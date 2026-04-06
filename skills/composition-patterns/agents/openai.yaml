@@ -1,0 +1,4 @@
+interface:
+  display_name: "Composition Patterns"
+  short_description: "Apply scalable React composition and state architecture patterns."
+  default_prompt: "Use $composition-patterns to review or refactor this React component architecture."

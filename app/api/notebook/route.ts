@@ -1,57 +1,39 @@
-import { desc, eq } from 'drizzle-orm';
 import { NextResponse } from 'next/server';
 
-import { getDb } from '@/lib/db/client';
-import { notebookEntries } from '@/lib/db/schema';
-import { createClient } from '@/lib/supabase/server';
+import { jsonError, parseJsonBody, withAuthenticatedUser } from '@/lib/api/route-helpers';
+import {
+  createNotebookEntry,
+  listNotebookEntries,
+  NotebookValidationError,
+  normalizeCreateNotebookEntryInput,
+} from '@/lib/services/notebook';
 
 export async function GET() {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-
-  const db = getDb();
-  const entries = await db
-    .select()
-    .from(notebookEntries)
-    .where(eq(notebookEntries.userId, user.id))
-    .orderBy(desc(notebookEntries.updatedAt));
-
-  return NextResponse.json(entries);
+  return withAuthenticatedUser(async (user) => {
+    const entries = await listNotebookEntries(user.id);
+    return NextResponse.json(entries);
+  });
 }
 
 export async function POST(request: Request) {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  return withAuthenticatedUser(async (user) => {
+    const bodyResult = await parseJsonBody(request);
+    if (!bodyResult.ok) {
+      return bodyResult.response;
+    }
 
-  const body = await request.json();
-  const { category, title, content, tags } = body as {
-    category?: string;
-    title?: string;
-    content?: string;
-    tags?: string[];
-  };
+    try {
+      const entry = await createNotebookEntry(
+        user.id,
+        normalizeCreateNotebookEntryInput(bodyResult.value),
+      );
+      return NextResponse.json(entry, { status: 201 });
+    } catch (error) {
+      if (error instanceof NotebookValidationError) {
+        return jsonError(error.message, 400);
+      }
 
-  if (!category || !title) {
-    return NextResponse.json({ error: 'category and title required' }, { status: 400 });
-  }
-
-  const db = getDb();
-  const [entry] = await db
-    .insert(notebookEntries)
-    .values({
-      userId: user.id,
-      category,
-      title: title.trim(),
-      content: content?.trim() || null,
-      tags: tags || null,
-    })
-    .returning();
-
-  return NextResponse.json(entry, { status: 201 });
+      throw error;
+    }
+  });
 }

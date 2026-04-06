@@ -1,5 +1,5 @@
 ---
-name: vercel-composition-patterns
+name: composition-patterns
 description:
   React composition patterns that scale. Use when refactoring components with
   boolean prop proliferation, building flexible component libraries, or
@@ -70,11 +70,11 @@ Reference these guidelines when:
 
 ## How to Use
 
-Read individual rule files for detailed explanations and code examples:
+Read individual rule files in this skill's local `rules` directory for detailed explanations and code examples:
 
 ```
-rules/architecture-avoid-boolean-props.md
-rules/state-context-interface.md
+architecture-avoid-boolean-props.md
+state-context-interface.md
 ```
 
 Each rule file contains:

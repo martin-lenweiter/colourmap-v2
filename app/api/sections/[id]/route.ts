@@ -1,94 +1,79 @@
-import { and, eq } from 'drizzle-orm';
 import { NextResponse } from 'next/server';
 
-import { getDb } from '@/lib/db/client';
-import { deleteSection, insertTracker } from '@/lib/db/queries/cockpit-sections';
-import { cockpitSections, sectionTrackers } from '@/lib/db/schema';
-import { createClient } from '@/lib/supabase/server';
+import { jsonError, parseJsonBody, withAuthenticatedUser } from '@/lib/api/route-helpers';
+import {
+  mutateSectionTracker,
+  normalizeRenameSectionInput,
+  normalizeSectionTrackerMutationInput,
+  removeSection,
+  renameSection,
+  SectionValidationError,
+} from '@/lib/services/sections';
 
 export async function PATCH(request: Request, { params }: { params: Promise<{ id: string }> }) {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  return withAuthenticatedUser(async (user) => {
+    const { id } = await params;
+    const bodyResult = await parseJsonBody(request);
+    if (!bodyResult.ok) {
+      return bodyResult.response;
+    }
 
-  const { id } = await params;
-  const body = await request.json();
-  if (typeof body.name !== 'string' || !body.name.trim()) {
-    return NextResponse.json({ error: 'name is required' }, { status: 400 });
-  }
+    try {
+      const { name } = normalizeRenameSectionInput(bodyResult.value);
+      const section = await renameSection(user.id, id, name);
+      if (!section) {
+        return jsonError('Not found', 404);
+      }
 
-  const db = getDb();
-  await db
-    .update(cockpitSections)
-    .set({ name: body.name.trim() })
-    .where(and(eq(cockpitSections.id, id), eq(cockpitSections.userId, user.id)));
+      return NextResponse.json(section);
+    } catch (error) {
+      if (error instanceof SectionValidationError) {
+        return jsonError(error.message, 400);
+      }
 
-  return NextResponse.json({ ok: true });
+      throw error;
+    }
+  });
 }
 
 export async function POST(request: Request, { params }: { params: Promise<{ id: string }> }) {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  return withAuthenticatedUser(async () => {
+    const { id } = await params;
 
-  if (!user) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-  }
+    const bodyResult = await parseJsonBody(request);
+    if (!bodyResult.ok) {
+      return bodyResult.response;
+    }
 
-  const { id } = await params;
+    try {
+      const result = await mutateSectionTracker(
+        id,
+        normalizeSectionTrackerMutationInput(bodyResult.value),
+      );
+      if ('deleted' in result) {
+        return NextResponse.json({ ok: result.deleted });
+      }
 
-  let body: unknown;
-  try {
-    body = await request.json();
-  } catch {
-    return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 });
-  }
+      return NextResponse.json(result.tracker, { status: 201 });
+    } catch (error) {
+      if (error instanceof SectionValidationError) {
+        return jsonError(error.message, 400);
+      }
 
-  if (typeof body !== 'object' || body === null) {
-    return NextResponse.json({ error: 'Invalid body' }, { status: 400 });
-  }
-
-  const { deleteTrackerId, label, type } = body as {
-    deleteTrackerId?: string;
-    label?: string;
-    type?: string;
-  };
-
-  // Delete a tracker
-  if (deleteTrackerId) {
-    const db = getDb();
-    await db.delete(sectionTrackers).where(eq(sectionTrackers.id, deleteTrackerId));
-    return NextResponse.json({ ok: true });
-  }
-
-  // Add a tracker
-  if (!label || !type) {
-    return NextResponse.json({ error: 'label and type are required' }, { status: 400 });
-  }
-
-  const tracker = await insertTracker(getDb(), { sectionId: id, label, type });
-  return NextResponse.json(tracker, { status: 201 });
+      throw error;
+    }
+  });
 }
 
 export async function DELETE(_request: Request, { params }: { params: Promise<{ id: string }> }) {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  return withAuthenticatedUser(async (user) => {
+    const { id } = await params;
+    const deleted = await removeSection(user.id, id);
 
-  if (!user) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-  }
+    if (!deleted) {
+      return jsonError('Not found', 404);
+    }
 
-  const { id } = await params;
-  const deleted = await deleteSection(getDb(), user.id, id);
-
-  if (!deleted) {
-    return NextResponse.json({ error: 'Not found' }, { status: 404 });
-  }
-
-  return NextResponse.json({ ok: true });
+    return NextResponse.json({ ok: true });
+  });
 }
