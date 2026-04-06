@@ -19,6 +19,10 @@ Senior staff engineer pairing mode. Push back on bad ideas, challenge assumption
 - Update canonical files first: `AGENTS.md`, `skills/*/SKILL.md`, and `rules/*.md`.
 - Update agent-specific adapter files (`.claude/`, `.codex/`) only when the adapter layer itself changes.
 
+## Workflow
+
+The agent must never push directly to `main`. All work goes through a branch and pull request. Follow `rules/workflow.md` for the full branch and merge policy.
+
 ## Rule Map
 
 - `rules/principles.md` — engineering and product principles
