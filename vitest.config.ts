@@ -12,7 +12,13 @@ export default defineConfig({
     coverage: {
       exclude: ['app/globals.css'],
       provider: 'v8',
-      reporter: ['text'],
+      reporter: ['text', 'json-summary'],
+      thresholds: {
+        statements: 50,
+        branches: 40,
+        functions: 40,
+        lines: 50,
+      },
     },
     environment: 'node',
     include: ['**/*.{test,spec}.{ts,tsx}'],

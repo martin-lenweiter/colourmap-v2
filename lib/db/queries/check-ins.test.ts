@@ -12,7 +12,7 @@ const select = vi.fn(() => ({ from }));
 
 const db = { insert, select } as unknown as Parameters<typeof insertCheckIn>[0];
 
-import { getRecentCheckIns, insertCheckIn } from './check-ins';
+import { getCheckInsForMission, getRecentCheckIns, insertCheckIn } from './check-ins';
 
 describe('insertCheckIn', () => {
   const fakeRow = {
@@ -127,5 +127,45 @@ describe('getRecentCheckIns', () => {
     await getRecentCheckIns(db, 'user-1', 3);
 
     expect(limit).toHaveBeenCalledWith(3);
+  });
+});
+
+describe('getCheckInsForMission', () => {
+  const fakeRows = [
+    {
+      id: 'mission-row-1',
+      userId: 'user-1',
+      sliderValue: 68,
+      note: 'made progress',
+      tags: ['Work'],
+      missionId: 'mission-1',
+      createdAt: new Date(),
+    },
+  ];
+
+  beforeEach(() => {
+    select.mockClear();
+    from.mockClear();
+    where.mockClear();
+    orderBy.mockClear();
+    limit.mockReset();
+    limit.mockResolvedValue(fakeRows);
+  });
+
+  it('returns recent check-ins for a mission with the default limit', async () => {
+    const result = await getCheckInsForMission(db, 'user-1', 'mission-1');
+
+    expect(select).toHaveBeenCalledTimes(1);
+    expect(from).toHaveBeenCalledTimes(1);
+    expect(where).toHaveBeenCalledTimes(1);
+    expect(orderBy).toHaveBeenCalledTimes(1);
+    expect(limit).toHaveBeenCalledWith(20);
+    expect(result).toEqual(fakeRows);
+  });
+
+  it('respects a custom mission history limit', async () => {
+    await getCheckInsForMission(db, 'user-1', 'mission-1', 5);
+
+    expect(limit).toHaveBeenCalledWith(5);
   });
 });

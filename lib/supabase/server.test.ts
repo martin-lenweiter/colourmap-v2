@@ -106,4 +106,15 @@ describe('createClient', () => {
     expect(createServerClient).not.toHaveBeenCalled();
     expect(cookies).not.toHaveBeenCalled();
   });
+
+  it('returns a dev client that can sign out cleanly when auth bypass is enabled', async () => {
+    process.env.DEV_BYPASS_AUTH = 'true';
+
+    const client = await createClient();
+    const { error } = await client.auth.signOut();
+
+    expect(error).toBeNull();
+    expect(createServerClient).not.toHaveBeenCalled();
+    expect(cookies).not.toHaveBeenCalled();
+  });
 });

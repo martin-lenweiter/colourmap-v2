@@ -23,10 +23,24 @@ export default defineConfig({
   },
   projects: [
     {
+      name: 'setup',
+      testMatch: /auth\.setup\.ts/,
+    },
+    {
       name: 'chromium',
       use: {
         browserName: 'chromium',
       },
+      testIgnore: /auth\.setup\.ts/,
+    },
+    {
+      name: 'chromium-auth',
+      use: {
+        browserName: 'chromium',
+        storageState: 'e2e/.auth/user.json',
+      },
+      testMatch: /smoke\.spec\.ts/,
+      dependencies: process.env.TEST_USER_EMAIL ? ['setup'] : [],
     },
   ],
   webServer: {
