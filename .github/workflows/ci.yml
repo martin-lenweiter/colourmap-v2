@@ -39,6 +39,14 @@ jobs:
       - run: bun install --frozen-lockfile
       - run: bun run test
 
+  coverage-gate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+      - run: bun install --frozen-lockfile
+      - run: bun run coverage
+
   policy-deps:
     runs-on: ubuntu-latest
     if: github.event_name == 'pull_request'
@@ -88,6 +96,30 @@ jobs:
         env:
           TEST_DRIFT_PR_BODY: ${{ github.event.pull_request.body }}
 
+  policy-architecture-boundaries:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+      - run: bun install --frozen-lockfile
+      - run: bun run policy:architecture-boundaries
+
+  policy-test-pairs:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+      - run: bun install --frozen-lockfile
+      - run: bun run policy:test-pairs
+
+  policy-agent-system:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: bash scripts/validate-agent-system.sh
+
   browser-smoke:
     runs-on: ubuntu-latest
     if: github.event_name == 'pull_request'
@@ -107,7 +139,7 @@ jobs:
           TEST_USER_PASSWORD: ${{ secrets.TEST_USER_PASSWORD }}
 
   deploy:
-    needs: [lint, typecheck, build, test]
+    needs: [lint, typecheck, build, test, coverage-gate]
     if: github.ref == 'refs/heads/main' && github.event_name == 'push'
     runs-on: ubuntu-latest
     env:
