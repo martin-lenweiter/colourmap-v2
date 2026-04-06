@@ -13,4 +13,3 @@ if [[ -f "package-lock.json" ]]; then
 fi
 
 echo "OK: no package-lock.json detected."
-
