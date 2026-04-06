@@ -1,0 +1,123 @@
+{
+  "summaryFile": "coverage/coverage-summary.json",
+  "baselineFile": "config/coverage-baseline.json",
+  "thresholds": [
+    {
+      "name": "app/api",
+      "description": "Route handlers stay covered, but the initial gate reflects current repo reality until Phase 3 fills route tests.",
+      "include": [
+        {
+          "prefix": "app/api/",
+          "suffixes": ["route.ts", "route.tsx"]
+        }
+      ],
+      "excludeSuffixes": [".test.ts", ".test.tsx", ".spec.ts", ".spec.tsx"],
+      "metrics": {
+        "lines": 4,
+        "statements": 4,
+        "functions": 4,
+        "branches": 3
+      }
+    },
+    {
+      "name": "lib/services",
+      "description": "Business logic is protected with a materially higher floor.",
+      "include": [
+        {
+          "prefix": "lib/services/",
+          "extensions": [".ts", ".tsx"]
+        }
+      ],
+      "excludeSuffixes": [".test.ts", ".test.tsx", ".spec.ts", ".spec.tsx"],
+      "metrics": {
+        "lines": 95,
+        "statements": 95,
+        "functions": 95,
+        "branches": 85
+      }
+    },
+    {
+      "name": "auth",
+      "description": "Auth routes and Supabase server wiring need stronger confidence than presentation code.",
+      "include": [
+        {
+          "prefix": "app/(auth)/",
+          "suffixes": ["route.ts", "route.tsx"]
+        },
+        {
+          "prefix": "lib/supabase/",
+          "extensions": [".ts", ".tsx"]
+        }
+      ],
+      "excludeSuffixes": [".test.ts", ".test.tsx", ".spec.ts", ".spec.tsx"],
+      "metrics": {
+        "lines": 85,
+        "statements": 85,
+        "functions": 80,
+        "branches": 70
+      }
+    },
+    {
+      "name": "policy-scripts",
+      "description": "The coverage gate helpers themselves are tested; shell policy scripts stay outside Vitest coverage.",
+      "include": [
+        {
+          "prefix": "scripts/",
+          "extensions": [".js", ".cjs", ".mjs", ".ts"]
+        }
+      ],
+      "excludeSuffixes": [".test.ts", ".test.tsx", ".spec.ts", ".spec.tsx"],
+      "metrics": {
+        "lines": 65,
+        "statements": 65,
+        "functions": 80,
+        "branches": 69.5
+      }
+    },
+    {
+      "name": "ui-default",
+      "description": "Presentation-heavy UI carries a lower floor than server-side logic.",
+      "include": [
+        {
+          "prefix": "components/",
+          "extensions": [".ts", ".tsx"]
+        },
+        {
+          "prefix": "app/(app)/",
+          "extensions": [".ts", ".tsx"]
+        },
+        {
+          "files": ["app/layout.tsx"]
+        }
+      ],
+      "excludeSuffixes": [".test.ts", ".test.tsx", ".spec.ts", ".spec.tsx"],
+      "metrics": {
+        "lines": 20,
+        "statements": 20,
+        "functions": 15,
+        "branches": 10
+      }
+    }
+  ],
+  "protectedPaths": {
+    "include": [
+      {
+        "prefix": "app/api/",
+        "suffixes": ["route.ts", "route.tsx"]
+      },
+      {
+        "prefix": "lib/services/",
+        "extensions": [".ts", ".tsx"]
+      },
+      {
+        "prefix": "app/(auth)/",
+        "suffixes": ["route.ts", "route.tsx"]
+      },
+      {
+        "prefix": "lib/supabase/",
+        "extensions": [".ts", ".tsx"]
+      }
+    ],
+    "excludeSuffixes": [".test.ts", ".test.tsx", ".spec.ts", ".spec.tsx"]
+  }
+}

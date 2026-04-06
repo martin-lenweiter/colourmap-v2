@@ -10,14 +10,17 @@
     "typecheck": "tsc --noEmit",
     "format": "biome check --write .",
     "test": "vitest run",
+    "coverage": "vitest run --coverage && bun scripts/coverage-gate.mjs",
     "test:watch": "vitest",
     "test:e2e": "playwright test",
     "db:generate": "drizzle-kit generate",
+    "policy:architecture-boundaries": "bun scripts/check-architecture-policy.ts",
     "policy:lockfile": "bash scripts/check-lockfile-policy.sh",
     "policy:protected-paths": "bash scripts/check-protected-paths.sh",
     "policy:pr-scope": "bash scripts/check-pr-scope.sh",
     "policy:spec-drift": "bash scripts/check-spec-drift.sh",
-    "policy:test-drift": "bash scripts/check-test-drift.sh"
+    "policy:test-drift": "bash scripts/check-test-drift.sh",
+    "policy:test-pairs": "bun scripts/check-test-pairs.ts"
   },
   "dependencies": {
     "@ai-sdk/anthropic": "^3.0.64",

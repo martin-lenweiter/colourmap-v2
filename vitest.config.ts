@@ -1,3 +1,4 @@
+// @ts-nocheck
 import path from 'node:path';
 
 import { configDefaults, defineConfig } from 'vitest/config';
@@ -10,9 +11,23 @@ export default defineConfig({
   },
   test: {
     coverage: {
-      exclude: ['app/globals.css'],
+      exclude: [
+        'app/globals.css',
+        '**/*.d.ts',
+        '**/*.test.{ts,tsx}',
+        '**/*.spec.{ts,tsx}',
+        'coverage/**',
+        'e2e/**',
+      ],
+      include: [
+        'app/**/*.{ts,tsx}',
+        'components/**/*.{ts,tsx}',
+        'lib/**/*.{ts,tsx}',
+        'proxy.ts',
+        'scripts/**/*.{js,cjs,mjs,ts}',
+      ],
       provider: 'v8',
-      reporter: ['text'],
+      reporter: ['text', 'json-summary'],
     },
     environment: 'node',
     include: ['**/*.{test,spec}.{ts,tsx}'],
