@@ -6,6 +6,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
+    "collab:setup": "bash scripts/setup-collab.sh",
+    "collab:doctor": "bash scripts/collab-doctor.sh",
     "lint": "biome check .",
     "typecheck": "tsc --noEmit",
     "format": "biome check --write .",

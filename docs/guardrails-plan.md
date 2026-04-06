@@ -1,5 +1,9 @@
 # Guardrails Plan
 
+Historical implementation plan only.
+
+The canonical source of truth for active guardrails is `rules/guardrails.md`.
+
 This document is the canonical autonomy plan for Colourmap V2.
 
 It exists because the repo already demonstrated the failure mode of open-ended agent autonomy:

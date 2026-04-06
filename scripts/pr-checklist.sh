@@ -18,6 +18,7 @@ protected_patterns=(
   "skills/"
   "docs/product.md"
   "docs/specs/"
+  "rules/guardrails.md"
   "docs/guardrails-plan.md"
   "package.json"
   "bun.lock"

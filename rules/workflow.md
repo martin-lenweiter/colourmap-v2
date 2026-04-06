@@ -63,7 +63,7 @@ There are two merge lanes:
 - Lane A: standard changes that may auto-merge after all required checks are green
 - Lane B: protected-path changes that require explicit human review or approval before merge
 
-Lane B includes protected paths such as `AGENTS.md`, `rules/**`, `skills/**`, `docs/product.md`, `docs/specs/**`, and `docs/guardrails-plan.md`.
+Lane B includes protected paths such as `AGENTS.md`, `rules/**`, `skills/**`, `docs/product.md`, `docs/specs/**`, `rules/guardrails.md`, and `docs/guardrails-plan.md`.
 
 Lane B pull requests must not be auto-merged. Leave them open, clearly note that they touch a protected path, and route them for human review.
 
