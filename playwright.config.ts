@@ -5,6 +5,7 @@ const supabasePublishableKey =
   process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY ??
   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ??
   'sb_publishable_example';
+const hasAuthTestUser = Boolean(process.env.TEST_USER_EMAIL && process.env.TEST_USER_PASSWORD);
 
 process.env.NEXT_PUBLIC_SUPABASE_URL = supabaseUrl;
 process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY = supabasePublishableKey;
@@ -22,10 +23,14 @@ export default defineConfig({
     video: 'off',
   },
   projects: [
-    {
-      name: 'setup',
-      testMatch: /auth\.setup\.ts/,
-    },
+    ...(hasAuthTestUser
+      ? [
+          {
+            name: 'setup',
+            testMatch: /auth\.setup\.ts/,
+          },
+        ]
+      : []),
     {
       name: 'chromium',
       use: {
@@ -33,15 +38,19 @@ export default defineConfig({
       },
       testIgnore: /auth\.setup\.ts/,
     },
-    {
-      name: 'chromium-auth',
-      use: {
-        browserName: 'chromium',
-        storageState: 'e2e/.auth/user.json',
-      },
-      testMatch: /smoke\.spec\.ts/,
-      dependencies: process.env.TEST_USER_EMAIL ? ['setup'] : [],
-    },
+    ...(hasAuthTestUser
+      ? [
+          {
+            name: 'chromium-auth',
+            use: {
+              browserName: 'chromium' as const,
+              storageState: 'e2e/.auth/user.json',
+            },
+            testMatch: /smoke\.spec\.ts/,
+            dependencies: ['setup'],
+          },
+        ]
+      : []),
   ],
   webServer: {
     command: 'bun run dev -- --hostname 127.0.0.1 --port 3000',

@@ -1,11 +1,9 @@
 import { mkdirSync } from 'node:fs';
 import path from 'node:path';
-import { fileURLToPath } from 'node:url';
 
 import { test as setup } from '@playwright/test';
 
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
-export const AUTH_FILE = path.join(__dirname, '.auth/user.json');
+const AUTH_FILE = path.resolve(process.cwd(), 'e2e/.auth/user.json');
 
 setup('authenticate', async ({ page }) => {
   const email = process.env.TEST_USER_EMAIL;
