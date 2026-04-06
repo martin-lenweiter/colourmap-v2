@@ -15,6 +15,9 @@ Senior staff engineer pairing mode. Push back on bad ideas, challenge assumption
 - Read `docs/product.md` before making product decisions.
 - Read the relevant feature spec in `docs/specs/` before implementing a feature.
 - Implementation plans are read-only after shipping — update the spec, not the plan.
+- `rules/guardrails.md` is the canonical source of truth for active repo guardrails.
+- When guardrails change, update `rules/guardrails.md` in the same change.
+- Keep guardrails repo-distributed through canonical files and symlinks so they propagate to collaborators on pull.
 - Use the relevant file in `skills/` when a request matches a skill.
 - Update canonical files first: `AGENTS.md`, `skills/*/SKILL.md`, and `rules/*.md`.
 - Update agent-specific adapter files (`.claude/`, `.codex/`) only when the adapter layer itself changes.
@@ -25,6 +28,7 @@ The agent must never push directly to `main`. All work goes through a branch and
 
 ## Rule Map
 
+- `rules/guardrails.md` — canonical source of truth for active repo guardrails
 - `rules/principles.md` — engineering and product principles
 - `rules/stack.md` — default stack, tooling, naming, coding standards
 - `rules/architecture.md` — server/client boundaries, project tiers, folder layout
@@ -53,5 +57,7 @@ The agent must never push directly to `main`. All work goes through a branch and
 - `.codex/AGENTS.md` → `AGENTS.md`
 - `.codex/rules/` → symlinks to `rules/*.md`
 - `.codex/skills/` → symlinks to `skills/*/`
+
+This wiring is how guardrail changes propagate to collaborators after a pull.
 
 Runtime-local settings stay untracked where supported. Today `.claude/settings.local.json` is gitignored.
