@@ -5,12 +5,21 @@ import { useEffect, useState } from 'react';
 const SIZES = [120, 160, 200, 240, 60];
 const STORAGE_KEY = 'colourmap:cat-size';
 
+function getStorage() {
+  if (typeof window === 'undefined') return null;
+
+  const storage = window.localStorage;
+  return typeof storage?.getItem === 'function' && typeof storage?.setItem === 'function'
+    ? storage
+    : null;
+}
+
 export default function CockpitCat() {
   const [size, setSize] = useState(200);
   const [showResize, setShowResize] = useState(false);
 
   useEffect(() => {
-    const saved = localStorage.getItem(STORAGE_KEY);
+    const saved = getStorage()?.getItem(STORAGE_KEY);
     if (saved) setSize(Number.parseInt(saved, 10));
   }, []);
 
@@ -18,7 +27,7 @@ export default function CockpitCat() {
     const idx = SIZES.indexOf(size);
     const next = SIZES[(idx + 1) % SIZES.length];
     setSize(next);
-    localStorage.setItem(STORAGE_KEY, String(next));
+    getStorage()?.setItem(STORAGE_KEY, String(next));
   }
 
   return (
@@ -39,7 +48,7 @@ export default function CockpitCat() {
                 type="button"
                 onClick={() => {
                   setSize(s);
-                  localStorage.setItem(STORAGE_KEY, String(s));
+                  getStorage()?.setItem(STORAGE_KEY, String(s));
                   setShowResize(false);
                 }}
                 className="h-5 w-5 rounded-full flex items-center justify-center text-[8px] transition-all"
