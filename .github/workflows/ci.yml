@@ -100,19 +100,19 @@ jobs:
     runs-on: ubuntu-latest
     if: github.event_name == 'pull_request'
     steps:
-      - run: echo "Compatibility check for current required status. Full architecture-boundary enforcement lands in PR #8."
+      - run: 'echo "Compatibility check for current required status. Full architecture-boundary enforcement lands in PR #8."'
 
   policy-test-pairs:
     runs-on: ubuntu-latest
     if: github.event_name == 'pull_request'
     steps:
-      - run: echo "Compatibility check for current required status. Full route/service test-pair enforcement lands in PR #8."
+      - run: 'echo "Compatibility check for current required status. Full route/service test-pair enforcement lands in PR #8."'
 
   policy-agent-system:
     runs-on: ubuntu-latest
     if: github.event_name == 'pull_request'
     steps:
-      - run: echo "Compatibility check for current required status. Instruction-system enforcement lands in PR #8."
+      - run: 'echo "Compatibility check for current required status. Instruction-system enforcement lands in PR #8."'
 
   browser-smoke:
     runs-on: ubuntu-latest
