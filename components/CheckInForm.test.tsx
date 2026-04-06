@@ -33,7 +33,13 @@ describe('CheckInForm', () => {
   beforeEach(() => {
     vi.stubGlobal(
       'fetch',
-      vi.fn((url: string) => {
+      vi.fn((url: string, options?: RequestInit) => {
+        if (url === '/api/check-ins' && (!options?.method || options.method === 'GET')) {
+          return Promise.resolve({
+            ok: true,
+            json: () => Promise.resolve([]),
+          });
+        }
         if (url === '/api/life-scan-answers') {
           return Promise.resolve({
             ok: true,
@@ -57,6 +63,18 @@ describe('CheckInForm', () => {
     render(<CheckInForm />);
 
     expect(screen.getByRole('button', { name: 'Check in' })).toBeDefined();
+  });
+
+  it('shows the ochre brown ink note on a first check-in', async () => {
+    render(<CheckInForm />);
+
+    await waitFor(() => {
+      expect(screen.getByText('First Check-In')).toBeDefined();
+    });
+
+    expect(screen.getByText('Ochre')).toBeDefined();
+    expect(screen.getByText('Brown')).toBeDefined();
+    expect(screen.getByText('Ink')).toBeDefined();
   });
 
   it('renders the Hawkins emotion bar', () => {
