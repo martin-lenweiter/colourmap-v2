@@ -44,6 +44,7 @@ describe('createClient', () => {
     createServerClient.mockClear();
     cookieStore.getAll.mockReturnValue([{ name: 'existing', value: 'cookie' }]);
     cookieStore.set.mockReset();
+    process.env.NODE_ENV = 'test';
     process.env.NEXT_PUBLIC_SUPABASE_URL = 'https://example.supabase.co';
     process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_test';
     delete process.env.DEV_BYPASS_AUTH;
@@ -105,5 +106,14 @@ describe('createClient', () => {
     expect(error).toBeNull();
     expect(createServerClient).not.toHaveBeenCalled();
     expect(cookies).not.toHaveBeenCalled();
+  });
+
+  it('ignores DEV_BYPASS_AUTH in production', async () => {
+    process.env.NODE_ENV = 'production';
+    process.env.DEV_BYPASS_AUTH = 'true';
+
+    expect(await createClient()).toBe('server-client');
+    expect(createServerClient).toHaveBeenCalledOnce();
+    expect(cookies).toHaveBeenCalledOnce();
   });
 });

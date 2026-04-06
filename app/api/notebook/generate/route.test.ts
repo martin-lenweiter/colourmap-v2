@@ -30,6 +30,14 @@ function makeRequest(body: unknown) {
   });
 }
 
+function makeInvalidJsonRequest() {
+  return new Request('http://localhost/api/notebook/generate', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: '{',
+  });
+}
+
 describe('notebook generate route', () => {
   beforeEach(() => {
     createClient.mockClear();
@@ -56,6 +64,27 @@ describe('notebook generate route', () => {
     const response = await POST(makeRequest({ type: 'bad', context: 'city lights' }));
     expect(response.status).toBe(400);
     await expect(response.text()).resolves.toBe('Invalid type');
+  });
+
+  it('returns 400 for invalid json', async () => {
+    const response = await POST(makeInvalidJsonRequest());
+    expect(response.status).toBe(400);
+    await expect(response.json()).resolves.toEqual({ error: 'Invalid JSON body' });
+    expect(streamText).not.toHaveBeenCalled();
+  });
+
+  it('returns 400 for non-string context', async () => {
+    const response = await POST(makeRequest({ type: 'chorus', context: { mood: 'bright' } }));
+    expect(response.status).toBe(400);
+    await expect(response.text()).resolves.toBe('Invalid context');
+    expect(streamText).not.toHaveBeenCalled();
+  });
+
+  it('returns 400 for oversized context', async () => {
+    const response = await POST(makeRequest({ type: 'chorus', context: 'a'.repeat(4_001) }));
+    expect(response.status).toBe(400);
+    await expect(response.text()).resolves.toBe('Context too long');
+    expect(streamText).not.toHaveBeenCalled();
   });
 
   it('rethrows unexpected ai failures', async () => {

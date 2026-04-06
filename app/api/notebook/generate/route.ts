@@ -1,7 +1,13 @@
 import { anthropic } from '@ai-sdk/anthropic';
 import { streamText } from 'ai';
 
-import { unauthorizedTextResponse, withAuthenticatedUser } from '@/lib/api/route-helpers';
+import {
+  invalidJsonBodyResponse,
+  unauthorizedTextResponse,
+  withAuthenticatedUser,
+} from '@/lib/api/route-helpers';
+
+const MAX_CONTEXT_LENGTH = 4_000;
 
 const PROMPTS: Record<string, { system: string; build: (ctx: string) => string }> = {
   chorus: {
@@ -33,20 +39,54 @@ Label each with a vibe tag. No explanations.`,
   },
 };
 
+function normalizeGenerateRequest(input: unknown) {
+  if (typeof input !== 'object' || input === null) {
+    return { ok: false as const, response: invalidJsonBodyResponse() };
+  }
+
+  const { type, context } = input as { type?: unknown; context?: unknown };
+  if (typeof type !== 'string' || !(type in PROMPTS)) {
+    return { ok: false as const, response: new Response('Invalid type', { status: 400 }) };
+  }
+
+  if (context !== undefined && context !== null && typeof context !== 'string') {
+    return { ok: false as const, response: new Response('Invalid context', { status: 400 }) };
+  }
+
+  const normalizedContext = typeof context === 'string' ? context.trim() : '';
+  if (normalizedContext.length > MAX_CONTEXT_LENGTH) {
+    return { ok: false as const, response: new Response('Context too long', { status: 400 }) };
+  }
+
+  return {
+    ok: true as const,
+    value: {
+      type,
+      context: normalizedContext || 'No context yet — surprise me with something fresh.',
+    },
+  };
+}
+
 export async function POST(req: Request) {
   return withAuthenticatedUser(
     async () => {
-      const { type, context } = await req.json();
-
-      const prompt = PROMPTS[type];
-      if (!prompt) {
-        return new Response('Invalid type', { status: 400 });
+      let body: unknown;
+      try {
+        body = await req.json();
+      } catch {
+        return invalidJsonBodyResponse();
       }
 
+      const input = normalizeGenerateRequest(body);
+      if (!input.ok) {
+        return input.response;
+      }
+
+      const prompt = PROMPTS[input.value.type];
       const result = streamText({
         model: anthropic('claude-haiku-4-5-20251001'),
         system: prompt.system,
-        prompt: prompt.build(context || 'No context yet — surprise me with something fresh.'),
+        prompt: prompt.build(input.value.context),
       });
 
       return result.toTextStreamResponse();
