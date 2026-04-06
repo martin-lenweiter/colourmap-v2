@@ -1,5 +1,12 @@
 import { expect, type Page, test } from '@playwright/test';
 
+function skipInAuthenticatedProject() {
+  test.skip(
+    test.info().project.name === 'chromium-auth',
+    'Unauthenticated smoke only runs in the public browser project',
+  );
+}
+
 async function gotoOrSkip(page: Page, path: string) {
   try {
     const response = await page.goto(path, { waitUntil: 'domcontentloaded' });
@@ -23,6 +30,8 @@ async function skipIfAppBootFailed(page: Page) {
 }
 
 test('login page renders without console errors', async ({ page }) => {
+  skipInAuthenticatedProject();
+
   const errors: string[] = [];
 
   page.on('console', (msg) => {
@@ -43,12 +52,16 @@ test('login page renders without console errors', async ({ page }) => {
 });
 
 test('protected routes redirect unauthenticated users', async ({ page }) => {
+  skipInAuthenticatedProject();
+
   await gotoOrSkip(page, '/');
 
   await expect(page).toHaveURL(/\/login(?:\?|$)/);
 });
 
 test('cockpit route redirects unauthenticated users', async ({ page }) => {
+  skipInAuthenticatedProject();
+
   await gotoOrSkip(page, '/overview');
 
   await expect(page).toHaveURL(/\/login(?:\?|$)/);
