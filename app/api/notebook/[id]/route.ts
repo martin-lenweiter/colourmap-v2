@@ -1,41 +1,47 @@
-import { and, eq } from 'drizzle-orm';
 import { NextResponse } from 'next/server';
 
-import { getDb } from '@/lib/db/client';
-import { notebookEntries } from '@/lib/db/schema';
-import { createClient } from '@/lib/supabase/server';
+import { jsonError, parseJsonBody, withAuthenticatedUser } from '@/lib/api/route-helpers';
+import {
+  deleteNotebookEntry,
+  NotebookValidationError,
+  normalizeUpdateNotebookEntryInput,
+  updateNotebookEntry,
+} from '@/lib/services/notebook';
 
 export async function PATCH(request: Request, { params }: { params: Promise<{ id: string }> }) {
-  const { id } = await params;
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  return withAuthenticatedUser(async (user) => {
+    const { id } = await params;
+    const bodyResult = await parseJsonBody(request);
+    if (!bodyResult.ok) {
+      return bodyResult.response;
+    }
 
-  const body = await request.json();
-  const db = getDb();
-  const [updated] = await db
-    .update(notebookEntries)
-    .set({ ...body, updatedAt: new Date() })
-    .where(and(eq(notebookEntries.id, id), eq(notebookEntries.userId, user.id)))
-    .returning();
+    try {
+      const updated = await updateNotebookEntry(
+        user.id,
+        id,
+        normalizeUpdateNotebookEntryInput(bodyResult.value),
+      );
 
-  return NextResponse.json(updated);
+      if (!updated) {
+        return jsonError('Not found', 404);
+      }
+
+      return NextResponse.json(updated);
+    } catch (error) {
+      if (error instanceof NotebookValidationError) {
+        return jsonError(error.message, 400);
+      }
+
+      throw error;
+    }
+  });
 }
 
 export async function DELETE(_request: Request, { params }: { params: Promise<{ id: string }> }) {
-  const { id } = await params;
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-
-  const db = getDb();
-  await db
-    .delete(notebookEntries)
-    .where(and(eq(notebookEntries.id, id), eq(notebookEntries.userId, user.id)));
-
-  return NextResponse.json({ ok: true });
+  return withAuthenticatedUser(async (user) => {
+    const { id } = await params;
+    await deleteNotebookEntry(user.id, id);
+    return NextResponse.json({ ok: true });
+  });
 }
