@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import PostCheckInInsight from '@/components/PostCheckInInsight';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
@@ -463,6 +463,31 @@ export default function CheckInForm({ missions = [], onCheckInComplete }: CheckI
     attitude: 50,
     structure: 50,
   });
+  const [isFirstCheckIn, setIsFirstCheckIn] = useState(false);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function loadExistingCheckIns() {
+      try {
+        const response = await fetch('/api/check-ins');
+        if (!response.ok) return;
+
+        const data = await response.json();
+        if (!cancelled && Array.isArray(data)) {
+          setIsFirstCheckIn(data.length === 0);
+        }
+      } catch {
+        // Keep the form usable even if the first-load check fails.
+      }
+    }
+
+    loadExistingCheckIns();
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   const _emotionalWord = getEmotionalWord(sliderValue);
 
@@ -588,6 +613,7 @@ export default function CheckInForm({ missions = [], onCheckInComplete }: CheckI
       setInsightColor(HAWKINS[hawkinsIdx].color);
       const submittedWord = getEmotionalWord(sliderValue);
       setReflectionWord(submittedWord);
+      setIsFirstCheckIn(false);
     } catch {
       setError('Network error — check your connection');
     } finally {
@@ -635,6 +661,36 @@ export default function CheckInForm({ missions = [], onCheckInComplete }: CheckI
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
+      {isFirstCheckIn && (
+        <div className="rounded-[22px] border border-[#c4a0602b] bg-[#fbf4e8cc] px-4 py-4 text-left shadow-[0_16px_40px_-32px_rgba(92,48,24,0.45)]">
+          <p className="text-[10px] uppercase tracking-[0.28em] text-[#9d6f2f]">First Check-In</p>
+          <div className="mt-3 space-y-3">
+            <div>
+              <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-[#c88820]">
+                Ochre
+              </p>
+              <p className="mt-1 text-sm leading-6 text-[#7a5438]">Create a branch first.</p>
+            </div>
+            <div>
+              <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-[#7a5438]">
+                Brown
+              </p>
+              <p className="mt-1 text-sm leading-6 text-[#7a5438]">
+                Do the work there, never on main.
+              </p>
+            </div>
+            <div>
+              <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-[#2d241f]">
+                Ink
+              </p>
+              <p className="mt-1 text-sm leading-6 text-[#2d241f]">
+                Open a PR. Wait for checks. If the UI changed, check it in the browser.
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Hawkins emotion wheel */}
       <div className="space-y-3">
         {(() => {

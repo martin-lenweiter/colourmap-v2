@@ -79,6 +79,8 @@ describe('AppLayout', () => {
     expect(html).toContain('Colourmap');
     expect(html).toContain('Sign out');
     expect(html).toContain('Child section');
+    expect(html).toContain('text-center');
+    expect(html).toContain('color:#B33A2B');
   });
 
   it('redirects unauthenticated visitors to the login page', async () => {
