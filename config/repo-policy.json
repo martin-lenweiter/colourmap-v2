@@ -1,0 +1,23 @@
+{
+  "routeServiceOwnership": {
+    "app/api/check-ins/route.ts": "lib/services/check-ins.ts",
+    "app/api/check-ins/[id]/route.ts": "lib/services/check-ins.ts",
+    "app/api/check-ins/analysis/route.ts": "lib/services/reflections.ts",
+    "app/api/check-ins/insight/route.ts": "lib/services/reflections.ts",
+    "app/api/day-map/insight/route.ts": "lib/services/reflections.ts",
+    "app/api/journey/reflect/route.ts": "lib/services/reflections.ts",
+    "app/api/life-scan/route.ts": "lib/services/life-scans.ts",
+    "app/api/missions/route.ts": "lib/services/missions.ts",
+    "app/api/missions/[id]/route.ts": "lib/services/missions.ts",
+    "app/api/missions/[id]/check-ins/route.ts": "lib/services/check-ins.ts",
+    "app/api/notebook/route.ts": "lib/services/notebook.ts",
+    "app/api/notebook/[id]/route.ts": "lib/services/notebook.ts",
+    "app/api/sections/route.ts": "lib/services/sections.ts",
+    "app/api/sections/[id]/route.ts": "lib/services/sections.ts",
+    "app/api/sections/[id]/entries/route.ts": "lib/services/sections.ts"
+  },
+  "testPairExceptions": {
+    "routes": [],
+    "services": []
+  }
+}

@@ -37,7 +37,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: oven-sh/setup-bun@v2
       - run: bun install --frozen-lockfile
-      - run: bun run test:coverage
+      - run: bun run test
 
   coverage-gate:
     runs-on: ubuntu-latest
@@ -45,7 +45,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: oven-sh/setup-bun@v2
       - run: bun install --frozen-lockfile
-      - run: bun run test:coverage
+      - run: bun run coverage
 
   policy-deps:
     runs-on: ubuntu-latest
@@ -100,19 +100,25 @@ jobs:
     runs-on: ubuntu-latest
     if: github.event_name == 'pull_request'
     steps:
-      - run: 'echo "Compatibility check for current required status. Full architecture-boundary enforcement lands in PR #8."'
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+      - run: bun install --frozen-lockfile
+      - run: bun run policy:architecture-boundaries
 
   policy-test-pairs:
     runs-on: ubuntu-latest
     if: github.event_name == 'pull_request'
     steps:
-      - run: 'echo "Compatibility check for current required status. Full route/service test-pair enforcement lands in PR #8."'
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+      - run: bun install --frozen-lockfile
+      - run: bun run policy:test-pairs
 
   policy-agent-system:
     runs-on: ubuntu-latest
-    if: github.event_name == 'pull_request'
     steps:
-      - run: 'echo "Compatibility check for current required status. Instruction-system enforcement lands in PR #8."'
+      - uses: actions/checkout@v4
+      - run: bash scripts/validate-agent-system.sh
 
   browser-smoke:
     runs-on: ubuntu-latest
@@ -134,7 +140,7 @@ jobs:
           TEST_USER_PASSWORD: ${{ secrets.TEST_USER_PASSWORD }}
 
   deploy:
-    needs: [lint, typecheck, build, test]
+    needs: [lint, typecheck, build, test, coverage-gate]
     if: github.ref == 'refs/heads/main' && github.event_name == 'push'
     runs-on: ubuntu-latest
     env:
