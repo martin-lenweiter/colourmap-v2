@@ -1,7 +1,7 @@
 import { anthropic } from '@ai-sdk/anthropic';
 import { streamText } from 'ai';
 
-import { createClient } from '@/lib/supabase/server';
+import { unauthorizedTextResponse, withAuthenticatedUser } from '@/lib/api/route-helpers';
 
 const PROMPTS: Record<string, { system: string; build: (ctx: string) => string }> = {
   chorus: {
@@ -34,27 +34,23 @@ Label each with a vibe tag. No explanations.`,
 };
 
 export async function POST(req: Request) {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  return withAuthenticatedUser(
+    async () => {
+      const { type, context } = await req.json();
 
-  if (!user) {
-    return new Response('Unauthorized', { status: 401 });
-  }
+      const prompt = PROMPTS[type];
+      if (!prompt) {
+        return new Response('Invalid type', { status: 400 });
+      }
 
-  const { type, context } = await req.json();
+      const result = streamText({
+        model: anthropic('claude-haiku-4-5-20251001'),
+        system: prompt.system,
+        prompt: prompt.build(context || 'No context yet — surprise me with something fresh.'),
+      });
 
-  const prompt = PROMPTS[type];
-  if (!prompt) {
-    return new Response('Invalid type', { status: 400 });
-  }
-
-  const result = streamText({
-    model: anthropic('claude-haiku-4-5-20251001'),
-    system: prompt.system,
-    prompt: prompt.build(context || 'No context yet — surprise me with something fresh.'),
-  });
-
-  return result.toTextStreamResponse();
+      return result.toTextStreamResponse();
+    },
+    { unauthorizedResponse: unauthorizedTextResponse },
+  );
 }

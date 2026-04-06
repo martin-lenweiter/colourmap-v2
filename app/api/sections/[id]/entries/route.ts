@@ -1,42 +1,35 @@
 import { NextResponse } from 'next/server';
 
-import { getDb } from '@/lib/db/client';
-import { upsertEntry } from '@/lib/db/queries/cockpit-sections';
-import { createClient } from '@/lib/supabase/server';
+import { jsonError, parseJsonBody, withAuthenticatedUser } from '@/lib/api/route-helpers';
+import {
+  normalizeSectionEntryInput,
+  recordSectionEntry,
+  SectionValidationError,
+} from '@/lib/services/sections';
 
 export async function POST(request: Request, { params }: { params: Promise<{ id: string }> }) {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  return withAuthenticatedUser(async (user) => {
+    await params;
 
-  if (!user) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-  }
+    const bodyResult = await parseJsonBody(request);
+    if (!bodyResult.ok) {
+      return bodyResult.response;
+    }
 
-  // id here is the section id, but we need trackerId from the body
-  await params;
+    const today = new Date().toISOString().split('T')[0];
+    try {
+      const entry = await recordSectionEntry(
+        user.id,
+        today,
+        normalizeSectionEntryInput(bodyResult.value),
+      );
+      return NextResponse.json(entry);
+    } catch (error) {
+      if (error instanceof SectionValidationError) {
+        return jsonError(error.message, 400);
+      }
 
-  let body: unknown;
-  try {
-    body = await request.json();
-  } catch {
-    return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 });
-  }
-
-  if (typeof body !== 'object' || body === null || !('trackerId' in body) || !('value' in body)) {
-    return NextResponse.json({ error: 'trackerId and value are required' }, { status: 400 });
-  }
-
-  const { trackerId, value } = body as { trackerId: string; value: number };
-  const today = new Date().toISOString().split('T')[0];
-
-  const entry = await upsertEntry(getDb(), {
-    trackerId,
-    userId: user.id,
-    date: today,
-    value,
+      throw error;
+    }
   });
-
-  return NextResponse.json(entry);
 }

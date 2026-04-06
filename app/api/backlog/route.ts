@@ -1,49 +1,35 @@
 import { NextResponse } from 'next/server';
 
+import { jsonError, parseJsonBody, withAuthenticatedUser } from '@/lib/api/route-helpers';
 import { getDb } from '@/lib/db/client';
 import { getBacklogItems, insertBacklogItem } from '@/lib/db/queries/backlog';
-import { createClient } from '@/lib/supabase/server';
 
 export async function GET() {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (!user) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-  }
-
-  const items = await getBacklogItems(getDb(), user.id);
-  return NextResponse.json(items);
+  return withAuthenticatedUser(async (user) => {
+    const items = await getBacklogItems(getDb(), user.id);
+    return NextResponse.json(items);
+  });
 }
 
 export async function POST(request: Request) {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  return withAuthenticatedUser(async (user) => {
+    const bodyResult = await parseJsonBody(request);
+    if (!bodyResult.ok) {
+      return bodyResult.response;
+    }
 
-  if (!user) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-  }
+    const body = bodyResult.value;
 
-  let body: unknown;
-  try {
-    body = await request.json();
-  } catch {
-    return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 });
-  }
+    if (typeof body !== 'object' || body === null || !('title' in body)) {
+      return jsonError('title is required', 400);
+    }
 
-  if (typeof body !== 'object' || body === null || !('title' in body)) {
-    return NextResponse.json({ error: 'title is required' }, { status: 400 });
-  }
+    const { title } = body as { title: unknown };
+    if (typeof title !== 'string' || title.trim().length === 0) {
+      return jsonError('title must be a non-empty string', 400);
+    }
 
-  const { title } = body as { title: unknown };
-  if (typeof title !== 'string' || title.trim().length === 0) {
-    return NextResponse.json({ error: 'title must be a non-empty string' }, { status: 400 });
-  }
-
-  const item = await insertBacklogItem(getDb(), { userId: user.id, title: title.trim() });
-  return NextResponse.json(item, { status: 201 });
+    const item = await insertBacklogItem(getDb(), { userId: user.id, title: title.trim() });
+    return NextResponse.json(item, { status: 201 });
+  });
 }
