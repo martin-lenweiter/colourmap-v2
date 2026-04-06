@@ -75,6 +75,31 @@ Before pushing, run the full build locally (`bun run build`) and confirm it pass
 
 Push to a branch, not `main`. Open a pull request. Never push directly to `main`.
 
+## No-Spec-Impact Declaration
+
+Use `no-spec-impact` only when a change is purely internal: refactor-only work, test cleanup, or other non-behavioral maintenance with no user-visible effect.
+
+Declare it by including the exact text `no-spec-impact` in the PR body or a commit message.
+
+It is wrong to use `no-spec-impact` when the change:
+
+- changes user-visible behavior
+- changes API responses
+- adds or removes features
+
+Misuse will still be caught in code review. The policy script only gates CI; it does not replace correctness review.
+
+## UI PR Evidence
+
+Any PR that touches `app/**` or `components/**` is incomplete unless the PR body includes UI verification evidence, regardless of CI status.
+
+Required evidence:
+
+- Routes verified: list every affected route you opened in a browser
+- Console status: `clean` or the exceptions you observed
+- Network status: `clean` or the failed requests you observed
+- Screenshot: attach one if the UI changed visually, or state `no visual change` if styling was untouched
+
 ## Commit Discipline
 
 - Write commit messages that describe what changed AND why

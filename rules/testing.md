@@ -2,19 +2,31 @@
 
 ## Goal
 
-100% test coverage. Every line, branch, and edge case.
+Confidence through enforced, risk-weighted coverage and behavior-based tests.
 
 ## Rules
 
 - **Every change gets tests.** New code needs new tests. Changed code needs updated tests. Deleted code means deleted tests. No exceptions.
 - **Coverage must not decrease.** If a change lowers coverage, it is not ready to commit.
+- **CI enforces coverage thresholds.** Local work should keep `bun run test` green before committing; CI is the primary coverage gate.
+- **Critical logic carries higher coverage expectations than presentation-only files.**
+- **Protected paths must not regress in coverage.**
+- **Bug fixes need regression tests when feasible.**
+- **No test drift.** Test changes must be justified by the spec, not by implementation drift. If behavior changed accidentally and you are updating tests to match, that is a spec violation. Update the spec first, then update the tests, then commit.
+- **Declare `no-spec-impact` only when no behavior changed.** If tests change as part of a refactor with no user-visible effect, declare `no-spec-impact` in the PR body.
 - **Test the behavior, not the implementation.** Tests should break when behavior changes, not when internals are refactored.
 - **One test file per source file.** Co-locate: `lib/foo.ts` → `lib/foo.test.ts`, `app/api/bar/route.ts` → `app/api/bar/route.test.ts`.
 - **No skipped tests.** No `test.skip`, no `test.todo` in committed code. If a test can't pass, fix the code or remove the test.
 
 ## Coverage Enforcement
 
-Run `bun run test --coverage` before committing. Review uncovered lines and add tests for them. Treat uncovered code the same as a failing test — a blocker, not a suggestion.
+Use explicit CI thresholds instead of a repo-wide 100% mandate.
+
+- Keep higher thresholds on critical logic than on presentation-only files.
+- Avoid coverage regression on protected paths.
+- Never update tests merely to rubber-stamp accidental drift.
+
+Locally, run `bun run test` before committing. CI enforces the coverage thresholds.
 
 ## What to Test
 

@@ -4,3 +4,13 @@ pre-commit:
       glob: "*.{js,ts,jsx,tsx,json,css}"
       run: bunx @biomejs/biome check --staged --write
       stage_fixed: true
+pre-push:
+  commands:
+    lint:
+      run: bun run lint
+    typecheck:
+      run: bun run typecheck
+    test:
+      run: bun run test
+    lockfile:
+      run: bash scripts/check-lockfile-policy.sh
