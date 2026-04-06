@@ -1,12 +1,27 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
+type CookieWrite = {
+  name: string;
+  value: string;
+  options?: Record<string, unknown>;
+};
+
+type ServerClientOptions = {
+  cookies: {
+    getAll: () => Array<{ name: string; value: string }>;
+    setAll: (cookiesToSet: CookieWrite[]) => void;
+  };
+};
+
 const { cookieStore, cookies, createServerClient } = vi.hoisted(() => ({
   cookieStore: {
     getAll: vi.fn(() => [{ name: 'existing', value: 'cookie' }]),
     set: vi.fn(),
   },
   cookies: vi.fn(),
-  createServerClient: vi.fn(() => 'server-client'),
+  createServerClient: vi.fn(
+    (_url: string, _key: string, _options: ServerClientOptions) => 'server-client',
+  ),
 }));
 
 cookies.mockImplementation(async () => cookieStore);

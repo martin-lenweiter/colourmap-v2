@@ -10,6 +10,15 @@ vi.mock('@/components/CheckInAnalysis', () => ({
 import CheckInHistory from './CheckInHistory';
 
 const now = new Date('2026-03-31T14:00:00Z');
+type MockDateArgs =
+  | []
+  | [string | number | Date]
+  | [number, number]
+  | [number, number, number]
+  | [number, number, number, number]
+  | [number, number, number, number, number]
+  | [number, number, number, number, number, number]
+  | [number, number, number, number, number, number, number];
 
 const fakeEntries = [
   {
@@ -49,12 +58,33 @@ describe('CheckInHistory', () => {
     vi.stubGlobal(
       'Date',
       class extends Date {
-        constructor(...args: ConstructorParameters<typeof Date>) {
+        constructor(...args: MockDateArgs) {
           if (args.length === 0) {
             super(now.toISOString());
-          } else {
-            // @ts-expect-error -- spread into Date constructor
-            super(...args);
+            return;
+          }
+
+          switch (args.length) {
+            case 1:
+              super(args[0]);
+              return;
+            case 2:
+              super(args[0], args[1]);
+              return;
+            case 3:
+              super(args[0], args[1], args[2]);
+              return;
+            case 4:
+              super(args[0], args[1], args[2], args[3]);
+              return;
+            case 5:
+              super(args[0], args[1], args[2], args[3], args[4]);
+              return;
+            case 6:
+              super(args[0], args[1], args[2], args[3], args[4], args[5]);
+              return;
+            default:
+              super(args[0], args[1], args[2], args[3], args[4], args[5], args[6]);
           }
         }
 
