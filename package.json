@@ -12,7 +12,12 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "test:e2e": "playwright test",
-    "db:generate": "drizzle-kit generate"
+    "db:generate": "drizzle-kit generate",
+    "policy:lockfile": "bash scripts/check-lockfile-policy.sh",
+    "policy:protected-paths": "bash scripts/check-protected-paths.sh",
+    "policy:pr-scope": "bash scripts/check-pr-scope.sh",
+    "policy:spec-drift": "bash scripts/check-spec-drift.sh",
+    "policy:test-drift": "bash scripts/check-test-drift.sh"
   },
   "dependencies": {
     "@ai-sdk/anthropic": "^3.0.64",
