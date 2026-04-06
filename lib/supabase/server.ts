@@ -21,8 +21,12 @@ function createDevClient(): SupabaseClient {
   } as unknown as SupabaseClient;
 }
 
+function isDevAuthBypassEnabled() {
+  return process.env.NODE_ENV !== 'production' && process.env.DEV_BYPASS_AUTH === 'true';
+}
+
 export async function createClient() {
-  if (process.env.DEV_BYPASS_AUTH === 'true') {
+  if (isDevAuthBypassEnabled()) {
     return createDevClient();
   }
 

@@ -59,6 +59,8 @@ export default defineConfig({
     timeout: 120_000,
     env: {
       ...process.env,
+      // Keep browser smoke tests isolated from local auth bypass convenience flags.
+      DEV_BYPASS_AUTH: 'false',
       NEXT_PUBLIC_SUPABASE_URL: supabaseUrl,
       NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: supabasePublishableKey,
     },

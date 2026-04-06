@@ -44,12 +44,14 @@ describe('createClient', () => {
     createServerClient.mockClear();
     cookieStore.getAll.mockReturnValue([{ name: 'existing', value: 'cookie' }]);
     cookieStore.set.mockReset();
+    vi.stubEnv('NODE_ENV', 'test');
     process.env.NEXT_PUBLIC_SUPABASE_URL = 'https://example.supabase.co';
     process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_test';
     delete process.env.DEV_BYPASS_AUTH;
   });
 
   afterEach(() => {
+    vi.unstubAllEnvs();
     process.env = { ...ORIGINAL_ENV };
   });
 
@@ -107,14 +109,12 @@ describe('createClient', () => {
     expect(cookies).not.toHaveBeenCalled();
   });
 
-  it('returns a dev client that can sign out cleanly when auth bypass is enabled', async () => {
+  it('ignores DEV_BYPASS_AUTH in production', async () => {
+    vi.stubEnv('NODE_ENV', 'production');
     process.env.DEV_BYPASS_AUTH = 'true';
 
-    const client = await createClient();
-    const { error } = await client.auth.signOut();
-
-    expect(error).toBeNull();
-    expect(createServerClient).not.toHaveBeenCalled();
-    expect(cookies).not.toHaveBeenCalled();
+    expect(await createClient()).toBe('server-client');
+    expect(createServerClient).toHaveBeenCalledOnce();
+    expect(cookies).toHaveBeenCalledOnce();
   });
 });
