@@ -4,7 +4,9 @@
 # - This script compares HEAD against origin/${GITHUB_BASE_REF:-main}.
 # - CI must fetch enough git history for the base ref to exist locally.
 # - Local runs default to the main branch when GITHUB_BASE_REF is unset.
-# - Protected-path detection is intentionally strict and exits non-zero when matches are found.
+# - Protected-path detection is intentionally strict about surfacing matches.
+# - Protected-path pull requests are Lane B work and should remain mergeable after human review,
+#   so this script warns without failing when matches are found.
 
 set -euo pipefail
 
@@ -53,7 +55,7 @@ done
 if [[ -n "${matched_files[*]-}" ]]; then
   echo "WARNING: protected files changed. These paths require Lane B handling:"
   printf ' - %s\n' "${matched_files[@]}" | sort -u
-  exit 1
+  exit 0
 fi
 
 echo "OK: no protected paths changed."

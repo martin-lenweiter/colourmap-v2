@@ -1,6 +1,11 @@
 import { expect, type Page, test } from '@playwright/test';
 
-const HAS_AUTH = Boolean(process.env.TEST_USER_EMAIL) && Boolean(process.env.TEST_USER_PASSWORD);
+function skipInAuthenticatedProject() {
+  test.skip(
+    test.info().project.name === 'chromium-auth',
+    'Unauthenticated smoke only runs in the public browser project',
+  );
+}
 
 async function gotoOrSkip(page: Page, path: string) {
   try {
@@ -24,26 +29,9 @@ async function skipIfAppBootFailed(page: Page) {
   );
 }
 
-async function fillCredentialLoginOrSkip(page: Page) {
-  await gotoOrSkip(page, '/login');
-
-  const emailInput = page.locator('input[type="email"]');
-  const passwordInput = page.locator('input[type="password"]');
-  const submitButton = page.locator('button[type="submit"]');
-
-  test.skip(
-    (await emailInput.count()) === 0 ||
-      (await passwordInput.count()) === 0 ||
-      (await submitButton.count()) === 0,
-    'Current login flow is Google OAuth only; no credential form is available for automated smoke auth.',
-  );
-
-  await emailInput.fill(process.env.TEST_USER_EMAIL!);
-  await passwordInput.fill(process.env.TEST_USER_PASSWORD!);
-  await submitButton.click();
-}
-
 test('login page renders without console errors', async ({ page }) => {
+  skipInAuthenticatedProject();
+
   const errors: string[] = [];
 
   page.on('console', (msg) => {
@@ -64,31 +52,52 @@ test('login page renders without console errors', async ({ page }) => {
 });
 
 test('protected routes redirect unauthenticated users', async ({ page }) => {
+  skipInAuthenticatedProject();
+
   await gotoOrSkip(page, '/');
 
   await expect(page).toHaveURL(/\/login(?:\?|$)/);
 });
 
 test('cockpit route redirects unauthenticated users', async ({ page }) => {
+  skipInAuthenticatedProject();
+
   await gotoOrSkip(page, '/overview');
 
   await expect(page).toHaveURL(/\/login(?:\?|$)/);
 });
 
-test.describe('authenticated smoke (requires TEST_USER_EMAIL)', () => {
-  test.skip(!HAS_AUTH, 'Set TEST_USER_EMAIL and TEST_USER_PASSWORD to run');
+test.describe('authenticated smoke', () => {
+  test.skip(
+    !process.env.TEST_USER_EMAIL,
+    'Set TEST_USER_EMAIL and TEST_USER_PASSWORD to run authenticated tests',
+  );
 
   test('cockpit loads after auth', async ({ page }) => {
-    await fillCredentialLoginOrSkip(page);
+    test.skip(
+      test.info().project.name !== 'chromium-auth',
+      'Auth smoke only runs in chromium-auth',
+    );
 
-    await expect(page).not.toHaveURL(/\/login/, { timeout: 10_000 });
+    await page.goto('/');
+    await expect(page).not.toHaveURL(/\/login/);
+    await expect(page.locator('body')).toBeVisible();
+    const errors: string[] = [];
+    page.on('console', (msg) => {
+      if (msg.type() === 'error') errors.push(msg.text());
+    });
+    await page.reload();
+    expect(errors.filter((error) => !error.toLowerCase().includes('supabase'))).toHaveLength(0);
   });
 
-  test('missions loads after auth', async ({ page }) => {
-    await fillCredentialLoginOrSkip(page);
+  test('missions route loads after auth', async ({ page }) => {
+    test.skip(
+      test.info().project.name !== 'chromium-auth',
+      'Auth smoke only runs in chromium-auth',
+    );
 
     await gotoOrSkip(page, '/missions');
-    await expect(page).not.toHaveURL(/\/login/, { timeout: 10_000 });
+    await expect(page).not.toHaveURL(/\/login/);
     await expect(page.locator('body')).toBeVisible();
   });
 });

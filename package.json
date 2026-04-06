@@ -10,6 +10,7 @@
     "typecheck": "tsc --noEmit",
     "format": "biome check --write .",
     "test": "vitest run",
+    "test:coverage": "vitest run --coverage && node scripts/check-coverage-thresholds.mjs",
     "test:watch": "vitest",
     "test:e2e": "playwright test",
     "db:generate": "drizzle-kit generate",
