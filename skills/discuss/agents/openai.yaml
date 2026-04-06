@@ -1,0 +1,4 @@
+interface:
+  display_name: "Discuss"
+  short_description: "Reason through a fuzzy problem before implementation."
+  default_prompt: "Use $discuss to think through this problem and sharpen the next step."

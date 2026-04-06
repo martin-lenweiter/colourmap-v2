@@ -10,6 +10,11 @@ failures=0
 tmp_dir="$(mktemp -d)"
 trap 'rm -rf "$tmp_dir"' EXIT
 
+has_rg=false
+if command -v rg >/dev/null 2>&1; then
+  has_rg=true
+fi
+
 pass() {
   printf 'PASS %s\n' "$1"
 }
@@ -66,6 +71,17 @@ write_sorted_rule_list() {
 
 write_sorted_skill_list() {
   find skills -mindepth 1 -maxdepth 1 -type d -print | LC_ALL=C sort > "$1"
+}
+
+extract_matches() {
+  local pattern="$1"
+  local path="$2"
+
+  if [[ "$has_rg" == "true" ]]; then
+    rg -o "$pattern" "$path" || true
+  else
+    grep -Eo "$pattern" "$path" || true
+  fi
 }
 
 section "Canonical Structure"
@@ -134,7 +150,7 @@ done < "$tmp_dir/actual-skills.txt"
 
 section "Cross-File References"
 
-rg -o 'specs/[A-Za-z0-9._/-]+\.md' docs/product.md | LC_ALL=C sort -u > "$tmp_dir/product-spec-links.txt" || true
+extract_matches 'specs/[A-Za-z0-9._/-]+\.md' docs/product.md | LC_ALL=C sort -u > "$tmp_dir/product-spec-links.txt"
 
 while IFS= read -r spec_link; do
   [[ -z "$spec_link" ]] && continue
@@ -150,9 +166,9 @@ for skill_dir in skills/*; do
 
   skill_name="$(basename "$skill_dir")"
 
-  rg -o 'references/[A-Za-z0-9._/-]+' "$skill_dir/SKILL.md" | LC_ALL=C sort -u > "$tmp_dir/$skill_name-references.txt" || true
-  rg -o 'rules/[A-Za-z0-9._/-]+\.md' "$skill_dir/SKILL.md" | LC_ALL=C sort -u > "$tmp_dir/$skill_name-rules.txt" || true
-  rg -o 'docs/[A-Za-z0-9._/-]+\.md' "$skill_dir/SKILL.md" | LC_ALL=C sort -u > "$tmp_dir/$skill_name-docs.txt" || true
+  extract_matches 'references/[A-Za-z0-9._/-]+' "$skill_dir/SKILL.md" | LC_ALL=C sort -u > "$tmp_dir/$skill_name-references.txt"
+  extract_matches 'rules/[A-Za-z0-9._/-]+\.md' "$skill_dir/SKILL.md" | LC_ALL=C sort -u > "$tmp_dir/$skill_name-rules.txt"
+  extract_matches 'docs/[A-Za-z0-9._/-]+\.md' "$skill_dir/SKILL.md" | LC_ALL=C sort -u > "$tmp_dir/$skill_name-docs.txt"
 
   while IFS= read -r relative_ref; do
     [[ -z "$relative_ref" ]] && continue
@@ -197,7 +213,11 @@ done
 
 section "Canonical Portability"
 
-runtime_hits="$(rg -n '\.claude/|\.codex/|CLAUDE\.md' skills --glob '!**/agents/**' || true)"
+if [[ "$has_rg" == "true" ]]; then
+  runtime_hits="$(rg -n '\.claude/|\.codex/|CLAUDE\.md' skills --glob '!**/agents/**' || true)"
+else
+  runtime_hits="$(grep -RInE '\.claude/|\.codex/|CLAUDE\.md' skills --exclude-dir=agents || true)"
+fi
 
 if [[ -z "$runtime_hits" ]]; then
   pass "canonical skill files avoid runtime-specific paths"
