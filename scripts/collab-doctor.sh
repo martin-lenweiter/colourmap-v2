@@ -70,6 +70,20 @@ else
   pass "currently on branch: $current_branch"
 fi
 
+section "Claude Code"
+
+if command -v claude >/dev/null 2>&1; then
+  pass "claude CLI is installed"
+else
+  fail "claude CLI is missing; run: npm install -g @anthropic-ai/claude-code && claude"
+fi
+
+if [[ -f .claude/settings.json ]]; then
+  pass ".claude/settings.json exists (deny rules active)"
+else
+  fail ".claude/settings.json is missing; run bun run collab:setup"
+fi
+
 section "Guide"
 
 if [[ -f docs/collaboration.md ]]; then

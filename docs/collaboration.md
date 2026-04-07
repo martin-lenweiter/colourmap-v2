@@ -21,6 +21,40 @@ bun run collab:doctor
 
 If `collab:doctor` reports a failure, stop and fix that first.
 
+## Using Claude Code
+
+Install once:
+
+```sh
+npm install -g @anthropic-ai/claude-code
+claude  # run once to log in
+```
+
+Then launch from the project folder:
+
+```sh
+claude --dangerously-skip-permissions
+```
+
+The `--dangerously-skip-permissions` flag lets Claude work without asking you to approve every file write. The repo's `.claude/settings.json` still blocks the genuinely dangerous operations (pushing directly to main, deleting files recursively, touching secrets files), so the guardrails are active regardless.
+
+On first launch in this folder Claude will ask:
+
+  > Do you trust this folder?  Yes / No
+
+Choose Yes. You will not be asked again.
+
+### Custom commands
+
+Type these in the Claude Code chat to trigger the full safe workflow automatically:
+
+- `/feature <description>` — creates a branch, writes the spec, implements, verifies, opens a PR
+- `/fix <description>`    — creates a branch, diagnoses, fixes, adds a regression test, opens a PR
+- `/verify`               — runs biome, build, tests, and typecheck and reports the results
+- `/review`               — checks current changes against the repo guardrails before you commit
+
+These commands encode all the steps in the Daily Checklist below. You do not need to remember the steps yourself.
+
 ## The Safe Way To Work
 
 Follow this flow every time:

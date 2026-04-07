@@ -125,9 +125,25 @@ From `lefthook.yml`:
 
 ### Collaborator Safety Commands
 
-- `bun run collab:setup` installs local hooks and verifies agent wiring.
-- `bun run collab:doctor` reports whether the local machine is safely configured for agent-assisted work.
+- `bun run collab:setup` installs local hooks, verifies agent wiring, and reports Claude Code installation status.
+- `bun run collab:doctor` reports whether the local machine is safely configured for agent-assisted work, including Claude Code and deny-rule presence.
 - `docs/collaboration.md` is the plain-language operating guide for non-technical collaborators.
+
+### Claude Code Settings
+
+`.claude/settings.json` is a git-tracked shared settings file that enforces hard deny rules for Claude Code regardless of the `--dangerously-skip-permissions` flag.
+
+Current deny rules:
+- `Bash(git push* main*)` — no direct pushes to main
+- `Bash(git push*--force*)` and `Bash(git push*-f *)` — no force pushes
+- `Bash(rm -rf *)` and `Bash(rm -fr *)` — no recursive deletes
+- `Read(.env*)` and `Write(.env*)` — no access to secrets files
+
+Custom slash commands in `.claude/commands/` encode the full safe workflow:
+- `/feature` — branch, spec, implement, verify, PR
+- `/fix` — branch, diagnose, fix, regression test, PR
+- `/verify` — full verification pipeline without committing
+- `/review` — guardrail check on current changes
 
 ## CI-Enforced Guardrails
 
