@@ -60,4 +60,8 @@ The agent must never push directly to `main`. All work goes through a branch and
 
 This wiring is how guardrail changes propagate to collaborators after a pull.
 
-Runtime-local settings stay untracked where supported. Today `.claude/settings.local.json` is gitignored.
+Runtime-local settings stay untracked where supported. `.claude/settings.local.json` is gitignored.
+
+`.claude/settings.json` is git-tracked and shared. It enforces hard deny rules (no direct pushes to main, no force pushes, no recursive deletes, no .env access) regardless of `--dangerously-skip-permissions`. See `rules/guardrails.md` for the full list.
+
+`.claude/commands/` contains custom slash commands (`/feature`, `/fix`, `/verify`, `/review`) that encode the full safe workflow for Claude Code users.
