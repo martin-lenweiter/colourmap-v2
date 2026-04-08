@@ -1,9 +1,9 @@
 'use client';
 
 import CareCompass from '@/components/CareCompass';
-import CheckInForm from '@/components/CheckInForm';
 import DayTabs from '@/components/DayTabs';
 import DoingCheckInCard from '@/components/DoingCheckInCard';
+import FeelingCheckInCard from '@/components/FeelingCheckInCard';
 import ShareCompass from '@/components/ShareCompass';
 import SharingCheckInCard from '@/components/SharingCheckInCard';
 import StarCompass from '@/components/StarCompass';
@@ -19,7 +19,7 @@ export default function DayPage() {
       <DayTabs
         feelingContent={
           <div className="space-y-4">
-            <CheckInForm />
+            <FeelingCheckInCard />
             <CareCompass />
           </div>
         }

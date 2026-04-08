@@ -115,7 +115,13 @@ export default function SharingCheckInCard() {
   ];
 
   return (
-    <div className="space-y-4 rounded-3xl border border-border bg-card p-6">
+    <div
+      className="space-y-4 rounded-3xl border border-[#7a543833] px-5 py-6"
+      style={{
+        background: 'linear-gradient(180deg, rgba(251,244,232,0.95), rgba(246,236,221,0.92))',
+        boxShadow: '0 24px 50px -34px rgba(92,48,24,0.35)',
+      }}
+    >
       <CockpitCat />
 
       {sections.map((s) => (

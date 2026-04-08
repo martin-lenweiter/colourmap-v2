@@ -214,7 +214,13 @@ export default function StarCompass() {
   const program = activeSub ? SUB_PROGRAMS[activeSub] : null;
 
   return (
-    <div className="space-y-5 rounded-3xl border border-border bg-card p-6">
+    <div
+      className="space-y-5 rounded-3xl border border-[#7a543833] px-5 py-6"
+      style={{
+        background: 'linear-gradient(180deg, rgba(250,241,225,0.96), rgba(246,232,212,0.92))',
+        boxShadow: '0 28px 55px -36px rgba(92,48,24,0.35)',
+      }}
+    >
       <p className="text-center text-[11px] font-semibold uppercase tracking-[0.24em] text-[#7A9A7A]">
         Doing
       </p>
