@@ -59,10 +59,10 @@ test('protected routes redirect unauthenticated users', async ({ page }) => {
   await expect(page).toHaveURL(/\/login(?:\?|$)/);
 });
 
-test('cockpit route redirects unauthenticated users', async ({ page }) => {
+test('day route redirects unauthenticated users', async ({ page }) => {
   skipInAuthenticatedProject();
 
-  await gotoOrSkip(page, '/overview');
+  await gotoOrSkip(page, '/day');
 
   await expect(page).toHaveURL(/\/login(?:\?|$)/);
 });
