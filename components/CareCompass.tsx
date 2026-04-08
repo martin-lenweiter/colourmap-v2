@@ -325,7 +325,7 @@ export default function CareCompass() {
                   />
                   <span
                     style={{
-                      fontFamily: 'var(--font-handwritten)',
+                      fontFamily: 'var(--font-serif)',
                       fontSize: '14px',
                       fontWeight: colorTheme === t.id ? 700 : 400,
                       color: colorTheme === t.id ? t.dot : 'hsl(var(--muted-foreground))',
@@ -418,7 +418,7 @@ export default function CareCompass() {
                 className="cursor-pointer select-none"
                 style={{
                   fontSize: isAct ? '17px' : '15px',
-                  fontFamily: 'var(--font-handwritten)',
+                  fontFamily: 'var(--font-serif)',
                   fontWeight: 700,
                   fill: isAct ? q.color : '#8f6a47',
                   transition: 'all 0.3s',
@@ -464,7 +464,7 @@ export default function CareCompass() {
         <div className="space-y-2 text-center">
           <span
             className="text-xl font-bold"
-            style={{ color: '#C4A060', fontFamily: 'var(--font-handwritten)' }}
+            style={{ color: '#C4A060', fontFamily: 'var(--font-serif)' }}
           >
             Challenge
           </span>
@@ -494,18 +494,18 @@ export default function CareCompass() {
               if (e.key === 'Enter') addChallenge(challengeInput);
             }}
             placeholder="What's challenging?..."
-            className="w-full border-b bg-transparent pb-1 text-center text-sm outline-none"
+            className="w-full border-b bg-transparent pb-1 text-center text-base outline-none"
             style={{
               color: '#C4A060',
               borderColor: '#C4A06030',
-              fontFamily: 'var(--font-handwritten)',
+              fontFamily: 'var(--font-serif)',
             }}
           />
         </div>
         <div className="space-y-2 text-center">
           <span
             className="text-xl font-bold"
-            style={{ color: '#C4A060', fontFamily: 'var(--font-handwritten)' }}
+            style={{ color: '#C4A060', fontFamily: 'var(--font-serif)' }}
           >
             Flow
           </span>
@@ -535,11 +535,11 @@ export default function CareCompass() {
               if (e.key === 'Enter') addFlow(flowInput);
             }}
             placeholder="What's flowing?..."
-            className="w-full border-b bg-transparent pb-1 text-center text-sm outline-none"
+            className="w-full border-b bg-transparent pb-1 text-center text-base outline-none"
             style={{
               color: '#C4A060',
               borderColor: '#C4A06030',
-              fontFamily: 'var(--font-handwritten)',
+              fontFamily: 'var(--font-serif)',
             }}
           />
         </div>
@@ -554,7 +554,7 @@ export default function CareCompass() {
               <div className="flex items-center justify-between">
                 <span
                   className="text-sm font-semibold"
-                  style={{ color: activeQ.color, fontFamily: 'var(--font-handwritten)' }}
+                  style={{ color: activeQ.color, fontFamily: 'var(--font-serif)' }}
                 >
                   {activeQ.label}
                 </span>
@@ -563,7 +563,7 @@ export default function CareCompass() {
                   style={{
                     color: activeQ.color,
                     opacity: 0.5,
-                    fontFamily: 'var(--font-handwritten)',
+                    fontFamily: 'var(--font-serif)',
                   }}
                 >
                   {current}. {RHYMES[current]}
@@ -612,7 +612,7 @@ export default function CareCompass() {
               style={{
                 background: s.color,
                 opacity: activeSub === s.label ? 1 : 0.6,
-                fontFamily: 'var(--font-handwritten)',
+                fontFamily: 'var(--font-serif)',
                 border: 'none',
               }}
             >
@@ -643,7 +643,7 @@ export default function CareCompass() {
               <div className="flex items-center justify-between">
                 <span
                   className="text-sm font-semibold"
-                  style={{ color: activeQ.color, fontFamily: 'var(--font-handwritten)' }}
+                  style={{ color: activeQ.color, fontFamily: 'var(--font-serif)' }}
                 >
                   {activeSub}
                 </span>
@@ -652,7 +652,7 @@ export default function CareCompass() {
 
               <p
                 className="text-base"
-                style={{ color: activeQ.color, fontFamily: 'var(--font-handwritten)' }}
+                style={{ color: activeQ.color, fontFamily: 'var(--font-serif)' }}
               >
                 &ldquo;{step.prompt}&rdquo;
               </p>
@@ -670,7 +670,7 @@ export default function CareCompass() {
                   style={{
                     color: activeQ.color,
                     borderColor: `${activeQ.color}30`,
-                    fontFamily: 'var(--font-handwritten)',
+                    fontFamily: 'var(--font-serif)',
                   }}
                 />
               )}

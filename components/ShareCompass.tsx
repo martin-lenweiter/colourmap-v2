@@ -384,7 +384,7 @@ export default function ShareCompass() {
                 className="cursor-pointer select-none"
                 style={{
                   fontSize: isAct ? '17px' : '15px',
-                  fontFamily: 'var(--font-handwritten)',
+                  fontFamily: 'var(--font-serif)',
                   fontWeight: 700,
                   fill: isAct ? q.color : '#8f6a47',
                   transition: 'all 0.3s',
@@ -430,7 +430,7 @@ export default function ShareCompass() {
         <div className="space-y-2 text-center">
           <span
             className="text-xl font-bold"
-            style={{ color: '#7A9A7A', fontFamily: 'var(--font-handwritten)' }}
+            style={{ color: '#7A9A7A', fontFamily: 'var(--font-serif)' }}
           >
             Distant
           </span>
@@ -460,18 +460,18 @@ export default function ShareCompass() {
               if (e.key === 'Enter') addDistant(distantInput);
             }}
             placeholder="Where do you feel far?..."
-            className="w-full border-b bg-transparent pb-1 text-center text-sm outline-none"
+            className="w-full border-b bg-transparent pb-1 text-center text-base outline-none"
             style={{
               color: '#7A9A7A',
               borderColor: '#7A9A7A30',
-              fontFamily: 'var(--font-handwritten)',
+              fontFamily: 'var(--font-serif)',
             }}
           />
         </div>
         <div className="space-y-2 text-center">
           <span
             className="text-xl font-bold"
-            style={{ color: '#7A9A7A', fontFamily: 'var(--font-handwritten)' }}
+            style={{ color: '#7A9A7A', fontFamily: 'var(--font-serif)' }}
           >
             Connected
           </span>
@@ -501,11 +501,11 @@ export default function ShareCompass() {
               if (e.key === 'Enter') addConnected(movingInput);
             }}
             placeholder="What's moving?..."
-            className="w-full border-b bg-transparent pb-1 text-center text-sm outline-none"
+            className="w-full border-b bg-transparent pb-1 text-center text-base outline-none"
             style={{
               color: '#7A9A7A',
               borderColor: '#7A9A7A30',
-              fontFamily: 'var(--font-handwritten)',
+              fontFamily: 'var(--font-serif)',
             }}
           />
         </div>
@@ -520,7 +520,7 @@ export default function ShareCompass() {
               <div className="flex items-center justify-between">
                 <span
                   className="text-sm font-semibold"
-                  style={{ color: activeQ.color, fontFamily: 'var(--font-handwritten)' }}
+                  style={{ color: activeQ.color, fontFamily: 'var(--font-serif)' }}
                 >
                   {activeQ.label}
                 </span>
@@ -529,7 +529,7 @@ export default function ShareCompass() {
                   style={{
                     color: activeQ.color,
                     opacity: 0.5,
-                    fontFamily: 'var(--font-handwritten)',
+                    fontFamily: 'var(--font-serif)',
                   }}
                 >
                   {current}. {RHYMES[current]}
@@ -578,7 +578,7 @@ export default function ShareCompass() {
               style={{
                 background: s.color,
                 opacity: activeSub === s.label ? 1 : 0.6,
-                fontFamily: 'var(--font-handwritten)',
+                fontFamily: 'var(--font-serif)',
                 border: 'none',
               }}
             >
@@ -609,7 +609,7 @@ export default function ShareCompass() {
               <div className="flex items-center justify-between">
                 <span
                   className="text-sm font-semibold"
-                  style={{ color: activeQ.color, fontFamily: 'var(--font-handwritten)' }}
+                  style={{ color: activeQ.color, fontFamily: 'var(--font-serif)' }}
                 >
                   {activeSub}
                 </span>
@@ -618,7 +618,7 @@ export default function ShareCompass() {
 
               <p
                 className="text-base"
-                style={{ color: activeQ.color, fontFamily: 'var(--font-handwritten)' }}
+                style={{ color: activeQ.color, fontFamily: 'var(--font-serif)' }}
               >
                 &ldquo;{step.prompt}&rdquo;
               </p>
@@ -636,7 +636,7 @@ export default function ShareCompass() {
                   style={{
                     color: activeQ.color,
                     borderColor: `${activeQ.color}30`,
-                    fontFamily: 'var(--font-handwritten)',
+                    fontFamily: 'var(--font-serif)',
                   }}
                 />
               )}
