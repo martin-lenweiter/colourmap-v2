@@ -11,7 +11,7 @@ import { useState } from 'react';
 type Tab = 'feeling' | 'doing' | 'sharing';
 
 const TABS: { id: Tab; label: string; color: string }[] = [
-  { id: 'feeling', label: 'FEELING', color: '#C4A060' },
+  { id: 'feeling', label: 'CARING', color: '#C4A060' },
   { id: 'doing', label: 'DOING', color: '#7A9A7A' },
   { id: 'sharing', label: 'SHARING', color: '#6B7F4E' },
 ];

@@ -110,6 +110,7 @@ export default function FeelingCheckInCard() {
   const [showDesc, setShowDesc] = useState(false);
   const [note, setNote] = useState('');
   const [activeTracker, setActiveTracker] = useState<string | null>(null);
+  const [trackerValues, setTrackerValues] = useState<Record<string, string>>({});
 
   const hawkinsIdx = Math.min(Math.round((sliderValue / 100) * 13), 13);
   const current = HAWKINS[hawkinsIdx];
@@ -313,6 +314,87 @@ export default function FeelingCheckInCard() {
             );
           })}
         </div>
+
+        {/* Open tracker program */}
+        {activeTracker &&
+          (() => {
+            const tracker = INNER_TRACKERS.find((t) => t.id === activeTracker);
+            if (!tracker) return null;
+
+            const keys = tracker.questions.map((_, i) =>
+              i === 0 ? tracker.id : `${tracker.id}_${i + 1}`,
+            );
+            const unlockedCount = keys.filter((key) => key in trackerValues).length;
+            const visibleCount = Math.max(1, unlockedCount);
+            const lastKey = keys[visibleCount - 1];
+            const canUnlockNext =
+              visibleCount < tracker.questions.length && trackerValues[lastKey]?.trim();
+
+            return (
+              <div className="space-y-2 animate-in fade-in duration-150">
+                <p
+                  className="text-center text-xl italic leading-none"
+                  style={{ color: tracker.color, fontFamily: 'var(--font-handwritten)' }}
+                >
+                  {tracker.label}
+                </p>
+                <div className="space-y-1">
+                  {tracker.questions.slice(0, visibleCount).map((question, index) => {
+                    const key = keys[index];
+                    const showLosange = index < visibleCount - 1;
+                    return (
+                      <div key={key}>
+                        <input
+                          type="text"
+                          value={trackerValues[key] || ''}
+                          onChange={(e) =>
+                            setTrackerValues((prev) => ({ ...prev, [key]: e.target.value }))
+                          }
+                          placeholder={question}
+                          className="w-full rounded-lg border px-3 py-2 text-sm outline-none placeholder:text-muted-foreground/40"
+                          style={{
+                            borderColor: `${tracker.color}25`,
+                            background: `${tracker.color}05`,
+                          }}
+                        />
+                        {showLosange && (
+                          <div className="flex justify-center py-2">
+                            <div
+                              className="h-2 w-2 rotate-45 rounded-[1px]"
+                              style={{ background: tracker.color, opacity: 0.2 }}
+                            />
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
+                  {canUnlockNext && (
+                    <div className="flex justify-center py-2">
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setTrackerValues((prev) => ({ ...prev, [keys[visibleCount]]: '' }))
+                        }
+                        className="flex h-3.5 w-3.5 rotate-45 cursor-pointer items-center justify-center transition-all hover:scale-125"
+                        style={{
+                          background: `${tracker.color}30`,
+                          borderRadius: 1.5,
+                          border: 'none',
+                        }}
+                      >
+                        <span
+                          className="-rotate-45 text-[6px] font-bold leading-none"
+                          style={{ color: tracker.color }}
+                        >
+                          +
+                        </span>
+                      </button>
+                    </div>
+                  )}
+                </div>
+              </div>
+            );
+          })()}
       </div>
     </div>
   );
