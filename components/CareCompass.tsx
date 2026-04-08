@@ -3,7 +3,7 @@
 import { useState } from 'react';
 
 /* ═══════════════════════════════════════════════════════════
-   CARE COMPASS — Feeling ring compass
+   CARE COMPASS — Caring compass
    C(left) A(top) R(right) E(bottom)
    Includes: CARE blobs, Challenge/Flow columns, sub-cells, 3-step programs
    ═══════════════════════════════════════════════════════════ */
@@ -28,7 +28,7 @@ const CARE_THEMES: {
     id: 'vivid',
     name: 'Vivid',
     dot: '#D45050',
-    colors: { care: '#D45050', attitude: '#E8A030', rest: '#3A8AC4', emotions: '#9B6BA0' },
+    colors: { care: '#D45050', attitude: '#E8A030', rest: '#3A8AC4', emotions: '#7AAA58' },
   },
   {
     id: 'earth',
@@ -274,7 +274,7 @@ export default function CareCompass() {
     >
       <div className="relative">
         <p className="text-center text-[11px] font-semibold uppercase tracking-[0.24em] text-[#C4A060]">
-          Feeling
+          Caring
         </p>
         <div className="absolute right-0 top-0 flex items-center gap-1.5">
           {CARE_THEMES.map((t) => (
