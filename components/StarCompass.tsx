@@ -10,6 +10,53 @@ import { useState } from 'react';
 
 type StarAxis = 'structure' | 'target' | 'action' | 'resources';
 
+type StarColorTheme = 'cool' | 'vivid' | 'forest';
+
+const STAR_THEMES: {
+  id: StarColorTheme;
+  name: string;
+  dot: string;
+  colors: Record<StarAxis, string>;
+}[] = [
+  {
+    id: 'cool',
+    name: 'Cool',
+    dot: '#7A9A7A',
+    colors: { structure: '#6A8A9A', target: '#7A9A7A', action: '#8A8A6A', resources: '#5A7A9A' },
+  },
+  {
+    id: 'vivid',
+    name: 'Vivid',
+    dot: '#7AAA58',
+    colors: { structure: '#3A8AC4', target: '#7AAA58', action: '#E8A030', resources: '#D45050' },
+  },
+  {
+    id: 'forest',
+    name: 'Forest',
+    dot: '#4A7A4A',
+    colors: { structure: '#5A8A5A', target: '#4A7A4A', action: '#6A9A6A', resources: '#3A6A3A' },
+  },
+];
+
+function getStarSlices(theme: (typeof STAR_THEMES)[0]) {
+  return [
+    {
+      key: 'structure' as StarAxis,
+      label: 'Structure',
+      angle: Math.PI,
+      color: theme.colors.structure,
+    },
+    { key: 'target' as StarAxis, label: 'Target', angle: -Math.PI / 2, color: theme.colors.target },
+    { key: 'action' as StarAxis, label: 'Action', angle: 0, color: theme.colors.action },
+    {
+      key: 'resources' as StarAxis,
+      label: 'Resources',
+      angle: Math.PI / 2,
+      color: theme.colors.resources,
+    },
+  ];
+}
+
 const STAR_SLICES: { key: StarAxis; label: string; angle: number; color: string }[] = [
   { key: 'structure', label: 'Structure', angle: Math.PI, color: '#6A8A9A' },
   { key: 'target', label: 'Target', angle: -Math.PI / 2, color: '#7A9A7A' },
@@ -161,6 +208,15 @@ function arcPath(
 }
 
 export default function StarCompass() {
+  const [starTheme, setStarTheme] = useState<StarColorTheme>(() => {
+    try {
+      return (localStorage.getItem('colourmap:star-color-theme') as StarColorTheme) || 'cool';
+    } catch {
+      return 'cool';
+    }
+  });
+  const st = STAR_THEMES.find((t) => t.id === starTheme) || STAR_THEMES[0];
+  const themedStarSlices = getStarSlices(st);
   const [values, setValues] = useState<Record<StarAxis, number>>(loadValues);
   const [activeSlice, setActiveSlice] = useState<string | null>(null);
   const [activeSub, setActiveSub] = useState<string | null>(null);
@@ -209,7 +265,7 @@ export default function StarCompass() {
   const innerR = 40;
   const outerR = 90;
 
-  const activeQ = STAR_SLICES.find((s) => s.label === activeSlice);
+  const activeQ = themedStarSlices.find((s) => s.label === activeSlice);
   const activeSubs = activeSlice ? SUB_CELLS[activeSlice] : null;
   const program = activeSub ? SUB_PROGRAMS[activeSub] : null;
 
@@ -221,9 +277,33 @@ export default function StarCompass() {
         boxShadow: '0 28px 55px -36px rgba(92,48,24,0.35)',
       }}
     >
-      <p className="text-center text-[11px] font-semibold uppercase tracking-[0.24em] text-[#7A9A7A]">
-        Doing
-      </p>
+      <div className="relative">
+        <p className="text-center text-[11px] font-semibold uppercase tracking-[0.24em] text-[#7A9A7A]">
+          Doing
+        </p>
+        <div className="absolute right-0 top-0 flex items-center gap-1.5">
+          {STAR_THEMES.map((t) => (
+            <button
+              key={t.id}
+              type="button"
+              onClick={() => {
+                setStarTheme(t.id);
+                localStorage.setItem('colourmap:star-color-theme', t.id);
+              }}
+              className="cursor-pointer transition-all duration-300 hover:scale-125"
+              style={{
+                width: starTheme === t.id ? 12 : 8,
+                height: starTheme === t.id ? 12 : 8,
+                borderRadius: '50%',
+                background: t.dot,
+                opacity: starTheme === t.id ? 1 : 0.3,
+                border: 'none',
+                padding: 0,
+              }}
+            />
+          ))}
+        </div>
+      </div>
 
       {/* Compass SVG */}
       <div className="flex justify-center">
@@ -247,7 +327,7 @@ export default function StarCompass() {
             opacity={0.15}
           />
 
-          {STAR_SLICES.map((q) => {
+          {themedStarSlices.map((q) => {
             const sa = q.angle - span / 2;
             const ea = q.angle + span / 2;
             const isAct = activeSlice === q.label;
@@ -288,7 +368,7 @@ export default function StarCompass() {
           })}
 
           {/* Labels */}
-          {STAR_SLICES.map((q) => {
+          {themedStarSlices.map((q) => {
             const labelR = (innerR + outerR) / 2;
             const lx = cx + labelR * Math.cos(q.angle);
             const ly = cy + labelR * Math.sin(q.angle);
@@ -328,7 +408,7 @@ export default function StarCompass() {
 
       {/* STAR blobs */}
       <div className="flex items-center justify-center gap-3">
-        {STAR_SLICES.map((a) => (
+        {themedStarSlices.map((a) => (
           <div
             key={a.key}
             className="flex h-8 w-8 items-center justify-center rounded-full"

@@ -10,12 +10,54 @@ import { useState } from 'react';
 
 type CareAxis = 'care' | 'attitude' | 'rest' | 'emotions';
 
-const CARE_SLICES: { key: CareAxis; label: string; angle: number; color: string }[] = [
-  { key: 'care', label: 'Care', angle: Math.PI, color: '#D4805A' },
-  { key: 'attitude', label: 'Attitude', angle: -Math.PI / 2, color: '#C4A070' },
-  { key: 'rest', label: 'Rest', angle: 0, color: '#C4906A' },
-  { key: 'emotions', label: 'Emotions', angle: Math.PI / 2, color: '#B07A5A' },
+type ColorTheme = 'warm' | 'vivid' | 'earth';
+
+const CARE_THEMES: {
+  id: ColorTheme;
+  name: string;
+  dot: string;
+  colors: Record<CareAxis, string>;
+}[] = [
+  {
+    id: 'warm',
+    name: 'Warm',
+    dot: '#C4A060',
+    colors: { care: '#D4805A', attitude: '#C4A070', rest: '#C4906A', emotions: '#B07A5A' },
+  },
+  {
+    id: 'vivid',
+    name: 'Vivid',
+    dot: '#D45050',
+    colors: { care: '#D45050', attitude: '#E8A030', rest: '#3A8AC4', emotions: '#9B6BA0' },
+  },
+  {
+    id: 'earth',
+    name: 'Earth',
+    dot: '#8A7A5A',
+    colors: { care: '#B89868', attitude: '#C8A878', rest: '#A89060', emotions: '#988050' },
+  },
 ];
+
+function getSlices(theme: (typeof CARE_THEMES)[0]) {
+  return [
+    { key: 'care' as CareAxis, label: 'Care', angle: Math.PI, color: theme.colors.care },
+    {
+      key: 'attitude' as CareAxis,
+      label: 'Attitude',
+      angle: -Math.PI / 2,
+      color: theme.colors.attitude,
+    },
+    { key: 'rest' as CareAxis, label: 'Rest', angle: 0, color: theme.colors.rest },
+    {
+      key: 'emotions' as CareAxis,
+      label: 'Emotions',
+      angle: Math.PI / 2,
+      color: theme.colors.emotions,
+    },
+  ];
+}
+
+const CARE_SLICES = getSlices(CARE_THEMES[0]);
 
 const SUB_CELLS: Record<string, { label: string; color: string }[]> = {
   Care: [
@@ -161,6 +203,15 @@ function arcPath(
 }
 
 export default function CareCompass() {
+  const [colorTheme, setColorTheme] = useState<ColorTheme>(() => {
+    try {
+      return (localStorage.getItem('colourmap:care-theme') as ColorTheme) || 'warm';
+    } catch {
+      return 'warm';
+    }
+  });
+  const ct = CARE_THEMES.find((t) => t.id === colorTheme) || CARE_THEMES[0];
+  const themedSlices = getSlices(ct);
   const [values, setValues] = useState<Record<CareAxis, number>>(loadValues);
   const [activeSlice, setActiveSlice] = useState<string | null>(null);
   const [activeSub, setActiveSub] = useState<string | null>(null);
@@ -209,7 +260,7 @@ export default function CareCompass() {
   const innerR = 40;
   const outerR = 90;
 
-  const activeQ = CARE_SLICES.find((s) => s.label === activeSlice);
+  const activeQ = themedSlices.find((s) => s.label === activeSlice);
   const activeSubs = activeSlice ? SUB_CELLS[activeSlice] : null;
   const program = activeSub ? SUB_PROGRAMS[activeSub] : null;
 
@@ -221,9 +272,33 @@ export default function CareCompass() {
         boxShadow: '0 28px 55px -36px rgba(92,48,24,0.35)',
       }}
     >
-      <p className="text-center text-[11px] font-semibold uppercase tracking-[0.24em] text-[#C4A060]">
-        Feeling
-      </p>
+      <div className="relative">
+        <p className="text-center text-[11px] font-semibold uppercase tracking-[0.24em] text-[#C4A060]">
+          Feeling
+        </p>
+        <div className="absolute right-0 top-0 flex items-center gap-1.5">
+          {CARE_THEMES.map((t) => (
+            <button
+              key={t.id}
+              type="button"
+              onClick={() => {
+                setColorTheme(t.id);
+                localStorage.setItem('colourmap:care-theme', t.id);
+              }}
+              className="cursor-pointer transition-all duration-300 hover:scale-125"
+              style={{
+                width: colorTheme === t.id ? 12 : 8,
+                height: colorTheme === t.id ? 12 : 8,
+                borderRadius: '50%',
+                background: t.dot,
+                opacity: colorTheme === t.id ? 1 : 0.3,
+                border: 'none',
+                padding: 0,
+              }}
+            />
+          ))}
+        </div>
+      </div>
 
       {/* Compass SVG */}
       <div className="flex justify-center">
@@ -247,7 +322,7 @@ export default function CareCompass() {
             opacity={0.15}
           />
 
-          {CARE_SLICES.map((q) => {
+          {themedSlices.map((q) => {
             const sa = q.angle - span / 2;
             const ea = q.angle + span / 2;
             const isAct = activeSlice === q.label;
@@ -288,7 +363,7 @@ export default function CareCompass() {
           })}
 
           {/* Labels */}
-          {CARE_SLICES.map((q) => {
+          {themedSlices.map((q) => {
             const labelR = (innerR + outerR) / 2;
             const lx = cx + labelR * Math.cos(q.angle);
             const ly = cy + labelR * Math.sin(q.angle);
@@ -328,7 +403,7 @@ export default function CareCompass() {
 
       {/* CARE blobs */}
       <div className="flex items-center justify-center gap-3">
-        {CARE_SLICES.map((a) => (
+        {themedSlices.map((a) => (
           <div
             key={a.key}
             className="flex h-8 w-8 items-center justify-center rounded-full"

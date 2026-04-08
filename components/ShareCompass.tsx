@@ -10,6 +10,53 @@ import { useState } from 'react';
 
 type ShareAxis = 'share' | 'authentic' | 'roots' | 'express';
 
+type ShareColorTheme = 'earth' | 'vivid' | 'moss';
+
+const SHARE_THEMES: {
+  id: ShareColorTheme;
+  name: string;
+  dot: string;
+  colors: Record<ShareAxis, string>;
+}[] = [
+  {
+    id: 'earth',
+    name: 'Earth',
+    dot: '#6B7F4E',
+    colors: { share: '#7A9A5A', authentic: '#8A9A6A', roots: '#6B8F4E', express: '#5A8A4A' },
+  },
+  {
+    id: 'vivid',
+    name: 'Vivid',
+    dot: '#7AAA58',
+    colors: { share: '#7AAA58', authentic: '#E8A030', roots: '#3A8AC4', express: '#9B6BA0' },
+  },
+  {
+    id: 'moss',
+    name: 'Moss',
+    dot: '#5A7A3A',
+    colors: { share: '#6A8A4A', authentic: '#7A9A5A', roots: '#5A7A3A', express: '#4A6A2A' },
+  },
+];
+
+function getShareSlices(theme: (typeof SHARE_THEMES)[0]) {
+  return [
+    { key: 'share' as ShareAxis, label: 'Share', angle: Math.PI, color: theme.colors.share },
+    {
+      key: 'authentic' as ShareAxis,
+      label: 'Authentic',
+      angle: -Math.PI / 2,
+      color: theme.colors.authentic,
+    },
+    { key: 'roots' as ShareAxis, label: 'Roots', angle: 0, color: theme.colors.roots },
+    {
+      key: 'express' as ShareAxis,
+      label: 'Express',
+      angle: Math.PI / 2,
+      color: theme.colors.express,
+    },
+  ];
+}
+
 const SHARE_SLICES: { key: ShareAxis; label: string; angle: number; color: string }[] = [
   { key: 'share', label: 'Share', angle: Math.PI, color: '#7A9A5A' },
   { key: 'authentic', label: 'Authentic', angle: -Math.PI / 2, color: '#8A9A6A' },
@@ -161,6 +208,15 @@ function arcPath(
 }
 
 export default function ShareCompass() {
+  const [shareTheme, setShareTheme] = useState<ShareColorTheme>(() => {
+    try {
+      return (localStorage.getItem('colourmap:share-color-theme') as ShareColorTheme) || 'earth';
+    } catch {
+      return 'earth';
+    }
+  });
+  const sht = SHARE_THEMES.find((t) => t.id === shareTheme) || SHARE_THEMES[0];
+  const themedShareSlices = getShareSlices(sht);
   const [values, setValues] = useState<Record<ShareAxis, number>>(loadValues);
   const [activeSlice, setActiveSlice] = useState<string | null>(null);
   const [activeSub, setActiveSub] = useState<string | null>(null);
@@ -209,7 +265,7 @@ export default function ShareCompass() {
   const innerR = 40;
   const outerR = 90;
 
-  const activeQ = SHARE_SLICES.find((s) => s.label === activeSlice);
+  const activeQ = themedShareSlices.find((s) => s.label === activeSlice);
   const activeSubs = activeSlice ? SUB_CELLS[activeSlice] : null;
   const program = activeSub ? SUB_PROGRAMS[activeSub] : null;
 
@@ -221,9 +277,33 @@ export default function ShareCompass() {
         boxShadow: '0 28px 55px -36px rgba(92,48,24,0.35)',
       }}
     >
-      <p className="text-center text-[11px] font-semibold uppercase tracking-[0.24em] text-[#6B7F4E]">
-        Sharing
-      </p>
+      <div className="relative">
+        <p className="text-center text-[11px] font-semibold uppercase tracking-[0.24em] text-[#6B7F4E]">
+          Sharing
+        </p>
+        <div className="absolute right-0 top-0 flex items-center gap-1.5">
+          {SHARE_THEMES.map((t) => (
+            <button
+              key={t.id}
+              type="button"
+              onClick={() => {
+                setShareTheme(t.id);
+                localStorage.setItem('colourmap:share-color-theme', t.id);
+              }}
+              className="cursor-pointer transition-all duration-300 hover:scale-125"
+              style={{
+                width: shareTheme === t.id ? 12 : 8,
+                height: shareTheme === t.id ? 12 : 8,
+                borderRadius: '50%',
+                background: t.dot,
+                opacity: shareTheme === t.id ? 1 : 0.3,
+                border: 'none',
+                padding: 0,
+              }}
+            />
+          ))}
+        </div>
+      </div>
 
       {/* Compass SVG */}
       <div className="flex justify-center">
@@ -247,7 +327,7 @@ export default function ShareCompass() {
             opacity={0.15}
           />
 
-          {SHARE_SLICES.map((q) => {
+          {themedShareSlices.map((q) => {
             const sa = q.angle - span / 2;
             const ea = q.angle + span / 2;
             const isAct = activeSlice === q.label;
@@ -288,7 +368,7 @@ export default function ShareCompass() {
           })}
 
           {/* Labels */}
-          {SHARE_SLICES.map((q) => {
+          {themedShareSlices.map((q) => {
             const labelR = (innerR + outerR) / 2;
             const lx = cx + labelR * Math.cos(q.angle);
             const ly = cy + labelR * Math.sin(q.angle);
@@ -328,7 +408,7 @@ export default function ShareCompass() {
 
       {/* STAR blobs */}
       <div className="flex items-center justify-center gap-3">
-        {SHARE_SLICES.map((a) => (
+        {themedShareSlices.map((a) => (
           <div
             key={a.key}
             className="flex h-8 w-8 items-center justify-center rounded-full"

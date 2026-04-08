@@ -12,7 +12,7 @@ import CockpitCat from '@/components/CockpitCat';
 const HAWKINS = [
   { level: 'Shame', color: '#C83030' },
   { level: 'Guilt', color: '#D44040' },
-  { level: 'Grief', color: '#D45050' },
+  { level: 'Grief', color: '#E04040' },
   { level: 'Fear', color: '#D46050' },
   { level: 'Desire', color: '#D87048' },
   { level: 'Anger', color: '#E0844A' },
@@ -36,7 +36,7 @@ const INNER_TRACKERS = [
       'What would happen if it came true?',
       "What's one small thing you can face right now?",
     ],
-    color: '#D45050',
+    color: '#E04040',
   },
   {
     id: 'avoidance',
@@ -47,7 +47,7 @@ const INNER_TRACKERS = [
       'What happens if you keep avoiding it?',
       "What's the smallest first step?",
     ],
-    color: '#E6A168',
+    color: '#F0904A',
   },
   {
     id: 'confusion',
@@ -58,7 +58,7 @@ const INNER_TRACKERS = [
       'What would clarity look like?',
       'Who or what could help you see it?',
     ],
-    color: '#B68DB8',
+    color: '#C070C8',
   },
   {
     id: 'intention',
@@ -69,7 +69,7 @@ const INNER_TRACKERS = [
       'Why does it matter today?',
       "What's the smallest next move?",
     ],
-    color: '#76AED0',
+    color: '#4090D0',
   },
   {
     id: 'need',
@@ -80,7 +80,7 @@ const INNER_TRACKERS = [
       'What would support look like?',
       'How can you give or ask for it today?',
     ],
-    color: '#D8BA5D',
+    color: '#E8A830',
   },
   {
     id: 'gratitude',
@@ -91,7 +91,7 @@ const INNER_TRACKERS = [
       'Why does it matter to you?',
       'Who made it possible?',
     ],
-    color: '#9DBE74',
+    color: '#70B840',
   },
 ] as const;
 
