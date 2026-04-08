@@ -415,7 +415,7 @@ export default function StarCompass() {
             style={{ background: a.color, opacity: 0.5 }}
           >
             <span
-              className="text-xs font-bold text-white select-none"
+              className="text-sm font-black text-white select-none"
               style={{ fontFamily: 'var(--font-handwritten)' }}
             >
               {a.label[0]}

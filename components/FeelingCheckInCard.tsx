@@ -12,7 +12,7 @@ import CockpitCat from '@/components/CockpitCat';
 const HAWKINS = [
   { level: 'Shame', color: '#C83030' },
   { level: 'Guilt', color: '#D44040' },
-  { level: 'Grief', color: '#E04040' },
+  { level: 'Grief', color: '#C85050' },
   { level: 'Fear', color: '#D46050' },
   { level: 'Desire', color: '#D87048' },
   { level: 'Anger', color: '#E0844A' },
@@ -36,7 +36,7 @@ const INNER_TRACKERS = [
       'What would happen if it came true?',
       "What's one small thing you can face right now?",
     ],
-    color: '#E04040',
+    color: '#C85050',
   },
   {
     id: 'avoidance',
@@ -47,7 +47,7 @@ const INNER_TRACKERS = [
       'What happens if you keep avoiding it?',
       "What's the smallest first step?",
     ],
-    color: '#F0904A',
+    color: '#D09060',
   },
   {
     id: 'confusion',
@@ -58,7 +58,7 @@ const INNER_TRACKERS = [
       'What would clarity look like?',
       'Who or what could help you see it?',
     ],
-    color: '#C070C8',
+    color: '#A878A8',
   },
   {
     id: 'intention',
@@ -69,7 +69,7 @@ const INNER_TRACKERS = [
       'Why does it matter today?',
       "What's the smallest next move?",
     ],
-    color: '#4090D0',
+    color: '#6890B0',
   },
   {
     id: 'need',
@@ -80,7 +80,7 @@ const INNER_TRACKERS = [
       'What would support look like?',
       'How can you give or ask for it today?',
     ],
-    color: '#E8A830',
+    color: '#C8A050',
   },
   {
     id: 'gratitude',
@@ -91,7 +91,7 @@ const INNER_TRACKERS = [
       'Why does it matter to you?',
       'Who made it possible?',
     ],
-    color: '#70B840',
+    color: '#88A858',
   },
 ] as const;
 
@@ -305,7 +305,7 @@ export default function FeelingCheckInCard() {
                 }}
               >
                 <span
-                  className="text-sm font-bold text-white select-none"
+                  className="text-base font-black text-white select-none"
                   style={{ fontFamily: 'var(--font-handwritten)', letterSpacing: 1 }}
                 >
                   {t.letter}
