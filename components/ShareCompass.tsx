@@ -461,7 +461,7 @@ export default function ShareCompass() {
                       className="flex-1 cursor-pointer transition-all duration-200"
                       style={{
                         height: isN ? 24 : 12,
-                        borderRadius: 4,
+                        borderRadius: 2,
                         background: activeQ.color,
                         opacity: isN ? 1 : dist === 1 ? 0.4 : 0.12,
                         border: 'none',
@@ -566,7 +566,7 @@ export default function ShareCompass() {
                         className="flex-1 cursor-pointer transition-all duration-200"
                         style={{
                           height: selected ? 26 : 16,
-                          borderRadius: 4,
+                          borderRadius: 2,
                           background: activeQ.color,
                           opacity: selected ? 1 : 0.2,
                           border: 'none',
