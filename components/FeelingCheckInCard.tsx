@@ -104,10 +104,71 @@ const CELL_SHAPES = [
   '48% 52% 55% 45% / 55% 45% 48% 52%',
 ];
 
+const PEACE_TRACKERS = [
+  {
+    id: 'pause',
+    label: 'Pause',
+    letter: 'P',
+    questions: [
+      'Can you stop for 10 seconds right now?',
+      'What happens when you pause?',
+      'What does stillness feel like?',
+    ],
+    color: '#8098B0',
+  },
+  {
+    id: 'express',
+    label: 'Express',
+    letter: 'E',
+    questions: [
+      'What needs to come out right now?',
+      'What would you say if nobody was listening?',
+      'How does it feel to let it out?',
+    ],
+    color: '#A08878',
+  },
+  {
+    id: 'accept',
+    label: 'Accept',
+    letter: 'A',
+    questions: [
+      'What are you resisting right now?',
+      'What would change if you stopped fighting it?',
+      'Can you let it be, just for today?',
+    ],
+    color: '#90A080',
+  },
+  {
+    id: 'calm',
+    label: 'Calm',
+    letter: 'C',
+    questions: [
+      'Where in your body do you feel tension?',
+      'What would help you settle right now?',
+      'What does calm feel like for you?',
+    ],
+    color: '#7098A0',
+  },
+  {
+    id: 'emerge',
+    label: 'Emerge',
+    letter: 'E',
+    questions: [
+      'What are you ready to step into?',
+      'What is on the other side of this?',
+      'How do you want to show up next?',
+    ],
+    color: '#A0A070',
+  },
+] as const;
+
+type TrackerMode = 'facing' | 'peace';
+
 export default function FeelingCheckInCard() {
   const [sliderValue, setSliderValue] = useState(50);
   const [barActive, setBarActive] = useState(false);
   const [showDesc, setShowDesc] = useState(false);
+  const [trackerMode, setTrackerMode] = useState<TrackerMode>('facing');
   const [note, setNote] = useState('');
   const [activeTracker, setActiveTracker] = useState<string | null>(null);
   const [trackerValues, setTrackerValues] = useState<Record<string, string>>({});
@@ -282,43 +343,86 @@ export default function FeelingCheckInCard() {
         />
       </div>
 
-      {/* FACING trackers — cell shapes */}
+      {/* FACING / PEACE trackers — swappable */}
       <div className="space-y-2">
-        <div className="flex items-center justify-center gap-2">
-          {INNER_TRACKERS.map((t, idx) => {
-            const isActive = activeTracker === t.id;
-            const size = isActive ? 46 : 38;
-            return (
-              <button
-                key={t.id}
-                type="button"
-                onClick={() => setActiveTracker(isActive ? null : t.id)}
-                className="relative flex cursor-pointer items-center justify-center transition-all duration-300 hover:scale-110"
-                style={{
-                  width: size,
-                  height: size,
-                  borderRadius: CELL_SHAPES[idx],
-                  background: t.color,
-                  opacity: isActive ? 1 : 0.6,
-                  border: 'none',
-                  padding: 0,
-                }}
-              >
-                <span
-                  className="text-base font-black text-white select-none"
-                  style={{ fontFamily: 'var(--font-handwritten)', letterSpacing: 1 }}
+        <div className="flex items-center gap-2">
+          {/* Arrow left (only if on PEACE) */}
+          {trackerMode === 'peace' && (
+            <button
+              type="button"
+              onClick={() => {
+                setTrackerMode('facing');
+                setActiveTracker(null);
+              }}
+              className="shrink-0 cursor-pointer text-sm text-muted-foreground/30 transition-colors hover:text-muted-foreground/60"
+              style={{ background: 'none', border: 'none' }}
+            >
+              ‹
+            </button>
+          )}
+
+          <div className="flex flex-1 items-center justify-center gap-2">
+            {(trackerMode === 'facing' ? INNER_TRACKERS : PEACE_TRACKERS).map((t, idx) => {
+              const isActive = activeTracker === t.id;
+              const size = isActive ? 46 : 38;
+              const shapes =
+                trackerMode === 'facing'
+                  ? CELL_SHAPES
+                  : [
+                      '50% 50% 45% 55% / 45% 55% 50% 50%',
+                      '45% 55% 50% 50% / 50% 50% 45% 55%',
+                      '55% 45% 50% 50% / 50% 50% 55% 45%',
+                      '50% 50% 55% 45% / 55% 45% 50% 50%',
+                      '48% 52% 42% 58% / 52% 48% 50% 50%',
+                    ];
+              return (
+                <button
+                  key={t.id}
+                  type="button"
+                  onClick={() => setActiveTracker(isActive ? null : t.id)}
+                  className="relative flex cursor-pointer items-center justify-center transition-all duration-300 hover:scale-110"
+                  style={{
+                    width: size,
+                    height: size,
+                    borderRadius: shapes[idx % shapes.length],
+                    background: t.color,
+                    opacity: isActive ? 1 : 0.6,
+                    border: 'none',
+                    padding: 0,
+                  }}
                 >
-                  {t.letter}
-                </span>
-              </button>
-            );
-          })}
+                  <span
+                    className="text-base font-black text-white select-none"
+                    style={{ fontFamily: 'var(--font-handwritten)', letterSpacing: 1 }}
+                  >
+                    {t.letter}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+
+          {/* Arrow right (only if on FACING) */}
+          {trackerMode === 'facing' && (
+            <button
+              type="button"
+              onClick={() => {
+                setTrackerMode('peace');
+                setActiveTracker(null);
+              }}
+              className="shrink-0 cursor-pointer text-sm text-muted-foreground/30 transition-colors hover:text-muted-foreground/60"
+              style={{ background: 'none', border: 'none' }}
+            >
+              ›
+            </button>
+          )}
         </div>
 
         {/* Open tracker program */}
         {activeTracker &&
           (() => {
-            const tracker = INNER_TRACKERS.find((t) => t.id === activeTracker);
+            const allTrackers = [...INNER_TRACKERS, ...PEACE_TRACKERS];
+            const tracker = allTrackers.find((t) => t.id === activeTracker);
             if (!tracker) return null;
 
             const keys = tracker.questions.map((_, i) =>
