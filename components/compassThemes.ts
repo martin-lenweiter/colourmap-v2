@@ -34,7 +34,7 @@ export const CARE_THEMES: (CompassTheme & { colors: Record<string, string> })[] 
     id: 'earth',
     name: 'Earth',
     dot: '#A08860',
-    colors: { care: '#B89868', attitude: '#C8A878', rest: '#A89060', emotions: '#988050' },
+    colors: { care: '#B89868', attitude: '#C4A070', rest: '#A89060', emotions: '#988050' },
   },
 ];
 
