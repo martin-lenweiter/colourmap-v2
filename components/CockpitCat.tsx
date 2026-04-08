@@ -15,7 +15,7 @@ function getStorage() {
 }
 
 export default function CockpitCat() {
-  const [size, setSize] = useState(200);
+  const [size, setSize] = useState(160);
   const [showResize, setShowResize] = useState(false);
 
   useEffect(() => {
