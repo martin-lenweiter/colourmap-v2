@@ -1,8 +1,8 @@
 'use client';
 
 import { useState } from 'react';
+import BoxDesignToggle, { useBoxFont } from '@/components/BoxDesignToggle';
 import CockpitCat from '@/components/CockpitCat';
-import { useStyle } from '@/components/StyleContext';
 
 /* ═══════════════════════════════════════════════════════════
    FEELING CHECK-IN CARD — Cat + Hawkins slider + FACING + Note
@@ -169,6 +169,11 @@ export default function FeelingCheckInCard() {
   const [barActive, setBarActive] = useState(false);
   const [showDesc, setShowDesc] = useState(false);
   const [trackerMode, setTrackerMode] = useState<TrackerMode>('facing');
+  const {
+    font: boxFont,
+    setFont: setBoxFont,
+    fontFamily,
+  } = useBoxFont('colourmap:feeling-card-font');
   const [note, setNote] = useState('');
   const [activeTracker, setActiveTracker] = useState<string | null>(null);
   const [trackerValues, setTrackerValues] = useState<Record<string, string>>({});
@@ -184,13 +189,23 @@ export default function FeelingCheckInCard() {
         boxShadow: '0 24px 50px -34px rgba(92,48,24,0.35)',
       }}
     >
+      {/* Design toggle */}
+      <div className="flex justify-end">
+        <BoxDesignToggle
+          storageKey="colourmap:feeling-card-font"
+          accentColor="#C4A060"
+          value={boxFont}
+          onChange={setBoxFont}
+        />
+      </div>
+
       {/* Cat */}
       <CockpitCat />
 
       {/* Emotion name — always visible above slider */}
       <p
         className="text-center text-lg font-semibold transition-all duration-300"
-        style={{ color: current.color, opacity: barActive ? 1 : 0.5 }}
+        style={{ color: current.color, opacity: barActive ? 1 : 0.5, fontFamily }}
       >
         {current.level}
       </p>

@@ -1,9 +1,8 @@
 'use client';
 
 import { useState } from 'react';
-
+import BoxDesignToggle, { useBoxFont } from '@/components/BoxDesignToggle';
 import CockpitCat from '@/components/CockpitCat';
-import { useStyle } from '@/components/StyleContext';
 
 /* ═══════════════════════════════════════════════════════════
    DOING CHECK-IN CARD — Cat + To-do + Missions + Trackers
@@ -329,6 +328,11 @@ function TrackersList() {
 
 /* ─── Main ─── */
 export default function DoingCheckInCard() {
+  const {
+    font: boxFont,
+    setFont: setBoxFont,
+    fontFamily,
+  } = useBoxFont('colourmap:doing-card-font');
   const [openSections, setOpenSections] = useState<Record<string, boolean>>({
     todos: true,
     missions: false,
@@ -346,6 +350,15 @@ export default function DoingCheckInCard() {
     >
       <CockpitCat />
 
+      <div className="flex justify-end">
+        <BoxDesignToggle
+          storageKey="colourmap:doing-card-font"
+          accentColor="#7A9A7A"
+          value={boxFont}
+          onChange={setBoxFont}
+        />
+      </div>
+
       {(['todos', 'missions', 'trackers'] as const).map((key) => {
         const label = key === 'todos' ? 'To-do' : key === 'missions' ? 'Missions' : 'Trackers';
         return (
@@ -356,10 +369,7 @@ export default function DoingCheckInCard() {
               className="flex w-full cursor-pointer items-center justify-between"
               style={{ background: 'none', border: 'none', padding: 0 }}
             >
-              <span
-                className="text-base font-semibold"
-                style={{ color: DOING_COLOR, fontFamily: 'var(--font-handwritten)' }}
-              >
+              <span className="text-base font-semibold" style={{ color: DOING_COLOR, fontFamily }}>
                 {label}
               </span>
               <span className="text-xs text-muted-foreground/30">
