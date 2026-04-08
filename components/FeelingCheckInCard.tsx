@@ -1,8 +1,8 @@
 'use client';
 
 import { useState } from 'react';
-
 import CockpitCat from '@/components/CockpitCat';
+import { useStyle } from '@/components/StyleContext';
 
 /* ═══════════════════════════════════════════════════════════
    FEELING CHECK-IN CARD — Cat + Hawkins slider + FACING + Note

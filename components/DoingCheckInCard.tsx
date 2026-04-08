@@ -3,6 +3,7 @@
 import { useState } from 'react';
 
 import CockpitCat from '@/components/CockpitCat';
+import { useStyle } from '@/components/StyleContext';
 
 /* ═══════════════════════════════════════════════════════════
    DOING CHECK-IN CARD — Cat + To-do + Missions + Trackers

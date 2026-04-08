@@ -3,6 +3,7 @@
 import { useState } from 'react';
 
 import CockpitCat from '@/components/CockpitCat';
+import { useStyle } from '@/components/StyleContext';
 
 /* ═══════════════════════════════════════════════════════════
    SHARING CHECK-IN CARD — Cat + People + Gratitude + Reach Out

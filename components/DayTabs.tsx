@@ -2,18 +2,18 @@
 
 import { useState } from 'react';
 
+import { useStyle } from '@/components/StyleContext';
+
 /* ═══════════════════════════════════════════════════════════
-   DAY TABS — FEELING / DOING / SHARING
-   Three-tab container with consistent structure across all doors.
-   Each tab: Block 1 (check-in card) + Block 2 (compass card)
+   DAY TABS — CARING / DOING / SHARING
    ═══════════════════════════════════════════════════════════ */
 
 type Tab = 'feeling' | 'doing' | 'sharing';
 
-const TABS: { id: Tab; label: string; color: string }[] = [
-  { id: 'feeling', label: 'CARING', color: '#C4A060' },
-  { id: 'doing', label: 'DOING', color: '#7A9A7A' },
-  { id: 'sharing', label: 'SHARING', color: '#6B7F4E' },
+const TABS: { id: Tab; label: string }[] = [
+  { id: 'feeling', label: 'Caring' },
+  { id: 'doing', label: 'Doing' },
+  { id: 'sharing', label: 'Sharing' },
 ];
 
 interface DayTabsProps {
@@ -24,6 +24,7 @@ interface DayTabsProps {
 
 export default function DayTabs({ feelingContent, doingContent, sharingContent }: DayTabsProps) {
   const [active, setActive] = useState<Tab>('feeling');
+  const { style } = useStyle();
 
   return (
     <div className="space-y-4">
@@ -36,11 +37,14 @@ export default function DayTabs({ feelingContent, doingContent, sharingContent }
               key={tab.id}
               type="button"
               onClick={() => setActive(tab.id)}
-              className="flex-1 cursor-pointer rounded-xl py-2.5 text-[13px] font-serif font-semibold tracking-[0.08em] transition-all duration-200"
+              className="flex-1 cursor-pointer rounded-xl py-2.5 tracking-[0.08em] transition-all duration-200"
               style={{
                 background: isActive ? '#C4A06018' : 'transparent',
                 border: `1.5px solid ${isActive ? '#C4A060' : 'hsl(var(--border) / 0.25)'}`,
                 color: 'hsl(var(--foreground))',
+                fontFamily: style.headingFont,
+                fontSize: style.titleSize,
+                fontWeight: style.weight.title,
               }}
             >
               {tab.label}
