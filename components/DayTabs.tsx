@@ -38,9 +38,9 @@ export default function DayTabs({ feelingContent, doingContent, sharingContent }
               onClick={() => setActive(tab.id)}
               className="flex-1 cursor-pointer rounded-xl py-2.5 text-xs font-semibold uppercase tracking-[0.16em] transition-all duration-200"
               style={{
-                background: isActive ? `${tab.color}18` : 'transparent',
-                border: `1.5px solid ${isActive ? tab.color : 'hsl(var(--border) / 0.25)'}`,
-                color: isActive ? tab.color : 'hsl(var(--muted-foreground))',
+                background: isActive ? '#C4A06018' : 'transparent',
+                border: `1.5px solid ${isActive ? '#C4A060' : 'hsl(var(--border) / 0.25)'}`,
+                color: 'hsl(var(--foreground))',
               }}
             >
               {tab.label}
