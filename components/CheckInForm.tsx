@@ -1,6 +1,10 @@
 'use client';
 
 import { useCallback, useEffect, useState } from 'react';
+import FacingRow from '@/components/FacingRow';
+import FeelingCompass from '@/components/FeelingCompass';
+import FeelingStageSelector from '@/components/FeelingStageSelector';
+import FeelingSupportChips from '@/components/FeelingSupportChips';
 import PostCheckInInsight from '@/components/PostCheckInInsight';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
@@ -85,6 +89,7 @@ const INNER_TRACKERS = [
   {
     id: 'fear',
     label: 'Fear',
+    letter: 'F',
     questions: [
       'What are you afraid of today?',
       'What would happen if it came true?',
@@ -94,36 +99,63 @@ const INNER_TRACKERS = [
     logKey: 'overview_Attitude_log',
   },
   {
-    id: 'gratitude',
-    label: 'Gratitude',
-    questions: [
-      'What are you grateful for?',
-      'Why does it matter to you?',
-      'Who made it possible?',
-    ],
-    color: '#7AAA58',
-    logKey: 'overview_Attitude_log',
-  },
-  {
     id: 'avoidance',
     label: 'Avoidance',
+    letter: 'A',
     questions: [
       'What do you keep pushing back?',
       'What happens if you keep avoiding it?',
       "What's the smallest first step?",
     ],
-    color: '#E0844A',
+    color: '#E6A168',
     logKey: 'overview_Attitude_log',
   },
   {
     id: 'confusion',
     label: 'Confusion',
+    letter: 'C',
     questions: [
       'What feels unclear right now?',
       'What would clarity look like?',
       'Who or what could help you see it?',
     ],
-    color: '#9B6BA0',
+    color: '#B68DB8',
+    logKey: 'overview_Attitude_log',
+  },
+  {
+    id: 'intention',
+    label: 'Intention',
+    letter: 'I',
+    questions: [
+      'What will you pursue?',
+      'Why does it matter today?',
+      "What's the smallest next move?",
+    ],
+    color: '#76AED0',
+    logKey: 'overview_Presence_log',
+  },
+  {
+    id: 'need',
+    label: 'Need',
+    letter: 'N',
+    questions: [
+      'What do you need right now?',
+      'What would support look like?',
+      'How can you give or ask for it today?',
+    ],
+    color: '#D8BA5D',
+    logKey: 'overview_Presence_log',
+  },
+  {
+    id: 'gratitude',
+    label: 'Gratitude',
+    letter: 'G',
+    questions: [
+      'What are you grateful for?',
+      'Why does it matter to you?',
+      'Who made it possible?',
+    ],
+    color: '#9DBE74',
     logKey: 'overview_Presence_log',
   },
 ] as const;
@@ -176,6 +208,18 @@ interface CheckInFormProps {
   onCheckInComplete?: () => void;
 }
 
+type FacingPayload = Record<
+  string,
+  {
+    label: string;
+    answers: string[];
+  }
+>;
+
+type PulsePayload = Partial<Record<'body' | 'attitude' | 'structure', number>>;
+
+type FeelingCompassPayload = Partial<Record<'attitude' | 'emotions' | 'presence' | 'body', number>>;
+
 const ENERGY_COLORS = ['#D08040', '#C88C48', '#C49850', '#C4A048', '#A8AC58', '#90B060', '#80B868'];
 const ENERGY_LABELS = ['Empty', 'Low', 'Tired', 'OK', 'Good', 'High', 'Peak'];
 
@@ -225,11 +269,9 @@ function _NoteLog({
               .replace(/^\d{2}:\d{2}\s*/, '')
               .replace(/\[(Empty|Low|Tired|OK|Good|High|Peak)\]\s*/, '')
               .trim();
-            const isTracker =
-              line.startsWith('[Fear]') ||
-              line.startsWith('[Gratitude]') ||
-              line.startsWith('[Avoidance]') ||
-              line.startsWith('[Confusion]');
+            const isTracker = INNER_TRACKERS.some((tracker) =>
+              line.startsWith(`[${tracker.label}]`),
+            );
             const trackerInfo = INNER_TRACKERS.find((t) => line.startsWith(`[${t.label}]`));
 
             return (
@@ -438,10 +480,190 @@ function PulseSlider({
   );
 }
 
+function ChallengeFlowFields({
+  challenge,
+  flow,
+  onChallengeChange,
+  onFlowChange,
+}: {
+  challenge: string;
+  flow: string;
+  onChallengeChange: (value: string) => void;
+  onFlowChange: (value: string) => void;
+}) {
+  return (
+    <div className="grid gap-4 md:grid-cols-2">
+      <div className="block space-y-2">
+        <label
+          htmlFor="check-in-challenge"
+          className="block text-center text-[28px] font-semibold leading-none tracking-[-0.04em] text-[#c79a42]"
+        >
+          Challenge
+        </label>
+        <Textarea
+          id="check-in-challenge"
+          value={challenge}
+          onChange={(event) => onChallengeChange(event.target.value)}
+          placeholder="What's challenging?..."
+          rows={3}
+          className="min-h-[132px] resize-none border-[#d2b47b4a] bg-[#f7eddc9c] text-[#7a5438] placeholder:text-[#c4a060] focus-visible:border-[#c79a42] focus-visible:ring-[#d9b56f33]"
+        />
+      </div>
+
+      <div className="block space-y-2">
+        <label
+          htmlFor="check-in-flow"
+          className="block text-center text-[28px] font-semibold leading-none tracking-[-0.04em] text-[#c79a42]"
+        >
+          Flow
+        </label>
+        <Textarea
+          id="check-in-flow"
+          value={flow}
+          onChange={(event) => onFlowChange(event.target.value)}
+          placeholder="What's flowing?..."
+          rows={3}
+          className="min-h-[132px] resize-none border-[#d2b47b4a] bg-[#f7eddc9c] text-[#7a5438] placeholder:text-[#c4a060] focus-visible:border-[#c79a42] focus-visible:ring-[#d9b56f33]"
+        />
+      </div>
+    </div>
+  );
+}
+
+function buildFacingPayload(trackerValues: Record<string, string>): FacingPayload | null {
+  const facingEntries = INNER_TRACKERS.flatMap((tracker) => {
+    const keys = tracker.questions.map((_, index) =>
+      index === 0 ? tracker.id : `${tracker.id}_${index + 1}`,
+    );
+    const answers = keys.map((key) => trackerValues[key]?.trim()).filter(Boolean) as string[];
+
+    if (answers.length === 0) {
+      return [];
+    }
+
+    return [
+      [
+        tracker.id,
+        {
+          label: tracker.label,
+          answers,
+        },
+      ] as const,
+    ];
+  });
+
+  if (facingEntries.length === 0) {
+    return null;
+  }
+
+  return Object.fromEntries(facingEntries);
+}
+
+function buildPulsePayload(pulseDots: Record<string, number>): PulsePayload | null {
+  const pulses = Object.fromEntries(
+    (['body', 'attitude', 'structure'] as const)
+      .filter((key) => pulseDots[key] !== undefined && pulseDots[key] !== 50)
+      .map((key) => [key, pulseDots[key]]),
+  ) as PulsePayload;
+
+  return Object.keys(pulses).length > 0 ? pulses : null;
+}
+
+function buildCheckInPayload(args: {
+  sliderValue: number;
+  note: string;
+  selectedTags: Set<string>;
+  selectedMission: string | null;
+  openTracker: string | null;
+  trackerValues: Record<string, string>;
+  pulseDots: Record<string, number>;
+  challenge: string;
+  flow: string;
+  feelingCompass: FeelingCompassPayload;
+  feelingStage: number | null;
+  feelingSupport: string[];
+  barActive: boolean;
+}) {
+  const {
+    sliderValue,
+    note,
+    selectedTags,
+    selectedMission,
+    openTracker,
+    trackerValues,
+    pulseDots,
+    challenge,
+    flow,
+    feelingCompass,
+    feelingStage,
+    feelingSupport,
+    barActive,
+  } = args;
+
+  const pulses = buildPulsePayload(pulseDots);
+  const facing = buildFacingPayload(trackerValues);
+  const hasFeelingCompass = Object.keys(feelingCompass).length > 0;
+  const trimmedSupport = feelingSupport.map((item) => item.trim()).filter(Boolean);
+
+  return {
+    sliderValue,
+    note:
+      [
+        ...(['body', 'attitude', 'structure'] as const)
+          .filter((id) => pulseDots[id] !== undefined && pulseDots[id] !== 50)
+          .map((id) => {
+            const levels: Record<string, readonly string[]> = {
+              body: ['Drained', 'Tired', 'OK', 'Good', 'Strong'],
+              attitude: ['Low', 'Heavy', 'Neutral', 'Solid', 'Powerful'],
+              structure: ['Chaotic', 'Messy', 'OK', 'Organised', 'Dialed in'],
+            };
+            const levelSet = levels[id];
+            const idx = Math.round(((pulseDots[id] ?? 50) / 100) * (levelSet.length - 1));
+            const pulseNote = trackerValues[`pulse_${id}`]?.trim();
+            return `[${id}: ${levelSet[idx]}]${pulseNote ? ` ${pulseNote}` : ''}`;
+          }),
+        ...INNER_TRACKERS.filter((tracker) => trackerValues[tracker.id]?.trim()).map((tracker) => {
+          const keys = tracker.questions.map((_, index) =>
+            index === 0 ? tracker.id : `${tracker.id}_${index + 1}`,
+          );
+          const answers = keys.map((key) => trackerValues[key]?.trim()).filter(Boolean);
+          return `[${tracker.label}] ${answers.join(' → ')}`;
+        }),
+        note.trim(),
+      ]
+        .filter(Boolean)
+        .join('\n') || null,
+    tags: selectedTags.size > 0 ? [...selectedTags] : null,
+    missionId: selectedMission,
+    emotionName: (() => {
+      const activeTracker = INNER_TRACKERS.find(
+        (tracker) => tracker.id === openTracker && trackerValues[tracker.id]?.trim(),
+      );
+      if (activeTracker) return activeTracker.label;
+      return barActive ? HAWKINS[Math.min(Math.round((sliderValue / 100) * 13), 13)].level : null;
+    })(),
+    emotionColor: (() => {
+      const activeTracker = INNER_TRACKERS.find(
+        (tracker) => tracker.id === openTracker && trackerValues[tracker.id]?.trim(),
+      );
+      if (activeTracker) return activeTracker.color;
+      return barActive ? HAWKINS[Math.min(Math.round((sliderValue / 100) * 13), 13)].color : null;
+    })(),
+    facing,
+    pulses,
+    challenge: challenge.trim() || null,
+    flow: flow.trim() || null,
+    feelingCompass: hasFeelingCompass ? feelingCompass : null,
+    feelingStage,
+    feelingSupport: trimmedSupport.length > 0 ? trimmedSupport : null,
+  };
+}
+
 export default function CheckInForm({ missions = [], onCheckInComplete }: CheckInFormProps) {
   const [sliderValue, setSliderValue] = useState(50);
   const [note, setNote] = useState('');
-  const [_challenge, setChallenge] = useState('');
+  const [challenge, setChallenge] = useState('');
+  const [flow, setFlow] = useState('');
   const [_showChallenge, setShowChallenge] = useState(false);
   const [selectedTags, setSelectedTags] = useState<Set<string>>(new Set());
   const [_tagSliders, setTagSliders] = useState<Record<string, number>>({});
@@ -456,13 +678,16 @@ export default function CheckInForm({ missions = [], onCheckInComplete }: CheckI
   const [showPulse, setShowPulse] = useState(false);
   const [barActive, setBarActive] = useState(false);
   const [showDesc, setShowDesc] = useState(false);
-  const [openTracker, setOpenTracker] = useState<string | null>(null);
+  const [openTracker, setOpenTracker] = useState<string>(INNER_TRACKERS[0].id);
   const [trackerValues, setTrackerValues] = useState<Record<string, string>>({});
   const [pulseDots, setPulseDots] = useState<Record<string, number>>({
     body: 50,
     attitude: 50,
     structure: 50,
   });
+  const [feelingCompass, setFeelingCompass] = useState<FeelingCompassPayload>({});
+  const [feelingStage, setFeelingStage] = useState<number | null>(null);
+  const [feelingSupport, setFeelingSupport] = useState<string[]>([]);
   const [isFirstCheckIn, setIsFirstCheckIn] = useState(false);
 
   useEffect(() => {
@@ -509,58 +734,26 @@ export default function CheckInForm({ missions = [], onCheckInComplete }: CheckI
     setIsSubmitting(true);
 
     try {
+      const payload = buildCheckInPayload({
+        sliderValue,
+        note,
+        selectedTags,
+        selectedMission,
+        openTracker,
+        trackerValues,
+        pulseDots,
+        challenge,
+        flow,
+        feelingCompass,
+        feelingStage,
+        feelingSupport,
+        barActive,
+      });
+
       const response = await fetch('/api/check-ins', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          sliderValue,
-          note:
-            [
-              // Pulse sliders
-              ...(['body', 'attitude', 'structure'] as const)
-                .filter((id) => pulseDots[id] !== undefined && pulseDots[id] !== 50)
-                .map((id) => {
-                  const levels: Record<string, readonly string[]> = {
-                    body: ['Drained', 'Tired', 'OK', 'Good', 'Strong'],
-                    attitude: ['Low', 'Heavy', 'Neutral', 'Solid', 'Powerful'],
-                    structure: ['Chaotic', 'Messy', 'OK', 'Organised', 'Dialed in'],
-                  };
-                  const lvl = levels[id];
-                  const idx = Math.round(((pulseDots[id] ?? 50) / 100) * (lvl.length - 1));
-                  const pulseNote = trackerValues[`pulse_${id}`]?.trim();
-                  return `[${id}: ${lvl[idx]}]${pulseNote ? ` ${pulseNote}` : ''}`;
-                }),
-              // Inner trackers (FGAC) — all question answers
-              ...INNER_TRACKERS.filter((t) => trackerValues[t.id]?.trim()).map((t) => {
-                const keys = t.questions.map((_, i) => (i === 0 ? t.id : `${t.id}_${i + 1}`));
-                const answers = keys.map((k) => trackerValues[k]?.trim()).filter(Boolean);
-                return `[${t.label}] ${answers.join(' → ')}`;
-              }),
-              note.trim(),
-            ]
-              .filter(Boolean)
-              .join('\n') || null,
-          tags: selectedTags.size > 0 ? [...selectedTags] : null,
-          missionId: selectedMission,
-          emotionName: (() => {
-            const activeTracker = INNER_TRACKERS.find(
-              (t) => t.id === openTracker && trackerValues[t.id]?.trim(),
-            );
-            if (activeTracker) return activeTracker.label;
-            return barActive
-              ? HAWKINS[Math.min(Math.round((sliderValue / 100) * 13), 13)].level
-              : null;
-          })(),
-          emotionColor: (() => {
-            const activeTracker = INNER_TRACKERS.find(
-              (t) => t.id === openTracker && trackerValues[t.id]?.trim(),
-            );
-            if (activeTracker) return activeTracker.color;
-            return barActive
-              ? HAWKINS[Math.min(Math.round((sliderValue / 100) * 13), 13)].color
-              : null;
-          })(),
-        }),
+        body: JSON.stringify(payload),
       });
 
       const responseData = await response.json();
@@ -632,6 +825,7 @@ export default function CheckInForm({ missions = [], onCheckInComplete }: CheckI
     setSliderValue(50);
     setNote('');
     setChallenge('');
+    setFlow('');
     setShowChallenge(false);
     setSelectedTags(new Set());
     setSelectedMission(null);
@@ -639,9 +833,12 @@ export default function CheckInForm({ missions = [], onCheckInComplete }: CheckI
     setTagNotes({});
     setBarActive(false);
     setShowDesc(false);
-    setOpenTracker(null);
+    setOpenTracker(INNER_TRACKERS[0].id);
     setTrackerValues({});
     setPulseDots({ body: 50, attitude: 50, structure: 50 });
+    setFeelingCompass({});
+    setFeelingStage(null);
+    setFeelingSupport([]);
     onCheckInComplete?.();
   }, [onCheckInComplete]);
 
@@ -660,7 +857,7 @@ export default function CheckInForm({ missions = [], onCheckInComplete }: CheckI
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6">
+    <form onSubmit={handleSubmit} className="space-y-8">
       {isFirstCheckIn && (
         <div className="rounded-[22px] border border-[#c4a0602b] bg-[#fbf4e8cc] px-4 py-4 text-left shadow-[0_16px_40px_-32px_rgba(92,48,24,0.45)]">
           <p className="text-[10px] uppercase tracking-[0.28em] text-[#9d6f2f]">First Check-In</p>
@@ -691,160 +888,323 @@ export default function CheckInForm({ missions = [], onCheckInComplete }: CheckI
         </div>
       )}
 
-      {/* Hawkins emotion wheel */}
-      <div className="space-y-3">
-        {(() => {
-          const hawkinsIdx = Math.round((sliderValue / 100) * 13);
-          const current = HAWKINS[Math.min(hawkinsIdx, 13)];
-          return (
-            <>
-              {/* Emotion name above bar */}
-              {barActive && (
-                <p
-                  className="text-lg font-semibold text-center transition-all duration-300"
-                  style={{ color: current.color }}
-                >
-                  {current.level}
-                </p>
-              )}
-
-              {/* Hawkins bar */}
-              <div
-                className="flex gap-[2px] rounded-lg overflow-hidden cursor-pointer"
-                data-no-drag
-                style={{ touchAction: 'none' }}
-                onDragStart={(e) => e.preventDefault()}
-                onMouseDown={(e) => {
-                  e.stopPropagation();
-                  setBarActive(true);
-                  setShowDesc(false);
-                  const r = e.currentTarget.getBoundingClientRect();
-                  setSliderValue(Math.round(((e.clientX - r.left) / r.width) * 100));
-                }}
-                onMouseMove={(e) => {
-                  if (e.buttons > 0) {
-                    e.stopPropagation();
-                    const r = e.currentTarget.getBoundingClientRect();
-                    setSliderValue(
-                      Math.max(
-                        0,
-                        Math.min(100, Math.round(((e.clientX - r.left) / r.width) * 100)),
-                      ),
-                    );
-                  }
-                }}
-                onTouchStart={(e) => {
-                  e.stopPropagation();
-                  setBarActive(true);
-                  setShowDesc(false);
-                  const r = e.currentTarget.getBoundingClientRect();
-                  setSliderValue(Math.round(((e.touches[0].clientX - r.left) / r.width) * 100));
-                }}
-                onTouchMove={(e) => {
-                  e.preventDefault();
-                  e.stopPropagation();
-                  const r = e.currentTarget.getBoundingClientRect();
-                  setSliderValue(
-                    Math.max(
-                      0,
-                      Math.min(100, Math.round(((e.touches[0].clientX - r.left) / r.width) * 100)),
-                    ),
-                  );
-                }}
-              >
-                {HAWKINS.map((h, i) => {
-                  const isSelected = i === hawkinsIdx;
-                  const dist = Math.abs(i - hawkinsIdx);
-                  return (
-                    <div
-                      key={h.level}
-                      style={{
-                        flex: 1,
-                        height: 28,
-                        background: h.color,
-                        opacity: barActive
-                          ? isSelected
-                            ? 1
-                            : dist === 1
-                              ? 0.55
-                              : 0.2
-                          : isSelected
-                            ? 0.7
-                            : dist === 1
-                              ? 0.4
-                              : 0.2,
-                        borderRadius: i === 0 ? '8px 0 0 8px' : i === 13 ? '0 8px 8px 0' : 0,
-                        transition: 'all 0.3s',
-                      }}
-                    />
-                  );
-                })}
-              </div>
-
-              {/* Description + more below slider */}
-              {barActive && (
-                <div className="text-center space-y-1">
-                  {!showDesc ? (
-                    <button
-                      type="button"
-                      onClick={() => setShowDesc(true)}
-                      className="text-[10px] text-muted-foreground/40 hover:text-muted-foreground/60 transition-colors"
+      <section className="rounded-[28px] border border-[#7a543833] bg-[linear-gradient(180deg,rgba(251,244,232,0.95),rgba(246,236,221,0.92))] px-5 py-6 shadow-[0_24px_50px_-34px_rgba(92,48,24,0.45)]">
+        <div className="space-y-5">
+          <div className="space-y-3">
+            {(() => {
+              const hawkinsIdx = Math.round((sliderValue / 100) * 13);
+              const current = HAWKINS[Math.min(hawkinsIdx, 13)];
+              return (
+                <>
+                  {barActive && (
+                    <p
+                      className="text-lg font-semibold text-center transition-all duration-300"
+                      style={{ color: current.color }}
                     >
-                      more
-                    </button>
-                  ) : (
-                    <div className="space-y-2 animate-in fade-in duration-200">
-                      <p
-                        className="text-xs leading-relaxed px-2"
-                        style={{ color: current.color, opacity: 0.7 }}
-                      >
-                        {current.desc}
-                      </p>
-                      <button
-                        type="button"
-                        onClick={() => setShowDesc(false)}
-                        className="text-[10px] text-muted-foreground/30 hover:text-muted-foreground/50 transition-colors"
-                      >
-                        less
-                      </button>
+                      {current.level}
+                    </p>
+                  )}
+
+                  <div
+                    className="flex gap-[2px] rounded-lg overflow-hidden cursor-pointer"
+                    data-no-drag
+                    style={{ touchAction: 'none' }}
+                    onDragStart={(e) => e.preventDefault()}
+                    onMouseDown={(e) => {
+                      e.stopPropagation();
+                      setBarActive(true);
+                      setShowDesc(false);
+                      const r = e.currentTarget.getBoundingClientRect();
+                      setSliderValue(Math.round(((e.clientX - r.left) / r.width) * 100));
+                    }}
+                    onMouseMove={(e) => {
+                      if (e.buttons > 0) {
+                        e.stopPropagation();
+                        const r = e.currentTarget.getBoundingClientRect();
+                        setSliderValue(
+                          Math.max(
+                            0,
+                            Math.min(100, Math.round(((e.clientX - r.left) / r.width) * 100)),
+                          ),
+                        );
+                      }
+                    }}
+                    onTouchStart={(e) => {
+                      e.stopPropagation();
+                      setBarActive(true);
+                      setShowDesc(false);
+                      const r = e.currentTarget.getBoundingClientRect();
+                      setSliderValue(Math.round(((e.touches[0].clientX - r.left) / r.width) * 100));
+                    }}
+                    onTouchMove={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      const r = e.currentTarget.getBoundingClientRect();
+                      setSliderValue(
+                        Math.max(
+                          0,
+                          Math.min(
+                            100,
+                            Math.round(((e.touches[0].clientX - r.left) / r.width) * 100),
+                          ),
+                        ),
+                      );
+                    }}
+                  >
+                    {HAWKINS.map((h, i) => {
+                      const isSelected = i === hawkinsIdx;
+                      const dist = Math.abs(i - hawkinsIdx);
+                      return (
+                        <div
+                          key={h.level}
+                          style={{
+                            flex: 1,
+                            height: 28,
+                            background: h.color,
+                            opacity: barActive
+                              ? isSelected
+                                ? 1
+                                : dist === 1
+                                  ? 0.55
+                                  : 0.2
+                              : isSelected
+                                ? 0.7
+                                : dist === 1
+                                  ? 0.4
+                                  : 0.2,
+                            borderRadius: i === 0 ? '8px 0 0 8px' : i === 13 ? '0 8px 8px 0' : 0,
+                            transition: 'all 0.3s',
+                          }}
+                        />
+                      );
+                    })}
+                  </div>
+
+                  {barActive && (
+                    <div className="text-center space-y-1">
+                      {!showDesc ? (
+                        <button
+                          type="button"
+                          onClick={() => setShowDesc(true)}
+                          className="text-[10px] text-muted-foreground/40 hover:text-muted-foreground/60 transition-colors"
+                        >
+                          more
+                        </button>
+                      ) : (
+                        <div className="space-y-2 animate-in fade-in duration-200">
+                          <p
+                            className="text-xs leading-relaxed px-2"
+                            style={{ color: current.color, opacity: 0.7 }}
+                          >
+                            {current.desc}
+                          </p>
+                          <button
+                            type="button"
+                            onClick={() => setShowDesc(false)}
+                            className="text-[10px] text-muted-foreground/30 hover:text-muted-foreground/50 transition-colors"
+                          >
+                            less
+                          </button>
+                        </div>
+                      )}
                     </div>
                   )}
-                </div>
-              )}
-            </>
-          );
-        })()}
-      </div>
+                </>
+              );
+            })()}
+          </div>
 
-      <Textarea
-        id="check-in-note"
-        className="border-[#C4A06020] bg-[#C4A06005] focus-visible:border-[#C4A06040] focus-visible:ring-[#C4A06015]"
-        placeholder={(() => {
-          const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-          if (!barActive) return `${time}  What's on your mind?`;
-          const idx = Math.min(Math.round((sliderValue / 100) * 13), 13);
-          const prompts: Record<string, string> = {
-            Shame: 'What feels heavy?',
-            Guilt: "What's weighing on you?",
-            Grief: 'What are you letting go of?',
-            Fear: 'What feels threatening?',
-            Desire: 'What are you craving?',
-            Anger: 'What crossed a line?',
-            Pride: 'What are you proving?',
-            Courage: 'What shifted?',
-            Willingness: 'What are you open to?',
-            Acceptance: 'What did you let in?',
-            Reason: 'What are you figuring out?',
-            Love: 'What are you nurturing?',
-            Joy: 'What lit you up?',
-            Peace: 'What feels still?',
-          };
-          return `${time}  ${prompts[HAWKINS[idx].level] || "What's on your mind?"}`;
-        })()}
-        value={note}
-        onChange={(e) => setNote(e.target.value)}
-        rows={2}
-      />
+          <Textarea
+            id="check-in-note"
+            className="border-[#C4A06020] bg-[#C4A06005] focus-visible:border-[#C4A06040] focus-visible:ring-[#C4A06015]"
+            placeholder={(() => {
+              const time = new Date().toLocaleTimeString([], {
+                hour: '2-digit',
+                minute: '2-digit',
+              });
+              if (!barActive) return `${time}  What's on your mind?`;
+              const idx = Math.min(Math.round((sliderValue / 100) * 13), 13);
+              const prompts: Record<string, string> = {
+                Shame: 'What feels heavy?',
+                Guilt: "What's weighing on you?",
+                Grief: 'What are you letting go of?',
+                Fear: 'What feels threatening?',
+                Desire: 'What are you craving?',
+                Anger: 'What crossed a line?',
+                Pride: 'What are you proving?',
+                Courage: 'What shifted?',
+                Willingness: 'What are you open to?',
+                Acceptance: 'What did you let in?',
+                Reason: 'What are you figuring out?',
+                Love: 'What are you nurturing?',
+                Joy: 'What lit you up?',
+                Peace: 'What feels still?',
+              };
+              return `${time}  ${prompts[HAWKINS[idx].level] || "What's on your mind?"}`;
+            })()}
+            value={note}
+            onChange={(e) => setNote(e.target.value)}
+            rows={2}
+          />
+        </div>
+      </section>
+
+      <section className="rounded-[28px] border border-[#7a543833] bg-[linear-gradient(180deg,rgba(250,241,225,0.96),rgba(246,232,212,0.92))] px-5 py-6 shadow-[0_28px_55px_-36px_rgba(92,48,24,0.5)]">
+        <div className="space-y-6">
+          <div>
+            <button
+              type="button"
+              onClick={() => setShowPulse(!showPulse)}
+              className="flex items-center justify-center gap-2 w-full py-1 transition-colors"
+            >
+              <span
+                className="text-[10px] font-semibold uppercase tracking-[0.2em]"
+                style={{ color: '#5C301850' }}
+              >
+                Pulse
+              </span>
+              <span className="text-[9px]" style={{ color: '#5C301830' }}>
+                {showPulse ? '−' : '+'}
+              </span>
+            </button>
+            {showPulse && (
+              <div className="space-y-2 pt-2 animate-in fade-in duration-150">
+                <PulseSlider
+                  id="body"
+                  label="Body"
+                  levels={['Disconnected', 'Drained', 'Tired', 'OK', 'Good', 'Strong', 'Powerful']}
+                  value={pulseDots.body ?? 50}
+                  onValue={(v) => setPulseDots((prev) => ({ ...prev, body: v }))}
+                  noteValue={trackerValues.pulse_body || ''}
+                  onNote={(v) => setTrackerValues((prev) => ({ ...prev, pulse_body: v }))}
+                />
+                <PulseSlider
+                  id="attitude"
+                  label="Attitude"
+                  levels={['Wet sock', 'Low', 'Heavy', 'Neutral', 'Solid', 'Strong', 'Unshakable']}
+                  value={pulseDots.attitude ?? 50}
+                  onValue={(v) => setPulseDots((prev) => ({ ...prev, attitude: v }))}
+                  noteValue={trackerValues.pulse_attitude || ''}
+                  onNote={(v) => setTrackerValues((prev) => ({ ...prev, pulse_attitude: v }))}
+                />
+                <PulseSlider
+                  id="structure"
+                  label="Structure"
+                  levels={[
+                    'Chaotic',
+                    'Scattered',
+                    'Messy',
+                    'OK',
+                    'Tidy',
+                    'Organised',
+                    'Laser sharp',
+                  ]}
+                  value={pulseDots.structure ?? 50}
+                  onValue={(v) => setPulseDots((prev) => ({ ...prev, structure: v }))}
+                  noteValue={trackerValues.pulse_structure || ''}
+                  onNote={(v) => setTrackerValues((prev) => ({ ...prev, pulse_structure: v }))}
+                />
+              </div>
+            )}
+          </div>
+
+          <div className="space-y-2">
+            <FacingRow
+              activeId={openTracker}
+              trackers={INNER_TRACKERS}
+              onSelect={(id) => setOpenTracker(id)}
+            />
+            {(() => {
+              const tracker = INNER_TRACKERS.find((item) => item.id === openTracker);
+              if (!tracker) return null;
+
+              const keys = tracker.questions.map((_, index) =>
+                index === 0 ? tracker.id : `${tracker.id}_${index + 1}`,
+              );
+              const unlockedCount = keys.filter((key) => key in trackerValues).length;
+              const visibleCount = Math.max(1, unlockedCount);
+              const lastKey = keys[visibleCount - 1];
+              const canUnlockNext =
+                visibleCount < tracker.questions.length && trackerValues[lastKey]?.trim();
+
+              return (
+                <div className="space-y-2 animate-in fade-in duration-150">
+                  <p
+                    className="text-xl italic leading-none text-center"
+                    style={{ color: tracker.color }}
+                  >
+                    {tracker.label}
+                  </p>
+                  <div className="space-y-1">
+                    {tracker.questions.slice(0, visibleCount).map((question, index) => {
+                      const key = keys[index];
+                      const showLosange = index < visibleCount - 1;
+
+                      return (
+                        <div key={key}>
+                          <input
+                            type="text"
+                            value={trackerValues[key] || ''}
+                            onChange={(e) =>
+                              setTrackerValues((prev) => ({ ...prev, [key]: e.target.value }))
+                            }
+                            placeholder={question}
+                            className="w-full rounded-lg border px-3 py-2 text-sm outline-none placeholder:text-muted-foreground/40"
+                            style={{
+                              borderColor: `${tracker.color}25`,
+                              background: `${tracker.color}05`,
+                            }}
+                          />
+                          {showLosange && (
+                            <div className="flex justify-center py-2">
+                              <div
+                                className="h-2 w-2 rotate-45 rounded-[1px]"
+                                style={{ background: tracker.color, opacity: 0.2 }}
+                              />
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })}
+                    {canUnlockNext && (
+                      <div className="flex justify-center py-2">
+                        <button
+                          type="button"
+                          onClick={() =>
+                            setTrackerValues((prev) => ({ ...prev, [keys[visibleCount]]: '' }))
+                          }
+                          className="flex h-3.5 w-3.5 items-center justify-center rotate-45 transition-all hover:scale-125"
+                          style={{ background: `${tracker.color}30`, borderRadius: 1.5 }}
+                        >
+                          <span
+                            className="text-[6px] leading-none -rotate-45 font-bold"
+                            style={{ color: tracker.color }}
+                          >
+                            +
+                          </span>
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              );
+            })()}
+          </div>
+
+          <div className="space-y-4">
+            <FeelingCompass values={feelingCompass} onChange={setFeelingCompass} />
+            <FeelingStageSelector value={feelingStage} onChange={setFeelingStage} />
+            <FeelingSupportChips value={feelingSupport} onChange={setFeelingSupport} />
+          </div>
+
+          <ChallengeFlowFields
+            challenge={challenge}
+            flow={flow}
+            onChallengeChange={setChallenge}
+            onFlowChange={setFlow}
+          />
+        </div>
+      </section>
 
       {error && <p className="text-sm text-destructive">{error}</p>}
 
@@ -855,168 +1215,6 @@ export default function CheckInForm({ missions = [], onCheckInComplete }: CheckI
       >
         {isSubmitting ? 'Saving...' : 'Check in'}
       </Button>
-
-      {/* Pulse (BAS) — collapsible, closed by default */}
-      <div>
-        <button
-          type="button"
-          onClick={() => setShowPulse(!showPulse)}
-          className="flex items-center justify-center gap-2 w-full py-1 transition-colors"
-        >
-          <span
-            className="text-[10px] font-semibold uppercase tracking-[0.2em]"
-            style={{ color: '#5C301850' }}
-          >
-            Pulse
-          </span>
-          <span className="text-[9px]" style={{ color: '#5C301830' }}>
-            {showPulse ? '−' : '+'}
-          </span>
-        </button>
-        {showPulse && (
-          <div className="space-y-2 pt-2 animate-in fade-in duration-150">
-            <PulseSlider
-              id="body"
-              label="Body"
-              levels={['Disconnected', 'Drained', 'Tired', 'OK', 'Good', 'Strong', 'Powerful']}
-              value={pulseDots.body ?? 50}
-              onValue={(v) => setPulseDots((prev) => ({ ...prev, body: v }))}
-              noteValue={trackerValues.pulse_body || ''}
-              onNote={(v) => setTrackerValues((prev) => ({ ...prev, pulse_body: v }))}
-            />
-            <PulseSlider
-              id="attitude"
-              label="Attitude"
-              levels={['Wet sock', 'Low', 'Heavy', 'Neutral', 'Solid', 'Strong', 'Unshakable']}
-              value={pulseDots.attitude ?? 50}
-              onValue={(v) => setPulseDots((prev) => ({ ...prev, attitude: v }))}
-              noteValue={trackerValues.pulse_attitude || ''}
-              onNote={(v) => setTrackerValues((prev) => ({ ...prev, pulse_attitude: v }))}
-            />
-            <PulseSlider
-              id="structure"
-              label="Structure"
-              levels={['Chaotic', 'Scattered', 'Messy', 'OK', 'Tidy', 'Organised', 'Laser sharp']}
-              value={pulseDots.structure ?? 50}
-              onValue={(v) => setPulseDots((prev) => ({ ...prev, structure: v }))}
-              noteValue={trackerValues.pulse_structure || ''}
-              onNote={(v) => setTrackerValues((prev) => ({ ...prev, pulse_structure: v }))}
-            />
-          </div>
-        )}
-      </div>
-
-      {/* Inner trackers (FGAC) — behind losange toggle */}
-      <div className="space-y-2">
-        <div className="flex items-center justify-center">
-          <button
-            type="button"
-            onClick={() => setOpenTracker(openTracker ? null : INNER_TRACKERS[0].id)}
-            className="flex h-4 w-4 items-center justify-center rotate-45 transition-all hover:scale-110"
-            style={{
-              background: openTracker ? '#C4A060' : '#C4A06035',
-              borderRadius: 1.5,
-            }}
-          >
-            <span
-              className="text-[7px] leading-none -rotate-45 font-bold"
-              style={{ color: openTracker ? '#fff' : '#C4A060' }}
-            >
-              {openTracker ? '−' : '+'}
-            </span>
-          </button>
-        </div>
-        {openTracker && (
-          <div className="space-y-2 animate-in fade-in duration-150">
-            <div className="flex flex-wrap gap-1.5 justify-center">
-              {INNER_TRACKERS.map((t) => {
-                const isActive = openTracker === t.id;
-                const hasValue = !!trackerValues[t.id]?.trim();
-                return (
-                  <button
-                    key={t.id}
-                    type="button"
-                    onClick={() => setOpenTracker(isActive ? null : t.id)}
-                    className="rounded-full px-3 py-1 text-[11px] font-medium transition-all"
-                    style={{
-                      background: isActive
-                        ? `${t.color}18`
-                        : hasValue
-                          ? `${t.color}10`
-                          : `${t.color}06`,
-                      color: isActive ? t.color : hasValue ? t.color : `${t.color}70`,
-                      border: `1px solid ${isActive ? `${t.color}35` : hasValue ? `${t.color}25` : `${t.color}15`}`,
-                    }}
-                  >
-                    {t.label}
-                    {hasValue && !isActive ? ' ✓' : ''}
-                  </button>
-                );
-              })}
-            </div>
-            {(() => {
-              const t = INNER_TRACKERS.find((t) => t.id === openTracker);
-              if (!t) return null;
-              const keys = t.questions.map((_, i) => (i === 0 ? t.id : `${t.id}_${i + 1}`));
-              // Only show questions that have been explicitly unlocked (key exists in trackerValues)
-              const unlockedCount = keys.filter((k) => k in trackerValues).length;
-              const visibleCount = Math.max(1, unlockedCount);
-              const lastKey = keys[visibleCount - 1];
-              const canUnlockNext =
-                visibleCount < t.questions.length && trackerValues[lastKey]?.trim();
-              return (
-                <div className="space-y-1">
-                  {t.questions.slice(0, visibleCount).map((q, i) => {
-                    const key = keys[i];
-                    const showLosange = i < visibleCount - 1;
-                    return (
-                      <div key={key}>
-                        <input
-                          type="text"
-                          value={trackerValues[key] || ''}
-                          onChange={(e) =>
-                            setTrackerValues((prev) => ({ ...prev, [key]: e.target.value }))
-                          }
-                          placeholder={q}
-                          className="w-full rounded-lg border px-3 py-2 text-sm outline-none placeholder:text-muted-foreground/40"
-                          style={{ borderColor: `${t.color}25`, background: `${t.color}05` }}
-                        />
-                        {showLosange && (
-                          <div className="flex justify-center py-2">
-                            <div
-                              className="h-2 w-2 rotate-45 rounded-[1px]"
-                              style={{ background: t.color, opacity: 0.2 }}
-                            />
-                          </div>
-                        )}
-                      </div>
-                    );
-                  })}
-                  {canUnlockNext && (
-                    <div className="flex justify-center py-2">
-                      <button
-                        type="button"
-                        onClick={() =>
-                          setTrackerValues((prev) => ({ ...prev, [keys[visibleCount]]: '' }))
-                        }
-                        className="flex h-3.5 w-3.5 items-center justify-center rotate-45 transition-all hover:scale-125"
-                        style={{ background: `${t.color}30`, borderRadius: 1.5 }}
-                      >
-                        <span
-                          className="text-[6px] leading-none -rotate-45 font-bold"
-                          style={{ color: t.color }}
-                        >
-                          +
-                        </span>
-                      </button>
-                    </div>
-                  )}
-                </div>
-              );
-            })()}
-          </div>
-        )}
-      </div>
     </form>
   );
 }

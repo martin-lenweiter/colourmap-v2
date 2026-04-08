@@ -205,7 +205,7 @@ function arcPath(
 export default function CareCompass() {
   const [colorTheme, setColorTheme] = useState<ColorTheme>(() => {
     try {
-      return (localStorage.getItem('colourmap:care-theme') as ColorTheme) || 'warm';
+      return (localStorage.getItem('colourmap:care-theme') as ColorTheme) || 'vivid';
     } catch {
       return 'warm';
     }
@@ -379,7 +379,7 @@ export default function CareCompass() {
                 style={{
                   fontSize: isAct ? '17px' : '15px',
                   fontFamily: 'var(--font-handwritten)',
-                  fontWeight: isAct ? 700 : 500,
+                  fontWeight: 700,
                   fill: isAct ? q.color : '#8f6a47',
                   transition: 'all 0.3s',
                 }}

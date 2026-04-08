@@ -25,6 +25,11 @@ describe('schema', () => {
 
     expect(checkIns).toHaveProperty('sliderValue');
     expect(checkIns).toHaveProperty('missionId');
+    expect(checkIns).toHaveProperty('facing');
+    expect(checkIns).toHaveProperty('challenge');
+    expect(checkIns).toHaveProperty('feelingCompass');
+    expect(checkIns).toHaveProperty('feelingStage');
+    expect(checkIns).toHaveProperty('feelingSupport');
     expect(missions).toHaveProperty('title');
     expect(missions).toHaveProperty('blocking');
     expect(missions).toHaveProperty('nextStep');

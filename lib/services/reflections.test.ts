@@ -99,6 +99,15 @@ describe('reflections service', () => {
         note: 'steady',
         tags: ['Work'],
         missionId: 'mission-1',
+        facing: {
+          fear: { label: 'Fear', answers: ['Missing the deadline', 'Ask for support'] },
+        },
+        pulses: { body: 75 },
+        challenge: 'Scope is still blurry',
+        flow: 'Momentum is picking up',
+        feelingCompass: { attitude: 25, presence: 50 },
+        feelingStage: 4,
+        feelingSupport: ['Confidence'],
         createdAt: new Date('2026-04-06T09:00:00Z'),
       },
     ]);
@@ -109,6 +118,9 @@ describe('reflections service', () => {
     const prompt = await buildCheckInAnalysisPrompt('user-1');
 
     expect(prompt).toContain('Word-72 (72/100)');
+    expect(prompt).toContain('FACING: Fear: Missing the deadline / Ask for support');
+    expect(prompt).toContain('Feeling compass: attitude 25%, presence 50%');
+    expect(prompt).toContain('Challenge: "Scope is still blurry"');
     expect(prompt).toContain('Mission: "Ship"');
     expect(prompt).toContain('Active missions');
   });
@@ -148,9 +160,29 @@ describe('reflections service', () => {
         sliderValue: 72,
         note: 'steady',
         missionId: 'mission-1',
+        facing: {
+          intention: { label: 'Intention', answers: ['Finish the pitch'] },
+        },
+        challenge: 'I keep second-guessing the outline',
+        flow: 'The opening paragraph feels strong',
+        feelingCompass: { attitude: 50 },
+        feelingStage: 5,
+        feelingSupport: ['Gratitude'],
         createdAt: new Date(),
       },
-      { id: 'check-2', sliderValue: 61, note: null, missionId: null, createdAt: new Date() },
+      {
+        id: 'check-2',
+        sliderValue: 61,
+        note: null,
+        missionId: null,
+        facing: null,
+        challenge: null,
+        flow: null,
+        feelingCompass: null,
+        feelingStage: null,
+        feelingSupport: null,
+        createdAt: new Date(),
+      },
     ]);
     getMissions.mockResolvedValue([{ id: 'mission-1', title: 'Ship', blocking: 'Scope' }]);
     orderBy.mockResolvedValue([
@@ -161,6 +193,9 @@ describe('reflections service', () => {
     const prompt = await buildCheckInInsightPrompt('user-1', { checkInId: 'check-1' });
 
     expect(prompt).toContain('Just checked in: Word-72 (72/100)');
+    expect(prompt).toContain('FACING: Intention: Finish the pitch');
+    expect(prompt).toContain('Challenge: "I keep second-guessing the outline"');
+    expect(prompt).toContain('Flow: "The opening paragraph feels strong"');
     expect(prompt).toContain('Working on: "Ship"');
     expect(prompt).toContain('Self-identified fears: failure, delay');
   });

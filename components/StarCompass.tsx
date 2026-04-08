@@ -384,7 +384,7 @@ export default function StarCompass() {
                 style={{
                   fontSize: isAct ? '17px' : '15px',
                   fontFamily: 'var(--font-handwritten)',
-                  fontWeight: isAct ? 700 : 500,
+                  fontWeight: 700,
                   fill: isAct ? q.color : '#8f6a47',
                   transition: 'all 0.3s',
                 }}

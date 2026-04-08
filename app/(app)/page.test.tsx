@@ -51,6 +51,8 @@ describe('CockpitPage', () => {
   it('renders all sections', () => {
     render(<CockpitPage />);
 
+    expect(screen.getByText('Feeling, left of center')).toBeDefined();
+    expect(screen.getByText('Doing, right on time')).toBeDefined();
     expect(screen.getByTestId('check-in-form')).toBeDefined();
     expect(screen.getByTestId('check-in-history')).toBeDefined();
     expect(screen.getByTestId('mission-tracker')).toBeDefined();

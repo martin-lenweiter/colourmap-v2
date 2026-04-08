@@ -99,6 +99,46 @@ const TONE_PROMPTS: Record<string, string> = {
     'Speak practically - data-driven, clear, structured. No metaphors. Use numbers and patterns. Keep it to 3-4 sentences.',
 };
 
+function summarizeStructuredCheckIn(checkIn: {
+  facing?: Record<string, { label: string; answers: string[] }> | null;
+  pulses?: Partial<Record<'body' | 'attitude' | 'structure', number>> | null;
+  challenge?: string | null;
+  flow?: string | null;
+  feelingCompass?: Partial<Record<'attitude' | 'emotions' | 'presence' | 'body', number>> | null;
+  feelingStage?: number | null;
+  feelingSupport?: string[] | null;
+}) {
+  const parts: string[] = [];
+
+  const facingSummary = Object.values(checkIn.facing ?? {})
+    .map((entry) => `${entry.label}: ${entry.answers.join(' / ')}`)
+    .join('; ');
+  if (facingSummary) parts.push(`FACING: ${facingSummary}`);
+
+  const compassSummary = Object.entries(checkIn.feelingCompass ?? {})
+    .map(([key, value]) => `${key} ${value}%`)
+    .join(', ');
+  if (compassSummary) parts.push(`Feeling compass: ${compassSummary}`);
+
+  const pulseSummary = Object.entries(checkIn.pulses ?? {})
+    .map(([key, value]) => `${key} ${value}%`)
+    .join(', ');
+  if (pulseSummary) parts.push(`Pulse: ${pulseSummary}`);
+
+  if (checkIn.feelingStage !== null && checkIn.feelingStage !== undefined) {
+    parts.push(`Feeling stage: ${checkIn.feelingStage}`);
+  }
+
+  if (checkIn.feelingSupport && checkIn.feelingSupport.length > 0) {
+    parts.push(`Support: ${checkIn.feelingSupport.join(', ')}`);
+  }
+
+  if (checkIn.challenge) parts.push(`Challenge: "${checkIn.challenge}"`);
+  if (checkIn.flow) parts.push(`Flow: "${checkIn.flow}"`);
+
+  return parts;
+}
+
 export async function buildCheckInAnalysisPrompt(userId: string) {
   const db = getDb();
   const [checkIns, missions] = await Promise.all([
@@ -119,6 +159,7 @@ export async function buildCheckInAnalysisPrompt(userId: string) {
       const mission = checkIn.missionId ? missionMap.get(checkIn.missionId) : null;
       const parts = [`${word} (${checkIn.sliderValue}/100) at ${time}`];
       if (checkIn.note) parts.push(`Note: "${checkIn.note}"`);
+      parts.push(...summarizeStructuredCheckIn(checkIn));
       if (checkIn.tags?.length) parts.push(`Tags: ${checkIn.tags.join(', ')}`);
       if (mission) {
         parts.push(`Mission: "${mission.title}"`);
@@ -199,6 +240,7 @@ export async function buildCheckInInsightPrompt(
 
   const contextParts = [`Just checked in: ${currentWord} (${current.sliderValue}/100)`];
   if (current.note) contextParts.push(`Note: "${current.note}"`);
+  contextParts.push(...summarizeStructuredCheckIn(current));
   if (trajectory) contextParts.push(`Recent trajectory: ${trajectory}`);
   if (linkedMission) {
     contextParts.push(`Working on: "${linkedMission.title}"`);
@@ -240,7 +282,8 @@ export async function buildDayMapInsightPrompt(
         hour: '2-digit',
         minute: '2-digit',
       });
-      return `${time} ${word} (${checkIn.sliderValue}/100)${checkIn.note ? ` - ${checkIn.note.slice(0, 80)}` : ''}`;
+      const structured = summarizeStructuredCheckIn(checkIn).join(' | ');
+      return `${time} ${word} (${checkIn.sliderValue}/100)${checkIn.note ? ` - ${checkIn.note.slice(0, 80)}` : ''}${structured ? ` | ${structured}` : ''}`;
     })
     .join('\n');
 
@@ -264,7 +307,8 @@ export async function buildJourneyReflectionPrompt(
     .slice(0, 10)
     .map((checkIn) => {
       const word = checkIn.emotionName || getEmotionalWord(checkIn.sliderValue);
-      return `${word} (${checkIn.sliderValue}/100)${checkIn.note ? ` - ${checkIn.note.slice(0, 60)}` : ''}`;
+      const structured = summarizeStructuredCheckIn(checkIn).join(' | ');
+      return `${word} (${checkIn.sliderValue}/100)${checkIn.note ? ` - ${checkIn.note.slice(0, 60)}` : ''}${structured ? ` | ${structured}` : ''}`;
     })
     .join('\n');
 

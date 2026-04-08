@@ -51,9 +51,21 @@ describe('check-in detail route', () => {
   });
 
   it('updates a check-in', async () => {
-    const response = await PATCH(makeRequest({ note: 'steady' }), { params });
+    const response = await PATCH(
+      makeRequest({
+        note: 'steady',
+        challenge: 'hard thing',
+        feelingStage: 3,
+      }),
+      { params },
+    );
     expect(response.status).toBe(200);
     await expect(response.json()).resolves.toEqual({ id: 'check-1', note: 'steady' });
+    expect(normalizeCheckInUpdateInput).toHaveBeenCalledWith({
+      note: 'steady',
+      challenge: 'hard thing',
+      feelingStage: 3,
+    });
   });
 
   it('deletes a check-in', async () => {

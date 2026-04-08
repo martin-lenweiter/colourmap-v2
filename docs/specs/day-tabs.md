@@ -1,8 +1,16 @@
-# Day Tabs — FEELING / DOING / SHARING
+# Day Tabs — CARING / DOING / SHARING
 
 ## Purpose
 
-The Day page provides three parallel views of the user's current state: inner (Feeling), outer (Doing), and relational (Sharing). Each tab follows the same composition pattern for consistency.
+The Day page provides three parallel views of the user's current state: inner (Caring), outer (Doing), and relational (Sharing). Each tab follows the same composition pattern for consistency.
+
+## Tab Labels
+
+- **Caring** / **Doing** / **Sharing**
+- Font: font-serif (Playfair Display), font-semibold
+- All labels use foreground color (black/white based on theme)
+- Selected tab: ochre (#C4A060) border and tint background
+- Unselected tab: transparent with subtle border
 
 ## Route
 
@@ -56,12 +64,16 @@ Compass positions: Sh left, A top, R right, E bottom.
 
 ## Block 1 Content Per Tab
 
-### Feeling
-- CockpitCat
+### Caring
+- CockpitCat (140px fixed, no resize)
 - Hawkins emotion slider (14 levels, colour bar)
-- Textarea (note with time-of-day prompts)
-- FACING trackers (Fear, Avoidance, Confusion, Intention, Need, Gratitude)
-- Each FACING tracker opens progressive questions with losange reveal
+- Emotion name always visible above slider
+- Single-line note input with time prefix
+- FACING / PEACE trackers (swappable with arrow ‹ ›)
+  - FACING: Fear, Avoidance, Confusion, Intention, Need, Gratitude (cell shapes)
+  - PEACE: Pause, Express, Accept, Calm, Emerge (calming colours)
+- Each tracker opens progressive questions with losange reveal
+- NO anagram blobs in this block (CARE blobs only in compass block below)
 
 ### Doing
 - CockpitCat
@@ -114,11 +126,16 @@ Compass positions: Sh left, A top, R right, E bottom.
 - Font: var(--font-handwritten)
 
 ## Visual Rules
-- FACING tracker circles use organic cell shapes (varied border-radius)
-- Compass labels must be clearly readable (minimum 15px)
-- Rating bars use square segments, not rounded
-- All fonts use var(--font-handwritten) for interactive elements
+- FACING tracker circles use organic cell shapes (varied border-radius), matte desaturated colours
+- PEACE tracker circles use calming muted tones
+- Compass labels: bold (fontWeight 700) always, minimum 15px, font-handwritten
+- Rating bars use square segments (borderRadius: 2), not rounded
+- All interactive text uses var(--font-handwritten) (Caveat)
+- Tab titles use var(--font-serif) (Playfair Display), font-semibold
 - Warm brown strokes (#ddb97f) for compass guide circles
+- Vivid colour theme is default for CARE compass
+- Cat: fixed 140px, no resize feature, minimal padding (py-1)
+- CARE/STAR/SHARE blobs: font-black (bolder than regular bold)
 - Each door has its own colour family:
   - Feeling: warm oranges/browns (#D4805A, #C4A070, #C4906A, #B07A5A)
   - Doing: cool greens/blues (#6A8A9A, #7A9A7A, #8A8A6A, #5A7A9A)

@@ -142,6 +142,16 @@ export default function CockpitPage() {
 
   return (
     <main className={isPhone ? 'space-y-6' : 'space-y-10'}>
+      <div className="flex items-center justify-between gap-4 rounded-[1.75rem] border border-border/70 bg-card/55 px-4 py-3 text-[11px] uppercase tracking-[0.24em] text-muted-foreground/70">
+        <span>Feeling, left of center</span>
+        <div
+          aria-hidden="true"
+          className="h-2.5 w-2.5 shrink-0 rotate-45 rounded-[2px]"
+          style={{ background: '#C4A060', opacity: 0.85 }}
+        />
+        <span className="text-right">Doing, right on time</span>
+      </div>
+
       {isPhone ? (
         <>
           {/* Check In */}

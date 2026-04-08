@@ -29,6 +29,24 @@ const fakeEntries = [
     missionId: null,
     emotionName: null,
     emotionColor: null,
+    facing: {
+      fear: {
+        label: 'Fear',
+        answers: ['I might miss the deadline', 'I can ask for help today'],
+      },
+    },
+    pulses: {
+      body: 75,
+      attitude: 50,
+    },
+    challenge: 'Finishing the check-in parity work.',
+    flow: 'The UI structure is finally getting cleaner.',
+    feelingCompass: {
+      attitude: 25,
+      presence: 50,
+    },
+    feelingStage: 4,
+    feelingSupport: ['Confidence', 'Gratitude'],
     createdAt: '2026-03-31T12:00:00Z',
   },
   {
@@ -39,6 +57,13 @@ const fakeEntries = [
     missionId: null,
     emotionName: null,
     emotionColor: null,
+    facing: null,
+    pulses: null,
+    challenge: null,
+    flow: null,
+    feelingCompass: null,
+    feelingStage: null,
+    feelingSupport: null,
     createdAt: '2026-03-31T08:00:00Z',
   },
   {
@@ -49,6 +74,13 @@ const fakeEntries = [
     missionId: null,
     emotionName: null,
     emotionColor: null,
+    facing: null,
+    pulses: null,
+    challenge: null,
+    flow: null,
+    feelingCompass: null,
+    feelingStage: null,
+    feelingSupport: null,
     createdAt: '2026-03-30T18:00:00Z',
   },
 ];
@@ -170,6 +202,26 @@ describe('CheckInHistory', () => {
 
     await user.click(screen.getByRole('button', { expanded: false }));
     expect(screen.getByText('Work')).toBeDefined();
+  });
+
+  it('renders structured CPC fields in the expanded timeline entry', async () => {
+    const user = userEvent.setup();
+    render(<CheckInHistory refreshKey={0} />);
+
+    await waitFor(() => {
+      expect(screen.getByText('Recent Reflections')).toBeDefined();
+    });
+
+    await user.click(screen.getByRole('button', { expanded: false }));
+
+    expect(screen.getByText('I might miss the deadline · I can ask for help today')).toBeDefined();
+    expect(screen.getByText('Stage 4: Searching for more')).toBeDefined();
+    expect(screen.getByText('Confidence')).toBeDefined();
+    expect(screen.getByText('Gratitude')).toBeDefined();
+    expect(screen.getByText('Finishing the check-in parity work.')).toBeDefined();
+    expect(screen.getByText('The UI structure is finally getting cleaner.')).toBeDefined();
+    expect(screen.getByText('25%')).toBeDefined();
+    expect(screen.getByText('50%')).toBeDefined();
   });
 
   it('shows loading skeleton initially', () => {

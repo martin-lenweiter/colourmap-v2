@@ -36,7 +36,7 @@ export default function DayTabs({ feelingContent, doingContent, sharingContent }
               key={tab.id}
               type="button"
               onClick={() => setActive(tab.id)}
-              className="flex-1 cursor-pointer rounded-xl py-2.5 text-[13px] font-serif font-normal tracking-[0.08em] transition-all duration-200"
+              className="flex-1 cursor-pointer rounded-xl py-2.5 text-[13px] font-serif font-semibold tracking-[0.08em] transition-all duration-200"
               style={{
                 background: isActive ? '#C4A06018' : 'transparent',
                 border: `1.5px solid ${isActive ? '#C4A060' : 'hsl(var(--border) / 0.25)'}`,
