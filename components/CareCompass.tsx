@@ -28,7 +28,7 @@ const CARE_THEMES: {
     id: 'vivid',
     name: 'Vivid',
     dot: '#D45050',
-    colors: { care: '#D45050', attitude: '#E8A030', rest: '#3A8AC4', emotions: '#7AAA58' },
+    colors: { care: '#D45050', attitude: '#E8A030', rest: '#6890B0', emotions: '#7AAA58' },
   },
   {
     id: 'earth',
