@@ -1,5 +1,19 @@
 # Day Tabs — CARING / DOING / SHARING
 
+## Design Philosophy
+
+Two poles define the visual identity of Colourmap:
+
+**Elegance & Sobriety** — The default. Warm paper textures, serif typography, muted earth tones, generous whitespace. The app feels like a well-made journal. Golden compass themes, Playfair Display headings, quiet colours that don't compete with the content. This pole says: *the instrument is invisible, your inner world is visible.*
+
+**Colour & Groove** — The alternative. Vivid compass themes, Righteous or Caveat fonts, bold saturated hues that make the dimensions pop. This pole says: *the instrument is alive, and it celebrates the richness of what you're tracking.*
+
+Users switch between these poles via the **style** button (top-right) and the **design** box (per compass). The two systems are independent:
+- **Style** controls typography globally (5 presets)
+- **Design** controls compass colours locally (4 themes per compass)
+
+The design box is the core reflection component — a small, elegant dropdown that appears where needed without disrupting the page. It uses the same pattern everywhere: a quiet label, a clean dropdown, named options with colour dots. No icons. No complexity. Just the word "design" and a list of choices.
+
 ## Purpose
 
 The Day page provides three parallel views of the user's current state: inner (Caring), outer (Doing), and relational (Sharing). Each tab follows the same composition pattern for consistency.

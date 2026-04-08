@@ -282,27 +282,66 @@ export default function ShareCompass() {
         <p className="text-center text-[11px] font-semibold uppercase tracking-[0.24em] text-[#6B7F4E]">
           Sharing
         </p>
-        <div className="absolute right-0 top-0">
-          {SHARE_THEMES.map((t) => (
-            <button
-              key={t.id}
-              type="button"
-              onClick={() => {
-                setShareTheme(t.id);
-                localStorage.setItem('colourmap:share-color-theme', t.id);
-              }}
-              className="cursor-pointer transition-all duration-300 hover:scale-125"
+        <div className="absolute right-0 top-0" style={{ zIndex: 10 }}>
+          <button
+            type="button"
+            onClick={() => setShowDesign(!showDesign)}
+            className="cursor-pointer rounded-md px-2 py-0.5 text-[9px] uppercase tracking-wider transition-all"
+            style={{
+              color: showDesign ? '#6B7F4E' : '#6B7F4E60',
+              background: showDesign ? '#6B7F4E10' : 'transparent',
+              border: `1px solid \${showDesign ? '#6B7F4E30' : 'transparent'}`,
+            }}
+          >
+            design
+          </button>
+          {showDesign && (
+            <div
+              className="mt-1 animate-in fade-in duration-150 rounded-xl overflow-hidden"
               style={{
-                width: shareTheme === t.id ? 12 : 8,
-                height: shareTheme === t.id ? 12 : 8,
-                borderRadius: '50%',
-                background: t.dot,
-                opacity: shareTheme === t.id ? 1 : 0.3,
-                border: 'none',
-                padding: 0,
+                background: 'hsl(var(--card))',
+                border: '1px solid hsl(var(--border) / 0.3)',
+                boxShadow: '0 4px 16px rgba(0,0,0,0.08)',
               }}
-            />
-          ))}
+            >
+              {SHARE_THEMES.map((t) => (
+                <button
+                  key={t.id}
+                  type="button"
+                  onClick={() => {
+                    setShareTheme(t.id);
+                    localStorage.setItem('colourmap:share-color-theme', t.id);
+                    setShowDesign(false);
+                  }}
+                  className="flex w-full cursor-pointer items-center gap-2.5 px-3 py-2 text-left transition-all hover:bg-muted/30"
+                  style={{
+                    border: 'none',
+                    background: shareTheme === t.id ? `\${t.dot}10` : 'transparent',
+                  }}
+                >
+                  <div
+                    style={{
+                      width: 8,
+                      height: 8,
+                      borderRadius: '50%',
+                      background: t.dot,
+                      opacity: shareTheme === t.id ? 1 : 0.4,
+                    }}
+                  />
+                  <span
+                    style={{
+                      fontFamily: 'var(--font-serif)',
+                      fontSize: '14px',
+                      fontWeight: shareTheme === t.id ? 700 : 400,
+                      color: shareTheme === t.id ? t.dot : 'hsl(var(--muted-foreground))',
+                    }}
+                  >
+                    {t.name}
+                  </span>
+                </button>
+              ))}
+            </div>
+          )}
         </div>
       </div>
 
