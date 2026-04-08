@@ -15,7 +15,9 @@ Every tab has exactly two blocks:
 ### Block 1: Check-In Card
 - Cat image (CockpitCat, same size across all tabs)
 - Collapsible sections specific to each door
-- Anagram blobs at the bottom
+- NO anagram blobs here (CARE/STAR/SHARE blobs only appear in Block 2)
+- Emotion name always visible above slider (Feeling tab)
+- Single-line note input with time prefix (not a textarea)
 
 ### Block 2: Compass Card
 - Title (Feeling / Doing / Sharing)

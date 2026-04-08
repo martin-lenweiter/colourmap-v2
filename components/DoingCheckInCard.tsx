@@ -376,29 +376,6 @@ export default function DoingCheckInCard() {
           </div>
         );
       })}
-
-      {/* STAR blobs */}
-      <div className="flex items-center justify-center gap-2.5">
-        {[
-          { label: 'S', color: '#6A8A9A' },
-          { label: 'T', color: '#7A9A7A' },
-          { label: 'A', color: '#8A8A6A' },
-          { label: 'R', color: '#5A7A9A' },
-        ].map((a) => (
-          <div
-            key={a.label}
-            className="flex h-8 w-8 items-center justify-center rounded-full"
-            style={{ background: a.color, opacity: 0.5 }}
-          >
-            <span
-              className="text-xs font-bold text-white select-none"
-              style={{ fontFamily: 'var(--font-handwritten)' }}
-            >
-              {a.label}
-            </span>
-          </div>
-        ))}
-      </div>
     </div>
   );
 }

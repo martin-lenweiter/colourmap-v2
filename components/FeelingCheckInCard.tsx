@@ -3,8 +3,6 @@
 import { useState } from 'react';
 
 import CockpitCat from '@/components/CockpitCat';
-import FacingRow from '@/components/FacingRow';
-import { Textarea } from '@/components/ui/textarea';
 
 /* ═══════════════════════════════════════════════════════════
    FEELING CHECK-IN CARD — Cat + Hawkins slider + FACING + Note
@@ -128,17 +126,16 @@ export default function FeelingCheckInCard() {
       {/* Cat */}
       <CockpitCat />
 
+      {/* Emotion name — always visible above slider */}
+      <p
+        className="text-center text-lg font-semibold transition-all duration-300"
+        style={{ color: current.color, opacity: barActive ? 1 : 0.5 }}
+      >
+        {current.level}
+      </p>
+
       {/* Hawkins slider */}
       <div className="space-y-3">
-        {barActive && (
-          <p
-            className="text-center text-lg font-semibold transition-all duration-300"
-            style={{ color: current.color }}
-          >
-            {current.level}
-          </p>
-        )}
-
         <div
           className="flex cursor-pointer gap-[2px] overflow-hidden rounded-lg"
           style={{ touchAction: 'none' }}
@@ -252,34 +249,38 @@ export default function FeelingCheckInCard() {
         )}
       </div>
 
-      {/* Note */}
-      <Textarea
-        value={note}
-        onChange={(e) => setNote(e.target.value)}
-        placeholder={(() => {
-          const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-          if (!barActive) return `${time}  What's on your mind?`;
-          const prompts: Record<string, string> = {
-            Shame: 'What feels heavy?',
-            Guilt: "What's weighing on you?",
-            Grief: 'What are you letting go of?',
-            Fear: 'What feels threatening?',
-            Desire: 'What are you craving?',
-            Anger: 'What crossed a line?',
-            Pride: 'What are you proving?',
-            Courage: 'What shifted?',
-            Willingness: 'What are you open to?',
-            Acceptance: 'What did you let in?',
-            Reason: 'What are you figuring out?',
-            Love: 'What are you nurturing?',
-            Joy: 'What lit you up?',
-            Peace: 'What feels still?',
-          };
-          return `${time}  ${prompts[current.level] || "What's on your mind?"}`;
-        })()}
-        rows={2}
-        className="border-[#C4A06020] bg-[#C4A06005] focus-visible:border-[#C4A06040] focus-visible:ring-[#C4A06015]"
-      />
+      {/* Note — single line with time */}
+      <div className="flex items-center gap-2 rounded-xl border border-[#C4A06020] bg-[#C4A06005] px-3 py-2.5">
+        <span className="shrink-0 text-[10px] text-muted-foreground/40">
+          {new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+        </span>
+        <input
+          type="text"
+          value={note}
+          onChange={(e) => setNote(e.target.value)}
+          placeholder={(() => {
+            if (!barActive) return "What's on your mind?";
+            const prompts: Record<string, string> = {
+              Shame: 'What feels heavy?',
+              Guilt: "What's weighing on you?",
+              Grief: 'What are you letting go of?',
+              Fear: 'What feels threatening?',
+              Desire: 'What are you craving?',
+              Anger: 'What crossed a line?',
+              Pride: 'What are you proving?',
+              Courage: 'What shifted?',
+              Willingness: 'What are you open to?',
+              Acceptance: 'What did you let in?',
+              Reason: 'What are you figuring out?',
+              Love: 'What are you nurturing?',
+              Joy: 'What lit you up?',
+              Peace: 'What feels still?',
+            };
+            return prompts[current.level] || "What's on your mind?";
+          })()}
+          className="flex-1 bg-transparent text-sm outline-none placeholder:text-muted-foreground/40"
+        />
+      </div>
 
       {/* FACING trackers — cell shapes */}
       <div className="space-y-2">
@@ -396,29 +397,6 @@ export default function FeelingCheckInCard() {
               </div>
             );
           })()}
-      </div>
-
-      {/* CARE blobs */}
-      <div className="flex items-center justify-center gap-3">
-        {[
-          { label: 'C', color: '#D4805A' },
-          { label: 'A', color: '#C4A070' },
-          { label: 'R', color: '#C4906A' },
-          { label: 'E', color: '#B07A5A' },
-        ].map((a) => (
-          <div
-            key={a.label}
-            className="flex h-8 w-8 items-center justify-center rounded-full"
-            style={{ background: a.color, opacity: 0.5 }}
-          >
-            <span
-              className="text-xs font-bold text-white select-none"
-              style={{ fontFamily: 'var(--font-handwritten)' }}
-            >
-              {a.label}
-            </span>
-          </div>
-        ))}
       </div>
     </div>
   );
