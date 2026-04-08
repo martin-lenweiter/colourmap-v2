@@ -203,6 +203,7 @@ function arcPath(
 }
 
 export default function CareCompass() {
+  const [showDesign, setShowDesign] = useState(false);
   const [colorTheme, setColorTheme] = useState<ColorTheme>(() => {
     try {
       return (localStorage.getItem('colourmap:care-theme') as ColorTheme) || 'vivid';
@@ -276,27 +277,66 @@ export default function CareCompass() {
         <p className="text-center text-[11px] font-semibold uppercase tracking-[0.24em] text-[#C4A060]">
           Caring
         </p>
-        <div className="absolute right-0 top-0 flex items-center gap-1.5">
-          {CARE_THEMES.map((t) => (
-            <button
-              key={t.id}
-              type="button"
-              onClick={() => {
-                setColorTheme(t.id);
-                localStorage.setItem('colourmap:care-theme', t.id);
-              }}
-              className="cursor-pointer transition-all duration-300 hover:scale-125"
+        <div className="absolute right-0 top-0" style={{ zIndex: 10 }}>
+          <button
+            type="button"
+            onClick={() => setShowDesign(!showDesign)}
+            className="cursor-pointer rounded-md px-2 py-0.5 text-[9px] uppercase tracking-wider transition-all"
+            style={{
+              color: showDesign ? '#C4A060' : '#C4A06060',
+              background: showDesign ? '#C4A06010' : 'transparent',
+              border: `1px solid ${showDesign ? '#C4A06030' : 'transparent'}`,
+            }}
+          >
+            design
+          </button>
+          {showDesign && (
+            <div
+              className="mt-1 animate-in fade-in duration-150 rounded-xl overflow-hidden"
               style={{
-                width: colorTheme === t.id ? 12 : 8,
-                height: colorTheme === t.id ? 12 : 8,
-                borderRadius: '50%',
-                background: t.dot,
-                opacity: colorTheme === t.id ? 1 : 0.3,
-                border: 'none',
-                padding: 0,
+                background: 'hsl(var(--card))',
+                border: '1px solid hsl(var(--border) / 0.3)',
+                boxShadow: '0 4px 16px rgba(0,0,0,0.08)',
               }}
-            />
-          ))}
+            >
+              {CARE_THEMES.map((t) => (
+                <button
+                  key={t.id}
+                  type="button"
+                  onClick={() => {
+                    setColorTheme(t.id);
+                    localStorage.setItem('colourmap:care-theme', t.id);
+                    setShowDesign(false);
+                  }}
+                  className="flex w-full cursor-pointer items-center gap-2.5 px-3 py-2 text-left transition-all hover:bg-muted/30"
+                  style={{
+                    border: 'none',
+                    background: colorTheme === t.id ? `${t.dot}10` : 'transparent',
+                  }}
+                >
+                  <div
+                    style={{
+                      width: 8,
+                      height: 8,
+                      borderRadius: '50%',
+                      background: t.dot,
+                      opacity: colorTheme === t.id ? 1 : 0.4,
+                    }}
+                  />
+                  <span
+                    style={{
+                      fontFamily: 'var(--font-handwritten)',
+                      fontSize: '14px',
+                      fontWeight: colorTheme === t.id ? 700 : 400,
+                      color: colorTheme === t.id ? t.dot : 'hsl(var(--muted-foreground))',
+                    }}
+                  >
+                    {t.name}
+                  </span>
+                </button>
+              ))}
+            </div>
+          )}
         </div>
       </div>
 
@@ -423,7 +463,7 @@ export default function CareCompass() {
       <div className="grid grid-cols-2 gap-4">
         <div className="space-y-2 text-center">
           <span
-            className="text-base font-semibold"
+            className="text-xl font-bold"
             style={{ color: '#C4A060', fontFamily: 'var(--font-handwritten)' }}
           >
             Challenge
@@ -464,7 +504,7 @@ export default function CareCompass() {
         </div>
         <div className="space-y-2 text-center">
           <span
-            className="text-base font-semibold"
+            className="text-xl font-bold"
             style={{ color: '#C4A060', fontFamily: 'var(--font-handwritten)' }}
           >
             Flow
@@ -611,7 +651,7 @@ export default function CareCompass() {
               </div>
 
               <p
-                className="text-base italic"
+                className="text-base"
                 style={{ color: activeQ.color, fontFamily: 'var(--font-handwritten)' }}
               >
                 &ldquo;{step.prompt}&rdquo;

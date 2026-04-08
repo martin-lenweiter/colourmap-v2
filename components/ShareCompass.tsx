@@ -208,6 +208,7 @@ function arcPath(
 }
 
 export default function ShareCompass() {
+  const [showDesign, setShowDesign] = useState(false);
   const [shareTheme, setShareTheme] = useState<ShareColorTheme>(() => {
     try {
       return (localStorage.getItem('colourmap:share-color-theme') as ShareColorTheme) || 'earth';
@@ -281,7 +282,7 @@ export default function ShareCompass() {
         <p className="text-center text-[11px] font-semibold uppercase tracking-[0.24em] text-[#6B7F4E]">
           Sharing
         </p>
-        <div className="absolute right-0 top-0 flex items-center gap-1.5">
+        <div className="absolute right-0 top-0">
           {SHARE_THEMES.map((t) => (
             <button
               key={t.id}
@@ -418,7 +419,7 @@ export default function ShareCompass() {
               className="text-sm font-black text-white select-none"
               style={{ fontFamily: 'var(--font-handwritten)' }}
             >
-              {a.label[0]}
+              {a.label === 'Share' ? 'Sh' : a.label[0]}
             </span>
           </div>
         ))}
@@ -428,7 +429,7 @@ export default function ShareCompass() {
       <div className="grid grid-cols-2 gap-4">
         <div className="space-y-2 text-center">
           <span
-            className="text-base font-semibold"
+            className="text-xl font-bold"
             style={{ color: '#7A9A7A', fontFamily: 'var(--font-handwritten)' }}
           >
             Distant
@@ -469,7 +470,7 @@ export default function ShareCompass() {
         </div>
         <div className="space-y-2 text-center">
           <span
-            className="text-base font-semibold"
+            className="text-xl font-bold"
             style={{ color: '#7A9A7A', fontFamily: 'var(--font-handwritten)' }}
           >
             Connected
@@ -616,7 +617,7 @@ export default function ShareCompass() {
               </div>
 
               <p
-                className="text-base italic"
+                className="text-base"
                 style={{ color: activeQ.color, fontFamily: 'var(--font-handwritten)' }}
               >
                 &ldquo;{step.prompt}&rdquo;

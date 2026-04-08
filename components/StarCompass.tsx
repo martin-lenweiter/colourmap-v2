@@ -208,6 +208,7 @@ function arcPath(
 }
 
 export default function StarCompass() {
+  const [showDesign, setShowDesign] = useState(false);
   const [starTheme, setStarTheme] = useState<StarColorTheme>(() => {
     try {
       return (localStorage.getItem('colourmap:star-color-theme') as StarColorTheme) || 'cool';
@@ -281,7 +282,7 @@ export default function StarCompass() {
         <p className="text-center text-[11px] font-semibold uppercase tracking-[0.24em] text-[#7A9A7A]">
           Doing
         </p>
-        <div className="absolute right-0 top-0 flex items-center gap-1.5">
+        <div className="absolute right-0 top-0">
           {STAR_THEMES.map((t) => (
             <button
               key={t.id}
@@ -428,7 +429,7 @@ export default function StarCompass() {
       <div className="grid grid-cols-2 gap-4">
         <div className="space-y-2 text-center">
           <span
-            className="text-base font-semibold"
+            className="text-xl font-bold"
             style={{ color: '#7A9A7A', fontFamily: 'var(--font-handwritten)' }}
           >
             Blocked
@@ -469,7 +470,7 @@ export default function StarCompass() {
         </div>
         <div className="space-y-2 text-center">
           <span
-            className="text-base font-semibold"
+            className="text-xl font-bold"
             style={{ color: '#7A9A7A', fontFamily: 'var(--font-handwritten)' }}
           >
             Moving
@@ -616,7 +617,7 @@ export default function StarCompass() {
               </div>
 
               <p
-                className="text-base italic"
+                className="text-base"
                 style={{ color: activeQ.color, fontFamily: 'var(--font-handwritten)' }}
               >
                 &ldquo;{step.prompt}&rdquo;
