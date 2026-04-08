@@ -124,6 +124,69 @@ describe('normalizeCreateCheckInInput', () => {
     ).toThrow(new CheckInValidationError('facing.fear must be an object'));
   });
 
+  it('throws when facing is not an object', () => {
+    expect(() =>
+      normalizeCreateCheckInInput({
+        sliderValue: 72,
+        facing: 'bad',
+      }),
+    ).toThrow(new CheckInValidationError('facing must be an object'));
+  });
+
+  it('throws when facing entry has no label', () => {
+    expect(() =>
+      normalizeCreateCheckInInput({
+        sliderValue: 72,
+        facing: { fear: { label: '', answers: ['yes'] } },
+      }),
+    ).toThrow(new CheckInValidationError('facing.fear.label must be a string'));
+  });
+
+  it('throws when facing entry has no answers array', () => {
+    expect(() =>
+      normalizeCreateCheckInInput({
+        sliderValue: 72,
+        facing: { fear: { label: 'Fear', answers: 'bad' } },
+      }),
+    ).toThrow(new CheckInValidationError('facing.fear.answers must be an array'));
+  });
+
+  it('throws when challenge is not a string', () => {
+    expect(() =>
+      normalizeCreateCheckInInput({
+        sliderValue: 72,
+        challenge: 123,
+      }),
+    ).toThrow(new CheckInValidationError('challenge must be a string'));
+  });
+
+  it('throws when pulses is not an object', () => {
+    expect(() =>
+      normalizeCreateCheckInInput({
+        sliderValue: 72,
+        pulses: 'bad',
+      }),
+    ).toThrow(new CheckInValidationError('pulses must be an object'));
+  });
+
+  it('throws when pulse value is not a number', () => {
+    expect(() =>
+      normalizeCreateCheckInInput({
+        sliderValue: 72,
+        pulses: { body: 'bad' },
+      }),
+    ).toThrow(new CheckInValidationError('pulses.body must be a number'));
+  });
+
+  it('throws when feelingSupport is not an array', () => {
+    expect(() =>
+      normalizeCreateCheckInInput({
+        sliderValue: 72,
+        feelingSupport: 'bad',
+      }),
+    ).toThrow(new CheckInValidationError('feelingSupport must be an array'));
+  });
+
   it('throws for invalid feeling stage', () => {
     expect(() =>
       normalizeCreateCheckInInput({
