@@ -722,7 +722,7 @@ function FlowerDemo() {
   const [activePetal, setActivePetal] = useState<number | null>(null);
   const petalColors = ['#D4805A', '#C4A060', '#7A9A7A', '#6890B0', '#9B6BA0', '#C87050'];
   const labels = ['Care', 'Attitude', 'Rest', 'Emotions', 'Growth', 'Balance'];
-  const sz = 200;
+  const sz = 220;
   const cx = sz / 2;
   const cy = sz / 2;
   const n = 6;
@@ -730,39 +730,51 @@ function FlowerDemo() {
     <svg width={sz} height={sz} viewBox={`0 0 ${sz} ${sz}`}>
       {petalColors.map((c, i) => {
         const a = (i / n) * Math.PI * 2 - Math.PI / 2;
-        const tipR = activePetal === i ? 80 : 68;
+        const tipR = activePetal === i ? 72 : 60;
         const pa = a + Math.PI / 2;
-        const sp = activePetal === i ? 20 : 16;
-        const c1x = cx + 22 * Math.cos(a) + sp * Math.cos(pa);
-        const c1y = cy + 22 * Math.sin(a) + sp * Math.sin(pa);
-        const c2x = cx + 22 * Math.cos(a) - sp * Math.cos(pa);
-        const c2y = cy + 22 * Math.sin(a) - sp * Math.sin(pa);
+        const sp = activePetal === i ? 18 : 14;
+        const c1x = cx + 20 * Math.cos(a) + sp * Math.cos(pa);
+        const c1y = cy + 20 * Math.sin(a) + sp * Math.sin(pa);
+        const c2x = cx + 20 * Math.cos(a) - sp * Math.cos(pa);
+        const c2y = cy + 20 * Math.sin(a) - sp * Math.sin(pa);
+        const isActive = activePetal === i;
+        const labelR = tipR + 16;
         return (
           <g key={i}>
             <path
               d={`M ${cx} ${cy} Q ${c1x} ${c1y} ${cx + tipR * Math.cos(a)} ${cy + tipR * Math.sin(a)} Q ${c2x} ${c2y} ${cx} ${cy} Z`}
               fill={c}
-              opacity={activePetal === i ? 0.6 : 0.25}
+              opacity={isActive ? 0.6 : 0.25}
               className="cursor-pointer transition-all duration-500"
-              style={{ filter: activePetal === i ? `drop-shadow(0 0 8px ${c}40)` : undefined }}
-              onClick={() => setActivePetal(activePetal === i ? null : i)}
+              style={{ filter: isActive ? `drop-shadow(0 0 8px ${c}40)` : undefined }}
+              onClick={() => setActivePetal(isActive ? null : i)}
             />
+            {/* Label OUTSIDE the petal tip */}
             <text
-              x={cx + 44 * Math.cos(a)}
-              y={cy + 44 * Math.sin(a)}
+              x={cx + labelR * Math.cos(a)}
+              y={cy + labelR * Math.sin(a)}
               textAnchor="middle"
               dominantBaseline="middle"
               style={{
-                fontSize: '8px',
-                fontFamily: 'var(--font-handwritten)',
-                fontWeight: 600,
-                fill: activePetal === i ? '#fff' : c,
+                fontSize: isActive ? '11px' : '9px',
+                fontFamily: 'var(--font-serif)',
+                fontWeight: 700,
+                fill: c,
+                opacity: isActive ? 1 : 0.6,
               }}
               className="cursor-pointer select-none"
-              onClick={() => setActivePetal(activePetal === i ? null : i)}
+              onClick={() => setActivePetal(isActive ? null : i)}
             >
               {labels[i]}
             </text>
+            {/* Small dot at petal tip connecting label to petal */}
+            <circle
+              cx={cx + (tipR + 2) * Math.cos(a)}
+              cy={cy + (tipR + 2) * Math.sin(a)}
+              r={isActive ? 3 : 2}
+              fill={c}
+              opacity={isActive ? 0.7 : 0.3}
+            />
           </g>
         );
       })}
