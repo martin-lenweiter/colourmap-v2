@@ -1,11 +1,14 @@
 'use client';
 
 import CareCompass from '@/components/CareCompass';
+import CaringDepth from '@/components/CaringDepth';
 import DayTabs from '@/components/DayTabs';
 import DoingCheckInCard from '@/components/DoingCheckInCard';
+import DoingDepth from '@/components/DoingDepth';
 import FeelingCheckInCard from '@/components/FeelingCheckInCard';
 import ShareCompass from '@/components/ShareCompass';
 import SharingCheckInCard from '@/components/SharingCheckInCard';
+import SharingDepth from '@/components/SharingDepth';
 import StarCompass from '@/components/StarCompass';
 import { STYLE_PRESETS, StyleProvider, useStyle } from '@/components/StyleContext';
 
@@ -96,18 +99,21 @@ function DayContent() {
           <div className="space-y-4">
             <FeelingCheckInCard />
             <CareCompass />
+            <CaringDepth />
           </div>
         }
         doingContent={
           <div className="space-y-4">
             <DoingCheckInCard />
             <StarCompass />
+            <DoingDepth />
           </div>
         }
         sharingContent={
           <div className="space-y-4">
             <SharingCheckInCard />
             <ShareCompass />
+            <SharingDepth />
           </div>
         }
       />
