@@ -7,17 +7,13 @@ import { useEffect, useRef, useState } from 'react';
 import { useViewMode } from './ViewModeContext';
 
 const PRIMARY_LINKS = [
-  { href: '/', label: 'Check In' },
-  { href: '/overview', label: 'Overview' },
-  { href: '/missions', label: 'Missions' },
+  { href: '/day', label: 'Day' },
   { href: '/journey', label: 'Journey' },
   { href: '/notebook', label: 'Notebook' },
 ];
 
 const PHONE_PRIMARY_LINKS = [
-  { href: '/', label: 'Check In' },
-  { href: '/#cockpit', label: 'Cockpit' },
-  { href: '/missions', label: 'Missions' },
+  { href: '/day', label: 'Day' },
   { href: '/journey', label: 'Journey' },
   { href: '/notebook', label: 'Notebook' },
 ];

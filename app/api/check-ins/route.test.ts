@@ -69,6 +69,13 @@ describe('POST /api/check-ins', () => {
         missionId: typeof body.missionId === 'string' ? body.missionId : null,
         emotionName: typeof body.emotionName === 'string' ? body.emotionName : null,
         emotionColor: typeof body.emotionColor === 'string' ? body.emotionColor : null,
+        facing: body.facing ?? null,
+        pulses: body.pulses ?? null,
+        challenge: typeof body.challenge === 'string' ? body.challenge : null,
+        flow: typeof body.flow === 'string' ? body.flow : null,
+        feelingCompass: body.feelingCompass ?? null,
+        feelingStage: typeof body.feelingStage === 'number' ? body.feelingStage : null,
+        feelingSupport: Array.isArray(body.feelingSupport) ? body.feelingSupport : null,
       };
     });
   });
@@ -89,6 +96,13 @@ describe('POST /api/check-ins', () => {
       missionId: null,
       emotionName: null,
       emotionColor: null,
+      facing: null,
+      pulses: null,
+      challenge: null,
+      flow: null,
+      feelingCompass: null,
+      feelingStage: null,
+      feelingSupport: null,
     });
   });
 
@@ -103,6 +117,13 @@ describe('POST /api/check-ins', () => {
       missionId: null,
       emotionName: null,
       emotionColor: null,
+      facing: null,
+      pulses: null,
+      challenge: null,
+      flow: null,
+      feelingCompass: null,
+      feelingStage: null,
+      feelingSupport: null,
     });
   });
 
@@ -117,6 +138,49 @@ describe('POST /api/check-ins', () => {
       missionId: null,
       emotionName: null,
       emotionColor: null,
+      facing: null,
+      pulses: null,
+      challenge: null,
+      flow: null,
+      feelingCompass: null,
+      feelingStage: null,
+      feelingSupport: null,
+    });
+  });
+
+  it('passes structured CPC check-in fields to the service', async () => {
+    const response = await POST(
+      makeRequest({
+        sliderValue: 61,
+        facing: {
+          fear: { label: 'Fear', answers: ['A conversation', 'It might sting', 'Send it'] },
+        },
+        pulses: { body: 44, attitude: 59 },
+        challenge: 'Hard conversation',
+        flow: 'Writing session',
+        feelingCompass: { attitude: 70, emotions: 55, presence: 50, body: 62 },
+        feelingStage: 4,
+        feelingSupport: ['Confidence', 'Openness'],
+      }),
+    );
+
+    expect(response.status).toBe(201);
+    expect(createCheckIn).toHaveBeenCalledWith('user-1', {
+      sliderValue: 61,
+      note: null,
+      tags: null,
+      missionId: null,
+      emotionName: null,
+      emotionColor: null,
+      facing: {
+        fear: { label: 'Fear', answers: ['A conversation', 'It might sting', 'Send it'] },
+      },
+      pulses: { body: 44, attitude: 59 },
+      challenge: 'Hard conversation',
+      flow: 'Writing session',
+      feelingCompass: { attitude: 70, emotions: 55, presence: 50, body: 62 },
+      feelingStage: 4,
+      feelingSupport: ['Confidence', 'Openness'],
     });
   });
 
@@ -192,6 +256,13 @@ describe('POST /api/check-ins', () => {
       missionId: null,
       emotionName: null,
       emotionColor: null,
+      facing: null,
+      pulses: null,
+      challenge: null,
+      flow: null,
+      feelingCompass: null,
+      feelingStage: null,
+      feelingSupport: null,
     });
 
     const response = await POST(makeRequest({ sliderValue: 50, note: 123 }));
@@ -204,6 +275,13 @@ describe('POST /api/check-ins', () => {
       missionId: null,
       emotionName: null,
       emotionColor: null,
+      facing: null,
+      pulses: null,
+      challenge: null,
+      flow: null,
+      feelingCompass: null,
+      feelingStage: null,
+      feelingSupport: null,
     });
   });
 });

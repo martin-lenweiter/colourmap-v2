@@ -65,6 +65,106 @@ describe('CheckInForm', () => {
     expect(screen.getByRole('button', { name: 'Check in' })).toBeDefined();
   });
 
+  it('renders the visible FACING row', () => {
+    render(<CheckInForm />);
+
+    expect(screen.getByText('FACING')).toBeDefined();
+    expect(screen.getByRole('button', { name: 'Facing Fear' })).toBeDefined();
+    expect(screen.getByRole('button', { name: 'Facing Avoidance' })).toBeDefined();
+    expect(screen.getByRole('button', { name: 'Facing Confusion' })).toBeDefined();
+    expect(screen.getByRole('button', { name: 'Facing Intention' })).toBeDefined();
+    expect(screen.getByRole('button', { name: 'Facing Need' })).toBeDefined();
+    expect(screen.getByRole('button', { name: 'Facing Gratitude' })).toBeDefined();
+  });
+
+  it('switches the active FACING tracker prompt family', async () => {
+    const user = userEvent.setup();
+    render(<CheckInForm />);
+
+    expect(screen.getByText('Fear')).toBeDefined();
+    expect(screen.getByPlaceholderText('What are you afraid of today?')).toBeDefined();
+
+    await user.click(screen.getByRole('button', { name: 'Facing Need' }));
+
+    expect(screen.getByText('Need')).toBeDefined();
+    expect(screen.getByPlaceholderText('What do you need right now?')).toBeDefined();
+  });
+
+  it('renders the feeling compass controls', () => {
+    render(<CheckInForm />);
+
+    expect(screen.getByRole('button', { name: 'Attitude 0%' })).toBeDefined();
+    expect(screen.getByRole('button', { name: 'Emotions 0%' })).toBeDefined();
+    expect(screen.getByRole('button', { name: 'Presence 0%' })).toBeDefined();
+    expect(screen.getByRole('button', { name: 'Body 0%' })).toBeDefined();
+    expect(screen.getByText('Choose the stage that fits today.')).toBeDefined();
+    expect(screen.getByRole('button', { name: 'Support Confidence' })).toBeDefined();
+  });
+
+  it('renders inline challenge and flow fields', () => {
+    render(<CheckInForm />);
+
+    expect(screen.getByLabelText('Challenge')).toBeDefined();
+    expect(screen.getByLabelText('Flow')).toBeDefined();
+    expect(screen.getByPlaceholderText("What's challenging?...")).toBeDefined();
+    expect(screen.getByPlaceholderText("What's flowing?...")).toBeDefined();
+  });
+
+  it('submits feeling compass, stage, and support chips in the payload', async () => {
+    const user = userEvent.setup();
+    render(<CheckInForm />);
+
+    await user.click(screen.getByRole('button', { name: 'Attitude 0%' }));
+    await user.click(screen.getByRole('button', { name: 'Body 0%' }));
+    await user.click(screen.getByRole('button', { name: 'Stage 4: Searching for more' }));
+    await user.click(screen.getByRole('button', { name: 'Support Confidence' }));
+    await user.click(screen.getByRole('button', { name: 'Support Gratitude' }));
+    await user.click(screen.getByRole('button', { name: 'Check in' }));
+
+    const postCall = vi
+      .mocked(fetch)
+      .mock.calls.find(
+        ([url, options]) =>
+          url === '/api/check-ins' && options && (options as RequestInit).method === 'POST',
+      );
+
+    expect(postCall).toBeDefined();
+    const payload = JSON.parse((postCall?.[1] as RequestInit).body as string);
+
+    expect(payload).toMatchObject({
+      feelingCompass: {
+        attitude: 25,
+        body: 25,
+      },
+      feelingStage: 4,
+      feelingSupport: ['Confidence', 'Gratitude'],
+    });
+  });
+
+  it('submits challenge and flow values in the payload', async () => {
+    const user = userEvent.setup();
+    render(<CheckInForm />);
+
+    await user.type(screen.getByLabelText('Challenge'), 'I am avoiding the hard sales call.');
+    await user.type(screen.getByLabelText('Flow'), 'Writing is moving quickly this morning.');
+    await user.click(screen.getByRole('button', { name: 'Check in' }));
+
+    const postCall = vi
+      .mocked(fetch)
+      .mock.calls.find(
+        ([url, options]) =>
+          url === '/api/check-ins' && options && (options as RequestInit).method === 'POST',
+      );
+
+    expect(postCall).toBeDefined();
+    const payload = JSON.parse((postCall?.[1] as RequestInit).body as string);
+
+    expect(payload).toMatchObject({
+      challenge: 'I am avoiding the hard sales call.',
+      flow: 'Writing is moving quickly this morning.',
+    });
+  });
+
   it('shows the ochre brown ink note on a first check-in', async () => {
     render(<CheckInForm />);
 
@@ -88,8 +188,9 @@ describe('CheckInForm', () => {
   it('renders the textarea', () => {
     render(<CheckInForm />);
 
-    // The textarea exists with a dynamic placeholder
-    expect(screen.getByRole('textbox')).toBeDefined();
+    const noteField = document.getElementById('check-in-note');
+    expect(noteField).toBeDefined();
+    expect(noteField?.tagName).toBe('TEXTAREA');
   });
 
   it('submit button is enabled by default', () => {
@@ -114,6 +215,35 @@ describe('CheckInForm', () => {
     );
   });
 
+  it('submits CPC scaffold fields alongside the legacy note payload', async () => {
+    const user = userEvent.setup();
+    render(<CheckInForm />);
+
+    await user.click(screen.getByRole('button', { name: 'Check in' }));
+
+    const postCall = vi
+      .mocked(fetch)
+      .mock.calls.find(
+        ([url, options]) =>
+          url === '/api/check-ins' && options && (options as RequestInit).method === 'POST',
+      );
+
+    expect(postCall).toBeDefined();
+    const payload = JSON.parse((postCall?.[1] as RequestInit).body as string);
+
+    expect(payload).toMatchObject({
+      sliderValue: 50,
+      facing: null,
+      pulses: null,
+      challenge: null,
+      flow: null,
+      feelingCompass: null,
+      feelingStage: null,
+      feelingSupport: null,
+    });
+    expect(payload).toHaveProperty('note');
+  });
+
   it('shows reflection moment after successful submit', async () => {
     const user = userEvent.setup();
     render(<CheckInForm />);
@@ -129,6 +259,9 @@ describe('CheckInForm', () => {
     const user = userEvent.setup();
     const onComplete = vi.fn();
     render(<CheckInForm onCheckInComplete={onComplete} />);
+
+    await user.type(screen.getByLabelText('Challenge'), 'Too many open loops.');
+    await user.type(screen.getByLabelText('Flow'), 'Design work feels clear.');
 
     await user.click(screen.getByRole('button', { name: 'Check in' }));
 
@@ -148,6 +281,8 @@ describe('CheckInForm', () => {
       expect(screen.getByRole('button', { name: 'Check in' })).toBeDefined();
     });
 
+    expect(screen.getByLabelText('Challenge')).toHaveProperty('value', '');
+    expect(screen.getByLabelText('Flow')).toHaveProperty('value', '');
     expect(onComplete).toHaveBeenCalledTimes(1);
   });
 

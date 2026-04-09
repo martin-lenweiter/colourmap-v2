@@ -1,5 +1,18 @@
 import { boolean, date, integer, jsonb, pgTable, text, timestamp, uuid } from 'drizzle-orm/pg-core';
 
+export type CheckInFacingEntry = {
+  label: string;
+  answers: string[];
+};
+
+export type CheckInFacing = Record<string, CheckInFacingEntry>;
+
+export type CheckInPulses = Partial<Record<'body' | 'attitude' | 'structure', number>>;
+
+export type CheckInFeelingCompass = Partial<
+  Record<'attitude' | 'emotions' | 'presence' | 'body', number>
+>;
+
 export const checkIns = pgTable('check_ins', {
   id: uuid('id').defaultRandom().primaryKey(),
   userId: uuid('user_id').notNull(),
@@ -9,6 +22,13 @@ export const checkIns = pgTable('check_ins', {
   missionId: uuid('mission_id'),
   emotionName: text('emotion_name'),
   emotionColor: text('emotion_color'),
+  facing: jsonb('facing').$type<CheckInFacing | null>(),
+  pulses: jsonb('pulses').$type<CheckInPulses | null>(),
+  challenge: text('challenge'),
+  flow: text('flow'),
+  feelingCompass: jsonb('feeling_compass').$type<CheckInFeelingCompass | null>(),
+  feelingStage: integer('feeling_stage'),
+  feelingSupport: jsonb('feeling_support').$type<string[] | null>(),
   createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
 });
 

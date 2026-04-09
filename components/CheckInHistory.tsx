@@ -13,6 +13,13 @@ interface HistoryEntry {
   missionId: string | null;
   emotionName: string | null;
   emotionColor: string | null;
+  facing: Record<string, { label: string; answers: string[] }> | null;
+  pulses: Partial<Record<'body' | 'attitude' | 'structure', number>> | null;
+  challenge: string | null;
+  flow: string | null;
+  feelingCompass: Partial<Record<'attitude' | 'emotions' | 'presence' | 'body', number>> | null;
+  feelingStage: number | null;
+  feelingSupport: string[] | null;
   createdAt: string;
 }
 
@@ -26,6 +33,17 @@ const FGAC_COLORS: Record<string, string> = {
   Gratitude: '#7AAA58',
   Avoidance: '#E0844A',
   Confusion: '#9B6BA0',
+};
+
+const FEELING_STAGE_LABELS: Record<number, string> = {
+  1: 'Closed off',
+  2: 'Warming up',
+  3: 'Listening in',
+  4: 'Searching for more',
+  5: 'Opening up',
+  6: 'Finding rhythm',
+  7: 'Moving clearly',
+  8: 'In balance',
 };
 
 function getDotColor(value: number): string {
@@ -123,6 +141,19 @@ function getDominantEmotion(entries: HistoryEntry[]): string {
 }
 
 function entryHasContent(entry: HistoryEntry): boolean {
+  const hasStructuredContent =
+    (entry.facing && Object.keys(entry.facing).length > 0) ||
+    (entry.pulses && Object.keys(entry.pulses).length > 0) ||
+    !!entry.challenge ||
+    !!entry.flow ||
+    (entry.feelingCompass && Object.keys(entry.feelingCompass).length > 0) ||
+    entry.feelingStage !== null ||
+    (entry.feelingSupport && entry.feelingSupport.length > 0);
+
+  if (hasStructuredContent) {
+    return true;
+  }
+
   if (!entry.note) return false;
   const { chips, cleanNote } = parseFgac(entry.note);
   return chips.length > 0 || cleanNote.length > 0;
@@ -254,6 +285,28 @@ function parsePulses(note: string) {
   return { pulses, pulseColors, cleanNote };
 }
 
+function getStructuredPulseRows(entry: HistoryEntry) {
+  const pulseColors = ['#D08040', '#C88C48', '#C49850', '#C4A048', '#A8AC58', '#90B060', '#80B868'];
+  const pulseEntries = Object.entries(entry.pulses ?? {}) as Array<
+    ['body' | 'attitude' | 'structure', number]
+  >;
+
+  return pulseEntries.map(([cat, value]) => ({
+    cat,
+    idx: Math.max(
+      0,
+      Math.min(pulseColors.length - 1, Math.round((value / 100) * (pulseColors.length - 1))),
+    ),
+    pulseColors,
+  }));
+}
+
+function getFeelingCompassRows(entry: HistoryEntry) {
+  return Object.entries(entry.feelingCompass ?? {}) as Array<
+    ['attitude' | 'emotions' | 'presence' | 'body', number]
+  >;
+}
+
 // --- Editable Timeline Entry ---
 function EditableTimelineEntry({
   entry,
@@ -302,6 +355,9 @@ function EditableTimelineEntry({
     const { pulses, pulseColors, cleanNote } = parsePulses(afterFgac);
     return { chips, pulses, pulseColors, cleanNote };
   }, [entry.note]);
+  const structuredPulses = useMemo(() => getStructuredPulseRows(entry), [entry]);
+  const feelingCompassRows = useMemo(() => getFeelingCompassRows(entry), [entry]);
+  const facingEntries = useMemo(() => Object.values(entry.facing ?? {}), [entry]);
 
   return (
     <div className="flex gap-0">
@@ -351,6 +407,22 @@ function EditableTimelineEntry({
                 <p className="text-xs text-[#5C3018]">{missionMap.get(entry.missionId)}</p>
               )}
 
+              {facingEntries.length > 0 && (
+                <div className="space-y-1.5">
+                  {facingEntries.map((item) => (
+                    <div
+                      key={`${entry.id}-${item.label}`}
+                      className="rounded-2xl border border-[#d6b57b44] bg-[#fbf4e8cc] px-3 py-2"
+                    >
+                      <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-[#9d6f2f]">
+                        {item.label}
+                      </p>
+                      <p className="mt-1 text-sm text-[#6f4a30]">{item.answers.join(' · ')}</p>
+                    </div>
+                  ))}
+                </div>
+              )}
+
               {/* FGAC chips */}
               {noteContent && noteContent.chips.length > 0 && (
                 <div className="flex flex-wrap gap-1">
@@ -364,6 +436,42 @@ function EditableTimelineEntry({
                         {chip.label}
                       </span>
                       <span className="text-[10px] text-muted-foreground">{chip.text}</span>
+                    </span>
+                  ))}
+                </div>
+              )}
+
+              {feelingCompassRows.length > 0 && (
+                <div className="flex flex-wrap gap-1.5">
+                  {feelingCompassRows.map(([key, value]) => (
+                    <span
+                      key={`${entry.id}-${key}`}
+                      className="inline-flex items-center gap-1 rounded-full border border-[#d6b57b44] bg-[#fbf4e8cc] px-2 py-0.5"
+                    >
+                      <span className="text-[10px] font-semibold capitalize text-[#9d6f2f]">
+                        {key}
+                      </span>
+                      <span className="text-[10px] text-[#7a5438]">{value}%</span>
+                    </span>
+                  ))}
+                </div>
+              )}
+
+              {(entry.feelingStage !== null ||
+                (entry.feelingSupport && entry.feelingSupport.length > 0)) && (
+                <div className="flex flex-wrap items-center gap-1.5">
+                  {entry.feelingStage !== null && (
+                    <span className="inline-flex items-center rounded-full bg-[#c79a4218] px-2 py-0.5 text-[10px] font-medium text-[#9d6f2f]">
+                      Stage {entry.feelingStage}:{' '}
+                      {FEELING_STAGE_LABELS[entry.feelingStage] ?? 'Feeling stage'}
+                    </span>
+                  )}
+                  {(entry.feelingSupport ?? []).map((item) => (
+                    <span
+                      key={`${entry.id}-${item}`}
+                      className="inline-flex items-center rounded-full border border-[#c79a4240] px-2 py-0.5 text-[10px] text-[#7a5438]"
+                    >
+                      {item}
                     </span>
                   ))}
                 </div>
@@ -400,6 +508,33 @@ function EditableTimelineEntry({
                 </div>
               )}
 
+              {structuredPulses.length > 0 && (
+                <div className="flex items-center gap-3">
+                  {structuredPulses.map((p) => (
+                    <div key={`${entry.id}-${p.cat}`} className="flex items-center gap-1">
+                      <span className="text-[9px] text-muted-foreground/40 uppercase">
+                        {p.cat[0]}
+                      </span>
+                      <div className="flex gap-[2px]">
+                        {p.pulseColors.map((c, cIdx) => (
+                          <div
+                            key={`${p.cat}-${c}`}
+                            style={{
+                              width: 6,
+                              height: 6,
+                              borderRadius: 1,
+                              background: c,
+                              opacity:
+                                cIdx === p.idx ? 1 : Math.abs(cIdx - p.idx) === 1 ? 0.4 : 0.1,
+                            }}
+                          />
+                        ))}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+
               {/* Note text with line-clamp */}
               {noteContent?.cleanNote && (
                 <button
@@ -413,6 +548,27 @@ function EditableTimelineEntry({
                     {noteContent.cleanNote}
                   </p>
                 </button>
+              )}
+
+              {(entry.challenge || entry.flow) && (
+                <div className="grid gap-2 pt-1 md:grid-cols-2">
+                  {entry.challenge && (
+                    <div className="rounded-2xl border border-[#d6b57b44] bg-[#faf1e1] px-3 py-2">
+                      <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-[#9d6f2f]">
+                        Challenge
+                      </p>
+                      <p className="mt-1 text-sm text-[#6f4a30]">{entry.challenge}</p>
+                    </div>
+                  )}
+                  {entry.flow && (
+                    <div className="rounded-2xl border border-[#d6b57b44] bg-[#faf1e1] px-3 py-2">
+                      <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-[#9d6f2f]">
+                        Flow
+                      </p>
+                      <p className="mt-1 text-sm text-[#6f4a30]">{entry.flow}</p>
+                    </div>
+                  )}
+                </div>
               )}
 
               {/* Tags */}

@@ -16,6 +16,13 @@ export async function insertCheckIn(
     missionId: string | null;
     emotionName?: string | null;
     emotionColor?: string | null;
+    facing?: schema.CheckInFacing | null;
+    pulses?: schema.CheckInPulses | null;
+    challenge?: string | null;
+    flow?: string | null;
+    feelingCompass?: schema.CheckInFeelingCompass | null;
+    feelingStage?: number | null;
+    feelingSupport?: string[] | null;
   },
 ): Promise<CheckIn> {
   const [row] = await db.insert(checkIns).values(data).returning();
