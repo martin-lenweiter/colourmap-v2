@@ -9,7 +9,7 @@ const tempDirs: string[] = [];
 const repoRoot = process.cwd();
 
 function execGit(cwd: string, args: string[], env?: NodeJS.ProcessEnv) {
-  return execFileSync('git', args, {
+  return execFileSync('git', ['-c', 'core.hooksPath=/dev/null', ...args], {
     cwd,
     env: { ...process.env, LEFTHOOK: '0', HUSKY: '0', ...env },
     stdio: 'pipe',
