@@ -451,11 +451,11 @@ export default function ShareCompass() {
         {themedShareSlices.map((a) => (
           <div
             key={a.key}
-            className="flex h-8 w-8 items-center justify-center rounded-full"
+            className="flex h-10 w-10 items-center justify-center rounded-full"
             style={{ background: a.color, opacity: 0.5 }}
           >
             <span
-              className="text-sm font-black text-white select-none"
+              className="text-base font-black text-white select-none"
               style={{ fontFamily: 'var(--font-handwritten)' }}
             >
               {a.label === 'Share' ? 'Sh' : a.label[0]}
