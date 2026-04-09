@@ -363,3 +363,18 @@ The design box stores preference in `colourmap:caring-depth-view`.
 8. **Alternative views** — constellation, losange, mandala (Week 4-5)
 9. **Cross-system integration** — connect to FACING, CARE, Inner Weather (Week 5-6)
 10. **Backend persistence** — move from localStorage to Supabase (after backend PR merges)
+11. **Emotion Decomposition** — perfume expert approach: break emotions into sub-components (Week 7+)
+
+---
+
+## 9. EMOTION DECOMPOSITION — Next Phase
+
+Like a perfume expert decomposes a fragrance into top, heart, and base notes, we decompose emotions into sub-components.
+
+**Flow**: Vertical Hawkins rainbow bar → pick an emotion (e.g. Courage) → reveal sub-emotions (Determination, Fear Acknowledged, Trust, Vulnerability) → rate how present each is → track how the composition shifts over time.
+
+**Visual**: Vertical rainbow (left), decomposition pills (right), composition bar (bottom), weekly history view.
+
+**Data**: `EmotionDecomposition { emotion, hawkinsLevel, components: { name, weight, linkedPillId }[], date }`
+
+**Connection**: Sub-components link to strengths/weaknesses ("determination feeds Discipline") and Inner Weather ("high vulnerability → breeze/fog").
