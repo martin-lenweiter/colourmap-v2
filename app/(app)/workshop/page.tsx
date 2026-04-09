@@ -139,6 +139,234 @@ The app reveals itself gradually. Nothing is hidden, but nothing demands attenti
 
 These are being ported via the feature branches.`,
   },
+  {
+    id: 'cpc-visual-tools',
+    title: 'CPC Visual Tools — What We Built & What Carries Over',
+    color: '#D06080',
+    content: `The CPC prototype is a treasure chest of visual ideas. Some are essential. Some are experiments. Here's what matters:
+
+**The Compass Family** — 8 compass forms were built: ring, pizza, rose, split, parchment, losange, triangle, classic. The ring won. It's the clearest on mobile. Pizza is second — it feels more playful. The losange and triangle are experimental and beautiful but harder to read on small screens. Rose is the most elegant but demands space.
+
+**Echo Workshop** — 5 concentric-ring depth readers. The Emotional Core (pain → behaviour → social face), Decision Depth (fear → desire → values → logic → intuition), Relationship Echo (need → wound → pattern → truth → love), Energy Scan (vital → emotional → mental → social → creative → spiritual), Growth Rings (childhood → adolescence → adult → now → becoming). These are the deepest tools in the app. They deserve a permanent home on the Journey page.
+
+**Flower Workshop** — Sacred geometry from 3 to 8 petals. Trinity (mind/body/spirit), Compass Rose (cardinal), Star Flower (golden ratio), Hex Bloom (FACING framework), Chakra Lotus (7 chakras), Full Mandala (8 petals). The 6-petal variant maps perfectly to FACING. The 4-petal maps to CARE/STAR/SHARE.
+
+**Mandala Council** — 102 archetypes across 8 families: Warriors, Nurturers, Children, Creators, Thinkers, Lovers, Wanderers, Shadows. Each family has its own colour. This is the most ambitious CPC tool and the one users are most curious about. It needs its own dedicated page.
+
+**SoulTerrain** — A 2D canvas where you place emotional dots on a positive/negative × external/internal grid. 6 categories, organic cell shapes, drag-and-drop. This is the most experimental tool. It works beautifully on desktop but struggles on mobile.
+
+**MissionMap** — Visual mission positioning on a canvas with draggable dots and sub-mission nesting. A spatial alternative to the pill-based mission list. Beautiful concept, but the pill format in V2 is more practical for daily use.
+
+**What carries over to V2**: Ring compass (done), Echo layers (Journey page), Mandala (Journey page), Flower (Workshop visual), 4-petal sacred geometry for depth boxes. What stays CPC-only for now: SoulTerrain (desktop), MissionMap (too experimental), classic nautical compasses (aesthetic exercise).`,
+  },
+  {
+    id: 'mandala-design',
+    title: 'Mandala Variations — Sacred Geometry as Interface',
+    color: '#9B6BA0',
+    content: `The mandala isn't decoration — it's a user interface pattern. Each petal is a dimension. The center is you. The geometry enforces balance.
+
+**3-Petal Trinity** — Mind, Body, Spirit. The simplest form. Use it when three things need equal attention. The shape says: "These are not separate. They overlap." In the app, this maps to: Caring / Doing / Sharing. Three tabs. Three doors. One mandala.
+
+**4-Petal Cross** — CARE (Care, Attitude, Rest, Emotions) or STAR (Structure, Target, Action, Resources). The compass form. North-South-East-West creates orientation. Every compass in the app uses this geometry. The ring compass is a flattened 4-petal mandala.
+
+**6-Petal Hex** — FACING (Fear, Avoidance, Confusion, Intention, Needs, Gratitude) or PEACE (Pause, Express, Accept, Calm, Emerge). Six blobs in a hexagonal pattern. This is why the FACING blobs work — hexagonal tiling is the most efficient space-filling geometry. It feels complete without feeling crowded.
+
+**8-Petal Full** — The Mandala Council's 8 archetype families. Warrior, Nurturer, Child, Creator, Thinker, Lover, Wanderer, Shadow. This is the mandala at its richest. Each petal can hold an entire program. 8 × 3 = 24 sub-programs. A year's worth of self-work in one flower.
+
+**Design variations to explore**:
+- **Layered petals**: Each petal has 3 layers (surface, middle, core) like the Echo rings. Tap to peel.
+- **Bloom animation**: Petals grow from bud to full flower as you complete programs.
+- **Seasonal colours**: Spring (greens/yellows), Summer (warm oranges), Autumn (browns/reds), Winter (cool blues). The mandala changes with the season.
+- **Glass morphism mandala**: Frosted glass petals over a warm gradient background. Modern, warm, distinct.
+- **Ink mandala**: Black line art on parchment. The most journal-like variant. Fill petals with colour as you engage.
+
+The mandala is the meta-tool. It contains all the compasses, all the frameworks, all the depth. If the app had only one visual element, it should be this.`,
+  },
+  {
+    id: 'app-usefulness',
+    title: 'Is the App Useful? — Honest Assessment',
+    color: '#C87050',
+    content: `Let's be honest about what works and what doesn't. A beautiful app that nobody uses is a failure. A useful app that looks ugly won't be opened twice.
+
+**What's genuinely useful right now**:
+- The Hawkins slider gives a fast emotional snapshot. Under 3 seconds. That alone justifies opening the app.
+- The compass dimensions (CARE/STAR/SHARE) create a vocabulary for self-reflection. Users start thinking in terms of "my Rest is low" or "my Authenticity needs work."
+- The tracker day-dots show weekly patterns at a glance. Simple, satisfying, proven.
+- The to-do pills work. They're not revolutionary, but they're warm and they persist.
+- The three-tab structure (Caring/Doing/Sharing) is intuitive. It covers the whole person.
+
+**What's not useful yet**:
+- The depth boxes (Box 3) are interesting but don't connect to action. Seeing a shape is nice. But "your Life Wheel is lopsided" needs to lead to "here's what you could try."
+- The writing columns (Challenge/Flow, Blocked/Moving) are open-ended. Some users need prompts. "What challenged you?" is too vague. Try: "Name one thing you avoided today and why."
+- The Workshop reflections are for developers, not users. A real user won't read "App Architecture." They need "How to get the most from this app in 5 minutes."
+- FACING and PEACE are powerful frameworks but they're not explained anywhere in the app. A new user sees 6 blobs and doesn't know what they mean.
+
+**What could make this 10x more useful**:
+- **Nudges, not notifications**: "You haven't checked your Rest in 3 days. Tap to rate it." Not a push notification. A gentle note when you open the app.
+- **Weekly summary**: Every Sunday, one screen: your average Hawkins score, your compass shape, your tracker completion, your top emotion. "This week you were mostly Calm, your Body was low, you completed 4/7 days of reading."
+- **Pattern recognition**: After 2 weeks, the app notices: "You tend to feel lower on Mondays" or "Your creativity score rises after exercise days." This is the killer feature.
+- **Guided first week**: Not a tutorial. Seven daily prompts that introduce one feature each. Day 1: slide the bar. Day 2: rate one compass dimension. Day 3: add a tracker. Day 4: name a challenge. Day 5: add a person to your constellation. Day 6: try the depth box. Day 7: read your week.
+
+**The core question**: Does this app help someone understand themselves better? Right now: maybe, if they explore deeply enough. The goal: definitely, from the first check-in.`,
+  },
+  {
+    id: 'segment-questions',
+    title: 'Deep Questions — One Per Segment',
+    color: '#6890B0',
+    content: `Every segment of the app should answer a core question. If it can't answer clearly, it's either missing something or shouldn't exist.
+
+**CARING — "How am I feeling, and what does that feeling need?"**
+- Does the Hawkins slider capture enough nuance? (Yes for speed, no for depth — that's why FACING exists.)
+- Should the cat react to more than just colour? What if it showed fatigue, tension, calm? (Possible but risky — anthropomorphising emotions can feel patronising.)
+- Is the Mirror (Inner Weather) the right Box 3 tool? Does tracking emotional weather help more than tracking shadow/strength patterns? (Weather is more intuitive. Shadows are deeper. Both have value.)
+- Can the CARE compass dimensions be rated without feeling like a survey? (The ring makes it feel like tuning an instrument, not filling a form.)
+- What happens to FACING data over time? Can we show "you've had more Gratitude this month than last"?
+
+**DOING — "What am I actually doing with my time and energy?"**
+- Is the to-do pill format better than a traditional checklist? (For mobile: yes. For power users: maybe not.)
+- Should missions have deadlines? (Probably not — deadlines create anxiety, which is the opposite of what this app offers.)
+- The Life Wheel is good at showing imbalance. But does it help fix it? (Not yet. It needs to suggest: "Sport is at 2/8. Could you walk for 10 minutes today?")
+- Are trackers engaging enough? Day-dots are simple but they don't explain why a day was missed.
+- Should the Doing tab show time-of-day context? Morning vs evening check-ins might want different prompts.
+
+**SHARING — "Who matters to me, and am I showing up for them?"**
+- Is closeness rating (1-5) enough? What about quality of connection? (Closeness is simple. Adding "when did you last talk?" and "how did it go?" would add depth.)
+- The Constellation is beautiful but passive. What if it suggested: "You haven't rated Jo in 2 weeks. Reach out?"
+- Should the SHARE compass (Share/Authentic/Roots/Express) connect to specific people? "I'm authentic with Alex but not with Sam."
+- Is gratitude only a Caring thing? Gratitude for people is deeply Sharing.
+- What about groups, not just individuals? Family, team, friends as clusters, not just individual stars.
+
+**WORKSHOP — "Do I understand my own tools?"**
+- Are the reflections too developer-focused? (Yes. They need a user-facing version.)
+- Should the Workshop show the user's own data as examples? "Here's YOUR compass shape" instead of demo data.
+- Is the Design Lab useful for non-designers? (Questionable. But it shows that the app is crafted, not generic.)
+- Could the Workshop have "lessons"? Short guided exercises using each tool.
+
+**JOURNEY — "Where have I been and where am I going?"**
+- When does a user need Journey vs Day? (Day is daily ritual. Journey is for when you feel stuck, curious, or want to go deeper.)
+- Should the Mandala Council be intimidating? 102 archetypes is a lot. Maybe start with 8 families and reveal individuals gradually.
+- The Echo layers are powerful but complex. Users need an onboarding. "Start with the Emotional Core. Tap each ring from outside in."
+- How does Journey data connect to Day data? If you discover a "Warrior" archetype in the Mandala, does that show up in your daily compass somehow?`,
+  },
+  {
+    id: 'whats-next',
+    title: "What's Next — Development Roadmap",
+    color: '#7A9A7A',
+    content: `Five phases. Each one makes the app more useful. None should be skipped.
+
+**Phase 1 — Polish What Exists** (Now)
+- Ensure every text element uses an explicit font from the 5 loaded fonts
+- Make all interactive elements respond with colour and animation
+- Fix the depth boxes: Inner Weather needs testing, Life Wheel needs action suggestions, Constellation needs reach-out prompts
+- Typography pass: title hierarchy, weight consistency, size scale
+- Every pill should expand and collapse smoothly
+- The cat should feel alive but not distracting
+
+**Phase 2 — Connect the Dots** (Next Week)
+- Weekly summary screen: one view that combines all three tabs' data
+- Pattern recognition: track trends over 7 days and surface insights
+- Cross-tab connections: if Rest is low (Caring) and Sport is low (Doing) and you haven't reached out to anyone (Sharing), the app should notice
+- Link FACING/PEACE progress to the CARE compass scores
+- Mission sub-steps: tap a mission → see and check off children
+
+**Phase 3 — Journey Page** (Week After)
+- Port Mandala Council from CPC (8 families, simplified archetype selection)
+- Port Echo Workshop (5 depth variants with guided onboarding)
+- Add Flower/Petal meditation exercise (tap petals in sequence, breathe)
+- Compass comparison: overlay this week's shape on last week's
+- Losange emotion loop reader for deeper self-enquiry
+
+**Phase 4 — Intelligence** (Month 2)
+- AI coaching integration: after a check-in, offer a one-paragraph reflection
+- "The coach notices" — gentle pattern insights based on 2+ weeks of data
+- Guided first-week experience (7 daily micro-tutorials)
+- Nudge system: context-aware prompts when you open the app
+- Export: weekly PDF summary with your compass shapes and key metrics
+
+**Phase 5 — Community & Sharing** (Month 3)
+- Anonymous aggregate: "60% of users also feel lower on Mondays"
+- Shared constellations: two users can see each other in their star maps
+- Template sharing: export your mandala layout, compass design, or tracker set
+- Facilitator mode: therapists/coaches can see anonymised patterns from their clients
+- Public workshop contributions: community-written reflections and guided exercises
+
+**The north star**: an app that knows you better than you know yourself — not because it's intrusive, but because it's patient, warm, and always watching for patterns you can't see alone.`,
+  },
+  {
+    id: 'emotional-design',
+    title: 'Emotional Design — Why Warmth Matters',
+    color: '#D4805A',
+    content: `Most wellness apps fail because they feel clinical. They use blue and white. They count things. They show graphs. They feel like a doctor's office, not a journal.
+
+**Colourmap's emotional signature**:
+- **Paper, not screens**: Every surface is parchment. Cream to tan gradients. The deeper you go, the more aged the paper feels. This communicates depth without saying it.
+- **Ink, not pixels**: Brown text instead of black. Gold accents instead of blue. The colour palette comes from natural materials — leather, sand, honey, earth, olive, terracotta.
+- **Handwriting, not type**: Caveat for personal entries. It looks like your own notes. Combined with Playfair for structure, it creates the feeling of a beautifully bound journal with your messy thoughts inside.
+- **Circles, not rectangles**: The compass, the mandala, the constellation, the echo rings, the life wheel — everything is circular. Circles feel organic. Rectangles feel manufactured. Rounded corners on cards bridge the gap.
+- **Glow, not shadow**: Active elements glow softly from behind, like warm light through paper. Drop shadows are used sparingly and softly. The effect is "lit from within" not "floating above."
+
+**What this means practically**:
+- Never use pure white (#fff) as a background. Always warm it.
+- Never use pure black (#000) for text. Always brown or charcoal.
+- Animation should be slow and smooth (300-700ms). Nothing should snap or bounce.
+- Sound, if ever added, should be organic: soft chimes, not digital bleeps.
+- Empty states should feel welcoming, not empty. "Tap a weather to name what you're feeling" is better than "No entries yet."
+
+**The competition's mistake**: Headspace is too cute. Calm is too passive. Daylio is too clinical. Reflectly is too AI-forward. Finch is too gamified. Colourmap occupies a unique space: **adult, warm, beautiful, and deeply personal**. It's a tool for people who think, not people who want to be told what to think.
+
+**The danger**: being so beautiful that it's intimidating. The warmth must invite, not impress. A first-time user should feel "I can write here" not "this is too nice for my messy thoughts." The handwriting font is the antidote — it says "imperfection is welcome."`,
+  },
+  {
+    id: 'data-stories',
+    title: 'Data Stories — What Your Numbers Mean',
+    color: '#8A6A4A',
+    content: `Raw numbers are noise. Patterns are signal. Stories are meaning. The app should move users from numbers → patterns → stories.
+
+**Example data story — Caring**:
+Your Hawkins average this week was 310 (Willingness). That's up from 280 (Courage) last week. You checked in 5 out of 7 days. Your dominant inner weather was "breeze" (Calm, Hope). Your CARE compass shows Rest at 3/8 — the lowest dimension for the third week in a row.
+
+*The story*: "You're feeling more willing and open this week. That's real progress. But your Rest keeps scoring low. Your body is carrying what your mind has resolved. What would rest look like today — not tomorrow, today?"
+
+**Example data story — Doing**:
+Your Life Wheel shows Work at 7/8 and Creative at 2/8. Your trackers show 7/7 for "Morning routine" but 1/7 for "Draw." You completed 3 missions, added 4 new ones, and archived 2 to-dos.
+
+*The story*: "You're productive but lopsided. Work dominates. Creativity is starving. You added more missions than you finished — ambition is high, but is it sustainable? Your morning routine is flawless — can you attach 10 minutes of drawing to it?"
+
+**Example data story — Sharing**:
+Your Constellation has 6 stars. Average closeness is 3.2 (friend level). Two stars haven't been rated in 2 weeks (Alex, Jo). Your SHARE compass shows Authenticity at 6/8 and Roots at 2/8.
+
+*The story*: "You're authentic with people, but your roots feel thin. Two people are drifting from your constellation — not because they don't matter, but because life gets busy. A single message could pull them back. Your Roots score says: you might be giving more than receiving. Who fills YOUR cup?"
+
+**How to build this**:
+1. Collect 7 days of data minimum before generating stories
+2. Compare this week to last week for trend direction
+3. Find the lowest and highest dimension across all three tabs
+4. Cross-reference: does a low Caring dimension correlate with a low Doing tracker?
+5. Write the story in second person, present tense, with one specific suggestion
+6. Never be judgmental. Always be curious. End with a question, not an instruction.`,
+  },
+  {
+    id: 'design-evolution',
+    title: 'Design Evolution — Where Each Tool Came From',
+    color: '#6B4830',
+    content: `Every visual tool in Colourmap has an origin story. Understanding where they came from helps decide where they should go.
+
+**The Compass** — Born from the Wheel of Life coaching tool (1960s, Paul J. Meyer). Adapted into a 4-quadrant ring for mobile. The ring form came from trying pizza slices and finding them too playful for daily use. The ring says "instrument" — the pizza says "game." We chose instrument.
+
+**The Mandala** — Carl Jung used mandala drawing as a therapeutic tool. Our 8-family archetype system borrows from Jungian archetypes, IFS (Internal Family Systems), and voice dialogue therapy. The visual form — petals from a center — is pure sacred geometry. It's the oldest shape humans have used for self-reflection.
+
+**The Echo Rings** — Inspired by tree rings (dendrochronology). Each ring is a layer of the self: the outermost is how you present, the innermost is your core truth. Tapping a ring "peels" it, like the Johari Window exercise but visual and personal. The 5 variants came from asking: "What else has layers?" — emotions, decisions, relationships, energy, life phases.
+
+**The Constellation** — Bert Hellinger's Family Constellations therapy, simplified. Instead of role-playing with other people, you place them as stars and rate your connection. Closeness determines orbit distance. Brightness shows engagement. It's a relational map — not a social graph.
+
+**The Life Wheel** — A radar/spider chart from data visualisation, given warmth. In corporate tools, this chart shows KPIs. Here, it shows life balance. The spokes are chosen by the user — not prescribed. That's the key difference. You define what matters.
+
+**The Inner Weather** — Newest tool. Metaphorical approach to mood tracking. Instead of "rate your anxiety 1-10," you ask "is it a storm or a breeze?" Weather is universal, non-judgmental, and inherently temporary. A storm passes. That's the therapeutic insight built into the metaphor.
+
+**The Hawkins Slider** — David R. Hawkins' Map of Consciousness (from "Power vs. Force"). A controversial but useful spectrum from Shame (20) to Enlightenment (700+). We simplified it to 10 levels with clear emotional labels. The slider makes it embodied: you feel where you are by where your thumb lands.
+
+**What connects them all**: Every tool is a mirror, not an advisor. It shows you YOUR shape, YOUR weather, YOUR constellation. The app never says "you should feel differently." It says "here's what you feel — and here's how it connects to yesterday."`,
+  },
 ];
 
 /* ═══ SECTION 2: VISUAL TOOLS ═══ */
@@ -411,52 +639,189 @@ function WheelDemo() {
   );
 }
 
-function MirrorDemo() {
+function WeatherDemo() {
+  const weathers = [
+    { emoji: '⛈', color: '#8B5E3C', label: 'storm', x: 40, y: 55, r: 24 },
+    { emoji: '🌧', color: '#6890B0', label: 'rain', x: 80, y: 75, r: 18 },
+    { emoji: '🌫', color: '#9A8A70', label: 'fog', x: 100, y: 50, r: 20 },
+    { emoji: '🍃', color: '#7A9A7A', label: 'breeze', x: 130, y: 70, r: 22 },
+    { emoji: '☀', color: '#C4A060', label: 'sun', x: 160, y: 45, r: 28 },
+  ];
   const sz = 200;
-  const cx = sz / 2;
-  const cy = sz / 2;
   return (
     <svg width={sz} height={sz} viewBox={`0 0 ${sz} ${sz}`}>
       <defs>
-        <radialGradient id="w-chg" cx="35%" cy="50%" r="50%">
-          <stop offset="0%" stopColor="#C87050" stopOpacity="0.4" />
-          <stop offset="100%" stopColor="#C87050" stopOpacity="0" />
-        </radialGradient>
-        <radialGradient id="w-flow" cx="65%" cy="50%" r="50%">
-          <stop offset="0%" stopColor="#C4A060" stopOpacity="0.4" />
-          <stop offset="100%" stopColor="#C4A060" stopOpacity="0" />
-        </radialGradient>
+        <linearGradient id="w-sky" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor="#6890B0" stopOpacity="0.08" />
+          <stop offset="100%" stopColor="#C4A060" stopOpacity="0.05" />
+        </linearGradient>
       </defs>
-      <circle cx={cx - 25} cy={cy} r={65} fill="url(#w-chg)" />
-      <circle cx={cx + 25} cy={cy} r={65} fill="url(#w-flow)" />
+      <rect x="0" y="0" width={sz} height={sz} rx="20" fill="url(#w-sky)" />
+      <line x1="20" y1="130" x2="180" y2="130" stroke="#C4B890" strokeWidth="0.5" opacity="0.15" />
+      {weathers.map((w) => (
+        <g key={w.label}>
+          <circle cx={w.x} cy={w.y} r={w.r + 6} fill={w.color} opacity="0.06" />
+          <circle cx={w.x} cy={w.y} r={w.r} fill={w.color} opacity="0.12" />
+          <text
+            x={w.x}
+            y={w.y + 2}
+            textAnchor="middle"
+            dominantBaseline="middle"
+            style={{ fontSize: `${w.r * 0.7}px` }}
+          >
+            {w.emoji}
+          </text>
+          <text
+            x={w.x}
+            y={w.y + w.r + 12}
+            textAnchor="middle"
+            style={{
+              fontSize: '8px',
+              fontFamily: 'var(--font-handwritten)',
+              fontWeight: 600,
+              fill: w.color,
+              opacity: 0.6,
+            }}
+          >
+            {w.label}
+          </text>
+        </g>
+      ))}
       <text
-        x={cx - 45}
-        y={cy - 5}
+        x={100}
+        y={165}
         textAnchor="middle"
         style={{
-          fontSize: '10px',
-          fontFamily: 'var(--font-serif)',
-          fontWeight: 600,
-          fill: '#C87050',
-          opacity: 0.7,
+          fontSize: '14px',
+          fontFamily: 'var(--font-handwritten)',
+          fontWeight: 700,
+          fill: '#B8905A',
+          opacity: 0.35,
         }}
       >
-        Challenge
+        62
       </text>
       <text
-        x={cx + 45}
-        y={cy - 5}
+        x={100}
+        y={178}
         textAnchor="middle"
         style={{
-          fontSize: '10px',
-          fontFamily: 'var(--font-serif)',
-          fontWeight: 600,
-          fill: '#C4A060',
-          opacity: 0.7,
+          fontSize: '7px',
+          fontFamily: 'var(--font-handwritten)',
+          fill: '#B8905A',
+          opacity: 0.2,
         }}
       >
-        Flow
+        warmth
       </text>
+    </svg>
+  );
+}
+
+function FlowerDemo() {
+  const [activePetal, setActivePetal] = useState<number | null>(null);
+  const petalColors = ['#D4805A', '#C4A060', '#7A9A7A', '#6890B0', '#9B6BA0', '#C87050'];
+  const labels = ['Care', 'Attitude', 'Rest', 'Emotions', 'Growth', 'Balance'];
+  const sz = 200;
+  const cx = sz / 2;
+  const cy = sz / 2;
+  const n = 6;
+  return (
+    <svg width={sz} height={sz} viewBox={`0 0 ${sz} ${sz}`}>
+      {petalColors.map((c, i) => {
+        const a = (i / n) * Math.PI * 2 - Math.PI / 2;
+        const tipR = activePetal === i ? 80 : 68;
+        const pa = a + Math.PI / 2;
+        const sp = activePetal === i ? 20 : 16;
+        const c1x = cx + 22 * Math.cos(a) + sp * Math.cos(pa);
+        const c1y = cy + 22 * Math.sin(a) + sp * Math.sin(pa);
+        const c2x = cx + 22 * Math.cos(a) - sp * Math.cos(pa);
+        const c2y = cy + 22 * Math.sin(a) - sp * Math.sin(pa);
+        return (
+          <g key={i}>
+            <path
+              d={`M ${cx} ${cy} Q ${c1x} ${c1y} ${cx + tipR * Math.cos(a)} ${cy + tipR * Math.sin(a)} Q ${c2x} ${c2y} ${cx} ${cy} Z`}
+              fill={c}
+              opacity={activePetal === i ? 0.6 : 0.25}
+              className="cursor-pointer transition-all duration-500"
+              style={{ filter: activePetal === i ? `drop-shadow(0 0 8px ${c}40)` : undefined }}
+              onClick={() => setActivePetal(activePetal === i ? null : i)}
+            />
+            <text
+              x={cx + 44 * Math.cos(a)}
+              y={cy + 44 * Math.sin(a)}
+              textAnchor="middle"
+              dominantBaseline="middle"
+              style={{
+                fontSize: '8px',
+                fontFamily: 'var(--font-handwritten)',
+                fontWeight: 600,
+                fill: activePetal === i ? '#fff' : c,
+              }}
+              className="cursor-pointer select-none"
+              onClick={() => setActivePetal(activePetal === i ? null : i)}
+            >
+              {labels[i]}
+            </text>
+          </g>
+        );
+      })}
+      <circle cx={cx} cy={cy} r={10} fill="#C4A060" opacity="0.1" />
+    </svg>
+  );
+}
+
+function LosangeDemo() {
+  const [activeQ, setActiveQ] = useState<number | null>(null);
+  const quads = [
+    { label: 'Feel', color: '#D4805A', angle: -Math.PI / 2 },
+    { label: 'Think', color: '#6890B0', angle: 0 },
+    { label: 'Act', color: '#7A9A7A', angle: Math.PI / 2 },
+    { label: 'Rest', color: '#9B6BA0', angle: Math.PI },
+  ];
+  const sz = 200;
+  const cx = sz / 2;
+  const cy = sz / 2;
+  const r = 70;
+  return (
+    <svg width={sz} height={sz} viewBox={`0 0 ${sz} ${sz}`}>
+      {quads.map((q, i) => {
+        const next = quads[(i + 1) % 4];
+        const x1 = cx + r * Math.cos(q.angle);
+        const y1 = cy + r * Math.sin(q.angle);
+        const x2 = cx + r * Math.cos(next.angle);
+        const y2 = cy + r * Math.sin(next.angle);
+        const isAct = activeQ === i;
+        return (
+          <g key={q.label} className="cursor-pointer" onClick={() => setActiveQ(isAct ? null : i)}>
+            <path
+              d={`M ${cx} ${cy} L ${x1} ${y1} L ${x2} ${y2} Z`}
+              fill={q.color}
+              opacity={isAct ? 0.5 : 0.15}
+              className="transition-all duration-300"
+              style={{ filter: isAct ? `drop-shadow(0 0 6px ${q.color}40)` : undefined }}
+            />
+          </g>
+        );
+      })}
+      {quads.map((q) => (
+        <text
+          key={`l-${q.label}`}
+          x={cx + r * 0.5 * Math.cos(q.angle)}
+          y={cy + r * 0.5 * Math.sin(q.angle)}
+          textAnchor="middle"
+          dominantBaseline="middle"
+          style={{
+            fontSize: '10px',
+            fontFamily: 'var(--font-serif)',
+            fontWeight: 700,
+            fill: q.color,
+          }}
+        >
+          {q.label}
+        </text>
+      ))}
+      <circle cx={cx} cy={cy} r={8} fill="#C4A060" opacity="0.08" />
     </svg>
   );
 }
@@ -542,20 +907,36 @@ const VISUAL_TOOLS = [
     Visual: WheelDemo,
   },
   {
-    id: 'mirror',
-    title: 'The Mirror',
-    subtitle: 'Challenge and Flow patterns',
-    color: '#C4A070',
-    desc: 'Two overlapping circles showing your balance. Lives in Box 3 of Caring tab.',
-    Visual: MirrorDemo,
+    id: 'weather',
+    title: 'Inner Weather',
+    subtitle: 'Emotions as climate patterns',
+    color: '#C4A060',
+    desc: 'Storm, rain, fog, breeze, sun — your emotional patterns as weather. Each kind has its own colour. Lives in Box 3 of Caring tab.',
+    Visual: WeatherDemo,
   },
   {
     id: 'constellation',
     title: 'The Constellation',
     subtitle: 'Your people as stars',
     color: '#6B7F4E',
-    desc: 'Brightness = connection recency. Lives in Box 3 of Sharing tab.',
+    desc: 'Colour-coded by closeness. Inner circle glows warm, distant stars fade cool. Lives in Box 3 of Sharing tab.',
     Visual: ConstellationDemo,
+  },
+  {
+    id: 'flower',
+    title: 'The Flower',
+    subtitle: 'Sacred geometry petals',
+    color: '#9B6BA0',
+    desc: '3 to 8 petals. Each petal is a dimension. The 6-petal maps to FACING, the 4-petal to CARE/STAR/SHARE. Future: Journey page meditation tool.',
+    Visual: FlowerDemo,
+  },
+  {
+    id: 'losange',
+    title: 'The Losange',
+    subtitle: 'Diamond emotion loop',
+    color: '#6890B0',
+    desc: 'Feel → Think → Act → Rest. A diamond that cycles through the emotional processing loop. Future: Journey page deep enquiry tool.',
+    Visual: LosangeDemo,
   },
 ];
 

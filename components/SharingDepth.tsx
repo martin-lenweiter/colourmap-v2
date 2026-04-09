@@ -4,7 +4,8 @@ import { useEffect, useState } from 'react';
 
 /* ═══════════════════════════════════════════════════════════
    SHARING DEPTH — The Constellation
-   People as stars. Add names, rate closeness, see the shape.
+   People as stars. Colour-coded by closeness.
+   Connection lines glow between close stars.
    ═══════════════════════════════════════════════════════════ */
 
 const CONSTELLATION_KEY = 'colourmap:constellation';
@@ -12,9 +13,12 @@ const CONSTELLATION_KEY = 'colourmap:constellation';
 interface Star {
   id: string;
   name: string;
-  closeness: number; // 1-5 (1=distant, 5=very close)
+  closeness: number; // 1-5
   createdAt: string;
 }
+
+const CLOSENESS_COLORS = ['#9A8A70', '#6890B0', '#C4A060', '#D4805A', '#C87050'];
+const CLOSENESS_LABELS = ['distant', 'acquaintance', 'friend', 'close', 'inner circle'];
 
 function loadStars(): Star[] {
   try {
@@ -23,7 +27,6 @@ function loadStars(): Star[] {
     return [];
   }
 }
-
 function saveStars(stars: Star[]) {
   localStorage.setItem(CONSTELLATION_KEY, JSON.stringify(stars));
 }
@@ -92,7 +95,34 @@ export default function SharingDepth() {
       {count > 0 && (
         <div className="flex justify-center">
           <svg width={sz} height={sz} viewBox={`0 0 ${sz} ${sz}`}>
-            {/* Connection lines */}
+            <defs>
+              {/* Warm center glow */}
+              <radialGradient id="const-glow" cx="50%" cy="50%" r="50%">
+                <stop offset="0%" stopColor="#C4A060" stopOpacity="0.12" />
+                <stop offset="60%" stopColor="#C4A060" stopOpacity="0.03" />
+                <stop offset="100%" stopColor="#C4A060" stopOpacity="0" />
+              </radialGradient>
+            </defs>
+
+            {/* Background glow */}
+            <circle cx={cx} cy={cy} r={100} fill="url(#const-glow)" />
+
+            {/* Orbit rings */}
+            {[30, 50, 70, 90].map((r, i) => (
+              <circle
+                key={r}
+                cx={cx}
+                cy={cy}
+                r={r}
+                fill="none"
+                stroke="#C4B890"
+                strokeWidth="0.3"
+                opacity={0.08 + i * 0.02}
+                strokeDasharray="3 5"
+              />
+            ))}
+
+            {/* Connection lines — coloured by closeness */}
             {stars.length >= 2 &&
               stars.map((s, i) => {
                 const next = stars[(i + 1) % stars.length];
@@ -101,6 +131,8 @@ export default function SharingDepth() {
                 const r1 = 30 + (5 - s.closeness) * 14;
                 const r2 = 30 + (5 - next.closeness) * 14;
                 if (s.closeness < 3 && next.closeness < 3) return null;
+                const avgC = (s.closeness + next.closeness) / 2;
+                const lineColor = CLOSENESS_COLORS[Math.round(avgC) - 1] || '#C4A060';
                 return (
                   <line
                     key={`l-${i}`}
@@ -108,20 +140,21 @@ export default function SharingDepth() {
                     y1={cy + r1 * Math.sin(a1)}
                     x2={cx + r2 * Math.cos(a2)}
                     y2={cy + r2 * Math.sin(a2)}
-                    stroke="#C4A060"
-                    strokeWidth="0.4"
-                    opacity={0.1}
-                    strokeDasharray="3 3"
+                    stroke={lineColor}
+                    strokeWidth={avgC > 3 ? '0.8' : '0.4'}
+                    opacity={avgC > 3 ? 0.2 : 0.08}
+                    strokeDasharray={avgC < 4 ? '3 3' : undefined}
                   />
                 );
               })}
 
-            {/* Stars */}
+            {/* Stars — colour-coded */}
             {stars.map((s, i) => {
               const angle = (i / count) * Math.PI * 2 - Math.PI / 2;
-              const dist = 30 + (5 - s.closeness) * 14; // closer = nearer center
+              const dist = 30 + (5 - s.closeness) * 14;
               const x = cx + dist * Math.cos(angle);
               const y = cy + dist * Math.sin(angle);
+              const color = CLOSENESS_COLORS[s.closeness - 1];
               const brightness = s.closeness / 5;
               const isActive = activeStar === s.id;
 
@@ -131,17 +164,41 @@ export default function SharingDepth() {
                   className="cursor-pointer"
                   onClick={() => setActiveStar(isActive ? null : s.id)}
                 >
+                  {/* Glow */}
+                  {brightness > 0.6 && (
+                    <circle
+                      cx={x}
+                      cy={y}
+                      r={brightness * 12 + 4}
+                      fill={color}
+                      opacity={0.08}
+                      style={{ filter: `blur(${brightness * 3}px)` }}
+                    />
+                  )}
+                  {/* Star body */}
                   <circle
                     cx={x}
                     cy={y}
                     r={brightness * 5 + 3}
-                    fill="#C4A060"
-                    opacity={brightness * 0.6 + 0.15}
+                    fill={color}
+                    opacity={brightness * 0.5 + 0.2}
                     className="transition-all duration-500"
                     style={{
-                      filter: brightness > 0.6 ? 'drop-shadow(0 0 5px #C4A06050)' : undefined,
+                      filter:
+                        brightness > 0.6
+                          ? `drop-shadow(0 0 ${brightness * 6}px ${color}50)`
+                          : undefined,
                     }}
                   />
+                  {/* Inner bright core */}
+                  <circle
+                    cx={x}
+                    cy={y}
+                    r={brightness * 2 + 1}
+                    fill="#fff"
+                    opacity={brightness * 0.3}
+                  />
+                  {/* Name */}
                   <text
                     x={x}
                     y={y + (brightness * 5 + 3) + 11}
@@ -150,8 +207,8 @@ export default function SharingDepth() {
                       fontSize: isActive ? '11px' : '9px',
                       fontFamily: 'var(--font-handwritten)',
                       fontWeight: isActive ? 700 : 500,
-                      fill: '#6B7F4E',
-                      opacity: brightness * 0.4 + 0.3,
+                      fill: color,
+                      opacity: brightness * 0.4 + 0.4,
                     }}
                   >
                     {s.name}
@@ -193,36 +250,46 @@ export default function SharingDepth() {
         </div>
       )}
 
-      {/* Active star rating */}
+      {/* Active star rating — colour-coded */}
       {activeStar &&
         (() => {
           const star = stars.find((s) => s.id === activeStar);
           if (!star) return null;
+          const color = CLOSENESS_COLORS[star.closeness - 1];
           return (
             <div className="mx-auto max-w-[280px] space-y-2">
               <div className="flex items-center justify-between">
                 <span
                   className="text-sm font-semibold"
-                  style={{ color: '#6B7F4E', fontFamily: 'var(--font-handwritten)' }}
+                  style={{ color, fontFamily: 'var(--font-handwritten)' }}
                 >
                   {star.name}
                 </span>
-                <button
-                  type="button"
-                  onClick={() => removeStar(star.id)}
-                  className="cursor-pointer text-[10px] text-muted-foreground/30 hover:text-muted-foreground/60"
-                  style={{ background: 'none', border: 'none' }}
-                >
-                  remove
-                </button>
+                <div className="flex items-center gap-2">
+                  <span
+                    className="text-[9px]"
+                    style={{ color, opacity: 0.5, fontFamily: 'var(--font-handwritten)' }}
+                  >
+                    {CLOSENESS_LABELS[star.closeness - 1]}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => removeStar(star.id)}
+                    className="cursor-pointer text-[10px]"
+                    style={{ color, opacity: 0.3, background: 'none', border: 'none' }}
+                  >
+                    ✕
+                  </button>
+                </div>
               </div>
               <div className="flex items-center gap-2">
-                <span className="text-[10px]" style={{ color: '#6B7F4E', opacity: 0.4 }}>
-                  distant
+                <span className="text-[10px]" style={{ color: '#9A8A70', opacity: 0.4 }}>
+                  far
                 </span>
                 <div className="flex flex-1 items-center gap-[4px]">
                   {[1, 2, 3, 4, 5].map((n) => {
                     const isN = n === star.closeness;
+                    const c = CLOSENESS_COLORS[n - 1];
                     return (
                       <button
                         key={n}
@@ -231,8 +298,8 @@ export default function SharingDepth() {
                         className="flex-1 cursor-pointer rounded-full transition-all duration-200"
                         style={{
                           height: isN ? 20 : 10,
-                          background: '#6B7F4E',
-                          opacity: isN ? 0.7 : n < star.closeness ? 0.3 : 0.1,
+                          background: c,
+                          opacity: isN ? 0.7 : n <= star.closeness ? 0.3 : 0.08,
                           border: 'none',
                           padding: 0,
                         }}
@@ -240,7 +307,7 @@ export default function SharingDepth() {
                     );
                   })}
                 </div>
-                <span className="text-[10px]" style={{ color: '#6B7F4E', opacity: 0.4 }}>
+                <span className="text-[10px]" style={{ color: '#C87050', opacity: 0.4 }}>
                   close
                 </span>
               </div>
