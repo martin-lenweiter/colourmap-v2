@@ -367,6 +367,84 @@ Your Constellation has 6 stars. Average closeness is 3.2 (friend level). Two sta
 
 **What connects them all**: Every tool is a mirror, not an advisor. It shows you YOUR shape, YOUR weather, YOUR constellation. The app never says "you should feel differently." It says "here's what you feel — and here's how it connects to yesterday."`,
   },
+  {
+    id: 'soul-journey',
+    title: 'Soul Journey — The Constellation That Flows',
+    color: '#D06080',
+    content: `The Soul Journey is the connective tissue of the whole app. It's a **long, scrollable, time-based constellation** that grows to the right like a river — each dot is a moment, a check-in, a pattern named.
+
+**The core vision**: imagine a portrait-format visual that scrolls horizontally. On the left is your past. On the right is now. Dots flow across like a river — some rise (strengths growing, spirit lifting), some dip (weaknesses surfacing, energy dropping). Over time, the river creates a landscape — mountains where you thrived, valleys where you struggled, plateaus where you coasted.
+
+**What each dot represents**:
+- A daily check-in (Hawkins score → dot height)
+- A named strength or weakness (coloured by type)
+- An inner weather reading (emoji + colour)
+- A FACING check (which dimension was active)
+
+**How it builds over time**:
+- Day 1: a single dot. Just today's check-in.
+- Week 1: a short river. You start seeing patterns — Monday dips, Friday lifts.
+- Month 1: a landscape forming. Your strengths cluster in the peaks. Your weaknesses cluster in the valleys.
+- Month 3: a full terrain. You can see growth edges, recurring storms, and the moments that lifted you.
+
+**The mountain metaphor**: Dots stack vertically by category. High-scoring aspects (spirit, creativity, connection) form peaks. Low-scoring aspects (organisation, rest, discipline) form valleys. The shape is YOUR mountain — unique to you. No one else's mountain looks like this.
+
+**The river metaphor**: The same data, but flowing left-to-right. Time on the x-axis. Intensity on the y-axis. Multiple streams for different categories, weaving together. Where streams converge = moments of balance. Where they diverge = moments of tension.
+
+**Interconnections**: When you tap a peak moment, you see what caused it: "Spirit was high because: I finished the project, I talked to Alex, I slept 8 hours." When you tap a valley: "Organisation was low because: too many meetings, skipped my routine, forgot to eat properly." Over time, you can **regroup** — see all the things that lifted you, all the things that pulled you down. The app learns your patterns.
+
+**How this connects to Box 3 in each tab**:
+
+**Caring Box 3** — The **Inner Weather + Strength/Weakness Map**. This is the "what's happening inside" view. The constellation shows your emotional dots — storms, breezes, named fears and strengths. The process: name patterns → score them → connect them → track them → work on one. Inner Weather is the emotional summary. The triangle wheel / constellation / mandala are the mapping tools. The river/mountain is the long-term view.
+
+**Doing Box 3** — The **Life Wheel + Mission Tracker**. This is the "what am I actually doing" view. The constellation here shows activity dots — habits tracked, missions progressed, aspects rated. The Life Wheel is the snapshot. The river shows how your wheel shape changes over weeks.
+
+**Sharing Box 3** — The **People Constellation**. This is the "who matters" view. Stars are people. Organic cells are connection qualities (trust, honesty, fun, support). The constellation grows as you add people and rate connections. The river shows closeness over time — who drifted away, who got closer.
+
+**The Soul Map** (new component): Combines all three into one terrain. Fears, emotions, needs, strengths, shadows, AND people — all on one radial map. Each category has a sector. Intensity determines distance from center. This is the zoomed-in "now" view. The river is the zoomed-out "over time" view.
+
+**Visual tool choices**: The user picks how to see their data:
+- **Constellation**: dots on a radial map (spatial, present-tense)
+- **River**: dots flowing left-to-right (temporal, past-to-present)
+- **Mountain**: dots stacking vertically by category (landscape, structural)
+- **Mandala**: dots as petals by pack/group (sacred geometry, holistic)
+- **Flower**: simplified mandala with 3-8 petals (for quick pattern view)
+- **Triangle Wheel**: radial spokes with intensity (for comparison view)
+
+All views show the same data. The choice is aesthetic and cognitive — some people think spatially, some think temporally, some think categorically.`,
+  },
+  {
+    id: 'caring-box1-rethink',
+    title: 'Caring Check-In — Simpler Alternatives',
+    color: '#D4805A',
+    content: `The current Caring check-in (Box 1) has: cat, Hawkins slider, FACING/PEACE blobs, emotion name, and a note input. It works — but is it the simplest version? Let's think about alternatives.
+
+**Current flow**: Open app → see cat → slide Hawkins bar → see emotion name → optionally tap FACING blob → optionally write a note. That's 2-5 interactions. Good. But the FACING blobs can feel overwhelming if you're new.
+
+**Alternative 1: Just the Slider**
+One single element: the Hawkins emotion slider. Full width. Big, beautiful, coloured. The emotion name appears above as you slide. That's it. Everything else is hidden behind a "more" tap. Fastest possible check-in. The cat appears small in the corner as a companion, not a feature.
+
+**Alternative 2: Emotion Wheel**
+Instead of a linear slider, a circular picker. 8-10 emotions arranged in a ring. Tap the one closest to how you feel. No sliding, no numbers. Just: "I feel... Courage." The ring glows where you tapped. The cat changes colour. Done.
+
+**Alternative 3: Weather First**
+Open the app → see a sky. Tap the weather that matches your mood. Storm, rain, fog, breeze, or sun. That's your check-in. The Inner Weather data from Box 3 starts with this first tap. It's immediate, metaphorical, and non-judgmental. "I'm in a fog today" is easier to say than "I'm at 200 on the Hawkins scale."
+
+**Alternative 4: One Question**
+The simplest possible: one question per day, rotating. "How are you feeling right now?" with 5 visual answer options (face-like circles from 😔 to 😊 but stylised as warm circles, not emoji). Tap one. Done. All depth is in Box 2 and Box 3.
+
+**Alternative 5: Photo/Colour**
+No words at all. The user picks a colour that matches their mood from a gradient. Or takes a photo. The app reads the dominant colour and maps it to the Hawkins scale. Experimental, but beautiful. "My day feels like this shade of amber."
+
+**What makes the best check-in**:
+1. Under 10 seconds
+2. Doesn't require vocabulary (not everyone can name emotions)
+3. Produces data that's useful for Box 2 and Box 3
+4. Feels warm, not clinical
+5. Rewards consistency without punishing absence
+
+**Recommendation**: Keep the Hawkins slider as default (it works, it's fast, it produces good data). But offer Weather First as an alternative — it connects directly to Inner Weather in Box 3, and it's the most intuitive for people who think in metaphors rather than numbers. The design box lets users switch.`,
+  },
 ];
 
 /* ═══ SECTION 2: VISUAL TOOLS ═══ */
@@ -783,6 +861,264 @@ function FlowerDemo() {
   );
 }
 
+function SoulRiverDemo() {
+  // Simulated 14 days of data flowing left to right
+  const days = [
+    { d: 1, spirit: 6, org: 3, social: 5, weather: 'fog', color: '#9A8A70' },
+    { d: 2, spirit: 5, org: 4, social: 4, weather: 'rain', color: '#4A7898' },
+    { d: 3, spirit: 4, org: 2, social: 6, weather: 'storm', color: '#8B5E3C' },
+    { d: 4, spirit: 3, org: 3, social: 3, weather: 'rain', color: '#4A7898' },
+    { d: 5, spirit: 5, org: 5, social: 4, weather: 'breeze', color: '#4A8A5A' },
+    { d: 6, spirit: 7, org: 4, social: 5, weather: 'breeze', color: '#4A8A5A' },
+    { d: 7, spirit: 8, org: 6, social: 7, weather: 'sun', color: '#C49030' },
+    { d: 8, spirit: 6, org: 5, social: 6, weather: 'breeze', color: '#4A8A5A' },
+    { d: 9, spirit: 4, org: 3, social: 4, weather: 'fog', color: '#9A8A70' },
+    { d: 10, spirit: 5, org: 4, social: 5, weather: 'breeze', color: '#4A8A5A' },
+    { d: 11, spirit: 7, org: 7, social: 6, weather: 'sun', color: '#C49030' },
+    { d: 12, spirit: 6, org: 5, social: 7, weather: 'breeze', color: '#4A8A5A' },
+    { d: 13, spirit: 8, org: 6, social: 8, weather: 'sun', color: '#C49030' },
+    { d: 14, spirit: 7, org: 7, social: 7, weather: 'sun', color: '#C49030' },
+  ];
+  const w = 280;
+  const h = 140;
+  const pad = 15;
+  const xStep = (w - pad * 2) / (days.length - 1);
+  const yScale = (v: number) => h - pad - ((v - 1) / 7) * (h - pad * 2);
+
+  const makePath = (key: 'spirit' | 'org' | 'social') =>
+    days.map((d, i) => `${i === 0 ? 'M' : 'L'} ${pad + i * xStep} ${yScale(d[key])}`).join(' ');
+
+  return (
+    <svg width={w} height={h} viewBox={`0 0 ${w} ${h}`}>
+      {/* Background bands */}
+      <rect
+        x={pad}
+        y={pad}
+        width={w - pad * 2}
+        height={h - pad * 2}
+        rx="8"
+        fill="#C4B890"
+        opacity="0.04"
+      />
+      {/* Grid lines */}
+      {[2, 4, 6, 8].map((v) => (
+        <line
+          key={v}
+          x1={pad}
+          y1={yScale(v)}
+          x2={w - pad}
+          y2={yScale(v)}
+          stroke="#C4B890"
+          strokeWidth="0.3"
+          opacity="0.1"
+        />
+      ))}
+      {/* Spirit river (warm) */}
+      <path
+        d={makePath('spirit')}
+        fill="none"
+        stroke="#D4805A"
+        strokeWidth="2"
+        opacity="0.6"
+        strokeLinejoin="round"
+      />
+      {/* Organisation river (cool) */}
+      <path
+        d={makePath('org')}
+        fill="none"
+        stroke="#6890B0"
+        strokeWidth="1.5"
+        opacity="0.4"
+        strokeLinejoin="round"
+        strokeDasharray="4 2"
+      />
+      {/* Social river (green) */}
+      <path
+        d={makePath('social')}
+        fill="none"
+        stroke="#7A9A7A"
+        strokeWidth="1.5"
+        opacity="0.4"
+        strokeLinejoin="round"
+      />
+      {/* Weather dots at each day */}
+      {days.map((d, i) => {
+        const x = pad + i * xStep;
+        const y = yScale(d.spirit);
+        return (
+          <g key={d.d}>
+            <circle cx={x} cy={y} r={4} fill={d.color} opacity="0.5" />
+            {d.weather === 'sun' && <circle cx={x} cy={y} r={7} fill={d.color} opacity="0.1" />}
+          </g>
+        );
+      })}
+      {/* Labels */}
+      <text
+        x={w - pad}
+        y={yScale(days[13].spirit) - 6}
+        textAnchor="end"
+        style={{
+          fontSize: '7px',
+          fontFamily: 'var(--font-handwritten)',
+          fill: '#D4805A',
+          fontWeight: 600,
+        }}
+      >
+        spirit
+      </text>
+      <text
+        x={w - pad}
+        y={yScale(days[13].org) + 10}
+        textAnchor="end"
+        style={{
+          fontSize: '7px',
+          fontFamily: 'var(--font-handwritten)',
+          fill: '#6890B0',
+          fontWeight: 600,
+        }}
+      >
+        org
+      </text>
+      <text
+        x={w - pad}
+        y={yScale(days[13].social) - 6}
+        textAnchor="end"
+        style={{
+          fontSize: '7px',
+          fontFamily: 'var(--font-handwritten)',
+          fill: '#7A9A7A',
+          fontWeight: 600,
+        }}
+      >
+        social
+      </text>
+      {/* Time arrow */}
+      <text
+        x={w / 2}
+        y={h - 3}
+        textAnchor="middle"
+        style={{
+          fontSize: '6px',
+          fontFamily: 'var(--font-handwritten)',
+          fill: '#C4B890',
+          opacity: 0.4,
+        }}
+      >
+        ← past · · · now →
+      </text>
+    </svg>
+  );
+}
+
+function TriangleWheelDemo() {
+  const [activeSpoke, setActiveSpoke] = useState<number | null>(null);
+  const items = [
+    { name: 'Courage', type: 'strength', intensity: 4, color: '#D4805A' },
+    { name: 'Empathy', type: 'strength', intensity: 5, color: '#C4A060' },
+    { name: 'Focus', type: 'strength', intensity: 3, color: '#7A9A7A' },
+    { name: 'Avoidance', type: 'weakness', intensity: 4, color: '#6890B0' },
+    { name: 'Self-doubt', type: 'weakness', intensity: 3, color: '#9B6BA0' },
+    { name: 'Control', type: 'weakness', intensity: 2, color: '#8B5E3C' },
+  ];
+  const sz = 200;
+  const cx = sz / 2;
+  const cy = sz / 2;
+  const maxR = 80;
+  const n = items.length;
+
+  return (
+    <svg width={sz} height={sz} viewBox={`0 0 ${sz} ${sz}`}>
+      {/* Background rings */}
+      {[0.33, 0.66, 1].map((r) => (
+        <circle
+          key={r}
+          cx={cx}
+          cy={cy}
+          r={maxR * r}
+          fill="none"
+          stroke="#C4B890"
+          strokeWidth="0.3"
+          opacity="0.08"
+        />
+      ))}
+      {/* Triangle spokes */}
+      {items.map((item, i) => {
+        const angle = (i / n) * Math.PI * 2 - Math.PI / 2;
+        const tipR = maxR * (item.intensity / 5);
+        const innerR = tipR * 0.25;
+        const spread = 0.3;
+        const sa = angle - spread;
+        const ea = angle + spread;
+        const isActive = activeSpoke === i;
+
+        const tipX = cx + tipR * Math.cos(angle);
+        const tipY = cy + tipR * Math.sin(angle);
+        const sX1 = cx + innerR * Math.cos(sa);
+        const sY1 = cy + innerR * Math.sin(sa);
+        const sX2 = cx + innerR * Math.cos(ea);
+        const sY2 = cy + innerR * Math.sin(ea);
+
+        return (
+          <g
+            key={item.name}
+            className="cursor-pointer"
+            onClick={() => setActiveSpoke(isActive ? null : i)}
+          >
+            {/* Triangle spoke */}
+            <polygon
+              points={`${cx},${cy} ${sX1},${sY1} ${tipX},${tipY} ${sX2},${sY2}`}
+              fill={item.color}
+              opacity={isActive ? 0.7 : 0.25 + (item.intensity / 5) * 0.2}
+              className="transition-all duration-500"
+              style={{ filter: isActive ? `drop-shadow(0 0 6px ${item.color}40)` : undefined }}
+            />
+            {/* Dot at tip */}
+            <circle
+              cx={tipX}
+              cy={tipY}
+              r={isActive ? 4 : 2.5}
+              fill={item.color}
+              opacity={isActive ? 0.9 : 0.6}
+            />
+            {/* Label outside */}
+            <text
+              x={cx + (maxR + 14) * Math.cos(angle)}
+              y={cy + (maxR + 14) * Math.sin(angle)}
+              textAnchor="middle"
+              dominantBaseline="middle"
+              style={{
+                fontSize: isActive ? '9px' : '7px',
+                fontFamily: 'var(--font-handwritten)',
+                fontWeight: isActive ? 700 : 500,
+                fill: item.color,
+              }}
+            >
+              {item.name}
+            </text>
+          </g>
+        );
+      })}
+      {/* Center */}
+      <circle cx={cx} cy={cy} r={6} fill="#C4A060" opacity="0.08" />
+      <text
+        x={cx}
+        y={cy + 1}
+        textAnchor="middle"
+        dominantBaseline="middle"
+        style={{
+          fontSize: '6px',
+          fontFamily: 'var(--font-handwritten)',
+          fill: '#8A6A4A',
+          opacity: 0.4,
+          fontWeight: 700,
+        }}
+      >
+        you
+      </text>
+    </svg>
+  );
+}
+
 function LosangeDemo() {
   const [activeQ, setActiveQ] = useState<number | null>(null);
   const quads = [
@@ -949,6 +1285,22 @@ const VISUAL_TOOLS = [
     color: '#6890B0',
     desc: 'Feel → Think → Act → Rest. A diamond that cycles through the emotional processing loop. Future: Journey page deep enquiry tool.',
     Visual: LosangeDemo,
+  },
+  {
+    id: 'river',
+    title: 'The Soul River',
+    subtitle: 'Your journey flowing through time',
+    color: '#D06080',
+    desc: 'Dots flow left to right — past to present. Peaks are your highs, valleys your lows. Colours show what lifted you and what pulled you down. Scrollable portrait view.',
+    Visual: SoulRiverDemo,
+  },
+  {
+    id: 'tri-wheel',
+    title: 'Triangle Wheel',
+    subtitle: 'Strengths & weaknesses as spokes',
+    color: '#C87050',
+    desc: 'Each triangle is a named pattern. Length = intensity. Warm colours = strengths. Cool colours = weaknesses. Point faces center (you).',
+    Visual: TriangleWheelDemo,
   },
 ];
 
