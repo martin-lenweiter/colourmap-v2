@@ -6,9 +6,12 @@
 # - Behavior-changing code is any changed file under app/, components/, lib/, or pages/
 #   except *.test.ts, *.test.tsx, *.md, and *.json files.
 # - A docs/specs/** change satisfies the spec update requirement.
-# - A no-spec-impact token in SPEC_PR_BODY or any commit message in the diff range bypasses failure.
+# - An active no-spec-impact declaration in SPEC_PR_BODY or any commit message in the diff range bypasses failure.
+# - Unchecked PR-template checklist items do not count as active declarations.
 
 set -euo pipefail
+
+source "$(dirname "$0")/policy-pr-body.sh"
 
 base_ref="origin/${GITHUB_BASE_REF:-main}"
 diff_range="${base_ref}...HEAD"
@@ -46,7 +49,8 @@ fi
 
 commit_messages=$(git log --format=%B "${diff_range}" 2>/dev/null || true)
 
-if grep -q "no-spec-impact" <<<"${pr_body}" || grep -q "no-spec-impact" <<<"${commit_messages}"; then
+if pr_body_has_active_token "${pr_body}" "no-spec-impact" \
+  || grep -q "no-spec-impact" <<<"${commit_messages}"; then
   echo "OK: no-spec-impact declaration detected."
   exit 0
 fi

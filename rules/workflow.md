@@ -79,7 +79,7 @@ Push to a branch, not `main`. Open a pull request. Never push directly to `main`
 
 Use `no-spec-impact` only when a change is purely internal: refactor-only work, test cleanup, or other non-behavioral maintenance with no user-visible effect.
 
-Declare it by including the exact text `no-spec-impact` in the PR body or a commit message.
+Declare it by including the exact text `no-spec-impact` in the PR body or a commit message. An unchecked PR-template checklist item does not count as a declaration.
 
 It is wrong to use `no-spec-impact` when the change:
 
@@ -115,7 +115,7 @@ Hard limits are enforced by `check-pr-scope.sh` in CI:
 - 25 changed files max
 - 1000 changed lines max
 
-These fail the `policy-pr-scope` check unless `LARGE_PR_APPROVED` appears in the PR body.
+These fail the `policy-pr-scope` check unless an active `LARGE_PR_APPROVED` declaration appears in the PR body.
 
 Warning thresholds are surfaced but do not block:
 
@@ -126,6 +126,7 @@ When a large change is unavoidable:
 
 - Add `LARGE_PR_APPROVED` to the PR body with a justification
 - Example: `LARGE_PR_APPROVED: Initial Playwright setup requires installing new dependency and creating config, tests, and CI job simultaneously.`
+- Leaving `LARGE_PR_APPROVED` in an unchecked PR-template checklist item does not activate the bypass.
 
 Forbidden patterns:
 

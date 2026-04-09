@@ -202,12 +202,13 @@ These changes are Lane B and must not be auto-merged.
 - failure at more than 25 changed files
 - warning at more than 500 changed lines
 - failure at more than 1000 changed lines
-- bypass only with `LARGE_PR_APPROVED` in the PR body or commit messages
+- bypass only with an active `LARGE_PR_APPROVED` declaration in the PR body or commit messages; unchecked PR-template checklist items do not count
 
 ### Spec And Test Drift Policy
 
-- `scripts/check-spec-drift.sh` fails behavior-changing code changes unless the PR includes a `docs/specs/**` update or `no-spec-impact`.
-- `scripts/check-test-drift.sh` fails test-file changes unless the PR includes a `docs/specs/**` update or `no-spec-impact`.
+- `scripts/check-spec-drift.sh` fails behavior-changing code changes unless the PR includes a `docs/specs/**` update or an active `no-spec-impact` declaration.
+- `scripts/check-test-drift.sh` fails test-file changes unless the PR includes a `docs/specs/**` update or an active `no-spec-impact` declaration.
+- Unchecked PR-template checklist items do not count as active declarations.
 
 ### Test Pairing Policy
 

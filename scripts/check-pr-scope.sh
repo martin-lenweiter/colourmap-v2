@@ -3,10 +3,13 @@
 # Assumptions:
 # - This script compares HEAD against origin/${GITHUB_BASE_REF:-main}.
 # - CI passes the PR body through PR_BODY, but local runs may omit it.
-# - A LARGE_PR_APPROVED token in PR_BODY or any commit message in the diff range bypasses failure thresholds only.
+# - An active LARGE_PR_APPROVED declaration in PR_BODY or any commit message in the diff range bypasses failure thresholds only.
+# - Unchecked PR-template checklist items do not count as active declarations.
 # - Warning thresholds are always reported even when the bypass token is present.
 
 set -euo pipefail
+
+source "$(dirname "$0")/policy-pr-body.sh"
 
 base_ref="origin/${GITHUB_BASE_REF:-main}"
 diff_range="${base_ref}...HEAD"
@@ -23,7 +26,7 @@ fi
 commit_messages=$(git log --format=%B "${diff_range}" 2>/dev/null || true)
 
 approved=false
-if grep -q "LARGE_PR_APPROVED" <<<"${pr_body}"; then
+if pr_body_has_active_token "${pr_body}" "LARGE_PR_APPROVED"; then
   approved=true
 elif grep -q "LARGE_PR_APPROVED" <<<"${commit_messages}"; then
   approved=true
@@ -63,4 +66,3 @@ if [[ ${#fail_messages[@]} -gt 0 ]]; then
 fi
 
 echo "OK: PR scope is within policy thresholds."
-

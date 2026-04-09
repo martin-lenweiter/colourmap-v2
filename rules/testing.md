@@ -13,7 +13,7 @@ Confidence through enforced, risk-weighted coverage and behavior-based tests.
 - **Protected paths must not regress in coverage.**
 - **Bug fixes need regression tests when feasible.**
 - **No test drift.** Test changes must be justified by the spec, not by implementation drift. If behavior changed accidentally and you are updating tests to match, that is a spec violation. Update the spec first, then update the tests, then commit.
-- **Declare `no-spec-impact` only when no behavior changed.** If tests change as part of a refactor with no user-visible effect, declare `no-spec-impact` in the PR body.
+- **Declare `no-spec-impact` only when no behavior changed.** If tests change as part of a refactor with no user-visible effect, declare `no-spec-impact` in the PR body. Unchecked PR-template checklist items do not count.
 - **Test the behavior, not the implementation.** Tests should break when behavior changes, not when internals are refactored.
 - **One test file per source file.** Co-locate: `lib/foo.ts` → `lib/foo.test.ts`, `app/api/bar/route.ts` → `app/api/bar/route.test.ts`.
 - **Route and service pairing is machine-enforced.** Every `app/api/**/route.ts` needs a sibling `route.test.ts` or `route.test.tsx`, and every `lib/services/*.ts` needs a sibling test unless `config/repo-policy.json` records an explicit exception.
