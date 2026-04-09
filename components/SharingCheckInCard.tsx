@@ -1,7 +1,6 @@
 'use client';
 
 import { useState } from 'react';
-import BoxDesignToggle, { useBoxFont } from '@/components/BoxDesignToggle';
 import CockpitCat from '@/components/CockpitCat';
 
 /* ═══════════════════════════════════════════════════════════
@@ -83,11 +82,6 @@ function SimpleList({
 }
 
 export default function SharingCheckInCard() {
-  const {
-    font: boxFont,
-    setFont: setBoxFont,
-    fontFamily,
-  } = useBoxFont('colourmap:sharing-card-font');
   const [openSections, setOpenSections] = useState<Record<string, boolean>>({
     people: true,
     gratitude: false,
@@ -129,15 +123,6 @@ export default function SharingCheckInCard() {
     >
       <CockpitCat />
 
-      <div className="flex justify-end">
-        <BoxDesignToggle
-          storageKey="colourmap:sharing-card-font"
-          accentColor="#6B7F4E"
-          value={boxFont}
-          onChange={setBoxFont}
-        />
-      </div>
-
       {sections.map((s) => (
         <div key={s.key}>
           <button
@@ -146,7 +131,10 @@ export default function SharingCheckInCard() {
             className="flex w-full cursor-pointer items-center justify-between"
             style={{ background: 'none', border: 'none', padding: 0 }}
           >
-            <span className="text-base font-semibold" style={{ color: SHARING_COLOR, fontFamily }}>
+            <span
+              className="text-base font-semibold"
+              style={{ color: SHARING_COLOR, fontFamily: 'var(--font-handwritten)' }}
+            >
               {s.label}
             </span>
             <span className="text-xs text-muted-foreground/30">
