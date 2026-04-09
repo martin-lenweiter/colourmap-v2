@@ -1,7 +1,6 @@
 'use client';
 
 import { useState } from 'react';
-import BoxDesignToggle, { useBoxFont } from '@/components/BoxDesignToggle';
 import CockpitCat from '@/components/CockpitCat';
 
 /* ═══════════════════════════════════════════════════════════
@@ -45,7 +44,7 @@ function TodoList({ fontFamily }: { fontFamily: string }) {
         {items.map((item) => (
           <span
             key={item.id}
-            className="inline-flex cursor-pointer items-center gap-1.5 rounded-full px-4 py-2 text-sm transition-all hover:scale-105"
+            className="inline-flex cursor-pointer items-center gap-1.5 rounded-full px-4 py-2.5 text-sm transition-all hover:scale-105"
             style={{
               background: item.done ? `${DOING_COLOR}15` : `${DOING_COLOR}08`,
               border: `1.5px solid ${item.done ? `${DOING_COLOR}40` : `${DOING_COLOR}22`}`,
@@ -197,7 +196,10 @@ function TrackersList({ fontFamily }: { fontFamily: string }) {
           style={{ background: `${DOING_COLOR}06`, border: `1px solid ${DOING_COLOR}15` }}
         >
           <div className="mb-2 flex items-center justify-between">
-            <span className="text-sm font-semibold" style={{ color: DOING_COLOR, fontFamily }}>
+            <span
+              className="text-sm font-semibold"
+              style={{ color: DOING_COLOR, fontFamily: 'var(--font-handwritten)' }}
+            >
               {t.name}
             </span>
             <div className="flex items-center gap-1.5">
@@ -263,11 +265,6 @@ function TrackersList({ fontFamily }: { fontFamily: string }) {
 
 /* ─── Main ─── */
 export default function DoingCheckInCard() {
-  const {
-    font: boxFont,
-    setFont: setBoxFont,
-    fontFamily,
-  } = useBoxFont('colourmap:doing-card-font');
   const [openSections, setOpenSections] = useState<Record<string, boolean>>({
     todos: true,
     missions: false,
@@ -277,22 +274,13 @@ export default function DoingCheckInCard() {
 
   return (
     <div
-      className="space-y-4 rounded-3xl border border-[#7a543833] px-5 py-6"
+      className="space-y-4 rounded-3xl border border-[#8A6A4A50] px-5 py-6"
       style={{
-        background: 'linear-gradient(180deg, rgba(251,244,232,0.95), rgba(246,236,221,0.92))',
+        background: 'linear-gradient(180deg, rgba(248,238,220,0.97), rgba(242,230,210,0.95))',
         boxShadow: '0 24px 50px -34px rgba(92,48,24,0.35)',
       }}
     >
       <CockpitCat />
-
-      <div className="flex justify-end">
-        <BoxDesignToggle
-          storageKey="colourmap:doing-card-font"
-          accentColor="#7A9A7A"
-          value={boxFont}
-          onChange={setBoxFont}
-        />
-      </div>
 
       {(['todos', 'missions', 'trackers'] as const).map((key) => {
         const label = key === 'todos' ? 'To-do' : key === 'missions' ? 'Missions' : 'Trackers';
@@ -304,7 +292,10 @@ export default function DoingCheckInCard() {
               className="flex w-full cursor-pointer items-center justify-between"
               style={{ background: 'none', border: 'none', padding: 0 }}
             >
-              <span className="text-base font-semibold" style={{ color: DOING_COLOR, fontFamily }}>
+              <span
+                className="text-xl font-bold"
+                style={{ color: DOING_COLOR, fontFamily: 'var(--font-serif)' }}
+              >
                 {label}
               </span>
               <span className="text-xs text-muted-foreground/30">
@@ -313,11 +304,11 @@ export default function DoingCheckInCard() {
             </button>
             {openSections[key] &&
               (key === 'todos' ? (
-                <TodoList fontFamily={fontFamily} />
+                <TodoList fontFamily={'var(--font-handwritten)'} />
               ) : key === 'missions' ? (
-                <MissionsList fontFamily={fontFamily} />
+                <MissionsList fontFamily={'var(--font-handwritten)'} />
               ) : (
-                <TrackersList fontFamily={fontFamily} />
+                <TrackersList fontFamily={'var(--font-handwritten)'} />
               ))}
           </div>
         );

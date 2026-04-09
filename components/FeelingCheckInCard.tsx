@@ -1,7 +1,6 @@
 'use client';
 
 import { useState } from 'react';
-import BoxDesignToggle, { useBoxFont } from '@/components/BoxDesignToggle';
 import CockpitCat from '@/components/CockpitCat';
 
 /* ═══════════════════════════════════════════════════════════
@@ -169,11 +168,6 @@ export default function FeelingCheckInCard() {
   const [barActive, setBarActive] = useState(false);
   const [showDesc, setShowDesc] = useState(false);
   const [trackerMode, setTrackerMode] = useState<TrackerMode>('facing');
-  const {
-    font: boxFont,
-    setFont: setBoxFont,
-    fontFamily,
-  } = useBoxFont('colourmap:feeling-card-font');
   const [note, setNote] = useState('');
   const [activeTracker, setActiveTracker] = useState<string | null>(null);
   const [trackerValues, setTrackerValues] = useState<Record<string, string>>({});
@@ -183,29 +177,23 @@ export default function FeelingCheckInCard() {
 
   return (
     <div
-      className="space-y-5 rounded-3xl border border-[#7a543833] px-5 py-6"
+      className="space-y-5 rounded-3xl border border-[#8A6A4A50] px-5 py-6"
       style={{
-        background: 'linear-gradient(180deg, rgba(251,244,232,0.95), rgba(246,236,221,0.92))',
+        background: 'linear-gradient(180deg, rgba(248,238,220,0.97), rgba(242,230,210,0.95))',
         boxShadow: '0 24px 50px -34px rgba(92,48,24,0.35)',
       }}
     >
-      {/* Design toggle */}
-      <div className="flex justify-end">
-        <BoxDesignToggle
-          storageKey="colourmap:feeling-card-font"
-          accentColor="#C4A060"
-          value={boxFont}
-          onChange={setBoxFont}
-        />
-      </div>
-
       {/* Cat */}
       <CockpitCat />
 
       {/* Emotion name — always visible above slider */}
       <p
         className="text-center text-lg font-semibold transition-all duration-300"
-        style={{ color: current.color, opacity: barActive ? 1 : 0.5, fontFamily }}
+        style={{
+          color: current.color,
+          opacity: barActive ? 1 : 0.5,
+          fontFamily: 'var(--font-serif)',
+        }}
       >
         {current.level}
       </p>
@@ -254,7 +242,7 @@ export default function FeelingCheckInCard() {
                 key={h.level}
                 style={{
                   flex: 1,
-                  height: 28,
+                  height: 34,
                   background: h.color,
                   opacity: barActive
                     ? isSelected
@@ -379,7 +367,7 @@ export default function FeelingCheckInCard() {
           <div className="flex flex-1 items-center justify-center gap-2">
             {(trackerMode === 'facing' ? INNER_TRACKERS : PEACE_TRACKERS).map((t, idx) => {
               const isActive = activeTracker === t.id;
-              const size = isActive ? 46 : 38;
+              const size = isActive ? 52 : 48;
               const shapes =
                 trackerMode === 'facing'
                   ? CELL_SHAPES

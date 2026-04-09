@@ -10,12 +10,14 @@ const PRIMARY_LINKS = [
   { href: '/day', label: 'Day' },
   { href: '/journey', label: 'Journey' },
   { href: '/notebook', label: 'Notebook' },
+  { href: '/workshop', label: 'Workshop' },
 ];
 
 const PHONE_PRIMARY_LINKS = [
   { href: '/day', label: 'Day' },
   { href: '/journey', label: 'Journey' },
   { href: '/notebook', label: 'Notebook' },
+  { href: '/workshop', label: 'Workshop' },
 ];
 
 const MORE_LINKS = [

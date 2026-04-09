@@ -1,7 +1,6 @@
 'use client';
 
 import { useState } from 'react';
-import BoxDesignToggle, { useBoxFont } from '@/components/BoxDesignToggle';
 import CockpitCat from '@/components/CockpitCat';
 
 /* ═══════════════════════════════════════════════════════════
@@ -83,11 +82,6 @@ function SimpleList({
 }
 
 export default function SharingCheckInCard() {
-  const {
-    font: boxFont,
-    setFont: setBoxFont,
-    fontFamily,
-  } = useBoxFont('colourmap:sharing-card-font');
   const [openSections, setOpenSections] = useState<Record<string, boolean>>({
     people: true,
     gratitude: false,
@@ -121,22 +115,13 @@ export default function SharingCheckInCard() {
 
   return (
     <div
-      className="space-y-4 rounded-3xl border border-[#7a543833] px-5 py-6"
+      className="space-y-4 rounded-3xl border border-[#8A6A4A50] px-5 py-6"
       style={{
-        background: 'linear-gradient(180deg, rgba(251,244,232,0.95), rgba(246,236,221,0.92))',
+        background: 'linear-gradient(180deg, rgba(248,238,220,0.97), rgba(242,230,210,0.95))',
         boxShadow: '0 24px 50px -34px rgba(92,48,24,0.35)',
       }}
     >
       <CockpitCat />
-
-      <div className="flex justify-end">
-        <BoxDesignToggle
-          storageKey="colourmap:sharing-card-font"
-          accentColor="#6B7F4E"
-          value={boxFont}
-          onChange={setBoxFont}
-        />
-      </div>
 
       {sections.map((s) => (
         <div key={s.key}>
@@ -146,7 +131,10 @@ export default function SharingCheckInCard() {
             className="flex w-full cursor-pointer items-center justify-between"
             style={{ background: 'none', border: 'none', padding: 0 }}
           >
-            <span className="text-base font-semibold" style={{ color: SHARING_COLOR, fontFamily }}>
+            <span
+              className="text-xl font-bold"
+              style={{ color: SHARING_COLOR, fontFamily: 'var(--font-serif)' }}
+            >
               {s.label}
             </span>
             <span className="text-xs text-muted-foreground/30">

@@ -1,11 +1,14 @@
 'use client';
 
 import CareCompass from '@/components/CareCompass';
+import CaringDepth from '@/components/CaringDepth';
 import DayTabs from '@/components/DayTabs';
 import DoingCheckInCard from '@/components/DoingCheckInCard';
+import DoingDepth from '@/components/DoingDepth';
 import FeelingCheckInCard from '@/components/FeelingCheckInCard';
 import ShareCompass from '@/components/ShareCompass';
 import SharingCheckInCard from '@/components/SharingCheckInCard';
+import SharingDepth from '@/components/SharingDepth';
 import StarCompass from '@/components/StarCompass';
 import { STYLE_PRESETS, StyleProvider, useStyle } from '@/components/StyleContext';
 
@@ -79,7 +82,10 @@ function DayContent() {
       <div className="mb-4 flex items-center justify-center gap-3">
         <div className="flex-1" />
         <div className="text-center">
-          <h1 className="text-2xl font-semibold" style={{ fontFamily: style.headingFont }}>
+          <h1
+            className="text-xl font-semibold uppercase tracking-[0.15em]"
+            style={{ fontFamily: 'var(--font-serif)', color: '#5C3018' }}
+          >
             Today
           </h1>
         </div>
@@ -93,18 +99,21 @@ function DayContent() {
           <div className="space-y-4">
             <FeelingCheckInCard />
             <CareCompass />
+            <CaringDepth />
           </div>
         }
         doingContent={
           <div className="space-y-4">
             <DoingCheckInCard />
             <StarCompass />
+            <DoingDepth />
           </div>
         }
         sharingContent={
           <div className="space-y-4">
             <SharingCheckInCard />
             <ShareCompass />
+            <SharingDepth />
           </div>
         }
       />
