@@ -3,7 +3,8 @@
 import { useState } from 'react';
 
 /* ═══════════════════════════════════════════════════════════
-   WORKSHOP — Live visual tools with interactive demos
+   WORKSHOP — Visual tools + Reflections + Design Variations
+   Three sections: Reflection, Visual Tools, Design Lab
    ═══════════════════════════════════════════════════════════ */
 
 /* ─── SVG Helpers ─── */
@@ -14,7 +15,133 @@ function arcPath(cx: number, cy: number, iR: number, oR: number, sa: number, ea:
   return `M ${cx + oR * Math.cos(s)} ${cy + oR * Math.sin(s)} A ${oR} ${oR} 0 0 1 ${cx + oR * Math.cos(e)} ${cy + oR * Math.sin(e)} L ${cx + iR * Math.cos(e)} ${cy + iR * Math.sin(e)} A ${iR} ${iR} 0 0 0 ${cx + iR * Math.cos(s)} ${cy + iR * Math.sin(s)} Z`;
 }
 
-/* ─── Visual: Compass ─── */
+/* ═══ SECTION 1: REFLECTIONS ═══ */
+const REFLECTIONS = [
+  {
+    id: 'architecture',
+    title: 'App Architecture',
+    color: '#C4A060',
+    content: `The app has four layers, each with a clear purpose:
+
+**Day** — The daily ritual. Three tabs (Caring, Doing, Sharing), each with three boxes. Box 1 is input (what's happening). Box 2 is measurement (rate your dimensions). Box 3 is pattern recognition (see your shape). This is where 90% of daily interaction happens. It should take under 3 minutes.
+
+**Journey** — The deep dives. Mandala Council, Echo Layers, Losange — tools you use weekly or when something feels off. Not daily. This is where you go when the compass shows a problem and you want to understand why.
+
+**Notebook** — The private journal. Notes, music, rhymes. Creative overflow. No structure, no tracking. Just a page and a pen.
+
+**Workshop** — The reflection space. Where you learn the tools, see alternatives, and think about your process. Meta-awareness. You're here now.
+
+The key insight: most wellness apps try to put everything on one screen. We separate rhythm (Day) from depth (Journey) from expression (Notebook) from understanding (Workshop). Each has its own pace.`,
+  },
+  {
+    id: 'user-journey',
+    title: 'The User Journey',
+    color: '#D4805A',
+    content: `A new user should be able to check in within 30 seconds of opening the app. No tutorial. No setup wizard. Just: slide the emotion bar, see the compass, done.
+
+**Day 1**: Slide the Hawkins bar. Maybe tap one FACING blob. Close the app.
+**Week 1**: Start rating compass dimensions. Write in Challenge/Flow. Add a tracker or two.
+**Month 1**: The depth boxes start showing patterns. You notice that Body is always low on Mondays. You see that "avoidance" appears in Challenge every week.
+**Month 3**: You open the Mandala Council for the first time. You discover which archetypes keep showing up. You start the shadow-strength work.
+
+The app reveals itself gradually. Nothing is hidden, but nothing demands attention. You discover depth by needing it, not by being told to use it.
+
+**What makes users stay**: seeing their own patterns reflected back. Not advice. Not gamification. Just a mirror that gets clearer over time.
+
+**What makes users leave**: too many features on day one. Guilt from missed days. Feeling like the app is judging them. We avoid all three.`,
+  },
+  {
+    id: 'missions-doing',
+    title: 'Missions & Doing — How to Develop',
+    color: '#7A9A7A',
+    content: `The Doing tab currently has: to-do pills, missions, trackers, STAR compass, Blocked/Moving, and the Life Wheel.
+
+**What works**: the tracker day-dots are simple and satisfying. The pill format for to-do is clean. The compass gives a high-level pulse.
+
+**What's missing**:
+- **Mission depth**: a mission like "Launch the project" should break down into sub-steps. Tap a mission pill → see its children. Each child is a smaller pill. Progress = children completed / total.
+- **Daily intention**: one sentence at the top of the Doing tab — "Today I focus on ___." This anchors the day. It's not a to-do. It's a compass heading.
+- **Weekly review**: every Sunday, the Life Wheel shows two overlapping shapes (this week vs last week). One question: "What will you do differently?"
+- **Done archive**: completed to-dos and missions shouldn't disappear. They should move to a gentle "done" section (collapsed by default) so you can see how much you've accomplished.
+
+**Design direction**: the Doing tab should feel like a captain's desk — precise, organised, warm wood tones. The to-do pills are like stamps in a logbook. Missions are like routes on a map. Trackers are like the ship's instruments.`,
+  },
+  {
+    id: 'typography',
+    title: 'Typography & Coherence',
+    color: '#6B4830',
+    content: `Five fonts are loaded. Each has a role:
+
+**Playfair Display** (--font-serif): Titles, section headers, tab labels. Elegant, grounding. This is the voice of the app. It says: "This is considered. This is intentional."
+
+**Caveat** (--font-handwritten): Compass labels, blob letters, journal entries, input placeholders. Warm, personal. This is the user's voice. It says: "This is yours. This is intimate."
+
+**Courier Prime** (--font-cowboy): Alternative style. Typewriter feel. For users who want structure and precision. It says: "This is a logbook. Every entry counts."
+
+**Righteous** (--font-groovy): Alternative style. Bold, expressive. For users who want energy and colour. It says: "This is alive. This celebrates you."
+
+**Kalam** (--font-sketch): Alternative style. Hand-drawn. For users who want rawness and authenticity. It says: "This is a sketchbook. Nothing is polished."
+
+**The coherence rule**: within one screen, use maximum 2 fonts. Serif for structure (titles, labels), handwritten for soul (inputs, entries, prompts). The design toggle switches the *pair*, not individual elements.
+
+**What needs fixing**: some labels still use system fonts. All interactive text should use one of the five loaded fonts. No Tailwind defaults leaking through.`,
+  },
+  {
+    id: 'aesthetics',
+    title: 'Aesthetics & Visual Language',
+    color: '#9B6BA0',
+    content: `The visual identity rests on three materials:
+
+**Paper**: every card is parchment. Warm gradients from cream to tan. The deeper you go (Box 1 → 2 → 3), the deeper the paper tone. Like layers of a journal — the first page is bright, the last is aged.
+
+**Ink**: text is brown, not black. Dark brown (#5C3018) for titles. Warm brown (#8A6A4A) for body text. Muted brown (#C4A060) for accents. Black is too harsh. Grey is too cold. Brown is earth.
+
+**Geometry**: circles for compasses, organic shapes for FACING blobs, petals for mandalas, stars for constellations. No sharp rectangles. No grid layouts. Everything should feel like it grew, not like it was manufactured.
+
+**The warmth principle**: when in doubt, make it warmer. A colder colour should always be balanced by a warmer neighbour. The app should feel like holding a warm cup — not like staring at a screen.
+
+**What's not working yet**: some borders are too faint (invisible in light mode). The Hawkins slider blocks could be warmer — they feel like a clinical scale, not an emotional instrument. The writing column inputs are too thin — they should feel like ruled notebook lines, not form fields.`,
+  },
+  {
+    id: 'what-users-need',
+    title: 'What Users Actually Need',
+    color: '#C87050',
+    content: `From research on wellness app usage:
+
+**Why users leave**: 1) Too much to set up. 2) Guilt from missed days. 3) Generic advice that doesn't feel personal. 4) No visible progress. 5) The app feels like homework.
+
+**Why users stay**: 1) It shows them something true about themselves. 2) It takes under 2 minutes. 3) It doesn't punish absence. 4) It gets more useful over time. 5) It feels warm, not clinical.
+
+**What Colourmap does differently**:
+- No setup required. First check-in is one slider.
+- No streaks. No red warnings for missed days.
+- The compass shows YOUR shape, not a comparison to others.
+- Depth reveals itself gradually (Box 1 → 2 → 3 → Journey → Workshop).
+- The aesthetic says "journal" not "dashboard."
+
+**What V2 has that CPC doesn't**:
+- Real authentication (Supabase)
+- Backend persistence (data survives cache clears)
+- AI coaching and reflection (Claude integration)
+- Martin's guardrails (safe, tested, production-ready)
+- Professional font system (7 loaded fonts with CSS vars)
+- Proper routing and navigation
+
+**What CPC has that V2 needs**:
+- 8 compass design shapes (ring, pizza, rose, split, parchment, losange, triangle, classic)
+- Mandala Council with 102 archetypes
+- Echo Workshop with 5 depth variants
+- Compass Workshop (Hybrid Rose, Mandala, Wheel, Losange)
+- Flower Workshop (sacred geometry 3-8 petals)
+- FACING + PEACE + STAR tracker systems
+- Challenge/Flow + Blocked/Moving + Distant/Connected writing columns
+- Cat that responds to emotion colour
+
+These are being ported via the feature branches.`,
+  },
+];
+
+/* ═══ SECTION 2: VISUAL TOOLS ═══ */
 function CompassDemo() {
   const [active, setActive] = useState<number | null>(null);
   const slices = [
@@ -27,7 +154,6 @@ function CompassDemo() {
   const sz = 200;
   const cx = sz / 2;
   const cy = sz / 2;
-
   return (
     <svg width={sz} height={sz} viewBox={`0 0 ${sz} ${sz}`}>
       <circle cx={cx} cy={cy} r={78} fill="none" stroke="#ddb97f" strokeWidth="0.6" opacity={0.2} />
@@ -51,34 +177,30 @@ function CompassDemo() {
           onClick={() => setActive(active === i ? null : i)}
         />
       ))}
-      {slices.map((s, i) => {
-        const r = 56;
-        return (
-          <text
-            key={`l-${s.label}`}
-            x={cx + r * Math.cos(angles[i])}
-            y={cy + r * Math.sin(angles[i])}
-            textAnchor="middle"
-            dominantBaseline="middle"
-            className="cursor-pointer select-none"
-            style={{
-              fontSize: '12px',
-              fontFamily: 'var(--font-serif)',
-              fontWeight: 700,
-              fill: active === i ? s.color : '#8f6a47',
-            }}
-            onClick={() => setActive(active === i ? null : i)}
-          >
-            {s.label}
-          </text>
-        );
-      })}
+      {slices.map((s, i) => (
+        <text
+          key={`l-${s.label}`}
+          x={cx + 56 * Math.cos(angles[i])}
+          y={cy + 56 * Math.sin(angles[i])}
+          textAnchor="middle"
+          dominantBaseline="middle"
+          className="cursor-pointer select-none"
+          style={{
+            fontSize: '12px',
+            fontFamily: 'var(--font-serif)',
+            fontWeight: 700,
+            fill: active === i ? s.color : '#8f6a47',
+          }}
+          onClick={() => setActive(active === i ? null : i)}
+        >
+          {s.label}
+        </text>
+      ))}
       <circle cx={cx} cy={cy} r={16} fill="#C4A060" opacity={0.08} />
     </svg>
   );
 }
 
-/* ─── Visual: Mandala ─── */
 function MandalaDemo() {
   const [active, setActive] = useState<number | null>(null);
   const petals = [
@@ -95,15 +217,12 @@ function MandalaDemo() {
   const sz = 200;
   const cx = sz / 2;
   const cy = sz / 2;
-
   return (
     <svg width={sz} height={sz} viewBox={`0 0 ${sz} ${sz}`}>
       <circle cx={cx} cy={cy} r={90} fill="none" stroke="#C4B890" strokeWidth="0.3" opacity={0.1} />
       {petals.map((c, i) => {
         const a = (i / 8) * Math.PI * 2 - Math.PI / 2;
         const tipR = active === i ? 82 : 72;
-        const tipX = cx + tipR * Math.cos(a);
-        const tipY = cy + tipR * Math.sin(a);
         const pa = a + Math.PI / 2;
         const sp = active === i ? 18 : 14;
         const c1x = cx + 20 * Math.cos(a) + sp * Math.cos(pa);
@@ -113,7 +232,7 @@ function MandalaDemo() {
         return (
           <path
             key={i}
-            d={`M ${cx} ${cy} Q ${c1x} ${c1y} ${tipX} ${tipY} Q ${c2x} ${c2y} ${cx} ${cy} Z`}
+            d={`M ${cx} ${cy} Q ${c1x} ${c1y} ${cx + tipR * Math.cos(a)} ${cy + tipR * Math.sin(a)} Q ${c2x} ${c2y} ${cx} ${cy} Z`}
             fill={c}
             opacity={active === i ? 0.7 : 0.3}
             className="cursor-pointer transition-all duration-500"
@@ -138,7 +257,6 @@ function MandalaDemo() {
               fontFamily: 'var(--font-handwritten)',
               fontWeight: 600,
               fill: active === i ? '#fff' : petals[i],
-              opacity: active === i ? 1 : 0.7,
             }}
             className="cursor-pointer select-none"
             onClick={() => setActive(active === i ? null : i)}
@@ -152,7 +270,6 @@ function MandalaDemo() {
   );
 }
 
-/* ─── Visual: Echo Layers ─── */
 function EchoDemo() {
   const [active, setActive] = useState<number | null>(null);
   const rings = [
@@ -167,7 +284,6 @@ function EchoDemo() {
   const cy = sz / 2;
   const maxR = 90;
   const rw = maxR / 5.5;
-
   return (
     <svg width={sz} height={sz} viewBox={`0 0 ${sz} ${sz}`}>
       {[...rings].reverse().map((ring, ri) => {
@@ -212,7 +328,6 @@ function EchoDemo() {
   );
 }
 
-/* ─── Visual: Life Wheel ─── */
 function WheelDemo() {
   const aspects = [
     { name: 'Sleep', value: 6 },
@@ -235,10 +350,10 @@ function WheelDemo() {
       lx: cx + (maxR + 14) * Math.cos(angle),
       ly: cy + (maxR + 14) * Math.sin(angle),
       name: a.name,
+      angle,
     };
   });
-  const dataPath = pts.map((p, i) => `${i === 0 ? 'M' : 'L'} ${p.x} ${p.y}`).join(' ') + ' Z';
-
+  const dataPath = `${pts.map((p, i) => `${i === 0 ? 'M' : 'L'} ${p.x} ${p.y}`).join(' ')} Z`;
   return (
     <svg width={sz} height={sz} viewBox={`0 0 ${sz} ${sz}`}>
       {[0.25, 0.5, 0.75, 1].map((r) => (
@@ -258,8 +373,8 @@ function WheelDemo() {
           key={i}
           x1={cx}
           y1={cy}
-          x2={cx + maxR * Math.cos((i / aspects.length) * Math.PI * 2 - Math.PI / 2)}
-          y2={cy + maxR * Math.sin((i / aspects.length) * Math.PI * 2 - Math.PI / 2)}
+          x2={cx + maxR * Math.cos(p.angle)}
+          y2={cy + maxR * Math.sin(p.angle)}
           stroke="#C4B890"
           strokeWidth="0.3"
           opacity={0.15}
@@ -296,7 +411,6 @@ function WheelDemo() {
   );
 }
 
-/* ─── Visual: Mirror ─── */
 function MirrorDemo() {
   const sz = 200;
   const cx = sz / 2;
@@ -312,14 +426,9 @@ function MirrorDemo() {
           <stop offset="0%" stopColor="#C4A060" stopOpacity="0.4" />
           <stop offset="100%" stopColor="#C4A060" stopOpacity="0" />
         </radialGradient>
-        <radialGradient id="w-overlap" cx="50%" cy="50%" r="30%">
-          <stop offset="0%" stopColor="#B8905A" stopOpacity="0.3" />
-          <stop offset="100%" stopColor="#B8905A" stopOpacity="0" />
-        </radialGradient>
       </defs>
       <circle cx={cx - 25} cy={cy} r={65} fill="url(#w-chg)" />
       <circle cx={cx + 25} cy={cy} r={65} fill="url(#w-flow)" />
-      <circle cx={cx} cy={cy} r={30} fill="url(#w-overlap)" />
       <text
         x={cx - 45}
         y={cy - 5}
@@ -348,51 +457,36 @@ function MirrorDemo() {
       >
         Flow
       </text>
-      <text
-        x={cx}
-        y={cy + 8}
-        textAnchor="middle"
-        style={{
-          fontSize: '8px',
-          fontFamily: 'var(--font-handwritten)',
-          fill: '#B8905A',
-          opacity: 0.5,
-        }}
-      >
-        integration
-      </text>
     </svg>
   );
 }
 
-/* ─── Visual: Constellation ─── */
 function ConstellationDemo() {
   const people = [
-    { name: 'Mom', angle: 0, brightness: 0.9, dist: 0.5 },
-    { name: 'Alex', angle: 1.2, brightness: 0.6, dist: 0.7 },
-    { name: 'Sam', angle: 2.4, brightness: 0.3, dist: 0.9 },
-    { name: 'Jo', angle: 3.6, brightness: 0.8, dist: 0.4 },
-    { name: 'Maya', angle: 5.0, brightness: 0.5, dist: 0.6 },
+    { name: 'Mom', a: 0, b: 0.9, d: 0.5 },
+    { name: 'Alex', a: 1.2, b: 0.6, d: 0.7 },
+    { name: 'Sam', a: 2.4, b: 0.3, d: 0.9 },
+    { name: 'Jo', a: 3.6, b: 0.8, d: 0.4 },
+    { name: 'Maya', a: 5.0, b: 0.5, d: 0.6 },
   ];
   const sz = 200;
   const cx = sz / 2;
   const cy = sz / 2;
-
   return (
     <svg width={sz} height={sz} viewBox={`0 0 ${sz} ${sz}`}>
       {people.map((p) => {
-        const r = 30 + p.dist * 50;
-        const x = cx + r * Math.cos(p.angle);
-        const y = cy + r * Math.sin(p.angle);
+        const r = 30 + p.d * 50;
+        const x = cx + r * Math.cos(p.a);
+        const y = cy + r * Math.sin(p.a);
         return (
           <g key={p.name}>
             <circle
               cx={x}
               cy={y}
-              r={p.brightness * 5 + 2}
+              r={p.b * 5 + 2}
               fill="#C4A060"
-              opacity={p.brightness * 0.7 + 0.1}
-              style={{ filter: p.brightness > 0.6 ? 'drop-shadow(0 0 4px #C4A06060)' : undefined }}
+              opacity={p.b * 0.7 + 0.1}
+              style={{ filter: p.b > 0.6 ? 'drop-shadow(0 0 4px #C4A06060)' : undefined }}
             />
             <text
               x={x}
@@ -402,7 +496,7 @@ function ConstellationDemo() {
                 fontSize: '7px',
                 fontFamily: 'var(--font-handwritten)',
                 fill: '#C4A060',
-                opacity: p.brightness * 0.5 + 0.3,
+                opacity: p.b * 0.5 + 0.3,
               }}
             >
               {p.name}
@@ -410,182 +504,17 @@ function ConstellationDemo() {
           </g>
         );
       })}
-      {/* thin connection lines */}
-      <line
-        x1={cx + 30 * Math.cos(0) + 0.5 * 50 * Math.cos(0)}
-        y1={cy + 30 * Math.sin(0) + 0.5 * 50 * Math.sin(0)}
-        x2={cx + 30 * Math.cos(3.6) + 0.4 * 50 * Math.cos(3.6)}
-        y2={cy + 30 * Math.sin(3.6) + 0.4 * 50 * Math.sin(3.6)}
-        stroke="#C4A060"
-        strokeWidth="0.3"
-        opacity={0.15}
-        strokeDasharray="2 2"
-      />
     </svg>
   );
 }
 
-/* ─── Visual: Losange ─── */
-function LosangeDemo() {
-  const [emotion, setEmotion] = useState('Fear');
-  const emotions = [
-    { label: 'Fear', color: '#D46050' },
-    { label: 'Hope', color: '#70C040' },
-    { label: 'Peace', color: '#18B0B0' },
-  ];
-  const sz = 200;
-  const cx = sz / 2;
-  const cy = sz / 2;
-  const R = 70;
-  const dims = ['Structure', 'Target', 'Action', 'Resources'];
-  const corners = [
-    { dx: -R, dy: 0 },
-    { dx: 0, dy: -R },
-    { dx: R, dy: 0 },
-    { dx: 0, dy: R },
-  ];
-  const ec = emotions.find((e) => e.label === emotion) || emotions[0];
-
-  return (
-    <div className="flex flex-col items-center gap-2">
-      <svg width={sz} height={sz} viewBox={`0 0 ${sz} ${sz}`}>
-        {[1, 0.65, 0.35].map((s, si) => (
-          <polygon
-            key={si}
-            points={corners.map((c) => `${cx + c.dx * s},${cy + c.dy * s}`).join(' ')}
-            fill="none"
-            stroke="#C4B890"
-            strokeWidth={si === 0 ? '1' : '0.4'}
-            opacity={si === 0 ? 0.25 : 0.12}
-          />
-        ))}
-        {corners.map((c, i) => {
-          const next = corners[(i + 1) % 4];
-          return (
-            <polygon
-              key={i}
-              points={`${cx},${cy} ${cx + c.dx},${cy + c.dy} ${cx + next.dx},${cy + next.dy}`}
-              fill={ec.color}
-              opacity={0.08}
-            />
-          );
-        })}
-        {corners.map((c, i) => (
-          <text
-            key={dims[i]}
-            x={cx + c.dx * 0.55}
-            y={cy + c.dy * 0.55}
-            textAnchor="middle"
-            dominantBaseline="middle"
-            style={{
-              fontSize: '9px',
-              fontFamily: 'var(--font-serif)',
-              fontWeight: 700,
-              fill: '#8A7A5A',
-            }}
-          >
-            {dims[i]}
-          </text>
-        ))}
-        <polygon
-          points={`${cx},${cy - 8} ${cx + 8},${cy} ${cx},${cy + 8} ${cx - 8},${cy}`}
-          fill={ec.color}
-          opacity={0.35}
-        />
-        <text
-          x={cx}
-          y={cy + 1}
-          textAnchor="middle"
-          dominantBaseline="middle"
-          style={{
-            fontSize: '7px',
-            fontFamily: 'var(--font-handwritten)',
-            fontWeight: 700,
-            fill: '#fff',
-          }}
-        >
-          {emotion}
-        </text>
-      </svg>
-      <div className="flex gap-1.5">
-        {emotions.map((e) => (
-          <button
-            key={e.label}
-            type="button"
-            onClick={() => setEmotion(e.label)}
-            className="cursor-pointer rounded-full px-3 py-1 text-[10px] font-semibold text-white transition-all"
-            style={{
-              background: e.color,
-              opacity: emotion === e.label ? 1 : 0.4,
-              border: 'none',
-              fontFamily: 'var(--font-handwritten)',
-            }}
-          >
-            {e.label}
-          </button>
-        ))}
-      </div>
-    </div>
-  );
-}
-
-/* ─── Visual: FACING blobs ─── */
-function FacingDemo() {
-  const [active, setActive] = useState<number | null>(null);
-  const blobs = [
-    { letter: 'F', color: '#C85050' },
-    { letter: 'A', color: '#D09060' },
-    { letter: 'C', color: '#A878A8' },
-    { letter: 'I', color: '#6890B0' },
-    { letter: 'N', color: '#C8A050' },
-    { letter: 'G', color: '#88A858' },
-  ];
-  const shapes = [
-    '60% 40% 55% 45% / 50% 60% 40% 50%',
-    '45% 55% 40% 60% / 55% 45% 55% 45%',
-    '50% 50% 45% 55% / 40% 60% 50% 50%',
-    '55% 45% 60% 40% / 50% 50% 45% 55%',
-    '52% 48% 42% 58% / 48% 52% 50% 50%',
-    '48% 52% 55% 45% / 55% 45% 48% 52%',
-  ];
-
-  return (
-    <div className="flex items-center justify-center gap-2">
-      {blobs.map((b, i) => (
-        <button
-          key={b.letter}
-          type="button"
-          onClick={() => setActive(active === i ? null : i)}
-          className="flex cursor-pointer items-center justify-center transition-all duration-300 hover:scale-110"
-          style={{
-            width: active === i ? 48 : 40,
-            height: active === i ? 48 : 40,
-            borderRadius: shapes[i],
-            background: b.color,
-            opacity: active === i ? 1 : 0.6,
-            border: 'none',
-          }}
-        >
-          <span
-            className="text-sm font-black text-white select-none"
-            style={{ fontFamily: 'var(--font-handwritten)' }}
-          >
-            {b.letter}
-          </span>
-        </button>
-      ))}
-    </div>
-  );
-}
-
-/* ─── Workshop Data ─── */
-const WORKSHOPS = [
+const VISUAL_TOOLS = [
   {
     id: 'compass',
     title: 'The Compass',
     subtitle: 'Rate your 4 dimensions',
     color: '#C4A060',
-    desc: 'Ring compass with clickable arcs. Each arc represents one dimension. Tap to rate 1-8. Sub-cells reveal deeper questions. Lives in Box 2 of every Day tab.',
+    desc: 'Ring compass with clickable arcs. Tap to rate 1-8. Lives in Box 2 of every Day tab.',
     Visual: CompassDemo,
   },
   {
@@ -593,15 +522,15 @@ const WORKSHOPS = [
     title: 'The Mandala',
     subtitle: 'Sacred geometry with inner voices',
     color: '#C86AD0',
-    desc: 'Eight petals, each an archetype. The mandala becomes your unique inner portrait. Tap a petal to hear its voice speak. Future: Journey page.',
+    desc: 'Eight petals, each an archetype. Future: Journey page.',
     Visual: MandalaDemo,
   },
   {
     id: 'echo',
     title: 'The Echo Layers',
-    subtitle: 'Peel the onion — depth rings',
+    subtitle: 'Peel the onion',
     color: '#D44040',
-    desc: "Concentric rings from surface to core. Click from outside in to reveal what's underneath. Five variants: Emotional Core, Decision Depth, Relationship, Energy, Growth. Future: Journey page.",
+    desc: 'Concentric rings from surface to core. Five variants. Future: Journey page.',
     Visual: EchoDemo,
   },
   {
@@ -609,15 +538,15 @@ const WORKSHOPS = [
     title: 'The Life Wheel',
     subtitle: 'Track habits as a radar shape',
     color: '#7A9A7A',
-    desc: 'Spider chart where your trackers become the spokes. The shape shows which habits are strong vs weak. Compare this week to last. Lives in Box 3 of the Doing tab.',
+    desc: 'Spider chart where trackers become spokes. Lives in Box 3 of Doing tab.',
     Visual: WheelDemo,
   },
   {
     id: 'mirror',
     title: 'The Mirror',
-    subtitle: 'Challenge and Flow made visible',
+    subtitle: 'Challenge and Flow patterns',
     color: '#C4A070',
-    desc: 'Two overlapping watercolour circles. Challenge grows the left. Flow grows the right. Where they overlap: integration. Lives in Box 3 of the Caring tab.',
+    desc: 'Two overlapping circles showing your balance. Lives in Box 3 of Caring tab.',
     Visual: MirrorDemo,
   },
   {
@@ -625,33 +554,78 @@ const WORKSHOPS = [
     title: 'The Constellation',
     subtitle: 'Your people as stars',
     color: '#6B7F4E',
-    desc: 'People become stars. Brightness = connection recency. Distant stars drift outward. Connected stars pull inward. Lives in Box 3 of the Sharing tab.',
+    desc: 'Brightness = connection recency. Lives in Box 3 of Sharing tab.',
     Visual: ConstellationDemo,
-  },
-  {
-    id: 'losange',
-    title: 'The Losange',
-    subtitle: 'How emotions distort doing',
-    color: '#9B6BA0',
-    desc: 'Diamond with 4 Doing dimensions. Pick an emotion and see how it refracts through Structure, Target, Action, Resources. Future: Journey page.',
-    Visual: LosangeDemo,
-  },
-  {
-    id: 'facing',
-    title: 'FACING / PEACE',
-    subtitle: 'Name it or release it',
-    color: '#C85050',
-    desc: "Six organic cell-shaped blobs. FACING names what's hard. PEACE walks you through releasing it. Swipe between them. Lives in Box 1 of the Caring tab.",
-    Visual: FacingDemo,
   },
 ];
 
-/* ─── Main ─── */
+/* ═══ SHARED PILL COMPONENT ═══ */
+function Pill({
+  title,
+  subtitle,
+  color,
+  isOpen,
+  onToggle,
+  children,
+}: {
+  title: string;
+  subtitle: string;
+  color: string;
+  isOpen: boolean;
+  onToggle: () => void;
+  children: React.ReactNode;
+}) {
+  return (
+    <div>
+      <button
+        type="button"
+        onClick={onToggle}
+        className="flex w-full cursor-pointer items-center justify-between rounded-2xl px-5 py-4 transition-all duration-200"
+        style={{
+          background: isOpen
+            ? 'linear-gradient(180deg, rgba(248,238,220,0.97), rgba(242,230,210,0.95))'
+            : 'transparent',
+          border: `1.5px solid ${isOpen ? '#8A6A4A50' : '#8A6A4A20'}`,
+        }}
+      >
+        <div className="text-left">
+          <span
+            className="block text-base font-bold"
+            style={{ color, fontFamily: 'var(--font-serif)' }}
+          >
+            {title}
+          </span>
+          <span
+            className="block text-xs text-muted-foreground/60"
+            style={{ fontFamily: 'var(--font-handwritten)' }}
+          >
+            {subtitle}
+          </span>
+        </div>
+        <span className="text-sm text-muted-foreground/30">{isOpen ? '▲' : '▼'}</span>
+      </button>
+      {isOpen && (
+        <div
+          className="animate-in fade-in duration-200 rounded-b-2xl border border-t-0 px-5 py-5"
+          style={{
+            borderColor: '#8A6A4A30',
+            background: 'linear-gradient(180deg, rgba(248,238,220,0.97), rgba(242,230,210,0.95))',
+          }}
+        >
+          {children}
+        </div>
+      )}
+    </div>
+  );
+}
+
+/* ═══ MAIN ═══ */
 export default function WorkshopPage() {
   const [openId, setOpenId] = useState<string | null>(null);
+  const [section, setSection] = useState<'reflection' | 'tools' | 'lab'>('reflection');
 
   return (
-    <div className="mx-auto max-w-2xl space-y-3 px-4 py-6">
+    <div className="mx-auto max-w-2xl space-y-4 px-4 py-6">
       <div className="mb-6 text-center">
         <h1
           className="text-xl font-semibold uppercase tracking-[0.15em]"
@@ -663,56 +637,106 @@ export default function WorkshopPage() {
           className="mt-1 text-sm text-muted-foreground"
           style={{ fontFamily: 'var(--font-handwritten)' }}
         >
-          Visual tools — tap to explore.
+          Think. See. Refine.
         </p>
       </div>
 
-      {WORKSHOPS.map((w) => {
-        const isOpen = openId === w.id;
-        return (
-          <div key={w.id}>
-            <button
-              type="button"
-              onClick={() => setOpenId(isOpen ? null : w.id)}
-              className="flex w-full cursor-pointer items-center justify-between rounded-2xl px-5 py-4 transition-all duration-200"
-              style={{
-                background: isOpen
-                  ? 'linear-gradient(180deg, rgba(248,238,220,0.97), rgba(242,230,210,0.95))'
-                  : 'transparent',
-                border: `1.5px solid ${isOpen ? '#8A6A4A50' : '#8A6A4A20'}`,
-              }}
-            >
-              <div className="text-left">
-                <span
-                  className="block text-base font-bold"
-                  style={{ color: w.color, fontFamily: 'var(--font-serif)' }}
-                >
-                  {w.title}
-                </span>
-                <span
-                  className="block text-xs text-muted-foreground/60"
-                  style={{ fontFamily: 'var(--font-handwritten)' }}
-                >
-                  {w.subtitle}
-                </span>
-              </div>
-              <span className="text-sm text-muted-foreground/30">{isOpen ? '▲' : '▼'}</span>
-            </button>
+      {/* Section tabs */}
+      <div className="flex gap-1.5">
+        {[
+          { id: 'reflection' as const, label: 'Reflection' },
+          { id: 'tools' as const, label: 'Visual Tools' },
+          { id: 'lab' as const, label: 'Design Lab' },
+        ].map((s) => (
+          <button
+            key={s.id}
+            type="button"
+            onClick={() => {
+              setSection(s.id);
+              setOpenId(null);
+            }}
+            className="flex-1 cursor-pointer rounded-xl py-2.5 uppercase tracking-[0.18em] transition-all duration-200"
+            style={{
+              background: section === s.id ? '#C4A06015' : 'transparent',
+              border: `1.5px solid ${section === s.id ? '#8A6A4A' : '#8A6A4A25'}`,
+              color: '#6B4830',
+              fontFamily: 'var(--font-serif)',
+              fontSize: '11px',
+              fontWeight: 600,
+            }}
+          >
+            {s.label}
+          </button>
+        ))}
+      </div>
 
-            {isOpen && (
-              <div
-                className="animate-in fade-in duration-200 space-y-4 rounded-b-2xl border border-t-0 px-5 py-5"
-                style={{
-                  borderColor: '#8A6A4A30',
-                  background:
-                    'linear-gradient(180deg, rgba(248,238,220,0.97), rgba(242,230,210,0.95))',
-                }}
-              >
-                {/* Live visual */}
+      {/* REFLECTION SECTION */}
+      {section === 'reflection' && (
+        <div className="space-y-3">
+          {REFLECTIONS.map((r) => (
+            <Pill
+              key={r.id}
+              title={r.title}
+              subtitle=""
+              color={r.color}
+              isOpen={openId === r.id}
+              onToggle={() => setOpenId(openId === r.id ? null : r.id)}
+            >
+              <div className="prose-sm max-w-none">
+                {r.content.split('\n\n').map((para, i) => {
+                  if (para.startsWith('**') && para.includes('**:')) {
+                    const [bold, rest] = para.split('**:', 2);
+                    return (
+                      <p
+                        key={i}
+                        className="text-sm leading-relaxed mb-2"
+                        style={{ color: '#5C3018', fontFamily: 'var(--font-serif)' }}
+                      >
+                        <strong style={{ color: r.color }}>{bold.replace(/\*\*/g, '')}</strong>:
+                        {rest}
+                      </p>
+                    );
+                  }
+                  return (
+                    <p
+                      key={i}
+                      className="text-sm leading-relaxed mb-2"
+                      style={{ color: '#5C3018', fontFamily: 'var(--font-serif)' }}
+                    >
+                      {para.split('**').map((chunk, j) =>
+                        j % 2 === 1 ? (
+                          <strong key={j} style={{ color: r.color }}>
+                            {chunk}
+                          </strong>
+                        ) : (
+                          chunk
+                        ),
+                      )}
+                    </p>
+                  );
+                })}
+              </div>
+            </Pill>
+          ))}
+        </div>
+      )}
+
+      {/* VISUAL TOOLS SECTION */}
+      {section === 'tools' && (
+        <div className="space-y-3">
+          {VISUAL_TOOLS.map((w) => (
+            <Pill
+              key={w.id}
+              title={w.title}
+              subtitle={w.subtitle}
+              color={w.color}
+              isOpen={openId === w.id}
+              onToggle={() => setOpenId(openId === w.id ? null : w.id)}
+            >
+              <div className="space-y-4">
                 <div className="flex justify-center py-2">
                   <w.Visual />
                 </div>
-                {/* Description */}
                 <p
                   className="text-center text-sm leading-relaxed"
                   style={{ color: '#5C3018', fontFamily: 'var(--font-serif)' }}
@@ -720,10 +744,207 @@ export default function WorkshopPage() {
                   {w.desc}
                 </p>
               </div>
-            )}
-          </div>
-        );
-      })}
+            </Pill>
+          ))}
+        </div>
+      )}
+
+      {/* DESIGN LAB SECTION */}
+      {section === 'lab' && (
+        <div className="space-y-3">
+          <Pill
+            title="Typography Pairs"
+            subtitle="How the 5 fonts work together"
+            color="#6B4830"
+            isOpen={openId === 'typo'}
+            onToggle={() => setOpenId(openId === 'typo' ? null : 'typo')}
+          >
+            <div className="space-y-4">
+              {[
+                {
+                  name: 'Elegant',
+                  title: 'var(--font-serif)',
+                  body: 'var(--font-handwritten)',
+                  sample: 'Caring · Doing · Sharing',
+                },
+                {
+                  name: 'Cowboy',
+                  title: 'var(--font-cowboy)',
+                  body: 'var(--font-cowboy)',
+                  sample: 'CARING · DOING · SHARING',
+                },
+                {
+                  name: 'Groovy',
+                  title: 'var(--font-groovy)',
+                  body: 'var(--font-handwritten)',
+                  sample: 'Caring · Doing · Sharing',
+                },
+                {
+                  name: 'Sketch',
+                  title: 'var(--font-sketch)',
+                  body: 'var(--font-sketch)',
+                  sample: 'Caring · Doing · Sharing',
+                },
+              ].map((pair) => (
+                <div
+                  key={pair.name}
+                  className="rounded-xl px-4 py-3"
+                  style={{ background: '#C4A06008', border: '1px solid #C4A06015' }}
+                >
+                  <p className="text-xs uppercase tracking-wider text-muted-foreground/40 mb-1">
+                    {pair.name}
+                  </p>
+                  <p
+                    style={{
+                      fontFamily: pair.title,
+                      fontSize: '18px',
+                      fontWeight: 600,
+                      color: '#5C3018',
+                    }}
+                  >
+                    {pair.sample}
+                  </p>
+                  <p style={{ fontFamily: pair.body, fontSize: '14px', color: '#8A6A4A' }}>
+                    How does your inner world feel right now?
+                  </p>
+                </div>
+              ))}
+            </div>
+          </Pill>
+
+          <Pill
+            title="Colour Palettes"
+            subtitle="Warm, Vivid, Earth variations"
+            color="#C4A060"
+            isOpen={openId === 'colours'}
+            onToggle={() => setOpenId(openId === 'colours' ? null : 'colours')}
+          >
+            <div className="space-y-3">
+              {[
+                { name: 'Warm', colors: ['#D4805A', '#C4A070', '#C4906A', '#B07A5A'] },
+                { name: 'Vivid', colors: ['#D45050', '#C8A040', '#6890B0', '#88A858'] },
+                { name: 'Earth', colors: ['#B89868', '#C4A070', '#A89060', '#988050'] },
+                { name: 'Golden', colors: ['#C4A070', '#C4A070', '#C4A070', '#C4A070'] },
+              ].map((p) => (
+                <div key={p.name} className="flex items-center gap-3">
+                  <span
+                    className="text-xs w-12"
+                    style={{ fontFamily: 'var(--font-handwritten)', color: '#8A6A4A' }}
+                  >
+                    {p.name}
+                  </span>
+                  <div className="flex gap-1.5">
+                    {p.colors.map((c, i) => (
+                      <div
+                        key={i}
+                        className="h-8 w-8 rounded-full"
+                        style={{ background: c, opacity: 0.7 }}
+                      />
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </Pill>
+
+          <Pill
+            title="Paper Depths"
+            subtitle="Three levels of warmth"
+            color="#8A6A4A"
+            isOpen={openId === 'paper'}
+            onToggle={() => setOpenId(openId === 'paper' ? null : 'paper')}
+          >
+            <div className="space-y-2">
+              {[
+                {
+                  name: 'Box 1 — Check-in',
+                  bg: 'rgba(248,238,220,0.97)',
+                  desc: 'Lightest. Where you arrive.',
+                },
+                {
+                  name: 'Box 2 — Compass',
+                  bg: 'rgba(245,235,215,0.97)',
+                  desc: 'Medium. Where you measure.',
+                },
+                {
+                  name: 'Box 3 — Depth',
+                  bg: 'rgba(242,232,210,0.97)',
+                  desc: 'Deepest. Where you see patterns.',
+                },
+              ].map((level) => (
+                <div
+                  key={level.name}
+                  className="rounded-xl px-4 py-3"
+                  style={{ background: level.bg, border: '1px solid #8A6A4A30' }}
+                >
+                  <p
+                    className="text-sm font-semibold"
+                    style={{ fontFamily: 'var(--font-serif)', color: '#5C3018' }}
+                  >
+                    {level.name}
+                  </p>
+                  <p
+                    className="text-xs"
+                    style={{ fontFamily: 'var(--font-handwritten)', color: '#8A6A4A' }}
+                  >
+                    {level.desc}
+                  </p>
+                </div>
+              ))}
+            </div>
+          </Pill>
+
+          <Pill
+            title="Border & Shadow"
+            subtitle="Card edge treatments"
+            color="#8A6A4A"
+            isOpen={openId === 'borders'}
+            onToggle={() => setOpenId(openId === 'borders' ? null : 'borders')}
+          >
+            <div className="space-y-3">
+              {[
+                {
+                  name: 'Current',
+                  border: '1.5px solid #8A6A4A50',
+                  shadow: '0 28px 55px -36px rgba(92,48,24,0.3)',
+                },
+                {
+                  name: 'Stronger',
+                  border: '2px solid #8A6A4A70',
+                  shadow: '0 20px 40px -28px rgba(92,48,24,0.4)',
+                },
+                {
+                  name: 'Subtle',
+                  border: '1px solid #8A6A4A30',
+                  shadow: '0 32px 60px -40px rgba(92,48,24,0.2)',
+                },
+                {
+                  name: 'None',
+                  border: '1px solid transparent',
+                  shadow: '0 24px 50px -34px rgba(92,48,24,0.35)',
+                },
+              ].map((style) => (
+                <div
+                  key={style.name}
+                  className="rounded-2xl px-4 py-3"
+                  style={{
+                    background: 'rgba(248,238,220,0.97)',
+                    border: style.border,
+                    boxShadow: style.shadow,
+                  }}
+                >
+                  <p
+                    className="text-sm"
+                    style={{ fontFamily: 'var(--font-serif)', color: '#5C3018' }}
+                  >
+                    {style.name}
+                  </p>
+                </div>
+              ))}
+            </div>
+          </Pill>
+        </div>
+      )}
     </div>
   );
 }
