@@ -31,6 +31,8 @@ The restless reflective person — not a beginner, not an expert. Someone who fe
 
 The cockpit has two sides: **feeling** (left) and **doing** (right). They sit side by side because that's the point — constant interaction between practical tasks and body/mind/emotions.
 
+The visual system must reinforce that split. Colourmap is not a generic dashboard with themed widgets. It is a paper cockpit built from cells: framed zones, small compartments, labeled islands, and intentional empty space. The feeling side and doing side should feel like two halves of one notebook spread, not two unrelated panels.
+
 ## Design Principles
 
 - **Minimalist by default, open if needed.** Every element starts collapsed or hidden. Detail appears on demand, never forced.
@@ -38,6 +40,25 @@ The cockpit has two sides: **feeling** (left) and **doing** (right). They sit si
 - **Two columns, one glance.** Left = feeling. Right = doing. Scannable in 5 seconds.
 - **Warm, not clinical.** Brown tones, poetic words, breathing room. This is a personal space.
 - **The losange.** Diamond shapes as visual motif — section dividers, toggle buttons, accent marks. A subtle signature throughout.
+- **Cell system, not cards.** The interface should be composed from notebook-like cells, compartments, and framed regions. Avoid generic SaaS card grids.
+- **Old world notebook, not retro cosplay.** The visual direction mixes Leonardo da Vinci notebook energy, captain's logbook warmth, and handmade annotations. It should feel studied and personal, not kitschy.
+- **Two-component aesthetic.** The app identity is built from two visual components at once:
+  - a parchment / pirate log / Leonardo notebook base layer
+  - a colorful, playful, almost childlike emotional accent layer
+- **Typography is mixed on purpose.** Serif structure for anchors and headings, cowboy/western display moments for key labels, and pirate-handwritten or inked script for reflective and human moments. The tension between these voices is part of the product identity.
+- **Color is selective.** The paper field stays warm and restrained; color appears in emotional signals, chips, letters, and highlighted states. The app should never become a flat beige wash or an over-saturated toy.
+
+## Visual Language
+
+- **Surface**: parchment, paper, notebook, field journal. Backgrounds should feel tactile and softly aged, not sterile.
+- **Base mood**: pirate logbook, inventor's notebook, ship journal, drafted paper. The app should feel like something written, annotated, and lived in.
+- **Structure**: borders, fine rules, split panes, centered emblems, and small geometric anchors. Layout should feel drafted, not merely stacked.
+- **Type roles**:
+  - Anchors and system labels use a refined serif or notebook editorial face.
+  - Certain section names and emphatic markers may use cowboy-style display lettering or old printing-press display type.
+  - Human prompts, notes, and intimate cues may use handwritten ink-like typography.
+- **Composition**: asymmetry is allowed, but the page still needs a disciplined grid underneath. The result should feel like a designed spread from a personal codex.
+- **Color behavior**: use localized emotional color to mark states and choices. Keep the paper base quiet so those accents matter. The color layer can feel playful, buoyant, and almost toy-like in selected moments, as long as the notebook base keeps the whole thing grounded.
 
 ## Navigation
 
@@ -49,7 +70,7 @@ Phone: Check In · Cockpit · Missions · Journey · Notebook · ◇
 
 ### Feeling (left column)
 
-1. **Check-in** — Hawkins-inspired emotional bar with contextual note prompts that change based on emotional level. FGAC trackers (Fear/Gratitude/Avoidance/Confusion) behind a losange toggle with progressive 3-question chains and losange separators. Pulse dots (Body/Attitude/Structure) collapsible. [Spec](specs/check-in.md)
+1. **Check-in** — Hawkins-inspired emotional bar with visible `FACING` prompts, a four-axis feeling compass (`Attitude / Emotions / Presence / Body`), a discrete stage selector, support chips, and inline `Challenge / Flow`. Current CPC behavior is absorbed here selectively, not ported wholesale. [Spec](specs/check-in.md)
 2. **After-Check-in AI Insight** — 2-sentence streamed reflection from Claude Haiku using current + previous check-ins + life scan context. Appears after the breath moment, auto-dismisses in 12s. [Spec](specs/post-submit-reflection.md)
 3. **Check-in History (Reflections)** — Timeline spine with colored dots, emotion-tinted rows, day sparkline SVG, FGAC chips, emotion clustering (xN), line-clamp notes, enhanced date headers. [Spec](specs/check-in-history.md)
 
@@ -139,8 +160,9 @@ All AI uses Claude Haiku for cost efficiency. Respects "cockpit not coach" — n
 - **Frequency**: On-demand. No scheduled check-ins, no streaks, no reminders.
 - **AI voice**: Companion, not therapist. Mirror, not coach. Warm, not clinical.
 - **Visual motif**: The losange (diamond) as recurring element — toggles, dividers, accents.
-- **Typography**: Playfair Display serif for titles, system sans for body. User-switchable across 4 themes.
+- **Typography**: Mixed system. Refined serif for structure, cowboy/western or old-printing-press accents for selected section markers, and handwritten ink-style typography for reflective moments. User-switchable themes may adapt this, but the default product identity should preserve the mix.
 - **Clarity vs Style**: Check-in features stay precise and minimal. Journey features go full narrative with archetypes and tones.
+- **Layout language**: Build with cells, notebook partitions, and drafted compartments instead of generic product cards.
 
 ## Success Criteria
 

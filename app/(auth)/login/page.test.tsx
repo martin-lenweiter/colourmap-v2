@@ -51,6 +51,7 @@ describe('LoginPage', () => {
 
     expect(html).toContain('Sign in with Google');
     expect(html).toContain('Continue with Google');
+    expect(html).toContain('Calm setup. One account. Your full map.');
     expect(html).toContain('Google OAuth is handled by Supabase Auth.');
   });
 

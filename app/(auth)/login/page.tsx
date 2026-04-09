@@ -48,14 +48,38 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
   const errorCopy = getErrorCopy(resolvedSearchParams.error);
 
   return (
-    <main className="flex min-h-screen items-center justify-center px-6 py-16">
-      <div className="w-full max-w-md rounded-3xl border border-border bg-card p-8 shadow-sm">
+    <main className="relative flex min-h-screen items-center justify-center overflow-hidden px-6 py-16">
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute inset-0"
+        style={{
+          background:
+            'radial-gradient(circle at top, rgba(196, 160, 96, 0.2), transparent 42%), linear-gradient(180deg, rgba(255, 251, 240, 0.18), rgba(242, 232, 208, 0.02))',
+        }}
+      />
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute left-1/2 top-20 h-56 w-56 -translate-x-1/2 rotate-45 rounded-[2rem] border border-[rgba(196,160,96,0.16)]"
+      />
+
+      <div className="relative w-full max-w-md rounded-[2rem] border border-border bg-card/95 p-8 shadow-[0_24px_80px_rgba(94,58,20,0.12)] backdrop-blur-sm">
         <div className="space-y-6">
           <div className="space-y-3">
             <p className="text-sm uppercase tracking-[0.2em] text-muted-foreground">Colourmap</p>
             <h1 className="text-3xl font-semibold tracking-tight">Sign in with Google</h1>
             <p className="text-sm leading-6 text-muted-foreground">
               Use your Google account to unlock your Colourmap cockpit across devices.
+            </p>
+          </div>
+
+          <div className="flex items-center gap-3 rounded-2xl border border-border/70 bg-background/55 px-4 py-3">
+            <div
+              aria-hidden="true"
+              className="h-2.5 w-2.5 rotate-45 rounded-[2px]"
+              style={{ background: '#C4A060' }}
+            />
+            <p className="text-xs tracking-[0.16em] text-muted-foreground uppercase">
+              Calm setup. One account. Your full map.
             </p>
           </div>
 
