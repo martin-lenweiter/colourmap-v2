@@ -177,9 +177,9 @@ export default function FeelingCheckInCard() {
 
   return (
     <div
-      className="space-y-5 rounded-3xl border border-[#7a543833] px-5 py-6"
+      className="space-y-5 rounded-3xl border border-[#8A6A4A50] px-5 py-6"
       style={{
-        background: 'linear-gradient(180deg, rgba(251,244,232,0.95), rgba(246,236,221,0.92))',
+        background: 'linear-gradient(180deg, rgba(248,238,220,0.97), rgba(242,230,210,0.95))',
         boxShadow: '0 24px 50px -34px rgba(92,48,24,0.35)',
       }}
     >

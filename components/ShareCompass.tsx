@@ -272,9 +272,9 @@ export default function ShareCompass() {
 
   return (
     <div
-      className="space-y-5 rounded-3xl border border-[#7a543833] px-5 py-6"
+      className="space-y-5 rounded-3xl border border-[#8A6A4A50] px-5 py-6"
       style={{
-        background: 'linear-gradient(180deg, rgba(250,241,225,0.96), rgba(246,232,212,0.92))',
+        background: 'linear-gradient(180deg, rgba(248,238,220,0.97), rgba(242,230,210,0.95))',
         boxShadow: '0 28px 55px -36px rgba(92,48,24,0.35)',
       }}
     >

@@ -79,7 +79,10 @@ function DayContent() {
       <div className="mb-4 flex items-center justify-center gap-3">
         <div className="flex-1" />
         <div className="text-center">
-          <h1 className="text-2xl font-semibold" style={{ fontFamily: style.headingFont }}>
+          <h1
+            className="text-xl font-semibold uppercase tracking-[0.15em]"
+            style={{ fontFamily: 'var(--font-serif)', color: '#5C3018' }}
+          >
             Today
           </h1>
         </div>
