@@ -57,8 +57,6 @@ function getSlices(theme: (typeof CARE_THEMES)[0]) {
   ];
 }
 
-const CARE_SLICES = getSlices(CARE_THEMES[0]);
-
 const SUB_CELLS: Record<string, { label: string; color: string }[]> = {
   Care: [
     { label: 'Health', color: '#D4805A' },

@@ -57,13 +57,6 @@ function getStarSlices(theme: (typeof STAR_THEMES)[0]) {
   ];
 }
 
-const STAR_SLICES: { key: StarAxis; label: string; angle: number; color: string }[] = [
-  { key: 'structure', label: 'Structure', angle: Math.PI, color: '#6A8A9A' },
-  { key: 'target', label: 'Target', angle: -Math.PI / 2, color: '#7A9A7A' },
-  { key: 'action', label: 'Action', angle: 0, color: '#8A8A6A' },
-  { key: 'resources', label: 'Resources', angle: Math.PI / 2, color: '#5A7A9A' },
-];
-
 const SUB_CELLS: Record<string, { label: string; color: string }[]> = {
   Structure: [
     { label: 'Routines', color: '#6A8A9A' },

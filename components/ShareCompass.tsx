@@ -57,13 +57,6 @@ function getShareSlices(theme: (typeof SHARE_THEMES)[0]) {
   ];
 }
 
-const SHARE_SLICES: { key: ShareAxis; label: string; angle: number; color: string }[] = [
-  { key: 'share', label: 'Share', angle: Math.PI, color: '#7A9A5A' },
-  { key: 'authentic', label: 'Authentic', angle: -Math.PI / 2, color: '#8A9A6A' },
-  { key: 'roots', label: 'Roots', angle: 0, color: '#6B8F4E' },
-  { key: 'express', label: 'Express', angle: Math.PI / 2, color: '#5A8A4A' },
-];
-
 const SUB_CELLS: Record<string, { label: string; color: string }[]> = {
   Structure: [
     { label: 'Routines', color: '#6A8A9A' },
