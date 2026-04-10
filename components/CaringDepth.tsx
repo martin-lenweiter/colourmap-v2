@@ -1,21 +1,18 @@
 'use client';
 
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
 /* ═══════════════════════════════════════════════════════════
-   CARING DEPTH — Full System
-   Three tabs: MAP · WORK · WEATHER
-   MAP: colour pills, connections, packs, triangle wheel +
-        alternative views (constellation, losange, mandala)
-   WORK: focus on one pattern, daily prompts, journal
-   WEATHER: inner climate from your patterns
+   CARING DEPTH — Three tabs: MAP · WORK · REFLECT
+   MAP    : strength/weakness pills, big readable blocks
+   WORK   : focus on one pattern, daily prompts, journal
+   REFLECT: vertical rainbow emotion slider + decomposition
    ═══════════════════════════════════════════════════════════ */
 
 /* ─── Storage keys ─── */
 const PILLS_KEY = 'colourmap:pattern-pills';
-const CONN_KEY = 'colourmap:pattern-connections';
-const PACKS_KEY = 'colourmap:pattern-packs';
-const VIEW_KEY = 'colourmap:caring-depth-view';
+const FOCUS_KEY = 'colourmap:pattern-focus';
+const REFLECT_KEY = 'colourmap:emotion-decompositions';
 
 /* ─── Types ─── */
 interface PatternPill {
@@ -23,31 +20,37 @@ interface PatternPill {
   name: string;
   type: 'strength' | 'weakness';
   color: string;
-  intensity: number;
-  locked: boolean;
   createdAt: string;
-  history: { date: string; intensity: number }[];
 }
 
-interface Connection {
-  id: string;
-  fromId: string;
-  toId: string;
-  kind: 'triggers' | 'strengthens' | 'weakens' | 'balances';
+interface WorkFocus {
+  pillId: string;
+  startDate: string;
+  reflections: { date: string; text: string }[];
 }
 
-interface Pack {
+interface EmotionComponent {
   id: string;
   name: string;
-  type: 'shadow' | 'strength' | 'growth-edge';
-  pillIds: string[];
+  weight: number; // 0-100
 }
 
-type ViewMode = 'wheel' | 'constellation' | 'losange' | 'mandala';
+interface EmotionDecomposition {
+  id: string;
+  emotion: string;
+  hawkinsLevel: number;
+  color: string;
+  components: EmotionComponent[];
+  impact: string; // where it impacts your life
+  source: string; // where does it come from
+  needs: string; // what do you need to overcome / work with it
+  createdAt: string;
+}
 
 /* ─── Palettes ─── */
 const S_COLORS = ['#D4805A', '#C4A060', '#C49030', '#D06848', '#B89040'];
 const W_COLORS = ['#6890B0', '#9B6BA0', '#8B5E3C', '#7A7A9A', '#5A7A8A'];
+
 const S_SUGGEST = [
   'Courage',
   'Empathy',
@@ -68,20 +71,40 @@ const W_SUGGEST = [
   'Procrastination',
   'Impatience',
 ];
-const CONN_KINDS: Connection['kind'][] = ['triggers', 'strengthens', 'weakens', 'balances'];
-const CONN_COLORS: Record<string, string> = {
-  triggers: '#D4605A',
-  strengthens: '#7A9A7A',
-  weakens: '#6890B0',
-  balances: '#C4A060',
-};
-const PACK_COLORS: Record<string, string> = {
-  shadow: '#6890B0',
-  strength: '#D4805A',
-  'growth-edge': '#9B6BA0',
+
+/* ─── Hawkins Rainbow (vertical, top = highest) ─── */
+const HAWKINS_LEVELS = [
+  { level: 700, name: 'Enlightenment', color: '#E8DBFF', text: '#5A4878' },
+  { level: 600, name: 'Peace', color: '#B8D8FF', text: '#3A5878' },
+  { level: 540, name: 'Joy', color: '#88C8E8', text: '#2A6888' },
+  { level: 500, name: 'Love', color: '#88D8B0', text: '#2A7858' },
+  { level: 400, name: 'Reason', color: '#A8E090', text: '#386838' },
+  { level: 350, name: 'Acceptance', color: '#D8E880', text: '#587818' },
+  { level: 310, name: 'Willingness', color: '#F0E060', text: '#785818' },
+  { level: 250, name: 'Neutrality', color: '#F8C040', text: '#783818' },
+  { level: 200, name: 'Courage', color: '#F89030', text: '#682808' },
+  { level: 175, name: 'Pride', color: '#E86040', text: '#681818' },
+  { level: 150, name: 'Anger', color: '#D44040', text: '#580808' },
+  { level: 125, name: 'Desire', color: '#A8408A', text: '#580848' },
+  { level: 100, name: 'Fear', color: '#7A4888', text: '#380838' },
+  { level: 75, name: 'Grief', color: '#5A5898', text: '#181838' },
+  { level: 50, name: 'Apathy', color: '#5A5878', text: '#181828' },
+  { level: 30, name: 'Guilt', color: '#48485A', text: '#080818' },
+  { level: 20, name: 'Shame', color: '#383848', text: '#080808' },
+];
+
+const COMPONENT_SUGGESTIONS: Record<string, string[]> = {
+  Courage: ['Determination', 'Trust', 'Vulnerability', 'Awareness'],
+  Anger: ['Hurt', 'Injustice', 'Powerlessness', 'Fear'],
+  Fear: ['Uncertainty', 'Loss', 'Shame', 'Loneliness'],
+  Joy: ['Gratitude', 'Wonder', 'Connection', 'Freedom'],
+  Love: ['Tenderness', 'Devotion', 'Acceptance', 'Presence'],
+  Grief: ['Loss', 'Longing', 'Tenderness', 'Memory'],
+  Pride: ['Recognition', 'Self-worth', 'Accomplishment', 'Comparison'],
+  Acceptance: ['Surrender', 'Peace', 'Wisdom', 'Patience'],
 };
 
-/* ─── Storage ─── */
+/* ─── Storage helpers ─── */
 function ls<T>(k: string, d: T): T {
   try {
     return JSON.parse(localStorage.getItem(k) || JSON.stringify(d));
@@ -93,18 +116,19 @@ function ss<T>(k: string, v: T) {
   localStorage.setItem(k, JSON.stringify(v));
 }
 
-/* ═══ MAIN ═══ */
+/* ═══════════════════════════════════════════════════════════
+   MAIN
+   ═══════════════════════════════════════════════════════════ */
 export default function CaringDepth() {
+  const [tab, setTab] = useState<'map' | 'work' | 'reflect'>('map');
   const [pills, setPills] = useState<PatternPill[]>([]);
-  const [conns, setConns] = useState<Connection[]>([]);
-  const [packs, setPacks] = useState<Pack[]>([]);
-  const [view, setView] = useState<ViewMode>('wheel');
+  const [focus, setFocus] = useState<WorkFocus | null>(null);
+  const [decompositions, setDecompositions] = useState<EmotionDecomposition[]>([]);
 
   useEffect(() => {
     setPills(ls(PILLS_KEY, []));
-    setConns(ls(CONN_KEY, []));
-    setPacks(ls(PACKS_KEY, []));
-    setView(ls(VIEW_KEY, 'wheel'));
+    setFocus(ls(FOCUS_KEY, null));
+    setDecompositions(ls(REFLECT_KEY, []));
   }, []);
 
   const up = useCallback(<T,>(key: string, val: T, setter: (v: T) => void) => {
@@ -112,77 +136,72 @@ export default function CaringDepth() {
     ss(key, val);
   }, []);
 
-  const strengths = pills.filter((p) => p.type === 'strength');
-  const weaknesses = pills.filter((p) => p.type === 'weakness');
-  const balance =
-    pills.length > 0
-      ? Math.round(
-          ((strengths.reduce((s, p) => s + p.intensity, 0) -
-            weaknesses.reduce((s, p) => s + p.intensity, 0) +
-            pills.length * 5) /
-            (pills.length * 10)) *
-            100,
-        )
-      : 50;
-
   return (
     <div
-      className="space-y-3 rounded-3xl border border-[#8A6A4A50] px-5 py-5"
+      className="space-y-4 rounded-3xl border border-[#8A6A4A50] px-5 py-5"
       style={{
         background: 'linear-gradient(180deg, rgba(242,232,210,0.97), rgba(236,224,204,0.95))',
         boxShadow: '0 28px 55px -36px rgba(92,48,24,0.3)',
       }}
     >
-      <MapTab
-        pills={pills}
-        setPills={(v) => up(PILLS_KEY, v, setPills)}
-        conns={conns}
-        setConns={(v) => up(CONN_KEY, v, setConns)}
-        packs={packs}
-        setPacks={(v) => up(PACKS_KEY, v, setPacks)}
-        strengths={strengths}
-        weaknesses={weaknesses}
-        balance={balance}
-        view={view}
-        setView={(v) => {
-          setView(v);
-          ss(VIEW_KEY, v);
-        }}
-      />
+      {/* Tabs — bigger, more readable */}
+      <div className="flex gap-1.5">
+        {[
+          { id: 'map' as const, label: 'Map', color: '#C4A060' },
+          { id: 'work' as const, label: 'Work', color: '#D4805A' },
+          { id: 'reflect' as const, label: 'Reflect', color: '#9B6BA0' },
+        ].map((t) => (
+          <button
+            key={t.id}
+            type="button"
+            onClick={() => setTab(t.id)}
+            className="flex-1 cursor-pointer rounded-lg py-2 text-center uppercase tracking-[0.18em] transition-all duration-200"
+            style={{
+              background: tab === t.id ? `${t.color}15` : 'transparent',
+              border: `1.5px solid ${tab === t.id ? `${t.color}45` : `${t.color}18`}`,
+              color: t.color,
+              fontFamily: 'var(--font-serif)',
+              fontSize: '12px',
+              fontWeight: 700,
+            }}
+          >
+            {t.label}
+          </button>
+        ))}
+      </div>
+
+      {tab === 'map' && <MapTab pills={pills} setPills={(v) => up(PILLS_KEY, v, setPills)} />}
+      {tab === 'work' && (
+        <WorkTab pills={pills} focus={focus} setFocus={(v) => up(FOCUS_KEY, v, setFocus)} />
+      )}
+      {tab === 'reflect' && (
+        <ReflectTab
+          pills={pills}
+          decompositions={decompositions}
+          setDecompositions={(v) => up(REFLECT_KEY, v, setDecompositions)}
+        />
+      )}
     </div>
   );
 }
 
-/* ═══ MAP TAB ═══ */
+/* ═══════════════════════════════════════════════════════════
+   MAP TAB — Big readable strength/weakness blocks
+   ═══════════════════════════════════════════════════════════ */
 function MapTab({
   pills,
   setPills,
-  conns,
-  setConns,
-  packs,
-  setPacks,
-  strengths,
-  weaknesses,
-  balance,
-  view,
-  setView,
 }: {
   pills: PatternPill[];
   setPills: (p: PatternPill[]) => void;
-  conns: Connection[];
-  setConns: (c: Connection[]) => void;
-  packs: Pack[];
-  setPacks: (p: Pack[]) => void;
-  strengths: PatternPill[];
-  weaknesses: PatternPill[];
-  balance: number;
-  view: ViewMode;
-  setView: (v: ViewMode) => void;
 }) {
-  const [activeId, setActiveId] = useState<string | null>(null);
   const [addingType, setAddingType] = useState<'strength' | 'weakness' | null>(null);
   const [input, setInput] = useState('');
-  const [linking, setLinking] = useState<{ fromId: string } | null>(null);
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editName, setEditName] = useState('');
+
+  const strengths = pills.filter((p) => p.type === 'strength');
+  const weaknesses = pills.filter((p) => p.type === 'weakness');
 
   const addPill = (name: string, type: 'strength' | 'weakness') => {
     if (!name.trim() || pills.some((p) => p.name.toLowerCase() === name.toLowerCase())) return;
@@ -195,460 +214,910 @@ function MapTab({
         name: name.trim(),
         type,
         color: colors[existing.length % colors.length],
-        intensity: 3,
-        locked: false,
         createdAt: new Date().toISOString(),
-        history: [],
       },
     ]);
     setInput('');
     setAddingType(null);
   };
 
-  const ratePill = (id: string, intensity: number) =>
-    setPills(pills.map((p) => (p.id === id ? { ...p, intensity } : p)));
-  const lockPill = (id: string) =>
-    setPills(pills.map((p) => (p.id === id ? { ...p, locked: !p.locked } : p)));
-  const removePill = (id: string) => {
-    setPills(pills.filter((p) => p.id !== id));
-    setConns(conns.filter((c) => c.fromId !== id && c.toId !== id));
-    if (activeId === id) setActiveId(null);
-  };
-
-  const addConn = (toId: string, kind: Connection['kind']) => {
-    if (!linking || linking.fromId === toId) return;
-    if (
-      conns.some(
-        (c) =>
-          (c.fromId === linking.fromId && c.toId === toId) ||
-          (c.fromId === toId && c.toId === linking.fromId),
-      )
-    ) {
-      setLinking(null);
+  const renamePill = (id: string, name: string) => {
+    if (!name.trim()) {
+      setEditingId(null);
       return;
     }
-    setConns([...conns, { id: crypto.randomUUID(), fromId: linking.fromId, toId, kind }]);
-    setLinking(null);
+    setPills(pills.map((p) => (p.id === id ? { ...p, name: name.trim() } : p)));
+    setEditingId(null);
   };
 
-  const removeConn = (id: string) => setConns(conns.filter((c) => c.id !== id));
-
-  const n = pills.length;
-  const sz = 220;
-  const cx = sz / 2;
-  const cy = sz / 2;
-  const maxR = 85;
-
-  // Pill angle helper
-  const pillAngle = (i: number) => (i / n) * Math.PI * 2 - Math.PI / 2;
-  const pillPos = (pill: PatternPill) => {
-    const i = pills.indexOf(pill);
-    const a = pillAngle(i);
-    const r = maxR * (pill.intensity / 5);
-    return { x: cx + r * Math.cos(a), y: cy + r * Math.sin(a), a, r };
+  const removePill = (id: string) => {
+    setPills(pills.filter((p) => p.id !== id));
+    if (editingId === id) setEditingId(null);
   };
 
   return (
-    <div className="space-y-3">
-      <div className="flex items-center justify-between">
-        <p
-          className="text-[11px] font-semibold uppercase tracking-[0.24em]"
-          style={{ color: '#C4A060' }}
-        >
-          Strengths & Weaknesses
-        </p>
-        {/* View switcher */}
-        <div className="flex gap-0.5">
-          {(['wheel', 'constellation', 'losange', 'mandala'] as ViewMode[]).map((v) => (
-            <button
-              key={v}
-              type="button"
-              onClick={() => setView(v)}
-              className="cursor-pointer rounded px-1.5 py-0.5 text-[7px] uppercase tracking-wider transition-all"
-              style={{
-                background: view === v ? '#C4A06015' : 'transparent',
-                border: `1px solid ${view === v ? '#C4A06030' : '#C4A06010'}`,
-                color: '#C4A060',
-                fontFamily: 'var(--font-handwritten)',
-                fontWeight: view === v ? 700 : 400,
-              }}
-            >
-              {v === 'wheel' ? '△' : v === 'constellation' ? '✦' : v === 'losange' ? '◇' : '✿'}
-            </button>
-          ))}
-        </div>
+    <div className="space-y-4">
+      <p
+        className="text-center font-semibold uppercase tracking-[0.24em]"
+        style={{ color: '#C4A060', fontSize: '12px' }}
+      >
+        Strength · Weakness Map
+      </p>
+
+      {/* Two big blocks: Flow | Challenge */}
+      <div className="grid grid-cols-2 gap-4">
+        {/* FLOW (strengths) */}
+        <ColumnBlock
+          label="Flow"
+          accent="#c79a42"
+          empty="What's strong?"
+          pills={strengths}
+          editingId={editingId}
+          editName={editName}
+          onAdd={() => setAddingType(addingType === 'strength' ? null : 'strength')}
+          onStartEdit={(id, name) => {
+            setEditingId(id);
+            setEditName(name);
+          }}
+          onChangeEdit={setEditName}
+          onCommitEdit={(id) => renamePill(id, editName)}
+          onCancelEdit={() => setEditingId(null)}
+          onRemove={removePill}
+        />
+        {/* CHALLENGE (weaknesses) */}
+        <ColumnBlock
+          label="Challenge"
+          accent="#c79a42"
+          empty="What's heavy?"
+          pills={weaknesses}
+          editingId={editingId}
+          editName={editName}
+          onAdd={() => setAddingType(addingType === 'weakness' ? null : 'weakness')}
+          onStartEdit={(id, name) => {
+            setEditingId(id);
+            setEditName(name);
+          }}
+          onChangeEdit={setEditName}
+          onCommitEdit={(id) => renamePill(id, editName)}
+          onCancelEdit={() => setEditingId(null)}
+          onRemove={removePill}
+        />
       </div>
 
-      {/* ─── VISUALIZATIONS ─── */}
-      {n >= 3 && (
-        <div className="flex justify-center">
-          <svg width={sz} height={sz} viewBox={`0 0 ${sz} ${sz}`}>
-            {/* Background rings */}
-            {[0.33, 0.66, 1].map((r) => (
-              <circle
-                key={r}
-                cx={cx}
-                cy={cy}
-                r={maxR * r}
-                fill="none"
-                stroke="#C4B890"
-                strokeWidth="0.3"
-                opacity="0.08"
-              />
-            ))}
+      {/* Add input — opens below the columns */}
+      {addingType && (
+        <AddPillInput
+          type={addingType}
+          input={input}
+          setInput={setInput}
+          onAdd={() => addPill(input, addingType)}
+          onAddSuggestion={(s) => addPill(s, addingType)}
+          existing={pills.map((p) => p.name)}
+          onCancel={() => setAddingType(null)}
+        />
+      )}
 
-            {/* Connection arcs */}
-            {conns.map((c) => {
-              const from = pills.find((p) => p.id === c.fromId);
-              const to = pills.find((p) => p.id === c.toId);
-              if (!from || !to) return null;
-              const fp = pillPos(from);
-              const tp = pillPos(to);
-              const midX = (fp.x + tp.x) / 2 + (fp.y - tp.y) * 0.2;
-              const midY = (fp.y + tp.y) / 2 + (tp.x - fp.x) * 0.2;
-              return (
-                <path
-                  key={c.id}
-                  d={`M ${fp.x} ${fp.y} Q ${midX} ${midY} ${tp.x} ${tp.y}`}
-                  fill="none"
-                  stroke={CONN_COLORS[c.kind]}
-                  strokeWidth="1"
-                  opacity="0.25"
-                  strokeDasharray={c.kind === 'weakens' ? '3 2' : undefined}
-                />
-              );
-            })}
+      {pills.length === 0 && !addingType && (
+        <p
+          className="text-center"
+          style={{
+            color: '#B8905A',
+            opacity: 0.5,
+            fontFamily: 'var(--font-handwritten)',
+            fontSize: '14px',
+          }}
+        >
+          Name what you carry — strengths and challenges.
+        </p>
+      )}
+    </div>
+  );
+}
 
-            {view === 'wheel' &&
-              pills.map((pill, i) => {
-                const a = pillAngle(i);
-                const tipR = maxR * (pill.intensity / 5);
-                const innerR = tipR * 0.22;
-                const spread = Math.min(0.35, Math.PI / n);
-                const tipX = cx + tipR * Math.cos(a);
-                const tipY = cy + tipR * Math.sin(a);
-                const sX1 = cx + innerR * Math.cos(a - spread);
-                const sY1 = cy + innerR * Math.sin(a - spread);
-                const sX2 = cx + innerR * Math.cos(a + spread);
-                const sY2 = cy + innerR * Math.sin(a + spread);
-                const isActive = activeId === pill.id;
-                const isLinkSource = linking?.fromId === pill.id;
-                return (
-                  <g
-                    key={pill.id}
-                    className="cursor-pointer"
-                    onClick={() =>
-                      linking
-                        ? addConn(pill.id, 'triggers')
-                        : setActiveId(isActive ? null : pill.id)
-                    }
-                  >
-                    <polygon
-                      points={`${cx},${cy} ${sX1},${sY1} ${tipX},${tipY} ${sX2},${sY2}`}
-                      fill={pill.color}
-                      opacity={
-                        isActive ? 0.75 : isLinkSource ? 0.6 : 0.2 + (pill.intensity / 5) * 0.25
-                      }
-                      className="transition-all duration-500"
-                      style={{
-                        filter: isActive ? `drop-shadow(0 0 8px ${pill.color}50)` : undefined,
-                      }}
-                    />
-                    <circle
-                      cx={tipX}
-                      cy={tipY}
-                      r={isActive ? 5 : 3}
-                      fill={pill.color}
-                      opacity={isActive ? 0.9 : 0.7}
-                    />
-                    {pill.locked && (
-                      <circle
-                        cx={tipX}
-                        cy={tipY}
-                        r={6}
-                        fill="none"
-                        stroke={pill.color}
-                        strokeWidth="1"
-                        opacity="0.4"
-                      />
-                    )}
-                    <text
-                      x={cx + (maxR + 16) * Math.cos(a)}
-                      y={cy + (maxR + 16) * Math.sin(a)}
-                      textAnchor="middle"
-                      dominantBaseline="middle"
-                      style={{
-                        fontSize: isActive ? '10px' : '8px',
-                        fontFamily: 'var(--font-handwritten)',
-                        fontWeight: isActive ? 700 : 500,
-                        fill: pill.color,
-                        opacity: isActive ? 1 : 0.7,
-                      }}
-                    >
-                      {pill.name}
-                    </text>
-                  </g>
-                );
-              })}
+/* ─── Column block (Flow or Challenge) ─── */
+function ColumnBlock({
+  label,
+  accent,
+  empty,
+  pills,
+  editingId,
+  editName,
+  onAdd,
+  onStartEdit,
+  onChangeEdit,
+  onCommitEdit,
+  onCancelEdit,
+  onRemove,
+}: {
+  label: string;
+  accent: string;
+  empty: string;
+  pills: PatternPill[];
+  editingId: string | null;
+  editName: string;
+  onAdd: () => void;
+  onStartEdit: (id: string, name: string) => void;
+  onChangeEdit: (v: string) => void;
+  onCommitEdit: (id: string) => void;
+  onCancelEdit: () => void;
+  onRemove: (id: string) => void;
+}) {
+  return (
+    <div className="space-y-3">
+      <button
+        type="button"
+        onClick={onAdd}
+        className="block w-full cursor-pointer text-center transition-all"
+        style={{
+          color: accent,
+          fontFamily: 'var(--font-serif)',
+          fontSize: '28px',
+          fontWeight: 600,
+          lineHeight: 1,
+          letterSpacing: '-0.04em',
+          background: 'none',
+          border: 'none',
+          padding: 0,
+        }}
+      >
+        {label}
+      </button>
+      <div className="space-y-2">
+        {pills.map((p) => (
+          <PillRow
+            key={p.id}
+            pill={p}
+            isEditing={editingId === p.id}
+            editName={editName}
+            onStartEdit={() => onStartEdit(p.id, p.name)}
+            onChangeEdit={onChangeEdit}
+            onCommitEdit={() => onCommitEdit(p.id)}
+            onCancelEdit={onCancelEdit}
+            onRemove={() => onRemove(p.id)}
+          />
+        ))}
+        {pills.length === 0 && (
+          <p
+            className="text-center"
+            style={{
+              color: accent,
+              opacity: 0.4,
+              fontFamily: 'var(--font-handwritten)',
+              fontSize: '14px',
+              fontStyle: 'italic',
+            }}
+          >
+            {empty}
+          </p>
+        )}
+      </div>
+    </div>
+  );
+}
 
-            {view === 'constellation' &&
-              pills.map((pill, i) => {
-                const a = pillAngle(i);
-                const dist = maxR * (1 - (pill.intensity - 1) / 4);
-                const x = cx + dist * Math.cos(a);
-                const y = cy + dist * Math.sin(a);
-                const isActive = activeId === pill.id;
-                const r = 4 + pill.intensity * 2;
-                return (
-                  <g
-                    key={pill.id}
-                    className="cursor-pointer"
-                    onClick={() =>
-                      linking
-                        ? addConn(pill.id, 'triggers')
-                        : setActiveId(isActive ? null : pill.id)
-                    }
-                  >
-                    <circle cx={x} cy={y} r={r + 6} fill={pill.color} opacity="0.06" />
-                    <circle
-                      cx={x}
-                      cy={y}
-                      r={r}
-                      fill={pill.color}
-                      opacity={isActive ? 0.8 : 0.3 + pill.intensity * 0.08}
-                      style={{
-                        filter: isActive ? `drop-shadow(0 0 6px ${pill.color}40)` : undefined,
-                      }}
-                    />
-                    {pill.locked && (
-                      <circle
-                        cx={x}
-                        cy={y}
-                        r={r + 3}
-                        fill="none"
-                        stroke={pill.color}
-                        strokeWidth="0.8"
-                        opacity="0.3"
-                      />
-                    )}
-                    <text
-                      x={x}
-                      y={y + r + 10}
-                      textAnchor="middle"
-                      style={{
-                        fontSize: isActive ? '9px' : '7px',
-                        fontFamily: 'var(--font-handwritten)',
-                        fontWeight: isActive ? 700 : 500,
-                        fill: pill.color,
-                        opacity: 0.7,
-                      }}
-                    >
-                      {pill.name}
-                    </text>
-                  </g>
-                );
-              })}
+/* ─── Pill row with double-click rename ─── */
+function PillRow({
+  pill,
+  isEditing,
+  editName,
+  onStartEdit,
+  onChangeEdit,
+  onCommitEdit,
+  onCancelEdit,
+  onRemove,
+}: {
+  pill: PatternPill;
+  isEditing: boolean;
+  editName: string;
+  onStartEdit: () => void;
+  onChangeEdit: (v: string) => void;
+  onCommitEdit: () => void;
+  onCancelEdit: () => void;
+  onRemove: () => void;
+}) {
+  if (isEditing) {
+    return (
+      <div
+        className="rounded-xl px-3 py-2.5"
+        style={{
+          background: '#f7eddc',
+          border: `2px solid ${pill.color}55`,
+        }}
+      >
+        <input
+          type="text"
+          value={editName}
+          onChange={(e) => onChangeEdit(e.target.value)}
+          onBlur={onCommitEdit}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter') onCommitEdit();
+            if (e.key === 'Escape') onCancelEdit();
+          }}
+          autoFocus
+          className="w-full bg-transparent outline-none"
+          style={{
+            color: '#7a5438',
+            fontFamily: 'var(--font-handwritten)',
+            fontWeight: 700,
+            fontSize: '18px',
+            border: 'none',
+          }}
+        />
+        <p
+          className="mt-1"
+          style={{
+            color: pill.color,
+            opacity: 0.5,
+            fontFamily: 'var(--font-handwritten)',
+            fontSize: '11px',
+          }}
+        >
+          Enter to save · Esc to cancel
+        </p>
+      </div>
+    );
+  }
 
-            {/* Center */}
-            <circle cx={cx} cy={cy} r={14} fill="#C4A060" opacity="0.06" />
-            <text
-              x={cx}
-              y={cy + 2}
-              textAnchor="middle"
-              dominantBaseline="middle"
+  return (
+    <div
+      className="group flex items-center gap-2.5 rounded-xl px-3 py-2.5 transition-all duration-200"
+      style={{
+        background: '#f7eddc9c',
+        border: '1px solid #d2b47b4a',
+      }}
+    >
+      <div
+        className="h-3 w-3 rounded-full flex-shrink-0"
+        style={{ background: pill.color, opacity: 0.9 }}
+      />
+      <button
+        type="button"
+        onClick={onStartEdit}
+        className="flex-1 cursor-pointer text-left"
+        style={{
+          color: '#7a5438',
+          fontFamily: 'var(--font-handwritten)',
+          fontWeight: 700,
+          fontSize: '18px',
+          background: 'none',
+          border: 'none',
+          padding: 0,
+        }}
+        title="Tap to rename"
+      >
+        {pill.name}
+      </button>
+      <button
+        type="button"
+        onClick={onRemove}
+        className="cursor-pointer rounded px-2 py-1 text-sm opacity-30 hover:opacity-80"
+        style={{
+          color: pill.color,
+          background: 'none',
+          border: 'none',
+        }}
+        title="Remove"
+      >
+        ✕
+      </button>
+    </div>
+  );
+}
+
+/* ─── Add pill input + suggestions ─── */
+function AddPillInput({
+  type,
+  input,
+  setInput,
+  onAdd,
+  onAddSuggestion,
+  existing,
+  onCancel,
+}: {
+  type: 'strength' | 'weakness';
+  input: string;
+  setInput: (v: string) => void;
+  onAdd: () => void;
+  onAddSuggestion: (s: string) => void;
+  existing: string[];
+  onCancel: () => void;
+}) {
+  const accent = type === 'strength' ? '#D4805A' : '#6890B0';
+  const sugg = type === 'strength' ? S_SUGGEST : W_SUGGEST;
+  const label = type === 'strength' ? 'Name a strength' : 'Name a weakness';
+
+  return (
+    <div className="space-y-3 animate-in fade-in duration-200">
+      <div
+        className="rounded-xl px-4 py-3"
+        style={{ background: '#f7eddc', border: `2px solid ${accent}40` }}
+      >
+        <div className="flex items-center justify-between mb-2">
+          <p
+            className="uppercase tracking-wider"
+            style={{
+              color: accent,
+              opacity: 0.6,
+              fontFamily: 'var(--font-serif)',
+              fontWeight: 700,
+              fontSize: '11px',
+            }}
+          >
+            {label}
+          </p>
+          <button
+            type="button"
+            onClick={onCancel}
+            className="cursor-pointer text-sm"
+            style={{
+              color: accent,
+              opacity: 0.4,
+              background: 'none',
+              border: 'none',
+            }}
+          >
+            ✕
+          </button>
+        </div>
+        <input
+          type="text"
+          value={input}
+          onChange={(e) => setInput(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter') onAdd();
+            if (e.key === 'Escape') onCancel();
+          }}
+          placeholder="type here..."
+          className="w-full bg-transparent outline-none"
+          style={{
+            color: '#7a5438',
+            fontFamily: 'var(--font-handwritten)',
+            fontWeight: 700,
+            fontSize: '20px',
+            border: 'none',
+            borderBottom: `1.5px solid ${accent}40`,
+            padding: '4px 0',
+          }}
+          autoFocus
+        />
+      </div>
+      <div className="flex flex-wrap gap-2">
+        {sugg
+          .filter((s) => !existing.includes(s))
+          .slice(0, 6)
+          .map((s) => (
+            <button
+              key={s}
+              type="button"
+              onClick={() => onAddSuggestion(s)}
+              className="cursor-pointer rounded-full px-3.5 py-2 transition-all hover:scale-105"
               style={{
-                fontSize: '14px',
+                background: `${accent}10`,
+                border: `1.5px solid ${accent}30`,
+                color: '#7a5438',
                 fontFamily: 'var(--font-handwritten)',
                 fontWeight: 700,
-                fill: '#B8905A',
-                opacity: 0.5,
+                fontSize: '15px',
               }}
             >
-              {balance}
-            </text>
-            <text
-              x={cx}
-              y={cy + 13}
-              textAnchor="middle"
+              {s}
+            </button>
+          ))}
+      </div>
+    </div>
+  );
+}
+
+/* ═══════════════════════════════════════════════════════════
+   WORK TAB
+   ═══════════════════════════════════════════════════════════ */
+function WorkTab({
+  pills,
+  focus,
+  setFocus,
+}: {
+  pills: PatternPill[];
+  focus: WorkFocus | null;
+  setFocus: (f: WorkFocus | null) => void;
+}) {
+  const [reflection, setReflection] = useState('');
+  const focusPill = focus ? pills.find((p) => p.id === focus.pillId) : null;
+
+  const selectFocus = (pillId: string) => {
+    setFocus({
+      pillId,
+      startDate: new Date().toISOString(),
+      reflections: focus?.reflections || [],
+    });
+  };
+
+  const addReflection = () => {
+    if (!reflection.trim() || !focus) return;
+    const today = new Date().toISOString().split('T')[0];
+    setFocus({
+      ...focus,
+      reflections: [...focus.reflections, { date: today, text: reflection.trim() }],
+    });
+    setReflection('');
+  };
+
+  const PROMPTS_S: Record<string, string[]> = {
+    Courage: ['Where did courage show up today?', "What would you do if you weren't afraid?"],
+    _default: ['Where did this strength show up today?', 'How could you use it more?'],
+  };
+  const PROMPTS_W: Record<string, string[]> = {
+    Avoidance: ['What did you avoid today?', 'What would happen if you faced it?'],
+    _default: ['When does this pattern show up most?', 'What would it look like to manage this?'],
+  };
+
+  const getPrompt = () => {
+    if (!focusPill) return '';
+    const bank =
+      focusPill.type === 'strength'
+        ? PROMPTS_S[focusPill.name] || PROMPTS_S._default
+        : PROMPTS_W[focusPill.name] || PROMPTS_W._default;
+    const dayIndex = Math.floor(Date.now() / 86400000) % bank.length;
+    return bank[dayIndex];
+  };
+
+  return (
+    <div className="space-y-4">
+      <p
+        className="text-center font-semibold uppercase tracking-[0.24em]"
+        style={{ color: '#D4805A', fontSize: '12px' }}
+      >
+        {focusPill ? `Working on: ${focusPill.name}` : 'Choose a pattern'}
+      </p>
+
+      {!focusPill && (
+        <div className="space-y-3">
+          {pills.length === 0 && (
+            <p
+              className="text-center"
               style={{
-                fontSize: '6px',
+                color: '#B8905A',
+                opacity: 0.5,
                 fontFamily: 'var(--font-handwritten)',
-                fill: '#B8905A',
-                opacity: 0.3,
+                fontSize: '14px',
               }}
             >
-              balance
-            </text>
-          </svg>
+              Add patterns in the Map tab first.
+            </p>
+          )}
+          {pills.length > 0 && (
+            <div className="flex flex-wrap gap-2">
+              {pills.map((p) => (
+                <button
+                  key={p.id}
+                  type="button"
+                  onClick={() => selectFocus(p.id)}
+                  className="cursor-pointer rounded-full px-4 py-2 transition-all hover:scale-105"
+                  style={{
+                    background: `${p.color}12`,
+                    border: `1.5px solid ${p.color}30`,
+                    color: '#7a5438',
+                    fontFamily: 'var(--font-handwritten)',
+                    fontWeight: 700,
+                    fontSize: '15px',
+                  }}
+                >
+                  {p.name}
+                </button>
+              ))}
+            </div>
+          )}
         </div>
       )}
 
-      {/* Linking mode banner */}
-      {linking && (
-        <div
-          className="flex items-center justify-between rounded-lg px-3 py-2"
-          style={{ background: '#D4605A10', border: '1px solid #D4605A25' }}
-        >
-          <span
-            className="text-[10px]"
-            style={{ color: '#D4605A', fontFamily: 'var(--font-handwritten)', fontWeight: 600 }}
+      {focusPill && (
+        <div className="space-y-3">
+          <div
+            className="rounded-xl px-4 py-3"
+            style={{
+              background: `${focusPill.color}10`,
+              border: `1.5px solid ${focusPill.color}25`,
+            }}
           >
-            Tap another pill to connect to {pills.find((p) => p.id === linking.fromId)?.name}
-          </span>
+            <p
+              className="uppercase tracking-wider mb-1"
+              style={{
+                color: focusPill.color,
+                opacity: 0.5,
+                fontFamily: 'var(--font-serif)',
+                fontWeight: 700,
+                fontSize: '11px',
+              }}
+            >
+              Today's prompt
+            </p>
+            <p
+              style={{
+                color: '#7a5438',
+                fontFamily: 'var(--font-serif)',
+                fontWeight: 600,
+                fontSize: '16px',
+                lineHeight: 1.4,
+              }}
+            >
+              {getPrompt()}
+            </p>
+          </div>
+
+          <textarea
+            value={reflection}
+            onChange={(e) => setReflection(e.target.value)}
+            placeholder="Write your reflection..."
+            className="w-full resize-none rounded-xl px-3 py-2.5 outline-none"
+            style={{
+              color: '#7a5438',
+              background: '#f7eddc9c',
+              fontFamily: 'var(--font-handwritten)',
+              fontSize: '15px',
+              border: `1.5px solid ${focusPill.color}25`,
+              minHeight: 80,
+            }}
+            rows={3}
+          />
+          {reflection.trim() && (
+            <button
+              type="button"
+              onClick={addReflection}
+              className="w-full cursor-pointer rounded-lg py-2.5 uppercase tracking-wider transition-all"
+              style={{
+                background: `${focusPill.color}15`,
+                border: `1.5px solid ${focusPill.color}35`,
+                color: focusPill.color,
+                fontFamily: 'var(--font-serif)',
+                fontWeight: 700,
+                fontSize: '12px',
+              }}
+            >
+              Save reflection
+            </button>
+          )}
+
+          {focus && focus.reflections.length > 0 && (
+            <div className="space-y-2 pt-2">
+              <p
+                className="uppercase tracking-wider"
+                style={{
+                  color: focusPill.color,
+                  opacity: 0.5,
+                  fontFamily: 'var(--font-serif)',
+                  fontWeight: 700,
+                  fontSize: '11px',
+                }}
+              >
+                Past reflections
+              </p>
+              {focus.reflections
+                .slice(-5)
+                .reverse()
+                .map((r, i) => (
+                  <div
+                    key={`${r.date}-${i}`}
+                    className="rounded-lg px-3 py-2"
+                    style={{
+                      background: `${focusPill.color}06`,
+                      border: `1px solid ${focusPill.color}15`,
+                    }}
+                  >
+                    <span
+                      style={{
+                        color: focusPill.color,
+                        opacity: 0.4,
+                        fontSize: '11px',
+                      }}
+                    >
+                      {r.date}
+                    </span>
+                    <p
+                      className="mt-1"
+                      style={{
+                        color: '#7a5438',
+                        fontFamily: 'var(--font-handwritten)',
+                        fontSize: '14px',
+                      }}
+                    >
+                      {r.text}
+                    </p>
+                  </div>
+                ))}
+            </div>
+          )}
+
           <button
             type="button"
-            onClick={() => setLinking(null)}
-            className="cursor-pointer text-[9px]"
-            style={{ color: '#D4605A', opacity: 0.5, background: 'none', border: 'none' }}
+            onClick={() => setFocus(null)}
+            className="w-full cursor-pointer text-center py-1"
+            style={{
+              color: '#8A6A4A',
+              opacity: 0.4,
+              background: 'none',
+              border: 'none',
+              fontFamily: 'var(--font-handwritten)',
+              fontSize: '12px',
+            }}
           >
-            cancel
+            change focus
           </button>
         </div>
       )}
+    </div>
+  );
+}
 
-      {/* Active pill detail */}
-      {activeId &&
-        !linking &&
-        (() => {
-          const pill = pills.find((p) => p.id === activeId);
-          if (!pill) return null;
-          const pillConns = conns.filter((c) => c.fromId === pill.id || c.toId === pill.id);
-          const pillPacks = packs.filter((pk) => pk.pillIds.includes(pill.id));
-          // Sparkline
-          const hist = pill.history || [];
-          return (
-            <div className="mx-auto max-w-[300px] space-y-2 animate-in fade-in duration-200">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-1.5">
-                  <div
-                    className="h-3 w-3 rounded-full"
-                    style={{ background: pill.color, opacity: 0.7 }}
-                  />
-                  <span
-                    className="text-sm font-bold"
-                    style={{ color: pill.color, fontFamily: 'var(--font-handwritten)' }}
-                  >
-                    {pill.name}
-                  </span>
-                  <span
-                    className="text-[7px] uppercase tracking-wider"
-                    style={{ color: pill.color, opacity: 0.35 }}
-                  >
-                    {pill.type}
-                  </span>
-                </div>
-                <div className="flex items-center gap-1">
+/* ═══════════════════════════════════════════════════════════
+   REFLECT TAB — Vertical Rainbow + Emotion Decomposition
+   ═══════════════════════════════════════════════════════════ */
+function ReflectTab({
+  pills,
+  decompositions,
+  setDecompositions,
+}: {
+  pills: PatternPill[];
+  decompositions: EmotionDecomposition[];
+  setDecompositions: (d: EmotionDecomposition[]) => void;
+}) {
+  const [activeDecomp, setActiveDecomp] = useState<string | null>(null);
+  const [pickedLevel, setPickedLevel] = useState<number | null>(null);
+  const [customComponent, setCustomComponent] = useState('');
+
+  const startDecomposition = (level: (typeof HAWKINS_LEVELS)[number]) => {
+    const newDecomp: EmotionDecomposition = {
+      id: crypto.randomUUID(),
+      emotion: level.name,
+      hawkinsLevel: level.level,
+      color: level.color,
+      components: [],
+      impact: '',
+      source: '',
+      needs: '',
+      createdAt: new Date().toISOString(),
+    };
+    setDecompositions([...decompositions, newDecomp]);
+    setActiveDecomp(newDecomp.id);
+    setPickedLevel(level.level);
+  };
+
+  const addComponent = (decompId: string, name: string) => {
+    if (!name.trim()) return;
+    setDecompositions(
+      decompositions.map((d) =>
+        d.id === decompId
+          ? {
+              ...d,
+              components: [
+                ...d.components,
+                { id: crypto.randomUUID(), name: name.trim(), weight: 50 },
+              ],
+            }
+          : d,
+      ),
+    );
+    setCustomComponent('');
+  };
+
+  const updateComponentWeight = (decompId: string, compId: string, weight: number) => {
+    setDecompositions(
+      decompositions.map((d) =>
+        d.id === decompId
+          ? {
+              ...d,
+              components: d.components.map((c) => (c.id === compId ? { ...c, weight } : c)),
+            }
+          : d,
+      ),
+    );
+  };
+
+  const removeComponent = (decompId: string, compId: string) => {
+    setDecompositions(
+      decompositions.map((d) =>
+        d.id === decompId ? { ...d, components: d.components.filter((c) => c.id !== compId) } : d,
+      ),
+    );
+  };
+
+  const updateField = (decompId: string, field: 'impact' | 'source' | 'needs', value: string) => {
+    setDecompositions(
+      decompositions.map((d) => (d.id === decompId ? { ...d, [field]: value } : d)),
+    );
+  };
+
+  const removeDecomposition = (id: string) => {
+    setDecompositions(decompositions.filter((d) => d.id !== id));
+    if (activeDecomp === id) {
+      setActiveDecomp(null);
+      setPickedLevel(null);
+    }
+  };
+
+  const active = decompositions.find((d) => d.id === activeDecomp);
+
+  return (
+    <div className="space-y-4">
+      <p
+        className="text-center font-semibold uppercase tracking-[0.24em]"
+        style={{ color: '#9B6BA0', fontSize: '12px' }}
+      >
+        Emotion Decomposition
+      </p>
+
+      <p
+        className="text-center"
+        style={{
+          color: '#8A6A4A',
+          opacity: 0.6,
+          fontFamily: 'var(--font-handwritten)',
+          fontSize: '14px',
+        }}
+      >
+        Pick an emotion. Decompose it like a perfume.
+      </p>
+
+      {/* Vertical Rainbow Slider */}
+      <div className="flex gap-3">
+        {/* Rainbow column */}
+        <div
+          className="flex flex-col rounded-xl overflow-hidden"
+          style={{
+            width: 70,
+            border: '1.5px solid #8A6A4A40',
+            boxShadow: 'inset 0 0 20px rgba(0,0,0,0.05)',
+          }}
+        >
+          {HAWKINS_LEVELS.map((lvl) => {
+            const isPicked = pickedLevel === lvl.level;
+            return (
+              <button
+                key={lvl.level}
+                type="button"
+                onClick={() => startDecomposition(lvl)}
+                className="cursor-pointer transition-all hover:scale-x-105"
+                style={{
+                  background: lvl.color,
+                  height: isPicked ? 32 : 22,
+                  border: 'none',
+                  padding: '0 6px',
+                  textAlign: 'left',
+                  borderTop: isPicked ? `2px solid ${lvl.text}` : 'none',
+                  borderBottom: isPicked ? `2px solid ${lvl.text}` : 'none',
+                }}
+                title={`${lvl.name} (${lvl.level})`}
+              >
+                <span
+                  className="font-bold uppercase truncate block"
+                  style={{
+                    color: lvl.text,
+                    fontFamily: 'var(--font-serif)',
+                    fontSize: isPicked ? '11px' : '9px',
+                    letterSpacing: '0.05em',
+                  }}
+                >
+                  {lvl.name}
+                </span>
+              </button>
+            );
+          })}
+        </div>
+
+        {/* Decomposition area */}
+        <div className="flex-1 space-y-3">
+          {!active && (
+            <div
+              className="rounded-xl px-4 py-6 text-center"
+              style={{ background: '#f7eddc9c', border: '1.5px dashed #8A6A4A30' }}
+            >
+              <p
+                style={{
+                  color: '#8A6A4A',
+                  opacity: 0.5,
+                  fontFamily: 'var(--font-handwritten)',
+                  fontSize: '15px',
+                }}
+              >
+                Tap an emotion on the rainbow
+              </p>
+            </div>
+          )}
+
+          {active && (
+            <div className="space-y-3">
+              {/* Header */}
+              <div
+                className="rounded-xl px-4 py-3"
+                style={{
+                  background: active.color,
+                  border: `1.5px solid ${active.color}`,
+                }}
+              >
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p
+                      className="uppercase tracking-wider"
+                      style={{
+                        color: '#5C3018',
+                        opacity: 0.6,
+                        fontFamily: 'var(--font-serif)',
+                        fontWeight: 700,
+                        fontSize: '10px',
+                      }}
+                    >
+                      {active.hawkinsLevel}
+                    </p>
+                    <p
+                      style={{
+                        color: '#5C3018',
+                        fontFamily: 'var(--font-serif)',
+                        fontWeight: 700,
+                        fontSize: '24px',
+                        lineHeight: 1,
+                      }}
+                    >
+                      {active.emotion}
+                    </p>
+                  </div>
                   <button
                     type="button"
-                    onClick={() => setLinking({ fromId: pill.id })}
-                    className="cursor-pointer text-[8px] rounded px-1.5 py-0.5"
-                    style={{
-                      color: '#D4605A',
-                      background: '#D4605A10',
-                      border: '1px solid #D4605A20',
-                      fontFamily: 'var(--font-handwritten)',
-                    }}
-                  >
-                    link
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => lockPill(pill.id)}
-                    className="cursor-pointer text-[10px]"
-                    style={{ background: 'none', border: 'none' }}
-                  >
-                    {pill.locked ? '🔒' : '🔓'}
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => removePill(pill.id)}
-                    className="cursor-pointer text-[9px]"
-                    style={{ color: pill.color, opacity: 0.3, background: 'none', border: 'none' }}
+                    onClick={() => removeDecomposition(active.id)}
+                    className="cursor-pointer text-base"
+                    style={{ color: '#5C3018', opacity: 0.4, background: 'none', border: 'none' }}
                   >
                     ✕
                   </button>
                 </div>
               </div>
-              {/* Intensity */}
-              <div className="flex items-center gap-1.5">
-                <span
-                  className="text-[8px]"
-                  style={{ color: pill.color, opacity: 0.4, fontFamily: 'var(--font-handwritten)' }}
+
+              {/* Components */}
+              <div className="space-y-2">
+                <p
+                  className="uppercase tracking-wider"
+                  style={{
+                    color: '#9B6BA0',
+                    opacity: 0.6,
+                    fontFamily: 'var(--font-serif)',
+                    fontWeight: 700,
+                    fontSize: '11px',
+                  }}
                 >
-                  faint
-                </span>
-                {[1, 2, 3, 4, 5].map((v) => (
-                  <button
-                    key={v}
-                    type="button"
-                    onClick={() => ratePill(pill.id, v)}
-                    className="flex-1 cursor-pointer rounded-lg transition-all duration-300"
-                    style={{
-                      height: v === pill.intensity ? 18 : 7,
-                      background: pill.color,
-                      opacity: v === pill.intensity ? 0.75 : 0.1,
-                      border: 'none',
-                      padding: 0,
-                    }}
-                  />
-                ))}
-                <span
-                  className="text-[8px]"
-                  style={{ color: pill.color, opacity: 0.4, fontFamily: 'var(--font-handwritten)' }}
-                >
-                  core
-                </span>
-              </div>
-              {/* Sparkline */}
-              {hist.length > 1 && (
-                <svg width="100%" height="20" viewBox="0 0 120 20" preserveAspectRatio="none">
-                  <path
-                    d={hist
-                      .map(
-                        (h, i) =>
-                          `${i === 0 ? 'M' : 'L'} ${(i / (hist.length - 1)) * 120} ${20 - (h.intensity / 5) * 18}`,
-                      )
-                      .join(' ')}
-                    fill="none"
-                    stroke={pill.color}
-                    strokeWidth="1.5"
-                    opacity="0.4"
-                  />
-                </svg>
-              )}
-              {/* Connections */}
-              {pillConns.length > 0 && (
-                <div className="flex flex-wrap gap-1">
-                  {pillConns.map((c) => {
-                    const other = pills.find(
-                      (p) => p.id === (c.fromId === pill.id ? c.toId : c.fromId),
-                    );
-                    if (!other) return null;
-                    return (
-                      <div
-                        key={c.id}
-                        className="flex items-center gap-1 rounded-full px-2 py-0.5"
+                  Inside this emotion
+                </p>
+                {active.components.map((c) => (
+                  <div
+                    key={c.id}
+                    className="rounded-lg px-3 py-2"
+                    style={{ background: '#f7eddc9c', border: '1px solid #d2b47b4a' }}
+                  >
+                    <div className="flex items-center justify-between mb-1">
+                      <span
                         style={{
-                          background: `${CONN_COLORS[c.kind]}10`,
-                          border: `1px solid ${CONN_COLORS[c.kind]}20`,
+                          color: '#7a5438',
+                          fontFamily: 'var(--font-handwritten)',
+                          fontWeight: 700,
+                          fontSize: '15px',
                         }}
                       >
+                        {c.name}
+                      </span>
+                      <div className="flex items-center gap-2">
                         <span
-                          className="text-[8px]"
                           style={{
-                            color: CONN_COLORS[c.kind],
+                            color: '#9B6BA0',
+                            opacity: 0.6,
                             fontFamily: 'var(--font-handwritten)',
-                            fontWeight: 600,
+                            fontSize: '12px',
+                            fontWeight: 700,
                           }}
                         >
-                          {c.kind} {other.name}
+                          {c.weight}%
                         </span>
                         <button
                           type="button"
-                          onClick={() => removeConn(c.id)}
-                          className="cursor-pointer text-[7px]"
+                          onClick={() => removeComponent(active.id, c.id)}
+                          className="cursor-pointer text-xs"
                           style={{
-                            color: CONN_COLORS[c.kind],
+                            color: '#9B6BA0',
                             opacity: 0.3,
                             background: 'none',
                             border: 'none',
@@ -657,224 +1126,217 @@ function MapTab({
                           ✕
                         </button>
                       </div>
-                    );
-                  })}
-                </div>
-              )}
-              {/* Packs this pill is in */}
-              {pillPacks.length > 0 && (
-                <div className="flex flex-wrap gap-1">
-                  {pillPacks.map((pk) => (
-                    <span
-                      key={pk.id}
-                      className="rounded-full px-2 py-0.5 text-[8px]"
-                      style={{
-                        background: `${PACK_COLORS[pk.type]}10`,
-                        color: PACK_COLORS[pk.type],
-                        fontFamily: 'var(--font-handwritten)',
-                        fontWeight: 600,
-                      }}
-                    >
-                      {pk.name}
-                    </span>
-                  ))}
-                </div>
-              )}
-            </div>
-          );
-        })()}
+                    </div>
+                    <input
+                      type="range"
+                      min={0}
+                      max={100}
+                      value={c.weight}
+                      onChange={(e) =>
+                        updateComponentWeight(active.id, c.id, Number(e.target.value))
+                      }
+                      className="w-full"
+                      style={{ accentColor: '#9B6BA0' }}
+                    />
+                  </div>
+                ))}
 
-      {/* Connection type chooser when linking */}
-      {linking &&
-        activeId &&
-        (() => {
-          const target = pills.find((p) => p.id === activeId);
-          const source = pills.find((p) => p.id === linking.fromId);
-          if (!target || !source || target.id === source.id) return null;
-          return (
-            <div className="space-y-1.5 animate-in fade-in duration-200">
-              <p
-                className="text-[10px] text-center"
-                style={{ color: '#8A6A4A', fontFamily: 'var(--font-handwritten)' }}
-              >
-                {source.name} → {target.name}
-              </p>
-              <div className="flex justify-center gap-1">
-                {CONN_KINDS.map((k) => (
-                  <button
-                    key={k}
-                    type="button"
-                    onClick={() => addConn(target.id, k)}
-                    className="cursor-pointer rounded-full px-2.5 py-1 text-[9px] transition-all hover:scale-105"
+                {/* Suggestion pills */}
+                {COMPONENT_SUGGESTIONS[active.emotion] && (
+                  <div className="flex flex-wrap gap-2 pt-1">
+                    {COMPONENT_SUGGESTIONS[active.emotion]
+                      .filter((s) => !active.components.some((c) => c.name === s))
+                      .map((s) => (
+                        <button
+                          key={s}
+                          type="button"
+                          onClick={() => addComponent(active.id, s)}
+                          className="cursor-pointer rounded-full px-3 py-1.5 transition-all hover:scale-105"
+                          style={{
+                            background: '#9B6BA010',
+                            border: '1.5px solid #9B6BA030',
+                            color: '#7a5438',
+                            fontFamily: 'var(--font-handwritten)',
+                            fontWeight: 700,
+                            fontSize: '13px',
+                          }}
+                        >
+                          + {s}
+                        </button>
+                      ))}
+                  </div>
+                )}
+
+                {/* Custom component input */}
+                <div className="flex gap-2 pt-1">
+                  <input
+                    type="text"
+                    value={customComponent}
+                    onChange={(e) => setCustomComponent(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') addComponent(active.id, customComponent);
+                    }}
+                    placeholder="add another..."
+                    className="flex-1 rounded-lg px-3 py-2 outline-none"
                     style={{
-                      background: `${CONN_COLORS[k]}10`,
-                      border: `1px solid ${CONN_COLORS[k]}25`,
-                      color: CONN_COLORS[k],
+                      background: '#f7eddc',
+                      border: '1px solid #9B6BA025',
+                      color: '#7a5438',
                       fontFamily: 'var(--font-handwritten)',
-                      fontWeight: 600,
+                      fontSize: '14px',
+                    }}
+                  />
+                </div>
+              </div>
+
+              {/* Reflection fields */}
+              <div className="space-y-2">
+                <ReflectField
+                  label="Where it impacts your life"
+                  value={active.impact}
+                  onChange={(v) => updateField(active.id, 'impact', v)}
+                  placeholder="work, sleep, relationships..."
+                />
+                <ReflectField
+                  label="Where it comes from"
+                  value={active.source}
+                  onChange={(v) => updateField(active.id, 'source', v)}
+                  placeholder="childhood, recent event, fear..."
+                />
+                <ReflectField
+                  label="What you need"
+                  value={active.needs}
+                  onChange={(v) => updateField(active.id, 'needs', v)}
+                  placeholder="rest, support, courage..."
+                />
+              </div>
+
+              {/* Connect to existing pills */}
+              {pills.length > 0 && (
+                <div className="space-y-2 pt-1">
+                  <p
+                    className="uppercase tracking-wider"
+                    style={{
+                      color: '#9B6BA0',
+                      opacity: 0.5,
+                      fontFamily: 'var(--font-serif)',
+                      fontWeight: 700,
+                      fontSize: '11px',
                     }}
                   >
-                    {k}
-                  </button>
-                ))}
-              </div>
+                    Linked to your map
+                  </p>
+                  <div className="flex flex-wrap gap-1.5">
+                    {pills.map((p) => (
+                      <span
+                        key={p.id}
+                        className="rounded-full px-3 py-1"
+                        style={{
+                          background: `${p.color}12`,
+                          border: `1px solid ${p.color}25`,
+                          color: '#7a5438',
+                          fontFamily: 'var(--font-handwritten)',
+                          fontWeight: 700,
+                          fontSize: '12px',
+                        }}
+                      >
+                        {p.name}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
-          );
-        })()}
-
-      {/* Two columns: pills */}
-      <div className="grid grid-cols-2 gap-2">
-        {/* Strengths */}
-        <div className="space-y-1">
-          <button
-            type="button"
-            onClick={() => setAddingType(addingType === 'strength' ? null : 'strength')}
-            className="w-full cursor-pointer text-center text-[9px] font-bold uppercase tracking-wider py-1 rounded-lg transition-all"
-            style={{
-              color: '#D4805A',
-              fontFamily: 'var(--font-serif)',
-              background: addingType === 'strength' ? '#D4805A10' : 'transparent',
-              border: `1px solid ${addingType === 'strength' ? '#D4805A30' : '#D4805A12'}`,
-            }}
-          >
-            + Strength
-          </button>
-          {strengths.map((p) => (
-            <button
-              key={p.id}
-              type="button"
-              onClick={() =>
-                linking ? setActiveId(p.id) : setActiveId(activeId === p.id ? null : p.id)
-              }
-              className="flex w-full cursor-pointer items-center gap-1.5 rounded-xl px-2 py-1.5 text-left transition-all duration-200"
-              style={{
-                background: activeId === p.id ? `${p.color}12` : `${p.color}04`,
-                border: `1px solid ${activeId === p.id ? `${p.color}30` : `${p.color}10`}`,
-              }}
-            >
-              <div className="h-2 w-2 rounded-full" style={{ background: p.color, opacity: 0.7 }} />
-              <span
-                className="flex-1 text-[10px]"
-                style={{ color: p.color, fontFamily: 'var(--font-handwritten)', fontWeight: 600 }}
-              >
-                {p.name}
-              </span>
-              {p.locked && <span className="text-[6px]">🔒</span>}
-            </button>
-          ))}
-        </div>
-        {/* Weaknesses */}
-        <div className="space-y-1">
-          <button
-            type="button"
-            onClick={() => setAddingType(addingType === 'weakness' ? null : 'weakness')}
-            className="w-full cursor-pointer text-center text-[9px] font-bold uppercase tracking-wider py-1 rounded-lg transition-all"
-            style={{
-              color: '#6890B0',
-              fontFamily: 'var(--font-serif)',
-              background: addingType === 'weakness' ? '#6890B010' : 'transparent',
-              border: `1px solid ${addingType === 'weakness' ? '#6890B030' : '#6890B012'}`,
-            }}
-          >
-            + Weakness
-          </button>
-          {weaknesses.map((p) => (
-            <button
-              key={p.id}
-              type="button"
-              onClick={() =>
-                linking ? setActiveId(p.id) : setActiveId(activeId === p.id ? null : p.id)
-              }
-              className="flex w-full cursor-pointer items-center gap-1.5 rounded-xl px-2 py-1.5 text-left transition-all duration-200"
-              style={{
-                background: activeId === p.id ? `${p.color}12` : `${p.color}04`,
-                border: `1px solid ${activeId === p.id ? `${p.color}30` : `${p.color}10`}`,
-              }}
-            >
-              <div className="h-2 w-2 rounded-full" style={{ background: p.color, opacity: 0.7 }} />
-              <span
-                className="flex-1 text-[10px]"
-                style={{ color: p.color, fontFamily: 'var(--font-handwritten)', fontWeight: 600 }}
-              >
-                {p.name}
-              </span>
-              {p.locked && <span className="text-[6px]">🔒</span>}
-            </button>
-          ))}
+          )}
         </div>
       </div>
 
-      {/* Add pill input */}
-      {addingType &&
-        (() => {
-          const ac = addingType === 'strength' ? '#D4805A' : '#6890B0';
-          const sugg = addingType === 'strength' ? S_SUGGEST : W_SUGGEST;
-          return (
-            <div className="space-y-2 animate-in fade-in duration-200">
-              <div
-                className="flex items-center gap-2 rounded-xl px-3 py-2"
-                style={{ background: `${ac}08`, border: `1px solid ${ac}20` }}
+      {/* History list */}
+      {decompositions.length > 0 && (
+        <div className="space-y-2 pt-2">
+          <p
+            className="uppercase tracking-wider"
+            style={{
+              color: '#9B6BA0',
+              opacity: 0.6,
+              fontFamily: 'var(--font-serif)',
+              fontWeight: 700,
+              fontSize: '11px',
+            }}
+          >
+            Your decompositions
+          </p>
+          <div className="flex flex-wrap gap-2">
+            {decompositions.map((d) => (
+              <button
+                key={d.id}
+                type="button"
+                onClick={() => {
+                  setActiveDecomp(d.id);
+                  setPickedLevel(d.hawkinsLevel);
+                }}
+                className="cursor-pointer rounded-full px-3 py-1.5 transition-all"
+                style={{
+                  background: activeDecomp === d.id ? d.color : `${d.color}aa`,
+                  border: activeDecomp === d.id ? '2px solid #5C3018' : '1.5px solid transparent',
+                  color: '#5C3018',
+                  fontFamily: 'var(--font-handwritten)',
+                  fontWeight: 700,
+                  fontSize: '13px',
+                }}
               >
-                <div
-                  className="h-2.5 w-2.5 rounded-full"
-                  style={{ background: ac, opacity: 0.5 }}
-                />
-                <input
-                  type="text"
-                  value={input}
-                  onChange={(e) => setInput(e.target.value)}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter') addPill(input, addingType);
-                  }}
-                  placeholder={`Name a ${addingType}...`}
-                  className="flex-1 bg-transparent text-sm outline-none"
-                  style={{ color: ac, fontFamily: 'var(--font-handwritten)', fontWeight: 600 }}
-                  autoFocus
-                />
-              </div>
-              <div className="flex flex-wrap gap-1 pl-1">
-                {sugg
-                  .filter((s) => !pills.some((p) => p.name === s))
-                  .slice(0, 4)
-                  .map((s) => (
-                    <button
-                      key={s}
-                      type="button"
-                      onClick={() => addPill(s, addingType)}
-                      className="cursor-pointer rounded-full px-2 py-0.5 text-[9px] transition-all hover:scale-105"
-                      style={{
-                        background: `${ac}10`,
-                        border: `1px solid ${ac}20`,
-                        color: ac,
-                        fontFamily: 'var(--font-handwritten)',
-                        fontWeight: 600,
-                      }}
-                    >
-                      {s}
-                    </button>
-                  ))}
-              </div>
-            </div>
-          );
-        })()}
+                {d.emotion}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
 
-      {/* Empty + prompt states */}
-      {n === 0 && !addingType && (
-        <p
-          className="text-center text-xs"
-          style={{ color: '#B8905A', opacity: 0.35, fontFamily: 'var(--font-handwritten)' }}
-        >
-          Name your strengths and weaknesses.
-        </p>
-      )}
-      {n > 0 && n < 3 && (
-        <p
-          className="text-center text-[9px]"
-          style={{ color: '#B8905A', opacity: 0.3, fontFamily: 'var(--font-handwritten)' }}
-        >
-          Add {3 - n} more to see your wheel
-        </p>
-      )}
+/* ─── Reflect field (label + textarea) ─── */
+function ReflectField({
+  label,
+  value,
+  onChange,
+  placeholder,
+}: {
+  label: string;
+  value: string;
+  onChange: (v: string) => void;
+  placeholder: string;
+}) {
+  return (
+    <div
+      className="rounded-xl px-3 py-2"
+      style={{ background: '#f7eddc9c', border: '1px solid #d2b47b4a' }}
+    >
+      <p
+        className="uppercase tracking-wider mb-1"
+        style={{
+          color: '#9B6BA0',
+          opacity: 0.6,
+          fontFamily: 'var(--font-serif)',
+          fontWeight: 700,
+          fontSize: '10px',
+        }}
+      >
+        {label}
+      </p>
+      <textarea
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        placeholder={placeholder}
+        rows={2}
+        className="w-full resize-none bg-transparent outline-none"
+        style={{
+          color: '#7a5438',
+          fontFamily: 'var(--font-handwritten)',
+          fontSize: '14px',
+          border: 'none',
+        }}
+      />
     </div>
   );
 }
