@@ -13,8 +13,14 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 const PILLS_KEY = 'colourmap:pattern-pills';
 const FOCUS_KEY = 'colourmap:pattern-focus';
 const REFLECT_KEY = 'colourmap:emotion-decompositions';
+const RIVER_KEY = 'colourmap:river-snapshots';
 
 /* ─── Types ─── */
+interface RiverSnapshot {
+  date: string; // YYYY-MM-DD
+  values: { pillId: string; intensity: number }[]; // 1-5 per pill
+}
+
 interface PatternPill {
   id: string;
   name: string;
@@ -120,15 +126,17 @@ function ss<T>(k: string, v: T) {
    MAIN
    ═══════════════════════════════════════════════════════════ */
 export default function CaringDepth() {
-  const [tab, setTab] = useState<'map' | 'work' | 'reflect'>('map');
+  const [tab, setTab] = useState<'map' | 'work' | 'reflect' | 'river'>('map');
   const [pills, setPills] = useState<PatternPill[]>([]);
   const [focus, setFocus] = useState<WorkFocus | null>(null);
   const [decompositions, setDecompositions] = useState<EmotionDecomposition[]>([]);
+  const [river, setRiver] = useState<RiverSnapshot[]>([]);
 
   useEffect(() => {
     setPills(ls(PILLS_KEY, []));
     setFocus(ls(FOCUS_KEY, null));
     setDecompositions(ls(REFLECT_KEY, []));
+    setRiver(ls(RIVER_KEY, []));
   }, []);
 
   const up = useCallback(<T,>(key: string, val: T, setter: (v: T) => void) => {
@@ -144,24 +152,25 @@ export default function CaringDepth() {
         boxShadow: '0 28px 55px -36px rgba(92,48,24,0.3)',
       }}
     >
-      {/* Tabs — bigger, more readable */}
-      <div className="flex gap-1.5">
+      {/* Tabs */}
+      <div className="flex gap-1">
         {[
           { id: 'map' as const, label: 'Map', color: '#C4A060' },
           { id: 'work' as const, label: 'Work', color: '#D4805A' },
           { id: 'reflect' as const, label: 'Reflect', color: '#9B6BA0' },
+          { id: 'river' as const, label: 'River', color: '#6890B0' },
         ].map((t) => (
           <button
             key={t.id}
             type="button"
             onClick={() => setTab(t.id)}
-            className="flex-1 cursor-pointer rounded-lg py-2 text-center uppercase tracking-[0.18em] transition-all duration-200"
+            className="flex-1 cursor-pointer rounded-lg py-2 text-center uppercase tracking-[0.15em] transition-all duration-200"
             style={{
               background: tab === t.id ? `${t.color}15` : 'transparent',
               border: `1.5px solid ${tab === t.id ? `${t.color}45` : `${t.color}18`}`,
               color: t.color,
               fontFamily: 'var(--font-serif)',
-              fontSize: '12px',
+              fontSize: '11px',
               fontWeight: 700,
             }}
           >
@@ -180,6 +189,9 @@ export default function CaringDepth() {
           decompositions={decompositions}
           setDecompositions={(v) => up(REFLECT_KEY, v, setDecompositions)}
         />
+      )}
+      {tab === 'river' && (
+        <RiverTab pills={pills} river={river} setRiver={(v) => up(RIVER_KEY, v, setRiver)} />
       )}
     </div>
   );
@@ -1337,6 +1349,444 @@ function ReflectField({
           border: 'none',
         }}
       />
+    </div>
+  );
+}
+
+/* ═══════════════════════════════════════════════════════════
+   RIVER TAB — Evolution graph over time
+   Horizontal mountain/river of strengths and weaknesses.
+   Variable timeframes (week / month / year).
+   ═══════════════════════════════════════════════════════════ */
+function RiverTab({
+  pills,
+  river,
+  setRiver,
+}: {
+  pills: PatternPill[];
+  river: RiverSnapshot[];
+  setRiver: (r: RiverSnapshot[]) => void;
+}) {
+  const [timeframe, setTimeframe] = useState<'week' | 'month' | 'year'>('month');
+  const [selectedPills, setSelectedPills] = useState<string[]>([]);
+  const [showAll, setShowAll] = useState(true);
+  const [todayValues, setTodayValues] = useState<Record<string, number>>({});
+
+  const today = new Date().toISOString().split('T')[0];
+  const todaySnapshot = river.find((s) => s.date === today);
+
+  // Initialize today's values from existing snapshot or defaults
+  useEffect(() => {
+    if (todaySnapshot) {
+      const vals: Record<string, number> = {};
+      todaySnapshot.values.forEach((v) => {
+        vals[v.pillId] = v.intensity;
+      });
+      setTodayValues(vals);
+    }
+  }, [todaySnapshot]);
+
+  const saveTodaySnapshot = () => {
+    const values = Object.entries(todayValues).map(([pillId, intensity]) => ({
+      pillId,
+      intensity,
+    }));
+    if (values.length === 0) return;
+    const filtered = river.filter((s) => s.date !== today);
+    setRiver([...filtered, { date: today, values }].sort((a, b) => a.date.localeCompare(b.date)));
+  };
+
+  const setTodayValue = (pillId: string, intensity: number) => {
+    setTodayValues({ ...todayValues, [pillId]: intensity });
+  };
+
+  // Filter snapshots by timeframe
+  const now = new Date();
+  const cutoff = new Date(now);
+  if (timeframe === 'week') cutoff.setDate(now.getDate() - 7);
+  if (timeframe === 'month') cutoff.setMonth(now.getMonth() - 1);
+  if (timeframe === 'year') cutoff.setFullYear(now.getFullYear() - 1);
+
+  const visibleSnapshots = river
+    .filter((s) => new Date(s.date) >= cutoff)
+    .sort((a, b) => a.date.localeCompare(b.date));
+
+  // Pills to graph
+  const graphPills = showAll ? pills : pills.filter((p) => selectedPills.includes(p.id));
+
+  // SVG dimensions
+  const w = 320;
+  const h = 180;
+  const padX = 20;
+  const padY = 20;
+  const innerW = w - padX * 2;
+  const innerH = h - padY * 2;
+
+  const xForIndex = (i: number, total: number) =>
+    total <= 1 ? padX + innerW / 2 : padX + (i / (total - 1)) * innerW;
+
+  const yForIntensity = (v: number) => padY + innerH - ((v - 1) / 4) * innerH;
+
+  const togglePill = (id: string) => {
+    if (selectedPills.includes(id)) {
+      setSelectedPills(selectedPills.filter((p) => p !== id));
+    } else {
+      setSelectedPills([...selectedPills, id]);
+    }
+  };
+
+  return (
+    <div className="space-y-4">
+      <p
+        className="text-center font-semibold uppercase tracking-[0.24em]"
+        style={{ color: '#6890B0', fontSize: '12px' }}
+      >
+        River of Time
+      </p>
+
+      <p
+        className="text-center"
+        style={{
+          color: '#8A6A4A',
+          opacity: 0.6,
+          fontFamily: 'var(--font-handwritten)',
+          fontSize: '14px',
+        }}
+      >
+        Watch your strengths and challenges flow over time.
+      </p>
+
+      {/* Timeframe selector */}
+      <div className="flex justify-center gap-1.5">
+        {(['week', 'month', 'year'] as const).map((tf) => (
+          <button
+            key={tf}
+            type="button"
+            onClick={() => setTimeframe(tf)}
+            className="cursor-pointer rounded-full px-4 py-1.5 transition-all"
+            style={{
+              background: timeframe === tf ? '#6890B015' : 'transparent',
+              border: `1.5px solid ${timeframe === tf ? '#6890B045' : '#6890B015'}`,
+              color: '#6890B0',
+              fontFamily: 'var(--font-serif)',
+              fontWeight: 700,
+              fontSize: '12px',
+              textTransform: 'capitalize',
+            }}
+          >
+            {tf}
+          </button>
+        ))}
+      </div>
+
+      {/* Graph */}
+      {pills.length === 0 && (
+        <p
+          className="text-center py-6"
+          style={{
+            color: '#B8905A',
+            opacity: 0.5,
+            fontFamily: 'var(--font-handwritten)',
+            fontSize: '14px',
+          }}
+        >
+          Add patterns in the Map tab first.
+        </p>
+      )}
+
+      {pills.length > 0 && (
+        <>
+          <div
+            className="rounded-xl px-2 py-3"
+            style={{ background: '#f7eddc9c', border: '1.5px solid #6890B025' }}
+          >
+            <svg
+              width="100%"
+              height={h}
+              viewBox={`0 0 ${w} ${h}`}
+              preserveAspectRatio="xMidYMid meet"
+            >
+              {/* Background grid */}
+              {[0, 0.25, 0.5, 0.75, 1].map((t) => (
+                <line
+                  key={t}
+                  x1={padX}
+                  y1={padY + t * innerH}
+                  x2={w - padX}
+                  y2={padY + t * innerH}
+                  stroke="#8A6A4A"
+                  strokeWidth="0.4"
+                  opacity="0.1"
+                  strokeDasharray="2 3"
+                />
+              ))}
+              {/* Y axis labels */}
+              <text
+                x={padX - 4}
+                y={padY + 4}
+                textAnchor="end"
+                style={{
+                  fontSize: '10px',
+                  fontFamily: 'var(--font-handwritten)',
+                  fill: '#8A6A4A',
+                  opacity: 0.5,
+                }}
+              >
+                high
+              </text>
+              <text
+                x={padX - 4}
+                y={padY + innerH}
+                textAnchor="end"
+                style={{
+                  fontSize: '10px',
+                  fontFamily: 'var(--font-handwritten)',
+                  fill: '#8A6A4A',
+                  opacity: 0.5,
+                }}
+              >
+                low
+              </text>
+
+              {/* Empty state */}
+              {visibleSnapshots.length === 0 && (
+                <text
+                  x={w / 2}
+                  y={h / 2}
+                  textAnchor="middle"
+                  dominantBaseline="middle"
+                  style={{
+                    fontSize: '13px',
+                    fontFamily: 'var(--font-handwritten)',
+                    fill: '#8A6A4A',
+                    opacity: 0.4,
+                  }}
+                >
+                  rate your patterns below to start the river
+                </text>
+              )}
+
+              {/* River lines per pill */}
+              {visibleSnapshots.length > 0 &&
+                graphPills.map((pill) => {
+                  const points = visibleSnapshots
+                    .map((snap, i) => {
+                      const v = snap.values.find((vv) => vv.pillId === pill.id);
+                      if (!v) return null;
+                      return {
+                        x: xForIndex(i, visibleSnapshots.length),
+                        y: yForIntensity(v.intensity),
+                      };
+                    })
+                    .filter((p): p is { x: number; y: number } => p !== null);
+                  if (points.length === 0) return null;
+                  const path =
+                    points.length === 1
+                      ? `M ${points[0].x} ${points[0].y} L ${points[0].x + 1} ${points[0].y}`
+                      : points.map((p, i) => `${i === 0 ? 'M' : 'L'} ${p.x} ${p.y}`).join(' ');
+                  return (
+                    <g key={pill.id}>
+                      <path
+                        d={path}
+                        fill="none"
+                        stroke={pill.color}
+                        strokeWidth="2.5"
+                        strokeLinejoin="round"
+                        strokeLinecap="round"
+                        opacity="0.7"
+                      />
+                      {points.map((p, i) => (
+                        <circle key={i} cx={p.x} cy={p.y} r={3} fill={pill.color} opacity="0.9" />
+                      ))}
+                    </g>
+                  );
+                })}
+
+              {/* X axis date labels (first, mid, last) */}
+              {visibleSnapshots.length > 0 && (
+                <>
+                  <text
+                    x={padX}
+                    y={h - 4}
+                    textAnchor="start"
+                    style={{
+                      fontSize: '10px',
+                      fontFamily: 'var(--font-handwritten)',
+                      fill: '#8A6A4A',
+                      opacity: 0.5,
+                    }}
+                  >
+                    {visibleSnapshots[0].date.slice(5)}
+                  </text>
+                  <text
+                    x={w - padX}
+                    y={h - 4}
+                    textAnchor="end"
+                    style={{
+                      fontSize: '10px',
+                      fontFamily: 'var(--font-handwritten)',
+                      fill: '#8A6A4A',
+                      opacity: 0.5,
+                    }}
+                  >
+                    {visibleSnapshots[visibleSnapshots.length - 1].date.slice(5)}
+                  </text>
+                </>
+              )}
+            </svg>
+          </div>
+
+          {/* Pill toggles */}
+          <div className="space-y-2">
+            <div className="flex items-center justify-between">
+              <p
+                className="uppercase tracking-wider"
+                style={{
+                  color: '#6890B0',
+                  opacity: 0.6,
+                  fontFamily: 'var(--font-serif)',
+                  fontWeight: 700,
+                  fontSize: '11px',
+                }}
+              >
+                Show on graph
+              </p>
+              <button
+                type="button"
+                onClick={() => setShowAll(!showAll)}
+                className="cursor-pointer rounded-full px-3 py-1"
+                style={{
+                  background: showAll ? '#6890B015' : 'transparent',
+                  border: '1.5px solid #6890B030',
+                  color: '#6890B0',
+                  fontFamily: 'var(--font-handwritten)',
+                  fontWeight: 700,
+                  fontSize: '12px',
+                }}
+              >
+                {showAll ? 'showing all' : 'select pills'}
+              </button>
+            </div>
+            {!showAll && (
+              <div className="flex flex-wrap gap-1.5">
+                {pills.map((p) => {
+                  const isOn = selectedPills.includes(p.id);
+                  return (
+                    <button
+                      key={p.id}
+                      type="button"
+                      onClick={() => togglePill(p.id)}
+                      className="cursor-pointer rounded-full px-3 py-1.5 transition-all"
+                      style={{
+                        background: isOn ? `${p.color}25` : `${p.color}08`,
+                        border: `1.5px solid ${isOn ? `${p.color}55` : `${p.color}20`}`,
+                        color: '#7a5438',
+                        fontFamily: 'var(--font-handwritten)',
+                        fontWeight: 700,
+                        fontSize: '13px',
+                      }}
+                    >
+                      {p.name}
+                    </button>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+
+          {/* Today's check-in */}
+          <div
+            className="rounded-xl px-4 py-3 space-y-3"
+            style={{ background: '#f7eddc', border: '1.5px solid #6890B030' }}
+          >
+            <div className="flex items-center justify-between">
+              <p
+                className="uppercase tracking-wider"
+                style={{
+                  color: '#6890B0',
+                  opacity: 0.6,
+                  fontFamily: 'var(--font-serif)',
+                  fontWeight: 700,
+                  fontSize: '11px',
+                }}
+              >
+                Today's check-in
+              </p>
+              <span
+                style={{
+                  color: '#8A6A4A',
+                  opacity: 0.5,
+                  fontFamily: 'var(--font-handwritten)',
+                  fontSize: '12px',
+                }}
+              >
+                {today.slice(5)}
+              </span>
+            </div>
+            {pills.map((p) => {
+              const v = todayValues[p.id] ?? 3;
+              return (
+                <div key={p.id} className="space-y-1">
+                  <div className="flex items-center justify-between">
+                    <span
+                      style={{
+                        color: '#7a5438',
+                        fontFamily: 'var(--font-handwritten)',
+                        fontWeight: 700,
+                        fontSize: '14px',
+                      }}
+                    >
+                      <span
+                        className="inline-block h-2 w-2 rounded-full mr-2"
+                        style={{ background: p.color }}
+                      />
+                      {p.name}
+                    </span>
+                    <span
+                      style={{
+                        color: p.color,
+                        opacity: 0.7,
+                        fontFamily: 'var(--font-handwritten)',
+                        fontWeight: 700,
+                        fontSize: '13px',
+                      }}
+                    >
+                      {v}/5
+                    </span>
+                  </div>
+                  <input
+                    type="range"
+                    min={1}
+                    max={5}
+                    step={1}
+                    value={v}
+                    onChange={(e) => setTodayValue(p.id, Number(e.target.value))}
+                    className="w-full"
+                    style={{ accentColor: p.color }}
+                  />
+                </div>
+              );
+            })}
+            <button
+              type="button"
+              onClick={saveTodaySnapshot}
+              disabled={Object.keys(todayValues).length === 0}
+              className="w-full cursor-pointer rounded-lg py-2 uppercase tracking-wider transition-all"
+              style={{
+                background: '#6890B015',
+                border: '1.5px solid #6890B040',
+                color: '#6890B0',
+                fontFamily: 'var(--font-serif)',
+                fontWeight: 700,
+                fontSize: '12px',
+                opacity: Object.keys(todayValues).length === 0 ? 0.4 : 1,
+              }}
+            >
+              {todaySnapshot ? 'Update today' : 'Save today'}
+            </button>
+          </div>
+        </>
+      )}
     </div>
   );
 }
