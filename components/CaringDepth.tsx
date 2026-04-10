@@ -12,6 +12,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 /* ─── Storage keys ─── */
 const PILLS_KEY = 'colourmap:pattern-pills';
 const FOCUS_KEY = 'colourmap:pattern-focus';
+const WORK_KEY = 'colourmap:pattern-work';
 const REFLECT_KEY = 'colourmap:emotion-decompositions';
 const RIVER_KEY = 'colourmap:river-snapshots';
 
@@ -32,8 +33,55 @@ interface PatternPill {
 interface WorkFocus {
   pillId: string;
   startDate: string;
-  reflections: { date: string; text: string }[];
 }
+
+interface PatternWork {
+  pillId: string;
+  origin: string;
+  triggers: string;
+  avoid: string;
+  helpful: string;
+  emotions: string;
+  worst: string;
+  updatedAt: string;
+}
+
+const WORK_FIELDS: {
+  key: keyof Omit<PatternWork, 'pillId' | 'updatedAt'>;
+  question: string;
+  placeholder: string;
+}[] = [
+  {
+    key: 'origin',
+    question: 'Where does it come from?',
+    placeholder: 'history, what taught you this, when it started...',
+  },
+  {
+    key: 'triggers',
+    question: 'What triggers it?',
+    placeholder: 'situations, people, moods, time of day...',
+  },
+  {
+    key: 'avoid',
+    question: 'How can we avoid it?',
+    placeholder: 'guardrails, prevention, what to step away from...',
+  },
+  {
+    key: 'helpful',
+    question: 'What would be helpful?',
+    placeholder: 'tools, support, environment, practices...',
+  },
+  {
+    key: 'emotions',
+    question: 'What emotions does it provoke?',
+    placeholder: 'anger, shame, relief, exhaustion...',
+  },
+  {
+    key: 'worst',
+    question: 'At its worst, what does it do?',
+    placeholder: 'the darkest version, what it costs you, the consequences...',
+  },
+];
 
 interface EmotionComponent {
   id: string;
@@ -129,12 +177,14 @@ export default function CaringDepth() {
   const [tab, setTab] = useState<'map' | 'work' | 'reflect' | 'river'>('map');
   const [pills, setPills] = useState<PatternPill[]>([]);
   const [focus, setFocus] = useState<WorkFocus | null>(null);
+  const [work, setWork] = useState<PatternWork[]>([]);
   const [decompositions, setDecompositions] = useState<EmotionDecomposition[]>([]);
   const [river, setRiver] = useState<RiverSnapshot[]>([]);
 
   useEffect(() => {
     setPills(ls(PILLS_KEY, []));
     setFocus(ls(FOCUS_KEY, null));
+    setWork(ls(WORK_KEY, []));
     setDecompositions(ls(REFLECT_KEY, []));
     setRiver(ls(RIVER_KEY, []));
   }, []);
@@ -179,9 +229,17 @@ export default function CaringDepth() {
         ))}
       </div>
 
-      {tab === 'map' && <MapTab pills={pills} setPills={(v) => up(PILLS_KEY, v, setPills)} />}
+      {tab === 'map' && (
+        <MapTab pills={pills} setPills={(v) => up(PILLS_KEY, v, setPills)} work={work} />
+      )}
       {tab === 'work' && (
-        <WorkTab pills={pills} focus={focus} setFocus={(v) => up(FOCUS_KEY, v, setFocus)} />
+        <WorkTab
+          pills={pills}
+          focus={focus}
+          setFocus={(v) => up(FOCUS_KEY, v, setFocus)}
+          work={work}
+          setWork={(v) => up(WORK_KEY, v, setWork)}
+        />
       )}
       {tab === 'reflect' && (
         <ReflectTab
@@ -203,9 +261,11 @@ export default function CaringDepth() {
 function MapTab({
   pills,
   setPills,
+  work,
 }: {
   pills: PatternPill[];
   setPills: (p: PatternPill[]) => void;
+  work: PatternWork[];
 }) {
   const [addingType, setAddingType] = useState<'strength' | 'weakness' | null>(null);
   const [input, setInput] = useState('');
@@ -277,6 +337,7 @@ function MapTab({
           accent="#c79a42"
           empty="What's strong?"
           pills={strengths}
+          work={work}
           editingId={editingId}
           editName={editName}
           onAdd={() => setAddingType(addingType === 'strength' ? null : 'strength')}
@@ -295,6 +356,7 @@ function MapTab({
           accent="#c79a42"
           empty="What's heavy?"
           pills={weaknesses}
+          work={work}
           editingId={editingId}
           editName={editName}
           onAdd={() => setAddingType(addingType === 'weakness' ? null : 'weakness')}
@@ -345,6 +407,7 @@ function ColumnBlock({
   accent,
   empty,
   pills,
+  work,
   editingId,
   editName,
   onAdd,
@@ -358,6 +421,7 @@ function ColumnBlock({
   accent: string;
   empty: string;
   pills: PatternPill[];
+  work: PatternWork[];
   editingId: string | null;
   editName: string;
   onAdd: () => void;
@@ -383,19 +447,26 @@ function ColumnBlock({
         {label}
       </div>
       <div className="space-y-2">
-        {pills.map((p) => (
-          <PillRow
-            key={p.id}
-            pill={p}
-            isEditing={editingId === p.id}
-            editName={editName}
-            onStartEdit={() => onStartEdit(p.id, p.name)}
-            onChangeEdit={onChangeEdit}
-            onCommitEdit={() => onCommitEdit(p.id)}
-            onCancelEdit={onCancelEdit}
-            onRemove={() => onRemove(p.id)}
-          />
-        ))}
+        {pills.map((p) => {
+          const w = work.find((ww) => ww.pillId === p.id);
+          const answeredCount = w
+            ? WORK_FIELDS.filter((f) => (w[f.key] || '').trim().length > 0).length
+            : 0;
+          return (
+            <PillRow
+              key={p.id}
+              pill={p}
+              workCount={answeredCount}
+              isEditing={editingId === p.id}
+              editName={editName}
+              onStartEdit={() => onStartEdit(p.id, p.name)}
+              onChangeEdit={onChangeEdit}
+              onCommitEdit={() => onCommitEdit(p.id)}
+              onCancelEdit={onCancelEdit}
+              onRemove={() => onRemove(p.id)}
+            />
+          );
+        })}
         {pills.length === 0 && (
           <p
             className="text-center"
@@ -434,6 +505,7 @@ function ColumnBlock({
 /* ─── Pill row with double-click rename ─── */
 function PillRow({
   pill,
+  workCount,
   isEditing,
   editName,
   onStartEdit,
@@ -443,6 +515,7 @@ function PillRow({
   onRemove,
 }: {
   pill: PatternPill;
+  workCount: number;
   isEditing: boolean;
   editName: string;
   onStartEdit: () => void;
@@ -523,6 +596,21 @@ function PillRow({
       >
         {pill.name}
       </button>
+      {workCount > 0 && (
+        <span
+          className="rounded-full px-2 py-0.5"
+          style={{
+            background: `${pill.color}20`,
+            color: pill.color,
+            fontFamily: 'var(--font-handwritten)',
+            fontWeight: 700,
+            fontSize: '11px',
+          }}
+          title={`${workCount} of 6 questions answered`}
+        >
+          {workCount}/6
+        </span>
+      )}
       <button
         type="button"
         onClick={onRemove}
@@ -645,56 +733,65 @@ function AddPillInput({
 }
 
 /* ═══════════════════════════════════════════════════════════
-   WORK TAB
+   WORK TAB — 6 questions per pattern
    ═══════════════════════════════════════════════════════════ */
 function WorkTab({
   pills,
   focus,
   setFocus,
+  work,
+  setWork,
 }: {
   pills: PatternPill[];
   focus: WorkFocus | null;
   setFocus: (f: WorkFocus | null) => void;
+  work: PatternWork[];
+  setWork: (w: PatternWork[]) => void;
 }) {
-  const [reflection, setReflection] = useState('');
   const focusPill = focus ? pills.find((p) => p.id === focus.pillId) : null;
+  const currentWork = focusPill
+    ? work.find((w) => w.pillId === focusPill.id) || {
+        pillId: focusPill.id,
+        origin: '',
+        triggers: '',
+        avoid: '',
+        helpful: '',
+        emotions: '',
+        worst: '',
+        updatedAt: new Date().toISOString(),
+      }
+    : null;
 
   const selectFocus = (pillId: string) => {
-    setFocus({
-      pillId,
-      startDate: new Date().toISOString(),
-      reflections: focus?.reflections || [],
-    });
+    setFocus({ pillId, startDate: new Date().toISOString() });
   };
 
-  const addReflection = () => {
-    if (!reflection.trim() || !focus) return;
-    const today = new Date().toISOString().split('T')[0];
-    setFocus({
-      ...focus,
-      reflections: [...focus.reflections, { date: today, text: reflection.trim() }],
-    });
-    setReflection('');
+  const updateField = (key: keyof Omit<PatternWork, 'pillId' | 'updatedAt'>, value: string) => {
+    if (!focusPill) return;
+    const existing = work.find((w) => w.pillId === focusPill.id);
+    const next: PatternWork = existing
+      ? { ...existing, [key]: value, updatedAt: new Date().toISOString() }
+      : {
+          pillId: focusPill.id,
+          origin: '',
+          triggers: '',
+          avoid: '',
+          helpful: '',
+          emotions: '',
+          worst: '',
+          [key]: value,
+          updatedAt: new Date().toISOString(),
+        };
+    if (existing) {
+      setWork(work.map((w) => (w.pillId === focusPill.id ? next : w)));
+    } else {
+      setWork([...work, next]);
+    }
   };
 
-  const PROMPTS_S: Record<string, string[]> = {
-    Courage: ['Where did courage show up today?', "What would you do if you weren't afraid?"],
-    _default: ['Where did this strength show up today?', 'How could you use it more?'],
-  };
-  const PROMPTS_W: Record<string, string[]> = {
-    Avoidance: ['What did you avoid today?', 'What would happen if you faced it?'],
-    _default: ['When does this pattern show up most?', 'What would it look like to manage this?'],
-  };
-
-  const getPrompt = () => {
-    if (!focusPill) return '';
-    const bank =
-      focusPill.type === 'strength'
-        ? PROMPTS_S[focusPill.name] || PROMPTS_S._default
-        : PROMPTS_W[focusPill.name] || PROMPTS_W._default;
-    const dayIndex = Math.floor(Date.now() / 86400000) % bank.length;
-    return bank[dayIndex];
-  };
+  const answeredCount = currentWork
+    ? WORK_FIELDS.filter((f) => (currentWork[f.key] || '').trim().length > 0).length
+    : 0;
 
   return (
     <div className="space-y-4">
@@ -707,9 +804,20 @@ function WorkTab({
 
       {!focusPill && (
         <div className="space-y-3">
+          <p
+            className="text-center"
+            style={{
+              color: '#8A6A4A',
+              opacity: 0.6,
+              fontFamily: 'var(--font-handwritten)',
+              fontSize: '14px',
+            }}
+          >
+            Pick a pattern from your map. Six questions to help you understand it.
+          </p>
           {pills.length === 0 && (
             <p
-              className="text-center"
+              className="text-center pt-2"
               style={{
                 color: '#B8905A',
                 opacity: 0.5,
@@ -722,160 +830,171 @@ function WorkTab({
           )}
           {pills.length > 0 && (
             <div className="flex flex-wrap gap-2">
-              {pills.map((p) => (
-                <button
-                  key={p.id}
-                  type="button"
-                  onClick={() => selectFocus(p.id)}
-                  className="cursor-pointer rounded-full px-4 py-2 transition-all hover:scale-105"
-                  style={{
-                    background: `${p.color}12`,
-                    border: `1.5px solid ${p.color}30`,
-                    color: '#7a5438',
-                    fontFamily: 'var(--font-handwritten)',
-                    fontWeight: 700,
-                    fontSize: '15px',
-                  }}
-                >
-                  {p.name}
-                </button>
-              ))}
+              {pills.map((p) => {
+                const w = work.find((ww) => ww.pillId === p.id);
+                const count = w
+                  ? WORK_FIELDS.filter((f) => (w[f.key] || '').trim().length > 0).length
+                  : 0;
+                return (
+                  <button
+                    key={p.id}
+                    type="button"
+                    onClick={() => selectFocus(p.id)}
+                    className="cursor-pointer rounded-full transition-all hover:scale-105 flex items-center gap-2"
+                    style={{
+                      background: `${p.color}12`,
+                      border: `1.5px solid ${p.color}30`,
+                      color: '#7a5438',
+                      fontFamily: 'var(--font-handwritten)',
+                      fontWeight: 700,
+                      fontSize: '15px',
+                      padding: '8px 14px',
+                    }}
+                  >
+                    <span className="h-2.5 w-2.5 rounded-full" style={{ background: p.color }} />
+                    {p.name}
+                    {count > 0 && (
+                      <span
+                        className="rounded-full px-1.5"
+                        style={{
+                          background: `${p.color}28`,
+                          color: p.color,
+                          fontSize: '11px',
+                          fontWeight: 700,
+                        }}
+                      >
+                        {count}/6
+                      </span>
+                    )}
+                  </button>
+                );
+              })}
             </div>
           )}
         </div>
       )}
 
-      {focusPill && (
+      {focusPill && currentWork && (
         <div className="space-y-3">
+          {/* Header with progress */}
           <div
             className="rounded-xl px-4 py-3"
             style={{
               background: `${focusPill.color}10`,
-              border: `1.5px solid ${focusPill.color}25`,
+              border: `1.5px solid ${focusPill.color}30`,
             }}
           >
-            <p
-              className="uppercase tracking-wider mb-1"
-              style={{
-                color: focusPill.color,
-                opacity: 0.5,
-                fontFamily: 'var(--font-serif)',
-                fontWeight: 700,
-                fontSize: '11px',
-              }}
-            >
-              Today's prompt
-            </p>
-            <p
-              style={{
-                color: '#7a5438',
-                fontFamily: 'var(--font-serif)',
-                fontWeight: 600,
-                fontSize: '16px',
-                lineHeight: 1.4,
-              }}
-            >
-              {getPrompt()}
-            </p>
-          </div>
-
-          <textarea
-            value={reflection}
-            onChange={(e) => setReflection(e.target.value)}
-            placeholder="Write your reflection..."
-            className="w-full resize-none rounded-xl px-3 py-2.5 outline-none"
-            style={{
-              color: '#7a5438',
-              background: '#f7eddc9c',
-              fontFamily: 'var(--font-handwritten)',
-              fontSize: '15px',
-              border: `1.5px solid ${focusPill.color}25`,
-              minHeight: 80,
-            }}
-            rows={3}
-          />
-          {reflection.trim() && (
-            <button
-              type="button"
-              onClick={addReflection}
-              className="w-full cursor-pointer rounded-lg py-2.5 uppercase tracking-wider transition-all"
-              style={{
-                background: `${focusPill.color}15`,
-                border: `1.5px solid ${focusPill.color}35`,
-                color: focusPill.color,
-                fontFamily: 'var(--font-serif)',
-                fontWeight: 700,
-                fontSize: '12px',
-              }}
-            >
-              Save reflection
-            </button>
-          )}
-
-          {focus && focus.reflections.length > 0 && (
-            <div className="space-y-2 pt-2">
-              <p
-                className="uppercase tracking-wider"
+            <div className="flex items-center justify-between mb-2">
+              <div className="flex items-center gap-2">
+                <span className="h-3 w-3 rounded-full" style={{ background: focusPill.color }} />
+                <span
+                  style={{
+                    color: '#7a5438',
+                    fontFamily: 'var(--font-serif)',
+                    fontWeight: 700,
+                    fontSize: '20px',
+                  }}
+                >
+                  {focusPill.name}
+                </span>
+              </div>
+              <span
                 style={{
                   color: focusPill.color,
-                  opacity: 0.5,
-                  fontFamily: 'var(--font-serif)',
+                  fontFamily: 'var(--font-handwritten)',
                   fontWeight: 700,
-                  fontSize: '11px',
+                  fontSize: '14px',
                 }}
               >
-                Past reflections
-              </p>
-              {focus.reflections
-                .slice(-5)
-                .reverse()
-                .map((r, i) => (
+                {answeredCount}/6
+              </span>
+            </div>
+            {/* Progress bar */}
+            <div className="flex gap-1">
+              {WORK_FIELDS.map((f) => {
+                const filled = (currentWork[f.key] || '').trim().length > 0;
+                return (
                   <div
-                    key={`${r.date}-${i}`}
-                    className="rounded-lg px-3 py-2"
+                    key={f.key}
+                    className="flex-1 rounded-full"
                     style={{
-                      background: `${focusPill.color}06`,
-                      border: `1px solid ${focusPill.color}15`,
+                      height: 4,
+                      background: filled ? focusPill.color : `${focusPill.color}20`,
+                      opacity: filled ? 0.8 : 1,
+                    }}
+                  />
+                );
+              })}
+            </div>
+          </div>
+
+          {/* 6 question cards */}
+          {WORK_FIELDS.map((field, i) => {
+            const value = currentWork[field.key] || '';
+            const filled = value.trim().length > 0;
+            return (
+              <div
+                key={field.key}
+                className="rounded-xl px-4 py-3"
+                style={{
+                  background: '#f7eddc9c',
+                  border: `1.5px solid ${filled ? `${focusPill.color}45` : '#d2b47b4a'}`,
+                }}
+              >
+                <p
+                  className="mb-2"
+                  style={{
+                    color: filled ? focusPill.color : '#8A6A4A',
+                    fontFamily: 'var(--font-serif)',
+                    fontWeight: 700,
+                    fontSize: '17px',
+                    lineHeight: 1.3,
+                  }}
+                >
+                  <span
+                    style={{
+                      color: focusPill.color,
+                      opacity: 0.5,
+                      fontSize: '13px',
+                      marginRight: 6,
                     }}
                   >
-                    <span
-                      style={{
-                        color: focusPill.color,
-                        opacity: 0.4,
-                        fontSize: '11px',
-                      }}
-                    >
-                      {r.date}
-                    </span>
-                    <p
-                      className="mt-1"
-                      style={{
-                        color: '#7a5438',
-                        fontFamily: 'var(--font-handwritten)',
-                        fontSize: '14px',
-                      }}
-                    >
-                      {r.text}
-                    </p>
-                  </div>
-                ))}
-            </div>
-          )}
+                    {i + 1}.
+                  </span>
+                  {field.question}
+                </p>
+                <textarea
+                  value={value}
+                  onChange={(e) => updateField(field.key, e.target.value)}
+                  placeholder={field.placeholder}
+                  rows={2}
+                  className="w-full resize-none bg-transparent outline-none"
+                  style={{
+                    color: '#7a5438',
+                    fontFamily: 'var(--font-handwritten)',
+                    fontSize: '16px',
+                    border: 'none',
+                    minHeight: 50,
+                  }}
+                />
+              </div>
+            );
+          })}
 
           <button
             type="button"
             onClick={() => setFocus(null)}
-            className="w-full cursor-pointer text-center py-1"
+            className="w-full cursor-pointer text-center py-2"
             style={{
               color: '#8A6A4A',
-              opacity: 0.4,
+              opacity: 0.5,
               background: 'none',
               border: 'none',
               fontFamily: 'var(--font-handwritten)',
-              fontSize: '12px',
+              fontSize: '14px',
             }}
           >
-            change focus
+            ← change pattern
           </button>
         </div>
       )}
