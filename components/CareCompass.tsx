@@ -433,13 +433,13 @@ export default function CareCompass() {
             );
           })}
 
-          {/* Center — small star */}
+          {/* Center — small 4-point star */}
           {(() => {
-            const r1 = 11;
-            const r2 = 4.5;
+            const r1 = 12;
+            const r2 = 4;
             const points: string[] = [];
-            for (let i = 0; i < 10; i++) {
-              const a = -Math.PI / 2 + (i * Math.PI) / 5;
+            for (let i = 0; i < 8; i++) {
+              const a = -Math.PI / 2 + (i * Math.PI) / 4;
               const r = i % 2 === 0 ? r1 : r2;
               points.push(`${cx + r * Math.cos(a)},${cy + r * Math.sin(a)}`);
             }
