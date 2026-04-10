@@ -75,64 +75,10 @@ const CONN_COLORS: Record<string, string> = {
   weakens: '#6890B0',
   balances: '#C4A060',
 };
-const PACK_TYPES: Pack['type'][] = ['shadow', 'strength', 'growth-edge'];
 const PACK_COLORS: Record<string, string> = {
   shadow: '#6890B0',
   strength: '#D4805A',
   'growth-edge': '#9B6BA0',
-};
-
-/* ─── Prompts ─── */
-
-/* ─── Weather ─── */
-const WK = ['storm', 'rain', 'fog', 'breeze', 'sun'] as const;
-type WKind = (typeof WK)[number];
-const WM: Record<
-  string,
-  { emoji: string; color: string; grad: [string, string]; skyT: string; skyB: string }
-> = {
-  storm: {
-    emoji: '⛈',
-    color: '#8B5E3C',
-    grad: ['#6B4830', '#A0784C'],
-    skyT: '#5A4030',
-    skyB: '#9A7858',
-  },
-  rain: {
-    emoji: '🌧',
-    color: '#4A7898',
-    grad: ['#3A6080', '#78B0D8'],
-    skyT: '#3A5A78',
-    skyB: '#88B8D8',
-  },
-  fog: {
-    emoji: '🌫',
-    color: '#8A7A60',
-    grad: ['#7A6A50', '#B8A880'],
-    skyT: '#9A8A70',
-    skyB: '#C8B890',
-  },
-  breeze: {
-    emoji: '🍃',
-    color: '#4A8A5A',
-    grad: ['#3A7A4A', '#80C880'],
-    skyT: '#4A8058',
-    skyB: '#A0D8A0',
-  },
-  sun: {
-    emoji: '☀',
-    color: '#C49030',
-    grad: ['#D07030', '#E8C840'],
-    skyT: '#D08840',
-    skyB: '#F0D870',
-  },
-};
-const WS: Record<string, string[]> = {
-  storm: ['Anger', 'Overwhelm', 'Frustration', 'Panic'],
-  rain: ['Sadness', 'Grief', 'Loneliness', 'Nostalgia'],
-  fog: ['Confusion', 'Numbness', 'Avoidance', 'Fatigue'],
-  breeze: ['Calm', 'Hope', 'Acceptance', 'Curiosity'],
-  sun: ['Joy', 'Gratitude', 'Confidence', 'Love'],
 };
 
 /* ─── Storage ─── */
@@ -237,10 +183,6 @@ function MapTab({
   const [addingType, setAddingType] = useState<'strength' | 'weakness' | null>(null);
   const [input, setInput] = useState('');
   const [linking, setLinking] = useState<{ fromId: string } | null>(null);
-  const [addingPack, setAddingPack] = useState(false);
-  const [packName, setPackName] = useState('');
-  const [packType, setPackType] = useState<Pack['type']>('shadow');
-  const [packPills, setPackPills] = useState<string[]>([]);
 
   const addPill = (name: string, type: 'strength' | 'weakness') => {
     if (!name.trim() || pills.some((p) => p.name.toLowerCase() === name.toLowerCase())) return;
@@ -290,19 +232,6 @@ function MapTab({
   };
 
   const removeConn = (id: string) => setConns(conns.filter((c) => c.id !== id));
-
-  const createPack = () => {
-    if (!packName.trim() || packPills.length < 2) return;
-    setPacks([
-      ...packs,
-      { id: crypto.randomUUID(), name: packName.trim(), type: packType, pillIds: packPills },
-    ]);
-    setPackName('');
-    setPackPills([]);
-    setAddingPack(false);
-  };
-
-  const removePack = (id: string) => setPacks(packs.filter((p) => p.id !== id));
 
   const n = pills.length;
   const sz = 220;
