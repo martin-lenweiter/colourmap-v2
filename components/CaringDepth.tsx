@@ -11,10 +11,22 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 
 /* ─── Storage keys ─── */
 const PILLS_KEY = 'colourmap:pattern-pills';
+const PACKS_KEY = 'colourmap:pattern-packs';
 const FOCUS_KEY = 'colourmap:pattern-focus';
 const WORK_KEY = 'colourmap:pattern-work';
 const REFLECT_KEY = 'colourmap:emotion-decompositions';
 const RIVER_KEY = 'colourmap:river-snapshots';
+
+const PACK_COLORS = [
+  '#9B6BA0',
+  '#6890B0',
+  '#7A9A7A',
+  '#D4805A',
+  '#C4A060',
+  '#C87050',
+  '#5A7A8A',
+  '#B07070',
+];
 
 /* ─── Types ─── */
 interface RiverSnapshot {
@@ -27,6 +39,15 @@ interface PatternPill {
   name: string;
   type: 'strength' | 'weakness';
   color: string;
+  packIds?: string[];
+  createdAt: string;
+}
+
+interface Pack {
+  id: string;
+  name: string;
+  color: string;
+  pillIds: string[];
   createdAt: string;
 }
 
@@ -176,6 +197,7 @@ function ss<T>(k: string, v: T) {
 export default function CaringDepth() {
   const [tab, setTab] = useState<'map' | 'work' | 'reflect' | 'river'>('map');
   const [pills, setPills] = useState<PatternPill[]>([]);
+  const [packs, setPacks] = useState<Pack[]>([]);
   const [focus, setFocus] = useState<WorkFocus | null>(null);
   const [work, setWork] = useState<PatternWork[]>([]);
   const [decompositions, setDecompositions] = useState<EmotionDecomposition[]>([]);
@@ -183,6 +205,7 @@ export default function CaringDepth() {
 
   useEffect(() => {
     setPills(ls(PILLS_KEY, []));
+    setPacks(ls(PACKS_KEY, []));
     setFocus(ls(FOCUS_KEY, null));
     setWork(ls(WORK_KEY, []));
     setDecompositions(ls(REFLECT_KEY, []));
@@ -230,7 +253,13 @@ export default function CaringDepth() {
       </div>
 
       {tab === 'map' && (
-        <MapTab pills={pills} setPills={(v) => up(PILLS_KEY, v, setPills)} work={work} />
+        <MapTab
+          pills={pills}
+          setPills={(v) => up(PILLS_KEY, v, setPills)}
+          packs={packs}
+          setPacks={(v) => up(PACKS_KEY, v, setPacks)}
+          work={work}
+        />
       )}
       {tab === 'work' && (
         <WorkTab
@@ -261,16 +290,62 @@ export default function CaringDepth() {
 function MapTab({
   pills,
   setPills,
+  packs,
+  setPacks,
   work,
 }: {
   pills: PatternPill[];
   setPills: (p: PatternPill[]) => void;
+  packs: Pack[];
+  setPacks: (p: Pack[]) => void;
   work: PatternWork[];
 }) {
   const [addingType, setAddingType] = useState<'strength' | 'weakness' | null>(null);
   const [input, setInput] = useState('');
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editName, setEditName] = useState('');
+  const [creatingPack, setCreatingPack] = useState(false);
+  const [newPackName, setNewPackName] = useState('');
+  const [newPackPills, setNewPackPills] = useState<string[]>([]);
+  const [expandedPack, setExpandedPack] = useState<string | null>(null);
+
+  const createPack = () => {
+    if (!newPackName.trim() || newPackPills.length === 0) return;
+    const color = PACK_COLORS[packs.length % PACK_COLORS.length];
+    setPacks([
+      ...packs,
+      {
+        id: crypto.randomUUID(),
+        name: newPackName.trim(),
+        color,
+        pillIds: newPackPills,
+        createdAt: new Date().toISOString(),
+      },
+    ]);
+    setNewPackName('');
+    setNewPackPills([]);
+    setCreatingPack(false);
+  };
+
+  const togglePackPill = (packId: string, pillId: string) => {
+    setPacks(
+      packs.map((pk) =>
+        pk.id === packId
+          ? {
+              ...pk,
+              pillIds: pk.pillIds.includes(pillId)
+                ? pk.pillIds.filter((id) => id !== pillId)
+                : [...pk.pillIds, pillId],
+            }
+          : pk,
+      ),
+    );
+  };
+
+  const removePack = (id: string) => {
+    setPacks(packs.filter((p) => p.id !== id));
+    if (expandedPack === id) setExpandedPack(null);
+  };
 
   const strengths = pills.filter((p) => p.type === 'strength');
   const weaknesses = pills.filter((p) => p.type === 'weakness');
@@ -396,6 +471,279 @@ function MapTab({
         >
           Name what you carry — strengths and challenges.
         </p>
+      )}
+
+      {/* PACKS — group related pills */}
+      {pills.length >= 2 && (
+        <div className="space-y-3 pt-3 border-t" style={{ borderColor: '#8A6A4A20' }}>
+          <div className="flex items-center justify-between">
+            <p
+              className="uppercase tracking-[0.2em]"
+              style={{
+                color: '#9B6BA0',
+                fontFamily: 'var(--font-serif)',
+                fontWeight: 700,
+                fontSize: '12px',
+              }}
+            >
+              Packs
+            </p>
+            <button
+              type="button"
+              onClick={() => {
+                setCreatingPack(!creatingPack);
+                setNewPackName('');
+                setNewPackPills([]);
+              }}
+              className="cursor-pointer rounded-full px-3 py-1.5"
+              style={{
+                background: creatingPack ? '#9B6BA015' : 'transparent',
+                border: '1.5px solid #9B6BA035',
+                color: '#9B6BA0',
+                fontFamily: 'var(--font-handwritten)',
+                fontWeight: 700,
+                fontSize: '13px',
+              }}
+            >
+              {creatingPack ? 'cancel' : '+ new pack'}
+            </button>
+          </div>
+
+          {/* Existing packs */}
+          {packs.length === 0 && !creatingPack && (
+            <p
+              className="text-center"
+              style={{
+                color: '#9B6BA0',
+                opacity: 0.5,
+                fontFamily: 'var(--font-handwritten)',
+                fontSize: '14px',
+                fontStyle: 'italic',
+              }}
+            >
+              Group related patterns. Tap "+ new pack" to start.
+            </p>
+          )}
+
+          {packs.map((pack) => {
+            const isExpanded = expandedPack === pack.id;
+            const packPills = pills.filter((p) => pack.pillIds.includes(p.id));
+            return (
+              <div
+                key={pack.id}
+                className="rounded-xl overflow-hidden"
+                style={{
+                  background: `${pack.color}10`,
+                  border: `1.5px solid ${pack.color}40`,
+                }}
+              >
+                <button
+                  type="button"
+                  onClick={() => setExpandedPack(isExpanded ? null : pack.id)}
+                  className="flex w-full items-center gap-2.5 px-3.5 py-2.5 cursor-pointer text-left"
+                  style={{ background: 'none', border: 'none' }}
+                >
+                  <span
+                    className="h-3 w-3 rounded-full flex-shrink-0"
+                    style={{ background: pack.color }}
+                  />
+                  <span
+                    className="flex-1"
+                    style={{
+                      color: '#7a5438',
+                      fontFamily: 'var(--font-handwritten)',
+                      fontWeight: 700,
+                      fontSize: '17px',
+                    }}
+                  >
+                    {pack.name}
+                  </span>
+                  <span
+                    className="rounded-full px-2 py-0.5"
+                    style={{
+                      background: `${pack.color}25`,
+                      color: pack.color,
+                      fontFamily: 'var(--font-handwritten)',
+                      fontWeight: 700,
+                      fontSize: '12px',
+                    }}
+                  >
+                    {pack.pillIds.length}
+                  </span>
+                  <span style={{ color: pack.color, fontSize: '12px', opacity: 0.5 }}>
+                    {isExpanded ? '▾' : '▸'}
+                  </span>
+                </button>
+                {isExpanded && (
+                  <div className="px-3.5 pb-3 space-y-2 animate-in fade-in duration-200">
+                    <p
+                      className="uppercase tracking-wider pt-1"
+                      style={{
+                        color: pack.color,
+                        opacity: 0.5,
+                        fontFamily: 'var(--font-serif)',
+                        fontWeight: 700,
+                        fontSize: '11px',
+                      }}
+                    >
+                      Tap to add or remove
+                    </p>
+                    <div className="flex flex-wrap gap-1.5">
+                      {pills.map((p) => {
+                        const isIn = pack.pillIds.includes(p.id);
+                        return (
+                          <button
+                            key={p.id}
+                            type="button"
+                            onClick={() => togglePackPill(pack.id, p.id)}
+                            className="cursor-pointer rounded-full transition-all hover:scale-105 flex items-center gap-1.5"
+                            style={{
+                              background: isIn ? `${p.color}28` : `${p.color}08`,
+                              border: `1.5px solid ${isIn ? `${p.color}55` : `${p.color}20`}`,
+                              color: '#7a5438',
+                              fontFamily: 'var(--font-handwritten)',
+                              fontWeight: 700,
+                              fontSize: '13px',
+                              padding: '6px 11px',
+                            }}
+                          >
+                            <span
+                              className="h-2 w-2 rounded-full"
+                              style={{ background: p.color }}
+                            />
+                            {p.name}
+                            {isIn && <span style={{ opacity: 0.5 }}>✓</span>}
+                          </button>
+                        );
+                      })}
+                    </div>
+                    {packPills.length > 0 && (
+                      <div className="flex justify-end pt-1">
+                        <button
+                          type="button"
+                          onClick={() => removePack(pack.id)}
+                          className="cursor-pointer"
+                          style={{
+                            color: pack.color,
+                            opacity: 0.4,
+                            background: 'none',
+                            border: 'none',
+                            fontFamily: 'var(--font-handwritten)',
+                            fontSize: '12px',
+                          }}
+                        >
+                          delete pack
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+            );
+          })}
+
+          {/* Create pack form */}
+          {creatingPack && (
+            <div
+              className="rounded-xl px-4 py-3 space-y-3 animate-in fade-in duration-200"
+              style={{ background: '#f7eddc', border: '2px solid #9B6BA040' }}
+            >
+              <div>
+                <p
+                  className="uppercase tracking-wider mb-2"
+                  style={{
+                    color: '#9B6BA0',
+                    opacity: 0.6,
+                    fontFamily: 'var(--font-serif)',
+                    fontWeight: 700,
+                    fontSize: '11px',
+                  }}
+                >
+                  Name your pack
+                </p>
+                <input
+                  type="text"
+                  value={newPackName}
+                  onChange={(e) => setNewPackName(e.target.value)}
+                  placeholder="e.g. Body stuff, Work stress, Family..."
+                  className="w-full bg-transparent outline-none"
+                  style={{
+                    color: '#7a5438',
+                    fontFamily: 'var(--font-handwritten)',
+                    fontWeight: 700,
+                    fontSize: '18px',
+                    border: 'none',
+                    borderBottom: '1.5px solid #9B6BA040',
+                    padding: '4px 0',
+                  }}
+                  autoFocus
+                />
+              </div>
+              <div>
+                <p
+                  className="uppercase tracking-wider mb-2"
+                  style={{
+                    color: '#9B6BA0',
+                    opacity: 0.6,
+                    fontFamily: 'var(--font-serif)',
+                    fontWeight: 700,
+                    fontSize: '11px',
+                  }}
+                >
+                  Pick the patterns ({newPackPills.length} selected)
+                </p>
+                <div className="flex flex-wrap gap-1.5">
+                  {pills.map((p) => {
+                    const isOn = newPackPills.includes(p.id);
+                    return (
+                      <button
+                        key={p.id}
+                        type="button"
+                        onClick={() =>
+                          setNewPackPills(
+                            isOn
+                              ? newPackPills.filter((id) => id !== p.id)
+                              : [...newPackPills, p.id],
+                          )
+                        }
+                        className="cursor-pointer rounded-full transition-all hover:scale-105 flex items-center gap-1.5"
+                        style={{
+                          background: isOn ? `${p.color}28` : `${p.color}08`,
+                          border: `1.5px solid ${isOn ? `${p.color}55` : `${p.color}20`}`,
+                          color: '#7a5438',
+                          fontFamily: 'var(--font-handwritten)',
+                          fontWeight: 700,
+                          fontSize: '13px',
+                          padding: '6px 11px',
+                        }}
+                      >
+                        <span className="h-2 w-2 rounded-full" style={{ background: p.color }} />
+                        {p.name}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={createPack}
+                disabled={!newPackName.trim() || newPackPills.length === 0}
+                className="w-full cursor-pointer rounded-lg py-2.5 uppercase tracking-wider transition-all"
+                style={{
+                  background: '#9B6BA015',
+                  border: '1.5px solid #9B6BA040',
+                  color: '#9B6BA0',
+                  fontFamily: 'var(--font-serif)',
+                  fontWeight: 700,
+                  fontSize: '13px',
+                  opacity: newPackName.trim() && newPackPills.length > 0 ? 1 : 0.4,
+                }}
+              >
+                Create pack
+              </button>
+            </div>
+          )}
+        </div>
       )}
     </div>
   );
