@@ -199,10 +199,10 @@ These changes are Lane B and must not be auto-merged.
 `scripts/check-pr-scope.sh` enforces:
 
 - warning at more than 15 changed files
-- failure at more than 25 changed files
+- stronger warning at more than 25 changed files
 - warning at more than 500 changed lines
-- failure at more than 1000 changed lines
-- bypass only with `LARGE_PR_APPROVED` in the PR body or commit messages
+- stronger warning at more than 1000 changed lines
+- PR scope warnings do not block merge on their own
 
 ### Spec And Test Drift Policy
 
