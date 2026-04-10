@@ -102,6 +102,9 @@ Editable from the start. The life scan may suggest additional sections or modifi
 - Missed day: no guilt. No streaks. No "you missed yesterday!" The data just has a gap.
 - Section with zero trackers: allowed but pointless. Show "Add a tracker" prompt inside.
 - Deleted section: tracker data is kept in the database (soft delete) for historical correlation. The section just disappears from the cockpit.
+- Sections hydrate from `/api/sections` on load for the signed-in user.
+- Toggling a tracker day is optimistic. If the save fails, the section refreshes from the backend.
+- Removing a section is optimistic. If the delete fails, the section list refreshes from the backend.
 
 ## Evolution (future, not V1)
 
@@ -115,6 +118,7 @@ Editable from the start. The life scan may suggest additional sections or modifi
 - Default sections (Body, Focus) appear for new users.
 - Life scan generates section suggestions based on low scores.
 - Daily tracker data persists and resets each day.
+- Section programs and daily tracker values are loaded and saved through `/api/sections`, not browser-only storage.
 - Sections are collapsible cards matching the cockpit's minimalist pattern.
 - The whole system feels like designing your own dashboard, not filling in someone else's spreadsheet.
 
