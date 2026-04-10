@@ -1,103 +1,117 @@
-# Caring Depth
+# Caring Depth — The 3-Step Inner Process
 
-> The deep layer of the Caring tab. Four sub-tabs that progressively help the user name, work on, decompose, and track their inner patterns over time.
+> Box 3 of the Caring tab is a complete inner-pattern workflow built on **three core steps** that mirror how humans actually work through their inner life.
 
-## Context
+## The Core Flow
 
-The main check-in (Box 1) captures today's state quickly. The compass (Box 2) measures the four CARE dimensions. Caring Depth (Box 3) is the slower, deeper layer — where recurring patterns get named, worked on, decomposed into components, and tracked across time.
+**Step 1 — MAP**: Dump everything. Strengths and weaknesses. Frustrations and flows. Then group them.
+**Step 2 — WORK**: Pick one pattern. Decompose it through 6 questions. Understand it.
+**Step 3 — RIVER**: Watch your patterns evolve over time. See growth, see drift.
 
-It has four tabs: **Map · Work · Reflect · River**.
+The fourth tab (**Reflect**) is a parallel deep tool for emotion decomposition — used when you want to break a feeling into its sub-components, perfume-expert style.
 
-## Tabs
+---
 
-### Map — Strength & Weakness Pills
+## Step 1 — MAP (Dump → Group)
 
-Big, simple, readable. Two columns: **Flow** (strengths) and **Challenge** (weaknesses).
+**The metaphor**: emptying your pockets onto the table.
 
-- Tap the column header (Flow / Challenge) to add a new pill
-- Each pill shows as a large card with a colour dot, the name in handwritten 18px ink, and a remove button
-- Tap the pill name to rename inline (clear edit box with "Enter to save · Esc to cancel" hint)
-- Suggestion pills appear when adding (Courage, Empathy, Discipline... / Overthinking, Avoidance, Self-doubt...)
-- Custom names allowed via free text input
-- All data in localStorage under `colourmap:pattern-pills`
+### Phase 1.A — Dump
 
-### Work — Focus on One Pattern
+You arrive with everything in your head: "I have organisation problems, I avoid hard conversations, I'm proud of my creativity, I get frustrated with my body, my relationship is shaky, I worry about money..."
 
-Choose one pattern at a time to work with.
+The Map tab is the dumping ground. Two big columns:
+- **Flow** (right) — strengths, things working, things you're proud of
+- **Challenge** (left) — weaknesses, frustrations, what's heavy
 
-- All pills shown as selectable chips
-- Selected pill becomes the focus
-- Daily rotating prompt from a question bank specific to the pattern type
-- Free-form journal textarea for daily reflection
-- Past reflections shown as dated cards (last 5)
-- "Change focus" button to release the current focus
-- Storage: `colourmap:pattern-focus`
+Tap the "+ add" button below either column. Type or pick from suggestions. Add as many as you want. There is no limit. The point is to **get it all out of your head and onto the page**.
 
-### Reflect — Emotion Decomposition (Perfume Expert Approach)
+Each pill is:
+- A colour dot (auto-assigned for visual variety)
+- A name (rename anytime by tapping)
+- A type (strength or weakness)
+- A "N/6" badge if work questions have been answered
 
-The deepest layer. Decompose an emotion into its sub-components, like a perfume expert breaks fragrance into top, heart, and base notes.
+### Phase 1.B — Group (Packs)
 
-**Vertical Hawkins Rainbow Slider**:
-- 17 levels from Shame (20) at the bottom to Enlightenment (700) at the top
-- Each level is a colour band, labeled with the emotion name
-- Tap any level to start a new decomposition
+After dumping, the natural next step is **organising the chaos**. Many of your patterns are related: organisation problems, lateness, missing keys, scattered desk — these are all one cluster. Anxiety, avoidance, procrastination — another cluster. Creativity, curiosity, playfulness — a strength cluster.
 
-**Decomposition Flow**:
-1. Pick an emotion → header shows level + name in big serif
-2. Add sub-components (suggestions per emotion + custom)
-3. Each component has a 0-100% weight slider
-4. Three reflection fields:
-   - **Where it impacts your life** (work, sleep, relationships...)
-   - **Where it comes from** (childhood, recent event, fear...)
-   - **What you need** (rest, support, courage...)
-5. Linked to your Map pills shown for context
-6. Past decompositions saved as a chip list at the bottom
+The Map tab supports **packs**: named groups of pills.
 
-Storage: `colourmap:emotion-decompositions`
+- Tap a pack icon to create a new pack
+- Name it ("Body stuff", "Work stress", "Family wounds", "My creative spark")
+- Drag pills into it (or tap to add)
+- Each pack gets its own colour
+- A pill can belong to multiple packs
 
-### River — Evolution Over Time
+Packs help you see the **shape of your inner life** — not just a flat list, but clusters of related patterns. They become the unit of focus for the Work tab.
 
-Horizontal line graph showing how strengths and challenges flow over time.
+---
 
-**Controls**:
-- Timeframe selector: week / month / year
-- "Show all" toggle or select specific pills to overlay
-- Today's check-in: rate each pill 1-5 with sliders, save snapshot
+## Step 2 — WORK (Decompose & Understand)
 
-**Visualization**:
-- Multi-line graph, one stream per pill, colour-coded
-- Smooth lines with dots at each data point
-- Y-axis: low → high (1-5)
-- X-axis: time, with first and last date labels
-- Empty state prompts to start by rating today
+**The metaphor**: sitting down with a wise friend to interrogate one pattern.
 
-Storage: `colourmap:river-snapshots`
+Pick any pattern (or pack) from your Map. The Work tab gives you **6 questions**, in order:
 
-## Process Flow
+1. **Where does it come from?** — origin, history, where you learned it
+2. **What triggers it?** — moments, situations, people, stress
+3. **How can we avoid it?** — practical guardrails, prevention
+4. **What would be helpful?** — tools, support, environment, practices
+5. **What emotions does it provoke?** — what feeling state it puts you in
+6. **At its worst, what does it do?** — the dark version, the cost
 
-1. **Day 1** — Open Map, add 2-3 strengths and 2-3 weaknesses, rename until they feel right
-2. **Week 1** — Use Work tab to focus on one pattern at a time, write daily reflections
-3. **Week 2** — Use Reflect tab when something feels strong or stuck, decompose the emotion, see what's inside
-4. **Week 3+** — Use River tab to rate patterns daily and watch them evolve over time
+These 6 questions work for ANY pattern — strength or weakness:
+- For *Courage*: where it comes from, what triggers it, how to keep it alive, what helps it grow, what emotions it brings, what it does at its peak
+- For *Avoidance*: same questions, opposite charge
 
-## Future Variations
+### Visual & Behaviour
 
-The Map tab will support multiple visual designs (currently flat columns):
-- **Triangle Wheel** — radial spokes, one per pill, length=intensity
-- **Constellation** — dots in space, distance=intensity
-- **Mandala / Flower** — petal shapes per pack
-- **Life Timeline style** — horizontal track with events placed by year (using `LifeTimeline` component aesthetic)
+- Each question is a card with the question in 17px serif and a 16px handwritten textarea
+- Auto-saves on type — no save button
+- Progress bar at top: 6 dots, filled as you answer
+- Pattern badge in Map shows "N/6" so you know which patterns have been worked on
+- You can return any day and add more — patterns are never "done"
 
-The Reflect connection system (linking pills) will be redesigned with **big simple left/right blocks** instead of the previous arc-based approach. We'll define if "Strength/Weakness" or "Flow/Challenge" naming is the canonical one as the system matures.
+---
 
-The River and Reflect tabs may eventually merge into a single combined view, or River may become a layer inside Map.
+## Step 3 — RIVER (Overview Over Time)
 
-## Cross-System Integration
+**The metaphor**: a river of your patterns flowing left to right.
 
-- **CARE compass** ← Strength categories map to compass dimensions (Care, Attitude, Rest, Emotions)
-- **FACING tracker** ← Weakness categories map to FACING dimensions (Fear, Avoidance, Confusion, etc.)
-- **Inner Weather** ← Decomposition output produces emotional climate (storm, rain, fog, breeze, sun)
-- **Day check-in** ← Active Work focus shows in the morning prompt
+Once you've mapped and worked on patterns, you need to see how they shift over time. The River tab shows all your patterns as **lines flowing horizontally**.
+
+- **X-axis**: time (week / month / year selector)
+- **Y-axis**: intensity 1-5
+- **Each line**: one pattern, colour-coded
+- **Data points**: daily check-ins where you rated each pattern
+
+### Today's check-in
+
+Below the river graph, a panel for rating today: each pattern gets a 1-5 slider. Save updates the snapshot. You can update during the day.
+
+### Filtering
+
+- Show all patterns (default) — full overlay
+- Or pick specific patterns to focus on
+- Or filter by pack (future)
+
+The River is the **memory** of the system. Without it, patterns are static; with it, they evolve.
+
+---
+
+## The Reflect Tab (parallel deep tool)
+
+Reflect is **not part of the 3-step core**. It's a separate deep tool for the moments when you want to decompose an EMOTION (not a pattern).
+
+- Vertical Hawkins rainbow slider (17 emotions from Shame 20 to Enlightenment 700)
+- Pick an emotion → reveal its sub-components
+- Rate the weight of each component (0-100%)
+- Reflection fields: where it impacts your life, where it comes from, what you need
+
+Reflect connects to the 3-step core like this: when you decompose Anger and notice it links to your Avoidance pattern, the app can suggest "want to add this to your Work session for Avoidance?"
+
+---
 
 ## Data Model
 
@@ -107,13 +121,37 @@ interface PatternPill {
   name: string;
   type: 'strength' | 'weakness';
   color: string;
+  packIds: string[]; // membership in packs
+  createdAt: string;
+}
+
+interface Pack {
+  id: string;
+  name: string;
+  color: string;
+  pillIds: string[];
   createdAt: string;
 }
 
 interface WorkFocus {
   pillId: string;
   startDate: string;
-  reflections: { date: string; text: string }[];
+}
+
+interface PatternWork {
+  pillId: string;
+  origin: string;
+  triggers: string;
+  avoid: string;
+  helpful: string;
+  emotions: string;
+  worst: string;
+  updatedAt: string;
+}
+
+interface RiverSnapshot {
+  date: string; // YYYY-MM-DD
+  values: { pillId: string; intensity: number }[]; // 1-5
 }
 
 interface EmotionDecomposition {
@@ -121,25 +159,64 @@ interface EmotionDecomposition {
   emotion: string;
   hawkinsLevel: number;
   color: string;
-  components: { id: string; name: string; weight: number }[]; // 0-100
+  components: { id: string; name: string; weight: number }[];
   impact: string;
   source: string;
   needs: string;
   createdAt: string;
 }
-
-interface RiverSnapshot {
-  date: string; // YYYY-MM-DD
-  values: { pillId: string; intensity: number }[]; // 1-5
-}
 ```
+
+LocalStorage keys:
+- `colourmap:pattern-pills`
+- `colourmap:pattern-packs`
+- `colourmap:pattern-focus`
+- `colourmap:pattern-work`
+- `colourmap:river-snapshots`
+- `colourmap:emotion-decompositions`
+
+---
+
+## Process Flow Summary
+
+1. **Day 1**: Dump everything in Map. Don't think. Just type names.
+2. **Day 2-3**: Group what's related into Packs. Name the clusters.
+3. **Week 1**: Pick one pattern in Work tab. Answer the 6 questions over a few days.
+4. **Week 2**: Start daily River check-ins. Watch the lines.
+5. **Anytime**: When a strong emotion hits, use Reflect to decompose it.
+
+The promise: in one month, you have a portrait of yourself that's deeper and more honest than years of self-help reading.
+
+---
+
+## Cross-System Integration
+
+- **CARE compass** ← Strength categories map to compass dimensions (Care, Attitude, Rest, Emotions)
+- **FACING tracker** ← Weakness categories map to FACING dimensions (Fear, Avoidance, Confusion, etc.)
+- **Inner Weather** ← Decomposition output produces emotional climate (storm, rain, fog, breeze, sun)
+- **Day check-in** ← Active Work focus shows in the morning prompt
+
+---
+
+## Future Variations
+
+The Map tab will support multiple visual designs (currently flat columns):
+- **Triangle Wheel** — radial spokes, one per pill
+- **Constellation** — dots in space (SoulMap style)
+- **Mandala / Flower** — petal shapes per pack
+- **Life Timeline style** — horizontal track with events placed by year
+
+Pack visualisation (future): once packs exist, the Map can show them as bubbles, the River can colour streams by pack, and the Work tab can let you focus on a whole pack instead of one pill.
+
+---
 
 ## Done When
 
 - All four tabs render and persist correctly
 - Pill rename works inline with Enter/Escape support
-- Decomposition flow works end-to-end (pick emotion → add components → rate → reflect)
-- River graph shows all pills as overlaid streams over the chosen timeframe
-- Today's check-in saves to River and updates the graph immediately
-- Empty states are warm and explain what to do next
-- All text is readable (minimum 12px for interactive, 11px for SVG labels)
+- Work tab shows 6 questions per pattern, auto-saves, shows progress
+- Map tab pills show "N/6" badge from Work data
+- Decomposition flow works end-to-end
+- River graph shows all pills as overlaid streams
+- All text is readable (minimum 12px for interactive, 13px for SVG labels)
+- Packs (Phase 1.B) can be created and pills can be assigned to them
