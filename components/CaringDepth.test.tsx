@@ -1,13 +1,30 @@
 // @vitest-environment jsdom
 import { cleanup, render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import CaringDepth from './CaringDepth';
 
 const PILLS_KEY = 'colourmap:pattern-pills';
 const CONN_KEY = 'colourmap:pattern-connections';
 const PACKS_KEY = 'colourmap:pattern-packs';
+
+function createLocalStorageMock() {
+  const store = new Map<string, string>();
+
+  return {
+    getItem: vi.fn((key: string) => store.get(key) ?? null),
+    setItem: vi.fn((key: string, value: string) => {
+      store.set(key, value);
+    }),
+    removeItem: vi.fn((key: string) => {
+      store.delete(key);
+    }),
+    clear: vi.fn(() => {
+      store.clear();
+    }),
+  };
+}
 
 const seededPills = [
   {
@@ -47,12 +64,14 @@ const seededPills = [
 
 describe('CaringDepth', () => {
   beforeEach(() => {
+    vi.stubGlobal('localStorage', createLocalStorageMock());
     localStorage.clear();
   });
 
   afterEach(() => {
     cleanup();
     localStorage.clear();
+    vi.unstubAllGlobals();
   });
 
   it('prompts for at least three pills before showing the wheel', async () => {

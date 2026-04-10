@@ -18,6 +18,7 @@ describe('ThemeSwitcher', () => {
   afterEach(() => {
     cleanup();
     vi.restoreAllMocks();
+    vi.unstubAllGlobals();
   });
 
   it('renders the Design toggle button', () => {

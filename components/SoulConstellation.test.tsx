@@ -1,20 +1,39 @@
 // @vitest-environment jsdom
 import { cleanup, render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import SoulConstellation from './SoulConstellation';
 
 const SOUL_KEY = 'colourmap:soul-constellation';
 
+function createLocalStorageMock() {
+  const store = new Map<string, string>();
+
+  return {
+    getItem: vi.fn((key: string) => store.get(key) ?? null),
+    setItem: vi.fn((key: string, value: string) => {
+      store.set(key, value);
+    }),
+    removeItem: vi.fn((key: string) => {
+      store.delete(key);
+    }),
+    clear: vi.fn(() => {
+      store.clear();
+    }),
+  };
+}
+
 describe('SoulConstellation', () => {
   beforeEach(() => {
+    vi.stubGlobal('localStorage', createLocalStorageMock());
     localStorage.clear();
   });
 
   afterEach(() => {
     cleanup();
     localStorage.clear();
+    vi.unstubAllGlobals();
   });
 
   it('adds, updates, and removes inner terrain points while persisting to localStorage', async () => {
