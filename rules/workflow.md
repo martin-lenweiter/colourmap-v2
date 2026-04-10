@@ -106,26 +106,23 @@ Required evidence:
 - One logical change per commit
 - If the project has a custom commit alias, use it
 
-## PR Scope Limits
+## PR Scope Guidance
 
 One logical change per PR. Feature work, bug fixes, and refactors belong in separate PRs.
 
-Hard limits are enforced by `check-pr-scope.sh` in CI:
-
-- 25 changed files max
-- 1000 changed lines max
-
-These fail the `policy-pr-scope` check unless `LARGE_PR_APPROVED` appears in the PR body.
-
-Warning thresholds are surfaced but do not block:
+`check-pr-scope.sh` surfaces warnings in CI:
 
 - 15 changed files
+- 25 changed files
 - 500 changed lines
+- 1000 changed lines
+
+`policy-pr-scope` is advisory only. Size warnings should trigger review of scope, not block merge by themselves.
 
 When a large change is unavoidable:
 
-- Add `LARGE_PR_APPROVED` to the PR body with a justification
-- Example: `LARGE_PR_APPROVED: Initial Playwright setup requires installing new dependency and creating config, tests, and CI job simultaneously.`
+- Split the work if the change can be decomposed cleanly.
+- If it cannot, keep the PR tightly justified and call out why the scope is unavoidable.
 
 Forbidden patterns:
 
