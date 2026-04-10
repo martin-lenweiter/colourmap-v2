@@ -433,9 +433,27 @@ export default function CareCompass() {
             );
           })}
 
-          {/* Center */}
-          <circle cx={cx} cy={cy} r={20} fill="#C4A060" opacity={0.08} />
-          <circle cx={cx} cy={cy} r={9} fill="#C4A060" opacity={0.15} />
+          {/* Center — small star */}
+          {(() => {
+            const r1 = 11;
+            const r2 = 4.5;
+            const points: string[] = [];
+            for (let i = 0; i < 10; i++) {
+              const a = -Math.PI / 2 + (i * Math.PI) / 5;
+              const r = i % 2 === 0 ? r1 : r2;
+              points.push(`${cx + r * Math.cos(a)},${cy + r * Math.sin(a)}`);
+            }
+            return (
+              <polygon
+                points={points.join(' ')}
+                fill="#C4A060"
+                opacity={0.3}
+                stroke="#8A6A4A"
+                strokeWidth="0.5"
+                strokeOpacity={0.4}
+              />
+            );
+          })()}
         </svg>
       </div>
 

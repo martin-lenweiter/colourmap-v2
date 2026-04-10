@@ -89,14 +89,14 @@ const HAWKINS_LEVELS = [
   { level: 310, name: 'Willingness', color: '#F0E060', text: '#785818' },
   { level: 250, name: 'Neutrality', color: '#F8C040', text: '#783818' },
   { level: 200, name: 'Courage', color: '#F89030', text: '#682808' },
-  { level: 175, name: 'Pride', color: '#E86040', text: '#681818' },
-  { level: 150, name: 'Anger', color: '#D44040', text: '#580808' },
-  { level: 125, name: 'Desire', color: '#A8408A', text: '#580848' },
-  { level: 100, name: 'Fear', color: '#7A4888', text: '#380838' },
-  { level: 75, name: 'Grief', color: '#5A5898', text: '#181838' },
-  { level: 50, name: 'Apathy', color: '#5A5878', text: '#181828' },
-  { level: 30, name: 'Guilt', color: '#48485A', text: '#080818' },
-  { level: 20, name: 'Shame', color: '#383848', text: '#080808' },
+  { level: 175, name: 'Pride', color: '#F0A088', text: '#783030' },
+  { level: 150, name: 'Anger', color: '#EE9090', text: '#702828' },
+  { level: 125, name: 'Desire', color: '#E0A0C8', text: '#682858' },
+  { level: 100, name: 'Fear', color: '#C8A8D8', text: '#583068' },
+  { level: 75, name: 'Grief', color: '#B0B0D8', text: '#383868' },
+  { level: 50, name: 'Apathy', color: '#B8B8C8', text: '#383850' },
+  { level: 30, name: 'Guilt', color: '#C0C0CC', text: '#383848' },
+  { level: 20, name: 'Shame', color: '#C8C8D0', text: '#383840' },
 ];
 
 const COMPONENT_SUGGESTIONS: Record<string, string[]> = {
@@ -256,6 +256,19 @@ function MapTab({
         Strength · Weakness Map
       </p>
 
+      <p
+        className="text-center"
+        style={{
+          color: '#8A6A4A',
+          opacity: 0.6,
+          fontFamily: 'var(--font-handwritten)',
+          fontSize: '14px',
+        }}
+      >
+        Name them here. Work on them in the{' '}
+        <span style={{ color: '#D4805A', fontWeight: 700 }}>Work</span> tab.
+      </p>
+
       {/* Two big blocks: Flow | Challenge */}
       <div className="grid grid-cols-2 gap-4">
         {/* FLOW (strengths) */}
@@ -356,10 +369,8 @@ function ColumnBlock({
 }) {
   return (
     <div className="space-y-3">
-      <button
-        type="button"
-        onClick={onAdd}
-        className="block w-full cursor-pointer text-center transition-all"
+      <div
+        className="block w-full text-center"
         style={{
           color: accent,
           fontFamily: 'var(--font-serif)',
@@ -367,13 +378,10 @@ function ColumnBlock({
           fontWeight: 600,
           lineHeight: 1,
           letterSpacing: '-0.04em',
-          background: 'none',
-          border: 'none',
-          padding: 0,
         }}
       >
         {label}
-      </button>
+      </div>
       <div className="space-y-2">
         {pills.map((p) => (
           <PillRow
@@ -403,6 +411,22 @@ function ColumnBlock({
           </p>
         )}
       </div>
+      {/* Clear add button below */}
+      <button
+        type="button"
+        onClick={onAdd}
+        className="w-full cursor-pointer rounded-xl py-2.5 transition-all hover:scale-[1.02]"
+        style={{
+          background: `${accent}12`,
+          border: `1.5px dashed ${accent}40`,
+          color: accent,
+          fontFamily: 'var(--font-handwritten)',
+          fontWeight: 700,
+          fontSize: '15px',
+        }}
+      >
+        + add {label.toLowerCase()}
+      </button>
     </div>
   );
 }
@@ -951,7 +975,7 @@ function ReflectTab({
     <div className="space-y-4">
       <p
         className="text-center font-semibold uppercase tracking-[0.24em]"
-        style={{ color: '#9B6BA0', fontSize: '12px' }}
+        style={{ color: '#9B6BA0', fontSize: '15px' }}
       >
         Emotion Decomposition
       </p>
@@ -962,7 +986,7 @@ function ReflectTab({
           color: '#8A6A4A',
           opacity: 0.6,
           fontFamily: 'var(--font-handwritten)',
-          fontSize: '14px',
+          fontSize: '16px',
         }}
       >
         Pick an emotion. Decompose it like a perfume.
@@ -974,7 +998,7 @@ function ReflectTab({
         <div
           className="flex flex-col rounded-xl overflow-hidden"
           style={{
-            width: 70,
+            width: 110,
             border: '1.5px solid #8A6A4A40',
             boxShadow: 'inset 0 0 20px rgba(0,0,0,0.05)',
           }}
@@ -989,9 +1013,9 @@ function ReflectTab({
                 className="cursor-pointer transition-all hover:scale-x-105"
                 style={{
                   background: lvl.color,
-                  height: isPicked ? 32 : 22,
+                  height: isPicked ? 38 : 30,
                   border: 'none',
-                  padding: '0 6px',
+                  padding: '0 10px',
                   textAlign: 'left',
                   borderTop: isPicked ? `2px solid ${lvl.text}` : 'none',
                   borderBottom: isPicked ? `2px solid ${lvl.text}` : 'none',
@@ -999,12 +1023,13 @@ function ReflectTab({
                 title={`${lvl.name} (${lvl.level})`}
               >
                 <span
-                  className="font-bold uppercase truncate block"
+                  className="font-bold block"
                   style={{
                     color: lvl.text,
                     fontFamily: 'var(--font-serif)',
-                    fontSize: isPicked ? '11px' : '9px',
-                    letterSpacing: '0.05em',
+                    fontSize: isPicked ? '15px' : '13px',
+                    letterSpacing: '0.02em',
+                    lineHeight: 1.1,
                   }}
                 >
                   {lvl.name}
@@ -1053,7 +1078,7 @@ function ReflectTab({
                         opacity: 0.6,
                         fontFamily: 'var(--font-serif)',
                         fontWeight: 700,
-                        fontSize: '10px',
+                        fontSize: '15px',
                       }}
                     >
                       {active.hawkinsLevel}
@@ -1090,7 +1115,7 @@ function ReflectTab({
                     opacity: 0.6,
                     fontFamily: 'var(--font-serif)',
                     fontWeight: 700,
-                    fontSize: '11px',
+                    fontSize: '16px',
                   }}
                 >
                   Inside this emotion
@@ -1118,7 +1143,7 @@ function ReflectTab({
                             color: '#9B6BA0',
                             opacity: 0.6,
                             fontFamily: 'var(--font-handwritten)',
-                            fontSize: '12px',
+                            fontSize: '15px',
                             fontWeight: 700,
                           }}
                         >
@@ -1170,7 +1195,7 @@ function ReflectTab({
                             color: '#7a5438',
                             fontFamily: 'var(--font-handwritten)',
                             fontWeight: 700,
-                            fontSize: '13px',
+                            fontSize: '15px',
                           }}
                         >
                           + {s}
@@ -1195,7 +1220,7 @@ function ReflectTab({
                       border: '1px solid #9B6BA025',
                       color: '#7a5438',
                       fontFamily: 'var(--font-handwritten)',
-                      fontSize: '14px',
+                      fontSize: '16px',
                     }}
                   />
                 </div>
@@ -1233,7 +1258,7 @@ function ReflectTab({
                       opacity: 0.5,
                       fontFamily: 'var(--font-serif)',
                       fontWeight: 700,
-                      fontSize: '11px',
+                      fontSize: '16px',
                     }}
                   >
                     Linked to your map
@@ -1249,7 +1274,7 @@ function ReflectTab({
                           color: '#7a5438',
                           fontFamily: 'var(--font-handwritten)',
                           fontWeight: 700,
-                          fontSize: '12px',
+                          fontSize: '15px',
                         }}
                       >
                         {p.name}
@@ -1273,7 +1298,7 @@ function ReflectTab({
               opacity: 0.6,
               fontFamily: 'var(--font-serif)',
               fontWeight: 700,
-              fontSize: '11px',
+              fontSize: '16px',
             }}
           >
             Your decompositions
@@ -1294,7 +1319,7 @@ function ReflectTab({
                   color: '#5C3018',
                   fontFamily: 'var(--font-handwritten)',
                   fontWeight: 700,
-                  fontSize: '13px',
+                  fontSize: '15px',
                 }}
               >
                 {d.emotion}
@@ -1331,7 +1356,7 @@ function ReflectField({
           opacity: 0.6,
           fontFamily: 'var(--font-serif)',
           fontWeight: 700,
-          fontSize: '10px',
+          fontSize: '15px',
         }}
       >
         {label}
