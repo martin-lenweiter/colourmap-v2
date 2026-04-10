@@ -21,10 +21,14 @@ Before you can check in honestly, you need to dump what's cluttering your head. 
 - Zero items: show "Mind is clear."
 - Rapid adding: each item appears immediately at the top.
 - Long text: single line, no truncation — text wraps naturally.
+- Fetch failure: keep showing the last loaded list instead of blanking the card.
+- Toggle is optimistic. If the save fails, the checkbox snaps back to its previous state.
+- Delete is optimistic. If the delete fails, the list refreshes from the API.
 
 ## Done When
 
 - Items persist across page loads (Supabase).
+- Items load from `/api/backlog` for the signed-in user rather than browser-only storage.
 - Adding an item takes one click + typing.
 - The list feels like scrap paper, not a project management tool.
 

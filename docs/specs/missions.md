@@ -28,10 +28,14 @@ Tasks without awareness become a grind. Awareness without tasks becomes navel-ga
 - All fields empty: valid. A mission can just be a title.
 - Challenge filled: card border tints red to signal a blocker at a glance.
 - Completed missions: can be unchecked to reactivate.
+- Fetch failure: keep showing the current mission state instead of clearing the card.
+- Completion toggle is optimistic. If the patch fails, the mission returns to its prior completed state.
+- Delete is optimistic. If the delete fails, refresh missions from the API.
 
 ## Done When
 
 - Missions persist across page loads (Supabase).
+- Missions load from `/api/missions` for the authenticated user rather than local-only storage.
 - All fields auto-save without a save button.
 - The card is minimalist when collapsed, detailed when expanded.
 - Adding a mission takes one click + typing. No friction.
