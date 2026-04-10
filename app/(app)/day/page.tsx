@@ -1,6 +1,7 @@
 'use client';
 
 import CareCompass from '@/components/CareCompass';
+import CaringDepth from '@/components/CaringDepth';
 import DayTabs from '@/components/DayTabs';
 import DoingCheckInCard from '@/components/DoingCheckInCard';
 import FeelingCheckInCard from '@/components/FeelingCheckInCard';
@@ -93,6 +94,7 @@ function DayContent() {
           <div className="space-y-4">
             <FeelingCheckInCard />
             <CareCompass />
+            <CaringDepth />
           </div>
         }
         doingContent={
