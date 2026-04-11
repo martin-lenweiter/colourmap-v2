@@ -39,6 +39,7 @@ interface PatternPill {
   name: string;
   type: 'strength' | 'weakness';
   color: string;
+  parentId?: string; // sub-pill if set
   packIds?: string[];
   createdAt: string;
 }
@@ -304,6 +305,8 @@ function MapTab({
   const [input, setInput] = useState('');
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editName, setEditName] = useState('');
+  const [addingSubFor, setAddingSubFor] = useState<string | null>(null);
+  const [subInput, setSubInput] = useState('');
   const [creatingPack, setCreatingPack] = useState(false);
   const [newPackName, setNewPackName] = useState('');
   const [newPackPills, setNewPackPills] = useState<string[]>([]);
@@ -347,13 +350,16 @@ function MapTab({
     if (expandedPack === id) setExpandedPack(null);
   };
 
-  const strengths = pills.filter((p) => p.type === 'strength');
-  const weaknesses = pills.filter((p) => p.type === 'weakness');
+  // Top-level pills (no parent)
+  const strengths = pills.filter((p) => p.type === 'strength' && !p.parentId);
+  const weaknesses = pills.filter((p) => p.type === 'weakness' && !p.parentId);
+  // Helper to get sub-pills for a parent
+  const getSubs = (parentId: string) => pills.filter((p) => p.parentId === parentId);
 
   const addPill = (name: string, type: 'strength' | 'weakness') => {
     if (!name.trim() || pills.some((p) => p.name.toLowerCase() === name.toLowerCase())) return;
     const colors = type === 'strength' ? S_COLORS : W_COLORS;
-    const existing = pills.filter((p) => p.type === type);
+    const existing = pills.filter((p) => p.type === type && !p.parentId);
     setPills([
       ...pills,
       {
@@ -368,6 +374,25 @@ function MapTab({
     setAddingType(null);
   };
 
+  const addSubPill = (parentId: string, name: string) => {
+    const parent = pills.find((p) => p.id === parentId);
+    if (!parent || !name.trim()) return;
+    if (pills.some((p) => p.name.toLowerCase() === name.toLowerCase())) return;
+    setPills([
+      ...pills,
+      {
+        id: crypto.randomUUID(),
+        name: name.trim(),
+        type: parent.type,
+        color: parent.color,
+        parentId,
+        createdAt: new Date().toISOString(),
+      },
+    ]);
+    setSubInput('');
+    setAddingSubFor(null);
+  };
+
   const renamePill = (id: string, name: string) => {
     if (!name.trim()) {
       setEditingId(null);
@@ -378,8 +403,10 @@ function MapTab({
   };
 
   const removePill = (id: string) => {
-    setPills(pills.filter((p) => p.id !== id));
+    // Also remove any sub-pills with this parent
+    setPills(pills.filter((p) => p.id !== id && p.parentId !== id));
     if (editingId === id) setEditingId(null);
+    if (addingSubFor === id) setAddingSubFor(null);
   };
 
   return (
@@ -413,8 +440,18 @@ function MapTab({
           empty="What's strong?"
           pills={strengths}
           work={work}
+          getSubs={getSubs}
           editingId={editingId}
           editName={editName}
+          addingSubFor={addingSubFor}
+          subInput={subInput}
+          setSubInput={setSubInput}
+          onStartAddSub={(id) => {
+            setAddingSubFor(addingSubFor === id ? null : id);
+            setSubInput('');
+          }}
+          onCommitAddSub={(id) => addSubPill(id, subInput)}
+          onCancelAddSub={() => setAddingSubFor(null)}
           onAdd={() => setAddingType(addingType === 'strength' ? null : 'strength')}
           onStartEdit={(id, name) => {
             setEditingId(id);
@@ -432,8 +469,18 @@ function MapTab({
           empty="What's heavy?"
           pills={weaknesses}
           work={work}
+          getSubs={getSubs}
           editingId={editingId}
           editName={editName}
+          addingSubFor={addingSubFor}
+          subInput={subInput}
+          setSubInput={setSubInput}
+          onStartAddSub={(id) => {
+            setAddingSubFor(addingSubFor === id ? null : id);
+            setSubInput('');
+          }}
+          onCommitAddSub={(id) => addSubPill(id, subInput)}
+          onCancelAddSub={() => setAddingSubFor(null)}
           onAdd={() => setAddingType(addingType === 'weakness' ? null : 'weakness')}
           onStartEdit={(id, name) => {
             setEditingId(id);
@@ -756,8 +803,15 @@ function ColumnBlock({
   empty,
   pills,
   work,
+  getSubs,
   editingId,
   editName,
+  addingSubFor,
+  subInput,
+  setSubInput,
+  onStartAddSub,
+  onCommitAddSub,
+  onCancelAddSub,
   onAdd,
   onStartEdit,
   onChangeEdit,
@@ -770,8 +824,15 @@ function ColumnBlock({
   empty: string;
   pills: PatternPill[];
   work: PatternWork[];
+  getSubs: (parentId: string) => PatternPill[];
   editingId: string | null;
   editName: string;
+  addingSubFor: string | null;
+  subInput: string;
+  setSubInput: (v: string) => void;
+  onStartAddSub: (id: string) => void;
+  onCommitAddSub: (id: string) => void;
+  onCancelAddSub: () => void;
   onAdd: () => void;
   onStartEdit: (id: string, name: string) => void;
   onChangeEdit: (v: string) => void;
@@ -779,6 +840,30 @@ function ColumnBlock({
   onCancelEdit: () => void;
   onRemove: (id: string) => void;
 }) {
+  const renderPill = (p: PatternPill, isSub: boolean) => {
+    const w = work.find((ww) => ww.pillId === p.id);
+    const answeredCount = w
+      ? WORK_FIELDS.filter((f) => (w[f.key] || '').trim().length > 0).length
+      : 0;
+    return (
+      <PillRow
+        key={p.id}
+        pill={p}
+        isSub={isSub}
+        workCount={answeredCount}
+        isEditing={editingId === p.id}
+        editName={editName}
+        canAddSub={!isSub}
+        onStartEdit={() => onStartEdit(p.id, p.name)}
+        onChangeEdit={onChangeEdit}
+        onCommitEdit={() => onCommitEdit(p.id)}
+        onCancelEdit={onCancelEdit}
+        onRemove={() => onRemove(p.id)}
+        onStartAddSub={() => onStartAddSub(p.id)}
+      />
+    );
+  };
+
   return (
     <div className="space-y-3">
       <div
@@ -796,23 +881,64 @@ function ColumnBlock({
       </div>
       <div className="space-y-2">
         {pills.map((p) => {
-          const w = work.find((ww) => ww.pillId === p.id);
-          const answeredCount = w
-            ? WORK_FIELDS.filter((f) => (w[f.key] || '').trim().length > 0).length
-            : 0;
+          const subs = getSubs(p.id);
           return (
-            <PillRow
-              key={p.id}
-              pill={p}
-              workCount={answeredCount}
-              isEditing={editingId === p.id}
-              editName={editName}
-              onStartEdit={() => onStartEdit(p.id, p.name)}
-              onChangeEdit={onChangeEdit}
-              onCommitEdit={() => onCommitEdit(p.id)}
-              onCancelEdit={onCancelEdit}
-              onRemove={() => onRemove(p.id)}
-            />
+            <div key={p.id} className="space-y-1.5">
+              {renderPill(p, false)}
+              {/* Sub pills nested under parent */}
+              {subs.length > 0 && (
+                <div
+                  className="ml-5 space-y-1.5 border-l-2 pl-3"
+                  style={{ borderColor: `${p.color}40` }}
+                >
+                  {subs.map((s) => renderPill(s, true))}
+                </div>
+              )}
+              {/* Sub-add input */}
+              {addingSubFor === p.id && (
+                <div
+                  className="ml-5 rounded-lg px-3 py-2 animate-in fade-in duration-150"
+                  style={{
+                    background: `${p.color}10`,
+                    border: `1.5px dashed ${p.color}45`,
+                  }}
+                >
+                  <p
+                    className="uppercase tracking-wider mb-1.5"
+                    style={{
+                      color: p.color,
+                      opacity: 0.55,
+                      fontFamily: 'var(--font-serif)',
+                      fontWeight: 700,
+                      fontSize: '10px',
+                    }}
+                  >
+                    Add sub-pattern
+                  </p>
+                  <input
+                    type="text"
+                    value={subInput}
+                    onChange={(e) => setSubInput(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') onCommitAddSub(p.id);
+                      if (e.key === 'Escape') onCancelAddSub();
+                    }}
+                    placeholder="e.g. Lateness, Lost keys..."
+                    className="w-full bg-transparent outline-none"
+                    style={{
+                      color: '#7a5438',
+                      fontFamily: 'var(--font-handwritten)',
+                      fontWeight: 700,
+                      fontSize: '15px',
+                      border: 'none',
+                      borderBottom: `1px solid ${p.color}40`,
+                      padding: '2px 0',
+                    }}
+                    autoFocus
+                  />
+                </div>
+              )}
+            </div>
           );
         })}
         {pills.length === 0 && (
@@ -850,32 +976,42 @@ function ColumnBlock({
   );
 }
 
-/* ─── Pill row with double-click rename ─── */
+/* ─── Pill row with rename + sub support ─── */
 function PillRow({
   pill,
+  isSub = false,
   workCount,
   isEditing,
   editName,
+  canAddSub = true,
   onStartEdit,
   onChangeEdit,
   onCommitEdit,
   onCancelEdit,
   onRemove,
+  onStartAddSub,
 }: {
   pill: PatternPill;
+  isSub?: boolean;
   workCount: number;
   isEditing: boolean;
   editName: string;
+  canAddSub?: boolean;
   onStartEdit: () => void;
   onChangeEdit: (v: string) => void;
   onCommitEdit: () => void;
   onCancelEdit: () => void;
   onRemove: () => void;
+  onStartAddSub?: () => void;
 }) {
+  const dotSize = isSub ? 'h-2 w-2' : 'h-3 w-3';
+  const fontSize = isSub ? '15px' : '18px';
+  const padding = isSub ? 'px-2.5 py-2' : 'px-3 py-2.5';
+
   if (isEditing) {
     return (
       <div
-        className="rounded-xl px-3 py-2.5"
+        className={`rounded-xl ${padding}`}
         style={{
           background: '#f7eddc',
           border: `2px solid ${pill.color}55`,
@@ -896,35 +1032,24 @@ function PillRow({
             color: '#7a5438',
             fontFamily: 'var(--font-handwritten)',
             fontWeight: 700,
-            fontSize: '18px',
+            fontSize,
             border: 'none',
           }}
         />
-        <p
-          className="mt-1"
-          style={{
-            color: pill.color,
-            opacity: 0.5,
-            fontFamily: 'var(--font-handwritten)',
-            fontSize: '11px',
-          }}
-        >
-          Enter to save · Esc to cancel
-        </p>
       </div>
     );
   }
 
   return (
     <div
-      className="group flex items-center gap-2.5 rounded-xl px-3 py-2.5 transition-all duration-200"
+      className={`group flex items-center gap-2 rounded-xl ${padding} transition-all duration-200`}
       style={{
-        background: '#f7eddc9c',
-        border: '1px solid #d2b47b4a',
+        background: isSub ? `${pill.color}06` : '#f7eddc9c',
+        border: `1px solid ${isSub ? `${pill.color}25` : '#d2b47b4a'}`,
       }}
     >
       <div
-        className="h-3 w-3 rounded-full flex-shrink-0"
+        className={`${dotSize} rounded-full flex-shrink-0`}
         style={{ background: pill.color, opacity: 0.9 }}
       />
       <button
@@ -935,7 +1060,7 @@ function PillRow({
           color: '#7a5438',
           fontFamily: 'var(--font-handwritten)',
           fontWeight: 700,
-          fontSize: '18px',
+          fontSize,
           background: 'none',
           border: 'none',
           padding: 0,
@@ -959,10 +1084,31 @@ function PillRow({
           {workCount}/6
         </span>
       )}
+      {canAddSub && onStartAddSub && (
+        <button
+          type="button"
+          onClick={(e) => {
+            e.stopPropagation();
+            onStartAddSub();
+          }}
+          className="cursor-pointer rounded-full px-2 py-0.5"
+          style={{
+            background: `${pill.color}12`,
+            color: pill.color,
+            border: `1px solid ${pill.color}25`,
+            fontFamily: 'var(--font-handwritten)',
+            fontWeight: 700,
+            fontSize: '11px',
+          }}
+          title="Add a sub-pattern"
+        >
+          + sub
+        </button>
+      )}
       <button
         type="button"
         onClick={onRemove}
-        className="cursor-pointer rounded px-2 py-1 text-sm opacity-30 hover:opacity-80"
+        className="cursor-pointer rounded px-1.5 py-0.5 text-sm opacity-30 hover:opacity-80"
         style={{
           color: pill.color,
           background: 'none',
