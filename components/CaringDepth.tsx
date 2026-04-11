@@ -307,6 +307,8 @@ function MapTab({
   const [editName, setEditName] = useState('');
   const [addingSubFor, setAddingSubFor] = useState<string | null>(null);
   const [subInput, setSubInput] = useState('');
+  const [organizing, setOrganizing] = useState(false);
+  const [pickingParentFor, setPickingParentFor] = useState<string | null>(null);
   const [creatingPack, setCreatingPack] = useState(false);
   const [newPackName, setNewPackName] = useState('');
   const [newPackPills, setNewPackPills] = useState<string[]>([]);
@@ -407,6 +409,22 @@ function MapTab({
     setPills(pills.filter((p) => p.id !== id && p.parentId !== id));
     if (editingId === id) setEditingId(null);
     if (addingSubFor === id) setAddingSubFor(null);
+    if (pickingParentFor === id) setPickingParentFor(null);
+  };
+
+  const promoteToMain = (id: string) => {
+    setPills(pills.map((p) => (p.id === id ? { ...p, parentId: undefined } : p)));
+  };
+
+  const makeSubOf = (childId: string, parentId: string) => {
+    const child = pills.find((p) => p.id === childId);
+    const parent = pills.find((p) => p.id === parentId);
+    if (!child || !parent || child.id === parent.id) return;
+    if (child.type !== parent.type) return;
+    // Don't allow making something a sub of one of its own children
+    if (parent.parentId === childId) return;
+    setPills(pills.map((p) => (p.id === childId ? { ...p, parentId, color: parent.color } : p)));
+    setPickingParentFor(null);
   };
 
   return (
@@ -431,6 +449,31 @@ function MapTab({
         <span style={{ color: '#D4805A', fontWeight: 700 }}>Work</span> tab.
       </p>
 
+      {/* Organize toggle */}
+      {pills.length >= 2 && (
+        <div className="flex justify-center">
+          <button
+            type="button"
+            onClick={() => {
+              setOrganizing(!organizing);
+              setPickingParentFor(null);
+              setAddingSubFor(null);
+            }}
+            className="cursor-pointer rounded-full px-4 py-1.5 transition-all"
+            style={{
+              background: organizing ? '#9B6BA018' : 'transparent',
+              border: `1.5px solid ${organizing ? '#9B6BA050' : '#9B6BA025'}`,
+              color: '#9B6BA0',
+              fontFamily: 'var(--font-handwritten)',
+              fontWeight: 700,
+              fontSize: '13px',
+            }}
+          >
+            {organizing ? '✓ done organizing' : '⇄ organize'}
+          </button>
+        </div>
+      )}
+
       {/* Two big blocks: Flow | Challenge */}
       <div className="grid grid-cols-2 gap-4">
         {/* FLOW (strengths) */}
@@ -439,6 +482,7 @@ function MapTab({
           accent="#c79a42"
           empty="What's strong?"
           pills={strengths}
+          allPills={pills}
           work={work}
           getSubs={getSubs}
           editingId={editingId}
@@ -446,6 +490,13 @@ function MapTab({
           addingSubFor={addingSubFor}
           subInput={subInput}
           setSubInput={setSubInput}
+          organizing={organizing}
+          pickingParentFor={pickingParentFor}
+          onPickParent={(childId) =>
+            setPickingParentFor(pickingParentFor === childId ? null : childId)
+          }
+          onMakeSubOf={makeSubOf}
+          onPromoteToMain={promoteToMain}
           onStartAddSub={(id) => {
             setAddingSubFor(addingSubFor === id ? null : id);
             setSubInput('');
@@ -468,6 +519,7 @@ function MapTab({
           accent="#c79a42"
           empty="What's heavy?"
           pills={weaknesses}
+          allPills={pills}
           work={work}
           getSubs={getSubs}
           editingId={editingId}
@@ -475,6 +527,13 @@ function MapTab({
           addingSubFor={addingSubFor}
           subInput={subInput}
           setSubInput={setSubInput}
+          organizing={organizing}
+          pickingParentFor={pickingParentFor}
+          onPickParent={(childId) =>
+            setPickingParentFor(pickingParentFor === childId ? null : childId)
+          }
+          onMakeSubOf={makeSubOf}
+          onPromoteToMain={promoteToMain}
           onStartAddSub={(id) => {
             setAddingSubFor(addingSubFor === id ? null : id);
             setSubInput('');
@@ -802,6 +861,7 @@ function ColumnBlock({
   accent,
   empty,
   pills,
+  allPills,
   work,
   getSubs,
   editingId,
@@ -809,6 +869,11 @@ function ColumnBlock({
   addingSubFor,
   subInput,
   setSubInput,
+  organizing,
+  pickingParentFor,
+  onPickParent,
+  onMakeSubOf,
+  onPromoteToMain,
   onStartAddSub,
   onCommitAddSub,
   onCancelAddSub,
@@ -823,6 +888,7 @@ function ColumnBlock({
   accent: string;
   empty: string;
   pills: PatternPill[];
+  allPills: PatternPill[];
   work: PatternWork[];
   getSubs: (parentId: string) => PatternPill[];
   editingId: string | null;
@@ -830,6 +896,11 @@ function ColumnBlock({
   addingSubFor: string | null;
   subInput: string;
   setSubInput: (v: string) => void;
+  organizing: boolean;
+  pickingParentFor: string | null;
+  onPickParent: (childId: string) => void;
+  onMakeSubOf: (childId: string, parentId: string) => void;
+  onPromoteToMain: (id: string) => void;
   onStartAddSub: (id: string) => void;
   onCommitAddSub: (id: string) => void;
   onCancelAddSub: () => void;
@@ -853,14 +924,26 @@ function ColumnBlock({
         workCount={answeredCount}
         isEditing={editingId === p.id}
         editName={editName}
-        canAddSub={!isSub}
+        canAddSub={!isSub && !organizing}
+        organizing={organizing}
         onStartEdit={() => onStartEdit(p.id, p.name)}
         onChangeEdit={onChangeEdit}
         onCommitEdit={() => onCommitEdit(p.id)}
         onCancelEdit={onCancelEdit}
         onRemove={() => onRemove(p.id)}
         onStartAddSub={() => onStartAddSub(p.id)}
+        onPickParent={() => onPickParent(p.id)}
+        onPromote={() => onPromoteToMain(p.id)}
       />
+    );
+  };
+
+  // For parent picker: valid parents are top-level pills of same type, excluding self and own descendants
+  const getValidParents = (childId: string): PatternPill[] => {
+    const child = allPills.find((p) => p.id === childId);
+    if (!child) return [];
+    return allPills.filter(
+      (p) => !p.parentId && p.type === child.type && p.id !== childId && p.parentId !== childId,
     );
   };
 
@@ -885,13 +968,34 @@ function ColumnBlock({
           return (
             <div key={p.id} className="space-y-1.5">
               {renderPill(p, false)}
+              {/* Parent picker for THIS top-level pill */}
+              {pickingParentFor === p.id && (
+                <ParentPickerStrip
+                  childPill={p}
+                  candidates={getValidParents(p.id)}
+                  onPick={(parentId) => onMakeSubOf(p.id, parentId)}
+                  onCancel={() => onPickParent(p.id)}
+                />
+              )}
               {/* Sub pills nested under parent */}
               {subs.length > 0 && (
                 <div
                   className="ml-5 space-y-1.5 border-l-2 pl-3"
                   style={{ borderColor: `${p.color}40` }}
                 >
-                  {subs.map((s) => renderPill(s, true))}
+                  {subs.map((s) => (
+                    <div key={s.id} className="space-y-1.5">
+                      {renderPill(s, true)}
+                      {pickingParentFor === s.id && (
+                        <ParentPickerStrip
+                          childPill={s}
+                          candidates={getValidParents(s.id)}
+                          onPick={(parentId) => onMakeSubOf(s.id, parentId)}
+                          onCancel={() => onPickParent(s.id)}
+                        />
+                      )}
+                    </div>
+                  ))}
                 </div>
               )}
               {/* Sub-add input */}
@@ -976,7 +1080,7 @@ function ColumnBlock({
   );
 }
 
-/* ─── Pill row with rename + sub support ─── */
+/* ─── Pill row with rename + sub + organize support ─── */
 function PillRow({
   pill,
   isSub = false,
@@ -984,12 +1088,15 @@ function PillRow({
   isEditing,
   editName,
   canAddSub = true,
+  organizing = false,
   onStartEdit,
   onChangeEdit,
   onCommitEdit,
   onCancelEdit,
   onRemove,
   onStartAddSub,
+  onPickParent,
+  onPromote,
 }: {
   pill: PatternPill;
   isSub?: boolean;
@@ -997,12 +1104,15 @@ function PillRow({
   isEditing: boolean;
   editName: string;
   canAddSub?: boolean;
+  organizing?: boolean;
   onStartEdit: () => void;
   onChangeEdit: (v: string) => void;
   onCommitEdit: () => void;
   onCancelEdit: () => void;
   onRemove: () => void;
   onStartAddSub?: () => void;
+  onPickParent?: () => void;
+  onPromote?: () => void;
 }) {
   const dotSize = isSub ? 'h-2 w-2' : 'h-3 w-3';
   const fontSize = isSub ? '15px' : '18px';
@@ -1069,7 +1179,7 @@ function PillRow({
       >
         {pill.name}
       </button>
-      {workCount > 0 && (
+      {workCount > 0 && !organizing && (
         <span
           className="rounded-full px-2 py-0.5"
           style={{
@@ -1084,7 +1194,70 @@ function PillRow({
           {workCount}/6
         </span>
       )}
-      {canAddSub && onStartAddSub && (
+      {organizing && !isSub && onPickParent && (
+        <button
+          type="button"
+          onClick={(e) => {
+            e.stopPropagation();
+            onPickParent();
+          }}
+          className="cursor-pointer rounded-full px-2.5 py-1"
+          style={{
+            background: '#9B6BA015',
+            color: '#9B6BA0',
+            border: '1.5px solid #9B6BA040',
+            fontFamily: 'var(--font-handwritten)',
+            fontWeight: 700,
+            fontSize: '12px',
+          }}
+          title="Make this a sub of another pattern"
+        >
+          ↳ sub of
+        </button>
+      )}
+      {organizing && isSub && onPromote && (
+        <button
+          type="button"
+          onClick={(e) => {
+            e.stopPropagation();
+            onPromote();
+          }}
+          className="cursor-pointer rounded-full px-2.5 py-1"
+          style={{
+            background: '#9B6BA015',
+            color: '#9B6BA0',
+            border: '1.5px solid #9B6BA040',
+            fontFamily: 'var(--font-handwritten)',
+            fontWeight: 700,
+            fontSize: '12px',
+          }}
+          title="Promote to main pattern"
+        >
+          ↑ promote
+        </button>
+      )}
+      {organizing && isSub && onPickParent && (
+        <button
+          type="button"
+          onClick={(e) => {
+            e.stopPropagation();
+            onPickParent();
+          }}
+          className="cursor-pointer rounded-full px-2.5 py-1"
+          style={{
+            background: '#9B6BA015',
+            color: '#9B6BA0',
+            border: '1.5px solid #9B6BA040',
+            fontFamily: 'var(--font-handwritten)',
+            fontWeight: 700,
+            fontSize: '12px',
+          }}
+          title="Move to a different parent"
+        >
+          ↳ move
+        </button>
+      )}
+      {!organizing && canAddSub && onStartAddSub && (
         <button
           type="button"
           onClick={(e) => {
@@ -1118,6 +1291,89 @@ function PillRow({
       >
         ✕
       </button>
+    </div>
+  );
+}
+
+/* ─── Parent picker strip ─── */
+function ParentPickerStrip({
+  childPill,
+  candidates,
+  onPick,
+  onCancel,
+}: {
+  childPill: PatternPill;
+  candidates: PatternPill[];
+  onPick: (parentId: string) => void;
+  onCancel: () => void;
+}) {
+  return (
+    <div
+      className="rounded-xl px-3 py-2.5 animate-in fade-in duration-200"
+      style={{
+        background: '#9B6BA010',
+        border: '1.5px solid #9B6BA040',
+      }}
+    >
+      <div className="flex items-center justify-between mb-2">
+        <p
+          className="uppercase tracking-wider"
+          style={{
+            color: '#9B6BA0',
+            opacity: 0.7,
+            fontFamily: 'var(--font-serif)',
+            fontWeight: 700,
+            fontSize: '11px',
+          }}
+        >
+          Make <span style={{ color: childPill.color }}>{childPill.name}</span> a sub of...
+        </p>
+        <button
+          type="button"
+          onClick={onCancel}
+          className="cursor-pointer text-sm"
+          style={{ color: '#9B6BA0', opacity: 0.5, background: 'none', border: 'none' }}
+        >
+          ✕
+        </button>
+      </div>
+      {candidates.length === 0 ? (
+        <p
+          className="text-center py-1"
+          style={{
+            color: '#9B6BA0',
+            opacity: 0.5,
+            fontFamily: 'var(--font-handwritten)',
+            fontSize: '13px',
+            fontStyle: 'italic',
+          }}
+        >
+          No other patterns to nest under
+        </p>
+      ) : (
+        <div className="flex flex-wrap gap-1.5">
+          {candidates.map((c) => (
+            <button
+              key={c.id}
+              type="button"
+              onClick={() => onPick(c.id)}
+              className="cursor-pointer rounded-full transition-all hover:scale-105 flex items-center gap-1.5"
+              style={{
+                background: `${c.color}15`,
+                border: `1.5px solid ${c.color}40`,
+                color: '#7a5438',
+                fontFamily: 'var(--font-handwritten)',
+                fontWeight: 700,
+                fontSize: '13px',
+                padding: '5px 10px',
+              }}
+            >
+              <span className="h-2 w-2 rounded-full" style={{ background: c.color }} />
+              {c.name}
+            </button>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
