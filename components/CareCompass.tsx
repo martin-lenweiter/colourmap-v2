@@ -203,8 +203,6 @@ const RHYMES: Record<string, string[]> = {
 };
 
 const STORAGE_KEY = 'colourmap:care-values';
-const CHALLENGE_KEY = 'colourmap:care-challenge';
-const FLOW_KEY = 'colourmap:care-flow';
 
 function loadValues(): Record<CareAxis, number> {
   try {
@@ -214,14 +212,6 @@ function loadValues(): Record<CareAxis, number> {
     /* ignore */
   }
   return { care: 50, attitude: 50, rest: 50, emotions: 50 };
-}
-
-function loadList(key: string): string[] {
-  try {
-    return JSON.parse(localStorage.getItem(key) || '[]');
-  } catch {
-    return [];
-  }
 }
 
 function arcPath(
@@ -263,40 +253,10 @@ export default function CareCompass() {
   const [activeSub, setActiveSub] = useState<string | null>(null);
   const [subStep, setSubStep] = useState(0);
   const [subAnswers, setSubAnswers] = useState<Record<string, string>>({});
-  const [challengeItems, setChallengeItems] = useState<string[]>(() => loadList(CHALLENGE_KEY));
-  const [flowItems, setFlowItems] = useState<string[]>(() => loadList(FLOW_KEY));
-  const [challengeInput, setChallengeInput] = useState('');
-  const [flowInput, setFlowInput] = useState('');
-
   const handleRating = (key: CareAxis, value: number) => {
     const next = { ...values, [key]: value };
     setValues(next);
     localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
-  };
-
-  const addChallenge = (text: string) => {
-    if (!text.trim()) return;
-    const next = [...challengeItems, text.trim()];
-    setChallengeItems(next);
-    localStorage.setItem(CHALLENGE_KEY, JSON.stringify(next));
-    setChallengeInput('');
-  };
-  const addFlow = (text: string) => {
-    if (!text.trim()) return;
-    const next = [...flowItems, text.trim()];
-    setFlowItems(next);
-    localStorage.setItem(FLOW_KEY, JSON.stringify(next));
-    setFlowInput('');
-  };
-  const removeChallenge = (i: number) => {
-    const next = challengeItems.filter((_, idx) => idx !== i);
-    setChallengeItems(next);
-    localStorage.setItem(CHALLENGE_KEY, JSON.stringify(next));
-  };
-  const removeFlow = (i: number) => {
-    const next = flowItems.filter((_, idx) => idx !== i);
-    setFlowItems(next);
-    localStorage.setItem(FLOW_KEY, JSON.stringify(next));
   };
 
   const span = Math.PI / 2;
