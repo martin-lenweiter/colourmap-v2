@@ -6,44 +6,6 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import CaringDepth from './CaringDepth';
 
 const PILLS_KEY = 'colourmap:pattern-pills';
-const CONN_KEY = 'colourmap:pattern-connections';
-const PACKS_KEY = 'colourmap:pattern-packs';
-
-const seededPills = [
-  {
-    id: 'pill-strength-1',
-    name: 'Courage',
-    type: 'strength',
-    color: '#D4805A',
-    intensity: 4,
-    locked: false,
-    createdAt: '2026-04-10T08:00:00.000Z',
-    history: [
-      { date: '2026-04-09', intensity: 2 },
-      { date: '2026-04-10', intensity: 4 },
-    ],
-  },
-  {
-    id: 'pill-strength-2',
-    name: 'Empathy',
-    type: 'strength',
-    color: '#C4A060',
-    intensity: 3,
-    locked: false,
-    createdAt: '2026-04-10T08:00:00.000Z',
-    history: [],
-  },
-  {
-    id: 'pill-weakness-1',
-    name: 'Avoidance',
-    type: 'weakness',
-    color: '#6890B0',
-    intensity: 2,
-    locked: false,
-    createdAt: '2026-04-10T08:00:00.000Z',
-    history: [],
-  },
-];
 
 describe('CaringDepth', () => {
   beforeEach(() => {
@@ -55,44 +17,71 @@ describe('CaringDepth', () => {
     localStorage.clear();
   });
 
-  it('prompts for at least three pills before showing the wheel', async () => {
+  it('renders Flow and Challenge inputs and creates pills on Enter', async () => {
     const user = userEvent.setup();
-
     render(<CaringDepth />);
 
-    expect(screen.getByText('Name your strengths and weaknesses.')).toBeDefined();
+    const flowInput = screen.getByPlaceholderText("What's flowing?...");
+    const challengeInput = screen.getByPlaceholderText("What's challenging?...");
 
-    await user.click(screen.getByRole('button', { name: '+ Strength' }));
-    await user.click(screen.getByRole('button', { name: 'Courage' }));
-    expect(screen.getByText('Add 2 more to see your wheel')).toBeDefined();
+    expect(flowInput).toBeDefined();
+    expect(challengeInput).toBeDefined();
 
-    await user.click(screen.getByRole('button', { name: '+ Weakness' }));
-    await user.click(screen.getByRole('button', { name: 'Avoidance' }));
-    expect(screen.getByText('Add 1 more to see your wheel')).toBeDefined();
-
-    await user.click(screen.getByRole('button', { name: '+ Strength' }));
-    await user.click(screen.getByRole('button', { name: 'Empathy' }));
-
+    await user.type(flowInput, 'Courage{Enter}');
     await waitFor(() => {
-      expect(screen.queryByText(/Add \d more to see your wheel/)).toBeNull();
+      expect(screen.getByText('Courage')).toBeDefined();
     });
-    expect(screen.getByRole('button', { name: /Courage/ })).toBeDefined();
-    expect(screen.getByRole('button', { name: /Avoidance/ })).toBeDefined();
+
+    await user.type(challengeInput, 'Overthinking{Enter}');
+    await waitFor(() => {
+      expect(screen.getByText('Overthinking')).toBeDefined();
+    });
+
+    // Verify pills persisted to localStorage
+    const saved = JSON.parse(localStorage.getItem(PILLS_KEY) || '[]');
+    expect(saved.length).toBe(2);
+    expect(saved[0].name).toBe('Courage');
+    expect(saved[0].type).toBe('strength');
+    expect(saved[1].name).toBe('Overthinking');
+    expect(saved[1].type).toBe('weakness');
   });
 
-  it('connects pills and shows any saved pack memberships in the detail view', async () => {
+  it('removes a pill when clicking the delete button', async () => {
     const user = userEvent.setup();
+    render(<CaringDepth />);
 
-    localStorage.setItem(PILLS_KEY, JSON.stringify(seededPills));
-    localStorage.setItem(CONN_KEY, JSON.stringify([]));
+    const flowInput = screen.getByPlaceholderText("What's flowing?...");
+    await user.type(flowInput, 'Creativity{Enter}');
+
+    await waitFor(() => {
+      expect(screen.getByText('Creativity')).toBeDefined();
+    });
+
+    const deleteBtn = screen.getByTitle('Remove');
+    await user.click(deleteBtn);
+
+    await waitFor(() => {
+      expect(screen.queryByText('Creativity')).toBeNull();
+    });
+  });
+
+  it('loads pills from localStorage on mount', async () => {
     localStorage.setItem(
-      PACKS_KEY,
+      PILLS_KEY,
       JSON.stringify([
         {
-          id: 'pack-1',
-          name: 'Shadow Pair',
-          type: 'shadow',
-          pillIds: ['pill-strength-1', 'pill-weakness-1'],
+          id: 'p1',
+          name: 'Music',
+          type: 'strength',
+          color: '#D4805A',
+          createdAt: '2026-04-10T08:00:00.000Z',
+        },
+        {
+          id: 'p2',
+          name: 'Sleep',
+          type: 'weakness',
+          color: '#6890B0',
+          createdAt: '2026-04-10T08:00:00.000Z',
         },
       ]),
     );
@@ -100,55 +89,8 @@ describe('CaringDepth', () => {
     render(<CaringDepth />);
 
     await waitFor(() => {
-      expect(screen.getByRole('button', { name: /Courage/ })).toBeDefined();
-    });
-
-    await user.click(screen.getByRole('button', { name: /Courage/ }));
-    expect(screen.getByText('Shadow Pair')).toBeDefined();
-
-    await user.click(screen.getByRole('button', { name: 'link' }));
-    expect(screen.getByText(/Tap another pill to connect to Courage/)).toBeDefined();
-
-    await user.click(screen.getByRole('button', { name: /Avoidance/ }));
-    await user.click(screen.getByRole('button', { name: 'balances' }));
-
-    const chipLabel = await screen.findByText('balances Courage', { selector: 'span' });
-    const chipDelete = chipLabel.parentElement?.querySelector('button');
-    if (!(chipDelete instanceof HTMLButtonElement)) {
-      throw new Error('Expected connection chip delete button');
-    }
-
-    await user.click(chipDelete);
-
-    await waitFor(() => {
-      expect(screen.queryByText('balances Courage', { selector: 'span' })).toBeNull();
-    });
-  });
-
-  it('can cancel linking and remove the active pill', async () => {
-    const user = userEvent.setup();
-
-    localStorage.setItem(PILLS_KEY, JSON.stringify(seededPills));
-    localStorage.setItem(CONN_KEY, JSON.stringify([]));
-    localStorage.setItem(PACKS_KEY, JSON.stringify([]));
-
-    render(<CaringDepth />);
-
-    await waitFor(() => {
-      expect(screen.getByRole('button', { name: /Courage/ })).toBeDefined();
-    });
-
-    await user.click(screen.getByRole('button', { name: /Courage/ }));
-    await user.click(screen.getByRole('button', { name: 'link' }));
-    await user.click(screen.getByRole('button', { name: 'cancel' }));
-
-    await waitFor(() => {
-      expect(screen.queryByText(/Tap another pill to connect to Courage/)).toBeNull();
-    });
-    await user.click(screen.getAllByRole('button', { name: '✕' })[0]);
-
-    await waitFor(() => {
-      expect(screen.queryByRole('button', { name: /Courage/ })).toBeNull();
+      expect(screen.getByText('Music')).toBeDefined();
+      expect(screen.getByText('Sleep')).toBeDefined();
     });
   });
 });
