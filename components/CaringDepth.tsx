@@ -197,6 +197,7 @@ function ss<T>(k: string, v: T) {
    ═══════════════════════════════════════════════════════════ */
 export default function CaringDepth() {
   const [tab, setTab] = useState<'map' | 'work' | 'reflect' | 'river'>('map');
+  const [showTabs, setShowTabs] = useState(false);
   const [pills, setPills] = useState<PatternPill[]>([]);
   const [packs, setPacks] = useState<Pack[]>([]);
   const [focus, setFocus] = useState<WorkFocus | null>(null);
@@ -226,33 +227,7 @@ export default function CaringDepth() {
         boxShadow: '0 28px 55px -36px rgba(92,48,24,0.3)',
       }}
     >
-      {/* Tabs */}
-      <div className="flex gap-1">
-        {[
-          { id: 'map' as const, label: 'Map', color: '#C4A060' },
-          { id: 'work' as const, label: 'Work', color: '#D4805A' },
-          { id: 'reflect' as const, label: 'Reflect', color: '#9B6BA0' },
-          { id: 'river' as const, label: 'River', color: '#6890B0' },
-        ].map((t) => (
-          <button
-            key={t.id}
-            type="button"
-            onClick={() => setTab(t.id)}
-            className="flex-1 cursor-pointer rounded-lg py-2 text-center uppercase tracking-[0.15em] transition-all duration-200"
-            style={{
-              background: tab === t.id ? `${t.color}15` : 'transparent',
-              border: `1.5px solid ${tab === t.id ? `${t.color}45` : `${t.color}18`}`,
-              color: t.color,
-              fontFamily: 'var(--font-serif)',
-              fontSize: '11px',
-              fontWeight: 700,
-            }}
-          >
-            {t.label}
-          </button>
-        ))}
-      </div>
-
+      {/* Map — always the default view */}
       {tab === 'map' && (
         <MapTab
           pills={pills}
@@ -262,24 +237,76 @@ export default function CaringDepth() {
           work={work}
         />
       )}
-      {tab === 'work' && (
-        <WorkTab
-          pills={pills}
-          focus={focus}
-          setFocus={(v) => up(FOCUS_KEY, v, setFocus)}
-          work={work}
-          setWork={(v) => up(WORK_KEY, v, setWork)}
+
+      {/* Losange gateway to deeper tabs */}
+      <div className="flex justify-center">
+        <button
+          type="button"
+          onClick={() => {
+            if (showTabs) {
+              setShowTabs(false);
+              setTab('map');
+            } else {
+              setShowTabs(true);
+            }
+          }}
+          className="h-5 w-5 rotate-45 cursor-pointer transition-all duration-300 hover:scale-125"
+          style={{
+            background: showTabs ? '#9B6BA040' : '#9B6BA018',
+            borderRadius: 2,
+            border: 'none',
+          }}
         />
-      )}
-      {tab === 'reflect' && (
-        <ReflectTab
-          pills={pills}
-          decompositions={decompositions}
-          setDecompositions={(v) => up(REFLECT_KEY, v, setDecompositions)}
-        />
-      )}
-      {tab === 'river' && (
-        <RiverTab pills={pills} river={river} setRiver={(v) => up(RIVER_KEY, v, setRiver)} />
+      </div>
+
+      {/* Tab row — only when losange is open */}
+      {showTabs && (
+        <div className="space-y-4 animate-in fade-in duration-200">
+          <div className="flex justify-center gap-3">
+            {[
+              { id: 'map' as const, label: 'Map', color: '#C4A060' },
+              { id: 'work' as const, label: 'Work', color: '#D4805A' },
+              { id: 'reflect' as const, label: 'Reflect', color: '#9B6BA0' },
+              { id: 'river' as const, label: 'River', color: '#6890B0' },
+            ].map((t) => (
+              <button
+                key={t.id}
+                type="button"
+                onClick={() => setTab(t.id)}
+                className="cursor-pointer rounded-full px-3 py-1 text-xs uppercase tracking-[0.15em] transition-all duration-200"
+                style={{
+                  background: tab === t.id ? `${t.color}18` : 'transparent',
+                  border: `1px solid ${tab === t.id ? `${t.color}40` : 'transparent'}`,
+                  color: t.color,
+                  fontFamily: 'var(--font-serif)',
+                  fontWeight: 700,
+                }}
+              >
+                {t.label}
+              </button>
+            ))}
+          </div>
+
+          {tab === 'work' && (
+            <WorkTab
+              pills={pills}
+              focus={focus}
+              setFocus={(v) => up(FOCUS_KEY, v, setFocus)}
+              work={work}
+              setWork={(v) => up(WORK_KEY, v, setWork)}
+            />
+          )}
+          {tab === 'reflect' && (
+            <ReflectTab
+              pills={pills}
+              decompositions={decompositions}
+              setDecompositions={(v) => up(REFLECT_KEY, v, setDecompositions)}
+            />
+          )}
+          {tab === 'river' && (
+            <RiverTab pills={pills} river={river} setRiver={(v) => up(RIVER_KEY, v, setRiver)} />
+          )}
+        </div>
       )}
     </div>
   );
@@ -429,58 +456,29 @@ function MapTab({
 
   return (
     <div className="space-y-4">
-      <p
-        className="text-center font-semibold uppercase tracking-[0.24em]"
-        style={{ color: '#C4A060', fontSize: '12px' }}
-      >
-        Strength · Weakness Map
-      </p>
+      {/* Challenge / Flow titles */}
+      <div className="grid grid-cols-2 gap-4">
+        <p
+          className="text-center text-xl font-bold"
+          style={{ color: '#C4A060', fontFamily: 'var(--font-serif)' }}
+        >
+          Flow
+        </p>
+        <p
+          className="text-center text-xl font-bold"
+          style={{ color: '#C4A060', fontFamily: 'var(--font-serif)' }}
+        >
+          Challenge
+        </p>
+      </div>
 
-      <p
-        className="text-center"
-        style={{
-          color: '#8A6A4A',
-          opacity: 0.6,
-          fontFamily: 'var(--font-handwritten)',
-          fontSize: '14px',
-        }}
-      >
-        Name them here. Work on them in the{' '}
-        <span style={{ color: '#D4805A', fontWeight: 700 }}>Work</span> tab.
-      </p>
-
-      {/* Organize toggle */}
-      {pills.length >= 2 && (
-        <div className="flex justify-center">
-          <button
-            type="button"
-            onClick={() => {
-              setOrganizing(!organizing);
-              setPickingParentFor(null);
-              setAddingSubFor(null);
-            }}
-            className="cursor-pointer rounded-full px-4 py-1.5 transition-all"
-            style={{
-              background: organizing ? '#9B6BA018' : 'transparent',
-              border: `1.5px solid ${organizing ? '#9B6BA050' : '#9B6BA025'}`,
-              color: '#9B6BA0',
-              fontFamily: 'var(--font-handwritten)',
-              fontWeight: 700,
-              fontSize: '13px',
-            }}
-          >
-            {organizing ? '✓ done organizing' : '⇄ organize'}
-          </button>
-        </div>
-      )}
-
-      {/* Two big blocks: Flow | Challenge */}
       <div className="grid grid-cols-2 gap-4">
         {/* FLOW (strengths) */}
         <ColumnBlock
           label="Flow"
           accent="#c79a42"
           empty="What's strong?"
+          placeholder="What's flowing?..."
           pills={strengths}
           allPills={pills}
           work={work}
@@ -503,7 +501,7 @@ function MapTab({
           }}
           onCommitAddSub={(id) => addSubPill(id, subInput)}
           onCancelAddSub={() => setAddingSubFor(null)}
-          onAdd={() => setAddingType(addingType === 'strength' ? null : 'strength')}
+          onAddDirect={(name) => addPill(name, 'strength')}
           onStartEdit={(id, name) => {
             setEditingId(id);
             setEditName(name);
@@ -518,6 +516,7 @@ function MapTab({
           label="Challenge"
           accent="#c79a42"
           empty="What's heavy?"
+          placeholder="What's challenging?..."
           pills={weaknesses}
           allPills={pills}
           work={work}
@@ -540,7 +539,7 @@ function MapTab({
           }}
           onCommitAddSub={(id) => addSubPill(id, subInput)}
           onCancelAddSub={() => setAddingSubFor(null)}
-          onAdd={() => setAddingType(addingType === 'weakness' ? null : 'weakness')}
+          onAddDirect={(name) => addPill(name, 'weakness')}
           onStartEdit={(id, name) => {
             setEditingId(id);
             setEditName(name);
@@ -551,306 +550,43 @@ function MapTab({
           onRemove={removePill}
         />
       </div>
+    </div>
+  );
+}
 
-      {/* Add input — opens below the columns */}
-      {addingType && (
-        <AddPillInput
-          type={addingType}
-          input={input}
-          setInput={setInput}
-          onAdd={() => addPill(input, addingType)}
-          onAddSuggestion={(s) => addPill(s, addingType)}
-          existing={pills.map((p) => p.name)}
-          onCancel={() => setAddingType(null)}
-        />
-      )}
-
-      {pills.length === 0 && !addingType && (
-        <p
-          className="text-center"
-          style={{
-            color: '#B8905A',
-            opacity: 0.5,
-            fontFamily: 'var(--font-handwritten)',
-            fontSize: '14px',
-          }}
-        >
-          Name what you carry — strengths and challenges.
-        </p>
-      )}
-
-      {/* PACKS — group related pills */}
-      {pills.length >= 2 && (
-        <div className="space-y-3 pt-3 border-t" style={{ borderColor: '#8A6A4A20' }}>
-          <div className="flex items-center justify-between">
-            <p
-              className="uppercase tracking-[0.2em]"
-              style={{
-                color: '#9B6BA0',
-                fontFamily: 'var(--font-serif)',
-                fontWeight: 700,
-                fontSize: '12px',
-              }}
-            >
-              Packs
-            </p>
-            <button
-              type="button"
-              onClick={() => {
-                setCreatingPack(!creatingPack);
-                setNewPackName('');
-                setNewPackPills([]);
-              }}
-              className="cursor-pointer rounded-full px-3 py-1.5"
-              style={{
-                background: creatingPack ? '#9B6BA015' : 'transparent',
-                border: '1.5px solid #9B6BA035',
-                color: '#9B6BA0',
-                fontFamily: 'var(--font-handwritten)',
-                fontWeight: 700,
-                fontSize: '13px',
-              }}
-            >
-              {creatingPack ? 'cancel' : '+ new pack'}
-            </button>
-          </div>
-
-          {/* Existing packs */}
-          {packs.length === 0 && !creatingPack && (
-            <p
-              className="text-center"
-              style={{
-                color: '#9B6BA0',
-                opacity: 0.5,
-                fontFamily: 'var(--font-handwritten)',
-                fontSize: '14px',
-                fontStyle: 'italic',
-              }}
-            >
-              Group related patterns. Tap "+ new pack" to start.
-            </p>
-          )}
-
-          {packs.map((pack) => {
-            const isExpanded = expandedPack === pack.id;
-            const packPills = pills.filter((p) => pack.pillIds.includes(p.id));
-            return (
-              <div
-                key={pack.id}
-                className="rounded-xl overflow-hidden"
-                style={{
-                  background: `${pack.color}10`,
-                  border: `1.5px solid ${pack.color}40`,
-                }}
-              >
-                <button
-                  type="button"
-                  onClick={() => setExpandedPack(isExpanded ? null : pack.id)}
-                  className="flex w-full items-center gap-2.5 px-3.5 py-2.5 cursor-pointer text-left"
-                  style={{ background: 'none', border: 'none' }}
-                >
-                  <span
-                    className="h-3 w-3 rounded-full flex-shrink-0"
-                    style={{ background: pack.color }}
-                  />
-                  <span
-                    className="flex-1"
-                    style={{
-                      color: '#7a5438',
-                      fontFamily: 'var(--font-handwritten)',
-                      fontWeight: 700,
-                      fontSize: '17px',
-                    }}
-                  >
-                    {pack.name}
-                  </span>
-                  <span
-                    className="rounded-full px-2 py-0.5"
-                    style={{
-                      background: `${pack.color}25`,
-                      color: pack.color,
-                      fontFamily: 'var(--font-handwritten)',
-                      fontWeight: 700,
-                      fontSize: '12px',
-                    }}
-                  >
-                    {pack.pillIds.length}
-                  </span>
-                  <span style={{ color: pack.color, fontSize: '12px', opacity: 0.5 }}>
-                    {isExpanded ? '▾' : '▸'}
-                  </span>
-                </button>
-                {isExpanded && (
-                  <div className="px-3.5 pb-3 space-y-2 animate-in fade-in duration-200">
-                    <p
-                      className="uppercase tracking-wider pt-1"
-                      style={{
-                        color: pack.color,
-                        opacity: 0.5,
-                        fontFamily: 'var(--font-serif)',
-                        fontWeight: 700,
-                        fontSize: '11px',
-                      }}
-                    >
-                      Tap to add or remove
-                    </p>
-                    <div className="flex flex-wrap gap-1.5">
-                      {pills.map((p) => {
-                        const isIn = pack.pillIds.includes(p.id);
-                        return (
-                          <button
-                            key={p.id}
-                            type="button"
-                            onClick={() => togglePackPill(pack.id, p.id)}
-                            className="cursor-pointer rounded-full transition-all hover:scale-105 flex items-center gap-1.5"
-                            style={{
-                              background: isIn ? `${p.color}28` : `${p.color}08`,
-                              border: `1.5px solid ${isIn ? `${p.color}55` : `${p.color}20`}`,
-                              color: '#7a5438',
-                              fontFamily: 'var(--font-handwritten)',
-                              fontWeight: 700,
-                              fontSize: '13px',
-                              padding: '6px 11px',
-                            }}
-                          >
-                            <span
-                              className="h-2 w-2 rounded-full"
-                              style={{ background: p.color }}
-                            />
-                            {p.name}
-                            {isIn && <span style={{ opacity: 0.5 }}>✓</span>}
-                          </button>
-                        );
-                      })}
-                    </div>
-                    {packPills.length > 0 && (
-                      <div className="flex justify-end pt-1">
-                        <button
-                          type="button"
-                          onClick={() => removePack(pack.id)}
-                          className="cursor-pointer"
-                          style={{
-                            color: pack.color,
-                            opacity: 0.4,
-                            background: 'none',
-                            border: 'none',
-                            fontFamily: 'var(--font-handwritten)',
-                            fontSize: '12px',
-                          }}
-                        >
-                          delete pack
-                        </button>
-                      </div>
-                    )}
-                  </div>
-                )}
-              </div>
-            );
-          })}
-
-          {/* Create pack form */}
-          {creatingPack && (
-            <div
-              className="rounded-xl px-4 py-3 space-y-3 animate-in fade-in duration-200"
-              style={{ background: '#f7eddc', border: '2px solid #9B6BA040' }}
-            >
-              <div>
-                <p
-                  className="uppercase tracking-wider mb-2"
-                  style={{
-                    color: '#9B6BA0',
-                    opacity: 0.6,
-                    fontFamily: 'var(--font-serif)',
-                    fontWeight: 700,
-                    fontSize: '11px',
-                  }}
-                >
-                  Name your pack
-                </p>
-                <input
-                  type="text"
-                  value={newPackName}
-                  onChange={(e) => setNewPackName(e.target.value)}
-                  placeholder="e.g. Body stuff, Work stress, Family..."
-                  className="w-full bg-transparent outline-none"
-                  style={{
-                    color: '#7a5438',
-                    fontFamily: 'var(--font-handwritten)',
-                    fontWeight: 700,
-                    fontSize: '18px',
-                    border: 'none',
-                    borderBottom: '1.5px solid #9B6BA040',
-                    padding: '4px 0',
-                  }}
-                  autoFocus
-                />
-              </div>
-              <div>
-                <p
-                  className="uppercase tracking-wider mb-2"
-                  style={{
-                    color: '#9B6BA0',
-                    opacity: 0.6,
-                    fontFamily: 'var(--font-serif)',
-                    fontWeight: 700,
-                    fontSize: '11px',
-                  }}
-                >
-                  Pick the patterns ({newPackPills.length} selected)
-                </p>
-                <div className="flex flex-wrap gap-1.5">
-                  {pills.map((p) => {
-                    const isOn = newPackPills.includes(p.id);
-                    return (
-                      <button
-                        key={p.id}
-                        type="button"
-                        onClick={() =>
-                          setNewPackPills(
-                            isOn
-                              ? newPackPills.filter((id) => id !== p.id)
-                              : [...newPackPills, p.id],
-                          )
-                        }
-                        className="cursor-pointer rounded-full transition-all hover:scale-105 flex items-center gap-1.5"
-                        style={{
-                          background: isOn ? `${p.color}28` : `${p.color}08`,
-                          border: `1.5px solid ${isOn ? `${p.color}55` : `${p.color}20`}`,
-                          color: '#7a5438',
-                          fontFamily: 'var(--font-handwritten)',
-                          fontWeight: 700,
-                          fontSize: '13px',
-                          padding: '6px 11px',
-                        }}
-                      >
-                        <span className="h-2 w-2 rounded-full" style={{ background: p.color }} />
-                        {p.name}
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-              <button
-                type="button"
-                onClick={createPack}
-                disabled={!newPackName.trim() || newPackPills.length === 0}
-                className="w-full cursor-pointer rounded-lg py-2.5 uppercase tracking-wider transition-all"
-                style={{
-                  background: '#9B6BA015',
-                  border: '1.5px solid #9B6BA040',
-                  color: '#9B6BA0',
-                  fontFamily: 'var(--font-serif)',
-                  fontWeight: 700,
-                  fontSize: '13px',
-                  opacity: newPackName.trim() && newPackPills.length > 0 ? 1 : 0.4,
-                }}
-              >
-                Create pack
-              </button>
-            </div>
-          )}
-        </div>
-      )}
+/* ─── Inline input for adding pills ─── */
+function ColumnInput({
+  label,
+  accent,
+  placeholder,
+  onAdd,
+}: {
+  label: string;
+  accent: string;
+  placeholder: string;
+  onAdd: (name: string) => void;
+}) {
+  const [value, setValue] = useState('');
+  return (
+    <div className="text-center">
+      <input
+        type="text"
+        value={value}
+        onChange={(e) => setValue(e.target.value)}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter' && value.trim()) {
+            onAdd(value.trim());
+            setValue('');
+          }
+        }}
+        placeholder={placeholder}
+        className="w-full border-b bg-transparent pb-1 text-center text-base outline-none"
+        style={{
+          color: '#C4A060',
+          borderColor: '#C4A06030',
+          fontFamily: 'var(--font-serif)',
+        }}
+      />
     </div>
   );
 }
@@ -860,6 +596,7 @@ function ColumnBlock({
   label,
   accent,
   empty,
+  placeholder,
   pills,
   allPills,
   work,
@@ -877,7 +614,7 @@ function ColumnBlock({
   onStartAddSub,
   onCommitAddSub,
   onCancelAddSub,
-  onAdd,
+  onAddDirect,
   onStartEdit,
   onChangeEdit,
   onCommitEdit,
@@ -887,6 +624,7 @@ function ColumnBlock({
   label: string;
   accent: string;
   empty: string;
+  placeholder: string;
   pills: PatternPill[];
   allPills: PatternPill[];
   work: PatternWork[];
@@ -904,7 +642,7 @@ function ColumnBlock({
   onStartAddSub: (id: string) => void;
   onCommitAddSub: (id: string) => void;
   onCancelAddSub: () => void;
-  onAdd: () => void;
+  onAddDirect: (name: string) => void;
   onStartEdit: (id: string, name: string) => void;
   onChangeEdit: (v: string) => void;
   onCommitEdit: (id: string) => void;
@@ -949,133 +687,13 @@ function ColumnBlock({
 
   return (
     <div className="space-y-3">
-      <div
-        className="block w-full text-center"
-        style={{
-          color: accent,
-          fontFamily: 'var(--font-serif)',
-          fontSize: '28px',
-          fontWeight: 600,
-          lineHeight: 1,
-          letterSpacing: '-0.04em',
-        }}
-      >
-        {label}
-      </div>
+      {/* Input at top */}
+      <ColumnInput label={label} accent={accent} placeholder={placeholder} onAdd={onAddDirect} />
       <div className="space-y-2">
         {pills.map((p) => {
-          const subs = getSubs(p.id);
-          return (
-            <div key={p.id} className="space-y-1.5">
-              {renderPill(p, false)}
-              {/* Parent picker for THIS top-level pill */}
-              {pickingParentFor === p.id && (
-                <ParentPickerStrip
-                  childPill={p}
-                  candidates={getValidParents(p.id)}
-                  onPick={(parentId) => onMakeSubOf(p.id, parentId)}
-                  onCancel={() => onPickParent(p.id)}
-                />
-              )}
-              {/* Sub pills nested under parent */}
-              {subs.length > 0 && (
-                <div
-                  className="ml-5 space-y-1.5 border-l-2 pl-3"
-                  style={{ borderColor: `${p.color}40` }}
-                >
-                  {subs.map((s) => (
-                    <div key={s.id} className="space-y-1.5">
-                      {renderPill(s, true)}
-                      {pickingParentFor === s.id && (
-                        <ParentPickerStrip
-                          childPill={s}
-                          candidates={getValidParents(s.id)}
-                          onPick={(parentId) => onMakeSubOf(s.id, parentId)}
-                          onCancel={() => onPickParent(s.id)}
-                        />
-                      )}
-                    </div>
-                  ))}
-                </div>
-              )}
-              {/* Sub-add input */}
-              {addingSubFor === p.id && (
-                <div
-                  className="ml-5 rounded-lg px-3 py-2 animate-in fade-in duration-150"
-                  style={{
-                    background: `${p.color}10`,
-                    border: `1.5px dashed ${p.color}45`,
-                  }}
-                >
-                  <p
-                    className="uppercase tracking-wider mb-1.5"
-                    style={{
-                      color: p.color,
-                      opacity: 0.55,
-                      fontFamily: 'var(--font-serif)',
-                      fontWeight: 700,
-                      fontSize: '10px',
-                    }}
-                  >
-                    Add sub-pattern
-                  </p>
-                  <input
-                    type="text"
-                    value={subInput}
-                    onChange={(e) => setSubInput(e.target.value)}
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter') onCommitAddSub(p.id);
-                      if (e.key === 'Escape') onCancelAddSub();
-                    }}
-                    placeholder="e.g. Lateness, Lost keys..."
-                    className="w-full bg-transparent outline-none"
-                    style={{
-                      color: '#7a5438',
-                      fontFamily: 'var(--font-handwritten)',
-                      fontWeight: 700,
-                      fontSize: '15px',
-                      border: 'none',
-                      borderBottom: `1px solid ${p.color}40`,
-                      padding: '2px 0',
-                    }}
-                    autoFocus
-                  />
-                </div>
-              )}
-            </div>
-          );
+          return <div key={p.id}>{renderPill(p, false)}</div>;
         })}
-        {pills.length === 0 && (
-          <p
-            className="text-center"
-            style={{
-              color: accent,
-              opacity: 0.4,
-              fontFamily: 'var(--font-handwritten)',
-              fontSize: '14px',
-              fontStyle: 'italic',
-            }}
-          >
-            {empty}
-          </p>
-        )}
       </div>
-      {/* Clear add button below */}
-      <button
-        type="button"
-        onClick={onAdd}
-        className="w-full cursor-pointer rounded-xl py-2.5 transition-all hover:scale-[1.02]"
-        style={{
-          background: `${accent}12`,
-          border: `1.5px dashed ${accent}40`,
-          color: accent,
-          fontFamily: 'var(--font-handwritten)',
-          fontWeight: 700,
-          fontSize: '15px',
-        }}
-      >
-        + add {label.toLowerCase()}
-      </button>
     </div>
   );
 }
@@ -1158,10 +776,6 @@ function PillRow({
         border: `1px solid ${isSub ? `${pill.color}25` : '#d2b47b4a'}`,
       }}
     >
-      <div
-        className={`${dotSize} rounded-full flex-shrink-0`}
-        style={{ background: pill.color, opacity: 0.9 }}
-      />
       <button
         type="button"
         onClick={onStartEdit}
@@ -1179,109 +793,10 @@ function PillRow({
       >
         {pill.name}
       </button>
-      {workCount > 0 && !organizing && (
-        <span
-          className="rounded-full px-2 py-0.5"
-          style={{
-            background: `${pill.color}20`,
-            color: pill.color,
-            fontFamily: 'var(--font-handwritten)',
-            fontWeight: 700,
-            fontSize: '11px',
-          }}
-          title={`${workCount} of 6 questions answered`}
-        >
-          {workCount}/6
-        </span>
-      )}
-      {organizing && !isSub && onPickParent && (
-        <button
-          type="button"
-          onClick={(e) => {
-            e.stopPropagation();
-            onPickParent();
-          }}
-          className="cursor-pointer rounded-full px-2.5 py-1"
-          style={{
-            background: '#9B6BA015',
-            color: '#9B6BA0',
-            border: '1.5px solid #9B6BA040',
-            fontFamily: 'var(--font-handwritten)',
-            fontWeight: 700,
-            fontSize: '12px',
-          }}
-          title="Make this a sub of another pattern"
-        >
-          ↳ sub of
-        </button>
-      )}
-      {organizing && isSub && onPromote && (
-        <button
-          type="button"
-          onClick={(e) => {
-            e.stopPropagation();
-            onPromote();
-          }}
-          className="cursor-pointer rounded-full px-2.5 py-1"
-          style={{
-            background: '#9B6BA015',
-            color: '#9B6BA0',
-            border: '1.5px solid #9B6BA040',
-            fontFamily: 'var(--font-handwritten)',
-            fontWeight: 700,
-            fontSize: '12px',
-          }}
-          title="Promote to main pattern"
-        >
-          ↑ promote
-        </button>
-      )}
-      {organizing && isSub && onPickParent && (
-        <button
-          type="button"
-          onClick={(e) => {
-            e.stopPropagation();
-            onPickParent();
-          }}
-          className="cursor-pointer rounded-full px-2.5 py-1"
-          style={{
-            background: '#9B6BA015',
-            color: '#9B6BA0',
-            border: '1.5px solid #9B6BA040',
-            fontFamily: 'var(--font-handwritten)',
-            fontWeight: 700,
-            fontSize: '12px',
-          }}
-          title="Move to a different parent"
-        >
-          ↳ move
-        </button>
-      )}
-      {!organizing && canAddSub && onStartAddSub && (
-        <button
-          type="button"
-          onClick={(e) => {
-            e.stopPropagation();
-            onStartAddSub();
-          }}
-          className="cursor-pointer rounded-full px-2 py-0.5"
-          style={{
-            background: `${pill.color}12`,
-            color: pill.color,
-            border: `1px solid ${pill.color}25`,
-            fontFamily: 'var(--font-handwritten)',
-            fontWeight: 700,
-            fontSize: '11px',
-          }}
-          title="Add a sub-pattern"
-        >
-          + sub
-        </button>
-      )}
       <button
         type="button"
         onClick={onRemove}
-        className="cursor-pointer rounded px-1.5 py-0.5 text-sm opacity-30 hover:opacity-80"
+        className="cursor-pointer rounded px-1.5 py-0.5 text-sm opacity-50 hover:opacity-80"
         style={{
           color: pill.color,
           background: 'none',
@@ -1323,7 +838,7 @@ function ParentPickerStrip({
             opacity: 0.7,
             fontFamily: 'var(--font-serif)',
             fontWeight: 700,
-            fontSize: '11px',
+            fontSize: '14px',
           }}
         >
           Make <span style={{ color: childPill.color }}>{childPill.name}</span> a sub of...
@@ -1344,7 +859,7 @@ function ParentPickerStrip({
             color: '#9B6BA0',
             opacity: 0.5,
             fontFamily: 'var(--font-handwritten)',
-            fontSize: '13px',
+            fontSize: '14px',
             fontStyle: 'italic',
           }}
         >
@@ -1364,7 +879,7 @@ function ParentPickerStrip({
                 color: '#7a5438',
                 fontFamily: 'var(--font-handwritten)',
                 fontWeight: 700,
-                fontSize: '13px',
+                fontSize: '14px',
                 padding: '5px 10px',
               }}
             >
@@ -1414,7 +929,7 @@ function AddPillInput({
               opacity: 0.6,
               fontFamily: 'var(--font-serif)',
               fontWeight: 700,
-              fontSize: '11px',
+              fontSize: '14px',
             }}
           >
             {label}
@@ -1485,6 +1000,83 @@ function AddPillInput({
 /* ═══════════════════════════════════════════════════════════
    WORK TAB — 6 questions per pattern
    ═══════════════════════════════════════════════════════════ */
+/* ─── Collapsible question list for Work tab ─── */
+function WorkQuestionList({
+  fields,
+  currentWork,
+  pillColor,
+  onUpdate,
+}: {
+  fields: typeof WORK_FIELDS;
+  currentWork: PatternWork;
+  pillColor: string;
+  onUpdate: (key: keyof Omit<PatternWork, 'pillId' | 'updatedAt'>, value: string) => void;
+}) {
+  const [openIdx, setOpenIdx] = useState<number | null>(null);
+
+  return (
+    <div className="space-y-1">
+      {fields.map((field, i) => {
+        const value = currentWork[field.key] || '';
+        const filled = value.trim().length > 0;
+        const isOpen = openIdx === i;
+
+        return (
+          <div key={field.key}>
+            <button
+              type="button"
+              onClick={() => setOpenIdx(isOpen ? null : i)}
+              className="flex w-full cursor-pointer items-center gap-2 rounded-lg px-3 py-2.5 text-left transition-all"
+              style={{
+                background: isOpen ? `${pillColor}08` : 'transparent',
+                border: 'none',
+              }}
+            >
+              <span
+                className="text-base font-semibold flex-1"
+                style={{
+                  color: pillColor,
+                  fontFamily: 'var(--font-serif)',
+                }}
+              >
+                {field.question}
+              </span>
+              {filled && (
+                <span
+                  className="h-2 w-2 rounded-full shrink-0"
+                  style={{ background: pillColor, opacity: 0.6 }}
+                />
+              )}
+              <span className="text-xs shrink-0" style={{ color: pillColor, opacity: 0.4 }}>
+                {isOpen ? '▲' : '▼'}
+              </span>
+            </button>
+            {isOpen && (
+              <div className="px-3 pb-3 animate-in fade-in duration-150">
+                <textarea
+                  value={value}
+                  onChange={(e) => onUpdate(field.key, e.target.value)}
+                  placeholder={field.placeholder}
+                  rows={2}
+                  autoFocus
+                  className="w-full resize-none bg-transparent outline-none"
+                  style={{
+                    color: '#7a5438',
+                    fontFamily: 'var(--font-handwritten)',
+                    fontSize: '18px',
+                    border: 'none',
+                    minHeight: 50,
+                  }}
+                />
+              </div>
+            )}
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
 function WorkTab({
   pills,
   focus,
@@ -1545,39 +1137,8 @@ function WorkTab({
 
   return (
     <div className="space-y-4">
-      <p
-        className="text-center font-semibold uppercase tracking-[0.24em]"
-        style={{ color: '#D4805A', fontSize: '12px' }}
-      >
-        {focusPill ? `Working on: ${focusPill.name}` : 'Choose a pattern'}
-      </p>
-
       {!focusPill && (
         <div className="space-y-3">
-          <p
-            className="text-center"
-            style={{
-              color: '#8A6A4A',
-              opacity: 0.6,
-              fontFamily: 'var(--font-handwritten)',
-              fontSize: '14px',
-            }}
-          >
-            Pick a pattern from your map. Six questions to help you understand it.
-          </p>
-          {pills.length === 0 && (
-            <p
-              className="text-center pt-2"
-              style={{
-                color: '#B8905A',
-                opacity: 0.5,
-                fontFamily: 'var(--font-handwritten)',
-                fontSize: '14px',
-              }}
-            >
-              Add patterns in the Map tab first.
-            </p>
-          )}
           {pills.length > 0 && (
             <div className="flex flex-wrap gap-2">
               {pills.map((p) => {
@@ -1603,19 +1164,6 @@ function WorkTab({
                   >
                     <span className="h-2.5 w-2.5 rounded-full" style={{ background: p.color }} />
                     {p.name}
-                    {count > 0 && (
-                      <span
-                        className="rounded-full px-1.5"
-                        style={{
-                          background: `${p.color}28`,
-                          color: p.color,
-                          fontSize: '11px',
-                          fontWeight: 700,
-                        }}
-                      >
-                        {count}/6
-                      </span>
-                    )}
                   </button>
                 );
               })}
@@ -1648,88 +1196,16 @@ function WorkTab({
                   {focusPill.name}
                 </span>
               </div>
-              <span
-                style={{
-                  color: focusPill.color,
-                  fontFamily: 'var(--font-handwritten)',
-                  fontWeight: 700,
-                  fontSize: '14px',
-                }}
-              >
-                {answeredCount}/6
-              </span>
-            </div>
-            {/* Progress bar */}
-            <div className="flex gap-1">
-              {WORK_FIELDS.map((f) => {
-                const filled = (currentWork[f.key] || '').trim().length > 0;
-                return (
-                  <div
-                    key={f.key}
-                    className="flex-1 rounded-full"
-                    style={{
-                      height: 4,
-                      background: filled ? focusPill.color : `${focusPill.color}20`,
-                      opacity: filled ? 0.8 : 1,
-                    }}
-                  />
-                );
-              })}
             </div>
           </div>
 
-          {/* 6 question cards */}
-          {WORK_FIELDS.map((field, i) => {
-            const value = currentWork[field.key] || '';
-            const filled = value.trim().length > 0;
-            return (
-              <div
-                key={field.key}
-                className="rounded-xl px-4 py-3"
-                style={{
-                  background: '#f7eddc9c',
-                  border: `1.5px solid ${filled ? `${focusPill.color}45` : '#d2b47b4a'}`,
-                }}
-              >
-                <p
-                  className="mb-2"
-                  style={{
-                    color: filled ? focusPill.color : '#8A6A4A',
-                    fontFamily: 'var(--font-serif)',
-                    fontWeight: 700,
-                    fontSize: '17px',
-                    lineHeight: 1.3,
-                  }}
-                >
-                  <span
-                    style={{
-                      color: focusPill.color,
-                      opacity: 0.5,
-                      fontSize: '13px',
-                      marginRight: 6,
-                    }}
-                  >
-                    {i + 1}.
-                  </span>
-                  {field.question}
-                </p>
-                <textarea
-                  value={value}
-                  onChange={(e) => updateField(field.key, e.target.value)}
-                  placeholder={field.placeholder}
-                  rows={2}
-                  className="w-full resize-none bg-transparent outline-none"
-                  style={{
-                    color: '#7a5438',
-                    fontFamily: 'var(--font-handwritten)',
-                    fontSize: '16px',
-                    border: 'none',
-                    minHeight: 50,
-                  }}
-                />
-              </div>
-            );
-          })}
+          {/* 6 questions — collapsible to-do list */}
+          <WorkQuestionList
+            fields={WORK_FIELDS}
+            currentWork={currentWork}
+            pillColor={focusPill.color}
+            onUpdate={updateField}
+          />
 
           <button
             type="button"
@@ -1755,6 +1231,37 @@ function WorkTab({
 /* ═══════════════════════════════════════════════════════════
    REFLECT TAB — Vertical Rainbow + Emotion Decomposition
    ═══════════════════════════════════════════════════════════ */
+const DOING_SPECTRUM = [
+  { level: 'Still', color: '#8098B0', desc: 'Not moving. Sometimes that is exactly right.' },
+  {
+    level: 'Drifting',
+    color: '#90A080',
+    desc: 'Moving without direction. Notice where the current takes you.',
+  },
+  {
+    level: 'Resisting',
+    color: '#C85050',
+    desc: 'Pushing back against what is. Name what you are fighting.',
+  },
+  {
+    level: 'Pushing',
+    color: '#D87048',
+    desc: 'Forcing through. Check if the wall is real or imagined.',
+  },
+  { level: 'Moving', color: '#C88820', desc: 'In motion with intent. Keep the pace sustainable.' },
+  {
+    level: 'Building',
+    color: '#7AAA58',
+    desc: 'Creating something that accumulates. Protect this energy.',
+  },
+  { level: 'Creating', color: '#3AA8A0', desc: 'Making something new. Let it be imperfect.' },
+  {
+    level: 'Flowing',
+    color: '#3A8AC4',
+    desc: 'Action without friction. You and the work are one.',
+  },
+];
+
 function ReflectTab({
   pills,
   decompositions,
@@ -1764,436 +1271,137 @@ function ReflectTab({
   decompositions: EmotionDecomposition[];
   setDecompositions: (d: EmotionDecomposition[]) => void;
 }) {
-  const [activeDecomp, setActiveDecomp] = useState<string | null>(null);
-  const [pickedLevel, setPickedLevel] = useState<number | null>(null);
-  const [customComponent, setCustomComponent] = useState('');
+  const [pickedHawkins, setPickedHawkins] = useState<number | null>(null);
+  const [pickedDoing, setPickedDoing] = useState<number | null>(null);
 
-  const startDecomposition = (level: (typeof HAWKINS_LEVELS)[number]) => {
-    const newDecomp: EmotionDecomposition = {
-      id: crypto.randomUUID(),
-      emotion: level.name,
-      hawkinsLevel: level.level,
-      color: level.color,
-      components: [],
-      impact: '',
-      source: '',
-      needs: '',
-      createdAt: new Date().toISOString(),
-    };
-    setDecompositions([...decompositions, newDecomp]);
-    setActiveDecomp(newDecomp.id);
-    setPickedLevel(level.level);
-  };
-
-  const addComponent = (decompId: string, name: string) => {
-    if (!name.trim()) return;
-    setDecompositions(
-      decompositions.map((d) =>
-        d.id === decompId
-          ? {
-              ...d,
-              components: [
-                ...d.components,
-                { id: crypto.randomUUID(), name: name.trim(), weight: 50 },
-              ],
-            }
-          : d,
-      ),
-    );
-    setCustomComponent('');
-  };
-
-  const updateComponentWeight = (decompId: string, compId: string, weight: number) => {
-    setDecompositions(
-      decompositions.map((d) =>
-        d.id === decompId
-          ? {
-              ...d,
-              components: d.components.map((c) => (c.id === compId ? { ...c, weight } : c)),
-            }
-          : d,
-      ),
-    );
-  };
-
-  const removeComponent = (decompId: string, compId: string) => {
-    setDecompositions(
-      decompositions.map((d) =>
-        d.id === decompId ? { ...d, components: d.components.filter((c) => c.id !== compId) } : d,
-      ),
-    );
-  };
-
-  const updateField = (decompId: string, field: 'impact' | 'source' | 'needs', value: string) => {
-    setDecompositions(
-      decompositions.map((d) => (d.id === decompId ? { ...d, [field]: value } : d)),
-    );
-  };
-
-  const removeDecomposition = (id: string) => {
-    setDecompositions(decompositions.filter((d) => d.id !== id));
-    if (activeDecomp === id) {
-      setActiveDecomp(null);
-      setPickedLevel(null);
-    }
-  };
-
-  const active = decompositions.find((d) => d.id === activeDecomp);
+  const hawkinsLevel = pickedHawkins !== null ? HAWKINS_LEVELS[pickedHawkins] : null;
+  const doingLevel = pickedDoing !== null ? DOING_SPECTRUM[pickedDoing] : null;
 
   return (
     <div className="space-y-4">
-      <p
-        className="text-center font-semibold uppercase tracking-[0.24em]"
-        style={{ color: '#9B6BA0', fontSize: '15px' }}
-      >
-        Emotion Decomposition
-      </p>
-
-      <p
-        className="text-center"
-        style={{
-          color: '#8A6A4A',
-          opacity: 0.6,
-          fontFamily: 'var(--font-handwritten)',
-          fontSize: '16px',
-        }}
-      >
-        Pick an emotion. Decompose it like a perfume.
-      </p>
-
-      {/* Vertical Rainbow Slider */}
-      <div className="flex gap-3">
-        {/* Rainbow column */}
-        <div
-          className="flex flex-col rounded-xl overflow-hidden"
-          style={{
-            width: 110,
-            border: '1.5px solid #8A6A4A40',
-            boxShadow: 'inset 0 0 20px rgba(0,0,0,0.05)',
-          }}
-        >
-          {HAWKINS_LEVELS.map((lvl) => {
-            const isPicked = pickedLevel === lvl.level;
-            return (
-              <button
-                key={lvl.level}
-                type="button"
-                onClick={() => startDecomposition(lvl)}
-                className="cursor-pointer transition-all hover:scale-x-105"
-                style={{
-                  background: lvl.color,
-                  height: isPicked ? 38 : 30,
-                  border: 'none',
-                  padding: '0 10px',
-                  textAlign: 'left',
-                  borderTop: isPicked ? `2px solid ${lvl.text}` : 'none',
-                  borderBottom: isPicked ? `2px solid ${lvl.text}` : 'none',
-                }}
-                title={`${lvl.name} (${lvl.level})`}
-              >
-                <span
-                  className="font-bold block"
+      {/* Two vertical columns: Hawkins (left) | Doing (right) */}
+      <div className="grid grid-cols-2 gap-3">
+        {/* Left: Hawkins feeling column */}
+        <div className="space-y-2">
+          <p
+            className="text-center text-lg font-bold"
+            style={{ color: '#9B6BA0', fontFamily: 'var(--font-serif)' }}
+          >
+            Feeling
+          </p>
+          <div
+            className="flex flex-col rounded-xl overflow-hidden"
+            style={{ border: '1.5px solid #9B6BA030' }}
+          >
+            {HAWKINS_LEVELS.map((lvl, i) => {
+              const isPicked = pickedHawkins === i;
+              return (
+                <button
+                  key={lvl.level}
+                  type="button"
+                  onClick={() => setPickedHawkins(isPicked ? null : i)}
+                  className="cursor-pointer transition-all"
                   style={{
-                    color: lvl.text,
-                    fontFamily: 'var(--font-serif)',
-                    fontSize: isPicked ? '15px' : '13px',
-                    letterSpacing: '0.02em',
-                    lineHeight: 1.1,
+                    background: lvl.color,
+                    height: isPicked ? 36 : 26,
+                    border: 'none',
+                    padding: '0 8px',
+                    textAlign: 'center',
                   }}
                 >
-                  {lvl.name}
-                </span>
-              </button>
-            );
-          })}
+                  <span
+                    className="font-bold"
+                    style={{
+                      color: lvl.text,
+                      fontFamily: 'var(--font-serif)',
+                      fontSize: isPicked ? '14px' : '11px',
+                      lineHeight: 1.1,
+                    }}
+                  >
+                    {lvl.name}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
         </div>
 
-        {/* Decomposition area */}
-        <div className="flex-1 space-y-3">
-          {!active && (
-            <div
-              className="rounded-xl px-4 py-6 text-center"
-              style={{ background: '#f7eddc9c', border: '1.5px dashed #8A6A4A30' }}
-            >
-              <p
-                style={{
-                  color: '#8A6A4A',
-                  opacity: 0.5,
-                  fontFamily: 'var(--font-handwritten)',
-                  fontSize: '15px',
-                }}
-              >
-                Tap an emotion on the rainbow
-              </p>
-            </div>
-          )}
-
-          {active && (
-            <div className="space-y-3">
-              {/* Header */}
-              <div
-                className="rounded-xl px-4 py-3"
-                style={{
-                  background: active.color,
-                  border: `1.5px solid ${active.color}`,
-                }}
-              >
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p
-                      className="uppercase tracking-wider"
-                      style={{
-                        color: '#5C3018',
-                        opacity: 0.6,
-                        fontFamily: 'var(--font-serif)',
-                        fontWeight: 700,
-                        fontSize: '15px',
-                      }}
-                    >
-                      {active.hawkinsLevel}
-                    </p>
-                    <p
-                      style={{
-                        color: '#5C3018',
-                        fontFamily: 'var(--font-serif)',
-                        fontWeight: 700,
-                        fontSize: '24px',
-                        lineHeight: 1,
-                      }}
-                    >
-                      {active.emotion}
-                    </p>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() => removeDecomposition(active.id)}
-                    className="cursor-pointer text-base"
-                    style={{ color: '#5C3018', opacity: 0.4, background: 'none', border: 'none' }}
-                  >
-                    ✕
-                  </button>
-                </div>
-              </div>
-
-              {/* Components */}
-              <div className="space-y-2">
-                <p
-                  className="uppercase tracking-wider"
+        {/* Right: Doing spectrum column */}
+        <div className="space-y-2">
+          <p
+            className="text-center text-lg font-bold"
+            style={{ color: '#3A8AC4', fontFamily: 'var(--font-serif)' }}
+          >
+            Doing
+          </p>
+          <div
+            className="flex flex-col rounded-xl overflow-hidden"
+            style={{ border: '1.5px solid #3A8AC430' }}
+          >
+            {DOING_SPECTRUM.map((lvl, i) => {
+              const isPicked = pickedDoing === i;
+              return (
+                <button
+                  key={lvl.level}
+                  type="button"
+                  onClick={() => setPickedDoing(isPicked ? null : i)}
+                  className="cursor-pointer transition-all"
                   style={{
-                    color: '#9B6BA0',
-                    opacity: 0.6,
-                    fontFamily: 'var(--font-serif)',
-                    fontWeight: 700,
-                    fontSize: '16px',
+                    background: lvl.color,
+                    height: isPicked ? 42 : 32,
+                    border: 'none',
+                    padding: '0 8px',
+                    textAlign: 'center',
                   }}
                 >
-                  Inside this emotion
-                </p>
-                {active.components.map((c) => (
-                  <div
-                    key={c.id}
-                    className="rounded-lg px-3 py-2"
-                    style={{ background: '#f7eddc9c', border: '1px solid #d2b47b4a' }}
-                  >
-                    <div className="flex items-center justify-between mb-1">
-                      <span
-                        style={{
-                          color: '#7a5438',
-                          fontFamily: 'var(--font-handwritten)',
-                          fontWeight: 700,
-                          fontSize: '15px',
-                        }}
-                      >
-                        {c.name}
-                      </span>
-                      <div className="flex items-center gap-2">
-                        <span
-                          style={{
-                            color: '#9B6BA0',
-                            opacity: 0.6,
-                            fontFamily: 'var(--font-handwritten)',
-                            fontSize: '15px',
-                            fontWeight: 700,
-                          }}
-                        >
-                          {c.weight}%
-                        </span>
-                        <button
-                          type="button"
-                          onClick={() => removeComponent(active.id, c.id)}
-                          className="cursor-pointer text-xs"
-                          style={{
-                            color: '#9B6BA0',
-                            opacity: 0.3,
-                            background: 'none',
-                            border: 'none',
-                          }}
-                        >
-                          ✕
-                        </button>
-                      </div>
-                    </div>
-                    <input
-                      type="range"
-                      min={0}
-                      max={100}
-                      value={c.weight}
-                      onChange={(e) =>
-                        updateComponentWeight(active.id, c.id, Number(e.target.value))
-                      }
-                      className="w-full"
-                      style={{ accentColor: '#9B6BA0' }}
-                    />
-                  </div>
-                ))}
-
-                {/* Suggestion pills */}
-                {COMPONENT_SUGGESTIONS[active.emotion] && (
-                  <div className="flex flex-wrap gap-2 pt-1">
-                    {COMPONENT_SUGGESTIONS[active.emotion]
-                      .filter((s) => !active.components.some((c) => c.name === s))
-                      .map((s) => (
-                        <button
-                          key={s}
-                          type="button"
-                          onClick={() => addComponent(active.id, s)}
-                          className="cursor-pointer rounded-full px-3 py-1.5 transition-all hover:scale-105"
-                          style={{
-                            background: '#9B6BA010',
-                            border: '1.5px solid #9B6BA030',
-                            color: '#7a5438',
-                            fontFamily: 'var(--font-handwritten)',
-                            fontWeight: 700,
-                            fontSize: '15px',
-                          }}
-                        >
-                          + {s}
-                        </button>
-                      ))}
-                  </div>
-                )}
-
-                {/* Custom component input */}
-                <div className="flex gap-2 pt-1">
-                  <input
-                    type="text"
-                    value={customComponent}
-                    onChange={(e) => setCustomComponent(e.target.value)}
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter') addComponent(active.id, customComponent);
-                    }}
-                    placeholder="add another..."
-                    className="flex-1 rounded-lg px-3 py-2 outline-none"
+                  <span
+                    className="font-bold text-white"
                     style={{
-                      background: '#f7eddc',
-                      border: '1px solid #9B6BA025',
-                      color: '#7a5438',
-                      fontFamily: 'var(--font-handwritten)',
-                      fontSize: '16px',
-                    }}
-                  />
-                </div>
-              </div>
-
-              {/* Reflection fields */}
-              <div className="space-y-2">
-                <ReflectField
-                  label="Where it impacts your life"
-                  value={active.impact}
-                  onChange={(v) => updateField(active.id, 'impact', v)}
-                  placeholder="work, sleep, relationships..."
-                />
-                <ReflectField
-                  label="Where it comes from"
-                  value={active.source}
-                  onChange={(v) => updateField(active.id, 'source', v)}
-                  placeholder="childhood, recent event, fear..."
-                />
-                <ReflectField
-                  label="What you need"
-                  value={active.needs}
-                  onChange={(v) => updateField(active.id, 'needs', v)}
-                  placeholder="rest, support, courage..."
-                />
-              </div>
-
-              {/* Connect to existing pills */}
-              {pills.length > 0 && (
-                <div className="space-y-2 pt-1">
-                  <p
-                    className="uppercase tracking-wider"
-                    style={{
-                      color: '#9B6BA0',
-                      opacity: 0.5,
                       fontFamily: 'var(--font-serif)',
-                      fontWeight: 700,
-                      fontSize: '16px',
+                      fontSize: isPicked ? '15px' : '13px',
+                      lineHeight: 1.1,
+                      textShadow: '0 1px 2px rgba(0,0,0,0.2)',
                     }}
                   >
-                    Linked to your map
-                  </p>
-                  <div className="flex flex-wrap gap-1.5">
-                    {pills.map((p) => (
-                      <span
-                        key={p.id}
-                        className="rounded-full px-3 py-1"
-                        style={{
-                          background: `${p.color}12`,
-                          border: `1px solid ${p.color}25`,
-                          color: '#7a5438',
-                          fontFamily: 'var(--font-handwritten)',
-                          fontWeight: 700,
-                          fontSize: '15px',
-                        }}
-                      >
-                        {p.name}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-              )}
-            </div>
-          )}
+                    {lvl.level}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
         </div>
       </div>
 
-      {/* History list */}
-      {decompositions.length > 0 && (
-        <div className="space-y-2 pt-2">
-          <p
-            className="uppercase tracking-wider"
-            style={{
-              color: '#9B6BA0',
-              opacity: 0.6,
-              fontFamily: 'var(--font-serif)',
-              fontWeight: 700,
-              fontSize: '16px',
-            }}
-          >
-            Your decompositions
-          </p>
-          <div className="flex flex-wrap gap-2">
-            {decompositions.map((d) => (
-              <button
-                key={d.id}
-                type="button"
-                onClick={() => {
-                  setActiveDecomp(d.id);
-                  setPickedLevel(d.hawkinsLevel);
-                }}
-                className="cursor-pointer rounded-full px-3 py-1.5 transition-all"
-                style={{
-                  background: activeDecomp === d.id ? d.color : `${d.color}aa`,
-                  border: activeDecomp === d.id ? '2px solid #5C3018' : '1.5px solid transparent',
-                  color: '#5C3018',
-                  fontFamily: 'var(--font-handwritten)',
-                  fontWeight: 700,
-                  fontSize: '15px',
-                }}
+      {/* Selected states */}
+      {(hawkinsLevel || doingLevel) && (
+        <div className="grid grid-cols-2 gap-3">
+          <div className="text-center">
+            {hawkinsLevel && (
+              <p
+                className="text-lg font-bold"
+                style={{ color: hawkinsLevel.text, fontFamily: 'var(--font-serif)' }}
               >
-                {d.emotion}
-              </button>
-            ))}
+                {hawkinsLevel.name}
+              </p>
+            )}
+          </div>
+          <div className="text-center">
+            {doingLevel && (
+              <>
+                <p
+                  className="text-lg font-bold"
+                  style={{ color: doingLevel.color, fontFamily: 'var(--font-serif)' }}
+                >
+                  {doingLevel.level}
+                </p>
+                <p
+                  className="text-xs mt-1"
+                  style={{ color: doingLevel.color, opacity: 0.7, fontFamily: 'var(--font-serif)' }}
+                >
+                  {doingLevel.desc}
+                </p>
+              </>
+            )}
           </div>
         </div>
       )}
@@ -2333,7 +1541,7 @@ function RiverTab({
     <div className="space-y-4">
       <p
         className="text-center font-semibold uppercase tracking-[0.24em]"
-        style={{ color: '#6890B0', fontSize: '12px' }}
+        style={{ color: '#6890B0', fontSize: '14px' }}
       >
         River of Time
       </p>
@@ -2364,7 +1572,7 @@ function RiverTab({
               color: '#6890B0',
               fontFamily: 'var(--font-serif)',
               fontWeight: 700,
-              fontSize: '12px',
+              fontSize: '14px',
               textTransform: 'capitalize',
             }}
           >
@@ -2420,7 +1628,7 @@ function RiverTab({
                 y={padY + 4}
                 textAnchor="end"
                 style={{
-                  fontSize: '10px',
+                  fontSize: '14px',
                   fontFamily: 'var(--font-handwritten)',
                   fill: '#8A6A4A',
                   opacity: 0.5,
@@ -2433,7 +1641,7 @@ function RiverTab({
                 y={padY + innerH}
                 textAnchor="end"
                 style={{
-                  fontSize: '10px',
+                  fontSize: '14px',
                   fontFamily: 'var(--font-handwritten)',
                   fill: '#8A6A4A',
                   opacity: 0.5,
@@ -2450,7 +1658,7 @@ function RiverTab({
                   textAnchor="middle"
                   dominantBaseline="middle"
                   style={{
-                    fontSize: '13px',
+                    fontSize: '14px',
                     fontFamily: 'var(--font-handwritten)',
                     fill: '#8A6A4A',
                     opacity: 0.4,
@@ -2504,7 +1712,7 @@ function RiverTab({
                     y={h - 4}
                     textAnchor="start"
                     style={{
-                      fontSize: '10px',
+                      fontSize: '14px',
                       fontFamily: 'var(--font-handwritten)',
                       fill: '#8A6A4A',
                       opacity: 0.5,
@@ -2517,7 +1725,7 @@ function RiverTab({
                     y={h - 4}
                     textAnchor="end"
                     style={{
-                      fontSize: '10px',
+                      fontSize: '14px',
                       fontFamily: 'var(--font-handwritten)',
                       fill: '#8A6A4A',
                       opacity: 0.5,
@@ -2540,7 +1748,7 @@ function RiverTab({
                   opacity: 0.6,
                   fontFamily: 'var(--font-serif)',
                   fontWeight: 700,
-                  fontSize: '11px',
+                  fontSize: '14px',
                 }}
               >
                 Show on graph
@@ -2555,7 +1763,7 @@ function RiverTab({
                   color: '#6890B0',
                   fontFamily: 'var(--font-handwritten)',
                   fontWeight: 700,
-                  fontSize: '12px',
+                  fontSize: '14px',
                 }}
               >
                 {showAll ? 'showing all' : 'select pills'}
@@ -2577,7 +1785,7 @@ function RiverTab({
                         color: '#7a5438',
                         fontFamily: 'var(--font-handwritten)',
                         fontWeight: 700,
-                        fontSize: '13px',
+                        fontSize: '14px',
                       }}
                     >
                       {p.name}
@@ -2601,7 +1809,7 @@ function RiverTab({
                   opacity: 0.6,
                   fontFamily: 'var(--font-serif)',
                   fontWeight: 700,
-                  fontSize: '11px',
+                  fontSize: '14px',
                 }}
               >
                 Today's check-in
@@ -2611,7 +1819,7 @@ function RiverTab({
                   color: '#8A6A4A',
                   opacity: 0.5,
                   fontFamily: 'var(--font-handwritten)',
-                  fontSize: '12px',
+                  fontSize: '14px',
                 }}
               >
                 {today.slice(5)}
@@ -2642,7 +1850,7 @@ function RiverTab({
                         opacity: 0.7,
                         fontFamily: 'var(--font-handwritten)',
                         fontWeight: 700,
-                        fontSize: '13px',
+                        fontSize: '14px',
                       }}
                     >
                       {v}/5
@@ -2672,7 +1880,7 @@ function RiverTab({
                 color: '#6890B0',
                 fontFamily: 'var(--font-serif)',
                 fontWeight: 700,
-                fontSize: '12px',
+                fontSize: '14px',
                 opacity: Object.keys(todayValues).length === 0 ? 0.4 : 1,
               }}
             >

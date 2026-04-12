@@ -173,8 +173,8 @@ export default function MissionTracker({ onMissionsChange, refreshKey = 0 }: Mis
           placeholder="New mission..."
           value={newTitle}
           onChange={(e) => setNewTitle(e.target.value)}
-          className="flex-1 rounded-xl border px-3 py-2.5 text-sm outline-none placeholder:text-muted-foreground/30"
-          style={{ borderColor: '#C4A06015', background: '#C4A06003' }}
+          className="flex-1 rounded-xl border px-3 py-2.5 text-sm outline-none placeholder:text-muted-foreground/50"
+          style={{ borderColor: '#C4A06015', background: '#C4A06003', color: '#7a5438' }}
         />
         {newTitle.trim() && (
           <button
@@ -233,7 +233,7 @@ export default function MissionTracker({ onMissionsChange, refreshKey = 0 }: Mis
                     <button
                       type="button"
                       onClick={() => handleToggle(mission.id, false)}
-                      className="h-4 w-4 rounded-full border-2 flex items-center justify-center text-[8px] shrink-0"
+                      className="h-4 w-4 rounded-full border-2 flex items-center justify-center text-[11px] shrink-0"
                       style={{ borderColor: color, color, background: `${color}20` }}
                     >
                       done
@@ -244,7 +244,7 @@ export default function MissionTracker({ onMissionsChange, refreshKey = 0 }: Mis
                     <button
                       type="button"
                       onClick={() => handleDelete(mission.id)}
-                      className="text-[10px] text-muted-foreground/20 hover:text-destructive transition-colors"
+                      className="text-xs text-muted-foreground/40 hover:text-destructive transition-colors"
                     >
                       x
                     </button>
@@ -337,22 +337,22 @@ function MissionCard({
       >
         <div className="flex items-center gap-3">
           <div className="flex-1 min-w-0">
-            <p className="text-sm font-medium truncate">{mission.title}</p>
+            <p className="text-base font-semibold truncate">{mission.title}</p>
             <div className="flex items-center gap-3 mt-1">
               {objectives.length > 0 && (
-                <span className="text-[10px] text-muted-foreground/40">
+                <span className="text-xs text-muted-foreground/40">
                   {objectives.length} objective{objectives.length > 1 ? 's' : ''}
                 </span>
               )}
               {hasBlocker && (
                 <span
-                  className="text-[10px] px-1.5 py-0.5 rounded"
+                  className="text-xs px-1.5 py-0.5 rounded"
                   style={{ color: '#D4605A', background: '#D4605A10' }}
                 >
                   blocked
                 </span>
               )}
-              <span className="text-[10px] text-muted-foreground/25">
+              <span className="text-xs text-muted-foreground/40">
                 {days === 0 ? 'today' : days === 1 ? 'yesterday' : `${days}d ago`}
               </span>
             </div>
@@ -406,20 +406,20 @@ function MissionCard({
               onFieldUpdate('title', e.target.value);
               save('title', e.target.value);
             }}
-            className="flex-1 text-base font-medium bg-transparent outline-none font-serif"
+            className="flex-1 text-lg font-semibold bg-transparent outline-none font-serif"
             style={{ color }}
           />
 
           <button
             type="button"
             onClick={onToggleExpand}
-            className="text-xs text-muted-foreground/30 hover:text-muted-foreground shrink-0 mt-1"
+            className="text-xs text-muted-foreground/50 hover:text-muted-foreground shrink-0 mt-1"
           >
             x
           </button>
         </div>
 
-        <p className="text-[10px] text-muted-foreground/30 mt-1 pl-7">
+        <p className="text-xs text-muted-foreground/50 mt-1 pl-7">
           Started{' '}
           {new Date(mission.createdAt).toLocaleDateString([], {
             month: 'long',
@@ -433,7 +433,7 @@ function MissionCard({
       {/* Objectives */}
       <div className="px-4 py-3 border-t" style={{ borderColor: `${color}10` }}>
         <p
-          className="text-[10px] font-medium uppercase tracking-wider mb-2"
+          className="text-xs font-medium uppercase tracking-wider mb-2"
           style={{ color: `${color}80` }}
         >
           Objectives {objectives.length > 0 && `(${objectives.length})`}
@@ -453,7 +453,7 @@ function MissionCard({
                   lines.splice(i, 1);
                   handleChange('nextStep', lines.join('\n'));
                 }}
-                className="text-[10px] text-muted-foreground/0 group-hover:text-muted-foreground/40 hover:!text-destructive transition-all shrink-0"
+                className="text-xs text-muted-foreground/0 group-hover:text-muted-foreground/40 hover:!text-destructive transition-all shrink-0"
               >
                 x
               </button>
@@ -479,8 +479,8 @@ function MissionCard({
               name="newObj"
               type="text"
               placeholder="Add objective..."
-              className="flex-1 rounded-lg border bg-transparent px-2.5 py-1.5 text-xs outline-none placeholder:text-muted-foreground/25"
-              style={{ borderColor: `${color}12` }}
+              className="flex-1 rounded-lg border bg-transparent px-2.5 py-1.5 text-xs outline-none placeholder:text-muted-foreground/40"
+              style={{ borderColor: `${color}12`, color: '#7a5438' }}
             />
           </form>
         </div>
@@ -489,7 +489,7 @@ function MissionCard({
       {/* Challenge */}
       <div className="px-4 py-3 border-t" style={{ borderColor: `${color}10` }}>
         <p
-          className="text-[10px] font-medium uppercase tracking-wider mb-2"
+          className="text-xs font-medium uppercase tracking-wider mb-2"
           style={{ color: hasBlocker ? '#D4605A80' : `${color}40` }}
         >
           Challenge
@@ -499,10 +499,11 @@ function MissionCard({
           onChange={(e) => handleChange('blocking', e.target.value)}
           placeholder="What's making this hard?"
           rows={1}
-          className="w-full rounded-lg border bg-transparent px-2.5 py-1.5 text-sm resize-none outline-none placeholder:text-muted-foreground/25"
+          className="w-full rounded-lg border bg-transparent px-2.5 py-1.5 text-sm resize-none outline-none placeholder:text-muted-foreground/40"
           style={{
             borderColor: hasBlocker ? '#D4605A20' : `${color}10`,
             background: hasBlocker ? '#D4605A04' : 'transparent',
+            color: '#7a5438',
           }}
           onInput={(e) => {
             const t = e.target as HTMLTextAreaElement;
@@ -524,7 +525,7 @@ function MissionCard({
         <button
           type="button"
           onClick={() => setOpenField(openField === 'checkins' ? null : 'checkins')}
-          className="text-[10px] font-medium uppercase tracking-wider transition-colors"
+          className="text-xs font-medium uppercase tracking-wider transition-colors"
           style={{ color: `${color}40` }}
         >
           Check-ins {linkedCheckIns.length > 0 && `(${linkedCheckIns.length})`}{' '}
@@ -533,7 +534,7 @@ function MissionCard({
         {openField === 'checkins' && (
           <div className="mt-2 space-y-1 animate-in fade-in duration-150">
             {linkedCheckIns.length === 0 && (
-              <p className="text-xs text-muted-foreground/30">No check-ins linked yet</p>
+              <p className="text-xs text-muted-foreground/50">No check-ins linked yet</p>
             )}
             {linkedCheckIns.map((ci) => (
               <div key={ci.id} className="flex items-center gap-2 py-1">
@@ -547,7 +548,7 @@ function MissionCard({
                     — {ci.note.slice(0, 40)}
                   </span>
                 )}
-                <span className="text-[10px] text-muted-foreground/25 shrink-0">
+                <span className="text-xs text-muted-foreground/40 shrink-0">
                   {formatShortDate(ci.createdAt)}
                 </span>
               </div>
@@ -564,7 +565,7 @@ function MissionCard({
         <button
           type="button"
           onClick={onDelete}
-          className="text-[10px] text-muted-foreground/25 hover:text-destructive transition-colors"
+          className="text-xs text-muted-foreground/40 hover:text-destructive transition-colors"
         >
           Delete
         </button>
@@ -669,10 +670,7 @@ function MissionCategories({
   return (
     <div className="px-4 py-3 border-t" style={{ borderColor: `${color}10` }}>
       <div className="flex items-center gap-2 mb-2">
-        <p
-          className="text-[10px] font-medium uppercase tracking-wider"
-          style={{ color: `${color}60` }}
-        >
+        <p className="text-xs font-medium uppercase tracking-wider" style={{ color: `${color}60` }}>
           Categories {categories.length > 0 && `(${categories.length})`}
         </p>
         <button
@@ -682,7 +680,7 @@ function MissionCategories({
           style={{ background: addingCat ? color : `${color}25` }}
         >
           <span
-            className="-rotate-45 text-[7px] font-bold"
+            className="-rotate-45 text-[10px] font-bold"
             style={{ color: addingCat ? '#fff' : color }}
           >
             +
@@ -698,7 +696,7 @@ function MissionCategories({
               key={cat.name}
               type="button"
               onClick={() => setExpandedCat(expandedCat === cat.name ? null : cat.name)}
-              className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[11px] font-medium transition-all"
+              className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-medium transition-all"
               style={{
                 background: expandedCat === cat.name ? `${cat.color}18` : `${cat.color}08`,
                 color: expandedCat === cat.name ? cat.color : `${cat.color}70`,
@@ -710,7 +708,7 @@ function MissionCategories({
                 style={{ background: cat.color, opacity: expandedCat === cat.name ? 0.8 : 0.4 }}
               />
               {cat.name}
-              <span className="text-[9px] opacity-50">{cat.items.length}</span>
+              <span className="text-[11px] opacity-50">{cat.items.length}</span>
             </button>
           ))}
         </div>
@@ -727,7 +725,8 @@ function MissionCategories({
               if (e.key === 'Enter') addCategory();
             }}
             placeholder="Category name..."
-            className="flex-1 rounded-lg border border-border/30 bg-transparent px-2.5 py-1.5 text-xs outline-none placeholder:text-muted-foreground/25"
+            className="flex-1 rounded-lg border border-border/30 bg-transparent px-2.5 py-1.5 text-xs outline-none placeholder:text-muted-foreground/40"
+            style={{ color: '#7a5438' }}
             autoFocus
           />
           <div className="flex gap-1">
@@ -745,7 +744,7 @@ function MissionCategories({
             type="button"
             onClick={addCategory}
             disabled={!newCatName.trim()}
-            className="text-[10px] font-medium disabled:opacity-30"
+            className="text-xs font-medium disabled:opacity-30"
             style={{ color: newCatColor }}
           >
             Add
@@ -781,14 +780,14 @@ function MissionCategories({
                       };
                       save(updated);
                     }}
-                    className="text-[9px] text-muted-foreground/0 group-hover:text-muted-foreground/40 hover:!text-destructive transition-all shrink-0"
+                    className="text-[11px] text-muted-foreground/0 group-hover:text-muted-foreground/40 hover:!text-destructive transition-all shrink-0"
                   >
                     x
                   </button>
                 </div>
               ))}
               {cat.items.length === 0 && (
-                <p className="text-[10px] text-muted-foreground/25">No items yet</p>
+                <p className="text-xs text-muted-foreground/40">No items yet</p>
               )}
               <form
                 onSubmit={(e) => {
@@ -811,8 +810,8 @@ function MissionCategories({
                   name="newItem"
                   type="text"
                   placeholder="Add item..."
-                  className="flex-1 rounded-lg border bg-transparent px-2.5 py-1.5 text-xs outline-none placeholder:text-muted-foreground/25"
-                  style={{ borderColor: `${cat.color}12` }}
+                  className="flex-1 rounded-lg border bg-transparent px-2.5 py-1.5 text-xs outline-none placeholder:text-muted-foreground/40"
+                  style={{ borderColor: `${cat.color}12`, color: '#7a5438' }}
                 />
               </form>
               <div className="flex justify-end">
@@ -822,7 +821,7 @@ function MissionCategories({
                     save(categories.filter((_, i) => i !== catIdx));
                     setExpandedCat(null);
                   }}
-                  className="text-[9px] text-muted-foreground/20 hover:text-destructive transition-colors"
+                  className="text-[11px] text-muted-foreground/40 hover:text-destructive transition-colors"
                 >
                   delete category
                 </button>

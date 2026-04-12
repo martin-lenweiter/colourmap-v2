@@ -324,7 +324,7 @@ export default function CockpitSections({ initialSections, initialEntries }: Coc
           {showAdd ? (
             <div className="rounded-xl border border-border/50 p-3 space-y-3">
               <div className="flex items-center justify-between">
-                <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
+                <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
                   Add a program
                 </p>
                 <button
@@ -364,13 +364,10 @@ export default function CockpitSections({ initialSections, initialEntries }: Coc
                         className="w-1.5 h-1.5 rounded-full flex-shrink-0"
                         style={{ background: prog.color, opacity: 0.6 }}
                       />
-                      <span
-                        className="text-[11px] font-medium flex-1"
-                        style={{ color: prog.color }}
-                      >
+                      <span className="text-xs font-medium flex-1" style={{ color: prog.color }}>
                         {prog.name}
                       </span>
-                      {exists && <span className="text-[9px] text-muted-foreground">Added</span>}
+                      {exists && <span className="text-[11px] text-muted-foreground">Added</span>}
                     </button>
                   );
                 })}
@@ -396,7 +393,7 @@ export default function CockpitSections({ initialSections, initialEntries }: Coc
             <button
               type="button"
               onClick={() => setShowAdd(true)}
-              className="w-full py-1.5 text-[10px] text-muted-foreground/40 hover:text-muted-foreground transition-colors"
+              className="w-full py-1.5 text-xs text-muted-foreground/40 hover:text-muted-foreground transition-colors"
             >
               + Add program
             </button>
@@ -552,18 +549,18 @@ function SectionCard({
           <div className="pt-2 flex justify-end">
             {confirmDelete ? (
               <div className="flex items-center gap-2">
-                <span className="text-[10px] text-muted-foreground">Delete this program?</span>
+                <span className="text-xs text-muted-foreground">Delete this program?</span>
                 <button
                   type="button"
                   onClick={onDelete}
-                  className="text-[10px] font-medium text-destructive"
+                  className="text-xs font-medium text-destructive"
                 >
                   Yes
                 </button>
                 <button
                   type="button"
                   onClick={() => setConfirmDelete(false)}
-                  className="text-[10px] text-muted-foreground"
+                  className="text-xs text-muted-foreground"
                 >
                   No
                 </button>
@@ -572,7 +569,7 @@ function SectionCard({
               <button
                 type="button"
                 onClick={() => setConfirmDelete(true)}
-                className="text-[10px] text-muted-foreground/30 hover:text-destructive transition-colors"
+                className="text-xs text-muted-foreground/50 hover:text-destructive transition-colors"
               >
                 Delete program
               </button>
@@ -638,7 +635,7 @@ function TrackerRow({ tracker, value, onChange, sectionId, onDeleted }: TrackerR
                 });
                 onDeleted();
               }}
-              className="text-[10px] text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity hover:text-destructive"
+              className="text-xs text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity hover:text-destructive"
             >
               ✕
             </button>

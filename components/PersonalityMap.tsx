@@ -214,7 +214,7 @@ export default function PersonalityMap() {
                     <button
                       type="button"
                       onClick={() => setExpandedId(null)}
-                      className="text-xs text-muted-foreground/30 hover:text-muted-foreground"
+                      className="text-xs text-muted-foreground/50 hover:text-muted-foreground"
                     >
                       x
                     </button>
@@ -223,10 +223,10 @@ export default function PersonalityMap() {
                   {/* Strength slider */}
                   <div className="space-y-1">
                     <div className="flex justify-between">
-                      <span className="text-[10px] text-muted-foreground/40">
+                      <span className="text-xs text-muted-foreground/40">
                         How present is this part?
                       </span>
-                      <span className="text-[10px] font-medium" style={{ color: part.color }}>
+                      <span className="text-xs font-medium" style={{ color: part.color }}>
                         {part.strength}%
                       </span>
                     </div>
@@ -248,7 +248,7 @@ export default function PersonalityMap() {
 
                   {/* Needs */}
                   <div className="space-y-1">
-                    <p className="text-[10px] font-medium" style={{ color: `${part.color}80` }}>
+                    <p className="text-xs font-medium" style={{ color: `${part.color}80` }}>
                       What does this part need?
                     </p>
                     <input
@@ -256,14 +256,14 @@ export default function PersonalityMap() {
                       value={part.needs}
                       onChange={(e) => updatePart(part.id, 'needs', e.target.value)}
                       placeholder="Freedom, recognition, rest, excitement..."
-                      className="w-full rounded-lg border px-3 py-2 text-xs outline-none placeholder:text-muted-foreground/25"
+                      className="w-full rounded-lg border px-3 py-2 text-xs outline-none placeholder:text-muted-foreground/40"
                       style={{ borderColor: `${part.color}15`, background: `${part.color}03` }}
                     />
                   </div>
 
                   {/* Triggers */}
                   <div className="space-y-1">
-                    <p className="text-[10px] font-medium" style={{ color: `${part.color}80` }}>
+                    <p className="text-xs font-medium" style={{ color: `${part.color}80` }}>
                       What triggers this part?
                     </p>
                     <input
@@ -271,7 +271,7 @@ export default function PersonalityMap() {
                       value={part.triggers}
                       onChange={(e) => updatePart(part.id, 'triggers', e.target.value)}
                       placeholder="Boredom, pressure, loneliness, success..."
-                      className="w-full rounded-lg border px-3 py-2 text-xs outline-none placeholder:text-muted-foreground/25"
+                      className="w-full rounded-lg border px-3 py-2 text-xs outline-none placeholder:text-muted-foreground/40"
                       style={{ borderColor: `${part.color}15`, background: `${part.color}03` }}
                     />
                   </div>
@@ -281,7 +281,7 @@ export default function PersonalityMap() {
                     <button
                       type="button"
                       onClick={() => deletePart(part.id)}
-                      className="text-[9px] text-muted-foreground/25 hover:text-destructive transition-colors"
+                      className="text-[11px] text-muted-foreground/40 hover:text-destructive transition-colors"
                     >
                       delete
                     </button>
@@ -316,7 +316,7 @@ export default function PersonalityMap() {
               if (e.key === 'Enter') addPart();
             }}
             placeholder="The Party Animal, The Perfectionist, The Dreamer..."
-            className="w-full rounded-lg border border-border/20 bg-background/40 px-3 py-2 text-sm outline-none placeholder:text-muted-foreground/30"
+            className="w-full rounded-lg border border-border/20 bg-background/40 px-3 py-2 text-sm outline-none placeholder:text-muted-foreground/50"
           />
           <div className="flex items-center gap-3">
             <div className="flex gap-1.5">
@@ -363,11 +363,11 @@ export default function PersonalityMap() {
       {/* Overview — contrasts and alignments */}
       {filledParts.length >= 2 && (
         <div className="rounded-xl border border-border/30 p-4 space-y-3">
-          <p className="text-[10px] text-muted-foreground/40 uppercase tracking-widest">Overview</p>
+          <p className="text-xs text-muted-foreground/40 uppercase tracking-widest">Overview</p>
 
           {/* Needs map */}
           <div className="space-y-1.5">
-            <p className="text-[10px] font-medium text-muted-foreground/50">What your parts need</p>
+            <p className="text-xs font-medium text-muted-foreground/50">What your parts need</p>
             <div className="flex flex-wrap gap-1.5">
               {filledParts
                 .filter((p) => p.needs.trim())
@@ -381,7 +381,7 @@ export default function PersonalityMap() {
                       className="h-2 w-2 rounded-full"
                       style={{ background: p.color, opacity: 0.6 }}
                     />
-                    <span className="text-[10px]" style={{ color: `${p.color}90` }}>
+                    <span className="text-xs" style={{ color: `${p.color}90` }}>
                       {p.needs}
                     </span>
                   </div>
@@ -391,12 +391,12 @@ export default function PersonalityMap() {
 
           {/* Strength ranking */}
           <div className="space-y-1.5">
-            <p className="text-[10px] font-medium text-muted-foreground/50">Presence right now</p>
+            <p className="text-xs font-medium text-muted-foreground/50">Presence right now</p>
             {[...parts]
               .sort((a, b) => b.strength - a.strength)
               .map((p) => (
                 <div key={p.id} className="flex items-center gap-2">
-                  <span className="text-[10px] w-20 truncate" style={{ color: `${p.color}90` }}>
+                  <span className="text-xs w-20 truncate" style={{ color: `${p.color}90` }}>
                     {p.name}
                   </span>
                   <div
@@ -408,7 +408,7 @@ export default function PersonalityMap() {
                       style={{ width: `${p.strength}%`, background: p.color, opacity: 0.4 }}
                     />
                   </div>
-                  <span className="text-[9px] w-6 text-right text-muted-foreground/30">
+                  <span className="text-[11px] w-6 text-right text-muted-foreground/50">
                     {p.strength}
                   </span>
                 </div>

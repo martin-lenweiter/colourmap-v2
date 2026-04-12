@@ -35,7 +35,7 @@ export default function ChapterCard({ initial }: { initial?: string }) {
         }}
         className="w-full text-center py-1"
       >
-        <span className="text-[11px] uppercase tracking-widest text-muted-foreground/30 hover:text-muted-foreground/50 transition-colors">
+        <span className="text-xs uppercase tracking-widest text-muted-foreground/50 hover:text-muted-foreground/50 transition-colors">
           name your current chapter
         </span>
       </button>
@@ -55,13 +55,13 @@ export default function ChapterCard({ initial }: { initial?: string }) {
             if (e.key === 'Escape') setEditing(false);
           }}
           placeholder="Chapter title..."
-          className="bg-transparent text-center text-sm font-semibold outline-none placeholder:text-muted-foreground/30"
+          className="bg-transparent text-center text-sm font-semibold outline-none placeholder:text-muted-foreground/50"
           style={{ color: '#5C3018' }}
         />
         <button
           type="button"
           onClick={save}
-          className="text-[10px] font-medium"
+          className="text-xs font-medium"
           style={{ color: '#5C3018' }}
         >
           Save
@@ -84,7 +84,7 @@ export default function ChapterCard({ initial }: { initial?: string }) {
         {title}
       </button>
       {saved && (
-        <p className="text-[10px] mt-0.5" style={{ color: '#C4A060' }}>
+        <p className="text-xs mt-0.5" style={{ color: '#C4A060' }}>
           saved
         </p>
       )}

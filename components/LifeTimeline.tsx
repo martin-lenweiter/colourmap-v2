@@ -123,7 +123,7 @@ export default function LifeTimeline() {
           <button
             type="button"
             onClick={() => setAddingYear(addingYear !== null ? null : currentYear)}
-            className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[11px] font-medium transition-all"
+            className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-medium transition-all"
             style={{
               color: addingYear !== null ? '#5C3018' : '#C4A06080',
               background: addingYear !== null ? '#5C301810' : 'transparent',
@@ -135,7 +135,7 @@ export default function LifeTimeline() {
           <button
             type="button"
             onClick={() => setShowSettings(!showSettings)}
-            className="text-[11px] text-muted-foreground/40 hover:text-muted-foreground transition-colors"
+            className="text-xs text-muted-foreground/40 hover:text-muted-foreground transition-colors"
           >
             {showSettings ? 'done' : 'years'}
           </button>
@@ -145,7 +145,7 @@ export default function LifeTimeline() {
                 key={o}
                 type="button"
                 onClick={() => setOrientation(o)}
-                className="text-[11px] px-3 py-1 transition-all"
+                className="text-xs px-3 py-1 transition-all"
                 style={{
                   background: orientation === o ? '#C4A06020' : 'transparent',
                   color: orientation === o ? '#5C3018' : '#5C301830',
@@ -176,7 +176,7 @@ export default function LifeTimeline() {
             }}
             className="w-20 rounded-lg border border-border/30 bg-transparent px-3 py-1.5 text-sm text-center outline-none"
           />
-          <span className="text-xs text-muted-foreground/30">{currentYear - birthYear} years</span>
+          <span className="text-xs text-muted-foreground/50">{currentYear - birthYear} years</span>
         </div>
       )}
 
@@ -217,7 +217,7 @@ export default function LifeTimeline() {
                       >
                         {year}
                       </span>
-                      <span className="text-[10px] text-muted-foreground/25">{age}</span>
+                      <span className="text-xs text-muted-foreground/40">{age}</span>
                     </div>
                     <div
                       className="flex-1 w-px min-h-[20px]"
@@ -258,14 +258,14 @@ export default function LifeTimeline() {
                               <button
                                 type="button"
                                 onClick={() => setExpandedId(null)}
-                                className="text-xs text-muted-foreground/30 hover:text-muted-foreground px-1"
+                                className="text-xs text-muted-foreground/50 hover:text-muted-foreground px-1"
                               >
                                 x
                               </button>
                             </div>
                             {catObj && (
                               <span
-                                className="inline-block text-[10px] px-2.5 py-1 rounded-full"
+                                className="inline-block text-xs px-2.5 py-1 rounded-full"
                                 style={{
                                   background: `${catObj.color}15`,
                                   color: catObj.color,
@@ -284,7 +284,7 @@ export default function LifeTimeline() {
                               <button
                                 type="button"
                                 onClick={() => deleteEvent(event.id)}
-                                className="text-[10px] text-muted-foreground/25 hover:text-destructive transition-colors"
+                                className="text-xs text-muted-foreground/40 hover:text-destructive transition-colors"
                               >
                                 delete
                               </button>
@@ -331,7 +331,7 @@ export default function LifeTimeline() {
                       <button
                         type="button"
                         onClick={() => setAddingYear(year)}
-                        className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-[11px] transition-all ${hasEvents ? 'opacity-0 group-hover/year:opacity-100' : 'opacity-30 hover:opacity-60'}`}
+                        className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs transition-all ${hasEvents ? 'opacity-0 group-hover/year:opacity-100' : 'opacity-30 hover:opacity-60'}`}
                         style={{ color: '#C4A06080', border: '1px dashed #C4A06025' }}
                       >
                         + add
@@ -345,7 +345,7 @@ export default function LifeTimeline() {
             <button
               type="button"
               onClick={() => setShowAllYears(true)}
-              className="w-full text-[10px] text-muted-foreground/30 hover:text-muted-foreground/50 transition-colors py-2 text-center"
+              className="w-full text-xs text-muted-foreground/50 hover:text-muted-foreground/50 transition-colors py-2 text-center"
             >
               Show all {years.length} years
             </button>
@@ -354,7 +354,7 @@ export default function LifeTimeline() {
             <button
               type="button"
               onClick={() => setShowAllYears(false)}
-              className="w-full text-[10px] text-muted-foreground/30 hover:text-muted-foreground/50 transition-colors py-2 text-center"
+              className="w-full text-xs text-muted-foreground/50 hover:text-muted-foreground/50 transition-colors py-2 text-center"
             >
               Show less
             </button>
@@ -374,7 +374,7 @@ export default function LifeTimeline() {
             >
               -
             </button>
-            <span className="text-[9px] text-muted-foreground/30">
+            <span className="text-[11px] text-muted-foreground/50">
               {yearWidth < 40 ? 'compact' : yearWidth > 64 ? 'wide' : 'normal'}
             </span>
             <button
@@ -439,7 +439,7 @@ export default function LifeTimeline() {
                                       e.stopPropagation();
                                       setExpandedId(null);
                                     }}
-                                    className="text-xs text-muted-foreground/30 hover:text-muted-foreground px-1"
+                                    className="text-xs text-muted-foreground/50 hover:text-muted-foreground px-1"
                                   >
                                     x
                                   </button>
@@ -450,13 +450,13 @@ export default function LifeTimeline() {
                                   </p>
                                 )}
                                 <div className="flex justify-between">
-                                  <span className="text-[10px] text-muted-foreground/30">
+                                  <span className="text-xs text-muted-foreground/50">
                                     {event.year}
                                   </span>
                                   <button
                                     type="button"
                                     onClick={() => deleteEvent(event.id)}
-                                    className="text-[10px] text-muted-foreground/25 hover:text-destructive"
+                                    className="text-xs text-muted-foreground/40 hover:text-destructive"
                                   >
                                     delete
                                   </button>
@@ -477,7 +477,7 @@ export default function LifeTimeline() {
                     <button
                       type="button"
                       onClick={() => setAddingYear(isAdding ? null : year)}
-                      className="text-[9px] mt-0.5 tabular-nums"
+                      className="text-[11px] mt-0.5 tabular-nums"
                       style={{
                         color: isCurrent ? '#D4605A' : hasEvents ? '#5C301860' : '#5C301815',
                         fontWeight: isCurrent || hasEvents ? 600 : 400,
@@ -499,7 +499,7 @@ export default function LifeTimeline() {
           <div className="flex items-center justify-between">
             <p className="text-sm font-serif" style={{ color: '#5C3018' }}>
               {addingYear}{' '}
-              <span className="text-[10px] text-muted-foreground/40 ml-1">
+              <span className="text-xs text-muted-foreground/40 ml-1">
                 age {addingYear - birthYear}
               </span>
             </p>
@@ -510,7 +510,7 @@ export default function LifeTimeline() {
                 setNewTitle('');
                 setNewNote('');
               }}
-              className="text-xs text-muted-foreground/30 hover:text-muted-foreground transition-colors"
+              className="text-xs text-muted-foreground/50 hover:text-muted-foreground transition-colors"
             >
               close
             </button>
@@ -524,7 +524,7 @@ export default function LifeTimeline() {
               if (e.key === 'Enter' && newTitle.trim()) addEvent();
             }}
             placeholder="What happened?"
-            className="w-full rounded-lg border border-border/20 bg-background/40 px-3 py-2 text-sm outline-none placeholder:text-muted-foreground/30"
+            className="w-full rounded-lg border border-border/20 bg-background/40 px-3 py-2 text-sm outline-none placeholder:text-muted-foreground/50"
           />
 
           <textarea
@@ -532,7 +532,7 @@ export default function LifeTimeline() {
             onChange={(e) => setNewNote(e.target.value)}
             placeholder="Notes, memories, details..."
             rows={2}
-            className="w-full rounded-lg border border-border/20 bg-background/40 px-3 py-2 text-sm resize-none outline-none placeholder:text-muted-foreground/30"
+            className="w-full rounded-lg border border-border/20 bg-background/40 px-3 py-2 text-sm resize-none outline-none placeholder:text-muted-foreground/50"
           />
 
           {/* Color + Category in one row */}
@@ -561,7 +561,7 @@ export default function LifeTimeline() {
                   key={c.id}
                   type="button"
                   onClick={() => setNewCategory(c.id)}
-                  className="px-2.5 py-1 rounded-full text-[10px] font-medium whitespace-nowrap shrink-0 transition-all"
+                  className="px-2.5 py-1 rounded-full text-xs font-medium whitespace-nowrap shrink-0 transition-all"
                   style={{
                     background: newCategory === c.id ? `${c.color}18` : 'transparent',
                     color: newCategory === c.id ? c.color : `${c.color}40`,

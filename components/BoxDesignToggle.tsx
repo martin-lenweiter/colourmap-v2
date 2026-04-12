@@ -55,7 +55,7 @@ export default function BoxDesignToggle({
       <button
         type="button"
         onClick={() => setOpen(!open)}
-        className="cursor-pointer rounded-md px-2 py-0.5 text-[9px] uppercase tracking-wider transition-all"
+        className="cursor-pointer rounded-md px-2 py-0.5 text-[11px] uppercase tracking-wider transition-all"
         style={{
           color: open ? accentColor : `${accentColor}60`,
           background: open ? `${accentColor}10` : 'transparent',
@@ -90,7 +90,7 @@ export default function BoxDesignToggle({
               <span
                 style={{
                   fontFamily: b.font,
-                  fontSize: '13px',
+                  fontSize: '14px',
                   fontWeight: value === b.id ? 700 : 400,
                   color: value === b.id ? b.color : 'hsl(var(--muted-foreground))',
                 }}

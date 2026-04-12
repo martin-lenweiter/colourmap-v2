@@ -135,7 +135,7 @@ export default function SoulConstellation() {
       }}
     >
       <p
-        className="text-center text-[11px] font-semibold uppercase tracking-[0.24em]"
+        className="text-center text-xs font-semibold uppercase tracking-[0.24em]"
         style={{ color: '#8A6A4A' }}
       >
         Soul Map
@@ -190,7 +190,7 @@ export default function SoulConstellation() {
                   textAnchor="middle"
                   dominantBaseline="middle"
                   style={{
-                    fontSize: '8px',
+                    fontSize: '14px',
                     fontFamily: 'var(--font-handwritten)',
                     fontWeight: 600,
                     fill: c.color,
@@ -321,7 +321,7 @@ export default function SoulConstellation() {
             y={cy + 16}
             textAnchor="middle"
             style={{
-              fontSize: '8px',
+              fontSize: '14px',
               fontFamily: 'var(--font-handwritten)',
               fill: '#8A6A4A',
               opacity: 0.25,
@@ -348,9 +348,9 @@ export default function SoulConstellation() {
                 border: `1.5px solid ${isAdding ? `${c.color}40` : `${c.color}15`}`,
               }}
             >
-              <span style={{ fontSize: '12px' }}>{c.emoji}</span>
+              <span style={{ fontSize: '14px' }}>{c.emoji}</span>
               <span
-                className="text-[9px] font-bold"
+                className="text-[11px] font-bold"
                 style={{
                   color: c.color,
                   fontFamily: 'var(--font-handwritten)',
@@ -361,7 +361,7 @@ export default function SoulConstellation() {
               </span>
               {count > 0 && (
                 <span
-                  className="text-[7px] font-bold rounded-full px-1"
+                  className="text-[10px] font-bold rounded-full px-1"
                   style={{ background: `${c.color}15`, color: c.color }}
                 >
                   {count}
@@ -409,7 +409,7 @@ export default function SoulConstellation() {
                   key={s}
                   type="button"
                   onClick={() => add(s, addingCat)}
-                  className="cursor-pointer rounded-full px-2.5 py-1 text-[10px] transition-all hover:scale-105"
+                  className="cursor-pointer rounded-full px-2.5 py-1 text-xs transition-all hover:scale-105"
                   style={{
                     background: `${CATEGORIES.find((c) => c.id === addingCat)!.color}10`,
                     border: `1px solid ${CATEGORIES.find((c) => c.id === addingCat)!.color}20`,
@@ -436,7 +436,7 @@ export default function SoulConstellation() {
             <div className="mx-auto max-w-[280px] space-y-2">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-1.5">
-                  <span style={{ fontSize: '12px' }}>{cat.emoji}</span>
+                  <span style={{ fontSize: '14px' }}>{cat.emoji}</span>
                   <span
                     className="text-sm font-bold"
                     style={{ color: cat.color, fontFamily: 'var(--font-handwritten)' }}
@@ -447,7 +447,7 @@ export default function SoulConstellation() {
                 <button
                   type="button"
                   onClick={() => remove(point.id)}
-                  className="cursor-pointer text-[9px]"
+                  className="cursor-pointer text-[11px]"
                   style={{ color: cat.color, opacity: 0.3, background: 'none', border: 'none' }}
                 >
                   ✕
@@ -455,7 +455,7 @@ export default function SoulConstellation() {
               </div>
               <div className="flex items-center gap-1.5">
                 <span
-                  className="text-[9px]"
+                  className="text-[11px]"
                   style={{
                     color: cat.color,
                     opacity: 0.4,
@@ -480,7 +480,7 @@ export default function SoulConstellation() {
                   />
                 ))}
                 <span
-                  className="text-[9px]"
+                  className="text-[11px]"
                   style={{
                     color: cat.color,
                     opacity: 0.4,
@@ -497,7 +497,7 @@ export default function SoulConstellation() {
       {points.length === 0 && !addingCat && (
         <p
           className="text-center text-xs"
-          style={{ color: '#8A6A4A', opacity: 0.35, fontFamily: 'var(--font-handwritten)' }}
+          style={{ color: '#8A6A4A', opacity: 0.5, fontFamily: 'var(--font-handwritten)' }}
         >
           Map your inner terrain. Fears, needs, strengths, shadows, people.
         </p>

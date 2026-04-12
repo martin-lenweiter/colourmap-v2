@@ -10,7 +10,7 @@ import { useState } from 'react';
 
 type CareAxis = 'care' | 'attitude' | 'rest' | 'emotions';
 
-type ColorTheme = 'warm' | 'vivid' | 'earth';
+type ColorTheme = 'warm' | 'rest' | 'care' | 'earth' | 'vivid';
 
 const CARE_THEMES: {
   id: ColorTheme;
@@ -22,19 +22,31 @@ const CARE_THEMES: {
     id: 'warm',
     name: 'Warm',
     dot: '#C4A060',
-    colors: { care: '#D4805A', attitude: '#C4A070', rest: '#C4906A', emotions: '#B07A5A' },
+    colors: { care: '#D4805A', attitude: '#C4A070', rest: '#D4805A', emotions: '#C4A070' },
+  },
+  {
+    id: 'rest',
+    name: 'Rest',
+    dot: '#C4906A',
+    colors: { care: '#C4906A', attitude: '#C4A070', rest: '#C4906A', emotions: '#C4A070' },
+  },
+  {
+    id: 'care',
+    name: 'Care',
+    dot: '#D4805A',
+    colors: { care: '#D4805A', attitude: '#C4A070', rest: '#D4805A', emotions: '#C4A070' },
+  },
+  {
+    id: 'earth',
+    name: 'Earth',
+    dot: '#8A7A5A',
+    colors: { care: '#B89868', attitude: '#C8A878', rest: '#B89868', emotions: '#C8A878' },
   },
   {
     id: 'vivid',
     name: 'Vivid',
     dot: '#D45050',
     colors: { care: '#D45050', attitude: '#E8A030', rest: '#6890B0', emotions: '#7AAA58' },
-  },
-  {
-    id: 'earth',
-    name: 'Earth',
-    dot: '#8A7A5A',
-    colors: { care: '#B89868', attitude: '#C8A878', rest: '#A89060', emotions: '#988050' },
   },
 ];
 
@@ -143,17 +155,52 @@ const SUB_PROGRAMS: Record<string, { reflect: string; rate: string; commit: stri
   },
 };
 
-const RHYMES = [
-  '',
-  'Far from the sun',
-  'Pushing through',
-  'Trying to be free',
-  'Searching for more',
-  'Coming alive',
-  'Finding the mix',
-  'Floating in heaven',
-  'Feeling great',
-];
+const RHYMES: Record<string, string[]> = {
+  Care: [
+    '',
+    'Neglecting yourself',
+    'Barely holding on',
+    'Getting by',
+    'Starting to notice',
+    'Taking small steps',
+    'Caring for yourself',
+    'Nourishing deeply',
+    'Fully tended to',
+  ],
+  Attitude: [
+    '',
+    'Closed and heavy',
+    'Resistant',
+    'Guarded',
+    'Cautiously open',
+    'Willing to try',
+    'Genuinely open',
+    'Embracing it all',
+    'Radically present',
+  ],
+  Rest: [
+    '',
+    'Running on empty',
+    'Depleted',
+    'Tired but pushing',
+    'Need a pause',
+    'Catching up',
+    'Rested enough',
+    'Deeply recharged',
+    'Completely restored',
+  ],
+  Emotions: [
+    '',
+    'Shut down',
+    'Overwhelmed',
+    'Turbulent',
+    'Unsettled',
+    'Processing',
+    'Finding balance',
+    'Calm and clear',
+    'At peace',
+  ],
+};
 
 const STORAGE_KEY = 'colourmap:care-values';
 const CHALLENGE_KEY = 'colourmap:care-challenge';
@@ -272,14 +319,14 @@ export default function CareCompass() {
       }}
     >
       <div className="relative">
-        <p className="text-center text-[11px] font-semibold uppercase tracking-[0.24em] text-[#C4A060]">
+        <p className="text-center text-xs font-semibold uppercase tracking-[0.24em] text-[#C4A060]">
           Caring
         </p>
         <div className="absolute right-0 top-0" style={{ zIndex: 10 }}>
           <button
             type="button"
             onClick={() => setShowDesign(!showDesign)}
-            className="cursor-pointer rounded-md px-2 py-0.5 text-[9px] uppercase tracking-wider transition-all"
+            className="cursor-pointer rounded-md px-2 py-0.5 text-[11px] uppercase tracking-wider transition-all"
             style={{
               color: showDesign ? '#C4A060' : '#C4A06060',
               background: showDesign ? '#C4A06010' : 'transparent',
@@ -475,139 +522,64 @@ export default function CareCompass() {
         ))}
       </div>
 
-      {/* Challenge / Flow columns */}
-      <div className="grid grid-cols-2 gap-4">
-        <div className="space-y-2 text-center">
-          <span
-            className="text-xl font-bold"
-            style={{ color: '#C4A060', fontFamily: 'var(--font-serif)' }}
-          >
-            Challenge
-          </span>
-          {challengeItems.length > 0 && (
-            <div className="flex flex-wrap justify-center gap-1">
-              {challengeItems.map((item, i) => (
-                <span
-                  key={i}
-                  onClick={() => removeChallenge(i)}
-                  className="inline-flex cursor-pointer items-center rounded-full px-2 py-1 text-xs hover:opacity-70"
-                  style={{
-                    background: '#C4A06012',
-                    border: '1px solid #C4A06020',
-                    color: '#C4A060',
-                  }}
-                >
-                  {item} ✕
-                </span>
-              ))}
-            </div>
-          )}
-          <input
-            type="text"
-            value={challengeInput}
-            onChange={(e) => setChallengeInput(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === 'Enter') addChallenge(challengeInput);
-            }}
-            placeholder="What's challenging?..."
-            className="w-full border-b bg-transparent pb-1 text-center text-base outline-none"
-            style={{
-              color: '#C4A060',
-              borderColor: '#C4A06030',
-              fontFamily: 'var(--font-serif)',
-            }}
-          />
-        </div>
-        <div className="space-y-2 text-center">
-          <span
-            className="text-xl font-bold"
-            style={{ color: '#C4A060', fontFamily: 'var(--font-serif)' }}
-          >
-            Flow
-          </span>
-          {flowItems.length > 0 && (
-            <div className="flex flex-wrap justify-center gap-1">
-              {flowItems.map((item, i) => (
-                <span
-                  key={i}
-                  onClick={() => removeFlow(i)}
-                  className="inline-flex cursor-pointer items-center rounded-full px-2 py-1 text-xs hover:opacity-70"
-                  style={{
-                    background: '#C4A06012',
-                    border: '1px solid #C4A06020',
-                    color: '#C4A060',
-                  }}
-                >
-                  {item} ✕
-                </span>
-              ))}
-            </div>
-          )}
-          <input
-            type="text"
-            value={flowInput}
-            onChange={(e) => setFlowInput(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === 'Enter') addFlow(flowInput);
-            }}
-            placeholder="What's flowing?..."
-            className="w-full border-b bg-transparent pb-1 text-center text-base outline-none"
-            style={{
-              color: '#C4A060',
-              borderColor: '#C4A06030',
-              fontFamily: 'var(--font-serif)',
-            }}
-          />
-        </div>
-      </div>
-
       {/* Rating bar when slice active */}
       {activeQ &&
         (() => {
           const current = Math.max(1, Math.min(8, Math.round((values[activeQ.key] / 100) * 8)));
           return (
             <div className="mx-auto max-w-[280px] space-y-2">
-              <div className="flex items-center justify-between">
-                <span
-                  className="text-sm font-semibold"
-                  style={{ color: activeQ.color, fontFamily: 'var(--font-serif)' }}
-                >
-                  {activeQ.label}
-                </span>
-                <span
-                  className="text-xs"
-                  style={{
-                    color: activeQ.color,
-                    opacity: 0.5,
-                    fontFamily: 'var(--font-serif)',
-                  }}
-                >
-                  {current}. {RHYMES[current]}
-                </span>
+              <p
+                className="text-center text-lg font-bold"
+                style={{ color: activeQ.color, fontFamily: 'var(--font-serif)' }}
+              >
+                {activeQ.label}
+              </p>
+              <div className="flex items-center justify-center gap-[2px]">
+                {(() => {
+                  const rainbow = [
+                    '#C83030',
+                    '#D46050',
+                    '#D87048',
+                    '#C88820',
+                    '#7AAA58',
+                    '#3AA8A0',
+                    '#3A8AC4',
+                    '#9B6BA0',
+                  ];
+                  return [1, 2, 3, 4, 5, 6, 7, 8].map((n) => {
+                    const mapped = Math.round((n / 8) * 100);
+                    const isN = n === current;
+                    const dist = Math.abs(n - current);
+                    return (
+                      <button
+                        key={n}
+                        type="button"
+                        onClick={() => handleRating(activeQ.key, mapped)}
+                        className="cursor-pointer transition-all duration-200"
+                        style={{
+                          width: 28,
+                          height: 28,
+                          borderRadius: 4,
+                          background: rainbow[n - 1],
+                          opacity: isN ? 1 : dist === 1 ? 0.5 : 0.2,
+                          border: 'none',
+                          padding: 0,
+                        }}
+                      />
+                    );
+                  });
+                })()}
               </div>
-              <div className="flex items-center gap-[3px]">
-                {[1, 2, 3, 4, 5, 6, 7, 8].map((n) => {
-                  const mapped = Math.round((n / 8) * 100);
-                  const isN = n === current;
-                  const dist = Math.abs(n - current);
-                  return (
-                    <button
-                      key={n}
-                      type="button"
-                      onClick={() => handleRating(activeQ.key, mapped)}
-                      className="flex-1 cursor-pointer transition-all duration-200"
-                      style={{
-                        height: isN ? 24 : 12,
-                        borderRadius: 2,
-                        background: activeQ.color,
-                        opacity: isN ? 1 : dist === 1 ? 0.4 : 0.12,
-                        border: 'none',
-                        padding: 0,
-                      }}
-                    />
-                  );
-                })}
-              </div>
+              <p
+                className="text-center text-base"
+                style={{
+                  color: activeQ.color,
+                  opacity: 0.7,
+                  fontFamily: 'var(--font-handwritten)',
+                }}
+              >
+                {(RHYMES[activeQ.label] || [])[current] || ''}
+              </p>
             </div>
           );
         })()}
@@ -663,7 +635,7 @@ export default function CareCompass() {
                 >
                   {activeSub}
                 </span>
-                <span className="text-[10px] text-muted-foreground">{subStep + 1} / 3</span>
+                <span className="text-xs text-muted-foreground">{subStep + 1} / 3</span>
               </div>
 
               <p
@@ -692,25 +664,39 @@ export default function CareCompass() {
               )}
 
               {step.type === 'rate' && (
-                <div className="flex items-center gap-1">
-                  {[1, 2, 3, 4, 5, 6, 7, 8].map((n) => {
-                    const selected = Number(subAnswers.rate) === n;
-                    return (
-                      <button
-                        key={n}
-                        type="button"
-                        onClick={() => setSubAnswers((prev) => ({ ...prev, rate: String(n) }))}
-                        className="flex-1 cursor-pointer transition-all duration-200"
-                        style={{
-                          height: selected ? 26 : 16,
-                          borderRadius: 2,
-                          background: activeQ.color,
-                          opacity: selected ? 1 : 0.2,
-                          border: 'none',
-                        }}
-                      />
-                    );
-                  })}
+                <div className="flex items-center justify-center gap-[2px]">
+                  {(() => {
+                    const rainbow = [
+                      '#C83030',
+                      '#D46050',
+                      '#D87048',
+                      '#C88820',
+                      '#7AAA58',
+                      '#3AA8A0',
+                      '#3A8AC4',
+                      '#9B6BA0',
+                    ];
+                    return [1, 2, 3, 4, 5, 6, 7, 8].map((n) => {
+                      const selected = Number(subAnswers.rate) === n;
+                      const dist = Math.abs(n - (Number(subAnswers.rate) || 0));
+                      return (
+                        <button
+                          key={n}
+                          type="button"
+                          onClick={() => setSubAnswers((prev) => ({ ...prev, rate: String(n) }))}
+                          className="cursor-pointer transition-all duration-200"
+                          style={{
+                            width: 28,
+                            height: 28,
+                            borderRadius: 4,
+                            background: rainbow[n - 1],
+                            opacity: selected ? 1 : dist === 1 ? 0.5 : 0.2,
+                            border: 'none',
+                          }}
+                        />
+                      );
+                    });
+                  })()}
                 </div>
               )}
 

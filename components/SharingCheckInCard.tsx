@@ -146,10 +146,10 @@ export default function SharingCheckInCard() {
             className="flex w-full cursor-pointer items-center justify-between"
             style={{ background: 'none', border: 'none', padding: 0 }}
           >
-            <span className="text-base font-semibold" style={{ color: SHARING_COLOR, fontFamily }}>
+            <span className="text-lg font-semibold" style={{ color: SHARING_COLOR, fontFamily }}>
               {s.label}
             </span>
-            <span className="text-xs text-muted-foreground/30">
+            <span className="text-xs text-muted-foreground/50">
               {openSections[s.key] ? '▲' : '▼'}
             </span>
           </button>

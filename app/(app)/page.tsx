@@ -142,7 +142,7 @@ export default function CockpitPage() {
 
   return (
     <main className={isPhone ? 'space-y-6' : 'space-y-10'}>
-      <div className="flex items-center justify-between gap-4 rounded-[1.75rem] border border-border/70 bg-card/55 px-4 py-3 text-[11px] uppercase tracking-[0.24em] text-muted-foreground/70">
+      <div className="flex items-center justify-between gap-4 rounded-[1.75rem] border border-border/70 bg-card/55 px-4 py-3 text-xs uppercase tracking-[0.24em] text-muted-foreground/70">
         <span>Feeling, left of center</span>
         <div
           aria-hidden="true"

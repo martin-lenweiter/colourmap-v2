@@ -79,7 +79,7 @@ export default function NavLinks() {
           }}
         >
           <span
-            className="text-[9px] leading-none -rotate-45 font-bold"
+            className="text-[11px] leading-none -rotate-45 font-bold"
             style={{ color: isMoreActive ? '#fff' : '#C4A060' }}
           >
             +

@@ -92,6 +92,28 @@ The live CPC check-in also carries a very specific visual grammar that matters t
 - The feature captures the current CPC check-in behavior without importing legacy repo layout or implementation structure.
 - The entire flow completes on a single screen with no navigation.
 
+## Design Direction: Zen Circle
+
+The long-term vision for the feeling register is radical simplicity — a single filled circle that holds the current emotion's color, with the emotion name below it. No slider, no bars, no controls visible by default.
+
+**The reference image:** a soft wheat/sand-gold circle on warm parchment with "Courage" written below in serif. That screenshot captures the target aesthetic — deep zen, one shape, one word, total stillness.
+
+### Principles
+
+- The circle IS the emotional state. Its color communicates everything the slider used to.
+- The emotion name appears below the circle in serif, not italic — confident and quiet.
+- To change the emotion, the user swipes or gestures on the circle area. The interaction is physical and fluid, not a discrete tap-on-segments UI.
+- All other check-in elements (FACING, note, Challenge/Flow) remain available but recede. The circle is the gravitational center.
+- The design should feel like opening a meditation app that also happens to capture data — not like filling out a form.
+
+### Why
+
+The Hawkins slider works functionally but introduces visual noise. The circle achieves the same emotional register with zero cognitive load. The product's north star is clarity through stillness, and the check-in should embody that from the first pixel.
+
+### Status
+
+Aspiration. The current implementation still uses the rainbow square slider as an intermediate step. The circle exists as the top element. Migration to swipe-only interaction is a future iteration.
+
 ## Dependencies
 
 - Supabase auth and database (Key Decision: real persistence from day one).

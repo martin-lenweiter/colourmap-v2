@@ -84,14 +84,14 @@ export default function ThemeSwitcher() {
             <button
               type="button"
               onClick={() => setTab('color')}
-              className={`flex-1 text-[10px] py-1 rounded-lg transition-colors ${tab === 'color' ? 'bg-accent font-medium' : 'text-muted-foreground hover:bg-accent/50'}`}
+              className={`flex-1 text-xs py-1 rounded-lg transition-colors ${tab === 'color' ? 'bg-accent font-medium' : 'text-muted-foreground hover:bg-accent/50'}`}
             >
               Color
             </button>
             <button
               type="button"
               onClick={() => setTab('typo')}
-              className={`flex-1 text-[10px] py-1 rounded-lg transition-colors ${tab === 'typo' ? 'bg-accent font-medium' : 'text-muted-foreground hover:bg-accent/50'}`}
+              className={`flex-1 text-xs py-1 rounded-lg transition-colors ${tab === 'typo' ? 'bg-accent font-medium' : 'text-muted-foreground hover:bg-accent/50'}`}
             >
               Typography
             </button>

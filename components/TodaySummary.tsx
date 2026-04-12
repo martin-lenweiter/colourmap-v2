@@ -64,7 +64,7 @@ export default function TodaySummary({ refreshKey }: { refreshKey: number }) {
 
   return (
     <div className="rounded-2xl border border-border bg-card/60 px-4 py-3 space-y-2">
-      <p className="text-[10px] text-muted-foreground/50">
+      <p className="text-xs text-muted-foreground/50">
         Today — {checkIns.length} check-in{checkIns.length > 1 ? 's' : ''}, mostly {dominantWord}
       </p>
 
@@ -83,7 +83,7 @@ export default function TodaySummary({ refreshKey }: { refreshKey: number }) {
             </div>
           )}
           {completion && (
-            <p className="text-[11px] leading-relaxed text-muted-foreground/60">{completion}</p>
+            <p className="text-xs leading-relaxed text-muted-foreground/60">{completion}</p>
           )}
         </div>
       )}

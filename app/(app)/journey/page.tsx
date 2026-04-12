@@ -288,7 +288,7 @@ function DarkPeriodCard({
           {open ? 'Logbook — facing the dark' : 'Logbook'}
         </span>
         {darkPeriodCount > 0 && !open && (
-          <span className="text-[9px] text-muted-foreground/30 ml-auto">
+          <span className="text-[11px] text-muted-foreground/50 ml-auto">
             {darkPeriodCount} past {darkPeriodCount === 1 ? 'entry' : 'entries'}
           </span>
         )}
@@ -309,7 +309,7 @@ function DarkPeriodCard({
                   className="h-2 w-2 rotate-45 rounded-[1px]"
                   style={{ background: '#3A8AC4', opacity: 0.3 }}
                 />
-                <span className="text-[11px] font-serif">
+                <span className="text-xs font-serif">
                   {showHeavens ? 'The view from above' : 'Look up — you have been here before'}
                 </span>
               </button>
@@ -321,7 +321,7 @@ function DarkPeriodCard({
                       className="rounded-xl p-3"
                       style={{ background: '#3A8AC406', border: '1px solid #3A8AC415' }}
                     >
-                      <p className="text-[10px] font-medium mb-2" style={{ color: '#3A8AC490' }}>
+                      <p className="text-xs font-medium mb-2" style={{ color: '#3A8AC490' }}>
                         What brought you back before
                       </p>
                       <div className="space-y-1">
@@ -344,14 +344,14 @@ function DarkPeriodCard({
                       className="rounded-xl p-3"
                       style={{ background: '#9B6BA006', border: '1px solid #9B6BA015' }}
                     >
-                      <p className="text-[10px] font-medium mb-2" style={{ color: '#9B6BA090' }}>
+                      <p className="text-xs font-medium mb-2" style={{ color: '#9B6BA090' }}>
                         What has triggered this before
                       </p>
                       <div className="flex flex-wrap gap-1.5">
                         {pastTriggers.slice(0, 6).map((trigger, i) => (
                           <span
                             key={i}
-                            className="px-2 py-0.5 rounded-lg text-[10px]"
+                            className="px-2 py-0.5 rounded-lg text-xs"
                             style={{
                               background: '#9B6BA010',
                               color: '#9B6BA0',
@@ -367,7 +367,7 @@ function DarkPeriodCard({
 
                   {/* Timeline */}
                   <div className="space-y-1">
-                    <p className="text-[10px] font-medium" style={{ color: '#5C301840' }}>
+                    <p className="text-xs font-medium" style={{ color: '#5C301840' }}>
                       Your history — {darkPeriodCount} dark{' '}
                       {darkPeriodCount === 1 ? 'period' : 'periods'}, and you came back every time
                     </p>
@@ -396,7 +396,7 @@ function DarkPeriodCard({
           {/* Current dark period questions */}
           {questions.map((q) => (
             <div key={q.key} className="space-y-1.5">
-              <p className="text-[11px] font-medium" style={{ color: '#D4605A90' }}>
+              <p className="text-xs font-medium" style={{ color: '#D4605A90' }}>
                 {q.label}
               </p>
               {q.levels ? (
@@ -406,7 +406,7 @@ function DarkPeriodCard({
                       key={level}
                       type="button"
                       onClick={() => setAnswers((prev) => ({ ...prev, [q.key]: level }))}
-                      className="px-2.5 py-1 rounded-lg text-[10px] font-medium transition-all"
+                      className="px-2.5 py-1 rounded-lg text-xs font-medium transition-all"
                       style={{
                         background: answers[q.key] === level ? '#D4605A18' : '#D4605A06',
                         color: answers[q.key] === level ? '#D4605A' : '#D4605A50',
@@ -423,7 +423,7 @@ function DarkPeriodCard({
                   value={answers[q.key] || ''}
                   onChange={(e) => setAnswers((prev) => ({ ...prev, [q.key]: e.target.value }))}
                   placeholder={q.placeholder}
-                  className="w-full rounded-lg border border-[#D4605A15] bg-[#D4605A03] px-3 py-2 text-sm outline-none placeholder:text-muted-foreground/30"
+                  className="w-full rounded-lg border border-[#D4605A15] bg-[#D4605A03] px-3 py-2 text-sm outline-none placeholder:text-muted-foreground/50"
                 />
               )}
             </div>
@@ -458,13 +458,13 @@ function DarkPeriodCard({
                 <button
                   type="button"
                   onClick={saveEntry}
-                  className="px-3 py-2 rounded-xl text-[10px] text-muted-foreground/40 hover:text-muted-foreground transition-colors border border-border/30"
+                  className="px-3 py-2 rounded-xl text-xs text-muted-foreground/40 hover:text-muted-foreground transition-colors border border-border/30"
                 >
                   Save
                 </button>
               )}
               {saved && (
-                <span className="px-3 py-2 text-[10px]" style={{ color: '#7AAA58' }}>
+                <span className="px-3 py-2 text-xs" style={{ color: '#7AAA58' }}>
                   Saved
                 </span>
               )}
@@ -500,15 +500,15 @@ function CatCompanion({ tone, prompt }: { tone: (typeof TONES)[number]; prompt: 
     >
       <div className="flex items-center gap-2">
         <span
-          className="flex h-5 w-5 items-center justify-center rotate-45 rounded-[2px] text-[9px] font-bold -rotate-0"
+          className="flex h-5 w-5 items-center justify-center rotate-45 rounded-[2px] text-[11px] font-bold -rotate-0"
           style={{ background: `${tone.color}20`, color: tone.color }}
         >
           {tone.icon}
         </span>
-        <span className="text-[11px] font-semibold" style={{ color: tone.color }}>
+        <span className="text-xs font-semibold" style={{ color: tone.color }}>
           {tone.catName}
         </span>
-        <span className="text-[9px] text-muted-foreground/40">— {tone.catRole}</span>
+        <span className="text-[11px] text-muted-foreground/40">— {tone.catRole}</span>
       </div>
       {isLoading && !completion && (
         <div className="flex gap-1.5">
@@ -642,15 +642,12 @@ export default function JourneyPage() {
                 }}
               >
                 <span
-                  className="flex h-4 w-4 items-center justify-center rotate-45 rounded-[1.5px] text-[7px] font-bold"
+                  className="flex h-4 w-4 items-center justify-center rotate-45 rounded-[1.5px] text-[10px] font-bold"
                   style={{ background: `${activeTone.color}25`, color: activeTone.color }}
                 >
                   <span className="-rotate-45">{activeTone.icon}</span>
                 </span>
-                <span
-                  className="text-[10px] font-medium"
-                  style={{ color: `${activeTone.color}80` }}
-                >
+                <span className="text-xs font-medium" style={{ color: `${activeTone.color}80` }}>
                   {activeTone.label}
                 </span>
               </button>
@@ -674,7 +671,7 @@ export default function JourneyPage() {
                         }}
                       >
                         <span
-                          className="flex h-5 w-5 items-center justify-center rotate-45 rounded-[2px] text-[8px] font-bold"
+                          className="flex h-5 w-5 items-center justify-center rotate-45 rounded-[2px] text-[11px] font-bold"
                           style={{
                             background: isActive ? `${t.color}25` : `${t.color}10`,
                             color: isActive ? t.color : `${t.color}50`,
@@ -683,7 +680,7 @@ export default function JourneyPage() {
                           <span className="-rotate-45">{t.icon}</span>
                         </span>
                         <span
-                          className="text-[8px] font-medium"
+                          className="text-[11px] font-medium"
                           style={{ color: isActive ? t.color : `${t.color}50` }}
                         >
                           {t.label}
@@ -695,7 +692,7 @@ export default function JourneyPage() {
                 <button
                   type="button"
                   onClick={() => setToneOpen(false)}
-                  className="w-full text-[9px] text-muted-foreground/30 text-center"
+                  className="w-full text-[11px] text-muted-foreground/50 text-center"
                 >
                   close
                 </button>
@@ -799,14 +796,14 @@ export default function JourneyPage() {
                               style={{ background: isActive ? `${a.color}30` : `${a.color}10` }}
                             >
                               <span
-                                className="-rotate-45 text-[10px] font-bold"
+                                className="-rotate-45 text-xs font-bold"
                                 style={{ color: isActive ? a.color : `${a.color}50` }}
                               >
                                 {a.name.split(' ')[1][0]}
                               </span>
                             </div>
                             <span
-                              className="text-[10px] font-medium"
+                              className="text-xs font-medium"
                               style={{ color: isActive ? a.color : `${a.color}50` }}
                             >
                               {a.name.split(' ')[1]}
@@ -818,7 +815,7 @@ export default function JourneyPage() {
                     <button
                       type="button"
                       onClick={() => setShowPicker(false)}
-                      className="w-full text-[10px] text-muted-foreground/30 text-center py-1"
+                      className="w-full text-xs text-muted-foreground/50 text-center py-1"
                     >
                       close
                     </button>
@@ -837,7 +834,7 @@ export default function JourneyPage() {
                         className="h-2 w-2 rounded-full"
                         style={{ background: inner.color, opacity: 0.6 }}
                       />
-                      <span className="text-[10px]" style={{ color: `${inner.color}80` }}>
+                      <span className="text-xs" style={{ color: `${inner.color}80` }}>
                         {inner.category}:{' '}
                         <span className="font-medium" style={{ color: inner.color }}>
                           {inner.archetype.replace('The ', '')}
@@ -854,7 +851,7 @@ export default function JourneyPage() {
 
       {/* ========== SOUL MAP ========== */}
       <div className="space-y-2">
-        <p className="text-[10px] text-center text-muted-foreground/40 uppercase tracking-widest">
+        <p className="text-xs text-center text-muted-foreground/40 uppercase tracking-widest">
           Your inner terrain
         </p>
         <SoulMap
@@ -946,12 +943,12 @@ export default function JourneyPage() {
                   <button
                     type="button"
                     onClick={() => setSelectedTerritory(null)}
-                    className="text-[10px] text-muted-foreground/30 hover:text-muted-foreground"
+                    className="text-xs text-muted-foreground/50 hover:text-muted-foreground"
                   >
                     x
                   </button>
                 </div>
-                <p className="text-[11px]" style={{ color: `${info.color}80` }}>
+                <p className="text-xs" style={{ color: `${info.color}80` }}>
                   {info.question}
                 </p>
                 <input
@@ -984,7 +981,7 @@ export default function JourneyPage() {
                       (e.target as HTMLInputElement).value = '';
                     }
                   }}
-                  className="w-full rounded-lg border px-3 py-2 text-sm outline-none placeholder:text-muted-foreground/30"
+                  className="w-full rounded-lg border px-3 py-2 text-sm outline-none placeholder:text-muted-foreground/50"
                   style={{ borderColor: `${info.color}15`, background: `${info.color}03` }}
                 />
               </div>
@@ -994,7 +991,7 @@ export default function JourneyPage() {
 
       {/* ========== PERSONALITY MAP ========== */}
       <div className="space-y-2">
-        <p className="text-[10px] text-center text-muted-foreground/40 uppercase tracking-widest">
+        <p className="text-xs text-center text-muted-foreground/40 uppercase tracking-widest">
           Your inner parts
         </p>
         <PersonalityMap />
@@ -1017,12 +1014,12 @@ export default function JourneyPage() {
       <div className="space-y-3">
         <div className="flex items-center justify-center gap-2">
           <span
-            className="flex h-5 w-5 items-center justify-center rotate-45 rounded-[2px] text-[9px] font-bold"
+            className="flex h-5 w-5 items-center justify-center rotate-45 rounded-[2px] text-[11px] font-bold"
             style={{ background: `${activeTone.color}20`, color: activeTone.color }}
           >
             <span className="-rotate-45">{activeTone.icon}</span>
           </span>
-          <p className="text-[11px] font-medium" style={{ color: activeTone.color }}>
+          <p className="text-xs font-medium" style={{ color: activeTone.color }}>
             {activeTone.catName} says...
           </p>
         </div>

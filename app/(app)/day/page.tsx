@@ -19,7 +19,7 @@ function StyleToggle() {
       <button
         type="button"
         onClick={() => setOpen(!open)}
-        className="cursor-pointer rounded-md px-2.5 py-1 text-[10px] uppercase tracking-wider transition-all"
+        className="cursor-pointer rounded-md px-2.5 py-1 text-xs uppercase tracking-wider transition-all"
         style={{
           color: open ? '#C4A060' : '#C4A06060',
           background: open ? '#C4A06010' : 'transparent',
@@ -77,18 +77,6 @@ function DayContent() {
 
   return (
     <div className="mx-auto max-w-2xl space-y-4 px-4 py-6">
-      <div className="mb-4 flex items-center justify-center gap-3">
-        <div className="flex-1" />
-        <div className="text-center">
-          <h1 className="text-2xl font-semibold" style={{ fontFamily: style.headingFont }}>
-            Today
-          </h1>
-        </div>
-        <div className="flex flex-1 justify-end">
-          <StyleToggle />
-        </div>
-      </div>
-
       <DayTabs
         feelingContent={
           <div className="space-y-4">
