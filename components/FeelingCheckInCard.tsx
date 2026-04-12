@@ -36,24 +36,6 @@ const MODE = [
   { level: 'On Fire', color: '#B0A0D0' },
 ];
 
-/* ─── Hawkins scale (inside losange) ─── */
-const HAWKINS = [
-  { level: 'Shame', color: '#C83030' },
-  { level: 'Guilt', color: '#D44040' },
-  { level: 'Grief', color: '#C85050' },
-  { level: 'Fear', color: '#D46050' },
-  { level: 'Desire', color: '#D87048' },
-  { level: 'Anger', color: '#E0844A' },
-  { level: 'Pride', color: '#E0844A' },
-  { level: 'Courage', color: '#C88820' },
-  { level: 'Willingness', color: '#7AAA58' },
-  { level: 'Acceptance', color: '#80C0A0' },
-  { level: 'Reason', color: '#3AA8A0' },
-  { level: 'Love', color: '#3A8AC4' },
-  { level: 'Joy', color: '#7A6AB8' },
-  { level: 'Peace', color: '#9B6BA0' },
-];
-
 const INNER_TRACKERS = [
   {
     id: 'fear',
