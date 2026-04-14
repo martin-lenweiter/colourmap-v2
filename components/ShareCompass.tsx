@@ -10,7 +10,7 @@ import { useState } from 'react';
 
 type ShareAxis = 'share' | 'authentic' | 'roots' | 'express';
 
-type ShareColorTheme = 'earth' | 'vivid' | 'moss';
+type ShareColorTheme = 'earth' | 'vivid' | 'moss' | 'vivid2';
 
 const SHARE_THEMES: {
   id: ShareColorTheme;
@@ -22,19 +22,25 @@ const SHARE_THEMES: {
     id: 'earth',
     name: 'Earth',
     dot: '#6B7F4E',
-    colors: { share: '#7A9A5A', authentic: '#8A9A6A', roots: '#6B8F4E', express: '#5A8A4A' },
+    colors: { share: '#7A9A5A', authentic: '#8A9A6A', roots: '#7A9A5A', express: '#8A9A6A' },
   },
   {
     id: 'vivid',
     name: 'Vivid',
     dot: '#7AAA58',
-    colors: { share: '#7AAA58', authentic: '#E8A030', roots: '#3A8AC4', express: '#9B6BA0' },
+    colors: { share: '#7AAA58', authentic: '#E8A030', roots: '#7AAA58', express: '#E8A030' },
   },
   {
     id: 'moss',
     name: 'Moss',
     dot: '#5A7A3A',
-    colors: { share: '#6A8A4A', authentic: '#7A9A5A', roots: '#5A7A3A', express: '#4A6A2A' },
+    colors: { share: '#6A8A4A', authentic: '#7A9A5A', roots: '#6A8A4A', express: '#7A9A5A' },
+  },
+  {
+    id: 'vivid2',
+    name: 'Vivid 2',
+    dot: '#E8A030',
+    colors: { share: '#E8A030', authentic: '#7AAA58', roots: '#E8A030', express: '#7AAA58' },
   },
 ];
 
@@ -272,14 +278,14 @@ export default function ShareCompass() {
       }}
     >
       <div className="relative">
-        <p className="text-center text-[11px] font-semibold uppercase tracking-[0.24em] text-[#6B7F4E]">
+        <p className="text-center text-xs font-semibold uppercase tracking-[0.24em] text-[#6B7F4E]">
           Sharing
         </p>
         <div className="absolute right-0 top-0" style={{ zIndex: 10 }}>
           <button
             type="button"
             onClick={() => setShowDesign(!showDesign)}
-            className="cursor-pointer rounded-md px-2 py-0.5 text-[9px] uppercase tracking-wider transition-all"
+            className="cursor-pointer rounded-md px-2 py-0.5 text-[11px] uppercase tracking-wider transition-all"
             style={{
               color: showDesign ? '#6B7F4E' : '#6B7F4E60',
               background: showDesign ? '#6B7F4E10' : 'transparent',
@@ -433,9 +439,27 @@ export default function ShareCompass() {
             );
           })}
 
-          {/* Center */}
-          <circle cx={cx} cy={cy} r={20} fill="#6B7F4E" opacity={0.08} />
-          <circle cx={cx} cy={cy} r={9} fill="#6B7F4E" opacity={0.15} />
+          {/* Center — small 4-point star */}
+          {(() => {
+            const r1 = 12;
+            const r2 = 4;
+            const pts: string[] = [];
+            for (let i = 0; i < 8; i++) {
+              const a = -Math.PI / 2 + (i * Math.PI) / 4;
+              const r = i % 2 === 0 ? r1 : r2;
+              pts.push(`${cx + r * Math.cos(a)},${cy + r * Math.sin(a)}`);
+            }
+            return (
+              <polygon
+                points={pts.join(' ')}
+                fill="#6B7F4E"
+                opacity={0.3}
+                stroke="#4A5A2A"
+                strokeWidth="0.5"
+                strokeOpacity={0.4}
+              />
+            );
+          })()}
         </svg>
       </div>
 
@@ -444,12 +468,12 @@ export default function ShareCompass() {
         {themedShareSlices.map((a) => (
           <div
             key={a.key}
-            className="flex h-8 w-8 items-center justify-center rounded-full"
-            style={{ background: a.color, opacity: 0.5 }}
+            className="flex h-11 w-11 items-center justify-center rounded-full"
+            style={{ background: a.color, opacity: 0.7 }}
           >
             <span
-              className="text-sm font-black text-white select-none"
-              style={{ fontFamily: 'var(--font-handwritten)' }}
+              className="text-xl font-black text-white select-none"
+              style={{ fontFamily: 'var(--font-handwritten)', lineHeight: 1 }}
             >
               {a.label === 'Share' ? 'Sh' : a.label[0]}
             </span>
@@ -645,7 +669,7 @@ export default function ShareCompass() {
                 >
                   {activeSub}
                 </span>
-                <span className="text-[10px] text-muted-foreground">{subStep + 1} / 3</span>
+                <span className="text-xs text-muted-foreground">{subStep + 1} / 3</span>
               </div>
 
               <p

@@ -50,7 +50,7 @@ export default async function AppLayout({
             <div className="flex items-center justify-between gap-4">
               <div className="flex items-center gap-2.5">
                 <StepBack />
-                <p className="text-[10px] text-muted-foreground/50">
+                <p className="text-xs text-muted-foreground/50">
                   {user.email ?? 'your Google account'}
                 </p>
               </div>
@@ -59,7 +59,7 @@ export default async function AppLayout({
                 <ThemeSwitcher />
                 <form action="/logout" method="post">
                   <button
-                    className="text-[10px] text-muted-foreground transition-colors hover:text-foreground"
+                    className="text-xs text-muted-foreground transition-colors hover:text-foreground"
                     type="submit"
                   >
                     Sign out

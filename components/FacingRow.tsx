@@ -39,7 +39,7 @@ export default function FacingRow({ activeId, trackers, onSelect }: FacingRowPro
           );
         })}
       </div>
-      <p className="text-center text-[10px] font-semibold uppercase tracking-[0.26em] text-[#8f6a47]">
+      <p className="text-center text-xs font-semibold uppercase tracking-[0.26em] text-[#8f6a47]">
         FACING
       </p>
     </div>

@@ -51,7 +51,7 @@ function GenerateButtons({ context }: { context: string }) {
   return (
     <div className="space-y-2">
       <div className="flex items-center gap-1.5">
-        <span className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground/50 mr-1">
+        <span className="text-xs font-semibold uppercase tracking-widest text-muted-foreground/50 mr-1">
           AI Ideas
         </span>
         {GENERATE_TYPES.map((t) => (
@@ -60,7 +60,7 @@ function GenerateButtons({ context }: { context: string }) {
             type="button"
             disabled={loading}
             onClick={() => generate(t.id)}
-            className="px-2 py-0.5 rounded-lg text-[9px] font-medium transition-all disabled:opacity-40"
+            className="px-2 py-0.5 rounded-lg text-[11px] font-medium transition-all disabled:opacity-40"
             style={{
               background: activeType === t.id ? `${t.color}20` : 'transparent',
               border: `1px solid ${activeType === t.id ? t.color : `${t.color}30`}`,
@@ -209,7 +209,7 @@ function FormatToolbar({
       <button
         type="button"
         onClick={() => wrapSelection('\n## ', '\n')}
-        className="h-7 w-7 flex items-center justify-center rounded text-[10px] font-bold text-muted-foreground/50 hover:text-muted-foreground hover:bg-accent/50 transition-colors"
+        className="h-7 w-7 flex items-center justify-center rounded text-xs font-bold text-muted-foreground/50 hover:text-muted-foreground hover:bg-accent/50 transition-colors"
       >
         H
       </button>
@@ -297,7 +297,7 @@ function FormatToolbar({
             setShowFonts(!showFonts);
             setShowColors(false);
           }}
-          className="h-7 px-1.5 flex items-center justify-center rounded text-[10px] text-muted-foreground/50 hover:text-muted-foreground hover:bg-accent/50 transition-colors"
+          className="h-7 px-1.5 flex items-center justify-center rounded text-xs text-muted-foreground/50 hover:text-muted-foreground hover:bg-accent/50 transition-colors"
         >
           Aa
         </button>
@@ -560,13 +560,13 @@ export default function NotebookPage() {
                 />
                 <div className="flex-1 min-w-0">
                   <p
-                    className="text-[11px] font-medium truncate"
+                    className="text-xs font-medium truncate"
                     style={{ color: isActive ? nb.color : `${nb.color}80` }}
                   >
                     {nb.label}
                   </p>
                   {count > 0 && (
-                    <p className="text-[9px]" style={{ color: `${nb.color}40` }}>
+                    <p className="text-[11px]" style={{ color: `${nb.color}40` }}>
                       {count} notes
                     </p>
                   )}
@@ -582,7 +582,7 @@ export default function NotebookPage() {
             className="w-full flex items-center gap-2 px-3 py-2 rounded-xl text-left transition-all hover:bg-accent/30"
           >
             <span className="text-sm opacity-30">+</span>
-            <span className="text-[10px] text-muted-foreground/30">New notebook</span>
+            <span className="text-xs text-muted-foreground/50">New notebook</span>
           </button>
 
           {showAddNotebook && (
@@ -592,7 +592,7 @@ export default function NotebookPage() {
                 value={newNbName}
                 onChange={(e) => setNewNbName(e.target.value)}
                 placeholder="Name..."
-                className="w-full rounded-lg border border-border bg-background px-2 py-1 text-[11px] outline-none"
+                className="w-full rounded-lg border border-border bg-background px-2 py-1 text-xs outline-none"
               />
               <div className="flex flex-wrap gap-1">
                 {COLOR_PICKER.map((c) => (
@@ -615,7 +615,7 @@ export default function NotebookPage() {
                   setNewNbName('');
                   setShowAddNotebook(false);
                 }}
-                className="w-full text-[10px] py-1 rounded-lg font-medium disabled:opacity-30"
+                className="w-full text-xs py-1 rounded-lg font-medium disabled:opacity-30"
                 style={{ color: newNbColor, background: `${newNbColor}10` }}
               >
                 Create
@@ -636,7 +636,7 @@ export default function NotebookPage() {
               {activeNb?.label}
             </h2>
             <div className="flex-1" />
-            <span className="text-[10px] text-muted-foreground/30">{filtered.length} notes</span>
+            <span className="text-xs text-muted-foreground/50">{filtered.length} notes</span>
           </div>
 
           {/* Add note */}
@@ -652,7 +652,7 @@ export default function NotebookPage() {
               value={newTitle}
               onChange={(e) => setNewTitle(e.target.value)}
               placeholder={placeholder}
-              className="flex-1 rounded-lg border px-3 py-2 text-sm outline-none placeholder:text-muted-foreground/30"
+              className="flex-1 rounded-lg border px-3 py-2 text-sm outline-none placeholder:text-muted-foreground/50"
               style={{
                 borderColor: `${activeNb?.color || '#C4A060'}15`,
                 background: `${activeNb?.color || '#C4A060'}03`,
@@ -677,7 +677,7 @@ export default function NotebookPage() {
                 className="h-8 w-8 rounded-full mx-auto"
                 style={{ background: activeNb?.color, opacity: 0.1 }}
               />
-              <p className="text-sm text-muted-foreground/30 mt-2">No notes yet</p>
+              <p className="text-sm text-muted-foreground/50 mt-2">No notes yet</p>
             </div>
           )}
 
@@ -715,7 +715,7 @@ export default function NotebookPage() {
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-medium truncate">{entry.title}</p>
                       {entry.content && (
-                        <p className="text-[11px] text-muted-foreground/30 truncate mt-0.5">
+                        <p className="text-xs text-muted-foreground/50 truncate mt-0.5">
                           {entry.content
                             .replace(/\*\*/g, '')
                             .replace(/\|\|\|CHORDS\|\|\|.*/, '')
@@ -723,7 +723,7 @@ export default function NotebookPage() {
                         </p>
                       )}
                     </div>
-                    <span className="text-[9px] text-muted-foreground/20 shrink-0">
+                    <span className="text-[11px] text-muted-foreground/40 shrink-0">
                       {new Date(entry.createdAt).toLocaleDateString([], {
                         month: 'short',
                         day: 'numeric',
@@ -754,7 +754,7 @@ export default function NotebookPage() {
                           setExpandedId(null);
                           setEditingId(null);
                         }}
-                        className="text-xs text-muted-foreground/30 hover:text-muted-foreground"
+                        className="text-xs text-muted-foreground/50 hover:text-muted-foreground"
                       >
                         ✕
                       </button>
@@ -889,7 +889,7 @@ export default function NotebookPage() {
                               color="transparent"
                             />
                           ) : (
-                            <p className="text-sm text-muted-foreground/20 py-2">
+                            <p className="text-sm text-muted-foreground/40 py-2">
                               Click to write...
                             </p>
                           )}
@@ -919,7 +919,7 @@ export default function NotebookPage() {
                                     body: JSON.stringify({ tags: next }),
                                   });
                                 }}
-                                className="px-2 py-0.5 rounded-lg text-[9px] font-medium"
+                                className="px-2 py-0.5 rounded-lg text-[11px] font-medium"
                                 style={{
                                   background: linked ? '#3A8AC420' : 'transparent',
                                   border: `1px solid ${linked ? '#3A8AC4' : '#3A8AC430'}`,
@@ -954,7 +954,7 @@ export default function NotebookPage() {
 
                       {/* Actions */}
                       <div className="flex items-center justify-between pt-2 border-t border-border/10">
-                        <span className="text-[9px] text-muted-foreground/20">
+                        <span className="text-[11px] text-muted-foreground/40">
                           {new Date(entry.createdAt).toLocaleDateString([], {
                             weekday: 'short',
                             month: 'short',
@@ -966,7 +966,7 @@ export default function NotebookPage() {
                             <button
                               type="button"
                               onClick={() => setEditingId(null)}
-                              className="text-[10px] text-muted-foreground/40 hover:text-muted-foreground"
+                              className="text-xs text-muted-foreground/40 hover:text-muted-foreground"
                             >
                               Done
                             </button>
@@ -974,7 +974,7 @@ export default function NotebookPage() {
                             <button
                               type="button"
                               onClick={() => setEditingId(entry.id)}
-                              className="text-[10px] text-muted-foreground/30 hover:text-muted-foreground"
+                              className="text-xs text-muted-foreground/50 hover:text-muted-foreground"
                             >
                               Edit
                             </button>
@@ -982,7 +982,7 @@ export default function NotebookPage() {
                           <button
                             type="button"
                             onClick={() => handleDelete(entry.id)}
-                            className="text-[10px] text-muted-foreground/20 hover:text-destructive"
+                            className="text-xs text-muted-foreground/40 hover:text-destructive"
                           >
                             Delete
                           </button>

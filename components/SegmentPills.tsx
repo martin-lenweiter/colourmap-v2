@@ -63,7 +63,7 @@ function Pill({
       <button
         type="button"
         onClick={onToggle}
-        className="w-full rounded-full px-4 py-2 text-[11px] font-semibold uppercase tracking-widest transition-all"
+        className="w-full rounded-full px-4 py-2 text-xs font-semibold uppercase tracking-widest transition-all"
         style={{
           background: open ? `${color}15` : 'transparent',
           color: open ? color : `${color}80`,
@@ -73,7 +73,7 @@ function Pill({
         <span className="flex items-center justify-center gap-2">
           {label}
           {count !== undefined && count > 0 && !open && (
-            <span className="text-[9px] opacity-50">{count}</span>
+            <span className="text-[11px] opacity-50">{count}</span>
           )}
         </span>
       </button>
@@ -235,7 +235,7 @@ export default function SegmentPills({
                 type="button"
                 onClick={addLogEntry}
                 disabled={saving}
-                className="text-[10px] font-medium px-2"
+                className="text-xs font-medium px-2"
                 style={{ color }}
               >
                 {saving ? '...' : 'Add'}
@@ -246,14 +246,14 @@ export default function SegmentPills({
             <div className="space-y-1.5 max-h-48 overflow-y-auto">
               {log.map((entry, i) => (
                 <div key={i} className="flex gap-2 text-xs group">
-                  <span className="text-muted-foreground/40 shrink-0 text-[10px] pt-0.5">
+                  <span className="text-muted-foreground/40 shrink-0 text-xs pt-0.5">
                     {formatDate(entry.date)}
                   </span>
                   <span className="text-muted-foreground flex-1">{entry.text}</span>
                   <button
                     type="button"
                     onClick={() => removeLogEntry(i)}
-                    className="text-[9px] text-muted-foreground/0 group-hover:text-muted-foreground/40 hover:!text-destructive transition-colors shrink-0"
+                    className="text-[11px] text-muted-foreground/0 group-hover:text-muted-foreground/40 hover:!text-destructive transition-colors shrink-0"
                   >
                     ×
                   </button>
@@ -261,7 +261,7 @@ export default function SegmentPills({
               ))}
             </div>
           ) : (
-            <p className="text-[10px] text-muted-foreground/30 text-center py-1">No notes yet</p>
+            <p className="text-xs text-muted-foreground/50 text-center py-1">No notes yet</p>
           )}
         </div>
       </Pill>
@@ -540,7 +540,7 @@ function ActionPlan({
                 <button
                   type="button"
                   onClick={() => toggleDone(i)}
-                  className={`mt-0.5 flex h-4 w-4 shrink-0 items-center justify-center rounded border transition-colors text-[9px] ${
+                  className={`mt-0.5 flex h-4 w-4 shrink-0 items-center justify-center rounded border transition-colors text-[11px] ${
                     a.done ? '' : 'border-muted-foreground/40'
                   }`}
                   style={
@@ -554,19 +554,19 @@ function ActionPlan({
                 <div className="flex-1 min-w-0">
                   <p className={`text-xs font-medium ${a.done ? 'line-through' : ''}`}>{a.what}</p>
                   {a.firstStep && (
-                    <p className="text-[10px] text-muted-foreground mt-0.5">
+                    <p className="text-xs text-muted-foreground mt-0.5">
                       First step: {a.firstStep}
                     </p>
                   )}
                   {a.linkedLabel && (
-                    <p className="text-[9px] mt-0.5" style={{ color }}>
+                    <p className="text-[11px] mt-0.5" style={{ color }}>
                       ↳ {a.linkedLabel}
                     </p>
                   )}
                 </div>
                 <div className="flex items-center gap-1.5 shrink-0">
                   {a.by && (
-                    <span className="text-[9px] text-muted-foreground/50">
+                    <span className="text-[11px] text-muted-foreground/50">
                       by {new Date(a.by).toLocaleDateString([], { month: 'short', day: 'numeric' })}
                     </span>
                   )}
@@ -574,21 +574,21 @@ function ActionPlan({
                     <button
                       type="button"
                       onClick={() => sendToCockpit(a, i)}
-                      className="text-[9px] text-muted-foreground/50 hover:text-foreground transition-colors"
+                      className="text-[11px] text-muted-foreground/50 hover:text-foreground transition-colors"
                       title="Track in cockpit"
                     >
                       → cockpit
                     </button>
                   )}
                   {a.inCockpit && (
-                    <span className="text-[9px]" style={{ color: '#C4A060' }}>
+                    <span className="text-[11px]" style={{ color: '#C4A060' }}>
                       ✓ cockpit
                     </span>
                   )}
                   <button
                     type="button"
                     onClick={() => remove(i)}
-                    className="text-[9px] text-muted-foreground/0 group-hover:text-muted-foreground/40 hover:!text-destructive transition-colors"
+                    className="text-[11px] text-muted-foreground/0 group-hover:text-muted-foreground/40 hover:!text-destructive transition-colors"
                   >
                     ×
                   </button>
@@ -613,15 +613,15 @@ function ActionPlan({
             value={firstStep}
             onChange={(e) => setFirstStep(e.target.value)}
             placeholder="First step..."
-            className="w-full bg-transparent text-[11px] outline-none placeholder:text-muted-foreground/30"
+            className="w-full bg-transparent text-xs outline-none placeholder:text-muted-foreground/50"
           />
           {/* Link to */}
           <div className="flex items-center gap-1.5 flex-wrap">
-            <span className="text-[10px] text-muted-foreground/40">link to</span>
+            <span className="text-xs text-muted-foreground/40">link to</span>
             <button
               type="button"
               onClick={() => setLinkTo(linkTo === 'daily' ? '' : 'daily')}
-              className={`rounded-full px-2 py-0.5 text-[9px] transition-colors ${
+              className={`rounded-full px-2 py-0.5 text-[11px] transition-colors ${
                 linkTo === 'daily' ? 'font-medium' : 'text-muted-foreground/50'
               }`}
               style={
@@ -640,7 +640,7 @@ function ActionPlan({
                   key={m.id}
                   type="button"
                   onClick={() => setLinkTo(active ? '' : val)}
-                  className={`rounded-full px-2 py-0.5 text-[9px] transition-colors ${
+                  className={`rounded-full px-2 py-0.5 text-[11px] transition-colors ${
                     active ? 'font-medium' : 'text-muted-foreground/50'
                   }`}
                   style={
@@ -656,19 +656,19 @@ function ActionPlan({
           </div>
           <div className="flex items-center justify-between pt-1">
             <div className="flex items-center gap-1.5">
-              <span className="text-[10px] text-muted-foreground/40">by</span>
+              <span className="text-xs text-muted-foreground/40">by</span>
               <input
                 type="date"
                 value={by}
                 onChange={(e) => setBy(e.target.value)}
-                className="bg-transparent text-[10px] text-muted-foreground outline-none"
+                className="bg-transparent text-xs text-muted-foreground outline-none"
               />
             </div>
             <div className="flex gap-2">
               <button
                 type="button"
                 onClick={() => setAdding(false)}
-                className="text-[10px] text-muted-foreground"
+                className="text-xs text-muted-foreground"
               >
                 Cancel
               </button>
@@ -676,7 +676,7 @@ function ActionPlan({
                 type="button"
                 onClick={add}
                 disabled={!what.trim() || saving}
-                className="text-[10px] font-medium"
+                className="text-xs font-medium"
                 style={{ color }}
               >
                 {saving ? '...' : 'Add'}
@@ -688,9 +688,9 @@ function ActionPlan({
         <button
           type="button"
           onClick={() => setAdding(true)}
-          className="flex items-center gap-1.5 text-[10px] text-muted-foreground/40 hover:text-muted-foreground transition-colors"
+          className="flex items-center gap-1.5 text-xs text-muted-foreground/40 hover:text-muted-foreground transition-colors"
         >
-          <span className="flex h-4 w-4 items-center justify-center rounded-full border border-border/40 text-[9px]">
+          <span className="flex h-4 w-4 items-center justify-center rounded-full border border-border/40 text-[11px]">
             +
           </span>
           <span>Add an action</span>
@@ -735,12 +735,10 @@ function QuestionPicker({
                 {dq.label}
               </p>
               {!isActive && answer && (
-                <p className="text-[11px] text-muted-foreground mt-0.5 truncate">{answer}</p>
+                <p className="text-xs text-muted-foreground mt-0.5 truncate">{answer}</p>
               )}
               {!isActive && !answer && (
-                <p className="text-[11px] text-muted-foreground/30 mt-0.5 italic">
-                  {dq.placeholder}
-                </p>
+                <p className="text-xs text-muted-foreground/50 mt-0.5 italic">{dq.placeholder}</p>
               )}
             </button>
             {isActive && (
@@ -803,7 +801,7 @@ function QuestionField({
   return (
     <div className="space-y-1">
       {label && (
-        <p className="text-[10px] font-semibold uppercase tracking-widest" style={{ color }}>
+        <p className="text-xs font-semibold uppercase tracking-widest" style={{ color }}>
           {label}
         </p>
       )}
@@ -820,7 +818,7 @@ function QuestionField({
       />
       <div className="flex items-center justify-end gap-2">
         {saved && (
-          <span className="text-[10px]" style={{ color: '#C4A060' }}>
+          <span className="text-xs" style={{ color: '#C4A060' }}>
             saved
           </span>
         )}
@@ -829,7 +827,7 @@ function QuestionField({
             type="button"
             onClick={save}
             disabled={saving}
-            className="rounded-lg px-3 py-1 text-[11px] font-medium transition-colors"
+            className="rounded-lg px-3 py-1 text-xs font-medium transition-colors"
             style={{ background: `${color}20`, color, border: `1px solid ${color}30` }}
           >
             {saving ? 'Saving...' : 'Save'}

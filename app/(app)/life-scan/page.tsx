@@ -40,7 +40,7 @@ function AutoSaveTextarea({
       />
       {saved && (
         <span
-          className="absolute right-3 bottom-3 text-[10px] font-medium animate-in fade-in duration-200"
+          className="absolute right-3 bottom-3 text-xs font-medium animate-in fade-in duration-200"
           style={{ color: '#C4A060' }}
         >
           saved
@@ -91,7 +91,7 @@ function SaveableQuestion({
           {items.map((item, i) => (
             <div
               key={i}
-              className="flex items-center gap-1 px-2.5 py-1 rounded-xl text-[11px]"
+              className="flex items-center gap-1 px-2.5 py-1 rounded-xl text-xs"
               style={{ background: `${color}12`, border: `1px solid ${color}25`, color }}
             >
               <span>{item}</span>
@@ -127,7 +127,7 @@ function SaveableQuestion({
           <button
             type="button"
             onClick={handleSave}
-            className="absolute right-3 bottom-3 text-[10px] font-medium transition-colors"
+            className="absolute right-3 bottom-3 text-xs font-medium transition-colors"
             style={{ color: `${color}80` }}
           >
             Save
@@ -220,10 +220,10 @@ export default function LifeScanPage() {
           Life Scan
         </p>
         {saveStatus === 'saving' && (
-          <span className="text-[10px] text-muted-foreground animate-pulse">saving</span>
+          <span className="text-xs text-muted-foreground animate-pulse">saving</span>
         )}
         {saveStatus === 'saved' && (
-          <span className="text-[10px] font-medium" style={{ color: '#C4A060' }}>
+          <span className="text-xs font-medium" style={{ color: '#C4A060' }}>
             saved
           </span>
         )}
@@ -255,7 +255,7 @@ export default function LifeScanPage() {
                 }}
               />
               <span
-                className="text-[10px] font-semibold uppercase tracking-widest"
+                className="text-xs font-semibold uppercase tracking-widest"
                 style={{ color: isActive ? dot.color : `${dot.color}80` }}
               >
                 {dot.label}
@@ -655,7 +655,7 @@ export default function LifeScanPage() {
       {/* TASK 4: Program suggestions based on blocks */}
       {suggestions.length > 0 && (
         <div className="rounded-2xl border border-border bg-card/50 p-4 space-y-2 animate-in fade-in duration-200">
-          <p className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground text-center">
+          <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground text-center">
             Suggested programs
           </p>
           <div className="flex flex-wrap justify-center gap-2">
@@ -663,7 +663,7 @@ export default function LifeScanPage() {
               <Link
                 key={s.label}
                 href={s.href}
-                className="rounded-full px-3 py-1.5 text-[11px] font-medium transition-colors border border-[#C4A060]/30 bg-[#C4A060]/8 text-[#8A7A5A] hover:bg-[#C4A060]/15"
+                className="rounded-full px-3 py-1.5 text-xs font-medium transition-colors border border-[#C4A060]/30 bg-[#C4A060]/8 text-[#8A7A5A] hover:bg-[#C4A060]/15"
               >
                 {s.label}
               </Link>

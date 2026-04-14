@@ -133,7 +133,7 @@ export default function InnerWeather({
   return (
     <div className="space-y-3">
       <p
-        className="text-center text-[11px] font-semibold uppercase tracking-[0.24em] transition-colors duration-700"
+        className="text-center text-xs font-semibold uppercase tracking-[0.24em] transition-colors duration-700"
         style={{ color: d ? d.color : '#C4A060' }}
       >
         Inner Weather
@@ -195,7 +195,7 @@ export default function InnerWeather({
                   y={pos.y + oR + 10}
                   textAnchor="middle"
                   style={{
-                    fontSize: '8px',
+                    fontSize: '14px',
                     fontFamily: 'var(--font-handwritten)',
                     fontWeight: 600,
                     fill: m.color,
@@ -228,7 +228,7 @@ export default function InnerWeather({
             y={cy + 62}
             textAnchor="middle"
             style={{
-              fontSize: '8px',
+              fontSize: '14px',
               fontFamily: 'var(--font-handwritten)',
               fill: d ? d.color : '#B8905A',
               opacity: 0.25,
@@ -274,7 +274,7 @@ export default function InnerWeather({
                 {m.emoji}
               </span>
               <span
-                className="text-[7px] font-bold capitalize"
+                className="text-[10px] font-bold capitalize"
                 style={{
                   color: m.color,
                   fontFamily: 'var(--font-handwritten)',
@@ -297,7 +297,7 @@ export default function InnerWeather({
               border: `1px solid ${WM[addingKind].color}18`,
             }}
           >
-            <span style={{ fontSize: '12px' }}>{WM[addingKind].emoji}</span>
+            <span style={{ fontSize: '14px' }}>{WM[addingKind].emoji}</span>
             <input
               type="text"
               value={input}
@@ -323,7 +323,7 @@ export default function InnerWeather({
                   key={s}
                   type="button"
                   onClick={() => add(s, addingKind)}
-                  className="cursor-pointer rounded-full px-2 py-0.5 text-[9px] hover:scale-105"
+                  className="cursor-pointer rounded-full px-2 py-0.5 text-[11px] hover:scale-105"
                   style={{
                     background: `${WM[addingKind].color}10`,
                     border: `1px solid ${WM[addingKind].color}18`,
@@ -355,9 +355,9 @@ export default function InnerWeather({
                     border: `1px solid ${isA ? `${m.color}30` : `${m.color}10`}`,
                   }}
                 >
-                  <span style={{ fontSize: '11px' }}>{m.emoji}</span>
+                  <span style={{ fontSize: '14px' }}>{m.emoji}</span>
                   <span
-                    className="flex-1 text-[10px]"
+                    className="flex-1 text-xs"
                     style={{
                       color: m.color,
                       fontFamily: 'var(--font-handwritten)',
@@ -401,7 +401,7 @@ export default function InnerWeather({
                     <button
                       type="button"
                       onClick={() => remove(e.id)}
-                      className="cursor-pointer text-[8px] ml-1"
+                      className="cursor-pointer text-[11px] ml-1"
                       style={{ color: m.color, opacity: 0.3, background: 'none', border: 'none' }}
                     >
                       ✕
@@ -416,7 +416,7 @@ export default function InnerWeather({
 
       {weather.length === 0 && !addingKind && (
         <p
-          className="text-center text-[10px]"
+          className="text-center text-xs"
           style={{ color: '#B8905A', opacity: 0.3, fontFamily: 'var(--font-handwritten)' }}
         >
           Tap a weather to name what you&apos;re feeling.

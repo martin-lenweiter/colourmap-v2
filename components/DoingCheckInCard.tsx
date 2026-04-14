@@ -41,24 +41,27 @@ function TodoList({ fontFamily }: { fontFamily: string }) {
 
   return (
     <div className="space-y-3">
-      <div className="flex flex-wrap gap-2">
+      <div className="space-y-1.5">
         {items.map((item) => (
-          <span
+          <div
             key={item.id}
-            className="inline-flex cursor-pointer items-center gap-1.5 rounded-full px-4 py-2 text-sm transition-all hover:scale-105"
-            style={{
-              background: item.done ? `${DOING_COLOR}15` : `${DOING_COLOR}08`,
-              border: `1.5px solid ${item.done ? `${DOING_COLOR}40` : `${DOING_COLOR}22`}`,
-              color: item.done ? `${DOING_COLOR}70` : DOING_COLOR,
-              textDecoration: item.done ? 'line-through' : 'none',
-              fontFamily,
-              fontWeight: item.done ? 400 : 600,
-            }}
+            className="group flex cursor-pointer items-center gap-2"
             onClick={() => save(items.map((i) => (i.id === item.id ? { ...i, done: !i.done } : i)))}
           >
-            {item.text}
             <span
-              className="text-[10px] opacity-30 hover:opacity-70"
+              className="text-base"
+              style={{
+                color: item.done ? '#7a543860' : '#7a5438',
+                textDecoration: item.done ? 'line-through' : 'none',
+                fontFamily,
+                fontWeight: 500,
+              }}
+            >
+              {item.text}
+            </span>
+            <span
+              className="text-xs opacity-0 transition-opacity group-hover:opacity-40 cursor-pointer"
+              style={{ color: '#7a5438' }}
               onClick={(e) => {
                 e.stopPropagation();
                 save(items.filter((i) => i.id !== item.id));
@@ -66,7 +69,7 @@ function TodoList({ fontFamily }: { fontFamily: string }) {
             >
               ✕
             </span>
-          </span>
+          </div>
         ))}
       </div>
       <input
@@ -78,7 +81,7 @@ function TodoList({ fontFamily }: { fontFamily: string }) {
         }}
         placeholder="+ add task..."
         className="w-full border-b bg-transparent pb-2 text-base outline-none"
-        style={{ color: DOING_COLOR, borderColor: `${DOING_COLOR}20`, fontFamily }}
+        style={{ color: '#7a5438', borderColor: `${DOING_COLOR}20`, fontFamily }}
       />
     </div>
   );
@@ -135,14 +138,11 @@ function MissionsList({ fontFamily }: { fontFamily: string }) {
               >
                 {m.name}
               </button>
-              <span
-                className="text-[11px]"
-                style={{ color: DOING_COLOR, opacity: 0.5, fontFamily }}
-              >
+              <span className="text-xs" style={{ color: DOING_COLOR, opacity: 0.5, fontFamily }}>
                 {m.progress}%
               </span>
               <span
-                className="cursor-pointer text-[10px] opacity-0 transition-opacity group-hover:opacity-50"
+                className="cursor-pointer text-xs opacity-0 transition-opacity group-hover:opacity-50"
                 style={{ color: DOING_COLOR }}
                 onClick={() => save(missions.filter((x) => x.id !== m.id))}
               >
@@ -161,7 +161,7 @@ function MissionsList({ fontFamily }: { fontFamily: string }) {
         }}
         placeholder="+ add mission..."
         className="w-full border-b bg-transparent pb-2 text-base outline-none"
-        style={{ color: DOING_COLOR, borderColor: `${DOING_COLOR}20`, fontFamily }}
+        style={{ color: '#7a5438', borderColor: `${DOING_COLOR}20`, fontFamily }}
       />
     </div>
   );
@@ -205,7 +205,7 @@ function TrackersList({ fontFamily }: { fontFamily: string }) {
                 {t.days.filter(Boolean).length}/7
               </span>
               <span
-                className="cursor-pointer text-[10px] opacity-0 transition-opacity group-hover:opacity-40"
+                className="cursor-pointer text-xs opacity-0 transition-opacity group-hover:opacity-40"
                 style={{ color: DOING_COLOR }}
                 onClick={() => save(trackers.filter((x) => x.id !== t.id))}
               >
@@ -238,7 +238,7 @@ function TrackersList({ fontFamily }: { fontFamily: string }) {
                     border: di === (today + 6) % 7 ? `2px solid ${DOING_COLOR}` : 'none',
                   }}
                 />
-                <span className="text-[10px]" style={{ color: DOING_COLOR, opacity: 0.35 }}>
+                <span className="text-xs" style={{ color: DOING_COLOR, opacity: 0.5 }}>
                   {labels[di]}
                 </span>
               </button>
@@ -255,13 +255,60 @@ function TrackersList({ fontFamily }: { fontFamily: string }) {
         }}
         placeholder="+ add tracker..."
         className="w-full border-b bg-transparent pb-2 text-base outline-none"
-        style={{ color: DOING_COLOR, borderColor: `${DOING_COLOR}20`, fontFamily }}
+        style={{ color: '#7a5438', borderColor: `${DOING_COLOR}20`, fontFamily }}
       />
     </div>
   );
 }
 
 /* ─── Main ─── */
+/* ─── Inner doing content — reusable without card wrapper ─── */
+export function DoingContent() {
+  const fontFamily = 'var(--font-handwritten)';
+  const [openSections, setOpenSections] = useState<Record<string, boolean>>({
+    todos: true,
+    missions: false,
+    trackers: false,
+  });
+  const toggle = (key: string) => setOpenSections((prev) => ({ ...prev, [key]: !prev[key] }));
+
+  return (
+    <div className="space-y-3">
+      {(['todos', 'missions', 'trackers'] as const).map((key) => {
+        const label = key === 'todos' ? 'To-do' : key === 'missions' ? 'Missions' : 'Trackers';
+        return (
+          <div key={key}>
+            <button
+              type="button"
+              onClick={() => toggle(key)}
+              className="flex w-full cursor-pointer items-center justify-between"
+              style={{ background: 'none', border: 'none', padding: 0 }}
+            >
+              <span
+                className="text-lg font-bold uppercase"
+                style={{ color: DOING_COLOR, fontFamily }}
+              >
+                {label}
+              </span>
+              <span className="text-xs text-muted-foreground/50">
+                {openSections[key] ? '▲' : '▼'}
+              </span>
+            </button>
+            {openSections[key] &&
+              (key === 'todos' ? (
+                <TodoList fontFamily={fontFamily} />
+              ) : key === 'missions' ? (
+                <MissionsList fontFamily={fontFamily} />
+              ) : (
+                <TrackersList fontFamily={fontFamily} />
+              ))}
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
 export default function DoingCheckInCard() {
   const {
     font: boxFont,
@@ -304,10 +351,13 @@ export default function DoingCheckInCard() {
               className="flex w-full cursor-pointer items-center justify-between"
               style={{ background: 'none', border: 'none', padding: 0 }}
             >
-              <span className="text-base font-semibold" style={{ color: DOING_COLOR, fontFamily }}>
+              <span
+                className="text-xl font-bold uppercase"
+                style={{ color: DOING_COLOR, fontFamily }}
+              >
                 {label}
               </span>
-              <span className="text-xs text-muted-foreground/30">
+              <span className="text-xs text-muted-foreground/50">
                 {openSections[key] ? '▲' : '▼'}
               </span>
             </button>

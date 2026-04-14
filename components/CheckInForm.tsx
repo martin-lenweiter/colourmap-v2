@@ -277,16 +277,13 @@ function _NoteLog({
             return (
               <div key={i} className="flex items-start gap-2 group">
                 {timeMatch && (
-                  <span className="text-[10px] text-muted-foreground/40 shrink-0 pt-0.5 w-10">
+                  <span className="text-xs text-muted-foreground/40 shrink-0 pt-0.5 w-10">
                     {timeMatch[1]}
                   </span>
                 )}
                 {!timeMatch && !isTracker && <span className="w-10 shrink-0" />}
                 {isTracker && trackerInfo && (
-                  <span
-                    className="text-[10px] shrink-0 pt-0.5"
-                    style={{ color: trackerInfo.color }}
-                  >
+                  <span className="text-xs shrink-0 pt-0.5" style={{ color: trackerInfo.color }}>
                     {trackerInfo.label}
                   </span>
                 )}
@@ -319,7 +316,7 @@ function _NoteLog({
       {/* Input row */}
       <div className="rounded-xl border border-border bg-card/50 p-3 space-y-2">
         <div className="flex items-center gap-2">
-          <span className="text-[10px] text-muted-foreground/40 shrink-0">{nowTime()}</span>
+          <span className="text-xs text-muted-foreground/40 shrink-0">{nowTime()}</span>
           <input
             type="text"
             value={inputText}
@@ -361,7 +358,7 @@ function _NoteLog({
               />
             ))}
             {inputEnergy !== null && (
-              <span className="text-[9px] ml-1" style={{ color: ENERGY_COLORS[inputEnergy] }}>
+              <span className="text-[11px] ml-1" style={{ color: ENERGY_COLORS[inputEnergy] }}>
                 {ENERGY_LABELS[inputEnergy]}
               </span>
             )}
@@ -378,7 +375,7 @@ function _NoteLog({
                     const prefix = `[${t.label}] `;
                     setNote(note ? `${note}\n${prefix}` : prefix);
                   }}
-                  className="rounded-full px-2 py-0.5 text-[9px] font-medium transition-all"
+                  className="rounded-full px-2 py-0.5 text-[11px] font-medium transition-all"
                   style={{
                     background: tagged ? `${t.color}18` : 'transparent',
                     color: tagged ? t.color : `${t.color}50`,
@@ -423,12 +420,12 @@ function PulseSlider({
     <div className="space-y-1">
       <div className="flex items-center justify-between">
         <span
-          className="text-[10px] font-medium uppercase tracking-wider"
+          className="text-xs font-medium uppercase tracking-wider"
           style={{ color: currentColor }}
         >
           {label}
         </span>
-        <span className="text-[10px]" style={{ color: currentColor }}>
+        <span className="text-xs" style={{ color: currentColor }}>
           {levels[idx]}
         </span>
       </div>
@@ -472,7 +469,7 @@ function PulseSlider({
           type="text"
           value=""
           onChange={(e) => onNote(e.target.value)}
-          className="w-full bg-transparent text-xs text-muted-foreground/30 outline-none placeholder:text-muted-foreground/30"
+          className="w-full bg-transparent text-xs text-muted-foreground/50 outline-none placeholder:text-muted-foreground/50"
           placeholder={`Note on ${label.toLowerCase()}...`}
         />
       )}
@@ -860,16 +857,16 @@ export default function CheckInForm({ missions = [], onCheckInComplete }: CheckI
     <form onSubmit={handleSubmit} className="space-y-8">
       {isFirstCheckIn && (
         <div className="rounded-[22px] border border-[#c4a0602b] bg-[#fbf4e8cc] px-4 py-4 text-left shadow-[0_16px_40px_-32px_rgba(92,48,24,0.45)]">
-          <p className="text-[10px] uppercase tracking-[0.28em] text-[#9d6f2f]">First Check-In</p>
+          <p className="text-xs uppercase tracking-[0.28em] text-[#9d6f2f]">First Check-In</p>
           <div className="mt-3 space-y-3">
             <div>
-              <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-[#c88820]">
+              <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[#c88820]">
                 Ochre
               </p>
               <p className="mt-1 text-sm leading-6 text-[#7a5438]">Create a branch first.</p>
             </div>
             <div>
-              <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-[#7a5438]">
+              <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[#7a5438]">
                 Brown
               </p>
               <p className="mt-1 text-sm leading-6 text-[#7a5438]">
@@ -877,7 +874,7 @@ export default function CheckInForm({ missions = [], onCheckInComplete }: CheckI
               </p>
             </div>
             <div>
-              <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-[#2d241f]">
+              <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[#2d241f]">
                 Ink
               </p>
               <p className="mt-1 text-sm leading-6 text-[#2d241f]">
@@ -986,7 +983,7 @@ export default function CheckInForm({ missions = [], onCheckInComplete }: CheckI
                         <button
                           type="button"
                           onClick={() => setShowDesc(true)}
-                          className="text-[10px] text-muted-foreground/40 hover:text-muted-foreground/60 transition-colors"
+                          className="text-xs text-muted-foreground/40 hover:text-muted-foreground/60 transition-colors"
                         >
                           more
                         </button>
@@ -1001,7 +998,7 @@ export default function CheckInForm({ missions = [], onCheckInComplete }: CheckI
                           <button
                             type="button"
                             onClick={() => setShowDesc(false)}
-                            className="text-[10px] text-muted-foreground/30 hover:text-muted-foreground/50 transition-colors"
+                            className="text-xs text-muted-foreground/50 hover:text-muted-foreground/50 transition-colors"
                           >
                             less
                           </button>
@@ -1058,12 +1055,12 @@ export default function CheckInForm({ missions = [], onCheckInComplete }: CheckI
               className="flex items-center justify-center gap-2 w-full py-1 transition-colors"
             >
               <span
-                className="text-[10px] font-semibold uppercase tracking-[0.2em]"
+                className="text-xs font-semibold uppercase tracking-[0.2em]"
                 style={{ color: '#5C301850' }}
               >
                 Pulse
               </span>
-              <span className="text-[9px]" style={{ color: '#5C301830' }}>
+              <span className="text-[11px]" style={{ color: '#5C301830' }}>
                 {showPulse ? '−' : '+'}
               </span>
             </button>
@@ -1177,7 +1174,7 @@ export default function CheckInForm({ missions = [], onCheckInComplete }: CheckI
                           style={{ background: `${tracker.color}30`, borderRadius: 1.5 }}
                         >
                           <span
-                            className="text-[6px] leading-none -rotate-45 font-bold"
+                            className="text-[10px] leading-none -rotate-45 font-bold"
                             style={{ color: tracker.color }}
                           >
                             +

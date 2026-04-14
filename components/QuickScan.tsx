@@ -73,12 +73,12 @@ export default function QuickScan() {
                 )}
               </div>
               <span
-                className="text-[10px] font-semibold uppercase tracking-widest"
+                className="text-xs font-semibold uppercase tracking-widest"
                 style={{ color: `${dot.color}80` }}
               >
                 {dot.label}
               </span>
-              <span className="text-[9px] text-muted-foreground">{subtitle}</span>
+              <span className="text-[11px] text-muted-foreground">{subtitle}</span>
             </div>
           );
         })}

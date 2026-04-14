@@ -527,7 +527,7 @@ function SegmentSlider({ slider, initialValue }: { slider: SliderDef; initialVal
           {current.label}
         </p>
         {saved && (
-          <span className="text-[10px]" style={{ color: '#C4A060' }}>
+          <span className="text-xs" style={{ color: '#C4A060' }}>
             saved
           </span>
         )}
@@ -610,7 +610,7 @@ function SegmentNote({
   return (
     <div className="space-y-1.5">
       {label && (
-        <p className="text-[10px] font-semibold uppercase tracking-widest" style={{ color }}>
+        <p className="text-xs font-semibold uppercase tracking-widest" style={{ color }}>
           {label}
         </p>
       )}
@@ -627,7 +627,7 @@ function SegmentNote({
       />
       <div className="flex items-center justify-end gap-2">
         {saved && (
-          <span className="text-[10px]" style={{ color: '#C4A060' }}>
+          <span className="text-xs" style={{ color: '#C4A060' }}>
             saved
           </span>
         )}
@@ -636,7 +636,7 @@ function SegmentNote({
             type="button"
             onClick={save}
             disabled={saving}
-            className="rounded-lg px-3 py-1 text-[11px] font-medium transition-colors"
+            className="rounded-lg px-3 py-1 text-xs font-medium transition-colors"
             style={{ background: `${color}20`, color, border: `1px solid ${color}30` }}
           >
             {saving ? 'Saving...' : 'Save'}
@@ -735,7 +735,7 @@ export default function CompassWheel({ data = {} }: { data?: CompassData }) {
           {/* Segment title + wisdom */}
           <div className="text-center">
             <p
-              className="text-[11px] font-bold uppercase tracking-widest"
+              className="text-xs font-bold uppercase tracking-widest"
               style={{ color: currentWheel.colors[1] }}
             >
               {segContent.title}
@@ -745,7 +745,7 @@ export default function CompassWheel({ data = {} }: { data?: CompassData }) {
                 <button
                   type="button"
                   onClick={() => setShowWisdom(true)}
-                  className="text-[9px] text-muted-foreground/30 hover:text-muted-foreground/50 transition-colors mt-1 italic"
+                  className="text-[11px] text-muted-foreground/50 hover:text-muted-foreground/50 transition-colors mt-1 italic"
                 >
                   ✦
                 </button>
@@ -755,7 +755,7 @@ export default function CompassWheel({ data = {} }: { data?: CompassData }) {
                   onClick={() => setShowWisdom(false)}
                   className="mt-2 block animate-in fade-in duration-300"
                 >
-                  <p className="text-[11px] leading-relaxed italic text-muted-foreground/60 px-2">
+                  <p className="text-xs leading-relaxed italic text-muted-foreground/60 px-2">
                     {segContent.wisdom}
                   </p>
                 </button>
@@ -764,7 +764,7 @@ export default function CompassWheel({ data = {} }: { data?: CompassData }) {
 
           {/* Status */}
           {segContent.status && (
-            <p className="text-[10px] text-center text-muted-foreground">{segContent.status}</p>
+            <p className="text-xs text-center text-muted-foreground">{segContent.status}</p>
           )}
 
           {/* Slider */}
@@ -799,7 +799,7 @@ export default function CompassWheel({ data = {} }: { data?: CompassData }) {
               {segContent.actions.map((action) => (
                 <span
                   key={action}
-                  className="px-3 py-1.5 rounded-xl text-[11px] font-medium"
+                  className="px-3 py-1.5 rounded-xl text-xs font-medium"
                   style={{
                     background: `${currentWheel.colors[0]}25`,
                     border: `1px solid ${currentWheel.colors[1]}25`,
@@ -841,7 +841,7 @@ export default function CompassWheel({ data = {} }: { data?: CompassData }) {
             <div className="text-center pt-1">
               <Link
                 href={segContent.link}
-                className="text-[10px] text-muted-foreground hover:text-foreground transition-colors underline underline-offset-2"
+                className="text-xs text-muted-foreground hover:text-foreground transition-colors underline underline-offset-2"
               >
                 {segContent.linkLabel || 'Go →'}
               </Link>

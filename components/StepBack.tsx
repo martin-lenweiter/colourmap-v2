@@ -84,7 +84,7 @@ export default function StepBack() {
           ))}
         </div>
 
-        <p className="text-[10px] text-[#C4A06040] mt-4">tap anywhere to return</p>
+        <p className="text-xs text-[#C4A06040] mt-4">tap anywhere to return</p>
       </div>
     </div>
   );

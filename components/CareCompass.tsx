@@ -10,7 +10,7 @@ import { useState } from 'react';
 
 type CareAxis = 'care' | 'attitude' | 'rest' | 'emotions';
 
-type ColorTheme = 'warm' | 'vivid' | 'earth';
+type ColorTheme = 'warm' | 'rest' | 'care' | 'earth' | 'vivid' | 'vivid2';
 
 const CARE_THEMES: {
   id: ColorTheme;
@@ -22,19 +22,37 @@ const CARE_THEMES: {
     id: 'warm',
     name: 'Warm',
     dot: '#C4A060',
-    colors: { care: '#D4805A', attitude: '#C4A070', rest: '#C4906A', emotions: '#B07A5A' },
+    colors: { care: '#D4805A', attitude: '#C4A070', rest: '#D4805A', emotions: '#C4A070' },
   },
   {
-    id: 'vivid',
-    name: 'Vivid',
-    dot: '#D45050',
-    colors: { care: '#D45050', attitude: '#E8A030', rest: '#6890B0', emotions: '#7AAA58' },
+    id: 'rest',
+    name: 'Rest',
+    dot: '#C4906A',
+    colors: { care: '#C4906A', attitude: '#C4A070', rest: '#C4906A', emotions: '#C4A070' },
+  },
+  {
+    id: 'care',
+    name: 'Care',
+    dot: '#D4805A',
+    colors: { care: '#D4805A', attitude: '#C4A070', rest: '#D4805A', emotions: '#C4A070' },
   },
   {
     id: 'earth',
     name: 'Earth',
     dot: '#8A7A5A',
-    colors: { care: '#B89868', attitude: '#C8A878', rest: '#A89060', emotions: '#988050' },
+    colors: { care: '#B89868', attitude: '#C8A878', rest: '#B89868', emotions: '#C8A878' },
+  },
+  {
+    id: 'vivid',
+    name: 'Vivid',
+    dot: '#D45050',
+    colors: { care: '#D45050', attitude: '#E8A030', rest: '#D45050', emotions: '#E8A030' },
+  },
+  {
+    id: 'vivid2',
+    name: 'Vivid 2',
+    dot: '#E8A030',
+    colors: { care: '#E8A030', attitude: '#D45050', rest: '#E8A030', emotions: '#D45050' },
   },
 ];
 
@@ -143,21 +161,64 @@ const SUB_PROGRAMS: Record<string, { reflect: string; rate: string; commit: stri
   },
 };
 
-const RHYMES = [
-  '',
-  'Far from the sun',
-  'Pushing through',
-  'Trying to be free',
-  'Searching for more',
-  'Coming alive',
-  'Finding the mix',
-  'Floating in heaven',
-  'Feeling great',
-];
+const RHYMES: Record<string, string[]> = {
+  Care: [
+    '',
+    'Neglecting yourself',
+    'Barely holding on',
+    'Getting by',
+    'Starting to notice',
+    'Taking small steps',
+    'Caring for yourself',
+    'Nourishing deeply',
+    'Fully tended to',
+  ],
+  Attitude: [
+    '',
+    'Closed and heavy',
+    'Resistant',
+    'Guarded',
+    'Cautiously open',
+    'Willing to try',
+    'Genuinely open',
+    'Embracing it all',
+    'Radically present',
+  ],
+  Rest: [
+    '',
+    'Running on empty',
+    'Depleted',
+    'Tired but pushing',
+    'Need a pause',
+    'Catching up',
+    'Rested enough',
+    'Deeply recharged',
+    'Completely restored',
+  ],
+  Emotions: [
+    '',
+    'Shut down',
+    'Overwhelmed',
+    'Turbulent',
+    'Unsettled',
+    'Processing',
+    'Finding balance',
+    'Calm and clear',
+    'At peace',
+  ],
+};
 
 const STORAGE_KEY = 'colourmap:care-values';
 const CHALLENGE_KEY = 'colourmap:care-challenge';
 const FLOW_KEY = 'colourmap:care-flow';
+
+function loadList(key: string): string[] {
+  try {
+    return JSON.parse(localStorage.getItem(key) || '[]');
+  } catch {
+    return [];
+  }
+}
 
 function loadValues(): Record<CareAxis, number> {
   try {
@@ -167,14 +228,6 @@ function loadValues(): Record<CareAxis, number> {
     /* ignore */
   }
   return { care: 50, attitude: 50, rest: 50, emotions: 50 };
-}
-
-function loadList(key: string): string[] {
-  try {
-    return JSON.parse(localStorage.getItem(key) || '[]');
-  } catch {
-    return [];
-  }
 }
 
 function arcPath(
@@ -204,7 +257,7 @@ export default function CareCompass() {
   const [showDesign, setShowDesign] = useState(false);
   const [colorTheme, setColorTheme] = useState<ColorTheme>(() => {
     try {
-      return (localStorage.getItem('colourmap:care-theme') as ColorTheme) || 'vivid';
+      return (localStorage.getItem('colourmap:care-theme') as ColorTheme) || 'warm';
     } catch {
       return 'warm';
     }
@@ -272,14 +325,14 @@ export default function CareCompass() {
       }}
     >
       <div className="relative">
-        <p className="text-center text-[11px] font-semibold uppercase tracking-[0.24em] text-[#C4A060]">
+        <p className="text-center text-xs font-semibold uppercase tracking-[0.24em] text-[#C4A060]">
           Caring
         </p>
         <div className="absolute right-0 top-0" style={{ zIndex: 10 }}>
           <button
             type="button"
             onClick={() => setShowDesign(!showDesign)}
-            className="cursor-pointer rounded-md px-2 py-0.5 text-[9px] uppercase tracking-wider transition-all"
+            className="cursor-pointer rounded-md px-2 py-0.5 text-[11px] uppercase tracking-wider transition-all"
             style={{
               color: showDesign ? '#C4A060' : '#C4A06060',
               background: showDesign ? '#C4A06010' : 'transparent',
@@ -433,9 +486,27 @@ export default function CareCompass() {
             );
           })}
 
-          {/* Center */}
-          <circle cx={cx} cy={cy} r={20} fill="#C4A060" opacity={0.08} />
-          <circle cx={cx} cy={cy} r={9} fill="#C4A060" opacity={0.15} />
+          {/* Center — small 4-point star */}
+          {(() => {
+            const r1 = 12;
+            const r2 = 4;
+            const points: string[] = [];
+            for (let i = 0; i < 8; i++) {
+              const a = -Math.PI / 2 + (i * Math.PI) / 4;
+              const r = i % 2 === 0 ? r1 : r2;
+              points.push(`${cx + r * Math.cos(a)},${cy + r * Math.sin(a)}`);
+            }
+            return (
+              <polygon
+                points={points.join(' ')}
+                fill="#C4A060"
+                opacity={0.3}
+                stroke="#8A6A4A"
+                strokeWidth="0.5"
+                strokeOpacity={0.4}
+              />
+            );
+          })()}
         </svg>
       </div>
 
@@ -444,12 +515,12 @@ export default function CareCompass() {
         {themedSlices.map((a) => (
           <div
             key={a.key}
-            className="flex h-8 w-8 items-center justify-center rounded-full"
-            style={{ background: a.color, opacity: 0.5 }}
+            className="flex h-11 w-11 items-center justify-center rounded-full"
+            style={{ background: a.color, opacity: 0.7 }}
           >
             <span
-              className="text-sm font-black text-white select-none"
-              style={{ fontFamily: 'var(--font-handwritten)' }}
+              className="text-xl font-black text-white select-none"
+              style={{ fontFamily: 'var(--font-handwritten)', lineHeight: 1 }}
             >
               {a.label[0]}
             </span>
@@ -469,8 +540,9 @@ export default function CareCompass() {
           {challengeItems.length > 0 && (
             <div className="flex flex-wrap justify-center gap-1">
               {challengeItems.map((item, i) => (
-                <span
-                  key={i}
+                <button
+                  key={`${item}-${i}`}
+                  type="button"
                   onClick={() => removeChallenge(i)}
                   className="inline-flex cursor-pointer items-center rounded-full px-2 py-1 text-xs hover:opacity-70"
                   style={{
@@ -480,7 +552,7 @@ export default function CareCompass() {
                   }}
                 >
                   {item} ✕
-                </span>
+                </button>
               ))}
             </div>
           )}
@@ -510,8 +582,9 @@ export default function CareCompass() {
           {flowItems.length > 0 && (
             <div className="flex flex-wrap justify-center gap-1">
               {flowItems.map((item, i) => (
-                <span
-                  key={i}
+                <button
+                  key={`${item}-${i}`}
+                  type="button"
                   onClick={() => removeFlow(i)}
                   className="inline-flex cursor-pointer items-center rounded-full px-2 py-1 text-xs hover:opacity-70"
                   style={{
@@ -521,7 +594,7 @@ export default function CareCompass() {
                   }}
                 >
                   {item} ✕
-                </span>
+                </button>
               ))}
             </div>
           )}
@@ -549,47 +622,58 @@ export default function CareCompass() {
           const current = Math.max(1, Math.min(8, Math.round((values[activeQ.key] / 100) * 8)));
           return (
             <div className="mx-auto max-w-[280px] space-y-2">
-              <div className="flex items-center justify-between">
-                <span
-                  className="text-sm font-semibold"
-                  style={{ color: activeQ.color, fontFamily: 'var(--font-serif)' }}
-                >
-                  {activeQ.label}
-                </span>
-                <span
-                  className="text-xs"
-                  style={{
-                    color: activeQ.color,
-                    opacity: 0.5,
-                    fontFamily: 'var(--font-serif)',
-                  }}
-                >
-                  {current}. {RHYMES[current]}
-                </span>
+              <p
+                className="text-center text-lg font-bold"
+                style={{ color: activeQ.color, fontFamily: 'var(--font-serif)' }}
+              >
+                {activeQ.label}
+              </p>
+              <div className="flex items-center justify-center gap-[2px]">
+                {(() => {
+                  const rainbow = [
+                    '#C83030',
+                    '#D46050',
+                    '#D87048',
+                    '#C88820',
+                    '#7AAA58',
+                    '#3AA8A0',
+                    '#3A8AC4',
+                    '#9B6BA0',
+                  ];
+                  return [1, 2, 3, 4, 5, 6, 7, 8].map((n) => {
+                    const mapped = Math.round((n / 8) * 100);
+                    const isN = n === current;
+                    const dist = Math.abs(n - current);
+                    return (
+                      <button
+                        key={n}
+                        type="button"
+                        onClick={() => handleRating(activeQ.key, mapped)}
+                        className="cursor-pointer transition-all duration-200"
+                        style={{
+                          width: 28,
+                          height: 28,
+                          borderRadius: 4,
+                          background: rainbow[n - 1],
+                          opacity: isN ? 1 : dist === 1 ? 0.5 : 0.2,
+                          border: 'none',
+                          padding: 0,
+                        }}
+                      />
+                    );
+                  });
+                })()}
               </div>
-              <div className="flex items-center gap-[3px]">
-                {[1, 2, 3, 4, 5, 6, 7, 8].map((n) => {
-                  const mapped = Math.round((n / 8) * 100);
-                  const isN = n === current;
-                  const dist = Math.abs(n - current);
-                  return (
-                    <button
-                      key={n}
-                      type="button"
-                      onClick={() => handleRating(activeQ.key, mapped)}
-                      className="flex-1 cursor-pointer transition-all duration-200"
-                      style={{
-                        height: isN ? 24 : 12,
-                        borderRadius: 2,
-                        background: activeQ.color,
-                        opacity: isN ? 1 : dist === 1 ? 0.4 : 0.12,
-                        border: 'none',
-                        padding: 0,
-                      }}
-                    />
-                  );
-                })}
-              </div>
+              <p
+                className="text-center text-base"
+                style={{
+                  color: activeQ.color,
+                  opacity: 0.7,
+                  fontFamily: 'var(--font-handwritten)',
+                }}
+              >
+                {(RHYMES[activeQ.label] || [])[current] || ''}
+              </p>
             </div>
           );
         })()}
@@ -645,7 +729,7 @@ export default function CareCompass() {
                 >
                   {activeSub}
                 </span>
-                <span className="text-[10px] text-muted-foreground">{subStep + 1} / 3</span>
+                <span className="text-xs text-muted-foreground">{subStep + 1} / 3</span>
               </div>
 
               <p
@@ -674,25 +758,39 @@ export default function CareCompass() {
               )}
 
               {step.type === 'rate' && (
-                <div className="flex items-center gap-1">
-                  {[1, 2, 3, 4, 5, 6, 7, 8].map((n) => {
-                    const selected = Number(subAnswers.rate) === n;
-                    return (
-                      <button
-                        key={n}
-                        type="button"
-                        onClick={() => setSubAnswers((prev) => ({ ...prev, rate: String(n) }))}
-                        className="flex-1 cursor-pointer transition-all duration-200"
-                        style={{
-                          height: selected ? 26 : 16,
-                          borderRadius: 2,
-                          background: activeQ.color,
-                          opacity: selected ? 1 : 0.2,
-                          border: 'none',
-                        }}
-                      />
-                    );
-                  })}
+                <div className="flex items-center justify-center gap-[2px]">
+                  {(() => {
+                    const rainbow = [
+                      '#C83030',
+                      '#D46050',
+                      '#D87048',
+                      '#C88820',
+                      '#7AAA58',
+                      '#3AA8A0',
+                      '#3A8AC4',
+                      '#9B6BA0',
+                    ];
+                    return [1, 2, 3, 4, 5, 6, 7, 8].map((n) => {
+                      const selected = Number(subAnswers.rate) === n;
+                      const dist = Math.abs(n - (Number(subAnswers.rate) || 0));
+                      return (
+                        <button
+                          key={n}
+                          type="button"
+                          onClick={() => setSubAnswers((prev) => ({ ...prev, rate: String(n) }))}
+                          className="cursor-pointer transition-all duration-200"
+                          style={{
+                            width: 28,
+                            height: 28,
+                            borderRadius: 4,
+                            background: rainbow[n - 1],
+                            opacity: selected ? 1 : dist === 1 ? 0.5 : 0.2,
+                            border: 'none',
+                          }}
+                        />
+                      );
+                    });
+                  })()}
                 </div>
               )}
 

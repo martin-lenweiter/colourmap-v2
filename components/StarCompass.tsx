@@ -10,7 +10,7 @@ import { useState } from 'react';
 
 type StarAxis = 'structure' | 'target' | 'action' | 'resources';
 
-type StarColorTheme = 'cool' | 'vivid' | 'forest';
+type StarColorTheme = 'cool' | 'vivid' | 'forest' | 'vivid2';
 
 const STAR_THEMES: {
   id: StarColorTheme;
@@ -22,19 +22,25 @@ const STAR_THEMES: {
     id: 'cool',
     name: 'Cool',
     dot: '#7A9A7A',
-    colors: { structure: '#6A8A9A', target: '#7A9A7A', action: '#8A8A6A', resources: '#5A7A9A' },
+    colors: { structure: '#6A8A9A', target: '#7A9A7A', action: '#6A8A9A', resources: '#7A9A7A' },
   },
   {
     id: 'vivid',
     name: 'Vivid',
     dot: '#7AAA58',
-    colors: { structure: '#3A8AC4', target: '#7AAA58', action: '#E8A030', resources: '#D45050' },
+    colors: { structure: '#3A8AC4', target: '#7AAA58', action: '#3A8AC4', resources: '#7AAA58' },
   },
   {
     id: 'forest',
     name: 'Forest',
     dot: '#4A7A4A',
-    colors: { structure: '#5A8A5A', target: '#4A7A4A', action: '#6A9A6A', resources: '#3A6A3A' },
+    colors: { structure: '#5A8A5A', target: '#4A7A4A', action: '#5A8A5A', resources: '#4A7A4A' },
+  },
+  {
+    id: 'vivid2',
+    name: 'Vivid 2',
+    dot: '#3A8AC4',
+    colors: { structure: '#7AAA58', target: '#3A8AC4', action: '#7AAA58', resources: '#3A8AC4' },
   },
 ];
 
@@ -272,14 +278,14 @@ export default function StarCompass() {
       }}
     >
       <div className="relative">
-        <p className="text-center text-[11px] font-semibold uppercase tracking-[0.24em] text-[#7A9A7A]">
+        <p className="text-center text-xs font-semibold uppercase tracking-[0.24em] text-[#7A9A7A]">
           Doing
         </p>
         <div className="absolute right-0 top-0" style={{ zIndex: 10 }}>
           <button
             type="button"
             onClick={() => setShowDesign(!showDesign)}
-            className="cursor-pointer rounded-md px-2 py-0.5 text-[9px] uppercase tracking-wider transition-all"
+            className="cursor-pointer rounded-md px-2 py-0.5 text-[11px] uppercase tracking-wider transition-all"
             style={{
               color: showDesign ? '#7A9A7A' : '#7A9A7A60',
               background: showDesign ? '#7A9A7A10' : 'transparent',
@@ -433,9 +439,27 @@ export default function StarCompass() {
             );
           })}
 
-          {/* Center */}
-          <circle cx={cx} cy={cy} r={20} fill="#7A9A7A" opacity={0.08} />
-          <circle cx={cx} cy={cy} r={9} fill="#7A9A7A" opacity={0.15} />
+          {/* Center — small 4-point star */}
+          {(() => {
+            const r1 = 12;
+            const r2 = 4;
+            const pts: string[] = [];
+            for (let i = 0; i < 8; i++) {
+              const a = -Math.PI / 2 + (i * Math.PI) / 4;
+              const r = i % 2 === 0 ? r1 : r2;
+              pts.push(`${cx + r * Math.cos(a)},${cy + r * Math.sin(a)}`);
+            }
+            return (
+              <polygon
+                points={pts.join(' ')}
+                fill="#7A9A7A"
+                opacity={0.3}
+                stroke="#4A6A4A"
+                strokeWidth="0.5"
+                strokeOpacity={0.4}
+              />
+            );
+          })()}
         </svg>
       </div>
 
@@ -444,12 +468,12 @@ export default function StarCompass() {
         {themedStarSlices.map((a) => (
           <div
             key={a.key}
-            className="flex h-8 w-8 items-center justify-center rounded-full"
-            style={{ background: a.color, opacity: 0.5 }}
+            className="flex h-11 w-11 items-center justify-center rounded-full"
+            style={{ background: a.color, opacity: 0.7 }}
           >
             <span
-              className="text-sm font-black text-white select-none"
-              style={{ fontFamily: 'var(--font-handwritten)' }}
+              className="text-xl font-black text-white select-none"
+              style={{ fontFamily: 'var(--font-handwritten)', lineHeight: 1 }}
             >
               {a.label[0]}
             </span>
@@ -645,7 +669,7 @@ export default function StarCompass() {
                 >
                   {activeSub}
                 </span>
-                <span className="text-[10px] text-muted-foreground">{subStep + 1} / 3</span>
+                <span className="text-xs text-muted-foreground">{subStep + 1} / 3</span>
               </div>
 
               <p

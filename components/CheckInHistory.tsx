@@ -363,7 +363,7 @@ function EditableTimelineEntry({
     <div className="flex gap-0">
       {/* Time column */}
       <div className="w-12 shrink-0 pt-0.5">
-        <span className="text-[10px] text-muted-foreground">{formatTime(entry.createdAt)}</span>
+        <span className="text-xs text-muted-foreground">{formatTime(entry.createdAt)}</span>
       </div>
 
       {/* Dot + connector */}
@@ -414,7 +414,7 @@ function EditableTimelineEntry({
                       key={`${entry.id}-${item.label}`}
                       className="rounded-2xl border border-[#d6b57b44] bg-[#fbf4e8cc] px-3 py-2"
                     >
-                      <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-[#9d6f2f]">
+                      <p className="text-xs font-semibold uppercase tracking-[0.22em] text-[#9d6f2f]">
                         {item.label}
                       </p>
                       <p className="mt-1 text-sm text-[#6f4a30]">{item.answers.join(' · ')}</p>
@@ -432,10 +432,10 @@ function EditableTimelineEntry({
                       className="inline-flex items-center gap-1 rounded-full px-2 py-0.5"
                       style={{ backgroundColor: `${chip.color}18` }}
                     >
-                      <span className="text-[10px] font-semibold" style={{ color: chip.color }}>
+                      <span className="text-xs font-semibold" style={{ color: chip.color }}>
                         {chip.label}
                       </span>
-                      <span className="text-[10px] text-muted-foreground">{chip.text}</span>
+                      <span className="text-xs text-muted-foreground">{chip.text}</span>
                     </span>
                   ))}
                 </div>
@@ -448,10 +448,8 @@ function EditableTimelineEntry({
                       key={`${entry.id}-${key}`}
                       className="inline-flex items-center gap-1 rounded-full border border-[#d6b57b44] bg-[#fbf4e8cc] px-2 py-0.5"
                     >
-                      <span className="text-[10px] font-semibold capitalize text-[#9d6f2f]">
-                        {key}
-                      </span>
-                      <span className="text-[10px] text-[#7a5438]">{value}%</span>
+                      <span className="text-xs font-semibold capitalize text-[#9d6f2f]">{key}</span>
+                      <span className="text-xs text-[#7a5438]">{value}%</span>
                     </span>
                   ))}
                 </div>
@@ -461,7 +459,7 @@ function EditableTimelineEntry({
                 (entry.feelingSupport && entry.feelingSupport.length > 0)) && (
                 <div className="flex flex-wrap items-center gap-1.5">
                   {entry.feelingStage !== null && (
-                    <span className="inline-flex items-center rounded-full bg-[#c79a4218] px-2 py-0.5 text-[10px] font-medium text-[#9d6f2f]">
+                    <span className="inline-flex items-center rounded-full bg-[#c79a4218] px-2 py-0.5 text-xs font-medium text-[#9d6f2f]">
                       Stage {entry.feelingStage}:{' '}
                       {FEELING_STAGE_LABELS[entry.feelingStage] ?? 'Feeling stage'}
                     </span>
@@ -469,7 +467,7 @@ function EditableTimelineEntry({
                   {(entry.feelingSupport ?? []).map((item) => (
                     <span
                       key={`${entry.id}-${item}`}
-                      className="inline-flex items-center rounded-full border border-[#c79a4240] px-2 py-0.5 text-[10px] text-[#7a5438]"
+                      className="inline-flex items-center rounded-full border border-[#c79a4240] px-2 py-0.5 text-xs text-[#7a5438]"
                     >
                       {item}
                     </span>
@@ -482,7 +480,7 @@ function EditableTimelineEntry({
                 <div className="flex items-center gap-3">
                   {noteContent.pulses.map((p) => (
                     <div key={p.cat} className="flex items-center gap-1">
-                      <span className="text-[9px] text-muted-foreground/40 uppercase">
+                      <span className="text-[11px] text-muted-foreground/40 uppercase">
                         {p.cat[0]}
                       </span>
                       <div className="flex gap-[2px]">
@@ -512,7 +510,7 @@ function EditableTimelineEntry({
                 <div className="flex items-center gap-3">
                   {structuredPulses.map((p) => (
                     <div key={`${entry.id}-${p.cat}`} className="flex items-center gap-1">
-                      <span className="text-[9px] text-muted-foreground/40 uppercase">
+                      <span className="text-[11px] text-muted-foreground/40 uppercase">
                         {p.cat[0]}
                       </span>
                       <div className="flex gap-[2px]">
@@ -554,7 +552,7 @@ function EditableTimelineEntry({
                 <div className="grid gap-2 pt-1 md:grid-cols-2">
                   {entry.challenge && (
                     <div className="rounded-2xl border border-[#d6b57b44] bg-[#faf1e1] px-3 py-2">
-                      <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-[#9d6f2f]">
+                      <p className="text-xs font-semibold uppercase tracking-[0.22em] text-[#9d6f2f]">
                         Challenge
                       </p>
                       <p className="mt-1 text-sm text-[#6f4a30]">{entry.challenge}</p>
@@ -562,7 +560,7 @@ function EditableTimelineEntry({
                   )}
                   {entry.flow && (
                     <div className="rounded-2xl border border-[#d6b57b44] bg-[#faf1e1] px-3 py-2">
-                      <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-[#9d6f2f]">
+                      <p className="text-xs font-semibold uppercase tracking-[0.22em] text-[#9d6f2f]">
                         Flow
                       </p>
                       <p className="mt-1 text-sm text-[#6f4a30]">{entry.flow}</p>
@@ -591,7 +589,7 @@ function EditableTimelineEntry({
           {editing && (
             <div className="space-y-3 pt-1 animate-in fade-in duration-150">
               <div className="space-y-1">
-                <div className="flex items-center justify-between text-[10px] text-muted-foreground">
+                <div className="flex items-center justify-between text-xs text-muted-foreground">
                   <span>Heavy</span>
                   <span>Light</span>
                 </div>
@@ -617,7 +615,7 @@ function EditableTimelineEntry({
                     onDelete(entry.id);
                     fetch(`/api/check-ins/${entry.id}`, { method: 'DELETE' });
                   }}
-                  className="text-[10px] text-muted-foreground hover:text-destructive transition-colors"
+                  className="text-xs text-muted-foreground hover:text-destructive transition-colors"
                 >
                   Delete
                 </button>
@@ -629,7 +627,7 @@ function EditableTimelineEntry({
                       setNote(entry.note || '');
                       setSliderValue(entry.sliderValue);
                     }}
-                    className="text-[10px] text-muted-foreground"
+                    className="text-xs text-muted-foreground"
                   >
                     Cancel
                   </button>
@@ -637,7 +635,7 @@ function EditableTimelineEntry({
                     type="button"
                     onClick={handleSave}
                     disabled={saving}
-                    className="text-[10px] font-medium text-[#5C3018]"
+                    className="text-xs font-medium text-[#5C3018]"
                   >
                     {saving ? 'Saving...' : 'Save'}
                   </button>
@@ -674,7 +672,7 @@ function ClusteredTimelineRow({
         <button
           type="button"
           onClick={() => setExpanded(false)}
-          className="mb-1 ml-12 pl-[23px] text-[10px] text-muted-foreground hover:text-foreground transition-colors"
+          className="mb-1 ml-12 pl-[23px] text-xs text-muted-foreground hover:text-foreground transition-colors"
         >
           Collapse {row.emotionWord} x{row.entries.length}
         </button>
@@ -697,7 +695,7 @@ function ClusteredTimelineRow({
       {/* Time column - stacked timestamps */}
       <div className="w-12 shrink-0 pt-0.5 flex flex-col">
         {row.entries.map((e) => (
-          <span key={e.id} className="text-[10px] text-muted-foreground leading-tight">
+          <span key={e.id} className="text-xs text-muted-foreground leading-tight">
             {formatTime(e.createdAt)}
           </span>
         ))}
@@ -734,7 +732,7 @@ function ClusteredTimelineRow({
             {row.emotionWord}
           </span>
           <span
-            className="text-[10px] font-semibold rounded-full px-1.5 py-0.5"
+            className="text-xs font-semibold rounded-full px-1.5 py-0.5"
             style={{ backgroundColor: `${emotionColor}20`, color: emotionColor }}
           >
             x{row.entries.length}

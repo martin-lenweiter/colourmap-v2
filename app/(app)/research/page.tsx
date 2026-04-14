@@ -152,7 +152,7 @@ export default function ResearchPage() {
           if (el.type === 'li') {
             return (
               <div key={i} className="flex gap-2 pl-2 text-sm leading-relaxed">
-                <span className="text-muted-foreground/30 shrink-0 pt-0.5">•</span>
+                <span className="text-muted-foreground/50 shrink-0 pt-0.5">•</span>
                 <span>{renderInline(el.content)}</span>
               </div>
             );
@@ -161,7 +161,7 @@ export default function ResearchPage() {
             const [term, def] = el.content.split('|||');
             return (
               <div key={i} className="flex gap-2 pl-2 text-sm leading-relaxed">
-                <span className="text-muted-foreground/30 shrink-0 pt-0.5">•</span>
+                <span className="text-muted-foreground/50 shrink-0 pt-0.5">•</span>
                 <span>
                   <strong className="font-semibold" style={{ color: '#5C3018' }}>
                     {term}
@@ -185,10 +185,7 @@ export default function ResearchPage() {
           }
           if (el.type === 'table') {
             return (
-              <div
-                key={i}
-                className="text-[11px] font-mono text-muted-foreground/60 overflow-x-auto"
-              >
+              <div key={i} className="text-xs font-mono text-muted-foreground/60 overflow-x-auto">
                 {el.content}
               </div>
             );

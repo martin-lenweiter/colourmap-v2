@@ -225,7 +225,7 @@ function BacklogItemRow({
         />
         <button type="button" onClick={() => setOpen(!open)} className="flex-1 text-sm text-left">
           {item.title}
-          {hasNotes && !open && <span className="text-muted-foreground/30 ml-1">•</span>}
+          {hasNotes && !open && <span className="text-muted-foreground/50 ml-1">•</span>}
         </button>
         <button
           type="button"
@@ -246,7 +246,7 @@ function BacklogItemRow({
             className="w-full resize-none rounded-xl border border-border bg-background/60 px-3 py-2 text-sm placeholder:text-muted-foreground/40 outline-none"
           />
           {saved && (
-            <span className="absolute right-3 top-2 text-[10px]" style={{ color: '#C4A060' }}>
+            <span className="absolute right-3 top-2 text-xs" style={{ color: '#C4A060' }}>
               saved
             </span>
           )}

@@ -369,7 +369,7 @@ export default function EnergyMap() {
         <button
           type="button"
           onClick={() => setViewMode('list')}
-          className="text-[9px] px-2 py-0.5 rounded-full transition-all"
+          className="text-[11px] px-2 py-0.5 rounded-full transition-all"
           style={{
             background: viewMode === 'list' ? '#C4A06020' : 'transparent',
             color: viewMode === 'list' ? '#5C3018' : '#5C301840',
@@ -380,7 +380,7 @@ export default function EnergyMap() {
         <button
           type="button"
           onClick={() => setViewMode('energy')}
-          className="text-[9px] px-2 py-0.5 rounded-full transition-all"
+          className="text-[11px] px-2 py-0.5 rounded-full transition-all"
           style={{
             background: viewMode === 'energy' ? '#C4A06020' : 'transparent',
             color: viewMode === 'energy' ? '#5C3018' : '#5C301840',
@@ -408,7 +408,7 @@ export default function EnergyMap() {
             type="time"
             value={time}
             onChange={(e) => setTime(e.target.value)}
-            className="bg-transparent text-[11px] text-muted-foreground outline-none w-14 text-right"
+            className="bg-transparent text-xs text-muted-foreground outline-none w-14 text-right"
           />
         )}
         {activity.trim() && (
@@ -431,7 +431,7 @@ export default function EnergyMap() {
               key={preset}
               type="button"
               onClick={() => setActivity(preset)}
-              className="rounded-full px-2.5 py-1 text-[10px] whitespace-nowrap transition-all shrink-0"
+              className="rounded-full px-2.5 py-1 text-xs whitespace-nowrap transition-all shrink-0"
               style={{
                 color: `${getActivityColor(preset)}90`,
                 border: `1px solid ${getActivityColor(preset)}20`,
@@ -453,7 +453,7 @@ export default function EnergyMap() {
                 const _updated = [...entries];
                 // Just visual hint for now
               }}
-              className="rounded-full px-2.5 py-0.5 text-[9px] font-medium whitespace-nowrap shrink-0 transition-all"
+              className="rounded-full px-2.5 py-0.5 text-[11px] font-medium whitespace-nowrap shrink-0 transition-all"
               style={{
                 color: CATEGORY_COLORS[cat],
                 background: `${CATEGORY_COLORS[cat]}10`,
@@ -580,7 +580,7 @@ export default function EnergyMap() {
                 {hours.map((seg) => (
                   <div key={seg.hour} className="flex-1 text-center">
                     <span
-                      className="text-[8px]"
+                      className="text-[11px]"
                       style={{ color: seg.hour === currentHour ? '#D4605A' : '#5C301825' }}
                     >
                       {seg.hour}
@@ -596,7 +596,7 @@ export default function EnergyMap() {
                       className="h-2 w-2 rounded-sm"
                       style={{ background: activityColors[name], opacity: 0.6 }}
                     />
-                    <span className="text-[9px] text-muted-foreground/50">{name}</span>
+                    <span className="text-[11px] text-muted-foreground/50">{name}</span>
                   </div>
                 ))}
               </div>
@@ -629,7 +629,7 @@ export default function EnergyMap() {
                         style={{ minHeight: hasEntries ? 30 : 20 }}
                       >
                         <span
-                          className={`text-[10px] pt-1 ${isCurrent ? 'font-bold' : 'font-medium'}`}
+                          className={`text-xs pt-1 ${isCurrent ? 'font-bold' : 'font-medium'}`}
                           style={{ color: isCurrent ? '#D4605A' : '#5C301835' }}
                         >
                           {h}
@@ -758,14 +758,11 @@ export default function EnergyMap() {
                                               (ev.target as HTMLInputElement).blur();
                                           }}
                                           onClick={(ev) => ev.stopPropagation()}
-                                          className="text-[11px] font-semibold bg-transparent outline-none border-b flex-1"
+                                          className="text-xs font-semibold bg-transparent outline-none border-b flex-1"
                                           style={{ color, borderColor: `${color}30` }}
                                         />
                                       ) : (
-                                        <span
-                                          className="text-[11px] font-semibold"
-                                          style={{ color }}
-                                        >
+                                        <span className="text-xs font-semibold" style={{ color }}>
                                           {e.activity}
                                         </span>
                                       )}
@@ -776,24 +773,30 @@ export default function EnergyMap() {
                                             ev.stopPropagation();
                                             setSelectedIdx(null);
                                           }}
-                                          className="text-[10px] text-muted-foreground/40 hover:text-muted-foreground ml-2 shrink-0"
+                                          className="text-xs text-muted-foreground/40 hover:text-muted-foreground ml-2 shrink-0"
                                         >
                                           ✕
                                         </button>
                                       )}
                                       <div className="flex items-center gap-1.5">
                                         {e.category && (
-                                          <span className="text-[8px] text-muted-foreground/40">
+                                          <span className="text-[11px] text-muted-foreground/40">
                                             {e.category}
                                           </span>
                                         )}
                                         {e.tag === 'good' && (
-                                          <span className="text-[9px]" style={{ color: '#80B868' }}>
+                                          <span
+                                            className="text-[11px]"
+                                            style={{ color: '#80B868' }}
+                                          >
                                             ✦
                                           </span>
                                         )}
                                         {e.tag === 'drop' && (
-                                          <span className="text-[9px]" style={{ color: '#D08040' }}>
+                                          <span
+                                            className="text-[11px]"
+                                            style={{ color: '#D08040' }}
+                                          >
                                             ▾
                                           </span>
                                         )}
@@ -818,11 +821,11 @@ export default function EnergyMap() {
                                         }}
                                         onClick={(ev) => ev.stopPropagation()}
                                         placeholder="Add a note..."
-                                        className="text-[9px] text-muted-foreground/60 italic mt-0.5 bg-transparent outline-none w-full placeholder:text-muted-foreground/25"
+                                        className="text-[11px] text-muted-foreground/60 italic mt-0.5 bg-transparent outline-none w-full placeholder:text-muted-foreground/40"
                                       />
                                     ) : (
                                       e.note && (
-                                        <p className="text-[9px] text-muted-foreground/40 italic mt-0.5">
+                                        <p className="text-[11px] text-muted-foreground/40 italic mt-0.5">
                                           {e.note}
                                         </p>
                                       )
@@ -877,7 +880,7 @@ export default function EnergyMap() {
                                               };
                                               save(updated);
                                             }}
-                                            className="rounded-full px-2.5 py-0.5 text-[9px] font-medium transition-all"
+                                            className="rounded-full px-2.5 py-0.5 text-[11px] font-medium transition-all"
                                             style={{
                                               background:
                                                 e.category === cat
@@ -908,7 +911,7 @@ export default function EnergyMap() {
                                               };
                                               save(updated);
                                             }}
-                                            className="rounded-full px-2 py-0.5 text-[9px]"
+                                            className="rounded-full px-2 py-0.5 text-[11px]"
                                             style={{
                                               color: e.tag === 'good' ? '#80B868' : '#80B86850',
                                               background:
@@ -927,7 +930,7 @@ export default function EnergyMap() {
                                               };
                                               save(updated);
                                             }}
-                                            className="rounded-full px-2 py-0.5 text-[9px]"
+                                            className="rounded-full px-2 py-0.5 text-[11px]"
                                             style={{
                                               color: e.tag === 'drop' ? '#D08040' : '#D0804050',
                                               background:
@@ -943,7 +946,7 @@ export default function EnergyMap() {
                                             removeEntry(globalIdx);
                                             setSelectedIdx(null);
                                           }}
-                                          className="text-[9px] text-muted-foreground/40 hover:text-destructive transition-colors"
+                                          className="text-[11px] text-muted-foreground/40 hover:text-destructive transition-colors"
                                         >
                                           delete
                                         </button>
@@ -994,7 +997,7 @@ export default function EnergyMap() {
                 <button
                   type="button"
                   onClick={() => setShowAllHours(!showAllHours)}
-                  className="w-full text-[10px] text-muted-foreground/30 hover:text-muted-foreground/50 transition-colors py-1 text-center"
+                  className="w-full text-xs text-muted-foreground/50 hover:text-muted-foreground/50 transition-colors py-1 text-center"
                 >
                   {showAllHours ? 'Show less' : `${hiddenCount} more hours`}
                 </button>

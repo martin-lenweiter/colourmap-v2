@@ -187,7 +187,7 @@ function CompassDemo() {
           dominantBaseline="middle"
           className="cursor-pointer select-none"
           style={{
-            fontSize: '12px',
+            fontSize: '14px',
             fontFamily: 'var(--font-serif)',
             fontWeight: 700,
             fill: active === i ? s.color : '#8f6a47',
@@ -254,7 +254,7 @@ function MandalaDemo() {
             dominantBaseline="middle"
             transform={`rotate(${(a * 180) / Math.PI + 90}, ${cx + r * Math.cos(a)}, ${cy + r * Math.sin(a)})`}
             style={{
-              fontSize: '7px',
+              fontSize: '14px',
               fontFamily: 'var(--font-handwritten)',
               fontWeight: 600,
               fill: active === i ? '#fff' : petals[i],
@@ -398,7 +398,7 @@ function WheelDemo() {
             textAnchor="middle"
             dominantBaseline="middle"
             style={{
-              fontSize: '8px',
+              fontSize: '14px',
               fontFamily: 'var(--font-handwritten)',
               fontWeight: 600,
               fill: '#7A9A7A',
@@ -449,7 +449,7 @@ function WeatherDemo() {
             y={w.y + w.r + 12}
             textAnchor="middle"
             style={{
-              fontSize: '8px',
+              fontSize: '14px',
               fontFamily: 'var(--font-handwritten)',
               fontWeight: 600,
               fill: w.color,
@@ -479,7 +479,7 @@ function WeatherDemo() {
         y={178}
         textAnchor="middle"
         style={{
-          fontSize: '7px',
+          fontSize: '14px',
           fontFamily: 'var(--font-handwritten)',
           fill: '#B8905A',
           opacity: 0.2,
@@ -523,7 +523,7 @@ function ConstellationDemo() {
               y={y + 12}
               textAnchor="middle"
               style={{
-                fontSize: '7px',
+                fontSize: '14px',
                 fontFamily: 'var(--font-handwritten)',
                 fill: '#C4A060',
                 opacity: p.b * 0.5 + 0.3,
@@ -633,7 +633,7 @@ function Pill({
             {subtitle}
           </span>
         </div>
-        <span className="text-sm text-muted-foreground/30">{isOpen ? '▲' : '▼'}</span>
+        <span className="text-sm text-muted-foreground/50">{isOpen ? '▲' : '▼'}</span>
       </button>
       {isOpen && (
         <div
@@ -692,7 +692,7 @@ export default function WorkshopPage() {
               border: `1.5px solid ${section === s.id ? '#8A6A4A' : '#8A6A4A25'}`,
               color: '#6B4830',
               fontFamily: 'var(--font-serif)',
-              fontSize: '11px',
+              fontSize: '14px',
               fontWeight: 600,
             }}
           >

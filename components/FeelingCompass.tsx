@@ -48,7 +48,7 @@ function nextValue(value: number | undefined): number {
 export default function FeelingCompass({ values, onChange }: FeelingCompassProps) {
   return (
     <div className="space-y-4 px-2 py-2">
-      <p className="text-center text-[11px] font-semibold uppercase tracking-[0.24em] text-[#ba7c2d]">
+      <p className="text-center text-xs font-semibold uppercase tracking-[0.24em] text-[#ba7c2d]">
         Feeling
       </p>
       <div className="grid items-center gap-5 md:grid-cols-[88px_minmax(0,1fr)_88px]">
@@ -125,7 +125,7 @@ export default function FeelingCompass({ values, onChange }: FeelingCompassProps
               aria-label={`${axis.label} ${values[axis.key] ?? 0}%`}
             >
               {axis.label}
-              <span className="ml-1 text-[10px] not-italic text-[#ba7c2d]">
+              <span className="ml-1 text-xs not-italic text-[#ba7c2d]">
                 {values[axis.key] ?? 0}%
               </span>
             </button>
@@ -140,7 +140,7 @@ export default function FeelingCompass({ values, onChange }: FeelingCompassProps
           </div>
         </div>
       </div>
-      <p className="text-center text-[10px] text-[#8f6a47]">
+      <p className="text-center text-xs text-[#8f6a47]">
         Tap each dimension to step through its intensity.
       </p>
     </div>
