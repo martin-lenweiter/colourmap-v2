@@ -2,6 +2,18 @@
 
 Opinionated defaults. Follow unless explicitly overridden.
 
+For the full visual identity — the three voices, the palette, the zen principles, the forbidden list — see [`docs/specs/visual-identity.md`](../docs/specs/visual-identity.md). The spine is **1949 American typewriter × handwritten letter × Japanese zen**, with existing voices (pirate logbook, Leonardo notebook, cowboy display) as moods within it.
+
+This file is the operational layer: hard rules that apply to every piece of UI regardless of mood.
+
+## Typography Principle
+
+**No sans-serif.** The app uses three voices only — typewriter serif (structure), handwritten ink (humanity), refined serif (ceremony). Never mix modern sans-serif fonts into UI. See visual-identity spec for when each voice applies.
+
+## Color Principle
+
+**No pure black, no pure white.** Paper never is. Use sepia ink (`#5C3018`) as the darkest, cream (`#F5ECDC`) as the lightest. Accent with warm ochre (`#C4A060`) as the primary. One secondary accent at most per view.
+
 ## Spacing
 
 8px grid. All spacing values must be multiples of 4: 4, 8, 12, 16, 24, 32, 48, 64. No magic numbers.

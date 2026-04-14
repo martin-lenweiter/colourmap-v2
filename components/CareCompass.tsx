@@ -10,7 +10,7 @@ import { useState } from 'react';
 
 type CareAxis = 'care' | 'attitude' | 'rest' | 'emotions';
 
-type ColorTheme = 'warm' | 'rest' | 'care' | 'earth' | 'vivid';
+type ColorTheme = 'warm' | 'rest' | 'care' | 'earth' | 'vivid' | 'vivid2';
 
 const CARE_THEMES: {
   id: ColorTheme;
@@ -46,7 +46,13 @@ const CARE_THEMES: {
     id: 'vivid',
     name: 'Vivid',
     dot: '#D45050',
-    colors: { care: '#D45050', attitude: '#E8A030', rest: '#6890B0', emotions: '#7AAA58' },
+    colors: { care: '#D45050', attitude: '#E8A030', rest: '#D45050', emotions: '#E8A030' },
+  },
+  {
+    id: 'vivid2',
+    name: 'Vivid 2',
+    dot: '#E8A030',
+    colors: { care: '#E8A030', attitude: '#D45050', rest: '#E8A030', emotions: '#D45050' },
   },
 ];
 
@@ -203,6 +209,16 @@ const RHYMES: Record<string, string[]> = {
 };
 
 const STORAGE_KEY = 'colourmap:care-values';
+const CHALLENGE_KEY = 'colourmap:care-challenge';
+const FLOW_KEY = 'colourmap:care-flow';
+
+function loadList(key: string): string[] {
+  try {
+    return JSON.parse(localStorage.getItem(key) || '[]');
+  } catch {
+    return [];
+  }
+}
 
 function loadValues(): Record<CareAxis, number> {
   try {
@@ -241,7 +257,7 @@ export default function CareCompass() {
   const [showDesign, setShowDesign] = useState(false);
   const [colorTheme, setColorTheme] = useState<ColorTheme>(() => {
     try {
-      return (localStorage.getItem('colourmap:care-theme') as ColorTheme) || 'vivid';
+      return (localStorage.getItem('colourmap:care-theme') as ColorTheme) || 'warm';
     } catch {
       return 'warm';
     }
@@ -253,10 +269,40 @@ export default function CareCompass() {
   const [activeSub, setActiveSub] = useState<string | null>(null);
   const [subStep, setSubStep] = useState(0);
   const [subAnswers, setSubAnswers] = useState<Record<string, string>>({});
+  const [challengeItems, setChallengeItems] = useState<string[]>(() => loadList(CHALLENGE_KEY));
+  const [flowItems, setFlowItems] = useState<string[]>(() => loadList(FLOW_KEY));
+  const [challengeInput, setChallengeInput] = useState('');
+  const [flowInput, setFlowInput] = useState('');
+
   const handleRating = (key: CareAxis, value: number) => {
     const next = { ...values, [key]: value };
     setValues(next);
     localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
+  };
+
+  const addChallenge = (text: string) => {
+    if (!text.trim()) return;
+    const next = [...challengeItems, text.trim()];
+    setChallengeItems(next);
+    localStorage.setItem(CHALLENGE_KEY, JSON.stringify(next));
+    setChallengeInput('');
+  };
+  const addFlow = (text: string) => {
+    if (!text.trim()) return;
+    const next = [...flowItems, text.trim()];
+    setFlowItems(next);
+    localStorage.setItem(FLOW_KEY, JSON.stringify(next));
+    setFlowInput('');
+  };
+  const removeChallenge = (i: number) => {
+    const next = challengeItems.filter((_, idx) => idx !== i);
+    setChallengeItems(next);
+    localStorage.setItem(CHALLENGE_KEY, JSON.stringify(next));
+  };
+  const removeFlow = (i: number) => {
+    const next = flowItems.filter((_, idx) => idx !== i);
+    setFlowItems(next);
+    localStorage.setItem(FLOW_KEY, JSON.stringify(next));
   };
 
   const span = Math.PI / 2;
@@ -469,17 +515,105 @@ export default function CareCompass() {
         {themedSlices.map((a) => (
           <div
             key={a.key}
-            className="flex h-8 w-8 items-center justify-center rounded-full"
-            style={{ background: a.color, opacity: 0.5 }}
+            className="flex h-11 w-11 items-center justify-center rounded-full"
+            style={{ background: a.color, opacity: 0.7 }}
           >
             <span
-              className="text-sm font-black text-white select-none"
-              style={{ fontFamily: 'var(--font-handwritten)' }}
+              className="text-xl font-black text-white select-none"
+              style={{ fontFamily: 'var(--font-handwritten)', lineHeight: 1 }}
             >
               {a.label[0]}
             </span>
           </div>
         ))}
+      </div>
+
+      {/* Challenge / Flow columns */}
+      <div className="grid grid-cols-2 gap-4">
+        <div className="space-y-2 text-center">
+          <span
+            className="text-xl font-bold"
+            style={{ color: '#C4A060', fontFamily: 'var(--font-serif)' }}
+          >
+            Challenge
+          </span>
+          {challengeItems.length > 0 && (
+            <div className="flex flex-wrap justify-center gap-1">
+              {challengeItems.map((item, i) => (
+                <button
+                  key={`${item}-${i}`}
+                  type="button"
+                  onClick={() => removeChallenge(i)}
+                  className="inline-flex cursor-pointer items-center rounded-full px-2 py-1 text-xs hover:opacity-70"
+                  style={{
+                    background: '#C4A06012',
+                    border: '1px solid #C4A06020',
+                    color: '#C4A060',
+                  }}
+                >
+                  {item} ✕
+                </button>
+              ))}
+            </div>
+          )}
+          <input
+            type="text"
+            value={challengeInput}
+            onChange={(e) => setChallengeInput(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') addChallenge(challengeInput);
+            }}
+            placeholder="What's challenging?..."
+            className="w-full border-b bg-transparent pb-1 text-center text-base outline-none"
+            style={{
+              color: '#C4A060',
+              borderColor: '#C4A06030',
+              fontFamily: 'var(--font-serif)',
+            }}
+          />
+        </div>
+        <div className="space-y-2 text-center">
+          <span
+            className="text-xl font-bold"
+            style={{ color: '#C4A060', fontFamily: 'var(--font-serif)' }}
+          >
+            Flow
+          </span>
+          {flowItems.length > 0 && (
+            <div className="flex flex-wrap justify-center gap-1">
+              {flowItems.map((item, i) => (
+                <button
+                  key={`${item}-${i}`}
+                  type="button"
+                  onClick={() => removeFlow(i)}
+                  className="inline-flex cursor-pointer items-center rounded-full px-2 py-1 text-xs hover:opacity-70"
+                  style={{
+                    background: '#C4A06012',
+                    border: '1px solid #C4A06020',
+                    color: '#C4A060',
+                  }}
+                >
+                  {item} ✕
+                </button>
+              ))}
+            </div>
+          )}
+          <input
+            type="text"
+            value={flowInput}
+            onChange={(e) => setFlowInput(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') addFlow(flowInput);
+            }}
+            placeholder="What's flowing?..."
+            className="w-full border-b bg-transparent pb-1 text-center text-base outline-none"
+            style={{
+              color: '#C4A060',
+              borderColor: '#C4A06030',
+              fontFamily: 'var(--font-serif)',
+            }}
+          />
+        </div>
       </div>
 
       {/* Rating bar when slice active */}

@@ -10,7 +10,7 @@ import { useState } from 'react';
 
 type ShareAxis = 'share' | 'authentic' | 'roots' | 'express';
 
-type ShareColorTheme = 'earth' | 'vivid' | 'moss';
+type ShareColorTheme = 'earth' | 'vivid' | 'moss' | 'vivid2';
 
 const SHARE_THEMES: {
   id: ShareColorTheme;
@@ -28,13 +28,19 @@ const SHARE_THEMES: {
     id: 'vivid',
     name: 'Vivid',
     dot: '#7AAA58',
-    colors: { share: '#7AAA58', authentic: '#E8A030', roots: '#3A8AC4', express: '#9B6BA0' },
+    colors: { share: '#7AAA58', authentic: '#E8A030', roots: '#7AAA58', express: '#E8A030' },
   },
   {
     id: 'moss',
     name: 'Moss',
     dot: '#5A7A3A',
     colors: { share: '#6A8A4A', authentic: '#7A9A5A', roots: '#6A8A4A', express: '#7A9A5A' },
+  },
+  {
+    id: 'vivid2',
+    name: 'Vivid 2',
+    dot: '#E8A030',
+    colors: { share: '#E8A030', authentic: '#7AAA58', roots: '#E8A030', express: '#7AAA58' },
   },
 ];
 
@@ -462,12 +468,12 @@ export default function ShareCompass() {
         {themedShareSlices.map((a) => (
           <div
             key={a.key}
-            className="flex h-8 w-8 items-center justify-center rounded-full"
-            style={{ background: a.color, opacity: 0.5 }}
+            className="flex h-11 w-11 items-center justify-center rounded-full"
+            style={{ background: a.color, opacity: 0.7 }}
           >
             <span
-              className="text-sm font-black text-white select-none"
-              style={{ fontFamily: 'var(--font-handwritten)' }}
+              className="text-xl font-black text-white select-none"
+              style={{ fontFamily: 'var(--font-handwritten)', lineHeight: 1 }}
             >
               {a.label === 'Share' ? 'Sh' : a.label[0]}
             </span>

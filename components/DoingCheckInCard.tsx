@@ -262,6 +262,53 @@ function TrackersList({ fontFamily }: { fontFamily: string }) {
 }
 
 /* ─── Main ─── */
+/* ─── Inner doing content — reusable without card wrapper ─── */
+export function DoingContent() {
+  const fontFamily = 'var(--font-handwritten)';
+  const [openSections, setOpenSections] = useState<Record<string, boolean>>({
+    todos: true,
+    missions: false,
+    trackers: false,
+  });
+  const toggle = (key: string) => setOpenSections((prev) => ({ ...prev, [key]: !prev[key] }));
+
+  return (
+    <div className="space-y-3">
+      {(['todos', 'missions', 'trackers'] as const).map((key) => {
+        const label = key === 'todos' ? 'To-do' : key === 'missions' ? 'Missions' : 'Trackers';
+        return (
+          <div key={key}>
+            <button
+              type="button"
+              onClick={() => toggle(key)}
+              className="flex w-full cursor-pointer items-center justify-between"
+              style={{ background: 'none', border: 'none', padding: 0 }}
+            >
+              <span
+                className="text-lg font-bold uppercase"
+                style={{ color: DOING_COLOR, fontFamily }}
+              >
+                {label}
+              </span>
+              <span className="text-xs text-muted-foreground/50">
+                {openSections[key] ? '▲' : '▼'}
+              </span>
+            </button>
+            {openSections[key] &&
+              (key === 'todos' ? (
+                <TodoList fontFamily={fontFamily} />
+              ) : key === 'missions' ? (
+                <MissionsList fontFamily={fontFamily} />
+              ) : (
+                <TrackersList fontFamily={fontFamily} />
+              ))}
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
 export default function DoingCheckInCard() {
   const {
     font: boxFont,

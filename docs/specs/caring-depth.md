@@ -1,6 +1,6 @@
-# Caring Depth — The 3-Step Inner Process
+# Caring Depth — Personality Map Over Time
 
-> Box 3 of the Caring tab is a complete inner-pattern workflow built on **three core steps** that mirror how humans actually work through their inner life.
+> Box 3 of the Caring tab maps your personality visually. Name what flows and what challenges you, work on understanding each pattern, and track how they evolve. The goal is self-knowledge that compounds — not a one-time reflection, but a living map you refine over weeks and months.
 
 ## The Core Flow
 
@@ -165,7 +165,39 @@ interface EmotionDecomposition {
   needs: string;
   createdAt: string;
 }
+
+interface CellPosition {
+  x: number;
+  y: number;
+}
 ```
+
+---
+
+## Cell View — Visual Personality Map
+
+The cell view is the spatial counterpart to the list view. Same data, different lens. The losange below the list toggles between them.
+
+### What it shows
+
+Each pill becomes a **cell** — a framed box on a canvas. Flow cells default to the left half, Challenge cells to the right. A subtle vertical divider separates the two territories.
+
+### Interaction
+
+- **Drag** any cell to reposition it. Positions persist across sessions.
+- **Tap** a cell name to rename it inline.
+- **Hover** to reveal a delete button.
+- Cells you drag close together visually communicate "these are related" without needing formal connections.
+
+### Vision
+
+Over time, the cell view becomes your personality map. Patterns cluster. You move "Work stress" near "Sleep problems" because you see they're connected. You drag "Music" to the center because it touches everything. The spatial arrangement IS the insight — no algorithm needed, just your own sense-making.
+
+Future iterations:
+- Draw lines between cells to mark connections
+- Cells grow/shrink based on how much work you've done on them
+- Ghost cells show patterns you've resolved (faded, moved to edges)
+- The cell view can overlay onto the CARE compass quadrants — each pattern placed in the life area it belongs to
 
 LocalStorage keys:
 - `colourmap:pattern-pills`

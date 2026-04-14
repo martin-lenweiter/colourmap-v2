@@ -1,39 +1,29 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
+import { DoingContent } from '@/components/DoingCheckInCard';
 
 /* ═══════════════════════════════════════════════════════════
    FEELING CHECK-IN CARD — Zen circle + losange gateway
    Swipe the circle to change emotion. Tap losange to go deeper.
    ═══════════════════════════════════════════════════════════ */
 
-/* ─── Mind spectrum (circle + name) — pastel ─── */
+/* ─── PRESENCE spectrum — how am I inside, right now? ─── */
 const MIND = [
-  { level: 'Stuck', color: '#E0908A' },
-  { level: 'Overwhelmed', color: '#E8A090' },
-  { level: 'Confused', color: '#C8A8C8' },
-  { level: 'Restless', color: '#E0B898' },
-  { level: 'Loaded', color: '#D8C088' },
-  { level: 'Neutral', color: '#D0C8B0' },
-  { level: 'Focused', color: '#A8CCA0' },
-  { level: 'Efficient', color: '#B0D8D0' },
-  { level: 'Relaxed', color: '#B0D0E8' },
+  { level: 'Absent', color: '#E0908A' },
+  { level: 'Scattered', color: '#E8B898' },
+  { level: 'Drifting', color: '#D8C088' },
+  { level: 'Present', color: '#A8CCA0' },
   { level: 'Flowing', color: '#B0A0D0' },
-  { level: 'Light', color: '#C8A8C0' },
 ];
 
-/* ─── Mission / mode spectrum — pastel ─── */
+/* ─── ENGAGEMENT spectrum — how IN the mission am I? ─── */
 const MODE = [
-  { level: 'Resting', color: '#A8B8D0' },
-  { level: 'Passive', color: '#B0C8A8' },
-  { level: 'Drifting', color: '#D0C8B0' },
-  { level: 'Preparing', color: '#D8C088' },
-  { level: 'Working', color: '#E0B898' },
-  { level: 'Pushing', color: '#E0908A' },
-  { level: 'Active', color: '#A8CCA0' },
-  { level: 'Building', color: '#90C8B8' },
-  { level: 'Creating', color: '#90B8D8' },
-  { level: 'On Fire', color: '#B0A0D0' },
+  { level: 'Avoiding', color: '#E0908A' },
+  { level: 'Resisting', color: '#E8B898' },
+  { level: 'Trying', color: '#D8C088' },
+  { level: 'Working', color: '#A8CCA0' },
+  { level: 'In Flow', color: '#90B8D8' },
 ];
 
 const INNER_TRACKERS = [
@@ -244,8 +234,40 @@ function loadNum(key: string, fallback: number): number {
 }
 
 export default function FeelingCheckInCard() {
-  const [mindIdx, setMindIdx] = useState(() => loadNum('colourmap:mind-idx', 5));
-  const [modeIdx, setModeIdx] = useState(() => loadNum('colourmap:mode-idx', 4));
+  // Presence (formerly Mind) + Engagement (formerly Mode) — 5 levels each, default mid
+  const [mindIdx, setMindIdx] = useState(() => {
+    const v = loadNum('colourmap:presence-idx', 2);
+    return Math.max(0, Math.min(MIND.length - 1, v));
+  });
+  const [modeIdx, setModeIdx] = useState(() => {
+    const v = loadNum('colourmap:engagement-idx', 2);
+    return Math.max(0, Math.min(MODE.length - 1, v));
+  });
+  const [objective, setObjective] = useState(() => {
+    try {
+      return localStorage.getItem('colourmap:current-objective') || '';
+    } catch {
+      return '';
+    }
+  });
+  const [emotionInput, setEmotionInput] = useState('');
+  const [sessionEmotions, setSessionEmotions] = useState<
+    { time: string; text: string; mind: string; mindColor: string }[]
+  >(() => {
+    try {
+      return JSON.parse(localStorage.getItem('colourmap:session-emotions') || '[]');
+    } catch {
+      return [];
+    }
+  });
+  const [nextObjectives, setNextObjectives] = useState<string[]>(() => {
+    try {
+      return JSON.parse(localStorage.getItem('colourmap:next-objectives') || '[]');
+    } catch {
+      return [];
+    }
+  });
+  const [nextInput, setNextInput] = useState('');
   const [trackerMode, setTrackerMode] = useState<TrackerMode>('facing');
   const [note, setNote] = useState(() => {
     try {
@@ -263,36 +285,293 @@ export default function FeelingCheckInCard() {
     }
   });
   const [expanded, setExpanded] = useState(false);
-  const [entries, setEntries] = useState<
-    { time: string; text: string; mind: string; mode: string }[]
+  const [showRecent, setShowRecent] = useState(false);
+  const [justSaved, setJustSaved] = useState(false);
+  const [objectiveSectionOpen, setObjectiveSectionOpen] = useState(() => {
+    try {
+      return localStorage.getItem('colourmap:objective-section-open') === 'true';
+    } catch {
+      return false;
+    }
+  });
+  const [emotionsSectionOpen, setEmotionsSectionOpen] = useState(() => {
+    try {
+      return localStorage.getItem('colourmap:emotions-section-open') !== 'false';
+    } catch {
+      return true;
+    }
+  });
+  const [observationsSectionOpen, setObservationsSectionOpen] = useState(() => {
+    try {
+      return localStorage.getItem('colourmap:observations-section-open') !== 'false';
+    } catch {
+      return true;
+    }
+  });
+  const [nextSectionOpen, setNextSectionOpen] = useState(() => {
+    try {
+      return localStorage.getItem('colourmap:next-section-open') === 'true';
+    } catch {
+      return false;
+    }
+  });
+  const toggleSection = (
+    section: 'objective' | 'emotions' | 'observations',
+    setter: (fn: (prev: boolean) => boolean) => void,
+  ) => {
+    setter((prev) => {
+      const next = !prev;
+      try {
+        localStorage.setItem(`colourmap:${section}-section-open`, String(next));
+      } catch {
+        /* silent */
+      }
+      return next;
+    });
+  };
+  const toggleObjectiveSection = () => toggleSection('objective', setObjectiveSectionOpen);
+  const toggleEmotionsSection = () => toggleSection('emotions', setEmotionsSectionOpen);
+  const toggleObservationsSection = () => toggleSection('observations', setObservationsSectionOpen);
+  const toggleNextSection = () => {
+    setNextSectionOpen((prev) => {
+      const next = !prev;
+      try {
+        localStorage.setItem('colourmap:next-section-open', String(next));
+      } catch {
+        /* silent */
+      }
+      return next;
+    });
+  };
+
+  // Observations — persistent free-text notes
+  const [observation, setObservation] = useState(() => {
+    try {
+      return localStorage.getItem('colourmap:current-observation') || '';
+    } catch {
+      return '';
+    }
+  });
+  const [observationsList, setObservationsList] = useState<{ time: string; text: string }[]>(() => {
+    try {
+      return JSON.parse(localStorage.getItem('colourmap:observations-list') || '[]');
+    } catch {
+      return [];
+    }
+  });
+  const addObservation = () => {
+    const text = observation.trim();
+    if (!text) return;
+    const entry = {
+      time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+      text,
+    };
+    const next = [entry, ...observationsList].slice(0, 50);
+    setObservationsList(next);
+    try {
+      localStorage.setItem('colourmap:observations-list', JSON.stringify(next));
+    } catch {
+      /* silent */
+    }
+    setObservation('');
+    try {
+      localStorage.setItem('colourmap:current-observation', '');
+    } catch {
+      /* silent */
+    }
+  };
+  useEffect(() => {
+    try {
+      localStorage.setItem('colourmap:current-observation', observation);
+    } catch {
+      /* silent */
+    }
+  }, [observation]);
+
+  // Life categories for objective tagging
+  const [lifeCategories, setLifeCategories] = useState<
+    { id: string; name: string; color: string }[]
+  >([]);
+  const [showCategoryPicker, setShowCategoryPicker] = useState(false);
+  const [justTagged, setJustTagged] = useState<string | null>(null);
+  useEffect(() => {
+    try {
+      const cats = localStorage.getItem('colourmap:life-categories');
+      if (cats) setLifeCategories(JSON.parse(cats));
+    } catch {
+      /* silent */
+    }
+  }, []);
+
+  const tagObjectiveToCategory = (categoryId: string) => {
+    const text = objective.trim();
+    if (!text) return;
+    try {
+      const raw = localStorage.getItem('colourmap:life-targets');
+      const existing: Array<{
+        id: string;
+        categoryId: string;
+        text: string;
+        done: boolean;
+        createdAt: string;
+        completedAt: string | null;
+      }> = raw ? JSON.parse(raw) : [];
+      const newTarget = {
+        id: crypto.randomUUID(),
+        categoryId,
+        text,
+        done: false,
+        createdAt: new Date().toISOString(),
+        completedAt: null,
+      };
+      localStorage.setItem('colourmap:life-targets', JSON.stringify([...existing, newTarget]));
+      setJustTagged(categoryId);
+      setShowCategoryPicker(false);
+      setTimeout(() => setJustTagged(null), 1200);
+    } catch {
+      /* silent */
+    }
+  };
+  const [checkIns, setCheckIns] = useState<
+    {
+      id: string;
+      time: string;
+      date: string;
+      mind: string;
+      mindColor: string;
+      mode: string;
+      modeColor: string;
+      note: string;
+      objective: string;
+      emotions: { time: string; text: string; mind: string; mindColor: string }[];
+      facing: Record<string, string>;
+    }[]
   >(() => {
     try {
-      return JSON.parse(localStorage.getItem('colourmap:feeling-entries') || '[]');
+      return JSON.parse(localStorage.getItem('colourmap:check-ins') || '[]');
     } catch {
       return [];
     }
   });
 
-  const saveEntry = () => {
-    if (!note.trim()) return;
-    const entry = {
-      time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-      text: note.trim(),
-      mind: currentMind.level,
-      mode: currentMode.level,
+  /* ─── Completed objectives history (with snapshot of reflections) ─── */
+  type DoneObjective = {
+    id: string;
+    text: string;
+    completedAt: string;
+    reflections?: { time: string; text: string; mind: string; mindColor: string }[];
+    mindAtComplete?: string;
+    modeAtComplete?: string;
+  };
+  const [doneObjectives, setDoneObjectives] = useState<DoneObjective[]>(() => {
+    try {
+      return JSON.parse(localStorage.getItem('colourmap:done-objectives') || '[]');
+    } catch {
+      return [];
+    }
+  });
+  const [showDone, setShowDone] = useState(false);
+  const [expandedDoneId, setExpandedDoneId] = useState<string | null>(null);
+
+  const completeObjective = (text: string, promoteFirstNext = true) => {
+    const clean = text.trim();
+    if (!clean) return;
+    const entry: DoneObjective = {
+      id: crypto.randomUUID(),
+      text: clean,
+      completedAt: new Date().toISOString(),
+      // Snapshot the logbook entries that accompanied this objective
+      reflections: sessionEmotions.slice(),
+      mindAtComplete: currentMind.level,
+      modeAtComplete: currentMode.level,
     };
-    const next = [entry, ...entries].slice(0, 50);
-    setEntries(next);
-    localStorage.setItem('colourmap:feeling-entries', JSON.stringify(next));
-    setNote('');
+    const next = [entry, ...doneObjectives].slice(0, 200);
+    setDoneObjectives(next);
+    try {
+      localStorage.setItem('colourmap:done-objectives', JSON.stringify(next));
+    } catch {
+      /* silent */
+    }
+    // Clear the current session's reflections — they travel with the done objective
+    setSessionEmotions([]);
+    try {
+      localStorage.setItem('colourmap:session-emotions', '[]');
+    } catch {
+      /* silent */
+    }
+    if (promoteFirstNext && nextObjectives.length > 0) {
+      setObjective(nextObjectives[0]);
+      setNextObjectives(nextObjectives.slice(1));
+    } else {
+      setObjective('');
+    }
+  };
+  const completeNextObjective = (i: number) => {
+    const text = nextObjectives[i];
+    // Next objectives don't have their own reflection stream yet — store bare entry
+    const entry: DoneObjective = {
+      id: crypto.randomUUID(),
+      text,
+      completedAt: new Date().toISOString(),
+      mindAtComplete: currentMind.level,
+      modeAtComplete: currentMode.level,
+    };
+    const next = [entry, ...doneObjectives].slice(0, 200);
+    setDoneObjectives(next);
+    try {
+      localStorage.setItem('colourmap:done-objectives', JSON.stringify(next));
+    } catch {
+      /* silent */
+    }
+    setNextObjectives(nextObjectives.filter((_, idx) => idx !== i));
   };
 
-  // Persist to localStorage
+  const saveCheckIn = () => {
+    // Only save if there's something beyond default state
+    const hasNote = note.trim().length > 0;
+    const hasEmotions = sessionEmotions.length > 0;
+    const hasFacing = Object.values(trackerValues).some((v) => v.trim());
+    if (!hasNote && !hasEmotions && !hasFacing) return;
+
+    const entry = {
+      id: crypto.randomUUID(),
+      time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+      date: new Date().toISOString(),
+      mind: currentMind.level,
+      mindColor: currentMind.color,
+      mode: currentMode.level,
+      modeColor: currentMode.color,
+      note: note.trim(),
+      objective: objective.trim(),
+      emotions: [...sessionEmotions],
+      facing: { ...trackerValues },
+    };
+    const next = [entry, ...checkIns].slice(0, 100);
+    setCheckIns(next);
+    localStorage.setItem('colourmap:check-ins', JSON.stringify(next));
+
+    // Clear session — promote next objective if available
+    setNote('');
+    setSessionEmotions([]);
+    localStorage.setItem('colourmap:session-emotions', '[]');
+    if (nextObjectives.length > 0) {
+      setObjective(nextObjectives[0]);
+      setNextObjectives(nextObjectives.slice(1));
+    }
+    setTrackerValues({});
+    setActiveTracker(null);
+
+    // Pulse confirmation
+    setJustSaved(true);
+    setTimeout(() => setJustSaved(false), 1500);
+  };
+
+  // Persist to localStorage (new keys for Presence/Engagement)
   useEffect(() => {
-    localStorage.setItem('colourmap:mind-idx', String(mindIdx));
+    localStorage.setItem('colourmap:presence-idx', String(mindIdx));
   }, [mindIdx]);
   useEffect(() => {
-    localStorage.setItem('colourmap:mode-idx', String(modeIdx));
+    localStorage.setItem('colourmap:engagement-idx', String(modeIdx));
   }, [modeIdx]);
   useEffect(() => {
     localStorage.setItem('colourmap:feeling-note', note);
@@ -300,6 +579,44 @@ export default function FeelingCheckInCard() {
   useEffect(() => {
     localStorage.setItem('colourmap:tracker-values', JSON.stringify(trackerValues));
   }, [trackerValues]);
+  useEffect(() => {
+    localStorage.setItem('colourmap:current-objective', objective);
+  }, [objective]);
+  useEffect(() => {
+    localStorage.setItem('colourmap:session-emotions', JSON.stringify(sessionEmotions));
+  }, [sessionEmotions]);
+  useEffect(() => {
+    localStorage.setItem('colourmap:next-objectives', JSON.stringify(nextObjectives));
+  }, [nextObjectives]);
+
+  const addNextObjective = () => {
+    if (!nextInput.trim()) return;
+    setNextObjectives([...nextObjectives, nextInput.trim()]);
+    setNextInput('');
+  };
+
+  const promoteNext = (idx: number) => {
+    const promoted = nextObjectives[idx];
+    setNextObjectives(nextObjectives.filter((_, i) => i !== idx));
+    setObjective(promoted);
+  };
+
+  const removeNext = (idx: number) => {
+    setNextObjectives(nextObjectives.filter((_, i) => i !== idx));
+  };
+
+  const addEmotion = () => {
+    if (!emotionInput.trim()) return;
+    const entry = {
+      time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+      text: emotionInput.trim(),
+      mind: currentMind.level,
+      mindColor: currentMind.color,
+    };
+    const next = [...sessionEmotions, entry];
+    setSessionEmotions(next);
+    setEmotionInput('');
+  };
 
   const [mindDragging, setMindDragging] = useState(false);
   const [modeDragging, setModeDragging] = useState(false);
@@ -367,8 +684,14 @@ export default function FeelingCheckInCard() {
         boxShadow: '0 24px 50px -34px rgba(92,48,24,0.35)',
       }}
     >
-      {/* Mind circle — swipe to change */}
-      <div className="flex justify-center">
+      {/* Presence — one circle, centered */}
+      <div className="flex flex-col items-center gap-2">
+        <span
+          className="text-xs font-semibold uppercase tracking-[0.22em]"
+          style={{ color: '#C4A060' }}
+        >
+          Presence
+        </span>
         <div
           className="cursor-grab transition-colors duration-500 active:cursor-grabbing"
           style={{
@@ -397,87 +720,536 @@ export default function FeelingCheckInCard() {
             setMindDragging(false);
           }}
         />
+        <p
+          className="text-center text-xl font-bold transition-all duration-300"
+          style={{ color: currentMind.color, fontFamily: 'var(--font-serif)' }}
+        >
+          {currentMind.level}
+        </p>
+        {mindDragging && (
+          <div className="animate-in fade-in duration-150">
+            <DragSlider items={MIND} selectedIdx={mindIdx} onSelect={setMindIdx} size={18} />
+          </div>
+        )}
       </div>
 
-      {/* Mind name */}
-      <p
-        className="text-center text-xl font-bold transition-all duration-300"
-        style={{ color: currentMind.color, fontFamily: 'var(--font-serif)' }}
-      >
-        {currentMind.level}
-      </p>
+      {/* ── CURRENT OBJECTIVE ── clickable pill opens/closes the Logbook below */}
+      <div className="flex flex-col items-center gap-2 pt-1">
+        <button
+          type="button"
+          onClick={toggleObjectiveSection}
+          className="flex cursor-pointer items-center gap-2 rounded-full px-5 py-1.5 transition-all"
+          style={{
+            background: '#C4A06015',
+            border: '1px solid #C4A06040',
+          }}
+        >
+          <span
+            className="text-center text-sm font-semibold uppercase tracking-[0.22em]"
+            style={{ color: '#C4A060' }}
+          >
+            Current Objective
+          </span>
+          <span
+            className="text-sm transition-transform duration-200"
+            style={{
+              color: '#C4A06080',
+              transform: objectiveSectionOpen ? 'rotate(180deg)' : 'rotate(0deg)',
+            }}
+          >
+            ▾
+          </span>
+        </button>
+        <div className="relative flex w-full items-center gap-2">
+          <input
+            type="text"
+            value={objective}
+            onChange={(e) => setObjective(e.target.value)}
+            placeholder="set an objective..."
+            className="flex-1 border-b bg-transparent pb-1 text-center outline-none placeholder:text-muted-foreground/40"
+            style={{
+              color: '#7a5438',
+              borderColor: '#C4A06020',
+              fontFamily: 'var(--font-handwritten)',
+              fontSize: '24px',
+            }}
+          />
+          {lifeCategories.length > 0 && objective.trim().length > 0 && (
+            <button
+              type="button"
+              onClick={() => setShowCategoryPicker(!showCategoryPicker)}
+              className="shrink-0 cursor-pointer rounded-md px-2 py-0.5 text-[11px] uppercase tracking-wider transition-all"
+              style={{
+                color: showCategoryPicker ? '#C4A060' : '#C4A06060',
+                background: showCategoryPicker ? '#C4A06010' : 'transparent',
+                border: `1px solid ${showCategoryPicker ? '#C4A06030' : 'transparent'}`,
+              }}
+            >
+              {justTagged ? '✓ tagged' : 'tag'}
+            </button>
+          )}
+          {/* Completion checkbox — mark objective as done */}
+          {objective.trim().length > 0 && (
+            <button
+              type="button"
+              onClick={() => completeObjective(objective)}
+              title="Mark as done"
+              className="flex h-5 w-5 shrink-0 cursor-pointer items-center justify-center rounded border transition-all hover:scale-110"
+              style={{
+                borderColor: '#7AAA5860',
+                background: '#7AAA5810',
+              }}
+            >
+              <span className="text-xs" style={{ color: '#7AAA58' }}>
+                ✓
+              </span>
+            </button>
+          )}
+          {showCategoryPicker && lifeCategories.length > 0 && (
+            <div
+              className="absolute right-0 top-full z-50 mt-1 animate-in fade-in duration-150 overflow-hidden rounded-xl"
+              style={{
+                background: '#F5ECDC',
+                border: '1px solid #8A6A4A40',
+                boxShadow: '0 8px 24px rgba(92,48,24,0.18)',
+                minWidth: 180,
+              }}
+            >
+              {lifeCategories.map((cat) => (
+                <button
+                  key={cat.id}
+                  type="button"
+                  onClick={() => tagObjectiveToCategory(cat.id)}
+                  className="flex w-full cursor-pointer items-center gap-2.5 px-3 py-2 text-left transition-all hover:bg-muted/30"
+                  style={{ border: 'none', background: 'transparent' }}
+                >
+                  <div
+                    style={{
+                      width: 8,
+                      height: 8,
+                      borderRadius: '50%',
+                      background: cat.color,
+                    }}
+                  />
+                  <span
+                    style={{
+                      fontFamily: 'var(--font-serif)',
+                      fontSize: '14px',
+                      color: '#7a5438',
+                    }}
+                  >
+                    {cat.name}
+                  </span>
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
 
-      {/* Mind rainbow — appears while dragging */}
-      {mindDragging && (
-        <div className="animate-in fade-in duration-150">
-          <DragSlider items={MIND} selectedIdx={mindIdx} onSelect={setMindIdx} size={20} />
+      {/* ── LOGBOOK & EMOTIONS ── opens with Current Objective */}
+      {objectiveSectionOpen && (
+        <div className="space-y-2 pt-1">
+          <p
+            className="text-center text-sm font-semibold uppercase tracking-[0.18em]"
+            style={{ color: '#C4A06080' }}
+          >
+            Logbook & Emotions
+          </p>
+          <input
+            type="text"
+            value={emotionInput}
+            onChange={(e) => setEmotionInput(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') addEmotion();
+            }}
+            className="w-full border-b bg-transparent pb-1 outline-none"
+            style={{
+              color: '#7a5438',
+              borderColor: '#C4A06020',
+              fontFamily: 'var(--font-handwritten)',
+              fontSize: '20px',
+            }}
+          />
+          {sessionEmotions.length > 0 && (
+            <div className="space-y-1">
+              {sessionEmotions.map((e, i) => (
+                <div key={i} className="flex items-center gap-2">
+                  <span className="shrink-0 text-sm text-muted-foreground/30">{e.time}</span>
+                  <span
+                    className="h-2 w-2 shrink-0 rounded-full"
+                    style={{ background: e.mindColor, opacity: 0.6 }}
+                  />
+                  <span
+                    style={{
+                      color: '#7a5438',
+                      fontFamily: 'var(--font-handwritten)',
+                      fontSize: '20px',
+                    }}
+                  >
+                    {e.text}
+                  </span>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       )}
 
-      {/* Mode circle — swipe to change */}
-      <div className="flex justify-center">
-        <div
-          className="cursor-grab transition-colors duration-500 active:cursor-grabbing"
+      {/* ── NEXT OBJECTIVE ── hidden behind a "+" when empty and closed */}
+      {!nextSectionOpen && nextObjectives.length === 0 ? (
+        <div className="flex justify-center pt-1">
+          <button
+            type="button"
+            onClick={toggleNextSection}
+            title="Add next objective"
+            className="group flex items-center gap-1.5 cursor-pointer bg-transparent transition-all"
+            style={{ border: 'none' }}
+          >
+            <span
+              className="flex h-6 w-6 rotate-45 items-center justify-center rounded-[3px] border transition-all group-hover:scale-110"
+              style={{ borderColor: '#C4A06040', background: '#C4A06010' }}
+            >
+              <span
+                className="-rotate-45 text-sm font-light"
+                style={{ color: '#C4A060', lineHeight: 1 }}
+              >
+                +
+              </span>
+            </span>
+            <span
+              className="text-[10px] font-semibold uppercase tracking-[0.18em] opacity-0 transition-opacity group-hover:opacity-70"
+              style={{ color: '#C4A060' }}
+            >
+              next
+            </span>
+          </button>
+        </div>
+      ) : (
+        <div className="flex flex-col items-center gap-2 pt-1">
+          <button
+            type="button"
+            onClick={toggleNextSection}
+            className="flex cursor-pointer items-center gap-2 rounded-full px-5 py-1.5 transition-all"
+            style={{
+              background: '#C4A06015',
+              border: '1px solid #C4A06040',
+            }}
+          >
+            <span
+              className="text-center text-sm font-semibold uppercase tracking-[0.22em]"
+              style={{ color: '#C4A060' }}
+            >
+              Next Objective
+            </span>
+            <span
+              className="text-sm transition-transform duration-200"
+              style={{
+                color: '#C4A06080',
+                transform: nextSectionOpen ? 'rotate(180deg)' : 'rotate(0deg)',
+              }}
+            >
+              ▾
+            </span>
+          </button>
+        </div>
+      )}
+
+      {/* Existing next-objective list — always visible if any exist */}
+      {nextObjectives.length > 0 && (
+        <div className="space-y-1">
+          {nextObjectives.map((obj, i) => (
+            <div
+              key={`${obj}-${i}`}
+              className="group relative flex items-center justify-center px-8"
+            >
+              <button
+                type="button"
+                onClick={() => promoteNext(i)}
+                className="absolute left-0 cursor-pointer text-sm transition-colors hover:text-muted-foreground/60"
+                style={{ color: '#C4A060', opacity: 0.5, background: 'none', border: 'none' }}
+                title="Make current"
+              >
+                ↑
+              </button>
+              <span
+                className="text-center"
+                style={{
+                  color: '#7a5438',
+                  fontFamily: 'var(--font-handwritten)',
+                  fontSize: '24px',
+                }}
+              >
+                {obj}
+              </span>
+              <div className="absolute right-0 flex items-center gap-1.5">
+                <button
+                  type="button"
+                  onClick={() => completeNextObjective(i)}
+                  title="Mark as done"
+                  className="flex h-5 w-5 shrink-0 cursor-pointer items-center justify-center rounded border transition-all hover:scale-110"
+                  style={{
+                    borderColor: '#7AAA5860',
+                    background: '#7AAA5810',
+                  }}
+                >
+                  <span className="text-xs" style={{ color: '#7AAA58' }}>
+                    ✓
+                  </span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => removeNext(i)}
+                  title="Remove"
+                  className="cursor-pointer text-sm opacity-0 transition-opacity group-hover:opacity-40"
+                  style={{ color: '#7a5438', background: 'none', border: 'none' }}
+                >
+                  ✕
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* Input only when the pill is open */}
+      {nextSectionOpen && (
+        <input
+          type="text"
+          value={nextInput}
+          onChange={(e) => setNextInput(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter') addNextObjective();
+          }}
+          placeholder="+ add next objective..."
+          className="w-full border-b bg-transparent pb-1 text-center outline-none placeholder:text-muted-foreground/40"
           style={{
-            width: 64,
-            height: 64,
-            borderRadius: '50%',
-            background: currentMode.color,
-            opacity: 0.75,
-            touchAction: 'none',
-          }}
-          onMouseDown={(e) => startModeDrag(e.clientX)}
-          onTouchStart={(e) => startModeDrag(e.touches[0].clientX)}
-          onTouchMove={(e) => {
-            e.preventDefault();
-            if (!modeDragRef.current) return;
-            const dx = e.touches[0].clientX - modeDragRef.current.startX;
-            const steps = Math.round(dx / 25);
-            const next = Math.max(
-              0,
-              Math.min(MODE.length - 1, modeDragRef.current.startIdx + steps),
-            );
-            if (next !== modeIdx) setModeIdx(next);
-          }}
-          onTouchEnd={() => {
-            modeDragRef.current = null;
-            setModeDragging(false);
+            color: '#7a5438',
+            borderColor: '#C4A06020',
+            fontFamily: 'var(--font-handwritten)',
+            fontSize: '24px',
           }}
         />
-      </div>
-
-      {/* Mode name */}
-      <p
-        className="text-center text-lg font-bold transition-all duration-300"
-        style={{ color: currentMode.color, fontFamily: 'var(--font-serif)' }}
-      >
-        {currentMode.level}
-      </p>
-
-      {/* Mode rainbow — appears while dragging */}
-      {modeDragging && (
-        <div className="animate-in fade-in duration-150">
-          <DragSlider items={MODE} selectedIdx={modeIdx} onSelect={setModeIdx} size={20} />
-        </div>
       )}
 
-      {/* Losange gateway */}
-      <div className="flex justify-center">
+      {/* ── DONE ── completed objectives history (matching Current/Next pill) */}
+      {doneObjectives.length > 0 && (
+        <>
+          <div className="flex flex-col items-center gap-2 pt-1">
+            <button
+              type="button"
+              onClick={() => setShowDone(!showDone)}
+              className="flex cursor-pointer items-center gap-2 rounded-full px-5 py-1.5 transition-all"
+              style={{
+                background: '#7AAA5810',
+                border: '1px solid #7AAA5840',
+              }}
+            >
+              <span
+                className="text-center text-sm font-semibold uppercase tracking-[0.22em]"
+                style={{ color: '#7AAA58' }}
+              >
+                Done · {doneObjectives.length}
+              </span>
+              <span
+                className="text-sm transition-transform duration-200"
+                style={{
+                  color: '#7AAA5880',
+                  transform: showDone ? 'rotate(180deg)' : 'rotate(0deg)',
+                }}
+              >
+                ▾
+              </span>
+            </button>
+          </div>
+
+          {showDone && (
+            <div className="space-y-2 animate-in fade-in duration-200">
+              {doneObjectives.slice(0, 12).map((d) => {
+                const dt = new Date(d.completedAt);
+                const dateStr = `${dt.getDate()}/${dt.getMonth() + 1}`;
+                const hasReflections = (d.reflections?.length ?? 0) > 0;
+                const isOpen = expandedDoneId === d.id;
+                return (
+                  <div key={d.id} className="space-y-1">
+                    <div className="group relative flex items-center justify-center px-8">
+                      <span className="absolute left-0 text-xs" style={{ color: '#8A6A4A50' }}>
+                        {dateStr}
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => setExpandedDoneId(isOpen ? null : d.id)}
+                        className="cursor-pointer text-center line-through"
+                        style={{
+                          color: '#7a5438',
+                          fontFamily: 'var(--font-handwritten)',
+                          fontSize: '20px',
+                          opacity: 0.55,
+                          background: 'none',
+                          border: 'none',
+                        }}
+                      >
+                        {d.text}
+                        {hasReflections && (
+                          <span
+                            className="ml-2 text-[10px] no-underline"
+                            style={{ color: '#C4A06080' }}
+                          >
+                            {d.reflections?.length} note{d.reflections?.length === 1 ? '' : 's'}
+                          </span>
+                        )}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const next = doneObjectives.filter((x) => x.id !== d.id);
+                          setDoneObjectives(next);
+                          try {
+                            localStorage.setItem('colourmap:done-objectives', JSON.stringify(next));
+                          } catch {
+                            /* silent */
+                          }
+                          if (expandedDoneId === d.id) setExpandedDoneId(null);
+                        }}
+                        title="Remove from history"
+                        className="absolute right-0 cursor-pointer text-sm opacity-0 transition-opacity group-hover:opacity-40"
+                        style={{ color: '#7a5438', background: 'none', border: 'none' }}
+                      >
+                        ✕
+                      </button>
+                    </div>
+
+                    {/* Expanded reflections for this done objective */}
+                    {isOpen && (
+                      <div
+                        className="mx-auto max-w-md space-y-1 rounded-xl border px-4 py-2 animate-in fade-in duration-150"
+                        style={{
+                          borderColor: '#8A6A4A20',
+                          background: 'rgba(245,236,220,0.55)',
+                        }}
+                      >
+                        {/* State at completion */}
+                        {(d.mindAtComplete || d.modeAtComplete) && (
+                          <div
+                            className="flex items-center justify-center gap-3 pb-1 text-xs"
+                            style={{ color: '#8A6A4A70' }}
+                          >
+                            {d.mindAtComplete && <span>mind: {d.mindAtComplete}</span>}
+                            {d.modeAtComplete && <span>· mode: {d.modeAtComplete}</span>}
+                          </div>
+                        )}
+                        {/* Reflections list */}
+                        {hasReflections ? (
+                          d.reflections?.map((r, i) => (
+                            <div key={i} className="flex items-center gap-2">
+                              <span className="shrink-0 text-xs" style={{ color: '#8A6A4A40' }}>
+                                {r.time}
+                              </span>
+                              <span
+                                className="h-2 w-2 shrink-0 rounded-full"
+                                style={{ background: r.mindColor, opacity: 0.6 }}
+                              />
+                              <span
+                                style={{
+                                  color: '#7a5438',
+                                  fontFamily: 'var(--font-handwritten)',
+                                  fontSize: '16px',
+                                }}
+                              >
+                                {r.text}
+                              </span>
+                            </div>
+                          ))
+                        ) : (
+                          <p className="text-center text-xs italic" style={{ color: '#8A6A4A50' }}>
+                            no reflections recorded
+                          </p>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </>
+      )}
+
+      {/* Save star — quick save without opening losange */}
+      <div className="flex flex-col items-center gap-1">
         <button
           type="button"
           onClick={() => {
-            setExpanded(!expanded);
+            saveCheckIn();
+          }}
+          className="cursor-pointer transition-all duration-500 hover:scale-125"
+          style={{ background: 'none', border: 'none', padding: 0 }}
+        >
+          <svg width={20} height={20} viewBox="0 0 20 20">
+            {(() => {
+              const cx = 10;
+              const cy = 10;
+              const r1 = 9;
+              const r2 = 3.5;
+              const pts: string[] = [];
+              for (let i = 0; i < 8; i++) {
+                const a = -Math.PI / 2 + (i * Math.PI) / 4;
+                const r = i % 2 === 0 ? r1 : r2;
+                pts.push(`${cx + r * Math.cos(a)},${cy + r * Math.sin(a)}`);
+              }
+              return (
+                <polygon
+                  points={pts.join(' ')}
+                  fill={justSaved ? currentMind.color : `${currentMind.color}40`}
+                  style={{ transition: 'fill 0.5s' }}
+                />
+              );
+            })()}
+          </svg>
+        </button>
+        {justSaved && (
+          <span
+            className="text-xs animate-in fade-in duration-300"
+            style={{
+              color: currentMind.color,
+              opacity: 0.6,
+              fontFamily: 'var(--font-handwritten)',
+            }}
+          >
+            saved
+          </span>
+        )}
+      </div>
+
+      {/* Losange gateway — closing also saves */}
+      <div className="flex flex-col items-center gap-1">
+        <button
+          type="button"
+          onClick={() => {
             if (expanded) {
-              setActiveTracker(null);
+              saveCheckIn();
+              setExpanded(false);
+            } else {
+              setExpanded(true);
             }
           }}
-          className="h-5 w-5 rotate-45 cursor-pointer transition-all duration-300 hover:scale-125"
-          style={{
-            background: expanded ? `${currentMind.color}40` : `${currentMind.color}18`,
-            borderRadius: 2,
-            border: 'none',
-          }}
-        />
+          className="flex items-center gap-2 cursor-pointer transition-all duration-300 hover:opacity-80"
+          style={{ background: 'none', border: 'none' }}
+        >
+          <span
+            className="h-4 w-4 rotate-45 transition-all duration-300"
+            style={{
+              background: expanded ? `${currentMind.color}60` : `${currentMind.color}25`,
+              borderRadius: 2,
+            }}
+          />
+          <span
+            className="text-xs font-semibold uppercase tracking-[0.18em]"
+            style={{ color: expanded ? currentMind.color : '#8A6A4A80' }}
+          >
+            {expanded ? 'save & close' : 'go deeper'}
+          </span>
+        </button>
       </div>
 
       {/* Expanded: note + FACING / PEACE */}
@@ -493,29 +1265,76 @@ export default function FeelingCheckInCard() {
               value={note}
               onChange={(e) => setNote(e.target.value)}
               onKeyDown={(e) => {
-                if (e.key === 'Enter') saveEntry();
+                if (e.key === 'Enter') {
+                  saveCheckIn();
+                  setExpanded(false);
+                }
               }}
               placeholder="What's on your mind?"
               className="flex-1 bg-transparent text-sm outline-none placeholder:text-muted-foreground/40"
             />
           </div>
 
-          {/* Saved entries */}
-          {entries.length > 0 && (
-            <div className="space-y-1">
-              {entries.map((e, i) => (
-                <div key={i} className="flex items-start gap-2 px-1">
-                  <span className="shrink-0 text-xs text-muted-foreground/30 pt-0.5">{e.time}</span>
-                  <span
-                    className="text-sm"
-                    style={{ color: '#7a5438', fontFamily: 'var(--font-handwritten)' }}
-                  >
-                    {e.text}
-                  </span>
+          {/* Recent check-ins — collapsible */}
+          {checkIns.length > 0 && (
+            <div>
+              <button
+                type="button"
+                onClick={() => setShowRecent(!showRecent)}
+                className="flex w-full cursor-pointer items-center justify-between"
+                style={{ background: 'none', border: 'none', padding: 0 }}
+              >
+                <span className="text-xs text-muted-foreground/40">Recent ({checkIns.length})</span>
+                <span className="text-xs text-muted-foreground/30">{showRecent ? '▲' : '▼'}</span>
+              </button>
+              {showRecent && (
+                <div className="space-y-1.5 pt-2 animate-in fade-in duration-150">
+                  {checkIns.slice(0, 5).map((c) => (
+                    <div key={c.id} className="flex items-start gap-2 px-1">
+                      <span className="shrink-0 text-xs text-muted-foreground/30 pt-0.5">
+                        {c.time}
+                      </span>
+                      <div className="flex items-center gap-1 shrink-0 pt-1">
+                        <span
+                          className="h-2 w-2 rounded-full"
+                          style={{ background: c.mindColor, opacity: 0.7 }}
+                        />
+                        <span
+                          className="h-2 w-2 rounded-full"
+                          style={{ background: c.modeColor, opacity: 0.5 }}
+                        />
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        {c.objective && (
+                          <p
+                            className="text-xs font-semibold truncate"
+                            style={{ color: '#7a5438', fontFamily: 'var(--font-handwritten)' }}
+                          >
+                            {c.objective}
+                          </p>
+                        )}
+                        {c.emotions && c.emotions.length > 0 && (
+                          <p
+                            className="text-xs truncate"
+                            style={{
+                              color: '#7a5438',
+                              opacity: 0.6,
+                              fontFamily: 'var(--font-handwritten)',
+                            }}
+                          >
+                            {c.emotions.map((em: { text: string }) => em.text).join(' → ')}
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                  ))}
                 </div>
-              ))}
+              )}
             </div>
           )}
+
+          {/* Doing: to-do, missions, trackers */}
+          <DoingContent />
 
           {/* FACING / PEACE trackers */}
           <div className="space-y-3">

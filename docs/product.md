@@ -15,6 +15,8 @@ The product is not a meditation app (pure stillness) or a productivity tool (pur
 
 ## Core Philosophy
 
+- **We work with the system, we don't fix it.** At the core, everything we do is feeding our subconscious and body. Ambitions, avoidances, routines — all mechanisms negotiating with our own nervous system. Colourmap's job is to help work *with* that system and bring clarity to it, not to optimize it away.
+- **Both movement and the feeling of movement matter.** Real progress (targets checked, patterns shifting) and the felt sense of being in motion are two different things. The subconscious responds to the felt sense. The visual layer is not decoration — it's how the app speaks to the body: *you are moving, things have shape, there is a way.*
 - **Check In is clarity. Journey is style.** Two sides of the same coin. Check-in strips everything bare. Journey takes the same data and reframes it through archetype and tone.
 - **The AI proposes, the user confirms.** The user writes the story. The app holds the pen.
 - **The cat is core, not gimmick.** The emotional safety layer. People say things to a cat they won't type into a blank field.
@@ -140,6 +142,12 @@ Notebook (always)               →  ideas, songs, reflections, plans
 - **Check-in analysis** — Deep reflection on emotional trajectory
 
 All AI uses Claude Haiku for cost efficiency. Respects "cockpit not coach" — names what it sees, never prescribes.
+
+### Evolution — Living Reflection Map
+
+**Categories** are the backbone. The user names the areas of life they want to track (Shoulder, Organisation, Social, Music, Work...). Within each category: challenge (what's hard) and flow (what's working). Daily review: see your last comment, update what changed. Categories absorb and simplify Challenge/Flow, Caring Depth patterns, River snapshots, and Programs into one system.
+
+The long-term AI direction is a living constellation that reads all user data (categories, check-ins, notes, day map, life scan), discovers clusters and recurrence, and expresses what it finds through multiple visual languages — geometric polygon, constellation, river, terrain, mandala, wheel. The AI picks the form that fits the moment: presence, relaxation, movement, or agency. It replaces Soul Map, Personality Map, and Cell View with one adaptive view. Mirror by default, coach only when asked. Exportable period reports for therapy/coaching use. [Spec](specs/ai-evolution.md)
 
 ## Non-Goals
 

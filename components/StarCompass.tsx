@@ -10,7 +10,7 @@ import { useState } from 'react';
 
 type StarAxis = 'structure' | 'target' | 'action' | 'resources';
 
-type StarColorTheme = 'cool' | 'vivid' | 'forest';
+type StarColorTheme = 'cool' | 'vivid' | 'forest' | 'vivid2';
 
 const STAR_THEMES: {
   id: StarColorTheme;
@@ -28,13 +28,19 @@ const STAR_THEMES: {
     id: 'vivid',
     name: 'Vivid',
     dot: '#7AAA58',
-    colors: { structure: '#3A8AC4', target: '#7AAA58', action: '#E8A030', resources: '#D45050' },
+    colors: { structure: '#3A8AC4', target: '#7AAA58', action: '#3A8AC4', resources: '#7AAA58' },
   },
   {
     id: 'forest',
     name: 'Forest',
     dot: '#4A7A4A',
     colors: { structure: '#5A8A5A', target: '#4A7A4A', action: '#5A8A5A', resources: '#4A7A4A' },
+  },
+  {
+    id: 'vivid2',
+    name: 'Vivid 2',
+    dot: '#3A8AC4',
+    colors: { structure: '#7AAA58', target: '#3A8AC4', action: '#7AAA58', resources: '#3A8AC4' },
   },
 ];
 
@@ -462,12 +468,12 @@ export default function StarCompass() {
         {themedStarSlices.map((a) => (
           <div
             key={a.key}
-            className="flex h-8 w-8 items-center justify-center rounded-full"
-            style={{ background: a.color, opacity: 0.5 }}
+            className="flex h-11 w-11 items-center justify-center rounded-full"
+            style={{ background: a.color, opacity: 0.7 }}
           >
             <span
-              className="text-sm font-black text-white select-none"
-              style={{ fontFamily: 'var(--font-handwritten)' }}
+              className="text-xl font-black text-white select-none"
+              style={{ fontFamily: 'var(--font-handwritten)', lineHeight: 1 }}
             >
               {a.label[0]}
             </span>

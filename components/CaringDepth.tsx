@@ -195,9 +195,17 @@ function ss<T>(k: string, v: T) {
 /* ═══════════════════════════════════════════════════════════
    MAIN
    ═══════════════════════════════════════════════════════════ */
-export default function CaringDepth() {
-  const [tab, setTab] = useState<'map' | 'work' | 'reflect' | 'river'>('map');
+export default function CaringDepth({
+  forcedTab,
+}: {
+  forcedTab?: 'map' | 'work' | 'reflect' | 'river';
+} = {}) {
+  const [tab, setTab] = useState<'map' | 'work' | 'reflect' | 'river'>(forcedTab ?? 'map');
   const [showTabs, setShowTabs] = useState(false);
+  // If forcedTab is set, lock the tab
+  useEffect(() => {
+    if (forcedTab) setTab(forcedTab);
+  }, [forcedTab]);
   const [pills, setPills] = useState<PatternPill[]>([]);
   const [packs, setPacks] = useState<Pack[]>([]);
   const [focus, setFocus] = useState<WorkFocus | null>(null);
@@ -218,6 +226,42 @@ export default function CaringDepth() {
     setter(val);
     ss(key, val);
   }, []);
+
+  // When forcedTab is set: render ONLY that tab bare, no outer card, no tab switcher
+  if (forcedTab) {
+    return (
+      <div className="space-y-4">
+        {forcedTab === 'map' && (
+          <MapTab
+            pills={pills}
+            setPills={(v) => up(PILLS_KEY, v, setPills)}
+            packs={packs}
+            setPacks={(v) => up(PACKS_KEY, v, setPacks)}
+            work={work}
+          />
+        )}
+        {forcedTab === 'work' && (
+          <WorkTab
+            pills={pills}
+            focus={focus}
+            setFocus={(v) => up(FOCUS_KEY, v, setFocus)}
+            work={work}
+            setWork={(v) => up(WORK_KEY, v, setWork)}
+          />
+        )}
+        {forcedTab === 'reflect' && (
+          <ReflectTab
+            pills={pills}
+            decompositions={decompositions}
+            setDecompositions={(v) => up(REFLECT_KEY, v, setDecompositions)}
+          />
+        )}
+        {forcedTab === 'river' && (
+          <RiverTab pills={pills} river={river} setRiver={(v) => up(RIVER_KEY, v, setRiver)} />
+        )}
+      </div>
+    );
+  }
 
   return (
     <div
@@ -315,6 +359,526 @@ export default function CaringDepth() {
 /* ═══════════════════════════════════════════════════════════
    MAP TAB — Big readable strength/weakness blocks
    ═══════════════════════════════════════════════════════════ */
+/* ═══════════════════════════════════════════════════════════
+   CELL VIEWS — 3 modes for visual personality mapping
+   ═══════════════════════════════════════════════════════════ */
+type CellViewMode = 'vertical' | 'freeform' | 'rings';
+
+const CARE_ZONES = [
+  { key: 'care', label: 'Care', color: '#D4805A' },
+  { key: 'attitude', label: 'Attitude', color: '#C4A070' },
+  { key: 'rest', label: 'Rest', color: '#C4906A' },
+  { key: 'emotions', label: 'Emotions', color: '#B07A5A' },
+];
+
+/* ─── Shared drag + edit logic for all cell views ─── */
+function useCellDrag(storageKey: string) {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [positions, setPositions] = useState<Record<string, { x: number; y: number }>>(() => {
+    try {
+      return JSON.parse(localStorage.getItem(storageKey) || '{}');
+    } catch {
+      return {};
+    }
+  });
+  const dragRef = useRef<{
+    id: string;
+    startX: number;
+    startY: number;
+    origX: number;
+    origY: number;
+  } | null>(null);
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editName, setEditName] = useState('');
+
+  const save = (next: Record<string, { x: number; y: number }>) => {
+    setPositions(next);
+    localStorage.setItem(storageKey, JSON.stringify(next));
+  };
+
+  useEffect(() => {
+    const onMove = (e: MouseEvent) => {
+      if (!dragRef.current || !containerRef.current) return;
+      const rect = containerRef.current.getBoundingClientRect();
+      const x = Math.max(
+        0,
+        Math.min(rect.width - 90, dragRef.current.origX + (e.clientX - dragRef.current.startX)),
+      );
+      const y = Math.max(
+        0,
+        Math.min(rect.height - 36, dragRef.current.origY + (e.clientY - dragRef.current.startY)),
+      );
+      setPositions((prev) => ({ ...prev, [dragRef.current!.id]: { x, y } }));
+    };
+    const onUp = () => {
+      if (dragRef.current) {
+        save({ ...positions });
+        dragRef.current = null;
+      }
+    };
+    window.addEventListener('mousemove', onMove);
+    window.addEventListener('mouseup', onUp);
+    return () => {
+      window.removeEventListener('mousemove', onMove);
+      window.removeEventListener('mouseup', onUp);
+    };
+  });
+
+  return { containerRef, positions, dragRef, editingId, setEditingId, editName, setEditName, save };
+}
+
+/* ─── Shared cell element ─── */
+function DraggableCell({
+  pill,
+  x,
+  y,
+  editingId,
+  editName,
+  setEditingId,
+  setEditName,
+  dragRef,
+  containerRef,
+  onRename,
+  onRemove,
+  positions,
+  savePositions,
+}: {
+  pill: PatternPill;
+  x: number;
+  y: number;
+  editingId: string | null;
+  editName: string;
+  setEditingId: (id: string | null) => void;
+  setEditName: (n: string) => void;
+  dragRef: React.MutableRefObject<{
+    id: string;
+    startX: number;
+    startY: number;
+    origX: number;
+    origY: number;
+  } | null>;
+  containerRef: React.RefObject<HTMLDivElement | null>;
+  onRename: (id: string, name: string) => void;
+  onRemove: (id: string) => void;
+  positions: Record<string, { x: number; y: number }>;
+  savePositions: (p: Record<string, { x: number; y: number }>) => void;
+}) {
+  const isEditing = editingId === pill.id;
+  return (
+    <div
+      className="absolute group cursor-grab rounded-lg px-3 py-2 transition-shadow duration-200 hover:shadow-md active:cursor-grabbing"
+      style={{
+        left: x,
+        top: y,
+        background: '#f7eddc',
+        border: `1.5px solid ${pill.color}40`,
+        boxShadow: `0 2px 8px ${pill.color}15`,
+        minWidth: 70,
+        maxWidth: 140,
+        touchAction: 'none',
+      }}
+      onMouseDown={(e) => {
+        if (isEditing) return;
+        dragRef.current = { id: pill.id, startX: e.clientX, startY: e.clientY, origX: x, origY: y };
+      }}
+      onTouchStart={(e) => {
+        if (isEditing) return;
+        const t = e.touches[0];
+        dragRef.current = { id: pill.id, startX: t.clientX, startY: t.clientY, origX: x, origY: y };
+      }}
+      onTouchMove={(e) => {
+        e.preventDefault();
+        if (!dragRef.current || !containerRef.current) return;
+        const t = e.touches[0];
+        const rect = containerRef.current.getBoundingClientRect();
+        const nx = Math.max(
+          0,
+          Math.min(rect.width - 90, dragRef.current.origX + (t.clientX - dragRef.current.startX)),
+        );
+        const ny = Math.max(
+          0,
+          Math.min(rect.height - 36, dragRef.current.origY + (t.clientY - dragRef.current.startY)),
+        );
+        positions[dragRef.current.id] = { x: nx, y: ny };
+      }}
+      onTouchEnd={() => {
+        if (dragRef.current) {
+          savePositions({ ...positions });
+          dragRef.current = null;
+        }
+      }}
+    >
+      {isEditing ? (
+        <input
+          type="text"
+          value={editName}
+          onChange={(e) => setEditName(e.target.value)}
+          onBlur={() => {
+            onRename(pill.id, editName);
+            setEditingId(null);
+          }}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter') {
+              onRename(pill.id, editName);
+              setEditingId(null);
+            }
+            if (e.key === 'Escape') setEditingId(null);
+          }}
+          autoFocus
+          className="bg-transparent outline-none"
+          style={{
+            color: '#7a5438',
+            fontFamily: 'var(--font-handwritten)',
+            fontWeight: 700,
+            fontSize: '14px',
+            width: '100%',
+            border: 'none',
+          }}
+        />
+      ) : (
+        <div className="flex items-center gap-1.5">
+          <span
+            onClick={() => {
+              setEditingId(pill.id);
+              setEditName(pill.name);
+            }}
+            className="cursor-text"
+            style={{
+              color: '#7a5438',
+              fontFamily: 'var(--font-handwritten)',
+              fontWeight: 700,
+              fontSize: '14px',
+            }}
+          >
+            {pill.name}
+          </span>
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              onRemove(pill.id);
+            }}
+            className="cursor-pointer text-xs opacity-0 transition-opacity group-hover:opacity-40"
+            style={{ color: '#7a5438', background: 'none', border: 'none' }}
+          >
+            ✕
+          </button>
+        </div>
+      )}
+    </div>
+  );
+}
+
+/* ─── View 1: Vertical CARE bands ─── */
+function VerticalCellView({
+  pills,
+  onRename,
+  onRemove,
+}: {
+  pills: PatternPill[];
+  onRename: (id: string, name: string) => void;
+  onRemove: (id: string) => void;
+}) {
+  const { containerRef, positions, dragRef, editingId, setEditingId, editName, setEditName, save } =
+    useCellDrag('colourmap:cell-vertical');
+  const bandH = 80;
+  const totalH = CARE_ZONES.length * bandH;
+
+  const getPos = (pill: PatternPill, idx: number) => {
+    if (positions[pill.id]) return positions[pill.id];
+    const bandIdx = idx % CARE_ZONES.length;
+    return { x: 60 + (idx % 3) * 90, y: bandIdx * bandH + 24 };
+  };
+
+  const allPills = pills.filter((p) => !p.parentId);
+
+  return (
+    <div
+      ref={containerRef}
+      className="relative rounded-xl overflow-hidden"
+      style={{ height: totalH, background: '#f7eddc30', border: '1.5px solid #8A6A4A12' }}
+    >
+      {CARE_ZONES.map((zone, i) => (
+        <div key={zone.key}>
+          <div
+            className="absolute left-0 right-0"
+            style={{
+              top: i * bandH,
+              height: bandH,
+              background: i % 2 === 0 ? '#f7eddc20' : 'transparent',
+              borderBottom: '1px solid #8A6A4A10',
+            }}
+          >
+            <span
+              className="absolute left-3 top-1 text-xs font-bold uppercase tracking-wider"
+              style={{ color: zone.color, opacity: 0.5, fontFamily: 'var(--font-serif)' }}
+            >
+              {zone.label}
+            </span>
+          </div>
+        </div>
+      ))}
+      {allPills.map((pill, i) => {
+        const pos = getPos(pill, i);
+        return (
+          <DraggableCell
+            key={pill.id}
+            pill={pill}
+            x={pos.x}
+            y={pos.y}
+            editingId={editingId}
+            editName={editName}
+            setEditingId={setEditingId}
+            setEditName={setEditName}
+            dragRef={dragRef}
+            containerRef={containerRef}
+            onRename={onRename}
+            onRemove={onRemove}
+            positions={positions}
+            savePositions={save}
+          />
+        );
+      })}
+    </div>
+  );
+}
+
+/* ─── View 2: Freeform with soft zone hints ─── */
+function FreeformCellView({
+  pills,
+  onRename,
+  onRemove,
+}: {
+  pills: PatternPill[];
+  onRename: (id: string, name: string) => void;
+  onRemove: (id: string) => void;
+}) {
+  const { containerRef, positions, dragRef, editingId, setEditingId, editName, setEditName, save } =
+    useCellDrag('colourmap:cell-freeform');
+
+  const getPos = (pill: PatternPill, idx: number) => {
+    if (positions[pill.id]) return positions[pill.id];
+    const isFlow = pill.type === 'strength';
+    return {
+      x: isFlow ? 20 + (idx % 2) * 110 : 150 + (idx % 2) * 110,
+      y: 30 + Math.floor(idx / 2) * 60,
+    };
+  };
+
+  const allPills = pills.filter((p) => !p.parentId);
+
+  return (
+    <div
+      ref={containerRef}
+      className="relative rounded-xl"
+      style={{ height: 340, background: '#f7eddc30', border: '1.5px solid #8A6A4A12' }}
+    >
+      {/* Soft zone labels in corners */}
+      <span
+        className="absolute top-2 left-3 text-xs uppercase tracking-wider"
+        style={{ color: '#D4805A', opacity: 0.3, fontFamily: 'var(--font-serif)', fontWeight: 700 }}
+      >
+        Care
+      </span>
+      <span
+        className="absolute top-2 right-3 text-xs uppercase tracking-wider"
+        style={{ color: '#C4A070', opacity: 0.3, fontFamily: 'var(--font-serif)', fontWeight: 700 }}
+      >
+        Attitude
+      </span>
+      <span
+        className="absolute bottom-2 left-3 text-xs uppercase tracking-wider"
+        style={{ color: '#C4906A', opacity: 0.3, fontFamily: 'var(--font-serif)', fontWeight: 700 }}
+      >
+        Rest
+      </span>
+      <span
+        className="absolute bottom-2 right-3 text-xs uppercase tracking-wider"
+        style={{ color: '#B07A5A', opacity: 0.3, fontFamily: 'var(--font-serif)', fontWeight: 700 }}
+      >
+        Emotions
+      </span>
+      {allPills.map((pill, i) => {
+        const pos = getPos(pill, i);
+        return (
+          <DraggableCell
+            key={pill.id}
+            pill={pill}
+            x={pos.x}
+            y={pos.y}
+            editingId={editingId}
+            editName={editName}
+            setEditingId={setEditingId}
+            setEditName={setEditName}
+            dragRef={dragRef}
+            containerRef={containerRef}
+            onRename={onRename}
+            onRemove={onRemove}
+            positions={positions}
+            savePositions={save}
+          />
+        );
+      })}
+    </div>
+  );
+}
+
+/* ─── View 3: Concentric rings ─── */
+function RingsCellView({
+  pills,
+  onRename,
+  onRemove,
+}: {
+  pills: PatternPill[];
+  onRename: (id: string, name: string) => void;
+  onRemove: (id: string) => void;
+}) {
+  const { containerRef, positions, dragRef, editingId, setEditingId, editName, setEditName, save } =
+    useCellDrag('colourmap:cell-rings');
+  const sz = 340;
+  const cx = sz / 2;
+  const cy = sz / 2;
+
+  const getPos = (pill: PatternPill, idx: number) => {
+    if (positions[pill.id]) return positions[pill.id];
+    const angle =
+      (idx / Math.max(1, pills.filter((p) => !p.parentId).length)) * Math.PI * 2 - Math.PI / 2;
+    const r = 80 + (idx % 3) * 30;
+    return { x: cx + r * Math.cos(angle) - 40, y: cy + r * Math.sin(angle) - 16 };
+  };
+
+  const allPills = pills.filter((p) => !p.parentId);
+
+  return (
+    <div
+      ref={containerRef}
+      className="relative rounded-xl"
+      style={{ height: sz, background: '#f7eddc30', border: '1.5px solid #8A6A4A12' }}
+    >
+      {/* Concentric ring guides */}
+      <svg className="absolute inset-0" width={sz} height={sz} viewBox={`0 0 ${sz} ${sz}`}>
+        <circle
+          cx={cx}
+          cy={cy}
+          r={60}
+          fill="none"
+          stroke="#8A6A4A"
+          strokeWidth="0.5"
+          opacity={0.1}
+        />
+        <circle
+          cx={cx}
+          cy={cy}
+          r={110}
+          fill="none"
+          stroke="#8A6A4A"
+          strokeWidth="0.5"
+          opacity={0.08}
+        />
+        <circle
+          cx={cx}
+          cy={cy}
+          r={155}
+          fill="none"
+          stroke="#8A6A4A"
+          strokeWidth="0.5"
+          opacity={0.06}
+        />
+        {/* CARE labels at compass points */}
+        <text
+          x={cx}
+          y={30}
+          textAnchor="middle"
+          style={{
+            fontSize: '11px',
+            fontFamily: 'var(--font-serif)',
+            fontWeight: 700,
+            fill: '#C4A070',
+            opacity: 0.35,
+          }}
+        >
+          Attitude
+        </text>
+        <text
+          x={sz - 12}
+          y={cy + 4}
+          textAnchor="end"
+          style={{
+            fontSize: '11px',
+            fontFamily: 'var(--font-serif)',
+            fontWeight: 700,
+            fill: '#C4906A',
+            opacity: 0.35,
+          }}
+        >
+          Rest
+        </text>
+        <text
+          x={cx}
+          y={sz - 16}
+          textAnchor="middle"
+          style={{
+            fontSize: '11px',
+            fontFamily: 'var(--font-serif)',
+            fontWeight: 700,
+            fill: '#B07A5A',
+            opacity: 0.35,
+          }}
+        >
+          Emotions
+        </text>
+        <text
+          x={12}
+          y={cy + 4}
+          textAnchor="start"
+          style={{
+            fontSize: '11px',
+            fontFamily: 'var(--font-serif)',
+            fontWeight: 700,
+            fill: '#D4805A',
+            opacity: 0.35,
+          }}
+        >
+          Care
+        </text>
+        {/* Center star */}
+        {(() => {
+          const r1 = 10;
+          const r2 = 3.5;
+          const pts: string[] = [];
+          for (let i = 0; i < 8; i++) {
+            const a = -Math.PI / 2 + (i * Math.PI) / 4;
+            const r = i % 2 === 0 ? r1 : r2;
+            pts.push(`${cx + r * Math.cos(a)},${cy + r * Math.sin(a)}`);
+          }
+          return <polygon points={pts.join(' ')} fill="#C4A060" opacity={0.2} />;
+        })()}
+      </svg>
+      {allPills.map((pill, i) => {
+        const pos = getPos(pill, i);
+        return (
+          <DraggableCell
+            key={pill.id}
+            pill={pill}
+            x={pos.x}
+            y={pos.y}
+            editingId={editingId}
+            editName={editName}
+            setEditingId={setEditingId}
+            setEditName={setEditName}
+            dragRef={dragRef}
+            containerRef={containerRef}
+            onRename={onRename}
+            onRemove={onRemove}
+            positions={positions}
+            savePositions={save}
+          />
+        );
+      })}
+    </div>
+  );
+}
+
 function MapTab({
   pills,
   setPills,
@@ -337,6 +901,7 @@ function MapTab({
   const [organizing, setOrganizing] = useState(false);
   const [pickingParentFor, setPickingParentFor] = useState<string | null>(null);
   const [creatingPack, setCreatingPack] = useState(false);
+  const [viewMode, setViewMode] = useState<'list' | CellViewMode>('list');
   const [newPackName, setNewPackName] = useState('');
   const [newPackPills, setNewPackPills] = useState<string[]>([]);
   const [expandedPack, setExpandedPack] = useState<string | null>(null);
@@ -456,99 +1021,140 @@ function MapTab({
 
   return (
     <div className="space-y-4">
-      {/* Challenge / Flow titles */}
-      <div className="grid grid-cols-2 gap-4">
-        <p
-          className="text-center text-xl font-bold"
-          style={{ color: '#C4A060', fontFamily: 'var(--font-serif)' }}
-        >
-          Flow
-        </p>
-        <p
-          className="text-center text-xl font-bold"
-          style={{ color: '#C4A060', fontFamily: 'var(--font-serif)' }}
-        >
-          Challenge
-        </p>
-      </div>
+      {viewMode === 'list' ? (
+        <>
+          {/* LIST VIEW — Challenge / Flow titles + inputs + pills */}
+          <div className="grid grid-cols-2 gap-4">
+            <p
+              className="text-center text-xl font-bold"
+              style={{ color: '#C4A060', fontFamily: 'var(--font-serif)' }}
+            >
+              Flow
+            </p>
+            <p
+              className="text-center text-xl font-bold"
+              style={{ color: '#C4A060', fontFamily: 'var(--font-serif)' }}
+            >
+              Challenge
+            </p>
+          </div>
 
-      <div className="grid grid-cols-2 gap-4">
-        {/* FLOW (strengths) */}
-        <ColumnBlock
-          label="Flow"
-          accent="#c79a42"
-          empty="What's strong?"
-          placeholder="What's flowing?..."
-          pills={strengths}
-          allPills={pills}
-          work={work}
-          getSubs={getSubs}
-          editingId={editingId}
-          editName={editName}
-          addingSubFor={addingSubFor}
-          subInput={subInput}
-          setSubInput={setSubInput}
-          organizing={organizing}
-          pickingParentFor={pickingParentFor}
-          onPickParent={(childId) =>
-            setPickingParentFor(pickingParentFor === childId ? null : childId)
-          }
-          onMakeSubOf={makeSubOf}
-          onPromoteToMain={promoteToMain}
-          onStartAddSub={(id) => {
-            setAddingSubFor(addingSubFor === id ? null : id);
-            setSubInput('');
+          <div className="grid grid-cols-2 gap-4">
+            <ColumnBlock
+              label="Flow"
+              accent="#c79a42"
+              empty="What's strong?"
+              placeholder="What's flowing?..."
+              pills={strengths}
+              allPills={pills}
+              work={work}
+              getSubs={getSubs}
+              editingId={editingId}
+              editName={editName}
+              addingSubFor={addingSubFor}
+              subInput={subInput}
+              setSubInput={setSubInput}
+              organizing={organizing}
+              pickingParentFor={pickingParentFor}
+              onPickParent={(childId) =>
+                setPickingParentFor(pickingParentFor === childId ? null : childId)
+              }
+              onMakeSubOf={makeSubOf}
+              onPromoteToMain={promoteToMain}
+              onStartAddSub={(id) => {
+                setAddingSubFor(addingSubFor === id ? null : id);
+                setSubInput('');
+              }}
+              onCommitAddSub={(id) => addSubPill(id, subInput)}
+              onCancelAddSub={() => setAddingSubFor(null)}
+              onAddDirect={(name) => addPill(name, 'strength')}
+              onStartEdit={(id, name) => {
+                setEditingId(id);
+                setEditName(name);
+              }}
+              onChangeEdit={setEditName}
+              onCommitEdit={(id) => renamePill(id, editName)}
+              onCancelEdit={() => setEditingId(null)}
+              onRemove={removePill}
+            />
+            <ColumnBlock
+              label="Challenge"
+              accent="#c79a42"
+              empty="What's heavy?"
+              placeholder="What's challenging?..."
+              pills={weaknesses}
+              allPills={pills}
+              work={work}
+              getSubs={getSubs}
+              editingId={editingId}
+              editName={editName}
+              addingSubFor={addingSubFor}
+              subInput={subInput}
+              setSubInput={setSubInput}
+              organizing={organizing}
+              pickingParentFor={pickingParentFor}
+              onPickParent={(childId) =>
+                setPickingParentFor(pickingParentFor === childId ? null : childId)
+              }
+              onMakeSubOf={makeSubOf}
+              onPromoteToMain={promoteToMain}
+              onStartAddSub={(id) => {
+                setAddingSubFor(addingSubFor === id ? null : id);
+                setSubInput('');
+              }}
+              onCommitAddSub={(id) => addSubPill(id, subInput)}
+              onCancelAddSub={() => setAddingSubFor(null)}
+              onAddDirect={(name) => addPill(name, 'weakness')}
+              onStartEdit={(id, name) => {
+                setEditingId(id);
+                setEditName(name);
+              }}
+              onChangeEdit={setEditName}
+              onCommitEdit={(id) => renamePill(id, editName)}
+              onCancelEdit={() => setEditingId(null)}
+              onRemove={removePill}
+            />
+          </div>
+        </>
+      ) : (
+        /* CELL VIEWS — visual map, replaces list */
+        <div className="animate-in fade-in duration-200">
+          {viewMode === 'vertical' && (
+            <VerticalCellView pills={pills} onRename={renamePill} onRemove={removePill} />
+          )}
+          {viewMode === 'freeform' && (
+            <FreeformCellView pills={pills} onRename={renamePill} onRemove={removePill} />
+          )}
+          {viewMode === 'rings' && (
+            <RingsCellView pills={pills} onRename={renamePill} onRemove={removePill} />
+          )}
+        </div>
+      )}
+
+      {/* Losange — cycles: list → vertical → freeform → rings → list */}
+      <div className="flex flex-col items-center gap-1">
+        <button
+          type="button"
+          onClick={() => {
+            const modes: ('list' | CellViewMode)[] = ['list', 'vertical', 'freeform', 'rings'];
+            const next = modes[(modes.indexOf(viewMode) + 1) % modes.length];
+            setViewMode(next);
           }}
-          onCommitAddSub={(id) => addSubPill(id, subInput)}
-          onCancelAddSub={() => setAddingSubFor(null)}
-          onAddDirect={(name) => addPill(name, 'strength')}
-          onStartEdit={(id, name) => {
-            setEditingId(id);
-            setEditName(name);
+          className="h-4 w-4 rotate-45 cursor-pointer transition-all duration-300 hover:scale-125"
+          style={{
+            background: viewMode !== 'list' ? '#C4A06040' : '#C4A06018',
+            borderRadius: 2,
+            border: 'none',
           }}
-          onChangeEdit={setEditName}
-          onCommitEdit={(id) => renamePill(id, editName)}
-          onCancelEdit={() => setEditingId(null)}
-          onRemove={removePill}
         />
-        {/* CHALLENGE (weaknesses) */}
-        <ColumnBlock
-          label="Challenge"
-          accent="#c79a42"
-          empty="What's heavy?"
-          placeholder="What's challenging?..."
-          pills={weaknesses}
-          allPills={pills}
-          work={work}
-          getSubs={getSubs}
-          editingId={editingId}
-          editName={editName}
-          addingSubFor={addingSubFor}
-          subInput={subInput}
-          setSubInput={setSubInput}
-          organizing={organizing}
-          pickingParentFor={pickingParentFor}
-          onPickParent={(childId) =>
-            setPickingParentFor(pickingParentFor === childId ? null : childId)
-          }
-          onMakeSubOf={makeSubOf}
-          onPromoteToMain={promoteToMain}
-          onStartAddSub={(id) => {
-            setAddingSubFor(addingSubFor === id ? null : id);
-            setSubInput('');
-          }}
-          onCommitAddSub={(id) => addSubPill(id, subInput)}
-          onCancelAddSub={() => setAddingSubFor(null)}
-          onAddDirect={(name) => addPill(name, 'weakness')}
-          onStartEdit={(id, name) => {
-            setEditingId(id);
-            setEditName(name);
-          }}
-          onChangeEdit={setEditName}
-          onCommitEdit={(id) => renamePill(id, editName)}
-          onCancelEdit={() => setEditingId(null)}
-          onRemove={removePill}
-        />
+        {viewMode !== 'list' && (
+          <span
+            className="text-xs"
+            style={{ color: '#C4A060', opacity: 0.4, fontFamily: 'var(--font-serif)' }}
+          >
+            {viewMode}
+          </span>
+        )}
       </div>
     </div>
   );
