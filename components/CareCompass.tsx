@@ -640,7 +640,7 @@ export default function CareCompass() {
               >
                 {activeQ.label}
               </p>
-              <div className="flex items-center justify-center gap-[2px]">
+              <div className="flex items-center justify-center gap-[5px]">
                 {(() => {
                   const rainbow = [
                     '#C83030',
@@ -791,7 +791,7 @@ export default function CareCompass() {
               )}
 
               {step.type === 'rate' && (
-                <div className="flex items-center justify-center gap-[2px]">
+                <div className="flex items-center justify-center gap-[5px]">
                   {(() => {
                     const rainbow = [
                       '#C83030',

@@ -603,7 +603,7 @@ export default function StarCompass() {
                   {current}. {RHYMES[current]}
                 </span>
               </div>
-              <div className="flex items-center gap-[3px]">
+              <div className="flex items-center gap-[6px]">
                 {[1, 2, 3, 4, 5, 6, 7, 8].map((n) => {
                   const mapped = Math.round((n / 8) * 100);
                   const isN = n === current;

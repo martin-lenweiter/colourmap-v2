@@ -1433,8 +1433,8 @@ export default function FeelingCheckInCard() {
               // a long row that reads as a continuous drawer strip.
               const blocksPerLevel = 3;
               const totalBlocks = BALANCE.length * blocksPerLevel;
-              const blockW = 10;
-              const gap = 2;
+              const blockW = 9;
+              const gap = 5; // doubled negative space between blocks
               const totalW = totalBlocks * blockW + (totalBlocks - 1) * gap;
               const offsetX = (300 - totalW) / 2;
               const blockH = 44;
@@ -1472,19 +1472,21 @@ export default function FeelingCheckInCard() {
         {variantIdx === 6 && (
           <div
             className="relative flex items-center justify-center"
-            style={{ width: 300, height: 95 }}
+            style={{ width: 340, height: 120 }}
           >
             {(() => {
               const stuck = HAWKINS.slice(0, 5); // Frozen → Overwhelmed
               const free = HAWKINS.slice(5); // Searching → Liberation
-              const barW = 14;
-              const barH = 60;
-              const gap = 3; // negative space between drawers
-              const groupW = barW * 5 + gap * 4; // 82
-              const circleD = 70;
-              const sideGap = 14; // space between drawer group and circle
-              const totalW = groupW * 2 + circleD + sideGap * 2; // 82+70+82+28 = 262
-              const startX = (300 - totalW) / 2; // ≈ 19
+              const W = 340;
+              const H = 120;
+              const barW = 22; // was 14 — ~60% wider
+              const barH = 84; // was 60 — 40% taller
+              const gap = 2; // negative space between drawers
+              const groupW = barW * 5 + gap * 4;
+              const circleD = 80; // was 70
+              const sideGap = 14;
+              const totalW = groupW * 2 + circleD + sideGap * 2;
+              const startX = (W - totalW) / 2;
 
               const renderBar = (label: string, color: string, globalIdx: number, x: number) => {
                 const selected = hawkinsIdx === globalIdx;
@@ -1493,15 +1495,15 @@ export default function FeelingCheckInCard() {
                     key={label}
                     type="button"
                     onClick={() => setHawkinsIdx(globalIdx)}
-                    className="absolute cursor-pointer rounded-sm border transition-all"
+                    className="absolute cursor-pointer rounded-sm transition-all"
                     style={{
                       left: x,
-                      top: (95 - barH) / 2,
+                      top: (H - barH) / 2,
                       width: barW,
                       height: barH,
                       background: color,
                       opacity: selected ? 1 : 0.35,
-                      borderColor: selected ? '#3A2416' : 'transparent',
+                      border: 'none',
                       boxShadow: selected ? `0 4px 14px -4px ${color}` : 'none',
                     }}
                     title={label}
@@ -1516,16 +1518,15 @@ export default function FeelingCheckInCard() {
                     const x = startX + i * (barW + gap);
                     return renderBar(h.level, h.color, i, x);
                   })}
-                  {/* Central circle — current state */}
+                  {/* Central circle — pastel (blend raw HAWKINS colour with cream), no glow */}
                   <div
                     className="absolute rounded-full transition-colors duration-300"
                     style={{
                       left: startX + groupW + sideGap,
-                      top: (95 - circleD) / 2,
+                      top: (H - circleD) / 2,
                       width: circleD,
                       height: circleD,
-                      background: HAWKINS[hawkinsIdx].color,
-                      boxShadow: `0 6px 20px -8px ${HAWKINS[hawkinsIdx].color}, inset 0 2px 6px rgba(255,255,255,0.3)`,
+                      background: `linear-gradient(rgba(245,236,220,0.45), rgba(245,236,220,0.45)), ${HAWKINS[hawkinsIdx].color}`,
                     }}
                   />
                   {/* Right drawers — freedom states (Searching → Liberation) */}
