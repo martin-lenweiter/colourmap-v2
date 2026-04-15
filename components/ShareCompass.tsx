@@ -285,14 +285,27 @@ export default function ShareCompass() {
           <button
             type="button"
             onClick={() => setShowDesign(!showDesign)}
-            className="cursor-pointer rounded-md px-2 py-0.5 text-[11px] uppercase tracking-wider transition-all"
+            aria-label="Choose colour theme"
+            className="flex cursor-pointer items-center justify-center rounded-full transition-all"
             style={{
-              color: showDesign ? '#6B7F4E' : '#6B7F4E60',
-              background: showDesign ? '#6B7F4E10' : 'transparent',
-              border: `1px solid \${showDesign ? '#6B7F4E30' : 'transparent'}`,
+              width: 18,
+              height: 18,
+              background: 'transparent',
+              border: 'none',
+              opacity: showDesign ? 1 : 0.5,
             }}
           >
-            design
+            <span
+              className="rotate-45"
+              style={{
+                width: 7,
+                height: 7,
+                background: '#6B7F4E',
+                opacity: showDesign ? 1 : 0.65,
+                borderRadius: 1,
+                display: 'block',
+              }}
+            />
           </button>
           {showDesign && (
             <div

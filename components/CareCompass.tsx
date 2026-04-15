@@ -332,14 +332,27 @@ export default function CareCompass() {
           <button
             type="button"
             onClick={() => setShowDesign(!showDesign)}
-            className="cursor-pointer rounded-md px-2 py-0.5 text-[11px] uppercase tracking-wider transition-all"
+            aria-label="Choose colour theme"
+            className="flex cursor-pointer items-center justify-center rounded-full transition-all"
             style={{
-              color: showDesign ? '#C4A060' : '#C4A06060',
-              background: showDesign ? '#C4A06010' : 'transparent',
-              border: `1px solid ${showDesign ? '#C4A06030' : 'transparent'}`,
+              width: 18,
+              height: 18,
+              background: 'transparent',
+              border: 'none',
+              opacity: showDesign ? 1 : 0.5,
             }}
           >
-            design
+            <span
+              className="rotate-45"
+              style={{
+                width: 7,
+                height: 7,
+                background: '#C4A060',
+                opacity: showDesign ? 1 : 0.65,
+                borderRadius: 1,
+                display: 'block',
+              }}
+            />
           </button>
           {showDesign && (
             <div
@@ -665,11 +678,13 @@ export default function CareCompass() {
                 })()}
               </div>
               <p
-                className="text-center text-base"
+                className="text-center"
                 style={{
-                  color: activeQ.color,
-                  opacity: 0.7,
+                  color: '#5C3018',
+                  opacity: 0.95,
                   fontFamily: 'var(--font-handwritten)',
+                  fontSize: '17px',
+                  fontWeight: 500,
                 }}
               >
                 {(RHYMES[activeQ.label] || [])[current] || ''}
@@ -690,12 +705,14 @@ export default function CareCompass() {
                 setSubStep(0);
                 setSubAnswers({});
               }}
-              className="cursor-pointer rounded-full px-4 py-2 text-sm font-bold text-white transition-all duration-300 hover:scale-105"
+              className="cursor-pointer rounded-full px-4 py-2 font-bold text-white transition-all duration-300 hover:scale-105"
               style={{
                 background: s.color,
-                opacity: activeSub === s.label ? 1 : 0.6,
+                opacity: activeSub === s.label ? 1 : 0.85,
                 fontFamily: 'var(--font-serif)',
                 border: 'none',
+                fontSize: '14px',
+                letterSpacing: '0.02em',
               }}
             >
               {s.label}
@@ -724,17 +741,34 @@ export default function CareCompass() {
             >
               <div className="flex items-center justify-between">
                 <span
-                  className="text-sm font-semibold"
-                  style={{ color: activeQ.color, fontFamily: 'var(--font-serif)' }}
+                  className="font-semibold"
+                  style={{
+                    color: activeQ.color,
+                    fontFamily: 'var(--font-serif)',
+                    fontSize: '15px',
+                  }}
                 >
                   {activeSub}
                 </span>
-                <span className="text-xs text-muted-foreground">{subStep + 1} / 3</span>
+                <span
+                  style={{
+                    color: '#8A6A4A',
+                    fontSize: '12px',
+                    opacity: 0.8,
+                    fontFamily: 'var(--font-serif)',
+                  }}
+                >
+                  {subStep + 1} / 3
+                </span>
               </div>
 
               <p
-                className="text-base"
-                style={{ color: activeQ.color, fontFamily: 'var(--font-serif)' }}
+                style={{
+                  color: '#5C3018',
+                  fontFamily: 'var(--font-serif)',
+                  fontSize: '16px',
+                  lineHeight: 1.5,
+                }}
               >
                 &ldquo;{step.prompt}&rdquo;
               </p>

@@ -285,14 +285,27 @@ export default function StarCompass() {
           <button
             type="button"
             onClick={() => setShowDesign(!showDesign)}
-            className="cursor-pointer rounded-md px-2 py-0.5 text-[11px] uppercase tracking-wider transition-all"
+            aria-label="Choose colour theme"
+            className="flex cursor-pointer items-center justify-center rounded-full transition-all"
             style={{
-              color: showDesign ? '#7A9A7A' : '#7A9A7A60',
-              background: showDesign ? '#7A9A7A10' : 'transparent',
-              border: `1px solid \${showDesign ? '#7A9A7A30' : 'transparent'}`,
+              width: 18,
+              height: 18,
+              background: 'transparent',
+              border: 'none',
+              opacity: showDesign ? 1 : 0.5,
             }}
           >
-            design
+            <span
+              className="rotate-45"
+              style={{
+                width: 7,
+                height: 7,
+                background: '#7A9A7A',
+                opacity: showDesign ? 1 : 0.65,
+                borderRadius: 1,
+                display: 'block',
+              }}
+            />
           </button>
           {showDesign && (
             <div

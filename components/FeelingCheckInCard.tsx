@@ -1215,16 +1215,17 @@ export default function FeelingCheckInCard() {
                     key={b.label}
                     type="button"
                     onClick={() => setBalanceIdx(i)}
-                    className="absolute flex cursor-pointer items-center justify-center rounded-full border transition-all hover:scale-110"
+                    className="absolute flex cursor-pointer items-center justify-center rounded-full transition-all hover:scale-110"
                     style={{
                       left: x,
                       top: y,
                       width: dotSize,
                       height: dotSize,
                       background: b.color,
-                      opacity: selected ? 1 : 0.7,
-                      borderColor: selected ? '#3A2416' : 'transparent',
+                      opacity: selected ? 1 : 0.55,
+                      border: 'none',
                       boxShadow: selected ? `0 4px 14px -4px ${b.color}` : 'none',
+                      transform: selected ? 'scale(1.08)' : 'scale(1)',
                     }}
                     title={b.label}
                   />
@@ -1260,7 +1261,6 @@ export default function FeelingCheckInCard() {
                 width: 90,
                 height: 90,
                 background: BALANCE[balanceIdx].color,
-                boxShadow: `0 6px 20px -8px ${BALANCE[balanceIdx].color}, inset 0 2px 6px rgba(255,255,255,0.3)`,
                 touchAction: 'none',
               }}
               onClick={(e) => {
@@ -1304,20 +1304,6 @@ export default function FeelingCheckInCard() {
                 window.addEventListener('touchend', onEnd);
               }}
             />
-            {/* Position dots under the circle */}
-            <div className="absolute bottom-0 flex gap-1.5">
-              {BALANCE.map((b, i) => (
-                <span
-                  key={b.label}
-                  style={{
-                    width: 5,
-                    height: 5,
-                    borderRadius: '50%',
-                    background: i === balanceIdx ? b.color : '#8A6A4A30',
-                  }}
-                />
-              ))}
-            </div>
           </div>
         )}
 
@@ -1392,16 +1378,15 @@ export default function FeelingCheckInCard() {
                     key={b.label}
                     type="button"
                     onClick={() => setBalanceIdx(i)}
-                    className="absolute cursor-pointer rounded-t-md border transition-all"
+                    className="absolute cursor-pointer rounded-t-md transition-all"
                     style={{
                       left: x,
                       top: y,
                       width: barW,
                       height: h,
                       background: b.color,
-                      opacity: selected ? 1 : 0.45,
-                      borderColor: selected ? '#3A2416' : 'transparent',
-                      borderBottomWidth: 0,
+                      opacity: selected ? 1 : 0.4,
+                      border: 'none',
                       boxShadow: selected ? `0 4px 14px -4px ${b.color}` : 'none',
                     }}
                     title={b.label}
@@ -1486,14 +1471,14 @@ export default function FeelingCheckInCard() {
                   />
                   {/* Handle */}
                   <div
-                    className="absolute cursor-grab rounded-full border-2 transition-all active:cursor-grabbing"
+                    className="absolute cursor-grab rounded-full transition-all active:cursor-grabbing"
                     style={{
                       left: handleX,
                       top: 0,
                       width: handleSize,
                       height: handleSize,
                       background: BALANCE[balanceIdx].color,
-                      borderColor: '#3A2416',
+                      border: 'none',
                       boxShadow: `0 4px 14px -4px ${BALANCE[balanceIdx].color}`,
                       pointerEvents: 'none',
                     }}
