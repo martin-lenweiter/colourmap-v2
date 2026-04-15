@@ -1282,7 +1282,10 @@ export default function FeelingCheckInCard() {
               style={{
                 width: 90,
                 height: 90,
-                background: BALANCE[balanceIdx].color,
+                // Pastel: blend the raw BALANCE colour with the cream paper base
+                // via a semi-transparent overlay. The 60% alpha lets the warm
+                // parchment tone show through, softening every variant.
+                background: `linear-gradient(rgba(245,236,220,0.45), rgba(245,236,220,0.45)), ${BALANCE[balanceIdx].color}`,
                 touchAction: 'none',
               }}
               onClick={(e) => {
