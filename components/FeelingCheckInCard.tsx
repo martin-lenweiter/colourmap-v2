@@ -1594,10 +1594,12 @@ export default function FeelingCheckInCard() {
               placeholder="set an objective..."
               className="w-full border-b bg-transparent pb-1 text-center outline-none placeholder:text-muted-foreground/40"
               style={{
-                color: '#7a5438',
+                color: '#5C3018',
                 borderColor: '#C4A06020',
                 fontFamily: 'var(--font-handwritten)',
                 fontSize: '24px',
+                fontWeight: 700,
+                letterSpacing: '0.06em',
                 paddingLeft: '64px',
                 paddingRight: '64px',
               }}
@@ -1696,8 +1698,13 @@ export default function FeelingCheckInCard() {
             }}
           >
             <span
-              className="text-center text-sm font-semibold uppercase tracking-[0.22em]"
-              style={{ color: '#C4A060' }}
+              className="text-center uppercase"
+              style={{
+                color: '#C4A060',
+                fontSize: '15px',
+                fontWeight: 700,
+                letterSpacing: '0.22em',
+              }}
             >
               Other Missions
             </span>

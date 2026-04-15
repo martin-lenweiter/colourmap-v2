@@ -10,15 +10,15 @@ function DayContent() {
   return (
     <div className="mx-auto max-w-2xl space-y-4 px-4 py-6">
       <DayTabs
-        cockpitContent={
+        checkinContent={
           <div className="space-y-4">
             <FeelingCheckInCard />
-            <CompassCarousel />
           </div>
         }
         overviewContent={
           <div className="space-y-4">
             <LifeCategories />
+            <CompassCarousel />
           </div>
         }
       />

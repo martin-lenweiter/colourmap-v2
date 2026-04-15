@@ -27,27 +27,27 @@ describe('DayTabs', () => {
     localStorage.clear();
   });
 
-  it('renders the two top-level tabs: Cockpit and Overview', () => {
-    render(<DayTabs cockpitContent={<div>cockpit</div>} overviewContent={<div>overview</div>} />);
-    expect(screen.getByText('Cockpit')).toBeDefined();
+  it('renders the two top-level tabs: Check in and Overview', () => {
+    render(<DayTabs checkinContent={<div>checkin</div>} overviewContent={<div>overview</div>} />);
+    expect(screen.getByText('Check in')).toBeDefined();
     expect(screen.getByText('Overview')).toBeDefined();
   });
 
-  it('shows cockpit content by default', () => {
+  it('shows check-in content by default', () => {
     render(
       <DayTabs
-        cockpitContent={<div>cockpit-content</div>}
+        checkinContent={<div>checkin-content</div>}
         overviewContent={<div>overview-content</div>}
       />,
     );
-    expect(screen.getByText('cockpit-content')).toBeDefined();
+    expect(screen.getByText('checkin-content')).toBeDefined();
   });
 
   it('switches to overview when the Overview tab is clicked', async () => {
     const user = userEvent.setup();
     render(
       <DayTabs
-        cockpitContent={<div>cockpit-content</div>}
+        checkinContent={<div>checkin-content</div>}
         overviewContent={<div>overview-content</div>}
       />,
     );

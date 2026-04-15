@@ -171,14 +171,14 @@ The variants are kept as exploration scaffolding — "for now" — so the design
 
 Iteration through many variants for the same axis revealed there is no single perfect axis for "how am I." The product ships with **balance** as the default frame because the centre is the answer (equilibrium), not just a midpoint, and both extremes are valid contexts (rest is not failure, focus is not failure). The variants stay available behind one toggle so the visual language can keep evolving without collapsing back into a flat form. The pillbox layout makes the check-in feel like distinct cards rather than a long form, and the click-to-expand notes on each daily objective preserve the "clarity-not-clutter" rule.
 
-## Day Page Shell — Cockpit / Overview
+## Day Page Shell — Check in / Overview
 
-The top-level tabs on `/day` are `Cockpit` and `Overview`, not the old `Caring / Doing / Sharing`.
+The top-level tabs on `/day` are `Check in` and `Overview`, not the old `Caring / Doing / Sharing`.
 
-- **Cockpit** — daily pulse. Holds box 1 (balance-arc check-in + pillboxes) and box 3 (the compass carousel that already swipes between Caring / Doing / Sharing compasses). The outer Caring/Doing/Sharing tabs were duplicating what the compass carousel already expresses, so they're gone.
-- **Overview** — wide-angle map. Holds box 2 (`LifeCategories`) — the backbone view of named life areas, their targets, and their logbook. Different altitude from the cockpit: step-back rather than daily pulse.
+- **Check in** — daily pulse. Holds box 1 only (`FeelingCheckInCard` — balance-arc variant picker + the three pillboxes: Current Objective, Other Missions, Logbook & Emotions). Kept deliberately narrow so the daily register feels like a single focused surface.
+- **Overview** — wide-angle map. Holds box 2 (`LifeCategories` — the backbone of named life areas, their targets, and their logbook) and box 3 (`CompassCarousel` — Caring / Doing / Sharing compasses with the two-question Emotions reflective card). Different altitude from the check-in: step-back scanning rather than daily pulse.
 
-Tab choice persists to localStorage (`colourmap:day-tab`). Cockpit is the default on first visit. `DoingCheckInCard` and `SharingCheckInCard` are no longer rendered on `/day` — their surface is covered by the compass carousel inside the cockpit.
+Tab choice persists to localStorage under `colourmap:day-tab`. Legacy values (`cockpit`) are remapped to `checkin` on read, so existing users aren't bounced to Overview after the rename. Check-in is the default on first visit. `DoingCheckInCard` and `SharingCheckInCard` are no longer rendered on `/day` — their surface is covered by the compass carousel inside Overview.
 
 ## Labels & Descriptions — Reference
 

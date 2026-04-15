@@ -5,36 +5,36 @@ import { useEffect, useState } from 'react';
 import { useStyle } from '@/components/StyleContext';
 
 /* ═══════════════════════════════════════════════════════════
-   DAY TABS — COCKPIT / OVERVIEW
-   Cockpit = daily pulse (balance arc + compass carousel).
-   Overview = wide-angle life categories map.
-   Caring / Doing / Sharing now live inside the compass carousel
-   in the cockpit — no need to duplicate them at the top level.
+   DAY TABS — CHECK IN / OVERVIEW
+   Check in = daily pulse (the emotional register + pillboxes).
+   Overview = wide-angle life map + compass carousel.
    ═══════════════════════════════════════════════════════════ */
 
-type Tab = 'cockpit' | 'overview';
+type Tab = 'checkin' | 'overview';
 
 const TABS: { id: Tab; label: string }[] = [
-  { id: 'cockpit', label: 'Cockpit' },
+  { id: 'checkin', label: 'Check in' },
   { id: 'overview', label: 'Overview' },
 ];
 
 const TAB_KEY = 'colourmap:day-tab';
 
 interface DayTabsProps {
-  cockpitContent: React.ReactNode;
+  checkinContent: React.ReactNode;
   overviewContent: React.ReactNode;
 }
 
-export default function DayTabs({ cockpitContent, overviewContent }: DayTabsProps) {
-  const [active, setActive] = useState<Tab>('cockpit');
+export default function DayTabs({ checkinContent, overviewContent }: DayTabsProps) {
+  const [active, setActive] = useState<Tab>('checkin');
   const { style } = useStyle();
 
-  // Restore last-chosen tab on mount
+  // Restore last-chosen tab on mount. Previous key values ('cockpit') are
+  // mapped to 'checkin' so users don't get bounced to Overview on upgrade.
   useEffect(() => {
     try {
       const stored = localStorage.getItem(TAB_KEY);
-      if (stored === 'cockpit' || stored === 'overview') setActive(stored);
+      if (stored === 'cockpit' || stored === 'checkin') setActive('checkin');
+      else if (stored === 'overview') setActive('overview');
     } catch {
       /* silent */
     }
@@ -59,7 +59,7 @@ export default function DayTabs({ cockpitContent, overviewContent }: DayTabsProp
               key={tab.id}
               type="button"
               onClick={() => setActive(tab.id)}
-              className="flex-1 cursor-pointer rounded-xl py-2.5 uppercase tracking-[0.08em] transition-all duration-200"
+              className="flex-1 cursor-pointer rounded-xl py-2.5 uppercase tracking-[0.22em] transition-all duration-200"
               style={{
                 background: isActive ? '#C4A06018' : 'transparent',
                 border: `1.5px solid ${isActive ? '#C4A060' : 'hsl(var(--border) / 0.25)'}`,
@@ -77,7 +77,7 @@ export default function DayTabs({ cockpitContent, overviewContent }: DayTabsProp
 
       {/* Content */}
       <div className="animate-in fade-in duration-200">
-        {active === 'cockpit' && cockpitContent}
+        {active === 'checkin' && checkinContent}
         {active === 'overview' && overviewContent}
       </div>
     </div>
