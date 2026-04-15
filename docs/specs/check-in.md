@@ -114,6 +114,44 @@ The Hawkins slider works functionally but introduces visual noise. The circle ac
 
 Aspiration. The current implementation still uses the rainbow square slider as an intermediate step. The circle exists as the top element. Migration to swipe-only interaction is a future iteration.
 
+## Current Implementation Direction (April 2026)
+
+The check-in has settled into a **single-anchor + collapsible-pillbox** structure inside box 1 of the Caring tab. This supersedes the multi-variant exploration of dots, columns, polygons, and grids — all of which were design experiments while looking for the right axis. The settled choices:
+
+### Top — Balance Arc
+
+A single horizontal arc with seven stops from `Deep Rest → Tunnel Vision`. Centre is `Balance` (equilibrium). **Both extremes are valid deep states** — `Deep Rest` is restorative, `Tunnel Vision` is intense focus. Neither is failure. The arc curve is a smooth cosine bow with the apex visibly higher than its neighbors, dots evenly spaced across the width.
+
+This replaces the earlier Hawkins-style emotional spectrum (Shame → Enlightenment) for the in-app representation. Hawkins data may still be referenced internally but the user-facing scale is the balance arc.
+
+### Three Collapsible Pillboxes
+
+Below the arc, three soft cream-coloured rounded containers stack vertically. Each holds an ochre-pill header that opens/closes the contents.
+
+1. **Current Objective** — single input for the active mission, with life-category tag picker on the right and a green ✓ to mark done. Completing the current promotes the first Next objective (if any) into its slot.
+
+2. **Other Missions** — holds two sub-sections plus a clarity slider:
+   - **Daily Objectives**: list of items planned for today. Each item is a checkable row whose text is clickable to expand a discrete handwritten note area (`advancements, next steps...`). Notes auto-save per item.
+   - **To-do**: shorter checkable tasks.
+   - **`are you clear on next missions?`** clarity slider at the bottom — a short check on whether the user knows what to do next.
+
+3. **Logbook & Emotions** — two writing inputs side by side semantically (stacked physically):
+   - **Challenge** (deeper warm brown) — `what is your main tension right now?`
+   - **Flow** (warm ochre) — `what is working well?`
+   Entries appear behind a transparent `notes · N` pill that opens/closes the list. A `mixed / grouped` sub-toggle switches between chronological and stacked-by-tag views. Colors stay in the warm-brown palette throughout — no red/green semantics.
+
+### Removed From Box 1
+
+- Multi-variant design picker (was 1..7 explorations of the same area)
+- Hawkins concentric rings, polygon vertices, mountain bars, radial rings, 3×5 grids, gradient-handle sliders — all design experiments
+- "Ready to push?" energy slider
+- Standalone Next Objective `+` button and Done history pill (consolidated into Other Missions)
+- Old engagement scales (Avoiding → In Flow) and old 11-level mind/mode pastel sliders
+
+### Why This Settled
+
+Iteration through 7+ variants for the same axis revealed there is no single perfect axis for "how am I." The product ships with **balance** as the chosen frame because the centre is the answer (equilibrium), not just a midpoint, and both extremes are valid contexts (rest is not failure, focus is not failure). The pillbox layout makes the check-in feel like distinct cards rather than a long form, and the click-to-expand notes on each daily objective preserve the "clarity-not-clutter" rule.
+
 ## Dependencies
 
 - Supabase auth and database (Key Decision: real persistence from day one).
