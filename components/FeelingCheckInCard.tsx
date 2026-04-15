@@ -1129,73 +1129,95 @@ export default function FeelingCheckInCard() {
 
   return (
     <div
-      className="space-y-5 rounded-3xl border border-[#7a543833] px-5 py-6"
+      className="relative space-y-5 rounded-3xl border border-[#7a543833] px-5 py-6"
       style={{
         background: 'linear-gradient(180deg, rgba(251,244,232,0.95), rgba(246,236,221,0.92))',
         boxShadow: '0 24px 50px -34px rgba(92,48,24,0.35)',
       }}
     >
-      {/* ─── Emotional register — 5 variants (pick the visual that fits the moment) */}
-      <div className="flex flex-col items-center gap-2">
-        {/* Variant picker — collapsed by default behind a single "designs" toggle */}
-        <div className="mb-1 flex flex-col items-center gap-1.5">
-          <button
-            type="button"
-            onClick={() => setDesignsOpen((o) => !o)}
-            className="cursor-pointer rounded-full px-3 py-1 transition-all"
+      {/* Discrete design toggle — tiny losange at top-right, opens variant picker */}
+      <div className="absolute right-4 top-4" style={{ zIndex: 10 }}>
+        <button
+          type="button"
+          onClick={() => setDesignsOpen((o) => !o)}
+          aria-label="Choose design"
+          className="flex cursor-pointer items-center justify-center rounded-full transition-all"
+          style={{
+            width: 18,
+            height: 18,
+            background: 'transparent',
+            border: 'none',
+            opacity: designsOpen ? 1 : 0.5,
+          }}
+        >
+          <span
+            className="rotate-45"
             style={{
-              background: designsOpen ? '#C4A06020' : 'transparent',
-              border: `1px solid ${designsOpen ? '#C4A06060' : '#C4A06030'}`,
-              color: '#5C3018',
-              fontFamily: 'var(--font-serif)',
-              fontSize: '12px',
-              fontWeight: 600,
-              letterSpacing: '0.14em',
-              textTransform: 'uppercase',
+              width: 7,
+              height: 7,
+              background: '#C4A060',
+              opacity: designsOpen ? 1 : 0.65,
+              borderRadius: 1,
+              display: 'block',
+            }}
+          />
+        </button>
+        {designsOpen && (
+          <div
+            className="absolute right-0 mt-1 animate-in fade-in duration-150 overflow-hidden rounded-xl"
+            style={{
+              background: 'hsl(var(--card))',
+              border: '1px solid hsl(var(--border) / 0.3)',
+              boxShadow: '0 4px 16px rgba(0,0,0,0.08)',
+              minWidth: 140,
             }}
           >
-            <span style={{ opacity: 0.7, marginRight: 8 }}>◇</span>
-            designs · {VARIANTS.find((v) => v.id === variantIdx)?.label ?? 'arc'}
-          </button>
-          {designsOpen && (
-            <div className="flex flex-wrap justify-center gap-1">
-              {VARIANTS.map((v) => {
-                const active = variantIdx === v.id;
-                return (
-                  <button
-                    key={v.id}
-                    type="button"
-                    onClick={() => {
-                      setVariantIdx(v.id);
-                      setDesignsOpen(false);
-                    }}
-                    className="cursor-pointer rounded-full px-2.5 py-1 transition-all"
+            {VARIANTS.map((v) => {
+              const active = variantIdx === v.id;
+              return (
+                <button
+                  key={v.id}
+                  type="button"
+                  onClick={() => {
+                    setVariantIdx(v.id);
+                    setDesignsOpen(false);
+                  }}
+                  className="flex w-full cursor-pointer items-center gap-2.5 px-3 py-2 text-left transition-all hover:bg-muted/30"
+                  style={{
+                    border: 'none',
+                    background: active ? '#C4A06012' : 'transparent',
+                  }}
+                >
+                  <span
+                    className="rotate-45"
                     style={{
-                      background: active ? '#C4A06020' : 'transparent',
-                      border: `1px solid ${active ? '#C4A06060' : '#C4A06020'}`,
-                      color: active ? '#5C3018' : '#8A6A4A',
+                      width: 7,
+                      height: 7,
+                      background: '#C4A060',
+                      opacity: active ? 1 : 0.35,
+                      borderRadius: 1,
+                      display: 'block',
+                    }}
+                  />
+                  <span
+                    style={{
                       fontFamily: 'var(--font-serif)',
-                      fontSize: '12px',
-                      fontWeight: active ? 700 : 500,
-                      letterSpacing: '0.12em',
-                      textTransform: 'uppercase',
+                      fontSize: '14px',
+                      fontWeight: active ? 700 : 400,
+                      color: active ? '#5C3018' : '#8A6A4A',
                     }}
                   >
                     {v.label}
-                  </button>
-                );
-              })}
-            </div>
-          )}
-        </div>
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+        )}
+      </div>
 
-        <p
-          className="text-center text-xs font-semibold uppercase tracking-[0.22em]"
-          style={{ color: '#8A6A4A' }}
-        >
-          Finding Balance
-        </p>
-
+      {/* ─── Emotional register — 6 variants (pick the visual that fits the moment) */}
+      <div className="flex flex-col items-center gap-2">
         {/* Variant 1: Arc — cosine bow */}
         {variantIdx === 1 && (
           <div className="relative" style={{ width: 300, height: 95 }}>
