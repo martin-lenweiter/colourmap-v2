@@ -1422,94 +1422,49 @@ export default function FeelingCheckInCard() {
           </div>
         )}
 
-        {/* Variant 5: Slider — horizontal gradient + draggable handle */}
+        {/* Variant 5: Slider — long row of small drawer blocks (Hawkins-boxes vocabulary) */}
         {variantIdx === 5 && (
           <div
             className="relative flex items-center justify-center select-none"
             style={{ width: 300, height: 95 }}
           >
             {(() => {
-              const trackW = 260;
-              const trackH = 14;
-              const handleSize = 30;
-              const stepX = trackW / (BALANCE.length - 1);
-              const handleX = balanceIdx * stepX - handleSize / 2 + trackH / 2;
-              const gradient = `linear-gradient(90deg, ${BALANCE.map((b) => b.color).join(', ')})`;
-              const onPointerDown = (startClientX: number) => {
-                const track = document.getElementById('fcic-slider-track');
-                if (!track) return;
-                const rect = track.getBoundingClientRect();
-                const snap = (clientX: number) => {
-                  const raw = (clientX - rect.left) / rect.width;
-                  const clamped = Math.max(0, Math.min(1, raw));
-                  const idx = Math.round(clamped * (BALANCE.length - 1));
-                  if (idx !== balanceIdx) setBalanceIdx(idx);
-                };
-                snap(startClientX);
-                const onMove = (ev: MouseEvent) => snap(ev.clientX);
-                const onUp = () => {
-                  window.removeEventListener('mousemove', onMove);
-                  window.removeEventListener('mouseup', onUp);
-                };
-                window.addEventListener('mousemove', onMove);
-                window.addEventListener('mouseup', onUp);
-              };
-              const onTouch = (startClientX: number) => {
-                const track = document.getElementById('fcic-slider-track');
-                if (!track) return;
-                const rect = track.getBoundingClientRect();
-                const snap = (clientX: number) => {
-                  const raw = (clientX - rect.left) / rect.width;
-                  const clamped = Math.max(0, Math.min(1, raw));
-                  const idx = Math.round(clamped * (BALANCE.length - 1));
-                  if (idx !== balanceIdx) setBalanceIdx(idx);
-                };
-                snap(startClientX);
-                const onMove = (ev: TouchEvent) => {
-                  ev.preventDefault();
-                  snap(ev.touches[0].clientX);
-                };
-                const onEnd = () => {
-                  window.removeEventListener('touchmove', onMove);
-                  window.removeEventListener('touchend', onEnd);
-                };
-                window.addEventListener('touchmove', onMove, { passive: false });
-                window.addEventListener('touchend', onEnd);
-              };
-              return (
-                <div
-                  className="relative"
-                  style={{ width: trackW, height: handleSize, touchAction: 'none' }}
-                >
-                  {/* Gradient track */}
-                  <div
-                    id="fcic-slider-track"
-                    className="absolute left-0 right-0 cursor-pointer rounded-full"
+              // 21 small blocks across the full width — 3 per BALANCE level.
+              // Each block takes its color from the level it belongs to, giving
+              // a long row that reads as a continuous drawer strip.
+              const blocksPerLevel = 3;
+              const totalBlocks = BALANCE.length * blocksPerLevel;
+              const blockW = 10;
+              const gap = 2;
+              const totalW = totalBlocks * blockW + (totalBlocks - 1) * gap;
+              const offsetX = (300 - totalW) / 2;
+              const blockH = 44;
+              const baseY = (95 - blockH) / 2;
+              return Array.from({ length: totalBlocks }, (_, i) => {
+                const level = Math.floor(i / blocksPerLevel);
+                const b = BALANCE[level];
+                const selected = balanceIdx === level;
+                const x = offsetX + i * (blockW + gap);
+                return (
+                  <button
+                    key={i}
+                    type="button"
+                    onClick={() => setBalanceIdx(level)}
+                    className="absolute cursor-pointer rounded-sm transition-all"
                     style={{
-                      top: (handleSize - trackH) / 2,
-                      height: trackH,
-                      background: gradient,
-                      boxShadow: 'inset 0 1px 3px rgba(92,48,24,0.2)',
-                    }}
-                    onMouseDown={(e) => onPointerDown(e.clientX)}
-                    onTouchStart={(e) => onTouch(e.touches[0].clientX)}
-                  />
-                  {/* Handle */}
-                  <div
-                    className="absolute cursor-grab rounded-full transition-all active:cursor-grabbing"
-                    style={{
-                      left: handleX,
-                      top: 0,
-                      width: handleSize,
-                      height: handleSize,
-                      background: BALANCE[balanceIdx].color,
+                      left: x,
+                      top: selected ? baseY - 6 : baseY,
+                      width: blockW,
+                      height: selected ? blockH + 12 : blockH,
+                      background: b.color,
+                      opacity: selected ? 1 : 0.35,
                       border: 'none',
-                      boxShadow: `0 4px 14px -4px ${BALANCE[balanceIdx].color}`,
-                      pointerEvents: 'none',
+                      boxShadow: selected ? `0 4px 14px -4px ${b.color}` : 'none',
                     }}
+                    title={b.label}
                   />
-                </div>
-              );
+                );
+              });
             })()}
           </div>
         )}
