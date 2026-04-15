@@ -292,16 +292,16 @@ export default function StarCompass() {
               height: 18,
               background: 'transparent',
               border: 'none',
-              opacity: showDesign ? 1 : 0.5,
+              opacity: 1,
             }}
           >
             <span
               className="rotate-45"
               style={{
-                width: 7,
-                height: 7,
+                width: 9,
+                height: 9,
                 background: '#7A9A7A',
-                opacity: showDesign ? 1 : 0.65,
+                opacity: 1,
                 borderRadius: 1,
                 display: 'block',
               }}

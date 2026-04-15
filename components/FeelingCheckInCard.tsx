@@ -1147,16 +1147,16 @@ export default function FeelingCheckInCard() {
             height: 18,
             background: 'transparent',
             border: 'none',
-            opacity: designsOpen ? 1 : 0.5,
+            opacity: 1,
           }}
         >
           <span
             className="rotate-45"
             style={{
-              width: 7,
-              height: 7,
+              width: 9,
+              height: 9,
               background: '#C4A060',
-              opacity: designsOpen ? 1 : 0.65,
+              opacity: 1,
               borderRadius: 1,
               display: 'block',
             }}
