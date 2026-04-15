@@ -227,7 +227,15 @@ export default function LifeCategories() {
     // View mode & cell positions
     try {
       const v = localStorage.getItem(VIEW_KEY);
-      if (v === 'polygon' || v === 'cells' || v === 'river' || v === 'cell' || v === 'blobs') {
+      if (v === 'list') {
+        setViewMode('list');
+      } else if (
+        v === 'polygon' ||
+        v === 'cells' ||
+        v === 'river' ||
+        v === 'cell' ||
+        v === 'blobs'
+      ) {
         // Legacy values: 'cell' and 'blobs' → 'cells'
         setViewMode(v === 'cell' || v === 'blobs' ? 'cells' : (v as 'polygon' | 'cells' | 'river'));
       }

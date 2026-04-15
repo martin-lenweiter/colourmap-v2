@@ -54,6 +54,10 @@ describe('LifeCategories', () => {
         { id: 'a', name: 'Music', color: '#D4805A', createdAt: new Date().toISOString() },
       ]),
     );
+    // Seed the view mode to 'list' so the cycle order under test is exercised
+    // explicitly — the component default switched to polygon but the cycle
+    // sequence list → polygon → cells → river → list itself is the contract.
+    localStorage.setItem('colourmap:life-view', 'list');
     render(<LifeCategories />);
 
     const toggle = screen.getByLabelText(/toggle view/i);
@@ -87,6 +91,11 @@ describe('LifeCategories', () => {
         { id: 'a', name: 'Organisation', color: '#C4A060', createdAt: new Date().toISOString() },
       ]),
     );
+    // Force list view — in polygon view the category label sits inside an
+    // SVG <foreignObject> with pointer-events:none, so the click target
+    // isn't reachable. The category-row click-to-expand interaction is the
+    // contract under test, regardless of which view is the visual default.
+    localStorage.setItem('colourmap:life-view', 'list');
     render(<LifeCategories />);
 
     await user.click(screen.getByText('Organisation'));
