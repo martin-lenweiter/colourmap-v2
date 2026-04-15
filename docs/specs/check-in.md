@@ -180,6 +180,74 @@ The top-level tabs on `/day` are `Cockpit` and `Overview`, not the old `Caring /
 
 Tab choice persists to localStorage (`colourmap:day-tab`). Cockpit is the default on first visit. `DoingCheckInCard` and `SharingCheckInCard` are no longer rendered on `/day` — their surface is covered by the compass carousel inside the cockpit.
 
+## Labels & Descriptions — Reference
+
+Kept here as the source of truth for the wording, ordering, and colour intent behind every scale in box 1 and the compass layer. Implementations must read from these lists — don't drift the labels in code without updating this reference.
+
+### Balance scale (7 levels) — box 1 variants `arc`, `circle`, `rings`, `mountain`, `slider`
+
+Index | Label | Colour
+--- | --- | ---
+0 | Deep Rest | `#88C8E8` (far left — restorative)
+1 | Soft | `#B8D8E8`
+2 | Easing | `#C8E880`
+3 | Balance | `#7AAA58` (centre — equilibrium, default)
+4 | Engaged | `#F8C040`
+5 | Focused | `#F0A088`
+6 | Tunnel Vision | `#E08030` (far right — deep focus)
+
+Both extremes are valid deep states (`Deep Rest` = restorative, `Tunnel Vision` = intense focus). The centre (`Balance`) is the answer, not merely the midpoint.
+
+### Hawkins process spectrum (10 levels) — box 1 variant `boxes`
+
+Index | Label | Colour | Side
+--- | --- | --- | ---
+0 | Frozen | `#B8D0E8` | stuck (left)
+1 | Frustrated | `#D8B0C8` | stuck
+2 | Distracted | `#E8A0C4` | stuck
+3 | Confused | `#F080B8` | stuck
+4 | Overwhelmed | `#F0A088` | stuck (5th left bar)
+5 | Searching | `#F8C040` | free (right)
+6 | Glimpsing | `#F0E060` | free
+7 | Opening | `#A8E090` | free
+8 | Releasing | `#88D8B0` | free
+9 | Liberation | `#88C8E8` | free (5th right bar)
+
+The Boxes variant renders indices 0–4 as left drawer bars and 5–9 as right drawer bars on either side of the central colour circle.
+
+### Compass rhymes — subtitle phrases under each axis
+
+Displayed in the 3-step program area of each compass at the user's current 0–8 rating. Index 0 is the empty/default state.
+
+**Care** (`0 → 8`): `'' · Neglecting yourself · Barely holding on · Getting by · Starting to notice · Taking small steps · Caring for yourself · Nourishing deeply · Fully tended to`
+
+**Attitude**: `'' · Closed and heavy · Resistant · Guarded · Cautiously open · Willing to try · Genuinely open · Embracing it all · Radically present`
+
+**Rest**: `'' · Running on empty · Depleted · Tired but pushing · Need a pause · Catching up · Rested enough · Deeply recharged · Completely restored`
+
+**Emotions**: `'' · Shut down · Overwhelmed · Turbulent · Unsettled · Processing · Finding balance · Calm and clear · At peace`
+
+Typography: handwritten ink face, sepia (`#5C3018`), opacity 0.95, ~17px. Readability rule applies — never drop below opacity 0.9 for the rhyme.
+
+### Sub-pills per axis (Care compass)
+
+Each CARE axis opens a set of sub-pill "lenses" except `Emotions`. Picking a sub-pill opens a 3-step program (reflect · rate · commit).
+
+- **Care** → `Health · Sport · Energy`
+- **Attitude** → `Confidence · Openness · Gratitude`
+- **Rest** → `Relaxation · Awareness · Grounding`
+- **Emotions** → **no sub-pills**. Clicking this axis opens a direct reflective card with two open questions designed to help the user understand themselves:
+  1. *What are your heaviest emotions right now?*
+  2. *Where do they come from?*
+
+  This replaces an earlier Joy / Weight / Peace pill picker, which forced the user to label the emotion before exploring it. The questions let the user name what's heavy and trace the source in their own words — truer to the "AI-evolution → understand the user" direction of the product.
+
+  Answers persist to localStorage (`colourmap:care-emotions-heavy`, `colourmap:care-emotions-source`). Both questions are optional — empty is a valid state.
+
+### 0–100 slider words (see [`emotional-vocabulary.md`](./emotional-vocabulary.md))
+
+The 8-word poetic scale (`Crushed → Expansive`) mapped across 0–100 is specified separately. Used wherever a 0–100 check-in value is surfaced — cockpit summary, check-in history, post-submit reflection. Not used by the box-1 variants (which run on the 7-level balance scale) or the boxes variant (10-level Hawkins scale).
+
 ## Dependencies
 
 - Supabase auth and database (Key Decision: real persistence from day one).

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 /* ═══════════════════════════════════════════════════════════
    CARE COMPASS — Caring compass
@@ -91,11 +91,11 @@ const SUB_CELLS: Record<string, { label: string; color: string }[]> = {
     { label: 'Awareness', color: '#B48060' },
     { label: 'Grounding', color: '#A47050' },
   ],
-  Emotions: [
-    { label: 'Joy', color: '#B07A5A' },
-    { label: 'Weight', color: '#A06A4A' },
-    { label: 'Peace', color: '#906040' },
-  ],
+  // Emotions intentionally has no sub-pills. Instead, clicking the Emotions
+  // axis opens a direct reflective card with two "understand yourself"
+  // questions (rendered below). The old Joy / Weight / Peace pills were
+  // removed — picking a pre-labelled emotion isn't as useful as being asked
+  // what's heavy and where it's coming from.
 };
 
 const SUB_PROGRAMS: Record<string, { reflect: string; rate: string; commit: string }> = {
@@ -143,21 +143,6 @@ const SUB_PROGRAMS: Record<string, { reflect: string; rate: string; commit: stri
     reflect: 'What makes you feel rooted and stable?',
     rate: 'How grounded do you feel right now?',
     commit: "What's one thing you'll do today to feel more anchored?",
-  },
-  Joy: {
-    reflect: 'What brought you joy recently, even briefly?',
-    rate: 'How much joy are you letting in?',
-    commit: "What's one thing you'll do today purely because it brings you joy?",
-  },
-  Weight: {
-    reflect: "What emotional weight are you carrying that isn't yours to hold?",
-    rate: 'How heavy does your emotional load feel?',
-    commit: "What's one thing you'll set down today, even temporarily?",
-  },
-  Peace: {
-    reflect: 'When did you last feel truly at peace? What was different?',
-    rate: 'How close to peace are you right now?',
-    commit: 'What boundary will you honour today to protect your peace?',
   },
 };
 
@@ -273,6 +258,39 @@ export default function CareCompass() {
   const [flowItems, setFlowItems] = useState<string[]>(() => loadList(FLOW_KEY));
   const [challengeInput, setChallengeInput] = useState('');
   const [flowInput, setFlowInput] = useState('');
+
+  // Emotions reflective card — two open questions to understand the user.
+  // Replaces the old Joy / Weight / Peace sub-pill picker.
+  const EMO_HEAVY_KEY = 'colourmap:care-emotions-heavy';
+  const EMO_SOURCE_KEY = 'colourmap:care-emotions-source';
+  const [emoHeavy, setEmoHeavy] = useState<string>(() => {
+    try {
+      return localStorage.getItem(EMO_HEAVY_KEY) || '';
+    } catch {
+      return '';
+    }
+  });
+  const [emoSource, setEmoSource] = useState<string>(() => {
+    try {
+      return localStorage.getItem(EMO_SOURCE_KEY) || '';
+    } catch {
+      return '';
+    }
+  });
+  useEffect(() => {
+    try {
+      localStorage.setItem(EMO_HEAVY_KEY, emoHeavy);
+    } catch {
+      /* silent */
+    }
+  }, [emoHeavy]);
+  useEffect(() => {
+    try {
+      localStorage.setItem(EMO_SOURCE_KEY, emoSource);
+    } catch {
+      /* silent */
+    }
+  }, [emoSource]);
 
   const handleRating = (key: CareAxis, value: number) => {
     const next = { ...values, [key]: value };
@@ -717,6 +735,72 @@ export default function CareCompass() {
               {s.label}
             </button>
           ))}
+        </div>
+      )}
+
+      {/* Emotions axis — direct reflective questions (no sub-pills) */}
+      {activeSlice === 'Emotions' && (
+        <div
+          className="mx-auto max-w-[320px] space-y-4 rounded-2xl p-4"
+          style={{
+            background: `${themedSlices.find((q) => q.label === 'Emotions')?.color ?? '#C4A060'}08`,
+            border: `1px solid ${themedSlices.find((q) => q.label === 'Emotions')?.color ?? '#C4A060'}18`,
+          }}
+        >
+          <label className="block space-y-2">
+            <span
+              style={{
+                color: '#5C3018',
+                fontFamily: 'var(--font-serif)',
+                fontSize: '14px',
+                fontWeight: 600,
+                letterSpacing: '0.02em',
+                display: 'block',
+              }}
+            >
+              What are your heaviest emotions right now?
+            </span>
+            <textarea
+              value={emoHeavy}
+              onChange={(e) => setEmoHeavy(e.target.value)}
+              placeholder="name them, let them land..."
+              className="min-h-[60px] w-full resize-none border-b bg-transparent pb-1 outline-none placeholder:opacity-50"
+              style={{
+                color: '#5C3018',
+                borderColor: '#8A6A4A30',
+                fontFamily: 'var(--font-handwritten)',
+                fontSize: '16px',
+                lineHeight: 1.5,
+              }}
+            />
+          </label>
+          <label className="block space-y-2">
+            <span
+              style={{
+                color: '#5C3018',
+                fontFamily: 'var(--font-serif)',
+                fontSize: '14px',
+                fontWeight: 600,
+                letterSpacing: '0.02em',
+                display: 'block',
+              }}
+            >
+              Where do they come from?
+            </span>
+            <textarea
+              value={emoSource}
+              onChange={(e) => setEmoSource(e.target.value)}
+              placeholder="a person · a memory · a situation..."
+              className="min-h-[60px] w-full resize-none border-b bg-transparent pb-1 outline-none placeholder:opacity-50"
+              style={{
+                color: '#5C3018',
+                borderColor: '#8A6A4A30',
+                fontFamily: 'var(--font-handwritten)',
+                fontSize: '16px',
+                lineHeight: 1.5,
+              }}
+            />
+          </label>
         </div>
       )}
 
