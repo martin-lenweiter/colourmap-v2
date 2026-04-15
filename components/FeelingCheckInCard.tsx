@@ -2238,27 +2238,29 @@ export default function FeelingCheckInCard() {
         </p>
         <div className="relative" style={{ width: 280, height: 28 }}>
           {(() => {
-            const blockW = 12;
-            const gap = 4;
-            const totalW = HAWKINS.length * blockW + (HAWKINS.length - 1) * gap;
+            const sq = 20; // square block edge
+            const gap = 6;
+            const totalW = HAWKINS.length * sq + (HAWKINS.length - 1) * gap;
             const offsetX = (280 - totalW) / 2;
+            const baseY = (28 - sq) / 2;
             return HAWKINS.map((h, i) => {
               const selected = hawkinsIdx === i;
-              const x = offsetX + i * (blockW + gap);
+              const x = offsetX + i * (sq + gap);
               return (
                 <button
                   key={h.level}
                   type="button"
                   onClick={() => setHawkinsIdx(i)}
-                  className="absolute cursor-pointer rounded-sm transition-all"
+                  className="absolute cursor-pointer rounded-[3px] transition-all"
                   style={{
                     left: x,
-                    top: selected ? 0 : 4,
-                    width: blockW,
-                    height: selected ? 28 : 20,
+                    top: baseY,
+                    width: sq,
+                    height: sq,
                     background: h.color,
                     opacity: selected ? 1 : 0.35,
                     border: 'none',
+                    transform: selected ? 'scale(1.15)' : 'scale(1)',
                     boxShadow: selected ? `0 4px 14px -4px ${h.color}` : 'none',
                   }}
                   title={h.level}
