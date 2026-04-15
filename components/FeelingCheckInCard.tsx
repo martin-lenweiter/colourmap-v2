@@ -1725,8 +1725,8 @@ export default function FeelingCheckInCard() {
             {/* Daily Objectives */}
             <div className="space-y-1.5">
               <p
-                className="px-1 text-[11px] font-semibold uppercase tracking-[0.18em]"
-                style={{ color: '#C4A060' }}
+                className="px-1 font-semibold uppercase tracking-[0.18em]"
+                style={{ color: '#C4A060', fontSize: '13px' }}
               >
                 Daily Objectives
               </p>
@@ -1758,7 +1758,7 @@ export default function FeelingCheckInCard() {
                         style={{
                           color: o.done ? '#C4A060' : '#7a5438',
                           fontFamily: 'var(--font-handwritten)',
-                          fontSize: '18px',
+                          fontSize: '20px',
                           opacity: o.done ? 0.85 : 0.95,
                           border: 'none',
                         }}
@@ -1790,13 +1790,13 @@ export default function FeelingCheckInCard() {
                         onChange={(e) => updateTodayNotes(o.id, e.target.value)}
                         placeholder="advancements, next steps..."
                         rows={2}
-                        className="ml-7 w-[calc(100%-1.75rem)] resize-none border-b bg-transparent pb-1 pt-0.5 outline-none placeholder:text-muted-foreground/30 animate-in fade-in duration-150"
+                        className="ml-7 w-[calc(100%-1.75rem)] resize-none border-b bg-transparent pb-1 pt-0.5 outline-none placeholder:text-muted-foreground/40 animate-in fade-in duration-150"
                         style={{
                           color: '#7a5438',
                           borderColor: '#C4A06025',
                           fontFamily: 'var(--font-handwritten)',
-                          fontSize: '15px',
-                          lineHeight: 1.35,
+                          fontSize: '17px',
+                          lineHeight: 1.4,
                         }}
                       />
                     )}
@@ -1816,7 +1816,7 @@ export default function FeelingCheckInCard() {
                   color: '#7a5438',
                   borderColor: '#C4A06020',
                   fontFamily: 'var(--font-handwritten)',
-                  fontSize: '18px',
+                  fontSize: '20px',
                 }}
               />
             </div>
@@ -1834,8 +1834,8 @@ export default function FeelingCheckInCard() {
             {/* To-do list */}
             <div className="space-y-1.5">
               <p
-                className="px-1 text-[11px] font-semibold uppercase tracking-[0.18em]"
-                style={{ color: '#C4A060' }}
+                className="px-1 font-semibold uppercase tracking-[0.18em]"
+                style={{ color: '#C4A060', fontSize: '13px' }}
               >
                 To-do
               </p>
@@ -1862,7 +1862,7 @@ export default function FeelingCheckInCard() {
                     style={{
                       color: t.done ? '#C4A060' : '#7a5438',
                       fontFamily: 'var(--font-handwritten)',
-                      fontSize: '18px',
+                      fontSize: '20px',
                       opacity: t.done ? 0.85 : 0.95,
                     }}
                   >
@@ -1892,7 +1892,7 @@ export default function FeelingCheckInCard() {
                   color: '#7a5438',
                   borderColor: '#C4A06020',
                   fontFamily: 'var(--font-handwritten)',
-                  fontSize: '18px',
+                  fontSize: '20px',
                 }}
               />
             </div>
@@ -1904,8 +1904,8 @@ export default function FeelingCheckInCard() {
                 style={{
                   color: '#8A6A4A',
                   fontFamily: 'var(--font-serif)',
-                  fontSize: '13px',
-                  opacity: 0.75,
+                  fontSize: '15px',
+                  opacity: 0.95,
                 }}
               >
                 are you clear on next missions?
@@ -2219,6 +2219,65 @@ export default function FeelingCheckInCard() {
             )}
           </>
         )}
+      </div>
+
+      {/* Hawkins process slider — sits above the save star so the discrete check-in
+          entry can capture where on the Frozen → Liberation arc you are. Uses the
+          same drawer-block vocabulary as the Boxes variant: 10 narrow blocks. */}
+      <div className="flex flex-col items-center gap-1.5">
+        <p
+          className="uppercase"
+          style={{
+            color: '#8A6A4A',
+            fontSize: '11px',
+            fontWeight: 600,
+            letterSpacing: '0.18em',
+          }}
+        >
+          where am I in the process
+        </p>
+        <div className="relative" style={{ width: 280, height: 28 }}>
+          {(() => {
+            const blockW = 12;
+            const gap = 4;
+            const totalW = HAWKINS.length * blockW + (HAWKINS.length - 1) * gap;
+            const offsetX = (280 - totalW) / 2;
+            return HAWKINS.map((h, i) => {
+              const selected = hawkinsIdx === i;
+              const x = offsetX + i * (blockW + gap);
+              return (
+                <button
+                  key={h.level}
+                  type="button"
+                  onClick={() => setHawkinsIdx(i)}
+                  className="absolute cursor-pointer rounded-sm transition-all"
+                  style={{
+                    left: x,
+                    top: selected ? 0 : 4,
+                    width: blockW,
+                    height: selected ? 28 : 20,
+                    background: h.color,
+                    opacity: selected ? 1 : 0.35,
+                    border: 'none',
+                    boxShadow: selected ? `0 4px 14px -4px ${h.color}` : 'none',
+                  }}
+                  title={h.level}
+                />
+              );
+            });
+          })()}
+        </div>
+        <p
+          style={{
+            color: HAWKINS[hawkinsIdx].color,
+            fontFamily: 'var(--font-serif)',
+            fontSize: '14px',
+            fontWeight: 600,
+            opacity: 0.9,
+          }}
+        >
+          {HAWKINS[hawkinsIdx].level}
+        </p>
       </div>
 
       {/* Save star — quick save without opening losange */}
