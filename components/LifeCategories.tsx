@@ -1238,56 +1238,6 @@ export default function LifeCategories() {
           </span>
         </button>
       )}
-
-      {/* ─── Divider ─── */}
-      <div className="flex items-center gap-3 pt-2">
-        <div className="h-px flex-1" style={{ background: '#C4A06015' }} />
-        <span
-          className="block h-2 w-2 rotate-45 rounded-[1px]"
-          style={{ background: '#C4A060', opacity: 0.2 }}
-        />
-        <div className="h-px flex-1" style={{ background: '#C4A06015' }} />
-      </div>
-
-      {/* ─── Objective & Emotion ─── */}
-      <div className="space-y-3 pt-1">
-        {/* Objective input */}
-        <input
-          type="text"
-          value={objective}
-          onChange={(e) => updateObjective(e.target.value)}
-          placeholder="Objective right now..."
-          className="w-full border-b bg-transparent pb-2 outline-none placeholder:opacity-30"
-          style={{
-            color: '#7a5438',
-            borderColor: '#C4A06020',
-            fontFamily: 'var(--font-handwritten)',
-            fontSize: '20px',
-          }}
-        />
-
-        {/* Mind — emotion state */}
-        <div className="space-y-1.5">
-          <p
-            className="text-center text-lg font-bold transition-all duration-300"
-            style={{ color: MIND[mindIdx].color, fontFamily: 'var(--font-serif)' }}
-          >
-            {MIND[mindIdx].level}
-          </p>
-          <DragSlider items={MIND} selectedIdx={mindIdx} onSelect={updateMind} size={18} />
-        </div>
-
-        {/* Mode — objective state */}
-        <div className="space-y-1.5">
-          <p
-            className="text-center text-base font-bold transition-all duration-300"
-            style={{ color: MODE[modeIdx].color, fontFamily: 'var(--font-serif)' }}
-          >
-            {MODE[modeIdx].level}
-          </p>
-          <DragSlider items={MODE} selectedIdx={modeIdx} onSelect={updateMode} size={18} />
-        </div>
-      </div>
     </div>
   );
 }

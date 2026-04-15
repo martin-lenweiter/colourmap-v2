@@ -8,13 +8,30 @@ import { DoingContent } from '@/components/DoingCheckInCard';
    Swipe the circle to change emotion. Tap losange to go deeper.
    ═══════════════════════════════════════════════════════════ */
 
-/* ─── PRESENCE spectrum — how am I inside, right now? ─── */
+/* ─── PRESENCE spectrum — am I here? (6 levels) ─── */
 const MIND = [
   { level: 'Absent', color: '#E0908A' },
   { level: 'Scattered', color: '#E8B898' },
+  { level: 'Confused', color: '#C8A8C8' },
   { level: 'Drifting', color: '#D8C088' },
   { level: 'Present', color: '#A8CCA0' },
   { level: 'Flowing', color: '#B0A0D0' },
+];
+
+/* ─── PROCESS spectrum — the journey from stuck to free (not static emotion) ─── */
+const HAWKINS = [
+  // Stuck end — light blue into pink, then warming toward orange
+  { level: 'Frozen', color: '#B8D0E8', hawkins: 0 }, // light blue (numb cold)
+  { level: 'Frustrated', color: '#D8B0C8', hawkins: 0 }, // dusty blue-pink transition
+  { level: 'Distracted', color: '#E8A0C4', hawkins: 0 }, // pink
+  { level: 'Confused', color: '#F080B8', hawkins: 0 }, // vivid pink — stands out
+  // Moving end — warm yellow through green into free blue
+  { level: 'Overwhelmed', color: '#F0A088', hawkins: 0 },
+  { level: 'Searching', color: '#F8C040', hawkins: 0 },
+  { level: 'Glimpsing', color: '#F0E060', hawkins: 0 },
+  { level: 'Opening', color: '#A8E090', hawkins: 0 },
+  { level: 'Releasing', color: '#88D8B0', hawkins: 0 },
+  { level: 'Liberation', color: '#88C8E8', hawkins: 0 },
 ];
 
 /* ─── ENGAGEMENT spectrum — how IN the mission am I? ─── */
@@ -24,6 +41,25 @@ const MODE = [
   { level: 'Trying', color: '#D8C088' },
   { level: 'Working', color: '#A8CCA0' },
   { level: 'In Flow', color: '#90B8D8' },
+];
+
+/* ─── Meaningful sliders at the bottom of box 1 — warm rainbow palette ─── */
+// Are you clear on next missions? — Lost → Crystal
+const CLARITY_MISSIONS = [
+  { level: 'Lost', color: '#E0908A' },
+  { level: 'Foggy', color: '#C8A8C8' },
+  { level: 'Some', color: '#D8C088' },
+  { level: 'Clear', color: '#A8CCA0' },
+  { level: 'Crystal', color: '#B0D0E8' },
+];
+
+// Ready to push? — Drained → Charged
+const READINESS = [
+  { level: 'Drained', color: '#A8B8D0' },
+  { level: 'Slow', color: '#B0C8A8' },
+  { level: 'Steady', color: '#D8C088' },
+  { level: 'Ready', color: '#E0B898' },
+  { level: 'Charged', color: '#E0908A' },
 ];
 
 const INNER_TRACKERS = [
@@ -189,8 +225,14 @@ function DragSlider({
   return (
     <div
       ref={containerRef}
-      className="flex cursor-pointer justify-center"
-      style={{ gap: `${gap}px`, touchAction: 'none' }}
+      className="flex cursor-pointer"
+      style={{
+        gap: `${gap}px`,
+        touchAction: 'none',
+        width: 'fit-content',
+        marginLeft: 'auto',
+        marginRight: 'auto',
+      }}
       onMouseDown={(e) => onSelect(idxFromX(e.clientX))}
       onMouseMove={(e) => {
         if (e.buttons > 0) onSelect(idxFromX(e.clientX));
@@ -234,11 +276,18 @@ function loadNum(key: string, fallback: number): number {
 }
 
 export default function FeelingCheckInCard() {
-  // Presence (formerly Mind) + Engagement (formerly Mode) — 5 levels each, default mid
+  // Presence — 5 levels (Absent → Flowing), default mid (idx 2 = Drifting)
   const [mindIdx, setMindIdx] = useState(() => {
     const v = loadNum('colourmap:presence-idx', 2);
     return Math.max(0, Math.min(MIND.length - 1, v));
   });
+  // Process state — 10 steps from Frozen → Liberation, default mid (idx 4 = Wrestling)
+  const [hawkinsIdx, setHawkinsIdx] = useState(() => {
+    const v = loadNum('colourmap:process-idx', 4);
+    return Math.max(0, Math.min(HAWKINS.length - 1, v));
+  });
+  const currentHawkins = HAWKINS[hawkinsIdx];
+  // MODE retained for backwards compat with existing check-ins history; not rendered
   const [modeIdx, setModeIdx] = useState(() => {
     const v = loadNum('colourmap:engagement-idx', 2);
     return Math.max(0, Math.min(MODE.length - 1, v));
@@ -289,9 +338,9 @@ export default function FeelingCheckInCard() {
   const [justSaved, setJustSaved] = useState(false);
   const [objectiveSectionOpen, setObjectiveSectionOpen] = useState(() => {
     try {
-      return localStorage.getItem('colourmap:objective-section-open') === 'true';
+      return localStorage.getItem('colourmap:objective-section-open') !== 'false';
     } catch {
-      return false;
+      return true;
     }
   });
   const [emotionsSectionOpen, setEmotionsSectionOpen] = useState(() => {
@@ -315,6 +364,367 @@ export default function FeelingCheckInCard() {
       return false;
     }
   });
+  const [otherMissionsOpen, setOtherMissionsOpen] = useState(() => {
+    try {
+      return localStorage.getItem('colourmap:other-missions-open') !== 'false';
+    } catch {
+      return true;
+    }
+  });
+  const toggleOtherMissions = () => {
+    setOtherMissionsOpen((prev) => {
+      const next = !prev;
+      try {
+        localStorage.setItem('colourmap:other-missions-open', String(next));
+      } catch {
+        /* silent */
+      }
+      return next;
+    });
+  };
+  const [logbookSectionOpen, setLogbookSectionOpen] = useState(() => {
+    try {
+      return localStorage.getItem('colourmap:logbook-section-open') !== 'false';
+    } catch {
+      return true;
+    }
+  });
+  const toggleLogbookSection = () => {
+    setLogbookSectionOpen((prev) => {
+      const next = !prev;
+      try {
+        localStorage.setItem('colourmap:logbook-section-open', String(next));
+      } catch {
+        /* silent */
+      }
+      return next;
+    });
+  };
+  const [presenceSectionOpen, setPresenceSectionOpen] = useState(() => {
+    try {
+      return localStorage.getItem('colourmap:presence-section-open') === 'true';
+    } catch {
+      return false;
+    }
+  });
+  const togglePresenceSection = () => {
+    setPresenceSectionOpen((prev) => {
+      const next = !prev;
+      try {
+        localStorage.setItem('colourmap:presence-section-open', String(next));
+      } catch {
+        /* silent */
+      }
+      return next;
+    });
+  };
+  // Writing stream inside Presence & Emotions — each entry can be tagged with a Hawkins level
+  type PresenceEntry = {
+    time: string;
+    text: string;
+    hawkinsIdx?: number;
+    hawkinsName?: string;
+    hawkinsColor?: string;
+    hawkinsLevel?: number;
+  };
+  const [presenceInput, setPresenceInput] = useState('');
+  const [entryHawkinsIdx, setEntryHawkinsIdx] = useState<number | null>(null); // null = not tagged
+  const [showHawkinsPicker, setShowHawkinsPicker] = useState(false);
+  const [showDotHawkinsPicker, setShowDotHawkinsPicker] = useState(false);
+
+  // Design variant — 1..7 for the process/mood area; cycles through exploratory designs
+  type Variant = 1 | 2 | 3;
+  const [variantIdx, setVariantIdx] = useState<Variant>(() => {
+    const v = loadNum('colourmap:design-variant', 1);
+    return Math.max(1, Math.min(3, v)) as Variant;
+  });
+  useEffect(() => {
+    localStorage.setItem('colourmap:design-variant', String(variantIdx));
+  }, [variantIdx]);
+
+  const CLARITY = [
+    'Sharp',
+    'Clear',
+    'Seeing',
+    'Noticing',
+    'Grounded',
+    'Aware',
+    'Curious',
+    'Open',
+    'Quiet',
+    'Present',
+  ];
+
+  // VARIANT 6: 3-column x 5-row grid. Left = heavy, middle = uncertain, right = light.
+  const GRID_3x5: { label: string; color: string }[][] = [
+    // Left column (Heavy) — dusty blue-pink shades
+    [
+      { label: 'Frozen', color: '#B8D0E8' },
+      { label: 'Stuck', color: '#C8B0D0' },
+      { label: 'Frustrated', color: '#EE9090' },
+      { label: 'Distracted', color: '#E8A0C4' },
+      { label: 'Restless', color: '#F080B8' },
+    ],
+    // Middle column (Uncertain) — warm yellows/oranges
+    [
+      { label: 'Confused', color: '#EF988C' },
+      { label: 'Drifting', color: '#F0A088' },
+      { label: 'Wrestling', color: '#F0B060' },
+      { label: 'Searching', color: '#F8C040' },
+      { label: 'Opening', color: '#F0E060' },
+    ],
+    // Right column (Light) — greens to blues, productive/focused
+    [
+      { label: 'Curious', color: '#C8E880' },
+      { label: 'Focused', color: '#A8E090' },
+      { label: 'On It', color: '#88D8B0' },
+      { label: 'Productive', color: '#88D8D0' },
+      { label: 'In Flow', color: '#88C8E8' },
+    ],
+  ];
+  // State for grid: [col, row] — default middle center
+  const [gridCol, setGridCol] = useState(() => loadNum('colourmap:grid-col', 1));
+  const [gridRow, setGridRow] = useState(() => loadNum('colourmap:grid-row', 2));
+  useEffect(() => {
+    localStorage.setItem('colourmap:grid-col', String(gridCol));
+  }, [gridCol]);
+  useEffect(() => {
+    localStorage.setItem('colourmap:grid-row', String(gridRow));
+  }, [gridRow]);
+  const gridCell = GRID_3x5[gridCol]?.[gridRow] ?? GRID_3x5[1][2];
+
+  // VARIANT 2: Balance scale — middle is equilibrium, extremes are valid deep states
+  const BALANCE = [
+    { label: 'Deep Rest', color: '#88C8E8' }, // far left — restorative
+    { label: 'Soft', color: '#B8D8E8' },
+    { label: 'Easing', color: '#C8E880' },
+    { label: 'Balance', color: '#7AAA58' }, // center
+    { label: 'Engaged', color: '#F8C040' },
+    { label: 'Focused', color: '#F0A088' },
+    { label: 'Tunnel Vision', color: '#E08030' }, // far right — deep focus
+  ];
+  const [balanceIdx, setBalanceIdx] = useState(() => loadNum('colourmap:balance-idx', 3));
+  useEffect(() => {
+    localStorage.setItem('colourmap:balance-idx', String(balanceIdx));
+  }, [balanceIdx]);
+
+  // CONTEXT — outer ring layer for variant 1: am I on the right mission?
+  const CONTEXT = [
+    { label: 'Avoiding', color: '#88C8E8' }, // turning away from mission
+    { label: 'Absorbed', color: '#C8B0D0' }, // head down in detail, missing context
+    { label: 'Facing', color: '#7AAA58' }, // engaged with mission
+    { label: 'Aware', color: '#F8C040' }, // seeing the bigger picture
+    { label: 'Re-orienting', color: '#F0A088' }, // shifting / questioning
+  ];
+  const [contextIdx, setContextIdx] = useState(() => {
+    const v = loadNum('colourmap:context-idx', 2);
+    return Math.max(0, Math.min(CONTEXT.length - 1, v));
+  });
+  const [showContextPicker, setShowContextPicker] = useState(false);
+  useEffect(() => {
+    localStorage.setItem('colourmap:context-idx', String(contextIdx));
+  }, [contextIdx]);
+
+  // Mission presence — second arc: how here am I with my mission?
+  const PRESENCE_ARC = [
+    { label: 'Absent', color: '#88C8E8' },
+    { label: 'Distant', color: '#B8D8E8' },
+    { label: 'Dipping', color: '#C8E880' },
+    { label: 'Present', color: '#7AAA58' },
+    { label: 'Connected', color: '#F8C040' },
+    { label: 'Absorbed', color: '#F0A088' },
+    { label: 'Merged', color: '#E08030' },
+  ];
+  const [presenceArcIdx, setPresenceArcIdx] = useState(() =>
+    loadNum('colourmap:presence-arc-idx', 3),
+  );
+  useEffect(() => {
+    localStorage.setItem('colourmap:presence-arc-idx', String(presenceArcIdx));
+  }, [presenceArcIdx]);
+
+  // Bottom sliders — clarity & readiness check-ins
+  const [clarityMissionsIdx, setClarityMissionsIdx] = useState(() => {
+    const v = loadNum('colourmap:clarity-missions-idx', 2);
+    return Math.max(0, Math.min(CLARITY_MISSIONS.length - 1, v));
+  });
+  const [readinessIdx, setReadinessIdx] = useState(() => {
+    const v = loadNum('colourmap:readiness-idx', 2);
+    return Math.max(0, Math.min(READINESS.length - 1, v));
+  });
+  useEffect(() => {
+    localStorage.setItem('colourmap:clarity-missions-idx', String(clarityMissionsIdx));
+  }, [clarityMissionsIdx]);
+  useEffect(() => {
+    localStorage.setItem('colourmap:readiness-idx', String(readinessIdx));
+  }, [readinessIdx]);
+
+  // Logbook entries shown/hidden behind a transparent pill toggle
+  const [showLogbookEntries, setShowLogbookEntries] = useState(() => {
+    try {
+      return localStorage.getItem('colourmap:logbook-entries-open') !== 'false';
+    } catch {
+      return true;
+    }
+  });
+  useEffect(() => {
+    try {
+      localStorage.setItem('colourmap:logbook-entries-open', String(showLogbookEntries));
+    } catch {
+      /* silent */
+    }
+  }, [showLogbookEntries]);
+
+  // Logbook display mode: 'grouped' (challenge stack + flow stack) or 'mixed' (chronological)
+  const [logbookMode, setLogbookMode] = useState<'grouped' | 'mixed'>(() => {
+    try {
+      const v = localStorage.getItem('colourmap:logbook-mode');
+      return v === 'mixed' ? 'mixed' : 'grouped';
+    } catch {
+      return 'grouped';
+    }
+  });
+  useEffect(() => {
+    try {
+      localStorage.setItem('colourmap:logbook-mode', logbookMode);
+    } catch {
+      /* silent */
+    }
+  }, [logbookMode]);
+
+  // Two separate inputs for the logbook — challenge + flow
+  const [challengeInput, setChallengeInput] = useState('');
+  const [flowInput, setFlowInput] = useState('');
+  const saveChallenge = () => {
+    const text = challengeInput.trim();
+    if (!text) return;
+    setSessionEmotions([
+      ...sessionEmotions,
+      {
+        time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+        text,
+        mind: 'challenge',
+        mindColor: '#A05A40',
+      },
+    ]);
+    setChallengeInput('');
+  };
+  const saveFlow = () => {
+    const text = flowInput.trim();
+    if (!text) return;
+    setSessionEmotions([
+      ...sessionEmotions,
+      {
+        time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+        text,
+        mind: 'flow',
+        mindColor: '#C4A060',
+      },
+    ]);
+    setFlowInput('');
+  };
+
+  // Today's objectives — multiple things planned for today
+  type TodoItem = { id: string; text: string; done: boolean; notes?: string };
+  const [expandedTodayId, setExpandedTodayId] = useState<string | null>(null);
+  const updateTodayNotes = (id: string, notes: string) => {
+    const next = todayObjectives.map((t) => (t.id === id ? { ...t, notes } : t));
+    setTodayObjectives(next);
+    try {
+      localStorage.setItem('colourmap:today-objectives', JSON.stringify(next));
+    } catch {
+      /* silent */
+    }
+  };
+  const [todayObjectives, setTodayObjectives] = useState<TodoItem[]>(() => {
+    try {
+      return JSON.parse(localStorage.getItem('colourmap:today-objectives') || '[]');
+    } catch {
+      return [];
+    }
+  });
+  const [todayInput, setTodayInput] = useState('');
+  const persistTodayObjectives = (next: TodoItem[]) => {
+    setTodayObjectives(next);
+    try {
+      localStorage.setItem('colourmap:today-objectives', JSON.stringify(next));
+    } catch {
+      /* silent */
+    }
+  };
+  const addTodayObjective = () => {
+    const text = todayInput.trim();
+    if (!text) return;
+    persistTodayObjectives([...todayObjectives, { id: crypto.randomUUID(), text, done: false }]);
+    setTodayInput('');
+  };
+  const toggleTodayObjective = (id: string) => {
+    persistTodayObjectives(todayObjectives.map((t) => (t.id === id ? { ...t, done: !t.done } : t)));
+  };
+  const removeTodayObjective = (id: string) => {
+    persistTodayObjectives(todayObjectives.filter((t) => t.id !== id));
+  };
+
+  // Quick to-do list inside the check-in
+  const [todos, setTodos] = useState<TodoItem[]>(() => {
+    try {
+      return JSON.parse(localStorage.getItem('colourmap:checkin-todos') || '[]');
+    } catch {
+      return [];
+    }
+  });
+  const [todoInput, setTodoInput] = useState('');
+  const persistTodos = (next: TodoItem[]) => {
+    setTodos(next);
+    try {
+      localStorage.setItem('colourmap:checkin-todos', JSON.stringify(next));
+    } catch {
+      /* silent */
+    }
+  };
+  const addTodo = () => {
+    const text = todoInput.trim();
+    if (!text) return;
+    persistTodos([...todos, { id: crypto.randomUUID(), text, done: false }]);
+    setTodoInput('');
+  };
+  const toggleTodo = (id: string) => {
+    persistTodos(todos.map((t) => (t.id === id ? { ...t, done: !t.done } : t)));
+  };
+  const removeTodo = (id: string) => {
+    persistTodos(todos.filter((t) => t.id !== id));
+  };
+  const [presenceLog, setPresenceLog] = useState<PresenceEntry[]>(() => {
+    try {
+      return JSON.parse(localStorage.getItem('colourmap:presence-log') || '[]');
+    } catch {
+      return [];
+    }
+  });
+  const addPresenceEntry = () => {
+    const text = presenceInput.trim();
+    if (!text) return;
+    const tagged = entryHawkinsIdx !== null ? HAWKINS[entryHawkinsIdx] : null;
+    const entry: PresenceEntry = {
+      time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+      text,
+      ...(tagged && {
+        hawkinsIdx: entryHawkinsIdx ?? undefined,
+        hawkinsName: tagged.level,
+        hawkinsColor: tagged.color,
+        hawkinsLevel: tagged.hawkins,
+      }),
+    };
+    const next = [entry, ...presenceLog].slice(0, 100);
+    setPresenceLog(next);
+    try {
+      localStorage.setItem('colourmap:presence-log', JSON.stringify(next));
+    } catch {
+      /* silent */
+    }
+    setPresenceInput('');
+    setEntryHawkinsIdx(null);
+    setShowHawkinsPicker(false);
+  };
   const toggleSection = (
     section: 'objective' | 'emotions' | 'observations',
     setter: (fn: (prev: boolean) => boolean) => void,
@@ -566,10 +976,13 @@ export default function FeelingCheckInCard() {
     setTimeout(() => setJustSaved(false), 1500);
   };
 
-  // Persist to localStorage (new keys for Presence/Engagement)
+  // Persist to localStorage
   useEffect(() => {
     localStorage.setItem('colourmap:presence-idx', String(mindIdx));
   }, [mindIdx]);
+  useEffect(() => {
+    localStorage.setItem('colourmap:process-idx', String(hawkinsIdx));
+  }, [hawkinsIdx]);
   useEffect(() => {
     localStorage.setItem('colourmap:engagement-idx', String(modeIdx));
   }, [modeIdx]);
@@ -607,15 +1020,19 @@ export default function FeelingCheckInCard() {
 
   const addEmotion = () => {
     if (!emotionInput.trim()) return;
+    // If a process level was picked for this entry, use ITS color/name as the tag
+    const tagged = entryHawkinsIdx !== null ? HAWKINS[entryHawkinsIdx] : null;
     const entry = {
       time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
       text: emotionInput.trim(),
-      mind: currentMind.level,
-      mindColor: currentMind.color,
+      mind: tagged ? tagged.level : currentMind.level,
+      mindColor: tagged ? tagged.color : currentMind.color,
     };
     const next = [...sessionEmotions, entry];
     setSessionEmotions(next);
     setEmotionInput('');
+    setEntryHawkinsIdx(null);
+    setShowHawkinsPicker(false);
   };
 
   const [mindDragging, setMindDragging] = useState(false);
@@ -624,6 +1041,8 @@ export default function FeelingCheckInCard() {
   // Swipe tracking
   const mindDragRef = useRef<{ startX: number; startIdx: number } | null>(null);
   const modeDragRef = useRef<{ startX: number; startIdx: number } | null>(null);
+  const hawkinsDragRef = useRef<{ startX: number; startIdx: number } | null>(null);
+  const [hawkinsDragging, setHawkinsDragging] = useState(false);
 
   const currentMind = MIND[mindIdx];
   const currentMode = MODE[modeIdx];
@@ -638,10 +1057,17 @@ export default function FeelingCheckInCard() {
     setModeDragging(true);
   };
 
+  const startHawkinsDrag = (clientX: number) => {
+    hawkinsDragRef.current = { startX: clientX, startIdx: hawkinsIdx };
+    setHawkinsDragging(true);
+  };
+
   const mindIdxRef = useRef(mindIdx);
   mindIdxRef.current = mindIdx;
   const modeIdxRef = useRef(modeIdx);
   modeIdxRef.current = modeIdx;
+  const hawkinsIdxRef = useRef(hawkinsIdx);
+  hawkinsIdxRef.current = hawkinsIdx;
 
   useEffect(() => {
     const onMove = (e: MouseEvent) => {
@@ -657,6 +1083,15 @@ export default function FeelingCheckInCard() {
         const next = Math.max(0, Math.min(MODE.length - 1, modeDragRef.current.startIdx + steps));
         if (next !== modeIdxRef.current) setModeIdx(next);
       }
+      if (hawkinsDragRef.current) {
+        const dx = e.clientX - hawkinsDragRef.current.startX;
+        const steps = Math.round(dx / 20);
+        const next = Math.max(
+          0,
+          Math.min(HAWKINS.length - 1, hawkinsDragRef.current.startIdx + steps),
+        );
+        if (next !== hawkinsIdxRef.current) setHawkinsIdx(next);
+      }
     };
     const onUp = () => {
       if (mindDragRef.current) {
@@ -666,6 +1101,10 @@ export default function FeelingCheckInCard() {
       if (modeDragRef.current) {
         modeDragRef.current = null;
         setModeDragging(false);
+      }
+      if (hawkinsDragRef.current) {
+        hawkinsDragRef.current = null;
+        setHawkinsDragging(false);
       }
     };
     window.addEventListener('mousemove', onMove);
@@ -684,252 +1123,85 @@ export default function FeelingCheckInCard() {
         boxShadow: '0 24px 50px -34px rgba(92,48,24,0.35)',
       }}
     >
-      {/* Presence — one circle, centered */}
+      {/* ─── Balance arc — the single design */}
       <div className="flex flex-col items-center gap-2">
-        <span
-          className="text-xs font-semibold uppercase tracking-[0.22em]"
-          style={{ color: '#C4A060' }}
-        >
-          Presence
-        </span>
-        <div
-          className="cursor-grab transition-colors duration-500 active:cursor-grabbing"
-          style={{
-            width: 80,
-            height: 80,
-            borderRadius: '50%',
-            background: currentMind.color,
-            opacity: 0.85,
-            touchAction: 'none',
-          }}
-          onMouseDown={(e) => startMindDrag(e.clientX)}
-          onTouchStart={(e) => startMindDrag(e.touches[0].clientX)}
-          onTouchMove={(e) => {
-            e.preventDefault();
-            if (!mindDragRef.current) return;
-            const dx = e.touches[0].clientX - mindDragRef.current.startX;
-            const steps = Math.round(dx / 22);
-            const next = Math.max(
-              0,
-              Math.min(MIND.length - 1, mindDragRef.current.startIdx + steps),
-            );
-            if (next !== mindIdx) setMindIdx(next);
-          }}
-          onTouchEnd={() => {
-            mindDragRef.current = null;
-            setMindDragging(false);
-          }}
-        />
         <p
-          className="text-center text-xl font-bold transition-all duration-300"
-          style={{ color: currentMind.color, fontFamily: 'var(--font-serif)' }}
+          className="text-center text-[10px] font-semibold uppercase tracking-[0.22em]"
+          style={{ color: '#8A6A4A80' }}
         >
-          {currentMind.level}
+          Finding Balance
         </p>
-        {mindDragging && (
-          <div className="animate-in fade-in duration-150">
-            <DragSlider items={MIND} selectedIdx={mindIdx} onSelect={setMindIdx} size={18} />
-          </div>
-        )}
-      </div>
-
-      {/* ── CURRENT OBJECTIVE ── clickable pill opens/closes the Logbook below */}
-      <div className="flex flex-col items-center gap-2 pt-1">
-        <button
-          type="button"
-          onClick={toggleObjectiveSection}
-          className="flex cursor-pointer items-center gap-2 rounded-full px-5 py-1.5 transition-all"
-          style={{
-            background: '#C4A06015',
-            border: '1px solid #C4A06040',
-          }}
-        >
-          <span
-            className="text-center text-sm font-semibold uppercase tracking-[0.22em]"
-            style={{ color: '#C4A060' }}
-          >
-            Current Objective
-          </span>
-          <span
-            className="text-sm transition-transform duration-200"
-            style={{
-              color: '#C4A06080',
-              transform: objectiveSectionOpen ? 'rotate(180deg)' : 'rotate(0deg)',
-            }}
-          >
-            ▾
-          </span>
-        </button>
-        <div className="relative flex w-full items-center gap-2">
-          <input
-            type="text"
-            value={objective}
-            onChange={(e) => setObjective(e.target.value)}
-            placeholder="set an objective..."
-            className="flex-1 border-b bg-transparent pb-1 text-center outline-none placeholder:text-muted-foreground/40"
-            style={{
-              color: '#7a5438',
-              borderColor: '#C4A06020',
-              fontFamily: 'var(--font-handwritten)',
-              fontSize: '24px',
-            }}
-          />
-          {lifeCategories.length > 0 && objective.trim().length > 0 && (
-            <button
-              type="button"
-              onClick={() => setShowCategoryPicker(!showCategoryPicker)}
-              className="shrink-0 cursor-pointer rounded-md px-2 py-0.5 text-[11px] uppercase tracking-wider transition-all"
-              style={{
-                color: showCategoryPicker ? '#C4A060' : '#C4A06060',
-                background: showCategoryPicker ? '#C4A06010' : 'transparent',
-                border: `1px solid ${showCategoryPicker ? '#C4A06030' : 'transparent'}`,
-              }}
-            >
-              {justTagged ? '✓ tagged' : 'tag'}
-            </button>
-          )}
-          {/* Completion checkbox — mark objective as done */}
-          {objective.trim().length > 0 && (
-            <button
-              type="button"
-              onClick={() => completeObjective(objective)}
-              title="Mark as done"
-              className="flex h-5 w-5 shrink-0 cursor-pointer items-center justify-center rounded border transition-all hover:scale-110"
-              style={{
-                borderColor: '#7AAA5860',
-                background: '#7AAA5810',
-              }}
-            >
-              <span className="text-xs" style={{ color: '#7AAA58' }}>
-                ✓
-              </span>
-            </button>
-          )}
-          {showCategoryPicker && lifeCategories.length > 0 && (
-            <div
-              className="absolute right-0 top-full z-50 mt-1 animate-in fade-in duration-150 overflow-hidden rounded-xl"
-              style={{
-                background: '#F5ECDC',
-                border: '1px solid #8A6A4A40',
-                boxShadow: '0 8px 24px rgba(92,48,24,0.18)',
-                minWidth: 180,
-              }}
-            >
-              {lifeCategories.map((cat) => (
+        <div className="relative" style={{ width: 300, height: 95 }}>
+          {(() => {
+            const W = 300;
+            const dotSize = 32;
+            const n = BALANCE.length;
+            const cy = 75;
+            const ry = 55; // arc height
+            return BALANCE.map((b, i) => {
+              // Linear x — evenly spaced left to right, no overlap
+              const x = ((W - dotSize) * i) / (n - 1);
+              // y traces a smooth cosine curve — true bow shape with visible apex
+              const angle = (i / (n - 1) - 0.5) * Math.PI;
+              const y = cy - ry * Math.cos(angle) - dotSize / 2;
+              const selected = balanceIdx === i;
+              return (
                 <button
-                  key={cat.id}
+                  key={b.label}
                   type="button"
-                  onClick={() => tagObjectiveToCategory(cat.id)}
-                  className="flex w-full cursor-pointer items-center gap-2.5 px-3 py-2 text-left transition-all hover:bg-muted/30"
-                  style={{ border: 'none', background: 'transparent' }}
-                >
-                  <div
-                    style={{
-                      width: 8,
-                      height: 8,
-                      borderRadius: '50%',
-                      background: cat.color,
-                    }}
-                  />
-                  <span
-                    style={{
-                      fontFamily: 'var(--font-serif)',
-                      fontSize: '14px',
-                      color: '#7a5438',
-                    }}
-                  >
-                    {cat.name}
-                  </span>
-                </button>
-              ))}
-            </div>
-          )}
+                  onClick={() => setBalanceIdx(i)}
+                  className="absolute flex cursor-pointer items-center justify-center rounded-full border transition-all hover:scale-110"
+                  style={{
+                    left: x,
+                    top: y,
+                    width: dotSize,
+                    height: dotSize,
+                    background: b.color,
+                    opacity: selected ? 1 : 0.7,
+                    borderColor: selected ? '#3A2416' : 'transparent',
+                    boxShadow: selected ? `0 4px 14px -4px ${b.color}` : 'none',
+                  }}
+                  title={b.label}
+                />
+              );
+            });
+          })()}
+          <svg
+            width="300"
+            height="95"
+            viewBox="0 0 300 95"
+            style={{ position: 'absolute', top: 0, left: 0, pointerEvents: 'none' }}
+          >
+            {/* Arc connecting first dot center (16) to last dot center (284) */}
+            <path
+              d="M 16 75 A 134 55 0 0 1 284 75"
+              fill="none"
+              stroke="#C4A06030"
+              strokeWidth="1"
+              strokeDasharray="2 4"
+            />
+          </svg>
         </div>
+        <p
+          className="text-center text-lg font-bold transition-all duration-300"
+          style={{ color: BALANCE[balanceIdx].color, fontFamily: 'var(--font-serif)' }}
+        >
+          {BALANCE[balanceIdx].label}
+        </p>
       </div>
 
-      {/* ── LOGBOOK & EMOTIONS ── opens with Current Objective */}
-      {objectiveSectionOpen && (
-        <div className="space-y-2 pt-1">
-          <p
-            className="text-center text-sm font-semibold uppercase tracking-[0.18em]"
-            style={{ color: '#C4A06080' }}
-          >
-            Logbook & Emotions
-          </p>
-          <input
-            type="text"
-            value={emotionInput}
-            onChange={(e) => setEmotionInput(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === 'Enter') addEmotion();
-            }}
-            className="w-full border-b bg-transparent pb-1 outline-none"
-            style={{
-              color: '#7a5438',
-              borderColor: '#C4A06020',
-              fontFamily: 'var(--font-handwritten)',
-              fontSize: '20px',
-            }}
-          />
-          {sessionEmotions.length > 0 && (
-            <div className="space-y-1">
-              {sessionEmotions.map((e, i) => (
-                <div key={i} className="flex items-center gap-2">
-                  <span className="shrink-0 text-sm text-muted-foreground/30">{e.time}</span>
-                  <span
-                    className="h-2 w-2 shrink-0 rounded-full"
-                    style={{ background: e.mindColor, opacity: 0.6 }}
-                  />
-                  <span
-                    style={{
-                      color: '#7a5438',
-                      fontFamily: 'var(--font-handwritten)',
-                      fontSize: '20px',
-                    }}
-                  >
-                    {e.text}
-                  </span>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-      )}
-
-      {/* ── NEXT OBJECTIVE ── hidden behind a "+" when empty and closed */}
-      {!nextSectionOpen && nextObjectives.length === 0 ? (
-        <div className="flex justify-center pt-1">
+      {/* ── CURRENT OBJECTIVE ── all in one pillbox */}
+      <div
+        className="space-y-2 rounded-2xl border px-4 py-3"
+        style={{
+          borderColor: '#C4A06030',
+          background: 'rgba(245,236,220,0.45)',
+        }}
+      >
+        <div className="flex flex-col items-center gap-2">
           <button
             type="button"
-            onClick={toggleNextSection}
-            title="Add next objective"
-            className="group flex items-center gap-1.5 cursor-pointer bg-transparent transition-all"
-            style={{ border: 'none' }}
-          >
-            <span
-              className="flex h-6 w-6 rotate-45 items-center justify-center rounded-[3px] border transition-all group-hover:scale-110"
-              style={{ borderColor: '#C4A06040', background: '#C4A06010' }}
-            >
-              <span
-                className="-rotate-45 text-sm font-light"
-                style={{ color: '#C4A060', lineHeight: 1 }}
-              >
-                +
-              </span>
-            </span>
-            <span
-              className="text-[10px] font-semibold uppercase tracking-[0.18em] opacity-0 transition-opacity group-hover:opacity-70"
-              style={{ color: '#C4A060' }}
-            >
-              next
-            </span>
-          </button>
-        </div>
-      ) : (
-        <div className="flex flex-col items-center gap-2 pt-1">
-          <button
-            type="button"
-            onClick={toggleNextSection}
+            onClick={toggleObjectiveSection}
             className="flex cursor-pointer items-center gap-2 rounded-full px-5 py-1.5 transition-all"
             style={{
               background: '#C4A06015',
@@ -940,52 +1212,53 @@ export default function FeelingCheckInCard() {
               className="text-center text-sm font-semibold uppercase tracking-[0.22em]"
               style={{ color: '#C4A060' }}
             >
-              Next Objective
+              Current Objective
             </span>
             <span
               className="text-sm transition-transform duration-200"
               style={{
                 color: '#C4A06080',
-                transform: nextSectionOpen ? 'rotate(180deg)' : 'rotate(0deg)',
+                transform: objectiveSectionOpen ? 'rotate(180deg)' : 'rotate(0deg)',
               }}
             >
               ▾
             </span>
           </button>
-        </div>
-      )}
-
-      {/* Existing next-objective list — always visible if any exist */}
-      {nextObjectives.length > 0 && (
-        <div className="space-y-1">
-          {nextObjectives.map((obj, i) => (
-            <div
-              key={`${obj}-${i}`}
-              className="group relative flex items-center justify-center px-8"
-            >
-              <button
-                type="button"
-                onClick={() => promoteNext(i)}
-                className="absolute left-0 cursor-pointer text-sm transition-colors hover:text-muted-foreground/60"
-                style={{ color: '#C4A060', opacity: 0.5, background: 'none', border: 'none' }}
-                title="Make current"
-              >
-                ↑
-              </button>
-              <span
-                className="text-center"
-                style={{
-                  color: '#7a5438',
-                  fontFamily: 'var(--font-handwritten)',
-                  fontSize: '24px',
-                }}
-              >
-                {obj}
-              </span>
-              <div className="absolute right-0 flex items-center gap-1.5">
+          <div className="relative w-full">
+            <input
+              type="text"
+              value={objective}
+              onChange={(e) => setObjective(e.target.value)}
+              placeholder="set an objective..."
+              className="w-full border-b bg-transparent pb-1 text-center outline-none placeholder:text-muted-foreground/40"
+              style={{
+                color: '#7a5438',
+                borderColor: '#C4A06020',
+                fontFamily: 'var(--font-handwritten)',
+                fontSize: '24px',
+                paddingLeft: '64px',
+                paddingRight: '64px',
+              }}
+            />
+            <div className="absolute right-0 top-1/2 flex -translate-y-1/2 items-center gap-1.5">
+              {lifeCategories.length > 0 && objective.trim().length > 0 && (
                 <button
                   type="button"
-                  onClick={() => completeNextObjective(i)}
+                  onClick={() => setShowCategoryPicker(!showCategoryPicker)}
+                  className="shrink-0 cursor-pointer rounded-md px-2 py-0.5 text-[11px] uppercase tracking-wider transition-all"
+                  style={{
+                    color: showCategoryPicker ? '#C4A060' : '#C4A06060',
+                    background: showCategoryPicker ? '#C4A06010' : 'transparent',
+                    border: `1px solid ${showCategoryPicker ? '#C4A06030' : 'transparent'}`,
+                  }}
+                >
+                  {justTagged ? '✓ tagged' : 'tag'}
+                </button>
+              )}
+              {objective.trim().length > 0 && (
+                <button
+                  type="button"
+                  onClick={() => completeObjective(objective)}
                   title="Mark as done"
                   className="flex h-5 w-5 shrink-0 cursor-pointer items-center justify-center rounded border transition-all hover:scale-110"
                   style={{
@@ -997,183 +1270,589 @@ export default function FeelingCheckInCard() {
                     ✓
                   </span>
                 </button>
-                <button
-                  type="button"
-                  onClick={() => removeNext(i)}
-                  title="Remove"
-                  className="cursor-pointer text-sm opacity-0 transition-opacity group-hover:opacity-40"
-                  style={{ color: '#7a5438', background: 'none', border: 'none' }}
-                >
-                  ✕
-                </button>
-              </div>
+              )}
             </div>
-          ))}
-        </div>
-      )}
-
-      {/* Input only when the pill is open */}
-      {nextSectionOpen && (
-        <input
-          type="text"
-          value={nextInput}
-          onChange={(e) => setNextInput(e.target.value)}
-          onKeyDown={(e) => {
-            if (e.key === 'Enter') addNextObjective();
-          }}
-          placeholder="+ add next objective..."
-          className="w-full border-b bg-transparent pb-1 text-center outline-none placeholder:text-muted-foreground/40"
-          style={{
-            color: '#7a5438',
-            borderColor: '#C4A06020',
-            fontFamily: 'var(--font-handwritten)',
-            fontSize: '24px',
-          }}
-        />
-      )}
-
-      {/* ── DONE ── completed objectives history (matching Current/Next pill) */}
-      {doneObjectives.length > 0 && (
-        <>
-          <div className="flex flex-col items-center gap-2 pt-1">
-            <button
-              type="button"
-              onClick={() => setShowDone(!showDone)}
-              className="flex cursor-pointer items-center gap-2 rounded-full px-5 py-1.5 transition-all"
-              style={{
-                background: '#7AAA5810',
-                border: '1px solid #7AAA5840',
-              }}
-            >
-              <span
-                className="text-center text-sm font-semibold uppercase tracking-[0.22em]"
-                style={{ color: '#7AAA58' }}
-              >
-                Done · {doneObjectives.length}
-              </span>
-              <span
-                className="text-sm transition-transform duration-200"
+            {showCategoryPicker && lifeCategories.length > 0 && (
+              <div
+                className="absolute right-0 top-full z-50 mt-1 animate-in fade-in duration-150 overflow-hidden rounded-xl"
                 style={{
-                  color: '#7AAA5880',
-                  transform: showDone ? 'rotate(180deg)' : 'rotate(0deg)',
+                  background: '#F5ECDC',
+                  border: '1px solid #8A6A4A40',
+                  boxShadow: '0 8px 24px rgba(92,48,24,0.18)',
+                  minWidth: 180,
                 }}
               >
-                ▾
-              </span>
-            </button>
+                {lifeCategories.map((cat) => (
+                  <button
+                    key={cat.id}
+                    type="button"
+                    onClick={() => tagObjectiveToCategory(cat.id)}
+                    className="flex w-full cursor-pointer items-center gap-2.5 px-3 py-2 text-left transition-all hover:bg-muted/30"
+                    style={{ border: 'none', background: 'transparent' }}
+                  >
+                    <div
+                      style={{
+                        width: 8,
+                        height: 8,
+                        borderRadius: '50%',
+                        background: cat.color,
+                      }}
+                    />
+                    <span
+                      style={{
+                        fontFamily: 'var(--font-serif)',
+                        fontSize: '14px',
+                        color: '#7a5438',
+                      }}
+                    >
+                      {cat.name}
+                    </span>
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
+        </div>
+      </div>
 
-          {showDone && (
-            <div className="space-y-2 animate-in fade-in duration-200">
-              {doneObjectives.slice(0, 12).map((d) => {
-                const dt = new Date(d.completedAt);
-                const dateStr = `${dt.getDate()}/${dt.getMonth() + 1}`;
-                const hasReflections = (d.reflections?.length ?? 0) > 0;
-                const isOpen = expandedDoneId === d.id;
+      {/* ── OTHER MISSIONS ── collapsible pillbox: Daily Objectives + To-do */}
+      <div
+        className="space-y-3 rounded-2xl border px-4 py-3"
+        style={{
+          borderColor: '#C4A06030',
+          background: 'rgba(245,236,220,0.45)',
+        }}
+      >
+        <div className="flex justify-center">
+          <button
+            type="button"
+            onClick={toggleOtherMissions}
+            className="flex cursor-pointer items-center gap-2 rounded-full px-5 py-1.5 transition-all"
+            style={{
+              background: '#C4A06015',
+              border: '1px solid #C4A06040',
+            }}
+          >
+            <span
+              className="text-center text-sm font-semibold uppercase tracking-[0.22em]"
+              style={{ color: '#C4A060' }}
+            >
+              Other Missions
+            </span>
+            <span
+              className="text-sm transition-transform duration-200"
+              style={{
+                color: '#C4A06080',
+                transform: otherMissionsOpen ? 'rotate(180deg)' : 'rotate(0deg)',
+              }}
+            >
+              ▾
+            </span>
+          </button>
+        </div>
+
+        {otherMissionsOpen && (
+          <>
+            {/* Daily Objectives */}
+            <div className="space-y-1.5">
+              <p
+                className="px-1 text-[11px] font-semibold uppercase tracking-[0.18em]"
+                style={{ color: '#C4A060' }}
+              >
+                Daily Objectives
+              </p>
+              {todayObjectives.map((o) => {
+                const isExpanded = expandedTodayId === o.id;
                 return (
-                  <div key={d.id} className="space-y-1">
-                    <div className="group relative flex items-center justify-center px-8">
-                      <span className="absolute left-0 text-xs" style={{ color: '#8A6A4A50' }}>
-                        {dateStr}
-                      </span>
+                  <div key={o.id} className="space-y-1">
+                    <div className="group flex items-center gap-2">
                       <button
                         type="button"
-                        onClick={() => setExpandedDoneId(isOpen ? null : d.id)}
-                        className="cursor-pointer text-center line-through"
+                        onClick={() => toggleTodayObjective(o.id)}
+                        title={o.done ? 'Mark as not done' : 'Mark as done'}
+                        className="flex h-5 w-5 shrink-0 cursor-pointer items-center justify-center rounded border transition-all hover:scale-110"
                         style={{
-                          color: '#7a5438',
-                          fontFamily: 'var(--font-handwritten)',
-                          fontSize: '20px',
-                          opacity: 0.55,
-                          background: 'none',
-                          border: 'none',
+                          borderColor: o.done ? '#7AAA5860' : '#C4A06060',
+                          background: o.done ? '#7AAA5810' : 'transparent',
                         }}
                       >
-                        {d.text}
-                        {hasReflections && (
-                          <span
-                            className="ml-2 text-[10px] no-underline"
-                            style={{ color: '#C4A06080' }}
-                          >
-                            {d.reflections?.length} note{d.reflections?.length === 1 ? '' : 's'}
+                        {o.done && (
+                          <span className="text-xs" style={{ color: '#7AAA58' }}>
+                            ✓
                           </span>
                         )}
                       </button>
                       <button
                         type="button"
-                        onClick={() => {
-                          const next = doneObjectives.filter((x) => x.id !== d.id);
-                          setDoneObjectives(next);
-                          try {
-                            localStorage.setItem('colourmap:done-objectives', JSON.stringify(next));
-                          } catch {
-                            /* silent */
-                          }
-                          if (expandedDoneId === d.id) setExpandedDoneId(null);
+                        onClick={() => setExpandedTodayId(isExpanded ? null : o.id)}
+                        className="flex-1 cursor-pointer bg-transparent text-left"
+                        style={{
+                          color: '#7a5438',
+                          fontFamily: 'var(--font-handwritten)',
+                          fontSize: '18px',
+                          opacity: o.done ? 0.45 : 0.9,
+                          textDecoration: o.done ? 'line-through' : 'none',
+                          border: 'none',
                         }}
-                        title="Remove from history"
-                        className="absolute right-0 cursor-pointer text-sm opacity-0 transition-opacity group-hover:opacity-40"
+                        title="Click to open notes"
+                      >
+                        {o.text}
+                        {o.notes && o.notes.trim().length > 0 && !isExpanded && (
+                          <span
+                            className="ml-2 text-xs no-underline"
+                            style={{ color: '#C4A06080' }}
+                          >
+                            ·
+                          </span>
+                        )}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => removeTodayObjective(o.id)}
+                        title="Remove"
+                        className="cursor-pointer text-sm opacity-0 transition-opacity group-hover:opacity-40"
                         style={{ color: '#7a5438', background: 'none', border: 'none' }}
                       >
                         ✕
                       </button>
                     </div>
-
-                    {/* Expanded reflections for this done objective */}
-                    {isOpen && (
-                      <div
-                        className="mx-auto max-w-md space-y-1 rounded-xl border px-4 py-2 animate-in fade-in duration-150"
+                    {isExpanded && (
+                      <textarea
+                        value={o.notes || ''}
+                        onChange={(e) => updateTodayNotes(o.id, e.target.value)}
+                        placeholder="advancements, next steps..."
+                        rows={2}
+                        className="ml-7 w-[calc(100%-1.75rem)] resize-none border-b bg-transparent pb-1 pt-0.5 outline-none placeholder:text-muted-foreground/30 animate-in fade-in duration-150"
                         style={{
-                          borderColor: '#8A6A4A20',
-                          background: 'rgba(245,236,220,0.55)',
+                          color: '#7a5438',
+                          borderColor: '#C4A06025',
+                          fontFamily: 'var(--font-handwritten)',
+                          fontSize: '15px',
+                          lineHeight: 1.35,
                         }}
-                      >
-                        {/* State at completion */}
-                        {(d.mindAtComplete || d.modeAtComplete) && (
-                          <div
-                            className="flex items-center justify-center gap-3 pb-1 text-xs"
-                            style={{ color: '#8A6A4A70' }}
-                          >
-                            {d.mindAtComplete && <span>mind: {d.mindAtComplete}</span>}
-                            {d.modeAtComplete && <span>· mode: {d.modeAtComplete}</span>}
-                          </div>
-                        )}
-                        {/* Reflections list */}
-                        {hasReflections ? (
-                          d.reflections?.map((r, i) => (
-                            <div key={i} className="flex items-center gap-2">
-                              <span className="shrink-0 text-xs" style={{ color: '#8A6A4A40' }}>
-                                {r.time}
-                              </span>
-                              <span
-                                className="h-2 w-2 shrink-0 rounded-full"
-                                style={{ background: r.mindColor, opacity: 0.6 }}
-                              />
-                              <span
-                                style={{
-                                  color: '#7a5438',
-                                  fontFamily: 'var(--font-handwritten)',
-                                  fontSize: '16px',
-                                }}
-                              >
-                                {r.text}
-                              </span>
-                            </div>
-                          ))
-                        ) : (
-                          <p className="text-center text-xs italic" style={{ color: '#8A6A4A50' }}>
-                            no reflections recorded
-                          </p>
-                        )}
-                      </div>
+                      />
                     )}
                   </div>
                 );
               })}
+              <input
+                type="text"
+                value={todayInput}
+                onChange={(e) => setTodayInput(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') addTodayObjective();
+                }}
+                placeholder="+ add objective for today..."
+                className="w-full border-b bg-transparent pb-1 outline-none placeholder:text-muted-foreground/40"
+                style={{
+                  color: '#7a5438',
+                  borderColor: '#C4A06020',
+                  fontFamily: 'var(--font-handwritten)',
+                  fontSize: '18px',
+                }}
+              />
             </div>
-          )}
-        </>
-      )}
+
+            {/* Divider */}
+            <div className="flex items-center gap-3">
+              <div className="h-px flex-1" style={{ background: '#C4A06020' }} />
+              <span
+                className="block h-1.5 w-1.5 rotate-45 rounded-[1px]"
+                style={{ background: '#C4A060', opacity: 0.4 }}
+              />
+              <div className="h-px flex-1" style={{ background: '#C4A06020' }} />
+            </div>
+
+            {/* To-do list */}
+            <div className="space-y-1.5">
+              <p
+                className="px-1 text-[11px] font-semibold uppercase tracking-[0.18em]"
+                style={{ color: '#C4A060' }}
+              >
+                To-do
+              </p>
+              {todos.map((t) => (
+                <div key={t.id} className="group flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => toggleTodo(t.id)}
+                    title={t.done ? 'Mark as not done' : 'Mark as done'}
+                    className="flex h-5 w-5 shrink-0 cursor-pointer items-center justify-center rounded border transition-all hover:scale-110"
+                    style={{
+                      borderColor: t.done ? '#7AAA5860' : '#C4A06060',
+                      background: t.done ? '#7AAA5810' : 'transparent',
+                    }}
+                  >
+                    {t.done && (
+                      <span className="text-xs" style={{ color: '#7AAA58' }}>
+                        ✓
+                      </span>
+                    )}
+                  </button>
+                  <span
+                    className="flex-1"
+                    style={{
+                      color: '#7a5438',
+                      fontFamily: 'var(--font-handwritten)',
+                      fontSize: '18px',
+                      opacity: t.done ? 0.45 : 0.9,
+                      textDecoration: t.done ? 'line-through' : 'none',
+                    }}
+                  >
+                    {t.text}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => removeTodo(t.id)}
+                    title="Remove"
+                    className="cursor-pointer text-sm opacity-0 transition-opacity group-hover:opacity-40"
+                    style={{ color: '#7a5438', background: 'none', border: 'none' }}
+                  >
+                    ✕
+                  </button>
+                </div>
+              ))}
+              <input
+                type="text"
+                value={todoInput}
+                onChange={(e) => setTodoInput(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') addTodo();
+                }}
+                placeholder="+ add to-do..."
+                className="w-full border-b bg-transparent pb-1 outline-none placeholder:text-muted-foreground/40"
+                style={{
+                  color: '#7a5438',
+                  borderColor: '#C4A06020',
+                  fontFamily: 'var(--font-handwritten)',
+                  fontSize: '18px',
+                }}
+              />
+            </div>
+
+            {/* Are you clear on next missions? — clarity slider, lives at the bottom of Other Missions */}
+            <div className="space-y-1.5 pt-2">
+              <p
+                className="text-center italic"
+                style={{
+                  color: '#8A6A4A',
+                  fontFamily: 'var(--font-serif)',
+                  fontSize: '13px',
+                  opacity: 0.75,
+                }}
+              >
+                are you clear on next missions?
+              </p>
+              <DragSlider
+                items={CLARITY_MISSIONS}
+                selectedIdx={clarityMissionsIdx}
+                onSelect={setClarityMissionsIdx}
+                size={36}
+              />
+              <p
+                className="text-center text-base font-bold transition-all duration-300"
+                style={{
+                  color: CLARITY_MISSIONS[clarityMissionsIdx].color,
+                  fontFamily: 'var(--font-serif)',
+                }}
+              >
+                {CLARITY_MISSIONS[clarityMissionsIdx].level}
+              </p>
+            </div>
+          </>
+        )}
+      </div>
+
+      {/* ── LOGBOOK & EMOTIONS ── collapsible pillbox */}
+      <div
+        className="space-y-2 rounded-2xl border px-4 py-3"
+        style={{
+          borderColor: '#C4A06030',
+          background: 'rgba(245,236,220,0.45)',
+        }}
+      >
+        {/* Pill header — click to open/close */}
+        <div className="flex items-center justify-between">
+          <span className="w-12" />
+          <button
+            type="button"
+            onClick={toggleLogbookSection}
+            className="flex cursor-pointer items-center gap-2 rounded-full px-5 py-1.5 transition-all"
+            style={{
+              background: '#C4A06015',
+              border: '1px solid #C4A06040',
+            }}
+          >
+            <span
+              className="text-center text-sm font-semibold uppercase tracking-[0.22em]"
+              style={{ color: '#C4A060' }}
+            >
+              Logbook & Emotions
+            </span>
+            <span
+              className="text-sm transition-transform duration-200"
+              style={{
+                color: '#C4A06080',
+                transform: logbookSectionOpen ? 'rotate(180deg)' : 'rotate(0deg)',
+              }}
+            >
+              ▾
+            </span>
+          </button>
+          <span className="w-12" />
+        </div>
+
+        {logbookSectionOpen && (
+          <>
+            {/* Two writing spots — challenge (top) + flow (bottom, ochre) */}
+            <div className="space-y-2">
+              {/* CHALLENGE — label + question on one line */}
+              <div className="space-y-1">
+                <div className="flex items-center gap-2 px-1">
+                  <span
+                    className="block h-2.5 w-2.5 shrink-0 rotate-45 rounded-[1px]"
+                    style={{ background: '#A05A40', opacity: 0.85 }}
+                  />
+                  <span
+                    className="shrink-0 text-[11px] font-semibold uppercase tracking-[0.18em]"
+                    style={{ color: '#A05A40' }}
+                  >
+                    Challenge
+                  </span>
+                  <span
+                    className="italic"
+                    style={{
+                      color: '#A05A40',
+                      fontFamily: 'var(--font-serif)',
+                      fontSize: '12px',
+                      opacity: 0.7,
+                    }}
+                  >
+                    · what is your main tension right now?
+                  </span>
+                </div>
+                <input
+                  type="text"
+                  value={challengeInput}
+                  onChange={(e) => setChallengeInput(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') saveChallenge();
+                  }}
+                  className="w-full border-b bg-transparent pb-1 outline-none"
+                  style={{
+                    color: '#7a5438',
+                    borderColor: '#A05A4030',
+                    fontFamily: 'var(--font-handwritten)',
+                    fontSize: '20px',
+                  }}
+                />
+              </div>
+
+              {/* FLOW — label + question on one line */}
+              <div className="space-y-1">
+                <div className="flex items-center gap-2 px-1">
+                  <span
+                    className="block h-2.5 w-2.5 shrink-0 rotate-45 rounded-[1px]"
+                    style={{ background: '#C4A060', opacity: 0.85 }}
+                  />
+                  <span
+                    className="shrink-0 text-[11px] font-semibold uppercase tracking-[0.18em]"
+                    style={{ color: '#C4A060' }}
+                  >
+                    Flow
+                  </span>
+                  <span
+                    className="italic"
+                    style={{
+                      color: '#C4A060',
+                      fontFamily: 'var(--font-serif)',
+                      fontSize: '12px',
+                      opacity: 0.7,
+                    }}
+                  >
+                    · what is working well?
+                  </span>
+                </div>
+                <input
+                  type="text"
+                  value={flowInput}
+                  onChange={(e) => setFlowInput(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') saveFlow();
+                  }}
+                  className="w-full border-b bg-transparent pb-1 outline-none"
+                  style={{
+                    color: '#7a5438',
+                    borderColor: '#C4A06030',
+                    fontFamily: 'var(--font-handwritten)',
+                    fontSize: '20px',
+                  }}
+                />
+              </div>
+            </div>
+            {/* Notes toggle — transparent pill that collapses/expands the entry list */}
+            {sessionEmotions.length > 0 && (
+              <div className="flex justify-center gap-2 pt-2">
+                <button
+                  type="button"
+                  onClick={() => setShowLogbookEntries(!showLogbookEntries)}
+                  className="flex cursor-pointer items-center gap-1.5 rounded-full bg-transparent px-3 py-0.5 text-[10px] font-semibold uppercase tracking-wider transition-all"
+                  style={{
+                    color: '#C4A06090',
+                    border: '1px dashed #C4A06050',
+                  }}
+                  title={showLogbookEntries ? 'Hide notes' : 'Show notes'}
+                >
+                  notes · {sessionEmotions.length}
+                  <span
+                    className="text-[8px] transition-transform duration-200"
+                    style={{
+                      color: '#C4A06080',
+                      transform: showLogbookEntries ? 'rotate(180deg)' : 'rotate(0deg)',
+                    }}
+                  >
+                    ▾
+                  </span>
+                </button>
+                {showLogbookEntries && (
+                  <button
+                    type="button"
+                    onClick={() => setLogbookMode(logbookMode === 'grouped' ? 'mixed' : 'grouped')}
+                    className="cursor-pointer rounded-md bg-transparent px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider transition-all"
+                    style={{
+                      color: '#C4A06090',
+                      border: '1px solid #C4A06030',
+                    }}
+                    title={`Switch to ${logbookMode === 'grouped' ? 'chronological (mixed)' : 'grouped'} view`}
+                  >
+                    {logbookMode === 'grouped' ? 'mixed' : 'grouped'}
+                  </button>
+                )}
+              </div>
+            )}
+
+            {showLogbookEntries && sessionEmotions.length > 0 && logbookMode === 'mixed' && (
+              <div className="space-y-1 pt-1">
+                {sessionEmotions.map((e, i) => (
+                  <div key={`m-${i}`} className="flex items-center gap-2">
+                    <span className="shrink-0 text-sm text-muted-foreground/30">{e.time}</span>
+                    <span
+                      className="h-2 w-2 shrink-0 rounded-full"
+                      style={{ background: e.mindColor, opacity: 0.7 }}
+                    />
+                    <span
+                      style={{
+                        color: '#7a5438',
+                        fontFamily: 'var(--font-handwritten)',
+                        fontSize: '20px',
+                      }}
+                    >
+                      {e.text}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            )}
+            {showLogbookEntries && sessionEmotions.length > 0 && logbookMode === 'grouped' && (
+              <div className="space-y-3 pt-1">
+                {/* CHALLENGE stack — red entries */}
+                {sessionEmotions.some((e) => e.mind === 'challenge') && (
+                  <div className="space-y-1">
+                    <p
+                      className="text-[10px] font-semibold uppercase tracking-[0.18em]"
+                      style={{ color: '#A05A40', opacity: 0.7 }}
+                    >
+                      Challenge
+                    </p>
+                    {sessionEmotions
+                      .filter((e) => e.mind === 'challenge')
+                      .map((e, i) => (
+                        <div key={`c-${i}`} className="flex items-center gap-2">
+                          <span className="shrink-0 text-sm text-muted-foreground/30">
+                            {e.time}
+                          </span>
+                          <span
+                            className="h-2 w-2 shrink-0 rounded-full"
+                            style={{ background: e.mindColor, opacity: 0.7 }}
+                          />
+                          <span
+                            style={{
+                              color: '#7a5438',
+                              fontFamily: 'var(--font-handwritten)',
+                              fontSize: '20px',
+                            }}
+                          >
+                            {e.text}
+                          </span>
+                        </div>
+                      ))}
+                  </div>
+                )}
+                {/* FLOW stack — green entries */}
+                {sessionEmotions.some((e) => e.mind === 'flow') && (
+                  <div className="space-y-1">
+                    <p
+                      className="text-[10px] font-semibold uppercase tracking-[0.18em]"
+                      style={{ color: '#C4A060', opacity: 0.7 }}
+                    >
+                      Flow
+                    </p>
+                    {sessionEmotions
+                      .filter((e) => e.mind === 'flow')
+                      .map((e, i) => (
+                        <div key={`f-${i}`} className="flex items-center gap-2">
+                          <span className="shrink-0 text-sm text-muted-foreground/30">
+                            {e.time}
+                          </span>
+                          <span
+                            className="h-2 w-2 shrink-0 rounded-full"
+                            style={{ background: e.mindColor, opacity: 0.7 }}
+                          />
+                          <span
+                            style={{
+                              color: '#7a5438',
+                              fontFamily: 'var(--font-handwritten)',
+                              fontSize: '20px',
+                            }}
+                          >
+                            {e.text}
+                          </span>
+                        </div>
+                      ))}
+                  </div>
+                )}
+                {/* Untagged entries (neither challenge nor flow) */}
+                {sessionEmotions.some((e) => e.mind !== 'challenge' && e.mind !== 'flow') && (
+                  <div className="space-y-1">
+                    {sessionEmotions
+                      .filter((e) => e.mind !== 'challenge' && e.mind !== 'flow')
+                      .map((e, i) => (
+                        <div key={`u-${i}`} className="flex items-center gap-2">
+                          <span className="shrink-0 text-sm text-muted-foreground/30">
+                            {e.time}
+                          </span>
+                          <span
+                            className="h-2 w-2 shrink-0 rounded-full"
+                            style={{ background: e.mindColor, opacity: 0.6 }}
+                          />
+                          <span
+                            style={{
+                              color: '#7a5438',
+                              fontFamily: 'var(--font-handwritten)',
+                              fontSize: '20px',
+                            }}
+                          >
+                            {e.text}
+                          </span>
+                        </div>
+                      ))}
+                  </div>
+                )}
+              </div>
+            )}
+          </>
+        )}
+      </div>
 
       {/* Save star — quick save without opening losange */}
       <div className="flex flex-col items-center gap-1">
@@ -1220,271 +1899,6 @@ export default function FeelingCheckInCard() {
           </span>
         )}
       </div>
-
-      {/* Losange gateway — closing also saves */}
-      <div className="flex flex-col items-center gap-1">
-        <button
-          type="button"
-          onClick={() => {
-            if (expanded) {
-              saveCheckIn();
-              setExpanded(false);
-            } else {
-              setExpanded(true);
-            }
-          }}
-          className="flex items-center gap-2 cursor-pointer transition-all duration-300 hover:opacity-80"
-          style={{ background: 'none', border: 'none' }}
-        >
-          <span
-            className="h-4 w-4 rotate-45 transition-all duration-300"
-            style={{
-              background: expanded ? `${currentMind.color}60` : `${currentMind.color}25`,
-              borderRadius: 2,
-            }}
-          />
-          <span
-            className="text-xs font-semibold uppercase tracking-[0.18em]"
-            style={{ color: expanded ? currentMind.color : '#8A6A4A80' }}
-          >
-            {expanded ? 'save & close' : 'go deeper'}
-          </span>
-        </button>
-      </div>
-
-      {/* Expanded: note + FACING / PEACE */}
-      {expanded && (
-        <div className="space-y-4 animate-in fade-in duration-200">
-          {/* Note input — Enter saves */}
-          <div className="flex items-center gap-2 rounded-xl border border-[#C4A06020] bg-[#C4A06005] px-3 py-2.5">
-            <span className="shrink-0 text-xs text-muted-foreground/40">
-              {new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-            </span>
-            <input
-              type="text"
-              value={note}
-              onChange={(e) => setNote(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter') {
-                  saveCheckIn();
-                  setExpanded(false);
-                }
-              }}
-              placeholder="What's on your mind?"
-              className="flex-1 bg-transparent text-sm outline-none placeholder:text-muted-foreground/40"
-            />
-          </div>
-
-          {/* Recent check-ins — collapsible */}
-          {checkIns.length > 0 && (
-            <div>
-              <button
-                type="button"
-                onClick={() => setShowRecent(!showRecent)}
-                className="flex w-full cursor-pointer items-center justify-between"
-                style={{ background: 'none', border: 'none', padding: 0 }}
-              >
-                <span className="text-xs text-muted-foreground/40">Recent ({checkIns.length})</span>
-                <span className="text-xs text-muted-foreground/30">{showRecent ? '▲' : '▼'}</span>
-              </button>
-              {showRecent && (
-                <div className="space-y-1.5 pt-2 animate-in fade-in duration-150">
-                  {checkIns.slice(0, 5).map((c) => (
-                    <div key={c.id} className="flex items-start gap-2 px-1">
-                      <span className="shrink-0 text-xs text-muted-foreground/30 pt-0.5">
-                        {c.time}
-                      </span>
-                      <div className="flex items-center gap-1 shrink-0 pt-1">
-                        <span
-                          className="h-2 w-2 rounded-full"
-                          style={{ background: c.mindColor, opacity: 0.7 }}
-                        />
-                        <span
-                          className="h-2 w-2 rounded-full"
-                          style={{ background: c.modeColor, opacity: 0.5 }}
-                        />
-                      </div>
-                      <div className="min-w-0 flex-1">
-                        {c.objective && (
-                          <p
-                            className="text-xs font-semibold truncate"
-                            style={{ color: '#7a5438', fontFamily: 'var(--font-handwritten)' }}
-                          >
-                            {c.objective}
-                          </p>
-                        )}
-                        {c.emotions && c.emotions.length > 0 && (
-                          <p
-                            className="text-xs truncate"
-                            style={{
-                              color: '#7a5438',
-                              opacity: 0.6,
-                              fontFamily: 'var(--font-handwritten)',
-                            }}
-                          >
-                            {c.emotions.map((em: { text: string }) => em.text).join(' → ')}
-                          </p>
-                        )}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-          )}
-
-          {/* Doing: to-do, missions, trackers */}
-          <DoingContent />
-
-          {/* FACING / PEACE trackers */}
-          <div className="space-y-3">
-            <div className="flex items-center gap-2">
-              {trackerMode === 'peace' && (
-                <button
-                  type="button"
-                  onClick={() => {
-                    setTrackerMode('facing');
-                    setActiveTracker(null);
-                  }}
-                  className="shrink-0 cursor-pointer text-sm text-muted-foreground/50 transition-colors hover:text-muted-foreground/60"
-                  style={{ background: 'none', border: 'none' }}
-                >
-                  ‹
-                </button>
-              )}
-
-              <div className="flex flex-1 items-center justify-center gap-2">
-                {(trackerMode === 'facing' ? INNER_TRACKERS : PEACE_TRACKERS).map((t, idx) => {
-                  const isActive = activeTracker === t.id;
-                  const size = isActive ? 46 : 38;
-                  const shapes =
-                    trackerMode === 'facing'
-                      ? CELL_SHAPES
-                      : [
-                          '50% 50% 45% 55% / 45% 55% 50% 50%',
-                          '45% 55% 50% 50% / 50% 50% 45% 55%',
-                          '55% 45% 50% 50% / 50% 50% 55% 45%',
-                          '50% 50% 55% 45% / 55% 45% 50% 50%',
-                          '48% 52% 42% 58% / 52% 48% 50% 50%',
-                        ];
-                  return (
-                    <button
-                      key={t.id}
-                      type="button"
-                      onClick={() => setActiveTracker(isActive ? null : t.id)}
-                      className="relative flex cursor-pointer items-center justify-center transition-all duration-300 hover:scale-110"
-                      style={{
-                        width: size,
-                        height: size,
-                        borderRadius: shapes[idx % shapes.length],
-                        background: t.color,
-                        opacity: isActive ? 1 : 0.6,
-                        border: 'none',
-                        padding: 0,
-                      }}
-                    >
-                      <span
-                        className="text-base font-black text-white select-none"
-                        style={{ fontFamily: 'var(--font-handwritten)', letterSpacing: 1 }}
-                      >
-                        {t.letter}
-                      </span>
-                    </button>
-                  );
-                })}
-              </div>
-
-              {trackerMode === 'facing' && (
-                <button
-                  type="button"
-                  onClick={() => {
-                    setTrackerMode('peace');
-                    setActiveTracker(null);
-                  }}
-                  className="shrink-0 cursor-pointer text-sm text-muted-foreground/50 transition-colors hover:text-muted-foreground/60"
-                  style={{ background: 'none', border: 'none' }}
-                >
-                  ›
-                </button>
-              )}
-            </div>
-
-            {/* Tracker questions */}
-            {activeTracker &&
-              (() => {
-                const allTrackers = [...INNER_TRACKERS, ...PEACE_TRACKERS];
-                const tracker = allTrackers.find((t) => t.id === activeTracker);
-                if (!tracker) return null;
-
-                const keys = tracker.questions.map((_, i) =>
-                  i === 0 ? tracker.id : `${tracker.id}_${i + 1}`,
-                );
-                const unlockedCount = keys.filter((key) => key in trackerValues).length;
-                const visibleCount = Math.max(1, unlockedCount);
-                const lastKey = keys[visibleCount - 1];
-                const canUnlockNext =
-                  visibleCount < tracker.questions.length && trackerValues[lastKey]?.trim();
-
-                return (
-                  <div className="space-y-1 animate-in fade-in duration-150">
-                    {tracker.questions.slice(0, visibleCount).map((question, index) => {
-                      const key = keys[index];
-                      const showLosange = index < visibleCount - 1;
-                      return (
-                        <div key={key}>
-                          <input
-                            type="text"
-                            value={trackerValues[key] || ''}
-                            onChange={(e) =>
-                              setTrackerValues((prev) => ({ ...prev, [key]: e.target.value }))
-                            }
-                            placeholder={question}
-                            className="w-full rounded-lg border px-3 py-2 text-sm outline-none placeholder:text-muted-foreground/40"
-                            style={{
-                              borderColor: `${tracker.color}25`,
-                              background: `${tracker.color}05`,
-                            }}
-                          />
-                          {showLosange && (
-                            <div className="flex justify-center py-2">
-                              <div
-                                className="h-2 w-2 rotate-45 rounded-[1px]"
-                                style={{ background: tracker.color, opacity: 0.2 }}
-                              />
-                            </div>
-                          )}
-                        </div>
-                      );
-                    })}
-                    {canUnlockNext && (
-                      <div className="flex justify-center py-2">
-                        <button
-                          type="button"
-                          onClick={() =>
-                            setTrackerValues((prev) => ({ ...prev, [keys[visibleCount]]: '' }))
-                          }
-                          className="flex h-3.5 w-3.5 rotate-45 cursor-pointer items-center justify-center transition-all hover:scale-125"
-                          style={{
-                            background: `${tracker.color}30`,
-                            borderRadius: 1.5,
-                            border: 'none',
-                          }}
-                        >
-                          <span
-                            className="-rotate-45 text-[10px] font-bold leading-none"
-                            style={{ color: tracker.color }}
-                          >
-                            +
-                          </span>
-                        </button>
-                      </div>
-                    )}
-                  </div>
-                );
-              })()}
-          </div>
-        </div>
-      )}
     </div>
   );
 }

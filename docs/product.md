@@ -159,6 +159,10 @@ The long-term AI direction is a living constellation that reads all user data (c
 - Onboarding wizard
 - Being a medical or therapeutic device
 
+## Open Ideas (not decided yet)
+
+- **Doing compass reframe (STAR → Clarity · Target · Resources · Action)**: potential future direction for the Doing compass. Four axes where Action sits at the south position and the other three (Clarity, Target, Resources) are the conditions that feed it. Would replace the current STAR wiring. Not committed — captured here so it isn't lost when we circle back to box 3.
+
 ## Key Decisions
 
 - **Data**: Supabase with auth. Real persistence and cross-device sync.
