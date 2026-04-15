@@ -198,22 +198,29 @@ Index | Label | Colour
 
 Both extremes are valid deep states (`Deep Rest` = restorative, `Tunnel Vision` = intense focus). The centre (`Balance`) is the answer, not merely the midpoint.
 
-### Hawkins process spectrum (10 levels) — box 1 variant `boxes`
+### Hawkins emotional spectrum (10 levels) — box 1 variant `boxes` + bottom hawkins slider
 
-Index | Label | Colour | Side
---- | --- | --- | ---
-0 | Frozen | `#B8D0E8` | stuck (left)
-1 | Frustrated | `#D8B0C8` | stuck
-2 | Distracted | `#E8A0C4` | stuck
-3 | Confused | `#F080B8` | stuck
-4 | Overwhelmed | `#F0A088` | stuck (5th left bar)
-5 | Searching | `#F8C040` | free (right)
-6 | Glimpsing | `#F0E060` | free
-7 | Opening | `#A8E090` | free
-8 | Releasing | `#88D8B0` | free
-9 | Liberation | `#88C8E8` | free (5th right bar)
+A 10-level distillation of David Hawkins' Map of Consciousness, from contracted (Shame) toward expanded (Peace). Numbers in the `Hawkins` column are the canonical Map calibrations.
 
-The Boxes variant renders indices 0–4 as left drawer bars and 5–9 as right drawer bars on either side of the central colour circle.
+Index | Label | Colour | Hawkins | Side
+--- | --- | --- | --- | ---
+0 | Shame | `#B8D0E8` | 20 | contracted (left)
+1 | Apathy | `#D8B0C8` | 50 | contracted
+2 | Grief | `#E8A0C4` | 75 | contracted
+3 | Fear | `#F080B8` | 100 | contracted
+4 | Anger | `#F0A088` | 150 | contracted (5th left bar)
+5 | Courage | `#F8C040` | 200 | expanded (right)
+6 | Acceptance | `#F0E060` | 350 | expanded
+7 | Reason | `#A8E090` | 400 | expanded
+8 | Love | `#88D8B0` | 500 | expanded
+9 | Peace | `#88C8E8` | 600 | expanded (5th right bar)
+
+Two surfaces consume this spectrum:
+
+- The **Boxes** variant renders indices 0–4 as left drawer bars and 5–9 as right drawer bars on either side of the central colour circle.
+- The **bottom hawkins slider** at the foot of box 1 (above the save star) renders all 10 as a long row of narrow drawer blocks. Selected block grows taller and goes full saturation; the current label appears in serif beneath ("where am I in the process" eyebrow above).
+
+Both surfaces share the same `hawkinsIdx` state (`localStorage:colourmap:process-idx`) so switching variants or moving the bottom slider stays in sync.
 
 ### Compass rhymes — subtitle phrases under each axis
 

@@ -18,20 +18,20 @@ const MIND = [
   { level: 'Flowing', color: '#B0A0D0' },
 ];
 
-/* ─── PROCESS spectrum — the journey from stuck to free (not static emotion) ─── */
+/* ─── HAWKINS emotional spectrum — classic Map of Consciousness, 10-level distillation
+       from contraction (Shame) toward expansion (Peace). Colours stay on the cool→warm→
+       light arc so the visual still reads as a journey from stuck to free. */
 const HAWKINS = [
-  // Stuck end — light blue into pink, then warming toward orange
-  { level: 'Frozen', color: '#B8D0E8', hawkins: 0 }, // light blue (numb cold)
-  { level: 'Frustrated', color: '#D8B0C8', hawkins: 0 }, // dusty blue-pink transition
-  { level: 'Distracted', color: '#E8A0C4', hawkins: 0 }, // pink
-  { level: 'Confused', color: '#F080B8', hawkins: 0 }, // vivid pink — stands out
-  // Moving end — warm yellow through green into free blue
-  { level: 'Overwhelmed', color: '#F0A088', hawkins: 0 },
-  { level: 'Searching', color: '#F8C040', hawkins: 0 },
-  { level: 'Glimpsing', color: '#F0E060', hawkins: 0 },
-  { level: 'Opening', color: '#A8E090', hawkins: 0 },
-  { level: 'Releasing', color: '#88D8B0', hawkins: 0 },
-  { level: 'Liberation', color: '#88C8E8', hawkins: 0 },
+  { level: 'Shame', color: '#B8D0E8', hawkins: 20 },
+  { level: 'Apathy', color: '#D8B0C8', hawkins: 50 },
+  { level: 'Grief', color: '#E8A0C4', hawkins: 75 },
+  { level: 'Fear', color: '#F080B8', hawkins: 100 },
+  { level: 'Anger', color: '#F0A088', hawkins: 150 },
+  { level: 'Courage', color: '#F8C040', hawkins: 200 },
+  { level: 'Acceptance', color: '#F0E060', hawkins: 350 },
+  { level: 'Reason', color: '#A8E090', hawkins: 400 },
+  { level: 'Love', color: '#88D8B0', hawkins: 500 },
+  { level: 'Peace', color: '#88C8E8', hawkins: 600 },
 ];
 
 /* ─── ENGAGEMENT spectrum — how IN the mission am I? ─── */
@@ -1475,8 +1475,8 @@ export default function FeelingCheckInCard() {
             style={{ width: 340, height: 120 }}
           >
             {(() => {
-              const stuck = HAWKINS.slice(0, 5); // Frozen → Overwhelmed
-              const free = HAWKINS.slice(5); // Searching → Liberation
+              const stuck = HAWKINS.slice(0, 5); // Shame → Anger (contracted side)
+              const free = HAWKINS.slice(5); // Courage → Peace (expanded side)
               const W = 340;
               const H = 120;
               const barW = 22; // was 14 — ~60% wider
