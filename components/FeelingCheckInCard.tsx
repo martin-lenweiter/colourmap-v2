@@ -432,15 +432,27 @@ export default function FeelingCheckInCard() {
   const [showHawkinsPicker, setShowHawkinsPicker] = useState(false);
   const [showDotHawkinsPicker, setShowDotHawkinsPicker] = useState(false);
 
-  // Design variant — 1..7 for the process/mood area; cycles through exploratory designs
-  type Variant = 1 | 2 | 3;
+  // Emotional-register variant — six ways to render the same balance level.
+  // 1 arc · 2 circle · 3 rings · 4 mountain · 5 slider · 6 boxes
+  type Variant = 1 | 2 | 3 | 4 | 5 | 6;
+  const VARIANTS: { id: Variant; label: string }[] = [
+    { id: 1, label: 'arc' },
+    { id: 2, label: 'circle' },
+    { id: 3, label: 'rings' },
+    { id: 4, label: 'mountain' },
+    { id: 5, label: 'slider' },
+    { id: 6, label: 'boxes' },
+  ];
   const [variantIdx, setVariantIdx] = useState<Variant>(() => {
     const v = loadNum('colourmap:design-variant', 1);
-    return Math.max(1, Math.min(3, v)) as Variant;
+    return Math.max(1, Math.min(6, v)) as Variant;
   });
   useEffect(() => {
     localStorage.setItem('colourmap:design-variant', String(variantIdx));
   }, [variantIdx]);
+  const [designsOpen, setDesignsOpen] = useState(false);
+
+  // hawkinsIdx + setHawkinsIdx already declared above (line ~285) — reused by the Boxes variant
 
   const CLARITY = [
     'Sharp',
@@ -1123,70 +1135,455 @@ export default function FeelingCheckInCard() {
         boxShadow: '0 24px 50px -34px rgba(92,48,24,0.35)',
       }}
     >
-      {/* ─── Balance arc — the single design */}
+      {/* ─── Emotional register — 5 variants (pick the visual that fits the moment) */}
       <div className="flex flex-col items-center gap-2">
+        {/* Variant picker — collapsed by default behind a single "designs" toggle */}
+        <div className="mb-1 flex flex-col items-center gap-1.5">
+          <button
+            type="button"
+            onClick={() => setDesignsOpen((o) => !o)}
+            className="cursor-pointer rounded-full px-3 py-1 transition-all"
+            style={{
+              background: designsOpen ? '#C4A06020' : 'transparent',
+              border: `1px solid ${designsOpen ? '#C4A06060' : '#C4A06030'}`,
+              color: '#5C3018',
+              fontFamily: 'var(--font-serif)',
+              fontSize: '12px',
+              fontWeight: 600,
+              letterSpacing: '0.14em',
+              textTransform: 'uppercase',
+            }}
+          >
+            <span style={{ opacity: 0.7, marginRight: 8 }}>◇</span>
+            designs · {VARIANTS.find((v) => v.id === variantIdx)?.label ?? 'arc'}
+          </button>
+          {designsOpen && (
+            <div className="flex flex-wrap justify-center gap-1">
+              {VARIANTS.map((v) => {
+                const active = variantIdx === v.id;
+                return (
+                  <button
+                    key={v.id}
+                    type="button"
+                    onClick={() => {
+                      setVariantIdx(v.id);
+                      setDesignsOpen(false);
+                    }}
+                    className="cursor-pointer rounded-full px-2.5 py-1 transition-all"
+                    style={{
+                      background: active ? '#C4A06020' : 'transparent',
+                      border: `1px solid ${active ? '#C4A06060' : '#C4A06020'}`,
+                      color: active ? '#5C3018' : '#8A6A4A',
+                      fontFamily: 'var(--font-serif)',
+                      fontSize: '12px',
+                      fontWeight: active ? 700 : 500,
+                      letterSpacing: '0.12em',
+                      textTransform: 'uppercase',
+                    }}
+                  >
+                    {v.label}
+                  </button>
+                );
+              })}
+            </div>
+          )}
+        </div>
+
         <p
-          className="text-center text-[10px] font-semibold uppercase tracking-[0.22em]"
-          style={{ color: '#8A6A4A80' }}
+          className="text-center text-xs font-semibold uppercase tracking-[0.22em]"
+          style={{ color: '#8A6A4A' }}
         >
           Finding Balance
         </p>
-        <div className="relative" style={{ width: 300, height: 95 }}>
-          {(() => {
-            const W = 300;
-            const dotSize = 32;
-            const n = BALANCE.length;
-            const cy = 75;
-            const ry = 55; // arc height
-            return BALANCE.map((b, i) => {
-              // Linear x — evenly spaced left to right, no overlap
-              const x = ((W - dotSize) * i) / (n - 1);
-              // y traces a smooth cosine curve — true bow shape with visible apex
-              const angle = (i / (n - 1) - 0.5) * Math.PI;
-              const y = cy - ry * Math.cos(angle) - dotSize / 2;
-              const selected = balanceIdx === i;
-              return (
-                <button
-                  key={b.label}
-                  type="button"
-                  onClick={() => setBalanceIdx(i)}
-                  className="absolute flex cursor-pointer items-center justify-center rounded-full border transition-all hover:scale-110"
-                  style={{
-                    left: x,
-                    top: y,
-                    width: dotSize,
-                    height: dotSize,
-                    background: b.color,
-                    opacity: selected ? 1 : 0.7,
-                    borderColor: selected ? '#3A2416' : 'transparent',
-                    boxShadow: selected ? `0 4px 14px -4px ${b.color}` : 'none',
-                  }}
-                  title={b.label}
-                />
-              );
-            });
-          })()}
-          <svg
-            width="300"
-            height="95"
-            viewBox="0 0 300 95"
-            style={{ position: 'absolute', top: 0, left: 0, pointerEvents: 'none' }}
+
+        {/* Variant 1: Arc — cosine bow */}
+        {variantIdx === 1 && (
+          <div className="relative" style={{ width: 300, height: 95 }}>
+            {(() => {
+              const W = 300;
+              const dotSize = 32;
+              const n = BALANCE.length;
+              const cy = 75;
+              const ry = 55;
+              return BALANCE.map((b, i) => {
+                const x = ((W - dotSize) * i) / (n - 1);
+                const angle = (i / (n - 1) - 0.5) * Math.PI;
+                const y = cy - ry * Math.cos(angle) - dotSize / 2;
+                const selected = balanceIdx === i;
+                return (
+                  <button
+                    key={b.label}
+                    type="button"
+                    onClick={() => setBalanceIdx(i)}
+                    className="absolute flex cursor-pointer items-center justify-center rounded-full border transition-all hover:scale-110"
+                    style={{
+                      left: x,
+                      top: y,
+                      width: dotSize,
+                      height: dotSize,
+                      background: b.color,
+                      opacity: selected ? 1 : 0.7,
+                      borderColor: selected ? '#3A2416' : 'transparent',
+                      boxShadow: selected ? `0 4px 14px -4px ${b.color}` : 'none',
+                    }}
+                    title={b.label}
+                  />
+                );
+              });
+            })()}
+            <svg
+              width="300"
+              height="95"
+              viewBox="0 0 300 95"
+              style={{ position: 'absolute', top: 0, left: 0, pointerEvents: 'none' }}
+            >
+              <path
+                d="M 16 75 A 134 55 0 0 1 284 75"
+                fill="none"
+                stroke="#C4A06030"
+                strokeWidth="1"
+                strokeDasharray="2 4"
+              />
+            </svg>
+          </div>
+        )}
+
+        {/* Variant 2: Circle — single draggable color disc */}
+        {variantIdx === 2 && (
+          <div
+            className="relative flex items-center justify-center select-none"
+            style={{ width: 300, height: 95 }}
           >
-            {/* Arc connecting first dot center (16) to last dot center (284) */}
-            <path
-              d="M 16 75 A 134 55 0 0 1 284 75"
-              fill="none"
-              stroke="#C4A06030"
-              strokeWidth="1"
-              strokeDasharray="2 4"
+            <div
+              className="cursor-grab rounded-full transition-colors duration-500 active:cursor-grabbing"
+              style={{
+                width: 90,
+                height: 90,
+                background: BALANCE[balanceIdx].color,
+                boxShadow: `0 6px 20px -8px ${BALANCE[balanceIdx].color}, inset 0 2px 6px rgba(255,255,255,0.3)`,
+                touchAction: 'none',
+              }}
+              onClick={(e) => {
+                const rect = (e.target as HTMLElement).getBoundingClientRect();
+                const cx = rect.left + rect.width / 2;
+                if (e.clientX < cx && balanceIdx > 0) setBalanceIdx(balanceIdx - 1);
+                else if (e.clientX > cx && balanceIdx < BALANCE.length - 1)
+                  setBalanceIdx(balanceIdx + 1);
+              }}
+              onMouseDown={(e) => {
+                const startX = e.clientX;
+                const startIdx = balanceIdx;
+                const onMove = (ev: MouseEvent) => {
+                  const dx = ev.clientX - startX;
+                  const steps = Math.round(dx / 30);
+                  const next = Math.max(0, Math.min(BALANCE.length - 1, startIdx + steps));
+                  if (next !== balanceIdx) setBalanceIdx(next);
+                };
+                const onUp = () => {
+                  window.removeEventListener('mousemove', onMove);
+                  window.removeEventListener('mouseup', onUp);
+                };
+                window.addEventListener('mousemove', onMove);
+                window.addEventListener('mouseup', onUp);
+              }}
+              onTouchStart={(e) => {
+                const startX = e.touches[0].clientX;
+                const startIdx = balanceIdx;
+                const onMove = (ev: TouchEvent) => {
+                  ev.preventDefault();
+                  const dx = ev.touches[0].clientX - startX;
+                  const steps = Math.round(dx / 30);
+                  const next = Math.max(0, Math.min(BALANCE.length - 1, startIdx + steps));
+                  if (next !== balanceIdx) setBalanceIdx(next);
+                };
+                const onEnd = () => {
+                  window.removeEventListener('touchmove', onMove);
+                  window.removeEventListener('touchend', onEnd);
+                };
+                window.addEventListener('touchmove', onMove, { passive: false });
+                window.addEventListener('touchend', onEnd);
+              }}
             />
-          </svg>
-        </div>
+            {/* Position dots under the circle */}
+            <div className="absolute bottom-0 flex gap-1.5">
+              {BALANCE.map((b, i) => (
+                <span
+                  key={b.label}
+                  style={{
+                    width: 5,
+                    height: 5,
+                    borderRadius: '50%',
+                    background: i === balanceIdx ? b.color : '#8A6A4A30',
+                  }}
+                />
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Variant 3: Rings — concentric Hawkins-style rings */}
+        {variantIdx === 3 && (
+          <div className="relative" style={{ width: 300, height: 95 }}>
+            <svg width="300" height="95" viewBox="0 0 300 95">
+              {(() => {
+                const cx = 150;
+                const cy = 95;
+                const radii = [14, 24, 34, 44, 54, 64, 74];
+                return BALANCE.map((b, i) => {
+                  const selected = balanceIdx === i;
+                  return (
+                    <g key={b.label}>
+                      {/* Hitbox — wider transparent stroke */}
+                      <circle
+                        cx={cx}
+                        cy={cy}
+                        r={radii[i]}
+                        fill="none"
+                        stroke="transparent"
+                        strokeWidth={10}
+                        style={{ cursor: 'pointer' }}
+                        onClick={() => setBalanceIdx(i)}
+                      />
+                      {/* Visual stroke */}
+                      <circle
+                        cx={cx}
+                        cy={cy}
+                        r={radii[i]}
+                        fill="none"
+                        stroke={b.color}
+                        strokeWidth={selected ? 6 : 3}
+                        opacity={selected ? 1 : 0.3}
+                        style={{ pointerEvents: 'none', transition: 'all 200ms' }}
+                      />
+                    </g>
+                  );
+                });
+              })()}
+              {/* Center dot — current colour */}
+              <circle
+                cx={150}
+                cy={95}
+                r={6}
+                fill={BALANCE[balanceIdx].color}
+                style={{ pointerEvents: 'none' }}
+              />
+            </svg>
+          </div>
+        )}
+
+        {/* Variant 4: Mountain — stacked-bar terrain */}
+        {variantIdx === 4 && (
+          <div className="relative" style={{ width: 300, height: 95 }}>
+            {(() => {
+              const barW = 30;
+              const gap = 6;
+              const n = BALANCE.length;
+              const totalW = barW * n + gap * (n - 1);
+              const offsetX = (300 - totalW) / 2;
+              const heights = [28, 46, 64, 82, 64, 46, 28]; // bell curve
+              const baseY = 90;
+              return BALANCE.map((b, i) => {
+                const h = heights[i];
+                const x = offsetX + i * (barW + gap);
+                const y = baseY - h;
+                const selected = balanceIdx === i;
+                return (
+                  <button
+                    key={b.label}
+                    type="button"
+                    onClick={() => setBalanceIdx(i)}
+                    className="absolute cursor-pointer rounded-t-md border transition-all"
+                    style={{
+                      left: x,
+                      top: y,
+                      width: barW,
+                      height: h,
+                      background: b.color,
+                      opacity: selected ? 1 : 0.45,
+                      borderColor: selected ? '#3A2416' : 'transparent',
+                      borderBottomWidth: 0,
+                      boxShadow: selected ? `0 4px 14px -4px ${b.color}` : 'none',
+                    }}
+                    title={b.label}
+                  />
+                );
+              });
+            })()}
+          </div>
+        )}
+
+        {/* Variant 5: Slider — horizontal gradient + draggable handle */}
+        {variantIdx === 5 && (
+          <div
+            className="relative flex items-center justify-center select-none"
+            style={{ width: 300, height: 95 }}
+          >
+            {(() => {
+              const trackW = 260;
+              const trackH = 14;
+              const handleSize = 30;
+              const stepX = trackW / (BALANCE.length - 1);
+              const handleX = balanceIdx * stepX - handleSize / 2 + trackH / 2;
+              const gradient = `linear-gradient(90deg, ${BALANCE.map((b) => b.color).join(', ')})`;
+              const onPointerDown = (startClientX: number) => {
+                const track = document.getElementById('fcic-slider-track');
+                if (!track) return;
+                const rect = track.getBoundingClientRect();
+                const snap = (clientX: number) => {
+                  const raw = (clientX - rect.left) / rect.width;
+                  const clamped = Math.max(0, Math.min(1, raw));
+                  const idx = Math.round(clamped * (BALANCE.length - 1));
+                  if (idx !== balanceIdx) setBalanceIdx(idx);
+                };
+                snap(startClientX);
+                const onMove = (ev: MouseEvent) => snap(ev.clientX);
+                const onUp = () => {
+                  window.removeEventListener('mousemove', onMove);
+                  window.removeEventListener('mouseup', onUp);
+                };
+                window.addEventListener('mousemove', onMove);
+                window.addEventListener('mouseup', onUp);
+              };
+              const onTouch = (startClientX: number) => {
+                const track = document.getElementById('fcic-slider-track');
+                if (!track) return;
+                const rect = track.getBoundingClientRect();
+                const snap = (clientX: number) => {
+                  const raw = (clientX - rect.left) / rect.width;
+                  const clamped = Math.max(0, Math.min(1, raw));
+                  const idx = Math.round(clamped * (BALANCE.length - 1));
+                  if (idx !== balanceIdx) setBalanceIdx(idx);
+                };
+                snap(startClientX);
+                const onMove = (ev: TouchEvent) => {
+                  ev.preventDefault();
+                  snap(ev.touches[0].clientX);
+                };
+                const onEnd = () => {
+                  window.removeEventListener('touchmove', onMove);
+                  window.removeEventListener('touchend', onEnd);
+                };
+                window.addEventListener('touchmove', onMove, { passive: false });
+                window.addEventListener('touchend', onEnd);
+              };
+              return (
+                <div
+                  className="relative"
+                  style={{ width: trackW, height: handleSize, touchAction: 'none' }}
+                >
+                  {/* Gradient track */}
+                  <div
+                    id="fcic-slider-track"
+                    className="absolute left-0 right-0 cursor-pointer rounded-full"
+                    style={{
+                      top: (handleSize - trackH) / 2,
+                      height: trackH,
+                      background: gradient,
+                      boxShadow: 'inset 0 1px 3px rgba(92,48,24,0.2)',
+                    }}
+                    onMouseDown={(e) => onPointerDown(e.clientX)}
+                    onTouchStart={(e) => onTouch(e.touches[0].clientX)}
+                  />
+                  {/* Handle */}
+                  <div
+                    className="absolute cursor-grab rounded-full border-2 transition-all active:cursor-grabbing"
+                    style={{
+                      left: handleX,
+                      top: 0,
+                      width: handleSize,
+                      height: handleSize,
+                      background: BALANCE[balanceIdx].color,
+                      borderColor: '#3A2416',
+                      boxShadow: `0 4px 14px -4px ${BALANCE[balanceIdx].color}`,
+                      pointerEvents: 'none',
+                    }}
+                  />
+                </div>
+              );
+            })()}
+          </div>
+        )}
+
+        {/* Variant 6: Boxes — central circle with drawer bars on both sides */}
+        {variantIdx === 6 && (
+          <div
+            className="relative flex items-center justify-center"
+            style={{ width: 300, height: 95 }}
+          >
+            {(() => {
+              const stuck = HAWKINS.slice(0, 5); // Frozen → Overwhelmed
+              const free = HAWKINS.slice(5); // Searching → Liberation
+              const barW = 14;
+              const barH = 60;
+              const gap = 3; // negative space between drawers
+              const groupW = barW * 5 + gap * 4; // 82
+              const circleD = 70;
+              const sideGap = 14; // space between drawer group and circle
+              const totalW = groupW * 2 + circleD + sideGap * 2; // 82+70+82+28 = 262
+              const startX = (300 - totalW) / 2; // ≈ 19
+
+              const renderBar = (label: string, color: string, globalIdx: number, x: number) => {
+                const selected = hawkinsIdx === globalIdx;
+                return (
+                  <button
+                    key={label}
+                    type="button"
+                    onClick={() => setHawkinsIdx(globalIdx)}
+                    className="absolute cursor-pointer rounded-sm border transition-all"
+                    style={{
+                      left: x,
+                      top: (95 - barH) / 2,
+                      width: barW,
+                      height: barH,
+                      background: color,
+                      opacity: selected ? 1 : 0.35,
+                      borderColor: selected ? '#3A2416' : 'transparent',
+                      boxShadow: selected ? `0 4px 14px -4px ${color}` : 'none',
+                    }}
+                    title={label}
+                  />
+                );
+              };
+
+              return (
+                <>
+                  {/* Left drawers — stuck states (Frozen → Overwhelmed) */}
+                  {stuck.map((h, i) => {
+                    const x = startX + i * (barW + gap);
+                    return renderBar(h.level, h.color, i, x);
+                  })}
+                  {/* Central circle — current state */}
+                  <div
+                    className="absolute rounded-full transition-colors duration-300"
+                    style={{
+                      left: startX + groupW + sideGap,
+                      top: (95 - circleD) / 2,
+                      width: circleD,
+                      height: circleD,
+                      background: HAWKINS[hawkinsIdx].color,
+                      boxShadow: `0 6px 20px -8px ${HAWKINS[hawkinsIdx].color}, inset 0 2px 6px rgba(255,255,255,0.3)`,
+                    }}
+                  />
+                  {/* Right drawers — freedom states (Searching → Liberation) */}
+                  {free.map((h, i) => {
+                    const globalIdx = 5 + i;
+                    const x = startX + groupW + sideGap + circleD + sideGap + i * (barW + gap);
+                    return renderBar(h.level, h.color, globalIdx, x);
+                  })}
+                </>
+              );
+            })()}
+          </div>
+        )}
+
         <p
           className="text-center text-lg font-bold transition-all duration-300"
-          style={{ color: BALANCE[balanceIdx].color, fontFamily: 'var(--font-serif)' }}
+          style={{
+            color: variantIdx === 6 ? HAWKINS[hawkinsIdx].color : BALANCE[balanceIdx].color,
+            fontFamily: 'var(--font-serif)',
+          }}
         >
-          {BALANCE[balanceIdx].label}
+          {variantIdx === 6 ? HAWKINS[hawkinsIdx].level : BALANCE[balanceIdx].label}
         </p>
       </div>
 
@@ -1387,11 +1784,10 @@ export default function FeelingCheckInCard() {
                         onClick={() => setExpandedTodayId(isExpanded ? null : o.id)}
                         className="flex-1 cursor-pointer bg-transparent text-left"
                         style={{
-                          color: '#7a5438',
+                          color: o.done ? '#C4A060' : '#7a5438',
                           fontFamily: 'var(--font-handwritten)',
                           fontSize: '18px',
-                          opacity: o.done ? 0.45 : 0.9,
-                          textDecoration: o.done ? 'line-through' : 'none',
+                          opacity: o.done ? 0.85 : 0.95,
                           border: 'none',
                         }}
                         title="Click to open notes"
@@ -1492,11 +1888,10 @@ export default function FeelingCheckInCard() {
                   <span
                     className="flex-1"
                     style={{
-                      color: '#7a5438',
+                      color: t.done ? '#C4A060' : '#7a5438',
                       fontFamily: 'var(--font-handwritten)',
                       fontSize: '18px',
-                      opacity: t.done ? 0.45 : 0.9,
-                      textDecoration: t.done ? 'line-through' : 'none',
+                      opacity: t.done ? 0.85 : 0.95,
                     }}
                   >
                     {t.text}

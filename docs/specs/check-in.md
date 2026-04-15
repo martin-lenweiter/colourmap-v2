@@ -140,17 +140,45 @@ Below the arc, three soft cream-coloured rounded containers stack vertically. Ea
    - **Flow** (warm ochre) — `what is working well?`
    Entries appear behind a transparent `notes · N` pill that opens/closes the list. A `mixed / grouped` sub-toggle switches between chronological and stacked-by-tag views. Colors stay in the warm-brown palette throughout — no red/green semantics.
 
-### Removed From Box 1
+### Emotional-Register Variants (collapsed behind one toggle)
 
-- Multi-variant design picker (was 1..7 explorations of the same area)
-- Hawkins concentric rings, polygon vertices, mountain bars, radial rings, 3×5 grids, gradient-handle sliders — all design experiments
+The balance arc is the default, but six renderings of the same emotional level are available behind a single `◇ designs` toggle at the top of box 1. The row of variant pills only appears when the user opens the toggle — box 1 stays quiet by default. Selecting a variant closes the picker and persists the choice to localStorage (`colourmap:design-variant`).
+
+All six variants read from the same underlying level index so switching is free — no data reshape:
+
+1. **Arc** — the cosine bow described above (default).
+2. **Circle** — a single large colour disc. Drag horizontally or tap left/right halves to shift level.
+3. **Rings** — 7 concentric Hawkins-style rings stacked from small to large; current ring thickens and fully saturates, others fade. Tap any ring to select.
+4. **Mountain** — 7 vertical bars forming a bell-curve terrain profile across the width; current bar at full saturation, others faded.
+5. **Slider** — a horizontal gradient track (all 7 colours blended) with a draggable ochre-bordered handle that snaps to the 7 discrete positions.
+6. **Boxes** — a central colour circle flanked by two groups of vertical drawer-bars: five "stuck" states on the left (`Frozen → Overwhelmed`) and five "freedom" states on the right (`Searching → Liberation`). Uses the 10-level Hawkins process spectrum rather than the 7-level balance scale; picked level is reflected in the central circle. Negative space between drawers makes the grouping legible.
+
+The variants are kept as exploration scaffolding — "for now" — so the design language for the emotional anchor can keep evolving without re-rewriting box 1 each time.
+
+### Readability Rules (box 1 + box 2)
+
+- Minimum 12px for any visible text, always. No ultra-low opacity (<0.5) on text.
+- When a mission / objective / target is marked done (the V check), **no strike-through bar**. Readability is preserved — the text shifts to a lighter warm-ochre colour (`#C4A060`, opacity ~0.85) to signal "done" without burying the words.
+- `LifeCategories` targets and logbook entries match box 1's typography and sizing so the two boxes feel like one voice.
+
+### Removed From Box 1 (superseded by the settled direction)
+
 - "Ready to push?" energy slider
 - Standalone Next Objective `+` button and Done history pill (consolidated into Other Missions)
 - Old engagement scales (Avoiding → In Flow) and old 11-level mind/mode pastel sliders
 
 ### Why This Settled
 
-Iteration through 7+ variants for the same axis revealed there is no single perfect axis for "how am I." The product ships with **balance** as the chosen frame because the centre is the answer (equilibrium), not just a midpoint, and both extremes are valid contexts (rest is not failure, focus is not failure). The pillbox layout makes the check-in feel like distinct cards rather than a long form, and the click-to-expand notes on each daily objective preserve the "clarity-not-clutter" rule.
+Iteration through many variants for the same axis revealed there is no single perfect axis for "how am I." The product ships with **balance** as the default frame because the centre is the answer (equilibrium), not just a midpoint, and both extremes are valid contexts (rest is not failure, focus is not failure). The variants stay available behind one toggle so the visual language can keep evolving without collapsing back into a flat form. The pillbox layout makes the check-in feel like distinct cards rather than a long form, and the click-to-expand notes on each daily objective preserve the "clarity-not-clutter" rule.
+
+## Day Page Shell — Cockpit / Overview
+
+The top-level tabs on `/day` are `Cockpit` and `Overview`, not the old `Caring / Doing / Sharing`.
+
+- **Cockpit** — daily pulse. Holds box 1 (balance-arc check-in + pillboxes) and box 3 (the compass carousel that already swipes between Caring / Doing / Sharing compasses). The outer Caring/Doing/Sharing tabs were duplicating what the compass carousel already expresses, so they're gone.
+- **Overview** — wide-angle map. Holds box 2 (`LifeCategories`) — the backbone view of named life areas, their targets, and their logbook. Different altitude from the cockpit: step-back rather than daily pulse.
+
+Tab choice persists to localStorage (`colourmap:day-tab`). Cockpit is the default on first visit. `DoingCheckInCard` and `SharingCheckInCard` are no longer rendered on `/day` — their surface is covered by the compass carousel inside the cockpit.
 
 ## Dependencies
 

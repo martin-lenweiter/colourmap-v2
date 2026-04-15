@@ -1,30 +1,52 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 import { useStyle } from '@/components/StyleContext';
 
 /* ═══════════════════════════════════════════════════════════
-   DAY TABS — CARING / DOING / SHARING
+   DAY TABS — COCKPIT / OVERVIEW
+   Cockpit = daily pulse (balance arc + compass carousel).
+   Overview = wide-angle life categories map.
+   Caring / Doing / Sharing now live inside the compass carousel
+   in the cockpit — no need to duplicate them at the top level.
    ═══════════════════════════════════════════════════════════ */
 
-type Tab = 'feeling' | 'doing' | 'sharing';
+type Tab = 'cockpit' | 'overview';
 
 const TABS: { id: Tab; label: string }[] = [
-  { id: 'feeling', label: 'Caring' },
-  { id: 'doing', label: 'Doing' },
-  { id: 'sharing', label: 'Sharing' },
+  { id: 'cockpit', label: 'Cockpit' },
+  { id: 'overview', label: 'Overview' },
 ];
 
+const TAB_KEY = 'colourmap:day-tab';
+
 interface DayTabsProps {
-  feelingContent: React.ReactNode;
-  doingContent: React.ReactNode;
-  sharingContent: React.ReactNode;
+  cockpitContent: React.ReactNode;
+  overviewContent: React.ReactNode;
 }
 
-export default function DayTabs({ feelingContent, doingContent, sharingContent }: DayTabsProps) {
-  const [active, setActive] = useState<Tab>('feeling');
+export default function DayTabs({ cockpitContent, overviewContent }: DayTabsProps) {
+  const [active, setActive] = useState<Tab>('cockpit');
   const { style } = useStyle();
+
+  // Restore last-chosen tab on mount
+  useEffect(() => {
+    try {
+      const stored = localStorage.getItem(TAB_KEY);
+      if (stored === 'cockpit' || stored === 'overview') setActive(stored);
+    } catch {
+      /* silent */
+    }
+  }, []);
+
+  useEffect(() => {
+    try {
+      localStorage.setItem(TAB_KEY, active);
+    } catch {
+      /* silent */
+    }
+  }, [active]);
 
   return (
     <div className="space-y-4">
@@ -55,9 +77,8 @@ export default function DayTabs({ feelingContent, doingContent, sharingContent }
 
       {/* Content */}
       <div className="animate-in fade-in duration-200">
-        {active === 'feeling' && feelingContent}
-        {active === 'doing' && doingContent}
-        {active === 'sharing' && sharingContent}
+        {active === 'cockpit' && cockpitContent}
+        {active === 'overview' && overviewContent}
       </div>
     </div>
   );

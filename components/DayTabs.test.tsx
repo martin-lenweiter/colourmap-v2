@@ -1,6 +1,7 @@
 // @vitest-environment jsdom
-import { render, screen } from '@testing-library/react';
-import { describe, expect, it, vi } from 'vitest';
+import { cleanup, render, screen } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import DayTabs from './DayTabs';
 
@@ -17,27 +18,40 @@ vi.mock('@/components/StyleContext', () => ({
 }));
 
 describe('DayTabs', () => {
-  it('renders three tab buttons', () => {
-    render(
-      <DayTabs
-        feelingContent={<div>feeling</div>}
-        doingContent={<div>doing</div>}
-        sharingContent={<div>sharing</div>}
-      />,
-    );
-    expect(screen.getByText('Caring')).toBeDefined();
-    expect(screen.getByText('Doing')).toBeDefined();
-    expect(screen.getByText('Sharing')).toBeDefined();
+  beforeEach(() => {
+    localStorage.clear();
   });
 
-  it('shows feeling content by default', () => {
+  afterEach(() => {
+    cleanup();
+    localStorage.clear();
+  });
+
+  it('renders the two top-level tabs: Cockpit and Overview', () => {
+    render(<DayTabs cockpitContent={<div>cockpit</div>} overviewContent={<div>overview</div>} />);
+    expect(screen.getByText('Cockpit')).toBeDefined();
+    expect(screen.getByText('Overview')).toBeDefined();
+  });
+
+  it('shows cockpit content by default', () => {
     render(
       <DayTabs
-        feelingContent={<div>feeling-content</div>}
-        doingContent={<div>doing-content</div>}
-        sharingContent={<div>sharing-content</div>}
+        cockpitContent={<div>cockpit-content</div>}
+        overviewContent={<div>overview-content</div>}
       />,
     );
-    expect(screen.getByText('feeling-content')).toBeDefined();
+    expect(screen.getByText('cockpit-content')).toBeDefined();
+  });
+
+  it('switches to overview when the Overview tab is clicked', async () => {
+    const user = userEvent.setup();
+    render(
+      <DayTabs
+        cockpitContent={<div>cockpit-content</div>}
+        overviewContent={<div>overview-content</div>}
+      />,
+    );
+    await user.click(screen.getByText('Overview'));
+    expect(screen.getByText('overview-content')).toBeDefined();
   });
 });

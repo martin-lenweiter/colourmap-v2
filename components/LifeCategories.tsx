@@ -1006,8 +1006,8 @@ export default function LifeCategories() {
                   {/* Targets */}
                   <div>
                     <p
-                      className="mb-2 text-xs font-semibold uppercase tracking-wider"
-                      style={{ color: cat.color, opacity: 0.7 }}
+                      className="mb-2 font-semibold uppercase tracking-wider"
+                      style={{ color: cat.color, fontSize: '12px' }}
                     >
                       Targets
                     </p>
@@ -1042,9 +1042,9 @@ export default function LifeCategories() {
                       </div>
                     ))}
 
-                    {/* Done targets */}
+                    {/* Done targets — readable, no strike, lighter ochre to signal done */}
                     {doneTargets.map((t) => (
-                      <div key={t.id} className="group flex items-center gap-2 py-1 opacity-40">
+                      <div key={t.id} className="group flex items-center gap-2 py-1">
                         <button
                           type="button"
                           onClick={() => toggleTarget(t.id)}
@@ -1056,11 +1056,12 @@ export default function LifeCategories() {
                           </span>
                         </button>
                         <span
-                          className="flex-1 text-sm line-through"
+                          className="flex-1"
                           style={{
-                            color: '#5C3018',
+                            color: '#C4A060',
                             fontFamily: 'var(--font-handwritten)',
                             fontSize: '15px',
+                            opacity: 0.85,
                           }}
                         >
                           {t.text}
@@ -1087,7 +1088,7 @@ export default function LifeCategories() {
                         if (e.key === 'Enter') addTarget(cat.id);
                       }}
                       placeholder="+ add target..."
-                      className="mt-1 w-full border-b bg-transparent pb-1 outline-none placeholder:opacity-30"
+                      className="mt-1 w-full border-b bg-transparent pb-1 outline-none placeholder:opacity-50"
                       style={{
                         borderColor: `${cat.color}15`,
                         color: '#5C3018',
@@ -1108,8 +1109,8 @@ export default function LifeCategories() {
                   {/* Logbook */}
                   <div>
                     <p
-                      className="mb-2 text-xs font-semibold uppercase tracking-wider"
-                      style={{ color: '#8A6A4A', opacity: 0.5 }}
+                      className="mb-2 font-semibold uppercase tracking-wider"
+                      style={{ color: cat.color, fontSize: '12px' }}
                     >
                       Logbook
                     </p>
@@ -1124,7 +1125,7 @@ export default function LifeCategories() {
                         if (e.key === 'Enter') addLog(cat.id);
                       }}
                       placeholder="How's it going..."
-                      className="mb-2 w-full border-b bg-transparent pb-1.5 outline-none placeholder:opacity-30"
+                      className="mb-2 w-full border-b bg-transparent pb-1.5 outline-none placeholder:opacity-50"
                       style={{
                         borderColor: '#8A6A4A15',
                         color: '#5C3018',
@@ -1141,17 +1142,18 @@ export default function LifeCategories() {
                           return (
                             <div key={log.id} className="group flex items-start gap-2">
                               <span
-                                className="shrink-0 pt-0.5 text-xs"
-                                style={{ color: '#8A6A4A40' }}
+                                className="shrink-0 pt-0.5"
+                                style={{ color: '#8A6A4A', fontSize: '12px', opacity: 0.75 }}
                               >
                                 {dateStr}
                               </span>
                               <span
-                                className="flex-1 text-sm"
+                                className="flex-1"
                                 style={{
                                   color: '#5C3018',
                                   fontFamily: 'var(--font-handwritten)',
-                                  lineHeight: '1.4',
+                                  fontSize: '15px',
+                                  lineHeight: '1.5',
                                 }}
                               >
                                 {log.text}
@@ -1176,8 +1178,7 @@ export default function LifeCategories() {
                     <button
                       type="button"
                       onClick={() => deleteCategory(cat.id)}
-                      className="text-xs"
-                      style={{ color: '#8A6A4A40' }}
+                      style={{ color: '#8A6A4A', fontSize: '12px', opacity: 0.7 }}
                     >
                       remove
                     </button>
