@@ -1971,6 +1971,67 @@ export default function FeelingCheckInCard() {
 
         {logbookSectionOpen && (
           <>
+            {/* Hawkins emotional slider — Shame → Peace, 10 squares.
+                Lives inside the Logbook & Emotions pill so it only appears
+                when you're actually opening the emotional reflection layer. */}
+            <div className="flex flex-col items-center gap-1.5 pb-2">
+              <p
+                className="uppercase"
+                style={{
+                  color: '#8A6A4A',
+                  fontSize: '11px',
+                  fontWeight: 600,
+                  letterSpacing: '0.18em',
+                }}
+              >
+                where am I in the process
+              </p>
+              <div className="relative" style={{ width: 280, height: 28 }}>
+                {(() => {
+                  const sq = 20;
+                  const gap = 6;
+                  const totalW = HAWKINS.length * sq + (HAWKINS.length - 1) * gap;
+                  const offsetX = (280 - totalW) / 2;
+                  const baseY = (28 - sq) / 2;
+                  return HAWKINS.map((h, i) => {
+                    const selected = hawkinsIdx === i;
+                    const x = offsetX + i * (sq + gap);
+                    return (
+                      <button
+                        key={h.level}
+                        type="button"
+                        onClick={() => setHawkinsIdx(i)}
+                        className="absolute cursor-pointer rounded-[3px] transition-all"
+                        style={{
+                          left: x,
+                          top: baseY,
+                          width: sq,
+                          height: sq,
+                          background: h.color,
+                          opacity: selected ? 1 : 0.35,
+                          border: 'none',
+                          transform: selected ? 'scale(1.15)' : 'scale(1)',
+                          boxShadow: selected ? `0 4px 14px -4px ${h.color}` : 'none',
+                        }}
+                        title={h.level}
+                      />
+                    );
+                  });
+                })()}
+              </div>
+              <p
+                style={{
+                  color: HAWKINS[hawkinsIdx].color,
+                  fontFamily: 'var(--font-serif)',
+                  fontSize: '14px',
+                  fontWeight: 600,
+                  opacity: 0.9,
+                }}
+              >
+                {HAWKINS[hawkinsIdx].level}
+              </p>
+            </div>
+
             {/* Two writing spots — challenge (top) + flow (bottom, ochre) */}
             <div className="space-y-2">
               {/* CHALLENGE — label + question on one line */}
@@ -2219,67 +2280,6 @@ export default function FeelingCheckInCard() {
             )}
           </>
         )}
-      </div>
-
-      {/* Hawkins process slider — sits above the save star so the discrete check-in
-          entry can capture where on the Frozen → Liberation arc you are. Uses the
-          same drawer-block vocabulary as the Boxes variant: 10 narrow blocks. */}
-      <div className="flex flex-col items-center gap-1.5">
-        <p
-          className="uppercase"
-          style={{
-            color: '#8A6A4A',
-            fontSize: '11px',
-            fontWeight: 600,
-            letterSpacing: '0.18em',
-          }}
-        >
-          where am I in the process
-        </p>
-        <div className="relative" style={{ width: 280, height: 28 }}>
-          {(() => {
-            const sq = 20; // square block edge
-            const gap = 6;
-            const totalW = HAWKINS.length * sq + (HAWKINS.length - 1) * gap;
-            const offsetX = (280 - totalW) / 2;
-            const baseY = (28 - sq) / 2;
-            return HAWKINS.map((h, i) => {
-              const selected = hawkinsIdx === i;
-              const x = offsetX + i * (sq + gap);
-              return (
-                <button
-                  key={h.level}
-                  type="button"
-                  onClick={() => setHawkinsIdx(i)}
-                  className="absolute cursor-pointer rounded-[3px] transition-all"
-                  style={{
-                    left: x,
-                    top: baseY,
-                    width: sq,
-                    height: sq,
-                    background: h.color,
-                    opacity: selected ? 1 : 0.35,
-                    border: 'none',
-                    transform: selected ? 'scale(1.15)' : 'scale(1)',
-                    boxShadow: selected ? `0 4px 14px -4px ${h.color}` : 'none',
-                  }}
-                  title={h.level}
-                />
-              );
-            });
-          })()}
-        </div>
-        <p
-          style={{
-            color: HAWKINS[hawkinsIdx].color,
-            fontFamily: 'var(--font-serif)',
-            fontSize: '14px',
-            fontWeight: 600,
-            opacity: 0.9,
-          }}
-        >
-          {HAWKINS[hawkinsIdx].level}
-        </p>
       </div>
 
       {/* Save star — quick save without opening losange */}

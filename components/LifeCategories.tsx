@@ -193,7 +193,7 @@ export default function LifeCategories() {
   const [logInput, setLogInput] = useState<Record<string, string>>({});
 
   // View mode: list (dots+titles), polygon (geometry), cells (organic), river (time + ratings)
-  const [viewMode, setViewMode] = useState<'list' | 'polygon' | 'cells' | 'river'>('list');
+  const [viewMode, setViewMode] = useState<'list' | 'polygon' | 'cells' | 'river'>('polygon');
   const [riverSnapshots, setRiverSnapshots] = useState<RiverSnapshot[]>([]);
   const [cellPositions, setCellPositions] = useState<Record<string, { x: number; y: number }>>({});
   const dragRef = useRef<{
@@ -571,8 +571,9 @@ export default function LifeCategories() {
                   const ct = catTargets(cat.id);
                   const progress = catProgress(cat.id);
                   const totalDone = progress.total > 0 ? progress.done / progress.total : 0;
-                  // Size: 22 base + progress glow
-                  const r = 18 + Math.min(10, ct.length * 1.5);
+                  // Uniform vertex size — every category reads as equal weight.
+                  // The shape itself communicates "all of these matter the same."
+                  const r = 22;
                   return (
                     <g
                       key={cat.id}
