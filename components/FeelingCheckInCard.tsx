@@ -1151,13 +1151,12 @@ export default function FeelingCheckInCard() {
           }}
         >
           <span
-            className="rotate-45"
             style={{
-              width: 9,
-              height: 9,
-              background: '#C4A060',
+              width: 12,
+              height: 12,
+              background: '#D8BE94',
               opacity: 1,
-              borderRadius: 1,
+              borderRadius: '50%',
               display: 'block',
             }}
           />

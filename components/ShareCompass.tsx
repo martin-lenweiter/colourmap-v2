@@ -296,13 +296,12 @@ export default function ShareCompass() {
             }}
           >
             <span
-              className="rotate-45"
               style={{
-                width: 9,
-                height: 9,
-                background: '#6B7F4E',
+                width: 12,
+                height: 12,
+                background: '#D8BE94',
                 opacity: 1,
-                borderRadius: 1,
+                borderRadius: '50%',
                 display: 'block',
               }}
             />

@@ -296,13 +296,12 @@ export default function StarCompass() {
             }}
           >
             <span
-              className="rotate-45"
               style={{
-                width: 9,
-                height: 9,
-                background: '#7A9A7A',
+                width: 12,
+                height: 12,
+                background: '#D8BE94',
                 opacity: 1,
-                borderRadius: 1,
+                borderRadius: '50%',
                 display: 'block',
               }}
             />
