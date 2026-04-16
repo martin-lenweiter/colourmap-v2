@@ -43,6 +43,8 @@ function loadArr<T>(key: string): T[] {
 export default function OverviewSections() {
   const [categories, setCategories] = useState<LifeCategory[]>([]);
   const [logs, setLogs] = useState<LogEntry[]>([]);
+  // Per-category inline input values, keyed by categoryId
+  const [drafts, setDrafts] = useState<Record<string, string>>({});
 
   // Refresh from localStorage on mount + on storage events (so the component
   // stays in sync when the user edits categories / logs elsewhere on the page).
@@ -64,6 +66,26 @@ export default function OverviewSections() {
       window.clearInterval(interval);
     };
   }, []);
+
+  // Append a new log entry for the given category, persist, clear the draft.
+  const addEntry = (categoryId: string) => {
+    const text = (drafts[categoryId] ?? '').trim();
+    if (!text) return;
+    const entry: LogEntry = {
+      id: crypto.randomUUID(),
+      categoryId,
+      text,
+      createdAt: new Date().toISOString(),
+    };
+    const next = [entry, ...logs];
+    setLogs(next);
+    try {
+      localStorage.setItem(LOG_KEY, JSON.stringify(next));
+    } catch {
+      /* silent */
+    }
+    setDrafts((prev) => ({ ...prev, [categoryId]: '' }));
+  };
 
   // Compute per-category "last entry" metadata.
   const now = new Date();
@@ -131,12 +153,20 @@ export default function OverviewSections() {
             emptyText="Mark a category as flowing to see it here."
             items={flowing}
             accent="#7AAA58"
+            drafts={drafts}
+            setDrafts={setDrafts}
+            onAdd={addEntry}
+            writable
           />
           <OverviewSection
             title="What is stuck"
             emptyText="Mark a category as stuck to see it here."
             items={stuck}
             accent="#A05A40"
+            drafts={drafts}
+            setDrafts={setDrafts}
+            onAdd={addEntry}
+            writable
           />
           {neglected.length > 0 && (
             <OverviewSection
@@ -161,9 +191,25 @@ interface SectionProps {
   items: { cat: LifeCategory; lastLog: LogEntry | null; daysSince: number }[];
   accent: string;
   muted?: boolean;
+  /** When true, shows an inline text input per row for adding a logbook entry. */
+  writable?: boolean;
+  drafts?: Record<string, string>;
+  setDrafts?: React.Dispatch<React.SetStateAction<Record<string, string>>>;
+  onAdd?: (categoryId: string) => void;
 }
 
-function OverviewSection({ title, subtitle, emptyText, items, accent, muted }: SectionProps) {
+function OverviewSection({
+  title,
+  subtitle,
+  emptyText,
+  items,
+  accent,
+  muted,
+  writable,
+  drafts,
+  setDrafts,
+  onAdd,
+}: SectionProps) {
   return (
     <div>
       <div className="mb-2 flex items-baseline gap-2">
@@ -262,6 +308,25 @@ function OverviewSection({ title, subtitle, emptyText, items, accent, muted }: S
                   >
                     no entries yet
                   </p>
+                )}
+                {writable && drafts && setDrafts && onAdd && (
+                  <input
+                    type="text"
+                    value={drafts[cat.id] ?? ''}
+                    onChange={(e) => setDrafts((prev) => ({ ...prev, [cat.id]: e.target.value }))}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') onAdd(cat.id);
+                    }}
+                    onBlur={() => onAdd(cat.id)}
+                    placeholder="+ what's going on..."
+                    className="mt-1.5 w-full border-b bg-transparent pb-1 outline-none placeholder:opacity-45"
+                    style={{
+                      color: '#5C3018',
+                      borderColor: `${accent}30`,
+                      fontFamily: 'var(--font-handwritten)',
+                      fontSize: '15px',
+                    }}
+                  />
                 )}
               </div>
             </li>
