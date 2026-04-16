@@ -59,14 +59,14 @@ export default function DayTabs({ checkinContent, overviewContent }: DayTabsProp
               key={tab.id}
               type="button"
               onClick={() => setActive(tab.id)}
-              className="flex-1 cursor-pointer rounded-xl py-2.5 uppercase tracking-[0.22em] transition-all duration-200"
+              className="flex-1 cursor-pointer rounded-xl py-3.5 uppercase tracking-[0.22em] transition-all duration-200"
               style={{
                 background: isActive ? '#C4A06018' : 'transparent',
                 border: `1.5px solid ${isActive ? '#C4A060' : 'hsl(var(--border) / 0.25)'}`,
                 color: 'hsl(var(--foreground))',
                 fontFamily: style.headingFont,
-                fontSize: style.titleSize,
-                fontWeight: style.weight.title,
+                fontSize: '16px',
+                fontWeight: isActive ? 700 : 600,
               }}
             >
               {tab.label}

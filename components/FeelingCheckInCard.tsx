@@ -2154,15 +2154,16 @@ export default function FeelingCheckInCard() {
                 />
               </button>
 
-              <div className="relative" style={{ width: 280, height: 36 }}>
+              <div className="relative" style={{ width: 300, height: 36 }}>
                 {(() => {
                   if (hawkinsStyle === 'losanges') {
-                    // LOSANGES style — rotated squares (diamonds). Slightly larger
-                    // cell size + wider gap so the diagonal corners don't overlap.
+                    // LOSANGES — rotated squares (diamonds). A rotated 18px square
+                    // visually occupies ~25.4px diagonal, so gap 13 yields ~4px
+                    // clean negative space between adjacent losanges.
                     const sq = 18;
-                    const gap = 9;
+                    const gap = 13;
                     const totalW = HAWKINS.length * sq + (HAWKINS.length - 1) * gap;
-                    const offsetX = (280 - totalW) / 2;
+                    const offsetX = (300 - totalW) / 2;
                     const baseY = (36 - sq) / 2;
                     return HAWKINS.map((h, i) => {
                       const selected = hawkinsIdx === i;
@@ -2195,7 +2196,7 @@ export default function FeelingCheckInCard() {
                     // same vocabulary as variant 1 (arc) but flat instead of bowed.
                     const dotSize = 22;
                     const totalW = HAWKINS.length * dotSize + (HAWKINS.length - 1) * 6;
-                    const offsetX = (280 - totalW) / 2;
+                    const offsetX = (300 - totalW) / 2;
                     const baseY = (28 - dotSize) / 2;
                     return HAWKINS.map((h, i) => {
                       const selected = hawkinsIdx === i;
