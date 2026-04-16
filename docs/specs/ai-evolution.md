@@ -151,6 +151,28 @@ The AI accumulates understanding across every data source in the product: check-
 
 The organizing comes first. The orienting is earned.
 
+### Suggested Themes (product-proposed + explained)
+
+> Decided 2026-04-16 on the Overview thread. Target design for the AI phase.
+
+The user names the areas of their life they want to watch (`LifeCategories`). That naming stays the user's — never overwritten. In parallel, the product surfaces **suggested themes**: patterns the AI discovers across categories, check-ins, and logbook entries that the user has not explicitly named.
+
+A suggested theme always comes with a **reason**. Not just "confidence" as a pill — rather "confidence — because 'not enough' shows up in 4 of your categories over the last 3 weeks." The explanation is first-class, not a hover. Without the reason, it reads as a magic label; with it, it reads as a mirror.
+
+Acceptance behaviour:
+
+- The user can accept a suggested theme (it promotes into a real category they can track), dismiss it (it disappears and the AI deprioritises similar clusters), or leave it as a read-only observation.
+- Accepted themes become first-class categories and can be renamed. The user always gets to rename.
+- Dismissed themes don't vanish forever — the AI can re-surface them if the evidence gets stronger, but with a delay so the user isn't nagged.
+
+Why this shape:
+
+- Users often can't see the meta-pattern across their own language (five categories all about "control" look like five different categories to them). The product surfacing the cluster + the reason is the specific job the user can't do for themselves.
+- Explanation prevents the "magic label" failure mode — a word without evidence reads as opinion, not observation, and erodes trust.
+- Product suggests, user confirms. Matches the product principle "the AI proposes, the user confirms."
+
+**Status: unsolved for now.** Needs: (a) a semantic layer that clusters categories and entries; (b) a data-source signal strong enough to justify an explanation; (c) a UI surface on Overview that shows the suggestion without stealing focus from the user-named categories. Come back to this when the AI phase starts (Phase 2+ in The Road below).
+
 ### What the AI Replaces
 
 The living map absorbs three current features into one adaptive view:
