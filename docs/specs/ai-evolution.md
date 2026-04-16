@@ -211,6 +211,14 @@ The boundary is drawn here because it's the clearest economic division: free use
 
 Other AI features in the product (post-check-in insight, Cat companion, Logbook AI support, Music generation) — their free/paid treatment is decided separately and not covered by this section.
 
+**Same base, AI overlays on top (decided 2026-04-16).** Free and paid users see an *identical* Overview core — same categories, same trajectories, same entries, same targets, same polygon view. The paid tier adds an AI layer that sits *on top of* the base, never replacing it. A paid user who stops paying keeps everything they had; they just stop seeing the AI layer. A free user who upgrades gains reflection on top of data they already recognise.
+
+Design constraints this puts on the AI layer:
+
+- It must be visually and functionally separable from the base — no restructuring the base view to make room for AI output.
+- Base Overview must read as complete on its own. Free users can't see text that references "themes I see" because they don't have that layer.
+- AI additions arrive as overlays: ribbons, badges, annotations, dedicated cards. Not re-orderings or recolourings of base content.
+
 ### What the AI Replaces
 
 The living map absorbs three current features into one adaptive view:
