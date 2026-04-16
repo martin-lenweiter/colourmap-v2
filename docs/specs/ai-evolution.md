@@ -35,6 +35,23 @@ The AI's primary tool is not answers — it's questions.
 
 For every challenge, every block, every category: the AI asks the question that unlocks the next step of thinking. Not generic prompts. The right question at the right time, informed by everything the user has already shared.
 
+### The Core Listening Questions
+
+Two questions sit at the core of the product. They are the shape of every AI reflection, every prompt, every weekly digest. Not "what should you do" — **"what is this telling you?"**
+
+- **What are all these challenges telling you?**
+- **What is your body telling you?**
+
+These are listening questions, not solving questions. They presume that the pattern the user has been living (the recurring challenges, the bodily signals) already contains information worth paying attention to — the product's job is to help the user hear it.
+
+Every reflective output in Colourmap — the AI's short sentence back after a capture, the weekly digest, the Synthesis Surface's observations, the Suggested Themes explanations — should ultimately serve one of these two questions. If a reflection answers "what should I do," it has slipped into coach mode. If it answers "what is this telling me," it stays a mirror.
+
+Why these two specifically:
+- **Challenges telling you something** — captures the recurring-problem pattern. The same challenge returning month after month isn't a failure to fix it; it's a message. The product's job is to name the message, not resolve the challenge.
+- **Body telling you something** — captures the somatic signal. The subconscious speaks through the body (tension, tiredness, tunnel vision, heaviness) before it speaks through words. Listening to it is the fastest path from reactive to observational (the "clarity is the metric" move).
+
+These questions are not displayed literally on the UI every time. They're the *frame* the product writes from. A weekly digest might read "your Shoulder challenge has appeared in 4 of the last 5 weeks" — the unstated question underneath is "what are your challenges telling you?"
+
 ### The River Metaphor
 
 The user's life is a river. Challenges are not enemies — they are **blocks in the river**. Each block is there for a reason. Each block is a tool to think better, to understand something about yourself. The app doesn't remove the blocks. It helps you work your attitude around them, so you can come back stronger to lift them — and the river flows again.
