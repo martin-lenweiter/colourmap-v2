@@ -173,6 +173,33 @@ Why this shape:
 
 **Status: unsolved for now.** Needs: (a) a semantic layer that clusters categories and entries; (b) a data-source signal strong enough to justify an explanation; (c) a UI surface on Overview that shows the suggestion without stealing focus from the user-named categories. Come back to this when the AI phase starts (Phase 2+ in The Road below).
 
+### Synthesis Surface — the bigger vision of Overview
+
+> Added 2026-04-16. Captures the user's stated aspiration for what Overview is ultimately for.
+
+Overview is the **connective tissue between micro and macro** — the piece of the product that takes a day's fragment (a line in Challenge, a logbook note, a checked target, a voice dump) and shows where it sits in the larger pattern the user is living.
+
+Input model (ideal):
+
+- Unstructured voice dumps ("big audio") — transcribed and ingested alongside written text.
+- Written notes across any surface (logbook, Challenge/Flow, category entries, day map observations).
+- Structured signals — target completions, check-in values (Hawkins, Balance, compass ratings), time spent on day-map categories.
+- One feeling trajectory, not per-area. The whole-self has a zone state; individual categories are inputs to it, not separate emotional channels.
+
+Output model (ideal):
+
+- Clustering — themes that recur across notes get grouped and named (with evidence, see above).
+- Relationships — how clusters move together. "Shoulder, sleep, and confidence have shifted in the same direction this month." "Organisation and anxiety haven't correlated at all — doing the desk isn't moving the feeling." Relationships are as important as labels; they're the actual diagnostic.
+- Mirror voice — every observation shows its evidence, never prescribes. The coach layer is optional, user-invoked (see "Mirror First, Coach When Asked").
+
+Why this shape:
+
+- The user can't see meta-patterns or correlations across their own unstructured dumps. That's the one job humans genuinely need software for — everything else they can do alone with a notebook.
+- Voice makes capture frictionless. Structure comes from the AI, not from the user's discipline. If the user has to slot everything into pre-made categories, they'll stop capturing.
+- The macro/micro bridge is what converts journaling-style capture into self-understanding. Without it, Colourmap is just another diary.
+
+Status: aspirational. Requires voice input + transcription (currently a V1 non-goal in `docs/product.md` — to be revisited), a semantic layer over all notes/entries, clustering, and relationship inference. The pre-AI Overview should remain honest about its limits: it *gathers* but does not *synthesise* until the AI phase is real.
+
 ### What the AI Replaces
 
 The living map absorbs three current features into one adaptive view:
