@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
+import CategoryTagPicker from '@/components/CategoryTagPicker';
 import { DoingContent } from '@/components/DoingCheckInCard';
 
 /* ═══════════════════════════════════════════════════════════
@@ -301,7 +302,14 @@ export default function FeelingCheckInCard() {
   });
   const [emotionInput, setEmotionInput] = useState('');
   const [sessionEmotions, setSessionEmotions] = useState<
-    { time: string; text: string; mind: string; mindColor: string }[]
+    {
+      time: string;
+      text: string;
+      mind: string;
+      mindColor: string;
+      tag?: string;
+      tagColor?: string;
+    }[]
   >(() => {
     try {
       return JSON.parse(localStorage.getItem('colourmap:session-emotions') || '[]');
@@ -309,6 +317,26 @@ export default function FeelingCheckInCard() {
       return [];
     }
   });
+  // In-progress tag picked for the next challenge/flow entry. Reset after save.
+  const [challengeTag, setChallengeTag] = useState<{ name: string; color: string } | null>(null);
+  const [flowTag, setFlowTag] = useState<{ name: string; color: string } | null>(null);
+  const [showChallengeTagPicker, setShowChallengeTagPicker] = useState(false);
+  const [showFlowTagPicker, setShowFlowTagPicker] = useState(false);
+  // Static compass axis options (Caring / Doing / Sharing) — offered alongside user-named life categories
+  const COMPASS_AXES: { name: string; color: string; group: string }[] = [
+    { name: 'Care', color: '#D4805A', group: 'Caring' },
+    { name: 'Attitude', color: '#C4A070', group: 'Caring' },
+    { name: 'Rest', color: '#C4906A', group: 'Caring' },
+    { name: 'Emotions', color: '#B07A5A', group: 'Caring' },
+    { name: 'Clarity', color: '#7AAA58', group: 'Doing' },
+    { name: 'Target', color: '#7A9A7A', group: 'Doing' },
+    { name: 'Resources', color: '#8AB0A0', group: 'Doing' },
+    { name: 'Action', color: '#9AB090', group: 'Doing' },
+    { name: 'Voice', color: '#6B7F4E', group: 'Sharing' },
+    { name: 'Listen', color: '#8CA46E', group: 'Sharing' },
+    { name: 'Bond', color: '#7B9560', group: 'Sharing' },
+    { name: 'Boundary', color: '#5F7447', group: 'Sharing' },
+  ];
   const [nextObjectives, setNextObjectives] = useState<string[]>(() => {
     try {
       return JSON.parse(localStorage.getItem('colourmap:next-objectives') || '[]');
@@ -616,9 +644,11 @@ export default function FeelingCheckInCard() {
         text,
         mind: 'challenge',
         mindColor: '#A05A40',
+        ...(challengeTag && { tag: challengeTag.name, tagColor: challengeTag.color }),
       },
     ]);
     setChallengeInput('');
+    setChallengeTag(null);
   };
   const saveFlow = () => {
     const text = flowInput.trim();
@@ -630,9 +660,11 @@ export default function FeelingCheckInCard() {
         text,
         mind: 'flow',
         mindColor: '#C4A060',
+        ...(flowTag && { tag: flowTag.name, tagColor: flowTag.color }),
       },
     ]);
     setFlowInput('');
+    setFlowTag(null);
   };
 
   // Today's objectives — multiple things planned for today
@@ -2392,21 +2424,32 @@ export default function FeelingCheckInCard() {
                     · what is your main tension right now?
                   </span>
                 </div>
-                <input
-                  type="text"
-                  value={challengeInput}
-                  onChange={(e) => setChallengeInput(e.target.value)}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter') saveChallenge();
-                  }}
-                  className="w-full border-b bg-transparent pb-1 outline-none"
-                  style={{
-                    color: '#7a5438',
-                    borderColor: '#A05A4030',
-                    fontFamily: 'var(--font-handwritten)',
-                    fontSize: '20px',
-                  }}
-                />
+                <div className="relative flex items-end gap-2">
+                  <input
+                    type="text"
+                    value={challengeInput}
+                    onChange={(e) => setChallengeInput(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') saveChallenge();
+                    }}
+                    className="flex-1 border-b bg-transparent pb-1 outline-none"
+                    style={{
+                      color: '#7a5438',
+                      borderColor: '#A05A4030',
+                      fontFamily: 'var(--font-handwritten)',
+                      fontSize: '20px',
+                    }}
+                  />
+                  <CategoryTagPicker
+                    value={challengeTag}
+                    onChange={setChallengeTag}
+                    open={showChallengeTagPicker}
+                    onToggle={() => setShowChallengeTagPicker((o) => !o)}
+                    onClose={() => setShowChallengeTagPicker(false)}
+                    lifeCategories={lifeCategories}
+                    compassAxes={COMPASS_AXES}
+                  />
+                </div>
               </div>
 
               {/* FLOW — label + question on one line */}
@@ -2434,21 +2477,32 @@ export default function FeelingCheckInCard() {
                     · what is working well?
                   </span>
                 </div>
-                <input
-                  type="text"
-                  value={flowInput}
-                  onChange={(e) => setFlowInput(e.target.value)}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter') saveFlow();
-                  }}
-                  className="w-full border-b bg-transparent pb-1 outline-none"
-                  style={{
-                    color: '#7a5438',
-                    borderColor: '#C4A06030',
-                    fontFamily: 'var(--font-handwritten)',
-                    fontSize: '20px',
-                  }}
-                />
+                <div className="relative flex items-end gap-2">
+                  <input
+                    type="text"
+                    value={flowInput}
+                    onChange={(e) => setFlowInput(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') saveFlow();
+                    }}
+                    className="flex-1 border-b bg-transparent pb-1 outline-none"
+                    style={{
+                      color: '#7a5438',
+                      borderColor: '#C4A06030',
+                      fontFamily: 'var(--font-handwritten)',
+                      fontSize: '20px',
+                    }}
+                  />
+                  <CategoryTagPicker
+                    value={flowTag}
+                    onChange={setFlowTag}
+                    open={showFlowTagPicker}
+                    onToggle={() => setShowFlowTagPicker((o) => !o)}
+                    onClose={() => setShowFlowTagPicker(false)}
+                    lifeCategories={lifeCategories}
+                    compassAxes={COMPASS_AXES}
+                  />
+                </div>
               </div>
             </div>
             {/* Notes toggle — transparent pill that collapses/expands the entry list */}

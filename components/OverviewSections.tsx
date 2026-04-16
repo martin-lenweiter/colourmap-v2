@@ -1,32 +1,57 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import CategoryTagPicker from '@/components/CategoryTagPicker';
 import type { LifeCategory, LogEntry } from '@/components/LifeCategories';
 
 /* ═══════════════════════════════════════════════════════════
-   OVERVIEW SECTIONS — the compressed three-answer surface.
-   Reads categories + log entries from localStorage and sorts
-   each category into one of three buckets:
-     · What is flowing  → cat.state === 'flowing'
-     · What is stuck    → cat.state === 'stuck'
-     · Attention check  → no logbook entry in 14+ days (any state)
-   Pre-AI. User classifies flowing/stuck manually via the pill
-   next to each category in LifeCategories. The AI version will
-   replace manual classification with inferred classification,
-   with the same surface.
+   OVERVIEW SECTIONS — write-surface + attention audit.
+
+   Two textareas at the top (one flowing, one stuck) — user writes
+   a cross-category reflection, optionally tags it with a life
+   category or a compass axis via CategoryTagPicker. Entries
+   accumulate in a scrolling list below each write area.
+
+   At the bottom: the attention check — categories whose latest
+   logbook entry is 14+ days old (or never written). Read-only
+   — it's signalling avoidance, not inviting capture.
+
+   Pre-AI. The AI version will later summarise these freeform
+   writings + categories into the synthesis described in
+   docs/specs/ai-evolution.md.
    ═══════════════════════════════════════════════════════════ */
 
 const CATS_KEY = 'colourmap:life-categories';
 const LOG_KEY = 'colourmap:life-logs';
+const OVERVIEW_NOTES_KEY = 'colourmap:overview-notes';
 const ATTENTION_THRESHOLD_DAYS = 14;
+
+// Static compass axes offered as tag options alongside user's LifeCategories
+const COMPASS_AXES = [
+  { name: 'Care', color: '#D4805A', group: 'Caring' },
+  { name: 'Attitude', color: '#C4A070', group: 'Caring' },
+  { name: 'Rest', color: '#C4906A', group: 'Caring' },
+  { name: 'Emotions', color: '#B07A5A', group: 'Caring' },
+  { name: 'Clarity', color: '#7AAA58', group: 'Doing' },
+  { name: 'Target', color: '#7A9A7A', group: 'Doing' },
+  { name: 'Resources', color: '#8AB0A0', group: 'Doing' },
+  { name: 'Action', color: '#9AB090', group: 'Doing' },
+  { name: 'Voice', color: '#6B7F4E', group: 'Sharing' },
+  { name: 'Listen', color: '#8CA46E', group: 'Sharing' },
+  { name: 'Bond', color: '#7B9560', group: 'Sharing' },
+  { name: 'Boundary', color: '#5F7447', group: 'Sharing' },
+];
+
+interface OverviewNote {
+  id: string;
+  kind: 'flowing' | 'stuck';
+  text: string;
+  tag?: { name: string; color: string };
+  createdAt: string;
+}
 
 function daysBetween(a: Date, b: Date): number {
   return Math.floor((a.getTime() - b.getTime()) / (1000 * 60 * 60 * 24));
-}
-
-function truncate(text: string, maxLen: number): string {
-  if (text.length <= maxLen) return text;
-  return `${text.slice(0, maxLen - 1).trimEnd()}…`;
 }
 
 function loadArr<T>(key: string): T[] {
@@ -43,23 +68,27 @@ function loadArr<T>(key: string): T[] {
 export default function OverviewSections() {
   const [categories, setCategories] = useState<LifeCategory[]>([]);
   const [logs, setLogs] = useState<LogEntry[]>([]);
-  // Per-category inline input values, keyed by categoryId
-  const [drafts, setDrafts] = useState<Record<string, string>>({});
+  const [notes, setNotes] = useState<OverviewNote[]>([]);
 
-  // Refresh from localStorage on mount + on storage events (so the component
-  // stays in sync when the user edits categories / logs elsewhere on the page).
+  // Drafts + per-draft tag pick
+  const [flowingDraft, setFlowingDraft] = useState('');
+  const [stuckDraft, setStuckDraft] = useState('');
+  const [flowingTag, setFlowingTag] = useState<{ name: string; color: string } | null>(null);
+  const [stuckTag, setStuckTag] = useState<{ name: string; color: string } | null>(null);
+  const [showFlowingPicker, setShowFlowingPicker] = useState(false);
+  const [showStuckPicker, setShowStuckPicker] = useState(false);
+
   useEffect(() => {
     const reload = () => {
       setCategories(loadArr<LifeCategory>(CATS_KEY));
       setLogs(loadArr<LogEntry>(LOG_KEY));
+      setNotes(loadArr<OverviewNote>(OVERVIEW_NOTES_KEY));
     };
     reload();
     const onStorage = (e: StorageEvent) => {
-      if (e.key === CATS_KEY || e.key === LOG_KEY) reload();
+      if (e.key === CATS_KEY || e.key === LOG_KEY || e.key === OVERVIEW_NOTES_KEY) reload();
     };
     window.addEventListener('storage', onStorage);
-    // Poll once per second so in-page edits to LifeCategories show up even
-    // without a storage event (same tab doesn't fire the storage event).
     const interval = window.setInterval(reload, 1000);
     return () => {
       window.removeEventListener('storage', onStorage);
@@ -67,44 +96,58 @@ export default function OverviewSections() {
     };
   }, []);
 
-  // Append a new log entry for the given category, persist, clear the draft.
-  const addEntry = (categoryId: string) => {
-    const text = (drafts[categoryId] ?? '').trim();
-    if (!text) return;
-    const entry: LogEntry = {
+  const saveNote = (kind: 'flowing' | 'stuck') => {
+    const draft = kind === 'flowing' ? flowingDraft.trim() : stuckDraft.trim();
+    if (!draft) return;
+    const tag = kind === 'flowing' ? flowingTag : stuckTag;
+    const entry: OverviewNote = {
       id: crypto.randomUUID(),
-      categoryId,
-      text,
+      kind,
+      text: draft,
+      ...(tag && { tag }),
       createdAt: new Date().toISOString(),
     };
-    const next = [entry, ...logs];
-    setLogs(next);
+    const next = [entry, ...notes];
+    setNotes(next);
     try {
-      localStorage.setItem(LOG_KEY, JSON.stringify(next));
+      localStorage.setItem(OVERVIEW_NOTES_KEY, JSON.stringify(next));
     } catch {
       /* silent */
     }
-    setDrafts((prev) => ({ ...prev, [categoryId]: '' }));
+    if (kind === 'flowing') {
+      setFlowingDraft('');
+      setFlowingTag(null);
+    } else {
+      setStuckDraft('');
+      setStuckTag(null);
+    }
   };
 
-  // Compute per-category "last entry" metadata.
+  const deleteNote = (id: string) => {
+    const next = notes.filter((n) => n.id !== id);
+    setNotes(next);
+    try {
+      localStorage.setItem(OVERVIEW_NOTES_KEY, JSON.stringify(next));
+    } catch {
+      /* silent */
+    }
+  };
+
+  // Attention check: categories with no log in 14+ days (or never)
   const now = new Date();
-  const catMeta = categories.map((cat) => {
-    const catLogs = logs
-      .filter((l) => l.categoryId === cat.id)
-      .sort((a, b) => b.createdAt.localeCompare(a.createdAt));
-    const lastLog = catLogs[0] ?? null;
-    const daysSince = lastLog ? daysBetween(now, new Date(lastLog.createdAt)) : Infinity;
-    return { cat, lastLog, daysSince };
-  });
+  const neglected = categories
+    .map((cat) => {
+      const catLogs = logs
+        .filter((l) => l.categoryId === cat.id)
+        .sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+      const lastLog = catLogs[0] ?? null;
+      const daysSince = lastLog ? daysBetween(now, new Date(lastLog.createdAt)) : Infinity;
+      return { cat, daysSince };
+    })
+    .filter((m) => m.daysSince >= ATTENTION_THRESHOLD_DAYS);
 
-  const flowing = catMeta.filter((m) => m.cat.state === 'flowing');
-  const stuck = catMeta.filter((m) => m.cat.state === 'stuck');
-  const neglected = catMeta.filter(
-    (m) => m.daysSince >= ATTENTION_THRESHOLD_DAYS && m.cat.state !== 'flowing',
-  );
-
-  const nothingYet = categories.length === 0;
+  const flowingNotes = notes.filter((n) => n.kind === 'flowing');
+  const stuckNotes = notes.filter((n) => n.kind === 'stuck');
 
   return (
     <div
@@ -130,207 +173,272 @@ export default function OverviewSections() {
             opacity: 0.85,
           }}
         >
-          what is stuck, what is flowing, what has gone quiet
+          what is flowing, what is stuck, what has gone quiet
         </p>
       </div>
 
-      {nothingYet ? (
-        <p
-          className="text-center italic"
-          style={{
-            color: '#8A6A4A',
-            fontFamily: 'var(--font-handwritten)',
-            fontSize: '15px',
-            opacity: 0.7,
-          }}
-        >
-          Name some areas of your life below to see them mapped here.
-        </p>
-      ) : (
-        <div className="space-y-5">
-          <OverviewSection
-            title="What is flowing"
-            emptyText="Mark a category as flowing to see it here."
-            items={flowing}
-            accent="#7AAA58"
-            drafts={drafts}
-            setDrafts={setDrafts}
-            onAdd={addEntry}
-            writable
-          />
-          <OverviewSection
-            title="What is stuck"
-            emptyText="Mark a category as stuck to see it here."
-            items={stuck}
-            accent="#A05A40"
-            drafts={drafts}
-            setDrafts={setDrafts}
-            onAdd={addEntry}
-            writable
-          />
-          {neglected.length > 0 && (
-            <OverviewSection
-              title="Attention check"
-              subtitle={`no entry for ${ATTENTION_THRESHOLD_DAYS}+ days`}
-              emptyText=""
-              items={neglected}
-              accent="#8A6A4A"
-              muted
-            />
-          )}
+      {/* Flowing write area */}
+      <WriteSection
+        title="What is flowing"
+        accent="#7AAA58"
+        placeholder="what is moving, nourishing you, working..."
+        draft={flowingDraft}
+        setDraft={setFlowingDraft}
+        onSave={() => saveNote('flowing')}
+        tag={flowingTag}
+        setTag={setFlowingTag}
+        pickerOpen={showFlowingPicker}
+        togglePicker={() => setShowFlowingPicker((o) => !o)}
+        closePicker={() => setShowFlowingPicker(false)}
+        categories={categories}
+        compassAxes={COMPASS_AXES}
+        entries={flowingNotes}
+        onDelete={deleteNote}
+      />
+
+      {/* Stuck write area */}
+      <WriteSection
+        title="What is stuck"
+        accent="#A05A40"
+        placeholder="what is blocking you, heavy, not moving..."
+        draft={stuckDraft}
+        setDraft={setStuckDraft}
+        onSave={() => saveNote('stuck')}
+        tag={stuckTag}
+        setTag={setStuckTag}
+        pickerOpen={showStuckPicker}
+        togglePicker={() => setShowStuckPicker((o) => !o)}
+        closePicker={() => setShowStuckPicker(false)}
+        categories={categories}
+        compassAxes={COMPASS_AXES}
+        entries={stuckNotes}
+        onDelete={deleteNote}
+      />
+
+      {/* Attention check */}
+      {neglected.length > 0 && (
+        <div>
+          <div className="mb-2 flex items-baseline gap-2">
+            <p
+              className="font-semibold uppercase"
+              style={{
+                color: '#8A6A4A',
+                fontSize: '13px',
+                letterSpacing: '0.18em',
+                opacity: 0.8,
+              }}
+            >
+              Attention check
+            </p>
+            <span
+              className="italic"
+              style={{
+                color: '#8A6A4A',
+                fontSize: '12px',
+                fontFamily: 'var(--font-serif)',
+                opacity: 0.7,
+              }}
+            >
+              · no entry for {ATTENTION_THRESHOLD_DAYS}+ days
+            </span>
+          </div>
+          <ul className="space-y-1.5">
+            {neglected.map(({ cat, daysSince }) => (
+              <li key={cat.id} className="flex items-center gap-3">
+                <span
+                  className="h-2.5 w-2.5 shrink-0 rounded-full"
+                  style={{ background: cat.color, opacity: 0.55 }}
+                />
+                <span
+                  className="flex-1"
+                  style={{
+                    color: '#5C3018',
+                    fontFamily: 'var(--font-serif)',
+                    fontSize: '13px',
+                    fontWeight: 600,
+                    opacity: 0.85,
+                  }}
+                >
+                  {cat.name}
+                </span>
+                <span
+                  className="italic"
+                  style={{
+                    color: '#8A6A4A',
+                    fontSize: '12px',
+                    fontFamily: 'var(--font-serif)',
+                    opacity: 0.7,
+                  }}
+                >
+                  {daysSince === Infinity ? 'no entries' : `${daysSince}d ago`}
+                </span>
+              </li>
+            ))}
+          </ul>
         </div>
       )}
     </div>
   );
 }
 
-interface SectionProps {
+interface WriteSectionProps {
   title: string;
-  subtitle?: string;
-  emptyText: string;
-  items: { cat: LifeCategory; lastLog: LogEntry | null; daysSince: number }[];
   accent: string;
-  muted?: boolean;
-  /** When true, shows an inline text input per row for adding a logbook entry. */
-  writable?: boolean;
-  drafts?: Record<string, string>;
-  setDrafts?: React.Dispatch<React.SetStateAction<Record<string, string>>>;
-  onAdd?: (categoryId: string) => void;
+  placeholder: string;
+  draft: string;
+  setDraft: (v: string) => void;
+  onSave: () => void;
+  tag: { name: string; color: string } | null;
+  setTag: (v: { name: string; color: string } | null) => void;
+  pickerOpen: boolean;
+  togglePicker: () => void;
+  closePicker: () => void;
+  categories: LifeCategory[];
+  compassAxes: { name: string; color: string; group: string }[];
+  entries: OverviewNote[];
+  onDelete: (id: string) => void;
 }
 
-function OverviewSection({
+function WriteSection({
   title,
-  subtitle,
-  emptyText,
-  items,
   accent,
-  muted,
-  writable,
-  drafts,
-  setDrafts,
-  onAdd,
-}: SectionProps) {
+  placeholder,
+  draft,
+  setDraft,
+  onSave,
+  tag,
+  setTag,
+  pickerOpen,
+  togglePicker,
+  closePicker,
+  categories,
+  compassAxes,
+  entries,
+  onDelete,
+}: WriteSectionProps) {
   return (
     <div>
-      <div className="mb-2 flex items-baseline gap-2">
-        <p
-          className="font-semibold uppercase"
-          style={{
-            color: accent,
-            fontSize: '13px',
-            letterSpacing: '0.18em',
-            opacity: muted ? 0.75 : 1,
+      <p
+        className="mb-2 font-semibold uppercase"
+        style={{
+          color: accent,
+          fontSize: '13px',
+          letterSpacing: '0.18em',
+        }}
+      >
+        {title}
+      </p>
+      <div className="flex items-end gap-2">
+        <textarea
+          value={draft}
+          onChange={(e) => setDraft(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' && !e.shiftKey) {
+              e.preventDefault();
+              onSave();
+            }
           }}
-        >
-          {title}
-        </p>
-        {subtitle && (
-          <span
-            className="italic"
-            style={{
-              color: '#8A6A4A',
-              fontSize: '12px',
-              fontFamily: 'var(--font-serif)',
-              opacity: 0.7,
-            }}
-          >
-            · {subtitle}
-          </span>
-        )}
+          placeholder={placeholder}
+          rows={2}
+          className="flex-1 resize-none border-b bg-transparent pb-1 outline-none placeholder:opacity-50"
+          style={{
+            color: '#5C3018',
+            borderColor: `${accent}30`,
+            fontFamily: 'var(--font-handwritten)',
+            fontSize: '16px',
+            lineHeight: 1.5,
+          }}
+        />
+        <CategoryTagPicker
+          value={tag}
+          onChange={setTag}
+          open={pickerOpen}
+          onToggle={togglePicker}
+          onClose={closePicker}
+          lifeCategories={categories}
+          compassAxes={compassAxes}
+        />
       </div>
-      {items.length === 0 ? (
-        <p
-          className="italic"
-          style={{
-            color: '#8A6A4A',
-            fontFamily: 'var(--font-serif)',
-            fontSize: '13px',
-            opacity: 0.55,
-          }}
-        >
-          {emptyText}
-        </p>
-      ) : (
-        <ul className="space-y-2">
-          {items.map(({ cat, lastLog, daysSince }) => (
-            <li key={cat.id} className="flex items-start gap-3">
-              <span
-                className="mt-2 h-2.5 w-2.5 shrink-0 rounded-full"
-                style={{ background: cat.color, opacity: muted ? 0.55 : 1 }}
-              />
-              <div className="flex-1">
-                <p
+
+      {entries.length > 0 && (
+        <ul className="mt-3 space-y-1.5">
+          {entries.slice(0, 20).map((note) => {
+            const d = new Date(note.createdAt);
+            const dateStr = `${d.getDate()}/${d.getMonth() + 1}`;
+            return (
+              <li key={note.id} className="group flex items-start gap-2.5">
+                <span
+                  className="shrink-0"
                   style={{
-                    color: '#5C3018',
-                    fontFamily: 'var(--font-serif)',
-                    fontSize: '14px',
-                    fontWeight: 600,
-                    letterSpacing: '0.01em',
-                    opacity: muted ? 0.8 : 1,
+                    color: '#8A6A4A',
+                    opacity: 0.75,
+                    fontSize: '12px',
+                    lineHeight: '1.5',
+                    paddingTop: '4px',
                   }}
                 >
-                  {cat.name}
-                  {lastLog && (
+                  {dateStr}
+                </span>
+                <span
+                  className="h-2 w-2 shrink-0 rounded-full"
+                  style={{ background: accent, opacity: 0.7, marginTop: '8px' }}
+                />
+                <div className="flex-1">
+                  <span
+                    style={{
+                      color: '#5C3018',
+                      fontFamily: 'var(--font-handwritten)',
+                      fontSize: '16px',
+                      lineHeight: 1.5,
+                    }}
+                  >
+                    {note.text}
+                  </span>
+                  {note.tag && (
                     <span
-                      className="ml-2 font-normal italic"
+                      className="ml-2 inline-flex items-center gap-1 rounded-full px-1.5 py-0.5 align-baseline"
                       style={{
-                        color: '#8A6A4A',
-                        fontSize: '12px',
-                        opacity: 0.65,
+                        background: `${note.tag.color}15`,
+                        border: `1px solid ${note.tag.color}40`,
+                        fontSize: '10px',
+                        fontFamily: 'var(--font-serif)',
+                        fontWeight: 600,
+                        color: note.tag.color,
+                        letterSpacing: '0.02em',
                       }}
                     >
-                      · {daysSince === 0 ? 'today' : `${daysSince}d ago`}
+                      <span
+                        className="rotate-45"
+                        style={{
+                          display: 'block',
+                          width: 5,
+                          height: 5,
+                          background: note.tag.color,
+                          borderRadius: 1,
+                        }}
+                      />
+                      {note.tag.name}
                     </span>
                   )}
-                </p>
-                {lastLog ? (
-                  <p
-                    className="mt-0.5"
-                    style={{
-                      color: '#5C3018',
-                      fontFamily: 'var(--font-handwritten)',
-                      fontSize: '15px',
-                      lineHeight: 1.45,
-                      opacity: muted ? 0.65 : 0.9,
-                    }}
-                  >
-                    {truncate(lastLog.text, 120)}
-                  </p>
-                ) : (
-                  <p
-                    className="mt-0.5 italic"
-                    style={{
-                      color: '#8A6A4A',
-                      fontFamily: 'var(--font-serif)',
-                      fontSize: '12px',
-                      opacity: 0.55,
-                    }}
-                  >
-                    no entries yet
-                  </p>
-                )}
-                {writable && drafts && setDrafts && onAdd && (
-                  <input
-                    type="text"
-                    value={drafts[cat.id] ?? ''}
-                    onChange={(e) => setDrafts((prev) => ({ ...prev, [cat.id]: e.target.value }))}
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter') onAdd(cat.id);
-                    }}
-                    onBlur={() => onAdd(cat.id)}
-                    placeholder="+ what's going on..."
-                    className="mt-1.5 w-full border-b bg-transparent pb-1 outline-none placeholder:opacity-45"
-                    style={{
-                      color: '#5C3018',
-                      borderColor: `${accent}30`,
-                      fontFamily: 'var(--font-handwritten)',
-                      fontSize: '15px',
-                    }}
-                  />
-                )}
-              </div>
-            </li>
-          ))}
+                </div>
+                <button
+                  type="button"
+                  onClick={() => onDelete(note.id)}
+                  className="cursor-pointer shrink-0 opacity-0 transition-opacity group-hover:opacity-40"
+                  style={{
+                    color: '#8A6A4A',
+                    fontSize: '12px',
+                    background: 'none',
+                    border: 'none',
+                    paddingTop: '4px',
+                  }}
+                  title="Remove"
+                >
+                  ✕
+                </button>
+              </li>
+            );
+          })}
         </ul>
       )}
     </div>
