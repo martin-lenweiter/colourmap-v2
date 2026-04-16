@@ -724,10 +724,12 @@ export default function FeelingCheckInCard() {
   const [draggedTodoIdx, setDraggedTodoIdx] = useState<number | null>(null);
   const [dragOverTodoIdx, setDragOverTodoIdx] = useState<number | null>(null);
   const [clarityOpen, setClarityOpen] = useState(false);
-  const [hawkinsStyle, setHawkinsStyle] = useState<'squares' | 'dots'>(() => {
+  type HawkinsStyle = 'squares' | 'dots' | 'losanges';
+  const [hawkinsStyle, setHawkinsStyle] = useState<HawkinsStyle>(() => {
     try {
       const v = localStorage.getItem('colourmap:hawkins-style');
-      return v === 'dots' ? 'dots' : 'squares';
+      if (v === 'dots' || v === 'losanges') return v;
+      return 'squares';
     } catch {
       return 'squares';
     }
@@ -2125,7 +2127,11 @@ export default function FeelingCheckInCard() {
               {/* Style toggle — small beige circle that switches between square and dot rendering */}
               <button
                 type="button"
-                onClick={() => setHawkinsStyle((s) => (s === 'squares' ? 'dots' : 'squares'))}
+                onClick={() =>
+                  setHawkinsStyle((s) =>
+                    s === 'squares' ? 'dots' : s === 'dots' ? 'losanges' : 'squares',
+                  )
+                }
                 aria-label="Toggle hawkins slider style"
                 className="absolute right-0 top-2 flex cursor-pointer items-center justify-center"
                 style={{
@@ -2142,13 +2148,48 @@ export default function FeelingCheckInCard() {
                     background: '#D8BE94',
                     borderRadius: hawkinsStyle === 'dots' ? '50%' : '3px',
                     display: 'block',
-                    transition: 'border-radius 200ms',
+                    transform: hawkinsStyle === 'losanges' ? 'rotate(45deg)' : 'rotate(0deg)',
+                    transition: 'border-radius 200ms, transform 200ms',
                   }}
                 />
               </button>
 
-              <div className="relative" style={{ width: 280, height: 28 }}>
+              <div className="relative" style={{ width: 280, height: 36 }}>
                 {(() => {
+                  if (hawkinsStyle === 'losanges') {
+                    // LOSANGES style — rotated squares (diamonds). Slightly larger
+                    // cell size + wider gap so the diagonal corners don't overlap.
+                    const sq = 18;
+                    const gap = 9;
+                    const totalW = HAWKINS.length * sq + (HAWKINS.length - 1) * gap;
+                    const offsetX = (280 - totalW) / 2;
+                    const baseY = (36 - sq) / 2;
+                    return HAWKINS.map((h, i) => {
+                      const selected = hawkinsIdx === i;
+                      const x = offsetX + i * (sq + gap);
+                      return (
+                        <button
+                          key={h.level}
+                          type="button"
+                          onClick={() => setHawkinsIdx(i)}
+                          className="absolute cursor-pointer transition-all"
+                          style={{
+                            left: x,
+                            top: baseY,
+                            width: sq,
+                            height: sq,
+                            background: h.color,
+                            opacity: selected ? 1 : 0.45,
+                            border: 'none',
+                            borderRadius: '2px',
+                            transform: selected ? 'rotate(45deg) scale(1.15)' : 'rotate(45deg)',
+                            boxShadow: selected ? `0 4px 14px -4px ${h.color}` : 'none',
+                          }}
+                          title={h.level}
+                        />
+                      );
+                    });
+                  }
                   if (hawkinsStyle === 'dots') {
                     // DOTS style — circular dots in a straight horizontal line,
                     // same vocabulary as variant 1 (arc) but flat instead of bowed.
