@@ -176,7 +176,31 @@ Iteration through many variants for the same axis revealed there is no single pe
 The top-level tabs on `/day` are `Check in` and `Overview`, not the old `Caring / Doing / Sharing`.
 
 - **Check in** — daily pulse. Holds box 1 only (`FeelingCheckInCard` — balance-arc variant picker + the three pillboxes: Current Objective, Other Missions, Logbook & Emotions). Kept deliberately narrow so the daily register feels like a single focused surface.
-- **Overview** — wide-angle map. Holds box 2 (`LifeCategories` — the backbone of named life areas, their targets, and their logbook) and box 3 (`CompassCarousel` — Caring / Doing / Sharing compasses with the two-question Emotions reflective card). Different altitude from the check-in: step-back scanning rather than daily pulse.
+- **Overview** — wide-angle map. Holds a new pre-AI synthesis surface (`OverviewSections`) at the top, then box 2 (`LifeCategories` — the backbone of named life areas, their targets, and their logbook), then box 3 (`CompassCarousel` — Caring / Doing / Sharing compasses with the two-question Emotions reflective card), then a design-exploration surface (`OverviewVisualDemos`) showing five candidate renderings of flow-and-stuck-over-time. Different altitude from the check-in: step-back scanning rather than daily pulse.
+
+### OverviewSections — compressed three-answer surface (pre-AI)
+
+Sits at the top of Overview. Compresses the user's LifeCategories into three sections, answering the guiding questions of the Overview directly:
+
+1. **What is flowing** — categories the user has tagged `flowing` via the state pill in LifeCategories. Each row: colour dot, name, "n days ago" since last logbook entry, the most recent logbook entry truncated to ~120 chars.
+2. **What is stuck** — same, for categories tagged `stuck`.
+3. **Attention check** — categories whose latest logbook entry (if any) is 14+ days old, regardless of state. Flags avoidance without requiring manual classification.
+
+State is user-authored in this first version. A new optional `state: 'stuck' | 'flowing' | null` field on `LifeCategory` persists to `colourmap:life-categories`. Each category row in `LifeCategories` gets a small pill next to its name that cycles `— → flowing → stuck → —` on tap. The state pill uses dashed border when unset, saturated border + soft tint when set (green-tinted for flowing, brown-red for stuck).
+
+Rationale: the AI version of Overview (Synthesis Surface in `ai-evolution.md`) requires the semantic layer that doesn't exist yet. This pre-AI surface delivers the same three-section answer without AI by asking the user to do the classification themselves. Same base, AI overlay later — the surface structure and data contract stay identical when the AI phase lands.
+
+### OverviewVisualDemos — design exploration for the river/flow view
+
+A temporary exploration surface that renders five candidate visualisations of flow-and-stuck over time using synthetic data:
+
+1. **Radiating rivers** — rivers flow outward from a centre (you). Colour saturation = flow vs stuck, width = activity.
+2. **Horizontal trajectories** — left-to-right = time, up = flowing, down = stuck. Reads like a vital-signs line.
+3. **Mountain terrain** — stacked areas, each category's height tracks its flow. Landscape metaphor.
+4. **Braided river** — a main river with tributaries (categories) branching off; pebbles along each = events.
+5. **Dot stream** — one row per category, twelve dots = twelve weeks, colour intensity = flow. Simplest, most honest.
+
+No persistence, no interaction beyond the static SVG. Intentionally placed below the active Overview content so it doesn't compete with real data. Meant as a side-by-side picker to decide which metaphor to build into the settled Overview. Will be removed once the metaphor is committed.
 
 Tab choice persists to localStorage under `colourmap:day-tab`. Legacy values (`cockpit`) are remapped to `checkin` on read, so existing users aren't bounced to Overview after the rename. Check-in is the default on first visit. `DoingCheckInCard` and `SharingCheckInCard` are no longer rendered on `/day` — their surface is covered by the compass carousel inside Overview.
 

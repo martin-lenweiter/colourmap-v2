@@ -55,11 +55,14 @@ const CAT_COLORS = [
 ];
 
 /* ─── Types ─── */
-interface LifeCategory {
+export type CategoryState = 'stuck' | 'flowing' | null;
+
+export interface LifeCategory {
   id: string;
   name: string;
   color: string;
   createdAt: string;
+  state?: CategoryState;
 }
 
 interface Target {
@@ -71,7 +74,7 @@ interface Target {
   completedAt: string | null;
 }
 
-interface LogEntry {
+export interface LogEntry {
   id: string;
   categoryId: string;
   text: string;
@@ -393,6 +396,21 @@ export default function LifeCategories() {
     setShowAdd(false);
     setExpandedId(cat.id);
   }, [newName, categories]);
+
+  const cycleCategoryState = useCallback(
+    (id: string) => {
+      const next = categories.map((c) => {
+        if (c.id !== id) return c;
+        const order: CategoryState[] = [null, 'flowing', 'stuck'];
+        const currentIdx = order.indexOf(c.state ?? null);
+        const nextState = order[(currentIdx + 1) % order.length];
+        return { ...c, state: nextState };
+      });
+      setCategories(next);
+      ss(CATS_KEY, next);
+    },
+    [categories],
+  );
 
   const deleteCategory = useCallback(
     (id: string) => {
@@ -966,36 +984,88 @@ export default function LifeCategories() {
               }}
             >
               {/* Collapsed row */}
-              <button
-                type="button"
-                className="flex w-full items-center gap-3 px-4 py-3 text-left"
-                onClick={() => setExpandedId(isExpanded ? null : cat.id)}
-              >
+              <div className="relative flex w-full items-center gap-3 px-4 py-3">
+                <button
+                  type="button"
+                  onClick={() => setExpandedId(isExpanded ? null : cat.id)}
+                  className="absolute inset-0 cursor-pointer"
+                  style={{ background: 'transparent', border: 'none' }}
+                  aria-label={`Expand ${cat.name}`}
+                />
                 <span
                   className="h-2.5 w-2.5 shrink-0 rounded-full"
-                  style={{ background: cat.color }}
+                  style={{ background: cat.color, position: 'relative', zIndex: 1 }}
                 />
                 <span
                   className="flex-1 text-sm font-semibold"
-                  style={{ color: '#5C3018', fontFamily: 'var(--font-serif)' }}
+                  style={{
+                    color: '#5C3018',
+                    fontFamily: 'var(--font-serif)',
+                    position: 'relative',
+                    zIndex: 1,
+                    pointerEvents: 'none',
+                  }}
                 >
                   {cat.name}
                 </span>
+                {/* Stuck / flowing state pill — click cycles null → flowing → stuck */}
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    cycleCategoryState(cat.id);
+                  }}
+                  className="relative shrink-0 rounded-full px-2.5 py-0.5 uppercase"
+                  style={{
+                    zIndex: 2,
+                    fontSize: '10px',
+                    fontFamily: 'var(--font-serif)',
+                    fontWeight: 600,
+                    letterSpacing: '0.12em',
+                    background:
+                      cat.state === 'flowing'
+                        ? '#7AAA5818'
+                        : cat.state === 'stuck'
+                          ? '#A05A4018'
+                          : 'transparent',
+                    border:
+                      cat.state === 'flowing'
+                        ? '1px solid #7AAA5860'
+                        : cat.state === 'stuck'
+                          ? '1px solid #A05A4060'
+                          : '1px dashed #8A6A4A40',
+                    color:
+                      cat.state === 'flowing'
+                        ? '#5A8048'
+                        : cat.state === 'stuck'
+                          ? '#A05A40'
+                          : '#8A6A4A80',
+                    cursor: 'pointer',
+                  }}
+                  title="Tap to cycle: flowing → stuck → —"
+                >
+                  {cat.state === 'flowing' ? 'flowing' : cat.state === 'stuck' ? 'stuck' : '—'}
+                </button>
                 {progress.total > 0 && (
-                  <span className="text-xs" style={{ color: '#8A6A4A60' }}>
+                  <span
+                    className="relative text-xs"
+                    style={{ color: '#8A6A4A60', zIndex: 1, pointerEvents: 'none' }}
+                  >
                     {progress.done}/{progress.total}
                   </span>
                 )}
                 <span
-                  className="text-xs transition-transform duration-200"
+                  className="relative text-xs transition-transform duration-200"
                   style={{
                     color: '#8A6A4A60',
+                    zIndex: 1,
+                    pointerEvents: 'none',
                     transform: isExpanded ? 'rotate(180deg)' : 'rotate(0deg)',
                   }}
                 >
                   ▾
                 </span>
-              </button>
+              </div>
 
               {/* Expanded content */}
               {isExpanded && (

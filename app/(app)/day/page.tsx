@@ -4,6 +4,8 @@ import CompassCarousel from '@/components/CompassCarousel';
 import DayTabs from '@/components/DayTabs';
 import FeelingCheckInCard from '@/components/FeelingCheckInCard';
 import LifeCategories from '@/components/LifeCategories';
+import OverviewSections from '@/components/OverviewSections';
+import OverviewVisualDemos from '@/components/OverviewVisualDemos';
 import { StyleProvider } from '@/components/StyleContext';
 
 function DayContent() {
@@ -17,8 +19,10 @@ function DayContent() {
         }
         overviewContent={
           <div className="space-y-4">
+            <OverviewSections />
             <LifeCategories />
             <CompassCarousel />
+            <OverviewVisualDemos />
           </div>
         }
       />

@@ -98,7 +98,10 @@ describe('LifeCategories', () => {
     localStorage.setItem('colourmap:life-view', 'list');
     render(<LifeCategories />);
 
-    await user.click(screen.getByText('Organisation'));
+    // The clickable expand target is an absolute button labelled "Expand <name>"
+    // (the visible name span has pointer-events:none so the state pill next
+    // to it doesn't capture the row click).
+    await user.click(screen.getByLabelText(/expand organisation/i));
 
     await waitFor(() => {
       expect(screen.getByText('Targets')).toBeDefined();
