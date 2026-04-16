@@ -46,7 +46,7 @@ interface OverviewNote {
   id: string;
   kind: 'flowing' | 'stuck';
   text: string;
-  tag?: { name: string; color: string };
+  tag?: { name: string; color: string; categoryId?: string };
   createdAt: string;
 }
 
@@ -73,8 +73,16 @@ export default function OverviewSections() {
   // Drafts + per-draft tag pick
   const [flowingDraft, setFlowingDraft] = useState('');
   const [stuckDraft, setStuckDraft] = useState('');
-  const [flowingTag, setFlowingTag] = useState<{ name: string; color: string } | null>(null);
-  const [stuckTag, setStuckTag] = useState<{ name: string; color: string } | null>(null);
+  const [flowingTag, setFlowingTag] = useState<{
+    name: string;
+    color: string;
+    categoryId?: string;
+  } | null>(null);
+  const [stuckTag, setStuckTag] = useState<{
+    name: string;
+    color: string;
+    categoryId?: string;
+  } | null>(null);
   const [showFlowingPicker, setShowFlowingPicker] = useState(false);
   const [showStuckPicker, setShowStuckPicker] = useState(false);
 
@@ -100,20 +108,47 @@ export default function OverviewSections() {
     const draft = kind === 'flowing' ? flowingDraft.trim() : stuckDraft.trim();
     if (!draft) return;
     const tag = kind === 'flowing' ? flowingTag : stuckTag;
+    const createdAt = new Date().toISOString();
+
     const entry: OverviewNote = {
       id: crypto.randomUUID(),
       kind,
       text: draft,
-      ...(tag && { tag }),
-      createdAt: new Date().toISOString(),
+      ...(tag && {
+        tag: tag.categoryId
+          ? { name: tag.name, color: tag.color, categoryId: tag.categoryId }
+          : { name: tag.name, color: tag.color },
+      }),
+      createdAt,
     };
-    const next = [entry, ...notes];
-    setNotes(next);
+    const nextNotes = [entry, ...notes];
+    setNotes(nextNotes);
     try {
-      localStorage.setItem(OVERVIEW_NOTES_KEY, JSON.stringify(next));
+      localStorage.setItem(OVERVIEW_NOTES_KEY, JSON.stringify(nextNotes));
     } catch {
       /* silent */
     }
+
+    // If tagged with a LifeCategory, mirror into that category's logbook
+    // so the entry shows up inside LifeCategories as a Challenge / Flow
+    // compartment entry. Compass-axis tags don't mirror (no categoryId).
+    if (tag?.categoryId) {
+      const mirroredLog: LogEntry = {
+        id: crypto.randomUUID(),
+        categoryId: tag.categoryId,
+        text: draft,
+        createdAt,
+        kind,
+      };
+      const nextLogs = [mirroredLog, ...logs];
+      setLogs(nextLogs);
+      try {
+        localStorage.setItem(LOG_KEY, JSON.stringify(nextLogs));
+      } catch {
+        /* silent */
+      }
+    }
+
     if (kind === 'flowing') {
       setFlowingDraft('');
       setFlowingTag(null);
@@ -288,8 +323,8 @@ interface WriteSectionProps {
   draft: string;
   setDraft: (v: string) => void;
   onSave: () => void;
-  tag: { name: string; color: string } | null;
-  setTag: (v: { name: string; color: string } | null) => void;
+  tag: { name: string; color: string; categoryId?: string } | null;
+  setTag: (v: { name: string; color: string; categoryId?: string } | null) => void;
   pickerOpen: boolean;
   togglePicker: () => void;
   closePicker: () => void;

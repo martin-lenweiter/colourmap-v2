@@ -79,6 +79,8 @@ export interface LogEntry {
   categoryId: string;
   text: string;
   createdAt: string;
+  /** Optional — Overview writes with a LifeCategory tag mark entries with flowing/stuck kind. */
+  kind?: 'flowing' | 'stuck';
 }
 
 interface RiverSnapshot {
@@ -1201,19 +1203,39 @@ export default function LifeCategories() {
                       }}
                     />
 
-                    {catLogs.length > 0 && (
-                      <div className="space-y-1.5">
-                        {catLogs.slice(0, 10).map((log) => {
+                    {catLogs.length > 0 &&
+                      (() => {
+                        // Split entries into three compartments when any of
+                        // the logs came from an Overview write (they carry a
+                        // 'kind' field). Untagged entries keep the legacy
+                        // "all logs" compartment so nothing gets lost.
+                        const flowingLogs = catLogs.filter((l) => l.kind === 'flowing');
+                        const stuckLogs = catLogs.filter((l) => l.kind === 'stuck');
+                        const otherLogs = catLogs.filter((l) => !l.kind);
+                        const hasKindedEntries = flowingLogs.length > 0 || stuckLogs.length > 0;
+
+                        const renderEntry = (log: LogEntry, kindColor?: string) => {
                           const d = new Date(log.createdAt);
                           const dateStr = `${d.getDate()}/${d.getMonth() + 1}`;
                           return (
                             <div key={log.id} className="group flex items-start gap-2">
                               <span
-                                className="shrink-0 pt-0.5"
-                                style={{ color: '#8A6A4A', fontSize: '12px', opacity: 0.75 }}
+                                className="shrink-0"
+                                style={{
+                                  color: '#8A6A4A',
+                                  fontSize: '12px',
+                                  opacity: 0.75,
+                                  paddingTop: '6px',
+                                }}
                               >
                                 {dateStr}
                               </span>
+                              {kindColor && (
+                                <span
+                                  className="h-2 w-2 shrink-0 rounded-full"
+                                  style={{ background: kindColor, marginTop: '10px' }}
+                                />
+                              )}
                               <span
                                 className="flex-1"
                                 style={{
@@ -1229,15 +1251,68 @@ export default function LifeCategories() {
                                 type="button"
                                 onClick={() => deleteLog(log.id)}
                                 className="shrink-0 text-xs opacity-0 transition-opacity group-hover:opacity-40"
-                                style={{ color: '#8A6A4A' }}
+                                style={{ color: '#8A6A4A', paddingTop: '6px' }}
                               >
                                 ✕
                               </button>
                             </div>
                           );
-                        })}
-                      </div>
-                    )}
+                        };
+
+                        if (!hasKindedEntries) {
+                          return (
+                            <div className="space-y-1.5">
+                              {otherLogs.slice(0, 10).map((log) => renderEntry(log))}
+                            </div>
+                          );
+                        }
+
+                        return (
+                          <div className="space-y-3">
+                            {flowingLogs.length > 0 && (
+                              <div>
+                                <p
+                                  className="mb-1 font-semibold uppercase tracking-[0.18em]"
+                                  style={{ color: '#7AAA58', fontSize: '11px' }}
+                                >
+                                  Flowing
+                                </p>
+                                <div className="space-y-1.5">
+                                  {flowingLogs
+                                    .slice(0, 10)
+                                    .map((log) => renderEntry(log, '#7AAA58'))}
+                                </div>
+                              </div>
+                            )}
+                            {stuckLogs.length > 0 && (
+                              <div>
+                                <p
+                                  className="mb-1 font-semibold uppercase tracking-[0.18em]"
+                                  style={{ color: '#A05A40', fontSize: '11px' }}
+                                >
+                                  Stuck
+                                </p>
+                                <div className="space-y-1.5">
+                                  {stuckLogs.slice(0, 10).map((log) => renderEntry(log, '#A05A40'))}
+                                </div>
+                              </div>
+                            )}
+                            {otherLogs.length > 0 && (
+                              <div>
+                                <p
+                                  className="mb-1 font-semibold uppercase tracking-[0.18em]"
+                                  style={{ color: '#8A6A4A', fontSize: '11px' }}
+                                >
+                                  Notes
+                                </p>
+                                <div className="space-y-1.5">
+                                  {otherLogs.slice(0, 10).map((log) => renderEntry(log))}
+                                </div>
+                              </div>
+                            )}
+                          </div>
+                        );
+                      })()}
                   </div>
 
                   {/* Delete category */}

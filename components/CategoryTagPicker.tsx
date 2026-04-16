@@ -13,6 +13,8 @@ import { useEffect, useRef } from 'react';
 export interface TagValue {
   name: string;
   color: string;
+  /** Set when the tag came from a LifeCategory (not a compass axis). */
+  categoryId?: string;
 }
 
 export interface LifeCategoryLike {
@@ -108,14 +110,15 @@ export default function CategoryTagPicker({
         )}
       </button>
 
-      {/* Dropdown — vertical list grouped by source */}
+      {/* Dropdown — vertical list grouped by source. Opaque so it cleanly
+          sits above whatever text lives underneath. */}
       {open && (
         <div
-          className="absolute right-0 z-20 mt-1 animate-in fade-in duration-150 overflow-hidden rounded-xl"
+          className="absolute right-0 z-30 mt-1 animate-in fade-in duration-150 overflow-hidden rounded-xl"
           style={{
-            background: 'hsl(var(--card))',
-            border: '1px solid hsl(var(--border) / 0.3)',
-            boxShadow: '0 8px 22px rgba(92, 48, 24, 0.12)',
+            background: '#F5ECDC',
+            border: '1px solid #8A6A4A30',
+            boxShadow: '0 10px 28px rgba(92, 48, 24, 0.18)',
             minWidth: 180,
             maxHeight: 320,
             overflowY: 'auto',
@@ -145,9 +148,9 @@ export default function CategoryTagPicker({
           {lifeCategories.map((cat) => (
             <OptionRow
               key={cat.id}
-              active={value?.name === cat.name}
+              active={value?.categoryId === cat.id}
               onClick={() => {
-                onChange({ name: cat.name, color: cat.color });
+                onChange({ name: cat.name, color: cat.color, categoryId: cat.id });
                 onClose();
               }}
               color={cat.color}
