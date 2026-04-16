@@ -2133,8 +2133,11 @@ export default function FeelingCheckInCard() {
                   )
                 }
                 aria-label="Toggle hawkins slider style"
-                className="absolute right-0 top-2 flex cursor-pointer items-center justify-center"
+                className="absolute right-0 flex cursor-pointer items-center justify-center"
                 style={{
+                  // Align vertically with the slider row: pt-4 (16px) + half of
+                  // 36px container (18px) − half of this button (10px) = 24px.
+                  top: 24,
                   width: 20,
                   height: 20,
                   background: 'transparent',
@@ -2145,7 +2148,7 @@ export default function FeelingCheckInCard() {
                   style={{
                     width: 14,
                     height: 14,
-                    background: '#D8BE94',
+                    background: '#8A6A4A',
                     borderRadius: hawkinsStyle === 'dots' ? '50%' : '3px',
                     display: 'block',
                     transform: hawkinsStyle === 'losanges' ? 'rotate(45deg)' : 'rotate(0deg)',
