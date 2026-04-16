@@ -200,6 +200,17 @@ Why this shape:
 
 Status: aspirational. Requires voice input + transcription (currently a V1 non-goal in `docs/product.md` — to be revisited), a semantic layer over all notes/entries, clustering, and relationship inference. The pre-AI Overview should remain honest about its limits: it *gathers* but does not *synthesise* until the AI phase is real.
 
+### Free / Paid Split (decided 2026-04-16)
+
+Overview is the primary boundary between free and paid tiers:
+
+- **Free tier — Overview without AI.** Gathers, displays, and lets the user re-read their own entries, trajectories, and targets across categories. No synthesis, no clustering, no AI-surfaced themes. Honest framing: "here's what you wrote — draw your own lines." Must be genuinely useful as a self-mirror, not a crippled demo.
+- **Paid tier — Overview with AI.** The Synthesis Surface described above: voice dumps, clustering, relationships, explained themes, correlation between action and feeling trajectory. The magic the user can't do themselves.
+
+The boundary is drawn here because it's the clearest economic division: free users get a journaling/structured-capture tool, paid users get a *mirror that reflects back*. The value of the paid tier is self-evident after you've used the free one long enough to accumulate material that would benefit from synthesis.
+
+Other AI features in the product (post-check-in insight, Cat companion, Logbook AI support, Music generation) — their free/paid treatment is decided separately and not covered by this section.
+
 ### What the AI Replaces
 
 The living map absorbs three current features into one adaptive view:
