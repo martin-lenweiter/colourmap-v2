@@ -675,6 +675,15 @@ export default function FeelingCheckInCard() {
   const removeTodayObjective = (id: string) => {
     persistTodayObjectives(todayObjectives.filter((t) => t.id !== id));
   };
+  const reorderTodayObjectives = (fromIdx: number, toIdx: number) => {
+    if (fromIdx === toIdx || fromIdx < 0 || toIdx < 0) return;
+    const next = [...todayObjectives];
+    const [moved] = next.splice(fromIdx, 1);
+    next.splice(toIdx, 0, moved);
+    persistTodayObjectives(next);
+  };
+  const [draggedTodayIdx, setDraggedTodayIdx] = useState<number | null>(null);
+  const [dragOverTodayIdx, setDragOverTodayIdx] = useState<number | null>(null);
 
   // Quick to-do list inside the check-in
   const [todos, setTodos] = useState<TodoItem[]>(() => {
@@ -705,6 +714,15 @@ export default function FeelingCheckInCard() {
   const removeTodo = (id: string) => {
     persistTodos(todos.filter((t) => t.id !== id));
   };
+  const reorderTodos = (fromIdx: number, toIdx: number) => {
+    if (fromIdx === toIdx || fromIdx < 0 || toIdx < 0) return;
+    const next = [...todos];
+    const [moved] = next.splice(fromIdx, 1);
+    next.splice(toIdx, 0, moved);
+    persistTodos(next);
+  };
+  const [draggedTodoIdx, setDraggedTodoIdx] = useState<number | null>(null);
+  const [dragOverTodoIdx, setDragOverTodoIdx] = useState<number | null>(null);
   const [presenceLog, setPresenceLog] = useState<PresenceEntry[]>(() => {
     try {
       return JSON.parse(localStorage.getItem('colourmap:presence-log') || '[]');
@@ -1730,10 +1748,47 @@ export default function FeelingCheckInCard() {
               >
                 Daily Objectives
               </p>
-              {todayObjectives.map((o) => {
+              {todayObjectives.map((o, idx) => {
                 const isExpanded = expandedTodayId === o.id;
+                const isDragging = draggedTodayIdx === idx;
+                const isDropTarget = dragOverTodayIdx === idx && draggedTodayIdx !== idx;
                 return (
-                  <div key={o.id} className="space-y-1">
+                  <div
+                    key={o.id}
+                    className="space-y-1"
+                    draggable
+                    onDragStart={() => setDraggedTodayIdx(idx)}
+                    onDragOver={(e) => {
+                      e.preventDefault();
+                      if (draggedTodayIdx !== null && draggedTodayIdx !== idx) {
+                        setDragOverTodayIdx(idx);
+                      }
+                    }}
+                    onDragLeave={(e) => {
+                      // Only clear if leaving to something outside this row
+                      if (!(e.currentTarget as HTMLElement).contains(e.relatedTarget as Node)) {
+                        setDragOverTodayIdx((prev) => (prev === idx ? null : prev));
+                      }
+                    }}
+                    onDrop={(e) => {
+                      e.preventDefault();
+                      if (draggedTodayIdx !== null) {
+                        reorderTodayObjectives(draggedTodayIdx, idx);
+                      }
+                      setDraggedTodayIdx(null);
+                      setDragOverTodayIdx(null);
+                    }}
+                    onDragEnd={() => {
+                      setDraggedTodayIdx(null);
+                      setDragOverTodayIdx(null);
+                    }}
+                    style={{
+                      opacity: isDragging ? 0.4 : 1,
+                      borderTop: isDropTarget ? '2px solid #C4A060' : '2px solid transparent',
+                      cursor: 'grab',
+                      transition: 'opacity 120ms, border-color 120ms',
+                    }}
+                  >
                     <div className="group flex items-center gap-2">
                       <button
                         type="button"
@@ -1839,46 +1894,84 @@ export default function FeelingCheckInCard() {
               >
                 To-do
               </p>
-              {todos.map((t) => (
-                <div key={t.id} className="group flex items-center gap-2">
-                  <button
-                    type="button"
-                    onClick={() => toggleTodo(t.id)}
-                    title={t.done ? 'Mark as not done' : 'Mark as done'}
-                    className="flex h-5 w-5 shrink-0 cursor-pointer items-center justify-center rounded border transition-all hover:scale-110"
+              {todos.map((t, idx) => {
+                const isDragging = draggedTodoIdx === idx;
+                const isDropTarget = dragOverTodoIdx === idx && draggedTodoIdx !== idx;
+                return (
+                  <div
+                    key={t.id}
+                    className="group flex items-center gap-2"
+                    draggable
+                    onDragStart={() => setDraggedTodoIdx(idx)}
+                    onDragOver={(e) => {
+                      e.preventDefault();
+                      if (draggedTodoIdx !== null && draggedTodoIdx !== idx) {
+                        setDragOverTodoIdx(idx);
+                      }
+                    }}
+                    onDragLeave={(e) => {
+                      if (!(e.currentTarget as HTMLElement).contains(e.relatedTarget as Node)) {
+                        setDragOverTodoIdx((prev) => (prev === idx ? null : prev));
+                      }
+                    }}
+                    onDrop={(e) => {
+                      e.preventDefault();
+                      if (draggedTodoIdx !== null) {
+                        reorderTodos(draggedTodoIdx, idx);
+                      }
+                      setDraggedTodoIdx(null);
+                      setDragOverTodoIdx(null);
+                    }}
+                    onDragEnd={() => {
+                      setDraggedTodoIdx(null);
+                      setDragOverTodoIdx(null);
+                    }}
                     style={{
-                      borderColor: t.done ? '#7AAA5860' : '#C4A06060',
-                      background: t.done ? '#7AAA5810' : 'transparent',
+                      opacity: isDragging ? 0.4 : 1,
+                      borderTop: isDropTarget ? '2px solid #C4A060' : '2px solid transparent',
+                      cursor: 'grab',
+                      transition: 'opacity 120ms, border-color 120ms',
                     }}
                   >
-                    {t.done && (
-                      <span className="text-xs" style={{ color: '#7AAA58' }}>
-                        ✓
-                      </span>
-                    )}
-                  </button>
-                  <span
-                    className="flex-1"
-                    style={{
-                      color: t.done ? '#C4A060' : '#7a5438',
-                      fontFamily: 'var(--font-handwritten)',
-                      fontSize: '20px',
-                      opacity: t.done ? 0.85 : 0.95,
-                    }}
-                  >
-                    {t.text}
-                  </span>
-                  <button
-                    type="button"
-                    onClick={() => removeTodo(t.id)}
-                    title="Remove"
-                    className="cursor-pointer text-sm opacity-0 transition-opacity group-hover:opacity-40"
-                    style={{ color: '#7a5438', background: 'none', border: 'none' }}
-                  >
-                    ✕
-                  </button>
-                </div>
-              ))}
+                    <button
+                      type="button"
+                      onClick={() => toggleTodo(t.id)}
+                      title={t.done ? 'Mark as not done' : 'Mark as done'}
+                      className="flex h-5 w-5 shrink-0 cursor-pointer items-center justify-center rounded border transition-all hover:scale-110"
+                      style={{
+                        borderColor: t.done ? '#7AAA5860' : '#C4A06060',
+                        background: t.done ? '#7AAA5810' : 'transparent',
+                      }}
+                    >
+                      {t.done && (
+                        <span className="text-xs" style={{ color: '#7AAA58' }}>
+                          ✓
+                        </span>
+                      )}
+                    </button>
+                    <span
+                      className="flex-1"
+                      style={{
+                        color: t.done ? '#C4A060' : '#7a5438',
+                        fontFamily: 'var(--font-handwritten)',
+                        fontSize: '20px',
+                        opacity: t.done ? 0.85 : 0.95,
+                      }}
+                    >
+                      {t.text}
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => removeTodo(t.id)}
+                      title="Remove"
+                      className="cursor-pointer text-sm opacity-0 transition-opacity group-hover:opacity-40"
+                      style={{ color: '#7a5438', background: 'none', border: 'none' }}
+                    >
+                      ✕
+                    </button>
+                  </div>
+                );
+              })}
               <input
                 type="text"
                 value={todoInput}
