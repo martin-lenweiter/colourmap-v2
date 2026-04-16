@@ -200,6 +200,50 @@ Why this shape:
 
 Status: aspirational. Requires voice input + transcription (currently a V1 non-goal in `docs/product.md` — to be revisited), a semantic layer over all notes/entries, clustering, and relationship inference. The pre-AI Overview should remain honest about its limits: it *gathers* but does not *synthesise* until the AI phase is real.
 
+### Overview's Purpose — Understanding the Fragments of Life
+
+> Sharpened 2026-04-16.
+
+Overview exists so the user can step back from the shapeless weight of *everything-going-on* and see the fragments of their life together. The Colourmap mission, the admin drag, the masters application, the shoulder rehab, the Sunday anxiety — each of these is a fragment. They pull simultaneously. Overview makes them visible as separate things AND as parts of a whole, so the user can reason about them instead of drowning in them.
+
+**Four guiding questions Overview is designed to help answer:**
+
+1. How do I balance my current mission with the stuff around it?
+2. How do I react to feelings and impulse?
+3. What are the tensions on my tension map?
+4. How do I clarify it all?
+
+### Tension Map
+
+A new primitive that sits alongside categories, not instead of them.
+
+- **Categories** are the *areas* of life — named by the user.
+- **Tensions** are the *pulls between* those areas — mission vs admin, rest vs output, self-care vs survival, creative vs practical. The tension is a relationship, not a topic.
+
+**Tension map = a view Overview renders** (AI-driven, not user-authored). The user doesn't name tensions; the AI discovers them from the user's language, category entries, target completion patterns, and emotional trajectory, and shows them back with the evidence that surfaced them. Consistent with Suggested Themes: the product proposes, explains, and the user can accept / dismiss / leave as observation.
+
+Why this shape:
+
+- Users usually feel tensions as a single undifferentiated squeeze ("I'm stressed"). They can't decompose the squeeze into its component pulls without help. That decomposition is the AI's specific job.
+- Naming tensions manually would force the user to analyse before they've captured — that's backwards. Capture first, synthesis second.
+- Tensions are time-sensitive. Today's mission-vs-admin squeeze is not last month's health-vs-work squeeze. The view re-renders as the data shifts.
+
+### AI Surface on Overview — the Box (not a ribbon)
+
+**Decided 2026-04-16 — the AI layer is a two-way box, not a read-only ribbon.**
+
+Earlier framing had the AI as a display element (ribbon, annotation). The actual intent is an interactive workspace:
+
+- **Input.** The user drops reflections into the box — text now, voice eventually. Low-friction, unstructured.
+- **Reading.** The box reads its own contents plus all the user's other captured data (categories, logbooks, check-ins, targets).
+- **Reflection.** It shows back its current understanding — which includes the tension map, suggested themes, trajectory observations, relationship patterns.
+- **Expand.** The box can expand (full-screen or deeper panel) to show more detail.
+- **Focus.** The user can zoom into a specific aspect — a single tension, a single theme, a single category — and the box reflects at that scope.
+
+This is a dialogue surface, not a dashboard widget. The AI box is *where the synthesis lives* and *where the user works with it*. Everything earlier in this spec about clustering, relationships, suggested themes, and tension map ultimately surfaces through this one place.
+
+Design constraint: the box is *optional*. A paid user can ignore it entirely and the base Overview still works. Free users never see it — but the base they see is complete on its own.
+
 ### Free / Paid Split (decided 2026-04-16)
 
 Overview is the primary boundary between free and paid tiers:
