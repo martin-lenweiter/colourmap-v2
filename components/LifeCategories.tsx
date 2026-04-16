@@ -596,19 +596,7 @@ export default function LifeCategories() {
                         }
                       }}
                     >
-                      {/* Glow ring (progress indicator) */}
-                      {progress.total > 0 && (
-                        <circle
-                          cx={v.x}
-                          cy={v.y}
-                          r={r + 4}
-                          fill="none"
-                          stroke={cat.color}
-                          strokeOpacity={0.3 + totalDone * 0.5}
-                          strokeWidth={1.5}
-                        />
-                      )}
-                      {/* Main vertex circle */}
+                      {/* Main vertex circle — no outer progress ring */}
                       <circle
                         cx={v.x}
                         cy={v.y}
