@@ -1713,6 +1713,93 @@ export default function FeelingCheckInCard() {
             )}
           </div>
         </div>
+
+        {/* Done archive — completed objectives land here and stay behind a pill */}
+        {doneObjectives.length > 0 && (
+          <div className="flex flex-col items-center gap-2 pt-1">
+            <button
+              type="button"
+              onClick={() => setShowDone((o) => !o)}
+              className="flex cursor-pointer items-center gap-1.5 rounded-full bg-transparent px-3 py-0.5 font-semibold uppercase tracking-wider transition-all"
+              style={{
+                color: '#8A6A4A',
+                border: '1px dashed #C4A06070',
+                fontSize: '12px',
+              }}
+              title={showDone ? 'Hide done objectives' : 'Show done objectives'}
+            >
+              done · {doneObjectives.length}
+              <span
+                className="text-[8px] transition-transform duration-200"
+                style={{
+                  color: '#C4A06080',
+                  transform: showDone ? 'rotate(180deg)' : 'rotate(0deg)',
+                }}
+              >
+                ▾
+              </span>
+            </button>
+            {showDone && (
+              <div className="w-full space-y-1.5 animate-in fade-in duration-200">
+                {doneObjectives.slice(0, 20).map((d) => {
+                  const dt = new Date(d.completedAt);
+                  const dateStr = `${dt.getDate()}/${dt.getMonth() + 1}`;
+                  return (
+                    <div key={d.id} className="flex items-start gap-2">
+                      <span
+                        className="shrink-0"
+                        style={{
+                          color: '#8A6A4A',
+                          opacity: 0.75,
+                          fontSize: '12px',
+                          paddingTop: '6px',
+                        }}
+                      >
+                        {dateStr}
+                      </span>
+                      <span
+                        className="flex h-4 w-4 shrink-0 items-center justify-center rounded border"
+                        style={{
+                          marginTop: '4px',
+                          borderColor: '#7AAA5860',
+                          background: '#7AAA5810',
+                        }}
+                      >
+                        <span className="text-[10px]" style={{ color: '#7AAA58' }}>
+                          ✓
+                        </span>
+                      </span>
+                      <span
+                        className="flex-1"
+                        style={{
+                          color: '#C4A060',
+                          fontFamily: 'var(--font-handwritten)',
+                          fontSize: '18px',
+                          opacity: 0.85,
+                        }}
+                      >
+                        {d.text}
+                      </span>
+                    </div>
+                  );
+                })}
+                {doneObjectives.length > 20 && (
+                  <p
+                    className="pt-1 text-center italic"
+                    style={{
+                      color: '#8A6A4A',
+                      fontFamily: 'var(--font-serif)',
+                      fontSize: '12px',
+                      opacity: 0.7,
+                    }}
+                  >
+                    + {doneObjectives.length - 20} older
+                  </p>
+                )}
+              </div>
+            )}
+          </div>
+        )}
       </div>
 
       {/* ── OTHER MISSIONS ── collapsible pillbox: Daily Objectives + To-do */}
@@ -1898,8 +1985,8 @@ export default function FeelingCheckInCard() {
             <div className="flex items-center gap-3">
               <div className="h-px flex-1" style={{ background: '#C4A06020' }} />
               <span
-                className="block h-1.5 w-1.5 rotate-45 rounded-[1px]"
-                style={{ background: '#C4A060', opacity: 0.4 }}
+                className="block h-3 w-3 rotate-45 rounded-[2px]"
+                style={{ background: '#C4A060', opacity: 0.85 }}
               />
               <div className="h-px flex-1" style={{ background: '#C4A06020' }} />
             </div>
