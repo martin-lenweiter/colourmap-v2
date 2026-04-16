@@ -723,6 +723,7 @@ export default function FeelingCheckInCard() {
   };
   const [draggedTodoIdx, setDraggedTodoIdx] = useState<number | null>(null);
   const [dragOverTodoIdx, setDragOverTodoIdx] = useState<number | null>(null);
+  const [clarityOpen, setClarityOpen] = useState(false);
   const [presenceLog, setPresenceLog] = useState<PresenceEntry[]>(() => {
     try {
       return JSON.parse(localStorage.getItem('colourmap:presence-log') || '[]');
@@ -1990,34 +1991,71 @@ export default function FeelingCheckInCard() {
               />
             </div>
 
-            {/* Are you clear on next missions? — clarity slider, lives at the bottom of Other Missions */}
+            {/* Are you clear on next missions? — collapsed behind a star.
+                Click the star (or the whole row) to open the clarity slider. */}
             <div className="space-y-1.5 pt-2">
-              <p
-                className="text-center italic"
+              <button
+                type="button"
+                onClick={() => setClarityOpen((o) => !o)}
+                className="flex w-full cursor-pointer items-center justify-center gap-2 bg-transparent italic"
                 style={{
                   color: '#8A6A4A',
                   fontFamily: 'var(--font-serif)',
                   fontSize: '15px',
                   opacity: 0.95,
+                  border: 'none',
+                  padding: '4px 0',
                 }}
+                title={clarityOpen ? 'Hide clarity slider' : 'Open clarity slider'}
               >
+                <svg
+                  width={14}
+                  height={14}
+                  viewBox="0 0 20 20"
+                  style={{ transition: 'transform 200ms', flexShrink: 0 }}
+                >
+                  {(() => {
+                    const cx = 10;
+                    const cy = 10;
+                    const r1 = 9;
+                    const r2 = 3.5;
+                    const pts: string[] = [];
+                    for (let i = 0; i < 8; i++) {
+                      const a = -Math.PI / 2 + (i * Math.PI) / 4;
+                      const r = i % 2 === 0 ? r1 : r2;
+                      pts.push(`${cx + r * Math.cos(a)},${cy + r * Math.sin(a)}`);
+                    }
+                    return (
+                      <polygon
+                        points={pts.join(' ')}
+                        fill={clarityOpen ? CLARITY_MISSIONS[clarityMissionsIdx].color : '#C4A060'}
+                        opacity={clarityOpen ? 1 : 0.55}
+                      />
+                    );
+                  })()}
+                </svg>
                 are you clear on next missions?
-              </p>
-              <DragSlider
-                items={CLARITY_MISSIONS}
-                selectedIdx={clarityMissionsIdx}
-                onSelect={setClarityMissionsIdx}
-                size={36}
-              />
-              <p
-                className="text-center text-base font-bold transition-all duration-300"
-                style={{
-                  color: CLARITY_MISSIONS[clarityMissionsIdx].color,
-                  fontFamily: 'var(--font-serif)',
-                }}
-              >
-                {CLARITY_MISSIONS[clarityMissionsIdx].level}
-              </p>
+              </button>
+              {clarityOpen && (
+                <div className="space-y-1.5 animate-in fade-in duration-200">
+                  <DragSlider
+                    items={CLARITY_MISSIONS}
+                    selectedIdx={clarityMissionsIdx}
+                    onSelect={setClarityMissionsIdx}
+                    size={36}
+                  />
+                  <p
+                    className="text-center font-bold transition-all duration-300"
+                    style={{
+                      color: CLARITY_MISSIONS[clarityMissionsIdx].color,
+                      fontFamily: 'var(--font-serif)',
+                      fontSize: '16px',
+                    }}
+                  >
+                    {CLARITY_MISSIONS[clarityMissionsIdx].level}
+                  </p>
+                </div>
+              )}
             </div>
           </>
         )}
@@ -2067,18 +2105,7 @@ export default function FeelingCheckInCard() {
             {/* Hawkins emotional slider — Shame → Peace, 10 squares.
                 Lives inside the Logbook & Emotions pill so it only appears
                 when you're actually opening the emotional reflection layer. */}
-            <div className="flex flex-col items-center gap-1.5 pb-2">
-              <p
-                className="uppercase"
-                style={{
-                  color: '#8A6A4A',
-                  fontSize: '11px',
-                  fontWeight: 600,
-                  letterSpacing: '0.18em',
-                }}
-              >
-                where am I in the process
-              </p>
+            <div className="flex flex-col items-center gap-2 pb-2">
               <div className="relative" style={{ width: 280, height: 28 }}>
                 {(() => {
                   const sq = 20;
@@ -2114,11 +2141,18 @@ export default function FeelingCheckInCard() {
               </div>
               <p
                 style={{
-                  color: HAWKINS[hawkinsIdx].color,
+                  // Acceptance's raw yellow (#F0E060) doesn't read against the cream
+                  // paper background — swap to a readable ochre while keeping the
+                  // yellow swatch in the slider itself.
+                  color:
+                    HAWKINS[hawkinsIdx].level === 'Acceptance'
+                      ? '#B8860B'
+                      : HAWKINS[hawkinsIdx].color,
                   fontFamily: 'var(--font-serif)',
-                  fontSize: '14px',
-                  fontWeight: 600,
-                  opacity: 0.9,
+                  fontSize: '18px',
+                  fontWeight: 700,
+                  letterSpacing: '0.04em',
+                  opacity: 1,
                 }}
               >
                 {HAWKINS[hawkinsIdx].level}
@@ -2257,16 +2291,22 @@ export default function FeelingCheckInCard() {
             {showLogbookEntries && sessionEmotions.length > 0 && logbookMode === 'mixed' && (
               <div className="space-y-1 pt-1">
                 {sessionEmotions.map((e, i) => (
-                  <div key={`m-${i}`} className="flex items-center gap-2">
+                  <div key={`m-${i}`} className="flex items-start gap-2">
                     <span
                       className="shrink-0"
-                      style={{ color: '#8A6A4A', opacity: 0.75, fontSize: '12px' }}
+                      style={{
+                        color: '#8A6A4A',
+                        opacity: 0.75,
+                        fontSize: '12px',
+                        lineHeight: '1.5',
+                        paddingTop: '6px',
+                      }}
                     >
                       {e.time}
                     </span>
                     <span
                       className="h-2 w-2 shrink-0 rounded-full"
-                      style={{ background: e.mindColor, opacity: 0.7 }}
+                      style={{ background: e.mindColor, opacity: 0.7, marginTop: '10px' }}
                     />
                     <span
                       style={{
@@ -2295,7 +2335,7 @@ export default function FeelingCheckInCard() {
                     {sessionEmotions
                       .filter((e) => e.mind === 'challenge')
                       .map((e, i) => (
-                        <div key={`c-${i}`} className="flex items-center gap-2">
+                        <div key={`c-${i}`} className="flex items-start gap-2">
                           <span
                             className="shrink-0"
                             style={{ color: '#8A6A4A', opacity: 0.75, fontSize: '12px' }}
@@ -2331,7 +2371,7 @@ export default function FeelingCheckInCard() {
                     {sessionEmotions
                       .filter((e) => e.mind === 'flow')
                       .map((e, i) => (
-                        <div key={`f-${i}`} className="flex items-center gap-2">
+                        <div key={`f-${i}`} className="flex items-start gap-2">
                           <span
                             className="shrink-0"
                             style={{ color: '#8A6A4A', opacity: 0.75, fontSize: '12px' }}
@@ -2361,7 +2401,7 @@ export default function FeelingCheckInCard() {
                     {sessionEmotions
                       .filter((e) => e.mind !== 'challenge' && e.mind !== 'flow')
                       .map((e, i) => (
-                        <div key={`u-${i}`} className="flex items-center gap-2">
+                        <div key={`u-${i}`} className="flex items-start gap-2">
                           <span
                             className="shrink-0"
                             style={{ color: '#8A6A4A', opacity: 0.75, fontSize: '12px' }}
