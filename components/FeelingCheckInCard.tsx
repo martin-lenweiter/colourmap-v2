@@ -2197,7 +2197,7 @@ export default function FeelingCheckInCard() {
                     const dotSize = 22;
                     const totalW = HAWKINS.length * dotSize + (HAWKINS.length - 1) * 6;
                     const offsetX = (300 - totalW) / 2;
-                    const baseY = (28 - dotSize) / 2;
+                    const baseY = (36 - dotSize) / 2;
                     return HAWKINS.map((h, i) => {
                       const selected = hawkinsIdx === i;
                       const x = offsetX + i * (dotSize + 6);
@@ -2227,8 +2227,8 @@ export default function FeelingCheckInCard() {
                   const sq = 20;
                   const gap = 6;
                   const totalW = HAWKINS.length * sq + (HAWKINS.length - 1) * gap;
-                  const offsetX = (280 - totalW) / 2;
-                  const baseY = (28 - sq) / 2;
+                  const offsetX = (300 - totalW) / 2;
+                  const baseY = (36 - sq) / 2;
                   return HAWKINS.map((h, i) => {
                     const selected = hawkinsIdx === i;
                     const x = offsetX + i * (sq + gap);
@@ -2281,7 +2281,7 @@ export default function FeelingCheckInCard() {
               <div className="space-y-1">
                 <div className="flex items-center gap-2 px-1">
                   <span
-                    className="block h-2.5 w-2.5 shrink-0 rotate-45 rounded-[1px]"
+                    className="block h-2.5 w-2.5 shrink-0 rounded-full"
                     style={{ background: '#A05A40', opacity: 0.85 }}
                   />
                   <span
@@ -2323,7 +2323,7 @@ export default function FeelingCheckInCard() {
               <div className="space-y-1">
                 <div className="flex items-center gap-2 px-1">
                   <span
-                    className="block h-2.5 w-2.5 shrink-0 rotate-45 rounded-[1px]"
+                    className="block h-2.5 w-2.5 shrink-0 rounded-full"
                     style={{ background: '#C4A060', opacity: 0.85 }}
                   />
                   <span
