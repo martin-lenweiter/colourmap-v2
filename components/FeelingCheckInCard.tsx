@@ -724,6 +724,21 @@ export default function FeelingCheckInCard() {
   const [draggedTodoIdx, setDraggedTodoIdx] = useState<number | null>(null);
   const [dragOverTodoIdx, setDragOverTodoIdx] = useState<number | null>(null);
   const [clarityOpen, setClarityOpen] = useState(false);
+  const [hawkinsStyle, setHawkinsStyle] = useState<'squares' | 'dots'>(() => {
+    try {
+      const v = localStorage.getItem('colourmap:hawkins-style');
+      return v === 'dots' ? 'dots' : 'squares';
+    } catch {
+      return 'squares';
+    }
+  });
+  useEffect(() => {
+    try {
+      localStorage.setItem('colourmap:hawkins-style', hawkinsStyle);
+    } catch {
+      /* silent */
+    }
+  }, [hawkinsStyle]);
   const [presenceLog, setPresenceLog] = useState<PresenceEntry[]>(() => {
     try {
       return JSON.parse(localStorage.getItem('colourmap:presence-log') || '[]');
@@ -2102,12 +2117,71 @@ export default function FeelingCheckInCard() {
 
         {logbookSectionOpen && (
           <>
-            {/* Hawkins emotional slider — Shame → Peace, 10 squares.
+            {/* Hawkins emotional slider — Shame → Peace, 10 stops.
+                Two visual styles (squares | dots), toggle on the right.
                 Lives inside the Logbook & Emotions pill so it only appears
                 when you're actually opening the emotional reflection layer. */}
-            <div className="flex flex-col items-center gap-2 pb-2">
+            <div className="relative flex flex-col items-center gap-2 pt-4 pb-2">
+              {/* Style toggle — small beige circle that switches between square and dot rendering */}
+              <button
+                type="button"
+                onClick={() => setHawkinsStyle((s) => (s === 'squares' ? 'dots' : 'squares'))}
+                aria-label="Toggle hawkins slider style"
+                className="absolute right-0 top-2 flex cursor-pointer items-center justify-center"
+                style={{
+                  width: 20,
+                  height: 20,
+                  background: 'transparent',
+                  border: 'none',
+                }}
+              >
+                <span
+                  style={{
+                    width: 14,
+                    height: 14,
+                    background: '#D8BE94',
+                    borderRadius: hawkinsStyle === 'dots' ? '50%' : '3px',
+                    display: 'block',
+                    transition: 'border-radius 200ms',
+                  }}
+                />
+              </button>
+
               <div className="relative" style={{ width: 280, height: 28 }}>
                 {(() => {
+                  if (hawkinsStyle === 'dots') {
+                    // DOTS style — circular dots in a straight horizontal line,
+                    // same vocabulary as variant 1 (arc) but flat instead of bowed.
+                    const dotSize = 22;
+                    const totalW = HAWKINS.length * dotSize + (HAWKINS.length - 1) * 6;
+                    const offsetX = (280 - totalW) / 2;
+                    const baseY = (28 - dotSize) / 2;
+                    return HAWKINS.map((h, i) => {
+                      const selected = hawkinsIdx === i;
+                      const x = offsetX + i * (dotSize + 6);
+                      return (
+                        <button
+                          key={h.level}
+                          type="button"
+                          onClick={() => setHawkinsIdx(i)}
+                          className="absolute cursor-pointer rounded-full transition-all"
+                          style={{
+                            left: x,
+                            top: baseY,
+                            width: dotSize,
+                            height: dotSize,
+                            background: h.color,
+                            opacity: selected ? 1 : 0.55,
+                            border: 'none',
+                            transform: selected ? 'scale(1.15)' : 'scale(1)',
+                            boxShadow: selected ? `0 4px 14px -4px ${h.color}` : 'none',
+                          }}
+                          title={h.level}
+                        />
+                      );
+                    });
+                  }
+                  // SQUARES style — original 20×20 rounded squares
                   const sq = 20;
                   const gap = 6;
                   const totalW = HAWKINS.length * sq + (HAWKINS.length - 1) * gap;
@@ -2170,7 +2244,7 @@ export default function FeelingCheckInCard() {
                   />
                   <span
                     className="shrink-0 font-semibold uppercase tracking-[0.18em]"
-                    style={{ color: '#A05A40', fontSize: '13px' }}
+                    style={{ color: '#A05A40', fontSize: '16px' }}
                   >
                     Challenge
                   </span>
@@ -2179,7 +2253,7 @@ export default function FeelingCheckInCard() {
                     style={{
                       color: '#A05A40',
                       fontFamily: 'var(--font-serif)',
-                      fontSize: '14px',
+                      fontSize: '15px',
                       opacity: 0.95,
                     }}
                   >
@@ -2212,7 +2286,7 @@ export default function FeelingCheckInCard() {
                   />
                   <span
                     className="shrink-0 font-semibold uppercase tracking-[0.18em]"
-                    style={{ color: '#C4A060', fontSize: '13px' }}
+                    style={{ color: '#C4A060', fontSize: '16px' }}
                   >
                     Flow
                   </span>
@@ -2221,7 +2295,7 @@ export default function FeelingCheckInCard() {
                     style={{
                       color: '#C4A060',
                       fontFamily: 'var(--font-serif)',
-                      fontSize: '14px',
+                      fontSize: '15px',
                       opacity: 0.95,
                     }}
                   >
@@ -2328,7 +2402,7 @@ export default function FeelingCheckInCard() {
                   <div className="space-y-1">
                     <p
                       className="font-semibold uppercase tracking-[0.18em]"
-                      style={{ color: '#A05A40', fontSize: '12px' }}
+                      style={{ color: '#A05A40', fontSize: '14px' }}
                     >
                       Challenge
                     </p>
@@ -2364,7 +2438,7 @@ export default function FeelingCheckInCard() {
                   <div className="space-y-1">
                     <p
                       className="font-semibold uppercase tracking-[0.18em]"
-                      style={{ color: '#C4A060', fontSize: '12px' }}
+                      style={{ color: '#C4A060', fontSize: '14px' }}
                     >
                       Flow
                     </p>
