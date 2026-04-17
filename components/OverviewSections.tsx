@@ -250,68 +250,7 @@ export default function OverviewSections() {
         onDelete={deleteNote}
       />
 
-      {/* Attention check */}
-      {neglected.length > 0 && (
-        <div>
-          <div className="mb-2 flex items-baseline gap-2">
-            <p
-              className="font-semibold uppercase"
-              style={{
-                color: '#8A6A4A',
-                fontSize: '13px',
-                letterSpacing: '0.18em',
-                opacity: 0.8,
-              }}
-            >
-              Attention check
-            </p>
-            <span
-              className="italic"
-              style={{
-                color: '#8A6A4A',
-                fontSize: '12px',
-                fontFamily: 'var(--font-serif)',
-                opacity: 0.7,
-              }}
-            >
-              · no entry for {ATTENTION_THRESHOLD_DAYS}+ days
-            </span>
-          </div>
-          <ul className="space-y-1.5">
-            {neglected.map(({ cat, daysSince }) => (
-              <li key={cat.id} className="flex items-center gap-3">
-                <span
-                  className="h-2.5 w-2.5 shrink-0 rounded-full"
-                  style={{ background: cat.color, opacity: 0.55 }}
-                />
-                <span
-                  className="flex-1"
-                  style={{
-                    color: '#5C3018',
-                    fontFamily: 'var(--font-serif)',
-                    fontSize: '13px',
-                    fontWeight: 600,
-                    opacity: 0.85,
-                  }}
-                >
-                  {cat.name}
-                </span>
-                <span
-                  className="italic"
-                  style={{
-                    color: '#8A6A4A',
-                    fontSize: '12px',
-                    fontFamily: 'var(--font-serif)',
-                    opacity: 0.7,
-                  }}
-                >
-                  {daysSince === Infinity ? 'no entries' : `${daysSince}d ago`}
-                </span>
-              </li>
-            ))}
-          </ul>
-        </div>
-      )}
+      {/* Attention check — disabled for now */}
     </div>
   );
 }
@@ -401,22 +340,25 @@ function WriteSection({
             const d = new Date(note.createdAt);
             const dateStr = `${d.getDate()}/${d.getMonth() + 1}`;
             return (
-              <li key={note.id} className="group flex items-start gap-2.5">
+              <li
+                key={note.id}
+                className="group flex items-center gap-2.5"
+                style={{ minHeight: 28 }}
+              >
                 <span
                   className="shrink-0"
                   style={{
                     color: '#8A6A4A',
                     opacity: 0.75,
                     fontSize: '12px',
-                    lineHeight: '1.5',
-                    paddingTop: '4px',
+                    lineHeight: '28px',
                   }}
                 >
                   {dateStr}
                 </span>
                 <span
                   className="h-2 w-2 shrink-0 rounded-full"
-                  style={{ background: accent, opacity: 0.7, marginTop: '8px' }}
+                  style={{ background: accent, opacity: 0.7 }}
                 />
                 <div className="flex-1">
                   <span
@@ -424,7 +366,7 @@ function WriteSection({
                       color: '#5C3018',
                       fontFamily: 'var(--font-handwritten)',
                       fontSize: '16px',
-                      lineHeight: 1.5,
+                      lineHeight: '28px',
                     }}
                   >
                     {note.text}
@@ -465,7 +407,6 @@ function WriteSection({
                     fontSize: '12px',
                     background: 'none',
                     border: 'none',
-                    paddingTop: '4px',
                   }}
                   title="Remove"
                 >

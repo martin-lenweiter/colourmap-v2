@@ -1,6 +1,8 @@
 'use client';
 
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import type { CompassAxis, LifeCategoryLike, TagValue } from '@/components/CategoryTagPicker';
+import CategoryTagPicker from '@/components/CategoryTagPicker';
 import FacingRow from '@/components/FacingRow';
 import FeelingCompass from '@/components/FeelingCompass';
 import FeelingStageSelector from '@/components/FeelingStageSelector';
@@ -9,6 +11,24 @@ import PostCheckInInsight from '@/components/PostCheckInInsight';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { getEmotionalWord } from '@/lib/emotional-vocabulary';
+
+const CATS_KEY = 'colourmap:life-categories';
+const CF_NAMES_KEY = 'colourmap:cf-custom-names';
+
+const COMPASS_AXES: CompassAxis[] = [
+  { name: 'Care', color: '#D4805A', group: 'Caring' },
+  { name: 'Attitude', color: '#C4A070', group: 'Caring' },
+  { name: 'Rest', color: '#C4906A', group: 'Caring' },
+  { name: 'Emotions', color: '#B07A5A', group: 'Caring' },
+  { name: 'Clarity', color: '#7AAA58', group: 'Doing' },
+  { name: 'Target', color: '#7A9A7A', group: 'Doing' },
+  { name: 'Resources', color: '#8AB0A0', group: 'Doing' },
+  { name: 'Action', color: '#9AB090', group: 'Doing' },
+  { name: 'Voice', color: '#6B7F4E', group: 'Sharing' },
+  { name: 'Listen', color: '#8CA46E', group: 'Sharing' },
+  { name: 'Bond', color: '#7B9560', group: 'Sharing' },
+  { name: 'Boundary', color: '#5F7447', group: 'Sharing' },
+];
 
 const HAWKINS = [
   {
@@ -482,45 +502,226 @@ function ChallengeFlowFields({
   flow,
   onChallengeChange,
   onFlowChange,
+  challengeTag,
+  flowTag,
+  onChallengeTagChange,
+  onFlowTagChange,
 }: {
   challenge: string;
   flow: string;
   onChallengeChange: (value: string) => void;
   onFlowChange: (value: string) => void;
+  challengeTag: TagValue | null;
+  flowTag: TagValue | null;
+  onChallengeTagChange: (v: TagValue | null) => void;
+  onFlowTagChange: (v: TagValue | null) => void;
 }) {
+  const [customNames, setCustomNames] = useState<{ challenge: string; flow: string }>(() => {
+    if (typeof window === 'undefined') return { challenge: 'Challenge', flow: 'Flow' };
+    try {
+      const raw = localStorage.getItem(CF_NAMES_KEY);
+      if (raw) return JSON.parse(raw);
+    } catch {}
+    return { challenge: 'Challenge', flow: 'Flow' };
+  });
+  const [lifeCategories, setLifeCategories] = useState<LifeCategoryLike[]>([]);
+  const [challengePickerOpen, setChallengePickerOpen] = useState(false);
+  const [flowPickerOpen, setFlowPickerOpen] = useState(false);
+
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem(CATS_KEY);
+      if (raw) setLifeCategories(JSON.parse(raw));
+    } catch {}
+  }, []);
+
+  function updateName(key: 'challenge' | 'flow', name: string) {
+    const next = { ...customNames, [key]: name };
+    setCustomNames(next);
+    localStorage.setItem(CF_NAMES_KEY, JSON.stringify(next));
+  }
+
+  const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
   return (
     <div className="grid gap-4 md:grid-cols-2">
-      <div className="block space-y-2">
-        <label
-          htmlFor="check-in-challenge"
-          className="block text-center text-[28px] font-semibold leading-none tracking-[-0.04em] text-[#c79a42]"
+      <CfColumn
+        id="check-in-challenge"
+        accent="#E0908A"
+        label={customNames.challenge}
+        onRename={(name) => updateName('challenge', name)}
+        time={time}
+        value={challenge}
+        onChange={onChallengeChange}
+        placeholder={`What's ${customNames.challenge.toLowerCase() === 'challenge' ? 'challenging' : customNames.challenge.toLowerCase()}?...`}
+        tag={challengeTag}
+        onTagChange={onChallengeTagChange}
+        pickerOpen={challengePickerOpen}
+        togglePicker={() => setChallengePickerOpen((o) => !o)}
+        closePicker={() => setChallengePickerOpen(false)}
+        lifeCategories={lifeCategories}
+      />
+      <CfColumn
+        id="check-in-flow"
+        accent="#A8CCA0"
+        label={customNames.flow}
+        onRename={(name) => updateName('flow', name)}
+        time={time}
+        value={flow}
+        onChange={onFlowChange}
+        placeholder={`What's ${customNames.flow.toLowerCase() === 'flow' ? 'flowing' : customNames.flow.toLowerCase()}?...`}
+        tag={flowTag}
+        onTagChange={onFlowTagChange}
+        pickerOpen={flowPickerOpen}
+        togglePicker={() => setFlowPickerOpen((o) => !o)}
+        closePicker={() => setFlowPickerOpen(false)}
+        lifeCategories={lifeCategories}
+      />
+    </div>
+  );
+}
+
+function CfColumn({
+  id,
+  accent,
+  label,
+  onRename,
+  time,
+  value,
+  onChange,
+  placeholder,
+  tag,
+  onTagChange,
+  pickerOpen,
+  togglePicker,
+  closePicker,
+  lifeCategories,
+}: {
+  id: string;
+  accent: string;
+  label: string;
+  onRename: (name: string) => void;
+  time: string;
+  value: string;
+  onChange: (v: string) => void;
+  placeholder: string;
+  tag: TagValue | null;
+  onTagChange: (v: TagValue | null) => void;
+  pickerOpen: boolean;
+  togglePicker: () => void;
+  closePicker: () => void;
+  lifeCategories: LifeCategoryLike[];
+}) {
+  const [renaming, setRenaming] = useState(false);
+  const [nameValue, setNameValue] = useState(label);
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    if (renaming && inputRef.current) inputRef.current.focus();
+  }, [renaming]);
+
+  function commitRename() {
+    const trimmed = nameValue.trim();
+    if (trimmed && trimmed !== label) {
+      onRename(trimmed);
+    } else {
+      setNameValue(label);
+    }
+    setRenaming(false);
+  }
+
+  return (
+    <div className="space-y-2">
+      {/* Header row: time · dot · label — all on one line */}
+      <div className="flex items-center gap-1.5" style={{ height: 20 }}>
+        <span
+          className="shrink-0"
+          style={{
+            color: '#8A6A4A',
+            opacity: 0.6,
+            fontFamily: 'var(--font-serif)',
+            fontSize: '12px',
+            lineHeight: '20px',
+            fontVariantNumeric: 'tabular-nums',
+          }}
         >
-          Challenge
-        </label>
-        <Textarea
-          id="check-in-challenge"
-          value={challenge}
-          onChange={(event) => onChallengeChange(event.target.value)}
-          placeholder="What's challenging?..."
-          rows={3}
-          className="min-h-[132px] resize-none border-[#d2b47b4a] bg-[#f7eddc9c] text-[#7a5438] placeholder:text-[#c4a060] focus-visible:border-[#c79a42] focus-visible:ring-[#d9b56f33]"
+          {time}
+        </span>
+        <span
+          className="shrink-0 rounded-full"
+          style={{ width: 8, height: 8, background: accent, opacity: 0.8 }}
         />
+        {renaming ? (
+          <input
+            ref={inputRef}
+            type="text"
+            value={nameValue}
+            onChange={(e) => setNameValue(e.target.value)}
+            onBlur={commitRename}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') commitRename();
+              if (e.key === 'Escape') {
+                setNameValue(label);
+                setRenaming(false);
+              }
+            }}
+            className="min-w-0 bg-transparent outline-none"
+            style={{
+              borderBottom: `1px solid ${accent}40`,
+              color: accent,
+              fontSize: '14px',
+              fontWeight: 600,
+              textTransform: 'uppercase' as const,
+              letterSpacing: '0.12em',
+              lineHeight: '20px',
+              padding: 0,
+            }}
+          />
+        ) : (
+          <button
+            type="button"
+            onClick={() => {
+              setNameValue(label);
+              setRenaming(true);
+            }}
+            title="Tap to rename"
+            style={{
+              background: 'none',
+              border: 'none',
+              padding: 0,
+              cursor: 'pointer',
+              color: accent,
+              fontSize: '14px',
+              fontWeight: 600,
+              textTransform: 'uppercase' as const,
+              letterSpacing: '0.12em',
+              lineHeight: '20px',
+            }}
+          >
+            {label}
+          </button>
+        )}
       </div>
 
-      <div className="block space-y-2">
-        <label
-          htmlFor="check-in-flow"
-          className="block text-center text-[28px] font-semibold leading-none tracking-[-0.04em] text-[#c79a42]"
-        >
-          Flow
-        </label>
+      {/* Textarea + category tag picker */}
+      <div className="flex items-end gap-2">
         <Textarea
-          id="check-in-flow"
-          value={flow}
-          onChange={(event) => onFlowChange(event.target.value)}
-          placeholder="What's flowing?..."
+          id={id}
+          aria-label={label}
+          value={value}
+          onChange={(event) => onChange(event.target.value)}
+          placeholder={placeholder}
           rows={3}
-          className="min-h-[132px] resize-none border-[#d2b47b4a] bg-[#f7eddc9c] text-[#7a5438] placeholder:text-[#c4a060] focus-visible:border-[#c79a42] focus-visible:ring-[#d9b56f33]"
+          className="min-h-[132px] flex-1 resize-none border-[#d2b47b4a] bg-[#f7eddc9c] text-[#7a5438] placeholder:text-[#c4a060] focus-visible:border-[#c79a42] focus-visible:ring-[#d9b56f33]"
+        />
+        <CategoryTagPicker
+          value={tag}
+          onChange={onTagChange}
+          open={pickerOpen}
+          onToggle={togglePicker}
+          onClose={closePicker}
+          lifeCategories={lifeCategories}
+          compassAxes={COMPASS_AXES}
         />
       </div>
     </div>
@@ -661,6 +862,8 @@ export default function CheckInForm({ missions = [], onCheckInComplete }: CheckI
   const [note, setNote] = useState('');
   const [challenge, setChallenge] = useState('');
   const [flow, setFlow] = useState('');
+  const [challengeTag, setChallengeTag] = useState<TagValue | null>(null);
+  const [flowTag, setFlowTag] = useState<TagValue | null>(null);
   const [_showChallenge, setShowChallenge] = useState(false);
   const [selectedTags, setSelectedTags] = useState<Set<string>>(new Set());
   const [_tagSliders, setTagSliders] = useState<Record<string, number>>({});
@@ -823,6 +1026,8 @@ export default function CheckInForm({ missions = [], onCheckInComplete }: CheckI
     setNote('');
     setChallenge('');
     setFlow('');
+    setChallengeTag(null);
+    setFlowTag(null);
     setShowChallenge(false);
     setSelectedTags(new Set());
     setSelectedMission(null);
@@ -1199,6 +1404,10 @@ export default function CheckInForm({ missions = [], onCheckInComplete }: CheckI
             flow={flow}
             onChallengeChange={setChallenge}
             onFlowChange={setFlow}
+            challengeTag={challengeTag}
+            flowTag={flowTag}
+            onChallengeTagChange={setChallengeTag}
+            onFlowTagChange={setFlowTag}
           />
         </div>
       </section>

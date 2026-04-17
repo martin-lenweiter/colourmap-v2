@@ -6,7 +6,9 @@ import FeelingCheckInCard from '@/components/FeelingCheckInCard';
 import LifeCategories from '@/components/LifeCategories';
 import OverviewSections from '@/components/OverviewSections';
 import OverviewVisualDemos from '@/components/OverviewVisualDemos';
+import ReflectBox from '@/components/ReflectBox';
 import { StyleProvider } from '@/components/StyleContext';
+import TransformationRoadmapDemos from '@/components/TransformationRoadmapDemos';
 
 function DayContent() {
   return (
@@ -20,8 +22,10 @@ function DayContent() {
         overviewContent={
           <div className="space-y-4">
             <OverviewSections />
-            <LifeCategories />
             <CompassCarousel />
+            <LifeCategories />
+            <ReflectBox />
+            <TransformationRoadmapDemos />
             <OverviewVisualDemos />
           </div>
         }

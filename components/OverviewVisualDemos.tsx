@@ -1,5 +1,7 @@
 'use client';
 
+import { useState } from 'react';
+
 /* ═══════════════════════════════════════════════════════════
    OVERVIEW VISUAL DEMOS — 5 mockups for the river / flow view.
    Each demo uses the same fake dataset (categories named +
@@ -1290,6 +1292,21 @@ const DEMOS: Demo[] = [
 ];
 
 export default function OverviewVisualDemos() {
+  const [open, setOpen] = useState(() => {
+    if (typeof window === 'undefined') return true;
+    return localStorage.getItem('colourmap:visual-demos-open') !== 'false';
+  });
+
+  const toggle = () => {
+    setOpen((prev) => {
+      const next = !prev;
+      try {
+        localStorage.setItem('colourmap:visual-demos-open', String(next));
+      } catch {}
+      return next;
+    });
+  };
+
   return (
     <div
       className="space-y-4 rounded-3xl border border-[#7a543833] px-5 py-6"
@@ -1298,13 +1315,28 @@ export default function OverviewVisualDemos() {
         boxShadow: '0 24px 50px -34px rgba(92,48,24,0.35)',
       }}
     >
-      <div className="flex flex-col items-center gap-1">
-        <p
-          className="text-center font-semibold uppercase"
-          style={{ color: '#C4A060', fontSize: '12px', letterSpacing: '0.22em' }}
-        >
-          River visualisations — design options
-        </p>
+      <button
+        type="button"
+        onClick={toggle}
+        className="flex w-full cursor-pointer flex-col items-center gap-1"
+      >
+        <div className="flex items-center gap-2">
+          <p
+            className="text-center font-semibold uppercase"
+            style={{ color: '#C4A060', fontSize: '12px', letterSpacing: '0.22em' }}
+          >
+            River visualisations — design options
+          </p>
+          <span
+            className="text-sm transition-transform duration-200"
+            style={{
+              color: '#C4A06080',
+              transform: open ? 'rotate(180deg)' : 'rotate(0deg)',
+            }}
+          >
+            ▾
+          </span>
+        </div>
         <p
           className="text-center italic"
           style={{
@@ -1317,55 +1349,57 @@ export default function OverviewVisualDemos() {
           five ways of rendering flow &amp; stuck over time — same synthetic data, same six
           categories
         </p>
-      </div>
+      </button>
 
-      <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
-        {DEMOS.map((demo) => (
-          <div
-            key={demo.id}
-            className="rounded-2xl border p-4"
-            style={{
-              borderColor: '#C4A06030',
-              background: 'rgba(245,236,220,0.55)',
-            }}
-          >
-            <p
-              className="mb-1"
-              style={{
-                color: '#5C3018',
-                fontFamily: 'var(--font-serif)',
-                fontSize: '14px',
-                fontWeight: 700,
-                letterSpacing: '0.01em',
-              }}
-            >
-              {demo.title}
-            </p>
-            <p
-              className="mb-3 italic"
-              style={{
-                color: '#8A6A4A',
-                fontFamily: 'var(--font-serif)',
-                fontSize: '12px',
-                opacity: 0.85,
-                lineHeight: 1.4,
-              }}
-            >
-              {demo.description}
-            </p>
+      {open && (
+        <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
+          {DEMOS.map((demo) => (
             <div
-              className="rounded-xl"
+              key={demo.id}
+              className="rounded-2xl border p-4"
               style={{
-                background: '#F5ECDC',
-                border: '1px solid #8A6A4A15',
-                padding: '6px',
+                borderColor: '#C4A06030',
+                background: 'rgba(245,236,220,0.55)',
               }}
             >
-              <demo.render />
+              <p
+                className="mb-1"
+                style={{
+                  color: '#5C3018',
+                  fontFamily: 'var(--font-serif)',
+                  fontSize: '14px',
+                  fontWeight: 700,
+                  letterSpacing: '0.01em',
+                }}
+              >
+                {demo.title}
+              </p>
+              <p
+                className="mb-3 italic"
+                style={{
+                  color: '#8A6A4A',
+                  fontFamily: 'var(--font-serif)',
+                  fontSize: '12px',
+                  opacity: 0.85,
+                  lineHeight: 1.4,
+                }}
+              >
+                {demo.description}
+              </p>
+              <div
+                className="rounded-xl"
+                style={{
+                  background: '#F5ECDC',
+                  border: '1px solid #8A6A4A15',
+                  padding: '6px',
+                }}
+              >
+                <demo.render />
+              </div>
             </div>
-          </div>
-        ))}
-      </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }

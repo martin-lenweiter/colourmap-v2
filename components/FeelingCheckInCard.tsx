@@ -2551,28 +2551,28 @@ export default function FeelingCheckInCard() {
             {showLogbookEntries && sessionEmotions.length > 0 && logbookMode === 'mixed' && (
               <div className="space-y-1 pt-1">
                 {sessionEmotions.map((e, i) => (
-                  <div key={`m-${i}`} className="flex items-start gap-2">
+                  <div key={`m-${i}`} className="flex items-center gap-2" style={{ minHeight: 28 }}>
                     <span
                       className="shrink-0"
                       style={{
                         color: '#8A6A4A',
                         opacity: 0.75,
                         fontSize: '12px',
-                        lineHeight: '1.5',
-                        paddingTop: '6px',
+                        lineHeight: '28px',
                       }}
                     >
                       {e.time}
                     </span>
                     <span
                       className="h-2 w-2 shrink-0 rounded-full"
-                      style={{ background: e.mindColor, opacity: 0.7, marginTop: '10px' }}
+                      style={{ background: e.mindColor, opacity: 0.7 }}
                     />
                     <span
                       style={{
                         color: '#7a5438',
                         fontFamily: 'var(--font-handwritten)',
                         fontSize: '20px',
+                        lineHeight: '28px',
                       }}
                     >
                       {e.text}
@@ -2595,10 +2595,19 @@ export default function FeelingCheckInCard() {
                     {sessionEmotions
                       .filter((e) => e.mind === 'challenge')
                       .map((e, i) => (
-                        <div key={`c-${i}`} className="flex items-start gap-2">
+                        <div
+                          key={`c-${i}`}
+                          className="flex items-center gap-2"
+                          style={{ minHeight: 28 }}
+                        >
                           <span
                             className="shrink-0"
-                            style={{ color: '#8A6A4A', opacity: 0.75, fontSize: '12px' }}
+                            style={{
+                              color: '#8A6A4A',
+                              opacity: 0.75,
+                              fontSize: '12px',
+                              lineHeight: '28px',
+                            }}
                           >
                             {e.time}
                           </span>
@@ -2611,6 +2620,7 @@ export default function FeelingCheckInCard() {
                               color: '#7a5438',
                               fontFamily: 'var(--font-handwritten)',
                               fontSize: '20px',
+                              lineHeight: '28px',
                             }}
                           >
                             {e.text}
@@ -2631,10 +2641,19 @@ export default function FeelingCheckInCard() {
                     {sessionEmotions
                       .filter((e) => e.mind === 'flow')
                       .map((e, i) => (
-                        <div key={`f-${i}`} className="flex items-start gap-2">
+                        <div
+                          key={`f-${i}`}
+                          className="flex items-center gap-2"
+                          style={{ minHeight: 28 }}
+                        >
                           <span
                             className="shrink-0"
-                            style={{ color: '#8A6A4A', opacity: 0.75, fontSize: '12px' }}
+                            style={{
+                              color: '#8A6A4A',
+                              opacity: 0.75,
+                              fontSize: '12px',
+                              lineHeight: '28px',
+                            }}
                           >
                             {e.time}
                           </span>
@@ -2647,6 +2666,7 @@ export default function FeelingCheckInCard() {
                               color: '#7a5438',
                               fontFamily: 'var(--font-handwritten)',
                               fontSize: '20px',
+                              lineHeight: '28px',
                             }}
                           >
                             {e.text}
@@ -2661,10 +2681,19 @@ export default function FeelingCheckInCard() {
                     {sessionEmotions
                       .filter((e) => e.mind !== 'challenge' && e.mind !== 'flow')
                       .map((e, i) => (
-                        <div key={`u-${i}`} className="flex items-start gap-2">
+                        <div
+                          key={`u-${i}`}
+                          className="flex items-center gap-2"
+                          style={{ minHeight: 28 }}
+                        >
                           <span
                             className="shrink-0"
-                            style={{ color: '#8A6A4A', opacity: 0.75, fontSize: '12px' }}
+                            style={{
+                              color: '#8A6A4A',
+                              opacity: 0.75,
+                              fontSize: '12px',
+                              lineHeight: '28px',
+                            }}
                           >
                             {e.time}
                           </span>
@@ -2677,6 +2706,7 @@ export default function FeelingCheckInCard() {
                               color: '#7a5438',
                               fontFamily: 'var(--font-handwritten)',
                               fontSize: '20px',
+                              lineHeight: '28px',
                             }}
                           >
                             {e.text}

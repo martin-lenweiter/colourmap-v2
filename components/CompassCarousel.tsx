@@ -2,7 +2,7 @@
 
 import { useRef, useState } from 'react';
 import CareCompass from '@/components/CareCompass';
-import CaringDepth from '@/components/CaringDepth';
+import CompassListView from '@/components/CompassListView';
 import ShareCompass from '@/components/ShareCompass';
 import StarCompass from '@/components/StarCompass';
 
@@ -12,12 +12,11 @@ const COMPASSES = [
   { id: 'sharing', label: 'Sharing', component: ShareCompass },
 ] as const;
 
-type DepthTab = 'compass' | 'work' | 'reflect';
+type DepthTab = 'compass' | 'list';
 
 const DEPTH_TABS: { id: DepthTab; label: string; color: string }[] = [
   { id: 'compass', label: 'Compass', color: '#C4A060' },
-  { id: 'work', label: 'Work', color: '#D4805A' },
-  { id: 'reflect', label: 'Reflect', color: '#9B6BA0' },
+  { id: 'list', label: 'List', color: '#D4805A' },
 ];
 
 export default function CompassCarousel() {
@@ -118,15 +117,9 @@ export default function CompassCarousel() {
         </div>
       )}
 
-      {depthTab === 'work' && (
+      {depthTab === 'list' && (
         <div className="animate-in fade-in duration-200">
-          <CaringDepth forcedTab="work" />
-        </div>
-      )}
-
-      {depthTab === 'reflect' && (
-        <div className="animate-in fade-in duration-200">
-          <CaringDepth forcedTab="reflect" />
+          <CompassListView />
         </div>
       )}
     </div>
