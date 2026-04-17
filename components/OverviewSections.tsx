@@ -170,7 +170,7 @@ export default function OverviewSections() {
 
   // Attention check: categories with no log in 14+ days (or never)
   const now = new Date();
-  const neglected = categories
+  const _neglected = categories
     .map((cat) => {
       const catLogs = logs
         .filter((l) => l.categoryId === cat.id)

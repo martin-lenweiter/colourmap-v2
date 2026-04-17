@@ -16,7 +16,7 @@ const POS_KEY = 'colourmap:life-positions';
 const RIVER_KEY = 'colourmap:life-river';
 
 /* ─── Objective & Emotion spectrums ─── */
-const MIND = [
+const _MIND = [
   { level: 'Stuck', color: '#E0908A' },
   { level: 'Overwhelmed', color: '#E8A090' },
   { level: 'Confused', color: '#C8A8C8' },
@@ -30,7 +30,7 @@ const MIND = [
   { level: 'Light', color: '#C8A8C0' },
 ];
 
-const MODE = [
+const _MODE = [
   { level: 'Resting', color: '#A8B8D0' },
   { level: 'Passive', color: '#B0C8A8' },
   { level: 'Drifting', color: '#D0C8B0' },
@@ -112,7 +112,7 @@ function ss(key: string, val: unknown) {
 }
 
 /* ─── Drag Slider (shared pattern) ─── */
-function DragSlider({
+function _DragSlider({
   items,
   selectedIdx,
   onSelect,
@@ -190,9 +190,9 @@ export default function LifeCategories() {
   const [targetInput, setTargetInput] = useState<Record<string, string>>({});
 
   // Objective & Emotion state — syncs with FeelingCheckInCard via same localStorage keys
-  const [objective, setObjective] = useState('');
-  const [mindIdx, setMindIdx] = useState(5);
-  const [modeIdx, setModeIdx] = useState(4);
+  const [_objective, setObjective] = useState('');
+  const [_mindIdx, setMindIdx] = useState(5);
+  const [_modeIdx, setModeIdx] = useState(4);
 
   const [logs, setLogs] = useState<LogEntry[]>([]);
   const [logInput, setLogInput] = useState<Record<string, string>>({});
@@ -304,7 +304,7 @@ export default function LifeCategories() {
     [riverSnapshots],
   );
 
-  const saveCellPositions = useCallback((next: Record<string, { x: number; y: number }>) => {
+  const _saveCellPositions = useCallback((next: Record<string, { x: number; y: number }>) => {
     setCellPositions(next);
     ss(POS_KEY, next);
   }, []);
@@ -435,7 +435,7 @@ export default function LifeCategories() {
   );
 
   /* ─── Objective & Emotion persistence ─── */
-  const updateObjective = useCallback((val: string) => {
+  const _updateObjective = useCallback((val: string) => {
     setObjective(val);
     try {
       localStorage.setItem('colourmap:current-objective', val);
@@ -444,7 +444,7 @@ export default function LifeCategories() {
     }
   }, []);
 
-  const updateMind = useCallback((idx: number) => {
+  const _updateMind = useCallback((idx: number) => {
     setMindIdx(idx);
     try {
       localStorage.setItem('colourmap:presence-idx', String(idx));
@@ -453,7 +453,7 @@ export default function LifeCategories() {
     }
   }, []);
 
-  const updateMode = useCallback((idx: number) => {
+  const _updateMode = useCallback((idx: number) => {
     setModeIdx(idx);
     try {
       localStorage.setItem('colourmap:engagement-idx', String(idx));
@@ -596,9 +596,9 @@ export default function LifeCategories() {
                 {/* Vertices — category dots + labels */}
                 {vertices.map((v, i) => {
                   const cat = categories[i];
-                  const ct = catTargets(cat.id);
+                  const _ct = catTargets(cat.id);
                   const progress = catProgress(cat.id);
-                  const totalDone = progress.total > 0 ? progress.done / progress.total : 0;
+                  const _totalDone = progress.total > 0 ? progress.done / progress.total : 0;
                   // Uniform vertex size — every category reads as equal weight.
                   // The shape itself communicates "all of these matter the same."
                   const r = 22;
