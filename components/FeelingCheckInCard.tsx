@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import CategoryTagPicker from '@/components/CategoryTagPicker';
 
 /* ═══════════════════════════════════════════════════════════
@@ -45,7 +45,7 @@ const MODE = [
 
 /* ─── Meaningful sliders at the bottom of box 1 — warm rainbow palette ─── */
 // Are you clear on next missions? — Lost → Crystal
-const _CLARITY_MISSIONS = [
+const CLARITY_MISSIONS = [
   { level: 'Lost', color: '#E0908A' },
   { level: 'Foggy', color: '#C8A8C8' },
   { level: 'Some', color: '#D8C088' },
@@ -370,21 +370,21 @@ export default function FeelingCheckInCard() {
       return true;
     }
   });
-  const [_emotionsSectionOpen, _setEmotionsSectionOpen] = useState(() => {
+  const [_emotionsSectionOpen, setEmotionsSectionOpen] = useState(() => {
     try {
       return localStorage.getItem('colourmap:emotions-section-open') !== 'false';
     } catch {
       return true;
     }
   });
-  const [_observationsSectionOpen, _setObservationsSectionOpen] = useState(() => {
+  const [_observationsSectionOpen, setObservationsSectionOpen] = useState(() => {
     try {
       return localStorage.getItem('colourmap:observations-section-open') !== 'false';
     } catch {
       return true;
     }
   });
-  const [_nextSectionOpen, _setNextSectionOpen] = useState(() => {
+  const [_nextSectionOpen, setNextSectionOpen] = useState(() => {
     try {
       return localStorage.getItem('colourmap:next-section-open') === 'true';
     } catch {
@@ -427,7 +427,7 @@ export default function FeelingCheckInCard() {
       return next;
     });
   };
-  const [_presenceSectionOpen, _setPresenceSectionOpen] = useState(() => {
+  const [_presenceSectionOpen, setPresenceSectionOpen] = useState(() => {
     try {
       return localStorage.getItem('colourmap:presence-section-open') === 'true';
     } catch {
@@ -522,14 +522,14 @@ export default function FeelingCheckInCard() {
     ],
   ];
   // State for grid: [col, row] — default middle center
-  const [_gridCol, _setGridCol] = useState(() => loadNum('colourmap:grid-col', 1));
-  const [_gridRow, _setGridRow] = useState(() => loadNum('colourmap:grid-row', 2));
+  const [gridCol, _setGridCol] = useState(() => loadNum('colourmap:grid-col', 1));
+  const [gridRow, _setGridRow] = useState(() => loadNum('colourmap:grid-row', 2));
   useEffect(() => {
     localStorage.setItem('colourmap:grid-col', String(gridCol));
-  }, []);
+  }, [gridCol]);
   useEffect(() => {
     localStorage.setItem('colourmap:grid-row', String(gridRow));
-  }, []);
+  }, [gridRow]);
   const _gridCell = GRID_3x5[gridCol]?.[gridRow] ?? GRID_3x5[1][2];
 
   // VARIANT 2: Balance scale — middle is equilibrium, extremes are valid deep states
@@ -555,14 +555,14 @@ export default function FeelingCheckInCard() {
     { label: 'Aware', color: '#F8C040' }, // seeing the bigger picture
     { label: 'Re-orienting', color: '#F0A088' }, // shifting / questioning
   ];
-  const [_contextIdx, _setContextIdx] = useState(() => {
+  const [contextIdx, _setContextIdx] = useState(() => {
     const v = loadNum('colourmap:context-idx', 2);
     return Math.max(0, Math.min(CONTEXT.length - 1, v));
   });
   const [_showContextPicker, _setShowContextPicker] = useState(false);
   useEffect(() => {
     localStorage.setItem('colourmap:context-idx', String(contextIdx));
-  }, []);
+  }, [contextIdx]);
 
   // Mission presence — second arc: how here am I with my mission?
   const _PRESENCE_ARC = [
@@ -1193,14 +1193,7 @@ export default function FeelingCheckInCard() {
       window.removeEventListener('mousemove', onMove);
       window.removeEventListener('mouseup', onUp);
     };
-  }, [
-    hawkinsDragRef,
-    hawkinsIdxRef.current,
-    mindDragRef,
-    mindIdxRef.current,
-    modeDragRef,
-    modeIdxRef.current,
-  ]);
+  }, []);
 
   return (
     <div
