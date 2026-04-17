@@ -1,8 +1,7 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import CategoryTagPicker from '@/components/CategoryTagPicker';
-import { DoingContent } from '@/components/DoingCheckInCard';
 
 /* ═══════════════════════════════════════════════════════════
    FEELING CHECK-IN CARD — Zen circle + losange gateway
@@ -46,7 +45,7 @@ const MODE = [
 
 /* ─── Meaningful sliders at the bottom of box 1 — warm rainbow palette ─── */
 // Are you clear on next missions? — Lost → Crystal
-const CLARITY_MISSIONS = [
+const _CLARITY_MISSIONS = [
   { level: 'Lost', color: '#E0908A' },
   { level: 'Foggy', color: '#C8A8C8' },
   { level: 'Some', color: '#D8C088' },
@@ -63,7 +62,7 @@ const READINESS = [
   { level: 'Charged', color: '#E0908A' },
 ];
 
-const INNER_TRACKERS = [
+const _INNER_TRACKERS = [
   {
     id: 'fear',
     label: 'Fear',
@@ -132,7 +131,7 @@ const INNER_TRACKERS = [
   },
 ] as const;
 
-const CELL_SHAPES = [
+const _CELL_SHAPES = [
   '60% 40% 55% 45% / 50% 60% 40% 50%',
   '45% 55% 40% 60% / 55% 45% 55% 45%',
   '50% 50% 45% 55% / 40% 60% 50% 50%',
@@ -141,7 +140,7 @@ const CELL_SHAPES = [
   '48% 52% 55% 45% / 55% 45% 48% 52%',
 ];
 
-const PEACE_TRACKERS = [
+const _PEACE_TRACKERS = [
   {
     id: 'pause',
     label: 'Pause',
@@ -287,7 +286,7 @@ export default function FeelingCheckInCard() {
     const v = loadNum('colourmap:process-idx', 4);
     return Math.max(0, Math.min(HAWKINS.length - 1, v));
   });
-  const currentHawkins = HAWKINS[hawkinsIdx];
+  const _currentHawkins = HAWKINS[hawkinsIdx];
   // MODE retained for backwards compat with existing check-ins history; not rendered
   const [modeIdx, setModeIdx] = useState(() => {
     const v = loadNum('colourmap:engagement-idx', 2);
@@ -345,7 +344,7 @@ export default function FeelingCheckInCard() {
     }
   });
   const [nextInput, setNextInput] = useState('');
-  const [trackerMode, setTrackerMode] = useState<TrackerMode>('facing');
+  const [_trackerMode, _setTrackerMode] = useState<TrackerMode>('facing');
   const [note, setNote] = useState(() => {
     try {
       return localStorage.getItem('colourmap:feeling-note') || '';
@@ -353,7 +352,7 @@ export default function FeelingCheckInCard() {
       return '';
     }
   });
-  const [activeTracker, setActiveTracker] = useState<string | null>(null);
+  const [_activeTracker, setActiveTracker] = useState<string | null>(null);
   const [trackerValues, setTrackerValues] = useState<Record<string, string>>(() => {
     try {
       return JSON.parse(localStorage.getItem('colourmap:tracker-values') || '{}');
@@ -361,8 +360,8 @@ export default function FeelingCheckInCard() {
       return {};
     }
   });
-  const [expanded, setExpanded] = useState(false);
-  const [showRecent, setShowRecent] = useState(false);
+  const [_expanded, _setExpanded] = useState(false);
+  const [_showRecent, _setShowRecent] = useState(false);
   const [justSaved, setJustSaved] = useState(false);
   const [objectiveSectionOpen, setObjectiveSectionOpen] = useState(() => {
     try {
@@ -371,21 +370,21 @@ export default function FeelingCheckInCard() {
       return true;
     }
   });
-  const [emotionsSectionOpen, setEmotionsSectionOpen] = useState(() => {
+  const [_emotionsSectionOpen, _setEmotionsSectionOpen] = useState(() => {
     try {
       return localStorage.getItem('colourmap:emotions-section-open') !== 'false';
     } catch {
       return true;
     }
   });
-  const [observationsSectionOpen, setObservationsSectionOpen] = useState(() => {
+  const [_observationsSectionOpen, _setObservationsSectionOpen] = useState(() => {
     try {
       return localStorage.getItem('colourmap:observations-section-open') !== 'false';
     } catch {
       return true;
     }
   });
-  const [nextSectionOpen, setNextSectionOpen] = useState(() => {
+  const [_nextSectionOpen, _setNextSectionOpen] = useState(() => {
     try {
       return localStorage.getItem('colourmap:next-section-open') === 'true';
     } catch {
@@ -428,14 +427,14 @@ export default function FeelingCheckInCard() {
       return next;
     });
   };
-  const [presenceSectionOpen, setPresenceSectionOpen] = useState(() => {
+  const [_presenceSectionOpen, _setPresenceSectionOpen] = useState(() => {
     try {
       return localStorage.getItem('colourmap:presence-section-open') === 'true';
     } catch {
       return false;
     }
   });
-  const togglePresenceSection = () => {
+  const _togglePresenceSection = () => {
     setPresenceSectionOpen((prev) => {
       const next = !prev;
       try {
@@ -457,8 +456,8 @@ export default function FeelingCheckInCard() {
   };
   const [presenceInput, setPresenceInput] = useState('');
   const [entryHawkinsIdx, setEntryHawkinsIdx] = useState<number | null>(null); // null = not tagged
-  const [showHawkinsPicker, setShowHawkinsPicker] = useState(false);
-  const [showDotHawkinsPicker, setShowDotHawkinsPicker] = useState(false);
+  const [_showHawkinsPicker, setShowHawkinsPicker] = useState(false);
+  const [_showDotHawkinsPicker, _setShowDotHawkinsPicker] = useState(false);
 
   // Emotional-register variant — six ways to render the same balance level.
   // 1 arc · 2 circle · 3 rings · 4 mountain · 5 slider · 6 boxes
@@ -482,7 +481,7 @@ export default function FeelingCheckInCard() {
 
   // hawkinsIdx + setHawkinsIdx already declared above (line ~285) — reused by the Boxes variant
 
-  const CLARITY = [
+  const _CLARITY = [
     'Sharp',
     'Clear',
     'Seeing',
@@ -523,15 +522,15 @@ export default function FeelingCheckInCard() {
     ],
   ];
   // State for grid: [col, row] — default middle center
-  const [gridCol, setGridCol] = useState(() => loadNum('colourmap:grid-col', 1));
-  const [gridRow, setGridRow] = useState(() => loadNum('colourmap:grid-row', 2));
+  const [_gridCol, _setGridCol] = useState(() => loadNum('colourmap:grid-col', 1));
+  const [_gridRow, _setGridRow] = useState(() => loadNum('colourmap:grid-row', 2));
   useEffect(() => {
     localStorage.setItem('colourmap:grid-col', String(gridCol));
-  }, [gridCol]);
+  }, []);
   useEffect(() => {
     localStorage.setItem('colourmap:grid-row', String(gridRow));
-  }, [gridRow]);
-  const gridCell = GRID_3x5[gridCol]?.[gridRow] ?? GRID_3x5[1][2];
+  }, []);
+  const _gridCell = GRID_3x5[gridCol]?.[gridRow] ?? GRID_3x5[1][2];
 
   // VARIANT 2: Balance scale — middle is equilibrium, extremes are valid deep states
   const BALANCE = [
@@ -556,17 +555,17 @@ export default function FeelingCheckInCard() {
     { label: 'Aware', color: '#F8C040' }, // seeing the bigger picture
     { label: 'Re-orienting', color: '#F0A088' }, // shifting / questioning
   ];
-  const [contextIdx, setContextIdx] = useState(() => {
+  const [_contextIdx, _setContextIdx] = useState(() => {
     const v = loadNum('colourmap:context-idx', 2);
     return Math.max(0, Math.min(CONTEXT.length - 1, v));
   });
-  const [showContextPicker, setShowContextPicker] = useState(false);
+  const [_showContextPicker, _setShowContextPicker] = useState(false);
   useEffect(() => {
     localStorage.setItem('colourmap:context-idx', String(contextIdx));
-  }, [contextIdx]);
+  }, []);
 
   // Mission presence — second arc: how here am I with my mission?
-  const PRESENCE_ARC = [
+  const _PRESENCE_ARC = [
     { label: 'Absent', color: '#88C8E8' },
     { label: 'Distant', color: '#B8D8E8' },
     { label: 'Dipping', color: '#C8E880' },
@@ -575,7 +574,7 @@ export default function FeelingCheckInCard() {
     { label: 'Absorbed', color: '#F0A088' },
     { label: 'Merged', color: '#E08030' },
   ];
-  const [presenceArcIdx, setPresenceArcIdx] = useState(() =>
+  const [presenceArcIdx, _setPresenceArcIdx] = useState(() =>
     loadNum('colourmap:presence-arc-idx', 3),
   );
   useEffect(() => {
@@ -587,7 +586,7 @@ export default function FeelingCheckInCard() {
     const v = loadNum('colourmap:clarity-missions-idx', 2);
     return Math.max(0, Math.min(CLARITY_MISSIONS.length - 1, v));
   });
-  const [readinessIdx, setReadinessIdx] = useState(() => {
+  const [readinessIdx, _setReadinessIdx] = useState(() => {
     const v = loadNum('colourmap:readiness-idx', 2);
     return Math.max(0, Math.min(READINESS.length - 1, v));
   });
@@ -780,7 +779,7 @@ export default function FeelingCheckInCard() {
       return [];
     }
   });
-  const addPresenceEntry = () => {
+  const _addPresenceEntry = () => {
     const text = presenceInput.trim();
     if (!text) return;
     const tagged = entryHawkinsIdx !== null ? HAWKINS[entryHawkinsIdx] : null;
@@ -820,9 +819,10 @@ export default function FeelingCheckInCard() {
     });
   };
   const toggleObjectiveSection = () => toggleSection('objective', setObjectiveSectionOpen);
-  const toggleEmotionsSection = () => toggleSection('emotions', setEmotionsSectionOpen);
-  const toggleObservationsSection = () => toggleSection('observations', setObservationsSectionOpen);
-  const toggleNextSection = () => {
+  const _toggleEmotionsSection = () => toggleSection('emotions', setEmotionsSectionOpen);
+  const _toggleObservationsSection = () =>
+    toggleSection('observations', setObservationsSectionOpen);
+  const _toggleNextSection = () => {
     setNextSectionOpen((prev) => {
       const next = !prev;
       try {
@@ -849,7 +849,7 @@ export default function FeelingCheckInCard() {
       return [];
     }
   });
-  const addObservation = () => {
+  const _addObservation = () => {
     const text = observation.trim();
     if (!text) return;
     const entry = {
@@ -961,7 +961,7 @@ export default function FeelingCheckInCard() {
     }
   });
   const [showDone, setShowDone] = useState(false);
-  const [expandedDoneId, setExpandedDoneId] = useState<string | null>(null);
+  const [_expandedDoneId, _setExpandedDoneId] = useState<string | null>(null);
 
   const completeObjective = (text: string, promoteFirstNext = true) => {
     const clean = text.trim();
@@ -996,7 +996,7 @@ export default function FeelingCheckInCard() {
       setObjective('');
     }
   };
-  const completeNextObjective = (i: number) => {
+  const _completeNextObjective = (i: number) => {
     const text = nextObjectives[i];
     // Next objectives don't have their own reflection stream yet — store bare entry
     const entry: DoneObjective = {
@@ -1082,23 +1082,23 @@ export default function FeelingCheckInCard() {
     localStorage.setItem('colourmap:next-objectives', JSON.stringify(nextObjectives));
   }, [nextObjectives]);
 
-  const addNextObjective = () => {
+  const _addNextObjective = () => {
     if (!nextInput.trim()) return;
     setNextObjectives([...nextObjectives, nextInput.trim()]);
     setNextInput('');
   };
 
-  const promoteNext = (idx: number) => {
+  const _promoteNext = (idx: number) => {
     const promoted = nextObjectives[idx];
     setNextObjectives(nextObjectives.filter((_, i) => i !== idx));
     setObjective(promoted);
   };
 
-  const removeNext = (idx: number) => {
+  const _removeNext = (idx: number) => {
     setNextObjectives(nextObjectives.filter((_, i) => i !== idx));
   };
 
-  const addEmotion = () => {
+  const _addEmotion = () => {
     if (!emotionInput.trim()) return;
     // If a process level was picked for this entry, use ITS color/name as the tag
     const tagged = entryHawkinsIdx !== null ? HAWKINS[entryHawkinsIdx] : null;
@@ -1115,29 +1115,29 @@ export default function FeelingCheckInCard() {
     setShowHawkinsPicker(false);
   };
 
-  const [mindDragging, setMindDragging] = useState(false);
-  const [modeDragging, setModeDragging] = useState(false);
+  const [_mindDragging, setMindDragging] = useState(false);
+  const [_modeDragging, setModeDragging] = useState(false);
 
   // Swipe tracking
   const mindDragRef = useRef<{ startX: number; startIdx: number } | null>(null);
   const modeDragRef = useRef<{ startX: number; startIdx: number } | null>(null);
   const hawkinsDragRef = useRef<{ startX: number; startIdx: number } | null>(null);
-  const [hawkinsDragging, setHawkinsDragging] = useState(false);
+  const [_hawkinsDragging, setHawkinsDragging] = useState(false);
 
   const currentMind = MIND[mindIdx];
   const currentMode = MODE[modeIdx];
 
-  const startMindDrag = (clientX: number) => {
+  const _startMindDrag = (clientX: number) => {
     mindDragRef.current = { startX: clientX, startIdx: mindIdx };
     setMindDragging(true);
   };
 
-  const startModeDrag = (clientX: number) => {
+  const _startModeDrag = (clientX: number) => {
     modeDragRef.current = { startX: clientX, startIdx: modeIdx };
     setModeDragging(true);
   };
 
-  const startHawkinsDrag = (clientX: number) => {
+  const _startHawkinsDrag = (clientX: number) => {
     hawkinsDragRef.current = { startX: clientX, startIdx: hawkinsIdx };
     setHawkinsDragging(true);
   };
@@ -1193,7 +1193,14 @@ export default function FeelingCheckInCard() {
       window.removeEventListener('mousemove', onMove);
       window.removeEventListener('mouseup', onUp);
     };
-  }, []);
+  }, [
+    hawkinsDragRef,
+    hawkinsIdxRef.current,
+    mindDragRef,
+    mindIdxRef.current,
+    modeDragRef,
+    modeIdxRef.current,
+  ]);
 
   return (
     <div
