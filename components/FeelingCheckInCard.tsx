@@ -963,7 +963,7 @@ export default function FeelingCheckInCard() {
       return [];
     }
   });
-  const [showDone, setShowDone] = useState(false);
+  const [_showDone2, _setShowDone2] = useState(false);
   const [_expandedDoneId, _setExpandedDoneId] = useState<string | null>(null);
 
   const completeObjective = (text: string, promoteFirstNext = true) => {
