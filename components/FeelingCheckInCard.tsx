@@ -1199,717 +1199,987 @@ export default function FeelingCheckInCard() {
     };
   }, []);
 
+  // Time-aware greeting
+  const greetingHour = new Date().getHours();
+  const greeting =
+    greetingHour >= 5 && greetingHour < 12
+      ? 'Good morning'
+      : greetingHour >= 12 && greetingHour < 17
+        ? 'Good afternoon'
+        : greetingHour >= 17 && greetingHour < 22
+          ? 'Good evening'
+          : 'Late night';
+  const dateStr = new Date().toLocaleDateString('en-GB', {
+    weekday: 'long',
+    day: 'numeric',
+    month: 'long',
+  });
+
   return (
-    <div
-      className="relative space-y-5 rounded-3xl border border-[#7a543833] px-5 py-6"
-      style={{
-        background: 'linear-gradient(180deg, rgba(251,244,232,0.95), rgba(246,236,221,0.92))',
-        boxShadow: '0 24px 50px -34px rgba(92,48,24,0.35)',
-      }}
-    >
-      {/* Discrete design toggle — tiny losange at top-right, opens variant picker */}
-      <div className="absolute right-4 top-4" style={{ zIndex: 10 }}>
-        <button
-          type="button"
-          onClick={() => setDesignsOpen((o) => !o)}
-          aria-label="Choose design"
-          className="flex cursor-pointer items-center justify-center rounded-full transition-all"
-          style={{
-            width: 18,
-            height: 18,
-            background: 'transparent',
-            border: 'none',
-            opacity: 1,
-          }}
-        >
-          <span
-            style={{
-              width: 12,
-              height: 12,
-              background: '#D8BE94',
-              opacity: 1,
-              borderRadius: '50%',
-              display: 'block',
-            }}
-          />
-        </button>
-        {designsOpen && (
-          <div
-            className="absolute right-0 mt-1 animate-in fade-in duration-150 overflow-hidden rounded-xl"
-            style={{
-              background: 'hsl(var(--card))',
-              border: '1px solid hsl(var(--border) / 0.3)',
-              boxShadow: '0 4px 16px rgba(0,0,0,0.08)',
-              minWidth: 140,
-            }}
-          >
-            {VARIANTS.map((v) => {
-              const active = variantIdx === v.id;
-              return (
-                <button
-                  key={v.id}
-                  type="button"
-                  onClick={() => {
-                    setVariantIdx(v.id);
-                    setDesignsOpen(false);
-                  }}
-                  className="flex w-full cursor-pointer items-center gap-2.5 px-3 py-2 text-left transition-all hover:bg-muted/30"
-                  style={{
-                    border: 'none',
-                    background: active ? '#C4A06012' : 'transparent',
-                  }}
-                >
-                  <span
-                    className="rotate-45"
-                    style={{
-                      width: 7,
-                      height: 7,
-                      background: '#C4A060',
-                      opacity: active ? 1 : 0.35,
-                      borderRadius: 1,
-                      display: 'block',
-                    }}
-                  />
-                  <span
-                    style={{
-                      fontFamily: 'var(--font-serif)',
-                      fontSize: '14px',
-                      fontWeight: active ? 700 : 400,
-                      color: active ? '#5C3018' : '#8A6A4A',
-                    }}
-                  >
-                    {v.label}
-                  </span>
-                </button>
-              );
-            })}
-          </div>
-        )}
-      </div>
-
-      {/* ─── Emotional register — 6 variants (pick the visual that fits the moment) */}
-      <div className="flex flex-col items-center gap-2">
-        {/* Variant 1: Arc — cosine bow */}
-        {variantIdx === 1 && (
-          <div className="relative" style={{ width: 300, height: 95 }}>
-            {(() => {
-              const W = 300;
-              const dotSize = 32;
-              const n = BALANCE.length;
-              const cy = 75;
-              const ry = 55;
-              return BALANCE.map((b, i) => {
-                const x = ((W - dotSize) * i) / (n - 1);
-                const angle = (i / (n - 1) - 0.5) * Math.PI;
-                const y = cy - ry * Math.cos(angle) - dotSize / 2;
-                const selected = balanceIdx === i;
-                return (
-                  <button
-                    key={b.label}
-                    type="button"
-                    onClick={() => setBalanceIdx(i)}
-                    className="absolute flex cursor-pointer items-center justify-center rounded-full transition-all hover:scale-110"
-                    style={{
-                      left: x,
-                      top: y,
-                      width: dotSize,
-                      height: dotSize,
-                      background: b.color,
-                      opacity: selected ? 1 : 0.55,
-                      border: 'none',
-                      boxShadow: selected ? `0 4px 14px -4px ${b.color}` : 'none',
-                      transform: selected ? 'scale(1.08)' : 'scale(1)',
-                    }}
-                    title={b.label}
-                  />
-                );
-              });
-            })()}
-            <svg
-              width="300"
-              height="95"
-              viewBox="0 0 300 95"
-              style={{ position: 'absolute', top: 0, left: 0, pointerEvents: 'none' }}
-            >
-              <path
-                d="M 16 75 A 134 55 0 0 1 284 75"
-                fill="none"
-                stroke="#C4A06030"
-                strokeWidth="1"
-                strokeDasharray="2 4"
-              />
-            </svg>
-          </div>
-        )}
-
-        {/* Variant 2: Circle — single draggable color disc */}
-        {variantIdx === 2 && (
-          <div
-            className="relative flex items-center justify-center select-none"
-            style={{ width: 300, height: 95 }}
-          >
-            <div
-              className="cursor-grab rounded-full transition-colors duration-500 active:cursor-grabbing"
-              style={{
-                width: 90,
-                height: 90,
-                // Pastel: blend the raw BALANCE colour with the cream paper base
-                // via a semi-transparent overlay. The 60% alpha lets the warm
-                // parchment tone show through, softening every variant.
-                background: `linear-gradient(rgba(245,236,220,0.45), rgba(245,236,220,0.45)), ${BALANCE[balanceIdx].color}`,
-                touchAction: 'none',
-              }}
-              onClick={(e) => {
-                const rect = (e.target as HTMLElement).getBoundingClientRect();
-                const cx = rect.left + rect.width / 2;
-                if (e.clientX < cx && balanceIdx > 0) setBalanceIdx(balanceIdx - 1);
-                else if (e.clientX > cx && balanceIdx < BALANCE.length - 1)
-                  setBalanceIdx(balanceIdx + 1);
-              }}
-              onMouseDown={(e) => {
-                const startX = e.clientX;
-                const startIdx = balanceIdx;
-                const onMove = (ev: MouseEvent) => {
-                  const dx = ev.clientX - startX;
-                  const steps = Math.round(dx / 30);
-                  const next = Math.max(0, Math.min(BALANCE.length - 1, startIdx + steps));
-                  if (next !== balanceIdx) setBalanceIdx(next);
-                };
-                const onUp = () => {
-                  window.removeEventListener('mousemove', onMove);
-                  window.removeEventListener('mouseup', onUp);
-                };
-                window.addEventListener('mousemove', onMove);
-                window.addEventListener('mouseup', onUp);
-              }}
-              onTouchStart={(e) => {
-                const startX = e.touches[0].clientX;
-                const startIdx = balanceIdx;
-                const onMove = (ev: TouchEvent) => {
-                  ev.preventDefault();
-                  const dx = ev.touches[0].clientX - startX;
-                  const steps = Math.round(dx / 30);
-                  const next = Math.max(0, Math.min(BALANCE.length - 1, startIdx + steps));
-                  if (next !== balanceIdx) setBalanceIdx(next);
-                };
-                const onEnd = () => {
-                  window.removeEventListener('touchmove', onMove);
-                  window.removeEventListener('touchend', onEnd);
-                };
-                window.addEventListener('touchmove', onMove, { passive: false });
-                window.addEventListener('touchend', onEnd);
-              }}
-            />
-          </div>
-        )}
-
-        {/* Variant 3: Rings — concentric Hawkins-style rings */}
-        {variantIdx === 3 && (
-          <div className="relative" style={{ width: 300, height: 95 }}>
-            <svg width="300" height="95" viewBox="0 0 300 95">
-              {(() => {
-                const cx = 150;
-                const cy = 95;
-                const radii = [14, 24, 34, 44, 54, 64, 74];
-                return BALANCE.map((b, i) => {
-                  const selected = balanceIdx === i;
-                  return (
-                    <g key={b.label}>
-                      {/* Hitbox — wider transparent stroke */}
-                      <circle
-                        cx={cx}
-                        cy={cy}
-                        r={radii[i]}
-                        fill="none"
-                        stroke="transparent"
-                        strokeWidth={10}
-                        style={{ cursor: 'pointer' }}
-                        onClick={() => setBalanceIdx(i)}
-                      />
-                      {/* Visual stroke */}
-                      <circle
-                        cx={cx}
-                        cy={cy}
-                        r={radii[i]}
-                        fill="none"
-                        stroke={b.color}
-                        strokeWidth={selected ? 6 : 3}
-                        opacity={selected ? 1 : 0.3}
-                        style={{ pointerEvents: 'none', transition: 'all 200ms' }}
-                      />
-                    </g>
-                  );
-                });
-              })()}
-              {/* Center dot — current colour */}
-              <circle
-                cx={150}
-                cy={95}
-                r={6}
-                fill={BALANCE[balanceIdx].color}
-                style={{ pointerEvents: 'none' }}
-              />
-            </svg>
-          </div>
-        )}
-
-        {/* Variant 4: Mountain — stacked-bar terrain */}
-        {variantIdx === 4 && (
-          <div className="relative" style={{ width: 300, height: 95 }}>
-            {(() => {
-              const barW = 30;
-              const gap = 6;
-              const n = BALANCE.length;
-              const totalW = barW * n + gap * (n - 1);
-              const offsetX = (300 - totalW) / 2;
-              const heights = [28, 46, 64, 82, 64, 46, 28]; // bell curve
-              const baseY = 90;
-              return BALANCE.map((b, i) => {
-                const h = heights[i];
-                const x = offsetX + i * (barW + gap);
-                const y = baseY - h;
-                const selected = balanceIdx === i;
-                return (
-                  <button
-                    key={b.label}
-                    type="button"
-                    onClick={() => setBalanceIdx(i)}
-                    className="absolute cursor-pointer rounded-t-md transition-all"
-                    style={{
-                      left: x,
-                      top: y,
-                      width: barW,
-                      height: h,
-                      background: b.color,
-                      opacity: selected ? 1 : 0.4,
-                      border: 'none',
-                      boxShadow: selected ? `0 4px 14px -4px ${b.color}` : 'none',
-                    }}
-                    title={b.label}
-                  />
-                );
-              });
-            })()}
-          </div>
-        )}
-
-        {/* Variant 5: Slider — long row of small drawer blocks (Hawkins-boxes vocabulary) */}
-        {variantIdx === 5 && (
-          <div
-            className="relative flex items-center justify-center select-none"
-            style={{ width: 300, height: 95 }}
-          >
-            {(() => {
-              // 21 small blocks across the full width — 3 per BALANCE level.
-              // Each block takes its color from the level it belongs to, giving
-              // a long row that reads as a continuous drawer strip.
-              const blocksPerLevel = 3;
-              const totalBlocks = BALANCE.length * blocksPerLevel;
-              const blockW = 9;
-              const gap = 5; // doubled negative space between blocks
-              const totalW = totalBlocks * blockW + (totalBlocks - 1) * gap;
-              const offsetX = (300 - totalW) / 2;
-              const blockH = 44;
-              const baseY = (95 - blockH) / 2;
-              return Array.from({ length: totalBlocks }, (_, i) => {
-                const level = Math.floor(i / blocksPerLevel);
-                const b = BALANCE[level];
-                const selected = balanceIdx === level;
-                const x = offsetX + i * (blockW + gap);
-                return (
-                  <button
-                    key={i}
-                    type="button"
-                    onClick={() => setBalanceIdx(level)}
-                    className="absolute cursor-pointer rounded-sm transition-all"
-                    style={{
-                      left: x,
-                      top: selected ? baseY - 6 : baseY,
-                      width: blockW,
-                      height: selected ? blockH + 12 : blockH,
-                      background: b.color,
-                      opacity: selected ? 1 : 0.35,
-                      border: 'none',
-                      boxShadow: selected ? `0 4px 14px -4px ${b.color}` : 'none',
-                    }}
-                    title={b.label}
-                  />
-                );
-              });
-            })()}
-          </div>
-        )}
-
-        {/* Variant 6: Boxes — central circle with drawer bars on both sides */}
-        {variantIdx === 6 && (
-          <div
-            className="relative flex items-center justify-center"
-            style={{ width: 340, height: 120 }}
-          >
-            {(() => {
-              const stuck = HAWKINS.slice(0, 5); // Shame → Anger (contracted side)
-              const free = HAWKINS.slice(5); // Courage → Peace (expanded side)
-              const W = 340;
-              const H = 120;
-              const barW = 22; // was 14 — ~60% wider
-              const barH = 84; // was 60 — 40% taller
-              const gap = 2; // negative space between drawers
-              const groupW = barW * 5 + gap * 4;
-              const circleD = 80; // was 70
-              const sideGap = 14;
-              const totalW = groupW * 2 + circleD + sideGap * 2;
-              const startX = (W - totalW) / 2;
-
-              const renderBar = (label: string, color: string, globalIdx: number, x: number) => {
-                const selected = hawkinsIdx === globalIdx;
-                return (
-                  <button
-                    key={label}
-                    type="button"
-                    onClick={() => setHawkinsIdx(globalIdx)}
-                    className="absolute cursor-pointer rounded-sm transition-all"
-                    style={{
-                      left: x,
-                      top: (H - barH) / 2,
-                      width: barW,
-                      height: barH,
-                      background: color,
-                      opacity: selected ? 1 : 0.35,
-                      border: 'none',
-                      boxShadow: selected ? `0 4px 14px -4px ${color}` : 'none',
-                    }}
-                    title={label}
-                  />
-                );
-              };
-
-              return (
-                <>
-                  {/* Left drawers — stuck states (Frozen → Overwhelmed) */}
-                  {stuck.map((h, i) => {
-                    const x = startX + i * (barW + gap);
-                    return renderBar(h.level, h.color, i, x);
-                  })}
-                  {/* Central circle — pastel (blend raw HAWKINS colour with cream), no glow */}
-                  <div
-                    className="absolute rounded-full transition-colors duration-300"
-                    style={{
-                      left: startX + groupW + sideGap,
-                      top: (H - circleD) / 2,
-                      width: circleD,
-                      height: circleD,
-                      background: `linear-gradient(rgba(245,236,220,0.45), rgba(245,236,220,0.45)), ${HAWKINS[hawkinsIdx].color}`,
-                    }}
-                  />
-                  {/* Right drawers — freedom states (Searching → Liberation) */}
-                  {free.map((h, i) => {
-                    const globalIdx = 5 + i;
-                    const x = startX + groupW + sideGap + circleD + sideGap + i * (barW + gap);
-                    return renderBar(h.level, h.color, globalIdx, x);
-                  })}
-                </>
-              );
-            })()}
-          </div>
-        )}
-
-        <p
-          className="text-center text-lg font-bold transition-all duration-300"
-          style={{
-            color: variantIdx === 6 ? HAWKINS[hawkinsIdx].color : BALANCE[balanceIdx].color,
-            fontFamily: 'var(--font-serif)',
-          }}
-        >
-          {variantIdx === 6 ? HAWKINS[hawkinsIdx].level : BALANCE[balanceIdx].label}
-        </p>
-      </div>
-
-      {/* ── CURRENT OBJECTIVE ── all in one pillbox */}
+    <>
+      {/* ═══ BOX A: HOW ARE YOU ═══ */}
       <div
-        className="space-y-2 rounded-2xl border px-4 py-3"
+        className="relative space-y-5 rounded-3xl border border-[#7a543833] px-5 py-6"
         style={{
-          borderColor: '#C4A06030',
-          background: 'rgba(245,236,220,0.45)',
+          background: 'linear-gradient(180deg, rgba(251,244,232,0.95), rgba(246,236,221,0.92))',
+          boxShadow: '0 24px 50px -34px rgba(92,48,24,0.35)',
         }}
       >
-        <div className="flex flex-col items-center gap-2">
+        {/* Time-aware greeting */}
+        <div className="flex flex-col items-center gap-0.5 pb-1">
+          <p
+            className="text-center italic"
+            style={{
+              fontFamily: 'var(--font-serif)',
+              fontSize: '18px',
+              color: '#5C3018',
+              opacity: 0.8,
+            }}
+          >
+            {greeting}
+          </p>
+          <p
+            className="text-center"
+            style={{
+              fontFamily: 'var(--font-serif)',
+              fontSize: '12px',
+              color: '#8A6A4A',
+              opacity: 0.5,
+              letterSpacing: '0.06em',
+            }}
+          >
+            {dateStr}
+          </p>
+        </div>
+
+        {/* Discrete design toggle — tiny losange at top-right, opens variant picker */}
+        <div className="absolute right-4 top-4" style={{ zIndex: 10 }}>
           <button
             type="button"
-            onClick={toggleObjectiveSection}
-            className="flex cursor-pointer items-center gap-2 rounded-full px-5 py-1.5 transition-all"
+            onClick={() => setDesignsOpen((o) => !o)}
+            aria-label="Choose design"
+            className="flex cursor-pointer items-center justify-center rounded-full transition-all"
             style={{
-              background: '#C4A06015',
-              border: '1px solid #C4A06040',
+              width: 18,
+              height: 18,
+              background: 'transparent',
+              border: 'none',
+              opacity: 1,
             }}
           >
             <span
-              className="text-center text-sm font-semibold uppercase tracking-[0.22em]"
-              style={{ color: '#C4A060' }}
-            >
-              Current Objective
-            </span>
-            <span
-              className="text-sm transition-transform duration-200"
               style={{
-                color: '#C4A06080',
-                transform: objectiveSectionOpen ? 'rotate(180deg)' : 'rotate(0deg)',
-              }}
-            >
-              ▾
-            </span>
-          </button>
-          <div className="relative w-full">
-            <input
-              type="text"
-              value={objective}
-              onChange={(e) => setObjective(e.target.value)}
-              placeholder="set an objective..."
-              className="w-full border-b bg-transparent pb-1 text-center outline-none placeholder:text-muted-foreground/40"
-              style={{
-                color: '#5C3018',
-                borderColor: '#C4A06020',
-                fontFamily: 'var(--font-handwritten)',
-                fontSize: '24px',
-                fontWeight: 700,
-                letterSpacing: '0.06em',
-                paddingLeft: '64px',
-                paddingRight: '64px',
+                width: 12,
+                height: 12,
+                background: '#D8BE94',
+                opacity: 1,
+                borderRadius: '50%',
+                display: 'block',
               }}
             />
-            <div className="absolute right-0 top-1/2 flex -translate-y-1/2 items-center gap-1.5">
-              {lifeCategories.length > 0 && objective.trim().length > 0 && (
-                <button
-                  type="button"
-                  onClick={() => setShowCategoryPicker(!showCategoryPicker)}
-                  className="shrink-0 cursor-pointer rounded-md px-2 py-0.5 text-[11px] uppercase tracking-wider transition-all"
-                  style={{
-                    color: showCategoryPicker ? '#C4A060' : '#C4A06060',
-                    background: showCategoryPicker ? '#C4A06010' : 'transparent',
-                    border: `1px solid ${showCategoryPicker ? '#C4A06030' : 'transparent'}`,
-                  }}
-                >
-                  {justTagged ? '✓ tagged' : 'tag'}
-                </button>
-              )}
-              {objective.trim().length > 0 && (
-                <button
-                  type="button"
-                  onClick={() => completeObjective(objective)}
-                  title="Mark as done"
-                  className="flex h-5 w-5 shrink-0 cursor-pointer items-center justify-center rounded border transition-all hover:scale-110"
-                  style={{
-                    borderColor: '#7AAA5860',
-                    background: '#7AAA5810',
-                  }}
-                >
-                  <span className="text-xs" style={{ color: '#7AAA58' }}>
-                    ✓
-                  </span>
-                </button>
-              )}
-            </div>
-            {showCategoryPicker && lifeCategories.length > 0 && (
-              <div
-                className="absolute right-0 top-full z-50 mt-1 animate-in fade-in duration-150 overflow-hidden rounded-xl"
-                style={{
-                  background: '#F5ECDC',
-                  border: '1px solid #8A6A4A40',
-                  boxShadow: '0 8px 24px rgba(92,48,24,0.18)',
-                  minWidth: 180,
-                }}
-              >
-                {lifeCategories.map((cat) => (
+          </button>
+          {designsOpen && (
+            <div
+              className="absolute right-0 mt-1 animate-in fade-in duration-150 overflow-hidden rounded-xl"
+              style={{
+                background: 'hsl(var(--card))',
+                border: '1px solid hsl(var(--border) / 0.3)',
+                boxShadow: '0 4px 16px rgba(0,0,0,0.08)',
+                minWidth: 140,
+              }}
+            >
+              {VARIANTS.map((v) => {
+                const active = variantIdx === v.id;
+                return (
                   <button
-                    key={cat.id}
+                    key={v.id}
                     type="button"
-                    onClick={() => tagObjectiveToCategory(cat.id)}
+                    onClick={() => {
+                      setVariantIdx(v.id);
+                      setDesignsOpen(false);
+                    }}
                     className="flex w-full cursor-pointer items-center gap-2.5 px-3 py-2 text-left transition-all hover:bg-muted/30"
-                    style={{ border: 'none', background: 'transparent' }}
+                    style={{
+                      border: 'none',
+                      background: active ? '#C4A06012' : 'transparent',
+                    }}
                   >
-                    <div
+                    <span
+                      className="rotate-45"
                       style={{
-                        width: 8,
-                        height: 8,
-                        borderRadius: '50%',
-                        background: cat.color,
+                        width: 7,
+                        height: 7,
+                        background: '#C4A060',
+                        opacity: active ? 1 : 0.35,
+                        borderRadius: 1,
+                        display: 'block',
                       }}
                     />
                     <span
                       style={{
                         fontFamily: 'var(--font-serif)',
                         fontSize: '14px',
-                        color: '#7a5438',
+                        fontWeight: active ? 700 : 400,
+                        color: active ? '#5C3018' : '#8A6A4A',
                       }}
                     >
-                      {cat.name}
+                      {v.label}
                     </span>
                   </button>
-                ))}
-              </div>
-            )}
-          </div>
+                );
+              })}
+            </div>
+          )}
         </div>
 
-        {/* Done archive moved to Other Missions Done tab */}
-      </div>
+        {/* ─── Emotional register — 6 variants (pick the visual that fits the moment) */}
+        <div className="flex flex-col items-center gap-2">
+          {/* Variant 1: Arc — cosine bow */}
+          {variantIdx === 1 && (
+            <div className="relative" style={{ width: 300, height: 95 }}>
+              {(() => {
+                const W = 300;
+                const dotSize = 32;
+                const n = BALANCE.length;
+                const cy = 75;
+                const ry = 55;
+                return BALANCE.map((b, i) => {
+                  const x = ((W - dotSize) * i) / (n - 1);
+                  const angle = (i / (n - 1) - 0.5) * Math.PI;
+                  const y = cy - ry * Math.cos(angle) - dotSize / 2;
+                  const selected = balanceIdx === i;
+                  return (
+                    <button
+                      key={b.label}
+                      type="button"
+                      onClick={() => setBalanceIdx(i)}
+                      className="absolute flex cursor-pointer items-center justify-center rounded-full transition-all hover:scale-110"
+                      style={{
+                        left: x,
+                        top: y,
+                        width: dotSize,
+                        height: dotSize,
+                        background: b.color,
+                        opacity: selected ? 1 : 0.55,
+                        border: 'none',
+                        boxShadow: selected ? `0 4px 14px -4px ${b.color}` : 'none',
+                        transform: selected ? 'scale(1.08)' : 'scale(1)',
+                      }}
+                      title={b.label}
+                    />
+                  );
+                });
+              })()}
+              <svg
+                width="300"
+                height="95"
+                viewBox="0 0 300 95"
+                style={{ position: 'absolute', top: 0, left: 0, pointerEvents: 'none' }}
+              >
+                <path
+                  d="M 16 75 A 134 55 0 0 1 284 75"
+                  fill="none"
+                  stroke="#C4A06030"
+                  strokeWidth="1"
+                  strokeDasharray="2 4"
+                />
+              </svg>
+            </div>
+          )}
 
-      {/* ── OTHER MISSIONS ── collapsible pillbox: Daily Objectives + To-do */}
-      <div
-        className="space-y-3 rounded-2xl border px-4 py-3"
-        style={{
-          borderColor: '#C4A06030',
-          background: 'rgba(245,236,220,0.45)',
-        }}
-      >
-        <div className="flex justify-center">
-          <button
-            type="button"
-            onClick={toggleOtherMissions}
-            className="flex cursor-pointer items-center gap-2 rounded-full px-5 py-1.5 transition-all"
+          {/* Variant 2: Circle — single draggable color disc */}
+          {variantIdx === 2 && (
+            <div
+              className="relative flex items-center justify-center select-none"
+              style={{ width: 300, height: 95 }}
+            >
+              <div
+                className="cursor-grab rounded-full transition-colors duration-500 active:cursor-grabbing"
+                style={{
+                  width: 90,
+                  height: 90,
+                  // Pastel: blend the raw BALANCE colour with the cream paper base
+                  // via a semi-transparent overlay. The 60% alpha lets the warm
+                  // parchment tone show through, softening every variant.
+                  background: `linear-gradient(rgba(245,236,220,0.45), rgba(245,236,220,0.45)), ${BALANCE[balanceIdx].color}`,
+                  touchAction: 'none',
+                }}
+                onClick={(e) => {
+                  const rect = (e.target as HTMLElement).getBoundingClientRect();
+                  const cx = rect.left + rect.width / 2;
+                  if (e.clientX < cx && balanceIdx > 0) setBalanceIdx(balanceIdx - 1);
+                  else if (e.clientX > cx && balanceIdx < BALANCE.length - 1)
+                    setBalanceIdx(balanceIdx + 1);
+                }}
+                onMouseDown={(e) => {
+                  const startX = e.clientX;
+                  const startIdx = balanceIdx;
+                  const onMove = (ev: MouseEvent) => {
+                    const dx = ev.clientX - startX;
+                    const steps = Math.round(dx / 30);
+                    const next = Math.max(0, Math.min(BALANCE.length - 1, startIdx + steps));
+                    if (next !== balanceIdx) setBalanceIdx(next);
+                  };
+                  const onUp = () => {
+                    window.removeEventListener('mousemove', onMove);
+                    window.removeEventListener('mouseup', onUp);
+                  };
+                  window.addEventListener('mousemove', onMove);
+                  window.addEventListener('mouseup', onUp);
+                }}
+                onTouchStart={(e) => {
+                  const startX = e.touches[0].clientX;
+                  const startIdx = balanceIdx;
+                  const onMove = (ev: TouchEvent) => {
+                    ev.preventDefault();
+                    const dx = ev.touches[0].clientX - startX;
+                    const steps = Math.round(dx / 30);
+                    const next = Math.max(0, Math.min(BALANCE.length - 1, startIdx + steps));
+                    if (next !== balanceIdx) setBalanceIdx(next);
+                  };
+                  const onEnd = () => {
+                    window.removeEventListener('touchmove', onMove);
+                    window.removeEventListener('touchend', onEnd);
+                  };
+                  window.addEventListener('touchmove', onMove, { passive: false });
+                  window.addEventListener('touchend', onEnd);
+                }}
+              />
+            </div>
+          )}
+
+          {/* Variant 3: Rings — concentric Hawkins-style rings */}
+          {variantIdx === 3 && (
+            <div className="relative" style={{ width: 300, height: 95 }}>
+              <svg width="300" height="95" viewBox="0 0 300 95">
+                {(() => {
+                  const cx = 150;
+                  const cy = 95;
+                  const radii = [14, 24, 34, 44, 54, 64, 74];
+                  return BALANCE.map((b, i) => {
+                    const selected = balanceIdx === i;
+                    return (
+                      <g key={b.label}>
+                        {/* Hitbox — wider transparent stroke */}
+                        <circle
+                          cx={cx}
+                          cy={cy}
+                          r={radii[i]}
+                          fill="none"
+                          stroke="transparent"
+                          strokeWidth={10}
+                          style={{ cursor: 'pointer' }}
+                          onClick={() => setBalanceIdx(i)}
+                        />
+                        {/* Visual stroke */}
+                        <circle
+                          cx={cx}
+                          cy={cy}
+                          r={radii[i]}
+                          fill="none"
+                          stroke={b.color}
+                          strokeWidth={selected ? 6 : 3}
+                          opacity={selected ? 1 : 0.3}
+                          style={{ pointerEvents: 'none', transition: 'all 200ms' }}
+                        />
+                      </g>
+                    );
+                  });
+                })()}
+                {/* Center dot — current colour */}
+                <circle
+                  cx={150}
+                  cy={95}
+                  r={6}
+                  fill={BALANCE[balanceIdx].color}
+                  style={{ pointerEvents: 'none' }}
+                />
+              </svg>
+            </div>
+          )}
+
+          {/* Variant 4: Mountain — stacked-bar terrain */}
+          {variantIdx === 4 && (
+            <div className="relative" style={{ width: 300, height: 95 }}>
+              {(() => {
+                const barW = 30;
+                const gap = 6;
+                const n = BALANCE.length;
+                const totalW = barW * n + gap * (n - 1);
+                const offsetX = (300 - totalW) / 2;
+                const heights = [28, 46, 64, 82, 64, 46, 28]; // bell curve
+                const baseY = 90;
+                return BALANCE.map((b, i) => {
+                  const h = heights[i];
+                  const x = offsetX + i * (barW + gap);
+                  const y = baseY - h;
+                  const selected = balanceIdx === i;
+                  return (
+                    <button
+                      key={b.label}
+                      type="button"
+                      onClick={() => setBalanceIdx(i)}
+                      className="absolute cursor-pointer rounded-t-md transition-all"
+                      style={{
+                        left: x,
+                        top: y,
+                        width: barW,
+                        height: h,
+                        background: b.color,
+                        opacity: selected ? 1 : 0.4,
+                        border: 'none',
+                        boxShadow: selected ? `0 4px 14px -4px ${b.color}` : 'none',
+                      }}
+                      title={b.label}
+                    />
+                  );
+                });
+              })()}
+            </div>
+          )}
+
+          {/* Variant 5: Slider — long row of small drawer blocks (Hawkins-boxes vocabulary) */}
+          {variantIdx === 5 && (
+            <div
+              className="relative flex items-center justify-center select-none"
+              style={{ width: 300, height: 95 }}
+            >
+              {(() => {
+                // 21 small blocks across the full width — 3 per BALANCE level.
+                // Each block takes its color from the level it belongs to, giving
+                // a long row that reads as a continuous drawer strip.
+                const blocksPerLevel = 3;
+                const totalBlocks = BALANCE.length * blocksPerLevel;
+                const blockW = 9;
+                const gap = 5; // doubled negative space between blocks
+                const totalW = totalBlocks * blockW + (totalBlocks - 1) * gap;
+                const offsetX = (300 - totalW) / 2;
+                const blockH = 44;
+                const baseY = (95 - blockH) / 2;
+                return Array.from({ length: totalBlocks }, (_, i) => {
+                  const level = Math.floor(i / blocksPerLevel);
+                  const b = BALANCE[level];
+                  const selected = balanceIdx === level;
+                  const x = offsetX + i * (blockW + gap);
+                  return (
+                    <button
+                      key={i}
+                      type="button"
+                      onClick={() => setBalanceIdx(level)}
+                      className="absolute cursor-pointer rounded-sm transition-all"
+                      style={{
+                        left: x,
+                        top: selected ? baseY - 6 : baseY,
+                        width: blockW,
+                        height: selected ? blockH + 12 : blockH,
+                        background: b.color,
+                        opacity: selected ? 1 : 0.35,
+                        border: 'none',
+                        boxShadow: selected ? `0 4px 14px -4px ${b.color}` : 'none',
+                      }}
+                      title={b.label}
+                    />
+                  );
+                });
+              })()}
+            </div>
+          )}
+
+          {/* Variant 6: Boxes — central circle with drawer bars on both sides */}
+          {variantIdx === 6 && (
+            <div
+              className="relative flex items-center justify-center"
+              style={{ width: 340, height: 120 }}
+            >
+              {(() => {
+                const stuck = HAWKINS.slice(0, 5); // Shame → Anger (contracted side)
+                const free = HAWKINS.slice(5); // Courage → Peace (expanded side)
+                const W = 340;
+                const H = 120;
+                const barW = 22; // was 14 — ~60% wider
+                const barH = 84; // was 60 — 40% taller
+                const gap = 2; // negative space between drawers
+                const groupW = barW * 5 + gap * 4;
+                const circleD = 80; // was 70
+                const sideGap = 14;
+                const totalW = groupW * 2 + circleD + sideGap * 2;
+                const startX = (W - totalW) / 2;
+
+                const renderBar = (label: string, color: string, globalIdx: number, x: number) => {
+                  const selected = hawkinsIdx === globalIdx;
+                  return (
+                    <button
+                      key={label}
+                      type="button"
+                      onClick={() => setHawkinsIdx(globalIdx)}
+                      className="absolute cursor-pointer rounded-sm transition-all"
+                      style={{
+                        left: x,
+                        top: (H - barH) / 2,
+                        width: barW,
+                        height: barH,
+                        background: color,
+                        opacity: selected ? 1 : 0.35,
+                        border: 'none',
+                        boxShadow: selected ? `0 4px 14px -4px ${color}` : 'none',
+                      }}
+                      title={label}
+                    />
+                  );
+                };
+
+                return (
+                  <>
+                    {/* Left drawers — stuck states (Frozen → Overwhelmed) */}
+                    {stuck.map((h, i) => {
+                      const x = startX + i * (barW + gap);
+                      return renderBar(h.level, h.color, i, x);
+                    })}
+                    {/* Central circle — pastel (blend raw HAWKINS colour with cream), no glow */}
+                    <div
+                      className="absolute rounded-full transition-colors duration-300"
+                      style={{
+                        left: startX + groupW + sideGap,
+                        top: (H - circleD) / 2,
+                        width: circleD,
+                        height: circleD,
+                        background: `linear-gradient(rgba(245,236,220,0.45), rgba(245,236,220,0.45)), ${HAWKINS[hawkinsIdx].color}`,
+                      }}
+                    />
+                    {/* Right drawers — freedom states (Searching → Liberation) */}
+                    {free.map((h, i) => {
+                      const globalIdx = 5 + i;
+                      const x = startX + groupW + sideGap + circleD + sideGap + i * (barW + gap);
+                      return renderBar(h.level, h.color, globalIdx, x);
+                    })}
+                  </>
+                );
+              })()}
+            </div>
+          )}
+
+          <p
+            className="text-center text-lg font-bold transition-all duration-300"
             style={{
-              background: '#C4A06015',
-              border: '1px solid #C4A06040',
+              color: variantIdx === 6 ? HAWKINS[hawkinsIdx].color : BALANCE[balanceIdx].color,
+              fontFamily: 'var(--font-serif)',
             }}
           >
-            <span
-              className="text-center uppercase"
-              style={{
-                color: '#C4A060',
-                fontSize: '15px',
-                fontWeight: 700,
-                letterSpacing: '0.22em',
-              }}
-            >
-              Other Missions
-            </span>
-            <span
-              className="text-sm transition-transform duration-200"
-              style={{
-                color: '#C4A06080',
-                transform: otherMissionsOpen ? 'rotate(180deg)' : 'rotate(0deg)',
-              }}
-            >
-              ▾
-            </span>
-          </button>
+            {variantIdx === 6 ? HAWKINS[hawkinsIdx].level : BALANCE[balanceIdx].label}
+          </p>
         </div>
 
-        {otherMissionsOpen && (
-          <>
-            {/* Daily Objectives */}
-            <div className="space-y-1.5">
-              <button
-                type="button"
-                onClick={() => setDailyObjOpen((s) => !s)}
-                className="flex cursor-pointer items-center gap-1.5 px-1"
-                style={{ background: 'none', border: 'none' }}
+        {/* Save star + post-save summary */}
+        <div className="flex flex-col items-center gap-1">
+          <button
+            type="button"
+            onClick={() => saveCheckIn()}
+            className="cursor-pointer transition-all duration-500 hover:scale-125"
+            style={{ background: 'none', border: 'none', padding: 0 }}
+          >
+            <svg width={20} height={20} viewBox="0 0 20 20">
+              {(() => {
+                const cx = 10;
+                const cy = 10;
+                const r1 = 9;
+                const r2 = 3.5;
+                const pts: string[] = [];
+                for (let i = 0; i < 8; i++) {
+                  const a = -Math.PI / 2 + (i * Math.PI) / 4;
+                  const r = i % 2 === 0 ? r1 : r2;
+                  pts.push(`${cx + r * Math.cos(a)},${cy + r * Math.sin(a)}`);
+                }
+                return (
+                  <polygon
+                    points={pts.join(' ')}
+                    fill={justSaved ? currentMind.color : `${currentMind.color}40`}
+                    style={{ transition: 'fill 0.5s' }}
+                  />
+                );
+              })()}
+            </svg>
+          </button>
+          {justSaved && (
+            <div className="animate-in fade-in duration-300 text-center space-y-0.5">
+              <p
+                style={{
+                  fontFamily: 'var(--font-serif)',
+                  fontSize: '13px',
+                  fontWeight: 600,
+                  color: currentMind.color,
+                }}
               >
-                <span
-                  className="font-semibold uppercase tracking-[0.18em]"
-                  style={{ color: '#C4A060', fontSize: '13px' }}
-                >
-                  Daily Objectives
-                </span>
-                <span
-                  className="text-[10px] transition-transform duration-200"
+                Checked in · {HAWKINS[hawkinsIdx].level}
+              </p>
+              <p
+                style={{
+                  fontFamily: 'var(--font-serif)',
+                  fontSize: '11px',
+                  color: '#8A6A4A',
+                  opacity: 0.6,
+                }}
+              >
+                {new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                {sessionEmotions.length > 0 && ` · ${sessionEmotions.length} notes`}
+              </p>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* ═══ BOX B: WHAT ARE YOU DOING ═══ */}
+      <div
+        className="space-y-4 rounded-3xl border border-[#7a543833] px-5 py-6"
+        style={{
+          background: 'linear-gradient(180deg, rgba(251,244,232,0.95), rgba(246,236,221,0.92))',
+          boxShadow: '0 24px 50px -34px rgba(92,48,24,0.35)',
+        }}
+      >
+        {/* ── CURRENT OBJECTIVE ── all in one pillbox */}
+        <div
+          className="space-y-2 rounded-2xl border px-4 py-3"
+          style={{
+            borderColor: '#C4A06030',
+            background: 'rgba(245,236,220,0.45)',
+          }}
+        >
+          <div className="flex flex-col items-center gap-2">
+            <button
+              type="button"
+              onClick={toggleObjectiveSection}
+              className="flex cursor-pointer items-center gap-2 rounded-full px-5 py-1.5 transition-all"
+              style={{
+                background: '#C4A06015',
+                border: '1px solid #C4A06040',
+              }}
+            >
+              <span
+                className="text-center text-sm font-semibold uppercase tracking-[0.22em]"
+                style={{ color: '#C4A060' }}
+              >
+                Current Objective
+              </span>
+              <span
+                className="text-sm transition-transform duration-200"
+                style={{
+                  color: '#C4A06080',
+                  transform: objectiveSectionOpen ? 'rotate(180deg)' : 'rotate(0deg)',
+                }}
+              >
+                ▾
+              </span>
+            </button>
+            <div className="relative w-full">
+              <input
+                type="text"
+                value={objective}
+                onChange={(e) => setObjective(e.target.value)}
+                placeholder="set an objective..."
+                className="w-full border-b bg-transparent pb-1 text-center outline-none placeholder:text-muted-foreground/40"
+                style={{
+                  color: '#5C3018',
+                  borderColor: '#C4A06020',
+                  fontFamily: 'var(--font-handwritten)',
+                  fontSize: '24px',
+                  fontWeight: 700,
+                  letterSpacing: '0.06em',
+                  paddingLeft: '64px',
+                  paddingRight: '64px',
+                }}
+              />
+              <div className="absolute right-0 top-1/2 flex -translate-y-1/2 items-center gap-1.5">
+                {lifeCategories.length > 0 && objective.trim().length > 0 && (
+                  <button
+                    type="button"
+                    onClick={() => setShowCategoryPicker(!showCategoryPicker)}
+                    className="shrink-0 cursor-pointer rounded-md px-2 py-0.5 text-[11px] uppercase tracking-wider transition-all"
+                    style={{
+                      color: showCategoryPicker ? '#C4A060' : '#C4A06060',
+                      background: showCategoryPicker ? '#C4A06010' : 'transparent',
+                      border: `1px solid ${showCategoryPicker ? '#C4A06030' : 'transparent'}`,
+                    }}
+                  >
+                    {justTagged ? '✓ tagged' : 'tag'}
+                  </button>
+                )}
+                {objective.trim().length > 0 && (
+                  <button
+                    type="button"
+                    onClick={() => completeObjective(objective)}
+                    title="Mark as done"
+                    className="flex h-5 w-5 shrink-0 cursor-pointer items-center justify-center rounded border transition-all hover:scale-110"
+                    style={{
+                      borderColor: '#7AAA5860',
+                      background: '#7AAA5810',
+                    }}
+                  >
+                    <span className="text-xs" style={{ color: '#7AAA58' }}>
+                      ✓
+                    </span>
+                  </button>
+                )}
+              </div>
+              {showCategoryPicker && lifeCategories.length > 0 && (
+                <div
+                  className="absolute right-0 top-full z-50 mt-1 animate-in fade-in duration-150 overflow-hidden rounded-xl"
                   style={{
-                    color: '#C4A06080',
-                    transform: dailyObjOpen ? 'rotate(180deg)' : 'rotate(0deg)',
+                    background: '#F5ECDC',
+                    border: '1px solid #8A6A4A40',
+                    boxShadow: '0 8px 24px rgba(92,48,24,0.18)',
+                    minWidth: 180,
                   }}
                 >
-                  ▾
-                </span>
-              </button>
-              {dailyObjOpen && (
-                <>
-                  {todayObjectives
-                    .filter((o) => !o.done)
-                    .map((o, idx) => {
-                      const isExpanded = expandedTodayId === o.id;
-                      const isDragging = draggedTodayIdx === idx;
-                      const isDropTarget = dragOverTodayIdx === idx && draggedTodayIdx !== idx;
-                      return (
-                        <div
-                          key={o.id}
-                          className="space-y-1"
-                          draggable
-                          onDragStart={() => setDraggedTodayIdx(idx)}
-                          onDragOver={(e) => {
-                            e.preventDefault();
-                            if (draggedTodayIdx !== null && draggedTodayIdx !== idx) {
-                              setDragOverTodayIdx(idx);
-                            }
-                          }}
-                          onDragLeave={(e) => {
-                            // Only clear if leaving to something outside this row
-                            if (
-                              !(e.currentTarget as HTMLElement).contains(e.relatedTarget as Node)
-                            ) {
-                              setDragOverTodayIdx((prev) => (prev === idx ? null : prev));
-                            }
-                          }}
-                          onDrop={(e) => {
-                            e.preventDefault();
-                            if (draggedTodayIdx !== null) {
-                              reorderTodayObjectives(draggedTodayIdx, idx);
-                            }
-                            setDraggedTodayIdx(null);
-                            setDragOverTodayIdx(null);
-                          }}
-                          onDragEnd={() => {
-                            setDraggedTodayIdx(null);
-                            setDragOverTodayIdx(null);
-                          }}
-                          style={{
-                            opacity: isDragging ? 0.4 : 1,
-                            borderTop: isDropTarget ? '2px solid #C4A060' : '2px solid transparent',
-                            cursor: 'grab',
-                            transition: 'opacity 120ms, border-color 120ms',
-                          }}
-                        >
-                          <div className="group flex items-center gap-2">
+                  {lifeCategories.map((cat) => (
+                    <button
+                      key={cat.id}
+                      type="button"
+                      onClick={() => tagObjectiveToCategory(cat.id)}
+                      className="flex w-full cursor-pointer items-center gap-2.5 px-3 py-2 text-left transition-all hover:bg-muted/30"
+                      style={{ border: 'none', background: 'transparent' }}
+                    >
+                      <div
+                        style={{
+                          width: 8,
+                          height: 8,
+                          borderRadius: '50%',
+                          background: cat.color,
+                        }}
+                      />
+                      <span
+                        style={{
+                          fontFamily: 'var(--font-serif)',
+                          fontSize: '14px',
+                          color: '#7a5438',
+                        }}
+                      >
+                        {cat.name}
+                      </span>
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Done archive moved to Other Missions Done tab */}
+        </div>
+
+        {/* ── OTHER MISSIONS ── collapsible pillbox: Daily Objectives + To-do */}
+        <div
+          className="space-y-3 rounded-2xl border px-4 py-3"
+          style={{
+            borderColor: '#C4A06030',
+            background: 'rgba(245,236,220,0.45)',
+          }}
+        >
+          <div className="flex justify-center">
+            <button
+              type="button"
+              onClick={toggleOtherMissions}
+              className="flex cursor-pointer items-center gap-2 rounded-full px-5 py-1.5 transition-all"
+              style={{
+                background: '#C4A06015',
+                border: '1px solid #C4A06040',
+              }}
+            >
+              <span
+                className="text-center uppercase"
+                style={{
+                  color: '#C4A060',
+                  fontSize: '15px',
+                  fontWeight: 700,
+                  letterSpacing: '0.22em',
+                }}
+              >
+                Other Missions
+              </span>
+              <span
+                className="text-sm transition-transform duration-200"
+                style={{
+                  color: '#C4A06080',
+                  transform: otherMissionsOpen ? 'rotate(180deg)' : 'rotate(0deg)',
+                }}
+              >
+                ▾
+              </span>
+            </button>
+          </div>
+
+          {otherMissionsOpen && (
+            <>
+              {/* Daily Objectives */}
+              <div className="space-y-1.5">
+                <button
+                  type="button"
+                  onClick={() => setDailyObjOpen((s) => !s)}
+                  className="flex cursor-pointer items-center gap-1.5 px-1"
+                  style={{ background: 'none', border: 'none' }}
+                >
+                  <span
+                    className="font-semibold uppercase tracking-[0.18em]"
+                    style={{ color: '#C4A060', fontSize: '13px' }}
+                  >
+                    Daily Objectives
+                  </span>
+                  <span
+                    className="text-[10px] transition-transform duration-200"
+                    style={{
+                      color: '#C4A06080',
+                      transform: dailyObjOpen ? 'rotate(180deg)' : 'rotate(0deg)',
+                    }}
+                  >
+                    ▾
+                  </span>
+                </button>
+                {dailyObjOpen && (
+                  <>
+                    {todayObjectives
+                      .filter((o) => !o.done)
+                      .map((o, idx) => {
+                        const isExpanded = expandedTodayId === o.id;
+                        const isDragging = draggedTodayIdx === idx;
+                        const isDropTarget = dragOverTodayIdx === idx && draggedTodayIdx !== idx;
+                        return (
+                          <div
+                            key={o.id}
+                            className="space-y-1"
+                            draggable
+                            onDragStart={() => setDraggedTodayIdx(idx)}
+                            onDragOver={(e) => {
+                              e.preventDefault();
+                              if (draggedTodayIdx !== null && draggedTodayIdx !== idx) {
+                                setDragOverTodayIdx(idx);
+                              }
+                            }}
+                            onDragLeave={(e) => {
+                              // Only clear if leaving to something outside this row
+                              if (
+                                !(e.currentTarget as HTMLElement).contains(e.relatedTarget as Node)
+                              ) {
+                                setDragOverTodayIdx((prev) => (prev === idx ? null : prev));
+                              }
+                            }}
+                            onDrop={(e) => {
+                              e.preventDefault();
+                              if (draggedTodayIdx !== null) {
+                                reorderTodayObjectives(draggedTodayIdx, idx);
+                              }
+                              setDraggedTodayIdx(null);
+                              setDragOverTodayIdx(null);
+                            }}
+                            onDragEnd={() => {
+                              setDraggedTodayIdx(null);
+                              setDragOverTodayIdx(null);
+                            }}
+                            style={{
+                              opacity: isDragging ? 0.4 : 1,
+                              borderTop: isDropTarget
+                                ? '2px solid #C4A060'
+                                : '2px solid transparent',
+                              cursor: 'grab',
+                              transition: 'opacity 120ms, border-color 120ms',
+                            }}
+                          >
+                            <div className="group flex items-center gap-2">
+                              <button
+                                type="button"
+                                onClick={() => toggleTodayObjective(o.id)}
+                                title={o.done ? 'Mark as not done' : 'Mark as done'}
+                                className="flex h-5 w-5 shrink-0 cursor-pointer items-center justify-center rounded border transition-all hover:scale-110"
+                                style={{
+                                  borderColor: o.done ? '#7AAA5860' : '#C4A06060',
+                                  background: o.done ? '#7AAA5810' : 'transparent',
+                                }}
+                              >
+                                {o.done && (
+                                  <span className="text-xs" style={{ color: '#7AAA58' }}>
+                                    ✓
+                                  </span>
+                                )}
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => setExpandedTodayId(isExpanded ? null : o.id)}
+                                className="flex-1 cursor-pointer bg-transparent text-left"
+                                style={{
+                                  color: o.done ? '#C4A060' : '#7a5438',
+                                  fontFamily: 'var(--font-handwritten)',
+                                  fontSize: '20px',
+                                  opacity: o.done ? 0.85 : 0.95,
+                                  border: 'none',
+                                }}
+                                title="Click to open notes"
+                              >
+                                {o.text}
+                                {o.notes && o.notes.trim().length > 0 && !isExpanded && (
+                                  <span
+                                    className="ml-2 text-xs no-underline"
+                                    style={{ color: '#C4A06080' }}
+                                  >
+                                    ·
+                                  </span>
+                                )}
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => removeTodayObjective(o.id)}
+                                title="Remove"
+                                className="cursor-pointer text-sm opacity-0 transition-opacity group-hover:opacity-40"
+                                style={{ color: '#7a5438', background: 'none', border: 'none' }}
+                              >
+                                ✕
+                              </button>
+                            </div>
+                            {isExpanded && (
+                              <textarea
+                                value={o.notes || ''}
+                                onChange={(e) => updateTodayNotes(o.id, e.target.value)}
+                                placeholder="advancements, next steps..."
+                                rows={2}
+                                className="ml-7 w-[calc(100%-1.75rem)] resize-none border-b bg-transparent pb-1 pt-0.5 outline-none placeholder:text-muted-foreground/40 animate-in fade-in duration-150"
+                                style={{
+                                  color: '#7a5438',
+                                  borderColor: '#C4A06025',
+                                  fontFamily: 'var(--font-handwritten)',
+                                  fontSize: '17px',
+                                  lineHeight: 1.4,
+                                }}
+                              />
+                            )}
+                          </div>
+                        );
+                      })}
+                    <input
+                      type="text"
+                      value={todayInput}
+                      onChange={(e) => setTodayInput(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') addTodayObjective();
+                      }}
+                      placeholder="+ add objective for today..."
+                      className="w-full border-b bg-transparent pb-1 outline-none placeholder:text-muted-foreground/40"
+                      style={{
+                        color: '#7a5438',
+                        borderColor: '#C4A06020',
+                        fontFamily: 'var(--font-handwritten)',
+                        fontSize: '20px',
+                      }}
+                    />
+                  </>
+                )}
+              </div>
+
+              {/* Divider */}
+              <div className="flex items-center gap-3">
+                <div className="h-px flex-1" style={{ background: '#C4A06020' }} />
+                <span
+                  className="block h-3 w-3 rotate-45 rounded-[2px]"
+                  style={{ background: '#C4A060', opacity: 0.85 }}
+                />
+                <div className="h-px flex-1" style={{ background: '#C4A06020' }} />
+              </div>
+
+              {/* Push for tomorrow */}
+              <div className="space-y-1.5">
+                <button
+                  type="button"
+                  onClick={() => setPushTomorrowOpen((s) => !s)}
+                  className="flex cursor-pointer items-center gap-1.5 px-1"
+                  style={{ background: 'none', border: 'none' }}
+                >
+                  <span
+                    className="font-semibold uppercase tracking-[0.18em]"
+                    style={{ color: '#C4A060', fontSize: '13px' }}
+                  >
+                    Push for tomorrow
+                  </span>
+                  <span
+                    className="text-[10px] transition-transform duration-200"
+                    style={{
+                      color: '#C4A06080',
+                      transform: pushTomorrowOpen ? 'rotate(180deg)' : 'rotate(0deg)',
+                    }}
+                  >
+                    ▾
+                  </span>
+                </button>
+                {pushTomorrowOpen && (
+                  <>
+                    {todos
+                      .filter((t) => !t.done)
+                      .map((t, idx) => {
+                        const isDragging = draggedTodoIdx === idx;
+                        const isDropTarget = dragOverTodoIdx === idx && draggedTodoIdx !== idx;
+                        return (
+                          <div
+                            key={t.id}
+                            className="group flex items-center gap-2"
+                            draggable
+                            onDragStart={() => setDraggedTodoIdx(idx)}
+                            onDragOver={(e) => {
+                              e.preventDefault();
+                              if (draggedTodoIdx !== null && draggedTodoIdx !== idx) {
+                                setDragOverTodoIdx(idx);
+                              }
+                            }}
+                            onDragLeave={(e) => {
+                              if (
+                                !(e.currentTarget as HTMLElement).contains(e.relatedTarget as Node)
+                              ) {
+                                setDragOverTodoIdx((prev) => (prev === idx ? null : prev));
+                              }
+                            }}
+                            onDrop={(e) => {
+                              e.preventDefault();
+                              if (draggedTodoIdx !== null) {
+                                reorderTodos(draggedTodoIdx, idx);
+                              }
+                              setDraggedTodoIdx(null);
+                              setDragOverTodoIdx(null);
+                            }}
+                            onDragEnd={() => {
+                              setDraggedTodoIdx(null);
+                              setDragOverTodoIdx(null);
+                            }}
+                            style={{
+                              opacity: isDragging ? 0.4 : 1,
+                              borderTop: isDropTarget
+                                ? '2px solid #C4A060'
+                                : '2px solid transparent',
+                              cursor: 'grab',
+                              transition: 'opacity 120ms, border-color 120ms',
+                            }}
+                          >
                             <button
                               type="button"
-                              onClick={() => toggleTodayObjective(o.id)}
-                              title={o.done ? 'Mark as not done' : 'Mark as done'}
+                              onClick={() => toggleTodo(t.id)}
+                              title={t.done ? 'Mark as not done' : 'Mark as done'}
                               className="flex h-5 w-5 shrink-0 cursor-pointer items-center justify-center rounded border transition-all hover:scale-110"
                               style={{
-                                borderColor: o.done ? '#7AAA5860' : '#C4A06060',
-                                background: o.done ? '#7AAA5810' : 'transparent',
+                                borderColor: t.done ? '#7AAA5860' : '#C4A06060',
+                                background: t.done ? '#7AAA5810' : 'transparent',
                               }}
                             >
-                              {o.done && (
+                              {t.done && (
                                 <span className="text-xs" style={{ color: '#7AAA58' }}>
                                   ✓
                                 </span>
                               )}
                             </button>
-                            <button
-                              type="button"
-                              onClick={() => setExpandedTodayId(isExpanded ? null : o.id)}
-                              className="flex-1 cursor-pointer bg-transparent text-left"
+                            <span
+                              className="flex-1"
                               style={{
-                                color: o.done ? '#C4A060' : '#7a5438',
+                                color: t.done ? '#C4A060' : '#7a5438',
                                 fontFamily: 'var(--font-handwritten)',
                                 fontSize: '20px',
-                                opacity: o.done ? 0.85 : 0.95,
-                                border: 'none',
+                                opacity: t.done ? 0.85 : 0.95,
                               }}
-                              title="Click to open notes"
                             >
-                              {o.text}
-                              {o.notes && o.notes.trim().length > 0 && !isExpanded && (
-                                <span
-                                  className="ml-2 text-xs no-underline"
-                                  style={{ color: '#C4A06080' }}
-                                >
-                                  ·
-                                </span>
-                              )}
-                            </button>
+                              {t.text}
+                            </span>
                             <button
                               type="button"
-                              onClick={() => removeTodayObjective(o.id)}
+                              onClick={() => removeTodo(t.id)}
                               title="Remove"
                               className="cursor-pointer text-sm opacity-0 transition-opacity group-hover:opacity-40"
                               style={{ color: '#7a5438', background: 'none', border: 'none' }}
@@ -1917,506 +2187,417 @@ export default function FeelingCheckInCard() {
                               ✕
                             </button>
                           </div>
-                          {isExpanded && (
-                            <textarea
-                              value={o.notes || ''}
-                              onChange={(e) => updateTodayNotes(o.id, e.target.value)}
-                              placeholder="advancements, next steps..."
-                              rows={2}
-                              className="ml-7 w-[calc(100%-1.75rem)] resize-none border-b bg-transparent pb-1 pt-0.5 outline-none placeholder:text-muted-foreground/40 animate-in fade-in duration-150"
-                              style={{
-                                color: '#7a5438',
-                                borderColor: '#C4A06025',
-                                fontFamily: 'var(--font-handwritten)',
-                                fontSize: '17px',
-                                lineHeight: 1.4,
-                              }}
-                            />
-                          )}
+                        );
+                      })}
+                    <input
+                      type="text"
+                      value={todoInput}
+                      onChange={(e) => setTodoInput(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') addTodo();
+                      }}
+                      placeholder="+ add to-do..."
+                      className="w-full border-b bg-transparent pb-1 outline-none placeholder:text-muted-foreground/40"
+                      style={{
+                        color: '#7a5438',
+                        borderColor: '#C4A06020',
+                        fontFamily: 'var(--font-handwritten)',
+                        fontSize: '20px',
+                      }}
+                    />
+                  </>
+                )}
+              </div>
+
+              {/* Done — all completed items grouped by category */}
+              {(doneObjectives.length > 0 ||
+                todayObjectives.some((o) => o.done) ||
+                todos.some((t) => t.done)) && (
+                <div className="space-y-1.5">
+                  <button
+                    type="button"
+                    onClick={() => setDoneOpen((s) => !s)}
+                    className="flex cursor-pointer items-center gap-1.5 px-1"
+                    style={{ background: 'none', border: 'none' }}
+                  >
+                    <span
+                      className="font-semibold uppercase tracking-[0.18em]"
+                      style={{ color: '#7AAA58', fontSize: '13px' }}
+                    >
+                      Done
+                    </span>
+                    <span
+                      className="text-[10px] transition-transform duration-200"
+                      style={{
+                        color: '#7AAA5880',
+                        transform: doneOpen ? 'rotate(180deg)' : 'rotate(0deg)',
+                      }}
+                    >
+                      ▾
+                    </span>
+                  </button>
+                  {doneOpen && (
+                    <div className="space-y-3 animate-in fade-in duration-150">
+                      {/* Current Objective completions */}
+                      {doneObjectives.length > 0 && (
+                        <div className="space-y-1">
+                          <p
+                            className="px-1 text-[11px] font-semibold uppercase tracking-wider"
+                            style={{ color: '#8A6A4A', opacity: 0.6 }}
+                          >
+                            Current Objective
+                          </p>
+                          {doneObjectives.slice(0, 10).map((d) => {
+                            const dt = new Date(d.completedAt);
+                            const dateStr = `${dt.getDate()}/${dt.getMonth() + 1}`;
+                            return (
+                              <div
+                                key={d.id}
+                                className="flex items-center gap-2 px-1"
+                                style={{ minHeight: 28 }}
+                              >
+                                <span
+                                  style={{
+                                    color: '#8A6A4A',
+                                    opacity: 0.6,
+                                    fontSize: '12px',
+                                    lineHeight: '28px',
+                                    flexShrink: 0,
+                                  }}
+                                >
+                                  {dateStr}
+                                </span>
+                                <span
+                                  className="flex h-4 w-4 shrink-0 items-center justify-center rounded border"
+                                  style={{ borderColor: '#7AAA5860', background: '#7AAA5810' }}
+                                >
+                                  <span className="text-[10px]" style={{ color: '#7AAA58' }}>
+                                    ✓
+                                  </span>
+                                </span>
+                                <span
+                                  style={{
+                                    color: '#8A6A4A',
+                                    fontFamily: 'var(--font-handwritten)',
+                                    fontSize: '16px',
+                                    opacity: 0.6,
+                                  }}
+                                >
+                                  {d.text}
+                                </span>
+                              </div>
+                            );
+                          })}
                         </div>
-                      );
-                    })}
-                  <input
-                    type="text"
-                    value={todayInput}
-                    onChange={(e) => setTodayInput(e.target.value)}
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter') addTodayObjective();
-                    }}
-                    placeholder="+ add objective for today..."
-                    className="w-full border-b bg-transparent pb-1 outline-none placeholder:text-muted-foreground/40"
-                    style={{
-                      color: '#7a5438',
-                      borderColor: '#C4A06020',
-                      fontFamily: 'var(--font-handwritten)',
-                      fontSize: '20px',
-                    }}
-                  />
-                </>
-              )}
-            </div>
-
-            {/* Divider */}
-            <div className="flex items-center gap-3">
-              <div className="h-px flex-1" style={{ background: '#C4A06020' }} />
-              <span
-                className="block h-3 w-3 rotate-45 rounded-[2px]"
-                style={{ background: '#C4A060', opacity: 0.85 }}
-              />
-              <div className="h-px flex-1" style={{ background: '#C4A06020' }} />
-            </div>
-
-            {/* Push for tomorrow */}
-            <div className="space-y-1.5">
-              <button
-                type="button"
-                onClick={() => setPushTomorrowOpen((s) => !s)}
-                className="flex cursor-pointer items-center gap-1.5 px-1"
-                style={{ background: 'none', border: 'none' }}
-              >
-                <span
-                  className="font-semibold uppercase tracking-[0.18em]"
-                  style={{ color: '#C4A060', fontSize: '13px' }}
-                >
-                  Push for tomorrow
-                </span>
-                <span
-                  className="text-[10px] transition-transform duration-200"
-                  style={{
-                    color: '#C4A06080',
-                    transform: pushTomorrowOpen ? 'rotate(180deg)' : 'rotate(0deg)',
-                  }}
-                >
-                  ▾
-                </span>
-              </button>
-              {pushTomorrowOpen && (
-                <>
-                  {todos
-                    .filter((t) => !t.done)
-                    .map((t, idx) => {
-                      const isDragging = draggedTodoIdx === idx;
-                      const isDropTarget = dragOverTodoIdx === idx && draggedTodoIdx !== idx;
-                      return (
-                        <div
-                          key={t.id}
-                          className="group flex items-center gap-2"
-                          draggable
-                          onDragStart={() => setDraggedTodoIdx(idx)}
-                          onDragOver={(e) => {
-                            e.preventDefault();
-                            if (draggedTodoIdx !== null && draggedTodoIdx !== idx) {
-                              setDragOverTodoIdx(idx);
-                            }
-                          }}
-                          onDragLeave={(e) => {
-                            if (
-                              !(e.currentTarget as HTMLElement).contains(e.relatedTarget as Node)
-                            ) {
-                              setDragOverTodoIdx((prev) => (prev === idx ? null : prev));
-                            }
-                          }}
-                          onDrop={(e) => {
-                            e.preventDefault();
-                            if (draggedTodoIdx !== null) {
-                              reorderTodos(draggedTodoIdx, idx);
-                            }
-                            setDraggedTodoIdx(null);
-                            setDragOverTodoIdx(null);
-                          }}
-                          onDragEnd={() => {
-                            setDraggedTodoIdx(null);
-                            setDragOverTodoIdx(null);
-                          }}
-                          style={{
-                            opacity: isDragging ? 0.4 : 1,
-                            borderTop: isDropTarget ? '2px solid #C4A060' : '2px solid transparent',
-                            cursor: 'grab',
-                            transition: 'opacity 120ms, border-color 120ms',
-                          }}
-                        >
-                          <button
-                            type="button"
-                            onClick={() => toggleTodo(t.id)}
-                            title={t.done ? 'Mark as not done' : 'Mark as done'}
-                            className="flex h-5 w-5 shrink-0 cursor-pointer items-center justify-center rounded border transition-all hover:scale-110"
-                            style={{
-                              borderColor: t.done ? '#7AAA5860' : '#C4A06060',
-                              background: t.done ? '#7AAA5810' : 'transparent',
-                            }}
+                      )}
+                      {/* Daily Objectives completions */}
+                      {todayObjectives.some((o) => o.done) && (
+                        <div className="space-y-1">
+                          <p
+                            className="px-1 text-[11px] font-semibold uppercase tracking-wider"
+                            style={{ color: '#8A6A4A', opacity: 0.6 }}
                           >
-                            {t.done && (
-                              <span className="text-xs" style={{ color: '#7AAA58' }}>
-                                ✓
-                              </span>
-                            )}
-                          </button>
-                          <span
-                            className="flex-1"
-                            style={{
-                              color: t.done ? '#C4A060' : '#7a5438',
-                              fontFamily: 'var(--font-handwritten)',
-                              fontSize: '20px',
-                              opacity: t.done ? 0.85 : 0.95,
-                            }}
-                          >
-                            {t.text}
-                          </span>
-                          <button
-                            type="button"
-                            onClick={() => removeTodo(t.id)}
-                            title="Remove"
-                            className="cursor-pointer text-sm opacity-0 transition-opacity group-hover:opacity-40"
-                            style={{ color: '#7a5438', background: 'none', border: 'none' }}
-                          >
-                            ✕
-                          </button>
+                            Daily Objectives
+                          </p>
+                          {todayObjectives
+                            .filter((o) => o.done)
+                            .map((o) => (
+                              <div
+                                key={o.id}
+                                className="flex items-center gap-2 px-1"
+                                style={{ minHeight: 28 }}
+                              >
+                                <button
+                                  type="button"
+                                  onClick={() => toggleTodayObjective(o.id)}
+                                  className="flex h-4 w-4 shrink-0 cursor-pointer items-center justify-center rounded border"
+                                  style={{ borderColor: '#7AAA5860', background: '#7AAA5810' }}
+                                >
+                                  <span className="text-xs" style={{ color: '#7AAA58' }}>
+                                    ✓
+                                  </span>
+                                </button>
+                                <span
+                                  style={{
+                                    color: '#8A6A4A',
+                                    fontFamily: 'var(--font-handwritten)',
+                                    fontSize: '16px',
+                                    opacity: 0.6,
+                                  }}
+                                >
+                                  {o.text}
+                                </span>
+                              </div>
+                            ))}
                         </div>
-                      );
-                    })}
-                  <input
-                    type="text"
-                    value={todoInput}
-                    onChange={(e) => setTodoInput(e.target.value)}
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter') addTodo();
-                    }}
-                    placeholder="+ add to-do..."
-                    className="w-full border-b bg-transparent pb-1 outline-none placeholder:text-muted-foreground/40"
-                    style={{
-                      color: '#7a5438',
-                      borderColor: '#C4A06020',
-                      fontFamily: 'var(--font-handwritten)',
-                      fontSize: '20px',
-                    }}
-                  />
-                </>
+                      )}
+                      {/* Push for tomorrow completions */}
+                      {todos.some((t) => t.done) && (
+                        <div className="space-y-1">
+                          <p
+                            className="px-1 text-[11px] font-semibold uppercase tracking-wider"
+                            style={{ color: '#8A6A4A', opacity: 0.6 }}
+                          >
+                            Push for tomorrow
+                          </p>
+                          {todos
+                            .filter((t) => t.done)
+                            .map((t) => (
+                              <div
+                                key={t.id}
+                                className="flex items-center gap-2 px-1"
+                                style={{ minHeight: 28 }}
+                              >
+                                <button
+                                  type="button"
+                                  onClick={() => toggleTodo(t.id)}
+                                  className="flex h-4 w-4 shrink-0 cursor-pointer items-center justify-center rounded border"
+                                  style={{ borderColor: '#7AAA5860', background: '#7AAA5810' }}
+                                >
+                                  <span className="text-xs" style={{ color: '#7AAA58' }}>
+                                    ✓
+                                  </span>
+                                </button>
+                                <span
+                                  style={{
+                                    color: '#8A6A4A',
+                                    fontFamily: 'var(--font-handwritten)',
+                                    fontSize: '16px',
+                                    opacity: 0.6,
+                                  }}
+                                >
+                                  {t.text}
+                                </span>
+                              </div>
+                            ))}
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
               )}
-            </div>
 
-            {/* Done — all completed items grouped by category */}
-            {(doneObjectives.length > 0 ||
-              todayObjectives.some((o) => o.done) ||
-              todos.some((t) => t.done)) && (
-              <div className="space-y-1.5">
+              {/* Are you clear on next missions? — collapsed behind a star.
+                Click the star (or the whole row) to open the clarity slider. */}
+              <div className="space-y-1.5 pt-2">
                 <button
                   type="button"
-                  onClick={() => setDoneOpen((s) => !s)}
-                  className="flex cursor-pointer items-center gap-1.5 px-1"
-                  style={{ background: 'none', border: 'none' }}
+                  onClick={() => setClarityOpen((o) => !o)}
+                  className="flex w-full cursor-pointer items-center justify-center gap-2 bg-transparent italic"
+                  style={{
+                    color: '#8A6A4A',
+                    fontFamily: 'var(--font-serif)',
+                    fontSize: '15px',
+                    opacity: 0.95,
+                    border: 'none',
+                    padding: '4px 0',
+                  }}
+                  title={clarityOpen ? 'Hide clarity slider' : 'Open clarity slider'}
                 >
-                  <span
-                    className="font-semibold uppercase tracking-[0.18em]"
-                    style={{ color: '#7AAA58', fontSize: '13px' }}
+                  <svg
+                    width={14}
+                    height={14}
+                    viewBox="0 0 20 20"
+                    style={{ transition: 'transform 200ms', flexShrink: 0 }}
                   >
-                    Done
-                  </span>
-                  <span
-                    className="text-[10px] transition-transform duration-200"
-                    style={{
-                      color: '#7AAA5880',
-                      transform: doneOpen ? 'rotate(180deg)' : 'rotate(0deg)',
-                    }}
-                  >
-                    ▾
-                  </span>
+                    {(() => {
+                      const cx = 10;
+                      const cy = 10;
+                      const r1 = 9;
+                      const r2 = 3.5;
+                      const pts: string[] = [];
+                      for (let i = 0; i < 8; i++) {
+                        const a = -Math.PI / 2 + (i * Math.PI) / 4;
+                        const r = i % 2 === 0 ? r1 : r2;
+                        pts.push(`${cx + r * Math.cos(a)},${cy + r * Math.sin(a)}`);
+                      }
+                      return (
+                        <polygon
+                          points={pts.join(' ')}
+                          fill={
+                            clarityOpen ? CLARITY_MISSIONS[clarityMissionsIdx].color : '#C4A060'
+                          }
+                          opacity={clarityOpen ? 1 : 0.55}
+                        />
+                      );
+                    })()}
+                  </svg>
+                  are you clear on next missions?
                 </button>
-                {doneOpen && (
-                  <div className="space-y-3 animate-in fade-in duration-150">
-                    {/* Current Objective completions */}
-                    {doneObjectives.length > 0 && (
-                      <div className="space-y-1">
-                        <p
-                          className="px-1 text-[11px] font-semibold uppercase tracking-wider"
-                          style={{ color: '#8A6A4A', opacity: 0.6 }}
-                        >
-                          Current Objective
-                        </p>
-                        {doneObjectives.slice(0, 10).map((d) => {
-                          const dt = new Date(d.completedAt);
-                          const dateStr = `${dt.getDate()}/${dt.getMonth() + 1}`;
-                          return (
-                            <div
-                              key={d.id}
-                              className="flex items-center gap-2 px-1"
-                              style={{ minHeight: 28 }}
-                            >
-                              <span
-                                style={{
-                                  color: '#8A6A4A',
-                                  opacity: 0.6,
-                                  fontSize: '12px',
-                                  lineHeight: '28px',
-                                  flexShrink: 0,
-                                }}
-                              >
-                                {dateStr}
-                              </span>
-                              <span
-                                className="flex h-4 w-4 shrink-0 items-center justify-center rounded border"
-                                style={{ borderColor: '#7AAA5860', background: '#7AAA5810' }}
-                              >
-                                <span className="text-[10px]" style={{ color: '#7AAA58' }}>
-                                  ✓
-                                </span>
-                              </span>
-                              <span
-                                style={{
-                                  color: '#8A6A4A',
-                                  fontFamily: 'var(--font-handwritten)',
-                                  fontSize: '16px',
-                                  opacity: 0.6,
-                                }}
-                              >
-                                {d.text}
-                              </span>
-                            </div>
-                          );
-                        })}
-                      </div>
-                    )}
-                    {/* Daily Objectives completions */}
-                    {todayObjectives.some((o) => o.done) && (
-                      <div className="space-y-1">
-                        <p
-                          className="px-1 text-[11px] font-semibold uppercase tracking-wider"
-                          style={{ color: '#8A6A4A', opacity: 0.6 }}
-                        >
-                          Daily Objectives
-                        </p>
-                        {todayObjectives
-                          .filter((o) => o.done)
-                          .map((o) => (
-                            <div
-                              key={o.id}
-                              className="flex items-center gap-2 px-1"
-                              style={{ minHeight: 28 }}
-                            >
-                              <button
-                                type="button"
-                                onClick={() => toggleTodayObjective(o.id)}
-                                className="flex h-4 w-4 shrink-0 cursor-pointer items-center justify-center rounded border"
-                                style={{ borderColor: '#7AAA5860', background: '#7AAA5810' }}
-                              >
-                                <span className="text-xs" style={{ color: '#7AAA58' }}>
-                                  ✓
-                                </span>
-                              </button>
-                              <span
-                                style={{
-                                  color: '#8A6A4A',
-                                  fontFamily: 'var(--font-handwritten)',
-                                  fontSize: '16px',
-                                  opacity: 0.6,
-                                }}
-                              >
-                                {o.text}
-                              </span>
-                            </div>
-                          ))}
-                      </div>
-                    )}
-                    {/* Push for tomorrow completions */}
-                    {todos.some((t) => t.done) && (
-                      <div className="space-y-1">
-                        <p
-                          className="px-1 text-[11px] font-semibold uppercase tracking-wider"
-                          style={{ color: '#8A6A4A', opacity: 0.6 }}
-                        >
-                          Push for tomorrow
-                        </p>
-                        {todos
-                          .filter((t) => t.done)
-                          .map((t) => (
-                            <div
-                              key={t.id}
-                              className="flex items-center gap-2 px-1"
-                              style={{ minHeight: 28 }}
-                            >
-                              <button
-                                type="button"
-                                onClick={() => toggleTodo(t.id)}
-                                className="flex h-4 w-4 shrink-0 cursor-pointer items-center justify-center rounded border"
-                                style={{ borderColor: '#7AAA5860', background: '#7AAA5810' }}
-                              >
-                                <span className="text-xs" style={{ color: '#7AAA58' }}>
-                                  ✓
-                                </span>
-                              </button>
-                              <span
-                                style={{
-                                  color: '#8A6A4A',
-                                  fontFamily: 'var(--font-handwritten)',
-                                  fontSize: '16px',
-                                  opacity: 0.6,
-                                }}
-                              >
-                                {t.text}
-                              </span>
-                            </div>
-                          ))}
-                      </div>
-                    )}
+                {clarityOpen && (
+                  <div className="space-y-1.5 animate-in fade-in duration-200">
+                    <DragSlider
+                      items={CLARITY_MISSIONS}
+                      selectedIdx={clarityMissionsIdx}
+                      onSelect={setClarityMissionsIdx}
+                      size={36}
+                    />
+                    <p
+                      className="text-center font-bold transition-all duration-300"
+                      style={{
+                        color: CLARITY_MISSIONS[clarityMissionsIdx].color,
+                        fontFamily: 'var(--font-serif)',
+                        fontSize: '16px',
+                      }}
+                    >
+                      {CLARITY_MISSIONS[clarityMissionsIdx].level}
+                    </p>
                   </div>
                 )}
               </div>
-            )}
-
-            {/* Are you clear on next missions? — collapsed behind a star.
-                Click the star (or the whole row) to open the clarity slider. */}
-            <div className="space-y-1.5 pt-2">
-              <button
-                type="button"
-                onClick={() => setClarityOpen((o) => !o)}
-                className="flex w-full cursor-pointer items-center justify-center gap-2 bg-transparent italic"
-                style={{
-                  color: '#8A6A4A',
-                  fontFamily: 'var(--font-serif)',
-                  fontSize: '15px',
-                  opacity: 0.95,
-                  border: 'none',
-                  padding: '4px 0',
-                }}
-                title={clarityOpen ? 'Hide clarity slider' : 'Open clarity slider'}
-              >
-                <svg
-                  width={14}
-                  height={14}
-                  viewBox="0 0 20 20"
-                  style={{ transition: 'transform 200ms', flexShrink: 0 }}
-                >
-                  {(() => {
-                    const cx = 10;
-                    const cy = 10;
-                    const r1 = 9;
-                    const r2 = 3.5;
-                    const pts: string[] = [];
-                    for (let i = 0; i < 8; i++) {
-                      const a = -Math.PI / 2 + (i * Math.PI) / 4;
-                      const r = i % 2 === 0 ? r1 : r2;
-                      pts.push(`${cx + r * Math.cos(a)},${cy + r * Math.sin(a)}`);
-                    }
-                    return (
-                      <polygon
-                        points={pts.join(' ')}
-                        fill={clarityOpen ? CLARITY_MISSIONS[clarityMissionsIdx].color : '#C4A060'}
-                        opacity={clarityOpen ? 1 : 0.55}
-                      />
-                    );
-                  })()}
-                </svg>
-                are you clear on next missions?
-              </button>
-              {clarityOpen && (
-                <div className="space-y-1.5 animate-in fade-in duration-200">
-                  <DragSlider
-                    items={CLARITY_MISSIONS}
-                    selectedIdx={clarityMissionsIdx}
-                    onSelect={setClarityMissionsIdx}
-                    size={36}
-                  />
-                  <p
-                    className="text-center font-bold transition-all duration-300"
-                    style={{
-                      color: CLARITY_MISSIONS[clarityMissionsIdx].color,
-                      fontFamily: 'var(--font-serif)',
-                      fontSize: '16px',
-                    }}
-                  >
-                    {CLARITY_MISSIONS[clarityMissionsIdx].level}
-                  </p>
-                </div>
-              )}
-            </div>
-          </>
-        )}
-      </div>
-
-      {/* ── LOGBOOK & EMOTIONS ── collapsible pillbox */}
-      <div
-        className="space-y-2 rounded-2xl border px-4 py-3"
-        style={{
-          borderColor: '#C4A06030',
-          background: 'rgba(245,236,220,0.45)',
-        }}
-      >
-        {/* Pill header — click to open/close */}
-        <div className="flex items-center justify-between">
-          <span className="w-12" />
-          <button
-            type="button"
-            onClick={toggleLogbookSection}
-            className="flex cursor-pointer items-center gap-2 rounded-full px-5 py-1.5 transition-all"
-            style={{
-              background: '#C4A06015',
-              border: '1px solid #C4A06040',
-            }}
-          >
-            <span
-              className="text-center text-sm font-semibold uppercase tracking-[0.22em]"
-              style={{ color: '#C4A060' }}
-            >
-              Logbook & Emotions
-            </span>
-            <span
-              className="text-sm transition-transform duration-200"
-              style={{
-                color: '#C4A06080',
-                transform: logbookSectionOpen ? 'rotate(180deg)' : 'rotate(0deg)',
-              }}
-            >
-              ▾
-            </span>
-          </button>
-          <span className="w-12" />
+            </>
+          )}
         </div>
 
-        {logbookSectionOpen && (
-          <>
-            {/* Hawkins emotional slider — toggled by losange below */}
-            {sliderVisible && (
-              <div className="relative flex flex-col items-center gap-2 pt-4 pb-2">
-                {/* Style toggle — small beige circle that switches between square and dot rendering */}
-                <button
-                  type="button"
-                  onClick={() =>
-                    setHawkinsStyle((s) =>
-                      s === 'squares' ? 'dots' : s === 'dots' ? 'losanges' : 'squares',
-                    )
-                  }
-                  aria-label="Toggle hawkins slider style"
-                  className="absolute right-0 flex cursor-pointer items-center justify-center"
-                  style={{
-                    // Align vertically with the slider row: pt-4 (16px) + half of
-                    // 36px container (18px) − half of this button (10px) = 24px.
-                    top: 24,
-                    width: 20,
-                    height: 20,
-                    background: 'transparent',
-                    border: 'none',
-                  }}
-                >
-                  <span
-                    style={{
-                      width: 14,
-                      height: 14,
-                      background: '#8A6A4A',
-                      borderRadius: hawkinsStyle === 'dots' ? '50%' : '3px',
-                      display: 'block',
-                      transform: hawkinsStyle === 'losanges' ? 'rotate(45deg)' : 'rotate(0deg)',
-                      transition: 'border-radius 200ms, transform 200ms',
-                    }}
-                  />
-                </button>
+        {/* ── LOGBOOK & EMOTIONS ── collapsible pillbox */}
+        <div
+          className="space-y-2 rounded-2xl border px-4 py-3"
+          style={{
+            borderColor: '#C4A06030',
+            background: 'rgba(245,236,220,0.45)',
+          }}
+        >
+          {/* Pill header — click to open/close */}
+          <div className="flex items-center justify-between">
+            <span className="w-12" />
+            <button
+              type="button"
+              onClick={toggleLogbookSection}
+              className="flex cursor-pointer items-center gap-2 rounded-full px-5 py-1.5 transition-all"
+              style={{
+                background: '#C4A06015',
+                border: '1px solid #C4A06040',
+              }}
+            >
+              <span
+                className="text-center text-sm font-semibold uppercase tracking-[0.22em]"
+                style={{ color: '#C4A060' }}
+              >
+                Logbook & Emotions
+              </span>
+              <span
+                className="text-sm transition-transform duration-200"
+                style={{
+                  color: '#C4A06080',
+                  transform: logbookSectionOpen ? 'rotate(180deg)' : 'rotate(0deg)',
+                }}
+              >
+                ▾
+              </span>
+            </button>
+            <span className="w-12" />
+          </div>
 
-                <div className="relative" style={{ width: 300, height: 36 }}>
-                  {(() => {
-                    if (hawkinsStyle === 'losanges') {
-                      // LOSANGES — rotated squares (diamonds). A rotated 18px square
-                      // visually occupies ~25.4px diagonal, so gap 13 yields ~4px
-                      // clean negative space between adjacent losanges.
-                      const sq = 18;
-                      const gap = 13;
+          {logbookSectionOpen && (
+            <>
+              {/* Hawkins emotional slider — toggled by losange below */}
+              {sliderVisible && (
+                <div className="relative flex flex-col items-center gap-2 pt-4 pb-2">
+                  {/* Style toggle — small beige circle that switches between square and dot rendering */}
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setHawkinsStyle((s) =>
+                        s === 'squares' ? 'dots' : s === 'dots' ? 'losanges' : 'squares',
+                      )
+                    }
+                    aria-label="Toggle hawkins slider style"
+                    className="absolute right-0 flex cursor-pointer items-center justify-center"
+                    style={{
+                      // Align vertically with the slider row: pt-4 (16px) + half of
+                      // 36px container (18px) − half of this button (10px) = 24px.
+                      top: 24,
+                      width: 20,
+                      height: 20,
+                      background: 'transparent',
+                      border: 'none',
+                    }}
+                  >
+                    <span
+                      style={{
+                        width: 14,
+                        height: 14,
+                        background: '#8A6A4A',
+                        borderRadius: hawkinsStyle === 'dots' ? '50%' : '3px',
+                        display: 'block',
+                        transform: hawkinsStyle === 'losanges' ? 'rotate(45deg)' : 'rotate(0deg)',
+                        transition: 'border-radius 200ms, transform 200ms',
+                      }}
+                    />
+                  </button>
+
+                  <div className="relative" style={{ width: 300, height: 36 }}>
+                    {(() => {
+                      if (hawkinsStyle === 'losanges') {
+                        // LOSANGES — rotated squares (diamonds). A rotated 18px square
+                        // visually occupies ~25.4px diagonal, so gap 13 yields ~4px
+                        // clean negative space between adjacent losanges.
+                        const sq = 18;
+                        const gap = 13;
+                        const totalW = HAWKINS.length * sq + (HAWKINS.length - 1) * gap;
+                        const offsetX = (300 - totalW) / 2;
+                        const baseY = (36 - sq) / 2;
+                        return HAWKINS.map((h, i) => {
+                          const selected = hawkinsIdx === i;
+                          const x = offsetX + i * (sq + gap);
+                          return (
+                            <button
+                              key={h.level}
+                              type="button"
+                              onClick={() => setHawkinsIdx(i)}
+                              className="absolute cursor-pointer transition-all"
+                              style={{
+                                left: x,
+                                top: baseY,
+                                width: sq,
+                                height: sq,
+                                background: h.color,
+                                opacity: selected ? 1 : 0.45,
+                                border: 'none',
+                                borderRadius: '2px',
+                                transform: selected ? 'rotate(45deg) scale(1.15)' : 'rotate(45deg)',
+                                boxShadow: selected ? `0 4px 14px -4px ${h.color}` : 'none',
+                              }}
+                              title={h.level}
+                            />
+                          );
+                        });
+                      }
+                      if (hawkinsStyle === 'dots') {
+                        // DOTS style — circular dots in a straight horizontal line,
+                        // same vocabulary as variant 1 (arc) but flat instead of bowed.
+                        const dotSize = 22;
+                        const totalW = HAWKINS.length * dotSize + (HAWKINS.length - 1) * 6;
+                        const offsetX = (300 - totalW) / 2;
+                        const baseY = (36 - dotSize) / 2;
+                        return HAWKINS.map((h, i) => {
+                          const selected = hawkinsIdx === i;
+                          const x = offsetX + i * (dotSize + 6);
+                          return (
+                            <button
+                              key={h.level}
+                              type="button"
+                              onClick={() => setHawkinsIdx(i)}
+                              className="absolute cursor-pointer rounded-full transition-all"
+                              style={{
+                                left: x,
+                                top: baseY,
+                                width: dotSize,
+                                height: dotSize,
+                                background: h.color,
+                                opacity: selected ? 1 : 0.55,
+                                border: 'none',
+                                transform: selected ? 'scale(1.15)' : 'scale(1)',
+                                boxShadow: selected ? `0 4px 14px -4px ${h.color}` : 'none',
+                              }}
+                              title={h.level}
+                            />
+                          );
+                        });
+                      }
+                      // SQUARES style — original 20×20 rounded squares
+                      const sq = 20;
+                      const gap = 6;
                       const totalW = HAWKINS.length * sq + (HAWKINS.length - 1) * gap;
                       const offsetX = (300 - totalW) / 2;
                       const baseY = (36 - sq) / 2;
@@ -2428,47 +2609,14 @@ export default function FeelingCheckInCard() {
                             key={h.level}
                             type="button"
                             onClick={() => setHawkinsIdx(i)}
-                            className="absolute cursor-pointer transition-all"
+                            className="absolute cursor-pointer rounded-[3px] transition-all"
                             style={{
                               left: x,
                               top: baseY,
                               width: sq,
                               height: sq,
                               background: h.color,
-                              opacity: selected ? 1 : 0.45,
-                              border: 'none',
-                              borderRadius: '2px',
-                              transform: selected ? 'rotate(45deg) scale(1.15)' : 'rotate(45deg)',
-                              boxShadow: selected ? `0 4px 14px -4px ${h.color}` : 'none',
-                            }}
-                            title={h.level}
-                          />
-                        );
-                      });
-                    }
-                    if (hawkinsStyle === 'dots') {
-                      // DOTS style — circular dots in a straight horizontal line,
-                      // same vocabulary as variant 1 (arc) but flat instead of bowed.
-                      const dotSize = 22;
-                      const totalW = HAWKINS.length * dotSize + (HAWKINS.length - 1) * 6;
-                      const offsetX = (300 - totalW) / 2;
-                      const baseY = (36 - dotSize) / 2;
-                      return HAWKINS.map((h, i) => {
-                        const selected = hawkinsIdx === i;
-                        const x = offsetX + i * (dotSize + 6);
-                        return (
-                          <button
-                            key={h.level}
-                            type="button"
-                            onClick={() => setHawkinsIdx(i)}
-                            className="absolute cursor-pointer rounded-full transition-all"
-                            style={{
-                              left: x,
-                              top: baseY,
-                              width: dotSize,
-                              height: dotSize,
-                              background: h.color,
-                              opacity: selected ? 1 : 0.55,
+                              opacity: selected ? 1 : 0.35,
                               border: 'none',
                               transform: selected ? 'scale(1.15)' : 'scale(1)',
                               boxShadow: selected ? `0 4px 14px -4px ${h.color}` : 'none',
@@ -2477,434 +2625,364 @@ export default function FeelingCheckInCard() {
                           />
                         );
                       });
-                    }
-                    // SQUARES style — original 20×20 rounded squares
-                    const sq = 20;
-                    const gap = 6;
-                    const totalW = HAWKINS.length * sq + (HAWKINS.length - 1) * gap;
-                    const offsetX = (300 - totalW) / 2;
-                    const baseY = (36 - sq) / 2;
-                    return HAWKINS.map((h, i) => {
-                      const selected = hawkinsIdx === i;
-                      const x = offsetX + i * (sq + gap);
-                      return (
-                        <button
-                          key={h.level}
-                          type="button"
-                          onClick={() => setHawkinsIdx(i)}
-                          className="absolute cursor-pointer rounded-[3px] transition-all"
-                          style={{
-                            left: x,
-                            top: baseY,
-                            width: sq,
-                            height: sq,
-                            background: h.color,
-                            opacity: selected ? 1 : 0.35,
-                            border: 'none',
-                            transform: selected ? 'scale(1.15)' : 'scale(1)',
-                            boxShadow: selected ? `0 4px 14px -4px ${h.color}` : 'none',
-                          }}
-                          title={h.level}
-                        />
-                      );
-                    });
-                  })()}
+                    })()}
+                  </div>
+                  <p
+                    style={{
+                      // Acceptance's raw yellow (#F0E060) doesn't read against the cream
+                      // paper background — swap to a readable ochre while keeping the
+                      // yellow swatch in the slider itself.
+                      color:
+                        HAWKINS[hawkinsIdx].level === 'Acceptance'
+                          ? '#B8860B'
+                          : HAWKINS[hawkinsIdx].color,
+                      fontFamily: 'var(--font-serif)',
+                      fontSize: '18px',
+                      fontWeight: 700,
+                      letterSpacing: '0.04em',
+                      opacity: 1,
+                    }}
+                  >
+                    {HAWKINS[hawkinsIdx].level}
+                  </p>
                 </div>
-                <p
-                  style={{
-                    // Acceptance's raw yellow (#F0E060) doesn't read against the cream
-                    // paper background — swap to a readable ochre while keeping the
-                    // yellow swatch in the slider itself.
-                    color:
-                      HAWKINS[hawkinsIdx].level === 'Acceptance'
-                        ? '#B8860B'
-                        : HAWKINS[hawkinsIdx].color,
-                    fontFamily: 'var(--font-serif)',
-                    fontSize: '18px',
-                    fontWeight: 700,
-                    letterSpacing: '0.04em',
-                    opacity: 1,
-                  }}
-                >
-                  {HAWKINS[hawkinsIdx].level}
-                </p>
-              </div>
-            )}
+              )}
 
-            {/* Losange toggle — show/hide slider + emotion name */}
-            <div className="flex justify-center py-1">
-              <button
-                type="button"
-                onClick={() => setSliderVisible((s) => !s)}
-                className="cursor-pointer transition-all hover:scale-125"
-                style={{ background: 'none', border: 'none', padding: 4 }}
-                title={sliderVisible ? 'Hide slider' : 'Show slider'}
-              >
-                <span
-                  style={{
-                    display: 'block',
-                    width: 10,
-                    height: 10,
-                    background: HAWKINS[hawkinsIdx].color,
-                    opacity: sliderVisible ? 0.6 : 0.3,
-                    borderRadius: 2,
-                    transform: 'rotate(45deg)',
-                    transition: 'opacity 0.2s',
-                  }}
-                />
-              </button>
-            </div>
-
-            {/* Notes toggle — transparent pill that collapses/expands the entry list */}
-            {sessionEmotions.length > 0 && (
-              <div className="flex justify-center gap-2 pt-2">
+              {/* Losange toggle — show/hide slider + emotion name */}
+              <div className="flex justify-center py-1">
                 <button
                   type="button"
-                  onClick={() => setShowLogbookEntries(!showLogbookEntries)}
-                  className="flex cursor-pointer items-center gap-1.5 rounded-full bg-transparent px-3 py-0.5 font-semibold uppercase tracking-wider transition-all"
-                  style={{
-                    color: '#8A6A4A',
-                    border: '1px dashed #C4A06070',
-                    fontSize: '12px',
-                  }}
-                  title={showLogbookEntries ? 'Hide notes' : 'Show notes'}
+                  onClick={() => setSliderVisible((s) => !s)}
+                  className="cursor-pointer transition-all hover:scale-125"
+                  style={{ background: 'none', border: 'none', padding: 4 }}
+                  title={sliderVisible ? 'Hide slider' : 'Show slider'}
                 >
-                  notes · {sessionEmotions.length}
                   <span
-                    className="text-[8px] transition-transform duration-200"
                     style={{
-                      color: '#C4A06080',
-                      transform: showLogbookEntries ? 'rotate(180deg)' : 'rotate(0deg)',
+                      display: 'block',
+                      width: 10,
+                      height: 10,
+                      background: HAWKINS[hawkinsIdx].color,
+                      opacity: sliderVisible ? 0.6 : 0.3,
+                      borderRadius: 2,
+                      transform: 'rotate(45deg)',
+                      transition: 'opacity 0.2s',
                     }}
-                  >
-                    ▾
-                  </span>
+                  />
                 </button>
-                {showLogbookEntries && (
+              </div>
+
+              {/* Notes toggle — transparent pill that collapses/expands the entry list */}
+              {sessionEmotions.length > 0 && (
+                <div className="flex justify-center gap-2 pt-2">
                   <button
                     type="button"
-                    onClick={() => setLogbookMode(logbookMode === 'grouped' ? 'mixed' : 'grouped')}
-                    className="cursor-pointer rounded-md bg-transparent px-2 py-0.5 font-semibold uppercase tracking-wider transition-all"
+                    onClick={() => setShowLogbookEntries(!showLogbookEntries)}
+                    className="flex cursor-pointer items-center gap-1.5 rounded-full bg-transparent px-3 py-0.5 font-semibold uppercase tracking-wider transition-all"
                     style={{
                       color: '#8A6A4A',
-                      border: '1px solid #C4A06050',
+                      border: '1px dashed #C4A06070',
                       fontSize: '12px',
                     }}
-                    title={`Switch to ${logbookMode === 'grouped' ? 'chronological (mixed)' : 'grouped'} view`}
+                    title={showLogbookEntries ? 'Hide notes' : 'Show notes'}
                   >
-                    {logbookMode === 'grouped' ? 'mixed' : 'grouped'}
-                  </button>
-                )}
-              </div>
-            )}
-
-            {showLogbookEntries && sessionEmotions.length > 0 && logbookMode === 'mixed' && (
-              <div className="space-y-1 pt-1">
-                {sessionEmotions.map((e, i) => (
-                  <div key={`m-${i}`} className="flex items-center gap-2" style={{ minHeight: 28 }}>
+                    notes · {sessionEmotions.length}
                     <span
-                      className="shrink-0"
+                      className="text-[8px] transition-transform duration-200"
+                      style={{
+                        color: '#C4A06080',
+                        transform: showLogbookEntries ? 'rotate(180deg)' : 'rotate(0deg)',
+                      }}
+                    >
+                      ▾
+                    </span>
+                  </button>
+                  {showLogbookEntries && (
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setLogbookMode(logbookMode === 'grouped' ? 'mixed' : 'grouped')
+                      }
+                      className="cursor-pointer rounded-md bg-transparent px-2 py-0.5 font-semibold uppercase tracking-wider transition-all"
                       style={{
                         color: '#8A6A4A',
-                        opacity: 0.75,
+                        border: '1px solid #C4A06050',
                         fontSize: '12px',
-                        lineHeight: '28px',
                       }}
+                      title={`Switch to ${logbookMode === 'grouped' ? 'chronological (mixed)' : 'grouped'} view`}
                     >
-                      {e.time}
-                    </span>
+                      {logbookMode === 'grouped' ? 'mixed' : 'grouped'}
+                    </button>
+                  )}
+                </div>
+              )}
+
+              {showLogbookEntries && sessionEmotions.length > 0 && logbookMode === 'mixed' && (
+                <div className="space-y-1 pt-1">
+                  {sessionEmotions.map((e, i) => (
+                    <div
+                      key={`m-${i}`}
+                      className="flex items-center gap-2"
+                      style={{ minHeight: 28 }}
+                    >
+                      <span
+                        className="shrink-0"
+                        style={{
+                          color: '#8A6A4A',
+                          opacity: 0.75,
+                          fontSize: '12px',
+                          lineHeight: '28px',
+                        }}
+                      >
+                        {e.time}
+                      </span>
+                      <span
+                        className="h-2 w-2 shrink-0 rounded-full"
+                        style={{ background: e.mindColor, opacity: 0.7 }}
+                      />
+                      <span
+                        style={{
+                          color: '#7a5438',
+                          fontFamily: 'var(--font-handwritten)',
+                          fontSize: '20px',
+                          lineHeight: '28px',
+                        }}
+                      >
+                        {e.text}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              )}
+              {showLogbookEntries && sessionEmotions.length > 0 && logbookMode === 'grouped' && (
+                <div className="space-y-3 pt-1">
+                  {/* CHALLENGE stack — red entries */}
+                  {sessionEmotions.some((e) => e.mind === 'challenge') && (
+                    <div className="space-y-1">
+                      <p
+                        className="font-semibold uppercase tracking-[0.18em]"
+                        style={{ color: '#D4805A', fontSize: '14px' }}
+                      >
+                        Challenge
+                      </p>
+                      {sessionEmotions
+                        .filter((e) => e.mind === 'challenge')
+                        .map((e, i) => (
+                          <div
+                            key={`c-${i}`}
+                            className="flex items-center gap-2"
+                            style={{ minHeight: 28 }}
+                          >
+                            <span
+                              className="shrink-0"
+                              style={{
+                                color: '#8A6A4A',
+                                opacity: 0.75,
+                                fontSize: '12px',
+                                lineHeight: '28px',
+                              }}
+                            >
+                              {e.time}
+                            </span>
+                            <span
+                              className="h-2 w-2 shrink-0 rounded-full"
+                              style={{ background: e.mindColor, opacity: 0.7 }}
+                            />
+                            <span
+                              style={{
+                                color: '#7a5438',
+                                fontFamily: 'var(--font-handwritten)',
+                                fontSize: '20px',
+                                lineHeight: '28px',
+                              }}
+                            >
+                              {e.text}
+                            </span>
+                          </div>
+                        ))}
+                    </div>
+                  )}
+                  {/* FLOW stack — green entries */}
+                  {sessionEmotions.some((e) => e.mind === 'flow') && (
+                    <div className="space-y-1">
+                      <p
+                        className="font-semibold uppercase tracking-[0.18em]"
+                        style={{ color: '#C4A060', fontSize: '14px' }}
+                      >
+                        Flow
+                      </p>
+                      {sessionEmotions
+                        .filter((e) => e.mind === 'flow')
+                        .map((e, i) => (
+                          <div
+                            key={`f-${i}`}
+                            className="flex items-center gap-2"
+                            style={{ minHeight: 28 }}
+                          >
+                            <span
+                              className="shrink-0"
+                              style={{
+                                color: '#8A6A4A',
+                                opacity: 0.75,
+                                fontSize: '12px',
+                                lineHeight: '28px',
+                              }}
+                            >
+                              {e.time}
+                            </span>
+                            <span
+                              className="h-2 w-2 shrink-0 rounded-full"
+                              style={{ background: e.mindColor, opacity: 0.7 }}
+                            />
+                            <span
+                              style={{
+                                color: '#7a5438',
+                                fontFamily: 'var(--font-handwritten)',
+                                fontSize: '20px',
+                                lineHeight: '28px',
+                              }}
+                            >
+                              {e.text}
+                            </span>
+                          </div>
+                        ))}
+                    </div>
+                  )}
+                  {/* Untagged entries (neither challenge nor flow) */}
+                  {sessionEmotions.some((e) => e.mind !== 'challenge' && e.mind !== 'flow') && (
+                    <div className="space-y-1">
+                      {sessionEmotions
+                        .filter((e) => e.mind !== 'challenge' && e.mind !== 'flow')
+                        .map((e, i) => (
+                          <div
+                            key={`u-${i}`}
+                            className="flex items-center gap-2"
+                            style={{ minHeight: 28 }}
+                          >
+                            <span
+                              className="shrink-0"
+                              style={{
+                                color: '#8A6A4A',
+                                opacity: 0.75,
+                                fontSize: '12px',
+                                lineHeight: '28px',
+                              }}
+                            >
+                              {e.time}
+                            </span>
+                            <span
+                              className="h-2 w-2 shrink-0 rounded-full"
+                              style={{ background: e.mindColor, opacity: 0.6 }}
+                            />
+                            <span
+                              style={{
+                                color: '#7a5438',
+                                fontFamily: 'var(--font-handwritten)',
+                                fontSize: '20px',
+                                lineHeight: '28px',
+                              }}
+                            >
+                              {e.text}
+                            </span>
+                          </div>
+                        ))}
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* Two writing spots — challenge (top) + flow (bottom, ochre) */}
+              <div className="space-y-2">
+                {/* CHALLENGE — label above, question as placeholder on write line */}
+                <div className="space-y-1">
+                  <div className="flex items-center gap-2 px-1">
                     <span
-                      className="h-2 w-2 shrink-0 rounded-full"
-                      style={{ background: e.mindColor, opacity: 0.7 }}
+                      className="block h-2.5 w-2.5 shrink-0 rounded-full"
+                      style={{ background: '#D4805A', opacity: 0.85 }}
                     />
                     <span
-                      style={{
-                        color: '#7a5438',
-                        fontFamily: 'var(--font-handwritten)',
-                        fontSize: '20px',
-                        lineHeight: '28px',
-                      }}
-                    >
-                      {e.text}
-                    </span>
-                  </div>
-                ))}
-              </div>
-            )}
-            {showLogbookEntries && sessionEmotions.length > 0 && logbookMode === 'grouped' && (
-              <div className="space-y-3 pt-1">
-                {/* CHALLENGE stack — red entries */}
-                {sessionEmotions.some((e) => e.mind === 'challenge') && (
-                  <div className="space-y-1">
-                    <p
-                      className="font-semibold uppercase tracking-[0.18em]"
-                      style={{ color: '#A05A40', fontSize: '14px' }}
+                      className="shrink-0 font-semibold uppercase tracking-[0.18em]"
+                      style={{ color: '#D4805A', fontSize: '16px' }}
                     >
                       Challenge
-                    </p>
-                    {sessionEmotions
-                      .filter((e) => e.mind === 'challenge')
-                      .map((e, i) => (
-                        <div
-                          key={`c-${i}`}
-                          className="flex items-center gap-2"
-                          style={{ minHeight: 28 }}
-                        >
-                          <span
-                            className="shrink-0"
-                            style={{
-                              color: '#8A6A4A',
-                              opacity: 0.75,
-                              fontSize: '12px',
-                              lineHeight: '28px',
-                            }}
-                          >
-                            {e.time}
-                          </span>
-                          <span
-                            className="h-2 w-2 shrink-0 rounded-full"
-                            style={{ background: e.mindColor, opacity: 0.7 }}
-                          />
-                          <span
-                            style={{
-                              color: '#7a5438',
-                              fontFamily: 'var(--font-handwritten)',
-                              fontSize: '20px',
-                              lineHeight: '28px',
-                            }}
-                          >
-                            {e.text}
-                          </span>
-                        </div>
-                      ))}
+                    </span>
                   </div>
-                )}
-                {/* FLOW stack — green entries */}
-                {sessionEmotions.some((e) => e.mind === 'flow') && (
-                  <div className="space-y-1">
-                    <p
-                      className="font-semibold uppercase tracking-[0.18em]"
-                      style={{ color: '#C4A060', fontSize: '14px' }}
+                  <div className="relative flex items-end gap-2">
+                    <input
+                      type="text"
+                      value={challengeInput}
+                      onChange={(e) => setChallengeInput(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') saveChallenge();
+                      }}
+                      placeholder="what is your main tension right now?"
+                      className="flex-1 border-b bg-transparent pb-1 outline-none placeholder:italic placeholder:text-[#D4805A] placeholder:opacity-80"
+                      style={{
+                        color: '#7a5438',
+                        borderColor: '#D4805A30',
+                        fontFamily: 'var(--font-handwritten)',
+                        fontSize: '20px',
+                      }}
+                    />
+                    <CategoryTagPicker
+                      value={challengeTag}
+                      onChange={setChallengeTag}
+                      open={showChallengeTagPicker}
+                      onToggle={() => setShowChallengeTagPicker((o) => !o)}
+                      onClose={() => setShowChallengeTagPicker(false)}
+                      lifeCategories={lifeCategories}
+                      compassAxes={COMPASS_AXES}
+                    />
+                  </div>
+                </div>
+
+                {/* FLOW — label above, question as placeholder on write line */}
+                <div className="space-y-1">
+                  <div className="flex items-center gap-2 px-1">
+                    <span
+                      className="block h-2.5 w-2.5 shrink-0 rounded-full"
+                      style={{ background: '#C4A060', opacity: 0.85 }}
+                    />
+                    <span
+                      className="shrink-0 font-semibold uppercase tracking-[0.18em]"
+                      style={{ color: '#C4A060', fontSize: '16px' }}
                     >
                       Flow
-                    </p>
-                    {sessionEmotions
-                      .filter((e) => e.mind === 'flow')
-                      .map((e, i) => (
-                        <div
-                          key={`f-${i}`}
-                          className="flex items-center gap-2"
-                          style={{ minHeight: 28 }}
-                        >
-                          <span
-                            className="shrink-0"
-                            style={{
-                              color: '#8A6A4A',
-                              opacity: 0.75,
-                              fontSize: '12px',
-                              lineHeight: '28px',
-                            }}
-                          >
-                            {e.time}
-                          </span>
-                          <span
-                            className="h-2 w-2 shrink-0 rounded-full"
-                            style={{ background: e.mindColor, opacity: 0.7 }}
-                          />
-                          <span
-                            style={{
-                              color: '#7a5438',
-                              fontFamily: 'var(--font-handwritten)',
-                              fontSize: '20px',
-                              lineHeight: '28px',
-                            }}
-                          >
-                            {e.text}
-                          </span>
-                        </div>
-                      ))}
+                    </span>
                   </div>
-                )}
-                {/* Untagged entries (neither challenge nor flow) */}
-                {sessionEmotions.some((e) => e.mind !== 'challenge' && e.mind !== 'flow') && (
-                  <div className="space-y-1">
-                    {sessionEmotions
-                      .filter((e) => e.mind !== 'challenge' && e.mind !== 'flow')
-                      .map((e, i) => (
-                        <div
-                          key={`u-${i}`}
-                          className="flex items-center gap-2"
-                          style={{ minHeight: 28 }}
-                        >
-                          <span
-                            className="shrink-0"
-                            style={{
-                              color: '#8A6A4A',
-                              opacity: 0.75,
-                              fontSize: '12px',
-                              lineHeight: '28px',
-                            }}
-                          >
-                            {e.time}
-                          </span>
-                          <span
-                            className="h-2 w-2 shrink-0 rounded-full"
-                            style={{ background: e.mindColor, opacity: 0.6 }}
-                          />
-                          <span
-                            style={{
-                              color: '#7a5438',
-                              fontFamily: 'var(--font-handwritten)',
-                              fontSize: '20px',
-                              lineHeight: '28px',
-                            }}
-                          >
-                            {e.text}
-                          </span>
-                        </div>
-                      ))}
+                  <div className="relative flex items-end gap-2">
+                    <input
+                      type="text"
+                      value={flowInput}
+                      onChange={(e) => setFlowInput(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') saveFlow();
+                      }}
+                      placeholder="what is working well?"
+                      className="flex-1 border-b bg-transparent pb-1 outline-none placeholder:italic placeholder:text-[#C4A060] placeholder:opacity-80"
+                      style={{
+                        color: '#7a5438',
+                        borderColor: '#C4A06030',
+                        fontFamily: 'var(--font-handwritten)',
+                        fontSize: '20px',
+                      }}
+                    />
+                    <CategoryTagPicker
+                      value={flowTag}
+                      onChange={setFlowTag}
+                      open={showFlowTagPicker}
+                      onToggle={() => setShowFlowTagPicker((o) => !o)}
+                      onClose={() => setShowFlowTagPicker(false)}
+                      lifeCategories={lifeCategories}
+                      compassAxes={COMPASS_AXES}
+                    />
                   </div>
-                )}
-              </div>
-            )}
-
-            {/* Two writing spots — challenge (top) + flow (bottom, ochre) */}
-            <div className="space-y-2">
-              {/* CHALLENGE — label above, question as placeholder on write line */}
-              <div className="space-y-1">
-                <div className="flex items-center gap-2 px-1">
-                  <span
-                    className="block h-2.5 w-2.5 shrink-0 rounded-full"
-                    style={{ background: '#A05A40', opacity: 0.85 }}
-                  />
-                  <span
-                    className="shrink-0 font-semibold uppercase tracking-[0.18em]"
-                    style={{ color: '#A05A40', fontSize: '16px' }}
-                  >
-                    Challenge
-                  </span>
-                </div>
-                <div className="relative flex items-end gap-2">
-                  <input
-                    type="text"
-                    value={challengeInput}
-                    onChange={(e) => setChallengeInput(e.target.value)}
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter') saveChallenge();
-                    }}
-                    placeholder="what is your main tension right now?"
-                    className="flex-1 border-b bg-transparent pb-1 outline-none placeholder:italic placeholder:text-[#A05A40] placeholder:opacity-80"
-                    style={{
-                      color: '#7a5438',
-                      borderColor: '#A05A4030',
-                      fontFamily: 'var(--font-handwritten)',
-                      fontSize: '20px',
-                    }}
-                  />
-                  <CategoryTagPicker
-                    value={challengeTag}
-                    onChange={setChallengeTag}
-                    open={showChallengeTagPicker}
-                    onToggle={() => setShowChallengeTagPicker((o) => !o)}
-                    onClose={() => setShowChallengeTagPicker(false)}
-                    lifeCategories={lifeCategories}
-                    compassAxes={COMPASS_AXES}
-                  />
                 </div>
               </div>
-
-              {/* FLOW — label above, question as placeholder on write line */}
-              <div className="space-y-1">
-                <div className="flex items-center gap-2 px-1">
-                  <span
-                    className="block h-2.5 w-2.5 shrink-0 rounded-full"
-                    style={{ background: '#C4A060', opacity: 0.85 }}
-                  />
-                  <span
-                    className="shrink-0 font-semibold uppercase tracking-[0.18em]"
-                    style={{ color: '#C4A060', fontSize: '16px' }}
-                  >
-                    Flow
-                  </span>
-                </div>
-                <div className="relative flex items-end gap-2">
-                  <input
-                    type="text"
-                    value={flowInput}
-                    onChange={(e) => setFlowInput(e.target.value)}
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter') saveFlow();
-                    }}
-                    placeholder="what is working well?"
-                    className="flex-1 border-b bg-transparent pb-1 outline-none placeholder:italic placeholder:text-[#C4A060] placeholder:opacity-80"
-                    style={{
-                      color: '#7a5438',
-                      borderColor: '#C4A06030',
-                      fontFamily: 'var(--font-handwritten)',
-                      fontSize: '20px',
-                    }}
-                  />
-                  <CategoryTagPicker
-                    value={flowTag}
-                    onChange={setFlowTag}
-                    open={showFlowTagPicker}
-                    onToggle={() => setShowFlowTagPicker((o) => !o)}
-                    onClose={() => setShowFlowTagPicker(false)}
-                    lifeCategories={lifeCategories}
-                    compassAxes={COMPASS_AXES}
-                  />
-                </div>
-              </div>
-            </div>
-          </>
-        )}
+            </>
+          )}
+        </div>
       </div>
-
-      {/* Save star — quick save without opening losange */}
-      <div className="flex flex-col items-center gap-1">
-        <button
-          type="button"
-          onClick={() => {
-            saveCheckIn();
-          }}
-          className="cursor-pointer transition-all duration-500 hover:scale-125"
-          style={{ background: 'none', border: 'none', padding: 0 }}
-        >
-          <svg width={20} height={20} viewBox="0 0 20 20">
-            {(() => {
-              const cx = 10;
-              const cy = 10;
-              const r1 = 9;
-              const r2 = 3.5;
-              const pts: string[] = [];
-              for (let i = 0; i < 8; i++) {
-                const a = -Math.PI / 2 + (i * Math.PI) / 4;
-                const r = i % 2 === 0 ? r1 : r2;
-                pts.push(`${cx + r * Math.cos(a)},${cy + r * Math.sin(a)}`);
-              }
-              return (
-                <polygon
-                  points={pts.join(' ')}
-                  fill={justSaved ? currentMind.color : `${currentMind.color}40`}
-                  style={{ transition: 'fill 0.5s' }}
-                />
-              );
-            })()}
-          </svg>
-        </button>
-        {justSaved && (
-          <span
-            className="text-xs animate-in fade-in duration-300"
-            style={{
-              color: currentMind.color,
-              opacity: 0.6,
-              fontFamily: 'var(--font-handwritten)',
-            }}
-          >
-            saved
-          </span>
-        )}
-      </div>
-    </div>
+    </>
   );
 }
