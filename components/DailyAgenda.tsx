@@ -1,6 +1,8 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import type { CompassAxis, LifeCategoryLike, TagValue } from '@/components/CategoryTagPicker';
+import CategoryTagPicker from '@/components/CategoryTagPicker';
 
 /* ═══════════════════════════════════════════════════════════
    AGENDA — day/week/month planner with mission + emotion layers.
@@ -19,7 +21,25 @@ interface AgendaBlock {
   duration: number; // in hours (0.5, 1, 1.5, 2, etc.)
   color: string;
   kind: 'mission' | 'emotion';
+  tag?: { name: string; color: string; categoryId?: string };
 }
+
+const CATS_KEY = 'colourmap:life-categories';
+
+const COMPASS_AXES: CompassAxis[] = [
+  { name: 'Care', color: '#D4805A', group: 'Caring' },
+  { name: 'Attitude', color: '#C4A070', group: 'Caring' },
+  { name: 'Rest', color: '#C4906A', group: 'Caring' },
+  { name: 'Emotions', color: '#B07A5A', group: 'Caring' },
+  { name: 'Structure', color: '#6A8A9A', group: 'Doing' },
+  { name: 'Target', color: '#7A9A7A', group: 'Doing' },
+  { name: 'Action', color: '#8A8A6A', group: 'Doing' },
+  { name: 'Resources', color: '#5A7A9A', group: 'Doing' },
+  { name: 'Social Life', color: '#6B7F4E', group: 'Sharing' },
+  { name: 'Authentic', color: '#8CA46E', group: 'Sharing' },
+  { name: 'Roots', color: '#7B9560', group: 'Sharing' },
+  { name: 'Express', color: '#5F7447', group: 'Sharing' },
+];
 
 interface Outing {
   id: string;
@@ -143,6 +163,9 @@ export default function DailyAgenda() {
   const [newDuration, setNewDuration] = useState(1);
   const [newColor, setNewColor] = useState(BLOCK_COLORS[0]);
   const [expandedBlock, setExpandedBlock] = useState<string | null>(null);
+  const [blockTag, setBlockTag] = useState<TagValue | null>(null);
+  const [showBlockPicker, setShowBlockPicker] = useState(false);
+  const [lifeCategories, setLifeCategories] = useState<LifeCategoryLike[]>([]);
   const [showObjectives, setShowObjectives] = useState(false);
   const [objectives, setObjectives] = useState<{ id: string; text: string; done: boolean }[]>([]);
 
@@ -152,6 +175,10 @@ export default function DailyAgenda() {
     try {
       const raw = localStorage.getItem('colourmap:today-objectives');
       if (raw) setObjectives(JSON.parse(raw));
+    } catch {}
+    try {
+      const raw = localStorage.getItem(CATS_KEY);
+      if (raw) setLifeCategories(JSON.parse(raw));
     } catch {}
   }, []);
 
@@ -173,13 +200,15 @@ export default function DailyAgenda() {
       date: selectedDate,
       startHour: hour,
       duration: newDuration,
-      color: newColor,
+      color: blockTag ? blockTag.color : newColor,
       kind,
+      ...(blockTag && { tag: blockTag }),
     };
     const next = [...blocks, block].sort((a, b) => a.startHour - b.startHour);
     setBlocks(next);
     saveAgenda(next);
     setNewText('');
+    setBlockTag(null);
     setAddingAt(null);
   };
 
@@ -533,6 +562,11 @@ export default function DailyAgenda() {
                   onMove={moveBlock}
                   expandedBlock={expandedBlock}
                   setExpandedBlock={setExpandedBlock}
+                  blockTag={blockTag}
+                  setBlockTag={setBlockTag}
+                  showBlockPicker={showBlockPicker}
+                  setShowBlockPicker={setShowBlockPicker}
+                  lifeCategories={lifeCategories}
                 />
               );
             })()}
@@ -826,6 +860,11 @@ function VerticalView({
   onMove,
   expandedBlock,
   setExpandedBlock,
+  blockTag,
+  setBlockTag,
+  showBlockPicker,
+  setShowBlockPicker,
+  lifeCategories,
 }: {
   blocks: AgendaBlock[];
   layer: AgendaLayer;
@@ -843,6 +882,11 @@ function VerticalView({
   onMove: (id: string, toHour: number) => void;
   expandedBlock: string | null;
   setExpandedBlock: (id: string | null) => void;
+  blockTag: TagValue | null;
+  setBlockTag: (v: TagValue | null) => void;
+  showBlockPicker: boolean;
+  setShowBlockPicker: (v: boolean) => void;
+  lifeCategories: LifeCategoryLike[];
 }) {
   const [dragOverHour, setDragOverHour] = useState<number | null>(null);
 
@@ -963,6 +1007,21 @@ function VerticalView({
                         >
                           {block.text}
                         </span>
+                        {block.tag && (
+                          <span
+                            className="shrink-0 rounded-full px-1.5 py-0.5"
+                            style={{
+                              fontSize: '9px',
+                              fontFamily: 'var(--font-serif)',
+                              fontWeight: 600,
+                              color: block.tag.color,
+                              background: `${block.tag.color}15`,
+                              border: `1px solid ${block.tag.color}30`,
+                            }}
+                          >
+                            {block.tag.name}
+                          </span>
+                        )}
                         <span
                           style={{
                             fontSize: '11px',
@@ -1143,6 +1202,15 @@ function VerticalView({
                         />
                       ))}
                     </div>
+                    <CategoryTagPicker
+                      value={blockTag}
+                      onChange={setBlockTag}
+                      open={showBlockPicker}
+                      onToggle={() => setShowBlockPicker(!showBlockPicker)}
+                      onClose={() => setShowBlockPicker(false)}
+                      lifeCategories={lifeCategories}
+                      compassAxes={COMPASS_AXES}
+                    />
                     <button
                       type="button"
                       onClick={() => setAddingAt(null)}
