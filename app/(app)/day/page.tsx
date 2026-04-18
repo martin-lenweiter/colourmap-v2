@@ -1,6 +1,7 @@
 'use client';
 
 import CompassCarousel from '@/components/CompassCarousel';
+import DailyAgenda from '@/components/DailyAgenda';
 import DayTabs from '@/components/DayTabs';
 import FeelingCheckInCard from '@/components/FeelingCheckInCard';
 import LifeCategories from '@/components/LifeCategories';
@@ -16,6 +17,7 @@ function DayContent() {
         checkinContent={
           <div className="space-y-4">
             <FeelingCheckInCard />
+            <DailyAgenda />
           </div>
         }
         overviewContent={

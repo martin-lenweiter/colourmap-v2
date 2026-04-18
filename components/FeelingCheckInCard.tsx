@@ -391,6 +391,9 @@ export default function FeelingCheckInCard() {
       return false;
     }
   });
+  const [dailyObjOpen, setDailyObjOpen] = useState(true);
+  const [pushTomorrowOpen, setPushTomorrowOpen] = useState(true);
+  const [doneOpen, setDoneOpen] = useState(false);
   const [otherMissionsOpen, setOtherMissionsOpen] = useState(() => {
     try {
       return localStorage.getItem('colourmap:other-missions-open') !== 'false';
@@ -1746,92 +1749,7 @@ export default function FeelingCheckInCard() {
           </div>
         </div>
 
-        {/* Done archive — completed objectives land here and stay behind a pill */}
-        {doneObjectives.length > 0 && (
-          <div className="flex flex-col items-center gap-2 pt-1">
-            <button
-              type="button"
-              onClick={() => setShowDone((o) => !o)}
-              className="flex cursor-pointer items-center gap-1.5 rounded-full bg-transparent px-3 py-0.5 font-semibold uppercase tracking-wider transition-all"
-              style={{
-                color: '#8A6A4A',
-                border: '1px dashed #C4A06070',
-                fontSize: '12px',
-              }}
-              title={showDone ? 'Hide done objectives' : 'Show done objectives'}
-            >
-              done · {doneObjectives.length}
-              <span
-                className="text-[8px] transition-transform duration-200"
-                style={{
-                  color: '#C4A06080',
-                  transform: showDone ? 'rotate(180deg)' : 'rotate(0deg)',
-                }}
-              >
-                ▾
-              </span>
-            </button>
-            {showDone && (
-              <div className="w-full space-y-1.5 animate-in fade-in duration-200">
-                {doneObjectives.slice(0, 20).map((d) => {
-                  const dt = new Date(d.completedAt);
-                  const dateStr = `${dt.getDate()}/${dt.getMonth() + 1}`;
-                  return (
-                    <div key={d.id} className="flex items-start gap-2">
-                      <span
-                        className="shrink-0"
-                        style={{
-                          color: '#8A6A4A',
-                          opacity: 0.75,
-                          fontSize: '12px',
-                          paddingTop: '6px',
-                        }}
-                      >
-                        {dateStr}
-                      </span>
-                      <span
-                        className="flex h-4 w-4 shrink-0 items-center justify-center rounded border"
-                        style={{
-                          marginTop: '4px',
-                          borderColor: '#7AAA5860',
-                          background: '#7AAA5810',
-                        }}
-                      >
-                        <span className="text-[10px]" style={{ color: '#7AAA58' }}>
-                          ✓
-                        </span>
-                      </span>
-                      <span
-                        className="flex-1"
-                        style={{
-                          color: '#C4A060',
-                          fontFamily: 'var(--font-handwritten)',
-                          fontSize: '18px',
-                          opacity: 0.85,
-                        }}
-                      >
-                        {d.text}
-                      </span>
-                    </div>
-                  );
-                })}
-                {doneObjectives.length > 20 && (
-                  <p
-                    className="pt-1 text-center italic"
-                    style={{
-                      color: '#8A6A4A',
-                      fontFamily: 'var(--font-serif)',
-                      fontSize: '12px',
-                      opacity: 0.7,
-                    }}
-                  >
-                    + {doneObjectives.length - 20} older
-                  </p>
-                )}
-              </div>
-            )}
-          </div>
-        )}
+        {/* Done archive moved to Other Missions Done tab */}
       </div>
 
       {/* ── OTHER MISSIONS ── collapsible pillbox: Daily Objectives + To-do */}
@@ -1879,138 +1797,162 @@ export default function FeelingCheckInCard() {
           <>
             {/* Daily Objectives */}
             <div className="space-y-1.5">
-              <p
-                className="px-1 font-semibold uppercase tracking-[0.18em]"
-                style={{ color: '#C4A060', fontSize: '13px' }}
+              <button
+                type="button"
+                onClick={() => setDailyObjOpen((s) => !s)}
+                className="flex cursor-pointer items-center gap-1.5 px-1"
+                style={{ background: 'none', border: 'none' }}
               >
-                Daily Objectives
-              </p>
-              {todayObjectives.map((o, idx) => {
-                const isExpanded = expandedTodayId === o.id;
-                const isDragging = draggedTodayIdx === idx;
-                const isDropTarget = dragOverTodayIdx === idx && draggedTodayIdx !== idx;
-                return (
-                  <div
-                    key={o.id}
-                    className="space-y-1"
-                    draggable
-                    onDragStart={() => setDraggedTodayIdx(idx)}
-                    onDragOver={(e) => {
-                      e.preventDefault();
-                      if (draggedTodayIdx !== null && draggedTodayIdx !== idx) {
-                        setDragOverTodayIdx(idx);
-                      }
+                <span
+                  className="font-semibold uppercase tracking-[0.18em]"
+                  style={{ color: '#C4A060', fontSize: '13px' }}
+                >
+                  Daily Objectives
+                </span>
+                <span
+                  className="text-[10px] transition-transform duration-200"
+                  style={{
+                    color: '#C4A06080',
+                    transform: dailyObjOpen ? 'rotate(180deg)' : 'rotate(0deg)',
+                  }}
+                >
+                  ▾
+                </span>
+              </button>
+              {dailyObjOpen && (
+                <>
+                  {todayObjectives
+                    .filter((o) => !o.done)
+                    .map((o, idx) => {
+                      const isExpanded = expandedTodayId === o.id;
+                      const isDragging = draggedTodayIdx === idx;
+                      const isDropTarget = dragOverTodayIdx === idx && draggedTodayIdx !== idx;
+                      return (
+                        <div
+                          key={o.id}
+                          className="space-y-1"
+                          draggable
+                          onDragStart={() => setDraggedTodayIdx(idx)}
+                          onDragOver={(e) => {
+                            e.preventDefault();
+                            if (draggedTodayIdx !== null && draggedTodayIdx !== idx) {
+                              setDragOverTodayIdx(idx);
+                            }
+                          }}
+                          onDragLeave={(e) => {
+                            // Only clear if leaving to something outside this row
+                            if (
+                              !(e.currentTarget as HTMLElement).contains(e.relatedTarget as Node)
+                            ) {
+                              setDragOverTodayIdx((prev) => (prev === idx ? null : prev));
+                            }
+                          }}
+                          onDrop={(e) => {
+                            e.preventDefault();
+                            if (draggedTodayIdx !== null) {
+                              reorderTodayObjectives(draggedTodayIdx, idx);
+                            }
+                            setDraggedTodayIdx(null);
+                            setDragOverTodayIdx(null);
+                          }}
+                          onDragEnd={() => {
+                            setDraggedTodayIdx(null);
+                            setDragOverTodayIdx(null);
+                          }}
+                          style={{
+                            opacity: isDragging ? 0.4 : 1,
+                            borderTop: isDropTarget ? '2px solid #C4A060' : '2px solid transparent',
+                            cursor: 'grab',
+                            transition: 'opacity 120ms, border-color 120ms',
+                          }}
+                        >
+                          <div className="group flex items-center gap-2">
+                            <button
+                              type="button"
+                              onClick={() => toggleTodayObjective(o.id)}
+                              title={o.done ? 'Mark as not done' : 'Mark as done'}
+                              className="flex h-5 w-5 shrink-0 cursor-pointer items-center justify-center rounded border transition-all hover:scale-110"
+                              style={{
+                                borderColor: o.done ? '#7AAA5860' : '#C4A06060',
+                                background: o.done ? '#7AAA5810' : 'transparent',
+                              }}
+                            >
+                              {o.done && (
+                                <span className="text-xs" style={{ color: '#7AAA58' }}>
+                                  ✓
+                                </span>
+                              )}
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => setExpandedTodayId(isExpanded ? null : o.id)}
+                              className="flex-1 cursor-pointer bg-transparent text-left"
+                              style={{
+                                color: o.done ? '#C4A060' : '#7a5438',
+                                fontFamily: 'var(--font-handwritten)',
+                                fontSize: '20px',
+                                opacity: o.done ? 0.85 : 0.95,
+                                border: 'none',
+                              }}
+                              title="Click to open notes"
+                            >
+                              {o.text}
+                              {o.notes && o.notes.trim().length > 0 && !isExpanded && (
+                                <span
+                                  className="ml-2 text-xs no-underline"
+                                  style={{ color: '#C4A06080' }}
+                                >
+                                  ·
+                                </span>
+                              )}
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => removeTodayObjective(o.id)}
+                              title="Remove"
+                              className="cursor-pointer text-sm opacity-0 transition-opacity group-hover:opacity-40"
+                              style={{ color: '#7a5438', background: 'none', border: 'none' }}
+                            >
+                              ✕
+                            </button>
+                          </div>
+                          {isExpanded && (
+                            <textarea
+                              value={o.notes || ''}
+                              onChange={(e) => updateTodayNotes(o.id, e.target.value)}
+                              placeholder="advancements, next steps..."
+                              rows={2}
+                              className="ml-7 w-[calc(100%-1.75rem)] resize-none border-b bg-transparent pb-1 pt-0.5 outline-none placeholder:text-muted-foreground/40 animate-in fade-in duration-150"
+                              style={{
+                                color: '#7a5438',
+                                borderColor: '#C4A06025',
+                                fontFamily: 'var(--font-handwritten)',
+                                fontSize: '17px',
+                                lineHeight: 1.4,
+                              }}
+                            />
+                          )}
+                        </div>
+                      );
+                    })}
+                  <input
+                    type="text"
+                    value={todayInput}
+                    onChange={(e) => setTodayInput(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') addTodayObjective();
                     }}
-                    onDragLeave={(e) => {
-                      // Only clear if leaving to something outside this row
-                      if (!(e.currentTarget as HTMLElement).contains(e.relatedTarget as Node)) {
-                        setDragOverTodayIdx((prev) => (prev === idx ? null : prev));
-                      }
-                    }}
-                    onDrop={(e) => {
-                      e.preventDefault();
-                      if (draggedTodayIdx !== null) {
-                        reorderTodayObjectives(draggedTodayIdx, idx);
-                      }
-                      setDraggedTodayIdx(null);
-                      setDragOverTodayIdx(null);
-                    }}
-                    onDragEnd={() => {
-                      setDraggedTodayIdx(null);
-                      setDragOverTodayIdx(null);
-                    }}
+                    placeholder="+ add objective for today..."
+                    className="w-full border-b bg-transparent pb-1 outline-none placeholder:text-muted-foreground/40"
                     style={{
-                      opacity: isDragging ? 0.4 : 1,
-                      borderTop: isDropTarget ? '2px solid #C4A060' : '2px solid transparent',
-                      cursor: 'grab',
-                      transition: 'opacity 120ms, border-color 120ms',
+                      color: '#7a5438',
+                      borderColor: '#C4A06020',
+                      fontFamily: 'var(--font-handwritten)',
+                      fontSize: '20px',
                     }}
-                  >
-                    <div className="group flex items-center gap-2">
-                      <button
-                        type="button"
-                        onClick={() => toggleTodayObjective(o.id)}
-                        title={o.done ? 'Mark as not done' : 'Mark as done'}
-                        className="flex h-5 w-5 shrink-0 cursor-pointer items-center justify-center rounded border transition-all hover:scale-110"
-                        style={{
-                          borderColor: o.done ? '#7AAA5860' : '#C4A06060',
-                          background: o.done ? '#7AAA5810' : 'transparent',
-                        }}
-                      >
-                        {o.done && (
-                          <span className="text-xs" style={{ color: '#7AAA58' }}>
-                            ✓
-                          </span>
-                        )}
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => setExpandedTodayId(isExpanded ? null : o.id)}
-                        className="flex-1 cursor-pointer bg-transparent text-left"
-                        style={{
-                          color: o.done ? '#C4A060' : '#7a5438',
-                          fontFamily: 'var(--font-handwritten)',
-                          fontSize: '20px',
-                          opacity: o.done ? 0.85 : 0.95,
-                          border: 'none',
-                        }}
-                        title="Click to open notes"
-                      >
-                        {o.text}
-                        {o.notes && o.notes.trim().length > 0 && !isExpanded && (
-                          <span
-                            className="ml-2 text-xs no-underline"
-                            style={{ color: '#C4A06080' }}
-                          >
-                            ·
-                          </span>
-                        )}
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => removeTodayObjective(o.id)}
-                        title="Remove"
-                        className="cursor-pointer text-sm opacity-0 transition-opacity group-hover:opacity-40"
-                        style={{ color: '#7a5438', background: 'none', border: 'none' }}
-                      >
-                        ✕
-                      </button>
-                    </div>
-                    {isExpanded && (
-                      <textarea
-                        value={o.notes || ''}
-                        onChange={(e) => updateTodayNotes(o.id, e.target.value)}
-                        placeholder="advancements, next steps..."
-                        rows={2}
-                        className="ml-7 w-[calc(100%-1.75rem)] resize-none border-b bg-transparent pb-1 pt-0.5 outline-none placeholder:text-muted-foreground/40 animate-in fade-in duration-150"
-                        style={{
-                          color: '#7a5438',
-                          borderColor: '#C4A06025',
-                          fontFamily: 'var(--font-handwritten)',
-                          fontSize: '17px',
-                          lineHeight: 1.4,
-                        }}
-                      />
-                    )}
-                  </div>
-                );
-              })}
-              <input
-                type="text"
-                value={todayInput}
-                onChange={(e) => setTodayInput(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter') addTodayObjective();
-                }}
-                placeholder="+ add objective for today..."
-                className="w-full border-b bg-transparent pb-1 outline-none placeholder:text-muted-foreground/40"
-                style={{
-                  color: '#7a5438',
-                  borderColor: '#C4A06020',
-                  fontFamily: 'var(--font-handwritten)',
-                  fontSize: '20px',
-                }}
-              />
+                  />
+                </>
+              )}
             </div>
 
             {/* Divider */}
@@ -2023,109 +1965,301 @@ export default function FeelingCheckInCard() {
               <div className="h-px flex-1" style={{ background: '#C4A06020' }} />
             </div>
 
-            {/* To-do list */}
+            {/* Push for tomorrow */}
             <div className="space-y-1.5">
-              <p
-                className="px-1 font-semibold uppercase tracking-[0.18em]"
-                style={{ color: '#C4A060', fontSize: '13px' }}
+              <button
+                type="button"
+                onClick={() => setPushTomorrowOpen((s) => !s)}
+                className="flex cursor-pointer items-center gap-1.5 px-1"
+                style={{ background: 'none', border: 'none' }}
               >
-                To-do
-              </p>
-              {todos.map((t, idx) => {
-                const isDragging = draggedTodoIdx === idx;
-                const isDropTarget = dragOverTodoIdx === idx && draggedTodoIdx !== idx;
-                return (
-                  <div
-                    key={t.id}
-                    className="group flex items-center gap-2"
-                    draggable
-                    onDragStart={() => setDraggedTodoIdx(idx)}
-                    onDragOver={(e) => {
-                      e.preventDefault();
-                      if (draggedTodoIdx !== null && draggedTodoIdx !== idx) {
-                        setDragOverTodoIdx(idx);
-                      }
+                <span
+                  className="font-semibold uppercase tracking-[0.18em]"
+                  style={{ color: '#C4A060', fontSize: '13px' }}
+                >
+                  Push for tomorrow
+                </span>
+                <span
+                  className="text-[10px] transition-transform duration-200"
+                  style={{
+                    color: '#C4A06080',
+                    transform: pushTomorrowOpen ? 'rotate(180deg)' : 'rotate(0deg)',
+                  }}
+                >
+                  ▾
+                </span>
+              </button>
+              {pushTomorrowOpen && (
+                <>
+                  {todos
+                    .filter((t) => !t.done)
+                    .map((t, idx) => {
+                      const isDragging = draggedTodoIdx === idx;
+                      const isDropTarget = dragOverTodoIdx === idx && draggedTodoIdx !== idx;
+                      return (
+                        <div
+                          key={t.id}
+                          className="group flex items-center gap-2"
+                          draggable
+                          onDragStart={() => setDraggedTodoIdx(idx)}
+                          onDragOver={(e) => {
+                            e.preventDefault();
+                            if (draggedTodoIdx !== null && draggedTodoIdx !== idx) {
+                              setDragOverTodoIdx(idx);
+                            }
+                          }}
+                          onDragLeave={(e) => {
+                            if (
+                              !(e.currentTarget as HTMLElement).contains(e.relatedTarget as Node)
+                            ) {
+                              setDragOverTodoIdx((prev) => (prev === idx ? null : prev));
+                            }
+                          }}
+                          onDrop={(e) => {
+                            e.preventDefault();
+                            if (draggedTodoIdx !== null) {
+                              reorderTodos(draggedTodoIdx, idx);
+                            }
+                            setDraggedTodoIdx(null);
+                            setDragOverTodoIdx(null);
+                          }}
+                          onDragEnd={() => {
+                            setDraggedTodoIdx(null);
+                            setDragOverTodoIdx(null);
+                          }}
+                          style={{
+                            opacity: isDragging ? 0.4 : 1,
+                            borderTop: isDropTarget ? '2px solid #C4A060' : '2px solid transparent',
+                            cursor: 'grab',
+                            transition: 'opacity 120ms, border-color 120ms',
+                          }}
+                        >
+                          <button
+                            type="button"
+                            onClick={() => toggleTodo(t.id)}
+                            title={t.done ? 'Mark as not done' : 'Mark as done'}
+                            className="flex h-5 w-5 shrink-0 cursor-pointer items-center justify-center rounded border transition-all hover:scale-110"
+                            style={{
+                              borderColor: t.done ? '#7AAA5860' : '#C4A06060',
+                              background: t.done ? '#7AAA5810' : 'transparent',
+                            }}
+                          >
+                            {t.done && (
+                              <span className="text-xs" style={{ color: '#7AAA58' }}>
+                                ✓
+                              </span>
+                            )}
+                          </button>
+                          <span
+                            className="flex-1"
+                            style={{
+                              color: t.done ? '#C4A060' : '#7a5438',
+                              fontFamily: 'var(--font-handwritten)',
+                              fontSize: '20px',
+                              opacity: t.done ? 0.85 : 0.95,
+                            }}
+                          >
+                            {t.text}
+                          </span>
+                          <button
+                            type="button"
+                            onClick={() => removeTodo(t.id)}
+                            title="Remove"
+                            className="cursor-pointer text-sm opacity-0 transition-opacity group-hover:opacity-40"
+                            style={{ color: '#7a5438', background: 'none', border: 'none' }}
+                          >
+                            ✕
+                          </button>
+                        </div>
+                      );
+                    })}
+                  <input
+                    type="text"
+                    value={todoInput}
+                    onChange={(e) => setTodoInput(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') addTodo();
                     }}
-                    onDragLeave={(e) => {
-                      if (!(e.currentTarget as HTMLElement).contains(e.relatedTarget as Node)) {
-                        setDragOverTodoIdx((prev) => (prev === idx ? null : prev));
-                      }
-                    }}
-                    onDrop={(e) => {
-                      e.preventDefault();
-                      if (draggedTodoIdx !== null) {
-                        reorderTodos(draggedTodoIdx, idx);
-                      }
-                      setDraggedTodoIdx(null);
-                      setDragOverTodoIdx(null);
-                    }}
-                    onDragEnd={() => {
-                      setDraggedTodoIdx(null);
-                      setDragOverTodoIdx(null);
-                    }}
+                    placeholder="+ add to-do..."
+                    className="w-full border-b bg-transparent pb-1 outline-none placeholder:text-muted-foreground/40"
                     style={{
-                      opacity: isDragging ? 0.4 : 1,
-                      borderTop: isDropTarget ? '2px solid #C4A060' : '2px solid transparent',
-                      cursor: 'grab',
-                      transition: 'opacity 120ms, border-color 120ms',
+                      color: '#7a5438',
+                      borderColor: '#C4A06020',
+                      fontFamily: 'var(--font-handwritten)',
+                      fontSize: '20px',
+                    }}
+                  />
+                </>
+              )}
+            </div>
+
+            {/* Done — all completed items grouped by category */}
+            {(doneObjectives.length > 0 ||
+              todayObjectives.some((o) => o.done) ||
+              todos.some((t) => t.done)) && (
+              <div className="space-y-1.5">
+                <button
+                  type="button"
+                  onClick={() => setDoneOpen((s) => !s)}
+                  className="flex cursor-pointer items-center gap-1.5 px-1"
+                  style={{ background: 'none', border: 'none' }}
+                >
+                  <span
+                    className="font-semibold uppercase tracking-[0.18em]"
+                    style={{ color: '#7AAA58', fontSize: '13px' }}
+                  >
+                    Done
+                  </span>
+                  <span
+                    className="text-[10px] transition-transform duration-200"
+                    style={{
+                      color: '#7AAA5880',
+                      transform: doneOpen ? 'rotate(180deg)' : 'rotate(0deg)',
                     }}
                   >
-                    <button
-                      type="button"
-                      onClick={() => toggleTodo(t.id)}
-                      title={t.done ? 'Mark as not done' : 'Mark as done'}
-                      className="flex h-5 w-5 shrink-0 cursor-pointer items-center justify-center rounded border transition-all hover:scale-110"
-                      style={{
-                        borderColor: t.done ? '#7AAA5860' : '#C4A06060',
-                        background: t.done ? '#7AAA5810' : 'transparent',
-                      }}
-                    >
-                      {t.done && (
-                        <span className="text-xs" style={{ color: '#7AAA58' }}>
-                          ✓
-                        </span>
-                      )}
-                    </button>
-                    <span
-                      className="flex-1"
-                      style={{
-                        color: t.done ? '#C4A060' : '#7a5438',
-                        fontFamily: 'var(--font-handwritten)',
-                        fontSize: '20px',
-                        opacity: t.done ? 0.85 : 0.95,
-                      }}
-                    >
-                      {t.text}
-                    </span>
-                    <button
-                      type="button"
-                      onClick={() => removeTodo(t.id)}
-                      title="Remove"
-                      className="cursor-pointer text-sm opacity-0 transition-opacity group-hover:opacity-40"
-                      style={{ color: '#7a5438', background: 'none', border: 'none' }}
-                    >
-                      ✕
-                    </button>
+                    ▾
+                  </span>
+                </button>
+                {doneOpen && (
+                  <div className="space-y-3 animate-in fade-in duration-150">
+                    {/* Current Objective completions */}
+                    {doneObjectives.length > 0 && (
+                      <div className="space-y-1">
+                        <p
+                          className="px-1 text-[11px] font-semibold uppercase tracking-wider"
+                          style={{ color: '#8A6A4A', opacity: 0.6 }}
+                        >
+                          Current Objective
+                        </p>
+                        {doneObjectives.slice(0, 10).map((d) => {
+                          const dt = new Date(d.completedAt);
+                          const dateStr = `${dt.getDate()}/${dt.getMonth() + 1}`;
+                          return (
+                            <div
+                              key={d.id}
+                              className="flex items-center gap-2 px-1"
+                              style={{ minHeight: 28 }}
+                            >
+                              <span
+                                style={{
+                                  color: '#8A6A4A',
+                                  opacity: 0.6,
+                                  fontSize: '12px',
+                                  lineHeight: '28px',
+                                  flexShrink: 0,
+                                }}
+                              >
+                                {dateStr}
+                              </span>
+                              <span
+                                className="flex h-4 w-4 shrink-0 items-center justify-center rounded border"
+                                style={{ borderColor: '#7AAA5860', background: '#7AAA5810' }}
+                              >
+                                <span className="text-[10px]" style={{ color: '#7AAA58' }}>
+                                  ✓
+                                </span>
+                              </span>
+                              <span
+                                style={{
+                                  color: '#8A6A4A',
+                                  fontFamily: 'var(--font-handwritten)',
+                                  fontSize: '16px',
+                                  opacity: 0.6,
+                                }}
+                              >
+                                {d.text}
+                              </span>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    )}
+                    {/* Daily Objectives completions */}
+                    {todayObjectives.some((o) => o.done) && (
+                      <div className="space-y-1">
+                        <p
+                          className="px-1 text-[11px] font-semibold uppercase tracking-wider"
+                          style={{ color: '#8A6A4A', opacity: 0.6 }}
+                        >
+                          Daily Objectives
+                        </p>
+                        {todayObjectives
+                          .filter((o) => o.done)
+                          .map((o) => (
+                            <div
+                              key={o.id}
+                              className="flex items-center gap-2 px-1"
+                              style={{ minHeight: 28 }}
+                            >
+                              <button
+                                type="button"
+                                onClick={() => toggleTodayObjective(o.id)}
+                                className="flex h-4 w-4 shrink-0 cursor-pointer items-center justify-center rounded border"
+                                style={{ borderColor: '#7AAA5860', background: '#7AAA5810' }}
+                              >
+                                <span className="text-xs" style={{ color: '#7AAA58' }}>
+                                  ✓
+                                </span>
+                              </button>
+                              <span
+                                style={{
+                                  color: '#8A6A4A',
+                                  fontFamily: 'var(--font-handwritten)',
+                                  fontSize: '16px',
+                                  opacity: 0.6,
+                                }}
+                              >
+                                {o.text}
+                              </span>
+                            </div>
+                          ))}
+                      </div>
+                    )}
+                    {/* Push for tomorrow completions */}
+                    {todos.some((t) => t.done) && (
+                      <div className="space-y-1">
+                        <p
+                          className="px-1 text-[11px] font-semibold uppercase tracking-wider"
+                          style={{ color: '#8A6A4A', opacity: 0.6 }}
+                        >
+                          Push for tomorrow
+                        </p>
+                        {todos
+                          .filter((t) => t.done)
+                          .map((t) => (
+                            <div
+                              key={t.id}
+                              className="flex items-center gap-2 px-1"
+                              style={{ minHeight: 28 }}
+                            >
+                              <button
+                                type="button"
+                                onClick={() => toggleTodo(t.id)}
+                                className="flex h-4 w-4 shrink-0 cursor-pointer items-center justify-center rounded border"
+                                style={{ borderColor: '#7AAA5860', background: '#7AAA5810' }}
+                              >
+                                <span className="text-xs" style={{ color: '#7AAA58' }}>
+                                  ✓
+                                </span>
+                              </button>
+                              <span
+                                style={{
+                                  color: '#8A6A4A',
+                                  fontFamily: 'var(--font-handwritten)',
+                                  fontSize: '16px',
+                                  opacity: 0.6,
+                                }}
+                              >
+                                {t.text}
+                              </span>
+                            </div>
+                          ))}
+                      </div>
+                    )}
                   </div>
-                );
-              })}
-              <input
-                type="text"
-                value={todoInput}
-                onChange={(e) => setTodoInput(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter') addTodo();
-                }}
-                placeholder="+ add to-do..."
-                className="w-full border-b bg-transparent pb-1 outline-none placeholder:text-muted-foreground/40"
-                style={{
-                  color: '#7a5438',
-                  borderColor: '#C4A06020',
-                  fontFamily: 'var(--font-handwritten)',
-                  fontSize: '20px',
-                }}
-              />
-            </div>
+                )}
+              </div>
+            )}
 
             {/* Are you clear on next missions? — collapsed behind a star.
                 Click the star (or the whole row) to open the clarity slider. */}
@@ -2399,7 +2533,7 @@ export default function FeelingCheckInCard() {
 
             {/* Two writing spots — challenge (top) + flow (bottom, ochre) */}
             <div className="space-y-2">
-              {/* CHALLENGE — label + question on one line */}
+              {/* CHALLENGE — label above, question as placeholder on write line */}
               <div className="space-y-1">
                 <div className="flex items-center gap-2 px-1">
                   <span
@@ -2412,17 +2546,6 @@ export default function FeelingCheckInCard() {
                   >
                     Challenge
                   </span>
-                  <span
-                    className="italic"
-                    style={{
-                      color: '#A05A40',
-                      fontFamily: 'var(--font-serif)',
-                      fontSize: '15px',
-                      opacity: 0.95,
-                    }}
-                  >
-                    · what is your main tension right now?
-                  </span>
                 </div>
                 <div className="relative flex items-end gap-2">
                   <input
@@ -2432,7 +2555,8 @@ export default function FeelingCheckInCard() {
                     onKeyDown={(e) => {
                       if (e.key === 'Enter') saveChallenge();
                     }}
-                    className="flex-1 border-b bg-transparent pb-1 outline-none"
+                    placeholder="what is your main tension right now?"
+                    className="flex-1 border-b bg-transparent pb-1 outline-none placeholder:italic placeholder:text-[#A05A40] placeholder:opacity-80"
                     style={{
                       color: '#7a5438',
                       borderColor: '#A05A4030',
@@ -2452,7 +2576,7 @@ export default function FeelingCheckInCard() {
                 </div>
               </div>
 
-              {/* FLOW — label + question on one line */}
+              {/* FLOW — label above, question as placeholder on write line */}
               <div className="space-y-1">
                 <div className="flex items-center gap-2 px-1">
                   <span
@@ -2465,17 +2589,6 @@ export default function FeelingCheckInCard() {
                   >
                     Flow
                   </span>
-                  <span
-                    className="italic"
-                    style={{
-                      color: '#C4A060',
-                      fontFamily: 'var(--font-serif)',
-                      fontSize: '15px',
-                      opacity: 0.95,
-                    }}
-                  >
-                    · what is working well?
-                  </span>
                 </div>
                 <div className="relative flex items-end gap-2">
                   <input
@@ -2485,7 +2598,8 @@ export default function FeelingCheckInCard() {
                     onKeyDown={(e) => {
                       if (e.key === 'Enter') saveFlow();
                     }}
-                    className="flex-1 border-b bg-transparent pb-1 outline-none"
+                    placeholder="what is working well?"
+                    className="flex-1 border-b bg-transparent pb-1 outline-none placeholder:italic placeholder:text-[#C4A060] placeholder:opacity-80"
                     style={{
                       color: '#7a5438',
                       borderColor: '#C4A06030',
