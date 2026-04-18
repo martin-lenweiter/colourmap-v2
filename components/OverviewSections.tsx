@@ -314,7 +314,7 @@ function WriteSection({
           }}
           placeholder={placeholder}
           rows={2}
-          className="flex-1 resize-none border-b bg-transparent pb-1 outline-none placeholder:opacity-50"
+          className="flex-1 resize-none border-b bg-transparent pb-1 outline-none placeholder:opacity-70"
           style={{
             color: '#5C3018',
             borderColor: `${accent}30`,

@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import RainbowSlider from '@/components/RainbowSlider';
 
 /* ═══════════════════════════════════════════════════════════
    CARE COMPASS — Caring compass
@@ -57,6 +58,7 @@ const CARE_THEMES: {
 ];
 
 function getSlices(theme: (typeof CARE_THEMES)[0]) {
+  // Order: left, top, right, bottom — spells C.A.R.E, matches compass spatial reading
   return [
     { key: 'care' as CareAxis, label: 'Care', angle: Math.PI, color: theme.colors.care },
     {
@@ -238,7 +240,7 @@ function arcPath(
   return `M ${ox1} ${oy1} A ${outerR} ${outerR} 0 ${large} 1 ${ox2} ${oy2} L ${ix2} ${iy2} A ${innerR} ${innerR} 0 ${large} 0 ${ix1} ${iy1} Z`;
 }
 
-export default function CareCompass() {
+export default function CareCompass({ initialSlice }: { initialSlice?: string | null } = {}) {
   const [showDesign, setShowDesign] = useState(false);
   const [colorTheme, setColorTheme] = useState<ColorTheme>(() => {
     try {
@@ -250,7 +252,8 @@ export default function CareCompass() {
   const ct = CARE_THEMES.find((t) => t.id === colorTheme) || CARE_THEMES[0];
   const themedSlices = getSlices(ct);
   const [values, setValues] = useState<Record<CareAxis, number>>(loadValues);
-  const [activeSlice, setActiveSlice] = useState<string | null>(null);
+  const [activeSlice, setActiveSlice] = useState<string | null>(initialSlice ?? null);
+  const [showSlider, setShowSlider] = useState(false);
   const [activeSub, setActiveSub] = useState<string | null>(null);
   const [subStep, setSubStep] = useState(0);
   const [subAnswers, setSubAnswers] = useState<Record<string, string>>({});
@@ -530,33 +533,86 @@ export default function CareCompass() {
               <polygon
                 points={points.join(' ')}
                 fill="#C4A060"
-                opacity={0.3}
+                opacity={showSlider ? 0.6 : 0.3}
                 stroke="#8A6A4A"
                 strokeWidth="0.5"
                 strokeOpacity={0.4}
+                className="cursor-pointer transition-all"
+                onClick={() => setShowSlider((s) => !s)}
               />
             );
           })()}
         </svg>
       </div>
 
-      {/* CARE blobs */}
-      <div className="flex items-center justify-center gap-3">
-        {themedSlices.map((a) => (
-          <div
-            key={a.key}
-            className="flex h-11 w-11 items-center justify-center rounded-full"
-            style={{ background: a.color, opacity: 0.7 }}
-          >
-            <span
-              className="text-xl font-black text-white select-none"
-              style={{ fontFamily: 'var(--font-handwritten)', lineHeight: 1 }}
+      {/* CARE blobs — transform into rainbow slider when centre star is clicked */}
+      {showSlider && activeQ ? (
+        (() => {
+          const current = Math.max(1, Math.min(8, Math.round((values[activeQ.key] / 100) * 8)));
+          const RAINBOW = [
+            '#E0908A',
+            '#E8A878',
+            '#D8C078',
+            '#C0D088',
+            '#A0C8A0',
+            '#90C0C0',
+            '#A0B0D0',
+            '#B0A0C8',
+          ];
+          const rhymeText = (RHYMES[activeQ.label] || [])[current] || '';
+          return (
+            <div className="space-y-1">
+              <div className="flex items-center justify-center gap-2">
+                {RAINBOW.map((color, i) => {
+                  const n = i + 1;
+                  const isActive = n === current;
+                  const dist = Math.abs(n - current);
+                  return (
+                    <button
+                      key={n}
+                      type="button"
+                      onClick={() => handleRating(activeQ.key, Math.round((n / 8) * 100))}
+                      className="flex h-8 w-8 items-center justify-center transition-all duration-200"
+                      style={{
+                        background: color,
+                        opacity: isActive ? 1 : dist === 1 ? 0.55 : 0.2,
+                        borderRadius: '50%',
+                        border: 'none',
+                        transform: isActive ? 'scale(1.15)' : 'scale(1)',
+                        boxShadow: isActive ? `0 3px 10px -3px ${color}` : 'none',
+                        cursor: 'pointer',
+                      }}
+                    />
+                  );
+                })}
+              </div>
+              <p
+                className="text-center text-xs"
+                style={{ color: activeQ.color, opacity: 0.6, fontFamily: 'var(--font-serif)' }}
+              >
+                {activeQ.label} · {current}. {rhymeText}
+              </p>
+            </div>
+          );
+        })()
+      ) : (
+        <div className="flex items-center justify-center gap-3">
+          {themedSlices.map((a) => (
+            <div
+              key={a.key}
+              className="flex h-11 w-11 items-center justify-center rounded-full"
+              style={{ background: a.color, opacity: 0.7 }}
             >
-              {a.label[0]}
-            </span>
-          </div>
-        ))}
-      </div>
+              <span
+                className="text-xl font-black text-white select-none"
+                style={{ fontFamily: 'var(--font-handwritten)', lineHeight: 1 }}
+              >
+                {a.label[0]}
+              </span>
+            </div>
+          ))}
+        </div>
+      )}
 
       {/* Challenge / Flow columns */}
       <div className="grid grid-cols-2 gap-4">
@@ -646,69 +702,7 @@ export default function CareCompass() {
         </div>
       </div>
 
-      {/* Rating bar when slice active */}
-      {activeQ &&
-        (() => {
-          const current = Math.max(1, Math.min(8, Math.round((values[activeQ.key] / 100) * 8)));
-          return (
-            <div className="mx-auto max-w-[280px] space-y-2">
-              <p
-                className="text-center text-lg font-bold"
-                style={{ color: activeQ.color, fontFamily: 'var(--font-serif)' }}
-              >
-                {activeQ.label}
-              </p>
-              <div className="flex items-center justify-center gap-[5px]">
-                {(() => {
-                  const rainbow = [
-                    '#C83030',
-                    '#D46050',
-                    '#D87048',
-                    '#C88820',
-                    '#7AAA58',
-                    '#3AA8A0',
-                    '#3A8AC4',
-                    '#9B6BA0',
-                  ];
-                  return [1, 2, 3, 4, 5, 6, 7, 8].map((n) => {
-                    const mapped = Math.round((n / 8) * 100);
-                    const isN = n === current;
-                    const dist = Math.abs(n - current);
-                    return (
-                      <button
-                        key={n}
-                        type="button"
-                        onClick={() => handleRating(activeQ.key, mapped)}
-                        className="cursor-pointer transition-all duration-200"
-                        style={{
-                          width: 28,
-                          height: 28,
-                          borderRadius: 4,
-                          background: rainbow[n - 1],
-                          opacity: isN ? 1 : dist === 1 ? 0.5 : 0.2,
-                          border: 'none',
-                          padding: 0,
-                        }}
-                      />
-                    );
-                  });
-                })()}
-              </div>
-              <p
-                className="text-center"
-                style={{
-                  color: '#5C3018',
-                  opacity: 0.95,
-                  fontFamily: 'var(--font-handwritten)',
-                  fontSize: '17px',
-                  fontWeight: 500,
-                }}
-              >
-                {(RHYMES[activeQ.label] || [])[current] || ''}
-              </p>
-            </div>
-          );
-        })()}
+      {/* Rating bar is now inline in the CARE blobs row above */}
 
       {/* Sub-cells */}
       {activeSubs && (
