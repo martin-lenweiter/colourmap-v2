@@ -3,25 +3,74 @@
 import { useEffect, useState } from 'react';
 
 /* ═══════════════════════════════════════════════════════════
-   DAILY AGENDA — time-block planner for the day.
-   Vertical (timeline) or horizontal (swim lanes) view.
-   Blocks are coloured by mission/objective.
-   Closable pillbox in check-in.
+   AGENDA — day/week/month planner with mission + emotion layers.
+   Includes social/outings tracker for Sharing compass.
    ═══════════════════════════════════════════════════════════ */
 
 const AGENDA_KEY = 'colourmap:daily-agenda';
 const AGENDA_OPEN_KEY = 'colourmap:daily-agenda-open';
+const OUTINGS_KEY = 'colourmap:outings';
 
 interface AgendaBlock {
   id: string;
   text: string;
+  date: string; // YYYY-MM-DD
   startHour: number; // 0–23
   duration: number; // in hours (0.5, 1, 1.5, 2, etc.)
   color: string;
   kind: 'mission' | 'emotion';
 }
 
+interface Outing {
+  id: string;
+  date: string; // YYYY-MM-DD
+  text: string;
+  color: string;
+}
+
 type AgendaLayer = 'mission' | 'emotion';
+type AgendaView = 'day' | 'week' | 'month';
+
+function todayStr() {
+  return new Date().toISOString().split('T')[0];
+}
+
+function dateLabel(d: string) {
+  const dt = new Date(`${d}T12:00:00`);
+  const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+  return `${days[dt.getDay()]} ${dt.getDate()}/${dt.getMonth() + 1}`;
+}
+
+function weekDates(ref: string): string[] {
+  const d = new Date(`${ref}T12:00:00`);
+  const day = d.getDay();
+  const monday = new Date(d);
+  monday.setDate(d.getDate() - ((day + 6) % 7));
+  return Array.from({ length: 7 }, (_, i) => {
+    const dd = new Date(monday);
+    dd.setDate(monday.getDate() + i);
+    return dd.toISOString().split('T')[0];
+  });
+}
+
+function monthDates(ref: string): string[] {
+  const d = new Date(`${ref}T12:00:00`);
+  const year = d.getFullYear();
+  const month = d.getMonth();
+  const last = new Date(year, month + 1, 0).getDate();
+  return Array.from({ length: last }, (_, i) => {
+    const dd = new Date(year, month, i + 1);
+    return dd.toISOString().split('T')[0];
+  });
+}
+
+function shiftDate(ref: string, view: AgendaView, delta: number): string {
+  const d = new Date(`${ref}T12:00:00`);
+  if (view === 'day') d.setDate(d.getDate() + delta);
+  else if (view === 'week') d.setDate(d.getDate() + delta * 7);
+  else d.setMonth(d.getMonth() + delta);
+  return d.toISOString().split('T')[0];
+}
 
 const BLOCK_COLORS = [
   '#D4805A', // warm terracotta
@@ -62,14 +111,33 @@ function saveAgenda(blocks: AgendaBlock[]) {
   } catch {}
 }
 
+function loadOutings(): Outing[] {
+  try {
+    const raw = localStorage.getItem(OUTINGS_KEY);
+    if (raw) return JSON.parse(raw);
+  } catch {}
+  return [];
+}
+
+function saveOutings(outings: Outing[]) {
+  try {
+    localStorage.setItem(OUTINGS_KEY, JSON.stringify(outings));
+  } catch {}
+}
+
 export default function DailyAgenda() {
   const [open, setOpen] = useState(() => {
     if (typeof window === 'undefined') return false;
     return localStorage.getItem(AGENDA_OPEN_KEY) === 'true';
   });
+  const [agendaView, setAgendaView] = useState<AgendaView>('day');
+  const [selectedDate, setSelectedDate] = useState(todayStr);
   const [showMission, setShowMission] = useState(true);
   const [showEmotion, setShowEmotion] = useState(true);
   const [blocks, setBlocks] = useState<AgendaBlock[]>([]);
+  const [outings, setOutings] = useState<Outing[]>([]);
+  const [outingInput, setOutingInput] = useState('');
+  const [showOutings, setShowOutings] = useState(false);
   const [addingAt, setAddingAt] = useState<number | null>(null);
   const [newText, setNewText] = useState('');
   const [newDuration, setNewDuration] = useState(1);
@@ -80,6 +148,7 @@ export default function DailyAgenda() {
 
   useEffect(() => {
     setBlocks(loadAgenda());
+    setOutings(loadOutings());
     try {
       const raw = localStorage.getItem('colourmap:today-objectives');
       if (raw) setObjectives(JSON.parse(raw));
@@ -101,6 +170,7 @@ export default function DailyAgenda() {
     const block: AgendaBlock = {
       id: crypto.randomUUID(),
       text: newText.trim(),
+      date: selectedDate,
       startHour: hour,
       duration: newDuration,
       color: newColor,
@@ -136,6 +206,7 @@ export default function DailyAgenda() {
     const block: AgendaBlock = {
       id: crypto.randomUUID(),
       text,
+      date: selectedDate,
       startHour,
       duration: 1,
       color: BLOCK_COLORS[blocks.length % BLOCK_COLORS.length],
@@ -161,6 +232,29 @@ export default function DailyAgenda() {
     setBlocks(next);
     saveAgenda(next);
   };
+
+  const addOuting = () => {
+    const text = outingInput.trim();
+    if (!text) return;
+    const entry: Outing = {
+      id: crypto.randomUUID(),
+      date: selectedDate,
+      text,
+      color: BLOCK_COLORS[(outings.length + 3) % BLOCK_COLORS.length],
+    };
+    const next = [entry, ...outings];
+    setOutings(next);
+    saveOutings(next);
+    setOutingInput('');
+  };
+
+  const removeOuting = (id: string) => {
+    const next = outings.filter((o) => o.id !== id);
+    setOutings(next);
+    saveOutings(next);
+  };
+
+  const dayBlocks = blocks.filter((b) => b.date === selectedDate || !b.date);
 
   return (
     <div
@@ -191,7 +285,7 @@ export default function DailyAgenda() {
               letterSpacing: '0.22em',
             }}
           >
-            Daily Agenda
+            Agenda
           </span>
           <span
             className="text-sm transition-transform duration-200"
@@ -207,6 +301,87 @@ export default function DailyAgenda() {
 
       {open && (
         <div className="space-y-3">
+          {/* View tabs: day / week / month */}
+          <div className="flex items-center justify-center gap-2">
+            <button
+              type="button"
+              onClick={() => setSelectedDate(shiftDate(selectedDate, agendaView, -1))}
+              style={{
+                background: 'none',
+                border: 'none',
+                cursor: 'pointer',
+                color: '#8A6A4A',
+                fontSize: '16px',
+                opacity: 0.5,
+              }}
+            >
+              ‹
+            </button>
+            <span
+              style={{
+                fontFamily: 'var(--font-serif)',
+                fontSize: '14px',
+                fontWeight: 600,
+                color: '#5C3018',
+                minWidth: 100,
+                textAlign: 'center',
+              }}
+            >
+              {agendaView === 'day'
+                ? dateLabel(selectedDate)
+                : agendaView === 'week'
+                  ? `Week of ${dateLabel(weekDates(selectedDate)[0])}`
+                  : new Date(`${selectedDate}T12:00:00`).toLocaleString('default', {
+                      month: 'long',
+                      year: 'numeric',
+                    })}
+            </span>
+            <button
+              type="button"
+              onClick={() => setSelectedDate(shiftDate(selectedDate, agendaView, 1))}
+              style={{
+                background: 'none',
+                border: 'none',
+                cursor: 'pointer',
+                color: '#8A6A4A',
+                fontSize: '16px',
+                opacity: 0.5,
+              }}
+            >
+              ›
+            </button>
+          </div>
+          <div className="flex justify-center gap-2">
+            {(['day', 'week', 'month'] as const).map((v) => (
+              <button
+                key={v}
+                type="button"
+                onClick={() => setAgendaView(v)}
+                className="cursor-pointer rounded-full px-3 py-1 text-[10px] font-semibold uppercase tracking-wider transition-all"
+                style={{
+                  color: '#6890B0',
+                  border: `1px solid ${agendaView === v ? '#6890B040' : '#C4A06018'}`,
+                  background: agendaView === v ? '#6890B010' : 'transparent',
+                  opacity: agendaView === v ? 1 : 0.5,
+                }}
+              >
+                {v}
+              </button>
+            ))}
+            <button
+              type="button"
+              onClick={() => setSelectedDate(todayStr())}
+              className="cursor-pointer rounded-full px-3 py-1 text-[10px] font-semibold uppercase tracking-wider transition-all"
+              style={{
+                color: '#C4A060',
+                border: '1px dashed #C4A06040',
+                background: 'transparent',
+              }}
+            >
+              today
+            </button>
+          </div>
+
           {/* Daily Objectives tab */}
           {objectives.length > 0 && (
             <div>
@@ -333,31 +508,300 @@ export default function DailyAgenda() {
             </button>
           </div>
 
-          {(() => {
-            const filtered = blocks.filter(
-              (b) => (showMission && b.kind === 'mission') || (showEmotion && b.kind === 'emotion'),
-            );
-            return (
-              <VerticalView
-                blocks={filtered}
-                layer={showEmotion && !showMission ? 'emotion' : 'mission'}
-                addingAt={addingAt}
-                setAddingAt={setAddingAt}
-                newText={newText}
-                setNewText={setNewText}
-                newDuration={newDuration}
-                setNewDuration={setNewDuration}
-                newColor={newColor}
-                setNewColor={setNewColor}
-                onAdd={addBlock}
-                onRemove={removeBlock}
-                onResize={resizeBlock}
-                onMove={moveBlock}
-                expandedBlock={expandedBlock}
-                setExpandedBlock={setExpandedBlock}
-              />
-            );
-          })()}
+          {/* Day view — full timeline */}
+          {agendaView === 'day' &&
+            (() => {
+              const filtered = dayBlocks.filter(
+                (b) =>
+                  (showMission && b.kind === 'mission') || (showEmotion && b.kind === 'emotion'),
+              );
+              return (
+                <VerticalView
+                  blocks={filtered}
+                  layer={showEmotion && !showMission ? 'emotion' : 'mission'}
+                  addingAt={addingAt}
+                  setAddingAt={setAddingAt}
+                  newText={newText}
+                  setNewText={setNewText}
+                  newDuration={newDuration}
+                  setNewDuration={setNewDuration}
+                  newColor={newColor}
+                  setNewColor={setNewColor}
+                  onAdd={addBlock}
+                  onRemove={removeBlock}
+                  onResize={resizeBlock}
+                  onMove={moveBlock}
+                  expandedBlock={expandedBlock}
+                  setExpandedBlock={setExpandedBlock}
+                />
+              );
+            })()}
+
+          {/* Week view — 7 columns with block dots */}
+          {agendaView === 'week' && (
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: 4 }}>
+              {weekDates(selectedDate).map((date) => {
+                const dayB = blocks.filter((b) => b.date === date);
+                const dayO = outings.filter((o) => o.date === date);
+                const isToday = date === todayStr();
+                const dt = new Date(`${date}T12:00:00`);
+                const isWeekend = dt.getDay() === 0 || dt.getDay() === 6;
+                return (
+                  <button
+                    key={date}
+                    type="button"
+                    onClick={() => {
+                      setSelectedDate(date);
+                      setAgendaView('day');
+                    }}
+                    className="cursor-pointer rounded-xl p-2 transition-all"
+                    style={{
+                      background: isToday ? '#6890B010' : isWeekend ? '#9B6BA008' : 'transparent',
+                      border: `1px solid ${isToday ? '#6890B030' : '#C4A06010'}`,
+                      minHeight: 80,
+                    }}
+                  >
+                    <p
+                      className="text-center text-[11px] font-semibold"
+                      style={{ color: isToday ? '#6890B0' : '#5C3018', opacity: isToday ? 1 : 0.7 }}
+                    >
+                      {['S', 'M', 'T', 'W', 'T', 'F', 'S'][dt.getDay()]}
+                    </p>
+                    <p className="text-center text-xs" style={{ color: '#8A6A4A', opacity: 0.6 }}>
+                      {dt.getDate()}
+                    </p>
+                    <div className="mt-1 flex flex-wrap justify-center gap-1">
+                      {dayB.slice(0, 4).map((b) => (
+                        <span
+                          key={b.id}
+                          style={{
+                            width: 6,
+                            height: 6,
+                            borderRadius: '50%',
+                            background: b.color,
+                            opacity: 0.7,
+                          }}
+                        />
+                      ))}
+                      {dayO.map((o) => (
+                        <span
+                          key={o.id}
+                          style={{
+                            width: 6,
+                            height: 6,
+                            borderRadius: 1,
+                            background: o.color,
+                            opacity: 0.7,
+                            transform: 'rotate(45deg)',
+                          }}
+                        />
+                      ))}
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+          )}
+
+          {/* Month view — calendar grid with block indicators */}
+          {agendaView === 'month' && (
+            <div>
+              <div
+                style={{
+                  display: 'grid',
+                  gridTemplateColumns: 'repeat(7, 1fr)',
+                  gap: 2,
+                  marginBottom: 4,
+                }}
+              >
+                {['M', 'T', 'W', 'T', 'F', 'S', 'S'].map((d, i) => (
+                  <span
+                    key={`${d}-${i}`}
+                    className="text-center text-[10px] font-semibold"
+                    style={{ color: '#8A6A4A', opacity: 0.4 }}
+                  >
+                    {d}
+                  </span>
+                ))}
+              </div>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: 2 }}>
+                {(() => {
+                  const dates = monthDates(selectedDate);
+                  const firstDay = new Date(`${dates[0]}T12:00:00`).getDay();
+                  const offset = (firstDay + 6) % 7;
+                  const cells: (string | null)[] = Array.from(
+                    { length: offset },
+                    () => null as string | null,
+                  ).concat(dates);
+                  return cells.map((date, i) => {
+                    if (!date) return <div key={`empty-${i}`} />;
+                    const dayB = blocks.filter((b) => b.date === date);
+                    const dayO = outings.filter((o) => o.date === date);
+                    const isToday = date === todayStr();
+                    const dt = new Date(`${date}T12:00:00`);
+                    return (
+                      <button
+                        key={date}
+                        type="button"
+                        onClick={() => {
+                          setSelectedDate(date);
+                          setAgendaView('day');
+                        }}
+                        className="cursor-pointer rounded-lg p-1 transition-all"
+                        style={{
+                          background: isToday ? '#6890B010' : 'transparent',
+                          border: `1px solid ${isToday ? '#6890B030' : 'transparent'}`,
+                          minHeight: 36,
+                        }}
+                      >
+                        <p
+                          className="text-center text-[11px]"
+                          style={{
+                            color: isToday ? '#6890B0' : '#5C3018',
+                            fontWeight: isToday ? 700 : 500,
+                            opacity: isToday ? 1 : 0.7,
+                          }}
+                        >
+                          {dt.getDate()}
+                        </p>
+                        {(dayB.length > 0 || dayO.length > 0) && (
+                          <div className="mt-0.5 flex justify-center gap-0.5">
+                            {dayB.length > 0 && (
+                              <span
+                                style={{
+                                  width: 4,
+                                  height: 4,
+                                  borderRadius: '50%',
+                                  background: dayB[0].color,
+                                  opacity: 0.7,
+                                }}
+                              />
+                            )}
+                            {dayO.length > 0 && (
+                              <span
+                                style={{
+                                  width: 4,
+                                  height: 4,
+                                  borderRadius: 1,
+                                  background: dayO[0].color,
+                                  opacity: 0.7,
+                                  transform: 'rotate(45deg)',
+                                }}
+                              />
+                            )}
+                          </div>
+                        )}
+                      </button>
+                    );
+                  });
+                })()}
+              </div>
+            </div>
+          )}
+
+          {/* Outings / Social — track going out, parties, memories */}
+          <div>
+            <button
+              type="button"
+              onClick={() => setShowOutings((s) => !s)}
+              className="flex w-full cursor-pointer items-center justify-center gap-2 rounded-full py-1.5 transition-all"
+              style={{
+                background: showOutings ? '#9B6BA012' : 'transparent',
+                border: `1px solid ${showOutings ? '#9B6BA030' : '#C4A06018'}`,
+              }}
+            >
+              <span
+                className="text-xs font-semibold uppercase tracking-[0.18em]"
+                style={{ color: '#9B6BA0' }}
+              >
+                Outings & Social
+              </span>
+              <span
+                className="text-[10px] transition-transform duration-200"
+                style={{
+                  color: '#9B6BA080',
+                  transform: showOutings ? 'rotate(180deg)' : 'rotate(0deg)',
+                }}
+              >
+                ▾
+              </span>
+            </button>
+            {showOutings && (
+              <div className="animate-in fade-in duration-150 space-y-2 pt-2">
+                <input
+                  type="text"
+                  value={outingInput}
+                  onChange={(e) => setOutingInput(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') addOuting();
+                  }}
+                  placeholder="where did you go? what happened?"
+                  className="w-full border-b bg-transparent pb-1 outline-none placeholder:italic placeholder:text-[#9B6BA0] placeholder:opacity-60"
+                  style={{
+                    color: '#5C3018',
+                    borderColor: '#9B6BA020',
+                    fontFamily: 'var(--font-handwritten)',
+                    fontSize: '18px',
+                  }}
+                />
+                {outings
+                  .filter((o) => {
+                    if (agendaView === 'day') return o.date === selectedDate;
+                    if (agendaView === 'week') return weekDates(selectedDate).includes(o.date);
+                    return monthDates(selectedDate).includes(o.date);
+                  })
+                  .map((o) => (
+                    <div
+                      key={o.id}
+                      className="group flex items-center gap-2"
+                      style={{ minHeight: 28 }}
+                    >
+                      <span
+                        style={{
+                          color: '#8A6A4A',
+                          opacity: 0.6,
+                          fontSize: '12px',
+                          lineHeight: '28px',
+                          flexShrink: 0,
+                        }}
+                      >
+                        {dateLabel(o.date).split(' ')[1]}
+                      </span>
+                      <span
+                        style={{
+                          width: 7,
+                          height: 7,
+                          borderRadius: 1,
+                          background: o.color,
+                          opacity: 0.7,
+                          transform: 'rotate(45deg)',
+                          flexShrink: 0,
+                        }}
+                      />
+                      <span
+                        style={{
+                          color: '#5C3018',
+                          fontFamily: 'var(--font-handwritten)',
+                          fontSize: '16px',
+                          lineHeight: '28px',
+                          flex: 1,
+                        }}
+                      >
+                        {o.text}
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => removeOuting(o.id)}
+                        className="shrink-0 text-xs opacity-0 transition-opacity group-hover:opacity-40 cursor-pointer"
+                        style={{ color: '#8A6A4A', background: 'none', border: 'none' }}
+                      >
+                        ✕
+                      </button>
+                    </div>
+                  ))}
+              </div>
+            )}
+          </div>
         </div>
       )}
     </div>
