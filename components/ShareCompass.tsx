@@ -1,7 +1,6 @@
 'use client';
 
 import { useState } from 'react';
-import RainbowSlider from '@/components/RainbowSlider';
 
 /* ═══════════════════════════════════════════════════════════
    STAR COMPASS — Sharing ring compass

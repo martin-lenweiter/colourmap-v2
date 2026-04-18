@@ -1,7 +1,6 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import RainbowSlider from '@/components/RainbowSlider';
 
 /* ═══════════════════════════════════════════════════════════
    CARE COMPASS — Caring compass
