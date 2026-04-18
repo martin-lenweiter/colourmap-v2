@@ -158,6 +158,8 @@ function FormatToolbar({
   onNoteColor,
   noteFont,
   onNoteFont,
+  noteSize,
+  onNoteSize,
   align,
   onAlign,
 }: {
@@ -167,11 +169,14 @@ function FormatToolbar({
   onNoteColor: (c: string) => void;
   noteFont: string;
   onNoteFont: (f: string) => void;
+  noteSize: string;
+  onNoteSize: (s: string) => void;
   align: string;
   onAlign: (a: string) => void;
 }) {
   const [showColors, setShowColors] = useState(false);
   const [showFonts, setShowFonts] = useState(false);
+  const [showSizes, setShowSizes] = useState(false);
 
   function wrapSelection(prefix: string, suffix: string) {
     const textarea = document.getElementById('note-editor') as HTMLTextAreaElement | null;
@@ -320,6 +325,39 @@ function FormatToolbar({
           </div>
         )}
       </div>
+
+      {/* Font size */}
+      <div className="relative">
+        <button
+          type="button"
+          onClick={() => {
+            setShowSizes(!showSizes);
+            setShowColors(false);
+            setShowFonts(false);
+          }}
+          className="h-7 px-1.5 flex items-center justify-center rounded text-xs text-muted-foreground/50 hover:text-muted-foreground hover:bg-accent/50 transition-colors"
+        >
+          {noteSize || '16'}
+        </button>
+        {showSizes && (
+          <div className="absolute top-full mt-1 right-0 z-50 p-1 rounded-lg border border-border bg-card shadow-lg animate-in fade-in duration-100 min-w-[60px]">
+            {['14', '16', '18', '20', '24'].map((s) => (
+              <button
+                key={s}
+                type="button"
+                onClick={() => {
+                  onNoteSize(s);
+                  setShowSizes(false);
+                }}
+                className="w-full text-left px-2 py-1 rounded text-xs transition-colors hover:bg-accent/50"
+                style={{ fontWeight: noteSize === s ? 600 : 400 }}
+              >
+                {s}px
+              </button>
+            ))}
+          </div>
+        )}
+      </div>
     </div>
   );
 }
@@ -333,20 +371,23 @@ function NotePreview({
   font,
   align,
   color,
+  size,
 }: {
   content: string;
   font: string;
   align: string;
   color: string;
+  size?: string;
 }) {
   if (!content) return null;
 
   const lines = content.split('\n');
   return (
     <div
-      className="text-sm leading-relaxed space-y-1 rounded-lg p-3"
+      className="leading-relaxed space-y-1 rounded-lg p-3"
       style={{
         fontFamily: font,
+        fontSize: `${size || 16}px`,
         textAlign: align as 'left' | 'center' | 'right',
         background: color,
         color: '#5A4535',
@@ -422,7 +463,7 @@ export default function NotebookPage() {
 
   // Per-note styling (stored in localStorage)
   const [noteStyles, setNoteStyles] = useState<
-    Record<string, { color: string; font: string; align: string }>
+    Record<string, { color: string; font: string; align: string; size?: string }>
   >({});
 
   useEffect(() => {
@@ -450,14 +491,17 @@ export default function NotebookPage() {
     localStorage.setItem(NOTEBOOK_STORAGE, JSON.stringify(nbs));
   }
 
-  function saveNoteStyle(id: string, style: { color: string; font: string; align: string }) {
+  function saveNoteStyle(
+    id: string,
+    style: { color: string; font: string; align: string; size?: string },
+  ) {
     const updated = { ...noteStyles, [id]: style };
     setNoteStyles(updated);
     localStorage.setItem('colourmap:note-styles', JSON.stringify(updated));
   }
 
   function getNoteStyle(id: string) {
-    return noteStyles[id] || { color: 'transparent', font: 'inherit', align: 'left' };
+    return noteStyles[id] || { color: 'transparent', font: 'inherit', align: 'left', size: '16' };
   }
 
   async function handleAdd() {
@@ -540,40 +584,93 @@ export default function NotebookPage() {
       <div className="flex gap-6">
         {/* ========== LEFT: NOTEBOOK TABS (vertical) ========== */}
         <div className="w-[140px] shrink-0 space-y-1">
-          {notebooks.map((nb) => {
-            const isActive = activeNotebook === nb.id;
-            const count = entries.filter((e) => e.category === nb.id).length;
-            return (
-              <button
-                key={nb.id}
-                type="button"
-                onClick={() => setActiveNotebook(nb.id)}
-                className="w-full flex items-center gap-2 px-3 py-2 rounded-xl text-left transition-all"
-                style={{
-                  background: isActive ? `${nb.color}15` : 'transparent',
-                  borderLeft: isActive ? `3px solid ${nb.color}` : '3px solid transparent',
-                }}
-              >
-                <div
-                  className="h-3 w-3 rounded-full shrink-0"
-                  style={{ background: nb.color, opacity: isActive ? 0.8 : 0.3 }}
-                />
-                <div className="flex-1 min-w-0">
-                  <p
-                    className="text-xs font-medium truncate"
-                    style={{ color: isActive ? nb.color : `${nb.color}80` }}
-                  >
-                    {nb.label}
-                  </p>
-                  {count > 0 && (
-                    <p className="text-[11px]" style={{ color: `${nb.color}40` }}>
-                      {count} notes
+          {/* General notebooks */}
+          <p
+            className="px-3 pt-1 text-[10px] font-semibold uppercase tracking-wider"
+            style={{ color: '#8A6A4A', opacity: 0.5 }}
+          >
+            General
+          </p>
+          {notebooks
+            .filter((nb) => !nb.isMusic)
+            .map((nb) => {
+              const isActive = activeNotebook === nb.id;
+              const count = entries.filter((e) => e.category === nb.id).length;
+              return (
+                <button
+                  key={nb.id}
+                  type="button"
+                  onClick={() => setActiveNotebook(nb.id)}
+                  className="w-full flex items-center gap-2 px-3 py-2 rounded-xl text-left transition-all"
+                  style={{
+                    background: isActive ? `${nb.color}15` : 'transparent',
+                    border: isActive ? `1px solid ${nb.color}30` : '1px solid transparent',
+                  }}
+                >
+                  <div
+                    className="h-3 w-3 rounded-full shrink-0"
+                    style={{ background: nb.color, opacity: isActive ? 0.8 : 0.3 }}
+                  />
+                  <div className="flex-1 min-w-0">
+                    <p
+                      className="text-xs font-medium truncate"
+                      style={{ color: isActive ? nb.color : `${nb.color}80` }}
+                    >
+                      {nb.label}
                     </p>
-                  )}
-                </div>
-              </button>
-            );
-          })}
+                    {count > 0 && (
+                      <p className="text-[11px]" style={{ color: `${nb.color}40` }}>
+                        {count}
+                      </p>
+                    )}
+                  </div>
+                </button>
+              );
+            })}
+
+          {/* Music notebooks */}
+          <p
+            className="px-3 pt-3 text-[10px] font-semibold uppercase tracking-wider"
+            style={{ color: '#9B6BA0', opacity: 0.5 }}
+          >
+            Music
+          </p>
+          {notebooks
+            .filter((nb) => nb.isMusic)
+            .map((nb) => {
+              const isActive = activeNotebook === nb.id;
+              const count = entries.filter((e) => e.category === nb.id).length;
+              return (
+                <button
+                  key={nb.id}
+                  type="button"
+                  onClick={() => setActiveNotebook(nb.id)}
+                  className="w-full flex items-center gap-2 px-3 py-2 rounded-xl text-left transition-all"
+                  style={{
+                    background: isActive ? `${nb.color}15` : 'transparent',
+                    border: isActive ? `1px solid ${nb.color}30` : '1px solid transparent',
+                  }}
+                >
+                  <div
+                    className="h-3 w-3 rounded-full shrink-0"
+                    style={{ background: nb.color, opacity: isActive ? 0.8 : 0.3 }}
+                  />
+                  <div className="flex-1 min-w-0">
+                    <p
+                      className="text-xs font-medium truncate"
+                      style={{ color: isActive ? nb.color : `${nb.color}80` }}
+                    >
+                      {nb.label}
+                    </p>
+                    {count > 0 && (
+                      <p className="text-[11px]" style={{ color: `${nb.color}40` }}>
+                        {count}
+                      </p>
+                    )}
+                  </div>
+                </button>
+              );
+            })}
 
           {/* Add notebook */}
           <button
@@ -784,6 +881,8 @@ export default function NotebookPage() {
                         onNoteColor={(c) => saveNoteStyle(entry.id, { ...style, color: c })}
                         noteFont={style.font}
                         onNoteFont={(f) => saveNoteStyle(entry.id, { ...style, font: f })}
+                        noteSize={style.size || '16'}
+                        onNoteSize={(s) => saveNoteStyle(entry.id, { ...style, size: s })}
                         align={style.align}
                         onAlign={(a) => saveNoteStyle(entry.id, { ...style, align: a })}
                       />
@@ -868,6 +967,7 @@ export default function NotebookPage() {
                           style={{
                             color: '#5A4535',
                             fontFamily: style.font,
+                            fontSize: `${style.size || 16}px`,
                             textAlign: style.align as 'left' | 'center' | 'right',
                           }}
                           onInput={(e) => {
@@ -887,6 +987,7 @@ export default function NotebookPage() {
                               font={style.font}
                               align={style.align}
                               color="transparent"
+                              size={style.size}
                             />
                           ) : (
                             <p className="text-sm text-muted-foreground/40 py-2">
