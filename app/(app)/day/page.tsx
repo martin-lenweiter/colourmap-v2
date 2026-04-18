@@ -5,10 +5,8 @@ import DailyAgenda from '@/components/DailyAgenda';
 import DayTabs from '@/components/DayTabs';
 import FeelingCheckInCard from '@/components/FeelingCheckInCard';
 import LifeCategories from '@/components/LifeCategories';
-import OverviewVisualDemos from '@/components/OverviewVisualDemos';
 import ReflectBox from '@/components/ReflectBox';
 import { StyleProvider } from '@/components/StyleContext';
-import TransformationRoadmapDemos from '@/components/TransformationRoadmapDemos';
 
 function DayContent() {
   return (
@@ -25,8 +23,6 @@ function DayContent() {
             <CompassCarousel />
             <LifeCategories />
             <ReflectBox />
-            <TransformationRoadmapDemos />
-            <OverviewVisualDemos />
           </div>
         }
       />

@@ -412,6 +412,7 @@ export default function FeelingCheckInCard() {
       return next;
     });
   };
+  const [sliderVisible, setSliderVisible] = useState(true);
   const [logbookSectionOpen, setLogbookSectionOpen] = useState(() => {
     try {
       return localStorage.getItem('colourmap:logbook-section-open') !== 'false';
@@ -2372,52 +2373,114 @@ export default function FeelingCheckInCard() {
 
         {logbookSectionOpen && (
           <>
-            {/* Hawkins emotional slider — Shame → Peace, 10 stops.
-                Two visual styles (squares | dots), toggle on the right.
-                Lives inside the Logbook & Emotions pill so it only appears
-                when you're actually opening the emotional reflection layer. */}
-            <div className="relative flex flex-col items-center gap-2 pt-4 pb-2">
-              {/* Style toggle — small beige circle that switches between square and dot rendering */}
-              <button
-                type="button"
-                onClick={() =>
-                  setHawkinsStyle((s) =>
-                    s === 'squares' ? 'dots' : s === 'dots' ? 'losanges' : 'squares',
-                  )
-                }
-                aria-label="Toggle hawkins slider style"
-                className="absolute right-0 flex cursor-pointer items-center justify-center"
-                style={{
-                  // Align vertically with the slider row: pt-4 (16px) + half of
-                  // 36px container (18px) − half of this button (10px) = 24px.
-                  top: 24,
-                  width: 20,
-                  height: 20,
-                  background: 'transparent',
-                  border: 'none',
-                }}
-              >
-                <span
+            {/* Hawkins emotional slider — toggled by losange below */}
+            {sliderVisible && (
+              <div className="relative flex flex-col items-center gap-2 pt-4 pb-2">
+                {/* Style toggle — small beige circle that switches between square and dot rendering */}
+                <button
+                  type="button"
+                  onClick={() =>
+                    setHawkinsStyle((s) =>
+                      s === 'squares' ? 'dots' : s === 'dots' ? 'losanges' : 'squares',
+                    )
+                  }
+                  aria-label="Toggle hawkins slider style"
+                  className="absolute right-0 flex cursor-pointer items-center justify-center"
                   style={{
-                    width: 14,
-                    height: 14,
-                    background: '#8A6A4A',
-                    borderRadius: hawkinsStyle === 'dots' ? '50%' : '3px',
-                    display: 'block',
-                    transform: hawkinsStyle === 'losanges' ? 'rotate(45deg)' : 'rotate(0deg)',
-                    transition: 'border-radius 200ms, transform 200ms',
+                    // Align vertically with the slider row: pt-4 (16px) + half of
+                    // 36px container (18px) − half of this button (10px) = 24px.
+                    top: 24,
+                    width: 20,
+                    height: 20,
+                    background: 'transparent',
+                    border: 'none',
                   }}
-                />
-              </button>
+                >
+                  <span
+                    style={{
+                      width: 14,
+                      height: 14,
+                      background: '#8A6A4A',
+                      borderRadius: hawkinsStyle === 'dots' ? '50%' : '3px',
+                      display: 'block',
+                      transform: hawkinsStyle === 'losanges' ? 'rotate(45deg)' : 'rotate(0deg)',
+                      transition: 'border-radius 200ms, transform 200ms',
+                    }}
+                  />
+                </button>
 
-              <div className="relative" style={{ width: 300, height: 36 }}>
-                {(() => {
-                  if (hawkinsStyle === 'losanges') {
-                    // LOSANGES — rotated squares (diamonds). A rotated 18px square
-                    // visually occupies ~25.4px diagonal, so gap 13 yields ~4px
-                    // clean negative space between adjacent losanges.
-                    const sq = 18;
-                    const gap = 13;
+                <div className="relative" style={{ width: 300, height: 36 }}>
+                  {(() => {
+                    if (hawkinsStyle === 'losanges') {
+                      // LOSANGES — rotated squares (diamonds). A rotated 18px square
+                      // visually occupies ~25.4px diagonal, so gap 13 yields ~4px
+                      // clean negative space between adjacent losanges.
+                      const sq = 18;
+                      const gap = 13;
+                      const totalW = HAWKINS.length * sq + (HAWKINS.length - 1) * gap;
+                      const offsetX = (300 - totalW) / 2;
+                      const baseY = (36 - sq) / 2;
+                      return HAWKINS.map((h, i) => {
+                        const selected = hawkinsIdx === i;
+                        const x = offsetX + i * (sq + gap);
+                        return (
+                          <button
+                            key={h.level}
+                            type="button"
+                            onClick={() => setHawkinsIdx(i)}
+                            className="absolute cursor-pointer transition-all"
+                            style={{
+                              left: x,
+                              top: baseY,
+                              width: sq,
+                              height: sq,
+                              background: h.color,
+                              opacity: selected ? 1 : 0.45,
+                              border: 'none',
+                              borderRadius: '2px',
+                              transform: selected ? 'rotate(45deg) scale(1.15)' : 'rotate(45deg)',
+                              boxShadow: selected ? `0 4px 14px -4px ${h.color}` : 'none',
+                            }}
+                            title={h.level}
+                          />
+                        );
+                      });
+                    }
+                    if (hawkinsStyle === 'dots') {
+                      // DOTS style — circular dots in a straight horizontal line,
+                      // same vocabulary as variant 1 (arc) but flat instead of bowed.
+                      const dotSize = 22;
+                      const totalW = HAWKINS.length * dotSize + (HAWKINS.length - 1) * 6;
+                      const offsetX = (300 - totalW) / 2;
+                      const baseY = (36 - dotSize) / 2;
+                      return HAWKINS.map((h, i) => {
+                        const selected = hawkinsIdx === i;
+                        const x = offsetX + i * (dotSize + 6);
+                        return (
+                          <button
+                            key={h.level}
+                            type="button"
+                            onClick={() => setHawkinsIdx(i)}
+                            className="absolute cursor-pointer rounded-full transition-all"
+                            style={{
+                              left: x,
+                              top: baseY,
+                              width: dotSize,
+                              height: dotSize,
+                              background: h.color,
+                              opacity: selected ? 1 : 0.55,
+                              border: 'none',
+                              transform: selected ? 'scale(1.15)' : 'scale(1)',
+                              boxShadow: selected ? `0 4px 14px -4px ${h.color}` : 'none',
+                            }}
+                            title={h.level}
+                          />
+                        );
+                      });
+                    }
+                    // SQUARES style — original 20×20 rounded squares
+                    const sq = 20;
+                    const gap = 6;
                     const totalW = HAWKINS.length * sq + (HAWKINS.length - 1) * gap;
                     const offsetX = (300 - totalW) / 2;
                     const baseY = (36 - sq) / 2;
@@ -2429,47 +2492,14 @@ export default function FeelingCheckInCard() {
                           key={h.level}
                           type="button"
                           onClick={() => setHawkinsIdx(i)}
-                          className="absolute cursor-pointer transition-all"
+                          className="absolute cursor-pointer rounded-[3px] transition-all"
                           style={{
                             left: x,
                             top: baseY,
                             width: sq,
                             height: sq,
                             background: h.color,
-                            opacity: selected ? 1 : 0.45,
-                            border: 'none',
-                            borderRadius: '2px',
-                            transform: selected ? 'rotate(45deg) scale(1.15)' : 'rotate(45deg)',
-                            boxShadow: selected ? `0 4px 14px -4px ${h.color}` : 'none',
-                          }}
-                          title={h.level}
-                        />
-                      );
-                    });
-                  }
-                  if (hawkinsStyle === 'dots') {
-                    // DOTS style — circular dots in a straight horizontal line,
-                    // same vocabulary as variant 1 (arc) but flat instead of bowed.
-                    const dotSize = 22;
-                    const totalW = HAWKINS.length * dotSize + (HAWKINS.length - 1) * 6;
-                    const offsetX = (300 - totalW) / 2;
-                    const baseY = (36 - dotSize) / 2;
-                    return HAWKINS.map((h, i) => {
-                      const selected = hawkinsIdx === i;
-                      const x = offsetX + i * (dotSize + 6);
-                      return (
-                        <button
-                          key={h.level}
-                          type="button"
-                          onClick={() => setHawkinsIdx(i)}
-                          className="absolute cursor-pointer rounded-full transition-all"
-                          style={{
-                            left: x,
-                            top: baseY,
-                            width: dotSize,
-                            height: dotSize,
-                            background: h.color,
-                            opacity: selected ? 1 : 0.55,
+                            opacity: selected ? 1 : 0.35,
                             border: 'none',
                             transform: selected ? 'scale(1.15)' : 'scale(1)',
                             boxShadow: selected ? `0 4px 14px -4px ${h.color}` : 'none',
@@ -2478,147 +2508,53 @@ export default function FeelingCheckInCard() {
                         />
                       );
                     });
-                  }
-                  // SQUARES style — original 20×20 rounded squares
-                  const sq = 20;
-                  const gap = 6;
-                  const totalW = HAWKINS.length * sq + (HAWKINS.length - 1) * gap;
-                  const offsetX = (300 - totalW) / 2;
-                  const baseY = (36 - sq) / 2;
-                  return HAWKINS.map((h, i) => {
-                    const selected = hawkinsIdx === i;
-                    const x = offsetX + i * (sq + gap);
-                    return (
-                      <button
-                        key={h.level}
-                        type="button"
-                        onClick={() => setHawkinsIdx(i)}
-                        className="absolute cursor-pointer rounded-[3px] transition-all"
-                        style={{
-                          left: x,
-                          top: baseY,
-                          width: sq,
-                          height: sq,
-                          background: h.color,
-                          opacity: selected ? 1 : 0.35,
-                          border: 'none',
-                          transform: selected ? 'scale(1.15)' : 'scale(1)',
-                          boxShadow: selected ? `0 4px 14px -4px ${h.color}` : 'none',
-                        }}
-                        title={h.level}
-                      />
-                    );
-                  });
-                })()}
+                  })()}
+                </div>
+                <p
+                  style={{
+                    // Acceptance's raw yellow (#F0E060) doesn't read against the cream
+                    // paper background — swap to a readable ochre while keeping the
+                    // yellow swatch in the slider itself.
+                    color:
+                      HAWKINS[hawkinsIdx].level === 'Acceptance'
+                        ? '#B8860B'
+                        : HAWKINS[hawkinsIdx].color,
+                    fontFamily: 'var(--font-serif)',
+                    fontSize: '18px',
+                    fontWeight: 700,
+                    letterSpacing: '0.04em',
+                    opacity: 1,
+                  }}
+                >
+                  {HAWKINS[hawkinsIdx].level}
+                </p>
               </div>
-              <p
-                style={{
-                  // Acceptance's raw yellow (#F0E060) doesn't read against the cream
-                  // paper background — swap to a readable ochre while keeping the
-                  // yellow swatch in the slider itself.
-                  color:
-                    HAWKINS[hawkinsIdx].level === 'Acceptance'
-                      ? '#B8860B'
-                      : HAWKINS[hawkinsIdx].color,
-                  fontFamily: 'var(--font-serif)',
-                  fontSize: '18px',
-                  fontWeight: 700,
-                  letterSpacing: '0.04em',
-                  opacity: 1,
-                }}
+            )}
+
+            {/* Losange toggle — show/hide slider + emotion name */}
+            <div className="flex justify-center py-1">
+              <button
+                type="button"
+                onClick={() => setSliderVisible((s) => !s)}
+                className="cursor-pointer transition-all hover:scale-125"
+                style={{ background: 'none', border: 'none', padding: 4 }}
+                title={sliderVisible ? 'Hide slider' : 'Show slider'}
               >
-                {HAWKINS[hawkinsIdx].level}
-              </p>
+                <span
+                  style={{
+                    display: 'block',
+                    width: 10,
+                    height: 10,
+                    background: HAWKINS[hawkinsIdx].color,
+                    opacity: sliderVisible ? 0.6 : 0.3,
+                    borderRadius: 2,
+                    transform: 'rotate(45deg)',
+                    transition: 'opacity 0.2s',
+                  }}
+                />
+              </button>
             </div>
 
-            {/* Two writing spots — challenge (top) + flow (bottom, ochre) */}
-            <div className="space-y-2">
-              {/* CHALLENGE — label above, question as placeholder on write line */}
-              <div className="space-y-1">
-                <div className="flex items-center gap-2 px-1">
-                  <span
-                    className="block h-2.5 w-2.5 shrink-0 rounded-full"
-                    style={{ background: '#A05A40', opacity: 0.85 }}
-                  />
-                  <span
-                    className="shrink-0 font-semibold uppercase tracking-[0.18em]"
-                    style={{ color: '#A05A40', fontSize: '16px' }}
-                  >
-                    Challenge
-                  </span>
-                </div>
-                <div className="relative flex items-end gap-2">
-                  <input
-                    type="text"
-                    value={challengeInput}
-                    onChange={(e) => setChallengeInput(e.target.value)}
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter') saveChallenge();
-                    }}
-                    placeholder="what is your main tension right now?"
-                    className="flex-1 border-b bg-transparent pb-1 outline-none placeholder:italic placeholder:text-[#A05A40] placeholder:opacity-80"
-                    style={{
-                      color: '#7a5438',
-                      borderColor: '#A05A4030',
-                      fontFamily: 'var(--font-handwritten)',
-                      fontSize: '20px',
-                    }}
-                  />
-                  <CategoryTagPicker
-                    value={challengeTag}
-                    onChange={setChallengeTag}
-                    open={showChallengeTagPicker}
-                    onToggle={() => setShowChallengeTagPicker((o) => !o)}
-                    onClose={() => setShowChallengeTagPicker(false)}
-                    lifeCategories={lifeCategories}
-                    compassAxes={COMPASS_AXES}
-                  />
-                </div>
-              </div>
-
-              {/* FLOW — label above, question as placeholder on write line */}
-              <div className="space-y-1">
-                <div className="flex items-center gap-2 px-1">
-                  <span
-                    className="block h-2.5 w-2.5 shrink-0 rounded-full"
-                    style={{ background: '#C4A060', opacity: 0.85 }}
-                  />
-                  <span
-                    className="shrink-0 font-semibold uppercase tracking-[0.18em]"
-                    style={{ color: '#C4A060', fontSize: '16px' }}
-                  >
-                    Flow
-                  </span>
-                </div>
-                <div className="relative flex items-end gap-2">
-                  <input
-                    type="text"
-                    value={flowInput}
-                    onChange={(e) => setFlowInput(e.target.value)}
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter') saveFlow();
-                    }}
-                    placeholder="what is working well?"
-                    className="flex-1 border-b bg-transparent pb-1 outline-none placeholder:italic placeholder:text-[#C4A060] placeholder:opacity-80"
-                    style={{
-                      color: '#7a5438',
-                      borderColor: '#C4A06030',
-                      fontFamily: 'var(--font-handwritten)',
-                      fontSize: '20px',
-                    }}
-                  />
-                  <CategoryTagPicker
-                    value={flowTag}
-                    onChange={setFlowTag}
-                    open={showFlowTagPicker}
-                    onToggle={() => setShowFlowTagPicker((o) => !o)}
-                    onClose={() => setShowFlowTagPicker(false)}
-                    lifeCategories={lifeCategories}
-                    compassAxes={COMPASS_AXES}
-                  />
-                </div>
-              </div>
-            </div>
             {/* Notes toggle — transparent pill that collapses/expands the entry list */}
             {sessionEmotions.length > 0 && (
               <div className="flex justify-center gap-2 pt-2">
@@ -2831,6 +2767,95 @@ export default function FeelingCheckInCard() {
                 )}
               </div>
             )}
+
+            {/* Two writing spots — challenge (top) + flow (bottom, ochre) */}
+            <div className="space-y-2">
+              {/* CHALLENGE — label above, question as placeholder on write line */}
+              <div className="space-y-1">
+                <div className="flex items-center gap-2 px-1">
+                  <span
+                    className="block h-2.5 w-2.5 shrink-0 rounded-full"
+                    style={{ background: '#A05A40', opacity: 0.85 }}
+                  />
+                  <span
+                    className="shrink-0 font-semibold uppercase tracking-[0.18em]"
+                    style={{ color: '#A05A40', fontSize: '16px' }}
+                  >
+                    Challenge
+                  </span>
+                </div>
+                <div className="relative flex items-end gap-2">
+                  <input
+                    type="text"
+                    value={challengeInput}
+                    onChange={(e) => setChallengeInput(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') saveChallenge();
+                    }}
+                    placeholder="what is your main tension right now?"
+                    className="flex-1 border-b bg-transparent pb-1 outline-none placeholder:italic placeholder:text-[#A05A40] placeholder:opacity-80"
+                    style={{
+                      color: '#7a5438',
+                      borderColor: '#A05A4030',
+                      fontFamily: 'var(--font-handwritten)',
+                      fontSize: '20px',
+                    }}
+                  />
+                  <CategoryTagPicker
+                    value={challengeTag}
+                    onChange={setChallengeTag}
+                    open={showChallengeTagPicker}
+                    onToggle={() => setShowChallengeTagPicker((o) => !o)}
+                    onClose={() => setShowChallengeTagPicker(false)}
+                    lifeCategories={lifeCategories}
+                    compassAxes={COMPASS_AXES}
+                  />
+                </div>
+              </div>
+
+              {/* FLOW — label above, question as placeholder on write line */}
+              <div className="space-y-1">
+                <div className="flex items-center gap-2 px-1">
+                  <span
+                    className="block h-2.5 w-2.5 shrink-0 rounded-full"
+                    style={{ background: '#C4A060', opacity: 0.85 }}
+                  />
+                  <span
+                    className="shrink-0 font-semibold uppercase tracking-[0.18em]"
+                    style={{ color: '#C4A060', fontSize: '16px' }}
+                  >
+                    Flow
+                  </span>
+                </div>
+                <div className="relative flex items-end gap-2">
+                  <input
+                    type="text"
+                    value={flowInput}
+                    onChange={(e) => setFlowInput(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') saveFlow();
+                    }}
+                    placeholder="what is working well?"
+                    className="flex-1 border-b bg-transparent pb-1 outline-none placeholder:italic placeholder:text-[#C4A060] placeholder:opacity-80"
+                    style={{
+                      color: '#7a5438',
+                      borderColor: '#C4A06030',
+                      fontFamily: 'var(--font-handwritten)',
+                      fontSize: '20px',
+                    }}
+                  />
+                  <CategoryTagPicker
+                    value={flowTag}
+                    onChange={setFlowTag}
+                    open={showFlowTagPicker}
+                    onToggle={() => setShowFlowTagPicker((o) => !o)}
+                    onClose={() => setShowFlowTagPicker(false)}
+                    lifeCategories={lifeCategories}
+                    compassAxes={COMPASS_AXES}
+                  />
+                </div>
+              </div>
+            </div>
           </>
         )}
       </div>

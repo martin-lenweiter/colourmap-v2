@@ -1,14 +1,13 @@
 'use client';
 
 /* ═══════════════════════════════════════════════════════════
-   CATEGORY TAG PICKER — small losange button that opens a
-   vertical list of taggable categories (user's LifeCategories
-   plus the compass axes from Caring / Doing / Sharing).
-   Used on Challenge and Flow inputs in the Logbook & Emotions
-   pillbox so each note can be connected to a category.
+   CATEGORY TAG PICKER — 3-dot compass entry point.
+   Three coloured dots (Caring / Doing / Sharing). Click one
+   to expand its axes + user categories assigned to it.
+   Used everywhere: Challenge/Flow, Agenda, Overview, etc.
    ═══════════════════════════════════════════════════════════ */
 
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 export interface TagValue {
   name: string;
@@ -21,6 +20,7 @@ export interface LifeCategoryLike {
   id: string;
   name: string;
   color: string;
+  compass?: 'caring' | 'doing' | 'sharing';
 }
 
 export interface CompassAxis {
@@ -28,6 +28,12 @@ export interface CompassAxis {
   color: string;
   group: string;
 }
+
+const COMPASSES = [
+  { id: 'caring', label: 'Caring', color: '#D4805A' },
+  { id: 'doing', label: 'Doing', color: '#6890B0' },
+  { id: 'sharing', label: 'Sharing', color: '#6B7F4E' },
+];
 
 interface Props {
   value: TagValue | null;
@@ -49,10 +55,13 @@ export default function CategoryTagPicker({
   compassAxes,
 }: Props) {
   const ref = useRef<HTMLDivElement>(null);
+  const [expandedCompass, setExpandedCompass] = useState<string | null>(null);
 
-  // Click-outside closes the dropdown
   useEffect(() => {
-    if (!open) return;
+    if (!open) {
+      setExpandedCompass(null);
+      return;
+    }
     const handler = (e: MouseEvent) => {
       if (ref.current && !ref.current.contains(e.target as Node)) onClose();
     };
@@ -60,16 +69,33 @@ export default function CategoryTagPicker({
     return () => document.removeEventListener('mousedown', handler);
   }, [open, onClose]);
 
-  // Group compass axes by compass for the dropdown
+  // Group compass axes by compass
   const axesByGroup: Record<string, CompassAxis[]> = {};
   for (const ax of compassAxes) {
     if (!axesByGroup[ax.group]) axesByGroup[ax.group] = [];
     axesByGroup[ax.group].push(ax);
   }
 
+  // Group user categories by compass assignment
+  const catsByCompass: Record<string, LifeCategoryLike[]> = {};
+  const unassigned: LifeCategoryLike[] = [];
+  for (const cat of lifeCategories) {
+    if (cat.compass) {
+      if (!catsByCompass[cat.compass]) catsByCompass[cat.compass] = [];
+      catsByCompass[cat.compass].push(cat);
+    } else {
+      unassigned.push(cat);
+    }
+  }
+
+  function selectTag(tag: TagValue) {
+    onChange(tag);
+    onClose();
+  }
+
   return (
     <div ref={ref} className="relative shrink-0">
-      {/* Trigger — tiny losange (warm brown) */}
+      {/* Trigger — three dots or selected tag */}
       <button
         type="button"
         onClick={onToggle}
@@ -77,41 +103,57 @@ export default function CategoryTagPicker({
         className="flex cursor-pointer items-center gap-1 rounded-md px-1.5 py-1 transition-all"
         style={{
           background: value ? `${value.color}15` : 'transparent',
-          border: value ? `1px solid ${value.color}60` : '1px dashed #8A6A4A60',
+          border: value ? `1px solid ${value.color}60` : '1px dashed #8A6A4A40',
         }}
       >
-        <span
-          className="rotate-45"
-          style={{
-            display: 'block',
-            width: 8,
-            height: 8,
-            background: value ? value.color : '#8A6A4A',
-            borderRadius: 1,
-          }}
-        />
-        {value && (
-          <span
-            style={{
-              color: value.color,
-              fontFamily: 'var(--font-serif)',
-              fontSize: '11px',
-              fontWeight: 600,
-              letterSpacing: '0.02em',
-              lineHeight: 1,
-              maxWidth: 80,
-              overflow: 'hidden',
-              textOverflow: 'ellipsis',
-              whiteSpace: 'nowrap',
-            }}
-          >
-            {value.name}
-          </span>
+        {value ? (
+          <>
+            <span
+              style={{
+                display: 'block',
+                width: 8,
+                height: 8,
+                borderRadius: '50%',
+                background: value.color,
+              }}
+            />
+            <span
+              style={{
+                color: value.color,
+                fontFamily: 'var(--font-serif)',
+                fontSize: '11px',
+                fontWeight: 600,
+                letterSpacing: '0.02em',
+                lineHeight: 1,
+                maxWidth: 80,
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+                whiteSpace: 'nowrap',
+              }}
+            >
+              {value.name}
+            </span>
+          </>
+        ) : (
+          <div className="flex items-center gap-1">
+            {COMPASSES.map((c) => (
+              <span
+                key={c.id}
+                style={{
+                  display: 'block',
+                  width: 7,
+                  height: 7,
+                  borderRadius: '50%',
+                  background: c.color,
+                  opacity: 0.6,
+                }}
+              />
+            ))}
+          </div>
         )}
       </button>
 
-      {/* Dropdown — vertical list grouped by source. Opaque so it cleanly
-          sits above whatever text lives underneath. */}
+      {/* Dropdown */}
       {open && (
         <div
           className="absolute right-0 z-30 mt-1 animate-in fade-in duration-150 overflow-hidden rounded-xl"
@@ -119,11 +161,12 @@ export default function CategoryTagPicker({
             background: '#F5ECDC',
             border: '1px solid #8A6A4A30',
             boxShadow: '0 10px 28px rgba(92, 48, 24, 0.18)',
-            minWidth: 180,
-            maxHeight: 320,
+            minWidth: 200,
+            maxHeight: 360,
             overflowY: 'auto',
           }}
         >
+          {/* Remove tag */}
           {value && (
             <button
               type="button"
@@ -144,39 +187,105 @@ export default function CategoryTagPicker({
             </button>
           )}
 
-          {lifeCategories.length > 0 && <GroupHeader label="Your categories" />}
-          {lifeCategories.map((cat) => (
-            <OptionRow
-              key={cat.id}
-              active={value?.categoryId === cat.id}
-              onClick={() => {
-                onChange({ name: cat.name, color: cat.color, categoryId: cat.id });
-                onClose();
-              }}
-              color={cat.color}
-              label={cat.name}
-            />
-          ))}
+          {/* Three compass dots — click to expand */}
+          <div className="flex items-center justify-center gap-4 py-3">
+            {COMPASSES.map((c) => {
+              const isExpanded = expandedCompass === c.id;
+              return (
+                <button
+                  key={c.id}
+                  type="button"
+                  onClick={() => setExpandedCompass(isExpanded ? null : c.id)}
+                  className="flex flex-col items-center gap-1 cursor-pointer transition-all"
+                  style={{ background: 'none', border: 'none' }}
+                >
+                  <span
+                    style={{
+                      display: 'block',
+                      width: isExpanded ? 14 : 11,
+                      height: isExpanded ? 14 : 11,
+                      borderRadius: '50%',
+                      background: c.color,
+                      opacity: isExpanded ? 1 : 0.5,
+                      transition: 'all 0.2s',
+                      boxShadow: isExpanded ? `0 2px 8px -2px ${c.color}` : 'none',
+                    }}
+                  />
+                  <span
+                    style={{
+                      fontFamily: 'var(--font-serif)',
+                      fontSize: '10px',
+                      fontWeight: 600,
+                      color: c.color,
+                      opacity: isExpanded ? 1 : 0.5,
+                      letterSpacing: '0.06em',
+                    }}
+                  >
+                    {c.label}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
 
-          {Object.entries(axesByGroup).map(([group, axes]) => (
-            <div key={group}>
-              <GroupHeader label={group} />
-              {axes.map((ax) => (
+          {/* Expanded compass content */}
+          {expandedCompass && (
+            <div className="animate-in fade-in duration-150 pb-2">
+              {/* Compass axes */}
+              {(
+                axesByGroup[expandedCompass.charAt(0).toUpperCase() + expandedCompass.slice(1)] ||
+                []
+              ).map((ax) => (
                 <OptionRow
-                  key={`${group}-${ax.name}`}
+                  key={`ax-${ax.name}`}
                   active={value?.name === ax.name}
-                  onClick={() => {
-                    onChange({ name: ax.name, color: ax.color });
-                    onClose();
-                  }}
+                  onClick={() => selectTag({ name: ax.name, color: ax.color })}
                   color={ax.color}
                   label={ax.name}
                 />
               ))}
-            </div>
-          ))}
 
-          {lifeCategories.length === 0 && compassAxes.length === 0 && (
+              {/* User categories assigned to this compass */}
+              {(catsByCompass[expandedCompass] || []).length > 0 && (
+                <>
+                  <Divider />
+                  {(catsByCompass[expandedCompass] || []).map((cat) => (
+                    <OptionRow
+                      key={cat.id}
+                      active={value?.categoryId === cat.id}
+                      onClick={() =>
+                        selectTag({ name: cat.name, color: cat.color, categoryId: cat.id })
+                      }
+                      color={cat.color}
+                      label={cat.name}
+                    />
+                  ))}
+                </>
+              )}
+
+              {/* Unassigned user categories show under any expanded compass */}
+              {unassigned.length > 0 && (
+                <>
+                  <Divider />
+                  <GroupHeader label="Your categories" />
+                  {unassigned.map((cat) => (
+                    <OptionRow
+                      key={cat.id}
+                      active={value?.categoryId === cat.id}
+                      onClick={() =>
+                        selectTag({ name: cat.name, color: cat.color, categoryId: cat.id })
+                      }
+                      color={cat.color}
+                      label={cat.name}
+                    />
+                  ))}
+                </>
+              )}
+            </div>
+          )}
+
+          {/* If nothing expanded and no value, show hint */}
+          {!expandedCompass && !value && lifeCategories.length === 0 && (
             <p
               className="px-3 py-3 text-center italic"
               style={{
@@ -186,13 +295,17 @@ export default function CategoryTagPicker({
                 opacity: 0.7,
               }}
             >
-              Name a life category to tag your notes.
+              Tap a compass to tag your note.
             </p>
           )}
         </div>
       )}
     </div>
   );
+}
+
+function Divider() {
+  return <div className="mx-3 my-1 h-px" style={{ background: '#8A6A4A15' }} />;
 }
 
 function GroupHeader({ label }: { label: string }) {
