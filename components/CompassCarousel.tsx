@@ -40,10 +40,10 @@ const TRIO_DATA = [
     compassIdx: 1,
     color: '#7AAA58',
     slices: [
-      { letter: 'S', full: 'Structure', color: '#8AB0C8' }, // left — lighter blue
-      { letter: 'T', full: 'Target', color: '#5A7A9A' }, // top — darker blue
-      { letter: 'A', full: 'Action', color: '#8AB0C8' }, // right — lighter blue
-      { letter: 'R', full: 'Resources', color: '#5A7A9A' }, // bottom — darker blue
+      { letter: 'S', full: 'Structure', color: '#5A7A9A' }, // left — darker blue
+      { letter: 'T', full: 'Target', color: '#8AB0C8' }, // top — lighter blue
+      { letter: 'A', full: 'Action', color: '#5A7A9A' }, // right — darker blue
+      { letter: 'R', full: 'Resources', color: '#8AB0C8' }, // bottom — lighter blue
     ],
   },
   {
@@ -51,10 +51,10 @@ const TRIO_DATA = [
     compassIdx: 2,
     color: '#6B7F4E',
     slices: [
-      { letter: 'S', full: 'Social Life', color: '#5F7447' }, // left — darker green
-      { letter: 'A', full: 'Authentic', color: '#8CA46E' }, // top — lighter green
-      { letter: 'R', full: 'Roots', color: '#5F7447' }, // right — darker green
-      { letter: 'E', full: 'Express', color: '#8CA46E' }, // bottom — lighter green
+      { letter: 'S', full: 'Social Life', color: '#8CA46E' }, // left — lighter green
+      { letter: 'A', full: 'Authentic', color: '#5F7447' }, // top — darker green
+      { letter: 'R', full: 'Roots', color: '#8CA46E' }, // right — lighter green
+      { letter: 'E', full: 'Express', color: '#5F7447' }, // bottom — darker green
     ],
   },
 ];
@@ -156,12 +156,12 @@ function SuperCompassView({
 }: {
   onSliceClick: (compassIdx: number, sliceName: string) => void;
 }) {
-  const W = 300;
-  const H = 300;
+  const W = 340;
+  const H = 340;
   const svgCx = W / 2;
   const svgCy = H / 2;
-  const outerR = 130;
-  const innerR = 60;
+  const outerR = 155;
+  const innerR = 65;
 
   // Order: top, right, bottom, left (matches compass layout with X offset)
   const outerSlices = [
@@ -250,7 +250,7 @@ function SuperCompassView({
     <div>
       <svg width="100%" height={H} viewBox={`0 0 ${W} ${H}`}>
         <title>Supercompass — Caring inside Doing</title>
-        {renderRing(outerSlices, outerR, innerR + 18, (outerR + innerR + 18) / 2, 13)}
+        {renderRing(outerSlices, outerR, innerR + 22, (outerR + innerR + 22) / 2, 14)}
         {renderRing(innerSlices, innerR, 0, innerR * 0.45, 11)}
       </svg>
     </div>
