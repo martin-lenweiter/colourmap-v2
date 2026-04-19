@@ -370,7 +370,13 @@ export default function DailyAgenda() {
               }}
             >
               {agendaView === 'day'
-                ? dateLabel(selectedDate)
+                ? selectedDate === todayStr()
+                  ? `Today — ${dateLabel(selectedDate)}`
+                  : selectedDate === shiftDate(todayStr(), 'day', -1)
+                    ? `Yesterday — ${dateLabel(selectedDate)}`
+                    : selectedDate === shiftDate(todayStr(), 'day', 1)
+                      ? `Tomorrow — ${dateLabel(selectedDate)}`
+                      : dateLabel(selectedDate)
                 : agendaView === 'week'
                   ? `Week of ${dateLabel(weekDates(selectedDate)[0])}`
                   : new Date(`${selectedDate}T12:00:00`).toLocaleString('default', {
@@ -879,6 +885,28 @@ export default function DailyAgenda() {
                       </span>
                       <button
                         type="button"
+                        onClick={() => {
+                          // Save to notebook as a journal entry via API
+                          fetch('/api/notebook', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                              category: 'journal',
+                              title: `${dateLabel(o.date)} — ${o.text}`,
+                              content: o.text,
+                              tags: ['social', 'outing'],
+                            }),
+                          }).catch(() => {});
+                          removeOuting(o.id);
+                        }}
+                        className="shrink-0 text-[9px] font-semibold uppercase tracking-wider opacity-0 transition-opacity group-hover:opacity-50 cursor-pointer"
+                        style={{ color: '#6B7F4E', background: 'none', border: 'none' }}
+                        title="Save to journal"
+                      >
+                        → journal
+                      </button>
+                      <button
+                        type="button"
                         onClick={() => removeOuting(o.id)}
                         className="shrink-0 text-xs opacity-0 transition-opacity group-hover:opacity-40 cursor-pointer"
                         style={{ color: '#8A6A4A', background: 'none', border: 'none' }}
@@ -1140,6 +1168,35 @@ function VerticalView({
                     <button
                       type="button"
                       onClick={() => {
+                        fetch('/api/notebook', {
+                          method: 'POST',
+                          headers: { 'Content-Type': 'application/json' },
+                          body: JSON.stringify({
+                            category: 'journal',
+                            title: sb.text,
+                            content: `${sb.text} (${sb.duration}h)`,
+                            tags: sb.tag ? [sb.tag.name] : [],
+                          }),
+                        }).catch(() => {});
+                        onRemove(sb.id);
+                        setExpandedBlock(null);
+                      }}
+                      style={{
+                        background: 'none',
+                        border: '1px solid #6B7F4E40',
+                        borderRadius: 6,
+                        padding: '2px 8px',
+                        cursor: 'pointer',
+                        fontSize: '11px',
+                        color: '#6B7F4E',
+                        marginLeft: 'auto',
+                      }}
+                    >
+                      → journal
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
                         onRemove(sb.id);
                         setExpandedBlock(null);
                       }}
@@ -1151,7 +1208,6 @@ function VerticalView({
                         cursor: 'pointer',
                         fontSize: '11px',
                         color: '#A05A40',
-                        marginLeft: 'auto',
                       }}
                     >
                       ✕

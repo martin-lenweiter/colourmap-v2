@@ -1560,61 +1560,66 @@ export default function FeelingCheckInCard() {
             </div>
           )}
 
-          {/* Variant 3: Rings — continuous rainbow concentric arcs */}
+          {/* Variant 3: Rings — continuous rainbow filled band */}
           {variantIdx === 3 && (
             <div className="relative" style={{ width: 300, height: 100 }}>
               <svg width="300" height="100" viewBox="0 0 300 100">
                 <defs>
-                  {BALANCE.map((b, i) => {
-                    const next = BALANCE[Math.min(i + 1, BALANCE.length - 1)];
-                    return (
-                      <linearGradient
-                        key={`rg-${i}`}
-                        id={`ring-grad-${i}`}
-                        x1="0"
-                        y1="0"
-                        x2="1"
-                        y2="0"
-                      >
-                        <stop offset="0%" stopColor={b.color} />
-                        <stop offset="100%" stopColor={next.color} />
-                      </linearGradient>
-                    );
-                  })}
+                  <radialGradient id="rainbow-ring" cx="50%" cy="100%" r="90%">
+                    {BALANCE.map((b, i) => (
+                      <stop
+                        key={b.label}
+                        offset={`${(i / (BALANCE.length - 1)) * 100}%`}
+                        stopColor={b.color}
+                      />
+                    ))}
+                  </radialGradient>
                 </defs>
                 {(() => {
                   const cx = 150;
                   const cy = 100;
-                  const minR = 12;
-                  const maxR = 88;
+                  const minR = 8;
+                  const maxR = 92;
                   const n = BALANCE.length;
-                  const step = (maxR - minR) / (n - 1);
-                  return BALANCE.map((b, i) => {
-                    const r = minR + i * step;
-                    const selected = balanceIdx === i;
-                    const dist = Math.abs(i - balanceIdx);
-                    return (
-                      <g key={b.label}>
-                        <path
-                          d={`M ${cx - r} ${cy} A ${r} ${r} 0 0 1 ${cx + r} ${cy}`}
-                          fill="none"
-                          stroke="transparent"
-                          strokeWidth={12}
-                          style={{ cursor: 'pointer' }}
-                          onClick={() => setBalanceIdx(i)}
-                        />
-                        <path
-                          d={`M ${cx - r} ${cy} A ${r} ${r} 0 0 1 ${cx + r} ${cy}`}
-                          fill="none"
-                          stroke={`url(#ring-grad-${i})`}
-                          strokeWidth={selected ? 5 : 2.5}
-                          strokeLinecap="round"
-                          opacity={selected ? 1 : dist === 1 ? 0.5 : 0.2}
-                          style={{ pointerEvents: 'none', transition: 'all 250ms' }}
-                        />
-                      </g>
-                    );
-                  });
+                  const bandW = (maxR - minR) / n;
+
+                  return (
+                    <>
+                      {/* Continuous rainbow band — filled arc segments */}
+                      {BALANCE.map((b, i) => {
+                        const innerR = minR + i * bandW;
+                        const outerR = innerR + bandW;
+                        const d = `M ${cx - outerR} ${cy} A ${outerR} ${outerR} 0 0 1 ${cx + outerR} ${cy} L ${cx + innerR} ${cy} A ${innerR} ${innerR} 0 0 0 ${cx - innerR} ${cy} Z`;
+                        const selected = balanceIdx === i;
+                        const dist = Math.abs(i - balanceIdx);
+                        return (
+                          <g key={b.label}>
+                            <path
+                              d={d}
+                              fill={b.color}
+                              opacity={selected ? 0.85 : dist === 1 ? 0.4 : 0.15}
+                              style={{ cursor: 'pointer', transition: 'opacity 250ms' }}
+                              onClick={() => setBalanceIdx(i)}
+                            />
+                          </g>
+                        );
+                      })}
+                      {/* Selection indicator — white arc line */}
+                      {(() => {
+                        const r = minR + balanceIdx * bandW + bandW / 2;
+                        return (
+                          <path
+                            d={`M ${cx - r} ${cy} A ${r} ${r} 0 0 1 ${cx + r} ${cy}`}
+                            fill="none"
+                            stroke="#FFFFFF"
+                            strokeWidth={2}
+                            opacity={0.6}
+                            style={{ pointerEvents: 'none', transition: 'all 250ms' }}
+                          />
+                        );
+                      })()}
+                    </>
+                  );
                 })()}
                 <circle
                   cx={150}
