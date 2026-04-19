@@ -453,6 +453,32 @@ export default function FeelingCheckInCard() {
       return false;
     }
   });
+  const [sectionLabels, setSectionLabels] = useState<Record<string, string>>(() => {
+    try {
+      const raw = localStorage.getItem('colourmap:section-labels');
+      if (raw) return JSON.parse(raw);
+    } catch {}
+    return {};
+  });
+  const [renamingSection, setRenamingSection] = useState<string | null>(null);
+  const [renameValue, setRenameValue] = useState('');
+
+  function sectionLabel(key: string, fallback: string) {
+    return sectionLabels[key] || fallback;
+  }
+
+  function commitRename(key: string, fallback: string) {
+    const trimmed = renameValue.trim();
+    if (trimmed && trimmed !== fallback) {
+      const next = { ...sectionLabels, [key]: trimmed };
+      setSectionLabels(next);
+      try {
+        localStorage.setItem('colourmap:section-labels', JSON.stringify(next));
+      } catch {}
+    }
+    setRenamingSection(null);
+  }
+
   const [dailyObjOpen, setDailyObjOpen] = useState(true);
   const [pushTomorrowOpen, setPushTomorrowOpen] = useState(true);
   const [doneOpen, setDoneOpen] = useState(false);
@@ -800,6 +826,24 @@ export default function FeelingCheckInCard() {
       /* silent */
     }
   };
+  // Move between sections
+  const moveToCurrent = (text: string, fromList: 'daily' | 'push', id: string) => {
+    setObjective(text);
+    if (fromList === 'daily') persistTodayObjectives(todayObjectives.filter((t) => t.id !== id));
+    else persistTodos(todos.filter((t) => t.id !== id));
+  };
+  const moveToPush = (text: string, fromList: 'daily' | 'current', id?: string) => {
+    persistTodos([...todos, { id: crypto.randomUUID(), text, done: false }]);
+    if (fromList === 'daily' && id)
+      persistTodayObjectives(todayObjectives.filter((t) => t.id !== id));
+    if (fromList === 'current') setObjective('');
+  };
+  const moveToDaily = (text: string, fromList: 'push' | 'current', id?: string) => {
+    persistTodayObjectives([...todayObjectives, { id: crypto.randomUUID(), text, done: false }]);
+    if (fromList === 'push' && id) persistTodos(todos.filter((t) => t.id !== id));
+    if (fromList === 'current') setObjective('');
+  };
+
   const addTodo = () => {
     const text = todoInput.trim();
     if (!text) return;
@@ -1842,7 +1886,32 @@ export default function FeelingCheckInCard() {
                 className="text-center text-sm font-semibold uppercase tracking-[0.22em]"
                 style={{ color: '#C4A060' }}
               >
-                Current Objective
+                {renamingSection === 'current' ? (
+                  <input
+                    type="text"
+                    value={renameValue}
+                    onChange={(e) => setRenameValue(e.target.value)}
+                    onBlur={() => commitRename('current', 'Current Objective')}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') commitRename('current', 'Current Objective');
+                      if (e.key === 'Escape') setRenamingSection(null);
+                    }}
+                    autoFocus
+                    className="bg-transparent text-center text-sm font-semibold uppercase tracking-[0.22em] outline-none border-b"
+                    style={{ color: '#C4A060', borderColor: '#C4A06040' }}
+                  />
+                ) : (
+                  <span
+                    className="cursor-pointer"
+                    onDoubleClick={() => {
+                      setRenamingSection('current');
+                      setRenameValue(sectionLabel('current', 'Current Objective'));
+                    }}
+                    title="Double-click to rename"
+                  >
+                    {sectionLabel('current', 'Current Objective')}
+                  </span>
+                )}
               </span>
               <span
                 className="text-sm transition-transform duration-200"
@@ -1937,7 +2006,38 @@ export default function FeelingCheckInCard() {
                   letterSpacing: '0.22em',
                 }}
               >
-                Other Missions
+                {renamingSection === 'other' ? (
+                  <input
+                    type="text"
+                    value={renameValue}
+                    onChange={(e) => setRenameValue(e.target.value)}
+                    onBlur={() => commitRename('other', 'Other Missions')}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') commitRename('other', 'Other Missions');
+                      if (e.key === 'Escape') setRenamingSection(null);
+                    }}
+                    autoFocus
+                    className="bg-transparent text-center uppercase outline-none border-b"
+                    style={{
+                      color: '#C4A060',
+                      fontSize: '15px',
+                      fontWeight: 700,
+                      letterSpacing: '0.22em',
+                      borderColor: '#C4A06040',
+                    }}
+                  />
+                ) : (
+                  <span
+                    className="cursor-pointer"
+                    onDoubleClick={() => {
+                      setRenamingSection('other');
+                      setRenameValue(sectionLabel('other', 'Other Missions'));
+                    }}
+                    title="Double-click to rename"
+                  >
+                    {sectionLabel('other', 'Other Missions')}
+                  </span>
+                )}
               </span>
               <span
                 className="text-sm transition-transform duration-200"
@@ -1965,7 +2065,34 @@ export default function FeelingCheckInCard() {
                     className="font-semibold uppercase tracking-[0.18em]"
                     style={{ color: '#C4A060', fontSize: '13px' }}
                   >
-                    Daily Objectives
+                    {renamingSection === 'daily' ? (
+                      <input
+                        type="text"
+                        value={renameValue}
+                        onChange={(e) => setRenameValue(e.target.value)}
+                        onBlur={() => commitRename('daily', 'Daily Objectives')}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter') commitRename('daily', 'Daily Objectives');
+                          if (e.key === 'Escape') setRenamingSection(null);
+                        }}
+                        autoFocus
+                        onClick={(e) => e.stopPropagation()}
+                        className="bg-transparent font-semibold uppercase tracking-[0.18em] outline-none border-b"
+                        style={{ color: '#C4A060', fontSize: '13px', borderColor: '#C4A06040' }}
+                      />
+                    ) : (
+                      <span
+                        className="cursor-pointer"
+                        onDoubleClick={(e) => {
+                          e.stopPropagation();
+                          setRenamingSection('daily');
+                          setRenameValue(sectionLabel('daily', 'Daily Objectives'));
+                        }}
+                        title="Double-click to rename"
+                      >
+                        {sectionLabel('daily', 'Daily Objectives')}
+                      </span>
+                    )}
                   </span>
                   <span
                     className="text-[10px] transition-transform duration-200"
@@ -2077,20 +2204,48 @@ export default function FeelingCheckInCard() {
                               </button>
                             </div>
                             {isExpanded && (
-                              <textarea
-                                value={o.notes || ''}
-                                onChange={(e) => updateTodayNotes(o.id, e.target.value)}
-                                placeholder="advancements, next steps..."
-                                rows={2}
-                                className="ml-7 w-[calc(100%-1.75rem)] resize-none border-b bg-transparent pb-1 pt-0.5 outline-none placeholder:text-muted-foreground/40 animate-in fade-in duration-150"
-                                style={{
-                                  color: '#7a5438',
-                                  borderColor: '#C4A06025',
-                                  fontFamily: 'var(--font-handwritten)',
-                                  fontSize: '17px',
-                                  lineHeight: 1.4,
-                                }}
-                              />
+                              <>
+                                <textarea
+                                  value={o.notes || ''}
+                                  onChange={(e) => updateTodayNotes(o.id, e.target.value)}
+                                  placeholder="advancements, next steps..."
+                                  rows={2}
+                                  className="ml-7 w-[calc(100%-1.75rem)] resize-none border-b bg-transparent pb-1 pt-0.5 outline-none placeholder:text-muted-foreground/40 animate-in fade-in duration-150"
+                                  style={{
+                                    color: '#7a5438',
+                                    borderColor: '#C4A06025',
+                                    fontFamily: 'var(--font-handwritten)',
+                                    fontSize: '17px',
+                                    lineHeight: 1.4,
+                                  }}
+                                />
+                                <div className="ml-7 flex gap-2 pt-1">
+                                  <button
+                                    type="button"
+                                    onClick={() => moveToCurrent(o.text, 'daily', o.id)}
+                                    className="cursor-pointer rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider transition-all hover:opacity-80"
+                                    style={{
+                                      color: '#C4A060',
+                                      border: '1px solid #C4A06030',
+                                      background: 'transparent',
+                                    }}
+                                  >
+                                    → current
+                                  </button>
+                                  <button
+                                    type="button"
+                                    onClick={() => moveToPush(o.text, 'daily', o.id)}
+                                    className="cursor-pointer rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider transition-all hover:opacity-80"
+                                    style={{
+                                      color: '#8A6A4A',
+                                      border: '1px solid #8A6A4A30',
+                                      background: 'transparent',
+                                    }}
+                                  >
+                                    → {sectionLabel('push', 'tomorrow')}
+                                  </button>
+                                </div>
+                              </>
                             )}
                           </div>
                         );
@@ -2137,7 +2292,34 @@ export default function FeelingCheckInCard() {
                     className="font-semibold uppercase tracking-[0.18em]"
                     style={{ color: '#C4A060', fontSize: '13px' }}
                   >
-                    Push for tomorrow
+                    {renamingSection === 'push' ? (
+                      <input
+                        type="text"
+                        value={renameValue}
+                        onChange={(e) => setRenameValue(e.target.value)}
+                        onBlur={() => commitRename('push', 'Push for tomorrow')}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter') commitRename('push', 'Push for tomorrow');
+                          if (e.key === 'Escape') setRenamingSection(null);
+                        }}
+                        autoFocus
+                        onClick={(e) => e.stopPropagation()}
+                        className="bg-transparent font-semibold uppercase tracking-[0.18em] outline-none border-b"
+                        style={{ color: '#C4A060', fontSize: '13px', borderColor: '#C4A06040' }}
+                      />
+                    ) : (
+                      <span
+                        className="cursor-pointer"
+                        onDoubleClick={(e) => {
+                          e.stopPropagation();
+                          setRenamingSection('push');
+                          setRenameValue(sectionLabel('push', 'Push for tomorrow'));
+                        }}
+                        title="Double-click to rename"
+                      >
+                        {sectionLabel('push', 'Push for tomorrow')}
+                      </span>
+                    )}
                   </span>
                   <span
                     className="text-[10px] transition-transform duration-200"
@@ -2223,6 +2405,24 @@ export default function FeelingCheckInCard() {
                             >
                               {t.text}
                             </span>
+                            <button
+                              type="button"
+                              onClick={() => moveToDaily(t.text, 'push', t.id)}
+                              title="Move to daily"
+                              className="cursor-pointer text-[9px] font-semibold uppercase tracking-wider opacity-0 transition-opacity group-hover:opacity-40"
+                              style={{ color: '#C4A060', background: 'none', border: 'none' }}
+                            >
+                              ↑ daily
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => moveToCurrent(t.text, 'push', t.id)}
+                              title="Move to current"
+                              className="cursor-pointer text-[9px] font-semibold uppercase tracking-wider opacity-0 transition-opacity group-hover:opacity-40"
+                              style={{ color: '#C4A060', background: 'none', border: 'none' }}
+                            >
+                              ↑ current
+                            </button>
                             <button
                               type="button"
                               onClick={() => removeTodo(t.id)}

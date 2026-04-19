@@ -115,7 +115,11 @@ const EMOTION_COLORS = [
   '#B0A0C8', // lavender — light
 ];
 
-const HOURS = Array.from({ length: 16 }, (_, i) => i + 6); // 6am – 9pm
+const WAKE_KEY = 'colourmap:wake-hour';
+
+function getHours(wakeHour: number): number[] {
+  return Array.from({ length: 22 - wakeHour }, (_, i) => i + wakeHour);
+}
 
 function loadAgenda(): AgendaBlock[] {
   try {
@@ -151,6 +155,15 @@ export default function DailyAgenda() {
     return localStorage.getItem(AGENDA_OPEN_KEY) === 'true';
   });
   const [agendaView, setAgendaView] = useState<AgendaView>('day');
+  const [wakeHour, setWakeHour] = useState(() => {
+    if (typeof window === 'undefined') return 7;
+    try {
+      const v = localStorage.getItem(WAKE_KEY);
+      return v ? Number(v) : 7;
+    } catch {
+      return 7;
+    }
+  });
   const [selectedDate, setSelectedDate] = useState(todayStr);
   const [showMission, setShowMission] = useState(true);
   const [showEmotion, setShowEmotion] = useState(true);
@@ -226,7 +239,7 @@ export default function DailyAgenda() {
       ),
     );
     let startHour = 8;
-    for (const h of HOURS) {
+    for (const h of getHours(wakeHour)) {
       if (!usedHours.has(h)) {
         startHour = h;
         break;
@@ -507,6 +520,46 @@ export default function DailyAgenda() {
             </div>
           )}
 
+          {/* Wake-up time */}
+          <div className="flex items-center justify-center gap-2">
+            <span
+              style={{
+                fontFamily: 'var(--font-serif)',
+                fontSize: '12px',
+                color: '#8A6A4A',
+                opacity: 0.6,
+              }}
+            >
+              woke up at
+            </span>
+            <select
+              value={wakeHour}
+              onChange={(e) => {
+                const v = Number(e.target.value);
+                setWakeHour(v);
+                try {
+                  localStorage.setItem(WAKE_KEY, String(v));
+                } catch {}
+              }}
+              style={{
+                background: 'transparent',
+                border: '1px solid #C4A06030',
+                borderRadius: 6,
+                padding: '2px 6px',
+                fontSize: '13px',
+                fontWeight: 600,
+                color: '#5C3018',
+                fontFamily: 'var(--font-serif)',
+              }}
+            >
+              {Array.from({ length: 12 }, (_, i) => i + 4).map((h) => (
+                <option key={h} value={h}>
+                  {String(h).padStart(2, '0')}:00
+                </option>
+              ))}
+            </select>
+          </div>
+
           {/* Layer toggles — both can be active independently */}
           <div className="flex justify-center gap-2">
             <button
@@ -560,6 +613,7 @@ export default function DailyAgenda() {
                   onRemove={removeBlock}
                   onResize={resizeBlock}
                   onMove={moveBlock}
+                  wakeHour={wakeHour}
                   expandedBlock={expandedBlock}
                   setExpandedBlock={setExpandedBlock}
                   blockTag={blockTag}
@@ -846,6 +900,7 @@ export default function DailyAgenda() {
 function VerticalView({
   blocks,
   layer,
+  wakeHour,
   addingAt,
   setAddingAt,
   newText,
@@ -868,6 +923,7 @@ function VerticalView({
 }: {
   blocks: AgendaBlock[];
   layer: AgendaLayer;
+  wakeHour: number;
   addingAt: number | null;
   setAddingAt: (h: number | null) => void;
   newText: string;
@@ -892,7 +948,7 @@ function VerticalView({
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
-      {HOURS.map((hour) => {
+      {getHours(wakeHour).map((hour) => {
         // All blocks visible in this hour slot
         const activeBlocks = blocks.filter(
           (b) => b.startHour <= hour && hour < b.startHour + b.duration,
