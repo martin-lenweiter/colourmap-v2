@@ -1142,6 +1142,7 @@ export default function FeelingCheckInCard() {
       date: new Date().toISOString(),
       mind: currentMind.level,
       mindColor: currentMind.color,
+      hawkinsIdx,
       mode: currentMode.level,
       modeColor: currentMode.color,
       note: note.trim(),
@@ -1152,6 +1153,30 @@ export default function FeelingCheckInCard() {
     const next = [entry, ...checkIns].slice(0, 100);
     setCheckIns(next);
     localStorage.setItem('colourmap:check-ins', JSON.stringify(next));
+
+    // Persist to backend
+    fetch('/api/check-ins', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        sliderValue: Math.round((hawkinsIdx / (HAWKINS.length - 1)) * 100),
+        note: note.trim() || null,
+        emotionLevel: currentMind.level,
+        emotionColor: currentMind.color,
+        challenge:
+          sessionEmotions
+            .filter((e) => e.mind === 'challenge')
+            .map((e) => e.text)
+            .join('\n') || null,
+        flow:
+          sessionEmotions
+            .filter((e) => e.mind === 'flow')
+            .map((e) => e.text)
+            .join('\n') || null,
+      }),
+    }).catch(() => {
+      /* silent — localStorage is the primary store */
+    });
 
     // Clear session — promote next objective if available
     setNote('');
@@ -1816,31 +1841,86 @@ export default function FeelingCheckInCard() {
               })()}
             </svg>
           </button>
-          {justSaved && (
-            <div className="animate-in fade-in duration-300 text-center space-y-0.5">
-              <p
-                style={{
-                  fontFamily: 'var(--font-serif)',
-                  fontSize: '13px',
-                  fontWeight: 600,
-                  color: currentMind.color,
-                }}
-              >
-                Checked in · {HAWKINS[hawkinsIdx].level}
-              </p>
-              <p
-                style={{
-                  fontFamily: 'var(--font-serif)',
-                  fontSize: '11px',
-                  color: '#8A6A4A',
-                  opacity: 0.6,
-                }}
-              >
-                {new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                {sessionEmotions.length > 0 && ` · ${sessionEmotions.length} notes`}
-              </p>
-            </div>
-          )}
+          {justSaved &&
+            (() => {
+              // Celebration logic — compare with previous check-ins
+              const today = new Date().toISOString().split('T')[0];
+              const yesterday = new Date(Date.now() - 86400000).toISOString().split('T')[0];
+              const prevToday = checkIns.find(
+                (c) => c.date?.startsWith(today) && c.id !== checkIns[0]?.id,
+              );
+              const prevYesterday = checkIns.find((c) => c.date?.startsWith(yesterday));
+              const prev = prevToday || prevYesterday;
+              const prevIdx = (prev as { hawkinsIdx?: number })?.hawkinsIdx;
+              const moved = typeof prevIdx === 'number' && prevIdx !== hawkinsIdx;
+              const movedUp = typeof prevIdx === 'number' && hawkinsIdx > prevIdx;
+
+              // Streak: count consecutive days with check-ins
+              let streak = 1;
+              const seen = new Set([today]);
+              for (const c of checkIns) {
+                if (!c.date) continue;
+                const d = c.date.split('T')[0];
+                if (seen.has(d)) continue;
+                const expected = new Date(Date.now() - streak * 86400000)
+                  .toISOString()
+                  .split('T')[0];
+                if (d === expected) {
+                  streak++;
+                  seen.add(d);
+                } else break;
+              }
+
+              // Celebration message
+              let celebration = '';
+              if (movedUp && prev) {
+                celebration = `${HAWKINS[prevIdx].level} → ${HAWKINS[hawkinsIdx].level}. You moved.`;
+              } else if (hawkinsIdx >= 7) {
+                celebration = 'You are in expansion. Protect this.';
+              } else if (hawkinsIdx >= 5) {
+                celebration = 'Courage territory. Keep going.';
+              }
+
+              return (
+                <div className="animate-in fade-in duration-300 text-center space-y-1">
+                  <p
+                    style={{
+                      fontFamily: 'var(--font-serif)',
+                      fontSize: '14px',
+                      fontWeight: 600,
+                      color: currentMind.color,
+                    }}
+                  >
+                    {HAWKINS[hawkinsIdx].level}
+                  </p>
+                  {celebration && (
+                    <p
+                      className="italic"
+                      style={{
+                        fontFamily: 'var(--font-serif)',
+                        fontSize: '12px',
+                        color: '#5C3018',
+                        opacity: 0.7,
+                      }}
+                    >
+                      {celebration}
+                    </p>
+                  )}
+                  <p
+                    style={{
+                      fontFamily: 'var(--font-serif)',
+                      fontSize: '11px',
+                      color: '#8A6A4A',
+                      opacity: 0.5,
+                    }}
+                  >
+                    {new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                    {sessionEmotions.length > 0 && ` · ${sessionEmotions.length} notes`}
+                    {streak > 1 && ` · ${streak} day streak`}
+                  </p>
+                </div>
+              );
+            })()}
         </div>
       </div>
 
@@ -3235,7 +3315,7 @@ export default function FeelingCheckInCard() {
                       onKeyDown={(e) => {
                         if (e.key === 'Enter') saveFlow();
                       }}
-                      placeholder="what is working well?"
+                      placeholder="what is working well? how are you celebrating?"
                       className="flex-1 border-b bg-transparent pb-1 outline-none placeholder:italic placeholder:text-[#C4A060] placeholder:opacity-80"
                       style={{
                         color: '#7a5438',
