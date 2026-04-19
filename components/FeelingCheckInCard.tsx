@@ -427,9 +427,9 @@ export default function FeelingCheckInCard() {
   const [justSaved, setJustSaved] = useState(false);
   const [objectiveSectionOpen, setObjectiveSectionOpen] = useState(() => {
     try {
-      return localStorage.getItem('colourmap:objective-section-open') !== 'false';
+      return localStorage.getItem('colourmap:objective-section-open') === 'true';
     } catch {
-      return true;
+      return false;
     }
   });
   const [_emotionsSectionOpen, setEmotionsSectionOpen] = useState(() => {
@@ -484,9 +484,9 @@ export default function FeelingCheckInCard() {
   const [doneOpen, setDoneOpen] = useState(false);
   const [otherMissionsOpen, setOtherMissionsOpen] = useState(() => {
     try {
-      return localStorage.getItem('colourmap:other-missions-open') !== 'false';
+      return localStorage.getItem('colourmap:other-missions-open') === 'true';
     } catch {
-      return true;
+      return false;
     }
   });
   const toggleOtherMissions = () => {
@@ -999,7 +999,6 @@ export default function FeelingCheckInCard() {
     color: string;
     categoryId?: string;
   } | null>(null);
-  const [justTagged, setJustTagged] = useState<string | null>(null);
   useEffect(() => {
     try {
       const cats = localStorage.getItem('colourmap:life-categories');
@@ -1031,9 +1030,7 @@ export default function FeelingCheckInCard() {
         completedAt: null,
       };
       localStorage.setItem('colourmap:life-targets', JSON.stringify([...existing, newTarget]));
-      setJustTagged(categoryId);
       setShowCategoryPicker(false);
-      setTimeout(() => setJustTagged(null), 1200);
     } catch {
       /* silent */
     }
@@ -1604,20 +1601,6 @@ export default function FeelingCheckInCard() {
                           </g>
                         );
                       })}
-                      {/* Selection indicator — white arc line */}
-                      {(() => {
-                        const r = minR + balanceIdx * bandW + bandW / 2;
-                        return (
-                          <path
-                            d={`M ${cx - r} ${cy} A ${r} ${r} 0 0 1 ${cx + r} ${cy}`}
-                            fill="none"
-                            stroke="#FFFFFF"
-                            strokeWidth={2}
-                            opacity={0.6}
-                            style={{ pointerEvents: 'none', transition: 'all 250ms' }}
-                          />
-                        );
-                      })()}
                     </>
                   );
                 })()}
@@ -2016,9 +1999,9 @@ export default function FeelingCheckInCard() {
                     type="text"
                     value={renameValue}
                     onChange={(e) => setRenameValue(e.target.value)}
-                    onBlur={() => commitRename('other', 'Other Missions')}
+                    onBlur={() => commitRename('other', 'Daily Objectives')}
                     onKeyDown={(e) => {
-                      if (e.key === 'Enter') commitRename('other', 'Other Missions');
+                      if (e.key === 'Enter') commitRename('other', 'Daily Objectives');
                       if (e.key === 'Escape') setRenamingSection(null);
                     }}
                     autoFocus
@@ -2036,11 +2019,11 @@ export default function FeelingCheckInCard() {
                     className="cursor-pointer"
                     onDoubleClick={() => {
                       setRenamingSection('other');
-                      setRenameValue(sectionLabel('other', 'Other Missions'));
+                      setRenameValue(sectionLabel('other', 'Daily Objectives'));
                     }}
                     title="Double-click to rename"
                   >
-                    {sectionLabel('other', 'Other Missions')}
+                    {sectionLabel('other', 'Daily Objectives')}
                   </span>
                 )}
               </span>
@@ -2488,85 +2471,74 @@ export default function FeelingCheckInCard() {
                     </span>
                   </button>
                   {doneOpen && (
-                    <div className="space-y-3 animate-in fade-in duration-150">
-                      {/* Current Objective completions */}
-                      {doneObjectives.length > 0 && (
-                        <div className="space-y-1">
-                          <p
-                            className="px-1 text-[11px] font-semibold uppercase tracking-wider"
-                            style={{ color: '#8A6A4A', opacity: 0.6 }}
-                          >
-                            Current Objective
-                          </p>
-                          {doneObjectives.slice(0, 10).map((d) => {
-                            const dt = new Date(d.completedAt);
-                            const dateStr = `${dt.getDate()}/${dt.getMonth() + 1}`;
-                            return (
+                    <div className="space-y-1 animate-in fade-in duration-150">
+                      {(() => {
+                        // Merge all done items into a flat list with dates
+                        const all: {
+                          id: string;
+                          text: string;
+                          date: string;
+                          onUndo?: () => void;
+                        }[] = [];
+                        for (const d of doneObjectives.slice(0, 20)) {
+                          const dt = new Date(d.completedAt);
+                          all.push({
+                            id: d.id,
+                            text: d.text,
+                            date: `${dt.getDate()}/${dt.getMonth() + 1}`,
+                          });
+                        }
+                        const today = new Date();
+                        const todayDate = `${today.getDate()}/${today.getMonth() + 1}`;
+                        for (const o of todayObjectives.filter((o) => o.done)) {
+                          all.push({
+                            id: `d-${o.id}`,
+                            text: o.text,
+                            date: todayDate,
+                            onUndo: () => toggleTodayObjective(o.id),
+                          });
+                        }
+                        for (const t of todos.filter((t) => t.done)) {
+                          all.push({
+                            id: `t-${t.id}`,
+                            text: t.text,
+                            date: todayDate,
+                            onUndo: () => toggleTodo(t.id),
+                          });
+                        }
+                        // Group by date
+                        const byDate: Record<string, typeof all> = {};
+                        for (const item of all) {
+                          if (!byDate[item.date]) byDate[item.date] = [];
+                          byDate[item.date].push(item);
+                        }
+                        return Object.entries(byDate).map(([date, items]) => (
+                          <div key={date} className="space-y-0.5">
+                            <p
+                              className="px-1 text-[11px] font-semibold"
+                              style={{ color: '#8A6A4A', opacity: 0.5 }}
+                            >
+                              {date}
+                            </p>
+                            {items.map((item) => (
                               <div
-                                key={d.id}
+                                key={item.id}
                                 className="flex items-center gap-2 px-1"
-                                style={{ minHeight: 28 }}
+                                style={{ minHeight: 26 }}
                               >
-                                <span
-                                  style={{
-                                    color: '#8A6A4A',
-                                    opacity: 0.6,
-                                    fontSize: '12px',
-                                    lineHeight: '28px',
-                                    flexShrink: 0,
-                                  }}
-                                >
-                                  {dateStr}
-                                </span>
-                                <span
+                                <button
+                                  type="button"
+                                  onClick={item.onUndo || undefined}
                                   className="flex h-4 w-4 shrink-0 items-center justify-center rounded border"
-                                  style={{ borderColor: '#7AAA5860', background: '#7AAA5810' }}
+                                  style={{
+                                    borderColor: '#7AAA5860',
+                                    background: '#7AAA5810',
+                                    cursor: item.onUndo ? 'pointer' : 'default',
+                                  }}
                                 >
                                   <span className="text-[10px]" style={{ color: '#7AAA58' }}>
                                     ✓
                                   </span>
-                                </span>
-                                <span
-                                  style={{
-                                    color: '#8A6A4A',
-                                    fontFamily: 'var(--font-handwritten)',
-                                    fontSize: '16px',
-                                    opacity: 0.6,
-                                  }}
-                                >
-                                  {d.text}
-                                </span>
-                              </div>
-                            );
-                          })}
-                        </div>
-                      )}
-                      {/* Daily Objectives completions */}
-                      {todayObjectives.some((o) => o.done) && (
-                        <div className="space-y-1">
-                          <p
-                            className="px-1 text-[11px] font-semibold uppercase tracking-wider"
-                            style={{ color: '#8A6A4A', opacity: 0.6 }}
-                          >
-                            Daily Objectives
-                          </p>
-                          {todayObjectives
-                            .filter((o) => o.done)
-                            .map((o) => (
-                              <div
-                                key={o.id}
-                                className="flex items-center gap-2 px-1"
-                                style={{ minHeight: 28 }}
-                              >
-                                <button
-                                  type="button"
-                                  onClick={() => toggleTodayObjective(o.id)}
-                                  className="flex h-4 w-4 shrink-0 cursor-pointer items-center justify-center rounded border"
-                                  style={{ borderColor: '#7AAA5860', background: '#7AAA5810' }}
-                                >
-                                  <span className="text-xs" style={{ color: '#7AAA58' }}>
-                                    ✓
-                                  </span>
                                 </button>
                                 <span
                                   style={{
@@ -2576,53 +2548,13 @@ export default function FeelingCheckInCard() {
                                     opacity: 0.6,
                                   }}
                                 >
-                                  {o.text}
+                                  {item.text}
                                 </span>
                               </div>
                             ))}
-                        </div>
-                      )}
-                      {/* Push for tomorrow completions */}
-                      {todos.some((t) => t.done) && (
-                        <div className="space-y-1">
-                          <p
-                            className="px-1 text-[11px] font-semibold uppercase tracking-wider"
-                            style={{ color: '#8A6A4A', opacity: 0.6 }}
-                          >
-                            Push for tomorrow
-                          </p>
-                          {todos
-                            .filter((t) => t.done)
-                            .map((t) => (
-                              <div
-                                key={t.id}
-                                className="flex items-center gap-2 px-1"
-                                style={{ minHeight: 28 }}
-                              >
-                                <button
-                                  type="button"
-                                  onClick={() => toggleTodo(t.id)}
-                                  className="flex h-4 w-4 shrink-0 cursor-pointer items-center justify-center rounded border"
-                                  style={{ borderColor: '#7AAA5860', background: '#7AAA5810' }}
-                                >
-                                  <span className="text-xs" style={{ color: '#7AAA58' }}>
-                                    ✓
-                                  </span>
-                                </button>
-                                <span
-                                  style={{
-                                    color: '#8A6A4A',
-                                    fontFamily: 'var(--font-handwritten)',
-                                    fontSize: '16px',
-                                    opacity: 0.6,
-                                  }}
-                                >
-                                  {t.text}
-                                </span>
-                              </div>
-                            ))}
-                        </div>
-                      )}
+                          </div>
+                        ));
+                      })()}
                     </div>
                   )}
                 </div>
