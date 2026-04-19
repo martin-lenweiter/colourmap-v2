@@ -40,10 +40,10 @@ const TRIO_DATA = [
     compassIdx: 1,
     color: '#7AAA58',
     slices: [
-      { letter: 'S', full: 'Structure', color: '#5A7A9A' }, // left — darker blue
-      { letter: 'T', full: 'Target', color: '#8AB0C8' }, // top — lighter blue
-      { letter: 'A', full: 'Action', color: '#5A7A9A' }, // right — darker blue
-      { letter: 'R', full: 'Resources', color: '#8AB0C8' }, // bottom — lighter blue
+      { letter: 'S', full: 'Structure', color: '#8AB0C8' }, // left — lighter blue
+      { letter: 'T', full: 'Target', color: '#5A7A9A' }, // top — darker blue
+      { letter: 'A', full: 'Action', color: '#8AB0C8' }, // right — lighter blue
+      { letter: 'R', full: 'Resources', color: '#5A7A9A' }, // bottom — darker blue
     ],
   },
   {

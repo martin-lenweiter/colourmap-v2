@@ -2074,7 +2074,7 @@ export default function FeelingCheckInCard() {
                   style={{ background: 'none', border: 'none' }}
                 >
                   <span
-                    className="font-semibold uppercase tracking-[0.18em]"
+                    className="font-semibold uppercase tracking-[0.22em]"
                     style={{ color: '#C4A060', fontSize: '13px' }}
                   >
                     {renamingSection === 'daily' ? (
@@ -2320,7 +2320,7 @@ export default function FeelingCheckInCard() {
                   style={{ background: 'none', border: 'none' }}
                 >
                   <span
-                    className="font-semibold uppercase tracking-[0.18em]"
+                    className="font-semibold uppercase tracking-[0.22em]"
                     style={{ color: '#C4A060', fontSize: '13px' }}
                   >
                     {renamingSection === 'push' ? (
@@ -2504,7 +2504,7 @@ export default function FeelingCheckInCard() {
                     style={{ background: 'none', border: 'none' }}
                   >
                     <span
-                      className="font-semibold uppercase tracking-[0.18em]"
+                      className="font-semibold uppercase tracking-[0.22em]"
                       style={{ color: '#7AAA58', fontSize: '13px' }}
                     >
                       Done
@@ -2705,7 +2705,7 @@ export default function FeelingCheckInCard() {
                 className="text-center text-sm font-semibold uppercase tracking-[0.22em]"
                 style={{ color: '#C4A060' }}
               >
-                Logbook & Emotions
+                Emotions
               </span>
               <span
                 className="text-sm transition-transform duration-200"
@@ -3037,7 +3037,7 @@ export default function FeelingCheckInCard() {
                   {sessionEmotions.some((e) => e.mind === 'challenge') && (
                     <div className="space-y-1">
                       <p
-                        className="font-semibold uppercase tracking-[0.18em]"
+                        className="font-semibold uppercase tracking-[0.22em]"
                         style={{ color: '#D4805A', fontSize: '14px' }}
                       >
                         Challenge
@@ -3083,7 +3083,7 @@ export default function FeelingCheckInCard() {
                   {sessionEmotions.some((e) => e.mind === 'flow') && (
                     <div className="space-y-1">
                       <p
-                        className="font-semibold uppercase tracking-[0.18em]"
+                        className="font-semibold uppercase tracking-[0.22em]"
                         style={{ color: '#C4A060', fontSize: '14px' }}
                       >
                         Flow
@@ -3178,7 +3178,7 @@ export default function FeelingCheckInCard() {
                       style={{ background: '#D4805A', opacity: 0.85 }}
                     />
                     <span
-                      className="shrink-0 font-semibold uppercase tracking-[0.18em]"
+                      className="shrink-0 font-semibold uppercase tracking-[0.22em]"
                       style={{ color: '#D4805A', fontSize: '16px' }}
                     >
                       Challenge
@@ -3221,7 +3221,7 @@ export default function FeelingCheckInCard() {
                       style={{ background: '#C4A060', opacity: 0.85 }}
                     />
                     <span
-                      className="shrink-0 font-semibold uppercase tracking-[0.18em]"
+                      className="shrink-0 font-semibold uppercase tracking-[0.22em]"
                       style={{ color: '#C4A060', fontSize: '16px' }}
                     >
                       Flow
