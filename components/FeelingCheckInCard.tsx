@@ -2262,7 +2262,7 @@ export default function FeelingCheckInCard() {
               <div className="flex items-center gap-3">
                 <div className="h-px flex-1" style={{ background: '#C4A06020' }} />
                 <span
-                  className="block h-3 w-3 rotate-45 rounded-[2px]"
+                  className="block h-5 w-5 rotate-45 rounded-[3px]"
                   style={{ background: '#C4A060', opacity: 0.85 }}
                 />
                 <div className="h-px flex-1" style={{ background: '#C4A06020' }} />
