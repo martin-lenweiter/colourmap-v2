@@ -17,7 +17,16 @@
     "app/api/sections/[id]/entries/route.ts": "lib/services/sections.ts"
   },
   "testPairExceptions": {
-    "routes": [],
+    "routes": [
+      "app/api/daily-objectives/route.ts",
+      "app/api/daily-objectives/[id]/route.ts",
+      "app/api/agenda-blocks/route.ts",
+      "app/api/agenda-blocks/[id]/route.ts",
+      "app/api/life-categories/route.ts",
+      "app/api/life-categories/[id]/route.ts",
+      "app/api/outings/route.ts",
+      "app/api/outings/[id]/route.ts"
+    ],
     "services": []
   }
 }

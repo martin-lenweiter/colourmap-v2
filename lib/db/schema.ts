@@ -105,6 +105,56 @@ export const notebookEntries = pgTable('notebook_entries', {
   updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow().notNull(),
 });
 
+// ─── Daily objectives (today + push for tomorrow) ───
+export const dailyObjectives = pgTable('daily_objectives', {
+  id: uuid('id').defaultRandom().primaryKey(),
+  userId: uuid('user_id').notNull(),
+  text: text('text').notNull(),
+  done: boolean('done').notNull().default(false),
+  list: text('list').notNull().default('today'), // 'today' | 'tomorrow'
+  notes: text('notes'),
+  position: integer('position').notNull().default(0),
+  createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+});
+
+// ─── Agenda blocks ───
+export const agendaBlocks = pgTable('agenda_blocks', {
+  id: uuid('id').defaultRandom().primaryKey(),
+  userId: uuid('user_id').notNull(),
+  text: text('text').notNull(),
+  date: date('date').notNull(),
+  startHour: integer('start_hour').notNull(),
+  duration: integer('duration_minutes').notNull().default(60), // in minutes
+  color: text('color').notNull().default('#C4A060'),
+  kind: text('kind').notNull().default('mission'), // 'mission' | 'emotion'
+  tagName: text('tag_name'),
+  tagColor: text('tag_color'),
+  tagCategoryId: text('tag_category_id'),
+  createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+});
+
+// ─── Life categories ───
+export const lifeCategories = pgTable('life_categories', {
+  id: uuid('id').defaultRandom().primaryKey(),
+  userId: uuid('user_id').notNull(),
+  name: text('name').notNull(),
+  color: text('color').notNull().default('#C4A060'),
+  compass: text('compass'), // 'caring' | 'doing' | 'sharing' | null
+  state: text('state'), // 'flowing' | 'stuck' | null
+  position: integer('position').notNull().default(0),
+  createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+});
+
+// ─── Outings / social life ───
+export const outings = pgTable('outings', {
+  id: uuid('id').defaultRandom().primaryKey(),
+  userId: uuid('user_id').notNull(),
+  text: text('text').notNull(),
+  date: date('date').notNull(),
+  color: text('color').notNull().default('#6B7F4E'),
+  createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+});
+
 export const dailyTrackerEntries = pgTable('daily_tracker_entries', {
   id: uuid('id').defaultRandom().primaryKey(),
   trackerId: uuid('tracker_id').notNull(),
