@@ -1057,6 +1057,70 @@ export default function FeelingCheckInCard() {
     }
   });
 
+  // Load check-in history from backend on mount
+  // biome-ignore lint/correctness/useExhaustiveDependencies: intentional mount-only load
+  useEffect(() => {
+    fetch('/api/check-ins')
+      .then((res) => {
+        if (res.ok) return res.json();
+        throw new Error();
+      })
+      .then(
+        (
+          data: {
+            id: string;
+            sliderValue: number;
+            note: string | null;
+            emotionName: string | null;
+            emotionColor: string | null;
+            challenge: string | null;
+            flow: string | null;
+            createdAt: string;
+          }[],
+        ) => {
+          if (!Array.isArray(data) || data.length === 0) return;
+          // Merge API data with localStorage — API is source of truth for persisted entries
+          const apiEntries = data.map((d) => ({
+            id: d.id,
+            time: new Date(d.createdAt).toLocaleTimeString([], {
+              hour: '2-digit',
+              minute: '2-digit',
+            }),
+            date: d.createdAt,
+            mind:
+              d.emotionName ||
+              HAWKINS[Math.round((d.sliderValue / 100) * (HAWKINS.length - 1))].level,
+            mindColor:
+              d.emotionColor ||
+              HAWKINS[Math.round((d.sliderValue / 100) * (HAWKINS.length - 1))].color,
+            hawkinsIdx: Math.round((d.sliderValue / 100) * (HAWKINS.length - 1)),
+            mode: '',
+            modeColor: '',
+            note: d.note || '',
+            objective: '',
+            emotions: [
+              ...(d.challenge
+                ? [{ time: '', text: d.challenge, mind: 'challenge', mindColor: '#D4805A' }]
+                : []),
+              ...(d.flow ? [{ time: '', text: d.flow, mind: 'flow', mindColor: '#6890B0' }] : []),
+            ],
+            facing: {},
+          }));
+          // Merge: keep local-only entries (no API id match) + all API entries
+          const apiIds = new Set(apiEntries.map((e) => e.id));
+          const localOnly = checkIns.filter((c) => !apiIds.has(c.id));
+          const merged = [...localOnly, ...apiEntries]
+            .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+            .slice(0, 100);
+          setCheckIns(merged);
+          localStorage.setItem('colourmap:check-ins', JSON.stringify(merged));
+        },
+      )
+      .catch(() => {
+        /* silent — use localStorage */
+      });
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
   /* ─── Completed objectives history (with snapshot of reflections) ─── */
   type DoneObjective = {
     id: string;
@@ -1154,28 +1218,38 @@ export default function FeelingCheckInCard() {
     setCheckIns(next);
     localStorage.setItem('colourmap:check-ins', JSON.stringify(next));
 
-    // Persist to backend
+    // Persist to backend (Supabase via API)
+    const challengeText = sessionEmotions
+      .filter((e) => e.mind === 'challenge')
+      .map((e) => e.text)
+      .join('\n')
+      .trim();
+    const flowText = sessionEmotions
+      .filter((e) => e.mind === 'flow')
+      .map((e) => e.text)
+      .join('\n')
+      .trim();
     fetch('/api/check-ins', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         sliderValue: Math.round((hawkinsIdx / (HAWKINS.length - 1)) * 100),
         note: note.trim() || null,
-        emotionLevel: currentMind.level,
+        emotionName: currentMind.level,
         emotionColor: currentMind.color,
-        challenge:
-          sessionEmotions
-            .filter((e) => e.mind === 'challenge')
-            .map((e) => e.text)
-            .join('\n') || null,
-        flow:
-          sessionEmotions
-            .filter((e) => e.mind === 'flow')
-            .map((e) => e.text)
-            .join('\n') || null,
+        challenge: challengeText || null,
+        flow: flowText || null,
+        facing:
+          Object.keys(trackerValues).length > 0
+            ? Object.fromEntries(
+                Object.entries(trackerValues)
+                  .filter(([, v]) => v.trim())
+                  .map(([k, v]) => [k, { label: k, answers: [v.trim()] }]),
+              )
+            : null,
       }),
     }).catch(() => {
-      /* silent — localStorage is the primary store */
+      /* silent — localStorage is fallback */
     });
 
     // Clear session — promote next objective if available
