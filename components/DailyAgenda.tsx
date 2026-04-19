@@ -193,6 +193,75 @@ export default function DailyAgenda() {
       const raw = localStorage.getItem(CATS_KEY);
       if (raw) setLifeCategories(JSON.parse(raw));
     } catch {}
+
+    // Load from backend
+    fetch('/api/agenda-blocks')
+      .then((r) => {
+        if (r.ok) return r.json();
+        throw new Error();
+      })
+      .then(
+        (
+          data: (AgendaBlock & {
+            tagName?: string;
+            tagColor?: string;
+            tagCategoryId?: string;
+            durationMinutes?: number;
+          })[],
+        ) => {
+          if (Array.isArray(data) && data.length > 0) {
+            const mapped: AgendaBlock[] = data.map((b) => ({
+              id: b.id,
+              text: b.text,
+              date: b.date,
+              startHour: b.startHour,
+              duration: b.durationMinutes
+                ? b.durationMinutes / 60
+                : typeof b.duration === 'number'
+                  ? b.duration
+                  : 1,
+              color: b.color,
+              kind: b.kind,
+              tag: b.tagName
+                ? {
+                    name: b.tagName,
+                    color: b.tagColor || '#C4A060',
+                    categoryId: b.tagCategoryId || undefined,
+                  }
+                : b.tag,
+            }));
+            setBlocks(mapped);
+            saveAgenda(mapped);
+          }
+        },
+      )
+      .catch(() => {});
+
+    fetch('/api/outings')
+      .then((r) => {
+        if (r.ok) return r.json();
+        throw new Error();
+      })
+      .then((data: Outing[]) => {
+        if (Array.isArray(data) && data.length > 0) {
+          setOutings(data);
+          saveOutings(data);
+        }
+      })
+      .catch(() => {});
+
+    fetch('/api/life-categories')
+      .then((r) => {
+        if (r.ok) return r.json();
+        throw new Error();
+      })
+      .then((data: LifeCategoryLike[]) => {
+        if (Array.isArray(data) && data.length > 0) {
+          setLifeCategories(data);
+          localStorage.setItem(CATS_KEY, JSON.stringify(data));
+        }
+      })
+      .catch(() => {});
   }, []);
 
   const toggleOpen = () => {
@@ -223,12 +292,28 @@ export default function DailyAgenda() {
     setNewText('');
     setBlockTag(null);
     setAddingAt(null);
+    fetch('/api/agenda-blocks', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        text: block.text,
+        date: block.date,
+        startHour: block.startHour,
+        durationMinutes: Math.round(block.duration * 60),
+        color: block.color,
+        kind: block.kind,
+        tagName: block.tag?.name,
+        tagColor: block.tag?.color,
+        tagCategoryId: block.tag?.categoryId,
+      }),
+    }).catch(() => {});
   };
 
   const removeBlock = (id: string) => {
     const next = blocks.filter((b) => b.id !== id);
     setBlocks(next);
     saveAgenda(next);
+    fetch(`/api/agenda-blocks/${id}`, { method: 'DELETE' }).catch(() => {});
   };
 
   const importObjective = (text: string) => {
@@ -260,11 +345,16 @@ export default function DailyAgenda() {
   };
 
   const resizeBlock = (id: string, delta: number) => {
-    const next = blocks.map((b) =>
-      b.id === id ? { ...b, duration: Math.max(0.5, b.duration + delta) } : b,
-    );
+    const block = blocks.find((b) => b.id === id);
+    const newDuration = Math.max(0.5, (block?.duration || 1) + delta);
+    const next = blocks.map((b) => (b.id === id ? { ...b, duration: newDuration } : b));
     setBlocks(next);
     saveAgenda(next);
+    fetch(`/api/agenda-blocks/${id}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ duration: Math.round(newDuration * 60) }),
+    }).catch(() => {});
   };
 
   const moveBlock = (id: string, toHour: number) => {
@@ -273,6 +363,11 @@ export default function DailyAgenda() {
       .sort((a, b) => a.startHour - b.startHour);
     setBlocks(next);
     saveAgenda(next);
+    fetch(`/api/agenda-blocks/${id}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ startHour: toHour }),
+    }).catch(() => {});
   };
 
   const addOuting = () => {
@@ -288,12 +383,18 @@ export default function DailyAgenda() {
     setOutings(next);
     saveOutings(next);
     setOutingInput('');
+    fetch('/api/outings', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ text: entry.text, date: entry.date, color: entry.color }),
+    }).catch(() => {});
   };
 
   const removeOuting = (id: string) => {
     const next = outings.filter((o) => o.id !== id);
     setOutings(next);
     saveOutings(next);
+    fetch(`/api/outings/${id}`, { method: 'DELETE' }).catch(() => {});
   };
 
   const dayBlocks = blocks.filter((b) => b.date === selectedDate || !b.date);

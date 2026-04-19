@@ -790,14 +790,27 @@ export default function FeelingCheckInCard() {
   const addTodayObjective = () => {
     const text = todayInput.trim();
     if (!text) return;
-    persistTodayObjectives([...todayObjectives, { id: crypto.randomUUID(), text, done: false }]);
+    const newItem = { id: crypto.randomUUID(), text, done: false };
+    persistTodayObjectives([...todayObjectives, newItem]);
     setTodayInput('');
+    fetch('/api/daily-objectives', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ text, list: 'today' }),
+    }).catch(() => {});
   };
   const toggleTodayObjective = (id: string) => {
+    const item = todayObjectives.find((t) => t.id === id);
     persistTodayObjectives(todayObjectives.map((t) => (t.id === id ? { ...t, done: !t.done } : t)));
+    fetch(`/api/daily-objectives/${id}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ done: item ? !item.done : true }),
+    }).catch(() => {});
   };
   const removeTodayObjective = (id: string) => {
     persistTodayObjectives(todayObjectives.filter((t) => t.id !== id));
+    fetch(`/api/daily-objectives/${id}`, { method: 'DELETE' }).catch(() => {});
   };
   const reorderTodayObjectives = (fromIdx: number, toIdx: number) => {
     if (fromIdx === toIdx || fromIdx < 0 || toIdx < 0) return;
@@ -849,12 +862,24 @@ export default function FeelingCheckInCard() {
     if (!text) return;
     persistTodos([...todos, { id: crypto.randomUUID(), text, done: false }]);
     setTodoInput('');
+    fetch('/api/daily-objectives', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ text, list: 'tomorrow' }),
+    }).catch(() => {});
   };
   const toggleTodo = (id: string) => {
+    const item = todos.find((t) => t.id === id);
     persistTodos(todos.map((t) => (t.id === id ? { ...t, done: !t.done } : t)));
+    fetch(`/api/daily-objectives/${id}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ done: item ? !item.done : true }),
+    }).catch(() => {});
   };
   const removeTodo = (id: string) => {
     persistTodos(todos.filter((t) => t.id !== id));
+    fetch(`/api/daily-objectives/${id}`, { method: 'DELETE' }).catch(() => {});
   };
   const reorderTodos = (fromIdx: number, toIdx: number) => {
     if (fromIdx === toIdx || fromIdx < 0 || toIdx < 0) return;
@@ -1120,6 +1145,34 @@ export default function FeelingCheckInCard() {
         /* silent — use localStorage */
       });
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Load daily objectives from backend on mount
+  // biome-ignore lint/correctness/useExhaustiveDependencies: mount-only
+  useEffect(() => {
+    fetch('/api/daily-objectives')
+      .then((r) => {
+        if (r.ok) return r.json();
+        throw new Error();
+      })
+      .then((data: { id: string; text: string; done: boolean; list: string; notes?: string }[]) => {
+        if (!Array.isArray(data) || data.length === 0) return;
+        const today = data
+          .filter((d) => d.list === 'today')
+          .map((d) => ({ id: d.id, text: d.text, done: d.done, notes: d.notes }));
+        const tomorrow = data
+          .filter((d) => d.list === 'tomorrow')
+          .map((d) => ({ id: d.id, text: d.text, done: d.done }));
+        if (today.length > 0) {
+          setTodayObjectives(today);
+          localStorage.setItem('colourmap:today-objectives', JSON.stringify(today));
+        }
+        if (tomorrow.length > 0) {
+          setTodos(tomorrow);
+          localStorage.setItem('colourmap:checkin-todos', JSON.stringify(tomorrow));
+        }
+      })
+      .catch(() => {});
+  }, []);
 
   /* ─── Completed objectives history (with snapshot of reflections) ─── */
   type DoneObjective = {

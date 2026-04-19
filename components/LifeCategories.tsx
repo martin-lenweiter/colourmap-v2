@@ -253,6 +253,20 @@ export default function LifeCategories() {
     }
     setCellPositions(ls<Record<string, { x: number; y: number }>>(POS_KEY, {}));
     setRiverSnapshots(ls<RiverSnapshot[]>(RIVER_KEY, []));
+
+    // Load categories from backend
+    fetch('/api/life-categories')
+      .then((r) => {
+        if (r.ok) return r.json();
+        throw new Error();
+      })
+      .then((data: LifeCategory[]) => {
+        if (Array.isArray(data) && data.length > 0) {
+          setCategories(data);
+          ss(CATS_KEY, data);
+        }
+      })
+      .catch(() => {});
   }, []);
 
   const cycleView = useCallback(() => {
@@ -401,6 +415,11 @@ export default function LifeCategories() {
     setNewName('');
     setShowAdd(false);
     setExpandedId(cat.id);
+    fetch('/api/life-categories', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name: cat.name, color: cat.color }),
+    }).catch(() => {});
   }, [newName, categories]);
 
   const cycleCategoryState = useCallback(
@@ -414,6 +433,14 @@ export default function LifeCategories() {
       });
       setCategories(next);
       ss(CATS_KEY, next);
+      const updated = next.find((c) => c.id === id);
+      if (updated) {
+        fetch(`/api/life-categories/${id}`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ state: updated.state || null }),
+        }).catch(() => {});
+      }
     },
     [categories],
   );
@@ -423,6 +450,7 @@ export default function LifeCategories() {
       const next = categories.filter((c) => c.id !== id);
       setCategories(next);
       ss(CATS_KEY, next);
+      fetch(`/api/life-categories/${id}`, { method: 'DELETE' }).catch(() => {});
       setTargets((prev) => {
         const cleaned = prev.filter((t) => t.categoryId !== id);
         ss(TARGETS_KEY, cleaned);
