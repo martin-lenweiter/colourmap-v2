@@ -22,16 +22,78 @@ const MIND = [
        from contraction (Shame) toward expansion (Peace). Colours stay on the cool→warm→
        light arc so the visual still reads as a journey from stuck to free. */
 const HAWKINS = [
-  { level: 'Shame', color: '#B8D0E8', hawkins: 20 },
-  { level: 'Apathy', color: '#D8B0C8', hawkins: 50 },
-  { level: 'Grief', color: '#E8A0C4', hawkins: 75 },
-  { level: 'Fear', color: '#F080B8', hawkins: 100 },
-  { level: 'Anger', color: '#F0A088', hawkins: 150 },
-  { level: 'Courage', color: '#F8C040', hawkins: 200 },
-  { level: 'Acceptance', color: '#F0E060', hawkins: 350 },
-  { level: 'Reason', color: '#A8E090', hawkins: 400 },
-  { level: 'Love', color: '#88D8B0', hawkins: 500 },
-  { level: 'Peace', color: '#88C8E8', hawkins: 600 },
+  {
+    level: 'Shame',
+    color: '#B8D0E8',
+    hawkins: 20,
+    desc: 'You feel fundamentally flawed. Separate what you did from who you are. One act of self-compassion.',
+    evolve: 'Move toward Apathy by simply acknowledging "I exist and that is enough."',
+  },
+  {
+    level: 'Apathy',
+    color: '#D8B0C8',
+    hawkins: 50,
+    desc: 'Nothing matters. You have given up. The world feels grey.',
+    evolve: 'Move toward Grief by letting yourself care about one small thing again.',
+  },
+  {
+    level: 'Grief',
+    color: '#E8A0C4',
+    hawkins: 75,
+    desc: 'The weight of loss. You feel the absence of something important.',
+    evolve: 'Move toward Fear by letting the sadness flow through rather than holding it.',
+  },
+  {
+    level: 'Fear',
+    color: '#F080B8',
+    hawkins: 100,
+    desc: 'The world feels threatening. You anticipate danger.',
+    evolve: 'Move toward Anger by asking "what crossed my line?" — fear becomes fuel.',
+  },
+  {
+    level: 'Anger',
+    color: '#F0A088',
+    hawkins: 150,
+    desc: 'Raw energy from crossed boundaries. Information about what matters.',
+    evolve: 'Move toward Courage by channeling the energy into one constructive action.',
+  },
+  {
+    level: 'Courage',
+    color: '#F8C040',
+    hawkins: 200,
+    desc: 'The first level of real power. You face what you have been avoiding.',
+    evolve: 'Move toward Acceptance by dropping the need to fight and letting things be.',
+  },
+  {
+    level: 'Acceptance',
+    color: '#F0E060',
+    hawkins: 350,
+    desc: 'You stopped fighting reality. You work with what is.',
+    evolve: 'Move toward Reason by using your clarity to understand patterns and systems.',
+  },
+  {
+    level: 'Reason',
+    color: '#A8E090',
+    hawkins: 400,
+    desc: 'Clear intellect. You see how things connect. Logic is strong.',
+    evolve:
+      'Move toward Love by balancing thinking with feeling — the heart knows things the mind cannot.',
+  },
+  {
+    level: 'Love',
+    color: '#88D8B0',
+    hawkins: 500,
+    desc: 'Unconditional warmth. Not attachment — genuine care without conditions.',
+    evolve:
+      'Move toward Peace by extending this love to yourself and releasing all remaining effort.',
+  },
+  {
+    level: 'Peace',
+    color: '#88C8E8',
+    hawkins: 600,
+    desc: 'Complete stillness. Pure awareness. You are the silence.',
+    evolve: 'You are here. Protect this. Return through breath whenever the world pulls you.',
+  },
 ];
 
 /* ─── ENGAGEMENT spectrum — how IN the mission am I? ─── */
@@ -413,6 +475,7 @@ export default function FeelingCheckInCard() {
     });
   };
   const [sliderVisible, setSliderVisible] = useState(true);
+  const [showHawkinsDesc, setShowHawkinsDesc] = useState(false);
   const [logbookSectionOpen, setLogbookSectionOpen] = useState(() => {
     try {
       return localStorage.getItem('colourmap:logbook-section-open') !== 'false';
@@ -887,6 +950,11 @@ export default function FeelingCheckInCard() {
     { id: string; name: string; color: string }[]
   >([]);
   const [showCategoryPicker, setShowCategoryPicker] = useState(false);
+  const [objectiveTag, setObjectiveTag] = useState<{
+    name: string;
+    color: string;
+    categoryId?: string;
+  } | null>(null);
   const [justTagged, setJustTagged] = useState<string | null>(null);
   useEffect(() => {
     try {
@@ -1448,51 +1516,68 @@ export default function FeelingCheckInCard() {
             </div>
           )}
 
-          {/* Variant 3: Rings — concentric Hawkins-style rings */}
+          {/* Variant 3: Rings — continuous rainbow concentric arcs */}
           {variantIdx === 3 && (
-            <div className="relative" style={{ width: 300, height: 95 }}>
-              <svg width="300" height="95" viewBox="0 0 300 95">
+            <div className="relative" style={{ width: 300, height: 100 }}>
+              <svg width="300" height="100" viewBox="0 0 300 100">
+                <defs>
+                  {BALANCE.map((b, i) => {
+                    const next = BALANCE[Math.min(i + 1, BALANCE.length - 1)];
+                    return (
+                      <linearGradient
+                        key={`rg-${i}`}
+                        id={`ring-grad-${i}`}
+                        x1="0"
+                        y1="0"
+                        x2="1"
+                        y2="0"
+                      >
+                        <stop offset="0%" stopColor={b.color} />
+                        <stop offset="100%" stopColor={next.color} />
+                      </linearGradient>
+                    );
+                  })}
+                </defs>
                 {(() => {
                   const cx = 150;
-                  const cy = 95;
-                  const radii = [14, 24, 34, 44, 54, 64, 74];
+                  const cy = 100;
+                  const minR = 12;
+                  const maxR = 88;
+                  const n = BALANCE.length;
+                  const step = (maxR - minR) / (n - 1);
                   return BALANCE.map((b, i) => {
+                    const r = minR + i * step;
                     const selected = balanceIdx === i;
+                    const dist = Math.abs(i - balanceIdx);
                     return (
                       <g key={b.label}>
-                        {/* Hitbox — wider transparent stroke */}
-                        <circle
-                          cx={cx}
-                          cy={cy}
-                          r={radii[i]}
+                        <path
+                          d={`M ${cx - r} ${cy} A ${r} ${r} 0 0 1 ${cx + r} ${cy}`}
                           fill="none"
                           stroke="transparent"
-                          strokeWidth={10}
+                          strokeWidth={12}
                           style={{ cursor: 'pointer' }}
                           onClick={() => setBalanceIdx(i)}
                         />
-                        {/* Visual stroke */}
-                        <circle
-                          cx={cx}
-                          cy={cy}
-                          r={radii[i]}
+                        <path
+                          d={`M ${cx - r} ${cy} A ${r} ${r} 0 0 1 ${cx + r} ${cy}`}
                           fill="none"
-                          stroke={b.color}
-                          strokeWidth={selected ? 6 : 3}
-                          opacity={selected ? 1 : 0.3}
-                          style={{ pointerEvents: 'none', transition: 'all 200ms' }}
+                          stroke={`url(#ring-grad-${i})`}
+                          strokeWidth={selected ? 5 : 2.5}
+                          strokeLinecap="round"
+                          opacity={selected ? 1 : dist === 1 ? 0.5 : 0.2}
+                          style={{ pointerEvents: 'none', transition: 'all 250ms' }}
                         />
                       </g>
                     );
                   });
                 })()}
-                {/* Center dot — current colour */}
                 <circle
                   cx={150}
-                  cy={95}
-                  r={6}
+                  cy={100}
+                  r={5}
                   fill={BALANCE[balanceIdx].color}
-                  style={{ pointerEvents: 'none' }}
+                  style={{ pointerEvents: 'none', transition: 'fill 250ms' }}
                 />
               </svg>
             </div>
@@ -1788,19 +1873,19 @@ export default function FeelingCheckInCard() {
                 }}
               />
               <div className="absolute right-0 top-1/2 flex -translate-y-1/2 items-center gap-1.5">
-                {lifeCategories.length > 0 && objective.trim().length > 0 && (
-                  <button
-                    type="button"
-                    onClick={() => setShowCategoryPicker(!showCategoryPicker)}
-                    className="shrink-0 cursor-pointer rounded-md px-2 py-0.5 text-[11px] uppercase tracking-wider transition-all"
-                    style={{
-                      color: showCategoryPicker ? '#C4A060' : '#C4A06060',
-                      background: showCategoryPicker ? '#C4A06010' : 'transparent',
-                      border: `1px solid ${showCategoryPicker ? '#C4A06030' : 'transparent'}`,
+                {objective.trim().length > 0 && (
+                  <CategoryTagPicker
+                    value={objectiveTag}
+                    onChange={(v) => {
+                      setObjectiveTag(v);
+                      if (v?.categoryId) tagObjectiveToCategory(v.categoryId);
                     }}
-                  >
-                    {justTagged ? '✓ tagged' : 'tag'}
-                  </button>
+                    open={showCategoryPicker}
+                    onToggle={() => setShowCategoryPicker(!showCategoryPicker)}
+                    onClose={() => setShowCategoryPicker(false)}
+                    lifeCategories={lifeCategories}
+                    compassAxes={COMPASS_AXES}
+                  />
                 )}
                 {objective.trim().length > 0 && (
                   <button
@@ -1819,45 +1904,6 @@ export default function FeelingCheckInCard() {
                   </button>
                 )}
               </div>
-              {showCategoryPicker && lifeCategories.length > 0 && (
-                <div
-                  className="absolute right-0 top-full z-50 mt-1 animate-in fade-in duration-150 overflow-hidden rounded-xl"
-                  style={{
-                    background: '#F5ECDC',
-                    border: '1px solid #8A6A4A40',
-                    boxShadow: '0 8px 24px rgba(92,48,24,0.18)',
-                    minWidth: 180,
-                  }}
-                >
-                  {lifeCategories.map((cat) => (
-                    <button
-                      key={cat.id}
-                      type="button"
-                      onClick={() => tagObjectiveToCategory(cat.id)}
-                      className="flex w-full cursor-pointer items-center gap-2.5 px-3 py-2 text-left transition-all hover:bg-muted/30"
-                      style={{ border: 'none', background: 'transparent' }}
-                    >
-                      <div
-                        style={{
-                          width: 8,
-                          height: 8,
-                          borderRadius: '50%',
-                          background: cat.color,
-                        }}
-                      />
-                      <span
-                        style={{
-                          fontFamily: 'var(--font-serif)',
-                          fontSize: '14px',
-                          color: '#7a5438',
-                        }}
-                      >
-                        {cat.name}
-                      </span>
-                    </button>
-                  ))}
-                </div>
-              )}
             </div>
           </div>
 
@@ -2643,8 +2689,53 @@ export default function FeelingCheckInCard() {
                       opacity: 1,
                     }}
                   >
-                    {HAWKINS[hawkinsIdx].level}
+                    <button
+                      type="button"
+                      onClick={() => setShowHawkinsDesc((s) => !s)}
+                      className="cursor-pointer transition-all hover:opacity-80"
+                      style={{
+                        background: 'none',
+                        border: 'none',
+                        padding: 0,
+                        color: 'inherit',
+                        font: 'inherit',
+                        fontWeight: 'inherit',
+                        letterSpacing: 'inherit',
+                      }}
+                    >
+                      {HAWKINS[hawkinsIdx].level}
+                    </button>
                   </p>
+                  {showHawkinsDesc && (
+                    <div className="animate-in fade-in duration-200 space-y-2 px-4 pt-1 pb-2">
+                      <p
+                        style={{
+                          fontFamily: 'var(--font-serif)',
+                          fontSize: '14px',
+                          color: '#5C3018',
+                          lineHeight: 1.5,
+                          opacity: 0.85,
+                        }}
+                      >
+                        {HAWKINS[hawkinsIdx].desc}
+                      </p>
+                      <p
+                        className="italic"
+                        style={{
+                          fontFamily: 'var(--font-serif)',
+                          fontSize: '13px',
+                          color:
+                            HAWKINS[hawkinsIdx].color === '#F0E060'
+                              ? '#B8860B'
+                              : HAWKINS[hawkinsIdx].color,
+                          lineHeight: 1.4,
+                          opacity: 0.75,
+                        }}
+                      >
+                        {HAWKINS[hawkinsIdx].evolve}
+                      </p>
+                    </div>
+                  )}
                 </div>
               )}
 
