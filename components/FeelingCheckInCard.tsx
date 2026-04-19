@@ -1852,9 +1852,20 @@ export default function FeelingCheckInCard() {
           boxShadow: '0 24px 50px -34px rgba(92,48,24,0.35)',
         }}
       >
-        {/* ── CURRENT OBJECTIVE ── all in one pillbox */}
+        {/* ── CURRENT OBJECTIVE ── drop zone for cross-list drag */}
         <div
-          className="space-y-2 rounded-2xl border px-4 py-3"
+          className="space-y-2 rounded-2xl border px-4 py-3 transition-all"
+          onDragOver={(e) => {
+            e.preventDefault();
+            e.dataTransfer.dropEffect = 'move';
+          }}
+          onDrop={(e) => {
+            e.preventDefault();
+            try {
+              const data = JSON.parse(e.dataTransfer.getData('text/plain'));
+              if (data.from && data.text) moveToCurrent(data.text, data.from, data.id);
+            } catch {}
+          }}
           style={{
             borderColor: '#C4A06030',
             background: 'rgba(245,236,220,0.45)',
@@ -2041,8 +2052,21 @@ export default function FeelingCheckInCard() {
 
           {otherMissionsOpen && (
             <>
-              {/* Daily Objectives */}
-              <div className="space-y-1.5">
+              {/* Daily Objectives — drop zone */}
+              <div
+                className="space-y-1.5 transition-all"
+                onDragOver={(e) => {
+                  e.preventDefault();
+                  e.dataTransfer.dropEffect = 'move';
+                }}
+                onDrop={(e) => {
+                  e.preventDefault();
+                  try {
+                    const data = JSON.parse(e.dataTransfer.getData('text/plain'));
+                    if (data.from === 'push' && data.text) moveToDaily(data.text, 'push', data.id);
+                  } catch {}
+                }}
+              >
                 <button
                   type="button"
                   onClick={() => setDailyObjOpen((s) => !s)}
@@ -2105,7 +2129,13 @@ export default function FeelingCheckInCard() {
                             key={o.id}
                             className="space-y-1"
                             draggable
-                            onDragStart={() => setDraggedTodayIdx(idx)}
+                            onDragStart={(e) => {
+                              setDraggedTodayIdx(idx);
+                              e.dataTransfer.setData(
+                                'text/plain',
+                                JSON.stringify({ from: 'daily', id: o.id, text: o.text }),
+                              );
+                            }}
                             onDragOver={(e) => {
                               e.preventDefault();
                               if (draggedTodayIdx !== null && draggedTodayIdx !== idx) {
@@ -2268,8 +2298,21 @@ export default function FeelingCheckInCard() {
                 <div className="h-px flex-1" style={{ background: '#C4A06020' }} />
               </div>
 
-              {/* Push for tomorrow */}
-              <div className="space-y-1.5">
+              {/* Push for tomorrow — drop zone */}
+              <div
+                className="space-y-1.5 transition-all"
+                onDragOver={(e) => {
+                  e.preventDefault();
+                  e.dataTransfer.dropEffect = 'move';
+                }}
+                onDrop={(e) => {
+                  e.preventDefault();
+                  try {
+                    const data = JSON.parse(e.dataTransfer.getData('text/plain'));
+                    if (data.from === 'daily' && data.text) moveToPush(data.text, 'daily', data.id);
+                  } catch {}
+                }}
+              >
                 <button
                   type="button"
                   onClick={() => setPushTomorrowOpen((s) => !s)}
@@ -2331,7 +2374,13 @@ export default function FeelingCheckInCard() {
                             key={t.id}
                             className="group flex items-center gap-2"
                             draggable
-                            onDragStart={() => setDraggedTodoIdx(idx)}
+                            onDragStart={(e) => {
+                              setDraggedTodoIdx(idx);
+                              e.dataTransfer.setData(
+                                'text/plain',
+                                JSON.stringify({ from: 'push', id: t.id, text: t.text }),
+                              );
+                            }}
                             onDragOver={(e) => {
                               e.preventDefault();
                               if (draggedTodoIdx !== null && draggedTodoIdx !== idx) {
