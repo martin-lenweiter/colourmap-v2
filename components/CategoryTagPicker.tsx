@@ -103,7 +103,7 @@ export default function CategoryTagPicker({
         className="flex cursor-pointer items-center gap-1 rounded-md px-1.5 py-1 transition-all"
         style={{
           background: value ? `${value.color}15` : 'transparent',
-          border: value ? `1px solid ${value.color}60` : '1px dashed #8A6A4A40',
+          border: value ? `1px solid ${value.color}60` : '1px dashed #8A6A4A60',
         }}
       >
         {value ? (
@@ -135,17 +135,17 @@ export default function CategoryTagPicker({
             </span>
           </>
         ) : (
-          <div className="flex items-center gap-1">
+          <div className="flex items-center gap-1.5">
             {COMPASSES.map((c) => (
               <span
                 key={c.id}
                 style={{
                   display: 'block',
-                  width: 7,
-                  height: 7,
+                  width: 9,
+                  height: 9,
                   borderRadius: '50%',
                   background: c.color,
-                  opacity: 0.6,
+                  opacity: 0.8,
                 }}
               />
             ))}
