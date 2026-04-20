@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import AgendaRoadView from '@/components/AgendaRoadView';
 import type { CompassAxis, LifeCategoryLike, TagValue } from '@/components/CategoryTagPicker';
 import CategoryTagPicker from '@/components/CategoryTagPicker';
 
@@ -168,6 +169,7 @@ export default function DailyAgenda() {
   const [showMission, setShowMission] = useState(true);
   const [showEmotion, setShowEmotion] = useState(true);
   const [showSocial, setShowSocial] = useState(false);
+  const [roadView, setRoadView] = useState(false);
   const [blocks, setBlocks] = useState<AgendaBlock[]>([]);
   const [outings, setOutings] = useState<Outing[]>([]);
   const [outingInput, setOutingInput] = useState('');
@@ -480,63 +482,7 @@ export default function DailyAgenda() {
 
       {open && (
         <div className="space-y-3">
-          {/* View tabs: day / week / month */}
-          <div className="flex items-center justify-center gap-2">
-            <button
-              type="button"
-              onClick={() => setSelectedDate(shiftDate(selectedDate, agendaView, -1))}
-              style={{
-                background: 'none',
-                border: 'none',
-                cursor: 'pointer',
-                color: '#8A6A4A',
-                fontSize: '16px',
-                opacity: 0.5,
-              }}
-            >
-              ‹
-            </button>
-            <span
-              style={{
-                fontFamily: 'var(--font-serif)',
-                fontSize: '14px',
-                fontWeight: 600,
-                color: '#5C3018',
-                minWidth: 100,
-                textAlign: 'center',
-              }}
-            >
-              {agendaView === 'day'
-                ? selectedDate === todayStr()
-                  ? dateLabel(selectedDate)
-                  : selectedDate === shiftDate(todayStr(), 'day', -1)
-                    ? dateLabel(selectedDate)
-                    : selectedDate === shiftDate(todayStr(), 'day', 1)
-                      ? `Tomorrow — ${dateLabel(selectedDate)}`
-                      : dateLabel(selectedDate)
-                : agendaView === 'week'
-                  ? `Week of ${dateLabel(weekDates(selectedDate)[0])}`
-                  : new Date(`${selectedDate}T12:00:00`).toLocaleString('default', {
-                      month: 'long',
-                      year: 'numeric',
-                    })}
-            </span>
-            <button
-              type="button"
-              onClick={() => setSelectedDate(shiftDate(selectedDate, agendaView, 1))}
-              style={{
-                background: 'none',
-                border: 'none',
-                cursor: 'pointer',
-                color: '#8A6A4A',
-                fontSize: '16px',
-                opacity: 0.5,
-              }}
-            >
-              ›
-            </button>
-          </div>
-          {/* View + Layer pills on one row */}
+          {/* Row 1: day/week/month left — mission/emotion/social right */}
           <div className="flex items-center justify-between">
             <div className="flex gap-1.5">
               {(['day', 'week', 'month'] as const).map((v) => (
@@ -556,37 +502,61 @@ export default function DailyAgenda() {
                 </button>
               ))}
             </div>
-            {/* Daily Objectives losange — right side */}
-            {objectives.filter((o) => !o.done).length > 0 && (
-              <button
-                type="button"
-                onClick={() => setShowObjectives((s) => !s)}
-                className="flex cursor-pointer items-center gap-1.5 transition-all"
-                style={{ background: 'none', border: 'none' }}
-                title="Daily Objectives"
-              >
-                <span
-                  className="rotate-45 rounded-[2px] block"
+            {/* Layer dots — compact */}
+            <div className="flex gap-1.5">
+              {(
+                [
+                  {
+                    key: 'mission',
+                    color: '#6890B0',
+                    active: showMission,
+                    toggle: () => setShowMission((s: boolean) => !s),
+                  },
+                  {
+                    key: 'emotion',
+                    color: '#9B6BA0',
+                    active: showEmotion,
+                    toggle: () => setShowEmotion((s: boolean) => !s),
+                  },
+                  {
+                    key: 'social',
+                    color: '#6B7F4E',
+                    active: showSocial,
+                    toggle: () => setShowSocial((s: boolean) => !s),
+                  },
+                ] as const
+              ).map((l) => (
+                <button
+                  key={l.key}
+                  type="button"
+                  onClick={l.toggle}
+                  className="cursor-pointer rounded-full transition-all"
                   style={{
                     width: 10,
                     height: 10,
-                    background: '#C4A060',
-                    opacity: showObjectives ? 1 : 0.5,
+                    background: l.color,
+                    opacity: l.active ? 1 : 0.25,
+                    border: 'none',
                   }}
+                  title={l.key}
                 />
-                <span
-                  style={{
-                    fontFamily: 'var(--font-serif)',
-                    fontSize: '11px',
-                    fontWeight: 600,
-                    color: '#C4A060',
-                    opacity: showObjectives ? 1 : 0.5,
-                  }}
-                >
-                  {objectives.filter((o) => !o.done).length}
-                </span>
-              </button>
-            )}
+              ))}
+              {/* Road view toggle */}
+              <button
+                type="button"
+                onClick={() => setRoadView((s) => !s)}
+                className="cursor-pointer rounded-[3px] transition-all"
+                style={{
+                  width: 10,
+                  height: 10,
+                  background: '#C4A060',
+                  opacity: roadView ? 1 : 0.25,
+                  border: 'none',
+                  transform: 'rotate(45deg)',
+                }}
+                title="Road view"
+              />
+            </div>
           </div>
 
           {/* Daily Objectives expanded */}
@@ -660,56 +630,102 @@ export default function DailyAgenda() {
             </div>
           )}
 
-          {/* Layer toggles */}
-          <div className="flex justify-center gap-1.5">
-            <button
-              type="button"
-              onClick={() => setShowMission((s) => !s)}
-              className="cursor-pointer rounded-full px-3 py-1 text-[10px] font-semibold uppercase tracking-wider transition-all"
-              style={{
-                color: '#6890B0',
-                border: `1px solid ${showMission ? '#6890B040' : '#C4A06018'}`,
-                background: showMission ? '#6890B010' : 'transparent',
-                opacity: showMission ? 1 : 0.5,
-              }}
-            >
-              mission
-            </button>
-            <button
-              type="button"
-              onClick={() => setShowEmotion((s) => !s)}
-              className="cursor-pointer rounded-full px-3 py-1 text-[10px] font-semibold uppercase tracking-wider transition-all"
-              style={{
-                color: '#9B6BA0',
-                border: `1px solid ${showEmotion ? '#9B6BA040' : '#C4A06018'}`,
-                background: showEmotion ? '#9B6BA010' : 'transparent',
-                opacity: showEmotion ? 1 : 0.5,
-              }}
-            >
-              emotion
-            </button>
-            <button
-              type="button"
-              onClick={() => setShowSocial((s) => !s)}
-              className="cursor-pointer rounded-full px-3 py-1 text-[10px] font-semibold uppercase tracking-wider transition-all"
-              style={{
-                color: '#6B7F4E',
-                border: `1px solid ${showSocial ? '#6B7F4E40' : '#C4A06018'}`,
-                background: showSocial ? '#6B7F4E10' : 'transparent',
-                opacity: showSocial ? 1 : 0.5,
-              }}
-            >
-              social
-            </button>
+          {/* Row 2: ‹ date › left — objectives losange right */}
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-1">
+              <button
+                type="button"
+                onClick={() => setSelectedDate(shiftDate(selectedDate, agendaView, -1))}
+                className="cursor-pointer"
+                style={{
+                  background: 'none',
+                  border: 'none',
+                  color: '#7A5438',
+                  fontSize: '14px',
+                  opacity: 0.5,
+                }}
+              >
+                ‹
+              </button>
+              <span
+                style={{
+                  fontFamily: 'var(--font-serif)',
+                  fontSize: '13px',
+                  fontWeight: 600,
+                  color: '#7A5438',
+                }}
+              >
+                {agendaView === 'day'
+                  ? dateLabel(selectedDate)
+                  : agendaView === 'week'
+                    ? `Week of ${dateLabel(weekDates(selectedDate)[0])}`
+                    : new Date(`${selectedDate}T12:00:00`).toLocaleString('default', {
+                        month: 'long',
+                        year: 'numeric',
+                      })}
+              </span>
+              <button
+                type="button"
+                onClick={() => setSelectedDate(shiftDate(selectedDate, agendaView, 1))}
+                className="cursor-pointer"
+                style={{
+                  background: 'none',
+                  border: 'none',
+                  color: '#7A5438',
+                  fontSize: '14px',
+                  opacity: 0.5,
+                }}
+              >
+                ›
+              </button>
+            </div>
+            {/* Daily Objectives losange */}
+            {objectives.filter((o) => !o.done).length > 0 && (
+              <button
+                type="button"
+                onClick={() => setShowObjectives((s) => !s)}
+                className="flex cursor-pointer items-center gap-1.5 transition-all"
+                style={{ background: 'none', border: 'none' }}
+                title="Daily Objectives"
+              >
+                <span
+                  className="rotate-45 rounded-[2px] block"
+                  style={{
+                    width: 10,
+                    height: 10,
+                    background: '#C4A060',
+                    opacity: showObjectives ? 1 : 0.5,
+                  }}
+                />
+                <span
+                  style={{
+                    fontFamily: 'var(--font-serif)',
+                    fontSize: '11px',
+                    fontWeight: 600,
+                    color: '#C4A060',
+                    opacity: showObjectives ? 1 : 0.5,
+                  }}
+                >
+                  {objectives.filter((o) => !o.done).length}
+                </span>
+              </button>
+            )}
           </div>
 
-          {/* Day view — full timeline */}
+          {/* Day view — full timeline or road view */}
           {agendaView === 'day' &&
             (() => {
               const filtered = dayBlocks.filter(
                 (b) =>
                   (showMission && b.kind === 'mission') || (showEmotion && b.kind === 'emotion'),
               );
+              if (roadView) {
+                return (
+                  <div className="flex justify-center">
+                    <AgendaRoadView blocks={filtered} wakeHour={wakeHour} />
+                  </div>
+                );
+              }
               return (
                 <VerticalView
                   blocks={filtered}
