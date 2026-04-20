@@ -459,6 +459,7 @@ export default function NotebookPage() {
   const [showAddNotebook, setShowAddNotebook] = useState(false);
   const [newNbName, setNewNbName] = useState('');
   const [newNbColor, setNewNbColor] = useState('#C4A060');
+  const [showMusic, setShowMusic] = useState(false);
   const saveTimers = useRef<Map<string, ReturnType<typeof setTimeout>>>(new Map());
 
   // Per-note styling (stored in localStorage)
@@ -628,49 +629,66 @@ export default function NotebookPage() {
               );
             })}
 
-          {/* Music notebooks */}
-          <p
-            className="px-3 pt-3 text-[10px] font-semibold uppercase tracking-wider"
-            style={{ color: '#9B6BA0', opacity: 0.5 }}
+          {/* Music notebooks — collapsible */}
+          <button
+            type="button"
+            onClick={() => setShowMusic((s) => !s)}
+            className="flex w-full cursor-pointer items-center gap-1.5 px-3 pt-3"
+            style={{ background: 'none', border: 'none' }}
           >
-            Music
-          </p>
-          {notebooks
-            .filter((nb) => nb.isMusic)
-            .map((nb) => {
-              const isActive = activeNotebook === nb.id;
-              const count = entries.filter((e) => e.category === nb.id).length;
-              return (
-                <button
-                  key={nb.id}
-                  type="button"
-                  onClick={() => setActiveNotebook(nb.id)}
-                  className="w-full flex items-center gap-2 px-3 py-2 rounded-xl text-left transition-all"
-                  style={{
-                    background: isActive ? `${nb.color}15` : 'transparent',
-                    border: isActive ? `1px solid ${nb.color}30` : '1px solid transparent',
-                  }}
-                >
-                  <div
-                    className="h-3 w-3 rounded-full shrink-0"
-                    style={{ background: nb.color, opacity: isActive ? 0.8 : 0.3 }}
-                  />
-                  <div className="flex-1 min-w-0">
-                    <p
-                      className="text-xs font-medium truncate"
-                      style={{ color: isActive ? nb.color : `${nb.color}80` }}
-                    >
-                      {nb.label}
-                    </p>
-                    {count > 0 && (
-                      <p className="text-[11px]" style={{ color: `${nb.color}40` }}>
-                        {count}
+            <p
+              className="text-[10px] font-semibold uppercase tracking-wider"
+              style={{ color: '#9B6BA0', opacity: 0.5 }}
+            >
+              Music
+            </p>
+            <span
+              className="text-[8px] transition-transform duration-200"
+              style={{
+                color: '#9B6BA050',
+                transform: showMusic ? 'rotate(180deg)' : 'rotate(0deg)',
+              }}
+            >
+              ▾
+            </span>
+          </button>
+          {showMusic &&
+            notebooks
+              .filter((nb) => nb.isMusic)
+              .map((nb) => {
+                const isActive = activeNotebook === nb.id;
+                const count = entries.filter((e) => e.category === nb.id).length;
+                return (
+                  <button
+                    key={nb.id}
+                    type="button"
+                    onClick={() => setActiveNotebook(nb.id)}
+                    className="w-full flex items-center gap-2 px-3 py-2 rounded-xl text-left transition-all"
+                    style={{
+                      background: isActive ? `${nb.color}15` : 'transparent',
+                      border: isActive ? `1px solid ${nb.color}30` : '1px solid transparent',
+                    }}
+                  >
+                    <div
+                      className="h-3 w-3 rounded-full shrink-0"
+                      style={{ background: nb.color, opacity: isActive ? 0.8 : 0.3 }}
+                    />
+                    <div className="flex-1 min-w-0">
+                      <p
+                        className="text-xs font-medium truncate"
+                        style={{ color: isActive ? nb.color : `${nb.color}80` }}
+                      >
+                        {nb.label}
                       </p>
-                    )}
-                  </div>
-                </button>
-              );
-            })}
+                      {count > 0 && (
+                        <p className="text-[11px]" style={{ color: `${nb.color}40` }}>
+                          {count}
+                        </p>
+                      )}
+                    </div>
+                  </button>
+                );
+              })}
 
           {/* Add notebook */}
           <button
@@ -749,10 +767,13 @@ export default function NotebookPage() {
               value={newTitle}
               onChange={(e) => setNewTitle(e.target.value)}
               placeholder={placeholder}
-              className="flex-1 rounded-lg border px-3 py-2 text-sm outline-none placeholder:text-muted-foreground/50"
+              className="flex-1 rounded-lg border px-3 py-2.5 outline-none placeholder:italic placeholder:text-[#8A6A4A] placeholder:opacity-60"
               style={{
-                borderColor: `${activeNb?.color || '#C4A060'}15`,
-                background: `${activeNb?.color || '#C4A060'}03`,
+                borderColor: `${activeNb?.color || '#C4A060'}20`,
+                background: `${activeNb?.color || '#C4A060'}05`,
+                fontFamily: 'var(--font-serif)',
+                fontSize: '15px',
+                color: '#5C3018',
               }}
             />
             {newTitle.trim() && (
@@ -960,20 +981,22 @@ export default function NotebookPage() {
                       ) : isEditing ? (
                         <textarea
                           id="note-editor"
+                          autoFocus
                           value={entry.content || ''}
                           onChange={(e) => updateLocal(entry.id, 'content', e.target.value)}
-                          placeholder="Start writing..."
-                          className="w-full min-h-[120px] rounded-lg border border-border/20 bg-transparent p-3 text-sm resize-none outline-none"
+                          placeholder="start writing..."
+                          className="w-full min-h-[200px] rounded-lg border border-border/20 bg-transparent p-3 resize-none outline-none placeholder:italic placeholder:text-[#8A6A4A] placeholder:opacity-[0.6]"
                           style={{
                             color: '#5A4535',
-                            fontFamily: style.font,
+                            fontFamily: style.font || 'var(--font-serif)',
                             fontSize: `${style.size || 16}px`,
                             textAlign: style.align as 'left' | 'center' | 'right',
+                            lineHeight: 1.6,
                           }}
                           onInput={(e) => {
                             const t = e.target as HTMLTextAreaElement;
                             t.style.height = 'auto';
-                            t.style.height = `${t.scrollHeight}px`;
+                            t.style.height = `${Math.max(200, t.scrollHeight)}px`;
                           }}
                         />
                       ) : (
@@ -990,8 +1013,16 @@ export default function NotebookPage() {
                               size={style.size}
                             />
                           ) : (
-                            <p className="text-sm text-muted-foreground/40 py-2">
-                              Click to write...
+                            <p
+                              className="italic py-2"
+                              style={{
+                                fontFamily: 'var(--font-serif)',
+                                fontSize: '15px',
+                                color: '#8A6A4A',
+                                opacity: 0.5,
+                              }}
+                            >
+                              tap to write...
                             </p>
                           )}
                         </div>
