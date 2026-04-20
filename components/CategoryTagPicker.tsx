@@ -188,7 +188,7 @@ export default function CategoryTagPicker({
           )}
 
           {/* Three compass dots — click to expand */}
-          <div className="flex items-center justify-center gap-4 py-3">
+          <div className="flex items-center justify-center gap-6 py-4">
             {COMPASSES.map((c) => {
               const isExpanded = expandedCompass === c.id;
               return (
@@ -196,25 +196,25 @@ export default function CategoryTagPicker({
                   key={c.id}
                   type="button"
                   onClick={() => setExpandedCompass(isExpanded ? null : c.id)}
-                  className="flex flex-col items-center gap-1 cursor-pointer transition-all"
+                  className="flex flex-col items-center gap-1.5 cursor-pointer transition-all"
                   style={{ background: 'none', border: 'none' }}
                 >
                   <span
                     style={{
                       display: 'block',
-                      width: isExpanded ? 14 : 11,
-                      height: isExpanded ? 14 : 11,
+                      width: isExpanded ? 20 : 16,
+                      height: isExpanded ? 20 : 16,
                       borderRadius: '50%',
                       background: c.color,
-                      opacity: isExpanded ? 1 : 0.5,
+                      opacity: isExpanded ? 1 : 0.6,
                       transition: 'all 0.2s',
-                      boxShadow: isExpanded ? `0 2px 8px -2px ${c.color}` : 'none',
+                      boxShadow: isExpanded ? `0 3px 10px -3px ${c.color}` : 'none',
                     }}
                   />
                   <span
                     style={{
                       fontFamily: 'var(--font-serif)',
-                      fontSize: '10px',
+                      fontSize: '13px',
                       fontWeight: 600,
                       color: c.color,
                       opacity: isExpanded ? 1 : 0.5,

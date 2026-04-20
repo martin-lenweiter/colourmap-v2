@@ -397,7 +397,7 @@ export default function DailyAgenda() {
     fetch(`/api/outings/${id}`, { method: 'DELETE' }).catch(() => {});
   };
 
-  const dayBlocks = blocks.filter((b) => b.date === selectedDate || !b.date);
+  const dayBlocks = blocks.filter((b) => b.date === selectedDate);
 
   return (
     <div
