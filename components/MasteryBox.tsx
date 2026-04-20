@@ -298,7 +298,7 @@ export default function MasteryBox() {
                         <span
                           style={{
                             fontFamily: 'var(--font-handwritten)',
-                            fontSize: '17px',
+                            fontSize: '18px',
                             color: task.done ? stage.color : '#5C3018',
                             opacity: task.done ? 0.5 : 1,
                             textDecoration: task.done ? 'line-through' : 'none',
@@ -465,7 +465,7 @@ export default function MasteryBox() {
                         color: '#7a5438',
                         borderColor: `${track.color}20`,
                         fontFamily: 'var(--font-handwritten)',
-                        fontSize: '17px',
+                        fontSize: '18px',
                         lineHeight: 1.4,
                       }}
                     />

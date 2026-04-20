@@ -21,9 +21,9 @@ function DayContent() {
         className="text-center"
         style={{
           fontFamily: 'var(--font-serif)',
-          fontSize: '13px',
-          color: '#8A6A4A',
-          opacity: 0.6,
+          fontSize: '14px',
+          color: '#7A5438',
+          opacity: 0.8,
           letterSpacing: '0.06em',
         }}
       >

@@ -3,6 +3,7 @@
 import { useCompletion } from '@ai-sdk/react';
 import { useEffect, useState } from 'react';
 import LifeTimeline from '@/components/LifeTimeline';
+import MasteryBox from '@/components/MasteryBox';
 import PersonalityMap from '@/components/PersonalityMap';
 import SoulMap from '@/components/SoulMap';
 import { getEmotionalWord } from '@/lib/emotional-vocabulary';
@@ -1060,6 +1061,9 @@ export default function JourneyPage() {
           );
         }}
       />
+
+      {/* ========== MASTERY ========== */}
+      <MasteryBox />
     </main>
   );
 }

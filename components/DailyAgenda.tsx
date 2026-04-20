@@ -553,18 +553,6 @@ export default function DailyAgenda() {
                 {v}
               </button>
             ))}
-            <button
-              type="button"
-              onClick={() => setSelectedDate(todayStr())}
-              className="cursor-pointer rounded-full px-3 py-1 text-[10px] font-semibold uppercase tracking-wider transition-all"
-              style={{
-                color: '#C4A060',
-                border: '1px dashed #C4A06040',
-                background: 'transparent',
-              }}
-            >
-              today
-            </button>
           </div>
 
           {/* Daily Objectives tab */}
@@ -1026,26 +1014,26 @@ export default function DailyAgenda() {
                   onClick={() => setShowDone((s) => !s)}
                   className="flex w-full cursor-pointer items-center justify-center gap-2 rounded-full py-1.5 transition-all"
                   style={{
-                    background: showDone ? '#7AAA5812' : 'transparent',
-                    border: `1px solid ${showDone ? '#7AAA5830' : '#C4A06018'}`,
+                    background: showDone ? '#C4A06012' : 'transparent',
+                    border: `1px solid ${showDone ? '#C4A06030' : '#C4A06018'}`,
                   }}
                 >
                   <span
                     className="text-xs font-semibold uppercase tracking-[0.18em]"
-                    style={{ color: '#7AAA58' }}
+                    style={{ color: '#C4A060' }}
                   >
                     Done
                   </span>
                   <span
                     className="rounded-full px-1.5 text-[10px] font-semibold"
-                    style={{ color: '#7AAA58', background: '#7AAA5815' }}
+                    style={{ color: '#C4A060', background: '#C4A06015' }}
                   >
                     {filtered.length}
                   </span>
                   <span
                     className="text-[10px] transition-transform duration-200"
                     style={{
-                      color: '#7AAA5880',
+                      color: '#C4A06080',
                       transform: showDone ? 'rotate(180deg)' : 'rotate(0deg)',
                     }}
                   >
@@ -1056,27 +1044,25 @@ export default function DailyAgenda() {
                   <div className="animate-in fade-in duration-150 space-y-3 pt-2">
                     {dates.map((date) => (
                       <div key={date}>
-                        {agendaView !== 'day' && (
-                          <p
-                            style={{
-                              fontFamily: 'var(--font-serif)',
-                              fontSize: '11px',
-                              color: '#8A6A4A',
-                              opacity: 0.5,
-                              marginBottom: 4,
-                            }}
-                          >
-                            {dateLabel(date)}
-                          </p>
-                        )}
+                        <p
+                          style={{
+                            fontFamily: 'var(--font-serif)',
+                            fontSize: '11px',
+                            color: '#8A6A4A',
+                            opacity: 0.5,
+                            marginBottom: 4,
+                          }}
+                        >
+                          {dateLabel(date)}
+                        </p>
                         <div className="space-y-1">
                           {byDate[date].map((d) => (
                             <div
                               key={d.id}
                               className="flex items-center gap-2 rounded-lg px-3 py-1.5"
-                              style={{ background: '#7AAA5808' }}
+                              style={{ background: '#C4A06008' }}
                             >
-                              <span className="text-xs" style={{ color: '#7AAA58' }}>
+                              <span className="text-xs" style={{ color: '#C4A060' }}>
                                 ✓
                               </span>
                               <span

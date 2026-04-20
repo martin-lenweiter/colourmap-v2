@@ -813,7 +813,7 @@ export default function FeelingCheckInCard() {
   };
   const STATUS_CONFIG: Record<TodoStatus, { label: string; color: string }> = {
     active: { label: 'Active', color: '#7AAA58' },
-    waiting: { label: 'Waiting for reply', color: '#8A8A8A' },
+    waiting: { label: 'Waiting for reply', color: '#A08060' },
   };
   const [expandedTodayId, setExpandedTodayId] = useState<string | null>(null);
   const [renamingObjId, setRenamingObjId] = useState<string | null>(null);
@@ -2926,7 +2926,7 @@ export default function FeelingCheckInCard() {
                                     color: o.done
                                       ? '#C4A060'
                                       : o.status === 'waiting'
-                                        ? '#8A8A8A'
+                                        ? '#A08060'
                                         : '#7a5438',
                                     fontFamily: 'var(--font-handwritten)',
                                     fontSize: '20px',
@@ -2940,7 +2940,7 @@ export default function FeelingCheckInCard() {
                                   {o.status === 'waiting' && (
                                     <span
                                       className="ml-2 text-xs"
-                                      style={{ color: '#8A8A8A', fontStyle: 'italic' }}
+                                      style={{ color: '#A08060', fontStyle: 'italic' }}
                                     >
                                       waiting
                                     </span>
@@ -3000,14 +3000,14 @@ export default function FeelingCheckInCard() {
                                       style={{
                                         width: 10,
                                         height: 10,
-                                        background: o.status === 'waiting' ? '#8A8A8A' : '#7AAA58',
+                                        background: o.status === 'waiting' ? '#A08060' : '#7AAA58',
                                       }}
                                     />
                                     <span
                                       style={{
                                         fontFamily: 'var(--font-serif)',
                                         fontSize: '12px',
-                                        color: o.status === 'waiting' ? '#8A8A8A' : '#7AAA58',
+                                        color: o.status === 'waiting' ? '#A08060' : '#7AAA58',
                                         fontWeight: 600,
                                       }}
                                     >
@@ -3107,8 +3107,8 @@ export default function FeelingCheckInCard() {
                                                 }
                                                 className="flex-1 transition-all duration-150"
                                                 style={{
-                                                  height: 10,
-                                                  borderRadius: 5,
+                                                  height: 14,
+                                                  borderRadius: 7,
                                                   background: color,
                                                   opacity: active ? 0.9 : 0.15,
                                                   border: 'none',
@@ -3162,8 +3162,8 @@ export default function FeelingCheckInCard() {
                                                 }
                                                 className="flex-1 transition-all duration-150"
                                                 style={{
-                                                  height: 10,
-                                                  borderRadius: 5,
+                                                  height: 14,
+                                                  borderRadius: 7,
                                                   background: color,
                                                   opacity: active ? 0.9 : 0.15,
                                                   border: 'none',
@@ -3217,8 +3217,8 @@ export default function FeelingCheckInCard() {
                                                 }
                                                 className="flex-1 transition-all duration-150"
                                                 style={{
-                                                  height: 10,
-                                                  borderRadius: 5,
+                                                  height: 14,
+                                                  borderRadius: 7,
                                                   background: color,
                                                   opacity: active ? 0.9 : 0.15,
                                                   border: 'none',
@@ -3279,7 +3279,7 @@ export default function FeelingCheckInCard() {
                                       <input
                                         type="text"
                                         placeholder="how are you feeling about this?"
-                                        className="w-full border-b bg-transparent pb-1 outline-none placeholder:text-[#8A6A4A] placeholder:opacity-40"
+                                        className="w-full border-b bg-transparent pb-1 outline-none placeholder:text-[#7A5438] placeholder:opacity-50"
                                         style={{
                                           color: '#7a5438',
                                           borderColor: '#C4A06020',
@@ -3539,7 +3539,7 @@ export default function FeelingCheckInCard() {
                                     color: t.done
                                       ? '#C4A060'
                                       : t.status === 'waiting'
-                                        ? '#8A8A8A'
+                                        ? '#A08060'
                                         : '#7a5438',
                                     fontFamily: 'var(--font-handwritten)',
                                     fontSize: '20px',
@@ -3553,7 +3553,7 @@ export default function FeelingCheckInCard() {
                                   {t.status === 'waiting' && (
                                     <span
                                       className="ml-2 text-xs"
-                                      style={{ color: '#8A8A8A', fontStyle: 'italic' }}
+                                      style={{ color: '#A08060', fontStyle: 'italic' }}
                                     >
                                       waiting
                                     </span>
@@ -3591,14 +3591,14 @@ export default function FeelingCheckInCard() {
                                       style={{
                                         width: 10,
                                         height: 10,
-                                        background: t.status === 'waiting' ? '#8A8A8A' : '#7AAA58',
+                                        background: t.status === 'waiting' ? '#A08060' : '#7AAA58',
                                       }}
                                     />
                                     <span
                                       style={{
                                         fontFamily: 'var(--font-serif)',
                                         fontSize: '12px',
-                                        color: t.status === 'waiting' ? '#8A8A8A' : '#7AAA58',
+                                        color: t.status === 'waiting' ? '#A08060' : '#7AAA58',
                                         fontWeight: 600,
                                       }}
                                     >
@@ -3695,8 +3695,8 @@ export default function FeelingCheckInCard() {
                                                 }
                                                 className="flex-1 transition-all duration-150"
                                                 style={{
-                                                  height: 10,
-                                                  borderRadius: 5,
+                                                  height: 14,
+                                                  borderRadius: 7,
                                                   background: color,
                                                   opacity: (t.ease || 0) >= n ? 0.9 : 0.15,
                                                   border: 'none',
@@ -3748,8 +3748,8 @@ export default function FeelingCheckInCard() {
                                                 }
                                                 className="flex-1 transition-all duration-150"
                                                 style={{
-                                                  height: 10,
-                                                  borderRadius: 5,
+                                                  height: 14,
+                                                  borderRadius: 7,
                                                   background: color,
                                                   opacity: (t.weight || 0) >= n ? 0.9 : 0.15,
                                                   border: 'none',
@@ -3802,8 +3802,8 @@ export default function FeelingCheckInCard() {
                                                 }
                                                 className="flex-1 transition-all duration-150"
                                                 style={{
-                                                  height: 10,
-                                                  borderRadius: 5,
+                                                  height: 14,
+                                                  borderRadius: 7,
                                                   background: color,
                                                   opacity: (t.urgency || 0) >= n ? 0.9 : 0.15,
                                                   border: 'none',
@@ -3864,7 +3864,7 @@ export default function FeelingCheckInCard() {
                                       <input
                                         type="text"
                                         placeholder="how are you feeling about this?"
-                                        className="w-full border-b bg-transparent pb-1 outline-none placeholder:text-[#8A6A4A] placeholder:opacity-40"
+                                        className="w-full border-b bg-transparent pb-1 outline-none placeholder:text-[#7A5438] placeholder:opacity-50"
                                         style={{
                                           color: '#7a5438',
                                           borderColor: '#C4A06020',
