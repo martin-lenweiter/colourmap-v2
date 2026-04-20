@@ -905,6 +905,7 @@ export default function FeelingCheckInCard() {
     next.splice(toIdx, 0, moved);
     persistTodos(next);
   };
+  const [expandedTodoId, setExpandedTodoId] = useState<string | null>(null);
   const [draggedTodoIdx, setDraggedTodoIdx] = useState<number | null>(null);
   const [dragOverTodoIdx, setDragOverTodoIdx] = useState<number | null>(null);
   const [clarityOpen, setClarityOpen] = useState(false);
@@ -2152,7 +2153,7 @@ export default function FeelingCheckInCard() {
                 value={objective}
                 onChange={(e) => setObjective(e.target.value)}
                 placeholder="set an objective..."
-                className="w-full border-b bg-transparent pb-1 text-center outline-none placeholder:text-[#C4A060] placeholder:opacity-60"
+                className="w-full border-b bg-transparent pb-1 text-center outline-none placeholder:text-[#7A5438] placeholder:opacity-50"
                 style={{
                   color: '#5C3018',
                   borderColor: '#C4A06020',
@@ -2455,7 +2456,7 @@ export default function FeelingCheckInCard() {
                                     color: o.done ? '#C4A060' : '#7a5438',
                                     fontFamily: 'var(--font-handwritten)',
                                     fontSize: '20px',
-                                    opacity: o.done ? 0.85 : 0.95,
+                                    opacity: o.done ? 0.5 : 1,
                                     border: 'none',
                                   }}
                                   title="Click to expand · Double-click to rename"
@@ -2488,7 +2489,7 @@ export default function FeelingCheckInCard() {
                                   onChange={(e) => updateTodayNotes(o.id, e.target.value)}
                                   placeholder="advancements, next steps..."
                                   rows={2}
-                                  className="ml-7 w-[calc(100%-1.75rem)] resize-none border-b bg-transparent pb-1 pt-0.5 outline-none placeholder:text-[#C4A060] placeholder:opacity-60 animate-in fade-in duration-150"
+                                  className="ml-7 w-[calc(100%-1.75rem)] resize-none border-b bg-transparent pb-1 pt-0.5 outline-none placeholder:text-[#7A5438] placeholder:opacity-50 animate-in fade-in duration-150"
                                   style={{
                                     color: '#7a5438',
                                     borderColor: '#C4A06025',
@@ -2631,7 +2632,7 @@ export default function FeelingCheckInCard() {
                         if (e.key === 'Enter') addTodayObjective();
                       }}
                       placeholder="+ add objective for today..."
-                      className="w-full border-b bg-transparent pb-1 outline-none placeholder:text-[#C4A060] placeholder:opacity-60"
+                      className="w-full border-b bg-transparent pb-1 outline-none placeholder:text-[#7A5438] placeholder:opacity-50"
                       style={{
                         color: '#7a5438',
                         borderColor: '#C4A06020',
@@ -2725,165 +2726,217 @@ export default function FeelingCheckInCard() {
                         const isDragging = draggedTodoIdx === idx;
                         const isDropTarget = dragOverTodoIdx === idx && draggedTodoIdx !== idx;
                         return (
-                          <div
-                            key={t.id}
-                            className="group flex items-center gap-2"
-                            draggable
-                            onDragStart={(e) => {
-                              setDraggedTodoIdx(idx);
-                              e.dataTransfer.setData(
-                                'text/plain',
-                                JSON.stringify({ from: 'push', id: t.id, text: t.text }),
-                              );
-                            }}
-                            onDragOver={(e) => {
-                              e.preventDefault();
-                              if (draggedTodoIdx !== null && draggedTodoIdx !== idx) {
-                                setDragOverTodoIdx(idx);
-                              }
-                            }}
-                            onDragLeave={(e) => {
-                              if (
-                                !(e.currentTarget as HTMLElement).contains(e.relatedTarget as Node)
-                              ) {
-                                setDragOverTodoIdx((prev) => (prev === idx ? null : prev));
-                              }
-                            }}
-                            onDrop={(e) => {
-                              e.preventDefault();
-                              if (draggedTodoIdx !== null) {
-                                reorderTodos(draggedTodoIdx, idx);
-                              }
-                              setDraggedTodoIdx(null);
-                              setDragOverTodoIdx(null);
-                            }}
-                            onDragEnd={() => {
-                              setDraggedTodoIdx(null);
-                              setDragOverTodoIdx(null);
-                            }}
-                            style={{
-                              opacity: isDragging ? 0.4 : 1,
-                              borderTop: isDropTarget
-                                ? '2px solid #C4A060'
-                                : '2px solid transparent',
-                              cursor: 'grab',
-                              transition: 'opacity 120ms, border-color 120ms',
-                            }}
-                          >
-                            <button
-                              type="button"
-                              onClick={() => toggleTodo(t.id)}
-                              title={t.done ? 'Mark as not done' : 'Mark as done'}
-                              className="flex h-5 w-5 shrink-0 cursor-pointer items-center justify-center rounded border transition-all hover:scale-110"
+                          <div key={t.id}>
+                            <div
+                              className="group flex items-center gap-2"
+                              draggable
+                              onDragStart={(e) => {
+                                setDraggedTodoIdx(idx);
+                                e.dataTransfer.setData(
+                                  'text/plain',
+                                  JSON.stringify({ from: 'push', id: t.id, text: t.text }),
+                                );
+                              }}
+                              onDragOver={(e) => {
+                                e.preventDefault();
+                                if (draggedTodoIdx !== null && draggedTodoIdx !== idx) {
+                                  setDragOverTodoIdx(idx);
+                                }
+                              }}
+                              onDragLeave={(e) => {
+                                if (
+                                  !(e.currentTarget as HTMLElement).contains(
+                                    e.relatedTarget as Node,
+                                  )
+                                ) {
+                                  setDragOverTodoIdx((prev) => (prev === idx ? null : prev));
+                                }
+                              }}
+                              onDrop={(e) => {
+                                e.preventDefault();
+                                if (draggedTodoIdx !== null) {
+                                  reorderTodos(draggedTodoIdx, idx);
+                                }
+                                setDraggedTodoIdx(null);
+                                setDragOverTodoIdx(null);
+                              }}
+                              onDragEnd={() => {
+                                setDraggedTodoIdx(null);
+                                setDragOverTodoIdx(null);
+                              }}
                               style={{
-                                borderColor: t.done ? '#7AAA5860' : '#C4A06060',
-                                background: t.done ? '#7AAA5810' : 'transparent',
+                                opacity: isDragging ? 0.4 : 1,
+                                borderTop: isDropTarget
+                                  ? '2px solid #C4A060'
+                                  : '2px solid transparent',
+                                cursor: 'grab',
+                                transition: 'opacity 120ms, border-color 120ms',
                               }}
                             >
-                              {t.done && (
-                                <span className="text-xs" style={{ color: '#7AAA58' }}>
-                                  ✓
-                                </span>
-                              )}
-                            </button>
-                            <span
-                              className="flex-1"
-                              style={{
-                                color: t.done ? '#C4A060' : '#7a5438',
-                                fontFamily: 'var(--font-handwritten)',
-                                fontSize: '20px',
-                                opacity: t.done ? 0.85 : 0.95,
-                              }}
-                            >
-                              {t.text}
-                            </span>
-                            {/* Ease/weight dots inline */}
-                            <div className="flex items-center gap-0.5 opacity-0 transition-opacity group-hover:opacity-100">
-                              {[1, 2, 3, 4, 5].map((n) => {
-                                const colors = [
-                                  '#E0844A',
-                                  '#D8C078',
-                                  '#C0D088',
-                                  '#A0C8A0',
-                                  '#7AAA58',
-                                ];
-                                return (
-                                  <button
-                                    key={`e-${n}`}
-                                    type="button"
-                                    onClick={() =>
-                                      updateTodoField(t.id, 'ease', t.ease === n ? 0 : n)
-                                    }
-                                    style={{
-                                      width: 8,
-                                      height: 8,
-                                      borderRadius: '50%',
-                                      background: colors[n - 1],
-                                      opacity: (t.ease || 0) >= n ? 0.9 : 0.15,
-                                      border: 'none',
-                                      cursor: 'pointer',
-                                      padding: 0,
-                                    }}
-                                  />
-                                );
-                              })}
-                              <span style={{ width: 4 }} />
-                              {[1, 2, 3, 4, 5].map((n) => {
-                                const colors = [
-                                  '#A0B0D0',
-                                  '#90C0C0',
-                                  '#D8C078',
-                                  '#E8A878',
-                                  '#E0908A',
-                                ];
-                                return (
-                                  <button
-                                    key={`w-${n}`}
-                                    type="button"
-                                    onClick={() =>
-                                      updateTodoField(t.id, 'weight', t.weight === n ? 0 : n)
-                                    }
-                                    style={{
-                                      width: 8,
-                                      height: 8,
-                                      borderRadius: '50%',
-                                      background: colors[n - 1],
-                                      opacity: (t.weight || 0) >= n ? 0.9 : 0.15,
-                                      border: 'none',
-                                      cursor: 'pointer',
-                                      padding: 0,
-                                    }}
-                                  />
-                                );
-                              })}
+                              <button
+                                type="button"
+                                onClick={() => toggleTodo(t.id)}
+                                title={t.done ? 'Mark as not done' : 'Mark as done'}
+                                className="flex h-5 w-5 shrink-0 cursor-pointer items-center justify-center rounded border transition-all hover:scale-110"
+                                style={{
+                                  borderColor: t.done ? '#7AAA5860' : '#C4A06060',
+                                  background: t.done ? '#7AAA5810' : 'transparent',
+                                }}
+                              >
+                                {t.done && (
+                                  <span className="text-xs" style={{ color: '#7AAA58' }}>
+                                    ✓
+                                  </span>
+                                )}
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() =>
+                                  setExpandedTodoId(expandedTodoId === t.id ? null : t.id)
+                                }
+                                className="flex-1 cursor-pointer bg-transparent text-left"
+                                style={{
+                                  color: t.done ? '#C4A060' : '#7a5438',
+                                  fontFamily: 'var(--font-handwritten)',
+                                  fontSize: '20px',
+                                  opacity: t.done ? 0.5 : 1,
+                                  border: 'none',
+                                }}
+                              >
+                                {t.text}
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => removeTodo(t.id)}
+                                title="Remove"
+                                className="cursor-pointer text-sm opacity-0 transition-opacity group-hover:opacity-40"
+                                style={{ color: '#7a5438', background: 'none', border: 'none' }}
+                              >
+                                ✕
+                              </button>
                             </div>
-                            <button
-                              type="button"
-                              onClick={() => moveToDaily(t.text, 'push', t.id)}
-                              title="Move to daily"
-                              className="cursor-pointer text-[9px] font-semibold uppercase tracking-wider opacity-0 transition-opacity group-hover:opacity-40"
-                              style={{ color: '#C4A060', background: 'none', border: 'none' }}
-                            >
-                              ↑ daily
-                            </button>
-                            <button
-                              type="button"
-                              onClick={() => moveToCurrent(t.text, 'push', t.id)}
-                              title="Move to current"
-                              className="cursor-pointer text-[9px] font-semibold uppercase tracking-wider opacity-0 transition-opacity group-hover:opacity-40"
-                              style={{ color: '#C4A060', background: 'none', border: 'none' }}
-                            >
-                              ↑ current
-                            </button>
-                            <button
-                              type="button"
-                              onClick={() => removeTodo(t.id)}
-                              title="Remove"
-                              className="cursor-pointer text-sm opacity-0 transition-opacity group-hover:opacity-40"
-                              style={{ color: '#7a5438', background: 'none', border: 'none' }}
-                            >
-                              ✕
-                            </button>
+                            {expandedTodoId === t.id && (
+                              <div className="space-y-2 pl-7 pt-1 animate-in fade-in duration-150">
+                                <div className="flex gap-4">
+                                  <div className="flex items-center gap-1.5">
+                                    <span
+                                      style={{
+                                        fontFamily: 'var(--font-serif)',
+                                        fontSize: '10px',
+                                        color: '#8A6A4A',
+                                        opacity: 0.6,
+                                        width: 32,
+                                      }}
+                                    >
+                                      ease
+                                    </span>
+                                    <div className="flex gap-1">
+                                      {[1, 2, 3, 4, 5].map((n) => {
+                                        const colors = [
+                                          '#E0844A',
+                                          '#D8C078',
+                                          '#C0D088',
+                                          '#A0C8A0',
+                                          '#7AAA58',
+                                        ];
+                                        return (
+                                          <button
+                                            key={n}
+                                            type="button"
+                                            onClick={() =>
+                                              updateTodoField(t.id, 'ease', t.ease === n ? 0 : n)
+                                            }
+                                            style={{
+                                              width: 14,
+                                              height: 14,
+                                              borderRadius: '50%',
+                                              background: colors[n - 1],
+                                              opacity: (t.ease || 0) >= n ? 0.9 : 0.2,
+                                              border: 'none',
+                                              cursor: 'pointer',
+                                              transition: 'all 0.15s',
+                                            }}
+                                          />
+                                        );
+                                      })}
+                                    </div>
+                                  </div>
+                                  <div className="flex items-center gap-1.5">
+                                    <span
+                                      style={{
+                                        fontFamily: 'var(--font-serif)',
+                                        fontSize: '10px',
+                                        color: '#8A6A4A',
+                                        opacity: 0.6,
+                                        width: 38,
+                                      }}
+                                    >
+                                      weight
+                                    </span>
+                                    <div className="flex gap-1">
+                                      {[1, 2, 3, 4, 5].map((n) => {
+                                        const colors = [
+                                          '#A0B0D0',
+                                          '#90C0C0',
+                                          '#D8C078',
+                                          '#E8A878',
+                                          '#E0908A',
+                                        ];
+                                        return (
+                                          <button
+                                            key={n}
+                                            type="button"
+                                            onClick={() =>
+                                              updateTodoField(
+                                                t.id,
+                                                'weight',
+                                                t.weight === n ? 0 : n,
+                                              )
+                                            }
+                                            style={{
+                                              width: 14,
+                                              height: 14,
+                                              borderRadius: '50%',
+                                              background: colors[n - 1],
+                                              opacity: (t.weight || 0) >= n ? 0.9 : 0.2,
+                                              border: 'none',
+                                              cursor: 'pointer',
+                                              transition: 'all 0.15s',
+                                            }}
+                                          />
+                                        );
+                                      })}
+                                    </div>
+                                  </div>
+                                </div>
+                                <div className="flex gap-2">
+                                  <button
+                                    type="button"
+                                    onClick={() => moveToDaily(t.text, 'push', t.id)}
+                                    className="cursor-pointer rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider transition-all hover:opacity-80"
+                                    style={{
+                                      color: '#C4A060',
+                                      border: '1px solid #C4A06030',
+                                      background: 'transparent',
+                                    }}
+                                  >
+                                    ↑ daily
+                                  </button>
+                                  <button
+                                    type="button"
+                                    onClick={() => moveToCurrent(t.text, 'push', t.id)}
+                                    className="cursor-pointer rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider transition-all hover:opacity-80"
+                                    style={{
+                                      color: '#C4A060',
+                                      border: '1px solid #C4A06030',
+                                      background: 'transparent',
+                                    }}
+                                  >
+                                    ↑ current
+                                  </button>
+                                </div>
+                              </div>
+                            )}
                           </div>
                         );
                       })}
@@ -2895,7 +2948,7 @@ export default function FeelingCheckInCard() {
                         if (e.key === 'Enter') addTodo();
                       }}
                       placeholder="+ add to-do..."
-                      className="w-full border-b bg-transparent pb-1 outline-none placeholder:text-[#C4A060] placeholder:opacity-60"
+                      className="w-full border-b bg-transparent pb-1 outline-none placeholder:text-[#7A5438] placeholder:opacity-50"
                       style={{
                         color: '#7a5438',
                         borderColor: '#C4A06020',
