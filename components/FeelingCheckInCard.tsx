@@ -769,6 +769,8 @@ export default function FeelingCheckInCard() {
     weight?: number;
   };
   const [expandedTodayId, setExpandedTodayId] = useState<string | null>(null);
+  const [renamingObjId, setRenamingObjId] = useState<string | null>(null);
+  const [renameObjValue, setRenameObjValue] = useState('');
   const updateTodayField = (id: string, field: string, value: string | number) => {
     const next = todayObjectives.map((t) => (t.id === id ? { ...t, [field]: value } : t));
     persistTodayObjectives(next);
@@ -2150,7 +2152,7 @@ export default function FeelingCheckInCard() {
                 value={objective}
                 onChange={(e) => setObjective(e.target.value)}
                 placeholder="set an objective..."
-                className="w-full border-b bg-transparent pb-1 text-center outline-none placeholder:text-muted-foreground/40"
+                className="w-full border-b bg-transparent pb-1 text-center outline-none placeholder:text-[#C4A060] placeholder:opacity-60"
                 style={{
                   color: '#5C3018',
                   borderColor: '#C4A06020',
@@ -2410,29 +2412,65 @@ export default function FeelingCheckInCard() {
                                   </span>
                                 )}
                               </button>
-                              <button
-                                type="button"
-                                onClick={() => setExpandedTodayId(isExpanded ? null : o.id)}
-                                className="flex-1 cursor-pointer bg-transparent text-left"
-                                style={{
-                                  color: o.done ? '#C4A060' : '#7a5438',
-                                  fontFamily: 'var(--font-handwritten)',
-                                  fontSize: '20px',
-                                  opacity: o.done ? 0.85 : 0.95,
-                                  border: 'none',
-                                }}
-                                title="Click to open notes"
-                              >
-                                {o.text}
-                                {o.notes && o.notes.trim().length > 0 && !isExpanded && (
-                                  <span
-                                    className="ml-2 text-xs no-underline"
-                                    style={{ color: '#C4A06080' }}
-                                  >
-                                    ·
-                                  </span>
-                                )}
-                              </button>
+                              {renamingObjId === o.id ? (
+                                <input
+                                  type="text"
+                                  value={renameObjValue}
+                                  onChange={(e) => setRenameObjValue(e.target.value)}
+                                  onBlur={() => {
+                                    const trimmed = renameObjValue.trim();
+                                    if (trimmed && trimmed !== o.text)
+                                      updateTodayField(o.id, 'text', trimmed);
+                                    setRenamingObjId(null);
+                                  }}
+                                  onKeyDown={(e) => {
+                                    if (e.key === 'Enter') {
+                                      const trimmed = renameObjValue.trim();
+                                      if (trimmed && trimmed !== o.text)
+                                        updateTodayField(o.id, 'text', trimmed);
+                                      setRenamingObjId(null);
+                                    }
+                                    if (e.key === 'Escape') setRenamingObjId(null);
+                                  }}
+                                  autoFocus
+                                  className="flex-1 bg-transparent text-left outline-none border-b"
+                                  style={{
+                                    color: '#7a5438',
+                                    fontFamily: 'var(--font-handwritten)',
+                                    fontSize: '20px',
+                                    borderColor: '#C4A06040',
+                                  }}
+                                />
+                              ) : (
+                                <button
+                                  type="button"
+                                  onClick={() => setExpandedTodayId(isExpanded ? null : o.id)}
+                                  onDoubleClick={(e) => {
+                                    e.stopPropagation();
+                                    setRenamingObjId(o.id);
+                                    setRenameObjValue(o.text);
+                                  }}
+                                  className="flex-1 cursor-pointer bg-transparent text-left"
+                                  style={{
+                                    color: o.done ? '#C4A060' : '#7a5438',
+                                    fontFamily: 'var(--font-handwritten)',
+                                    fontSize: '20px',
+                                    opacity: o.done ? 0.85 : 0.95,
+                                    border: 'none',
+                                  }}
+                                  title="Click to expand · Double-click to rename"
+                                >
+                                  {o.text}
+                                  {o.notes && o.notes.trim().length > 0 && !isExpanded && (
+                                    <span
+                                      className="ml-2 text-xs no-underline"
+                                      style={{ color: '#C4A06080' }}
+                                    >
+                                      ·
+                                    </span>
+                                  )}
+                                </button>
+                              )}
                               <button
                                 type="button"
                                 onClick={() => removeTodayObjective(o.id)}
@@ -2450,7 +2488,7 @@ export default function FeelingCheckInCard() {
                                   onChange={(e) => updateTodayNotes(o.id, e.target.value)}
                                   placeholder="advancements, next steps..."
                                   rows={2}
-                                  className="ml-7 w-[calc(100%-1.75rem)] resize-none border-b bg-transparent pb-1 pt-0.5 outline-none placeholder:text-muted-foreground/40 animate-in fade-in duration-150"
+                                  className="ml-7 w-[calc(100%-1.75rem)] resize-none border-b bg-transparent pb-1 pt-0.5 outline-none placeholder:text-[#C4A060] placeholder:opacity-60 animate-in fade-in duration-150"
                                   style={{
                                     color: '#7a5438',
                                     borderColor: '#C4A06025',
@@ -2593,7 +2631,7 @@ export default function FeelingCheckInCard() {
                         if (e.key === 'Enter') addTodayObjective();
                       }}
                       placeholder="+ add objective for today..."
-                      className="w-full border-b bg-transparent pb-1 outline-none placeholder:text-muted-foreground/40"
+                      className="w-full border-b bg-transparent pb-1 outline-none placeholder:text-[#C4A060] placeholder:opacity-60"
                       style={{
                         color: '#7a5438',
                         borderColor: '#C4A06020',
@@ -2857,7 +2895,7 @@ export default function FeelingCheckInCard() {
                         if (e.key === 'Enter') addTodo();
                       }}
                       placeholder="+ add to-do..."
-                      className="w-full border-b bg-transparent pb-1 outline-none placeholder:text-muted-foreground/40"
+                      className="w-full border-b bg-transparent pb-1 outline-none placeholder:text-[#C4A060] placeholder:opacity-60"
                       style={{
                         color: '#7a5438',
                         borderColor: '#C4A06020',
