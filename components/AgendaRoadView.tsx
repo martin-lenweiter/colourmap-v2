@@ -1,8 +1,8 @@
 'use client';
 
 /* ═══════════════════════════════════════════════════════════
-   AGENDA ROAD VIEW — perspective pyramid view of daily blocks.
-   Inspired by Guitar Hero: blocks ascend toward a horizon point.
+   AGENDA ROAD VIEW — perspective road with missions as steps.
+   Inspired by Guitar Hero / road to horizon.
    Toggle on/off from the agenda — does not replace the normal view.
    ═══════════════════════════════════════════════════════════ */
 
@@ -21,97 +21,132 @@ interface Props {
 }
 
 export default function AgendaRoadView({ blocks, wakeHour }: Props) {
-  // Sort blocks by startHour ascending (closest = bottom, furthest = top)
   const sorted = [...blocks].sort((a, b) => a.startHour - b.startHour);
   const totalHours = 22 - wakeHour;
   const W = 340;
-  const H = 320;
+  const H = 360;
 
-  // Perspective: bottom is wide (full width), top narrows to a point
-  // Each block is a horizontal pill placed at its perspective depth
-  const vanishY = 20; // horizon point Y
-  const baseY = H - 20; // bottom of the road
-  const vanishX = W / 2; // center convergence
+  const vanishX = W / 2;
+  const vanishY = 30;
+  const baseY = H - 30;
+  const roadSpan = baseY - vanishY;
+
+  // Road edges at a given depth (0=horizon, 1=bottom)
+  const roadLeft = (depth: number) => vanishX - (vanishX - 20) * depth;
+  const roadRight = (depth: number) => vanishX + (vanishX - 20) * depth;
 
   return (
     <div className="relative overflow-hidden rounded-2xl" style={{ width: W, height: H }}>
-      {/* Gradient sky background */}
+      {/* Sky gradient */}
       <div
         className="absolute inset-0"
         style={{
-          background: 'linear-gradient(180deg, #E8C8A0 0%, #F0DCC0 40%, #F5ECDC 100%)',
+          background: 'linear-gradient(180deg, #D8A878 0%, #E8C8A0 30%, #F0DCC0 60%, #F5ECDC 100%)',
         }}
       />
 
-      {/* Perspective grid lines */}
-      {[0.2, 0.4, 0.6, 0.8].map((t) => {
-        const y = vanishY + (baseY - vanishY) * t;
-        const widthAtY = W * 0.15 + W * 0.85 * t;
-        const x = (W - widthAtY) / 2;
-        return (
-          <div
-            key={t}
-            className="absolute"
-            style={{
-              top: y,
-              left: x,
-              width: widthAtY,
-              height: 1,
-              background: '#5C301810',
-            }}
-          />
-        );
-      })}
-
-      {/* Left and right perspective lines */}
+      {/* Road surface — trapezoid */}
       <svg className="absolute inset-0" width={W} height={H} style={{ pointerEvents: 'none' }}>
-        <line x1={vanishX} y1={vanishY} x2={0} y2={baseY} stroke="#5C301808" strokeWidth={1} />
-        <line x1={vanishX} y1={vanishY} x2={W} y2={baseY} stroke="#5C301808" strokeWidth={1} />
+        {/* Road fill */}
+        <polygon
+          points={`${vanishX},${vanishY} ${roadLeft(1)},${baseY} ${roadRight(1)},${baseY}`}
+          fill="#C4A06018"
+        />
+        {/* Road edges */}
+        <line
+          x1={vanishX}
+          y1={vanishY}
+          x2={roadLeft(1)}
+          y2={baseY}
+          stroke="#5C301815"
+          strokeWidth={2}
+        />
+        <line
+          x1={vanishX}
+          y1={vanishY}
+          x2={roadRight(1)}
+          y2={baseY}
+          stroke="#5C301815"
+          strokeWidth={2}
+        />
+        {/* Center dashed line */}
+        <line
+          x1={vanishX}
+          y1={vanishY}
+          x2={vanishX}
+          y2={baseY}
+          stroke="#C4A06030"
+          strokeWidth={1.5}
+          strokeDasharray="6 8"
+        />
+        {/* Horizon line */}
+        <line x1={30} y1={vanishY} x2={W - 30} y2={vanishY} stroke="#5C301810" strokeWidth={1} />
+        {/* Horizontal depth markers */}
+        {[0.2, 0.35, 0.5, 0.65, 0.8, 0.92].map((d) => {
+          const y = vanishY + roadSpan * d;
+          return (
+            <line
+              key={d}
+              x1={roadLeft(d)}
+              y1={y}
+              x2={roadRight(d)}
+              y2={y}
+              stroke="#5C301808"
+              strokeWidth={1}
+            />
+          );
+        })}
       </svg>
 
-      {/* Horizon label */}
-      <p
-        className="absolute text-center"
+      {/* Horizon marker */}
+      <div
+        className="absolute"
         style={{
-          top: 4,
+          top: vanishY - 14,
           left: 0,
           right: 0,
-          fontFamily: 'var(--font-handwritten)',
-          fontSize: '13px',
-          color: '#5C3018',
-          opacity: 0.5,
+          textAlign: 'center',
         }}
       >
-        → horizon
-      </p>
+        <span
+          style={{
+            fontFamily: 'var(--font-handwritten)',
+            fontSize: '12px',
+            color: '#5C3018',
+            opacity: 0.4,
+          }}
+        >
+          horizon
+        </span>
+      </div>
 
-      {/* Blocks as perspective pills */}
-      {sorted.map((block, idx) => {
-        // t=0 is first hour (bottom), t=1 is last hour (top/horizon)
+      {/* Blocks as road pills — early hours at bottom, later at top */}
+      {sorted.map((block) => {
         const hourOffset = block.startHour - wakeHour;
         const t = totalHours > 0 ? hourOffset / totalHours : 0;
-        // Invert: early hours at bottom, later hours at top
-        const depth = 1 - t;
+        const depth = 1 - t; // 1=bottom (now), 0=horizon (later)
 
-        const y = vanishY + (baseY - vanishY) * (1 - depth);
-        const widthAtDepth = 60 + (W - 120) * depth;
-        const x = (W - widthAtDepth) / 2;
-        const pillH = Math.max(24, 36 * depth);
-        const fontSize = Math.max(11, 14 * depth);
-        const opacity = 0.4 + 0.6 * depth;
+        const y = vanishY + roadSpan * (1 - depth);
+        const left = roadLeft(depth);
+        const right = roadRight(depth);
+        const pillW = (right - left) * 0.75;
+        const pillX = vanishX - pillW / 2;
+        const pillH = Math.max(22, 34 * depth);
+        const fontSize = Math.max(10, 14 * depth);
+        const opacity = 0.5 + 0.5 * depth;
 
         return (
           <div
             key={block.id}
             className="absolute flex items-center justify-center rounded-full transition-all"
             style={{
-              left: x,
+              left: pillX,
               top: y - pillH / 2,
-              width: widthAtDepth,
+              width: pillW,
               height: pillH,
               background: block.color,
               opacity,
-              boxShadow: `0 2px 8px -2px ${block.color}40`,
+              boxShadow: `0 2px 10px -3px ${block.color}50`,
             }}
           >
             <span
@@ -121,7 +156,7 @@ export default function AgendaRoadView({ blocks, wakeHour }: Props) {
                 fontSize,
                 fontWeight: 600,
                 color: '#F5ECDC',
-                maxWidth: widthAtDepth - 16,
+                maxWidth: pillW - 12,
               }}
             >
               {block.text}
@@ -130,31 +165,50 @@ export default function AgendaRoadView({ blocks, wakeHour }: Props) {
         );
       })}
 
-      {/* Step labels on the left */}
-      {sorted.map((block, idx) => {
+      {/* Hour labels along the left road edge */}
+      {sorted.map((block) => {
         const hourOffset = block.startHour - wakeHour;
         const t = totalHours > 0 ? hourOffset / totalHours : 0;
         const depth = 1 - t;
-        const y = vanishY + (baseY - vanishY) * (1 - depth);
+        const y = vanishY + roadSpan * (1 - depth);
+        const left = roadLeft(depth);
 
         return (
           <span
-            key={`label-${block.id}`}
+            key={`h-${block.id}`}
             className="absolute"
             style={{
-              left: 6,
-              top: y - 7,
+              left: left - 4,
+              top: y - 6,
               fontFamily: 'var(--font-serif)',
-              fontSize: '10px',
+              fontSize: Math.max(9, 11 * depth),
               fontWeight: 600,
               color: '#5C3018',
-              opacity: 0.35,
+              opacity: 0.3 + 0.2 * depth,
+              textAlign: 'right',
+              transform: 'translateX(-100%)',
             }}
           >
             {String(block.startHour).padStart(2, '0')}h
           </span>
         );
       })}
+
+      {/* Empty state */}
+      {sorted.length === 0 && (
+        <div className="absolute inset-0 flex items-center justify-center">
+          <p
+            style={{
+              fontFamily: 'var(--font-handwritten)',
+              fontSize: '16px',
+              color: '#5C3018',
+              opacity: 0.3,
+            }}
+          >
+            add missions to see the road
+          </p>
+        </div>
+      )}
     </div>
   );
 }
