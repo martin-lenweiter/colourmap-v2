@@ -5,6 +5,7 @@ import DailyAgenda from '@/components/DailyAgenda';
 import DayTabs from '@/components/DayTabs';
 import FeelingCheckInCard from '@/components/FeelingCheckInCard';
 import LifeCategories from '@/components/LifeCategories';
+import MasteryBox from '@/components/MasteryBox';
 import ReflectBox from '@/components/ReflectBox';
 import { StyleProvider } from '@/components/StyleContext';
 
@@ -42,6 +43,7 @@ function DayContent() {
             <ReflectBox />
           </div>
         }
+        masteryContent={<MasteryBox />}
       />
     </div>
   );

@@ -10,11 +10,12 @@ import { useStyle } from '@/components/StyleContext';
    Overview = wide-angle life map + compass carousel.
    ═══════════════════════════════════════════════════════════ */
 
-type Tab = 'checkin' | 'overview';
+type Tab = 'checkin' | 'overview' | 'mastery';
 
 const TABS: { id: Tab; label: string }[] = [
   { id: 'checkin', label: 'Check in' },
   { id: 'overview', label: 'Overview' },
+  { id: 'mastery', label: 'Mastery' },
 ];
 
 const TAB_KEY = 'colourmap:day-tab';
@@ -22,9 +23,10 @@ const TAB_KEY = 'colourmap:day-tab';
 interface DayTabsProps {
   checkinContent: React.ReactNode;
   overviewContent: React.ReactNode;
+  masteryContent?: React.ReactNode;
 }
 
-export default function DayTabs({ checkinContent, overviewContent }: DayTabsProps) {
+export default function DayTabs({ checkinContent, overviewContent, masteryContent }: DayTabsProps) {
   const [active, setActive] = useState<Tab>('checkin');
   const { style } = useStyle();
 
@@ -35,6 +37,7 @@ export default function DayTabs({ checkinContent, overviewContent }: DayTabsProp
       const stored = localStorage.getItem(TAB_KEY);
       if (stored === 'cockpit' || stored === 'checkin') setActive('checkin');
       else if (stored === 'overview') setActive('overview');
+      else if (stored === 'mastery') setActive('mastery');
     } catch {
       /* silent */
     }
@@ -79,6 +82,7 @@ export default function DayTabs({ checkinContent, overviewContent }: DayTabsProp
       <div className="animate-in fade-in duration-200">
         {active === 'checkin' && checkinContent}
         {active === 'overview' && overviewContent}
+        {active === 'mastery' && masteryContent}
       </div>
     </div>
   );
