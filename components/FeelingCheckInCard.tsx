@@ -760,8 +760,23 @@ export default function FeelingCheckInCard() {
   };
 
   // Today's objectives — multiple things planned for today
-  type TodoItem = { id: string; text: string; done: boolean; notes?: string };
+  type TodoItem = {
+    id: string;
+    text: string;
+    done: boolean;
+    notes?: string;
+    ease?: number;
+    weight?: number;
+  };
   const [expandedTodayId, setExpandedTodayId] = useState<string | null>(null);
+  const updateTodayField = (id: string, field: string, value: string | number) => {
+    const next = todayObjectives.map((t) => (t.id === id ? { ...t, [field]: value } : t));
+    persistTodayObjectives(next);
+  };
+  const updateTodoField = (id: string, field: string, value: string | number) => {
+    const next = todos.map((t) => (t.id === id ? { ...t, [field]: value } : t));
+    persistTodos(next);
+  };
   const updateTodayNotes = (id: string, notes: string) => {
     const next = todayObjectives.map((t) => (t.id === id ? { ...t, notes } : t));
     setTodayObjectives(next);
@@ -2444,6 +2459,101 @@ export default function FeelingCheckInCard() {
                                     lineHeight: 1.4,
                                   }}
                                 />
+                                {/* Ease + Weight sliders */}
+                                <div className="ml-7 flex gap-4 pt-2 pb-1">
+                                  <div className="flex items-center gap-1.5">
+                                    <span
+                                      style={{
+                                        fontFamily: 'var(--font-serif)',
+                                        fontSize: '10px',
+                                        color: '#8A6A4A',
+                                        opacity: 0.6,
+                                        width: 32,
+                                      }}
+                                    >
+                                      ease
+                                    </span>
+                                    <div className="flex gap-1">
+                                      {[1, 2, 3, 4, 5].map((n) => {
+                                        const colors = [
+                                          '#E0844A',
+                                          '#D8C078',
+                                          '#C0D088',
+                                          '#A0C8A0',
+                                          '#7AAA58',
+                                        ];
+                                        const active = (o.ease || 0) >= n;
+                                        return (
+                                          <button
+                                            key={n}
+                                            type="button"
+                                            onClick={() =>
+                                              updateTodayField(o.id, 'ease', o.ease === n ? 0 : n)
+                                            }
+                                            style={{
+                                              width: 14,
+                                              height: 14,
+                                              borderRadius: '50%',
+                                              background: colors[n - 1],
+                                              opacity: active ? 0.9 : 0.2,
+                                              border: 'none',
+                                              cursor: 'pointer',
+                                              transition: 'all 0.15s',
+                                            }}
+                                          />
+                                        );
+                                      })}
+                                    </div>
+                                  </div>
+                                  <div className="flex items-center gap-1.5">
+                                    <span
+                                      style={{
+                                        fontFamily: 'var(--font-serif)',
+                                        fontSize: '10px',
+                                        color: '#8A6A4A',
+                                        opacity: 0.6,
+                                        width: 38,
+                                      }}
+                                    >
+                                      weight
+                                    </span>
+                                    <div className="flex gap-1">
+                                      {[1, 2, 3, 4, 5].map((n) => {
+                                        const colors = [
+                                          '#A0B0D0',
+                                          '#90C0C0',
+                                          '#D8C078',
+                                          '#E8A878',
+                                          '#E0908A',
+                                        ];
+                                        const active = (o.weight || 0) >= n;
+                                        return (
+                                          <button
+                                            key={n}
+                                            type="button"
+                                            onClick={() =>
+                                              updateTodayField(
+                                                o.id,
+                                                'weight',
+                                                o.weight === n ? 0 : n,
+                                              )
+                                            }
+                                            style={{
+                                              width: 14,
+                                              height: 14,
+                                              borderRadius: '50%',
+                                              background: colors[n - 1],
+                                              opacity: active ? 0.9 : 0.2,
+                                              border: 'none',
+                                              cursor: 'pointer',
+                                              transition: 'all 0.15s',
+                                            }}
+                                          />
+                                        );
+                                      })}
+                                    </div>
+                                  </div>
+                                </div>
                                 <div className="ml-7 flex gap-2 pt-1">
                                   <button
                                     type="button"
@@ -2649,6 +2759,66 @@ export default function FeelingCheckInCard() {
                             >
                               {t.text}
                             </span>
+                            {/* Ease/weight dots inline */}
+                            <div className="flex items-center gap-0.5 opacity-0 transition-opacity group-hover:opacity-100">
+                              {[1, 2, 3, 4, 5].map((n) => {
+                                const colors = [
+                                  '#E0844A',
+                                  '#D8C078',
+                                  '#C0D088',
+                                  '#A0C8A0',
+                                  '#7AAA58',
+                                ];
+                                return (
+                                  <button
+                                    key={`e-${n}`}
+                                    type="button"
+                                    onClick={() =>
+                                      updateTodoField(t.id, 'ease', t.ease === n ? 0 : n)
+                                    }
+                                    style={{
+                                      width: 8,
+                                      height: 8,
+                                      borderRadius: '50%',
+                                      background: colors[n - 1],
+                                      opacity: (t.ease || 0) >= n ? 0.9 : 0.15,
+                                      border: 'none',
+                                      cursor: 'pointer',
+                                      padding: 0,
+                                    }}
+                                  />
+                                );
+                              })}
+                              <span style={{ width: 4 }} />
+                              {[1, 2, 3, 4, 5].map((n) => {
+                                const colors = [
+                                  '#A0B0D0',
+                                  '#90C0C0',
+                                  '#D8C078',
+                                  '#E8A878',
+                                  '#E0908A',
+                                ];
+                                return (
+                                  <button
+                                    key={`w-${n}`}
+                                    type="button"
+                                    onClick={() =>
+                                      updateTodoField(t.id, 'weight', t.weight === n ? 0 : n)
+                                    }
+                                    style={{
+                                      width: 8,
+                                      height: 8,
+                                      borderRadius: '50%',
+                                      background: colors[n - 1],
+                                      opacity: (t.weight || 0) >= n ? 0.9 : 0.15,
+                                      border: 'none',
+                                      cursor: 'pointer',
+                                      padding: 0,
+                                    }}
+                                  />
+                                );
+                              })}
+                            </div>
                             <button
                               type="button"
                               onClick={() => moveToDaily(t.text, 'push', t.id)}
