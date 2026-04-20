@@ -205,11 +205,12 @@ export default function MasteryBox() {
             Your path
           </p>
           <p
+            className="italic"
             style={{
-              fontFamily: 'var(--font-handwritten)',
+              fontFamily: 'var(--font-serif)',
               fontSize: '15px',
               color: '#8A6A4A',
-              opacity: 0.7,
+              opacity: 0.95,
             }}
           >
             tap a dot to write what lives there
@@ -286,11 +287,12 @@ export default function MasteryBox() {
                         )}
                       </p>
                       <p
+                        className="italic"
                         style={{
-                          fontFamily: 'var(--font-handwritten)',
-                          fontSize: '16px',
+                          fontFamily: 'var(--font-serif)',
+                          fontSize: '14px',
                           color: '#8A6A4A',
-                          opacity: 0.65,
+                          opacity: 0.95,
                         }}
                       >
                         {stage.subtitle}
@@ -575,11 +577,12 @@ export default function MasteryBox() {
             Your domains
           </p>
           <p
+            className="italic"
             style={{
-              fontFamily: 'var(--font-handwritten)',
+              fontFamily: 'var(--font-serif)',
               fontSize: '15px',
               color: '#8A6A4A',
-              opacity: 0.7,
+              opacity: 0.95,
             }}
           >
             where are you growing
@@ -650,11 +653,12 @@ export default function MasteryBox() {
                 {/* Level — where are you */}
                 <div className="space-y-1.5">
                   <p
+                    className="italic"
                     style={{
-                      fontFamily: 'var(--font-handwritten)',
-                      fontSize: '15px',
+                      fontFamily: 'var(--font-serif)',
+                      fontSize: '14px',
                       color: '#8A6A4A',
-                      opacity: 0.6,
+                      opacity: 0.95,
                     }}
                   >
                     where are you?

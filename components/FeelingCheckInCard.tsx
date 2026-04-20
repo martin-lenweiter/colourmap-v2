@@ -4650,12 +4650,12 @@ export default function FeelingCheckInCard() {
                         if (e.key === 'Enter') saveChallenge();
                       }}
                       placeholder="what is your main tension right now?"
-                      className="flex-1 border-b bg-transparent pb-1 outline-none placeholder:text-[#7A5438] placeholder:opacity-60"
+                      className="flex-1 border-b bg-transparent pb-1 outline-none placeholder:italic placeholder:text-[#8A6A4A] placeholder:opacity-[0.95]"
                       style={{
                         color: '#7a5438',
                         borderColor: '#C4A06030',
-                        fontFamily: 'var(--font-handwritten)',
-                        fontSize: '18px',
+                        fontFamily: 'var(--font-serif)',
+                        fontSize: '16px',
                       }}
                     />
                     <CategoryTagPicker
@@ -4693,12 +4693,12 @@ export default function FeelingCheckInCard() {
                         if (e.key === 'Enter') saveFlow();
                       }}
                       placeholder="what is working well? how are you celebrating?"
-                      className="flex-1 border-b bg-transparent pb-1 outline-none placeholder:text-[#7A5438] placeholder:opacity-60"
+                      className="flex-1 border-b bg-transparent pb-1 outline-none placeholder:italic placeholder:text-[#8A6A4A] placeholder:opacity-[0.95]"
                       style={{
                         color: '#7a5438',
                         borderColor: '#C4A06030',
-                        fontFamily: 'var(--font-handwritten)',
-                        fontSize: '18px',
+                        fontFamily: 'var(--font-serif)',
+                        fontSize: '16px',
                       }}
                     />
                     <CategoryTagPicker
