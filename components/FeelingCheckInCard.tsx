@@ -370,6 +370,8 @@ export default function FeelingCheckInCard() {
       mindColor: string;
       tag?: string;
       tagColor?: string;
+      missionId?: string;
+      missionText?: string;
     }[]
   >(() => {
     try {
@@ -552,9 +554,9 @@ export default function FeelingCheckInCard() {
   const [_showHawkinsPicker, setShowHawkinsPicker] = useState(false);
   const [_showDotHawkinsPicker, _setShowDotHawkinsPicker] = useState(false);
 
-  // Emotional-register variant — six ways to render the same balance level.
-  // 1 arc · 2 circle · 3 rings · 4 mountain · 5 slider · 6 boxes
-  type Variant = 1 | 2 | 3 | 4 | 5 | 6;
+  // Emotional-register variant — nine ways to render the same balance level.
+  // 1 arc · 2 circle · 3 rings · 4 mountain · 5 slider · 6 boxes · 7 quadrant · 8 bars · 9 grid
+  type Variant = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9;
   const VARIANTS: { id: Variant; label: string }[] = [
     { id: 1, label: 'arc' },
     { id: 2, label: 'circle' },
@@ -562,10 +564,13 @@ export default function FeelingCheckInCard() {
     { id: 4, label: 'mountain' },
     { id: 5, label: 'slider' },
     { id: 6, label: 'boxes' },
+    { id: 7, label: 'quadrant' },
+    { id: 8, label: 'bars' },
+    { id: 9, label: 'grid' },
   ];
   const [variantIdx, setVariantIdx] = useState<Variant>(() => {
     const v = loadNum('colourmap:design-variant', 1);
-    return Math.max(1, Math.min(6, v)) as Variant;
+    return Math.max(1, Math.min(9, v)) as Variant;
   });
   useEffect(() => {
     localStorage.setItem('colourmap:design-variant', String(variantIdx));
@@ -639,6 +644,41 @@ export default function FeelingCheckInCard() {
   useEffect(() => {
     localStorage.setItem('colourmap:balance-idx', String(balanceIdx));
   }, [balanceIdx]);
+
+  // Quadrant variant — two axes: body (relaxed↔tense) and mind (productive↔disconnected)
+  const BODY_AXIS = [
+    { label: 'Relaxed', color: '#7AAA58' },
+    { label: 'At ease', color: '#A0C8A0' },
+    { label: 'Neutral', color: '#C8C8A0' },
+    { label: 'Tight', color: '#E8A878' },
+    { label: 'Tense', color: '#D06040' },
+  ];
+  const MIND_AXIS = [
+    { label: 'Productive', color: '#6890B0' },
+    { label: 'Focused', color: '#88B0C8' },
+    { label: 'Neutral', color: '#C8C8A0' },
+    { label: 'Drifting', color: '#D8C078' },
+    { label: 'Disconnected', color: '#C4A060' },
+  ];
+  const CLARITY_AXIS = [
+    { label: 'Clear mind', color: '#7AAA58' },
+    { label: 'Mostly clear', color: '#A0C8A0' },
+    { label: 'A bit foggy', color: '#C8C8A0' },
+    { label: 'Scattered', color: '#D8C078' },
+    { label: 'Blocking my focus', color: '#D06040' },
+  ];
+  const [bodyIdx, setBodyIdx] = useState(() => loadNum('colourmap:body-idx', 2));
+  const [focusIdx, setFocusIdx] = useState(() => loadNum('colourmap:focus-idx', 2));
+  const [clarityIdx, setClarityIdx] = useState(() => loadNum('colourmap:clarity-idx', 2));
+  useEffect(() => {
+    localStorage.setItem('colourmap:body-idx', String(bodyIdx));
+  }, [bodyIdx]);
+  useEffect(() => {
+    localStorage.setItem('colourmap:focus-idx', String(focusIdx));
+  }, [focusIdx]);
+  useEffect(() => {
+    localStorage.setItem('colourmap:clarity-idx', String(clarityIdx));
+  }, [clarityIdx]);
 
   // CONTEXT — outer ring layer for variant 1: am I on the right mission?
   const CONTEXT = [
@@ -735,7 +775,7 @@ export default function FeelingCheckInCard() {
         time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
         text,
         mind: 'challenge',
-        mindColor: '#A05A40',
+        mindColor: '#C4A060',
         ...(challengeTag && { tag: challengeTag.name, tagColor: challengeTag.color }),
       },
     ]);
@@ -760,6 +800,7 @@ export default function FeelingCheckInCard() {
   };
 
   // Today's objectives — multiple things planned for today
+  type TodoStatus = 'active' | 'waiting';
   type TodoItem = {
     id: string;
     text: string;
@@ -767,10 +808,18 @@ export default function FeelingCheckInCard() {
     notes?: string;
     ease?: number;
     weight?: number;
+    urgency?: number;
+    status?: TodoStatus;
+  };
+  const STATUS_CONFIG: Record<TodoStatus, { label: string; color: string }> = {
+    active: { label: 'Active', color: '#7AAA58' },
+    waiting: { label: 'Waiting for reply', color: '#8A8A8A' },
   };
   const [expandedTodayId, setExpandedTodayId] = useState<string | null>(null);
   const [renamingObjId, setRenamingObjId] = useState<string | null>(null);
   const [renameObjValue, setRenameObjValue] = useState('');
+  const [renamingTodoId, setRenamingTodoId] = useState<string | null>(null);
+  const [renameTodoValue, setRenameTodoValue] = useState('');
   const updateTodayField = (id: string, field: string, value: string | number) => {
     const next = todayObjectives.map((t) => (t.id === id ? { ...t, [field]: value } : t));
     persistTodayObjectives(next);
@@ -829,15 +878,18 @@ export default function FeelingCheckInCard() {
     persistTodayObjectives(todayObjectives.filter((t) => t.id !== id));
     fetch(`/api/daily-objectives/${id}`, { method: 'DELETE' }).catch(() => {});
   };
-  const reorderTodayObjectives = (fromIdx: number, toIdx: number) => {
-    if (fromIdx === toIdx || fromIdx < 0 || toIdx < 0) return;
+  const reorderTodayObjectives = (fromId: string, toId: string) => {
+    if (fromId === toId) return;
+    const fromIdx = todayObjectives.findIndex((o) => o.id === fromId);
+    const toIdx = todayObjectives.findIndex((o) => o.id === toId);
+    if (fromIdx < 0 || toIdx < 0) return;
     const next = [...todayObjectives];
     const [moved] = next.splice(fromIdx, 1);
     next.splice(toIdx, 0, moved);
     persistTodayObjectives(next);
   };
-  const [draggedTodayIdx, setDraggedTodayIdx] = useState<number | null>(null);
-  const [dragOverTodayIdx, setDragOverTodayIdx] = useState<number | null>(null);
+  const [draggedTodayId, setDraggedTodayId] = useState<string | null>(null);
+  const [dragOverTodayId, setDragOverTodayId] = useState<string | null>(null);
 
   // Quick to-do list inside the check-in
   const [todos, setTodos] = useState<TodoItem[]>(() => {
@@ -898,16 +950,19 @@ export default function FeelingCheckInCard() {
     persistTodos(todos.filter((t) => t.id !== id));
     fetch(`/api/daily-objectives/${id}`, { method: 'DELETE' }).catch(() => {});
   };
-  const reorderTodos = (fromIdx: number, toIdx: number) => {
-    if (fromIdx === toIdx || fromIdx < 0 || toIdx < 0) return;
+  const reorderTodos = (fromId: string, toId: string) => {
+    if (fromId === toId) return;
+    const fromIdx = todos.findIndex((t) => t.id === fromId);
+    const toIdx = todos.findIndex((t) => t.id === toId);
+    if (fromIdx < 0 || toIdx < 0) return;
     const next = [...todos];
     const [moved] = next.splice(fromIdx, 1);
     next.splice(toIdx, 0, moved);
     persistTodos(next);
   };
   const [expandedTodoId, setExpandedTodoId] = useState<string | null>(null);
-  const [draggedTodoIdx, setDraggedTodoIdx] = useState<number | null>(null);
-  const [dragOverTodoIdx, setDragOverTodoIdx] = useState<number | null>(null);
+  const [draggedTodoId, setDraggedTodoId] = useState<string | null>(null);
+  const [dragOverTodoId, setDragOverTodoId] = useState<string | null>(null);
   const [clarityOpen, setClarityOpen] = useState(false);
   type HawkinsStyle = 'squares' | 'dots' | 'losanges';
   const [hawkinsStyle, setHawkinsStyle] = useState<HawkinsStyle>(() => {
@@ -1143,7 +1198,7 @@ export default function FeelingCheckInCard() {
             objective: '',
             emotions: [
               ...(d.challenge
-                ? [{ time: '', text: d.challenge, mind: 'challenge', mindColor: '#D4805A' }]
+                ? [{ time: '', text: d.challenge, mind: 'challenge', mindColor: '#C4A060' }]
                 : []),
               ...(d.flow ? [{ time: '', text: d.flow, mind: 'flow', mindColor: '#6890B0' }] : []),
             ],
@@ -1165,7 +1220,6 @@ export default function FeelingCheckInCard() {
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Load daily objectives from backend on mount
-  // biome-ignore lint/correctness/useExhaustiveDependencies: mount-only
   useEffect(() => {
     fetch('/api/daily-objectives')
       .then((r) => {
@@ -1478,22 +1532,6 @@ export default function FeelingCheckInCard() {
     };
   }, []);
 
-  // Time-aware greeting
-  const greetingHour = new Date().getHours();
-  const greeting =
-    greetingHour >= 5 && greetingHour < 12
-      ? 'Good morning'
-      : greetingHour >= 12 && greetingHour < 17
-        ? 'Good afternoon'
-        : greetingHour >= 17 && greetingHour < 22
-          ? 'Good evening'
-          : 'Late night';
-  const dateStr = new Date().toLocaleDateString('en-GB', {
-    weekday: 'long',
-    day: 'numeric',
-    month: 'long',
-  });
-
   return (
     <>
       {/* ═══ BOX A: HOW ARE YOU ═══ */}
@@ -1504,33 +1542,6 @@ export default function FeelingCheckInCard() {
           boxShadow: '0 24px 50px -34px rgba(92,48,24,0.35)',
         }}
       >
-        {/* Time-aware greeting */}
-        <div className="flex flex-col items-center gap-0.5 pb-1">
-          <p
-            className="text-center italic"
-            style={{
-              fontFamily: 'var(--font-serif)',
-              fontSize: '18px',
-              color: '#5C3018',
-              opacity: 0.8,
-            }}
-          >
-            {greeting}
-          </p>
-          <p
-            className="text-center"
-            style={{
-              fontFamily: 'var(--font-serif)',
-              fontSize: '12px',
-              color: '#8A6A4A',
-              opacity: 0.5,
-              letterSpacing: '0.06em',
-            }}
-          >
-            {dateStr}
-          </p>
-        </div>
-
         {/* Discrete design toggle — tiny losange at top-right, opens variant picker */}
         <div className="absolute right-4 top-4" style={{ zIndex: 10 }}>
           <button
@@ -1539,8 +1550,8 @@ export default function FeelingCheckInCard() {
             aria-label="Choose design"
             className="flex cursor-pointer items-center justify-center rounded-full transition-all"
             style={{
-              width: 18,
-              height: 18,
+              width: 28,
+              height: 28,
               background: 'transparent',
               border: 'none',
               opacity: 1,
@@ -1548,8 +1559,8 @@ export default function FeelingCheckInCard() {
           >
             <span
               style={{
-                width: 12,
-                height: 12,
+                width: 20,
+                height: 20,
                 background: '#D8BE94',
                 opacity: 1,
                 borderRadius: '50%',
@@ -1945,15 +1956,462 @@ export default function FeelingCheckInCard() {
             </div>
           )}
 
-          <p
-            className="text-center text-lg font-bold transition-all duration-300"
-            style={{
-              color: variantIdx === 6 ? HAWKINS[hawkinsIdx].color : BALANCE[balanceIdx].color,
-              fontFamily: 'var(--font-serif)',
-            }}
-          >
-            {variantIdx === 6 ? HAWKINS[hawkinsIdx].level : BALANCE[balanceIdx].label}
-          </p>
+          {variantIdx === 7 && (
+            <div className="flex items-stretch gap-6" style={{ width: 340, minHeight: 120 }}>
+              {/* Left axis — body: Relaxed ↔ Tense */}
+              <div className="flex flex-1 flex-col items-center gap-1">
+                <span
+                  style={{
+                    fontFamily: 'var(--font-serif)',
+                    fontSize: '10px',
+                    fontWeight: 700,
+                    color: '#8A6A4A',
+                    letterSpacing: '0.14em',
+                    textTransform: 'uppercase' as const,
+                    opacity: 0.6,
+                  }}
+                >
+                  body
+                </span>
+                <div className="flex flex-1 flex-col gap-[3px]" style={{ width: '100%' }}>
+                  {BODY_AXIS.map((b, i) => {
+                    const active = bodyIdx === i;
+                    return (
+                      <button
+                        key={b.label}
+                        type="button"
+                        onClick={() => setBodyIdx(i)}
+                        className="flex-1 cursor-pointer rounded-sm transition-all"
+                        style={{
+                          background: b.color,
+                          opacity: active ? 1 : 0.2,
+                          border: 'none',
+                          boxShadow: active ? `0 2px 10px -3px ${b.color}` : 'none',
+                          minHeight: 16,
+                        }}
+                      />
+                    );
+                  })}
+                </div>
+                <span
+                  style={{
+                    fontFamily: 'var(--font-serif)',
+                    fontSize: '12px',
+                    fontWeight: 600,
+                    color: BODY_AXIS[bodyIdx].color,
+                  }}
+                >
+                  {BODY_AXIS[bodyIdx].label}
+                </span>
+              </div>
+
+              {/* Right axis — focus: Productive ↔ Disconnected */}
+              <div className="flex flex-1 flex-col items-center gap-1">
+                <span
+                  style={{
+                    fontFamily: 'var(--font-serif)',
+                    fontSize: '10px',
+                    fontWeight: 700,
+                    color: '#8A6A4A',
+                    letterSpacing: '0.14em',
+                    textTransform: 'uppercase' as const,
+                    opacity: 0.6,
+                  }}
+                >
+                  focus
+                </span>
+                <div className="flex flex-1 flex-col gap-[3px]" style={{ width: '100%' }}>
+                  {MIND_AXIS.map((m, i) => {
+                    const active = focusIdx === i;
+                    return (
+                      <button
+                        key={m.label}
+                        type="button"
+                        onClick={() => setFocusIdx(i)}
+                        className="flex-1 cursor-pointer rounded-sm transition-all"
+                        style={{
+                          background: m.color,
+                          opacity: active ? 1 : 0.2,
+                          border: 'none',
+                          boxShadow: active ? `0 2px 10px -3px ${m.color}` : 'none',
+                          minHeight: 16,
+                        }}
+                      />
+                    );
+                  })}
+                </div>
+                <span
+                  style={{
+                    fontFamily: 'var(--font-serif)',
+                    fontSize: '12px',
+                    fontWeight: 600,
+                    color: MIND_AXIS[focusIdx].color,
+                  }}
+                >
+                  {MIND_AXIS[focusIdx].label}
+                </span>
+              </div>
+              {/* Clarity — horizontal bar below both columns */}
+              <div className="mt-3 space-y-1.5" style={{ width: '100%' }}>
+                <div className="flex items-center justify-between">
+                  <span
+                    style={{
+                      fontFamily: 'var(--font-serif)',
+                      fontSize: '11px',
+                      fontWeight: 700,
+                      color: '#8A6A4A',
+                      letterSpacing: '0.14em',
+                      textTransform: 'uppercase' as const,
+                      opacity: 0.6,
+                    }}
+                  >
+                    clarity
+                  </span>
+                  <span
+                    style={{
+                      fontFamily: 'var(--font-serif)',
+                      fontSize: '12px',
+                      fontWeight: 600,
+                      color: CLARITY_AXIS[clarityIdx].color,
+                    }}
+                  >
+                    {CLARITY_AXIS[clarityIdx].label}
+                  </span>
+                </div>
+                <div className="flex gap-[3px]">
+                  {CLARITY_AXIS.map((c, i) => {
+                    const active = clarityIdx === i;
+                    return (
+                      <button
+                        key={c.label}
+                        type="button"
+                        onClick={() => setClarityIdx(i)}
+                        className="flex-1 cursor-pointer rounded-sm transition-all"
+                        style={{
+                          height: 14,
+                          background: c.color,
+                          opacity: active ? 1 : 0.18,
+                          border: 'none',
+                          boxShadow: active ? `0 2px 8px -2px ${c.color}` : 'none',
+                        }}
+                      />
+                    );
+                  })}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {variantIdx === 8 && (
+            <div className="space-y-4" style={{ width: 340 }}>
+              {/* Body axis — horizontal bar */}
+              <div className="space-y-1.5">
+                <div className="flex items-center justify-between">
+                  <span
+                    style={{
+                      fontFamily: 'var(--font-serif)',
+                      fontSize: '11px',
+                      fontWeight: 700,
+                      color: '#8A6A4A',
+                      letterSpacing: '0.14em',
+                      textTransform: 'uppercase' as const,
+                      opacity: 0.6,
+                    }}
+                  >
+                    body
+                  </span>
+                  <span
+                    style={{
+                      fontFamily: 'var(--font-serif)',
+                      fontSize: '12px',
+                      fontWeight: 600,
+                      color: BODY_AXIS[bodyIdx].color,
+                    }}
+                  >
+                    {BODY_AXIS[bodyIdx].label}
+                  </span>
+                </div>
+                <div className="flex gap-[3px]">
+                  {BODY_AXIS.map((b, i) => {
+                    const active = bodyIdx === i;
+                    return (
+                      <button
+                        key={b.label}
+                        type="button"
+                        onClick={() => setBodyIdx(i)}
+                        className="flex-1 cursor-pointer rounded-sm transition-all"
+                        style={{
+                          height: 18,
+                          background: b.color,
+                          opacity: active ? 1 : 0.18,
+                          border: 'none',
+                          boxShadow: active ? `0 2px 8px -2px ${b.color}` : 'none',
+                        }}
+                      />
+                    );
+                  })}
+                </div>
+              </div>
+              {/* Focus axis — horizontal bar */}
+              <div className="space-y-1.5">
+                <div className="flex items-center justify-between">
+                  <span
+                    style={{
+                      fontFamily: 'var(--font-serif)',
+                      fontSize: '11px',
+                      fontWeight: 700,
+                      color: '#8A6A4A',
+                      letterSpacing: '0.14em',
+                      textTransform: 'uppercase' as const,
+                      opacity: 0.6,
+                    }}
+                  >
+                    focus
+                  </span>
+                  <span
+                    style={{
+                      fontFamily: 'var(--font-serif)',
+                      fontSize: '12px',
+                      fontWeight: 600,
+                      color: MIND_AXIS[focusIdx].color,
+                    }}
+                  >
+                    {MIND_AXIS[focusIdx].label}
+                  </span>
+                </div>
+                <div className="flex gap-[3px]">
+                  {MIND_AXIS.map((m, i) => {
+                    const active = focusIdx === i;
+                    return (
+                      <button
+                        key={m.label}
+                        type="button"
+                        onClick={() => setFocusIdx(i)}
+                        className="flex-1 cursor-pointer rounded-sm transition-all"
+                        style={{
+                          height: 18,
+                          background: m.color,
+                          opacity: active ? 1 : 0.18,
+                          border: 'none',
+                          boxShadow: active ? `0 2px 8px -2px ${m.color}` : 'none',
+                        }}
+                      />
+                    );
+                  })}
+                </div>
+              </div>
+              {/* Clarity axis — horizontal bar */}
+              <div className="space-y-1.5">
+                <div className="flex items-center justify-between">
+                  <span
+                    style={{
+                      fontFamily: 'var(--font-serif)',
+                      fontSize: '11px',
+                      fontWeight: 700,
+                      color: '#8A6A4A',
+                      letterSpacing: '0.14em',
+                      textTransform: 'uppercase' as const,
+                      opacity: 0.6,
+                    }}
+                  >
+                    clarity
+                  </span>
+                  <span
+                    style={{
+                      fontFamily: 'var(--font-serif)',
+                      fontSize: '12px',
+                      fontWeight: 600,
+                      color: CLARITY_AXIS[clarityIdx].color,
+                    }}
+                  >
+                    {CLARITY_AXIS[clarityIdx].label}
+                  </span>
+                </div>
+                <div className="flex gap-[3px]">
+                  {CLARITY_AXIS.map((c, i) => {
+                    const active = clarityIdx === i;
+                    return (
+                      <button
+                        key={c.label}
+                        type="button"
+                        onClick={() => setClarityIdx(i)}
+                        className="flex-1 cursor-pointer rounded-sm transition-all"
+                        style={{
+                          height: 18,
+                          background: c.color,
+                          opacity: active ? 1 : 0.18,
+                          border: 'none',
+                          boxShadow: active ? `0 2px 8px -2px ${c.color}` : 'none',
+                        }}
+                      />
+                    );
+                  })}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Variant 9: grid — body left, focus right as square columns, clarity bar below */}
+          {variantIdx === 9 && (
+            <div style={{ width: 340 }}>
+              <div className="flex gap-4">
+                {/* Body column — left */}
+                <div className="flex flex-1 flex-col items-center gap-1">
+                  <span
+                    style={{
+                      fontFamily: 'var(--font-serif)',
+                      fontSize: '10px',
+                      fontWeight: 700,
+                      color: '#8A6A4A',
+                      letterSpacing: '0.14em',
+                      textTransform: 'uppercase' as const,
+                      opacity: 0.6,
+                    }}
+                  >
+                    body
+                  </span>
+                  <div className="flex flex-col gap-[3px]" style={{ width: '100%' }}>
+                    {BODY_AXIS.map((b, i) => {
+                      const active = bodyIdx === i;
+                      return (
+                        <button
+                          key={b.label}
+                          type="button"
+                          onClick={() => setBodyIdx(i)}
+                          className="cursor-pointer rounded-[3px] transition-all"
+                          style={{
+                            width: '100%',
+                            height: 24,
+                            background: b.color,
+                            opacity: active ? 1 : 0.18,
+                            border: 'none',
+                            boxShadow: active ? `0 2px 8px -2px ${b.color}` : 'none',
+                          }}
+                        />
+                      );
+                    })}
+                  </div>
+                  <span
+                    style={{
+                      fontFamily: 'var(--font-serif)',
+                      fontSize: '12px',
+                      fontWeight: 600,
+                      color: BODY_AXIS[bodyIdx].color,
+                    }}
+                  >
+                    {BODY_AXIS[bodyIdx].label}
+                  </span>
+                </div>
+                {/* Focus column — right */}
+                <div className="flex flex-1 flex-col items-center gap-1">
+                  <span
+                    style={{
+                      fontFamily: 'var(--font-serif)',
+                      fontSize: '10px',
+                      fontWeight: 700,
+                      color: '#8A6A4A',
+                      letterSpacing: '0.14em',
+                      textTransform: 'uppercase' as const,
+                      opacity: 0.6,
+                    }}
+                  >
+                    focus
+                  </span>
+                  <div className="flex flex-col gap-[3px]" style={{ width: '100%' }}>
+                    {MIND_AXIS.map((m, i) => {
+                      const active = focusIdx === i;
+                      return (
+                        <button
+                          key={m.label}
+                          type="button"
+                          onClick={() => setFocusIdx(i)}
+                          className="cursor-pointer rounded-[3px] transition-all"
+                          style={{
+                            width: '100%',
+                            height: 24,
+                            background: m.color,
+                            opacity: active ? 1 : 0.18,
+                            border: 'none',
+                            boxShadow: active ? `0 2px 8px -2px ${m.color}` : 'none',
+                          }}
+                        />
+                      );
+                    })}
+                  </div>
+                  <span
+                    style={{
+                      fontFamily: 'var(--font-serif)',
+                      fontSize: '12px',
+                      fontWeight: 600,
+                      color: MIND_AXIS[focusIdx].color,
+                    }}
+                  >
+                    {MIND_AXIS[focusIdx].label}
+                  </span>
+                </div>
+              </div>
+              {/* Clarity — horizontal bar below both columns */}
+              <div className="mt-4 space-y-1.5">
+                <div className="flex items-center justify-between">
+                  <span
+                    style={{
+                      fontFamily: 'var(--font-serif)',
+                      fontSize: '11px',
+                      fontWeight: 700,
+                      color: '#8A6A4A',
+                      letterSpacing: '0.14em',
+                      textTransform: 'uppercase' as const,
+                      opacity: 0.6,
+                    }}
+                  >
+                    clarity
+                  </span>
+                  <span
+                    style={{
+                      fontFamily: 'var(--font-serif)',
+                      fontSize: '12px',
+                      fontWeight: 600,
+                      color: CLARITY_AXIS[clarityIdx].color,
+                    }}
+                  >
+                    {CLARITY_AXIS[clarityIdx].label}
+                  </span>
+                </div>
+                <div className="flex gap-[3px]">
+                  {CLARITY_AXIS.map((c, i) => {
+                    const active = clarityIdx === i;
+                    return (
+                      <button
+                        key={c.label}
+                        type="button"
+                        onClick={() => setClarityIdx(i)}
+                        className="flex-1 cursor-pointer rounded-[3px] transition-all"
+                        style={{
+                          height: 18,
+                          background: c.color,
+                          opacity: active ? 1 : 0.18,
+                          border: 'none',
+                          boxShadow: active ? `0 2px 8px -2px ${c.color}` : 'none',
+                        }}
+                      />
+                    );
+                  })}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {variantIdx !== 7 && variantIdx !== 8 && variantIdx !== 9 && (
+            <p
+              className="text-center text-lg font-bold transition-all duration-300"
+              style={{
+                color: variantIdx === 6 ? HAWKINS[hawkinsIdx].color : BALANCE[balanceIdx].color,
+                fontFamily: 'var(--font-serif)',
+              }}
+            >
+              {variantIdx === 6 ? HAWKINS[hawkinsIdx].level : BALANCE[balanceIdx].label}
+            </p>
+          )}
         </div>
 
         {/* Save star + post-save summary */}
@@ -1997,7 +2455,7 @@ export default function FeelingCheckInCard() {
               const prevYesterday = checkIns.find((c) => c.date?.startsWith(yesterday));
               const prev = prevToday || prevYesterday;
               const prevIdx = (prev as { hawkinsIdx?: number })?.hawkinsIdx;
-              const moved = typeof prevIdx === 'number' && prevIdx !== hawkinsIdx;
+              const _moved = typeof prevIdx === 'number' && prevIdx !== hawkinsIdx;
               const movedUp = typeof prevIdx === 'number' && hawkinsIdx > prevIdx;
 
               // Streak: count consecutive days with check-ins
@@ -2345,17 +2803,17 @@ export default function FeelingCheckInCard() {
                   <>
                     {todayObjectives
                       .filter((o) => !o.done)
-                      .map((o, idx) => {
+                      .map((o) => {
                         const isExpanded = expandedTodayId === o.id;
-                        const isDragging = draggedTodayIdx === idx;
-                        const isDropTarget = dragOverTodayIdx === idx && draggedTodayIdx !== idx;
+                        const isDragging = draggedTodayId === o.id;
+                        const isDropTarget = dragOverTodayId === o.id && draggedTodayId !== o.id;
                         return (
                           <div
                             key={o.id}
                             className="space-y-1"
                             draggable
                             onDragStart={(e) => {
-                              setDraggedTodayIdx(idx);
+                              setDraggedTodayId(o.id);
                               e.dataTransfer.setData(
                                 'text/plain',
                                 JSON.stringify({ from: 'daily', id: o.id, text: o.text }),
@@ -2363,8 +2821,8 @@ export default function FeelingCheckInCard() {
                             }}
                             onDragOver={(e) => {
                               e.preventDefault();
-                              if (draggedTodayIdx !== null && draggedTodayIdx !== idx) {
-                                setDragOverTodayIdx(idx);
+                              if (draggedTodayId !== null && draggedTodayId !== o.id) {
+                                setDragOverTodayId(o.id);
                               }
                             }}
                             onDragLeave={(e) => {
@@ -2372,20 +2830,20 @@ export default function FeelingCheckInCard() {
                               if (
                                 !(e.currentTarget as HTMLElement).contains(e.relatedTarget as Node)
                               ) {
-                                setDragOverTodayIdx((prev) => (prev === idx ? null : prev));
+                                setDragOverTodayId((prev) => (prev === o.id ? null : prev));
                               }
                             }}
                             onDrop={(e) => {
                               e.preventDefault();
-                              if (draggedTodayIdx !== null) {
-                                reorderTodayObjectives(draggedTodayIdx, idx);
+                              if (draggedTodayId !== null) {
+                                reorderTodayObjectives(draggedTodayId, o.id);
                               }
-                              setDraggedTodayIdx(null);
-                              setDragOverTodayIdx(null);
+                              setDraggedTodayId(null);
+                              setDragOverTodayId(null);
                             }}
                             onDragEnd={() => {
-                              setDraggedTodayIdx(null);
-                              setDragOverTodayIdx(null);
+                              setDraggedTodayId(null);
+                              setDragOverTodayId(null);
                             }}
                             style={{
                               opacity: isDragging ? 0.4 : 1,
@@ -2396,12 +2854,12 @@ export default function FeelingCheckInCard() {
                               transition: 'opacity 120ms, border-color 120ms',
                             }}
                           >
-                            <div className="group flex items-center gap-2">
+                            <div className="group flex items-start gap-2">
                               <button
                                 type="button"
                                 onClick={() => toggleTodayObjective(o.id)}
                                 title={o.done ? 'Mark as not done' : 'Mark as done'}
-                                className="flex h-5 w-5 shrink-0 cursor-pointer items-center justify-center rounded border transition-all hover:scale-110"
+                                className="mt-[3px] flex h-5 w-5 shrink-0 cursor-pointer items-center justify-center rounded border transition-all hover:scale-110"
                                 style={{
                                   borderColor: o.done ? '#7AAA5860' : '#C4A06060',
                                   background: o.done ? '#7AAA5810' : 'transparent',
@@ -2413,6 +2871,18 @@ export default function FeelingCheckInCard() {
                                   </span>
                                 )}
                               </button>
+                              {/* Status dot */}
+                              {!o.done && o.status && o.status !== 'active' && (
+                                <span
+                                  className="mt-[5px] block shrink-0 rounded-full"
+                                  style={{
+                                    width: 7,
+                                    height: 7,
+                                    background: STATUS_CONFIG[o.status].color,
+                                  }}
+                                  title={STATUS_CONFIG[o.status].label}
+                                />
+                              )}
                               {renamingObjId === o.id ? (
                                 <input
                                   type="text"
@@ -2453,15 +2923,28 @@ export default function FeelingCheckInCard() {
                                   }}
                                   className="flex-1 cursor-pointer bg-transparent text-left"
                                   style={{
-                                    color: o.done ? '#C4A060' : '#7a5438',
+                                    color: o.done
+                                      ? '#C4A060'
+                                      : o.status === 'waiting'
+                                        ? '#8A8A8A'
+                                        : '#7a5438',
                                     fontFamily: 'var(--font-handwritten)',
                                     fontSize: '20px',
-                                    opacity: o.done ? 0.5 : 1,
+                                    opacity: o.done ? 0.5 : o.status === 'waiting' ? 0.5 : 1,
                                     border: 'none',
+                                    fontStyle: o.status === 'waiting' ? 'italic' : 'normal',
                                   }}
                                   title="Click to expand · Double-click to rename"
                                 >
                                   {o.text}
+                                  {o.status === 'waiting' && (
+                                    <span
+                                      className="ml-2 text-xs"
+                                      style={{ color: '#8A8A8A', fontStyle: 'italic' }}
+                                    >
+                                      waiting
+                                    </span>
+                                  )}
                                   {o.notes && o.notes.trim().length > 0 && !isExpanded && (
                                     <span
                                       className="ml-2 text-xs no-underline"
@@ -2476,7 +2959,7 @@ export default function FeelingCheckInCard() {
                                 type="button"
                                 onClick={() => removeTodayObjective(o.id)}
                                 title="Remove"
-                                className="cursor-pointer text-sm opacity-0 transition-opacity group-hover:opacity-40"
+                                className="mt-[3px] cursor-pointer text-sm opacity-0 transition-opacity group-hover:opacity-40"
                                 style={{ color: '#7a5438', background: 'none', border: 'none' }}
                               >
                                 ✕
@@ -2498,127 +2981,336 @@ export default function FeelingCheckInCard() {
                                     lineHeight: 1.4,
                                   }}
                                 />
-                                {/* Ease + Weight sliders */}
-                                <div className="ml-7 flex gap-4 pt-2 pb-1">
-                                  <div className="flex items-center gap-1.5">
+                                {/* Status toggle — Active / Waiting */}
+                                <div className="ml-7 pt-1">
+                                  <button
+                                    type="button"
+                                    onClick={() =>
+                                      updateTodayField(
+                                        o.id,
+                                        'status',
+                                        o.status === 'waiting' ? 'active' : 'waiting',
+                                      )
+                                    }
+                                    className="flex cursor-pointer items-center gap-2 transition-all"
+                                    style={{ background: 'none', border: 'none' }}
+                                  >
+                                    <span
+                                      className="block rounded-full"
+                                      style={{
+                                        width: 10,
+                                        height: 10,
+                                        background: o.status === 'waiting' ? '#8A8A8A' : '#7AAA58',
+                                      }}
+                                    />
                                     <span
                                       style={{
                                         fontFamily: 'var(--font-serif)',
-                                        fontSize: '10px',
-                                        color: '#8A6A4A',
-                                        opacity: 0.6,
-                                        width: 32,
+                                        fontSize: '12px',
+                                        color: o.status === 'waiting' ? '#8A8A8A' : '#7AAA58',
+                                        fontWeight: 600,
                                       }}
                                     >
-                                      ease
+                                      {o.status === 'waiting' ? 'Waiting for reply' : 'Active'}
                                     </span>
-                                    <div className="flex gap-1">
-                                      {[1, 2, 3, 4, 5].map((n) => {
-                                        const colors = [
-                                          '#E0844A',
-                                          '#D8C078',
-                                          '#C0D088',
-                                          '#A0C8A0',
-                                          '#7AAA58',
-                                        ];
-                                        const active = (o.ease || 0) >= n;
-                                        return (
-                                          <button
-                                            key={n}
-                                            type="button"
-                                            onClick={() =>
-                                              updateTodayField(o.id, 'ease', o.ease === n ? 0 : n)
-                                            }
-                                            style={{
-                                              width: 14,
-                                              height: 14,
-                                              borderRadius: '50%',
-                                              background: colors[n - 1],
-                                              opacity: active ? 0.9 : 0.2,
-                                              border: 'none',
-                                              cursor: 'pointer',
-                                              transition: 'all 0.15s',
-                                            }}
-                                          />
-                                        );
-                                      })}
-                                    </div>
-                                  </div>
-                                  <div className="flex items-center gap-1.5">
-                                    <span
-                                      style={{
-                                        fontFamily: 'var(--font-serif)',
-                                        fontSize: '10px',
-                                        color: '#8A6A4A',
-                                        opacity: 0.6,
-                                        width: 38,
-                                      }}
-                                    >
-                                      weight
-                                    </span>
-                                    <div className="flex gap-1">
-                                      {[1, 2, 3, 4, 5].map((n) => {
-                                        const colors = [
-                                          '#A0B0D0',
-                                          '#90C0C0',
-                                          '#D8C078',
-                                          '#E8A878',
-                                          '#E0908A',
-                                        ];
-                                        const active = (o.weight || 0) >= n;
-                                        return (
-                                          <button
-                                            key={n}
-                                            type="button"
-                                            onClick={() =>
-                                              updateTodayField(
-                                                o.id,
-                                                'weight',
-                                                o.weight === n ? 0 : n,
-                                              )
-                                            }
-                                            style={{
-                                              width: 14,
-                                              height: 14,
-                                              borderRadius: '50%',
-                                              background: colors[n - 1],
-                                              opacity: active ? 0.9 : 0.2,
-                                              border: 'none',
-                                              cursor: 'pointer',
-                                              transition: 'all 0.15s',
-                                            }}
-                                          />
-                                        );
-                                      })}
-                                    </div>
-                                  </div>
-                                </div>
-                                <div className="ml-7 flex gap-2 pt-1">
-                                  <button
-                                    type="button"
-                                    onClick={() => moveToCurrent(o.text, 'daily', o.id)}
-                                    className="cursor-pointer rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider transition-all hover:opacity-80"
-                                    style={{
-                                      color: '#C4A060',
-                                      border: '1px solid #C4A06030',
-                                      background: 'transparent',
-                                    }}
-                                  >
-                                    → current
-                                  </button>
-                                  <button
-                                    type="button"
-                                    onClick={() => moveToPush(o.text, 'daily', o.id)}
-                                    className="cursor-pointer rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider transition-all hover:opacity-80"
-                                    style={{
-                                      color: '#8A6A4A',
-                                      border: '1px solid #8A6A4A30',
-                                      background: 'transparent',
-                                    }}
-                                  >
-                                    → {sectionLabel('push', 'tomorrow')}
                                   </button>
                                 </div>
+                                {/* Ease + Weight + Urgency long sliders */}
+                                {(() => {
+                                  const easeLabels = [
+                                    '',
+                                    'Complex',
+                                    'Hard',
+                                    'Medium',
+                                    'Doable',
+                                    'Easy',
+                                  ];
+                                  const easeColors = [
+                                    '#E0844A',
+                                    '#D8C078',
+                                    '#C0D088',
+                                    '#A0C8A0',
+                                    '#7AAA58',
+                                  ];
+                                  const weightLabels = [
+                                    '',
+                                    'Light',
+                                    'Mild',
+                                    'Present',
+                                    'Heavy',
+                                    'Crushing',
+                                  ];
+                                  const weightColors = [
+                                    '#A0B0D0',
+                                    '#90C0C0',
+                                    '#D8C078',
+                                    '#E8A878',
+                                    '#E0908A',
+                                  ];
+                                  const urgencyLabels = [
+                                    '',
+                                    'No rush',
+                                    'When you can',
+                                    'This week',
+                                    'Soon',
+                                    'Finish now',
+                                  ];
+                                  const urgencyColors = [
+                                    '#A0C8A0',
+                                    '#C0D088',
+                                    '#D8C078',
+                                    '#E8A060',
+                                    '#D06040',
+                                  ];
+                                  return (
+                                    <div className="ml-7 space-y-2 pt-2 pb-1">
+                                      {/* Ease slider */}
+                                      <div>
+                                        <div className="flex items-center justify-between mb-1">
+                                          <span
+                                            style={{
+                                              fontFamily: 'var(--font-serif)',
+                                              fontSize: '11px',
+                                              color: '#8A6A4A',
+                                              opacity: 0.6,
+                                            }}
+                                          >
+                                            how easy to solve?
+                                          </span>
+                                          {(o.ease || 0) > 0 && (
+                                            <span
+                                              style={{
+                                                fontFamily: 'var(--font-serif)',
+                                                fontSize: '11px',
+                                                color: easeColors[(o.ease || 1) - 1],
+                                                fontWeight: 600,
+                                              }}
+                                            >
+                                              {easeLabels[o.ease || 0]}
+                                            </span>
+                                          )}
+                                        </div>
+                                        <div className="flex gap-[3px]">
+                                          {easeColors.map((color, i) => {
+                                            const n = i + 1;
+                                            const active = (o.ease || 0) >= n;
+                                            return (
+                                              <button
+                                                key={n}
+                                                type="button"
+                                                onClick={() =>
+                                                  updateTodayField(
+                                                    o.id,
+                                                    'ease',
+                                                    o.ease === n ? 0 : n,
+                                                  )
+                                                }
+                                                className="flex-1 transition-all duration-150"
+                                                style={{
+                                                  height: 10,
+                                                  borderRadius: 5,
+                                                  background: color,
+                                                  opacity: active ? 0.9 : 0.15,
+                                                  border: 'none',
+                                                  cursor: 'pointer',
+                                                }}
+                                              />
+                                            );
+                                          })}
+                                        </div>
+                                      </div>
+                                      {/* Weight slider */}
+                                      <div>
+                                        <div className="flex items-center justify-between mb-1">
+                                          <span
+                                            style={{
+                                              fontFamily: 'var(--font-serif)',
+                                              fontSize: '11px',
+                                              color: '#8A6A4A',
+                                              opacity: 0.6,
+                                            }}
+                                          >
+                                            how heavy does this feel?
+                                          </span>
+                                          {(o.weight || 0) > 0 && (
+                                            <span
+                                              style={{
+                                                fontFamily: 'var(--font-serif)',
+                                                fontSize: '11px',
+                                                color: weightColors[(o.weight || 1) - 1],
+                                                fontWeight: 600,
+                                              }}
+                                            >
+                                              {weightLabels[o.weight || 0]}
+                                            </span>
+                                          )}
+                                        </div>
+                                        <div className="flex gap-[3px]">
+                                          {weightColors.map((color, i) => {
+                                            const n = i + 1;
+                                            const active = (o.weight || 0) >= n;
+                                            return (
+                                              <button
+                                                key={n}
+                                                type="button"
+                                                onClick={() =>
+                                                  updateTodayField(
+                                                    o.id,
+                                                    'weight',
+                                                    o.weight === n ? 0 : n,
+                                                  )
+                                                }
+                                                className="flex-1 transition-all duration-150"
+                                                style={{
+                                                  height: 10,
+                                                  borderRadius: 5,
+                                                  background: color,
+                                                  opacity: active ? 0.9 : 0.15,
+                                                  border: 'none',
+                                                  cursor: 'pointer',
+                                                }}
+                                              />
+                                            );
+                                          })}
+                                        </div>
+                                      </div>
+                                      {/* Urgency slider */}
+                                      <div>
+                                        <div className="flex items-center justify-between mb-1">
+                                          <span
+                                            style={{
+                                              fontFamily: 'var(--font-serif)',
+                                              fontSize: '11px',
+                                              color: '#8A6A4A',
+                                              opacity: 0.6,
+                                            }}
+                                          >
+                                            how pressing is it?
+                                          </span>
+                                          {(o.urgency || 0) > 0 && (
+                                            <span
+                                              style={{
+                                                fontFamily: 'var(--font-serif)',
+                                                fontSize: '11px',
+                                                color: urgencyColors[(o.urgency || 1) - 1],
+                                                fontWeight: 600,
+                                              }}
+                                            >
+                                              {urgencyLabels[o.urgency || 0]}
+                                            </span>
+                                          )}
+                                        </div>
+                                        <div className="flex gap-[3px]">
+                                          {urgencyColors.map((color, i) => {
+                                            const n = i + 1;
+                                            const active = (o.urgency || 0) >= n;
+                                            return (
+                                              <button
+                                                key={n}
+                                                type="button"
+                                                onClick={() =>
+                                                  updateTodayField(
+                                                    o.id,
+                                                    'urgency',
+                                                    o.urgency === n ? 0 : n,
+                                                  )
+                                                }
+                                                className="flex-1 transition-all duration-150"
+                                                style={{
+                                                  height: 10,
+                                                  borderRadius: 5,
+                                                  background: color,
+                                                  opacity: active ? 0.9 : 0.15,
+                                                  border: 'none',
+                                                  cursor: 'pointer',
+                                                }}
+                                              />
+                                            );
+                                          })}
+                                        </div>
+                                      </div>
+                                    </div>
+                                  );
+                                })()}
+                                {/* Linked emotions for this mission */}
+                                {(() => {
+                                  const linked = sessionEmotions.filter(
+                                    (e) => e.missionId === o.id,
+                                  );
+                                  return (
+                                    <div className="ml-7 space-y-1.5 pt-2">
+                                      {linked.length > 0 && (
+                                        <div className="space-y-1">
+                                          {linked.map((e, ei) => (
+                                            <div
+                                              key={`me-${ei}`}
+                                              className="flex items-start gap-2"
+                                              style={{ minHeight: 24 }}
+                                            >
+                                              <span
+                                                className="shrink-0"
+                                                style={{
+                                                  color: '#8A6A4A',
+                                                  opacity: 0.6,
+                                                  fontSize: '11px',
+                                                  lineHeight: '24px',
+                                                }}
+                                              >
+                                                {e.time}
+                                              </span>
+                                              <span
+                                                className="mt-[8px] h-1.5 w-1.5 shrink-0 rounded-full"
+                                                style={{ background: e.mindColor, opacity: 0.7 }}
+                                              />
+                                              <span
+                                                style={{
+                                                  color: '#7a5438',
+                                                  fontFamily: 'var(--font-handwritten)',
+                                                  fontSize: '16px',
+                                                  lineHeight: '24px',
+                                                }}
+                                              >
+                                                {e.text}
+                                              </span>
+                                            </div>
+                                          ))}
+                                        </div>
+                                      )}
+                                      <input
+                                        type="text"
+                                        placeholder="how are you feeling about this?"
+                                        className="w-full border-b bg-transparent pb-1 outline-none placeholder:text-[#8A6A4A] placeholder:opacity-40"
+                                        style={{
+                                          color: '#7a5438',
+                                          borderColor: '#C4A06020',
+                                          fontFamily: 'var(--font-handwritten)',
+                                          fontSize: '16px',
+                                        }}
+                                        onKeyDown={(e) => {
+                                          if (e.key === 'Enter') {
+                                            const text = (
+                                              e.target as HTMLInputElement
+                                            ).value.trim();
+                                            if (!text) return;
+                                            const entry = {
+                                              time: new Date().toLocaleTimeString([], {
+                                                hour: '2-digit',
+                                                minute: '2-digit',
+                                              }),
+                                              text,
+                                              mind: 'challenge',
+                                              mindColor: '#C4A060',
+                                              missionId: o.id,
+                                              missionText: o.text,
+                                            };
+                                            setSessionEmotions((prev) => [...prev, entry]);
+                                            (e.target as HTMLInputElement).value = '';
+                                          }
+                                        }}
+                                      />
+                                    </div>
+                                  );
+                                })()}
                               </>
                             )}
                           </div>
@@ -2722,16 +3414,16 @@ export default function FeelingCheckInCard() {
                   <>
                     {todos
                       .filter((t) => !t.done)
-                      .map((t, idx) => {
-                        const isDragging = draggedTodoIdx === idx;
-                        const isDropTarget = dragOverTodoIdx === idx && draggedTodoIdx !== idx;
+                      .map((t) => {
+                        const isDragging = draggedTodoId === t.id;
+                        const isDropTarget = dragOverTodoId === t.id && draggedTodoId !== t.id;
                         return (
                           <div key={t.id}>
                             <div
-                              className="group flex items-center gap-2"
+                              className="group flex items-start gap-2"
                               draggable
                               onDragStart={(e) => {
-                                setDraggedTodoIdx(idx);
+                                setDraggedTodoId(t.id);
                                 e.dataTransfer.setData(
                                   'text/plain',
                                   JSON.stringify({ from: 'push', id: t.id, text: t.text }),
@@ -2739,8 +3431,8 @@ export default function FeelingCheckInCard() {
                               }}
                               onDragOver={(e) => {
                                 e.preventDefault();
-                                if (draggedTodoIdx !== null && draggedTodoIdx !== idx) {
-                                  setDragOverTodoIdx(idx);
+                                if (draggedTodoId !== null && draggedTodoId !== t.id) {
+                                  setDragOverTodoId(t.id);
                                 }
                               }}
                               onDragLeave={(e) => {
@@ -2749,20 +3441,20 @@ export default function FeelingCheckInCard() {
                                     e.relatedTarget as Node,
                                   )
                                 ) {
-                                  setDragOverTodoIdx((prev) => (prev === idx ? null : prev));
+                                  setDragOverTodoId((prev) => (prev === t.id ? null : prev));
                                 }
                               }}
                               onDrop={(e) => {
                                 e.preventDefault();
-                                if (draggedTodoIdx !== null) {
-                                  reorderTodos(draggedTodoIdx, idx);
+                                if (draggedTodoId !== null) {
+                                  reorderTodos(draggedTodoId, t.id);
                                 }
-                                setDraggedTodoIdx(null);
-                                setDragOverTodoIdx(null);
+                                setDraggedTodoId(null);
+                                setDragOverTodoId(null);
                               }}
                               onDragEnd={() => {
-                                setDraggedTodoIdx(null);
-                                setDragOverTodoIdx(null);
+                                setDraggedTodoId(null);
+                                setDragOverTodoId(null);
                               }}
                               style={{
                                 opacity: isDragging ? 0.4 : 1,
@@ -2777,7 +3469,7 @@ export default function FeelingCheckInCard() {
                                 type="button"
                                 onClick={() => toggleTodo(t.id)}
                                 title={t.done ? 'Mark as not done' : 'Mark as done'}
-                                className="flex h-5 w-5 shrink-0 cursor-pointer items-center justify-center rounded border transition-all hover:scale-110"
+                                className="mt-[3px] flex h-5 w-5 shrink-0 cursor-pointer items-center justify-center rounded border transition-all hover:scale-110"
                                 style={{
                                   borderColor: t.done ? '#7AAA5860' : '#C4A06060',
                                   background: t.done ? '#7AAA5810' : 'transparent',
@@ -2789,27 +3481,90 @@ export default function FeelingCheckInCard() {
                                   </span>
                                 )}
                               </button>
-                              <button
-                                type="button"
-                                onClick={() =>
-                                  setExpandedTodoId(expandedTodoId === t.id ? null : t.id)
-                                }
-                                className="flex-1 cursor-pointer bg-transparent text-left"
-                                style={{
-                                  color: t.done ? '#C4A060' : '#7a5438',
-                                  fontFamily: 'var(--font-handwritten)',
-                                  fontSize: '20px',
-                                  opacity: t.done ? 0.5 : 1,
-                                  border: 'none',
-                                }}
-                              >
-                                {t.text}
-                              </button>
+                              {/* Status indicator */}
+                              {/* Status dot */}
+                              {!t.done && t.status && t.status !== 'active' && (
+                                <span
+                                  className="mt-[5px] block shrink-0 rounded-full"
+                                  style={{
+                                    width: 7,
+                                    height: 7,
+                                    background: STATUS_CONFIG[t.status].color,
+                                  }}
+                                  title={STATUS_CONFIG[t.status].label}
+                                />
+                              )}
+                              {renamingTodoId === t.id ? (
+                                <input
+                                  type="text"
+                                  value={renameTodoValue}
+                                  onChange={(e) => setRenameTodoValue(e.target.value)}
+                                  onBlur={() => {
+                                    const trimmed = renameTodoValue.trim();
+                                    if (trimmed && trimmed !== t.text)
+                                      updateTodoField(t.id, 'text', trimmed);
+                                    setRenamingTodoId(null);
+                                  }}
+                                  onKeyDown={(e) => {
+                                    if (e.key === 'Enter') {
+                                      const trimmed = renameTodoValue.trim();
+                                      if (trimmed && trimmed !== t.text)
+                                        updateTodoField(t.id, 'text', trimmed);
+                                      setRenamingTodoId(null);
+                                    }
+                                    if (e.key === 'Escape') setRenamingTodoId(null);
+                                  }}
+                                  autoFocus
+                                  className="flex-1 bg-transparent text-left outline-none border-b"
+                                  style={{
+                                    color: '#7a5438',
+                                    fontFamily: 'var(--font-handwritten)',
+                                    fontSize: '20px',
+                                    borderColor: '#C4A06040',
+                                  }}
+                                />
+                              ) : (
+                                <button
+                                  type="button"
+                                  onClick={() =>
+                                    setExpandedTodoId(expandedTodoId === t.id ? null : t.id)
+                                  }
+                                  onDoubleClick={(e) => {
+                                    e.stopPropagation();
+                                    setRenamingTodoId(t.id);
+                                    setRenameTodoValue(t.text);
+                                  }}
+                                  className="flex-1 cursor-pointer bg-transparent text-left"
+                                  style={{
+                                    color: t.done
+                                      ? '#C4A060'
+                                      : t.status === 'waiting'
+                                        ? '#8A8A8A'
+                                        : '#7a5438',
+                                    fontFamily: 'var(--font-handwritten)',
+                                    fontSize: '20px',
+                                    opacity: t.done ? 0.5 : t.status === 'waiting' ? 0.5 : 1,
+                                    border: 'none',
+                                    fontStyle: t.status === 'waiting' ? 'italic' : 'normal',
+                                  }}
+                                  title="Click to expand · Double-click to rename"
+                                >
+                                  {t.text}
+                                  {t.status === 'waiting' && (
+                                    <span
+                                      className="ml-2 text-xs"
+                                      style={{ color: '#8A8A8A', fontStyle: 'italic' }}
+                                    >
+                                      waiting
+                                    </span>
+                                  )}
+                                </button>
+                              )}
                               <button
                                 type="button"
                                 onClick={() => removeTodo(t.id)}
                                 title="Remove"
-                                className="cursor-pointer text-sm opacity-0 transition-opacity group-hover:opacity-40"
+                                className="mt-[3px] cursor-pointer text-sm opacity-0 transition-opacity group-hover:opacity-40"
                                 style={{ color: '#7a5438', background: 'none', border: 'none' }}
                               >
                                 ✕
@@ -2817,124 +3572,330 @@ export default function FeelingCheckInCard() {
                             </div>
                             {expandedTodoId === t.id && (
                               <div className="space-y-2 pl-7 pt-1 animate-in fade-in duration-150">
-                                <div className="flex gap-4">
-                                  <div className="flex items-center gap-1.5">
+                                {/* Status toggle — Active / Waiting */}
+                                <div>
+                                  <button
+                                    type="button"
+                                    onClick={() =>
+                                      updateTodoField(
+                                        t.id,
+                                        'status',
+                                        t.status === 'waiting' ? 'active' : 'waiting',
+                                      )
+                                    }
+                                    className="flex cursor-pointer items-center gap-2 transition-all"
+                                    style={{ background: 'none', border: 'none' }}
+                                  >
+                                    <span
+                                      className="block rounded-full"
+                                      style={{
+                                        width: 10,
+                                        height: 10,
+                                        background: t.status === 'waiting' ? '#8A8A8A' : '#7AAA58',
+                                      }}
+                                    />
                                     <span
                                       style={{
                                         fontFamily: 'var(--font-serif)',
-                                        fontSize: '10px',
-                                        color: '#8A6A4A',
-                                        opacity: 0.6,
-                                        width: 32,
+                                        fontSize: '12px',
+                                        color: t.status === 'waiting' ? '#8A8A8A' : '#7AAA58',
+                                        fontWeight: 600,
                                       }}
                                     >
-                                      ease
+                                      {t.status === 'waiting' ? 'Waiting for reply' : 'Active'}
                                     </span>
-                                    <div className="flex gap-1">
-                                      {[1, 2, 3, 4, 5].map((n) => {
-                                        const colors = [
-                                          '#E0844A',
-                                          '#D8C078',
-                                          '#C0D088',
-                                          '#A0C8A0',
-                                          '#7AAA58',
-                                        ];
-                                        return (
-                                          <button
-                                            key={n}
-                                            type="button"
-                                            onClick={() =>
-                                              updateTodoField(t.id, 'ease', t.ease === n ? 0 : n)
-                                            }
-                                            style={{
-                                              width: 14,
-                                              height: 14,
-                                              borderRadius: '50%',
-                                              background: colors[n - 1],
-                                              opacity: (t.ease || 0) >= n ? 0.9 : 0.2,
-                                              border: 'none',
-                                              cursor: 'pointer',
-                                              transition: 'all 0.15s',
-                                            }}
-                                          />
-                                        );
-                                      })}
-                                    </div>
-                                  </div>
-                                  <div className="flex items-center gap-1.5">
-                                    <span
-                                      style={{
-                                        fontFamily: 'var(--font-serif)',
-                                        fontSize: '10px',
-                                        color: '#8A6A4A',
-                                        opacity: 0.6,
-                                        width: 38,
-                                      }}
-                                    >
-                                      weight
-                                    </span>
-                                    <div className="flex gap-1">
-                                      {[1, 2, 3, 4, 5].map((n) => {
-                                        const colors = [
-                                          '#A0B0D0',
-                                          '#90C0C0',
-                                          '#D8C078',
-                                          '#E8A878',
-                                          '#E0908A',
-                                        ];
-                                        return (
-                                          <button
-                                            key={n}
-                                            type="button"
-                                            onClick={() =>
-                                              updateTodoField(
-                                                t.id,
-                                                'weight',
-                                                t.weight === n ? 0 : n,
-                                              )
-                                            }
-                                            style={{
-                                              width: 14,
-                                              height: 14,
-                                              borderRadius: '50%',
-                                              background: colors[n - 1],
-                                              opacity: (t.weight || 0) >= n ? 0.9 : 0.2,
-                                              border: 'none',
-                                              cursor: 'pointer',
-                                              transition: 'all 0.15s',
-                                            }}
-                                          />
-                                        );
-                                      })}
-                                    </div>
-                                  </div>
-                                </div>
-                                <div className="flex gap-2">
-                                  <button
-                                    type="button"
-                                    onClick={() => moveToDaily(t.text, 'push', t.id)}
-                                    className="cursor-pointer rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider transition-all hover:opacity-80"
-                                    style={{
-                                      color: '#C4A060',
-                                      border: '1px solid #C4A06030',
-                                      background: 'transparent',
-                                    }}
-                                  >
-                                    ↑ daily
-                                  </button>
-                                  <button
-                                    type="button"
-                                    onClick={() => moveToCurrent(t.text, 'push', t.id)}
-                                    className="cursor-pointer rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider transition-all hover:opacity-80"
-                                    style={{
-                                      color: '#C4A060',
-                                      border: '1px solid #C4A06030',
-                                      background: 'transparent',
-                                    }}
-                                  >
-                                    ↑ current
                                   </button>
                                 </div>
+                                {(() => {
+                                  const easeLabels = [
+                                    '',
+                                    'Complex',
+                                    'Hard',
+                                    'Medium',
+                                    'Doable',
+                                    'Easy',
+                                  ];
+                                  const easeColors = [
+                                    '#E0844A',
+                                    '#D8C078',
+                                    '#C0D088',
+                                    '#A0C8A0',
+                                    '#7AAA58',
+                                  ];
+                                  const weightLabels = [
+                                    '',
+                                    'Light',
+                                    'Mild',
+                                    'Present',
+                                    'Heavy',
+                                    'Crushing',
+                                  ];
+                                  const weightColors = [
+                                    '#A0B0D0',
+                                    '#90C0C0',
+                                    '#D8C078',
+                                    '#E8A878',
+                                    '#E0908A',
+                                  ];
+                                  const urgencyLabels = [
+                                    '',
+                                    'No rush',
+                                    'When you can',
+                                    'This week',
+                                    'Soon',
+                                    'Finish now',
+                                  ];
+                                  const urgencyColors = [
+                                    '#A0C8A0',
+                                    '#C0D088',
+                                    '#D8C078',
+                                    '#E8A060',
+                                    '#D06040',
+                                  ];
+                                  return (
+                                    <>
+                                      <div>
+                                        <div className="flex items-center justify-between mb-1">
+                                          <span
+                                            style={{
+                                              fontFamily: 'var(--font-serif)',
+                                              fontSize: '11px',
+                                              color: '#8A6A4A',
+                                              opacity: 0.6,
+                                            }}
+                                          >
+                                            how easy to solve?
+                                          </span>
+                                          {(t.ease || 0) > 0 && (
+                                            <span
+                                              style={{
+                                                fontFamily: 'var(--font-serif)',
+                                                fontSize: '11px',
+                                                color: easeColors[(t.ease || 1) - 1],
+                                                fontWeight: 600,
+                                              }}
+                                            >
+                                              {easeLabels[t.ease || 0]}
+                                            </span>
+                                          )}
+                                        </div>
+                                        <div className="flex gap-[3px]">
+                                          {easeColors.map((color, i) => {
+                                            const n = i + 1;
+                                            return (
+                                              <button
+                                                key={n}
+                                                type="button"
+                                                onClick={() =>
+                                                  updateTodoField(
+                                                    t.id,
+                                                    'ease',
+                                                    t.ease === n ? 0 : n,
+                                                  )
+                                                }
+                                                className="flex-1 transition-all duration-150"
+                                                style={{
+                                                  height: 10,
+                                                  borderRadius: 5,
+                                                  background: color,
+                                                  opacity: (t.ease || 0) >= n ? 0.9 : 0.15,
+                                                  border: 'none',
+                                                  cursor: 'pointer',
+                                                }}
+                                              />
+                                            );
+                                          })}
+                                        </div>
+                                      </div>
+                                      <div>
+                                        <div className="flex items-center justify-between mb-1">
+                                          <span
+                                            style={{
+                                              fontFamily: 'var(--font-serif)',
+                                              fontSize: '11px',
+                                              color: '#8A6A4A',
+                                              opacity: 0.6,
+                                            }}
+                                          >
+                                            how heavy does this feel?
+                                          </span>
+                                          {(t.weight || 0) > 0 && (
+                                            <span
+                                              style={{
+                                                fontFamily: 'var(--font-serif)',
+                                                fontSize: '11px',
+                                                color: weightColors[(t.weight || 1) - 1],
+                                                fontWeight: 600,
+                                              }}
+                                            >
+                                              {weightLabels[t.weight || 0]}
+                                            </span>
+                                          )}
+                                        </div>
+                                        <div className="flex gap-[3px]">
+                                          {weightColors.map((color, i) => {
+                                            const n = i + 1;
+                                            return (
+                                              <button
+                                                key={n}
+                                                type="button"
+                                                onClick={() =>
+                                                  updateTodoField(
+                                                    t.id,
+                                                    'weight',
+                                                    t.weight === n ? 0 : n,
+                                                  )
+                                                }
+                                                className="flex-1 transition-all duration-150"
+                                                style={{
+                                                  height: 10,
+                                                  borderRadius: 5,
+                                                  background: color,
+                                                  opacity: (t.weight || 0) >= n ? 0.9 : 0.15,
+                                                  border: 'none',
+                                                  cursor: 'pointer',
+                                                }}
+                                              />
+                                            );
+                                          })}
+                                        </div>
+                                      </div>
+                                      {/* Urgency slider */}
+                                      <div>
+                                        <div className="flex items-center justify-between mb-1">
+                                          <span
+                                            style={{
+                                              fontFamily: 'var(--font-serif)',
+                                              fontSize: '11px',
+                                              color: '#8A6A4A',
+                                              opacity: 0.6,
+                                            }}
+                                          >
+                                            how pressing is it?
+                                          </span>
+                                          {(t.urgency || 0) > 0 && (
+                                            <span
+                                              style={{
+                                                fontFamily: 'var(--font-serif)',
+                                                fontSize: '11px',
+                                                color: urgencyColors[(t.urgency || 1) - 1],
+                                                fontWeight: 600,
+                                              }}
+                                            >
+                                              {urgencyLabels[t.urgency || 0]}
+                                            </span>
+                                          )}
+                                        </div>
+                                        <div className="flex gap-[3px]">
+                                          {urgencyColors.map((color, i) => {
+                                            const n = i + 1;
+                                            return (
+                                              <button
+                                                key={n}
+                                                type="button"
+                                                onClick={() =>
+                                                  updateTodoField(
+                                                    t.id,
+                                                    'urgency',
+                                                    t.urgency === n ? 0 : n,
+                                                  )
+                                                }
+                                                className="flex-1 transition-all duration-150"
+                                                style={{
+                                                  height: 10,
+                                                  borderRadius: 5,
+                                                  background: color,
+                                                  opacity: (t.urgency || 0) >= n ? 0.9 : 0.15,
+                                                  border: 'none',
+                                                  cursor: 'pointer',
+                                                }}
+                                              />
+                                            );
+                                          })}
+                                        </div>
+                                      </div>
+                                    </>
+                                  );
+                                })()}
+                                {/* Linked emotions for this mission */}
+                                {(() => {
+                                  const linked = sessionEmotions.filter(
+                                    (e) => e.missionId === t.id,
+                                  );
+                                  return (
+                                    <div className="space-y-1.5 pt-2">
+                                      {linked.length > 0 && (
+                                        <div className="space-y-1">
+                                          {linked.map((e, ei) => (
+                                            <div
+                                              key={`te-${ei}`}
+                                              className="flex items-start gap-2"
+                                              style={{ minHeight: 24 }}
+                                            >
+                                              <span
+                                                className="shrink-0"
+                                                style={{
+                                                  color: '#8A6A4A',
+                                                  opacity: 0.6,
+                                                  fontSize: '11px',
+                                                  lineHeight: '24px',
+                                                }}
+                                              >
+                                                {e.time}
+                                              </span>
+                                              <span
+                                                className="mt-[8px] h-1.5 w-1.5 shrink-0 rounded-full"
+                                                style={{ background: e.mindColor, opacity: 0.7 }}
+                                              />
+                                              <span
+                                                style={{
+                                                  color: '#7a5438',
+                                                  fontFamily: 'var(--font-handwritten)',
+                                                  fontSize: '16px',
+                                                  lineHeight: '24px',
+                                                }}
+                                              >
+                                                {e.text}
+                                              </span>
+                                            </div>
+                                          ))}
+                                        </div>
+                                      )}
+                                      <input
+                                        type="text"
+                                        placeholder="how are you feeling about this?"
+                                        className="w-full border-b bg-transparent pb-1 outline-none placeholder:text-[#8A6A4A] placeholder:opacity-40"
+                                        style={{
+                                          color: '#7a5438',
+                                          borderColor: '#C4A06020',
+                                          fontFamily: 'var(--font-handwritten)',
+                                          fontSize: '16px',
+                                        }}
+                                        onKeyDown={(e) => {
+                                          if (e.key === 'Enter') {
+                                            const text = (
+                                              e.target as HTMLInputElement
+                                            ).value.trim();
+                                            if (!text) return;
+                                            const entry = {
+                                              time: new Date().toLocaleTimeString([], {
+                                                hour: '2-digit',
+                                                minute: '2-digit',
+                                              }),
+                                              text,
+                                              mind: 'challenge',
+                                              mindColor: '#C4A060',
+                                              missionId: t.id,
+                                              missionText: t.text,
+                                            };
+                                            setSessionEmotions((prev) => [...prev, entry]);
+                                            (e.target as HTMLInputElement).value = '';
+                                          }
+                                        }}
+                                      />
+                                    </div>
+                                  );
+                                })()}
                               </div>
                             )}
                           </div>
@@ -3417,225 +4378,6 @@ export default function FeelingCheckInCard() {
                 </button>
               </div>
 
-              {/* Notes toggle — transparent pill that collapses/expands the entry list */}
-              {sessionEmotions.length > 0 && (
-                <div className="flex justify-center gap-2 pt-2">
-                  <button
-                    type="button"
-                    onClick={() => setShowLogbookEntries(!showLogbookEntries)}
-                    className="flex cursor-pointer items-center gap-1.5 rounded-full bg-transparent px-3 py-0.5 font-semibold uppercase tracking-wider transition-all"
-                    style={{
-                      color: '#8A6A4A',
-                      border: '1px dashed #C4A06070',
-                      fontSize: '12px',
-                    }}
-                    title={showLogbookEntries ? 'Hide notes' : 'Show notes'}
-                  >
-                    notes · {sessionEmotions.length}
-                    <span
-                      className="text-[8px] transition-transform duration-200"
-                      style={{
-                        color: '#C4A06080',
-                        transform: showLogbookEntries ? 'rotate(180deg)' : 'rotate(0deg)',
-                      }}
-                    >
-                      ▾
-                    </span>
-                  </button>
-                  {showLogbookEntries && (
-                    <button
-                      type="button"
-                      onClick={() =>
-                        setLogbookMode(logbookMode === 'grouped' ? 'mixed' : 'grouped')
-                      }
-                      className="cursor-pointer rounded-md bg-transparent px-2 py-0.5 font-semibold uppercase tracking-wider transition-all"
-                      style={{
-                        color: '#8A6A4A',
-                        border: '1px solid #C4A06050',
-                        fontSize: '12px',
-                      }}
-                      title={`Switch to ${logbookMode === 'grouped' ? 'chronological (mixed)' : 'grouped'} view`}
-                    >
-                      {logbookMode === 'grouped' ? 'mixed' : 'grouped'}
-                    </button>
-                  )}
-                </div>
-              )}
-
-              {showLogbookEntries && sessionEmotions.length > 0 && logbookMode === 'mixed' && (
-                <div className="space-y-1 pt-1">
-                  {sessionEmotions.map((e, i) => (
-                    <div
-                      key={`m-${i}`}
-                      className="flex items-center gap-2"
-                      style={{ minHeight: 28 }}
-                    >
-                      <span
-                        className="shrink-0"
-                        style={{
-                          color: '#8A6A4A',
-                          opacity: 0.75,
-                          fontSize: '12px',
-                          lineHeight: '28px',
-                        }}
-                      >
-                        {e.time}
-                      </span>
-                      <span
-                        className="h-2 w-2 shrink-0 rounded-full"
-                        style={{ background: e.mindColor, opacity: 0.7 }}
-                      />
-                      <span
-                        style={{
-                          color: '#7a5438',
-                          fontFamily: 'var(--font-handwritten)',
-                          fontSize: '20px',
-                          lineHeight: '28px',
-                        }}
-                      >
-                        {e.text}
-                      </span>
-                    </div>
-                  ))}
-                </div>
-              )}
-              {showLogbookEntries && sessionEmotions.length > 0 && logbookMode === 'grouped' && (
-                <div className="space-y-3 pt-1">
-                  {/* CHALLENGE stack — red entries */}
-                  {sessionEmotions.some((e) => e.mind === 'challenge') && (
-                    <div className="space-y-1">
-                      <p
-                        className="font-semibold uppercase tracking-[0.22em]"
-                        style={{ color: '#D4805A', fontSize: '14px' }}
-                      >
-                        Challenge
-                      </p>
-                      {sessionEmotions
-                        .filter((e) => e.mind === 'challenge')
-                        .map((e, i) => (
-                          <div
-                            key={`c-${i}`}
-                            className="flex items-center gap-2"
-                            style={{ minHeight: 28 }}
-                          >
-                            <span
-                              className="shrink-0"
-                              style={{
-                                color: '#8A6A4A',
-                                opacity: 0.75,
-                                fontSize: '12px',
-                                lineHeight: '28px',
-                              }}
-                            >
-                              {e.time}
-                            </span>
-                            <span
-                              className="h-2 w-2 shrink-0 rounded-full"
-                              style={{ background: e.mindColor, opacity: 0.7 }}
-                            />
-                            <span
-                              style={{
-                                color: '#7a5438',
-                                fontFamily: 'var(--font-handwritten)',
-                                fontSize: '20px',
-                                lineHeight: '28px',
-                              }}
-                            >
-                              {e.text}
-                            </span>
-                          </div>
-                        ))}
-                    </div>
-                  )}
-                  {/* FLOW stack — green entries */}
-                  {sessionEmotions.some((e) => e.mind === 'flow') && (
-                    <div className="space-y-1">
-                      <p
-                        className="font-semibold uppercase tracking-[0.22em]"
-                        style={{ color: '#C4A060', fontSize: '14px' }}
-                      >
-                        Flow
-                      </p>
-                      {sessionEmotions
-                        .filter((e) => e.mind === 'flow')
-                        .map((e, i) => (
-                          <div
-                            key={`f-${i}`}
-                            className="flex items-center gap-2"
-                            style={{ minHeight: 28 }}
-                          >
-                            <span
-                              className="shrink-0"
-                              style={{
-                                color: '#8A6A4A',
-                                opacity: 0.75,
-                                fontSize: '12px',
-                                lineHeight: '28px',
-                              }}
-                            >
-                              {e.time}
-                            </span>
-                            <span
-                              className="h-2 w-2 shrink-0 rounded-full"
-                              style={{ background: e.mindColor, opacity: 0.7 }}
-                            />
-                            <span
-                              style={{
-                                color: '#7a5438',
-                                fontFamily: 'var(--font-handwritten)',
-                                fontSize: '20px',
-                                lineHeight: '28px',
-                              }}
-                            >
-                              {e.text}
-                            </span>
-                          </div>
-                        ))}
-                    </div>
-                  )}
-                  {/* Untagged entries (neither challenge nor flow) */}
-                  {sessionEmotions.some((e) => e.mind !== 'challenge' && e.mind !== 'flow') && (
-                    <div className="space-y-1">
-                      {sessionEmotions
-                        .filter((e) => e.mind !== 'challenge' && e.mind !== 'flow')
-                        .map((e, i) => (
-                          <div
-                            key={`u-${i}`}
-                            className="flex items-center gap-2"
-                            style={{ minHeight: 28 }}
-                          >
-                            <span
-                              className="shrink-0"
-                              style={{
-                                color: '#8A6A4A',
-                                opacity: 0.75,
-                                fontSize: '12px',
-                                lineHeight: '28px',
-                              }}
-                            >
-                              {e.time}
-                            </span>
-                            <span
-                              className="h-2 w-2 shrink-0 rounded-full"
-                              style={{ background: e.mindColor, opacity: 0.6 }}
-                            />
-                            <span
-                              style={{
-                                color: '#7a5438',
-                                fontFamily: 'var(--font-handwritten)',
-                                fontSize: '20px',
-                                lineHeight: '28px',
-                              }}
-                            >
-                              {e.text}
-                            </span>
-                          </div>
-                        ))}
-                    </div>
-                  )}
-                </div>
-              )}
-
               {/* Two writing spots — challenge (top) + flow (bottom, ochre) */}
               <div className="space-y-2">
                 {/* CHALLENGE — label above, question as placeholder on write line */}
@@ -3643,11 +4385,11 @@ export default function FeelingCheckInCard() {
                   <div className="flex items-center gap-2 px-1">
                     <span
                       className="block h-2.5 w-2.5 shrink-0 rounded-full"
-                      style={{ background: '#D4805A', opacity: 0.85 }}
+                      style={{ background: '#C4A060', opacity: 0.85 }}
                     />
                     <span
                       className="shrink-0 font-semibold uppercase tracking-[0.22em]"
-                      style={{ color: '#D4805A', fontSize: '16px' }}
+                      style={{ color: '#C4A060', fontSize: '16px' }}
                     >
                       Challenge
                     </span>
@@ -3661,10 +4403,10 @@ export default function FeelingCheckInCard() {
                         if (e.key === 'Enter') saveChallenge();
                       }}
                       placeholder="what is your main tension right now?"
-                      className="flex-1 border-b bg-transparent pb-1 outline-none placeholder:italic placeholder:text-[#D4805A] placeholder:opacity-80"
+                      className="flex-1 border-b bg-transparent pb-1 outline-none placeholder:text-[#7a5438] placeholder:opacity-50"
                       style={{
                         color: '#7a5438',
-                        borderColor: '#D4805A30',
+                        borderColor: '#C4A06030',
                         fontFamily: 'var(--font-handwritten)',
                         fontSize: '20px',
                       }}
@@ -3704,7 +4446,7 @@ export default function FeelingCheckInCard() {
                         if (e.key === 'Enter') saveFlow();
                       }}
                       placeholder="what is working well? how are you celebrating?"
-                      className="flex-1 border-b bg-transparent pb-1 outline-none placeholder:italic placeholder:text-[#C4A060] placeholder:opacity-80"
+                      className="flex-1 border-b bg-transparent pb-1 outline-none placeholder:text-[#7a5438] placeholder:opacity-50"
                       style={{
                         color: '#7a5438',
                         borderColor: '#C4A06030',
@@ -3723,6 +4465,225 @@ export default function FeelingCheckInCard() {
                     />
                   </div>
                 </div>
+
+                {/* Notes toggle — transparent pill that collapses/expands the entry list */}
+                {sessionEmotions.length > 0 && (
+                  <div className="flex justify-center gap-2 pt-2">
+                    <button
+                      type="button"
+                      onClick={() => setShowLogbookEntries(!showLogbookEntries)}
+                      className="flex cursor-pointer items-center gap-1.5 rounded-full bg-transparent px-3 py-0.5 font-semibold uppercase tracking-wider transition-all"
+                      style={{
+                        color: '#8A6A4A',
+                        border: '1px dashed #C4A06070',
+                        fontSize: '12px',
+                      }}
+                      title={showLogbookEntries ? 'Hide notes' : 'Show notes'}
+                    >
+                      notes · {sessionEmotions.length}
+                      <span
+                        className="text-[10px] transition-transform duration-200"
+                        style={{
+                          color: '#C4A06080',
+                          transform: showLogbookEntries ? 'rotate(180deg)' : 'rotate(0deg)',
+                        }}
+                      >
+                        ▾
+                      </span>
+                    </button>
+                    {showLogbookEntries && (
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setLogbookMode(logbookMode === 'grouped' ? 'mixed' : 'grouped')
+                        }
+                        className="cursor-pointer rounded-md bg-transparent px-2 py-0.5 font-semibold uppercase tracking-wider transition-all"
+                        style={{
+                          color: '#8A6A4A',
+                          border: '1px solid #C4A06050',
+                          fontSize: '12px',
+                        }}
+                        title={`Switch to ${logbookMode === 'grouped' ? 'chronological (mixed)' : 'grouped'} view`}
+                      >
+                        {logbookMode === 'grouped' ? 'mixed' : 'grouped'}
+                      </button>
+                    )}
+                  </div>
+                )}
+
+                {showLogbookEntries && sessionEmotions.length > 0 && logbookMode === 'mixed' && (
+                  <div className="space-y-1 pt-1">
+                    {sessionEmotions.map((e, i) => (
+                      <div
+                        key={`m-${i}`}
+                        className="flex items-start gap-2"
+                        style={{ minHeight: 28 }}
+                      >
+                        <span
+                          className="shrink-0"
+                          style={{
+                            color: '#8A6A4A',
+                            opacity: 0.75,
+                            fontSize: '12px',
+                            lineHeight: '28px',
+                          }}
+                        >
+                          {e.time}
+                        </span>
+                        <span
+                          className="mt-[10px] h-2 w-2 shrink-0 rounded-full"
+                          style={{ background: e.mindColor, opacity: 0.7 }}
+                        />
+                        <span
+                          style={{
+                            color: '#7a5438',
+                            fontFamily: 'var(--font-handwritten)',
+                            fontSize: '20px',
+                            lineHeight: '28px',
+                          }}
+                        >
+                          {e.text}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+                {showLogbookEntries && sessionEmotions.length > 0 && logbookMode === 'grouped' && (
+                  <div className="space-y-3 pt-1">
+                    {/* CHALLENGE stack — red entries */}
+                    {sessionEmotions.some((e) => e.mind === 'challenge') && (
+                      <div className="space-y-1">
+                        <p
+                          className="font-semibold uppercase tracking-[0.22em]"
+                          style={{ color: '#C4A060', fontSize: '14px' }}
+                        >
+                          Challenge
+                        </p>
+                        {sessionEmotions
+                          .filter((e) => e.mind === 'challenge')
+                          .map((e, i) => (
+                            <div
+                              key={`c-${i}`}
+                              className="flex items-center gap-2"
+                              style={{ minHeight: 28 }}
+                            >
+                              <span
+                                className="shrink-0"
+                                style={{
+                                  color: '#8A6A4A',
+                                  opacity: 0.75,
+                                  fontSize: '12px',
+                                  lineHeight: '28px',
+                                }}
+                              >
+                                {e.time}
+                              </span>
+                              <span
+                                className="h-2 w-2 shrink-0 rounded-full"
+                                style={{ background: e.mindColor, opacity: 0.7 }}
+                              />
+                              <span
+                                style={{
+                                  color: '#7a5438',
+                                  fontFamily: 'var(--font-handwritten)',
+                                  fontSize: '20px',
+                                  lineHeight: '28px',
+                                }}
+                              >
+                                {e.text}
+                              </span>
+                            </div>
+                          ))}
+                      </div>
+                    )}
+                    {/* FLOW stack — green entries */}
+                    {sessionEmotions.some((e) => e.mind === 'flow') && (
+                      <div className="space-y-1">
+                        <p
+                          className="font-semibold uppercase tracking-[0.22em]"
+                          style={{ color: '#C4A060', fontSize: '14px' }}
+                        >
+                          Flow
+                        </p>
+                        {sessionEmotions
+                          .filter((e) => e.mind === 'flow')
+                          .map((e, i) => (
+                            <div
+                              key={`f-${i}`}
+                              className="flex items-center gap-2"
+                              style={{ minHeight: 28 }}
+                            >
+                              <span
+                                className="shrink-0"
+                                style={{
+                                  color: '#8A6A4A',
+                                  opacity: 0.75,
+                                  fontSize: '12px',
+                                  lineHeight: '28px',
+                                }}
+                              >
+                                {e.time}
+                              </span>
+                              <span
+                                className="h-2 w-2 shrink-0 rounded-full"
+                                style={{ background: e.mindColor, opacity: 0.7 }}
+                              />
+                              <span
+                                style={{
+                                  color: '#7a5438',
+                                  fontFamily: 'var(--font-handwritten)',
+                                  fontSize: '20px',
+                                  lineHeight: '28px',
+                                }}
+                              >
+                                {e.text}
+                              </span>
+                            </div>
+                          ))}
+                      </div>
+                    )}
+                    {/* Untagged entries (neither challenge nor flow) */}
+                    {sessionEmotions.some((e) => e.mind !== 'challenge' && e.mind !== 'flow') && (
+                      <div className="space-y-1">
+                        {sessionEmotions
+                          .filter((e) => e.mind !== 'challenge' && e.mind !== 'flow')
+                          .map((e, i) => (
+                            <div
+                              key={`u-${i}`}
+                              className="flex items-center gap-2"
+                              style={{ minHeight: 28 }}
+                            >
+                              <span
+                                className="shrink-0"
+                                style={{
+                                  color: '#8A6A4A',
+                                  opacity: 0.75,
+                                  fontSize: '12px',
+                                  lineHeight: '28px',
+                                }}
+                              >
+                                {e.time}
+                              </span>
+                              <span
+                                className="h-2 w-2 shrink-0 rounded-full"
+                                style={{ background: e.mindColor, opacity: 0.6 }}
+                              />
+                              <span
+                                style={{
+                                  color: '#7a5438',
+                                  fontFamily: 'var(--font-handwritten)',
+                                  fontSize: '20px',
+                                  lineHeight: '28px',
+                                }}
+                              >
+                                {e.text}
+                              </span>
+                            </div>
+                          ))}
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
             </>
           )}

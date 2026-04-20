@@ -39,13 +39,28 @@ export default async function AppLayout({
       <div className="min-h-screen bg-background">
         <header className="border-b border-border">
           <div className="mx-auto flex w-full max-w-5xl flex-col gap-3 px-6 py-3">
-            <div className="flex items-center justify-center">
+            <div className="flex items-center justify-center gap-2">
               <p
                 className="text-[18px] font-normal tracking-[0.1em] font-serif text-center"
                 style={{ color: '#B33A2B' }}
               >
                 Colourmap
               </p>
+              <svg width={16} height={16} viewBox="0 0 20 20">
+                {(() => {
+                  const cx = 10;
+                  const cy = 10;
+                  const r1 = 9;
+                  const r2 = 3.5;
+                  const pts: string[] = [];
+                  for (let i = 0; i < 8; i++) {
+                    const a = -Math.PI / 2 + (i * Math.PI) / 4;
+                    const r = i % 2 === 0 ? r1 : r2;
+                    pts.push(`${cx + r * Math.cos(a)},${cy + r * Math.sin(a)}`);
+                  }
+                  return <polygon points={pts.join(' ')} fill="#B33A2B" opacity={0.85} />;
+                })()}
+              </svg>
             </div>
             <div className="flex items-center justify-between gap-4">
               <div className="flex items-center gap-2.5">

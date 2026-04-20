@@ -56,10 +56,12 @@ export default function CategoryTagPicker({
 }: Props) {
   const ref = useRef<HTMLDivElement>(null);
   const [expandedCompass, setExpandedCompass] = useState<string | null>(null);
+  const [showThree, setShowThree] = useState(false);
 
   useEffect(() => {
     if (!open) {
       setExpandedCompass(null);
+      setShowThree(false);
       return;
     }
     const handler = (e: MouseEvent) => {
@@ -94,69 +96,134 @@ export default function CategoryTagPicker({
   }
 
   return (
-    <div ref={ref} className="relative shrink-0">
-      {/* Trigger — three dots or selected tag */}
-      <button
-        type="button"
-        onClick={onToggle}
-        aria-label={value ? `Tag: ${value.name} (tap to change)` : 'Tag with a category'}
-        className="flex cursor-pointer items-center gap-1 rounded-md px-1.5 py-1 transition-all"
-        style={{
-          background: value ? `${value.color}15` : 'transparent',
-          border: value ? `1px solid ${value.color}60` : '1px dashed #8A6A4A60',
-        }}
-      >
-        {value ? (
-          <>
-            <span
-              style={{
-                display: 'block',
-                width: 8,
-                height: 8,
-                borderRadius: '50%',
-                background: value.color,
-              }}
-            />
-            <span
-              style={{
-                color: value.color,
-                fontFamily: 'var(--font-serif)',
-                fontSize: '11px',
-                fontWeight: 600,
-                letterSpacing: '0.02em',
-                lineHeight: 1,
-                maxWidth: 80,
-                overflow: 'hidden',
-                textOverflow: 'ellipsis',
-                whiteSpace: 'nowrap',
-              }}
-            >
-              {value.name}
-            </span>
-          </>
-        ) : (
-          <div className="flex items-center gap-1.5">
-            {COMPASSES.map((c) => (
+    <div ref={ref} className="relative shrink-0" style={{ zIndex: open ? 50 : 'auto' }}>
+      {/* Trigger — single losange → three losanges → dropdown */}
+      <div className="flex items-center gap-1.5">
+        {!showThree && !open && (
+          <button
+            type="button"
+            onClick={() => {
+              if (value) {
+                onToggle();
+              } else {
+                setShowThree(true);
+              }
+            }}
+            aria-label={value ? `Tag: ${value.name} (tap to change)` : 'Tag with a category'}
+            className="flex cursor-pointer items-center gap-1.5 rounded-md px-1.5 py-1 transition-all"
+            style={{
+              background: value ? `${value.color}15` : 'transparent',
+              border: value ? `1px solid ${value.color}60` : 'none',
+            }}
+          >
+            {value ? (
+              <>
+                <span
+                  className="rotate-45 rounded-[2px]"
+                  style={{
+                    display: 'block',
+                    width: 8,
+                    height: 8,
+                    background: value.color,
+                  }}
+                />
+                <span
+                  style={{
+                    color: value.color,
+                    fontFamily: 'var(--font-serif)',
+                    fontSize: '11px',
+                    fontWeight: 600,
+                    letterSpacing: '0.02em',
+                    lineHeight: 1,
+                    maxWidth: 80,
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                    whiteSpace: 'nowrap',
+                  }}
+                >
+                  {value.name}
+                </span>
+              </>
+            ) : (
               <span
-                key={c.id}
+                className="rotate-45 rounded-[2px] transition-all"
                 style={{
                   display: 'block',
-                  width: 9,
-                  height: 9,
-                  borderRadius: '50%',
-                  background: c.color,
-                  opacity: 0.8,
+                  width: 11,
+                  height: 11,
+                  background: '#C4A060',
+                  opacity: 0.5,
                 }}
               />
+            )}
+          </button>
+        )}
+
+        {/* Three compass losanges — intermediate step */}
+        {showThree && !open && (
+          <div className="flex items-center gap-2 animate-in fade-in duration-150">
+            {COMPASSES.map((c) => (
+              <button
+                key={c.id}
+                type="button"
+                onClick={() => {
+                  setShowThree(false);
+                  setExpandedCompass(c.id);
+                  onToggle();
+                }}
+                className="cursor-pointer transition-all hover:scale-125"
+                style={{ background: 'none', border: 'none', padding: 2 }}
+                title={c.label}
+              >
+                <span
+                  className="rotate-45 rounded-[2px] block transition-all"
+                  style={{
+                    width: 12,
+                    height: 12,
+                    background: c.color,
+                    opacity: 0.85,
+                  }}
+                />
+              </button>
             ))}
+            <button
+              type="button"
+              onClick={() => setShowThree(false)}
+              className="cursor-pointer text-xs transition-all"
+              style={{ background: 'none', border: 'none', color: '#8A6A4A', opacity: 0.4 }}
+            >
+              ✕
+            </button>
           </div>
         )}
-      </button>
+
+        {/* When dropdown is open, show selected compass losange */}
+        {open && (
+          <button
+            type="button"
+            onClick={onClose}
+            className="cursor-pointer"
+            style={{ background: 'none', border: 'none', padding: 2 }}
+          >
+            <span
+              className="rotate-45 rounded-[2px] block"
+              style={{
+                width: 11,
+                height: 11,
+                background: expandedCompass
+                  ? COMPASSES.find((c) => c.id === expandedCompass)?.color || '#C4A060'
+                  : '#C4A060',
+                opacity: 0.85,
+              }}
+            />
+          </button>
+        )}
+      </div>
 
       {/* Dropdown */}
       {open && (
         <div
-          className="absolute right-0 z-30 mt-1 animate-in fade-in duration-150 overflow-hidden rounded-xl"
+          className="absolute right-0 z-50 mt-1 animate-in fade-in duration-150 overflow-hidden rounded-xl"
           style={{
             background: '#F5ECDC',
             border: '1px solid #8A6A4A30',
@@ -187,28 +254,26 @@ export default function CategoryTagPicker({
             </button>
           )}
 
-          {/* Three compass dots — click to expand */}
+          {/* Three compass losanges — beautiful full panel */}
           <div className="flex items-center justify-center gap-6 py-4">
             {COMPASSES.map((c) => {
-              const isExpanded = expandedCompass === c.id;
+              const isActive = expandedCompass === c.id;
               return (
                 <button
                   key={c.id}
                   type="button"
-                  onClick={() => setExpandedCompass(isExpanded ? null : c.id)}
+                  onClick={() => setExpandedCompass(isActive ? null : c.id)}
                   className="flex flex-col items-center gap-1.5 cursor-pointer transition-all"
                   style={{ background: 'none', border: 'none' }}
                 >
                   <span
+                    className="rotate-45 rounded-[2px] block transition-all"
                     style={{
-                      display: 'block',
-                      width: isExpanded ? 20 : 16,
-                      height: isExpanded ? 20 : 16,
-                      borderRadius: '50%',
+                      width: isActive ? 20 : 16,
+                      height: isActive ? 20 : 16,
                       background: c.color,
-                      opacity: isExpanded ? 1 : 0.6,
-                      transition: 'all 0.2s',
-                      boxShadow: isExpanded ? `0 3px 10px -3px ${c.color}` : 'none',
+                      opacity: isActive ? 1 : 0.6,
+                      boxShadow: isActive ? `0 3px 10px -3px ${c.color}` : 'none',
                     }}
                   />
                   <span
@@ -217,7 +282,7 @@ export default function CategoryTagPicker({
                       fontSize: '13px',
                       fontWeight: 600,
                       color: c.color,
-                      opacity: isExpanded ? 1 : 0.5,
+                      opacity: isActive ? 1 : 0.5,
                       letterSpacing: '0.06em',
                     }}
                   >

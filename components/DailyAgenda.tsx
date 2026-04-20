@@ -167,6 +167,7 @@ export default function DailyAgenda() {
   const [selectedDate, setSelectedDate] = useState(todayStr);
   const [showMission, setShowMission] = useState(true);
   const [showEmotion, setShowEmotion] = useState(true);
+  const [showSocial, setShowSocial] = useState(false);
   const [blocks, setBlocks] = useState<AgendaBlock[]>([]);
   const [outings, setOutings] = useState<Outing[]>([]);
   const [outingInput, setOutingInput] = useState('');
@@ -181,6 +182,16 @@ export default function DailyAgenda() {
   const [lifeCategories, setLifeCategories] = useState<LifeCategoryLike[]>([]);
   const [showObjectives, setShowObjectives] = useState(false);
   const [objectives, setObjectives] = useState<{ id: string; text: string; done: boolean }[]>([]);
+  const [showDone, setShowDone] = useState(false);
+  const [doneObjectives, setDoneObjectives] = useState<
+    {
+      id: string;
+      text: string;
+      completedAt: string;
+      mindAtComplete?: string;
+      modeAtComplete?: string;
+    }[]
+  >([]);
 
   useEffect(() => {
     setBlocks(loadAgenda());
@@ -192,6 +203,10 @@ export default function DailyAgenda() {
     try {
       const raw = localStorage.getItem(CATS_KEY);
       if (raw) setLifeCategories(JSON.parse(raw));
+    } catch {}
+    try {
+      const raw = localStorage.getItem('colourmap:done-objectives');
+      if (raw) setDoneObjectives(JSON.parse(raw));
     } catch {}
 
     // Load from backend
@@ -262,6 +277,27 @@ export default function DailyAgenda() {
         }
       })
       .catch(() => {});
+  }, []);
+
+  // Refresh done objectives when localStorage changes (e.g. from check-in card)
+  useEffect(() => {
+    const refresh = () => {
+      try {
+        const raw = localStorage.getItem('colourmap:done-objectives');
+        if (raw) setDoneObjectives(JSON.parse(raw));
+      } catch {}
+      try {
+        const raw = localStorage.getItem('colourmap:today-objectives');
+        if (raw) setObjectives(JSON.parse(raw));
+      } catch {}
+    };
+    window.addEventListener('storage', refresh);
+    // Also poll every 3s for same-tab updates
+    const iv = setInterval(refresh, 3000);
+    return () => {
+      window.removeEventListener('storage', refresh);
+      clearInterval(iv);
+    };
   }, []);
 
   const toggleOpen = () => {
@@ -415,14 +451,14 @@ export default function DailyAgenda() {
           onClick={toggleOpen}
           className="flex cursor-pointer items-center gap-2 rounded-full px-5 py-1.5 transition-all"
           style={{
-            background: '#6890B015',
-            border: '1px solid #6890B040',
+            background: '#C4A06015',
+            border: '1px solid #C4A06040',
           }}
         >
           <span
             className="text-center uppercase"
             style={{
-              color: '#6890B0',
+              color: '#C4A060',
               fontSize: '15px',
               fontWeight: 700,
               letterSpacing: '0.22em',
@@ -433,7 +469,7 @@ export default function DailyAgenda() {
           <span
             className="text-sm transition-transform duration-200"
             style={{
-              color: '#6890B080',
+              color: '#C4A06080',
               transform: open ? 'rotate(180deg)' : 'rotate(0deg)',
             }}
           >
@@ -627,45 +663,7 @@ export default function DailyAgenda() {
             </div>
           )}
 
-          {/* Wake-up time */}
-          <div className="flex items-center justify-center gap-2">
-            <span
-              style={{
-                fontFamily: 'var(--font-serif)',
-                fontSize: '12px',
-                color: '#8A6A4A',
-                opacity: 0.6,
-              }}
-            >
-              woke up at
-            </span>
-            <select
-              value={wakeHour}
-              onChange={(e) => {
-                const v = Number(e.target.value);
-                setWakeHour(v);
-                try {
-                  localStorage.setItem(WAKE_KEY, String(v));
-                } catch {}
-              }}
-              style={{
-                background: 'transparent',
-                border: '1px solid #C4A06030',
-                borderRadius: 6,
-                padding: '2px 6px',
-                fontSize: '13px',
-                fontWeight: 600,
-                color: '#5C3018',
-                fontFamily: 'var(--font-serif)',
-              }}
-            >
-              {Array.from({ length: 12 }, (_, i) => i + 4).map((h) => (
-                <option key={h} value={h}>
-                  {String(h).padStart(2, '0')}:00
-                </option>
-              ))}
-            </select>
-          </div>
+          {/* Wake-up time — moved into VerticalView */}
 
           {/* Layer toggles — both can be active independently */}
           <div className="flex justify-center gap-2">
@@ -694,6 +692,19 @@ export default function DailyAgenda() {
               }}
             >
               emotion
+            </button>
+            <button
+              type="button"
+              onClick={() => setShowSocial((s) => !s)}
+              className="cursor-pointer rounded-full px-3 py-1 text-[10px] font-semibold uppercase tracking-wider transition-all"
+              style={{
+                color: '#6B7F4E',
+                border: `1px solid ${showSocial ? '#6B7F4E40' : '#C4A06018'}`,
+                background: showSocial ? '#6B7F4E10' : 'transparent',
+                opacity: showSocial ? 1 : 0.5,
+              }}
+            >
+              social
             </button>
           </div>
 
@@ -728,7 +739,76 @@ export default function DailyAgenda() {
                   showBlockPicker={showBlockPicker}
                   setShowBlockPicker={setShowBlockPicker}
                   lifeCategories={lifeCategories}
+                  setWakeHour={setWakeHour}
                 />
+              );
+            })()}
+
+          {/* Social layer — outings for current period */}
+          {showSocial &&
+            (() => {
+              const filtered = outings.filter((o) => {
+                if (agendaView === 'day') return o.date === selectedDate;
+                if (agendaView === 'week') return weekDates(selectedDate).includes(o.date);
+                return monthDates(selectedDate).includes(o.date);
+              });
+              if (filtered.length === 0 && agendaView === 'day') {
+                return (
+                  <div
+                    className="flex items-center justify-center gap-2 rounded-lg py-3"
+                    style={{ background: '#6B7F4E08', border: '1px dashed #6B7F4E20' }}
+                  >
+                    <span
+                      style={{
+                        fontFamily: 'var(--font-serif)',
+                        fontSize: '12px',
+                        color: '#6B7F4E',
+                        opacity: 0.5,
+                      }}
+                    >
+                      no outings today
+                    </span>
+                  </div>
+                );
+              }
+              if (filtered.length === 0) return null;
+              return (
+                <div className="space-y-1">
+                  {filtered.map((o) => (
+                    <div
+                      key={o.id}
+                      className="flex items-center gap-2 rounded-lg px-3 py-1.5"
+                      style={{ background: '#6B7F4E08' }}
+                    >
+                      <span
+                        className="h-2 w-2 shrink-0 rotate-45 rounded-[1px]"
+                        style={{ background: o.color, opacity: 0.7 }}
+                      />
+                      <span
+                        style={{
+                          fontFamily: 'var(--font-handwritten)',
+                          fontSize: '16px',
+                          color: '#5C3018',
+                          flex: 1,
+                        }}
+                      >
+                        {o.text}
+                      </span>
+                      {agendaView !== 'day' && (
+                        <span
+                          style={{
+                            fontFamily: 'var(--font-serif)',
+                            fontSize: '10px',
+                            color: '#8A6A4A',
+                            opacity: 0.5,
+                          }}
+                        >
+                          {dateLabel(o.date)}
+                        </span>
+                      )}
+                    </div>
+                  ))}
+                </div>
               );
             })()}
 
@@ -894,131 +974,299 @@ export default function DailyAgenda() {
             </div>
           )}
 
-          {/* Outings / Social — track going out, parties, memories */}
-          <div>
-            <button
-              type="button"
-              onClick={() => setShowOutings((s) => !s)}
-              className="flex w-full cursor-pointer items-center justify-center gap-2 rounded-full py-1.5 transition-all"
-              style={{
-                background: showOutings ? '#9B6BA012' : 'transparent',
-                border: `1px solid ${showOutings ? '#9B6BA030' : '#C4A06018'}`,
-              }}
-            >
-              <span
-                className="text-xs font-semibold uppercase tracking-[0.18em]"
-                style={{ color: '#9B6BA0' }}
-              >
-                Outings & Social
-              </span>
-              <span
-                className="text-[10px] transition-transform duration-200"
+          {/* Done — completed missions/objectives for this period */}
+          {(() => {
+            // Gather done items for the current view period
+            const allDone: {
+              id: string;
+              text: string;
+              date: string;
+              time: string;
+              mind?: string;
+              mode?: string;
+            }[] = [];
+            // From done objectives archive
+            for (const d of doneObjectives) {
+              const dt = new Date(d.completedAt);
+              const dateStr = dt.toISOString().split('T')[0];
+              allDone.push({
+                id: d.id,
+                text: d.text,
+                date: dateStr,
+                time: `${dt.getHours().toString().padStart(2, '0')}:${dt.getMinutes().toString().padStart(2, '0')}`,
+                mind: d.mindAtComplete,
+                mode: d.modeAtComplete,
+              });
+            }
+            // From today's checked-off objectives
+            const today = todayStr();
+            for (const o of objectives.filter((o) => o.done)) {
+              if (!allDone.some((d) => d.text === o.text && d.date === today)) {
+                allDone.push({ id: `obj-${o.id}`, text: o.text, date: today, time: '' });
+              }
+            }
+            // Filter to selected period
+            const filtered = allDone.filter((d) => {
+              if (agendaView === 'day') return d.date === selectedDate;
+              if (agendaView === 'week') return weekDates(selectedDate).includes(d.date);
+              return monthDates(selectedDate).includes(d.date);
+            });
+            if (filtered.length === 0) return null;
+            // Group by date
+            const byDate: Record<string, typeof filtered> = {};
+            for (const d of filtered) {
+              if (!byDate[d.date]) byDate[d.date] = [];
+              byDate[d.date].push(d);
+            }
+            const dates = Object.keys(byDate).sort().reverse();
+            return (
+              <div>
+                <button
+                  type="button"
+                  onClick={() => setShowDone((s) => !s)}
+                  className="flex w-full cursor-pointer items-center justify-center gap-2 rounded-full py-1.5 transition-all"
+                  style={{
+                    background: showDone ? '#7AAA5812' : 'transparent',
+                    border: `1px solid ${showDone ? '#7AAA5830' : '#C4A06018'}`,
+                  }}
+                >
+                  <span
+                    className="text-xs font-semibold uppercase tracking-[0.18em]"
+                    style={{ color: '#7AAA58' }}
+                  >
+                    Done
+                  </span>
+                  <span
+                    className="rounded-full px-1.5 text-[10px] font-semibold"
+                    style={{ color: '#7AAA58', background: '#7AAA5815' }}
+                  >
+                    {filtered.length}
+                  </span>
+                  <span
+                    className="text-[10px] transition-transform duration-200"
+                    style={{
+                      color: '#7AAA5880',
+                      transform: showDone ? 'rotate(180deg)' : 'rotate(0deg)',
+                    }}
+                  >
+                    ▾
+                  </span>
+                </button>
+                {showDone && (
+                  <div className="animate-in fade-in duration-150 space-y-3 pt-2">
+                    {dates.map((date) => (
+                      <div key={date}>
+                        {agendaView !== 'day' && (
+                          <p
+                            style={{
+                              fontFamily: 'var(--font-serif)',
+                              fontSize: '11px',
+                              color: '#8A6A4A',
+                              opacity: 0.5,
+                              marginBottom: 4,
+                            }}
+                          >
+                            {dateLabel(date)}
+                          </p>
+                        )}
+                        <div className="space-y-1">
+                          {byDate[date].map((d) => (
+                            <div
+                              key={d.id}
+                              className="flex items-center gap-2 rounded-lg px-3 py-1.5"
+                              style={{ background: '#7AAA5808' }}
+                            >
+                              <span className="text-xs" style={{ color: '#7AAA58' }}>
+                                ✓
+                              </span>
+                              <span
+                                style={{
+                                  fontFamily: 'var(--font-handwritten)',
+                                  fontSize: '16px',
+                                  color: '#5C3018',
+                                  flex: 1,
+                                }}
+                              >
+                                {d.text}
+                              </span>
+                              {d.time && (
+                                <span
+                                  style={{
+                                    fontFamily: 'var(--font-serif)',
+                                    fontSize: '10px',
+                                    color: '#8A6A4A',
+                                    opacity: 0.5,
+                                  }}
+                                >
+                                  {d.time}
+                                </span>
+                              )}
+                              {d.mind && (
+                                <span
+                                  className="rounded-full px-1.5 py-0.5"
+                                  style={{
+                                    fontFamily: 'var(--font-serif)',
+                                    fontSize: '9px',
+                                    color: '#6890B0',
+                                    background: '#6890B010',
+                                    border: '1px solid #6890B020',
+                                  }}
+                                >
+                                  {d.mind}
+                                </span>
+                              )}
+                              {d.mode && (
+                                <span
+                                  className="rounded-full px-1.5 py-0.5"
+                                  style={{
+                                    fontFamily: 'var(--font-serif)',
+                                    fontSize: '9px',
+                                    color: '#C4A060',
+                                    background: '#C4A06010',
+                                    border: '1px solid #C4A06020',
+                                  }}
+                                >
+                                  {d.mode}
+                                </span>
+                              )}
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            );
+          })()}
+
+          {/* Outings / Social — removed, accessed via social pill layer */}
+          {false && (
+            <div>
+              <button
+                type="button"
+                onClick={() => setShowOutings((s) => !s)}
+                className="flex w-full cursor-pointer items-center justify-center gap-2 rounded-full py-1.5 transition-all"
                 style={{
-                  color: '#9B6BA080',
-                  transform: showOutings ? 'rotate(180deg)' : 'rotate(0deg)',
+                  background: showOutings ? '#9B6BA012' : 'transparent',
+                  border: `1px solid ${showOutings ? '#9B6BA030' : '#C4A06018'}`,
                 }}
               >
-                ▾
-              </span>
-            </button>
-            {showOutings && (
-              <div className="animate-in fade-in duration-150 space-y-2 pt-2">
-                <input
-                  type="text"
-                  value={outingInput}
-                  onChange={(e) => setOutingInput(e.target.value)}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter') addOuting();
-                  }}
-                  placeholder="where did you go? what happened?"
-                  className="w-full border-b bg-transparent pb-1 outline-none placeholder:italic placeholder:text-[#9B6BA0] placeholder:opacity-60"
+                <span
+                  className="text-xs font-semibold uppercase tracking-[0.18em]"
+                  style={{ color: '#9B6BA0' }}
+                >
+                  Outings & Social
+                </span>
+                <span
+                  className="text-[10px] transition-transform duration-200"
                   style={{
-                    color: '#5C3018',
-                    borderColor: '#9B6BA020',
-                    fontFamily: 'var(--font-handwritten)',
-                    fontSize: '18px',
+                    color: '#9B6BA080',
+                    transform: showOutings ? 'rotate(180deg)' : 'rotate(0deg)',
                   }}
-                />
-                {outings
-                  .filter((o) => {
-                    if (agendaView === 'day') return o.date === selectedDate;
-                    if (agendaView === 'week') return weekDates(selectedDate).includes(o.date);
-                    return monthDates(selectedDate).includes(o.date);
-                  })
-                  .map((o) => (
-                    <div
-                      key={o.id}
-                      className="group flex items-center gap-2"
-                      style={{ minHeight: 28 }}
-                    >
-                      <span
-                        style={{
-                          color: '#8A6A4A',
-                          opacity: 0.6,
-                          fontSize: '12px',
-                          lineHeight: '28px',
-                          flexShrink: 0,
-                        }}
+                >
+                  ▾
+                </span>
+              </button>
+              {showOutings && (
+                <div className="animate-in fade-in duration-150 space-y-2 pt-2">
+                  <input
+                    type="text"
+                    value={outingInput}
+                    onChange={(e) => setOutingInput(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') addOuting();
+                    }}
+                    placeholder="where did you go? what happened?"
+                    className="w-full border-b bg-transparent pb-1 outline-none placeholder:italic placeholder:text-[#9B6BA0] placeholder:opacity-60"
+                    style={{
+                      color: '#5C3018',
+                      borderColor: '#9B6BA020',
+                      fontFamily: 'var(--font-handwritten)',
+                      fontSize: '18px',
+                    }}
+                  />
+                  {outings
+                    .filter((o) => {
+                      if (agendaView === 'day') return o.date === selectedDate;
+                      if (agendaView === 'week') return weekDates(selectedDate).includes(o.date);
+                      return monthDates(selectedDate).includes(o.date);
+                    })
+                    .map((o) => (
+                      <div
+                        key={o.id}
+                        className="group flex items-center gap-2"
+                        style={{ minHeight: 28 }}
                       >
-                        {dateLabel(o.date).split(' ')[1]}
-                      </span>
-                      <span
-                        style={{
-                          width: 7,
-                          height: 7,
-                          borderRadius: 1,
-                          background: o.color,
-                          opacity: 0.7,
-                          transform: 'rotate(45deg)',
-                          flexShrink: 0,
-                        }}
-                      />
-                      <span
-                        style={{
-                          color: '#5C3018',
-                          fontFamily: 'var(--font-handwritten)',
-                          fontSize: '16px',
-                          lineHeight: '28px',
-                          flex: 1,
-                        }}
-                      >
-                        {o.text}
-                      </span>
-                      <button
-                        type="button"
-                        onClick={() => {
-                          // Save to notebook as a journal entry via API
-                          fetch('/api/notebook', {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({
-                              category: 'journal',
-                              title: `${dateLabel(o.date)} — ${o.text}`,
-                              content: o.text,
-                              tags: ['social', 'outing'],
-                            }),
-                          }).catch(() => {});
-                          removeOuting(o.id);
-                        }}
-                        className="shrink-0 text-[9px] font-semibold uppercase tracking-wider opacity-0 transition-opacity group-hover:opacity-50 cursor-pointer"
-                        style={{ color: '#6B7F4E', background: 'none', border: 'none' }}
-                        title="Save to journal"
-                      >
-                        → journal
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => removeOuting(o.id)}
-                        className="shrink-0 text-xs opacity-0 transition-opacity group-hover:opacity-40 cursor-pointer"
-                        style={{ color: '#8A6A4A', background: 'none', border: 'none' }}
-                      >
-                        ✕
-                      </button>
-                    </div>
-                  ))}
-              </div>
-            )}
-          </div>
+                        <span
+                          style={{
+                            color: '#8A6A4A',
+                            opacity: 0.6,
+                            fontSize: '12px',
+                            lineHeight: '28px',
+                            flexShrink: 0,
+                          }}
+                        >
+                          {dateLabel(o.date).split(' ')[1]}
+                        </span>
+                        <span
+                          style={{
+                            width: 7,
+                            height: 7,
+                            borderRadius: 1,
+                            background: o.color,
+                            opacity: 0.7,
+                            transform: 'rotate(45deg)',
+                            flexShrink: 0,
+                          }}
+                        />
+                        <span
+                          style={{
+                            color: '#5C3018',
+                            fontFamily: 'var(--font-handwritten)',
+                            fontSize: '16px',
+                            lineHeight: '28px',
+                            flex: 1,
+                          }}
+                        >
+                          {o.text}
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            // Save to notebook as a journal entry via API
+                            fetch('/api/notebook', {
+                              method: 'POST',
+                              headers: { 'Content-Type': 'application/json' },
+                              body: JSON.stringify({
+                                category: 'journal',
+                                title: `${dateLabel(o.date)} — ${o.text}`,
+                                content: o.text,
+                                tags: ['social', 'outing'],
+                              }),
+                            }).catch(() => {});
+                            removeOuting(o.id);
+                          }}
+                          className="shrink-0 text-[9px] font-semibold uppercase tracking-wider opacity-0 transition-opacity group-hover:opacity-50 cursor-pointer"
+                          style={{ color: '#6B7F4E', background: 'none', border: 'none' }}
+                          title="Save to journal"
+                        >
+                          → journal
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => removeOuting(o.id)}
+                          className="shrink-0 text-xs opacity-0 transition-opacity group-hover:opacity-40 cursor-pointer"
+                          style={{ color: '#8A6A4A', background: 'none', border: 'none' }}
+                        >
+                          ✕
+                        </button>
+                      </div>
+                    ))}
+                </div>
+              )}
+            </div>
+          )}
         </div>
       )}
     </div>
@@ -1049,6 +1297,7 @@ function VerticalView({
   showBlockPicker,
   setShowBlockPicker,
   lifeCategories,
+  setWakeHour,
 }: {
   blocks: AgendaBlock[];
   layer: AgendaLayer;
@@ -1072,11 +1321,51 @@ function VerticalView({
   showBlockPicker: boolean;
   setShowBlockPicker: (v: boolean) => void;
   lifeCategories: LifeCategoryLike[];
+  setWakeHour: (v: number) => void;
 }) {
   const [dragOverHour, setDragOverHour] = useState<number | null>(null);
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
+      {/* Wake-up time — left-aligned above hours */}
+      <div className="flex items-center gap-1.5 pb-1" style={{ paddingLeft: 0 }}>
+        <span
+          style={{
+            fontFamily: 'var(--font-serif)',
+            fontSize: '11px',
+            color: '#8A6A4A',
+            opacity: 0.5,
+          }}
+        >
+          woke up at
+        </span>
+        <select
+          value={wakeHour}
+          onChange={(e) => {
+            const v = Number(e.target.value);
+            setWakeHour(v);
+            try {
+              localStorage.setItem(WAKE_KEY, String(v));
+            } catch {}
+          }}
+          style={{
+            background: 'transparent',
+            border: '1px solid #C4A06030',
+            borderRadius: 4,
+            padding: '1px 4px',
+            fontSize: '12px',
+            fontWeight: 600,
+            color: '#5C3018',
+            fontFamily: 'var(--font-serif)',
+          }}
+        >
+          {Array.from({ length: 12 }, (_, i) => i + 4).map((h) => (
+            <option key={h} value={h}>
+              {String(h).padStart(2, '0')}:00
+            </option>
+          ))}
+        </select>
+      </div>
       {getHours(wakeHour).map((hour) => {
         // All blocks visible in this hour slot
         const activeBlocks = blocks.filter(
