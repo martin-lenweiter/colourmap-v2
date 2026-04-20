@@ -541,21 +541,35 @@ export default function DailyAgenda() {
                   title={l.key}
                 />
               ))}
-              {/* Road view toggle */}
-              <button
-                type="button"
-                onClick={() => setRoadView((s) => !s)}
-                className="cursor-pointer rounded-[3px] transition-all"
-                style={{
-                  width: 10,
-                  height: 10,
-                  background: '#C4A060',
-                  opacity: roadView ? 1 : 0.25,
-                  border: 'none',
-                  transform: 'rotate(45deg)',
-                }}
-                title="Road view"
-              />
+              {/* Road / List toggle */}
+              <div className="ml-2 flex gap-1">
+                <button
+                  type="button"
+                  onClick={() => setRoadView(false)}
+                  className="cursor-pointer rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider transition-all"
+                  style={{
+                    color: '#C4A060',
+                    background: !roadView ? '#C4A06015' : 'transparent',
+                    border: `1px solid ${!roadView ? '#C4A06040' : '#C4A06015'}`,
+                    opacity: !roadView ? 1 : 0.4,
+                  }}
+                >
+                  list
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setRoadView(true)}
+                  className="cursor-pointer rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider transition-all"
+                  style={{
+                    color: '#C4A060',
+                    background: roadView ? '#C4A06015' : 'transparent',
+                    border: `1px solid ${roadView ? '#C4A06040' : '#C4A06015'}`,
+                    opacity: roadView ? 1 : 0.4,
+                  }}
+                >
+                  road
+                </button>
+              </div>
             </div>
           </div>
 
