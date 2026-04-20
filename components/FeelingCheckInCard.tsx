@@ -822,6 +822,7 @@ export default function FeelingCheckInCard() {
   const [renamingTodoId, setRenamingTodoId] = useState<string | null>(null);
   const [renameTodoValue, setRenameTodoValue] = useState('');
   const [objTagPickerId, setObjTagPickerId] = useState<string | null>(null);
+  const [slidersOpenId, setSlidersOpenId] = useState<string | null>(null);
   const updateTodayField = (id: string, field: string, value: string | number) => {
     const next = todayObjectives.map((t) => (t.id === id ? { ...t, [field]: value } : t));
     persistTodayObjectives(next);
@@ -3045,7 +3046,7 @@ export default function FeelingCheckInCard() {
                                     compassAxes={COMPASS_AXES}
                                   />
                                 </div>
-                                {/* Ease + Weight + Urgency long sliders */}
+                                {/* Ease + Weight + Urgency — compact or expanded */}
                                 {(() => {
                                   const easeLabels = [
                                     '',
@@ -3092,17 +3093,117 @@ export default function FeelingCheckInCard() {
                                     '#E8A060',
                                     '#D06040',
                                   ];
+                                  const hasValues =
+                                    (o.ease || 0) > 0 ||
+                                    (o.weight || 0) > 0 ||
+                                    (o.urgency || 0) > 0;
+                                  const isSliderOpen = slidersOpenId === o.id;
+
+                                  // Compact summary — dots + labels
+                                  if (hasValues && !isSliderOpen) {
+                                    return (
+                                      <button
+                                        type="button"
+                                        onClick={() => setSlidersOpenId(o.id)}
+                                        className="ml-7 flex cursor-pointer flex-wrap items-center gap-3 pt-2 pb-1 transition-all"
+                                        style={{ background: 'none', border: 'none' }}
+                                      >
+                                        {(o.ease || 0) > 0 && (
+                                          <span className="flex items-center gap-1.5">
+                                            <span
+                                              className="block rounded-full"
+                                              style={{
+                                                width: 8,
+                                                height: 8,
+                                                background: easeColors[(o.ease || 1) - 1],
+                                              }}
+                                            />
+                                            <span
+                                              style={{
+                                                fontFamily: 'var(--font-serif)',
+                                                fontSize: '12px',
+                                                fontWeight: 600,
+                                                color: easeColors[(o.ease || 1) - 1],
+                                              }}
+                                            >
+                                              {easeLabels[o.ease || 0]}
+                                            </span>
+                                          </span>
+                                        )}
+                                        {(o.weight || 0) > 0 && (
+                                          <span className="flex items-center gap-1.5">
+                                            <span
+                                              className="block rounded-full"
+                                              style={{
+                                                width: 8,
+                                                height: 8,
+                                                background: weightColors[(o.weight || 1) - 1],
+                                              }}
+                                            />
+                                            <span
+                                              style={{
+                                                fontFamily: 'var(--font-serif)',
+                                                fontSize: '12px',
+                                                fontWeight: 600,
+                                                color: weightColors[(o.weight || 1) - 1],
+                                              }}
+                                            >
+                                              {weightLabels[o.weight || 0]}
+                                            </span>
+                                          </span>
+                                        )}
+                                        {(o.urgency || 0) > 0 && (
+                                          <span className="flex items-center gap-1.5">
+                                            <span
+                                              className="block rounded-full"
+                                              style={{
+                                                width: 8,
+                                                height: 8,
+                                                background: urgencyColors[(o.urgency || 1) - 1],
+                                              }}
+                                            />
+                                            <span
+                                              style={{
+                                                fontFamily: 'var(--font-serif)',
+                                                fontSize: '12px',
+                                                fontWeight: 600,
+                                                color: urgencyColors[(o.urgency || 1) - 1],
+                                              }}
+                                            >
+                                              {urgencyLabels[o.urgency || 0]}
+                                            </span>
+                                          </span>
+                                        )}
+                                      </button>
+                                    );
+                                  }
+
                                   return (
                                     <div className="ml-7 space-y-2 pt-2 pb-1">
+                                      {hasValues && (
+                                        <button
+                                          type="button"
+                                          onClick={() => setSlidersOpenId(null)}
+                                          className="cursor-pointer text-[10px]"
+                                          style={{
+                                            background: 'none',
+                                            border: 'none',
+                                            color: '#8A6A4A',
+                                            opacity: 0.5,
+                                          }}
+                                        >
+                                          collapse
+                                        </button>
+                                      )}
                                       {/* Ease slider */}
                                       <div>
                                         <div className="flex items-center justify-between mb-1">
                                           <span
                                             style={{
                                               fontFamily: 'var(--font-serif)',
-                                              fontSize: '11px',
-                                              color: '#8A6A4A',
-                                              opacity: 0.6,
+                                              fontSize: '12px',
+                                              color: '#7A5438',
+                                              opacity: 0.7,
                                             }}
                                           >
                                             how easy to solve?
@@ -3111,7 +3212,7 @@ export default function FeelingCheckInCard() {
                                             <span
                                               style={{
                                                 fontFamily: 'var(--font-serif)',
-                                                fontSize: '11px',
+                                                fontSize: '12px',
                                                 color: easeColors[(o.ease || 1) - 1],
                                                 fontWeight: 600,
                                               }}
@@ -3155,9 +3256,9 @@ export default function FeelingCheckInCard() {
                                           <span
                                             style={{
                                               fontFamily: 'var(--font-serif)',
-                                              fontSize: '11px',
-                                              color: '#8A6A4A',
-                                              opacity: 0.6,
+                                              fontSize: '12px',
+                                              color: '#7A5438',
+                                              opacity: 0.7,
                                             }}
                                           >
                                             how heavy does this feel?
@@ -3166,7 +3267,7 @@ export default function FeelingCheckInCard() {
                                             <span
                                               style={{
                                                 fontFamily: 'var(--font-serif)',
-                                                fontSize: '11px',
+                                                fontSize: '12px',
                                                 color: weightColors[(o.weight || 1) - 1],
                                                 fontWeight: 600,
                                               }}
@@ -3210,9 +3311,9 @@ export default function FeelingCheckInCard() {
                                           <span
                                             style={{
                                               fontFamily: 'var(--font-serif)',
-                                              fontSize: '11px',
-                                              color: '#8A6A4A',
-                                              opacity: 0.6,
+                                              fontSize: '12px',
+                                              color: '#7A5438',
+                                              opacity: 0.7,
                                             }}
                                           >
                                             how pressing is it?
@@ -3221,7 +3322,7 @@ export default function FeelingCheckInCard() {
                                             <span
                                               style={{
                                                 fontFamily: 'var(--font-serif)',
-                                                fontSize: '11px',
+                                                fontSize: '12px',
                                                 color: urgencyColors[(o.urgency || 1) - 1],
                                                 fontWeight: 600,
                                               }}
@@ -3652,6 +3753,7 @@ export default function FeelingCheckInCard() {
                                     compassAxes={COMPASS_AXES}
                                   />
                                 </div>
+                                {/* Ease + Weight + Urgency — compact or expanded */}
                                 {(() => {
                                   const easeLabels = [
                                     '',
@@ -3698,16 +3800,115 @@ export default function FeelingCheckInCard() {
                                     '#E8A060',
                                     '#D06040',
                                   ];
+                                  const hasValues =
+                                    (t.ease || 0) > 0 ||
+                                    (t.weight || 0) > 0 ||
+                                    (t.urgency || 0) > 0;
+                                  const isSliderOpen = slidersOpenId === `todo-${t.id}`;
+
+                                  if (hasValues && !isSliderOpen) {
+                                    return (
+                                      <button
+                                        type="button"
+                                        onClick={() => setSlidersOpenId(`todo-${t.id}`)}
+                                        className="flex cursor-pointer flex-wrap items-center gap-3 pt-2 pb-1 transition-all"
+                                        style={{ background: 'none', border: 'none' }}
+                                      >
+                                        {(t.ease || 0) > 0 && (
+                                          <span className="flex items-center gap-1.5">
+                                            <span
+                                              className="block rounded-full"
+                                              style={{
+                                                width: 8,
+                                                height: 8,
+                                                background: easeColors[(t.ease || 1) - 1],
+                                              }}
+                                            />
+                                            <span
+                                              style={{
+                                                fontFamily: 'var(--font-serif)',
+                                                fontSize: '12px',
+                                                fontWeight: 600,
+                                                color: easeColors[(t.ease || 1) - 1],
+                                              }}
+                                            >
+                                              {easeLabels[t.ease || 0]}
+                                            </span>
+                                          </span>
+                                        )}
+                                        {(t.weight || 0) > 0 && (
+                                          <span className="flex items-center gap-1.5">
+                                            <span
+                                              className="block rounded-full"
+                                              style={{
+                                                width: 8,
+                                                height: 8,
+                                                background: weightColors[(t.weight || 1) - 1],
+                                              }}
+                                            />
+                                            <span
+                                              style={{
+                                                fontFamily: 'var(--font-serif)',
+                                                fontSize: '12px',
+                                                fontWeight: 600,
+                                                color: weightColors[(t.weight || 1) - 1],
+                                              }}
+                                            >
+                                              {weightLabels[t.weight || 0]}
+                                            </span>
+                                          </span>
+                                        )}
+                                        {(t.urgency || 0) > 0 && (
+                                          <span className="flex items-center gap-1.5">
+                                            <span
+                                              className="block rounded-full"
+                                              style={{
+                                                width: 8,
+                                                height: 8,
+                                                background: urgencyColors[(t.urgency || 1) - 1],
+                                              }}
+                                            />
+                                            <span
+                                              style={{
+                                                fontFamily: 'var(--font-serif)',
+                                                fontSize: '12px',
+                                                fontWeight: 600,
+                                                color: urgencyColors[(t.urgency || 1) - 1],
+                                              }}
+                                            >
+                                              {urgencyLabels[t.urgency || 0]}
+                                            </span>
+                                          </span>
+                                        )}
+                                      </button>
+                                    );
+                                  }
+
                                   return (
                                     <>
+                                      {hasValues && (
+                                        <button
+                                          type="button"
+                                          onClick={() => setSlidersOpenId(null)}
+                                          className="cursor-pointer text-[10px]"
+                                          style={{
+                                            background: 'none',
+                                            border: 'none',
+                                            color: '#8A6A4A',
+                                            opacity: 0.5,
+                                          }}
+                                        >
+                                          collapse
+                                        </button>
+                                      )}
                                       <div>
                                         <div className="flex items-center justify-between mb-1">
                                           <span
                                             style={{
                                               fontFamily: 'var(--font-serif)',
-                                              fontSize: '11px',
-                                              color: '#8A6A4A',
-                                              opacity: 0.6,
+                                              fontSize: '12px',
+                                              color: '#7A5438',
+                                              opacity: 0.7,
                                             }}
                                           >
                                             how easy to solve?
@@ -3716,7 +3917,7 @@ export default function FeelingCheckInCard() {
                                             <span
                                               style={{
                                                 fontFamily: 'var(--font-serif)',
-                                                fontSize: '11px',
+                                                fontSize: '12px',
                                                 color: easeColors[(t.ease || 1) - 1],
                                                 fontWeight: 600,
                                               }}
@@ -3758,9 +3959,9 @@ export default function FeelingCheckInCard() {
                                           <span
                                             style={{
                                               fontFamily: 'var(--font-serif)',
-                                              fontSize: '11px',
-                                              color: '#8A6A4A',
-                                              opacity: 0.6,
+                                              fontSize: '12px',
+                                              color: '#7A5438',
+                                              opacity: 0.7,
                                             }}
                                           >
                                             how heavy does this feel?
@@ -3769,7 +3970,7 @@ export default function FeelingCheckInCard() {
                                             <span
                                               style={{
                                                 fontFamily: 'var(--font-serif)',
-                                                fontSize: '11px',
+                                                fontSize: '12px',
                                                 color: weightColors[(t.weight || 1) - 1],
                                                 fontWeight: 600,
                                               }}
@@ -3812,9 +4013,9 @@ export default function FeelingCheckInCard() {
                                           <span
                                             style={{
                                               fontFamily: 'var(--font-serif)',
-                                              fontSize: '11px',
-                                              color: '#8A6A4A',
-                                              opacity: 0.6,
+                                              fontSize: '12px',
+                                              color: '#7A5438',
+                                              opacity: 0.7,
                                             }}
                                           >
                                             how pressing is it?
@@ -3823,7 +4024,7 @@ export default function FeelingCheckInCard() {
                                             <span
                                               style={{
                                                 fontFamily: 'var(--font-serif)',
-                                                fontSize: '11px',
+                                                fontSize: '12px',
                                                 color: urgencyColors[(t.urgency || 1) - 1],
                                                 fontWeight: 600,
                                               }}
