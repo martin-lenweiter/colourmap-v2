@@ -508,9 +508,9 @@ export default function DailyAgenda() {
             >
               {agendaView === 'day'
                 ? selectedDate === todayStr()
-                  ? `Today — ${dateLabel(selectedDate)}`
+                  ? dateLabel(selectedDate)
                   : selectedDate === shiftDate(todayStr(), 'day', -1)
-                    ? `Yesterday — ${dateLabel(selectedDate)}`
+                    ? dateLabel(selectedDate)
                     : selectedDate === shiftDate(todayStr(), 'day', 1)
                       ? `Tomorrow — ${dateLabel(selectedDate)}`
                       : dateLabel(selectedDate)
@@ -536,53 +536,62 @@ export default function DailyAgenda() {
               ›
             </button>
           </div>
-          <div className="flex justify-center gap-2">
-            {(['day', 'week', 'month'] as const).map((v) => (
-              <button
-                key={v}
-                type="button"
-                onClick={() => setAgendaView(v)}
-                className="cursor-pointer rounded-full px-3 py-1 text-[10px] font-semibold uppercase tracking-wider transition-all"
-                style={{
-                  color: '#6890B0',
-                  border: `1px solid ${agendaView === v ? '#6890B040' : '#C4A06018'}`,
-                  background: agendaView === v ? '#6890B010' : 'transparent',
-                  opacity: agendaView === v ? 1 : 0.5,
-                }}
-              >
-                {v}
-              </button>
-            ))}
-          </div>
-
-          {/* Daily Objectives tab */}
-          {objectives.length > 0 && (
-            <div>
+          {/* View + Layer pills on one row */}
+          <div className="flex items-center justify-between">
+            <div className="flex gap-1.5">
+              {(['day', 'week', 'month'] as const).map((v) => (
+                <button
+                  key={v}
+                  type="button"
+                  onClick={() => setAgendaView(v)}
+                  className="cursor-pointer rounded-full px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wider transition-all"
+                  style={{
+                    color: '#C4A060',
+                    border: `1px solid ${agendaView === v ? '#C4A06040' : '#C4A06018'}`,
+                    background: agendaView === v ? '#C4A06010' : 'transparent',
+                    opacity: agendaView === v ? 1 : 0.5,
+                  }}
+                >
+                  {v}
+                </button>
+              ))}
+            </div>
+            {/* Daily Objectives losange — right side */}
+            {objectives.filter((o) => !o.done).length > 0 && (
               <button
                 type="button"
                 onClick={() => setShowObjectives((s) => !s)}
-                className="flex w-full cursor-pointer items-center justify-center gap-2 rounded-full py-1.5 transition-all"
-                style={{
-                  background: showObjectives ? '#C4A06012' : 'transparent',
-                  border: `1px solid ${showObjectives ? '#C4A06030' : '#C4A06018'}`,
-                }}
+                className="flex cursor-pointer items-center gap-1.5 transition-all"
+                style={{ background: 'none', border: 'none' }}
+                title="Daily Objectives"
               >
                 <span
-                  className="text-xs font-semibold uppercase tracking-[0.18em]"
-                  style={{ color: '#C4A060' }}
-                >
-                  Daily Objectives
-                </span>
-                <span
-                  className="text-[10px] transition-transform duration-200"
+                  className="rotate-45 rounded-[2px] block"
                   style={{
-                    color: '#C4A06080',
-                    transform: showObjectives ? 'rotate(180deg)' : 'rotate(0deg)',
+                    width: 10,
+                    height: 10,
+                    background: '#C4A060',
+                    opacity: showObjectives ? 1 : 0.5,
+                  }}
+                />
+                <span
+                  style={{
+                    fontFamily: 'var(--font-serif)',
+                    fontSize: '11px',
+                    fontWeight: 600,
+                    color: '#C4A060',
+                    opacity: showObjectives ? 1 : 0.5,
                   }}
                 >
-                  ▾
+                  {objectives.filter((o) => !o.done).length}
                 </span>
               </button>
+            )}
+          </div>
+
+          {/* Daily Objectives expanded */}
+          {objectives.filter((o) => !o.done).length > 0 && (
+            <div>
               {showObjectives && (
                 <div className="animate-in fade-in duration-150 space-y-1.5 pt-2">
                   {(() => {
@@ -651,10 +660,8 @@ export default function DailyAgenda() {
             </div>
           )}
 
-          {/* Wake-up time — moved into VerticalView */}
-
-          {/* Layer toggles — both can be active independently */}
-          <div className="flex justify-center gap-2">
+          {/* Layer toggles */}
+          <div className="flex justify-center gap-1.5">
             <button
               type="button"
               onClick={() => setShowMission((s) => !s)}

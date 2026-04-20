@@ -810,6 +810,7 @@ export default function FeelingCheckInCard() {
     weight?: number;
     urgency?: number;
     status?: TodoStatus;
+    tag?: { name: string; color: string; categoryId?: string };
   };
   const STATUS_CONFIG: Record<TodoStatus, { label: string; color: string }> = {
     active: { label: 'Active', color: '#7AAA58' },
@@ -820,12 +821,27 @@ export default function FeelingCheckInCard() {
   const [renameObjValue, setRenameObjValue] = useState('');
   const [renamingTodoId, setRenamingTodoId] = useState<string | null>(null);
   const [renameTodoValue, setRenameTodoValue] = useState('');
+  const [objTagPickerId, setObjTagPickerId] = useState<string | null>(null);
   const updateTodayField = (id: string, field: string, value: string | number) => {
     const next = todayObjectives.map((t) => (t.id === id ? { ...t, [field]: value } : t));
     persistTodayObjectives(next);
   };
   const updateTodoField = (id: string, field: string, value: string | number) => {
     const next = todos.map((t) => (t.id === id ? { ...t, [field]: value } : t));
+    persistTodos(next);
+  };
+  const updateTodayTag = (
+    id: string,
+    tag: { name: string; color: string; categoryId?: string } | null,
+  ) => {
+    const next = todayObjectives.map((t) => (t.id === id ? { ...t, tag: tag || undefined } : t));
+    persistTodayObjectives(next);
+  };
+  const updateTodoTag = (
+    id: string,
+    tag: { name: string; color: string; categoryId?: string } | null,
+  ) => {
+    const next = todos.map((t) => (t.id === id ? { ...t, tag: tag || undefined } : t));
     persistTodos(next);
   };
   const updateTodayNotes = (id: string, notes: string) => {
@@ -3015,6 +3031,20 @@ export default function FeelingCheckInCard() {
                                     </span>
                                   </button>
                                 </div>
+                                {/* Category losange picker */}
+                                <div className="ml-7 pt-1">
+                                  <CategoryTagPicker
+                                    value={o.tag || null}
+                                    onChange={(tag) => updateTodayTag(o.id, tag)}
+                                    open={objTagPickerId === o.id}
+                                    onToggle={() =>
+                                      setObjTagPickerId(objTagPickerId === o.id ? null : o.id)
+                                    }
+                                    onClose={() => setObjTagPickerId(null)}
+                                    lifeCategories={lifeCategories}
+                                    compassAxes={COMPASS_AXES}
+                                  />
+                                </div>
                                 {/* Ease + Weight + Urgency long sliders */}
                                 {(() => {
                                   const easeLabels = [
@@ -3605,6 +3635,22 @@ export default function FeelingCheckInCard() {
                                       {t.status === 'waiting' ? 'Waiting for reply' : 'Active'}
                                     </span>
                                   </button>
+                                </div>
+                                {/* Category losange picker */}
+                                <div>
+                                  <CategoryTagPicker
+                                    value={t.tag || null}
+                                    onChange={(tag) => updateTodoTag(t.id, tag)}
+                                    open={objTagPickerId === `todo-${t.id}`}
+                                    onToggle={() =>
+                                      setObjTagPickerId(
+                                        objTagPickerId === `todo-${t.id}` ? null : `todo-${t.id}`,
+                                      )
+                                    }
+                                    onClose={() => setObjTagPickerId(null)}
+                                    lifeCategories={lifeCategories}
+                                    compassAxes={COMPASS_AXES}
+                                  />
                                 </div>
                                 {(() => {
                                   const easeLabels = [
@@ -4403,12 +4449,12 @@ export default function FeelingCheckInCard() {
                         if (e.key === 'Enter') saveChallenge();
                       }}
                       placeholder="what is your main tension right now?"
-                      className="flex-1 border-b bg-transparent pb-1 outline-none placeholder:text-[#7a5438] placeholder:opacity-50"
+                      className="flex-1 border-b bg-transparent pb-1 outline-none placeholder:text-[#7A5438] placeholder:opacity-60"
                       style={{
                         color: '#7a5438',
                         borderColor: '#C4A06030',
                         fontFamily: 'var(--font-handwritten)',
-                        fontSize: '20px',
+                        fontSize: '18px',
                       }}
                     />
                     <CategoryTagPicker
@@ -4446,12 +4492,12 @@ export default function FeelingCheckInCard() {
                         if (e.key === 'Enter') saveFlow();
                       }}
                       placeholder="what is working well? how are you celebrating?"
-                      className="flex-1 border-b bg-transparent pb-1 outline-none placeholder:text-[#7a5438] placeholder:opacity-50"
+                      className="flex-1 border-b bg-transparent pb-1 outline-none placeholder:text-[#7A5438] placeholder:opacity-60"
                       style={{
                         color: '#7a5438',
                         borderColor: '#C4A06030',
                         fontFamily: 'var(--font-handwritten)',
-                        fontSize: '20px',
+                        fontSize: '18px',
                       }}
                     />
                     <CategoryTagPicker
