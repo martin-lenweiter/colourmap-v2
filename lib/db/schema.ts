@@ -163,3 +163,55 @@ export const dailyTrackerEntries = pgTable('daily_tracker_entries', {
   value: integer('value').notNull(),
   createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
 });
+
+// ─── Circles — shared spaces ───
+export const circles = pgTable('circles', {
+  id: uuid('id').defaultRandom().primaryKey(),
+  name: text('name').notNull(),
+  code: text('code').notNull(),
+  color: text('color').notNull().default('#D4805A'),
+  createdBy: uuid('created_by').notNull(),
+  createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+});
+
+export const circleMembers = pgTable('circle_members', {
+  id: uuid('id').defaultRandom().primaryKey(),
+  circleId: uuid('circle_id').notNull(),
+  userId: uuid('user_id').notNull(),
+  name: text('name').notNull(),
+  color: text('color').notNull().default('#D4805A'),
+  pulse: text('pulse'),
+  pulseColor: text('pulse_color'),
+  sharePulse: boolean('share_pulse').default(false).notNull(),
+  joinedAt: timestamp('joined_at', { withTimezone: true }).defaultNow().notNull(),
+});
+
+export const circleMissions = pgTable('circle_missions', {
+  id: uuid('id').defaultRandom().primaryKey(),
+  circleId: uuid('circle_id').notNull(),
+  text: text('text').notNull(),
+  claimedBy: uuid('claimed_by'),
+  done: boolean('done').default(false).notNull(),
+  dueDate: date('due_date'),
+  createdBy: uuid('created_by').notNull(),
+  createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+});
+
+export const circleNotes = pgTable('circle_notes', {
+  id: uuid('id').defaultRandom().primaryKey(),
+  circleId: uuid('circle_id').notNull(),
+  authorId: uuid('author_id').notNull(),
+  authorName: text('author_name').notNull(),
+  text: text('text').notNull(),
+  sessionId: uuid('session_id'),
+  createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+});
+
+export const circleSessions = pgTable('circle_sessions', {
+  id: uuid('id').defaultRandom().primaryKey(),
+  circleId: uuid('circle_id').notNull(),
+  startedBy: uuid('started_by').notNull(),
+  startedAt: timestamp('started_at', { withTimezone: true }).defaultNow().notNull(),
+  endedAt: timestamp('ended_at', { withTimezone: true }),
+  summary: text('summary'),
+});
