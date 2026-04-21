@@ -1,99 +1,53 @@
 'use client';
 
-import { useCallback, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 
 /* ═══════════════════════════════════════════════════════════
    CIRCLE BOARD — shared mission board for a group of people.
    Create circles, join with a code, shared missions + log.
-   Phase 2: API-backed (multi-device, real collaboration).
+   Phase 1: localStorage only (single device, demo mode).
    ═══════════════════════════════════════════════════════════ */
 
+const LS_CIRCLES = 'colourmap:circles';
+const LS_ACTIVE = 'colourmap:active-circle';
 const LS_ME = 'colourmap:circle-me';
-
-interface CircleMember {
-  id: string;
-  circleId: string;
-  userId: string;
-  name: string;
-  color: string;
-  pulse?: string | null;
-  pulseColor?: string | null;
-  sharePulse: boolean;
-  joinedAt: string;
-}
-
-interface CircleMission {
-  id: string;
-  circleId: string;
-  text: string;
-  claimedBy?: string | null;
-  done: boolean;
-  dueDate?: string | null;
-  createdBy: string;
-  createdAt: string;
-}
-
-interface CircleNote {
-  id: string;
-  circleId: string;
-  authorId: string;
-  authorName: string;
-  text: string;
-  sessionId?: string | null;
-  createdAt: string;
-}
-
-interface CircleSession {
-  id: string;
-  circleId: string;
-  startedBy: string;
-  startedAt: string;
-  endedAt?: string | null;
-  summary?: string | null;
-}
 
 interface Circle {
   id: string;
   name: string;
   code: string;
   color: string;
-  createdBy: string;
+  members: Member[];
+  missions: Mission[];
+  notes: Note[];
   createdAt: string;
-  members: CircleMember[];
 }
 
-interface CircleDetail extends Circle {
-  missions: CircleMission[];
-  notes: CircleNote[];
-  activeSession: CircleSession | null;
+interface Member {
+  id: string;
+  name: string;
+  color: string;
+  pulse?: string;
+  pulseColor?: string;
+}
+
+interface Mission {
+  id: string;
+  text: string;
+  claimedBy?: string;
+  done: boolean;
+  createdAt: string;
+}
+
+interface Note {
+  id: string;
+  authorId: string;
+  authorName: string;
+  text: string;
+  createdAt: string;
 }
 
 const CIRCLE_COLORS = ['#D4805A', '#6890B0', '#7AAA58', '#9B6BA0', '#C4A060', '#5A8AAA'];
-
-const HAWKINS_LABELS = [
-  'Shame',
-  'Apathy',
-  'Grief',
-  'Fear',
-  'Anger',
-  'Courage',
-  'Acceptance',
-  'Reason',
-  'Love',
-  'Peace',
-];
-const HAWKINS_COLORS = [
-  '#B8D0E8',
-  '#D8B0C8',
-  '#E8A0C4',
-  '#F080B8',
-  '#F0A088',
-  '#F8C040',
-  '#F0E060',
-  '#A8E090',
-  '#88D8B0',
-  '#88C8E8',
-];
 
 function ls<T>(key: string, fallback: T): T {
   if (typeof window === 'undefined') return fallback;
@@ -108,34 +62,20 @@ function ls<T>(key: string, fallback: T): T {
 function ss(key: string, val: unknown) {
   try {
     localStorage.setItem(key, JSON.stringify(val));
-  } catch {
-    /* noop */
-  }
+  } catch {}
 }
 
-type View = 'list' | 'board' | 'week';
-
-function getWeekDays(): { label: string; date: string }[] {
-  const now = new Date();
-  const day = now.getDay();
-  const monday = new Date(now);
-  monday.setDate(now.getDate() - ((day + 6) % 7));
-  const days: { label: string; date: string }[] = [];
-  const labels = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
-  for (let i = 0; i < 7; i++) {
-    const d = new Date(monday);
-    d.setDate(monday.getDate() + i);
-    days.push({
-      label: labels[i],
-      date: d.toISOString().split('T')[0],
-    });
-  }
-  return days;
+function genCode(): string {
+  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+  let code = '';
+  for (let i = 0; i < 6; i++) code += chars[Math.floor(Math.random() * chars.length)];
+  return code;
 }
+
+type View = 'list' | 'board';
 
 export default function CircleBoard() {
   const [circles, setCircles] = useState<Circle[]>([]);
-  const [activeDetail, setActiveDetail] = useState<CircleDetail | null>(null);
   const [activeId, setActiveId] = useState<string | null>(null);
   const [me, setMe] = useState<{ id: string; name: string }>({ id: '', name: '' });
   const [view, setView] = useState<View>('list');
@@ -144,387 +84,203 @@ export default function CircleBoard() {
   const [newName, setNewName] = useState('');
   const [joinCode, setJoinCode] = useState('');
   const [missionInput, setMissionInput] = useState('');
-  const [missionDueDate, setMissionDueDate] = useState('');
   const [noteInput, setNoteInput] = useState('');
   const [editingMe, setEditingMe] = useState(false);
   const [meNameInput, setMeNameInput] = useState('');
-  const [loading, setLoading] = useState(true);
 
-  // Load saved name
   useEffect(() => {
-    const savedMe = ls<{ id: string; name: string }>(LS_ME, { id: '', name: '' });
+    setCircles(ls<Circle[]>(LS_CIRCLES, []));
+    setActiveId(ls<string | null>(LS_ACTIVE, null));
+    const savedMe = ls<{ id: string; name: string }>(LS_ME, {
+      id: crypto.randomUUID(),
+      name: '',
+    });
     setMe(savedMe);
     if (!savedMe.name) setEditingMe(true);
   }, []);
 
-  // Fetch circles on mount
-  useEffect(() => {
-    async function load() {
-      try {
-        const res = await fetch('/api/circles');
-        if (res.ok) {
-          const data = await res.json();
-          setCircles(data);
-        }
-      } catch {
-        /* offline fallback: circles stays empty */
-      } finally {
-        setLoading(false);
-      }
-    }
-    load();
-  }, []);
-
-  const fetchCircleDetail = useCallback(async (circleId: string) => {
-    try {
-      const res = await fetch(`/api/circles/${circleId}`);
-      if (res.ok) {
-        const data: CircleDetail = await res.json();
-        setActiveDetail(data);
-        return data;
-      }
-    } catch {
-      /* noop */
-    }
-    return null;
-  }, []);
+  function persist(next: Circle[]) {
+    setCircles(next);
+    ss(LS_CIRCLES, next);
+  }
 
   function selectCircle(id: string) {
     setActiveId(id);
+    ss(LS_ACTIVE, id);
     setView('board');
-    fetchCircleDetail(id);
   }
 
   function saveMe(name: string) {
     const trimmed = name.trim();
     if (!trimmed) return;
     const updated = { ...me, name: trimmed };
+    if (!updated.id) updated.id = crypto.randomUUID();
     setMe(updated);
     ss(LS_ME, updated);
     setEditingMe(false);
   }
 
-  async function createCircle() {
+  function createCircle() {
     const name = newName.trim();
     if (!name || !me.name) return;
-
-    // Optimistic: add placeholder
-    const tempId = crypto.randomUUID();
-    const tempCircle: Circle = {
-      id: tempId,
+    const circle: Circle = {
+      id: crypto.randomUUID(),
       name,
-      code: '------',
+      code: genCode(),
       color: CIRCLE_COLORS[circles.length % CIRCLE_COLORS.length],
-      createdBy: '',
+      members: [{ id: me.id, name: me.name, color: CIRCLE_COLORS[0] }],
+      missions: [],
+      notes: [],
       createdAt: new Date().toISOString(),
-      members: [],
     };
-    setCircles((prev) => [...prev, tempCircle]);
+    const next = [...circles, circle];
+    persist(next);
+    selectCircle(circle.id);
     setNewName('');
     setCreating(false);
-
-    try {
-      const res = await fetch('/api/circles', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name, userName: me.name }),
-      });
-      if (res.ok) {
-        const { circle, member } = await res.json();
-        const full: Circle = { ...circle, members: [member] };
-        setCircles((prev) => prev.map((c) => (c.id === tempId ? full : c)));
-        selectCircle(circle.id);
-      } else {
-        // Revert
-        setCircles((prev) => prev.filter((c) => c.id !== tempId));
-      }
-    } catch {
-      setCircles((prev) => prev.filter((c) => c.id !== tempId));
-    }
   }
 
-  async function joinCircleAction() {
+  function joinCircle() {
     const code = joinCode.trim().toUpperCase();
-    if (!code || !me.name) return;
-
-    try {
-      const res = await fetch('/api/circles/join', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ code, userName: me.name }),
-      });
-      if (res.ok) {
-        const { circle, member } = await res.json();
-        // Refresh circles list
-        const listRes = await fetch('/api/circles');
-        if (listRes.ok) {
-          setCircles(await listRes.json());
-        } else {
-          setCircles((prev) => {
-            const exists = prev.some((c) => c.id === circle.id);
-            if (exists) return prev;
-            return [...prev, { ...circle, members: [member] }];
-          });
-        }
-        selectCircle(circle.id);
-        setJoining(false);
-        setJoinCode('');
-      }
-    } catch {
-      /* noop */
+    const circle = circles.find((c) => c.code === code);
+    if (!circle) return;
+    if (circle.members.some((m) => m.id === me.id)) {
+      selectCircle(circle.id);
+      setJoining(false);
+      setJoinCode('');
+      return;
     }
+    const memberColor = CIRCLE_COLORS[circle.members.length % CIRCLE_COLORS.length];
+    const updated = circles.map((c) =>
+      c.id === circle.id
+        ? { ...c, members: [...c.members, { id: me.id, name: me.name, color: memberColor }] }
+        : c,
+    );
+    persist(updated);
+    selectCircle(circle.id);
+    setJoining(false);
+    setJoinCode('');
   }
 
-  async function addMission() {
+  function addMission() {
     const text = missionInput.trim();
-    if (!text || !activeId || !activeDetail) return;
-
-    // Optimistic
-    const tempId = crypto.randomUUID();
-    const tempMission: CircleMission = {
-      id: tempId,
-      circleId: activeId,
+    if (!text || !activeId) return;
+    const mission: Mission = {
+      id: crypto.randomUUID(),
       text,
       done: false,
-      claimedBy: null,
-      dueDate: missionDueDate || null,
-      createdBy: '',
       createdAt: new Date().toISOString(),
     };
-    setActiveDetail((prev) =>
-      prev ? { ...prev, missions: [tempMission, ...prev.missions] } : prev,
+    const updated = circles.map((c) =>
+      c.id === activeId ? { ...c, missions: [...c.missions, mission] } : c,
     );
+    persist(updated);
     setMissionInput('');
-    setMissionDueDate('');
-
-    try {
-      const res = await fetch(`/api/circles/${activeId}/missions`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ text, dueDate: missionDueDate || undefined }),
-      });
-      if (res.ok) {
-        const mission: CircleMission = await res.json();
-        setActiveDetail((prev) =>
-          prev
-            ? { ...prev, missions: prev.missions.map((m) => (m.id === tempId ? mission : m)) }
-            : prev,
-        );
-      } else {
-        setActiveDetail((prev) =>
-          prev ? { ...prev, missions: prev.missions.filter((m) => m.id !== tempId) } : prev,
-        );
-      }
-    } catch {
-      setActiveDetail((prev) =>
-        prev ? { ...prev, missions: prev.missions.filter((m) => m.id !== tempId) } : prev,
-      );
-    }
   }
 
-  async function toggleMission(missionId: string) {
-    if (!activeId || !activeDetail) return;
-    const mission = activeDetail.missions.find((m) => m.id === missionId);
-    if (!mission) return;
-
-    // Optimistic
-    setActiveDetail((prev) =>
-      prev
+  function toggleMission(missionId: string) {
+    const updated = circles.map((c) =>
+      c.id === activeId
         ? {
-            ...prev,
-            missions: prev.missions.map((m) => (m.id === missionId ? { ...m, done: !m.done } : m)),
+            ...c,
+            missions: c.missions.map((m) => (m.id === missionId ? { ...m, done: !m.done } : m)),
           }
-        : prev,
+        : c,
     );
-
-    try {
-      await fetch(`/api/circles/${activeId}/missions/${missionId}`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ done: !mission.done }),
-      });
-    } catch {
-      // Revert
-      setActiveDetail((prev) =>
-        prev
-          ? {
-              ...prev,
-              missions: prev.missions.map((m) =>
-                m.id === missionId ? { ...m, done: mission.done } : m,
-              ),
-            }
-          : prev,
-      );
-    }
+    persist(updated);
   }
 
-  async function claimMission(missionId: string) {
-    if (!activeId || !activeDetail) return;
-    const mission = activeDetail.missions.find((m) => m.id === missionId);
-    if (!mission) return;
-
-    const member = activeDetail.members.find((m) => m.userId === me.id);
-    const newClaimedBy =
-      mission.claimedBy === (member?.userId ?? me.id) ? null : (member?.userId ?? me.id);
-
-    // Optimistic
-    setActiveDetail((prev) =>
-      prev
+  function claimMission(missionId: string) {
+    const updated = circles.map((c) =>
+      c.id === activeId
         ? {
-            ...prev,
-            missions: prev.missions.map((m) =>
-              m.id === missionId ? { ...m, claimedBy: newClaimedBy } : m,
+            ...c,
+            missions: c.missions.map((m) =>
+              m.id === missionId
+                ? { ...m, claimedBy: m.claimedBy === me.id ? undefined : me.id }
+                : m,
             ),
           }
-        : prev,
+        : c,
     );
-
-    try {
-      await fetch(`/api/circles/${activeId}/missions/${missionId}`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ claimedBy: newClaimedBy }),
-      });
-    } catch {
-      // Revert
-      setActiveDetail((prev) =>
-        prev
-          ? {
-              ...prev,
-              missions: prev.missions.map((m) =>
-                m.id === missionId ? { ...m, claimedBy: mission.claimedBy } : m,
-              ),
-            }
-          : prev,
-      );
-    }
+    persist(updated);
   }
 
-  async function removeMissionAction(missionId: string) {
-    if (!activeId || !activeDetail) return;
-
-    const removed = activeDetail.missions.find((m) => m.id === missionId);
-    // Optimistic
-    setActiveDetail((prev) =>
-      prev ? { ...prev, missions: prev.missions.filter((m) => m.id !== missionId) } : prev,
+  function removeMission(missionId: string) {
+    const updated = circles.map((c) =>
+      c.id === activeId ? { ...c, missions: c.missions.filter((m) => m.id !== missionId) } : c,
     );
-
-    try {
-      await fetch(`/api/circles/${activeId}/missions/${missionId}`, { method: 'DELETE' });
-    } catch {
-      // Revert
-      if (removed) {
-        setActiveDetail((prev) =>
-          prev ? { ...prev, missions: [...prev.missions, removed] } : prev,
-        );
-      }
-    }
+    persist(updated);
   }
 
-  async function addNote() {
+  function addNote() {
     const text = noteInput.trim();
-    if (!text || !activeId || !activeDetail) return;
-
-    const tempId = crypto.randomUUID();
-    const tempNote: CircleNote = {
-      id: tempId,
-      circleId: activeId,
+    if (!text || !activeId) return;
+    const note: Note = {
+      id: crypto.randomUUID(),
       authorId: me.id,
       authorName: me.name,
       text,
-      sessionId: activeDetail.activeSession?.id ?? null,
       createdAt: new Date().toISOString(),
     };
-    setActiveDetail((prev) => (prev ? { ...prev, notes: [tempNote, ...prev.notes] } : prev));
+    const updated = circles.map((c) =>
+      c.id === activeId ? { ...c, notes: [note, ...c.notes].slice(0, 100) } : c,
+    );
+    persist(updated);
     setNoteInput('');
-
-    try {
-      const res = await fetch(`/api/circles/${activeId}/notes`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          text,
-          authorName: me.name,
-          sessionId: activeDetail.activeSession?.id,
-        }),
-      });
-      if (res.ok) {
-        const note: CircleNote = await res.json();
-        setActiveDetail((prev) =>
-          prev ? { ...prev, notes: prev.notes.map((n) => (n.id === tempId ? note : n)) } : prev,
-        );
-      }
-    } catch {
-      /* keep optimistic note */
-    }
   }
 
-  // Sync pulse from localStorage check-in data
+  const active = circles.find((c) => c.id === activeId);
+
+  // Read pulse from check-in — only on circle switch
+  // biome-ignore lint/correctness/useExhaustiveDependencies: intentionally runs only on activeId change
   useEffect(() => {
-    if (!activeId) return;
+    if (!active || !me.id) return;
     try {
       const hawkinsIdx = Number(localStorage.getItem('colourmap:process-idx') || '4');
+      const HAWKINS_LABELS = [
+        'Shame',
+        'Apathy',
+        'Grief',
+        'Fear',
+        'Anger',
+        'Courage',
+        'Acceptance',
+        'Reason',
+        'Love',
+        'Peace',
+      ];
+      const HAWKINS_COLORS = [
+        '#B8D0E8',
+        '#D8B0C8',
+        '#E8A0C4',
+        '#F080B8',
+        '#F0A088',
+        '#F8C040',
+        '#F0E060',
+        '#A8E090',
+        '#88D8B0',
+        '#88C8E8',
+      ];
       const pulse = HAWKINS_LABELS[hawkinsIdx] || 'Neutral';
       const pulseColor = HAWKINS_COLORS[hawkinsIdx] || '#C4A060';
-
-      fetch(`/api/circles/${activeId}/pulse`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ pulse, pulseColor }),
-      }).catch(() => {
-        /* noop */
-      });
-    } catch {
-      /* noop */
-    }
+      const updated = circles.map((c) =>
+        c.id === activeId
+          ? {
+              ...c,
+              members: c.members.map((m) => (m.id === me.id ? { ...m, pulse, pulseColor } : m)),
+            }
+          : c,
+      );
+      // Only persist if pulse actually changed
+      const currentMember = active.members.find((m) => m.id === me.id);
+      if (currentMember?.pulse !== pulse) {
+        persist(updated);
+      }
+    } catch {}
   }, [activeId]);
 
-  async function handleStartSession() {
-    if (!activeId || !activeDetail) return;
-
-    try {
-      const res = await fetch(`/api/circles/${activeId}/sessions`, { method: 'POST' });
-      if (res.ok) {
-        const session: CircleSession = await res.json();
-        setActiveDetail((prev) => (prev ? { ...prev, activeSession: session } : prev));
-      }
-    } catch {
-      /* noop */
-    }
-  }
-
-  async function handleEndSession() {
-    if (!activeId || !activeDetail?.activeSession) return;
-
-    try {
-      const res = await fetch(`/api/circles/${activeId}/sessions`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ sessionId: activeDetail.activeSession.id }),
-      });
-      if (res.ok) {
-        setActiveDetail((prev) => (prev ? { ...prev, activeSession: null } : prev));
-      }
-    } catch {
-      /* noop */
-    }
-  }
-
   const font = 'var(--font-serif)';
-
-  // ── Loading ──
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center py-16">
-        <p
-          className="italic"
-          style={{ fontFamily: font, fontSize: '14px', color: '#8A6A4A', opacity: 0.5 }}
-        >
-          loading circles...
-        </p>
-      </div>
-    );
-  }
 
   // ── Name setup ──
   if (editingMe || !me.name) {
@@ -584,7 +340,7 @@ export default function CircleBoard() {
   }
 
   // ── Circle list ──
-  if (view === 'list' || !activeDetail) {
+  if (view === 'list' || !active) {
     return (
       <div className="mx-auto max-w-md space-y-6 px-4 py-8">
         <div className="text-center space-y-1">
@@ -658,7 +414,8 @@ export default function CircleBoard() {
                     {c.name}
                   </p>
                   <p style={{ fontFamily: font, fontSize: '11px', color: '#8A6A4A', opacity: 0.5 }}>
-                    {c.members.length} {c.members.length === 1 ? 'member' : 'members'}
+                    {c.members.length} {c.members.length === 1 ? 'member' : 'members'} ·{' '}
+                    {c.missions.filter((m) => !m.done).length} active
                   </p>
                 </div>
                 {/* Member pulse dots */}
@@ -671,9 +428,9 @@ export default function CircleBoard() {
                         width: 8,
                         height: 8,
                         background: m.pulseColor || m.color,
-                        opacity: m.pulse && m.sharePulse ? 0.8 : 0.3,
+                        opacity: m.pulse ? 0.8 : 0.3,
                       }}
-                      title={`${m.name}${m.pulse && m.sharePulse ? ` · ${m.pulse}` : ''}`}
+                      title={`${m.name}${m.pulse ? ` · ${m.pulse}` : ''}`}
                     />
                   ))}
                 </div>
@@ -759,7 +516,7 @@ export default function CircleBoard() {
               value={joinCode}
               onChange={(e) => setJoinCode(e.target.value.toUpperCase())}
               onKeyDown={(e) => {
-                if (e.key === 'Enter') joinCircleAction();
+                if (e.key === 'Enter') joinCircle();
               }}
               placeholder="enter 6-letter code..."
               autoFocus
@@ -775,7 +532,7 @@ export default function CircleBoard() {
             <div className="flex justify-center gap-2">
               <button
                 type="button"
-                onClick={joinCircleAction}
+                onClick={joinCircle}
                 className="cursor-pointer rounded-full px-4 py-1.5 text-[12px] font-semibold"
                 style={{ color: '#6890B0', background: '#6890B012', border: '1px solid #6890B030' }}
               >
@@ -805,129 +562,10 @@ export default function CircleBoard() {
     );
   }
 
-  // ── Week view (collective agenda) ──
-  if (view === 'week') {
-    const weekDays = getWeekDays();
-    const missionsWithDue = activeDetail.missions.filter((m) => m.dueDate && !m.done);
-    const memberMap = new Map(activeDetail.members.map((m) => [m.userId, m]));
-
-    return (
-      <div className="mx-auto max-w-lg space-y-4 px-4 py-6">
-        {/* Header */}
-        <div className="flex items-center gap-3">
-          <button
-            type="button"
-            onClick={() => setView('board')}
-            className="cursor-pointer text-[12px] transition-all"
-            style={{ color: '#8A6A4A', opacity: 0.5, background: 'none', border: 'none' }}
-          >
-            &#8249; board
-          </button>
-          <div className="flex-1 text-center">
-            <span style={{ fontFamily: font, fontSize: '14px', fontWeight: 700, color: '#5C3018' }}>
-              week agenda
-            </span>
-          </div>
-          <span
-            style={{
-              fontFamily: font,
-              fontSize: '14px',
-              fontWeight: 700,
-              color: activeDetail.color,
-            }}
-          >
-            {activeDetail.name}
-          </span>
-        </div>
-
-        {/* 7-day grid */}
-        <div className="grid grid-cols-7 gap-1">
-          {weekDays.map((day) => {
-            const dayMissions = missionsWithDue.filter((m) => m.dueDate === day.date);
-            const isToday = day.date === new Date().toISOString().split('T')[0];
-            return (
-              <div
-                key={day.date}
-                className="rounded-xl px-1 py-2"
-                style={{
-                  background: isToday ? `${activeDetail.color}10` : 'transparent',
-                  border: isToday ? `1px solid ${activeDetail.color}25` : '1px solid transparent',
-                  minHeight: 80,
-                }}
-              >
-                <p
-                  className="text-center"
-                  style={{
-                    fontFamily: font,
-                    fontSize: '10px',
-                    fontWeight: isToday ? 700 : 500,
-                    color: isToday ? activeDetail.color : '#8A6A4A',
-                    opacity: isToday ? 1 : 0.5,
-                  }}
-                >
-                  {day.label}
-                </p>
-                <p
-                  className="text-center"
-                  style={{
-                    fontFamily: font,
-                    fontSize: '9px',
-                    color: '#8A6A4A',
-                    opacity: 0.3,
-                  }}
-                >
-                  {day.date.slice(5)}
-                </p>
-                <div className="mt-1 space-y-0.5">
-                  {dayMissions.map((m) => {
-                    const claimer = m.claimedBy ? memberMap.get(m.claimedBy) : null;
-                    return (
-                      <div
-                        key={m.id}
-                        className="rounded px-1 py-0.5"
-                        style={{
-                          background: claimer
-                            ? `${claimer.pulseColor || claimer.color}20`
-                            : `${activeDetail.color}10`,
-                        }}
-                      >
-                        <p
-                          style={{
-                            fontFamily: font,
-                            fontSize: '8px',
-                            color: '#5C3018',
-                            overflow: 'hidden',
-                            textOverflow: 'ellipsis',
-                            whiteSpace: 'nowrap',
-                          }}
-                        >
-                          {m.text}
-                        </p>
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-            );
-          })}
-        </div>
-
-        {missionsWithDue.length === 0 && (
-          <p
-            className="text-center italic"
-            style={{ fontFamily: font, fontSize: '12px', color: '#8A6A4A', opacity: 0.4 }}
-          >
-            no missions with due dates this week
-          </p>
-        )}
-      </div>
-    );
-  }
-
   // ── Board view ──
-  const activeMissions = activeDetail.missions.filter((m) => !m.done);
-  const doneMissions = activeDetail.missions.filter((m) => m.done);
-  const memberMap = new Map(activeDetail.members.map((m) => [m.userId, m]));
+  const activeMissions = active.missions.filter((m) => !m.done);
+  const doneMissions = active.missions.filter((m) => m.done);
+  const memberMap = new Map(active.members.map((m) => [m.id, m]));
 
   return (
     <div className="mx-auto max-w-md space-y-5 px-4 py-6">
@@ -935,18 +573,14 @@ export default function CircleBoard() {
       <div className="flex items-center gap-3">
         <button
           type="button"
-          onClick={() => {
-            setView('list');
-            setActiveId(null);
-            setActiveDetail(null);
-          }}
+          onClick={() => setView('list')}
           className="cursor-pointer text-[12px] transition-all"
           style={{ color: '#8A6A4A', opacity: 0.5, background: 'none', border: 'none' }}
         >
-          &#8249; back
+          ‹ back
         </button>
         <div className="flex flex-1 items-center justify-center gap-2">
-          {activeDetail.members.map((m) => (
+          {active.members.map((m) => (
             <span
               key={m.id}
               className="block rounded-full transition-all"
@@ -954,104 +588,39 @@ export default function CircleBoard() {
                 width: 10,
                 height: 10,
                 background: m.pulseColor || m.color,
-                opacity: m.pulse && m.sharePulse ? 0.85 : 0.3,
+                opacity: m.pulse ? 0.85 : 0.3,
               }}
-              title={`${m.name}${m.pulse && m.sharePulse ? ` · ${m.pulse}` : ''}`}
+              title={`${m.name}${m.pulse ? ` · ${m.pulse}` : ''}`}
             />
           ))}
         </div>
-        <span
-          style={{
-            fontFamily: font,
-            fontSize: '14px',
-            fontWeight: 700,
-            color: activeDetail.color,
-          }}
-        >
-          {activeDetail.name}
+        <span style={{ fontFamily: font, fontSize: '14px', fontWeight: 700, color: active.color }}>
+          {active.name}
         </span>
       </div>
 
-      {/* Join code + week view link */}
-      <div className="flex items-center justify-center gap-4">
-        <div className="flex items-center gap-2">
-          <span style={{ fontFamily: font, fontSize: '11px', color: '#8A6A4A', opacity: 0.4 }}>
-            code:
-          </span>
-          <span
-            style={{
-              fontFamily: font,
-              fontSize: '13px',
-              fontWeight: 700,
-              color: activeDetail.color,
-              letterSpacing: '0.2em',
-              opacity: 0.6,
-            }}
-          >
-            {activeDetail.code}
-          </span>
-        </div>
-        <button
-          type="button"
-          onClick={() => setView('week')}
-          className="cursor-pointer text-[11px] transition-all"
+      {/* Join code */}
+      <div className="flex items-center justify-center gap-2">
+        <span style={{ fontFamily: font, fontSize: '11px', color: '#8A6A4A', opacity: 0.4 }}>
+          code:
+        </span>
+        <span
           style={{
             fontFamily: font,
-            color: '#8A6A4A',
-            opacity: 0.4,
-            background: 'none',
-            border: 'none',
+            fontSize: '13px',
+            fontWeight: 700,
+            color: active.color,
+            letterSpacing: '0.2em',
+            opacity: 0.6,
           }}
         >
-          week view
-        </button>
+          {active.code}
+        </span>
       </div>
-
-      {/* Active session indicator */}
-      {activeDetail.activeSession ? (
-        <div
-          className="flex items-center justify-center gap-3 rounded-2xl px-4 py-2"
-          style={{ background: '#7AAA5808', border: '1px solid #7AAA5820' }}
-        >
-          <span
-            className="block animate-pulse rounded-full"
-            style={{ width: 8, height: 8, background: '#7AAA58' }}
-          />
-          <span style={{ fontFamily: font, fontSize: '12px', color: '#7AAA58', fontWeight: 600 }}>
-            session active
-          </span>
-          <span style={{ fontFamily: font, fontSize: '10px', color: '#8A6A4A', opacity: 0.4 }}>
-            since{' '}
-            {new Date(activeDetail.activeSession.startedAt).toLocaleTimeString([], {
-              hour: '2-digit',
-              minute: '2-digit',
-            })}
-          </span>
-          <button
-            type="button"
-            onClick={handleEndSession}
-            className="cursor-pointer rounded-full px-3 py-1 text-[10px] font-semibold transition-all"
-            style={{ color: '#D4805A', background: '#D4805A10', border: '1px solid #D4805A25' }}
-          >
-            end
-          </button>
-        </div>
-      ) : (
-        <div className="flex justify-center">
-          <button
-            type="button"
-            onClick={handleStartSession}
-            className="cursor-pointer rounded-full px-4 py-1.5 text-[11px] font-semibold transition-all"
-            style={{ color: '#7AAA58', background: '#7AAA5808', border: '1px solid #7AAA5820' }}
-          >
-            start session
-          </button>
-        </div>
-      )}
 
       {/* Members */}
       <div className="flex justify-center gap-3">
-        {activeDetail.members.map((m) => (
+        {active.members.map((m) => (
           <div key={m.id} className="flex flex-col items-center gap-1">
             <span
               className="block rounded-full"
@@ -1059,7 +628,7 @@ export default function CircleBoard() {
                 width: 20,
                 height: 20,
                 background: m.pulseColor || m.color,
-                opacity: m.pulse && m.sharePulse ? 0.8 : 0.3,
+                opacity: m.pulse ? 0.8 : 0.3,
               }}
             />
             <span
@@ -1067,20 +636,15 @@ export default function CircleBoard() {
                 fontFamily: font,
                 fontSize: '10px',
                 color: '#5C3018',
-                fontWeight: m.userId === me.id ? 700 : 500,
+                fontWeight: m.id === me.id ? 700 : 500,
                 opacity: 0.7,
               }}
             >
               {m.name}
             </span>
-            {m.pulse && m.sharePulse && (
+            {m.pulse && (
               <span
-                style={{
-                  fontFamily: font,
-                  fontSize: '9px',
-                  color: m.pulseColor || '#C4A060',
-                  opacity: 0.6,
-                }}
+                style={{ fontFamily: font, fontSize: '9px', color: m.pulseColor, opacity: 0.6 }}
               >
                 {m.pulse}
               </span>
@@ -1092,10 +656,7 @@ export default function CircleBoard() {
       {/* Missions */}
       <div
         className="space-y-2 rounded-2xl border px-4 py-3"
-        style={{
-          borderColor: `${activeDetail.color}20`,
-          background: `${activeDetail.color}04`,
-        }}
+        style={{ borderColor: `${active.color}20`, background: `${active.color}04` }}
       >
         <p
           className="uppercase tracking-[0.2em] text-center"
@@ -1103,7 +664,7 @@ export default function CircleBoard() {
             fontFamily: font,
             fontSize: '10px',
             fontWeight: 700,
-            color: activeDetail.color,
+            color: active.color,
             opacity: 0.5,
           }}
         >
@@ -1122,30 +683,18 @@ export default function CircleBoard() {
                 style={{
                   width: 18,
                   height: 18,
-                  border: `1.5px solid ${activeDetail.color}40`,
+                  border: `1.5px solid ${active.color}40`,
                   background: 'transparent',
                 }}
               />
-              <button
-                type="button"
-                className="flex-1 cursor-pointer bg-transparent text-left"
+              <span
+                className="flex-1 cursor-pointer"
                 onClick={() => claimMission(m.id)}
-                style={{
-                  fontFamily: font,
-                  fontSize: '14px',
-                  color: '#5C3018',
-                  border: 'none',
-                  padding: 0,
-                }}
+                style={{ fontFamily: font, fontSize: '14px', color: '#5C3018' }}
                 title="tap to claim"
               >
                 {m.text}
-              </button>
-              {m.dueDate && (
-                <span style={{ fontFamily: font, fontSize: '9px', color: '#8A6A4A', opacity: 0.4 }}>
-                  {m.dueDate.slice(5)}
-                </span>
-              )}
+              </span>
               {claimer && (
                 <span
                   className="block rounded-full"
@@ -1160,11 +709,11 @@ export default function CircleBoard() {
               )}
               <button
                 type="button"
-                onClick={() => removeMissionAction(m.id)}
+                onClick={() => removeMission(m.id)}
                 className="cursor-pointer text-[10px] transition-all"
                 style={{ color: '#8A6A4A', opacity: 0.2, background: 'none', border: 'none' }}
               >
-                x
+                ×
               </button>
             </div>
           );
@@ -1185,21 +734,7 @@ export default function CircleBoard() {
               fontFamily: font,
               fontSize: '13px',
               color: '#5C3018',
-              borderColor: `${activeDetail.color}20`,
-            }}
-          />
-          <input
-            type="date"
-            value={missionDueDate}
-            onChange={(e) => setMissionDueDate(e.target.value)}
-            className="border-b bg-transparent pb-1 outline-none"
-            style={{
-              fontFamily: font,
-              fontSize: '11px',
-              color: '#8A6A4A',
-              opacity: 0.5,
-              borderColor: `${activeDetail.color}15`,
-              width: 100,
+              borderColor: `${active.color}20`,
             }}
           />
         </div>
@@ -1219,13 +754,11 @@ export default function CircleBoard() {
                   style={{
                     width: 18,
                     height: 18,
-                    border: `1.5px solid ${activeDetail.color}20`,
-                    background: `${activeDetail.color}15`,
+                    border: `1.5px solid ${active.color}20`,
+                    background: `${active.color}15`,
                   }}
                 >
-                  <span style={{ fontSize: '10px', color: activeDetail.color, opacity: 0.6 }}>
-                    &#10003;
-                  </span>
+                  <span style={{ fontSize: '10px', color: active.color, opacity: 0.6 }}>✓</span>
                 </button>
                 <span
                   style={{
@@ -1283,7 +816,7 @@ export default function CircleBoard() {
         </div>
 
         {/* Notes */}
-        {activeDetail.notes.slice(0, 20).map((n) => (
+        {active.notes.slice(0, 20).map((n) => (
           <div key={n.id} className="flex items-start gap-2">
             <span
               style={{
@@ -1295,10 +828,7 @@ export default function CircleBoard() {
                 marginTop: 2,
               }}
             >
-              {new Date(n.createdAt).toLocaleTimeString([], {
-                hour: '2-digit',
-                minute: '2-digit',
-              })}
+              {new Date(n.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
             </span>
             <span
               style={{
@@ -1318,7 +848,7 @@ export default function CircleBoard() {
           </div>
         ))}
 
-        {activeDetail.notes.length === 0 && (
+        {active.notes.length === 0 && (
           <p
             className="text-center italic"
             style={{ fontFamily: font, fontSize: '12px', color: '#8A6A4A', opacity: 0.3 }}
