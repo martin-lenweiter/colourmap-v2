@@ -1,14 +1,17 @@
 import { NextResponse } from 'next/server';
 
 import { jsonError, parseJsonBody, withAuthenticatedUser } from '@/lib/api/route-helpers';
-import { getDb } from '@/lib/db/client';
-import { getActiveSession } from '@/lib/db/queries/circles';
-import { CircleValidationError, endSession, startSession } from '@/lib/services/circles';
+import {
+  CircleValidationError,
+  endSession,
+  getActiveCircleSession,
+  startSession,
+} from '@/lib/services/circles';
 
 export async function GET(_request: Request, { params }: { params: Promise<{ id: string }> }) {
   return withAuthenticatedUser(async (_user) => {
     const { id } = await params;
-    const session = await getActiveSession(getDb(), id);
+    const session = await getActiveCircleSession(id);
     return NextResponse.json(session);
   });
 }

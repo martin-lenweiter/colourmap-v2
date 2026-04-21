@@ -263,3 +263,15 @@ export async function endSession(
   const db = getDb();
   return endCircleSession(db, sessionId, summary);
 }
+
+export async function listCircleMissions(circleId: string): Promise<CircleMission[]> {
+  return getCircleMissions(getDb(), circleId);
+}
+
+export async function listCircleNotes(circleId: string, limit?: number): Promise<CircleNote[]> {
+  return getCircleNotes(getDb(), circleId, limit);
+}
+
+export async function getActiveCircleSession(circleId: string): Promise<CircleSession | null> {
+  return getActiveSession(getDb(), circleId);
+}

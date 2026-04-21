@@ -1,14 +1,12 @@
 import { NextResponse } from 'next/server';
 
 import { jsonError, parseJsonBody, withAuthenticatedUser } from '@/lib/api/route-helpers';
-import { getDb } from '@/lib/db/client';
-import { getCircleMissions } from '@/lib/db/queries/circles';
-import { addMission, CircleValidationError } from '@/lib/services/circles';
+import { addMission, CircleValidationError, listCircleMissions } from '@/lib/services/circles';
 
 export async function GET(_request: Request, { params }: { params: Promise<{ id: string }> }) {
   return withAuthenticatedUser(async (_user) => {
     const { id } = await params;
-    const missions = await getCircleMissions(getDb(), id);
+    const missions = await listCircleMissions(id);
     return NextResponse.json(missions);
   });
 }

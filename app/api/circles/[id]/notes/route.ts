@@ -1,14 +1,12 @@
 import { NextResponse } from 'next/server';
 
 import { jsonError, parseJsonBody, withAuthenticatedUser } from '@/lib/api/route-helpers';
-import { getDb } from '@/lib/db/client';
-import { getCircleNotes } from '@/lib/db/queries/circles';
-import { addNote, CircleValidationError } from '@/lib/services/circles';
+import { addNote, CircleValidationError, listCircleNotes } from '@/lib/services/circles';
 
 export async function GET(_request: Request, { params }: { params: Promise<{ id: string }> }) {
   return withAuthenticatedUser(async (_user) => {
     const { id } = await params;
-    const notes = await getCircleNotes(getDb(), id);
+    const notes = await listCircleNotes(id);
     return NextResponse.json(notes);
   });
 }
