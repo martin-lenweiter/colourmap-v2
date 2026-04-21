@@ -333,7 +333,7 @@ export default function BinauralTuner() {
   const [showSuggestion, setShowSuggestion] = useState(true);
   const [view, setView] = useState<'presets' | 'layers' | 'genres'>('presets');
   const [tremolo, setTremolo] = useState(false);
-  const [tremoloSpeed, setTremoloSpeed] = useState(0.15); // Hz — very slow wave
+  const [tremoloSpeed, _setTremoloSpeed] = useState(0.15); // Hz — very slow wave
   const lfoRef = useRef<OscillatorNode | null>(null);
   const lfoGainRef = useRef<GainNode | null>(null);
   const [savedMixes, setSavedMixes] = useState<
@@ -565,7 +565,12 @@ export default function BinauralTuner() {
   }, [volume]);
 
   useEffect(() => {
-    if (binGainRef.current) binGainRef.current.gain.value = binauralOn ? 1 : 0;
+    if (binGainRef.current && ctxRef.current) {
+      const now = ctxRef.current.currentTime;
+      binGainRef.current.gain.cancelScheduledValues(now);
+      binGainRef.current.gain.setValueAtTime(binGainRef.current.gain.value, now);
+      binGainRef.current.gain.linearRampToValueAtTime(binauralOn ? 1 : 0, now + 0.5);
+    }
   }, [binauralOn]);
 
   // Tremolo — slow wave effect on main gain
@@ -628,7 +633,7 @@ export default function BinauralTuner() {
   const preset = PRESETS.find((p) => p.beat === beatFreq && p.base === baseFreq);
   const genre = GENRES.find((g) => g.id === activeGenre);
   const activeColor = genre?.color || preset?.color || '#C4A060';
-  const activeLayerCount = Object.values(activeLayers).filter((v) => v > 0).length;
+  const _activeLayerCount = Object.values(activeLayers).filter((v) => v > 0).length;
 
   return (
     <div className="space-y-4">

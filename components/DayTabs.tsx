@@ -91,8 +91,9 @@ export default function DayTabs({
         {active === 'checkin' && checkinContent}
         {active === 'overview' && overviewContent}
         {active === 'mastery' && masteryContent}
-        {active === 'tuner' && tunerContent}
       </div>
+      {/* Tuner stays mounted so audio keeps playing across tabs */}
+      <div style={{ display: active === 'tuner' ? 'block' : 'none' }}>{tunerContent}</div>
     </div>
   );
 }

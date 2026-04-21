@@ -130,6 +130,8 @@ export default function MagicMaker() {
   const [cruisePattern, setCruisePattern] = useState<CruisePattern>('breathing');
   const [activeNotes, setActiveNotes] = useState<Set<number>>(new Set());
   const [volume, setVolume] = useState(0.3);
+  const [cruiseSpeed, setCruiseSpeed] = useState(0.5); // 0=slow, 1=fast
+  const [cellShape, setCellShape] = useState<'square' | 'circle'>('square');
 
   const ctxRef = useRef<AudioContext | null>(null);
   const cruiseRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -230,17 +232,18 @@ export default function MagicMaker() {
 
     playNote(notes[idx], idx);
 
+    const speedMult = 1.5 - cruiseSpeed; // 0.5=fast, 1.5=slow
     const interval =
-      cruisePattern === 'breathing'
+      (cruisePattern === 'breathing'
         ? 600 + Math.random() * 400
         : cruisePattern === 'rain'
           ? 200 + Math.random() * 800
           : cruisePattern === 'ascending'
             ? 400 + Math.random() * 200
-            : 300 + Math.random() * 600;
+            : 300 + Math.random() * 600) * speedMult;
 
     cruiseRef.current = setTimeout(cruiseStep, interval);
-  }, [cruising, cruisePattern, notes, playNote]);
+  }, [cruising, cruisePattern, notes, playNote, cruiseSpeed]);
 
   useEffect(() => {
     if (cruising) {
@@ -302,21 +305,41 @@ export default function MagicMaker() {
           {notes.map((freq, idx) => {
             const isActive = activeNotes.has(idx);
             const color = palette[idx % palette.length];
+            const scale = SCALES[scaleId] || SCALES.pentatonic;
+            const noteInScale = idx % scale.intervals.length;
+            const _octave = Math.floor(idx / scale.intervals.length);
+            const noteNames = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
+            const semitone = (ROOTS.indexOf(root) * 2 + scale.intervals[noteInScale]) % 12;
+            const noteName = noteNames[semitone >= 0 ? semitone : 0];
             return (
               <button
                 key={`${freq}-${idx}`}
                 type="button"
                 onClick={() => playNote(freq, idx)}
-                className="cursor-pointer rounded-xl transition-all"
+                className="cursor-pointer transition-all flex items-center justify-center"
                 style={{
                   aspectRatio: '1',
                   background: color,
                   opacity: isActive ? 1 : 0.45,
                   border: 'none',
+                  borderRadius: cellShape === 'circle' ? '50%' : '12px',
                   transform: isActive ? 'scale(1.1)' : 'scale(1)',
                   boxShadow: isActive ? `0 4px 16px -4px ${color}` : 'none',
                 }}
-              />
+              >
+                {isActive && (
+                  <span
+                    style={{
+                      fontSize: '10px',
+                      fontWeight: 700,
+                      color: '#F5ECDC',
+                      fontFamily: 'var(--font-serif)',
+                    }}
+                  >
+                    {noteName}
+                  </span>
+                )}
+              </button>
             );
           })}
         </div>
@@ -533,6 +556,73 @@ export default function MagicMaker() {
                 ))}
               </button>
             ))}
+          </div>
+        </div>
+
+        {/* Shape + Speed */}
+        <div className="flex gap-4">
+          <div className="space-y-1">
+            <p
+              style={{
+                fontFamily: 'var(--font-serif)',
+                fontSize: '12px',
+                color: '#7A5438',
+                opacity: 0.7,
+              }}
+            >
+              shape
+            </p>
+            <div className="flex gap-1.5">
+              {(['square', 'circle'] as const).map((s) => (
+                <button
+                  key={s}
+                  type="button"
+                  onClick={() => setCellShape(s)}
+                  className="cursor-pointer rounded-lg px-2 py-1 text-[11px] transition-all"
+                  style={{
+                    fontFamily: 'var(--font-serif)',
+                    fontWeight: cellShape === s ? 700 : 500,
+                    color: cellShape === s ? '#5C3018' : '#8A6A4A',
+                    background: cellShape === s ? '#C4A06010' : 'transparent',
+                    border: `1px solid ${cellShape === s ? '#C4A06030' : '#C4A06010'}`,
+                    opacity: cellShape === s ? 1 : 0.5,
+                  }}
+                >
+                  {s}
+                </button>
+              ))}
+            </div>
+          </div>
+          <div className="space-y-1 flex-1">
+            <p
+              style={{
+                fontFamily: 'var(--font-serif)',
+                fontSize: '12px',
+                color: '#7A5438',
+                opacity: 0.7,
+              }}
+            >
+              cruise speed
+            </p>
+            <div
+              className="flex gap-[2px] cursor-pointer"
+              onClick={(e) => {
+                const r = (e.currentTarget as HTMLElement).getBoundingClientRect();
+                setCruiseSpeed(Math.max(0.1, Math.min(1, (e.clientX - r.left) / r.width)));
+              }}
+            >
+              {Array.from({ length: 8 }, (_, i) => (
+                <div
+                  key={i}
+                  className="flex-1 rounded-[3px] transition-all"
+                  style={{
+                    height: 20,
+                    background: instrument.color,
+                    opacity: i / 7 <= cruiseSpeed ? 0.3 + (i / 7) * 0.5 : 0.08,
+                  }}
+                />
+              ))}
+            </div>
           </div>
         </div>
 

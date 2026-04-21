@@ -9,7 +9,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 
 const STEPS = 16;
 const NOTES = ['C', 'D', 'E', 'F', 'G', 'A', 'B'];
-const NOTE_FREQ: Record<string, number> = {
+const _NOTE_FREQ: Record<string, number> = {
   C: 130.81,
   D: 146.83,
   E: 164.81,
@@ -117,26 +117,151 @@ function playShaker(ctx: AudioContext, t: number, v: number) {
   n.stop(t + 0.06);
 }
 
-// ── Bass synthesis ──
-function playBass(
-  ctx: AudioContext,
-  t: number,
-  freq: number,
-  v: number,
-  type: OscillatorType = 'sine',
-) {
+// ── Bass synthesis — 8 types ──
+interface BassType {
+  id: string;
+  label: string;
+  color: string;
+  play: (ctx: AudioContext, t: number, freq: number, v: number) => void;
+}
+
+function bassSub(ctx: AudioContext, t: number, freq: number, v: number) {
   const o = ctx.createOscillator();
-  o.type = type;
+  o.type = 'sine';
   o.frequency.value = freq;
   const g = ctx.createGain();
-  g.gain.setValueAtTime(v, t);
-  g.gain.setValueAtTime(v * 0.8, t + 0.05);
-  g.gain.exponentialRampToValueAtTime(0.001, t + 0.3);
+  g.gain.setValueAtTime(v * 0.7, t);
+  g.gain.exponentialRampToValueAtTime(0.001, t + 0.5);
   o.connect(g);
   g.connect(ctx.destination);
   o.start(t);
-  o.stop(t + 0.35);
+  o.stop(t + 0.55);
 }
+
+function bassPluck(ctx: AudioContext, t: number, freq: number, v: number) {
+  const o = ctx.createOscillator();
+  o.type = 'triangle';
+  o.frequency.value = freq;
+  const g = ctx.createGain();
+  g.gain.setValueAtTime(v, t);
+  g.gain.exponentialRampToValueAtTime(0.001, t + 0.15);
+  o.connect(g);
+  g.connect(ctx.destination);
+  o.start(t);
+  o.stop(t + 0.2);
+}
+
+function bassSmooth(ctx: AudioContext, t: number, freq: number, v: number) {
+  const o = ctx.createOscillator();
+  o.type = 'sine';
+  o.frequency.value = freq;
+  const g = ctx.createGain();
+  g.gain.setValueAtTime(0, t);
+  g.gain.linearRampToValueAtTime(v * 0.6, t + 0.08);
+  g.gain.exponentialRampToValueAtTime(0.001, t + 0.4);
+  o.connect(g);
+  g.connect(ctx.destination);
+  o.start(t);
+  o.stop(t + 0.45);
+}
+
+function bassGrowl(ctx: AudioContext, t: number, freq: number, v: number) {
+  const o = ctx.createOscillator();
+  o.type = 'sawtooth';
+  o.frequency.value = freq;
+  const f = ctx.createBiquadFilter();
+  f.type = 'lowpass';
+  f.frequency.value = 400;
+  const g = ctx.createGain();
+  g.gain.setValueAtTime(v * 0.5, t);
+  g.gain.exponentialRampToValueAtTime(0.001, t + 0.25);
+  o.connect(f);
+  f.connect(g);
+  g.connect(ctx.destination);
+  o.start(t);
+  o.stop(t + 0.3);
+}
+
+function bassBounce(ctx: AudioContext, t: number, freq: number, v: number) {
+  const o = ctx.createOscillator();
+  o.type = 'sine';
+  o.frequency.setValueAtTime(freq * 1.5, t);
+  o.frequency.exponentialRampToValueAtTime(freq, t + 0.06);
+  const g = ctx.createGain();
+  g.gain.setValueAtTime(v * 0.8, t);
+  g.gain.exponentialRampToValueAtTime(0.001, t + 0.2);
+  o.connect(g);
+  g.connect(ctx.destination);
+  o.start(t);
+  o.stop(t + 0.25);
+}
+
+function bassWobble(ctx: AudioContext, t: number, freq: number, v: number) {
+  const o = ctx.createOscillator();
+  o.type = 'sawtooth';
+  o.frequency.value = freq;
+  const f = ctx.createBiquadFilter();
+  f.type = 'lowpass';
+  f.frequency.setValueAtTime(200, t);
+  f.frequency.linearRampToValueAtTime(800, t + 0.15);
+  f.frequency.linearRampToValueAtTime(200, t + 0.3);
+  const g = ctx.createGain();
+  g.gain.setValueAtTime(v * 0.4, t);
+  g.gain.exponentialRampToValueAtTime(0.001, t + 0.35);
+  o.connect(f);
+  f.connect(g);
+  g.connect(ctx.destination);
+  o.start(t);
+  o.stop(t + 0.4);
+}
+
+function bassDeep(ctx: AudioContext, t: number, freq: number, v: number) {
+  const o1 = ctx.createOscillator();
+  o1.type = 'sine';
+  o1.frequency.value = freq;
+  const o2 = ctx.createOscillator();
+  o2.type = 'sine';
+  o2.frequency.value = freq / 2;
+  const g = ctx.createGain();
+  g.gain.setValueAtTime(v * 0.5, t);
+  g.gain.exponentialRampToValueAtTime(0.001, t + 0.4);
+  o1.connect(g);
+  o2.connect(g);
+  g.connect(ctx.destination);
+  o1.start(t);
+  o1.stop(t + 0.45);
+  o2.start(t);
+  o2.stop(t + 0.45);
+}
+
+function bassFunk(ctx: AudioContext, t: number, freq: number, v: number) {
+  const o = ctx.createOscillator();
+  o.type = 'square';
+  o.frequency.setValueAtTime(freq * 1.2, t);
+  o.frequency.exponentialRampToValueAtTime(freq, t + 0.03);
+  const f = ctx.createBiquadFilter();
+  f.type = 'lowpass';
+  f.frequency.value = 600;
+  const g = ctx.createGain();
+  g.gain.setValueAtTime(v * 0.4, t);
+  g.gain.exponentialRampToValueAtTime(0.001, t + 0.18);
+  o.connect(f);
+  f.connect(g);
+  g.connect(ctx.destination);
+  o.start(t);
+  o.stop(t + 0.22);
+}
+
+const BASS_TYPES: BassType[] = [
+  { id: 'sub', label: 'Sub', color: '#5C3018', play: bassSub },
+  { id: 'pluck', label: 'Pluck', color: '#7AAA58', play: bassPluck },
+  { id: 'smooth', label: 'Smooth', color: '#6890B0', play: bassSmooth },
+  { id: 'growl', label: 'Growl', color: '#D4805A', play: bassGrowl },
+  { id: 'bounce', label: 'Bounce', color: '#C4A060', play: bassBounce },
+  { id: 'wobble', label: 'Wobble', color: '#9B6BA0', play: bassWobble },
+  { id: 'deep', label: 'Deep', color: '#5A8AAA', play: bassDeep },
+  { id: 'funk', label: 'Funk', color: '#D06040', play: bassFunk },
+];
 
 // ── Melody synthesis ──
 function playMelody(ctx: AudioContext, t: number, freq: number, v: number, instType: string) {
@@ -526,6 +651,7 @@ export default function LofiLooper() {
   const [activeLayer, setActiveLayer] = useState<Layer>('beat');
   const [palette, setPalette] = useState('warm');
   const [melodyInst, setMelodyInst] = useState('piano');
+  const [bassType, setBassType] = useState('sub');
 
   // Beat grid
   const [beat, setBeat] = useState<Record<DrumId, boolean[]>>(() => ({
@@ -557,6 +683,8 @@ export default function LofiLooper() {
   mutesRef.current = { beat: muteBeat, bass: muteBass, melody: muteMelody };
   const melodyInstRef = useRef(melodyInst);
   melodyInstRef.current = melodyInst;
+  const bassTypeRef = useRef(bassType);
+  bassTypeRef.current = bassType;
 
   const pal = PALETTES[palette] || PALETTES.warm;
 
@@ -583,7 +711,10 @@ export default function LofiLooper() {
     // Bass
     if (!m.bass) {
       const freq = bassRef.current[step];
-      if (freq) playBass(ctx, now, freq, volume * 0.6);
+      if (freq) {
+        const bt = BASS_TYPES.find((b) => b.id === bassTypeRef.current) || BASS_TYPES[0];
+        bt.play(ctx, now, freq, volume * 0.6);
+      }
     }
     // Melody
     if (!m.melody) {
@@ -682,35 +813,53 @@ export default function LofiLooper() {
         </p>
       </div>
 
-      {/* ── LAZY GENIUS — one-tap arrangements ── */}
-      <div className="flex flex-wrap justify-center gap-1.5">
+      {/* ── MOODS — one-tap arrangements ── */}
+      <div className="flex flex-wrap justify-center gap-1">
         {ARRANGEMENTS.map((arr) => (
           <button
             key={arr.id}
             type="button"
             onClick={() => loadArrangement(arr)}
-            className="cursor-pointer rounded-full px-3 py-1 text-[11px] font-semibold transition-all"
-            style={{
-              color: arr.color,
-              background: `${arr.color}10`,
-              border: `1px solid ${arr.color}25`,
-            }}
+            className="flex cursor-pointer items-center gap-1.5 rounded-lg px-2 py-1 transition-all hover:bg-[#C4A06008]"
+            style={{ background: 'none', border: 'none' }}
           >
-            {arr.label}
+            <span
+              className="block rounded-full"
+              style={{ width: 8, height: 8, background: arr.color, opacity: 0.8 }}
+            />
+            <span
+              style={{
+                fontFamily: 'var(--font-serif)',
+                fontSize: '11px',
+                fontWeight: 600,
+                color: '#5C3018',
+                opacity: 0.7,
+              }}
+            >
+              {arr.label}
+            </span>
           </button>
         ))}
         <button
           type="button"
           onClick={clearAll}
-          className="cursor-pointer rounded-full px-3 py-1 text-[11px] font-semibold transition-all"
-          style={{
-            color: '#8A6A4A',
-            opacity: 0.4,
-            background: 'none',
-            border: '1px solid #C4A06012',
-          }}
+          className="flex cursor-pointer items-center gap-1.5 rounded-lg px-2 py-1 transition-all"
+          style={{ background: 'none', border: 'none' }}
         >
-          clear
+          <span
+            className="block rounded-full"
+            style={{ width: 8, height: 8, background: '#8A6A4A', opacity: 0.15 }}
+          />
+          <span
+            style={{
+              fontFamily: 'var(--font-serif)',
+              fontSize: '11px',
+              color: '#8A6A4A',
+              opacity: 0.3,
+            }}
+          >
+            clear
+          </span>
         </button>
       </div>
 
@@ -846,7 +995,26 @@ export default function LofiLooper() {
 
       {/* ── BASS GRID ── */}
       {activeLayer === 'bass' && (
-        <div className="space-y-1">
+        <div className="space-y-2">
+          {/* Bass type selector */}
+          <div className="flex flex-wrap justify-center gap-1">
+            {BASS_TYPES.map((bt) => (
+              <button
+                key={bt.id}
+                type="button"
+                onClick={() => setBassType(bt.id)}
+                className="cursor-pointer rounded-full px-2 py-0.5 text-[10px] font-semibold transition-all"
+                style={{
+                  color: bassType === bt.id ? bt.color : '#8A6A4A',
+                  background: bassType === bt.id ? `${bt.color}12` : 'transparent',
+                  border: `1px solid ${bassType === bt.id ? `${bt.color}30` : '#C4A06010'}`,
+                  opacity: bassType === bt.id ? 1 : 0.45,
+                }}
+              >
+                {bt.label}
+              </button>
+            ))}
+          </div>
           <div className="flex items-center gap-1.5">
             <span
               style={{
