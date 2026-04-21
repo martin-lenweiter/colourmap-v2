@@ -281,7 +281,7 @@ export default function MagicMaker() {
   const [cruisePattern, setCruisePattern] = useState<CruisePattern>('breathing');
   const [activeNotes, setActiveNotes] = useState<Set<number>>(new Set());
   const [volume, setVolume] = useState(0.3);
-  const [cruiseSpeed, setCruiseSpeed] = useState(0.5);
+  const [cruiseSpeed, setCruiseSpeed] = useState(0.25); // slower default
   const [cellShape, setCellShape] = useState<'square' | 'circle'>('square');
   const [showAdvanced, setShowAdvanced] = useState(false);
   const [showInstruments, setShowInstruments] = useState(false);
@@ -497,15 +497,15 @@ export default function MagicMaker() {
 
     playNote(notes[idx], idx);
 
-    const speedMult = 1.5 - cruiseSpeed; // 0.5=fast, 1.5=slow
+    const speedMult = 2.0 - cruiseSpeed * 1.5; // 0.5=moderate, 2.0=very slow
     const interval =
       (cruisePattern === 'breathing'
-        ? 600 + Math.random() * 400
+        ? 800 + Math.random() * 600
         : cruisePattern === 'rain'
-          ? 200 + Math.random() * 800
+          ? 500 + Math.random() * 1200
           : cruisePattern === 'ascending'
-            ? 400 + Math.random() * 200
-            : 300 + Math.random() * 600) * speedMult;
+            ? 600 + Math.random() * 300
+            : 400 + Math.random() * 800) * speedMult;
 
     cruiseRef.current = setTimeout(cruiseStep, interval);
   }, [cruising, cruisePattern, notes, playNote, cruiseSpeed]);
