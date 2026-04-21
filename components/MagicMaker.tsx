@@ -43,7 +43,7 @@ interface Instrument {
 
 const INSTRUMENTS: Instrument[] = [
   {
-    id: 'sine',
+    id: 'pure',
     name: 'Pure',
     color: '#6890B0',
     type: 'sine',
@@ -92,6 +92,36 @@ const INSTRUMENTS: Instrument[] = [
     sustain: 0.2,
     release: 1.0,
   },
+  {
+    id: 'warm',
+    name: 'Warm',
+    color: '#D4805A',
+    type: 'triangle',
+    attack: 0.1,
+    decay: 0.4,
+    sustain: 0.5,
+    release: 1.2,
+  },
+  {
+    id: 'strings',
+    name: 'Strings',
+    color: '#A0907A',
+    type: 'sawtooth',
+    attack: 0.2,
+    decay: 0.3,
+    sustain: 0.7,
+    release: 1.5,
+  },
+  {
+    id: 'glass',
+    name: 'Glass',
+    color: '#5A8AAA',
+    type: 'sine',
+    attack: 0.005,
+    decay: 0.8,
+    sustain: 0.05,
+    release: 2.0,
+  },
 ];
 
 // ── Palettes ──
@@ -130,8 +160,13 @@ export default function MagicMaker() {
   const [cruisePattern, setCruisePattern] = useState<CruisePattern>('breathing');
   const [activeNotes, setActiveNotes] = useState<Set<number>>(new Set());
   const [volume, setVolume] = useState(0.3);
-  const [cruiseSpeed, setCruiseSpeed] = useState(0.5); // 0=slow, 1=fast
+  const [cruiseSpeed, setCruiseSpeed] = useState(0.5);
   const [cellShape, setCellShape] = useState<'square' | 'circle'>('square');
+  const [showAdvanced, setShowAdvanced] = useState(false);
+  const [filterCutoff, setFilterCutoff] = useState(2000);
+  const [reverbMix, setReverbMix] = useState(0.2);
+  const [detune, setDetune] = useState(5);
+  const reverbRef = useRef<ConvolverNode | null>(null);
 
   const ctxRef = useRef<AudioContext | null>(null);
   const cruiseRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -151,47 +186,102 @@ export default function MagicMaker() {
     return ctxRef.current;
   }
 
-  // biome-ignore lint/correctness/useExhaustiveDependencies: getCtx uses ref, stable
+  // Create reverb impulse response on first use
+  function getReverb(ctx: AudioContext): ConvolverNode {
+    if (reverbRef.current) return reverbRef.current;
+    const len = ctx.sampleRate * 2;
+    const buf = ctx.createBuffer(2, len, ctx.sampleRate);
+    for (let ch = 0; ch < 2; ch++) {
+      const d = buf.getChannelData(ch);
+      for (let i = 0; i < len; i++) {
+        d[i] = (Math.random() * 2 - 1) * (1 - i / len) ** 2;
+      }
+    }
+    const conv = ctx.createConvolver();
+    conv.buffer = buf;
+    reverbRef.current = conv;
+    return conv;
+  }
+
+  // biome-ignore lint/correctness/useExhaustiveDependencies: getCtx/getReverb use refs
   const playNote = useCallback(
     (freq: number, idx: number) => {
       const ctx = getCtx();
-      const osc = ctx.createOscillator();
-      osc.type = instrument.type;
-      osc.frequency.value = freq;
+      const now = ctx.currentTime;
+      const dur = instrument.attack + instrument.decay + instrument.release;
 
-      // For bell/crystal: add a harmonic
-      let osc2: OscillatorNode | null = null;
-      if (instrument.id === 'bell' || instrument.id === 'crystal') {
-        osc2 = ctx.createOscillator();
-        osc2.type = 'sine';
-        osc2.frequency.value = freq * (instrument.id === 'bell' ? 2.756 : 3.0);
+      // Main oscillator
+      const osc1 = ctx.createOscillator();
+      osc1.type = instrument.type;
+      osc1.frequency.value = freq;
+
+      // Second oscillator — slightly detuned for richness
+      const osc2 = ctx.createOscillator();
+      osc2.type = instrument.type;
+      osc2.frequency.value = freq;
+      osc2.detune.value = detune;
+
+      // Third oscillator — harmonic for bell/crystal/glass/strings
+      let osc3: OscillatorNode | null = null;
+      if (['bell', 'crystal', 'glass', 'strings'].includes(instrument.id)) {
+        osc3 = ctx.createOscillator();
+        osc3.type = 'sine';
+        osc3.frequency.value =
+          freq * (instrument.id === 'bell' ? 2.756 : instrument.id === 'glass' ? 4.0 : 2.0);
       }
 
+      // Envelope
       const env = ctx.createGain();
-      const now = ctx.currentTime;
       env.gain.setValueAtTime(0, now);
       env.gain.linearRampToValueAtTime(volume, now + instrument.attack);
       env.gain.linearRampToValueAtTime(
         volume * instrument.sustain,
         now + instrument.attack + instrument.decay,
       );
-      env.gain.linearRampToValueAtTime(
-        0,
-        now + instrument.attack + instrument.decay + instrument.release,
-      );
+      env.gain.linearRampToValueAtTime(0, now + dur);
 
-      osc.connect(env);
-      if (osc2) {
-        const env2 = ctx.createGain();
-        env2.gain.value = 0.15;
-        osc2.connect(env2);
-        env2.connect(env);
-        osc2.start(now);
-        osc2.stop(now + instrument.attack + instrument.decay + instrument.release + 0.1);
+      // Filter
+      const filter = ctx.createBiquadFilter();
+      filter.type = 'lowpass';
+      filter.frequency.value = filterCutoff;
+      filter.Q.value = 1;
+
+      // Connect: oscs → filter → env → (dry + reverb) → destination
+      const osc2gain = ctx.createGain();
+      osc2gain.gain.value = 0.3;
+      osc1.connect(filter);
+      osc2.connect(osc2gain);
+      osc2gain.connect(filter);
+      if (osc3) {
+        const osc3gain = ctx.createGain();
+        osc3gain.gain.value = 0.12;
+        osc3.connect(osc3gain);
+        osc3gain.connect(filter);
+        osc3.start(now);
+        osc3.stop(now + dur + 0.1);
       }
-      env.connect(ctx.destination);
-      osc.start(now);
-      osc.stop(now + instrument.attack + instrument.decay + instrument.release + 0.1);
+      filter.connect(env);
+
+      // Dry path
+      const dryGain = ctx.createGain();
+      dryGain.gain.value = 1 - reverbMix;
+      env.connect(dryGain);
+      dryGain.connect(ctx.destination);
+
+      // Reverb path
+      if (reverbMix > 0.01) {
+        const wetGain = ctx.createGain();
+        wetGain.gain.value = reverbMix;
+        const reverb = getReverb(ctx);
+        env.connect(wetGain);
+        wetGain.connect(reverb);
+        reverb.connect(ctx.destination);
+      }
+
+      osc1.start(now);
+      osc1.stop(now + dur + 0.1);
+      osc2.start(now);
+      osc2.stop(now + dur + 0.1);
 
       // Visual feedback
       setActiveNotes((prev) => new Set(prev).add(idx));
@@ -206,7 +296,7 @@ export default function MagicMaker() {
         (instrument.attack + instrument.decay) * 1000 + 200,
       );
     },
-    [instrument, volume],
+    [instrument, volume, filterCutoff, reverbMix, detune],
   );
 
   // Cruise control
@@ -693,6 +783,172 @@ export default function MagicMaker() {
             </div>
           </div>
         </div>
+
+        {/* Advanced — collapsible */}
+        <button
+          type="button"
+          onClick={() => setShowAdvanced((s) => !s)}
+          className="flex w-full cursor-pointer items-center justify-center gap-1.5"
+          style={{ background: 'none', border: 'none' }}
+        >
+          <span
+            className="italic"
+            style={{
+              fontFamily: 'var(--font-serif)',
+              fontSize: '12px',
+              color: '#8A6A4A',
+              opacity: 0.5,
+            }}
+          >
+            {showAdvanced ? 'hide synth controls' : 'synth controls'}
+          </span>
+          <span
+            className="text-[8px] transition-transform duration-200"
+            style={{
+              color: '#8A6A4A50',
+              transform: showAdvanced ? 'rotate(180deg)' : 'rotate(0deg)',
+            }}
+          >
+            ▾
+          </span>
+        </button>
+
+        {showAdvanced && (
+          <div className="space-y-3 animate-in fade-in duration-150">
+            {/* Filter cutoff */}
+            <div className="space-y-1">
+              <div className="flex items-center justify-between">
+                <span
+                  style={{
+                    fontFamily: 'var(--font-serif)',
+                    fontSize: '12px',
+                    color: '#7A5438',
+                    opacity: 0.7,
+                  }}
+                >
+                  filter
+                </span>
+                <span
+                  style={{
+                    fontFamily: 'var(--font-serif)',
+                    fontSize: '12px',
+                    color: '#C4A060',
+                    fontWeight: 600,
+                  }}
+                >
+                  {filterCutoff}Hz
+                </span>
+              </div>
+              <div
+                className="flex gap-[2px] cursor-pointer"
+                onClick={(e) => {
+                  const r = (e.currentTarget as HTMLElement).getBoundingClientRect();
+                  setFilterCutoff(Math.round(200 + ((e.clientX - r.left) / r.width) * 4800));
+                }}
+              >
+                {Array.from({ length: 10 }, (_, i) => (
+                  <div
+                    key={i}
+                    className="flex-1 rounded-[3px] transition-all"
+                    style={{
+                      height: 14,
+                      background: '#C4A060',
+                      opacity: i / 9 <= (filterCutoff - 200) / 4800 ? 0.3 + (i / 9) * 0.5 : 0.08,
+                    }}
+                  />
+                ))}
+              </div>
+            </div>
+            {/* Reverb */}
+            <div className="space-y-1">
+              <div className="flex items-center justify-between">
+                <span
+                  style={{
+                    fontFamily: 'var(--font-serif)',
+                    fontSize: '12px',
+                    color: '#7A5438',
+                    opacity: 0.7,
+                  }}
+                >
+                  reverb
+                </span>
+                <span
+                  style={{
+                    fontFamily: 'var(--font-serif)',
+                    fontSize: '12px',
+                    color: '#6890B0',
+                    fontWeight: 600,
+                  }}
+                >
+                  {Math.round(reverbMix * 100)}%
+                </span>
+              </div>
+              <div
+                className="flex gap-[2px] cursor-pointer"
+                onClick={(e) => {
+                  const r = (e.currentTarget as HTMLElement).getBoundingClientRect();
+                  setReverbMix(Math.max(0, Math.min(1, (e.clientX - r.left) / r.width)));
+                }}
+              >
+                {Array.from({ length: 10 }, (_, i) => (
+                  <div
+                    key={i}
+                    className="flex-1 rounded-[3px] transition-all"
+                    style={{
+                      height: 14,
+                      background: '#6890B0',
+                      opacity: i / 9 <= reverbMix ? 0.3 + (i / 9) * 0.5 : 0.08,
+                    }}
+                  />
+                ))}
+              </div>
+            </div>
+            {/* Detune */}
+            <div className="space-y-1">
+              <div className="flex items-center justify-between">
+                <span
+                  style={{
+                    fontFamily: 'var(--font-serif)',
+                    fontSize: '12px',
+                    color: '#7A5438',
+                    opacity: 0.7,
+                  }}
+                >
+                  detune
+                </span>
+                <span
+                  style={{
+                    fontFamily: 'var(--font-serif)',
+                    fontSize: '12px',
+                    color: '#D4805A',
+                    fontWeight: 600,
+                  }}
+                >
+                  {detune}¢
+                </span>
+              </div>
+              <div
+                className="flex gap-[2px] cursor-pointer"
+                onClick={(e) => {
+                  const r = (e.currentTarget as HTMLElement).getBoundingClientRect();
+                  setDetune(Math.round(((e.clientX - r.left) / r.width) * 50));
+                }}
+              >
+                {Array.from({ length: 10 }, (_, i) => (
+                  <div
+                    key={i}
+                    className="flex-1 rounded-[3px] transition-all"
+                    style={{
+                      height: 14,
+                      background: '#D4805A',
+                      opacity: i / 9 <= detune / 50 ? 0.3 + (i / 9) * 0.5 : 0.08,
+                    }}
+                  />
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
