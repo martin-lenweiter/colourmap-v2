@@ -260,6 +260,105 @@ const _PEACE_TRACKERS = [
   },
 ] as const;
 
+/* ─── Challenge depth — guided follow-up questions ─── */
+const CHALLENGE_QUESTIONS = [
+  { key: 'why', placeholder: 'why does this feel hard?' },
+  { key: 'fear', placeholder: 'what are you afraid will happen?' },
+  { key: 'need', placeholder: 'what do you need right now?' },
+  { key: 'smallest', placeholder: 'what is the smallest step you could take?' },
+];
+
+function ChallengeDepth({ onSave }: { onSave: (text: string) => void }) {
+  const [open, setOpen] = useState(false);
+  const [answers, setAnswers] = useState<Record<string, string>>({});
+  const [saved, setSaved] = useState(false);
+
+  function saveAll() {
+    const filled = CHALLENGE_QUESTIONS.filter((q) => answers[q.key]?.trim()).map(
+      (q) => `${q.placeholder}: ${answers[q.key]?.trim()}`,
+    );
+    if (filled.length === 0) return;
+    onSave(filled.join(' · '));
+    setAnswers({});
+    setSaved(true);
+    setTimeout(() => {
+      setSaved(false);
+      setOpen(false);
+    }, 1500);
+  }
+
+  if (!open) {
+    return (
+      <button
+        type="button"
+        onClick={() => setOpen(true)}
+        className="cursor-pointer rounded-full px-2.5 py-1 text-[10px] font-semibold italic transition-all"
+        style={{
+          color: '#8A6A4A',
+          opacity: 0.4,
+          background: 'transparent',
+          border: 'none',
+          marginLeft: 14,
+        }}
+      >
+        go deeper...
+      </button>
+    );
+  }
+
+  return (
+    <div
+      className="space-y-2 rounded-xl px-3 py-3 animate-in fade-in duration-200"
+      style={{ background: '#C4A06006', border: '1px solid #C4A06012', marginLeft: 14 }}
+    >
+      {CHALLENGE_QUESTIONS.map((q) => (
+        <input
+          key={q.key}
+          type="text"
+          value={answers[q.key] || ''}
+          onChange={(e) => setAnswers((prev) => ({ ...prev, [q.key]: e.target.value }))}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter') saveAll();
+          }}
+          placeholder={q.placeholder}
+          className="w-full border-b bg-transparent pb-1 outline-none placeholder:italic placeholder:text-[#8A6A4A] placeholder:opacity-50"
+          style={{
+            color: '#7a5438',
+            borderColor: '#C4A06020',
+            fontFamily: 'var(--font-serif)',
+            fontSize: '14px',
+          }}
+        />
+      ))}
+      <div className="flex items-center gap-2 pt-1">
+        <button
+          type="button"
+          onClick={saveAll}
+          className="cursor-pointer rounded-full px-3 py-1 text-[11px] font-semibold transition-all"
+          style={{
+            color: '#C4A060',
+            background: '#C4A06010',
+            border: '1px solid #C4A06025',
+          }}
+        >
+          {saved ? 'saved' : 'save'}
+        </button>
+        <button
+          type="button"
+          onClick={() => {
+            setOpen(false);
+            setAnswers({});
+          }}
+          className="cursor-pointer text-[10px] transition-all"
+          style={{ color: '#8A6A4A', opacity: 0.4, background: 'none', border: 'none' }}
+        >
+          close
+        </button>
+      </div>
+    </div>
+  );
+}
+
 /* ─── Reusable draggable square slider ─── */
 function DragSlider({
   items,
@@ -2803,6 +2902,28 @@ export default function FeelingCheckInCard() {
                     />
                   </div>
                 </div>
+
+                {/* Challenge depth — guided follow-ups */}
+                <ChallengeDepth
+                  onSave={(text) => {
+                    setSessionEmotions([
+                      ...sessionEmotions,
+                      {
+                        time: new Date().toLocaleTimeString([], {
+                          hour: '2-digit',
+                          minute: '2-digit',
+                        }),
+                        text,
+                        mind: 'challenge',
+                        mindColor: '#C4A060',
+                        ...(challengeTag && {
+                          tag: challengeTag.name,
+                          tagColor: challengeTag.color,
+                        }),
+                      },
+                    ]);
+                  }}
+                />
 
                 {/* FLOW — label above, question as placeholder on write line */}
                 <div className="space-y-1">
