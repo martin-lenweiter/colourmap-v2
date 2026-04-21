@@ -125,7 +125,6 @@ const DEFAULT_NOTEBOOKS: Notebook[] = [
   { id: 'notes', label: 'Notes', color: '#C4A060' },
   { id: 'ideas', label: 'Ideas', color: '#E0844A' },
   { id: 'journal', label: 'Journal', color: '#7A8A50' },
-  { id: 'tasks', label: 'Tasks', color: '#3A8AC4' },
   { id: 'song_ideas', label: 'Songs', color: '#9B6BA0', isMusic: true },
   { id: 'projects', label: 'Projects', color: '#3A8AC4', isMusic: true },
   { id: 'rhymes', label: 'Rhymes', color: '#D4605A', isMusic: true },
@@ -859,25 +858,54 @@ export default function NotebookPage() {
                 {!isExpanded && (
                   <button
                     type="button"
-                    onClick={() => setExpandedId(entry.id)}
-                    className="flex w-full items-center gap-3 px-4 py-3 text-left group"
+                    onClick={() => {
+                      setExpandedId(entry.id);
+                      setEditingId(entry.id);
+                    }}
+                    className="flex w-full cursor-pointer items-center gap-3 px-4 py-3 text-left transition-all hover:bg-[#C4A06008]"
+                    style={{ background: 'none', border: 'none' }}
                   >
                     <div
-                      className="w-1.5 h-8 rounded-full shrink-0"
-                      style={{ background: color, opacity: 0.2 }}
+                      className="w-1.5 h-6 rounded-full shrink-0"
+                      style={{ background: color, opacity: 0.35 }}
                     />
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium truncate">{entry.title}</p>
+                      <p
+                        className="truncate"
+                        style={{
+                          fontFamily: 'var(--font-serif)',
+                          fontSize: '15px',
+                          fontWeight: 600,
+                          color: '#5C3018',
+                        }}
+                      >
+                        {entry.title}
+                      </p>
                       {entry.content && (
-                        <p className="text-xs text-muted-foreground/50 truncate mt-0.5">
+                        <p
+                          className="truncate mt-0.5"
+                          style={{
+                            fontFamily: 'var(--font-serif)',
+                            fontSize: '12px',
+                            color: '#8A6A4A',
+                            opacity: 0.5,
+                          }}
+                        >
                           {entry.content
-                            .replace(/\*\*/g, '')
+                            .replace(/<[^>]*>/g, '')
                             .replace(/\|\|\|CHORDS\|\|\|.*/, '')
                             .slice(0, 60)}
                         </p>
                       )}
                     </div>
-                    <span className="text-[11px] text-muted-foreground/40 shrink-0">
+                    <span
+                      style={{
+                        fontFamily: 'var(--font-serif)',
+                        fontSize: '11px',
+                        color: '#8A6A4A',
+                        opacity: 0.4,
+                      }}
+                    >
                       {new Date(entry.createdAt).toLocaleDateString([], {
                         month: 'short',
                         day: 'numeric',
@@ -889,18 +917,27 @@ export default function NotebookPage() {
                 {/* ---- EXPANDED ---- */}
                 {isExpanded && (
                   <div className="animate-in fade-in duration-200">
-                    {/* Title bar */}
-                    <div className="px-4 pt-3 pb-1 flex items-center gap-3">
+                    {/* Title bar + close */}
+                    <div
+                      className="px-4 pt-3 pb-2 flex items-center gap-3"
+                      style={{ borderBottom: `1px solid ${color}15` }}
+                    >
                       <div
-                        className="w-1.5 h-6 rounded-full shrink-0"
-                        style={{ background: color, opacity: 0.3 }}
+                        className="w-2 h-8 rounded-full shrink-0"
+                        style={{ background: color, opacity: 0.5 }}
                       />
                       <input
                         type="text"
                         value={entry.title}
                         onChange={(e) => updateLocal(entry.id, 'title', e.target.value)}
-                        className="flex-1 text-sm font-semibold bg-transparent outline-none font-serif"
-                        style={{ color, textAlign: style.align as 'left' | 'center' | 'right' }}
+                        className="flex-1 bg-transparent outline-none"
+                        style={{
+                          color: '#5C3018',
+                          fontFamily: 'var(--font-serif)',
+                          fontSize: '17px',
+                          fontWeight: 700,
+                          textAlign: style.align as 'left' | 'center' | 'right',
+                        }}
                       />
                       <button
                         type="button"
@@ -908,9 +945,17 @@ export default function NotebookPage() {
                           setExpandedId(null);
                           setEditingId(null);
                         }}
-                        className="text-xs text-muted-foreground/50 hover:text-muted-foreground"
+                        className="flex cursor-pointer items-center justify-center rounded-full px-3 py-1 transition-all"
+                        style={{
+                          background: `${color}10`,
+                          border: `1px solid ${color}20`,
+                          fontFamily: 'var(--font-serif)',
+                          fontSize: '11px',
+                          fontWeight: 600,
+                          color,
+                        }}
                       >
-                        ✕
+                        close
                       </button>
                     </div>
 
