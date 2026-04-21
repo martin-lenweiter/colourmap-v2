@@ -656,7 +656,7 @@ export default function FeelingCheckInCard() {
   const MIND_AXIS = [
     { label: 'Productive', color: '#6890B0' },
     { label: 'Focused', color: '#88B0C8' },
-    { label: 'Neutral', color: '#C8C8A0' },
+    { label: 'Entering the zone', color: '#C8C8A0' },
     { label: 'Drifting', color: '#D8C078' },
     { label: 'Disconnected', color: '#C4A060' },
   ];
@@ -2409,6 +2409,54 @@ export default function FeelingCheckInCard() {
                           opacity: active ? 1 : 0.18,
                           border: 'none',
                           boxShadow: active ? `0 2px 8px -2px ${c.color}` : 'none',
+                        }}
+                      />
+                    );
+                  })}
+                </div>
+              </div>
+              {/* Hawkins emotion bar */}
+              <div className="mt-4 space-y-1.5">
+                <div className="flex items-center justify-between">
+                  <span
+                    style={{
+                      fontFamily: 'var(--font-serif)',
+                      fontSize: '11px',
+                      fontWeight: 700,
+                      color: '#8A6A4A',
+                      letterSpacing: '0.14em',
+                      textTransform: 'uppercase' as const,
+                      opacity: 0.6,
+                    }}
+                  >
+                    emotion
+                  </span>
+                  <span
+                    style={{
+                      fontFamily: 'var(--font-serif)',
+                      fontSize: '12px',
+                      fontWeight: 600,
+                      color: HAWKINS[hawkinsIdx].color,
+                    }}
+                  >
+                    {HAWKINS[hawkinsIdx].level}
+                  </span>
+                </div>
+                <div className="flex gap-[3px]">
+                  {HAWKINS.map((h, i) => {
+                    const active = hawkinsIdx === i;
+                    return (
+                      <button
+                        key={h.level}
+                        type="button"
+                        onClick={() => setHawkinsIdx(i)}
+                        className="flex-1 cursor-pointer rounded-[3px] transition-all"
+                        style={{
+                          height: 18,
+                          background: h.color,
+                          opacity: active ? 1 : 0.18,
+                          border: 'none',
+                          boxShadow: active ? `0 2px 8px -2px ${h.color}` : 'none',
                         }}
                       />
                     );
