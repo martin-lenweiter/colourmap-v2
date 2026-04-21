@@ -995,7 +995,7 @@ export default function BinauralTuner() {
         </p>
       )}
 
-      {/* Sliders: beat, tone, reverb — always visible */}
+      {/* Sliders: beat (with binaural toggle), tone (with tone toggle), reverb, wave */}
       <div className="space-y-3 px-2">
         <SliderRow
           label="beat"
@@ -1005,6 +1005,8 @@ export default function BinauralTuner() {
           unit="Hz"
           color={activeColor}
           onChange={setBeatFreq}
+          toggleOn={binauralOn}
+          onToggle={() => setBinauralOn((s) => !s)}
         />
         <SliderRow
           label="tone"
@@ -1014,6 +1016,8 @@ export default function BinauralTuner() {
           unit="Hz"
           color="#7A5438"
           onChange={setBaseFreq}
+          toggleOn={baseToneOn}
+          onToggle={() => setBaseToneOn((s) => !s)}
         />
         <SliderRow
           label="reverb"
@@ -1024,88 +1028,17 @@ export default function BinauralTuner() {
           color="#A0907A"
           onChange={(v) => setReverbMix(v / 100)}
         />
-      </div>
-
-      {/* Toggles: tone on/off, binaural on/off, wave on/off — always visible */}
-      <div className="space-y-2 px-2">
-        <div className="flex items-center gap-3">
-          <button
-            type="button"
-            onClick={() => setBaseToneOn((s) => !s)}
-            className="shrink-0 cursor-pointer rounded-full px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wider transition-all"
-            style={{
-              color: baseToneOn ? '#7A5438' : '#8A6A4A',
-              background: baseToneOn ? '#7A543815' : 'transparent',
-              border: `1px solid ${baseToneOn ? '#7A543840' : '#C4A06018'}`,
-              opacity: baseToneOn ? 1 : 0.4,
-            }}
-          >
-            tone {baseToneOn ? 'on' : 'off'}
-          </button>
-          <p
-            className="italic"
-            style={{
-              fontFamily: 'var(--font-serif)',
-              fontSize: '12px',
-              color: '#8A6A4A',
-              opacity: 0.45,
-            }}
-          >
-            steady low tone — the foundation frequency your brain locks onto
-          </p>
-        </div>
-        <div className="flex items-center gap-3">
-          <button
-            type="button"
-            onClick={() => setBinauralOn((s) => !s)}
-            className="shrink-0 cursor-pointer rounded-full px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wider transition-all"
-            style={{
-              color: binauralOn ? activeColor : '#8A6A4A',
-              background: binauralOn ? `${activeColor}15` : 'transparent',
-              border: `1px solid ${binauralOn ? `${activeColor}40` : '#C4A06018'}`,
-              opacity: binauralOn ? 1 : 0.4,
-            }}
-          >
-            binaural {binauralOn ? 'on' : 'off'}
-          </button>
-          <p
-            className="italic"
-            style={{
-              fontFamily: 'var(--font-serif)',
-              fontSize: '12px',
-              color: '#8A6A4A',
-              opacity: 0.45,
-            }}
-          >
-            second tone slightly higher — the difference creates a pulsing beat in your brain
-          </p>
-        </div>
-        <div className="flex items-center gap-3">
-          <button
-            type="button"
-            onClick={() => setTremolo((s) => !s)}
-            className="shrink-0 cursor-pointer rounded-full px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wider transition-all"
-            style={{
-              color: tremolo ? '#6890B0' : '#8A6A4A',
-              background: tremolo ? '#6890B015' : 'transparent',
-              border: `1px solid ${tremolo ? '#6890B040' : '#C4A06018'}`,
-              opacity: tremolo ? 1 : 0.4,
-            }}
-          >
-            wave {tremolo ? 'on' : 'off'}
-          </button>
-          <p
-            className="italic"
-            style={{
-              fontFamily: 'var(--font-serif)',
-              fontSize: '12px',
-              color: '#8A6A4A',
-              opacity: 0.45,
-            }}
-          >
-            gentle volume swell — like breathing
-          </p>
-        </div>
+        <SliderRow
+          label="wave"
+          value={tremolo ? 1 : 0}
+          min={0}
+          max={1}
+          unit=""
+          color="#6890B0"
+          onChange={() => setTremolo((s) => !s)}
+          toggleOn={tremolo}
+          onToggle={() => setTremolo((s) => !s)}
+        />
       </div>
 
       {/* Volume bar — always visible */}
@@ -1159,90 +1092,58 @@ export default function BinauralTuner() {
         </div>
       </div>
 
-      {/* Layers section — always visible */}
-      <div className="space-y-4 px-1">
+      {/* Layers — 3-column grid by group */}
+      <div className="grid grid-cols-3 gap-3 px-1">
         {(['nature', 'tones', 'texture'] as const).map((group) => (
-          <div key={group} className="space-y-1.5">
+          <div key={group} className="space-y-1">
             <p
-              className="uppercase tracking-[0.16em]"
+              className="uppercase tracking-[0.16em] text-center"
               style={{
                 fontFamily: 'var(--font-serif)',
-                fontSize: '10px',
+                fontSize: '9px',
                 fontWeight: 700,
                 color: '#8A6A4A',
-                opacity: 0.5,
+                opacity: 0.4,
               }}
             >
               {group}
             </p>
-            <div className="space-y-1">
-              {LAYERS.filter((l) => l.group === group).map((l) => {
-                const vol = activeLayers[l.id] || 0;
-                const isOn = vol > 0;
-                return (
-                  <div key={l.id} className="flex items-center gap-2">
-                    <button
-                      type="button"
-                      onClick={() => toggleLayer(l.id)}
-                      className="flex cursor-pointer items-center gap-2 rounded-lg px-3 py-1.5 transition-all"
-                      style={{
-                        background: isOn ? `${l.color}12` : 'transparent',
-                        border: `1px solid ${isOn ? `${l.color}30` : '#C4A06012'}`,
-                        flex: '0 0 110px',
-                      }}
-                    >
-                      <span
-                        className="block rounded-full"
-                        style={{
-                          width: 8,
-                          height: 8,
-                          background: l.color,
-                          opacity: isOn ? 1 : 0.3,
-                        }}
-                      />
-                      <span
-                        style={{
-                          fontFamily: 'var(--font-serif)',
-                          fontSize: '12px',
-                          fontWeight: 600,
-                          color: isOn ? l.color : '#8A6A4A',
-                          opacity: isOn ? 1 : 0.5,
-                        }}
-                      >
-                        {l.label}
-                      </span>
-                    </button>
-                    {isOn && (
-                      <div
-                        className="flex flex-1 gap-[2px] cursor-pointer"
-                        onClick={(e) => {
-                          const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
-                          const x = (e.clientX - rect.left) / rect.width;
-                          setLayerVol(l.id, Math.max(0, Math.min(1, x)));
-                        }}
-                      >
-                        {Array.from({ length: 8 }, (_, si) => {
-                          const t = si / 7;
-                          const lightness = 1 - t * 0.3;
-                          return (
-                            <div
-                              key={si}
-                              className="flex-1 rounded-[3px] transition-all"
-                              style={{
-                                height: 10,
-                                background: l.color,
-                                opacity: t <= vol ? 0.25 + t * 0.55 : 0.06,
-                                filter: `brightness(${lightness})`,
-                              }}
-                            />
-                          );
-                        })}
-                      </div>
-                    )}
-                  </div>
-                );
-              })}
-            </div>
+            {LAYERS.filter((l) => l.group === group).map((l) => {
+              const isOn = (activeLayers[l.id] || 0) > 0;
+              return (
+                <button
+                  key={l.id}
+                  type="button"
+                  onClick={() => toggleLayer(l.id)}
+                  className="flex w-full cursor-pointer items-center gap-1.5 rounded-lg px-2 py-1.5 transition-all"
+                  style={{
+                    background: isOn ? `${l.color}15` : 'transparent',
+                    border: `1px solid ${isOn ? `${l.color}35` : '#C4A06010'}`,
+                  }}
+                >
+                  <span
+                    className="block rounded-full shrink-0"
+                    style={{
+                      width: 7,
+                      height: 7,
+                      background: l.color,
+                      opacity: isOn ? 1 : 0.3,
+                    }}
+                  />
+                  <span
+                    style={{
+                      fontFamily: 'var(--font-serif)',
+                      fontSize: '11px',
+                      fontWeight: isOn ? 700 : 500,
+                      color: isOn ? l.color : '#8A6A4A',
+                      opacity: isOn ? 1 : 0.5,
+                    }}
+                  >
+                    {l.label}
+                  </span>
+                </button>
+              );
+            })}
           </div>
         ))}
       </div>
@@ -1569,6 +1470,8 @@ function SliderRow({
   unit,
   color,
   onChange,
+  toggleOn,
+  onToggle,
 }: {
   label: string;
   value: number;
@@ -1577,27 +1480,54 @@ function SliderRow({
   unit: string;
   color: string;
   onChange: (v: number) => void;
+  toggleOn?: boolean;
+  onToggle?: () => void;
 }) {
   const count = 20;
   const pct = (value - min) / (max - min);
   const activeIdx = Math.round(pct * (count - 1));
   const sq = 12;
   const gap = 3;
+  const muted = toggleOn === false;
   return (
-    <div className="flex items-center gap-3">
-      <span
-        style={{
-          fontFamily: 'var(--font-serif)',
-          fontSize: '13px',
-          color: '#7A5438',
-          opacity: 0.7,
-          width: 48,
-          flexShrink: 0,
-          textAlign: 'right',
-        }}
-      >
-        {label}
-      </span>
+    <div className="flex items-center gap-2" style={{ opacity: muted ? 0.35 : 1 }}>
+      {/* Label — clickable to toggle if toggle exists */}
+      {onToggle ? (
+        <button
+          type="button"
+          onClick={onToggle}
+          className="cursor-pointer"
+          style={{
+            fontFamily: 'var(--font-serif)',
+            fontSize: '13px',
+            color: muted ? '#8A6A4A' : '#7A5438',
+            fontWeight: 600,
+            width: 48,
+            flexShrink: 0,
+            textAlign: 'right',
+            background: 'none',
+            border: 'none',
+            textDecoration: muted ? 'line-through' : 'none',
+          }}
+          title={muted ? `tap to enable ${label}` : `tap to mute ${label}`}
+        >
+          {label}
+        </button>
+      ) : (
+        <span
+          style={{
+            fontFamily: 'var(--font-serif)',
+            fontSize: '13px',
+            color: '#7A5438',
+            opacity: 0.7,
+            width: 48,
+            flexShrink: 0,
+            textAlign: 'right',
+          }}
+        >
+          {label}
+        </span>
+      )}
       <div className="flex flex-1 justify-center" style={{ gap }}>
         {Array.from({ length: count }, (_, i) => {
           const selected = i === activeIdx;
