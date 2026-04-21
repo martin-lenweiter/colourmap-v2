@@ -122,6 +122,127 @@ const INSTRUMENTS: Instrument[] = [
     sustain: 0.05,
     release: 2.0,
   },
+  {
+    id: 'organ',
+    name: 'Organ',
+    color: '#8A6A4A',
+    type: 'square',
+    attack: 0.01,
+    decay: 0.1,
+    sustain: 0.8,
+    release: 0.3,
+  },
+  {
+    id: 'flute',
+    name: 'Flute',
+    color: '#90C0C0',
+    type: 'sine',
+    attack: 0.08,
+    decay: 0.2,
+    sustain: 0.6,
+    release: 0.5,
+  },
+  {
+    id: 'marimba',
+    name: 'Marimba',
+    color: '#C87050',
+    type: 'triangle',
+    attack: 0.003,
+    decay: 0.15,
+    sustain: 0.02,
+    release: 0.3,
+  },
+  {
+    id: 'choir',
+    name: 'Choir',
+    color: '#B0A0C8',
+    type: 'sine',
+    attack: 0.4,
+    decay: 0.3,
+    sustain: 0.7,
+    release: 2.0,
+  },
+  {
+    id: 'bass',
+    name: 'Bass',
+    color: '#5C3018',
+    type: 'sine',
+    attack: 0.01,
+    decay: 0.3,
+    sustain: 0.2,
+    release: 0.2,
+  },
+  {
+    id: 'harp',
+    name: 'Harp',
+    color: '#C8B898',
+    type: 'triangle',
+    attack: 0.01,
+    decay: 0.5,
+    sustain: 0.15,
+    release: 1.0,
+  },
+  {
+    id: 'lead',
+    name: 'Lead',
+    color: '#D06040',
+    type: 'sawtooth',
+    attack: 0.01,
+    decay: 0.15,
+    sustain: 0.5,
+    release: 0.3,
+  },
+  {
+    id: 'ambient',
+    name: 'Ambient',
+    color: '#A0C8D0',
+    type: 'sine',
+    attack: 0.5,
+    decay: 0.8,
+    sustain: 0.6,
+    release: 3.0,
+  },
+  // Cinematic pack
+  {
+    id: 'angels',
+    name: 'Angels',
+    color: '#E8D8C8',
+    type: 'sine',
+    attack: 0.6,
+    decay: 0.5,
+    sustain: 0.8,
+    release: 3.5,
+  },
+  {
+    id: 'epic',
+    name: 'Epic',
+    color: '#B33A2B',
+    type: 'sawtooth',
+    attack: 0.15,
+    decay: 0.4,
+    sustain: 0.7,
+    release: 2.0,
+  },
+  {
+    id: 'horizon',
+    name: 'Horizon',
+    color: '#D8A878',
+    type: 'sine',
+    attack: 0.8,
+    decay: 0.6,
+    sustain: 0.5,
+    release: 4.0,
+  },
+  {
+    id: 'pulse',
+    name: 'Pulse',
+    color: '#E0844A',
+    type: 'square',
+    attack: 0.005,
+    decay: 0.1,
+    sustain: 0.3,
+    release: 0.15,
+  },
 ];
 
 // ── Palettes ──
@@ -221,13 +342,57 @@ export default function MagicMaker() {
       osc2.frequency.value = freq;
       osc2.detune.value = detune;
 
-      // Third oscillator — harmonic for bell/crystal/glass/strings
+      // Third oscillator — harmonics, sub-octaves
       let osc3: OscillatorNode | null = null;
-      if (['bell', 'crystal', 'glass', 'strings'].includes(instrument.id)) {
+      const harmonicIds = [
+        'bell',
+        'crystal',
+        'glass',
+        'strings',
+        'choir',
+        'organ',
+        'epic',
+        'angels',
+      ];
+      if (harmonicIds.includes(instrument.id)) {
+        osc3 = ctx.createOscillator();
+        osc3.type =
+          instrument.id === 'organ' ? 'square' : instrument.id === 'epic' ? 'sawtooth' : 'sine';
+        const r =
+          instrument.id === 'bell'
+            ? 2.756
+            : instrument.id === 'glass'
+              ? 4.0
+              : ['choir', 'angels'].includes(instrument.id)
+                ? 1.01
+                : instrument.id === 'epic'
+                  ? 0.5
+                  : 2.0;
+        osc3.frequency.value = freq * r;
+      }
+      if (instrument.id === 'bass') {
         osc3 = ctx.createOscillator();
         osc3.type = 'sine';
-        osc3.frequency.value =
-          freq * (instrument.id === 'bell' ? 2.756 : instrument.id === 'glass' ? 4.0 : 2.0);
+        osc3.frequency.value = freq / 2;
+      }
+      // Angels: 4th osc for thick choir
+      let osc4: OscillatorNode | null = null;
+      if (instrument.id === 'angels') {
+        osc4 = ctx.createOscillator();
+        osc4.type = 'sine';
+        osc4.frequency.value = freq * 2.01;
+      }
+      // Vibrato for flute/horizon
+      if (instrument.id === 'flute' || instrument.id === 'horizon') {
+        const lfo = ctx.createOscillator();
+        lfo.type = 'sine';
+        lfo.frequency.value = instrument.id === 'horizon' ? 2 : 5;
+        const lg = ctx.createGain();
+        lg.gain.value = instrument.id === 'horizon' ? 6 : 3;
+        lfo.connect(lg);
+        lg.connect(osc1.frequency);
+        lfo.start(now);
+        lfo.stop(now + dur + 0.1);
       }
 
       // Envelope
@@ -254,11 +419,20 @@ export default function MagicMaker() {
       osc2gain.connect(filter);
       if (osc3) {
         const osc3gain = ctx.createGain();
-        osc3gain.gain.value = 0.12;
+        osc3gain.gain.value =
+          instrument.id === 'angels' ? 0.2 : instrument.id === 'epic' ? 0.25 : 0.12;
         osc3.connect(osc3gain);
         osc3gain.connect(filter);
         osc3.start(now);
         osc3.stop(now + dur + 0.1);
+      }
+      if (osc4) {
+        const osc4gain = ctx.createGain();
+        osc4gain.gain.value = 0.08;
+        osc4.connect(osc4gain);
+        osc4gain.connect(filter);
+        osc4.start(now);
+        osc4.stop(now + dur + 0.1);
       }
       filter.connect(env);
 
