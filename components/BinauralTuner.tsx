@@ -1117,8 +1117,9 @@ export default function BinauralTuner() {
       {view === 'presets' && (
         <div className="space-y-4">
           <div className="space-y-3 px-2">
+            {/* Sound controls: beat, tone, reverb */}
             <SliderRow
-              label="binaural beat"
+              label="beat"
               value={beatFreq}
               min={1}
               max={10}
@@ -1127,7 +1128,7 @@ export default function BinauralTuner() {
               onChange={setBeatFreq}
             />
             <SliderRow
-              label="base tone"
+              label="tone"
               value={baseFreq}
               min={30}
               max={80}
@@ -1136,16 +1137,16 @@ export default function BinauralTuner() {
               onChange={setBaseFreq}
             />
             <SliderRow
-              label="volume"
-              value={Math.round(volume * 100)}
+              label="reverb"
+              value={Math.round(reverbMix * 100)}
               min={0}
               max={100}
               unit="%"
-              color="#7A5438"
-              onChange={(v) => setVolume(v / 100)}
+              color="#A0907A"
+              onChange={(v) => setReverbMix(v / 100)}
             />
 
-            {/* Tone toggles with explanations */}
+            {/* Toggles with explanations */}
             <div className="space-y-2 pt-2">
               <div className="flex items-center gap-3">
                 <button
@@ -1227,16 +1228,56 @@ export default function BinauralTuner() {
               </div>
             </div>
 
-            {/* Reverb control */}
-            <SliderRow
-              label="reverb"
-              value={Math.round(reverbMix * 100)}
-              min={0}
-              max={100}
-              unit="%"
-              color="#A0907A"
-              onChange={(v) => setReverbMix(v / 100)}
-            />
+            {/* Volume — separate, at the bottom */}
+            <div className="pt-3">
+              <div
+                className="flex items-center gap-3 rounded-xl px-3 py-2"
+                style={{ background: '#5C301804' }}
+              >
+                <span
+                  style={{
+                    fontFamily: 'var(--font-serif)',
+                    fontSize: '11px',
+                    color: '#8A6A4A',
+                    opacity: 0.5,
+                    fontWeight: 600,
+                    flexShrink: 0,
+                  }}
+                >
+                  vol
+                </span>
+                <div
+                  className="flex flex-1 gap-[3px] cursor-pointer"
+                  onClick={(e) => {
+                    const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
+                    setVolume(Math.max(0.02, (e.clientX - rect.left) / rect.width));
+                  }}
+                >
+                  {Array.from({ length: 12 }, (_, i) => (
+                    <div
+                      key={i}
+                      className="flex-1 rounded-[2px] transition-all"
+                      style={{
+                        height: 6,
+                        background: '#8A6A4A',
+                        opacity: i / 11 <= volume ? 0.25 + (i / 11) * 0.4 : 0.06,
+                      }}
+                    />
+                  ))}
+                </div>
+                <span
+                  style={{
+                    fontFamily: 'var(--font-serif)',
+                    fontSize: '10px',
+                    color: '#8A6A4A',
+                    opacity: 0.4,
+                    flexShrink: 0,
+                  }}
+                >
+                  {Math.round(volume * 100)}%
+                </span>
+              </div>
+            </div>
 
             {/* Brain state presets with default layers */}
             <div className="pt-3">
@@ -1536,24 +1577,21 @@ function SliderRow({
   const sq = 20;
   const gap = 6;
   return (
-    <div className="space-y-1.5">
-      <div className="flex items-center justify-between">
-        <span
-          style={{
-            fontFamily: 'var(--font-serif)',
-            fontSize: '12px',
-            color: '#7A5438',
-            opacity: 0.7,
-          }}
-        >
-          {label}
-        </span>
-        <span style={{ fontFamily: 'var(--font-serif)', fontSize: '12px', color, fontWeight: 600 }}>
-          {value}
-          {unit}
-        </span>
-      </div>
-      <div className="flex justify-center" style={{ gap }}>
+    <div className="flex items-center gap-3">
+      <span
+        style={{
+          fontFamily: 'var(--font-serif)',
+          fontSize: '12px',
+          color: '#7A5438',
+          opacity: 0.7,
+          width: 48,
+          flexShrink: 0,
+          textAlign: 'right',
+        }}
+      >
+        {label}
+      </span>
+      <div className="flex flex-1 justify-center" style={{ gap }}>
         {Array.from({ length: count }, (_, i) => {
           const selected = i === activeIdx;
           const segColor = RAINBOW[i % RAINBOW.length];
@@ -1576,6 +1614,20 @@ function SliderRow({
           );
         })}
       </div>
+      <span
+        style={{
+          fontFamily: 'var(--font-serif)',
+          fontSize: '11px',
+          color,
+          fontWeight: 600,
+          width: 40,
+          flexShrink: 0,
+          textAlign: 'left',
+        }}
+      >
+        {value}
+        {unit}
+      </span>
     </div>
   );
 }
