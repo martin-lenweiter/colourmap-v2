@@ -152,8 +152,6 @@ const COLOR_PICKER = [
 // ============================================================
 
 function FormatToolbar({
-  value,
-  onChange,
   noteColor,
   onNoteColor,
   noteFont,
@@ -163,8 +161,6 @@ function FormatToolbar({
   align,
   onAlign,
 }: {
-  value: string;
-  onChange: (v: string) => void;
   noteColor: string;
   onNoteColor: (c: string) => void;
   noteFont: string;
@@ -178,18 +174,10 @@ function FormatToolbar({
   const [showFonts, setShowFonts] = useState(false);
   const [showSizes, setShowSizes] = useState(false);
 
-  function wrapSelection(prefix: string, suffix: string) {
-    const textarea = document.getElementById('note-editor') as HTMLTextAreaElement | null;
-    if (!textarea) return;
-    const start = textarea.selectionStart;
-    const end = textarea.selectionEnd;
-    const selected = value.slice(start, end);
-    const newValue = value.slice(0, start) + prefix + selected + suffix + value.slice(end);
-    onChange(newValue);
-    setTimeout(() => {
-      textarea.focus();
-      textarea.setSelectionRange(start + prefix.length, end + prefix.length);
-    }, 10);
+  function exec(cmd: string, val?: string) {
+    document.execCommand(cmd, false, val);
+    // Re-focus the editor
+    document.getElementById('note-editor')?.focus();
   }
 
   return (
@@ -197,7 +185,7 @@ function FormatToolbar({
       {/* Bold */}
       <button
         type="button"
-        onClick={() => wrapSelection('**', '**')}
+        onClick={() => exec('bold')}
         className="h-7 w-7 flex items-center justify-center rounded text-xs font-bold text-muted-foreground/50 hover:text-muted-foreground hover:bg-accent/50 transition-colors"
       >
         B
@@ -205,15 +193,23 @@ function FormatToolbar({
       {/* Italic */}
       <button
         type="button"
-        onClick={() => wrapSelection('*', '*')}
+        onClick={() => exec('italic')}
         className="h-7 w-7 flex items-center justify-center rounded text-xs italic text-muted-foreground/50 hover:text-muted-foreground hover:bg-accent/50 transition-colors"
       >
         I
       </button>
+      {/* Underline */}
+      <button
+        type="button"
+        onClick={() => exec('underline')}
+        className="h-7 w-7 flex items-center justify-center rounded text-xs underline text-muted-foreground/50 hover:text-muted-foreground hover:bg-accent/50 transition-colors"
+      >
+        U
+      </button>
       {/* Heading */}
       <button
         type="button"
-        onClick={() => wrapSelection('\n## ', '\n')}
+        onClick={() => exec('formatBlock', 'h2')}
         className="h-7 w-7 flex items-center justify-center rounded text-xs font-bold text-muted-foreground/50 hover:text-muted-foreground hover:bg-accent/50 transition-colors"
       >
         H
@@ -221,7 +217,7 @@ function FormatToolbar({
       {/* List */}
       <button
         type="button"
-        onClick={() => wrapSelection('\n- ', '')}
+        onClick={() => exec('insertUnorderedList')}
         className="h-7 w-7 flex items-center justify-center rounded text-xs text-muted-foreground/50 hover:text-muted-foreground hover:bg-accent/50 transition-colors"
       >
         •
@@ -921,23 +917,6 @@ export default function NotebookPage() {
                     {/* Format toolbar */}
                     <div className="px-4 py-1 border-b border-border/20">
                       <FormatToolbar
-                        value={
-                          isSong
-                            ? (entry.content || '').split('|||CHORDS|||')[0]
-                            : entry.content || ''
-                        }
-                        onChange={(v) => {
-                          if (isSong) {
-                            const chords = (entry.content || '').split('|||CHORDS|||')[1] || '';
-                            updateLocal(
-                              entry.id,
-                              'content',
-                              chords.trim() ? `${v}|||CHORDS|||${chords}` : v,
-                            );
-                          } else {
-                            updateLocal(entry.id, 'content', v);
-                          }
-                        }}
                         noteColor={style.color}
                         onNoteColor={(c) => saveNoteStyle(entry.id, { ...style, color: c })}
                         noteFont={style.font}
@@ -1018,14 +997,24 @@ export default function NotebookPage() {
                             </div>
                           );
                         })()
-                      ) : isEditing ? (
-                        <textarea
+                      ) : (
+                        <div
                           id="note-editor"
-                          autoFocus
-                          value={entry.content || ''}
-                          onChange={(e) => updateLocal(entry.id, 'content', e.target.value)}
-                          placeholder="start writing..."
-                          className="w-full min-h-[200px] rounded-lg border border-border/20 bg-transparent p-3 resize-none outline-none placeholder:italic placeholder:text-[#8A6A4A] placeholder:opacity-[0.6]"
+                          contentEditable
+                          suppressContentEditableWarning
+                          ref={(el) => {
+                            if (el && isEditing && !el.innerHTML && entry.content) {
+                              el.innerHTML = entry.content;
+                            }
+                            if (el && isEditing && !entry.content && el.innerHTML === '') {
+                              el.focus();
+                            }
+                          }}
+                          onInput={(e) => {
+                            const html = (e.target as HTMLDivElement).innerHTML;
+                            updateLocal(entry.id, 'content', html === '<br>' ? '' : html);
+                          }}
+                          className="w-full min-h-[200px] rounded-lg border border-border/20 bg-transparent p-3 outline-none"
                           style={{
                             color: '#5A4535',
                             fontFamily: style.font || 'var(--font-serif)',
@@ -1033,39 +1022,8 @@ export default function NotebookPage() {
                             textAlign: style.align as 'left' | 'center' | 'right',
                             lineHeight: 1.6,
                           }}
-                          onInput={(e) => {
-                            const t = e.target as HTMLTextAreaElement;
-                            t.style.height = 'auto';
-                            t.style.height = `${Math.max(200, t.scrollHeight)}px`;
-                          }}
+                          data-placeholder="start writing..."
                         />
-                      ) : (
-                        <div
-                          onClick={() => setEditingId(entry.id)}
-                          className="cursor-text min-h-[60px]"
-                        >
-                          {entry.content ? (
-                            <NotePreview
-                              content={entry.content}
-                              font={style.font}
-                              align={style.align}
-                              color="transparent"
-                              size={style.size}
-                            />
-                          ) : (
-                            <p
-                              className="italic py-2"
-                              style={{
-                                fontFamily: 'var(--font-serif)',
-                                fontSize: '15px',
-                                color: '#8A6A4A',
-                                opacity: 0.5,
-                              }}
-                            >
-                              tap to write...
-                            </p>
-                          )}
-                        </div>
                       )}
 
                       {/* Project links for songs */}
