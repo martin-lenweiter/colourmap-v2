@@ -286,7 +286,7 @@ export default function MagicMaker() {
   const [showAdvanced, setShowAdvanced] = useState(false);
   const [showInstruments, setShowInstruments] = useState(false);
   const [filterCutoff, setFilterCutoff] = useState(2000);
-  const [reverbMix, setReverbMix] = useState(0.2);
+  const [reverbMix, setReverbMix] = useState(0.5);
   const [detune, setDetune] = useState(5);
   const reverbRef = useRef<ConvolverNode | null>(null);
 
@@ -607,6 +607,103 @@ export default function MagicMaker() {
               </button>
             );
           })}
+        </div>
+      </div>
+
+      {/* ── SYNTH CONTROLS — below grid ── */}
+      <div className="flex justify-center gap-4 px-2">
+        <div className="flex-1 space-y-1">
+          <span
+            style={{
+              fontFamily: 'var(--font-serif)',
+              fontSize: '10px',
+              color: '#C4A060',
+              opacity: 0.6,
+            }}
+          >
+            filter
+          </span>
+          <div
+            className="flex gap-[2px] cursor-pointer"
+            onClick={(e) => {
+              const r = (e.currentTarget as HTMLElement).getBoundingClientRect();
+              setFilterCutoff(Math.round(200 + ((e.clientX - r.left) / r.width) * 4800));
+            }}
+          >
+            {Array.from({ length: 8 }, (_, i) => (
+              <div
+                key={i}
+                className="flex-1 rounded-full transition-all"
+                style={{
+                  height: 8,
+                  background: '#C4A060',
+                  opacity: i / 7 <= (filterCutoff - 200) / 4800 ? 0.4 + (i / 7) * 0.4 : 0.08,
+                }}
+              />
+            ))}
+          </div>
+        </div>
+        <div className="flex-1 space-y-1">
+          <span
+            style={{
+              fontFamily: 'var(--font-serif)',
+              fontSize: '10px',
+              color: '#6890B0',
+              opacity: 0.6,
+            }}
+          >
+            reverb
+          </span>
+          <div
+            className="flex gap-[2px] cursor-pointer"
+            onClick={(e) => {
+              const r = (e.currentTarget as HTMLElement).getBoundingClientRect();
+              setReverbMix(Math.max(0, Math.min(1, (e.clientX - r.left) / r.width)));
+            }}
+          >
+            {Array.from({ length: 8 }, (_, i) => (
+              <div
+                key={i}
+                className="flex-1 rounded-full transition-all"
+                style={{
+                  height: 8,
+                  background: '#6890B0',
+                  opacity: i / 7 <= reverbMix ? 0.4 + (i / 7) * 0.4 : 0.08,
+                }}
+              />
+            ))}
+          </div>
+        </div>
+        <div className="flex-1 space-y-1">
+          <span
+            style={{
+              fontFamily: 'var(--font-serif)',
+              fontSize: '10px',
+              color: '#D4805A',
+              opacity: 0.6,
+            }}
+          >
+            detune
+          </span>
+          <div
+            className="flex gap-[2px] cursor-pointer"
+            onClick={(e) => {
+              const r = (e.currentTarget as HTMLElement).getBoundingClientRect();
+              setDetune(Math.round(((e.clientX - r.left) / r.width) * 50));
+            }}
+          >
+            {Array.from({ length: 8 }, (_, i) => (
+              <div
+                key={i}
+                className="flex-1 rounded-full transition-all"
+                style={{
+                  height: 8,
+                  background: '#D4805A',
+                  opacity: i / 7 <= detune / 50 ? 0.4 + (i / 7) * 0.4 : 0.08,
+                }}
+              />
+            ))}
+          </div>
         </div>
       </div>
 
@@ -1007,36 +1104,7 @@ export default function MagicMaker() {
           </div>
         </div>
 
-        {/* Advanced — collapsible */}
-        <button
-          type="button"
-          onClick={() => setShowAdvanced((s) => !s)}
-          className="flex w-full cursor-pointer items-center justify-center gap-1.5"
-          style={{ background: 'none', border: 'none' }}
-        >
-          <span
-            className="italic"
-            style={{
-              fontFamily: 'var(--font-serif)',
-              fontSize: '12px',
-              color: '#8A6A4A',
-              opacity: 0.5,
-            }}
-          >
-            {showAdvanced ? 'hide synth controls' : 'synth controls'}
-          </span>
-          <span
-            className="text-[8px] transition-transform duration-200"
-            style={{
-              color: '#8A6A4A50',
-              transform: showAdvanced ? 'rotate(180deg)' : 'rotate(0deg)',
-            }}
-          >
-            ▾
-          </span>
-        </button>
-
-        {showAdvanced && (
+        {false && (
           <div className="space-y-3 animate-in fade-in duration-150">
             {/* Filter cutoff */}
             <div className="space-y-1">
