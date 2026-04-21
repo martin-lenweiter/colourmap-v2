@@ -284,6 +284,7 @@ export default function MagicMaker() {
   const [cruiseSpeed, setCruiseSpeed] = useState(0.5);
   const [cellShape, setCellShape] = useState<'square' | 'circle'>('square');
   const [showAdvanced, setShowAdvanced] = useState(false);
+  const [showInstruments, setShowInstruments] = useState(false);
   const [filterCutoff, setFilterCutoff] = useState(2000);
   const [reverbMix, setReverbMix] = useState(0.2);
   const [detune, setDetune] = useState(5);
@@ -747,39 +748,87 @@ export default function MagicMaker() {
           </div>
         </div>
 
-        {/* Instrument */}
-        <div className="space-y-1.5">
-          <p
-            style={{
-              fontFamily: 'var(--font-serif)',
-              fontSize: '12px',
-              color: '#7A5438',
-              opacity: 0.7,
-            }}
+        {/* Instrument — dot toggle + dropdown */}
+        <div className="relative space-y-1.5">
+          <button
+            type="button"
+            onClick={() => setShowInstruments((s) => !s)}
+            className="flex w-full cursor-pointer items-center gap-2"
+            style={{ background: 'none', border: 'none' }}
           >
-            instrument
-          </p>
-          <div className="flex gap-1.5">
-            {INSTRUMENTS.map((inst) => (
-              <button
-                key={inst.id}
-                type="button"
-                onClick={() => setInstrumentId(inst.id)}
-                className="flex-1 cursor-pointer rounded-lg py-1.5 text-center transition-all"
-                style={{
-                  fontFamily: 'var(--font-serif)',
-                  fontSize: '12px',
-                  fontWeight: instrumentId === inst.id ? 700 : 500,
-                  color: instrumentId === inst.id ? inst.color : '#8A6A4A',
-                  background: instrumentId === inst.id ? `${inst.color}12` : 'transparent',
-                  border: `1px solid ${instrumentId === inst.id ? `${inst.color}35` : '#C4A06012'}`,
-                  opacity: instrumentId === inst.id ? 1 : 0.5,
-                }}
-              >
-                {inst.name}
-              </button>
-            ))}
-          </div>
+            <span
+              className="block rounded-full"
+              style={{ width: 14, height: 14, background: instrument.color }}
+            />
+            <span
+              style={{
+                fontFamily: 'var(--font-serif)',
+                fontSize: '14px',
+                fontWeight: 700,
+                color: instrument.color,
+              }}
+            >
+              {instrument.name}
+            </span>
+            <span
+              className="text-[10px] transition-transform duration-200"
+              style={{
+                color: `${instrument.color}80`,
+                transform: showInstruments ? 'rotate(180deg)' : 'rotate(0deg)',
+              }}
+            >
+              ▾
+            </span>
+          </button>
+          {showInstruments && (
+            <div
+              className="animate-in fade-in duration-150 rounded-xl px-2 py-2"
+              style={{
+                background: '#F5ECDC',
+                border: '1px solid #8A6A4A20',
+                boxShadow: '0 8px 24px rgba(92,48,24,0.12)',
+              }}
+            >
+              <div className="grid grid-cols-4 gap-1">
+                {INSTRUMENTS.map((inst) => (
+                  <button
+                    key={inst.id}
+                    type="button"
+                    onClick={() => {
+                      setInstrumentId(inst.id);
+                      setShowInstruments(false);
+                    }}
+                    className="flex cursor-pointer flex-col items-center gap-1 rounded-lg py-1.5 transition-all"
+                    style={{
+                      background: instrumentId === inst.id ? `${inst.color}12` : 'transparent',
+                      border: `1px solid ${instrumentId === inst.id ? `${inst.color}30` : 'transparent'}`,
+                    }}
+                  >
+                    <span
+                      className="block rounded-full"
+                      style={{
+                        width: 10,
+                        height: 10,
+                        background: inst.color,
+                        opacity: instrumentId === inst.id ? 1 : 0.5,
+                      }}
+                    />
+                    <span
+                      style={{
+                        fontFamily: 'var(--font-serif)',
+                        fontSize: '10px',
+                        fontWeight: instrumentId === inst.id ? 700 : 500,
+                        color: instrumentId === inst.id ? inst.color : '#8A6A4A',
+                        opacity: instrumentId === inst.id ? 1 : 0.6,
+                      }}
+                    >
+                      {inst.name}
+                    </span>
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Palette */}

@@ -333,9 +333,14 @@ export default function BinauralTuner() {
   const [showSuggestion, setShowSuggestion] = useState(true);
   const [view, setView] = useState<'presets' | 'layers' | 'genres'>('presets');
   const [tremolo, setTremolo] = useState(false);
-  const [tremoloSpeed, _setTremoloSpeed] = useState(0.15); // Hz — very slow wave
+  const [tremoloSpeed, setTremoloSpeed] = useState(0.15);
+  const [warmth, setWarmth] = useState(0); // 0-1, adds harmonics
+  const [filterFreq, setFilterFreq] = useState(2000); // lowpass filter on binaural
   const lfoRef = useRef<OscillatorNode | null>(null);
   const lfoGainRef = useRef<GainNode | null>(null);
+  const warmOscRef = useRef<OscillatorNode | null>(null);
+  const warmGainRef = useRef<GainNode | null>(null);
+  const binFilterRef = useRef<BiquadFilterNode | null>(null);
   const [savedMixes, setSavedMixes] = useState<
     {
       name: string;
@@ -461,7 +466,30 @@ export default function BinauralTuner() {
       oscR.connect(panR);
       panR.connect(binGain);
 
-      binGain.connect(gain);
+      // Filter on binaural signal
+      const binFilter = ctx.createBiquadFilter();
+      binFilter.type = 'lowpass';
+      binFilter.frequency.value = filterFreq;
+      binFilter.Q.value = 0.5;
+      binFilterRef.current = binFilter;
+
+      binGain.connect(binFilter);
+      binFilter.connect(gain);
+
+      // Warmth — adds a harmonic layer
+      if (warmth > 0.01) {
+        const warmOsc = ctx.createOscillator();
+        warmOsc.type = 'triangle';
+        warmOsc.frequency.value = baseFreq * 2;
+        const wg = ctx.createGain();
+        wg.gain.value = warmth * 0.15;
+        warmOsc.connect(wg);
+        wg.connect(binFilter);
+        warmOsc.start();
+        warmOscRef.current = warmOsc;
+        warmGainRef.current = wg;
+      }
+
       gain.connect(ctx.destination);
 
       oscL.start();
@@ -572,6 +600,17 @@ export default function BinauralTuner() {
       binGainRef.current.gain.linearRampToValueAtTime(binauralOn ? 1 : 0, now + 0.5);
     }
   }, [binauralOn]);
+
+  // Filter update
+  useEffect(() => {
+    if (binFilterRef.current) binFilterRef.current.frequency.value = filterFreq;
+  }, [filterFreq]);
+
+  // Warmth update
+  useEffect(() => {
+    if (warmGainRef.current) warmGainRef.current.gain.value = warmth * 0.15;
+    if (warmOscRef.current) warmOscRef.current.frequency.value = baseFreq * 2;
+  }, [warmth, baseFreq]);
 
   // Tremolo — slow wave effect on main gain
   useEffect(() => {
@@ -863,6 +902,49 @@ export default function BinauralTuner() {
               unit="%"
               color="#7A5438"
               onChange={(v) => setVolume(v / 100)}
+            />
+
+            {/* Effects on the binaural tone */}
+            <div className="pt-2">
+              <p
+                className="italic text-center mb-2"
+                style={{
+                  fontFamily: 'var(--font-serif)',
+                  fontSize: '12px',
+                  color: '#8A6A4A',
+                  opacity: 0.6,
+                }}
+              >
+                shape the tone
+              </p>
+            </div>
+
+            <SliderRow
+              label="filter"
+              value={filterFreq}
+              min={200}
+              max={5000}
+              unit="Hz"
+              color="#C4A060"
+              onChange={setFilterFreq}
+            />
+            <SliderRow
+              label="warmth"
+              value={Math.round(warmth * 100)}
+              min={0}
+              max={100}
+              unit="%"
+              color="#D4805A"
+              onChange={(v) => setWarmth(v / 100)}
+            />
+            <SliderRow
+              label="tremolo speed"
+              value={Math.round(tremoloSpeed * 100)}
+              min={5}
+              max={50}
+              unit=""
+              color="#6890B0"
+              onChange={(v) => setTremoloSpeed(v / 100)}
             />
           </div>
         </div>
