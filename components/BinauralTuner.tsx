@@ -322,9 +322,12 @@ function getSuggestion(
 export default function BinauralTuner() {
   const [playing, setPlaying] = useState(false);
   const [binauralOn, setBinauralOn] = useState(true);
+  const [baseToneOn, setBaseToneOn] = useState(true);
   const panLRef = useRef<StereoPannerNode | null>(null);
   const panRRef = useRef<StereoPannerNode | null>(null);
   const binGainRef = useRef<GainNode | null>(null);
+  const oscLGainRef = useRef<GainNode | null>(null);
+  const oscRGainRef = useRef<GainNode | null>(null);
   const [baseFreq, setBaseFreq] = useState(60);
   const [beatFreq, setBeatFreq] = useState(4);
   const [volume, setVolume] = useState(0.15);
@@ -335,7 +338,7 @@ export default function BinauralTuner() {
   const [tremolo, setTremolo] = useState(false);
   const [tremoloSpeed, setTremoloSpeed] = useState(0.15);
   const [warmth, setWarmth] = useState(0); // 0-1, adds harmonics
-  const [filterFreq, setFilterFreq] = useState(500); // lowpass — start muffled so sliding up opens it
+  const [filterFreq, setFilterFreq] = useState(3000); // lowpass — open enough to hear clearly by default
   const lfoRef = useRef<OscillatorNode | null>(null);
   const lfoGainRef = useRef<GainNode | null>(null);
   const warmOscRef = useRef<OscillatorNode | null>(null);
@@ -456,14 +459,24 @@ export default function BinauralTuner() {
       panLRef.current = panL;
       panRRef.current = panR;
 
-      // Binaural gain — can be muted independently
+      // Master gain for oscillators — always on, individual muting via oscL/oscR gains
       const binGain = ctx.createGain();
-      binGain.gain.value = binauralOn ? 1 : 0;
+      binGain.gain.value = 1;
       binGainRef.current = binGain;
 
-      oscL.connect(panL);
+      // Individual gain for base tone and beat tone
+      const oscLGain = ctx.createGain();
+      oscLGain.gain.value = baseToneOn ? 1 : 0;
+      oscLGainRef.current = oscLGain;
+      const oscRGain = ctx.createGain();
+      oscRGain.gain.value = binauralOn ? 1 : 0;
+      oscRGainRef.current = oscRGain;
+
+      oscL.connect(oscLGain);
+      oscLGain.connect(panL);
       panL.connect(binGain);
-      oscR.connect(panR);
+      oscR.connect(oscRGain);
+      oscRGain.connect(panR);
       panR.connect(binGain);
 
       // Filter on binaural signal
@@ -592,24 +605,68 @@ export default function BinauralTuner() {
     if (gainRef.current) gainRef.current.gain.value = volume;
   }, [volume]);
 
+  // Binaural beat (right osc) toggle
   useEffect(() => {
-    if (binGainRef.current && ctxRef.current) {
+    if (oscRGainRef.current && ctxRef.current) {
       const now = ctxRef.current.currentTime;
-      binGainRef.current.gain.cancelScheduledValues(now);
-      binGainRef.current.gain.setValueAtTime(binGainRef.current.gain.value, now);
-      binGainRef.current.gain.linearRampToValueAtTime(binauralOn ? 1 : 0, now + 0.5);
+      oscRGainRef.current.gain.cancelScheduledValues(now);
+      oscRGainRef.current.gain.setValueAtTime(oscRGainRef.current.gain.value, now);
+      oscRGainRef.current.gain.linearRampToValueAtTime(binauralOn ? 1 : 0, now + 0.5);
     }
   }, [binauralOn]);
+
+  // Base tone (left osc) toggle
+  useEffect(() => {
+    if (oscLGainRef.current && ctxRef.current) {
+      const now = ctxRef.current.currentTime;
+      oscLGainRef.current.gain.cancelScheduledValues(now);
+      oscLGainRef.current.gain.setValueAtTime(oscLGainRef.current.gain.value, now);
+      oscLGainRef.current.gain.linearRampToValueAtTime(baseToneOn ? 1 : 0, now + 0.5);
+    }
+  }, [baseToneOn]);
 
   // Filter update
   useEffect(() => {
     if (binFilterRef.current) binFilterRef.current.frequency.value = filterFreq;
   }, [filterFreq]);
 
-  // Warmth update
+  // Warmth — create/destroy harmonic oscillator dynamically
   useEffect(() => {
-    if (warmGainRef.current) warmGainRef.current.gain.value = warmth * 0.15;
-    if (warmOscRef.current) warmOscRef.current.frequency.value = baseFreq * 2;
+    const ctx = ctxRef.current;
+    const binFilter = binFilterRef.current;
+    if (!ctx || !binFilter) return;
+
+    if (warmth > 0.01) {
+      if (warmOscRef.current) {
+        // Update existing
+        warmGainRef.current!.gain.value = warmth * 0.15;
+        warmOscRef.current.frequency.value = baseFreq * 2;
+      } else {
+        // Create new
+        const warmOsc = ctx.createOscillator();
+        warmOsc.type = 'triangle';
+        warmOsc.frequency.value = baseFreq * 2;
+        const wg = ctx.createGain();
+        wg.gain.value = warmth * 0.15;
+        warmOsc.connect(wg);
+        wg.connect(binFilter);
+        warmOsc.start();
+        warmOscRef.current = warmOsc;
+        warmGainRef.current = wg;
+      }
+    } else {
+      // Destroy if exists
+      if (warmOscRef.current) {
+        try {
+          warmOscRef.current.stop();
+        } catch {}
+        warmOscRef.current = null;
+      }
+      if (warmGainRef.current) {
+        warmGainRef.current.disconnect();
+        warmGainRef.current = null;
+      }
+    }
   }, [warmth, baseFreq]);
 
   // Tremolo — slow wave effect on main gain
@@ -657,14 +714,32 @@ export default function BinauralTuner() {
     };
   }, []);
 
-  // Wave visualization
+  // Wave visualization — tremolo modulates amplitude when active
   const W = 320;
   const H = 100;
   const cy = H / 2;
   const wavelength = Math.max(20, 80 - beatFreq * 1.5);
-  const amplitude = 15 + volume * 30;
+  const baseAmplitude = 15 + volume * 30;
+  const [waveTime, setWaveTime] = useState(0);
+  useEffect(() => {
+    if (!tremolo || !playing) return;
+    let raf: number;
+    const start = performance.now();
+    function animate() {
+      setWaveTime((performance.now() - start) / 1000);
+      raf = requestAnimationFrame(animate);
+    }
+    raf = requestAnimationFrame(animate);
+    return () => cancelAnimationFrame(raf);
+  }, [tremolo, playing]);
+
   const points: string[] = [];
   for (let x = 0; x <= W; x += 2) {
+    const tremoloMod =
+      tremolo && playing
+        ? 1 - 0.35 * Math.sin(waveTime * tremoloSpeed * Math.PI * 2 + (x / W) * 0.5)
+        : 1;
+    const amplitude = baseAmplitude * tremoloMod;
     const y = cy + Math.sin((x / wavelength) * Math.PI * 2) * amplitude;
     points.push(`${x},${y.toFixed(1)}`);
   }
@@ -687,7 +762,7 @@ export default function BinauralTuner() {
             color: '#5C3018',
           }}
         >
-          Tuner
+          Calming Sounds
         </p>
         <p
           className="italic"
@@ -778,6 +853,19 @@ export default function BinauralTuner() {
         {/* Binaural on/off */}
         <button
           type="button"
+          onClick={() => setBaseToneOn((s) => !s)}
+          className="cursor-pointer rounded-full px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wider transition-all"
+          style={{
+            color: baseToneOn ? '#7A5438' : '#8A6A4A',
+            background: baseToneOn ? '#7A543815' : 'transparent',
+            border: `1px solid ${baseToneOn ? '#7A543840' : '#C4A06018'}`,
+            opacity: baseToneOn ? 1 : 0.4,
+          }}
+        >
+          base {baseToneOn ? 'on' : 'off'}
+        </button>
+        <button
+          type="button"
           onClick={() => setBinauralOn((s) => !s)}
           className="cursor-pointer rounded-full px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wider transition-all"
           style={{
@@ -787,7 +875,7 @@ export default function BinauralTuner() {
             opacity: binauralOn ? 1 : 0.4,
           }}
         >
-          binaural {binauralOn ? 'on' : 'off'}
+          beat {binauralOn ? 'on' : 'off'}
         </button>
         <button
           type="button"
@@ -904,10 +992,10 @@ export default function BinauralTuner() {
               onChange={(v) => setVolume(v / 100)}
             />
 
-            {/* Effects on the binaural tone */}
+            {/* Effects — rotary knobs */}
             <div className="pt-2">
               <p
-                className="italic text-center mb-2"
+                className="italic text-center mb-3"
                 style={{
                   fontFamily: 'var(--font-serif)',
                   fontSize: '12px',
@@ -919,33 +1007,21 @@ export default function BinauralTuner() {
               </p>
             </div>
 
-            <SliderRow
-              label="filter"
-              value={filterFreq}
-              min={200}
-              max={5000}
-              unit="Hz"
-              color="#C4A060"
-              onChange={setFilterFreq}
-            />
-            <SliderRow
-              label="warmth"
-              value={Math.round(warmth * 100)}
-              min={0}
-              max={100}
-              unit="%"
-              color="#D4805A"
-              onChange={(v) => setWarmth(v / 100)}
-            />
-            <SliderRow
-              label="tremolo speed"
-              value={Math.round(tremoloSpeed * 100)}
-              min={5}
-              max={50}
-              unit=""
-              color="#6890B0"
-              onChange={(v) => setTremoloSpeed(v / 100)}
-            />
+            <div className="flex justify-center gap-6">
+              <RotaryKnob
+                label="filter"
+                value={(filterFreq - 200) / 4800}
+                color="#C4A060"
+                onChange={(v) => setFilterFreq(Math.round(200 + v * 4800))}
+              />
+              <RotaryKnob label="warmth" value={warmth} color="#D4805A" onChange={setWarmth} />
+              <RotaryKnob
+                label="tremolo"
+                value={(tremoloSpeed - 0.05) / 0.45}
+                color="#6890B0"
+                onChange={(v) => setTremoloSpeed(0.05 + v * 0.45)}
+              />
+            </div>
           </div>
         </div>
       )}
@@ -1216,6 +1292,113 @@ export default function BinauralTuner() {
           </div>
         )}
       </div>
+    </div>
+  );
+}
+
+function RotaryKnob({
+  label,
+  value,
+  color,
+  onChange,
+}: {
+  label: string;
+  value: number; // 0-1
+  color: string;
+  onChange: (v: number) => void;
+}) {
+  const size = 56;
+  const cx = size / 2;
+  const cy = size / 2;
+  const r = 22;
+  const stroke = 4;
+  // Arc from 135deg to 405deg (270deg sweep)
+  const startAngle = 135;
+  const endAngle = 405;
+  const sweep = endAngle - startAngle;
+  const currentAngle = startAngle + value * sweep;
+
+  function polarToCart(angle: number, radius: number) {
+    const rad = (angle * Math.PI) / 180;
+    return { x: cx + radius * Math.cos(rad), y: cy + radius * Math.sin(rad) };
+  }
+
+  const arcStart = polarToCart(startAngle, r);
+  const arcEnd = polarToCart(currentAngle, r);
+  const largeArc = currentAngle - startAngle > 180 ? 1 : 0;
+
+  const bgArcEnd = polarToCart(endAngle, r);
+  const bgLargeArc = 1;
+
+  // Indicator dot
+  const dot = polarToCart(currentAngle, r);
+
+  function handleClick(e: React.MouseEvent<SVGSVGElement>) {
+    const rect = e.currentTarget.getBoundingClientRect();
+    const mx = e.clientX - rect.left - cx;
+    const my = e.clientY - rect.top - cy;
+    let angle = (Math.atan2(my, mx) * 180) / Math.PI;
+    if (angle < 0) angle += 360;
+    // Map angle to value (135-405 range, wrapping at 360)
+    let normalized = angle - startAngle;
+    if (normalized < -45) normalized += 360;
+    const clamped = Math.max(0, Math.min(sweep, normalized));
+    onChange(clamped / sweep);
+  }
+
+  return (
+    <div className="flex flex-col items-center gap-1">
+      <svg width={size} height={size} className="cursor-pointer" onClick={handleClick}>
+        {/* Background arc */}
+        <path
+          d={`M ${arcStart.x} ${arcStart.y} A ${r} ${r} 0 ${bgLargeArc} 1 ${bgArcEnd.x} ${bgArcEnd.y}`}
+          fill="none"
+          stroke={color}
+          strokeWidth={stroke}
+          opacity={0.12}
+          strokeLinecap="round"
+        />
+        {/* Value arc */}
+        {value > 0.01 && (
+          <path
+            d={`M ${arcStart.x} ${arcStart.y} A ${r} ${r} 0 ${largeArc} 1 ${arcEnd.x} ${arcEnd.y}`}
+            fill="none"
+            stroke={color}
+            strokeWidth={stroke}
+            opacity={0.7}
+            strokeLinecap="round"
+          />
+        )}
+        {/* Dot indicator */}
+        <circle cx={dot.x} cy={dot.y} r={3.5} fill={color} opacity={0.9} />
+        {/* Center value */}
+        <text
+          x={cx}
+          y={cy + 1}
+          textAnchor="middle"
+          dominantBaseline="middle"
+          style={{
+            fontFamily: 'var(--font-serif)',
+            fontSize: '11px',
+            fontWeight: 700,
+            fill: color,
+            opacity: 0.7,
+          }}
+        >
+          {Math.round(value * 100)}
+        </text>
+      </svg>
+      <span
+        style={{
+          fontFamily: 'var(--font-serif)',
+          fontSize: '10px',
+          color,
+          opacity: 0.5,
+          fontWeight: 600,
+        }}
+      >
+        {label}
+      </span>
     </div>
   );
 }

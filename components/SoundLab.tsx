@@ -19,7 +19,7 @@ export default function SoundLab() {
       {/* Mode toggle */}
       <div className="flex justify-center gap-2">
         {[
-          { id: 'tuner' as const, label: 'Tuner' },
+          { id: 'tuner' as const, label: 'Calming Sounds' },
           { id: 'maker' as const, label: 'Magic Maker' },
           { id: 'looper' as const, label: 'Lo-fi Looper' },
         ].map((m) => (

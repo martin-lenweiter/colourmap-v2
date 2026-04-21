@@ -16,7 +16,7 @@ const TABS: { id: Tab; label: string }[] = [
   { id: 'checkin', label: 'Check in' },
   { id: 'overview', label: 'Overview' },
   { id: 'mastery', label: 'Mastery' },
-  { id: 'tuner', label: 'Tuner' },
+  { id: 'tuner', label: 'Sounds' },
 ];
 
 const TAB_KEY = 'colourmap:day-tab';

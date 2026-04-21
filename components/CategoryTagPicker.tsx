@@ -30,7 +30,7 @@ export interface CompassAxis {
 }
 
 const COMPASSES = [
-  { id: 'caring', label: 'Caring', color: '#D4805A' },
+  { id: 'caring', label: 'Feeling', color: '#D4805A' },
   { id: 'doing', label: 'Doing', color: '#6890B0' },
   { id: 'sharing', label: 'Sharing', color: '#6B7F4E' },
 ];

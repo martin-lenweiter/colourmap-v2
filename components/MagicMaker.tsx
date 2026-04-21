@@ -6,6 +6,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
    MAGIC MAKER — visual sound instrument.
    Tap colored cells to play notes. Every note is in tune.
    Cruise control = auto-play meditation mode.
+   Loop studio = record layers over a fixed-length loop.
    ═══════════════════════════════════════════════════════════ */
 
 // ── Musical scales (intervals from root in semitones) ──
@@ -260,36 +261,56 @@ type CruisePattern = 'breathing' | 'rain' | 'ascending' | 'random' | 'phrase' | 
 // ── Musical phrases per scale — pre-composed note index sequences ──
 const PHRASES: Record<string, number[][]> = {
   pentatonic: [
-    [0, 2, 4, 2, 0, 4, 2, 0], // gentle ascend-descend
-    [4, 3, 2, 0, 2, 3, 4, 4], // high to low and back
-    [0, 0, 2, 4, 4, 2, 0, 2], // rhythmic pulse
+    [0, 2, 4, 2, 0, 4, 2, 0],
+    [4, 3, 2, 0, 2, 3, 4, 4],
+    [0, 0, 2, 4, 4, 2, 0, 2],
   ],
   blues: [
-    [0, 2, 3, 4, 3, 2, 0, 5], // classic blues walk
-    [5, 4, 3, 2, 0, 2, 3, 0], // descending lick
-    [0, 3, 5, 3, 0, 2, 4, 2], // swing feel
+    [0, 2, 3, 4, 3, 2, 0, 5],
+    [5, 4, 3, 2, 0, 2, 3, 0],
+    [0, 3, 5, 3, 0, 2, 4, 2],
   ],
   japanese: [
-    [0, 1, 2, 4, 2, 1, 0, 4], // sakura feel
-    [4, 2, 1, 0, 1, 2, 4, 2], // koto descend
-    [0, 4, 2, 0, 1, 4, 2, 1], // zen garden
+    [0, 1, 2, 4, 2, 1, 0, 4],
+    [4, 2, 1, 0, 1, 2, 4, 2],
+    [0, 4, 2, 0, 1, 4, 2, 1],
   ],
   arabic: [
-    [0, 1, 3, 4, 6, 4, 3, 1], // maqam ascend-descend
-    [6, 4, 3, 1, 0, 1, 3, 4], // desert wind
-    [0, 3, 6, 3, 0, 1, 4, 1], // ornamental
+    [0, 1, 3, 4, 6, 4, 3, 1],
+    [6, 4, 3, 1, 0, 1, 3, 4],
+    [0, 3, 6, 3, 0, 1, 4, 1],
   ],
   minor: [
-    [0, 2, 3, 4, 6, 4, 3, 2], // natural minor walk
-    [6, 4, 3, 2, 0, 2, 3, 4], // melancholic descend
-    [0, 3, 4, 6, 4, 2, 0, 3], // emotional arc
+    [0, 2, 3, 4, 6, 4, 3, 2],
+    [6, 4, 3, 2, 0, 2, 3, 4],
+    [0, 3, 4, 6, 4, 2, 0, 3],
   ],
   major: [
-    [0, 2, 4, 5, 4, 2, 0, 6], // happy walk up
-    [6, 5, 4, 2, 0, 2, 4, 5], // bright descend
-    [0, 4, 2, 5, 4, 0, 2, 6], // playful skip
+    [0, 2, 4, 5, 4, 2, 0, 6],
+    [6, 5, 4, 2, 0, 2, 4, 5],
+    [0, 4, 2, 5, 4, 0, 2, 6],
   ],
 };
+
+// ── Loop layer type ──
+interface LoopNote {
+  idx: number;
+  time: number; // ms offset within the loop duration
+}
+
+interface LoopLayer {
+  id: number;
+  notes: LoopNote[];
+  color: string;
+  muted: boolean;
+}
+
+const LOOP_DURATIONS = [
+  { label: '2s', ms: 2000 },
+  { label: '4s', ms: 4000 },
+  { label: '8s', ms: 8000 },
+  { label: '16s', ms: 16000 },
+];
 
 // Generate note frequencies for a scale
 function buildNotes(root: string, scaleId: string, octaves: number): number[] {
@@ -305,6 +326,9 @@ function buildNotes(root: string, scaleId: string, octaves: number): number[] {
   return notes;
 }
 
+// Layer colors for loop layers
+const LAYER_COLORS = ['#C4A060', '#6890B0', '#D4805A', '#7AAA58', '#9B6BA0', '#88B0C8'];
+
 export default function MagicMaker() {
   const [root, setRoot] = useState('C');
   const [scaleId, setScaleId] = useState('pentatonic');
@@ -315,28 +339,39 @@ export default function MagicMaker() {
   const [cruisePattern, setCruisePattern] = useState<CruisePattern>('breathing');
   const [activeNotes, setActiveNotes] = useState<Set<number>>(new Set());
   const [volume, setVolume] = useState(0.3);
-  const [cruiseSpeed, setCruiseSpeed] = useState(0.25); // slower default
+  const [cruiseSpeed, setCruiseSpeed] = useState(0.25);
   const [cellShape, setCellShape] = useState<'square' | 'circle'>('square');
-  const [showAdvanced, setShowAdvanced] = useState(false);
   const [showInstruments, setShowInstruments] = useState(false);
-  const [recording, setRecording] = useState(false);
-  const [loopData, setLoopData] = useState<{ idx: number; time: number }[]>([]);
   const [phraseIdx, setPhraseIdx] = useState(0);
-  const recordStartRef = useRef(0);
-  const loopRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [filterCutoff, setFilterCutoff] = useState(2000);
   const [reverbMix, setReverbMix] = useState(0.5);
   const [detune, setDetune] = useState(5);
   const reverbRef = useRef<ConvolverNode | null>(null);
+
+  // ── Loop state ──
+  const [loopLayers, setLoopLayers] = useState<LoopLayer[]>([]);
+  const [recording, setRecording] = useState(false);
+  const [loopPlaying, setLoopPlaying] = useState(false);
+  const [loopDurationIdx, setLoopDurationIdx] = useState(1); // default 4s
+  const [loopProgress, setLoopProgress] = useState(0); // 0-1 for timeline
+  const [loopScaleId, setLoopScaleId] = useState('pentatonic');
+  const recordStartRef = useRef(0);
+  const currentLayerNotesRef = useRef<LoopNote[]>([]);
+  const loopTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const loopStartRef = useRef(0);
+  const loopAnimRef = useRef<number | null>(null);
+  const nextLayerIdRef = useRef(1);
 
   const ctxRef = useRef<AudioContext | null>(null);
   const cruiseRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const cruiseIdxRef = useRef(0);
 
   const notes = buildNotes(root, scaleId, octaves);
+  const loopNotes = buildNotes(root, loopScaleId, octaves);
   const instrument = INSTRUMENTS.find((i) => i.id === instrumentId) || INSTRUMENTS[0];
   const palette = PALETTES[paletteId] || PALETTES.warm;
   const cols = Math.min(notes.length, Math.ceil(Math.sqrt(notes.length)));
+  const loopDuration = LOOP_DURATIONS[loopDurationIdx].ms;
 
   function getCtx() {
     if (!ctxRef.current) {
@@ -497,10 +532,11 @@ export default function MagicMaker() {
       osc2.start(now);
       osc2.stop(now + dur + 0.1);
 
-      // Record tap for loop
+      // Record tap for loop layer
       if (recording) {
         const elapsed = Date.now() - recordStartRef.current;
-        setLoopData((prev) => [...prev, { idx, time: elapsed }]);
+        const wrapped = elapsed % loopDuration;
+        currentLayerNotesRef.current.push({ idx, time: wrapped });
       }
 
       // Visual feedback
@@ -516,8 +552,108 @@ export default function MagicMaker() {
         (instrument.attack + instrument.decay) * 1000 + 200,
       );
     },
-    [instrument, volume, filterCutoff, reverbMix, detune],
+    [instrument, volume, filterCutoff, reverbMix, detune, recording, loopDuration],
   );
+
+  // ── Loop playback engine ──
+  const playLoopOnce = useCallback(() => {
+    if (loopLayers.length === 0) return;
+    const allNotes: { idx: number; time: number }[] = [];
+    for (const layer of loopLayers) {
+      if (layer.muted) continue;
+      for (const note of layer.notes) {
+        allNotes.push(note);
+      }
+    }
+    allNotes.sort((a, b) => a.time - b.time);
+
+    loopStartRef.current = Date.now();
+
+    // Schedule all notes
+    for (const note of allNotes) {
+      const noteIdx = note.idx % loopNotes.length;
+      if (noteIdx >= 0 && noteIdx < loopNotes.length) {
+        setTimeout(() => {
+          if (!loopPlaying) return;
+          playNote(loopNotes[noteIdx], noteIdx);
+        }, note.time);
+      }
+    }
+
+    // Schedule next loop iteration
+    loopTimerRef.current = setTimeout(() => {
+      if (loopPlaying) playLoopOnce();
+    }, loopDuration);
+  }, [loopLayers, loopNotes, loopDuration, loopPlaying, playNote]);
+
+  // Start/stop loop playback
+  const layerCount = loopLayers.length;
+  useEffect(() => {
+    if (loopPlaying && layerCount > 0) {
+      playLoopOnce();
+    }
+    if (!loopPlaying) {
+      if (loopTimerRef.current) clearTimeout(loopTimerRef.current);
+    }
+    return () => {
+      if (loopTimerRef.current) clearTimeout(loopTimerRef.current);
+    };
+  }, [loopPlaying, playLoopOnce, layerCount]);
+
+  // Animate loop progress
+  useEffect(() => {
+    if (!loopPlaying && !recording) {
+      setLoopProgress(0);
+      if (loopAnimRef.current) cancelAnimationFrame(loopAnimRef.current);
+      return;
+    }
+    function tick() {
+      const elapsed = (Date.now() - loopStartRef.current) % loopDuration;
+      setLoopProgress(elapsed / loopDuration);
+      loopAnimRef.current = requestAnimationFrame(tick);
+    }
+    loopAnimRef.current = requestAnimationFrame(tick);
+    return () => {
+      if (loopAnimRef.current) cancelAnimationFrame(loopAnimRef.current);
+    };
+  }, [loopPlaying, recording, loopDuration]);
+
+  // Start recording a new layer
+  function startRecording() {
+    currentLayerNotesRef.current = [];
+    recordStartRef.current = Date.now();
+    loopStartRef.current = Date.now();
+    setRecording(true);
+
+    // Auto-stop after one loop duration
+    setTimeout(() => {
+      finishRecording();
+    }, loopDuration);
+  }
+
+  function finishRecording() {
+    setRecording(false);
+    const notes = [...currentLayerNotesRef.current];
+    if (notes.length === 0) return;
+    const layerId = nextLayerIdRef.current++;
+    const color = LAYER_COLORS[loopLayers.length % LAYER_COLORS.length];
+    setLoopLayers((prev) => [...prev, { id: layerId, notes, color, muted: false }]);
+    currentLayerNotesRef.current = [];
+  }
+
+  function toggleLayerMute(id: number) {
+    setLoopLayers((prev) => prev.map((l) => (l.id === id ? { ...l, muted: !l.muted } : l)));
+  }
+
+  function removeLayer(id: number) {
+    setLoopLayers((prev) => prev.filter((l) => l.id !== id));
+  }
+
+  function clearAllLayers() {
+    setLoopLayers([]);
+    setLoopPlaying(false);
+    if (loopTimerRef.current) clearTimeout(loopTimerRef.current);
+  }
 
   // Cruise control
   const cruiseStep = useCallback(() => {
@@ -525,17 +661,11 @@ export default function MagicMaker() {
 
     let idx: number;
     if (cruisePattern === 'phrase') {
-      // Musical phrase from the scale
       const phrases = PHRASES[scaleId] || PHRASES.pentatonic;
       const phrase = phrases[phraseIdx % phrases.length];
       const noteInPhrase = cruiseIdxRef.current % phrase.length;
       const scaleIdx = phrase[noteInPhrase] % notes.length;
       idx = scaleIdx;
-      cruiseIdxRef.current++;
-    } else if (cruisePattern === 'loop' && loopData.length > 0) {
-      // Replay recorded loop
-      const loopNote = loopData[cruiseIdxRef.current % loopData.length];
-      idx = loopNote.idx % notes.length;
       cruiseIdxRef.current++;
     } else if (cruisePattern === 'ascending') {
       idx = cruiseIdxRef.current % notes.length;
@@ -553,30 +683,24 @@ export default function MagicMaker() {
 
     playNote(notes[idx], idx);
 
-    const speedMult = 2.0 - cruiseSpeed * 1.5; // 0.5=moderate, 2.0=very slow
+    // Speed: 0.1 = ultra slow (6x), 0.5 = moderate (2x), 1.0 = fast (0.5x)
+    const speedMult =
+      cruiseSpeed < 0.3
+        ? 6.0 - cruiseSpeed * 13.3 // 0.1→4.7x, 0.3→2.0x — ultra slow range
+        : 2.0 - cruiseSpeed * 1.5; // 0.3→1.55x, 1.0→0.5x — normal range
     const interval =
       (cruisePattern === 'phrase'
         ? 500 + Math.random() * 300
-        : cruisePattern === 'loop' && loopData.length > 0
-          ? (() => {
-              const cur = cruiseIdxRef.current - 1;
-              const next = cur + 1;
-              if (next >= loopData.length) return loopData[0].time + 200;
-              return Math.max(
-                100,
-                loopData[next % loopData.length].time - loopData[cur % loopData.length].time,
-              );
-            })()
-          : cruisePattern === 'breathing'
-            ? 800 + Math.random() * 600
-            : cruisePattern === 'rain'
-              ? 500 + Math.random() * 1200
-              : cruisePattern === 'ascending'
-                ? 600 + Math.random() * 300
-                : 400 + Math.random() * 800) * speedMult;
+        : cruisePattern === 'breathing'
+          ? 800 + Math.random() * 600
+          : cruisePattern === 'rain'
+            ? 500 + Math.random() * 1200
+            : cruisePattern === 'ascending'
+              ? 600 + Math.random() * 300
+              : 400 + Math.random() * 800) * speedMult;
 
     cruiseRef.current = setTimeout(cruiseStep, interval);
-  }, [cruising, cruisePattern, notes, playNote, cruiseSpeed, scaleId, phraseIdx, loopData]);
+  }, [cruising, cruisePattern, notes, playNote, cruiseSpeed, scaleId, phraseIdx]);
 
   useEffect(() => {
     if (cruising) {
@@ -640,7 +764,6 @@ export default function MagicMaker() {
             const color = palette[idx % palette.length];
             const scale = SCALES[scaleId] || SCALES.pentatonic;
             const noteInScale = idx % scale.intervals.length;
-            const _octave = Math.floor(idx / scale.intervals.length);
             const noteNames = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
             const semitone = (ROOTS.indexOf(root) * 2 + scale.intervals[noteInScale]) % 12;
             const noteName = noteNames[semitone >= 0 ? semitone : 0];
@@ -775,6 +898,41 @@ export default function MagicMaker() {
         </div>
       </div>
 
+      {/* ── CRUISE SPEED — below synth controls ── */}
+      <div className="px-2">
+        <div className="space-y-1">
+          <p
+            style={{
+              fontFamily: 'var(--font-serif)',
+              fontSize: '10px',
+              color: '#7A5438',
+              opacity: 0.5,
+            }}
+          >
+            cruise speed
+          </p>
+          <div
+            className="flex gap-[2px] cursor-pointer"
+            onClick={(e) => {
+              const r = (e.currentTarget as HTMLElement).getBoundingClientRect();
+              setCruiseSpeed(Math.max(0.1, Math.min(1, (e.clientX - r.left) / r.width)));
+            }}
+          >
+            {Array.from({ length: 8 }, (_, i) => (
+              <div
+                key={i}
+                className="flex-1 rounded-[3px] transition-all"
+                style={{
+                  height: 12,
+                  background: instrument.color,
+                  opacity: i / 7 <= cruiseSpeed ? 0.3 + (i / 7) * 0.5 : 0.08,
+                }}
+              />
+            ))}
+          </div>
+        </div>
+      </div>
+
       {/* ── CRUISE CONTROL ── */}
       <div className="flex items-center justify-center gap-3">
         <button
@@ -823,7 +981,7 @@ export default function MagicMaker() {
         </button>
         {/* Pattern selector */}
         <div className="flex flex-wrap gap-1">
-          {(['breathing', 'rain', 'ascending', 'random', 'phrase', 'loop'] as const).map((p) => (
+          {(['breathing', 'rain', 'ascending', 'random', 'phrase'] as const).map((p) => (
             <button
               key={p}
               type="button"
@@ -836,60 +994,381 @@ export default function MagicMaker() {
                 color: cruisePattern === p ? instrument.color : '#8A6A4A',
                 background: cruisePattern === p ? `${instrument.color}12` : 'transparent',
                 border: `1px solid ${cruisePattern === p ? `${instrument.color}30` : '#C4A06012'}`,
-                opacity:
-                  cruisePattern === p ? 1 : p === 'loop' && loopData.length === 0 ? 0.2 : 0.4,
+                opacity: cruisePattern === p ? 1 : 0.4,
               }}
-              disabled={p === 'loop' && loopData.length === 0}
             >
               {p}
             </button>
           ))}
         </div>
       </div>
-      {/* Record loop */}
-      <div className="flex justify-center">
-        <button
-          type="button"
-          onClick={() => {
-            if (recording) {
-              setRecording(false);
-            } else {
-              setLoopData([]);
-              recordStartRef.current = Date.now();
-              setRecording(true);
-            }
-          }}
-          className="flex cursor-pointer items-center gap-2 rounded-full px-3 py-1.5 transition-all"
-          style={{
-            background: recording ? '#D0604015' : '#C4A06008',
-            border: `1px solid ${recording ? '#D0604040' : '#C4A06018'}`,
-          }}
-        >
-          <span
-            className="block rounded-full"
-            style={{
-              width: 8,
-              height: 8,
-              background: recording ? '#D06040' : '#8A6A4A',
-              opacity: recording ? 1 : 0.4,
-            }}
-          />
-          <span
+
+      {/* ══════════════════════════════════════════════
+          LOOP STUDIO — record layers over a base loop
+          ══════════════════════════════════════════════ */}
+      <div
+        className="mx-2 rounded-2xl px-4 py-4 space-y-4"
+        style={{
+          background: '#5C301806',
+          border: '1px solid #5C301812',
+        }}
+      >
+        <div className="flex items-center justify-between">
+          <p
             style={{
               fontFamily: 'var(--font-serif)',
-              fontSize: '12px',
-              fontWeight: 600,
-              color: recording ? '#D06040' : '#8A6A4A',
-              opacity: recording ? 1 : 0.6,
+              fontSize: '14px',
+              fontWeight: 700,
+              fontStyle: 'italic',
+              color: '#5C3018',
+              opacity: 0.8,
             }}
           >
-            {recording
-              ? `recording · ${loopData.length} notes`
-              : loopData.length > 0
-                ? `loop · ${loopData.length} notes`
-                : 'record loop'}
-          </span>
-        </button>
+            loop studio
+          </p>
+          {loopLayers.length > 0 && (
+            <button
+              type="button"
+              onClick={clearAllLayers}
+              className="cursor-pointer text-[10px] font-semibold uppercase tracking-wider transition-all"
+              style={{
+                color: '#8A6A4A',
+                opacity: 0.4,
+                background: 'none',
+                border: 'none',
+              }}
+            >
+              clear all
+            </button>
+          )}
+        </div>
+
+        {/* Duration + Scale selector */}
+        <div className="flex gap-4">
+          <div className="space-y-1">
+            <p
+              style={{
+                fontFamily: 'var(--font-serif)',
+                fontSize: '10px',
+                color: '#7A5438',
+                opacity: 0.5,
+              }}
+            >
+              duration
+            </p>
+            <div className="flex gap-1">
+              {LOOP_DURATIONS.map((d, i) => (
+                <button
+                  key={d.label}
+                  type="button"
+                  onClick={() => {
+                    if (loopLayers.length === 0) setLoopDurationIdx(i);
+                  }}
+                  className="cursor-pointer rounded-lg px-2 py-1 text-[11px] font-semibold transition-all"
+                  style={{
+                    color: loopDurationIdx === i ? '#5C3018' : '#8A6A4A',
+                    background: loopDurationIdx === i ? '#C4A06015' : 'transparent',
+                    border: `1px solid ${loopDurationIdx === i ? '#C4A06035' : '#C4A06010'}`,
+                    opacity: loopDurationIdx === i ? 1 : loopLayers.length > 0 ? 0.2 : 0.4,
+                    fontFamily: 'var(--font-serif)',
+                  }}
+                  disabled={loopLayers.length > 0}
+                >
+                  {d.label}
+                </button>
+              ))}
+            </div>
+          </div>
+          <div className="space-y-1">
+            <p
+              style={{
+                fontFamily: 'var(--font-serif)',
+                fontSize: '10px',
+                color: '#7A5438',
+                opacity: 0.5,
+              }}
+            >
+              loop scale
+            </p>
+            <div className="flex flex-wrap gap-1">
+              {Object.entries(SCALES).map(([id, s]) => (
+                <button
+                  key={id}
+                  type="button"
+                  onClick={() => setLoopScaleId(id)}
+                  className="cursor-pointer rounded-full px-1.5 py-0.5 text-[9px] font-semibold transition-all"
+                  style={{
+                    color: loopScaleId === id ? '#5C3018' : '#8A6A4A',
+                    background: loopScaleId === id ? '#5C301810' : 'transparent',
+                    border: `1px solid ${loopScaleId === id ? '#5C301830' : '#C4A06008'}`,
+                    opacity: loopScaleId === id ? 1 : 0.4,
+                    fontFamily: 'var(--font-serif)',
+                  }}
+                >
+                  {s.name}
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* Visual timeline */}
+        <div className="space-y-2">
+          <div
+            className="relative rounded-xl overflow-hidden"
+            style={{
+              height: Math.max(32, loopLayers.length * 14 + 18),
+              background: '#5C301808',
+              border: '1px solid #5C301810',
+            }}
+          >
+            {/* Playhead */}
+            {(loopPlaying || recording) && (
+              <div
+                className="absolute top-0 bottom-0 transition-none"
+                style={{
+                  left: `${loopProgress * 100}%`,
+                  width: 2,
+                  background: recording ? '#D06040' : '#C4A060',
+                  opacity: 0.8,
+                  zIndex: 10,
+                }}
+              />
+            )}
+
+            {/* Layer note dots */}
+            {loopLayers.map((layer, layerIdx) => (
+              <div
+                key={layer.id}
+                className="absolute left-0 right-0"
+                style={{
+                  top: 8 + layerIdx * 14,
+                  height: 10,
+                  opacity: layer.muted ? 0.15 : 1,
+                }}
+              >
+                {layer.notes.map((note, ni) => {
+                  const x = (note.time / loopDuration) * 100;
+                  return (
+                    <div
+                      key={`${layer.id}-${ni}`}
+                      className="absolute rounded-full"
+                      style={{
+                        left: `${x}%`,
+                        top: 1,
+                        width: 8,
+                        height: 8,
+                        background: layer.color,
+                        opacity: 0.7,
+                        transform: 'translateX(-4px)',
+                      }}
+                    />
+                  );
+                })}
+              </div>
+            ))}
+
+            {/* Recording indicator dots */}
+            {recording && currentLayerNotesRef.current.length > 0 && (
+              <div
+                className="absolute left-0 right-0"
+                style={{
+                  top: 8 + loopLayers.length * 14,
+                  height: 10,
+                }}
+              >
+                {/* Live dots render on next re-render */}
+              </div>
+            )}
+
+            {/* Empty state */}
+            {loopLayers.length === 0 && !recording && (
+              <div className="flex items-center justify-center h-full">
+                <p
+                  className="italic"
+                  style={{
+                    fontFamily: 'var(--font-serif)',
+                    fontSize: '11px',
+                    color: '#8A6A4A',
+                    opacity: 0.3,
+                  }}
+                >
+                  tap record to lay down a loop
+                </p>
+              </div>
+            )}
+          </div>
+
+          {/* Time markers */}
+          <div className="flex justify-between px-1">
+            {Array.from({ length: 5 }, (_, i) => (
+              <span
+                key={i}
+                style={{
+                  fontFamily: 'var(--font-serif)',
+                  fontSize: '9px',
+                  color: '#8A6A4A',
+                  opacity: 0.3,
+                }}
+              >
+                {((loopDuration / 1000) * (i / 4)).toFixed(1)}s
+              </span>
+            ))}
+          </div>
+        </div>
+
+        {/* Transport controls */}
+        <div className="flex items-center justify-center gap-3">
+          {/* Record button */}
+          <button
+            type="button"
+            onClick={() => {
+              if (recording) {
+                finishRecording();
+              } else {
+                startRecording();
+              }
+            }}
+            className="flex cursor-pointer items-center gap-2 rounded-full px-4 py-2 transition-all"
+            style={{
+              background: recording ? '#D0604018' : '#D0604008',
+              border: `1px solid ${recording ? '#D0604050' : '#D0604020'}`,
+            }}
+          >
+            <span
+              className="block rounded-full"
+              style={{
+                width: 10,
+                height: 10,
+                background: '#D06040',
+                opacity: recording ? 1 : 0.5,
+                boxShadow: recording ? '0 0 8px #D0604060' : 'none',
+              }}
+            />
+            <span
+              style={{
+                fontFamily: 'var(--font-serif)',
+                fontSize: '12px',
+                fontWeight: 600,
+                color: recording ? '#D06040' : '#7A5438',
+              }}
+            >
+              {recording ? 'recording...' : 'record layer'}
+            </span>
+          </button>
+
+          {/* Play/Stop loop */}
+          {loopLayers.length > 0 && (
+            <button
+              type="button"
+              onClick={() => setLoopPlaying((s) => !s)}
+              className="flex cursor-pointer items-center gap-2 rounded-full px-4 py-2 transition-all"
+              style={{
+                background: loopPlaying ? '#C4A06015' : '#C4A06008',
+                border: `1px solid ${loopPlaying ? '#C4A06040' : '#C4A06020'}`,
+              }}
+            >
+              {loopPlaying ? (
+                <div className="flex gap-1">
+                  <span
+                    className="block rounded-sm"
+                    style={{ width: 3, height: 12, background: '#C4A060' }}
+                  />
+                  <span
+                    className="block rounded-sm"
+                    style={{ width: 3, height: 12, background: '#C4A060' }}
+                  />
+                </div>
+              ) : (
+                <span
+                  className="block"
+                  style={{
+                    width: 0,
+                    height: 0,
+                    borderLeft: '10px solid #C4A060',
+                    borderTop: '6px solid transparent',
+                    borderBottom: '6px solid transparent',
+                    marginLeft: 1,
+                  }}
+                />
+              )}
+              <span
+                style={{
+                  fontFamily: 'var(--font-serif)',
+                  fontSize: '12px',
+                  fontWeight: 600,
+                  color: loopPlaying ? '#C4A060' : '#7A5438',
+                }}
+              >
+                {loopPlaying ? 'stop' : 'play loop'}
+              </span>
+            </button>
+          )}
+        </div>
+
+        {/* Layer list */}
+        {loopLayers.length > 0 && (
+          <div className="space-y-1">
+            {loopLayers.map((layer, i) => (
+              <div
+                key={layer.id}
+                className="flex items-center gap-2 rounded-lg px-2 py-1"
+                style={{
+                  background: layer.muted ? 'transparent' : `${layer.color}08`,
+                  border: `1px solid ${layer.muted ? '#C4A06008' : `${layer.color}18`}`,
+                }}
+              >
+                <span
+                  className="block rounded-full"
+                  style={{
+                    width: 8,
+                    height: 8,
+                    background: layer.color,
+                    opacity: layer.muted ? 0.2 : 0.8,
+                  }}
+                />
+                <span
+                  style={{
+                    fontFamily: 'var(--font-serif)',
+                    fontSize: '11px',
+                    fontWeight: 600,
+                    color: layer.muted ? '#8A6A4A' : layer.color,
+                    opacity: layer.muted ? 0.4 : 0.8,
+                    flex: 1,
+                  }}
+                >
+                  layer {i + 1} · {layer.notes.length} notes
+                </span>
+                <button
+                  type="button"
+                  onClick={() => toggleLayerMute(layer.id)}
+                  className="cursor-pointer rounded px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wider transition-all"
+                  style={{
+                    color: layer.muted ? '#8A6A4A' : layer.color,
+                    background: layer.muted ? '#8A6A4A08' : `${layer.color}10`,
+                    border: `1px solid ${layer.muted ? '#8A6A4A15' : `${layer.color}25`}`,
+                    opacity: layer.muted ? 0.4 : 0.7,
+                  }}
+                >
+                  {layer.muted ? 'unmute' : 'mute'}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => removeLayer(layer.id)}
+                  className="cursor-pointer text-[10px] transition-all"
+                  style={{
+                    color: '#8A6A4A',
+                    opacity: 0.3,
+                    background: 'none',
+                    border: 'none',
+                  }}
+                >
+                  ×
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
 
       {/* ── CONTROLS ── */}
@@ -1087,7 +1566,7 @@ export default function MagicMaker() {
           </div>
         </div>
 
-        {/* Shape + Speed */}
+        {/* Shape + Octaves + Volume */}
         <div className="flex gap-4">
           <div className="space-y-1">
             <p
@@ -1118,37 +1597,6 @@ export default function MagicMaker() {
                 >
                   {s}
                 </button>
-              ))}
-            </div>
-          </div>
-          <div className="space-y-1 flex-1">
-            <p
-              style={{
-                fontFamily: 'var(--font-serif)',
-                fontSize: '12px',
-                color: '#7A5438',
-                opacity: 0.7,
-              }}
-            >
-              cruise speed
-            </p>
-            <div
-              className="flex gap-[2px] cursor-pointer"
-              onClick={(e) => {
-                const r = (e.currentTarget as HTMLElement).getBoundingClientRect();
-                setCruiseSpeed(Math.max(0.1, Math.min(1, (e.clientX - r.left) / r.width)));
-              }}
-            >
-              {Array.from({ length: 8 }, (_, i) => (
-                <div
-                  key={i}
-                  className="flex-1 rounded-[3px] transition-all"
-                  style={{
-                    height: 20,
-                    background: instrument.color,
-                    opacity: i / 7 <= cruiseSpeed ? 0.3 + (i / 7) * 0.5 : 0.08,
-                  }}
-                />
               ))}
             </div>
           </div>
@@ -1221,143 +1669,6 @@ export default function MagicMaker() {
             </div>
           </div>
         </div>
-
-        {false && (
-          <div className="space-y-3 animate-in fade-in duration-150">
-            {/* Filter cutoff */}
-            <div className="space-y-1">
-              <div className="flex items-center justify-between">
-                <span
-                  style={{
-                    fontFamily: 'var(--font-serif)',
-                    fontSize: '12px',
-                    color: '#7A5438',
-                    opacity: 0.7,
-                  }}
-                >
-                  filter
-                </span>
-                <span
-                  style={{
-                    fontFamily: 'var(--font-serif)',
-                    fontSize: '12px',
-                    color: '#C4A060',
-                    fontWeight: 600,
-                  }}
-                >
-                  {filterCutoff}Hz
-                </span>
-              </div>
-              <div
-                className="flex gap-[2px] cursor-pointer"
-                onClick={(e) => {
-                  const r = (e.currentTarget as HTMLElement).getBoundingClientRect();
-                  setFilterCutoff(Math.round(200 + ((e.clientX - r.left) / r.width) * 4800));
-                }}
-              >
-                {Array.from({ length: 10 }, (_, i) => (
-                  <div
-                    key={i}
-                    className="flex-1 rounded-[3px] transition-all"
-                    style={{
-                      height: 14,
-                      background: '#C4A060',
-                      opacity: i / 9 <= (filterCutoff - 200) / 4800 ? 0.3 + (i / 9) * 0.5 : 0.08,
-                    }}
-                  />
-                ))}
-              </div>
-            </div>
-            {/* Reverb */}
-            <div className="space-y-1">
-              <div className="flex items-center justify-between">
-                <span
-                  style={{
-                    fontFamily: 'var(--font-serif)',
-                    fontSize: '12px',
-                    color: '#7A5438',
-                    opacity: 0.7,
-                  }}
-                >
-                  reverb
-                </span>
-                <span
-                  style={{
-                    fontFamily: 'var(--font-serif)',
-                    fontSize: '12px',
-                    color: '#6890B0',
-                    fontWeight: 600,
-                  }}
-                >
-                  {Math.round(reverbMix * 100)}%
-                </span>
-              </div>
-              <div
-                className="flex gap-[2px] cursor-pointer"
-                onClick={(e) => {
-                  const r = (e.currentTarget as HTMLElement).getBoundingClientRect();
-                  setReverbMix(Math.max(0, Math.min(1, (e.clientX - r.left) / r.width)));
-                }}
-              >
-                {Array.from({ length: 10 }, (_, i) => (
-                  <div
-                    key={i}
-                    className="flex-1 rounded-[3px] transition-all"
-                    style={{
-                      height: 14,
-                      background: '#6890B0',
-                      opacity: i / 9 <= reverbMix ? 0.3 + (i / 9) * 0.5 : 0.08,
-                    }}
-                  />
-                ))}
-              </div>
-            </div>
-            {/* Detune */}
-            <div className="space-y-1">
-              <div className="flex items-center justify-between">
-                <span
-                  style={{
-                    fontFamily: 'var(--font-serif)',
-                    fontSize: '12px',
-                    color: '#7A5438',
-                    opacity: 0.7,
-                  }}
-                >
-                  detune
-                </span>
-                <span
-                  style={{
-                    fontFamily: 'var(--font-serif)',
-                    fontSize: '12px',
-                    color: '#D4805A',
-                    fontWeight: 600,
-                  }}
-                >
-                  {detune}¢
-                </span>
-              </div>
-              <div
-                className="flex gap-[2px] cursor-pointer"
-                onClick={(e) => {
-                  const r = (e.currentTarget as HTMLElement).getBoundingClientRect();
-                  setDetune(Math.round(((e.clientX - r.left) / r.width) * 50));
-                }}
-              >
-                {Array.from({ length: 10 }, (_, i) => (
-                  <div
-                    key={i}
-                    className="flex-1 rounded-[3px] transition-all"
-                    style={{
-                      height: 14,
-                      background: '#D4805A',
-                      opacity: i / 9 <= detune / 50 ? 0.3 + (i / 9) * 0.5 : 0.08,
-                    }}
-                  />
-                ))}
-              </div>
-            </div>
-          </div>
-        )}
       </div>
     </div>
   );

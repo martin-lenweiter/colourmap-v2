@@ -29,7 +29,7 @@ interface Compass {
 const COMPASSES: Compass[] = [
   {
     id: 'caring',
-    label: 'Caring',
+    label: 'Feeling',
     letter: 'C.A.R.E',
     color: '#D4805A',
     storageKey: 'colourmap:care-values',

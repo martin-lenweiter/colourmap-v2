@@ -346,7 +346,7 @@ export default function CareCompass({ initialSlice }: { initialSlice?: string | 
     >
       <div className="relative">
         <p className="text-center text-xs font-semibold uppercase tracking-[0.24em] text-[#C4A060]">
-          Caring
+          Feeling
         </p>
         <div className="absolute right-0 top-0" style={{ zIndex: 10 }}>
           <button

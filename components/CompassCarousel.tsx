@@ -7,7 +7,7 @@ import ShareCompass from '@/components/ShareCompass';
 import StarCompass from '@/components/StarCompass';
 
 const COMPASSES = [
-  { id: 'caring', label: 'Caring', component: CareCompass },
+  { id: 'caring', label: 'Feeling', component: CareCompass },
   { id: 'doing', label: 'Doing', component: StarCompass },
   { id: 'sharing', label: 'Sharing', component: ShareCompass },
 ] as const;
@@ -25,7 +25,7 @@ const DEPTH_TABS: { id: DepthTab; label: string; color: string }[] = [
 // With X offset (-π/4), index 0=top, 1=right, 2=bottom, 3=left
 const TRIO_DATA = [
   {
-    label: 'Caring',
+    label: 'Feeling',
     compassIdx: 0,
     color: '#D4805A',
     slices: [

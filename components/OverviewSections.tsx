@@ -28,10 +28,10 @@ const ATTENTION_THRESHOLD_DAYS = 14;
 
 // Static compass axes offered as tag options alongside user's LifeCategories
 const COMPASS_AXES = [
-  { name: 'Care', color: '#D4805A', group: 'Caring' },
-  { name: 'Attitude', color: '#C4A070', group: 'Caring' },
-  { name: 'Rest', color: '#C4906A', group: 'Caring' },
-  { name: 'Emotions', color: '#B07A5A', group: 'Caring' },
+  { name: 'Care', color: '#D4805A', group: 'Feeling' },
+  { name: 'Attitude', color: '#C4A070', group: 'Feeling' },
+  { name: 'Rest', color: '#C4906A', group: 'Feeling' },
+  { name: 'Emotions', color: '#B07A5A', group: 'Feeling' },
   { name: 'Clarity', color: '#7AAA58', group: 'Doing' },
   { name: 'Target', color: '#7A9A7A', group: 'Doing' },
   { name: 'Resources', color: '#8AB0A0', group: 'Doing' },
