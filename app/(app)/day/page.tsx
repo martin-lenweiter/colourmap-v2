@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import CategoryCompass from '@/components/CategoryCompass';
 import CompassCarousel from '@/components/CompassCarousel';
 import DailyAgenda from '@/components/DailyAgenda';
 import DayTabs from '@/components/DayTabs';
@@ -81,6 +82,7 @@ function DayContent() {
         overviewContent={
           <div className="space-y-4">
             <CompassCarousel />
+            <CategoryCompass />
             <LifeCategories />
             <ReflectBox />
           </div>
