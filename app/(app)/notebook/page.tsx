@@ -479,13 +479,32 @@ export default function NotebookPage() {
   }, []);
 
   const fetchEntries = useCallback(async () => {
-    const res = await fetch('/api/notebook');
-    if (res.ok) setEntries(await res.json());
+    try {
+      const res = await fetch('/api/notebook');
+      if (res.ok) {
+        const data = await res.json();
+        setEntries(data);
+        localStorage.setItem('colourmap:notebook-entries', JSON.stringify(data));
+        return;
+      }
+    } catch {}
+    // Fallback to localStorage
+    try {
+      const raw = localStorage.getItem('colourmap:notebook-entries');
+      if (raw) setEntries(JSON.parse(raw));
+    } catch {}
   }, []);
 
   useEffect(() => {
     fetchEntries();
   }, [fetchEntries]);
+
+  // Persist entries to localStorage on every change
+  useEffect(() => {
+    if (entries.length > 0) {
+      localStorage.setItem('colourmap:notebook-entries', JSON.stringify(entries));
+    }
+  }, [entries]);
 
   function saveNotebooks(nbs: Notebook[]) {
     setNotebooks(nbs);
@@ -508,6 +527,15 @@ export default function NotebookPage() {
   async function handleAdd() {
     if (!newTitle.trim() || adding) return;
     setAdding(true);
+    // Create locally first so it works without API
+    const localEntry: Entry = {
+      id: crypto.randomUUID(),
+      category: activeNotebook,
+      title: newTitle.trim(),
+      content: null,
+      tags: null,
+      createdAt: new Date().toISOString(),
+    };
     try {
       const res = await fetch('/api/notebook', {
         method: 'POST',
@@ -520,7 +548,19 @@ export default function NotebookPage() {
         setNewTitle('');
         setExpandedId(entry.id);
         setEditingId(entry.id);
+      } else {
+        // API failed — use local entry
+        setEntries((prev) => [localEntry, ...prev]);
+        setNewTitle('');
+        setExpandedId(localEntry.id);
+        setEditingId(localEntry.id);
       }
+    } catch {
+      // Network error — use local entry
+      setEntries((prev) => [localEntry, ...prev]);
+      setNewTitle('');
+      setExpandedId(localEntry.id);
+      setEditingId(localEntry.id);
     } finally {
       setAdding(false);
     }
