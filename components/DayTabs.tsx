@@ -10,12 +10,13 @@ import { useStyle } from '@/components/StyleContext';
    Overview = wide-angle life map + compass carousel.
    ═══════════════════════════════════════════════════════════ */
 
-type Tab = 'checkin' | 'overview' | 'mastery';
+type Tab = 'checkin' | 'overview' | 'mastery' | 'tuner';
 
 const TABS: { id: Tab; label: string }[] = [
   { id: 'checkin', label: 'Check in' },
   { id: 'overview', label: 'Overview' },
   { id: 'mastery', label: 'Mastery' },
+  { id: 'tuner', label: 'Tuner' },
 ];
 
 const TAB_KEY = 'colourmap:day-tab';
@@ -24,9 +25,15 @@ interface DayTabsProps {
   checkinContent: React.ReactNode;
   overviewContent: React.ReactNode;
   masteryContent?: React.ReactNode;
+  tunerContent?: React.ReactNode;
 }
 
-export default function DayTabs({ checkinContent, overviewContent, masteryContent }: DayTabsProps) {
+export default function DayTabs({
+  checkinContent,
+  overviewContent,
+  masteryContent,
+  tunerContent,
+}: DayTabsProps) {
   const [active, setActive] = useState<Tab>('checkin');
   const { style } = useStyle();
 
@@ -38,6 +45,7 @@ export default function DayTabs({ checkinContent, overviewContent, masteryConten
       if (stored === 'cockpit' || stored === 'checkin') setActive('checkin');
       else if (stored === 'overview') setActive('overview');
       else if (stored === 'mastery') setActive('mastery');
+      else if (stored === 'tuner') setActive('tuner');
     } catch {
       /* silent */
     }
@@ -62,13 +70,13 @@ export default function DayTabs({ checkinContent, overviewContent, masteryConten
               key={tab.id}
               type="button"
               onClick={() => setActive(tab.id)}
-              className="flex-1 cursor-pointer rounded-xl py-3.5 uppercase tracking-[0.22em] transition-all duration-200"
+              className="flex-1 cursor-pointer rounded-xl py-2.5 uppercase tracking-[0.18em] transition-all duration-200"
               style={{
                 background: isActive ? '#C4A06018' : 'transparent',
                 border: `1.5px solid ${isActive ? '#C4A060' : 'hsl(var(--border) / 0.25)'}`,
                 color: 'hsl(var(--foreground))',
                 fontFamily: style.headingFont,
-                fontSize: '16px',
+                fontSize: '13px',
                 fontWeight: isActive ? 700 : 600,
               }}
             >
@@ -83,6 +91,7 @@ export default function DayTabs({ checkinContent, overviewContent, masteryConten
         {active === 'checkin' && checkinContent}
         {active === 'overview' && overviewContent}
         {active === 'mastery' && masteryContent}
+        {active === 'tuner' && tunerContent}
       </div>
     </div>
   );
