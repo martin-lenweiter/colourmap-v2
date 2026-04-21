@@ -9,12 +9,14 @@ import { useViewMode } from './ViewModeContext';
 const PRIMARY_LINKS = [
   { href: '/day', label: 'Day' },
   { href: '/journey', label: 'Journey' },
+  { href: '/circles', label: 'Circles' },
   { href: '/notebook', label: 'Notebook' },
 ];
 
 const PHONE_PRIMARY_LINKS = [
   { href: '/day', label: 'Day' },
   { href: '/journey', label: 'Journey' },
+  { href: '/circles', label: 'Circles' },
   { href: '/notebook', label: 'Notebook' },
 ];
 
