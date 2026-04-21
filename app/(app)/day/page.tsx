@@ -4,6 +4,7 @@ import CompassCarousel from '@/components/CompassCarousel';
 import DailyAgenda from '@/components/DailyAgenda';
 import DayTabs from '@/components/DayTabs';
 import FeelingCheckInCard from '@/components/FeelingCheckInCard';
+import FrequencyBox from '@/components/FrequencyBox';
 import LifeCategories from '@/components/LifeCategories';
 import MasteryBox from '@/components/MasteryBox';
 import ReflectBox from '@/components/ReflectBox';
@@ -33,6 +34,7 @@ function DayContent() {
         checkinContent={
           <div className="space-y-4">
             <FeelingCheckInCard />
+            <FrequencyBox />
             <DailyAgenda />
           </div>
         }
