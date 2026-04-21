@@ -314,50 +314,59 @@ export default function BinauralTuner() {
     setSuggestion(getSuggestion(body, focus, clarity));
   }, []);
 
+  const [audioError, setAudioError] = useState<string | null>(null);
+
   // biome-ignore lint/correctness/useExhaustiveDependencies: startLayer uses refs, stable in component body
-  const startAudio = useCallback(async () => {
-    if (ctxRef.current) return;
-    const ctx = new AudioContext();
-    // Resume context — required by browsers after user gesture
-    if (ctx.state === 'suspended') await ctx.resume();
-    ctxRef.current = ctx;
+  const startAudio = useCallback(() => {
+    try {
+      if (ctxRef.current) return;
+      setAudioError(null);
+      const ctx = new AudioContext();
+      // Resume context — required by browsers after user gesture
+      if (ctx.state === 'suspended') {
+        ctx.resume().catch(() => setAudioError('browser blocked audio'));
+      }
+      ctxRef.current = ctx;
 
-    const gain = ctx.createGain();
-    gain.gain.value = volume;
-    gainRef.current = gain;
+      const gain = ctx.createGain();
+      gain.gain.value = volume;
+      gainRef.current = gain;
 
-    // Connect both channels to stereo output for binaural effect
-    // But also send to both ears so it's audible without headphones
-    const oscL = ctx.createOscillator();
-    oscL.type = 'sine';
-    oscL.frequency.value = baseFreq;
-    oscLeftRef.current = oscL;
+      // Connect both channels to stereo output for binaural effect
+      // But also send to both ears so it's audible without headphones
+      const oscL = ctx.createOscillator();
+      oscL.type = 'sine';
+      oscL.frequency.value = baseFreq;
+      oscLeftRef.current = oscL;
 
-    const oscR = ctx.createOscillator();
-    oscR.type = 'sine';
-    oscR.frequency.value = baseFreq + beatFreq;
-    oscRightRef.current = oscR;
+      const oscR = ctx.createOscillator();
+      oscR.type = 'sine';
+      oscR.frequency.value = baseFreq + beatFreq;
+      oscRightRef.current = oscR;
 
-    // Stereo panning: left osc panned left, right osc panned right
-    const panL = ctx.createStereoPanner();
-    panL.pan.value = -0.8;
-    const panR = ctx.createStereoPanner();
-    panR.pan.value = 0.8;
+      // Stereo panning: left osc panned left, right osc panned right
+      const panL = ctx.createStereoPanner();
+      panL.pan.value = -0.8;
+      const panR = ctx.createStereoPanner();
+      panR.pan.value = 0.8;
 
-    oscL.connect(panL);
-    panL.connect(gain);
-    oscR.connect(panR);
-    panR.connect(gain);
+      oscL.connect(panL);
+      panL.connect(gain);
+      oscR.connect(panR);
+      panR.connect(gain);
 
-    gain.connect(ctx.destination);
+      gain.connect(ctx.destination);
 
-    oscL.start();
-    oscR.start();
-    setPlaying(true);
+      oscL.start();
+      oscR.start();
+      setPlaying(true);
 
-    // Start any active layers
-    for (const [layerId, vol] of Object.entries(activeLayers)) {
-      if (vol > 0) startLayer(ctx, layerId, vol);
+      // Start any active layers
+      for (const [layerId, vol] of Object.entries(activeLayers)) {
+        if (vol > 0) startLayer(ctx, layerId, vol);
+      }
+    } catch {
+      setAudioError('could not start audio');
     }
   }, [baseFreq, beatFreq, volume, activeLayers]);
 
@@ -643,6 +652,16 @@ export default function BinauralTuner() {
           </span>
         )}
       </div>
+
+      {/* Audio error */}
+      {audioError && (
+        <p
+          className="text-center"
+          style={{ fontFamily: 'var(--font-serif)', fontSize: '12px', color: '#D06040' }}
+        >
+          {audioError}
+        </p>
+      )}
 
       {/* View tabs: presets / genres / layers */}
       <div className="flex justify-center gap-1.5">
