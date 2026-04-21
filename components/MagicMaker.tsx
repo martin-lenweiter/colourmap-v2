@@ -329,6 +329,18 @@ function buildNotes(root: string, scaleId: string, octaves: number): number[] {
 // Layer colors for loop layers
 const LAYER_COLORS = ['#C4A060', '#6890B0', '#D4805A', '#7AAA58', '#9B6BA0', '#88B0C8'];
 
+// ── localStorage keys ──
+const LS_KEY_LAYERS = 'magicmaker-loopLayers';
+const LS_KEY_DURATION_IDX = 'magicmaker-loopDurationIdx';
+const LS_KEY_LOOP_SCALE = 'magicmaker-loopScaleId';
+
+// ── Quantize helper ──
+function quantizeNote(timeMs: number, loopDurationMs: number): number {
+  const subdivisions = 16;
+  const gridSize = loopDurationMs / subdivisions;
+  return Math.round(timeMs / gridSize) * gridSize;
+}
+
 export default function MagicMaker() {
   const [root, setRoot] = useState('C');
   const [scaleId, setScaleId] = useState('pentatonic');
@@ -348,6 +360,12 @@ export default function MagicMaker() {
   const [detune, setDetune] = useState(5);
   const reverbRef = useRef<ConvolverNode | null>(null);
 
+  // ── Collapsible settings drawer ──
+  const [settingsOpen, setSettingsOpen] = useState(false);
+
+  // ── Quantize toggle ──
+  const [quantize, setQuantize] = useState(false);
+
   // ── Loop state ──
   const [loopLayers, setLoopLayers] = useState<LoopLayer[]>([]);
   const [recording, setRecording] = useState(false);
@@ -362,9 +380,67 @@ export default function MagicMaker() {
   const loopAnimRef = useRef<number | null>(null);
   const nextLayerIdRef = useRef(1);
 
+  // Track whether loop was playing when overdub started
+  const overdubPlayingRef = useRef(false);
+
   const ctxRef = useRef<AudioContext | null>(null);
   const cruiseRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const cruiseIdxRef = useRef(0);
+
+  // ── localStorage: restore on mount ──
+  const [hydrated, setHydrated] = useState(false);
+  useEffect(() => {
+    try {
+      const savedLayers = localStorage.getItem(LS_KEY_LAYERS);
+      if (savedLayers) {
+        const parsed = JSON.parse(savedLayers) as LoopLayer[];
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          setLoopLayers(parsed);
+          // Ensure nextLayerIdRef is higher than any existing id
+          const maxId = Math.max(...parsed.map((l) => l.id));
+          nextLayerIdRef.current = maxId + 1;
+        }
+      }
+      const savedDurIdx = localStorage.getItem(LS_KEY_DURATION_IDX);
+      if (savedDurIdx !== null) {
+        const idx = Number.parseInt(savedDurIdx, 10);
+        if (idx >= 0 && idx < LOOP_DURATIONS.length) setLoopDurationIdx(idx);
+      }
+      const savedLoopScale = localStorage.getItem(LS_KEY_LOOP_SCALE);
+      if (savedLoopScale && savedLoopScale in SCALES) setLoopScaleId(savedLoopScale);
+    } catch {
+      // localStorage unavailable — proceed with defaults
+    }
+    setHydrated(true);
+  }, []);
+
+  // ── localStorage: persist on change (after hydration) ──
+  useEffect(() => {
+    if (!hydrated) return;
+    try {
+      localStorage.setItem(LS_KEY_LAYERS, JSON.stringify(loopLayers));
+    } catch {
+      // quota exceeded or unavailable
+    }
+  }, [loopLayers, hydrated]);
+
+  useEffect(() => {
+    if (!hydrated) return;
+    try {
+      localStorage.setItem(LS_KEY_DURATION_IDX, String(loopDurationIdx));
+    } catch {
+      // quota exceeded or unavailable
+    }
+  }, [loopDurationIdx, hydrated]);
+
+  useEffect(() => {
+    if (!hydrated) return;
+    try {
+      localStorage.setItem(LS_KEY_LOOP_SCALE, loopScaleId);
+    } catch {
+      // quota exceeded or unavailable
+    }
+  }, [loopScaleId, hydrated]);
 
   const notes = buildNotes(root, scaleId, octaves);
   const loopNotes = buildNotes(root, loopScaleId, octaves);
@@ -536,7 +612,8 @@ export default function MagicMaker() {
       if (recording) {
         const elapsed = Date.now() - recordStartRef.current;
         const wrapped = elapsed % loopDuration;
-        currentLayerNotesRef.current.push({ idx, time: wrapped });
+        const finalTime = quantize ? quantizeNote(wrapped, loopDuration) : wrapped;
+        currentLayerNotesRef.current.push({ idx, time: finalTime });
       }
 
       // Visual feedback
@@ -552,7 +629,7 @@ export default function MagicMaker() {
         (instrument.attack + instrument.decay) * 1000 + 200,
       );
     },
-    [instrument, volume, filterCutoff, reverbMix, detune, recording, loopDuration],
+    [instrument, volume, filterCutoff, reverbMix, detune, recording, loopDuration, quantize],
   );
 
   // ── Loop playback engine ──
@@ -618,11 +695,21 @@ export default function MagicMaker() {
     };
   }, [loopPlaying, recording, loopDuration]);
 
-  // Start recording a new layer
+  // Start recording a new layer (supports overdub while playing)
   function startRecording() {
     currentLayerNotesRef.current = [];
     recordStartRef.current = Date.now();
-    loopStartRef.current = Date.now();
+    // If loop is already playing, keep it playing (overdub mode)
+    // Sync the recording start to the current loop position
+    if (loopPlaying) {
+      overdubPlayingRef.current = true;
+      // Align record start to current loop phase so notes line up
+      const elapsed = (Date.now() - loopStartRef.current) % loopDuration;
+      recordStartRef.current = Date.now() - elapsed;
+    } else {
+      overdubPlayingRef.current = false;
+      loopStartRef.current = Date.now();
+    }
     setRecording(true);
 
     // Auto-stop after one loop duration
@@ -633,11 +720,11 @@ export default function MagicMaker() {
 
   function finishRecording() {
     setRecording(false);
-    const notes = [...currentLayerNotesRef.current];
-    if (notes.length === 0) return;
+    const recordedNotes = [...currentLayerNotesRef.current];
+    if (recordedNotes.length === 0) return;
     const layerId = nextLayerIdRef.current++;
     const color = LAYER_COLORS[loopLayers.length % LAYER_COLORS.length];
-    setLoopLayers((prev) => [...prev, { id: layerId, notes, color, muted: false }]);
+    setLoopLayers((prev) => [...prev, { id: layerId, notes: recordedNotes, color, muted: false }]);
     currentLayerNotesRef.current = [];
   }
 
@@ -1112,74 +1199,175 @@ export default function MagicMaker() {
           </div>
         </div>
 
+        {/* Quantize toggle */}
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={() => setQuantize((q) => !q)}
+            className="flex cursor-pointer items-center gap-1.5 rounded-full px-2.5 py-1 transition-all"
+            style={{
+              background: quantize ? '#C4A06012' : 'transparent',
+              border: `1px solid ${quantize ? '#C4A06035' : '#C4A06015'}`,
+            }}
+          >
+            <span
+              className="block rounded-sm"
+              style={{
+                width: 10,
+                height: 10,
+                background: quantize ? '#C4A060' : '#8A6A4A',
+                opacity: quantize ? 0.8 : 0.2,
+                borderRadius: 2,
+              }}
+            />
+            <span
+              style={{
+                fontFamily: 'var(--font-serif)',
+                fontSize: '10px',
+                fontWeight: 600,
+                color: quantize ? '#5C3018' : '#8A6A4A',
+                opacity: quantize ? 0.9 : 0.4,
+              }}
+            >
+              quantize
+            </span>
+          </button>
+          {quantize && (
+            <span
+              style={{
+                fontFamily: 'var(--font-serif)',
+                fontSize: '9px',
+                color: '#8A6A4A',
+                opacity: 0.4,
+              }}
+            >
+              snap to 1/16
+            </span>
+          )}
+        </div>
+
         {/* Visual timeline */}
         <div className="space-y-2">
           <div
             className="relative rounded-xl overflow-hidden"
             style={{
-              height: Math.max(32, loopLayers.length * 14 + 18),
-              background: '#5C301808',
-              border: '1px solid #5C301810',
+              height: Math.max(48, loopLayers.length * 20 + 16),
+              background: '#5C301806',
+              border: '1px solid #5C301812',
             }}
           >
-            {/* Playhead */}
-            {(loopPlaying || recording) && (
+            {/* Beat tick marks — faint vertical lines at every quarter */}
+            {[1, 2, 3].map((tick) => (
               <div
-                className="absolute top-0 bottom-0 transition-none"
+                key={`tick-${tick}`}
+                className="absolute top-0 bottom-0"
                 style={{
-                  left: `${loopProgress * 100}%`,
-                  width: 2,
-                  background: recording ? '#D06040' : '#C4A060',
-                  opacity: 0.8,
-                  zIndex: 10,
+                  left: `${(tick / 4) * 100}%`,
+                  width: 1,
+                  background: '#5C3018',
+                  opacity: 0.08,
+                  zIndex: 1,
                 }}
               />
-            )}
-
-            {/* Layer note dots */}
-            {loopLayers.map((layer, layerIdx) => (
-              <div
-                key={layer.id}
-                className="absolute left-0 right-0"
-                style={{
-                  top: 8 + layerIdx * 14,
-                  height: 10,
-                  opacity: layer.muted ? 0.15 : 1,
-                }}
-              >
-                {layer.notes.map((note, ni) => {
-                  const x = (note.time / loopDuration) * 100;
-                  return (
-                    <div
-                      key={`${layer.id}-${ni}`}
-                      className="absolute rounded-full"
-                      style={{
-                        left: `${x}%`,
-                        top: 1,
-                        width: 8,
-                        height: 8,
-                        background: layer.color,
-                        opacity: 0.7,
-                        transform: 'translateX(-4px)',
-                      }}
-                    />
-                  );
-                })}
-              </div>
             ))}
+            {/* Finer 8th-note ticks */}
+            {Array.from({ length: 7 }, (_, i) => i + 1)
+              .filter((i) => i % 2 !== 0)
+              .map((tick) => (
+                <div
+                  key={`fine-${tick}`}
+                  className="absolute top-0 bottom-0"
+                  style={{
+                    left: `${(tick / 8) * 100}%`,
+                    width: 1,
+                    background: '#5C3018',
+                    opacity: 0.04,
+                    zIndex: 1,
+                  }}
+                />
+              ))}
 
-            {/* Recording indicator dots */}
-            {recording && currentLayerNotesRef.current.length > 0 && (
-              <div
-                className="absolute left-0 right-0"
-                style={{
-                  top: 8 + loopLayers.length * 14,
-                  height: 10,
-                }}
-              >
-                {/* Live dots render on next re-render */}
-              </div>
+            {/* Playhead with glow */}
+            {(loopPlaying || recording) && (
+              <>
+                <div
+                  className="absolute top-0 bottom-0 transition-none"
+                  style={{
+                    left: `${loopProgress * 100}%`,
+                    width: 6,
+                    background: recording ? '#D0604025' : '#C4A06020',
+                    transform: 'translateX(-3px)',
+                    zIndex: 9,
+                  }}
+                />
+                <div
+                  className="absolute top-0 bottom-0 transition-none"
+                  style={{
+                    left: `${loopProgress * 100}%`,
+                    width: 2,
+                    background: recording ? '#D06040' : '#C4A060',
+                    opacity: 0.9,
+                    zIndex: 10,
+                  }}
+                />
+              </>
             )}
+
+            {/* Layer lanes with colored backgrounds */}
+            {loopLayers.map((layer, layerIdx) => {
+              const laneTop = 6 + layerIdx * 20;
+              return (
+                <div
+                  key={layer.id}
+                  className="absolute left-0 right-0"
+                  style={{
+                    top: laneTop,
+                    height: 16,
+                    opacity: layer.muted ? 0.15 : 1,
+                  }}
+                >
+                  {/* Lane background */}
+                  <div
+                    className="absolute inset-0 rounded-sm"
+                    style={{ background: `${layer.color}06` }}
+                  />
+                  {/* Note bars — short horizontal bars instead of dots */}
+                  {layer.notes.map((note, ni) => {
+                    const x = (note.time / loopDuration) * 100;
+                    return (
+                      <div
+                        key={`${layer.id}-${ni}`}
+                        className="absolute rounded-sm"
+                        style={{
+                          left: `${x}%`,
+                          top: 2,
+                          width: 12,
+                          height: 12,
+                          background: layer.color,
+                          opacity: 0.6,
+                          transform: 'translateX(-6px)',
+                          borderRadius: '3px',
+                        }}
+                      />
+                    );
+                  })}
+                  {/* Layer label */}
+                  <span
+                    className="absolute right-1"
+                    style={{
+                      top: 2,
+                      fontFamily: 'var(--font-serif)',
+                      fontSize: '8px',
+                      fontWeight: 700,
+                      color: layer.color,
+                      opacity: 0.4,
+                    }}
+                  >
+                    {layerIdx + 1}
+                  </span>
+                </div>
+              );
+            })}
 
             {/* Empty state */}
             {loopLayers.length === 0 && !recording && (
@@ -1371,304 +1559,380 @@ export default function MagicMaker() {
         )}
       </div>
 
-      {/* ── CONTROLS ── */}
-      <div className="space-y-3 px-2">
-        {/* Scale */}
-        <div className="space-y-1.5">
-          <p
+      {/* ── COLLAPSIBLE SETTINGS DRAWER ── */}
+      <div className="px-2">
+        <button
+          type="button"
+          onClick={() => setSettingsOpen((s) => !s)}
+          className="flex w-full cursor-pointer items-center justify-between rounded-xl px-3 py-2 transition-all"
+          style={{
+            background: settingsOpen ? '#5C301808' : '#5C301804',
+            border: `1px solid ${settingsOpen ? '#5C301815' : '#5C301808'}`,
+          }}
+        >
+          <span
             style={{
               fontFamily: 'var(--font-serif)',
-              fontSize: '12px',
+              fontSize: '13px',
+              fontWeight: 600,
+              fontStyle: 'italic',
               color: '#7A5438',
               opacity: 0.7,
             }}
           >
-            scale
-          </p>
-          <div className="flex flex-wrap gap-1.5">
-            {Object.entries(SCALES).map(([id, s]) => (
-              <button
-                key={id}
-                type="button"
-                onClick={() => setScaleId(id)}
-                className="cursor-pointer rounded-full px-2.5 py-1 text-[11px] font-semibold transition-all"
-                style={{
-                  color: scaleId === id ? '#5C3018' : '#8A6A4A',
-                  background: scaleId === id ? '#5C301810' : 'transparent',
-                  border: `1px solid ${scaleId === id ? '#5C301830' : '#C4A06012'}`,
-                  opacity: scaleId === id ? 1 : 0.5,
-                }}
-              >
-                {s.name}
-              </button>
-            ))}
-          </div>
-        </div>
+            settings
+          </span>
+          <span
+            className="text-[10px] transition-transform duration-200"
+            style={{
+              color: '#7A543880',
+              transform: settingsOpen ? 'rotate(180deg)' : 'rotate(0deg)',
+              display: 'inline-block',
+            }}
+          >
+            ▾
+          </span>
+        </button>
 
-        {/* Root note */}
-        <div className="space-y-1.5">
-          <p
+        {settingsOpen && (
+          <div
+            className="mt-2 space-y-5 rounded-xl px-3 py-3"
             style={{
-              fontFamily: 'var(--font-serif)',
-              fontSize: '12px',
-              color: '#7A5438',
-              opacity: 0.7,
+              background: '#5C301804',
+              border: '1px solid #5C301808',
             }}
           >
-            root note
-          </p>
-          <div className="flex gap-2">
-            {ROOTS.map((r) => (
-              <button
-                key={r}
-                type="button"
-                onClick={() => setRoot(r)}
-                className="cursor-pointer rounded-lg transition-all"
+            {/* ── SOUND GROUP ── */}
+            <div className="space-y-3">
+              <p
                 style={{
-                  width: 36,
-                  height: 32,
                   fontFamily: 'var(--font-serif)',
-                  fontSize: '14px',
-                  fontWeight: root === r ? 700 : 500,
-                  color: root === r ? '#5C3018' : '#8A6A4A',
-                  background: root === r ? '#C4A06015' : 'transparent',
-                  border: `1px solid ${root === r ? '#C4A06040' : '#C4A06012'}`,
-                  opacity: root === r ? 1 : 0.5,
+                  fontSize: '10px',
+                  fontWeight: 700,
+                  color: '#C4A060',
+                  opacity: 0.6,
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.08em',
                 }}
               >
-                {r}
-              </button>
-            ))}
-          </div>
-        </div>
+                sound
+              </p>
 
-        {/* Instrument — dot toggle + dropdown */}
-        <div className="relative space-y-1.5">
-          <button
-            type="button"
-            onClick={() => setShowInstruments((s) => !s)}
-            className="flex w-full cursor-pointer items-center gap-2"
-            style={{ background: 'none', border: 'none' }}
-          >
-            <span
-              className="block rounded-full"
-              style={{ width: 14, height: 14, background: instrument.color }}
-            />
-            <span
-              style={{
-                fontFamily: 'var(--font-serif)',
-                fontSize: '14px',
-                fontWeight: 700,
-                color: instrument.color,
-              }}
-            >
-              {instrument.name}
-            </span>
-            <span
-              className="text-[10px] transition-transform duration-200"
-              style={{
-                color: `${instrument.color}80`,
-                transform: showInstruments ? 'rotate(180deg)' : 'rotate(0deg)',
-              }}
-            >
-              ▾
-            </span>
-          </button>
-          {showInstruments && (
-            <div
-              className="animate-in fade-in duration-150 rounded-xl px-2 py-2"
-              style={{
-                background: '#F5ECDC',
-                border: '1px solid #8A6A4A20',
-                boxShadow: '0 8px 24px rgba(92,48,24,0.12)',
-              }}
-            >
-              <div className="grid grid-cols-4 gap-1">
-                {INSTRUMENTS.map((inst) => (
-                  <button
-                    key={inst.id}
-                    type="button"
-                    onClick={() => {
-                      setInstrumentId(inst.id);
-                      setShowInstruments(false);
-                    }}
-                    className="flex cursor-pointer flex-col items-center gap-1 rounded-lg py-1.5 transition-all"
+              {/* Instrument — dot toggle + dropdown */}
+              <div className="relative space-y-1.5">
+                <button
+                  type="button"
+                  onClick={() => setShowInstruments((s) => !s)}
+                  className="flex w-full cursor-pointer items-center gap-2"
+                  style={{ background: 'none', border: 'none' }}
+                >
+                  <span
+                    className="block rounded-full"
+                    style={{ width: 14, height: 14, background: instrument.color }}
+                  />
+                  <span
                     style={{
-                      background: instrumentId === inst.id ? `${inst.color}12` : 'transparent',
-                      border: `1px solid ${instrumentId === inst.id ? `${inst.color}30` : 'transparent'}`,
+                      fontFamily: 'var(--font-serif)',
+                      fontSize: '14px',
+                      fontWeight: 700,
+                      color: instrument.color,
                     }}
                   >
-                    <span
-                      className="block rounded-full"
+                    {instrument.name}
+                  </span>
+                  <span
+                    className="text-[10px] transition-transform duration-200"
+                    style={{
+                      color: `${instrument.color}80`,
+                      transform: showInstruments ? 'rotate(180deg)' : 'rotate(0deg)',
+                    }}
+                  >
+                    ▾
+                  </span>
+                </button>
+                {showInstruments && (
+                  <div
+                    className="animate-in fade-in duration-150 rounded-xl px-2 py-2"
+                    style={{
+                      background: '#F5ECDC',
+                      border: '1px solid #8A6A4A20',
+                      boxShadow: '0 8px 24px rgba(92,48,24,0.12)',
+                    }}
+                  >
+                    <div className="grid grid-cols-4 gap-1">
+                      {INSTRUMENTS.map((inst) => (
+                        <button
+                          key={inst.id}
+                          type="button"
+                          onClick={() => {
+                            setInstrumentId(inst.id);
+                            setShowInstruments(false);
+                          }}
+                          className="flex cursor-pointer flex-col items-center gap-1 rounded-lg py-1.5 transition-all"
+                          style={{
+                            background:
+                              instrumentId === inst.id ? `${inst.color}12` : 'transparent',
+                            border: `1px solid ${instrumentId === inst.id ? `${inst.color}30` : 'transparent'}`,
+                          }}
+                        >
+                          <span
+                            className="block rounded-full"
+                            style={{
+                              width: 10,
+                              height: 10,
+                              background: inst.color,
+                              opacity: instrumentId === inst.id ? 1 : 0.5,
+                            }}
+                          />
+                          <span
+                            style={{
+                              fontFamily: 'var(--font-serif)',
+                              fontSize: '10px',
+                              fontWeight: instrumentId === inst.id ? 700 : 500,
+                              color: instrumentId === inst.id ? inst.color : '#8A6A4A',
+                              opacity: instrumentId === inst.id ? 1 : 0.6,
+                            }}
+                          >
+                            {inst.name}
+                          </span>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Scale */}
+              <div className="space-y-1.5">
+                <p
+                  style={{
+                    fontFamily: 'var(--font-serif)',
+                    fontSize: '12px',
+                    color: '#7A5438',
+                    opacity: 0.7,
+                  }}
+                >
+                  scale
+                </p>
+                <div className="flex flex-wrap gap-1.5">
+                  {Object.entries(SCALES).map(([id, s]) => (
+                    <button
+                      key={id}
+                      type="button"
+                      onClick={() => setScaleId(id)}
+                      className="cursor-pointer rounded-full px-2.5 py-1 text-[11px] font-semibold transition-all"
                       style={{
-                        width: 10,
-                        height: 10,
-                        background: inst.color,
-                        opacity: instrumentId === inst.id ? 1 : 0.5,
-                      }}
-                    />
-                    <span
-                      style={{
-                        fontFamily: 'var(--font-serif)',
-                        fontSize: '10px',
-                        fontWeight: instrumentId === inst.id ? 700 : 500,
-                        color: instrumentId === inst.id ? inst.color : '#8A6A4A',
-                        opacity: instrumentId === inst.id ? 1 : 0.6,
+                        color: scaleId === id ? '#5C3018' : '#8A6A4A',
+                        background: scaleId === id ? '#5C301810' : 'transparent',
+                        border: `1px solid ${scaleId === id ? '#5C301830' : '#C4A06012'}`,
+                        opacity: scaleId === id ? 1 : 0.5,
                       }}
                     >
-                      {inst.name}
-                    </span>
-                  </button>
-                ))}
+                      {s.name}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Root note */}
+              <div className="space-y-1.5">
+                <p
+                  style={{
+                    fontFamily: 'var(--font-serif)',
+                    fontSize: '12px',
+                    color: '#7A5438',
+                    opacity: 0.7,
+                  }}
+                >
+                  root note
+                </p>
+                <div className="flex gap-2">
+                  {ROOTS.map((r) => (
+                    <button
+                      key={r}
+                      type="button"
+                      onClick={() => setRoot(r)}
+                      className="cursor-pointer rounded-lg transition-all"
+                      style={{
+                        width: 36,
+                        height: 32,
+                        fontFamily: 'var(--font-serif)',
+                        fontSize: '14px',
+                        fontWeight: root === r ? 700 : 500,
+                        color: root === r ? '#5C3018' : '#8A6A4A',
+                        background: root === r ? '#C4A06015' : 'transparent',
+                        border: `1px solid ${root === r ? '#C4A06040' : '#C4A06012'}`,
+                        opacity: root === r ? 1 : 0.5,
+                      }}
+                    >
+                      {r}
+                    </button>
+                  ))}
+                </div>
               </div>
             </div>
-          )}
-        </div>
 
-        {/* Palette */}
-        <div className="space-y-1.5">
-          <p
-            style={{
-              fontFamily: 'var(--font-serif)',
-              fontSize: '12px',
-              color: '#7A5438',
-              opacity: 0.7,
-            }}
-          >
-            palette
-          </p>
-          <div className="flex gap-2">
-            {Object.entries(PALETTES).map(([id, colors]) => (
-              <button
-                key={id}
-                type="button"
-                onClick={() => setPaletteId(id)}
-                className="flex cursor-pointer gap-[2px] rounded-lg px-2 py-1.5 transition-all"
+            {/* ── FEEL GROUP ── */}
+            <div className="space-y-3">
+              <p
                 style={{
-                  background: paletteId === id ? '#5C301808' : 'transparent',
-                  border: `1px solid ${paletteId === id ? '#5C301825' : '#C4A06008'}`,
+                  fontFamily: 'var(--font-serif)',
+                  fontSize: '10px',
+                  fontWeight: 700,
+                  color: '#C4A060',
+                  opacity: 0.6,
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.08em',
                 }}
               >
-                {colors.slice(0, 4).map((c, ci) => (
-                  <span
-                    key={`${id}-${ci}`}
-                    className="block rounded-full"
+                feel
+              </p>
+
+              {/* Palette */}
+              <div className="space-y-1.5">
+                <p
+                  style={{
+                    fontFamily: 'var(--font-serif)',
+                    fontSize: '12px',
+                    color: '#7A5438',
+                    opacity: 0.7,
+                  }}
+                >
+                  palette
+                </p>
+                <div className="flex gap-2">
+                  {Object.entries(PALETTES).map(([id, colors]) => (
+                    <button
+                      key={id}
+                      type="button"
+                      onClick={() => setPaletteId(id)}
+                      className="flex cursor-pointer gap-[2px] rounded-lg px-2 py-1.5 transition-all"
+                      style={{
+                        background: paletteId === id ? '#5C301808' : 'transparent',
+                        border: `1px solid ${paletteId === id ? '#5C301825' : '#C4A06008'}`,
+                      }}
+                    >
+                      {colors.slice(0, 4).map((c, ci) => (
+                        <span
+                          key={`${id}-${ci}`}
+                          className="block rounded-full"
+                          style={{
+                            width: 8,
+                            height: 8,
+                            background: c,
+                            opacity: paletteId === id ? 1 : 0.4,
+                          }}
+                        />
+                      ))}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Shape */}
+              <div className="space-y-1">
+                <p
+                  style={{
+                    fontFamily: 'var(--font-serif)',
+                    fontSize: '12px',
+                    color: '#7A5438',
+                    opacity: 0.7,
+                  }}
+                >
+                  shape
+                </p>
+                <div className="flex gap-1.5">
+                  {(['square', 'circle'] as const).map((s) => (
+                    <button
+                      key={s}
+                      type="button"
+                      onClick={() => setCellShape(s)}
+                      className="cursor-pointer rounded-lg px-2 py-1 text-[11px] transition-all"
+                      style={{
+                        fontFamily: 'var(--font-serif)',
+                        fontWeight: cellShape === s ? 700 : 500,
+                        color: cellShape === s ? '#5C3018' : '#8A6A4A',
+                        background: cellShape === s ? '#C4A06010' : 'transparent',
+                        border: `1px solid ${cellShape === s ? '#C4A06030' : '#C4A06010'}`,
+                        opacity: cellShape === s ? 1 : 0.5,
+                      }}
+                    >
+                      {s}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Octaves + Volume */}
+              <div className="flex gap-4">
+                <div className="space-y-1 flex-1">
+                  <p
                     style={{
-                      width: 8,
-                      height: 8,
-                      background: c,
-                      opacity: paletteId === id ? 1 : 0.4,
+                      fontFamily: 'var(--font-serif)',
+                      fontSize: '12px',
+                      color: '#7A5438',
+                      opacity: 0.7,
                     }}
-                  />
-                ))}
-              </button>
-            ))}
-          </div>
-        </div>
-
-        {/* Shape + Octaves + Volume */}
-        <div className="flex gap-4">
-          <div className="space-y-1">
-            <p
-              style={{
-                fontFamily: 'var(--font-serif)',
-                fontSize: '12px',
-                color: '#7A5438',
-                opacity: 0.7,
-              }}
-            >
-              shape
-            </p>
-            <div className="flex gap-1.5">
-              {(['square', 'circle'] as const).map((s) => (
-                <button
-                  key={s}
-                  type="button"
-                  onClick={() => setCellShape(s)}
-                  className="cursor-pointer rounded-lg px-2 py-1 text-[11px] transition-all"
-                  style={{
-                    fontFamily: 'var(--font-serif)',
-                    fontWeight: cellShape === s ? 700 : 500,
-                    color: cellShape === s ? '#5C3018' : '#8A6A4A',
-                    background: cellShape === s ? '#C4A06010' : 'transparent',
-                    border: `1px solid ${cellShape === s ? '#C4A06030' : '#C4A06010'}`,
-                    opacity: cellShape === s ? 1 : 0.5,
-                  }}
-                >
-                  {s}
-                </button>
-              ))}
+                  >
+                    octaves
+                  </p>
+                  <div className="flex gap-1.5">
+                    {[1, 2, 3].map((o) => (
+                      <button
+                        key={o}
+                        type="button"
+                        onClick={() => setOctaves(o)}
+                        className="flex-1 cursor-pointer rounded-lg py-1 text-center transition-all"
+                        style={{
+                          fontFamily: 'var(--font-serif)',
+                          fontSize: '13px',
+                          fontWeight: octaves === o ? 700 : 500,
+                          color: octaves === o ? '#5C3018' : '#8A6A4A',
+                          background: octaves === o ? '#C4A06012' : 'transparent',
+                          border: `1px solid ${octaves === o ? '#C4A06035' : '#C4A06012'}`,
+                          opacity: octaves === o ? 1 : 0.5,
+                        }}
+                      >
+                        {o}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+                <div className="space-y-1 flex-1">
+                  <p
+                    style={{
+                      fontFamily: 'var(--font-serif)',
+                      fontSize: '12px',
+                      color: '#7A5438',
+                      opacity: 0.7,
+                    }}
+                  >
+                    volume
+                  </p>
+                  <div
+                    className="flex gap-[2px] cursor-pointer"
+                    onClick={(e) => {
+                      const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
+                      setVolume(Math.max(0.05, (e.clientX - rect.left) / rect.width));
+                    }}
+                  >
+                    {Array.from({ length: 8 }, (_, i) => (
+                      <div
+                        key={i}
+                        className="flex-1 rounded-[3px] transition-all"
+                        style={{
+                          height: 24,
+                          background: instrument.color,
+                          opacity: i / 7 <= volume ? 0.3 + (i / 7) * 0.5 : 0.08,
+                        }}
+                      />
+                    ))}
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
-        </div>
-
-        {/* Octaves + Volume */}
-        <div className="flex gap-4">
-          <div className="space-y-1 flex-1">
-            <p
-              style={{
-                fontFamily: 'var(--font-serif)',
-                fontSize: '12px',
-                color: '#7A5438',
-                opacity: 0.7,
-              }}
-            >
-              octaves
-            </p>
-            <div className="flex gap-1.5">
-              {[1, 2, 3].map((o) => (
-                <button
-                  key={o}
-                  type="button"
-                  onClick={() => setOctaves(o)}
-                  className="flex-1 cursor-pointer rounded-lg py-1 text-center transition-all"
-                  style={{
-                    fontFamily: 'var(--font-serif)',
-                    fontSize: '13px',
-                    fontWeight: octaves === o ? 700 : 500,
-                    color: octaves === o ? '#5C3018' : '#8A6A4A',
-                    background: octaves === o ? '#C4A06012' : 'transparent',
-                    border: `1px solid ${octaves === o ? '#C4A06035' : '#C4A06012'}`,
-                    opacity: octaves === o ? 1 : 0.5,
-                  }}
-                >
-                  {o}
-                </button>
-              ))}
-            </div>
-          </div>
-          <div className="space-y-1 flex-1">
-            <p
-              style={{
-                fontFamily: 'var(--font-serif)',
-                fontSize: '12px',
-                color: '#7A5438',
-                opacity: 0.7,
-              }}
-            >
-              volume
-            </p>
-            <div
-              className="flex gap-[2px] cursor-pointer"
-              onClick={(e) => {
-                const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
-                setVolume(Math.max(0.05, (e.clientX - rect.left) / rect.width));
-              }}
-            >
-              {Array.from({ length: 8 }, (_, i) => (
-                <div
-                  key={i}
-                  className="flex-1 rounded-[3px] transition-all"
-                  style={{
-                    height: 24,
-                    background: instrument.color,
-                    opacity: i / 7 <= volume ? 0.3 + (i / 7) * 0.5 : 0.08,
-                  }}
-                />
-              ))}
-            </div>
-          </div>
-        </div>
+        )}
       </div>
     </div>
   );

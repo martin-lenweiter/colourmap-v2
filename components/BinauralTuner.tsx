@@ -19,6 +19,16 @@ const PRESETS = [
   { id: 'stillness', label: 'Stillness', base: 35, beat: 2, color: '#A0907A' },
 ];
 
+// ── Default layers per preset ──
+const PRESET_LAYERS: Record<string, string[]> = {
+  'deep-sleep': ['ocean', 'sub'],
+  meditation: ['rain', 'breath'],
+  creativity: ['birds', 'wind', 'bowl'],
+  'calm-focus': ['hum', 'wind'],
+  presence: ['breath', 'drone'],
+  stillness: ['bowl', 'breath'],
+};
+
 // ── Soundscape layers ──
 interface LayerDef {
   id: string;
@@ -319,6 +329,9 @@ function getSuggestion(
   return { preset: 'calm-focus', reason: 'balanced state — alpha waves to maintain' };
 }
 
+// ── Crossfade duration in seconds ──
+const CROSSFADE_DURATION = 1.5;
+
 export default function BinauralTuner() {
   const [playing, setPlaying] = useState(false);
   const [binauralOn, setBinauralOn] = useState(true);
@@ -336,9 +349,9 @@ export default function BinauralTuner() {
   const [showSuggestion, setShowSuggestion] = useState(true);
   const [view, setView] = useState<'presets' | 'layers' | 'genres'>('presets');
   const [tremolo, setTremolo] = useState(false);
-  const [tremoloSpeed, setTremoloSpeed] = useState(0.15);
-  const [warmth, setWarmth] = useState(0); // 0-1, adds harmonics
-  const [filterFreq, setFilterFreq] = useState(3000); // lowpass — open enough to hear clearly by default
+  const tremoloSpeed = 0.15;
+  const warmth = 0.3; // always-on gentle warmth for smoother sound
+  const filterFreq = 5000; // wide open — no muffling
   const lfoRef = useRef<OscillatorNode | null>(null);
   const lfoGainRef = useRef<GainNode | null>(null);
   const warmOscRef = useRef<OscillatorNode | null>(null);
@@ -354,8 +367,13 @@ export default function BinauralTuner() {
       binaural: boolean;
     }[]
   >([]);
+  const [reverbMix, setReverbMix] = useState(0.3);
+  const reverbNodeRef = useRef<ConvolverNode | null>(null);
+  const dryGainRef = useRef<GainNode | null>(null);
+  const wetGainRef = useRef<GainNode | null>(null);
   const [saveName, setSaveName] = useState('');
   const [showSave, setShowSave] = useState(false);
+  const crossfadingRef = useRef(false);
 
   // Load saved mixes
   useEffect(() => {
@@ -503,7 +521,31 @@ export default function BinauralTuner() {
         warmGainRef.current = wg;
       }
 
-      gain.connect(ctx.destination);
+      // Reverb — smooths the overall binaural sound
+      const reverbLen = ctx.sampleRate * 3;
+      const reverbBuf = ctx.createBuffer(2, reverbLen, ctx.sampleRate);
+      for (let ch = 0; ch < 2; ch++) {
+        const d = reverbBuf.getChannelData(ch);
+        for (let i = 0; i < reverbLen; i++) {
+          d[i] = (Math.random() * 2 - 1) * (1 - i / reverbLen) ** 2.5;
+        }
+      }
+      const reverb = ctx.createConvolver();
+      reverb.buffer = reverbBuf;
+      reverbNodeRef.current = reverb;
+
+      const dryGain = ctx.createGain();
+      dryGain.gain.value = 1 - reverbMix;
+      dryGainRef.current = dryGain;
+      const wetGain = ctx.createGain();
+      wetGain.gain.value = reverbMix;
+      wetGainRef.current = wetGain;
+
+      gain.connect(dryGain);
+      dryGain.connect(ctx.destination);
+      gain.connect(reverb);
+      reverb.connect(wetGain);
+      wetGain.connect(ctx.destination);
 
       oscL.start();
       oscR.start();
@@ -548,6 +590,42 @@ export default function BinauralTuner() {
     layerNodesRef.current.set(layerId, { source, gain: layerGain });
   }
 
+  function startLayerWithFadeIn(ctx: AudioContext, layerId: string, targetVol: number) {
+    const def = LAYERS.find((l) => l.id === layerId);
+    if (!def) return;
+    const { node, source } = def.build(ctx, baseFreq);
+    const layerGain = ctx.createGain();
+    layerGain.gain.value = 0;
+    node.connect(layerGain);
+    layerGain.connect(ctx.destination);
+    if ('start' in source) source.start();
+    layerNodesRef.current.set(layerId, { source, gain: layerGain });
+    // Fade in over crossfade duration
+    const now = ctx.currentTime;
+    layerGain.gain.setValueAtTime(0, now);
+    layerGain.gain.linearRampToValueAtTime(targetVol, now + CROSSFADE_DURATION);
+  }
+
+  function fadeOutLayer(ctx: AudioContext, layerId: string) {
+    const existing = layerNodesRef.current.get(layerId);
+    if (!existing) return;
+    const now = ctx.currentTime;
+    existing.gain.gain.cancelScheduledValues(now);
+    existing.gain.gain.setValueAtTime(existing.gain.gain.value, now);
+    existing.gain.gain.linearRampToValueAtTime(0, now + CROSSFADE_DURATION);
+    // Schedule cleanup after fade
+    setTimeout(
+      () => {
+        try {
+          existing.source.stop();
+        } catch {}
+        existing.gain.disconnect();
+        layerNodesRef.current.delete(layerId);
+      },
+      CROSSFADE_DURATION * 1000 + 100,
+    );
+  }
+
   function toggleLayer(layerId: string) {
     const current = activeLayers[layerId] || 0;
     const newVol = current > 0 ? 0 : 0.25;
@@ -574,26 +652,76 @@ export default function BinauralTuner() {
   }
 
   function applyGenre(genre: Genre) {
+    const ctx = ctxRef.current;
     setActiveGenre(genre.id);
     setBaseFreq(genre.base);
     setBeatFreq(genre.beat);
-    // Stop all current layers
-    if (ctxRef.current) {
-      for (const [id, node] of layerNodesRef.current) {
-        try {
-          node.source.stop();
-        } catch {}
-        node.gain.disconnect();
-        layerNodesRef.current.delete(id);
+
+    if (ctx && !crossfadingRef.current) {
+      crossfadingRef.current = true;
+      // Fade out all current layers
+      const oldLayerIds = [...layerNodesRef.current.keys()];
+      for (const id of oldLayerIds) {
+        fadeOutLayer(ctx, id);
       }
+      // After fade out completes, start new layers with fade in
+      setTimeout(
+        () => {
+          const newLayers: Record<string, number> = {};
+          for (const id of genre.layers) {
+            newLayers[id] = 0.2;
+            startLayerWithFadeIn(ctx, id, 0.2);
+          }
+          setActiveLayers(newLayers);
+          crossfadingRef.current = false;
+        },
+        CROSSFADE_DURATION * 1000 + 150,
+      );
+    } else {
+      // No audio context or already crossfading — just set state
+      const newLayers: Record<string, number> = {};
+      for (const id of genre.layers) {
+        newLayers[id] = 0.2;
+      }
+      setActiveLayers(newLayers);
     }
-    // Set genre layers
-    const newLayers: Record<string, number> = {};
-    for (const id of genre.layers) {
-      newLayers[id] = 0.2;
-      if (ctxRef.current) startLayer(ctxRef.current, id, 0.2);
+  }
+
+  function applyPresetWithLayers(preset: (typeof PRESETS)[0]) {
+    setBaseFreq(preset.base);
+    setBeatFreq(preset.beat);
+    const defaultLayers = PRESET_LAYERS[preset.id];
+    if (!defaultLayers) return;
+
+    const ctx = ctxRef.current;
+    if (ctx && !crossfadingRef.current) {
+      crossfadingRef.current = true;
+      // Fade out all current layers
+      const oldLayerIds = [...layerNodesRef.current.keys()];
+      for (const id of oldLayerIds) {
+        fadeOutLayer(ctx, id);
+      }
+      // After fade out, start preset layers with fade in
+      setTimeout(
+        () => {
+          const newLayers: Record<string, number> = {};
+          for (const id of defaultLayers) {
+            newLayers[id] = 0.2;
+            startLayerWithFadeIn(ctx, id, 0.2);
+          }
+          setActiveLayers(newLayers);
+          crossfadingRef.current = false;
+        },
+        CROSSFADE_DURATION * 1000 + 150,
+      );
+    } else {
+      // No audio context — just set state
+      const newLayers: Record<string, number> = {};
+      for (const id of defaultLayers) {
+        newLayers[id] = 0.2;
+      }
+      setActiveLayers(newLayers);
     }
-    setActiveLayers(newLayers);
   }
 
   useEffect(() => {
@@ -625,10 +753,11 @@ export default function BinauralTuner() {
     }
   }, [baseToneOn]);
 
-  // Filter update
+  // Reverb mix update
   useEffect(() => {
-    if (binFilterRef.current) binFilterRef.current.frequency.value = filterFreq;
-  }, [filterFreq]);
+    if (dryGainRef.current) dryGainRef.current.gain.value = 1 - reverbMix;
+    if (wetGainRef.current) wetGainRef.current.gain.value = reverbMix;
+  }, [reverbMix]);
 
   // Warmth — create/destroy harmonic oscillator dynamically
   useEffect(() => {
@@ -667,7 +796,7 @@ export default function BinauralTuner() {
         warmGainRef.current = null;
       }
     }
-  }, [warmth, baseFreq]);
+  }, [baseFreq]);
 
   // Tremolo — slow wave effect on main gain
   useEffect(() => {
@@ -697,7 +826,7 @@ export default function BinauralTuner() {
         lfoGainRef.current = null;
       }
     }
-  }, [tremolo, tremoloSpeed, volume]);
+  }, [tremolo, volume]);
 
   useEffect(() => {
     return () => {
@@ -801,8 +930,8 @@ export default function BinauralTuner() {
         </svg>
       </div>
 
-      {/* Brain state + play */}
-      <div className="flex items-center justify-center gap-4">
+      {/* Brain state + play + save bookmark */}
+      <div className="flex items-center justify-center gap-3">
         <p
           style={{
             fontFamily: 'var(--font-serif)',
@@ -850,46 +979,71 @@ export default function BinauralTuner() {
             />
           )}
         </button>
-        {/* Binaural on/off */}
-        <button
-          type="button"
-          onClick={() => setBaseToneOn((s) => !s)}
-          className="cursor-pointer rounded-full px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wider transition-all"
-          style={{
-            color: baseToneOn ? '#7A5438' : '#8A6A4A',
-            background: baseToneOn ? '#7A543815' : 'transparent',
-            border: `1px solid ${baseToneOn ? '#7A543840' : '#C4A06018'}`,
-            opacity: baseToneOn ? 1 : 0.4,
-          }}
-        >
-          base {baseToneOn ? 'on' : 'off'}
-        </button>
-        <button
-          type="button"
-          onClick={() => setBinauralOn((s) => !s)}
-          className="cursor-pointer rounded-full px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wider transition-all"
-          style={{
-            color: binauralOn ? activeColor : '#8A6A4A',
-            background: binauralOn ? `${activeColor}15` : 'transparent',
-            border: `1px solid ${binauralOn ? `${activeColor}40` : '#C4A06018'}`,
-            opacity: binauralOn ? 1 : 0.4,
-          }}
-        >
-          beat {binauralOn ? 'on' : 'off'}
-        </button>
-        <button
-          type="button"
-          onClick={() => setTremolo((s) => !s)}
-          className="cursor-pointer rounded-full px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wider transition-all"
-          style={{
-            color: tremolo ? '#6890B0' : '#8A6A4A',
-            background: tremolo ? '#6890B015' : 'transparent',
-            border: `1px solid ${tremolo ? '#6890B040' : '#C4A06018'}`,
-            opacity: tremolo ? 1 : 0.4,
-          }}
-        >
-          wave {tremolo ? 'on' : 'off'}
-        </button>
+        {/* Save bookmark icon */}
+        {!showSave ? (
+          <button
+            type="button"
+            onClick={() => setShowSave(true)}
+            className="flex cursor-pointer items-center justify-center rounded-full transition-all"
+            style={{
+              width: 32,
+              height: 32,
+              background: '#C4A06008',
+              border: '1px solid #C4A06020',
+            }}
+            title="save this mix"
+          >
+            <span
+              className="rotate-45 rounded-[2px] block"
+              style={{ width: 10, height: 10, background: '#C4A060', opacity: 0.5 }}
+            />
+          </button>
+        ) : (
+          <div className="flex items-center gap-1.5">
+            <input
+              type="text"
+              value={saveName}
+              onChange={(e) => setSaveName(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') saveMix();
+                if (e.key === 'Escape') setShowSave(false);
+              }}
+              placeholder="name..."
+              autoFocus
+              className="rounded-lg border bg-transparent px-2 py-1 outline-none placeholder:italic placeholder:text-[#8A6A4A] placeholder:opacity-50"
+              style={{
+                fontFamily: 'var(--font-serif)',
+                fontSize: '12px',
+                color: '#5C3018',
+                borderColor: '#C4A06025',
+                width: 100,
+              }}
+            />
+            <button
+              type="button"
+              onClick={saveMix}
+              className="cursor-pointer rounded-lg px-2 py-1"
+              style={{
+                fontFamily: 'var(--font-serif)',
+                fontSize: '11px',
+                fontWeight: 600,
+                color: '#7AAA58',
+                background: '#7AAA5810',
+                border: '1px solid #7AAA5830',
+              }}
+            >
+              save
+            </button>
+            <button
+              type="button"
+              onClick={() => setShowSave(false)}
+              className="cursor-pointer text-[10px]"
+              style={{ color: '#8A6A4A', opacity: 0.4, background: 'none', border: 'none' }}
+            >
+              x
+            </button>
+          </div>
+        )}
       </div>
 
       {/* Adaptive suggestion — below the wave */}
@@ -911,8 +1065,7 @@ export default function BinauralTuner() {
             onClick={() => {
               const p = PRESETS.find((pr) => pr.id === suggestion.preset);
               if (p) {
-                setBaseFreq(p.base);
-                setBeatFreq(p.beat);
+                applyPresetWithLayers(p);
               }
               setShowSuggestion(false);
             }}
@@ -977,7 +1130,7 @@ export default function BinauralTuner() {
               label="base tone"
               value={baseFreq}
               min={30}
-              max={130}
+              max={80}
               unit="Hz"
               color="#7A5438"
               onChange={setBaseFreq}
@@ -992,10 +1145,103 @@ export default function BinauralTuner() {
               onChange={(v) => setVolume(v / 100)}
             />
 
-            {/* Effects — rotary knobs */}
-            <div className="pt-2">
+            {/* Tone toggles with explanations */}
+            <div className="space-y-2 pt-2">
+              <div className="flex items-center gap-3">
+                <button
+                  type="button"
+                  onClick={() => setBaseToneOn((s) => !s)}
+                  className="shrink-0 cursor-pointer rounded-full px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wider transition-all"
+                  style={{
+                    color: baseToneOn ? '#7A5438' : '#8A6A4A',
+                    background: baseToneOn ? '#7A543815' : 'transparent',
+                    border: `1px solid ${baseToneOn ? '#7A543840' : '#C4A06018'}`,
+                    opacity: baseToneOn ? 1 : 0.4,
+                  }}
+                >
+                  base {baseToneOn ? 'on' : 'off'}
+                </button>
+                <p
+                  className="italic"
+                  style={{
+                    fontFamily: 'var(--font-serif)',
+                    fontSize: '11px',
+                    color: '#8A6A4A',
+                    opacity: 0.45,
+                  }}
+                >
+                  steady low tone — the foundation frequency your brain locks onto
+                </p>
+              </div>
+              <div className="flex items-center gap-3">
+                <button
+                  type="button"
+                  onClick={() => setBinauralOn((s) => !s)}
+                  className="shrink-0 cursor-pointer rounded-full px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wider transition-all"
+                  style={{
+                    color: binauralOn ? activeColor : '#8A6A4A',
+                    background: binauralOn ? `${activeColor}15` : 'transparent',
+                    border: `1px solid ${binauralOn ? `${activeColor}40` : '#C4A06018'}`,
+                    opacity: binauralOn ? 1 : 0.4,
+                  }}
+                >
+                  beat {binauralOn ? 'on' : 'off'}
+                </button>
+                <p
+                  className="italic"
+                  style={{
+                    fontFamily: 'var(--font-serif)',
+                    fontSize: '11px',
+                    color: '#8A6A4A',
+                    opacity: 0.45,
+                  }}
+                >
+                  second tone slightly higher — the difference creates a pulsing beat in your brain
+                </p>
+              </div>
+              <div className="flex items-center gap-3">
+                <button
+                  type="button"
+                  onClick={() => setTremolo((s) => !s)}
+                  className="shrink-0 cursor-pointer rounded-full px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wider transition-all"
+                  style={{
+                    color: tremolo ? '#6890B0' : '#8A6A4A',
+                    background: tremolo ? '#6890B015' : 'transparent',
+                    border: `1px solid ${tremolo ? '#6890B040' : '#C4A06018'}`,
+                    opacity: tremolo ? 1 : 0.4,
+                  }}
+                >
+                  wave {tremolo ? 'on' : 'off'}
+                </button>
+                <p
+                  className="italic"
+                  style={{
+                    fontFamily: 'var(--font-serif)',
+                    fontSize: '11px',
+                    color: '#8A6A4A',
+                    opacity: 0.45,
+                  }}
+                >
+                  gentle volume swell — like breathing
+                </p>
+              </div>
+            </div>
+
+            {/* Reverb control */}
+            <SliderRow
+              label="reverb"
+              value={Math.round(reverbMix * 100)}
+              min={0}
+              max={100}
+              unit="%"
+              color="#A0907A"
+              onChange={(v) => setReverbMix(v / 100)}
+            />
+
+            {/* Brain state presets with default layers */}
+            <div className="pt-3">
               <p
-                className="italic text-center mb-3"
+                className="italic text-center mb-2"
                 style={{
                   fontFamily: 'var(--font-serif)',
                   fontSize: '12px',
@@ -1003,24 +1249,51 @@ export default function BinauralTuner() {
                   opacity: 0.6,
                 }}
               >
-                shape the tone
+                brain states
               </p>
-            </div>
-
-            <div className="flex justify-center gap-6">
-              <RotaryKnob
-                label="filter"
-                value={(filterFreq - 200) / 4800}
-                color="#C4A060"
-                onChange={(v) => setFilterFreq(Math.round(200 + v * 4800))}
-              />
-              <RotaryKnob label="warmth" value={warmth} color="#D4805A" onChange={setWarmth} />
-              <RotaryKnob
-                label="tremolo"
-                value={(tremoloSpeed - 0.05) / 0.45}
-                color="#6890B0"
-                onChange={(v) => setTremoloSpeed(0.05 + v * 0.45)}
-              />
+              <div className="flex flex-wrap justify-center gap-1.5">
+                {PRESETS.map((p) => {
+                  const isActive = p.base === baseFreq && p.beat === beatFreq;
+                  const presetLayers = PRESET_LAYERS[p.id] || [];
+                  return (
+                    <button
+                      key={p.id}
+                      type="button"
+                      onClick={() => applyPresetWithLayers(p)}
+                      className="cursor-pointer rounded-full px-3 py-1.5 text-left transition-all"
+                      style={{
+                        background: isActive ? `${p.color}15` : 'transparent',
+                        border: `1px solid ${isActive ? `${p.color}40` : '#C4A06015'}`,
+                      }}
+                    >
+                      <span
+                        style={{
+                          fontFamily: 'var(--font-serif)',
+                          fontSize: '12px',
+                          fontWeight: 600,
+                          color: isActive ? p.color : '#7A5438',
+                          opacity: isActive ? 1 : 0.6,
+                        }}
+                      >
+                        {p.label}
+                      </span>
+                      {isActive && presetLayers.length > 0 && (
+                        <span
+                          style={{
+                            fontFamily: 'var(--font-serif)',
+                            fontSize: '10px',
+                            color: p.color,
+                            opacity: 0.6,
+                            marginLeft: 4,
+                          }}
+                        >
+                          +{presetLayers.length}
+                        </span>
+                      )}
+                    </button>
+                  );
+                })}
+              </div>
             </div>
           </div>
         </div>
@@ -1183,222 +1456,46 @@ export default function BinauralTuner() {
         </div>
       )}
 
-      {/* Save mix + saved mixes */}
-      <div className="space-y-2 pt-2">
-        {!showSave ? (
-          <button
-            type="button"
-            onClick={() => setShowSave(true)}
-            className="flex w-full cursor-pointer items-center justify-center gap-2 rounded-xl py-2 transition-all"
-            style={{ background: '#C4A06008', border: '1px solid #C4A06018' }}
-          >
-            <span
-              className="rotate-45 rounded-[2px] block"
-              style={{ width: 8, height: 8, background: '#C4A060', opacity: 0.5 }}
-            />
-            <span
-              className="italic"
-              style={{
-                fontFamily: 'var(--font-serif)',
-                fontSize: '13px',
-                color: '#8A6A4A',
-                opacity: 0.6,
-              }}
-            >
-              save this mix
-            </span>
-          </button>
-        ) : (
-          <div className="flex gap-2">
-            <input
-              type="text"
-              value={saveName}
-              onChange={(e) => setSaveName(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter') saveMix();
-              }}
-              placeholder="name your mix..."
-              autoFocus
-              className="flex-1 rounded-lg border bg-transparent px-3 py-1.5 outline-none placeholder:italic placeholder:text-[#8A6A4A] placeholder:opacity-50"
-              style={{
-                fontFamily: 'var(--font-serif)',
-                fontSize: '13px',
-                color: '#5C3018',
-                borderColor: '#C4A06025',
-              }}
-            />
+      {/* Saved mixes list */}
+      {savedMixes.length > 0 && (
+        <div className="space-y-1 pt-2">
+          {savedMixes.map((mix, i) => (
             <button
+              key={`${mix.name}-${i}`}
               type="button"
-              onClick={saveMix}
-              className="cursor-pointer rounded-lg px-3 py-1.5"
-              style={{
-                fontFamily: 'var(--font-serif)',
-                fontSize: '12px',
-                fontWeight: 600,
-                color: '#7AAA58',
-                background: '#7AAA5810',
-                border: '1px solid #7AAA5830',
-              }}
+              onClick={() => loadMix(mix)}
+              className="flex w-full cursor-pointer items-center gap-2 rounded-lg px-3 py-1.5 text-left transition-all hover:bg-[#C4A06008]"
+              style={{ background: 'none', border: 'none' }}
             >
-              save
-            </button>
-            <button
-              type="button"
-              onClick={() => setShowSave(false)}
-              className="cursor-pointer text-[11px]"
-              style={{ color: '#8A6A4A', opacity: 0.4, background: 'none', border: 'none' }}
-            >
-              cancel
-            </button>
-          </div>
-        )}
-        {savedMixes.length > 0 && (
-          <div className="space-y-1">
-            {savedMixes.map((mix, i) => (
-              <button
-                key={`${mix.name}-${i}`}
-                type="button"
-                onClick={() => loadMix(mix)}
-                className="flex w-full cursor-pointer items-center gap-2 rounded-lg px-3 py-1.5 text-left transition-all hover:bg-[#C4A06008]"
-                style={{ background: 'none', border: 'none' }}
+              <span
+                className="block rounded-full"
+                style={{ width: 8, height: 8, background: '#C4A060', opacity: 0.5 }}
+              />
+              <span
+                style={{
+                  fontFamily: 'var(--font-serif)',
+                  fontSize: '13px',
+                  color: '#5C3018',
+                  fontWeight: 600,
+                }}
               >
-                <span
-                  className="block rounded-full"
-                  style={{ width: 8, height: 8, background: '#C4A060', opacity: 0.5 }}
-                />
-                <span
-                  style={{
-                    fontFamily: 'var(--font-serif)',
-                    fontSize: '13px',
-                    color: '#5C3018',
-                    fontWeight: 600,
-                  }}
-                >
-                  {mix.name}
-                </span>
-                <span
-                  style={{
-                    fontFamily: 'var(--font-serif)',
-                    fontSize: '11px',
-                    color: '#8A6A4A',
-                    opacity: 0.4,
-                    marginLeft: 'auto',
-                  }}
-                >
-                  {mix.beat}Hz · {Object.values(mix.layers).filter((v) => v > 0).length} layers
-                </span>
-              </button>
-            ))}
-          </div>
-        )}
-      </div>
-    </div>
-  );
-}
-
-function RotaryKnob({
-  label,
-  value,
-  color,
-  onChange,
-}: {
-  label: string;
-  value: number; // 0-1
-  color: string;
-  onChange: (v: number) => void;
-}) {
-  const size = 56;
-  const cx = size / 2;
-  const cy = size / 2;
-  const r = 22;
-  const stroke = 4;
-  // Arc from 135deg to 405deg (270deg sweep)
-  const startAngle = 135;
-  const endAngle = 405;
-  const sweep = endAngle - startAngle;
-  const currentAngle = startAngle + value * sweep;
-
-  function polarToCart(angle: number, radius: number) {
-    const rad = (angle * Math.PI) / 180;
-    return { x: cx + radius * Math.cos(rad), y: cy + radius * Math.sin(rad) };
-  }
-
-  const arcStart = polarToCart(startAngle, r);
-  const arcEnd = polarToCart(currentAngle, r);
-  const largeArc = currentAngle - startAngle > 180 ? 1 : 0;
-
-  const bgArcEnd = polarToCart(endAngle, r);
-  const bgLargeArc = 1;
-
-  // Indicator dot
-  const dot = polarToCart(currentAngle, r);
-
-  function handleClick(e: React.MouseEvent<SVGSVGElement>) {
-    const rect = e.currentTarget.getBoundingClientRect();
-    const mx = e.clientX - rect.left - cx;
-    const my = e.clientY - rect.top - cy;
-    let angle = (Math.atan2(my, mx) * 180) / Math.PI;
-    if (angle < 0) angle += 360;
-    // Map angle to value (135-405 range, wrapping at 360)
-    let normalized = angle - startAngle;
-    if (normalized < -45) normalized += 360;
-    const clamped = Math.max(0, Math.min(sweep, normalized));
-    onChange(clamped / sweep);
-  }
-
-  return (
-    <div className="flex flex-col items-center gap-1">
-      <svg width={size} height={size} className="cursor-pointer" onClick={handleClick}>
-        {/* Background arc */}
-        <path
-          d={`M ${arcStart.x} ${arcStart.y} A ${r} ${r} 0 ${bgLargeArc} 1 ${bgArcEnd.x} ${bgArcEnd.y}`}
-          fill="none"
-          stroke={color}
-          strokeWidth={stroke}
-          opacity={0.12}
-          strokeLinecap="round"
-        />
-        {/* Value arc */}
-        {value > 0.01 && (
-          <path
-            d={`M ${arcStart.x} ${arcStart.y} A ${r} ${r} 0 ${largeArc} 1 ${arcEnd.x} ${arcEnd.y}`}
-            fill="none"
-            stroke={color}
-            strokeWidth={stroke}
-            opacity={0.7}
-            strokeLinecap="round"
-          />
-        )}
-        {/* Dot indicator */}
-        <circle cx={dot.x} cy={dot.y} r={3.5} fill={color} opacity={0.9} />
-        {/* Center value */}
-        <text
-          x={cx}
-          y={cy + 1}
-          textAnchor="middle"
-          dominantBaseline="middle"
-          style={{
-            fontFamily: 'var(--font-serif)',
-            fontSize: '11px',
-            fontWeight: 700,
-            fill: color,
-            opacity: 0.7,
-          }}
-        >
-          {Math.round(value * 100)}
-        </text>
-      </svg>
-      <span
-        style={{
-          fontFamily: 'var(--font-serif)',
-          fontSize: '10px',
-          color,
-          opacity: 0.5,
-          fontWeight: 600,
-        }}
-      >
-        {label}
-      </span>
+                {mix.name}
+              </span>
+              <span
+                style={{
+                  fontFamily: 'var(--font-serif)',
+                  fontSize: '11px',
+                  color: '#8A6A4A',
+                  opacity: 0.4,
+                  marginLeft: 'auto',
+                }}
+              >
+                {mix.beat}Hz · {Object.values(mix.layers).filter((v) => v > 0).length} layers
+              </span>
+            </button>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
