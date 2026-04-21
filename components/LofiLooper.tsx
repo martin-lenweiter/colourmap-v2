@@ -468,8 +468,11 @@ export default function LofiLooper() {
     stepRef.current++;
   }, [volume]);
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: getCtx uses ref
   const start = useCallback(() => {
     if (timerRef.current) return;
+    // Ensure AudioContext is created on user gesture
+    getCtx();
     stepRef.current = 0;
     const stepMs = (60 / bpm / 4) * 1000; // 16th notes
     tick();
