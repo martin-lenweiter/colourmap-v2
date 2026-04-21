@@ -993,7 +993,7 @@ export default function LofiLooper() {
         </div>
       )}
 
-      {/* ── BASS GRID ── */}
+      {/* ── BASS PIANO ROLL ── */}
       {activeLayer === 'bass' && (
         <div className="space-y-2">
           {/* Bass type selector */}
@@ -1015,54 +1015,65 @@ export default function LofiLooper() {
               </button>
             ))}
           </div>
-          <div className="flex items-center gap-1.5">
-            <span
-              style={{
-                fontFamily: 'var(--font-serif)',
-                fontSize: '10px',
-                fontWeight: 600,
-                color: '#7AAA58',
-                width: 40,
-                textAlign: 'right',
-              }}
-            >
-              Bass
-            </span>
-            <div className="flex flex-1 gap-[2px]">
-              {bass.map((freq, s) => {
-                const cur = currentStep === s;
-                const noteIdx = freq ? bassNotes.indexOf(freq) : 0;
-                const hasNote = noteIdx > 0;
+          {/* Piano roll — notes on Y, steps on X */}
+          <div className="space-y-0">
+            {[...bassNotes]
+              .reverse()
+              .filter((f) => f > 0)
+              .map((noteFreq) => {
+                const noteIdx = bassNotes.indexOf(noteFreq);
+                const noteName = NOTES[noteIdx - 1];
                 return (
-                  <button
-                    key={s}
-                    type="button"
-                    onClick={() => {
-                      const next = [...bass];
-                      const ni = (noteIdx + 1) % bassNotes.length;
-                      next[s] = ni === 0 ? null : bassNotes[ni];
-                      setBass(next);
-                    }}
-                    className="flex-1 cursor-pointer rounded-[3px] transition-all flex items-center justify-center"
-                    style={{
-                      height: 28,
-                      background: hasNote ? '#7AAA58' : cur ? `${pal.active}20` : pal.bg,
-                      opacity: hasNote ? (cur ? 1 : 0.5 + noteIdx * 0.07) : 1,
-                      border: 'none',
-                      boxShadow: cur && hasNote ? '0 0 8px #7AAA5860' : 'none',
-                    }}
-                  >
-                    {hasNote && (
-                      <span style={{ fontSize: '8px', color: '#F5ECDC', fontWeight: 700 }}>
-                        {NOTES[noteIdx - 1]}
-                      </span>
-                    )}
-                  </button>
+                  <div key={noteFreq} className="flex items-center gap-1">
+                    <span
+                      style={{
+                        fontFamily: 'var(--font-serif)',
+                        fontSize: '9px',
+                        fontWeight: 600,
+                        color: '#7AAA58',
+                        width: 16,
+                        textAlign: 'right',
+                        opacity: 0.7,
+                      }}
+                    >
+                      {noteName}
+                    </span>
+                    <div className="flex flex-1 gap-[1px]">
+                      {Array.from({ length: STEPS }, (_, s) => {
+                        const isOn = bass[s] === noteFreq;
+                        const cur = currentStep === s;
+                        return (
+                          <button
+                            key={s}
+                            type="button"
+                            onClick={() => {
+                              const next = [...bass];
+                              next[s] = isOn ? null : noteFreq;
+                              setBass(next);
+                            }}
+                            className="flex-1 cursor-pointer rounded-[2px] transition-all"
+                            style={{
+                              height: 14,
+                              background: isOn
+                                ? '#7AAA58'
+                                : cur
+                                  ? `${pal.active}15`
+                                  : s % 4 === 0
+                                    ? '#C4A06008'
+                                    : 'transparent',
+                              opacity: isOn ? (cur ? 1 : 0.65) : 1,
+                              border: 'none',
+                              boxShadow: cur && isOn ? '0 0 6px #7AAA5850' : 'none',
+                            }}
+                          />
+                        );
+                      })}
+                    </div>
+                  </div>
                 );
               })}
-            </div>
           </div>
-          <div className="flex gap-[2px]" style={{ marginLeft: 46 }}>
+          <div className="flex gap-[1px]" style={{ marginLeft: 20 }}>
             {Array.from({ length: STEPS }, (_, s) => (
               <div
                 key={s}
@@ -1070,7 +1081,7 @@ export default function LofiLooper() {
                 style={{
                   height: 3,
                   background: '#7AAA58',
-                  opacity: currentStep === s ? 0.8 : 0.08,
+                  opacity: currentStep === s ? 0.8 : 0.06,
                 }}
               />
             ))}
@@ -1078,7 +1089,7 @@ export default function LofiLooper() {
         </div>
       )}
 
-      {/* ── MELODY GRID ── */}
+      {/* ── MELODY PIANO ROLL ── */}
       {activeLayer === 'melody' && (
         <div className="space-y-2">
           {/* Instrument selector */}
@@ -1100,64 +1111,75 @@ export default function LofiLooper() {
               </button>
             ))}
           </div>
-          <div className="flex items-center gap-1.5">
-            <span
-              style={{
-                fontFamily: 'var(--font-serif)',
-                fontSize: '10px',
-                fontWeight: 600,
-                color: '#9B6BA0',
-                width: 40,
-                textAlign: 'right',
-              }}
-            >
-              Note
-            </span>
-            <div className="flex flex-1 gap-[2px]">
-              {melody.map((freq, s) => {
-                const cur = currentStep === s;
-                const noteIdx = freq ? melodyNotes.indexOf(freq) : 0;
-                const hasNote = noteIdx > 0;
-                const instColor =
-                  MELODY_INSTRUMENTS.find((i) => i.id === melodyInst)?.color || '#9B6BA0';
-                return (
-                  <button
-                    key={s}
-                    type="button"
-                    onClick={() => {
-                      const next = [...melody];
-                      const ni = (noteIdx + 1) % melodyNotes.length;
-                      next[s] = ni === 0 ? null : melodyNotes[ni];
-                      setMelody(next);
-                    }}
-                    className="flex-1 cursor-pointer rounded-[3px] transition-all flex items-center justify-center"
-                    style={{
-                      height: 28,
-                      background: hasNote ? instColor : cur ? `${pal.active}20` : pal.bg,
-                      opacity: hasNote ? (cur ? 1 : 0.5 + noteIdx * 0.04) : 1,
-                      border: 'none',
-                      boxShadow: cur && hasNote ? `0 0 8px ${instColor}60` : 'none',
-                    }}
-                  >
-                    {hasNote && (
-                      <span style={{ fontSize: '7px', color: '#F5ECDC', fontWeight: 700 }}>
-                        {['C', 'D', 'E', 'F', 'G', 'A', 'B', 'C', 'D', 'E'][noteIdx - 1]}
-                      </span>
-                    )}
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-          <div className="flex gap-[2px]" style={{ marginLeft: 46 }}>
+          {/* Piano roll — notes on Y, steps on X */}
+          {(() => {
+            const instColor =
+              MELODY_INSTRUMENTS.find((i) => i.id === melodyInst)?.color || '#9B6BA0';
+            const melodyLabels = ['E5', 'D5', 'C5', 'B4', 'A4', 'G4', 'F4', 'E4', 'D4', 'C4'];
+            const reversedNotes = [...melodyNotes].slice(1).reverse();
+            return (
+              <div className="space-y-0">
+                {reversedNotes.map((noteFreq, ri) => (
+                  <div key={noteFreq} className="flex items-center gap-1">
+                    <span
+                      style={{
+                        fontFamily: 'var(--font-serif)',
+                        fontSize: '8px',
+                        fontWeight: 600,
+                        color: instColor,
+                        width: 20,
+                        textAlign: 'right',
+                        opacity: 0.6,
+                      }}
+                    >
+                      {melodyLabels[ri]}
+                    </span>
+                    <div className="flex flex-1 gap-[1px]">
+                      {Array.from({ length: STEPS }, (_, s) => {
+                        const isOn = melody[s] === noteFreq;
+                        const cur = currentStep === s;
+                        return (
+                          <button
+                            key={s}
+                            type="button"
+                            onClick={() => {
+                              const next = [...melody];
+                              next[s] = isOn ? null : noteFreq;
+                              setMelody(next);
+                            }}
+                            className="flex-1 cursor-pointer rounded-[2px] transition-all"
+                            style={{
+                              height: 12,
+                              background: isOn
+                                ? instColor
+                                : cur
+                                  ? `${pal.active}15`
+                                  : s % 4 === 0
+                                    ? '#C4A06008'
+                                    : 'transparent',
+                              opacity: isOn ? (cur ? 1 : 0.6) : 1,
+                              border: 'none',
+                              boxShadow: cur && isOn ? `0 0 6px ${instColor}50` : 'none',
+                            }}
+                          />
+                        );
+                      })}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            );
+          })()}
+          <div className="flex gap-[1px]" style={{ marginLeft: 24 }}>
             {Array.from({ length: STEPS }, (_, s) => (
               <div
                 key={s}
                 className="flex-1 rounded-full transition-all"
                 style={{
                   height: 3,
-                  background: '#9B6BA0',
-                  opacity: currentStep === s ? 0.8 : 0.08,
+                  background:
+                    MELODY_INSTRUMENTS.find((i) => i.id === melodyInst)?.color || '#9B6BA0',
+                  opacity: currentStep === s ? 0.8 : 0.06,
                 }}
               />
             ))}

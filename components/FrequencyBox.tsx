@@ -74,6 +74,10 @@ function getDirection(
 }
 
 export default function FrequencyBox() {
+  const [open, setOpen] = useState(() => {
+    if (typeof window === 'undefined') return true;
+    return localStorage.getItem('colourmap:frequency-open') !== 'false';
+  });
   const [bodyIdx, setBodyIdx] = useState(2);
   const [focusIdx, setFocusIdx] = useState(2);
   const [clarityIdx, setClarityIdx] = useState(2);
@@ -135,65 +139,86 @@ export default function FrequencyBox() {
         boxShadow: '0 24px 50px -34px rgba(92,48,24,0.35)',
       }}
     >
-      {/* Title */}
-      <p
-        className="text-center italic"
-        style={{
-          fontFamily: 'var(--font-serif)',
-          fontSize: '15px',
-          color: '#8A6A4A',
-          opacity: 0.95,
+      {/* Title — tap to toggle */}
+      <button
+        type="button"
+        onClick={() => {
+          const next = !open;
+          setOpen(next);
+          localStorage.setItem('colourmap:frequency-open', String(next));
         }}
+        className="flex w-full cursor-pointer items-center justify-center gap-2"
+        style={{ background: 'none', border: 'none' }}
       >
-        your frequency
-      </p>
+        <p
+          className="italic"
+          style={{
+            fontFamily: 'var(--font-serif)',
+            fontSize: '15px',
+            color: '#8A6A4A',
+            opacity: 0.95,
+          }}
+        >
+          your frequency
+        </p>
+        <span
+          className="text-[10px] transition-transform duration-200"
+          style={{ color: '#8A6A4A80', transform: open ? 'rotate(180deg)' : 'rotate(0deg)' }}
+        >
+          ▾
+        </span>
+      </button>
 
-      {/* The string */}
-      <div className="flex justify-center">
-        <svg width={W} height={H} style={{ overflow: 'visible' }}>
-          {/* Resting line */}
-          <line x1={0} y1={cy} x2={W} y2={cy} stroke="#C4A06015" strokeWidth={1} />
-          {/* The wave */}
-          <path
-            d={pathD}
-            fill="none"
-            stroke={color}
-            strokeWidth={2.5}
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            style={{ transition: 'all 0.5s ease-out' }}
-          />
-          {/* Glow */}
-          <path
-            d={pathD}
-            fill="none"
-            stroke={color}
-            strokeWidth={8}
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            opacity={0.15}
-            style={{ transition: 'all 0.5s ease-out' }}
-          />
-          {/* Anchor dots at edges */}
-          <circle cx={4} cy={cy} r={3} fill={color} opacity={0.6} />
-          <circle cx={W - 4} cy={cy} r={3} fill={color} opacity={0.6} />
-        </svg>
-      </div>
+      {open && (
+        <>
+          {/* The string */}
+          <div className="flex justify-center">
+            <svg width={W} height={H} style={{ overflow: 'visible' }}>
+              {/* Resting line */}
+              <line x1={0} y1={cy} x2={W} y2={cy} stroke="#C4A06015" strokeWidth={1} />
+              {/* The wave */}
+              <path
+                d={pathD}
+                fill="none"
+                stroke={color}
+                strokeWidth={2.5}
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                style={{ transition: 'all 0.5s ease-out' }}
+              />
+              {/* Glow */}
+              <path
+                d={pathD}
+                fill="none"
+                stroke={color}
+                strokeWidth={8}
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                opacity={0.15}
+                style={{ transition: 'all 0.5s ease-out' }}
+              />
+              {/* Anchor dots at edges */}
+              <circle cx={4} cy={cy} r={3} fill={color} opacity={0.6} />
+              <circle cx={W - 4} cy={cy} r={3} fill={color} opacity={0.6} />
+            </svg>
+          </div>
 
-      {/* Direction word */}
-      <p
-        className="text-center"
-        style={{
-          fontFamily: 'var(--font-serif)',
-          fontSize: '18px',
-          fontWeight: 700,
-          color: direction.color,
-          letterSpacing: '0.06em',
-          transition: 'color 0.5s',
-        }}
-      >
-        {direction.word}
-      </p>
+          {/* Direction word */}
+          <p
+            className="text-center"
+            style={{
+              fontFamily: 'var(--font-serif)',
+              fontSize: '18px',
+              fontWeight: 700,
+              color: direction.color,
+              letterSpacing: '0.06em',
+              transition: 'color 0.5s',
+            }}
+          >
+            {direction.word}
+          </p>
+        </>
+      )}
     </div>
   );
 }
