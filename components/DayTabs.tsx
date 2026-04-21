@@ -12,10 +12,11 @@ import { useStyle } from '@/components/StyleContext';
 
 type Tab = 'checkin' | 'overview' | 'mastery' | 'tuner';
 
+// V1: Check in + Sounds only. Overview + Mastery hidden — restore by uncommenting.
 const TABS: { id: Tab; label: string }[] = [
   { id: 'checkin', label: 'Check in' },
-  { id: 'overview', label: 'Overview' },
-  { id: 'mastery', label: 'Mastery' },
+  // { id: 'overview', label: 'Overview' },
+  // { id: 'mastery', label: 'Mastery' },
   { id: 'tuner', label: 'Sounds' },
 ];
 

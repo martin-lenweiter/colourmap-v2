@@ -8,19 +8,19 @@ import { useViewMode } from './ViewModeContext';
 
 const PRIMARY_LINKS = [
   { href: '/day', label: 'Day' },
-  { href: '/journey', label: 'Journey' },
   { href: '/circles', label: 'Circles' },
   { href: '/notebook', label: 'Notebook' },
 ];
 
 const PHONE_PRIMARY_LINKS = [
   { href: '/day', label: 'Day' },
-  { href: '/journey', label: 'Journey' },
   { href: '/circles', label: 'Circles' },
   { href: '/notebook', label: 'Notebook' },
 ];
 
+// V2 features — hidden for now, restore by moving back to PRIMARY_LINKS
 const MORE_LINKS = [
+  { href: '/journey', label: 'Journey' },
   { href: '/life-scan', label: 'Life Scan' },
   { href: '/programs', label: 'Programs' },
   { href: '/research', label: 'Research' },
