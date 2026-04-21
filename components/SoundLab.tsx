@@ -2,13 +2,14 @@
 
 import { useState } from 'react';
 import BinauralTuner from '@/components/BinauralTuner';
+import LofiLooper from '@/components/LofiLooper';
 import MagicMaker from '@/components/MagicMaker';
 
 /* ═══════════════════════════════════════════════════════════
    SOUND LAB — toggles between Tuner and Magic Maker.
    ═══════════════════════════════════════════════════════════ */
 
-type Mode = 'tuner' | 'maker';
+type Mode = 'tuner' | 'maker' | 'looper';
 
 export default function SoundLab() {
   const [mode, setMode] = useState<Mode>('tuner');
@@ -20,6 +21,7 @@ export default function SoundLab() {
         {[
           { id: 'tuner' as const, label: 'Tuner' },
           { id: 'maker' as const, label: 'Magic Maker' },
+          { id: 'looper' as const, label: 'Lo-fi Looper' },
         ].map((m) => (
           <button
             key={m.id}
@@ -47,6 +49,7 @@ export default function SoundLab() {
       >
         {mode === 'tuner' && <BinauralTuner />}
         {mode === 'maker' && <MagicMaker />}
+        {mode === 'looper' && <LofiLooper />}
       </div>
     </div>
   );
