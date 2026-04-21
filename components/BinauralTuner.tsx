@@ -11,12 +11,12 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 
 // ── Brain state presets ──
 const PRESETS = [
-  { id: 'deep-sleep', label: 'Deep Sleep', base: 180, beat: 2, color: '#9B6BA0' },
-  { id: 'meditation', label: 'Meditation', base: 200, beat: 6, color: '#6890B0' },
-  { id: 'creativity', label: 'Creativity', base: 210, beat: 7, color: '#D4805A' },
-  { id: 'calm-focus', label: 'Calm Focus', base: 220, beat: 10, color: '#7AAA58' },
-  { id: 'active-mind', label: 'Active Mind', base: 240, beat: 18, color: '#C4A060' },
-  { id: 'peak', label: 'Peak', base: 260, beat: 35, color: '#D06040' },
+  { id: 'deep-sleep', label: 'Deep Sleep', base: 40, beat: 2, color: '#9B6BA0' },
+  { id: 'meditation', label: 'Meditation', base: 60, beat: 5, color: '#6890B0' },
+  { id: 'creativity', label: 'Creativity', base: 70, beat: 6, color: '#D4805A' },
+  { id: 'calm-focus', label: 'Calm Focus', base: 80, beat: 8, color: '#7AAA58' },
+  { id: 'presence', label: 'Presence', base: 50, beat: 4, color: '#C4A060' },
+  { id: 'stillness', label: 'Stillness', base: 35, beat: 2, color: '#A0907A' },
 ];
 
 // ── Soundscape layers ──
@@ -198,7 +198,7 @@ const GENRES: Genre[] = [
     color: '#5A8AAA',
     subtitle: 'waves · drone · vast stillness',
     beat: 3,
-    base: 160,
+    base: 45,
     layers: ['ocean', 'waves', 'sub', 'breath'],
   },
   {
@@ -206,8 +206,8 @@ const GENRES: Genre[] = [
     label: 'Forest Morning',
     color: '#7AAA58',
     subtitle: 'birds · wind · alive',
-    beat: 7,
-    base: 200,
+    beat: 6,
+    base: 65,
     layers: ['forest', 'birds', 'wind'],
   },
   {
@@ -215,8 +215,8 @@ const GENRES: Genre[] = [
     label: 'Fireside',
     color: '#D4805A',
     subtitle: 'fire · drone · warm crackle',
-    beat: 6,
-    base: 180,
+    beat: 5,
+    base: 55,
     layers: ['fire', 'drone', 'crackle'],
   },
   {
@@ -224,8 +224,8 @@ const GENRES: Genre[] = [
     label: 'Rain Night',
     color: '#6890B0',
     subtitle: 'rain · thunder · deep rest',
-    beat: 4,
-    base: 170,
+    beat: 3,
+    base: 40,
     layers: ['rain', 'thunder', 'sub'],
   },
   {
@@ -233,8 +233,8 @@ const GENRES: Genre[] = [
     label: 'Focus',
     color: '#C4A060',
     subtitle: 'bowl · hum · clear mind',
-    beat: 10,
-    base: 220,
+    beat: 8,
+    base: 75,
     layers: ['bowl', 'hum', 'wind'],
   },
   {
@@ -242,8 +242,8 @@ const GENRES: Genre[] = [
     label: 'Trippy',
     color: '#9B6BA0',
     subtitle: 'harmonic · ocean · floating',
-    beat: 5,
-    base: 180,
+    beat: 4,
+    base: 50,
     layers: ['ocean', 'harmonic', 'sub', 'breath'],
   },
   {
@@ -251,8 +251,8 @@ const GENRES: Genre[] = [
     label: 'Storm',
     color: '#8A6A4A',
     subtitle: 'thunder · rain · waves · power',
-    beat: 4,
-    base: 150,
+    beat: 3,
+    base: 35,
     layers: ['thunder', 'rain', 'waves', 'wind'],
   },
   {
@@ -260,8 +260,8 @@ const GENRES: Genre[] = [
     label: 'Zen',
     color: '#A0907A',
     subtitle: 'bowl · breath · silence',
-    beat: 6,
-    base: 190,
+    beat: 4,
+    base: 45,
     layers: ['bowl', 'breath'],
   },
 ];
@@ -325,13 +325,17 @@ export default function BinauralTuner() {
   const panLRef = useRef<StereoPannerNode | null>(null);
   const panRRef = useRef<StereoPannerNode | null>(null);
   const binGainRef = useRef<GainNode | null>(null);
-  const [baseFreq, setBaseFreq] = useState(220);
-  const [beatFreq, setBeatFreq] = useState(10);
+  const [baseFreq, setBaseFreq] = useState(60);
+  const [beatFreq, setBeatFreq] = useState(4);
   const [volume, setVolume] = useState(0.15);
   const [activeLayers, setActiveLayers] = useState<Record<string, number>>({});
   const [activeGenre, setActiveGenre] = useState<string | null>(null);
   const [showSuggestion, setShowSuggestion] = useState(true);
   const [view, setView] = useState<'presets' | 'layers' | 'genres'>('presets');
+  const [tremolo, setTremolo] = useState(false);
+  const [tremoloSpeed, setTremoloSpeed] = useState(0.15); // Hz — very slow wave
+  const lfoRef = useRef<OscillatorNode | null>(null);
+  const lfoGainRef = useRef<GainNode | null>(null);
   const [savedMixes, setSavedMixes] = useState<
     {
       name: string;
@@ -564,6 +568,36 @@ export default function BinauralTuner() {
     if (binGainRef.current) binGainRef.current.gain.value = binauralOn ? 1 : 0;
   }, [binauralOn]);
 
+  // Tremolo — slow wave effect on main gain
+  useEffect(() => {
+    const ctx = ctxRef.current;
+    const gain = gainRef.current;
+    if (!ctx || !gain) return;
+    if (tremolo) {
+      const lfo = ctx.createOscillator();
+      lfo.type = 'sine';
+      lfo.frequency.value = tremoloSpeed;
+      const lfoGain = ctx.createGain();
+      lfoGain.gain.value = volume * 0.4; // modulation depth
+      lfo.connect(lfoGain);
+      lfoGain.connect(gain.gain);
+      lfo.start();
+      lfoRef.current = lfo;
+      lfoGainRef.current = lfoGain;
+    } else {
+      if (lfoRef.current) {
+        try {
+          lfoRef.current.stop();
+        } catch {}
+        lfoRef.current = null;
+      }
+      if (lfoGainRef.current) {
+        lfoGainRef.current.disconnect();
+        lfoGainRef.current = null;
+      }
+    }
+  }, [tremolo, tremoloSpeed, volume]);
+
   useEffect(() => {
     return () => {
       if (ctxRef.current) {
@@ -711,6 +745,19 @@ export default function BinauralTuner() {
         >
           binaural {binauralOn ? 'on' : 'off'}
         </button>
+        <button
+          type="button"
+          onClick={() => setTremolo((s) => !s)}
+          className="cursor-pointer rounded-full px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wider transition-all"
+          style={{
+            color: tremolo ? '#6890B0' : '#8A6A4A',
+            background: tremolo ? '#6890B015' : 'transparent',
+            border: `1px solid ${tremolo ? '#6890B040' : '#C4A06018'}`,
+            opacity: tremolo ? 1 : 0.4,
+          }}
+        >
+          wave {tremolo ? 'on' : 'off'}
+        </button>
       </div>
 
       {/* Adaptive suggestion — below the wave */}
@@ -757,7 +804,13 @@ export default function BinauralTuner() {
 
       {/* View tabs: presets / genres / layers */}
       <div className="flex justify-center gap-1.5">
-        {(['presets', 'genres', 'layers'] as const).map((v) => (
+        {(
+          [
+            ['presets', 'sliders'],
+            ['genres', 'genres'],
+            ['layers', 'layers'],
+          ] as const
+        ).map(([v, label]) => (
           <button
             key={v}
             type="button"
@@ -770,46 +823,20 @@ export default function BinauralTuner() {
               opacity: view === v ? 1 : 0.5,
             }}
           >
-            {v}
+            {label}
           </button>
         ))}
       </div>
 
-      {/* ── PRESETS VIEW ── */}
+      {/* ── SLIDERS VIEW ── */}
       {view === 'presets' && (
         <div className="space-y-4">
-          <div className="flex flex-wrap justify-center gap-1.5">
-            {PRESETS.map((p) => {
-              const isActive = preset?.id === p.id;
-              return (
-                <button
-                  key={p.id}
-                  type="button"
-                  onClick={() => {
-                    setBaseFreq(p.base);
-                    setBeatFreq(p.beat);
-                    setActiveGenre(null);
-                  }}
-                  className="cursor-pointer rounded-full px-3 py-1 text-[11px] font-semibold uppercase tracking-wider transition-all"
-                  style={{
-                    color: p.color,
-                    background: isActive ? `${p.color}15` : 'transparent',
-                    border: `1px solid ${isActive ? `${p.color}40` : `${p.color}18`}`,
-                    opacity: isActive ? 1 : 0.6,
-                  }}
-                >
-                  {p.label}
-                </button>
-              );
-            })}
-          </div>
-          {/* Sliders */}
           <div className="space-y-3 px-2">
             <SliderRow
               label="binaural beat"
               value={beatFreq}
               min={1}
-              max={40}
+              max={10}
               unit="Hz"
               color={activeColor}
               onChange={setBeatFreq}
@@ -817,8 +844,8 @@ export default function BinauralTuner() {
             <SliderRow
               label="base tone"
               value={baseFreq}
-              min={100}
-              max={400}
+              min={30}
+              max={130}
               unit="Hz"
               color="#7A5438"
               onChange={setBaseFreq}
@@ -965,17 +992,23 @@ export default function BinauralTuner() {
                             setLayerVol(l.id, Math.max(0, Math.min(1, x)));
                           }}
                         >
-                          {Array.from({ length: 8 }, (_, si) => (
-                            <div
-                              key={si}
-                              className="flex-1 rounded-[3px] transition-all"
-                              style={{
-                                height: 10,
-                                background: l.color,
-                                opacity: si / 7 <= vol ? 0.3 + (si / 7) * 0.5 : 0.08,
-                              }}
-                            />
-                          ))}
+                          {Array.from({ length: 8 }, (_, si) => {
+                            const t = si / 7;
+                            // Subtle degrade: lighten at start, full color at end
+                            const lightness = 1 - t * 0.3; // 1.0 → 0.7
+                            return (
+                              <div
+                                key={si}
+                                className="flex-1 rounded-[3px] transition-all"
+                                style={{
+                                  height: 10,
+                                  background: l.color,
+                                  opacity: t <= vol ? 0.25 + t * 0.55 : 0.06,
+                                  filter: `brightness(${lightness})`,
+                                }}
+                              />
+                            );
+                          })}
                         </div>
                       )}
                     </div>
