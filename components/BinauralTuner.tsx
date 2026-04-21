@@ -76,42 +76,56 @@ const LAYERS: LayerDef[] = [
     label: 'Rain',
     color: '#6890B0',
     group: 'nature',
-    build: (ctx) => buildNoise(ctx, 'highpass', 800, 3.5),
+    build: (ctx) => buildNoise(ctx, 'highpass', 800, 1.2),
   },
   {
     id: 'ocean',
     label: 'Ocean',
     color: '#5A8AAA',
     group: 'nature',
-    build: (ctx) => buildNoise(ctx, 'lowpass', 300, 4),
+    build: (ctx) => buildNoise(ctx, 'lowpass', 300, 1.5),
   },
   {
     id: 'wind',
     label: 'Wind',
     color: '#A0C8A0',
     group: 'nature',
-    build: (ctx) => buildNoise(ctx, 'lowpass', 400, 2.5),
+    build: (ctx) => buildNoise(ctx, 'lowpass', 400, 1.0),
   },
   {
     id: 'fire',
     label: 'Fire',
     color: '#D4805A',
     group: 'nature',
-    build: (ctx) => buildNoise(ctx, 'bandpass', 600, 2),
+    build: (ctx) => buildNoise(ctx, 'bandpass', 600, 0.8),
   },
   {
     id: 'forest',
     label: 'Forest',
     color: '#7AAA58',
     group: 'nature',
-    build: (ctx) => buildNoise(ctx, 'bandpass', 2000, 1.5),
+    build: (ctx) => buildNoise(ctx, 'bandpass', 2000, 0.6),
   },
   {
     id: 'thunder',
     label: 'Thunder',
     color: '#8A6A4A',
     group: 'nature',
-    build: (ctx) => buildNoise(ctx, 'lowpass', 100, 5),
+    build: (ctx) => buildNoise(ctx, 'lowpass', 100, 1.8),
+  },
+  {
+    id: 'birds',
+    label: 'Birds',
+    color: '#C8906A',
+    group: 'nature',
+    build: (ctx) => buildNoise(ctx, 'highpass', 3500, 0.4),
+  },
+  {
+    id: 'waves',
+    label: 'Waves',
+    color: '#88B0C8',
+    group: 'nature',
+    build: (ctx) => buildNoise(ctx, 'bandpass', 200, 1.0),
   },
   // Tones
   {
@@ -148,14 +162,14 @@ const LAYERS: LayerDef[] = [
     label: 'Vinyl',
     color: '#B8A080',
     group: 'texture',
-    build: (ctx) => buildNoise(ctx, 'highpass', 3000, 0.8),
+    build: (ctx) => buildNoise(ctx, 'highpass', 3000, 0.3),
   },
   {
     id: 'breath',
     label: 'Breath',
     color: '#C8C8A0',
     group: 'texture',
-    build: (ctx) => buildNoise(ctx, 'bandpass', 500, 1.2),
+    build: (ctx) => buildNoise(ctx, 'bandpass', 500, 0.5),
   },
   {
     id: 'hum',
@@ -179,58 +193,76 @@ interface Genre {
 
 const GENRES: Genre[] = [
   {
+    id: 'deep-ocean',
+    label: 'Deep Ocean',
+    color: '#5A8AAA',
+    subtitle: 'waves · drone · vast stillness',
+    beat: 3,
+    base: 160,
+    layers: ['ocean', 'waves', 'sub', 'breath'],
+  },
+  {
+    id: 'forest-morning',
+    label: 'Forest Morning',
+    color: '#7AAA58',
+    subtitle: 'birds · wind · alive',
+    beat: 7,
+    base: 200,
+    layers: ['forest', 'birds', 'wind'],
+  },
+  {
+    id: 'fireside',
+    label: 'Fireside',
+    color: '#D4805A',
+    subtitle: 'fire · drone · warm crackle',
+    beat: 6,
+    base: 180,
+    layers: ['fire', 'drone', 'crackle'],
+  },
+  {
+    id: 'rain-night',
+    label: 'Rain Night',
+    color: '#6890B0',
+    subtitle: 'rain · thunder · deep rest',
+    beat: 4,
+    base: 170,
+    layers: ['rain', 'thunder', 'sub'],
+  },
+  {
+    id: 'focus',
+    label: 'Focus',
+    color: '#C4A060',
+    subtitle: 'bowl · hum · clear mind',
+    beat: 10,
+    base: 220,
+    layers: ['bowl', 'hum', 'wind'],
+  },
+  {
     id: 'trippy',
     label: 'Trippy',
     color: '#9B6BA0',
-    subtitle: 'deep · psychedelic · floating',
-    beat: 6,
+    subtitle: 'harmonic · ocean · floating',
+    beat: 5,
     base: 180,
     layers: ['ocean', 'harmonic', 'sub', 'breath'],
   },
   {
-    id: 'classical',
-    label: 'Classical',
-    color: '#C4A060',
-    subtitle: 'warm · elegant · grounded',
-    beat: 10,
-    base: 220,
-    layers: ['fire', 'bowl', 'drone'],
+    id: 'storm',
+    label: 'Storm',
+    color: '#8A6A4A',
+    subtitle: 'thunder · rain · waves · power',
+    beat: 4,
+    base: 150,
+    layers: ['thunder', 'rain', 'waves', 'wind'],
   },
   {
-    id: 'groovy',
-    label: 'Groovy Slow',
-    color: '#D4805A',
-    subtitle: 'smooth · rhythmic · warm',
-    beat: 8,
-    base: 200,
-    layers: ['rain', 'sub', 'crackle'],
-  },
-  {
-    id: 'logical',
-    label: 'Logical',
-    color: '#6890B0',
-    subtitle: 'clear · precise · sharp',
-    beat: 14,
-    base: 250,
-    layers: ['wind', 'drone', 'hum'],
-  },
-  {
-    id: 'night',
-    label: 'Night',
-    color: '#5A7A8A',
-    subtitle: 'silent · vast · still',
-    beat: 3,
-    base: 160,
-    layers: ['ocean', 'sub', 'breath'],
-  },
-  {
-    id: 'forest',
-    label: 'Forest',
-    color: '#7AAA58',
-    subtitle: 'alive · green · organic',
-    beat: 7,
-    base: 210,
-    layers: ['forest', 'wind', 'fire'],
+    id: 'zen',
+    label: 'Zen',
+    color: '#A0907A',
+    subtitle: 'bowl · breath · silence',
+    beat: 6,
+    base: 190,
+    layers: ['bowl', 'breath'],
   },
 ];
 
@@ -289,13 +321,76 @@ function getSuggestion(
 
 export default function BinauralTuner() {
   const [playing, setPlaying] = useState(false);
+  const [binauralOn, setBinauralOn] = useState(true);
+  const panLRef = useRef<StereoPannerNode | null>(null);
+  const panRRef = useRef<StereoPannerNode | null>(null);
+  const binGainRef = useRef<GainNode | null>(null);
   const [baseFreq, setBaseFreq] = useState(220);
   const [beatFreq, setBeatFreq] = useState(10);
-  const [volume, setVolume] = useState(0.5);
+  const [volume, setVolume] = useState(0.15);
   const [activeLayers, setActiveLayers] = useState<Record<string, number>>({});
   const [activeGenre, setActiveGenre] = useState<string | null>(null);
   const [showSuggestion, setShowSuggestion] = useState(true);
   const [view, setView] = useState<'presets' | 'layers' | 'genres'>('presets');
+  const [savedMixes, setSavedMixes] = useState<
+    {
+      name: string;
+      base: number;
+      beat: number;
+      vol: number;
+      layers: Record<string, number>;
+      binaural: boolean;
+    }[]
+  >([]);
+  const [saveName, setSaveName] = useState('');
+  const [showSave, setShowSave] = useState(false);
+
+  // Load saved mixes
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem('colourmap:tuner-mixes');
+      if (raw) setSavedMixes(JSON.parse(raw));
+    } catch {}
+  }, []);
+
+  function saveMix() {
+    if (!saveName.trim()) return;
+    const mix = {
+      name: saveName.trim(),
+      base: baseFreq,
+      beat: beatFreq,
+      vol: volume,
+      layers: { ...activeLayers },
+      binaural: binauralOn,
+    };
+    const next = [mix, ...savedMixes].slice(0, 20);
+    setSavedMixes(next);
+    localStorage.setItem('colourmap:tuner-mixes', JSON.stringify(next));
+    setSaveName('');
+    setShowSave(false);
+  }
+
+  function loadMix(mix: (typeof savedMixes)[0]) {
+    setBaseFreq(mix.base);
+    setBeatFreq(mix.beat);
+    setVolume(mix.vol);
+    setBinauralOn(mix.binaural);
+    // Stop current layers
+    if (ctxRef.current) {
+      for (const [id, node] of layerNodesRef.current) {
+        try {
+          node.source.stop();
+        } catch {}
+        node.gain.disconnect();
+        layerNodesRef.current.delete(id);
+      }
+      // Start mix layers
+      for (const [id, vol] of Object.entries(mix.layers)) {
+        if (vol > 0) startLayer(ctxRef.current, id, vol);
+      }
+    }
+    setActiveLayers(mix.layers);
+  }
 
   const ctxRef = useRef<AudioContext | null>(null);
   const oscLeftRef = useRef<OscillatorNode | null>(null);
@@ -349,12 +444,20 @@ export default function BinauralTuner() {
       panL.pan.value = -0.8;
       const panR = ctx.createStereoPanner();
       panR.pan.value = 0.8;
+      panLRef.current = panL;
+      panRRef.current = panR;
+
+      // Binaural gain — can be muted independently
+      const binGain = ctx.createGain();
+      binGain.gain.value = binauralOn ? 1 : 0;
+      binGainRef.current = binGain;
 
       oscL.connect(panL);
-      panL.connect(gain);
+      panL.connect(binGain);
       oscR.connect(panR);
-      panR.connect(gain);
+      panR.connect(binGain);
 
+      binGain.connect(gain);
       gain.connect(ctx.destination);
 
       oscL.start();
@@ -458,6 +561,10 @@ export default function BinauralTuner() {
   }, [volume]);
 
   useEffect(() => {
+    if (binGainRef.current) binGainRef.current.gain.value = binauralOn ? 1 : 0;
+  }, [binauralOn]);
+
+  useEffect(() => {
     return () => {
       if (ctxRef.current) {
         for (const [, node] of layerNodesRef.current) {
@@ -473,8 +580,8 @@ export default function BinauralTuner() {
   }, []);
 
   // Wave visualization
-  const W = 300;
-  const H = 60;
+  const W = 320;
+  const H = 100;
   const cy = H / 2;
   const wavelength = Math.max(20, 80 - beatFreq * 1.5);
   const amplitude = 15 + volume * 30;
@@ -516,55 +623,6 @@ export default function BinauralTuner() {
           find your frequency
         </p>
       </div>
-
-      {/* Adaptive suggestion */}
-      {suggestion && showSuggestion && (
-        <div
-          className="flex items-start gap-3 rounded-xl px-4 py-3 animate-in fade-in duration-300"
-          style={{ background: '#C4A06008', border: '1px solid #C4A06020' }}
-        >
-          <span
-            className="mt-0.5 block shrink-0 rotate-45 rounded-[2px]"
-            style={{ width: 8, height: 8, background: '#C4A060' }}
-          />
-          <div className="flex-1">
-            <p
-              className="italic"
-              style={{
-                fontFamily: 'var(--font-serif)',
-                fontSize: '13px',
-                color: '#7A5438',
-                lineHeight: 1.5,
-              }}
-            >
-              {suggestion.reason}
-            </p>
-          </div>
-          <button
-            type="button"
-            onClick={() => {
-              const p = PRESETS.find((pr) => pr.id === suggestion.preset);
-              if (p) {
-                setBaseFreq(p.base);
-                setBeatFreq(p.beat);
-              }
-              setShowSuggestion(false);
-            }}
-            className="shrink-0 cursor-pointer rounded-full px-3 py-1 text-[11px] font-semibold transition-all"
-            style={{ color: '#C4A060', background: '#C4A06015', border: '1px solid #C4A06030' }}
-          >
-            try it
-          </button>
-          <button
-            type="button"
-            onClick={() => setShowSuggestion(false)}
-            className="shrink-0 cursor-pointer text-[11px] transition-all"
-            style={{ color: '#8A6A4A', opacity: 0.4, background: 'none', border: 'none' }}
-          >
-            dismiss
-          </button>
-        </div>
-      )}
 
       {/* Wave visualization */}
       <div className="flex justify-center">
@@ -639,19 +697,53 @@ export default function BinauralTuner() {
             />
           )}
         </button>
-        {activeLayerCount > 0 && (
-          <span
+        {/* Binaural on/off */}
+        <button
+          type="button"
+          onClick={() => setBinauralOn((s) => !s)}
+          className="cursor-pointer rounded-full px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wider transition-all"
+          style={{
+            color: binauralOn ? activeColor : '#8A6A4A',
+            background: binauralOn ? `${activeColor}15` : 'transparent',
+            border: `1px solid ${binauralOn ? `${activeColor}40` : '#C4A06018'}`,
+            opacity: binauralOn ? 1 : 0.4,
+          }}
+        >
+          binaural {binauralOn ? 'on' : 'off'}
+        </button>
+      </div>
+
+      {/* Adaptive suggestion — below the wave */}
+      {suggestion && showSuggestion && (
+        <div className="flex items-center justify-center gap-2">
+          <p
+            className="italic"
             style={{
               fontFamily: 'var(--font-serif)',
-              fontSize: '11px',
-              color: '#8A6A4A',
-              opacity: 0.5,
+              fontSize: '12px',
+              color: '#7A5438',
+              opacity: 0.6,
             }}
           >
-            {activeLayerCount} layer{activeLayerCount > 1 ? 's' : ''}
-          </span>
-        )}
-      </div>
+            {suggestion.reason}
+          </p>
+          <button
+            type="button"
+            onClick={() => {
+              const p = PRESETS.find((pr) => pr.id === suggestion.preset);
+              if (p) {
+                setBaseFreq(p.base);
+                setBeatFreq(p.beat);
+              }
+              setShowSuggestion(false);
+            }}
+            className="shrink-0 cursor-pointer rounded-full px-2 py-0.5 text-[10px] font-semibold transition-all"
+            style={{ color: '#C4A060', background: '#C4A06012', border: '1px solid #C4A06025' }}
+          >
+            try
+          </button>
+        </div>
+      )}
 
       {/* Audio error */}
       {audioError && (
@@ -873,14 +965,14 @@ export default function BinauralTuner() {
                             setLayerVol(l.id, Math.max(0, Math.min(1, x)));
                           }}
                         >
-                          {Array.from({ length: 10 }, (_, si) => (
+                          {Array.from({ length: 8 }, (_, si) => (
                             <div
                               key={si}
-                              className="flex-1 rounded-full transition-all"
+                              className="flex-1 rounded-[3px] transition-all"
                               style={{
-                                height: 8,
+                                height: 10,
                                 background: l.color,
-                                opacity: si / 9 <= vol ? 0.8 : 0.12,
+                                opacity: si / 7 <= vol ? 0.3 + (si / 7) * 0.5 : 0.08,
                               }}
                             />
                           ))}
@@ -894,9 +986,132 @@ export default function BinauralTuner() {
           ))}
         </div>
       )}
+
+      {/* Save mix + saved mixes */}
+      <div className="space-y-2 pt-2">
+        {!showSave ? (
+          <button
+            type="button"
+            onClick={() => setShowSave(true)}
+            className="flex w-full cursor-pointer items-center justify-center gap-2 rounded-xl py-2 transition-all"
+            style={{ background: '#C4A06008', border: '1px solid #C4A06018' }}
+          >
+            <span
+              className="rotate-45 rounded-[2px] block"
+              style={{ width: 8, height: 8, background: '#C4A060', opacity: 0.5 }}
+            />
+            <span
+              className="italic"
+              style={{
+                fontFamily: 'var(--font-serif)',
+                fontSize: '13px',
+                color: '#8A6A4A',
+                opacity: 0.6,
+              }}
+            >
+              save this mix
+            </span>
+          </button>
+        ) : (
+          <div className="flex gap-2">
+            <input
+              type="text"
+              value={saveName}
+              onChange={(e) => setSaveName(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') saveMix();
+              }}
+              placeholder="name your mix..."
+              autoFocus
+              className="flex-1 rounded-lg border bg-transparent px-3 py-1.5 outline-none placeholder:italic placeholder:text-[#8A6A4A] placeholder:opacity-50"
+              style={{
+                fontFamily: 'var(--font-serif)',
+                fontSize: '13px',
+                color: '#5C3018',
+                borderColor: '#C4A06025',
+              }}
+            />
+            <button
+              type="button"
+              onClick={saveMix}
+              className="cursor-pointer rounded-lg px-3 py-1.5"
+              style={{
+                fontFamily: 'var(--font-serif)',
+                fontSize: '12px',
+                fontWeight: 600,
+                color: '#7AAA58',
+                background: '#7AAA5810',
+                border: '1px solid #7AAA5830',
+              }}
+            >
+              save
+            </button>
+            <button
+              type="button"
+              onClick={() => setShowSave(false)}
+              className="cursor-pointer text-[11px]"
+              style={{ color: '#8A6A4A', opacity: 0.4, background: 'none', border: 'none' }}
+            >
+              cancel
+            </button>
+          </div>
+        )}
+        {savedMixes.length > 0 && (
+          <div className="space-y-1">
+            {savedMixes.map((mix, i) => (
+              <button
+                key={`${mix.name}-${i}`}
+                type="button"
+                onClick={() => loadMix(mix)}
+                className="flex w-full cursor-pointer items-center gap-2 rounded-lg px-3 py-1.5 text-left transition-all hover:bg-[#C4A06008]"
+                style={{ background: 'none', border: 'none' }}
+              >
+                <span
+                  className="block rounded-full"
+                  style={{ width: 8, height: 8, background: '#C4A060', opacity: 0.5 }}
+                />
+                <span
+                  style={{
+                    fontFamily: 'var(--font-serif)',
+                    fontSize: '13px',
+                    color: '#5C3018',
+                    fontWeight: 600,
+                  }}
+                >
+                  {mix.name}
+                </span>
+                <span
+                  style={{
+                    fontFamily: 'var(--font-serif)',
+                    fontSize: '11px',
+                    color: '#8A6A4A',
+                    opacity: 0.4,
+                    marginLeft: 'auto',
+                  }}
+                >
+                  {mix.beat}Hz · {Object.values(mix.layers).filter((v) => v > 0).length} layers
+                </span>
+              </button>
+            ))}
+          </div>
+        )}
+      </div>
     </div>
   );
 }
+
+const RAINBOW = [
+  '#E0908A',
+  '#E8A878',
+  '#D8C078',
+  '#C0D088',
+  '#A0C8A0',
+  '#90C0C0',
+  '#A0B0D0',
+  '#B0A0C8',
+  '#C8A8C8',
+  '#E0908A',
+];
 
 function SliderRow({
   label,
@@ -915,9 +1130,11 @@ function SliderRow({
   color: string;
   onChange: (v: number) => void;
 }) {
-  const steps = 20;
+  const count = 10;
   const pct = (value - min) / (max - min);
-  const GRAD = ['#9B6BA0', '#6890B0', '#7AAA58', '#C4A060', '#D4805A', '#D06040'];
+  const activeIdx = Math.round(pct * (count - 1));
+  const sq = 20;
+  const gap = 6;
   return (
     <div className="space-y-1.5">
       <div className="flex items-center justify-between">
@@ -936,24 +1153,25 @@ function SliderRow({
           {unit}
         </span>
       </div>
-      <div
-        className="flex gap-[2px] cursor-pointer"
-        onClick={(e) => {
-          const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
-          const x = (e.clientX - rect.left) / rect.width;
-          onChange(Math.round(min + x * (max - min)));
-        }}
-      >
-        {Array.from({ length: steps }, (_, i) => {
-          const t = i / (steps - 1);
-          const active = t <= pct;
-          const ci = Math.floor(t * (GRAD.length - 1));
-          const segColor = GRAD[Math.min(ci, GRAD.length - 1)];
+      <div className="flex justify-center" style={{ gap }}>
+        {Array.from({ length: count }, (_, i) => {
+          const selected = i === activeIdx;
+          const segColor = RAINBOW[i % RAINBOW.length];
           return (
-            <div
+            <button
               key={i}
-              className="flex-1 rounded-full transition-all"
-              style={{ height: 12, background: segColor, opacity: active ? 0.85 : 0.12 }}
+              type="button"
+              onClick={() => onChange(Math.round(min + (i / (count - 1)) * (max - min)))}
+              className="cursor-pointer rounded-[3px] transition-all"
+              style={{
+                width: sq,
+                height: sq,
+                background: segColor,
+                opacity: selected ? 1 : i <= activeIdx ? 0.55 : 0.2,
+                border: 'none',
+                transform: selected ? 'scale(1.15)' : 'scale(1)',
+                boxShadow: selected ? `0 4px 12px -4px ${segColor}` : 'none',
+              }}
             />
           );
         })}
