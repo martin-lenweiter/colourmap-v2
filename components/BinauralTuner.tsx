@@ -865,15 +865,26 @@ export default function BinauralTuner() {
                         </span>
                       </button>
                       {isOn && (
-                        <input
-                          type="range"
-                          min={0}
-                          max={100}
-                          value={Math.round(vol * 100)}
-                          onChange={(e) => setLayerVol(l.id, Number(e.target.value) / 100)}
-                          className="flex-1"
-                          style={{ accentColor: l.color }}
-                        />
+                        <div
+                          className="flex flex-1 gap-[2px] cursor-pointer"
+                          onClick={(e) => {
+                            const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
+                            const x = (e.clientX - rect.left) / rect.width;
+                            setLayerVol(l.id, Math.max(0, Math.min(1, x)));
+                          }}
+                        >
+                          {Array.from({ length: 10 }, (_, si) => (
+                            <div
+                              key={si}
+                              className="flex-1 rounded-full transition-all"
+                              style={{
+                                height: 8,
+                                background: l.color,
+                                opacity: si / 9 <= vol ? 0.8 : 0.12,
+                              }}
+                            />
+                          ))}
+                        </div>
                       )}
                     </div>
                   );
@@ -904,8 +915,11 @@ function SliderRow({
   color: string;
   onChange: (v: number) => void;
 }) {
+  const steps = 20;
+  const pct = (value - min) / (max - min);
+  const GRAD = ['#9B6BA0', '#6890B0', '#7AAA58', '#C4A060', '#D4805A', '#D06040'];
   return (
-    <div className="space-y-1">
+    <div className="space-y-1.5">
       <div className="flex items-center justify-between">
         <span
           style={{
@@ -922,15 +936,28 @@ function SliderRow({
           {unit}
         </span>
       </div>
-      <input
-        type="range"
-        min={min}
-        max={max}
-        value={value}
-        onChange={(e) => onChange(Number(e.target.value))}
-        className="w-full"
-        style={{ accentColor: color }}
-      />
+      <div
+        className="flex gap-[2px] cursor-pointer"
+        onClick={(e) => {
+          const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
+          const x = (e.clientX - rect.left) / rect.width;
+          onChange(Math.round(min + x * (max - min)));
+        }}
+      >
+        {Array.from({ length: steps }, (_, i) => {
+          const t = i / (steps - 1);
+          const active = t <= pct;
+          const ci = Math.floor(t * (GRAD.length - 1));
+          const segColor = GRAD[Math.min(ci, GRAD.length - 1)];
+          return (
+            <div
+              key={i}
+              className="flex-1 rounded-full transition-all"
+              style={{ height: 12, background: segColor, opacity: active ? 0.85 : 0.12 }}
+            />
+          );
+        })}
+      </div>
     </div>
   );
 }
