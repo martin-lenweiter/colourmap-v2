@@ -291,7 +291,7 @@ export default function BinauralTuner() {
   const [playing, setPlaying] = useState(false);
   const [baseFreq, setBaseFreq] = useState(220);
   const [beatFreq, setBeatFreq] = useState(10);
-  const [volume, setVolume] = useState(0.3);
+  const [volume, setVolume] = useState(0.5);
   const [activeLayers, setActiveLayers] = useState<Record<string, number>>({});
   const [activeGenre, setActiveGenre] = useState<string | null>(null);
   const [showSuggestion, setShowSuggestion] = useState(true);
@@ -315,36 +315,40 @@ export default function BinauralTuner() {
   }, []);
 
   // biome-ignore lint/correctness/useExhaustiveDependencies: startLayer uses refs, stable in component body
-  const startAudio = useCallback(() => {
+  const startAudio = useCallback(async () => {
     if (ctxRef.current) return;
     const ctx = new AudioContext();
+    // Resume context — required by browsers after user gesture
+    if (ctx.state === 'suspended') await ctx.resume();
     ctxRef.current = ctx;
 
     const gain = ctx.createGain();
     gain.gain.value = volume;
     gainRef.current = gain;
 
-    const merger = ctx.createChannelMerger(2);
-
+    // Connect both channels to stereo output for binaural effect
+    // But also send to both ears so it's audible without headphones
     const oscL = ctx.createOscillator();
     oscL.type = 'sine';
     oscL.frequency.value = baseFreq;
-    const gL = ctx.createGain();
-    gL.gain.value = 1;
-    oscL.connect(gL);
-    gL.connect(merger, 0, 0);
     oscLeftRef.current = oscL;
 
     const oscR = ctx.createOscillator();
     oscR.type = 'sine';
     oscR.frequency.value = baseFreq + beatFreq;
-    const gR = ctx.createGain();
-    gR.gain.value = 1;
-    oscR.connect(gR);
-    gR.connect(merger, 0, 1);
     oscRightRef.current = oscR;
 
-    merger.connect(gain);
+    // Stereo panning: left osc panned left, right osc panned right
+    const panL = ctx.createStereoPanner();
+    panL.pan.value = -0.8;
+    const panR = ctx.createStereoPanner();
+    panR.pan.value = 0.8;
+
+    oscL.connect(panL);
+    panL.connect(gain);
+    oscR.connect(panR);
+    panR.connect(gain);
+
     gain.connect(ctx.destination);
 
     oscL.start();
