@@ -1,6 +1,5 @@
 'use client';
 
-import BinauralTuner from '@/components/BinauralTuner';
 import CompassCarousel from '@/components/CompassCarousel';
 import DailyAgenda from '@/components/DailyAgenda';
 import DayTabs from '@/components/DayTabs';
@@ -9,6 +8,7 @@ import FrequencyBox from '@/components/FrequencyBox';
 import LifeCategories from '@/components/LifeCategories';
 import MasteryBox from '@/components/MasteryBox';
 import ReflectBox from '@/components/ReflectBox';
+import SoundLab from '@/components/SoundLab';
 import { StyleProvider } from '@/components/StyleContext';
 
 function DayContent() {
@@ -47,17 +47,7 @@ function DayContent() {
           </div>
         }
         masteryContent={<MasteryBox />}
-        tunerContent={
-          <div
-            className="rounded-3xl border border-[#7a543833] px-5 py-6"
-            style={{
-              background: 'linear-gradient(180deg, rgba(251,244,232,0.95), rgba(246,236,221,0.92))',
-              boxShadow: '0 24px 50px -34px rgba(92,48,24,0.35)',
-            }}
-          >
-            <BinauralTuner />
-          </div>
-        }
+        tunerContent={<SoundLab />}
       />
     </div>
   );
