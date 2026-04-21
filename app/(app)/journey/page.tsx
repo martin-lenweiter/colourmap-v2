@@ -2,6 +2,7 @@
 
 import { useCompletion } from '@ai-sdk/react';
 import { useEffect, useState } from 'react';
+import BinauralTuner from '@/components/BinauralTuner';
 import LifeTimeline from '@/components/LifeTimeline';
 import MasteryBox from '@/components/MasteryBox';
 import PersonalityMap from '@/components/PersonalityMap';
@@ -1064,6 +1065,17 @@ export default function JourneyPage() {
 
       {/* ========== MASTERY ========== */}
       <MasteryBox />
+
+      {/* ========== TUNER ========== */}
+      <div
+        className="space-y-4 rounded-3xl border border-[#7a543833] px-5 py-6"
+        style={{
+          background: 'linear-gradient(180deg, rgba(251,244,232,0.95), rgba(246,236,221,0.92))',
+          boxShadow: '0 24px 50px -34px rgba(92,48,24,0.35)',
+        }}
+      >
+        <BinauralTuner />
+      </div>
     </main>
   );
 }
