@@ -335,7 +335,7 @@ export default function BinauralTuner() {
   const [tremolo, setTremolo] = useState(false);
   const [tremoloSpeed, setTremoloSpeed] = useState(0.15);
   const [warmth, setWarmth] = useState(0); // 0-1, adds harmonics
-  const [filterFreq, setFilterFreq] = useState(2000); // lowpass filter on binaural
+  const [filterFreq, setFilterFreq] = useState(500); // lowpass — start muffled so sliding up opens it
   const lfoRef = useRef<OscillatorNode | null>(null);
   const lfoGainRef = useRef<GainNode | null>(null);
   const warmOscRef = useRef<OscillatorNode | null>(null);

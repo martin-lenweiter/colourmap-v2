@@ -255,7 +255,41 @@ const PALETTES: Record<string, string[]> = {
 };
 
 // ── Cruise control patterns ──
-type CruisePattern = 'breathing' | 'rain' | 'ascending' | 'random';
+type CruisePattern = 'breathing' | 'rain' | 'ascending' | 'random' | 'phrase' | 'loop';
+
+// ── Musical phrases per scale — pre-composed note index sequences ──
+const PHRASES: Record<string, number[][]> = {
+  pentatonic: [
+    [0, 2, 4, 2, 0, 4, 2, 0], // gentle ascend-descend
+    [4, 3, 2, 0, 2, 3, 4, 4], // high to low and back
+    [0, 0, 2, 4, 4, 2, 0, 2], // rhythmic pulse
+  ],
+  blues: [
+    [0, 2, 3, 4, 3, 2, 0, 5], // classic blues walk
+    [5, 4, 3, 2, 0, 2, 3, 0], // descending lick
+    [0, 3, 5, 3, 0, 2, 4, 2], // swing feel
+  ],
+  japanese: [
+    [0, 1, 2, 4, 2, 1, 0, 4], // sakura feel
+    [4, 2, 1, 0, 1, 2, 4, 2], // koto descend
+    [0, 4, 2, 0, 1, 4, 2, 1], // zen garden
+  ],
+  arabic: [
+    [0, 1, 3, 4, 6, 4, 3, 1], // maqam ascend-descend
+    [6, 4, 3, 1, 0, 1, 3, 4], // desert wind
+    [0, 3, 6, 3, 0, 1, 4, 1], // ornamental
+  ],
+  minor: [
+    [0, 2, 3, 4, 6, 4, 3, 2], // natural minor walk
+    [6, 4, 3, 2, 0, 2, 3, 4], // melancholic descend
+    [0, 3, 4, 6, 4, 2, 0, 3], // emotional arc
+  ],
+  major: [
+    [0, 2, 4, 5, 4, 2, 0, 6], // happy walk up
+    [6, 5, 4, 2, 0, 2, 4, 5], // bright descend
+    [0, 4, 2, 5, 4, 0, 2, 6], // playful skip
+  ],
+};
 
 // Generate note frequencies for a scale
 function buildNotes(root: string, scaleId: string, octaves: number): number[] {
@@ -285,6 +319,11 @@ export default function MagicMaker() {
   const [cellShape, setCellShape] = useState<'square' | 'circle'>('square');
   const [showAdvanced, setShowAdvanced] = useState(false);
   const [showInstruments, setShowInstruments] = useState(false);
+  const [recording, setRecording] = useState(false);
+  const [loopData, setLoopData] = useState<{ idx: number; time: number }[]>([]);
+  const [phraseIdx, setPhraseIdx] = useState(0);
+  const recordStartRef = useRef(0);
+  const loopRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [filterCutoff, setFilterCutoff] = useState(2000);
   const [reverbMix, setReverbMix] = useState(0.5);
   const [detune, setDetune] = useState(5);
@@ -458,6 +497,12 @@ export default function MagicMaker() {
       osc2.start(now);
       osc2.stop(now + dur + 0.1);
 
+      // Record tap for loop
+      if (recording) {
+        const elapsed = Date.now() - recordStartRef.current;
+        setLoopData((prev) => [...prev, { idx, time: elapsed }]);
+      }
+
       // Visual feedback
       setActiveNotes((prev) => new Set(prev).add(idx));
       setTimeout(
@@ -479,19 +524,30 @@ export default function MagicMaker() {
     if (!cruising || notes.length === 0) return;
 
     let idx: number;
-    if (cruisePattern === 'ascending') {
+    if (cruisePattern === 'phrase') {
+      // Musical phrase from the scale
+      const phrases = PHRASES[scaleId] || PHRASES.pentatonic;
+      const phrase = phrases[phraseIdx % phrases.length];
+      const noteInPhrase = cruiseIdxRef.current % phrase.length;
+      const scaleIdx = phrase[noteInPhrase] % notes.length;
+      idx = scaleIdx;
+      cruiseIdxRef.current++;
+    } else if (cruisePattern === 'loop' && loopData.length > 0) {
+      // Replay recorded loop
+      const loopNote = loopData[cruiseIdxRef.current % loopData.length];
+      idx = loopNote.idx % notes.length;
+      cruiseIdxRef.current++;
+    } else if (cruisePattern === 'ascending') {
       idx = cruiseIdxRef.current % notes.length;
       cruiseIdxRef.current++;
     } else if (cruisePattern === 'random') {
       idx = Math.floor(Math.random() * notes.length);
     } else if (cruisePattern === 'breathing') {
-      // Slow pendulum
       const period = notes.length * 2;
       const pos = cruiseIdxRef.current % period;
       idx = pos < notes.length ? pos : period - pos - 1;
       cruiseIdxRef.current++;
     } else {
-      // Rain — sparse random
       idx = Math.floor(Math.random() * notes.length);
     }
 
@@ -499,16 +555,28 @@ export default function MagicMaker() {
 
     const speedMult = 2.0 - cruiseSpeed * 1.5; // 0.5=moderate, 2.0=very slow
     const interval =
-      (cruisePattern === 'breathing'
-        ? 800 + Math.random() * 600
-        : cruisePattern === 'rain'
-          ? 500 + Math.random() * 1200
-          : cruisePattern === 'ascending'
-            ? 600 + Math.random() * 300
-            : 400 + Math.random() * 800) * speedMult;
+      (cruisePattern === 'phrase'
+        ? 500 + Math.random() * 300
+        : cruisePattern === 'loop' && loopData.length > 0
+          ? (() => {
+              const cur = cruiseIdxRef.current - 1;
+              const next = cur + 1;
+              if (next >= loopData.length) return loopData[0].time + 200;
+              return Math.max(
+                100,
+                loopData[next % loopData.length].time - loopData[cur % loopData.length].time,
+              );
+            })()
+          : cruisePattern === 'breathing'
+            ? 800 + Math.random() * 600
+            : cruisePattern === 'rain'
+              ? 500 + Math.random() * 1200
+              : cruisePattern === 'ascending'
+                ? 600 + Math.random() * 300
+                : 400 + Math.random() * 800) * speedMult;
 
     cruiseRef.current = setTimeout(cruiseStep, interval);
-  }, [cruising, cruisePattern, notes, playNote, cruiseSpeed]);
+  }, [cruising, cruisePattern, notes, playNote, cruiseSpeed, scaleId, phraseIdx, loopData]);
 
   useEffect(() => {
     if (cruising) {
@@ -754,24 +822,74 @@ export default function MagicMaker() {
           </span>
         </button>
         {/* Pattern selector */}
-        <div className="flex gap-1">
-          {(['breathing', 'rain', 'ascending', 'random'] as const).map((p) => (
+        <div className="flex flex-wrap gap-1">
+          {(['breathing', 'rain', 'ascending', 'random', 'phrase', 'loop'] as const).map((p) => (
             <button
               key={p}
               type="button"
-              onClick={() => setCruisePattern(p)}
+              onClick={() => {
+                setCruisePattern(p);
+                if (p === 'phrase') setPhraseIdx(Math.floor(Math.random() * 3));
+              }}
               className="cursor-pointer rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider transition-all"
               style={{
                 color: cruisePattern === p ? instrument.color : '#8A6A4A',
                 background: cruisePattern === p ? `${instrument.color}12` : 'transparent',
                 border: `1px solid ${cruisePattern === p ? `${instrument.color}30` : '#C4A06012'}`,
-                opacity: cruisePattern === p ? 1 : 0.4,
+                opacity:
+                  cruisePattern === p ? 1 : p === 'loop' && loopData.length === 0 ? 0.2 : 0.4,
               }}
+              disabled={p === 'loop' && loopData.length === 0}
             >
               {p}
             </button>
           ))}
         </div>
+      </div>
+      {/* Record loop */}
+      <div className="flex justify-center">
+        <button
+          type="button"
+          onClick={() => {
+            if (recording) {
+              setRecording(false);
+            } else {
+              setLoopData([]);
+              recordStartRef.current = Date.now();
+              setRecording(true);
+            }
+          }}
+          className="flex cursor-pointer items-center gap-2 rounded-full px-3 py-1.5 transition-all"
+          style={{
+            background: recording ? '#D0604015' : '#C4A06008',
+            border: `1px solid ${recording ? '#D0604040' : '#C4A06018'}`,
+          }}
+        >
+          <span
+            className="block rounded-full"
+            style={{
+              width: 8,
+              height: 8,
+              background: recording ? '#D06040' : '#8A6A4A',
+              opacity: recording ? 1 : 0.4,
+            }}
+          />
+          <span
+            style={{
+              fontFamily: 'var(--font-serif)',
+              fontSize: '12px',
+              fontWeight: 600,
+              color: recording ? '#D06040' : '#8A6A4A',
+              opacity: recording ? 1 : 0.6,
+            }}
+          >
+            {recording
+              ? `recording · ${loopData.length} notes`
+              : loopData.length > 0
+                ? `loop · ${loopData.length} notes`
+                : 'record loop'}
+          </span>
+        </button>
       </div>
 
       {/* ── CONTROLS ── */}
