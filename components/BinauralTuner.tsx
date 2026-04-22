@@ -2331,7 +2331,6 @@ export default function BinauralTuner() {
             color: '#8A6A4A',
             background: 'transparent',
             border: '1px solid #C4A06020',
-            opacity: 0.5,
           }}
         >
           {simpleMode ? 'open studio' : 'back to simple'}
@@ -2466,7 +2465,7 @@ export default function BinauralTuner() {
                       width: 10,
                       height: 10,
                       background: g.color,
-                      opacity: isActive ? 1 : 0.5,
+                      opacity: isActive ? 1 : 0.7,
                     }}
                   />
                   <span
@@ -2475,7 +2474,7 @@ export default function BinauralTuner() {
                       fontSize: '13px',
                       fontWeight: isActive ? 700 : 500,
                       color: isActive ? g.color : '#7A5438',
-                      opacity: isActive ? 1 : 0.6,
+                      opacity: isActive ? 1 : 0.8,
                     }}
                   >
                     {g.label}
@@ -2775,9 +2774,8 @@ export default function BinauralTuner() {
               className="text-center mb-2"
               style={{
                 fontFamily: 'var(--font-serif)',
-                fontSize: '11px',
+                fontSize: '12px',
                 color: '#7A5438',
-                opacity: 0.85,
               }}
             >
               harmonics — {baseFreq}Hz
@@ -2810,16 +2808,16 @@ export default function BinauralTuner() {
                         width: 10,
                         height: 10,
                         background: h.color,
-                        opacity: isOn ? 1 : 0.3,
+                        opacity: isOn ? 1 : 0.7,
                       }}
                     />
                     <span
                       style={{
                         fontFamily: 'var(--font-serif)',
-                        fontSize: '11px',
+                        fontSize: '12px',
                         fontWeight: isOn ? 700 : 500,
                         color: isOn ? h.color : '#8A6A4A',
-                        opacity: isOn ? 1 : 0.5,
+                        opacity: isOn ? 1 : 0.8,
                       }}
                     >
                       {h.label}
@@ -2827,9 +2825,8 @@ export default function BinauralTuner() {
                     <span
                       style={{
                         fontFamily: 'var(--font-serif)',
-                        fontSize: '11px',
+                        fontSize: '12px',
                         color: '#8A6A4A',
-                        opacity: 0.7,
                       }}
                     >
                       {freq}Hz
@@ -2846,9 +2843,8 @@ export default function BinauralTuner() {
               className="text-center mb-2"
               style={{
                 fontFamily: 'var(--font-serif)',
-                fontSize: '11px',
+                fontSize: '12px',
                 color: '#7A5438',
-                opacity: 0.85,
               }}
             >
               sacred frequencies
@@ -2910,7 +2906,6 @@ export default function BinauralTuner() {
                           fontFamily: 'var(--font-serif)',
                           fontSize: '8px',
                           color: s.color,
-                          opacity: 0.85,
                         }}
                       >
                         ×{nearestInt}
@@ -2928,9 +2923,8 @@ export default function BinauralTuner() {
               className="text-center mb-2"
               style={{
                 fontFamily: 'var(--font-serif)',
-                fontSize: '11px',
+                fontSize: '12px',
                 color: '#7A5438',
-                opacity: 0.85,
               }}
             >
               melodies
@@ -2963,10 +2957,10 @@ export default function BinauralTuner() {
                     <span
                       style={{
                         fontFamily: 'var(--font-serif)',
-                        fontSize: '11px',
+                        fontSize: '12px',
                         fontWeight: isOn ? 700 : 500,
                         color: isOn ? m.color : '#8A6A4A',
-                        opacity: isOn ? 1 : 0.5,
+                        opacity: isOn ? 1 : 0.8,
                       }}
                     >
                       {m.label}
@@ -2987,7 +2981,7 @@ export default function BinauralTuner() {
                     color: melodyScale === id ? '#5C3018' : '#8A6A4A',
                     background: melodyScale === id ? '#5C301810' : 'transparent',
                     border: `1px solid ${melodyScale === id ? '#5C301830' : '#C4A06008'}`,
-                    opacity: melodyScale === id ? 1 : 0.4,
+                    opacity: melodyScale === id ? 1 : 0.7,
                     fontFamily: 'var(--font-serif)',
                   }}
                 >
@@ -3003,7 +2997,6 @@ export default function BinauralTuner() {
                       fontFamily: 'var(--font-serif)',
                       fontSize: '12px',
                       color: '#8A6A4A',
-                      opacity: 0.85,
                     }}
                   >
                     speed
@@ -3035,7 +3028,6 @@ export default function BinauralTuner() {
                       fontFamily: 'var(--font-serif)',
                       fontSize: '12px',
                       color: '#8A6A4A',
-                      opacity: 0.85,
                     }}
                   >
                     reverb
@@ -3071,9 +3063,8 @@ export default function BinauralTuner() {
               className="text-center mb-2"
               style={{
                 fontFamily: 'var(--font-serif)',
-                fontSize: '11px',
+                fontSize: '12px',
                 color: '#7A5438',
-                opacity: 0.85,
               }}
             >
               voices
@@ -3091,7 +3082,7 @@ export default function BinauralTuner() {
                       color: isOn ? '#9B6BA0' : '#8A6A4A',
                       background: isOn ? '#9B6BA015' : 'transparent',
                       border: `1px solid ${isOn ? '#9B6BA040' : '#C4A06010'}`,
-                      opacity: isOn ? 1 : mode === 'off' ? 0.3 : 0.5,
+                      opacity: isOn ? 1 : mode === 'off' ? 0.5 : 0.8,
                       fontFamily: 'var(--font-serif)',
                     }}
                   >
@@ -3108,7 +3099,6 @@ export default function BinauralTuner() {
                       fontFamily: 'var(--font-serif)',
                       fontSize: '12px',
                       color: '#8A6A4A',
-                      opacity: 0.85,
                     }}
                   >
                     speed
@@ -3140,7 +3130,6 @@ export default function BinauralTuner() {
                       fontFamily: 'var(--font-serif)',
                       fontSize: '12px',
                       color: '#8A6A4A',
-                      opacity: 0.85,
                     }}
                   >
                     pitch
@@ -3172,7 +3161,6 @@ export default function BinauralTuner() {
                       fontFamily: 'var(--font-serif)',
                       fontSize: '12px',
                       color: '#8A6A4A',
-                      opacity: 0.85,
                     }}
                   >
                     vol
@@ -3235,7 +3223,6 @@ export default function BinauralTuner() {
                       fontFamily: 'var(--font-serif)',
                       fontSize: '12px',
                       color: '#8A6A4A',
-                      opacity: 0.85,
                     }}
                   >
                     layer reverb
@@ -3303,16 +3290,16 @@ export default function BinauralTuner() {
                                     width: 7,
                                     height: 7,
                                     background: l.color,
-                                    opacity: isOn ? 1 : 0.5,
+                                    opacity: isOn ? 1 : 0.8,
                                   }}
                                 />
                                 <span
                                   style={{
                                     fontFamily: 'var(--font-serif)',
-                                    fontSize: '11px',
+                                    fontSize: '12px',
                                     fontWeight: isOn ? 700 : 500,
                                     color: l.color,
-                                    opacity: isOn ? 1 : 0.5,
+                                    opacity: isOn ? 1 : 0.8,
                                   }}
                                 >
                                   {l.label}
@@ -3402,7 +3389,7 @@ export default function BinauralTuner() {
                           width: 8,
                           height: 8,
                           background: g.color,
-                          opacity: isActive ? 1 : 0.5,
+                          opacity: isActive ? 1 : 0.7,
                         }}
                       />
                       <span
@@ -3411,7 +3398,7 @@ export default function BinauralTuner() {
                           fontSize: '12px',
                           fontWeight: isActive ? 700 : 500,
                           color: isActive ? g.color : '#7A5438',
-                          opacity: isActive ? 1 : 0.6,
+                          opacity: isActive ? 1 : 0.8,
                         }}
                       >
                         {g.label}
@@ -3470,7 +3457,7 @@ export default function BinauralTuner() {
                             fontSize: '12px',
                             fontWeight: 600,
                             color: isActive ? p.color : '#7A5438',
-                            opacity: isActive ? 1 : 0.6,
+                            opacity: isActive ? 1 : 0.8,
                           }}
                         >
                           {p.label}
@@ -3481,7 +3468,7 @@ export default function BinauralTuner() {
                               fontFamily: 'var(--font-serif)',
                               fontSize: '12px',
                               color: p.color,
-                              opacity: 0.85,
+
                               marginLeft: 4,
                             }}
                           >
@@ -3546,7 +3533,7 @@ export default function BinauralTuner() {
                     className="cursor-pointer rounded-lg px-2 py-1"
                     style={{
                       fontFamily: 'var(--font-serif)',
-                      fontSize: '11px',
+                      fontSize: '12px',
                       fontWeight: 600,
                       color: '#7AAA58',
                       background: '#7AAA5810',
@@ -3584,9 +3571,9 @@ export default function BinauralTuner() {
                         <span
                           style={{
                             fontFamily: 'var(--font-serif)',
-                            fontSize: '11px',
+                            fontSize: '12px',
                             color: '#8A6A4A',
-                            opacity: 0.8,
+
                             marginLeft: 'auto',
                           }}
                         >
