@@ -501,81 +501,6 @@ const LAYERS: LayerDef[] = [
     },
   },
   {
-    id: 'laughter',
-    label: 'Laughter',
-    color: '#E0844A',
-    group: 'ambient' as const,
-    build: (ctx: AudioContext) => {
-      // Synthesized gentle giggles — short bursts of modulated tones
-      const n = ctx.sampleRate * 12;
-      const b = ctx.createBuffer(2, n, ctx.sampleRate);
-      for (let c = 0; c < 2; c++) {
-        const d = b.getChannelData(c);
-        for (let j = 0; j < 4; j++) {
-          const p = Math.floor(Math.random() * (n - ctx.sampleRate * 1.5));
-          const baseF = 250 + Math.random() * 150;
-          // Each laugh = 4-7 syllables
-          const syllables = 4 + Math.floor(Math.random() * 4);
-          for (let s = 0; s < syllables; s++) {
-            const sp = p + Math.floor(s * ctx.sampleRate * (0.12 + Math.random() * 0.08));
-            const sl = Math.floor(ctx.sampleRate * (0.06 + Math.random() * 0.04));
-            const pitch = baseF * (1 + s * 0.03); // slight rising pitch
-            for (let i = 0; i < sl && sp + i < n; i++) {
-              const t = i / sl;
-              const env = Math.sin(t * Math.PI);
-              // Mix fundamental + formant-like harmonics
-              d[sp + i] +=
-                (Math.sin((i / ctx.sampleRate) * pitch * Math.PI * 2) * 0.3 +
-                  Math.sin((i / ctx.sampleRate) * pitch * 3 * Math.PI * 2) * 0.15 +
-                  (Math.random() * 2 - 1) * 0.1) *
-                env *
-                0.03;
-            }
-          }
-        }
-      }
-      const s = ctx.createBufferSource();
-      s.buffer = b;
-      s.loop = true;
-      const f = ctx.createBiquadFilter();
-      f.type = 'bandpass';
-      f.frequency.value = 800;
-      f.Q.value = 0.5;
-      s.connect(f);
-      return { node: f, source: s };
-    },
-  },
-  {
-    id: 'deepspace',
-    label: 'Deep Space',
-    color: '#3A3A6A',
-    group: 'ambient' as const,
-    build: (ctx: AudioContext) => {
-      // Slow sweeping low tones — sci-fi atmosphere
-      const n = ctx.sampleRate * 16;
-      const b = ctx.createBuffer(2, n, ctx.sampleRate);
-      for (let c = 0; c < 2; c++) {
-        const d = b.getChannelData(c);
-        for (let i = 0; i < n; i++) {
-          const t = i / n;
-          const sweep = 40 + 30 * Math.sin(t * Math.PI * 2 * 0.5);
-          const env = 0.5 + 0.5 * Math.sin(t * Math.PI * 2 * 0.3);
-          d[i] =
-            Math.sin((i / ctx.sampleRate) * sweep * Math.PI * 2) * env * 0.08 +
-            (Math.random() * 2 - 1) * 0.01;
-        }
-      }
-      const s = ctx.createBufferSource();
-      s.buffer = b;
-      s.loop = true;
-      const f = ctx.createBiquadFilter();
-      f.type = 'lowpass';
-      f.frequency.value = 200;
-      s.connect(f);
-      return { node: f, source: s };
-    },
-  },
-  {
     id: 'heartbeat',
     label: 'Heartbeat',
     color: '#C85050',
@@ -618,26 +543,27 @@ const LAYERS: LayerDef[] = [
   // More nature variety
   {
     id: 'frogs',
-    label: 'Frogs',
+    label: 'Space Frogs',
     color: '#6B8F4E',
     group: 'ambient' as const,
     build: (ctx: AudioContext) => {
-      const n = ctx.sampleRate * 8;
+      // Gentle, slow, spacey frog sounds — more reverb-like tones
+      const n = ctx.sampleRate * 14;
       const b = ctx.createBuffer(2, n, ctx.sampleRate);
       for (let c = 0; c < 2; c++) {
         const d = b.getChannelData(c);
-        for (let j = 0; j < 8; j++) {
-          const p = Math.floor(Math.random() * (n - ctx.sampleRate * 0.4));
-          const f = 600 + Math.random() * 400;
-          const ribbitCount = 2 + Math.floor(Math.random() * 3);
+        for (let j = 0; j < 5; j++) {
+          const p = Math.floor(Math.random() * (n - ctx.sampleRate * 1));
+          const f = 200 + Math.random() * 200; // lower, deeper
+          const ribbitCount = 2 + Math.floor(Math.random() * 2);
           for (let r = 0; r < ribbitCount; r++) {
-            const rp = p + Math.floor(r * ctx.sampleRate * 0.12);
-            const rl = Math.floor(ctx.sampleRate * 0.08);
+            const rp = p + Math.floor(r * ctx.sampleRate * 0.25); // slower spacing
+            const rl = Math.floor(ctx.sampleRate * 0.2); // longer notes
             for (let i = 0; i < rl && rp + i < n; i++) {
               const t = i / rl;
-              const freq = f * (1 - t * 0.3);
+              const freq = f * (1 - t * 0.2);
               d[rp + i] +=
-                Math.sin((i / ctx.sampleRate) * freq * Math.PI * 2) * Math.sin(t * Math.PI) * 0.05;
+                Math.sin((i / ctx.sampleRate) * freq * Math.PI * 2) * Math.sin(t * Math.PI) * 0.03;
             }
           }
         }
@@ -646,44 +572,6 @@ const LAYERS: LayerDef[] = [
       s.buffer = b;
       s.loop = true;
       return { node: s as AudioNode, source: s };
-    },
-  },
-  {
-    id: 'nightbirds',
-    label: 'Night Birds',
-    color: '#3A5A7A',
-    group: 'ambient' as const,
-    build: (ctx: AudioContext) => {
-      const n = ctx.sampleRate * 14;
-      const b = ctx.createBuffer(2, n, ctx.sampleRate);
-      for (let c = 0; c < 2; c++) {
-        const d = b.getChannelData(c);
-        for (let j = 0; j < 5; j++) {
-          const p = Math.floor(Math.random() * (n - ctx.sampleRate * 1));
-          const baseF = 1500 + Math.random() * 1500;
-          // Each call = 2-4 descending notes
-          const notes = 2 + Math.floor(Math.random() * 3);
-          for (let nt = 0; nt < notes; nt++) {
-            const np = p + Math.floor(nt * ctx.sampleRate * 0.2);
-            const nf = baseF * (1 - nt * 0.12);
-            const nl = Math.floor(ctx.sampleRate * (0.1 + Math.random() * 0.1));
-            for (let i = 0; i < nl && np + i < n; i++) {
-              const t = i / nl;
-              d[np + i] +=
-                Math.sin((i / ctx.sampleRate) * nf * Math.PI * 2) * Math.sin(t * Math.PI) * 0.035;
-            }
-          }
-        }
-      }
-      const s = ctx.createBufferSource();
-      s.buffer = b;
-      s.loop = true;
-      const f = ctx.createBiquadFilter();
-      f.type = 'bandpass';
-      f.frequency.value = 2500;
-      f.Q.value = 1;
-      s.connect(f);
-      return { node: f, source: s };
     },
   },
   {
@@ -835,6 +723,20 @@ const REAL_LAYERS: LayerDef[] = [
     group: 'real',
     build: (ctx) => buildRealSound(ctx, '/sounds/real-sheep-bleating.ogg'),
   },
+  {
+    id: 'real-wolf',
+    label: 'Wolf Howl',
+    color: '#5A6A8A',
+    group: 'real',
+    build: (ctx) => buildRealSound(ctx, '/sounds/real-wolf-howl-sound.ogg'),
+  },
+  {
+    id: 'real-bear',
+    label: 'Bear',
+    color: '#7A5438',
+    group: 'real',
+    build: (ctx) => buildRealSound(ctx, '/sounds/real-bear-growl.ogg'),
+  },
   // Synthesized sci-fi / cyberpunk
   {
     id: 'spaceship',
@@ -870,22 +772,24 @@ const REAL_LAYERS: LayerDef[] = [
   },
   {
     id: 'laser',
-    label: 'Laser Hum',
+    label: 'Space Robot',
     color: '#7060C0',
     group: 'ambient' as const,
     build: (ctx: AudioContext) => {
-      const n = ctx.sampleRate * 8;
+      // Long, slow laser sweeps — relaxing sci-fi atmosphere
+      const n = ctx.sampleRate * 16;
       const b = ctx.createBuffer(2, n, ctx.sampleRate);
       for (let c = 0; c < 2; c++) {
         const d = b.getChannelData(c);
-        for (let j = 0; j < 5; j++) {
-          const p = Math.floor(Math.random() * (n - ctx.sampleRate * 0.5));
-          const freq = 800 + Math.random() * 2000;
-          const l = Math.floor(ctx.sampleRate * (0.05 + Math.random() * 0.15));
-          for (let i = 0; i < l && p + i < n; i++) {
-            const t = i / l;
-            const sweep = freq * (1 + t * 2);
-            d[p + i] += Math.sin((i / ctx.sampleRate) * sweep * Math.PI * 2) * (1 - t) ** 3 * 0.04;
+        for (let j = 0; j < 3; j++) {
+          const p = Math.floor((j * n) / 3 + (Math.random() * n) / 6);
+          const freq = 400 + Math.random() * 600;
+          const sweepLen = Math.floor(ctx.sampleRate * (3 + Math.random() * 3));
+          for (let i = 0; i < sweepLen && p + i < n; i++) {
+            const t = i / sweepLen;
+            const env = Math.sin(t * Math.PI); // smooth bell
+            const sweep = freq * (1 + t * 0.8); // gentle rise
+            d[p + i] += Math.sin((i / ctx.sampleRate) * sweep * Math.PI * 2) * env * 0.03;
           }
         }
       }
@@ -956,6 +860,110 @@ const REAL_LAYERS: LayerDef[] = [
       f.type = 'bandpass';
       f.frequency.value = 500;
       f.Q.value = 0.3;
+      s.connect(f);
+      return { node: f, source: s };
+    },
+  },
+  // Synthesized predators — fun!
+  {
+    id: 'lion',
+    label: 'Wobble',
+    color: '#C87030',
+    group: 'ambient' as const,
+    build: (ctx: AudioContext) => {
+      const n = ctx.sampleRate * 14;
+      const b = ctx.createBuffer(2, n, ctx.sampleRate);
+      for (let c = 0; c < 2; c++) {
+        const d = b.getChannelData(c);
+        for (let j = 0; j < 3; j++) {
+          const p = Math.floor((j * n) / 3 + (Math.random() * n) / 6);
+          const roarLen = Math.floor(ctx.sampleRate * (2 + Math.random() * 1.5));
+          for (let i = 0; i < roarLen && p + i < n; i++) {
+            const t = i / roarLen;
+            // Build-up → peak → fade — like a real roar
+            const env = t < 0.2 ? t / 0.2 : t < 0.6 ? 1 : 1 - (t - 0.6) / 0.4;
+            const freq = 80 + 30 * Math.sin(t * 6 * Math.PI); // rumbling vibrato
+            const growl = Math.sin((i / ctx.sampleRate) * freq * Math.PI * 2);
+            const noise = (Math.random() * 2 - 1) * 0.4;
+            d[p + i] += (growl * 0.6 + noise * 0.4) * env * 0.06;
+          }
+        }
+      }
+      const s = ctx.createBufferSource();
+      s.buffer = b;
+      s.loop = true;
+      const f = ctx.createBiquadFilter();
+      f.type = 'lowpass';
+      f.frequency.value = 400;
+      s.connect(f);
+      return { node: f, source: s };
+    },
+  },
+  {
+    id: 'trex',
+    label: 'T-Rex',
+    color: '#8A4030',
+    group: 'ambient' as const,
+    build: (ctx: AudioContext) => {
+      const n = ctx.sampleRate * 16;
+      const b = ctx.createBuffer(2, n, ctx.sampleRate);
+      for (let c = 0; c < 2; c++) {
+        const d = b.getChannelData(c);
+        for (let j = 0; j < 2; j++) {
+          const p = Math.floor((j * n) / 2 + (Math.random() * n) / 4);
+          const roarLen = Math.floor(ctx.sampleRate * (3 + Math.random() * 2));
+          for (let i = 0; i < roarLen && p + i < n; i++) {
+            const t = i / roarLen;
+            const env = t < 0.15 ? (t / 0.15) ** 2 : t < 0.5 ? 1 : (1 - (t - 0.5) / 0.5) ** 0.5;
+            // Very low frequency sweep with sub-bass rumble
+            const freq = 30 + 20 * Math.sin(t * 4 * Math.PI);
+            const base = Math.sin((i / ctx.sampleRate) * freq * Math.PI * 2);
+            const sub = Math.sin((i / ctx.sampleRate) * 18 * Math.PI * 2) * 0.5;
+            const distort = Math.tanh((base + sub) * 3) * 0.5;
+            const noise = (Math.random() * 2 - 1) * 0.2;
+            d[p + i] += (distort + noise) * env * 0.08;
+          }
+        }
+      }
+      const s = ctx.createBufferSource();
+      s.buffer = b;
+      s.loop = true;
+      const f = ctx.createBiquadFilter();
+      f.type = 'lowpass';
+      f.frequency.value = 200;
+      s.connect(f);
+      return { node: f, source: s };
+    },
+  },
+  {
+    id: 'softlaser',
+    label: 'Soft Lasers',
+    color: '#A08090',
+    group: 'ambient' as const,
+    build: (ctx: AudioContext) => {
+      // Very long, gentle frequency sweeps — ethereal and calming
+      const n = ctx.sampleRate * 20;
+      const b = ctx.createBuffer(2, n, ctx.sampleRate);
+      for (let c = 0; c < 2; c++) {
+        const d = b.getChannelData(c);
+        for (let j = 0; j < 4; j++) {
+          const p = Math.floor((j * n) / 4 + (Math.random() * n) / 8);
+          const sweepLen = Math.floor(ctx.sampleRate * (4 + Math.random() * 4));
+          const baseFreq = 300 + Math.random() * 300;
+          for (let i = 0; i < sweepLen && p + i < n; i++) {
+            const t = i / sweepLen;
+            const env = Math.sin(t * Math.PI) ** 0.5; // very smooth
+            const freq = baseFreq * (1 + Math.sin(t * Math.PI) * 0.5);
+            d[p + i] += Math.sin((i / ctx.sampleRate) * freq * Math.PI * 2) * env * 0.025;
+          }
+        }
+      }
+      const s = ctx.createBufferSource();
+      s.buffer = b;
+      s.loop = true;
+      const f = ctx.createBiquadFilter();
+      f.type = 'lowpass';
+      f.frequency.value = 1000;
       s.connect(f);
       return { node: f, source: s };
     },
@@ -1192,9 +1200,9 @@ export default function BinauralTuner() {
       label: 'Music Box',
       color: '#88C8E8',
       type: 'sine' as OscillatorType,
-      attack: 0.15,
-      release: 2.5,
-      octave: 6,
+      attack: 0.4,
+      release: 3.0,
+      octave: 4,
     },
     {
       id: 'pad',
@@ -1221,6 +1229,15 @@ export default function BinauralTuner() {
       type: 'sawtooth' as OscillatorType,
       attack: 0.8,
       release: 5.0,
+      octave: 3,
+    },
+    {
+      id: 'guitar',
+      label: 'Psych Guitar',
+      color: '#B33A2B',
+      type: 'sawtooth' as OscillatorType,
+      attack: 0.2,
+      release: 4.0,
       octave: 3,
     },
   ] as const;
@@ -1269,6 +1286,31 @@ export default function BinauralTuner() {
       lp.Q.value = 0.5;
       osc.connect(lp);
       source = lp;
+    }
+
+    // For guitar, add distortion + pitch bend
+    if (melDef.id === 'guitar') {
+      // Waveshaper distortion
+      const ws = ctx.createWaveShaper();
+      const curve = new Float32Array(256);
+      for (let i = 0; i < 256; i++) {
+        const x = i / 128 - 1;
+        curve[i] = Math.tanh(x * 2.5); // soft clip
+      }
+      ws.curve = curve;
+      ws.oversample = '2x';
+      // Lowpass to tame highs
+      const lp = ctx.createBiquadFilter();
+      lp.type = 'lowpass';
+      lp.frequency.value = 1200;
+      lp.Q.value = 1;
+      osc.connect(ws);
+      ws.connect(lp);
+      source = lp;
+      // Pitch bend — slide into the note
+      const t0 = ctx.currentTime;
+      osc.frequency.setValueAtTime(freq * 0.95, t0);
+      osc.frequency.linearRampToValueAtTime(freq, t0 + 0.15);
     }
 
     // For pad, add second detuned osc
