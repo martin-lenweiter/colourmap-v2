@@ -251,20 +251,64 @@ const LAYERS: LayerDef[] = [
   },
   {
     id: 'chimes',
-    label: 'Chimes',
+    label: 'Wind Chimes',
     color: '#88D8D0',
     group: 'ambient' as const,
     build: (ctx: AudioContext) => {
-      const n = ctx.sampleRate * 8;
+      // Metallic wind chimes — aluminium pipe resonance with overtones
+      const n = ctx.sampleRate * 14;
       const b = ctx.createBuffer(2, n, ctx.sampleRate);
+      // Pipe tunings — pentatonic set like real wind chimes
+      const pipes = [523, 587, 659, 784, 880, 1047, 1175];
       for (let c = 0; c < 2; c++) {
         const d = b.getChannelData(c);
-        for (let j = 0; j < 8; j++) {
-          const p = Math.floor(Math.random() * (n - ctx.sampleRate * 0.5));
-          const f = 800 + Math.random() * 2000;
-          const l = Math.floor(ctx.sampleRate * (0.1 + Math.random() * 0.3));
+        for (let j = 0; j < 10; j++) {
+          const p = Math.floor(Math.random() * (n - ctx.sampleRate * 3));
+          const pipe = pipes[Math.floor(Math.random() * pipes.length)];
+          const ringTime = 1.5 + Math.random() * 2.0; // long ring-out
+          const l = Math.floor(ctx.sampleRate * ringTime);
           for (let i = 0; i < l && p + i < n; i++) {
-            d[p + i] += Math.sin((i / ctx.sampleRate) * f * Math.PI * 2) * (1 - i / l) ** 2 * 0.06;
+            const t = i / l;
+            const env = Math.exp(-t * 3); // exponential decay like metal
+            // Fundamental + 2 inharmonic overtones (metallic character)
+            const fund = Math.sin((i / ctx.sampleRate) * pipe * Math.PI * 2);
+            const over1 = Math.sin((i / ctx.sampleRate) * pipe * 2.76 * Math.PI * 2) * 0.3;
+            const over2 = Math.sin((i / ctx.sampleRate) * pipe * 5.4 * Math.PI * 2) * 0.1;
+            d[p + i] += (fund + over1 + over2) * env * 0.04;
+          }
+        }
+      }
+      const s = ctx.createBufferSource();
+      s.buffer = b;
+      s.loop = true;
+      return { node: s as AudioNode, source: s };
+    },
+  },
+  {
+    id: 'tibetanbowl',
+    label: 'Tibetan Bowl',
+    color: '#C4A060',
+    group: 'ambient' as const,
+    build: (ctx: AudioContext) => {
+      // Singing bowl — rich resonant tone with beating overtones
+      const n = ctx.sampleRate * 16;
+      const b = ctx.createBuffer(2, n, ctx.sampleRate);
+      const bowlFreqs = [220, 330, 440, 528]; // common bowl frequencies
+      for (let c = 0; c < 2; c++) {
+        const d = b.getChannelData(c);
+        for (let j = 0; j < 4; j++) {
+          const p = Math.floor((j * n) / 4 + (Math.random() * n) / 8);
+          const freq = bowlFreqs[j % bowlFreqs.length];
+          const ringTime = 4 + Math.random() * 3;
+          const l = Math.floor(ctx.sampleRate * ringTime);
+          for (let i = 0; i < l && p + i < n; i++) {
+            const t = i / l;
+            const env = Math.exp(-t * 1.5) * (1 - Math.exp(-t * 20)); // strike + decay
+            // Bowl overtone series — slightly detuned for beating
+            const f1 = Math.sin((i / ctx.sampleRate) * freq * Math.PI * 2);
+            const f2 = Math.sin((i / ctx.sampleRate) * freq * 2.003 * Math.PI * 2) * 0.5; // beating
+            const f3 = Math.sin((i / ctx.sampleRate) * freq * 3.01 * Math.PI * 2) * 0.2;
+            d[p + i] += (f1 + f2 + f3) * env * 0.05;
           }
         }
       }
@@ -276,24 +320,24 @@ const LAYERS: LayerDef[] = [
   },
   {
     id: 'bubbles',
-    label: 'Bubbles',
+    label: 'Soft Bubbles',
     color: '#90C0E0',
     group: 'ambient' as const,
     build: (ctx: AudioContext) => {
-      const n = ctx.sampleRate * 6;
+      // Gentle underwater bubbles — slow, deep, relaxing
+      const n = ctx.sampleRate * 12;
       const b = ctx.createBuffer(2, n, ctx.sampleRate);
       for (let c = 0; c < 2; c++) {
         const d = b.getChannelData(c);
-        for (let j = 0; j < 12; j++) {
-          const p = Math.floor(Math.random() * (n - ctx.sampleRate * 0.1));
-          const bf = 200 + Math.random() * 400;
-          const l = Math.floor(ctx.sampleRate * (0.03 + Math.random() * 0.06));
+        for (let j = 0; j < 8; j++) {
+          const p = Math.floor(Math.random() * (n - ctx.sampleRate * 0.5));
+          const bf = 80 + Math.random() * 150; // lower frequencies = deeper bubbles
+          const l = Math.floor(ctx.sampleRate * (0.1 + Math.random() * 0.2)); // longer
           for (let i = 0; i < l && p + i < n; i++) {
             const t = i / l;
-            d[p + i] +=
-              Math.sin((i / ctx.sampleRate) * bf * (1 + t * 3) * Math.PI * 2) *
-              (1 - t) ** 1.5 *
-              0.04;
+            const rise = bf * (1 + t * 1.2); // gentle rise, not sharp
+            const env = Math.sin(t * Math.PI); // smooth bell envelope
+            d[p + i] += Math.sin((i / ctx.sampleRate) * rise * Math.PI * 2) * env * 0.025;
           }
         }
       }
@@ -679,6 +723,20 @@ const LAYERS: LayerDef[] = [
 // Audio file cache for real recorded sounds
 const audioCache = new Map<string, AudioBuffer>();
 
+function applyCrossfade(buffer: AudioBuffer): AudioBuffer {
+  // Fade first 0.3s in and last 0.3s out so loop points don't click
+  const fadeLen = Math.min(Math.floor(buffer.sampleRate * 0.3), buffer.length / 4);
+  for (let ch = 0; ch < buffer.numberOfChannels; ch++) {
+    const data = buffer.getChannelData(ch);
+    for (let i = 0; i < fadeLen; i++) {
+      const t = i / fadeLen;
+      data[i] *= t; // fade in
+      data[data.length - 1 - i] *= t; // fade out
+    }
+  }
+  return buffer;
+}
+
 function buildRealSound(
   ctx: AudioContext,
   url: string,
@@ -693,9 +751,10 @@ function buildRealSound(
       .then((res) => res.arrayBuffer())
       .then((buf) => ctx.decodeAudioData(buf))
       .then((decoded) => {
-        audioCache.set(url, decoded);
+        const faded = applyCrossfade(decoded);
+        audioCache.set(url, faded);
         try {
-          source.buffer = decoded;
+          source.buffer = faded;
         } catch {
           /* source may have been stopped */
         }
@@ -754,6 +813,152 @@ const REAL_LAYERS: LayerDef[] = [
     color: '#A0B070',
     group: 'real',
     build: (ctx) => buildRealSound(ctx, '/sounds/real-cicada.ogg'),
+  },
+  {
+    id: 'real-clock',
+    label: 'Clock',
+    color: '#B8A080',
+    group: 'real',
+    build: (ctx) => buildRealSound(ctx, '/sounds/real-clock.ogg'),
+  },
+  {
+    id: 'real-windchimes',
+    label: 'Wind Chimes',
+    color: '#88D8D0',
+    group: 'real',
+    build: (ctx) => buildRealSound(ctx, '/sounds/real-windchimes.ogg'),
+  },
+  {
+    id: 'real-sheep',
+    label: 'Sheep',
+    color: '#C8B898',
+    group: 'real',
+    build: (ctx) => buildRealSound(ctx, '/sounds/real-sheep-bleating.ogg'),
+  },
+  // Synthesized sci-fi / cyberpunk
+  {
+    id: 'spaceship',
+    label: 'Spaceship',
+    color: '#5060A0',
+    group: 'ambient' as const,
+    build: (ctx: AudioContext) => {
+      const n = ctx.sampleRate * 10;
+      const b = ctx.createBuffer(2, n, ctx.sampleRate);
+      for (let c = 0; c < 2; c++) {
+        const d = b.getChannelData(c);
+        for (let i = 0; i < n; i++) {
+          const t = i / n;
+          // Low engine hum + occasional whoosh pass-bys
+          const hum = Math.sin((i / ctx.sampleRate) * 35 * Math.PI * 2) * 0.04;
+          const whooshPhase = (t * 3) % 1;
+          const whoosh =
+            whooshPhase > 0.8
+              ? Math.sin(whooshPhase * 50 * Math.PI * 2) * (1 - (whooshPhase - 0.8) / 0.2) * 0.06
+              : 0;
+          d[i] = hum + whoosh + (Math.random() * 2 - 1) * 0.008;
+        }
+      }
+      const s = ctx.createBufferSource();
+      s.buffer = b;
+      s.loop = true;
+      const f = ctx.createBiquadFilter();
+      f.type = 'lowpass';
+      f.frequency.value = 300;
+      s.connect(f);
+      return { node: f, source: s };
+    },
+  },
+  {
+    id: 'laser',
+    label: 'Laser Hum',
+    color: '#7060C0',
+    group: 'ambient' as const,
+    build: (ctx: AudioContext) => {
+      const n = ctx.sampleRate * 8;
+      const b = ctx.createBuffer(2, n, ctx.sampleRate);
+      for (let c = 0; c < 2; c++) {
+        const d = b.getChannelData(c);
+        for (let j = 0; j < 5; j++) {
+          const p = Math.floor(Math.random() * (n - ctx.sampleRate * 0.5));
+          const freq = 800 + Math.random() * 2000;
+          const l = Math.floor(ctx.sampleRate * (0.05 + Math.random() * 0.15));
+          for (let i = 0; i < l && p + i < n; i++) {
+            const t = i / l;
+            const sweep = freq * (1 + t * 2);
+            d[p + i] += Math.sin((i / ctx.sampleRate) * sweep * Math.PI * 2) * (1 - t) ** 3 * 0.04;
+          }
+        }
+      }
+      const s = ctx.createBufferSource();
+      s.buffer = b;
+      s.loop = true;
+      return { node: s as AudioNode, source: s };
+    },
+  },
+  {
+    id: 'cyberdrone',
+    label: 'Cyber Drone',
+    color: '#4050A0',
+    group: 'ambient' as const,
+    build: (ctx: AudioContext) => {
+      // Deep modulated drone with digital artifacts
+      const n = ctx.sampleRate * 12;
+      const b = ctx.createBuffer(2, n, ctx.sampleRate);
+      for (let c = 0; c < 2; c++) {
+        const d = b.getChannelData(c);
+        for (let i = 0; i < n; i++) {
+          const t = i / ctx.sampleRate;
+          const base = Math.sin(t * 45 * Math.PI * 2);
+          const mod = Math.sin(t * 0.3 * Math.PI * 2);
+          const glitch = Math.random() > 0.998 ? (Math.random() * 2 - 1) * 0.15 : 0;
+          d[i] = base * (0.3 + mod * 0.2) * 0.06 + glitch;
+        }
+      }
+      const s = ctx.createBufferSource();
+      s.buffer = b;
+      s.loop = true;
+      const f = ctx.createBiquadFilter();
+      f.type = 'lowpass';
+      f.frequency.value = 250;
+      s.connect(f);
+      return { node: f, source: s };
+    },
+  },
+  {
+    id: 'cafechatter',
+    label: 'Cafe',
+    color: '#C8906A',
+    group: 'ambient' as const,
+    build: (ctx: AudioContext) => {
+      // Synthesized background chatter — overlapping filtered noise bursts
+      const n = ctx.sampleRate * 10;
+      const b = ctx.createBuffer(2, n, ctx.sampleRate);
+      for (let c = 0; c < 2; c++) {
+        const d = b.getChannelData(c);
+        // Multiple "voices" = noise bursts at speech-like frequencies
+        for (let v = 0; v < 12; v++) {
+          const start = Math.floor(Math.random() * n * 0.8);
+          const len = Math.floor(ctx.sampleRate * (0.5 + Math.random() * 2));
+          const pitch = 150 + Math.random() * 200;
+          for (let i = 0; i < len && start + i < n; i++) {
+            const t = i / len;
+            const env = Math.sin(t * Math.PI) * (0.8 + 0.2 * Math.sin(t * 8 * Math.PI));
+            const noise = Math.random() * 2 - 1;
+            const formant = Math.sin((i / ctx.sampleRate) * pitch * Math.PI * 2);
+            d[start + i] += (noise * 0.3 + formant * 0.7) * env * 0.015;
+          }
+        }
+      }
+      const s = ctx.createBufferSource();
+      s.buffer = b;
+      s.loop = true;
+      const f = ctx.createBiquadFilter();
+      f.type = 'bandpass';
+      f.frequency.value = 500;
+      f.Q.value = 0.3;
+      s.connect(f);
+      return { node: f, source: s };
+    },
   },
 ];
 
