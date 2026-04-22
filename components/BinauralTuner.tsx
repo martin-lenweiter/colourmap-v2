@@ -2326,7 +2326,7 @@ export default function BinauralTuner() {
         <button
           type="button"
           onClick={() => setSimpleMode((s) => !s)}
-          className="cursor-pointer rounded-full px-3 py-1 text-[10px] font-semibold uppercase tracking-wider transition-all"
+          className="cursor-pointer rounded-full px-3 py-1 text-[12px] font-semibold uppercase tracking-wider transition-all"
           style={{
             color: '#8A6A4A',
             background: 'transparent',
@@ -2976,7 +2976,7 @@ export default function BinauralTuner() {
                   key={id}
                   type="button"
                   onClick={() => setMelodyScale(id)}
-                  className="cursor-pointer rounded-full px-2 py-0.5 text-[9px] font-semibold transition-all"
+                  className="cursor-pointer rounded-full px-3 py-1 text-[12px] font-semibold transition-all"
                   style={{
                     color: melodyScale === id ? '#5C3018' : '#8A6A4A',
                     background: melodyScale === id ? '#5C301810' : 'transparent',
@@ -3077,7 +3077,7 @@ export default function BinauralTuner() {
                     key={mode}
                     type="button"
                     onClick={() => setVoiceMode(isOn ? 'off' : mode)}
-                    className="cursor-pointer rounded-full px-2.5 py-1 text-[10px] font-semibold transition-all"
+                    className="cursor-pointer rounded-full px-2.5 py-1 text-[12px] font-semibold transition-all"
                     style={{
                       color: isOn ? '#9B6BA0' : '#8A6A4A',
                       background: isOn ? '#9B6BA015' : 'transparent',
