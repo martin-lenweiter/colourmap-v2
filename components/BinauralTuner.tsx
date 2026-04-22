@@ -378,6 +378,22 @@ export default function BinauralTuner() {
   ] as const;
   const [activeHarmonics, setActiveHarmonics] = useState<Set<string>>(new Set());
   const harmOscsRef = useRef<Map<string, { osc: OscillatorNode; gain: GainNode }>>(new Map());
+
+  // Sacred / Solfeggio frequencies
+  const SACRED = [
+    { id: 's174', label: '174', freq: 174, desc: 'foundation', color: '#A0907A' },
+    { id: 's285', label: '285', freq: 285, desc: 'healing', color: '#88B0C8' },
+    { id: 's396', label: '396', freq: 396, desc: 'liberation', color: '#9B6BA0' },
+    { id: 's417', label: '417', freq: 417, desc: 'change', color: '#D4805A' },
+    { id: 's432', label: '432', freq: 432, desc: 'nature', color: '#7AAA58' },
+    { id: 's528', label: '528', freq: 528, desc: 'love', color: '#C4A060' },
+    { id: 's639', label: '639', freq: 639, desc: 'connection', color: '#6890B0' },
+    { id: 's741', label: '741', freq: 741, desc: 'intuition', color: '#B0A0C8' },
+    { id: 's852', label: '852', freq: 852, desc: 'spiritual', color: '#D8A878' },
+    { id: 's963', label: '963', freq: 963, desc: 'higher self', color: '#88C8E8' },
+  ] as const;
+  const [activeSacred, setActiveSacred] = useState<Set<string>>(new Set());
+  const sacredOscsRef = useRef<Map<string, { osc: OscillatorNode; gain: GainNode }>>(new Map());
   const reverbNodeRef = useRef<ConvolverNode | null>(null);
   const dryGainRef = useRef<GainNode | null>(null);
   const wetGainRef = useRef<GainNode | null>(null);
@@ -835,6 +851,45 @@ export default function BinauralTuner() {
     }
   }, [activeHarmonics, baseFreq, HARMONICS]);
 
+  // Sacred tones — fixed frequencies, same pattern
+  useEffect(() => {
+    const ctx = ctxRef.current;
+    const gain = gainRef.current;
+    if (!ctx || !gain) return;
+    const binFilter = binFilterRef.current;
+
+    for (const s of SACRED) {
+      if (activeSacred.has(s.id) && !sacredOscsRef.current.has(s.id)) {
+        const osc = ctx.createOscillator();
+        osc.type = 'sine';
+        osc.frequency.value = s.freq;
+        const g = ctx.createGain();
+        g.gain.value = 0;
+        osc.connect(g);
+        g.connect(binFilter || gain);
+        osc.start();
+        g.gain.setValueAtTime(0, ctx.currentTime);
+        g.gain.linearRampToValueAtTime(0.5, ctx.currentTime + 1.0);
+        sacredOscsRef.current.set(s.id, { osc, gain: g });
+      }
+    }
+
+    for (const [id, node] of sacredOscsRef.current) {
+      if (!activeSacred.has(id)) {
+        const now = ctx.currentTime;
+        node.gain.gain.setValueAtTime(node.gain.gain.value, now);
+        node.gain.gain.linearRampToValueAtTime(0, now + 0.8);
+        setTimeout(() => {
+          try {
+            node.osc.stop();
+          } catch {}
+          node.gain.disconnect();
+        }, 900);
+        sacredOscsRef.current.delete(id);
+      }
+    }
+  }, [activeSacred, SACRED]);
+
   // Warmth — create/destroy harmonic oscillator dynamically
   useEffect(() => {
     const ctx = ctxRef.current;
@@ -1223,7 +1278,63 @@ export default function BinauralTuner() {
         </div>
       </div>
 
-      {/* Layers — closable, 3-column grid */}
+      {/* Sacred frequencies — Solfeggio + 432Hz */}
+      <div className="px-2">
+        <p
+          className="text-center mb-2"
+          style={{
+            fontFamily: 'var(--font-serif)',
+            fontSize: '11px',
+            color: '#7A5438',
+            opacity: 0.5,
+          }}
+        >
+          sacred frequencies
+        </p>
+        <div className="flex flex-wrap justify-center gap-1.5">
+          {SACRED.map((s) => {
+            const isOn = activeSacred.has(s.id);
+            return (
+              <button
+                key={s.id}
+                type="button"
+                onClick={() => {
+                  setActiveSacred((prev) => {
+                    const next = new Set(prev);
+                    if (next.has(s.id)) next.delete(s.id);
+                    else next.add(s.id);
+                    return next;
+                  });
+                }}
+                className="flex cursor-pointer items-center gap-1 rounded-full px-2 py-1 transition-all"
+                style={{
+                  background: isOn ? `${s.color}18` : 'transparent',
+                  border: `1px solid ${isOn ? `${s.color}40` : '#C4A06010'}`,
+                }}
+                title={s.desc}
+              >
+                <span
+                  className="block rounded-full"
+                  style={{ width: 6, height: 6, background: s.color, opacity: isOn ? 1 : 0.3 }}
+                />
+                <span
+                  style={{
+                    fontFamily: 'var(--font-serif)',
+                    fontSize: '10px',
+                    fontWeight: isOn ? 700 : 500,
+                    color: isOn ? s.color : '#8A6A4A',
+                    opacity: isOn ? 1 : 0.45,
+                  }}
+                >
+                  {s.label}
+                </span>
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* Layers — closable, 3-column grid with volume */}
       <div className="px-2">
         <button
           type="button"
@@ -1264,39 +1375,66 @@ export default function BinauralTuner() {
                   {group}
                 </p>
                 {LAYERS.filter((l) => l.group === group).map((l) => {
-                  const isOn = (activeLayers[l.id] || 0) > 0;
+                  const vol = activeLayers[l.id] || 0;
+                  const isOn = vol > 0;
                   return (
-                    <button
-                      key={l.id}
-                      type="button"
-                      onClick={() => toggleLayer(l.id)}
-                      className="flex w-full cursor-pointer items-center gap-1.5 rounded-lg px-2 py-1.5 transition-all"
-                      style={{
-                        background: isOn ? `${l.color}15` : 'transparent',
-                        border: `1px solid ${isOn ? `${l.color}35` : '#C4A06010'}`,
-                      }}
-                    >
-                      <span
-                        className="block rounded-full shrink-0"
+                    <div key={l.id} className="space-y-0.5">
+                      <button
+                        type="button"
+                        onClick={() => toggleLayer(l.id)}
+                        className="flex w-full cursor-pointer items-center gap-1.5 rounded-lg px-2 py-1.5 transition-all"
                         style={{
-                          width: 7,
-                          height: 7,
-                          background: l.color,
-                          opacity: isOn ? 1 : 0.3,
-                        }}
-                      />
-                      <span
-                        style={{
-                          fontFamily: 'var(--font-serif)',
-                          fontSize: '11px',
-                          fontWeight: isOn ? 700 : 500,
-                          color: isOn ? l.color : '#8A6A4A',
-                          opacity: isOn ? 1 : 0.5,
+                          background: isOn ? `${l.color}15` : 'transparent',
+                          border: `1px solid ${isOn ? `${l.color}35` : '#C4A06010'}`,
                         }}
                       >
-                        {l.label}
-                      </span>
-                    </button>
+                        <span
+                          className="block rounded-full shrink-0"
+                          style={{
+                            width: 7,
+                            height: 7,
+                            background: l.color,
+                            opacity: isOn ? 1 : 0.3,
+                          }}
+                        />
+                        <span
+                          style={{
+                            fontFamily: 'var(--font-serif)',
+                            fontSize: '11px',
+                            fontWeight: isOn ? 700 : 500,
+                            color: isOn ? l.color : '#8A6A4A',
+                            opacity: isOn ? 1 : 0.5,
+                          }}
+                        >
+                          {l.label}
+                        </span>
+                      </button>
+                      {isOn && (
+                        <div
+                          className="flex gap-[2px] px-1 cursor-pointer"
+                          onClick={(e) => {
+                            const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
+                            const x = Math.max(
+                              0.05,
+                              Math.min(1, (e.clientX - rect.left) / rect.width),
+                            );
+                            setLayerVol(l.id, x);
+                          }}
+                        >
+                          {Array.from({ length: 6 }, (_, i) => (
+                            <div
+                              key={i}
+                              className="flex-1 rounded-[2px] transition-all"
+                              style={{
+                                height: 4,
+                                background: l.color,
+                                opacity: i / 5 <= vol ? 0.4 + (i / 5) * 0.4 : 0.08,
+                              }}
+                            />
+                          ))}
+                        </div>
+                      )}
+                    </div>
                   );
                 })}
               </div>
