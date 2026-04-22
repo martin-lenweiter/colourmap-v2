@@ -34,7 +34,7 @@ interface LayerDef {
   id: string;
   label: string;
   color: string;
-  group: 'nature' | 'tones' | 'texture';
+  group: 'nature' | 'tones' | 'texture' | 'ambient';
   build: (
     ctx: AudioContext,
     baseFreq: number,
@@ -187,6 +187,274 @@ const LAYERS: LayerDef[] = [
     color: '#A0907A',
     group: 'texture',
     build: (ctx) => buildTone(ctx, 60, 'sine'),
+  },
+  // Ambient — noise, periodic sounds, atmospheric
+  {
+    id: 'whitenoise',
+    label: 'White Noise',
+    color: '#C8C8C8',
+    group: 'ambient' as const,
+    build: (ctx: AudioContext) => {
+      const n = ctx.sampleRate * 4;
+      const b = ctx.createBuffer(2, n, ctx.sampleRate);
+      for (let c = 0; c < 2; c++) {
+        const d = b.getChannelData(c);
+        for (let i = 0; i < n; i++) d[i] = (Math.random() * 2 - 1) * 0.15;
+      }
+      const s = ctx.createBufferSource();
+      s.buffer = b;
+      s.loop = true;
+      return { node: s as AudioNode, source: s };
+    },
+  },
+  {
+    id: 'pinknoise',
+    label: 'Pink Noise',
+    color: '#E8B8C8',
+    group: 'ambient' as const,
+    build: (ctx: AudioContext) => {
+      const n = ctx.sampleRate * 4;
+      const b = ctx.createBuffer(2, n, ctx.sampleRate);
+      for (let c = 0; c < 2; c++) {
+        const d = b.getChannelData(c);
+        let b0 = 0,
+          b1 = 0,
+          b2 = 0,
+          b3 = 0,
+          b4 = 0,
+          b5 = 0,
+          b6 = 0;
+        for (let i = 0; i < n; i++) {
+          const w = Math.random() * 2 - 1;
+          b0 = 0.99886 * b0 + w * 0.0555179;
+          b1 = 0.99332 * b1 + w * 0.0750759;
+          b2 = 0.969 * b2 + w * 0.153852;
+          b3 = 0.8665 * b3 + w * 0.3104856;
+          b4 = 0.55 * b4 + w * 0.5329522;
+          b5 = -0.7616 * b5 - w * 0.016898;
+          d[i] = (b0 + b1 + b2 + b3 + b4 + b5 + b6 + w * 0.5362) * 0.04;
+          b6 = w * 0.115926;
+        }
+      }
+      const s = ctx.createBufferSource();
+      s.buffer = b;
+      s.loop = true;
+      return { node: s as AudioNode, source: s };
+    },
+  },
+  {
+    id: 'brownnoise',
+    label: 'Brown Noise',
+    color: '#A08060',
+    group: 'ambient' as const,
+    build: (ctx: AudioContext) => buildNoise(ctx, 'lowpass', 200, 2.0),
+  },
+  {
+    id: 'chimes',
+    label: 'Chimes',
+    color: '#88D8D0',
+    group: 'ambient' as const,
+    build: (ctx: AudioContext) => {
+      const n = ctx.sampleRate * 8;
+      const b = ctx.createBuffer(2, n, ctx.sampleRate);
+      for (let c = 0; c < 2; c++) {
+        const d = b.getChannelData(c);
+        for (let j = 0; j < 8; j++) {
+          const p = Math.floor(Math.random() * (n - ctx.sampleRate * 0.5));
+          const f = 800 + Math.random() * 2000;
+          const l = Math.floor(ctx.sampleRate * (0.1 + Math.random() * 0.3));
+          for (let i = 0; i < l && p + i < n; i++) {
+            d[p + i] += Math.sin((i / ctx.sampleRate) * f * Math.PI * 2) * (1 - i / l) ** 2 * 0.06;
+          }
+        }
+      }
+      const s = ctx.createBufferSource();
+      s.buffer = b;
+      s.loop = true;
+      return { node: s as AudioNode, source: s };
+    },
+  },
+  {
+    id: 'bubbles',
+    label: 'Bubbles',
+    color: '#90C0E0',
+    group: 'ambient' as const,
+    build: (ctx: AudioContext) => {
+      const n = ctx.sampleRate * 6;
+      const b = ctx.createBuffer(2, n, ctx.sampleRate);
+      for (let c = 0; c < 2; c++) {
+        const d = b.getChannelData(c);
+        for (let j = 0; j < 12; j++) {
+          const p = Math.floor(Math.random() * (n - ctx.sampleRate * 0.1));
+          const bf = 200 + Math.random() * 400;
+          const l = Math.floor(ctx.sampleRate * (0.03 + Math.random() * 0.06));
+          for (let i = 0; i < l && p + i < n; i++) {
+            const t = i / l;
+            d[p + i] +=
+              Math.sin((i / ctx.sampleRate) * bf * (1 + t * 3) * Math.PI * 2) *
+              (1 - t) ** 1.5 *
+              0.04;
+          }
+        }
+      }
+      const s = ctx.createBufferSource();
+      s.buffer = b;
+      s.loop = true;
+      return { node: s as AudioNode, source: s };
+    },
+  },
+  {
+    id: 'echoes',
+    label: 'Echoes',
+    color: '#B0A0D0',
+    group: 'ambient' as const,
+    build: (ctx: AudioContext) => {
+      const n = ctx.sampleRate * 10;
+      const b = ctx.createBuffer(2, n, ctx.sampleRate);
+      for (let c = 0; c < 2; c++) {
+        const d = b.getChannelData(c);
+        for (let j = 0; j < 5; j++) {
+          const p = Math.floor(Math.random() * (n - ctx.sampleRate * 2));
+          const f = 300 + Math.random() * 200;
+          for (let rep = 0; rep < 4; rep++) {
+            const offset = p + Math.floor(rep * ctx.sampleRate * 0.4);
+            const vol = 0.08 * 0.8 ** rep;
+            const l = Math.floor(ctx.sampleRate * 0.15);
+            for (let i = 0; i < l && offset + i < n; i++) {
+              d[offset + i] +=
+                Math.sin((i / ctx.sampleRate) * f * Math.PI * 2) * (1 - i / l) ** 2 * vol;
+            }
+          }
+        }
+      }
+      const s = ctx.createBufferSource();
+      s.buffer = b;
+      s.loop = true;
+      return { node: s as AudioNode, source: s };
+    },
+  },
+  {
+    id: 'rollingwaves',
+    label: 'Rolling Waves',
+    color: '#5A8AAA',
+    group: 'ambient' as const,
+    build: (ctx: AudioContext) => {
+      const n = ctx.sampleRate * 12;
+      const b = ctx.createBuffer(2, n, ctx.sampleRate);
+      for (let c = 0; c < 2; c++) {
+        const d = b.getChannelData(c);
+        let last = 0;
+        for (let i = 0; i < n; i++) {
+          const w = Math.random() * 2 - 1;
+          last = (last + 0.02 * w) / 1.02;
+          const wave = Math.sin((i / ctx.sampleRate) * 0.15 * Math.PI * 2);
+          d[i] = last * 1.2 * Math.max(0, wave * 0.7 + 0.3);
+        }
+      }
+      const s = ctx.createBufferSource();
+      s.buffer = b;
+      s.loop = true;
+      const f = ctx.createBiquadFilter();
+      f.type = 'lowpass';
+      f.frequency.value = 400;
+      s.connect(f);
+      return { node: f, source: s };
+    },
+  },
+  {
+    id: 'whispers',
+    label: 'Whispers',
+    color: '#D8C8B8',
+    group: 'ambient' as const,
+    build: (ctx: AudioContext) => {
+      const n = ctx.sampleRate * 8;
+      const b = ctx.createBuffer(2, n, ctx.sampleRate);
+      for (let c = 0; c < 2; c++) {
+        const d = b.getChannelData(c);
+        for (let j = 0; j < 6; j++) {
+          const p = Math.floor(Math.random() * (n - ctx.sampleRate * 0.8));
+          const l = Math.floor(ctx.sampleRate * (0.3 + Math.random() * 0.5));
+          for (let i = 0; i < l && p + i < n; i++) {
+            const env = Math.sin((i / l) * Math.PI);
+            d[p + i] += (Math.random() * 2 - 1) * env * 0.03;
+          }
+        }
+      }
+      const s = ctx.createBufferSource();
+      s.buffer = b;
+      s.loop = true;
+      const f = ctx.createBiquadFilter();
+      f.type = 'bandpass';
+      f.frequency.value = 2000;
+      f.Q.value = 2;
+      s.connect(f);
+      return { node: f, source: s };
+    },
+  },
+  {
+    id: 'jungle',
+    label: 'Jungle',
+    color: '#5F7447',
+    group: 'ambient' as const,
+    build: (ctx: AudioContext) => {
+      const n = ctx.sampleRate * 10;
+      const b = ctx.createBuffer(2, n, ctx.sampleRate);
+      for (let c = 0; c < 2; c++) {
+        const d = b.getChannelData(c);
+        for (let j = 0; j < 10; j++) {
+          const p = Math.floor(Math.random() * (n - ctx.sampleRate * 0.5));
+          const isChirp = Math.random() > 0.5;
+          const f = isChirp ? 2000 + Math.random() * 3000 : 500 + Math.random() * 800;
+          const l = Math.floor(
+            ctx.sampleRate * (isChirp ? 0.05 + Math.random() * 0.1 : 0.2 + Math.random() * 0.3),
+          );
+          for (let i = 0; i < l && p + i < n; i++) {
+            const t = i / l;
+            const env = isChirp ? (1 - t) ** 2 : Math.sin(t * Math.PI);
+            const fMod = isChirp ? f * (1 + t * 0.5) : f;
+            d[p + i] +=
+              Math.sin((i / ctx.sampleRate) * fMod * Math.PI * 2) * env * (isChirp ? 0.04 : 0.03);
+          }
+        }
+      }
+      const s = ctx.createBufferSource();
+      s.buffer = b;
+      s.loop = true;
+      return { node: s as AudioNode, source: s };
+    },
+  },
+  {
+    id: 'crickets',
+    label: 'Crickets',
+    color: '#A0B070',
+    group: 'ambient' as const,
+    build: (ctx: AudioContext) => {
+      const n = ctx.sampleRate * 6;
+      const b = ctx.createBuffer(2, n, ctx.sampleRate);
+      for (let c = 0; c < 2; c++) {
+        const d = b.getChannelData(c);
+        for (let j = 0; j < 15; j++) {
+          const p = Math.floor(Math.random() * (n - ctx.sampleRate * 0.3));
+          const f = 4000 + Math.random() * 2000;
+          const chirps = 3 + Math.floor(Math.random() * 4);
+          for (let k = 0; k < chirps; k++) {
+            const cp = p + Math.floor(k * ctx.sampleRate * 0.06);
+            const l = Math.floor(ctx.sampleRate * 0.02);
+            for (let i = 0; i < l && cp + i < n; i++) {
+              d[cp + i] += Math.sin((i / ctx.sampleRate) * f * Math.PI * 2) * 0.02;
+            }
+          }
+        }
+      }
+      const s = ctx.createBufferSource();
+      s.buffer = b;
+      s.loop = true;
+      const f = ctx.createBiquadFilter();
+      f.type = 'highpass';
+      f.frequency.value = 3000;
+      s.connect(f);
+      return { node: f, source: s };
+    },
   },
 ];
 
@@ -405,8 +673,8 @@ export default function BinauralTuner() {
       label: 'Soft Piano',
       color: '#9B6BA0',
       type: 'triangle' as OscillatorType,
-      attack: 0.05,
-      release: 3.0,
+      attack: 0.3,
+      release: 3.5,
       octave: 4,
     },
     {
@@ -414,8 +682,8 @@ export default function BinauralTuner() {
       label: 'Music Box',
       color: '#88C8E8',
       type: 'sine' as OscillatorType,
-      attack: 0.01,
-      release: 2.0,
+      attack: 0.15,
+      release: 2.5,
       octave: 6,
     },
     {
@@ -423,8 +691,8 @@ export default function BinauralTuner() {
       label: 'Ambient Pad',
       color: '#7AAA58',
       type: 'sine' as OscillatorType,
-      attack: 0.8,
-      release: 5.0,
+      attack: 1.2,
+      release: 6.0,
       octave: 3,
     },
     {
@@ -432,8 +700,8 @@ export default function BinauralTuner() {
       label: 'Harp',
       color: '#C4A060',
       type: 'triangle' as OscillatorType,
-      attack: 0.01,
-      release: 1.5,
+      attack: 0.1,
+      release: 2.0,
       octave: 5,
     },
     {
@@ -441,13 +709,22 @@ export default function BinauralTuner() {
       label: 'Strings',
       color: '#D4805A',
       type: 'sawtooth' as OscillatorType,
-      attack: 0.4,
-      release: 4.0,
+      attack: 0.8,
+      release: 5.0,
       octave: 3,
     },
   ] as const;
-  // Pentatonic intervals in semitones: C D E G A
-  const PENTA = [0, 2, 4, 7, 9, 12, 14, 16, 19, 21];
+  // Musical scales for melodies
+  const MELODY_SCALES: Record<string, { label: string; notes: number[] }> = {
+    pentatonic: { label: 'Pentatonic', notes: [0, 2, 4, 7, 9, 12, 14, 16, 19, 21] },
+    major: { label: 'Major', notes: [0, 2, 4, 5, 7, 9, 11, 12, 14, 16, 17, 19] },
+    minor: { label: 'Minor', notes: [0, 2, 3, 5, 7, 8, 10, 12, 14, 15, 17, 19] },
+    japanese: { label: 'Japanese', notes: [0, 1, 5, 7, 8, 12, 13, 17, 19, 20] },
+    blues: { label: 'Blues', notes: [0, 3, 5, 6, 7, 10, 12, 15, 17, 18, 19, 22] },
+    arabic: { label: 'Arabic', notes: [0, 1, 4, 5, 7, 8, 11, 12, 13, 16, 17, 19] },
+    wholeTone: { label: 'Whole Tone', notes: [0, 2, 4, 6, 8, 10, 12, 14, 16, 18, 20, 22] },
+  };
+  const [melodyScale, setMelodyScale] = useState('pentatonic');
   const [activeMelodies, setActiveMelodies] = useState<Set<string>>(new Set());
   const [melodySpeed, setMelodySpeed] = useState(50); // 0-100, 0=very slow, 100=fast
   const [melodyReverb, setMelodyReverb] = useState(60); // 0-100
@@ -463,8 +740,9 @@ export default function BinauralTuner() {
     const gain = gainRef.current;
     if (!ctx || !gain || !melodyActiveIdsRef.current.has(melDef.id)) return;
 
-    // Pick a random pentatonic note
-    const noteIdx = PENTA[Math.floor(Math.random() * PENTA.length)];
+    // Pick a random note from the selected scale
+    const scaleNotes = MELODY_SCALES[melodyScale]?.notes || MELODY_SCALES.pentatonic.notes;
+    const noteIdx = scaleNotes[Math.floor(Math.random() * scaleNotes.length)];
     const baseNote = 261.63 * 2 ** (melDef.octave - 4); // C of the octave
     const freq = baseNote * 2 ** (noteIdx / 12);
 
@@ -1614,6 +1892,26 @@ export default function BinauralTuner() {
             );
           })}
         </div>
+        {/* Scale selector */}
+        <div className="flex flex-wrap justify-center gap-1 pt-1">
+          {Object.entries(MELODY_SCALES).map(([id, s]) => (
+            <button
+              key={id}
+              type="button"
+              onClick={() => setMelodyScale(id)}
+              className="cursor-pointer rounded-full px-2 py-0.5 text-[9px] font-semibold transition-all"
+              style={{
+                color: melodyScale === id ? '#5C3018' : '#8A6A4A',
+                background: melodyScale === id ? '#5C301810' : 'transparent',
+                border: `1px solid ${melodyScale === id ? '#5C301830' : '#C4A06008'}`,
+                opacity: melodyScale === id ? 1 : 0.4,
+                fontFamily: 'var(--font-serif)',
+              }}
+            >
+              {s.label}
+            </button>
+          ))}
+        </div>
         {activeMelodies.size > 0 && (
           <div className="flex justify-center gap-4 pt-2">
             <div className="flex items-center gap-2">
@@ -1709,8 +2007,8 @@ export default function BinauralTuner() {
           </span>
         </button>
         {layersOpen && (
-          <div className="animate-in fade-in duration-150 grid grid-cols-3 gap-3 pt-1">
-            {(['nature', 'tones', 'texture'] as const).map((group) => (
+          <div className="animate-in fade-in duration-150 grid grid-cols-4 gap-2 pt-1">
+            {(['nature', 'tones', 'texture', 'ambient'] as const).map((group) => (
               <div key={group} className="space-y-1">
                 <p
                   className="uppercase tracking-[0.14em] text-center"
