@@ -192,7 +192,7 @@ const LAYERS: LayerDef[] = [
   {
     id: 'whitenoise',
     label: 'White Noise',
-    color: '#C8C8C8',
+    color: '#D8C8B8',
     group: 'ambient' as const,
     build: (ctx: AudioContext) => {
       const n = ctx.sampleRate * 4;

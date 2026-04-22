@@ -1310,6 +1310,50 @@ export default function LofiLooper() {
 
   const bassNotes = [0, 130.81, 146.83, 164.81, 174.61, 196.0, 220.0, 246.94]; // null + C-B
 
+  function randomizeBeat() {
+    const densities: Record<string, number> = {
+      kick: 0.25,
+      snare: 0.15,
+      hat: 0.4,
+      clap: 0.1,
+      shaker: 0.3,
+    };
+    const next: Record<string, boolean[]> = {};
+    for (const drum of DRUMS) {
+      const density = densities[drum.id] || 0.2;
+      next[drum.id] = Array.from({ length: STEPS }, (_, i) => {
+        if (drum.id === 'kick' && i === 0) return true; // always kick on 1
+        return Math.random() < density;
+      });
+    }
+    setBeat(next as typeof beat);
+    setActivePreset(null);
+  }
+
+  function randomizeBass() {
+    const next = Array.from({ length: STEPS }, () =>
+      Math.random() < 0.3 ? Math.floor(Math.random() * 7) + 1 : 0,
+    );
+    // Always bass on beat 1
+    next[0] = Math.floor(Math.random() * 7) + 1;
+    setBass(next);
+    setActivePreset(null);
+  }
+
+  function randomizeMelody() {
+    const next: (number | null)[] = Array.from({ length: STEPS }, () =>
+      Math.random() < 0.25 ? Math.floor(Math.random() * melodyLabels.length) + 1 : null,
+    );
+    setMelody(next);
+    setActivePreset(null);
+  }
+
+  function randomizeActive() {
+    if (activeLayer === 'beat') randomizeBeat();
+    else if (activeLayer === 'bass') randomizeBass();
+    else randomizeMelody();
+  }
+
   return (
     <div className="space-y-4">
       {/* Title */}
@@ -1416,7 +1460,22 @@ export default function LofiLooper() {
             </button>
           ))}
         </div>
-        {/* Mute toggles */}
+        {/* Dice + Mute toggles */}
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={randomizeActive}
+            className="cursor-pointer rounded-full px-2 py-0.5 text-[10px] font-semibold transition-all"
+            style={{
+              color: '#C4A060',
+              background: '#C4A06010',
+              border: '1px solid #C4A06020',
+            }}
+            title={`randomize ${activeLayer}`}
+          >
+            dice
+          </button>
+        </div>
         <div className="flex gap-1">
           <button
             type="button"
