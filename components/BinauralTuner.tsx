@@ -1654,6 +1654,81 @@ export default function BinauralTuner() {
   const [brainStatesOpen, setBrainStatesOpen] = useState(false);
   const [savedSoundsOpen, setSavedSoundsOpen] = useState(false);
 
+  // Auto-save current sound state to localStorage
+  const LS_STATE = 'colourmap:calming-sounds-state';
+  useEffect(() => {
+    // Restore on mount
+    try {
+      const raw = localStorage.getItem(LS_STATE);
+      if (raw) {
+        const s = JSON.parse(raw);
+        if (s.baseFreq) setBaseFreq(s.baseFreq);
+        if (s.beatFreq) setBeatFreq(s.beatFreq);
+        if (s.volume) setVolume(s.volume);
+        if (s.reverbMix !== undefined) setReverbMix(s.reverbMix);
+        if (s.binauralOn !== undefined) setBinauralOn(s.binauralOn);
+        if (s.baseToneOn !== undefined) setBaseToneOn(s.baseToneOn);
+        if (s.tremolo !== undefined) setTremolo(s.tremolo);
+        if (s.activeLayers) setActiveLayers(s.activeLayers);
+        if (s.activeGenre) setActiveGenre(s.activeGenre);
+        if (s.activeHarmonics) setActiveHarmonics(new Set(s.activeHarmonics));
+        if (s.activeSacred) setActiveSacred(new Set(s.activeSacred));
+        if (s.activeMelodies) setActiveMelodies(new Set(s.activeMelodies));
+        if (s.melodyScale) setMelodyScale(s.melodyScale);
+        if (s.melodySpeed !== undefined) setMelodySpeed(s.melodySpeed);
+        if (s.melodyReverb !== undefined) setMelodyReverb(s.melodyReverb);
+        if (s.layerReverb !== undefined) setLayerReverb(s.layerReverb);
+        if (s.simpleMode !== undefined) setSimpleMode(s.simpleMode);
+      }
+    } catch {}
+  }, []);
+
+  // Save state on changes (debounced via the dep array)
+  useEffect(() => {
+    try {
+      localStorage.setItem(
+        LS_STATE,
+        JSON.stringify({
+          baseFreq,
+          beatFreq,
+          volume,
+          reverbMix,
+          binauralOn,
+          baseToneOn,
+          tremolo,
+          activeLayers,
+          activeGenre,
+          activeHarmonics: [...activeHarmonics],
+          activeSacred: [...activeSacred],
+          activeMelodies: [...activeMelodies],
+          melodyScale,
+          melodySpeed,
+          melodyReverb,
+          layerReverb,
+          simpleMode,
+        }),
+      );
+    } catch {}
+  }, [
+    baseFreq,
+    beatFreq,
+    volume,
+    reverbMix,
+    binauralOn,
+    baseToneOn,
+    tremolo,
+    activeLayers,
+    activeGenre,
+    activeHarmonics,
+    activeSacred,
+    activeMelodies,
+    melodyScale,
+    melodySpeed,
+    melodyReverb,
+    layerReverb,
+    simpleMode,
+  ]);
+
   // Load saved mixes
   useEffect(() => {
     try {
