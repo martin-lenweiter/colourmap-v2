@@ -376,6 +376,7 @@ export default function BinauralTuner() {
   const crossfadingRef = useRef(false);
 
   // Collapsible section state
+  const [layersOpen, setLayersOpen] = useState(true);
   const [genresOpen, setGenresOpen] = useState(false);
   const [brainStatesOpen, setBrainStatesOpen] = useState(false);
   const [savedSoundsOpen, setSavedSoundsOpen] = useState(false);
@@ -1092,60 +1093,86 @@ export default function BinauralTuner() {
         </div>
       </div>
 
-      {/* Layers — 3-column grid by group */}
-      <div className="grid grid-cols-3 gap-3 px-1">
-        {(['nature', 'tones', 'texture'] as const).map((group) => (
-          <div key={group} className="space-y-1">
-            <p
-              className="uppercase tracking-[0.16em] text-center"
-              style={{
-                fontFamily: 'var(--font-serif)',
-                fontSize: '9px',
-                fontWeight: 700,
-                color: '#8A6A4A',
-                opacity: 0.4,
-              }}
-            >
-              {group}
-            </p>
-            {LAYERS.filter((l) => l.group === group).map((l) => {
-              const isOn = (activeLayers[l.id] || 0) > 0;
-              return (
-                <button
-                  key={l.id}
-                  type="button"
-                  onClick={() => toggleLayer(l.id)}
-                  className="flex w-full cursor-pointer items-center gap-1.5 rounded-lg px-2 py-1.5 transition-all"
+      {/* Layers — closable, 3-column grid */}
+      <div className="px-2">
+        <button
+          type="button"
+          onClick={() => setLayersOpen((s) => !s)}
+          className="flex w-full cursor-pointer items-center justify-center gap-2 py-2"
+          style={{ background: 'none', border: 'none' }}
+        >
+          <span
+            className="text-center text-sm font-semibold uppercase tracking-[0.22em]"
+            style={{ color: '#7A5438' }}
+          >
+            layers
+          </span>
+          <span
+            style={{
+              transform: layersOpen ? 'rotate(180deg)' : 'rotate(0deg)',
+              transition: 'transform 0.2s',
+              color: '#7A543880',
+            }}
+          >
+            ▾
+          </span>
+        </button>
+        {layersOpen && (
+          <div className="animate-in fade-in duration-150 grid grid-cols-3 gap-3 pt-1">
+            {(['nature', 'tones', 'texture'] as const).map((group) => (
+              <div key={group} className="space-y-1">
+                <p
+                  className="uppercase tracking-[0.14em] text-center"
                   style={{
-                    background: isOn ? `${l.color}15` : 'transparent',
-                    border: `1px solid ${isOn ? `${l.color}35` : '#C4A06010'}`,
+                    fontFamily: 'var(--font-serif)',
+                    fontSize: '11px',
+                    fontWeight: 700,
+                    color: '#5C3018',
+                    opacity: 0.6,
                   }}
                 >
-                  <span
-                    className="block rounded-full shrink-0"
-                    style={{
-                      width: 7,
-                      height: 7,
-                      background: l.color,
-                      opacity: isOn ? 1 : 0.3,
-                    }}
-                  />
-                  <span
-                    style={{
-                      fontFamily: 'var(--font-serif)',
-                      fontSize: '11px',
-                      fontWeight: isOn ? 700 : 500,
-                      color: isOn ? l.color : '#8A6A4A',
-                      opacity: isOn ? 1 : 0.5,
-                    }}
-                  >
-                    {l.label}
-                  </span>
-                </button>
-              );
-            })}
+                  {group}
+                </p>
+                {LAYERS.filter((l) => l.group === group).map((l) => {
+                  const isOn = (activeLayers[l.id] || 0) > 0;
+                  return (
+                    <button
+                      key={l.id}
+                      type="button"
+                      onClick={() => toggleLayer(l.id)}
+                      className="flex w-full cursor-pointer items-center gap-1.5 rounded-lg px-2 py-1.5 transition-all"
+                      style={{
+                        background: isOn ? `${l.color}15` : 'transparent',
+                        border: `1px solid ${isOn ? `${l.color}35` : '#C4A06010'}`,
+                      }}
+                    >
+                      <span
+                        className="block rounded-full shrink-0"
+                        style={{
+                          width: 7,
+                          height: 7,
+                          background: l.color,
+                          opacity: isOn ? 1 : 0.3,
+                        }}
+                      />
+                      <span
+                        style={{
+                          fontFamily: 'var(--font-serif)',
+                          fontSize: '11px',
+                          fontWeight: isOn ? 700 : 500,
+                          color: isOn ? l.color : '#8A6A4A',
+                          opacity: isOn ? 1 : 0.5,
+                        }}
+                      >
+                        {l.label}
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
+            ))}
           </div>
-        ))}
+        )}
       </div>
 
       {/* Collapsible: Genres */}
@@ -1173,7 +1200,7 @@ export default function BinauralTuner() {
           </span>
         </button>
         {genresOpen && (
-          <div className="animate-in fade-in duration-150 space-y-2">
+          <div className="animate-in fade-in duration-150 flex flex-wrap justify-center gap-2 pt-1">
             {GENRES.map((g) => {
               const isActive = activeGenre === g.id;
               return (
@@ -1181,56 +1208,33 @@ export default function BinauralTuner() {
                   key={g.id}
                   type="button"
                   onClick={() => applyGenre(g)}
-                  className="flex w-full cursor-pointer items-center gap-3 rounded-xl px-4 py-3 text-left transition-all"
+                  className="flex cursor-pointer items-center gap-1.5 rounded-full px-3 py-1.5 transition-all"
                   style={{
-                    background: isActive ? `${g.color}10` : 'transparent',
-                    border: `1px solid ${isActive ? `${g.color}30` : 'transparent'}`,
+                    background: isActive ? `${g.color}18` : '#C4A06006',
+                    border: `1px solid ${isActive ? `${g.color}40` : '#C4A06015'}`,
                   }}
+                  title={g.subtitle}
                 >
                   <span
-                    className="block shrink-0 rounded-full"
+                    className="block rounded-full shrink-0"
                     style={{
-                      width: 14,
-                      height: 14,
+                      width: 8,
+                      height: 8,
                       background: g.color,
-                      opacity: isActive ? 1 : 0.6,
+                      opacity: isActive ? 1 : 0.5,
                     }}
                   />
-                  <div className="flex-1">
-                    <p
-                      style={{
-                        fontFamily: 'var(--font-serif)',
-                        fontSize: '15px',
-                        fontWeight: 700,
-                        color: isActive ? g.color : '#5C3018',
-                      }}
-                    >
-                      {g.label}
-                    </p>
-                    <p
-                      className="italic"
-                      style={{
-                        fontFamily: 'var(--font-serif)',
-                        fontSize: '12px',
-                        color: '#8A6A4A',
-                        opacity: 0.7,
-                      }}
-                    >
-                      {g.subtitle}
-                    </p>
-                  </div>
-                  {isActive && (
-                    <span
-                      style={{
-                        fontFamily: 'var(--font-serif)',
-                        fontSize: '11px',
-                        color: g.color,
-                        fontWeight: 600,
-                      }}
-                    >
-                      {g.layers.length} layers
-                    </span>
-                  )}
+                  <span
+                    style={{
+                      fontFamily: 'var(--font-serif)',
+                      fontSize: '12px',
+                      fontWeight: isActive ? 700 : 500,
+                      color: isActive ? g.color : '#7A5438',
+                      opacity: isActive ? 1 : 0.6,
+                    }}
+                  >
+                    {g.label}
+                  </span>
                 </button>
               );
             })}
