@@ -2238,51 +2238,78 @@ export default function BinauralTuner() {
         </button>
       </div>
 
-      {/* Wave visualization — no horizontal center line */}
-      <div className="flex justify-center">
+      {/* Wave visualization with gradient fill + play button overlay */}
+      <div className="relative flex justify-center">
         <svg width={W} height={H}>
+          <defs>
+            <linearGradient id="waveGrad" x1="0" y1="0" x2="1" y2="0">
+              {RAINBOW.map((c, i) => (
+                <stop
+                  key={c}
+                  offset={`${(i / (RAINBOW.length - 1)) * 100}%`}
+                  stopColor={c}
+                  stopOpacity={0.15}
+                />
+              ))}
+            </linearGradient>
+            <linearGradient id="waveStroke" x1="0" y1="0" x2="1" y2="0">
+              {RAINBOW.map((c, i) => (
+                <stop
+                  key={c}
+                  offset={`${(i / (RAINBOW.length - 1)) * 100}%`}
+                  stopColor={c}
+                  stopOpacity={playing ? 0.8 : 0.4}
+                />
+              ))}
+            </linearGradient>
+          </defs>
+          {/* Gradient fill below the wave */}
+          <path
+            d={`${pathD} L ${W},${H} L 0,${H} Z`}
+            fill="url(#waveGrad)"
+            style={{ transition: 'all 0.3s' }}
+          />
+          {/* Rainbow stroke */}
           <path
             d={pathD}
             fill="none"
-            stroke={activeColor}
-            strokeWidth={2}
+            stroke="url(#waveStroke)"
+            strokeWidth={2.5}
             strokeLinecap="round"
-            style={{ transition: 'all 0.3s' }}
           />
-          <path
-            d={pathD}
-            fill="none"
-            stroke={activeColor}
-            strokeWidth={6}
-            strokeLinecap="round"
-            opacity={playing ? 0.2 : 0.05}
-            style={{ transition: 'all 0.3s' }}
-          />
+          {/* Glow when playing */}
+          {playing && (
+            <path
+              d={pathD}
+              fill="none"
+              stroke={activeColor}
+              strokeWidth={8}
+              strokeLinecap="round"
+              opacity={0.12}
+            />
+          )}
         </svg>
-      </div>
-
-      {/* Play button — centered, no brain state text, no save bookmark */}
-      <div className="flex items-center justify-center">
+        {/* Play button — overlaid on the right */}
         <button
           type="button"
           onClick={playing ? stopAudio : startAudio}
-          className="flex cursor-pointer items-center justify-center rounded-full transition-all"
+          className="absolute right-2 top-1/2 -translate-y-1/2 flex cursor-pointer items-center justify-center rounded-full transition-all"
           style={{
-            width: 44,
-            height: 44,
-            background: playing ? `${activeColor}20` : `${activeColor}10`,
-            border: `2px solid ${activeColor}${playing ? '60' : '30'}`,
+            width: 36,
+            height: 36,
+            background: playing ? `${activeColor}25` : `${activeColor}10`,
+            border: `2px solid ${activeColor}${playing ? '50' : '25'}`,
           }}
         >
           {playing ? (
-            <div className="flex gap-1">
+            <div className="flex gap-0.5">
               <span
                 className="block rounded-sm"
-                style={{ width: 4, height: 14, background: activeColor }}
+                style={{ width: 3, height: 12, background: activeColor }}
               />
               <span
                 className="block rounded-sm"
-                style={{ width: 4, height: 14, background: activeColor }}
+                style={{ width: 3, height: 12, background: activeColor }}
               />
             </div>
           ) : (
@@ -2291,10 +2318,10 @@ export default function BinauralTuner() {
               style={{
                 width: 0,
                 height: 0,
-                borderLeft: `12px solid ${activeColor}`,
-                borderTop: '8px solid transparent',
-                borderBottom: '8px solid transparent',
-                marginLeft: 2,
+                borderLeft: `10px solid ${activeColor}`,
+                borderTop: '6px solid transparent',
+                borderBottom: '6px solid transparent',
+                marginLeft: 1,
               }}
             />
           )}
