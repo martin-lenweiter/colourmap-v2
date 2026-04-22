@@ -456,6 +456,121 @@ const LAYERS: LayerDef[] = [
       return { node: f, source: s };
     },
   },
+  {
+    id: 'laughter',
+    label: 'Laughter',
+    color: '#E0844A',
+    group: 'ambient' as const,
+    build: (ctx: AudioContext) => {
+      // Synthesized gentle giggles — short bursts of modulated tones
+      const n = ctx.sampleRate * 12;
+      const b = ctx.createBuffer(2, n, ctx.sampleRate);
+      for (let c = 0; c < 2; c++) {
+        const d = b.getChannelData(c);
+        for (let j = 0; j < 4; j++) {
+          const p = Math.floor(Math.random() * (n - ctx.sampleRate * 1.5));
+          const baseF = 250 + Math.random() * 150;
+          // Each laugh = 4-7 syllables
+          const syllables = 4 + Math.floor(Math.random() * 4);
+          for (let s = 0; s < syllables; s++) {
+            const sp = p + Math.floor(s * ctx.sampleRate * (0.12 + Math.random() * 0.08));
+            const sl = Math.floor(ctx.sampleRate * (0.06 + Math.random() * 0.04));
+            const pitch = baseF * (1 + s * 0.03); // slight rising pitch
+            for (let i = 0; i < sl && sp + i < n; i++) {
+              const t = i / sl;
+              const env = Math.sin(t * Math.PI);
+              // Mix fundamental + formant-like harmonics
+              d[sp + i] +=
+                (Math.sin((i / ctx.sampleRate) * pitch * Math.PI * 2) * 0.3 +
+                  Math.sin((i / ctx.sampleRate) * pitch * 3 * Math.PI * 2) * 0.15 +
+                  (Math.random() * 2 - 1) * 0.1) *
+                env *
+                0.03;
+            }
+          }
+        }
+      }
+      const s = ctx.createBufferSource();
+      s.buffer = b;
+      s.loop = true;
+      const f = ctx.createBiquadFilter();
+      f.type = 'bandpass';
+      f.frequency.value = 800;
+      f.Q.value = 0.5;
+      s.connect(f);
+      return { node: f, source: s };
+    },
+  },
+  {
+    id: 'deepspace',
+    label: 'Deep Space',
+    color: '#3A3A6A',
+    group: 'ambient' as const,
+    build: (ctx: AudioContext) => {
+      // Slow sweeping low tones — sci-fi atmosphere
+      const n = ctx.sampleRate * 16;
+      const b = ctx.createBuffer(2, n, ctx.sampleRate);
+      for (let c = 0; c < 2; c++) {
+        const d = b.getChannelData(c);
+        for (let i = 0; i < n; i++) {
+          const t = i / n;
+          const sweep = 40 + 30 * Math.sin(t * Math.PI * 2 * 0.5);
+          const env = 0.5 + 0.5 * Math.sin(t * Math.PI * 2 * 0.3);
+          d[i] =
+            Math.sin((i / ctx.sampleRate) * sweep * Math.PI * 2) * env * 0.08 +
+            (Math.random() * 2 - 1) * 0.01;
+        }
+      }
+      const s = ctx.createBufferSource();
+      s.buffer = b;
+      s.loop = true;
+      const f = ctx.createBiquadFilter();
+      f.type = 'lowpass';
+      f.frequency.value = 200;
+      s.connect(f);
+      return { node: f, source: s };
+    },
+  },
+  {
+    id: 'heartbeat',
+    label: 'Heartbeat',
+    color: '#C85050',
+    group: 'ambient' as const,
+    build: (ctx: AudioContext) => {
+      // Rhythmic double-thump — like a slow heartbeat
+      const bpm = 60; // 60bpm = 1 beat per second
+      const beatLen = ctx.sampleRate * (60 / bpm);
+      const n = Math.floor(beatLen * 4); // 4 beats loop
+      const b = ctx.createBuffer(2, n, ctx.sampleRate);
+      for (let c = 0; c < 2; c++) {
+        const d = b.getChannelData(c);
+        for (let beat = 0; beat < 4; beat++) {
+          const offset = Math.floor(beat * beatLen);
+          // Lub (lower)
+          const lubLen = Math.floor(ctx.sampleRate * 0.08);
+          for (let i = 0; i < lubLen; i++) {
+            const t = i / lubLen;
+            d[offset + i] += Math.sin(t * 50 * Math.PI * 2) * (1 - t) ** 2 * 0.12;
+          }
+          // Dub (higher, slightly delayed)
+          const dubOffset = offset + Math.floor(ctx.sampleRate * 0.15);
+          const dubLen = Math.floor(ctx.sampleRate * 0.06);
+          for (let i = 0; i < dubLen && dubOffset + i < n; i++) {
+            const t = i / dubLen;
+            d[dubOffset + i] += Math.sin(t * 70 * Math.PI * 2) * (1 - t) ** 2 * 0.08;
+          }
+        }
+      }
+      const s = ctx.createBufferSource();
+      s.buffer = b;
+      s.loop = true;
+      const f = ctx.createBiquadFilter();
+      f.type = 'lowpass';
+      f.frequency.value = 150;
+      s.connect(f);
+      return { node: f, source: s };
+    },
+  },
 ];
 
 // ── Genre modes ──
@@ -636,6 +751,10 @@ export default function BinauralTuner() {
     }[]
   >([]);
   const [reverbMix, setReverbMix] = useState(0.3);
+  const [layerReverb, setLayerReverb] = useState(30); // 0-100, shared layer reverb
+  const layerReverbRef = useRef<ConvolverNode | null>(null);
+  const layerDryRef = useRef<GainNode | null>(null);
+  const layerWetRef = useRef<GainNode | null>(null);
   // Harmony tones — musical intervals relative to base frequency
   const HARMONICS = [
     { id: 'fifth', label: 'Fifth', ratio: 3 / 2, color: '#6890B0' },
@@ -880,6 +999,12 @@ export default function BinauralTuner() {
     if (melodyWetRef.current) melodyWetRef.current.gain.value = melodyReverb / 100;
   }, [melodyReverb]);
 
+  // Layer reverb mix update
+  useEffect(() => {
+    if (layerDryRef.current) layerDryRef.current.gain.value = 1 - layerReverb / 100;
+    if (layerWetRef.current) layerWetRef.current.gain.value = layerReverb / 100;
+  }, [layerReverb]);
+
   const [saveName, setSaveName] = useState('');
   const [_showSave, setShowSave] = useState(false);
   const crossfadingRef = useRef(false);
@@ -1094,14 +1219,45 @@ export default function BinauralTuner() {
     setPlaying(false);
   }, []);
 
+  function ensureLayerReverb(ctx: AudioContext) {
+    if (layerReverbRef.current) return;
+    const len = ctx.sampleRate * 3;
+    const buf = ctx.createBuffer(2, len, ctx.sampleRate);
+    for (let ch = 0; ch < 2; ch++) {
+      const d = buf.getChannelData(ch);
+      for (let i = 0; i < len; i++) {
+        d[i] = (Math.random() * 2 - 1) * (1 - i / len) ** 2.5;
+      }
+    }
+    const rev = ctx.createConvolver();
+    rev.buffer = buf;
+    layerReverbRef.current = rev;
+    const dry = ctx.createGain();
+    dry.gain.value = 1 - layerReverb / 100;
+    layerDryRef.current = dry;
+    const wet = ctx.createGain();
+    wet.gain.value = layerReverb / 100;
+    layerWetRef.current = wet;
+    dry.connect(ctx.destination);
+    rev.connect(wet);
+    wet.connect(ctx.destination);
+  }
+
   function startLayer(ctx: AudioContext, layerId: string, vol: number) {
     const def = LAYERS.find((l) => l.id === layerId);
     if (!def) return;
+    ensureLayerReverb(ctx);
     const { node, source } = def.build(ctx, baseFreq);
     const layerGain = ctx.createGain();
     layerGain.gain.value = vol;
     node.connect(layerGain);
-    layerGain.connect(ctx.destination);
+    // Route through layer reverb bus
+    if (layerDryRef.current && layerReverbRef.current) {
+      layerGain.connect(layerDryRef.current);
+      layerGain.connect(layerReverbRef.current);
+    } else {
+      layerGain.connect(ctx.destination);
+    }
     if ('start' in source) source.start();
     layerNodesRef.current.set(layerId, { source, gain: layerGain });
   }
@@ -1109,11 +1265,17 @@ export default function BinauralTuner() {
   function startLayerWithFadeIn(ctx: AudioContext, layerId: string, targetVol: number) {
     const def = LAYERS.find((l) => l.id === layerId);
     if (!def) return;
+    ensureLayerReverb(ctx);
     const { node, source } = def.build(ctx, baseFreq);
     const layerGain = ctx.createGain();
     layerGain.gain.value = 0;
     node.connect(layerGain);
-    layerGain.connect(ctx.destination);
+    if (layerDryRef.current && layerReverbRef.current) {
+      layerGain.connect(layerDryRef.current);
+      layerGain.connect(layerReverbRef.current);
+    } else {
+      layerGain.connect(ctx.destination);
+    }
     if ('start' in source) source.start();
     layerNodesRef.current.set(layerId, { source, gain: layerGain });
     // Fade in over crossfade duration
@@ -2007,86 +2169,121 @@ export default function BinauralTuner() {
           </span>
         </button>
         {layersOpen && (
-          <div className="animate-in fade-in duration-150 grid grid-cols-4 gap-2 pt-1">
-            {(['nature', 'tones', 'texture', 'ambient'] as const).map((group) => (
-              <div key={group} className="space-y-1">
-                <p
-                  className="uppercase tracking-[0.14em] text-center"
-                  style={{
-                    fontFamily: 'var(--font-serif)',
-                    fontSize: '11px',
-                    fontWeight: 700,
-                    color: '#5C3018',
-                    opacity: 0.6,
-                  }}
-                >
-                  {group}
-                </p>
-                {LAYERS.filter((l) => l.group === group).map((l) => {
-                  const vol = activeLayers[l.id] || 0;
-                  const isOn = vol > 0;
-                  return (
-                    <div key={l.id} className="space-y-0.5">
-                      <button
-                        type="button"
-                        onClick={() => toggleLayer(l.id)}
-                        className="flex w-full cursor-pointer items-center gap-1.5 rounded-lg px-2 py-1.5 transition-all"
-                        style={{
-                          background: isOn ? `${l.color}15` : 'transparent',
-                          border: `1px solid ${isOn ? `${l.color}35` : '#C4A06010'}`,
-                        }}
-                      >
-                        <span
-                          className="block rounded-full shrink-0"
-                          style={{
-                            width: 7,
-                            height: 7,
-                            background: l.color,
-                            opacity: isOn ? 1 : 0.3,
-                          }}
-                        />
-                        <span
-                          style={{
-                            fontFamily: 'var(--font-serif)',
-                            fontSize: '11px',
-                            fontWeight: isOn ? 700 : 500,
-                            color: isOn ? l.color : '#8A6A4A',
-                            opacity: isOn ? 1 : 0.5,
-                          }}
-                        >
-                          {l.label}
-                        </span>
-                      </button>
-                      {isOn && (
-                        <div
-                          className="flex gap-[2px] px-1 cursor-pointer"
-                          onClick={(e) => {
-                            const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
-                            const x = Math.max(
-                              0.05,
-                              Math.min(1, (e.clientX - rect.left) / rect.width),
-                            );
-                            setLayerVol(l.id, x);
-                          }}
-                        >
-                          {Array.from({ length: 6 }, (_, i) => (
-                            <div
-                              key={i}
-                              className="flex-1 rounded-[2px] transition-all"
-                              style={{
-                                height: 4,
-                                background: l.color,
-                                opacity: i / 5 <= vol ? 0.4 + (i / 5) * 0.4 : 0.08,
-                              }}
-                            />
-                          ))}
-                        </div>
-                      )}
-                    </div>
-                  );
-                })}
+          <div className="animate-in fade-in duration-150 space-y-2 pt-1">
+            {/* Layer reverb control */}
+            <div className="flex items-center justify-center gap-2">
+              <span
+                style={{
+                  fontFamily: 'var(--font-serif)',
+                  fontSize: '10px',
+                  color: '#8A6A4A',
+                  opacity: 0.5,
+                }}
+              >
+                layer reverb
+              </span>
+              <div
+                className="flex gap-[2px] cursor-pointer"
+                onClick={(e) => {
+                  const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
+                  setLayerReverb(Math.round(((e.clientX - rect.left) / rect.width) * 100));
+                }}
+              >
+                {Array.from({ length: 8 }, (_, i) => (
+                  <div
+                    key={i}
+                    className="rounded-[2px] transition-all"
+                    style={{
+                      width: 10,
+                      height: 6,
+                      background: '#A0907A',
+                      opacity: i / 7 <= layerReverb / 100 ? 0.4 + (i / 7) * 0.4 : 0.08,
+                    }}
+                  />
+                ))}
               </div>
-            ))}
+            </div>
+            <div className="grid grid-cols-4 gap-2">
+              {(['nature', 'tones', 'texture', 'ambient'] as const).map((group) => (
+                <div key={group} className="space-y-1">
+                  <p
+                    className="uppercase tracking-[0.14em] text-center"
+                    style={{
+                      fontFamily: 'var(--font-serif)',
+                      fontSize: '11px',
+                      fontWeight: 700,
+                      color: '#5C3018',
+                      opacity: 0.6,
+                    }}
+                  >
+                    {group}
+                  </p>
+                  {LAYERS.filter((l) => l.group === group).map((l) => {
+                    const vol = activeLayers[l.id] || 0;
+                    const isOn = vol > 0;
+                    return (
+                      <div key={l.id} className="space-y-0.5">
+                        <button
+                          type="button"
+                          onClick={() => toggleLayer(l.id)}
+                          className="flex w-full cursor-pointer items-center gap-1.5 rounded-lg px-2 py-1.5 transition-all"
+                          style={{
+                            background: isOn ? `${l.color}15` : 'transparent',
+                            border: `1px solid ${isOn ? `${l.color}35` : '#C4A06010'}`,
+                          }}
+                        >
+                          <span
+                            className="block rounded-full shrink-0"
+                            style={{
+                              width: 7,
+                              height: 7,
+                              background: l.color,
+                              opacity: isOn ? 1 : 0.3,
+                            }}
+                          />
+                          <span
+                            style={{
+                              fontFamily: 'var(--font-serif)',
+                              fontSize: '11px',
+                              fontWeight: isOn ? 700 : 500,
+                              color: isOn ? l.color : '#8A6A4A',
+                              opacity: isOn ? 1 : 0.5,
+                            }}
+                          >
+                            {l.label}
+                          </span>
+                        </button>
+                        {isOn && (
+                          <div
+                            className="flex gap-[2px] px-1 cursor-pointer"
+                            onClick={(e) => {
+                              const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
+                              const x = Math.max(
+                                0.05,
+                                Math.min(1, (e.clientX - rect.left) / rect.width),
+                              );
+                              setLayerVol(l.id, x);
+                            }}
+                          >
+                            {Array.from({ length: 6 }, (_, i) => (
+                              <div
+                                key={i}
+                                className="flex-1 rounded-[2px] transition-all"
+                                style={{
+                                  height: 4,
+                                  background: l.color,
+                                  opacity: i / 5 <= vol ? 0.4 + (i / 5) * 0.4 : 0.08,
+                                }}
+                              />
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              ))}
+            </div>
           </div>
         )}
       </div>
