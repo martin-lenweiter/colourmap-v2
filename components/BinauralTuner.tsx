@@ -792,7 +792,8 @@ export default function BinauralTuner() {
     const gain = gainRef.current;
     if (!ctx || !gain) return;
 
-    // Start new harmonics
+    // Start new harmonics — route through binFilter so they get reverb too
+    const binFilter = binFilterRef.current;
     for (const h of HARMONICS) {
       if (activeHarmonics.has(h.id) && !harmOscsRef.current.has(h.id)) {
         const osc = ctx.createOscillator();
@@ -801,11 +802,12 @@ export default function BinauralTuner() {
         const g = ctx.createGain();
         g.gain.value = 0;
         osc.connect(g);
-        g.connect(gain);
+        // Connect to filter chain (same as main oscs) so harmonics get reverb
+        g.connect(binFilter || gain);
         osc.start();
-        // Fade in
+        // Fade in to full audible volume
         g.gain.setValueAtTime(0, ctx.currentTime);
-        g.gain.linearRampToValueAtTime(0.08, ctx.currentTime + 0.5);
+        g.gain.linearRampToValueAtTime(0.7, ctx.currentTime + 0.8);
         harmOscsRef.current.set(h.id, { osc, gain: g });
       }
     }
