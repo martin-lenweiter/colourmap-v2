@@ -368,6 +368,16 @@ export default function BinauralTuner() {
     }[]
   >([]);
   const [reverbMix, setReverbMix] = useState(0.3);
+  // Harmony tones — musical intervals relative to base frequency
+  const HARMONICS = [
+    { id: 'fifth', label: 'Fifth', ratio: 3 / 2, color: '#6890B0' },
+    { id: 'octave', label: 'Octave', ratio: 2, color: '#7AAA58' },
+    { id: 'third', label: 'Third', ratio: 5 / 4, color: '#D4805A' },
+    { id: 'fourth', label: 'Fourth', ratio: 4 / 3, color: '#9B6BA0' },
+    { id: 'minor3', label: 'Minor 3rd', ratio: 6 / 5, color: '#C4A060' },
+  ] as const;
+  const [activeHarmonics, setActiveHarmonics] = useState<Set<string>>(new Set());
+  const harmOscsRef = useRef<Map<string, { osc: OscillatorNode; gain: GainNode }>>(new Map());
   const reverbNodeRef = useRef<ConvolverNode | null>(null);
   const dryGainRef = useRef<GainNode | null>(null);
   const wetGainRef = useRef<GainNode | null>(null);
@@ -776,6 +786,53 @@ export default function BinauralTuner() {
     if (wetGainRef.current) wetGainRef.current.gain.value = reverbMix;
   }, [reverbMix]);
 
+  // Harmony tones — start/stop oscillators based on activeHarmonics
+  useEffect(() => {
+    const ctx = ctxRef.current;
+    const gain = gainRef.current;
+    if (!ctx || !gain) return;
+
+    // Start new harmonics
+    for (const h of HARMONICS) {
+      if (activeHarmonics.has(h.id) && !harmOscsRef.current.has(h.id)) {
+        const osc = ctx.createOscillator();
+        osc.type = 'sine';
+        osc.frequency.value = baseFreq * h.ratio;
+        const g = ctx.createGain();
+        g.gain.value = 0;
+        osc.connect(g);
+        g.connect(gain);
+        osc.start();
+        // Fade in
+        g.gain.setValueAtTime(0, ctx.currentTime);
+        g.gain.linearRampToValueAtTime(0.08, ctx.currentTime + 0.5);
+        harmOscsRef.current.set(h.id, { osc, gain: g });
+      }
+    }
+
+    // Stop removed harmonics
+    for (const [id, node] of harmOscsRef.current) {
+      if (!activeHarmonics.has(id)) {
+        const now = ctx.currentTime;
+        node.gain.gain.setValueAtTime(node.gain.gain.value, now);
+        node.gain.gain.linearRampToValueAtTime(0, now + 0.5);
+        setTimeout(() => {
+          try {
+            node.osc.stop();
+          } catch {}
+          node.gain.disconnect();
+        }, 600);
+        harmOscsRef.current.delete(id);
+      }
+    }
+
+    // Update frequencies for existing harmonics (when baseFreq changes)
+    for (const h of HARMONICS) {
+      const node = harmOscsRef.current.get(h.id);
+      if (node) node.osc.frequency.value = baseFreq * h.ratio;
+    }
+  }, [activeHarmonics, baseFreq, HARMONICS]);
+
   // Warmth — create/destroy harmonic oscillator dynamically
   useEffect(() => {
     const ctx = ctxRef.current;
@@ -1090,6 +1147,77 @@ export default function BinauralTuner() {
           >
             {Math.round(volume * 100)}%
           </span>
+        </div>
+      </div>
+
+      {/* Harmony — musical intervals that fit the base tone */}
+      <div className="px-2">
+        <p
+          className="text-center mb-2"
+          style={{
+            fontFamily: 'var(--font-serif)',
+            fontSize: '11px',
+            color: '#7A5438',
+            opacity: 0.5,
+          }}
+        >
+          harmonics — {baseFreq}Hz
+        </p>
+        <div className="flex justify-center gap-2">
+          {HARMONICS.map((h) => {
+            const isOn = activeHarmonics.has(h.id);
+            const freq = Math.round(baseFreq * h.ratio);
+            return (
+              <button
+                key={h.id}
+                type="button"
+                onClick={() => {
+                  setActiveHarmonics((prev) => {
+                    const next = new Set(prev);
+                    if (next.has(h.id)) next.delete(h.id);
+                    else next.add(h.id);
+                    return next;
+                  });
+                }}
+                className="flex cursor-pointer flex-col items-center gap-1 rounded-xl px-2.5 py-2 transition-all"
+                style={{
+                  background: isOn ? `${h.color}15` : 'transparent',
+                  border: `1px solid ${isOn ? `${h.color}40` : '#C4A06012'}`,
+                }}
+              >
+                <span
+                  className="block rounded-full"
+                  style={{
+                    width: 10,
+                    height: 10,
+                    background: h.color,
+                    opacity: isOn ? 1 : 0.3,
+                  }}
+                />
+                <span
+                  style={{
+                    fontFamily: 'var(--font-serif)',
+                    fontSize: '11px',
+                    fontWeight: isOn ? 700 : 500,
+                    color: isOn ? h.color : '#8A6A4A',
+                    opacity: isOn ? 1 : 0.5,
+                  }}
+                >
+                  {h.label}
+                </span>
+                <span
+                  style={{
+                    fontFamily: 'var(--font-serif)',
+                    fontSize: '9px',
+                    color: '#8A6A4A',
+                    opacity: 0.35,
+                  }}
+                >
+                  {freq}Hz
+                </span>
+              </button>
+            );
+          })}
         </div>
       </div>
 

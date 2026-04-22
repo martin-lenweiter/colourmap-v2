@@ -46,7 +46,7 @@ export default async function AppLayout({
               >
                 Colourmap
               </p>
-              <svg width={16} height={16} viewBox="0 0 20 20">
+              <svg width={16} height={16} viewBox="0 0 20 20" style={{ marginTop: 3 }}>
                 {(() => {
                   const cx = 10;
                   const cy = 10;
