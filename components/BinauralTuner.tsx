@@ -397,6 +397,211 @@ export default function BinauralTuner() {
   const reverbNodeRef = useRef<ConvolverNode | null>(null);
   const dryGainRef = useRef<GainNode | null>(null);
   const wetGainRef = useRef<GainNode | null>(null);
+
+  // Generative melodies
+  const MELODIES = [
+    {
+      id: 'piano',
+      label: 'Soft Piano',
+      color: '#9B6BA0',
+      type: 'triangle' as OscillatorType,
+      attack: 0.05,
+      release: 3.0,
+      octave: 4,
+    },
+    {
+      id: 'musicbox',
+      label: 'Music Box',
+      color: '#88C8E8',
+      type: 'sine' as OscillatorType,
+      attack: 0.01,
+      release: 2.0,
+      octave: 6,
+    },
+    {
+      id: 'pad',
+      label: 'Ambient Pad',
+      color: '#7AAA58',
+      type: 'sine' as OscillatorType,
+      attack: 0.8,
+      release: 5.0,
+      octave: 3,
+    },
+    {
+      id: 'harp',
+      label: 'Harp',
+      color: '#C4A060',
+      type: 'triangle' as OscillatorType,
+      attack: 0.01,
+      release: 1.5,
+      octave: 5,
+    },
+    {
+      id: 'strings',
+      label: 'Strings',
+      color: '#D4805A',
+      type: 'sawtooth' as OscillatorType,
+      attack: 0.4,
+      release: 4.0,
+      octave: 3,
+    },
+  ] as const;
+  // Pentatonic intervals in semitones: C D E G A
+  const PENTA = [0, 2, 4, 7, 9, 12, 14, 16, 19, 21];
+  const [activeMelodies, setActiveMelodies] = useState<Set<string>>(new Set());
+  const [melodySpeed, setMelodySpeed] = useState(50); // 0-100, 0=very slow, 100=fast
+  const [melodyReverb, setMelodyReverb] = useState(60); // 0-100
+  const melodyTimersRef = useRef<Map<string, ReturnType<typeof setTimeout>>>(new Map());
+  const melodyActiveIdsRef = useRef<Set<string>>(new Set());
+  const melodyReverbRef = useRef<ConvolverNode | null>(null);
+  const melodyDryRef = useRef<GainNode | null>(null);
+  const melodyWetRef = useRef<GainNode | null>(null);
+
+  // biome-ignore lint/correctness/useExhaustiveDependencies: uses refs, stable
+  const playMelodyNote = useCallback((melDef: (typeof MELODIES)[number]) => {
+    const ctx = ctxRef.current;
+    const gain = gainRef.current;
+    if (!ctx || !gain || !melodyActiveIdsRef.current.has(melDef.id)) return;
+
+    // Pick a random pentatonic note
+    const noteIdx = PENTA[Math.floor(Math.random() * PENTA.length)];
+    const baseNote = 261.63 * 2 ** (melDef.octave - 4); // C of the octave
+    const freq = baseNote * 2 ** (noteIdx / 12);
+
+    const osc = ctx.createOscillator();
+    osc.type = melDef.type;
+    osc.frequency.value = freq;
+
+    // For strings, add lowpass filter
+    let source: AudioNode = osc;
+    if (melDef.id === 'strings') {
+      const lp = ctx.createBiquadFilter();
+      lp.type = 'lowpass';
+      lp.frequency.value = 800;
+      lp.Q.value = 0.5;
+      osc.connect(lp);
+      source = lp;
+    }
+
+    // For pad, add second detuned osc
+    let osc2: OscillatorNode | null = null;
+    if (melDef.id === 'pad') {
+      osc2 = ctx.createOscillator();
+      osc2.type = 'sine';
+      osc2.frequency.value = freq * 1.003; // slight detune
+    }
+
+    const env = ctx.createGain();
+    const now = ctx.currentTime;
+    const vol = melDef.id === 'pad' ? 0.12 : melDef.id === 'strings' ? 0.08 : 0.15;
+    env.gain.setValueAtTime(0, now);
+    env.gain.linearRampToValueAtTime(vol, now + melDef.attack);
+    env.gain.linearRampToValueAtTime(0, now + melDef.attack + melDef.release);
+
+    source.connect(env);
+    if (osc2) {
+      const env2 = ctx.createGain();
+      env2.gain.setValueAtTime(0, now);
+      env2.gain.linearRampToValueAtTime(vol * 0.7, now + melDef.attack);
+      env2.gain.linearRampToValueAtTime(0, now + melDef.attack + melDef.release);
+      osc2.connect(env2);
+      env2.connect(gain);
+      osc2.start(now);
+      osc2.stop(now + melDef.attack + melDef.release + 0.1);
+    }
+
+    // Route through melody reverb if set up, otherwise direct
+    if (melodyDryRef.current && melodyReverbRef.current) {
+      env.connect(melodyDryRef.current);
+      env.connect(melodyReverbRef.current);
+    } else {
+      env.connect(gain);
+    }
+    osc.start(now);
+    osc.stop(now + melDef.attack + melDef.release + 0.1);
+
+    // Schedule next note — speed 0=slow, 50=normal, 100=fast
+    const speedMult =
+      melodySpeed < 50 ? 1 + (50 - melodySpeed) / 10 : 1 / (1 + (melodySpeed - 50) / 25);
+    const baseInterval =
+      melDef.id === 'pad'
+        ? 3000 + Math.random() * 4000
+        : melDef.id === 'harp'
+          ? 400 + Math.random() * 800
+          : 1500 + Math.random() * 3000;
+    const interval = baseInterval * speedMult;
+
+    melodyTimersRef.current.set(
+      melDef.id,
+      setTimeout(() => {
+        if (melodyActiveIdsRef.current.has(melDef.id)) playMelodyNote(melDef);
+      }, interval),
+    );
+  }, []);
+
+  // Start/stop melodies — supports multiple simultaneous
+  // biome-ignore lint/correctness/useExhaustiveDependencies: MELODIES stable, melodyReverb used in setup only
+  useEffect(() => {
+    // Start newly activated melodies
+    for (const m of MELODIES) {
+      if (activeMelodies.has(m.id) && !melodyActiveIdsRef.current.has(m.id) && ctxRef.current) {
+        melodyActiveIdsRef.current.add(m.id);
+
+        // Set up melody reverb on first melody activation
+        if (!melodyReverbRef.current && ctxRef.current) {
+          const ctx = ctxRef.current;
+          const len = ctx.sampleRate * 4;
+          const buf = ctx.createBuffer(2, len, ctx.sampleRate);
+          for (let ch = 0; ch < 2; ch++) {
+            const d = buf.getChannelData(ch);
+            for (let i = 0; i < len; i++) {
+              d[i] = (Math.random() * 2 - 1) * (1 - i / len) ** 3;
+            }
+          }
+          const rev = ctx.createConvolver();
+          rev.buffer = buf;
+          melodyReverbRef.current = rev;
+          const dry = ctx.createGain();
+          dry.gain.value = 1 - melodyReverb / 100;
+          melodyDryRef.current = dry;
+          const wet = ctx.createGain();
+          wet.gain.value = melodyReverb / 100;
+          melodyWetRef.current = wet;
+          dry.connect(ctx.destination);
+          rev.connect(wet);
+          wet.connect(ctx.destination);
+        }
+
+        playMelodyNote(m);
+      }
+    }
+    // Stop removed melodies
+    for (const id of melodyActiveIdsRef.current) {
+      if (!activeMelodies.has(id)) {
+        melodyActiveIdsRef.current.delete(id);
+        const timer = melodyTimersRef.current.get(id);
+        if (timer) {
+          clearTimeout(timer);
+          melodyTimersRef.current.delete(id);
+        }
+      }
+    }
+    return () => {
+      // Cleanup all on unmount
+      for (const [, timer] of melodyTimersRef.current) {
+        clearTimeout(timer);
+      }
+      melodyTimersRef.current.clear();
+      melodyActiveIdsRef.current.clear();
+    };
+  }, [activeMelodies, playMelodyNote]);
+
+  // Melody reverb mix update
+  useEffect(() => {
+    if (melodyDryRef.current) melodyDryRef.current.gain.value = 1 - melodyReverb / 100;
+    if (melodyWetRef.current) melodyWetRef.current.gain.value = melodyReverb / 100;
+  }, [melodyReverb]);
+
   const [saveName, setSaveName] = useState('');
   const [_showSave, setShowSave] = useState(false);
   const crossfadingRef = useRef(false);
@@ -1294,6 +1499,11 @@ export default function BinauralTuner() {
         <div className="flex flex-wrap justify-center gap-1.5">
           {SACRED.map((s) => {
             const isOn = activeSacred.has(s.id);
+            // Check if this sacred freq is a harmonic of the base tone (within 5%)
+            const ratio = s.freq / baseFreq;
+            const nearestInt = Math.round(ratio);
+            const isAligned =
+              nearestInt >= 2 && nearestInt <= 16 && Math.abs(ratio - nearestInt) < 0.05;
             return (
               <button
                 key={s.id}
@@ -1308,14 +1518,19 @@ export default function BinauralTuner() {
                 }}
                 className="flex cursor-pointer items-center gap-1 rounded-full px-2 py-1 transition-all"
                 style={{
-                  background: isOn ? `${s.color}18` : 'transparent',
-                  border: `1px solid ${isOn ? `${s.color}40` : '#C4A06010'}`,
+                  background: isOn ? `${s.color}18` : isAligned ? `${s.color}08` : 'transparent',
+                  border: `1px solid ${isOn ? `${s.color}40` : isAligned ? `${s.color}20` : '#C4A06010'}`,
                 }}
-                title={s.desc}
+                title={`${s.desc}${isAligned ? ` · harmonic ×${nearestInt} of ${baseFreq}Hz` : ''}`}
               >
                 <span
                   className="block rounded-full"
-                  style={{ width: 6, height: 6, background: s.color, opacity: isOn ? 1 : 0.3 }}
+                  style={{
+                    width: 6,
+                    height: 6,
+                    background: s.color,
+                    opacity: isOn ? 1 : isAligned ? 0.6 : 0.3,
+                  }}
                 />
                 <span
                   style={{
@@ -1323,15 +1538,150 @@ export default function BinauralTuner() {
                     fontSize: '10px',
                     fontWeight: isOn ? 700 : 500,
                     color: isOn ? s.color : '#8A6A4A',
-                    opacity: isOn ? 1 : 0.45,
+                    opacity: isOn ? 1 : isAligned ? 0.7 : 0.45,
                   }}
                 >
                   {s.label}
+                </span>
+                {isAligned && !isOn && (
+                  <span
+                    style={{
+                      fontFamily: 'var(--font-serif)',
+                      fontSize: '8px',
+                      color: s.color,
+                      opacity: 0.5,
+                    }}
+                  >
+                    ×{nearestInt}
+                  </span>
+                )}
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* Generative melodies */}
+      <div className="px-2">
+        <p
+          className="text-center mb-2"
+          style={{
+            fontFamily: 'var(--font-serif)',
+            fontSize: '11px',
+            color: '#7A5438',
+            opacity: 0.5,
+          }}
+        >
+          melodies
+        </p>
+        <div className="flex flex-wrap justify-center gap-1.5">
+          {MELODIES.map((m) => {
+            const isOn = activeMelodies.has(m.id);
+            return (
+              <button
+                key={m.id}
+                type="button"
+                onClick={() => {
+                  setActiveMelodies((prev) => {
+                    const next = new Set(prev);
+                    if (next.has(m.id)) next.delete(m.id);
+                    else next.add(m.id);
+                    return next;
+                  });
+                }}
+                className="flex cursor-pointer items-center gap-1.5 rounded-full px-2.5 py-1.5 transition-all"
+                style={{
+                  background: isOn ? `${m.color}18` : 'transparent',
+                  border: `1px solid ${isOn ? `${m.color}40` : '#C4A06010'}`,
+                }}
+              >
+                <span
+                  className="block rounded-full"
+                  style={{ width: 7, height: 7, background: m.color, opacity: isOn ? 1 : 0.3 }}
+                />
+                <span
+                  style={{
+                    fontFamily: 'var(--font-serif)',
+                    fontSize: '11px',
+                    fontWeight: isOn ? 700 : 500,
+                    color: isOn ? m.color : '#8A6A4A',
+                    opacity: isOn ? 1 : 0.5,
+                  }}
+                >
+                  {m.label}
                 </span>
               </button>
             );
           })}
         </div>
+        {activeMelodies.size > 0 && (
+          <div className="flex justify-center gap-4 pt-2">
+            <div className="flex items-center gap-2">
+              <span
+                style={{
+                  fontFamily: 'var(--font-serif)',
+                  fontSize: '10px',
+                  color: '#8A6A4A',
+                  opacity: 0.5,
+                }}
+              >
+                speed
+              </span>
+              <div
+                className="flex gap-[2px] cursor-pointer"
+                onClick={(e) => {
+                  const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
+                  setMelodySpeed(Math.round(((e.clientX - rect.left) / rect.width) * 100));
+                }}
+              >
+                {Array.from({ length: 8 }, (_, i) => (
+                  <div
+                    key={i}
+                    className="rounded-[2px] transition-all"
+                    style={{
+                      width: 10,
+                      height: 6,
+                      background: '#9B6BA0',
+                      opacity: i / 7 <= melodySpeed / 100 ? 0.4 + (i / 7) * 0.4 : 0.08,
+                    }}
+                  />
+                ))}
+              </div>
+            </div>
+            <div className="flex items-center gap-2">
+              <span
+                style={{
+                  fontFamily: 'var(--font-serif)',
+                  fontSize: '10px',
+                  color: '#8A6A4A',
+                  opacity: 0.5,
+                }}
+              >
+                reverb
+              </span>
+              <div
+                className="flex gap-[2px] cursor-pointer"
+                onClick={(e) => {
+                  const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
+                  setMelodyReverb(Math.round(((e.clientX - rect.left) / rect.width) * 100));
+                }}
+              >
+                {Array.from({ length: 8 }, (_, i) => (
+                  <div
+                    key={i}
+                    className="rounded-[2px] transition-all"
+                    style={{
+                      width: 10,
+                      height: 6,
+                      background: '#A0907A',
+                      opacity: i / 7 <= melodyReverb / 100 ? 0.4 + (i / 7) * 0.4 : 0.08,
+                    }}
+                  />
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Layers — closable, 3-column grid with volume */}

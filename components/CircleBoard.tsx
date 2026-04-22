@@ -198,7 +198,7 @@ export default function CircleBoard() {
     persist(updated);
   }
 
-  function claimMission(missionId: string) {
+  function _claimMission(missionId: string) {
     const updated = circles.map((c) =>
       c.id === activeId
         ? {
