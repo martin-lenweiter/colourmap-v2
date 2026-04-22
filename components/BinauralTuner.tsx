@@ -188,6 +188,92 @@ const LAYERS: LayerDef[] = [
     group: 'texture',
     build: (ctx) => buildTone(ctx, 60, 'sine'),
   },
+  // Vinyl / scratchy / lo-fi warmth
+  {
+    id: 'vinylwarm',
+    label: 'Warm Vinyl',
+    color: '#C8A878',
+    group: 'texture',
+    build: (ctx) => {
+      // Warm vinyl crackle — gentle, continuous, cozy
+      const n = ctx.sampleRate * 6;
+      const b = ctx.createBuffer(2, n, ctx.sampleRate);
+      for (let c = 0; c < 2; c++) {
+        const d = b.getChannelData(c);
+        for (let i = 0; i < n; i++) {
+          const pop = Math.random() > 0.997 ? (Math.random() - 0.5) * 0.08 : 0;
+          d[i] = (Math.random() * 2 - 1) * 0.008 + pop;
+        }
+      }
+      const s = ctx.createBufferSource();
+      s.buffer = b;
+      s.loop = true;
+      const f = ctx.createBiquadFilter();
+      f.type = 'bandpass';
+      f.frequency.value = 1500;
+      f.Q.value = 0.3;
+      s.connect(f);
+      return { node: f, source: s };
+    },
+  },
+  {
+    id: 'scratchlp',
+    label: 'Old Record',
+    color: '#B09070',
+    group: 'texture',
+    build: (ctx) => {
+      // Scratchy LP surface noise — rhythmic, warm
+      const n = ctx.sampleRate * 4;
+      const b = ctx.createBuffer(2, n, ctx.sampleRate);
+      for (let c = 0; c < 2; c++) {
+        const d = b.getChannelData(c);
+        for (let i = 0; i < n; i++) {
+          const rpm = Math.sin((i / ctx.sampleRate) * 0.56 * Math.PI * 2); // 33rpm rotation
+          const scratch = (Math.random() * 2 - 1) * (0.01 + Math.abs(rpm) * 0.005);
+          const click = Math.random() > 0.999 ? (Math.random() - 0.5) * 0.12 : 0;
+          d[i] = scratch + click;
+        }
+      }
+      const s = ctx.createBufferSource();
+      s.buffer = b;
+      s.loop = true;
+      const f = ctx.createBiquadFilter();
+      f.type = 'highpass';
+      f.frequency.value = 800;
+      s.connect(f);
+      return { node: f, source: s };
+    },
+  },
+  {
+    id: 'tapeglitch',
+    label: 'Tape Glitch',
+    color: '#A08878',
+    group: 'texture',
+    build: (ctx) => {
+      // Cassette tape warble — pitch wobble + hiss
+      const n = ctx.sampleRate * 8;
+      const b = ctx.createBuffer(2, n, ctx.sampleRate);
+      for (let c = 0; c < 2; c++) {
+        const d = b.getChannelData(c);
+        for (let i = 0; i < n; i++) {
+          const t = i / ctx.sampleRate;
+          const hiss = (Math.random() * 2 - 1) * 0.006;
+          const warble = Math.sin(t * 0.8 * Math.PI * 2) * 0.003;
+          const dropout = Math.random() > 0.998 ? 0 : 1;
+          d[i] = (hiss + warble) * dropout;
+        }
+      }
+      const s = ctx.createBufferSource();
+      s.buffer = b;
+      s.loop = true;
+      const f = ctx.createBiquadFilter();
+      f.type = 'bandpass';
+      f.frequency.value = 2500;
+      f.Q.value = 0.5;
+      s.connect(f);
+      return { node: f, source: s };
+    },
+  },
   // Ambient — noise, periodic sounds, atmospheric
   {
     id: 'whitenoise',
@@ -736,6 +822,20 @@ const REAL_LAYERS: LayerDef[] = [
     color: '#7A5438',
     group: 'real',
     build: (ctx) => buildRealSound(ctx, '/sounds/real-bear-growl.ogg'),
+  },
+  {
+    id: 'real-singing-bowl',
+    label: 'Singing Bowl',
+    color: '#C4A060',
+    group: 'real',
+    build: (ctx) => buildRealSound(ctx, '/sounds/real-singing-bowl-tibetan.ogg'),
+  },
+  {
+    id: 'real-heavy-rain',
+    label: 'Heavy Rain',
+    color: '#5A7AAA',
+    group: 'real',
+    build: (ctx) => buildRealSound(ctx, '/sounds/real-rain-heavy-recording.ogg'),
   },
   // Synthesized sci-fi / cyberpunk
   {
@@ -2394,7 +2494,7 @@ export default function BinauralTuner() {
                 fontFamily: 'var(--font-serif)',
                 fontSize: '12px',
                 color: '#8A6A4A',
-                opacity: 0.5,
+                opacity: 0.85,
                 fontWeight: 600,
                 flexShrink: 0,
               }}
@@ -2425,7 +2525,7 @@ export default function BinauralTuner() {
                 fontFamily: 'var(--font-serif)',
                 fontSize: '11px',
                 color: '#8A6A4A',
-                opacity: 0.4,
+                opacity: 0.8,
                 flexShrink: 0,
               }}
             >
@@ -2552,7 +2652,7 @@ export default function BinauralTuner() {
                   fontFamily: 'var(--font-serif)',
                   fontSize: '12px',
                   color: '#8A6A4A',
-                  opacity: 0.5,
+                  opacity: 0.85,
                   fontWeight: 600,
                   flexShrink: 0,
                 }}
@@ -2583,7 +2683,7 @@ export default function BinauralTuner() {
                   fontFamily: 'var(--font-serif)',
                   fontSize: '11px',
                   color: '#8A6A4A',
-                  opacity: 0.4,
+                  opacity: 0.8,
                   flexShrink: 0,
                 }}
               >
@@ -2600,7 +2700,7 @@ export default function BinauralTuner() {
                 fontFamily: 'var(--font-serif)',
                 fontSize: '11px',
                 color: '#7A5438',
-                opacity: 0.5,
+                opacity: 0.85,
               }}
             >
               harmonics — {baseFreq}Hz
@@ -2652,7 +2752,7 @@ export default function BinauralTuner() {
                         fontFamily: 'var(--font-serif)',
                         fontSize: '9px',
                         color: '#8A6A4A',
-                        opacity: 0.35,
+                        opacity: 0.7,
                       }}
                     >
                       {freq}Hz
@@ -2671,7 +2771,7 @@ export default function BinauralTuner() {
                 fontFamily: 'var(--font-serif)',
                 fontSize: '11px',
                 color: '#7A5438',
-                opacity: 0.5,
+                opacity: 0.85,
               }}
             >
               sacred frequencies
@@ -2733,7 +2833,7 @@ export default function BinauralTuner() {
                           fontFamily: 'var(--font-serif)',
                           fontSize: '8px',
                           color: s.color,
-                          opacity: 0.5,
+                          opacity: 0.85,
                         }}
                       >
                         ×{nearestInt}
@@ -2753,7 +2853,7 @@ export default function BinauralTuner() {
                 fontFamily: 'var(--font-serif)',
                 fontSize: '11px',
                 color: '#7A5438',
-                opacity: 0.5,
+                opacity: 0.85,
               }}
             >
               melodies
@@ -2826,7 +2926,7 @@ export default function BinauralTuner() {
                       fontFamily: 'var(--font-serif)',
                       fontSize: '10px',
                       color: '#8A6A4A',
-                      opacity: 0.5,
+                      opacity: 0.85,
                     }}
                   >
                     speed
@@ -2858,7 +2958,7 @@ export default function BinauralTuner() {
                       fontFamily: 'var(--font-serif)',
                       fontSize: '10px',
                       color: '#8A6A4A',
-                      opacity: 0.5,
+                      opacity: 0.85,
                     }}
                   >
                     reverb
@@ -2896,7 +2996,7 @@ export default function BinauralTuner() {
                 fontFamily: 'var(--font-serif)',
                 fontSize: '11px',
                 color: '#7A5438',
-                opacity: 0.5,
+                opacity: 0.85,
               }}
             >
               voices
@@ -2931,7 +3031,7 @@ export default function BinauralTuner() {
                       fontFamily: 'var(--font-serif)',
                       fontSize: '10px',
                       color: '#8A6A4A',
-                      opacity: 0.5,
+                      opacity: 0.85,
                     }}
                   >
                     speed
@@ -2963,7 +3063,7 @@ export default function BinauralTuner() {
                       fontFamily: 'var(--font-serif)',
                       fontSize: '10px',
                       color: '#8A6A4A',
-                      opacity: 0.5,
+                      opacity: 0.85,
                     }}
                   >
                     pitch
@@ -2995,7 +3095,7 @@ export default function BinauralTuner() {
                       fontFamily: 'var(--font-serif)',
                       fontSize: '10px',
                       color: '#8A6A4A',
-                      opacity: 0.5,
+                      opacity: 0.85,
                     }}
                   >
                     vol
@@ -3058,7 +3158,7 @@ export default function BinauralTuner() {
                       fontFamily: 'var(--font-serif)',
                       fontSize: '10px',
                       color: '#8A6A4A',
-                      opacity: 0.5,
+                      opacity: 0.85,
                     }}
                   >
                     layer reverb
@@ -3401,7 +3501,7 @@ export default function BinauralTuner() {
                             fontFamily: 'var(--font-serif)',
                             fontSize: '11px',
                             color: '#8A6A4A',
-                            opacity: 0.4,
+                            opacity: 0.8,
                             marginLeft: 'auto',
                           }}
                         >
