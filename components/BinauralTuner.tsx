@@ -1149,7 +1149,7 @@ export default function BinauralTuner() {
       binaural: boolean;
     }[]
   >([]);
-  const [reverbMix, setReverbMix] = useState(0.3);
+  const [reverbMix, setReverbMix] = useState(0.7);
   const [layerReverb, setLayerReverb] = useState(30); // 0-100, shared layer reverb
   const layerReverbRef = useRef<ConvolverNode | null>(null);
   const layerDryRef = useRef<GainNode | null>(null);
@@ -1233,7 +1233,7 @@ export default function BinauralTuner() {
     },
     {
       id: 'guitar',
-      label: 'Psych Guitar',
+      label: 'Boat Sounds',
       color: '#B33A2B',
       type: 'sawtooth' as OscillatorType,
       attack: 0.2,
@@ -1254,7 +1254,7 @@ export default function BinauralTuner() {
   const [melodyScale, setMelodyScale] = useState('pentatonic');
   const [activeMelodies, setActiveMelodies] = useState<Set<string>>(new Set());
   const [melodySpeed, setMelodySpeed] = useState(50); // 0-100, 0=very slow, 100=fast
-  const [melodyReverb, setMelodyReverb] = useState(60); // 0-100
+  const [melodyReverb, setMelodyReverb] = useState(80); // 0-100
   const melodyTimersRef = useRef<Map<string, ReturnType<typeof setTimeout>>>(new Map());
   const melodyActiveIdsRef = useRef<Set<string>>(new Set());
   const melodyReverbRef = useRef<ConvolverNode | null>(null);
@@ -2234,7 +2234,7 @@ export default function BinauralTuner() {
             opacity: 0.5,
           }}
         >
-          {simpleMode ? 'full mode' : 'simple mode'}
+          {simpleMode ? 'open studio' : 'back to simple'}
         </button>
       </div>
 
@@ -2411,10 +2411,21 @@ export default function BinauralTuner() {
       {/* ── FULL MODE: all controls ── */}
       {!simpleMode && (
         <>
-          {/* Sliders: beat (with binaural toggle), tone (with tone toggle), reverb, wave */}
+          {/* Sliders: tone first, then binaural beat, reverb (dots), wave */}
           <div className="space-y-3 px-2">
             <SliderRow
-              label="beat"
+              label="tone"
+              value={baseFreq}
+              min={30}
+              max={80}
+              unit="Hz"
+              color="#C4A060"
+              onChange={setBaseFreq}
+              toggleOn={baseToneOn}
+              onToggle={() => setBaseToneOn((s) => !s)}
+            />
+            <SliderRow
+              label="binaural"
               value={beatFreq}
               min={1}
               max={10}
@@ -2424,26 +2435,72 @@ export default function BinauralTuner() {
               toggleOn={binauralOn}
               onToggle={() => setBinauralOn((s) => !s)}
             />
-            <SliderRow
-              label="tone"
-              value={baseFreq}
-              min={30}
-              max={80}
-              unit="Hz"
-              color="#7A5438"
-              onChange={setBaseFreq}
-              toggleOn={baseToneOn}
-              onToggle={() => setBaseToneOn((s) => !s)}
-            />
-            <SliderRow
-              label="reverb"
-              value={Math.round(reverbMix * 100)}
-              min={0}
-              max={100}
-              unit="%"
-              color="#A0907A"
-              onChange={(v) => setReverbMix(v / 100)}
-            />
+            {/* Reverb as dots */}
+            <div className="flex items-center gap-2">
+              <span
+                style={{
+                  fontFamily: 'var(--font-serif)',
+                  fontSize: '13px',
+                  color: '#C4A060',
+                  fontWeight: 600,
+                  width: 60,
+                  flexShrink: 0,
+                  textAlign: 'right',
+                }}
+              >
+                reverb
+              </span>
+              <div
+                className="flex flex-1 justify-center gap-2 cursor-pointer"
+                style={{ touchAction: 'none' }}
+                onClick={(e) => {
+                  const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
+                  setReverbMix(Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width)));
+                }}
+                onMouseDown={(e) => {
+                  const el = e.currentTarget as HTMLElement;
+                  const onMove = (ev: MouseEvent) => {
+                    const r = el.getBoundingClientRect();
+                    setReverbMix(Math.max(0, Math.min(1, (ev.clientX - r.left) / r.width)));
+                  };
+                  const onUp = () => {
+                    window.removeEventListener('mousemove', onMove);
+                    window.removeEventListener('mouseup', onUp);
+                  };
+                  window.addEventListener('mousemove', onMove);
+                  window.addEventListener('mouseup', onUp);
+                }}
+              >
+                {Array.from({ length: 12 }, (_, i) => {
+                  const active = i / 11 <= reverbMix;
+                  const dotColor = RAINBOW[i % RAINBOW.length];
+                  return (
+                    <div
+                      key={i}
+                      className="rounded-full transition-all"
+                      style={{
+                        width: active ? 10 : 7,
+                        height: active ? 10 : 7,
+                        background: dotColor,
+                        opacity: active ? 0.6 + (i / 11) * 0.3 : 0.12,
+                      }}
+                    />
+                  );
+                })}
+              </div>
+              <span
+                style={{
+                  fontFamily: 'var(--font-serif)',
+                  fontSize: '12px',
+                  color: '#A0907A',
+                  fontWeight: 600,
+                  width: 40,
+                  flexShrink: 0,
+                }}
+              >
+                {Math.round(reverbMix * 100)}%
+              </span>
+            </div>
             <SliderRow
               label="wave"
               value={tremolo ? 1 : 0}
@@ -3408,9 +3465,15 @@ function SliderRow({
   const sq = 12;
   const gap = 3;
   const muted = toggleOn === false;
+
+  function handleDrag(clientX: number, el: HTMLElement) {
+    const rect = el.getBoundingClientRect();
+    const x = Math.max(0, Math.min(1, (clientX - rect.left) / rect.width));
+    onChange(Math.round(min + x * (max - min)));
+  }
+
   return (
     <div className="flex items-center gap-2" style={{ opacity: muted ? 0.35 : 1 }}>
-      {/* Label — clickable to toggle if toggle exists */}
       {onToggle ? (
         <button
           type="button"
@@ -3419,9 +3482,9 @@ function SliderRow({
           style={{
             fontFamily: 'var(--font-serif)',
             fontSize: '13px',
-            color: muted ? '#8A6A4A' : '#7A5438',
+            color: muted ? '#8A6A4A' : '#C4A060',
             fontWeight: 600,
-            width: 48,
+            width: 60,
             flexShrink: 0,
             textAlign: 'right',
             background: 'none',
@@ -3437,9 +3500,9 @@ function SliderRow({
           style={{
             fontFamily: 'var(--font-serif)',
             fontSize: '13px',
-            color: '#7A5438',
-            opacity: 0.7,
-            width: 48,
+            color: '#C4A060',
+            fontWeight: 600,
+            width: 60,
             flexShrink: 0,
             textAlign: 'right',
           }}
@@ -3447,22 +3510,47 @@ function SliderRow({
           {label}
         </span>
       )}
-      <div className="flex flex-1 justify-center" style={{ gap }}>
+      <div
+        className="flex flex-1 justify-center cursor-pointer"
+        style={{ gap, touchAction: 'none' }}
+        onMouseDown={(e) => {
+          const el = e.currentTarget as HTMLElement;
+          handleDrag(e.clientX, el);
+          const onMove = (ev: MouseEvent) => handleDrag(ev.clientX, el);
+          const onUp = () => {
+            window.removeEventListener('mousemove', onMove);
+            window.removeEventListener('mouseup', onUp);
+          };
+          window.addEventListener('mousemove', onMove);
+          window.addEventListener('mouseup', onUp);
+        }}
+        onTouchStart={(e) => {
+          const el = e.currentTarget as HTMLElement;
+          handleDrag(e.touches[0].clientX, el);
+          const onMove = (ev: TouchEvent) => {
+            ev.preventDefault();
+            handleDrag(ev.touches[0].clientX, el);
+          };
+          const onEnd = () => {
+            window.removeEventListener('touchmove', onMove);
+            window.removeEventListener('touchend', onEnd);
+          };
+          window.addEventListener('touchmove', onMove, { passive: false });
+          window.addEventListener('touchend', onEnd);
+        }}
+      >
         {Array.from({ length: count }, (_, i) => {
           const selected = i === activeIdx;
           const segColor = RAINBOW[i % RAINBOW.length];
           return (
-            <button
+            <div
               key={i}
-              type="button"
-              onClick={() => onChange(Math.round(min + (i / (count - 1)) * (max - min)))}
-              className="cursor-pointer rounded-[3px] transition-all"
+              className="rounded-[3px] transition-all"
               style={{
                 width: sq,
                 height: sq,
                 background: segColor,
-                opacity: selected ? 1 : i <= activeIdx ? 0.55 : 0.2,
-                border: 'none',
+                opacity: selected ? 1 : i <= activeIdx ? 0.6 : 0.15,
                 transform: selected ? 'scale(1.15)' : 'scale(1)',
                 boxShadow: selected ? `0 4px 12px -4px ${segColor}` : 'none',
               }}
