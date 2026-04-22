@@ -34,7 +34,7 @@ interface LayerDef {
   id: string;
   label: string;
   color: string;
-  group: 'nature' | 'tones' | 'texture' | 'ambient';
+  group: 'nature' | 'tones' | 'texture' | 'ambient' | 'real';
   build: (
     ctx: AudioContext,
     baseFreq: number,
@@ -83,56 +83,56 @@ const LAYERS: LayerDef[] = [
   // Nature
   {
     id: 'rain',
-    label: 'Rain',
+    label: 'Synth Rain',
     color: '#6890B0',
     group: 'nature',
     build: (ctx) => buildNoise(ctx, 'highpass', 800, 1.2),
   },
   {
     id: 'ocean',
-    label: 'Ocean',
+    label: 'Synth Ocean',
     color: '#5A8AAA',
     group: 'nature',
     build: (ctx) => buildNoise(ctx, 'lowpass', 300, 1.5),
   },
   {
     id: 'wind',
-    label: 'Wind',
+    label: 'Synth Wind',
     color: '#A0C8A0',
     group: 'nature',
     build: (ctx) => buildNoise(ctx, 'lowpass', 400, 1.0),
   },
   {
     id: 'fire',
-    label: 'Fire',
+    label: 'Synth Fire',
     color: '#D4805A',
     group: 'nature',
     build: (ctx) => buildNoise(ctx, 'bandpass', 600, 0.8),
   },
   {
     id: 'forest',
-    label: 'Forest',
+    label: 'Synth Forest',
     color: '#7AAA58',
     group: 'nature',
     build: (ctx) => buildNoise(ctx, 'bandpass', 2000, 0.6),
   },
   {
     id: 'thunder',
-    label: 'Thunder',
+    label: 'Synth Thunder',
     color: '#8A6A4A',
     group: 'nature',
     build: (ctx) => buildNoise(ctx, 'lowpass', 100, 1.8),
   },
   {
     id: 'birds',
-    label: 'Birds',
+    label: 'Synth Birds',
     color: '#C8906A',
     group: 'nature',
     build: (ctx) => buildNoise(ctx, 'highpass', 3500, 0.4),
   },
   {
     id: 'waves',
-    label: 'Waves',
+    label: 'Synth Waves',
     color: '#88B0C8',
     group: 'nature',
     build: (ctx) => buildNoise(ctx, 'bandpass', 200, 1.0),
@@ -675,6 +675,89 @@ const LAYERS: LayerDef[] = [
     },
   },
 ];
+
+// Audio file cache for real recorded sounds
+const audioCache = new Map<string, AudioBuffer>();
+
+function buildRealSound(
+  ctx: AudioContext,
+  url: string,
+): { node: AudioNode; source: AudioBufferSourceNode } {
+  const source = ctx.createBufferSource();
+  source.loop = true;
+  const cached = audioCache.get(url);
+  if (cached) {
+    source.buffer = cached;
+  } else {
+    fetch(url)
+      .then((res) => res.arrayBuffer())
+      .then((buf) => ctx.decodeAudioData(buf))
+      .then((decoded) => {
+        audioCache.set(url, decoded);
+        try {
+          source.buffer = decoded;
+        } catch {
+          /* source may have been stopped */
+        }
+      })
+      .catch(() => {});
+  }
+  return { node: source, source };
+}
+
+const REAL_LAYERS: LayerDef[] = [
+  {
+    id: 'real-birds',
+    label: 'Birds',
+    color: '#D4805A',
+    group: 'real',
+    build: (ctx) => buildRealSound(ctx, '/sounds/real-birds.ogg'),
+  },
+  {
+    id: 'real-garden',
+    label: 'Garden Birds',
+    color: '#C8906A',
+    group: 'real',
+    build: (ctx) => buildRealSound(ctx, '/sounds/real-garden-birds.ogg'),
+  },
+  {
+    id: 'real-rain',
+    label: 'Rain',
+    color: '#6890B0',
+    group: 'real',
+    build: (ctx) => buildRealSound(ctx, '/sounds/real-rain.ogg'),
+  },
+  {
+    id: 'real-thunder',
+    label: 'Thunder',
+    color: '#8A6A4A',
+    group: 'real',
+    build: (ctx) => buildRealSound(ctx, '/sounds/real-thunder.ogg'),
+  },
+  {
+    id: 'real-wind',
+    label: 'Wind & Thunder',
+    color: '#A0C8A0',
+    group: 'real',
+    build: (ctx) => buildRealSound(ctx, '/sounds/real-wind-thunder.ogg'),
+  },
+  {
+    id: 'real-forest',
+    label: 'Forest',
+    color: '#7AAA58',
+    group: 'real',
+    build: (ctx) => buildRealSound(ctx, '/sounds/real-forest.ogg'),
+  },
+  {
+    id: 'real-cicada',
+    label: 'Cicada',
+    color: '#A0B070',
+    group: 'real',
+    build: (ctx) => buildRealSound(ctx, '/sounds/real-cicada.ogg'),
+  },
+];
+
+const ALL_LAYERS = [...LAYERS, ...REAL_LAYERS];
 
 // ── Genre modes ──
 interface Genre {
@@ -1452,7 +1535,7 @@ export default function BinauralTuner() {
   }
 
   function startLayer(ctx: AudioContext, layerId: string, vol: number) {
-    const def = LAYERS.find((l) => l.id === layerId);
+    const def = ALL_LAYERS.find((l) => l.id === layerId);
     if (!def) return;
     ensureLayerReverb(ctx);
     const { node, source } = def.build(ctx, baseFreq);
@@ -1471,7 +1554,7 @@ export default function BinauralTuner() {
   }
 
   function startLayerWithFadeIn(ctx: AudioContext, layerId: string, targetVol: number) {
-    const def = LAYERS.find((l) => l.id === layerId);
+    const def = ALL_LAYERS.find((l) => l.id === layerId);
     if (!def) return;
     ensureLayerReverb(ctx);
     const { node, source } = def.build(ctx, baseFreq);
@@ -2548,8 +2631,8 @@ export default function BinauralTuner() {
                 ))}
               </div>
             </div>
-            <div className="grid grid-cols-4 gap-2">
-              {(['nature', 'tones', 'texture', 'ambient'] as const).map((group) => (
+            <div className="grid grid-cols-5 gap-1.5">
+              {(['real', 'nature', 'tones', 'texture', 'ambient'] as const).map((group) => (
                 <div key={group} className="space-y-1">
                   <p
                     className="uppercase tracking-[0.14em] text-center"
@@ -2563,7 +2646,7 @@ export default function BinauralTuner() {
                   >
                     {group}
                   </p>
-                  {LAYERS.filter((l) => l.group === group).map((l) => {
+                  {ALL_LAYERS.filter((l) => l.group === group).map((l) => {
                     const vol = activeLayers[l.id] || 0;
                     const isOn = vol > 0;
                     return (
