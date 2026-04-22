@@ -571,6 +571,109 @@ const LAYERS: LayerDef[] = [
       return { node: f, source: s };
     },
   },
+  // More nature variety
+  {
+    id: 'frogs',
+    label: 'Frogs',
+    color: '#6B8F4E',
+    group: 'ambient' as const,
+    build: (ctx: AudioContext) => {
+      const n = ctx.sampleRate * 8;
+      const b = ctx.createBuffer(2, n, ctx.sampleRate);
+      for (let c = 0; c < 2; c++) {
+        const d = b.getChannelData(c);
+        for (let j = 0; j < 8; j++) {
+          const p = Math.floor(Math.random() * (n - ctx.sampleRate * 0.4));
+          const f = 600 + Math.random() * 400;
+          const ribbitCount = 2 + Math.floor(Math.random() * 3);
+          for (let r = 0; r < ribbitCount; r++) {
+            const rp = p + Math.floor(r * ctx.sampleRate * 0.12);
+            const rl = Math.floor(ctx.sampleRate * 0.08);
+            for (let i = 0; i < rl && rp + i < n; i++) {
+              const t = i / rl;
+              const freq = f * (1 - t * 0.3);
+              d[rp + i] +=
+                Math.sin((i / ctx.sampleRate) * freq * Math.PI * 2) * Math.sin(t * Math.PI) * 0.05;
+            }
+          }
+        }
+      }
+      const s = ctx.createBufferSource();
+      s.buffer = b;
+      s.loop = true;
+      return { node: s as AudioNode, source: s };
+    },
+  },
+  {
+    id: 'nightbirds',
+    label: 'Night Birds',
+    color: '#3A5A7A',
+    group: 'ambient' as const,
+    build: (ctx: AudioContext) => {
+      const n = ctx.sampleRate * 14;
+      const b = ctx.createBuffer(2, n, ctx.sampleRate);
+      for (let c = 0; c < 2; c++) {
+        const d = b.getChannelData(c);
+        for (let j = 0; j < 5; j++) {
+          const p = Math.floor(Math.random() * (n - ctx.sampleRate * 1));
+          const baseF = 1500 + Math.random() * 1500;
+          // Each call = 2-4 descending notes
+          const notes = 2 + Math.floor(Math.random() * 3);
+          for (let nt = 0; nt < notes; nt++) {
+            const np = p + Math.floor(nt * ctx.sampleRate * 0.2);
+            const nf = baseF * (1 - nt * 0.12);
+            const nl = Math.floor(ctx.sampleRate * (0.1 + Math.random() * 0.1));
+            for (let i = 0; i < nl && np + i < n; i++) {
+              const t = i / nl;
+              d[np + i] +=
+                Math.sin((i / ctx.sampleRate) * nf * Math.PI * 2) * Math.sin(t * Math.PI) * 0.035;
+            }
+          }
+        }
+      }
+      const s = ctx.createBufferSource();
+      s.buffer = b;
+      s.loop = true;
+      const f = ctx.createBiquadFilter();
+      f.type = 'bandpass';
+      f.frequency.value = 2500;
+      f.Q.value = 1;
+      s.connect(f);
+      return { node: f, source: s };
+    },
+  },
+  {
+    id: 'stream',
+    label: 'Stream',
+    color: '#70A8C0',
+    group: 'nature' as const,
+    build: (ctx: AudioContext) => {
+      // Babbling brook — filtered noise with rhythmic amplitude modulation
+      const n = ctx.sampleRate * 6;
+      const b = ctx.createBuffer(2, n, ctx.sampleRate);
+      for (let c = 0; c < 2; c++) {
+        const d = b.getChannelData(c);
+        let last = 0;
+        for (let i = 0; i < n; i++) {
+          const w = Math.random() * 2 - 1;
+          last = (last + 0.04 * w) / 1.04;
+          // Multiple rhythm layers for babbling effect
+          const mod1 = 0.5 + 0.5 * Math.sin((i / ctx.sampleRate) * 3.7 * Math.PI * 2);
+          const mod2 = 0.7 + 0.3 * Math.sin((i / ctx.sampleRate) * 1.3 * Math.PI * 2);
+          d[i] = last * 0.8 * mod1 * mod2;
+        }
+      }
+      const s = ctx.createBufferSource();
+      s.buffer = b;
+      s.loop = true;
+      const f = ctx.createBiquadFilter();
+      f.type = 'bandpass';
+      f.frequency.value = 1500;
+      f.Q.value = 0.3;
+      s.connect(f);
+      return { node: f, source: s };
+    },
+  },
 ];
 
 // ── Genre modes ──
@@ -1004,6 +1107,111 @@ export default function BinauralTuner() {
     if (layerDryRef.current) layerDryRef.current.gain.value = 1 - layerReverb / 100;
     if (layerWetRef.current) layerWetRef.current.gain.value = layerReverb / 100;
   }, [layerReverb]);
+
+  // Voice / Poetry system
+  const VOICE_CONTENT = {
+    affirmations: [
+      'I am exactly where I need to be.',
+      'This moment is enough.',
+      'I release what I cannot control.',
+      'My breath is my anchor.',
+      'I am becoming who I was meant to be.',
+      'Stillness is not emptiness. It is fullness.',
+      'I trust the process of my life.',
+      'Every breath is a new beginning.',
+      'I am worthy of peace.',
+      'The light in me recognizes the light in others.',
+      'I choose calm over chaos.',
+      'My feelings are valid. I honor them.',
+    ],
+    meditation: [
+      'Close your eyes. Feel the weight of your body.',
+      'Breathe in through the nose. Slowly. Deeply.',
+      'Hold. Feel the stillness between breaths.',
+      'Breathe out. Let everything go.',
+      'Notice where you hold tension. Let it soften.',
+      'You are safe. You are here. You are whole.',
+      'The thoughts will come. Let them pass like clouds.',
+      'Return to the breath. Always the breath.',
+      'Feel the ground beneath you. Solid. Still.',
+      'You are not your thoughts. You are the space that holds them.',
+    ],
+    poetry: [
+      'The river does not push. It flows. And in flowing, it arrives.',
+      'Between the notes, silence. Between the words, truth.',
+      'You were not made to be small. You were made to be the whole sky.',
+      'The wound is where the light enters you.',
+      'Do not be afraid of the dark. It is where the stars live.',
+      'Let yourself be silently drawn by the strange pull of what you really love.',
+      'The quieter you become, the more you can hear.',
+      'Out beyond ideas of wrongdoing and rightdoing, there is a field. I will meet you there.',
+      'You are not a drop in the ocean. You are the entire ocean in a drop.',
+      'Be like water. Soft enough to flow, strong enough to carve stone.',
+    ],
+  };
+  const [voiceMode, setVoiceMode] = useState<'off' | 'affirmations' | 'meditation' | 'poetry'>(
+    'off',
+  );
+  const [voiceRate, setVoiceRate] = useState(0.7); // 0.5-1.0
+  const [voicePitch, setVoicePitch] = useState(1.0); // 0.5-1.5
+  const [voiceVolume, setVoiceVolume] = useState(0.8);
+  const voiceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const voiceIdxRef = useRef(0);
+  const voiceActiveRef = useRef(false);
+
+  function speakLine(text: string) {
+    if (typeof window === 'undefined' || !window.speechSynthesis) return;
+    const utter = new SpeechSynthesisUtterance(text);
+    utter.rate = voiceRate;
+    utter.pitch = voicePitch;
+    utter.volume = voiceVolume;
+    // Try to find a soft/calm voice
+    const voices = window.speechSynthesis.getVoices();
+    const preferred = voices.find(
+      (v) =>
+        v.lang.startsWith('en') &&
+        (v.name.includes('Samantha') || v.name.includes('Karen') || v.name.includes('Female')),
+    );
+    if (preferred) utter.voice = preferred;
+    else if (voices.length > 0)
+      utter.voice = voices.find((v) => v.lang.startsWith('en')) || voices[0];
+    window.speechSynthesis.speak(utter);
+  }
+
+  function scheduleNextVoiceLine() {
+    if (!voiceActiveRef.current || voiceMode === 'off') return;
+    const content = VOICE_CONTENT[voiceMode];
+    if (!content) return;
+    const line = content[voiceIdxRef.current % content.length];
+    voiceIdxRef.current++;
+    speakLine(line);
+    // Schedule next line — longer pauses for poetry, shorter for affirmations
+    const pause =
+      voiceMode === 'meditation'
+        ? 8000 + Math.random() * 5000
+        : voiceMode === 'poetry'
+          ? 12000 + Math.random() * 8000
+          : 10000 + Math.random() * 6000;
+    voiceTimerRef.current = setTimeout(scheduleNextVoiceLine, pause);
+  }
+
+  // biome-ignore lint/correctness/useExhaustiveDependencies: voice scheduling uses refs
+  useEffect(() => {
+    if (voiceMode !== 'off') {
+      voiceActiveRef.current = true;
+      voiceIdxRef.current = Math.floor(Math.random() * 10);
+      // Small delay before first line
+      voiceTimerRef.current = setTimeout(scheduleNextVoiceLine, 2000);
+    } else {
+      voiceActiveRef.current = false;
+      if (voiceTimerRef.current) clearTimeout(voiceTimerRef.current);
+      if (typeof window !== 'undefined') window.speechSynthesis?.cancel();
+    }
+    return () => {
+      voiceActiveRef.current = false;
+      if (voiceTimerRef.current) clearTimeout(voiceTimerRef.current);
+    };
+  }, [voiceMode]);
 
   const [saveName, setSaveName] = useState('');
   const [_showSave, setShowSave] = useState(false);
@@ -2135,6 +2343,143 @@ export default function BinauralTuner() {
                       height: 6,
                       background: '#A0907A',
                       opacity: i / 7 <= melodyReverb / 100 ? 0.4 + (i / 7) * 0.4 : 0.08,
+                    }}
+                  />
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Voice / Poetry */}
+      <div className="px-2">
+        <p
+          className="text-center mb-2"
+          style={{
+            fontFamily: 'var(--font-serif)',
+            fontSize: '11px',
+            color: '#7A5438',
+            opacity: 0.5,
+          }}
+        >
+          voices
+        </p>
+        <div className="flex justify-center gap-2">
+          {(['off', 'affirmations', 'meditation', 'poetry'] as const).map((mode) => {
+            const isOn = voiceMode === mode;
+            return (
+              <button
+                key={mode}
+                type="button"
+                onClick={() => setVoiceMode(isOn ? 'off' : mode)}
+                className="cursor-pointer rounded-full px-2.5 py-1 text-[10px] font-semibold transition-all"
+                style={{
+                  color: isOn ? '#9B6BA0' : '#8A6A4A',
+                  background: isOn ? '#9B6BA015' : 'transparent',
+                  border: `1px solid ${isOn ? '#9B6BA040' : '#C4A06010'}`,
+                  opacity: isOn ? 1 : mode === 'off' ? 0.3 : 0.5,
+                  fontFamily: 'var(--font-serif)',
+                }}
+              >
+                {mode}
+              </button>
+            );
+          })}
+        </div>
+        {voiceMode !== 'off' && (
+          <div className="flex justify-center gap-4 pt-2">
+            <div className="flex items-center gap-2">
+              <span
+                style={{
+                  fontFamily: 'var(--font-serif)',
+                  fontSize: '10px',
+                  color: '#8A6A4A',
+                  opacity: 0.5,
+                }}
+              >
+                speed
+              </span>
+              <div
+                className="flex gap-[2px] cursor-pointer"
+                onClick={(e) => {
+                  const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
+                  setVoiceRate(0.5 + ((e.clientX - rect.left) / rect.width) * 0.5);
+                }}
+              >
+                {Array.from({ length: 6 }, (_, i) => (
+                  <div
+                    key={i}
+                    className="rounded-[2px] transition-all"
+                    style={{
+                      width: 8,
+                      height: 5,
+                      background: '#9B6BA0',
+                      opacity: i / 5 <= (voiceRate - 0.5) / 0.5 ? 0.4 + (i / 5) * 0.4 : 0.08,
+                    }}
+                  />
+                ))}
+              </div>
+            </div>
+            <div className="flex items-center gap-2">
+              <span
+                style={{
+                  fontFamily: 'var(--font-serif)',
+                  fontSize: '10px',
+                  color: '#8A6A4A',
+                  opacity: 0.5,
+                }}
+              >
+                pitch
+              </span>
+              <div
+                className="flex gap-[2px] cursor-pointer"
+                onClick={(e) => {
+                  const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
+                  setVoicePitch(0.5 + ((e.clientX - rect.left) / rect.width) * 1.0);
+                }}
+              >
+                {Array.from({ length: 6 }, (_, i) => (
+                  <div
+                    key={i}
+                    className="rounded-[2px] transition-all"
+                    style={{
+                      width: 8,
+                      height: 5,
+                      background: '#9B6BA0',
+                      opacity: i / 5 <= (voicePitch - 0.5) / 1.0 ? 0.4 + (i / 5) * 0.4 : 0.08,
+                    }}
+                  />
+                ))}
+              </div>
+            </div>
+            <div className="flex items-center gap-2">
+              <span
+                style={{
+                  fontFamily: 'var(--font-serif)',
+                  fontSize: '10px',
+                  color: '#8A6A4A',
+                  opacity: 0.5,
+                }}
+              >
+                vol
+              </span>
+              <div
+                className="flex gap-[2px] cursor-pointer"
+                onClick={(e) => {
+                  const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
+                  setVoiceVolume(Math.max(0.1, (e.clientX - rect.left) / rect.width));
+                }}
+              >
+                {Array.from({ length: 6 }, (_, i) => (
+                  <div
+                    key={i}
+                    className="rounded-[2px] transition-all"
+                    style={{
+                      width: 8,
+                      height: 5,
+                      background: '#9B6BA0',
+                      opacity: i / 5 <= voiceVolume ? 0.4 + (i / 5) * 0.4 : 0.08,
                     }}
                   />
                 ))}
