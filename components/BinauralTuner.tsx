@@ -3262,87 +3262,95 @@ export default function BinauralTuner() {
                   </div>
                 </div>
                 <div className="grid grid-cols-5 gap-1.5">
-                  {(['real', 'nature', 'tones', 'texture', 'ambient'] as const).map((group) => (
-                    <div key={group} className="space-y-1">
-                      <p
-                        className="uppercase tracking-[0.14em] text-center"
-                        style={{
-                          fontFamily: 'var(--font-serif)',
-                          fontSize: '11px',
-                          fontWeight: 700,
-                          color: '#5C3018',
-                          opacity: 0.85,
-                        }}
-                      >
-                        {group}
-                      </p>
-                      {ALL_LAYERS.filter((l) => l.group === group).map((l) => {
-                        const vol = activeLayers[l.id] || 0;
-                        const isOn = vol > 0;
-                        return (
-                          <div key={l.id} className="space-y-0.5">
-                            <button
-                              type="button"
-                              onClick={() => toggleLayer(l.id)}
-                              className="flex w-full cursor-pointer items-center gap-1.5 rounded-lg px-2 py-1.5 transition-all"
-                              style={{
-                                background: isOn ? `${l.color}15` : 'transparent',
-                                border: `1px solid ${isOn ? `${l.color}35` : '#C4A06010'}`,
-                              }}
-                            >
-                              <span
-                                className="block rounded-full shrink-0"
+                  {(['real', 'nature', 'tones', 'texture', 'ambient'] as const).map((group) => {
+                    const groupColors: Record<string, string> = {
+                      real: '#D4805A',
+                      nature: '#7AAA58',
+                      tones: '#C4A060',
+                      texture: '#A0907A',
+                      ambient: '#6890B0',
+                    };
+                    return (
+                      <div key={group} className="space-y-1">
+                        <p
+                          className="uppercase tracking-[0.14em] text-center"
+                          style={{
+                            fontFamily: 'var(--font-serif)',
+                            fontSize: '12px',
+                            fontWeight: 700,
+                            color: groupColors[group] || '#5C3018',
+                          }}
+                        >
+                          {group}
+                        </p>
+                        {ALL_LAYERS.filter((l) => l.group === group).map((l) => {
+                          const vol = activeLayers[l.id] || 0;
+                          const isOn = vol > 0;
+                          return (
+                            <div key={l.id} className="space-y-0.5">
+                              <button
+                                type="button"
+                                onClick={() => toggleLayer(l.id)}
+                                className="flex w-full cursor-pointer items-center gap-1.5 rounded-lg px-2 py-1.5 transition-all"
                                 style={{
-                                  width: 7,
-                                  height: 7,
-                                  background: l.color,
-                                  opacity: isOn ? 1 : 0.3,
-                                }}
-                              />
-                              <span
-                                style={{
-                                  fontFamily: 'var(--font-serif)',
-                                  fontSize: '11px',
-                                  fontWeight: isOn ? 700 : 500,
-                                  color: isOn ? l.color : '#8A6A4A',
-                                  opacity: isOn ? 1 : 0.5,
+                                  background: isOn ? `${l.color}15` : 'transparent',
+                                  border: `1px solid ${isOn ? `${l.color}35` : '#C4A06010'}`,
                                 }}
                               >
-                                {l.label}
-                              </span>
-                            </button>
-                            {isOn && (
-                              <div
-                                className="flex gap-[2px] px-1 cursor-pointer"
-                                onClick={(e) => {
-                                  const rect = (
-                                    e.currentTarget as HTMLElement
-                                  ).getBoundingClientRect();
-                                  const x = Math.max(
-                                    0.05,
-                                    Math.min(1, (e.clientX - rect.left) / rect.width),
-                                  );
-                                  setLayerVol(l.id, x);
-                                }}
-                              >
-                                {Array.from({ length: 6 }, (_, i) => (
-                                  <div
-                                    key={i}
-                                    className="flex-1 rounded-[2px] transition-all"
-                                    style={{
-                                      height: 4,
-                                      background: l.color,
-                                      opacity: i / 5 <= vol ? 0.4 + (i / 5) * 0.4 : 0.08,
-                                    }}
-                                  />
-                                ))}
-                              </div>
-                            )}
-                          </div>
-                        );
-                      })}
-                    </div>
-                  ))}
+                                <span
+                                  className="block rounded-full shrink-0"
+                                  style={{
+                                    width: 7,
+                                    height: 7,
+                                    background: l.color,
+                                    opacity: isOn ? 1 : 0.5,
+                                  }}
+                                />
+                                <span
+                                  style={{
+                                    fontFamily: 'var(--font-serif)',
+                                    fontSize: '11px',
+                                    fontWeight: isOn ? 700 : 500,
+                                    color: l.color,
+                                    opacity: isOn ? 1 : 0.5,
+                                  }}
+                                >
+                                  {l.label}
+                                </span>
+                              </button>
+                              {isOn && (
+                                <div
+                                  className="flex gap-[2px] px-1 cursor-pointer"
+                                  onClick={(e) => {
+                                    const rect = (
+                                      e.currentTarget as HTMLElement
+                                    ).getBoundingClientRect();
+                                    const x = Math.max(
+                                      0.05,
+                                      Math.min(1, (e.clientX - rect.left) / rect.width),
+                                    );
+                                    setLayerVol(l.id, x);
+                                  }}
+                                >
+                                  {Array.from({ length: 6 }, (_, i) => (
+                                    <div
+                                      key={i}
+                                      className="flex-1 rounded-[2px] transition-all"
+                                      style={{
+                                        height: 4,
+                                        background: l.color,
+                                        opacity: i / 5 <= vol ? 0.4 + (i / 5) * 0.4 : 0.08,
+                                      }}
+                                    />
+                                  ))}
+                                </div>
+                              )}
+                            </div>
+                          );
+                        })}
+                      </div>
+                    );
+                  })}
                 </div>
               </div>
             )}
@@ -3595,36 +3603,7 @@ export default function BinauralTuner() {
         </>
       )}
 
-      {/* Adaptive suggestion */}
-      {suggestion && showSuggestion && (
-        <div className="flex items-center justify-center gap-2 px-2">
-          <p
-            className="italic"
-            style={{
-              fontFamily: 'var(--font-serif)',
-              fontSize: '12px',
-              color: '#7A5438',
-              opacity: 0.85,
-            }}
-          >
-            {suggestion.reason}
-          </p>
-          <button
-            type="button"
-            onClick={() => {
-              const p = PRESETS.find((pr) => pr.id === suggestion.preset);
-              if (p) {
-                applyPresetWithLayers(p);
-              }
-              setShowSuggestion(false);
-            }}
-            className="shrink-0 cursor-pointer rounded-full px-2 py-0.5 text-[10px] font-semibold transition-all"
-            style={{ color: '#C4A060', background: '#C4A06012', border: '1px solid #C4A06025' }}
-          >
-            try
-          </button>
-        </div>
-      )}
+      {/* Suggestion removed — was "balanced state alpha waves to maintain" */}
     </div>
   );
 }
