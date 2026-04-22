@@ -1301,6 +1301,7 @@ export default function BinauralTuner() {
   const crossfadingRef = useRef(false);
 
   // Collapsible section state
+  const [simpleMode, setSimpleMode] = useState(true);
   const [layersOpen, setLayersOpen] = useState(true);
   const [genresOpen, setGenresOpen] = useState(false);
   const [brainStatesOpen, setBrainStatesOpen] = useState(false);
@@ -1973,6 +1974,23 @@ export default function BinauralTuner() {
         </p>
       </div>
 
+      {/* Simple / Full toggle */}
+      <div className="flex justify-center">
+        <button
+          type="button"
+          onClick={() => setSimpleMode((s) => !s)}
+          className="cursor-pointer rounded-full px-3 py-1 text-[10px] font-semibold uppercase tracking-wider transition-all"
+          style={{
+            color: '#8A6A4A',
+            background: 'transparent',
+            border: '1px solid #C4A06020',
+            opacity: 0.5,
+          }}
+        >
+          {simpleMode ? 'full mode' : 'simple mode'}
+        </button>
+      </div>
+
       {/* Wave visualization — no horizontal center line */}
       <div className="flex justify-center">
         <svg width={W} height={H}>
@@ -2046,710 +2064,22 @@ export default function BinauralTuner() {
         </p>
       )}
 
-      {/* Sliders: beat (with binaural toggle), tone (with tone toggle), reverb, wave */}
-      <div className="space-y-3 px-2">
-        <SliderRow
-          label="beat"
-          value={beatFreq}
-          min={1}
-          max={10}
-          unit="Hz"
-          color={activeColor}
-          onChange={setBeatFreq}
-          toggleOn={binauralOn}
-          onToggle={() => setBinauralOn((s) => !s)}
-        />
-        <SliderRow
-          label="tone"
-          value={baseFreq}
-          min={30}
-          max={80}
-          unit="Hz"
-          color="#7A5438"
-          onChange={setBaseFreq}
-          toggleOn={baseToneOn}
-          onToggle={() => setBaseToneOn((s) => !s)}
-        />
-        <SliderRow
-          label="reverb"
-          value={Math.round(reverbMix * 100)}
-          min={0}
-          max={100}
-          unit="%"
-          color="#A0907A"
-          onChange={(v) => setReverbMix(v / 100)}
-        />
-        <SliderRow
-          label="wave"
-          value={tremolo ? 1 : 0}
-          min={0}
-          max={1}
-          unit=""
-          color="#6890B0"
-          onChange={() => setTremolo((s) => !s)}
-          toggleOn={tremolo}
-          onToggle={() => setTremolo((s) => !s)}
-        />
-      </div>
-
-      {/* Volume bar — always visible */}
-      <div className="px-2">
-        <div
-          className="flex items-center gap-3 rounded-xl px-3 py-2"
-          style={{ background: '#5C301804' }}
-        >
-          <span
-            style={{
-              fontFamily: 'var(--font-serif)',
-              fontSize: '12px',
-              color: '#8A6A4A',
-              opacity: 0.5,
-              fontWeight: 600,
-              flexShrink: 0,
-            }}
-          >
-            vol
-          </span>
-          <div
-            className="flex flex-1 gap-[3px] cursor-pointer"
-            onClick={(e) => {
-              const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
-              setVolume(Math.max(0.02, (e.clientX - rect.left) / rect.width));
-            }}
-          >
-            {Array.from({ length: 12 }, (_, i) => (
-              <div
-                key={i}
-                className="flex-1 rounded-[2px] transition-all"
-                style={{
-                  height: 6,
-                  background: '#8A6A4A',
-                  opacity: i / 11 <= volume ? 0.25 + (i / 11) * 0.4 : 0.06,
-                }}
-              />
-            ))}
-          </div>
-          <span
-            style={{
-              fontFamily: 'var(--font-serif)',
-              fontSize: '11px',
-              color: '#8A6A4A',
-              opacity: 0.4,
-              flexShrink: 0,
-            }}
-          >
-            {Math.round(volume * 100)}%
-          </span>
-        </div>
-      </div>
-
-      {/* Harmony — musical intervals that fit the base tone */}
-      <div className="px-2">
-        <p
-          className="text-center mb-2"
-          style={{
-            fontFamily: 'var(--font-serif)',
-            fontSize: '11px',
-            color: '#7A5438',
-            opacity: 0.5,
-          }}
-        >
-          harmonics — {baseFreq}Hz
-        </p>
-        <div className="flex justify-center gap-2">
-          {HARMONICS.map((h) => {
-            const isOn = activeHarmonics.has(h.id);
-            const freq = Math.round(baseFreq * h.ratio);
-            return (
-              <button
-                key={h.id}
-                type="button"
-                onClick={() => {
-                  setActiveHarmonics((prev) => {
-                    const next = new Set(prev);
-                    if (next.has(h.id)) next.delete(h.id);
-                    else next.add(h.id);
-                    return next;
-                  });
-                }}
-                className="flex cursor-pointer flex-col items-center gap-1 rounded-xl px-2.5 py-2 transition-all"
-                style={{
-                  background: isOn ? `${h.color}15` : 'transparent',
-                  border: `1px solid ${isOn ? `${h.color}40` : '#C4A06012'}`,
-                }}
-              >
-                <span
-                  className="block rounded-full"
-                  style={{
-                    width: 10,
-                    height: 10,
-                    background: h.color,
-                    opacity: isOn ? 1 : 0.3,
-                  }}
-                />
-                <span
-                  style={{
-                    fontFamily: 'var(--font-serif)',
-                    fontSize: '11px',
-                    fontWeight: isOn ? 700 : 500,
-                    color: isOn ? h.color : '#8A6A4A',
-                    opacity: isOn ? 1 : 0.5,
-                  }}
-                >
-                  {h.label}
-                </span>
-                <span
-                  style={{
-                    fontFamily: 'var(--font-serif)',
-                    fontSize: '9px',
-                    color: '#8A6A4A',
-                    opacity: 0.35,
-                  }}
-                >
-                  {freq}Hz
-                </span>
-              </button>
-            );
-          })}
-        </div>
-      </div>
-
-      {/* Sacred frequencies — Solfeggio + 432Hz */}
-      <div className="px-2">
-        <p
-          className="text-center mb-2"
-          style={{
-            fontFamily: 'var(--font-serif)',
-            fontSize: '11px',
-            color: '#7A5438',
-            opacity: 0.5,
-          }}
-        >
-          sacred frequencies
-        </p>
-        <div className="flex flex-wrap justify-center gap-1.5">
-          {SACRED.map((s) => {
-            const isOn = activeSacred.has(s.id);
-            // Check if this sacred freq is a harmonic of the base tone (within 5%)
-            const ratio = s.freq / baseFreq;
-            const nearestInt = Math.round(ratio);
-            const isAligned =
-              nearestInt >= 2 && nearestInt <= 16 && Math.abs(ratio - nearestInt) < 0.05;
-            return (
-              <button
-                key={s.id}
-                type="button"
-                onClick={() => {
-                  setActiveSacred((prev) => {
-                    const next = new Set(prev);
-                    if (next.has(s.id)) next.delete(s.id);
-                    else next.add(s.id);
-                    return next;
-                  });
-                }}
-                className="flex cursor-pointer items-center gap-1 rounded-full px-2 py-1 transition-all"
-                style={{
-                  background: isOn ? `${s.color}18` : isAligned ? `${s.color}08` : 'transparent',
-                  border: `1px solid ${isOn ? `${s.color}40` : isAligned ? `${s.color}20` : '#C4A06010'}`,
-                }}
-                title={`${s.desc}${isAligned ? ` · harmonic ×${nearestInt} of ${baseFreq}Hz` : ''}`}
-              >
-                <span
-                  className="block rounded-full"
-                  style={{
-                    width: 6,
-                    height: 6,
-                    background: s.color,
-                    opacity: isOn ? 1 : isAligned ? 0.6 : 0.3,
-                  }}
-                />
-                <span
-                  style={{
-                    fontFamily: 'var(--font-serif)',
-                    fontSize: '10px',
-                    fontWeight: isOn ? 700 : 500,
-                    color: isOn ? s.color : '#8A6A4A',
-                    opacity: isOn ? 1 : isAligned ? 0.7 : 0.45,
-                  }}
-                >
-                  {s.label}
-                </span>
-                {isAligned && !isOn && (
-                  <span
-                    style={{
-                      fontFamily: 'var(--font-serif)',
-                      fontSize: '8px',
-                      color: s.color,
-                      opacity: 0.5,
-                    }}
-                  >
-                    ×{nearestInt}
-                  </span>
-                )}
-              </button>
-            );
-          })}
-        </div>
-      </div>
-
-      {/* Generative melodies */}
-      <div className="px-2">
-        <p
-          className="text-center mb-2"
-          style={{
-            fontFamily: 'var(--font-serif)',
-            fontSize: '11px',
-            color: '#7A5438',
-            opacity: 0.5,
-          }}
-        >
-          melodies
-        </p>
-        <div className="flex flex-wrap justify-center gap-1.5">
-          {MELODIES.map((m) => {
-            const isOn = activeMelodies.has(m.id);
-            return (
-              <button
-                key={m.id}
-                type="button"
-                onClick={() => {
-                  setActiveMelodies((prev) => {
-                    const next = new Set(prev);
-                    if (next.has(m.id)) next.delete(m.id);
-                    else next.add(m.id);
-                    return next;
-                  });
-                }}
-                className="flex cursor-pointer items-center gap-1.5 rounded-full px-2.5 py-1.5 transition-all"
-                style={{
-                  background: isOn ? `${m.color}18` : 'transparent',
-                  border: `1px solid ${isOn ? `${m.color}40` : '#C4A06010'}`,
-                }}
-              >
-                <span
-                  className="block rounded-full"
-                  style={{ width: 7, height: 7, background: m.color, opacity: isOn ? 1 : 0.3 }}
-                />
-                <span
-                  style={{
-                    fontFamily: 'var(--font-serif)',
-                    fontSize: '11px',
-                    fontWeight: isOn ? 700 : 500,
-                    color: isOn ? m.color : '#8A6A4A',
-                    opacity: isOn ? 1 : 0.5,
-                  }}
-                >
-                  {m.label}
-                </span>
-              </button>
-            );
-          })}
-        </div>
-        {/* Scale selector */}
-        <div className="flex flex-wrap justify-center gap-1 pt-1">
-          {Object.entries(MELODY_SCALES).map(([id, s]) => (
-            <button
-              key={id}
-              type="button"
-              onClick={() => setMelodyScale(id)}
-              className="cursor-pointer rounded-full px-2 py-0.5 text-[9px] font-semibold transition-all"
-              style={{
-                color: melodyScale === id ? '#5C3018' : '#8A6A4A',
-                background: melodyScale === id ? '#5C301810' : 'transparent',
-                border: `1px solid ${melodyScale === id ? '#5C301830' : '#C4A06008'}`,
-                opacity: melodyScale === id ? 1 : 0.4,
-                fontFamily: 'var(--font-serif)',
-              }}
-            >
-              {s.label}
-            </button>
-          ))}
-        </div>
-        {activeMelodies.size > 0 && (
-          <div className="flex justify-center gap-4 pt-2">
-            <div className="flex items-center gap-2">
-              <span
-                style={{
-                  fontFamily: 'var(--font-serif)',
-                  fontSize: '10px',
-                  color: '#8A6A4A',
-                  opacity: 0.5,
-                }}
-              >
-                speed
-              </span>
-              <div
-                className="flex gap-[2px] cursor-pointer"
-                onClick={(e) => {
-                  const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
-                  setMelodySpeed(Math.round(((e.clientX - rect.left) / rect.width) * 100));
-                }}
-              >
-                {Array.from({ length: 8 }, (_, i) => (
-                  <div
-                    key={i}
-                    className="rounded-[2px] transition-all"
-                    style={{
-                      width: 10,
-                      height: 6,
-                      background: '#9B6BA0',
-                      opacity: i / 7 <= melodySpeed / 100 ? 0.4 + (i / 7) * 0.4 : 0.08,
-                    }}
-                  />
-                ))}
-              </div>
-            </div>
-            <div className="flex items-center gap-2">
-              <span
-                style={{
-                  fontFamily: 'var(--font-serif)',
-                  fontSize: '10px',
-                  color: '#8A6A4A',
-                  opacity: 0.5,
-                }}
-              >
-                reverb
-              </span>
-              <div
-                className="flex gap-[2px] cursor-pointer"
-                onClick={(e) => {
-                  const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
-                  setMelodyReverb(Math.round(((e.clientX - rect.left) / rect.width) * 100));
-                }}
-              >
-                {Array.from({ length: 8 }, (_, i) => (
-                  <div
-                    key={i}
-                    className="rounded-[2px] transition-all"
-                    style={{
-                      width: 10,
-                      height: 6,
-                      background: '#A0907A',
-                      opacity: i / 7 <= melodyReverb / 100 ? 0.4 + (i / 7) * 0.4 : 0.08,
-                    }}
-                  />
-                ))}
-              </div>
-            </div>
-          </div>
-        )}
-      </div>
-
-      {/* Voice / Poetry */}
-      <div className="px-2">
-        <p
-          className="text-center mb-2"
-          style={{
-            fontFamily: 'var(--font-serif)',
-            fontSize: '11px',
-            color: '#7A5438',
-            opacity: 0.5,
-          }}
-        >
-          voices
-        </p>
-        <div className="flex justify-center gap-2">
-          {(['off', 'affirmations', 'meditation', 'poetry'] as const).map((mode) => {
-            const isOn = voiceMode === mode;
-            return (
-              <button
-                key={mode}
-                type="button"
-                onClick={() => setVoiceMode(isOn ? 'off' : mode)}
-                className="cursor-pointer rounded-full px-2.5 py-1 text-[10px] font-semibold transition-all"
-                style={{
-                  color: isOn ? '#9B6BA0' : '#8A6A4A',
-                  background: isOn ? '#9B6BA015' : 'transparent',
-                  border: `1px solid ${isOn ? '#9B6BA040' : '#C4A06010'}`,
-                  opacity: isOn ? 1 : mode === 'off' ? 0.3 : 0.5,
-                  fontFamily: 'var(--font-serif)',
-                }}
-              >
-                {mode}
-              </button>
-            );
-          })}
-        </div>
-        {voiceMode !== 'off' && (
-          <div className="flex justify-center gap-4 pt-2">
-            <div className="flex items-center gap-2">
-              <span
-                style={{
-                  fontFamily: 'var(--font-serif)',
-                  fontSize: '10px',
-                  color: '#8A6A4A',
-                  opacity: 0.5,
-                }}
-              >
-                speed
-              </span>
-              <div
-                className="flex gap-[2px] cursor-pointer"
-                onClick={(e) => {
-                  const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
-                  setVoiceRate(0.5 + ((e.clientX - rect.left) / rect.width) * 0.5);
-                }}
-              >
-                {Array.from({ length: 6 }, (_, i) => (
-                  <div
-                    key={i}
-                    className="rounded-[2px] transition-all"
-                    style={{
-                      width: 8,
-                      height: 5,
-                      background: '#9B6BA0',
-                      opacity: i / 5 <= (voiceRate - 0.5) / 0.5 ? 0.4 + (i / 5) * 0.4 : 0.08,
-                    }}
-                  />
-                ))}
-              </div>
-            </div>
-            <div className="flex items-center gap-2">
-              <span
-                style={{
-                  fontFamily: 'var(--font-serif)',
-                  fontSize: '10px',
-                  color: '#8A6A4A',
-                  opacity: 0.5,
-                }}
-              >
-                pitch
-              </span>
-              <div
-                className="flex gap-[2px] cursor-pointer"
-                onClick={(e) => {
-                  const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
-                  setVoicePitch(0.5 + ((e.clientX - rect.left) / rect.width) * 1.0);
-                }}
-              >
-                {Array.from({ length: 6 }, (_, i) => (
-                  <div
-                    key={i}
-                    className="rounded-[2px] transition-all"
-                    style={{
-                      width: 8,
-                      height: 5,
-                      background: '#9B6BA0',
-                      opacity: i / 5 <= (voicePitch - 0.5) / 1.0 ? 0.4 + (i / 5) * 0.4 : 0.08,
-                    }}
-                  />
-                ))}
-              </div>
-            </div>
-            <div className="flex items-center gap-2">
-              <span
-                style={{
-                  fontFamily: 'var(--font-serif)',
-                  fontSize: '10px',
-                  color: '#8A6A4A',
-                  opacity: 0.5,
-                }}
-              >
-                vol
-              </span>
-              <div
-                className="flex gap-[2px] cursor-pointer"
-                onClick={(e) => {
-                  const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
-                  setVoiceVolume(Math.max(0.1, (e.clientX - rect.left) / rect.width));
-                }}
-              >
-                {Array.from({ length: 6 }, (_, i) => (
-                  <div
-                    key={i}
-                    className="rounded-[2px] transition-all"
-                    style={{
-                      width: 8,
-                      height: 5,
-                      background: '#9B6BA0',
-                      opacity: i / 5 <= voiceVolume ? 0.4 + (i / 5) * 0.4 : 0.08,
-                    }}
-                  />
-                ))}
-              </div>
-            </div>
-          </div>
-        )}
-      </div>
-
-      {/* Layers — closable, 3-column grid with volume */}
-      <div className="px-2">
-        <button
-          type="button"
-          onClick={() => setLayersOpen((s) => !s)}
-          className="flex w-full cursor-pointer items-center justify-center gap-2 py-2"
-          style={{ background: 'none', border: 'none' }}
-        >
-          <span
-            className="text-center text-sm font-semibold uppercase tracking-[0.22em]"
-            style={{ color: '#7A5438' }}
-          >
-            layers
-          </span>
-          <span
-            style={{
-              transform: layersOpen ? 'rotate(180deg)' : 'rotate(0deg)',
-              transition: 'transform 0.2s',
-              color: '#7A543880',
-            }}
-          >
-            ▾
-          </span>
-        </button>
-        {layersOpen && (
-          <div className="animate-in fade-in duration-150 space-y-2 pt-1">
-            {/* Layer reverb control */}
-            <div className="flex items-center justify-center gap-2">
-              <span
-                style={{
-                  fontFamily: 'var(--font-serif)',
-                  fontSize: '10px',
-                  color: '#8A6A4A',
-                  opacity: 0.5,
-                }}
-              >
-                layer reverb
-              </span>
-              <div
-                className="flex gap-[2px] cursor-pointer"
-                onClick={(e) => {
-                  const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
-                  setLayerReverb(Math.round(((e.clientX - rect.left) / rect.width) * 100));
-                }}
-              >
-                {Array.from({ length: 8 }, (_, i) => (
-                  <div
-                    key={i}
-                    className="rounded-[2px] transition-all"
-                    style={{
-                      width: 10,
-                      height: 6,
-                      background: '#A0907A',
-                      opacity: i / 7 <= layerReverb / 100 ? 0.4 + (i / 7) * 0.4 : 0.08,
-                    }}
-                  />
-                ))}
-              </div>
-            </div>
-            <div className="grid grid-cols-5 gap-1.5">
-              {(['real', 'nature', 'tones', 'texture', 'ambient'] as const).map((group) => (
-                <div key={group} className="space-y-1">
-                  <p
-                    className="uppercase tracking-[0.14em] text-center"
-                    style={{
-                      fontFamily: 'var(--font-serif)',
-                      fontSize: '11px',
-                      fontWeight: 700,
-                      color: '#5C3018',
-                      opacity: 0.6,
-                    }}
-                  >
-                    {group}
-                  </p>
-                  {ALL_LAYERS.filter((l) => l.group === group).map((l) => {
-                    const vol = activeLayers[l.id] || 0;
-                    const isOn = vol > 0;
-                    return (
-                      <div key={l.id} className="space-y-0.5">
-                        <button
-                          type="button"
-                          onClick={() => toggleLayer(l.id)}
-                          className="flex w-full cursor-pointer items-center gap-1.5 rounded-lg px-2 py-1.5 transition-all"
-                          style={{
-                            background: isOn ? `${l.color}15` : 'transparent',
-                            border: `1px solid ${isOn ? `${l.color}35` : '#C4A06010'}`,
-                          }}
-                        >
-                          <span
-                            className="block rounded-full shrink-0"
-                            style={{
-                              width: 7,
-                              height: 7,
-                              background: l.color,
-                              opacity: isOn ? 1 : 0.3,
-                            }}
-                          />
-                          <span
-                            style={{
-                              fontFamily: 'var(--font-serif)',
-                              fontSize: '11px',
-                              fontWeight: isOn ? 700 : 500,
-                              color: isOn ? l.color : '#8A6A4A',
-                              opacity: isOn ? 1 : 0.5,
-                            }}
-                          >
-                            {l.label}
-                          </span>
-                        </button>
-                        {isOn && (
-                          <div
-                            className="flex gap-[2px] px-1 cursor-pointer"
-                            onClick={(e) => {
-                              const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
-                              const x = Math.max(
-                                0.05,
-                                Math.min(1, (e.clientX - rect.left) / rect.width),
-                              );
-                              setLayerVol(l.id, x);
-                            }}
-                          >
-                            {Array.from({ length: 6 }, (_, i) => (
-                              <div
-                                key={i}
-                                className="flex-1 rounded-[2px] transition-all"
-                                style={{
-                                  height: 4,
-                                  background: l.color,
-                                  opacity: i / 5 <= vol ? 0.4 + (i / 5) * 0.4 : 0.08,
-                                }}
-                              />
-                            ))}
-                          </div>
-                        )}
-                      </div>
-                    );
-                  })}
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-      </div>
-
-      {/* Collapsible: Genres */}
-      <div className="px-2">
-        <button
-          type="button"
-          onClick={() => setGenresOpen((s) => !s)}
-          className="flex w-full cursor-pointer items-center justify-center gap-2 py-2"
-          style={{ background: 'none', border: 'none' }}
-        >
-          <span
-            className="text-center text-sm font-semibold uppercase tracking-[0.22em]"
-            style={{ color: '#C4A060' }}
-          >
-            genres
-          </span>
-          <span
-            style={{
-              transform: genresOpen ? 'rotate(180deg)' : 'rotate(0deg)',
-              transition: 'transform 0.2s',
-              color: '#C4A060',
-            }}
-          >
-            ▾
-          </span>
-        </button>
-        {genresOpen && (
-          <div className="animate-in fade-in duration-150 flex flex-wrap justify-center gap-2 pt-1">
+      {/* ── SIMPLE MODE: just genres + volume ── */}
+      {simpleMode && (
+        <div className="space-y-3 px-2">
+          {/* Genre pills — always visible in simple mode */}
+          <div className="flex flex-wrap justify-center gap-2">
             {GENRES.map((g) => {
               const isActive = activeGenre === g.id;
               return (
                 <button
                   key={g.id}
                   type="button"
-                  onClick={() => applyGenre(g)}
-                  className="flex cursor-pointer items-center gap-1.5 rounded-full px-3 py-1.5 transition-all"
+                  onClick={() => {
+                    applyGenre(g);
+                    if (!playing) startAudio();
+                  }}
+                  className="flex cursor-pointer items-center gap-1.5 rounded-full px-3 py-2 transition-all"
                   style={{
                     background: isActive ? `${g.color}18` : '#C4A06006',
                     border: `1px solid ${isActive ? `${g.color}40` : '#C4A06015'}`,
@@ -2757,10 +2087,10 @@ export default function BinauralTuner() {
                   title={g.subtitle}
                 >
                   <span
-                    className="block rounded-full shrink-0"
+                    className="block rounded-full"
                     style={{
-                      width: 8,
-                      height: 8,
+                      width: 10,
+                      height: 10,
                       background: g.color,
                       opacity: isActive ? 1 : 0.5,
                     }}
@@ -2768,7 +2098,7 @@ export default function BinauralTuner() {
                   <span
                     style={{
                       fontFamily: 'var(--font-serif)',
-                      fontSize: '12px',
+                      fontSize: '13px',
                       fontWeight: isActive ? 700 : 500,
                       color: isActive ? g.color : '#7A5438',
                       opacity: isActive ? 1 : 0.6,
@@ -2780,72 +2110,302 @@ export default function BinauralTuner() {
               );
             })}
           </div>
-        )}
-      </div>
+          {/* Volume */}
+          <div
+            className="flex items-center gap-3 rounded-xl px-3 py-2"
+            style={{ background: '#5C301804' }}
+          >
+            <span
+              style={{
+                fontFamily: 'var(--font-serif)',
+                fontSize: '12px',
+                color: '#8A6A4A',
+                opacity: 0.5,
+                fontWeight: 600,
+                flexShrink: 0,
+              }}
+            >
+              vol
+            </span>
+            <div
+              className="flex flex-1 gap-[3px] cursor-pointer"
+              onClick={(e) => {
+                const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
+                setVolume(Math.max(0.02, (e.clientX - rect.left) / rect.width));
+              }}
+            >
+              {Array.from({ length: 12 }, (_, i) => (
+                <div
+                  key={i}
+                  className="flex-1 rounded-[2px] transition-all"
+                  style={{
+                    height: 6,
+                    background: '#8A6A4A',
+                    opacity: i / 11 <= volume ? 0.25 + (i / 11) * 0.4 : 0.06,
+                  }}
+                />
+              ))}
+            </div>
+            <span
+              style={{
+                fontFamily: 'var(--font-serif)',
+                fontSize: '11px',
+                color: '#8A6A4A',
+                opacity: 0.4,
+                flexShrink: 0,
+              }}
+            >
+              {Math.round(volume * 100)}%
+            </span>
+          </div>
+        </div>
+      )}
 
-      {/* Collapsible: Brain States */}
-      <div className="px-2">
-        <button
-          type="button"
-          onClick={() => setBrainStatesOpen((s) => !s)}
-          className="flex w-full cursor-pointer items-center justify-center gap-2 py-2"
-          style={{ background: 'none', border: 'none' }}
-        >
-          <span
-            className="text-center text-sm font-semibold uppercase tracking-[0.22em]"
-            style={{ color: '#C4A060' }}
-          >
-            brain states
-          </span>
-          <span
-            style={{
-              transform: brainStatesOpen ? 'rotate(180deg)' : 'rotate(0deg)',
-              transition: 'transform 0.2s',
-              color: '#C4A060',
-            }}
-          >
-            ▾
-          </span>
-        </button>
-        {brainStatesOpen && (
-          <div className="animate-in fade-in duration-150">
-            <div className="flex flex-wrap justify-center gap-1.5 pt-1">
-              {PRESETS.map((p) => {
-                const isActive = p.base === baseFreq && p.beat === beatFreq;
-                const presetLayers = PRESET_LAYERS[p.id] || [];
+      {/* ── FULL MODE: all controls ── */}
+      {!simpleMode && (
+        <>
+          {/* Sliders: beat (with binaural toggle), tone (with tone toggle), reverb, wave */}
+          <div className="space-y-3 px-2">
+            <SliderRow
+              label="beat"
+              value={beatFreq}
+              min={1}
+              max={10}
+              unit="Hz"
+              color={activeColor}
+              onChange={setBeatFreq}
+              toggleOn={binauralOn}
+              onToggle={() => setBinauralOn((s) => !s)}
+            />
+            <SliderRow
+              label="tone"
+              value={baseFreq}
+              min={30}
+              max={80}
+              unit="Hz"
+              color="#7A5438"
+              onChange={setBaseFreq}
+              toggleOn={baseToneOn}
+              onToggle={() => setBaseToneOn((s) => !s)}
+            />
+            <SliderRow
+              label="reverb"
+              value={Math.round(reverbMix * 100)}
+              min={0}
+              max={100}
+              unit="%"
+              color="#A0907A"
+              onChange={(v) => setReverbMix(v / 100)}
+            />
+            <SliderRow
+              label="wave"
+              value={tremolo ? 1 : 0}
+              min={0}
+              max={1}
+              unit=""
+              color="#6890B0"
+              onChange={() => setTremolo((s) => !s)}
+              toggleOn={tremolo}
+              onToggle={() => setTremolo((s) => !s)}
+            />
+          </div>
+
+          {/* Volume bar — always visible */}
+          <div className="px-2">
+            <div
+              className="flex items-center gap-3 rounded-xl px-3 py-2"
+              style={{ background: '#5C301804' }}
+            >
+              <span
+                style={{
+                  fontFamily: 'var(--font-serif)',
+                  fontSize: '12px',
+                  color: '#8A6A4A',
+                  opacity: 0.5,
+                  fontWeight: 600,
+                  flexShrink: 0,
+                }}
+              >
+                vol
+              </span>
+              <div
+                className="flex flex-1 gap-[3px] cursor-pointer"
+                onClick={(e) => {
+                  const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
+                  setVolume(Math.max(0.02, (e.clientX - rect.left) / rect.width));
+                }}
+              >
+                {Array.from({ length: 12 }, (_, i) => (
+                  <div
+                    key={i}
+                    className="flex-1 rounded-[2px] transition-all"
+                    style={{
+                      height: 6,
+                      background: '#8A6A4A',
+                      opacity: i / 11 <= volume ? 0.25 + (i / 11) * 0.4 : 0.06,
+                    }}
+                  />
+                ))}
+              </div>
+              <span
+                style={{
+                  fontFamily: 'var(--font-serif)',
+                  fontSize: '11px',
+                  color: '#8A6A4A',
+                  opacity: 0.4,
+                  flexShrink: 0,
+                }}
+              >
+                {Math.round(volume * 100)}%
+              </span>
+            </div>
+          </div>
+
+          {/* Harmony — musical intervals that fit the base tone */}
+          <div className="px-2">
+            <p
+              className="text-center mb-2"
+              style={{
+                fontFamily: 'var(--font-serif)',
+                fontSize: '11px',
+                color: '#7A5438',
+                opacity: 0.5,
+              }}
+            >
+              harmonics — {baseFreq}Hz
+            </p>
+            <div className="flex justify-center gap-2">
+              {HARMONICS.map((h) => {
+                const isOn = activeHarmonics.has(h.id);
+                const freq = Math.round(baseFreq * h.ratio);
                 return (
                   <button
-                    key={p.id}
+                    key={h.id}
                     type="button"
-                    onClick={() => applyPresetWithLayers(p)}
-                    className="cursor-pointer rounded-full px-3 py-1.5 text-left transition-all"
+                    onClick={() => {
+                      setActiveHarmonics((prev) => {
+                        const next = new Set(prev);
+                        if (next.has(h.id)) next.delete(h.id);
+                        else next.add(h.id);
+                        return next;
+                      });
+                    }}
+                    className="flex cursor-pointer flex-col items-center gap-1 rounded-xl px-2.5 py-2 transition-all"
                     style={{
-                      background: isActive ? `${p.color}15` : 'transparent',
-                      border: `1px solid ${isActive ? `${p.color}40` : '#C4A06015'}`,
+                      background: isOn ? `${h.color}15` : 'transparent',
+                      border: `1px solid ${isOn ? `${h.color}40` : '#C4A06012'}`,
                     }}
                   >
                     <span
+                      className="block rounded-full"
+                      style={{
+                        width: 10,
+                        height: 10,
+                        background: h.color,
+                        opacity: isOn ? 1 : 0.3,
+                      }}
+                    />
+                    <span
                       style={{
                         fontFamily: 'var(--font-serif)',
-                        fontSize: '12px',
-                        fontWeight: 600,
-                        color: isActive ? p.color : '#7A5438',
-                        opacity: isActive ? 1 : 0.6,
+                        fontSize: '11px',
+                        fontWeight: isOn ? 700 : 500,
+                        color: isOn ? h.color : '#8A6A4A',
+                        opacity: isOn ? 1 : 0.5,
                       }}
                     >
-                      {p.label}
+                      {h.label}
                     </span>
-                    {isActive && presetLayers.length > 0 && (
+                    <span
+                      style={{
+                        fontFamily: 'var(--font-serif)',
+                        fontSize: '9px',
+                        color: '#8A6A4A',
+                        opacity: 0.35,
+                      }}
+                    >
+                      {freq}Hz
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Sacred frequencies — Solfeggio + 432Hz */}
+          <div className="px-2">
+            <p
+              className="text-center mb-2"
+              style={{
+                fontFamily: 'var(--font-serif)',
+                fontSize: '11px',
+                color: '#7A5438',
+                opacity: 0.5,
+              }}
+            >
+              sacred frequencies
+            </p>
+            <div className="flex flex-wrap justify-center gap-1.5">
+              {SACRED.map((s) => {
+                const isOn = activeSacred.has(s.id);
+                // Check if this sacred freq is a harmonic of the base tone (within 5%)
+                const ratio = s.freq / baseFreq;
+                const nearestInt = Math.round(ratio);
+                const isAligned =
+                  nearestInt >= 2 && nearestInt <= 16 && Math.abs(ratio - nearestInt) < 0.05;
+                return (
+                  <button
+                    key={s.id}
+                    type="button"
+                    onClick={() => {
+                      setActiveSacred((prev) => {
+                        const next = new Set(prev);
+                        if (next.has(s.id)) next.delete(s.id);
+                        else next.add(s.id);
+                        return next;
+                      });
+                    }}
+                    className="flex cursor-pointer items-center gap-1 rounded-full px-2 py-1 transition-all"
+                    style={{
+                      background: isOn
+                        ? `${s.color}18`
+                        : isAligned
+                          ? `${s.color}08`
+                          : 'transparent',
+                      border: `1px solid ${isOn ? `${s.color}40` : isAligned ? `${s.color}20` : '#C4A06010'}`,
+                    }}
+                    title={`${s.desc}${isAligned ? ` · harmonic ×${nearestInt} of ${baseFreq}Hz` : ''}`}
+                  >
+                    <span
+                      className="block rounded-full"
+                      style={{
+                        width: 6,
+                        height: 6,
+                        background: s.color,
+                        opacity: isOn ? 1 : isAligned ? 0.6 : 0.3,
+                      }}
+                    />
+                    <span
+                      style={{
+                        fontFamily: 'var(--font-serif)',
+                        fontSize: '10px',
+                        fontWeight: isOn ? 700 : 500,
+                        color: isOn ? s.color : '#8A6A4A',
+                        opacity: isOn ? 1 : isAligned ? 0.7 : 0.45,
+                      }}
+                    >
+                      {s.label}
+                    </span>
+                    {isAligned && !isOn && (
                       <span
                         style={{
                           fontFamily: 'var(--font-serif)',
-                          fontSize: '10px',
-                          color: p.color,
-                          opacity: 0.6,
-                          marginLeft: 4,
+                          fontSize: '8px',
+                          color: s.color,
+                          opacity: 0.5,
                         }}
                       >
-                        +{presetLayers.length}
+                        ×{nearestInt}
                       </span>
                     )}
                   </button>
@@ -2853,112 +2413,679 @@ export default function BinauralTuner() {
               })}
             </div>
           </div>
-        )}
-      </div>
 
-      {/* Collapsible: Saved Sounds */}
-      <div className="px-2">
-        <button
-          type="button"
-          onClick={() => setSavedSoundsOpen((s) => !s)}
-          className="flex w-full cursor-pointer items-center justify-center gap-2 py-2"
-          style={{ background: 'none', border: 'none' }}
-        >
-          <span
-            className="text-center text-sm font-semibold uppercase tracking-[0.22em]"
-            style={{ color: '#C4A060' }}
-          >
-            saved sounds
-          </span>
-          <span
-            style={{
-              transform: savedSoundsOpen ? 'rotate(180deg)' : 'rotate(0deg)',
-              transition: 'transform 0.2s',
-              color: '#C4A060',
-            }}
-          >
-            ▾
-          </span>
-        </button>
-        {savedSoundsOpen && (
-          <div className="animate-in fade-in duration-150 space-y-2 pt-1">
-            {/* Save input */}
-            <div className="flex items-center gap-1.5">
-              <input
-                type="text"
-                value={saveName}
-                onChange={(e) => setSaveName(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter') saveMix();
-                }}
-                placeholder="name this mix..."
-                className="flex-1 rounded-lg border bg-transparent px-2 py-1 outline-none placeholder:italic placeholder:text-[#8A6A4A] placeholder:opacity-50"
-                style={{
-                  fontFamily: 'var(--font-serif)',
-                  fontSize: '12px',
-                  color: '#5C3018',
-                  borderColor: '#C4A06025',
-                }}
-              />
-              <button
-                type="button"
-                onClick={saveMix}
-                className="cursor-pointer rounded-lg px-2 py-1"
-                style={{
-                  fontFamily: 'var(--font-serif)',
-                  fontSize: '11px',
-                  fontWeight: 600,
-                  color: '#7AAA58',
-                  background: '#7AAA5810',
-                  border: '1px solid #7AAA5830',
-                }}
-              >
-                save
-              </button>
-            </div>
-            {/* Saved mixes list */}
-            {savedMixes.length > 0 && (
-              <div className="space-y-1">
-                {savedMixes.map((mix, i) => (
+          {/* Generative melodies */}
+          <div className="px-2">
+            <p
+              className="text-center mb-2"
+              style={{
+                fontFamily: 'var(--font-serif)',
+                fontSize: '11px',
+                color: '#7A5438',
+                opacity: 0.5,
+              }}
+            >
+              melodies
+            </p>
+            <div className="flex flex-wrap justify-center gap-1.5">
+              {MELODIES.map((m) => {
+                const isOn = activeMelodies.has(m.id);
+                return (
                   <button
-                    key={`${mix.name}-${i}`}
+                    key={m.id}
                     type="button"
-                    onClick={() => loadMix(mix)}
-                    className="flex w-full cursor-pointer items-center gap-2 rounded-lg px-3 py-1.5 text-left transition-all hover:bg-[#C4A06008]"
-                    style={{ background: 'none', border: 'none' }}
+                    onClick={() => {
+                      setActiveMelodies((prev) => {
+                        const next = new Set(prev);
+                        if (next.has(m.id)) next.delete(m.id);
+                        else next.add(m.id);
+                        return next;
+                      });
+                    }}
+                    className="flex cursor-pointer items-center gap-1.5 rounded-full px-2.5 py-1.5 transition-all"
+                    style={{
+                      background: isOn ? `${m.color}18` : 'transparent',
+                      border: `1px solid ${isOn ? `${m.color}40` : '#C4A06010'}`,
+                    }}
                   >
                     <span
                       className="block rounded-full"
-                      style={{ width: 8, height: 8, background: '#C4A060', opacity: 0.5 }}
+                      style={{ width: 7, height: 7, background: m.color, opacity: isOn ? 1 : 0.3 }}
                     />
                     <span
                       style={{
                         fontFamily: 'var(--font-serif)',
-                        fontSize: '13px',
-                        color: '#5C3018',
-                        fontWeight: 600,
-                      }}
-                    >
-                      {mix.name}
-                    </span>
-                    <span
-                      style={{
-                        fontFamily: 'var(--font-serif)',
                         fontSize: '11px',
-                        color: '#8A6A4A',
-                        opacity: 0.4,
-                        marginLeft: 'auto',
+                        fontWeight: isOn ? 700 : 500,
+                        color: isOn ? m.color : '#8A6A4A',
+                        opacity: isOn ? 1 : 0.5,
                       }}
                     >
-                      {mix.beat}Hz · {Object.values(mix.layers).filter((v) => v > 0).length} layers
+                      {m.label}
                     </span>
                   </button>
-                ))}
+                );
+              })}
+            </div>
+            {/* Scale selector */}
+            <div className="flex flex-wrap justify-center gap-1 pt-1">
+              {Object.entries(MELODY_SCALES).map(([id, s]) => (
+                <button
+                  key={id}
+                  type="button"
+                  onClick={() => setMelodyScale(id)}
+                  className="cursor-pointer rounded-full px-2 py-0.5 text-[9px] font-semibold transition-all"
+                  style={{
+                    color: melodyScale === id ? '#5C3018' : '#8A6A4A',
+                    background: melodyScale === id ? '#5C301810' : 'transparent',
+                    border: `1px solid ${melodyScale === id ? '#5C301830' : '#C4A06008'}`,
+                    opacity: melodyScale === id ? 1 : 0.4,
+                    fontFamily: 'var(--font-serif)',
+                  }}
+                >
+                  {s.label}
+                </button>
+              ))}
+            </div>
+            {activeMelodies.size > 0 && (
+              <div className="flex justify-center gap-4 pt-2">
+                <div className="flex items-center gap-2">
+                  <span
+                    style={{
+                      fontFamily: 'var(--font-serif)',
+                      fontSize: '10px',
+                      color: '#8A6A4A',
+                      opacity: 0.5,
+                    }}
+                  >
+                    speed
+                  </span>
+                  <div
+                    className="flex gap-[2px] cursor-pointer"
+                    onClick={(e) => {
+                      const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
+                      setMelodySpeed(Math.round(((e.clientX - rect.left) / rect.width) * 100));
+                    }}
+                  >
+                    {Array.from({ length: 8 }, (_, i) => (
+                      <div
+                        key={i}
+                        className="rounded-[2px] transition-all"
+                        style={{
+                          width: 10,
+                          height: 6,
+                          background: '#9B6BA0',
+                          opacity: i / 7 <= melodySpeed / 100 ? 0.4 + (i / 7) * 0.4 : 0.08,
+                        }}
+                      />
+                    ))}
+                  </div>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span
+                    style={{
+                      fontFamily: 'var(--font-serif)',
+                      fontSize: '10px',
+                      color: '#8A6A4A',
+                      opacity: 0.5,
+                    }}
+                  >
+                    reverb
+                  </span>
+                  <div
+                    className="flex gap-[2px] cursor-pointer"
+                    onClick={(e) => {
+                      const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
+                      setMelodyReverb(Math.round(((e.clientX - rect.left) / rect.width) * 100));
+                    }}
+                  >
+                    {Array.from({ length: 8 }, (_, i) => (
+                      <div
+                        key={i}
+                        className="rounded-[2px] transition-all"
+                        style={{
+                          width: 10,
+                          height: 6,
+                          background: '#A0907A',
+                          opacity: i / 7 <= melodyReverb / 100 ? 0.4 + (i / 7) * 0.4 : 0.08,
+                        }}
+                      />
+                    ))}
+                  </div>
+                </div>
               </div>
             )}
           </div>
-        )}
-      </div>
+
+          {/* Voice / Poetry */}
+          <div className="px-2">
+            <p
+              className="text-center mb-2"
+              style={{
+                fontFamily: 'var(--font-serif)',
+                fontSize: '11px',
+                color: '#7A5438',
+                opacity: 0.5,
+              }}
+            >
+              voices
+            </p>
+            <div className="flex justify-center gap-2">
+              {(['off', 'affirmations', 'meditation', 'poetry'] as const).map((mode) => {
+                const isOn = voiceMode === mode;
+                return (
+                  <button
+                    key={mode}
+                    type="button"
+                    onClick={() => setVoiceMode(isOn ? 'off' : mode)}
+                    className="cursor-pointer rounded-full px-2.5 py-1 text-[10px] font-semibold transition-all"
+                    style={{
+                      color: isOn ? '#9B6BA0' : '#8A6A4A',
+                      background: isOn ? '#9B6BA015' : 'transparent',
+                      border: `1px solid ${isOn ? '#9B6BA040' : '#C4A06010'}`,
+                      opacity: isOn ? 1 : mode === 'off' ? 0.3 : 0.5,
+                      fontFamily: 'var(--font-serif)',
+                    }}
+                  >
+                    {mode}
+                  </button>
+                );
+              })}
+            </div>
+            {voiceMode !== 'off' && (
+              <div className="flex justify-center gap-4 pt-2">
+                <div className="flex items-center gap-2">
+                  <span
+                    style={{
+                      fontFamily: 'var(--font-serif)',
+                      fontSize: '10px',
+                      color: '#8A6A4A',
+                      opacity: 0.5,
+                    }}
+                  >
+                    speed
+                  </span>
+                  <div
+                    className="flex gap-[2px] cursor-pointer"
+                    onClick={(e) => {
+                      const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
+                      setVoiceRate(0.5 + ((e.clientX - rect.left) / rect.width) * 0.5);
+                    }}
+                  >
+                    {Array.from({ length: 6 }, (_, i) => (
+                      <div
+                        key={i}
+                        className="rounded-[2px] transition-all"
+                        style={{
+                          width: 8,
+                          height: 5,
+                          background: '#9B6BA0',
+                          opacity: i / 5 <= (voiceRate - 0.5) / 0.5 ? 0.4 + (i / 5) * 0.4 : 0.08,
+                        }}
+                      />
+                    ))}
+                  </div>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span
+                    style={{
+                      fontFamily: 'var(--font-serif)',
+                      fontSize: '10px',
+                      color: '#8A6A4A',
+                      opacity: 0.5,
+                    }}
+                  >
+                    pitch
+                  </span>
+                  <div
+                    className="flex gap-[2px] cursor-pointer"
+                    onClick={(e) => {
+                      const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
+                      setVoicePitch(0.5 + ((e.clientX - rect.left) / rect.width) * 1.0);
+                    }}
+                  >
+                    {Array.from({ length: 6 }, (_, i) => (
+                      <div
+                        key={i}
+                        className="rounded-[2px] transition-all"
+                        style={{
+                          width: 8,
+                          height: 5,
+                          background: '#9B6BA0',
+                          opacity: i / 5 <= (voicePitch - 0.5) / 1.0 ? 0.4 + (i / 5) * 0.4 : 0.08,
+                        }}
+                      />
+                    ))}
+                  </div>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span
+                    style={{
+                      fontFamily: 'var(--font-serif)',
+                      fontSize: '10px',
+                      color: '#8A6A4A',
+                      opacity: 0.5,
+                    }}
+                  >
+                    vol
+                  </span>
+                  <div
+                    className="flex gap-[2px] cursor-pointer"
+                    onClick={(e) => {
+                      const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
+                      setVoiceVolume(Math.max(0.1, (e.clientX - rect.left) / rect.width));
+                    }}
+                  >
+                    {Array.from({ length: 6 }, (_, i) => (
+                      <div
+                        key={i}
+                        className="rounded-[2px] transition-all"
+                        style={{
+                          width: 8,
+                          height: 5,
+                          background: '#9B6BA0',
+                          opacity: i / 5 <= voiceVolume ? 0.4 + (i / 5) * 0.4 : 0.08,
+                        }}
+                      />
+                    ))}
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Layers — closable, 3-column grid with volume */}
+          <div className="px-2">
+            <button
+              type="button"
+              onClick={() => setLayersOpen((s) => !s)}
+              className="flex w-full cursor-pointer items-center justify-center gap-2 py-2"
+              style={{ background: 'none', border: 'none' }}
+            >
+              <span
+                className="text-center text-sm font-semibold uppercase tracking-[0.22em]"
+                style={{ color: '#7A5438' }}
+              >
+                layers
+              </span>
+              <span
+                style={{
+                  transform: layersOpen ? 'rotate(180deg)' : 'rotate(0deg)',
+                  transition: 'transform 0.2s',
+                  color: '#7A543880',
+                }}
+              >
+                ▾
+              </span>
+            </button>
+            {layersOpen && (
+              <div className="animate-in fade-in duration-150 space-y-2 pt-1">
+                {/* Layer reverb control */}
+                <div className="flex items-center justify-center gap-2">
+                  <span
+                    style={{
+                      fontFamily: 'var(--font-serif)',
+                      fontSize: '10px',
+                      color: '#8A6A4A',
+                      opacity: 0.5,
+                    }}
+                  >
+                    layer reverb
+                  </span>
+                  <div
+                    className="flex gap-[2px] cursor-pointer"
+                    onClick={(e) => {
+                      const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
+                      setLayerReverb(Math.round(((e.clientX - rect.left) / rect.width) * 100));
+                    }}
+                  >
+                    {Array.from({ length: 8 }, (_, i) => (
+                      <div
+                        key={i}
+                        className="rounded-[2px] transition-all"
+                        style={{
+                          width: 10,
+                          height: 6,
+                          background: '#A0907A',
+                          opacity: i / 7 <= layerReverb / 100 ? 0.4 + (i / 7) * 0.4 : 0.08,
+                        }}
+                      />
+                    ))}
+                  </div>
+                </div>
+                <div className="grid grid-cols-5 gap-1.5">
+                  {(['real', 'nature', 'tones', 'texture', 'ambient'] as const).map((group) => (
+                    <div key={group} className="space-y-1">
+                      <p
+                        className="uppercase tracking-[0.14em] text-center"
+                        style={{
+                          fontFamily: 'var(--font-serif)',
+                          fontSize: '11px',
+                          fontWeight: 700,
+                          color: '#5C3018',
+                          opacity: 0.6,
+                        }}
+                      >
+                        {group}
+                      </p>
+                      {ALL_LAYERS.filter((l) => l.group === group).map((l) => {
+                        const vol = activeLayers[l.id] || 0;
+                        const isOn = vol > 0;
+                        return (
+                          <div key={l.id} className="space-y-0.5">
+                            <button
+                              type="button"
+                              onClick={() => toggleLayer(l.id)}
+                              className="flex w-full cursor-pointer items-center gap-1.5 rounded-lg px-2 py-1.5 transition-all"
+                              style={{
+                                background: isOn ? `${l.color}15` : 'transparent',
+                                border: `1px solid ${isOn ? `${l.color}35` : '#C4A06010'}`,
+                              }}
+                            >
+                              <span
+                                className="block rounded-full shrink-0"
+                                style={{
+                                  width: 7,
+                                  height: 7,
+                                  background: l.color,
+                                  opacity: isOn ? 1 : 0.3,
+                                }}
+                              />
+                              <span
+                                style={{
+                                  fontFamily: 'var(--font-serif)',
+                                  fontSize: '11px',
+                                  fontWeight: isOn ? 700 : 500,
+                                  color: isOn ? l.color : '#8A6A4A',
+                                  opacity: isOn ? 1 : 0.5,
+                                }}
+                              >
+                                {l.label}
+                              </span>
+                            </button>
+                            {isOn && (
+                              <div
+                                className="flex gap-[2px] px-1 cursor-pointer"
+                                onClick={(e) => {
+                                  const rect = (
+                                    e.currentTarget as HTMLElement
+                                  ).getBoundingClientRect();
+                                  const x = Math.max(
+                                    0.05,
+                                    Math.min(1, (e.clientX - rect.left) / rect.width),
+                                  );
+                                  setLayerVol(l.id, x);
+                                }}
+                              >
+                                {Array.from({ length: 6 }, (_, i) => (
+                                  <div
+                                    key={i}
+                                    className="flex-1 rounded-[2px] transition-all"
+                                    style={{
+                                      height: 4,
+                                      background: l.color,
+                                      opacity: i / 5 <= vol ? 0.4 + (i / 5) * 0.4 : 0.08,
+                                    }}
+                                  />
+                                ))}
+                              </div>
+                            )}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Collapsible: Genres */}
+          <div className="px-2">
+            <button
+              type="button"
+              onClick={() => setGenresOpen((s) => !s)}
+              className="flex w-full cursor-pointer items-center justify-center gap-2 py-2"
+              style={{ background: 'none', border: 'none' }}
+            >
+              <span
+                className="text-center text-sm font-semibold uppercase tracking-[0.22em]"
+                style={{ color: '#C4A060' }}
+              >
+                genres
+              </span>
+              <span
+                style={{
+                  transform: genresOpen ? 'rotate(180deg)' : 'rotate(0deg)',
+                  transition: 'transform 0.2s',
+                  color: '#C4A060',
+                }}
+              >
+                ▾
+              </span>
+            </button>
+            {genresOpen && (
+              <div className="animate-in fade-in duration-150 flex flex-wrap justify-center gap-2 pt-1">
+                {GENRES.map((g) => {
+                  const isActive = activeGenre === g.id;
+                  return (
+                    <button
+                      key={g.id}
+                      type="button"
+                      onClick={() => applyGenre(g)}
+                      className="flex cursor-pointer items-center gap-1.5 rounded-full px-3 py-1.5 transition-all"
+                      style={{
+                        background: isActive ? `${g.color}18` : '#C4A06006',
+                        border: `1px solid ${isActive ? `${g.color}40` : '#C4A06015'}`,
+                      }}
+                      title={g.subtitle}
+                    >
+                      <span
+                        className="block rounded-full shrink-0"
+                        style={{
+                          width: 8,
+                          height: 8,
+                          background: g.color,
+                          opacity: isActive ? 1 : 0.5,
+                        }}
+                      />
+                      <span
+                        style={{
+                          fontFamily: 'var(--font-serif)',
+                          fontSize: '12px',
+                          fontWeight: isActive ? 700 : 500,
+                          color: isActive ? g.color : '#7A5438',
+                          opacity: isActive ? 1 : 0.6,
+                        }}
+                      >
+                        {g.label}
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+
+          {/* Collapsible: Brain States */}
+          <div className="px-2">
+            <button
+              type="button"
+              onClick={() => setBrainStatesOpen((s) => !s)}
+              className="flex w-full cursor-pointer items-center justify-center gap-2 py-2"
+              style={{ background: 'none', border: 'none' }}
+            >
+              <span
+                className="text-center text-sm font-semibold uppercase tracking-[0.22em]"
+                style={{ color: '#C4A060' }}
+              >
+                brain states
+              </span>
+              <span
+                style={{
+                  transform: brainStatesOpen ? 'rotate(180deg)' : 'rotate(0deg)',
+                  transition: 'transform 0.2s',
+                  color: '#C4A060',
+                }}
+              >
+                ▾
+              </span>
+            </button>
+            {brainStatesOpen && (
+              <div className="animate-in fade-in duration-150">
+                <div className="flex flex-wrap justify-center gap-1.5 pt-1">
+                  {PRESETS.map((p) => {
+                    const isActive = p.base === baseFreq && p.beat === beatFreq;
+                    const presetLayers = PRESET_LAYERS[p.id] || [];
+                    return (
+                      <button
+                        key={p.id}
+                        type="button"
+                        onClick={() => applyPresetWithLayers(p)}
+                        className="cursor-pointer rounded-full px-3 py-1.5 text-left transition-all"
+                        style={{
+                          background: isActive ? `${p.color}15` : 'transparent',
+                          border: `1px solid ${isActive ? `${p.color}40` : '#C4A06015'}`,
+                        }}
+                      >
+                        <span
+                          style={{
+                            fontFamily: 'var(--font-serif)',
+                            fontSize: '12px',
+                            fontWeight: 600,
+                            color: isActive ? p.color : '#7A5438',
+                            opacity: isActive ? 1 : 0.6,
+                          }}
+                        >
+                          {p.label}
+                        </span>
+                        {isActive && presetLayers.length > 0 && (
+                          <span
+                            style={{
+                              fontFamily: 'var(--font-serif)',
+                              fontSize: '10px',
+                              color: p.color,
+                              opacity: 0.6,
+                              marginLeft: 4,
+                            }}
+                          >
+                            +{presetLayers.length}
+                          </span>
+                        )}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Collapsible: Saved Sounds */}
+          <div className="px-2">
+            <button
+              type="button"
+              onClick={() => setSavedSoundsOpen((s) => !s)}
+              className="flex w-full cursor-pointer items-center justify-center gap-2 py-2"
+              style={{ background: 'none', border: 'none' }}
+            >
+              <span
+                className="text-center text-sm font-semibold uppercase tracking-[0.22em]"
+                style={{ color: '#C4A060' }}
+              >
+                saved sounds
+              </span>
+              <span
+                style={{
+                  transform: savedSoundsOpen ? 'rotate(180deg)' : 'rotate(0deg)',
+                  transition: 'transform 0.2s',
+                  color: '#C4A060',
+                }}
+              >
+                ▾
+              </span>
+            </button>
+            {savedSoundsOpen && (
+              <div className="animate-in fade-in duration-150 space-y-2 pt-1">
+                {/* Save input */}
+                <div className="flex items-center gap-1.5">
+                  <input
+                    type="text"
+                    value={saveName}
+                    onChange={(e) => setSaveName(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') saveMix();
+                    }}
+                    placeholder="name this mix..."
+                    className="flex-1 rounded-lg border bg-transparent px-2 py-1 outline-none placeholder:italic placeholder:text-[#8A6A4A] placeholder:opacity-50"
+                    style={{
+                      fontFamily: 'var(--font-serif)',
+                      fontSize: '12px',
+                      color: '#5C3018',
+                      borderColor: '#C4A06025',
+                    }}
+                  />
+                  <button
+                    type="button"
+                    onClick={saveMix}
+                    className="cursor-pointer rounded-lg px-2 py-1"
+                    style={{
+                      fontFamily: 'var(--font-serif)',
+                      fontSize: '11px',
+                      fontWeight: 600,
+                      color: '#7AAA58',
+                      background: '#7AAA5810',
+                      border: '1px solid #7AAA5830',
+                    }}
+                  >
+                    save
+                  </button>
+                </div>
+                {/* Saved mixes list */}
+                {savedMixes.length > 0 && (
+                  <div className="space-y-1">
+                    {savedMixes.map((mix, i) => (
+                      <button
+                        key={`${mix.name}-${i}`}
+                        type="button"
+                        onClick={() => loadMix(mix)}
+                        className="flex w-full cursor-pointer items-center gap-2 rounded-lg px-3 py-1.5 text-left transition-all hover:bg-[#C4A06008]"
+                        style={{ background: 'none', border: 'none' }}
+                      >
+                        <span
+                          className="block rounded-full"
+                          style={{ width: 8, height: 8, background: '#C4A060', opacity: 0.5 }}
+                        />
+                        <span
+                          style={{
+                            fontFamily: 'var(--font-serif)',
+                            fontSize: '13px',
+                            color: '#5C3018',
+                            fontWeight: 600,
+                          }}
+                        >
+                          {mix.name}
+                        </span>
+                        <span
+                          style={{
+                            fontFamily: 'var(--font-serif)',
+                            fontSize: '11px',
+                            color: '#8A6A4A',
+                            opacity: 0.4,
+                            marginLeft: 'auto',
+                          }}
+                        >
+                          {mix.beat}Hz · {Object.values(mix.layers).filter((v) => v > 0).length}{' '}
+                          layers
+                        </span>
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+        </>
+      )}
 
       {/* Adaptive suggestion */}
       {suggestion && showSuggestion && (
