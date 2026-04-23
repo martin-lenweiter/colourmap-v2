@@ -2401,11 +2401,12 @@ export default function BinauralTuner() {
         <button
           type="button"
           onClick={() => setSimpleMode((s) => !s)}
-          className="cursor-pointer rounded-full px-3 py-1 text-[12px] font-semibold uppercase tracking-wider transition-all"
+          className="cursor-pointer rounded-full px-5 py-1.5 text-[12px] font-semibold uppercase tracking-[0.12em] transition-all hover:opacity-85"
           style={{
-            color: '#8A6A4A',
-            background: 'transparent',
-            border: '1px solid #C4A06020',
+            color: '#7A5438',
+            background: '#F5E8C8',
+            border: '1px solid rgba(196, 160, 96, 0.35)',
+            boxShadow: '0 1px 2px rgba(94, 58, 20, 0.06)',
           }}
         >
           {simpleMode ? 'open studio' : 'back to simple'}
