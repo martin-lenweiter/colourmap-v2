@@ -44,7 +44,7 @@ export function useKeyboardAware<T extends HTMLElement>(): RefObject<T | null> {
       // so visualViewport has updated before we compute "in view."
       requestAnimationFrame(() => {
         requestAnimationFrame(() => {
-          target.scrollIntoView({ block: 'center', behavior: 'smooth' });
+          target.scrollIntoView?.({ block: 'center', behavior: 'smooth' });
         });
       });
     }
