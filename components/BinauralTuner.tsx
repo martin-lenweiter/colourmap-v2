@@ -3676,27 +3676,48 @@ export default function BinauralTuner() {
 }
 
 /*
- * VisualizerBox — a labeled card containing the AtomVisualizer
- * plus a mode picker so users can cycle through the visualization
- * family (atom / fibonacci / phyllotaxis / wave).
- *
- * Defaults to 'atom' (the original) and persists the chosen mode
- * per user in localStorage so each person keeps their favorite.
+ * VisualizerBox — eight-mode visualizer + parameter sliders +
+ * fullscreen toggle. All state persists in localStorage so the
+ * user's chosen math stays across sessions.
  */
+const VALID_MODES: VisualizerMode[] = [
+  'atom',
+  'fibonacci',
+  'phyllotaxis',
+  'wave',
+  'lissajous',
+  'constellation',
+  'helix',
+  'starfield',
+];
+
 function VisualizerBox() {
   const [mode, setMode] = useState<VisualizerMode>('atom');
+  const [speed, setSpeed] = useState(0.5);
+  const [density, setDensity] = useState(0.5);
+  const [scale, setScale] = useState(0.5);
+  const [fullscreen, setFullscreen] = useState(false);
+  const [dims, setDims] = useState<{ w: number; h: number }>({ w: 300, h: 180 });
 
+  // Restore persisted state
   useEffect(() => {
     try {
-      const saved = localStorage.getItem('colourmap:visualizer-mode');
-      if (
-        saved === 'atom' ||
-        saved === 'fibonacci' ||
-        saved === 'phyllotaxis' ||
-        saved === 'wave'
-      ) {
-        setMode(saved);
+      const savedMode = localStorage.getItem('colourmap:visualizer-mode');
+      if (savedMode && (VALID_MODES as string[]).includes(savedMode)) {
+        setMode(savedMode as VisualizerMode);
       }
+      const savedSpeed = Number.parseFloat(
+        localStorage.getItem('colourmap:visualizer-speed') || 'NaN',
+      );
+      if (!Number.isNaN(savedSpeed)) setSpeed(Math.max(0, Math.min(1, savedSpeed)));
+      const savedDensity = Number.parseFloat(
+        localStorage.getItem('colourmap:visualizer-density') || 'NaN',
+      );
+      if (!Number.isNaN(savedDensity)) setDensity(Math.max(0, Math.min(1, savedDensity)));
+      const savedScale = Number.parseFloat(
+        localStorage.getItem('colourmap:visualizer-scale') || 'NaN',
+      );
+      if (!Number.isNaN(savedScale)) setScale(Math.max(0, Math.min(1, savedScale)));
     } catch {}
   }, []);
 
@@ -3705,91 +3726,250 @@ function VisualizerBox() {
       localStorage.setItem('colourmap:visualizer-mode', mode);
     } catch {}
   }, [mode]);
+  useEffect(() => {
+    try {
+      localStorage.setItem('colourmap:visualizer-speed', speed.toString());
+    } catch {}
+  }, [speed]);
+  useEffect(() => {
+    try {
+      localStorage.setItem('colourmap:visualizer-density', density.toString());
+    } catch {}
+  }, [density]);
+  useEffect(() => {
+    try {
+      localStorage.setItem('colourmap:visualizer-scale', scale.toString());
+    } catch {}
+  }, [scale]);
+
+  // Resize canvas to fit fullscreen or the normal embedded frame
+  useEffect(() => {
+    function update() {
+      if (fullscreen) {
+        setDims({
+          w: Math.min(window.innerWidth, 1200),
+          h: Math.min(window.innerHeight - 200, 900),
+        });
+      } else {
+        setDims({ w: 300, h: 180 });
+      }
+    }
+    update();
+    if (fullscreen) {
+      window.addEventListener('resize', update);
+      return () => window.removeEventListener('resize', update);
+    }
+  }, [fullscreen]);
+
+  // Escape exits fullscreen
+  useEffect(() => {
+    if (!fullscreen) return;
+    function onKey(e: KeyboardEvent) {
+      if (e.key === 'Escape') setFullscreen(false);
+    }
+    document.addEventListener('keydown', onKey);
+    return () => document.removeEventListener('keydown', onKey);
+  }, [fullscreen]);
 
   const MODES: { id: VisualizerMode; label: string; desc: string }[] = [
-    { id: 'atom', label: 'Atom', desc: 'drag to push — cloud of dots breathes with the sound' },
+    { id: 'atom', label: 'Atom', desc: 'drag to push — spring-tied cloud breathes with sound' },
+    { id: 'fibonacci', label: 'Fibonacci', desc: 'golden-ratio spiral rotating and pulsing' },
+    { id: 'phyllotaxis', label: 'Sunflower', desc: 'continuous outward seed growth' },
+    { id: 'wave', label: 'Ripples', desc: 'concentric rings pulsing outward' },
+    { id: 'lissajous', label: 'Lissajous', desc: 'braided harmonograph curves' },
     {
-      id: 'fibonacci',
-      label: 'Fibonacci',
-      desc: 'golden-ratio spiral that slowly rotates and expands with loudness',
+      id: 'constellation',
+      label: 'Constellation',
+      desc: 'drifting nebula — lines between neighbors',
     },
-    {
-      id: 'phyllotaxis',
-      label: 'Sunflower',
-      desc: 'continuous outward growth — seeds that appear to keep coming',
-    },
-    {
-      id: 'wave',
-      label: 'Ripples',
-      desc: 'concentric rings pulsing outward in time with the audio',
-    },
+    { id: 'helix', label: 'Helix', desc: 'double helix rotating about a vertical axis' },
+    { id: 'starfield', label: 'Starfield', desc: 'warp streaks racing outward from center' },
   ];
 
   const current = MODES.find((m) => m.id === mode) ?? MODES[0];
 
-  return (
-    <div className="px-2">
-      <div
-        className="rounded-2xl border border-border p-3"
-        style={{ background: 'rgba(92,48,24,0.03)' }}
+  const slider = (
+    label: string,
+    value: number,
+    setValue: (v: number) => void,
+    leftLabel: string,
+    rightLabel: string,
+  ) => (
+    <div key={label} className="flex items-center gap-2">
+      <span
+        style={{
+          fontFamily: 'var(--font-serif)',
+          fontSize: 11,
+          color: '#8A6A4A',
+          width: 50,
+          flexShrink: 0,
+          textAlign: 'right',
+        }}
       >
-        <div className="mb-2 flex items-center justify-between">
-          <p
-            className="uppercase"
-            style={{
-              fontFamily: 'var(--font-serif)',
-              fontSize: 13,
-              fontWeight: 700,
-              letterSpacing: '0.14em',
-              color: '#5C3018',
-            }}
-          >
-            Visual
-          </p>
+        {label}
+      </span>
+      <div
+        className="relative flex-1 cursor-pointer"
+        style={{ height: 14 }}
+        onClick={(e) => {
+          const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
+          setValue(Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width)));
+        }}
+        onMouseDown={(e) => {
+          const el = e.currentTarget as HTMLElement;
+          const onMove = (ev: MouseEvent) => {
+            const r = el.getBoundingClientRect();
+            setValue(Math.max(0, Math.min(1, (ev.clientX - r.left) / r.width)));
+          };
+          const onUp = () => {
+            window.removeEventListener('mousemove', onMove);
+            window.removeEventListener('mouseup', onUp);
+          };
+          window.addEventListener('mousemove', onMove);
+          window.addEventListener('mouseup', onUp);
+        }}
+      >
+        <div
+          className="absolute top-1/2 -translate-y-1/2 left-0 right-0 rounded-full"
+          style={{ height: 3, background: '#C4A06015' }}
+        />
+        <div
+          className="absolute top-1/2 -translate-y-1/2 left-0 rounded-full"
+          style={{
+            height: 3,
+            width: `${value * 100}%`,
+            background: 'linear-gradient(90deg, #C4A06040, #C4A060)',
+          }}
+        />
+        <div
+          className="absolute top-1/2 rounded-full"
+          style={{
+            left: `${value * 100}%`,
+            width: 10,
+            height: 10,
+            background: '#C4A060',
+            transform: 'translate(-50%, -50%)',
+            boxShadow: '0 1px 2px rgba(196,160,96,0.4)',
+          }}
+        />
+      </div>
+      <span
+        style={{
+          fontFamily: 'var(--font-serif)',
+          fontSize: 10,
+          color: '#8A6A4A',
+          opacity: 0.5,
+          width: 42,
+          flexShrink: 0,
+        }}
+      >
+        {leftLabel} · {rightLabel}
+      </span>
+    </div>
+  );
+
+  const content = (
+    <div
+      className={
+        fullscreen
+          ? 'fixed inset-0 z-50 flex flex-col items-center justify-center gap-4 p-6 overflow-auto'
+          : 'rounded-2xl border border-border p-3'
+      }
+      style={{
+        background: fullscreen
+          ? 'radial-gradient(ellipse at center, rgba(40,20,10,0.9), rgba(10,5,2,0.98))'
+          : 'rgba(92,48,24,0.03)',
+        fontFamily: 'var(--font-serif)',
+      }}
+    >
+      <div className="mb-2 flex w-full max-w-4xl items-center justify-between">
+        <p
+          className="uppercase"
+          style={{
+            fontSize: fullscreen ? 15 : 13,
+            fontWeight: 700,
+            letterSpacing: '0.14em',
+            color: fullscreen ? '#F2DCBC' : '#5C3018',
+          }}
+        >
+          Visual · {current.label}
+        </p>
+        <div className="flex items-center gap-3">
           <p
             className="italic"
             style={{
-              fontFamily: 'var(--font-serif)',
               fontSize: 11,
-              color: '#8A6A4A',
+              color: fullscreen ? '#C8A070' : '#8A6A4A',
               opacity: 0.75,
               textAlign: 'right',
-              maxWidth: 220,
+              maxWidth: 260,
             }}
           >
             {current.desc}
           </p>
+          <button
+            type="button"
+            onClick={() => setFullscreen((f) => !f)}
+            className="cursor-pointer rounded-full px-2 py-1 text-[11px] font-semibold uppercase tracking-[0.12em] transition-all"
+            style={{
+              color: fullscreen ? '#F5E8C8' : '#7A5438',
+              background: fullscreen ? '#7A5438' : 'transparent',
+              border: '1px solid rgba(196, 160, 96, 0.35)',
+            }}
+            aria-pressed={fullscreen}
+            title="Toggle fullscreen"
+          >
+            {fullscreen ? 'close ✕' : 'open ⛶'}
+          </button>
         </div>
+      </div>
 
-        {/* Mode picker */}
-        <div className="mb-3 flex flex-wrap justify-center gap-1.5">
-          {MODES.map((m) => {
-            const isOn = mode === m.id;
-            return (
-              <button
-                key={m.id}
-                type="button"
-                onClick={() => setMode(m.id)}
-                aria-pressed={isOn}
-                className="cursor-pointer rounded-full px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.12em] transition-all"
-                style={{
-                  color: isOn ? '#F5E8C8' : '#8A6A4A',
-                  background: isOn ? '#7A5438' : 'transparent',
-                  border: '1px solid rgba(196, 160, 96, 0.3)',
-                }}
-              >
-                {m.label}
-              </button>
-            );
-          })}
-        </div>
+      {/* Mode picker */}
+      <div className="mb-3 flex flex-wrap justify-center gap-1.5">
+        {MODES.map((m) => {
+          const isOn = mode === m.id;
+          return (
+            <button
+              key={m.id}
+              type="button"
+              onClick={() => setMode(m.id)}
+              aria-pressed={isOn}
+              className="cursor-pointer rounded-full px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.12em] transition-all"
+              style={{
+                color: isOn ? '#F5E8C8' : fullscreen ? '#C8A070' : '#8A6A4A',
+                background: isOn ? '#7A5438' : 'transparent',
+                border: '1px solid rgba(196, 160, 96, 0.3)',
+              }}
+            >
+              {m.label}
+            </button>
+          );
+        })}
+      </div>
 
-        <div className="flex justify-center">
-          <AtomVisualizer width={300} height={180} intensity={0.7} mode={mode} />
-        </div>
+      {/* Canvas */}
+      <div className="flex justify-center">
+        <AtomVisualizer
+          width={dims.w}
+          height={dims.h}
+          intensity={0.7}
+          speed={speed}
+          density={density}
+          scale={scale}
+          mode={mode}
+        />
+      </div>
+
+      {/* Parameter sliders — touch anywhere on the canvas still pushes dots */}
+      <div className="mt-3 w-full max-w-md mx-auto space-y-2">
+        {slider('speed', speed, setSpeed, 'slow', 'fast')}
+        {slider('density', density, setDensity, 'few', 'many')}
+        {slider('scale', scale, setScale, 'tiny', 'big')}
       </div>
     </div>
   );
+
+  return <div className="px-2">{content}</div>;
 }
 
 const RAINBOW = [
