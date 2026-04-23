@@ -2,6 +2,8 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 
+import AtomVisualizer from '@/components/AtomVisualizer';
+
 /* ═══════════════════════════════════════════════════════════
    BINAURAL TUNER — adaptive soundscape generator.
    Reads your check-in state to suggest a frequency.
@@ -2840,6 +2842,43 @@ export default function BinauralTuner() {
               >
                 {Math.round(volume * 100)}%
               </span>
+            </div>
+          </div>
+
+          {/* Atom Visualizer — interactive dot field that breathes with the sound */}
+          <div className="px-2">
+            <div
+              className="rounded-2xl border border-border p-3"
+              style={{ background: 'rgba(92,48,24,0.03)' }}
+            >
+              <div className="mb-2 flex items-center justify-between">
+                <p
+                  className="uppercase"
+                  style={{
+                    fontFamily: 'var(--font-serif)',
+                    fontSize: 13,
+                    fontWeight: 700,
+                    letterSpacing: '0.14em',
+                    color: '#5C3018',
+                  }}
+                >
+                  Atom
+                </p>
+                <p
+                  className="italic"
+                  style={{
+                    fontFamily: 'var(--font-serif)',
+                    fontSize: 11,
+                    color: '#8A6A4A',
+                    opacity: 0.75,
+                  }}
+                >
+                  drag to push — breathes with the sound
+                </p>
+              </div>
+              <div className="flex justify-center">
+                <AtomVisualizer width={300} height={180} intensity={0.7} />
+              </div>
             </div>
           </div>
 
