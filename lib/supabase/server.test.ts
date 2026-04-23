@@ -109,12 +109,28 @@ describe('createClient', () => {
     expect(cookies).not.toHaveBeenCalled();
   });
 
-  it('ignores DEV_BYPASS_AUTH in production', async () => {
+  it('ignores DEV_BYPASS_AUTH in production when the prod guard is already past', async () => {
     vi.stubEnv('NODE_ENV', 'production');
     process.env.DEV_BYPASS_AUTH = 'true';
 
     expect(await createClient()).toBe('server-client');
     expect(createServerClient).toHaveBeenCalledOnce();
     expect(cookies).toHaveBeenCalledOnce();
+  });
+
+  it('throws at import time when NODE_ENV=production and DEV_BYPASS_AUTH=true', async () => {
+    vi.stubEnv('NODE_ENV', 'production');
+    process.env.DEV_BYPASS_AUTH = 'true';
+    vi.resetModules();
+    await expect(import('./server')).rejects.toThrow(
+      /DEV_BYPASS_AUTH must not be set to "true" in production/,
+    );
+  });
+
+  it('does not throw at import time in production without DEV_BYPASS_AUTH', async () => {
+    vi.stubEnv('NODE_ENV', 'production');
+    delete process.env.DEV_BYPASS_AUTH;
+    vi.resetModules();
+    await expect(import('./server')).resolves.toBeDefined();
   });
 });
