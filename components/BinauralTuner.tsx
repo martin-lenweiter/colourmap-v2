@@ -1218,6 +1218,13 @@ export default function BinauralTuner() {
   const [playing, setPlaying] = useState(false);
   const [binauralOn, setBinauralOn] = useState(true);
   const [baseToneOn, setBaseToneOn] = useState(true);
+  // Engine-breathing: slow organic modulation of the binaural beat frequency,
+  // feels like a ship's engine on the ocean rather than a fixed tone.
+  const [engineBreathing, setEngineBreathing] = useState(false);
+  const engineLfoSlowRef = useRef<OscillatorNode | null>(null);
+  const engineLfoSlowGainRef = useRef<GainNode | null>(null);
+  const engineLfoFastRef = useRef<OscillatorNode | null>(null);
+  const engineLfoFastGainRef = useRef<GainNode | null>(null);
   const panLRef = useRef<StereoPannerNode | null>(null);
   const panRRef = useRef<StereoPannerNode | null>(null);
   const binGainRef = useRef<GainNode | null>(null);
@@ -1668,6 +1675,7 @@ export default function BinauralTuner() {
         if (s.reverbMix !== undefined) setReverbMix(s.reverbMix);
         if (s.binauralOn !== undefined) setBinauralOn(s.binauralOn);
         if (s.baseToneOn !== undefined) setBaseToneOn(s.baseToneOn);
+        if (s.engineBreathing !== undefined) setEngineBreathing(s.engineBreathing);
         if (s.tremolo !== undefined) setTremolo(s.tremolo);
         if (s.activeLayers) setActiveLayers(s.activeLayers);
         if (s.activeGenre) setActiveGenre(s.activeGenre);
@@ -1695,6 +1703,7 @@ export default function BinauralTuner() {
           reverbMix,
           binauralOn,
           baseToneOn,
+          engineBreathing,
           tremolo,
           activeLayers,
           activeGenre,
@@ -1716,6 +1725,7 @@ export default function BinauralTuner() {
     reverbMix,
     binauralOn,
     baseToneOn,
+    engineBreathing,
     tremolo,
     activeLayers,
     activeGenre,
@@ -2134,6 +2144,65 @@ export default function BinauralTuner() {
       oscRGainRef.current.gain.linearRampToValueAtTime(binauralOn ? 1 : 0, now + 0.5);
     }
   }, [binauralOn]);
+
+  // Engine-breathing: two slow LFOs added to the right-ear oscillator
+  // frequency so the audible beat drifts organically instead of staying
+  // perfectly fixed. Feels like a ship's engine riding on the ocean.
+  //
+  // LFO #1 — slow, wider swing (~50s period, ±0.35 Hz)
+  // LFO #2 — faster, smaller swing (~17s period, ±0.12 Hz)
+  // Sum gives non-repeating organic variation without wobbling too fast.
+  useEffect(() => {
+    const ctx = ctxRef.current;
+    const oscR = oscRightRef.current;
+
+    function teardown() {
+      try {
+        engineLfoSlowRef.current?.stop();
+      } catch {}
+      engineLfoSlowRef.current?.disconnect();
+      engineLfoSlowGainRef.current?.disconnect();
+      engineLfoSlowRef.current = null;
+      engineLfoSlowGainRef.current = null;
+      try {
+        engineLfoFastRef.current?.stop();
+      } catch {}
+      engineLfoFastRef.current?.disconnect();
+      engineLfoFastGainRef.current?.disconnect();
+      engineLfoFastRef.current = null;
+      engineLfoFastGainRef.current = null;
+    }
+
+    // Only arm when audio is live, binaural is on, and the user opted in.
+    if (!engineBreathing || !playing || !binauralOn || !ctx || !oscR) {
+      teardown();
+      return;
+    }
+
+    const slow = ctx.createOscillator();
+    slow.type = 'sine';
+    slow.frequency.value = 1 / 50; // ~50 s cycle
+    const slowGain = ctx.createGain();
+    slowGain.gain.value = 0.35;
+    slow.connect(slowGain);
+    slowGain.connect(oscR.frequency);
+    slow.start();
+    engineLfoSlowRef.current = slow;
+    engineLfoSlowGainRef.current = slowGain;
+
+    const fast = ctx.createOscillator();
+    fast.type = 'sine';
+    fast.frequency.value = 1 / 17; // ~17 s cycle
+    const fastGain = ctx.createGain();
+    fastGain.gain.value = 0.12;
+    fast.connect(fastGain);
+    fastGain.connect(oscR.frequency);
+    fast.start();
+    engineLfoFastRef.current = fast;
+    engineLfoFastGainRef.current = fastGain;
+
+    return teardown;
+  }, [engineBreathing, playing, binauralOn]);
 
   // Mono routing: center panL when binaural is off, restore stereo when on
   useEffect(() => {
@@ -2672,6 +2741,36 @@ export default function BinauralTuner() {
               toggleOn={binauralOn}
               onToggle={() => setBinauralOn((s) => !s)}
             />
+            {/* Engine breathing — organic LFO drift on the binaural beat */}
+            <div className="flex items-center gap-2">
+              <span
+                style={{
+                  fontFamily: 'var(--font-serif)',
+                  fontSize: '12px',
+                  color: '#8A6A4A',
+                  width: 60,
+                  flexShrink: 0,
+                  textAlign: 'right',
+                }}
+                title="Makes the binaural beat drift gently around your chosen rate, like a ship's engine on the ocean. Two slow LFOs (~50s and ~17s) sum for organic variation."
+              >
+                engine
+              </span>
+              <button
+                type="button"
+                onClick={() => setEngineBreathing((b) => !b)}
+                disabled={!binauralOn}
+                aria-pressed={engineBreathing}
+                className="flex flex-1 items-center justify-center cursor-pointer rounded-full py-1.5 text-[11px] font-semibold uppercase tracking-[0.14em] transition-all disabled:cursor-not-allowed disabled:opacity-40"
+                style={{
+                  color: engineBreathing ? '#F5E8C8' : '#8A6A4A',
+                  background: engineBreathing ? '#7A5438' : 'transparent',
+                  border: '1px solid rgba(196, 160, 96, 0.35)',
+                }}
+              >
+                {engineBreathing ? 'breathing' : 'breathe'}
+              </button>
+            </div>
             {/* Reverb as dots */}
             <div className="flex items-center gap-2">
               <span
