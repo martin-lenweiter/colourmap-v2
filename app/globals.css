@@ -162,3 +162,58 @@
     font-family: var(--font-heading);
   }
 }
+
+/* ──────────────────────────────────────────────────────────────
+   Mobile-first baseline — scoped exclusively to ≤ 768 px so
+   desktop layouts stay unchanged. See docs/specs/mobile-first-plan.md.
+
+   Goals:
+   1. 10-11 px text becomes readable on phones without hurting desktop
+   2. Uppercase tracking tightens from spacey to thumb-sized
+   3. Any small round dot that users are meant to tap gets a 44 px
+      invisible hit-area expansion (iOS/HIG minimum)
+   ────────────────────────────────────────────────────────────── */
+@media (max-width: 768px) {
+  /* Text smaller than 12 px is unreadable on a phone in most
+     lighting. Bump the bottom tier up without touching larger
+     type (which was already sized well). */
+  :where([style*="font-size: 10px"]),
+  :where([style*="font-size: 11px"]),
+  :where([style*="font-size:10px"]),
+  :where([style*="font-size:11px"]),
+  :where(.text-\[10px\]),
+  :where(.text-\[11px\]) {
+    font-size: 13px;
+    line-height: 1.35;
+  }
+
+  /* Pre-tweened uppercase labels on desktop use wide tracking for
+     that "design magazine" feel. On phones the tracking stretches
+     words past tappable width — tighten it. Does not change any
+     actual letters, just the CSS letter-spacing. */
+  :where(.uppercase),
+  :where([style*="textTransform: 'uppercase'"]),
+  :where([style*="letter-spacing: 0.18em"]),
+  :where([style*="letter-spacing: 0.2em"]),
+  :where([style*="letter-spacing: 0.22em"]),
+  :where([style*="letter-spacing: 0.24em"]),
+  :where([style*="letter-spacing: 0.28em"]) {
+    letter-spacing: 0.08em;
+  }
+
+  /* Utility class to slap on any small round/square control so
+     the clickable area meets the 44 px Apple HIG minimum without
+     changing the visible size. Apply in components like:
+     <button className="tap-44">...</button> */
+  .tap-44 {
+    position: relative;
+  }
+  .tap-44::after {
+    content: "";
+    position: absolute;
+    inset: -50%;
+    min-height: 44px;
+    min-width: 44px;
+    /* transparent; acts purely as a hit-area expander */
+  }
+}
