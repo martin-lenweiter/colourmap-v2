@@ -113,7 +113,7 @@
   --sidebar-ring: #a86a28;
 }
 
-/* ─── Night ─── */
+/* ─── Night (classic, warm dark brown — kept as original) ─── */
 .dark {
   --background: #150c04;
   --foreground: #f0dfc0;
@@ -146,6 +146,114 @@
   --sidebar-accent-foreground: #f0dfc0;
   --sidebar-border: rgba(200, 160, 96, 0.18);
   --sidebar-ring: #906840;
+}
+
+/* ─── Night — Deep Brown (rich cocoa) ─── */
+.dark.night-brown,
+.night-brown {
+  --background: #1a0d04;
+  --foreground: #f2dcbc;
+  --card: #2a1608;
+  --card-foreground: #f2dcbc;
+  --popover: #2a1608;
+  --popover-foreground: #f2dcbc;
+  --primary: #f2dcbc;
+  --primary-foreground: #1a0d04;
+  --secondary: #3a2010;
+  --secondary-foreground: #f2dcbc;
+  --muted: #3a2010;
+  --muted-foreground: #d2a878;
+  --accent: #4a2e18;
+  --accent-foreground: #f2dcbc;
+  --destructive: #d4605a;
+  --border: rgba(210, 168, 120, 0.2);
+  --input: rgba(210, 168, 120, 0.22);
+  --ring: #a07040;
+  --chart-1: #e88040;
+  --chart-2: #e8b82a;
+  --chart-3: #7bb848;
+  --chart-4: #6a8ac4;
+  --chart-5: #9b6bb8;
+  --sidebar: #2a1608;
+  --sidebar-foreground: #f2dcbc;
+  --sidebar-primary: #e8b82a;
+  --sidebar-primary-foreground: #1a0d04;
+  --sidebar-accent: #3a2010;
+  --sidebar-accent-foreground: #f2dcbc;
+  --sidebar-border: rgba(210, 168, 120, 0.2);
+  --sidebar-ring: #a07040;
+}
+
+/* ─── Night — Deep Blue (midnight) ─── */
+.dark.night-blue,
+.night-blue {
+  --background: #05101e;
+  --foreground: #d4e0ec;
+  --card: #0a1a2e;
+  --card-foreground: #d4e0ec;
+  --popover: #0a1a2e;
+  --popover-foreground: #d4e0ec;
+  --primary: #d4e0ec;
+  --primary-foreground: #05101e;
+  --secondary: #12243e;
+  --secondary-foreground: #d4e0ec;
+  --muted: #12243e;
+  --muted-foreground: #90a8c4;
+  --accent: #1c3858;
+  --accent-foreground: #d4e0ec;
+  --destructive: #d46870;
+  --border: rgba(144, 168, 196, 0.2);
+  --input: rgba(144, 168, 196, 0.22);
+  --ring: #4a7abc;
+  --chart-1: #6088e0;
+  --chart-2: #78c8e8;
+  --chart-3: #5bb8a8;
+  --chart-4: #c4a860;
+  --chart-5: #9b6bb8;
+  --sidebar: #0a1a2e;
+  --sidebar-foreground: #d4e0ec;
+  --sidebar-primary: #78c8e8;
+  --sidebar-primary-foreground: #05101e;
+  --sidebar-accent: #12243e;
+  --sidebar-accent-foreground: #d4e0ec;
+  --sidebar-border: rgba(144, 168, 196, 0.2);
+  --sidebar-ring: #4a7abc;
+}
+
+/* ─── Night — Deep Purple (eggplant) ─── */
+.dark.night-purple,
+.night-purple {
+  --background: #130722;
+  --foreground: #e2d4ec;
+  --card: #1e0e34;
+  --card-foreground: #e2d4ec;
+  --popover: #1e0e34;
+  --popover-foreground: #e2d4ec;
+  --primary: #e2d4ec;
+  --primary-foreground: #130722;
+  --secondary: #2a1648;
+  --secondary-foreground: #e2d4ec;
+  --muted: #2a1648;
+  --muted-foreground: #b090c8;
+  --accent: #3a1e5e;
+  --accent-foreground: #e2d4ec;
+  --destructive: #d46870;
+  --border: rgba(176, 144, 200, 0.2);
+  --input: rgba(176, 144, 200, 0.22);
+  --ring: #8858c4;
+  --chart-1: #a070e0;
+  --chart-2: #d478e8;
+  --chart-3: #78b8d0;
+  --chart-4: #d4a860;
+  --chart-5: #6bb888;
+  --sidebar: #1e0e34;
+  --sidebar-foreground: #e2d4ec;
+  --sidebar-primary: #d478e8;
+  --sidebar-primary-foreground: #130722;
+  --sidebar-accent: #2a1648;
+  --sidebar-accent-foreground: #e2d4ec;
+  --sidebar-border: rgba(176, 144, 200, 0.2);
+  --sidebar-ring: #8858c4;
 }
 
 @layer base {
@@ -181,5 +289,60 @@
 @media (max-width: 768px) {
   form {
     padding-bottom: max(24px, var(--keyboard-height, 0px), env(safe-area-inset-bottom, 0px));
+  }
+}
+
+/* ──────────────────────────────────────────────────────────────
+   Mobile-first baseline — scoped exclusively to ≤ 768 px so
+   desktop layouts stay unchanged. See docs/specs/mobile-first-plan.md.
+
+   Goals:
+   1. 10-11 px text becomes readable on phones without hurting desktop
+   2. Uppercase tracking tightens from spacey to thumb-sized
+   3. Any small round dot that users are meant to tap gets a 44 px
+      invisible hit-area expansion (iOS/HIG minimum)
+   ────────────────────────────────────────────────────────────── */
+@media (max-width: 768px) {
+  /* Text smaller than 12 px is unreadable on a phone in most
+     lighting. Bump the bottom tier up without touching larger
+     type (which was already sized well). */
+  :where([style*="font-size: 10px"]),
+  :where([style*="font-size: 11px"]),
+  :where([style*="font-size:10px"]),
+  :where([style*="font-size:11px"]),
+  :where(.text-\[10px\]),
+  :where(.text-\[11px\]) {
+    font-size: 13px;
+    line-height: 1.35;
+  }
+
+  /* Pre-tweened uppercase labels on desktop use wide tracking for
+     that "design magazine" feel. On phones the tracking stretches
+     words past tappable width — tighten it. Does not change any
+     actual letters, just the CSS letter-spacing. */
+  :where(.uppercase),
+  :where([style*="textTransform: 'uppercase'"]),
+  :where([style*="letter-spacing: 0.18em"]),
+  :where([style*="letter-spacing: 0.2em"]),
+  :where([style*="letter-spacing: 0.22em"]),
+  :where([style*="letter-spacing: 0.24em"]),
+  :where([style*="letter-spacing: 0.28em"]) {
+    letter-spacing: 0.08em;
+  }
+
+  /* Utility class to slap on any small round/square control so
+     the clickable area meets the 44 px Apple HIG minimum without
+     changing the visible size. Apply in components like:
+     <button className="tap-44">...</button> */
+  .tap-44 {
+    position: relative;
+  }
+  .tap-44::after {
+    content: "";
+    position: absolute;
+    inset: -50%;
+    min-height: 44px;
+    min-width: 44px;
+    /* transparent; acts purely as a hit-area expander */
   }
 }

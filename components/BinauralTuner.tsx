@@ -523,7 +523,7 @@ const LAYERS: LayerDef[] = [
   },
   {
     id: 'jungle',
-    label: 'Jungle',
+    label: 'Lazer Jungle',
     color: '#5F7447',
     group: 'ambient' as const,
     build: (ctx: AudioContext) => {
@@ -836,6 +836,23 @@ const REAL_LAYERS: LayerDef[] = [
     color: '#5A7AAA',
     group: 'real',
     build: (ctx) => buildRealSound(ctx, '/sounds/real-rain-heavy-recording.ogg'),
+  },
+  // Shamanic + percussion (from public/sounds/drums/, all Public Domain
+  // per public/sounds/ATTRIBUTIONS.md). Long continuous recordings that
+  // loop cleanly with the crossfade treatment.
+  {
+    id: 'real-shamanic-drum',
+    label: 'Shamanic Drum',
+    color: '#B33A2B',
+    group: 'real',
+    build: (ctx) => buildRealSound(ctx, '/sounds/drums/Schamanische_Reise.ogg'),
+  },
+  {
+    id: 'real-tambourine',
+    label: 'Tambourine',
+    color: '#E8B568',
+    group: 'real',
+    build: (ctx) => buildRealSound(ctx, '/sounds/drums/Tambourine.ogg'),
   },
   // Synthesized sci-fi / cyberpunk
   {
@@ -1214,10 +1231,74 @@ function getSuggestion(
 // ── Crossfade duration in seconds ──
 const CROSSFADE_DURATION = 1.5;
 
+// Saved-item marker shape icon — user taps to cycle dot/star/heart/losange/triangle/square
+type SavedShape = 'dot' | 'star' | 'heart' | 'losange' | 'triangle' | 'square';
+
+function SavedShapeIcon({ shape, color }: { shape: SavedShape; color: string }) {
+  const common = {
+    width: 12,
+    height: 12,
+    viewBox: '0 0 12 12',
+    fill: color,
+    opacity: 0.65,
+  } as const;
+  switch (shape) {
+    case 'star':
+      return (
+        <svg {...common}>
+          <title>Star marker</title>
+          <path d="M6 1l1.5 3.3 3.5.4-2.7 2.4.8 3.5L6 8.9 2.9 10.6l.8-3.5L1 4.7l3.5-.4L6 1z" />
+        </svg>
+      );
+    case 'heart':
+      return (
+        <svg {...common}>
+          <title>Heart marker</title>
+          <path d="M6 10.3S1.2 7.4 1.2 4.3c0-1.5 1.2-2.7 2.7-2.7 1 0 1.7.5 2.1 1.2.4-.7 1.1-1.2 2.1-1.2 1.5 0 2.7 1.2 2.7 2.7 0 3.1-4.8 6-4.8 6z" />
+        </svg>
+      );
+    case 'losange':
+      return (
+        <svg {...common}>
+          <title>Diamond marker</title>
+          <path d="M6 1l5 5-5 5-5-5 5-5z" />
+        </svg>
+      );
+    case 'triangle':
+      return (
+        <svg {...common}>
+          <title>Triangle marker</title>
+          <path d="M6 1.5l4.5 8H1.5L6 1.5z" />
+        </svg>
+      );
+    case 'square':
+      return (
+        <svg {...common}>
+          <title>Square marker</title>
+          <rect x="2" y="2" width="8" height="8" rx="1" />
+        </svg>
+      );
+    default:
+      return (
+        <span
+          className="block rounded-full"
+          style={{ width: 8, height: 8, background: color, opacity: 0.5 }}
+        />
+      );
+  }
+}
+
 export default function BinauralTuner() {
   const [playing, setPlaying] = useState(false);
   const [binauralOn, setBinauralOn] = useState(true);
   const [baseToneOn, setBaseToneOn] = useState(true);
+  // Engine-breathing: slow organic modulation of the binaural beat frequency,
+  // feels like a ship's engine on the ocean rather than a fixed tone.
+  const [engineBreathing, setEngineBreathing] = useState(false);
+  const engineLfoSlowRef = useRef<OscillatorNode | null>(null);
+  const engineLfoSlowGainRef = useRef<GainNode | null>(null);
+  const engineLfoFastRef = useRef<OscillatorNode | null>(null);
+  const engineLfoFastGainRef = useRef<GainNode | null>(null);
   const panLRef = useRef<StereoPannerNode | null>(null);
   const panRRef = useRef<StereoPannerNode | null>(null);
   const binGainRef = useRef<GainNode | null>(null);
@@ -1247,6 +1328,7 @@ export default function BinauralTuner() {
       vol: number;
       layers: Record<string, number>;
       binaural: boolean;
+      shape?: 'dot' | 'star' | 'heart' | 'losange' | 'triangle' | 'square';
     }[]
   >([]);
   const [reverbMix, setReverbMix] = useState(0.7);
@@ -1370,8 +1452,30 @@ export default function BinauralTuner() {
     // Pick a random note from the selected scale
     const scaleNotes = MELODY_SCALES[melodyScale]?.notes || MELODY_SCALES.pentatonic.notes;
     const noteIdx = scaleNotes[Math.floor(Math.random() * scaleNotes.length)];
+
+    // Multi-octave spread (RM-C3): about 25% chance of ±1 octave jump
+    // and 5% chance of ±2 octave jump on each note. Gives the melody
+    // real range instead of sitting in one register. Base probability
+    // 55% keeps the home octave dominant so the key center stays audible.
+    const r = Math.random();
+    let octaveOffset = 0;
+    if (r < 0.025) octaveOffset = -24;
+    else if (r < 0.05) octaveOffset = 24;
+    else if (r < 0.2) octaveOffset = -12;
+    else if (r < 0.35) octaveOffset = 12;
+
+    // Clamp to a musical range: midi ~24 (C1) through midi ~96 (C7).
+    // melDef.octave is the center octave (4 for C4); noteIdx adds
+    // semitones on top; octaveOffset may push further. Fold back if
+    // we land outside the safe range.
+    const octavesFromCenter = Math.floor((noteIdx + octaveOffset) / 12);
+    const finalOctave = melDef.octave + octavesFromCenter;
+    let safeOctaveOffset = octaveOffset;
+    if (finalOctave < 1) safeOctaveOffset += 12 * (1 - finalOctave);
+    else if (finalOctave > 7) safeOctaveOffset -= 12 * (finalOctave - 7);
+
     const baseNote = 261.63 * 2 ** (melDef.octave - 4); // C of the octave
-    const freq = baseNote * 2 ** (noteIdx / 12);
+    const freq = baseNote * 2 ** ((noteIdx + safeOctaveOffset) / 12);
 
     const osc = ctx.createOscillator();
     osc.type = melDef.type;
@@ -1668,6 +1772,7 @@ export default function BinauralTuner() {
         if (s.reverbMix !== undefined) setReverbMix(s.reverbMix);
         if (s.binauralOn !== undefined) setBinauralOn(s.binauralOn);
         if (s.baseToneOn !== undefined) setBaseToneOn(s.baseToneOn);
+        if (s.engineBreathing !== undefined) setEngineBreathing(s.engineBreathing);
         if (s.tremolo !== undefined) setTremolo(s.tremolo);
         if (s.activeLayers) setActiveLayers(s.activeLayers);
         if (s.activeGenre) setActiveGenre(s.activeGenre);
@@ -1695,6 +1800,7 @@ export default function BinauralTuner() {
           reverbMix,
           binauralOn,
           baseToneOn,
+          engineBreathing,
           tremolo,
           activeLayers,
           activeGenre,
@@ -1716,6 +1822,7 @@ export default function BinauralTuner() {
     reverbMix,
     binauralOn,
     baseToneOn,
+    engineBreathing,
     tremolo,
     activeLayers,
     activeGenre,
@@ -1746,12 +1853,26 @@ export default function BinauralTuner() {
       vol: volume,
       layers: { ...activeLayers },
       binaural: binauralOn,
+      shape: 'dot' as const,
     };
     const next = [mix, ...savedMixes].slice(0, 20);
     setSavedMixes(next);
     localStorage.setItem('colourmap:tuner-mixes', JSON.stringify(next));
     setSaveName('');
     setShowSave(false);
+  }
+
+  const SHAPE_CYCLE = ['dot', 'star', 'heart', 'losange', 'triangle', 'square'] as const;
+
+  function cycleMixShape(index: number) {
+    setSavedMixes((prev) => {
+      const next = [...prev];
+      const current = next[index].shape ?? 'dot';
+      const nextShape = SHAPE_CYCLE[(SHAPE_CYCLE.indexOf(current) + 1) % SHAPE_CYCLE.length];
+      next[index] = { ...next[index], shape: nextShape };
+      localStorage.setItem('colourmap:tuner-mixes', JSON.stringify(next));
+      return next;
+    });
   }
 
   function loadMix(mix: (typeof savedMixes)[0]) {
@@ -2125,6 +2246,56 @@ export default function BinauralTuner() {
     if (gainRef.current) gainRef.current.gain.value = volume;
   }, [volume]);
 
+  // Mobile-friendly audio session handling:
+  //   - Page Visibility API  → when the user tabs away, switches
+  //     apps, or locks the phone, duck the master gain to ~0 over
+  //     300ms so the audio goes quiet without disappearing. Restore
+  //     to the user's volume when the tab becomes visible again.
+  //     This is the web-app equivalent of iOS AudioSession ducking
+  //     and matches how native apps behave on incoming calls.
+  //   - Works on both iOS Safari and Android Chrome; both fire
+  //     'visibilitychange' events reliably.
+  // NOTE: The browser may also freeze Web Audio entirely when the
+  // tab is hidden (especially iOS Safari). That's platform-level,
+  // not something we can prevent from JS. The duck-and-restore
+  // keeps the audio graph alive and ready to resume cleanly.
+  useEffect(() => {
+    if (!playing) return;
+
+    function duck() {
+      const g = gainRef.current;
+      const ctx = ctxRef.current;
+      if (!g || !ctx) return;
+      const now = ctx.currentTime;
+      g.gain.cancelScheduledValues(now);
+      g.gain.setValueAtTime(g.gain.value, now);
+      g.gain.linearRampToValueAtTime(0.0001, now + 0.3);
+    }
+
+    function restore() {
+      const g = gainRef.current;
+      const ctx = ctxRef.current;
+      if (!g || !ctx) return;
+      // Resume the context too — iOS Safari sometimes auto-suspends
+      // a hidden AudioContext, and we want audible sound back fast.
+      if (ctx.state === 'suspended') {
+        ctx.resume().catch(() => {});
+      }
+      const now = ctx.currentTime;
+      g.gain.cancelScheduledValues(now);
+      g.gain.setValueAtTime(g.gain.value, now);
+      g.gain.linearRampToValueAtTime(volume, now + 0.5);
+    }
+
+    function onVisibilityChange() {
+      if (document.hidden) duck();
+      else restore();
+    }
+
+    document.addEventListener('visibilitychange', onVisibilityChange);
+    return () => document.removeEventListener('visibilitychange', onVisibilityChange);
+  }, [playing, volume]);
+
   // Binaural beat (right osc) toggle
   useEffect(() => {
     if (oscRGainRef.current && ctxRef.current) {
@@ -2134,6 +2305,65 @@ export default function BinauralTuner() {
       oscRGainRef.current.gain.linearRampToValueAtTime(binauralOn ? 1 : 0, now + 0.5);
     }
   }, [binauralOn]);
+
+  // Engine-breathing: two slow LFOs added to the right-ear oscillator
+  // frequency so the audible beat drifts organically instead of staying
+  // perfectly fixed. Feels like a ship's engine riding on the ocean.
+  //
+  // LFO #1 — slow, wider swing (~50s period, ±0.35 Hz)
+  // LFO #2 — faster, smaller swing (~17s period, ±0.12 Hz)
+  // Sum gives non-repeating organic variation without wobbling too fast.
+  useEffect(() => {
+    const ctx = ctxRef.current;
+    const oscR = oscRightRef.current;
+
+    function teardown() {
+      try {
+        engineLfoSlowRef.current?.stop();
+      } catch {}
+      engineLfoSlowRef.current?.disconnect();
+      engineLfoSlowGainRef.current?.disconnect();
+      engineLfoSlowRef.current = null;
+      engineLfoSlowGainRef.current = null;
+      try {
+        engineLfoFastRef.current?.stop();
+      } catch {}
+      engineLfoFastRef.current?.disconnect();
+      engineLfoFastGainRef.current?.disconnect();
+      engineLfoFastRef.current = null;
+      engineLfoFastGainRef.current = null;
+    }
+
+    // Only arm when audio is live, binaural is on, and the user opted in.
+    if (!engineBreathing || !playing || !binauralOn || !ctx || !oscR) {
+      teardown();
+      return;
+    }
+
+    const slow = ctx.createOscillator();
+    slow.type = 'sine';
+    slow.frequency.value = 1 / 50; // ~50 s cycle
+    const slowGain = ctx.createGain();
+    slowGain.gain.value = 0.35;
+    slow.connect(slowGain);
+    slowGain.connect(oscR.frequency);
+    slow.start();
+    engineLfoSlowRef.current = slow;
+    engineLfoSlowGainRef.current = slowGain;
+
+    const fast = ctx.createOscillator();
+    fast.type = 'sine';
+    fast.frequency.value = 1 / 17; // ~17 s cycle
+    const fastGain = ctx.createGain();
+    fastGain.gain.value = 0.12;
+    fast.connect(fastGain);
+    fastGain.connect(oscR.frequency);
+    fast.start();
+    engineLfoFastRef.current = fast;
+    engineLfoFastGainRef.current = fastGain;
+
+    return teardown;
+  }, [engineBreathing, playing, binauralOn]);
 
   // Mono routing: center panL when binaural is off, restore stereo when on
   useEffect(() => {
@@ -2370,6 +2600,25 @@ export default function BinauralTuner() {
 
   return (
     <div className="space-y-4">
+      {/* Mobile-only gentle banner: the browser suspends audio when
+          the tab is hidden. Let the user know so they don't think the
+          app is broken when sound stops after switching apps. */}
+      {playing && (
+        <div
+          className="md:hidden mx-auto max-w-md rounded-xl border border-border bg-muted/40 px-3 py-2 text-center"
+          style={{
+            fontFamily: 'var(--font-serif)',
+            fontSize: 12,
+            color: 'var(--muted-foreground)',
+            lineHeight: 1.45,
+          }}
+          role="note"
+        >
+          Keep the app open to hear the sound continuously. Switching apps or locking your phone
+          will pause audio — it resumes when you return.
+        </div>
+      )}
+
       {/* Title */}
       <div className="text-center space-y-1">
         <p
@@ -2383,17 +2632,6 @@ export default function BinauralTuner() {
         >
           Calming Sounds
         </p>
-        <p
-          className="italic"
-          style={{
-            fontFamily: 'var(--font-serif)',
-            fontSize: '15px',
-            color: '#8A6A4A',
-            opacity: 0.95,
-          }}
-        >
-          find your frequency
-        </p>
       </div>
 
       {/* Simple / Full toggle */}
@@ -2401,11 +2639,12 @@ export default function BinauralTuner() {
         <button
           type="button"
           onClick={() => setSimpleMode((s) => !s)}
-          className="cursor-pointer rounded-full px-3 py-1 text-[12px] font-semibold uppercase tracking-wider transition-all"
+          className="cursor-pointer rounded-full px-5 py-1.5 text-[12px] font-semibold uppercase tracking-[0.12em] transition-all hover:opacity-85"
           style={{
-            color: '#8A6A4A',
-            background: 'transparent',
-            border: '1px solid #C4A06020',
+            color: '#7A5438',
+            background: '#F5E8C8',
+            border: '1px solid rgba(196, 160, 96, 0.35)',
+            boxShadow: '0 1px 2px rgba(94, 58, 20, 0.06)',
           }}
         >
           {simpleMode ? 'open studio' : 'back to simple'}
@@ -2672,6 +2911,36 @@ export default function BinauralTuner() {
               toggleOn={binauralOn}
               onToggle={() => setBinauralOn((s) => !s)}
             />
+            {/* Engine breathing — organic LFO drift on the binaural beat */}
+            <div className="flex items-center gap-2">
+              <span
+                style={{
+                  fontFamily: 'var(--font-serif)',
+                  fontSize: '12px',
+                  color: '#8A6A4A',
+                  width: 60,
+                  flexShrink: 0,
+                  textAlign: 'right',
+                }}
+                title="Makes the binaural beat drift gently around your chosen rate, like a ship's engine on the ocean. Two slow LFOs (~50s and ~17s) sum for organic variation."
+              >
+                engine
+              </span>
+              <button
+                type="button"
+                onClick={() => setEngineBreathing((b) => !b)}
+                disabled={!binauralOn}
+                aria-pressed={engineBreathing}
+                className="flex flex-1 items-center justify-center cursor-pointer rounded-full py-1.5 text-[11px] font-semibold uppercase tracking-[0.14em] transition-all disabled:cursor-not-allowed disabled:opacity-40"
+                style={{
+                  color: engineBreathing ? '#F5E8C8' : '#8A6A4A',
+                  background: engineBreathing ? '#7A5438' : 'transparent',
+                  border: '1px solid rgba(196, 160, 96, 0.35)',
+                }}
+              >
+                {engineBreathing ? 'breathing' : 'breathe'}
+              </button>
+            </div>
             {/* Reverb as dots */}
             <div className="flex items-center gap-2">
               <span
@@ -2846,14 +3115,16 @@ export default function BinauralTuner() {
           {/* Harmony — musical intervals that fit the base tone */}
           <div className="px-2">
             <p
-              className="text-center mb-2"
+              className="text-center mb-2 uppercase"
               style={{
                 fontFamily: 'var(--font-serif)',
-                fontSize: '12px',
-                color: '#7A5438',
+                fontSize: '14px',
+                fontWeight: 700,
+                color: '#5C3018',
+                letterSpacing: '0.18em',
               }}
             >
-              harmonics — {baseFreq}Hz
+              Harmonics · {baseFreq}Hz
             </p>
             <div className="flex justify-center gap-2">
               {HARMONICS.map((h) => {
@@ -2915,14 +3186,16 @@ export default function BinauralTuner() {
           {/* Sacred frequencies — Solfeggio + 432Hz */}
           <div className="px-2">
             <p
-              className="text-center mb-2"
+              className="text-center mb-2 uppercase"
               style={{
                 fontFamily: 'var(--font-serif)',
-                fontSize: '12px',
-                color: '#7A5438',
+                fontSize: '14px',
+                fontWeight: 700,
+                color: '#5C3018',
+                letterSpacing: '0.18em',
               }}
             >
-              sacred frequencies
+              Sacred Frequencies
             </p>
             <div className="flex flex-wrap justify-center gap-1.5">
               {SACRED.map((s) => {
@@ -3291,37 +3564,68 @@ export default function BinauralTuner() {
             </button>
             {layersOpen && (
               <div className="animate-in fade-in duration-150 space-y-2 pt-1">
-                {/* Layer reverb control */}
+                {/* Layer softness / reverb — smooth bar matching the volume control */}
                 <div className="flex items-center justify-center gap-2">
                   <span
                     style={{
                       fontFamily: 'var(--font-serif)',
-                      fontSize: '12px',
-                      color: '#8A6A4A',
+                      fontSize: '13px',
+                      fontWeight: 600,
+                      color: '#7A5438',
+                      letterSpacing: '0.02em',
                     }}
                   >
-                    layer reverb
+                    layer softness
                   </span>
                   <div
-                    className="flex gap-[2px] cursor-pointer"
+                    className="relative cursor-pointer"
+                    style={{ width: 120, height: 14 }}
                     onClick={(e) => {
                       const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
-                      setLayerReverb(Math.round(((e.clientX - rect.left) / rect.width) * 100));
+                      setLayerReverb(
+                        Math.round(
+                          Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width)) * 100,
+                        ),
+                      );
                     }}
                   >
-                    {Array.from({ length: 8 }, (_, i) => (
-                      <div
-                        key={i}
-                        className="rounded-[2px] transition-all"
-                        style={{
-                          width: 10,
-                          height: 6,
-                          background: '#A0907A',
-                          opacity: i / 7 <= layerReverb / 100 ? 0.4 + (i / 7) * 0.4 : 0.08,
-                        }}
-                      />
-                    ))}
+                    <div
+                      className="absolute top-1/2 -translate-y-1/2 left-0 right-0 rounded-full"
+                      style={{ height: 4, background: '#C4A06015' }}
+                    />
+                    <div
+                      className="absolute top-1/2 -translate-y-1/2 left-0 rounded-full"
+                      style={{
+                        height: 4,
+                        width: `${layerReverb}%`,
+                        background: 'linear-gradient(90deg, #A0907A30, #A0907A)',
+                      }}
+                    />
+                    <div
+                      className="absolute top-1/2 rounded-full"
+                      style={{
+                        left: `${layerReverb}%`,
+                        width: 12,
+                        height: 12,
+                        background: '#A0907A',
+                        transform: 'translate(-50%, -50%)',
+                        boxShadow: '0 1px 3px rgba(160,144,122,0.5)',
+                      }}
+                    />
                   </div>
+                  <span
+                    style={{
+                      fontFamily: 'var(--font-serif)',
+                      fontSize: '12px',
+                      fontWeight: 600,
+                      color: '#8A6A4A',
+                      width: 30,
+                      flexShrink: 0,
+                      textAlign: 'right',
+                    }}
+                  >
+                    {layerReverb}%
+                  </span>
                 </div>
                 <div className="grid grid-cols-5 gap-1.5">
                   {(['real', 'nature', 'tones', 'texture', 'ambient'] as const).map((group) => {
@@ -3382,7 +3686,7 @@ export default function BinauralTuner() {
                               </button>
                               {isOn && (
                                 <div
-                                  className="flex gap-[2px] px-1 cursor-pointer"
+                                  className="flex gap-[3px] px-1 cursor-pointer"
                                   onClick={(e) => {
                                     const rect = (
                                       e.currentTarget as HTMLElement
@@ -3397,11 +3701,11 @@ export default function BinauralTuner() {
                                   {Array.from({ length: 6 }, (_, i) => (
                                     <div
                                       key={i}
-                                      className="flex-1 rounded-[2px] transition-all"
+                                      className="flex-1 rounded-[3px] transition-all"
                                       style={{
-                                        height: 4,
+                                        height: 8,
                                         background: l.color,
-                                        opacity: i / 5 <= vol ? 0.4 + (i / 5) * 0.4 : 0.08,
+                                        opacity: i / 5 <= vol ? 0.55 + (i / 5) * 0.4 : 0.15,
                                       }}
                                     />
                                   ))}
@@ -3629,10 +3933,27 @@ export default function BinauralTuner() {
                         className="flex w-full cursor-pointer items-center gap-2 rounded-lg px-3 py-1.5 text-left transition-all hover:bg-[#C4A06008]"
                         style={{ background: 'none', border: 'none' }}
                       >
-                        <span
-                          className="block rounded-full"
-                          style={{ width: 8, height: 8, background: '#C4A060', opacity: 0.5 }}
-                        />
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            cycleMixShape(i);
+                          }}
+                          title="Tap to change marker shape"
+                          className="shrink-0 cursor-pointer"
+                          style={{
+                            width: 14,
+                            height: 14,
+                            padding: 0,
+                            background: 'none',
+                            border: 'none',
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                          }}
+                        >
+                          <SavedShapeIcon shape={mix.shape ?? 'dot'} color="#C4A060" />
+                        </button>
                         <span
                           style={{
                             fontFamily: 'var(--font-serif)',

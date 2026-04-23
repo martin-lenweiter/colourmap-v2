@@ -712,7 +712,7 @@ function CfColumn({
           onChange={(event) => onChange(event.target.value)}
           placeholder={placeholder}
           rows={3}
-          className="min-h-[132px] flex-1 resize-none border-[#d2b47b4a] bg-[#f7eddc9c] text-[#7a5438] placeholder:text-[#c4a060] focus-visible:border-[#c79a42] focus-visible:ring-[#d9b56f33]"
+          className="min-h-[132px] flex-1 resize-none border-border bg-muted text-foreground placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-ring/40"
         />
         <CategoryTagPicker
           value={tag}
@@ -1061,7 +1061,7 @@ export default function CheckInForm({ missions = [], onCheckInComplete }: CheckI
   return (
     <form onSubmit={handleSubmit} className="space-y-8">
       {isFirstCheckIn && (
-        <div className="rounded-[22px] border border-[#c4a0602b] bg-[#fbf4e8cc] px-4 py-4 text-left shadow-[0_16px_40px_-32px_rgba(92,48,24,0.45)]">
+        <div className="rounded-[22px] border border-border bg-card px-4 py-4 text-left shadow-[0_16px_40px_-32px_rgba(92,48,24,0.45)]">
           <p className="text-xs uppercase tracking-[0.28em] text-[#9d6f2f]">First Check-In</p>
           <div className="mt-3 space-y-3">
             <div>
