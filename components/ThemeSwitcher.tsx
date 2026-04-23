@@ -6,6 +6,19 @@ const COLOR_THEMES = [
   { id: 'paper', label: 'Paper', className: '', color: '#F2E8D0' },
   { id: 'golden', label: 'Golden', className: 'golden', color: '#E8C97A' },
   { id: 'night', label: 'Night', className: 'dark', color: '#150C04' },
+  {
+    id: 'night-brown',
+    label: 'Night Brown',
+    className: 'dark night-brown',
+    color: '#2A1608',
+  },
+  { id: 'night-blue', label: 'Night Blue', className: 'dark night-blue', color: '#0A1A2E' },
+  {
+    id: 'night-purple',
+    label: 'Night Purple',
+    className: 'dark night-purple',
+    color: '#1E0E34',
+  },
 ] as const;
 
 const TYPO_THEMES = [
@@ -23,9 +36,13 @@ function applyColorTheme(id: ColorId) {
   if (!theme) return;
   const html = document.documentElement;
   for (const t of COLOR_THEMES) {
-    if (t.className) html.classList.remove(t.className);
+    for (const cls of t.className.split(' ').filter(Boolean)) {
+      html.classList.remove(cls);
+    }
   }
-  if (theme.className) html.classList.add(theme.className);
+  for (const cls of theme.className.split(' ').filter(Boolean)) {
+    html.classList.add(cls);
+  }
   localStorage.setItem('colourmap-theme', id);
 }
 
