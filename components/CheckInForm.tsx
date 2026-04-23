@@ -7,6 +7,7 @@ import FacingRow from '@/components/FacingRow';
 import FeelingCompass from '@/components/FeelingCompass';
 import FeelingStageSelector from '@/components/FeelingStageSelector';
 import FeelingSupportChips from '@/components/FeelingSupportChips';
+import { useKeyboardAware } from '@/components/hooks/useKeyboardAware';
 import PostCheckInInsight from '@/components/PostCheckInInsight';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
@@ -858,6 +859,10 @@ function buildCheckInPayload(args: {
 }
 
 export default function CheckInForm({ missions = [], onCheckInComplete }: CheckInFormProps) {
+  // Mobile keyboard-aware ref: auto-scrolls any focused input/textarea
+  // inside the form into view above the virtual keyboard on phones.
+  // Desktop: no-op (no visualViewport interference).
+  const formRef = useKeyboardAware<HTMLFormElement>();
   const [sliderValue, setSliderValue] = useState(50);
   const [note, setNote] = useState('');
   const [challenge, setChallenge] = useState('');
@@ -1059,7 +1064,7 @@ export default function CheckInForm({ missions = [], onCheckInComplete }: CheckI
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-8">
+    <form ref={formRef} onSubmit={handleSubmit} className="space-y-8">
       {isFirstCheckIn && (
         <div className="rounded-[22px] border border-[#c4a0602b] bg-[#fbf4e8cc] px-4 py-4 text-left shadow-[0_16px_40px_-32px_rgba(92,48,24,0.45)]">
           <p className="text-xs uppercase tracking-[0.28em] text-[#9d6f2f]">First Check-In</p>
