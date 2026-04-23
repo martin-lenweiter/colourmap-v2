@@ -412,7 +412,7 @@ function EditableTimelineEntry({
                   {facingEntries.map((item) => (
                     <div
                       key={`${entry.id}-${item.label}`}
-                      className="rounded-2xl border border-[#d6b57b44] bg-[#fbf4e8cc] px-3 py-2"
+                      className="rounded-2xl border border-border bg-card px-3 py-2"
                     >
                       <p className="text-xs font-semibold uppercase tracking-[0.22em] text-[#9d6f2f]">
                         {item.label}
@@ -446,7 +446,7 @@ function EditableTimelineEntry({
                   {feelingCompassRows.map(([key, value]) => (
                     <span
                       key={`${entry.id}-${key}`}
-                      className="inline-flex items-center gap-1 rounded-full border border-[#d6b57b44] bg-[#fbf4e8cc] px-2 py-0.5"
+                      className="inline-flex items-center gap-1 rounded-full border border-border bg-card px-2 py-0.5"
                     >
                       <span className="text-xs font-semibold capitalize text-[#9d6f2f]">{key}</span>
                       <span className="text-xs text-[#7a5438]">{value}%</span>
@@ -551,7 +551,7 @@ function EditableTimelineEntry({
               {(entry.challenge || entry.flow) && (
                 <div className="grid gap-2 pt-1 md:grid-cols-2">
                   {entry.challenge && (
-                    <div className="rounded-2xl border border-[#d6b57b44] bg-[#faf1e1] px-3 py-2">
+                    <div className="rounded-2xl border border-border bg-card px-3 py-2">
                       <p className="text-xs font-semibold uppercase tracking-[0.22em] text-[#9d6f2f]">
                         Challenge
                       </p>
@@ -559,7 +559,7 @@ function EditableTimelineEntry({
                     </div>
                   )}
                   {entry.flow && (
-                    <div className="rounded-2xl border border-[#d6b57b44] bg-[#faf1e1] px-3 py-2">
+                    <div className="rounded-2xl border border-border bg-card px-3 py-2">
                       <p className="text-xs font-semibold uppercase tracking-[0.22em] text-[#9d6f2f]">
                         Flow
                       </p>
