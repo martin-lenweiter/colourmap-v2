@@ -3688,16 +3688,27 @@ const VALID_MODES: VisualizerMode[] = [
   'lissajous',
   'constellation',
   'helix',
-  'starfield',
+  'tunnel',
+  'morph',
+  'saturn',
+  'galaxy',
+  'orbital',
+  'solar',
 ];
 
 function VisualizerBox() {
   const [mode, setMode] = useState<VisualizerMode>('atom');
-  const [speed, setSpeed] = useState(0.5);
+  // Speed default 0.25 — most calm, relaxing stable spot for the whole
+  // family. Other stable spots are at 0.4 (gentle), 0.6 (flowing),
+  // 0.8 (energetic). The speed preset chips in the UI snap to these.
+  const [speed, setSpeed] = useState(0.25);
   const [density, setDensity] = useState(0.5);
   const [scale, setScale] = useState(0.5);
+  const [opacity, setOpacity] = useState(0.9);
+  const [depth3d, setDepth3d] = useState(0);
   const [fullscreen, setFullscreen] = useState(false);
   const [dims, setDims] = useState<{ w: number; h: number }>({ w: 300, h: 180 });
+  const [learnDepth, setLearnDepth] = useState(0);
 
   // Restore persisted state
   useEffect(() => {
@@ -3725,6 +3736,8 @@ function VisualizerBox() {
     try {
       localStorage.setItem('colourmap:visualizer-mode', mode);
     } catch {}
+    // Collapse "learn more" blocks each time the user switches modes
+    setLearnDepth(0);
   }, [mode]);
   useEffect(() => {
     try {
@@ -3783,8 +3796,166 @@ function VisualizerBox() {
       desc: 'drifting nebula — lines between neighbors',
     },
     { id: 'helix', label: 'Helix', desc: 'double helix rotating about a vertical axis' },
-    { id: 'starfield', label: 'Starfield', desc: 'warp streaks racing outward from center' },
+    {
+      id: 'tunnel',
+      label: 'Tunnel',
+      desc: 'flying through a tunnel of rings — depth + motion',
+    },
+    {
+      id: 'morph',
+      label: 'Morph',
+      desc: '4D-like transformation between three shapes, very slow',
+    },
+    {
+      id: 'saturn',
+      label: 'Saturn',
+      desc: 'a tilted planet with rings — with Cassini-like gaps',
+    },
+    {
+      id: 'galaxy',
+      label: 'Galaxy',
+      desc: 'logarithmic spiral arms slowly rotating with a bright core',
+    },
+    {
+      id: 'orbital',
+      label: 'Orbital',
+      desc: '3D atom — electrons on tilted shells around a nucleus',
+    },
+    {
+      id: 'solar',
+      label: 'Solar',
+      desc: 'our solar system — 8 planets on concentric orbits',
+    },
   ];
+
+  // Stable "calm spots" on the speed axis — the user noticed certain
+  // speeds feel particularly settled. These are the sweet spots; the
+  // pill row lets them jump between without hunting on the slider.
+  const SPEED_PRESETS: { label: string; value: number }[] = [
+    { label: 'Dream', value: 0.15 },
+    { label: 'Calm', value: 0.25 },
+    { label: 'Gentle', value: 0.4 },
+    { label: 'Flow', value: 0.6 },
+    { label: 'Alive', value: 0.8 },
+  ];
+
+  // Layered educational content for each mode — the user can press
+  // losanges to dig deeper, one block at a time.
+  const LEARN_CONTENT: Record<VisualizerMode, { title: string; blocks: string[] }> = {
+    atom: {
+      title: 'The golden-angle spiral',
+      blocks: [
+        '200 dots arranged using the golden angle (~137.5°) — the angle that packs points on a disk more evenly than any other rotation.',
+        'Why 137.5°? It is 360° divided by φ² where φ = 1.618, the golden ratio. Any other angle leaves visible gaps or ridges; this one alone spreads dots evenly at every radius.',
+        'Sunflowers use this angle in their seed heads. Pinecones, daisies, pineapple skins, and the scales on a Romanesco broccoli do the same. Nature independently evolved this for optimal sunlight / growing-space packing.',
+        'Da Vinci and Kepler wrote about it, but botanist Wilhelm Hofmeister (1868) and later Douady & Couder (1992) showed it emerges from a simple "place the next primordium as far from the previous as possible" rule. Life does optimization without knowing math.',
+      ],
+    },
+    fibonacci: {
+      title: 'Fibonacci and the golden spiral',
+      blocks: [
+        'The Fibonacci sequence (1, 1, 2, 3, 5, 8, 13, 21, ...) — each number is the sum of the two before. Ratios of consecutive terms converge to the golden ratio φ ≈ 1.6180339...',
+        'Fibonacci (Leonardo of Pisa, 1202) introduced the sequence to Europe via a rabbit-breeding problem. The sequence itself was known in Sanskrit prosody much earlier — Pingala, around 200 BCE.',
+        "The golden spiral (r = φ^(θ/90°)) appears in nautilus shells, galaxies, hurricanes, Greek architecture, Renaissance paintings (Da Vinci's Vitruvian Man, Parthenon facade), and human body proportions.",
+        'The deep reason: φ is the "most irrational" number — its continued-fraction expansion is [1; 1, 1, 1, ...] — so φ-rotations never align with themselves. That makes it nature\'s best choice whenever non-repetition matters.',
+      ],
+    },
+    phyllotaxis: {
+      title: 'Phyllotaxis — the mathematics of plant growth',
+      blocks: [
+        'Phyllotaxis = "leaf arrangement." The study of how plants place new leaves, petals, seeds, and branches around a stem.',
+        'Nearly every spiral pattern in a plant follows a Fibonacci number of clockwise and counter-clockwise arms. Count them on a pinecone — you will find 5 and 8, or 8 and 13, or 13 and 21.',
+        'The dots here spawn continuously from the center, drift outward, and fade at the edge — simulating how a plant adds new primordia at its tip while older ones push outward.',
+        'Why does evolution "choose" Fibonacci? Because it gives each leaf maximum sunlight and each seed maximum packing density. The geometry is the survival strategy.',
+      ],
+    },
+    wave: {
+      title: 'Radial waves — ripples in the pond',
+      blocks: [
+        'Concentric rings pulse outward like ripples in a pond, each ring phase-shifted in time. In physics this is a simplified wave equation: u(r, t) = A·sin(kr - ωt).',
+        'The same pattern describes sound spreading from a speaker, light from a bulb, seismic waves from an earthquake, and the cosmic microwave background ripples from the Big Bang.',
+        'Huygens (1678) showed every point on a wave front is itself the source of a new wave — a deeply strange idea that perfectly describes diffraction and interference 350 years later.',
+      ],
+    },
+    lissajous: {
+      title: 'Lissajous curves — two rhythms braiding',
+      blocks: [
+        'x = sin(a·t + δ), y = sin(b·t) — two sine waves at different frequencies plotted against each other. Named after Jules Lissajous (1857).',
+        'Lissajous invented them to visualize vibrations — he bounced light off a tuning-fork mirror onto a wall. 165 years later oscilloscopes still use them.',
+        'The curve closes into a loop only when the ratio a/b is rational (like 2:3). Irrational ratios trace paths that fill the square forever without repeating — chaos-adjacent behavior from a simple equation.',
+        'Bowen Technique, harmonograph pendulums, and 1960s-era music visualizers all rely on this math. Kids drawing spirograph with two pens are drawing Lissajous variants.',
+      ],
+    },
+    constellation: {
+      title: 'Drifting nebula — proximity graphs',
+      blocks: [
+        'Dots drift gently, and lines connect those within a threshold distance. This is a live proximity graph — a basic structure in computational geometry.',
+        'Used in 3D rendering for boids (flocking birds), in physics for ideal-gas simulations, and in social network analysis to find clusters of close friends.',
+        'The nebula feel comes from a happy accident: gentle noise in dot motion + distance-thresholded opacity makes patterns appear and dissolve organically — the Brownian-motion aesthetic.',
+      ],
+    },
+    helix: {
+      title: 'The double helix',
+      blocks: [
+        "Two intertwined strands rotating about a shared axis — DNA's structure, discovered by Watson, Crick, Franklin, and Wilkins in 1953 from Rosalind Franklin's X-ray crystallography.",
+        "DNA's helix has ~10 base pairs per turn, a pitch of 3.4 nm, and a diameter of 2 nm. If you uncoiled all the DNA in your body end-to-end, it would stretch ~67 billion km — 446 times the distance Earth to the Sun.",
+        'The same mathematical shape appears in phone cords, climbing plants (morning glory), spiral staircases, and the tubulin proteins in your cells. It is the most compact way to store a linear sequence in 3D space while keeping both ends accessible.',
+      ],
+    },
+    tunnel: {
+      title: 'Depth and perspective — the racing tunnel',
+      blocks: [
+        'Rings expand outward at different depths, creating an illusion of forward motion. Early Renaissance painters (Brunelleschi, ~1415) discovered linear perspective — far things appear smaller with mathematical precision.',
+        'Alberti (1435) formalized the vanishing point. Suddenly 2D paintings could evoke 3D space. Every 3D video game, VR headset, and film camera since uses his projection matrix.',
+        'The "warp tunnel" effect here is that same math animated — rings start tiny at the vanishing point and grow as they "travel" toward you. Star Wars hyperspace and 2001: A Space Odyssey\'s star gate use it.',
+      ],
+    },
+    morph: {
+      title: 'Morphing — weighted blends of shapes',
+      blocks: [
+        'Each dot sits at a weighted sum of its position on three different shapes (Fibonacci spiral, double helix, Lissajous curve). The weights shift over 20 seconds, so the cloud continuously transforms.',
+        'This technique is used in 3D animation as "blend shapes" or "morph targets" — how Pixar animates face expressions (smile → frown → surprise) by interpolating between stored shapes.',
+        'Mathematically this is a convex combination: a·P₁ + b·P₂ + c·P₃ where a + b + c = 1. At any moment the cloud is a unique hybrid shape that has never existed before and may never again.',
+        'The feeling of watching a 4-dimensional object rotate comes from this: you are seeing 2D projections of a 3-way shape blend, and your brain insists it must be a single object moving through higher-dimensional space.',
+      ],
+    },
+    saturn: {
+      title: 'Saturn — rings of ice and rock',
+      blocks: [
+        "Saturn's rings are not solid — they are billions of ice and rock chunks, from dust grains to boulders, all orbiting the planet within a ring system just ~10 meters thick on average. You could park a building-height structure across the whole thing.",
+        "The gaps in the rings (Cassini Division, Encke Gap) are swept clean by Saturn's moons. Small moons orbiting inside the gap pull debris out; tiny gravitational resonances do the rest.",
+        'Ring planets exist for the same reason: any close-orbiting material tidally breaks into pieces too small to gravitationally pull into a single moon. The Roche limit — below this distance, a moon shatters — is where rings form.',
+        "Jupiter, Uranus, and Neptune all have rings too, they are just thinner. Saturn's are visible because its rings are mostly water ice, which reflects sunlight brilliantly.",
+      ],
+    },
+    galaxy: {
+      title: 'Spiral galaxies — rivers of stars',
+      blocks: [
+        'Our Milky Way is a barred spiral galaxy with ~200-400 billion stars arranged in 4 main arms. Light from the far side takes ~100,000 years to reach us.',
+        'Spiral arms are not solid structures — they are density waves. Stars pass through the arms like cars through a traffic jam, slowing briefly as gas compresses and new stars form, then moving on.',
+        'The arms follow a logarithmic spiral: r = a·e^(b·θ). Same equation as nautilus shells, hurricanes, and the Fibonacci spiral. Scale-invariant beauty.',
+        "Galaxies rotate, but not like rigid disks — inner stars orbit faster, outer stars slower. Yet they somehow keep the same shape for billions of years. The answer involves dark matter, unseen scaffolding we can't directly observe but can calculate must exist.",
+      ],
+    },
+    orbital: {
+      title: 'Atomic orbitals — where electrons probably are',
+      blocks: [
+        'Electrons do not orbit the nucleus like planets around a sun. They exist as probability clouds — the orbital — where the electron could be with some probability density.',
+        'Each shell (1s, 2s, 2p, 3d, ...) has a different 3D shape: spheres, dumbbells, clovers, even more exotic. The visualization here simplifies to rotating rings but real orbitals are stranger and more beautiful.',
+        'The quantum numbers that define orbitals (n, ℓ, mℓ, ms) were worked out in the 1920s by Schrödinger, Heisenberg, Pauli. They explain the entire periodic table.',
+        'When two atoms bond chemically, their orbitals merge into "molecular orbitals" — the actual shape of every molecule in your body is a sum of blended orbital geometries. Math is the architecture of life.',
+      ],
+    },
+    solar: {
+      title: 'Our solar system',
+      blocks: [
+        '8 planets + the Sun + ~200 moons + millions of asteroids + trillions of comets, all bound by gravity. Age: ~4.6 billion years. Formed from a collapsing cloud of gas and dust.',
+        "The Sun holds 99.86% of the solar system's mass. Jupiter holds most of the rest. Everything else, including Earth, is rounding error by mass.",
+        "Orbital periods follow Kepler's third law: T² ∝ r³ (square of year length is proportional to cube of distance). Discovered by Kepler in 1609 from Tycho Brahe's observations, 80 years before Newton explained why.",
+        "Voyager 1, launched 1977, crossed the heliopause (edge of the Sun's influence) in 2012 and is now in interstellar space, ~24 billion km away, still transmitting. Its Golden Record carries music and greetings for any civilization that ever finds it.",
+      ],
+    },
+  };
 
   const current = MODES.find((m) => m.id === mode) ?? MODES[0];
 
@@ -3956,8 +4127,33 @@ function VisualizerBox() {
           speed={speed}
           density={density}
           scale={scale}
+          opacity={opacity}
+          depth3d={depth3d}
           mode={mode}
         />
+      </div>
+
+      {/* Speed preset chips — snap to the five stable "calm spots" */}
+      <div className="mt-3 flex w-full max-w-md mx-auto justify-between gap-1.5">
+        {SPEED_PRESETS.map((p) => {
+          const isOn = Math.abs(speed - p.value) < 0.04;
+          return (
+            <button
+              key={p.label}
+              type="button"
+              onClick={() => setSpeed(p.value)}
+              aria-pressed={isOn}
+              className="flex-1 cursor-pointer rounded-full px-2 py-1 text-[10px] font-semibold uppercase tracking-[0.1em] transition-all"
+              style={{
+                color: isOn ? '#F5E8C8' : fullscreen ? '#C8A070' : '#8A6A4A',
+                background: isOn ? '#7A5438' : 'transparent',
+                border: '1px solid rgba(196, 160, 96, 0.25)',
+              }}
+            >
+              {p.label}
+            </button>
+          );
+        })}
       </div>
 
       {/* Parameter sliders — touch anywhere on the canvas still pushes dots */}
@@ -3965,10 +4161,87 @@ function VisualizerBox() {
         {slider('speed', speed, setSpeed, 'slow', 'fast')}
         {slider('density', density, setDensity, 'few', 'many')}
         {slider('scale', scale, setScale, 'tiny', 'big')}
+        {slider('opacity', opacity, setOpacity, 'faint', 'bold')}
+        {slider('3D', depth3d, setDepth3d, 'flat', 'deep')}
+      </div>
+
+      {/* Learn more — losange buttons reveal layered educational content */}
+      <div className="mt-4 w-full max-w-md mx-auto">
+        <p
+          className="uppercase mb-2"
+          style={{
+            fontFamily: 'var(--font-serif)',
+            fontSize: 11,
+            fontWeight: 700,
+            letterSpacing: '0.14em',
+            color: fullscreen ? '#C8A070' : '#8A6A4A',
+            opacity: 0.75,
+          }}
+        >
+          {LEARN_CONTENT[mode].title}
+        </p>
+        {LEARN_CONTENT[mode].blocks.slice(0, learnDepth).map((block, i) => (
+          <p
+            key={`${mode}-${i}`}
+            className="mb-2 animate-in fade-in duration-300"
+            style={{
+              fontFamily: 'var(--font-serif)',
+              fontSize: 12,
+              lineHeight: 1.55,
+              color: fullscreen ? '#F2DCBC' : '#5C3018',
+              opacity: 0.88,
+            }}
+          >
+            {block}
+          </p>
+        ))}
+        {learnDepth < LEARN_CONTENT[mode].blocks.length && (
+          <button
+            type="button"
+            onClick={() => setLearnDepth((d) => Math.min(d + 1, LEARN_CONTENT[mode].blocks.length))}
+            className="mt-1 flex items-center gap-2 cursor-pointer transition-opacity hover:opacity-80"
+            style={{
+              background: 'none',
+              border: 'none',
+              padding: 0,
+              fontFamily: 'var(--font-serif)',
+              fontSize: 11,
+              color: fullscreen ? '#C8A070' : '#8A6A4A',
+              letterSpacing: '0.06em',
+            }}
+          >
+            <span
+              aria-hidden="true"
+              className="h-2.5 w-2.5 rotate-45"
+              style={{ background: '#C4A060', opacity: 0.85 }}
+            />
+            {learnDepth === 0 ? 'learn about this' : 'know more'}
+          </button>
+        )}
+        {learnDepth > 0 && (
+          <button
+            type="button"
+            onClick={() => setLearnDepth(0)}
+            className="mt-1 ml-4 cursor-pointer transition-opacity hover:opacity-70"
+            style={{
+              background: 'none',
+              border: 'none',
+              padding: 0,
+              fontFamily: 'var(--font-serif)',
+              fontSize: 10,
+              color: fullscreen ? '#C8A070' : '#8A6A4A',
+              opacity: 0.5,
+            }}
+          >
+            close
+          </button>
+        )}
       </div>
     </div>
   );
 
+  // Reset learn depth when mode changes so each mode starts collapsed
+  // (done via an effect so we don't mix state updates with render)
   return <div className="px-2">{content}</div>;
 }
 
