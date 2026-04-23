@@ -2383,17 +2383,66 @@ export default function BinauralTuner() {
         >
           Calming Sounds
         </p>
-        <p
-          className="italic"
+        {/* Binaural quick-shortcut. Shows what's currently playing (base
+            Hz + beat Hz + breathing). Tap to jump into full Studio mode
+            for fine-tuning. "Live readout doubles as a door." */}
+        <button
+          type="button"
+          onClick={() => setSimpleMode(false)}
+          className="italic cursor-pointer transition-opacity hover:opacity-85"
           style={{
             fontFamily: 'var(--font-serif)',
             fontSize: '15px',
             color: '#8A6A4A',
             opacity: 0.95,
+            minHeight: '1.4em',
+            background: 'none',
+            border: 'none',
+            padding: '2px 8px',
+            borderRadius: 10,
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: 6,
           }}
+          title="Open the studio to tune frequencies"
+          aria-live="polite"
         >
-          find your frequency
-        </p>
+          {playing ? (
+            <>
+              {baseToneOn ? (
+                <span style={{ color: '#5C3018', fontWeight: 600, fontStyle: 'normal' }}>
+                  {baseFreq}
+                  <span style={{ fontSize: '11px', opacity: 0.7, marginLeft: 2 }}>Hz</span>
+                </span>
+              ) : (
+                <span style={{ opacity: 0.45 }}>no base tone</span>
+              )}
+              {binauralOn && (
+                <>
+                  <span style={{ opacity: 0.4 }}>·</span>
+                  <span style={{ color: '#7A5438', fontWeight: 600, fontStyle: 'normal' }}>
+                    {beatFreq}
+                    <span style={{ fontSize: '11px', opacity: 0.7, marginLeft: 2 }}>Hz beat</span>
+                  </span>
+                </>
+              )}
+            </>
+          ) : (
+            <span style={{ opacity: 0.55 }}>tap play to begin</span>
+          )}
+          <span
+            aria-hidden="true"
+            style={{
+              fontSize: 10,
+              opacity: 0.45,
+              letterSpacing: '0.08em',
+              textTransform: 'uppercase',
+              fontStyle: 'normal',
+            }}
+          >
+            open studio ›
+          </span>
+        </button>
       </div>
 
       {/* Simple / Full toggle */}
