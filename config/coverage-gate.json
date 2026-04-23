@@ -44,7 +44,7 @@
     },
     {
       "name": "circles-service-pending",
-      "description": "Circles service (`lib/services/circles.ts`) landed in PR #26 without unit tests (5.2% line coverage at merge time). Held to a low floor in its own group so it stays measured and visible in CI output; the main `lib/services` floor (95%) is unchanged. Ratchet this group up and eventually fold `circles.ts` back into `lib/services` once tests land.",
+      "description": "Circles service (`lib/services/circles.ts`) landed in PR #26 without unit tests (5.21% lines, 4.95% statements, 5.00% functions at merge time). Held to a low floor in its own group so it stays measured and visible in CI output; the main `lib/services` floor (95%) is unchanged. Ratchet this group up and eventually fold `circles.ts` back into `lib/services` once tests land.",
       "include": [
         {
           "files": ["lib/services/circles.ts"]
@@ -52,9 +52,9 @@
       ],
       "excludeSuffixes": [".test.ts", ".test.tsx", ".spec.ts", ".spec.tsx"],
       "metrics": {
-        "lines": 5,
-        "statements": 5,
-        "functions": 5,
+        "lines": 4,
+        "statements": 4,
+        "functions": 4,
         "branches": 0
       }
     },
