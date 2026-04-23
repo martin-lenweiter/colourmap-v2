@@ -1,6 +1,7 @@
 // @vitest-environment jsdom
-import { render, screen } from '@testing-library/react';
-import { describe, expect, it, vi } from 'vitest';
+import { cleanup, render, screen } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import DayTabs from './DayTabs';
 
@@ -17,27 +18,41 @@ vi.mock('@/components/StyleContext', () => ({
 }));
 
 describe('DayTabs', () => {
-  it('renders three tab buttons', () => {
-    render(
-      <DayTabs
-        feelingContent={<div>feeling</div>}
-        doingContent={<div>doing</div>}
-        sharingContent={<div>sharing</div>}
-      />,
-    );
-    expect(screen.getByText('Caring')).toBeDefined();
-    expect(screen.getByText('Doing')).toBeDefined();
-    expect(screen.getByText('Sharing')).toBeDefined();
+  beforeEach(() => {
+    localStorage.clear();
   });
 
-  it('shows feeling content by default', () => {
+  afterEach(() => {
+    cleanup();
+    localStorage.clear();
+  });
+
+  it('renders the V1 tabs: Check in and Sounds', () => {
+    render(<DayTabs checkinContent={<div>checkin</div>} overviewContent={<div>overview</div>} />);
+    expect(screen.getByText('Check in')).toBeDefined();
+    expect(screen.getByText('Sounds')).toBeDefined();
+  });
+
+  it('shows check-in content by default', () => {
     render(
       <DayTabs
-        feelingContent={<div>feeling-content</div>}
-        doingContent={<div>doing-content</div>}
-        sharingContent={<div>sharing-content</div>}
+        checkinContent={<div>checkin-content</div>}
+        overviewContent={<div>overview-content</div>}
       />,
     );
-    expect(screen.getByText('feeling-content')).toBeDefined();
+    expect(screen.getByText('checkin-content')).toBeDefined();
+  });
+
+  it('switches to sounds when the Sounds tab is clicked', async () => {
+    const user = userEvent.setup();
+    render(
+      <DayTabs
+        checkinContent={<div>checkin-content</div>}
+        overviewContent={<div>overview-content</div>}
+        tunerContent={<div>sounds-content</div>}
+      />,
+    );
+    await user.click(screen.getByText('Sounds'));
+    expect(screen.getByText('sounds-content')).toBeDefined();
   });
 });

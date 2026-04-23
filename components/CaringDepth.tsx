@@ -169,7 +169,7 @@ const HAWKINS_LEVELS = [
   { level: 20, name: 'Shame', color: '#C8C8D0', text: '#383840' },
 ];
 
-const COMPONENT_SUGGESTIONS: Record<string, string[]> = {
+const _COMPONENT_SUGGESTIONS: Record<string, string[]> = {
   Courage: ['Determination', 'Trust', 'Vulnerability', 'Awareness'],
   Anger: ['Hurt', 'Injustice', 'Powerlessness', 'Fear'],
   Fear: ['Uncertainty', 'Loss', 'Shame', 'Loneliness'],
@@ -892,21 +892,21 @@ function MapTab({
   setPacks: (p: Pack[]) => void;
   work: PatternWork[];
 }) {
-  const [addingType, setAddingType] = useState<'strength' | 'weakness' | null>(null);
-  const [input, setInput] = useState('');
+  const [_addingType, setAddingType] = useState<'strength' | 'weakness' | null>(null);
+  const [_input, setInput] = useState('');
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editName, setEditName] = useState('');
   const [addingSubFor, setAddingSubFor] = useState<string | null>(null);
   const [subInput, setSubInput] = useState('');
-  const [organizing, setOrganizing] = useState(false);
+  const [organizing, _setOrganizing] = useState(false);
   const [pickingParentFor, setPickingParentFor] = useState<string | null>(null);
-  const [creatingPack, setCreatingPack] = useState(false);
+  const [_creatingPack, setCreatingPack] = useState(false);
   const [viewMode, setViewMode] = useState<'list' | CellViewMode>('list');
   const [newPackName, setNewPackName] = useState('');
   const [newPackPills, setNewPackPills] = useState<string[]>([]);
   const [expandedPack, setExpandedPack] = useState<string | null>(null);
 
-  const createPack = () => {
+  const _createPack = () => {
     if (!newPackName.trim() || newPackPills.length === 0) return;
     const color = PACK_COLORS[packs.length % PACK_COLORS.length];
     setPacks([
@@ -924,7 +924,7 @@ function MapTab({
     setCreatingPack(false);
   };
 
-  const togglePackPill = (packId: string, pillId: string) => {
+  const _togglePackPill = (packId: string, pillId: string) => {
     setPacks(
       packs.map((pk) =>
         pk.id === packId
@@ -939,7 +939,7 @@ function MapTab({
     );
   };
 
-  const removePack = (id: string) => {
+  const _removePack = (id: string) => {
     setPacks(packs.filter((p) => p.id !== id));
     if (expandedPack === id) setExpandedPack(null);
   };
@@ -1283,7 +1283,7 @@ function ColumnBlock({
   };
 
   // For parent picker: valid parents are top-level pills of same type, excluding self and own descendants
-  const getValidParents = (childId: string): PatternPill[] => {
+  const _getValidParents = (childId: string): PatternPill[] => {
     const child = allPills.find((p) => p.id === childId);
     if (!child) return [];
     return allPills.filter(
@@ -1338,7 +1338,7 @@ function PillRow({
   onPickParent?: () => void;
   onPromote?: () => void;
 }) {
-  const dotSize = isSub ? 'h-2 w-2' : 'h-3 w-3';
+  const _dotSize = isSub ? 'h-2 w-2' : 'h-3 w-3';
   const fontSize = isSub ? '15px' : '18px';
   const padding = isSub ? 'px-2.5 py-2' : 'px-3 py-2.5';
 
@@ -1417,7 +1417,7 @@ function PillRow({
 }
 
 /* ─── Parent picker strip ─── */
-function ParentPickerStrip({
+function _ParentPickerStrip({
   childPill,
   candidates,
   onPick,
@@ -1500,7 +1500,7 @@ function ParentPickerStrip({
 }
 
 /* ─── Add pill input + suggestions ─── */
-function AddPillInput({
+function _AddPillInput({
   type,
   input,
   setInput,
@@ -1737,7 +1737,7 @@ function WorkTab({
     }
   };
 
-  const answeredCount = currentWork
+  const _answeredCount = currentWork
     ? WORK_FIELDS.filter((f) => (currentWork[f.key] || '').trim().length > 0).length
     : 0;
 
@@ -1749,7 +1749,7 @@ function WorkTab({
             <div className="flex flex-wrap gap-2">
               {pills.map((p) => {
                 const w = work.find((ww) => ww.pillId === p.id);
-                const count = w
+                const _count = w
                   ? WORK_FIELDS.filter((f) => (w[f.key] || '').trim().length > 0).length
                   : 0;
                 return (
@@ -2016,7 +2016,7 @@ function ReflectTab({
 }
 
 /* ─── Reflect field (label + textarea) ─── */
-function ReflectField({
+function _ReflectField({
   label,
   value,
   onChange,

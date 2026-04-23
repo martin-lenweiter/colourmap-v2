@@ -1,10 +1,12 @@
 'use client';
 
+import OverviewVisualDemos from '@/components/OverviewVisualDemos';
 import QuickScan from '@/components/QuickScan';
+import TransformationRoadmapDemos from '@/components/TransformationRoadmapDemos';
 
 export default function ExtrasPage() {
   return (
-    <main className="mx-auto max-w-lg space-y-8">
+    <main className="mx-auto max-w-lg space-y-8 px-4 py-6">
       <p className="text-center text-lg font-semibold tracking-wide" style={{ color: '#5C3018' }}>
         Extra
       </p>
@@ -15,6 +17,9 @@ export default function ExtrasPage() {
         </p>
         <QuickScan />
       </div>
+
+      <TransformationRoadmapDemos />
+      <OverviewVisualDemos />
     </main>
   );
 }

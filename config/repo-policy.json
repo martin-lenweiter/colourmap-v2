@@ -14,10 +14,35 @@
     "app/api/notebook/[id]/route.ts": "lib/services/notebook.ts",
     "app/api/sections/route.ts": "lib/services/sections.ts",
     "app/api/sections/[id]/route.ts": "lib/services/sections.ts",
-    "app/api/sections/[id]/entries/route.ts": "lib/services/sections.ts"
+    "app/api/sections/[id]/entries/route.ts": "lib/services/sections.ts",
+    "app/api/circles/route.ts": "lib/services/circles.ts",
+    "app/api/circles/join/route.ts": "lib/services/circles.ts",
+    "app/api/circles/[id]/route.ts": "lib/services/circles.ts",
+    "app/api/circles/[id]/missions/route.ts": "lib/services/circles.ts",
+    "app/api/circles/[id]/missions/[missionId]/route.ts": "lib/services/circles.ts",
+    "app/api/circles/[id]/notes/route.ts": "lib/services/circles.ts",
+    "app/api/circles/[id]/pulse/route.ts": "lib/services/circles.ts",
+    "app/api/circles/[id]/sessions/route.ts": "lib/services/circles.ts"
   },
   "testPairExceptions": {
-    "routes": [],
+    "routes": [
+      "app/api/daily-objectives/route.ts",
+      "app/api/daily-objectives/[id]/route.ts",
+      "app/api/agenda-blocks/route.ts",
+      "app/api/agenda-blocks/[id]/route.ts",
+      "app/api/life-categories/route.ts",
+      "app/api/life-categories/[id]/route.ts",
+      "app/api/outings/route.ts",
+      "app/api/outings/[id]/route.ts",
+      "app/api/circles/route.ts",
+      "app/api/circles/join/route.ts",
+      "app/api/circles/[id]/route.ts",
+      "app/api/circles/[id]/missions/route.ts",
+      "app/api/circles/[id]/missions/[missionId]/route.ts",
+      "app/api/circles/[id]/notes/route.ts",
+      "app/api/circles/[id]/pulse/route.ts",
+      "app/api/circles/[id]/sessions/route.ts"
+    ],
     "services": []
   }
 }

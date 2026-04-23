@@ -8,17 +8,19 @@ import { useViewMode } from './ViewModeContext';
 
 const PRIMARY_LINKS = [
   { href: '/day', label: 'Day' },
-  { href: '/journey', label: 'Journey' },
+  { href: '/circles', label: 'Circles' },
   { href: '/notebook', label: 'Notebook' },
 ];
 
 const PHONE_PRIMARY_LINKS = [
   { href: '/day', label: 'Day' },
-  { href: '/journey', label: 'Journey' },
+  { href: '/circles', label: 'Circles' },
   { href: '/notebook', label: 'Notebook' },
 ];
 
+// V2 features — hidden for now, restore by moving back to PRIMARY_LINKS
 const MORE_LINKS = [
+  { href: '/journey', label: 'Journey' },
   { href: '/life-scan', label: 'Life Scan' },
   { href: '/programs', label: 'Programs' },
   { href: '/research', label: 'Research' },
@@ -47,7 +49,7 @@ export default function NavLinks() {
   return (
     <nav
       className={`mx-auto flex w-full items-center justify-center px-4 pb-3 ${
-        isPhone ? 'max-w-sm gap-3 text-xs flex-wrap' : 'max-w-5xl gap-6 text-sm'
+        isPhone ? 'max-w-sm gap-4 text-sm flex-wrap' : 'max-w-5xl gap-8 text-base'
       }`}
     >
       {primary.map((link) => {
@@ -60,7 +62,7 @@ export default function NavLinks() {
           <Link
             key={link.href}
             href={link.href}
-            className={`transition-colors ${isActive ? 'text-foreground font-medium' : 'text-muted-foreground hover:text-foreground'}`}
+            className={`transition-colors tracking-[0.04em] ${isActive ? 'text-foreground font-semibold' : 'text-muted-foreground hover:text-foreground'}`}
           >
             {link.label}
           </Link>

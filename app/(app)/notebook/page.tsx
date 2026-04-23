@@ -125,7 +125,6 @@ const DEFAULT_NOTEBOOKS: Notebook[] = [
   { id: 'notes', label: 'Notes', color: '#C4A060' },
   { id: 'ideas', label: 'Ideas', color: '#E0844A' },
   { id: 'journal', label: 'Journal', color: '#7A8A50' },
-  { id: 'tasks', label: 'Tasks', color: '#3A8AC4' },
   { id: 'song_ideas', label: 'Songs', color: '#9B6BA0', isMusic: true },
   { id: 'projects', label: 'Projects', color: '#3A8AC4', isMusic: true },
   { id: 'rhymes', label: 'Rhymes', color: '#D4605A', isMusic: true },
@@ -152,39 +151,32 @@ const COLOR_PICKER = [
 // ============================================================
 
 function FormatToolbar({
-  value,
-  onChange,
   noteColor,
   onNoteColor,
   noteFont,
   onNoteFont,
+  noteSize,
+  onNoteSize,
   align,
   onAlign,
 }: {
-  value: string;
-  onChange: (v: string) => void;
   noteColor: string;
   onNoteColor: (c: string) => void;
   noteFont: string;
   onNoteFont: (f: string) => void;
+  noteSize: string;
+  onNoteSize: (s: string) => void;
   align: string;
   onAlign: (a: string) => void;
 }) {
   const [showColors, setShowColors] = useState(false);
   const [showFonts, setShowFonts] = useState(false);
+  const [showSizes, setShowSizes] = useState(false);
 
-  function wrapSelection(prefix: string, suffix: string) {
-    const textarea = document.getElementById('note-editor') as HTMLTextAreaElement | null;
-    if (!textarea) return;
-    const start = textarea.selectionStart;
-    const end = textarea.selectionEnd;
-    const selected = value.slice(start, end);
-    const newValue = value.slice(0, start) + prefix + selected + suffix + value.slice(end);
-    onChange(newValue);
-    setTimeout(() => {
-      textarea.focus();
-      textarea.setSelectionRange(start + prefix.length, end + prefix.length);
-    }, 10);
+  function exec(cmd: string, val?: string) {
+    document.execCommand(cmd, false, val);
+    // Re-focus the editor
+    document.getElementById('note-editor')?.focus();
   }
 
   return (
@@ -192,7 +184,7 @@ function FormatToolbar({
       {/* Bold */}
       <button
         type="button"
-        onClick={() => wrapSelection('**', '**')}
+        onClick={() => exec('bold')}
         className="h-7 w-7 flex items-center justify-center rounded text-xs font-bold text-muted-foreground/50 hover:text-muted-foreground hover:bg-accent/50 transition-colors"
       >
         B
@@ -200,15 +192,23 @@ function FormatToolbar({
       {/* Italic */}
       <button
         type="button"
-        onClick={() => wrapSelection('*', '*')}
+        onClick={() => exec('italic')}
         className="h-7 w-7 flex items-center justify-center rounded text-xs italic text-muted-foreground/50 hover:text-muted-foreground hover:bg-accent/50 transition-colors"
       >
         I
       </button>
+      {/* Underline */}
+      <button
+        type="button"
+        onClick={() => exec('underline')}
+        className="h-7 w-7 flex items-center justify-center rounded text-xs underline text-muted-foreground/50 hover:text-muted-foreground hover:bg-accent/50 transition-colors"
+      >
+        U
+      </button>
       {/* Heading */}
       <button
         type="button"
-        onClick={() => wrapSelection('\n## ', '\n')}
+        onClick={() => exec('formatBlock', 'h2')}
         className="h-7 w-7 flex items-center justify-center rounded text-xs font-bold text-muted-foreground/50 hover:text-muted-foreground hover:bg-accent/50 transition-colors"
       >
         H
@@ -216,7 +216,7 @@ function FormatToolbar({
       {/* List */}
       <button
         type="button"
-        onClick={() => wrapSelection('\n- ', '')}
+        onClick={() => exec('insertUnorderedList')}
         className="h-7 w-7 flex items-center justify-center rounded text-xs text-muted-foreground/50 hover:text-muted-foreground hover:bg-accent/50 transition-colors"
       >
         •
@@ -320,6 +320,39 @@ function FormatToolbar({
           </div>
         )}
       </div>
+
+      {/* Font size */}
+      <div className="relative">
+        <button
+          type="button"
+          onClick={() => {
+            setShowSizes(!showSizes);
+            setShowColors(false);
+            setShowFonts(false);
+          }}
+          className="h-7 px-1.5 flex items-center justify-center rounded text-xs text-muted-foreground/50 hover:text-muted-foreground hover:bg-accent/50 transition-colors"
+        >
+          {noteSize || '16'}
+        </button>
+        {showSizes && (
+          <div className="absolute top-full mt-1 right-0 z-50 p-1 rounded-lg border border-border bg-card shadow-lg animate-in fade-in duration-100 min-w-[60px]">
+            {['14', '16', '18', '20', '24'].map((s) => (
+              <button
+                key={s}
+                type="button"
+                onClick={() => {
+                  onNoteSize(s);
+                  setShowSizes(false);
+                }}
+                className="w-full text-left px-2 py-1 rounded text-xs transition-colors hover:bg-accent/50"
+                style={{ fontWeight: noteSize === s ? 600 : 400 }}
+              >
+                {s}px
+              </button>
+            ))}
+          </div>
+        )}
+      </div>
     </div>
   );
 }
@@ -333,20 +366,23 @@ function NotePreview({
   font,
   align,
   color,
+  size,
 }: {
   content: string;
   font: string;
   align: string;
   color: string;
+  size?: string;
 }) {
   if (!content) return null;
 
   const lines = content.split('\n');
   return (
     <div
-      className="text-sm leading-relaxed space-y-1 rounded-lg p-3"
+      className="leading-relaxed space-y-1 rounded-lg p-3"
       style={{
         fontFamily: font,
+        fontSize: `${size || 16}px`,
         textAlign: align as 'left' | 'center' | 'right',
         background: color,
         color: '#5A4535',
@@ -418,11 +454,12 @@ export default function NotebookPage() {
   const [showAddNotebook, setShowAddNotebook] = useState(false);
   const [newNbName, setNewNbName] = useState('');
   const [newNbColor, setNewNbColor] = useState('#C4A060');
+  const [showMusic, setShowMusic] = useState(false);
   const saveTimers = useRef<Map<string, ReturnType<typeof setTimeout>>>(new Map());
 
   // Per-note styling (stored in localStorage)
   const [noteStyles, setNoteStyles] = useState<
-    Record<string, { color: string; font: string; align: string }>
+    Record<string, { color: string; font: string; align: string; size?: string }>
   >({});
 
   useEffect(() => {
@@ -437,32 +474,63 @@ export default function NotebookPage() {
   }, []);
 
   const fetchEntries = useCallback(async () => {
-    const res = await fetch('/api/notebook');
-    if (res.ok) setEntries(await res.json());
+    try {
+      const res = await fetch('/api/notebook');
+      if (res.ok) {
+        const data = await res.json();
+        setEntries(data);
+        localStorage.setItem('colourmap:notebook-entries', JSON.stringify(data));
+        return;
+      }
+    } catch {}
+    // Fallback to localStorage
+    try {
+      const raw = localStorage.getItem('colourmap:notebook-entries');
+      if (raw) setEntries(JSON.parse(raw));
+    } catch {}
   }, []);
 
   useEffect(() => {
     fetchEntries();
   }, [fetchEntries]);
 
+  // Persist entries to localStorage on every change
+  useEffect(() => {
+    if (entries.length > 0) {
+      localStorage.setItem('colourmap:notebook-entries', JSON.stringify(entries));
+    }
+  }, [entries]);
+
   function saveNotebooks(nbs: Notebook[]) {
     setNotebooks(nbs);
     localStorage.setItem(NOTEBOOK_STORAGE, JSON.stringify(nbs));
   }
 
-  function saveNoteStyle(id: string, style: { color: string; font: string; align: string }) {
+  function saveNoteStyle(
+    id: string,
+    style: { color: string; font: string; align: string; size?: string },
+  ) {
     const updated = { ...noteStyles, [id]: style };
     setNoteStyles(updated);
     localStorage.setItem('colourmap:note-styles', JSON.stringify(updated));
   }
 
   function getNoteStyle(id: string) {
-    return noteStyles[id] || { color: 'transparent', font: 'inherit', align: 'left' };
+    return noteStyles[id] || { color: 'transparent', font: 'inherit', align: 'left', size: '16' };
   }
 
   async function handleAdd() {
     if (!newTitle.trim() || adding) return;
     setAdding(true);
+    // Create locally first so it works without API
+    const localEntry: Entry = {
+      id: crypto.randomUUID(),
+      category: activeNotebook,
+      title: newTitle.trim(),
+      content: null,
+      tags: null,
+      createdAt: new Date().toISOString(),
+    };
     try {
       const res = await fetch('/api/notebook', {
         method: 'POST',
@@ -475,7 +543,19 @@ export default function NotebookPage() {
         setNewTitle('');
         setExpandedId(entry.id);
         setEditingId(entry.id);
+      } else {
+        // API failed — use local entry
+        setEntries((prev) => [localEntry, ...prev]);
+        setNewTitle('');
+        setExpandedId(localEntry.id);
+        setEditingId(localEntry.id);
       }
+    } catch {
+      // Network error — use local entry
+      setEntries((prev) => [localEntry, ...prev]);
+      setNewTitle('');
+      setExpandedId(localEntry.id);
+      setEditingId(localEntry.id);
     } finally {
       setAdding(false);
     }
@@ -540,40 +620,110 @@ export default function NotebookPage() {
       <div className="flex gap-6">
         {/* ========== LEFT: NOTEBOOK TABS (vertical) ========== */}
         <div className="w-[140px] shrink-0 space-y-1">
-          {notebooks.map((nb) => {
-            const isActive = activeNotebook === nb.id;
-            const count = entries.filter((e) => e.category === nb.id).length;
-            return (
-              <button
-                key={nb.id}
-                type="button"
-                onClick={() => setActiveNotebook(nb.id)}
-                className="w-full flex items-center gap-2 px-3 py-2 rounded-xl text-left transition-all"
-                style={{
-                  background: isActive ? `${nb.color}15` : 'transparent',
-                  borderLeft: isActive ? `3px solid ${nb.color}` : '3px solid transparent',
-                }}
-              >
-                <div
-                  className="h-3 w-3 rounded-full shrink-0"
-                  style={{ background: nb.color, opacity: isActive ? 0.8 : 0.3 }}
-                />
-                <div className="flex-1 min-w-0">
-                  <p
-                    className="text-xs font-medium truncate"
-                    style={{ color: isActive ? nb.color : `${nb.color}80` }}
-                  >
-                    {nb.label}
-                  </p>
-                  {count > 0 && (
-                    <p className="text-[11px]" style={{ color: `${nb.color}40` }}>
-                      {count} notes
+          {/* General notebooks */}
+          <p
+            className="px-3 pt-1 text-[10px] font-semibold uppercase tracking-wider"
+            style={{ color: '#8A6A4A', opacity: 0.5 }}
+          >
+            General
+          </p>
+          {notebooks
+            .filter((nb) => !nb.isMusic)
+            .map((nb) => {
+              const isActive = activeNotebook === nb.id;
+              const count = entries.filter((e) => e.category === nb.id).length;
+              return (
+                <button
+                  key={nb.id}
+                  type="button"
+                  onClick={() => setActiveNotebook(nb.id)}
+                  className="w-full flex items-center gap-2 px-3 py-2 rounded-xl text-left transition-all"
+                  style={{
+                    background: isActive ? `${nb.color}15` : 'transparent',
+                    border: isActive ? `1px solid ${nb.color}30` : '1px solid transparent',
+                  }}
+                >
+                  <div
+                    className="h-3 w-3 rounded-full shrink-0"
+                    style={{ background: nb.color, opacity: isActive ? 0.8 : 0.3 }}
+                  />
+                  <div className="flex-1 min-w-0">
+                    <p
+                      className="text-xs font-medium truncate"
+                      style={{ color: isActive ? nb.color : `${nb.color}80` }}
+                    >
+                      {nb.label}
                     </p>
-                  )}
-                </div>
-              </button>
-            );
-          })}
+                    {count > 0 && (
+                      <p className="text-[11px]" style={{ color: `${nb.color}40` }}>
+                        {count}
+                      </p>
+                    )}
+                  </div>
+                </button>
+              );
+            })}
+
+          {/* Music notebooks — collapsible */}
+          <button
+            type="button"
+            onClick={() => setShowMusic((s) => !s)}
+            className="flex w-full cursor-pointer items-center gap-1.5 px-3 pt-3"
+            style={{ background: 'none', border: 'none' }}
+          >
+            <p
+              className="text-[10px] font-semibold uppercase tracking-wider"
+              style={{ color: '#9B6BA0', opacity: 0.5 }}
+            >
+              Music
+            </p>
+            <span
+              className="text-[8px] transition-transform duration-200"
+              style={{
+                color: '#9B6BA050',
+                transform: showMusic ? 'rotate(180deg)' : 'rotate(0deg)',
+              }}
+            >
+              ▾
+            </span>
+          </button>
+          {showMusic &&
+            notebooks
+              .filter((nb) => nb.isMusic)
+              .map((nb) => {
+                const isActive = activeNotebook === nb.id;
+                const count = entries.filter((e) => e.category === nb.id).length;
+                return (
+                  <button
+                    key={nb.id}
+                    type="button"
+                    onClick={() => setActiveNotebook(nb.id)}
+                    className="w-full flex items-center gap-2 px-3 py-2 rounded-xl text-left transition-all"
+                    style={{
+                      background: isActive ? `${nb.color}15` : 'transparent',
+                      border: isActive ? `1px solid ${nb.color}30` : '1px solid transparent',
+                    }}
+                  >
+                    <div
+                      className="h-3 w-3 rounded-full shrink-0"
+                      style={{ background: nb.color, opacity: isActive ? 0.8 : 0.3 }}
+                    />
+                    <div className="flex-1 min-w-0">
+                      <p
+                        className="text-xs font-medium truncate"
+                        style={{ color: isActive ? nb.color : `${nb.color}80` }}
+                      >
+                        {nb.label}
+                      </p>
+                      {count > 0 && (
+                        <p className="text-[11px]" style={{ color: `${nb.color}40` }}>
+                          {count}
+                        </p>
+                      )}
+                    </div>
+                  </button>
+                );
+              })}
 
           {/* Add notebook */}
           <button
@@ -652,10 +802,13 @@ export default function NotebookPage() {
               value={newTitle}
               onChange={(e) => setNewTitle(e.target.value)}
               placeholder={placeholder}
-              className="flex-1 rounded-lg border px-3 py-2 text-sm outline-none placeholder:text-muted-foreground/50"
+              className="flex-1 rounded-lg border px-3 py-2.5 outline-none placeholder:italic placeholder:text-[#8A6A4A] placeholder:opacity-60"
               style={{
-                borderColor: `${activeNb?.color || '#C4A060'}15`,
-                background: `${activeNb?.color || '#C4A060'}03`,
+                borderColor: `${activeNb?.color || '#C4A060'}20`,
+                background: `${activeNb?.color || '#C4A060'}05`,
+                fontFamily: 'var(--font-serif)',
+                fontSize: '15px',
+                color: '#5C3018',
               }}
             />
             {newTitle.trim() && (
@@ -705,25 +858,54 @@ export default function NotebookPage() {
                 {!isExpanded && (
                   <button
                     type="button"
-                    onClick={() => setExpandedId(entry.id)}
-                    className="flex w-full items-center gap-3 px-4 py-3 text-left group"
+                    onClick={() => {
+                      setExpandedId(entry.id);
+                      setEditingId(entry.id);
+                    }}
+                    className="flex w-full cursor-pointer items-center gap-3 px-4 py-3 text-left transition-all hover:bg-[#C4A06008]"
+                    style={{ background: 'none', border: 'none' }}
                   >
                     <div
-                      className="w-1.5 h-8 rounded-full shrink-0"
-                      style={{ background: color, opacity: 0.2 }}
+                      className="w-1.5 h-6 rounded-full shrink-0"
+                      style={{ background: color, opacity: 0.35 }}
                     />
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium truncate">{entry.title}</p>
+                      <p
+                        className="truncate"
+                        style={{
+                          fontFamily: 'var(--font-serif)',
+                          fontSize: '15px',
+                          fontWeight: 600,
+                          color: '#5C3018',
+                        }}
+                      >
+                        {entry.title}
+                      </p>
                       {entry.content && (
-                        <p className="text-xs text-muted-foreground/50 truncate mt-0.5">
+                        <p
+                          className="truncate mt-0.5"
+                          style={{
+                            fontFamily: 'var(--font-serif)',
+                            fontSize: '12px',
+                            color: '#8A6A4A',
+                            opacity: 0.5,
+                          }}
+                        >
                           {entry.content
-                            .replace(/\*\*/g, '')
+                            .replace(/<[^>]*>/g, '')
                             .replace(/\|\|\|CHORDS\|\|\|.*/, '')
                             .slice(0, 60)}
                         </p>
                       )}
                     </div>
-                    <span className="text-[11px] text-muted-foreground/40 shrink-0">
+                    <span
+                      style={{
+                        fontFamily: 'var(--font-serif)',
+                        fontSize: '11px',
+                        color: '#8A6A4A',
+                        opacity: 0.4,
+                      }}
+                    >
                       {new Date(entry.createdAt).toLocaleDateString([], {
                         month: 'short',
                         day: 'numeric',
@@ -735,18 +917,27 @@ export default function NotebookPage() {
                 {/* ---- EXPANDED ---- */}
                 {isExpanded && (
                   <div className="animate-in fade-in duration-200">
-                    {/* Title bar */}
-                    <div className="px-4 pt-3 pb-1 flex items-center gap-3">
+                    {/* Title bar + close */}
+                    <div
+                      className="px-4 pt-3 pb-2 flex items-center gap-3"
+                      style={{ borderBottom: `1px solid ${color}15` }}
+                    >
                       <div
-                        className="w-1.5 h-6 rounded-full shrink-0"
-                        style={{ background: color, opacity: 0.3 }}
+                        className="w-2 h-8 rounded-full shrink-0"
+                        style={{ background: color, opacity: 0.5 }}
                       />
                       <input
                         type="text"
                         value={entry.title}
                         onChange={(e) => updateLocal(entry.id, 'title', e.target.value)}
-                        className="flex-1 text-sm font-semibold bg-transparent outline-none font-serif"
-                        style={{ color, textAlign: style.align as 'left' | 'center' | 'right' }}
+                        className="flex-1 bg-transparent outline-none"
+                        style={{
+                          color: '#5C3018',
+                          fontFamily: 'var(--font-serif)',
+                          fontSize: '17px',
+                          fontWeight: 700,
+                          textAlign: style.align as 'left' | 'center' | 'right',
+                        }}
                       />
                       <button
                         type="button"
@@ -754,36 +945,29 @@ export default function NotebookPage() {
                           setExpandedId(null);
                           setEditingId(null);
                         }}
-                        className="text-xs text-muted-foreground/50 hover:text-muted-foreground"
+                        className="flex cursor-pointer items-center justify-center rounded-full px-3 py-1 transition-all"
+                        style={{
+                          background: `${color}10`,
+                          border: `1px solid ${color}20`,
+                          fontFamily: 'var(--font-serif)',
+                          fontSize: '11px',
+                          fontWeight: 600,
+                          color,
+                        }}
                       >
-                        ✕
+                        close
                       </button>
                     </div>
 
                     {/* Format toolbar */}
                     <div className="px-4 py-1 border-b border-border/20">
                       <FormatToolbar
-                        value={
-                          isSong
-                            ? (entry.content || '').split('|||CHORDS|||')[0]
-                            : entry.content || ''
-                        }
-                        onChange={(v) => {
-                          if (isSong) {
-                            const chords = (entry.content || '').split('|||CHORDS|||')[1] || '';
-                            updateLocal(
-                              entry.id,
-                              'content',
-                              chords.trim() ? `${v}|||CHORDS|||${chords}` : v,
-                            );
-                          } else {
-                            updateLocal(entry.id, 'content', v);
-                          }
-                        }}
                         noteColor={style.color}
                         onNoteColor={(c) => saveNoteStyle(entry.id, { ...style, color: c })}
                         noteFont={style.font}
                         onNoteFont={(f) => saveNoteStyle(entry.id, { ...style, font: f })}
+                        noteSize={style.size || '16'}
+                        onNoteSize={(s) => saveNoteStyle(entry.id, { ...style, size: s })}
                         align={style.align}
                         onAlign={(a) => saveNoteStyle(entry.id, { ...style, align: a })}
                       />
@@ -858,42 +1042,33 @@ export default function NotebookPage() {
                             </div>
                           );
                         })()
-                      ) : isEditing ? (
-                        <textarea
-                          id="note-editor"
-                          value={entry.content || ''}
-                          onChange={(e) => updateLocal(entry.id, 'content', e.target.value)}
-                          placeholder="Start writing..."
-                          className="w-full min-h-[120px] rounded-lg border border-border/20 bg-transparent p-3 text-sm resize-none outline-none"
-                          style={{
-                            color: '#5A4535',
-                            fontFamily: style.font,
-                            textAlign: style.align as 'left' | 'center' | 'right',
-                          }}
-                          onInput={(e) => {
-                            const t = e.target as HTMLTextAreaElement;
-                            t.style.height = 'auto';
-                            t.style.height = `${t.scrollHeight}px`;
-                          }}
-                        />
                       ) : (
                         <div
-                          onClick={() => setEditingId(entry.id)}
-                          className="cursor-text min-h-[60px]"
-                        >
-                          {entry.content ? (
-                            <NotePreview
-                              content={entry.content}
-                              font={style.font}
-                              align={style.align}
-                              color="transparent"
-                            />
-                          ) : (
-                            <p className="text-sm text-muted-foreground/40 py-2">
-                              Click to write...
-                            </p>
-                          )}
-                        </div>
+                          id="note-editor"
+                          contentEditable
+                          suppressContentEditableWarning
+                          ref={(el) => {
+                            if (el && isEditing && !el.innerHTML && entry.content) {
+                              el.innerHTML = entry.content;
+                            }
+                            if (el && isEditing && !entry.content && el.innerHTML === '') {
+                              el.focus();
+                            }
+                          }}
+                          onInput={(e) => {
+                            const html = (e.target as HTMLDivElement).innerHTML;
+                            updateLocal(entry.id, 'content', html === '<br>' ? '' : html);
+                          }}
+                          className="w-full min-h-[200px] rounded-lg border border-border/20 bg-transparent p-3 outline-none"
+                          style={{
+                            color: '#5A4535',
+                            fontFamily: style.font || 'var(--font-serif)',
+                            fontSize: `${style.size || 16}px`,
+                            textAlign: style.align as 'left' | 'center' | 'right',
+                            lineHeight: 1.6,
+                          }}
+                          data-placeholder="start writing..."
+                        />
                       )}
 
                       {/* Project links for songs */}

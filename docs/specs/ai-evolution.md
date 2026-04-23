@@ -35,6 +35,23 @@ The AI's primary tool is not answers — it's questions.
 
 For every challenge, every block, every category: the AI asks the question that unlocks the next step of thinking. Not generic prompts. The right question at the right time, informed by everything the user has already shared.
 
+### The Core Listening Questions
+
+Two questions sit at the core of the product. They are the shape of every AI reflection, every prompt, every weekly digest. Not "what should you do" — **"what is this telling you?"**
+
+- **What are all these challenges telling you?**
+- **What is your body telling you?**
+
+These are listening questions, not solving questions. They presume that the pattern the user has been living (the recurring challenges, the bodily signals) already contains information worth paying attention to — the product's job is to help the user hear it.
+
+Every reflective output in Colourmap — the AI's short sentence back after a capture, the weekly digest, the Synthesis Surface's observations, the Suggested Themes explanations — should ultimately serve one of these two questions. If a reflection answers "what should I do," it has slipped into coach mode. If it answers "what is this telling me," it stays a mirror.
+
+Why these two specifically:
+- **Challenges telling you something** — captures the recurring-problem pattern. The same challenge returning month after month isn't a failure to fix it; it's a message. The product's job is to name the message, not resolve the challenge.
+- **Body telling you something** — captures the somatic signal. The subconscious speaks through the body (tension, tiredness, tunnel vision, heaviness) before it speaks through words. Listening to it is the fastest path from reactive to observational (the "clarity is the metric" move).
+
+These questions are not displayed literally on the UI every time. They're the *frame* the product writes from. A weekly digest might read "your Shoulder challenge has appeared in 4 of the last 5 weeks" — the unstated question underneath is "what are your challenges telling you?"
+
 ### The River Metaphor
 
 The user's life is a river. Challenges are not enemies — they are **blocks in the river**. Each block is there for a reason. Each block is a tool to think better, to understand something about yourself. The app doesn't remove the blocks. It helps you work your attitude around them, so you can come back stronger to lift them — and the river flows again.
@@ -150,6 +167,118 @@ The AI accumulates understanding across every data source in the product: check-
 2. **Orient** — only when asked, suggest where to focus next, what's shifting, what deserves attention.
 
 The organizing comes first. The orienting is earned.
+
+### Suggested Themes (product-proposed + explained)
+
+> Decided 2026-04-16 on the Overview thread. Target design for the AI phase.
+
+The user names the areas of their life they want to watch (`LifeCategories`). That naming stays the user's — never overwritten. In parallel, the product surfaces **suggested themes**: patterns the AI discovers across categories, check-ins, and logbook entries that the user has not explicitly named.
+
+A suggested theme always comes with a **reason**. Not just "confidence" as a pill — rather "confidence — because 'not enough' shows up in 4 of your categories over the last 3 weeks." The explanation is first-class, not a hover. Without the reason, it reads as a magic label; with it, it reads as a mirror.
+
+Acceptance behaviour:
+
+- The user can accept a suggested theme (it promotes into a real category they can track), dismiss it (it disappears and the AI deprioritises similar clusters), or leave it as a read-only observation.
+- Accepted themes become first-class categories and can be renamed. The user always gets to rename.
+- Dismissed themes don't vanish forever — the AI can re-surface them if the evidence gets stronger, but with a delay so the user isn't nagged.
+
+Why this shape:
+
+- Users often can't see the meta-pattern across their own language (five categories all about "control" look like five different categories to them). The product surfacing the cluster + the reason is the specific job the user can't do for themselves.
+- Explanation prevents the "magic label" failure mode — a word without evidence reads as opinion, not observation, and erodes trust.
+- Product suggests, user confirms. Matches the product principle "the AI proposes, the user confirms."
+
+**Status: unsolved for now.** Needs: (a) a semantic layer that clusters categories and entries; (b) a data-source signal strong enough to justify an explanation; (c) a UI surface on Overview that shows the suggestion without stealing focus from the user-named categories. Come back to this when the AI phase starts (Phase 2+ in The Road below).
+
+### Synthesis Surface — the bigger vision of Overview
+
+> Added 2026-04-16. Captures the user's stated aspiration for what Overview is ultimately for.
+
+Overview is the **connective tissue between micro and macro** — the piece of the product that takes a day's fragment (a line in Challenge, a logbook note, a checked target, a voice dump) and shows where it sits in the larger pattern the user is living.
+
+Input model (ideal):
+
+- Unstructured voice dumps ("big audio") — transcribed and ingested alongside written text.
+- Written notes across any surface (logbook, Challenge/Flow, category entries, day map observations).
+- Structured signals — target completions, check-in values (Hawkins, Balance, compass ratings), time spent on day-map categories.
+- One feeling trajectory, not per-area. The whole-self has a zone state; individual categories are inputs to it, not separate emotional channels.
+
+Output model (ideal):
+
+- Clustering — themes that recur across notes get grouped and named (with evidence, see above).
+- Relationships — how clusters move together. "Shoulder, sleep, and confidence have shifted in the same direction this month." "Organisation and anxiety haven't correlated at all — doing the desk isn't moving the feeling." Relationships are as important as labels; they're the actual diagnostic.
+- Mirror voice — every observation shows its evidence, never prescribes. The coach layer is optional, user-invoked (see "Mirror First, Coach When Asked").
+
+Why this shape:
+
+- The user can't see meta-patterns or correlations across their own unstructured dumps. That's the one job humans genuinely need software for — everything else they can do alone with a notebook.
+- Voice makes capture frictionless. Structure comes from the AI, not from the user's discipline. If the user has to slot everything into pre-made categories, they'll stop capturing.
+- The macro/micro bridge is what converts journaling-style capture into self-understanding. Without it, Colourmap is just another diary.
+
+Status: aspirational. Requires voice input + transcription (currently a V1 non-goal in `docs/product.md` — to be revisited), a semantic layer over all notes/entries, clustering, and relationship inference. The pre-AI Overview should remain honest about its limits: it *gathers* but does not *synthesise* until the AI phase is real.
+
+### Overview's Purpose — Understanding the Fragments of Life
+
+> Sharpened 2026-04-16.
+
+Overview exists so the user can step back from the shapeless weight of *everything-going-on* and see the fragments of their life together. The Colourmap mission, the admin drag, the masters application, the shoulder rehab, the Sunday anxiety — each of these is a fragment. They pull simultaneously. Overview makes them visible as separate things AND as parts of a whole, so the user can reason about them instead of drowning in them.
+
+**Four guiding questions Overview is designed to help answer:**
+
+1. How do I balance my current mission with the stuff around it?
+2. How do I react to feelings and impulse?
+3. What are the tensions on my tension map?
+4. How do I clarify it all?
+
+### Tension Map
+
+A new primitive that sits alongside categories, not instead of them.
+
+- **Categories** are the *areas* of life — named by the user.
+- **Tensions** are the *pulls between* those areas — mission vs admin, rest vs output, self-care vs survival, creative vs practical. The tension is a relationship, not a topic.
+
+**Tension map = a view Overview renders** (AI-driven, not user-authored). The user doesn't name tensions; the AI discovers them from the user's language, category entries, target completion patterns, and emotional trajectory, and shows them back with the evidence that surfaced them. Consistent with Suggested Themes: the product proposes, explains, and the user can accept / dismiss / leave as observation.
+
+Why this shape:
+
+- Users usually feel tensions as a single undifferentiated squeeze ("I'm stressed"). They can't decompose the squeeze into its component pulls without help. That decomposition is the AI's specific job.
+- Naming tensions manually would force the user to analyse before they've captured — that's backwards. Capture first, synthesis second.
+- Tensions are time-sensitive. Today's mission-vs-admin squeeze is not last month's health-vs-work squeeze. The view re-renders as the data shifts.
+
+### AI Surface on Overview — the Box (not a ribbon)
+
+**Decided 2026-04-16 — the AI layer is a two-way box, not a read-only ribbon.**
+
+Earlier framing had the AI as a display element (ribbon, annotation). The actual intent is an interactive workspace:
+
+- **Input.** The user drops reflections into the box — text now, voice eventually. Low-friction, unstructured.
+- **Reading.** The box reads its own contents plus all the user's other captured data (categories, logbooks, check-ins, targets).
+- **Reflection.** It shows back its current understanding — which includes the tension map, suggested themes, trajectory observations, relationship patterns.
+- **Expand.** The box can expand (full-screen or deeper panel) to show more detail.
+- **Focus.** The user can zoom into a specific aspect — a single tension, a single theme, a single category — and the box reflects at that scope.
+
+This is a dialogue surface, not a dashboard widget. The AI box is *where the synthesis lives* and *where the user works with it*. Everything earlier in this spec about clustering, relationships, suggested themes, and tension map ultimately surfaces through this one place.
+
+Design constraint: the box is *optional*. A paid user can ignore it entirely and the base Overview still works. Free users never see it — but the base they see is complete on its own.
+
+### Free / Paid Split (decided 2026-04-16)
+
+Overview is the primary boundary between free and paid tiers:
+
+- **Free tier — Overview without AI.** Gathers, displays, and lets the user re-read their own entries, trajectories, and targets across categories. No synthesis, no clustering, no AI-surfaced themes. Honest framing: "here's what you wrote — draw your own lines." Must be genuinely useful as a self-mirror, not a crippled demo.
+- **Paid tier — Overview with AI.** The Synthesis Surface described above: voice dumps, clustering, relationships, explained themes, correlation between action and feeling trajectory. The magic the user can't do themselves.
+
+The boundary is drawn here because it's the clearest economic division: free users get a journaling/structured-capture tool, paid users get a *mirror that reflects back*. The value of the paid tier is self-evident after you've used the free one long enough to accumulate material that would benefit from synthesis.
+
+Other AI features in the product (post-check-in insight, Cat companion, Logbook AI support, Music generation) — their free/paid treatment is decided separately and not covered by this section.
+
+**Same base, AI overlays on top (decided 2026-04-16).** Free and paid users see an *identical* Overview core — same categories, same trajectories, same entries, same targets, same polygon view. The paid tier adds an AI layer that sits *on top of* the base, never replacing it. A paid user who stops paying keeps everything they had; they just stop seeing the AI layer. A free user who upgrades gains reflection on top of data they already recognise.
+
+Design constraints this puts on the AI layer:
+
+- It must be visually and functionally separable from the base — no restructuring the base view to make room for AI output.
+- Base Overview must read as complete on its own. Free users can't see text that references "themes I see" because they don't have that layer.
+- AI additions arrive as overlays: ribbons, badges, annotations, dedicated cards. Not re-orderings or recolourings of base content.
 
 ### What the AI Replaces
 

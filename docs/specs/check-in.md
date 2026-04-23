@@ -114,6 +114,171 @@ The Hawkins slider works functionally but introduces visual noise. The circle ac
 
 Aspiration. The current implementation still uses the rainbow square slider as an intermediate step. The circle exists as the top element. Migration to swipe-only interaction is a future iteration.
 
+## Current Implementation Direction (April 2026)
+
+The check-in has settled into a **single-anchor + collapsible-pillbox** structure inside box 1 of the Caring tab. This supersedes the multi-variant exploration of dots, columns, polygons, and grids — all of which were design experiments while looking for the right axis. The settled choices:
+
+### Top — Balance Arc
+
+A single horizontal arc with seven stops from `Deep Rest → Tunnel Vision`. Centre is `Balance` (equilibrium). **Both extremes are valid deep states** — `Deep Rest` is restorative, `Tunnel Vision` is intense focus. Neither is failure. The arc curve is a smooth cosine bow with the apex visibly higher than its neighbors, dots evenly spaced across the width.
+
+This replaces the earlier Hawkins-style emotional spectrum (Shame → Enlightenment) for the in-app representation. Hawkins data may still be referenced internally but the user-facing scale is the balance arc.
+
+### Three Collapsible Pillboxes
+
+Below the arc, three soft cream-coloured rounded containers stack vertically. Each holds an ochre-pill header that opens/closes the contents.
+
+1. **Current Objective** — single input for the active mission, with life-category tag picker on the right and a green ✓ to mark done. Completing the current promotes the first Next objective (if any) into its slot.
+
+2. **Other Missions** — holds two sub-sections plus a clarity slider:
+   - **Daily Objectives**: list of items planned for today. Each item is a checkable row whose text is clickable to expand a discrete handwritten note area (`advancements, next steps...`). Notes auto-save per item.
+   - **To-do**: shorter checkable tasks.
+   - **`are you clear on next missions?`** clarity slider at the bottom — a short check on whether the user knows what to do next.
+
+3. **Logbook & Emotions** — two writing inputs side by side semantically (stacked physically):
+   - **Challenge** (deeper warm brown) — `what is your main tension right now?`
+   - **Flow** (warm ochre) — `what is working well?`
+   Entries appear behind a transparent `notes · N` pill that opens/closes the list. A `mixed / grouped` sub-toggle switches between chronological and stacked-by-tag views. Colors stay in the warm-brown palette throughout — no red/green semantics.
+
+### Emotional-Register Variants (collapsed behind one toggle)
+
+The balance arc is the default, but six renderings of the same emotional level are available behind a single `◇ designs` toggle at the top of box 1. The row of variant pills only appears when the user opens the toggle — box 1 stays quiet by default. Selecting a variant closes the picker and persists the choice to localStorage (`colourmap:design-variant`).
+
+All six variants read from the same underlying level index so switching is free — no data reshape:
+
+1. **Arc** — the cosine bow described above (default).
+2. **Circle** — a single large colour disc. Drag horizontally or tap left/right halves to shift level.
+3. **Rings** — 7 concentric Hawkins-style rings stacked from small to large; current ring thickens and fully saturates, others fade. Tap any ring to select.
+4. **Mountain** — 7 vertical bars forming a bell-curve terrain profile across the width; current bar at full saturation, others faded.
+5. **Slider** — a horizontal gradient track (all 7 colours blended) with a draggable ochre-bordered handle that snaps to the 7 discrete positions.
+6. **Boxes** — a central colour circle flanked by two groups of vertical drawer-bars: five "stuck" states on the left (`Frozen → Overwhelmed`) and five "freedom" states on the right (`Searching → Liberation`). Uses the 10-level Hawkins process spectrum rather than the 7-level balance scale; picked level is reflected in the central circle. Negative space between drawers makes the grouping legible.
+
+The variants are kept as exploration scaffolding — "for now" — so the design language for the emotional anchor can keep evolving without re-rewriting box 1 each time.
+
+### Readability Rules (box 1 + box 2)
+
+- Minimum 12px for any visible text, always. No ultra-low opacity (<0.5) on text.
+- When a mission / objective / target is marked done (the V check), **no strike-through bar**. Readability is preserved — the text shifts to a lighter warm-ochre colour (`#C4A060`, opacity ~0.85) to signal "done" without burying the words.
+- `LifeCategories` targets and logbook entries match box 1's typography and sizing so the two boxes feel like one voice.
+
+### Removed From Box 1 (superseded by the settled direction)
+
+- "Ready to push?" energy slider
+- Standalone Next Objective `+` button and Done history pill (consolidated into Other Missions)
+- Old engagement scales (Avoiding → In Flow) and old 11-level mind/mode pastel sliders
+
+### Why This Settled
+
+Iteration through many variants for the same axis revealed there is no single perfect axis for "how am I." The product ships with **balance** as the default frame because the centre is the answer (equilibrium), not just a midpoint, and both extremes are valid contexts (rest is not failure, focus is not failure). The variants stay available behind one toggle so the visual language can keep evolving without collapsing back into a flat form. The pillbox layout makes the check-in feel like distinct cards rather than a long form, and the click-to-expand notes on each daily objective preserve the "clarity-not-clutter" rule.
+
+## Day Page Shell — Check in / Overview
+
+The top-level tabs on `/day` are `Check in` and `Overview`, not the old `Caring / Doing / Sharing`.
+
+- **Check in** — daily pulse. Holds box 1 only (`FeelingCheckInCard` — balance-arc variant picker + the three pillboxes: Current Objective, Other Missions, Logbook & Emotions). Kept deliberately narrow so the daily register feels like a single focused surface.
+- **Overview** — wide-angle map. Holds a new pre-AI synthesis surface (`OverviewSections`) at the top, then box 2 (`LifeCategories` — the backbone of named life areas, their targets, and their logbook), then box 3 (`CompassCarousel` — Caring / Doing / Sharing compasses with the two-question Emotions reflective card), then a design-exploration surface (`OverviewVisualDemos`) showing five candidate renderings of flow-and-stuck-over-time. Different altitude from the check-in: step-back scanning rather than daily pulse.
+
+### OverviewSections — compressed three-answer surface (pre-AI)
+
+Sits at the top of Overview. Compresses the user's LifeCategories into three sections, answering the guiding questions of the Overview directly:
+
+1. **What is flowing** — categories the user has tagged `flowing` via the state pill in LifeCategories. Each row: colour dot, name, "n days ago" since last logbook entry, the most recent logbook entry truncated to ~120 chars.
+2. **What is stuck** — same, for categories tagged `stuck`.
+3. **Attention check** — categories whose latest logbook entry (if any) is 14+ days old, regardless of state. Flags avoidance without requiring manual classification.
+
+State is user-authored in this first version. A new optional `state: 'stuck' | 'flowing' | null` field on `LifeCategory` persists to `colourmap:life-categories`. Each category row in `LifeCategories` gets a small pill next to its name that cycles `— → flowing → stuck → —` on tap. The state pill uses dashed border when unset, saturated border + soft tint when set (green-tinted for flowing, brown-red for stuck).
+
+Rationale: the AI version of Overview (Synthesis Surface in `ai-evolution.md`) requires the semantic layer that doesn't exist yet. This pre-AI surface delivers the same three-section answer without AI by asking the user to do the classification themselves. Same base, AI overlay later — the surface structure and data contract stay identical when the AI phase lands.
+
+### OverviewVisualDemos — design exploration for the river/flow view
+
+A temporary exploration surface that renders five candidate visualisations of flow-and-stuck over time using synthetic data:
+
+1. **Radiating rivers** — rivers flow outward from a centre (you). Colour saturation = flow vs stuck, width = activity.
+2. **Horizontal trajectories** — left-to-right = time, up = flowing, down = stuck. Reads like a vital-signs line.
+3. **Mountain terrain** — stacked areas, each category's height tracks its flow. Landscape metaphor.
+4. **Braided river** — a main river with tributaries (categories) branching off; pebbles along each = events.
+5. **Dot stream** — one row per category, twelve dots = twelve weeks, colour intensity = flow. Simplest, most honest.
+
+No persistence, no interaction beyond the static SVG. Intentionally placed below the active Overview content so it doesn't compete with real data. Meant as a side-by-side picker to decide which metaphor to build into the settled Overview. Will be removed once the metaphor is committed.
+
+Tab choice persists to localStorage under `colourmap:day-tab`. Legacy values (`cockpit`) are remapped to `checkin` on read, so existing users aren't bounced to Overview after the rename. Check-in is the default on first visit. `DoingCheckInCard` and `SharingCheckInCard` are no longer rendered on `/day` — their surface is covered by the compass carousel inside Overview.
+
+## Labels & Descriptions — Reference
+
+Kept here as the source of truth for the wording, ordering, and colour intent behind every scale in box 1 and the compass layer. Implementations must read from these lists — don't drift the labels in code without updating this reference.
+
+### Balance scale (7 levels) — box 1 variants `arc`, `circle`, `rings`, `mountain`, `slider`
+
+Index | Label | Colour
+--- | --- | ---
+0 | Deep Rest | `#88C8E8` (far left — restorative)
+1 | Soft | `#B8D8E8`
+2 | Easing | `#C8E880`
+3 | Balance | `#7AAA58` (centre — equilibrium, default)
+4 | Engaged | `#F8C040`
+5 | Focused | `#F0A088`
+6 | Tunnel Vision | `#E08030` (far right — deep focus)
+
+Both extremes are valid deep states (`Deep Rest` = restorative, `Tunnel Vision` = intense focus). The centre (`Balance`) is the answer, not merely the midpoint.
+
+### Hawkins emotional spectrum (10 levels) — box 1 variant `boxes` + bottom hawkins slider
+
+A 10-level distillation of David Hawkins' Map of Consciousness, from contracted (Shame) toward expanded (Peace). Numbers in the `Hawkins` column are the canonical Map calibrations.
+
+Index | Label | Colour | Hawkins | Side
+--- | --- | --- | --- | ---
+0 | Shame | `#B8D0E8` | 20 | contracted (left)
+1 | Apathy | `#D8B0C8` | 50 | contracted
+2 | Grief | `#E8A0C4` | 75 | contracted
+3 | Fear | `#F080B8` | 100 | contracted
+4 | Anger | `#F0A088` | 150 | contracted (5th left bar)
+5 | Courage | `#F8C040` | 200 | expanded (right)
+6 | Acceptance | `#F0E060` | 350 | expanded
+7 | Reason | `#A8E090` | 400 | expanded
+8 | Love | `#88D8B0` | 500 | expanded
+9 | Peace | `#88C8E8` | 600 | expanded (5th right bar)
+
+Two surfaces consume this spectrum:
+
+- The **Boxes** variant renders indices 0–4 as left drawer bars and 5–9 as right drawer bars on either side of the central colour circle.
+- The **bottom hawkins slider** at the foot of box 1 (above the save star) renders all 10 as a long row of narrow drawer blocks. Selected block grows taller and goes full saturation; the current label appears in serif beneath ("where am I in the process" eyebrow above).
+
+Both surfaces share the same `hawkinsIdx` state (`localStorage:colourmap:process-idx`) so switching variants or moving the bottom slider stays in sync.
+
+### Compass rhymes — subtitle phrases under each axis
+
+Displayed in the 3-step program area of each compass at the user's current 0–8 rating. Index 0 is the empty/default state.
+
+**Care** (`0 → 8`): `'' · Neglecting yourself · Barely holding on · Getting by · Starting to notice · Taking small steps · Caring for yourself · Nourishing deeply · Fully tended to`
+
+**Attitude**: `'' · Closed and heavy · Resistant · Guarded · Cautiously open · Willing to try · Genuinely open · Embracing it all · Radically present`
+
+**Rest**: `'' · Running on empty · Depleted · Tired but pushing · Need a pause · Catching up · Rested enough · Deeply recharged · Completely restored`
+
+**Emotions**: `'' · Shut down · Overwhelmed · Turbulent · Unsettled · Processing · Finding balance · Calm and clear · At peace`
+
+Typography: handwritten ink face, sepia (`#5C3018`), opacity 0.95, ~17px. Readability rule applies — never drop below opacity 0.9 for the rhyme.
+
+### Sub-pills per axis (Care compass)
+
+Each CARE axis opens a set of sub-pill "lenses" except `Emotions`. Picking a sub-pill opens a 3-step program (reflect · rate · commit).
+
+- **Care** → `Health · Sport · Energy`
+- **Attitude** → `Confidence · Openness · Gratitude`
+- **Rest** → `Relaxation · Awareness · Grounding`
+- **Emotions** → **no sub-pills**. Clicking this axis opens a direct reflective card with two open questions designed to help the user understand themselves:
+  1. *What are your heaviest emotions right now?*
+  2. *Where do they come from?*
+
+  This replaces an earlier Joy / Weight / Peace pill picker, which forced the user to label the emotion before exploring it. The questions let the user name what's heavy and trace the source in their own words — truer to the "AI-evolution → understand the user" direction of the product.
+
+  Answers persist to localStorage (`colourmap:care-emotions-heavy`, `colourmap:care-emotions-source`). Both questions are optional — empty is a valid state.
+
+### 0–100 slider words (see [`emotional-vocabulary.md`](./emotional-vocabulary.md))
+
+The 8-word poetic scale (`Crushed → Expansive`) mapped across 0–100 is specified separately. Used wherever a 0–100 check-in value is surfaced — cockpit summary, check-in history, post-submit reflection. Not used by the box-1 variants (which run on the 7-level balance scale) or the boxes variant (10-level Hawkins scale).
+
 ## Dependencies
 
 - Supabase auth and database (Key Decision: real persistence from day one).

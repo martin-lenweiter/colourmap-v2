@@ -1,30 +1,64 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 import { useStyle } from '@/components/StyleContext';
 
 /* ═══════════════════════════════════════════════════════════
-   DAY TABS — CARING / DOING / SHARING
+   DAY TABS — CHECK IN / OVERVIEW
+   Check in = daily pulse (the emotional register + pillboxes).
+   Overview = wide-angle life map + compass carousel.
    ═══════════════════════════════════════════════════════════ */
 
-type Tab = 'feeling' | 'doing' | 'sharing';
+type Tab = 'checkin' | 'overview' | 'mastery' | 'tuner';
 
+// V1: Check in + Sounds only. Overview + Mastery hidden — restore by uncommenting.
 const TABS: { id: Tab; label: string }[] = [
-  { id: 'feeling', label: 'Caring' },
-  { id: 'doing', label: 'Doing' },
-  { id: 'sharing', label: 'Sharing' },
+  { id: 'checkin', label: 'Check in' },
+  // { id: 'overview', label: 'Overview' },
+  // { id: 'mastery', label: 'Mastery' },
+  { id: 'tuner', label: 'Sounds' },
 ];
 
+const TAB_KEY = 'colourmap:day-tab';
+
 interface DayTabsProps {
-  feelingContent: React.ReactNode;
-  doingContent: React.ReactNode;
-  sharingContent: React.ReactNode;
+  checkinContent: React.ReactNode;
+  overviewContent: React.ReactNode;
+  masteryContent?: React.ReactNode;
+  tunerContent?: React.ReactNode;
 }
 
-export default function DayTabs({ feelingContent, doingContent, sharingContent }: DayTabsProps) {
-  const [active, setActive] = useState<Tab>('feeling');
+export default function DayTabs({
+  checkinContent,
+  overviewContent,
+  masteryContent,
+  tunerContent,
+}: DayTabsProps) {
+  const [active, setActive] = useState<Tab>('checkin');
   const { style } = useStyle();
+
+  // Restore last-chosen tab on mount. Previous key values ('cockpit') are
+  // mapped to 'checkin' so users don't get bounced to Overview on upgrade.
+  useEffect(() => {
+    try {
+      const stored = localStorage.getItem(TAB_KEY);
+      if (stored === 'cockpit' || stored === 'checkin') setActive('checkin');
+      else if (stored === 'overview') setActive('overview');
+      else if (stored === 'mastery') setActive('mastery');
+      else if (stored === 'tuner') setActive('tuner');
+    } catch {
+      /* silent */
+    }
+  }, []);
+
+  useEffect(() => {
+    try {
+      localStorage.setItem(TAB_KEY, active);
+    } catch {
+      /* silent */
+    }
+  }, [active]);
 
   return (
     <div className="space-y-4">
@@ -37,14 +71,14 @@ export default function DayTabs({ feelingContent, doingContent, sharingContent }
               key={tab.id}
               type="button"
               onClick={() => setActive(tab.id)}
-              className="flex-1 cursor-pointer rounded-xl py-2.5 uppercase tracking-[0.08em] transition-all duration-200"
+              className="flex-1 cursor-pointer rounded-xl py-2.5 uppercase tracking-[0.18em] transition-all duration-200"
               style={{
                 background: isActive ? '#C4A06018' : 'transparent',
                 border: `1.5px solid ${isActive ? '#C4A060' : 'hsl(var(--border) / 0.25)'}`,
                 color: 'hsl(var(--foreground))',
                 fontFamily: style.headingFont,
-                fontSize: style.titleSize,
-                fontWeight: style.weight.title,
+                fontSize: '13px',
+                fontWeight: isActive ? 700 : 600,
               }}
             >
               {tab.label}
@@ -55,10 +89,12 @@ export default function DayTabs({ feelingContent, doingContent, sharingContent }
 
       {/* Content */}
       <div className="animate-in fade-in duration-200">
-        {active === 'feeling' && feelingContent}
-        {active === 'doing' && doingContent}
-        {active === 'sharing' && sharingContent}
+        {active === 'checkin' && checkinContent}
+        {active === 'overview' && overviewContent}
+        {active === 'mastery' && masteryContent}
       </div>
+      {/* Tuner stays mounted so audio keeps playing across tabs */}
+      <div style={{ display: active === 'tuner' ? 'block' : 'none' }}>{tunerContent}</div>
     </div>
   );
 }

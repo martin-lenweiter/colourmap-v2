@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 /* ═══════════════════════════════════════════════════════════
    CARE COMPASS — Caring compass
@@ -57,6 +57,7 @@ const CARE_THEMES: {
 ];
 
 function getSlices(theme: (typeof CARE_THEMES)[0]) {
+  // Order: left, top, right, bottom — spells C.A.R.E, matches compass spatial reading
   return [
     { key: 'care' as CareAxis, label: 'Care', angle: Math.PI, color: theme.colors.care },
     {
@@ -91,11 +92,11 @@ const SUB_CELLS: Record<string, { label: string; color: string }[]> = {
     { label: 'Awareness', color: '#B48060' },
     { label: 'Grounding', color: '#A47050' },
   ],
-  Emotions: [
-    { label: 'Joy', color: '#B07A5A' },
-    { label: 'Weight', color: '#A06A4A' },
-    { label: 'Peace', color: '#906040' },
-  ],
+  // Emotions intentionally has no sub-pills. Instead, clicking the Emotions
+  // axis opens a direct reflective card with two "understand yourself"
+  // questions (rendered below). The old Joy / Weight / Peace pills were
+  // removed — picking a pre-labelled emotion isn't as useful as being asked
+  // what's heavy and where it's coming from.
 };
 
 const SUB_PROGRAMS: Record<string, { reflect: string; rate: string; commit: string }> = {
@@ -143,21 +144,6 @@ const SUB_PROGRAMS: Record<string, { reflect: string; rate: string; commit: stri
     reflect: 'What makes you feel rooted and stable?',
     rate: 'How grounded do you feel right now?',
     commit: "What's one thing you'll do today to feel more anchored?",
-  },
-  Joy: {
-    reflect: 'What brought you joy recently, even briefly?',
-    rate: 'How much joy are you letting in?',
-    commit: "What's one thing you'll do today purely because it brings you joy?",
-  },
-  Weight: {
-    reflect: "What emotional weight are you carrying that isn't yours to hold?",
-    rate: 'How heavy does your emotional load feel?',
-    commit: "What's one thing you'll set down today, even temporarily?",
-  },
-  Peace: {
-    reflect: 'When did you last feel truly at peace? What was different?',
-    rate: 'How close to peace are you right now?',
-    commit: 'What boundary will you honour today to protect your peace?',
   },
 };
 
@@ -253,7 +239,7 @@ function arcPath(
   return `M ${ox1} ${oy1} A ${outerR} ${outerR} 0 ${large} 1 ${ox2} ${oy2} L ${ix2} ${iy2} A ${innerR} ${innerR} 0 ${large} 0 ${ix1} ${iy1} Z`;
 }
 
-export default function CareCompass() {
+export default function CareCompass({ initialSlice }: { initialSlice?: string | null } = {}) {
   const [showDesign, setShowDesign] = useState(false);
   const [colorTheme, setColorTheme] = useState<ColorTheme>(() => {
     try {
@@ -265,7 +251,8 @@ export default function CareCompass() {
   const ct = CARE_THEMES.find((t) => t.id === colorTheme) || CARE_THEMES[0];
   const themedSlices = getSlices(ct);
   const [values, setValues] = useState<Record<CareAxis, number>>(loadValues);
-  const [activeSlice, setActiveSlice] = useState<string | null>(null);
+  const [activeSlice, setActiveSlice] = useState<string | null>(initialSlice ?? null);
+  const [showSlider, setShowSlider] = useState(false);
   const [activeSub, setActiveSub] = useState<string | null>(null);
   const [subStep, setSubStep] = useState(0);
   const [subAnswers, setSubAnswers] = useState<Record<string, string>>({});
@@ -273,6 +260,39 @@ export default function CareCompass() {
   const [flowItems, setFlowItems] = useState<string[]>(() => loadList(FLOW_KEY));
   const [challengeInput, setChallengeInput] = useState('');
   const [flowInput, setFlowInput] = useState('');
+
+  // Emotions reflective card — two open questions to understand the user.
+  // Replaces the old Joy / Weight / Peace sub-pill picker.
+  const EMO_HEAVY_KEY = 'colourmap:care-emotions-heavy';
+  const EMO_SOURCE_KEY = 'colourmap:care-emotions-source';
+  const [emoHeavy, setEmoHeavy] = useState<string>(() => {
+    try {
+      return localStorage.getItem(EMO_HEAVY_KEY) || '';
+    } catch {
+      return '';
+    }
+  });
+  const [emoSource, setEmoSource] = useState<string>(() => {
+    try {
+      return localStorage.getItem(EMO_SOURCE_KEY) || '';
+    } catch {
+      return '';
+    }
+  });
+  useEffect(() => {
+    try {
+      localStorage.setItem(EMO_HEAVY_KEY, emoHeavy);
+    } catch {
+      /* silent */
+    }
+  }, [emoHeavy]);
+  useEffect(() => {
+    try {
+      localStorage.setItem(EMO_SOURCE_KEY, emoSource);
+    } catch {
+      /* silent */
+    }
+  }, [emoSource]);
 
   const handleRating = (key: CareAxis, value: number) => {
     const next = { ...values, [key]: value };
@@ -326,20 +346,32 @@ export default function CareCompass() {
     >
       <div className="relative">
         <p className="text-center text-xs font-semibold uppercase tracking-[0.24em] text-[#C4A060]">
-          Caring
+          Feeling
         </p>
         <div className="absolute right-0 top-0" style={{ zIndex: 10 }}>
           <button
             type="button"
             onClick={() => setShowDesign(!showDesign)}
-            className="cursor-pointer rounded-md px-2 py-0.5 text-[11px] uppercase tracking-wider transition-all"
+            aria-label="Choose colour theme"
+            className="flex cursor-pointer items-center justify-center rounded-full transition-all"
             style={{
-              color: showDesign ? '#C4A060' : '#C4A06060',
-              background: showDesign ? '#C4A06010' : 'transparent',
-              border: `1px solid ${showDesign ? '#C4A06030' : 'transparent'}`,
+              width: 18,
+              height: 18,
+              background: 'transparent',
+              border: 'none',
+              opacity: 1,
             }}
           >
-            design
+            <span
+              style={{
+                width: 12,
+                height: 12,
+                background: '#D8BE94',
+                opacity: 1,
+                borderRadius: '50%',
+                display: 'block',
+              }}
+            />
           </button>
           {showDesign && (
             <div
@@ -500,33 +532,86 @@ export default function CareCompass() {
               <polygon
                 points={points.join(' ')}
                 fill="#C4A060"
-                opacity={0.3}
+                opacity={showSlider ? 0.6 : 0.3}
                 stroke="#8A6A4A"
                 strokeWidth="0.5"
                 strokeOpacity={0.4}
+                className="cursor-pointer transition-all"
+                onClick={() => setShowSlider((s) => !s)}
               />
             );
           })()}
         </svg>
       </div>
 
-      {/* CARE blobs */}
-      <div className="flex items-center justify-center gap-3">
-        {themedSlices.map((a) => (
-          <div
-            key={a.key}
-            className="flex h-11 w-11 items-center justify-center rounded-full"
-            style={{ background: a.color, opacity: 0.7 }}
-          >
-            <span
-              className="text-xl font-black text-white select-none"
-              style={{ fontFamily: 'var(--font-handwritten)', lineHeight: 1 }}
+      {/* CARE blobs — transform into rainbow slider when centre star is clicked */}
+      {showSlider && activeQ ? (
+        (() => {
+          const current = Math.max(1, Math.min(8, Math.round((values[activeQ.key] / 100) * 8)));
+          const RAINBOW = [
+            '#E0908A',
+            '#E8A878',
+            '#D8C078',
+            '#C0D088',
+            '#A0C8A0',
+            '#90C0C0',
+            '#A0B0D0',
+            '#B0A0C8',
+          ];
+          const rhymeText = (RHYMES[activeQ.label] || [])[current] || '';
+          return (
+            <div className="space-y-1">
+              <div className="flex items-center justify-center gap-2">
+                {RAINBOW.map((color, i) => {
+                  const n = i + 1;
+                  const isActive = n === current;
+                  const dist = Math.abs(n - current);
+                  return (
+                    <button
+                      key={n}
+                      type="button"
+                      onClick={() => handleRating(activeQ.key, Math.round((n / 8) * 100))}
+                      className="flex h-8 w-8 items-center justify-center transition-all duration-200"
+                      style={{
+                        background: color,
+                        opacity: isActive ? 1 : dist === 1 ? 0.55 : 0.2,
+                        borderRadius: '50%',
+                        border: 'none',
+                        transform: isActive ? 'scale(1.15)' : 'scale(1)',
+                        boxShadow: isActive ? `0 3px 10px -3px ${color}` : 'none',
+                        cursor: 'pointer',
+                      }}
+                    />
+                  );
+                })}
+              </div>
+              <p
+                className="text-center text-xs"
+                style={{ color: activeQ.color, opacity: 0.6, fontFamily: 'var(--font-serif)' }}
+              >
+                {activeQ.label} · {current}. {rhymeText}
+              </p>
+            </div>
+          );
+        })()
+      ) : (
+        <div className="flex items-center justify-center gap-3">
+          {themedSlices.map((a) => (
+            <div
+              key={a.key}
+              className="flex h-11 w-11 items-center justify-center rounded-full"
+              style={{ background: a.color, opacity: 0.7 }}
             >
-              {a.label[0]}
-            </span>
-          </div>
-        ))}
-      </div>
+              <span
+                className="text-xl font-black text-white select-none"
+                style={{ fontFamily: 'var(--font-handwritten)', lineHeight: 1 }}
+              >
+                {a.label[0]}
+              </span>
+            </div>
+          ))}
+        </div>
+      )}
 
       {/* Challenge / Flow columns */}
       <div className="grid grid-cols-2 gap-4">
@@ -616,67 +701,7 @@ export default function CareCompass() {
         </div>
       </div>
 
-      {/* Rating bar when slice active */}
-      {activeQ &&
-        (() => {
-          const current = Math.max(1, Math.min(8, Math.round((values[activeQ.key] / 100) * 8)));
-          return (
-            <div className="mx-auto max-w-[280px] space-y-2">
-              <p
-                className="text-center text-lg font-bold"
-                style={{ color: activeQ.color, fontFamily: 'var(--font-serif)' }}
-              >
-                {activeQ.label}
-              </p>
-              <div className="flex items-center justify-center gap-[2px]">
-                {(() => {
-                  const rainbow = [
-                    '#C83030',
-                    '#D46050',
-                    '#D87048',
-                    '#C88820',
-                    '#7AAA58',
-                    '#3AA8A0',
-                    '#3A8AC4',
-                    '#9B6BA0',
-                  ];
-                  return [1, 2, 3, 4, 5, 6, 7, 8].map((n) => {
-                    const mapped = Math.round((n / 8) * 100);
-                    const isN = n === current;
-                    const dist = Math.abs(n - current);
-                    return (
-                      <button
-                        key={n}
-                        type="button"
-                        onClick={() => handleRating(activeQ.key, mapped)}
-                        className="cursor-pointer transition-all duration-200"
-                        style={{
-                          width: 28,
-                          height: 28,
-                          borderRadius: 4,
-                          background: rainbow[n - 1],
-                          opacity: isN ? 1 : dist === 1 ? 0.5 : 0.2,
-                          border: 'none',
-                          padding: 0,
-                        }}
-                      />
-                    );
-                  });
-                })()}
-              </div>
-              <p
-                className="text-center text-base"
-                style={{
-                  color: activeQ.color,
-                  opacity: 0.7,
-                  fontFamily: 'var(--font-handwritten)',
-                }}
-              >
-                {(RHYMES[activeQ.label] || [])[current] || ''}
-              </p>
-            </div>
-          );
-        })()}
+      {/* Rating bar is now inline in the CARE blobs row above */}
 
       {/* Sub-cells */}
       {activeSubs && (
@@ -690,17 +715,85 @@ export default function CareCompass() {
                 setSubStep(0);
                 setSubAnswers({});
               }}
-              className="cursor-pointer rounded-full px-4 py-2 text-sm font-bold text-white transition-all duration-300 hover:scale-105"
+              className="cursor-pointer rounded-full px-4 py-2 font-bold text-white transition-all duration-300 hover:scale-105"
               style={{
                 background: s.color,
-                opacity: activeSub === s.label ? 1 : 0.6,
+                opacity: activeSub === s.label ? 1 : 0.85,
                 fontFamily: 'var(--font-serif)',
                 border: 'none',
+                fontSize: '14px',
+                letterSpacing: '0.02em',
               }}
             >
               {s.label}
             </button>
           ))}
+        </div>
+      )}
+
+      {/* Emotions axis — direct reflective questions (no sub-pills) */}
+      {activeSlice === 'Emotions' && (
+        <div
+          className="mx-auto max-w-[320px] space-y-4 rounded-2xl p-4"
+          style={{
+            background: `${themedSlices.find((q) => q.label === 'Emotions')?.color ?? '#C4A060'}08`,
+            border: `1px solid ${themedSlices.find((q) => q.label === 'Emotions')?.color ?? '#C4A060'}18`,
+          }}
+        >
+          <label className="block space-y-2">
+            <span
+              style={{
+                color: '#5C3018',
+                fontFamily: 'var(--font-serif)',
+                fontSize: '14px',
+                fontWeight: 600,
+                letterSpacing: '0.02em',
+                display: 'block',
+              }}
+            >
+              What are your heaviest emotions right now?
+            </span>
+            <textarea
+              value={emoHeavy}
+              onChange={(e) => setEmoHeavy(e.target.value)}
+              placeholder="name them, let them land..."
+              className="min-h-[60px] w-full resize-none border-b bg-transparent pb-1 outline-none placeholder:opacity-50"
+              style={{
+                color: '#5C3018',
+                borderColor: '#8A6A4A30',
+                fontFamily: 'var(--font-handwritten)',
+                fontSize: '16px',
+                lineHeight: 1.5,
+              }}
+            />
+          </label>
+          <label className="block space-y-2">
+            <span
+              style={{
+                color: '#5C3018',
+                fontFamily: 'var(--font-serif)',
+                fontSize: '14px',
+                fontWeight: 600,
+                letterSpacing: '0.02em',
+                display: 'block',
+              }}
+            >
+              Where do they come from?
+            </span>
+            <textarea
+              value={emoSource}
+              onChange={(e) => setEmoSource(e.target.value)}
+              placeholder="a person · a memory · a situation..."
+              className="min-h-[60px] w-full resize-none border-b bg-transparent pb-1 outline-none placeholder:opacity-50"
+              style={{
+                color: '#5C3018',
+                borderColor: '#8A6A4A30',
+                fontFamily: 'var(--font-handwritten)',
+                fontSize: '16px',
+                lineHeight: 1.5,
+              }}
+            />
+          </label>
         </div>
       )}
 
@@ -724,17 +817,34 @@ export default function CareCompass() {
             >
               <div className="flex items-center justify-between">
                 <span
-                  className="text-sm font-semibold"
-                  style={{ color: activeQ.color, fontFamily: 'var(--font-serif)' }}
+                  className="font-semibold"
+                  style={{
+                    color: activeQ.color,
+                    fontFamily: 'var(--font-serif)',
+                    fontSize: '15px',
+                  }}
                 >
                   {activeSub}
                 </span>
-                <span className="text-xs text-muted-foreground">{subStep + 1} / 3</span>
+                <span
+                  style={{
+                    color: '#8A6A4A',
+                    fontSize: '12px',
+                    opacity: 0.8,
+                    fontFamily: 'var(--font-serif)',
+                  }}
+                >
+                  {subStep + 1} / 3
+                </span>
               </div>
 
               <p
-                className="text-base"
-                style={{ color: activeQ.color, fontFamily: 'var(--font-serif)' }}
+                style={{
+                  color: '#5C3018',
+                  fontFamily: 'var(--font-serif)',
+                  fontSize: '16px',
+                  lineHeight: 1.5,
+                }}
               >
                 &ldquo;{step.prompt}&rdquo;
               </p>
@@ -758,7 +868,7 @@ export default function CareCompass() {
               )}
 
               {step.type === 'rate' && (
-                <div className="flex items-center justify-center gap-[2px]">
+                <div className="flex items-center justify-center gap-[5px]">
                   {(() => {
                     const rainbow = [
                       '#C83030',

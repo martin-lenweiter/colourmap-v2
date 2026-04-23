@@ -45,8 +45,9 @@ const SHARE_THEMES: {
 ];
 
 function getShareSlices(theme: (typeof SHARE_THEMES)[0]) {
+  // Order: left, top, right, bottom — spells S.A.R.E, matches compass spatial reading
   return [
-    { key: 'share' as ShareAxis, label: 'Share', angle: Math.PI, color: theme.colors.share },
+    { key: 'share' as ShareAxis, label: 'Social Life', angle: Math.PI, color: theme.colors.share },
     {
       key: 'authentic' as ShareAxis,
       label: 'Authentic',
@@ -206,7 +207,7 @@ function arcPath(
   return `M ${ox1} ${oy1} A ${outerR} ${outerR} 0 ${large} 1 ${ox2} ${oy2} L ${ix2} ${iy2} A ${innerR} ${innerR} 0 ${large} 0 ${ix1} ${iy1} Z`;
 }
 
-export default function ShareCompass() {
+export default function ShareCompass({ initialSlice }: { initialSlice?: string | null } = {}) {
   const [showDesign, setShowDesign] = useState(false);
   const [shareTheme, setShareTheme] = useState<ShareColorTheme>(() => {
     try {
@@ -218,7 +219,8 @@ export default function ShareCompass() {
   const sht = SHARE_THEMES.find((t) => t.id === shareTheme) || SHARE_THEMES[0];
   const themedShareSlices = getShareSlices(sht);
   const [values, setValues] = useState<Record<ShareAxis, number>>(loadValues);
-  const [activeSlice, setActiveSlice] = useState<string | null>(null);
+  const [activeSlice, setActiveSlice] = useState<string | null>(initialSlice ?? null);
+  const [showSlider, setShowSlider] = useState(false);
   const [activeSub, setActiveSub] = useState<string | null>(null);
   const [subStep, setSubStep] = useState(0);
   const [subAnswers, setSubAnswers] = useState<Record<string, string>>({});
@@ -285,14 +287,26 @@ export default function ShareCompass() {
           <button
             type="button"
             onClick={() => setShowDesign(!showDesign)}
-            className="cursor-pointer rounded-md px-2 py-0.5 text-[11px] uppercase tracking-wider transition-all"
+            aria-label="Choose colour theme"
+            className="flex cursor-pointer items-center justify-center rounded-full transition-all"
             style={{
-              color: showDesign ? '#6B7F4E' : '#6B7F4E60',
-              background: showDesign ? '#6B7F4E10' : 'transparent',
-              border: `1px solid \${showDesign ? '#6B7F4E30' : 'transparent'}`,
+              width: 18,
+              height: 18,
+              background: 'transparent',
+              border: 'none',
+              opacity: 1,
             }}
           >
-            design
+            <span
+              style={{
+                width: 12,
+                height: 12,
+                background: '#D8BE94',
+                opacity: 1,
+                borderRadius: '50%',
+                display: 'block',
+              }}
+            />
           </button>
           {showDesign && (
             <div
@@ -453,33 +467,85 @@ export default function ShareCompass() {
               <polygon
                 points={pts.join(' ')}
                 fill="#6B7F4E"
-                opacity={0.3}
+                opacity={showSlider ? 0.6 : 0.3}
                 stroke="#4A5A2A"
                 strokeWidth="0.5"
                 strokeOpacity={0.4}
+                className="cursor-pointer transition-all"
+                onClick={() => setShowSlider((s) => !s)}
               />
             );
           })()}
         </svg>
       </div>
 
-      {/* STAR blobs */}
-      <div className="flex items-center justify-center gap-3">
-        {themedShareSlices.map((a) => (
-          <div
-            key={a.key}
-            className="flex h-11 w-11 items-center justify-center rounded-full"
-            style={{ background: a.color, opacity: 0.7 }}
-          >
-            <span
-              className="text-xl font-black text-white select-none"
-              style={{ fontFamily: 'var(--font-handwritten)', lineHeight: 1 }}
+      {/* Blobs — transform into rainbow slider when centre star is clicked */}
+      {showSlider && activeQ ? (
+        (() => {
+          const current = Math.max(1, Math.min(8, Math.round((values[activeQ.key] / 100) * 8)));
+          const RAINBOW = [
+            '#E0908A',
+            '#E8A878',
+            '#D8C078',
+            '#C0D088',
+            '#A0C8A0',
+            '#90C0C0',
+            '#A0B0D0',
+            '#B0A0C8',
+          ];
+          return (
+            <div className="space-y-1">
+              <div className="flex items-center justify-center gap-2">
+                {RAINBOW.map((color, i) => {
+                  const n = i + 1;
+                  const isActive = n === current;
+                  const dist = Math.abs(n - current);
+                  return (
+                    <button
+                      key={n}
+                      type="button"
+                      onClick={() => handleRating(activeQ.key, Math.round((n / 8) * 100))}
+                      className="flex h-8 w-8 items-center justify-center transition-all duration-200"
+                      style={{
+                        background: color,
+                        opacity: isActive ? 1 : dist === 1 ? 0.55 : 0.2,
+                        borderRadius: '50%',
+                        border: 'none',
+                        transform: isActive ? 'scale(1.15)' : 'scale(1)',
+                        boxShadow: isActive ? `0 3px 10px -3px ${color}` : 'none',
+                        cursor: 'pointer',
+                      }}
+                    />
+                  );
+                })}
+              </div>
+              <p
+                className="text-center text-xs"
+                style={{ color: activeQ.color, opacity: 0.6, fontFamily: 'var(--font-serif)' }}
+              >
+                {activeQ.label} · {current}. {RHYMES[current]}
+              </p>
+            </div>
+          );
+        })()
+      ) : (
+        <div className="flex items-center justify-center gap-3">
+          {themedShareSlices.map((a) => (
+            <div
+              key={a.key}
+              className="flex h-11 w-11 items-center justify-center rounded-full"
+              style={{ background: a.color, opacity: 0.7 }}
             >
-              {a.label === 'Share' ? 'Sh' : a.label[0]}
-            </span>
-          </div>
-        ))}
-      </div>
+              <span
+                className="text-xl font-black text-white select-none"
+                style={{ fontFamily: 'var(--font-handwritten)', lineHeight: 1 }}
+              >
+                {a.label === 'Social Life' ? 'S' : a.label[0]}
+              </span>
+            </div>
+          ))}
+        </div>
+      )}
 
       {/* Distant / Connected columns */}
       <div className="grid grid-cols-2 gap-4">
@@ -567,56 +633,7 @@ export default function ShareCompass() {
         </div>
       </div>
 
-      {/* Rating bar when slice active */}
-      {activeQ &&
-        (() => {
-          const current = Math.max(1, Math.min(8, Math.round((values[activeQ.key] / 100) * 8)));
-          return (
-            <div className="mx-auto max-w-[280px] space-y-2">
-              <div className="flex items-center justify-between">
-                <span
-                  className="text-sm font-semibold"
-                  style={{ color: activeQ.color, fontFamily: 'var(--font-serif)' }}
-                >
-                  {activeQ.label}
-                </span>
-                <span
-                  className="text-xs"
-                  style={{
-                    color: activeQ.color,
-                    opacity: 0.5,
-                    fontFamily: 'var(--font-serif)',
-                  }}
-                >
-                  {current}. {RHYMES[current]}
-                </span>
-              </div>
-              <div className="flex items-center gap-[3px]">
-                {[1, 2, 3, 4, 5, 6, 7, 8].map((n) => {
-                  const mapped = Math.round((n / 8) * 100);
-                  const isN = n === current;
-                  const dist = Math.abs(n - current);
-                  return (
-                    <button
-                      key={n}
-                      type="button"
-                      onClick={() => handleRating(activeQ.key, mapped)}
-                      className="flex-1 cursor-pointer transition-all duration-200"
-                      style={{
-                        height: isN ? 24 : 12,
-                        borderRadius: 2,
-                        background: activeQ.color,
-                        opacity: isN ? 1 : dist === 1 ? 0.4 : 0.12,
-                        border: 'none',
-                        padding: 0,
-                      }}
-                    />
-                  );
-                })}
-              </div>
-            </div>
-          );
-        })()}
+      {/* Rating bar is now inline in the STAR blobs row above */}
 
       {/* Sub-cells */}
       {activeSubs && (

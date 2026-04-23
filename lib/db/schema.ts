@@ -105,6 +105,56 @@ export const notebookEntries = pgTable('notebook_entries', {
   updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow().notNull(),
 });
 
+// ─── Daily objectives (today + push for tomorrow) ───
+export const dailyObjectives = pgTable('daily_objectives', {
+  id: uuid('id').defaultRandom().primaryKey(),
+  userId: uuid('user_id').notNull(),
+  text: text('text').notNull(),
+  done: boolean('done').notNull().default(false),
+  list: text('list').notNull().default('today'), // 'today' | 'tomorrow'
+  notes: text('notes'),
+  position: integer('position').notNull().default(0),
+  createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+});
+
+// ─── Agenda blocks ───
+export const agendaBlocks = pgTable('agenda_blocks', {
+  id: uuid('id').defaultRandom().primaryKey(),
+  userId: uuid('user_id').notNull(),
+  text: text('text').notNull(),
+  date: date('date').notNull(),
+  startHour: integer('start_hour').notNull(),
+  duration: integer('duration_minutes').notNull().default(60), // in minutes
+  color: text('color').notNull().default('#C4A060'),
+  kind: text('kind').notNull().default('mission'), // 'mission' | 'emotion'
+  tagName: text('tag_name'),
+  tagColor: text('tag_color'),
+  tagCategoryId: text('tag_category_id'),
+  createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+});
+
+// ─── Life categories ───
+export const lifeCategories = pgTable('life_categories', {
+  id: uuid('id').defaultRandom().primaryKey(),
+  userId: uuid('user_id').notNull(),
+  name: text('name').notNull(),
+  color: text('color').notNull().default('#C4A060'),
+  compass: text('compass'), // 'caring' | 'doing' | 'sharing' | null
+  state: text('state'), // 'flowing' | 'stuck' | null
+  position: integer('position').notNull().default(0),
+  createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+});
+
+// ─── Outings / social life ───
+export const outings = pgTable('outings', {
+  id: uuid('id').defaultRandom().primaryKey(),
+  userId: uuid('user_id').notNull(),
+  text: text('text').notNull(),
+  date: date('date').notNull(),
+  color: text('color').notNull().default('#6B7F4E'),
+  createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+});
+
 export const dailyTrackerEntries = pgTable('daily_tracker_entries', {
   id: uuid('id').defaultRandom().primaryKey(),
   trackerId: uuid('tracker_id').notNull(),
@@ -112,4 +162,56 @@ export const dailyTrackerEntries = pgTable('daily_tracker_entries', {
   date: date('date').notNull(),
   value: integer('value').notNull(),
   createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+});
+
+// ─── Circles — shared spaces ───
+export const circles = pgTable('circles', {
+  id: uuid('id').defaultRandom().primaryKey(),
+  name: text('name').notNull(),
+  code: text('code').notNull(),
+  color: text('color').notNull().default('#D4805A'),
+  createdBy: uuid('created_by').notNull(),
+  createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+});
+
+export const circleMembers = pgTable('circle_members', {
+  id: uuid('id').defaultRandom().primaryKey(),
+  circleId: uuid('circle_id').notNull(),
+  userId: uuid('user_id').notNull(),
+  name: text('name').notNull(),
+  color: text('color').notNull().default('#D4805A'),
+  pulse: text('pulse'),
+  pulseColor: text('pulse_color'),
+  sharePulse: boolean('share_pulse').default(false).notNull(),
+  joinedAt: timestamp('joined_at', { withTimezone: true }).defaultNow().notNull(),
+});
+
+export const circleMissions = pgTable('circle_missions', {
+  id: uuid('id').defaultRandom().primaryKey(),
+  circleId: uuid('circle_id').notNull(),
+  text: text('text').notNull(),
+  claimedBy: uuid('claimed_by'),
+  done: boolean('done').default(false).notNull(),
+  dueDate: date('due_date'),
+  createdBy: uuid('created_by').notNull(),
+  createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+});
+
+export const circleNotes = pgTable('circle_notes', {
+  id: uuid('id').defaultRandom().primaryKey(),
+  circleId: uuid('circle_id').notNull(),
+  authorId: uuid('author_id').notNull(),
+  authorName: text('author_name').notNull(),
+  text: text('text').notNull(),
+  sessionId: uuid('session_id'),
+  createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+});
+
+export const circleSessions = pgTable('circle_sessions', {
+  id: uuid('id').defaultRandom().primaryKey(),
+  circleId: uuid('circle_id').notNull(),
+  startedBy: uuid('started_by').notNull(),
+  startedAt: timestamp('started_at', { withTimezone: true }).defaultNow().notNull(),
+  endedAt: timestamp('ended_at', { withTimezone: true }),
+  summary: text('summary'),
 });
