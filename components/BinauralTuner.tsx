@@ -523,7 +523,7 @@ const LAYERS: LayerDef[] = [
   },
   {
     id: 'jungle',
-    label: 'Jungle',
+    label: 'Lazer Jungle',
     color: '#5F7447',
     group: 'ambient' as const,
     build: (ctx: AudioContext) => {
@@ -1214,6 +1214,63 @@ function getSuggestion(
 // ── Crossfade duration in seconds ──
 const CROSSFADE_DURATION = 1.5;
 
+// Saved-item marker shape icon — user taps to cycle dot/star/heart/losange/triangle/square
+type SavedShape = 'dot' | 'star' | 'heart' | 'losange' | 'triangle' | 'square';
+
+function SavedShapeIcon({ shape, color }: { shape: SavedShape; color: string }) {
+  const common = {
+    width: 12,
+    height: 12,
+    viewBox: '0 0 12 12',
+    fill: color,
+    opacity: 0.65,
+  } as const;
+  switch (shape) {
+    case 'star':
+      return (
+        <svg {...common}>
+          <title>Star marker</title>
+          <path d="M6 1l1.5 3.3 3.5.4-2.7 2.4.8 3.5L6 8.9 2.9 10.6l.8-3.5L1 4.7l3.5-.4L6 1z" />
+        </svg>
+      );
+    case 'heart':
+      return (
+        <svg {...common}>
+          <title>Heart marker</title>
+          <path d="M6 10.3S1.2 7.4 1.2 4.3c0-1.5 1.2-2.7 2.7-2.7 1 0 1.7.5 2.1 1.2.4-.7 1.1-1.2 2.1-1.2 1.5 0 2.7 1.2 2.7 2.7 0 3.1-4.8 6-4.8 6z" />
+        </svg>
+      );
+    case 'losange':
+      return (
+        <svg {...common}>
+          <title>Diamond marker</title>
+          <path d="M6 1l5 5-5 5-5-5 5-5z" />
+        </svg>
+      );
+    case 'triangle':
+      return (
+        <svg {...common}>
+          <title>Triangle marker</title>
+          <path d="M6 1.5l4.5 8H1.5L6 1.5z" />
+        </svg>
+      );
+    case 'square':
+      return (
+        <svg {...common}>
+          <title>Square marker</title>
+          <rect x="2" y="2" width="8" height="8" rx="1" />
+        </svg>
+      );
+    default:
+      return (
+        <span
+          className="block rounded-full"
+          style={{ width: 8, height: 8, background: color, opacity: 0.5 }}
+        />
+      );
+  }
+}
+
 export default function BinauralTuner() {
   const [playing, setPlaying] = useState(false);
   const [binauralOn, setBinauralOn] = useState(true);
@@ -1254,6 +1311,7 @@ export default function BinauralTuner() {
       vol: number;
       layers: Record<string, number>;
       binaural: boolean;
+      shape?: 'dot' | 'star' | 'heart' | 'losange' | 'triangle' | 'square';
     }[]
   >([]);
   const [reverbMix, setReverbMix] = useState(0.7);
@@ -1756,12 +1814,26 @@ export default function BinauralTuner() {
       vol: volume,
       layers: { ...activeLayers },
       binaural: binauralOn,
+      shape: 'dot' as const,
     };
     const next = [mix, ...savedMixes].slice(0, 20);
     setSavedMixes(next);
     localStorage.setItem('colourmap:tuner-mixes', JSON.stringify(next));
     setSaveName('');
     setShowSave(false);
+  }
+
+  const SHAPE_CYCLE = ['dot', 'star', 'heart', 'losange', 'triangle', 'square'] as const;
+
+  function cycleMixShape(index: number) {
+    setSavedMixes((prev) => {
+      const next = [...prev];
+      const current = next[index].shape ?? 'dot';
+      const nextShape = SHAPE_CYCLE[(SHAPE_CYCLE.indexOf(current) + 1) % SHAPE_CYCLE.length];
+      next[index] = { ...next[index], shape: nextShape };
+      localStorage.setItem('colourmap:tuner-mixes', JSON.stringify(next));
+      return next;
+    });
   }
 
   function loadMix(mix: (typeof savedMixes)[0]) {
@@ -2452,17 +2524,6 @@ export default function BinauralTuner() {
         >
           Calming Sounds
         </p>
-        <p
-          className="italic"
-          style={{
-            fontFamily: 'var(--font-serif)',
-            fontSize: '15px',
-            color: '#8A6A4A',
-            opacity: 0.95,
-          }}
-        >
-          find your frequency
-        </p>
       </div>
 
       {/* Simple / Full toggle */}
@@ -2470,11 +2531,12 @@ export default function BinauralTuner() {
         <button
           type="button"
           onClick={() => setSimpleMode((s) => !s)}
-          className="cursor-pointer rounded-full px-3 py-1 text-[12px] font-semibold uppercase tracking-wider transition-all"
+          className="cursor-pointer rounded-full px-5 py-1.5 text-[12px] font-semibold uppercase tracking-[0.12em] transition-all hover:opacity-85"
           style={{
-            color: '#8A6A4A',
-            background: 'transparent',
-            border: '1px solid #C4A06020',
+            color: '#7A5438',
+            background: '#F5E8C8',
+            border: '1px solid rgba(196, 160, 96, 0.35)',
+            boxShadow: '0 1px 2px rgba(94, 58, 20, 0.06)',
           }}
         >
           {simpleMode ? 'open studio' : 'back to simple'}
@@ -3399,7 +3461,7 @@ export default function BinauralTuner() {
                       color: '#8A6A4A',
                     }}
                   >
-                    layer reverb
+                    layer softness
                   </span>
                   <div
                     className="flex gap-[2px] cursor-pointer"
@@ -3728,10 +3790,27 @@ export default function BinauralTuner() {
                         className="flex w-full cursor-pointer items-center gap-2 rounded-lg px-3 py-1.5 text-left transition-all hover:bg-[#C4A06008]"
                         style={{ background: 'none', border: 'none' }}
                       >
-                        <span
-                          className="block rounded-full"
-                          style={{ width: 8, height: 8, background: '#C4A060', opacity: 0.5 }}
-                        />
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            cycleMixShape(i);
+                          }}
+                          title="Tap to change marker shape"
+                          className="shrink-0 cursor-pointer"
+                          style={{
+                            width: 14,
+                            height: 14,
+                            padding: 0,
+                            background: 'none',
+                            border: 'none',
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                          }}
+                        >
+                          <SavedShapeIcon shape={mix.shape ?? 'dot'} color="#C4A060" />
+                        </button>
                         <span
                           style={{
                             fontFamily: 'var(--font-serif)',
