@@ -1435,8 +1435,30 @@ export default function BinauralTuner() {
     // Pick a random note from the selected scale
     const scaleNotes = MELODY_SCALES[melodyScale]?.notes || MELODY_SCALES.pentatonic.notes;
     const noteIdx = scaleNotes[Math.floor(Math.random() * scaleNotes.length)];
+
+    // Multi-octave spread (RM-C3): about 25% chance of ±1 octave jump
+    // and 5% chance of ±2 octave jump on each note. Gives the melody
+    // real range instead of sitting in one register. Base probability
+    // 55% keeps the home octave dominant so the key center stays audible.
+    const r = Math.random();
+    let octaveOffset = 0;
+    if (r < 0.025) octaveOffset = -24;
+    else if (r < 0.05) octaveOffset = 24;
+    else if (r < 0.2) octaveOffset = -12;
+    else if (r < 0.35) octaveOffset = 12;
+
+    // Clamp to a musical range: midi ~24 (C1) through midi ~96 (C7).
+    // melDef.octave is the center octave (4 for C4); noteIdx adds
+    // semitones on top; octaveOffset may push further. Fold back if
+    // we land outside the safe range.
+    const octavesFromCenter = Math.floor((noteIdx + octaveOffset) / 12);
+    const finalOctave = melDef.octave + octavesFromCenter;
+    let safeOctaveOffset = octaveOffset;
+    if (finalOctave < 1) safeOctaveOffset += 12 * (1 - finalOctave);
+    else if (finalOctave > 7) safeOctaveOffset -= 12 * (finalOctave - 7);
+
     const baseNote = 261.63 * 2 ** (melDef.octave - 4); // C of the octave
-    const freq = baseNote * 2 ** (noteIdx / 12);
+    const freq = baseNote * 2 ** ((noteIdx + safeOctaveOffset) / 12);
 
     const osc = ctx.createOscillator();
     osc.type = melDef.type;
