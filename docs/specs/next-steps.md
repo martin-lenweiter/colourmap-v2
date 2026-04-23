@@ -49,6 +49,7 @@
 - Emotional vocabulary builder
 - Body map (tap where tension is)
 - Morning intention / evening reflection prompts
+- **Challenge of the day — persistent, visible on the Feeling/Doing first page.** A single line the user writes that stays pinned across the session so the current struggle or intention doesn't get lost when the UI shifts. Example from Martin: "I struggle to disconnect from colourmap and do other stuff cause I wanna move here." That kind of honest, personal sentence is exactly what should stay visible — not hidden in a notebook, not expiring after a check-in, but front-and-center as today's anchor. Could be rendered as a small header band or a dedicated card above the tabs. Open questions: does it reset at midnight? can the user keep the same one for days? is it linked to a mission or separate?
 
 ## Circles Reflections
 
