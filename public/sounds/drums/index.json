@@ -1,0 +1,51 @@
+{
+  "category": "drums-and-percussion",
+  "samples": [
+    {
+      "id": "djembe",
+      "file": "Djembe.ogg",
+      "label": "Djembe",
+      "description": "African hand drum, single sharp hit",
+      "source": "Wikimedia Commons",
+      "url": "https://commons.wikimedia.org/wiki/File:Djembe.ogg",
+      "author": "Freddythehat",
+      "license": "Public Domain",
+      "sizeKB": 165
+    },
+    {
+      "id": "singing-bowl",
+      "file": "SingingBowl1.ogg",
+      "label": "Singing Bowl",
+      "description": "Short Tibetan singing bowl strike",
+      "source": "Wikimedia Commons",
+      "url": "https://commons.wikimedia.org/wiki/File:SingingBowl1.ogg",
+      "author": "BambooBeast",
+      "license": "Public Domain",
+      "sizeKB": 108
+    },
+    {
+      "id": "tambourine",
+      "file": "Tambourine.ogg",
+      "label": "Tambourine",
+      "description": "Jingling frame drum, short loop",
+      "source": "Wikimedia Commons",
+      "url": "https://commons.wikimedia.org/wiki/File:Tambourine.ogg",
+      "author": "Freddythehat",
+      "license": "Public Domain",
+      "sizeKB": 712
+    },
+    {
+      "id": "shamanic-journey",
+      "file": "Schamanische_Reise.ogg",
+      "label": "Shamanic Journey",
+      "description": "Long hypnotic shamanic drumming — meditation-grade atmospheric (~60 min)",
+      "source": "Wikimedia Commons",
+      "url": "https://commons.wikimedia.org/wiki/File:Schamanische_Reise.ogg",
+      "author": "Schamanenstube.com",
+      "license": "Public Domain",
+      "sizeKB": 20017,
+      "note": "Large file — consider lazy-loading or moving to Supabase Storage for mobile bundle size"
+    }
+  ],
+  "basePath": "/sounds/drums/"
+}
