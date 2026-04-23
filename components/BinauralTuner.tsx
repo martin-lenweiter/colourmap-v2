@@ -2,6 +2,8 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 
+import InfoTooltip from '@/components/InfoTooltip';
+
 /* ═══════════════════════════════════════════════════════════
    BINAURAL TUNER — adaptive soundscape generator.
    Reads your check-in state to suggest a frequency.
@@ -3291,17 +3293,38 @@ export default function BinauralTuner() {
             </button>
             {layersOpen && (
               <div className="animate-in fade-in duration-150 space-y-2 pt-1">
-                {/* Layer reverb control */}
+                {/* Layer reverb control — click the label to explain reverb */}
                 <div className="flex items-center justify-center gap-2">
-                  <span
-                    style={{
-                      fontFamily: 'var(--font-serif)',
-                      fontSize: '12px',
-                      color: '#8A6A4A',
-                    }}
-                  >
-                    layer reverb
-                  </span>
+                  <InfoTooltip
+                    title="Layer Softness (Reverb)"
+                    content={
+                      <>
+                        <p style={{ margin: 0 }}>
+                          Reverb makes every layer sound like it's playing in a bigger space — a
+                          room, a hall, a cathedral. Turn it up and sounds feel softer, further
+                          away, more dreamlike. Turn it down and they feel tight and close.
+                        </p>
+                        <p style={{ margin: '8px 0 0 0' }}>
+                          Technically it's a shared reverb bus that all active layers run through,
+                          so the whole mix breathes together. The percentage is how much of each
+                          layer is sent into that bus.
+                        </p>
+                      </>
+                    }
+                    trigger={
+                      <span
+                        style={{
+                          fontFamily: 'var(--font-serif)',
+                          fontSize: '12px',
+                          color: '#8A6A4A',
+                          borderBottom: '1px dotted #8A6A4A60',
+                          paddingBottom: 1,
+                        }}
+                      >
+                        layer reverb
+                      </span>
+                    }
+                  />
                   <div
                     className="flex gap-[2px] cursor-pointer"
                     onClick={(e) => {
