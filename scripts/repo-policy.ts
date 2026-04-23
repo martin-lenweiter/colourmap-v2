@@ -334,7 +334,7 @@ function dedupeViolations(violations: PolicyViolation[]): PolicyViolation[] {
 }
 
 function normalizePath(value: string): string {
-  return path.posix.normalize(value).replace(/^(\.\/)+/, '');
+  return path.posix.normalize(value.replace(/\\/g, '/')).replace(/^(\.\/)+/, '');
 }
 
 function sameModulePath(left: string, right: string): boolean {
