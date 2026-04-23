@@ -311,6 +311,9 @@ export default function CircleBoard() {
             className="italic"
             style={{ fontFamily: font, fontSize: '14px', color: '#8A6A4A', opacity: 0.8 }}
           >
+            coworking with people you trust
+          </p>
+          <p style={{ fontFamily: font, fontSize: '13px', color: '#8A6A4A', opacity: 0.6 }}>
             first, what should people call you?
           </p>
         </div>
@@ -366,9 +369,23 @@ export default function CircleBoard() {
           </p>
           <p
             className="italic"
-            style={{ fontFamily: font, fontSize: '14px', color: '#8A6A4A', opacity: 0.8 }}
+            style={{ fontFamily: font, fontSize: '14px', color: '#8A6A4A', opacity: 0.85 }}
           >
-            your shared spaces
+            coworking with people you trust
+          </p>
+          <p
+            style={{
+              fontFamily: font,
+              fontSize: '12px',
+              color: '#8A6A4A',
+              opacity: 0.55,
+              maxWidth: 300,
+              margin: '0 auto',
+              lineHeight: 1.5,
+            }}
+          >
+            a shared space to hold missions together, feel each other's pulse, and leave notes —
+            like a quiet co-working room for what matters most.
           </p>
         </div>
 
