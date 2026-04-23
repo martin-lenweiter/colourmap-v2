@@ -2125,6 +2125,56 @@ export default function BinauralTuner() {
     if (gainRef.current) gainRef.current.gain.value = volume;
   }, [volume]);
 
+  // Mobile-friendly audio session handling:
+  //   - Page Visibility API  → when the user tabs away, switches
+  //     apps, or locks the phone, duck the master gain to ~0 over
+  //     300ms so the audio goes quiet without disappearing. Restore
+  //     to the user's volume when the tab becomes visible again.
+  //     This is the web-app equivalent of iOS AudioSession ducking
+  //     and matches how native apps behave on incoming calls.
+  //   - Works on both iOS Safari and Android Chrome; both fire
+  //     'visibilitychange' events reliably.
+  // NOTE: The browser may also freeze Web Audio entirely when the
+  // tab is hidden (especially iOS Safari). That's platform-level,
+  // not something we can prevent from JS. The duck-and-restore
+  // keeps the audio graph alive and ready to resume cleanly.
+  useEffect(() => {
+    if (!playing) return;
+
+    function duck() {
+      const g = gainRef.current;
+      const ctx = ctxRef.current;
+      if (!g || !ctx) return;
+      const now = ctx.currentTime;
+      g.gain.cancelScheduledValues(now);
+      g.gain.setValueAtTime(g.gain.value, now);
+      g.gain.linearRampToValueAtTime(0.0001, now + 0.3);
+    }
+
+    function restore() {
+      const g = gainRef.current;
+      const ctx = ctxRef.current;
+      if (!g || !ctx) return;
+      // Resume the context too — iOS Safari sometimes auto-suspends
+      // a hidden AudioContext, and we want audible sound back fast.
+      if (ctx.state === 'suspended') {
+        ctx.resume().catch(() => {});
+      }
+      const now = ctx.currentTime;
+      g.gain.cancelScheduledValues(now);
+      g.gain.setValueAtTime(g.gain.value, now);
+      g.gain.linearRampToValueAtTime(volume, now + 0.5);
+    }
+
+    function onVisibilityChange() {
+      if (document.hidden) duck();
+      else restore();
+    }
+
+    document.addEventListener('visibilitychange', onVisibilityChange);
+    return () => document.removeEventListener('visibilitychange', onVisibilityChange);
+  }, [playing, volume]);
+
   // Binaural beat (right osc) toggle
   useEffect(() => {
     if (oscRGainRef.current && ctxRef.current) {
@@ -2370,6 +2420,25 @@ export default function BinauralTuner() {
 
   return (
     <div className="space-y-4">
+      {/* Mobile-only gentle banner: the browser suspends audio when
+          the tab is hidden. Let the user know so they don't think the
+          app is broken when sound stops after switching apps. */}
+      {playing && (
+        <div
+          className="md:hidden mx-auto max-w-md rounded-xl border border-border bg-muted/40 px-3 py-2 text-center"
+          style={{
+            fontFamily: 'var(--font-serif)',
+            fontSize: 12,
+            color: 'var(--muted-foreground)',
+            lineHeight: 1.45,
+          }}
+          role="note"
+        >
+          Keep the app open to hear the sound continuously. Switching apps or locking your phone
+          will pause audio — it resumes when you return.
+        </div>
+      )}
+
       {/* Title */}
       <div className="text-center space-y-1">
         <p
