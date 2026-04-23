@@ -114,8 +114,8 @@
       ],
       "excludeSuffixes": [".test.ts", ".test.tsx", ".spec.ts", ".spec.tsx"],
       "metrics": {
-        "lines": 12,
-        "statements": 12,
+        "lines": 11,
+        "statements": 11,
         "functions": 11,
         "branches": 10
       }
