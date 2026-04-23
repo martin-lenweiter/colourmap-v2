@@ -3,6 +3,7 @@ import { redirect } from 'next/navigation';
 
 import ColourmapBrandButton from '@/components/ColourmapBrandButton';
 import DevBranchHud from '@/components/DevBranchHud';
+import MobileViewportBoot from '@/components/MobileViewportBoot';
 import NavLinks from '@/components/NavLinks';
 import StepBack from '@/components/StepBack';
 import ThemeSwitcher from '@/components/ThemeSwitcher';
@@ -38,6 +39,7 @@ export default async function AppLayout({
 
   return (
     <ViewModeProvider>
+      <MobileViewportBoot />
       <div className="min-h-screen bg-background">
         <header className="border-b border-border">
           <div className="mx-auto flex w-full max-w-5xl flex-col gap-3 px-6 py-3">
