@@ -837,6 +837,23 @@ const REAL_LAYERS: LayerDef[] = [
     group: 'real',
     build: (ctx) => buildRealSound(ctx, '/sounds/real-rain-heavy-recording.ogg'),
   },
+  // Shamanic + percussion (from public/sounds/drums/, all Public Domain
+  // per public/sounds/ATTRIBUTIONS.md). Long continuous recordings that
+  // loop cleanly with the crossfade treatment.
+  {
+    id: 'real-shamanic-drum',
+    label: 'Shamanic Drum',
+    color: '#B33A2B',
+    group: 'real',
+    build: (ctx) => buildRealSound(ctx, '/sounds/drums/Schamanische_Reise.ogg'),
+  },
+  {
+    id: 'real-tambourine',
+    label: 'Tambourine',
+    color: '#E8B568',
+    group: 'real',
+    build: (ctx) => buildRealSound(ctx, '/sounds/drums/Tambourine.ogg'),
+  },
   // Synthesized sci-fi / cyberpunk
   {
     id: 'spaceship',
