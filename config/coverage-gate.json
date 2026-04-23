@@ -98,7 +98,7 @@
     },
     {
       "name": "ui-default",
-      "description": "Presentation-heavy UI carries a lower floor than server-side logic. Thresholds were dropped from 18/18/14/10 to 12/12/11/10 during the sound-studio-polish merge (PR #26, 2026-04-23), which added ~25k lines of new UI (Magic Maker, Calming Sounds, Circles) without proportional tests. Ratchet back up as UI tests land in follow-up PRs.",
+      "description": "Presentation-heavy UI carries a lower floor than server-side logic. Thresholds were dropped from 18/18/14/10 to 12/12/11/10 during the sound-studio-polish merge (PR #26, 2026-04-23), then again to 11/11/11/10 after the atom-visualizer merge (PR #47, 2026-04-23) added AtomVisualizer + 13 modes without proportional tests. Ratchet back up as UI tests land in follow-up PRs.",
       "include": [
         {
           "prefix": "components/",
@@ -114,8 +114,8 @@
       ],
       "excludeSuffixes": [".test.ts", ".test.tsx", ".spec.ts", ".spec.tsx"],
       "metrics": {
-        "lines": 12,
-        "statements": 12,
+        "lines": 11,
+        "statements": 11,
         "functions": 11,
         "branches": 10
       }
