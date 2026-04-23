@@ -2,6 +2,8 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 
+import InfoTooltip from '@/components/InfoTooltip';
+
 /* ═══════════════════════════════════════════════════════════
    BINAURAL TUNER — adaptive soundscape generator.
    Reads your check-in state to suggest a frequency.
@@ -3624,19 +3626,40 @@ export default function BinauralTuner() {
             </button>
             {layersOpen && (
               <div className="animate-in fade-in duration-150 space-y-2 pt-1">
-                {/* Layer softness / reverb — smooth bar matching the volume control */}
+                {/* Layer softness control — smooth bar + click-to-explain label */}
                 <div className="flex items-center justify-center gap-2">
-                  <span
-                    style={{
-                      fontFamily: 'var(--font-serif)',
-                      fontSize: '13px',
-                      fontWeight: 600,
-                      color: '#7A5438',
-                      letterSpacing: '0.02em',
-                    }}
-                  >
-                    layer softness
-                  </span>
+                  <InfoTooltip
+                    title="Layer Softness (Reverb)"
+                    content={
+                      <>
+                        <p style={{ margin: 0 }}>
+                          Reverb makes every layer sound like it's playing in a bigger space — a
+                          room, a hall, a cathedral. Turn it up and sounds feel softer, further
+                          away, more dreamlike. Turn it down and they feel tight and close.
+                        </p>
+                        <p style={{ margin: '8px 0 0 0' }}>
+                          Technically it's a shared reverb bus that all active layers run through,
+                          so the whole mix breathes together. The percentage is how much of each
+                          layer is sent into that bus.
+                        </p>
+                      </>
+                    }
+                    trigger={
+                      <span
+                        style={{
+                          fontFamily: 'var(--font-serif)',
+                          fontSize: '13px',
+                          fontWeight: 600,
+                          color: '#7A5438',
+                          letterSpacing: '0.02em',
+                          borderBottom: '1px dotted #7A543860',
+                          paddingBottom: 1,
+                        }}
+                      >
+                        layer softness
+                      </span>
+                    }
+                  />
                   <div
                     className="relative cursor-pointer"
                     style={{ width: 120, height: 14 }}
