@@ -1,62 +1,23 @@
 // @vitest-environment jsdom
-import { cleanup, render, screen } from '@testing-library/react';
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 
-vi.mock('@/components/CheckInForm', () => ({
-  default: () => <div data-testid="check-in-form">CheckInForm</div>,
+vi.mock('next/navigation', () => ({
+  redirect: vi.fn((path: string) => {
+    throw new Error(`REDIRECT:${path}`);
+  }),
 }));
 
-vi.mock('@/components/CheckInHistory', () => ({
-  default: () => <div data-testid="check-in-history">History</div>,
-}));
+import { redirect } from 'next/navigation';
 
-vi.mock('@/components/MissionTracker', () => ({
-  default: () => <div data-testid="mission-tracker">MissionTracker</div>,
-}));
+import RootAppPage from './page';
 
-vi.mock('@/components/BackOfMind', () => ({
-  default: () => <div data-testid="back-of-mind">BackOfMind</div>,
-}));
-
-vi.mock('@/components/CockpitSection', () => ({
-  default: () => <div data-testid="cockpit-sections">Sections</div>,
-}));
-
-vi.mock('@/components/CollapsibleCard', () => ({
-  default: ({
-    title,
-    children,
-  }: {
-    title: string;
-    children: React.ReactNode;
-    defaultOpen?: boolean;
-  }) => <div data-testid={`card-${title.toLowerCase().replace(/\s+/g, '-')}`}>{children}</div>,
-}));
-
-import CockpitPage from './page';
-
-describe('CockpitPage', () => {
-  beforeEach(() => {
-    vi.stubGlobal(
-      'fetch',
-      vi.fn(() => Promise.resolve({ ok: true, json: () => Promise.resolve([]) })),
-    );
-  });
-
+describe('RootAppPage', () => {
   afterEach(() => {
-    cleanup();
-    vi.restoreAllMocks();
+    vi.clearAllMocks();
   });
 
-  it('renders all sections', () => {
-    render(<CockpitPage />);
-
-    expect(screen.getByText('Feeling, left of center')).toBeDefined();
-    expect(screen.getByText('Doing, right on time')).toBeDefined();
-    expect(screen.getByTestId('check-in-form')).toBeDefined();
-    expect(screen.getByTestId('check-in-history')).toBeDefined();
-    expect(screen.getByTestId('mission-tracker')).toBeDefined();
-    expect(screen.getByTestId('back-of-mind')).toBeDefined();
-    expect(screen.getByTestId('cockpit-sections')).toBeDefined();
+  it('redirects to /day', () => {
+    expect(() => RootAppPage()).toThrow('REDIRECT:/day');
+    expect(redirect).toHaveBeenCalledWith('/day');
   });
 });
