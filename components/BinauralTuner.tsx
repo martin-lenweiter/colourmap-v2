@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 
-import AtomVisualizer from '@/components/AtomVisualizer';
+import AtomVisualizer, { type VisualizerMode } from '@/components/AtomVisualizer';
 
 /* ═══════════════════════════════════════════════════════════
    BINAURAL TUNER — adaptive soundscape generator.
@@ -2845,42 +2845,8 @@ export default function BinauralTuner() {
             </div>
           </div>
 
-          {/* Atom Visualizer — interactive dot field that breathes with the sound */}
-          <div className="px-2">
-            <div
-              className="rounded-2xl border border-border p-3"
-              style={{ background: 'rgba(92,48,24,0.03)' }}
-            >
-              <div className="mb-2 flex items-center justify-between">
-                <p
-                  className="uppercase"
-                  style={{
-                    fontFamily: 'var(--font-serif)',
-                    fontSize: 13,
-                    fontWeight: 700,
-                    letterSpacing: '0.14em',
-                    color: '#5C3018',
-                  }}
-                >
-                  Atom
-                </p>
-                <p
-                  className="italic"
-                  style={{
-                    fontFamily: 'var(--font-serif)',
-                    fontSize: 11,
-                    color: '#8A6A4A',
-                    opacity: 0.75,
-                  }}
-                >
-                  drag to push — breathes with the sound
-                </p>
-              </div>
-              <div className="flex justify-center">
-                <AtomVisualizer width={300} height={180} intensity={0.7} />
-              </div>
-            </div>
-          </div>
+          {/* Visualizer Box — family of soft dot visuals, user picks the mode */}
+          <VisualizerBox />
 
           {/* Harmony — musical intervals that fit the base tone */}
           <div className="px-2">
@@ -3705,6 +3671,123 @@ export default function BinauralTuner() {
       )}
 
       {/* Suggestion removed — was "balanced state alpha waves to maintain" */}
+    </div>
+  );
+}
+
+/*
+ * VisualizerBox — a labeled card containing the AtomVisualizer
+ * plus a mode picker so users can cycle through the visualization
+ * family (atom / fibonacci / phyllotaxis / wave).
+ *
+ * Defaults to 'atom' (the original) and persists the chosen mode
+ * per user in localStorage so each person keeps their favorite.
+ */
+function VisualizerBox() {
+  const [mode, setMode] = useState<VisualizerMode>('atom');
+
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem('colourmap:visualizer-mode');
+      if (
+        saved === 'atom' ||
+        saved === 'fibonacci' ||
+        saved === 'phyllotaxis' ||
+        saved === 'wave'
+      ) {
+        setMode(saved);
+      }
+    } catch {}
+  }, []);
+
+  useEffect(() => {
+    try {
+      localStorage.setItem('colourmap:visualizer-mode', mode);
+    } catch {}
+  }, [mode]);
+
+  const MODES: { id: VisualizerMode; label: string; desc: string }[] = [
+    { id: 'atom', label: 'Atom', desc: 'drag to push — cloud of dots breathes with the sound' },
+    {
+      id: 'fibonacci',
+      label: 'Fibonacci',
+      desc: 'golden-ratio spiral that slowly rotates and expands with loudness',
+    },
+    {
+      id: 'phyllotaxis',
+      label: 'Sunflower',
+      desc: 'continuous outward growth — seeds that appear to keep coming',
+    },
+    {
+      id: 'wave',
+      label: 'Ripples',
+      desc: 'concentric rings pulsing outward in time with the audio',
+    },
+  ];
+
+  const current = MODES.find((m) => m.id === mode) ?? MODES[0];
+
+  return (
+    <div className="px-2">
+      <div
+        className="rounded-2xl border border-border p-3"
+        style={{ background: 'rgba(92,48,24,0.03)' }}
+      >
+        <div className="mb-2 flex items-center justify-between">
+          <p
+            className="uppercase"
+            style={{
+              fontFamily: 'var(--font-serif)',
+              fontSize: 13,
+              fontWeight: 700,
+              letterSpacing: '0.14em',
+              color: '#5C3018',
+            }}
+          >
+            Visual
+          </p>
+          <p
+            className="italic"
+            style={{
+              fontFamily: 'var(--font-serif)',
+              fontSize: 11,
+              color: '#8A6A4A',
+              opacity: 0.75,
+              textAlign: 'right',
+              maxWidth: 220,
+            }}
+          >
+            {current.desc}
+          </p>
+        </div>
+
+        {/* Mode picker */}
+        <div className="mb-3 flex flex-wrap justify-center gap-1.5">
+          {MODES.map((m) => {
+            const isOn = mode === m.id;
+            return (
+              <button
+                key={m.id}
+                type="button"
+                onClick={() => setMode(m.id)}
+                aria-pressed={isOn}
+                className="cursor-pointer rounded-full px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.12em] transition-all"
+                style={{
+                  color: isOn ? '#F5E8C8' : '#8A6A4A',
+                  background: isOn ? '#7A5438' : 'transparent',
+                  border: '1px solid rgba(196, 160, 96, 0.3)',
+                }}
+              >
+                {m.label}
+              </button>
+            );
+          })}
+        </div>
+
+        <div className="flex justify-center">
+          <AtomVisualizer width={300} height={180} intensity={0.7} mode={mode} />
+        </div>
+      </div>
     </div>
   );
 }

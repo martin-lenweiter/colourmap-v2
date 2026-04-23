@@ -3,32 +3,39 @@
 import { useEffect, useRef, useState } from 'react';
 
 /*
- * Atom Visualizer
- * ----------------
- * A soft, peaceful cloud of 180 colored dots arranged around a center.
- * Touch or click-drag the canvas to push the nearest dots outward; they
- * spring smoothly back to their home position.
+ * Atom Visualizer — a family of soft, peaceful dot visualizations
+ * ---------------------------------------------------------------
  *
- * Audio-reactive: if a Web Audio AnalyserNode is passed in via the
- * `analyser` prop, the dots breathe with the music — brightness and
- * size pulse with the current loudness.
+ * Four selectable modes:
+ *   - atom        : dots in a golden-spiral cloud, spring-tied to home,
+ *                   drag to push. Audio-reactive brightness + size.
+ *   - fibonacci   : a slowly-rotating Fibonacci spiral that grows
+ *                   organically as it turns. Each dot traces an orbit.
+ *   - phyllotaxis : sunflower-seed arrangement, continuously shifting
+ *                   phase so the pattern appears to breathe outward.
+ *   - wave        : concentric radial ripples emanating from the
+ *                   center, phase-shifted by music loudness.
  *
- * Rendered on Canvas 2D for iOS/Android compatibility and low battery
- * impact. Target: 60 fps with 180 dots on iPhone 11+ and modern Android.
- *
- * Pauses automatically when the page is hidden (same visibility trick
- * the audio engine uses) so it doesn't drain battery in the background.
+ * All modes:
+ *   - Canvas 2D (iOS Safari friendly, low battery)
+ *   - pause when `document.hidden`
+ *   - respond to pointer (touch/mouse drag)
+ *   - optionally react to an AnalyserNode for loudness modulation
  */
+
+export type VisualizerMode = 'atom' | 'fibonacci' | 'phyllotaxis' | 'wave';
 
 interface AtomVisualizerProps {
   /** Optional AnalyserNode for audio-reactive dot modulation */
   analyser?: AnalyserNode | null;
-  /** Width in px; defaults to 320. Canvas adapts to container if set to 'auto' */
+  /** Width in px; defaults to 320 */
   width?: number;
   /** Height in px; defaults to 200 */
   height?: number;
-  /** Visual intensity 0-1: how wildly dots react to touch and sound */
+  /** Visual intensity 0-1: how wildly dots react to touch/sound */
   intensity?: number;
+  /** Which visualization mode to render */
+  mode?: VisualizerMode;
 }
 
 interface Dot {
@@ -41,6 +48,8 @@ interface Dot {
   color: string;
   baseSize: number;
   phase: number;
+  /** For Fibonacci/phyllotaxis modes: the dot's index in the spiral */
+  idx: number;
 }
 
 const WARM_PALETTE = [
@@ -54,17 +63,17 @@ const WARM_PALETTE = [
   '#7AAA58',
 ];
 
+const GOLDEN_ANGLE = Math.PI * (3 - Math.sqrt(5));
+
 function buildDots(count: number, width: number, height: number, palette: string[]): Dot[] {
   const dots: Dot[] = [];
   const cx = width / 2;
   const cy = height / 2;
   const maxR = Math.min(width, height) * 0.42;
   for (let i = 0; i < count; i++) {
-    // Golden-angle spiral for even distribution — sunflower-seed pattern
-    const goldenAngle = Math.PI * (3 - Math.sqrt(5));
     const t = i / count;
     const r = maxR * Math.sqrt(t);
-    const a = i * goldenAngle;
+    const a = i * GOLDEN_ANGLE;
     const homeX = cx + r * Math.cos(a);
     const homeY = cy + r * Math.sin(a);
     dots.push({
@@ -77,6 +86,7 @@ function buildDots(count: number, width: number, height: number, palette: string
       color: palette[i % palette.length],
       baseSize: 1.4 + Math.random() * 1.8,
       phase: Math.random() * Math.PI * 2,
+      idx: i,
     });
   }
   return dots;
@@ -87,6 +97,7 @@ export default function AtomVisualizer({
   width = 320,
   height = 200,
   intensity = 0.6,
+  mode = 'atom',
 }: AtomVisualizerProps) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const dotsRef = useRef<Dot[]>([]);
@@ -96,9 +107,13 @@ export default function AtomVisualizer({
     y: 0,
     active: false,
   });
+  const modeRef = useRef<VisualizerMode>(mode);
   const [hidden, setHidden] = useState(false);
 
-  // Pause when document is hidden (same trick the audio engine uses)
+  useEffect(() => {
+    modeRef.current = mode;
+  }, [mode]);
+
   useEffect(() => {
     function onVis() {
       setHidden(document.hidden);
@@ -111,7 +126,6 @@ export default function AtomVisualizer({
     const canvas = canvasRef.current;
     if (!canvas) return;
 
-    // Handle retina / hi-dpi
     const dpr = Math.min(window.devicePixelRatio || 1, 2);
     canvas.width = width * dpr;
     canvas.height = height * dpr;
@@ -121,7 +135,7 @@ export default function AtomVisualizer({
     if (!ctx) return;
     ctx.scale(dpr, dpr);
 
-    dotsRef.current = buildDots(180, width, height, WARM_PALETTE);
+    dotsRef.current = buildDots(200, width, height, WARM_PALETTE);
 
     const analyserData = analyser ? new Uint8Array(analyser.frequencyBinCount) : null;
 
@@ -131,7 +145,7 @@ export default function AtomVisualizer({
         return;
       }
 
-      // Compute current audio loudness (0-1) if analyser is connected
+      // Current audio loudness (0-1)
       let loudness = 0;
       if (analyser && analyserData) {
         analyser.getByteTimeDomainData(analyserData);
@@ -144,58 +158,116 @@ export default function AtomVisualizer({
       }
 
       if (!ctx) return;
-      // Fade previous frame (trail effect)
-      ctx.fillStyle = 'rgba(0, 0, 0, 0)';
       ctx.clearRect(0, 0, width, height);
 
       const dots = dotsRef.current;
       const p = pointerRef.current;
-      const pushRadius = 60 * intensity;
-      const pushStrength = 1.5 * intensity;
+      const currentMode = modeRef.current;
+      const cx = width / 2;
+      const cy = height / 2;
+      const maxR = Math.min(width, height) * 0.42;
+      const timeS = tMs / 1000;
 
-      for (const d of dots) {
-        // Spring toward home
-        const dx = d.homeX - d.x;
-        const dy = d.homeY - d.y;
-        d.vx += dx * 0.02;
-        d.vy += dy * 0.02;
-
-        // Pointer push
-        if (p.active) {
-          const pdx = d.x - p.x;
-          const pdy = d.y - p.y;
-          const pdist = Math.sqrt(pdx * pdx + pdy * pdy);
-          if (pdist < pushRadius && pdist > 0.01) {
-            const force = (1 - pdist / pushRadius) * pushStrength;
-            d.vx += (pdx / pdist) * force;
-            d.vy += (pdy / pdist) * force;
+      if (currentMode === 'atom') {
+        // Spring-to-home + pointer-push interactive cloud
+        const pushRadius = 60 * intensity;
+        const pushStrength = 1.5 * intensity;
+        for (const d of dots) {
+          const dx = d.homeX - d.x;
+          const dy = d.homeY - d.y;
+          d.vx += dx * 0.02;
+          d.vy += dy * 0.02;
+          if (p.active) {
+            const pdx = d.x - p.x;
+            const pdy = d.y - p.y;
+            const pdist = Math.sqrt(pdx * pdx + pdy * pdy);
+            if (pdist < pushRadius && pdist > 0.01) {
+              const force = (1 - pdist / pushRadius) * pushStrength;
+              d.vx += (pdx / pdist) * force;
+              d.vy += (pdy / pdist) * force;
+            }
+          }
+          d.vx *= 0.9;
+          d.vy *= 0.9;
+          d.x += d.vx;
+          d.y += d.vy;
+          const bob = 1 + Math.sin(timeS + d.phase) * 0.15;
+          const audioBob = 1 + loudness * 1.2;
+          const size = d.baseSize * bob * audioBob;
+          ctx.globalAlpha = 0.4 + loudness * 0.6;
+          ctx.fillStyle = d.color;
+          ctx.beginPath();
+          ctx.arc(d.x, d.y, size, 0, Math.PI * 2);
+          ctx.fill();
+        }
+      } else if (currentMode === 'fibonacci') {
+        // Slowly rotating Fibonacci spiral. Each dot rides an orbit
+        // that expands/contracts with the music.
+        const rotation = timeS * 0.15;
+        for (const d of dots) {
+          const t = d.idx / dots.length;
+          const r = maxR * Math.sqrt(t) * (1 + loudness * 0.25);
+          const a = d.idx * GOLDEN_ANGLE + rotation;
+          const x = cx + r * Math.cos(a);
+          const y = cy + r * Math.sin(a);
+          d.x = x;
+          d.y = y;
+          const size = d.baseSize * (1 + Math.sin(timeS * 1.5 + d.phase) * 0.2);
+          ctx.globalAlpha = 0.35 + t * 0.4 + loudness * 0.25;
+          ctx.fillStyle = d.color;
+          ctx.beginPath();
+          ctx.arc(x, y, size, 0, Math.PI * 2);
+          ctx.fill();
+        }
+      } else if (currentMode === 'phyllotaxis') {
+        // Sunflower-seed expansion, phase-shifted outward over time.
+        // Creates an illusion of infinite outward growth.
+        const drift = (timeS * 15) % dots.length;
+        for (const d of dots) {
+          const shifted = (d.idx + drift) % dots.length;
+          const t = shifted / dots.length;
+          const r = maxR * Math.sqrt(t);
+          const a = shifted * GOLDEN_ANGLE;
+          const x = cx + r * Math.cos(a);
+          const y = cy + r * Math.sin(a);
+          d.x = x;
+          d.y = y;
+          // Fade in from center, fade out at edge
+          const centerFade = Math.min(1, t * 4);
+          const edgeFade = 1 - Math.max(0, (t - 0.85) / 0.15);
+          ctx.globalAlpha = (0.4 + loudness * 0.5) * centerFade * edgeFade;
+          ctx.fillStyle = d.color;
+          ctx.beginPath();
+          ctx.arc(x, y, d.baseSize + loudness * 1.5, 0, Math.PI * 2);
+          ctx.fill();
+        }
+      } else if (currentMode === 'wave') {
+        // Concentric radial waves — dots arranged on rings, phase-
+        // shifted by time and loudness, pulsing outward.
+        const rings = 12;
+        const per = Math.ceil(dots.length / rings);
+        for (let r = 0; r < rings; r++) {
+          const ringT = r / (rings - 1);
+          const wavePhase = timeS * 1.2 - r * 0.6;
+          const radius = maxR * (ringT + Math.sin(wavePhase) * 0.08 * (1 + loudness));
+          for (let i = 0; i < per; i++) {
+            const d = dots[r * per + i];
+            if (!d) continue;
+            const a = (i / per) * Math.PI * 2 + wavePhase * 0.3;
+            const x = cx + radius * Math.cos(a);
+            const y = cy + radius * Math.sin(a);
+            d.x = x;
+            d.y = y;
+            ctx.globalAlpha = 0.3 + loudness * 0.5;
+            ctx.fillStyle = d.color;
+            ctx.beginPath();
+            ctx.arc(x, y, d.baseSize * (0.8 + Math.sin(wavePhase) * 0.3), 0, Math.PI * 2);
+            ctx.fill();
           }
         }
-
-        // Damping
-        d.vx *= 0.9;
-        d.vy *= 0.9;
-
-        // Integrate
-        d.x += d.vx;
-        d.y += d.vy;
-
-        // Size breathes with audio + per-dot sinusoidal phase
-        const bob = 1 + Math.sin(tMs / 1000 + d.phase) * 0.15;
-        const audioBob = 1 + loudness * 1.2;
-        const size = d.baseSize * bob * audioBob;
-
-        // Brightness modulated by loudness
-        const glow = 0.4 + loudness * 0.6;
-
-        ctx.globalAlpha = glow;
-        ctx.fillStyle = d.color;
-        ctx.beginPath();
-        ctx.arc(d.x, d.y, size, 0, Math.PI * 2);
-        ctx.fill();
       }
-      ctx.globalAlpha = 1;
 
+      ctx.globalAlpha = 1;
       rafRef.current = requestAnimationFrame(loop);
     }
     rafRef.current = requestAnimationFrame(loop);
@@ -241,7 +313,7 @@ export default function AtomVisualizer({
         cursor: 'grab',
         display: 'block',
       }}
-      aria-label="Interactive visualizer — drag or touch to move the dots"
+      aria-label={`Interactive ${mode} visualizer`}
     />
   );
 }
