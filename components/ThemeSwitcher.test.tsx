@@ -84,6 +84,47 @@ describe('ThemeSwitcher', () => {
     expect(document.documentElement.classList.contains('dark')).toBe(true);
   });
 
+  it('shows the three additional night variants', async () => {
+    const user = userEvent.setup();
+    render(<ThemeSwitcher />);
+
+    await user.click(screen.getByText('Design'));
+
+    expect(screen.getByText('Night Brown')).toBeDefined();
+    expect(screen.getByText('Night Blue')).toBeDefined();
+    expect(screen.getByText('Night Purple')).toBeDefined();
+  });
+
+  it('applies both dark and night-blue classes when Night Blue is selected', async () => {
+    const user = userEvent.setup();
+    render(<ThemeSwitcher />);
+
+    await user.click(screen.getByText('Design'));
+    await user.click(screen.getByText('Night Blue'));
+
+    expect(document.documentElement.classList.contains('dark')).toBe(true);
+    expect(document.documentElement.classList.contains('night-blue')).toBe(true);
+    expect(localStorage.setItem).toHaveBeenCalledWith('colourmap-theme', 'night-blue');
+  });
+
+  it('removes all night-variant classes when switching back to Paper', async () => {
+    const user = userEvent.setup();
+    render(<ThemeSwitcher />);
+
+    await user.click(screen.getByText('Design'));
+    await user.click(screen.getByText('Night Purple'));
+    expect(document.documentElement.classList.contains('night-purple')).toBe(true);
+
+    if (!screen.queryByText('Paper')) {
+      await user.click(screen.getByText('Design'));
+    }
+    await user.click(screen.getByText('Paper'));
+    expect(document.documentElement.classList.contains('dark')).toBe(false);
+    expect(document.documentElement.classList.contains('night-purple')).toBe(false);
+    expect(document.documentElement.classList.contains('night-blue')).toBe(false);
+    expect(document.documentElement.classList.contains('night-brown')).toBe(false);
+  });
+
   it('shows Typography tab when clicked', async () => {
     const user = userEvent.setup();
     render(<ThemeSwitcher />);

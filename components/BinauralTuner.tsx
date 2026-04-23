@@ -523,7 +523,7 @@ const LAYERS: LayerDef[] = [
   },
   {
     id: 'jungle',
-    label: 'Jungle',
+    label: 'Lazer Jungle',
     color: '#5F7447',
     group: 'ambient' as const,
     build: (ctx: AudioContext) => {
@@ -2455,17 +2455,6 @@ export default function BinauralTuner() {
         >
           Calming Sounds
         </p>
-        <p
-          className="italic"
-          style={{
-            fontFamily: 'var(--font-serif)',
-            fontSize: '15px',
-            color: '#8A6A4A',
-            opacity: 0.95,
-          }}
-        >
-          find your frequency
-        </p>
       </div>
 
       {/* Simple / Full toggle */}
@@ -2473,11 +2462,12 @@ export default function BinauralTuner() {
         <button
           type="button"
           onClick={() => setSimpleMode((s) => !s)}
-          className="cursor-pointer rounded-full px-3 py-1 text-[12px] font-semibold uppercase tracking-wider transition-all"
+          className="cursor-pointer rounded-full px-5 py-1.5 text-[12px] font-semibold uppercase tracking-[0.12em] transition-all hover:opacity-85"
           style={{
-            color: '#8A6A4A',
-            background: 'transparent',
-            border: '1px solid #C4A06020',
+            color: '#7A5438',
+            background: '#F5E8C8',
+            border: '1px solid rgba(196, 160, 96, 0.35)',
+            boxShadow: '0 1px 2px rgba(94, 58, 20, 0.06)',
           }}
         >
           {simpleMode ? 'open studio' : 'back to simple'}
@@ -3372,7 +3362,7 @@ export default function BinauralTuner() {
                       color: '#8A6A4A',
                     }}
                   >
-                    layer reverb
+                    layer softness
                   </span>
                   <div
                     className="flex gap-[2px] cursor-pointer"
