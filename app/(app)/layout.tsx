@@ -1,6 +1,7 @@
 import { isAuthSessionMissingError } from '@supabase/supabase-js';
 import { redirect } from 'next/navigation';
 
+import DevBranchHud from '@/components/DevBranchHud';
 import NavLinks from '@/components/NavLinks';
 import StepBack from '@/components/StepBack';
 import ThemeSwitcher from '@/components/ThemeSwitcher';
@@ -87,6 +88,7 @@ export default async function AppLayout({
         </header>
         <AppShell>{children}</AppShell>
       </div>
+      <DevBranchHud />
     </ViewModeProvider>
   );
 }
