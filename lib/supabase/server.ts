@@ -25,6 +25,22 @@ function isDevAuthBypassEnabled() {
   return process.env.NODE_ENV !== 'production' && process.env.DEV_BYPASS_AUTH === 'true';
 }
 
+/*
+ * Production guard: DEV_BYPASS_AUTH must never be true in prod.
+ * Today the isDevAuthBypassEnabled() check silently ignores it in
+ * prod, but that's too quiet — if it gets set by accident (wrong
+ * env var dashboard, a shared .env file, a Vercel env leak), the
+ * app still runs against real auth and nobody notices. Fail loudly
+ * instead so the deployment breaks visibly at first import.
+ */
+if (process.env.NODE_ENV === 'production' && process.env.DEV_BYPASS_AUTH === 'true') {
+  throw new Error(
+    'DEV_BYPASS_AUTH must not be set to "true" in production. ' +
+      'Remove it from your hosting provider (Vercel Settings → Environment Variables) ' +
+      'before redeploying.',
+  );
+}
+
 export async function createClient() {
   if (isDevAuthBypassEnabled()) {
     return createDevClient();
