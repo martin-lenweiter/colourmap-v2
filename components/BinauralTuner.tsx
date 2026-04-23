@@ -2846,14 +2846,16 @@ export default function BinauralTuner() {
           {/* Harmony — musical intervals that fit the base tone */}
           <div className="px-2">
             <p
-              className="text-center mb-2"
+              className="text-center mb-2 uppercase"
               style={{
                 fontFamily: 'var(--font-serif)',
-                fontSize: '12px',
-                color: '#7A5438',
+                fontSize: '14px',
+                fontWeight: 700,
+                color: '#5C3018',
+                letterSpacing: '0.18em',
               }}
             >
-              harmonics — {baseFreq}Hz
+              Harmonics · {baseFreq}Hz
             </p>
             <div className="flex justify-center gap-2">
               {HARMONICS.map((h) => {
@@ -2915,14 +2917,16 @@ export default function BinauralTuner() {
           {/* Sacred frequencies — Solfeggio + 432Hz */}
           <div className="px-2">
             <p
-              className="text-center mb-2"
+              className="text-center mb-2 uppercase"
               style={{
                 fontFamily: 'var(--font-serif)',
-                fontSize: '12px',
-                color: '#7A5438',
+                fontSize: '14px',
+                fontWeight: 700,
+                color: '#5C3018',
+                letterSpacing: '0.18em',
               }}
             >
-              sacred frequencies
+              Sacred Frequencies
             </p>
             <div className="flex flex-wrap justify-center gap-1.5">
               {SACRED.map((s) => {
@@ -3291,37 +3295,68 @@ export default function BinauralTuner() {
             </button>
             {layersOpen && (
               <div className="animate-in fade-in duration-150 space-y-2 pt-1">
-                {/* Layer reverb control */}
+                {/* Layer softness / reverb — smooth bar matching the volume control */}
                 <div className="flex items-center justify-center gap-2">
                   <span
                     style={{
                       fontFamily: 'var(--font-serif)',
-                      fontSize: '12px',
-                      color: '#8A6A4A',
+                      fontSize: '13px',
+                      fontWeight: 600,
+                      color: '#7A5438',
+                      letterSpacing: '0.02em',
                     }}
                   >
                     layer reverb
                   </span>
                   <div
-                    className="flex gap-[2px] cursor-pointer"
+                    className="relative cursor-pointer"
+                    style={{ width: 120, height: 14 }}
                     onClick={(e) => {
                       const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
-                      setLayerReverb(Math.round(((e.clientX - rect.left) / rect.width) * 100));
+                      setLayerReverb(
+                        Math.round(
+                          Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width)) * 100,
+                        ),
+                      );
                     }}
                   >
-                    {Array.from({ length: 8 }, (_, i) => (
-                      <div
-                        key={i}
-                        className="rounded-[2px] transition-all"
-                        style={{
-                          width: 10,
-                          height: 6,
-                          background: '#A0907A',
-                          opacity: i / 7 <= layerReverb / 100 ? 0.4 + (i / 7) * 0.4 : 0.08,
-                        }}
-                      />
-                    ))}
+                    <div
+                      className="absolute top-1/2 -translate-y-1/2 left-0 right-0 rounded-full"
+                      style={{ height: 4, background: '#C4A06015' }}
+                    />
+                    <div
+                      className="absolute top-1/2 -translate-y-1/2 left-0 rounded-full"
+                      style={{
+                        height: 4,
+                        width: `${layerReverb}%`,
+                        background: 'linear-gradient(90deg, #A0907A30, #A0907A)',
+                      }}
+                    />
+                    <div
+                      className="absolute top-1/2 rounded-full"
+                      style={{
+                        left: `${layerReverb}%`,
+                        width: 12,
+                        height: 12,
+                        background: '#A0907A',
+                        transform: 'translate(-50%, -50%)',
+                        boxShadow: '0 1px 3px rgba(160,144,122,0.5)',
+                      }}
+                    />
                   </div>
+                  <span
+                    style={{
+                      fontFamily: 'var(--font-serif)',
+                      fontSize: '12px',
+                      fontWeight: 600,
+                      color: '#8A6A4A',
+                      width: 30,
+                      flexShrink: 0,
+                      textAlign: 'right',
+                    }}
+                  >
+                    {layerReverb}%
+                  </span>
                 </div>
                 <div className="grid grid-cols-5 gap-1.5">
                   {(['real', 'nature', 'tones', 'texture', 'ambient'] as const).map((group) => {
@@ -3382,7 +3417,7 @@ export default function BinauralTuner() {
                               </button>
                               {isOn && (
                                 <div
-                                  className="flex gap-[2px] px-1 cursor-pointer"
+                                  className="flex gap-[3px] px-1 cursor-pointer"
                                   onClick={(e) => {
                                     const rect = (
                                       e.currentTarget as HTMLElement
@@ -3397,11 +3432,11 @@ export default function BinauralTuner() {
                                   {Array.from({ length: 6 }, (_, i) => (
                                     <div
                                       key={i}
-                                      className="flex-1 rounded-[2px] transition-all"
+                                      className="flex-1 rounded-[3px] transition-all"
                                       style={{
-                                        height: 4,
+                                        height: 8,
                                         background: l.color,
-                                        opacity: i / 5 <= vol ? 0.4 + (i / 5) * 0.4 : 0.08,
+                                        opacity: i / 5 <= vol ? 0.55 + (i / 5) * 0.4 : 0.15,
                                       }}
                                     />
                                   ))}
