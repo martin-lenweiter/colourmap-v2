@@ -523,7 +523,7 @@ const LAYERS: LayerDef[] = [
   },
   {
     id: 'jungle',
-    label: 'Jungle',
+    label: 'Lazer Jungle',
     color: '#5F7447',
     group: 'ambient' as const,
     build: (ctx: AudioContext) => {
@@ -2383,17 +2383,6 @@ export default function BinauralTuner() {
         >
           Calming Sounds
         </p>
-        <p
-          className="italic"
-          style={{
-            fontFamily: 'var(--font-serif)',
-            fontSize: '15px',
-            color: '#8A6A4A',
-            opacity: 0.95,
-          }}
-        >
-          find your frequency
-        </p>
       </div>
 
       {/* Simple / Full toggle */}
@@ -3301,7 +3290,7 @@ export default function BinauralTuner() {
                       color: '#8A6A4A',
                     }}
                   >
-                    layer reverb
+                    layer softness
                   </span>
                   <div
                     className="flex gap-[2px] cursor-pointer"
