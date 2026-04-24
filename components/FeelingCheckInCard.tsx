@@ -2641,13 +2641,11 @@ export default function FeelingCheckInCard() {
                       behind them before). Bigger tap target (28px)
                       and more visible border so it doesn't look like
                       a faded dot. */}
-                  {/* Design-style toggle. Two presentations:
-                      - phone: pill with a small shape + number
-                        (1=squares · 2=dots · 3=losanges) so the user
-                        can say 'I like design 2'.
-                      - desktop: plain sober beige circle, vertically
-                        centered with the slider it controls, no shape
-                        or number inside. */}
+                  {/* Design-style toggle — plain beige dot on both
+                      phone and desktop. User feedback: 'jsut a biege
+                      dot liek in feeling' + 'do it a small bit higher'.
+                      Title carries the current design number so they
+                      can long-press to read it without visual clutter. */}
                   <button
                     type="button"
                     onClick={() =>
@@ -2660,63 +2658,27 @@ export default function FeelingCheckInCard() {
                     } of 3 — tap to cycle`}
                     title={`Design ${
                       hawkinsStyle === 'squares' ? 1 : hawkinsStyle === 'dots' ? 2 : 3
-                    } — tap to cycle`}
-                    className="absolute cursor-pointer md:flex md:items-center md:justify-center"
+                    } of 3`}
+                    className="absolute cursor-pointer flex items-center justify-center"
                     style={{
-                      // Phone: top-right pill with number
-                      // Desktop: small beige circle centered with the slider row (height 48 → centerY = 24)
-                      right: 0,
-                      top: 12,
+                      right: 2,
+                      top: 4,
+                      width: 22,
+                      height: 22,
+                      background: 'transparent',
+                      border: 'none',
+                      padding: 4,
                       zIndex: 2,
                     }}
                   >
-                    {/* Phone presentation (number + shape pill) */}
-                    <span
-                      className="md:hidden flex items-center justify-center gap-1"
-                      style={{
-                        minWidth: 36,
-                        height: 28,
-                        padding: '0 6px',
-                        background: '#F5E8C8',
-                        border: '1.5px solid #C4A06055',
-                        borderRadius: 999,
-                        boxShadow: '0 1px 3px rgba(92,48,24,0.12)',
-                      }}
-                    >
-                      <span
-                        style={{
-                          width: 10,
-                          height: 10,
-                          background: '#8A6A4A',
-                          borderRadius: hawkinsStyle === 'dots' ? '50%' : '3px',
-                          display: 'block',
-                          transform: hawkinsStyle === 'losanges' ? 'rotate(45deg)' : 'rotate(0deg)',
-                          transition: 'border-radius 200ms, transform 200ms',
-                        }}
-                      />
-                      <span
-                        style={{
-                          fontFamily: 'var(--font-serif)',
-                          fontSize: 11,
-                          fontWeight: 700,
-                          color: '#8A6A4A',
-                          lineHeight: 1,
-                        }}
-                      >
-                        {hawkinsStyle === 'squares' ? '1' : hawkinsStyle === 'dots' ? '2' : '3'}
-                      </span>
-                    </span>
-                    {/* Desktop presentation (plain beige circle) */}
                     <span
                       aria-hidden="true"
-                      className="hidden md:block"
                       style={{
                         width: 14,
                         height: 14,
                         background: '#C4A060',
                         borderRadius: '50%',
                         opacity: 0.6,
-                        border: 'none',
                       }}
                     />
                   </button>
