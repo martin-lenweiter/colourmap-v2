@@ -6,7 +6,7 @@
    to tag directly, or expand to see your life categories.
    ═══════════════════════════════════════════════════════════ */
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef } from 'react';
 
 export interface TagValue {
   name: string;
@@ -28,10 +28,12 @@ export interface CompassAxis {
   group: string;
 }
 
+// Compass dot palette per Martin 2026-04-24:
+//   feeling → warm orange · doing → ochre · sharing → warm olive/army.
 const COMPASSES = [
-  { id: 'caring', label: 'Feeling', color: '#D4805A' },
-  { id: 'doing', label: 'Doing', color: '#6890B0' },
-  { id: 'sharing', label: 'Sharing', color: '#6B7F4E' },
+  { id: 'caring', label: 'Feeling', color: '#E07840' },
+  { id: 'doing', label: 'Doing', color: '#C4A060' },
+  { id: 'sharing', label: 'Sharing', color: '#7B8C4A' },
 ];
 
 interface Props {
@@ -54,33 +56,15 @@ export default function CategoryTagPicker({
   lifeCategories,
 }: Props) {
   const ref = useRef<HTMLDivElement>(null);
-  const [showThree, setShowThree] = useState(false);
 
   useEffect(() => {
-    if (!open) {
-      setShowThree(false);
-      return;
-    }
+    if (!open) return;
     const handler = (e: MouseEvent) => {
       if (ref.current && !ref.current.contains(e.target as Node)) onClose();
     };
     document.addEventListener('mousedown', handler);
     return () => document.removeEventListener('mousedown', handler);
   }, [open, onClose]);
-
-  // Group user categories by compass assignment
-  const catsByCompass: Record<string, LifeCategoryLike[]> = {};
-  const unassigned: LifeCategoryLike[] = [];
-  for (const cat of lifeCategories) {
-    if (cat.compass) {
-      if (!catsByCompass[cat.compass]) catsByCompass[cat.compass] = [];
-      catsByCompass[cat.compass].push(cat);
-    } else {
-      unassigned.push(cat);
-    }
-  }
-
-  const hasCategories = lifeCategories.length > 0 || unassigned.length > 0;
 
   function selectTag(tag: TagValue) {
     onChange(tag);
@@ -89,135 +73,55 @@ export default function CategoryTagPicker({
 
   return (
     <div ref={ref} className="relative shrink-0" style={{ zIndex: open ? 50 : 'auto' }}>
-      {/* Trigger — single losange → three dots → dropdown */}
-      <div className="flex items-center gap-1.5">
-        {!showThree && !open && (
-          <button
-            type="button"
-            onClick={() => {
-              if (value) {
-                onToggle();
-              } else {
-                setShowThree(true);
-              }
-            }}
-            aria-label={value ? `Tag: ${value.name} (tap to change)` : 'Tag with a category'}
-            className="flex cursor-pointer items-center gap-1.5 rounded-md px-1.5 py-1 transition-all"
-            style={{
-              background: value ? `${value.color}15` : 'transparent',
-              border: value ? `1px solid ${value.color}60` : 'none',
-            }}
-          >
-            {value ? (
-              <>
-                <span
-                  className="block rounded-full"
-                  style={{
-                    width: 8,
-                    height: 8,
-                    background: value.color,
-                  }}
-                />
-                <span
-                  style={{
-                    color: value.color,
-                    fontFamily: 'var(--font-serif)',
-                    fontSize: '11px',
-                    fontWeight: 600,
-                    letterSpacing: '0.02em',
-                    lineHeight: 1,
-                    maxWidth: 80,
-                    overflow: 'hidden',
-                    textOverflow: 'ellipsis',
-                    whiteSpace: 'nowrap',
-                  }}
-                >
-                  {value.name}
-                </span>
-              </>
-            ) : (
-              <span
-                className="block rounded-full transition-all"
-                style={{
-                  width: 11,
-                  height: 11,
-                  background: '#C4A060',
-                  opacity: 0.5,
-                }}
-              />
-            )}
-          </button>
-        )}
-
-        {/* Three compass dots — tap to tag directly */}
-        {showThree && !open && (
-          <div className="flex items-center gap-2 animate-in fade-in duration-150">
-            {COMPASSES.map((c) => (
-              <button
-                key={c.id}
-                type="button"
-                onClick={() => {
-                  // If there are categories under this compass, open the picker
-                  if ((catsByCompass[c.id] || []).length > 0 || hasCategories) {
-                    setShowThree(false);
-                    onToggle();
-                  } else {
-                    // Tag directly with this compass
-                    selectTag({ name: c.label, color: c.color });
-                    setShowThree(false);
-                  }
-                }}
-                onDoubleClick={() => {
-                  // Double-tap always tags directly
-                  selectTag({ name: c.label, color: c.color });
-                  setShowThree(false);
-                }}
-                className="cursor-pointer transition-all hover:scale-125"
-                style={{ background: 'none', border: 'none', padding: 2 }}
-                title={c.label}
-              >
-                <span
-                  className="block rounded-full transition-all"
-                  style={{
-                    width: 12,
-                    height: 12,
-                    background: c.color,
-                    opacity: 0.85,
-                  }}
-                />
-              </button>
-            ))}
-            <button
-              type="button"
-              onClick={() => setShowThree(false)}
-              className="cursor-pointer text-xs transition-all"
-              style={{ background: 'none', border: 'none', color: '#8A6A4A', opacity: 0.4 }}
-            >
-              ✕
-            </button>
-          </div>
-        )}
-
-        {/* When dropdown is open, show close button */}
-        {open && (
-          <button
-            type="button"
-            onClick={onClose}
-            className="cursor-pointer"
-            style={{ background: 'none', border: 'none', padding: 2 }}
-          >
+      {/* Single trigger dot. Click opens straight into the 3-bigger-dots
+          picker (Feeling / Doing / Sharing with labels underneath). The
+          old two-step showThree flow is removed — one tap gets to the
+          decision the user actually wants to make. */}
+      <button
+        type="button"
+        onClick={onToggle}
+        aria-label={value ? `Tag: ${value.name} (tap to change)` : 'Tag with a category'}
+        className="flex cursor-pointer items-center gap-1.5 rounded-md px-1.5 py-1 transition-all"
+        style={{
+          background: value ? `${value.color}15` : 'transparent',
+          border: value ? `1px solid ${value.color}60` : 'none',
+        }}
+      >
+        {value ? (
+          <>
             <span
               className="block rounded-full"
-              style={{
-                width: 11,
-                height: 11,
-                background: '#C4A060',
-                opacity: 0.85,
-              }}
+              style={{ width: 10, height: 10, background: value.color }}
             />
-          </button>
+            <span
+              style={{
+                color: value.color,
+                fontFamily: 'var(--font-serif)',
+                fontSize: '12px',
+                fontWeight: 600,
+                letterSpacing: '0.02em',
+                lineHeight: 1,
+                maxWidth: 80,
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+                whiteSpace: 'nowrap',
+              }}
+            >
+              {value.name}
+            </span>
+          </>
+        ) : (
+          <span
+            className="block rounded-full transition-all"
+            style={{
+              width: 12,
+              height: 12,
+              background: '#C4A060',
+              opacity: 0.55,
+            }}
+          />
         )}
-      </div>
+      </button>
 
       {/* Dropdown — 3 compass dots + user categories */}
       {open && (
@@ -253,8 +157,10 @@ export default function CategoryTagPicker({
             </button>
           )}
 
-          {/* Three compass dots — tap to tag directly */}
-          <div className="flex items-center justify-center gap-5 py-3">
+          {/* Three compass dots — the primary picker. Bigger than before
+              (22/26px) with the label right under each dot so it reads
+              at a glance on phone. */}
+          <div className="flex items-center justify-center gap-7 px-4 py-4">
             {COMPASSES.map((c) => {
               const isActive = value?.name === c.label;
               return (
@@ -262,26 +168,26 @@ export default function CategoryTagPicker({
                   key={c.id}
                   type="button"
                   onClick={() => selectTag({ name: c.label, color: c.color })}
-                  className="flex flex-col items-center gap-1 cursor-pointer transition-all"
+                  className="flex cursor-pointer flex-col items-center gap-2 transition-all"
                   style={{ background: 'none', border: 'none' }}
                 >
                   <span
                     className="block rounded-full transition-all"
                     style={{
-                      width: isActive ? 18 : 14,
-                      height: isActive ? 18 : 14,
+                      width: isActive ? 26 : 22,
+                      height: isActive ? 26 : 22,
                       background: c.color,
-                      opacity: isActive ? 1 : 0.6,
-                      boxShadow: isActive ? `0 3px 10px -3px ${c.color}` : 'none',
+                      opacity: isActive ? 1 : 0.75,
+                      boxShadow: isActive ? `0 4px 12px -3px ${c.color}` : 'none',
                     }}
                   />
                   <span
                     style={{
                       fontFamily: 'var(--font-serif)',
-                      fontSize: '11px',
+                      fontSize: '13px',
                       fontWeight: 600,
                       color: c.color,
-                      opacity: isActive ? 1 : 0.5,
+                      opacity: isActive ? 1 : 0.7,
                     }}
                   >
                     {c.label}
