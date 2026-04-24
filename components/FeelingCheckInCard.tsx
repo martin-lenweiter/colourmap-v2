@@ -3325,7 +3325,6 @@ export default function FeelingCheckInCard() {
           }}
           style={{
             borderColor: '#C4A06030',
-            background: 'rgba(245,236,220,0.45)',
           }}
         >
           <div className="flex flex-col items-center gap-2">
@@ -3531,7 +3530,7 @@ export default function FeelingCheckInCard() {
                 >
                   <span
                     className="font-semibold uppercase tracking-[0.22em]"
-                    style={{ color: '#C4A060', fontSize: '13px' }}
+                    style={{ color: '#C4A060', fontSize: '14px' }}
                   >
                     {renamingSection === 'daily' ? (
                       <input
@@ -3546,7 +3545,7 @@ export default function FeelingCheckInCard() {
                         autoFocus
                         onClick={(e) => e.stopPropagation()}
                         className="bg-transparent font-semibold uppercase tracking-[0.18em] outline-none border-b"
-                        style={{ color: '#C4A060', fontSize: '13px', borderColor: '#C4A06040' }}
+                        style={{ color: '#C4A060', fontSize: '14px', borderColor: '#C4A06040' }}
                       />
                     ) : (
                       <span
@@ -4256,7 +4255,7 @@ export default function FeelingCheckInCard() {
                 >
                   <span
                     className="font-semibold uppercase tracking-[0.22em]"
-                    style={{ color: '#C4A060', fontSize: '13px' }}
+                    style={{ color: '#C4A060', fontSize: '14px' }}
                   >
                     {renamingSection === 'push' ? (
                       <input
@@ -4271,7 +4270,7 @@ export default function FeelingCheckInCard() {
                         autoFocus
                         onClick={(e) => e.stopPropagation()}
                         className="bg-transparent font-semibold uppercase tracking-[0.18em] outline-none border-b"
-                        style={{ color: '#C4A060', fontSize: '13px', borderColor: '#C4A06040' }}
+                        style={{ color: '#C4A060', fontSize: '14px', borderColor: '#C4A06040' }}
                       />
                     ) : (
                       <span
@@ -4924,7 +4923,9 @@ export default function FeelingCheckInCard() {
                 )}
               </div>
 
-              {/* Done — all completed items grouped by category */}
+              {/* Done — all completed items grouped by category.
+                  Label centered + ochre to match the other Doing section
+                  labels (was green, which read as a separate colour family). */}
               {(doneObjectives.length > 0 ||
                 todayObjectives.some((o) => o.done) ||
                 todos.some((t) => t.done)) && (
@@ -4932,19 +4933,19 @@ export default function FeelingCheckInCard() {
                   <button
                     type="button"
                     onClick={() => setDoneOpen((s) => !s)}
-                    className="flex cursor-pointer items-center gap-1.5 px-1"
+                    className="mx-auto flex cursor-pointer items-center gap-1.5 px-1"
                     style={{ background: 'none', border: 'none' }}
                   >
                     <span
                       className="font-semibold uppercase tracking-[0.22em]"
-                      style={{ color: '#7AAA58', fontSize: '13px' }}
+                      style={{ color: '#C4A060', fontSize: '14px' }}
                     >
                       Done
                     </span>
                     <span
                       className="text-[10px] transition-transform duration-200"
                       style={{
-                        color: '#7AAA5880',
+                        color: '#C4A06080',
                         transform: doneOpen ? 'rotate(180deg)' : 'rotate(0deg)',
                       }}
                     >

@@ -460,14 +460,10 @@ export default function DailyAgenda() {
   const dayBlocks = blocks.filter((b) => b.date === selectedDate);
 
   return (
-    <div
-      className="space-y-3 rounded-3xl border px-5 py-5"
-      style={{
-        borderColor: '#6890B050',
-        background: 'linear-gradient(180deg, rgba(245,236,220,0.97), rgba(240,228,208,0.95))',
-        boxShadow: '0 28px 55px -36px rgba(92,48,24,0.3)',
-      }}
-    >
+    <div className="space-y-3 px-1 py-2">
+      {/* Container flattened on phone per user — no beige frame so the
+          section inherits whichever color style is active. Agenda reads
+          as part of the Doing column rather than as a nested card. */}
       {/* Header — same pill format as Other Missions */}
       <div className="flex justify-center">
         <button
