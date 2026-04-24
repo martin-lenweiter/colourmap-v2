@@ -40,10 +40,10 @@ function isTyping(target: EventTarget | null): boolean {
 function matches(ev: KeyboardEvent, s: KeyboardShortcut): boolean {
   const keyMatches = ev.key.toLowerCase() === s.key.toLowerCase();
   if (!keyMatches) return false;
-  if ((ev.metaKey ? true : false) !== (s.meta ?? false)) return false;
-  if ((ev.ctrlKey ? true : false) !== (s.ctrl ?? false)) return false;
-  if ((ev.shiftKey ? true : false) !== (s.shift ?? false)) return false;
-  if ((ev.altKey ? true : false) !== (s.alt ?? false)) return false;
+  if (Boolean(ev.metaKey) !== Boolean(s.meta ?? false)) return false;
+  if (Boolean(ev.ctrlKey) !== Boolean(s.ctrl ?? false)) return false;
+  if (Boolean(ev.shiftKey) !== Boolean(s.shift ?? false)) return false;
+  if (Boolean(ev.altKey) !== Boolean(s.alt ?? false)) return false;
   return true;
 }
 

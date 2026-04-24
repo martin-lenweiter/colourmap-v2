@@ -44,6 +44,8 @@ export default function FeedbackOverlay() {
   const [mode, setMode] = useState<Mode>('note');
   const [text, setText] = useState('');
   const [notePos, setNotePos] = useState<{ x: number; y: number }>({ x: 16, y: 60 });
+  const [noteSize, setNoteSize] = useState<{ w: number; h: number }>({ w: 280, h: 180 });
+  const [toolbarCollapsed, setToolbarCollapsed] = useState(false);
   const [strokes, setStrokes] = useState<Stroke[]>([]);
   const [drawColor, setDrawColor] = useState('#B33A2B');
 
@@ -55,6 +57,12 @@ export default function FeedbackOverlay() {
     startY: number;
     origX: number;
     origY: number;
+  } | null>(null);
+  const noteResizeStateRef = useRef<{
+    startX: number;
+    startY: number;
+    origW: number;
+    origH: number;
   } | null>(null);
 
   // Restore last note on first mount
@@ -193,6 +201,32 @@ export default function FeedbackOverlay() {
     noteDragStateRef.current = null;
   }
 
+  // Note resize handlers — drag the corner handle to set any size.
+  function onNoteResizeStart(ev: React.PointerEvent<HTMLElement>) {
+    ev.stopPropagation();
+    ev.currentTarget.setPointerCapture(ev.pointerId);
+    noteResizeStateRef.current = {
+      startX: ev.clientX,
+      startY: ev.clientY,
+      origW: noteSize.w,
+      origH: noteSize.h,
+    };
+  }
+  function onNoteResizeMove(ev: React.PointerEvent<HTMLElement>) {
+    const s = noteResizeStateRef.current;
+    if (!s) return;
+    ev.stopPropagation();
+    const dx = ev.clientX - s.startX;
+    const dy = ev.clientY - s.startY;
+    // Clamp: min 120×80 (still readable), max 420×520 (won't steal screen).
+    const w = Math.max(120, Math.min(420, s.origW + dx));
+    const h = Math.max(80, Math.min(520, s.origH + dy));
+    setNoteSize({ w, h });
+  }
+  function onNoteResizeEnd() {
+    noteResizeStateRef.current = null;
+  }
+
   if (!open) {
     return (
       <button
@@ -255,7 +289,9 @@ export default function FeedbackOverlay() {
         ))}
       </svg>
 
-      {/* Control bar — top center, always clickable */}
+      {/* Control bar — top center, always clickable.
+          Collapsible: tap the chevron to shrink to a tiny pill that
+          doesn't obscure the app while screenshotting. */}
       <div
         className="fixed left-1/2 -translate-x-1/2"
         style={{
@@ -268,33 +304,58 @@ export default function FeedbackOverlay() {
           className="flex items-center gap-1 rounded-full border-2 p-1 shadow-[0_4px_16px_rgba(0,0,0,0.18)]"
           style={{ background: '#FFFFFF', borderColor: '#9B6BA0' }}
         >
-          <ModeButton active={mode === 'note'} onClick={() => setMode('note')} label="note" />
-          <ModeButton active={mode === 'draw'} onClick={() => setMode('draw')} label="draw" />
-          {mode === 'draw' && (
+          {!toolbarCollapsed && (
             <>
-              <ColorSwatch
-                color="#B33A2B"
-                active={drawColor === '#B33A2B'}
-                onClick={() => setDrawColor('#B33A2B')}
-              />
-              <ColorSwatch
-                color="#3A8AC4"
-                active={drawColor === '#3A8AC4'}
-                onClick={() => setDrawColor('#3A8AC4')}
-              />
-              <ColorSwatch
-                color="#7AAA58"
-                active={drawColor === '#7AAA58'}
-                onClick={() => setDrawColor('#7AAA58')}
-              />
-              <IconButton onClick={undoStroke} title="Undo last stroke">
-                ↶
-              </IconButton>
-              <IconButton onClick={clearStrokes} title="Clear all strokes">
-                ⌫
-              </IconButton>
+              <ModeButton active={mode === 'note'} onClick={() => setMode('note')} label="note" />
+              <ModeButton active={mode === 'draw'} onClick={() => setMode('draw')} label="draw" />
+              {mode === 'draw' && (
+                <>
+                  <ColorSwatch
+                    color="#B33A2B"
+                    active={drawColor === '#B33A2B'}
+                    onClick={() => setDrawColor('#B33A2B')}
+                  />
+                  <ColorSwatch
+                    color="#3A8AC4"
+                    active={drawColor === '#3A8AC4'}
+                    onClick={() => setDrawColor('#3A8AC4')}
+                  />
+                  <ColorSwatch
+                    color="#7AAA58"
+                    active={drawColor === '#7AAA58'}
+                    onClick={() => setDrawColor('#7AAA58')}
+                  />
+                  <IconButton onClick={undoStroke} title="Undo last stroke">
+                    ↶
+                  </IconButton>
+                  <IconButton onClick={clearStrokes} title="Clear all strokes">
+                    ⌫
+                  </IconButton>
+                </>
+              )}
             </>
           )}
+          <button
+            type="button"
+            onClick={() => setToolbarCollapsed((c) => !c)}
+            aria-label={toolbarCollapsed ? 'Expand toolbar' : 'Collapse toolbar'}
+            title={toolbarCollapsed ? 'Expand' : 'Collapse'}
+            style={{
+              background: 'transparent',
+              border: '1px solid #9B6BA055',
+              color: '#9B6BA0',
+              borderRadius: '50%',
+              width: 26,
+              height: 26,
+              fontSize: 13,
+              cursor: 'pointer',
+              fontFamily: 'var(--font-serif)',
+              fontWeight: 700,
+              padding: 0,
+            }}
+          >
+            {toolbarCollapsed ? '›' : '‹'}
+          </button>
           <button
             type="button"
             onClick={close}
@@ -317,20 +378,27 @@ export default function FeedbackOverlay() {
         </div>
       </div>
 
-      {/* Draggable sticky note — only in note mode */}
+      {/* Draggable + resizable sticky note — only in note mode.
+          Drag handle at the top to move, corner handle at the bottom-right
+          to resize. Keep it small while screenshotting, expand while writing. */}
       {mode === 'note' && (
         <div
           className="fixed rounded-xl border-2 shadow-[0_12px_30px_-10px_rgba(0,0,0,0.35)]"
           style={{
             top: notePos.y,
             left: notePos.x,
-            width: 280,
-            maxWidth: 'calc(100vw - 32px)',
+            width: noteSize.w,
+            height: noteSize.h,
+            maxWidth: 'calc(100vw - 16px)',
+            maxHeight: 'calc(100vh - 80px)',
             background: '#FFF8E6',
             borderColor: '#9B6BA0',
             padding: 10,
             pointerEvents: 'auto',
             zIndex: 9999,
+            display: 'flex',
+            flexDirection: 'column',
+            boxSizing: 'border-box',
           }}
         >
           {/** biome-ignore lint/a11y/noStaticElementInteractions: drag handle */}
@@ -341,7 +409,7 @@ export default function FeedbackOverlay() {
             onPointerCancel={onNoteDragEnd}
             style={{
               cursor: 'grab',
-              padding: '2px 4px 8px',
+              padding: '2px 4px 6px',
               fontFamily: 'var(--font-serif)',
               fontSize: 10,
               letterSpacing: '0.14em',
@@ -350,30 +418,132 @@ export default function FeedbackOverlay() {
               fontWeight: 700,
               touchAction: 'none',
               userSelect: 'none',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              gap: 6,
             }}
           >
-            feedback · drag me
+            <span>feedback · drag</span>
+            <div style={{ display: 'flex', gap: 4 }}>
+              <button
+                type="button"
+                onPointerDown={(e) => e.stopPropagation()}
+                onClick={() => setNoteSize({ w: 140, h: 100 })}
+                aria-label="Shrink note to small"
+                title="Small"
+                style={{
+                  background: 'transparent',
+                  border: '1px solid #9B6BA055',
+                  color: '#9B6BA0',
+                  borderRadius: 6,
+                  padding: '2px 7px',
+                  fontSize: 10,
+                  fontFamily: 'var(--font-serif)',
+                  cursor: 'pointer',
+                  fontWeight: 700,
+                }}
+              >
+                S
+              </button>
+              <button
+                type="button"
+                onPointerDown={(e) => e.stopPropagation()}
+                onClick={() => setNoteSize({ w: 280, h: 180 })}
+                aria-label="Medium note"
+                title="Medium"
+                style={{
+                  background: 'transparent',
+                  border: '1px solid #9B6BA055',
+                  color: '#9B6BA0',
+                  borderRadius: 6,
+                  padding: '2px 7px',
+                  fontSize: 10,
+                  fontFamily: 'var(--font-serif)',
+                  cursor: 'pointer',
+                  fontWeight: 700,
+                }}
+              >
+                M
+              </button>
+              <button
+                type="button"
+                onPointerDown={(e) => e.stopPropagation()}
+                onClick={() =>
+                  setNoteSize({
+                    w: Math.min(420, window.innerWidth - 32),
+                    h: Math.min(420, window.innerHeight - 120),
+                  })
+                }
+                aria-label="Large note"
+                title="Large"
+                style={{
+                  background: 'transparent',
+                  border: '1px solid #9B6BA055',
+                  color: '#9B6BA0',
+                  borderRadius: 6,
+                  padding: '2px 7px',
+                  fontSize: 10,
+                  fontFamily: 'var(--font-serif)',
+                  cursor: 'pointer',
+                  fontWeight: 700,
+                }}
+              >
+                L
+              </button>
+            </div>
           </div>
           <textarea
             ref={textareaRef}
             value={text}
             onChange={(e) => setText(e.target.value)}
             placeholder="Type here. Take a screenshot — this note is visible in the image."
-            rows={5}
             style={{
+              flex: 1,
               width: '100%',
               background: 'transparent',
               color: '#1f1208',
               border: 'none',
               resize: 'none',
-              fontSize: 15,
-              lineHeight: 1.45,
+              // Smaller notes get smaller text so more fits in the frame;
+              // larger notes read comfortably while writing.
+              fontSize: noteSize.w < 200 ? 12 : 15,
+              lineHeight: 1.4,
               fontFamily: 'var(--font-serif)',
               outline: 'none',
               padding: 4,
-              minHeight: 90,
+              minHeight: 0,
+              overflow: 'auto',
             }}
             aria-label="Feedback note"
+          />
+          {/* Bottom-right resize handle — drag to any custom size.
+              Uses a <button> so aria-label is valid and the element
+              is naturally interactive. type=button keeps it out of
+              form submissions. Pointer handlers drive the resize. */}
+          <button
+            type="button"
+            onPointerDown={onNoteResizeStart}
+            onPointerMove={onNoteResizeMove}
+            onPointerUp={onNoteResizeEnd}
+            onPointerCancel={onNoteResizeEnd}
+            aria-label="Resize note"
+            title="Drag to resize"
+            style={{
+              position: 'absolute',
+              right: 0,
+              bottom: 0,
+              width: 20,
+              height: 20,
+              cursor: 'nwse-resize',
+              touchAction: 'none',
+              padding: 0,
+              border: 'none',
+              // Visual cue — a small diagonal stripe
+              background:
+                'linear-gradient(135deg, transparent 35%, #9B6BA0 35%, #9B6BA0 45%, transparent 45%, transparent 60%, #9B6BA0 60%, #9B6BA0 70%, transparent 70%)',
+              borderBottomRightRadius: 10,
+            }}
           />
         </div>
       )}
