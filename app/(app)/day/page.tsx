@@ -8,6 +8,7 @@ import DailyAgenda from '@/components/DailyAgenda';
 import DayRail from '@/components/DayRail';
 import DayTabs from '@/components/DayTabs';
 import FeelingCheckInCard from '@/components/FeelingCheckInCard';
+import FirstRunOnboarding from '@/components/FirstRunOnboarding';
 import FrequencyBox from '@/components/FrequencyBox';
 import LifeCategories from '@/components/LifeCategories';
 import MasteryBox from '@/components/MasteryBox';
@@ -25,6 +26,7 @@ function DayContent() {
   return (
     <div className="mx-auto flex w-full max-w-6xl gap-6 px-4 py-8 lg:px-6">
       <div className="mx-auto w-full max-w-2xl space-y-6 lg:mx-0 lg:flex-1">
+        <FirstRunOnboarding />
         <CheckInPing />
         <p
           className="text-center"
