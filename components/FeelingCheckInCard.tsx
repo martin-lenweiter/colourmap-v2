@@ -1659,13 +1659,15 @@ export default function FeelingCheckInCard() {
         }}
       >
         <p
-          className="text-center uppercase tracking-[0.24em]"
+          className="text-center uppercase tracking-[0.2em] md:tracking-[0.24em]"
           style={{
             fontFamily: 'var(--font-serif)',
-            fontSize: '10px',
+            // Phone: 15px so the segment title is readable at arm's length.
+            // Desktop override happens inline via clamp-min on md screens.
+            fontSize: 'clamp(13px, 3.4vw, 15px)',
             fontWeight: 700,
             color: '#D4805A',
-            opacity: 0.5,
+            opacity: 0.7,
           }}
         >
           feeling
@@ -1700,10 +1702,15 @@ export default function FeelingCheckInCard() {
             <div
               className="absolute right-0 mt-1 animate-in fade-in duration-150 overflow-hidden rounded-xl"
               style={{
-                background: 'hsl(var(--card))',
-                border: '1px solid hsl(var(--border) / 0.3)',
-                boxShadow: '0 4px 16px rgba(0,0,0,0.08)',
-                minWidth: 140,
+                // Fully opaque — previous use of hsl(var(--card)) could
+                // resolve to a translucent color in some themes and the
+                // list underneath bled through.
+                background: '#FAF2E4',
+                border: '1px solid #C4A06055',
+                boxShadow:
+                  '0 8px 24px -4px rgba(92,48,24,0.25), 0 2px 8px -2px rgba(92,48,24,0.15)',
+                minWidth: 160,
+                backdropFilter: 'none',
               }}
             >
               {VARIANTS.map((v) => {
@@ -2667,7 +2674,7 @@ export default function FeelingCheckInCard() {
                     />
                   </button>
 
-                  <div className="relative" style={{ width: 300, height: 36 }}>
+                  <div className="relative" style={{ width: 300, height: 48 }}>
                     {(() => {
                       if (hawkinsStyle === 'losanges') {
                         // LOSANGES — rotated squares (diamonds). A rotated 18px square
@@ -2677,7 +2684,7 @@ export default function FeelingCheckInCard() {
                         const gap = 13;
                         const totalW = HAWKINS.length * sq + (HAWKINS.length - 1) * gap;
                         const offsetX = (300 - totalW) / 2;
-                        const baseY = (36 - sq) / 2;
+                        const baseY = (48 - sq) / 2;
                         return HAWKINS.map((h, i) => {
                           const selected = hawkinsIdx === i;
                           const x = offsetX + i * (sq + gap);
@@ -2710,7 +2717,7 @@ export default function FeelingCheckInCard() {
                         const dotSize = 22;
                         const totalW = HAWKINS.length * dotSize + (HAWKINS.length - 1) * 6;
                         const offsetX = (300 - totalW) / 2;
-                        const baseY = (36 - dotSize) / 2;
+                        const baseY = (48 - dotSize) / 2;
                         return HAWKINS.map((h, i) => {
                           const selected = hawkinsIdx === i;
                           const x = offsetX + i * (dotSize + 6);
@@ -2741,7 +2748,7 @@ export default function FeelingCheckInCard() {
                       const gap = 6;
                       const totalW = HAWKINS.length * sq + (HAWKINS.length - 1) * gap;
                       const offsetX = (300 - totalW) / 2;
-                      const baseY = (36 - sq) / 2;
+                      const baseY = (48 - sq) / 2;
                       return HAWKINS.map((h, i) => {
                         const selected = hawkinsIdx === i;
                         const x = offsetX + i * (sq + gap);

@@ -44,43 +44,49 @@ function DayContent() {
         <DayTabs
           checkinContent={
             <div className="space-y-4">
-              {/* Box A — emotions + expression */}
+              {/* Segment — emotions + expression.
+                  FrequencyBox is desktop-only now; it was cluttering
+                  the phone checkin. Reveal button also hidden on
+                  phone — use the Sounds tab for the frequency
+                  experience. */}
               <div className="space-y-3">
                 <FeelingCheckInCard />
-                {showFreqBox ? (
-                  <div className="relative">
+                <div className="hidden md:block">
+                  {showFreqBox ? (
+                    <div className="relative">
+                      <button
+                        type="button"
+                        onClick={() => setShowFreqBox(false)}
+                        className="absolute right-2 top-2 z-10 cursor-pointer rounded-full px-1.5 py-0.5 text-[10px] transition-all"
+                        style={{
+                          color: '#8A6A4A',
+                          opacity: 0.3,
+                          background: '#F5ECDC80',
+                          border: 'none',
+                        }}
+                      >
+                        hide
+                      </button>
+                      <FrequencyBox />
+                    </div>
+                  ) : (
                     <button
                       type="button"
-                      onClick={() => setShowFreqBox(false)}
-                      className="absolute right-2 top-2 z-10 cursor-pointer rounded-full px-1.5 py-0.5 text-[10px] transition-all"
+                      onClick={() => setShowFreqBox(true)}
+                      className="w-full cursor-pointer rounded-xl py-1.5 text-center transition-all"
                       style={{
+                        fontFamily: 'var(--font-serif)',
+                        fontSize: '11px',
                         color: '#8A6A4A',
-                        opacity: 0.3,
-                        background: '#F5ECDC80',
-                        border: 'none',
+                        opacity: 0.35,
+                        background: '#C4A06006',
+                        border: '1px solid #C4A06010',
                       }}
                     >
-                      hide
+                      show frequency
                     </button>
-                    <FrequencyBox />
-                  </div>
-                ) : (
-                  <button
-                    type="button"
-                    onClick={() => setShowFreqBox(true)}
-                    className="w-full cursor-pointer rounded-xl py-1.5 text-center transition-all"
-                    style={{
-                      fontFamily: 'var(--font-serif)',
-                      fontSize: '11px',
-                      color: '#8A6A4A',
-                      opacity: 0.35,
-                      background: '#C4A06006',
-                      border: '1px solid #C4A06010',
-                    }}
-                  >
-                    show frequency
-                  </button>
-                )}
+                  )}
+                </div>
               </div>
               {/* Box B — missions */}
               <DailyAgenda />

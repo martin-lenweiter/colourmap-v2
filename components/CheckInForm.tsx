@@ -692,11 +692,13 @@ function CfColumn({
               padding: 0,
               cursor: 'pointer',
               color: accent,
-              fontSize: '14px',
-              fontWeight: 600,
+              // Phone-readable: 16px at rest, shrinks only on very narrow
+              // screens. Label sits above the Challenge/Flow textareas.
+              fontSize: 'clamp(15px, 3.8vw, 17px)',
+              fontWeight: 700,
               textTransform: 'uppercase' as const,
               letterSpacing: '0.12em',
-              lineHeight: '20px',
+              lineHeight: 1.25,
             }}
           >
             {label}
@@ -704,16 +706,20 @@ function CfColumn({
         )}
       </div>
 
-      {/* Textarea + category tag picker */}
-      <div className="flex items-end gap-2">
+      {/* Textarea + category tag picker.
+          Phone-friendly: no outer card background, larger text,
+          auto-grows via field-sizing-content from the base Textarea
+          (resize-none removed so growth isn't clipped). */}
+      <div className="flex items-start gap-2">
         <Textarea
           id={id}
           aria-label={label}
           value={value}
           onChange={(event) => onChange(event.target.value)}
           placeholder={placeholder}
-          rows={3}
-          className="min-h-[132px] flex-1 resize-none border-border bg-muted text-foreground placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-ring/40"
+          rows={2}
+          className="min-h-[84px] flex-1 border-0 bg-transparent px-0 text-[16px] leading-relaxed text-foreground placeholder:text-muted-foreground/60 focus-visible:ring-0 focus-visible:border-0 md:text-[16px]"
+          style={{ fontFamily: 'var(--font-serif)' }}
         />
         <CategoryTagPicker
           value={tag}
@@ -1095,7 +1101,7 @@ export default function CheckInForm({ missions = [], onCheckInComplete }: CheckI
         </div>
       )}
 
-      <section className="rounded-[28px] border border-[#7a543833] bg-[linear-gradient(180deg,rgba(251,244,232,0.95),rgba(246,236,221,0.92))] px-5 py-6 shadow-[0_24px_50px_-34px_rgba(92,48,24,0.45)]">
+      <section className="rounded-none border-0 bg-transparent px-0 py-3 shadow-none md:rounded-[28px] md:border md:border-[#7a543833] md:bg-[linear-gradient(180deg,rgba(251,244,232,0.95),rgba(246,236,221,0.92))] md:px-5 md:py-6 md:shadow-[0_24px_50px_-34px_rgba(92,48,24,0.45)]">
         <div className="space-y-5">
           <div className="space-y-3">
             {(() => {
@@ -1223,7 +1229,8 @@ export default function CheckInForm({ missions = [], onCheckInComplete }: CheckI
 
           <Textarea
             id="check-in-note"
-            className="border-[#C4A06020] bg-[#C4A06005] focus-visible:border-[#C4A06040] focus-visible:ring-[#C4A06015]"
+            className="border-0 bg-transparent px-0 text-[16px] leading-relaxed focus-visible:ring-0 focus-visible:border-0 md:text-[16px]"
+            style={{ fontFamily: 'var(--font-serif)' }}
             placeholder={(() => {
               const time = new Date().toLocaleTimeString([], {
                 hour: '2-digit',
@@ -1256,7 +1263,7 @@ export default function CheckInForm({ missions = [], onCheckInComplete }: CheckI
         </div>
       </section>
 
-      <section className="rounded-[28px] border border-[#7a543833] bg-[linear-gradient(180deg,rgba(250,241,225,0.96),rgba(246,232,212,0.92))] px-5 py-6 shadow-[0_28px_55px_-36px_rgba(92,48,24,0.5)]">
+      <section className="rounded-none border-0 bg-transparent px-0 py-3 shadow-none md:rounded-[28px] md:border md:border-[#7a543833] md:bg-[linear-gradient(180deg,rgba(250,241,225,0.96),rgba(246,232,212,0.92))] md:px-5 md:py-6 md:shadow-[0_28px_55px_-36px_rgba(92,48,24,0.5)]">
         <div className="space-y-6">
           <div>
             <button
