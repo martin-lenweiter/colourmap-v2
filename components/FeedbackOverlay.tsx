@@ -202,7 +202,7 @@ export default function FeedbackOverlay() {
   }
 
   // Note resize handlers — drag the corner handle to set any size.
-  function onNoteResizeStart(ev: React.PointerEvent<HTMLDivElement>) {
+  function onNoteResizeStart(ev: React.PointerEvent<HTMLElement>) {
     ev.stopPropagation();
     ev.currentTarget.setPointerCapture(ev.pointerId);
     noteResizeStateRef.current = {
@@ -212,7 +212,7 @@ export default function FeedbackOverlay() {
       origH: noteSize.h,
     };
   }
-  function onNoteResizeMove(ev: React.PointerEvent<HTMLDivElement>) {
+  function onNoteResizeMove(ev: React.PointerEvent<HTMLElement>) {
     const s = noteResizeStateRef.current;
     if (!s) return;
     ev.stopPropagation();
