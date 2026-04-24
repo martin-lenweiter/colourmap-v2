@@ -692,11 +692,13 @@ function CfColumn({
               padding: 0,
               cursor: 'pointer',
               color: accent,
-              fontSize: '14px',
-              fontWeight: 600,
+              // Phone-readable: 16px at rest, shrinks only on very narrow
+              // screens. Label sits above the Challenge/Flow textareas.
+              fontSize: 'clamp(15px, 3.8vw, 17px)',
+              fontWeight: 700,
               textTransform: 'uppercase' as const,
               letterSpacing: '0.12em',
-              lineHeight: '20px',
+              lineHeight: 1.25,
             }}
           >
             {label}
