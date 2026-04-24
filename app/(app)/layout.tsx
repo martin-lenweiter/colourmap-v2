@@ -43,29 +43,28 @@ export default async function AppLayout({
       <MobileViewportBoot />
       <div className="min-h-svh bg-background">
         <header className="border-b border-border">
-          <div className="mx-auto flex w-full max-w-5xl flex-col gap-3 px-6 py-3">
-            <div className="flex items-center justify-center">
+          {/* Compact phone-friendly header. Logo + controls on one row;
+              email hidden on phone (it's on the Sign out form target
+              anyway, and takes too much space on narrow screens). */}
+          <div className="mx-auto flex w-full max-w-5xl items-center gap-3 px-4 py-2">
+            <StepBack />
+            <div className="flex-1 flex justify-center">
               <ColourmapBrandButton />
             </div>
-            <div className="flex items-center justify-between gap-4">
-              <div className="flex items-center gap-2.5">
-                <StepBack />
-                <p className="text-xs text-muted-foreground/50">
-                  {user.email ?? 'your Google account'}
-                </p>
-              </div>
-              <div className="flex items-center gap-3">
-                <ViewModeSwitcher />
-                <ThemeSwitcher />
-                <form action="/logout" method="post">
-                  <button
-                    className="text-xs text-muted-foreground transition-colors hover:text-foreground"
-                    type="submit"
-                  >
-                    Sign out
-                  </button>
-                </form>
-              </div>
+            <p className="hidden md:block text-xs text-muted-foreground/50 mr-2">
+              {user.email ?? 'your Google account'}
+            </p>
+            <div className="flex items-center gap-2">
+              <ViewModeSwitcher />
+              <ThemeSwitcher />
+              <form action="/logout" method="post">
+                <button
+                  className="text-[11px] text-muted-foreground transition-colors hover:text-foreground"
+                  type="submit"
+                >
+                  Sign out
+                </button>
+              </form>
             </div>
           </div>
           <NavLinks />
