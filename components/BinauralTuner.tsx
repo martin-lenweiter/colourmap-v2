@@ -1343,7 +1343,7 @@ export default function BinauralTuner() {
   const [volume, setVolume] = useState(0.15);
   const [activeLayers, setActiveLayers] = useState<Record<string, number>>({});
   const [activeGenre, setActiveGenre] = useState<string | null>(null);
-  const [showSuggestion, setShowSuggestion] = useState(true);
+  const [_showSuggestion, _setShowSuggestion] = useState(true);
   const [_view, _setView] = useState<'presets' | 'layers' | 'genres'>('presets');
   const [tremolo, setTremolo] = useState(false);
   const tremoloSpeed = 0.15;
@@ -2070,13 +2070,14 @@ export default function BinauralTuner() {
     Map<string, { source: AudioBufferSourceNode | OscillatorNode; gain: GainNode }>
   >(new Map());
 
-  // Adaptive: read check-in state
-  const [suggestion, setSuggestion] = useState<{ preset: string; reason: string } | null>(null);
+  // Adaptive: read check-in state (parked — suggestion not yet shown
+  // in UI; prefixed with _ to satisfy biome.)
+  const [_suggestion, _setSuggestion] = useState<{ preset: string; reason: string } | null>(null);
   useEffect(() => {
     const body = loadNum('colourmap:body-idx', 2);
     const focus = loadNum('colourmap:focus-idx', 2);
     const clarity = loadNum('colourmap:clarity-idx', 2);
-    setSuggestion(getSuggestion(body, focus, clarity));
+    _setSuggestion(getSuggestion(body, focus, clarity));
   }, []);
 
   const [audioError, setAudioError] = useState<string | null>(null);

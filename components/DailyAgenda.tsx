@@ -683,94 +683,92 @@ export default function DailyAgenda() {
                       show all
                     </button>
                   )}
-                <div className="space-y-1.5">
-                  {(() => {
-                    const alreadyInAgenda = new Set(blocks.map((b) => b.text));
-                    return objectives
-                      .filter((o) => !o.done)
-                      .filter(
-                        (o) =>
-                          missionFilter === 'all' || (o.type ?? 'daily') === missionFilter,
-                      )
-                      .map((o) => {
-                        const scheduled = alreadyInAgenda.has(o.text);
-                        const type = o.type ?? 'doing';
-                        const typeDef =
-                          MISSION_TYPES.find((mt) => mt.id === type) ?? MISSION_TYPES[1];
-                        return (
-                          <div
-                            key={o.id}
-                            className="flex items-center gap-2.5 px-2"
-                            style={{ minHeight: 40 }}
-                          >
-                            <button
-                              type="button"
-                              onClick={() => {
-                                // Cycle through Feeling → Doing → Sharing on tap
-                                // so the user can re-bucket a row without a
-                                // separate picker menu.
-                                const order = MISSION_TYPES.map((m) => m.id);
-                                const next =
-                                  order[(order.indexOf(type) + 1) % order.length];
-                                setObjectives((prev) =>
-                                  prev.map((p) => (p.id === o.id ? { ...p, type: next } : p)),
-                                );
-                              }}
-                              aria-label={`Mission bucket: ${typeDef.label}. Tap to change.`}
-                              title={`${typeDef.label} — tap to slide to next`}
-                              style={{
-                                width: 16,
-                                height: 16,
-                                borderRadius: '50%',
-                                background: typeDef.color,
-                                opacity: o.done ? 0.4 : 0.9,
-                                flexShrink: 0,
-                                border: `2px solid ${typeDef.color}33`,
-                                padding: 0,
-                                cursor: 'pointer',
-                              }}
-                            />
-                            <span
-                              style={{
-                                flex: 1,
-                                fontFamily: 'var(--font-serif)',
-                                fontSize: '16px',
-                                fontWeight: 600,
-                                color: '#5C3018',
-                                opacity: o.done ? 0.5 : 1,
-                                textDecoration: o.done ? 'line-through' : 'none',
-                                lineHeight: 1.35,
-                              }}
+                  <div className="space-y-1.5">
+                    {(() => {
+                      const alreadyInAgenda = new Set(blocks.map((b) => b.text));
+                      return objectives
+                        .filter((o) => !o.done)
+                        .filter(
+                          (o) => missionFilter === 'all' || (o.type ?? 'daily') === missionFilter,
+                        )
+                        .map((o) => {
+                          const scheduled = alreadyInAgenda.has(o.text);
+                          const type = o.type ?? 'doing';
+                          const typeDef =
+                            MISSION_TYPES.find((mt) => mt.id === type) ?? MISSION_TYPES[1];
+                          return (
+                            <div
+                              key={o.id}
+                              className="flex items-center gap-2.5 px-2"
+                              style={{ minHeight: 40 }}
                             >
-                              {o.text}
-                            </span>
-                            {!o.done && !scheduled && (
                               <button
                                 type="button"
-                                onClick={() => importObjective(o.text)}
-                                className="cursor-pointer rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider transition-all hover:opacity-80"
+                                onClick={() => {
+                                  // Cycle through Feeling → Doing → Sharing on tap
+                                  // so the user can re-bucket a row without a
+                                  // separate picker menu.
+                                  const order = MISSION_TYPES.map((m) => m.id);
+                                  const next = order[(order.indexOf(type) + 1) % order.length];
+                                  setObjectives((prev) =>
+                                    prev.map((p) => (p.id === o.id ? { ...p, type: next } : p)),
+                                  );
+                                }}
+                                aria-label={`Mission bucket: ${typeDef.label}. Tap to change.`}
+                                title={`${typeDef.label} — tap to slide to next`}
                                 style={{
-                                  background: '#6890B012',
-                                  border: '1px solid #6890B030',
-                                  color: '#6890B0',
+                                  width: 16,
+                                  height: 16,
+                                  borderRadius: '50%',
+                                  background: typeDef.color,
+                                  opacity: o.done ? 0.4 : 0.9,
+                                  flexShrink: 0,
+                                  border: `2px solid ${typeDef.color}33`,
+                                  padding: 0,
+                                  cursor: 'pointer',
+                                }}
+                              />
+                              <span
+                                style={{
+                                  flex: 1,
+                                  fontFamily: 'var(--font-serif)',
+                                  fontSize: '16px',
+                                  fontWeight: 600,
+                                  color: '#5C3018',
+                                  opacity: o.done ? 0.5 : 1,
+                                  textDecoration: o.done ? 'line-through' : 'none',
+                                  lineHeight: 1.35,
                                 }}
                               >
-                                schedule
-                              </button>
-                            )}
-                            {scheduled && !o.done && (
-                              <span
-                                className="text-[10px] font-semibold uppercase tracking-wider"
-                                style={{ color: '#6890B0', opacity: 0.5 }}
-                              >
-                                scheduled
+                                {o.text}
                               </span>
-                            )}
-                          </div>
-                        );
-                      });
-                  })()}
-                </div>
+                              {!o.done && !scheduled && (
+                                <button
+                                  type="button"
+                                  onClick={() => importObjective(o.text)}
+                                  className="cursor-pointer rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider transition-all hover:opacity-80"
+                                  style={{
+                                    background: '#6890B012',
+                                    border: '1px solid #6890B030',
+                                    color: '#6890B0',
+                                  }}
+                                >
+                                  schedule
+                                </button>
+                              )}
+                              {scheduled && !o.done && (
+                                <span
+                                  className="text-[10px] font-semibold uppercase tracking-wider"
+                                  style={{ color: '#6890B0', opacity: 0.5 }}
+                                >
+                                  scheduled
+                                </span>
+                              )}
+                            </div>
+                          );
+                        });
+                    })()}
+                  </div>
                 </div>
               )}
             </div>
@@ -1501,7 +1499,7 @@ function VerticalView({
           type="time"
           value={(() => {
             const storedRaw =
-              typeof window !== 'undefined' ? localStorage.getItem(WAKE_KEY) ?? '' : '';
+              typeof window !== 'undefined' ? (localStorage.getItem(WAKE_KEY) ?? '') : '';
             const asHHMM = storedRaw.includes(':') ? storedRaw : null;
             const hh = String(wakeHour).padStart(2, '0');
             return asHHMM ?? `${hh}:00`;

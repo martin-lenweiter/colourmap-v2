@@ -223,11 +223,11 @@ export default function AtomVisualizer({
       const sizeMul = 0.5 + params.scale * 1.8;
       const pushStrength = 1.2 * params.intensity;
       const pushRadius = 50 + params.intensity * 80;
-      const opacityMul = 0.2 + params.opacity * 0.8;
+      const _opacityMul = 0.2 + params.opacity * 0.8;
       // 3D depth adds a z-like per-dot perspective scaling based on
       // distance from center + a gentle wobble so dots feel like they're
       // floating at different depths.
-      const depthAmount = params.depth3d;
+      const _depthAmount = params.depth3d;
 
       let loudness = 0;
       if (analyser && analyserData) {
