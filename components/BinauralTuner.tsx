@@ -3177,7 +3177,8 @@ export default function BinauralTuner() {
               );
             })}
           </div>
-          {/* Volume — smooth track */}
+          {/* Volume — brown dots, longer than the reverb row per user.
+              Drag-to-slide: pointer-capture + move updates volume. */}
           <div className="flex items-center gap-3 px-1 py-2">
             <span
               style={{
@@ -3185,77 +3186,53 @@ export default function BinauralTuner() {
                 fontSize: '13px',
                 color: '#C4A060',
                 fontWeight: 600,
+                width: 60,
+                flexShrink: 0,
               }}
             >
               volume
             </span>
-            <div
-              className="relative flex-1 cursor-pointer"
-              style={{ height: 20, touchAction: 'none' }}
-              onMouseDown={(e) => {
-                const el = e.currentTarget as HTMLElement;
+            <button
+              type="button"
+              aria-label="Volume"
+              className="flex flex-1 cursor-pointer gap-[3px]"
+              style={{ height: 20, touchAction: 'none', background: 'none', border: 'none', padding: 0 }}
+              onPointerDown={(e) => {
+                const el = e.currentTarget;
+                el.setPointerCapture(e.pointerId);
                 const set = (cx: number) => {
                   const r = el.getBoundingClientRect();
                   setVolume(Math.max(0.02, Math.min(1, (cx - r.left) / r.width)));
                 };
                 set(e.clientX);
-                const onMove = (ev: MouseEvent) => set(ev.clientX);
-                const onUp = () => {
-                  window.removeEventListener('mousemove', onMove);
-                  window.removeEventListener('mouseup', onUp);
-                };
-                window.addEventListener('mousemove', onMove);
-                window.addEventListener('mouseup', onUp);
               }}
-              onTouchStart={(e) => {
-                const el = e.currentTarget as HTMLElement;
-                const set = (cx: number) => {
-                  const r = el.getBoundingClientRect();
-                  setVolume(Math.max(0.02, Math.min(1, (cx - r.left) / r.width)));
-                };
-                set(e.touches[0].clientX);
-                const onMove = (ev: TouchEvent) => {
-                  ev.preventDefault();
-                  set(ev.touches[0].clientX);
-                };
-                const onEnd = () => {
-                  window.removeEventListener('touchmove', onMove);
-                  window.removeEventListener('touchend', onEnd);
-                };
-                window.addEventListener('touchmove', onMove, { passive: false });
-                window.addEventListener('touchend', onEnd);
+              onPointerMove={(e) => {
+                if ((e.buttons & 1) === 0 && e.pointerType === 'mouse') return;
+                const el = e.currentTarget;
+                const r = el.getBoundingClientRect();
+                setVolume(Math.max(0.02, Math.min(1, (e.clientX - r.left) / r.width)));
               }}
             >
-              <div
-                className="absolute top-1/2 -translate-y-1/2 left-0 right-0 rounded-full"
-                style={{ height: 4, background: '#C4A06015' }}
-              />
-              <div
-                className="absolute top-1/2 -translate-y-1/2 left-0 rounded-full"
-                style={{
-                  height: 4,
-                  width: `${volume * 100}%`,
-                  background: 'linear-gradient(90deg, #C4A06030, #C4A060)',
-                }}
-              />
-              <div
-                className="absolute top-1/2 rounded-full"
-                style={{
-                  left: `${volume * 100}%`,
-                  width: 14,
-                  height: 14,
-                  background: '#C4A060',
-                  transform: 'translate(-50%, -50%)',
-                  boxShadow: '0 2px 6px rgba(196,160,96,0.4)',
-                }}
-              />
-            </div>
+              {Array.from({ length: 14 }, (_, i) => (
+                <div
+                  key={i}
+                  className="flex-1 rounded-[3px] transition-all pointer-events-none"
+                  style={{
+                    background: '#7A5438',
+                    opacity: i / 13 <= volume ? 0.4 + (i / 13) * 0.5 : 0.1,
+                  }}
+                />
+              ))}
+            </button>
             <span
               style={{
                 fontFamily: 'var(--font-serif)',
                 fontSize: '12px',
                 color: '#C4A060',
                 fontWeight: 600,
+                width: 40,
+                flexShrink: 0,
+                textAlign: 'right',
               }}
             >
               {Math.round(volume * 100)}%
@@ -3465,8 +3442,10 @@ export default function BinauralTuner() {
             </div>
           </div>
 
-          {/* Visualizer Box — family of soft dot visuals, user picks the mode */}
-          <VisualizerBox />
+          {/* VisualizerBox removed from Calming Sounds per user feedback —
+              Visuals is now a separate 4th category in SoundLab. The
+              <VisualizerBox/> function is kept in this file so the
+              import still works; it's just not rendered here. */}
 
           {/* Harmony — musical intervals that fit the base tone */}
           <div className="px-2">
