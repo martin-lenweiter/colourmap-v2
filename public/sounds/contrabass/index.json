@@ -1,0 +1,14 @@
+{
+  "instrument": "contrabass",
+  "source": "tonejs-instruments (Versilian Studios Community Orchestra 2, VSCO 2)",
+  "license": "CC0",
+  "format": "mp3",
+  "samplerMap": {
+    "A2": "A2.mp3",
+    "B3": "B3.mp3",
+    "C2": "C2.mp3",
+    "D2": "D2.mp3",
+    "E2": "E2.mp3",
+    "E3": "E3.mp3"
+  }
+}

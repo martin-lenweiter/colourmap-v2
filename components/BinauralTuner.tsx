@@ -106,6 +106,56 @@ function buildTone(
   return { node: osc, source: osc };
 }
 
+// Chant — a low sawtooth tone passed through a vocal-formant
+// bandpass filter. Creates an "ahhhhh" drone character without
+// needing any audio samples. Sits comfortably under any base tone
+// because the filter does most of the shaping.
+function buildChant(
+  ctx: AudioContext,
+  baseFreq: number,
+): { node: AudioNode; source: OscillatorNode } {
+  const osc = ctx.createOscillator();
+  osc.type = 'sawtooth';
+  osc.frequency.value = baseFreq;
+  const formant = ctx.createBiquadFilter();
+  formant.type = 'bandpass';
+  formant.frequency.value = 750; // "ah" vowel formant F1
+  formant.Q.value = 4;
+  const gain = ctx.createGain();
+  gain.gain.value = 0.22;
+  osc.connect(formant);
+  formant.connect(gain);
+  return { node: gain, source: osc };
+}
+
+// Choir — richer than Chant. Uses a custom PeriodicWave with
+// harmonic partials (root + octave + fifth + double octave + ...)
+// so a single oscillator sounds like a stacked chord. Passed through
+// a vocal formant filter for chorus-pad quality.
+function buildChoir(
+  ctx: AudioContext,
+  baseFreq: number,
+): { node: AudioNode; source: OscillatorNode } {
+  const osc = ctx.createOscillator();
+  // Harmonic amplitudes: 1, 2, 3, 4, 5, 6, 7, 8
+  // Weighted for choir-like: strong root, fifth (3rd harmonic),
+  // octave (2nd), twelfth (3rd), slightly duller upper partials.
+  const real = new Float32Array([0, 1, 0.65, 0.55, 0.3, 0.35, 0.15, 0.25, 0.1]);
+  const imag = new Float32Array(real.length);
+  const wave = ctx.createPeriodicWave(real, imag, { disableNormalization: false });
+  osc.setPeriodicWave(wave);
+  osc.frequency.value = baseFreq;
+  const formant = ctx.createBiquadFilter();
+  formant.type = 'bandpass';
+  formant.frequency.value = 1100; // brighter formant, "ehh"-ward
+  formant.Q.value = 2.5;
+  const gain = ctx.createGain();
+  gain.gain.value = 0.18;
+  osc.connect(formant);
+  formant.connect(gain);
+  return { node: gain, source: osc };
+}
+
 const LAYERS: LayerDef[] = [
   // Nature
   {
@@ -185,6 +235,22 @@ const LAYERS: LayerDef[] = [
     color: '#6890B0',
     group: 'tones',
     build: (ctx, base) => buildTone(ctx, base * 2, 'triangle'),
+  },
+  // Voice-like drones — synthesized from scratch with PeriodicWave +
+  // vocal-formant filtering. No audio samples needed.
+  {
+    id: 'chant',
+    label: 'Chant',
+    color: '#7A4A5F',
+    group: 'tones',
+    build: (ctx, base) => buildChant(ctx, base / 2),
+  },
+  {
+    id: 'choir',
+    label: 'Choir',
+    color: '#A07490',
+    group: 'tones',
+    build: (ctx, base) => buildChoir(ctx, base),
   },
   {
     id: 'sub',
@@ -1570,6 +1636,99 @@ export default function BinauralTuner() {
       release: 3.5,
       octave: 5,
       sampledPack: 'harp',
+    },
+    // New CC0 instruments pulled from tonejs-instruments (VSCO 2).
+    // Each sits in public/sounds/<pack>/ with an index.json + per-note
+    // mp3 samples. Colours chosen to match the instrument's character.
+    {
+      id: 'real-cello',
+      label: 'Cello',
+      color: '#6A3A2A',
+      type: 'sine' as OscillatorType,
+      attack: 0.15,
+      release: 4.5,
+      octave: 3,
+      sampledPack: 'cello',
+    },
+    {
+      id: 'real-nylon',
+      label: 'Nylon Guitar',
+      color: '#A07040',
+      type: 'sine' as OscillatorType,
+      attack: 0.1,
+      release: 3,
+      octave: 4,
+      sampledPack: 'guitar-nylon',
+    },
+    {
+      id: 'real-contrabass',
+      label: 'Contrabass',
+      color: '#3A2A1E',
+      type: 'sine' as OscillatorType,
+      attack: 0.2,
+      release: 5,
+      octave: 2,
+      sampledPack: 'contrabass',
+    },
+    {
+      id: 'real-french-horn',
+      label: 'French Horn',
+      color: '#8A5A3A',
+      type: 'sine' as OscillatorType,
+      attack: 0.2,
+      release: 4,
+      octave: 3,
+      sampledPack: 'french-horn',
+    },
+    {
+      id: 'real-organ',
+      label: 'Organ',
+      color: '#7A4A5F',
+      type: 'sine' as OscillatorType,
+      attack: 0.1,
+      release: 4,
+      octave: 4,
+      sampledPack: 'organ',
+    },
+    {
+      id: 'real-saxophone',
+      label: 'Saxophone',
+      color: '#B8843A',
+      type: 'sine' as OscillatorType,
+      attack: 0.15,
+      release: 3.5,
+      octave: 4,
+      sampledPack: 'saxophone',
+    },
+    {
+      id: 'real-bassoon',
+      label: 'Bassoon',
+      color: '#5A3A2A',
+      type: 'sine' as OscillatorType,
+      attack: 0.15,
+      release: 4,
+      octave: 3,
+      sampledPack: 'bassoon',
+    },
+    {
+      id: 'real-clarinet',
+      label: 'Clarinet',
+      color: '#6A8A4A',
+      type: 'sine' as OscillatorType,
+      attack: 0.1,
+      release: 3,
+      octave: 4,
+      sampledPack: 'clarinet',
+    },
+    {
+      id: 'real-xylophone',
+      label: 'Xylophone',
+      color: '#D4A058',
+      type: 'sine' as OscillatorType,
+      attack: 0.02,
+      release: 1.2,
+      octave: 5,
+      sampledPack: 'xylophone',
     },
   ];
   // Musical scales for melodies

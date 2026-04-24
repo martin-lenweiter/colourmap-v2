@@ -1,0 +1,16 @@
+{
+  "instrument": "french-horn",
+  "source": "tonejs-instruments (Versilian Studios Community Orchestra 2, VSCO 2)",
+  "license": "CC0",
+  "format": "mp3",
+  "samplerMap": {
+    "A3": "A3.mp3",
+    "C2": "C2.mp3",
+    "C4": "C4.mp3",
+    "D3": "D3.mp3",
+    "D5": "D5.mp3",
+    "F3": "F3.mp3",
+    "F5": "F5.mp3",
+    "G2": "G2.mp3"
+  }
+}
