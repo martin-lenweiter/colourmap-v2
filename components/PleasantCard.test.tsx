@@ -38,7 +38,11 @@ describe('PleasantCard', () => {
   });
 
   it('applies the accent color to the title', () => {
-    render(<PleasantCard title="Circles" accent="#7AAA58" />);
+    render(
+      <PleasantCard title="Circles" accent="#7AAA58">
+        <div>body</div>
+      </PleasantCard>,
+    );
     const heading = screen.getByRole('heading', { name: 'Circles' });
     expect(heading.getAttribute('style')).toContain('color: rgb(122, 170, 88)');
   });
