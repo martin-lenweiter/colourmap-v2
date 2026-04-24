@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import CategoryCompass from '@/components/CategoryCompass';
+import CheckInPing from '@/components/CheckInPing';
 import CompassCarousel from '@/components/CompassCarousel';
 import DailyAgenda from '@/components/DailyAgenda';
 import DayTabs from '@/components/DayTabs';
@@ -22,6 +23,7 @@ function DayContent() {
   });
   return (
     <div className="mx-auto max-w-2xl space-y-6 px-4 py-8">
+      <CheckInPing />
       <p
         className="text-center"
         style={{
