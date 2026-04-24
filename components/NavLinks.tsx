@@ -51,6 +51,7 @@ export default function NavLinks() {
   // never loses orientation. Especially matters on phone where only
   // 2–3 tabs are visible at once — without this, navigating to
   // /notebook scrolls Day off-screen and you feel 'lost'.
+  // biome-ignore lint/correctness/useExhaustiveDependencies: refs are stable, pathname triggers
   useEffect(() => {
     if (!isPhone) return;
     const el = activeLinkRef.current;
