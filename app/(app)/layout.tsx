@@ -67,8 +67,14 @@ export default async function AppLayout({
             <div />
             <ColourmapBrandButton />
             <div className="flex items-center justify-end gap-2">
-              <ViewModeSwitcher />
-              <ThemeSwitcher />
+              {/* Phone/Design toggle + theme switcher are dev-time tools;
+                  on phone they cramp the header next to the brand and
+                  initials. Hide them on phone — brand centered + initials
+                  right is the clean phone shape. */}
+              <div className="hidden md:flex items-center gap-2">
+                <ViewModeSwitcher />
+                <ThemeSwitcher />
+              </div>
               <UserInitialsMenu
                 initials={deriveInitials(
                   user.user_metadata?.full_name as string | undefined,
