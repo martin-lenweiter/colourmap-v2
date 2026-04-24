@@ -48,7 +48,7 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
   const errorCopy = getErrorCopy(resolvedSearchParams.error);
 
   return (
-    <main className="relative flex min-h-screen items-center justify-center overflow-hidden px-6 py-16">
+    <main className="relative flex min-h-svh items-center justify-center overflow-hidden px-6 py-16">
       <div
         aria-hidden="true"
         className="pointer-events-none absolute inset-0"
