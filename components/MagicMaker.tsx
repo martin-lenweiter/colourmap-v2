@@ -31,6 +31,10 @@ const ROOT_FREQ: Record<string, number> = {
 };
 
 // ── Instruments (oscillator type + ADSR envelope) ──
+// `sampledPack` flips an instrument to play real CC0 samples from
+// public/sounds/<pack>/ instead of the oscillator synth. Attack/decay/
+// sustain/release are ignored in sampled mode — the recording carries
+// its own envelope.
 interface Instrument {
   id: string;
   name: string;
@@ -40,6 +44,95 @@ interface Instrument {
   decay: number;
   sustain: number;
   release: number;
+  sampledPack?: 'piano' | 'violin' | 'flute' | 'harp';
+}
+
+// ── Sample pack loader (shared across Magic Maker instances) ──
+interface SamplerMap {
+  [noteName: string]: string; // e.g. 'A4' -> 'A4.mp3'
+}
+interface LoadedPack {
+  notes: { midi: number; url: string; buffer?: AudioBuffer }[];
+}
+const packCache = new Map<string, LoadedPack>();
+const packLoading = new Map<string, Promise<LoadedPack>>();
+
+function noteNameToMidi(name: string): number {
+  // Convert tonejs-style names like 'A0', 'A#0', 'As0' to a MIDI number.
+  const sanitized = name.replace(/^([A-G])s(\d+)$/, '$1#$2');
+  const m = sanitized.match(/^([A-G])(#|b)?(-?\d+)$/);
+  if (!m) return 60;
+  const pitchClass = { C: 0, D: 2, E: 4, F: 5, G: 7, A: 9, B: 11 }[
+    m[1] as 'C' | 'D' | 'E' | 'F' | 'G' | 'A' | 'B'
+  ];
+  const accidental = m[2] === '#' ? 1 : m[2] === 'b' ? -1 : 0;
+  const octave = Number.parseInt(m[3], 10);
+  return (octave + 1) * 12 + pitchClass + accidental;
+}
+
+async function loadPack(packId: 'piano' | 'violin' | 'flute' | 'harp'): Promise<LoadedPack> {
+  const cached = packCache.get(packId);
+  if (cached) return cached;
+  const inflight = packLoading.get(packId);
+  if (inflight) return inflight;
+  const promise = (async () => {
+    const res = await fetch(`/sounds/${packId}/index.json`);
+    const json = (await res.json()) as { samplerMap: SamplerMap };
+    const notes = Object.entries(json.samplerMap).map(([noteName, file]) => ({
+      midi: noteNameToMidi(noteName),
+      url: `/sounds/${packId}/${file}`,
+    }));
+    notes.sort((a, b) => a.midi - b.midi);
+    const loaded: LoadedPack = { notes };
+    packCache.set(packId, loaded);
+    return loaded;
+  })();
+  packLoading.set(packId, promise);
+  return promise;
+}
+
+function freqToMidi(freq: number): number {
+  return 12 * Math.log2(freq / 440) + 69;
+}
+
+async function playSampledNote(
+  ctx: AudioContext,
+  packId: 'piano' | 'violin' | 'flute' | 'harp',
+  freq: number,
+  velocity: number,
+  output: AudioNode,
+): Promise<void> {
+  const pack = await loadPack(packId);
+  if (pack.notes.length === 0) return;
+  const midi = freqToMidi(freq);
+  // Nearest sample by midi distance (stable — ties broken by earlier index)
+  let nearest = pack.notes[0];
+  let nearestDist = Math.abs(midi - nearest.midi);
+  for (let i = 1; i < pack.notes.length; i++) {
+    const d = Math.abs(midi - pack.notes[i].midi);
+    if (d < nearestDist) {
+      nearest = pack.notes[i];
+      nearestDist = d;
+    }
+  }
+  if (!nearest.buffer) {
+    try {
+      const res = await fetch(nearest.url);
+      const buf = await res.arrayBuffer();
+      nearest.buffer = await ctx.decodeAudioData(buf);
+    } catch {
+      return;
+    }
+  }
+  const src = ctx.createBufferSource();
+  src.buffer = nearest.buffer;
+  // Pitch-shift by the cent offset between request and nearest sample
+  src.playbackRate.value = 2 ** ((midi - nearest.midi) / 12);
+  const gain = ctx.createGain();
+  gain.gain.value = velocity;
+  src.connect(gain);
+  gain.connect(output);
+  src.start();
 }
 
 const INSTRUMENTS: Instrument[] = [
@@ -243,6 +336,52 @@ const INSTRUMENTS: Instrument[] = [
     decay: 0.1,
     sustain: 0.3,
     release: 0.15,
+  },
+  // Real sampled instruments — ADSR fields are unused in sampled mode
+  // (the recording supplies its own envelope).
+  {
+    id: 'real-piano',
+    name: 'Real Piano',
+    color: '#5C3018',
+    type: 'sine',
+    attack: 0,
+    decay: 0,
+    sustain: 1,
+    release: 0,
+    sampledPack: 'piano',
+  },
+  {
+    id: 'real-violin',
+    name: 'Real Violin',
+    color: '#8A3A2B',
+    type: 'sine',
+    attack: 0,
+    decay: 0,
+    sustain: 1,
+    release: 0,
+    sampledPack: 'violin',
+  },
+  {
+    id: 'real-flute',
+    name: 'Real Flute',
+    color: '#6890B0',
+    type: 'sine',
+    attack: 0,
+    decay: 0,
+    sustain: 1,
+    release: 0,
+    sampledPack: 'flute',
+  },
+  {
+    id: 'real-harp',
+    name: 'Real Harp',
+    color: '#C4A060',
+    type: 'sine',
+    attack: 0,
+    decay: 0,
+    sustain: 1,
+    release: 0,
+    sampledPack: 'harp',
   },
 ];
 
@@ -479,6 +618,28 @@ export default function MagicMaker() {
   const playNote = useCallback(
     (freq: number, idx: number) => {
       const ctx = getCtx();
+
+      // Sampled instrument — play a real recording through the dry/wet bus.
+      if (instrument.sampledPack) {
+        const packId = instrument.sampledPack;
+        const bus = ctx.createGain();
+        bus.gain.value = 1;
+        const dryGain = ctx.createGain();
+        dryGain.gain.value = 1 - reverbMix;
+        bus.connect(dryGain);
+        dryGain.connect(ctx.destination);
+        if (reverbMix > 0.01) {
+          const wetGain = ctx.createGain();
+          wetGain.gain.value = reverbMix;
+          const reverb = getReverb(ctx);
+          bus.connect(wetGain);
+          wetGain.connect(reverb);
+          reverb.connect(ctx.destination);
+        }
+        playSampledNote(ctx, packId, freq, volume, bus);
+        return;
+      }
+
       const now = ctx.currentTime;
       const dur = instrument.attack + instrument.decay + instrument.release;
 
