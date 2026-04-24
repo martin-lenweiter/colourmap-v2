@@ -31,6 +31,8 @@ export default function NavLinks() {
   const isPhone = mode === 'phone';
   const [moreOpen, setMoreOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
+  const navRef = useRef<HTMLElement | null>(null);
+  const activeLinkRef = useRef<HTMLAnchorElement | null>(null);
 
   const primary = isPhone ? PHONE_PRIMARY_LINKS : PRIMARY_LINKS;
   const isMoreActive = MORE_LINKS.some((l) => l.href === pathname);
@@ -45,16 +47,48 @@ export default function NavLinks() {
     return () => document.removeEventListener('mousedown', onClickOutside);
   }, [moreOpen]);
 
-  // On phone, the nav scrolls horizontally so labels don't wrap or
-  // shrink. No-wrap, horizontal overflow, hidden scrollbar.
+  // Auto-scroll the active tab into view on route change so the user
+  // never loses orientation. Especially matters on phone where only
+  // 2–3 tabs are visible at once — without this, navigating to
+  // /notebook scrolls Day off-screen and you feel 'lost'.
+  useEffect(() => {
+    if (!isPhone) return;
+    const el = activeLinkRef.current;
+    const nav = navRef.current;
+    if (!el || !nav) return;
+    const linkRect = el.getBoundingClientRect();
+    const navRect = nav.getBoundingClientRect();
+    // Center the active link in the visible nav strip when possible.
+    const target = el.offsetLeft - navRect.width / 2 + linkRect.width / 2;
+    nav.scrollTo({ left: Math.max(0, target), behavior: 'smooth' });
+  }, [pathname, isPhone]);
+
+  // On phone, the nav scrolls horizontally with scroll-snap + fade
+  // edges so the user feels like they're flipping through tabs.
   return (
     <nav
+      ref={(el) => {
+        navRef.current = el;
+      }}
       className={`mx-auto flex w-full items-center px-4 pb-3 ${
         isPhone
-          ? 'gap-5 text-sm overflow-x-auto justify-start scrollbar-none'
+          ? 'gap-6 text-[15px] overflow-x-auto justify-start scrollbar-none relative'
           : 'max-w-5xl gap-8 text-base justify-center'
       }`}
-      style={isPhone ? { scrollbarWidth: 'none' } : undefined}
+      style={
+        isPhone
+          ? {
+              scrollbarWidth: 'none',
+              scrollSnapType: 'x proximity',
+              // Soft fade on the right edge so the user can see there's
+              // more tabs to slide to. Left fade only when scrolled.
+              WebkitMaskImage:
+                'linear-gradient(to right, transparent 0, black 12px, black calc(100% - 28px), transparent 100%)',
+              maskImage:
+                'linear-gradient(to right, transparent 0, black 12px, black calc(100% - 28px), transparent 100%)',
+            }
+          : undefined
+      }
     >
       {primary.map((link) => {
         const isActive = link.href.startsWith('/#')
@@ -66,9 +100,34 @@ export default function NavLinks() {
           <Link
             key={link.href}
             href={link.href}
-            className={`shrink-0 whitespace-nowrap transition-colors tracking-[0.04em] ${isActive ? 'text-foreground font-semibold' : 'text-muted-foreground hover:text-foreground'}`}
+            ref={
+              isActive
+                ? (el) => {
+                    activeLinkRef.current = el;
+                  }
+                : undefined
+            }
+            className={`shrink-0 whitespace-nowrap transition-colors tracking-[0.04em] ${
+              isActive
+                ? 'text-foreground font-semibold'
+                : 'text-muted-foreground hover:text-foreground'
+            }`}
+            style={{ scrollSnapAlign: 'center' }}
           >
             {link.label}
+            {isActive && (
+              <span
+                aria-hidden="true"
+                className="block mx-auto"
+                style={{
+                  height: 2,
+                  width: '100%',
+                  background: '#C4A060',
+                  borderRadius: 2,
+                  marginTop: 2,
+                }}
+              />
+            )}
           </Link>
         );
       })}
