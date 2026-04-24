@@ -22,6 +22,16 @@ const WAVE_STYLES: { id: WaveStyle; label: string }[] = [
   { id: 'zigzag', label: 'zigzag' },
 ];
 
+// ── Soft-beat bed (gentle percussion on a user-chosen tempo) ──
+type BeatPreset = 'off' | 'heartbeat' | 'walking' | 'dance';
+const BEAT_PRESETS: { id: BeatPreset; label: string; intervalMs: number }[] = [
+  { id: 'off', label: 'off', intervalMs: 0 },
+  { id: 'heartbeat', label: 'heartbeat', intervalMs: 857 }, // ~70 BPM
+  { id: 'walking', label: 'walking', intervalMs: 600 }, // 100 BPM
+  { id: 'dance', label: 'dance', intervalMs: 500 }, // 120 BPM
+];
+const BEAT_SAMPLE_URL = '/sounds/drums/Djembe.ogg';
+
 // ── Brain state presets ──
 const PRESETS = [
   { id: 'deep-sleep', label: 'Deep Sleep', base: 40, beat: 2, color: '#9B6BA0' },
@@ -850,13 +860,22 @@ const REAL_LAYERS: LayerDef[] = [
     group: 'real',
     build: (ctx) => buildRealSound(ctx, '/sounds/real-rain-heavy-recording.ogg'),
   },
-  // Shamanic + percussion (from public/sounds/drums/, all Public Domain
-  // per public/sounds/ATTRIBUTIONS.md). Long continuous recordings that
-  // loop cleanly with the crossfade treatment.
+  // Percussion (Public Domain — see public/sounds/ATTRIBUTIONS.md).
+  // Djembe is a hand drum used here as the "Shaman Drum" layer — a deep,
+  // steady pulse when looped. The Schamanische_Reise.ogg file is a
+  // 60-minute ambient trance recording (too long + too thin to loop as a
+  // drum) — surfaced as "Shaman Journey" ambient so the character fits.
   {
-    id: 'real-shamanic-drum',
-    label: 'Shamanic Drum',
+    id: 'real-shaman-drum',
+    label: 'Shaman Drum',
     color: '#B33A2B',
+    group: 'real',
+    build: (ctx) => buildRealSound(ctx, '/sounds/drums/Djembe.ogg'),
+  },
+  {
+    id: 'real-shaman-journey',
+    label: 'Shaman Journey',
+    color: '#8A3A2B',
     group: 'real',
     build: (ctx) => buildRealSound(ctx, '/sounds/drums/Schamanische_Reise.ogg'),
   },
@@ -1342,6 +1361,38 @@ export default function BinauralTuner() {
       /* silent */
     }
   }, [waveStyle]);
+  const [beatPreset, setBeatPreset] = useState<BeatPreset>('off');
+  const [beatVolume, setBeatVolume] = useState(0.3);
+  const beatTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const beatBufferRef = useRef<AudioBuffer | null>(null);
+  const beatGainRef = useRef<GainNode | null>(null);
+  useEffect(() => {
+    try {
+      const stored = localStorage.getItem('colourmap:beat-preset');
+      if (stored && BEAT_PRESETS.some((b) => b.id === stored)) {
+        setBeatPreset(stored as BeatPreset);
+      }
+      const v = Number.parseFloat(localStorage.getItem('colourmap:beat-volume') ?? '');
+      if (!Number.isNaN(v) && v >= 0 && v <= 1) setBeatVolume(v);
+    } catch {
+      /* silent */
+    }
+  }, []);
+  useEffect(() => {
+    try {
+      localStorage.setItem('colourmap:beat-preset', beatPreset);
+    } catch {
+      /* silent */
+    }
+  }, [beatPreset]);
+  useEffect(() => {
+    try {
+      localStorage.setItem('colourmap:beat-volume', String(beatVolume));
+    } catch {
+      /* silent */
+    }
+    if (beatGainRef.current) beatGainRef.current.gain.value = beatVolume;
+  }, [beatVolume]);
   const warmth = 0.3; // always-on gentle warmth for smoother sound
   const filterFreq = 5000; // wide open — no muffling
   const lfoRef = useRef<OscillatorNode | null>(null);
@@ -2577,6 +2628,60 @@ export default function BinauralTuner() {
     }
   }, [tremolo, volume]);
 
+  // Soft-beat bed — schedules a percussion sample at the chosen tempo.
+  // Uses a dedicated gain node so beat volume is independent of main.
+  useEffect(() => {
+    const ctx: AudioContext | null = ctxRef.current;
+    if (!ctx || !playing || beatPreset === 'off') return;
+    const interval = BEAT_PRESETS.find((b) => b.id === beatPreset)?.intervalMs ?? 0;
+    if (!interval) return;
+
+    let cancelled = false;
+    const gain = ctx.createGain();
+    gain.gain.value = beatVolume;
+    gain.connect(ctx.destination);
+    beatGainRef.current = gain;
+
+    async function start() {
+      if (!beatBufferRef.current) {
+        try {
+          const res = await fetch(BEAT_SAMPLE_URL);
+          const buf = await res.arrayBuffer();
+          if (!ctx) return;
+          const decoded = await ctx.decodeAudioData(buf);
+          beatBufferRef.current = decoded;
+        } catch {
+          return;
+        }
+      }
+      if (cancelled) return;
+      const play = () => {
+        if (cancelled || !ctxRef.current || !beatBufferRef.current) return;
+        const src = ctxRef.current.createBufferSource();
+        src.buffer = beatBufferRef.current;
+        src.connect(gain);
+        src.start();
+      };
+      play();
+      beatTimerRef.current = setInterval(play, interval);
+    }
+    start();
+
+    return () => {
+      cancelled = true;
+      if (beatTimerRef.current) {
+        clearInterval(beatTimerRef.current);
+        beatTimerRef.current = null;
+      }
+      try {
+        gain.disconnect();
+      } catch {
+        /* already disconnected */
+      }
+      beatGainRef.current = null;
+    };
+  }, [playing, beatPreset, beatVolume]);
+
   useEffect(() => {
     return () => {
       if (ctxRef.current) {
@@ -2883,6 +2988,51 @@ export default function BinauralTuner() {
             </button>
           );
         })}
+      </div>
+
+      {/* Soft-beat bed — gentle percussion on a chosen tempo */}
+      <div className="flex flex-col items-center gap-1.5">
+        <div className="flex flex-wrap justify-center gap-1.5">
+          {BEAT_PRESETS.map((b) => {
+            const isActive = beatPreset === b.id;
+            return (
+              <button
+                key={b.id}
+                type="button"
+                onClick={() => setBeatPreset(b.id)}
+                className="cursor-pointer rounded-full px-2.5 py-0.5 text-[10px] uppercase tracking-[0.12em] transition-all"
+                style={{
+                  color: isActive ? '#5C3018' : '#8A6A4A',
+                  background: isActive ? `${activeColor}20` : 'transparent',
+                  border: `1px solid ${isActive ? `${activeColor}60` : '#5C301818'}`,
+                  fontFamily: 'var(--font-serif)',
+                  opacity: isActive ? 1 : 0.65,
+                }}
+                aria-label={`Beat tempo: ${b.label}`}
+              >
+                {b.label}
+              </button>
+            );
+          })}
+        </div>
+        {beatPreset !== 'off' && (
+          <label
+            className="flex items-center gap-2"
+            style={{ fontFamily: 'var(--font-serif)', fontSize: 10, color: '#8A6A4A' }}
+          >
+            <span style={{ opacity: 0.7 }}>beat vol</span>
+            <input
+              type="range"
+              min={0}
+              max={1}
+              step={0.01}
+              value={beatVolume}
+              onChange={(e) => setBeatVolume(Number.parseFloat(e.target.value))}
+              aria-label="Beat volume"
+              style={{ width: 120, accentColor: activeColor }}
+            />
+          </label>
+        )}
       </div>
 
       {/* Audio error */}
