@@ -283,7 +283,6 @@ export default function FeedbackOverlay() {
       }}
     >
       {/* Draw layer — receives strokes only in draw mode */}
-      {/** biome-ignore lint/a11y/noStaticElementInteractions: drawing surface is intentionally not focusable */}
       <svg
         aria-hidden="true"
         width="100%"
@@ -425,7 +424,6 @@ export default function FeedbackOverlay() {
             boxSizing: 'border-box',
           }}
         >
-          {/** biome-ignore lint/a11y/noStaticElementInteractions: drag handle */}
           <div
             onPointerDown={onNoteDragStart}
             onPointerMove={onNoteDragMove}

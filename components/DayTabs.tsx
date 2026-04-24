@@ -11,14 +11,13 @@ import { haptic } from '@/lib/haptics';
    Overview = wide-angle life map + compass carousel.
    ═══════════════════════════════════════════════════════════ */
 
-type Tab = 'checkin' | 'overview' | 'mastery' | 'tuner';
+type Tab = 'checkin' | 'overview';
 
-// V1: Check in + Sounds only. Overview + Mastery hidden — restore by uncommenting.
+// Day = Check in + Overview. Sounds moved out to its own top-nav tab
+// (/sounds) so the Day surface stays about the feeling/doing rhythm.
 const TABS: { id: Tab; label: string }[] = [
   { id: 'checkin', label: 'Check in' },
-  // { id: 'overview', label: 'Overview' },
-  // { id: 'mastery', label: 'Mastery' },
-  { id: 'tuner', label: 'Sounds' },
+  { id: 'overview', label: 'Overview' },
 ];
 
 const TAB_KEY = 'colourmap:day-tab';
@@ -26,28 +25,20 @@ const TAB_KEY = 'colourmap:day-tab';
 interface DayTabsProps {
   checkinContent: React.ReactNode;
   overviewContent: React.ReactNode;
-  masteryContent?: React.ReactNode;
-  tunerContent?: React.ReactNode;
 }
 
-export default function DayTabs({
-  checkinContent,
-  overviewContent,
-  masteryContent,
-  tunerContent,
-}: DayTabsProps) {
+export default function DayTabs({ checkinContent, overviewContent }: DayTabsProps) {
   const [active, setActive] = useState<Tab>('checkin');
   const { style } = useStyle();
 
-  // Restore last-chosen tab on mount. Previous key values ('cockpit') are
-  // mapped to 'checkin' so users don't get bounced to Overview on upgrade.
+  // Restore last-chosen tab on mount. Previous key values ('cockpit',
+  // 'tuner', 'mastery') are remapped to the nearest surviving tab so
+  // users don't land on a disappeared tab after upgrade.
   useEffect(() => {
     try {
       const stored = localStorage.getItem(TAB_KEY);
-      if (stored === 'cockpit' || stored === 'checkin') setActive('checkin');
-      else if (stored === 'overview') setActive('overview');
-      else if (stored === 'mastery') setActive('mastery');
-      else if (stored === 'tuner') setActive('tuner');
+      if (stored === 'overview') setActive('overview');
+      else setActive('checkin');
     } catch {
       /* silent */
     }
@@ -96,10 +87,7 @@ export default function DayTabs({
       <div className="animate-in fade-in duration-200">
         {active === 'checkin' && checkinContent}
         {active === 'overview' && overviewContent}
-        {active === 'mastery' && masteryContent}
       </div>
-      {/* Tuner stays mounted so audio keeps playing across tabs */}
-      <div style={{ display: active === 'tuner' ? 'block' : 'none' }}>{tunerContent}</div>
     </div>
   );
 }

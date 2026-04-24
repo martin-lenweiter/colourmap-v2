@@ -2641,7 +2641,12 @@ export default function FeelingCheckInCard() {
               {/* Hawkins emotional slider — toggled by losange below */}
               {sliderVisible && (
                 <div className="relative flex flex-col items-center gap-2 pt-4 pb-2">
-                  {/* Style toggle — small beige circle that switches between square and dot rendering */}
+                  {/* Style toggle — pushed to the top-right corner of
+                      the slider container with z-index 2 so it sits
+                      ABOVE the slider squares on phone (was hidden
+                      behind them before). Bigger tap target (28px)
+                      and more visible border so it doesn't look like
+                      a faded dot. */}
                   <button
                     type="button"
                     onClick={() =>
@@ -2650,21 +2655,23 @@ export default function FeelingCheckInCard() {
                       )
                     }
                     aria-label="Toggle hawkins slider style"
-                    className="absolute right-0 flex cursor-pointer items-center justify-center"
+                    className="absolute flex cursor-pointer items-center justify-center"
                     style={{
-                      // Align vertically with the slider row: pt-4 (16px) + half of
-                      // 36px container (18px) − half of this button (10px) = 24px.
-                      top: 24,
-                      width: 20,
-                      height: 20,
-                      background: 'transparent',
-                      border: 'none',
+                      right: -4,
+                      top: -6,
+                      width: 28,
+                      height: 28,
+                      background: '#F5E8C8',
+                      border: '1.5px solid #C4A06055',
+                      borderRadius: 999,
+                      boxShadow: '0 1px 3px rgba(92,48,24,0.12)',
+                      zIndex: 2,
                     }}
                   >
                     <span
                       style={{
-                        width: 14,
-                        height: 14,
+                        width: 12,
+                        height: 12,
                         background: '#8A6A4A',
                         borderRadius: hawkinsStyle === 'dots' ? '50%' : '3px',
                         display: 'block',

@@ -14,6 +14,22 @@ const AGENDA_KEY = 'colourmap:daily-agenda';
 const AGENDA_OPEN_KEY = 'colourmap:daily-agenda-open';
 const OUTINGS_KEY = 'colourmap:outings';
 
+// Mission buckets mirror the compass vocabulary used in check-in:
+// Feeling / Doing / Sharing. Rendered as three labeled pills above the
+// objectives list (same visual language as the check-in slider drawer
+// toggles). Tap a pill to filter. Tap an objective's colored pill to
+// slide it sideways between buckets — no separate picker menu.
+//
+// Colors match the compass axis colors in CheckInForm so the whole app
+// reads as one vocabulary.
+type ObjectiveType = 'feeling' | 'doing' | 'sharing';
+
+const MISSION_TYPES: { id: ObjectiveType; label: string; color: string }[] = [
+  { id: 'feeling', label: 'Feeling', color: '#D4805A' },
+  { id: 'doing', label: 'Doing', color: '#6890B0' },
+  { id: 'sharing', label: 'Sharing', color: '#7AAA58' },
+];
+
 interface AgendaBlock {
   id: string;
   text: string;
@@ -183,7 +199,13 @@ export default function DailyAgenda() {
   const [showBlockPicker, setShowBlockPicker] = useState(false);
   const [lifeCategories, setLifeCategories] = useState<LifeCategoryLike[]>([]);
   const [showObjectives, setShowObjectives] = useState(false);
-  const [objectives, setObjectives] = useState<{ id: string; text: string; done: boolean }[]>([]);
+  // Mission type — the four buckets an objective can sit in. Dots above
+  // the list let you filter to one bucket or see all. Default is 'daily'
+  // for any objective that doesn't yet have a type set (legacy data).
+  const [objectives, setObjectives] = useState<
+    { id: string; text: string; done: boolean; type?: ObjectiveType }[]
+  >([]);
+  const [missionFilter, setMissionFilter] = useState<ObjectiveType | 'all'>('all');
   const [showDone, setShowDone] = useState(false);
   const [doneObjectives, setDoneObjectives] = useState<
     {
@@ -577,68 +599,176 @@ export default function DailyAgenda() {
           {objectives.filter((o) => !o.done).length > 0 && (
             <div>
               {showObjectives && (
-                <div className="animate-in fade-in duration-150 space-y-1.5 pt-2">
-                  {(() => {
-                    const alreadyInAgenda = new Set(blocks.map((b) => b.text));
-                    return objectives
-                      .filter((o) => !o.done)
-                      .map((o) => {
-                        const scheduled = alreadyInAgenda.has(o.text);
-                        return (
-                          <div
-                            key={o.id}
-                            className="flex items-center gap-2 px-2"
-                            style={{ minHeight: 32 }}
+                <div className="animate-in fade-in duration-150 space-y-3 pt-2">
+                  {/* Compass pills — Feeling / Doing / Sharing as three
+                      equal-width drawer-style toggles matching the
+                      check-in slider vocabulary. Tap one to filter.
+                      Tap again or 'all' to clear. */}
+                  <div className="flex items-center gap-1.5 px-1">
+                    {MISSION_TYPES.map((mt) => {
+                      const isActive = missionFilter === mt.id;
+                      const typedCount = objectives.filter(
+                        (o) => !o.done && (o.type ?? 'doing') === mt.id,
+                      ).length;
+                      return (
+                        <button
+                          key={mt.id}
+                          type="button"
+                          onClick={() => setMissionFilter(isActive ? 'all' : mt.id)}
+                          className="flex flex-1 cursor-pointer items-center justify-center gap-1.5 rounded-xl transition-all hover:opacity-90"
+                          style={{
+                            background: isActive ? `${mt.color}22` : `${mt.color}08`,
+                            border: `1.5px solid ${isActive ? mt.color : `${mt.color}30`}`,
+                            padding: '9px 8px',
+                            minHeight: 44,
+                          }}
+                          aria-label={`Filter to ${mt.label} missions`}
+                          aria-pressed={isActive}
+                        >
+                          <span
+                            style={{
+                              width: 10,
+                              height: 10,
+                              borderRadius: '50%',
+                              background: mt.color,
+                              opacity: isActive ? 1 : 0.7,
+                              flexShrink: 0,
+                            }}
+                          />
+                          <span
+                            style={{
+                              fontFamily: 'var(--font-serif)',
+                              fontSize: 13,
+                              fontWeight: isActive ? 700 : 600,
+                              color: isActive ? mt.color : '#5C3018',
+                              letterSpacing: '0.04em',
+                            }}
                           >
+                            {mt.label}
+                          </span>
+                          {typedCount > 0 && (
                             <span
                               style={{
-                                width: 8,
-                                height: 8,
-                                borderRadius: '50%',
-                                background: o.done ? '#7AAA58' : scheduled ? '#6890B0' : '#C4A060',
-                                opacity: o.done ? 0.5 : 0.7,
-                                flexShrink: 0,
-                              }}
-                            />
-                            <span
-                              style={{
-                                flex: 1,
                                 fontFamily: 'var(--font-serif)',
-                                fontSize: '14px',
+                                fontSize: 11,
                                 fontWeight: 600,
-                                color: '#5C3018',
-                                opacity: o.done ? 0.5 : 1,
-                                textDecoration: o.done ? 'line-through' : 'none',
+                                color: mt.color,
+                                opacity: 0.7,
                               }}
                             >
-                              {o.text}
+                              · {typedCount}
                             </span>
-                            {!o.done && !scheduled && (
+                          )}
+                        </button>
+                      );
+                    })}
+                  </div>
+                  {missionFilter !== 'all' && (
+                    <button
+                      type="button"
+                      onClick={() => setMissionFilter('all')}
+                      className="cursor-pointer block mx-auto"
+                      style={{
+                        background: 'none',
+                        border: 'none',
+                        color: '#8A6A4A',
+                        opacity: 0.55,
+                        fontSize: 11,
+                        fontFamily: 'var(--font-serif)',
+                        textTransform: 'uppercase',
+                        letterSpacing: '0.12em',
+                        padding: '2px 8px',
+                      }}
+                    >
+                      show all
+                    </button>
+                  )}
+                  <div className="space-y-1.5">
+                    {(() => {
+                      const alreadyInAgenda = new Set(blocks.map((b) => b.text));
+                      return objectives
+                        .filter((o) => !o.done)
+                        .filter(
+                          (o) => missionFilter === 'all' || (o.type ?? 'daily') === missionFilter,
+                        )
+                        .map((o) => {
+                          const scheduled = alreadyInAgenda.has(o.text);
+                          const type = o.type ?? 'doing';
+                          const typeDef =
+                            MISSION_TYPES.find((mt) => mt.id === type) ?? MISSION_TYPES[1];
+                          return (
+                            <div
+                              key={o.id}
+                              className="flex items-center gap-2.5 px-2"
+                              style={{ minHeight: 40 }}
+                            >
                               <button
                                 type="button"
-                                onClick={() => importObjective(o.text)}
-                                className="cursor-pointer rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider transition-all hover:opacity-80"
+                                onClick={() => {
+                                  // Cycle through Feeling → Doing → Sharing on tap
+                                  // so the user can re-bucket a row without a
+                                  // separate picker menu.
+                                  const order = MISSION_TYPES.map((m) => m.id);
+                                  const next = order[(order.indexOf(type) + 1) % order.length];
+                                  setObjectives((prev) =>
+                                    prev.map((p) => (p.id === o.id ? { ...p, type: next } : p)),
+                                  );
+                                }}
+                                aria-label={`Mission bucket: ${typeDef.label}. Tap to change.`}
+                                title={`${typeDef.label} — tap to slide to next`}
                                 style={{
-                                  background: '#6890B012',
-                                  border: '1px solid #6890B030',
-                                  color: '#6890B0',
+                                  width: 16,
+                                  height: 16,
+                                  borderRadius: '50%',
+                                  background: typeDef.color,
+                                  opacity: o.done ? 0.4 : 0.9,
+                                  flexShrink: 0,
+                                  border: `2px solid ${typeDef.color}33`,
+                                  padding: 0,
+                                  cursor: 'pointer',
+                                }}
+                              />
+                              <span
+                                style={{
+                                  flex: 1,
+                                  fontFamily: 'var(--font-serif)',
+                                  fontSize: '16px',
+                                  fontWeight: 600,
+                                  color: '#5C3018',
+                                  opacity: o.done ? 0.5 : 1,
+                                  textDecoration: o.done ? 'line-through' : 'none',
+                                  lineHeight: 1.35,
                                 }}
                               >
-                                schedule
-                              </button>
-                            )}
-                            {scheduled && !o.done && (
-                              <span
-                                className="text-[10px] font-semibold uppercase tracking-wider"
-                                style={{ color: '#6890B0', opacity: 0.5 }}
-                              >
-                                scheduled
+                                {o.text}
                               </span>
-                            )}
-                          </div>
-                        );
-                      });
-                  })()}
+                              {!o.done && !scheduled && (
+                                <button
+                                  type="button"
+                                  onClick={() => importObjective(o.text)}
+                                  className="cursor-pointer rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider transition-all hover:opacity-80"
+                                  style={{
+                                    background: '#6890B012',
+                                    border: '1px solid #6890B030',
+                                    color: '#6890B0',
+                                  }}
+                                >
+                                  schedule
+                                </button>
+                              )}
+                              {scheduled && !o.done && (
+                                <span
+                                  className="text-[10px] font-semibold uppercase tracking-wider"
+                                  style={{ color: '#6890B0', opacity: 0.5 }}
+                                >
+                                  scheduled
+                                </span>
+                              )}
+                            </div>
+                          );
+                        });
+                    })()}
+                  </div>
                 </div>
               )}
             </div>
@@ -1350,44 +1480,53 @@ function VerticalView({
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
-      {/* Wake-up time — left-aligned above hours */}
-      <div className="flex items-center gap-1.5 pb-1" style={{ paddingLeft: 0 }}>
+      {/* Wake-up time — native time input so phones get the OS time
+          wheel (iOS / Android) instead of a coarse dropdown. Stored
+          as HH:MM in localStorage; the hour-only value that drives
+          the timeline grid is derived on change. */}
+      <div className="flex items-center gap-2 pb-1" style={{ paddingLeft: 0 }}>
         <span
           style={{
             fontFamily: 'var(--font-serif)',
-            fontSize: '11px',
+            fontSize: '12px',
             color: '#8A6A4A',
-            opacity: 0.5,
+            opacity: 0.65,
           }}
         >
           woke up at
         </span>
-        <select
-          value={wakeHour}
+        <input
+          type="time"
+          value={(() => {
+            const storedRaw =
+              typeof window !== 'undefined' ? (localStorage.getItem(WAKE_KEY) ?? '') : '';
+            const asHHMM = storedRaw.includes(':') ? storedRaw : null;
+            const hh = String(wakeHour).padStart(2, '0');
+            return asHHMM ?? `${hh}:00`;
+          })()}
           onChange={(e) => {
-            const v = Number(e.target.value);
-            setWakeHour(v);
+            const v = e.target.value; // "HH:MM"
             try {
-              localStorage.setItem(WAKE_KEY, String(v));
+              localStorage.setItem(WAKE_KEY, v);
             } catch {}
+            const h = Number.parseInt(v.split(':')[0] ?? '7', 10);
+            if (!Number.isNaN(h)) setWakeHour(h);
           }}
+          aria-label="Wake up time"
           style={{
             background: 'transparent',
-            border: '1px solid #C4A06030',
-            borderRadius: 4,
-            padding: '1px 4px',
-            fontSize: '12px',
-            fontWeight: 600,
+            border: '1px solid #C4A06060',
+            borderRadius: 10,
+            padding: '6px 10px',
+            fontSize: '15px',
+            fontWeight: 700,
             color: '#5C3018',
             fontFamily: 'var(--font-serif)',
+            minHeight: 36,
+            minWidth: 92,
+            outline: 'none',
           }}
-        >
-          {Array.from({ length: 12 }, (_, i) => i + 4).map((h) => (
-            <option key={h} value={h}>
-              {String(h).padStart(2, '0')}:00
-            </option>
-          ))}
-        </select>
+        />
       </div>
       {getHours(wakeHour).map((hour) => {
         // All blocks visible in this hour slot
