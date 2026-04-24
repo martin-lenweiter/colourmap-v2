@@ -2867,7 +2867,7 @@ export default function BinauralTuner() {
       )}
 
       {/* Title */}
-      <div className="text-center space-y-1">
+      <div className="text-center space-y-1.5">
         <p
           style={{
             fontFamily: 'var(--font-serif)',
@@ -2878,6 +2878,17 @@ export default function BinauralTuner() {
           }}
         >
           Calming Sounds
+        </p>
+        <p
+          style={{
+            fontFamily: 'var(--font-serif)',
+            fontSize: '13px',
+            color: '#8A6A4A',
+            opacity: 0.7,
+            letterSpacing: '0.02em',
+          }}
+        >
+          gentle tones + nature sounds to settle in
         </p>
         {/* Binaural quick-shortcut. Shows what's currently playing (base
             Hz + beat Hz + breathing). Tap to jump into full Studio mode
@@ -3279,7 +3290,7 @@ export default function BinauralTuner() {
               onToggle={() => setBaseToneOn((s) => !s)}
             />
             <SliderRow
-              label="binaural"
+              label="brain-wave rate"
               value={beatFreq}
               min={1}
               max={10}
