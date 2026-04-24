@@ -2,6 +2,8 @@
 
 import { useEffect, useState } from 'react';
 
+import { useKeyboardAware } from '@/components/hooks/useKeyboardAware';
+
 /* ═══════════════════════════════════════════════════════════
    CIRCLE BOARD — shared mission board for a group of people.
    Create circles, join with a code, shared missions + log.
@@ -96,6 +98,7 @@ export default function CircleBoard() {
   const [editingMe, setEditingMe] = useState(false);
   const [meNameInput, setMeNameInput] = useState('');
   const [howOpen, setHowOpen] = useState(false);
+  const boardRef = useKeyboardAware<HTMLDivElement>();
 
   useEffect(() => {
     setCircles(ls<Circle[]>(LS_CIRCLES, []));
@@ -294,7 +297,7 @@ export default function CircleBoard() {
   // ── Name setup ──
   if (editingMe || !me.name) {
     return (
-      <div className="mx-auto max-w-md space-y-6 px-4 py-12">
+      <div ref={boardRef} className="mx-auto max-w-md space-y-6 px-4 py-12">
         <div className="text-center space-y-2">
           <p
             style={{
@@ -354,7 +357,7 @@ export default function CircleBoard() {
   // ── Circle list ──
   if (view === 'list' || !active) {
     return (
-      <div className="mx-auto max-w-md space-y-6 px-4 py-8">
+      <div ref={boardRef} className="mx-auto max-w-md space-y-6 px-4 py-8">
         <div className="text-center space-y-1">
           <p
             style={{
@@ -768,7 +771,7 @@ export default function CircleBoard() {
   }
 
   return (
-    <div className="mx-auto max-w-md space-y-5 px-4 py-6">
+    <div ref={boardRef} className="mx-auto max-w-md space-y-5 px-4 py-6">
       {/* Header */}
       <div className="flex items-center gap-3">
         <button
