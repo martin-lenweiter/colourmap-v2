@@ -2894,7 +2894,7 @@ export default function BinauralTuner() {
             color: '#5C3018',
           }}
         >
-          Calming Sounds
+          Relaxing Sounds
         </p>
       </div>
 

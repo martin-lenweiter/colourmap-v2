@@ -7,9 +7,26 @@ import FeedbackOverlay from '@/components/FeedbackOverlay';
 import MobileViewportBoot from '@/components/MobileViewportBoot';
 import NavLinks from '@/components/NavLinks';
 import ThemeSwitcher from '@/components/ThemeSwitcher';
+import UserInitialsMenu from '@/components/UserInitialsMenu';
 import { ViewModeProvider } from '@/components/ViewModeContext';
 import ViewModeSwitcher from '@/components/ViewModeSwitcher';
 import { createClient } from '@/lib/supabase/server';
+
+function deriveInitials(fullName: string | undefined, email: string): string {
+  const source = fullName?.trim();
+  if (source) {
+    const parts = source.split(/\s+/).filter(Boolean);
+    if (parts.length >= 2) return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+    return parts[0].slice(0, 2).toUpperCase();
+  }
+  const local = (email.split('@')[0] || '').trim();
+  if (!local) return '';
+  if (local.includes('.')) {
+    const parts = local.split('.').filter(Boolean);
+    if (parts.length >= 2) return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+  }
+  return local.slice(0, 2).toUpperCase();
+}
 
 import AppShell from './AppShell';
 
@@ -42,27 +59,23 @@ export default async function AppLayout({
       <MobileViewportBoot />
       <div className="min-h-svh bg-background">
         <header className="border-b border-border">
-          {/* Compact phone-friendly header. Logo + controls on one row;
-              email hidden on phone (it's on the Sign out form target
-              anyway, and takes too much space on narrow screens). */}
-          <div className="mx-auto flex w-full max-w-5xl items-center gap-3 px-4 py-2">
-            <div className="flex-1 flex justify-center">
-              <ColourmapBrandButton />
-            </div>
-            <p className="hidden md:block text-xs text-muted-foreground/50 mr-2">
-              {user.email ?? 'your Google account'}
-            </p>
-            <div className="flex items-center gap-2">
+          {/* Three-column grid so the Colourmap brand stays visually
+              centered on every viewport — not just desktop. Left column
+              is an empty spacer matching the width of the right column
+              so the middle is truly centered even on phone. */}
+          <div className="mx-auto grid w-full max-w-5xl grid-cols-[1fr_auto_1fr] items-center gap-3 px-4 py-2">
+            <div />
+            <ColourmapBrandButton />
+            <div className="flex items-center justify-end gap-2">
               <ViewModeSwitcher />
               <ThemeSwitcher />
-              <form action="/logout" method="post">
-                <button
-                  className="text-[11px] text-muted-foreground transition-colors hover:text-foreground"
-                  type="submit"
-                >
-                  Sign out
-                </button>
-              </form>
+              <UserInitialsMenu
+                initials={deriveInitials(
+                  user.user_metadata?.full_name as string | undefined,
+                  user.email ?? '',
+                )}
+                email={user.email ?? ''}
+              />
             </div>
           </div>
           <NavLinks />
