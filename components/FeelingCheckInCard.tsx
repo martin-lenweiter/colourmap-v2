@@ -1652,14 +1652,13 @@ export default function FeelingCheckInCard() {
     <>
       {/* BOX A: FEELING — frame removed on phone to reclaim margins.
           Desktop keeps the beige card for visual grouping. */}
-      <div className="relative space-y-5 rounded-none border-0 bg-transparent px-0 py-0 shadow-none md:rounded-3xl md:border md:border-[#7a543833] md:px-5 md:py-6 md:bg-[linear-gradient(180deg,rgba(251,244,232,0.95),rgba(246,236,221,0.92))] md:shadow-[0_24px_50px_-34px_rgba(92,48,24,0.35)]">
+      <div className="relative space-y-2.5 rounded-none border-0 bg-transparent px-0 py-0 shadow-none md:space-y-5 md:rounded-3xl md:border md:border-[#7a543833] md:px-5 md:py-6 md:bg-[linear-gradient(180deg,rgba(251,244,232,0.95),rgba(246,236,221,0.92))] md:shadow-[0_24px_50px_-34px_rgba(92,48,24,0.35)]">
         <p
           className="text-center uppercase tracking-[0.2em] md:tracking-[0.24em]"
           style={{
             fontFamily: 'var(--font-serif)',
-            // Phone: 15px so the segment title is readable at arm's length.
-            // Desktop override happens inline via clamp-min on md screens.
-            fontSize: 'clamp(13px, 3.4vw, 15px)',
+            // Tighter on phone per user: go deeper, smaller.
+            fontSize: 'clamp(10px, 2.4vw, 13px)',
             fontWeight: 700,
             color: '#D4805A',
             opacity: 0.7,
@@ -2675,7 +2674,7 @@ export default function FeelingCheckInCard() {
                     />
                   </button>
 
-                  <div className="relative" style={{ width: 300, height: 48 }}>
+                  <div className="relative" style={{ width: 300, height: 40 }}>
                     {(() => {
                       if (hawkinsStyle === 'losanges') {
                         // LOSANGES — rotated squares (diamonds). A rotated 18px square
@@ -2685,7 +2684,7 @@ export default function FeelingCheckInCard() {
                         const gap = 13;
                         const totalW = HAWKINS.length * sq + (HAWKINS.length - 1) * gap;
                         const offsetX = (300 - totalW) / 2;
-                        const baseY = (48 - sq) / 2;
+                        const baseY = (40 - sq) / 2;
                         return HAWKINS.map((h, i) => {
                           const selected = hawkinsIdx === i;
                           const x = offsetX + i * (sq + gap);
@@ -2718,7 +2717,7 @@ export default function FeelingCheckInCard() {
                         const dotSize = 22;
                         const totalW = HAWKINS.length * dotSize + (HAWKINS.length - 1) * 6;
                         const offsetX = (300 - totalW) / 2;
-                        const baseY = (48 - dotSize) / 2;
+                        const baseY = (40 - dotSize) / 2;
                         return HAWKINS.map((h, i) => {
                           const selected = hawkinsIdx === i;
                           const x = offsetX + i * (dotSize + 6);
@@ -2749,7 +2748,7 @@ export default function FeelingCheckInCard() {
                       const gap = 6;
                       const totalW = HAWKINS.length * sq + (HAWKINS.length - 1) * gap;
                       const offsetX = (300 - totalW) / 2;
-                      const baseY = (48 - sq) / 2;
+                      const baseY = (40 - sq) / 2;
                       return HAWKINS.map((h, i) => {
                         const selected = hawkinsIdx === i;
                         const x = offsetX + i * (sq + gap);
@@ -3313,7 +3312,7 @@ export default function FeelingCheckInCard() {
       </div>
 
       {/* BOX B: DOING — frame removed on phone to reclaim margins. */}
-      <div className="space-y-4 rounded-none border-0 bg-transparent px-0 py-0 shadow-none md:rounded-3xl md:border md:border-[#7a543833] md:px-5 md:py-6 md:bg-[linear-gradient(180deg,rgba(251,244,232,0.95),rgba(246,236,221,0.92))] md:shadow-[0_24px_50px_-34px_rgba(92,48,24,0.35)]">
+      <div className="space-y-2.5 rounded-none border-0 bg-transparent px-0 py-0 shadow-none md:space-y-4 md:rounded-3xl md:border md:border-[#7a543833] md:px-5 md:py-6 md:bg-[linear-gradient(180deg,rgba(251,244,232,0.95),rgba(246,236,221,0.92))] md:shadow-[0_24px_50px_-34px_rgba(92,48,24,0.35)]">
         <p
           className="text-center uppercase tracking-[0.24em]"
           style={{
