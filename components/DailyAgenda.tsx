@@ -1482,44 +1482,53 @@ function VerticalView({
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
-      {/* Wake-up time — left-aligned above hours */}
-      <div className="flex items-center gap-1.5 pb-1" style={{ paddingLeft: 0 }}>
+      {/* Wake-up time — native time input so phones get the OS time
+          wheel (iOS / Android) instead of a coarse dropdown. Stored
+          as HH:MM in localStorage; the hour-only value that drives
+          the timeline grid is derived on change. */}
+      <div className="flex items-center gap-2 pb-1" style={{ paddingLeft: 0 }}>
         <span
           style={{
             fontFamily: 'var(--font-serif)',
-            fontSize: '11px',
+            fontSize: '12px',
             color: '#8A6A4A',
-            opacity: 0.5,
+            opacity: 0.65,
           }}
         >
           woke up at
         </span>
-        <select
-          value={wakeHour}
+        <input
+          type="time"
+          value={(() => {
+            const storedRaw =
+              typeof window !== 'undefined' ? localStorage.getItem(WAKE_KEY) ?? '' : '';
+            const asHHMM = storedRaw.includes(':') ? storedRaw : null;
+            const hh = String(wakeHour).padStart(2, '0');
+            return asHHMM ?? `${hh}:00`;
+          })()}
           onChange={(e) => {
-            const v = Number(e.target.value);
-            setWakeHour(v);
+            const v = e.target.value; // "HH:MM"
             try {
-              localStorage.setItem(WAKE_KEY, String(v));
+              localStorage.setItem(WAKE_KEY, v);
             } catch {}
+            const h = Number.parseInt(v.split(':')[0] ?? '7', 10);
+            if (!Number.isNaN(h)) setWakeHour(h);
           }}
+          aria-label="Wake up time"
           style={{
             background: 'transparent',
-            border: '1px solid #C4A06030',
-            borderRadius: 4,
-            padding: '1px 4px',
-            fontSize: '12px',
-            fontWeight: 600,
+            border: '1px solid #C4A06060',
+            borderRadius: 10,
+            padding: '6px 10px',
+            fontSize: '15px',
+            fontWeight: 700,
             color: '#5C3018',
             fontFamily: 'var(--font-serif)',
+            minHeight: 36,
+            minWidth: 92,
+            outline: 'none',
           }}
-        >
-          {Array.from({ length: 12 }, (_, i) => i + 4).map((h) => (
-            <option key={h} value={h}>
-              {String(h).padStart(2, '0')}:00
-            </option>
-          ))}
-        </select>
+        />
       </div>
       {getHours(wakeHour).map((hour) => {
         // All blocks visible in this hour slot
