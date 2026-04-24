@@ -1921,6 +1921,12 @@ export default function BinauralTuner() {
   const [simpleMode, setSimpleMode] = useState(true);
   const [layersOpen, setLayersOpen] = useState(true);
   const [genresOpen, setGenresOpen] = useState(false);
+  // Which layer group is showing in the phone tab strip (desktop ignores this
+  // and renders the 5-column grid). Default to 'nature' as the most
+  // immediately recognizable category.
+  const [activeLayerGroup, setActiveLayerGroup] = useState<
+    'real' | 'nature' | 'tones' | 'texture' | 'ambient'
+  >('nature');
   const [brainStatesOpen, setBrainStatesOpen] = useState(false);
   const [savedSoundsOpen, setSavedSoundsOpen] = useState(false);
 
@@ -4038,7 +4044,162 @@ export default function BinauralTuner() {
                     {layerReverb}%
                   </span>
                 </div>
-                <div className="grid grid-cols-5 gap-1.5">
+                {/* Active layers chip strip — always on, shows what's
+                    currently playing with tap-to-remove. */}
+                {(() => {
+                  const active = ALL_LAYERS.filter((l) => (activeLayers[l.id] || 0) > 0);
+                  if (active.length === 0) return null;
+                  return (
+                    <div className="flex flex-wrap gap-1.5 mb-3">
+                      {active.map((l) => (
+                        <button
+                          key={l.id}
+                          type="button"
+                          onClick={() => toggleLayer(l.id)}
+                          className="flex cursor-pointer items-center gap-1.5 rounded-full px-2.5 py-1 transition-opacity hover:opacity-85"
+                          style={{
+                            background: `${l.color}20`,
+                            border: `1px solid ${l.color}55`,
+                          }}
+                          title={`Remove ${l.label}`}
+                          aria-label={`Remove ${l.label}`}
+                        >
+                          <span
+                            style={{
+                              width: 8,
+                              height: 8,
+                              borderRadius: '50%',
+                              background: l.color,
+                            }}
+                          />
+                          <span
+                            style={{
+                              fontFamily: 'var(--font-serif)',
+                              fontSize: 12,
+                              fontWeight: 600,
+                              color: l.color,
+                            }}
+                          >
+                            {l.label}
+                          </span>
+                          <span
+                            aria-hidden="true"
+                            style={{ color: l.color, opacity: 0.6, fontSize: 13, lineHeight: 1 }}
+                          >
+                            ×
+                          </span>
+                        </button>
+                      ))}
+                    </div>
+                  );
+                })()}
+
+                {/* Phone: horizontal group tab strip + single-column list */}
+                <div className="md:hidden">
+                  <div className="flex gap-1.5 overflow-x-auto mb-2 pb-1">
+                    {(['real', 'nature', 'tones', 'texture', 'ambient'] as const).map((group) => {
+                      const groupColors: Record<string, string> = {
+                        real: '#D4805A',
+                        nature: '#7AAA58',
+                        tones: '#C4A060',
+                        texture: '#A0907A',
+                        ambient: '#6890B0',
+                      };
+                      const isActive = activeLayerGroup === group;
+                      return (
+                        <button
+                          key={group}
+                          type="button"
+                          onClick={() => setActiveLayerGroup(group)}
+                          className="shrink-0 cursor-pointer rounded-full px-3 py-1.5 uppercase tracking-[0.14em] transition-all"
+                          style={{
+                            fontFamily: 'var(--font-serif)',
+                            fontSize: 12,
+                            fontWeight: 700,
+                            color: isActive ? groupColors[group] : '#8A6A4A',
+                            background: isActive ? `${groupColors[group]}15` : 'transparent',
+                            border: `1px solid ${isActive ? `${groupColors[group]}60` : '#C4A06018'}`,
+                          }}
+                        >
+                          {group}
+                        </button>
+                      );
+                    })}
+                  </div>
+                  <div className="space-y-1.5">
+                    {ALL_LAYERS.filter((l) => l.group === activeLayerGroup).map((l) => {
+                      const vol = activeLayers[l.id] || 0;
+                      const isOn = vol > 0;
+                      return (
+                        <div key={l.id} className="space-y-0.5">
+                          <button
+                            type="button"
+                            onClick={() => toggleLayer(l.id)}
+                            className="flex w-full cursor-pointer items-center gap-2 rounded-lg px-3 py-2.5 transition-all"
+                            style={{
+                              background: isOn ? `${l.color}15` : 'transparent',
+                              border: `1px solid ${isOn ? `${l.color}35` : '#C4A06010'}`,
+                              minHeight: 44,
+                            }}
+                          >
+                            <span
+                              className="block rounded-full shrink-0"
+                              style={{
+                                width: 10,
+                                height: 10,
+                                background: l.color,
+                                opacity: isOn ? 1 : 0.7,
+                              }}
+                            />
+                            <span
+                              style={{
+                                fontFamily: 'var(--font-serif)',
+                                fontSize: 14,
+                                fontWeight: isOn ? 700 : 500,
+                                color: l.color,
+                              }}
+                            >
+                              {l.label}
+                            </span>
+                          </button>
+                          {isOn && (
+                            <button
+                              type="button"
+                              className="flex w-full gap-[3px] px-2 py-1 cursor-pointer"
+                              onClick={(e) => {
+                                const rect = (
+                                  e.currentTarget as HTMLElement
+                                ).getBoundingClientRect();
+                                const x = Math.max(
+                                  0.05,
+                                  Math.min(1, (e.clientX - rect.left) / rect.width),
+                                );
+                                setLayerVol(l.id, x);
+                              }}
+                              aria-label={`${l.label} volume`}
+                              style={{ background: 'none', border: 'none' }}
+                            >
+                              {Array.from({ length: 8 }, (_, i) => (
+                                <div
+                                  key={i}
+                                  className="flex-1 rounded-[3px] transition-all"
+                                  style={{
+                                    height: 10,
+                                    background: l.color,
+                                    opacity: i / 7 <= vol ? 0.55 + (i / 7) * 0.4 : 0.15,
+                                  }}
+                                />
+                              ))}
+                            </button>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {/* Desktop: the original 5-column grid stays unchanged. */}
+                <div className="hidden md:grid md:grid-cols-5 md:gap-1.5">
                   {(['real', 'nature', 'tones', 'texture', 'ambient'] as const).map((group) => {
                     const groupColors: Record<string, string> = {
                       real: '#D4805A',
