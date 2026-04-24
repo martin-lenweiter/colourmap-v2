@@ -106,6 +106,56 @@ function buildTone(
   return { node: osc, source: osc };
 }
 
+// Chant — a low sawtooth tone passed through a vocal-formant
+// bandpass filter. Creates an "ahhhhh" drone character without
+// needing any audio samples. Sits comfortably under any base tone
+// because the filter does most of the shaping.
+function buildChant(
+  ctx: AudioContext,
+  baseFreq: number,
+): { node: AudioNode; source: OscillatorNode } {
+  const osc = ctx.createOscillator();
+  osc.type = 'sawtooth';
+  osc.frequency.value = baseFreq;
+  const formant = ctx.createBiquadFilter();
+  formant.type = 'bandpass';
+  formant.frequency.value = 750; // "ah" vowel formant F1
+  formant.Q.value = 4;
+  const gain = ctx.createGain();
+  gain.gain.value = 0.22;
+  osc.connect(formant);
+  formant.connect(gain);
+  return { node: gain, source: osc };
+}
+
+// Choir — richer than Chant. Uses a custom PeriodicWave with
+// harmonic partials (root + octave + fifth + double octave + ...)
+// so a single oscillator sounds like a stacked chord. Passed through
+// a vocal formant filter for chorus-pad quality.
+function buildChoir(
+  ctx: AudioContext,
+  baseFreq: number,
+): { node: AudioNode; source: OscillatorNode } {
+  const osc = ctx.createOscillator();
+  // Harmonic amplitudes: 1, 2, 3, 4, 5, 6, 7, 8
+  // Weighted for choir-like: strong root, fifth (3rd harmonic),
+  // octave (2nd), twelfth (3rd), slightly duller upper partials.
+  const real = new Float32Array([0, 1, 0.65, 0.55, 0.3, 0.35, 0.15, 0.25, 0.1]);
+  const imag = new Float32Array(real.length);
+  const wave = ctx.createPeriodicWave(real, imag, { disableNormalization: false });
+  osc.setPeriodicWave(wave);
+  osc.frequency.value = baseFreq;
+  const formant = ctx.createBiquadFilter();
+  formant.type = 'bandpass';
+  formant.frequency.value = 1100; // brighter formant, "ehh"-ward
+  formant.Q.value = 2.5;
+  const gain = ctx.createGain();
+  gain.gain.value = 0.18;
+  osc.connect(formant);
+  formant.connect(gain);
+  return { node: gain, source: osc };
+}
+
 const LAYERS: LayerDef[] = [
   // Nature
   {
@@ -185,6 +235,22 @@ const LAYERS: LayerDef[] = [
     color: '#6890B0',
     group: 'tones',
     build: (ctx, base) => buildTone(ctx, base * 2, 'triangle'),
+  },
+  // Voice-like drones — synthesized from scratch with PeriodicWave +
+  // vocal-formant filtering. No audio samples needed.
+  {
+    id: 'chant',
+    label: 'Chant',
+    color: '#7A4A5F',
+    group: 'tones',
+    build: (ctx, base) => buildChant(ctx, base / 2),
+  },
+  {
+    id: 'choir',
+    label: 'Choir',
+    color: '#A07490',
+    group: 'tones',
+    build: (ctx, base) => buildChoir(ctx, base),
   },
   {
     id: 'sub',
@@ -1416,13 +1482,24 @@ export default function BinauralTuner() {
   const layerReverbRef = useRef<ConvolverNode | null>(null);
   const layerDryRef = useRef<GainNode | null>(null);
   const layerWetRef = useRef<GainNode | null>(null);
-  // Harmony tones — musical intervals relative to base frequency
+  // Harmony tones — musical intervals relative to base frequency.
+  // Ordered low → high so the row reads like a pitch ladder. Below 1×
+  // are subharmonics (undertones) which ground the mix with warmth;
+  // above 1× are the classical overtones. Ratios are exact just
+  // intonation so they beat cleanly against the root.
   const HARMONICS = [
-    { id: 'fifth', label: 'Fifth', ratio: 3 / 2, color: '#6890B0' },
-    { id: 'octave', label: 'Octave', ratio: 2, color: '#7AAA58' },
+    // Subharmonics — below the root
+    { id: 'sub-octave', label: 'Sub Octave', ratio: 1 / 2, color: '#5F3A24' },
+    { id: 'sub-fifth', label: 'Sub Fifth', ratio: 2 / 3, color: '#7A4E2E' },
+    { id: 'sub-fourth', label: 'Sub Fourth', ratio: 3 / 4, color: '#8A6A4A' },
+    { id: 'sub-third', label: 'Sub Third', ratio: 4 / 5, color: '#A07450' },
+    // Overtones — above the root
+    { id: 'minor3', label: 'Minor 3rd', ratio: 6 / 5, color: '#C4A060' },
     { id: 'third', label: 'Third', ratio: 5 / 4, color: '#D4805A' },
     { id: 'fourth', label: 'Fourth', ratio: 4 / 3, color: '#9B6BA0' },
-    { id: 'minor3', label: 'Minor 3rd', ratio: 6 / 5, color: '#C4A060' },
+    { id: 'fifth', label: 'Fifth', ratio: 3 / 2, color: '#6890B0' },
+    { id: 'octave', label: 'Octave', ratio: 2, color: '#7AAA58' },
+    { id: 'double-oct', label: 'Double Oct', ratio: 4, color: '#88C878' },
   ] as const;
   const [activeHarmonics, setActiveHarmonics] = useState<Set<string>>(new Set());
   const harmOscsRef = useRef<Map<string, { osc: OscillatorNode; gain: GainNode }>>(new Map());
@@ -1559,6 +1636,99 @@ export default function BinauralTuner() {
       release: 3.5,
       octave: 5,
       sampledPack: 'harp',
+    },
+    // New CC0 instruments pulled from tonejs-instruments (VSCO 2).
+    // Each sits in public/sounds/<pack>/ with an index.json + per-note
+    // mp3 samples. Colours chosen to match the instrument's character.
+    {
+      id: 'real-cello',
+      label: 'Cello',
+      color: '#6A3A2A',
+      type: 'sine' as OscillatorType,
+      attack: 0.15,
+      release: 4.5,
+      octave: 3,
+      sampledPack: 'cello',
+    },
+    {
+      id: 'real-nylon',
+      label: 'Nylon Guitar',
+      color: '#A07040',
+      type: 'sine' as OscillatorType,
+      attack: 0.1,
+      release: 3,
+      octave: 4,
+      sampledPack: 'guitar-nylon',
+    },
+    {
+      id: 'real-contrabass',
+      label: 'Contrabass',
+      color: '#3A2A1E',
+      type: 'sine' as OscillatorType,
+      attack: 0.2,
+      release: 5,
+      octave: 2,
+      sampledPack: 'contrabass',
+    },
+    {
+      id: 'real-french-horn',
+      label: 'French Horn',
+      color: '#8A5A3A',
+      type: 'sine' as OscillatorType,
+      attack: 0.2,
+      release: 4,
+      octave: 3,
+      sampledPack: 'french-horn',
+    },
+    {
+      id: 'real-organ',
+      label: 'Organ',
+      color: '#7A4A5F',
+      type: 'sine' as OscillatorType,
+      attack: 0.1,
+      release: 4,
+      octave: 4,
+      sampledPack: 'organ',
+    },
+    {
+      id: 'real-saxophone',
+      label: 'Saxophone',
+      color: '#B8843A',
+      type: 'sine' as OscillatorType,
+      attack: 0.15,
+      release: 3.5,
+      octave: 4,
+      sampledPack: 'saxophone',
+    },
+    {
+      id: 'real-bassoon',
+      label: 'Bassoon',
+      color: '#5A3A2A',
+      type: 'sine' as OscillatorType,
+      attack: 0.15,
+      release: 4,
+      octave: 3,
+      sampledPack: 'bassoon',
+    },
+    {
+      id: 'real-clarinet',
+      label: 'Clarinet',
+      color: '#6A8A4A',
+      type: 'sine' as OscillatorType,
+      attack: 0.1,
+      release: 3,
+      octave: 4,
+      sampledPack: 'clarinet',
+    },
+    {
+      id: 'real-xylophone',
+      label: 'Xylophone',
+      color: '#D4A058',
+      type: 'sine' as OscillatorType,
+      attack: 0.02,
+      release: 1.2,
+      octave: 5,
+      sampledPack: 'xylophone',
     },
   ];
   // Musical scales for melodies
@@ -3269,9 +3439,13 @@ export default function BinauralTuner() {
         </div>
       )}
 
-      {/* ── FULL MODE: all controls ── */}
+      {/* ── FULL MODE: all controls ── DJ-mix-table layout on desktop.
+          On md+ the sections stop stacking vertically and flow into
+          two columns, each column behaving like a DJ channel strip
+          so the whole instrument spreads across the screen. Phone
+          stays as a single column for reading. */}
       {!simpleMode && (
-        <>
+        <div className="space-y-6 md:grid md:grid-cols-2 md:gap-x-8 md:gap-y-6 md:space-y-0">
           {/* Sliders: tone first, then binaural beat, reverb (dots), wave */}
           <div className="space-y-3 px-2">
             <SliderRow
@@ -3487,10 +3661,16 @@ export default function BinauralTuner() {
             >
               Harmonics · {baseFreq}Hz
             </p>
-            <div className="flex justify-center gap-2">
+            {/* Bigger harmony pills — 2-column grid on phone, 5 across on
+                desktop so the 10 over+under-tones all fit without cramming.
+                Each card: big dot, label, ratio line, Hz. */}
+            <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 md:grid-cols-5">
               {HARMONICS.map((h) => {
                 const isOn = activeHarmonics.has(h.id);
-                const freq = Math.round(baseFreq * h.ratio);
+                const freq = Math.round(baseFreq * h.ratio * 100) / 100;
+                const freqDisplay = freq < 20 ? freq.toFixed(1) : Math.round(freq);
+                const ratioDisplay =
+                  h.ratio < 1 ? `÷${Math.round((1 / h.ratio) * 100) / 100}` : `×${h.ratio}`;
                 return (
                   <button
                     key={h.id}
@@ -3503,17 +3683,19 @@ export default function BinauralTuner() {
                         return next;
                       });
                     }}
-                    className="flex cursor-pointer flex-col items-center gap-1 rounded-xl px-2.5 py-2 transition-all"
+                    className="flex cursor-pointer flex-col items-center justify-center gap-1 rounded-2xl px-3 py-3 transition-all"
                     style={{
-                      background: isOn ? `${h.color}15` : 'transparent',
-                      border: `1px solid ${isOn ? `${h.color}40` : '#C4A06012'}`,
+                      background: isOn ? `${h.color}1E` : 'transparent',
+                      border: `1px solid ${isOn ? `${h.color}60` : '#C4A06020'}`,
+                      minHeight: 88,
                     }}
+                    aria-pressed={isOn}
                   >
                     <span
                       className="block rounded-full"
                       style={{
-                        width: 10,
-                        height: 10,
+                        width: 14,
+                        height: 14,
                         background: h.color,
                         opacity: isOn ? 1 : 0.7,
                       }}
@@ -3521,10 +3703,11 @@ export default function BinauralTuner() {
                     <span
                       style={{
                         fontFamily: 'var(--font-serif)',
-                        fontSize: '12px',
-                        fontWeight: isOn ? 700 : 500,
-                        color: isOn ? h.color : '#8A6A4A',
-                        opacity: isOn ? 1 : 0.8,
+                        fontSize: '13px',
+                        fontWeight: isOn ? 700 : 600,
+                        color: isOn ? h.color : '#5C3018',
+                        opacity: isOn ? 1 : 0.85,
+                        lineHeight: 1.1,
                       }}
                     >
                       {h.label}
@@ -3532,11 +3715,14 @@ export default function BinauralTuner() {
                     <span
                       style={{
                         fontFamily: 'var(--font-serif)',
-                        fontSize: '12px',
-                        color: '#8A6A4A',
+                        fontSize: '11px',
+                        fontStyle: 'italic',
+                        color: isOn ? h.color : '#8A6A4A',
+                        opacity: isOn ? 0.85 : 0.6,
+                        letterSpacing: '0.02em',
                       }}
                     >
-                      {freq}Hz
+                      {ratioDisplay} · {freqDisplay}Hz
                     </span>
                   </button>
                 );
@@ -3711,103 +3897,77 @@ export default function BinauralTuner() {
               ))}
             </div>
             {activeMelodies.size > 0 && (
-              <div className="flex justify-center gap-4 pt-2">
-                <div className="flex items-center gap-2">
-                  <span
-                    style={{
-                      fontFamily: 'var(--font-serif)',
-                      fontSize: '12px',
-                      color: '#8A6A4A',
-                    }}
-                  >
-                    speed
-                  </span>
-                  <div
-                    className="flex gap-[2px] cursor-pointer"
-                    onClick={(e) => {
-                      const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
-                      setMelodySpeed(Math.round(((e.clientX - rect.left) / rect.width) * 100));
-                    }}
-                  >
-                    {Array.from({ length: 8 }, (_, i) => (
-                      <div
-                        key={i}
-                        className="rounded-[2px] transition-all"
+              <div className="mx-auto max-w-md space-y-3 pt-3">
+                {(
+                  [
+                    {
+                      label: 'speed',
+                      color: '#9B6BA0',
+                      value: melodySpeed / 100,
+                      onChange: (v: number) => setMelodySpeed(Math.round(v * 100)),
+                    },
+                    {
+                      label: 'reverb',
+                      color: '#A0907A',
+                      value: melodyReverb / 100,
+                      onChange: (v: number) => setMelodyReverb(Math.round(v * 100)),
+                    },
+                    {
+                      label: 'volume',
+                      color: '#C4A060',
+                      value: melodyVolume,
+                      onChange: (v: number) => setMelodyVolume(v),
+                    },
+                  ] as const
+                ).map((s) => {
+                  const DOTS = 20;
+                  return (
+                    <div key={s.label} className="flex items-center gap-3">
+                      <span
+                        className="shrink-0 text-right uppercase"
                         style={{
-                          width: 10,
-                          height: 6,
-                          background: '#9B6BA0',
-                          opacity: i / 7 <= melodySpeed / 100 ? 0.4 + (i / 7) * 0.4 : 0.08,
+                          fontFamily: 'var(--font-serif)',
+                          fontSize: '11px',
+                          letterSpacing: '0.12em',
+                          color: s.color,
+                          opacity: 0.85,
+                          fontWeight: 600,
+                          width: 56,
                         }}
-                      />
-                    ))}
-                  </div>
-                </div>
-                <div className="flex items-center gap-2">
-                  <span
-                    style={{
-                      fontFamily: 'var(--font-serif)',
-                      fontSize: '12px',
-                      color: '#8A6A4A',
-                    }}
-                  >
-                    reverb
-                  </span>
-                  <div
-                    className="flex gap-[2px] cursor-pointer"
-                    onClick={(e) => {
-                      const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
-                      setMelodyReverb(Math.round(((e.clientX - rect.left) / rect.width) * 100));
-                    }}
-                  >
-                    {Array.from({ length: 8 }, (_, i) => (
-                      <div
-                        key={i}
-                        className="rounded-[2px] transition-all"
-                        style={{
-                          width: 10,
-                          height: 6,
-                          background: '#A0907A',
-                          opacity: i / 7 <= melodyReverb / 100 ? 0.4 + (i / 7) * 0.4 : 0.08,
+                      >
+                        {s.label}
+                      </span>
+                      <button
+                        type="button"
+                        aria-label={`${s.label} ${Math.round(s.value * 100)}%`}
+                        className="flex flex-1 cursor-pointer items-center justify-between bg-transparent"
+                        style={{ border: 'none', padding: '4px 0' }}
+                        onClick={(e) => {
+                          const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
+                          s.onChange(
+                            Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width)),
+                          );
                         }}
-                      />
-                    ))}
-                  </div>
-                </div>
-                {/* Melody volume — independent of main mix */}
-                <div className="flex items-center gap-2">
-                  <span
-                    style={{
-                      fontFamily: 'var(--font-serif)',
-                      fontSize: '12px',
-                      color: '#8A6A4A',
-                    }}
-                  >
-                    volume
-                  </span>
-                  <div
-                    className="flex gap-[2px] cursor-pointer"
-                    onClick={(e) => {
-                      const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
-                      setMelodyVolume(
-                        Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width)),
-                      );
-                    }}
-                  >
-                    {Array.from({ length: 8 }, (_, i) => (
-                      <div
-                        key={i}
-                        className="rounded-[2px] transition-all"
-                        style={{
-                          width: 10,
-                          height: 6,
-                          background: '#C4A060',
-                          opacity: i / 7 <= melodyVolume ? 0.4 + (i / 7) * 0.4 : 0.08,
-                        }}
-                      />
-                    ))}
-                  </div>
-                </div>
+                      >
+                        {Array.from({ length: DOTS }, (_, i) => {
+                          const filled = i / (DOTS - 1) <= s.value;
+                          return (
+                            <span
+                              key={i}
+                              className="block rounded-full transition-all"
+                              style={{
+                                width: filled ? 8 : 5,
+                                height: filled ? 8 : 5,
+                                background: s.color,
+                                opacity: filled ? 0.55 + (i / (DOTS - 1)) * 0.4 : 0.2,
+                              }}
+                            />
+                          );
+                        })}
+                      </button>
+                    </div>
+                  );
+                })}
               </div>
             )}
           </div>
@@ -4571,7 +4731,7 @@ export default function BinauralTuner() {
               </div>
             )}
           </div>
-        </>
+        </div>
       )}
 
       {/* Suggestion removed — was "balanced state alpha waves to maintain" */}

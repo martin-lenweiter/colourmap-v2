@@ -20,7 +20,20 @@
  * provided output node.
  */
 
-export type SamplePackId = 'piano' | 'violin' | 'flute' | 'harp';
+export type SamplePackId =
+  | 'piano'
+  | 'violin'
+  | 'flute'
+  | 'harp'
+  | 'cello'
+  | 'guitar-nylon'
+  | 'contrabass'
+  | 'french-horn'
+  | 'organ'
+  | 'saxophone'
+  | 'bassoon'
+  | 'clarinet'
+  | 'xylophone';
 
 interface SamplerMap {
   [noteName: string]: string;

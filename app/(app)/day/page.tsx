@@ -19,8 +19,13 @@ function DayContent() {
     month: 'long',
   });
   return (
-    <div className="mx-auto w-full max-w-6xl px-4 py-3 lg:flex lg:gap-6 lg:px-6 lg:py-6">
-      <div className="mx-auto w-full max-w-2xl space-y-4 lg:mx-0 lg:flex-1">
+    // Wider outer wrapper on md+ so the Feeling + Doing side-by-side
+    // grid has room for the Hawkins slider / compass dots without
+    // overflow. Inner column lifts from max-w-2xl (672px) to max-w-4xl
+    // (896px) on md, giving each of the two columns ~430px instead of
+    // ~320px. Phone stays max-w-2xl (read-column width).
+    <div className="mx-auto w-full max-w-7xl px-4 py-3 lg:flex lg:gap-6 lg:px-6 lg:py-6">
+      <div className="mx-auto w-full max-w-2xl space-y-4 md:max-w-4xl lg:mx-0 lg:flex-1">
         <FirstRunOnboarding />
         <CheckInPing />
         <DayTabs

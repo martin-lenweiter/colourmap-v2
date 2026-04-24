@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import AtomVisualizer, { type VisualizerMode } from '@/components/AtomVisualizer';
 import BinauralTuner from '@/components/BinauralTuner';
+import GrooveMachine from '@/components/GrooveMachine';
 import LofiLooper from '@/components/LofiLooper';
 import MagicMaker from '@/components/MagicMaker';
 import MusicSetlist from '@/components/MusicSetlist';
@@ -12,7 +13,7 @@ import MusicSetlist from '@/components/MusicSetlist';
    Looper / Visuals / Songs.
    ═══════════════════════════════════════════════════════════ */
 
-type Mode = 'tuner' | 'maker' | 'looper' | 'visuals' | 'songs';
+type Mode = 'tuner' | 'groove' | 'maker' | 'looper' | 'visuals' | 'songs';
 
 const VISUALIZER_MODES: { id: VisualizerMode; label: string }[] = [
   { id: 'atom', label: 'Atom' },
@@ -66,6 +67,7 @@ export default function SoundLab() {
         {(
           [
             { id: 'tuner' as const, label: 'Relaxing Sounds' },
+            { id: 'groove' as const, label: 'Groove Machine' },
             { id: 'maker' as const, label: 'Magic Maker' },
             { id: 'looper' as const, label: 'Lo-fi Looper' },
             { id: 'visuals' as const, label: 'Visuals' },
@@ -94,6 +96,7 @@ export default function SoundLab() {
       {/* Content — no outer box; each mode is responsible for its own
           interior structure and breathes across the full page width. */}
       {mode === 'tuner' && <BinauralTuner />}
+      {mode === 'groove' && <GrooveMachine />}
       {mode === 'maker' && <MagicMaker />}
       {mode === 'looper' && <LofiLooper />}
       {mode === 'songs' && <MusicSetlist />}
