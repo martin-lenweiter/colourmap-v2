@@ -108,9 +108,30 @@ export default function FeedbackOverlay() {
   const [listening, setListening] = useState(false);
   const textBeforeListenRef = useRef<string>('');
   const [voiceSupported, setVoiceSupported] = useState(false);
+  // Font size for the note textarea. Persisted in localStorage so the
+  // user's preference carries between sessions. 9px to 22px range —
+  // small enough for tight screenshots, large enough for comfortable
+  // writing.
+  const [fontSize, setFontSize] = useState<number>(15);
   useEffect(() => {
     setVoiceSupported(getSpeechRecognition() !== null);
+    try {
+      const raw = localStorage.getItem('colourmap:feedback-overlay-font-size');
+      if (raw) {
+        const n = Number.parseFloat(raw);
+        if (Number.isFinite(n) && n >= 9 && n <= 22) setFontSize(n);
+      }
+    } catch {
+      /* silent */
+    }
   }, []);
+  useEffect(() => {
+    try {
+      localStorage.setItem('colourmap:feedback-overlay-font-size', String(fontSize));
+    } catch {
+      /* silent */
+    }
+  }, [fontSize]);
 
   function startListening() {
     const Ctor = getSpeechRecognition();
@@ -641,6 +662,43 @@ export default function FeedbackOverlay() {
               </button>
             </div>
           </div>
+          {/* Text-size slider — small for screenshot-sized notes,
+              big for comfortable writing. Persisted between sessions. */}
+          <div
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: 6,
+              padding: '0 4px 4px',
+              fontFamily: 'var(--font-serif)',
+              fontSize: 10,
+              color: '#9B6BA0',
+            }}
+          >
+            <span
+              aria-hidden="true"
+              style={{ fontSize: 9, letterSpacing: '0.08em', textTransform: 'uppercase', opacity: 0.7 }}
+            >
+              A
+            </span>
+            <input
+              type="range"
+              min={9}
+              max={22}
+              step={1}
+              value={fontSize}
+              onChange={(e) => setFontSize(Number.parseInt(e.target.value, 10))}
+              onPointerDown={(e) => e.stopPropagation()}
+              aria-label="Text size"
+              style={{ flex: 1, accentColor: '#9B6BA0', minHeight: 20 }}
+            />
+            <span
+              aria-hidden="true"
+              style={{ fontSize: 14, letterSpacing: '0.08em', textTransform: 'uppercase', opacity: 0.7 }}
+            >
+              A
+            </span>
+          </div>
           <textarea
             ref={textareaRef}
             value={text}
@@ -655,7 +713,7 @@ export default function FeedbackOverlay() {
               resize: 'none',
               // Smaller notes get smaller text so more fits in the frame;
               // larger notes read comfortably while writing.
-              fontSize: noteSize.w < 200 ? 12 : 15,
+              fontSize,
               lineHeight: 1.4,
               fontFamily: 'var(--font-serif)',
               outline: 'none',
