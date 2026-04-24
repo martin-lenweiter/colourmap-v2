@@ -303,17 +303,27 @@
       invisible hit-area expansion (iOS/HIG minimum)
    ────────────────────────────────────────────────────────────── */
 @media (max-width: 768px) {
-  /* Text smaller than 12 px is unreadable on a phone in most
-     lighting. Bump the bottom tier up without touching larger
-     type (which was already sized well). */
+  /* Pleasant-redesign pass: anything 10-11 px on desktop becomes 14 px
+     on phones; 12-13 px becomes 15 px. Bumps the reading baseline so
+     the app doesn't feel like a dashboard on a small screen. Larger
+     sizes (14 px+) stay as authored. */
   :where([style*="font-size: 10px"]),
   :where([style*="font-size: 11px"]),
   :where([style*="font-size:10px"]),
   :where([style*="font-size:11px"]),
   :where(.text-\[10px\]),
   :where(.text-\[11px\]) {
-    font-size: 13px;
-    line-height: 1.35;
+    font-size: 14px;
+    line-height: 1.4;
+  }
+  :where([style*="font-size: 12px"]),
+  :where([style*="font-size: 13px"]),
+  :where([style*="font-size:12px"]),
+  :where([style*="font-size:13px"]),
+  :where(.text-\[12px\]),
+  :where(.text-\[13px\]) {
+    font-size: 15px;
+    line-height: 1.45;
   }
 
   /* Pre-tweened uppercase labels on desktop use wide tracking for

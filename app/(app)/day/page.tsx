@@ -21,14 +21,15 @@ function DayContent() {
     month: 'long',
   });
   return (
-    <div className="mx-auto max-w-2xl space-y-4 px-4 py-6">
+    <div className="mx-auto max-w-2xl space-y-6 px-4 py-8">
       <p
         className="text-center"
         style={{
           fontFamily: 'var(--font-serif)',
-          fontSize: '14px',
+          fontSize: '17px',
+          fontStyle: 'italic',
           color: '#7A5438',
-          opacity: 0.8,
+          opacity: 0.85,
           letterSpacing: '0.06em',
         }}
       >
