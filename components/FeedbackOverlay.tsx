@@ -517,9 +517,12 @@ export default function FeedbackOverlay() {
             }}
             aria-label="Feedback note"
           />
-          {/* Bottom-right resize handle — drag to any custom size */}
-          {/** biome-ignore lint/a11y/noStaticElementInteractions: resize handle */}
-          <div
+          {/* Bottom-right resize handle — drag to any custom size.
+              Uses a <button> so aria-label is valid and the element
+              is naturally interactive. type=button keeps it out of
+              form submissions. Pointer handlers drive the resize. */}
+          <button
+            type="button"
             onPointerDown={onNoteResizeStart}
             onPointerMove={onNoteResizeMove}
             onPointerUp={onNoteResizeEnd}
@@ -534,6 +537,8 @@ export default function FeedbackOverlay() {
               height: 20,
               cursor: 'nwse-resize',
               touchAction: 'none',
+              padding: 0,
+              border: 'none',
               // Visual cue — a small diagonal stripe
               background:
                 'linear-gradient(135deg, transparent 35%, #9B6BA0 35%, #9B6BA0 45%, transparent 45%, transparent 60%, #9B6BA0 60%, #9B6BA0 70%, transparent 70%)',
