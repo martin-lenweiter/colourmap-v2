@@ -1650,14 +1650,9 @@ export default function FeelingCheckInCard() {
 
   return (
     <>
-      {/* ═══ BOX A: FEELING ═══ */}
-      <div
-        className="relative space-y-5 rounded-3xl border border-[#7a543833] px-5 py-6"
-        style={{
-          background: 'linear-gradient(180deg, rgba(251,244,232,0.95), rgba(246,236,221,0.92))',
-          boxShadow: '0 24px 50px -34px rgba(92,48,24,0.35)',
-        }}
-      >
+      {/* BOX A: FEELING — frame removed on phone to reclaim margins.
+          Desktop keeps the beige card for visual grouping. */}
+      <div className="relative space-y-5 rounded-none border-0 bg-transparent px-0 py-0 shadow-none md:rounded-3xl md:border md:border-[#7a543833] md:px-5 md:py-6 md:bg-[linear-gradient(180deg,rgba(251,244,232,0.95),rgba(246,236,221,0.92))] md:shadow-[0_24px_50px_-34px_rgba(92,48,24,0.35)]">
         <p
           className="text-center uppercase tracking-[0.2em] md:tracking-[0.24em]"
           style={{
@@ -2597,12 +2592,11 @@ export default function FeelingCheckInCard() {
           )}
         </div>
 
-        {/* ── LOGBOOK & EMOTIONS ── collapsible pillbox */}
+        {/* LOGBOOK & EMOTIONS — frame removed on phone. */}
         <div
-          className="space-y-2 rounded-2xl border px-4 py-3"
+          className="space-y-2 rounded-none border-0 bg-transparent px-0 py-1 md:rounded-2xl md:border md:px-4 md:py-3"
           style={{
             borderColor: '#C4A06030',
-            background: 'rgba(245,236,220,0.45)',
           }}
         >
           {/* Pill header — click to open/close */}
@@ -3318,14 +3312,8 @@ export default function FeelingCheckInCard() {
         </div>
       </div>
 
-      {/* ═══ BOX B: DOING ═══ */}
-      <div
-        className="space-y-4 rounded-3xl border border-[#7a543833] px-5 py-6"
-        style={{
-          background: 'linear-gradient(180deg, rgba(251,244,232,0.95), rgba(246,236,221,0.92))',
-          boxShadow: '0 24px 50px -34px rgba(92,48,24,0.35)',
-        }}
-      >
+      {/* BOX B: DOING — frame removed on phone to reclaim margins. */}
+      <div className="space-y-4 rounded-none border-0 bg-transparent px-0 py-0 shadow-none md:rounded-3xl md:border md:border-[#7a543833] md:px-5 md:py-6 md:bg-[linear-gradient(180deg,rgba(251,244,232,0.95),rgba(246,236,221,0.92))] md:shadow-[0_24px_50px_-34px_rgba(92,48,24,0.35)]">
         <p
           className="text-center uppercase tracking-[0.24em]"
           style={{
@@ -3338,9 +3326,9 @@ export default function FeelingCheckInCard() {
         >
           doing
         </p>
-        {/* ── CURRENT OBJECTIVE ── drop zone for cross-list drag */}
+        {/* CURRENT OBJECTIVE — frame removed on phone. */}
         <div
-          className="space-y-2 rounded-2xl border px-4 py-3 transition-all"
+          className="space-y-2 rounded-none border-0 bg-transparent px-0 py-1 transition-all md:rounded-2xl md:border md:px-4 md:py-3"
           onDragOver={(e) => {
             e.preventDefault();
             e.dataTransfer.dropEffect = 'move';
@@ -3464,12 +3452,11 @@ export default function FeelingCheckInCard() {
           {/* Done archive moved to Other Missions Done tab */}
         </div>
 
-        {/* ── OTHER MISSIONS ── collapsible pillbox: Daily Objectives + To-do */}
+        {/* DAILY OBJECTIVES + TO-DO — frame removed on phone. */}
         <div
-          className="space-y-3 rounded-2xl border px-4 py-3"
+          className="space-y-3 rounded-none border-0 bg-transparent px-0 py-1 md:rounded-2xl md:border md:px-4 md:py-3"
           style={{
             borderColor: '#C4A06030',
-            background: 'rgba(245,236,220,0.45)',
           }}
         >
           <div className="flex justify-center">
