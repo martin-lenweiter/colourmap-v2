@@ -35,20 +35,8 @@ const STEPS: Step[] = [
   {
     icon: '✦',
     title: 'Welcome',
-    body: 'Colourmap is a living self-portrait you paint every day. A quick check-in, layered sounds to settle in, and a map of who you are that deepens over time.',
+    body: 'Colourmap is here to help you organize all your missions and feel good while you do it.',
     accent: '#C4A060',
-  },
-  {
-    icon: '~',
-    title: 'The rhythm',
-    body: 'Three things each day, as long or short as you want. Feel (how am I today?). Listen (settle into a state). Reflect (what moved, what is stuck).',
-    accent: '#6890B0',
-  },
-  {
-    icon: '◆',
-    title: 'The map',
-    body: 'The more you show up, the more the map fills in. Patterns emerge. No pressure, no streaks, no shame — just a gentle mirror you can visit whenever you like.',
-    accent: '#9B6BA0',
   },
 ];
 
@@ -109,8 +97,10 @@ export default function FirstRunOnboarding() {
       <div
         className="relative w-full max-w-md rounded-3xl border p-8"
         style={{
-          background: `linear-gradient(180deg, ${step.accent}16 0%, var(--card) 40%, var(--card) 100%)`,
-          borderColor: `${step.accent}30`,
+          // Fully opaque — no gradient. User asked for a clean solid card.
+          background: '#FFF8E6',
+          borderColor: `${step.accent}55`,
+          borderWidth: 2,
           boxShadow: `0 30px 80px -40px ${step.accent}99, 0 8px 20px -12px ${step.accent}40`,
         }}
       >

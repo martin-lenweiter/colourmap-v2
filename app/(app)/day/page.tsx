@@ -1,6 +1,5 @@
 'use client';
 
-import { useState } from 'react';
 import CategoryCompass from '@/components/CategoryCompass';
 import CheckInPing from '@/components/CheckInPing';
 import CompassCarousel from '@/components/CompassCarousel';
@@ -9,7 +8,6 @@ import DayRail from '@/components/DayRail';
 import DayTabs from '@/components/DayTabs';
 import FeelingCheckInCard from '@/components/FeelingCheckInCard';
 import FirstRunOnboarding from '@/components/FirstRunOnboarding';
-import FrequencyBox from '@/components/FrequencyBox';
 import LifeCategories from '@/components/LifeCategories';
 import MasteryBox from '@/components/MasteryBox';
 import ReflectBox from '@/components/ReflectBox';
@@ -17,7 +15,6 @@ import SoundLab from '@/components/SoundLab';
 import { StyleProvider } from '@/components/StyleContext';
 
 function DayContent() {
-  const [showFreqBox, setShowFreqBox] = useState(true);
   const dateStr = new Date().toLocaleDateString('en-GB', {
     weekday: 'long',
     day: 'numeric',
@@ -44,51 +41,12 @@ function DayContent() {
         <DayTabs
           checkinContent={
             <div className="space-y-4">
-              {/* Segment — emotions + expression.
-                  FrequencyBox is desktop-only now; it was cluttering
-                  the phone checkin. Reveal button also hidden on
-                  phone — use the Sounds tab for the frequency
-                  experience. */}
-              <div className="space-y-3">
-                <FeelingCheckInCard />
-                <div className="hidden md:block">
-                  {showFreqBox ? (
-                    <div className="relative">
-                      <button
-                        type="button"
-                        onClick={() => setShowFreqBox(false)}
-                        className="absolute right-2 top-2 z-10 cursor-pointer rounded-full px-1.5 py-0.5 text-[10px] transition-all"
-                        style={{
-                          color: '#8A6A4A',
-                          opacity: 0.3,
-                          background: '#F5ECDC80',
-                          border: 'none',
-                        }}
-                      >
-                        hide
-                      </button>
-                      <FrequencyBox />
-                    </div>
-                  ) : (
-                    <button
-                      type="button"
-                      onClick={() => setShowFreqBox(true)}
-                      className="w-full cursor-pointer rounded-xl py-1.5 text-center transition-all"
-                      style={{
-                        fontFamily: 'var(--font-serif)',
-                        fontSize: '11px',
-                        color: '#8A6A4A',
-                        opacity: 0.35,
-                        background: '#C4A06006',
-                        border: '1px solid #C4A06010',
-                      }}
-                    >
-                      show frequency
-                    </button>
-                  )}
-                </div>
-              </div>
-              {/* Box B — missions */}
+              {/* Segment — emotions + expression. FrequencyBox was
+                  removed entirely from the check-in (user: 'delete
+                  the frequency box in check in'). Sound tuning lives
+                  on /sounds now. */}
+              <FeelingCheckInCard />
+              {/* Segment — missions */}
               <DailyAgenda />
             </div>
           }
