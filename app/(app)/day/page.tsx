@@ -11,9 +11,7 @@ import FeelingCheckInCard from '@/components/FeelingCheckInCard';
 import FirstRunOnboarding from '@/components/FirstRunOnboarding';
 import FrequencyBox from '@/components/FrequencyBox';
 import LifeCategories from '@/components/LifeCategories';
-import MasteryBox from '@/components/MasteryBox';
 import ReflectBox from '@/components/ReflectBox';
-import SoundLab from '@/components/SoundLab';
 import { StyleProvider } from '@/components/StyleContext';
 
 function DayContent() {
@@ -100,8 +98,6 @@ function DayContent() {
               <ReflectBox />
             </div>
           }
-          masteryContent={<MasteryBox />}
-          tunerContent={<SoundLab />}
         />
       </div>
       <DayRail />

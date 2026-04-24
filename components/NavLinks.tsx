@@ -11,6 +11,7 @@ import { useViewMode } from './ViewModeContext';
 // labels blur together.
 const PRIMARY_LINKS: { href: string; label: string; glyph: string }[] = [
   { href: '/day', label: 'Day', glyph: '☾' }, // crescent moon — the daily rhythm
+  { href: '/sounds', label: 'Sounds', glyph: '~' }, // tilde — waveform
   { href: '/music', label: 'Music', glyph: '♪' }, // eighth note
   { href: '/circles', label: 'Circles', glyph: '◯' }, // ring — people
   { href: '/notebook', label: 'Notebook', glyph: '❦' }, // floral heart — reflection

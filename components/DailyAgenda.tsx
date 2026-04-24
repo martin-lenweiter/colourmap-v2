@@ -14,6 +14,23 @@ const AGENDA_KEY = 'colourmap:daily-agenda';
 const AGENDA_OPEN_KEY = 'colourmap:daily-agenda-open';
 const OUTINGS_KEY = 'colourmap:outings';
 
+// Mission-type buckets surfaced as medium-big dots above the objectives
+// list. Each objective belongs to one bucket; tapping a dot filters to
+// that bucket (tap the same dot or 'all' to clear the filter).
+//
+// - focus    → the 1–2 missions you're prioritizing right now
+// - daily    → your running daily objectives (default for legacy data)
+// - tomorrow → pushed for tomorrow (don't do it now, don't lose it)
+// - someday  → longer-term, parked for later
+type ObjectiveType = 'focus' | 'daily' | 'tomorrow' | 'someday';
+
+const MISSION_TYPES: { id: ObjectiveType; label: string; color: string }[] = [
+  { id: 'focus', label: 'Focus', color: '#9B6BA0' },
+  { id: 'daily', label: 'Daily', color: '#C4A060' },
+  { id: 'tomorrow', label: 'Tomorrow', color: '#6890B0' },
+  { id: 'someday', label: 'Someday', color: '#7AAA58' },
+];
+
 interface AgendaBlock {
   id: string;
   text: string;
@@ -183,7 +200,13 @@ export default function DailyAgenda() {
   const [showBlockPicker, setShowBlockPicker] = useState(false);
   const [lifeCategories, setLifeCategories] = useState<LifeCategoryLike[]>([]);
   const [showObjectives, setShowObjectives] = useState(false);
-  const [objectives, setObjectives] = useState<{ id: string; text: string; done: boolean }[]>([]);
+  // Mission type — the four buckets an objective can sit in. Dots above
+  // the list let you filter to one bucket or see all. Default is 'daily'
+  // for any objective that doesn't yet have a type set (legacy data).
+  const [objectives, setObjectives] = useState<
+    { id: string; text: string; done: boolean; type?: ObjectiveType }[]
+  >([]);
+  const [missionFilter, setMissionFilter] = useState<ObjectiveType | 'all'>('all');
   const [showDone, setShowDone] = useState(false);
   const [doneObjectives, setDoneObjectives] = useState<
     {
@@ -577,27 +600,125 @@ export default function DailyAgenda() {
           {objectives.filter((o) => !o.done).length > 0 && (
             <div>
               {showObjectives && (
-                <div className="animate-in fade-in duration-150 space-y-1.5 pt-2">
+                <div className="animate-in fade-in duration-150 space-y-3 pt-2">
+                  {/* Mission-type dots — medium-big (22px). Tap one to
+                      filter the list to that bucket; tap 'all' or the
+                      active dot to clear. Counts shown next to labels. */}
+                  <div className="flex items-center justify-between gap-2 px-2">
+                    <div className="flex items-center gap-2">
+                      {MISSION_TYPES.map((mt) => {
+                        const isActive = missionFilter === mt.id;
+                        const typedCount = objectives.filter(
+                          (o) => !o.done && (o.type ?? 'daily') === mt.id,
+                        ).length;
+                        return (
+                          <button
+                            key={mt.id}
+                            type="button"
+                            onClick={() => setMissionFilter(isActive ? 'all' : mt.id)}
+                            className="flex cursor-pointer items-center gap-1.5 transition-all hover:opacity-85"
+                            style={{
+                              background: isActive ? `${mt.color}22` : 'transparent',
+                              border: `1px solid ${isActive ? mt.color : 'transparent'}`,
+                              borderRadius: 999,
+                              padding: '4px 8px 4px 5px',
+                            }}
+                            title={`${mt.label} (${typedCount})`}
+                            aria-label={`Filter to ${mt.label} missions`}
+                            aria-pressed={isActive}
+                          >
+                            <span
+                              style={{
+                                width: 22,
+                                height: 22,
+                                borderRadius: '50%',
+                                background: mt.color,
+                                opacity: isActive ? 1 : 0.55,
+                                boxShadow: isActive
+                                  ? `0 2px 8px -2px ${mt.color}`
+                                  : 'none',
+                                flexShrink: 0,
+                              }}
+                            />
+                            <span
+                              style={{
+                                fontFamily: 'var(--font-serif)',
+                                fontSize: 12,
+                                fontWeight: isActive ? 700 : 500,
+                                color: isActive ? mt.color : '#8A6A4A',
+                              }}
+                            >
+                              {typedCount > 0 ? typedCount : ''}
+                            </span>
+                          </button>
+                        );
+                      })}
+                    </div>
+                    {missionFilter !== 'all' && (
+                      <button
+                        type="button"
+                        onClick={() => setMissionFilter('all')}
+                        className="cursor-pointer"
+                        style={{
+                          background: 'none',
+                          border: 'none',
+                          color: '#8A6A4A',
+                          opacity: 0.55,
+                          fontSize: 11,
+                          fontFamily: 'var(--font-serif)',
+                          textTransform: 'uppercase',
+                          letterSpacing: '0.12em',
+                          padding: '4px 8px',
+                        }}
+                      >
+                        show all
+                      </button>
+                    )}
+                  </div>
+                <div className="space-y-1.5">
                   {(() => {
                     const alreadyInAgenda = new Set(blocks.map((b) => b.text));
                     return objectives
                       .filter((o) => !o.done)
+                      .filter(
+                        (o) =>
+                          missionFilter === 'all' || (o.type ?? 'daily') === missionFilter,
+                      )
                       .map((o) => {
                         const scheduled = alreadyInAgenda.has(o.text);
+                        const type = o.type ?? 'daily';
+                        const typeDef =
+                          MISSION_TYPES.find((mt) => mt.id === type) ?? MISSION_TYPES[1];
                         return (
                           <div
                             key={o.id}
                             className="flex items-center gap-2 px-2"
                             style={{ minHeight: 32 }}
                           >
-                            <span
+                            <button
+                              type="button"
+                              onClick={() => {
+                                // Cycle through mission types on tap so the user
+                                // can re-assign a row without a picker UI.
+                                const order = MISSION_TYPES.map((m) => m.id);
+                                const next =
+                                  order[(order.indexOf(type) + 1) % order.length];
+                                setObjectives((prev) =>
+                                  prev.map((p) => (p.id === o.id ? { ...p, type: next } : p)),
+                                );
+                              }}
+                              aria-label={`Change mission type (currently ${typeDef.label})`}
+                              title={`${typeDef.label} — tap to change`}
                               style={{
-                                width: 8,
-                                height: 8,
+                                width: 12,
+                                height: 12,
                                 borderRadius: '50%',
-                                background: o.done ? '#7AAA58' : scheduled ? '#6890B0' : '#C4A060',
-                                opacity: o.done ? 0.5 : 0.7,
+                                background: typeDef.color,
+                                opacity: o.done ? 0.4 : 0.85,
                                 flexShrink: 0,
+                                border: 'none',
+                                padding: 0,
+                                cursor: 'pointer',
                               }}
                             />
                             <span
@@ -639,6 +760,7 @@ export default function DailyAgenda() {
                         );
                       });
                   })()}
+                </div>
                 </div>
               )}
             </div>
