@@ -14,21 +14,20 @@ const AGENDA_KEY = 'colourmap:daily-agenda';
 const AGENDA_OPEN_KEY = 'colourmap:daily-agenda-open';
 const OUTINGS_KEY = 'colourmap:outings';
 
-// Mission-type buckets surfaced as medium-big dots above the objectives
-// list. Each objective belongs to one bucket; tapping a dot filters to
-// that bucket (tap the same dot or 'all' to clear the filter).
+// Mission buckets mirror the compass vocabulary used in check-in:
+// Feeling / Doing / Sharing. Rendered as three labeled pills above the
+// objectives list (same visual language as the check-in slider drawer
+// toggles). Tap a pill to filter. Tap an objective's colored pill to
+// slide it sideways between buckets — no separate picker menu.
 //
-// - focus    → the 1–2 missions you're prioritizing right now
-// - daily    → your running daily objectives (default for legacy data)
-// - tomorrow → pushed for tomorrow (don't do it now, don't lose it)
-// - someday  → longer-term, parked for later
-type ObjectiveType = 'focus' | 'daily' | 'tomorrow' | 'someday';
+// Colors match the compass axis colors in CheckInForm so the whole app
+// reads as one vocabulary.
+type ObjectiveType = 'feeling' | 'doing' | 'sharing';
 
 const MISSION_TYPES: { id: ObjectiveType; label: string; color: string }[] = [
-  { id: 'focus', label: 'Focus', color: '#9B6BA0' },
-  { id: 'daily', label: 'Daily', color: '#C4A060' },
-  { id: 'tomorrow', label: 'Tomorrow', color: '#6890B0' },
-  { id: 'someday', label: 'Someday', color: '#7AAA58' },
+  { id: 'feeling', label: 'Feeling', color: '#D4805A' },
+  { id: 'doing', label: 'Doing', color: '#6890B0' },
+  { id: 'sharing', label: 'Sharing', color: '#7AAA58' },
 ];
 
 interface AgendaBlock {
@@ -601,80 +600,89 @@ export default function DailyAgenda() {
             <div>
               {showObjectives && (
                 <div className="animate-in fade-in duration-150 space-y-3 pt-2">
-                  {/* Mission-type dots — medium-big (22px). Tap one to
-                      filter the list to that bucket; tap 'all' or the
-                      active dot to clear. Counts shown next to labels. */}
-                  <div className="flex items-center justify-between gap-2 px-2">
-                    <div className="flex items-center gap-2">
-                      {MISSION_TYPES.map((mt) => {
-                        const isActive = missionFilter === mt.id;
-                        const typedCount = objectives.filter(
-                          (o) => !o.done && (o.type ?? 'daily') === mt.id,
-                        ).length;
-                        return (
-                          <button
-                            key={mt.id}
-                            type="button"
-                            onClick={() => setMissionFilter(isActive ? 'all' : mt.id)}
-                            className="flex cursor-pointer items-center gap-1.5 transition-all hover:opacity-85"
+                  {/* Compass pills — Feeling / Doing / Sharing as three
+                      equal-width drawer-style toggles matching the
+                      check-in slider vocabulary. Tap one to filter.
+                      Tap again or 'all' to clear. */}
+                  <div className="flex items-center gap-1.5 px-1">
+                    {MISSION_TYPES.map((mt) => {
+                      const isActive = missionFilter === mt.id;
+                      const typedCount = objectives.filter(
+                        (o) => !o.done && (o.type ?? 'doing') === mt.id,
+                      ).length;
+                      return (
+                        <button
+                          key={mt.id}
+                          type="button"
+                          onClick={() => setMissionFilter(isActive ? 'all' : mt.id)}
+                          className="flex flex-1 cursor-pointer items-center justify-center gap-1.5 rounded-xl transition-all hover:opacity-90"
+                          style={{
+                            background: isActive ? `${mt.color}22` : `${mt.color}08`,
+                            border: `1.5px solid ${isActive ? mt.color : `${mt.color}30`}`,
+                            padding: '9px 8px',
+                            minHeight: 44,
+                          }}
+                          aria-label={`Filter to ${mt.label} missions`}
+                          aria-pressed={isActive}
+                        >
+                          <span
                             style={{
-                              background: isActive ? `${mt.color}22` : 'transparent',
-                              border: `1px solid ${isActive ? mt.color : 'transparent'}`,
-                              borderRadius: 999,
-                              padding: '4px 8px 4px 5px',
+                              width: 10,
+                              height: 10,
+                              borderRadius: '50%',
+                              background: mt.color,
+                              opacity: isActive ? 1 : 0.7,
+                              flexShrink: 0,
                             }}
-                            title={`${mt.label} (${typedCount})`}
-                            aria-label={`Filter to ${mt.label} missions`}
-                            aria-pressed={isActive}
+                          />
+                          <span
+                            style={{
+                              fontFamily: 'var(--font-serif)',
+                              fontSize: 13,
+                              fontWeight: isActive ? 700 : 600,
+                              color: isActive ? mt.color : '#5C3018',
+                              letterSpacing: '0.04em',
+                            }}
                           >
-                            <span
-                              style={{
-                                width: 22,
-                                height: 22,
-                                borderRadius: '50%',
-                                background: mt.color,
-                                opacity: isActive ? 1 : 0.55,
-                                boxShadow: isActive
-                                  ? `0 2px 8px -2px ${mt.color}`
-                                  : 'none',
-                                flexShrink: 0,
-                              }}
-                            />
+                            {mt.label}
+                          </span>
+                          {typedCount > 0 && (
                             <span
                               style={{
                                 fontFamily: 'var(--font-serif)',
-                                fontSize: 12,
-                                fontWeight: isActive ? 700 : 500,
-                                color: isActive ? mt.color : '#8A6A4A',
+                                fontSize: 11,
+                                fontWeight: 600,
+                                color: mt.color,
+                                opacity: 0.7,
                               }}
                             >
-                              {typedCount > 0 ? typedCount : ''}
+                              · {typedCount}
                             </span>
-                          </button>
-                        );
-                      })}
-                    </div>
-                    {missionFilter !== 'all' && (
-                      <button
-                        type="button"
-                        onClick={() => setMissionFilter('all')}
-                        className="cursor-pointer"
-                        style={{
-                          background: 'none',
-                          border: 'none',
-                          color: '#8A6A4A',
-                          opacity: 0.55,
-                          fontSize: 11,
-                          fontFamily: 'var(--font-serif)',
-                          textTransform: 'uppercase',
-                          letterSpacing: '0.12em',
-                          padding: '4px 8px',
-                        }}
-                      >
-                        show all
-                      </button>
-                    )}
+                          )}
+                        </button>
+                      );
+                    })}
                   </div>
+                  {missionFilter !== 'all' && (
+                    <button
+                      type="button"
+                      onClick={() => setMissionFilter('all')}
+                      className="cursor-pointer block mx-auto"
+                      style={{
+                        background: 'none',
+                        border: 'none',
+                        color: '#8A6A4A',
+                        opacity: 0.55,
+                        fontSize: 11,
+                        fontFamily: 'var(--font-serif)',
+                        textTransform: 'uppercase',
+                        letterSpacing: '0.12em',
+                        padding: '2px 8px',
+                      }}
+                    >
+                      show all
+                    </button>
+                  )}
                 <div className="space-y-1.5">
                   {(() => {
                     const alreadyInAgenda = new Set(blocks.map((b) => b.text));
@@ -686,20 +694,21 @@ export default function DailyAgenda() {
                       )
                       .map((o) => {
                         const scheduled = alreadyInAgenda.has(o.text);
-                        const type = o.type ?? 'daily';
+                        const type = o.type ?? 'doing';
                         const typeDef =
                           MISSION_TYPES.find((mt) => mt.id === type) ?? MISSION_TYPES[1];
                         return (
                           <div
                             key={o.id}
-                            className="flex items-center gap-2 px-2"
-                            style={{ minHeight: 32 }}
+                            className="flex items-center gap-2.5 px-2"
+                            style={{ minHeight: 40 }}
                           >
                             <button
                               type="button"
                               onClick={() => {
-                                // Cycle through mission types on tap so the user
-                                // can re-assign a row without a picker UI.
+                                // Cycle through Feeling → Doing → Sharing on tap
+                                // so the user can re-bucket a row without a
+                                // separate picker menu.
                                 const order = MISSION_TYPES.map((m) => m.id);
                                 const next =
                                   order[(order.indexOf(type) + 1) % order.length];
@@ -707,16 +716,16 @@ export default function DailyAgenda() {
                                   prev.map((p) => (p.id === o.id ? { ...p, type: next } : p)),
                                 );
                               }}
-                              aria-label={`Change mission type (currently ${typeDef.label})`}
-                              title={`${typeDef.label} — tap to change`}
+                              aria-label={`Mission bucket: ${typeDef.label}. Tap to change.`}
+                              title={`${typeDef.label} — tap to slide to next`}
                               style={{
-                                width: 12,
-                                height: 12,
+                                width: 16,
+                                height: 16,
                                 borderRadius: '50%',
                                 background: typeDef.color,
-                                opacity: o.done ? 0.4 : 0.85,
+                                opacity: o.done ? 0.4 : 0.9,
                                 flexShrink: 0,
-                                border: 'none',
+                                border: `2px solid ${typeDef.color}33`,
                                 padding: 0,
                                 cursor: 'pointer',
                               }}
@@ -725,11 +734,12 @@ export default function DailyAgenda() {
                               style={{
                                 flex: 1,
                                 fontFamily: 'var(--font-serif)',
-                                fontSize: '14px',
+                                fontSize: '16px',
                                 fontWeight: 600,
                                 color: '#5C3018',
                                 opacity: o.done ? 0.5 : 1,
                                 textDecoration: o.done ? 'line-through' : 'none',
+                                lineHeight: 1.35,
                               }}
                             >
                               {o.text}
