@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 
 /*
  * FeedbackOverlay — developer mode with drawing + text notes, opened
@@ -48,6 +49,15 @@ export default function FeedbackOverlay() {
   const [toolbarCollapsed, setToolbarCollapsed] = useState(false);
   const [strokes, setStrokes] = useState<Stroke[]>([]);
   const [drawColor, setDrawColor] = useState('#B33A2B');
+  // Portal mount — defer until after hydration so createPortal has
+  // document.body available. Rendering into body escapes any ancestor
+  // `transform` / `filter` / `overflow` that would otherwise break
+  // `position: fixed` on iOS Safari (the reason the dev-mode toolbar
+  // could disappear when scrolling).
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const tapTimestampsRef = useRef<number[]>([]);
   const textareaRef = useRef<HTMLTextAreaElement | null>(null);
@@ -227,33 +237,47 @@ export default function FeedbackOverlay() {
     noteResizeStateRef.current = null;
   }
 
+  if (!mounted) return null;
+
   if (!open) {
-    return (
+    // Small trigger dot at bottom-right — thumb-reachable on phone.
+    // Rendered via portal into body so iOS doesn't strip fixed
+    // positioning when an ancestor has transform/filter.
+    return createPortal(
       <button
         type="button"
         onClick={openOverlay}
         aria-label="Open developer feedback mode (or triple-tap anywhere)"
         title="Developer feedback — triple-tap anywhere"
-        className="fixed z-40 cursor-pointer transition-opacity hover:opacity-90"
         style={{
-          top: 'calc(6px + env(safe-area-inset-top, 0px))',
-          right: 6,
-          width: 14,
-          height: 14,
+          position: 'fixed',
+          bottom: 'calc(14px + env(safe-area-inset-bottom, 0px))',
+          right: 'calc(14px + env(safe-area-inset-right, 0px))',
+          width: 18,
+          height: 18,
           borderRadius: '50%',
           background: '#9B6BA0',
           border: '1px solid rgba(0,0,0,0.2)',
-          opacity: 0.4,
+          opacity: 0.55,
           padding: 0,
+          cursor: 'pointer',
+          transition: 'opacity 150ms ease',
+          zIndex: 9997,
+          boxShadow: '0 2px 6px rgba(0,0,0,0.15)',
         }}
-      />
+      />,
+      document.body,
     );
   }
 
-  return (
+  return createPortal(
     <div
-      className="fixed inset-0"
       style={{
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
         zIndex: 9998,
         pointerEvents: 'none', // children opt in individually
       }}
@@ -545,7 +569,8 @@ export default function FeedbackOverlay() {
           />
         </div>
       )}
-    </div>
+    </div>,
+    document.body,
   );
 }
 
