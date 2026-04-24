@@ -40,6 +40,36 @@ interface Stroke {
   points: { x: number; y: number }[];
 }
 
+// Web Speech API types — they're still vendor-prefixed so we declare
+// the shape ourselves rather than depending on lib.dom updates.
+interface SpeechRecognitionEventLike {
+  results: ArrayLike<ArrayLike<{ transcript: string }>>;
+  resultIndex: number;
+}
+
+interface SpeechRecognitionLike {
+  lang: string;
+  continuous: boolean;
+  interimResults: boolean;
+  start: () => void;
+  stop: () => void;
+  abort: () => void;
+  onresult: ((ev: SpeechRecognitionEventLike) => void) | null;
+  onerror: (() => void) | null;
+  onend: (() => void) | null;
+}
+
+type SpeechRecognitionCtor = new () => SpeechRecognitionLike;
+
+function getSpeechRecognition(): SpeechRecognitionCtor | null {
+  if (typeof window === 'undefined') return null;
+  const w = window as unknown as {
+    SpeechRecognition?: SpeechRecognitionCtor;
+    webkitSpeechRecognition?: SpeechRecognitionCtor;
+  };
+  return w.SpeechRecognition ?? w.webkitSpeechRecognition ?? null;
+}
+
 export default function FeedbackOverlay() {
   const [open, setOpen] = useState(false);
   const [mode, setMode] = useState<Mode>('note');
@@ -74,6 +104,81 @@ export default function FeedbackOverlay() {
     origW: number;
     origH: number;
   } | null>(null);
+  const recognitionRef = useRef<SpeechRecognitionLike | null>(null);
+  const [listening, setListening] = useState(false);
+  const textBeforeListenRef = useRef<string>('');
+  const [voiceSupported, setVoiceSupported] = useState(false);
+  // Font size for the note textarea. Persisted in localStorage so the
+  // user's preference carries between sessions. 9px to 22px range —
+  // small enough for tight screenshots, large enough for comfortable
+  // writing.
+  const [fontSize, setFontSize] = useState<number>(15);
+  useEffect(() => {
+    setVoiceSupported(getSpeechRecognition() !== null);
+    try {
+      const raw = localStorage.getItem('colourmap:feedback-overlay-font-size');
+      if (raw) {
+        const n = Number.parseFloat(raw);
+        if (Number.isFinite(n) && n >= 9 && n <= 22) setFontSize(n);
+      }
+    } catch {
+      /* silent */
+    }
+  }, []);
+  useEffect(() => {
+    try {
+      localStorage.setItem('colourmap:feedback-overlay-font-size', String(fontSize));
+    } catch {
+      /* silent */
+    }
+  }, [fontSize]);
+
+  function startListening() {
+    const Ctor = getSpeechRecognition();
+    if (!Ctor) return;
+    const rec = new Ctor();
+    rec.lang = 'en-US';
+    rec.continuous = true;
+    rec.interimResults = true;
+    textBeforeListenRef.current = text;
+    rec.onresult = (ev) => {
+      let transcript = '';
+      for (let i = 0; i < ev.results.length; i++) {
+        transcript += ev.results[i][0].transcript;
+      }
+      const base = textBeforeListenRef.current;
+      setText(
+        base
+          ? `${base}${base.endsWith('\n') || base.endsWith(' ') ? '' : ' '}${transcript}`
+          : transcript,
+      );
+    };
+    rec.onerror = () => {
+      setListening(false);
+    };
+    rec.onend = () => {
+      setListening(false);
+    };
+    try {
+      rec.start();
+      recognitionRef.current = rec;
+      setListening(true);
+    } catch {
+      /* already started or blocked */
+    }
+  }
+
+  function stopListening() {
+    const rec = recognitionRef.current;
+    if (rec) {
+      try {
+        rec.stop();
+      } catch {
+        /* silent */
+      }
+    }
+    setListening(false);
+  }
 
   // Restore last note on first mount
   useEffect(() => {
@@ -94,6 +199,15 @@ export default function FeedbackOverlay() {
 
   const close = useCallback(() => {
     setOpen(false);
+    // Stop any active speech recognition when the overlay closes.
+    if (recognitionRef.current) {
+      try {
+        recognitionRef.current.stop();
+      } catch {
+        /* silent */
+      }
+    }
+    setListening(false);
     try {
       if (text.trim()) localStorage.setItem(LS_LAST_NOTE, text);
       else localStorage.removeItem(LS_LAST_NOTE);
@@ -447,7 +561,42 @@ export default function FeedbackOverlay() {
             }}
           >
             <span>feedback · drag</span>
-            <div style={{ display: 'flex', gap: 4 }}>
+            <div style={{ display: 'flex', gap: 4, alignItems: 'center' }}>
+              {voiceSupported && (
+                <button
+                  type="button"
+                  onPointerDown={(e) => e.stopPropagation()}
+                  onClick={() => (listening ? stopListening() : startListening())}
+                  aria-label={listening ? 'Stop recording' : 'Start voice input'}
+                  title={listening ? 'Stop (tap to finish)' : 'Voice input'}
+                  style={{
+                    background: listening ? '#B33A2B' : 'transparent',
+                    border: `1px solid ${listening ? '#B33A2B' : '#9B6BA055'}`,
+                    color: listening ? '#FFF' : '#9B6BA0',
+                    borderRadius: 999,
+                    padding: '2px 8px',
+                    fontSize: 11,
+                    fontFamily: 'var(--font-serif)',
+                    cursor: 'pointer',
+                    fontWeight: 700,
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 3,
+                  }}
+                >
+                  <span
+                    aria-hidden="true"
+                    style={{
+                      width: 6,
+                      height: 6,
+                      borderRadius: '50%',
+                      background: listening ? '#FFF' : '#B33A2B',
+                      animation: listening ? 'pulse 1s ease-in-out infinite' : 'none',
+                    }}
+                  />
+                  {listening ? 'stop' : 'mic'}
+                </button>
+              )}
               <button
                 type="button"
                 onPointerDown={(e) => e.stopPropagation()}
@@ -515,6 +664,53 @@ export default function FeedbackOverlay() {
               </button>
             </div>
           </div>
+          {/* Text-size slider — small for screenshot-sized notes,
+              big for comfortable writing. Persisted between sessions. */}
+          <div
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: 6,
+              padding: '0 4px 4px',
+              fontFamily: 'var(--font-serif)',
+              fontSize: 10,
+              color: '#9B6BA0',
+            }}
+          >
+            <span
+              aria-hidden="true"
+              style={{
+                fontSize: 9,
+                letterSpacing: '0.08em',
+                textTransform: 'uppercase',
+                opacity: 0.7,
+              }}
+            >
+              A
+            </span>
+            <input
+              type="range"
+              min={9}
+              max={22}
+              step={1}
+              value={fontSize}
+              onChange={(e) => setFontSize(Number.parseInt(e.target.value, 10))}
+              onPointerDown={(e) => e.stopPropagation()}
+              aria-label="Text size"
+              style={{ flex: 1, accentColor: '#9B6BA0', minHeight: 20 }}
+            />
+            <span
+              aria-hidden="true"
+              style={{
+                fontSize: 14,
+                letterSpacing: '0.08em',
+                textTransform: 'uppercase',
+                opacity: 0.7,
+              }}
+            >
+              A
+            </span>
+          </div>
           <textarea
             ref={textareaRef}
             value={text}
@@ -529,7 +725,7 @@ export default function FeedbackOverlay() {
               resize: 'none',
               // Smaller notes get smaller text so more fits in the frame;
               // larger notes read comfortably while writing.
-              fontSize: noteSize.w < 200 ? 12 : 15,
+              fontSize,
               lineHeight: 1.4,
               fontFamily: 'var(--font-serif)',
               outline: 'none',
