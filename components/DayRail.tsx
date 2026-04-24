@@ -228,8 +228,10 @@ function Panel({
     <section
       className="rounded-2xl border p-5"
       style={{
-        background: `linear-gradient(180deg, ${accent}10 0%, var(--card) 60%, var(--card) 100%)`,
-        borderColor: `${accent}24`,
+        // Solid card — user: 'streak box no degrade'. Previously used
+        // a gradient that faded from accent to card.
+        background: 'var(--card)',
+        borderColor: `${accent}30`,
       }}
     >
       <p

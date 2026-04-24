@@ -86,8 +86,7 @@ describe('useKeyboardAware', () => {
 
   it('does not throw when scrollIntoView is absent (jsdom default)', async () => {
     const original = Element.prototype.scrollIntoView;
-    // biome-ignore lint/performance/noDelete: testing the optional-call guard
-    delete (Element.prototype as unknown as { scrollIntoView?: unknown }).scrollIntoView;
+    (Element.prototype as unknown as { scrollIntoView?: unknown }).scrollIntoView = undefined;
     vi.spyOn(globalThis, 'requestAnimationFrame').mockImplementation((cb: FrameRequestCallback) => {
       cb(0);
       return 0;

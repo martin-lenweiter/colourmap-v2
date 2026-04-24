@@ -27,10 +27,10 @@ describe('DayTabs', () => {
     localStorage.clear();
   });
 
-  it('renders the V1 tabs: Check in and Sounds', () => {
+  it('renders the Check in and Overview tabs', () => {
     render(<DayTabs checkinContent={<div>checkin</div>} overviewContent={<div>overview</div>} />);
     expect(screen.getByText('Check in')).toBeDefined();
-    expect(screen.getByText('Sounds')).toBeDefined();
+    expect(screen.getByText('Overview')).toBeDefined();
   });
 
   it('shows check-in content by default', () => {
@@ -43,16 +43,15 @@ describe('DayTabs', () => {
     expect(screen.getByText('checkin-content')).toBeDefined();
   });
 
-  it('switches to sounds when the Sounds tab is clicked', async () => {
+  it('switches to Overview when the Overview tab is clicked', async () => {
     const user = userEvent.setup();
     render(
       <DayTabs
         checkinContent={<div>checkin-content</div>}
         overviewContent={<div>overview-content</div>}
-        tunerContent={<div>sounds-content</div>}
       />,
     );
-    await user.click(screen.getByText('Sounds'));
-    expect(screen.getByText('sounds-content')).toBeDefined();
+    await user.click(screen.getByText('Overview'));
+    expect(screen.getByText('overview-content')).toBeDefined();
   });
 });
