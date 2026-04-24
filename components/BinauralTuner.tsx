@@ -2969,96 +2969,106 @@ export default function BinauralTuner() {
         </button>
       </div>
 
-      {/* Wave visualization with gradient fill + play button overlay */}
-      <div className="relative flex justify-center">
-        <svg width={W} height={H}>
-          <defs>
-            <linearGradient id="waveGrad" x1="0" y1="0" x2="1" y2="0">
-              {RAINBOW.map((c, i) => (
-                // index key — RAINBOW repeats #E0908A at start and end for
-                // a wrap-around gradient, so color alone would collide.
-                <stop
-                  key={i}
-                  offset={`${(i / (RAINBOW.length - 1)) * 100}%`}
-                  stopColor={c}
-                  stopOpacity={0.15}
-                />
-              ))}
-            </linearGradient>
-            <linearGradient id="waveStroke" x1="0" y1="0" x2="1" y2="0">
-              {RAINBOW.map((c, i) => (
-                <stop
-                  key={i}
-                  offset={`${(i / (RAINBOW.length - 1)) * 100}%`}
-                  stopColor={c}
-                  stopOpacity={playing ? 0.8 : 0.4}
-                />
-              ))}
-            </linearGradient>
-          </defs>
-          {/* Just the wave line — rainbow fill removed per user
+      {/* Wave visualization with gradient fill + play button overlay.
+          SVG now width="100%" + viewBox so it scales to the parent
+          width. Wrapped in a bounded relative div so the overlay play
+          button pins to the SVG edge, not the page. */}
+      <div className="flex w-full justify-center">
+        <div className="relative w-full" style={{ maxWidth: 480 }}>
+          <svg
+            width="100%"
+            height={H}
+            viewBox={`0 0 ${W} ${H}`}
+            preserveAspectRatio="xMidYMid meet"
+          >
+            <defs>
+              <linearGradient id="waveGrad" x1="0" y1="0" x2="1" y2="0">
+                {RAINBOW.map((c, i) => (
+                  // index key — RAINBOW repeats #E0908A at start and end for
+                  // a wrap-around gradient, so color alone would collide.
+                  <stop
+                    key={i}
+                    offset={`${(i / (RAINBOW.length - 1)) * 100}%`}
+                    stopColor={c}
+                    stopOpacity={0.15}
+                  />
+                ))}
+              </linearGradient>
+              <linearGradient id="waveStroke" x1="0" y1="0" x2="1" y2="0">
+                {RAINBOW.map((c, i) => (
+                  <stop
+                    key={i}
+                    offset={`${(i / (RAINBOW.length - 1)) * 100}%`}
+                    stopColor={c}
+                    stopOpacity={playing ? 0.8 : 0.4}
+                  />
+                ))}
+              </linearGradient>
+            </defs>
+            {/* Just the wave line — rainbow fill removed per user
               feedback (clutter). Keep the subtle rainbow stroke
               because it still reads as a single line. */}
-          <path
-            d={pathD}
-            fill="none"
-            stroke="url(#waveStroke)"
-            strokeWidth={2.5}
-            strokeLinecap="round"
-          />
-          {/* Glow when playing */}
-          {playing && (
             <path
               d={pathD}
               fill="none"
-              stroke={activeColor}
-              strokeWidth={8}
+              stroke="url(#waveStroke)"
+              strokeWidth={2.5}
               strokeLinecap="round"
-              opacity={0.12}
             />
-          )}
-        </svg>
-        {/* Play button — overlaid on the right */}
-        <button
-          type="button"
-          onClick={() => {
-            haptic(playing ? 'tick' : 'tap');
-            if (playing) stopAudio();
-            else startAudio();
-          }}
-          className="absolute right-2 top-1/2 -translate-y-1/2 flex cursor-pointer items-center justify-center rounded-full transition-all"
-          style={{
-            width: 36,
-            height: 36,
-            background: playing ? `${activeColor}25` : `${activeColor}10`,
-            border: `2px solid ${activeColor}${playing ? '50' : '25'}`,
-          }}
-        >
-          {playing ? (
-            <div className="flex gap-0.5">
-              <span
-                className="block rounded-sm"
-                style={{ width: 3, height: 12, background: activeColor }}
+            {/* Glow when playing */}
+            {playing && (
+              <path
+                d={pathD}
+                fill="none"
+                stroke={activeColor}
+                strokeWidth={8}
+                strokeLinecap="round"
+                opacity={0.12}
               />
+            )}
+          </svg>
+          {/* Play button — overlaid on the right */}
+          <button
+            type="button"
+            onClick={() => {
+              haptic(playing ? 'tick' : 'tap');
+              if (playing) stopAudio();
+              else startAudio();
+            }}
+            className="absolute right-2 top-1/2 -translate-y-1/2 flex cursor-pointer items-center justify-center rounded-full transition-all"
+            style={{
+              width: 36,
+              height: 36,
+              background: playing ? `${activeColor}25` : `${activeColor}10`,
+              border: `2px solid ${activeColor}${playing ? '50' : '25'}`,
+            }}
+          >
+            {playing ? (
+              <div className="flex gap-0.5">
+                <span
+                  className="block rounded-sm"
+                  style={{ width: 3, height: 12, background: activeColor }}
+                />
+                <span
+                  className="block rounded-sm"
+                  style={{ width: 3, height: 12, background: activeColor }}
+                />
+              </div>
+            ) : (
               <span
-                className="block rounded-sm"
-                style={{ width: 3, height: 12, background: activeColor }}
+                className="block"
+                style={{
+                  width: 0,
+                  height: 0,
+                  borderLeft: `10px solid ${activeColor}`,
+                  borderTop: '6px solid transparent',
+                  borderBottom: '6px solid transparent',
+                  marginLeft: 1,
+                }}
               />
-            </div>
-          ) : (
-            <span
-              className="block"
-              style={{
-                width: 0,
-                height: 0,
-                borderLeft: `10px solid ${activeColor}`,
-                borderTop: '6px solid transparent',
-                borderBottom: '6px solid transparent',
-                marginLeft: 1,
-              }}
-            />
-          )}
-        </button>
+            )}
+          </button>
+        </div>
       </div>
 
       {/* Wave-style picker — pick the visual shape of the waveform */}
@@ -3471,8 +3481,8 @@ export default function BinauralTuner() {
             </div>
           </div>
 
-          {/* Visualizer Box — family of soft dot visuals, user picks the mode */}
-          <VisualizerBox />
+          {/* VisualizerBox moved to the dedicated Visuals tab in SoundLab —
+              keep this page focused on tuning, not decoration. */}
 
           {/* Harmony — musical intervals that fit the base tone */}
           <div className="px-2">
@@ -4584,7 +4594,11 @@ const VALID_MODES: VisualizerMode[] = [
   'solar',
 ];
 
-function VisualizerBox() {
+// Kept as dead code for now — Visuals surface was lifted out of the
+// tuner into the Sounds → Visuals tab. Delete fully once we're sure
+// we don't want an in-tuner option back. `_` prefix tells biome to
+// ignore the unused-function warning.
+function _VisualizerBox() {
   const [mode, setMode] = useState<VisualizerMode>('atom');
   // Speed default 0.25 — most calm, relaxing stable spot for the whole
   // family. Other stable spots are at 0.4 (gentle), 0.6 (flowing),
