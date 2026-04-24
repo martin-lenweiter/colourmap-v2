@@ -6,15 +6,13 @@ import { useEffect, useRef, useState } from 'react';
 
 import { useViewMode } from './ViewModeContext';
 
-// Minimalist glyphs sit to the left of each label. Helps lay users
-// pattern-match the nav at a glance, especially on phone where text
-// labels blur together.
-const PRIMARY_LINKS: { href: string; label: string; glyph: string }[] = [
-  { href: '/day', label: 'Day', glyph: '☾' }, // crescent moon — the daily rhythm
-  { href: '/sounds', label: 'Sounds', glyph: '~' }, // tilde — waveform
-  { href: '/music', label: 'Music', glyph: '♪' }, // eighth note
-  { href: '/circles', label: 'Circles', glyph: '◯' }, // ring — people
-  { href: '/notebook', label: 'Notebook', glyph: '❦' }, // floral heart — reflection
+// Plain text labels — no glyphs (user: 'no smileys').
+const PRIMARY_LINKS: { href: string; label: string }[] = [
+  { href: '/day', label: 'Day' },
+  { href: '/sounds', label: 'Sounds' },
+  { href: '/music', label: 'Music' },
+  { href: '/circles', label: 'Circles' },
+  { href: '/notebook', label: 'Notebook' },
 ];
 
 const PHONE_PRIMARY_LINKS = PRIMARY_LINKS;
@@ -47,11 +45,16 @@ export default function NavLinks() {
     return () => document.removeEventListener('mousedown', onClickOutside);
   }, [moreOpen]);
 
+  // On phone, the nav scrolls horizontally so labels don't wrap or
+  // shrink. No-wrap, horizontal overflow, hidden scrollbar.
   return (
     <nav
-      className={`mx-auto flex w-full items-center justify-center px-4 pb-3 ${
-        isPhone ? 'max-w-sm gap-4 text-sm flex-wrap' : 'max-w-5xl gap-8 text-base'
+      className={`mx-auto flex w-full items-center px-4 pb-3 ${
+        isPhone
+          ? 'gap-5 text-sm overflow-x-auto justify-start scrollbar-none'
+          : 'max-w-5xl gap-8 text-base justify-center'
       }`}
+      style={isPhone ? { scrollbarWidth: 'none' } : undefined}
     >
       {primary.map((link) => {
         const isActive = link.href.startsWith('/#')
@@ -63,27 +66,15 @@ export default function NavLinks() {
           <Link
             key={link.href}
             href={link.href}
-            className={`inline-flex items-center gap-1.5 transition-colors tracking-[0.04em] ${isActive ? 'text-foreground font-semibold' : 'text-muted-foreground hover:text-foreground'}`}
+            className={`shrink-0 whitespace-nowrap transition-colors tracking-[0.04em] ${isActive ? 'text-foreground font-semibold' : 'text-muted-foreground hover:text-foreground'}`}
           >
-            <span
-              aria-hidden="true"
-              style={{
-                fontFamily: 'var(--font-serif)',
-                fontSize: '15px',
-                lineHeight: 1,
-                opacity: isActive ? 1 : 0.65,
-                color: isActive ? '#C4A060' : 'inherit',
-              }}
-            >
-              {link.glyph}
-            </span>
             {link.label}
           </Link>
         );
       })}
 
       {/* More menu */}
-      <div className="relative" ref={menuRef}>
+      <div className="relative shrink-0" ref={menuRef}>
         <button
           type="button"
           onClick={() => setMoreOpen(!moreOpen)}

@@ -2881,17 +2881,6 @@ export default function BinauralTuner() {
         >
           Calming Sounds
         </p>
-        <p
-          style={{
-            fontFamily: 'var(--font-serif)',
-            fontSize: '13px',
-            color: '#8A6A4A',
-            opacity: 0.7,
-            letterSpacing: '0.02em',
-          }}
-        >
-          gentle tones + nature sounds to settle in
-        </p>
         {/* Binaural quick-shortcut. Shows what's currently playing (base
             Hz + beat Hz + breathing). Tap to jump into full Studio mode
             for fine-tuning. "Live readout doubles as a door." */}
@@ -2998,13 +2987,9 @@ export default function BinauralTuner() {
               ))}
             </linearGradient>
           </defs>
-          {/* Gradient fill below the wave */}
-          <path
-            d={`${pathD} L ${W},${H} L 0,${H} Z`}
-            fill="url(#waveGrad)"
-            style={{ transition: 'all 0.3s' }}
-          />
-          {/* Rainbow stroke */}
+          {/* Just the wave line — rainbow fill removed per user
+              feedback (clutter). Keep the subtle rainbow stroke
+              because it still reads as a single line. */}
           <path
             d={pathD}
             fill="none"
@@ -3091,50 +3076,10 @@ export default function BinauralTuner() {
         })}
       </div>
 
-      {/* Soft-beat bed — gentle percussion on a chosen tempo */}
-      <div className="flex flex-col items-center gap-1.5">
-        <div className="flex flex-wrap justify-center gap-1.5">
-          {BEAT_PRESETS.map((b) => {
-            const isActive = beatPreset === b.id;
-            return (
-              <button
-                key={b.id}
-                type="button"
-                onClick={() => setBeatPreset(b.id)}
-                className="cursor-pointer rounded-full px-2.5 py-0.5 text-[10px] uppercase tracking-[0.12em] transition-all"
-                style={{
-                  color: isActive ? '#5C3018' : '#8A6A4A',
-                  background: isActive ? `${activeColor}20` : 'transparent',
-                  border: `1px solid ${isActive ? `${activeColor}60` : '#5C301818'}`,
-                  fontFamily: 'var(--font-serif)',
-                  opacity: isActive ? 1 : 0.65,
-                }}
-                aria-label={`Beat tempo: ${b.label}`}
-              >
-                {b.label}
-              </button>
-            );
-          })}
-        </div>
-        {beatPreset !== 'off' && (
-          <label
-            className="flex items-center gap-2"
-            style={{ fontFamily: 'var(--font-serif)', fontSize: 10, color: '#8A6A4A' }}
-          >
-            <span style={{ opacity: 0.7 }}>beat vol</span>
-            <input
-              type="range"
-              min={0}
-              max={1}
-              step={0.01}
-              value={beatVolume}
-              onChange={(e) => setBeatVolume(Number.parseFloat(e.target.value))}
-              aria-label="Beat volume"
-              style={{ width: 120, accentColor: activeColor }}
-            />
-          </label>
-        )}
-      </div>
+      {/* Beat bed UI removed per user feedback — clutter in studio.
+          The scheduler state still exists but defaults to 'off' and is
+          inaccessible from the UI. If it comes back later it should be
+          as a dedicated 'rhythm' surface, not stacked under the wave. */}
 
       {/* Audio error */}
       {audioError && (

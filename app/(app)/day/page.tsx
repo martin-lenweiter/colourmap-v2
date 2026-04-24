@@ -19,19 +19,20 @@ function DayContent() {
     month: 'long',
   });
   return (
-    <div className="mx-auto flex w-full max-w-6xl gap-6 px-4 py-8 lg:px-6">
-      <div className="mx-auto w-full max-w-2xl space-y-6 lg:mx-0 lg:flex-1">
+    <div className="mx-auto w-full max-w-6xl px-4 py-3 lg:flex lg:gap-6 lg:px-6 lg:py-6">
+      <div className="mx-auto w-full max-w-2xl space-y-4 lg:mx-0 lg:flex-1">
         <FirstRunOnboarding />
         <CheckInPing />
         <p
           className="text-center"
           style={{
             fontFamily: 'var(--font-serif)',
-            fontSize: '17px',
+            fontSize: '15px',
             fontStyle: 'italic',
             color: '#7A5438',
-            opacity: 0.85,
-            letterSpacing: '0.06em',
+            opacity: 0.75,
+            letterSpacing: '0.04em',
+            margin: '2px 0',
           }}
         >
           {dateStr}
