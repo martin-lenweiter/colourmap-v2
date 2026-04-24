@@ -3251,36 +3251,9 @@ export default function BinauralTuner() {
               toggleOn={binauralOn}
               onToggle={() => setBinauralOn((s) => !s)}
             />
-            {/* Engine breathing — organic LFO drift on the binaural beat */}
-            <div className="flex items-center gap-2">
-              <span
-                style={{
-                  fontFamily: 'var(--font-serif)',
-                  fontSize: '12px',
-                  color: '#8A6A4A',
-                  width: 60,
-                  flexShrink: 0,
-                  textAlign: 'right',
-                }}
-                title="Makes the binaural beat drift gently around your chosen rate, like a ship's engine on the ocean. Two slow LFOs (~50s and ~17s) sum for organic variation."
-              >
-                engine
-              </span>
-              <button
-                type="button"
-                onClick={() => setEngineBreathing((b) => !b)}
-                disabled={!binauralOn}
-                aria-pressed={engineBreathing}
-                className="flex flex-1 items-center justify-center cursor-pointer rounded-full py-1.5 text-[11px] font-semibold uppercase tracking-[0.14em] transition-all disabled:cursor-not-allowed disabled:opacity-40"
-                style={{
-                  color: engineBreathing ? '#F5E8C8' : '#8A6A4A',
-                  background: engineBreathing ? '#7A5438' : 'transparent',
-                  border: '1px solid rgba(196, 160, 96, 0.35)',
-                }}
-              >
-                {engineBreathing ? 'breathing' : 'breathe'}
-              </button>
-            </div>
+            {/* Engine-breathing toggle removed from UI per user feedback.
+                Scheduler state still exists (useState defaults to false)
+                so the logic stays wired if we want to bring it back. */}
             {/* Reverb as dots */}
             <div className="flex items-center gap-2">
               <span
