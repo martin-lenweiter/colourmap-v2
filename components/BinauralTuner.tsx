@@ -3569,10 +3569,13 @@ export default function BinauralTuner() {
             >
               Sacred Frequencies
             </p>
-            <div className="flex flex-wrap justify-center gap-1.5">
+            {/* 2-per-row cards on phone (3-per-row on desktop). Each
+                card shows the Hz number big on top with the descriptor
+                ("om", "foundation", "healing"…) right below it. Much
+                easier to scan than the earlier wrapping mini-pills. */}
+            <div className="grid grid-cols-2 gap-2 md:grid-cols-3">
               {SACRED.map((s) => {
                 const isOn = activeSacred.has(s.id);
-                // Check if this sacred freq is a harmonic of the base tone (within 5%)
                 const ratio = s.freq / baseFreq;
                 const nearestInt = Math.round(ratio);
                 const isAligned =
@@ -3589,48 +3592,57 @@ export default function BinauralTuner() {
                         return next;
                       });
                     }}
-                    className="flex cursor-pointer items-center gap-1 rounded-full px-2 py-1 transition-all"
+                    className="flex cursor-pointer flex-col items-center justify-center rounded-xl px-3 py-2.5 transition-all"
                     style={{
                       background: isOn
-                        ? `${s.color}18`
+                        ? `${s.color}1A`
                         : isAligned
-                          ? `${s.color}08`
+                          ? `${s.color}0A`
                           : 'transparent',
-                      border: `1px solid ${isOn ? `${s.color}40` : isAligned ? `${s.color}20` : '#C4A06010'}`,
+                      border: `1px solid ${isOn ? `${s.color}55` : isAligned ? `${s.color}25` : '#C4A06015'}`,
+                      minHeight: 56,
                     }}
                     title={`${s.desc}${isAligned ? ` · harmonic ×${nearestInt} of ${baseFreq}Hz` : ''}`}
+                    aria-pressed={isOn}
                   >
-                    <span
-                      className="block rounded-full"
-                      style={{
-                        width: 6,
-                        height: 6,
-                        background: s.color,
-                        opacity: isOn ? 1 : isAligned ? 0.6 : 0.3,
-                      }}
-                    />
                     <span
                       style={{
                         fontFamily: 'var(--font-serif)',
-                        fontSize: '12px',
-                        fontWeight: isOn ? 700 : 500,
-                        color: isOn ? s.color : '#8A6A4A',
-                        opacity: isOn ? 1 : isAligned ? 0.7 : 0.45,
+                        fontSize: '17px',
+                        fontWeight: 700,
+                        color: isOn ? s.color : '#5C3018',
+                        opacity: isOn ? 1 : 0.85,
+                        lineHeight: 1.1,
                       }}
                     >
                       {s.label}
-                    </span>
-                    {isAligned && !isOn && (
                       <span
                         style={{
-                          fontFamily: 'var(--font-serif)',
-                          fontSize: '8px',
-                          color: s.color,
+                          fontSize: '10px',
+                          fontWeight: 500,
+                          opacity: 0.55,
+                          marginLeft: 2,
                         }}
                       >
-                        ×{nearestInt}
+                        Hz
                       </span>
-                    )}
+                    </span>
+                    <span
+                      style={{
+                        fontFamily: 'var(--font-serif)',
+                        fontSize: '11px',
+                        fontStyle: 'italic',
+                        color: isOn ? s.color : '#8A6A4A',
+                        opacity: isOn ? 0.85 : 0.55,
+                        letterSpacing: '0.02em',
+                        marginTop: 2,
+                      }}
+                    >
+                      {s.desc}
+                      {isAligned && !isOn && (
+                        <span style={{ marginLeft: 4, fontSize: '9px' }}>×{nearestInt}</span>
+                      )}
+                    </span>
                   </button>
                 );
               })}
@@ -4397,7 +4409,12 @@ export default function BinauralTuner() {
             </button>
             {brainStatesOpen && (
               <div className="animate-in fade-in duration-150">
-                <div className="flex flex-wrap justify-center gap-1.5 pt-1">
+                {/* Horizontal scroll on phone so the 6 presets stay on
+                    one row instead of wrapping into uneven 3+3 grids. */}
+                <div
+                  className="flex gap-1.5 overflow-x-auto px-2 pb-1 pt-1"
+                  style={{ scrollbarWidth: 'none' }}
+                >
                   {PRESETS.map((p) => {
                     const isActive = p.base === baseFreq && p.beat === beatFreq;
                     const presetLayers = PRESET_LAYERS[p.id] || [];
@@ -4406,7 +4423,7 @@ export default function BinauralTuner() {
                         key={p.id}
                         type="button"
                         onClick={() => applyPresetWithLayers(p)}
-                        className="cursor-pointer rounded-full px-3 py-1.5 text-left transition-all"
+                        className="shrink-0 cursor-pointer whitespace-nowrap rounded-full px-3 py-1.5 text-left transition-all"
                         style={{
                           background: isActive ? `${p.color}15` : 'transparent',
                           border: `1px solid ${isActive ? `${p.color}40` : '#C4A06015'}`,
