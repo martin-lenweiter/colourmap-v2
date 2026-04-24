@@ -12,6 +12,16 @@ import InfoTooltip from '@/components/InfoTooltip';
    Genre modes: trippy, classical, groovy, logical.
    ═══════════════════════════════════════════════════════════ */
 
+// ── Wave visualization styles ──
+type WaveStyle = 'sine' | 'layered' | 'pulse' | 'double' | 'zigzag';
+const WAVE_STYLES: { id: WaveStyle; label: string }[] = [
+  { id: 'sine', label: 'sine' },
+  { id: 'layered', label: 'layered' },
+  { id: 'pulse', label: 'pulse' },
+  { id: 'double', label: 'double' },
+  { id: 'zigzag', label: 'zigzag' },
+];
+
 // ── Brain state presets ──
 const PRESETS = [
   { id: 'deep-sleep', label: 'Deep Sleep', base: 40, beat: 2, color: '#9B6BA0' },
@@ -1316,6 +1326,22 @@ export default function BinauralTuner() {
   const [_view, _setView] = useState<'presets' | 'layers' | 'genres'>('presets');
   const [tremolo, setTremolo] = useState(false);
   const tremoloSpeed = 0.15;
+  const [waveStyle, setWaveStyle] = useState<WaveStyle>('sine');
+  useEffect(() => {
+    try {
+      const stored = localStorage.getItem('colourmap:wave-style');
+      if (stored && WAVE_STYLES.some((w) => w.id === stored)) setWaveStyle(stored as WaveStyle);
+    } catch {
+      /* silent */
+    }
+  }, []);
+  useEffect(() => {
+    try {
+      localStorage.setItem('colourmap:wave-style', waveStyle);
+    } catch {
+      /* silent */
+    }
+  }, [waveStyle]);
   const warmth = 0.3; // always-on gentle warmth for smoother sound
   const filterFreq = 5000; // wide open — no muffling
   const lfoRef = useRef<OscillatorNode | null>(null);
@@ -2573,8 +2599,11 @@ export default function BinauralTuner() {
   const wavelength = Math.max(20, 80 - beatFreq * 1.5);
   const baseAmplitude = 15 + volume * 30;
   const [waveTime, setWaveTime] = useState(0);
+  // Animate whenever sound is playing OR tremolo is on (so non-sine styles
+  // like pulse/double visibly breathe even without tremolo).
+  const shouldAnimate = playing || tremolo;
   useEffect(() => {
-    if (!tremolo || !playing) return;
+    if (!shouldAnimate) return;
     let raf: number;
     const start = performance.now();
     function animate() {
@@ -2583,7 +2612,7 @@ export default function BinauralTuner() {
     }
     raf = requestAnimationFrame(animate);
     return () => cancelAnimationFrame(raf);
-  }, [tremolo, playing]);
+  }, [shouldAnimate]);
 
   const points: string[] = [];
   for (let x = 0; x <= W; x += 2) {
@@ -2592,7 +2621,33 @@ export default function BinauralTuner() {
         ? 1 - 0.35 * Math.sin(waveTime * tremoloSpeed * Math.PI * 2 + (x / W) * 0.5)
         : 1;
     const amplitude = baseAmplitude * tremoloMod;
-    const y = cy + Math.sin((x / wavelength) * Math.PI * 2) * amplitude;
+    const phase = (x / wavelength) * Math.PI * 2;
+    let sample: number;
+    switch (waveStyle) {
+      case 'layered':
+        // Fundamental + second harmonic at 1/3 amplitude — richer body
+        sample = Math.sin(phase) * 0.75 + Math.sin(phase * 2) * 0.25;
+        break;
+      case 'pulse': {
+        // Slow amplitude envelope on top of the sine — heartbeat feel
+        const envelope = 0.5 + 0.5 * Math.sin(waveTime * 1.5 * Math.PI * 2 + phase * 0.15);
+        sample = Math.sin(phase) * envelope;
+        break;
+      }
+      case 'double':
+        // Two sines at slightly different wavelengths — visual beat pattern
+        sample = (Math.sin(phase) + Math.sin(phase * 1.07 + waveTime * 0.8)) * 0.5;
+        break;
+      case 'zigzag': {
+        // Symmetric triangle wave — same period as sine, sharper edges
+        const t = (((x / wavelength) % 1) + 1) % 1;
+        sample = t < 0.5 ? 4 * t - 1 : 3 - 4 * t;
+        break;
+      }
+      default:
+        sample = Math.sin(phase);
+    }
+    const y = cy + sample * amplitude;
     points.push(`${x},${y.toFixed(1)}`);
   }
   const pathD = `M ${points.join(' L ')}`;
@@ -2720,8 +2775,10 @@ export default function BinauralTuner() {
           <defs>
             <linearGradient id="waveGrad" x1="0" y1="0" x2="1" y2="0">
               {RAINBOW.map((c, i) => (
+                // index key — RAINBOW repeats #E0908A at start and end for
+                // a wrap-around gradient, so color alone would collide.
                 <stop
-                  key={c}
+                  key={i}
                   offset={`${(i / (RAINBOW.length - 1)) * 100}%`}
                   stopColor={c}
                   stopOpacity={0.15}
@@ -2731,7 +2788,7 @@ export default function BinauralTuner() {
             <linearGradient id="waveStroke" x1="0" y1="0" x2="1" y2="0">
               {RAINBOW.map((c, i) => (
                 <stop
-                  key={c}
+                  key={i}
                   offset={`${(i / (RAINBOW.length - 1)) * 100}%`}
                   stopColor={c}
                   stopOpacity={playing ? 0.8 : 0.4}
@@ -2802,6 +2859,30 @@ export default function BinauralTuner() {
             />
           )}
         </button>
+      </div>
+
+      {/* Wave-style picker — pick the visual shape of the waveform */}
+      <div className="flex flex-wrap justify-center gap-1.5">
+        {WAVE_STYLES.map((w) => {
+          const isActive = waveStyle === w.id;
+          return (
+            <button
+              key={w.id}
+              type="button"
+              onClick={() => setWaveStyle(w.id)}
+              className="cursor-pointer rounded-full px-2.5 py-0.5 text-[10px] uppercase tracking-[0.12em] transition-all"
+              style={{
+                color: isActive ? '#5C3018' : '#8A6A4A',
+                background: isActive ? `${activeColor}20` : 'transparent',
+                border: `1px solid ${isActive ? `${activeColor}60` : '#5C301818'}`,
+                fontFamily: 'var(--font-serif)',
+                opacity: isActive ? 1 : 0.7,
+              }}
+            >
+              {w.label}
+            </button>
+          );
+        })}
       </div>
 
       {/* Audio error */}
