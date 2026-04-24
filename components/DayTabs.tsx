@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 
 import { useStyle } from '@/components/StyleContext';
+import { haptic } from '@/lib/haptics';
 
 /* ═══════════════════════════════════════════════════════════
    DAY TABS — CHECK IN / OVERVIEW
@@ -70,7 +71,10 @@ export default function DayTabs({
             <button
               key={tab.id}
               type="button"
-              onClick={() => setActive(tab.id)}
+              onClick={() => {
+                if (tab.id !== active) haptic('tap');
+                setActive(tab.id);
+              }}
               className="flex-1 cursor-pointer rounded-2xl py-3.5 uppercase tracking-[0.18em] transition-all duration-200"
               style={{
                 background: isActive ? '#C4A06018' : 'transparent',
