@@ -29,8 +29,7 @@ describe('ColourmapBrandButton', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Colourmap' }));
     const dialog = screen.getByRole('dialog', { name: /about colourmap/i });
     expect(dialog).toBeDefined();
-    expect(screen.getByText('Vikash Morgan')).toBeDefined();
-    expect(screen.getByText('The Mysterious Martin')).toBeDefined();
+    expect(screen.getByText('Vikash and Martin')).toBeDefined();
   });
 
   it('closes the dialog when the close button is clicked', () => {
