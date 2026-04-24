@@ -3711,103 +3711,77 @@ export default function BinauralTuner() {
               ))}
             </div>
             {activeMelodies.size > 0 && (
-              <div className="flex justify-center gap-4 pt-2">
-                <div className="flex items-center gap-2">
-                  <span
-                    style={{
-                      fontFamily: 'var(--font-serif)',
-                      fontSize: '12px',
-                      color: '#8A6A4A',
-                    }}
-                  >
-                    speed
-                  </span>
-                  <div
-                    className="flex gap-[2px] cursor-pointer"
-                    onClick={(e) => {
-                      const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
-                      setMelodySpeed(Math.round(((e.clientX - rect.left) / rect.width) * 100));
-                    }}
-                  >
-                    {Array.from({ length: 8 }, (_, i) => (
-                      <div
-                        key={i}
-                        className="rounded-[2px] transition-all"
+              <div className="mx-auto max-w-md space-y-3 pt-3">
+                {(
+                  [
+                    {
+                      label: 'speed',
+                      color: '#9B6BA0',
+                      value: melodySpeed / 100,
+                      onChange: (v: number) => setMelodySpeed(Math.round(v * 100)),
+                    },
+                    {
+                      label: 'reverb',
+                      color: '#A0907A',
+                      value: melodyReverb / 100,
+                      onChange: (v: number) => setMelodyReverb(Math.round(v * 100)),
+                    },
+                    {
+                      label: 'volume',
+                      color: '#C4A060',
+                      value: melodyVolume,
+                      onChange: (v: number) => setMelodyVolume(v),
+                    },
+                  ] as const
+                ).map((s) => {
+                  const DOTS = 20;
+                  return (
+                    <div key={s.label} className="flex items-center gap-3">
+                      <span
+                        className="shrink-0 text-right uppercase"
                         style={{
-                          width: 10,
-                          height: 6,
-                          background: '#9B6BA0',
-                          opacity: i / 7 <= melodySpeed / 100 ? 0.4 + (i / 7) * 0.4 : 0.08,
+                          fontFamily: 'var(--font-serif)',
+                          fontSize: '11px',
+                          letterSpacing: '0.12em',
+                          color: s.color,
+                          opacity: 0.85,
+                          fontWeight: 600,
+                          width: 56,
                         }}
-                      />
-                    ))}
-                  </div>
-                </div>
-                <div className="flex items-center gap-2">
-                  <span
-                    style={{
-                      fontFamily: 'var(--font-serif)',
-                      fontSize: '12px',
-                      color: '#8A6A4A',
-                    }}
-                  >
-                    reverb
-                  </span>
-                  <div
-                    className="flex gap-[2px] cursor-pointer"
-                    onClick={(e) => {
-                      const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
-                      setMelodyReverb(Math.round(((e.clientX - rect.left) / rect.width) * 100));
-                    }}
-                  >
-                    {Array.from({ length: 8 }, (_, i) => (
-                      <div
-                        key={i}
-                        className="rounded-[2px] transition-all"
-                        style={{
-                          width: 10,
-                          height: 6,
-                          background: '#A0907A',
-                          opacity: i / 7 <= melodyReverb / 100 ? 0.4 + (i / 7) * 0.4 : 0.08,
+                      >
+                        {s.label}
+                      </span>
+                      <button
+                        type="button"
+                        aria-label={`${s.label} ${Math.round(s.value * 100)}%`}
+                        className="flex flex-1 cursor-pointer items-center justify-between bg-transparent"
+                        style={{ border: 'none', padding: '4px 0' }}
+                        onClick={(e) => {
+                          const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
+                          s.onChange(
+                            Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width)),
+                          );
                         }}
-                      />
-                    ))}
-                  </div>
-                </div>
-                {/* Melody volume — independent of main mix */}
-                <div className="flex items-center gap-2">
-                  <span
-                    style={{
-                      fontFamily: 'var(--font-serif)',
-                      fontSize: '12px',
-                      color: '#8A6A4A',
-                    }}
-                  >
-                    volume
-                  </span>
-                  <div
-                    className="flex gap-[2px] cursor-pointer"
-                    onClick={(e) => {
-                      const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
-                      setMelodyVolume(
-                        Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width)),
-                      );
-                    }}
-                  >
-                    {Array.from({ length: 8 }, (_, i) => (
-                      <div
-                        key={i}
-                        className="rounded-[2px] transition-all"
-                        style={{
-                          width: 10,
-                          height: 6,
-                          background: '#C4A060',
-                          opacity: i / 7 <= melodyVolume ? 0.4 + (i / 7) * 0.4 : 0.08,
-                        }}
-                      />
-                    ))}
-                  </div>
-                </div>
+                      >
+                        {Array.from({ length: DOTS }, (_, i) => {
+                          const filled = i / (DOTS - 1) <= s.value;
+                          return (
+                            <span
+                              key={i}
+                              className="block rounded-full transition-all"
+                              style={{
+                                width: filled ? 8 : 5,
+                                height: filled ? 8 : 5,
+                                background: s.color,
+                                opacity: filled ? 0.55 + (i / (DOTS - 1)) * 0.4 : 0.2,
+                              }}
+                            />
+                          );
+                        })}
+                      </button>
+                    </div>
+                  );
+                })}
               </div>
             )}
           </div>
