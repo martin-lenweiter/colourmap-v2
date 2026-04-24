@@ -64,10 +64,14 @@ function TrioView({
 }: {
   onSliceClick: (compassIdx: number, sliceName: string) => void;
 }) {
-  const r = 44;
-  const gap = 32;
+  // Bumped r from 44 → 56 and tightened gap 32 → 14 so the trio feels
+  // like the hero of the Overview. Total width 3*2*56 + 2*14 = 364,
+  // which still fits a ~360px phone with the viewBox scaling the SVG
+  // to 100% container width.
+  const r = 56;
+  const gap = 14;
   const totalW = r * 2 * 3 + gap * 2;
-  const H = r * 2 + 44;
+  const H = r * 2 + 50;
   const sliceOffset = (3 * Math.PI) / 4;
 
   return (
@@ -112,7 +116,7 @@ function TrioView({
                       textAnchor="middle"
                       dominantBaseline="central"
                       fill="#5C3018"
-                      fontSize={13}
+                      fontSize={17}
                       fontFamily="var(--font-serif)"
                       fontWeight={700}
                       style={{ pointerEvents: 'none' }}
@@ -132,10 +136,10 @@ function TrioView({
               />
               <text
                 x={cx}
-                y={cy + r + 16}
+                y={cy + r + 22}
                 textAnchor="middle"
                 fill="#5C3018"
-                fontSize={12}
+                fontSize={14}
                 fontFamily="var(--font-serif)"
                 fontWeight={700}
                 style={{ pointerEvents: 'none' }}
@@ -290,14 +294,9 @@ export default function CompassCarousel() {
   };
 
   return (
-    <div
-      className="space-y-4 rounded-3xl border px-5 py-5"
-      style={{
-        borderColor: '#8A6A4A50',
-        background: 'linear-gradient(180deg, rgba(245,236,220,0.97), rgba(240,228,208,0.95))',
-        boxShadow: '0 28px 55px -36px rgba(92,48,24,0.3)',
-      }}
-    >
+    // Outer card frame dropped — compass wheel sits flat on the page
+    // background and the trio now reads as the Overview hero.
+    <div className="space-y-4 px-1 py-2">
       {/* Depth tabs — Compass / Work / Reflect */}
       <div className="flex justify-center gap-3">
         {DEPTH_TABS.map((t) => (

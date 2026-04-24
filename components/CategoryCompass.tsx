@@ -124,13 +124,9 @@ export default function CategoryCompass() {
     : [];
 
   return (
-    <div
-      className="space-y-4 rounded-3xl border border-[#7a543833] px-5 py-6"
-      style={{
-        background: 'linear-gradient(180deg, rgba(251,244,232,0.95), rgba(246,236,221,0.92))',
-        boxShadow: '0 24px 50px -34px rgba(92,48,24,0.35)',
-      }}
-    >
+    // Outer card frame dropped per Overview cleanup — content sits flat
+    // on the page background, separated from siblings by page spacing.
+    <div className="space-y-4 px-1 py-2">
       {/* Title */}
       <div className="flex items-center justify-between">
         <p
@@ -159,18 +155,21 @@ export default function CategoryCompass() {
         </button>
       </div>
 
-      {/* Three compasses as pizza circles */}
-      <div className="flex justify-center gap-6">
+      {/* Three compasses as pizza circles. Bumped from 120×120 (r=52)
+          to 150×150 (r=66) so the categories inside read at arm's
+          length on phone. Gap tightened so all three still fit across
+          a ~360px phone viewport. */}
+      <div className="flex justify-center gap-3">
         {COMPASSES.map((compass) => {
           const cats = grouped[compass.id];
           const sliceCount = Math.max(cats.length, 1);
-          const r = 52;
-          const cx = 60;
-          const cy = 60;
+          const r = 66;
+          const cx = 75;
+          const cy = 75;
 
           return (
             <div key={compass.id} className="flex flex-col items-center gap-2">
-              <svg width={120} height={120} className="cursor-pointer">
+              <svg width={150} height={150} className="cursor-pointer">
                 {/* Background circle */}
                 <circle
                   cx={cx}
@@ -224,7 +223,7 @@ export default function CategoryCompass() {
                           dominantBaseline="middle"
                           style={{
                             fontFamily: 'var(--font-serif)',
-                            fontSize: cats.length > 4 ? '8px' : '9px',
+                            fontSize: cats.length > 4 ? '10px' : '11px',
                             fontWeight: 700,
                             fill: '#5C3018',
                             opacity: isSelected ? 0.9 : 0.5,

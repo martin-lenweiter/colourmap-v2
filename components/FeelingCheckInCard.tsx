@@ -1655,11 +1655,9 @@ export default function FeelingCheckInCard() {
           Desktop keeps the beige card for visual grouping. */}
       <div className="relative space-y-5 rounded-none border-0 bg-transparent px-0 py-0 shadow-none md:rounded-3xl md:border md:border-[#7a543833] md:px-5 md:py-6 md:bg-[linear-gradient(180deg,rgba(251,244,232,0.95),rgba(246,236,221,0.92))] md:shadow-[0_24px_50px_-34px_rgba(92,48,24,0.35)]">
         <p
-          className="text-center uppercase tracking-[0.2em] md:tracking-[0.24em]"
+          className="hidden text-center uppercase tracking-[0.24em] md:block"
           style={{
             fontFamily: 'var(--font-serif)',
-            // Phone: 15px so the segment title is readable at arm's length.
-            // Desktop override happens inline via clamp-min on md screens.
             fontSize: 'clamp(13px, 3.4vw, 15px)',
             fontWeight: 700,
             color: '#D4805A',
@@ -1791,20 +1789,9 @@ export default function FeelingCheckInCard() {
                   );
                 });
               })()}
-              <svg
-                width="300"
-                height="95"
-                viewBox="0 0 300 95"
-                style={{ position: 'absolute', top: 0, left: 0, pointerEvents: 'none' }}
-              >
-                <path
-                  d="M 16 75 A 134 55 0 0 1 284 75"
-                  fill="none"
-                  stroke="#C4A06030"
-                  strokeWidth="1"
-                  strokeDasharray="2 4"
-                />
-              </svg>
+              {/* Arc curve line removed — dots still sit on the arc but
+                  the dashed guide behind them is gone so the shape
+                  reads as floating dots, not a drawn bow. */}
             </div>
           )}
 
