@@ -14,10 +14,17 @@ import { useEffect, useRef, useState } from 'react';
 const RECENT_PRS: { num: number; title: string }[] = [
   { num: 86, title: 'Dev mode stays pinned on scroll (portal) + bottom-right trigger' },
   { num: 85, title: 'Onboarding opaque, 1-card with new copy + FrequencyBox deleted' },
-  { num: 84, title: 'Overview restored, compass pills (Feeling/Doing/Sharing), Sounds moved to /sounds, wake-up time wheel, no-rainbow wave, no-glyph nav' },
+  {
+    num: 84,
+    title:
+      'Overview restored, compass pills (Feeling/Doing/Sharing), Sounds moved to /sounds, wake-up time wheel, no-rainbow wave, no-glyph nav',
+  },
   { num: 83, title: 'Feedback overlay: resizable note + collapsible toolbar' },
   { num: 82, title: 'Feedback overlay: triple-tap dev mode with note + draw' },
-  { num: 81, title: 'Phone check-in: no outer boxes, bigger text, auto-grow, opaque design popover' },
+  {
+    num: 81,
+    title: 'Phone check-in: no outer boxes, bigger text, auto-grow, opaque design popover',
+  },
   { num: 80, title: 'Desktop Day rail (streak · last check-in · last tuned)' },
   { num: 79, title: 'Nav glyphs (later removed per feedback)' },
   { num: 78, title: 'Haptic feedback wired into play + tab switches' },
@@ -170,7 +177,10 @@ export default function ColourmapBrandButton() {
                 lineHeight: 1.6,
               }}
             >
-              <span className="uppercase" style={{ opacity: 0.55, fontSize: 11, letterSpacing: '0.22em' }}>
+              <span
+                className="uppercase"
+                style={{ opacity: 0.55, fontSize: 11, letterSpacing: '0.22em' }}
+              >
                 Created by
               </span>
               <br />
@@ -198,7 +208,8 @@ export default function ColourmapBrandButton() {
                   letterSpacing: '0.06em',
                 }}
               >
-                latest: <strong style={{ color: '#B33A2B', fontWeight: 700 }}>PR #{LATEST_PR}</strong>
+                latest:{' '}
+                <strong style={{ color: '#B33A2B', fontWeight: 700 }}>PR #{LATEST_PR}</strong>
               </p>
               <button
                 type="button"

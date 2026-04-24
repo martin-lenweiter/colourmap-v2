@@ -147,7 +147,11 @@ export default function FeedbackOverlay() {
         transcript += ev.results[i][0].transcript;
       }
       const base = textBeforeListenRef.current;
-      setText(base ? `${base}${base.endsWith('\n') || base.endsWith(' ') ? '' : ' '}${transcript}` : transcript);
+      setText(
+        base
+          ? `${base}${base.endsWith('\n') || base.endsWith(' ') ? '' : ' '}${transcript}`
+          : transcript,
+      );
     };
     rec.onerror = () => {
       setListening(false);
@@ -675,7 +679,12 @@ export default function FeedbackOverlay() {
           >
             <span
               aria-hidden="true"
-              style={{ fontSize: 9, letterSpacing: '0.08em', textTransform: 'uppercase', opacity: 0.7 }}
+              style={{
+                fontSize: 9,
+                letterSpacing: '0.08em',
+                textTransform: 'uppercase',
+                opacity: 0.7,
+              }}
             >
               A
             </span>
@@ -692,7 +701,12 @@ export default function FeedbackOverlay() {
             />
             <span
               aria-hidden="true"
-              style={{ fontSize: 14, letterSpacing: '0.08em', textTransform: 'uppercase', opacity: 0.7 }}
+              style={{
+                fontSize: 14,
+                letterSpacing: '0.08em',
+                textTransform: 'uppercase',
+                opacity: 0.7,
+              }}
             >
               A
             </span>
