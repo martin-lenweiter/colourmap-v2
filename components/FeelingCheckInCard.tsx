@@ -1650,6 +1650,10 @@ export default function FeelingCheckInCard() {
   }, []);
 
   return (
+    // Side-by-side Feeling + Doing on desktop kept — the outer Day
+    // page now gives this card extra width on md+ so each column has
+    // room for the larger Hawkins slider / compass / inputs without
+    // overflow. Phone stays single-column with no frames.
     <div className="space-y-6 md:grid md:grid-cols-2 md:gap-6 md:space-y-0 md:items-start">
       {/* BOX A: FEELING — frame removed on phone to reclaim margins.
           Desktop keeps the beige card for visual grouping. */}

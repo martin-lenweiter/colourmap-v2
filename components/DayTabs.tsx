@@ -5,6 +5,37 @@ import { useEffect, useState } from 'react';
 import { useStyle } from '@/components/StyleContext';
 import { haptic } from '@/lib/haptics';
 
+const LS_CHECKINS = 'colourmap:check-ins';
+
+// Mirror of computeStreak from DayRail. Lifted inline so the phone
+// (which hides DayRail) still sees the streak under the tab strip.
+function computeStreakFromStorage(): number {
+  if (typeof window === 'undefined') return 0;
+  try {
+    const raw = localStorage.getItem(LS_CHECKINS);
+    if (!raw) return 0;
+    const entries = JSON.parse(raw);
+    if (!Array.isArray(entries) || entries.length === 0) return 0;
+    const days = new Set<string>();
+    for (const e of entries) {
+      if (!e?.date) continue;
+      days.add(new Date(e.date).toISOString().slice(0, 10));
+    }
+    const today = new Date();
+    let streak = 0;
+    for (let i = 0; i < 365; i++) {
+      const d = new Date(today);
+      d.setDate(d.getDate() - i);
+      const key = d.toISOString().slice(0, 10);
+      if (days.has(key)) streak++;
+      else if (i > 0) break;
+    }
+    return streak;
+  } catch {
+    return 0;
+  }
+}
+
 /* ═══════════════════════════════════════════════════════════
    DAY TABS — CHECK IN / OVERVIEW
    Check in = daily pulse (the emotional register + pillboxes).
@@ -33,6 +64,7 @@ interface DayTabsProps {
 
 export default function DayTabs({ checkinContent, overviewContent, dateLabel }: DayTabsProps) {
   const [active, setActive] = useState<Tab>('checkin');
+  const [streak, setStreak] = useState(0);
   const { style } = useStyle();
 
   // Restore last-chosen tab on mount. Previous key values ('cockpit',
@@ -46,6 +78,7 @@ export default function DayTabs({ checkinContent, overviewContent, dateLabel }: 
     } catch {
       /* silent */
     }
+    setStreak(computeStreakFromStorage());
   }, []);
 
   useEffect(() => {
@@ -101,6 +134,28 @@ export default function DayTabs({ checkinContent, overviewContent, dateLabel }: 
             );
           })}
         </div>
+        {/* Streak line — compact status right under the tab strip so
+            it's visible on phone too (DayRail is desktop-only). Shows
+            nothing when there's no streak yet, to avoid nagging. */}
+        {streak > 0 && (
+          <p
+            className="text-center"
+            style={{
+              fontFamily: 'var(--font-serif)',
+              fontSize: '12px',
+              color: '#C4A060',
+              opacity: 0.85,
+              letterSpacing: '0.14em',
+              textTransform: 'uppercase',
+              marginTop: 4,
+            }}
+          >
+            <span style={{ fontWeight: 700 }}>{streak}</span>
+            <span style={{ fontWeight: 500, opacity: 0.75, marginLeft: 6 }}>
+              day{streak === 1 ? '' : 's'} · streak
+            </span>
+          </p>
+        )}
       </div>
 
       {/* Content */}
