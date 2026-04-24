@@ -1571,6 +1571,7 @@ export default function BinauralTuner() {
   const [activeMelodies, setActiveMelodies] = useState<Set<string>>(new Set());
   const [melodySpeed, setMelodySpeed] = useState(50); // 0-100, 0=very slow, 100=fast
   const [melodyReverb, setMelodyReverb] = useState(80); // 0-100
+  const [melodyVolume, setMelodyVolume] = useState(1); // 0-1, multiplies per-note vol
   const melodyTimersRef = useRef<Map<string, ReturnType<typeof setTimeout>>>(new Map());
   const melodyActiveIdsRef = useRef<Set<string>>(new Set());
   const melodyReverbRef = useRef<ConvolverNode | null>(null);
@@ -1595,11 +1596,10 @@ export default function BinauralTuner() {
       const baseNote = 261.63 * 2 ** (melDef.octave - 4);
       const freq = baseNote * 2 ** (noteIdx / 12);
       const output = melodyDryRef.current ?? gain;
-      // Volume is per-melody: piano/violin a bit warmer, flute/harp brighter.
-      const vol = 0.25;
+      // Per-note volume × user-controlled melodyVolume (0-1).
+      const vol = 0.25 * melodyVolume;
       playSampledNote(ctx, melDef.sampledPack, freq, vol, output);
       if (melodyReverbRef.current) {
-        // Also send a copy through the melody reverb for depth.
         playSampledNote(ctx, melDef.sampledPack, freq, vol * 0.6, melodyReverbRef.current);
       }
       // Schedule next note on the same cadence as the other melodies
@@ -1692,7 +1692,8 @@ export default function BinauralTuner() {
 
     const env = ctx.createGain();
     const now = ctx.currentTime;
-    const vol = melDef.id === 'pad' ? 0.12 : melDef.id === 'strings' ? 0.08 : 0.15;
+    const baseVol = melDef.id === 'pad' ? 0.12 : melDef.id === 'strings' ? 0.08 : 0.15;
+    const vol = baseVol * melodyVolume;
     env.gain.setValueAtTime(0, now);
     env.gain.linearRampToValueAtTime(vol, now + melDef.attack);
     env.gain.linearRampToValueAtTime(0, now + melDef.attack + melDef.release);
@@ -2820,8 +2821,10 @@ export default function BinauralTuner() {
         sample = Math.sin(phase) * 0.75 + Math.sin(phase * 2) * 0.25;
         break;
       case 'pulse': {
-        // Slow amplitude envelope on top of the sine — heartbeat feel
-        const envelope = 0.5 + 0.5 * Math.sin(waveTime * 1.5 * Math.PI * 2 + phase * 0.15);
+        // Very slow amplitude envelope on top of the sine — meditative
+        // breath, not a heartbeat. Cycle roughly every 8-10 seconds
+        // (~0.125 Hz) so it stays relaxing as a background visual.
+        const envelope = 0.55 + 0.45 * Math.sin(waveTime * 0.25 * Math.PI * 2 + phase * 0.08);
         sample = Math.sin(phase) * envelope;
         break;
       }
@@ -3094,6 +3097,43 @@ export default function BinauralTuner() {
       {/* ── SIMPLE MODE: just genres + volume ── */}
       {simpleMode && (
         <div className="space-y-3 px-2">
+          {/* Saved mixes — surfaced above the genre pills in simple
+              mode so the user can load their tuned presets in one tap
+              without opening studio. */}
+          {savedMixes.length > 0 && (
+            <div className="flex flex-wrap justify-center gap-1.5">
+              {savedMixes.map((mix, i) => (
+                <button
+                  key={`${mix.name}-${i}`}
+                  type="button"
+                  onClick={() => {
+                    loadMix(mix);
+                    if (!playing) startAudio();
+                  }}
+                  className="flex cursor-pointer items-center gap-1.5 rounded-full px-3 py-1.5 transition-all"
+                  style={{
+                    background: '#C4A06012',
+                    border: '1px solid #C4A06035',
+                  }}
+                  title={`Load "${mix.name}" — ${mix.beat}Hz · ${
+                    Object.values(mix.layers).filter((v) => v > 0).length
+                  } layers`}
+                >
+                  <SavedShapeIcon shape={mix.shape ?? 'dot'} color="#C4A060" />
+                  <span
+                    style={{
+                      fontFamily: 'var(--font-serif)',
+                      fontSize: '13px',
+                      fontWeight: 600,
+                      color: '#5C3018',
+                    }}
+                  >
+                    {mix.name}
+                  </span>
+                </button>
+              ))}
+            </div>
+          )}
           {/* Genre pills — always visible in simple mode */}
           <div className="flex flex-wrap justify-center gap-2">
             {GENRES.map((g) => {
@@ -3251,36 +3291,9 @@ export default function BinauralTuner() {
               toggleOn={binauralOn}
               onToggle={() => setBinauralOn((s) => !s)}
             />
-            {/* Engine breathing — organic LFO drift on the binaural beat */}
-            <div className="flex items-center gap-2">
-              <span
-                style={{
-                  fontFamily: 'var(--font-serif)',
-                  fontSize: '12px',
-                  color: '#8A6A4A',
-                  width: 60,
-                  flexShrink: 0,
-                  textAlign: 'right',
-                }}
-                title="Makes the binaural beat drift gently around your chosen rate, like a ship's engine on the ocean. Two slow LFOs (~50s and ~17s) sum for organic variation."
-              >
-                engine
-              </span>
-              <button
-                type="button"
-                onClick={() => setEngineBreathing((b) => !b)}
-                disabled={!binauralOn}
-                aria-pressed={engineBreathing}
-                className="flex flex-1 items-center justify-center cursor-pointer rounded-full py-1.5 text-[11px] font-semibold uppercase tracking-[0.14em] transition-all disabled:cursor-not-allowed disabled:opacity-40"
-                style={{
-                  color: engineBreathing ? '#F5E8C8' : '#8A6A4A',
-                  background: engineBreathing ? '#7A5438' : 'transparent',
-                  border: '1px solid rgba(196, 160, 96, 0.35)',
-                }}
-              >
-                {engineBreathing ? 'breathing' : 'breathe'}
-              </button>
-            </div>
+            {/* Engine-breathing toggle removed from UI per user feedback.
+                Scheduler state still exists (useState defaults to false)
+                so the logic stays wired if we want to bring it back. */}
             {/* Reverb as dots */}
             <div className="flex items-center gap-2">
               <span
@@ -3739,6 +3752,40 @@ export default function BinauralTuner() {
                           height: 6,
                           background: '#A0907A',
                           opacity: i / 7 <= melodyReverb / 100 ? 0.4 + (i / 7) * 0.4 : 0.08,
+                        }}
+                      />
+                    ))}
+                  </div>
+                </div>
+                {/* Melody volume — independent of main mix */}
+                <div className="flex items-center gap-2">
+                  <span
+                    style={{
+                      fontFamily: 'var(--font-serif)',
+                      fontSize: '12px',
+                      color: '#8A6A4A',
+                    }}
+                  >
+                    volume
+                  </span>
+                  <div
+                    className="flex gap-[2px] cursor-pointer"
+                    onClick={(e) => {
+                      const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
+                      setMelodyVolume(
+                        Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width)),
+                      );
+                    }}
+                  >
+                    {Array.from({ length: 8 }, (_, i) => (
+                      <div
+                        key={i}
+                        className="rounded-[2px] transition-all"
+                        style={{
+                          width: 10,
+                          height: 6,
+                          background: '#C4A060',
+                          opacity: i / 7 <= melodyVolume ? 0.4 + (i / 7) * 0.4 : 0.08,
                         }}
                       />
                     ))}
