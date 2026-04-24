@@ -61,9 +61,9 @@ export default function DayTabs({
   }, [active]);
 
   return (
-    <div className="space-y-4">
-      {/* Tab selectors */}
-      <div className="flex gap-1.5">
+    <div className="space-y-6">
+      {/* Tab selectors — bigger, more breathing room on phone */}
+      <div className="flex gap-2">
         {TABS.map((tab) => {
           const isActive = active === tab.id;
           return (
@@ -71,14 +71,15 @@ export default function DayTabs({
               key={tab.id}
               type="button"
               onClick={() => setActive(tab.id)}
-              className="flex-1 cursor-pointer rounded-xl py-2.5 uppercase tracking-[0.18em] transition-all duration-200"
+              className="flex-1 cursor-pointer rounded-2xl py-3.5 uppercase tracking-[0.18em] transition-all duration-200"
               style={{
                 background: isActive ? '#C4A06018' : 'transparent',
                 border: `1.5px solid ${isActive ? '#C4A060' : 'hsl(var(--border) / 0.25)'}`,
                 color: 'hsl(var(--foreground))',
                 fontFamily: style.headingFont,
-                fontSize: '13px',
+                fontSize: '15px',
                 fontWeight: isActive ? 700 : 600,
+                minHeight: 48,
               }}
             >
               {tab.label}
