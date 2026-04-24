@@ -1649,7 +1649,7 @@ export default function FeelingCheckInCard() {
   }, []);
 
   return (
-    <>
+    <div className="space-y-6 md:grid md:grid-cols-2 md:gap-6 md:space-y-0 md:items-start">
       {/* BOX A: FEELING — frame removed on phone to reclaim margins.
           Desktop keeps the beige card for visual grouping. */}
       <div className="relative space-y-5 rounded-none border-0 bg-transparent px-0 py-0 shadow-none md:rounded-3xl md:border md:border-[#7a543833] md:px-5 md:py-6 md:bg-[linear-gradient(180deg,rgba(251,244,232,0.95),rgba(246,236,221,0.92))] md:shadow-[0_24px_50px_-34px_rgba(92,48,24,0.35)]">
@@ -2095,10 +2095,10 @@ export default function FeelingCheckInCard() {
                     fontFamily: 'var(--font-serif)',
                     fontSize: '10px',
                     fontWeight: 700,
-                    color: '#8A6A4A',
+                    color: '#C26744',
                     letterSpacing: '0.14em',
                     textTransform: 'uppercase' as const,
-                    opacity: 0.6,
+                    opacity: 0.75,
                   }}
                 >
                   body
@@ -2142,10 +2142,10 @@ export default function FeelingCheckInCard() {
                     fontFamily: 'var(--font-serif)',
                     fontSize: '10px',
                     fontWeight: 700,
-                    color: '#8A6A4A',
+                    color: '#C4A060',
                     letterSpacing: '0.14em',
                     textTransform: 'uppercase' as const,
-                    opacity: 0.6,
+                    opacity: 0.85,
                   }}
                 >
                   focus
@@ -2189,10 +2189,10 @@ export default function FeelingCheckInCard() {
                       fontFamily: 'var(--font-serif)',
                       fontSize: '11px',
                       fontWeight: 700,
-                      color: '#8A6A4A',
+                      color: '#9B6BA0',
                       letterSpacing: '0.14em',
                       textTransform: 'uppercase' as const,
-                      opacity: 0.6,
+                      opacity: 0.8,
                     }}
                   >
                     clarity
@@ -2242,10 +2242,10 @@ export default function FeelingCheckInCard() {
                       fontFamily: 'var(--font-serif)',
                       fontSize: '11px',
                       fontWeight: 700,
-                      color: '#8A6A4A',
+                      color: '#C26744',
                       letterSpacing: '0.14em',
                       textTransform: 'uppercase' as const,
-                      opacity: 0.6,
+                      opacity: 0.75,
                     }}
                   >
                     body
@@ -2290,10 +2290,10 @@ export default function FeelingCheckInCard() {
                       fontFamily: 'var(--font-serif)',
                       fontSize: '11px',
                       fontWeight: 700,
-                      color: '#8A6A4A',
+                      color: '#C4A060',
                       letterSpacing: '0.14em',
                       textTransform: 'uppercase' as const,
-                      opacity: 0.6,
+                      opacity: 0.85,
                     }}
                   >
                     focus
@@ -2338,10 +2338,10 @@ export default function FeelingCheckInCard() {
                       fontFamily: 'var(--font-serif)',
                       fontSize: '11px',
                       fontWeight: 700,
-                      color: '#8A6A4A',
+                      color: '#9B6BA0',
                       letterSpacing: '0.14em',
                       textTransform: 'uppercase' as const,
-                      opacity: 0.6,
+                      opacity: 0.8,
                     }}
                   >
                     clarity
@@ -2392,10 +2392,10 @@ export default function FeelingCheckInCard() {
                       fontFamily: 'var(--font-serif)',
                       fontSize: '10px',
                       fontWeight: 700,
-                      color: '#8A6A4A',
+                      color: '#C26744',
                       letterSpacing: '0.14em',
                       textTransform: 'uppercase' as const,
-                      opacity: 0.6,
+                      opacity: 0.75,
                     }}
                   >
                     body
@@ -2439,10 +2439,10 @@ export default function FeelingCheckInCard() {
                       fontFamily: 'var(--font-serif)',
                       fontSize: '10px',
                       fontWeight: 700,
-                      color: '#8A6A4A',
+                      color: '#C4A060',
                       letterSpacing: '0.14em',
                       textTransform: 'uppercase' as const,
-                      opacity: 0.6,
+                      opacity: 0.85,
                     }}
                   >
                     focus
@@ -2488,10 +2488,10 @@ export default function FeelingCheckInCard() {
                       fontFamily: 'var(--font-serif)',
                       fontSize: '11px',
                       fontWeight: 700,
-                      color: '#8A6A4A',
+                      color: '#9B6BA0',
                       letterSpacing: '0.14em',
                       textTransform: 'uppercase' as const,
-                      opacity: 0.6,
+                      opacity: 0.8,
                     }}
                   >
                     clarity
@@ -2536,10 +2536,10 @@ export default function FeelingCheckInCard() {
                       fontFamily: 'var(--font-serif)',
                       fontSize: '11px',
                       fontWeight: 700,
-                      color: '#8A6A4A',
+                      color: '#D4805A',
                       letterSpacing: '0.14em',
                       textTransform: 'uppercase' as const,
-                      opacity: 0.6,
+                      opacity: 0.8,
                     }}
                   >
                     emotion
@@ -2592,13 +2592,8 @@ export default function FeelingCheckInCard() {
           )}
         </div>
 
-        {/* LOGBOOK & EMOTIONS — frame removed on phone. */}
-        <div
-          className="space-y-2 rounded-none border-0 bg-transparent px-0 py-1 md:rounded-2xl md:border md:px-4 md:py-3"
-          style={{
-            borderColor: '#C4A06030',
-          }}
-        >
+        {/* LOGBOOK & EMOTIONS — flat, no contour: part of the outer Feeling box. */}
+        <div className="space-y-2 rounded-none border-0 bg-transparent px-0 py-1 md:py-3">
           {/* Pill header — click to open/close */}
           <div className="flex items-center justify-between">
             <span className="w-12" />
@@ -2649,31 +2644,19 @@ export default function FeelingCheckInCard() {
                       )
                     }
                     aria-label="Toggle hawkins slider style"
-                    className="absolute flex cursor-pointer items-center justify-center"
+                    className="absolute cursor-pointer"
                     style={{
-                      right: -4,
-                      top: -6,
-                      width: 28,
-                      height: 28,
-                      background: '#F5E8C8',
-                      border: '1.5px solid #C4A06055',
-                      borderRadius: 999,
-                      boxShadow: '0 1px 3px rgba(92,48,24,0.12)',
+                      right: 0,
+                      top: -4,
+                      width: 20,
+                      height: 20,
+                      background: '#D8BE94',
+                      border: 'none',
+                      borderRadius: '50%',
+                      padding: 0,
                       zIndex: 2,
                     }}
-                  >
-                    <span
-                      style={{
-                        width: 12,
-                        height: 12,
-                        background: '#8A6A4A',
-                        borderRadius: hawkinsStyle === 'dots' ? '50%' : '3px',
-                        display: 'block',
-                        transform: hawkinsStyle === 'losanges' ? 'rotate(45deg)' : 'rotate(0deg)',
-                        transition: 'border-radius 200ms, transform 200ms',
-                      }}
-                    />
-                  </button>
+                  />
 
                   <div className="relative" style={{ width: 300, height: 48 }}>
                     {(() => {
@@ -5130,6 +5113,6 @@ export default function FeelingCheckInCard() {
           )}
         </div>
       </div>
-    </>
+    </div>
   );
 }
