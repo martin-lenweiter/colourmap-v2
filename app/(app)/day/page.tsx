@@ -23,21 +23,8 @@ function DayContent() {
       <div className="mx-auto w-full max-w-2xl space-y-4 lg:mx-0 lg:flex-1">
         <FirstRunOnboarding />
         <CheckInPing />
-        <p
-          className="text-center"
-          style={{
-            fontFamily: 'var(--font-serif)',
-            fontSize: '15px',
-            fontStyle: 'italic',
-            color: '#7A5438',
-            opacity: 0.75,
-            letterSpacing: '0.04em',
-            margin: '2px 0',
-          }}
-        >
-          {dateStr}
-        </p>
         <DayTabs
+          dateLabel={dateStr}
           checkinContent={
             <div className="space-y-4">
               <FeelingCheckInCard />

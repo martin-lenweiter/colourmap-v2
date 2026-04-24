@@ -2598,7 +2598,7 @@ export default function FeelingCheckInCard() {
                 className="text-center text-sm font-semibold uppercase tracking-[0.22em]"
                 style={{ color: '#C4A060' }}
               >
-                Emotions
+                Feelings
               </span>
               <span
                 className="text-sm transition-transform duration-200"
@@ -3288,7 +3288,7 @@ export default function FeelingCheckInCard() {
       {/* BOX B: DOING — frame removed on phone to reclaim margins. */}
       <div className="space-y-4 rounded-none border-0 bg-transparent px-0 py-0 shadow-none md:rounded-3xl md:border md:border-[#7a543833] md:px-5 md:py-6 md:bg-[linear-gradient(180deg,rgba(251,244,232,0.95),rgba(246,236,221,0.92))] md:shadow-[0_24px_50px_-34px_rgba(92,48,24,0.35)]">
         <p
-          className="text-center uppercase tracking-[0.24em]"
+          className="hidden text-center uppercase tracking-[0.24em] md:block"
           style={{
             fontFamily: 'var(--font-serif)',
             fontSize: '10px',
