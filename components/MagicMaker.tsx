@@ -2,6 +2,8 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 
+import { playSampledNote, type SamplePackId } from '@/lib/sample-pack';
+
 /* ═══════════════════════════════════════════════════════════
    MAGIC MAKER — visual sound instrument.
    Tap colored cells to play notes. Every note is in tune.
@@ -44,95 +46,7 @@ interface Instrument {
   decay: number;
   sustain: number;
   release: number;
-  sampledPack?: 'piano' | 'violin' | 'flute' | 'harp';
-}
-
-// ── Sample pack loader (shared across Magic Maker instances) ──
-interface SamplerMap {
-  [noteName: string]: string; // e.g. 'A4' -> 'A4.mp3'
-}
-interface LoadedPack {
-  notes: { midi: number; url: string; buffer?: AudioBuffer }[];
-}
-const packCache = new Map<string, LoadedPack>();
-const packLoading = new Map<string, Promise<LoadedPack>>();
-
-function noteNameToMidi(name: string): number {
-  // Convert tonejs-style names like 'A0', 'A#0', 'As0' to a MIDI number.
-  const sanitized = name.replace(/^([A-G])s(\d+)$/, '$1#$2');
-  const m = sanitized.match(/^([A-G])(#|b)?(-?\d+)$/);
-  if (!m) return 60;
-  const pitchClass = { C: 0, D: 2, E: 4, F: 5, G: 7, A: 9, B: 11 }[
-    m[1] as 'C' | 'D' | 'E' | 'F' | 'G' | 'A' | 'B'
-  ];
-  const accidental = m[2] === '#' ? 1 : m[2] === 'b' ? -1 : 0;
-  const octave = Number.parseInt(m[3], 10);
-  return (octave + 1) * 12 + pitchClass + accidental;
-}
-
-async function loadPack(packId: 'piano' | 'violin' | 'flute' | 'harp'): Promise<LoadedPack> {
-  const cached = packCache.get(packId);
-  if (cached) return cached;
-  const inflight = packLoading.get(packId);
-  if (inflight) return inflight;
-  const promise = (async () => {
-    const res = await fetch(`/sounds/${packId}/index.json`);
-    const json = (await res.json()) as { samplerMap: SamplerMap };
-    const notes = Object.entries(json.samplerMap).map(([noteName, file]) => ({
-      midi: noteNameToMidi(noteName),
-      url: `/sounds/${packId}/${file}`,
-    }));
-    notes.sort((a, b) => a.midi - b.midi);
-    const loaded: LoadedPack = { notes };
-    packCache.set(packId, loaded);
-    return loaded;
-  })();
-  packLoading.set(packId, promise);
-  return promise;
-}
-
-function freqToMidi(freq: number): number {
-  return 12 * Math.log2(freq / 440) + 69;
-}
-
-async function playSampledNote(
-  ctx: AudioContext,
-  packId: 'piano' | 'violin' | 'flute' | 'harp',
-  freq: number,
-  velocity: number,
-  output: AudioNode,
-): Promise<void> {
-  const pack = await loadPack(packId);
-  if (pack.notes.length === 0) return;
-  const midi = freqToMidi(freq);
-  // Nearest sample by midi distance (stable — ties broken by earlier index)
-  let nearest = pack.notes[0];
-  let nearestDist = Math.abs(midi - nearest.midi);
-  for (let i = 1; i < pack.notes.length; i++) {
-    const d = Math.abs(midi - pack.notes[i].midi);
-    if (d < nearestDist) {
-      nearest = pack.notes[i];
-      nearestDist = d;
-    }
-  }
-  if (!nearest.buffer) {
-    try {
-      const res = await fetch(nearest.url);
-      const buf = await res.arrayBuffer();
-      nearest.buffer = await ctx.decodeAudioData(buf);
-    } catch {
-      return;
-    }
-  }
-  const src = ctx.createBufferSource();
-  src.buffer = nearest.buffer;
-  // Pitch-shift by the cent offset between request and nearest sample
-  src.playbackRate.value = 2 ** ((midi - nearest.midi) / 12);
-  const gain = ctx.createGain();
-  gain.gain.value = velocity;
-  src.connect(gain);
-  gain.connect(output);
-  src.start();
+  sampledPack?: SamplePackId;
 }
 
 const INSTRUMENTS: Instrument[] = [
