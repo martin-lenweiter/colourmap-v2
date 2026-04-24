@@ -6,7 +6,6 @@ import DevBranchHud from '@/components/DevBranchHud';
 import FeedbackOverlay from '@/components/FeedbackOverlay';
 import MobileViewportBoot from '@/components/MobileViewportBoot';
 import NavLinks from '@/components/NavLinks';
-import StepBack from '@/components/StepBack';
 import ThemeSwitcher from '@/components/ThemeSwitcher';
 import { ViewModeProvider } from '@/components/ViewModeContext';
 import ViewModeSwitcher from '@/components/ViewModeSwitcher';
@@ -47,7 +46,6 @@ export default async function AppLayout({
               email hidden on phone (it's on the Sign out form target
               anyway, and takes too much space on narrow screens). */}
           <div className="mx-auto flex w-full max-w-5xl items-center gap-3 px-4 py-2">
-            <StepBack />
             <div className="flex-1 flex justify-center">
               <ColourmapBrandButton />
             </div>
