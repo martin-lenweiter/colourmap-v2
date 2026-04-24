@@ -3202,7 +3202,13 @@ export default function BinauralTuner() {
               type="button"
               aria-label="Volume"
               className="flex flex-1 cursor-pointer gap-[3px]"
-              style={{ height: 20, touchAction: 'none', background: 'none', border: 'none', padding: 0 }}
+              style={{
+                height: 20,
+                touchAction: 'none',
+                background: 'none',
+                border: 'none',
+                padding: 0,
+              }}
               onPointerDown={(e) => {
                 const el = e.currentTarget;
                 el.setPointerCapture(e.pointerId);
@@ -4563,7 +4569,10 @@ const VALID_MODES: VisualizerMode[] = [
   'solar',
 ];
 
-function VisualizerBox() {
+// VisualizerBox kept in-file but not rendered in Calming Sounds —
+// Visuals are surfaced via the dedicated SoundLab tab now.
+// biome-ignore lint/correctness/noUnusedVariables: preserved for future in-place use
+function _VisualizerBox() {
   const [mode, setMode] = useState<VisualizerMode>('atom');
   // Speed default 0.25 — most calm, relaxing stable spot for the whole
   // family. Other stable spots are at 0.4 (gentle), 0.6 (flowing),
