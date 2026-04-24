@@ -15,10 +15,9 @@ import { playSampledNote, type SamplePackId } from '@/lib/sample-pack';
    ═══════════════════════════════════════════════════════════ */
 
 // ── Wave visualization styles ──
-type WaveStyle = 'sine' | 'layered' | 'pulse' | 'double' | 'zigzag';
+type WaveStyle = 'sine' | 'pulse' | 'double' | 'zigzag';
 const WAVE_STYLES: { id: WaveStyle; label: string }[] = [
   { id: 'sine', label: 'sine' },
-  { id: 'layered', label: 'layered' },
   { id: 'pulse', label: 'pulse' },
   { id: 'double', label: 'double' },
   { id: 'zigzag', label: 'zigzag' },
@@ -45,13 +44,16 @@ const PRESETS = [
 ];
 
 // ── Default layers per preset ──
+// 'breath' (bandpass-filtered noise layer) removed from all defaults
+// per user — the sound wasn't reading as "breath", felt like noise on
+// top. Users can still manually toggle the layer from the layers list.
 const PRESET_LAYERS: Record<string, string[]> = {
   'deep-sleep': ['ocean', 'sub'],
-  meditation: ['rain', 'breath'],
+  meditation: ['rain', 'bowl'],
   creativity: ['birds', 'wind', 'bowl'],
   'calm-focus': ['hum', 'wind'],
-  presence: ['breath', 'drone'],
-  stillness: ['bowl', 'breath'],
+  presence: ['drone'],
+  stillness: ['bowl'],
 };
 
 // ── Soundscape layers ──
@@ -199,13 +201,9 @@ const LAYERS: LayerDef[] = [
     group: 'texture',
     build: (ctx) => buildNoise(ctx, 'highpass', 3000, 0.3),
   },
-  {
-    id: 'breath',
-    label: 'Breath',
-    color: '#C8C8A0',
-    group: 'texture',
-    build: (ctx) => buildNoise(ctx, 'bandpass', 500, 0.5),
-  },
+  // 'breath' layer removed — the bandpass-noise output didn't read as
+  // breathing, just added a layer of hiss. Can be reintroduced with a
+  // proper breath sample if we want the concept back.
   {
     id: 'hum',
     label: 'Room Hum',
@@ -1429,8 +1427,14 @@ export default function BinauralTuner() {
   const [activeHarmonics, setActiveHarmonics] = useState<Set<string>>(new Set());
   const harmOscsRef = useRef<Map<string, { osc: OscillatorNode; gain: GainNode }>>(new Map());
 
-  // Sacred / Solfeggio frequencies
+  // Sacred / Solfeggio frequencies. Deep end (32–174) are lower
+  // anchoring tones — grounding / earth resonance; mid-range are the
+  // canonical Solfeggio; 963 at the top for higher-self.
   const SACRED = [
+    { id: 's032', label: '32', freq: 32, desc: 'root', color: '#6A4A2A' },
+    { id: 's063', label: '63', freq: 63, desc: 'earth', color: '#7A5438' },
+    { id: 's108', label: '108', freq: 108, desc: 'unity', color: '#8A6A4A' },
+    { id: 's136', label: '136', freq: 136.1, desc: 'om', color: '#B89C76' },
     { id: 's174', label: '174', freq: 174, desc: 'foundation', color: '#A0907A' },
     { id: 's285', label: '285', freq: 285, desc: 'healing', color: '#88B0C8' },
     { id: 's396', label: '396', freq: 396, desc: 'liberation', color: '#9B6BA0' },
@@ -2819,13 +2823,13 @@ export default function BinauralTuner() {
         ? 1 - 0.35 * Math.sin(waveTime * tremoloSpeed * Math.PI * 2 + (x / W) * 0.5)
         : 1;
     const amplitude = baseAmplitude * tremoloMod;
-    const phase = (x / wavelength) * Math.PI * 2;
+    // Gentle time-drift so 'sine' and 'zigzag' breathe along instead of
+    // sitting perfectly still. 0.35 rad/s ≈ one full drift every 18s —
+    // calm, not twitchy.
+    const drift = waveTime * 0.35;
+    const phase = (x / wavelength) * Math.PI * 2 + drift;
     let sample: number;
     switch (waveStyle) {
-      case 'layered':
-        // Fundamental + second harmonic at 1/3 amplitude — richer body
-        sample = Math.sin(phase) * 0.75 + Math.sin(phase * 2) * 0.25;
-        break;
       case 'pulse': {
         // Very slow amplitude envelope on top of the sine — meditative
         // breath, not a heartbeat. Cycle roughly every 8-10 seconds
@@ -2839,8 +2843,9 @@ export default function BinauralTuner() {
         sample = (Math.sin(phase) + Math.sin(phase * 1.07 + waveTime * 0.8)) * 0.5;
         break;
       case 'zigzag': {
-        // Symmetric triangle wave — same period as sine, sharper edges
-        const t = (((x / wavelength) % 1) + 1) % 1;
+        // Symmetric triangle wave — same period as sine, sharper edges.
+        // Offset by drift so it also gently scrolls.
+        const t = ((((x + (drift * wavelength) / (Math.PI * 2)) / wavelength) % 1) + 1) % 1;
         sample = t < 0.5 ? 4 * t - 1 : 3 - 4 * t;
         break;
       }
@@ -2888,68 +2893,52 @@ export default function BinauralTuner() {
             color: '#5C3018',
           }}
         >
-          Calming Sounds
+          Relaxing Sounds
         </p>
-        {/* Binaural quick-shortcut. Shows what's currently playing (base
-            Hz + beat Hz + breathing). Tap to jump into full Studio mode
-            for fine-tuning. "Live readout doubles as a door." */}
-        <button
-          type="button"
-          onClick={() => setSimpleMode(false)}
-          className="italic cursor-pointer transition-opacity hover:opacity-85"
-          style={{
-            fontFamily: 'var(--font-serif)',
-            fontSize: '15px',
-            color: '#8A6A4A',
-            opacity: 0.95,
-            minHeight: '1.4em',
-            background: 'none',
-            border: 'none',
-            padding: '2px 8px',
-            borderRadius: 10,
-            display: 'inline-flex',
-            alignItems: 'center',
-            gap: 6,
-          }}
-          title="Open the studio to tune frequencies"
-          aria-live="polite"
-        >
-          {playing ? (
-            <>
-              {baseToneOn ? (
-                <span style={{ color: '#5C3018', fontWeight: 600, fontStyle: 'normal' }}>
-                  {baseFreq}
-                  <span style={{ fontSize: '11px', opacity: 0.7, marginLeft: 2 }}>Hz</span>
-                </span>
-              ) : (
-                <span style={{ opacity: 0.45 }}>no base tone</span>
-              )}
-              {binauralOn && (
-                <>
-                  <span style={{ opacity: 0.4 }}>·</span>
-                  <span style={{ color: '#7A5438', fontWeight: 600, fontStyle: 'normal' }}>
-                    {beatFreq}
-                    <span style={{ fontSize: '11px', opacity: 0.7, marginLeft: 2 }}>Hz beat</span>
-                  </span>
-                </>
-              )}
-            </>
-          ) : (
-            <span style={{ opacity: 0.55 }}>tap play to begin</span>
-          )}
-          <span
-            aria-hidden="true"
-            style={{
-              fontSize: 10,
-              opacity: 0.45,
-              letterSpacing: '0.08em',
-              textTransform: 'uppercase',
-              fontStyle: 'normal',
-            }}
-          >
-            open studio ›
-          </span>
-        </button>
+        {/* Status strip — one-line readout of everything audible right
+            now. Makes it impossible for a stuck layer or drum bed to
+            hide somewhere down the page. When nothing is playing we
+            show a gentle "tap play to begin" hint in the same slot. */}
+        {(() => {
+          const parts: string[] = [];
+          if (playing) {
+            if (baseToneOn) parts.push(`${baseFreq}Hz`);
+            if (binauralOn) parts.push(`${beatFreq}Hz beat`);
+            const layerIds = Object.keys(activeLayers).filter((id) => (activeLayers[id] ?? 0) > 0);
+            if (layerIds.length > 0) {
+              const labels = layerIds
+                .map((id) => LAYERS.find((l) => l.id === id)?.label ?? id)
+                .filter(Boolean);
+              parts.push(labels.join(' · '));
+            }
+            if (beatPreset !== 'off') parts.push(`${beatPreset} drums`);
+            if (activeMelodies.size > 0) parts.push(`${activeMelodies.size} melodies`);
+            if (activeSacred.size > 0) parts.push(`${activeSacred.size} sacred`);
+          }
+          const text = !playing
+            ? 'tap play to begin'
+            : parts.length === 0
+              ? 'silent'
+              : parts.join('  ·  ');
+          return (
+            <p
+              className="px-3"
+              style={{
+                fontFamily: 'var(--font-serif)',
+                fontSize: '12px',
+                fontStyle: 'italic',
+                color: '#8A6A4A',
+                opacity: playing ? 0.85 : 0.55,
+                lineHeight: 1.5,
+                maxWidth: 520,
+                margin: '0 auto',
+              }}
+              aria-live="polite"
+            >
+              {text}
+            </p>
+          );
+        })()}
       </div>
 
       {/* Simple / Full toggle */}
@@ -2969,96 +2958,106 @@ export default function BinauralTuner() {
         </button>
       </div>
 
-      {/* Wave visualization with gradient fill + play button overlay */}
-      <div className="relative flex justify-center">
-        <svg width={W} height={H}>
-          <defs>
-            <linearGradient id="waveGrad" x1="0" y1="0" x2="1" y2="0">
-              {RAINBOW.map((c, i) => (
-                // index key — RAINBOW repeats #E0908A at start and end for
-                // a wrap-around gradient, so color alone would collide.
-                <stop
-                  key={i}
-                  offset={`${(i / (RAINBOW.length - 1)) * 100}%`}
-                  stopColor={c}
-                  stopOpacity={0.15}
-                />
-              ))}
-            </linearGradient>
-            <linearGradient id="waveStroke" x1="0" y1="0" x2="1" y2="0">
-              {RAINBOW.map((c, i) => (
-                <stop
-                  key={i}
-                  offset={`${(i / (RAINBOW.length - 1)) * 100}%`}
-                  stopColor={c}
-                  stopOpacity={playing ? 0.8 : 0.4}
-                />
-              ))}
-            </linearGradient>
-          </defs>
-          {/* Just the wave line — rainbow fill removed per user
+      {/* Wave visualization with gradient fill + play button overlay.
+          SVG now width="100%" + viewBox so it scales to the parent
+          width. Wrapped in a bounded relative div so the overlay play
+          button pins to the SVG edge, not the page. */}
+      <div className="flex w-full justify-center">
+        <div className="relative w-full" style={{ maxWidth: 480 }}>
+          <svg
+            width="100%"
+            height={H}
+            viewBox={`0 0 ${W} ${H}`}
+            preserveAspectRatio="xMidYMid meet"
+          >
+            <defs>
+              <linearGradient id="waveGrad" x1="0" y1="0" x2="1" y2="0">
+                {RAINBOW.map((c, i) => (
+                  // index key — RAINBOW repeats #E0908A at start and end for
+                  // a wrap-around gradient, so color alone would collide.
+                  <stop
+                    key={i}
+                    offset={`${(i / (RAINBOW.length - 1)) * 100}%`}
+                    stopColor={c}
+                    stopOpacity={0.15}
+                  />
+                ))}
+              </linearGradient>
+              <linearGradient id="waveStroke" x1="0" y1="0" x2="1" y2="0">
+                {RAINBOW.map((c, i) => (
+                  <stop
+                    key={i}
+                    offset={`${(i / (RAINBOW.length - 1)) * 100}%`}
+                    stopColor={c}
+                    stopOpacity={playing ? 0.8 : 0.4}
+                  />
+                ))}
+              </linearGradient>
+            </defs>
+            {/* Just the wave line — rainbow fill removed per user
               feedback (clutter). Keep the subtle rainbow stroke
               because it still reads as a single line. */}
-          <path
-            d={pathD}
-            fill="none"
-            stroke="url(#waveStroke)"
-            strokeWidth={2.5}
-            strokeLinecap="round"
-          />
-          {/* Glow when playing */}
-          {playing && (
             <path
               d={pathD}
               fill="none"
-              stroke={activeColor}
-              strokeWidth={8}
+              stroke="url(#waveStroke)"
+              strokeWidth={2.5}
               strokeLinecap="round"
-              opacity={0.12}
             />
-          )}
-        </svg>
-        {/* Play button — overlaid on the right */}
-        <button
-          type="button"
-          onClick={() => {
-            haptic(playing ? 'tick' : 'tap');
-            if (playing) stopAudio();
-            else startAudio();
-          }}
-          className="absolute right-2 top-1/2 -translate-y-1/2 flex cursor-pointer items-center justify-center rounded-full transition-all"
-          style={{
-            width: 36,
-            height: 36,
-            background: playing ? `${activeColor}25` : `${activeColor}10`,
-            border: `2px solid ${activeColor}${playing ? '50' : '25'}`,
-          }}
-        >
-          {playing ? (
-            <div className="flex gap-0.5">
-              <span
-                className="block rounded-sm"
-                style={{ width: 3, height: 12, background: activeColor }}
+            {/* Glow when playing */}
+            {playing && (
+              <path
+                d={pathD}
+                fill="none"
+                stroke={activeColor}
+                strokeWidth={8}
+                strokeLinecap="round"
+                opacity={0.12}
               />
+            )}
+          </svg>
+          {/* Play button — overlaid on the right */}
+          <button
+            type="button"
+            onClick={() => {
+              haptic(playing ? 'tick' : 'tap');
+              if (playing) stopAudio();
+              else startAudio();
+            }}
+            className="absolute right-2 top-1/2 -translate-y-1/2 flex cursor-pointer items-center justify-center rounded-full transition-all"
+            style={{
+              width: 36,
+              height: 36,
+              background: playing ? `${activeColor}25` : `${activeColor}10`,
+              border: `2px solid ${activeColor}${playing ? '50' : '25'}`,
+            }}
+          >
+            {playing ? (
+              <div className="flex gap-0.5">
+                <span
+                  className="block rounded-sm"
+                  style={{ width: 3, height: 12, background: activeColor }}
+                />
+                <span
+                  className="block rounded-sm"
+                  style={{ width: 3, height: 12, background: activeColor }}
+                />
+              </div>
+            ) : (
               <span
-                className="block rounded-sm"
-                style={{ width: 3, height: 12, background: activeColor }}
+                className="block"
+                style={{
+                  width: 0,
+                  height: 0,
+                  borderLeft: `10px solid ${activeColor}`,
+                  borderTop: '6px solid transparent',
+                  borderBottom: '6px solid transparent',
+                  marginLeft: 1,
+                }}
               />
-            </div>
-          ) : (
-            <span
-              className="block"
-              style={{
-                width: 0,
-                height: 0,
-                borderLeft: `10px solid ${activeColor}`,
-                borderTop: '6px solid transparent',
-                borderBottom: '6px solid transparent',
-                marginLeft: 1,
-              }}
-            />
-          )}
-        </button>
+            )}
+          </button>
+        </div>
       </div>
 
       {/* Wave-style picker — pick the visual shape of the waveform */}
@@ -3471,8 +3470,8 @@ export default function BinauralTuner() {
             </div>
           </div>
 
-          {/* Visualizer Box — family of soft dot visuals, user picks the mode */}
-          <VisualizerBox />
+          {/* VisualizerBox moved to the dedicated Visuals tab in SoundLab —
+              keep this page focused on tuning, not decoration. */}
 
           {/* Harmony — musical intervals that fit the base tone */}
           <div className="px-2">
@@ -3559,10 +3558,13 @@ export default function BinauralTuner() {
             >
               Sacred Frequencies
             </p>
-            <div className="flex flex-wrap justify-center gap-1.5">
+            {/* 2-per-row cards on phone (3-per-row on desktop). Each
+                card shows the Hz number big on top with the descriptor
+                ("om", "foundation", "healing"…) right below it. Much
+                easier to scan than the earlier wrapping mini-pills. */}
+            <div className="grid grid-cols-2 gap-2 md:grid-cols-3">
               {SACRED.map((s) => {
                 const isOn = activeSacred.has(s.id);
-                // Check if this sacred freq is a harmonic of the base tone (within 5%)
                 const ratio = s.freq / baseFreq;
                 const nearestInt = Math.round(ratio);
                 const isAligned =
@@ -3579,48 +3581,57 @@ export default function BinauralTuner() {
                         return next;
                       });
                     }}
-                    className="flex cursor-pointer items-center gap-1 rounded-full px-2 py-1 transition-all"
+                    className="flex cursor-pointer flex-col items-center justify-center rounded-xl px-3 py-2.5 transition-all"
                     style={{
                       background: isOn
-                        ? `${s.color}18`
+                        ? `${s.color}1A`
                         : isAligned
-                          ? `${s.color}08`
+                          ? `${s.color}0A`
                           : 'transparent',
-                      border: `1px solid ${isOn ? `${s.color}40` : isAligned ? `${s.color}20` : '#C4A06010'}`,
+                      border: `1px solid ${isOn ? `${s.color}55` : isAligned ? `${s.color}25` : '#C4A06015'}`,
+                      minHeight: 56,
                     }}
                     title={`${s.desc}${isAligned ? ` · harmonic ×${nearestInt} of ${baseFreq}Hz` : ''}`}
+                    aria-pressed={isOn}
                   >
-                    <span
-                      className="block rounded-full"
-                      style={{
-                        width: 6,
-                        height: 6,
-                        background: s.color,
-                        opacity: isOn ? 1 : isAligned ? 0.6 : 0.3,
-                      }}
-                    />
                     <span
                       style={{
                         fontFamily: 'var(--font-serif)',
-                        fontSize: '12px',
-                        fontWeight: isOn ? 700 : 500,
-                        color: isOn ? s.color : '#8A6A4A',
-                        opacity: isOn ? 1 : isAligned ? 0.7 : 0.45,
+                        fontSize: '17px',
+                        fontWeight: 700,
+                        color: isOn ? s.color : '#5C3018',
+                        opacity: isOn ? 1 : 0.85,
+                        lineHeight: 1.1,
                       }}
                     >
                       {s.label}
-                    </span>
-                    {isAligned && !isOn && (
                       <span
                         style={{
-                          fontFamily: 'var(--font-serif)',
-                          fontSize: '8px',
-                          color: s.color,
+                          fontSize: '10px',
+                          fontWeight: 500,
+                          opacity: 0.55,
+                          marginLeft: 2,
                         }}
                       >
-                        ×{nearestInt}
+                        Hz
                       </span>
-                    )}
+                    </span>
+                    <span
+                      style={{
+                        fontFamily: 'var(--font-serif)',
+                        fontSize: '11px',
+                        fontStyle: 'italic',
+                        color: isOn ? s.color : '#8A6A4A',
+                        opacity: isOn ? 0.85 : 0.55,
+                        letterSpacing: '0.02em',
+                        marginTop: 2,
+                      }}
+                    >
+                      {s.desc}
+                      {isAligned && !isOn && (
+                        <span style={{ marginLeft: 4, fontSize: '9px' }}>×{nearestInt}</span>
+                      )}
+                    </span>
                   </button>
                 );
               })}
@@ -4387,7 +4398,12 @@ export default function BinauralTuner() {
             </button>
             {brainStatesOpen && (
               <div className="animate-in fade-in duration-150">
-                <div className="flex flex-wrap justify-center gap-1.5 pt-1">
+                {/* Horizontal scroll on phone so the 6 presets stay on
+                    one row instead of wrapping into uneven 3+3 grids. */}
+                <div
+                  className="flex gap-1.5 overflow-x-auto px-2 pb-1 pt-1"
+                  style={{ scrollbarWidth: 'none' }}
+                >
                   {PRESETS.map((p) => {
                     const isActive = p.base === baseFreq && p.beat === beatFreq;
                     const presetLayers = PRESET_LAYERS[p.id] || [];
@@ -4396,7 +4412,7 @@ export default function BinauralTuner() {
                         key={p.id}
                         type="button"
                         onClick={() => applyPresetWithLayers(p)}
-                        className="cursor-pointer rounded-full px-3 py-1.5 text-left transition-all"
+                        className="shrink-0 cursor-pointer whitespace-nowrap rounded-full px-3 py-1.5 text-left transition-all"
                         style={{
                           background: isActive ? `${p.color}15` : 'transparent',
                           border: `1px solid ${isActive ? `${p.color}40` : '#C4A06015'}`,
@@ -4584,7 +4600,11 @@ const VALID_MODES: VisualizerMode[] = [
   'solar',
 ];
 
-function VisualizerBox() {
+// Kept as dead code for now — Visuals surface was lifted out of the
+// tuner into the Sounds → Visuals tab. Delete fully once we're sure
+// we don't want an in-tuner option back. `_` prefix tells biome to
+// ignore the unused-function warning.
+function _VisualizerBox() {
   const [mode, setMode] = useState<VisualizerMode>('atom');
   // Speed default 0.25 — most calm, relaxing stable spot for the whole
   // family. Other stable spots are at 0.4 (gentle), 0.6 (flowing),

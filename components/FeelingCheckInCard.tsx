@@ -580,7 +580,8 @@ export default function FeelingCheckInCard() {
     setRenamingSection(null);
   }
 
-  const [dailyObjOpen, setDailyObjOpen] = useState(true);
+  // dailyObjOpen removed — inner section header was duplicate of the
+  // outer "Daily Objectives" pill, todos now always render.
   const [pushTomorrowOpen, setPushTomorrowOpen] = useState(true);
   const [doneOpen, setDoneOpen] = useState(false);
   const [otherMissionsOpen, setOtherMissionsOpen] = useState(() => {
@@ -1649,16 +1650,14 @@ export default function FeelingCheckInCard() {
   }, []);
 
   return (
-    <>
+    <div className="space-y-6 md:grid md:grid-cols-2 md:gap-6 md:space-y-0 md:items-start">
       {/* BOX A: FEELING — frame removed on phone to reclaim margins.
           Desktop keeps the beige card for visual grouping. */}
       <div className="relative space-y-5 rounded-none border-0 bg-transparent px-0 py-0 shadow-none md:rounded-3xl md:border md:border-[#7a543833] md:px-5 md:py-6 md:bg-[linear-gradient(180deg,rgba(251,244,232,0.95),rgba(246,236,221,0.92))] md:shadow-[0_24px_50px_-34px_rgba(92,48,24,0.35)]">
         <p
-          className="text-center uppercase tracking-[0.2em] md:tracking-[0.24em]"
+          className="hidden text-center uppercase tracking-[0.24em] md:block"
           style={{
             fontFamily: 'var(--font-serif)',
-            // Phone: 15px so the segment title is readable at arm's length.
-            // Desktop override happens inline via clamp-min on md screens.
             fontSize: 'clamp(13px, 3.4vw, 15px)',
             fontWeight: 700,
             color: '#D4805A',
@@ -1790,20 +1789,9 @@ export default function FeelingCheckInCard() {
                   );
                 });
               })()}
-              <svg
-                width="300"
-                height="95"
-                viewBox="0 0 300 95"
-                style={{ position: 'absolute', top: 0, left: 0, pointerEvents: 'none' }}
-              >
-                <path
-                  d="M 16 75 A 134 55 0 0 1 284 75"
-                  fill="none"
-                  stroke="#C4A06030"
-                  strokeWidth="1"
-                  strokeDasharray="2 4"
-                />
-              </svg>
+              {/* Arc curve line removed — dots still sit on the arc but
+                  the dashed guide behind them is gone so the shape
+                  reads as floating dots, not a drawn bow. */}
             </div>
           )}
 
@@ -2095,10 +2083,10 @@ export default function FeelingCheckInCard() {
                     fontFamily: 'var(--font-serif)',
                     fontSize: '10px',
                     fontWeight: 700,
-                    color: '#8A6A4A',
+                    color: '#C26744',
                     letterSpacing: '0.14em',
                     textTransform: 'uppercase' as const,
-                    opacity: 0.6,
+                    opacity: 0.75,
                   }}
                 >
                   body
@@ -2142,10 +2130,10 @@ export default function FeelingCheckInCard() {
                     fontFamily: 'var(--font-serif)',
                     fontSize: '10px',
                     fontWeight: 700,
-                    color: '#8A6A4A',
+                    color: '#C4A060',
                     letterSpacing: '0.14em',
                     textTransform: 'uppercase' as const,
-                    opacity: 0.6,
+                    opacity: 0.85,
                   }}
                 >
                   focus
@@ -2189,10 +2177,10 @@ export default function FeelingCheckInCard() {
                       fontFamily: 'var(--font-serif)',
                       fontSize: '11px',
                       fontWeight: 700,
-                      color: '#8A6A4A',
+                      color: '#9B6BA0',
                       letterSpacing: '0.14em',
                       textTransform: 'uppercase' as const,
-                      opacity: 0.6,
+                      opacity: 0.8,
                     }}
                   >
                     clarity
@@ -2242,10 +2230,10 @@ export default function FeelingCheckInCard() {
                       fontFamily: 'var(--font-serif)',
                       fontSize: '11px',
                       fontWeight: 700,
-                      color: '#8A6A4A',
+                      color: '#C26744',
                       letterSpacing: '0.14em',
                       textTransform: 'uppercase' as const,
-                      opacity: 0.6,
+                      opacity: 0.75,
                     }}
                   >
                     body
@@ -2290,10 +2278,10 @@ export default function FeelingCheckInCard() {
                       fontFamily: 'var(--font-serif)',
                       fontSize: '11px',
                       fontWeight: 700,
-                      color: '#8A6A4A',
+                      color: '#C4A060',
                       letterSpacing: '0.14em',
                       textTransform: 'uppercase' as const,
-                      opacity: 0.6,
+                      opacity: 0.85,
                     }}
                   >
                     focus
@@ -2338,10 +2326,10 @@ export default function FeelingCheckInCard() {
                       fontFamily: 'var(--font-serif)',
                       fontSize: '11px',
                       fontWeight: 700,
-                      color: '#8A6A4A',
+                      color: '#9B6BA0',
                       letterSpacing: '0.14em',
                       textTransform: 'uppercase' as const,
-                      opacity: 0.6,
+                      opacity: 0.8,
                     }}
                   >
                     clarity
@@ -2392,10 +2380,10 @@ export default function FeelingCheckInCard() {
                       fontFamily: 'var(--font-serif)',
                       fontSize: '10px',
                       fontWeight: 700,
-                      color: '#8A6A4A',
+                      color: '#C26744',
                       letterSpacing: '0.14em',
                       textTransform: 'uppercase' as const,
-                      opacity: 0.6,
+                      opacity: 0.75,
                     }}
                   >
                     body
@@ -2439,10 +2427,10 @@ export default function FeelingCheckInCard() {
                       fontFamily: 'var(--font-serif)',
                       fontSize: '10px',
                       fontWeight: 700,
-                      color: '#8A6A4A',
+                      color: '#C4A060',
                       letterSpacing: '0.14em',
                       textTransform: 'uppercase' as const,
-                      opacity: 0.6,
+                      opacity: 0.85,
                     }}
                   >
                     focus
@@ -2488,10 +2476,10 @@ export default function FeelingCheckInCard() {
                       fontFamily: 'var(--font-serif)',
                       fontSize: '11px',
                       fontWeight: 700,
-                      color: '#8A6A4A',
+                      color: '#9B6BA0',
                       letterSpacing: '0.14em',
                       textTransform: 'uppercase' as const,
-                      opacity: 0.6,
+                      opacity: 0.8,
                     }}
                   >
                     clarity
@@ -2536,10 +2524,10 @@ export default function FeelingCheckInCard() {
                       fontFamily: 'var(--font-serif)',
                       fontSize: '11px',
                       fontWeight: 700,
-                      color: '#8A6A4A',
+                      color: '#D4805A',
                       letterSpacing: '0.14em',
                       textTransform: 'uppercase' as const,
-                      opacity: 0.6,
+                      opacity: 0.8,
                     }}
                   >
                     emotion
@@ -2592,13 +2580,8 @@ export default function FeelingCheckInCard() {
           )}
         </div>
 
-        {/* LOGBOOK & EMOTIONS — frame removed on phone. */}
-        <div
-          className="space-y-2 rounded-none border-0 bg-transparent px-0 py-1 md:rounded-2xl md:border md:px-4 md:py-3"
-          style={{
-            borderColor: '#C4A06030',
-          }}
-        >
+        {/* LOGBOOK & EMOTIONS — flat, no contour: part of the outer Feeling box. */}
+        <div className="space-y-2 rounded-none border-0 bg-transparent px-0 py-1 md:py-3">
           {/* Pill header — click to open/close */}
           <div className="flex items-center justify-between">
             <span className="w-12" />
@@ -2615,7 +2598,7 @@ export default function FeelingCheckInCard() {
                 className="text-center text-sm font-semibold uppercase tracking-[0.22em]"
                 style={{ color: '#C4A060' }}
               >
-                Emotions
+                Feelings
               </span>
               <span
                 className="text-sm transition-transform duration-200"
@@ -2635,12 +2618,9 @@ export default function FeelingCheckInCard() {
               {/* Hawkins emotional slider — toggled by losange below */}
               {sliderVisible && (
                 <div className="relative flex flex-col items-center gap-2 pt-4 pb-2">
-                  {/* Style toggle — pushed to the top-right corner of
-                      the slider container with z-index 2 so it sits
-                      ABOVE the slider squares on phone (was hidden
-                      behind them before). Bigger tap target (28px)
-                      and more visible border so it doesn't look like
-                      a faded dot. */}
+                  {/* Style toggle — discrete losange that picks up the
+                      Emotions axis colour (#B07A5A) so it reads as part of
+                      the same section instead of a loud beige dot. */}
                   <button
                     type="button"
                     onClick={() =>
@@ -2649,43 +2629,32 @@ export default function FeelingCheckInCard() {
                       )
                     }
                     aria-label="Toggle hawkins slider style"
-                    className="absolute flex cursor-pointer items-center justify-center"
+                    className="absolute cursor-pointer"
                     style={{
-                      right: -4,
-                      top: -6,
-                      width: 28,
-                      height: 28,
-                      background: '#F5E8C8',
-                      border: '1.5px solid #C4A06055',
-                      borderRadius: 999,
-                      boxShadow: '0 1px 3px rgba(92,48,24,0.12)',
+                      right: 0,
+                      top: -4,
+                      width: 20,
+                      height: 20,
+                      background: '#B07A5A',
+                      opacity: 0.55,
+                      border: 'none',
+                      borderRadius: '50%',
+                      padding: 0,
                       zIndex: 2,
                     }}
-                  >
-                    <span
-                      style={{
-                        width: 12,
-                        height: 12,
-                        background: '#8A6A4A',
-                        borderRadius: hawkinsStyle === 'dots' ? '50%' : '3px',
-                        display: 'block',
-                        transform: hawkinsStyle === 'losanges' ? 'rotate(45deg)' : 'rotate(0deg)',
-                        transition: 'border-radius 200ms, transform 200ms',
-                      }}
-                    />
-                  </button>
+                  />
 
-                  <div className="relative" style={{ width: 300, height: 48 }}>
+                  <div className="relative" style={{ width: 340, height: 56 }}>
                     {(() => {
                       if (hawkinsStyle === 'losanges') {
-                        // LOSANGES — rotated squares (diamonds). A rotated 18px square
-                        // visually occupies ~25.4px diagonal, so gap 13 yields ~4px
-                        // clean negative space between adjacent losanges.
-                        const sq = 18;
-                        const gap = 13;
+                        // LOSANGES — rotated squares (diamonds). 22px rotated
+                        // square ≈ 31px diagonal, gap 14 yields comfortable
+                        // breathing room on phone.
+                        const sq = 22;
+                        const gap = 14;
                         const totalW = HAWKINS.length * sq + (HAWKINS.length - 1) * gap;
-                        const offsetX = (300 - totalW) / 2;
-                        const baseY = (48 - sq) / 2;
+                        const offsetX = (340 - totalW) / 2;
+                        const baseY = (56 - sq) / 2;
                         return HAWKINS.map((h, i) => {
                           const selected = hawkinsIdx === i;
                           const x = offsetX + i * (sq + gap);
@@ -2715,13 +2684,13 @@ export default function FeelingCheckInCard() {
                       if (hawkinsStyle === 'dots') {
                         // DOTS style — circular dots in a straight horizontal line,
                         // same vocabulary as variant 1 (arc) but flat instead of bowed.
-                        const dotSize = 22;
-                        const totalW = HAWKINS.length * dotSize + (HAWKINS.length - 1) * 6;
-                        const offsetX = (300 - totalW) / 2;
-                        const baseY = (48 - dotSize) / 2;
+                        const dotSize = 26;
+                        const totalW = HAWKINS.length * dotSize + (HAWKINS.length - 1) * 7;
+                        const offsetX = (340 - totalW) / 2;
+                        const baseY = (56 - dotSize) / 2;
                         return HAWKINS.map((h, i) => {
                           const selected = hawkinsIdx === i;
-                          const x = offsetX + i * (dotSize + 6);
+                          const x = offsetX + i * (dotSize + 7);
                           return (
                             <button
                               key={h.level}
@@ -2744,12 +2713,13 @@ export default function FeelingCheckInCard() {
                           );
                         });
                       }
-                      // SQUARES style — original 20×20 rounded squares
-                      const sq = 20;
-                      const gap = 6;
+                      // SQUARES style — 24×24 rounded squares (bumped from
+                      // 20 for the larger slider).
+                      const sq = 24;
+                      const gap = 7;
                       const totalW = HAWKINS.length * sq + (HAWKINS.length - 1) * gap;
-                      const offsetX = (300 - totalW) / 2;
-                      const baseY = (48 - sq) / 2;
+                      const offsetX = (340 - totalW) / 2;
+                      const baseY = (56 - sq) / 2;
                       return HAWKINS.map((h, i) => {
                         const selected = hawkinsIdx === i;
                         const x = offsetX + i * (sq + gap);
@@ -2868,16 +2838,18 @@ export default function FeelingCheckInCard() {
 
               {/* Two writing spots — challenge (top) + flow (bottom, ochre) */}
               <div className="space-y-2">
-                {/* CHALLENGE — label above, question as placeholder on write line */}
+                {/* CHALLENGE — label above, question as placeholder on write line.
+                    Deeper ochre (#8A6830) reads better than #C4A060 on
+                    warm/golden backgrounds where the light tone washed out. */}
                 <div className="space-y-1">
                   <div className="flex items-center gap-2 px-1">
                     <span
                       className="block h-2.5 w-2.5 shrink-0 rounded-full"
-                      style={{ background: '#C4A060', opacity: 0.85 }}
+                      style={{ background: '#8A6830', opacity: 0.9 }}
                     />
                     <span
                       className="shrink-0 font-semibold uppercase tracking-[0.22em]"
-                      style={{ color: '#C4A060', fontSize: '16px' }}
+                      style={{ color: '#8A6830', fontSize: '16px' }}
                     >
                       Challenge
                     </span>
@@ -2933,16 +2905,17 @@ export default function FeelingCheckInCard() {
                   }}
                 />
 
-                {/* FLOW — label above, question as placeholder on write line */}
+                {/* FLOW — label above. Deeper ochre to match Challenge
+                    (same reason: #C4A060 washed out on golden style). */}
                 <div className="space-y-1">
                   <div className="flex items-center gap-2 px-1">
                     <span
                       className="block h-2.5 w-2.5 shrink-0 rounded-full"
-                      style={{ background: '#C4A060', opacity: 0.85 }}
+                      style={{ background: '#8A6830', opacity: 0.9 }}
                     />
                     <span
                       className="shrink-0 font-semibold uppercase tracking-[0.22em]"
-                      style={{ color: '#C4A060', fontSize: '16px' }}
+                      style={{ color: '#8A6830', fontSize: '16px' }}
                     >
                       Flow
                     </span>
@@ -3315,7 +3288,7 @@ export default function FeelingCheckInCard() {
       {/* BOX B: DOING — frame removed on phone to reclaim margins. */}
       <div className="space-y-4 rounded-none border-0 bg-transparent px-0 py-0 shadow-none md:rounded-3xl md:border md:border-[#7a543833] md:px-5 md:py-6 md:bg-[linear-gradient(180deg,rgba(251,244,232,0.95),rgba(246,236,221,0.92))] md:shadow-[0_24px_50px_-34px_rgba(92,48,24,0.35)]">
         <p
-          className="text-center uppercase tracking-[0.24em]"
+          className="hidden text-center uppercase tracking-[0.24em] md:block"
           style={{
             fontFamily: 'var(--font-serif)',
             fontSize: '10px',
@@ -3342,7 +3315,6 @@ export default function FeelingCheckInCard() {
           }}
           style={{
             borderColor: '#C4A06030',
-            background: 'rgba(245,236,220,0.45)',
           }}
         >
           <div className="flex flex-col items-center gap-2">
@@ -3540,56 +3512,10 @@ export default function FeelingCheckInCard() {
                   } catch {}
                 }}
               >
-                <button
-                  type="button"
-                  onClick={() => setDailyObjOpen((s) => !s)}
-                  className="flex cursor-pointer items-center gap-1.5 px-1"
-                  style={{ background: 'none', border: 'none' }}
-                >
-                  <span
-                    className="font-semibold uppercase tracking-[0.22em]"
-                    style={{ color: '#C4A060', fontSize: '13px' }}
-                  >
-                    {renamingSection === 'daily' ? (
-                      <input
-                        type="text"
-                        value={renameValue}
-                        onChange={(e) => setRenameValue(e.target.value)}
-                        onBlur={() => commitRename('daily', 'Daily Objectives')}
-                        onKeyDown={(e) => {
-                          if (e.key === 'Enter') commitRename('daily', 'Daily Objectives');
-                          if (e.key === 'Escape') setRenamingSection(null);
-                        }}
-                        autoFocus
-                        onClick={(e) => e.stopPropagation()}
-                        className="bg-transparent font-semibold uppercase tracking-[0.18em] outline-none border-b"
-                        style={{ color: '#C4A060', fontSize: '13px', borderColor: '#C4A06040' }}
-                      />
-                    ) : (
-                      <span
-                        className="cursor-pointer"
-                        onDoubleClick={(e) => {
-                          e.stopPropagation();
-                          setRenamingSection('daily');
-                          setRenameValue(sectionLabel('daily', 'Daily Objectives'));
-                        }}
-                        title="Double-click to rename"
-                      >
-                        {sectionLabel('daily', 'Daily Objectives')}
-                      </span>
-                    )}
-                  </span>
-                  <span
-                    className="text-[10px] transition-transform duration-200"
-                    style={{
-                      color: '#C4A06080',
-                      transform: dailyObjOpen ? 'rotate(180deg)' : 'rotate(0deg)',
-                    }}
-                  >
-                    ▾
-                  </span>
-                </button>
-                {dailyObjOpen && (
+                {/* Inner "Daily Objectives" header removed per user — the
+                    outer pill already says it, so this was a duplicate.
+                    Todos + add-input always render now (no collapse). */}
+                {
                   <>
                     {todayObjectives
                       .filter((o) => !o.done)
@@ -4233,11 +4159,11 @@ export default function FeelingCheckInCard() {
                         color: '#7a5438',
                         borderColor: '#C4A06020',
                         fontFamily: 'var(--font-handwritten)',
-                        fontSize: '20px',
+                        fontSize: '22px',
                       }}
                     />
                   </>
-                )}
+                }
               </div>
 
               {/* Divider */}
@@ -4265,55 +4191,74 @@ export default function FeelingCheckInCard() {
                   } catch {}
                 }}
               >
-                <button
-                  type="button"
-                  onClick={() => setPushTomorrowOpen((s) => !s)}
-                  className="flex cursor-pointer items-center gap-1.5 px-1"
-                  style={{ background: 'none', border: 'none' }}
-                >
-                  <span
-                    className="font-semibold uppercase tracking-[0.22em]"
-                    style={{ color: '#C4A060', fontSize: '13px' }}
-                  >
-                    {renamingSection === 'push' ? (
-                      <input
-                        type="text"
-                        value={renameValue}
-                        onChange={(e) => setRenameValue(e.target.value)}
-                        onBlur={() => commitRename('push', 'Push for tomorrow')}
-                        onKeyDown={(e) => {
-                          if (e.key === 'Enter') commitRename('push', 'Push for tomorrow');
-                          if (e.key === 'Escape') setRenamingSection(null);
-                        }}
-                        autoFocus
-                        onClick={(e) => e.stopPropagation()}
-                        className="bg-transparent font-semibold uppercase tracking-[0.18em] outline-none border-b"
-                        style={{ color: '#C4A060', fontSize: '13px', borderColor: '#C4A06040' }}
-                      />
-                    ) : (
-                      <span
-                        className="cursor-pointer"
-                        onDoubleClick={(e) => {
-                          e.stopPropagation();
-                          setRenamingSection('push');
-                          setRenameValue(sectionLabel('push', 'Push for tomorrow'));
-                        }}
-                        title="Double-click to rename"
-                      >
-                        {sectionLabel('push', 'Push for tomorrow')}
-                      </span>
-                    )}
-                  </span>
-                  <span
-                    className="text-[10px] transition-transform duration-200"
+                {/* Pill-shaped header to match the outer "Daily Objectives"
+                    pill — same rounded bg + border, just a separate toggle
+                    wrapped in a centering flex so it sits on its own row. */}
+                <div className="flex justify-center">
+                  <button
+                    type="button"
+                    onClick={() => setPushTomorrowOpen((s) => !s)}
+                    className="flex cursor-pointer items-center gap-2 rounded-full px-5 py-1.5 transition-all"
                     style={{
-                      color: '#C4A06080',
-                      transform: pushTomorrowOpen ? 'rotate(180deg)' : 'rotate(0deg)',
+                      background: '#C4A06015',
+                      border: '1px solid #C4A06040',
                     }}
                   >
-                    ▾
-                  </span>
-                </button>
+                    <span
+                      className="text-center uppercase"
+                      style={{
+                        color: '#C4A060',
+                        fontSize: '16px',
+                        fontWeight: 700,
+                        letterSpacing: '0.22em',
+                      }}
+                    >
+                      {renamingSection === 'push' ? (
+                        <input
+                          type="text"
+                          value={renameValue}
+                          onChange={(e) => setRenameValue(e.target.value)}
+                          onBlur={() => commitRename('push', 'Push for tomorrow')}
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter') commitRename('push', 'Push for tomorrow');
+                            if (e.key === 'Escape') setRenamingSection(null);
+                          }}
+                          autoFocus
+                          onClick={(e) => e.stopPropagation()}
+                          className="bg-transparent text-center uppercase outline-none border-b"
+                          style={{
+                            color: '#C4A060',
+                            fontSize: '14px',
+                            fontWeight: 700,
+                            letterSpacing: '0.22em',
+                            borderColor: '#C4A06040',
+                          }}
+                        />
+                      ) : (
+                        <span
+                          className="cursor-pointer"
+                          onDoubleClick={(e) => {
+                            e.stopPropagation();
+                            setRenamingSection('push');
+                            setRenameValue(sectionLabel('push', 'Push for tomorrow'));
+                          }}
+                          title="Double-click to rename"
+                        >
+                          {sectionLabel('push', 'Push for tomorrow')}
+                        </span>
+                      )}
+                    </span>
+                    <span
+                      className="text-sm transition-transform duration-200"
+                      style={{
+                        color: '#C4A06080',
+                        transform: pushTomorrowOpen ? 'rotate(180deg)' : 'rotate(0deg)',
+                      }}
+                    >
+                      ▾
+                    </span>
+                  </button>
+                </div>
                 {pushTomorrowOpen && (
                   <>
                     {todos
@@ -4941,33 +4886,45 @@ export default function FeelingCheckInCard() {
                 )}
               </div>
 
-              {/* Done — all completed items grouped by category */}
+              {/* Done — same ochre pill shape as Daily Objectives +
+                  Push for Tomorrow so all three sections read as a
+                  single family. */}
               {(doneObjectives.length > 0 ||
                 todayObjectives.some((o) => o.done) ||
                 todos.some((t) => t.done)) && (
                 <div className="space-y-1.5">
-                  <button
-                    type="button"
-                    onClick={() => setDoneOpen((s) => !s)}
-                    className="flex cursor-pointer items-center gap-1.5 px-1"
-                    style={{ background: 'none', border: 'none' }}
-                  >
-                    <span
-                      className="font-semibold uppercase tracking-[0.22em]"
-                      style={{ color: '#7AAA58', fontSize: '13px' }}
-                    >
-                      Done
-                    </span>
-                    <span
-                      className="text-[10px] transition-transform duration-200"
+                  <div className="flex justify-center">
+                    <button
+                      type="button"
+                      onClick={() => setDoneOpen((s) => !s)}
+                      className="flex cursor-pointer items-center gap-2 rounded-full px-5 py-1.5 transition-all"
                       style={{
-                        color: '#7AAA5880',
-                        transform: doneOpen ? 'rotate(180deg)' : 'rotate(0deg)',
+                        background: '#C4A06015',
+                        border: '1px solid #C4A06040',
                       }}
                     >
-                      ▾
-                    </span>
-                  </button>
+                      <span
+                        className="text-center uppercase"
+                        style={{
+                          color: '#C4A060',
+                          fontSize: '14px',
+                          fontWeight: 700,
+                          letterSpacing: '0.22em',
+                        }}
+                      >
+                        Done
+                      </span>
+                      <span
+                        className="text-sm transition-transform duration-200"
+                        style={{
+                          color: '#C4A06080',
+                          transform: doneOpen ? 'rotate(180deg)' : 'rotate(0deg)',
+                        }}
+                      >
+                        ▾
+                      </span>
+                    </button>
+                  </div>
                   {doneOpen && (
                     <div className="space-y-1 animate-in fade-in duration-150">
                       {(() => {
@@ -5130,6 +5087,6 @@ export default function FeelingCheckInCard() {
           )}
         </div>
       </div>
-    </>
+    </div>
   );
 }

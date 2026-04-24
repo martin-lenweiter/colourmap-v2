@@ -25,9 +25,13 @@ const TAB_KEY = 'colourmap:day-tab';
 interface DayTabsProps {
   checkinContent: React.ReactNode;
   overviewContent: React.ReactNode;
+  /** Today's date ("Friday 24 April") shown as a tiny header above the
+   *  tab strip so it belongs to the "today's scan" block instead of
+   *  floating on its own between the nav and the tabs. */
+  dateLabel?: string;
 }
 
-export default function DayTabs({ checkinContent, overviewContent }: DayTabsProps) {
+export default function DayTabs({ checkinContent, overviewContent, dateLabel }: DayTabsProps) {
   const [active, setActive] = useState<Tab>('checkin');
   const { style } = useStyle();
 
@@ -54,33 +58,49 @@ export default function DayTabs({ checkinContent, overviewContent }: DayTabsProp
 
   return (
     <div className="space-y-6">
-      {/* Tab selectors — bigger, more breathing room on phone */}
-      <div className="flex gap-2">
-        {TABS.map((tab) => {
-          const isActive = active === tab.id;
-          return (
-            <button
-              key={tab.id}
-              type="button"
-              onClick={() => {
-                if (tab.id !== active) haptic('tap');
-                setActive(tab.id);
-              }}
-              className="flex-1 cursor-pointer rounded-2xl py-3.5 uppercase tracking-[0.18em] transition-all duration-200"
-              style={{
-                background: isActive ? '#C4A06018' : 'transparent',
-                border: `1.5px solid ${isActive ? '#C4A060' : 'hsl(var(--border) / 0.25)'}`,
-                color: 'hsl(var(--foreground))',
-                fontFamily: style.headingFont,
-                fontSize: '15px',
-                fontWeight: isActive ? 700 : 600,
-                minHeight: 48,
-              }}
-            >
-              {tab.label}
-            </button>
-          );
-        })}
+      <div className="space-y-1">
+        {dateLabel && (
+          <p
+            className="text-center italic"
+            style={{
+              fontFamily: 'var(--font-serif)',
+              fontSize: '13px',
+              color: '#7A5438',
+              opacity: 0.7,
+              letterSpacing: '0.04em',
+            }}
+          >
+            {dateLabel}
+          </p>
+        )}
+        {/* Tab selectors — bigger, more breathing room on phone */}
+        <div className="flex gap-2">
+          {TABS.map((tab) => {
+            const isActive = active === tab.id;
+            return (
+              <button
+                key={tab.id}
+                type="button"
+                onClick={() => {
+                  if (tab.id !== active) haptic('tap');
+                  setActive(tab.id);
+                }}
+                className="flex-1 cursor-pointer rounded-2xl py-3.5 uppercase tracking-[0.18em] transition-all duration-200"
+                style={{
+                  background: isActive ? '#C4A06018' : 'transparent',
+                  border: `1.5px solid ${isActive ? '#C4A060' : 'hsl(var(--border) / 0.25)'}`,
+                  color: 'hsl(var(--foreground))',
+                  fontFamily: style.headingFont,
+                  fontSize: '15px',
+                  fontWeight: isActive ? 700 : 600,
+                  minHeight: 48,
+                }}
+              >
+                {tab.label}
+              </button>
+            );
+          })}
+        </div>
       </div>
 
       {/* Content */}

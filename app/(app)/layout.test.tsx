@@ -48,6 +48,21 @@ vi.mock('@/components/ViewModeSwitcher', () => ({
   default: () => <div data-testid="view-mode-switcher">ViewModeSwitcher</div>,
 }));
 
+vi.mock('@/components/UserInitialsMenu', () => ({
+  // Flatten to visible markup so the existing assertions about email
+  // and Sign out still cover the user-menu surface (which now lives
+  // behind a click-to-open popover).
+  default: ({ initials, email }: { initials: string; email: string }) => (
+    <div data-testid="user-initials-menu">
+      <span>{initials}</span>
+      <span>{email}</span>
+      <form action="/logout" method="post">
+        <button type="submit">Sign out</button>
+      </form>
+    </div>
+  ),
+}));
+
 vi.mock('./AppShell', () => ({
   default: ({ children }: { children: React.ReactNode }) => <main>{children}</main>,
 }));
