@@ -6,19 +6,17 @@ import { useEffect, useRef, useState } from 'react';
 
 import { useViewMode } from './ViewModeContext';
 
-const PRIMARY_LINKS = [
-  { href: '/day', label: 'Day' },
-  { href: '/music', label: 'Music' },
-  { href: '/circles', label: 'Circles' },
-  { href: '/notebook', label: 'Notebook' },
+// Minimalist glyphs sit to the left of each label. Helps lay users
+// pattern-match the nav at a glance, especially on phone where text
+// labels blur together.
+const PRIMARY_LINKS: { href: string; label: string; glyph: string }[] = [
+  { href: '/day', label: 'Day', glyph: '☾' }, // crescent moon — the daily rhythm
+  { href: '/music', label: 'Music', glyph: '♪' }, // eighth note
+  { href: '/circles', label: 'Circles', glyph: '◯' }, // ring — people
+  { href: '/notebook', label: 'Notebook', glyph: '❦' }, // floral heart — reflection
 ];
 
-const PHONE_PRIMARY_LINKS = [
-  { href: '/day', label: 'Day' },
-  { href: '/music', label: 'Music' },
-  { href: '/circles', label: 'Circles' },
-  { href: '/notebook', label: 'Notebook' },
-];
+const PHONE_PRIMARY_LINKS = PRIMARY_LINKS;
 
 // V2 features — hidden for now, restore by moving back to PRIMARY_LINKS
 const MORE_LINKS = [
@@ -64,8 +62,20 @@ export default function NavLinks() {
           <Link
             key={link.href}
             href={link.href}
-            className={`transition-colors tracking-[0.04em] ${isActive ? 'text-foreground font-semibold' : 'text-muted-foreground hover:text-foreground'}`}
+            className={`inline-flex items-center gap-1.5 transition-colors tracking-[0.04em] ${isActive ? 'text-foreground font-semibold' : 'text-muted-foreground hover:text-foreground'}`}
           >
+            <span
+              aria-hidden="true"
+              style={{
+                fontFamily: 'var(--font-serif)',
+                fontSize: '15px',
+                lineHeight: 1,
+                opacity: isActive ? 1 : 0.65,
+                color: isActive ? '#C4A060' : 'inherit',
+              }}
+            >
+              {link.glyph}
+            </span>
             {link.label}
           </Link>
         );
