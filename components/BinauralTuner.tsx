@@ -3439,9 +3439,13 @@ export default function BinauralTuner() {
         </div>
       )}
 
-      {/* ── FULL MODE: all controls ── */}
+      {/* ── FULL MODE: all controls ── DJ-mix-table layout on desktop.
+          On md+ the sections stop stacking vertically and flow into
+          two columns, each column behaving like a DJ channel strip
+          so the whole instrument spreads across the screen. Phone
+          stays as a single column for reading. */}
       {!simpleMode && (
-        <>
+        <div className="space-y-6 md:grid md:grid-cols-2 md:gap-x-8 md:gap-y-6 md:space-y-0">
           {/* Sliders: tone first, then binaural beat, reverb (dots), wave */}
           <div className="space-y-3 px-2">
             <SliderRow
@@ -4727,7 +4731,7 @@ export default function BinauralTuner() {
               </div>
             )}
           </div>
-        </>
+        </div>
       )}
 
       {/* Suggestion removed — was "balanced state alpha waves to maintain" */}
