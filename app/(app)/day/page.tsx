@@ -7,6 +7,7 @@ import CompassCarousel from '@/components/CompassCarousel';
 import DailyAgenda from '@/components/DailyAgenda';
 import DayTabs from '@/components/DayTabs';
 import FeelingCheckInCard from '@/components/FeelingCheckInCard';
+import FirstRunOnboarding from '@/components/FirstRunOnboarding';
 import FrequencyBox from '@/components/FrequencyBox';
 import LifeCategories from '@/components/LifeCategories';
 import MasteryBox from '@/components/MasteryBox';
@@ -23,6 +24,7 @@ function DayContent() {
   });
   return (
     <div className="mx-auto max-w-2xl space-y-6 px-4 py-8">
+      <FirstRunOnboarding />
       <CheckInPing />
       <p
         className="text-center"
