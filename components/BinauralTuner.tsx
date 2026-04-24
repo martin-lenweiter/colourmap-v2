@@ -2895,6 +2895,50 @@ export default function BinauralTuner() {
         >
           Relaxing Sounds
         </p>
+        {/* Status strip — one-line readout of everything audible right
+            now. Makes it impossible for a stuck layer or drum bed to
+            hide somewhere down the page. When nothing is playing we
+            show a gentle "tap play to begin" hint in the same slot. */}
+        {(() => {
+          const parts: string[] = [];
+          if (playing) {
+            if (baseToneOn) parts.push(`${baseFreq}Hz`);
+            if (binauralOn) parts.push(`${beatFreq}Hz beat`);
+            const layerIds = Object.keys(activeLayers).filter((id) => (activeLayers[id] ?? 0) > 0);
+            if (layerIds.length > 0) {
+              const labels = layerIds
+                .map((id) => LAYERS.find((l) => l.id === id)?.label ?? id)
+                .filter(Boolean);
+              parts.push(labels.join(' · '));
+            }
+            if (beatPreset !== 'off') parts.push(`${beatPreset} drums`);
+            if (activeMelodies.size > 0) parts.push(`${activeMelodies.size} melodies`);
+            if (activeSacred.size > 0) parts.push(`${activeSacred.size} sacred`);
+          }
+          const text = !playing
+            ? 'tap play to begin'
+            : parts.length === 0
+              ? 'silent'
+              : parts.join('  ·  ');
+          return (
+            <p
+              className="px-3"
+              style={{
+                fontFamily: 'var(--font-serif)',
+                fontSize: '12px',
+                fontStyle: 'italic',
+                color: '#8A6A4A',
+                opacity: playing ? 0.85 : 0.55,
+                lineHeight: 1.5,
+                maxWidth: 520,
+                margin: '0 auto',
+              }}
+              aria-live="polite"
+            >
+              {text}
+            </p>
+          );
+        })()}
       </div>
 
       {/* Simple / Full toggle */}
