@@ -1416,13 +1416,24 @@ export default function BinauralTuner() {
   const layerReverbRef = useRef<ConvolverNode | null>(null);
   const layerDryRef = useRef<GainNode | null>(null);
   const layerWetRef = useRef<GainNode | null>(null);
-  // Harmony tones — musical intervals relative to base frequency
+  // Harmony tones — musical intervals relative to base frequency.
+  // Ordered low → high so the row reads like a pitch ladder. Below 1×
+  // are subharmonics (undertones) which ground the mix with warmth;
+  // above 1× are the classical overtones. Ratios are exact just
+  // intonation so they beat cleanly against the root.
   const HARMONICS = [
-    { id: 'fifth', label: 'Fifth', ratio: 3 / 2, color: '#6890B0' },
-    { id: 'octave', label: 'Octave', ratio: 2, color: '#7AAA58' },
+    // Subharmonics — below the root
+    { id: 'sub-octave', label: 'Sub Octave', ratio: 1 / 2, color: '#5F3A24' },
+    { id: 'sub-fifth', label: 'Sub Fifth', ratio: 2 / 3, color: '#7A4E2E' },
+    { id: 'sub-fourth', label: 'Sub Fourth', ratio: 3 / 4, color: '#8A6A4A' },
+    { id: 'sub-third', label: 'Sub Third', ratio: 4 / 5, color: '#A07450' },
+    // Overtones — above the root
+    { id: 'minor3', label: 'Minor 3rd', ratio: 6 / 5, color: '#C4A060' },
     { id: 'third', label: 'Third', ratio: 5 / 4, color: '#D4805A' },
     { id: 'fourth', label: 'Fourth', ratio: 4 / 3, color: '#9B6BA0' },
-    { id: 'minor3', label: 'Minor 3rd', ratio: 6 / 5, color: '#C4A060' },
+    { id: 'fifth', label: 'Fifth', ratio: 3 / 2, color: '#6890B0' },
+    { id: 'octave', label: 'Octave', ratio: 2, color: '#7AAA58' },
+    { id: 'double-oct', label: 'Double Oct', ratio: 4, color: '#88C878' },
   ] as const;
   const [activeHarmonics, setActiveHarmonics] = useState<Set<string>>(new Set());
   const harmOscsRef = useRef<Map<string, { osc: OscillatorNode; gain: GainNode }>>(new Map());
@@ -3487,10 +3498,16 @@ export default function BinauralTuner() {
             >
               Harmonics · {baseFreq}Hz
             </p>
-            <div className="flex justify-center gap-2">
+            {/* Bigger harmony pills — 2-column grid on phone, 5 across on
+                desktop so the 10 over+under-tones all fit without cramming.
+                Each card: big dot, label, ratio line, Hz. */}
+            <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 md:grid-cols-5">
               {HARMONICS.map((h) => {
                 const isOn = activeHarmonics.has(h.id);
-                const freq = Math.round(baseFreq * h.ratio);
+                const freq = Math.round(baseFreq * h.ratio * 100) / 100;
+                const freqDisplay = freq < 20 ? freq.toFixed(1) : Math.round(freq);
+                const ratioDisplay =
+                  h.ratio < 1 ? `÷${Math.round((1 / h.ratio) * 100) / 100}` : `×${h.ratio}`;
                 return (
                   <button
                     key={h.id}
@@ -3503,17 +3520,19 @@ export default function BinauralTuner() {
                         return next;
                       });
                     }}
-                    className="flex cursor-pointer flex-col items-center gap-1 rounded-xl px-2.5 py-2 transition-all"
+                    className="flex cursor-pointer flex-col items-center justify-center gap-1 rounded-2xl px-3 py-3 transition-all"
                     style={{
-                      background: isOn ? `${h.color}15` : 'transparent',
-                      border: `1px solid ${isOn ? `${h.color}40` : '#C4A06012'}`,
+                      background: isOn ? `${h.color}1E` : 'transparent',
+                      border: `1px solid ${isOn ? `${h.color}60` : '#C4A06020'}`,
+                      minHeight: 88,
                     }}
+                    aria-pressed={isOn}
                   >
                     <span
                       className="block rounded-full"
                       style={{
-                        width: 10,
-                        height: 10,
+                        width: 14,
+                        height: 14,
                         background: h.color,
                         opacity: isOn ? 1 : 0.7,
                       }}
@@ -3521,10 +3540,11 @@ export default function BinauralTuner() {
                     <span
                       style={{
                         fontFamily: 'var(--font-serif)',
-                        fontSize: '12px',
-                        fontWeight: isOn ? 700 : 500,
-                        color: isOn ? h.color : '#8A6A4A',
-                        opacity: isOn ? 1 : 0.8,
+                        fontSize: '13px',
+                        fontWeight: isOn ? 700 : 600,
+                        color: isOn ? h.color : '#5C3018',
+                        opacity: isOn ? 1 : 0.85,
+                        lineHeight: 1.1,
                       }}
                     >
                       {h.label}
@@ -3532,11 +3552,14 @@ export default function BinauralTuner() {
                     <span
                       style={{
                         fontFamily: 'var(--font-serif)',
-                        fontSize: '12px',
-                        color: '#8A6A4A',
+                        fontSize: '11px',
+                        fontStyle: 'italic',
+                        color: isOn ? h.color : '#8A6A4A',
+                        opacity: isOn ? 0.85 : 0.6,
+                        letterSpacing: '0.02em',
                       }}
                     >
-                      {freq}Hz
+                      {ratioDisplay} · {freqDisplay}Hz
                     </span>
                   </button>
                 );
