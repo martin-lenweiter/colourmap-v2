@@ -4,6 +4,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 
 import AtomVisualizer, { type VisualizerMode } from '@/components/AtomVisualizer';
 import InfoTooltip from '@/components/InfoTooltip';
+import { playSampledNote, type SamplePackId } from '@/lib/sample-pack';
 
 /* ═══════════════════════════════════════════════════════════
    BINAURAL TUNER — adaptive soundscape generator.
@@ -1447,7 +1448,16 @@ export default function BinauralTuner() {
   const wetGainRef = useRef<GainNode | null>(null);
 
   // Generative melodies
-  const MELODIES = [
+  const MELODIES: {
+    readonly id: string;
+    readonly label: string;
+    readonly color: string;
+    readonly type: OscillatorType;
+    readonly attack: number;
+    readonly release: number;
+    readonly octave: number;
+    readonly sampledPack?: SamplePackId;
+  }[] = [
     {
       id: 'piano',
       label: 'Soft Piano',
@@ -1502,7 +1512,50 @@ export default function BinauralTuner() {
       release: 4.0,
       octave: 3,
     },
-  ] as const;
+    // Real sampled instruments (CC0, from public/sounds/<pack>/).
+    // When sampledPack is set, the melody loop plays a real recording
+    // via playSampledNote() instead of building an oscillator.
+    {
+      id: 'real-piano',
+      label: 'Real Piano',
+      color: '#5C3018',
+      type: 'sine' as OscillatorType,
+      attack: 0.1,
+      release: 3.5,
+      octave: 4,
+      sampledPack: 'piano',
+    },
+    {
+      id: 'real-violin',
+      label: 'Real Violin',
+      color: '#8A3A2B',
+      type: 'sine' as OscillatorType,
+      attack: 0.1,
+      release: 3.5,
+      octave: 4,
+      sampledPack: 'violin',
+    },
+    {
+      id: 'real-flute',
+      label: 'Real Flute',
+      color: '#6890B0',
+      type: 'sine' as OscillatorType,
+      attack: 0.1,
+      release: 3.5,
+      octave: 5,
+      sampledPack: 'flute',
+    },
+    {
+      id: 'real-harp',
+      label: 'Real Harp',
+      color: '#C4A060',
+      type: 'sine' as OscillatorType,
+      attack: 0.1,
+      release: 3.5,
+      octave: 5,
+      sampledPack: 'harp',
+    },
+  ];
   // Musical scales for melodies
   const MELODY_SCALES: Record<string, { label: string; notes: number[] }> = {
     pentatonic: { label: 'Pentatonic', notes: [0, 2, 4, 7, 9, 12, 14, 16, 19, 21] },
@@ -1532,6 +1585,37 @@ export default function BinauralTuner() {
     // Pick a random note from the selected scale
     const scaleNotes = MELODY_SCALES[melodyScale]?.notes || MELODY_SCALES.pentatonic.notes;
     const noteIdx = scaleNotes[Math.floor(Math.random() * scaleNotes.length)];
+
+    // Sampled-instrument branch — play a real recording at the chosen
+    // pitch, schedule the next note, and return. Skips the entire
+    // oscillator stack below.
+    if (melDef.sampledPack) {
+      const octavesFromCenter = Math.floor(noteIdx / 12);
+      const baseNote = 261.63 * 2 ** (melDef.octave - 4);
+      const freq = baseNote * 2 ** (noteIdx / 12);
+      const output = melodyDryRef.current ?? gain;
+      // Volume is per-melody: piano/violin a bit warmer, flute/harp brighter.
+      const vol = 0.25;
+      playSampledNote(ctx, melDef.sampledPack, freq, vol, output);
+      if (melodyReverbRef.current) {
+        // Also send a copy through the melody reverb for depth.
+        playSampledNote(ctx, melDef.sampledPack, freq, vol * 0.6, melodyReverbRef.current);
+      }
+      // Schedule next note on the same cadence as the other melodies
+      const speedMult =
+        melodySpeed < 50 ? 1 + (50 - melodySpeed) / 10 : 1 / (1 + (melodySpeed - 50) / 25);
+      const interval = (1500 + Math.random() * 3000) * speedMult;
+      melodyTimersRef.current.set(
+        melDef.id,
+        setTimeout(() => {
+          if (melodyActiveIdsRef.current.has(melDef.id)) playMelodyNote(melDef);
+        }, interval),
+      );
+      // Unused in sampled path — keeps the later code skipped without
+      // a TypeScript "unused var" complaint.
+      void octavesFromCenter;
+      return;
+    }
 
     // Multi-octave spread (RM-C3): about 25% chance of ±1 octave jump
     // and 5% chance of ±2 octave jump on each note. Gives the melody
