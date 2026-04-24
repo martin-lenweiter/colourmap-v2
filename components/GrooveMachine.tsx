@@ -534,6 +534,33 @@ function triggerArp(ctx: AudioContext, when: number, vel: number, freq: number) 
   osc.stop(when + 0.15);
 }
 
+// White-noise riser played once when a DROP begins. 2 bars at 115 bpm
+// ≈ 4.2s. Rises in pitch and volume to create anticipation, then cuts
+// so the slam-back feels big.
+function triggerRiser(ctx: AudioContext, when: number, durationSec: number) {
+  const bufSize = Math.floor(ctx.sampleRate * durationSec);
+  const buf = ctx.createBuffer(1, bufSize, ctx.sampleRate);
+  const data = buf.getChannelData(0);
+  for (let i = 0; i < bufSize; i++) data[i] = Math.random() * 2 - 1;
+  const src = ctx.createBufferSource();
+  src.buffer = buf;
+  const bp = ctx.createBiquadFilter();
+  bp.type = 'bandpass';
+  bp.Q.value = 6;
+  // Sweep from 400Hz to 8kHz across the duration
+  bp.frequency.setValueAtTime(400, when);
+  bp.frequency.exponentialRampToValueAtTime(8000, when + durationSec - 0.1);
+  const g = ctx.createGain();
+  g.gain.setValueAtTime(0.0001, when);
+  g.gain.linearRampToValueAtTime(0.3, when + durationSec - 0.15);
+  g.gain.exponentialRampToValueAtTime(0.0001, when + durationSec);
+  src.connect(bp);
+  bp.connect(g);
+  g.connect(ctx.destination);
+  src.start(when);
+  src.stop(when + durationSec);
+}
+
 function triggerChop(ctx: AudioContext, when: number, vel: number, freq: number) {
   // Short "ah" vocal chop — multi-partial periodic wave + vowel formant
   const osc = ctx.createOscillator();
@@ -636,28 +663,47 @@ export default function GrooveMachine() {
     const ctx = ctxRef.current;
     if (!ctx) return;
     const secondsPerSixteenth = 60 / bpmRef.current / 4;
+    // Swing: offbeat 16ths sit ~17% late. Gives the grid breath.
+    const SWING_AMOUNT = 0.17;
     const lookahead = 0.1;
     while (nextTimeRef.current < ctx.currentTime + lookahead) {
-      const stepIdx = nextStepRef.current % 16;
+      const totalStep = nextStepRef.current;
+      const stepIdx = totalStep % 16;
+      const bar = Math.floor(totalStep / 16);
+      // On bar 4 of every 4-bar cycle: a drum fill at steps 14-15 —
+      // adds life without needing a second pattern.
+      const isLastBarOfCycle = bar % 4 === 3;
+      const isFillWindow = isLastBarOfCycle && stepIdx >= 14;
       const currentMode = modeRef.current;
       const currentActive = activeRef.current;
+      // Swung timing: offbeat 16ths (odd step index) pushed later.
+      const swingOffset = stepIdx % 2 === 1 ? secondsPerSixteenth * SWING_AMOUNT : 0;
+      const when = nextTimeRef.current + swingOffset;
+
       for (const track of TRACKS) {
-        // Mode gating — breakdown / silence / drop override per-track
         let allowed = currentActive[track.id];
         if (currentMode === 'breakdown') {
           allowed = track.id === 'bass' || track.id === 'pad';
         } else if (currentMode === 'silence') {
           allowed = track.id === 'pad';
         } else if (currentMode === 'drop') {
-          // DROP: drums muted for 2 bars, everything else plays
+          // DROP: drums muted during the riser — bass + pad keep a
+          // bed under the tension, everything else silent except the
+          // pad and wobble.
           if (track.group === 'drums') allowed = false;
         }
         if (!allowed) continue;
-        const vel = track.pattern[stepIdx];
+        let vel = track.pattern[stepIdx];
+        // Fill bar: add extra snare + kick hits on 14-15 to sell the
+        // approach to the downbeat.
+        if (isFillWindow && currentMode === 'full') {
+          if (track.id === 'snare' && (stepIdx === 14 || stepIdx === 15)) vel = 0.85;
+          if (track.id === 'kick' && stepIdx === 15) vel = 0.7;
+        }
         if (!vel) continue;
         const freq = track.notes?.[stepIdx] ?? undefined;
-        if (freq === 0) continue; // explicit silence in the notes array
-        VOICES[track.id](ctx, nextTimeRef.current, vel, freq);
+        if (freq === 0) continue;
+        VOICES[track.id](ctx, when, vel, freq);
       }
       nextTimeRef.current += secondsPerSixteenth;
       nextStepRef.current++;
@@ -706,10 +752,33 @@ export default function GrooveMachine() {
   }
 
   function runDrop() {
+    const ctx = ctxRef.current;
+    const twoBarsSec = (60 / bpmRef.current) * 4 * 2;
     setMode('drop');
-    // Snap back to full after 2 bars
-    const twoBars = ((60 / bpmRef.current) * 4 * 2 * 1000) | 0;
-    setTimeout(() => setMode('full'), twoBars);
+    // Schedule a 2-bar noise riser from now. The drums stay muted
+    // (mode 'drop') while this rises, building tension; at the end
+    // we snap back to 'full' and the first beat after slams.
+    if (ctx) {
+      const now = ctx.currentTime + 0.05;
+      triggerRiser(ctx, now, twoBarsSec);
+    }
+    setTimeout(() => setMode('full'), (twoBarsSec * 1000) | 0);
+  }
+
+  function randomizeGroove() {
+    // Keep anchors on: kick, bass, pad. Randomize everything else.
+    const ANCHORS: TrackId[] = ['kick', 'bass', 'pad'];
+    const next: Record<TrackId, boolean> = { ...DEFAULT_ACTIVE };
+    for (const id of Object.keys(next) as TrackId[]) {
+      if (ANCHORS.includes(id)) {
+        next[id] = true;
+      } else {
+        // 35% chance for each non-anchor — gives a coherent sparse mix
+        next[id] = Math.random() < 0.35;
+      }
+    }
+    setActive(next);
+    if (mode !== 'full') setMode('full');
   }
 
   const activeCount = Object.values(active).filter(Boolean).length;
@@ -973,6 +1042,26 @@ export default function GrooveMachine() {
                 onClick={() => setMode('silence')}
               />
             </div>
+            {/* Randomize — keeps kick + bass + pad, rolls the rest.
+                Fastest way to find a new vibe you didn't know you wanted. */}
+            <button
+              type="button"
+              onClick={randomizeGroove}
+              className="mt-3 w-full cursor-pointer rounded-xl py-2.5 transition-all hover:opacity-85"
+              style={{
+                background: 'transparent',
+                border: '1.5px dashed #C4A06060',
+                color: '#8A6A4A',
+                fontFamily: 'var(--font-serif)',
+                fontSize: '12px',
+                fontWeight: 600,
+                letterSpacing: '0.16em',
+                textTransform: 'uppercase',
+                fontStyle: 'italic',
+              }}
+            >
+              ✦ new groove
+            </button>
           </div>
 
           {/* Vibe meter */}
