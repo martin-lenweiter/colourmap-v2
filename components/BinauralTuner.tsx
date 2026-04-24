@@ -45,13 +45,16 @@ const PRESETS = [
 ];
 
 // ── Default layers per preset ──
+// 'breath' (bandpass-filtered noise layer) removed from all defaults
+// per user — the sound wasn't reading as "breath", felt like noise on
+// top. Users can still manually toggle the layer from the layers list.
 const PRESET_LAYERS: Record<string, string[]> = {
   'deep-sleep': ['ocean', 'sub'],
-  meditation: ['rain', 'breath'],
+  meditation: ['rain', 'bowl'],
   creativity: ['birds', 'wind', 'bowl'],
   'calm-focus': ['hum', 'wind'],
-  presence: ['breath', 'drone'],
-  stillness: ['bowl', 'breath'],
+  presence: ['drone'],
+  stillness: ['bowl'],
 };
 
 // ── Soundscape layers ──
@@ -199,13 +202,9 @@ const LAYERS: LayerDef[] = [
     group: 'texture',
     build: (ctx) => buildNoise(ctx, 'highpass', 3000, 0.3),
   },
-  {
-    id: 'breath',
-    label: 'Breath',
-    color: '#C8C8A0',
-    group: 'texture',
-    build: (ctx) => buildNoise(ctx, 'bandpass', 500, 0.5),
-  },
+  // 'breath' layer removed — the bandpass-noise output didn't read as
+  // breathing, just added a layer of hiss. Can be reintroduced with a
+  // proper breath sample if we want the concept back.
   {
     id: 'hum',
     label: 'Room Hum',
