@@ -3,6 +3,7 @@ import { redirect } from 'next/navigation';
 
 import ColourmapBrandButton from '@/components/ColourmapBrandButton';
 import DevBranchHud from '@/components/DevBranchHud';
+import FeedbackOverlay from '@/components/FeedbackOverlay';
 import MobileViewportBoot from '@/components/MobileViewportBoot';
 import NavLinks from '@/components/NavLinks';
 import StepBack from '@/components/StepBack';
@@ -71,6 +72,7 @@ export default async function AppLayout({
         </header>
         <AppShell>{children}</AppShell>
       </div>
+      <FeedbackOverlay />
       <DevBranchHud />
     </ViewModeProvider>
   );
