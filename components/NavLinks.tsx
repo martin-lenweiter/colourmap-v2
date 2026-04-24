@@ -7,12 +7,14 @@ import { useEffect, useRef, useState } from 'react';
 import { useViewMode } from './ViewModeContext';
 
 // Plain text labels — no glyphs (user: 'no smileys').
+// 4 categories per Martin 2026-04-24: Focus / Teamwork / Notebook / Music.
+// /day → Focus (inner check-in). /circles → Teamwork. /sounds → Music
+// (Relaxing Sounds + Magic Maker + Lo-fi Looper + Visuals + Songs).
 const PRIMARY_LINKS: { href: string; label: string }[] = [
-  { href: '/day', label: 'Day' },
-  { href: '/sounds', label: 'Sounds' },
-  { href: '/music', label: 'Music' },
-  { href: '/circles', label: 'Circles' },
+  { href: '/day', label: 'Focus' },
+  { href: '/circles', label: 'Teamwork' },
   { href: '/notebook', label: 'Notebook' },
+  { href: '/sounds', label: 'Music' },
 ];
 
 const PHONE_PRIMARY_LINKS = PRIMARY_LINKS;
@@ -23,6 +25,7 @@ const MORE_LINKS = [
   { href: '/life-scan', label: 'Life Scan' },
   { href: '/programs', label: 'Programs' },
   { href: '/research', label: 'Research' },
+  { href: '/music', label: 'Music Setlist' },
 ];
 
 export default function NavLinks() {
@@ -45,16 +48,16 @@ export default function NavLinks() {
     return () => document.removeEventListener('mousedown', onClickOutside);
   }, [moreOpen]);
 
-  // On phone, the nav scrolls horizontally so labels don't wrap or
-  // shrink. No-wrap, horizontal overflow, hidden scrollbar.
+  // With 4 primary links the phone nav fits centered without horizontal
+  // overflow — keeps Focus from hugging the left edge. Scroll fallback
+  // remains in case a custom /more item is ever promoted back up.
   return (
     <nav
       className={`mx-auto flex w-full items-center px-4 pb-3 ${
         isPhone
-          ? 'gap-5 text-sm overflow-x-auto justify-start scrollbar-none'
+          ? 'gap-4 text-sm justify-center flex-wrap'
           : 'max-w-5xl gap-8 text-base justify-center'
       }`}
-      style={isPhone ? { scrollbarWidth: 'none' } : undefined}
     >
       {primary.map((link) => {
         const isActive = link.href.startsWith('/#')

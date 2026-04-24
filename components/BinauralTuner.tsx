@@ -15,10 +15,9 @@ import { playSampledNote, type SamplePackId } from '@/lib/sample-pack';
    ═══════════════════════════════════════════════════════════ */
 
 // ── Wave visualization styles ──
-type WaveStyle = 'sine' | 'layered' | 'pulse' | 'double' | 'zigzag';
+type WaveStyle = 'sine' | 'pulse' | 'double' | 'zigzag';
 const WAVE_STYLES: { id: WaveStyle; label: string }[] = [
   { id: 'sine', label: 'sine' },
-  { id: 'layered', label: 'layered' },
   { id: 'pulse', label: 'pulse' },
   { id: 'double', label: 'double' },
   { id: 'zigzag', label: 'zigzag' },
@@ -1428,8 +1427,14 @@ export default function BinauralTuner() {
   const [activeHarmonics, setActiveHarmonics] = useState<Set<string>>(new Set());
   const harmOscsRef = useRef<Map<string, { osc: OscillatorNode; gain: GainNode }>>(new Map());
 
-  // Sacred / Solfeggio frequencies
+  // Sacred / Solfeggio frequencies. Deep end (32–174) are lower
+  // anchoring tones — grounding / earth resonance; mid-range are the
+  // canonical Solfeggio; 963 at the top for higher-self.
   const SACRED = [
+    { id: 's032', label: '32', freq: 32, desc: 'root', color: '#6A4A2A' },
+    { id: 's063', label: '63', freq: 63, desc: 'earth', color: '#7A5438' },
+    { id: 's108', label: '108', freq: 108, desc: 'unity', color: '#8A6A4A' },
+    { id: 's136', label: '136', freq: 136.1, desc: 'om', color: '#B89C76' },
     { id: 's174', label: '174', freq: 174, desc: 'foundation', color: '#A0907A' },
     { id: 's285', label: '285', freq: 285, desc: 'healing', color: '#88B0C8' },
     { id: 's396', label: '396', freq: 396, desc: 'liberation', color: '#9B6BA0' },
@@ -2818,13 +2823,13 @@ export default function BinauralTuner() {
         ? 1 - 0.35 * Math.sin(waveTime * tremoloSpeed * Math.PI * 2 + (x / W) * 0.5)
         : 1;
     const amplitude = baseAmplitude * tremoloMod;
-    const phase = (x / wavelength) * Math.PI * 2;
+    // Gentle time-drift so 'sine' and 'zigzag' breathe along instead of
+    // sitting perfectly still. 0.35 rad/s ≈ one full drift every 18s —
+    // calm, not twitchy.
+    const drift = waveTime * 0.35;
+    const phase = (x / wavelength) * Math.PI * 2 + drift;
     let sample: number;
     switch (waveStyle) {
-      case 'layered':
-        // Fundamental + second harmonic at 1/3 amplitude — richer body
-        sample = Math.sin(phase) * 0.75 + Math.sin(phase * 2) * 0.25;
-        break;
       case 'pulse': {
         // Very slow amplitude envelope on top of the sine — meditative
         // breath, not a heartbeat. Cycle roughly every 8-10 seconds
@@ -2838,8 +2843,9 @@ export default function BinauralTuner() {
         sample = (Math.sin(phase) + Math.sin(phase * 1.07 + waveTime * 0.8)) * 0.5;
         break;
       case 'zigzag': {
-        // Symmetric triangle wave — same period as sine, sharper edges
-        const t = (((x / wavelength) % 1) + 1) % 1;
+        // Symmetric triangle wave — same period as sine, sharper edges.
+        // Offset by drift so it also gently scrolls.
+        const t = ((((x + (drift * wavelength) / (Math.PI * 2)) / wavelength) % 1) + 1) % 1;
         sample = t < 0.5 ? 4 * t - 1 : 3 - 4 * t;
         break;
       }
@@ -2887,68 +2893,8 @@ export default function BinauralTuner() {
             color: '#5C3018',
           }}
         >
-          Calming Sounds
+          Relaxing Sounds
         </p>
-        {/* Binaural quick-shortcut. Shows what's currently playing (base
-            Hz + beat Hz + breathing). Tap to jump into full Studio mode
-            for fine-tuning. "Live readout doubles as a door." */}
-        <button
-          type="button"
-          onClick={() => setSimpleMode(false)}
-          className="italic cursor-pointer transition-opacity hover:opacity-85"
-          style={{
-            fontFamily: 'var(--font-serif)',
-            fontSize: '15px',
-            color: '#8A6A4A',
-            opacity: 0.95,
-            minHeight: '1.4em',
-            background: 'none',
-            border: 'none',
-            padding: '2px 8px',
-            borderRadius: 10,
-            display: 'inline-flex',
-            alignItems: 'center',
-            gap: 6,
-          }}
-          title="Open the studio to tune frequencies"
-          aria-live="polite"
-        >
-          {playing ? (
-            <>
-              {baseToneOn ? (
-                <span style={{ color: '#5C3018', fontWeight: 600, fontStyle: 'normal' }}>
-                  {baseFreq}
-                  <span style={{ fontSize: '11px', opacity: 0.7, marginLeft: 2 }}>Hz</span>
-                </span>
-              ) : (
-                <span style={{ opacity: 0.45 }}>no base tone</span>
-              )}
-              {binauralOn && (
-                <>
-                  <span style={{ opacity: 0.4 }}>·</span>
-                  <span style={{ color: '#7A5438', fontWeight: 600, fontStyle: 'normal' }}>
-                    {beatFreq}
-                    <span style={{ fontSize: '11px', opacity: 0.7, marginLeft: 2 }}>Hz beat</span>
-                  </span>
-                </>
-              )}
-            </>
-          ) : (
-            <span style={{ opacity: 0.55 }}>tap play to begin</span>
-          )}
-          <span
-            aria-hidden="true"
-            style={{
-              fontSize: 10,
-              opacity: 0.45,
-              letterSpacing: '0.08em',
-              textTransform: 'uppercase',
-              fontStyle: 'normal',
-            }}
-          >
-            open studio ›
-          </span>
-        </button>
       </div>
 
       {/* Simple / Full toggle */}

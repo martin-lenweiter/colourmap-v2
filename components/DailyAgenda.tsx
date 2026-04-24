@@ -134,8 +134,16 @@ const EMOTION_COLORS = [
 
 const WAKE_KEY = 'colourmap:wake-hour';
 
+// Phone-friendly short window — only render the hours that matter
+// right now instead of rolling out 15 rows for the whole day. Window
+// is currentHour ± a few, clamped to [wakeHour, 22] so early-risers
+// with wakeHour=6 and late-night users stay within their day.
 function getHours(wakeHour: number): number[] {
-  return Array.from({ length: 22 - wakeHour }, (_, i) => i + wakeHour);
+  const now = new Date();
+  const current = now.getHours();
+  const startH = Math.max(wakeHour, current - 1);
+  const endH = Math.min(22, Math.max(current + 4, startH + 4));
+  return Array.from({ length: endH - startH + 1 }, (_, i) => i + startH);
 }
 
 function loadAgenda(): AgendaBlock[] {
@@ -460,14 +468,10 @@ export default function DailyAgenda() {
   const dayBlocks = blocks.filter((b) => b.date === selectedDate);
 
   return (
-    <div
-      className="space-y-3 rounded-3xl border px-5 py-5"
-      style={{
-        borderColor: '#6890B050',
-        background: 'linear-gradient(180deg, rgba(245,236,220,0.97), rgba(240,228,208,0.95))',
-        boxShadow: '0 28px 55px -36px rgba(92,48,24,0.3)',
-      }}
-    >
+    <div className="space-y-3 px-1 py-2">
+      {/* Container flattened on phone per user — no beige frame so the
+          section inherits whichever color style is active. Agenda reads
+          as part of the Doing column rather than as a nested card. */}
       {/* Header — same pill format as Other Missions */}
       <div className="flex justify-center">
         <button
@@ -524,24 +528,29 @@ export default function DailyAgenda() {
                 </button>
               ))}
             </div>
-            {/* Layer dots — compact */}
-            <div className="flex gap-1.5">
+            {/* Layer toggles — mirror the compass-pill vocabulary: a dot
+                + its label, so the three layers read as a deliberate
+                choice rather than three anonymous dots. */}
+            <div className="flex gap-2">
               {(
                 [
                   {
                     key: 'mission',
+                    label: 'Mission',
                     color: '#6890B0',
                     active: showMission,
                     toggle: () => setShowMission((s: boolean) => !s),
                   },
                   {
                     key: 'emotion',
+                    label: 'Emotion',
                     color: '#9B6BA0',
                     active: showEmotion,
                     toggle: () => setShowEmotion((s: boolean) => !s),
                   },
                   {
                     key: 'social',
+                    label: 'Social',
                     color: '#6B7F4E',
                     active: showSocial,
                     toggle: () => setShowSocial((s: boolean) => !s),
@@ -552,16 +561,35 @@ export default function DailyAgenda() {
                   key={l.key}
                   type="button"
                   onClick={l.toggle}
-                  className="cursor-pointer rounded-full transition-all"
+                  className="flex cursor-pointer items-center gap-1.5 rounded-full px-2 py-1 transition-all"
                   style={{
-                    width: 10,
-                    height: 10,
-                    background: l.color,
-                    opacity: l.active ? 1 : 0.25,
-                    border: 'none',
+                    background: l.active ? `${l.color}18` : 'transparent',
+                    border: `1px solid ${l.active ? `${l.color}50` : `${l.color}20`}`,
+                    opacity: l.active ? 1 : 0.65,
                   }}
-                  title={l.key}
-                />
+                  title={l.label}
+                  aria-pressed={l.active}
+                >
+                  <span
+                    className="block rounded-full"
+                    style={{
+                      width: 10,
+                      height: 10,
+                      background: l.color,
+                    }}
+                  />
+                  <span
+                    style={{
+                      fontFamily: 'var(--font-serif)',
+                      fontSize: 11,
+                      fontWeight: 600,
+                      color: l.color,
+                      letterSpacing: '0.04em',
+                    }}
+                  >
+                    {l.label}
+                  </span>
+                </button>
               ))}
               {/* Road / List toggle */}
               <div className="ml-2 flex gap-1">

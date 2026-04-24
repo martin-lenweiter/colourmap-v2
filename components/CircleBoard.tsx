@@ -429,7 +429,7 @@ export default function CircleBoard() {
               className="uppercase"
               style={{
                 fontFamily: font,
-                fontSize: 12,
+                fontSize: 14,
                 fontWeight: 700,
                 letterSpacing: '0.12em',
                 color: '#5C3018',
@@ -450,7 +450,7 @@ export default function CircleBoard() {
           {(circles.length === 0 || howOpen) && (
             <div
               className="mt-3 space-y-3 animate-in fade-in duration-150"
-              style={{ fontFamily: font, fontSize: 13, lineHeight: 1.55, color: '#5C3018' }}
+              style={{ fontFamily: font, fontSize: 16, lineHeight: 1.6, color: '#5C3018' }}
             >
               <p>
                 A <strong>Circle</strong> is a shared space with a few people you trust — friends,
@@ -461,7 +461,7 @@ export default function CircleBoard() {
                 <p
                   className="uppercase mb-1"
                   style={{
-                    fontSize: 11,
+                    fontSize: 13,
                     letterSpacing: '0.12em',
                     color: '#8A6A4A',
                     fontWeight: 700,
@@ -498,7 +498,7 @@ export default function CircleBoard() {
                 <p
                   className="uppercase mb-1"
                   style={{
-                    fontSize: 11,
+                    fontSize: 13,
                     letterSpacing: '0.12em',
                     color: '#8A6A4A',
                     fontWeight: 700,
