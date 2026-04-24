@@ -20,44 +20,22 @@ describe('FirstRunOnboarding', () => {
     expect(container.firstChild).toBeNull();
   });
 
-  it('shows step 1 on first load', () => {
+  it('shows the single-card welcome on first load', () => {
     render(<FirstRunOnboarding />);
     expect(screen.getByRole('dialog')).toBeDefined();
     expect(screen.getByRole('heading', { name: 'Welcome' })).toBeDefined();
-  });
-
-  it('advances to the next step when Next is clicked', () => {
-    render(<FirstRunOnboarding />);
-    fireEvent.click(screen.getByRole('button', { name: 'Next' }));
-    expect(screen.getByRole('heading', { name: 'The rhythm' })).toBeDefined();
-  });
-
-  it('shows Start my map on the final step', () => {
-    render(<FirstRunOnboarding />);
-    fireEvent.click(screen.getByRole('button', { name: 'Next' }));
-    fireEvent.click(screen.getByRole('button', { name: 'Next' }));
     expect(screen.getByRole('button', { name: /start my map/i })).toBeDefined();
   });
 
   it('closes and marks onboarded when Start my map is tapped', () => {
     render(<FirstRunOnboarding />);
-    fireEvent.click(screen.getByRole('button', { name: 'Next' }));
-    fireEvent.click(screen.getByRole('button', { name: 'Next' }));
     fireEvent.click(screen.getByRole('button', { name: /start my map/i }));
     expect(screen.queryByRole('dialog')).toBeNull();
     expect(localStorage.getItem('colourmap:onboarded')).toBe('true');
   });
 
-  it('closes and marks onboarded when Skip is tapped', () => {
+  it('closes and marks onboarded when × is tapped', () => {
     render(<FirstRunOnboarding />);
-    fireEvent.click(screen.getByRole('button', { name: 'skip' }));
-    expect(screen.queryByRole('dialog')).toBeNull();
-    expect(localStorage.getItem('colourmap:onboarded')).toBe('true');
-  });
-
-  it('closes and marks onboarded when × is tapped at any step', () => {
-    render(<FirstRunOnboarding />);
-    fireEvent.click(screen.getByRole('button', { name: 'Next' }));
     fireEvent.click(screen.getByRole('button', { name: /skip welcome/i }));
     expect(screen.queryByRole('dialog')).toBeNull();
     expect(localStorage.getItem('colourmap:onboarded')).toBe('true');
