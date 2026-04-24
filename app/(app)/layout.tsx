@@ -40,7 +40,7 @@ export default async function AppLayout({
   return (
     <ViewModeProvider>
       <MobileViewportBoot />
-      <div className="min-h-screen bg-background">
+      <div className="min-h-svh bg-background">
         <header className="border-b border-border">
           <div className="mx-auto flex w-full max-w-5xl flex-col gap-3 px-6 py-3">
             <div className="flex items-center justify-center">
