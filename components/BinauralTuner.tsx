@@ -4,6 +4,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 
 import AtomVisualizer, { type VisualizerMode } from '@/components/AtomVisualizer';
 import InfoTooltip from '@/components/InfoTooltip';
+import { haptic } from '@/lib/haptics';
 import { playSampledNote, type SamplePackId } from '@/lib/sample-pack';
 
 /* ═══════════════════════════════════════════════════════════
@@ -3025,7 +3026,11 @@ export default function BinauralTuner() {
         {/* Play button — overlaid on the right */}
         <button
           type="button"
-          onClick={playing ? stopAudio : startAudio}
+          onClick={() => {
+            haptic(playing ? 'tick' : 'tap');
+            if (playing) stopAudio();
+            else startAudio();
+          }}
           className="absolute right-2 top-1/2 -translate-y-1/2 flex cursor-pointer items-center justify-center rounded-full transition-all"
           style={{
             width: 36,
