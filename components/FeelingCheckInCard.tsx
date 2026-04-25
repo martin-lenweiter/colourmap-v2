@@ -2752,17 +2752,15 @@ export default function FeelingCheckInCard() {
                   </div>
                   <p
                     style={{
-                      // Acceptance's raw yellow (#F0E060) doesn't read against the cream
-                      // paper background — swap to a readable ochre while keeping the
-                      // yellow swatch in the slider itself.
-                      color:
-                        HAWKINS[hawkinsIdx].level === 'Acceptance'
-                          ? '#B8860B'
-                          : HAWKINS[hawkinsIdx].color,
+                      // Per-feeling colours were too light against warm/golden
+                      // backgrounds — switched to deep brown so the level name
+                      // reads cleanly. The slider squares above still carry the
+                      // colour, so the visual link to the feeling is preserved.
+                      color: '#3A2418',
                       fontFamily: 'var(--font-serif)',
-                      fontSize: '18px',
+                      fontSize: '24px',
                       fontWeight: 700,
-                      letterSpacing: '0.04em',
+                      letterSpacing: '0.02em',
                       opacity: 1,
                     }}
                   >
@@ -2859,20 +2857,34 @@ export default function FeelingCheckInCard() {
                     </span>
                   </div>
                   <div className="relative flex items-end gap-2">
-                    <input
-                      type="text"
+                    {/* Auto-grow textarea — Enter inserts newline so the
+                        user can write the full extent of a thought.
+                        Cmd/Ctrl+Enter saves; tag picker stays inline. */}
+                    <textarea
+                      rows={1}
                       value={challengeInput}
                       onChange={(e) => setChallengeInput(e.target.value)}
+                      onInput={(e) => {
+                        const t = e.currentTarget;
+                        t.style.height = 'auto';
+                        t.style.height = `${t.scrollHeight}px`;
+                      }}
                       onKeyDown={(e) => {
-                        if (e.key === 'Enter') saveChallenge();
+                        if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) {
+                          e.preventDefault();
+                          saveChallenge();
+                        }
                       }}
                       placeholder="what is your main tension right now?"
-                      className="flex-1 border-b bg-transparent pb-1 outline-none placeholder:italic placeholder:text-[#8A6A4A] placeholder:opacity-[0.95]"
+                      className="flex-1 resize-none border-b bg-transparent pb-1 outline-none placeholder:italic placeholder:text-[#8A6A4A] placeholder:opacity-[0.95]"
                       style={{
                         color: '#7a5438',
                         borderColor: '#C4A06030',
                         fontFamily: 'var(--font-serif)',
                         fontSize: '16px',
+                        minHeight: 28,
+                        overflow: 'hidden',
+                        lineHeight: 1.45,
                       }}
                     />
                     <CategoryTagPicker
@@ -2925,20 +2937,33 @@ export default function FeelingCheckInCard() {
                     </span>
                   </div>
                   <div className="relative flex items-end gap-2">
-                    <input
-                      type="text"
+                    {/* Auto-grow textarea — same pattern as Challenge:
+                        Enter wraps, Cmd/Ctrl+Enter saves. */}
+                    <textarea
+                      rows={1}
                       value={flowInput}
                       onChange={(e) => setFlowInput(e.target.value)}
+                      onInput={(e) => {
+                        const t = e.currentTarget;
+                        t.style.height = 'auto';
+                        t.style.height = `${t.scrollHeight}px`;
+                      }}
                       onKeyDown={(e) => {
-                        if (e.key === 'Enter') saveFlow();
+                        if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) {
+                          e.preventDefault();
+                          saveFlow();
+                        }
                       }}
                       placeholder="what is working well? how are you celebrating?"
-                      className="flex-1 border-b bg-transparent pb-1 outline-none placeholder:italic placeholder:text-[#8A6A4A] placeholder:opacity-[0.95]"
+                      className="flex-1 resize-none border-b bg-transparent pb-1 outline-none placeholder:italic placeholder:text-[#8A6A4A] placeholder:opacity-[0.95]"
                       style={{
                         color: '#7a5438',
                         borderColor: '#C4A06030',
                         fontFamily: 'var(--font-serif)',
                         fontSize: '16px',
+                        minHeight: 28,
+                        overflow: 'hidden',
+                        lineHeight: 1.45,
                       }}
                     />
                     <CategoryTagPicker
@@ -4372,7 +4397,7 @@ export default function FeelingCheckInCard() {
                                   style={{
                                     color: '#7a5438',
                                     fontFamily: 'var(--font-handwritten)',
-                                    fontSize: '20px',
+                                    fontSize: '24px',
                                     borderColor: '#C4A06040',
                                   }}
                                 />
@@ -4395,7 +4420,7 @@ export default function FeelingCheckInCard() {
                                         ? '#A08060'
                                         : '#7a5438',
                                     fontFamily: 'var(--font-handwritten)',
-                                    fontSize: '20px',
+                                    fontSize: '24px',
                                     opacity: t.done ? 0.5 : t.status === 'waiting' ? 0.5 : 1,
                                     border: 'none',
                                     fontStyle: t.status === 'waiting' ? 'italic' : 'normal',
@@ -4883,7 +4908,7 @@ export default function FeelingCheckInCard() {
                         color: '#7a5438',
                         borderColor: '#C4A06020',
                         fontFamily: 'var(--font-handwritten)',
-                        fontSize: '20px',
+                        fontSize: '24px',
                       }}
                     />
                   </>
