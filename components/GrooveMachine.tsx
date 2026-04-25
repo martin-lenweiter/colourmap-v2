@@ -9,6 +9,7 @@ import {
   getPreset,
   PRESET_LS_KEY,
 } from '@/lib/groove-presets';
+import { useSoundSession } from '@/lib/sound-session';
 
 /* ═══════════════════════════════════════════════════════════
    GROOVE MACHINE — collective-ready groove box.
@@ -667,6 +668,7 @@ const DEFAULT_ACTIVE: Record<TrackId, boolean> = {
 type Mode = 'full' | 'drop' | 'breakdown' | 'silence';
 
 export default function GrooveMachine() {
+  const soundSession = useSoundSession();
   const [playing, setPlaying] = useState(false);
   // Preset state — picks one of the 7 curated soundscapes (Sun-up
   // Funk / Tech House / Tropical / Slow Roll / Boom Bap / Epic
@@ -897,7 +899,9 @@ export default function GrooveMachine() {
     scheduleNextNotes();
     timerRef.current = setInterval(scheduleNextNotes, 25);
     setPlaying(true);
-  }, [scheduleNextNotes]);
+    // Register with global SoundSession — pill shows on other pages
+    soundSession.setActive('groove-machine', `${preset.name} · ${bpm}bpm`);
+  }, [scheduleNextNotes, soundSession, preset.name, bpm]);
 
   const stopAudio = useCallback(() => {
     if (timerRef.current) {
@@ -906,7 +910,8 @@ export default function GrooveMachine() {
     }
     setPlaying(false);
     setStep(0);
-  }, []);
+    soundSession.setPlaying(false);
+  }, [soundSession]);
 
   useEffect(
     () => () => {
