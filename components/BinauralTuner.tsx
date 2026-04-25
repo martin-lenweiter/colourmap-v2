@@ -1305,7 +1305,7 @@ const GENRES: Genre[] = [
   },
 ];
 
-function _getBrainState(beat: number): string {
+function getBrainState(beat: number): string {
   if (beat <= 4) return 'delta · deep rest';
   if (beat <= 8) return 'theta · meditation';
   if (beat <= 14) return 'alpha · relaxed focus';
@@ -2326,6 +2326,88 @@ export default function BinauralTuner() {
     localStorage.setItem('colourmap:tuner-mixes', JSON.stringify(next));
     setSaveName('');
     setShowSave(false);
+  }
+
+  // "Save this moment" — capture a snapshot of the current sound
+  // state and POST it to the user's Notebook (category 'moments').
+  // Falls back to the local moments cache if the API is unreachable
+  // so it always succeeds from the user's perspective. Used by the
+  // small button in the saved-sounds drawer.
+  const [momentStatus, setMomentStatus] = useState<null | 'saving' | 'saved' | 'error'>(null);
+  async function saveMomentToNotebook() {
+    const activeLayerLabels = ALL_LAYERS.filter((l) => (activeLayers[l.id] || 0) > 0)
+      .map((l) => l.label)
+      .join(', ');
+    const harmonicLabels = HARMONICS.filter((h) => activeHarmonics.has(h.id))
+      .map((h) => h.label)
+      .join(', ');
+    const sacredLabels = SACRED.filter((s) => activeSacred.has(s.id))
+      .map((s) => `${s.freq}Hz (${s.desc})`)
+      .join(', ');
+    const melodyLabels = MELODIES.filter((m) => activeMelodies.has(m.id))
+      .map((m) => m.label)
+      .join(', ');
+
+    const stamp = new Date().toLocaleString([], {
+      month: 'short',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+    });
+    const title = saveName.trim()
+      ? `${saveName.trim()} — ${baseFreq}Hz`
+      : `Chill moment · ${stamp} · ${baseFreq}Hz`;
+
+    const lines = [
+      `Base ${baseFreq}Hz · brain-wave ${beatFreq}Hz (${getBrainState(beatFreq)})`,
+      `Volume ${Math.round(volume * 100)}% · binaural ${binauralOn ? 'on' : 'off'}`,
+    ];
+    if (activeLayerLabels) lines.push(`Layers: ${activeLayerLabels}`);
+    if (harmonicLabels) lines.push(`Harmonics: ${harmonicLabels}`);
+    if (sacredLabels) lines.push(`Sacred freqs: ${sacredLabels}`);
+    if (melodyLabels) lines.push(`Melody: ${melodyLabels} · scale ${melodyScale}`);
+    if (wahOn || echoOn) {
+      lines.push(`Effects: ${[wahOn && 'wah', echoOn && 'echo'].filter(Boolean).join(' + ')}`);
+    }
+
+    const body = {
+      category: 'ideas',
+      title,
+      content: lines.join('\n'),
+      tags: ['chill-machine', 'sound-snapshot'],
+    };
+
+    setMomentStatus('saving');
+    try {
+      const res = await fetch('/api/notebook', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+      });
+      if (!res.ok) throw new Error('api');
+      setMomentStatus('saved');
+    } catch {
+      // Fallback: queue into local moments cache so the snapshot
+      // isn't lost even if the API is unreachable. Notebook page
+      // will pick this up via its localStorage fallback.
+      try {
+        const raw = localStorage.getItem('colourmap:notebook-entries');
+        const existing = raw ? JSON.parse(raw) : [];
+        const localEntry = {
+          id: crypto.randomUUID(),
+          ...body,
+          createdAt: new Date().toISOString(),
+        };
+        localStorage.setItem(
+          'colourmap:notebook-entries',
+          JSON.stringify([localEntry, ...existing]),
+        );
+        setMomentStatus('saved');
+      } catch {
+        setMomentStatus('error');
+      }
+    }
+    setTimeout(() => setMomentStatus(null), 1800);
   }
 
   const SHAPE_CYCLE = ['dot', 'star', 'heart', 'losange', 'triangle', 'square'] as const;
@@ -5067,6 +5149,34 @@ export default function BinauralTuner() {
                     }}
                   >
                     save
+                  </button>
+                  {/* Save this moment → Notebook (Ideas). Captures
+                      a snapshot of base/beat/layers/harmonics/effects
+                      so the user can find this exact tuning later
+                      from the Notebook surface. */}
+                  <button
+                    type="button"
+                    onClick={saveMomentToNotebook}
+                    disabled={momentStatus === 'saving'}
+                    title="Save this moment to your Notebook (Ideas)"
+                    className="cursor-pointer rounded-lg px-2 py-1 disabled:opacity-50"
+                    style={{
+                      fontFamily: 'var(--font-serif)',
+                      fontSize: '12px',
+                      fontWeight: 600,
+                      color: momentStatus === 'saved' ? '#7AAA58' : '#9B6BA0',
+                      background: momentStatus === 'saved' ? '#7AAA5810' : '#9B6BA010',
+                      border: `1px solid ${momentStatus === 'saved' ? '#7AAA5830' : '#9B6BA030'}`,
+                      whiteSpace: 'nowrap',
+                    }}
+                  >
+                    {momentStatus === 'saving'
+                      ? '…'
+                      : momentStatus === 'saved'
+                        ? '✓ saved'
+                        : momentStatus === 'error'
+                          ? 'error'
+                          : '→ notebook'}
                   </button>
                 </div>
                 {/* Saved mixes list */}
