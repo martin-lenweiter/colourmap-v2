@@ -4505,146 +4505,162 @@ export default function BinauralTuner() {
             )}
           </div>
 
-          {/* Collapsible: Genres */}
+          {/* Unified Presets pill — Genre + Brain State live under the
+              same ochre title now. One toggle opens both rows. */}
           <div className="px-2">
-            <button
-              type="button"
-              onClick={() => setGenresOpen((s) => !s)}
-              className="flex w-full cursor-pointer items-center justify-center gap-2 py-2"
-              style={{ background: 'none', border: 'none' }}
-            >
-              <span
-                className="text-center text-sm font-semibold uppercase tracking-[0.22em]"
-                style={{ color: '#C4A060' }}
-              >
-                genres
-              </span>
-              <span
-                style={{
-                  transform: genresOpen ? 'rotate(180deg)' : 'rotate(0deg)',
-                  transition: 'transform 0.2s',
-                  color: '#C4A060',
+            <div className="mb-2 flex justify-center">
+              <button
+                type="button"
+                onClick={() => {
+                  const next = !genresOpen;
+                  setGenresOpen(next);
+                  setBrainStatesOpen(next);
                 }}
+                className="flex cursor-pointer items-center gap-2 rounded-full px-5 py-1.5 transition-all"
+                style={{ background: '#C4A06015', border: '1px solid #C4A06040' }}
               >
-                ▾
-              </span>
-            </button>
-            {genresOpen && (
-              <div className="animate-in fade-in duration-150 flex flex-wrap justify-center gap-2 pt-1">
-                {GENRES.map((g) => {
-                  const isActive = activeGenre === g.id;
-                  return (
-                    <button
-                      key={g.id}
-                      type="button"
-                      onClick={() => applyGenre(g)}
-                      className="flex cursor-pointer items-center gap-1.5 rounded-full px-3 py-1.5 transition-all"
-                      style={{
-                        background: isActive ? `${g.color}18` : '#C4A06006',
-                        border: `1px solid ${isActive ? `${g.color}40` : '#C4A06015'}`,
-                      }}
-                      title={g.subtitle}
-                    >
-                      <span
-                        className="block rounded-full shrink-0"
-                        style={{
-                          width: 8,
-                          height: 8,
-                          background: g.color,
-                          opacity: isActive ? 1 : 0.7,
-                        }}
-                      />
-                      <span
-                        style={{
-                          fontFamily: 'var(--font-serif)',
-                          fontSize: '12px',
-                          fontWeight: isActive ? 700 : 500,
-                          color: isActive ? g.color : '#7A5438',
-                          opacity: isActive ? 1 : 0.8,
-                        }}
-                      >
-                        {g.label}
-                      </span>
-                    </button>
-                  );
-                })}
-              </div>
-            )}
-          </div>
-
-          {/* Collapsible: Brain States */}
-          <div className="px-2">
-            <button
-              type="button"
-              onClick={() => setBrainStatesOpen((s) => !s)}
-              className="flex w-full cursor-pointer items-center justify-center gap-2 py-2"
-              style={{ background: 'none', border: 'none' }}
-            >
-              <span
-                className="text-center text-sm font-semibold uppercase tracking-[0.22em]"
-                style={{ color: '#C4A060' }}
-              >
-                brain states
-              </span>
-              <span
-                style={{
-                  transform: brainStatesOpen ? 'rotate(180deg)' : 'rotate(0deg)',
-                  transition: 'transform 0.2s',
-                  color: '#C4A060',
-                }}
-              >
-                ▾
-              </span>
-            </button>
-            {brainStatesOpen && (
-              <div className="animate-in fade-in duration-150">
-                {/* Horizontal scroll on phone so the 6 presets stay on
-                    one row instead of wrapping into uneven 3+3 grids. */}
-                <div
-                  className="flex gap-1.5 overflow-x-auto px-2 pb-1 pt-1"
-                  style={{ scrollbarWidth: 'none' }}
+                <span
+                  className="uppercase"
+                  style={{
+                    fontFamily: 'var(--font-serif)',
+                    fontSize: '14px',
+                    fontWeight: 700,
+                    color: '#C4A060',
+                    letterSpacing: '0.18em',
+                  }}
                 >
-                  {PRESETS.map((p) => {
-                    const isActive = p.base === baseFreq && p.beat === beatFreq;
-                    const presetLayers = PRESET_LAYERS[p.id] || [];
-                    return (
-                      <button
-                        key={p.id}
-                        type="button"
-                        onClick={() => applyPresetWithLayers(p)}
-                        className="shrink-0 cursor-pointer whitespace-nowrap rounded-full px-3 py-1.5 text-left transition-all"
-                        style={{
-                          background: isActive ? `${p.color}15` : 'transparent',
-                          border: `1px solid ${isActive ? `${p.color}40` : '#C4A06015'}`,
-                        }}
-                      >
-                        <span
+                  Presets
+                </span>
+                <span
+                  className="text-sm transition-transform duration-200"
+                  style={{
+                    color: '#C4A06080',
+                    transform: genresOpen ? 'rotate(180deg)' : 'rotate(0deg)',
+                  }}
+                >
+                  ▾
+                </span>
+              </button>
+            </div>
+            {genresOpen && (
+              <div className="animate-in fade-in duration-150 space-y-3 pt-1">
+                {/* GENRE row */}
+                <div>
+                  <p
+                    className="mb-1.5 text-center uppercase"
+                    style={{
+                      fontFamily: 'var(--font-serif)',
+                      fontSize: '10px',
+                      fontWeight: 700,
+                      color: '#8A6A4A',
+                      letterSpacing: '0.18em',
+                      opacity: 0.65,
+                    }}
+                  >
+                    Genre
+                  </p>
+                  <div className="flex flex-wrap justify-center gap-2">
+                    {GENRES.map((g) => {
+                      const isActive = activeGenre === g.id;
+                      return (
+                        <button
+                          key={g.id}
+                          type="button"
+                          onClick={() => applyGenre(g)}
+                          className="flex cursor-pointer items-center gap-1.5 rounded-full px-3 py-1.5 transition-all"
                           style={{
-                            fontFamily: 'var(--font-serif)',
-                            fontSize: '12px',
-                            fontWeight: 600,
-                            color: isActive ? p.color : '#7A5438',
-                            opacity: isActive ? 1 : 0.8,
+                            background: isActive ? `${g.color}18` : '#C4A06006',
+                            border: `1px solid ${isActive ? `${g.color}40` : '#C4A06015'}`,
                           }}
+                          title={g.subtitle}
                         >
-                          {p.label}
-                        </span>
-                        {isActive && presetLayers.length > 0 && (
+                          <span
+                            className="block rounded-full shrink-0"
+                            style={{
+                              width: 8,
+                              height: 8,
+                              background: g.color,
+                              opacity: isActive ? 1 : 0.7,
+                            }}
+                          />
                           <span
                             style={{
                               fontFamily: 'var(--font-serif)',
                               fontSize: '12px',
-                              color: p.color,
-
-                              marginLeft: 4,
+                              fontWeight: isActive ? 700 : 500,
+                              color: isActive ? g.color : '#7A5438',
+                              opacity: isActive ? 1 : 0.8,
                             }}
                           >
-                            +{presetLayers.length}
+                            {g.label}
                           </span>
-                        )}
-                      </button>
-                    );
-                  })}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {/* BRAIN STATE row */}
+                <div>
+                  <p
+                    className="mb-1.5 text-center uppercase"
+                    style={{
+                      fontFamily: 'var(--font-serif)',
+                      fontSize: '10px',
+                      fontWeight: 700,
+                      color: '#8A6A4A',
+                      letterSpacing: '0.18em',
+                      opacity: 0.65,
+                    }}
+                  >
+                    Brain State
+                  </p>
+                  <div
+                    className="flex gap-1.5 overflow-x-auto px-2 pb-1 pt-1"
+                    style={{ scrollbarWidth: 'none' }}
+                  >
+                    {PRESETS.map((p) => {
+                      const isActive = p.base === baseFreq && p.beat === beatFreq;
+                      const presetLayers = PRESET_LAYERS[p.id] || [];
+                      return (
+                        <button
+                          key={p.id}
+                          type="button"
+                          onClick={() => applyPresetWithLayers(p)}
+                          className="shrink-0 cursor-pointer whitespace-nowrap rounded-full px-3 py-1.5 text-left transition-all"
+                          style={{
+                            background: isActive ? `${p.color}15` : 'transparent',
+                            border: `1px solid ${isActive ? `${p.color}40` : '#C4A06015'}`,
+                          }}
+                        >
+                          <span
+                            style={{
+                              fontFamily: 'var(--font-serif)',
+                              fontSize: '12px',
+                              fontWeight: 600,
+                              color: isActive ? p.color : '#7A5438',
+                              opacity: isActive ? 1 : 0.8,
+                            }}
+                          >
+                            {p.label}
+                          </span>
+                          {isActive && presetLayers.length > 0 && (
+                            <span
+                              style={{
+                                fontFamily: 'var(--font-serif)',
+                                fontSize: '12px',
+                                color: p.color,
+
+                                marginLeft: 4,
+                              }}
+                            >
+                              +{presetLayers.length}
+                            </span>
+                          )}
+                        </button>
+                      );
+                    })}
+                  </div>
                 </div>
               </div>
             )}
