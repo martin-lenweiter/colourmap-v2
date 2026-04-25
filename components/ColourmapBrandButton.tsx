@@ -15,6 +15,12 @@ import { useEffect, useRef, useState } from 'react';
 // shown next to the PR number so the user knows which version is live.
 const RECENT_PRS: { num: number; title: string; date: string }[] = [
   {
+    num: 98,
+    date: '2026-04-25',
+    title:
+      '3-dot Check-in landing (Feeling · Doing) + nuke the djembe + simpler Circles description + nav phone fix',
+  },
+  {
     num: 97,
     date: '2026-04-25',
     title:
