@@ -4023,50 +4023,146 @@ export default function BinauralTuner() {
                 Melodies
               </span>
             </div>
-            {/* Melodies as proper boxes — 2 per row on phone, 3 on sm,
-                5 on md+. Each box uses the instrument's own colour as
-                the fill (no separate dot), giving a harmonious row of
-                colour-cards instead of tiny pills. */}
-            <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 md:grid-cols-5">
-              {MELODIES.map((m) => {
-                const isOn = activeMelodies.has(m.id);
-                return (
-                  <button
-                    key={m.id}
-                    type="button"
-                    onClick={() => {
-                      setActiveMelodies((prev) => {
-                        const next = new Set(prev);
-                        if (next.has(m.id)) next.delete(m.id);
-                        else next.add(m.id);
-                        return next;
-                      });
-                    }}
-                    className="flex cursor-pointer items-center justify-center rounded-2xl px-3 py-3 transition-all"
-                    style={{
-                      background: isOn ? `${m.color}1E` : `${m.color}08`,
-                      border: `1px solid ${isOn ? `${m.color}60` : `${m.color}20`}`,
-                      minHeight: 56,
-                    }}
-                    aria-pressed={isOn}
-                  >
-                    <span
-                      className="text-center"
-                      style={{
-                        fontFamily: 'var(--font-serif)',
-                        fontSize: '13px',
-                        fontWeight: isOn ? 700 : 600,
-                        color: isOn ? m.color : '#5C3018',
-                        opacity: isOn ? 1 : 0.7,
-                        lineHeight: 1.15,
-                      }}
-                    >
-                      {m.label}
-                    </span>
-                  </button>
-                );
-              })}
-            </div>
+            {/* Real instruments live in their own horizontal scroll
+                strip above the synthesized melodies. They're recorded
+                CC0 samples (cello, sax, harp, etc) — distinct enough
+                in character that pulling them out of the synth grid
+                makes the surface easier to scan. Each card carries a
+                tiny ♪ glyph in the instrument's colour as a stand-in
+                for proper silhouettes. */}
+            {(() => {
+              const realMelodies = MELODIES.filter((m) => m.sampledPack);
+              const synthMelodies = MELODIES.filter((m) => !m.sampledPack);
+              return (
+                <>
+                  {realMelodies.length > 0 && (
+                    <div className="mb-3">
+                      <p
+                        className="mb-1.5 text-center uppercase"
+                        style={{
+                          fontFamily: 'var(--font-serif)',
+                          fontSize: '10px',
+                          fontWeight: 700,
+                          color: '#8A6A4A',
+                          letterSpacing: '0.18em',
+                          opacity: 0.65,
+                        }}
+                      >
+                        Real Instruments
+                      </p>
+                      <div
+                        className="flex gap-2 overflow-x-auto pb-1"
+                        style={{ scrollbarWidth: 'none' }}
+                      >
+                        {realMelodies.map((m) => {
+                          const isOn = activeMelodies.has(m.id);
+                          return (
+                            <button
+                              key={m.id}
+                              type="button"
+                              onClick={() => {
+                                setActiveMelodies((prev) => {
+                                  const next = new Set(prev);
+                                  if (next.has(m.id)) next.delete(m.id);
+                                  else next.add(m.id);
+                                  return next;
+                                });
+                              }}
+                              className="shrink-0 cursor-pointer rounded-2xl px-4 py-3 transition-all"
+                              style={{
+                                background: isOn ? `${m.color}1E` : `${m.color}08`,
+                                border: `1.5px solid ${isOn ? `${m.color}60` : `${m.color}20`}`,
+                                minWidth: 96,
+                              }}
+                              aria-pressed={isOn}
+                            >
+                              <div
+                                className="mb-1 flex items-center justify-center"
+                                style={{
+                                  width: 28,
+                                  height: 28,
+                                  borderRadius: '50%',
+                                  margin: '0 auto',
+                                  background: `${m.color}25`,
+                                  border: `1px solid ${m.color}50`,
+                                }}
+                              >
+                                <span
+                                  style={{
+                                    fontFamily: 'var(--font-serif)',
+                                    fontSize: 16,
+                                    color: m.color,
+                                    opacity: isOn ? 1 : 0.7,
+                                    lineHeight: 1,
+                                  }}
+                                >
+                                  ♪
+                                </span>
+                              </div>
+                              <p
+                                className="text-center"
+                                style={{
+                                  fontFamily: 'var(--font-serif)',
+                                  fontSize: '12px',
+                                  fontWeight: isOn ? 700 : 600,
+                                  color: isOn ? m.color : '#5C3018',
+                                  opacity: isOn ? 1 : 0.8,
+                                  lineHeight: 1.1,
+                                  whiteSpace: 'nowrap',
+                                }}
+                              >
+                                {m.label.replace(/^Real /, '')}
+                              </p>
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  )}
+                  {/* Synth melodies — 2 per row on phone, 3 on sm, 5 md+. */}
+                  <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 md:grid-cols-5">
+                    {synthMelodies.map((m) => {
+                      const isOn = activeMelodies.has(m.id);
+                      return (
+                        <button
+                          key={m.id}
+                          type="button"
+                          onClick={() => {
+                            setActiveMelodies((prev) => {
+                              const next = new Set(prev);
+                              if (next.has(m.id)) next.delete(m.id);
+                              else next.add(m.id);
+                              return next;
+                            });
+                          }}
+                          className="flex cursor-pointer items-center justify-center rounded-2xl px-3 py-3 transition-all"
+                          style={{
+                            background: isOn ? `${m.color}1E` : `${m.color}08`,
+                            border: `1px solid ${isOn ? `${m.color}60` : `${m.color}20`}`,
+                            minHeight: 56,
+                          }}
+                          aria-pressed={isOn}
+                        >
+                          <span
+                            className="text-center"
+                            style={{
+                              fontFamily: 'var(--font-serif)',
+                              fontSize: '13px',
+                              fontWeight: isOn ? 700 : 600,
+                              color: isOn ? m.color : '#5C3018',
+                              opacity: isOn ? 1 : 0.7,
+                              lineHeight: 1.15,
+                            }}
+                          >
+                            {m.label}
+                          </span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </>
+              );
+            })()}
             {/* Scale selector */}
             <div className="flex flex-wrap justify-center gap-1 pt-1">
               {Object.entries(MELODY_SCALES).map(([id, s]) => (
