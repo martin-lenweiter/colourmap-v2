@@ -3512,16 +3512,17 @@ export default function FeelingCheckInCard() {
                     value={objective}
                     onChange={(e) => setObjective(e.target.value)}
                     placeholder="set an objective..."
-                    className="w-full border-b bg-transparent pb-1 text-center outline-none placeholder:text-[#7A5438] placeholder:opacity-50"
+                    className="w-full border-b bg-transparent pb-3 pt-2 text-center outline-none placeholder:text-[#7A5438] placeholder:opacity-50"
                     style={{
                       color: '#5C3018',
                       borderColor: '#C4A06020',
                       fontFamily: 'var(--font-handwritten)',
-                      fontSize: '24px',
+                      fontSize: '26px',
                       fontWeight: 700,
                       letterSpacing: '0.06em',
                       paddingLeft: '64px',
                       paddingRight: '64px',
+                      lineHeight: 1.3,
                     }}
                   />
                   <div className="absolute right-0 top-1/2 flex -translate-y-1/2 items-center gap-1.5">
@@ -4300,12 +4301,13 @@ export default function FeelingCheckInCard() {
                             if (e.key === 'Enter') addTodayObjective();
                           }}
                           placeholder="+ add objective for today..."
-                          className="w-full border-b bg-transparent pb-1 outline-none placeholder:text-[#7A5438] placeholder:opacity-50"
+                          className="w-full border-b bg-transparent pb-3 pt-2 text-center outline-none placeholder:text-[#7A5438] placeholder:opacity-50"
                           style={{
                             color: '#7a5438',
                             borderColor: '#C4A06020',
                             fontFamily: 'var(--font-handwritten)',
-                            fontSize: '22px',
+                            fontSize: '24px',
+                            lineHeight: 1.3,
                           }}
                         />
                       </>
