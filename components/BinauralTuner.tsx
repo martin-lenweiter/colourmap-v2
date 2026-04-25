@@ -68,6 +68,62 @@ interface LayerDef {
   ) => { node: AudioNode; source: AudioBufferSourceNode | OscillatorNode };
 }
 
+// ── Display categories ──
+// User-facing categories grouping layers by *character*, not engineering
+// taxonomy. The original `group` field stays so saved-mix restoration
+// still works; this is a derived view for the UI only.
+type LayerCategory = 'waters' | 'birds' | 'drones' | 'textures' | 'digital';
+
+const CATEGORY_LABELS: Record<LayerCategory, string> = {
+  waters: 'Waters',
+  birds: 'Birds & Forest',
+  drones: 'Drones & Voices',
+  textures: 'Textures',
+  digital: 'Digital',
+};
+
+const CATEGORY_COLORS: Record<LayerCategory, string> = {
+  waters: '#5AA8B0', // teal — rain, ocean, thunder, waves
+  birds: '#7AAA58', // sage — birds, forest, creatures, wind
+  drones: '#9B6BA0', // plum — sustained tones, chant, choir
+  textures: '#B8843A', // gold — vinyl, hum, bowls, chimes, fire
+  digital: '#5A7AAA', // blue-grey — synthetic / sci-fi
+};
+
+const CATEGORY_ORDER: LayerCategory[] = ['waters', 'birds', 'drones', 'textures', 'digital'];
+
+function getLayerCategory(layer: { id: string; group: string }): LayerCategory {
+  // Drones — every tone-group layer is sustained pitched material
+  if (layer.group === 'tones') return 'drones';
+  // Textures — small grainy character layers
+  if (layer.group === 'texture') return 'textures';
+  // Digital — anything synthetic / sci-fi / modern
+  if (layer.group === 'ambient') return 'digital';
+  // Nature — split: birds + forest live separately from water-character
+  if (layer.group === 'nature') {
+    if (layer.id === 'birds' || layer.id === 'forest' || layer.id === 'wind') return 'birds';
+    if (layer.id === 'fire') return 'textures';
+    return 'waters';
+  }
+  // Real samples — split by id substring
+  if (layer.group === 'real') {
+    const id = layer.id;
+    if (id.includes('rain') || id.includes('thunder') || id === 'real-wind') return 'waters';
+    if (
+      id === 'real-birds' ||
+      id === 'real-garden' ||
+      id === 'real-forest' ||
+      id === 'real-cicada' ||
+      id === 'real-sheep' ||
+      id === 'real-wolf' ||
+      id === 'real-bear'
+    )
+      return 'birds';
+    return 'textures';
+  }
+  return 'textures';
+}
+
 function buildNoise(
   ctx: AudioContext,
   filterType: BiquadFilterType,
@@ -2151,12 +2207,10 @@ export default function BinauralTuner() {
   const [simpleMode, setSimpleMode] = useState(true);
   const [layersOpen, setLayersOpen] = useState(true);
   const [genresOpen, setGenresOpen] = useState(false);
-  // Which layer group is showing in the phone tab strip (desktop ignores this
-  // and renders the 5-column grid). Default to 'nature' as the most
-  // immediately recognizable category.
-  const [activeLayerGroup, setActiveLayerGroup] = useState<
-    'real' | 'nature' | 'tones' | 'texture' | 'ambient'
-  >('nature');
+  // Which layer category is showing in the phone tab strip (desktop
+  // groups all 5 in a row). Default to 'waters' as the most universal
+  // entry point.
+  const [activeLayerGroup, setActiveLayerGroup] = useState<LayerCategory>('waters');
   // brainStatesOpen state kept (write-only) so saved-state restore
   // doesn't break — but the value is never read after merging Genre +
   // Brain State under one Presets pill (genresOpen drives both).
@@ -4503,40 +4557,37 @@ export default function BinauralTuner() {
                   );
                 })()}
 
-                {/* Phone: horizontal group tab strip + single-column list */}
+                {/* Phone: horizontal category tab strip + single-column list.
+                    Categories now group by character (Waters / Birds /
+                    Drones / Textures / Digital) instead of engineering
+                    taxonomy. */}
                 <div className="md:hidden">
                   <div className="flex gap-1.5 overflow-x-auto mb-2 pb-1">
-                    {(['real', 'nature', 'tones', 'texture', 'ambient'] as const).map((group) => {
-                      const groupColors: Record<string, string> = {
-                        real: '#D4805A',
-                        nature: '#7AAA58',
-                        tones: '#C4A060',
-                        texture: '#A0907A',
-                        ambient: '#6890B0',
-                      };
-                      const isActive = activeLayerGroup === group;
+                    {CATEGORY_ORDER.map((cat) => {
+                      const isActive = activeLayerGroup === cat;
+                      const color = CATEGORY_COLORS[cat];
                       return (
                         <button
-                          key={group}
+                          key={cat}
                           type="button"
-                          onClick={() => setActiveLayerGroup(group)}
+                          onClick={() => setActiveLayerGroup(cat)}
                           className="shrink-0 cursor-pointer rounded-full px-3 py-1.5 uppercase tracking-[0.14em] transition-all"
                           style={{
                             fontFamily: 'var(--font-serif)',
                             fontSize: 12,
                             fontWeight: 700,
-                            color: isActive ? groupColors[group] : '#8A6A4A',
-                            background: isActive ? `${groupColors[group]}15` : 'transparent',
-                            border: `1px solid ${isActive ? `${groupColors[group]}60` : '#C4A06018'}`,
+                            color: isActive ? color : '#8A6A4A',
+                            background: isActive ? `${color}15` : 'transparent',
+                            border: `1px solid ${isActive ? `${color}60` : '#C4A06018'}`,
                           }}
                         >
-                          {group}
+                          {CATEGORY_LABELS[cat]}
                         </button>
                       );
                     })}
                   </div>
                   <div className="space-y-1.5">
-                    {ALL_LAYERS.filter((l) => l.group === activeLayerGroup).map((l) => {
+                    {ALL_LAYERS.filter((l) => getLayerCategory(l) === activeLayerGroup).map((l) => {
                       const vol = activeLayers[l.id] || 0;
                       const isOn = vol > 0;
                       return (
@@ -4619,30 +4670,26 @@ export default function BinauralTuner() {
                   </div>
                 </div>
 
-                {/* Desktop: the original 5-column grid stays unchanged. */}
+                {/* Desktop: 5-column grid using the new character-led
+                    categories (Waters / Birds & Forest / Drones &
+                    Voices / Textures / Digital). */}
                 <div className="hidden md:grid md:grid-cols-5 md:gap-1.5">
-                  {(['real', 'nature', 'tones', 'texture', 'ambient'] as const).map((group) => {
-                    const groupColors: Record<string, string> = {
-                      real: '#D4805A',
-                      nature: '#7AAA58',
-                      tones: '#C4A060',
-                      texture: '#A0907A',
-                      ambient: '#6890B0',
-                    };
+                  {CATEGORY_ORDER.map((cat) => {
+                    const color = CATEGORY_COLORS[cat];
                     return (
-                      <div key={group} className="space-y-1">
+                      <div key={cat} className="space-y-1">
                         <p
                           className="uppercase tracking-[0.14em] text-center"
                           style={{
                             fontFamily: 'var(--font-serif)',
                             fontSize: '12px',
                             fontWeight: 700,
-                            color: groupColors[group] || '#5C3018',
+                            color,
                           }}
                         >
-                          {group}
+                          {CATEGORY_LABELS[cat]}
                         </p>
-                        {ALL_LAYERS.filter((l) => l.group === group).map((l) => {
+                        {ALL_LAYERS.filter((l) => getLayerCategory(l) === cat).map((l) => {
                           const vol = activeLayers[l.id] || 0;
                           const isOn = vol > 0;
                           return (
