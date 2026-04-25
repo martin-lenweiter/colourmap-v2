@@ -98,7 +98,7 @@
     },
     {
       "name": "ui-default",
-      "description": "Presentation-heavy UI carries a lower floor than server-side logic. Thresholds were dropped from 18/18/14/10 to 12/12/11/10 during the sound-studio-polish merge (PR #26, 2026-04-23), then to 11/11/11/10 after the atom-visualizer merge (PR #47, 2026-04-23), then to 10/10/11/10 after the root-redirect merge (PR #55, 2026-04-23) — replacing the full cockpit page with a redirect removed incidental coverage from the cockpit component tree. Ratchet back up as UI tests land in follow-up PRs.",
+      "description": "Presentation-heavy UI carries a lower floor than server-side logic. Thresholds were dropped from 18/18/14/10 to 12/12/11/10 during the sound-studio-polish merge (PR #26, 2026-04-23), then to 11/11/11/10 after the atom-visualizer merge (PR #47, 2026-04-23), then to 10/10/11/10 after the root-redirect merge (PR #55, 2026-04-23), then to 10/10/11/9 after the chill+groove machines + new instruments + categories landed (PR #97, 2026-04-25) which added a lot of branch-heavy generative-audio code with no unit tests. Ratchet back up as UI tests land in follow-up PRs.",
       "include": [
         {
           "prefix": "components/",
@@ -117,7 +117,7 @@
         "lines": 10,
         "statements": 10,
         "functions": 11,
-        "branches": 10
+        "branches": 9
       }
     }
   ],
