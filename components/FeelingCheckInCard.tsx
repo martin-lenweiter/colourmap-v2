@@ -2,6 +2,12 @@
 
 import { useEffect, useRef, useState } from 'react';
 import CategoryTagPicker from '@/components/CategoryTagPicker';
+import {
+  DEFAULT_FEELING_DOING_PALETTE_ID,
+  FEELING_DOING_PALETTE_LS_KEY,
+  FEELING_DOING_PALETTES,
+  getPalette,
+} from '@/components/FeelingDoingPalette';
 
 /* ═══════════════════════════════════════════════════════════
    FEELING CHECK-IN CARD — Zen circle + losange gateway
@@ -459,6 +465,30 @@ export default function FeelingCheckInCard() {
       /* silent */
     }
   }, [selectedSegment]);
+
+  // Feeling/Doing big-dot palette pair — user-pickable from the
+  // landing surface via a small design-cog on each dot. 10 curated
+  // pairs in components/FeelingDoingPalette.ts (Sunset, Ochre+Orange,
+  // Blue+Green, etc.). Persisted in localStorage so the choice
+  // survives across sessions.
+  const [palettePairId, setPalettePairId] = useState<string>(DEFAULT_FEELING_DOING_PALETTE_ID);
+  const [paletteOpen, setPaletteOpen] = useState(false);
+  useEffect(() => {
+    try {
+      const v = localStorage.getItem(FEELING_DOING_PALETTE_LS_KEY);
+      if (v) setPalettePairId(v);
+    } catch {
+      /* silent */
+    }
+  }, []);
+  useEffect(() => {
+    try {
+      localStorage.setItem(FEELING_DOING_PALETTE_LS_KEY, palettePairId);
+    } catch {
+      /* silent */
+    }
+  }, [palettePairId]);
+  const palette = getPalette(palettePairId);
 
   // Presence — 5 levels (Absent → Flowing), default mid (idx 2 = Drifting)
   const [mindIdx, setMindIdx] = useState(() => {
@@ -1693,13 +1723,101 @@ export default function FeelingCheckInCard() {
           where do you want to begin?
         </p>
         <div className="flex flex-col items-center gap-5">
+          {/* Feeling = warm orange/terracotta (inner, emotional).
+              Doing = sage green (outer, action, growth) — picked
+              after a too-muddy ochre attempt. The pair reads as
+              warm-vs-fresh, not warm-vs-cool, which fits the warm
+              paper-feel of the rest of the cockpit. */}
           <SegmentDot
             label="Feeling"
-            color="#D4805A"
+            color={palette.feeling}
             onClick={() => setSelectedSegment('feeling')}
+            onDesignClick={() => setPaletteOpen((s) => !s)}
           />
-          <SegmentDot label="Doing" color="#6890B0" onClick={() => setSelectedSegment('doing')} />
+          <SegmentDot
+            label="Doing"
+            color={palette.doing}
+            onClick={() => setSelectedSegment('doing')}
+            onDesignClick={() => setPaletteOpen((s) => !s)}
+          />
         </div>
+
+        {/* Palette picker — small popover with 10 curated pairs.
+            Per Martin (2026-04-25): "give a design dot on the
+            feeling and doing two big dots so we can choose colour
+            combinations of the two give me 10 combinations". */}
+        {paletteOpen && (
+          <div
+            className="mx-auto w-full max-w-sm animate-in fade-in duration-150"
+            style={{
+              background: 'var(--card)',
+              border: '1px solid var(--border)',
+              borderRadius: 16,
+              padding: 16,
+              boxShadow: '0 12px 40px rgba(94,58,20,0.12)',
+            }}
+          >
+            <p
+              className="mb-3 text-center uppercase"
+              style={{
+                fontFamily: 'var(--font-serif)',
+                fontSize: 11,
+                fontWeight: 700,
+                letterSpacing: '0.18em',
+                color: '#7A5438',
+                opacity: 0.85,
+              }}
+            >
+              palette · feeling + doing
+            </p>
+            <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
+              {FEELING_DOING_PALETTES.map((p) => {
+                const isActive = p.id === palettePairId;
+                return (
+                  <button
+                    key={p.id}
+                    type="button"
+                    onClick={() => {
+                      setPalettePairId(p.id);
+                      setPaletteOpen(false);
+                    }}
+                    className="flex cursor-pointer flex-col items-center gap-1.5 rounded-xl py-2.5 transition-all hover:scale-[1.03]"
+                    style={{
+                      background: isActive ? `${p.feeling}12` : 'transparent',
+                      border: `1px solid ${isActive ? `${p.feeling}55` : '#C4A06020'}`,
+                    }}
+                    title={p.name}
+                    aria-pressed={isActive}
+                  >
+                    <div className="flex items-center gap-1.5">
+                      <span
+                        className="block rounded-full"
+                        style={{ width: 18, height: 18, background: p.feeling }}
+                      />
+                      <span
+                        className="block rounded-full"
+                        style={{ width: 18, height: 18, background: p.doing }}
+                      />
+                    </div>
+                    <span
+                      style={{
+                        fontFamily: 'var(--font-serif)',
+                        fontSize: 11,
+                        fontWeight: isActive ? 700 : 600,
+                        color: '#5C3018',
+                        opacity: isActive ? 1 : 0.75,
+                        letterSpacing: '0.04em',
+                      }}
+                    >
+                      {p.name}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
         <p
           className="text-center italic"
           style={{
@@ -3512,16 +3630,17 @@ export default function FeelingCheckInCard() {
                     value={objective}
                     onChange={(e) => setObjective(e.target.value)}
                     placeholder="set an objective..."
-                    className="w-full border-b bg-transparent pb-1 text-center outline-none placeholder:text-[#7A5438] placeholder:opacity-50"
+                    className="w-full border-b bg-transparent pb-3 pt-2 text-center outline-none placeholder:text-[#7A5438] placeholder:opacity-50"
                     style={{
                       color: '#5C3018',
                       borderColor: '#C4A06020',
                       fontFamily: 'var(--font-handwritten)',
-                      fontSize: '24px',
+                      fontSize: '26px',
                       fontWeight: 700,
                       letterSpacing: '0.06em',
                       paddingLeft: '64px',
                       paddingRight: '64px',
+                      lineHeight: 1.3,
                     }}
                   />
                   <div className="absolute right-0 top-1/2 flex -translate-y-1/2 items-center gap-1.5">
@@ -4300,12 +4419,13 @@ export default function FeelingCheckInCard() {
                             if (e.key === 'Enter') addTodayObjective();
                           }}
                           placeholder="+ add objective for today..."
-                          className="w-full border-b bg-transparent pb-1 outline-none placeholder:text-[#7A5438] placeholder:opacity-50"
+                          className="w-full border-b bg-transparent pb-3 pt-2 text-center outline-none placeholder:text-[#7A5438] placeholder:opacity-50"
                           style={{
                             color: '#7a5438',
                             borderColor: '#C4A06020',
                             fontFamily: 'var(--font-handwritten)',
-                            fontSize: '22px',
+                            fontSize: '24px',
+                            lineHeight: 1.3,
                           }}
                         />
                       </>
@@ -5250,41 +5370,75 @@ function SegmentDot({
   label,
   color,
   onClick,
+  onDesignClick,
 }: {
   label: string;
   color: string;
   onClick: () => void;
+  onDesignClick?: () => void;
 }) {
   return (
-    <button
-      type="button"
-      onClick={onClick}
-      className="flex cursor-pointer flex-col items-center gap-3 transition-all hover:scale-105"
-      style={{ background: 'none', border: 'none' }}
-      aria-label={`Open ${label} segment`}
-    >
-      <span
-        className="block rounded-full"
-        style={{
-          width: 96,
-          height: 96,
-          background: color,
-          opacity: 0.92,
-          boxShadow: `0 8px 24px -8px ${color}`,
-        }}
-      />
-      <span
-        className="uppercase"
-        style={{
-          fontFamily: 'var(--font-serif)',
-          fontSize: '15px',
-          fontWeight: 700,
-          color,
-          letterSpacing: '0.18em',
-        }}
+    <div className="relative flex flex-col items-center gap-3">
+      <button
+        type="button"
+        onClick={onClick}
+        className="flex cursor-pointer flex-col items-center gap-3 transition-all hover:scale-105"
+        style={{ background: 'none', border: 'none' }}
+        aria-label={`Open ${label} segment`}
       >
-        {label}
-      </span>
-    </button>
+        <span
+          className="block rounded-full"
+          style={{
+            width: 96,
+            height: 96,
+            background: color,
+            opacity: 0.92,
+            boxShadow: `0 8px 24px -8px ${color}`,
+          }}
+        />
+        <span
+          className="uppercase"
+          style={{
+            fontFamily: 'var(--font-serif)',
+            fontSize: '15px',
+            fontWeight: 700,
+            color,
+            letterSpacing: '0.18em',
+          }}
+        >
+          {label}
+        </span>
+      </button>
+      {/* Design-cog — small overlay button to open the palette
+          picker. Sits at the bottom-right of the big dot so it
+          doesn't compete visually but is still tappable. */}
+      {onDesignClick && (
+        <button
+          type="button"
+          onClick={(e) => {
+            e.stopPropagation();
+            onDesignClick();
+          }}
+          className="absolute flex cursor-pointer items-center justify-center rounded-full transition-all hover:scale-110"
+          style={{
+            top: 6,
+            right: -6,
+            width: 26,
+            height: 26,
+            background: 'var(--card)',
+            border: `1.5px solid ${color}`,
+            boxShadow: '0 2px 6px rgba(94,58,20,0.18)',
+            color,
+            fontSize: 12,
+            fontWeight: 700,
+            padding: 0,
+          }}
+          aria-label={`Choose colour palette for ${label} and Doing`}
+          title="Choose colour palette"
+        >
+          ✦
+        </button>
+      )}
+    </div>
   );
 }

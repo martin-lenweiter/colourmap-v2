@@ -1,6 +1,14 @@
 'use client';
 
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+
+import {
+  DEFAULT_PRESET_ID,
+  GROOVE_PRESETS,
+  type GroovePreset,
+  getPreset,
+  PRESET_LS_KEY,
+} from '@/lib/groove-presets';
 
 /* ═══════════════════════════════════════════════════════════
    GROOVE MACHINE — collective-ready groove box.
@@ -660,7 +668,13 @@ type Mode = 'full' | 'drop' | 'breakdown' | 'silence';
 
 export default function GrooveMachine() {
   const [playing, setPlaying] = useState(false);
-  const [bpm, setBpm] = useState(115);
+  // Preset state — picks one of the 7 curated soundscapes (Sun-up
+  // Funk / Tech House / Tropical / Slow Roll / Boom Bap / Epic
+  // Electro / Lofi Rooftop). Drives bpm, swing, default-active
+  // tracks, and per-track pattern + note overrides. See
+  // lib/groove-presets.ts.
+  const [presetId, setPresetId] = useState<string>(DEFAULT_PRESET_ID);
+  const [bpm, setBpm] = useState(112);
   const [active, setActive] = useState<Record<TrackId, boolean>>(DEFAULT_ACTIVE);
   const [mode, setMode] = useState<Mode>('full');
   const [openGroups, setOpenGroups] = useState<Record<Group, boolean>>({
@@ -679,6 +693,9 @@ export default function GrooveMachine() {
   const modeRef = useRef(mode);
   const activeRef = useRef(active);
   const bpmRef = useRef(bpm);
+  // Swing amount comes from the active preset; ref so the scheduler
+  // closure picks up the latest without recreation.
+  const swingRef = useRef(0.17);
   // Master bus — every voice connects here instead of ctx.destination
   // so we can put a compressor + reverb send + master gain in one
   // place. Built once in startAudio. Without this everything plays
@@ -695,12 +712,87 @@ export default function GrooveMachine() {
     bpmRef.current = bpm;
   }, [bpm]);
 
+  // Compute the active tracks by applying preset overrides on top
+  // of the base TRACKS. This is what the scheduler iterates over.
+  const preset = useMemo(() => getPreset(presetId), [presetId]);
+  const activeTracks = useMemo(
+    () =>
+      TRACKS.map((t) => ({
+        ...t,
+        pattern: preset.patternOverrides?.[t.id] ?? t.pattern,
+        notes: preset.notesOverrides?.[t.id] ?? t.notes,
+      })),
+    [preset],
+  );
+  const tracksRef = useRef(activeTracks);
+  useEffect(() => {
+    tracksRef.current = activeTracks;
+    swingRef.current = preset.swing;
+  }, [activeTracks, preset.swing]);
+
+  /**
+   * Apply a preset: switch presetId, set bpm + swing + active set.
+   * Persists the choice to localStorage so it survives reloads.
+   */
+  const applyPreset = useCallback(
+    (p: GroovePreset) => {
+      setPresetId(p.id);
+      setBpm(p.bpm);
+      swingRef.current = p.swing;
+      // New active set: only tracks listed in the preset's
+      // activeSet are on; everything else off.
+      const next: Record<TrackId, boolean> = {
+        kick: false,
+        snare: false,
+        clap: false,
+        hihat: false,
+        perc: false,
+        bass: false,
+        subpulse: false,
+        wobble: false,
+        rhodes: false,
+        guitar: false,
+        pluck: false,
+        arp: false,
+        lead: false,
+        chop: false,
+        pad: false,
+      };
+      for (const id of Object.keys(p.activeSet) as TrackId[]) {
+        if (p.activeSet[id]) next[id] = true;
+      }
+      setActive(next);
+      if (mode !== 'full') setMode('full');
+      try {
+        localStorage.setItem(PRESET_LS_KEY, p.id);
+      } catch {
+        /* silent */
+      }
+    },
+    [mode],
+  );
+
+  // Load saved preset on mount.
+  // biome-ignore lint/correctness/useExhaustiveDependencies: run once
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem(PRESET_LS_KEY);
+      if (saved) {
+        const p = getPreset(saved);
+        applyPreset(p);
+      }
+    } catch {
+      /* silent */
+    }
+  }, []);
+
   const scheduleNextNotes = useCallback(() => {
     const ctx = ctxRef.current;
     if (!ctx) return;
     const secondsPerSixteenth = 60 / bpmRef.current / 4;
-    // Swing: offbeat 16ths sit ~17% late. Gives the grid breath.
-    const SWING_AMOUNT = 0.17;
+    // Swing: offbeat 16ths sit late by `swingRef.current` of a 16th.
+    // Per-preset (Tech House = 0.04 mechanical; Lofi = 0.25 heavy).
+    const swingAmount = swingRef.current;
     const lookahead = 0.1;
     while (nextTimeRef.current < ctx.currentTime + lookahead) {
       const totalStep = nextStepRef.current;
@@ -713,10 +805,10 @@ export default function GrooveMachine() {
       const currentMode = modeRef.current;
       const currentActive = activeRef.current;
       // Swung timing: offbeat 16ths (odd step index) pushed later.
-      const swingOffset = stepIdx % 2 === 1 ? secondsPerSixteenth * SWING_AMOUNT : 0;
+      const swingOffset = stepIdx % 2 === 1 ? secondsPerSixteenth * swingAmount : 0;
       const when = nextTimeRef.current + swingOffset;
 
-      for (const track of TRACKS) {
+      for (const track of tracksRef.current) {
         let allowed = currentActive[track.id];
         if (currentMode === 'breakdown') {
           allowed = track.id === 'bass' || track.id === 'pad';
@@ -870,6 +962,64 @@ export default function GrooveMachine() {
   const activeCount = Object.values(active).filter(Boolean).length;
   const totalTracks = TRACKS.length;
 
+  // "Save this groove" — capture a snapshot of the current pattern
+  // (bpm, mode, active tracks) and POST it to the user's Notebook
+  // (Ideas). Same shape as the Chill Machine save-this-moment button
+  // so the user finds them all in one place. Local fallback if the
+  // API is unreachable.
+  const [momentStatus, setMomentStatus] = useState<null | 'saving' | 'saved' | 'error'>(null);
+  async function saveGrooveToNotebook() {
+    const activeTracks = TRACKS.filter((t) => active[t.id]);
+    const trackLabels = activeTracks.map((t) => t.label).join(', ');
+    const stamp = new Date().toLocaleString([], {
+      month: 'short',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+    });
+    const title = `Groove · ${stamp} · ${bpm}bpm`;
+    const lines = [
+      `Tempo ${bpm} bpm · mode ${mode}`,
+      `${activeCount}/${totalTracks} tracks active`,
+      trackLabels ? `Tracks: ${trackLabels}` : 'Tracks: (none)',
+    ];
+    const body = {
+      category: 'ideas',
+      title,
+      content: lines.join('\n'),
+      tags: ['groove-machine', 'sound-snapshot'],
+    };
+
+    setMomentStatus('saving');
+    try {
+      const res = await fetch('/api/notebook', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+      });
+      if (!res.ok) throw new Error('api');
+      setMomentStatus('saved');
+    } catch {
+      try {
+        const raw = localStorage.getItem('colourmap:notebook-entries');
+        const existing = raw ? JSON.parse(raw) : [];
+        const localEntry = {
+          id: crypto.randomUUID(),
+          ...body,
+          createdAt: new Date().toISOString(),
+        };
+        localStorage.setItem(
+          'colourmap:notebook-entries',
+          JSON.stringify([localEntry, ...existing]),
+        );
+        setMomentStatus('saved');
+      } catch {
+        setMomentStatus('error');
+      }
+    }
+    setTimeout(() => setMomentStatus(null), 1800);
+  }
+
   return (
     <div className="space-y-5">
       {/* Header */}
@@ -895,9 +1045,70 @@ export default function GrooveMachine() {
             opacity: 0.8,
           }}
         >
-          tech · tropical · rock · simplicity · silences matter
+          {preset.vibe}
         </p>
       </div>
+
+      {/* Soundscape picker — 7 big colour dots, one per preset.
+          Per Martin (2026-04-25): "do the 7 groove landscapes ...
+          make them complementary and differentiated." Spec:
+          docs/specs/groove-machine-7-soundscapes.md. Horizontal
+          scroll on phone, full row on desktop. Tap → preset
+          reconfigures bpm + swing + active tracks + per-track
+          patterns. */}
+      <div
+        className="-mx-4 flex snap-x snap-mandatory items-center gap-4 overflow-x-auto px-6 pb-2 pt-1 md:mx-0 md:flex-wrap md:justify-center md:gap-3 md:overflow-visible md:px-0"
+        style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+      >
+        {GROOVE_PRESETS.map((p) => {
+          const isActive = p.id === presetId;
+          return (
+            <button
+              key={p.id}
+              type="button"
+              onClick={() => applyPreset(p)}
+              className="flex shrink-0 cursor-pointer snap-center flex-col items-center gap-1.5 bg-transparent transition-all"
+              style={{
+                border: 'none',
+                padding: 0,
+                opacity: isActive ? 1 : 0.55,
+              }}
+              aria-pressed={isActive}
+              title={`${p.name} — ${p.vibe}`}
+            >
+              <span
+                className="block rounded-full transition-all"
+                style={{
+                  width: isActive ? 56 : 44,
+                  height: isActive ? 56 : 44,
+                  background: p.dot,
+                  boxShadow: isActive
+                    ? `0 6px 18px -6px ${p.dot}`
+                    : '0 2px 6px rgba(94,58,20,0.08)',
+                  border: `2px solid ${p.dot}`,
+                  // Subtle pulse animation when active + playing
+                  animation: isActive && playing ? 'gm-dot-pulse 2s ease-in-out infinite' : 'none',
+                }}
+              />
+              <span
+                className="text-center"
+                style={{
+                  fontFamily: 'var(--font-serif)',
+                  fontSize: '11px',
+                  fontWeight: isActive ? 700 : 600,
+                  color: p.dot,
+                  letterSpacing: '0.04em',
+                  maxWidth: 84,
+                  lineHeight: 1.15,
+                }}
+              >
+                {p.name}
+              </span>
+            </button>
+          );
+        })}
+      </div>
+      <style>{`@keyframes gm-dot-pulse { 0%,100% { transform: scale(1); } 50% { transform: scale(1.06); } }`}</style>
 
       {/* Desktop DJ layout: 2 columns on md+. Phone: stacked. */}
       <div className="space-y-5 md:grid md:grid-cols-[1fr_320px] md:gap-8 md:space-y-0">
@@ -1147,6 +1358,33 @@ export default function GrooveMachine() {
               }}
             >
               ✦ new groove
+            </button>
+            {/* Save this groove → Notebook (Ideas). Mirrors the
+                Chill Machine button so saved sounds land in one
+                place. */}
+            <button
+              type="button"
+              onClick={saveGrooveToNotebook}
+              disabled={momentStatus === 'saving'}
+              className="mt-2 w-full cursor-pointer rounded-xl py-2.5 transition-all hover:opacity-85 disabled:opacity-50"
+              style={{
+                background: momentStatus === 'saved' ? '#7AAA5815' : '#9B6BA010',
+                border: `1.5px solid ${momentStatus === 'saved' ? '#7AAA5840' : '#9B6BA040'}`,
+                color: momentStatus === 'saved' ? '#7AAA58' : '#9B6BA0',
+                fontFamily: 'var(--font-serif)',
+                fontSize: '12px',
+                fontWeight: 600,
+                letterSpacing: '0.16em',
+                textTransform: 'uppercase',
+              }}
+            >
+              {momentStatus === 'saving'
+                ? '…'
+                : momentStatus === 'saved'
+                  ? '✓ saved to notebook'
+                  : momentStatus === 'error'
+                    ? 'error · try again'
+                    : '→ save to notebook'}
             </button>
           </div>
 

@@ -1305,7 +1305,7 @@ const GENRES: Genre[] = [
   },
 ];
 
-function _getBrainState(beat: number): string {
+function getBrainState(beat: number): string {
   if (beat <= 4) return 'delta · deep rest';
   if (beat <= 8) return 'theta · meditation';
   if (beat <= 14) return 'alpha · relaxed focus';
@@ -1435,6 +1435,11 @@ export default function BinauralTuner() {
   const oscLGainRef = useRef<GainNode | null>(null);
   const oscRGainRef = useRef<GainNode | null>(null);
   const [baseFreq, setBaseFreq] = useState(60);
+  // Keep the ref in sync so playMelodyNote (stable useCallback) can
+  // tune sampled instruments to the current base frequency.
+  useEffect(() => {
+    baseFreqRef.current = baseFreq;
+  }, [baseFreq]);
   const [beatFreq, setBeatFreq] = useState(4);
   const [volume, setVolume] = useState(0.15);
   const [activeLayers, setActiveLayers] = useState<Record<string, number>>({});
@@ -1508,6 +1513,13 @@ export default function BinauralTuner() {
   const layerReverbRef = useRef<ConvolverNode | null>(null);
   const layerDryRef = useRef<GainNode | null>(null);
   const layerWetRef = useRef<GainNode | null>(null);
+  // baseFreq mirror for use inside the melody scheduler — playMelodyNote
+  // is a stable useCallback (refs-only deps) so we can't read baseFreq
+  // directly. The melody root is octave-shifted from this reference so
+  // the melody actually sits in tune with the user's chosen drone
+  // (e.g. 528Hz, 432Hz, 174Hz). Without this the melody plays a fixed
+  // C-rooted scale regardless of context.
+  const baseFreqRef = useRef(60);
   // Harmony tones — musical intervals relative to base frequency.
   // Ordered low → high so the row reads like a pitch ladder. Below 1×
   // are subharmonics (undertones) which ground the mix with warmth;
@@ -1806,7 +1818,17 @@ export default function BinauralTuner() {
     // oscillator stack below.
     if (melDef.sampledPack) {
       const octavesFromCenter = Math.floor(noteIdx / 12);
-      const baseNote = 261.63 * 2 ** (melDef.octave - 4);
+      // Tune the melody root to the current base frequency so the
+      // sampled instrument actually sits with the drone instead of
+      // playing a fixed C-rooted scale. Octave-shift baseFreq into a
+      // singing register (~C4 ± a fourth), then apply the
+      // instrument's octave preference. Without this, the nylon
+      // guitar / cello / etc. sound out of tune with the chosen
+      // sacred frequency or harmonic.
+      let referenceRoot = baseFreqRef.current || 261.63;
+      while (referenceRoot < 180) referenceRoot *= 2;
+      while (referenceRoot >= 360) referenceRoot /= 2;
+      const baseNote = referenceRoot * 2 ** (melDef.octave - 4);
       const freq = baseNote * 2 ** (noteIdx / 12);
       const output = melodyDryRef.current ?? gain;
       // Per-note volume × user-controlled melodyVolume (0-1).
@@ -1858,7 +1880,12 @@ export default function BinauralTuner() {
     if (finalOctave < 1) safeOctaveOffset += 12 * (1 - finalOctave);
     else if (finalOctave > 7) safeOctaveOffset -= 12 * (finalOctave - 7);
 
-    const baseNote = 261.63 * 2 ** (melDef.octave - 4); // C of the octave
+    // Same base-freq-aware tuning as the sampled path so synth voices
+    // also sit with the drone.
+    let referenceRoot = baseFreqRef.current || 261.63;
+    while (referenceRoot < 180) referenceRoot *= 2;
+    while (referenceRoot >= 360) referenceRoot /= 2;
+    const baseNote = referenceRoot * 2 ** (melDef.octave - 4);
     const freq = baseNote * 2 ** ((noteIdx + safeOctaveOffset) / 12);
 
     const osc = ctx.createOscillator();
@@ -2326,6 +2353,88 @@ export default function BinauralTuner() {
     localStorage.setItem('colourmap:tuner-mixes', JSON.stringify(next));
     setSaveName('');
     setShowSave(false);
+  }
+
+  // "Save this moment" — capture a snapshot of the current sound
+  // state and POST it to the user's Notebook (category 'moments').
+  // Falls back to the local moments cache if the API is unreachable
+  // so it always succeeds from the user's perspective. Used by the
+  // small button in the saved-sounds drawer.
+  const [momentStatus, setMomentStatus] = useState<null | 'saving' | 'saved' | 'error'>(null);
+  async function saveMomentToNotebook() {
+    const activeLayerLabels = ALL_LAYERS.filter((l) => (activeLayers[l.id] || 0) > 0)
+      .map((l) => l.label)
+      .join(', ');
+    const harmonicLabels = HARMONICS.filter((h) => activeHarmonics.has(h.id))
+      .map((h) => h.label)
+      .join(', ');
+    const sacredLabels = SACRED.filter((s) => activeSacred.has(s.id))
+      .map((s) => `${s.freq}Hz (${s.desc})`)
+      .join(', ');
+    const melodyLabels = MELODIES.filter((m) => activeMelodies.has(m.id))
+      .map((m) => m.label)
+      .join(', ');
+
+    const stamp = new Date().toLocaleString([], {
+      month: 'short',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+    });
+    const title = saveName.trim()
+      ? `${saveName.trim()} — ${baseFreq}Hz`
+      : `Chill moment · ${stamp} · ${baseFreq}Hz`;
+
+    const lines = [
+      `Base ${baseFreq}Hz · brain-wave ${beatFreq}Hz (${getBrainState(beatFreq)})`,
+      `Volume ${Math.round(volume * 100)}% · binaural ${binauralOn ? 'on' : 'off'}`,
+    ];
+    if (activeLayerLabels) lines.push(`Layers: ${activeLayerLabels}`);
+    if (harmonicLabels) lines.push(`Harmonics: ${harmonicLabels}`);
+    if (sacredLabels) lines.push(`Sacred freqs: ${sacredLabels}`);
+    if (melodyLabels) lines.push(`Melody: ${melodyLabels} · scale ${melodyScale}`);
+    if (wahOn || echoOn) {
+      lines.push(`Effects: ${[wahOn && 'wah', echoOn && 'echo'].filter(Boolean).join(' + ')}`);
+    }
+
+    const body = {
+      category: 'ideas',
+      title,
+      content: lines.join('\n'),
+      tags: ['chill-machine', 'sound-snapshot'],
+    };
+
+    setMomentStatus('saving');
+    try {
+      const res = await fetch('/api/notebook', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+      });
+      if (!res.ok) throw new Error('api');
+      setMomentStatus('saved');
+    } catch {
+      // Fallback: queue into local moments cache so the snapshot
+      // isn't lost even if the API is unreachable. Notebook page
+      // will pick this up via its localStorage fallback.
+      try {
+        const raw = localStorage.getItem('colourmap:notebook-entries');
+        const existing = raw ? JSON.parse(raw) : [];
+        const localEntry = {
+          id: crypto.randomUUID(),
+          ...body,
+          createdAt: new Date().toISOString(),
+        };
+        localStorage.setItem(
+          'colourmap:notebook-entries',
+          JSON.stringify([localEntry, ...existing]),
+        );
+        setMomentStatus('saved');
+      } catch {
+        setMomentStatus('error');
+      }
+    }
+    setTimeout(() => setMomentStatus(null), 1800);
   }
 
   const SHAPE_CYCLE = ['dot', 'star', 'heart', 'losange', 'triangle', 'square'] as const;
@@ -3719,7 +3828,7 @@ export default function BinauralTuner() {
                 type="button"
                 aria-label={`Volume ${Math.round(volume * 100)}%`}
                 className="flex flex-1 cursor-pointer items-center justify-between bg-transparent"
-                style={{ border: 'none', padding: '4px 0' }}
+                style={{ border: 'none', padding: '10px 0' }}
                 onClick={(e) => {
                   const r = (e.currentTarget as HTMLElement).getBoundingClientRect();
                   setVolume(Math.max(0.02, Math.min(1, (e.clientX - r.left) / r.width)));
@@ -3733,9 +3842,9 @@ export default function BinauralTuner() {
                       key={i}
                       className="block rounded-full transition-all"
                       style={{
-                        width: filled ? 8 : 5,
-                        height: filled ? 8 : 5,
-                        background: '#C4A060',
+                        width: filled ? 13 : 7,
+                        height: filled ? 13 : 7,
+                        background: SLIDER_PROGRESSIONS.volume[i],
                         opacity: filled ? 0.55 + ratio * 0.4 : 0.2,
                       }}
                     />
@@ -4244,7 +4353,7 @@ export default function BinauralTuner() {
                 <button
                   type="button"
                   className="flex flex-1 cursor-pointer items-center justify-between bg-transparent"
-                  style={{ border: 'none', padding: '4px 0', opacity: wahOn ? 1 : 0.4 }}
+                  style={{ border: 'none', padding: '10px 0', opacity: wahOn ? 1 : 0.4 }}
                   onClick={(e) => {
                     const r = (e.currentTarget as HTMLElement).getBoundingClientRect();
                     setWahSpeed(Math.max(0, Math.min(1, (e.clientX - r.left) / r.width)));
@@ -4259,9 +4368,9 @@ export default function BinauralTuner() {
                         key={i}
                         className="block rounded-full transition-all"
                         style={{
-                          width: filled ? 8 : 5,
-                          height: filled ? 8 : 5,
-                          background: '#B85A8A',
+                          width: filled ? 13 : 7,
+                          height: filled ? 13 : 7,
+                          background: SLIDER_PROGRESSIONS.wah[i],
                           opacity: filled ? 0.55 + ratio * 0.4 : 0.2,
                         }}
                       />
@@ -4293,7 +4402,7 @@ export default function BinauralTuner() {
                 <button
                   type="button"
                   className="flex flex-1 cursor-pointer items-center justify-between bg-transparent"
-                  style={{ border: 'none', padding: '4px 0', opacity: echoOn ? 1 : 0.4 }}
+                  style={{ border: 'none', padding: '10px 0', opacity: echoOn ? 1 : 0.4 }}
                   onClick={(e) => {
                     const r = (e.currentTarget as HTMLElement).getBoundingClientRect();
                     setEchoAmount(Math.max(0, Math.min(1, (e.clientX - r.left) / r.width)));
@@ -4308,9 +4417,9 @@ export default function BinauralTuner() {
                         key={i}
                         className="block rounded-full transition-all"
                         style={{
-                          width: filled ? 8 : 5,
-                          height: filled ? 8 : 5,
-                          background: '#5AA8B0',
+                          width: filled ? 13 : 7,
+                          height: filled ? 13 : 7,
+                          background: SLIDER_PROGRESSIONS.echo[i],
                           opacity: filled ? 0.55 + ratio * 0.4 : 0.2,
                         }}
                       />
@@ -4539,7 +4648,7 @@ export default function BinauralTuner() {
                     type="button"
                     aria-label={`Layer softness ${layerReverb}%`}
                     className="flex flex-1 cursor-pointer items-center justify-between bg-transparent"
-                    style={{ border: 'none', padding: '4px 0' }}
+                    style={{ border: 'none', padding: '10px 0' }}
                     onClick={(e) => {
                       const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
                       setLayerReverb(
@@ -4557,9 +4666,9 @@ export default function BinauralTuner() {
                           key={i}
                           className="block rounded-full transition-all"
                           style={{
-                            width: filled ? 8 : 5,
-                            height: filled ? 8 : 5,
-                            background: '#9B6BA0',
+                            width: filled ? 13 : 7,
+                            height: filled ? 13 : 7,
+                            background: SLIDER_PROGRESSIONS.softness[i],
                             opacity: filled ? 0.55 + ratio * 0.4 : 0.2,
                           }}
                         />
@@ -4702,7 +4811,7 @@ export default function BinauralTuner() {
                           {isOn && (
                             <button
                               type="button"
-                              className="flex w-full cursor-pointer items-center justify-between px-2 py-1.5"
+                              className="flex w-full cursor-pointer items-center justify-between px-2 py-2.5"
                               onClick={(e) => {
                                 const rect = (
                                   e.currentTarget as HTMLElement
@@ -4724,8 +4833,8 @@ export default function BinauralTuner() {
                                     key={i}
                                     className="block rounded-full transition-all"
                                     style={{
-                                      width: filled ? 9 : 5,
-                                      height: filled ? 9 : 5,
+                                      width: filled ? 13 : 7,
+                                      height: filled ? 13 : 7,
                                       // Soft hue shift: blend the layer color with the
                                       // next group's accent so the slider reads as a
                                       // gradient rather than a flat colour wash.
@@ -5067,6 +5176,34 @@ export default function BinauralTuner() {
                     }}
                   >
                     save
+                  </button>
+                  {/* Save this moment → Notebook (Ideas). Captures
+                      a snapshot of base/beat/layers/harmonics/effects
+                      so the user can find this exact tuning later
+                      from the Notebook surface. */}
+                  <button
+                    type="button"
+                    onClick={saveMomentToNotebook}
+                    disabled={momentStatus === 'saving'}
+                    title="Save this moment to your Notebook (Ideas)"
+                    className="cursor-pointer rounded-lg px-2 py-1 disabled:opacity-50"
+                    style={{
+                      fontFamily: 'var(--font-serif)',
+                      fontSize: '12px',
+                      fontWeight: 600,
+                      color: momentStatus === 'saved' ? '#7AAA58' : '#9B6BA0',
+                      background: momentStatus === 'saved' ? '#7AAA5810' : '#9B6BA010',
+                      border: `1px solid ${momentStatus === 'saved' ? '#7AAA5830' : '#9B6BA030'}`,
+                      whiteSpace: 'nowrap',
+                    }}
+                  >
+                    {momentStatus === 'saving'
+                      ? '…'
+                      : momentStatus === 'saved'
+                        ? '✓ saved'
+                        : momentStatus === 'error'
+                          ? 'error'
+                          : '→ notebook'}
                   </button>
                 </div>
                 {/* Saved mixes list */}
@@ -5725,6 +5862,108 @@ const RAINBOW = [
   '#E0908A',
 ];
 
+// Per-slider colour progressions for the chill-machine inline dot
+// sliders. Each is a 20-step palette (matches the 20 dots) running
+// from a soft tint at the low end to a saturated note of the
+// slider's identity colour at the high end. Picked so each slider
+// reads as a "one-fluid-thing" gradient rather than a flat colour
+// wash. Per Martin 2026-04-25: "make all chill sliders rainbow or
+// colour progressions".
+const SLIDER_PROGRESSIONS = {
+  // Volume: pale gold → deep amber
+  volume: [
+    '#F2E4C0',
+    '#EEDDB0',
+    '#EAD6A0',
+    '#E6CF90',
+    '#E2C880',
+    '#DEC174',
+    '#D8B868',
+    '#D2AF5C',
+    '#CCA650',
+    '#C49C48',
+    '#BC9240',
+    '#B48838',
+    '#AC7E30',
+    '#A4742A',
+    '#9A6A24',
+    '#90601E',
+    '#86561A',
+    '#7C4C16',
+    '#724212',
+    '#683810',
+  ],
+  // Wah: pale rose → magenta-violet
+  wah: [
+    '#F0D8E4',
+    '#ECCCDC',
+    '#E8C0D4',
+    '#E4B4CC',
+    '#E0A8C4',
+    '#DC9CBC',
+    '#D490B4',
+    '#CC84AC',
+    '#C478A4',
+    '#BC6C9C',
+    '#B46094',
+    '#AC548C',
+    '#A44884',
+    '#9C3C7C',
+    '#943074',
+    '#88286C',
+    '#7C2064',
+    '#70185C',
+    '#641054',
+    '#58084C',
+  ],
+  // Echo: pale aqua → deep teal-blue
+  echo: [
+    '#D8EEEC',
+    '#C8E6E2',
+    '#B8DED8',
+    '#A8D6CE',
+    '#98CEC4',
+    '#88C6BA',
+    '#78BCB0',
+    '#68B2A6',
+    '#5CA89C',
+    '#509E92',
+    '#449488',
+    '#388A7E',
+    '#308074',
+    '#28766A',
+    '#206C60',
+    '#186258',
+    '#125850',
+    '#0E4E48',
+    '#0A4440',
+    '#083A38',
+  ],
+  // Layer softness: pale lavender → deep violet
+  softness: [
+    '#EBDFEC',
+    '#E2D2E4',
+    '#D9C5DC',
+    '#D0B8D4',
+    '#C7ABCC',
+    '#BE9EC4',
+    '#B591BC',
+    '#AC84B4',
+    '#A37CAC',
+    '#9A74A4',
+    '#916C9C',
+    '#886494',
+    '#7F5C8C',
+    '#765484',
+    '#6D4C7C',
+    '#644474',
+    '#5C3C6C',
+    '#543464',
+    '#4C2C5C',
+    '#442454',
+  ],
+} as const;
+
 function SliderRow({
   label,
   value,
@@ -5749,7 +5988,7 @@ function SliderRow({
   const count = 20;
   const pct = (value - min) / (max - min);
   const activeIdx = Math.round(pct * (count - 1));
-  const sq = 12;
+  const sq = 15;
   const gap = 3;
   const muted = toggleOn === false;
 

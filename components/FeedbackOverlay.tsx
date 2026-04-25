@@ -370,7 +370,7 @@ export default function FeedbackOverlay() {
           width: 18,
           height: 18,
           borderRadius: '50%',
-          background: '#9B6BA0',
+          background: '#A87A40',
           border: '1px solid rgba(0,0,0,0.2)',
           opacity: 0.55,
           padding: 0,
@@ -439,7 +439,7 @@ export default function FeedbackOverlay() {
       >
         <div
           className="flex items-center gap-1 rounded-full border-2 p-1 shadow-[0_4px_16px_rgba(0,0,0,0.18)]"
-          style={{ background: '#FFFFFF', borderColor: '#9B6BA0' }}
+          style={{ background: '#FFFFFF', borderColor: '#A87A40' }}
         >
           {!toolbarCollapsed && (
             <>
@@ -479,8 +479,8 @@ export default function FeedbackOverlay() {
             title={toolbarCollapsed ? 'Expand' : 'Collapse'}
             style={{
               background: 'transparent',
-              border: '1px solid #9B6BA055',
-              color: '#9B6BA0',
+              border: '1px solid #A87A4055',
+              color: '#A87A40',
               borderRadius: '50%',
               width: 26,
               height: 26,
@@ -498,7 +498,7 @@ export default function FeedbackOverlay() {
             onClick={close}
             aria-label="Close developer mode"
             style={{
-              background: '#9B6BA0',
+              background: '#A87A40',
               border: 'none',
               color: '#FFFFFF',
               borderRadius: '50%',
@@ -528,8 +528,8 @@ export default function FeedbackOverlay() {
             height: noteSize.h,
             maxWidth: 'calc(100vw - 16px)',
             maxHeight: 'calc(100vh - 80px)',
-            background: '#FFF8E6',
-            borderColor: '#9B6BA0',
+            background: '#F3E0B8',
+            borderColor: '#A87A40',
             padding: 10,
             pointerEvents: 'auto',
             zIndex: 9999,
@@ -550,7 +550,7 @@ export default function FeedbackOverlay() {
               fontSize: 10,
               letterSpacing: '0.14em',
               textTransform: 'uppercase',
-              color: '#9B6BA0',
+              color: '#A87A40',
               fontWeight: 700,
               touchAction: 'none',
               userSelect: 'none',
@@ -571,8 +571,8 @@ export default function FeedbackOverlay() {
                   title={listening ? 'Stop (tap to finish)' : 'Voice input'}
                   style={{
                     background: listening ? '#B33A2B' : 'transparent',
-                    border: `1px solid ${listening ? '#B33A2B' : '#9B6BA055'}`,
-                    color: listening ? '#FFF' : '#9B6BA0',
+                    border: `1px solid ${listening ? '#B33A2B' : '#A87A4055'}`,
+                    color: listening ? '#FFF' : '#A87A40',
                     borderRadius: 999,
                     padding: '2px 8px',
                     fontSize: 11,
@@ -605,8 +605,8 @@ export default function FeedbackOverlay() {
                 title="Small"
                 style={{
                   background: 'transparent',
-                  border: '1px solid #9B6BA055',
-                  color: '#9B6BA0',
+                  border: '1px solid #A87A4055',
+                  color: '#A87A40',
                   borderRadius: 6,
                   padding: '2px 7px',
                   fontSize: 10,
@@ -625,8 +625,8 @@ export default function FeedbackOverlay() {
                 title="Medium"
                 style={{
                   background: 'transparent',
-                  border: '1px solid #9B6BA055',
-                  color: '#9B6BA0',
+                  border: '1px solid #A87A4055',
+                  color: '#A87A40',
                   borderRadius: 6,
                   padding: '2px 7px',
                   fontSize: 10,
@@ -650,8 +650,8 @@ export default function FeedbackOverlay() {
                 title="Large"
                 style={{
                   background: 'transparent',
-                  border: '1px solid #9B6BA055',
-                  color: '#9B6BA0',
+                  border: '1px solid #A87A4055',
+                  color: '#A87A40',
                   borderRadius: 6,
                   padding: '2px 7px',
                   fontSize: 10,
@@ -674,7 +674,7 @@ export default function FeedbackOverlay() {
               padding: '0 4px 4px',
               fontFamily: 'var(--font-serif)',
               fontSize: 10,
-              color: '#9B6BA0',
+              color: '#A87A40',
             }}
           >
             <span
@@ -697,7 +697,7 @@ export default function FeedbackOverlay() {
               onChange={(e) => setFontSize(Number.parseInt(e.target.value, 10))}
               onPointerDown={(e) => e.stopPropagation()}
               aria-label="Text size"
-              style={{ flex: 1, accentColor: '#9B6BA0', minHeight: 20 }}
+              style={{ flex: 1, accentColor: '#A87A40', minHeight: 20 }}
             />
             <span
               aria-hidden="true"
@@ -759,7 +759,7 @@ export default function FeedbackOverlay() {
               border: 'none',
               // Visual cue — a small diagonal stripe
               background:
-                'linear-gradient(135deg, transparent 35%, #9B6BA0 35%, #9B6BA0 45%, transparent 45%, transparent 60%, #9B6BA0 60%, #9B6BA0 70%, transparent 70%)',
+                'linear-gradient(135deg, transparent 35%, #A87A40 35%, #A87A40 45%, transparent 45%, transparent 60%, #A87A40 60%, #A87A40 70%, transparent 70%)',
               borderBottomRightRadius: 10,
             }}
           />
@@ -784,7 +784,7 @@ function ModeButton({
       type="button"
       onClick={onClick}
       style={{
-        background: active ? '#9B6BA0' : 'transparent',
+        background: active ? '#A87A40' : 'transparent',
         color: active ? '#FFFFFF' : '#5C3018',
         border: 'none',
         borderRadius: 999,

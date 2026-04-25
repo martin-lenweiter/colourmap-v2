@@ -94,11 +94,24 @@ export default function SoundLab() {
       </div>
 
       {/* Content — no outer box; each mode is responsible for its own
-          interior structure and breathes across the full page width. */}
-      {mode === 'tuner' && <BinauralTuner />}
-      {mode === 'groove' && <GrooveMachine />}
-      {mode === 'maker' && <MagicMaker />}
-      {mode === 'looper' && <LofiLooper />}
+          interior structure and breathes across the full page width.
+          Sound-emitting tabs (Chill, Groove, Maker, Looper) are
+          kept *mounted* and visibility-toggled instead of conditional
+          render — so the audio keeps playing when the user wanders to
+          Visuals or Songs. Per Martin 2026-04-25: "chill machine stays
+          when we are on visuals". */}
+      <div style={{ display: mode === 'tuner' ? 'block' : 'none' }}>
+        <BinauralTuner />
+      </div>
+      <div style={{ display: mode === 'groove' ? 'block' : 'none' }}>
+        <GrooveMachine />
+      </div>
+      <div style={{ display: mode === 'maker' ? 'block' : 'none' }}>
+        <MagicMaker />
+      </div>
+      <div style={{ display: mode === 'looper' ? 'block' : 'none' }}>
+        <LofiLooper />
+      </div>
       {mode === 'songs' && <MusicSetlist />}
       {mode === 'visuals' && (
         <div className="space-y-4">

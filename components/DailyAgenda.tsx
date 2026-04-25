@@ -507,27 +507,33 @@ export default function DailyAgenda() {
       </div>
 
       {open && (
-        <div className="space-y-3">
-          {/* Row 1: day/week/month left — mission/emotion/social right */}
-          <div className="flex items-center justify-between">
-            <div className="flex gap-1.5">
-              {(['day', 'week', 'month'] as const).map((v) => (
-                <button
-                  key={v}
-                  type="button"
-                  onClick={() => setAgendaView(v)}
-                  className="cursor-pointer rounded-full px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wider transition-all"
-                  style={{
-                    color: '#C4A060',
-                    border: `1px solid ${agendaView === v ? '#C4A06040' : '#C4A06018'}`,
-                    background: agendaView === v ? '#C4A06010' : 'transparent',
-                    opacity: agendaView === v ? 1 : 0.5,
-                  }}
-                >
-                  {v}
-                </button>
-              ))}
-            </div>
+        <div className="space-y-2">
+          {/* Row 1 (primary): day / week / month — the time scale.
+              These are the main agenda controls, full visual weight. */}
+          <div className="flex items-center justify-center gap-1.5">
+            {(['day', 'week', 'month'] as const).map((v) => (
+              <button
+                key={v}
+                type="button"
+                onClick={() => setAgendaView(v)}
+                className="cursor-pointer rounded-full px-3.5 py-1.5 text-[11px] font-semibold uppercase tracking-wider transition-all"
+                style={{
+                  color: '#C4A060',
+                  border: `1px solid ${agendaView === v ? '#C4A06060' : '#C4A06022'}`,
+                  background: agendaView === v ? '#C4A06018' : 'transparent',
+                  opacity: agendaView === v ? 1 : 0.6,
+                }}
+              >
+                {v}
+              </button>
+            ))}
+          </div>
+          {/* Row 2 (secondary): mission / emotion / social filters +
+              road/list view toggle. Lower visual weight — these are
+              optional layer toggles on top of the primary scale.
+              Per Martin 2026-04-25: "mission emotion and social on a
+              lower layer in agenda than week month". */}
+          <div className="flex items-center justify-center gap-2 opacity-85">
             {/* Layer toggles — mirror the compass-pill vocabulary: a dot
                 + its label, so the three layers read as a deliberate
                 choice rather than three anonymous dots. */}

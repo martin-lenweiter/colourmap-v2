@@ -1,0 +1,302 @@
+/*
+ * Groove Machine — 7 curated soundscape presets.
+ *
+ * Each preset is a complete bundle: bpm + swing + pattern overrides
+ * for relevant tracks + which tracks default to active + a colour
+ * palette for the big-dot picker. The engine in components/
+ * GrooveMachine.tsx applies a preset by overriding the base tracks
+ * — non-overridden tracks keep their default funk-tech-house
+ * patterns (which is fine when the preset doesn't activate them).
+ *
+ * Per Martin (2026-04-25): "make sure u do the 7 groove landscapes.
+ * what we have now is just one. make them complementary. and
+ * differentiated. add more atmo pads on base one. add different
+ * rythmic parts. so it isnt the same rythm box forever."
+ *
+ * Spec: docs/specs/groove-machine-7-soundscapes.md
+ */
+
+export type TrackId =
+  | 'kick'
+  | 'snare'
+  | 'clap'
+  | 'hihat'
+  | 'perc'
+  | 'bass'
+  | 'subpulse'
+  | 'wobble'
+  | 'rhodes'
+  | 'guitar'
+  | 'pluck'
+  | 'arp'
+  | 'lead'
+  | 'pad'
+  | 'chop';
+
+export interface GroovePreset {
+  id: string;
+  name: string;
+  /** One-line poetic description shown under the big dot. */
+  vibe: string;
+  /** Colour for the big dot in the preset picker + the group accent. */
+  dot: string;
+  /** Default tempo in bpm. */
+  bpm: number;
+  /** Swing amount 0..0.5. 0 = mechanical; 0.17 = funky. */
+  swing: number;
+  /** Which tracks default to ON when this preset loads. */
+  activeSet: Partial<Record<TrackId, boolean>>;
+  /** Per-track pattern overrides. Track ids not listed keep the
+   *  default pattern from TRACKS. Length 16 = one bar of 16ths. */
+  patternOverrides?: Partial<Record<TrackId, number[]>>;
+  /** Per-track notes overrides — frequencies for melodic tracks. */
+  notesOverrides?: Partial<Record<TrackId, number[]>>;
+}
+
+// Frequencies for melodic notes (matches GrooveMachine.tsx constants)
+const A2 = 110;
+const C3 = 130.81;
+const D3 = 146.83;
+const E3 = 164.81;
+const F3 = 174.61;
+const G3 = 196;
+const A3 = 220;
+const C4 = 261.63;
+const D4 = 293.66;
+const E4 = 329.63;
+const G4 = 392;
+const A4 = 440;
+const C5 = 523.25;
+
+export const GROOVE_PRESETS: readonly GroovePreset[] = [
+  {
+    id: 'sun-up-funk',
+    name: 'Sun-up Funk',
+    vibe: 'Daft Punk · Jamiroquai · golden hour',
+    dot: '#C4A060',
+    bpm: 112,
+    swing: 0.17,
+    activeSet: {
+      kick: true,
+      snare: true,
+      hihat: true,
+      bass: true,
+      pad: true,
+      guitar: true,
+    },
+    // Default patterns are already funk-flavoured — small tweaks only.
+  },
+  {
+    id: 'tech-house',
+    name: 'Tech House',
+    vibe: 'Berlin late-night · Kompakt records',
+    dot: '#3A6890',
+    bpm: 124,
+    swing: 0.04, // tight, almost zero
+    activeSet: {
+      kick: true,
+      hihat: true,
+      perc: true,
+      subpulse: true,
+      pad: true,
+    },
+    patternOverrides: {
+      // 4-on-floor — kick on every beat
+      kick: [1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0],
+      // Off-beat hat (the genre's heartbeat)
+      hihat: [0, 0, 0.7, 0, 0, 0, 0.7, 0, 0, 0, 0.7, 0, 0, 0, 0.7, 0],
+      // Sub on the 1, sustained
+      subpulse: [1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0],
+      // Sparse percussion offbeats
+      perc: [0, 0, 0, 0.5, 0, 0, 0, 0, 0, 0, 0, 0.5, 0, 0, 0, 0],
+      // Atmo pad sustained
+      pad: [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    },
+    notesOverrides: {
+      subpulse: [A2 / 2, 0, 0, 0, 0, 0, 0, 0, A2 / 2, 0, 0, 0, 0, 0, 0, 0],
+      pad: [A2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    },
+  },
+  {
+    id: 'tropical',
+    name: 'Tropical',
+    vibe: 'Kygo sunset · steel pan + marimba',
+    dot: '#E08858',
+    bpm: 104,
+    swing: 0.08,
+    activeSet: {
+      kick: true,
+      snare: true,
+      perc: true,
+      pluck: true,
+      bass: true,
+      pad: true,
+    },
+    patternOverrides: {
+      // Soft kick on 1+3, gentle ghost on 2&
+      kick: [1, 0, 0, 0, 0, 0, 0.4, 0, 1, 0, 0, 0, 0, 0, 0, 0],
+      // Snare on 2+4 only
+      snare: [0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0],
+      // Shaker 16ths
+      perc: [0.5, 0.4, 0.6, 0.4, 0.5, 0.4, 0.6, 0.4, 0.5, 0.4, 0.6, 0.4, 0.5, 0.4, 0.6, 0.4],
+      // Plucked bass — root + fifth
+      bass: [1, 0, 0, 0, 0, 0, 0.7, 0, 1, 0, 0, 0, 0, 0, 0.7, 0],
+      // Tropical pluck — marimba-like, I-V-vi-IV pattern
+      pluck: [1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.6, 0],
+      // Atmo pad
+      pad: [1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0],
+    },
+    notesOverrides: {
+      bass: [A2, A2, A2, A2, A2, A2, E3, A2, A2, A2, A2, A2, A2, A2, G3 / 2, A2],
+      pluck: [A4, 0, 0, 0, E4, 0, 0, 0, F3 * 2, 0, 0, 0, D4, 0, A4, 0],
+      pad: [A3, 0, 0, 0, 0, 0, 0, 0, A3, 0, 0, 0, 0, 0, 0, 0],
+    },
+  },
+  {
+    id: 'slow-roll',
+    name: 'Slow Roll',
+    vibe: 'sexy R&B · low-BPM bedroom soul',
+    dot: '#7A3850',
+    bpm: 78,
+    swing: 0.12,
+    activeSet: {
+      kick: true,
+      snare: true,
+      bass: true,
+      rhodes: true,
+      pad: true,
+    },
+    patternOverrides: {
+      // Big slow kick on 1 only (half-time feel)
+      kick: [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+      // Snare drag on 3 only
+      snare: [0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0],
+      // Long sustained bass
+      bass: [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0],
+      // Rhodes m9 chord every 2 bars — sparse stabs
+      rhodes: [0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+      // Big atmospheric pad
+      pad: [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    },
+    notesOverrides: {
+      bass: [A2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, F3 / 2, 0, 0, 0],
+      rhodes: [0, 0, 0, 0, A3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+      pad: [A3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    },
+  },
+  {
+    id: 'boom-bap',
+    name: 'Boom Bap',
+    vibe: 'Biggie · Nas · J Dilla · 1995 Brooklyn',
+    dot: '#6A4A2A',
+    bpm: 90,
+    swing: 0.2, // strong swing
+    activeSet: {
+      kick: true,
+      snare: true,
+      hihat: true,
+      bass: true,
+      rhodes: true,
+      chop: true,
+    },
+    patternOverrides: {
+      // Dusty kick — 1 + & of 2 + 3
+      kick: [1, 0, 0, 0, 0, 0, 1, 0, 1, 0, 0, 0, 0, 0, 0.5, 0],
+      // Loud dry snare on 2+4
+      snare: [0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0],
+      // 8th-note hat with humanization (velocities vary)
+      hihat: [0.6, 0, 0.5, 0, 0.7, 0, 0.4, 0, 0.6, 0, 0.5, 0, 0.7, 0, 0.4, 0],
+      // Walking jazz upright bass
+      bass: [1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0],
+      // Jazzy Rhodes loop chopped
+      rhodes: [1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0],
+      // Vocal chop on the &-of-3 every 2 bars
+      chop: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0],
+    },
+    notesOverrides: {
+      bass: [A2, 0, 0, 0, C3, 0, 0, 0, D3, 0, 0, 0, E3, 0, 0, 0],
+      rhodes: [A3, 0, 0, 0, 0, 0, C4, 0, 0, 0, E4, 0, 0, 0, 0, 0],
+      chop: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, E4, 0, 0, 0, 0],
+    },
+  },
+  {
+    id: 'epic-electro',
+    name: 'Epic Electro',
+    vibe: 'Justice · Discovery-era Daft Punk · Madeon',
+    dot: '#3868D8',
+    bpm: 126,
+    swing: 0,
+    activeSet: {
+      kick: true,
+      snare: true,
+      clap: true,
+      hihat: true,
+      wobble: true,
+      lead: true,
+      pad: true,
+    },
+    patternOverrides: {
+      // Compressed kick punching through everything
+      kick: [1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0],
+      // Snare on 2+4 with reverb tail
+      snare: [0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0],
+      // Clap doubled on snare hits
+      clap: [0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0],
+      // Hat 16ths driving
+      hihat: [0.5, 0.5, 0.7, 0.5, 0.5, 0.5, 0.7, 0.5, 0.5, 0.5, 0.7, 0.5, 0.5, 0.5, 0.7, 0.5],
+      // Distorted square sub with wobble
+      wobble: [1, 0, 0, 0, 0, 0, 1, 0, 1, 0, 0, 0, 0, 0, 0.7, 0],
+      // Octaved square-wave riff motif
+      lead: [1, 0, 0.6, 0, 1, 0, 0.6, 0, 1, 0, 0.6, 0, 1, 0, 0.8, 0],
+      // Big pad chord sustained
+      pad: [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    },
+    notesOverrides: {
+      lead: [A4, 0, C5, 0, A4, 0, C5, 0, G4, 0, A4, 0, E4, 0, G4, 0],
+      pad: [A3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    },
+  },
+  {
+    id: 'lofi-rooftop',
+    name: 'Lofi Rooftop',
+    vibe: 'Nujabes · J Dilla · study beats',
+    dot: '#6A4A7A',
+    bpm: 82,
+    swing: 0.25, // major swing
+    activeSet: {
+      kick: true,
+      snare: true,
+      hihat: true,
+      bass: true,
+      rhodes: true,
+      pad: true,
+    },
+    patternOverrides: {
+      // Soft kick — like Boom Bap but quieter and swung more
+      kick: [0.7, 0, 0, 0, 0, 0, 0.6, 0, 0.7, 0, 0, 0, 0, 0, 0.5, 0],
+      // Brushed snare on 2+4
+      snare: [0, 0, 0, 0, 0.7, 0, 0, 0, 0, 0, 0, 0, 0.7, 0, 0, 0],
+      // 8th-note hat, swung
+      hihat: [0.5, 0, 0.4, 0, 0.5, 0, 0.4, 0, 0.5, 0, 0.4, 0, 0.5, 0, 0.4, 0],
+      // Soft upright bass walking
+      bass: [0.7, 0, 0, 0, 0.6, 0, 0, 0, 0.7, 0, 0, 0, 0.6, 0, 0, 0],
+      // Lush jazz 9 chord every 4 bars
+      rhodes: [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+      // Atmo pad always on
+      pad: [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    },
+    notesOverrides: {
+      bass: [A2, 0, 0, 0, F3 / 2, 0, 0, 0, A2, 0, 0, 0, G3 / 2, 0, 0, 0],
+      rhodes: [A3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+      pad: [A3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    },
+  },
+];
+
+export const DEFAULT_PRESET_ID = GROOVE_PRESETS[0].id;
+export const PRESET_LS_KEY = 'colourmap:groove-preset';
+
+export function getPreset(id: string | null | undefined): GroovePreset {
+  if (!id) return GROOVE_PRESETS[0];
+  return GROOVE_PRESETS.find((p) => p.id === id) ?? GROOVE_PRESETS[0];
+}

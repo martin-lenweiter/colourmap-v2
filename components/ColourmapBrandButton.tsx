@@ -15,6 +15,12 @@ import { useEffect, useRef, useState } from 'react';
 // shown next to the PR number so the user knows which version is live.
 const RECENT_PRS: { num: number; title: string; date: string }[] = [
   {
+    num: 98,
+    date: '2026-04-25',
+    title:
+      '3-dot Check-in landing (Feeling · Doing) + nuke the djembe + simpler Circles description + nav phone fix',
+  },
+  {
     num: 97,
     date: '2026-04-25',
     title:
@@ -65,9 +71,88 @@ const RECENT_PRS: { num: number; title: string; date: string }[] = [
 const LATEST_PR = RECENT_PRS[0].num;
 const LATEST_PR_DATE = RECENT_PRS[0].date;
 
+// Vision sections — distilled from docs/pdfs/colourmap-vision-2026-04.pdf
+// (the master vision PDF). Each entry has a one-line summary +
+// what I think the *core next step* is for that surface. Updated
+// as those next steps land. Shown when the user expands the second
+// losange in the About modal.
+const VISION_SECTIONS: { title: string; color: string; summary: string; next: string }[] = [
+  {
+    title: 'The thesis',
+    color: '#B33A2B',
+    summary:
+      'Patagonia of social, not Meta. A small intentional space that holds people who already love each other — without performing for strangers.',
+    next: 'Live with it. Run Salon #1 with our 8 closest friends — see if the room recognizes itself.',
+  },
+  {
+    title: 'Day · Check-in',
+    color: '#D4805A',
+    summary:
+      'Two big dots, Feeling and Doing, opening into 60-second guided check-ins. The base layer everything else reads from.',
+    next: 'Sharing — the third dot. Add the social-context check-in once Circles have missions and presence.',
+  },
+  {
+    title: 'Music · Chill ↔ Groove unity',
+    color: '#3A6890',
+    summary:
+      'Chill is the atmosphere creator; Groove is the rhythm. One shared sound library so a Chill landscape becomes the bed for a Groove session.',
+    next: 'Extract lib/sound-library.ts, then ship the Atmosphere strip in Groove that consumes saved Chill soundscapes.',
+  },
+  {
+    title: 'Music · 7 soundscapes deepened',
+    color: '#C4A060',
+    summary:
+      'Big-dot picker landed (Tech / Funk / Tropical / Slow Roll / Boom Bap / Epic Electro / Lofi). Each preset reconfigures bpm + swing + tracks.',
+    next: 'Source CC0 samples (marimba, vinyl crackle, snap, ooh-vocal) and tune the per-preset sound design — make each soundscape feel singular.',
+  },
+  {
+    title: 'Notebook',
+    color: '#9B6BA0',
+    summary:
+      'Lightweight markdown notebook with multiple categories (Notes / Ideas / Journal / Songs / Projects / Rhymes / Practice / Lessons). Saved sound moments land here.',
+    next: 'Tag-based "now" view for what you\'re actively working on — feeds the Track Lines layer of Overview.',
+  },
+  {
+    title: 'Circles · the social primitive',
+    color: '#7AAA58',
+    summary:
+      'A shared space to align missions and become effective in the process. 5–30 people. No follow, no feed, no public profile.',
+    next: 'Circle Missions schema + UI. Use it to run our own band project for 2 weeks. Without missions, Circles are a primitive; with them, Circles are the product.',
+  },
+  {
+    title: 'Overview · the reflective surface',
+    color: '#5AA8B0',
+    summary:
+      'Seven layers — NowBar (live), Week Shape, Compass flower, Track Lines, Soundscape Garden, Quiet Notes, Slow Wins. Recognition + Beauty + Insight.',
+    next: 'Layer 2 — Week Shape. A horizontal heat-river of feeling + doing across 7 days. Mostly SVG work, ~half a day.',
+  },
+  {
+    title: 'Mini-player · audio across navigation',
+    color: '#5C3018',
+    summary:
+      'When music plays in any tool and you wander to /day, a small persistent pill keeps the audio alive and offers play/pause + jump-back.',
+    next: 'lib/sound-session.tsx provider + <MiniPlayer />. ~2–3 days. Foundation for collective music control later.',
+  },
+  {
+    title: 'Design system · adaptive',
+    color: '#8A6A4A',
+    summary:
+      'Shipped lib/design-tokens.ts (NowBar dogfoods it). The bigger move is container queries + useViewport() so layouts adapt to where they are, not just what md: thinks.',
+    next: 'useViewport() hook + 100dvh on the cockpit (fixes iOS Safari address-bar jump). Migrate one component as worked example.',
+  },
+  {
+    title: 'Growth · €0 social media',
+    color: '#E0844A',
+    summary:
+      'Salons (8 people, living room) → Underground Nights (50, friendly venue) → Experiments + Expos → Festivals. No paid ads, no influencers, no PR firms.',
+    next: 'Ship Salon Mode preset — host-flow with the right surfaces sequenced. Run our first Salon. Iterate from there.',
+  },
+];
+
 export default function ColourmapBrandButton() {
   const [open, setOpen] = useState(false);
   const [changelogOpen, setChangelogOpen] = useState(false);
+  const [visionOpen, setVisionOpen] = useState(false);
   const overlayRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
@@ -220,6 +305,133 @@ export default function ColourmapBrandButton() {
               className="mt-6 mb-4"
               style={{ height: 1, background: 'var(--border)' }}
             />
+
+            {/* Vision losange — tap to expand the master-vision
+                summary + core next step for each surface (Day,
+                Music, Notebook, Circles, Overview, etc.). Sourced
+                from docs/pdfs/colourmap-vision-2026-04.pdf. */}
+            <div className="flex items-center justify-between gap-3 mb-3">
+              <p
+                style={{
+                  fontFamily: 'var(--font-serif)',
+                  fontSize: 12,
+                  color: '#8A6A4A',
+                  opacity: 0.85,
+                  letterSpacing: '0.06em',
+                }}
+              >
+                vision ·{' '}
+                <strong style={{ color: '#5C3018', fontWeight: 700 }}>core next steps</strong>
+              </p>
+              <button
+                type="button"
+                onClick={() => setVisionOpen((s) => !s)}
+                aria-label={visionOpen ? 'Hide vision sections' : 'Show vision sections'}
+                aria-expanded={visionOpen}
+                title="What's next, by surface"
+                className="flex cursor-pointer items-center justify-center transition-all hover:opacity-80"
+                style={{
+                  width: 28,
+                  height: 28,
+                  background: visionOpen ? '#B33A2B18' : 'transparent',
+                  border: '1px solid #B33A2B55',
+                  borderRadius: 6,
+                  transform: 'rotate(45deg)',
+                  padding: 0,
+                }}
+              >
+                <span
+                  aria-hidden="true"
+                  style={{
+                    transform: 'rotate(-45deg)',
+                    color: '#B33A2B',
+                    fontWeight: 700,
+                    fontSize: 13,
+                    lineHeight: 1,
+                  }}
+                >
+                  {visionOpen ? '−' : '+'}
+                </span>
+              </button>
+            </div>
+
+            {visionOpen && (
+              <div
+                className="mb-4 rounded-lg animate-in fade-in duration-150"
+                style={{
+                  background: '#F5E8C812',
+                  border: '1px solid #B33A2B25',
+                  padding: '12px 14px',
+                  maxHeight: 360,
+                  overflowY: 'auto',
+                }}
+              >
+                <ul className="space-y-3.5">
+                  {VISION_SECTIONS.map((section) => (
+                    <li key={section.title} style={{ fontFamily: 'var(--font-serif)' }}>
+                      <p
+                        className="flex items-center gap-2"
+                        style={{
+                          fontSize: 13,
+                          fontWeight: 700,
+                          color: section.color,
+                          letterSpacing: '0.04em',
+                          marginBottom: 3,
+                        }}
+                      >
+                        <span
+                          aria-hidden="true"
+                          style={{
+                            display: 'inline-block',
+                            width: 8,
+                            height: 8,
+                            borderRadius: 4,
+                            background: section.color,
+                          }}
+                        />
+                        {section.title}
+                      </p>
+                      <p
+                        style={{
+                          fontSize: 12,
+                          color: 'var(--muted-foreground)',
+                          lineHeight: 1.5,
+                          opacity: 0.95,
+                          marginBottom: 4,
+                        }}
+                      >
+                        {section.summary}
+                      </p>
+                      <p
+                        style={{
+                          fontSize: 11.5,
+                          color: '#5C3018',
+                          lineHeight: 1.5,
+                          fontStyle: 'italic',
+                          paddingLeft: 14,
+                          borderLeft: `2px solid ${section.color}55`,
+                          marginLeft: 0,
+                        }}
+                      >
+                        <strong
+                          style={{
+                            fontWeight: 700,
+                            color: section.color,
+                            letterSpacing: '0.04em',
+                            textTransform: 'uppercase',
+                            fontSize: 10,
+                            marginRight: 6,
+                          }}
+                        >
+                          next
+                        </strong>
+                        {section.next}
+                      </p>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
 
             {/* Changelog losange — tap to expand a rolling list of
                 recent PRs so the user can see what just shipped. */}

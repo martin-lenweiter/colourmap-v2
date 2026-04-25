@@ -2,6 +2,8 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 
+import { type SaveStatus, saveToNotebook } from '@/lib/save-to-notebook';
+
 /* ═══════════════════════════════════════════════════════════
    LOFI STUDIO — beat + bass + melody layers with effects.
    Lazy genius mode: one-tap full arrangements.
@@ -1029,6 +1031,28 @@ export default function LofiLooper() {
   const [filterCutoff, setFilterCutoff] = useState(5000); // 200-8000 Hz
   const [reverbMix, setReverbMix] = useState(0.15); // 0-1
   const [activePreset, setActivePreset] = useState<string | null>(null);
+  const [momentStatus, setMomentStatus] = useState<SaveStatus>(null);
+
+  /**
+   * Save the current Lofi loop to the user's Notebook. Captures
+   * tempo + palette + active layer + active preset + active drums
+   * so the user can find this exact loop later.
+   */
+  async function saveMomentToNotebook() {
+    setMomentStatus('saving');
+    const lines = [
+      `Tempo ${bpm} bpm · swing ${swing}`,
+      `Palette ${palette} · melody ${melodyInst} · bass ${bassType}`,
+      `Volume ${Math.round(volume * 100)}%`,
+    ];
+    if (activePreset) lines.push(`Preset: ${activePreset}`);
+    const result = await saveToNotebook({
+      tool: 'lofi-looper',
+      content: lines.join('\n'),
+    });
+    setMomentStatus(result);
+    setTimeout(() => setMomentStatus(null), 1800);
+  }
 
   // Beat grid
   const [beat, setBeat] = useState<Record<DrumId, boolean[]>>(() => ({
@@ -1380,6 +1404,36 @@ export default function LofiLooper() {
         >
           tap a mood or build your own
         </p>
+      </div>
+
+      {/* Save this loop → Notebook (Ideas). Mirrors the Chill /
+          Groove / Maker "→ notebook" buttons so saved snapshots
+          land in one place. */}
+      <div className="flex justify-center">
+        <button
+          type="button"
+          onClick={saveMomentToNotebook}
+          disabled={momentStatus === 'saving'}
+          className="cursor-pointer rounded-xl px-4 py-2 transition-all hover:opacity-85 disabled:opacity-50"
+          style={{
+            background: momentStatus === 'saved' ? '#7AAA5815' : '#9B6BA010',
+            border: `1.5px solid ${momentStatus === 'saved' ? '#7AAA5840' : '#9B6BA040'}`,
+            color: momentStatus === 'saved' ? '#7AAA58' : '#9B6BA0',
+            fontFamily: 'var(--font-serif)',
+            fontSize: '12px',
+            fontWeight: 600,
+            letterSpacing: '0.16em',
+            textTransform: 'uppercase',
+          }}
+        >
+          {momentStatus === 'saving'
+            ? '…'
+            : momentStatus === 'saved'
+              ? '✓ saved to notebook'
+              : momentStatus === 'error'
+                ? 'error · try again'
+                : '→ save to notebook'}
+        </button>
       </div>
 
       {/* ── MOODS — one-tap arrangements ── */}
