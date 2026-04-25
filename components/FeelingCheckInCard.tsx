@@ -1693,12 +1693,17 @@ export default function FeelingCheckInCard() {
           where do you want to begin?
         </p>
         <div className="flex flex-col items-center gap-5">
+          {/* Feeling = warm orange/terracotta (inner, emotional).
+              Doing = sage green (outer, action, growth) — picked
+              after a too-muddy ochre attempt. The pair reads as
+              warm-vs-fresh, not warm-vs-cool, which fits the warm
+              paper-feel of the rest of the cockpit. */}
           <SegmentDot
             label="Feeling"
             color="#D4805A"
             onClick={() => setSelectedSegment('feeling')}
           />
-          <SegmentDot label="Doing" color="#6890B0" onClick={() => setSelectedSegment('doing')} />
+          <SegmentDot label="Doing" color="#7AAA58" onClick={() => setSelectedSegment('doing')} />
         </div>
         <p
           className="text-center italic"
@@ -4300,7 +4305,7 @@ export default function FeelingCheckInCard() {
                             if (e.key === 'Enter') addTodayObjective();
                           }}
                           placeholder="+ add objective for today..."
-                          className="w-full border-b bg-transparent pb-1 outline-none placeholder:text-[#7A5438] placeholder:opacity-50"
+                          className="w-full border-b bg-transparent pb-1 text-center outline-none placeholder:text-[#7A5438] placeholder:opacity-50"
                           style={{
                             color: '#7a5438',
                             borderColor: '#C4A06020',
