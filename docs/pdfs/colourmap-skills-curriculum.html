@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Colourmap — Skills &amp; Tools Curriculum, v1</title>
+<style>
+@page { size: A4; margin: 22mm 18mm; }
+* { box-sizing: border-box; }
+body {
+  font-family: 'Georgia', 'Garamond', serif;
+  color: #3A2418;
+  background: #F5E8C8;
+  line-height: 1.55;
+  font-size: 12.5pt;
+  margin: 0;
+}
+h1 {
+  font-size: 30pt;
+  font-style: italic;
+  font-weight: normal;
+  color: #B33A2B;
+  letter-spacing: 0.04em;
+  margin: 0 0 0.2em 0;
+  page-break-after: avoid;
+}
+h2 {
+  font-size: 18pt;
+  color: #5C3018;
+  font-weight: normal;
+  font-style: italic;
+  margin-top: 1.6em;
+  margin-bottom: 0.4em;
+  border-bottom: 1px dotted #B89C76;
+  padding-bottom: 0.25em;
+  page-break-after: avoid;
+}
+h3 {
+  font-size: 13pt;
+  color: #7A5438;
+  font-weight: 600;
+  margin-top: 1.2em;
+  margin-bottom: 0.3em;
+  letter-spacing: 0.02em;
+}
+h4 {
+  font-size: 11pt;
+  color: #8A6A4A;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  margin-top: 1em;
+  margin-bottom: 0.3em;
+}
+.lede {
+  font-size: 14pt;
+  font-style: italic;
+  color: #6A4A2A;
+  border-left: 3px solid #C4A060;
+  padding-left: 14px;
+  margin: 1em 0 1.5em 0;
+}
+p { margin: 0.5em 0; }
+ul, ol { padding-left: 1.4em; margin: 0.4em 0; }
+li { margin-bottom: 0.3em; }
+strong { color: #5C3018; }
+em { color: #7A5438; }
+code, .code {
+  font-family: 'Consolas', 'Monaco', monospace;
+  font-size: 10.5pt;
+  background: #EEDFC4;
+  padding: 1px 5px;
+  border-radius: 3px;
+  color: #5C3018;
+}
+.tag {
+  display: inline-block;
+  font-size: 9pt;
+  color: #fff;
+  background: #B33A2B;
+  padding: 2px 9px;
+  border-radius: 11px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  vertical-align: middle;
+  margin-right: 6px;
+}
+.subhead { font-size: 10.5pt; color: #8A6A4A; letter-spacing: 0.08em; text-transform: uppercase; }
+.brand {
+  font-family: 'Georgia', serif;
+  font-style: italic;
+  color: #B33A2B;
+  font-weight: bold;
+}
+.divider {
+  text-align: center;
+  margin: 1.6em 0;
+  color: #C4A060;
+  letter-spacing: 0.5em;
+  font-size: 11pt;
+}
+.module-card {
+  background: rgba(255,255,255,0.42);
+  border: 1px solid #B89C76;
+  border-radius: 10px;
+  padding: 14px 18px;
+  margin: 1.4em 0;
+  page-break-inside: avoid;
+}
+.module-card h2 { margin-top: 0.2em; border: none; }
+.priority {
+  display: inline-block;
+  font-size: 9pt;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  padding: 1px 8px;
+  border-radius: 6px;
+  vertical-align: middle;
+  margin-left: 8px;
+}
+.priority.now { background: #B33A2B; color: white; }
+.priority.soon { background: #C4A060; color: white; }
+.priority.later { background: #8A6A4A; color: white; }
+.priority.optional { background: #B89C76; color: #5C3018; }
+table {
+  border-collapse: collapse;
+  margin: 0.6em 0;
+  width: 100%;
+}
+td, th {
+  border: 1px solid #C4A06040;
+  padding: 6px 10px;
+  font-size: 11pt;
+  vertical-align: top;
+}
+th {
+  background: #EEDFC4;
+  font-weight: 700;
+  color: #5C3018;
+  text-align: left;
+}
+.callout {
+  background: #F0DFB6;
+  border-left: 4px solid #B33A2B;
+  padding: 10px 14px;
+  margin: 0.8em 0;
+  font-style: italic;
+}
+.honest {
+  background: #EEDFC4;
+  border-left: 3px solid #7A5438;
+  padding: 10px 14px;
+  margin: 0.8em 0;
+  font-size: 11.5pt;
+}
+.footer {
+  margin-top: 3em;
+  padding-top: 1em;
+  border-top: 1px dotted #B89C76;
+  font-style: italic;
+  font-size: 10.5pt;
+  color: #8A6A4A;
+  text-align: center;
+}
+</style>
+</head>
+<body>
+
+<p class="subhead">Personal curriculum · v1 · 2026-04-25</p>
+<h1>What you actually need to learn</h1>
+<p class="lede">For an artist who became a vibecoder building Colourmap. No CS degree, big dreams, possibly heading into a master's at Politecnico Milano. This is your minimum-viable map of what to learn — when, why, and how deep.</p>
+
+<div class="callout">
+The honest truth: <strong>you don't need to learn everything.</strong> You're not training to be a senior engineer at Google. You're training to ship one specific app — Colourmap — and to be the kind of artist-builder who can hold their own in a room of designers, engineers, and musicians. That's a much narrower (and more interesting) target than "learn to code."
+</div>
+
+<h2>How to read this</h2>
+<p>10 modules. Each has:</p>
+<ul>
+<li>What it is, in one paragraph an artist would understand</li>
+<li>Why <strong>you specifically</strong> need it for Colourmap</li>
+<li>What to learn first (the 20% that gets you 80% of the way)</li>
+<li>Resources I'd actually recommend (not a list of every YouTube tutorial)</li>
+<li>An honest "you can ignore this if..." escape hatch</li>
+</ul>
+<p>Priority labels: <span class="priority now">NOW</span> = needed this month · <span class="priority soon">SOON</span> = next 3 months · <span class="priority later">LATER</span> = once Colourmap has 1k users · <span class="priority optional">OPTIONAL</span> = nice-to-have.</p>
+
+<div class="divider">· · ·</div>
+
+<div class="module-card">
+<h2><span class="tag">01</span>The stack you're already using <span class="priority now">NOW</span></h2>
+<p>You're shipping in <strong>Next.js + React + TypeScript + Tailwind + Bun + Vercel + Supabase</strong>. Most of these you've been using without fully understanding. That's fine for shipping — it's not fine forever. Each one is a tool with sharp edges.</p>
+
+<h3>What to learn first (in this order)</h3>
+<ol>
+<li><strong>JavaScript fundamentals</strong> — closures, promises, async/await, the event loop. <em>Without these, every other thing on this list is a mystery.</em></li>
+<li><strong>TypeScript types</strong> — interfaces, generics, narrowing. You'll feel a 10× productivity gain when you stop fighting the types and start using them as scaffolding.</li>
+<li><strong>React hooks</strong> — <code>useState</code>, <code>useEffect</code>, <code>useRef</code>, <code>useCallback</code>. The trap is <em>useEffect</em>: 80% of React bugs come from misusing it.</li>
+<li><strong>Next.js App Router basics</strong> — server components vs. client components, when to use which, layouts, route groups.</li>
+<li><strong>Tailwind utility classes</strong> — you mostly know this from doing. Read the docs once front-to-back; you'll find shortcuts.</li>
+</ol>
+
+<h3>Best resources</h3>
+<ul>
+<li><strong>Josh Comeau's React for the rest of us</strong> (joshwcomeau.com) — best beginner-but-not-dumb React content on the web.</li>
+<li><strong>TypeScript Handbook</strong> (typescriptlang.org/docs) — actually written for humans.</li>
+<li><strong>Next.js docs</strong> (nextjs.org/docs) — App Router section is what you need.</li>
+</ul>
+
+<div class="honest">
+You can ignore deep React internals (fiber, reconciler) until you're optimising for performance. You will <em>not</em> need to know how Webpack works. You will <em>not</em> need to read the Next.js source. Stay shallow until something breaks.
+</div>
+</div>
+
+<div class="module-card">
+<h2><span class="tag">02</span>Web Audio — your differentiator <span class="priority now">NOW</span></h2>
+<p>The Chill Machine, Groove Machine, Magic Maker, Lo-fi Looper — all built on the <strong>Web Audio API</strong>. This is your edge over every other "wellness app." Most developers never touch this; you're already using it.</p>
+
+<h3>What to learn first</h3>
+<ol>
+<li><strong>The audio graph model</strong> — sources → nodes → destination. Everything is a node. Once this clicks, everything else is reading docs.</li>
+<li><strong>Oscillators + envelopes</strong> — sine / square / triangle / sawtooth + ADSR. This is sound design at its most basic. Master this and you can recreate most synths.</li>
+<li><strong>Buffer sources + sample playback</strong> — how the real-instrument samples work in your code.</li>
+<li><strong>Filters + effects</strong> — biquad filters (lowpass, highpass, bandpass), delay, convolution reverb. Each unlocks a category of sound.</li>
+<li><strong>The scheduler pattern</strong> — your <code>scheduleNextNotes()</code> function in GrooveMachine. The 100ms-lookahead trick is foundational; once you get it, you can build any rhythm-based tool.</li>
+</ol>
+
+<h3>Best resources</h3>
+<ul>
+<li><strong>MDN Web Audio API docs</strong> — surprisingly well-written.</li>
+<li><strong>Tonejs.github.io</strong> source code — even if you don't use Tone.js, reading its source teaches you idiomatic Web Audio.</li>
+<li><strong>"A Tale of Two Clocks"</strong> by Chris Wilson — the article that explains why the scheduler pattern works.</li>
+</ul>
+
+<div class="honest">
+This is the area where you can <em>actually become world-class</em> over 2–3 years. Most music-app builders are former DSP engineers, not artists. You have the artist's ear. Keep building, keep listening to references, keep tweaking. The combination is rare.
+</div>
+</div>
+
+<div class="module-card">
+<h2><span class="tag">03</span>Sound design + music theory (just enough) <span class="priority now">NOW</span></h2>
+<p>Web Audio is the <em>tool</em>; this is what to <em>do with it</em>. As a musician you already have most of this — but the formal vocabulary (intervals, voice leading, timbre theory) lets you reason about what you're hearing.</p>
+
+<h3>What to learn first</h3>
+<ol>
+<li><strong>Intervals + scales</strong> — pentatonic, major, minor, modes (dorian, mixolydian, phrygian). You're already using these in code.</li>
+<li><strong>Chord progressions</strong> — I-V-vi-IV, ii-V-I, modal interchange. Your Groove presets need these.</li>
+<li><strong>Frequency vs. pitch</strong> — A4 = 440 Hz, octave doubles. The <code>baseNote * 2 ** (semitones/12)</code> formula in your code lives because of this.</li>
+<li><strong>Envelope shapes</strong> — pluck (fast attack, fast decay) vs. pad (slow attack, slow release) vs. percussion (instant attack, almost no sustain). This is what makes a "sound" feel like an instrument.</li>
+<li><strong>Mixing fundamentals</strong> — EQ (cut more than boost), compression, reverb send vs. insert, stereo width.</li>
+</ol>
+
+<h3>Best resources</h3>
+<ul>
+<li><strong>Andrew Huang YouTube</strong> — accessible production basics.</li>
+<li><strong>"How Music Works"</strong> — David Byrne. Not technical but reframes how you think about songs as <em>contexts</em>.</li>
+<li><strong>Adam Neely YouTube</strong> — for music theory delivered with a straight face but real depth.</li>
+</ul>
+</div>
+
+<div class="module-card">
+<h2><span class="tag">04</span>Database + backend basics <span class="priority soon">SOON</span></h2>
+<p>Colourmap will eventually need to store things across devices — check-ins, projects, Circle missions, saved sounds. Today this works in localStorage; tomorrow you need real persistence with auth.</p>
+
+<h3>What to learn first</h3>
+<ol>
+<li><strong>SQL fundamentals</strong> — SELECT, INSERT, UPDATE, JOIN, foreign keys. Most of "backend" is just SQL with extra steps.</li>
+<li><strong>Schema design</strong> — why you put email on user, not on post. Why you don't store JSON blobs when columns would do. Normalisation.</li>
+<li><strong>Migrations</strong> — how schemas evolve over time without breaking production. Drizzle (which you're using) makes this easy.</li>
+<li><strong>Row-level security (RLS)</strong> in Supabase — the security model that lets the database itself enforce who can read what.</li>
+<li><strong>RESTful API design</strong> — why you have <code>GET /circles/:id</code> and <code>POST /circles/:id/missions</code>, not <code>POST /api/getCircle</code>.</li>
+</ol>
+
+<h3>Best resources</h3>
+<ul>
+<li><strong>Supabase docs</strong> — they're really good. Read the auth + RLS sections.</li>
+<li><strong>"SQL for the Lazy"</strong> — Mode Analytics tutorial (mode.com).</li>
+<li><strong>Drizzle ORM docs</strong> — for the migration patterns you're using.</li>
+</ul>
+
+<div class="honest">
+You probably won't need to know about indexing, query optimisation, or stored procedures until 10k+ users. Stay shallow.
+</div>
+</div>
+
+<div class="module-card">
+<h2><span class="tag">05</span>Auth + security (the bare minimum) <span class="priority soon">SOON</span></h2>
+<p>This is the area artists most reliably skip and most reliably regret. Even a small intentional app needs to handle passwords, sessions, and not leak data correctly.</p>
+
+<h3>What to learn first</h3>
+<ol>
+<li><strong>Sessions vs. JWTs</strong> — what your auth cookie actually is, why it works, how it can be stolen.</li>
+<li><strong>HTTPS + CORS</strong> — why every API call needs to be on the right domain with the right headers.</li>
+<li><strong>OWASP Top 10</strong> — the 10 most common security mistakes. Read once, reread once a year.</li>
+<li><strong>Password handling</strong> — never store plain text. Supabase does this for you, but understand <em>what</em> it's doing.</li>
+<li><strong>Rate limiting + abuse prevention</strong> — for the day someone tries to spam your /api endpoints.</li>
+</ol>
+
+<h3>Best resources</h3>
+<ul>
+<li><strong>OWASP Top 10</strong> page itself (owasp.org).</li>
+<li><strong>Lucia auth docs</strong> — even if you don't use Lucia, the docs explain auth concepts clearly.</li>
+<li><strong>Troy Hunt's blog</strong> (troyhunt.com) — for cautionary tales.</li>
+</ul>
+</div>
+
+<div class="module-card">
+<h2><span class="tag">06</span>Design fundamentals (you have intuition; learn the names) <span class="priority now">NOW</span></h2>
+<p>You're an artist. You have taste. The gap is <strong>vocabulary</strong>. Knowing the names lets you talk to designers, brief other people, and look at your own work with diagnostic eyes.</p>
+
+<h3>What to learn first</h3>
+<ol>
+<li><strong>Type scale + hierarchy</strong> — why 11/13/15/22 px, not arbitrary sizes. Why line-height should usually be 1.4–1.6.</li>
+<li><strong>Spacing scale</strong> — 4 / 8 / 12 / 16 / 24 / 32 / 48. The geometric/Fibonacci ratio between sizes is what makes a layout feel "tuned" rather than thrown together.</li>
+<li><strong>Colour theory for screens</strong> — HSL > RGB for thinking. Saturation cascades. Why your warm-earth palette works (analogous hues + slight saturation drop on muted text).</li>
+<li><strong>Accessibility basics</strong> — contrast ratios (4.5:1 minimum), keyboard navigation, screen-reader semantics, focus states.</li>
+<li><strong>Fitts's Law + touch targets</strong> — 44×44 px minimum. Why you spent a day making the dot sliders bigger.</li>
+</ol>
+
+<h3>Best resources</h3>
+<ul>
+<li><strong>"Refactoring UI"</strong> — Adam Wathan + Steve Schoger. Best book for a non-designer-becoming-designer.</li>
+<li><strong>"Practical Typography"</strong> by Matthew Butterick — practicaltypography.com.</li>
+<li><strong>WebAIM contrast checker</strong> — bookmark it.</li>
+</ul>
+
+<div class="honest">
+You don't need to learn Figma deeply. You're sketching ideas in code with my help — that's a faster loop for a builder of your kind. Use Figma when collaborating with someone else; otherwise sketch in code.
+</div>
+</div>
+
+<div class="module-card">
+<h2><span class="tag">07</span>Working with AI (your force multiplier) <span class="priority now">NOW</span></h2>
+<p>You're already doing this — using me to ship features. Most developers haven't yet figured out what works. The next 2 years, the gap between "good prompter" and "ok prompter" will be the biggest single productivity gap of any era of programming. Be in the front group.</p>
+
+<h3>What to learn first</h3>
+<ol>
+<li><strong>Specification clarity</strong> — the more precise your ask, the better the output. <em>"Add a save button"</em> vs. <em>"Add a save button to MagicMaker that captures root + scale + active loop layers and POSTs to /api/notebook with category 'ideas' and tag 'magic-maker'."</em> — these get wildly different results.</li>
+<li><strong>When to delegate vs. learn</strong> — repeated patterns: delegate. Anything you'll need to debug at 3am: learn first.</li>
+<li><strong>Reading code AI generates</strong> — never merge what you can't read. Even quickly. <em>Especially</em> quickly.</li>
+<li><strong>Spec-first vs. code-first</strong> — you've started using docs/specs/ heavily. That's the right pattern: align on shape in prose, then have AI write the code.</li>
+<li><strong>Editor integration</strong> — Claude Code, Cursor, Continue.dev. Each has tradeoffs. Pick one and master it.</li>
+</ol>
+
+<h3>Best resources</h3>
+<ul>
+<li><strong>Anthropic's prompting guide</strong> — docs.anthropic.com.</li>
+<li><strong>Reading other people's spec docs</strong> — Stripe's API guidelines, Linear's design notes. The clarity is the lesson.</li>
+<li><strong>Try every tool yourself for 1 week</strong> — your own experience is more useful than any guide.</li>
+</ul>
+</div>
+
+<div class="module-card">
+<h2><span class="tag">08</span>Product + user thinking <span class="priority soon">SOON</span></h2>
+<p>You're the product person on this app. There's no PM coming to save you. Most apps die because the founder builds what they think users want, not what users actually do.</p>
+
+<h3>What to learn first</h3>
+<ol>
+<li><strong>Talking to users</strong> — open-ended questions, no leading. <em>"Tell me about the last time you wanted to relax with music"</em> not <em>"Would you use a meditation app?"</em></li>
+<li><strong>Watching users use the product</strong> — Maze, Lookback, or just call your friend on FaceTime and ask them to share their screen. The single most valuable activity in product work.</li>
+<li><strong>Jobs to be Done</strong> framework — what is the user "hiring" your app to do for them? Not features; outcomes.</li>
+<li><strong>The minimum lovable product</strong> idea (bigger than minimum viable) — the smallest thing someone will love, not just tolerate.</li>
+<li><strong>Saying no</strong> — for every feature you ship, you commit to maintaining it for years. Half your skill as a product person is rejecting things gracefully.</li>
+</ol>
+
+<h3>Best resources</h3>
+<ul>
+<li><strong>"The Mom Test"</strong> by Rob Fitzpatrick — short, brilliant, about user research.</li>
+<li><strong>"Inspired"</strong> by Marty Cagan — the canonical product book.</li>
+<li><strong>Julian Lehr's blog</strong> (julian.digital) — designer-product-engineer thinking distilled.</li>
+</ul>
+</div>
+
+<div class="module-card">
+<h2><span class="tag">09</span>Indie business + sustainable software <span class="priority later">LATER</span></h2>
+<p>The "Patagonia of social, not Meta" thesis you've written is a <em>business</em> thesis as much as a product one. There's a body of indie / lifestyle / bootstrapped business knowledge that you need before you scale, not after.</p>
+
+<h3>What to learn first</h3>
+<ol>
+<li><strong>Pricing fundamentals</strong> — why €69/year is more sustainable than €5/month for an intentional product. When to charge upfront vs. recurring.</li>
+<li><strong>Bootstrapping vs. raising</strong> — what each path costs you in control, in pace, in sleep.</li>
+<li><strong>Cash flow reading</strong> — the difference between MRR, ARR, gross margin, LTV, CAC. A musician's bookkeeping won't survive the app's accounting needs.</li>
+<li><strong>Customer support</strong> — what tools (Plain, Help Scout, Intercom), what tone, what auto-response.</li>
+<li><strong>Vendor + tool spend</strong> — Vercel, Supabase, OpenAI, Stripe. These add up. Watch them monthly.</li>
+</ol>
+
+<h3>Best resources</h3>
+<ul>
+<li><strong>"The Embedded Entrepreneur"</strong> — Arvid Kahl.</li>
+<li><strong>Indie Hackers podcast</strong> — for stories of people who've been here.</li>
+<li><strong>Lenny Rachitsky's newsletter</strong> — covers a wider range but consistently useful.</li>
+</ul>
+</div>
+
+<div class="module-card">
+<h2><span class="tag">10</span>The master's at Politecnico Milano (if you go) <span class="priority optional">OPTIONAL</span></h2>
+<p>Politecnico's <em>Communication Design</em> and <em>Digital and Interaction Design</em> programs are world-class. They'll give you four things this curriculum can't: <strong>peers</strong>, <strong>structure</strong>, <strong>credentials</strong>, <strong>time</strong>.</p>
+
+<h3>What to expect</h3>
+<ol>
+<li><strong>Studio culture</strong> — most learning happens between students, not in lectures. Be in the studio.</li>
+<li><strong>Italian design tradition</strong> — Munari, Castiglioni, Sottsass. Read about them before you arrive.</li>
+<li><strong>Critical theory you'll resist</strong> — semiotics, post-structuralism. Push through; it changes how you see images and interfaces.</li>
+<li><strong>The thesis project</strong> — they'll let you make Colourmap your thesis. Do that.</li>
+<li><strong>Internship pipeline</strong> — Milan-based studios (Cerri, Habits, Frog, Pentagram Italy) recruit out of Politecnico. Useful network even if you stay indie.</li>
+</ol>
+
+<h3>What to NOT expect</h3>
+<ul>
+<li>Being taught modern web stack technically. They're a design school. The CS rigor is in their engineering programs.</li>
+<li>Permission to slow down on Colourmap. The opposite — they'll want you to ship more, not less.</li>
+</ul>
+
+<div class="honest">
+The school is worth it for the network and the structured time, not the technical curriculum. If you can't go, replicate it: a small group of 5 builders meeting weekly + a published portfolio + a 4-month focused thesis-style project. That's 80% of the value at 0% of the cost.
+</div>
+</div>
+
+<div class="divider">· · ·</div>
+
+<h2>Ten-week starter plan</h2>
+<p>If you have 5 hours/week to invest in learning <em>outside</em> shipping, here's a sequence:</p>
+
+<table>
+<tr><th>Week</th><th>Focus</th><th>Concrete output</th></tr>
+<tr><td>1</td><td>JavaScript closures + promises (Module 01)</td><td>Read Comeau articles; rewrite one of your useEffects from memory</td></tr>
+<tr><td>2</td><td>TypeScript narrowing + generics (Module 01)</td><td>Type-tighten one of your service files</td></tr>
+<tr><td>3</td><td>Web Audio graph + oscillators (Module 02)</td><td>Build a one-knob synth from scratch in a sandbox</td></tr>
+<tr><td>4</td><td>Sound design ADSR + filters (Module 02 + 03)</td><td>Recreate one of your existing instruments without using any existing code</td></tr>
+<tr><td>5</td><td>SQL fundamentals + schema design (Module 04)</td><td>Sketch the Circle Missions schema without help; compare to mine</td></tr>
+<tr><td>6</td><td>Refactoring UI book chapters 1–4 (Module 06)</td><td>Apply spacing scale + type scale to one Colourmap surface</td></tr>
+<tr><td>7</td><td>The Mom Test book (Module 08)</td><td>Run 3 user interviews with friends-of-friends</td></tr>
+<tr><td>8</td><td>OWASP Top 10 + Supabase auth (Module 05)</td><td>Audit one Colourmap route for security smells</td></tr>
+<tr><td>9</td><td>Pricing fundamentals (Module 09)</td><td>Sketch pricing for Pro tier; A/B in friends' heads</td></tr>
+<tr><td>10</td><td>Reflection + plan next 10</td><td>Update this curriculum based on what you learned</td></tr>
+</table>
+
+<div class="divider">· · ·</div>
+
+<h2>The honest closing</h2>
+<p class="lede">You don't need to be a great engineer. You need to be a great <em>artist who knows enough engineering to build the rooms they imagine</em>. That's a different (rarer) thing — and it's exactly what Colourmap needs at the helm.</p>
+
+<p>Use AI as your engineer-in-residence. Read just enough to argue with me when I'm wrong. Keep your taste sharp. The technical depth you need is shallower than you think — but the depth in <strong>music</strong>, <strong>design</strong>, <strong>product instinct</strong>, and <strong>community-building</strong> is the lifelong work. Spend most of your learning time there.</p>
+
+<p>Update this PDF every 3 months. The curriculum will look different at 5k users than at 100. Keep the file in the <span class="brand">Colourmap</span> secret catalog so it lives in the same room as the rest of the thinking.</p>
+
+<div class="footer">
+<span class="brand">Colourmap</span> · From organization to clarity.<br>
+Skills curriculum v1, written 2026-04-25 · 10 modules · ~10 pages · iterative
+</div>
+
+</body>
+</html>

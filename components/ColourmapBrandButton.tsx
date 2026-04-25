@@ -2,6 +2,8 @@
 
 import { useEffect, useRef, useState } from 'react';
 
+import SecretCatalog from '@/components/SecretCatalog';
+
 /*
  * Clickable "Colourmap" brand in the top header.
  * Opens an About modal with a short tagline, credits, and a losange
@@ -153,6 +155,7 @@ export default function ColourmapBrandButton() {
   const [open, setOpen] = useState(false);
   const [changelogOpen, setChangelogOpen] = useState(false);
   const [visionOpen, setVisionOpen] = useState(false);
+  const [catalogOpen, setCatalogOpen] = useState(false);
   const overlayRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
@@ -546,6 +549,61 @@ export default function ColourmapBrandButton() {
                     </li>
                   ))}
                 </ul>
+              </div>
+            )}
+
+            {/* Catalog losange — third losange. Tap to open the
+                3×3 rainbow-tone passcode pad; correct sequence
+                unlocks a small library of PDF deliverables. Per
+                Martin: "rainbow padbox password with music ...
+                cool and useful for future." */}
+            <div className="mt-3 flex items-center justify-between gap-3">
+              <p
+                style={{
+                  fontFamily: 'var(--font-serif)',
+                  fontSize: 12,
+                  color: '#8A6A4A',
+                  opacity: 0.85,
+                  letterSpacing: '0.06em',
+                }}
+              >
+                catalog · <strong style={{ color: '#7A3850', fontWeight: 700 }}>secret pad</strong>
+              </p>
+              <button
+                type="button"
+                onClick={() => setCatalogOpen((s) => !s)}
+                aria-label={catalogOpen ? 'Hide secret catalog' : 'Show secret catalog pad'}
+                aria-expanded={catalogOpen}
+                title="3×3 passcode pad — unlocks a small PDF library"
+                className="flex cursor-pointer items-center justify-center transition-all hover:opacity-80"
+                style={{
+                  width: 28,
+                  height: 28,
+                  background: catalogOpen ? '#9B6BA018' : 'transparent',
+                  border: '1px solid #9B6BA055',
+                  borderRadius: 6,
+                  transform: 'rotate(45deg)',
+                  padding: 0,
+                }}
+              >
+                <span
+                  aria-hidden="true"
+                  style={{
+                    transform: 'rotate(-45deg)',
+                    color: '#9B6BA0',
+                    fontWeight: 700,
+                    fontSize: 13,
+                    lineHeight: 1,
+                  }}
+                >
+                  {catalogOpen ? '−' : '+'}
+                </span>
+              </button>
+            </div>
+
+            {catalogOpen && (
+              <div className="mt-3">
+                <SecretCatalog />
               </div>
             )}
 
