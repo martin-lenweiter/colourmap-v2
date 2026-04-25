@@ -1467,19 +1467,21 @@ export default function BinauralTuner() {
   // are subharmonics (undertones) which ground the mix with warmth;
   // above 1× are the classical overtones. Ratios are exact just
   // intonation so they beat cleanly against the root.
+  // Harmonious rainbow progression low → high. Warm wine at the
+  // bottom of the pitch range, through rose / terracotta / gold /
+  // sage / teal / sky blue at the top. Avoids grey/ochre/purple
+  // mixing — the row reads as one fluid spectrum.
   const HARMONICS = [
-    // Subharmonics — below the root
-    { id: 'sub-octave', label: 'Sub Octave', ratio: 1 / 2, color: '#5F3A24' },
-    { id: 'sub-fifth', label: 'Sub Fifth', ratio: 2 / 3, color: '#7A4E2E' },
-    { id: 'sub-fourth', label: 'Sub Fourth', ratio: 3 / 4, color: '#8A6A4A' },
-    { id: 'sub-third', label: 'Sub Third', ratio: 4 / 5, color: '#A07450' },
-    // Overtones — above the root
-    { id: 'minor3', label: 'Minor 3rd', ratio: 6 / 5, color: '#C4A060' },
-    { id: 'third', label: 'Third', ratio: 5 / 4, color: '#D4805A' },
-    { id: 'fourth', label: 'Fourth', ratio: 4 / 3, color: '#9B6BA0' },
-    { id: 'fifth', label: 'Fifth', ratio: 3 / 2, color: '#6890B0' },
-    { id: 'octave', label: 'Octave', ratio: 2, color: '#7AAA58' },
-    { id: 'double-oct', label: 'Double Oct', ratio: 4, color: '#88C878' },
+    { id: 'sub-octave', label: 'Sub Octave', ratio: 1 / 2, color: '#5A2E48' }, // wine
+    { id: 'sub-fifth', label: 'Sub Fifth', ratio: 2 / 3, color: '#7A3850' }, // mauve
+    { id: 'sub-fourth', label: 'Sub Fourth', ratio: 3 / 4, color: '#9A4858' }, // rose-brown
+    { id: 'sub-third', label: 'Sub Third', ratio: 4 / 5, color: '#B85A50' }, // terracotta
+    { id: 'minor3', label: 'Minor 3rd', ratio: 6 / 5, color: '#D4805A' }, // warm orange
+    { id: 'third', label: 'Third', ratio: 5 / 4, color: '#DCA050' }, // gold
+    { id: 'fourth', label: 'Fourth', ratio: 4 / 3, color: '#C8B854' }, // chartreuse
+    { id: 'fifth', label: 'Fifth', ratio: 3 / 2, color: '#88B868' }, // sage
+    { id: 'octave', label: 'Octave', ratio: 2, color: '#5AA8B0' }, // teal
+    { id: 'double-oct', label: 'Double Oct', ratio: 4, color: '#6890C8' }, // sky
   ] as const;
   const [activeHarmonics, setActiveHarmonics] = useState<Set<string>>(new Set());
   const harmOscsRef = useRef<Map<string, { osc: OscillatorNode; gain: GainNode }>>(new Map());
@@ -3833,7 +3835,11 @@ export default function BinauralTuner() {
             >
               melodies
             </p>
-            <div className="flex flex-wrap justify-center gap-1.5">
+            {/* Melodies as proper boxes — 2 per row on phone, 3 on sm,
+                5 on md+. Each box uses the instrument's own colour as
+                the fill (no separate dot), giving a harmonious row of
+                colour-cards instead of tiny pills. */}
+            <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 md:grid-cols-5">
               {MELODIES.map((m) => {
                 const isOn = activeMelodies.has(m.id);
                 return (
@@ -3848,23 +3854,23 @@ export default function BinauralTuner() {
                         return next;
                       });
                     }}
-                    className="flex cursor-pointer items-center gap-1.5 rounded-full px-2.5 py-1.5 transition-all"
+                    className="flex cursor-pointer items-center justify-center rounded-2xl px-3 py-3 transition-all"
                     style={{
-                      background: isOn ? `${m.color}18` : 'transparent',
-                      border: `1px solid ${isOn ? `${m.color}40` : '#C4A06010'}`,
+                      background: isOn ? `${m.color}1E` : `${m.color}08`,
+                      border: `1px solid ${isOn ? `${m.color}60` : `${m.color}20`}`,
+                      minHeight: 56,
                     }}
+                    aria-pressed={isOn}
                   >
                     <span
-                      className="block rounded-full"
-                      style={{ width: 7, height: 7, background: m.color, opacity: isOn ? 1 : 0.3 }}
-                    />
-                    <span
+                      className="text-center"
                       style={{
                         fontFamily: 'var(--font-serif)',
-                        fontSize: '12px',
-                        fontWeight: isOn ? 700 : 500,
-                        color: isOn ? m.color : '#8A6A4A',
-                        opacity: isOn ? 1 : 0.8,
+                        fontSize: '13px',
+                        fontWeight: isOn ? 700 : 600,
+                        color: isOn ? m.color : '#5C3018',
+                        opacity: isOn ? 1 : 0.7,
+                        lineHeight: 1.15,
                       }}
                     >
                       {m.label}
@@ -3899,19 +3905,19 @@ export default function BinauralTuner() {
                   [
                     {
                       label: 'speed',
-                      color: '#9B6BA0',
+                      color: '#B85A8A', // warm rose — energy
                       value: melodySpeed / 100,
                       onChange: (v: number) => setMelodySpeed(Math.round(v * 100)),
                     },
                     {
                       label: 'reverb',
-                      color: '#A0907A',
+                      color: '#5AA8B0', // teal — space
                       value: melodyReverb / 100,
                       onChange: (v: number) => setMelodyReverb(Math.round(v * 100)),
                     },
                     {
                       label: 'volume',
-                      color: '#C4A060',
+                      color: '#D4805A', // warm orange — presence
                       value: melodyVolume,
                       onChange: (v: number) => setMelodyVolume(v),
                     },
@@ -3921,15 +3927,15 @@ export default function BinauralTuner() {
                   return (
                     <div key={s.label} className="flex items-center gap-3">
                       <span
-                        className="shrink-0 text-right uppercase"
+                        className="shrink-0 text-left uppercase"
                         style={{
                           fontFamily: 'var(--font-serif)',
                           fontSize: '11px',
                           letterSpacing: '0.12em',
                           color: s.color,
-                          opacity: 0.85,
-                          fontWeight: 600,
-                          width: 56,
+                          opacity: 0.9,
+                          fontWeight: 700,
+                          width: 64,
                         }}
                       >
                         {s.label}
