@@ -1728,10 +1728,21 @@ export default function BinauralTuner() {
   const [melodySpeed, setMelodySpeed] = useState(50); // 0-100, 0=very slow, 100=fast
   const [melodyReverb, setMelodyReverb] = useState(80); // 0-100
   const [melodyVolume, setMelodyVolume] = useState(1); // 0-1, multiplies per-note vol
+  const [wahOn, setWahOn] = useState(false);
+  const [wahSpeed, setWahSpeed] = useState(0.5); // 0-1 → 0.2Hz to 3Hz LFO
+  const [echoOn, setEchoOn] = useState(false);
+  const [echoAmount, setEchoAmount] = useState(0.4); // 0-1 → wet send level
   const melodyTimersRef = useRef<Map<string, ReturnType<typeof setTimeout>>>(new Map());
   const melodyActiveIdsRef = useRef<Set<string>>(new Set());
   const melodyReverbRef = useRef<ConvolverNode | null>(null);
   const melodyDryRef = useRef<GainNode | null>(null);
+  // Effects: wah (filter LFO send), echo (delay with feedback)
+  const wahFilterRef = useRef<BiquadFilterNode | null>(null);
+  const wahLfoRef = useRef<OscillatorNode | null>(null);
+  const wahWetRef = useRef<GainNode | null>(null);
+  const echoDelayRef = useRef<DelayNode | null>(null);
+  const echoFeedbackRef = useRef<GainNode | null>(null);
+  const echoWetRef = useRef<GainNode | null>(null);
   const melodyWetRef = useRef<GainNode | null>(null);
 
   // biome-ignore lint/correctness/useExhaustiveDependencies: uses refs, stable
@@ -1757,6 +1768,12 @@ export default function BinauralTuner() {
       playSampledNote(ctx, melDef.sampledPack, freq, vol, output);
       if (melodyReverbRef.current) {
         playSampledNote(ctx, melDef.sampledPack, freq, vol * 0.6, melodyReverbRef.current);
+      }
+      if (wahFilterRef.current) {
+        playSampledNote(ctx, melDef.sampledPack, freq, vol * 0.7, wahFilterRef.current);
+      }
+      if (echoDelayRef.current) {
+        playSampledNote(ctx, melDef.sampledPack, freq, vol * 0.7, echoDelayRef.current);
       }
       // Schedule next note on the same cadence as the other melodies
       const speedMult =
@@ -1866,10 +1883,14 @@ export default function BinauralTuner() {
       osc2.stop(now + melDef.attack + melDef.release + 0.1);
     }
 
-    // Route through melody reverb if set up, otherwise direct
+    // Route through melody reverb if set up, otherwise direct.
+    // Also fan out to wah + echo sends — their wet gains decide
+    // whether they're audible.
     if (melodyDryRef.current && melodyReverbRef.current) {
       env.connect(melodyDryRef.current);
       env.connect(melodyReverbRef.current);
+      if (wahFilterRef.current) env.connect(wahFilterRef.current);
+      if (echoDelayRef.current) env.connect(echoDelayRef.current);
     } else {
       env.connect(gain);
     }
@@ -1903,7 +1924,9 @@ export default function BinauralTuner() {
       if (activeMelodies.has(m.id) && !melodyActiveIdsRef.current.has(m.id) && ctxRef.current) {
         melodyActiveIdsRef.current.add(m.id);
 
-        // Set up melody reverb on first melody activation
+        // Set up melody reverb + effects (wah, echo) on first melody
+        // activation. All effects live as parallel sends — toggling
+        // them on adjusts a wet gain, no need to rewire.
         if (!melodyReverbRef.current && ctxRef.current) {
           const ctx = ctxRef.current;
           const len = ctx.sampleRate * 4;
@@ -1926,6 +1949,46 @@ export default function BinauralTuner() {
           dry.connect(ctx.destination);
           rev.connect(wet);
           wet.connect(ctx.destination);
+
+          // Wah send: bandpass filter on a slow LFO. Wet gain starts at
+          // 0; toggling wahOn ramps it up. Each note's env will fan
+          // into wahFilter as well as melodyDryRef when notes play.
+          const wahFilter = ctx.createBiquadFilter();
+          wahFilter.type = 'bandpass';
+          wahFilter.frequency.value = 1000;
+          wahFilter.Q.value = 6;
+          const wahLfo = ctx.createOscillator();
+          wahLfo.type = 'sine';
+          wahLfo.frequency.value = 0.2 + wahSpeed * 2.8; // 0.2–3 Hz
+          const wahLfoGain = ctx.createGain();
+          wahLfoGain.gain.value = 1500; // sweep ±1500 Hz around 1000 Hz
+          wahLfo.connect(wahLfoGain);
+          wahLfoGain.connect(wahFilter.frequency);
+          wahLfo.start();
+          const wahWet = ctx.createGain();
+          wahWet.gain.value = wahOn ? 0.7 : 0;
+          wahFilter.connect(wahWet);
+          wahWet.connect(ctx.destination);
+          wahFilterRef.current = wahFilter;
+          wahLfoRef.current = wahLfo;
+          wahWetRef.current = wahWet;
+
+          // Echo send: stereo-ish delay with feedback for a tape-echo
+          // smear. Send level starts at 0; toggling echoOn ramps it.
+          const echoDelay = ctx.createDelay(2);
+          echoDelay.delayTime.value = 0.36; // ~quarter note at 100 BPM
+          const echoFeedback = ctx.createGain();
+          echoFeedback.gain.value = 0.45;
+          const echoWet = ctx.createGain();
+          echoWet.gain.value = echoOn ? echoAmount : 0;
+          // Feedback loop: delay → feedback gain → back into delay
+          echoDelay.connect(echoFeedback);
+          echoFeedback.connect(echoDelay);
+          echoDelay.connect(echoWet);
+          echoWet.connect(ctx.destination);
+          echoDelayRef.current = echoDelay;
+          echoFeedbackRef.current = echoFeedback;
+          echoWetRef.current = echoWet;
         }
 
         playMelodyNote(m);
@@ -1957,6 +2020,17 @@ export default function BinauralTuner() {
     if (melodyDryRef.current) melodyDryRef.current.gain.value = 1 - melodyReverb / 100;
     if (melodyWetRef.current) melodyWetRef.current.gain.value = melodyReverb / 100;
   }, [melodyReverb]);
+
+  // Wah send + LFO speed
+  useEffect(() => {
+    if (wahWetRef.current) wahWetRef.current.gain.value = wahOn ? 0.7 : 0;
+    if (wahLfoRef.current) wahLfoRef.current.frequency.value = 0.2 + wahSpeed * 2.8;
+  }, [wahOn, wahSpeed]);
+
+  // Echo send level
+  useEffect(() => {
+    if (echoWetRef.current) echoWetRef.current.gain.value = echoOn ? echoAmount : 0;
+  }, [echoOn, echoAmount]);
 
   // Layer reverb mix update
   useEffect(() => {
@@ -3987,6 +4061,138 @@ export default function BinauralTuner() {
                 })}
               </div>
             )}
+          </div>
+
+          {/* Effects — wah + echo on the melody chain */}
+          <div className="px-2">
+            <div className="mb-3 flex justify-center">
+              <span
+                className="flex items-center uppercase rounded-full px-5 py-1.5"
+                style={{
+                  fontFamily: 'var(--font-serif)',
+                  fontSize: '14px',
+                  fontWeight: 700,
+                  color: '#C4A060',
+                  letterSpacing: '0.18em',
+                  background: '#C4A06015',
+                  border: '1px solid #C4A06040',
+                }}
+              >
+                Effects
+              </span>
+            </div>
+            <div className="mx-auto max-w-md space-y-3">
+              {/* Wah */}
+              <div className="flex items-center gap-3">
+                <button
+                  type="button"
+                  onClick={() => setWahOn((s) => !s)}
+                  className="shrink-0 rounded-full px-3 py-1.5 transition-all cursor-pointer"
+                  style={{
+                    background: wahOn ? '#B85A8A20' : 'transparent',
+                    border: `1.5px solid ${wahOn ? '#B85A8A' : '#B85A8A40'}`,
+                    color: wahOn ? '#B85A8A' : '#7A5438',
+                    fontFamily: 'var(--font-serif)',
+                    fontSize: '11px',
+                    fontWeight: 700,
+                    letterSpacing: '0.16em',
+                    textTransform: 'uppercase',
+                    width: 80,
+                  }}
+                  aria-pressed={wahOn}
+                >
+                  Wah
+                </button>
+                <button
+                  type="button"
+                  className="flex flex-1 cursor-pointer items-center justify-between bg-transparent"
+                  style={{ border: 'none', padding: '4px 0', opacity: wahOn ? 1 : 0.4 }}
+                  onClick={(e) => {
+                    const r = (e.currentTarget as HTMLElement).getBoundingClientRect();
+                    setWahSpeed(Math.max(0, Math.min(1, (e.clientX - r.left) / r.width)));
+                  }}
+                  aria-label="Wah speed"
+                >
+                  {Array.from({ length: 20 }, (_, i) => {
+                    const ratio = i / 19;
+                    const filled = ratio <= wahSpeed;
+                    return (
+                      <span
+                        key={i}
+                        className="block rounded-full transition-all"
+                        style={{
+                          width: filled ? 8 : 5,
+                          height: filled ? 8 : 5,
+                          background: '#B85A8A',
+                          opacity: filled ? 0.55 + ratio * 0.4 : 0.2,
+                        }}
+                      />
+                    );
+                  })}
+                </button>
+              </div>
+              {/* Echo */}
+              <div className="flex items-center gap-3">
+                <button
+                  type="button"
+                  onClick={() => setEchoOn((s) => !s)}
+                  className="shrink-0 rounded-full px-3 py-1.5 transition-all cursor-pointer"
+                  style={{
+                    background: echoOn ? '#5AA8B020' : 'transparent',
+                    border: `1.5px solid ${echoOn ? '#5AA8B0' : '#5AA8B040'}`,
+                    color: echoOn ? '#5AA8B0' : '#7A5438',
+                    fontFamily: 'var(--font-serif)',
+                    fontSize: '11px',
+                    fontWeight: 700,
+                    letterSpacing: '0.16em',
+                    textTransform: 'uppercase',
+                    width: 80,
+                  }}
+                  aria-pressed={echoOn}
+                >
+                  Echo
+                </button>
+                <button
+                  type="button"
+                  className="flex flex-1 cursor-pointer items-center justify-between bg-transparent"
+                  style={{ border: 'none', padding: '4px 0', opacity: echoOn ? 1 : 0.4 }}
+                  onClick={(e) => {
+                    const r = (e.currentTarget as HTMLElement).getBoundingClientRect();
+                    setEchoAmount(Math.max(0, Math.min(1, (e.clientX - r.left) / r.width)));
+                  }}
+                  aria-label="Echo amount"
+                >
+                  {Array.from({ length: 20 }, (_, i) => {
+                    const ratio = i / 19;
+                    const filled = ratio <= echoAmount;
+                    return (
+                      <span
+                        key={i}
+                        className="block rounded-full transition-all"
+                        style={{
+                          width: filled ? 8 : 5,
+                          height: filled ? 8 : 5,
+                          background: '#5AA8B0',
+                          opacity: filled ? 0.55 + ratio * 0.4 : 0.2,
+                        }}
+                      />
+                    );
+                  })}
+                </button>
+              </div>
+              <p
+                className="text-center italic"
+                style={{
+                  fontFamily: 'var(--font-serif)',
+                  fontSize: '11px',
+                  color: '#8A6A4A',
+                  opacity: 0.6,
+                  marginTop: 6,
+                }}
+              >
+                effects route on the melody chain
+              </p>
+            </div>
           </div>
 
           {/* Voice / Poetry */}
