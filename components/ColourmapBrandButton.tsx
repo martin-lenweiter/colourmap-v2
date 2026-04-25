@@ -11,34 +11,59 @@ import { useEffect, useRef, useState } from 'react';
 
 // Rolling changelog — keep this updated as PRs ship. The losange in
 // the modal expands to show this list. Newest first.
-const RECENT_PRS: { num: number; title: string }[] = [
-  { num: 86, title: 'Dev mode stays pinned on scroll (portal) + bottom-right trigger' },
-  { num: 85, title: 'Onboarding opaque, 1-card with new copy + FrequencyBox deleted' },
+// Rolling changelog. `date` is the ISO date the PR landed on main —
+// shown next to the PR number so the user knows which version is live.
+const RECENT_PRS: { num: number; title: string; date: string }[] = [
+  {
+    num: 97,
+    date: '2026-04-25',
+    title:
+      'Chill Machine + Groove Machine, day cockpit polish, palette pass — instruments, layers reorg, effects, real instruments strip, wave reactivity',
+  },
+  {
+    num: 95,
+    date: '2026-04-24',
+    title:
+      'Phone-cockpit + Relax Sounds cleanup — nav rename, compass wheels, drums fix, sacred-freq cards, fullscreen visualizer',
+  },
+  {
+    num: 86,
+    date: '2026-04-23',
+    title: 'Dev mode stays pinned on scroll (portal) + bottom-right trigger',
+  },
+  {
+    num: 85,
+    date: '2026-04-23',
+    title: 'Onboarding opaque, 1-card with new copy + FrequencyBox deleted',
+  },
   {
     num: 84,
+    date: '2026-04-23',
     title:
       'Overview restored, compass pills (Feeling/Doing/Sharing), Sounds moved to /sounds, wake-up time wheel, no-rainbow wave, no-glyph nav',
   },
-  { num: 83, title: 'Feedback overlay: resizable note + collapsible toolbar' },
-  { num: 82, title: 'Feedback overlay: triple-tap dev mode with note + draw' },
+  { num: 83, date: '2026-04-22', title: 'Feedback overlay: resizable note + collapsible toolbar' },
+  { num: 82, date: '2026-04-22', title: 'Feedback overlay: triple-tap dev mode with note + draw' },
   {
     num: 81,
+    date: '2026-04-22',
     title: 'Phone check-in: no outer boxes, bigger text, auto-grow, opaque design popover',
   },
-  { num: 80, title: 'Desktop Day rail (streak · last check-in · last tuned)' },
-  { num: 79, title: 'Nav glyphs (later removed per feedback)' },
-  { num: 78, title: 'Haptic feedback wired into play + tab switches' },
-  { num: 77, title: 'Keyboard shortcuts primitive' },
-  { num: 76, title: 'First-run onboarding' },
-  { num: 74, title: 'Music setlist + Projects/habits design spec' },
-  { num: 73, title: 'Real piano/violin/flute/harp in Calming Sounds melodies' },
-  { num: 72, title: 'Check-in ping banner' },
-  { num: 71, title: 'Jargon pass — brain-wave rate' },
-  { num: 70, title: 'Haptics wrapper' },
-  { num: 68, title: 'Pleasant phase 1 — type scale + spacing' },
-  { num: 66, title: 'Soft-beat bed + fix shaman-drum sample' },
+  { num: 80, date: '2026-04-21', title: 'Desktop Day rail (streak · last check-in · last tuned)' },
+  { num: 79, date: '2026-04-21', title: 'Nav glyphs (later removed per feedback)' },
+  { num: 78, date: '2026-04-21', title: 'Haptic feedback wired into play + tab switches' },
+  { num: 77, date: '2026-04-20', title: 'Keyboard shortcuts primitive' },
+  { num: 76, date: '2026-04-20', title: 'First-run onboarding' },
+  { num: 74, date: '2026-04-19', title: 'Music setlist + Projects/habits design spec' },
+  { num: 73, date: '2026-04-19', title: 'Real piano/violin/flute/harp in Calming Sounds melodies' },
+  { num: 72, date: '2026-04-18', title: 'Check-in ping banner' },
+  { num: 71, date: '2026-04-18', title: 'Jargon pass — brain-wave rate' },
+  { num: 70, date: '2026-04-17', title: 'Haptics wrapper' },
+  { num: 68, date: '2026-04-15', title: 'Pleasant phase 1 — type scale + spacing' },
+  { num: 66, date: '2026-04-13', title: 'Soft-beat bed + fix shaman-drum sample' },
 ];
 const LATEST_PR = RECENT_PRS[0].num;
+const LATEST_PR_DATE = RECENT_PRS[0].date;
 
 export default function ColourmapBrandButton() {
   const [open, setOpen] = useState(false);
@@ -210,6 +235,9 @@ export default function ColourmapBrandButton() {
               >
                 latest:{' '}
                 <strong style={{ color: '#B33A2B', fontWeight: 700 }}>PR #{LATEST_PR}</strong>
+                <span style={{ color: '#8A6A4A', opacity: 0.7, marginLeft: 6 }}>
+                  · {LATEST_PR_DATE}
+                </span>
               </p>
               <button
                 type="button"
@@ -262,17 +290,36 @@ export default function ColourmapBrandButton() {
                       style={{ fontFamily: 'var(--font-serif)' }}
                     >
                       <span
+                        className="flex flex-col items-end shrink-0"
                         style={{
-                          fontSize: 11,
-                          fontWeight: 700,
-                          color: '#B33A2B',
-                          flexShrink: 0,
                           marginTop: 2,
-                          minWidth: 30,
-                          letterSpacing: '0.04em',
+                          minWidth: 56,
                         }}
                       >
-                        #{pr.num}
+                        <span
+                          style={{
+                            fontSize: 11,
+                            fontWeight: 700,
+                            color: '#B33A2B',
+                            letterSpacing: '0.04em',
+                            lineHeight: 1.1,
+                          }}
+                        >
+                          #{pr.num}
+                        </span>
+                        <span
+                          style={{
+                            fontSize: 9,
+                            fontWeight: 500,
+                            color: '#8A6A4A',
+                            opacity: 0.7,
+                            letterSpacing: '0.02em',
+                            lineHeight: 1.1,
+                            marginTop: 1,
+                          }}
+                        >
+                          {pr.date}
+                        </span>
                       </span>
                       <span
                         style={{

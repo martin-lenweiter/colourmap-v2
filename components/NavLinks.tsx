@@ -48,15 +48,15 @@ export default function NavLinks() {
     return () => document.removeEventListener('mousedown', onClickOutside);
   }, [moreOpen]);
 
-  // With 4 primary links the phone nav fits centered without horizontal
-  // overflow — keeps Focus from hugging the left edge. Scroll fallback
-  // remains in case a custom /more item is ever promoted back up.
+  // Phone nav: tight gap + smaller text so Focus doesn't get pushed
+  // off-screen. Center-justified + flex-wrap so the row stays
+  // balanced. Less padding (px-2) on phone reclaims edge width.
   return (
     <nav
-      className={`mx-auto flex w-full items-center px-4 pb-3 ${
+      className={`mx-auto flex w-full items-center pb-3 ${
         isPhone
-          ? 'gap-4 text-sm justify-center flex-wrap'
-          : 'max-w-5xl gap-8 text-base justify-center'
+          ? 'flex-wrap justify-center gap-3 px-2 text-[13px]'
+          : 'max-w-5xl gap-8 px-4 text-base justify-center'
       }`}
     >
       {primary.map((link) => {
