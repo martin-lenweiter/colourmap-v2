@@ -4360,8 +4360,9 @@ export default function BinauralTuner() {
             </button>
             {layersOpen && (
               <div className="animate-in fade-in duration-150 space-y-2 pt-1">
-                {/* Layer softness control — smooth bar + click-to-explain label */}
-                <div className="flex items-center justify-center gap-2">
+                {/* Layer softness — circle-dot slider, no greys, same
+                    long format as the speed/reverb/volume sliders. */}
+                <div className="mx-auto flex max-w-md items-center gap-3 px-1">
                   <InfoTooltip
                     title="Layer Softness (Reverb)"
                     content={
@@ -4373,30 +4374,34 @@ export default function BinauralTuner() {
                         </p>
                         <p style={{ margin: '8px 0 0 0' }}>
                           Technically it's a shared reverb bus that all active layers run through,
-                          so the whole mix breathes together. The percentage is how much of each
-                          layer is sent into that bus.
+                          so the whole mix breathes together.
                         </p>
                       </>
                     }
                     trigger={
                       <span
+                        className="shrink-0 text-left uppercase"
                         style={{
                           fontFamily: 'var(--font-serif)',
-                          fontSize: '13px',
-                          fontWeight: 600,
-                          color: '#7A5438',
-                          letterSpacing: '0.02em',
-                          borderBottom: '1px dotted #7A543860',
+                          fontSize: '11px',
+                          letterSpacing: '0.12em',
+                          color: '#9B6BA0',
+                          opacity: 0.9,
+                          fontWeight: 700,
+                          width: 88,
+                          borderBottom: '1px dotted #9B6BA060',
                           paddingBottom: 1,
                         }}
                       >
-                        layer softness
+                        Softness
                       </span>
                     }
                   />
-                  <div
-                    className="relative cursor-pointer"
-                    style={{ width: 120, height: 14 }}
+                  <button
+                    type="button"
+                    aria-label={`Layer softness ${layerReverb}%`}
+                    className="flex flex-1 cursor-pointer items-center justify-between bg-transparent"
+                    style={{ border: 'none', padding: '4px 0' }}
                     onClick={(e) => {
                       const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
                       setLayerReverb(
@@ -4406,36 +4411,30 @@ export default function BinauralTuner() {
                       );
                     }}
                   >
-                    <div
-                      className="absolute top-1/2 -translate-y-1/2 left-0 right-0 rounded-full"
-                      style={{ height: 4, background: '#C4A06015' }}
-                    />
-                    <div
-                      className="absolute top-1/2 -translate-y-1/2 left-0 rounded-full"
-                      style={{
-                        height: 4,
-                        width: `${layerReverb}%`,
-                        background: 'linear-gradient(90deg, #A0907A30, #A0907A)',
-                      }}
-                    />
-                    <div
-                      className="absolute top-1/2 rounded-full"
-                      style={{
-                        left: `${layerReverb}%`,
-                        width: 12,
-                        height: 12,
-                        background: '#A0907A',
-                        transform: 'translate(-50%, -50%)',
-                        boxShadow: '0 1px 3px rgba(160,144,122,0.5)',
-                      }}
-                    />
-                  </div>
+                    {Array.from({ length: 20 }, (_, i) => {
+                      const ratio = i / 19;
+                      const filled = ratio <= layerReverb / 100;
+                      return (
+                        <span
+                          key={i}
+                          className="block rounded-full transition-all"
+                          style={{
+                            width: filled ? 8 : 5,
+                            height: filled ? 8 : 5,
+                            background: '#9B6BA0',
+                            opacity: filled ? 0.55 + ratio * 0.4 : 0.2,
+                          }}
+                        />
+                      );
+                    })}
+                  </button>
                   <span
+                    className="hidden md:inline"
                     style={{
                       fontFamily: 'var(--font-serif)',
-                      fontSize: '12px',
+                      fontSize: '11px',
                       fontWeight: 600,
-                      color: '#8A6A4A',
+                      color: '#9B6BA0',
                       width: 30,
                       flexShrink: 0,
                       textAlign: 'right',
@@ -4531,32 +4530,35 @@ export default function BinauralTuner() {
                       const vol = activeLayers[l.id] || 0;
                       const isOn = vol > 0;
                       return (
-                        <div key={l.id} className="space-y-0.5">
+                        <div key={l.id} className="space-y-1">
                           <button
                             type="button"
                             onClick={() => toggleLayer(l.id)}
-                            className="flex w-full cursor-pointer items-center gap-2 rounded-lg px-3 py-2.5 transition-all"
+                            className="flex w-full cursor-pointer items-center gap-2.5 rounded-2xl px-4 py-3 transition-all"
                             style={{
-                              background: isOn ? `${l.color}15` : 'transparent',
-                              border: `1px solid ${isOn ? `${l.color}35` : '#C4A06010'}`,
-                              minHeight: 44,
+                              background: isOn ? `${l.color}1E` : `${l.color}08`,
+                              border: `1.5px solid ${isOn ? `${l.color}60` : `${l.color}22`}`,
+                              minHeight: 52,
                             }}
+                            aria-pressed={isOn}
                           >
                             <span
                               className="block rounded-full shrink-0"
                               style={{
-                                width: 10,
-                                height: 10,
+                                width: 12,
+                                height: 12,
                                 background: l.color,
-                                opacity: isOn ? 1 : 0.7,
+                                opacity: isOn ? 1 : 0.6,
                               }}
                             />
                             <span
                               style={{
                                 fontFamily: 'var(--font-serif)',
-                                fontSize: 14,
-                                fontWeight: isOn ? 700 : 500,
+                                fontSize: isOn ? 17 : 16,
+                                fontWeight: isOn ? 700 : 600,
                                 color: l.color,
+                                opacity: isOn ? 1 : 0.85,
+                                lineHeight: 1.2,
                               }}
                             >
                               {l.label}
@@ -4634,32 +4636,36 @@ export default function BinauralTuner() {
                           const vol = activeLayers[l.id] || 0;
                           const isOn = vol > 0;
                           return (
-                            <div key={l.id} className="space-y-0.5">
+                            <div key={l.id} className="space-y-1">
                               <button
                                 type="button"
                                 onClick={() => toggleLayer(l.id)}
-                                className="flex w-full cursor-pointer items-center gap-1.5 rounded-lg px-2 py-1.5 transition-all"
+                                className="flex w-full cursor-pointer items-center gap-2 rounded-xl px-3 py-2.5 transition-all"
                                 style={{
-                                  background: isOn ? `${l.color}15` : 'transparent',
-                                  border: `1px solid ${isOn ? `${l.color}35` : '#C4A06010'}`,
+                                  background: isOn ? `${l.color}1E` : `${l.color}06`,
+                                  border: `1px solid ${isOn ? `${l.color}55` : `${l.color}18`}`,
+                                  minHeight: 40,
                                 }}
+                                aria-pressed={isOn}
                               >
                                 <span
                                   className="block rounded-full shrink-0"
                                   style={{
-                                    width: 7,
-                                    height: 7,
+                                    width: 10,
+                                    height: 10,
                                     background: l.color,
-                                    opacity: isOn ? 1 : 0.8,
+                                    opacity: isOn ? 1 : 0.6,
                                   }}
                                 />
                                 <span
                                   style={{
                                     fontFamily: 'var(--font-serif)',
-                                    fontSize: '12px',
-                                    fontWeight: isOn ? 700 : 500,
+                                    fontSize: '14px',
+                                    fontWeight: isOn ? 700 : 600,
                                     color: l.color,
-                                    opacity: isOn ? 1 : 0.8,
+                                    opacity: isOn ? 1 : 0.85,
+                                    lineHeight: 1.15,
+                                    textAlign: 'left',
                                   }}
                                 >
                                   {l.label}
