@@ -926,32 +926,12 @@ const REAL_LAYERS: LayerDef[] = [
     group: 'real',
     build: (ctx) => buildRealSound(ctx, '/sounds/real-rain-heavy-recording.ogg'),
   },
-  // Percussion (Public Domain — see public/sounds/ATTRIBUTIONS.md).
-  // Djembe is a hand drum used here as the "Shaman Drum" layer — a deep,
-  // steady pulse when looped. The Schamanische_Reise.ogg file is a
-  // 60-minute ambient trance recording (too long + too thin to loop as a
-  // drum) — surfaced as "Shaman Journey" ambient so the character fits.
-  {
-    id: 'real-shaman-drum',
-    label: 'Shaman Drum',
-    color: '#B33A2B',
-    group: 'real',
-    build: (ctx) => buildRealSound(ctx, '/sounds/drums/Djembe.ogg'),
-  },
-  {
-    id: 'real-shaman-journey',
-    label: 'Shaman Journey',
-    color: '#8A3A2B',
-    group: 'real',
-    build: (ctx) => buildRealSound(ctx, '/sounds/drums/Schamanische_Reise.ogg'),
-  },
-  {
-    id: 'real-tambourine',
-    label: 'Tambourine',
-    color: '#E8B568',
-    group: 'real',
-    build: (ctx) => buildRealSound(ctx, '/sounds/drums/Tambourine.ogg'),
-  },
+  // Drum-loop layers (Djembe / Schamanische_Reise / Tambourine) removed
+  // from Relaxing Sounds — they don't belong here. Djembe in particular
+  // looped as a continuous fast drum that auto-restored from saved state
+  // and felt anything but relaxing. The samples still live in
+  // public/sounds/drums/ and can be revived inside Groove Machine if we
+  // want a real-percussion track there.
   // Synthesized sci-fi / cyberpunk
   {
     id: 'spaceship',
@@ -2120,7 +2100,24 @@ export default function BinauralTuner() {
         if (s.baseToneOn !== undefined) setBaseToneOn(s.baseToneOn);
         if (s.engineBreathing !== undefined) setEngineBreathing(s.engineBreathing);
         if (s.tremolo !== undefined) setTremolo(s.tremolo);
-        if (s.activeLayers) setActiveLayers(s.activeLayers);
+        if (s.activeLayers) {
+          // Strip any drum-loop layers from saved state. These layers no
+          // longer exist in Relaxing Sounds, but old saves can still
+          // reference them — keeping them in the restored state would
+          // try to play them as ghost layers (and historically did, as
+          // a fast Djembe loop the user couldn't see to disable).
+          const RETIRED_IDS = new Set([
+            'real-shaman-drum',
+            'real-shaman-journey',
+            'real-tambourine',
+            'breath',
+          ]);
+          const cleaned: Record<string, number> = {};
+          for (const [id, vol] of Object.entries(s.activeLayers)) {
+            if (!RETIRED_IDS.has(id)) cleaned[id] = vol as number;
+          }
+          setActiveLayers(cleaned);
+        }
         if (s.activeGenre) setActiveGenre(s.activeGenre);
         if (s.activeHarmonics) setActiveHarmonics(new Set(s.activeHarmonics));
         if (s.activeSacred) setActiveSacred(new Set(s.activeSacred));
