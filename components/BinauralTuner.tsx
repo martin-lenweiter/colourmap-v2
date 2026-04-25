@@ -2157,7 +2157,10 @@ export default function BinauralTuner() {
   const [activeLayerGroup, setActiveLayerGroup] = useState<
     'real' | 'nature' | 'tones' | 'texture' | 'ambient'
   >('nature');
-  const [brainStatesOpen, setBrainStatesOpen] = useState(false);
+  // brainStatesOpen state kept (write-only) so saved-state restore
+  // doesn't break — but the value is never read after merging Genre +
+  // Brain State under one Presets pill (genresOpen drives both).
+  const [_brainStatesOpen, setBrainStatesOpen] = useState(false);
   const [savedSoundsOpen, setSavedSoundsOpen] = useState(false);
 
   // Auto-save current sound state to localStorage
