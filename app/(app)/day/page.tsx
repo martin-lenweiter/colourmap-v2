@@ -9,6 +9,7 @@ import DayTabs from '@/components/DayTabs';
 import FeelingCheckInCard from '@/components/FeelingCheckInCard';
 import FirstRunOnboarding from '@/components/FirstRunOnboarding';
 import LifeCategories from '@/components/LifeCategories';
+import LifeCategoriesEmptyState from '@/components/LifeCategoriesEmptyState';
 import LifeCategoriesStrip from '@/components/LifeCategoriesStrip';
 import NowBar from '@/components/NowBar';
 import ReflectBox from '@/components/ReflectBox';
@@ -40,6 +41,7 @@ function DayContent() {
           }
           overviewContent={
             <div className="space-y-4">
+              <LifeCategoriesEmptyState />
               <NowBar />
               <LifeCategoriesStrip />
               <CompassCarousel />
