@@ -14,6 +14,7 @@ import LifeCategoriesStrip from '@/components/LifeCategoriesStrip';
 import NowBar from '@/components/NowBar';
 import ReflectBox from '@/components/ReflectBox';
 import { StyleProvider } from '@/components/StyleContext';
+import WeekShape from '@/components/WeekShape';
 
 function DayContent() {
   const dateStr = new Date().toLocaleDateString('en-GB', {
@@ -43,6 +44,7 @@ function DayContent() {
             <div className="space-y-4">
               <LifeCategoriesEmptyState />
               <NowBar />
+              <WeekShape />
               <LifeCategoriesStrip />
               <CompassCarousel />
               <CategoryCompass />
