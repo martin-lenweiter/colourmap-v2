@@ -48,12 +48,17 @@
 }
 
 /* ─── Paper (Light beige) — default ─── */
+/* Background warmed slightly per Martin 2026-04-25:
+   "warmer paper feel background in phone view also for boxes pop up
+   when clicking ont itle and developper box". From #f2e8d0 (cool
+   cream) to #f0dfb6 (warmer amber-paper) — same lightness, more
+   yellow-warm. Card + popover similarly warmed. */
 :root {
-  --background: #f2e8d0;
+  --background: #f0dfb6;
   --foreground: #2a1a06;
-  --card: #fffbf0;
+  --card: #fbf3d8;
   --card-foreground: #2a1a06;
-  --popover: #fffbf0;
+  --popover: #fbf3d8;
   --popover-foreground: #2a1a06;
   --primary: #2a1a06;
   --primary-foreground: #fffbf0;
