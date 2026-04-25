@@ -6,8 +6,10 @@ import {
   DEFAULT_PRESET_ID,
   GROOVE_PRESETS,
   type GroovePreset,
+  getPhaseForBar,
   getPreset,
   PRESET_LS_KEY,
+  pickVariationIndex,
 } from '@/lib/groove-presets';
 
 /* ═══════════════════════════════════════════════════════════
@@ -786,6 +788,20 @@ export default function GrooveMachine() {
     }
   }, []);
 
+  // Per-bar cached variation patterns. At the start of each bar
+  // (stepIdx === 0) the scheduler picks a fresh variation per
+  // track from the preset's pool based on the current arc phase.
+  // Without this, the scheduler would re-pick on every step and
+  // the bar's pattern would be incoherent.
+  const barPatternsRef = useRef<Partial<Record<TrackId, number[]>>>({});
+  const presetRef = useRef<GroovePreset>(getPreset(DEFAULT_PRESET_ID));
+  useEffect(() => {
+    presetRef.current = preset;
+    // Clear cached variations so the next bar repicks from the
+    // new preset's pool.
+    barPatternsRef.current = {};
+  }, [preset]);
+
   const scheduleNextNotes = useCallback(() => {
     const ctx = ctxRef.current;
     if (!ctx) return;
@@ -804,6 +820,23 @@ export default function GrooveMachine() {
       const isFillWindow = isLastBarOfCycle && stepIdx >= 14;
       const currentMode = modeRef.current;
       const currentActive = activeRef.current;
+      // At the start of each bar, pick fresh variations per track.
+      // The arc phase decides which variation is favoured (intro
+      // sparse, chorus busy, breakdown empty, etc.).
+      if (stepIdx === 0) {
+        const phase = getPhaseForBar(bar);
+        const pools = presetRef.current.variationPools;
+        const next: Partial<Record<TrackId, number[]>> = {};
+        if (pools) {
+          for (const trackId of Object.keys(pools) as TrackId[]) {
+            const pool = pools[trackId];
+            if (!pool || pool.length === 0) continue;
+            const idx = pickVariationIndex(phase, pool.length);
+            next[trackId] = pool[idx];
+          }
+        }
+        barPatternsRef.current = next;
+      }
       // Swung timing: offbeat 16ths (odd step index) pushed later.
       const swingOffset = stepIdx % 2 === 1 ? secondsPerSixteenth * swingAmount : 0;
       const when = nextTimeRef.current + swingOffset;
@@ -821,7 +854,11 @@ export default function GrooveMachine() {
           if (track.group === 'drums') allowed = false;
         }
         if (!allowed) continue;
-        let vel = track.pattern[stepIdx];
+        // Use a per-bar variation if the preset provides one for
+        // this track; otherwise fall back to the static pattern.
+        const variationPattern = barPatternsRef.current[track.id];
+        const patternForBar = variationPattern ?? track.pattern;
+        let vel = patternForBar[stepIdx];
         // Fill bar: add extra snare + kick hits on 14-15 to sell the
         // approach to the downbeat.
         if (isFillWindow && currentMode === 'full') {
