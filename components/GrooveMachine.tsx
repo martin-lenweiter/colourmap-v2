@@ -870,6 +870,64 @@ export default function GrooveMachine() {
   const activeCount = Object.values(active).filter(Boolean).length;
   const totalTracks = TRACKS.length;
 
+  // "Save this groove" — capture a snapshot of the current pattern
+  // (bpm, mode, active tracks) and POST it to the user's Notebook
+  // (Ideas). Same shape as the Chill Machine save-this-moment button
+  // so the user finds them all in one place. Local fallback if the
+  // API is unreachable.
+  const [momentStatus, setMomentStatus] = useState<null | 'saving' | 'saved' | 'error'>(null);
+  async function saveGrooveToNotebook() {
+    const activeTracks = TRACKS.filter((t) => active[t.id]);
+    const trackLabels = activeTracks.map((t) => t.label).join(', ');
+    const stamp = new Date().toLocaleString([], {
+      month: 'short',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+    });
+    const title = `Groove · ${stamp} · ${bpm}bpm`;
+    const lines = [
+      `Tempo ${bpm} bpm · mode ${mode}`,
+      `${activeCount}/${totalTracks} tracks active`,
+      trackLabels ? `Tracks: ${trackLabels}` : 'Tracks: (none)',
+    ];
+    const body = {
+      category: 'ideas',
+      title,
+      content: lines.join('\n'),
+      tags: ['groove-machine', 'sound-snapshot'],
+    };
+
+    setMomentStatus('saving');
+    try {
+      const res = await fetch('/api/notebook', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+      });
+      if (!res.ok) throw new Error('api');
+      setMomentStatus('saved');
+    } catch {
+      try {
+        const raw = localStorage.getItem('colourmap:notebook-entries');
+        const existing = raw ? JSON.parse(raw) : [];
+        const localEntry = {
+          id: crypto.randomUUID(),
+          ...body,
+          createdAt: new Date().toISOString(),
+        };
+        localStorage.setItem(
+          'colourmap:notebook-entries',
+          JSON.stringify([localEntry, ...existing]),
+        );
+        setMomentStatus('saved');
+      } catch {
+        setMomentStatus('error');
+      }
+    }
+    setTimeout(() => setMomentStatus(null), 1800);
+  }
+
   return (
     <div className="space-y-5">
       {/* Header */}
@@ -1147,6 +1205,33 @@ export default function GrooveMachine() {
               }}
             >
               ✦ new groove
+            </button>
+            {/* Save this groove → Notebook (Ideas). Mirrors the
+                Chill Machine button so saved sounds land in one
+                place. */}
+            <button
+              type="button"
+              onClick={saveGrooveToNotebook}
+              disabled={momentStatus === 'saving'}
+              className="mt-2 w-full cursor-pointer rounded-xl py-2.5 transition-all hover:opacity-85 disabled:opacity-50"
+              style={{
+                background: momentStatus === 'saved' ? '#7AAA5815' : '#9B6BA010',
+                border: `1.5px solid ${momentStatus === 'saved' ? '#7AAA5840' : '#9B6BA040'}`,
+                color: momentStatus === 'saved' ? '#7AAA58' : '#9B6BA0',
+                fontFamily: 'var(--font-serif)',
+                fontSize: '12px',
+                fontWeight: 600,
+                letterSpacing: '0.16em',
+                textTransform: 'uppercase',
+              }}
+            >
+              {momentStatus === 'saving'
+                ? '…'
+                : momentStatus === 'saved'
+                  ? '✓ saved to notebook'
+                  : momentStatus === 'error'
+                    ? 'error · try again'
+                    : '→ save to notebook'}
             </button>
           </div>
 
