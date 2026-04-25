@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 
 import { type SaveStatus, saveToNotebook } from '@/lib/save-to-notebook';
+import { useSoundSession } from '@/lib/sound-session';
 
 /* ═══════════════════════════════════════════════════════════
    LOFI STUDIO — beat + bass + melody layers with effects.
@@ -1019,6 +1020,7 @@ function loadSavedState(): Partial<SavedState> | null {
 }
 
 export default function LofiLooper() {
+  const soundSession = useSoundSession();
   const [playing, setPlaying] = useState(false);
   const [bpm, setBpm] = useState(72);
   const [volume, setVolume] = useState(0.35);
@@ -1282,7 +1284,8 @@ export default function LofiLooper() {
 
     scheduleFullLoop(0);
     setPlaying(true);
-  }, [bpm, volume]);
+    soundSession.setActive('lofi-looper', `${bpm}bpm · ${palette}`);
+  }, [bpm, volume, soundSession, palette]);
 
   const stop = useCallback(() => {
     for (const t of timerRef.current) clearTimeout(t);
@@ -1290,7 +1293,8 @@ export default function LofiLooper() {
     setPlaying(false);
     setCurrentStep(-1);
     stepRef.current = 0;
-  }, []);
+    soundSession.setPlaying(false);
+  }, [soundSession]);
 
   // biome-ignore lint/correctness/useExhaustiveDependencies: intentional restart on bpm/swing
   useEffect(() => {
