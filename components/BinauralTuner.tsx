@@ -3648,18 +3648,22 @@ export default function BinauralTuner() {
 
           {/* Harmony — musical intervals that fit the base tone */}
           <div className="px-2">
-            <p
-              className="text-center mb-2 uppercase"
-              style={{
-                fontFamily: 'var(--font-serif)',
-                fontSize: '14px',
-                fontWeight: 700,
-                color: '#5C3018',
-                letterSpacing: '0.18em',
-              }}
-            >
-              Harmonics · {baseFreq}Hz
-            </p>
+            <div className="mb-3 flex justify-center">
+              <span
+                className="flex items-center uppercase rounded-full px-5 py-1.5"
+                style={{
+                  fontFamily: 'var(--font-serif)',
+                  fontSize: '14px',
+                  fontWeight: 700,
+                  color: '#C4A060',
+                  letterSpacing: '0.18em',
+                  background: '#C4A06015',
+                  border: '1px solid #C4A06040',
+                }}
+              >
+                Harmonics · {baseFreq}Hz
+              </span>
+            </div>
             {/* Bigger harmony pills — 2-column grid on phone, 5 across on
                 desktop so the 10 over+under-tones all fit without cramming.
                 Each card: big dot, label, ratio line, Hz. */}
@@ -3731,18 +3735,22 @@ export default function BinauralTuner() {
 
           {/* Sacred frequencies — Solfeggio + 432Hz */}
           <div className="px-2">
-            <p
-              className="text-center mb-2 uppercase"
-              style={{
-                fontFamily: 'var(--font-serif)',
-                fontSize: '14px',
-                fontWeight: 700,
-                color: '#5C3018',
-                letterSpacing: '0.18em',
-              }}
-            >
-              Sacred Frequencies
-            </p>
+            <div className="mb-3 flex justify-center">
+              <span
+                className="flex items-center uppercase rounded-full px-5 py-1.5"
+                style={{
+                  fontFamily: 'var(--font-serif)',
+                  fontSize: '14px',
+                  fontWeight: 700,
+                  color: '#C4A060',
+                  letterSpacing: '0.18em',
+                  background: '#C4A06015',
+                  border: '1px solid #C4A06040',
+                }}
+              >
+                Sacred Frequencies
+              </span>
+            </div>
             {/* 2-per-row cards on phone (3-per-row on desktop). Each
                 card shows the Hz number big on top with the descriptor
                 ("om", "foundation", "healing"…) right below it. Much
@@ -3825,16 +3833,22 @@ export default function BinauralTuner() {
 
           {/* Generative melodies */}
           <div className="px-2">
-            <p
-              className="text-center mb-2"
-              style={{
-                fontFamily: 'var(--font-serif)',
-                fontSize: '12px',
-                color: '#7A5438',
-              }}
-            >
-              melodies
-            </p>
+            <div className="mb-3 flex justify-center">
+              <span
+                className="flex items-center uppercase rounded-full px-5 py-1.5"
+                style={{
+                  fontFamily: 'var(--font-serif)',
+                  fontSize: '14px',
+                  fontWeight: 700,
+                  color: '#C4A060',
+                  letterSpacing: '0.18em',
+                  background: '#C4A06015',
+                  border: '1px solid #C4A06040',
+                }}
+              >
+                Melodies
+              </span>
+            </div>
             {/* Melodies as proper boxes — 2 per row on phone, 3 on sm,
                 5 on md+. Each box uses the instrument's own colour as
                 the fill (no separate dot), giving a harmonious row of
@@ -3977,16 +3991,22 @@ export default function BinauralTuner() {
 
           {/* Voice / Poetry */}
           <div className="px-2">
-            <p
-              className="text-center mb-2"
-              style={{
-                fontFamily: 'var(--font-serif)',
-                fontSize: '12px',
-                color: '#7A5438',
-              }}
-            >
-              voices
-            </p>
+            <div className="mb-3 flex justify-center">
+              <span
+                className="flex items-center uppercase rounded-full px-5 py-1.5"
+                style={{
+                  fontFamily: 'var(--font-serif)',
+                  fontSize: '14px',
+                  fontWeight: 700,
+                  color: '#C4A060',
+                  letterSpacing: '0.18em',
+                  background: '#C4A06015',
+                  border: '1px solid #C4A06040',
+                }}
+              >
+                Voices
+              </span>
+            </div>
             <div className="flex justify-center gap-2">
               {(['off', 'affirmations', 'meditation', 'poetry'] as const).map((mode) => {
                 const isOn = voiceMode === mode;
