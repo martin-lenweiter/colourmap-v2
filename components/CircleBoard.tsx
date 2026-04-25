@@ -449,85 +449,18 @@ export default function CircleBoard() {
           </button>
           {(circles.length === 0 || howOpen) && (
             <div
-              className="mt-3 space-y-3 animate-in fade-in duration-150"
-              style={{ fontFamily: font, fontSize: 16, lineHeight: 1.6, color: '#5C3018' }}
+              className="mt-4 space-y-5 animate-in fade-in duration-150"
+              style={{ fontFamily: font, fontSize: 18, lineHeight: 1.55, color: '#5C3018' }}
             >
               <p>
-                A <strong>Circle</strong> is a shared space with a few people you trust — friends,
-                teammates, a band, a study group. Like a quiet co-working room you can drop into any
-                time.
+                A <strong>Circle</strong> is a small group of people you trust.
               </p>
-              <div>
-                <p
-                  className="uppercase mb-1"
-                  style={{
-                    fontSize: 13,
-                    letterSpacing: '0.12em',
-                    color: '#8A6A4A',
-                    fontWeight: 700,
-                  }}
-                >
-                  What you can do now
-                </p>
-                <ul className="space-y-1 pl-3" style={{ listStyle: 'none' }}>
-                  <li>
-                    <span style={{ color: '#7AAA58' }}>•</span> <strong>Create</strong> a circle —
-                    give it a name (Rock Band, Family, Dojo) and invite friends with a 6-character
-                    code.
-                  </li>
-                  <li>
-                    <span style={{ color: '#6890B0' }}>•</span> <strong>Join</strong> with a code
-                    someone sent you.
-                  </li>
-                  <li>
-                    <span style={{ color: '#C4A060' }}>•</span> <strong>Share missions</strong> —
-                    write the thing you need to get done. Anyone in the circle can mark it complete.
-                  </li>
-                  <li>
-                    <span style={{ color: '#B33A2B' }}>•</span> <strong>Leave notes</strong> — a
-                    running log of what's happening in the circle, visible to everyone inside.
-                  </li>
-                  <li>
-                    <span style={{ color: '#9B6BA0' }}>•</span>{' '}
-                    <strong>See each other's pulse</strong> — tiny colored dots show whether each
-                    member recently checked in and how they felt.
-                  </li>
-                </ul>
-              </div>
-              <div>
-                <p
-                  className="uppercase mb-1"
-                  style={{
-                    fontSize: 13,
-                    letterSpacing: '0.12em',
-                    color: '#8A6A4A',
-                    fontWeight: 700,
-                  }}
-                >
-                  Coming soon
-                </p>
-                <ul className="space-y-1 pl-3" style={{ listStyle: 'none' }}>
-                  <li>
-                    <span style={{ opacity: 0.5 }}>◇</span> Cross-device sync (right now your
-                    circles live only on this device)
-                  </li>
-                  <li>
-                    <span style={{ opacity: 0.5 }}>◇</span> Shared focus sessions — 25-minute timer
-                    both of you see, with a shared calming sound
-                  </li>
-                  <li>
-                    <span style={{ opacity: 0.5 }}>◇</span> Weekly retrospective — a gentle summary
-                    of the circle's week
-                  </li>
-                  <li>
-                    <span style={{ opacity: 0.5 }}>◇</span> Vacation mode — a one-tap "I'm taking a
-                    break" signal
-                  </li>
-                </ul>
-              </div>
-              <p style={{ fontSize: 12, opacity: 0.65, fontStyle: 'italic' }}>
-                This is <strong>not</strong> a chat, a feed, or a social network. It's a quiet room
-                where chosen people are present while you do your work.
+              <p>
+                Make one, invite friends with a code, share what you're working on, see each other's
+                pulse. Quiet — not a chat, not a feed.
+              </p>
+              <p className="italic" style={{ fontSize: 15, opacity: 0.7, color: '#8A6A4A' }}>
+                More coming soon: cross-device sync, shared focus sessions, weekly digests.
               </p>
             </div>
           )}
