@@ -11,6 +11,7 @@ import FirstRunOnboarding from '@/components/FirstRunOnboarding';
 import LifeCategories from '@/components/LifeCategories';
 import LifeCategoriesEmptyState from '@/components/LifeCategoriesEmptyState';
 import LifeCategoriesStrip from '@/components/LifeCategoriesStrip';
+import MoodSuggestion from '@/components/MoodSuggestion';
 import NowBar from '@/components/NowBar';
 import ReflectBox from '@/components/ReflectBox';
 import { StyleProvider } from '@/components/StyleContext';
@@ -35,6 +36,7 @@ function DayContent() {
           dateLabel={dateStr}
           checkinContent={
             <div className="space-y-4">
+              <MoodSuggestion />
               <FeelingCheckInCard />
               <DailyAgenda />
             </div>
