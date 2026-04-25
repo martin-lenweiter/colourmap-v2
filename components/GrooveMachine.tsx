@@ -208,9 +208,16 @@ const GROUPS: { id: Group; label: string; accent: string }[] = [
 // after the note decays, auto-disconnect via onended).
 // ─────────────────────────────────────────────────────────────
 
-type Voice = (ctx: AudioContext, when: number, velocity: number, noteFreq?: number) => void;
+type Voice = (
+  ctx: AudioContext,
+  when: number,
+  velocity: number,
+  out: AudioNode,
+  noteFreq?: number,
+) => void;
 
-function triggerKick(ctx: AudioContext, when: number, vel: number) {
+function triggerKick(ctx: AudioContext, when: number, vel: number, out: AudioNode) {
+  // Body: sine sweep 150 → 40 Hz over 120 ms, the deep punch.
   const osc = ctx.createOscillator();
   const gain = ctx.createGain();
   osc.type = 'sine';
@@ -220,12 +227,30 @@ function triggerKick(ctx: AudioContext, when: number, vel: number) {
   gain.gain.exponentialRampToValueAtTime(0.9 * vel, when + 0.005);
   gain.gain.exponentialRampToValueAtTime(0.0001, when + 0.35);
   osc.connect(gain);
-  gain.connect(ctx.destination);
+  gain.connect(out);
   osc.start(when);
   osc.stop(when + 0.4);
+
+  // Click: 5 ms noise burst at the very start. Adds the "beater"
+  // attack that pure sine kicks lack.
+  const clickBuf = ctx.createBuffer(1, ctx.sampleRate * 0.01, ctx.sampleRate);
+  const cd = clickBuf.getChannelData(0);
+  for (let i = 0; i < cd.length; i++) cd[i] = (Math.random() * 2 - 1) * (1 - i / cd.length);
+  const click = ctx.createBufferSource();
+  click.buffer = clickBuf;
+  const clickHp = ctx.createBiquadFilter();
+  clickHp.type = 'highpass';
+  clickHp.frequency.value = 4000;
+  const clickGain = ctx.createGain();
+  clickGain.gain.value = 0.18 * vel;
+  click.connect(clickHp);
+  clickHp.connect(clickGain);
+  clickGain.connect(out);
+  click.start(when);
+  click.stop(when + 0.012);
 }
 
-function triggerSnare(ctx: AudioContext, when: number, vel: number) {
+function triggerSnare(ctx: AudioContext, when: number, vel: number, out: AudioNode) {
   // Noise + tonal body
   const bufSize = ctx.sampleRate * 0.2;
   const buf = ctx.createBuffer(1, bufSize, ctx.sampleRate);
@@ -241,7 +266,7 @@ function triggerSnare(ctx: AudioContext, when: number, vel: number) {
   noiseGain.gain.exponentialRampToValueAtTime(0.0001, when + 0.15);
   noise.connect(hp);
   hp.connect(noiseGain);
-  noiseGain.connect(ctx.destination);
+  noiseGain.connect(out);
   noise.start(when);
   noise.stop(when + 0.2);
 
@@ -254,12 +279,12 @@ function triggerSnare(ctx: AudioContext, when: number, vel: number) {
   bodyGain.gain.setValueAtTime(0.25 * vel, when);
   bodyGain.gain.exponentialRampToValueAtTime(0.0001, when + 0.1);
   body.connect(bodyGain);
-  bodyGain.connect(ctx.destination);
+  bodyGain.connect(out);
   body.start(when);
   body.stop(when + 0.15);
 }
 
-function triggerHihat(ctx: AudioContext, when: number, vel: number) {
+function triggerHihat(ctx: AudioContext, when: number, vel: number, out: AudioNode) {
   const bufSize = ctx.sampleRate * 0.08;
   const buf = ctx.createBuffer(1, bufSize, ctx.sampleRate);
   const data = buf.getChannelData(0);
@@ -274,12 +299,12 @@ function triggerHihat(ctx: AudioContext, when: number, vel: number) {
   g.gain.exponentialRampToValueAtTime(0.0001, when + 0.05);
   noise.connect(hp);
   hp.connect(g);
-  g.connect(ctx.destination);
+  g.connect(out);
   noise.start(when);
   noise.stop(when + 0.08);
 }
 
-function triggerPerc(ctx: AudioContext, when: number, vel: number) {
+function triggerPerc(ctx: AudioContext, when: number, vel: number, out: AudioNode) {
   // Short shaker: noise burst with bandpass
   const bufSize = ctx.sampleRate * 0.08;
   const buf = ctx.createBuffer(1, bufSize, ctx.sampleRate);
@@ -296,12 +321,12 @@ function triggerPerc(ctx: AudioContext, when: number, vel: number) {
   g.gain.exponentialRampToValueAtTime(0.0001, when + 0.08);
   src.connect(bp);
   bp.connect(g);
-  g.connect(ctx.destination);
+  g.connect(out);
   src.start(when);
   src.stop(when + 0.1);
 }
 
-function triggerBass(ctx: AudioContext, when: number, vel: number, freq: number) {
+function triggerBass(ctx: AudioContext, when: number, vel: number, out: AudioNode, freq: number) {
   const osc = ctx.createOscillator();
   osc.type = 'sawtooth';
   osc.frequency.setValueAtTime(freq, when);
@@ -316,12 +341,18 @@ function triggerBass(ctx: AudioContext, when: number, vel: number, freq: number)
   g.gain.exponentialRampToValueAtTime(0.0001, when + 0.2);
   osc.connect(lp);
   lp.connect(g);
-  g.connect(ctx.destination);
+  g.connect(out);
   osc.start(when);
   osc.stop(when + 0.25);
 }
 
-function triggerSubPulse(ctx: AudioContext, when: number, vel: number, freq: number) {
+function triggerSubPulse(
+  ctx: AudioContext,
+  when: number,
+  vel: number,
+  out: AudioNode,
+  freq: number,
+) {
   const osc = ctx.createOscillator();
   osc.type = 'sine';
   osc.frequency.value = freq;
@@ -330,12 +361,12 @@ function triggerSubPulse(ctx: AudioContext, when: number, vel: number, freq: num
   g.gain.exponentialRampToValueAtTime(0.4 * vel, when + 0.3);
   g.gain.exponentialRampToValueAtTime(0.0001, when + 1.8);
   osc.connect(g);
-  g.connect(ctx.destination);
+  g.connect(out);
   osc.start(when);
   osc.stop(when + 2);
 }
 
-function triggerRhodes(ctx: AudioContext, when: number, vel: number, freq: number) {
+function triggerRhodes(ctx: AudioContext, when: number, vel: number, out: AudioNode, freq: number) {
   // Rhodes: sine + triangle fifth, short attack, medium decay
   const osc1 = ctx.createOscillator();
   osc1.type = 'sine';
@@ -353,14 +384,14 @@ function triggerRhodes(ctx: AudioContext, when: number, vel: number, freq: numbe
   osc1.connect(lp);
   osc2.connect(lp);
   lp.connect(g);
-  g.connect(ctx.destination);
+  g.connect(out);
   osc1.start(when);
   osc2.start(when);
   osc1.stop(when + 0.5);
   osc2.stop(when + 0.5);
 }
 
-function triggerGuitar(ctx: AudioContext, when: number, vel: number, freq: number) {
+function triggerGuitar(ctx: AudioContext, when: number, vel: number, out: AudioNode, freq: number) {
   // Wah guitar chop: sawtooth + bandpass filter sweep
   const osc = ctx.createOscillator();
   osc.type = 'sawtooth';
@@ -376,12 +407,12 @@ function triggerGuitar(ctx: AudioContext, when: number, vel: number, freq: numbe
   g.gain.exponentialRampToValueAtTime(0.0001, when + 0.18);
   osc.connect(bp);
   bp.connect(g);
-  g.connect(ctx.destination);
+  g.connect(out);
   osc.start(when);
   osc.stop(when + 0.2);
 }
 
-function triggerPluck(ctx: AudioContext, when: number, vel: number, freq: number) {
+function triggerPluck(ctx: AudioContext, when: number, vel: number, out: AudioNode, freq: number) {
   // Tropical pluck: triangle wave with quick filtered attack
   const osc = ctx.createOscillator();
   osc.type = 'triangle';
@@ -396,12 +427,12 @@ function triggerPluck(ctx: AudioContext, when: number, vel: number, freq: number
   g.gain.exponentialRampToValueAtTime(0.0001, when + 0.3);
   osc.connect(lp);
   lp.connect(g);
-  g.connect(ctx.destination);
+  g.connect(out);
   osc.start(when);
   osc.stop(when + 0.32);
 }
 
-function triggerLead(ctx: AudioContext, when: number, vel: number, freq: number) {
+function triggerLead(ctx: AudioContext, when: number, vel: number, out: AudioNode, freq: number) {
   // Lead: square w/ filter envelope — simple emotional line à la The Blaze
   const osc = ctx.createOscillator();
   osc.type = 'square';
@@ -416,12 +447,12 @@ function triggerLead(ctx: AudioContext, when: number, vel: number, freq: number)
   g.gain.exponentialRampToValueAtTime(0.0001, when + 0.5);
   osc.connect(lp);
   lp.connect(g);
-  g.connect(ctx.destination);
+  g.connect(out);
   osc.start(when);
   osc.stop(when + 0.55);
 }
 
-function triggerPad(ctx: AudioContext, when: number, vel: number, freq: number) {
+function triggerPad(ctx: AudioContext, when: number, vel: number, out: AudioNode, freq: number) {
   // Long sustained pad — slow fade in and out
   const osc1 = ctx.createOscillator();
   osc1.type = 'sawtooth';
@@ -439,14 +470,14 @@ function triggerPad(ctx: AudioContext, when: number, vel: number, freq: number) 
   osc1.connect(lp);
   osc2.connect(lp);
   lp.connect(g);
-  g.connect(ctx.destination);
+  g.connect(out);
   osc1.start(when);
   osc2.start(when);
   osc1.stop(when + 4);
   osc2.stop(when + 4);
 }
 
-function triggerClap(ctx: AudioContext, when: number, vel: number) {
+function triggerClap(ctx: AudioContext, when: number, vel: number, out: AudioNode) {
   // Layered noise bursts with gaps simulating hand clap smear
   const bufSize = ctx.sampleRate * 0.18;
   const buf = ctx.createBuffer(1, bufSize, ctx.sampleRate);
@@ -470,12 +501,12 @@ function triggerClap(ctx: AudioContext, when: number, vel: number) {
   g.gain.value = 0.32 * vel;
   src.connect(bp);
   bp.connect(g);
-  g.connect(ctx.destination);
+  g.connect(out);
   src.start(when);
   src.stop(when + 0.2);
 }
 
-function triggerWobble(ctx: AudioContext, when: number, vel: number, freq: number) {
+function triggerWobble(ctx: AudioContext, when: number, vel: number, out: AudioNode, freq: number) {
   // Dubstep wobble bass: saw + square through a filter that wobbles
   // on an LFO for the note duration (1 bar ≈ 2s at 115 bpm half-time).
   const dur = 1.7;
@@ -505,7 +536,7 @@ function triggerWobble(ctx: AudioContext, when: number, vel: number, freq: numbe
   osc1.connect(lp);
   osc2.connect(lp);
   lp.connect(g);
-  g.connect(ctx.destination);
+  g.connect(out);
   osc1.start(when);
   osc2.start(when);
   lfo.start(when);
@@ -514,7 +545,7 @@ function triggerWobble(ctx: AudioContext, when: number, vel: number, freq: numbe
   lfo.stop(when + dur);
 }
 
-function triggerArp(ctx: AudioContext, when: number, vel: number, freq: number) {
+function triggerArp(ctx: AudioContext, when: number, vel: number, out: AudioNode, freq: number) {
   // Ratatat-style short bright arpeggio note — square wave + filter
   const osc = ctx.createOscillator();
   osc.type = 'square';
@@ -529,7 +560,7 @@ function triggerArp(ctx: AudioContext, when: number, vel: number, freq: number) 
   g.gain.exponentialRampToValueAtTime(0.0001, when + 0.13);
   osc.connect(lp);
   lp.connect(g);
-  g.connect(ctx.destination);
+  g.connect(out);
   osc.start(when);
   osc.stop(when + 0.15);
 }
@@ -537,7 +568,7 @@ function triggerArp(ctx: AudioContext, when: number, vel: number, freq: number) 
 // White-noise riser played once when a DROP begins. 2 bars at 115 bpm
 // ≈ 4.2s. Rises in pitch and volume to create anticipation, then cuts
 // so the slam-back feels big.
-function triggerRiser(ctx: AudioContext, when: number, durationSec: number) {
+function triggerRiser(ctx: AudioContext, when: number, durationSec: number, out: AudioNode) {
   const bufSize = Math.floor(ctx.sampleRate * durationSec);
   const buf = ctx.createBuffer(1, bufSize, ctx.sampleRate);
   const data = buf.getChannelData(0);
@@ -556,12 +587,12 @@ function triggerRiser(ctx: AudioContext, when: number, durationSec: number) {
   g.gain.exponentialRampToValueAtTime(0.0001, when + durationSec);
   src.connect(bp);
   bp.connect(g);
-  g.connect(ctx.destination);
+  g.connect(out);
   src.start(when);
   src.stop(when + durationSec);
 }
 
-function triggerChop(ctx: AudioContext, when: number, vel: number, freq: number) {
+function triggerChop(ctx: AudioContext, when: number, vel: number, out: AudioNode, freq: number) {
   // Short "ah" vocal chop — multi-partial periodic wave + vowel formant
   const osc = ctx.createOscillator();
   const real = new Float32Array([0, 1, 0.6, 0.4, 0.25, 0.15]);
@@ -580,7 +611,7 @@ function triggerChop(ctx: AudioContext, when: number, vel: number, freq: number)
   g.gain.exponentialRampToValueAtTime(0.0001, when + 0.25);
   osc.connect(formant);
   formant.connect(g);
-  g.connect(ctx.destination);
+  g.connect(out);
   osc.start(when);
   osc.stop(when + 0.3);
 }
@@ -591,16 +622,16 @@ const VOICES: Record<TrackId, Voice> = {
   clap: triggerClap,
   hihat: triggerHihat,
   perc: triggerPerc,
-  bass: (ctx, when, vel, f) => triggerBass(ctx, when, vel, f ?? A2),
-  subpulse: (ctx, when, vel, f) => triggerSubPulse(ctx, when, vel, f ?? A2 / 2),
-  wobble: (ctx, when, vel, f) => triggerWobble(ctx, when, vel, f ?? A2),
-  rhodes: (ctx, when, vel, f) => triggerRhodes(ctx, when, vel, f ?? A3),
-  guitar: (ctx, when, vel, f) => triggerGuitar(ctx, when, vel, f ?? E3),
-  pluck: (ctx, when, vel, f) => triggerPluck(ctx, when, vel, f ?? A4),
-  arp: (ctx, when, vel, f) => triggerArp(ctx, when, vel, f ?? A4),
-  lead: (ctx, when, vel, f) => triggerLead(ctx, when, vel, f ?? A4),
-  chop: (ctx, when, vel, f) => triggerChop(ctx, when, vel, f ?? A4),
-  pad: (ctx, when, vel, f) => triggerPad(ctx, when, vel, f ?? A3),
+  bass: (ctx, when, vel, out, f) => triggerBass(ctx, when, vel, out, f ?? A2),
+  subpulse: (ctx, when, vel, out, f) => triggerSubPulse(ctx, when, vel, out, f ?? A2 / 2),
+  wobble: (ctx, when, vel, out, f) => triggerWobble(ctx, when, vel, out, f ?? A2),
+  rhodes: (ctx, when, vel, out, f) => triggerRhodes(ctx, when, vel, out, f ?? A3),
+  guitar: (ctx, when, vel, out, f) => triggerGuitar(ctx, when, vel, out, f ?? E3),
+  pluck: (ctx, when, vel, out, f) => triggerPluck(ctx, when, vel, out, f ?? A4),
+  arp: (ctx, when, vel, out, f) => triggerArp(ctx, when, vel, out, f ?? A4),
+  lead: (ctx, when, vel, out, f) => triggerLead(ctx, when, vel, out, f ?? A4),
+  chop: (ctx, when, vel, out, f) => triggerChop(ctx, when, vel, out, f ?? A4),
+  pad: (ctx, when, vel, out, f) => triggerPad(ctx, when, vel, out, f ?? A3),
 };
 
 // ─────────────────────────────────────────────────────────────
@@ -648,6 +679,11 @@ export default function GrooveMachine() {
   const modeRef = useRef(mode);
   const activeRef = useRef(active);
   const bpmRef = useRef(bpm);
+  // Master bus — every voice connects here instead of ctx.destination
+  // so we can put a compressor + reverb send + master gain in one
+  // place. Built once in startAudio. Without this everything plays
+  // dry and clipped; with it the mix has glue.
+  const masterInRef = useRef<GainNode | null>(null);
 
   useEffect(() => {
     modeRef.current = mode;
@@ -703,7 +739,17 @@ export default function GrooveMachine() {
         if (!vel) continue;
         const freq = track.notes?.[stepIdx] ?? undefined;
         if (freq === 0) continue;
-        VOICES[track.id](ctx, when, vel, freq);
+        // Humanization — drum tracks get ±5 % velocity and ±3 ms
+        // timing jitter so the grid stops feeling like a machine.
+        // Pitched tracks stay tight to keep harmonic alignment.
+        let humanizedVel = vel;
+        let humanizedWhen = when;
+        if (track.group === 'drums') {
+          humanizedVel = vel * (0.95 + Math.random() * 0.1);
+          humanizedWhen = when + (Math.random() - 0.5) * 0.006;
+        }
+        const out = masterInRef.current ?? ctx.destination;
+        VOICES[track.id](ctx, humanizedWhen, humanizedVel, out, freq);
       }
       nextTimeRef.current += secondsPerSixteenth;
       nextStepRef.current++;
@@ -717,6 +763,42 @@ export default function GrooveMachine() {
     if (!ctxRef.current) ctxRef.current = new Ctor();
     const ctx = ctxRef.current;
     if (ctx.state === 'suspended') void ctx.resume();
+
+    // Build the master bus on first play. master input → compressor
+    // (-18 dB threshold, 4:1 ratio) → split: dry to destination + a
+    // gentle reverb send for cohesion. Without this the mix sounds
+    // dry and the kick clips on full mode.
+    if (!masterInRef.current) {
+      const masterIn = ctx.createGain();
+      masterIn.gain.value = 0.85;
+      const comp = ctx.createDynamicsCompressor();
+      comp.threshold.value = -18;
+      comp.ratio.value = 4;
+      comp.attack.value = 0.005;
+      comp.release.value = 0.12;
+      const dry = ctx.createGain();
+      dry.gain.value = 1;
+      // Reverb send: small impulse buffer, low send level so it just
+      // glues without flooding the mix.
+      const len = ctx.sampleRate * 1.6;
+      const buf = ctx.createBuffer(2, len, ctx.sampleRate);
+      for (let ch = 0; ch < 2; ch++) {
+        const d = buf.getChannelData(ch);
+        for (let i = 0; i < len; i++) d[i] = (Math.random() * 2 - 1) * (1 - i / len) ** 2.5;
+      }
+      const rev = ctx.createConvolver();
+      rev.buffer = buf;
+      const wet = ctx.createGain();
+      wet.gain.value = 0.18;
+      masterIn.connect(comp);
+      comp.connect(dry);
+      comp.connect(rev);
+      rev.connect(wet);
+      dry.connect(ctx.destination);
+      wet.connect(ctx.destination);
+      masterInRef.current = masterIn;
+    }
+
     nextStepRef.current = 0;
     nextTimeRef.current = ctx.currentTime + 0.05;
     setStep(0);
@@ -757,10 +839,14 @@ export default function GrooveMachine() {
     setMode('drop');
     // Schedule a 2-bar noise riser from now. The drums stay muted
     // (mode 'drop') while this rises, building tension; at the end
-    // we snap back to 'full' and the first beat after slams.
+    // we snap back to 'full' and the first beat after slams. We also
+    // schedule a single big kick at the slam moment so the return is
+    // visceral, not just a re-mute-off.
     if (ctx) {
       const now = ctx.currentTime + 0.05;
-      triggerRiser(ctx, now, twoBarsSec);
+      const out = masterInRef.current ?? ctx.destination;
+      triggerRiser(ctx, now, twoBarsSec, out);
+      triggerKick(ctx, now + twoBarsSec, 1.0, out);
     }
     setTimeout(() => setMode('full'), (twoBarsSec * 1000) | 0);
   }

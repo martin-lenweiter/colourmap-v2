@@ -66,7 +66,7 @@ export default function SoundLab() {
       <div className="flex flex-wrap justify-center gap-x-5 gap-y-2 px-2">
         {(
           [
-            { id: 'tuner' as const, label: 'Relaxing Sounds' },
+            { id: 'tuner' as const, label: 'Chill Machine' },
             { id: 'groove' as const, label: 'Groove Machine' },
             { id: 'maker' as const, label: 'Magic Maker' },
             { id: 'looper' as const, label: 'Lo-fi Looper' },

@@ -68,6 +68,62 @@ interface LayerDef {
   ) => { node: AudioNode; source: AudioBufferSourceNode | OscillatorNode };
 }
 
+// ── Display categories ──
+// User-facing categories grouping layers by *character*, not engineering
+// taxonomy. The original `group` field stays so saved-mix restoration
+// still works; this is a derived view for the UI only.
+type LayerCategory = 'waters' | 'birds' | 'drones' | 'textures' | 'digital';
+
+const CATEGORY_LABELS: Record<LayerCategory, string> = {
+  waters: 'Waters',
+  birds: 'Birds & Forest',
+  drones: 'Drones & Voices',
+  textures: 'Textures',
+  digital: 'Digital',
+};
+
+const CATEGORY_COLORS: Record<LayerCategory, string> = {
+  waters: '#5AA8B0', // teal — rain, ocean, thunder, waves
+  birds: '#7AAA58', // sage — birds, forest, creatures, wind
+  drones: '#9B6BA0', // plum — sustained tones, chant, choir
+  textures: '#B8843A', // gold — vinyl, hum, bowls, chimes, fire
+  digital: '#5A7AAA', // blue-grey — synthetic / sci-fi
+};
+
+const CATEGORY_ORDER: LayerCategory[] = ['waters', 'birds', 'drones', 'textures', 'digital'];
+
+function getLayerCategory(layer: { id: string; group: string }): LayerCategory {
+  // Drones — every tone-group layer is sustained pitched material
+  if (layer.group === 'tones') return 'drones';
+  // Textures — small grainy character layers
+  if (layer.group === 'texture') return 'textures';
+  // Digital — anything synthetic / sci-fi / modern
+  if (layer.group === 'ambient') return 'digital';
+  // Nature — split: birds + forest live separately from water-character
+  if (layer.group === 'nature') {
+    if (layer.id === 'birds' || layer.id === 'forest' || layer.id === 'wind') return 'birds';
+    if (layer.id === 'fire') return 'textures';
+    return 'waters';
+  }
+  // Real samples — split by id substring
+  if (layer.group === 'real') {
+    const id = layer.id;
+    if (id.includes('rain') || id.includes('thunder') || id === 'real-wind') return 'waters';
+    if (
+      id === 'real-birds' ||
+      id === 'real-garden' ||
+      id === 'real-forest' ||
+      id === 'real-cicada' ||
+      id === 'real-sheep' ||
+      id === 'real-wolf' ||
+      id === 'real-bear'
+    )
+      return 'birds';
+    return 'textures';
+  }
+  return 'textures';
+}
+
 function buildNoise(
   ctx: AudioContext,
   filterType: BiquadFilterType,
@@ -926,32 +982,12 @@ const REAL_LAYERS: LayerDef[] = [
     group: 'real',
     build: (ctx) => buildRealSound(ctx, '/sounds/real-rain-heavy-recording.ogg'),
   },
-  // Percussion (Public Domain — see public/sounds/ATTRIBUTIONS.md).
-  // Djembe is a hand drum used here as the "Shaman Drum" layer — a deep,
-  // steady pulse when looped. The Schamanische_Reise.ogg file is a
-  // 60-minute ambient trance recording (too long + too thin to loop as a
-  // drum) — surfaced as "Shaman Journey" ambient so the character fits.
-  {
-    id: 'real-shaman-drum',
-    label: 'Shaman Drum',
-    color: '#B33A2B',
-    group: 'real',
-    build: (ctx) => buildRealSound(ctx, '/sounds/drums/Djembe.ogg'),
-  },
-  {
-    id: 'real-shaman-journey',
-    label: 'Shaman Journey',
-    color: '#8A3A2B',
-    group: 'real',
-    build: (ctx) => buildRealSound(ctx, '/sounds/drums/Schamanische_Reise.ogg'),
-  },
-  {
-    id: 'real-tambourine',
-    label: 'Tambourine',
-    color: '#E8B568',
-    group: 'real',
-    build: (ctx) => buildRealSound(ctx, '/sounds/drums/Tambourine.ogg'),
-  },
+  // Drum-loop layers (Djembe / Schamanische_Reise / Tambourine) removed
+  // from Relaxing Sounds — they don't belong here. Djembe in particular
+  // looped as a continuous fast drum that auto-restored from saved state
+  // and felt anything but relaxing. The samples still live in
+  // public/sounds/drums/ and can be revived inside Groove Machine if we
+  // want a real-percussion track there.
   // Synthesized sci-fi / cyberpunk
   {
     id: 'spaceship',
@@ -1487,19 +1523,21 @@ export default function BinauralTuner() {
   // are subharmonics (undertones) which ground the mix with warmth;
   // above 1× are the classical overtones. Ratios are exact just
   // intonation so they beat cleanly against the root.
+  // Harmonious rainbow progression low → high. Warm wine at the
+  // bottom of the pitch range, through rose / terracotta / gold /
+  // sage / teal / sky blue at the top. Avoids grey/ochre/purple
+  // mixing — the row reads as one fluid spectrum.
   const HARMONICS = [
-    // Subharmonics — below the root
-    { id: 'sub-octave', label: 'Sub Octave', ratio: 1 / 2, color: '#5F3A24' },
-    { id: 'sub-fifth', label: 'Sub Fifth', ratio: 2 / 3, color: '#7A4E2E' },
-    { id: 'sub-fourth', label: 'Sub Fourth', ratio: 3 / 4, color: '#8A6A4A' },
-    { id: 'sub-third', label: 'Sub Third', ratio: 4 / 5, color: '#A07450' },
-    // Overtones — above the root
-    { id: 'minor3', label: 'Minor 3rd', ratio: 6 / 5, color: '#C4A060' },
-    { id: 'third', label: 'Third', ratio: 5 / 4, color: '#D4805A' },
-    { id: 'fourth', label: 'Fourth', ratio: 4 / 3, color: '#9B6BA0' },
-    { id: 'fifth', label: 'Fifth', ratio: 3 / 2, color: '#6890B0' },
-    { id: 'octave', label: 'Octave', ratio: 2, color: '#7AAA58' },
-    { id: 'double-oct', label: 'Double Oct', ratio: 4, color: '#88C878' },
+    { id: 'sub-octave', label: 'Sub Octave', ratio: 1 / 2, color: '#5A2E48' }, // wine
+    { id: 'sub-fifth', label: 'Sub Fifth', ratio: 2 / 3, color: '#7A3850' }, // mauve
+    { id: 'sub-fourth', label: 'Sub Fourth', ratio: 3 / 4, color: '#9A4858' }, // rose-brown
+    { id: 'sub-third', label: 'Sub Third', ratio: 4 / 5, color: '#B85A50' }, // terracotta
+    { id: 'minor3', label: 'Minor 3rd', ratio: 6 / 5, color: '#D4805A' }, // warm orange
+    { id: 'third', label: 'Third', ratio: 5 / 4, color: '#DCA050' }, // gold
+    { id: 'fourth', label: 'Fourth', ratio: 4 / 3, color: '#C8B854' }, // chartreuse
+    { id: 'fifth', label: 'Fifth', ratio: 3 / 2, color: '#88B868' }, // sage
+    { id: 'octave', label: 'Octave', ratio: 2, color: '#5AA8B0' }, // teal
+    { id: 'double-oct', label: 'Double Oct', ratio: 4, color: '#6890C8' }, // sky
   ] as const;
   const [activeHarmonics, setActiveHarmonics] = useState<Set<string>>(new Set());
   const harmOscsRef = useRef<Map<string, { osc: OscillatorNode; gain: GainNode }>>(new Map());
@@ -1746,10 +1784,21 @@ export default function BinauralTuner() {
   const [melodySpeed, setMelodySpeed] = useState(50); // 0-100, 0=very slow, 100=fast
   const [melodyReverb, setMelodyReverb] = useState(80); // 0-100
   const [melodyVolume, setMelodyVolume] = useState(1); // 0-1, multiplies per-note vol
+  const [wahOn, setWahOn] = useState(false);
+  const [wahSpeed, setWahSpeed] = useState(0.5); // 0-1 → 0.2Hz to 3Hz LFO
+  const [echoOn, setEchoOn] = useState(false);
+  const [echoAmount, setEchoAmount] = useState(0.4); // 0-1 → wet send level
   const melodyTimersRef = useRef<Map<string, ReturnType<typeof setTimeout>>>(new Map());
   const melodyActiveIdsRef = useRef<Set<string>>(new Set());
   const melodyReverbRef = useRef<ConvolverNode | null>(null);
   const melodyDryRef = useRef<GainNode | null>(null);
+  // Effects: wah (filter LFO send), echo (delay with feedback)
+  const wahFilterRef = useRef<BiquadFilterNode | null>(null);
+  const wahLfoRef = useRef<OscillatorNode | null>(null);
+  const wahWetRef = useRef<GainNode | null>(null);
+  const echoDelayRef = useRef<DelayNode | null>(null);
+  const echoFeedbackRef = useRef<GainNode | null>(null);
+  const echoWetRef = useRef<GainNode | null>(null);
   const melodyWetRef = useRef<GainNode | null>(null);
 
   // biome-ignore lint/correctness/useExhaustiveDependencies: uses refs, stable
@@ -1775,6 +1824,12 @@ export default function BinauralTuner() {
       playSampledNote(ctx, melDef.sampledPack, freq, vol, output);
       if (melodyReverbRef.current) {
         playSampledNote(ctx, melDef.sampledPack, freq, vol * 0.6, melodyReverbRef.current);
+      }
+      if (wahFilterRef.current) {
+        playSampledNote(ctx, melDef.sampledPack, freq, vol * 0.7, wahFilterRef.current);
+      }
+      if (echoDelayRef.current) {
+        playSampledNote(ctx, melDef.sampledPack, freq, vol * 0.7, echoDelayRef.current);
       }
       // Schedule next note on the same cadence as the other melodies
       const speedMult =
@@ -1884,10 +1939,14 @@ export default function BinauralTuner() {
       osc2.stop(now + melDef.attack + melDef.release + 0.1);
     }
 
-    // Route through melody reverb if set up, otherwise direct
+    // Route through melody reverb if set up, otherwise direct.
+    // Also fan out to wah + echo sends — their wet gains decide
+    // whether they're audible.
     if (melodyDryRef.current && melodyReverbRef.current) {
       env.connect(melodyDryRef.current);
       env.connect(melodyReverbRef.current);
+      if (wahFilterRef.current) env.connect(wahFilterRef.current);
+      if (echoDelayRef.current) env.connect(echoDelayRef.current);
     } else {
       env.connect(gain);
     }
@@ -1921,7 +1980,9 @@ export default function BinauralTuner() {
       if (activeMelodies.has(m.id) && !melodyActiveIdsRef.current.has(m.id) && ctxRef.current) {
         melodyActiveIdsRef.current.add(m.id);
 
-        // Set up melody reverb on first melody activation
+        // Set up melody reverb + effects (wah, echo) on first melody
+        // activation. All effects live as parallel sends — toggling
+        // them on adjusts a wet gain, no need to rewire.
         if (!melodyReverbRef.current && ctxRef.current) {
           const ctx = ctxRef.current;
           const len = ctx.sampleRate * 4;
@@ -1944,6 +2005,46 @@ export default function BinauralTuner() {
           dry.connect(ctx.destination);
           rev.connect(wet);
           wet.connect(ctx.destination);
+
+          // Wah send: bandpass filter on a slow LFO. Wet gain starts at
+          // 0; toggling wahOn ramps it up. Each note's env will fan
+          // into wahFilter as well as melodyDryRef when notes play.
+          const wahFilter = ctx.createBiquadFilter();
+          wahFilter.type = 'bandpass';
+          wahFilter.frequency.value = 1000;
+          wahFilter.Q.value = 6;
+          const wahLfo = ctx.createOscillator();
+          wahLfo.type = 'sine';
+          wahLfo.frequency.value = 0.2 + wahSpeed * 2.8; // 0.2–3 Hz
+          const wahLfoGain = ctx.createGain();
+          wahLfoGain.gain.value = 1500; // sweep ±1500 Hz around 1000 Hz
+          wahLfo.connect(wahLfoGain);
+          wahLfoGain.connect(wahFilter.frequency);
+          wahLfo.start();
+          const wahWet = ctx.createGain();
+          wahWet.gain.value = wahOn ? 0.7 : 0;
+          wahFilter.connect(wahWet);
+          wahWet.connect(ctx.destination);
+          wahFilterRef.current = wahFilter;
+          wahLfoRef.current = wahLfo;
+          wahWetRef.current = wahWet;
+
+          // Echo send: stereo-ish delay with feedback for a tape-echo
+          // smear. Send level starts at 0; toggling echoOn ramps it.
+          const echoDelay = ctx.createDelay(2);
+          echoDelay.delayTime.value = 0.36; // ~quarter note at 100 BPM
+          const echoFeedback = ctx.createGain();
+          echoFeedback.gain.value = 0.45;
+          const echoWet = ctx.createGain();
+          echoWet.gain.value = echoOn ? echoAmount : 0;
+          // Feedback loop: delay → feedback gain → back into delay
+          echoDelay.connect(echoFeedback);
+          echoFeedback.connect(echoDelay);
+          echoDelay.connect(echoWet);
+          echoWet.connect(ctx.destination);
+          echoDelayRef.current = echoDelay;
+          echoFeedbackRef.current = echoFeedback;
+          echoWetRef.current = echoWet;
         }
 
         playMelodyNote(m);
@@ -1975,6 +2076,17 @@ export default function BinauralTuner() {
     if (melodyDryRef.current) melodyDryRef.current.gain.value = 1 - melodyReverb / 100;
     if (melodyWetRef.current) melodyWetRef.current.gain.value = melodyReverb / 100;
   }, [melodyReverb]);
+
+  // Wah send + LFO speed
+  useEffect(() => {
+    if (wahWetRef.current) wahWetRef.current.gain.value = wahOn ? 0.7 : 0;
+    if (wahLfoRef.current) wahLfoRef.current.frequency.value = 0.2 + wahSpeed * 2.8;
+  }, [wahOn, wahSpeed]);
+
+  // Echo send level
+  useEffect(() => {
+    if (echoWetRef.current) echoWetRef.current.gain.value = echoOn ? echoAmount : 0;
+  }, [echoOn, echoAmount]);
 
   // Layer reverb mix update
   useEffect(() => {
@@ -2095,13 +2207,14 @@ export default function BinauralTuner() {
   const [simpleMode, setSimpleMode] = useState(true);
   const [layersOpen, setLayersOpen] = useState(true);
   const [genresOpen, setGenresOpen] = useState(false);
-  // Which layer group is showing in the phone tab strip (desktop ignores this
-  // and renders the 5-column grid). Default to 'nature' as the most
-  // immediately recognizable category.
-  const [activeLayerGroup, setActiveLayerGroup] = useState<
-    'real' | 'nature' | 'tones' | 'texture' | 'ambient'
-  >('nature');
-  const [brainStatesOpen, setBrainStatesOpen] = useState(false);
+  // Which layer category is showing in the phone tab strip (desktop
+  // groups all 5 in a row). Default to 'waters' as the most universal
+  // entry point.
+  const [activeLayerGroup, setActiveLayerGroup] = useState<LayerCategory>('waters');
+  // brainStatesOpen state kept (write-only) so saved-state restore
+  // doesn't break — but the value is never read after merging Genre +
+  // Brain State under one Presets pill (genresOpen drives both).
+  const [_brainStatesOpen, setBrainStatesOpen] = useState(false);
   const [savedSoundsOpen, setSavedSoundsOpen] = useState(false);
 
   // Auto-save current sound state to localStorage
@@ -2120,7 +2233,24 @@ export default function BinauralTuner() {
         if (s.baseToneOn !== undefined) setBaseToneOn(s.baseToneOn);
         if (s.engineBreathing !== undefined) setEngineBreathing(s.engineBreathing);
         if (s.tremolo !== undefined) setTremolo(s.tremolo);
-        if (s.activeLayers) setActiveLayers(s.activeLayers);
+        if (s.activeLayers) {
+          // Strip any drum-loop layers from saved state. These layers no
+          // longer exist in Relaxing Sounds, but old saves can still
+          // reference them — keeping them in the restored state would
+          // try to play them as ghost layers (and historically did, as
+          // a fast Djembe loop the user couldn't see to disable).
+          const RETIRED_IDS = new Set([
+            'real-shaman-drum',
+            'real-shaman-journey',
+            'real-tambourine',
+            'breath',
+          ]);
+          const cleaned: Record<string, number> = {};
+          for (const [id, vol] of Object.entries(s.activeLayers)) {
+            if (!RETIRED_IDS.has(id)) cleaned[id] = vol as number;
+          }
+          setActiveLayers(cleaned);
+        }
         if (s.activeGenre) setActiveGenre(s.activeGenre);
         if (s.activeHarmonics) setActiveHarmonics(new Set(s.activeHarmonics));
         if (s.activeSacred) setActiveSacred(new Set(s.activeSacred));
@@ -3063,7 +3193,7 @@ export default function BinauralTuner() {
             color: '#5C3018',
           }}
         >
-          Relaxing Sounds
+          Chill Machine
         </p>
         {/* Status strip — one-line readout of everything audible right
             now. Makes it impossible for a stuck layer or drum bed to
@@ -3131,127 +3261,198 @@ export default function BinauralTuner() {
       {/* Wave visualization with gradient fill + play button overlay.
           SVG now width="100%" + viewBox so it scales to the parent
           width. Wrapped in a bounded relative div so the overlay play
-          button pins to the SVG edge, not the page. */}
-      <div className="flex w-full justify-center">
-        <div className="relative w-full" style={{ maxWidth: 480 }}>
-          <svg
-            width="100%"
-            height={H}
-            viewBox={`0 0 ${W} ${H}`}
-            preserveAspectRatio="xMidYMid meet"
-          >
-            <defs>
-              <linearGradient id="waveGrad" x1="0" y1="0" x2="1" y2="0">
-                {RAINBOW.map((c, i) => (
-                  // index key — RAINBOW repeats #E0908A at start and end for
-                  // a wrap-around gradient, so color alone would collide.
-                  <stop
-                    key={i}
-                    offset={`${(i / (RAINBOW.length - 1)) * 100}%`}
-                    stopColor={c}
-                    stopOpacity={0.15}
-                  />
-                ))}
-              </linearGradient>
-              <linearGradient id="waveStroke" x1="0" y1="0" x2="1" y2="0">
-                {RAINBOW.map((c, i) => (
-                  <stop
-                    key={i}
-                    offset={`${(i / (RAINBOW.length - 1)) * 100}%`}
-                    stopColor={c}
-                    stopOpacity={playing ? 0.8 : 0.4}
-                  />
-                ))}
-              </linearGradient>
-            </defs>
-            {/* Just the wave line — rainbow fill removed per user
-              feedback (clutter). Keep the subtle rainbow stroke
-              because it still reads as a single line. */}
-            <path
-              d={pathD}
-              fill="none"
-              stroke="url(#waveStroke)"
-              strokeWidth={2.5}
-              strokeLinecap="round"
-            />
-            {/* Glow when playing */}
-            {playing && (
-              <path
-                d={pathD}
-                fill="none"
-                stroke={activeColor}
-                strokeWidth={8}
-                strokeLinecap="round"
-                opacity={0.12}
-              />
-            )}
-          </svg>
-          {/* Play button — overlaid on the right */}
-          <button
-            type="button"
-            onClick={() => {
-              haptic(playing ? 'tick' : 'tap');
-              if (playing) stopAudio();
-              else startAudio();
-            }}
-            className="absolute right-2 top-1/2 -translate-y-1/2 flex cursor-pointer items-center justify-center rounded-full transition-all"
-            style={{
-              width: 36,
-              height: 36,
-              background: playing ? `${activeColor}25` : `${activeColor}10`,
-              border: `2px solid ${activeColor}${playing ? '50' : '25'}`,
-            }}
-          >
-            {playing ? (
-              <div className="flex gap-0.5">
-                <span
-                  className="block rounded-sm"
-                  style={{ width: 3, height: 12, background: activeColor }}
-                />
-                <span
-                  className="block rounded-sm"
-                  style={{ width: 3, height: 12, background: activeColor }}
-                />
-              </div>
-            ) : (
-              <span
-                className="block"
-                style={{
-                  width: 0,
-                  height: 0,
-                  borderLeft: `10px solid ${activeColor}`,
-                  borderTop: '6px solid transparent',
-                  borderBottom: '6px solid transparent',
-                  marginLeft: 1,
-                }}
-              />
-            )}
-          </button>
-        </div>
-      </div>
+          button pins to the SVG edge, not the page.
 
-      {/* Wave-style picker — pick the visual shape of the waveform */}
-      <div className="flex flex-wrap justify-center gap-1.5">
-        {WAVE_STYLES.map((w) => {
-          const isActive = waveStyle === w.id;
-          return (
-            <button
-              key={w.id}
-              type="button"
-              onClick={() => setWaveStyle(w.id)}
-              className="cursor-pointer rounded-full px-2.5 py-0.5 text-[10px] uppercase tracking-[0.12em] transition-all"
-              style={{
-                color: isActive ? '#5C3018' : '#8A6A4A',
-                background: isActive ? `${activeColor}20` : 'transparent',
-                border: `1px solid ${isActive ? `${activeColor}60` : '#5C301818'}`,
-                fontFamily: 'var(--font-serif)',
-                opacity: isActive ? 1 : 0.7,
-              }}
-            >
-              {w.label}
-            </button>
-          );
-        })}
+          The wave reacts to the mix: more active layers = thicker
+          stroke + a coloured halo of the dominant active layer's tone.
+          Idle = thin and quiet, full mix = thick and tinted. */}
+      {(() => {
+        // Pull the layer ids that are currently audible, find the one
+        // with the highest volume, use it as the dominant tint colour.
+        const activeIds = Object.keys(activeLayers).filter((id) => (activeLayers[id] ?? 0) > 0);
+        const dominantId = activeIds.reduce<string | null>((best, id) => {
+          const v = activeLayers[id] ?? 0;
+          if (best === null) return id;
+          return v > (activeLayers[best] ?? 0) ? id : best;
+        }, null);
+        const dominantColor =
+          (dominantId && ALL_LAYERS.find((l) => l.id === dominantId)?.color) || activeColor;
+        // Stroke gets thicker as layer count grows. Caps at 5 px so it
+        // never gets cartoonish.
+        const layerThickness = Math.min(activeIds.length * 0.5, 2.5);
+        const strokeWidth = 2.5 + layerThickness;
+        const haloOpacity = 0.08 + Math.min(activeIds.length * 0.02, 0.15);
+        return (
+          <div className="flex w-full justify-center">
+            <div className="relative w-full" style={{ maxWidth: 480 }}>
+              <svg
+                width="100%"
+                height={H}
+                viewBox={`0 0 ${W} ${H}`}
+                preserveAspectRatio="xMidYMid meet"
+              >
+                <defs>
+                  <linearGradient id="waveGrad" x1="0" y1="0" x2="1" y2="0">
+                    {RAINBOW.map((c, i) => (
+                      // index key — RAINBOW repeats #E0908A at start and end for
+                      // a wrap-around gradient, so color alone would collide.
+                      <stop
+                        key={i}
+                        offset={`${(i / (RAINBOW.length - 1)) * 100}%`}
+                        stopColor={c}
+                        stopOpacity={0.15}
+                      />
+                    ))}
+                  </linearGradient>
+                  <linearGradient id="waveStroke" x1="0" y1="0" x2="1" y2="0">
+                    {RAINBOW.map((c, i) => (
+                      <stop
+                        key={i}
+                        offset={`${(i / (RAINBOW.length - 1)) * 100}%`}
+                        stopColor={c}
+                        stopOpacity={playing ? 0.8 : 0.4}
+                      />
+                    ))}
+                  </linearGradient>
+                </defs>
+                {/* Wide soft tint of the dominant layer colour underneath
+                — the more layers active, the more it glows. */}
+                {playing && activeIds.length > 0 && (
+                  <path
+                    d={pathD}
+                    fill="none"
+                    stroke={dominantColor}
+                    strokeWidth={18}
+                    strokeLinecap="round"
+                    opacity={haloOpacity}
+                  />
+                )}
+                {/* Just the wave line — rainbow fill removed per user
+              feedback (clutter). Keep the subtle rainbow stroke
+              because it still reads as a single line. Stroke grows
+              with active layer count. */}
+                <path
+                  d={pathD}
+                  fill="none"
+                  stroke="url(#waveStroke)"
+                  strokeWidth={strokeWidth}
+                  strokeLinecap="round"
+                />
+                {/* Glow when playing */}
+                {playing && (
+                  <path
+                    d={pathD}
+                    fill="none"
+                    stroke={activeColor}
+                    strokeWidth={8}
+                    strokeLinecap="round"
+                    opacity={0.12}
+                  />
+                )}
+              </svg>
+              {/* Play button — overlaid on the right */}
+              <button
+                type="button"
+                onClick={() => {
+                  haptic(playing ? 'tick' : 'tap');
+                  if (playing) stopAudio();
+                  else startAudio();
+                }}
+                className="absolute right-2 top-1/2 -translate-y-1/2 flex cursor-pointer items-center justify-center rounded-full transition-all"
+                style={{
+                  width: 36,
+                  height: 36,
+                  background: playing ? `${activeColor}25` : `${activeColor}10`,
+                  border: `2px solid ${activeColor}${playing ? '50' : '25'}`,
+                }}
+              >
+                {playing ? (
+                  <div className="flex gap-0.5">
+                    <span
+                      className="block rounded-sm"
+                      style={{ width: 3, height: 12, background: activeColor }}
+                    />
+                    <span
+                      className="block rounded-sm"
+                      style={{ width: 3, height: 12, background: activeColor }}
+                    />
+                  </div>
+                ) : (
+                  <span
+                    className="block"
+                    style={{
+                      width: 0,
+                      height: 0,
+                      borderLeft: `10px solid ${activeColor}`,
+                      borderTop: '6px solid transparent',
+                      borderBottom: '6px solid transparent',
+                      marginLeft: 1,
+                    }}
+                  />
+                )}
+              </button>
+            </div>
+          </div>
+        );
+      })()}
+
+      {/* Wave-style picker — 4-position dot slider. Each dot represents
+          one waveform style; the active one grows + brightens. Same
+          visual language as the speed/reverb/volume sliders. */}
+      <div className="mx-auto flex max-w-md items-center gap-3 px-1">
+        <span
+          className="shrink-0 text-left uppercase"
+          style={{
+            fontFamily: 'var(--font-serif)',
+            fontSize: '11px',
+            letterSpacing: '0.12em',
+            color: activeColor,
+            opacity: 0.9,
+            fontWeight: 700,
+            width: 64,
+          }}
+        >
+          Wave
+        </span>
+        <div className="flex flex-1 items-center justify-between">
+          {WAVE_STYLES.map((w) => {
+            const isActive = waveStyle === w.id;
+            return (
+              <button
+                key={w.id}
+                type="button"
+                onClick={() => setWaveStyle(w.id)}
+                title={w.label}
+                aria-label={`Wave style ${w.label}`}
+                className="flex cursor-pointer flex-col items-center gap-1 bg-transparent"
+                style={{ border: 'none', padding: '4px 0' }}
+              >
+                <span
+                  className="block rounded-full transition-all"
+                  style={{
+                    width: isActive ? 14 : 7,
+                    height: isActive ? 14 : 7,
+                    background: activeColor,
+                    opacity: isActive ? 1 : 0.35,
+                  }}
+                />
+                <span
+                  style={{
+                    fontFamily: 'var(--font-serif)',
+                    fontSize: '9px',
+                    letterSpacing: '0.1em',
+                    textTransform: 'uppercase',
+                    color: activeColor,
+                    opacity: isActive ? 1 : 0.5,
+                    fontWeight: isActive ? 700 : 500,
+                  }}
+                >
+                  {w.label}
+                </span>
+              </button>
+            );
+          })}
+        </div>
       </div>
 
       {/* Beat bed UI removed per user feedback — clutter in studio.
@@ -3552,91 +3753,63 @@ export default function BinauralTuner() {
             />
           </div>
 
-          {/* Volume — smooth gradient track with draggable thumb */}
+          {/* Volume — 20-circle dot slider matching the speed/reverb/
+              volume melody sliders. Click anywhere to set. Drag is
+              gone (uniform with the rest of the dot-slider family);
+              touch/mouse single-tap is sufficient. */}
           <div className="px-2">
-            <div className="flex items-center gap-3 px-1 py-2">
+            <div className="mx-auto flex max-w-md items-center gap-3">
               <span
+                className="shrink-0 text-left uppercase"
                 style={{
                   fontFamily: 'var(--font-serif)',
-                  fontSize: '13px',
+                  fontSize: '11px',
+                  letterSpacing: '0.12em',
+                  color: '#C4A060',
+                  opacity: 0.9,
+                  fontWeight: 700,
+                  width: 64,
+                }}
+              >
+                Volume
+              </span>
+              <button
+                type="button"
+                aria-label={`Volume ${Math.round(volume * 100)}%`}
+                className="flex flex-1 cursor-pointer items-center justify-between bg-transparent"
+                style={{ border: 'none', padding: '4px 0' }}
+                onClick={(e) => {
+                  const r = (e.currentTarget as HTMLElement).getBoundingClientRect();
+                  setVolume(Math.max(0.02, Math.min(1, (e.clientX - r.left) / r.width)));
+                }}
+              >
+                {Array.from({ length: 20 }, (_, i) => {
+                  const ratio = i / 19;
+                  const filled = ratio <= volume;
+                  return (
+                    <span
+                      key={i}
+                      className="block rounded-full transition-all"
+                      style={{
+                        width: filled ? 8 : 5,
+                        height: filled ? 8 : 5,
+                        background: '#C4A060',
+                        opacity: filled ? 0.55 + ratio * 0.4 : 0.2,
+                      }}
+                    />
+                  );
+                })}
+              </button>
+              <span
+                className="hidden md:inline"
+                style={{
+                  fontFamily: 'var(--font-serif)',
+                  fontSize: '11px',
                   color: '#C4A060',
                   fontWeight: 600,
-                  width: 60,
+                  width: 32,
                   flexShrink: 0,
                   textAlign: 'right',
-                }}
-              >
-                volume
-              </span>
-              <div
-                className="relative flex-1 cursor-pointer"
-                style={{ height: 20, touchAction: 'none' }}
-                onMouseDown={(e) => {
-                  const el = e.currentTarget as HTMLElement;
-                  const set = (cx: number) => {
-                    const r = el.getBoundingClientRect();
-                    setVolume(Math.max(0.02, Math.min(1, (cx - r.left) / r.width)));
-                  };
-                  set(e.clientX);
-                  const onMove = (ev: MouseEvent) => set(ev.clientX);
-                  const onUp = () => {
-                    window.removeEventListener('mousemove', onMove);
-                    window.removeEventListener('mouseup', onUp);
-                  };
-                  window.addEventListener('mousemove', onMove);
-                  window.addEventListener('mouseup', onUp);
-                }}
-                onTouchStart={(e) => {
-                  const el = e.currentTarget as HTMLElement;
-                  const set = (cx: number) => {
-                    const r = el.getBoundingClientRect();
-                    setVolume(Math.max(0.02, Math.min(1, (cx - r.left) / r.width)));
-                  };
-                  set(e.touches[0].clientX);
-                  const onMove = (ev: TouchEvent) => {
-                    ev.preventDefault();
-                    set(ev.touches[0].clientX);
-                  };
-                  const onEnd = () => {
-                    window.removeEventListener('touchmove', onMove);
-                    window.removeEventListener('touchend', onEnd);
-                  };
-                  window.addEventListener('touchmove', onMove, { passive: false });
-                  window.addEventListener('touchend', onEnd);
-                }}
-              >
-                <div
-                  className="absolute top-1/2 -translate-y-1/2 left-0 right-0 rounded-full"
-                  style={{ height: 4, background: '#C4A06015' }}
-                />
-                <div
-                  className="absolute top-1/2 -translate-y-1/2 left-0 rounded-full"
-                  style={{
-                    height: 4,
-                    width: `${volume * 100}%`,
-                    background: 'linear-gradient(90deg, #C4A06030, #C4A060)',
-                  }}
-                />
-                <div
-                  className="absolute top-1/2 rounded-full"
-                  style={{
-                    left: `${volume * 100}%`,
-                    width: 14,
-                    height: 14,
-                    background: '#C4A060',
-                    transform: 'translate(-50%, -50%)',
-                    boxShadow: '0 2px 6px rgba(196,160,96,0.4)',
-                  }}
-                />
-              </div>
-              <span
-                style={{
-                  fontFamily: 'var(--font-serif)',
-                  fontSize: '12px',
-                  color: '#C4A060',
-                  fontWeight: 600,
-                  width: 40,
-                  flexShrink: 0,
                 }}
               >
                 {Math.round(volume * 100)}%
@@ -3649,18 +3822,22 @@ export default function BinauralTuner() {
 
           {/* Harmony — musical intervals that fit the base tone */}
           <div className="px-2">
-            <p
-              className="text-center mb-2 uppercase"
-              style={{
-                fontFamily: 'var(--font-serif)',
-                fontSize: '14px',
-                fontWeight: 700,
-                color: '#5C3018',
-                letterSpacing: '0.18em',
-              }}
-            >
-              Harmonics · {baseFreq}Hz
-            </p>
+            <div className="mb-3 flex justify-center">
+              <span
+                className="flex items-center uppercase rounded-full px-5 py-1.5"
+                style={{
+                  fontFamily: 'var(--font-serif)',
+                  fontSize: '14px',
+                  fontWeight: 700,
+                  color: '#C4A060',
+                  letterSpacing: '0.18em',
+                  background: '#C4A06015',
+                  border: '1px solid #C4A06040',
+                }}
+              >
+                Harmonics · {baseFreq}Hz
+              </span>
+            </div>
             {/* Bigger harmony pills — 2-column grid on phone, 5 across on
                 desktop so the 10 over+under-tones all fit without cramming.
                 Each card: big dot, label, ratio line, Hz. */}
@@ -3732,18 +3909,22 @@ export default function BinauralTuner() {
 
           {/* Sacred frequencies — Solfeggio + 432Hz */}
           <div className="px-2">
-            <p
-              className="text-center mb-2 uppercase"
-              style={{
-                fontFamily: 'var(--font-serif)',
-                fontSize: '14px',
-                fontWeight: 700,
-                color: '#5C3018',
-                letterSpacing: '0.18em',
-              }}
-            >
-              Sacred Frequencies
-            </p>
+            <div className="mb-3 flex justify-center">
+              <span
+                className="flex items-center uppercase rounded-full px-5 py-1.5"
+                style={{
+                  fontFamily: 'var(--font-serif)',
+                  fontSize: '14px',
+                  fontWeight: 700,
+                  color: '#C4A060',
+                  letterSpacing: '0.18em',
+                  background: '#C4A06015',
+                  border: '1px solid #C4A06040',
+                }}
+              >
+                Sacred Frequencies
+              </span>
+            </div>
             {/* 2-per-row cards on phone (3-per-row on desktop). Each
                 card shows the Hz number big on top with the descriptor
                 ("om", "foundation", "healing"…) right below it. Much
@@ -3826,56 +4007,162 @@ export default function BinauralTuner() {
 
           {/* Generative melodies */}
           <div className="px-2">
-            <p
-              className="text-center mb-2"
-              style={{
-                fontFamily: 'var(--font-serif)',
-                fontSize: '12px',
-                color: '#7A5438',
-              }}
-            >
-              melodies
-            </p>
-            <div className="flex flex-wrap justify-center gap-1.5">
-              {MELODIES.map((m) => {
-                const isOn = activeMelodies.has(m.id);
-                return (
-                  <button
-                    key={m.id}
-                    type="button"
-                    onClick={() => {
-                      setActiveMelodies((prev) => {
-                        const next = new Set(prev);
-                        if (next.has(m.id)) next.delete(m.id);
-                        else next.add(m.id);
-                        return next;
-                      });
-                    }}
-                    className="flex cursor-pointer items-center gap-1.5 rounded-full px-2.5 py-1.5 transition-all"
-                    style={{
-                      background: isOn ? `${m.color}18` : 'transparent',
-                      border: `1px solid ${isOn ? `${m.color}40` : '#C4A06010'}`,
-                    }}
-                  >
-                    <span
-                      className="block rounded-full"
-                      style={{ width: 7, height: 7, background: m.color, opacity: isOn ? 1 : 0.3 }}
-                    />
-                    <span
-                      style={{
-                        fontFamily: 'var(--font-serif)',
-                        fontSize: '12px',
-                        fontWeight: isOn ? 700 : 500,
-                        color: isOn ? m.color : '#8A6A4A',
-                        opacity: isOn ? 1 : 0.8,
-                      }}
-                    >
-                      {m.label}
-                    </span>
-                  </button>
-                );
-              })}
+            <div className="mb-3 flex justify-center">
+              <span
+                className="flex items-center uppercase rounded-full px-5 py-1.5"
+                style={{
+                  fontFamily: 'var(--font-serif)',
+                  fontSize: '14px',
+                  fontWeight: 700,
+                  color: '#C4A060',
+                  letterSpacing: '0.18em',
+                  background: '#C4A06015',
+                  border: '1px solid #C4A06040',
+                }}
+              >
+                Melodies
+              </span>
             </div>
+            {/* Real instruments live in their own horizontal scroll
+                strip above the synthesized melodies. They're recorded
+                CC0 samples (cello, sax, harp, etc) — distinct enough
+                in character that pulling them out of the synth grid
+                makes the surface easier to scan. Each card carries a
+                tiny ♪ glyph in the instrument's colour as a stand-in
+                for proper silhouettes. */}
+            {(() => {
+              const realMelodies = MELODIES.filter((m) => m.sampledPack);
+              const synthMelodies = MELODIES.filter((m) => !m.sampledPack);
+              return (
+                <>
+                  {realMelodies.length > 0 && (
+                    <div className="mb-3">
+                      <p
+                        className="mb-1.5 text-center uppercase"
+                        style={{
+                          fontFamily: 'var(--font-serif)',
+                          fontSize: '10px',
+                          fontWeight: 700,
+                          color: '#8A6A4A',
+                          letterSpacing: '0.18em',
+                          opacity: 0.65,
+                        }}
+                      >
+                        Real Instruments
+                      </p>
+                      <div
+                        className="flex gap-2 overflow-x-auto pb-1"
+                        style={{ scrollbarWidth: 'none' }}
+                      >
+                        {realMelodies.map((m) => {
+                          const isOn = activeMelodies.has(m.id);
+                          return (
+                            <button
+                              key={m.id}
+                              type="button"
+                              onClick={() => {
+                                setActiveMelodies((prev) => {
+                                  const next = new Set(prev);
+                                  if (next.has(m.id)) next.delete(m.id);
+                                  else next.add(m.id);
+                                  return next;
+                                });
+                              }}
+                              className="shrink-0 cursor-pointer rounded-2xl px-4 py-3 transition-all"
+                              style={{
+                                background: isOn ? `${m.color}1E` : `${m.color}08`,
+                                border: `1.5px solid ${isOn ? `${m.color}60` : `${m.color}20`}`,
+                                minWidth: 96,
+                              }}
+                              aria-pressed={isOn}
+                            >
+                              <div
+                                className="mb-1 flex items-center justify-center"
+                                style={{
+                                  width: 28,
+                                  height: 28,
+                                  borderRadius: '50%',
+                                  margin: '0 auto',
+                                  background: `${m.color}25`,
+                                  border: `1px solid ${m.color}50`,
+                                }}
+                              >
+                                <span
+                                  style={{
+                                    fontFamily: 'var(--font-serif)',
+                                    fontSize: 16,
+                                    color: m.color,
+                                    opacity: isOn ? 1 : 0.7,
+                                    lineHeight: 1,
+                                  }}
+                                >
+                                  ♪
+                                </span>
+                              </div>
+                              <p
+                                className="text-center"
+                                style={{
+                                  fontFamily: 'var(--font-serif)',
+                                  fontSize: '12px',
+                                  fontWeight: isOn ? 700 : 600,
+                                  color: isOn ? m.color : '#5C3018',
+                                  opacity: isOn ? 1 : 0.8,
+                                  lineHeight: 1.1,
+                                  whiteSpace: 'nowrap',
+                                }}
+                              >
+                                {m.label.replace(/^Real /, '')}
+                              </p>
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  )}
+                  {/* Synth melodies — 2 per row on phone, 3 on sm, 5 md+. */}
+                  <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 md:grid-cols-5">
+                    {synthMelodies.map((m) => {
+                      const isOn = activeMelodies.has(m.id);
+                      return (
+                        <button
+                          key={m.id}
+                          type="button"
+                          onClick={() => {
+                            setActiveMelodies((prev) => {
+                              const next = new Set(prev);
+                              if (next.has(m.id)) next.delete(m.id);
+                              else next.add(m.id);
+                              return next;
+                            });
+                          }}
+                          className="flex cursor-pointer items-center justify-center rounded-2xl px-3 py-3 transition-all"
+                          style={{
+                            background: isOn ? `${m.color}1E` : `${m.color}08`,
+                            border: `1px solid ${isOn ? `${m.color}60` : `${m.color}20`}`,
+                            minHeight: 56,
+                          }}
+                          aria-pressed={isOn}
+                        >
+                          <span
+                            className="text-center"
+                            style={{
+                              fontFamily: 'var(--font-serif)',
+                              fontSize: '13px',
+                              fontWeight: isOn ? 700 : 600,
+                              color: isOn ? m.color : '#5C3018',
+                              opacity: isOn ? 1 : 0.7,
+                              lineHeight: 1.15,
+                            }}
+                          >
+                            {m.label}
+                          </span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </>
+              );
+            })()}
             {/* Scale selector */}
             <div className="flex flex-wrap justify-center gap-1 pt-1">
               {Object.entries(MELODY_SCALES).map(([id, s]) => (
@@ -3902,19 +4189,19 @@ export default function BinauralTuner() {
                   [
                     {
                       label: 'speed',
-                      color: '#9B6BA0',
+                      color: '#B85A8A', // warm rose — energy
                       value: melodySpeed / 100,
                       onChange: (v: number) => setMelodySpeed(Math.round(v * 100)),
                     },
                     {
                       label: 'reverb',
-                      color: '#A0907A',
+                      color: '#5AA8B0', // teal — space
                       value: melodyReverb / 100,
                       onChange: (v: number) => setMelodyReverb(Math.round(v * 100)),
                     },
                     {
                       label: 'volume',
-                      color: '#C4A060',
+                      color: '#D4805A', // warm orange — presence
                       value: melodyVolume,
                       onChange: (v: number) => setMelodyVolume(v),
                     },
@@ -3924,15 +4211,15 @@ export default function BinauralTuner() {
                   return (
                     <div key={s.label} className="flex items-center gap-3">
                       <span
-                        className="shrink-0 text-right uppercase"
+                        className="shrink-0 text-left uppercase"
                         style={{
                           fontFamily: 'var(--font-serif)',
                           fontSize: '11px',
                           letterSpacing: '0.12em',
                           color: s.color,
-                          opacity: 0.85,
-                          fontWeight: 600,
-                          width: 56,
+                          opacity: 0.9,
+                          fontWeight: 700,
+                          width: 64,
                         }}
                       >
                         {s.label}
@@ -3972,18 +4259,156 @@ export default function BinauralTuner() {
             )}
           </div>
 
+          {/* Effects — wah + echo on the melody chain */}
+          <div className="px-2">
+            <div className="mb-3 flex justify-center">
+              <span
+                className="flex items-center uppercase rounded-full px-5 py-1.5"
+                style={{
+                  fontFamily: 'var(--font-serif)',
+                  fontSize: '14px',
+                  fontWeight: 700,
+                  color: '#C4A060',
+                  letterSpacing: '0.18em',
+                  background: '#C4A06015',
+                  border: '1px solid #C4A06040',
+                }}
+              >
+                Effects
+              </span>
+            </div>
+            <div className="mx-auto max-w-md space-y-3">
+              {/* Wah */}
+              <div className="flex items-center gap-3">
+                <button
+                  type="button"
+                  onClick={() => setWahOn((s) => !s)}
+                  className="shrink-0 rounded-full px-3 py-1.5 transition-all cursor-pointer"
+                  style={{
+                    background: wahOn ? '#B85A8A20' : 'transparent',
+                    border: `1.5px solid ${wahOn ? '#B85A8A' : '#B85A8A40'}`,
+                    color: wahOn ? '#B85A8A' : '#7A5438',
+                    fontFamily: 'var(--font-serif)',
+                    fontSize: '11px',
+                    fontWeight: 700,
+                    letterSpacing: '0.16em',
+                    textTransform: 'uppercase',
+                    width: 80,
+                  }}
+                  aria-pressed={wahOn}
+                >
+                  Wah
+                </button>
+                <button
+                  type="button"
+                  className="flex flex-1 cursor-pointer items-center justify-between bg-transparent"
+                  style={{ border: 'none', padding: '4px 0', opacity: wahOn ? 1 : 0.4 }}
+                  onClick={(e) => {
+                    const r = (e.currentTarget as HTMLElement).getBoundingClientRect();
+                    setWahSpeed(Math.max(0, Math.min(1, (e.clientX - r.left) / r.width)));
+                  }}
+                  aria-label="Wah speed"
+                >
+                  {Array.from({ length: 20 }, (_, i) => {
+                    const ratio = i / 19;
+                    const filled = ratio <= wahSpeed;
+                    return (
+                      <span
+                        key={i}
+                        className="block rounded-full transition-all"
+                        style={{
+                          width: filled ? 8 : 5,
+                          height: filled ? 8 : 5,
+                          background: '#B85A8A',
+                          opacity: filled ? 0.55 + ratio * 0.4 : 0.2,
+                        }}
+                      />
+                    );
+                  })}
+                </button>
+              </div>
+              {/* Echo */}
+              <div className="flex items-center gap-3">
+                <button
+                  type="button"
+                  onClick={() => setEchoOn((s) => !s)}
+                  className="shrink-0 rounded-full px-3 py-1.5 transition-all cursor-pointer"
+                  style={{
+                    background: echoOn ? '#5AA8B020' : 'transparent',
+                    border: `1.5px solid ${echoOn ? '#5AA8B0' : '#5AA8B040'}`,
+                    color: echoOn ? '#5AA8B0' : '#7A5438',
+                    fontFamily: 'var(--font-serif)',
+                    fontSize: '11px',
+                    fontWeight: 700,
+                    letterSpacing: '0.16em',
+                    textTransform: 'uppercase',
+                    width: 80,
+                  }}
+                  aria-pressed={echoOn}
+                >
+                  Echo
+                </button>
+                <button
+                  type="button"
+                  className="flex flex-1 cursor-pointer items-center justify-between bg-transparent"
+                  style={{ border: 'none', padding: '4px 0', opacity: echoOn ? 1 : 0.4 }}
+                  onClick={(e) => {
+                    const r = (e.currentTarget as HTMLElement).getBoundingClientRect();
+                    setEchoAmount(Math.max(0, Math.min(1, (e.clientX - r.left) / r.width)));
+                  }}
+                  aria-label="Echo amount"
+                >
+                  {Array.from({ length: 20 }, (_, i) => {
+                    const ratio = i / 19;
+                    const filled = ratio <= echoAmount;
+                    return (
+                      <span
+                        key={i}
+                        className="block rounded-full transition-all"
+                        style={{
+                          width: filled ? 8 : 5,
+                          height: filled ? 8 : 5,
+                          background: '#5AA8B0',
+                          opacity: filled ? 0.55 + ratio * 0.4 : 0.2,
+                        }}
+                      />
+                    );
+                  })}
+                </button>
+              </div>
+              <p
+                className="text-center italic"
+                style={{
+                  fontFamily: 'var(--font-serif)',
+                  fontSize: '11px',
+                  color: '#8A6A4A',
+                  opacity: 0.6,
+                  marginTop: 6,
+                }}
+              >
+                effects route on the melody chain
+              </p>
+            </div>
+          </div>
+
           {/* Voice / Poetry */}
           <div className="px-2">
-            <p
-              className="text-center mb-2"
-              style={{
-                fontFamily: 'var(--font-serif)',
-                fontSize: '12px',
-                color: '#7A5438',
-              }}
-            >
-              voices
-            </p>
+            <div className="mb-3 flex justify-center">
+              <span
+                className="flex items-center uppercase rounded-full px-5 py-1.5"
+                style={{
+                  fontFamily: 'var(--font-serif)',
+                  fontSize: '14px',
+                  fontWeight: 700,
+                  color: '#C4A060',
+                  letterSpacing: '0.18em',
+                  background: '#C4A06015',
+                  border: '1px solid #C4A06040',
+                }}
+              >
+                Voices
+              </span>
+            </div>
             <div className="flex justify-center gap-2">
               {(['off', 'affirmations', 'meditation', 'poetry'] as const).map((mode) => {
                 const isOn = voiceMode === mode;
@@ -4131,8 +4556,9 @@ export default function BinauralTuner() {
             </button>
             {layersOpen && (
               <div className="animate-in fade-in duration-150 space-y-2 pt-1">
-                {/* Layer softness control — smooth bar + click-to-explain label */}
-                <div className="flex items-center justify-center gap-2">
+                {/* Layer softness — circle-dot slider, no greys, same
+                    long format as the speed/reverb/volume sliders. */}
+                <div className="mx-auto flex max-w-md items-center gap-3 px-1">
                   <InfoTooltip
                     title="Layer Softness (Reverb)"
                     content={
@@ -4144,30 +4570,34 @@ export default function BinauralTuner() {
                         </p>
                         <p style={{ margin: '8px 0 0 0' }}>
                           Technically it's a shared reverb bus that all active layers run through,
-                          so the whole mix breathes together. The percentage is how much of each
-                          layer is sent into that bus.
+                          so the whole mix breathes together.
                         </p>
                       </>
                     }
                     trigger={
                       <span
+                        className="shrink-0 text-left uppercase"
                         style={{
                           fontFamily: 'var(--font-serif)',
-                          fontSize: '13px',
-                          fontWeight: 600,
-                          color: '#7A5438',
-                          letterSpacing: '0.02em',
-                          borderBottom: '1px dotted #7A543860',
+                          fontSize: '11px',
+                          letterSpacing: '0.12em',
+                          color: '#9B6BA0',
+                          opacity: 0.9,
+                          fontWeight: 700,
+                          width: 88,
+                          borderBottom: '1px dotted #9B6BA060',
                           paddingBottom: 1,
                         }}
                       >
-                        layer softness
+                        Softness
                       </span>
                     }
                   />
-                  <div
-                    className="relative cursor-pointer"
-                    style={{ width: 120, height: 14 }}
+                  <button
+                    type="button"
+                    aria-label={`Layer softness ${layerReverb}%`}
+                    className="flex flex-1 cursor-pointer items-center justify-between bg-transparent"
+                    style={{ border: 'none', padding: '4px 0' }}
                     onClick={(e) => {
                       const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
                       setLayerReverb(
@@ -4177,36 +4607,30 @@ export default function BinauralTuner() {
                       );
                     }}
                   >
-                    <div
-                      className="absolute top-1/2 -translate-y-1/2 left-0 right-0 rounded-full"
-                      style={{ height: 4, background: '#C4A06015' }}
-                    />
-                    <div
-                      className="absolute top-1/2 -translate-y-1/2 left-0 rounded-full"
-                      style={{
-                        height: 4,
-                        width: `${layerReverb}%`,
-                        background: 'linear-gradient(90deg, #A0907A30, #A0907A)',
-                      }}
-                    />
-                    <div
-                      className="absolute top-1/2 rounded-full"
-                      style={{
-                        left: `${layerReverb}%`,
-                        width: 12,
-                        height: 12,
-                        background: '#A0907A',
-                        transform: 'translate(-50%, -50%)',
-                        boxShadow: '0 1px 3px rgba(160,144,122,0.5)',
-                      }}
-                    />
-                  </div>
+                    {Array.from({ length: 20 }, (_, i) => {
+                      const ratio = i / 19;
+                      const filled = ratio <= layerReverb / 100;
+                      return (
+                        <span
+                          key={i}
+                          className="block rounded-full transition-all"
+                          style={{
+                            width: filled ? 8 : 5,
+                            height: filled ? 8 : 5,
+                            background: '#9B6BA0',
+                            opacity: filled ? 0.55 + ratio * 0.4 : 0.2,
+                          }}
+                        />
+                      );
+                    })}
+                  </button>
                   <span
+                    className="hidden md:inline"
                     style={{
                       fontFamily: 'var(--font-serif)',
-                      fontSize: '12px',
+                      fontSize: '11px',
                       fontWeight: 600,
-                      color: '#8A6A4A',
+                      color: '#9B6BA0',
                       width: 30,
                       flexShrink: 0,
                       textAlign: 'right',
@@ -4265,69 +4689,69 @@ export default function BinauralTuner() {
                   );
                 })()}
 
-                {/* Phone: horizontal group tab strip + single-column list */}
+                {/* Phone: horizontal category tab strip + single-column list.
+                    Categories now group by character (Waters / Birds /
+                    Drones / Textures / Digital) instead of engineering
+                    taxonomy. */}
                 <div className="md:hidden">
                   <div className="flex gap-1.5 overflow-x-auto mb-2 pb-1">
-                    {(['real', 'nature', 'tones', 'texture', 'ambient'] as const).map((group) => {
-                      const groupColors: Record<string, string> = {
-                        real: '#D4805A',
-                        nature: '#7AAA58',
-                        tones: '#C4A060',
-                        texture: '#A0907A',
-                        ambient: '#6890B0',
-                      };
-                      const isActive = activeLayerGroup === group;
+                    {CATEGORY_ORDER.map((cat) => {
+                      const isActive = activeLayerGroup === cat;
+                      const color = CATEGORY_COLORS[cat];
                       return (
                         <button
-                          key={group}
+                          key={cat}
                           type="button"
-                          onClick={() => setActiveLayerGroup(group)}
+                          onClick={() => setActiveLayerGroup(cat)}
                           className="shrink-0 cursor-pointer rounded-full px-3 py-1.5 uppercase tracking-[0.14em] transition-all"
                           style={{
                             fontFamily: 'var(--font-serif)',
                             fontSize: 12,
                             fontWeight: 700,
-                            color: isActive ? groupColors[group] : '#8A6A4A',
-                            background: isActive ? `${groupColors[group]}15` : 'transparent',
-                            border: `1px solid ${isActive ? `${groupColors[group]}60` : '#C4A06018'}`,
+                            color: isActive ? color : '#8A6A4A',
+                            background: isActive ? `${color}15` : 'transparent',
+                            border: `1px solid ${isActive ? `${color}60` : '#C4A06018'}`,
                           }}
                         >
-                          {group}
+                          {CATEGORY_LABELS[cat]}
                         </button>
                       );
                     })}
                   </div>
                   <div className="space-y-1.5">
-                    {ALL_LAYERS.filter((l) => l.group === activeLayerGroup).map((l) => {
+                    {ALL_LAYERS.filter((l) => getLayerCategory(l) === activeLayerGroup).map((l) => {
                       const vol = activeLayers[l.id] || 0;
                       const isOn = vol > 0;
                       return (
-                        <div key={l.id} className="space-y-0.5">
+                        <div key={l.id} className="space-y-1">
                           <button
                             type="button"
                             onClick={() => toggleLayer(l.id)}
-                            className="flex w-full cursor-pointer items-center gap-2 rounded-lg px-3 py-2.5 transition-all"
+                            className="flex w-full cursor-pointer items-center gap-2.5 rounded-2xl px-4 py-3 transition-all"
                             style={{
-                              background: isOn ? `${l.color}15` : 'transparent',
-                              border: `1px solid ${isOn ? `${l.color}35` : '#C4A06010'}`,
-                              minHeight: 44,
+                              background: isOn ? `${l.color}1E` : `${l.color}08`,
+                              border: `1.5px solid ${isOn ? `${l.color}60` : `${l.color}22`}`,
+                              minHeight: 52,
                             }}
+                            aria-pressed={isOn}
                           >
                             <span
                               className="block rounded-full shrink-0"
                               style={{
-                                width: 10,
-                                height: 10,
+                                width: 12,
+                                height: 12,
                                 background: l.color,
-                                opacity: isOn ? 1 : 0.7,
+                                opacity: isOn ? 1 : 0.6,
                               }}
                             />
                             <span
                               style={{
                                 fontFamily: 'var(--font-serif)',
-                                fontSize: 14,
-                                fontWeight: isOn ? 700 : 500,
+                                fontSize: isOn ? 17 : 16,
+                                fontWeight: isOn ? 700 : 600,
                                 color: l.color,
+                                opacity: isOn ? 1 : 0.85,
+                                lineHeight: 1.2,
                               }}
                             >
                               {l.label}
@@ -4336,7 +4760,7 @@ export default function BinauralTuner() {
                           {isOn && (
                             <button
                               type="button"
-                              className="flex w-full gap-[3px] px-2 py-1 cursor-pointer"
+                              className="flex w-full cursor-pointer items-center justify-between px-2 py-1.5"
                               onClick={(e) => {
                                 const rect = (
                                   e.currentTarget as HTMLElement
@@ -4350,17 +4774,26 @@ export default function BinauralTuner() {
                               aria-label={`${l.label} volume`}
                               style={{ background: 'none', border: 'none' }}
                             >
-                              {Array.from({ length: 8 }, (_, i) => (
-                                <div
-                                  key={i}
-                                  className="flex-1 rounded-[3px] transition-all"
-                                  style={{
-                                    height: 10,
-                                    background: l.color,
-                                    opacity: i / 7 <= vol ? 0.55 + (i / 7) * 0.4 : 0.15,
-                                  }}
-                                />
-                              ))}
+                              {Array.from({ length: 20 }, (_, i) => {
+                                const ratio = i / 19;
+                                const filled = ratio <= vol;
+                                return (
+                                  <span
+                                    key={i}
+                                    className="block rounded-full transition-all"
+                                    style={{
+                                      width: filled ? 9 : 5,
+                                      height: filled ? 9 : 5,
+                                      // Soft hue shift: blend the layer color with the
+                                      // next group's accent so the slider reads as a
+                                      // gradient rather than a flat colour wash.
+                                      background: l.color,
+                                      filter: `hue-rotate(${(ratio * 18 - 9).toFixed(0)}deg) saturate(${(0.85 + ratio * 0.3).toFixed(2)})`,
+                                      opacity: filled ? 0.55 + ratio * 0.4 : 0.18,
+                                    }}
+                                  />
+                                );
+                              })}
                             </button>
                           )}
                         </div>
@@ -4369,67 +4802,69 @@ export default function BinauralTuner() {
                   </div>
                 </div>
 
-                {/* Desktop: the original 5-column grid stays unchanged. */}
+                {/* Desktop: 5-column grid using the new character-led
+                    categories (Waters / Birds & Forest / Drones &
+                    Voices / Textures / Digital). */}
                 <div className="hidden md:grid md:grid-cols-5 md:gap-1.5">
-                  {(['real', 'nature', 'tones', 'texture', 'ambient'] as const).map((group) => {
-                    const groupColors: Record<string, string> = {
-                      real: '#D4805A',
-                      nature: '#7AAA58',
-                      tones: '#C4A060',
-                      texture: '#A0907A',
-                      ambient: '#6890B0',
-                    };
+                  {CATEGORY_ORDER.map((cat) => {
+                    const color = CATEGORY_COLORS[cat];
                     return (
-                      <div key={group} className="space-y-1">
+                      <div key={cat} className="space-y-1">
                         <p
                           className="uppercase tracking-[0.14em] text-center"
                           style={{
                             fontFamily: 'var(--font-serif)',
                             fontSize: '12px',
                             fontWeight: 700,
-                            color: groupColors[group] || '#5C3018',
+                            color,
                           }}
                         >
-                          {group}
+                          {CATEGORY_LABELS[cat]}
                         </p>
-                        {ALL_LAYERS.filter((l) => l.group === group).map((l) => {
+                        {ALL_LAYERS.filter((l) => getLayerCategory(l) === cat).map((l) => {
                           const vol = activeLayers[l.id] || 0;
                           const isOn = vol > 0;
                           return (
-                            <div key={l.id} className="space-y-0.5">
+                            <div key={l.id} className="space-y-1">
                               <button
                                 type="button"
                                 onClick={() => toggleLayer(l.id)}
-                                className="flex w-full cursor-pointer items-center gap-1.5 rounded-lg px-2 py-1.5 transition-all"
+                                className="flex w-full cursor-pointer items-center gap-2 rounded-xl px-3 py-2.5 transition-all"
                                 style={{
-                                  background: isOn ? `${l.color}15` : 'transparent',
-                                  border: `1px solid ${isOn ? `${l.color}35` : '#C4A06010'}`,
+                                  background: isOn ? `${l.color}1E` : `${l.color}06`,
+                                  border: `1px solid ${isOn ? `${l.color}55` : `${l.color}18`}`,
+                                  minHeight: 40,
                                 }}
+                                aria-pressed={isOn}
                               >
                                 <span
                                   className="block rounded-full shrink-0"
                                   style={{
-                                    width: 7,
-                                    height: 7,
+                                    width: 10,
+                                    height: 10,
                                     background: l.color,
-                                    opacity: isOn ? 1 : 0.8,
+                                    opacity: isOn ? 1 : 0.6,
                                   }}
                                 />
                                 <span
                                   style={{
                                     fontFamily: 'var(--font-serif)',
-                                    fontSize: '12px',
-                                    fontWeight: isOn ? 700 : 500,
+                                    fontSize: '14px',
+                                    fontWeight: isOn ? 700 : 600,
                                     color: l.color,
-                                    opacity: isOn ? 1 : 0.8,
+                                    opacity: isOn ? 1 : 0.85,
+                                    lineHeight: 1.15,
+                                    textAlign: 'left',
                                   }}
                                 >
                                   {l.label}
                                 </span>
                               </button>
                               {isOn && (
-                                <div
-                                  className="flex gap-[3px] px-1 cursor-pointer"
+                                <button
+                                  type="button"
+                                  className="flex w-full cursor-pointer items-center justify-between px-1 py-1"
+                                  style={{ background: 'none', border: 'none' }}
                                   onClick={(e) => {
                                     const rect = (
                                       e.currentTarget as HTMLElement
@@ -4441,18 +4876,24 @@ export default function BinauralTuner() {
                                     setLayerVol(l.id, x);
                                   }}
                                 >
-                                  {Array.from({ length: 6 }, (_, i) => (
-                                    <div
-                                      key={i}
-                                      className="flex-1 rounded-[3px] transition-all"
-                                      style={{
-                                        height: 8,
-                                        background: l.color,
-                                        opacity: i / 5 <= vol ? 0.55 + (i / 5) * 0.4 : 0.15,
-                                      }}
-                                    />
-                                  ))}
-                                </div>
+                                  {Array.from({ length: 14 }, (_, i) => {
+                                    const ratio = i / 13;
+                                    const filled = ratio <= vol;
+                                    return (
+                                      <span
+                                        key={i}
+                                        className="block rounded-full transition-all"
+                                        style={{
+                                          width: filled ? 7 : 4,
+                                          height: filled ? 7 : 4,
+                                          background: l.color,
+                                          filter: `hue-rotate(${(ratio * 18 - 9).toFixed(0)}deg) saturate(${(0.85 + ratio * 0.3).toFixed(2)})`,
+                                          opacity: filled ? 0.55 + ratio * 0.4 : 0.18,
+                                        }}
+                                      />
+                                    );
+                                  })}
+                                </button>
                               )}
                             </div>
                           );
@@ -4465,146 +4906,162 @@ export default function BinauralTuner() {
             )}
           </div>
 
-          {/* Collapsible: Genres */}
+          {/* Unified Presets pill — Genre + Brain State live under the
+              same ochre title now. One toggle opens both rows. */}
           <div className="px-2">
-            <button
-              type="button"
-              onClick={() => setGenresOpen((s) => !s)}
-              className="flex w-full cursor-pointer items-center justify-center gap-2 py-2"
-              style={{ background: 'none', border: 'none' }}
-            >
-              <span
-                className="text-center text-sm font-semibold uppercase tracking-[0.22em]"
-                style={{ color: '#C4A060' }}
-              >
-                genres
-              </span>
-              <span
-                style={{
-                  transform: genresOpen ? 'rotate(180deg)' : 'rotate(0deg)',
-                  transition: 'transform 0.2s',
-                  color: '#C4A060',
+            <div className="mb-2 flex justify-center">
+              <button
+                type="button"
+                onClick={() => {
+                  const next = !genresOpen;
+                  setGenresOpen(next);
+                  setBrainStatesOpen(next);
                 }}
+                className="flex cursor-pointer items-center gap-2 rounded-full px-5 py-1.5 transition-all"
+                style={{ background: '#C4A06015', border: '1px solid #C4A06040' }}
               >
-                ▾
-              </span>
-            </button>
-            {genresOpen && (
-              <div className="animate-in fade-in duration-150 flex flex-wrap justify-center gap-2 pt-1">
-                {GENRES.map((g) => {
-                  const isActive = activeGenre === g.id;
-                  return (
-                    <button
-                      key={g.id}
-                      type="button"
-                      onClick={() => applyGenre(g)}
-                      className="flex cursor-pointer items-center gap-1.5 rounded-full px-3 py-1.5 transition-all"
-                      style={{
-                        background: isActive ? `${g.color}18` : '#C4A06006',
-                        border: `1px solid ${isActive ? `${g.color}40` : '#C4A06015'}`,
-                      }}
-                      title={g.subtitle}
-                    >
-                      <span
-                        className="block rounded-full shrink-0"
-                        style={{
-                          width: 8,
-                          height: 8,
-                          background: g.color,
-                          opacity: isActive ? 1 : 0.7,
-                        }}
-                      />
-                      <span
-                        style={{
-                          fontFamily: 'var(--font-serif)',
-                          fontSize: '12px',
-                          fontWeight: isActive ? 700 : 500,
-                          color: isActive ? g.color : '#7A5438',
-                          opacity: isActive ? 1 : 0.8,
-                        }}
-                      >
-                        {g.label}
-                      </span>
-                    </button>
-                  );
-                })}
-              </div>
-            )}
-          </div>
-
-          {/* Collapsible: Brain States */}
-          <div className="px-2">
-            <button
-              type="button"
-              onClick={() => setBrainStatesOpen((s) => !s)}
-              className="flex w-full cursor-pointer items-center justify-center gap-2 py-2"
-              style={{ background: 'none', border: 'none' }}
-            >
-              <span
-                className="text-center text-sm font-semibold uppercase tracking-[0.22em]"
-                style={{ color: '#C4A060' }}
-              >
-                brain states
-              </span>
-              <span
-                style={{
-                  transform: brainStatesOpen ? 'rotate(180deg)' : 'rotate(0deg)',
-                  transition: 'transform 0.2s',
-                  color: '#C4A060',
-                }}
-              >
-                ▾
-              </span>
-            </button>
-            {brainStatesOpen && (
-              <div className="animate-in fade-in duration-150">
-                {/* Horizontal scroll on phone so the 6 presets stay on
-                    one row instead of wrapping into uneven 3+3 grids. */}
-                <div
-                  className="flex gap-1.5 overflow-x-auto px-2 pb-1 pt-1"
-                  style={{ scrollbarWidth: 'none' }}
+                <span
+                  className="uppercase"
+                  style={{
+                    fontFamily: 'var(--font-serif)',
+                    fontSize: '14px',
+                    fontWeight: 700,
+                    color: '#C4A060',
+                    letterSpacing: '0.18em',
+                  }}
                 >
-                  {PRESETS.map((p) => {
-                    const isActive = p.base === baseFreq && p.beat === beatFreq;
-                    const presetLayers = PRESET_LAYERS[p.id] || [];
-                    return (
-                      <button
-                        key={p.id}
-                        type="button"
-                        onClick={() => applyPresetWithLayers(p)}
-                        className="shrink-0 cursor-pointer whitespace-nowrap rounded-full px-3 py-1.5 text-left transition-all"
-                        style={{
-                          background: isActive ? `${p.color}15` : 'transparent',
-                          border: `1px solid ${isActive ? `${p.color}40` : '#C4A06015'}`,
-                        }}
-                      >
-                        <span
+                  Presets
+                </span>
+                <span
+                  className="text-sm transition-transform duration-200"
+                  style={{
+                    color: '#C4A06080',
+                    transform: genresOpen ? 'rotate(180deg)' : 'rotate(0deg)',
+                  }}
+                >
+                  ▾
+                </span>
+              </button>
+            </div>
+            {genresOpen && (
+              <div className="animate-in fade-in duration-150 space-y-3 pt-1">
+                {/* GENRE row */}
+                <div>
+                  <p
+                    className="mb-1.5 text-center uppercase"
+                    style={{
+                      fontFamily: 'var(--font-serif)',
+                      fontSize: '10px',
+                      fontWeight: 700,
+                      color: '#8A6A4A',
+                      letterSpacing: '0.18em',
+                      opacity: 0.65,
+                    }}
+                  >
+                    Genre
+                  </p>
+                  <div className="flex flex-wrap justify-center gap-2">
+                    {GENRES.map((g) => {
+                      const isActive = activeGenre === g.id;
+                      return (
+                        <button
+                          key={g.id}
+                          type="button"
+                          onClick={() => applyGenre(g)}
+                          className="flex cursor-pointer items-center gap-1.5 rounded-full px-3 py-1.5 transition-all"
                           style={{
-                            fontFamily: 'var(--font-serif)',
-                            fontSize: '12px',
-                            fontWeight: 600,
-                            color: isActive ? p.color : '#7A5438',
-                            opacity: isActive ? 1 : 0.8,
+                            background: isActive ? `${g.color}18` : '#C4A06006',
+                            border: `1px solid ${isActive ? `${g.color}40` : '#C4A06015'}`,
                           }}
+                          title={g.subtitle}
                         >
-                          {p.label}
-                        </span>
-                        {isActive && presetLayers.length > 0 && (
+                          <span
+                            className="block rounded-full shrink-0"
+                            style={{
+                              width: 8,
+                              height: 8,
+                              background: g.color,
+                              opacity: isActive ? 1 : 0.7,
+                            }}
+                          />
                           <span
                             style={{
                               fontFamily: 'var(--font-serif)',
                               fontSize: '12px',
-                              color: p.color,
-
-                              marginLeft: 4,
+                              fontWeight: isActive ? 700 : 500,
+                              color: isActive ? g.color : '#7A5438',
+                              opacity: isActive ? 1 : 0.8,
                             }}
                           >
-                            +{presetLayers.length}
+                            {g.label}
                           </span>
-                        )}
-                      </button>
-                    );
-                  })}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {/* BRAIN STATE row */}
+                <div>
+                  <p
+                    className="mb-1.5 text-center uppercase"
+                    style={{
+                      fontFamily: 'var(--font-serif)',
+                      fontSize: '10px',
+                      fontWeight: 700,
+                      color: '#8A6A4A',
+                      letterSpacing: '0.18em',
+                      opacity: 0.65,
+                    }}
+                  >
+                    Brain State
+                  </p>
+                  <div
+                    className="flex gap-1.5 overflow-x-auto px-2 pb-1 pt-1"
+                    style={{ scrollbarWidth: 'none' }}
+                  >
+                    {PRESETS.map((p) => {
+                      const isActive = p.base === baseFreq && p.beat === beatFreq;
+                      const presetLayers = PRESET_LAYERS[p.id] || [];
+                      return (
+                        <button
+                          key={p.id}
+                          type="button"
+                          onClick={() => applyPresetWithLayers(p)}
+                          className="shrink-0 cursor-pointer whitespace-nowrap rounded-full px-3 py-1.5 text-left transition-all"
+                          style={{
+                            background: isActive ? `${p.color}15` : 'transparent',
+                            border: `1px solid ${isActive ? `${p.color}40` : '#C4A06015'}`,
+                          }}
+                        >
+                          <span
+                            style={{
+                              fontFamily: 'var(--font-serif)',
+                              fontSize: '12px',
+                              fontWeight: 600,
+                              color: isActive ? p.color : '#7A5438',
+                              opacity: isActive ? 1 : 0.8,
+                            }}
+                          >
+                            {p.label}
+                          </span>
+                          {isActive && presetLayers.length > 0 && (
+                            <span
+                              style={{
+                                fontFamily: 'var(--font-serif)',
+                                fontSize: '12px',
+                                color: p.color,
+
+                                marginLeft: 4,
+                              }}
+                            >
+                              +{presetLayers.length}
+                            </span>
+                          )}
+                        </button>
+                      );
+                    })}
+                  </div>
                 </div>
               </div>
             )}

@@ -91,16 +91,21 @@ export default function DayTabs({ checkinContent, overviewContent, dateLabel }: 
 
   return (
     <div className="space-y-6">
-      <div className="space-y-1">
+      <div>
         {dateLabel && (
           <p
             className="text-center italic"
             style={{
               fontFamily: 'var(--font-serif)',
-              fontSize: '13px',
+              fontSize: '14px',
               color: '#7A5438',
               opacity: 0.7,
-              letterSpacing: '0.04em',
+              letterSpacing: '0.06em',
+              // Sits centered in the negative space between the global
+              // nav (above) and the tab strip (below) — bigger margin
+              // top + bottom so it doesn't feel squashed.
+              marginTop: 14,
+              marginBottom: 18,
             }}
           >
             {dateLabel}
