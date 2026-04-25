@@ -3261,104 +3261,140 @@ export default function BinauralTuner() {
       {/* Wave visualization with gradient fill + play button overlay.
           SVG now width="100%" + viewBox so it scales to the parent
           width. Wrapped in a bounded relative div so the overlay play
-          button pins to the SVG edge, not the page. */}
-      <div className="flex w-full justify-center">
-        <div className="relative w-full" style={{ maxWidth: 480 }}>
-          <svg
-            width="100%"
-            height={H}
-            viewBox={`0 0 ${W} ${H}`}
-            preserveAspectRatio="xMidYMid meet"
-          >
-            <defs>
-              <linearGradient id="waveGrad" x1="0" y1="0" x2="1" y2="0">
-                {RAINBOW.map((c, i) => (
-                  // index key — RAINBOW repeats #E0908A at start and end for
-                  // a wrap-around gradient, so color alone would collide.
-                  <stop
-                    key={i}
-                    offset={`${(i / (RAINBOW.length - 1)) * 100}%`}
-                    stopColor={c}
-                    stopOpacity={0.15}
+          button pins to the SVG edge, not the page.
+
+          The wave reacts to the mix: more active layers = thicker
+          stroke + a coloured halo of the dominant active layer's tone.
+          Idle = thin and quiet, full mix = thick and tinted. */}
+      {(() => {
+        // Pull the layer ids that are currently audible, find the one
+        // with the highest volume, use it as the dominant tint colour.
+        const activeIds = Object.keys(activeLayers).filter((id) => (activeLayers[id] ?? 0) > 0);
+        const dominantId = activeIds.reduce<string | null>((best, id) => {
+          const v = activeLayers[id] ?? 0;
+          if (best === null) return id;
+          return v > (activeLayers[best] ?? 0) ? id : best;
+        }, null);
+        const dominantColor =
+          (dominantId && ALL_LAYERS.find((l) => l.id === dominantId)?.color) || activeColor;
+        // Stroke gets thicker as layer count grows. Caps at 5 px so it
+        // never gets cartoonish.
+        const layerThickness = Math.min(activeIds.length * 0.5, 2.5);
+        const strokeWidth = 2.5 + layerThickness;
+        const haloOpacity = 0.08 + Math.min(activeIds.length * 0.02, 0.15);
+        return (
+          <div className="flex w-full justify-center">
+            <div className="relative w-full" style={{ maxWidth: 480 }}>
+              <svg
+                width="100%"
+                height={H}
+                viewBox={`0 0 ${W} ${H}`}
+                preserveAspectRatio="xMidYMid meet"
+              >
+                <defs>
+                  <linearGradient id="waveGrad" x1="0" y1="0" x2="1" y2="0">
+                    {RAINBOW.map((c, i) => (
+                      // index key — RAINBOW repeats #E0908A at start and end for
+                      // a wrap-around gradient, so color alone would collide.
+                      <stop
+                        key={i}
+                        offset={`${(i / (RAINBOW.length - 1)) * 100}%`}
+                        stopColor={c}
+                        stopOpacity={0.15}
+                      />
+                    ))}
+                  </linearGradient>
+                  <linearGradient id="waveStroke" x1="0" y1="0" x2="1" y2="0">
+                    {RAINBOW.map((c, i) => (
+                      <stop
+                        key={i}
+                        offset={`${(i / (RAINBOW.length - 1)) * 100}%`}
+                        stopColor={c}
+                        stopOpacity={playing ? 0.8 : 0.4}
+                      />
+                    ))}
+                  </linearGradient>
+                </defs>
+                {/* Wide soft tint of the dominant layer colour underneath
+                — the more layers active, the more it glows. */}
+                {playing && activeIds.length > 0 && (
+                  <path
+                    d={pathD}
+                    fill="none"
+                    stroke={dominantColor}
+                    strokeWidth={18}
+                    strokeLinecap="round"
+                    opacity={haloOpacity}
                   />
-                ))}
-              </linearGradient>
-              <linearGradient id="waveStroke" x1="0" y1="0" x2="1" y2="0">
-                {RAINBOW.map((c, i) => (
-                  <stop
-                    key={i}
-                    offset={`${(i / (RAINBOW.length - 1)) * 100}%`}
-                    stopColor={c}
-                    stopOpacity={playing ? 0.8 : 0.4}
-                  />
-                ))}
-              </linearGradient>
-            </defs>
-            {/* Just the wave line — rainbow fill removed per user
+                )}
+                {/* Just the wave line — rainbow fill removed per user
               feedback (clutter). Keep the subtle rainbow stroke
-              because it still reads as a single line. */}
-            <path
-              d={pathD}
-              fill="none"
-              stroke="url(#waveStroke)"
-              strokeWidth={2.5}
-              strokeLinecap="round"
-            />
-            {/* Glow when playing */}
-            {playing && (
-              <path
-                d={pathD}
-                fill="none"
-                stroke={activeColor}
-                strokeWidth={8}
-                strokeLinecap="round"
-                opacity={0.12}
-              />
-            )}
-          </svg>
-          {/* Play button — overlaid on the right */}
-          <button
-            type="button"
-            onClick={() => {
-              haptic(playing ? 'tick' : 'tap');
-              if (playing) stopAudio();
-              else startAudio();
-            }}
-            className="absolute right-2 top-1/2 -translate-y-1/2 flex cursor-pointer items-center justify-center rounded-full transition-all"
-            style={{
-              width: 36,
-              height: 36,
-              background: playing ? `${activeColor}25` : `${activeColor}10`,
-              border: `2px solid ${activeColor}${playing ? '50' : '25'}`,
-            }}
-          >
-            {playing ? (
-              <div className="flex gap-0.5">
-                <span
-                  className="block rounded-sm"
-                  style={{ width: 3, height: 12, background: activeColor }}
+              because it still reads as a single line. Stroke grows
+              with active layer count. */}
+                <path
+                  d={pathD}
+                  fill="none"
+                  stroke="url(#waveStroke)"
+                  strokeWidth={strokeWidth}
+                  strokeLinecap="round"
                 />
-                <span
-                  className="block rounded-sm"
-                  style={{ width: 3, height: 12, background: activeColor }}
-                />
-              </div>
-            ) : (
-              <span
-                className="block"
-                style={{
-                  width: 0,
-                  height: 0,
-                  borderLeft: `10px solid ${activeColor}`,
-                  borderTop: '6px solid transparent',
-                  borderBottom: '6px solid transparent',
-                  marginLeft: 1,
+                {/* Glow when playing */}
+                {playing && (
+                  <path
+                    d={pathD}
+                    fill="none"
+                    stroke={activeColor}
+                    strokeWidth={8}
+                    strokeLinecap="round"
+                    opacity={0.12}
+                  />
+                )}
+              </svg>
+              {/* Play button — overlaid on the right */}
+              <button
+                type="button"
+                onClick={() => {
+                  haptic(playing ? 'tick' : 'tap');
+                  if (playing) stopAudio();
+                  else startAudio();
                 }}
-              />
-            )}
-          </button>
-        </div>
-      </div>
+                className="absolute right-2 top-1/2 -translate-y-1/2 flex cursor-pointer items-center justify-center rounded-full transition-all"
+                style={{
+                  width: 36,
+                  height: 36,
+                  background: playing ? `${activeColor}25` : `${activeColor}10`,
+                  border: `2px solid ${activeColor}${playing ? '50' : '25'}`,
+                }}
+              >
+                {playing ? (
+                  <div className="flex gap-0.5">
+                    <span
+                      className="block rounded-sm"
+                      style={{ width: 3, height: 12, background: activeColor }}
+                    />
+                    <span
+                      className="block rounded-sm"
+                      style={{ width: 3, height: 12, background: activeColor }}
+                    />
+                  </div>
+                ) : (
+                  <span
+                    className="block"
+                    style={{
+                      width: 0,
+                      height: 0,
+                      borderLeft: `10px solid ${activeColor}`,
+                      borderTop: '6px solid transparent',
+                      borderBottom: '6px solid transparent',
+                      marginLeft: 1,
+                    }}
+                  />
+                )}
+              </button>
+            </div>
+          </div>
+        );
+      })()}
 
       {/* Wave-style picker — 4-position dot slider. Each dot represents
           one waveform style; the active one grows + brightens. Same
