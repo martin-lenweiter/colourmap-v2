@@ -4333,7 +4333,7 @@ export default function BinauralTuner() {
                           {isOn && (
                             <button
                               type="button"
-                              className="flex w-full gap-[3px] px-2 py-1 cursor-pointer"
+                              className="flex w-full cursor-pointer items-center justify-between px-2 py-1.5"
                               onClick={(e) => {
                                 const rect = (
                                   e.currentTarget as HTMLElement
@@ -4347,17 +4347,26 @@ export default function BinauralTuner() {
                               aria-label={`${l.label} volume`}
                               style={{ background: 'none', border: 'none' }}
                             >
-                              {Array.from({ length: 8 }, (_, i) => (
-                                <div
-                                  key={i}
-                                  className="flex-1 rounded-[3px] transition-all"
-                                  style={{
-                                    height: 10,
-                                    background: l.color,
-                                    opacity: i / 7 <= vol ? 0.55 + (i / 7) * 0.4 : 0.15,
-                                  }}
-                                />
-                              ))}
+                              {Array.from({ length: 20 }, (_, i) => {
+                                const ratio = i / 19;
+                                const filled = ratio <= vol;
+                                return (
+                                  <span
+                                    key={i}
+                                    className="block rounded-full transition-all"
+                                    style={{
+                                      width: filled ? 9 : 5,
+                                      height: filled ? 9 : 5,
+                                      // Soft hue shift: blend the layer color with the
+                                      // next group's accent so the slider reads as a
+                                      // gradient rather than a flat colour wash.
+                                      background: l.color,
+                                      filter: `hue-rotate(${(ratio * 18 - 9).toFixed(0)}deg) saturate(${(0.85 + ratio * 0.3).toFixed(2)})`,
+                                      opacity: filled ? 0.55 + ratio * 0.4 : 0.18,
+                                    }}
+                                  />
+                                );
+                              })}
                             </button>
                           )}
                         </div>
@@ -4425,8 +4434,10 @@ export default function BinauralTuner() {
                                 </span>
                               </button>
                               {isOn && (
-                                <div
-                                  className="flex gap-[3px] px-1 cursor-pointer"
+                                <button
+                                  type="button"
+                                  className="flex w-full cursor-pointer items-center justify-between px-1 py-1"
+                                  style={{ background: 'none', border: 'none' }}
                                   onClick={(e) => {
                                     const rect = (
                                       e.currentTarget as HTMLElement
@@ -4438,18 +4449,24 @@ export default function BinauralTuner() {
                                     setLayerVol(l.id, x);
                                   }}
                                 >
-                                  {Array.from({ length: 6 }, (_, i) => (
-                                    <div
-                                      key={i}
-                                      className="flex-1 rounded-[3px] transition-all"
-                                      style={{
-                                        height: 8,
-                                        background: l.color,
-                                        opacity: i / 5 <= vol ? 0.55 + (i / 5) * 0.4 : 0.15,
-                                      }}
-                                    />
-                                  ))}
-                                </div>
+                                  {Array.from({ length: 14 }, (_, i) => {
+                                    const ratio = i / 13;
+                                    const filled = ratio <= vol;
+                                    return (
+                                      <span
+                                        key={i}
+                                        className="block rounded-full transition-all"
+                                        style={{
+                                          width: filled ? 7 : 4,
+                                          height: filled ? 7 : 4,
+                                          background: l.color,
+                                          filter: `hue-rotate(${(ratio * 18 - 9).toFixed(0)}deg) saturate(${(0.85 + ratio * 0.3).toFixed(2)})`,
+                                          opacity: filled ? 0.55 + ratio * 0.4 : 0.18,
+                                        }}
+                                      />
+                                    );
+                                  })}
+                                </button>
                               )}
                             </div>
                           );
