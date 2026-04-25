@@ -1435,6 +1435,11 @@ export default function BinauralTuner() {
   const oscLGainRef = useRef<GainNode | null>(null);
   const oscRGainRef = useRef<GainNode | null>(null);
   const [baseFreq, setBaseFreq] = useState(60);
+  // Keep the ref in sync so playMelodyNote (stable useCallback) can
+  // tune sampled instruments to the current base frequency.
+  useEffect(() => {
+    baseFreqRef.current = baseFreq;
+  }, [baseFreq]);
   const [beatFreq, setBeatFreq] = useState(4);
   const [volume, setVolume] = useState(0.15);
   const [activeLayers, setActiveLayers] = useState<Record<string, number>>({});
@@ -1508,6 +1513,13 @@ export default function BinauralTuner() {
   const layerReverbRef = useRef<ConvolverNode | null>(null);
   const layerDryRef = useRef<GainNode | null>(null);
   const layerWetRef = useRef<GainNode | null>(null);
+  // baseFreq mirror for use inside the melody scheduler — playMelodyNote
+  // is a stable useCallback (refs-only deps) so we can't read baseFreq
+  // directly. The melody root is octave-shifted from this reference so
+  // the melody actually sits in tune with the user's chosen drone
+  // (e.g. 528Hz, 432Hz, 174Hz). Without this the melody plays a fixed
+  // C-rooted scale regardless of context.
+  const baseFreqRef = useRef(60);
   // Harmony tones — musical intervals relative to base frequency.
   // Ordered low → high so the row reads like a pitch ladder. Below 1×
   // are subharmonics (undertones) which ground the mix with warmth;
@@ -1806,7 +1818,17 @@ export default function BinauralTuner() {
     // oscillator stack below.
     if (melDef.sampledPack) {
       const octavesFromCenter = Math.floor(noteIdx / 12);
-      const baseNote = 261.63 * 2 ** (melDef.octave - 4);
+      // Tune the melody root to the current base frequency so the
+      // sampled instrument actually sits with the drone instead of
+      // playing a fixed C-rooted scale. Octave-shift baseFreq into a
+      // singing register (~C4 ± a fourth), then apply the
+      // instrument's octave preference. Without this, the nylon
+      // guitar / cello / etc. sound out of tune with the chosen
+      // sacred frequency or harmonic.
+      let referenceRoot = baseFreqRef.current || 261.63;
+      while (referenceRoot < 180) referenceRoot *= 2;
+      while (referenceRoot >= 360) referenceRoot /= 2;
+      const baseNote = referenceRoot * 2 ** (melDef.octave - 4);
       const freq = baseNote * 2 ** (noteIdx / 12);
       const output = melodyDryRef.current ?? gain;
       // Per-note volume × user-controlled melodyVolume (0-1).
@@ -1858,7 +1880,12 @@ export default function BinauralTuner() {
     if (finalOctave < 1) safeOctaveOffset += 12 * (1 - finalOctave);
     else if (finalOctave > 7) safeOctaveOffset -= 12 * (finalOctave - 7);
 
-    const baseNote = 261.63 * 2 ** (melDef.octave - 4); // C of the octave
+    // Same base-freq-aware tuning as the sampled path so synth voices
+    // also sit with the drone.
+    let referenceRoot = baseFreqRef.current || 261.63;
+    while (referenceRoot < 180) referenceRoot *= 2;
+    while (referenceRoot >= 360) referenceRoot /= 2;
+    const baseNote = referenceRoot * 2 ** (melDef.octave - 4);
     const freq = baseNote * 2 ** ((noteIdx + safeOctaveOffset) / 12);
 
     const osc = ctx.createOscillator();
@@ -3735,7 +3762,7 @@ export default function BinauralTuner() {
                       style={{
                         width: filled ? 8 : 5,
                         height: filled ? 8 : 5,
-                        background: '#C4A060',
+                        background: SLIDER_PROGRESSIONS.volume[i],
                         opacity: filled ? 0.55 + ratio * 0.4 : 0.2,
                       }}
                     />
@@ -4261,7 +4288,7 @@ export default function BinauralTuner() {
                         style={{
                           width: filled ? 8 : 5,
                           height: filled ? 8 : 5,
-                          background: '#B85A8A',
+                          background: SLIDER_PROGRESSIONS.wah[i],
                           opacity: filled ? 0.55 + ratio * 0.4 : 0.2,
                         }}
                       />
@@ -4310,7 +4337,7 @@ export default function BinauralTuner() {
                         style={{
                           width: filled ? 8 : 5,
                           height: filled ? 8 : 5,
-                          background: '#5AA8B0',
+                          background: SLIDER_PROGRESSIONS.echo[i],
                           opacity: filled ? 0.55 + ratio * 0.4 : 0.2,
                         }}
                       />
@@ -4559,7 +4586,7 @@ export default function BinauralTuner() {
                           style={{
                             width: filled ? 8 : 5,
                             height: filled ? 8 : 5,
-                            background: '#9B6BA0',
+                            background: SLIDER_PROGRESSIONS.softness[i],
                             opacity: filled ? 0.55 + ratio * 0.4 : 0.2,
                           }}
                         />
@@ -5724,6 +5751,108 @@ const RAINBOW = [
   '#C8A8C8',
   '#E0908A',
 ];
+
+// Per-slider colour progressions for the chill-machine inline dot
+// sliders. Each is a 20-step palette (matches the 20 dots) running
+// from a soft tint at the low end to a saturated note of the
+// slider's identity colour at the high end. Picked so each slider
+// reads as a "one-fluid-thing" gradient rather than a flat colour
+// wash. Per Martin 2026-04-25: "make all chill sliders rainbow or
+// colour progressions".
+const SLIDER_PROGRESSIONS = {
+  // Volume: pale gold → deep amber
+  volume: [
+    '#F2E4C0',
+    '#EEDDB0',
+    '#EAD6A0',
+    '#E6CF90',
+    '#E2C880',
+    '#DEC174',
+    '#D8B868',
+    '#D2AF5C',
+    '#CCA650',
+    '#C49C48',
+    '#BC9240',
+    '#B48838',
+    '#AC7E30',
+    '#A4742A',
+    '#9A6A24',
+    '#90601E',
+    '#86561A',
+    '#7C4C16',
+    '#724212',
+    '#683810',
+  ],
+  // Wah: pale rose → magenta-violet
+  wah: [
+    '#F0D8E4',
+    '#ECCCDC',
+    '#E8C0D4',
+    '#E4B4CC',
+    '#E0A8C4',
+    '#DC9CBC',
+    '#D490B4',
+    '#CC84AC',
+    '#C478A4',
+    '#BC6C9C',
+    '#B46094',
+    '#AC548C',
+    '#A44884',
+    '#9C3C7C',
+    '#943074',
+    '#88286C',
+    '#7C2064',
+    '#70185C',
+    '#641054',
+    '#58084C',
+  ],
+  // Echo: pale aqua → deep teal-blue
+  echo: [
+    '#D8EEEC',
+    '#C8E6E2',
+    '#B8DED8',
+    '#A8D6CE',
+    '#98CEC4',
+    '#88C6BA',
+    '#78BCB0',
+    '#68B2A6',
+    '#5CA89C',
+    '#509E92',
+    '#449488',
+    '#388A7E',
+    '#308074',
+    '#28766A',
+    '#206C60',
+    '#186258',
+    '#125850',
+    '#0E4E48',
+    '#0A4440',
+    '#083A38',
+  ],
+  // Layer softness: pale lavender → deep violet
+  softness: [
+    '#EBDFEC',
+    '#E2D2E4',
+    '#D9C5DC',
+    '#D0B8D4',
+    '#C7ABCC',
+    '#BE9EC4',
+    '#B591BC',
+    '#AC84B4',
+    '#A37CAC',
+    '#9A74A4',
+    '#916C9C',
+    '#886494',
+    '#7F5C8C',
+    '#765484',
+    '#6D4C7C',
+    '#644474',
+    '#5C3C6C',
+    '#543464',
+    '#4C2C5C',
+    '#442454',
+  ],
+} as const;
 
 function SliderRow({
   label,
