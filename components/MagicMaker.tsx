@@ -1,8 +1,8 @@
 'use client';
 
 import { useCallback, useEffect, useRef, useState } from 'react';
-
 import { playSampledNote, type SamplePackId } from '@/lib/sample-pack';
+import { type SaveStatus, saveToNotebook } from '@/lib/save-to-notebook';
 
 /* ═══════════════════════════════════════════════════════════
    MAGIC MAKER — visual sound instrument.
@@ -424,6 +424,33 @@ export default function MagicMaker() {
   const [recording, setRecording] = useState(false);
   const [loopPlaying, setLoopPlaying] = useState(false);
   const [loopDurationIdx, setLoopDurationIdx] = useState(1); // default 4s
+  const [momentStatus, setMomentStatus] = useState<SaveStatus>(null);
+
+  /**
+   * Save the current Magic Maker state to the user's Notebook.
+   * Captures root + scale + instrument + palette + active loop
+   * layers so the user can find this exact pattern later.
+   */
+  async function saveMomentToNotebook() {
+    setMomentStatus('saving');
+    const lines = [
+      `Root ${root} · scale ${scaleId} · ${octaves} octave${octaves === 1 ? '' : 's'}`,
+      `Instrument ${instrumentId} · palette ${paletteId}`,
+      `Volume ${Math.round(volume * 100)}%`,
+    ];
+    if (loopLayers.length > 0) {
+      lines.push(`${loopLayers.length} loop layer${loopLayers.length === 1 ? '' : 's'} recorded`);
+    }
+    if (cruising) {
+      lines.push(`Cruise pattern: ${cruisePattern}`);
+    }
+    const result = await saveToNotebook({
+      tool: 'magic-maker',
+      content: lines.join('\n'),
+    });
+    setMomentStatus(result);
+    setTimeout(() => setMomentStatus(null), 1800);
+  }
   const [loopProgress, setLoopProgress] = useState(0); // 0-1 for timeline
   const [loopScaleId, setLoopScaleId] = useState('pentatonic');
   const recordStartRef = useRef(0);
@@ -1632,6 +1659,36 @@ export default function MagicMaker() {
             ))}
           </div>
         )}
+      </div>
+
+      {/* Save this pattern → Notebook (Ideas). Mirrors the
+          Chill / Groove "→ notebook" buttons so saved snapshots
+          from every tool land in one place. */}
+      <div className="px-2">
+        <button
+          type="button"
+          onClick={saveMomentToNotebook}
+          disabled={momentStatus === 'saving'}
+          className="mx-auto block cursor-pointer rounded-xl px-4 py-2.5 transition-all hover:opacity-85 disabled:opacity-50"
+          style={{
+            background: momentStatus === 'saved' ? '#7AAA5815' : '#9B6BA010',
+            border: `1.5px solid ${momentStatus === 'saved' ? '#7AAA5840' : '#9B6BA040'}`,
+            color: momentStatus === 'saved' ? '#7AAA58' : '#9B6BA0',
+            fontFamily: 'var(--font-serif)',
+            fontSize: '12px',
+            fontWeight: 600,
+            letterSpacing: '0.16em',
+            textTransform: 'uppercase',
+          }}
+        >
+          {momentStatus === 'saving'
+            ? '…'
+            : momentStatus === 'saved'
+              ? '✓ saved to notebook'
+              : momentStatus === 'error'
+                ? 'error · try again'
+                : '→ save to notebook'}
+        </button>
       </div>
 
       {/* ── COLLAPSIBLE SETTINGS DRAWER ── */}
