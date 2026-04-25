@@ -1,0 +1,458 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Colourmap — Vision &amp; Growth, April 2026</title>
+<style>
+@page { size: A4; margin: 22mm 18mm; }
+* { box-sizing: border-box; }
+body {
+  font-family: 'Georgia', 'Garamond', serif;
+  color: #3A2418;
+  background: #F5E8C8;
+  line-height: 1.55;
+  font-size: 12.5pt;
+  margin: 0;
+}
+h1 {
+  font-size: 32pt;
+  font-style: italic;
+  font-weight: normal;
+  color: #B33A2B;
+  letter-spacing: 0.04em;
+  margin: 0 0 0.2em 0;
+  page-break-after: avoid;
+}
+h2 {
+  font-size: 20pt;
+  color: #5C3018;
+  font-weight: normal;
+  font-style: italic;
+  margin-top: 1.6em;
+  margin-bottom: 0.4em;
+  border-bottom: 1px dotted #B89C76;
+  padding-bottom: 0.25em;
+  page-break-after: avoid;
+}
+h3 {
+  font-size: 14pt;
+  color: #7A5438;
+  font-weight: 600;
+  margin-top: 1.3em;
+  margin-bottom: 0.3em;
+  letter-spacing: 0.02em;
+}
+h4 {
+  font-size: 12pt;
+  color: #8A6A4A;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  margin-top: 1em;
+  margin-bottom: 0.3em;
+}
+.lede {
+  font-size: 14pt;
+  font-style: italic;
+  color: #6A4A2A;
+  border-left: 3px solid #C4A060;
+  padding-left: 14px;
+  margin: 1em 0 1.5em 0;
+}
+p { margin: 0.5em 0; }
+ul, ol { padding-left: 1.4em; margin: 0.4em 0; }
+li { margin-bottom: 0.25em; }
+strong { color: #5C3018; }
+em { color: #7A5438; }
+.tag {
+  display: inline-block;
+  font-size: 9pt;
+  color: #fff;
+  background: #B33A2B;
+  padding: 2px 9px;
+  border-radius: 11px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  vertical-align: middle;
+  margin-right: 6px;
+}
+.section-card {
+  background: rgba(255,255,255,0.42);
+  border: 1px solid #B89C76;
+  border-radius: 10px;
+  padding: 16px 20px;
+  margin: 1.4em 0;
+}
+.section-card h2 { margin-top: 0.2em; border: none; }
+.section-card h3 { margin-top: 0.6em; }
+.subhead { font-size: 10.5pt; color: #8A6A4A; letter-spacing: 0.08em; text-transform: uppercase; }
+.divider {
+  text-align: center;
+  margin: 2em 0;
+  color: #C4A060;
+  letter-spacing: 0.5em;
+  font-size: 11pt;
+}
+.brand {
+  font-family: 'Georgia', serif;
+  font-style: italic;
+  color: #B33A2B;
+  font-weight: bold;
+}
+.footer {
+  margin-top: 3em;
+  padding-top: 1em;
+  border-top: 1px dotted #B89C76;
+  font-style: italic;
+  font-size: 10.5pt;
+  color: #8A6A4A;
+  text-align: center;
+}
+.toc {
+  background: rgba(255,255,255,0.4);
+  border: 1px solid #C4A060;
+  border-radius: 10px;
+  padding: 14px 18px;
+  margin: 1em 0 2em 0;
+}
+.toc h3 { margin-top: 0; }
+.toc ol { padding-left: 1.6em; }
+.tldr {
+  background: #F0DFB6;
+  border-left: 4px solid #B33A2B;
+  padding: 10px 14px;
+  margin: 0.8em 0;
+  font-style: italic;
+}
+.dot {
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  vertical-align: middle;
+  margin-right: 6px;
+}
+.connections {
+  font-size: 10pt;
+  color: #8A6A4A;
+  font-style: italic;
+  margin-top: 0.8em;
+}
+table {
+  border-collapse: collapse;
+  margin: 0.6em 0;
+  width: 100%;
+}
+td, th {
+  border: 1px solid #C4A06040;
+  padding: 6px 10px;
+  font-size: 11pt;
+  vertical-align: top;
+}
+th {
+  background: #EEDFC4;
+  font-weight: 700;
+  color: #5C3018;
+  text-align: left;
+}
+</style>
+</head>
+<body>
+
+<p class="subhead">Master vision · 2026-04-25</p>
+<h1>Colourmap — Vision &amp; Growth</h1>
+<p class="lede">A consolidated map of where this app is going — assembled from the specs and conversations of the last few weeks. Not a feature list. A theory of <em>why</em>, then the shape of <em>how</em>, then a concrete <em>what next</em>.</p>
+
+<div class="toc">
+<h3>What's in this document</h3>
+<ol>
+<li>The thesis — what we are actually building</li>
+<li>The five surfaces — Day, Music, Notebook, Circles, Overview</li>
+<li>The Music story — Chill ↔ Groove unity, 7 soundscapes, deep bass, atmospheres</li>
+<li>The Social story — Circles, salons, parties, venues</li>
+<li>The Overview story — progression, beauty, ethical gamification</li>
+<li>Design system + adaptive direction</li>
+<li>Growth strategy — €0-budget social media (salons → nights → festivals)</li>
+<li>The 90-day plan — what ships first</li>
+<li>Risks &amp; honest tradeoffs</li>
+</ol>
+</div>
+
+<div class="divider">· · ·</div>
+
+<h2>1 · The thesis</h2>
+<p class="lede">Colourmap is a place where <strong>people who already love each other</strong> tend to their inner lives and make things together — calmly, beautifully, without performing for strangers.</p>
+
+<p>It's not a productivity app, not a meditation app, not a music app, not a social network — although it touches all four. It's the <em>connective tissue</em> between an artist's solo work, their close circle, and the rooms they show up in.</p>
+
+<p>The bet underneath every decision: a generation of late-20s-to-40s urban creatives is exhausted by platforms that optimize for engagement and ad spend. They want a small intentional space that holds their music, their weekly check-ins, their band, their salon — without selling them content or comparing them to strangers.</p>
+
+<div class="tldr">
+We are building <strong>Patagonia of social</strong>, not Meta. Smaller, more honest, more sustainable. Ceiling: 5–50M users globally paying €5–10/month with deep retention. Not a billion users; never going for that.
+</div>
+
+<h3>The five core human needs current platforms don't deliver</h3>
+<table>
+<tr><th>Need</th><th>Current platforms give</th><th>What's missing</th></tr>
+<tr><td>Belonging — "I have a group"</td><td>Algorithmic feed of strangers</td><td>Real small-group presence</td></tr>
+<tr><td>Expression — "I made something"</td><td>Performance for likes</td><td>Witness without audit</td></tr>
+<tr><td>Witness — "someone sees me"</td><td>Vanity metrics</td><td>Quiet attention</td></tr>
+<tr><td>Connection — "I know you"</td><td>DMs that decay</td><td>Persistent gentle threads</td></tr>
+<tr><td>Tribe — "we share something"</td><td>Hashtags / fandoms</td><td>Active making together</td></tr>
+</table>
+
+<h3>Three founding principles</h3>
+<ol>
+<li><strong>Small-group first, public-feed never.</strong> No global feed. Activity visible only to your Circles. Default = private.</li>
+<li><strong>Time-bound, not permanent.</strong> Check-ins live for the day. Posts decay. Party Circles last a week. Permanence is a bug; it forces you to perform for an imagined future audience.</li>
+<li><strong>Making together, not posting alone.</strong> The unit of social action shifts from "post" → "co-create." Songs made with friends. Groove sessions. Synchronized check-ins.</li>
+</ol>
+
+<div class="divider">· · ·</div>
+
+<h2>2 · The five surfaces</h2>
+<p>Colourmap is small on purpose. Five surfaces, no more.</p>
+
+<div class="section-card">
+<h3><span class="dot" style="background:#D4805A"></span>Day</h3>
+<p class="subhead">where you check in with yourself</p>
+<p>The cockpit. Two big dots — <strong>Feeling</strong> and <strong>Doing</strong> — open into 60-second guided check-ins. Captures tone, energy, current objective, what you're working on. Twice a day at most. The base layer everything else reads from.</p>
+</div>
+
+<div class="section-card">
+<h3><span class="dot" style="background:#3A6890"></span>Music</h3>
+<p class="subhead">how you set your inner weather</p>
+<p>Two tools, one engine. <strong>Chill Machine</strong> = atmosphere creator (binaural drone, sacred frequencies, layered field-recording soundscapes, melodic instruments). <strong>Groove Machine</strong> = generative beat box that consumes atmospheres from Chill as backgrounds and adds rhythm + chord motion. 7 curated soundscapes (Tech House → Lofi Rooftop) cover the full mood spectrum.</p>
+</div>
+
+<div class="section-card">
+<h3><span class="dot" style="background:#9B6BA0"></span>Notebook</h3>
+<p class="subhead">where the inner life leaves a trace</p>
+<p>Lightweight markdown-flavoured note-taking with multiple notebooks (Notes, Ideas, Journal, Songs, Projects, Rhymes, Practice, Lessons). Per-note typography + colour. AI helpers for songwriting (chorus, verse, chords, bridge). Saved sound moments from Chill and Groove auto-land here.</p>
+</div>
+
+<div class="section-card">
+<h3><span class="dot" style="background:#7AAA58"></span>Circles</h3>
+<p class="subhead">a shared space to align missions and become effective in the process</p>
+<p>The social primitive. 5–30 people who share a context (band, friend group, coworking space, party, retreat). No follow, no feed, no public profile. Activity inside a Circle: each member's daily check-in (compass colour visible), shared missions with owners + due dates, low-volume notes, presence indicator. <em>The first real test will be running our own band's project on it.</em></p>
+</div>
+
+<div class="section-card">
+<h3><span class="dot" style="background:#C4A060"></span>Overview</h3>
+<p class="subhead">where you see the shape of who you've been</p>
+<p>The reflective surface. Seven layers: <strong>Now Bar</strong> (one calm sentence summarizing the present) → <strong>Week Shape</strong> (heat-river of feeling + doing across 7 days) → <strong>Compass flower</strong> (4-axis radar of inner / doing / care / play balance) → <strong>Track Lines</strong> (dots-per-pursuit momentum view) → <strong>Soundscape Garden</strong> (constellation of where you've been musically) → <strong>Quiet Notes</strong> (random old fragment surfaced) → <strong>Slow Wins</strong> (gentle milestones quietly noticed).</p>
+</div>
+
+<div class="divider">· · ·</div>
+
+<h2>3 · The Music story</h2>
+
+<h3>Chill Machine — atmosphere</h3>
+<p>The atmosphere creator. Five layer categories (Waters / Birds &amp; Forest / Drones &amp; Voices / Textures / Digital). Real instruments scrolling strip (piano, violin, cello, flute, harp, etc., all CC0 sample packs). Wave visualization that reacts to active layers. Effects (wah, echo) on the melody chain. Per-slider colour progressions. Tunes melodies to context (the user's chosen base frequency).</p>
+<p><strong>Coming:</strong> a deep-bass / shamanic family — didgeridoo, throat singing, Tibetan gong, slow LFO sub-bass. "Shamanic dubstep" — chest-pressure low end at heart-rate tempo. Differentiates the calm side from every other meditation app on the market.</p>
+
+<h3>Groove Machine — rhythm + motion</h3>
+<p>15-voice generative beat box with 4 dynamics modes (Full / Breakdown / Drop / Silence) + Randomize. <strong>7 curated soundscapes</strong>, each its own bpm + swing + pattern + chord progression + voice palette:</p>
+
+<table>
+<tr><th>Preset</th><th>BPM</th><th>References</th></tr>
+<tr><td>Sun-up Funk</td><td>112</td><td>Daft Punk · Jamiroquai · golden hour</td></tr>
+<tr><td>Tech House</td><td>124</td><td>Berlin late-night · Kompakt</td></tr>
+<tr><td>Tropical</td><td>104</td><td>Kygo sunset · steel pan + marimba</td></tr>
+<tr><td>Slow Roll</td><td>78</td><td>R&amp;B bedroom soul</td></tr>
+<tr><td>Boom Bap</td><td>90</td><td>Biggie · Nas · J Dilla · 1995</td></tr>
+<tr><td>Epic Electro</td><td>126</td><td>Justice · Discovery · Madeon</td></tr>
+<tr><td>Lofi Rooftop</td><td>82</td><td>Nujabes · J Dilla · study beats</td></tr>
+</table>
+
+<p>Big-dot picker UI. Tap a dot → engine reconfigures. Long term: bar-aligned tempo+key-matched cross-fades so the wandering between them feels like one continuous piece.</p>
+
+<h3>The unity — Chill as atmosphere for Groove</h3>
+<p>Chill stays Chill (atmosphere creator). Groove gains an <strong>Atmosphere</strong> strip that consumes saved soundscapes from Chill and plays them as the bed under the rhythm. Two tools, one shared sound library (<code>lib/sound-library.ts</code>). The unity is plumbing, not UI — Chill builders' atmospheres flow into Groove sessions automatically.</p>
+
+<h3>Long-term — calm ↔ fire blend arcs + collective control</h3>
+<p>A session becomes a sequence of moods (e.g. <em>calm 4m → rising 1m → groove 5m → drop 15s → groove 4m → breakdown 1m → return to calm 3m</em>). Pre-built arcs: <em>Sunrise</em>, <em>Workout</em>, <em>Long focus</em>, <em>Party</em>, <em>Free</em>. Music isn't always intense — silence and breathing are first-class.</p>
+<p>In Circle mode, three collective-control modes:</p>
+<ul>
+<li><strong>Vote axis</strong> — every phone has one calm↔fire slider; room takes the average.</li>
+<li><strong>Solo rotation</strong> — one person gets full DJ for 3 minutes, then it rotates.</li>
+<li><strong>Team-of-3</strong> — a trio shares control (mood / layer / intensity), forced collaboration.</li>
+</ul>
+
+<div class="divider">· · ·</div>
+
+<h2>4 · The Social story</h2>
+
+<h3>Circles — the building block</h3>
+<p>5–30 people sharing a context. No follow. No feed. No public profile. Types:</p>
+<ul>
+<li><strong>Persistent personal</strong> — your band, close friends, weekly meditation group.</li>
+<li><strong>Event Circles</strong> — last 7 days for a salon / party / retreat. Auto-archive.</li>
+<li><strong>Coworking Circles</strong> — same data, different mode. Quiets at session end.</li>
+<li><strong>Venue Circles</strong> — temporary 3-hour Circle for everyone checked into a partnered bar / café.</li>
+</ul>
+
+<h3>Profile — anti-LinkedIn</h3>
+<pre style="font-family:Georgia,serif; font-size:11pt; background:#EEDFC4; padding:12px 16px; border-left:3px solid #C4A060; margin:0.6em 0;">
+ML  Martin Lenweiter
+    musician · designer · Paris
+
+  ✦ today's compass · easing / focus
+  ✦ what I'm building · Colourmap
+  ✦ what I'm listening to · Kitchen Light loop #3
+
+  links · soundcloud · instagram · website · email
+</pre>
+<p>The status updates daily, driven by morning compass. Links are stable. People meet you <em>in time</em> (right now I'm in this state), not in static identity.</p>
+
+<h3>The party scenario — 20–30 people downloading at the door</h3>
+<p>Three reasons people actually pull out their phone at a party:</p>
+<ol>
+<li><strong>The music belongs to me too.</strong> Without the app you're a passive listener. With it you tap a button and the room's mix shifts.</li>
+<li><strong>The exit ticket is in your pocket.</strong> Each guest gets a 90-second souvenir — their two minutes of "having the wheel" + names of everyone who was there. Only via the app.</li>
+<li><strong>Your tribe is here, not on Instagram.</strong> Tonight, the people in this room are the network. The app holds the small Circle of people you actually met.</li>
+</ol>
+
+<h3>Venue partnerships</h3>
+<p>Curated bars / cafés / cowork spots become nodes on the Colourmap map. Each shows: how many users currently checked in, the room's "vibe" (aggregate compass state), what's playing. Foot traffic on slow Tuesdays. Curated Colourmap nights monthly. Revenue: €100–300/mo per venue + 80/20 split on curated event door donations.</p>
+<p><strong>Aesthetic safeguard:</strong> independent natural-wine bars, bookshop-cafés, creative coworking spots, small concert venues. <em>If the venue would put a Coca-Cola sticker in their window, it's not a Colourmap venue.</em></p>
+
+<div class="divider">· · ·</div>
+
+<h2>5 · The Overview story</h2>
+<p class="lede">Open the app on a Sunday morning. Before you tap anything, you see what your week was. Not as numbers — as a <em>shape</em>. The shape is recognizable: it looks like <em>your</em> week. You feel a small <em>yes, that was me</em>.</p>
+
+<h3>Three feelings to evoke</h3>
+<ol>
+<li><strong>Recognition</strong> — that's me.</li>
+<li><strong>Beauty</strong> — I want to keep looking at this.</li>
+<li><strong>Insight</strong> — I learned something I didn't know.</li>
+</ol>
+
+<h3>The seven layers (top to bottom)</h3>
+<ol>
+<li><strong>Now Bar</strong> — one sentence summarizing the present moment. Generated locally.</li>
+<li><strong>Week Shape</strong> — horizontal heat-river of feeling + doing across 7 days. The visible streak. No counters.</li>
+<li><strong>Compass flower</strong> — 4-axis radar (Inner / Doing / Care / Play). Petals bloom or wilt based on the past 14 days.</li>
+<li><strong>Track Lines</strong> — horizontal lines, one per pursuit (project, song, habit). Each ● = a session. Faded trailing dots = momentum slipping.</li>
+<li><strong>Soundscape Garden</strong> — constellation of soundscapes you've touched. Dots pulse with time spent. Tap to re-enter.</li>
+<li><strong>Quiet Notes</strong> — randomly-rotated fragment from your old notes. The Memory layer.</li>
+<li><strong>Slow Wins</strong> — gentle milestones surfaced after the fact. <em>"You've checked in 30 days in a row." "Your evening sessions are getting longer."</em></li>
+</ol>
+
+<h3>The ethical gamification stance</h3>
+<p>What we DON'T do: points, levels, leaderboards, streak warnings, badges, notifications-to-engagement. The bet: people are intrinsically motivated by <strong>seeing themselves</strong>, not by points. Especially this audience.</p>
+
+<div class="divider">· · ·</div>
+
+<h2>6 · Design system + adaptive direction</h2>
+<p>Today the codebase has a <em>direction</em> (warm earth palette, serif/handwritten typography, soft borders) but not yet a <em>system</em>. Every component reinvents spacing / font-size / colour. That's why every cockpit polish iteration takes another round.</p>
+
+<h3>The fix — two threads in parallel</h3>
+<ol>
+<li><strong>Lift design decisions into tokens.</strong> A handful of typed constants in <code>lib/design-tokens.ts</code> for space / fontSize / colours / radii / touch. Adopted per-touch, no rewrite.</li>
+<li><strong>Move from breakpoint-based to context-based adaptation.</strong> Container queries + viewport units + a real <code>useViewport()</code> hook. <code>100dvh</code> for cockpit so iOS Safari address-bar collapse stops jumping the layout.</li>
+</ol>
+
+<h3>Three target classes</h3>
+<table>
+<tr><th>Class</th><th>What changes</th></tr>
+<tr><td>Phone (≤600px)</td><td>Single column · text 15–16px base · touch 44×44 · safe-area-inset on every fixed element</td></tr>
+<tr><td>Tablet (601–1024px)</td><td>2-column where desktop has 3 · drawer-style sub-panels · touch-first</td></tr>
+<tr><td>Desktop (1025px+)</td><td>Multi-column · hover affordances · keyboard shortcuts visible · cap at ~1400px</td></tr>
+</table>
+
+<div class="divider">· · ·</div>
+
+<h2>7 · Growth strategy — €0-budget social media</h2>
+<p class="lede">The cheapest customer acquisition is people who already love each other in the same room. Build for that. Resist every temptation to scale it any way that removes the room.</p>
+
+<h3>Four stages, each self-funded</h3>
+<ol>
+<li><strong>The Salon (months 0–3, 6–12 people)</strong> — single small evening in a single living room. The app guides 90 minutes (check-in, music, reflection). Marginal cost per attendee = €0. 70% of guests tell 2 friends within a week.</li>
+<li><strong>The Underground Night (months 3–9, 30–80 people)</strong> — monthly venue evening. Donation door covers venue. Out-of-pocket from us = €0.</li>
+<li><strong>Experiments + Expos (months 6–18)</strong> — strange-enough things people <em>want to write about</em>: 24-hour Salon, Silent Salon, Cooking Salon, Gallery Night, Co-living week. Stories travel. Press is free.</li>
+<li><strong>Festivals (months 12–24)</strong> — small art festival or design week installations. The festival pays the booth. Press in design + art outlets.</li>
+</ol>
+
+<h3>What we never do</h3>
+<ul>
+<li>Paid ads (Google / Meta / TikTok)</li>
+<li>Influencer partnerships</li>
+<li>Hire a marketer (founders are the marketers until ~100k MAU)</li>
+<li>PR firms</li>
+<li>Conferences as attendees (only as exhibitors with a free booth)</li>
+</ul>
+
+<h3>90-day cost projection</h3>
+<p>Total spend: <strong>under €500.</strong> Reach: plausibly <strong>200–400 people in the app</strong>, all of whom touched it through someone they trusted.</p>
+
+<div class="divider">· · ·</div>
+
+<h2>8 · The 90-day plan</h2>
+<p>Concrete shipping order. Each item is half a day to a few days.</p>
+
+<h3>Now (in flight)</h3>
+<ul>
+<li>NowBar component at top of Overview tab</li>
+<li>LifeCategoriesStrip — slidable big-dot life map</li>
+<li>Feeling/Doing palette picker (10 curated colour pairs)</li>
+<li>Groove Machine 7 soundscapes catalogue + big-dot picker</li>
+<li>Wider AppShell + bigger objective inputs</li>
+<li>Save-this-moment → Notebook from Chill + Groove</li>
+</ul>
+
+<h3>Month 1</h3>
+<ul>
+<li>Circle Missions schema + UI (the band test)</li>
+<li>Compass-colour avatar ring on Circle members</li>
+<li>"What else I'm working on" tile</li>
+<li>Sound library extraction (lib/sound-library.ts)</li>
+<li>Atmosphere strip in Groove Machine</li>
+</ul>
+
+<h3>Month 2</h3>
+<ul>
+<li>SoundSessionProvider + global mini-player</li>
+<li>Salon Mode preset (host-flow with sequenced surfaces)</li>
+<li>Run Salon #1 with our own friends</li>
+<li>Deep-bass / shamanic Chill layer family</li>
+<li>Overview Layer 2 — Week Shape (heat-river)</li>
+</ul>
+
+<h3>Month 3</h3>
+<ul>
+<li>Compass flower (Layer 3)</li>
+<li>Track Lines (Layer 4)</li>
+<li>Salons #2–#5 across 5 cities (recruit hosts)</li>
+<li>Underground Night #1 in our city</li>
+<li>Profile page (compass colour + 3 links + one-sentence)</li>
+</ul>
+
+<div class="divider">· · ·</div>
+
+<h2>9 · Risks and honest tradeoffs</h2>
+<table>
+<tr><th>Risk</th><th>What we accept</th></tr>
+<tr><td>Small forever</td><td>Ceiling: 5–50M globally paying €5–10/mo. Patagonia of social, not Meta. More sustainable, less spectacular, more honest.</td></tr>
+<tr><td>Slow to acquire</td><td>Without a public feed, virality is muted. 6–12 months to 10k users. Word-of-mouth + events.</td></tr>
+<tr><td>Venue ops are hard</td><td>Partnership management, dead-Tuesday nights, bad weather. Operational rigour required.</td></tr>
+<tr><td>Privacy / GDPR</td><td>Proximity-based meeting needs careful opt-in. Legal layer matters.</td></tr>
+<tr><td>Aesthetic policing</td><td>"No Coca-Cola venues" sounds elitist. Need careful press framing.</td></tr>
+<tr><td>Founder taste risk</td><td>Vision is musician-led. If Martin steps back, curation collapses. Need succession plan year 2+.</td></tr>
+</table>
+
+<div class="divider">· · ·</div>
+
+<h2>Closing</h2>
+<p class="lede">Wake up alone → check in → quiet music → Circle of friends sees your colour today → coworking session → evening event → 90-second souvenir → tomorrow morning, a friend from the event is now in your Circle.</p>
+<p>That's the loop the app holds. None of the existing platforms hold this loop. The work for the next 90 days is closing the gaps in that loop, one PR at a time, in our own band's living room first.</p>
+
+<div class="footer">
+<span class="brand">Colourmap</span> · From organization to clarity.<br>
+Master vision document, written 2026-04-25 · consolidates ~15 individual specs<br>
+Created by Vikash and Martin
+</div>
+
+</body>
+</html>
