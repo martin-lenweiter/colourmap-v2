@@ -3060,7 +3060,7 @@ export default function BinauralTuner() {
             color: '#5C3018',
           }}
         >
-          Relaxing Sounds
+          Chill Machine
         </p>
         {/* Status strip — one-line readout of everything audible right
             now. Makes it impossible for a stuck layer or drum bed to
