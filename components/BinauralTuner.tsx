@@ -23,15 +23,11 @@ const WAVE_STYLES: { id: WaveStyle; label: string }[] = [
   { id: 'zigzag', label: 'zigzag' },
 ];
 
-// ── Soft-beat bed (gentle percussion on a user-chosen tempo) ──
-type BeatPreset = 'off' | 'heartbeat' | 'walking' | 'dance';
-const BEAT_PRESETS: { id: BeatPreset; label: string; intervalMs: number }[] = [
-  { id: 'off', label: 'off', intervalMs: 0 },
-  { id: 'heartbeat', label: 'heartbeat', intervalMs: 857 }, // ~70 BPM
-  { id: 'walking', label: 'walking', intervalMs: 600 }, // 100 BPM
-  { id: 'dance', label: 'dance', intervalMs: 500 }, // 120 BPM
-];
-const BEAT_SAMPLE_URL = '/sounds/drums/Djembe.ogg';
+// Soft-beat bed (Djembe drum pattern) was deleted from Chill Machine
+// after a stuck-state bug kept the drums playing on every page load
+// even after multiple "fix" attempts. The Chill surface is now drum-
+// free; rhythmic percussion lives in Groove Machine instead. Sample
+// files at public/sounds/drums/ remain for Groove Machine use.
 
 // ── Brain state presets ──
 const PRESETS = [
@@ -1463,37 +1459,31 @@ export default function BinauralTuner() {
       /* silent */
     }
   }, [waveStyle]);
-  const [beatPreset, setBeatPreset] = useState<BeatPreset>('off');
-  const [beatVolume, setBeatVolume] = useState(0.3);
-  const beatTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
-  const beatBufferRef = useRef<AudioBuffer | null>(null);
-  const beatGainRef = useRef<GainNode | null>(null);
+  // beatPreset / beatVolume / beatTimer / beatBuffer / beatGain
+  // intentionally absent — beat-bed feature deleted from Chill Machine.
+  // Old localStorage keys are purged once on mount so any persisted
+  // 'heartbeat' / 'walking' / 'dance' value cannot reanimate.
   useEffect(() => {
     try {
-      const stored = localStorage.getItem('colourmap:beat-preset');
-      if (stored && BEAT_PRESETS.some((b) => b.id === stored)) {
-        setBeatPreset(stored as BeatPreset);
-      }
-      const v = Number.parseFloat(localStorage.getItem('colourmap:beat-volume') ?? '');
-      if (!Number.isNaN(v) && v >= 0 && v <= 1) setBeatVolume(v);
+      localStorage.removeItem('colourmap:beat-preset');
+      localStorage.removeItem('colourmap:beat-volume');
     } catch {
       /* silent */
     }
   }, []);
-  useEffect(() => {
-    try {
-      localStorage.setItem('colourmap:beat-preset', beatPreset);
-    } catch {
-      /* silent */
-    }
-  }, [beatPreset]);
+  // Placeholder kept to preserve the surrounding useEffect's [beatVolume]
+  // dependency declarations elsewhere; kept as a constant so the value
+  // exists for the (no-op) beatVolume save effect below.
+  const [beatVolume, _setBeatVolume] = useState(0.3);
   useEffect(() => {
     try {
       localStorage.setItem('colourmap:beat-volume', String(beatVolume));
     } catch {
       /* silent */
     }
-    if (beatGainRef.current) beatGainRef.current.gain.value = beatVolume;
+    // beatGainRef gone with the rest of the beat-bed feature; nothing
+    // to update on beatVolume change. Kept the state purely so old
+    // saved-mix loads don't crash on `setBeatVolume` references.
   }, [beatVolume]);
   const warmth = 0.3; // always-on gentle warmth for smoother sound
   const filterFreq = 5000; // wide open — no muffling
@@ -3025,59 +3015,11 @@ export default function BinauralTuner() {
     }
   }, [tremolo, volume]);
 
-  // Soft-beat bed — schedules a percussion sample at the chosen tempo.
-  // Uses a dedicated gain node so beat volume is independent of main.
-  useEffect(() => {
-    const ctx: AudioContext | null = ctxRef.current;
-    if (!ctx || !playing || beatPreset === 'off') return;
-    const interval = BEAT_PRESETS.find((b) => b.id === beatPreset)?.intervalMs ?? 0;
-    if (!interval) return;
-
-    let cancelled = false;
-    const gain = ctx.createGain();
-    gain.gain.value = beatVolume;
-    gain.connect(ctx.destination);
-    beatGainRef.current = gain;
-
-    async function start() {
-      if (!beatBufferRef.current) {
-        try {
-          const res = await fetch(BEAT_SAMPLE_URL);
-          const buf = await res.arrayBuffer();
-          if (!ctx) return;
-          const decoded = await ctx.decodeAudioData(buf);
-          beatBufferRef.current = decoded;
-        } catch {
-          return;
-        }
-      }
-      if (cancelled) return;
-      const play = () => {
-        if (cancelled || !ctxRef.current || !beatBufferRef.current) return;
-        const src = ctxRef.current.createBufferSource();
-        src.buffer = beatBufferRef.current;
-        src.connect(gain);
-        src.start();
-      };
-      play();
-      beatTimerRef.current = setInterval(play, interval);
-    }
-    start();
-
-    return () => {
-      cancelled = true;
-      if (beatTimerRef.current) {
-        clearInterval(beatTimerRef.current);
-        beatTimerRef.current = null;
-      }
-      try {
-        gain.disconnect();
-      } catch {
-        /* already disconnected */
-      }
-      beatGainRef.current = null;
-    };
-  }, [playing, beatPreset, beatVolume]);
+  // Soft-beat bed scheduler — DELETED. Used to fetch /sounds/drums/
+  // Djembe.ogg and loop it forever; multiple "fix" attempts at killing
+  // the auto-restoration left the door open and users still heard the
+  // djembe on every page load. Nuked from Chill Machine. Rhythmic
+  // percussion lives in Groove Machine.
 
   useEffect(() => {
     return () => {
@@ -3211,7 +3153,7 @@ export default function BinauralTuner() {
                 .filter(Boolean);
               parts.push(labels.join(' · '));
             }
-            if (beatPreset !== 'off') parts.push(`${beatPreset} drums`);
+            // beat-bed deleted — no drums in Chill Machine status
             if (activeMelodies.size > 0) parts.push(`${activeMelodies.size} melodies`);
             if (activeSacred.size > 0) parts.push(`${activeSacred.size} sacred`);
           }
