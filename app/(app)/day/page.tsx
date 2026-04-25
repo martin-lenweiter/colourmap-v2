@@ -3,6 +3,7 @@
 import CategoryCompass from '@/components/CategoryCompass';
 import CheckInPing from '@/components/CheckInPing';
 import CompassCarousel from '@/components/CompassCarousel';
+import CompassFlower from '@/components/CompassFlower';
 import DailyAgenda from '@/components/DailyAgenda';
 import DayRail from '@/components/DayRail';
 import DayTabs from '@/components/DayTabs';
@@ -12,8 +13,12 @@ import LifeCategories from '@/components/LifeCategories';
 import LifeCategoriesEmptyState from '@/components/LifeCategoriesEmptyState';
 import LifeCategoriesStrip from '@/components/LifeCategoriesStrip';
 import NowBar from '@/components/NowBar';
+import QuietNotes from '@/components/QuietNotes';
 import ReflectBox from '@/components/ReflectBox';
+import SlowWins from '@/components/SlowWins';
+import SoundscapeGarden from '@/components/SoundscapeGarden';
 import { StyleProvider } from '@/components/StyleContext';
+import TrackLines from '@/components/TrackLines';
 
 function DayContent() {
   const dateStr = new Date().toLocaleDateString('en-GB', {
@@ -44,6 +49,11 @@ function DayContent() {
               <LifeCategoriesEmptyState />
               <NowBar />
               <LifeCategoriesStrip />
+              <CompassFlower />
+              <TrackLines />
+              <SoundscapeGarden />
+              <QuietNotes />
+              <SlowWins />
               <CompassCarousel />
               <CategoryCompass />
               <LifeCategories />
