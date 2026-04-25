@@ -3306,28 +3306,63 @@ export default function BinauralTuner() {
         </div>
       </div>
 
-      {/* Wave-style picker — pick the visual shape of the waveform */}
-      <div className="flex flex-wrap justify-center gap-1.5">
-        {WAVE_STYLES.map((w) => {
-          const isActive = waveStyle === w.id;
-          return (
-            <button
-              key={w.id}
-              type="button"
-              onClick={() => setWaveStyle(w.id)}
-              className="cursor-pointer rounded-full px-2.5 py-0.5 text-[10px] uppercase tracking-[0.12em] transition-all"
-              style={{
-                color: isActive ? '#5C3018' : '#8A6A4A',
-                background: isActive ? `${activeColor}20` : 'transparent',
-                border: `1px solid ${isActive ? `${activeColor}60` : '#5C301818'}`,
-                fontFamily: 'var(--font-serif)',
-                opacity: isActive ? 1 : 0.7,
-              }}
-            >
-              {w.label}
-            </button>
-          );
-        })}
+      {/* Wave-style picker — 4-position dot slider. Each dot represents
+          one waveform style; the active one grows + brightens. Same
+          visual language as the speed/reverb/volume sliders. */}
+      <div className="mx-auto flex max-w-md items-center gap-3 px-1">
+        <span
+          className="shrink-0 text-left uppercase"
+          style={{
+            fontFamily: 'var(--font-serif)',
+            fontSize: '11px',
+            letterSpacing: '0.12em',
+            color: activeColor,
+            opacity: 0.9,
+            fontWeight: 700,
+            width: 64,
+          }}
+        >
+          Wave
+        </span>
+        <div className="flex flex-1 items-center justify-between">
+          {WAVE_STYLES.map((w) => {
+            const isActive = waveStyle === w.id;
+            return (
+              <button
+                key={w.id}
+                type="button"
+                onClick={() => setWaveStyle(w.id)}
+                title={w.label}
+                aria-label={`Wave style ${w.label}`}
+                className="flex cursor-pointer flex-col items-center gap-1 bg-transparent"
+                style={{ border: 'none', padding: '4px 0' }}
+              >
+                <span
+                  className="block rounded-full transition-all"
+                  style={{
+                    width: isActive ? 14 : 7,
+                    height: isActive ? 14 : 7,
+                    background: activeColor,
+                    opacity: isActive ? 1 : 0.35,
+                  }}
+                />
+                <span
+                  style={{
+                    fontFamily: 'var(--font-serif)',
+                    fontSize: '9px',
+                    letterSpacing: '0.1em',
+                    textTransform: 'uppercase',
+                    color: activeColor,
+                    opacity: isActive ? 1 : 0.5,
+                    fontWeight: isActive ? 700 : 500,
+                  }}
+                >
+                  {w.label}
+                </span>
+              </button>
+            );
+          })}
+        </div>
       </div>
 
       {/* Beat bed UI removed per user feedback — clutter in studio.
@@ -3628,91 +3663,63 @@ export default function BinauralTuner() {
             />
           </div>
 
-          {/* Volume — smooth gradient track with draggable thumb */}
+          {/* Volume — 20-circle dot slider matching the speed/reverb/
+              volume melody sliders. Click anywhere to set. Drag is
+              gone (uniform with the rest of the dot-slider family);
+              touch/mouse single-tap is sufficient. */}
           <div className="px-2">
-            <div className="flex items-center gap-3 px-1 py-2">
+            <div className="mx-auto flex max-w-md items-center gap-3">
               <span
+                className="shrink-0 text-left uppercase"
                 style={{
                   fontFamily: 'var(--font-serif)',
-                  fontSize: '13px',
+                  fontSize: '11px',
+                  letterSpacing: '0.12em',
+                  color: '#C4A060',
+                  opacity: 0.9,
+                  fontWeight: 700,
+                  width: 64,
+                }}
+              >
+                Volume
+              </span>
+              <button
+                type="button"
+                aria-label={`Volume ${Math.round(volume * 100)}%`}
+                className="flex flex-1 cursor-pointer items-center justify-between bg-transparent"
+                style={{ border: 'none', padding: '4px 0' }}
+                onClick={(e) => {
+                  const r = (e.currentTarget as HTMLElement).getBoundingClientRect();
+                  setVolume(Math.max(0.02, Math.min(1, (e.clientX - r.left) / r.width)));
+                }}
+              >
+                {Array.from({ length: 20 }, (_, i) => {
+                  const ratio = i / 19;
+                  const filled = ratio <= volume;
+                  return (
+                    <span
+                      key={i}
+                      className="block rounded-full transition-all"
+                      style={{
+                        width: filled ? 8 : 5,
+                        height: filled ? 8 : 5,
+                        background: '#C4A060',
+                        opacity: filled ? 0.55 + ratio * 0.4 : 0.2,
+                      }}
+                    />
+                  );
+                })}
+              </button>
+              <span
+                className="hidden md:inline"
+                style={{
+                  fontFamily: 'var(--font-serif)',
+                  fontSize: '11px',
                   color: '#C4A060',
                   fontWeight: 600,
-                  width: 60,
+                  width: 32,
                   flexShrink: 0,
                   textAlign: 'right',
-                }}
-              >
-                volume
-              </span>
-              <div
-                className="relative flex-1 cursor-pointer"
-                style={{ height: 20, touchAction: 'none' }}
-                onMouseDown={(e) => {
-                  const el = e.currentTarget as HTMLElement;
-                  const set = (cx: number) => {
-                    const r = el.getBoundingClientRect();
-                    setVolume(Math.max(0.02, Math.min(1, (cx - r.left) / r.width)));
-                  };
-                  set(e.clientX);
-                  const onMove = (ev: MouseEvent) => set(ev.clientX);
-                  const onUp = () => {
-                    window.removeEventListener('mousemove', onMove);
-                    window.removeEventListener('mouseup', onUp);
-                  };
-                  window.addEventListener('mousemove', onMove);
-                  window.addEventListener('mouseup', onUp);
-                }}
-                onTouchStart={(e) => {
-                  const el = e.currentTarget as HTMLElement;
-                  const set = (cx: number) => {
-                    const r = el.getBoundingClientRect();
-                    setVolume(Math.max(0.02, Math.min(1, (cx - r.left) / r.width)));
-                  };
-                  set(e.touches[0].clientX);
-                  const onMove = (ev: TouchEvent) => {
-                    ev.preventDefault();
-                    set(ev.touches[0].clientX);
-                  };
-                  const onEnd = () => {
-                    window.removeEventListener('touchmove', onMove);
-                    window.removeEventListener('touchend', onEnd);
-                  };
-                  window.addEventListener('touchmove', onMove, { passive: false });
-                  window.addEventListener('touchend', onEnd);
-                }}
-              >
-                <div
-                  className="absolute top-1/2 -translate-y-1/2 left-0 right-0 rounded-full"
-                  style={{ height: 4, background: '#C4A06015' }}
-                />
-                <div
-                  className="absolute top-1/2 -translate-y-1/2 left-0 rounded-full"
-                  style={{
-                    height: 4,
-                    width: `${volume * 100}%`,
-                    background: 'linear-gradient(90deg, #C4A06030, #C4A060)',
-                  }}
-                />
-                <div
-                  className="absolute top-1/2 rounded-full"
-                  style={{
-                    left: `${volume * 100}%`,
-                    width: 14,
-                    height: 14,
-                    background: '#C4A060',
-                    transform: 'translate(-50%, -50%)',
-                    boxShadow: '0 2px 6px rgba(196,160,96,0.4)',
-                  }}
-                />
-              </div>
-              <span
-                style={{
-                  fontFamily: 'var(--font-serif)',
-                  fontSize: '12px',
-                  color: '#C4A060',
-                  fontWeight: 600,
-                  width: 40,
-                  flexShrink: 0,
                 }}
               >
                 {Math.round(volume * 100)}%
