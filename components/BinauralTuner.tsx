@@ -3719,7 +3719,7 @@ export default function BinauralTuner() {
                 type="button"
                 aria-label={`Volume ${Math.round(volume * 100)}%`}
                 className="flex flex-1 cursor-pointer items-center justify-between bg-transparent"
-                style={{ border: 'none', padding: '4px 0' }}
+                style={{ border: 'none', padding: '10px 0' }}
                 onClick={(e) => {
                   const r = (e.currentTarget as HTMLElement).getBoundingClientRect();
                   setVolume(Math.max(0.02, Math.min(1, (e.clientX - r.left) / r.width)));
@@ -3733,8 +3733,8 @@ export default function BinauralTuner() {
                       key={i}
                       className="block rounded-full transition-all"
                       style={{
-                        width: filled ? 8 : 5,
-                        height: filled ? 8 : 5,
+                        width: filled ? 13 : 7,
+                        height: filled ? 13 : 7,
                         background: '#C4A060',
                         opacity: filled ? 0.55 + ratio * 0.4 : 0.2,
                       }}
@@ -4244,7 +4244,7 @@ export default function BinauralTuner() {
                 <button
                   type="button"
                   className="flex flex-1 cursor-pointer items-center justify-between bg-transparent"
-                  style={{ border: 'none', padding: '4px 0', opacity: wahOn ? 1 : 0.4 }}
+                  style={{ border: 'none', padding: '10px 0', opacity: wahOn ? 1 : 0.4 }}
                   onClick={(e) => {
                     const r = (e.currentTarget as HTMLElement).getBoundingClientRect();
                     setWahSpeed(Math.max(0, Math.min(1, (e.clientX - r.left) / r.width)));
@@ -4259,8 +4259,8 @@ export default function BinauralTuner() {
                         key={i}
                         className="block rounded-full transition-all"
                         style={{
-                          width: filled ? 8 : 5,
-                          height: filled ? 8 : 5,
+                          width: filled ? 13 : 7,
+                          height: filled ? 13 : 7,
                           background: '#B85A8A',
                           opacity: filled ? 0.55 + ratio * 0.4 : 0.2,
                         }}
@@ -4293,7 +4293,7 @@ export default function BinauralTuner() {
                 <button
                   type="button"
                   className="flex flex-1 cursor-pointer items-center justify-between bg-transparent"
-                  style={{ border: 'none', padding: '4px 0', opacity: echoOn ? 1 : 0.4 }}
+                  style={{ border: 'none', padding: '10px 0', opacity: echoOn ? 1 : 0.4 }}
                   onClick={(e) => {
                     const r = (e.currentTarget as HTMLElement).getBoundingClientRect();
                     setEchoAmount(Math.max(0, Math.min(1, (e.clientX - r.left) / r.width)));
@@ -4308,8 +4308,8 @@ export default function BinauralTuner() {
                         key={i}
                         className="block rounded-full transition-all"
                         style={{
-                          width: filled ? 8 : 5,
-                          height: filled ? 8 : 5,
+                          width: filled ? 13 : 7,
+                          height: filled ? 13 : 7,
                           background: '#5AA8B0',
                           opacity: filled ? 0.55 + ratio * 0.4 : 0.2,
                         }}
@@ -4539,7 +4539,7 @@ export default function BinauralTuner() {
                     type="button"
                     aria-label={`Layer softness ${layerReverb}%`}
                     className="flex flex-1 cursor-pointer items-center justify-between bg-transparent"
-                    style={{ border: 'none', padding: '4px 0' }}
+                    style={{ border: 'none', padding: '10px 0' }}
                     onClick={(e) => {
                       const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
                       setLayerReverb(
@@ -4557,8 +4557,8 @@ export default function BinauralTuner() {
                           key={i}
                           className="block rounded-full transition-all"
                           style={{
-                            width: filled ? 8 : 5,
-                            height: filled ? 8 : 5,
+                            width: filled ? 13 : 7,
+                            height: filled ? 13 : 7,
                             background: '#9B6BA0',
                             opacity: filled ? 0.55 + ratio * 0.4 : 0.2,
                           }}
@@ -4702,7 +4702,7 @@ export default function BinauralTuner() {
                           {isOn && (
                             <button
                               type="button"
-                              className="flex w-full cursor-pointer items-center justify-between px-2 py-1.5"
+                              className="flex w-full cursor-pointer items-center justify-between px-2 py-2.5"
                               onClick={(e) => {
                                 const rect = (
                                   e.currentTarget as HTMLElement
@@ -4724,8 +4724,8 @@ export default function BinauralTuner() {
                                     key={i}
                                     className="block rounded-full transition-all"
                                     style={{
-                                      width: filled ? 9 : 5,
-                                      height: filled ? 9 : 5,
+                                      width: filled ? 13 : 7,
+                                      height: filled ? 13 : 7,
                                       // Soft hue shift: blend the layer color with the
                                       // next group's accent so the slider reads as a
                                       // gradient rather than a flat colour wash.
@@ -5749,7 +5749,7 @@ function SliderRow({
   const count = 20;
   const pct = (value - min) / (max - min);
   const activeIdx = Math.round(pct * (count - 1));
-  const sq = 12;
+  const sq = 15;
   const gap = 3;
   const muted = toggleOn === false;
 
