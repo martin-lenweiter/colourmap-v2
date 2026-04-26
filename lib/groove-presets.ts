@@ -74,6 +74,26 @@ export interface PresetVoiceTweaks {
     /** Gain at peak. Default 0.12. */
     gain?: number;
   };
+  pad?: {
+    /** Oscillator type. Default 'sawtooth'. 'sine' = pure clean
+     *  drone; 'triangle' = soft warm; 'sawtooth' = full string-like;
+     *  'square' = retro arcade pad. */
+    oscType?: OscillatorType;
+    /** Detune ratio between the two unison oscillators. Default
+     *  1.005 — small chorus. Higher = wider, almost out of tune. */
+    detune?: number;
+    /** Lowpass cutoff Hz. Default 1800. Lower = darker / dustier. */
+    lpHz?: number;
+    /** Lowpass resonance. Default 1. Higher = ringy synth feel. */
+    lpQ?: number;
+    /** Peak gain. Default 0.12. */
+    gain?: number;
+    /** Fade-in seconds. Default 1.5. */
+    fadeInSec?: number;
+    /** Sustain duration before fade-out, seconds. Default 2.3
+     *  (fadeIn 1.5 + sustain 2.3 = total 3.8). */
+    sustainSec?: number;
+  };
 }
 
 export interface GroovePreset {
@@ -214,6 +234,8 @@ export const GROOVE_PRESETS: readonly GroovePreset[] = [
       kick: { freqStart: 160, freqEnd: 45, bodyGain: 0.95 },
       snare: { bodyFreq: 230, noiseHpHz: 1400 },
       hihat: { hpHz: 7500, gain: 0.13 },
+      // Funk pad — warm sawtooth bed with subtle chorus.
+      pad: { oscType: 'sawtooth', detune: 1.006, lpHz: 1800, gain: 0.13 },
     },
     activeSet: {
       kick: true,
@@ -286,6 +308,15 @@ export const GROOVE_PRESETS: readonly GroovePreset[] = [
       },
       snare: { noiseHpHz: 2000, noiseDecaySec: 0.08, bodyFreq: 240 },
       hihat: { hpHz: 9000, decaySec: 0.04, gain: 0.1 },
+      // Tech pad — clinical square wave, narrow chorus, brighter
+      // filter so it sits over the 4-on-floor without warming it.
+      pad: {
+        oscType: 'square',
+        detune: 1.003,
+        lpHz: 2400,
+        gain: 0.09,
+        fadeInSec: 1.0,
+      },
     },
     activeSet: {
       kick: true,
@@ -351,6 +382,9 @@ export const GROOVE_PRESETS: readonly GroovePreset[] = [
       kick: { freqStart: 130, freqEnd: 55, bodyGain: 0.7, clickGain: 0.1 },
       snare: { noiseHpHz: 1500, noiseGain: 0.28, bodyFreq: 250 },
       hihat: { hpHz: 6500, gain: 0.1 },
+      // Tropical pad — clean triangle bed, soft and bright. The
+      // low resonance keeps the steel-drum world airy.
+      pad: { oscType: 'triangle', detune: 1.008, lpHz: 2200, gain: 0.11 },
     },
     vibe: 'Kygo sunset · steel pan + marimba',
     dot: '#E08858',
@@ -431,6 +465,15 @@ export const GROOVE_PRESETS: readonly GroovePreset[] = [
       },
       snare: { noiseHpHz: 1000, noiseDecaySec: 0.2, bodyFreq: 200 },
       hihat: { decaySec: 0.07 },
+      // Slow Roll pad — wide, dark, slow-fade. Cinematic.
+      pad: {
+        oscType: 'sawtooth',
+        detune: 1.012,
+        lpHz: 1300,
+        gain: 0.16,
+        fadeInSec: 2.5,
+        sustainSec: 3.5,
+      },
     },
     vibe: 'sexy R&B · low-BPM bedroom soul',
     dot: '#7A3850',
@@ -508,6 +551,9 @@ export const GROOVE_PRESETS: readonly GroovePreset[] = [
       },
       snare: { noiseHpHz: 900, bodyFreq: 200, noiseGain: 0.4 },
       hihat: { hpHz: 6000, decaySec: 0.04 },
+      // Boom Bap pad — dusty, narrow, low — sits behind the rhodes
+      // chord without competing.
+      pad: { oscType: 'triangle', detune: 1.002, lpHz: 900, gain: 0.1 },
     },
     vibe: 'Biggie · Nas · J Dilla · 1995 Brooklyn',
     dot: '#6A4A2A',
@@ -588,6 +634,16 @@ export const GROOVE_PRESETS: readonly GroovePreset[] = [
       },
       snare: { noiseHpHz: 1800, noiseGain: 0.42, bodyFreq: 240 },
       hihat: { hpHz: 9500, gain: 0.14 },
+      // Epic pad — wide, ringy, festival-stack. Higher resonance
+      // so the chord rings; bigger fade so it carries.
+      pad: {
+        oscType: 'sawtooth',
+        detune: 1.015,
+        lpHz: 2800,
+        lpQ: 4,
+        gain: 0.16,
+        fadeInSec: 1.2,
+      },
     },
     vibe: 'Justice · Discovery-era Daft Punk · Madeon',
     dot: '#3868D8',
@@ -683,6 +739,16 @@ export const GROOVE_PRESETS: readonly GroovePreset[] = [
       },
       snare: { noiseHpHz: 800, noiseDecaySec: 0.18, bodyFreq: 200, noiseGain: 0.3 },
       hihat: { hpHz: 5500, decaySec: 0.06, gain: 0.1 },
+      // Lofi pad — muffled triangle, very low cutoff, slow swell.
+      // Tape-saturated feel — no sparkle, all warmth.
+      pad: {
+        oscType: 'triangle',
+        detune: 1.004,
+        lpHz: 800,
+        gain: 0.13,
+        fadeInSec: 2.2,
+        sustainSec: 3.0,
+      },
     },
     vibe: 'Nujabes · J Dilla · study beats',
     dot: '#6A4A7A',

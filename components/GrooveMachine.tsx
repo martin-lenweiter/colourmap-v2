@@ -497,28 +497,38 @@ function triggerLead(ctx: AudioContext, when: number, vel: number, out: AudioNod
 }
 
 function triggerPad(ctx: AudioContext, when: number, vel: number, out: AudioNode, freq: number) {
-  // Long sustained pad — slow fade in and out
+  const tw = CURRENT_TWEAKS.pad ?? {};
+  const oscType = tw.oscType ?? 'sawtooth';
+  const detune = tw.detune ?? 1.005;
+  const lpHz = tw.lpHz ?? 1800;
+  const lpQ = tw.lpQ ?? 1;
+  const gainPeak = tw.gain ?? 0.12;
+  const fadeInSec = tw.fadeInSec ?? 1.5;
+  const sustainSec = tw.sustainSec ?? 2.3;
+  const totalSec = fadeInSec + sustainSec;
+
   const osc1 = ctx.createOscillator();
-  osc1.type = 'sawtooth';
+  osc1.type = oscType;
   osc1.frequency.value = freq;
   const osc2 = ctx.createOscillator();
-  osc2.type = 'sawtooth';
-  osc2.frequency.value = freq * 1.005; // slight detune for chorus
+  osc2.type = oscType;
+  osc2.frequency.value = freq * detune;
   const lp = ctx.createBiquadFilter();
   lp.type = 'lowpass';
-  lp.frequency.value = 1800;
+  lp.frequency.value = lpHz;
+  lp.Q.value = lpQ;
   const g = ctx.createGain();
   g.gain.setValueAtTime(0.0001, when);
-  g.gain.linearRampToValueAtTime(0.12 * vel, when + 1.5);
-  g.gain.linearRampToValueAtTime(0.0001, when + 3.8);
+  g.gain.linearRampToValueAtTime(gainPeak * vel, when + fadeInSec);
+  g.gain.linearRampToValueAtTime(0.0001, when + totalSec);
   osc1.connect(lp);
   osc2.connect(lp);
   lp.connect(g);
   g.connect(out);
   osc1.start(when);
   osc2.start(when);
-  osc1.stop(when + 4);
-  osc2.stop(when + 4);
+  osc1.stop(when + totalSec + 0.2);
+  osc2.stop(when + totalSec + 0.2);
 }
 
 function triggerClap(ctx: AudioContext, when: number, vel: number, out: AudioNode) {
