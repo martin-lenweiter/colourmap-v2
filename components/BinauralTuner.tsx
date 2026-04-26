@@ -69,7 +69,7 @@ interface LayerDef {
 // User-facing categories grouping layers by *character*, not engineering
 // taxonomy. The original `group` field stays so saved-mix restoration
 // still works; this is a derived view for the UI only.
-type LayerCategory = 'waters' | 'birds' | 'drones' | 'textures' | 'digital';
+type LayerCategory = 'waters' | 'birds' | 'drones' | 'textures' | 'digital' | 'pulse';
 
 const CATEGORY_LABELS: Record<LayerCategory, string> = {
   waters: 'Waters',
@@ -77,6 +77,7 @@ const CATEGORY_LABELS: Record<LayerCategory, string> = {
   drones: 'Drones & Voices',
   textures: 'Textures',
   digital: 'Digital',
+  pulse: 'Pulse & Ceremony',
 };
 
 const CATEGORY_COLORS: Record<LayerCategory, string> = {
@@ -85,15 +86,43 @@ const CATEGORY_COLORS: Record<LayerCategory, string> = {
   drones: '#9B6BA0', // plum — sustained tones, chant, choir
   textures: '#B8843A', // gold — vinyl, hum, bowls, chimes, fire
   digital: '#5A7AAA', // blue-grey — synthetic / sci-fi
+  pulse: '#7A4A2C', // burnt sienna — frame drum, rattle, shaker, ceremonial heartbeat
 };
 
-const CATEGORY_ORDER: LayerCategory[] = ['waters', 'birds', 'drones', 'textures', 'digital'];
+const CATEGORY_ORDER: LayerCategory[] = [
+  'waters',
+  'birds',
+  'drones',
+  'textures',
+  'pulse',
+  'digital',
+];
+
+/** Per-category gain ceiling. Pulse layers are rhythmic and can be
+ *  fatiguing at full volume — cap them at 0.5 so the slider's
+ *  "almost full" still feels grounded, not tense. */
+const CATEGORY_VOLUME_CAP: Partial<Record<LayerCategory, number>> = {
+  pulse: 0.5,
+};
+
+// Synthesized ceremonial-percussion layer ids — they share group: 'ambient'
+// with the digital family for save-mix compatibility but read as 'pulse'
+// in the UI so they live alongside drones rather than synth blips.
+const PULSE_LAYER_IDS = new Set([
+  'frame-drum',
+  'shaman-drum',
+  'chacapa',
+  'sand-maraca',
+  'ceremony-heartbeat',
+]);
 
 function getLayerCategory(layer: { id: string; group: string }): LayerCategory {
   // Drones — every tone-group layer is sustained pitched material
   if (layer.group === 'tones') return 'drones';
   // Textures — small grainy character layers
   if (layer.group === 'texture') return 'textures';
+  // Pulse — ceremonial percussion (frame drums, rattles, shakers)
+  if (PULSE_LAYER_IDS.has(layer.id)) return 'pulse';
   // Digital — anything synthetic / sci-fi / modern
   if (layer.group === 'ambient') return 'digital';
   // Nature — split: birds + forest live separately from water-character
@@ -834,6 +863,223 @@ const LAYERS: LayerDef[] = [
       return { node: f, source: s };
     },
   },
+  // ── Pulse / Ceremony — synthesized rhythmic percussion ──
+  // All five layers below pre-render a 4-beat loop at 72 BPM (≈ resting
+  // heart rate). They share the same beat grid so when stacked they read
+  // as one ceremonial ensemble even without a runtime scheduler.
+  // Synthesized end-to-end so we ship App-Store-clean with zero sample
+  // licensing risk; CC0 sample drop-in is documented in
+  // docs/specs/chill-machine-ceremonial-percussion.md.
+  {
+    id: 'frame-drum',
+    label: 'Frame Drum',
+    color: '#7A4A2C',
+    group: 'ambient' as const,
+    build: (ctx: AudioContext) => {
+      const bpm = 72;
+      const beatLen = Math.floor((ctx.sampleRate * 60) / bpm);
+      const beats = 4;
+      const n = beatLen * beats;
+      const b = ctx.createBuffer(2, n, ctx.sampleRate);
+      for (let c = 0; c < 2; c++) {
+        const d = b.getChannelData(c);
+        for (let beat = 0; beat < beats; beat++) {
+          const offset = beat * beatLen;
+          const accent = beat === 0 ? 1 : beat === 2 ? 0.7 : 0.55;
+          // Soft membrane: 100Hz fundamental sliding to 70Hz, exp decay
+          const hitLen = Math.floor(ctx.sampleRate * 0.32);
+          for (let i = 0; i < hitLen && offset + i < n; i++) {
+            const t = i / hitLen;
+            const env = Math.exp(-t * 5);
+            const freq = 100 - 30 * t;
+            d[offset + i] +=
+              Math.sin((i / ctx.sampleRate) * freq * Math.PI * 2) * env * 0.18 * accent;
+          }
+        }
+      }
+      const s = ctx.createBufferSource();
+      s.buffer = b;
+      s.loop = true;
+      const f = ctx.createBiquadFilter();
+      f.type = 'lowpass';
+      f.frequency.value = 250;
+      s.connect(f);
+      return { node: f, source: s };
+    },
+  },
+  {
+    id: 'shaman-drum',
+    label: 'Shaman Drum',
+    color: '#5C2818',
+    group: 'ambient' as const,
+    build: (ctx: AudioContext) => {
+      const bpm = 72;
+      const beatLen = Math.floor((ctx.sampleRate * 60) / bpm);
+      const beats = 4;
+      const n = beatLen * beats;
+      const b = ctx.createBuffer(2, n, ctx.sampleRate);
+      for (let c = 0; c < 2; c++) {
+        const d = b.getChannelData(c);
+        // Hits on beats 0 and 2 (slow ceremonial pulse — half the frame drum)
+        for (const beat of [0, 2]) {
+          const offset = beat * beatLen;
+          const hitLen = Math.floor(ctx.sampleRate * 0.55);
+          for (let i = 0; i < hitLen && offset + i < n; i++) {
+            const t = i / hitLen;
+            const env = Math.exp(-t * 3.2);
+            // Deeper fundamental: 60Hz sliding to 40Hz
+            const freq = 60 - 20 * t;
+            const body = Math.sin((i / ctx.sampleRate) * freq * Math.PI * 2);
+            // A whisper of noise at the attack for stick-on-skin grit
+            const noise = i < hitLen * 0.05 ? (Math.random() * 2 - 1) * 0.4 : 0;
+            d[offset + i] += (body + noise) * env * 0.22;
+          }
+        }
+      }
+      const s = ctx.createBufferSource();
+      s.buffer = b;
+      s.loop = true;
+      const f = ctx.createBiquadFilter();
+      f.type = 'lowpass';
+      f.frequency.value = 180;
+      s.connect(f);
+      return { node: f, source: s };
+    },
+  },
+  {
+    id: 'chacapa',
+    label: 'Chacapa Rattle',
+    color: '#8E6B3A',
+    group: 'ambient' as const,
+    build: (ctx: AudioContext) => {
+      // Icaro-style leaf-bundle rattle: a swelling-then-falling burst
+      // of grainy bandpass noise per beat. Lighter than maracas, drier,
+      // longer tail. Used by Amazonian curanderos to mark the breath
+      // of the song rather than the metronome.
+      const bpm = 72;
+      const beatLen = Math.floor((ctx.sampleRate * 60) / bpm);
+      const beats = 4;
+      const n = beatLen * beats;
+      const b = ctx.createBuffer(2, n, ctx.sampleRate);
+      for (let c = 0; c < 2; c++) {
+        const d = b.getChannelData(c);
+        for (let beat = 0; beat < beats; beat++) {
+          const offset = beat * beatLen;
+          const sweepLen = Math.floor(ctx.sampleRate * 0.55);
+          for (let i = 0; i < sweepLen && offset + i < n; i++) {
+            const t = i / sweepLen;
+            // Swell-attack envelope: rises to 0.4, holds, falls
+            const env = t < 0.4 ? t / 0.4 : Math.exp(-(t - 0.4) * 4);
+            // Noise carrier with mild AM at ~24 Hz (leaf-flutter rate)
+            const am = 0.7 + 0.3 * Math.sin((i / ctx.sampleRate) * 24 * Math.PI * 2);
+            d[offset + i] += (Math.random() * 2 - 1) * env * am * 0.12;
+          }
+        }
+      }
+      const s = ctx.createBufferSource();
+      s.buffer = b;
+      s.loop = true;
+      const hp = ctx.createBiquadFilter();
+      hp.type = 'highpass';
+      hp.frequency.value = 800;
+      const bp = ctx.createBiquadFilter();
+      bp.type = 'bandpass';
+      bp.frequency.value = 2400;
+      bp.Q.value = 0.7;
+      s.connect(hp);
+      hp.connect(bp);
+      return { node: bp, source: s };
+    },
+  },
+  {
+    id: 'sand-maraca',
+    label: 'Sand Maraca',
+    color: '#B8843A',
+    group: 'ambient' as const,
+    build: (ctx: AudioContext) => {
+      // Sand-filled shaker — short scratchy bursts on every 8th note
+      // (twice per beat) for a rolling pulse, with the on-beat hits
+      // slightly louder so the underlying tempo is felt, not counted.
+      const bpm = 72;
+      const beatLen = Math.floor((ctx.sampleRate * 60) / bpm);
+      const beats = 4;
+      const n = beatLen * beats;
+      const halfBeat = Math.floor(beatLen / 2);
+      const b = ctx.createBuffer(2, n, ctx.sampleRate);
+      for (let c = 0; c < 2; c++) {
+        const d = b.getChannelData(c);
+        for (let step = 0; step < beats * 2; step++) {
+          const offset = step * halfBeat;
+          const onBeat = step % 2 === 0;
+          const accent = onBeat ? 1 : 0.55;
+          const hitLen = Math.floor(ctx.sampleRate * 0.13);
+          for (let i = 0; i < hitLen && offset + i < n; i++) {
+            const t = i / hitLen;
+            // Fast attack, fast decay — grain of sand falling in plastic
+            const env = Math.exp(-t * 14) * (1 - Math.exp(-t * 60));
+            d[offset + i] += (Math.random() * 2 - 1) * env * 0.18 * accent;
+          }
+        }
+      }
+      const s = ctx.createBufferSource();
+      s.buffer = b;
+      s.loop = true;
+      const hp = ctx.createBiquadFilter();
+      hp.type = 'highpass';
+      hp.frequency.value = 3500;
+      const bp = ctx.createBiquadFilter();
+      bp.type = 'bandpass';
+      bp.frequency.value = 6000;
+      bp.Q.value = 0.5;
+      s.connect(hp);
+      hp.connect(bp);
+      return { node: bp, source: s };
+    },
+  },
+  {
+    id: 'ceremony-heartbeat',
+    label: 'Ceremony Heart',
+    color: '#9C3C1C',
+    group: 'ambient' as const,
+    build: (ctx: AudioContext) => {
+      // Warmer, slower lub-dub than the digital 'heartbeat'. 72 BPM
+      // matches the rest of the pulse family so they layer cleanly.
+      const bpm = 72;
+      const beatLen = Math.floor((ctx.sampleRate * 60) / bpm);
+      const beats = 4;
+      const n = beatLen * beats;
+      const b = ctx.createBuffer(2, n, ctx.sampleRate);
+      for (let c = 0; c < 2; c++) {
+        const d = b.getChannelData(c);
+        for (let beat = 0; beat < beats; beat++) {
+          const offset = beat * beatLen;
+          // Lub — deep
+          const lubLen = Math.floor(ctx.sampleRate * 0.1);
+          for (let i = 0; i < lubLen && offset + i < n; i++) {
+            const t = i / lubLen;
+            d[offset + i] +=
+              Math.sin((i / ctx.sampleRate) * 42 * Math.PI * 2) * (1 - t) ** 2 * 0.16;
+          }
+          // Dub — slightly higher, slightly delayed
+          const dubOffset = offset + Math.floor(ctx.sampleRate * 0.18);
+          const dubLen = Math.floor(ctx.sampleRate * 0.075);
+          for (let i = 0; i < dubLen && dubOffset + i < n; i++) {
+            const t = i / dubLen;
+            d[dubOffset + i] +=
+              Math.sin((i / ctx.sampleRate) * 58 * Math.PI * 2) * (1 - t) ** 2 * 0.1;
+          }
+        }
+      }
+      const s = ctx.createBufferSource();
+      s.buffer = b;
+      s.loop = true;
+      const f = ctx.createBiquadFilter();
+      f.type = 'lowpass';
+      f.frequency.value = 130;
+      s.connect(f);
+      return { node: f, source: s };
+    },
+  },
 ];
 
 // Audio file cache for real recorded sounds
@@ -1445,6 +1691,14 @@ export default function BinauralTuner() {
   const [beatFreq, setBeatFreq] = useState(4);
   const [volume, setVolume] = useState(0.15);
   const [activeLayers, setActiveLayers] = useState<Record<string, number>>({});
+  // Pulse-category tempo. The percussion buffers are pre-rendered at 72 BPM
+  // so playbackRate = pulseBpm / 72. Only affects pulse layers; everything
+  // else stays at rate 1.0. Default 72 = resting heart-rate territory.
+  const [pulseBpm, setPulseBpm] = useState(72);
+  const pulseBpmRef = useRef(72);
+  useEffect(() => {
+    pulseBpmRef.current = pulseBpm;
+  }, [pulseBpm]);
   const [activeGenre, setActiveGenre] = useState<string | null>(null);
   const [_showSuggestion, _setShowSuggestion] = useState(true);
   const [_view, _setView] = useState<'presets' | 'layers' | 'genres'>('presets');
@@ -2660,11 +2914,31 @@ export default function BinauralTuner() {
     wet.connect(ctx.destination);
   }
 
+  function applyPulseRate(layerId: string, source: AudioBufferSourceNode | OscillatorNode) {
+    if (!PULSE_LAYER_IDS.has(layerId)) return;
+    if (!('playbackRate' in source)) return;
+    source.playbackRate.value = pulseBpmRef.current / 72;
+  }
+
+  // Re-tune already-running pulse layers when the user moves the BPM slider.
+  // Uses playbackRate (a smooth AudioParam) so the change is glitch-free.
+  useEffect(() => {
+    const rate = pulseBpm / 72;
+    for (const [id, entry] of layerNodesRef.current) {
+      if (!PULSE_LAYER_IDS.has(id)) continue;
+      const source = entry.source;
+      if ('playbackRate' in source) {
+        source.playbackRate.value = rate;
+      }
+    }
+  }, [pulseBpm]);
+
   function startLayer(ctx: AudioContext, layerId: string, vol: number) {
     const def = ALL_LAYERS.find((l) => l.id === layerId);
     if (!def) return;
     ensureLayerReverb(ctx);
     const { node, source } = def.build(ctx, baseFreq);
+    applyPulseRate(layerId, source);
     const layerGain = ctx.createGain();
     layerGain.gain.value = vol;
     node.connect(layerGain);
@@ -2684,6 +2958,7 @@ export default function BinauralTuner() {
     if (!def) return;
     ensureLayerReverb(ctx);
     const { node, source } = def.build(ctx, baseFreq);
+    applyPulseRate(layerId, source);
     const layerGain = ctx.createGain();
     layerGain.gain.value = 0;
     node.connect(layerGain);
@@ -2741,9 +3016,12 @@ export default function BinauralTuner() {
   }
 
   function setLayerVol(layerId: string, vol: number) {
-    setActiveLayers((prev) => ({ ...prev, [layerId]: vol }));
+    const layer = ALL_LAYERS.find((l) => l.id === layerId);
+    const cap = layer ? CATEGORY_VOLUME_CAP[getLayerCategory(layer)] : undefined;
+    const clamped = cap !== undefined ? Math.min(vol, cap) : vol;
+    setActiveLayers((prev) => ({ ...prev, [layerId]: clamped }));
     const existing = layerNodesRef.current.get(layerId);
-    if (existing) existing.gain.gain.value = vol;
+    if (existing) existing.gain.gain.value = clamped;
   }
 
   function applyGenre(genre: Genre) {
@@ -4775,6 +5053,51 @@ export default function BinauralTuner() {
                       );
                     })}
                   </div>
+                  {activeLayerGroup === 'pulse' && (
+                    <div
+                      className="mb-2.5 flex items-center gap-2.5 rounded-xl px-3 py-2.5"
+                      style={{
+                        background: `${CATEGORY_COLORS.pulse}10`,
+                        border: `1px solid ${CATEGORY_COLORS.pulse}28`,
+                      }}
+                    >
+                      <span
+                        className="uppercase tracking-[0.14em]"
+                        style={{
+                          fontFamily: 'var(--font-serif)',
+                          fontSize: 11,
+                          fontWeight: 700,
+                          color: CATEGORY_COLORS.pulse,
+                          opacity: 0.85,
+                        }}
+                      >
+                        Tempo
+                      </span>
+                      <input
+                        type="range"
+                        min={50}
+                        max={100}
+                        step={1}
+                        value={pulseBpm}
+                        onChange={(e) => setPulseBpm(Number(e.target.value))}
+                        className="flex-1 cursor-pointer"
+                        style={{ accentColor: CATEGORY_COLORS.pulse }}
+                        aria-label="Pulse BPM"
+                      />
+                      <span
+                        style={{
+                          fontFamily: 'var(--font-serif)',
+                          fontSize: 13,
+                          fontWeight: 700,
+                          color: CATEGORY_COLORS.pulse,
+                          minWidth: 56,
+                          textAlign: 'right',
+                        }}
+                      >
+                        {pulseBpm} bpm
+                      </span>
+                    </div>
+                  )}
                   <div className="space-y-1.5">
                     {ALL_LAYERS.filter((l) => getLayerCategory(l) === activeLayerGroup).map((l) => {
                       const vol = activeLayers[l.id] || 0;
@@ -4859,10 +5182,10 @@ export default function BinauralTuner() {
                   </div>
                 </div>
 
-                {/* Desktop: 5-column grid using the new character-led
+                {/* Desktop: 6-column grid using the new character-led
                     categories (Waters / Birds & Forest / Drones &
-                    Voices / Textures / Digital). */}
-                <div className="hidden md:grid md:grid-cols-5 md:gap-1.5">
+                    Voices / Textures / Pulse & Ceremony / Digital). */}
+                <div className="hidden md:grid md:grid-cols-6 md:gap-1.5">
                   {CATEGORY_ORDER.map((cat) => {
                     const color = CATEGORY_COLORS[cat];
                     return (
@@ -4878,6 +5201,40 @@ export default function BinauralTuner() {
                         >
                           {CATEGORY_LABELS[cat]}
                         </p>
+                        {cat === 'pulse' && (
+                          <div
+                            className="mt-0.5 mb-1 rounded-lg px-2 py-1.5"
+                            style={{
+                              background: `${color}10`,
+                              border: `1px solid ${color}28`,
+                            }}
+                          >
+                            <input
+                              type="range"
+                              min={50}
+                              max={100}
+                              step={1}
+                              value={pulseBpm}
+                              onChange={(e) => setPulseBpm(Number(e.target.value))}
+                              className="w-full cursor-pointer"
+                              style={{ accentColor: color }}
+                              aria-label="Pulse BPM"
+                            />
+                            <p
+                              className="text-center"
+                              style={{
+                                fontFamily: 'var(--font-serif)',
+                                fontSize: 11,
+                                fontWeight: 700,
+                                color,
+                                opacity: 0.85,
+                                marginTop: 2,
+                              }}
+                            >
+                              {pulseBpm} bpm
+                            </p>
+                          </div>
+                        )}
                         {ALL_LAYERS.filter((l) => getLayerCategory(l) === cat).map((l) => {
                           const vol = activeLayers[l.id] || 0;
                           const isOn = vol > 0;
