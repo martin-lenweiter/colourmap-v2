@@ -15,7 +15,7 @@ import LifeCategoriesStrip from '@/components/LifeCategoriesStrip';
 import MoodSuggestion from '@/components/MoodSuggestion';
 import NowBar from '@/components/NowBar';
 import QuietNotes from '@/components/QuietNotes';
-import ReflectBox from '@/components/ReflectBox';
+import ReflectThreeDots from '@/components/ReflectThreeDots';
 import SlowWins from '@/components/SlowWins';
 import { StyleProvider } from '@/components/StyleContext';
 import TrackLines from '@/components/TrackLines';
@@ -53,12 +53,14 @@ function DayContent() {
               <DailyAgenda />
             </div>
           }
-          // SHARING — circle pulse + connection prompts. Stub for now;
-          // pulls in the same surfaces that live on /circles so the
-          // Day-page user sees their bands without leaving Day.
+          // SHARING — three-dot reflect surface. The Sharing axis
+          // (Lonely → Connected) lives here alongside Feeling and
+          // Doing so the user can journal at any level of any axis;
+          // each entry is timestamped and threads under its level
+          // over time.
           sharingContent={
             <div className="space-y-4">
-              <ReflectBox />
+              <ReflectThreeDots />
             </div>
           }
           // ROAD — wide-angle life map. The compasses, categories, and
