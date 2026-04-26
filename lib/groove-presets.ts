@@ -51,6 +51,93 @@ export interface GroovePreset {
   patternOverrides?: Partial<Record<TrackId, number[]>>;
   /** Per-track notes overrides — frequencies for melodic tracks. */
   notesOverrides?: Partial<Record<TrackId, number[]>>;
+  /** Per-track variation pools — alternative 16-step patterns the
+   *  scheduler can swap to per-bar based on the current arc phase.
+   *  Keeps the groove from sounding repetitive after a minute.
+   *  See docs/specs/groove-machine-infinite-tracks.md. */
+  variationPools?: Partial<Record<TrackId, number[][]>>;
+}
+
+/* ─── Arc phases ───────────────────────────────────────────────
+ * Phase 1 of the infinite-tracks evolution. The 80-bar loop:
+ *   intro   8 bars  — sparse / inviting
+ *   verse  16 bars  — main groove
+ *   lift    4 bars  — riser feel
+ *   chorus 16 bars  — full mix
+ *   bdwn    8 bars  — bass + pad only (breakdown)
+ *   verse' 16 bars  — verse with variation
+ *   outro   8 bars  — softening
+ *   reprise 4 bars  — back to intro shape
+ */
+export type ArcPhase =
+  | 'intro'
+  | 'verse'
+  | 'lift'
+  | 'chorus'
+  | 'breakdown'
+  | 'verse2'
+  | 'outro'
+  | 'reprise';
+
+const PHASE_BAR_LENGTHS: { phase: ArcPhase; bars: number }[] = [
+  { phase: 'intro', bars: 8 },
+  { phase: 'verse', bars: 16 },
+  { phase: 'lift', bars: 4 },
+  { phase: 'chorus', bars: 16 },
+  { phase: 'breakdown', bars: 8 },
+  { phase: 'verse2', bars: 16 },
+  { phase: 'outro', bars: 8 },
+  { phase: 'reprise', bars: 4 },
+];
+
+const ARC_TOTAL_BARS = PHASE_BAR_LENGTHS.reduce((acc, p) => acc + p.bars, 0); // 80
+
+/** Map a global bar number to its arc phase. */
+export function getPhaseForBar(bar: number): ArcPhase {
+  let b = bar % ARC_TOTAL_BARS;
+  for (const { phase, bars } of PHASE_BAR_LENGTHS) {
+    if (b < bars) return phase;
+    b -= bars;
+  }
+  return 'intro';
+}
+
+/** Phase-specific weights for picking from a variation pool. The
+ *  pool is `[A, B, C, D, ...]` from "main" to "busier" to
+ *  "sparse" to "alt." The weights here favour different ones per
+ *  phase. Phases not listed = uniform. */
+const PHASE_VARIATION_WEIGHTS: Partial<Record<ArcPhase, number[]>> = {
+  intro: [0, 0, 1, 0.4], // sparse-leaning
+  verse: [1, 0.5, 0, 0.2], // mostly the main pattern
+  lift: [0.4, 1, 0, 0.4], // busier
+  chorus: [0.6, 1, 0, 0.4], // busiest
+  breakdown: [0, 0, 1, 0.6], // sparse + alt
+  verse2: [0.6, 0.5, 0.2, 1], // main + alt mixed
+  outro: [0.4, 0, 1, 0.2], // softening
+  reprise: [0, 0, 1, 0], // back to sparse
+};
+
+/**
+ * Pick a variation index from a pool based on the current arc phase.
+ * Returns 0 if the pool is empty/missing. Uses weighted random pick;
+ * for very simple pools (1–2 alternatives) you'll usually get the
+ * same one twice in a row, which is fine — the structure isn't in
+ * the small picks but in the long arc.
+ */
+export function pickVariationIndex(phase: ArcPhase, poolSize: number): number {
+  if (poolSize <= 0) return 0;
+  if (poolSize === 1) return 0;
+  const weights = PHASE_VARIATION_WEIGHTS[phase];
+  if (!weights) return Math.floor(Math.random() * poolSize);
+  const trimmed = weights.slice(0, poolSize);
+  const total = trimmed.reduce((a, b) => a + b, 0);
+  if (total <= 0) return 0;
+  let r = Math.random() * total;
+  for (let i = 0; i < trimmed.length; i++) {
+    r -= trimmed[i];
+    if (r <= 0) return i;
+  }
+  return 0;
 }
 
 // Frequencies for melodic notes (matches GrooveMachine.tsx constants)
@@ -85,6 +172,48 @@ export const GROOVE_PRESETS: readonly GroovePreset[] = [
       guitar: true,
     },
     // Default patterns are already funk-flavoured — small tweaks only.
+    variationPools: {
+      kick: [
+        // A — main funk kick (1, ghost on &a3)
+        [1, 0, 0, 0, 0, 0, 0.5, 0, 1, 0, 0, 0, 0, 0, 0.4, 0],
+        // B — busier (extra hits on the 2 and 4)
+        [1, 0, 0, 0, 1, 0, 0.5, 0, 1, 0, 0, 0, 1, 0, 0.4, 0],
+        // C — half-time (only 1 and 9)
+        [1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0],
+        // D — funky pickup (hit on the &-of-4 leading to next bar)
+        [1, 0, 0, 0, 0, 0, 0.5, 0, 1, 0, 0, 0, 0, 0, 1, 0],
+      ],
+      snare: [
+        // A — backbeat with ghost
+        [0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0.35, 0],
+        // B — busier with extra ghost on the &a of 1
+        [0, 0, 0.3, 0, 1, 0, 0, 0, 0, 0, 0.3, 0, 1, 0, 0.4, 0],
+        // C — sparse, just 2 + 4
+        [0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0],
+        // D — ghost-heavy
+        [0, 0, 0.25, 0, 1, 0, 0.3, 0, 0, 0, 0.25, 0, 1, 0, 0.35, 0],
+      ],
+      hihat: [
+        // A — main swung 16ths with open
+        [0.45, 0.3, 0.7, 0.3, 0.45, 0.3, 1, 0.3, 0.45, 0.3, 0.7, 0.3, 0.45, 0.3, 1, 0.5],
+        // B — busier all-16ths
+        [0.5, 0.4, 0.7, 0.4, 0.5, 0.4, 1, 0.4, 0.5, 0.4, 0.7, 0.4, 0.5, 0.4, 1, 0.7],
+        // C — sparse 8ths
+        [0.45, 0, 0.5, 0, 0.45, 0, 0.7, 0, 0.45, 0, 0.5, 0, 0.45, 0, 0.7, 0],
+        // D — alt with offbeat accents
+        [0.4, 0.3, 0.5, 0.5, 0.4, 0.3, 0.8, 0.4, 0.4, 0.3, 0.5, 0.5, 0.4, 0.3, 0.9, 0.5],
+      ],
+      bass: [
+        // A — main funk bass with ghosts
+        [1, 0, 0, 0.6, 0, 1, 0, 0.5, 1, 0, 0, 0, 1, 0, 0.7, 0.5],
+        // B — busier with more 16ths
+        [1, 0.3, 0, 0.6, 0.4, 1, 0, 0.5, 1, 0.3, 0, 0.4, 1, 0, 0.7, 0.5],
+        // C — root-only sparse
+        [1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0],
+        // D — alt with the 5th on offbeats
+        [1, 0, 0, 0.4, 0, 0.7, 0, 0.5, 1, 0, 0, 0, 0.7, 0, 0.5, 0.4],
+      ],
+    },
   },
   {
     id: 'tech-house',
@@ -115,6 +244,38 @@ export const GROOVE_PRESETS: readonly GroovePreset[] = [
     notesOverrides: {
       subpulse: [A2 / 2, 0, 0, 0, 0, 0, 0, 0, A2 / 2, 0, 0, 0, 0, 0, 0, 0],
       pad: [A2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    },
+    variationPools: {
+      kick: [
+        // A — main 4-on-floor
+        [1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0],
+        // B — main + ghost on the &-of-4
+        [1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.5, 0],
+        // C — three-quarter (drops one beat — chorus drama)
+        [1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0],
+        // D — pickup with extra 16th
+        [1, 0, 0, 0, 1, 0, 0, 0.5, 1, 0, 0, 0, 1, 0, 0, 0.5],
+      ],
+      hihat: [
+        // A — main offbeat
+        [0, 0, 0.7, 0, 0, 0, 0.7, 0, 0, 0, 0.7, 0, 0, 0, 0.7, 0],
+        // B — alt with closed on every 16th
+        [0.3, 0.3, 0.7, 0.3, 0.3, 0.3, 0.7, 0.3, 0.3, 0.3, 0.7, 0.3, 0.3, 0.3, 0.7, 0.3],
+        // C — sparse, just every 4th
+        [0, 0, 0.7, 0, 0, 0, 0, 0, 0, 0, 0.7, 0, 0, 0, 0, 0],
+        // D — open hat on the &-of-4
+        [0, 0, 0.7, 0, 0, 0, 0.7, 0, 0, 0, 0.7, 0, 0, 0, 1, 0.5],
+      ],
+      perc: [
+        // A — sparse offbeat shaker
+        [0, 0, 0, 0.5, 0, 0, 0, 0, 0, 0, 0, 0.5, 0, 0, 0, 0],
+        // B — busier shaker
+        [0.4, 0, 0.4, 0.5, 0.4, 0, 0.4, 0, 0.4, 0, 0.4, 0.5, 0.4, 0, 0.4, 0],
+        // C — silent
+        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        // D — clave-like cross-rhythm
+        [0, 0, 0, 1, 0.4, 0, 1, 0, 0, 0, 1, 0, 0.4, 0, 1, 0],
+      ],
     },
   },
   {
@@ -217,6 +378,38 @@ export const GROOVE_PRESETS: readonly GroovePreset[] = [
       bass: [A2, 0, 0, 0, C3, 0, 0, 0, D3, 0, 0, 0, E3, 0, 0, 0],
       rhodes: [A3, 0, 0, 0, 0, 0, C4, 0, 0, 0, E4, 0, 0, 0, 0, 0],
       chop: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, E4, 0, 0, 0, 0],
+    },
+    variationPools: {
+      kick: [
+        // A — main dusty kick
+        [1, 0, 0, 0, 0, 0, 1, 0, 1, 0, 0, 0, 0, 0, 0.5, 0],
+        // B — busier with extra ghost
+        [1, 0, 0.4, 0, 0, 0, 1, 0, 1, 0, 0.4, 0, 0, 0, 0.6, 0],
+        // C — sparse just 1 + 9
+        [1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0],
+        // D — alt with the &-of-2 instead of the &-of-3
+        [1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0.5, 0],
+      ],
+      snare: [
+        // A — 2+4 dry
+        [0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0],
+        // B — with subtle ghost on 14
+        [0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0.3, 0],
+        // C — only on 2
+        [0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        // D — drag on 13.5 leading into next bar
+        [0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0.4, 0.3, 0],
+      ],
+      hihat: [
+        // A — main 8th-note swung
+        [0.6, 0, 0.5, 0, 0.7, 0, 0.4, 0, 0.6, 0, 0.5, 0, 0.7, 0, 0.4, 0],
+        // B — busier with closed 16ths
+        [0.5, 0.3, 0.5, 0.3, 0.7, 0.3, 0.4, 0.3, 0.5, 0.3, 0.5, 0.3, 0.7, 0.3, 0.4, 0.3],
+        // C — sparse — every quarter
+        [0.6, 0, 0, 0, 0.7, 0, 0, 0, 0.6, 0, 0, 0, 0.7, 0, 0, 0],
+        // D — alt — open hat at the end
+        [0.6, 0, 0.5, 0, 0.7, 0, 0.4, 0, 0.6, 0, 0.5, 0, 0.7, 0, 1, 0],
+      ],
     },
   },
   {
