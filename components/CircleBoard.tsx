@@ -543,13 +543,7 @@ export default function CircleBoard() {
               <p>
                 A <strong>Circle</strong> is a small group of people you trust.
               </p>
-              <p>
-                Make one, invite friends with a code, share what you're working on, see each other's
-                pulse. Quiet — not a chat, not a feed.
-              </p>
-              <p className="italic" style={{ fontSize: 15, opacity: 0.7, color: '#8A6A4A' }}>
-                More coming soon: cross-device sync, shared focus sessions, weekly digests.
-              </p>
+              <p>Share what you're working on and organise missions together.</p>
             </div>
           )}
         </div>
