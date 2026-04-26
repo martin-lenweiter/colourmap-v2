@@ -81,47 +81,52 @@ register audios and let them in a folder. audios with reflections."
 
 ## Storage
 
-V1 ships **localStorage-only**, keyed per circle:
+| Section    | Persistence                                                     |
+|------------|-----------------------------------------------------------------|
+| Agenda     | derived from existing `circle_missions` rows, no new storage    |
+| Events     | localStorage `colourmap:circle-events` (Supabase follow-up)     |
+| Decisions  | **Supabase** via `/api/circles/:id/decisions` + localStorage cache |
+| Money      | localStorage `colourmap:circle-money` (Supabase follow-up)      |
+| Audio      | localStorage `colourmap:circle-audio` (Supabase follow-up)      |
+| Rainbow    | localStorage `colourmap:circle-rainbow` (Supabase follow-up)    |
 
-| Section    | LocalStorage key              |
-|------------|-------------------------------|
-| Events     | `colourmap:circle-events`     |
-| Decisions  | `colourmap:circle-decisions`  |
-| Money      | `colourmap:circle-money`      |
-| Audio      | `colourmap:circle-audio`      |
-| Rainbow    | `colourmap:circle-rainbow`    |
+The localStorage-backed sections use `Record<circleId, T[]>` shape
+under the hood. The Supabase-backed Decisions hook (`useCircleDecisions`)
+hydrates from a localStorage cache for instant first-paint and offline
+reads, then reconciles with the server on mount and after every mutation.
 
-Shape is `Record<circleId, T[]>` for all of them. Agenda is
-derived from the existing missions list, no new key needed.
-
-This is a deliberate scope cut so the band can use these features
-**this morning**. Supabase wire-up is a follow-up — see below.
+Decisions sets the migration pattern; the other four follow the same
+path (Drizzle table → service helpers → API route → hook → component
+refactor with cache fallback).
 
 ## Supabase migration plan (follow-up)
 
-Each section gets a Drizzle table, an API route, and a hook that
-mirrors the `useCircles` pattern (optimistic updates +
-localStorage cache fallback). Order of attack, lowest-friction
-first:
+Each remaining section gets a Drizzle table, service helpers, an
+API route, and a hook with optimistic updates + localStorage cache
+fallback (the Decisions wire-up is the reference implementation).
 
-1. **Decisions** + **Events** — closest in shape to existing missions
-   (single-record per row, simple voting/RSVP arrays). Reuse the
-   `withAuthenticatedUser` route helper. ~1 PR each.
-2. **Money** — needs row-level integrity (the balance has to
-   sum to zero) but otherwise straightforward. 1 PR.
+**Done:**
+
+- ✅ **Decisions** — `circle_decisions` + `circle_decision_votes`
+  tables, three API routes (list/create + decide/archive/delete +
+  vote), service helpers in `lib/services/circles.ts`, and
+  `useCircleDecisions` hook. Migration `0009_add_circle_decisions.sql`.
+
+**Remaining (in order of attack, lowest-friction first):**
+
+1. **Events** — closest in shape to Decisions (single record + RSVP
+   array). Mirror the Decisions pattern. ~1 PR.
+2. **Money** — needs row-level integrity (the balance has to sum to
+   zero) but otherwise straightforward. 1 PR.
 3. **Rainbow** — `circle_rainbow_reflections` table with
    `(circle_id, stage, author_id, text, created_at)`. The UI already
    sorts on the client; the API just needs to scope by `circle_id`.
    1 PR.
 4. **Audio** — non-trivial. Base64 in a row works for tiny clips but
-   real jam takes need Supabase Storage with signed URLs. This is the
-   one to **not rush** — better localStorage-only than half-broken.
-   2 PRs: storage bucket + metadata table.
-5. **Agenda** — no migration needed; it's pure UI over missions.
-
-Tracked in `docs/specs/supabase-sync-status.md` as a follow-up
-after the band-first-test PR lands and the band actually starts
-using these surfaces.
+   real recordings need Supabase Storage with signed URLs. This is
+   the one to **not rush** — better localStorage-only than
+   half-broken. 2 PRs: storage bucket + metadata table.
+5. **Agenda** — no migration needed; pure UI over missions.
 
 ## How it shows up
 

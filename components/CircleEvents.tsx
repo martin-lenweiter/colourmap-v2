@@ -162,7 +162,7 @@ export default function CircleEvents({
               type="text"
               value={titleInput}
               onChange={(e) => setTitleInput(e.target.value)}
-              placeholder="rehearsal · mix night · photoshoot…"
+              placeholder="gathering · trip · session · dinner…"
               className="w-full border-b bg-transparent pb-1 outline-none placeholder:italic placeholder:text-[#8A6A4A] placeholder:opacity-50"
               style={{
                 fontFamily: 'var(--font-serif)',
@@ -324,7 +324,7 @@ export default function CircleEvents({
                         className="ml-2"
                         style={{
                           fontFamily: 'var(--font-serif)',
-                          fontSize: 10,
+                          fontSize: 11,
                           color: '#8A6A4A',
                           opacity: 0.7,
                         }}
@@ -345,7 +345,7 @@ export default function CircleEvents({
                               key={r.memberId}
                               style={{
                                 fontFamily: 'var(--font-serif)',
-                                fontSize: 9.5,
+                                fontSize: 11,
                                 fontWeight: 600,
                                 color: member?.color || '#8A6A4A',
                                 opacity: r.status === 'maybe' ? 0.55 : 1,

@@ -164,8 +164,8 @@ export default function CircleRainbow({
               lineHeight: 1.5,
             }}
           >
-            tap a stage to leave a reflection · the band reads how each of us relates to that state,
-            over time
+            tap a stage to leave a reflection · the circle reads how each of us relates to that
+            state, over time
           </p>
           <div className="space-y-1.5">
             {STAGES.map((stage) => {
@@ -298,9 +298,9 @@ export default function CircleRainbow({
                             <span
                               style={{
                                 fontFamily: 'var(--font-serif)',
-                                fontSize: 10,
+                                fontSize: 11,
                                 color: '#8A6A4A',
-                                opacity: 0.55,
+                                opacity: 0.6,
                               }}
                             >
                               {relativeWhen(r.createdAt)}

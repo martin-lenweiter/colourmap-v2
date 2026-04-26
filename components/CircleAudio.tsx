@@ -4,9 +4,9 @@ import { useEffect, useRef, useState } from 'react';
 
 /*
  * CircleAudio — drop-zone for audio recordings shared with the
- * circle. Members can drop voice memos, jam recordings, mic
- * captures from their phone, or any audio file. Each clip can
- * have a reflection (description / what to listen for).
+ * circle. Voice memos, recordings, mic captures, audio reflections
+ * from a walk, a meeting, a session — any audio file. Each clip
+ * can have a reflection (description / what to listen for).
  *
  * V1 storage: localStorage keyed by circle id, with audio files
  * encoded as base64 data URLs. Works fully offline; small files
@@ -14,7 +14,7 @@ import { useEffect, useRef, useState } from 'react';
  *
  * Per Martin (2026-04-26): "place where we can put our recordings
  * so where we can drop files. from our phone recordings during
- * jams. for other users non musicians it means they can register
+ * sessions. for non-musicians: the same surface holds voice memos,
  * audios and let them in a folder. audios with reflections."
  *
  * V2 (Supabase wire-up): swap to Supabase Storage bucket per
@@ -262,12 +262,12 @@ export default function CircleAudio({
               className="mt-1.5"
               style={{
                 fontFamily: 'var(--font-serif)',
-                fontSize: 10,
+                fontSize: 11,
                 color: '#8A6A4A',
-                opacity: 0.55,
+                opacity: 0.6,
               }}
             >
-              voice memos · jam recordings · audio reflections · max {formatSize(MAX_BYTES)}
+              voice memos · recordings · sound reflections · max {formatSize(MAX_BYTES)}
             </p>
           </div>
 
@@ -443,9 +443,9 @@ export default function CircleAudio({
                       className="mt-1"
                       style={{
                         fontFamily: 'var(--font-serif)',
-                        fontSize: 10,
+                        fontSize: 11,
                         color: '#8A6A4A',
-                        opacity: 0.65,
+                        opacity: 0.7,
                       }}
                     >
                       <span style={{ color: clip.uploadedByColour, fontWeight: 600 }}>

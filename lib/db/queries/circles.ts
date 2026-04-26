@@ -3,6 +3,8 @@ import type { PostgresJsDatabase } from 'drizzle-orm/postgres-js';
 
 import type * as schema from '@/lib/db/schema';
 import {
+  circleDecisions,
+  circleDecisionVotes,
   circleMembers,
   circleMissions,
   circleNotes,
@@ -15,6 +17,8 @@ export type CircleMember = InferSelectModel<typeof circleMembers>;
 export type CircleMission = InferSelectModel<typeof circleMissions>;
 export type CircleNote = InferSelectModel<typeof circleNotes>;
 export type CircleSession = InferSelectModel<typeof circleSessions>;
+export type CircleDecision = InferSelectModel<typeof circleDecisions>;
+export type CircleDecisionVote = InferSelectModel<typeof circleDecisionVotes>;
 
 type Db = PostgresJsDatabase<typeof schema>;
 
@@ -170,4 +174,92 @@ export async function getActiveSession(db: Db, circleId: string): Promise<Circle
     .orderBy(desc(circleSessions.startedAt))
     .limit(1);
   return row ?? null;
+}
+
+// ─── Decisions ───
+
+export async function insertCircleDecision(
+  db: Db,
+  data: { circleId: string; title: string; description?: string | null; createdBy: string },
+): Promise<CircleDecision> {
+  const [row] = await db.insert(circleDecisions).values(data).returning();
+  return row;
+}
+
+export async function getCircleDecisions(db: Db, circleId: string): Promise<CircleDecision[]> {
+  return db
+    .select()
+    .from(circleDecisions)
+    .where(eq(circleDecisions.circleId, circleId))
+    .orderBy(desc(circleDecisions.createdAt));
+}
+
+export async function updateCircleDecision(
+  db: Db,
+  decisionId: string,
+  data: {
+    status?: 'proposed' | 'decided' | 'archived';
+    decision?: 'yes' | 'no' | null;
+    decidedAt?: Date | null;
+    title?: string;
+    description?: string | null;
+  },
+): Promise<CircleDecision | null> {
+  const [row] = await db
+    .update(circleDecisions)
+    .set(data)
+    .where(eq(circleDecisions.id, decisionId))
+    .returning();
+  return row ?? null;
+}
+
+export async function deleteCircleDecision(db: Db, decisionId: string): Promise<boolean> {
+  await db.delete(circleDecisionVotes).where(eq(circleDecisionVotes.decisionId, decisionId));
+  const result = await db
+    .delete(circleDecisions)
+    .where(eq(circleDecisions.id, decisionId))
+    .returning();
+  return result.length > 0;
+}
+
+export async function getDecisionVotes(db: Db, decisionId: string): Promise<CircleDecisionVote[]> {
+  return db
+    .select()
+    .from(circleDecisionVotes)
+    .where(eq(circleDecisionVotes.decisionId, decisionId))
+    .orderBy(desc(circleDecisionVotes.createdAt));
+}
+
+export async function getVotesForDecisions(
+  db: Db,
+  decisionIds: string[],
+): Promise<CircleDecisionVote[]> {
+  if (decisionIds.length === 0) return [];
+  const rows = await db.select().from(circleDecisionVotes);
+  return rows.filter((r) => decisionIds.includes(r.decisionId));
+}
+
+/**
+ * Cast or replace a member's vote on a decision. Each member has at
+ * most one vote per decision — we delete any prior vote first.
+ */
+export async function upsertDecisionVote(
+  db: Db,
+  data: {
+    decisionId: string;
+    memberId: string;
+    memberName: string;
+    value: 'yes' | 'no' | 'unsure';
+  },
+): Promise<CircleDecisionVote> {
+  await db
+    .delete(circleDecisionVotes)
+    .where(
+      and(
+        eq(circleDecisionVotes.decisionId, data.decisionId),
+        eq(circleDecisionVotes.memberId, data.memberId),
+      ),
+    );
+  const [row] = await db.insert(circleDecisionVotes).values(data).returning();
+  return row;
 }

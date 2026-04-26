@@ -217,12 +217,12 @@ export default function CircleAgenda({
                           className="cursor-pointer rounded-md px-1.5 py-1 text-left transition-all hover:opacity-85"
                           style={{
                             fontFamily: 'var(--font-serif)',
-                            fontSize: 10,
+                            fontSize: 11,
                             fontWeight: 600,
                             color: colour,
                             background: `${colour}15`,
                             border: `1px solid ${colour}40`,
-                            lineHeight: 1.25,
+                            lineHeight: 1.3,
                           }}
                           title={`${m.text}${owner ? ` · ${owner.name}` : ''}`}
                         >
@@ -250,9 +250,9 @@ export default function CircleAgenda({
         className="mt-3 text-center italic"
         style={{
           fontFamily: 'var(--font-serif)',
-          fontSize: 10,
+          fontSize: 11,
           color: '#8A6A4A',
-          opacity: 0.55,
+          opacity: 0.6,
           letterSpacing: '0.04em',
         }}
       >

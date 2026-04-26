@@ -1,57 +1,18 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
+
+import { useCircleDecisions } from '@/lib/hooks/use-circle-decisions';
 
 /*
  * CircleDecisions — proposal + vote layer for the circle.
  * Each decision: title + description + per-member vote
  * (yes / no / unsure). Status = proposed → decided when a clear
- * majority emerges. Past decisions become an archived log so the
- * band's brain doesn't lose them.
+ * majority emerges. Past decisions become an archived log.
  *
- * Per Martin (2026-04-26): item 4 from Circles evolution list.
- * V1 storage: localStorage keyed by circle id.
+ * Storage: Supabase via /api/circles/:id/decisions, with a
+ * localStorage cache for instant first-paint and offline reads.
  */
-
-const LS = 'colourmap:circle-decisions';
-
-interface Vote {
-  memberId: string;
-  memberName: string;
-  value: 'yes' | 'no' | 'unsure';
-}
-
-interface Decision {
-  id: string;
-  title: string;
-  description: string;
-  status: 'proposed' | 'decided' | 'archived';
-  decision?: 'yes' | 'no';
-  decidedAt?: string;
-  createdBy: string;
-  createdAt: string;
-  votes: Vote[];
-}
-
-type Store = Record<string, Decision[]>;
-
-function load(): Store {
-  if (typeof window === 'undefined') return {};
-  try {
-    const raw = localStorage.getItem(LS);
-    return raw ? (JSON.parse(raw) as Store) : {};
-  } catch {
-    return {};
-  }
-}
-
-function persist(s: Store) {
-  try {
-    localStorage.setItem(LS, JSON.stringify(s));
-  } catch {
-    /* silent */
-  }
-}
 
 export default function CircleDecisions({
   circleId,
@@ -64,66 +25,40 @@ export default function CircleDecisions({
   meName: string;
   members: { id: string; name: string; color: string }[];
 }) {
-  const [store, setStore] = useState<Store>({});
+  const {
+    decisions,
+    propose,
+    castVote: castVoteApi,
+    decide: decideApi,
+    archive: archiveApi,
+    remove: removeApi,
+  } = useCircleDecisions(circleId, meName);
   const [open, setOpen] = useState(true);
   const [titleInput, setTitleInput] = useState('');
   const [descInput, setDescInput] = useState('');
 
-  useEffect(() => {
-    setStore(load());
-  }, []);
-
-  const decisions = (store[circleId] ?? [])
-    .slice()
-    .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
-
-  function update(next: Store) {
-    setStore(next);
-    persist(next);
-  }
-
   function add() {
     const t = titleInput.trim();
     if (!t) return;
-    const dec: Decision = {
-      id: crypto.randomUUID(),
-      title: t,
-      description: descInput.trim(),
-      status: 'proposed',
-      createdBy: meId,
-      createdAt: new Date().toISOString(),
-      votes: [],
-    };
-    update({ ...store, [circleId]: [dec, ...decisions] });
+    propose(t, descInput.trim() || undefined);
     setTitleInput('');
     setDescInput('');
   }
 
   function castVote(id: string, value: 'yes' | 'no' | 'unsure') {
-    const next = decisions.map((d) => {
-      if (d.id !== id) return d;
-      const rest = d.votes.filter((v) => v.memberId !== meId);
-      return { ...d, votes: [...rest, { memberId: meId, memberName: meName, value }] };
-    });
-    update({ ...store, [circleId]: next });
+    castVoteApi(id, value, meId);
   }
 
   function decide(id: string, decision: 'yes' | 'no') {
-    const next = decisions.map((d) =>
-      d.id === id
-        ? { ...d, status: 'decided' as const, decision, decidedAt: new Date().toISOString() }
-        : d,
-    );
-    update({ ...store, [circleId]: next });
+    decideApi(id, decision);
   }
 
   function archive(id: string) {
-    const next = decisions.map((d) => (d.id === id ? { ...d, status: 'archived' as const } : d));
-    update({ ...store, [circleId]: next });
+    archiveApi(id);
   }
 
   function remove(id: string) {
-    update({ ...store, [circleId]: decisions.filter((d) => d.id !== id) });
+    removeApi(id);
   }
 
   const proposed = decisions.filter((d) => d.status === 'proposed');
@@ -333,7 +268,7 @@ export default function CircleDecisions({
                           key={v.memberId}
                           style={{
                             fontFamily: 'var(--font-serif)',
-                            fontSize: 9.5,
+                            fontSize: 11,
                             fontWeight: 600,
                             color: member?.color || '#8A6A4A',
                             opacity: v.value === 'unsure' ? 0.55 : 1,
@@ -416,9 +351,9 @@ export default function CircleDecisions({
               className="text-center italic"
               style={{
                 fontFamily: 'var(--font-serif)',
-                fontSize: 10,
+                fontSize: 11,
                 color: '#8A6A4A',
-                opacity: 0.4,
+                opacity: 0.5,
               }}
             >
               + {archived.length} archived

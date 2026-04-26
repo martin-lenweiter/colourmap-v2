@@ -281,9 +281,9 @@ export default function CircleMoney({
                 <p
                   style={{
                     fontFamily: 'var(--font-serif)',
-                    fontSize: 10.5,
+                    fontSize: 11.5,
                     color: '#8A6A4A',
-                    opacity: 0.7,
+                    opacity: 0.75,
                   }}
                 >
                   paid by {e.paidByName} ·{' '}
