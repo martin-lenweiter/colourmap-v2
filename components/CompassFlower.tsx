@@ -140,19 +140,22 @@ export default function CompassFlower() {
   }
 
   return (
+    // Phone: no card wrapper, just breathing room. Desktop: soft tan
+    // card so the compass sits inside the column rhythm. (Martin
+    // 2026-04-26: "drop the white box around the compasses in phone
+    // view.")
     <div
-      className="rounded-xl"
+      className="rounded-xl px-1 py-3 md:border md:px-3.5 md:py-3"
       style={{
-        background: '#C4A06010',
-        border: '1px solid #C4A06022',
-        padding: '14px 14px 12px',
+        background: 'transparent',
+        borderColor: '#C4A06022',
       }}
     >
       <p
         className="mb-2 text-center uppercase"
         style={{
           fontFamily: 'var(--font-serif)',
-          fontSize: 11,
+          fontSize: 13,
           fontWeight: 700,
           letterSpacing: '0.18em',
           color: '#7A5438',
@@ -215,7 +218,7 @@ export default function CompassFlower() {
                 dominantBaseline="middle"
                 style={{
                   fontFamily: 'var(--font-serif)',
-                  fontSize: 12,
+                  fontSize: 14,
                   fontWeight: 700,
                   fill: p.colour,
                   letterSpacing: '0.04em',
@@ -233,9 +236,9 @@ export default function CompassFlower() {
         className="mt-2 text-center italic"
         style={{
           fontFamily: 'var(--font-serif)',
-          fontSize: 12,
+          fontSize: 14,
           color: '#7A5438',
-          opacity: 0.85,
+          opacity: 0.9,
           lineHeight: 1.5,
         }}
       >

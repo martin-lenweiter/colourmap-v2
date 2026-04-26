@@ -49,17 +49,26 @@ vi.mock('@/components/ViewModeSwitcher', () => ({
   default: () => <div data-testid="view-mode-switcher">ViewModeSwitcher</div>,
 }));
 
-vi.mock('@/components/UserInitialsMenu', () => ({
-  // Flatten to visible markup so the existing assertions about email
-  // and Sign out still cover the user-menu surface (which now lives
-  // behind a click-to-open popover).
-  default: ({ initials, email }: { initials: string; email: string }) => (
-    <div data-testid="user-initials-menu">
-      <span>{initials}</span>
-      <span>{email}</span>
-      <form action="/logout" method="post">
-        <button type="submit">Sign out</button>
-      </form>
+// Mock the brand button so we can flatten the (otherwise modal-gated)
+// user card into the static markup. The initials, email, and Sign out
+// previously lived in a separate UserInitialsMenu in the right slot;
+// they now live inside the brand-button modal, which only renders
+// when opened. Flattening keeps the assertions meaningful.
+vi.mock('@/components/ColourmapBrandButton', () => ({
+  default: ({ initials, email }: { initials?: string; email?: string }) => (
+    <div data-testid="brand-button">
+      <p style={{ color: '#B33A2B' }} className="text-center">
+        Colourmap
+      </p>
+      {initials && (
+        <div data-testid="brand-user-card">
+          <span>{initials}</span>
+          {email && <span>{email}</span>}
+          <form action="/logout" method="post">
+            <button type="submit">Sign out</button>
+          </form>
+        </div>
+      )}
     </div>
   ),
 }));

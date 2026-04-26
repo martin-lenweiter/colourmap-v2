@@ -117,8 +117,10 @@ function composeSentence(): string {
   }
 
   if (objective) {
-    const trimmed = objective.length > 60 ? objective.slice(0, 57) + '…' : objective;
-    parts.push(`Your objective is ${trimmed}.`);
+    // Full objective text — wraps to 2+ rows in the NowBar card.
+    // Earlier 60-char truncation made longer objectives ("morning
+    // overview…") cut off mid-word. The card flexes vertically.
+    parts.push(`Your objective is ${objective}.`);
   }
 
   const streak = computeStreakDays(checkins);

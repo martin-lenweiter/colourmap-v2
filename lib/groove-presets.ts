@@ -33,6 +33,98 @@ export type TrackId =
   | 'pad'
   | 'chop';
 
+/** Per-voice tweaks that let each preset shape the same synth with
+ *  its own timbre. All fields are optional; absent values fall back
+ *  to the engine defaults so a preset without `voiceTweaks` sounds
+ *  identical to a pre-tweak preset. */
+export interface PresetVoiceTweaks {
+  kick?: {
+    /** Starting frequency of the body sweep, Hz. Default 150. */
+    freqStart?: number;
+    /** Ending frequency of the body sweep, Hz. Default 40. */
+    freqEnd?: number;
+    /** Sweep duration in seconds. Default 0.12. */
+    sweepSec?: number;
+    /** Body decay duration in seconds. Default 0.35. */
+    decaySec?: number;
+    /** Click (beater) gain. Default 0.18. Set 0 to remove the click. */
+    clickGain?: number;
+    /** Click high-pass cutoff Hz. Default 4000. Lower = thuddier. */
+    clickHpHz?: number;
+    /** Body gain at peak. Default 0.9. */
+    bodyGain?: number;
+  };
+  snare?: {
+    /** Noise high-pass cutoff Hz. Default 1200. */
+    noiseHpHz?: number;
+    /** Noise decay seconds. Default 0.15. */
+    noiseDecaySec?: number;
+    /** Tonal body start Hz. Default 220. */
+    bodyFreq?: number;
+    /** Body decay seconds. Default 0.1. */
+    bodyDecaySec?: number;
+    /** Noise gain at peak. Default 0.35. */
+    noiseGain?: number;
+  };
+  hihat?: {
+    /** High-pass cutoff Hz. Default 7000. */
+    hpHz?: number;
+    /** Decay seconds. Default 0.05. Higher = more "open" hat feel. */
+    decaySec?: number;
+    /** Gain at peak. Default 0.12. */
+    gain?: number;
+  };
+  rhodes?: {
+    /** Lowpass cutoff Hz for the rhodes tone. Default 2500. Lower
+     *  = mellower / dustier; higher = brighter electric piano. */
+    lpHz?: number;
+    /** Decay seconds. Default 0.45. Longer = sustained pad-like
+     *  rhodes; shorter = stab. */
+    decaySec?: number;
+    /** Peak gain. Default 0.3. */
+    gain?: number;
+    /** Ratio of upper-partial triangle to fundamental sine. Default
+     *  3 (third octave). 1.5 = clean-mellow; 4 = bell-like. */
+    overtoneRatio?: number;
+  };
+  bass?: {
+    /** Oscillator type. Default 'sawtooth'. */
+    oscType?: OscillatorType;
+    /** Filter starting cutoff Hz. Default 1200. */
+    lpStartHz?: number;
+    /** Filter ending cutoff Hz. Default 300. */
+    lpEndHz?: number;
+    /** Filter sweep duration seconds. Default 0.15. */
+    sweepSec?: number;
+    /** Filter resonance. Default 4. Higher = squelchier acid. */
+    lpQ?: number;
+    /** Peak gain. Default 0.55. */
+    gain?: number;
+    /** Decay seconds. Default 0.2. */
+    decaySec?: number;
+  };
+  pad?: {
+    /** Oscillator type. Default 'sawtooth'. 'sine' = pure clean
+     *  drone; 'triangle' = soft warm; 'sawtooth' = full string-like;
+     *  'square' = retro arcade pad. */
+    oscType?: OscillatorType;
+    /** Detune ratio between the two unison oscillators. Default
+     *  1.005 — small chorus. Higher = wider, almost out of tune. */
+    detune?: number;
+    /** Lowpass cutoff Hz. Default 1800. Lower = darker / dustier. */
+    lpHz?: number;
+    /** Lowpass resonance. Default 1. Higher = ringy synth feel. */
+    lpQ?: number;
+    /** Peak gain. Default 0.12. */
+    gain?: number;
+    /** Fade-in seconds. Default 1.5. */
+    fadeInSec?: number;
+    /** Sustain duration before fade-out, seconds. Default 2.3
+     *  (fadeIn 1.5 + sustain 2.3 = total 3.8). */
+    sustainSec?: number;
+  };
+}
+
 export interface GroovePreset {
   id: string;
   name: string;
@@ -56,6 +148,10 @@ export interface GroovePreset {
    *  Keeps the groove from sounding repetitive after a minute.
    *  See docs/specs/groove-machine-infinite-tracks.md. */
   variationPools?: Partial<Record<TrackId, number[][]>>;
+  /** Per-voice timbre tweaks (kick/snare/hihat envelopes + filters)
+   *  so the same synth speaks differently per preset. Partial — any
+   *  field can be omitted to fall back to engine defaults. */
+  voiceTweaks?: PresetVoiceTweaks;
 }
 
 /* ─── Arc phases ───────────────────────────────────────────────
@@ -163,6 +259,15 @@ export const GROOVE_PRESETS: readonly GroovePreset[] = [
     dot: '#C4A060',
     bpm: 112,
     swing: 0.17,
+    voiceTweaks: {
+      kick: { freqStart: 160, freqEnd: 45, bodyGain: 0.95 },
+      snare: { bodyFreq: 230, noiseHpHz: 1400 },
+      hihat: { hpHz: 7500, gain: 0.13 },
+      // Funk pad — warm sawtooth bed with subtle chorus.
+      pad: { oscType: 'sawtooth', detune: 1.006, lpHz: 1800, gain: 0.13 },
+      // Funk bass — bouncy sawtooth with classic Moog-style cutoff.
+      bass: { oscType: 'sawtooth', lpStartHz: 1500, lpEndHz: 350, lpQ: 5, gain: 0.6 },
+    },
     activeSet: {
       kick: true,
       snare: true,
@@ -222,6 +327,31 @@ export const GROOVE_PRESETS: readonly GroovePreset[] = [
     dot: '#3A6890',
     bpm: 124,
     swing: 0.04, // tight, almost zero
+    voiceTweaks: {
+      // Punchy, short, mechanical — fast attack and crisp click.
+      kick: {
+        freqStart: 200,
+        freqEnd: 50,
+        sweepSec: 0.08,
+        decaySec: 0.22,
+        clickGain: 0.25,
+        clickHpHz: 5000,
+      },
+      snare: { noiseHpHz: 2000, noiseDecaySec: 0.08, bodyFreq: 240 },
+      hihat: { hpHz: 9000, decaySec: 0.04, gain: 0.1 },
+      // Tech pad — clinical square wave, narrow chorus, brighter
+      // filter so it sits over the 4-on-floor without warming it.
+      pad: {
+        oscType: 'square',
+        detune: 1.003,
+        lpHz: 2400,
+        gain: 0.09,
+        fadeInSec: 1.0,
+      },
+      // Tech bass note — Tech House preset uses subpulse not bass,
+      // but if bass is enabled it should be the squelchy acid kind.
+      bass: { oscType: 'square', lpStartHz: 1800, lpEndHz: 400, lpQ: 8, gain: 0.5 },
+    },
     activeSet: {
       kick: true,
       hihat: true,
@@ -281,6 +411,17 @@ export const GROOVE_PRESETS: readonly GroovePreset[] = [
   {
     id: 'tropical',
     name: 'Tropical',
+    voiceTweaks: {
+      // Light, bright — kick is more rim than thump, snare papery.
+      kick: { freqStart: 130, freqEnd: 55, bodyGain: 0.7, clickGain: 0.1 },
+      snare: { noiseHpHz: 1500, noiseGain: 0.28, bodyFreq: 250 },
+      hihat: { hpHz: 6500, gain: 0.1 },
+      // Tropical pad — clean triangle bed, soft and bright. The
+      // low resonance keeps the steel-drum world airy.
+      pad: { oscType: 'triangle', detune: 1.008, lpHz: 2200, gain: 0.11 },
+      // Tropical bass — soft triangle, light and warm, no acid.
+      bass: { oscType: 'triangle', lpStartHz: 800, lpEndHz: 250, lpQ: 1.5, gain: 0.5 },
+    },
     vibe: 'Kygo sunset · steel pan + marimba',
     dot: '#E08858',
     bpm: 104,
@@ -348,6 +489,40 @@ export const GROOVE_PRESETS: readonly GroovePreset[] = [
   {
     id: 'slow-roll',
     name: 'Slow Roll',
+    voiceTweaks: {
+      // Long-tail deep kick + thicker snare body — warm and patient.
+      kick: {
+        freqStart: 120,
+        freqEnd: 35,
+        sweepSec: 0.18,
+        decaySec: 0.5,
+        bodyGain: 1.0,
+        clickGain: 0.1,
+      },
+      snare: { noiseHpHz: 1000, noiseDecaySec: 0.2, bodyFreq: 200 },
+      hihat: { decaySec: 0.07 },
+      // Slow Roll pad — wide, dark, slow-fade. Cinematic.
+      pad: {
+        oscType: 'sawtooth',
+        detune: 1.012,
+        lpHz: 1300,
+        gain: 0.16,
+        fadeInSec: 2.5,
+        sustainSec: 3.5,
+      },
+      // Slow Roll bass — heavy, sustained, deep cinematic low end.
+      bass: {
+        oscType: 'sawtooth',
+        lpStartHz: 700,
+        lpEndHz: 180,
+        sweepSec: 0.3,
+        lpQ: 3,
+        gain: 0.7,
+        decaySec: 0.45,
+      },
+      // Slow Roll rhodes — wide cinematic chord, long sustain, bright.
+      rhodes: { lpHz: 3200, decaySec: 0.85, gain: 0.32, overtoneRatio: 3 },
+    },
     vibe: 'sexy R&B · low-BPM bedroom soul',
     dot: '#7A3850',
     bpm: 78,
@@ -412,6 +587,33 @@ export const GROOVE_PRESETS: readonly GroovePreset[] = [
   {
     id: 'boom-bap',
     name: 'Boom Bap',
+    voiceTweaks: {
+      // Dusty, lo-fi'd kick (bigger noise click, lower hp) + tight
+      // crackly snare. Hat sits dirty and short.
+      kick: {
+        freqStart: 110,
+        freqEnd: 38,
+        decaySec: 0.3,
+        clickGain: 0.3,
+        clickHpHz: 3000,
+      },
+      snare: { noiseHpHz: 900, bodyFreq: 200, noiseGain: 0.4 },
+      hihat: { hpHz: 6000, decaySec: 0.04 },
+      // Boom Bap pad — dusty, narrow, low — sits behind the rhodes
+      // chord without competing.
+      pad: { oscType: 'triangle', detune: 1.002, lpHz: 900, gain: 0.1 },
+      // Boom Bap bass — round 808-style sub, no acid, very dark.
+      bass: {
+        oscType: 'sine',
+        lpStartHz: 600,
+        lpEndHz: 180,
+        lpQ: 2,
+        gain: 0.65,
+        decaySec: 0.32,
+      },
+      // Boom Bap rhodes — dusty stab, muffled tone, short decay.
+      rhodes: { lpHz: 1600, decaySec: 0.35, gain: 0.28, overtoneRatio: 2 },
+    },
     vibe: 'Biggie · Nas · J Dilla · 1995 Brooklyn',
     dot: '#6A4A2A',
     bpm: 90,
@@ -479,6 +681,39 @@ export const GROOVE_PRESETS: readonly GroovePreset[] = [
   {
     id: 'epic-electro',
     name: 'Epic Electro',
+    voiceTweaks: {
+      // Big, room-filling kick (wider sweep) + bright snare + sizzly
+      // hat. The "festival mainroom" weight without going dirty.
+      kick: {
+        freqStart: 180,
+        freqEnd: 38,
+        sweepSec: 0.15,
+        bodyGain: 1.0,
+        clickGain: 0.25,
+      },
+      snare: { noiseHpHz: 1800, noiseGain: 0.42, bodyFreq: 240 },
+      hihat: { hpHz: 9500, gain: 0.14 },
+      // Epic pad — wide, ringy, festival-stack. Higher resonance
+      // so the chord rings; bigger fade so it carries.
+      pad: {
+        oscType: 'sawtooth',
+        detune: 1.015,
+        lpHz: 2800,
+        lpQ: 4,
+        gain: 0.16,
+        fadeInSec: 1.2,
+      },
+      // Epic bass — big square wobble bass, opens up, ringy.
+      bass: {
+        oscType: 'square',
+        lpStartHz: 2000,
+        lpEndHz: 500,
+        sweepSec: 0.2,
+        lpQ: 6,
+        gain: 0.65,
+        decaySec: 0.28,
+      },
+    },
     vibe: 'Justice · Discovery-era Daft Punk · Madeon',
     dot: '#3868D8',
     bpm: 126,
@@ -558,6 +793,44 @@ export const GROOVE_PRESETS: readonly GroovePreset[] = [
   {
     id: 'lofi-rooftop',
     name: 'Lofi Rooftop',
+    voiceTweaks: {
+      // Muffled slow kick (no click attack, low body), dampened
+      // snare, dusty short hat. The "tape passed through three
+      // generations" feel.
+      kick: {
+        freqStart: 110,
+        freqEnd: 50,
+        sweepSec: 0.18,
+        decaySec: 0.4,
+        clickGain: 0.05,
+        clickHpHz: 2500,
+        bodyGain: 0.75,
+      },
+      snare: { noiseHpHz: 800, noiseDecaySec: 0.18, bodyFreq: 200, noiseGain: 0.3 },
+      hihat: { hpHz: 5500, decaySec: 0.06, gain: 0.1 },
+      // Lofi pad — muffled triangle, very low cutoff, slow swell.
+      // Tape-saturated feel — no sparkle, all warmth.
+      pad: {
+        oscType: 'triangle',
+        detune: 1.004,
+        lpHz: 800,
+        gain: 0.13,
+        fadeInSec: 2.2,
+        sustainSec: 3.0,
+      },
+      // Lofi bass — soft upright-ish triangle, very dark, low Q.
+      bass: {
+        oscType: 'triangle',
+        lpStartHz: 500,
+        lpEndHz: 200,
+        sweepSec: 0.25,
+        lpQ: 1,
+        gain: 0.5,
+        decaySec: 0.3,
+      },
+      // Lofi rhodes — warm tape-saturated chord, mellow + sustained.
+      rhodes: { lpHz: 1400, decaySec: 0.7, gain: 0.3, overtoneRatio: 2 },
+    },
     vibe: 'Nujabes · J Dilla · study beats',
     dot: '#6A4A7A',
     bpm: 82,

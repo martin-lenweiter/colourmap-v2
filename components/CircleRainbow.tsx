@@ -15,7 +15,7 @@ import { useEffect, useState } from 'react';
  * there ... tracks the evolutions of that over time."
  *
  * The 10 Hawkins stages (low → high):
- *   Shame · Apathy · Grief · Fear · Anger ·
+ *   Shame · Apathy · Sadness · Fear · Anger ·
  *   Courage · Acceptance · Reason · Love · Peace
  *
  * V1 storage: localStorage keyed by circle id. Supabase wire-up
@@ -32,7 +32,7 @@ const STAGES: { name: string; colour: string; soft: string }[] = [
   { name: 'Courage', colour: '#F8C040', soft: '#F8C04015' },
   { name: 'Anger', colour: '#F0A088', soft: '#F0A08815' },
   { name: 'Fear', colour: '#F080B8', soft: '#F080B815' },
-  { name: 'Grief', colour: '#E8A0C4', soft: '#E8A0C415' },
+  { name: 'Sadness', colour: '#E8A0C4', soft: '#E8A0C415' },
   { name: 'Apathy', colour: '#D8B0C8', soft: '#D8B0C815' },
   { name: 'Shame', colour: '#B8D0E8', soft: '#B8D0E815' },
 ];
