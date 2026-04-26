@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { playSampledNote, type SamplePackId } from '@/lib/sample-pack';
 import { type SaveStatus, saveToNotebook } from '@/lib/save-to-notebook';
+import { useSoundSession } from '@/lib/sound-session';
 
 /* ═══════════════════════════════════════════════════════════
    MAGIC MAKER — visual sound instrument.
@@ -395,6 +396,7 @@ function quantizeNote(timeMs: number, loopDurationMs: number): number {
 }
 
 export default function MagicMaker() {
+  const soundSession = useSoundSession();
   const [root, setRoot] = useState('C');
   const [scaleId, setScaleId] = useState('pentatonic');
   const [octaves, setOctaves] = useState(2);
@@ -1126,7 +1128,15 @@ export default function MagicMaker() {
       <div className="flex items-center justify-center gap-3">
         <button
           type="button"
-          onClick={() => setCruising((s) => !s)}
+          onClick={() => {
+            const next = !cruising;
+            setCruising(next);
+            if (next) {
+              soundSession.setActive('magic-maker', `${instrument.name} · ${root} ${scaleId}`);
+            } else {
+              soundSession.setPlaying(false);
+            }
+          }}
           className="flex cursor-pointer items-center gap-2 rounded-full px-4 py-2 transition-all"
           style={{
             background: cruising ? `${instrument.color}15` : '#C4A06008',
@@ -1551,7 +1561,18 @@ export default function MagicMaker() {
           {loopLayers.length > 0 && (
             <button
               type="button"
-              onClick={() => setLoopPlaying((s) => !s)}
+              onClick={() => {
+                const next = !loopPlaying;
+                setLoopPlaying(next);
+                if (next) {
+                  soundSession.setActive(
+                    'magic-maker',
+                    `${loopLayers.length} loop layer${loopLayers.length === 1 ? '' : 's'}`,
+                  );
+                } else {
+                  soundSession.setPlaying(false);
+                }
+              }}
               className="flex cursor-pointer items-center gap-2 rounded-full px-4 py-2 transition-all"
               style={{
                 background: loopPlaying ? '#C4A06015' : '#C4A06008',

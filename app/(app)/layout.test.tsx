@@ -22,6 +22,7 @@ const { redirect } = vi.hoisted(() => ({
 
 vi.mock('next/navigation', () => ({
   redirect,
+  usePathname: () => '/day',
 }));
 
 vi.mock('@/lib/supabase/server', () => ({

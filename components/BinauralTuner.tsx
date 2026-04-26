@@ -6,6 +6,7 @@ import AtomVisualizer, { type VisualizerMode } from '@/components/AtomVisualizer
 import InfoTooltip from '@/components/InfoTooltip';
 import { haptic } from '@/lib/haptics';
 import { playSampledNote, type SamplePackId } from '@/lib/sample-pack';
+import { useSoundSession } from '@/lib/sound-session';
 
 /* ═══════════════════════════════════════════════════════════
    BINAURAL TUNER — adaptive soundscape generator.
@@ -1419,6 +1420,7 @@ function SavedShapeIcon({ shape, color }: { shape: SavedShape; color: string }) 
 }
 
 export default function BinauralTuner() {
+  const soundSession = useSoundSession();
   const [playing, setPlaying] = useState(false);
   const [binauralOn, setBinauralOn] = useState(true);
   const [baseToneOn, setBaseToneOn] = useState(true);
@@ -2602,6 +2604,9 @@ export default function BinauralTuner() {
       oscL.start();
       oscR.start();
       setPlaying(true);
+      // Register with the global SoundSession so the MiniPlayer
+      // shows the Chill pill when the user navigates away.
+      soundSession.setActive('chill-machine', `${baseFreq}Hz · ${beatFreq}Hz beat`);
 
       // Start any active layers
       for (const [layerId, vol] of Object.entries(activeLayers)) {
@@ -2610,7 +2615,7 @@ export default function BinauralTuner() {
     } catch {
       setAudioError('could not start audio');
     }
-  }, [baseFreq, beatFreq, volume, activeLayers]);
+  }, [baseFreq, beatFreq, volume, activeLayers, soundSession]);
 
   const stopAudio = useCallback(() => {
     for (const [, node] of layerNodesRef.current) {
@@ -2628,7 +2633,8 @@ export default function BinauralTuner() {
     oscRightRef.current = null;
     gainRef.current = null;
     setPlaying(false);
-  }, []);
+    soundSession.setPlaying(false);
+  }, [soundSession]);
 
   function ensureLayerReverb(ctx: AudioContext) {
     if (layerReverbRef.current) return;
