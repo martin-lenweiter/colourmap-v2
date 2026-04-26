@@ -1803,21 +1803,27 @@ export default function BinauralTuner() {
   // Sacred / Solfeggio frequencies. Deep end (32–174) are lower
   // anchoring tones — grounding / earth resonance; mid-range are the
   // canonical Solfeggio; 963 at the top for higher-self.
+  // Sacred frequency colours sweep a rainbow as you read down the
+  // list — low Hz (root) reads deep red, mid-list shifts through
+  // orange/gold/green/cyan, top of list (higher self) lands in
+  // violet. Per Martin (2026-04-26): "make rainbow colour
+  // progressions going down. on the Hz." Hex values so the
+  // existing `${color}XX` alpha-suffix patterns still work.
   const SACRED = [
-    { id: 's032', label: '32', freq: 32, desc: 'root', color: '#6A4A2A' },
-    { id: 's063', label: '63', freq: 63, desc: 'earth', color: '#7A5438' },
-    { id: 's108', label: '108', freq: 108, desc: 'unity', color: '#8A6A4A' },
-    { id: 's136', label: '136', freq: 136.1, desc: 'om', color: '#B89C76' },
-    { id: 's174', label: '174', freq: 174, desc: 'foundation', color: '#A0907A' },
-    { id: 's285', label: '285', freq: 285, desc: 'healing', color: '#88B0C8' },
-    { id: 's396', label: '396', freq: 396, desc: 'liberation', color: '#9B6BA0' },
-    { id: 's417', label: '417', freq: 417, desc: 'change', color: '#D4805A' },
-    { id: 's432', label: '432', freq: 432, desc: 'nature', color: '#7AAA58' },
-    { id: 's528', label: '528', freq: 528, desc: 'love', color: '#C4A060' },
-    { id: 's639', label: '639', freq: 639, desc: 'connection', color: '#6890B0' },
-    { id: 's741', label: '741', freq: 741, desc: 'intuition', color: '#B0A0C8' },
-    { id: 's852', label: '852', freq: 852, desc: 'spiritual', color: '#D8A878' },
-    { id: 's963', label: '963', freq: 963, desc: 'higher self', color: '#88C8E8' },
+    { id: 's032', label: '32', freq: 32, desc: 'root', color: '#C8463E' },
+    { id: 's063', label: '63', freq: 63, desc: 'earth', color: '#D6604E' },
+    { id: 's108', label: '108', freq: 108, desc: 'unity', color: '#DC7A4A' },
+    { id: 's136', label: '136', freq: 136.1, desc: 'om', color: '#D89846' },
+    { id: 's174', label: '174', freq: 174, desc: 'foundation', color: '#C8B046' },
+    { id: 's285', label: '285', freq: 285, desc: 'healing', color: '#A8B848' },
+    { id: 's396', label: '396', freq: 396, desc: 'liberation', color: '#7AB85A' },
+    { id: 's417', label: '417', freq: 417, desc: 'change', color: '#5AB088' },
+    { id: 's432', label: '432', freq: 432, desc: 'nature', color: '#48A4AA' },
+    { id: 's528', label: '528', freq: 528, desc: 'love', color: '#4C90C2' },
+    { id: 's639', label: '639', freq: 639, desc: 'connection', color: '#5778C8' },
+    { id: 's741', label: '741', freq: 741, desc: 'intuition', color: '#7064C0' },
+    { id: 's852', label: '852', freq: 852, desc: 'spiritual', color: '#8E58B6' },
+    { id: 's963', label: '963', freq: 963, desc: 'higher self', color: '#A4509E' },
   ] as const;
   const [activeSacred, setActiveSacred] = useState<Set<string>>(new Set());
   const sacredOscsRef = useRef<Map<string, { osc: OscillatorNode; gain: GainNode }>>(new Map());
@@ -4285,12 +4291,13 @@ export default function BinauralTuner() {
                     }}
                     className="flex cursor-pointer flex-col items-center justify-center rounded-xl px-3 py-2.5 transition-all"
                     style={{
-                      background: isOn
-                        ? `${s.color}1A`
-                        : isAligned
-                          ? `${s.color}0A`
-                          : 'transparent',
-                      border: `1px solid ${isOn ? `${s.color}55` : isAligned ? `${s.color}25` : '#C4A06015'}`,
+                      // Active = clearly visible filled box. Off = no
+                      // box at all so active vs idle is unmistakable.
+                      // (Per Martin 2026-04-26: "make sure u understand
+                      // well if they are active or not by making colour
+                      // box more opaque.")
+                      background: isOn ? `${s.color}45` : 'transparent',
+                      border: `1px solid ${isOn ? s.color : 'transparent'}`,
                       minHeight: 56,
                     }}
                     title={`${s.desc}${isAligned ? ` · harmonic ×${nearestInt} of ${baseFreq}Hz` : ''}`}
@@ -4405,8 +4412,9 @@ export default function BinauralTuner() {
                               }}
                               className="shrink-0 cursor-pointer rounded-2xl px-4 py-3 transition-all"
                               style={{
-                                background: isOn ? `${m.color}1E` : `${m.color}08`,
-                                border: `1.5px solid ${isOn ? `${m.color}60` : `${m.color}20`}`,
+                                // Active = filled box, off = no box.
+                                background: isOn ? `${m.color}45` : 'transparent',
+                                border: `1.5px solid ${isOn ? m.color : 'transparent'}`,
                                 minWidth: 96,
                               }}
                               aria-pressed={isOn}
@@ -4472,8 +4480,9 @@ export default function BinauralTuner() {
                           }}
                           className="flex cursor-pointer items-center justify-center rounded-2xl px-3 py-3 transition-all"
                           style={{
-                            background: isOn ? `${m.color}1E` : `${m.color}08`,
-                            border: `1px solid ${isOn ? `${m.color}60` : `${m.color}20`}`,
+                            // Active = filled box, off = no box.
+                            background: isOn ? `${m.color}45` : 'transparent',
+                            border: `1px solid ${isOn ? m.color : 'transparent'}`,
                             minHeight: 56,
                           }}
                           aria-pressed={isOn}
