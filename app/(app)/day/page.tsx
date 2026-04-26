@@ -3,6 +3,7 @@
 import CategoryCompass from '@/components/CategoryCompass';
 import CheckInPing from '@/components/CheckInPing';
 import CompassCarousel from '@/components/CompassCarousel';
+import CompassFlower from '@/components/CompassFlower';
 import DailyAgenda from '@/components/DailyAgenda';
 import DayRail from '@/components/DayRail';
 import DayTabs from '@/components/DayTabs';
@@ -11,9 +12,15 @@ import FirstRunOnboarding from '@/components/FirstRunOnboarding';
 import LifeCategories from '@/components/LifeCategories';
 import LifeCategoriesEmptyState from '@/components/LifeCategoriesEmptyState';
 import LifeCategoriesStrip from '@/components/LifeCategoriesStrip';
+import MoodSuggestion from '@/components/MoodSuggestion';
 import NowBar from '@/components/NowBar';
+import QuietNotes from '@/components/QuietNotes';
 import ReflectBox from '@/components/ReflectBox';
+import SlowWins from '@/components/SlowWins';
+import SoundscapeGarden from '@/components/SoundscapeGarden';
 import { StyleProvider } from '@/components/StyleContext';
+import TrackLines from '@/components/TrackLines';
+import WeekShape from '@/components/WeekShape';
 
 function DayContent() {
   const dateStr = new Date().toLocaleDateString('en-GB', {
@@ -35,6 +42,7 @@ function DayContent() {
           dateLabel={dateStr}
           checkinContent={
             <div className="space-y-4">
+              <MoodSuggestion />
               <FeelingCheckInCard />
               <DailyAgenda />
             </div>
@@ -43,7 +51,13 @@ function DayContent() {
             <div className="space-y-4">
               <LifeCategoriesEmptyState />
               <NowBar />
+              <WeekShape />
               <LifeCategoriesStrip />
+              <CompassFlower />
+              <TrackLines />
+              <SoundscapeGarden />
+              <QuietNotes />
+              <SlowWins />
               <CompassCarousel />
               <CategoryCompass />
               <LifeCategories />
