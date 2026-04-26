@@ -371,23 +371,32 @@ function triggerPerc(ctx: AudioContext, when: number, vel: number, out: AudioNod
 }
 
 function triggerBass(ctx: AudioContext, when: number, vel: number, out: AudioNode, freq: number) {
+  const tw = CURRENT_TWEAKS.bass ?? {};
+  const oscType = tw.oscType ?? 'sawtooth';
+  const lpStartHz = tw.lpStartHz ?? 1200;
+  const lpEndHz = tw.lpEndHz ?? 300;
+  const sweepSec = tw.sweepSec ?? 0.15;
+  const lpQ = tw.lpQ ?? 4;
+  const gainPeak = tw.gain ?? 0.55;
+  const decaySec = tw.decaySec ?? 0.2;
+
   const osc = ctx.createOscillator();
-  osc.type = 'sawtooth';
+  osc.type = oscType;
   osc.frequency.setValueAtTime(freq, when);
   const lp = ctx.createBiquadFilter();
   lp.type = 'lowpass';
-  lp.frequency.setValueAtTime(1200, when);
-  lp.frequency.exponentialRampToValueAtTime(300, when + 0.15);
-  lp.Q.value = 4;
+  lp.frequency.setValueAtTime(lpStartHz, when);
+  lp.frequency.exponentialRampToValueAtTime(lpEndHz, when + sweepSec);
+  lp.Q.value = lpQ;
   const g = ctx.createGain();
   g.gain.setValueAtTime(0.0001, when);
-  g.gain.exponentialRampToValueAtTime(0.55 * vel, when + 0.005);
-  g.gain.exponentialRampToValueAtTime(0.0001, when + 0.2);
+  g.gain.exponentialRampToValueAtTime(gainPeak * vel, when + 0.005);
+  g.gain.exponentialRampToValueAtTime(0.0001, when + decaySec);
   osc.connect(lp);
   lp.connect(g);
   g.connect(out);
   osc.start(when);
-  osc.stop(when + 0.25);
+  osc.stop(when + decaySec + 0.05);
 }
 
 function triggerSubPulse(

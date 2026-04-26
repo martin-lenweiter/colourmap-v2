@@ -74,6 +74,22 @@ export interface PresetVoiceTweaks {
     /** Gain at peak. Default 0.12. */
     gain?: number;
   };
+  bass?: {
+    /** Oscillator type. Default 'sawtooth'. */
+    oscType?: OscillatorType;
+    /** Filter starting cutoff Hz. Default 1200. */
+    lpStartHz?: number;
+    /** Filter ending cutoff Hz. Default 300. */
+    lpEndHz?: number;
+    /** Filter sweep duration seconds. Default 0.15. */
+    sweepSec?: number;
+    /** Filter resonance. Default 4. Higher = squelchier acid. */
+    lpQ?: number;
+    /** Peak gain. Default 0.55. */
+    gain?: number;
+    /** Decay seconds. Default 0.2. */
+    decaySec?: number;
+  };
   pad?: {
     /** Oscillator type. Default 'sawtooth'. 'sine' = pure clean
      *  drone; 'triangle' = soft warm; 'sawtooth' = full string-like;
@@ -236,6 +252,8 @@ export const GROOVE_PRESETS: readonly GroovePreset[] = [
       hihat: { hpHz: 7500, gain: 0.13 },
       // Funk pad — warm sawtooth bed with subtle chorus.
       pad: { oscType: 'sawtooth', detune: 1.006, lpHz: 1800, gain: 0.13 },
+      // Funk bass — bouncy sawtooth with classic Moog-style cutoff.
+      bass: { oscType: 'sawtooth', lpStartHz: 1500, lpEndHz: 350, lpQ: 5, gain: 0.6 },
     },
     activeSet: {
       kick: true,
@@ -317,6 +335,9 @@ export const GROOVE_PRESETS: readonly GroovePreset[] = [
         gain: 0.09,
         fadeInSec: 1.0,
       },
+      // Tech bass note — Tech House preset uses subpulse not bass,
+      // but if bass is enabled it should be the squelchy acid kind.
+      bass: { oscType: 'square', lpStartHz: 1800, lpEndHz: 400, lpQ: 8, gain: 0.5 },
     },
     activeSet: {
       kick: true,
@@ -385,6 +406,8 @@ export const GROOVE_PRESETS: readonly GroovePreset[] = [
       // Tropical pad — clean triangle bed, soft and bright. The
       // low resonance keeps the steel-drum world airy.
       pad: { oscType: 'triangle', detune: 1.008, lpHz: 2200, gain: 0.11 },
+      // Tropical bass — soft triangle, light and warm, no acid.
+      bass: { oscType: 'triangle', lpStartHz: 800, lpEndHz: 250, lpQ: 1.5, gain: 0.5 },
     },
     vibe: 'Kygo sunset · steel pan + marimba',
     dot: '#E08858',
@@ -474,6 +497,16 @@ export const GROOVE_PRESETS: readonly GroovePreset[] = [
         fadeInSec: 2.5,
         sustainSec: 3.5,
       },
+      // Slow Roll bass — heavy, sustained, deep cinematic low end.
+      bass: {
+        oscType: 'sawtooth',
+        lpStartHz: 700,
+        lpEndHz: 180,
+        sweepSec: 0.3,
+        lpQ: 3,
+        gain: 0.7,
+        decaySec: 0.45,
+      },
     },
     vibe: 'sexy R&B · low-BPM bedroom soul',
     dot: '#7A3850',
@@ -554,6 +587,15 @@ export const GROOVE_PRESETS: readonly GroovePreset[] = [
       // Boom Bap pad — dusty, narrow, low — sits behind the rhodes
       // chord without competing.
       pad: { oscType: 'triangle', detune: 1.002, lpHz: 900, gain: 0.1 },
+      // Boom Bap bass — round 808-style sub, no acid, very dark.
+      bass: {
+        oscType: 'sine',
+        lpStartHz: 600,
+        lpEndHz: 180,
+        lpQ: 2,
+        gain: 0.65,
+        decaySec: 0.32,
+      },
     },
     vibe: 'Biggie · Nas · J Dilla · 1995 Brooklyn',
     dot: '#6A4A2A',
@@ -643,6 +685,16 @@ export const GROOVE_PRESETS: readonly GroovePreset[] = [
         lpQ: 4,
         gain: 0.16,
         fadeInSec: 1.2,
+      },
+      // Epic bass — big square wobble bass, opens up, ringy.
+      bass: {
+        oscType: 'square',
+        lpStartHz: 2000,
+        lpEndHz: 500,
+        sweepSec: 0.2,
+        lpQ: 6,
+        gain: 0.65,
+        decaySec: 0.28,
       },
     },
     vibe: 'Justice · Discovery-era Daft Punk · Madeon',
@@ -748,6 +800,16 @@ export const GROOVE_PRESETS: readonly GroovePreset[] = [
         gain: 0.13,
         fadeInSec: 2.2,
         sustainSec: 3.0,
+      },
+      // Lofi bass — soft upright-ish triangle, very dark, low Q.
+      bass: {
+        oscType: 'triangle',
+        lpStartHz: 500,
+        lpEndHz: 200,
+        sweepSec: 0.25,
+        lpQ: 1,
+        gain: 0.5,
+        decaySec: 0.3,
       },
     },
     vibe: 'Nujabes · J Dilla · study beats',
