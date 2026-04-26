@@ -17,6 +17,17 @@ vi.mock('@/components/StyleContext', () => ({
   }),
 }));
 
+function renderTabs() {
+  return render(
+    <DayTabs
+      feelingContent={<div>feeling-content</div>}
+      doingContent={<div>doing-content</div>}
+      sharingContent={<div>sharing-content</div>}
+      roadContent={<div>road-content</div>}
+    />,
+  );
+}
+
 describe('DayTabs', () => {
   beforeEach(() => {
     localStorage.clear();
@@ -27,31 +38,35 @@ describe('DayTabs', () => {
     localStorage.clear();
   });
 
-  it('renders the Check in and Overview tabs', () => {
-    render(<DayTabs checkinContent={<div>checkin</div>} overviewContent={<div>overview</div>} />);
-    expect(screen.getByText('Check in')).toBeDefined();
-    expect(screen.getByText('Overview')).toBeDefined();
+  it('renders the List/Road scope strip and the Feeling/Doing/Sharing trio', () => {
+    renderTabs();
+    expect(screen.getByText('List')).toBeDefined();
+    expect(screen.getByText('Road')).toBeDefined();
+    expect(screen.getByText('Feeling')).toBeDefined();
+    expect(screen.getByText('Doing')).toBeDefined();
+    expect(screen.getByText('Sharing')).toBeDefined();
   });
 
-  it('shows check-in content by default', () => {
-    render(
-      <DayTabs
-        checkinContent={<div>checkin-content</div>}
-        overviewContent={<div>overview-content</div>}
-      />,
-    );
-    expect(screen.getByText('checkin-content')).toBeDefined();
+  it('shows feeling content by default (List scope, Feeling tab)', () => {
+    renderTabs();
+    expect(screen.getByText('feeling-content')).toBeDefined();
   });
 
-  it('switches to Overview when the Overview tab is clicked', async () => {
+  it('switches to Doing when the Doing tab is clicked', async () => {
     const user = userEvent.setup();
-    render(
-      <DayTabs
-        checkinContent={<div>checkin-content</div>}
-        overviewContent={<div>overview-content</div>}
-      />,
-    );
-    await user.click(screen.getByText('Overview'));
-    expect(screen.getByText('overview-content')).toBeDefined();
+    renderTabs();
+    await user.click(screen.getByText('Doing'));
+    expect(screen.getByText('doing-content')).toBeDefined();
+  });
+
+  it('switches to Road and hides the inner trio when Road is clicked', async () => {
+    const user = userEvent.setup();
+    renderTabs();
+    await user.click(screen.getByText('Road'));
+    expect(screen.getByText('road-content')).toBeDefined();
+    // Inner trio is hidden when scope = road, so Doing/Sharing buttons
+    // shouldn't be reachable as buttons.
+    expect(screen.queryByText('Doing')).toBeNull();
+    expect(screen.queryByText('Sharing')).toBeNull();
   });
 });

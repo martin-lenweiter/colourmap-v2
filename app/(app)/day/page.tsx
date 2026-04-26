@@ -39,17 +39,34 @@ function DayContent() {
         <CheckInPing />
         <DayTabs
           dateLabel={dateStr}
-          checkinContent={
+          // FEELING — emotion register: where am I, what's around me.
+          feelingContent={
             <div className="space-y-4">
               <MoodSuggestion />
               <FeelingCheckInCard />
+            </div>
+          }
+          // DOING — agenda + missions: what's the day for.
+          doingContent={
+            <div className="space-y-4">
+              <NowBar />
               <DailyAgenda />
             </div>
           }
-          overviewContent={
+          // SHARING — circle pulse + connection prompts. Stub for now;
+          // pulls in the same surfaces that live on /circles so the
+          // Day-page user sees their bands without leaving Day.
+          sharingContent={
+            <div className="space-y-4">
+              <ReflectBox />
+            </div>
+          }
+          // ROAD — wide-angle life map. The compasses, categories, and
+          // long-arc surfaces live here so they don't compete with the
+          // daily-pulse trio for the same band of space.
+          roadContent={
             <div className="space-y-4">
               <LifeCategoriesEmptyState />
-              <NowBar />
               <WeekShape />
               <LifeCategoriesStrip />
               <CompassFlower />
@@ -59,7 +76,6 @@ function DayContent() {
               <CompassCarousel />
               <CategoryCompass />
               <LifeCategories />
-              <ReflectBox />
             </div>
           }
         />

@@ -37,44 +37,72 @@ function computeStreakFromStorage(): number {
 }
 
 /* ═══════════════════════════════════════════════════════════
-   DAY TABS — CHECK IN / OVERVIEW
-   Check in = daily pulse (the emotional register + pillboxes).
-   Overview = wide-angle life map + compass carousel.
+   DAY TABS — two tiers, separate heights
+   - Top mini-strip:  LIST  ·  ROAD
+       List = today's pulse (the inner trio below)
+       Road = wide-angle life map (compasses + categories)
+   - Inner trio (only visible inside List):
+       FEELING · DOING · SHARING
+       — emotion · agenda + missions · social/circles —
+   Lifting List/Road into its own row keeps the trio from
+   competing with the wide-overview surface for the same band of
+   space. (Per Martin 2026-04-26.)
    ═══════════════════════════════════════════════════════════ */
 
-type Tab = 'checkin' | 'overview';
+type Scope = 'list' | 'road';
+type Tab = 'feeling' | 'doing' | 'sharing';
 
-// Day = Check in + Overview. Sounds moved out to its own top-nav tab
-// (/sounds) so the Day surface stays about the feeling/doing rhythm.
+const SCOPES: { id: Scope; label: string }[] = [
+  { id: 'list', label: 'List' },
+  { id: 'road', label: 'Road' },
+];
+
 const TABS: { id: Tab; label: string }[] = [
-  { id: 'checkin', label: 'Check in' },
-  { id: 'overview', label: 'Overview' },
+  { id: 'feeling', label: 'Feeling' },
+  { id: 'doing', label: 'Doing' },
+  { id: 'sharing', label: 'Sharing' },
 ];
 
 const TAB_KEY = 'colourmap:day-tab';
+const SCOPE_KEY = 'colourmap:day-scope';
 
 interface DayTabsProps {
-  checkinContent: React.ReactNode;
-  overviewContent: React.ReactNode;
+  feelingContent: React.ReactNode;
+  doingContent: React.ReactNode;
+  sharingContent: React.ReactNode;
+  roadContent: React.ReactNode;
   /** Today's date ("Friday 24 April") shown as a tiny header above the
    *  tab strip so it belongs to the "today's scan" block instead of
    *  floating on its own between the nav and the tabs. */
   dateLabel?: string;
 }
 
-export default function DayTabs({ checkinContent, overviewContent, dateLabel }: DayTabsProps) {
-  const [active, setActive] = useState<Tab>('checkin');
+export default function DayTabs({
+  feelingContent,
+  doingContent,
+  sharingContent,
+  roadContent,
+  dateLabel,
+}: DayTabsProps) {
+  const [scope, setScope] = useState<Scope>('list');
+  const [active, setActive] = useState<Tab>('feeling');
   const [streak, setStreak] = useState(0);
   const { style } = useStyle();
 
-  // Restore last-chosen tab on mount. Previous key values ('cockpit',
-  // 'tuner', 'mastery') are remapped to the nearest surviving tab so
-  // users don't land on a disappeared tab after upgrade.
+  // Restore last-chosen scope + tab on mount. Legacy values are
+  // remapped: 'checkin' → 'feeling', 'overview' → 'road'. So users
+  // who previously sat on the Overview tab land on Road, not on a
+  // disappeared label.
   useEffect(() => {
     try {
-      const stored = localStorage.getItem(TAB_KEY);
-      if (stored === 'overview') setActive('overview');
-      else setActive('checkin');
+      const storedScope = localStorage.getItem(SCOPE_KEY);
+      if (storedScope === 'road') setScope('road');
+      else setScope('list');
+
+      const storedTab = localStorage.getItem(TAB_KEY);
+      if (storedTab === 'doing' || storedTab === 'sharing') setActive(storedTab);
+      else if (storedTab === 'overview') setScope('road');
+      else setActive('feeling');
     } catch {
       /* silent */
     }
@@ -84,14 +112,15 @@ export default function DayTabs({ checkinContent, overviewContent, dateLabel }: 
   useEffect(() => {
     try {
       localStorage.setItem(TAB_KEY, active);
+      localStorage.setItem(SCOPE_KEY, scope);
     } catch {
       /* silent */
     }
-  }, [active]);
+  }, [active, scope]);
 
   return (
-    <div className="space-y-6">
-      <div>
+    <div className="space-y-5">
+      <div className="space-y-3">
         {dateLabel && (
           <p
             className="text-center italic"
@@ -101,47 +130,75 @@ export default function DayTabs({ checkinContent, overviewContent, dateLabel }: 
               color: '#7A5438',
               opacity: 0.7,
               letterSpacing: '0.06em',
-              // Sits centered in the negative space between the global
-              // nav (above) and the tab strip (below) — bigger margin
-              // top + bottom so it doesn't feel squashed.
               marginTop: 14,
-              marginBottom: 18,
+              marginBottom: 6,
             }}
           >
             {dateLabel}
           </p>
         )}
-        {/* Tab selectors — bigger, more breathing room on phone */}
-        <div className="flex gap-2">
-          {TABS.map((tab) => {
-            const isActive = active === tab.id;
+        {/* Top mini-strip — List · Road. Tighter / lighter than the
+            inner tabs so the two tiers read as different priorities. */}
+        <div className="flex justify-center gap-1">
+          {SCOPES.map((s) => {
+            const isOn = scope === s.id;
             return (
               <button
-                key={tab.id}
+                key={s.id}
                 type="button"
                 onClick={() => {
-                  if (tab.id !== active) haptic('tap');
-                  setActive(tab.id);
+                  if (s.id !== scope) haptic('tap');
+                  setScope(s.id);
                 }}
-                className="flex-1 cursor-pointer rounded-2xl py-3.5 uppercase tracking-[0.18em] transition-all duration-200"
+                className="cursor-pointer rounded-full px-4 py-1.5 uppercase tracking-[0.22em] transition-all duration-200"
                 style={{
-                  background: isActive ? '#C4A06018' : 'transparent',
-                  border: `1.5px solid ${isActive ? '#C4A060' : 'hsl(var(--border) / 0.25)'}`,
-                  color: 'hsl(var(--foreground))',
+                  background: isOn ? '#C4A06014' : 'transparent',
+                  border: `1px solid ${isOn ? '#C4A06070' : 'transparent'}`,
+                  color: isOn ? '#7A5438' : '#8A6A4A',
                   fontFamily: style.headingFont,
-                  fontSize: '15px',
-                  fontWeight: isActive ? 700 : 600,
-                  minHeight: 48,
+                  fontSize: '11px',
+                  fontWeight: isOn ? 700 : 600,
+                  opacity: isOn ? 1 : 0.65,
                 }}
               >
-                {tab.label}
+                {s.label}
               </button>
             );
           })}
         </div>
-        {/* Streak line — compact status right under the tab strip so
-            it's visible on phone too (DayRail is desktop-only). Shows
-            nothing when there's no streak yet, to avoid nagging. */}
+        {/* Inner trio — only when scope = list. Bigger, full-width,
+            this is the daily-pulse register. */}
+        {scope === 'list' && (
+          <div className="flex gap-2">
+            {TABS.map((tab) => {
+              const isActive = active === tab.id;
+              return (
+                <button
+                  key={tab.id}
+                  type="button"
+                  onClick={() => {
+                    if (tab.id !== active) haptic('tap');
+                    setActive(tab.id);
+                  }}
+                  className="flex-1 cursor-pointer rounded-2xl py-3 uppercase tracking-[0.16em] transition-all duration-200"
+                  style={{
+                    background: isActive ? '#C4A06018' : 'transparent',
+                    border: `1.5px solid ${isActive ? '#C4A060' : 'hsl(var(--border) / 0.25)'}`,
+                    color: 'hsl(var(--foreground))',
+                    fontFamily: style.headingFont,
+                    fontSize: '15px',
+                    fontWeight: isActive ? 700 : 600,
+                    minHeight: 48,
+                  }}
+                >
+                  {tab.label}
+                </button>
+              );
+            })}
+          </div>
+        )}
+        {/* Streak line — under whichever strip is current, so the
+            phone always sees it (DayRail is desktop-only). */}
         {streak > 0 && (
           <p
             className="text-center"
@@ -152,7 +209,7 @@ export default function DayTabs({ checkinContent, overviewContent, dateLabel }: 
               opacity: 0.85,
               letterSpacing: '0.14em',
               textTransform: 'uppercase',
-              marginTop: 4,
+              marginTop: 2,
             }}
           >
             <span style={{ fontWeight: 700 }}>{streak}</span>
@@ -165,8 +222,10 @@ export default function DayTabs({ checkinContent, overviewContent, dateLabel }: 
 
       {/* Content */}
       <div className="animate-in fade-in duration-200">
-        {active === 'checkin' && checkinContent}
-        {active === 'overview' && overviewContent}
+        {scope === 'road' && roadContent}
+        {scope === 'list' && active === 'feeling' && feelingContent}
+        {scope === 'list' && active === 'doing' && doingContent}
+        {scope === 'list' && active === 'sharing' && sharingContent}
       </div>
     </div>
   );
