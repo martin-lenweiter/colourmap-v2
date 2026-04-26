@@ -3,16 +3,22 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 
+import { useDesignerObservations } from '@/lib/hooks/use-designer-observations';
+
 /*
  * FeedbackOverlay — developer mode with drawing + text notes, opened
  * by triple-tapping anywhere on the app.
  *
  * Purpose: let the user annotate a live UI screenshot directly, so
  * when they screenshot the phone I get the UI state + their
- * scribbles + their written feedback in a single image.
+ * scribbles + their written feedback in a single image. Plus —
+ * register block-by-block observations with an "area" pill (Day,
+ * Music, Circles, etc.) into a persistent Supabase-backed log so
+ * the running list of "what doesn't work" travels with the user
+ * across devices.
  *
  * Modes when dev-mode is active:
- *   - `note`  → a draggable sticky-note textarea. Type feedback.
+ *   - `note`  → a draggable sticky-note textarea + observation log.
  *   - `draw`  → finger/mouse strokes are captured as SVG paths laid
  *               over the page. Red pen by default.
  *
@@ -20,18 +26,51 @@ import { createPortal } from 'react-dom';
  * the × or by triple-tapping again (only outside the note/draw
  * controls).
  *
- * Persistence: the last note text is saved to localStorage so an
- * accidental close doesn't lose the user's work. Drawings are NOT
- * persisted — they're ephemeral annotations for a single screenshot.
+ * Persistence: each observation is saved as its own row in
+ * `designer_observations` (Supabase) when the user hits Register.
+ * The textarea's working text is also cached in localStorage so an
+ * accidental close doesn't lose mid-typing thoughts. Drawings are
+ * NOT persisted — they're ephemeral annotations for screenshots.
  *
- * Discoverability: a tiny purple dot in the top-right corner; single-
+ * Discoverability: a tiny tan dot in the bottom-right corner; single-
  * tap also opens.
  */
 
 const LS_LAST_NOTE = 'colourmap:feedback-overlay-last';
+const LS_LAST_AREA = 'colourmap:feedback-overlay-last-area';
 const TRIPLE_TAP_WINDOW_MS = 700;
 
 type Mode = 'note' | 'draw';
+
+interface AreaOption {
+  id: string;
+  label: string;
+  color: string;
+}
+
+/** The parts of the app an observation can be tagged with. Adjust
+ *  freely as the surface area grows — the area is stored as a free
+ *  text column in the database, so adding/removing options here
+ *  doesn't require a migration. */
+const AREA_OPTIONS: AreaOption[] = [
+  { id: 'day', label: 'Day', color: '#C4A060' },
+  { id: 'music', label: 'Music', color: '#6890B0' },
+  { id: 'circles', label: 'Circles', color: '#7AAA58' },
+  { id: 'overview', label: 'Overview', color: '#9B6BA0' },
+  { id: 'profile', label: 'Profile', color: '#8E6B3A' },
+  { id: 'studios', label: 'Studios', color: '#5AA8B0' },
+  { id: 'other', label: 'Other', color: '#8A6A4A' },
+];
+
+function relativeWhen(iso: string): string {
+  const d = new Date(iso);
+  const diff = Date.now() - d.getTime();
+  if (diff < 60_000) return 'just now';
+  if (diff < 3_600_000) return `${Math.floor(diff / 60_000)}m ago`;
+  if (diff < 86_400_000) return `${Math.floor(diff / 3_600_000)}h ago`;
+  if (diff < 7 * 86_400_000) return `${Math.floor(diff / 86_400_000)}d ago`;
+  return d.toLocaleDateString([], { month: 'short', day: 'numeric' });
+}
 
 interface Stroke {
   id: number;
@@ -108,6 +147,14 @@ export default function FeedbackOverlay() {
   const [listening, setListening] = useState(false);
   const textBeforeListenRef = useRef<string>('');
   const [voiceSupported, setVoiceSupported] = useState(false);
+  // Observation log — Supabase-backed list of past feedback blocks.
+  const { observations, register, remove: removeObservation } = useDesignerObservations();
+  const [selectedAreaId, setSelectedAreaId] = useState<string | null>(null);
+  const [logOpen, setLogOpen] = useState(false);
+  const [registerStatus, setRegisterStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>(
+    'idle',
+  );
+
   // Font size for the note textarea. Persisted in localStorage so the
   // user's preference carries between sessions. 9px to 22px range —
   // small enough for tight screenshots, large enough for comfortable
@@ -180,15 +227,56 @@ export default function FeedbackOverlay() {
     setListening(false);
   }
 
-  // Restore last note on first mount
+  // Restore last note + last area on first mount
   useEffect(() => {
     try {
       const last = localStorage.getItem(LS_LAST_NOTE);
       if (last) setText(last);
+      const lastArea = localStorage.getItem(LS_LAST_AREA);
+      if (lastArea && AREA_OPTIONS.some((o) => o.id === lastArea)) setSelectedAreaId(lastArea);
     } catch {
       /* silent */
     }
   }, []);
+
+  // Persist the selected area between sessions (working draft of "what
+  // is this feedback about" should survive an accidental close).
+  useEffect(() => {
+    try {
+      if (selectedAreaId) localStorage.setItem(LS_LAST_AREA, selectedAreaId);
+      else localStorage.removeItem(LS_LAST_AREA);
+    } catch {
+      /* silent */
+    }
+  }, [selectedAreaId]);
+
+  // Reset the saved-status pulse a moment after a successful save.
+  useEffect(() => {
+    if (registerStatus !== 'saved') return;
+    const t = setTimeout(() => setRegisterStatus('idle'), 1600);
+    return () => clearTimeout(t);
+  }, [registerStatus]);
+
+  const onRegister = useCallback(async () => {
+    if (!text.trim()) return;
+    const areaLabel = selectedAreaId
+      ? (AREA_OPTIONS.find((o) => o.id === selectedAreaId)?.label ?? null)
+      : null;
+    setRegisterStatus('saving');
+    const result = await register(text, areaLabel);
+    if (result) {
+      setText('');
+      try {
+        localStorage.removeItem(LS_LAST_NOTE);
+      } catch {
+        /* silent */
+      }
+      setRegisterStatus('saved');
+      setLogOpen(true);
+    } else {
+      setRegisterStatus('error');
+    }
+  }, [text, selectedAreaId, register]);
 
   const openOverlay = useCallback(() => {
     setOpen(true);
@@ -711,11 +799,46 @@ export default function FeedbackOverlay() {
               A
             </span>
           </div>
+          {/* Area pill row — tag the observation with the part of the
+              app it's about. Selection persists between sessions and
+              is sent to Supabase when the user hits Register. */}
+          <div
+            className="flex flex-wrap gap-1"
+            style={{ padding: '0 4px 4px', rowGap: 4 }}
+            onPointerDown={(e) => e.stopPropagation()}
+          >
+            {AREA_OPTIONS.map((opt) => {
+              const isActive = selectedAreaId === opt.id;
+              return (
+                <button
+                  key={opt.id}
+                  type="button"
+                  onClick={() => setSelectedAreaId(isActive ? null : opt.id)}
+                  style={{
+                    fontFamily: 'var(--font-serif)',
+                    fontSize: 11,
+                    fontWeight: 700,
+                    letterSpacing: '0.08em',
+                    textTransform: 'uppercase',
+                    color: isActive ? '#FFFFFF' : opt.color,
+                    background: isActive ? opt.color : `${opt.color}18`,
+                    border: `1px solid ${opt.color}${isActive ? 'FF' : '50'}`,
+                    borderRadius: 999,
+                    padding: '2px 8px',
+                    cursor: 'pointer',
+                  }}
+                  aria-pressed={isActive}
+                >
+                  {opt.label}
+                </button>
+              );
+            })}
+          </div>
           <textarea
             ref={textareaRef}
             value={text}
             onChange={(e) => setText(e.target.value)}
-            placeholder="Type here. Take a screenshot — this note is visible in the image."
+            placeholder="Type a block of feedback. Tag the area, then Register."
             style={{
               flex: 1,
               width: '100%',
@@ -735,6 +858,166 @@ export default function FeedbackOverlay() {
             }}
             aria-label="Feedback note"
           />
+          {/* Register button — explicit save of this block to the
+              Supabase log. Disabled until there's text to save. */}
+          <div
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: 8,
+              padding: '4px 4px 0',
+            }}
+            onPointerDown={(e) => e.stopPropagation()}
+          >
+            <button
+              type="button"
+              onClick={onRegister}
+              disabled={!text.trim() || registerStatus === 'saving'}
+              style={{
+                fontFamily: 'var(--font-serif)',
+                fontSize: 12,
+                fontWeight: 700,
+                letterSpacing: '0.1em',
+                textTransform: 'uppercase',
+                color:
+                  registerStatus === 'saved' ? '#FFFFFF' : !text.trim() ? '#A87A4055' : '#A87A40',
+                background:
+                  registerStatus === 'saved' ? '#7AAA58' : !text.trim() ? '#A87A4010' : '#A87A4018',
+                border: `1px solid ${registerStatus === 'saved' ? '#7AAA58' : '#A87A4080'}`,
+                borderRadius: 999,
+                padding: '4px 14px',
+                cursor: !text.trim() || registerStatus === 'saving' ? 'default' : 'pointer',
+                transition: 'all 150ms ease',
+              }}
+              aria-label="Register this observation"
+            >
+              {registerStatus === 'saving'
+                ? 'saving…'
+                : registerStatus === 'saved'
+                  ? '✓ saved'
+                  : registerStatus === 'error'
+                    ? 'try again'
+                    : 'register'}
+            </button>
+            {observations.length > 0 && (
+              <button
+                type="button"
+                onClick={() => setLogOpen((s) => !s)}
+                style={{
+                  fontFamily: 'var(--font-serif)',
+                  fontSize: 11,
+                  color: '#A87A40',
+                  background: 'transparent',
+                  border: '1px solid #A87A4040',
+                  borderRadius: 999,
+                  padding: '4px 10px',
+                  cursor: 'pointer',
+                  marginLeft: 'auto',
+                }}
+              >
+                log · {observations.length} {logOpen ? '▾' : '▸'}
+              </button>
+            )}
+          </div>
+          {/* Log — all past observations, newest first. Each block
+              shows its area pill + relative time + text + delete. */}
+          {logOpen && observations.length > 0 && (
+            <div
+              style={{
+                marginTop: 6,
+                paddingTop: 6,
+                borderTop: '1px dashed #A87A4035',
+                overflowY: 'auto',
+                maxHeight: 220,
+                display: 'flex',
+                flexDirection: 'column',
+                gap: 6,
+              }}
+              onPointerDown={(e) => e.stopPropagation()}
+            >
+              {observations.map((obs) => {
+                const opt = AREA_OPTIONS.find((o) => o.label === obs.area);
+                const color = opt?.color ?? '#8A6A4A';
+                return (
+                  <div
+                    key={obs.id}
+                    style={{
+                      borderRadius: 8,
+                      padding: '6px 8px',
+                      background: 'rgba(255,255,255,0.45)',
+                      border: `1px solid ${color}30`,
+                    }}
+                  >
+                    <div
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: 6,
+                        marginBottom: 3,
+                      }}
+                    >
+                      {obs.area && (
+                        <span
+                          style={{
+                            fontFamily: 'var(--font-serif)',
+                            fontSize: 10,
+                            fontWeight: 700,
+                            letterSpacing: '0.08em',
+                            textTransform: 'uppercase',
+                            color: '#FFFFFF',
+                            background: color,
+                            borderRadius: 999,
+                            padding: '1px 7px',
+                          }}
+                        >
+                          {obs.area}
+                        </span>
+                      )}
+                      <span
+                        style={{
+                          fontFamily: 'var(--font-serif)',
+                          fontSize: 11,
+                          color: '#8A6A4A',
+                          opacity: 0.75,
+                        }}
+                      >
+                        {relativeWhen(obs.createdAt)}
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => removeObservation(obs.id)}
+                        aria-label="Delete observation"
+                        style={{
+                          marginLeft: 'auto',
+                          background: 'transparent',
+                          border: 'none',
+                          color: '#A87A4080',
+                          fontSize: 14,
+                          cursor: 'pointer',
+                          padding: '0 4px',
+                          lineHeight: 1,
+                        }}
+                      >
+                        ×
+                      </button>
+                    </div>
+                    <p
+                      style={{
+                        fontFamily: 'var(--font-serif)',
+                        fontSize: 12.5,
+                        color: '#1f1208',
+                        lineHeight: 1.4,
+                        whiteSpace: 'pre-wrap',
+                        wordBreak: 'break-word',
+                      }}
+                    >
+                      {obs.text}
+                    </p>
+                  </div>
+                );
+              })}
+            </div>
+          )}
           {/* Bottom-right resize handle — drag to any custom size.
               Uses a <button> so aria-label is valid and the element
               is naturally interactive. type=button keeps it out of
