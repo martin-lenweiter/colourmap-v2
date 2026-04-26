@@ -9,6 +9,7 @@ import {
   getPhaseForBar,
   getPreset,
   PRESET_LS_KEY,
+  type PresetVoiceTweaks,
   pickVariationIndex,
 } from '@/lib/groove-presets';
 import { useSoundSession } from '@/lib/sound-session';
@@ -227,43 +228,70 @@ type Voice = (
   noteFreq?: number,
 ) => void;
 
+/* Per-preset voice tweaks. The active preset writes its `voiceTweaks`
+ * object to this module-level slot; voice trigger functions read from
+ * it to shape kick/snare/hihat envelopes per preset without taking an
+ * extra arg through the scheduler. Empty object = engine defaults. */
+let CURRENT_TWEAKS: PresetVoiceTweaks = {};
+function setCurrentVoiceTweaks(tweaks: PresetVoiceTweaks | undefined) {
+  CURRENT_TWEAKS = tweaks ?? {};
+}
+
 function triggerKick(ctx: AudioContext, when: number, vel: number, out: AudioNode) {
-  // Body: sine sweep 150 → 40 Hz over 120 ms, the deep punch.
+  const tw = CURRENT_TWEAKS.kick ?? {};
+  const freqStart = tw.freqStart ?? 150;
+  const freqEnd = tw.freqEnd ?? 40;
+  const sweepSec = tw.sweepSec ?? 0.12;
+  const decaySec = tw.decaySec ?? 0.35;
+  const bodyGain = tw.bodyGain ?? 0.9;
+  const clickGain = tw.clickGain ?? 0.18;
+  const clickHpHz = tw.clickHpHz ?? 4000;
+
+  // Body: sine sweep, the deep punch.
   const osc = ctx.createOscillator();
   const gain = ctx.createGain();
   osc.type = 'sine';
-  osc.frequency.setValueAtTime(150, when);
-  osc.frequency.exponentialRampToValueAtTime(40, when + 0.12);
+  osc.frequency.setValueAtTime(freqStart, when);
+  osc.frequency.exponentialRampToValueAtTime(freqEnd, when + sweepSec);
   gain.gain.setValueAtTime(0.0001, when);
-  gain.gain.exponentialRampToValueAtTime(0.9 * vel, when + 0.005);
-  gain.gain.exponentialRampToValueAtTime(0.0001, when + 0.35);
+  gain.gain.exponentialRampToValueAtTime(bodyGain * vel, when + 0.005);
+  gain.gain.exponentialRampToValueAtTime(0.0001, when + decaySec);
   osc.connect(gain);
   gain.connect(out);
   osc.start(when);
-  osc.stop(when + 0.4);
+  osc.stop(when + decaySec + 0.05);
 
-  // Click: 5 ms noise burst at the very start. Adds the "beater"
-  // attack that pure sine kicks lack.
-  const clickBuf = ctx.createBuffer(1, ctx.sampleRate * 0.01, ctx.sampleRate);
-  const cd = clickBuf.getChannelData(0);
-  for (let i = 0; i < cd.length; i++) cd[i] = (Math.random() * 2 - 1) * (1 - i / cd.length);
-  const click = ctx.createBufferSource();
-  click.buffer = clickBuf;
-  const clickHp = ctx.createBiquadFilter();
-  clickHp.type = 'highpass';
-  clickHp.frequency.value = 4000;
-  const clickGain = ctx.createGain();
-  clickGain.gain.value = 0.18 * vel;
-  click.connect(clickHp);
-  clickHp.connect(clickGain);
-  clickGain.connect(out);
-  click.start(when);
-  click.stop(when + 0.012);
+  // Click: noise burst at the very start. Adds the "beater" attack
+  // that pure sine kicks lack. Skipped when clickGain is ~0 (Lofi).
+  if (clickGain > 0.01) {
+    const clickBuf = ctx.createBuffer(1, ctx.sampleRate * 0.01, ctx.sampleRate);
+    const cd = clickBuf.getChannelData(0);
+    for (let i = 0; i < cd.length; i++) cd[i] = (Math.random() * 2 - 1) * (1 - i / cd.length);
+    const click = ctx.createBufferSource();
+    click.buffer = clickBuf;
+    const clickHp = ctx.createBiquadFilter();
+    clickHp.type = 'highpass';
+    clickHp.frequency.value = clickHpHz;
+    const cGain = ctx.createGain();
+    cGain.gain.value = clickGain * vel;
+    click.connect(clickHp);
+    clickHp.connect(cGain);
+    cGain.connect(out);
+    click.start(when);
+    click.stop(when + 0.012);
+  }
 }
 
 function triggerSnare(ctx: AudioContext, when: number, vel: number, out: AudioNode) {
+  const tw = CURRENT_TWEAKS.snare ?? {};
+  const noiseHpHz = tw.noiseHpHz ?? 1200;
+  const noiseDecaySec = tw.noiseDecaySec ?? 0.15;
+  const bodyFreq = tw.bodyFreq ?? 220;
+  const bodyDecaySec = tw.bodyDecaySec ?? 0.1;
+  const noiseGainPeak = tw.noiseGain ?? 0.35;
+
   // Noise + tonal body
-  const bufSize = ctx.sampleRate * 0.2;
+  const bufSize = ctx.sampleRate * Math.max(0.2, noiseDecaySec + 0.05);
   const buf = ctx.createBuffer(1, bufSize, ctx.sampleRate);
   const data = buf.getChannelData(0);
   for (let i = 0; i < bufSize; i++) data[i] = Math.random() * 2 - 1;
@@ -271,32 +299,37 @@ function triggerSnare(ctx: AudioContext, when: number, vel: number, out: AudioNo
   noise.buffer = buf;
   const hp = ctx.createBiquadFilter();
   hp.type = 'highpass';
-  hp.frequency.value = 1200;
+  hp.frequency.value = noiseHpHz;
   const noiseGain = ctx.createGain();
-  noiseGain.gain.setValueAtTime(0.35 * vel, when);
-  noiseGain.gain.exponentialRampToValueAtTime(0.0001, when + 0.15);
+  noiseGain.gain.setValueAtTime(noiseGainPeak * vel, when);
+  noiseGain.gain.exponentialRampToValueAtTime(0.0001, when + noiseDecaySec);
   noise.connect(hp);
   hp.connect(noiseGain);
   noiseGain.connect(out);
   noise.start(when);
-  noise.stop(when + 0.2);
+  noise.stop(when + noiseDecaySec + 0.05);
 
   // Tonal body
   const body = ctx.createOscillator();
   body.type = 'triangle';
-  body.frequency.setValueAtTime(220, when);
-  body.frequency.exponentialRampToValueAtTime(180, when + 0.08);
+  body.frequency.setValueAtTime(bodyFreq, when);
+  body.frequency.exponentialRampToValueAtTime(bodyFreq * 0.82, when + 0.08);
   const bodyGain = ctx.createGain();
   bodyGain.gain.setValueAtTime(0.25 * vel, when);
-  bodyGain.gain.exponentialRampToValueAtTime(0.0001, when + 0.1);
+  bodyGain.gain.exponentialRampToValueAtTime(0.0001, when + bodyDecaySec);
   body.connect(bodyGain);
   bodyGain.connect(out);
   body.start(when);
-  body.stop(when + 0.15);
+  body.stop(when + bodyDecaySec + 0.05);
 }
 
 function triggerHihat(ctx: AudioContext, when: number, vel: number, out: AudioNode) {
-  const bufSize = ctx.sampleRate * 0.08;
+  const tw = CURRENT_TWEAKS.hihat ?? {};
+  const hpHz = tw.hpHz ?? 7000;
+  const decaySec = tw.decaySec ?? 0.05;
+  const gainPeak = tw.gain ?? 0.12;
+
+  const bufSize = ctx.sampleRate * Math.max(0.08, decaySec + 0.03);
   const buf = ctx.createBuffer(1, bufSize, ctx.sampleRate);
   const data = buf.getChannelData(0);
   for (let i = 0; i < bufSize; i++) data[i] = Math.random() * 2 - 1;
@@ -304,15 +337,15 @@ function triggerHihat(ctx: AudioContext, when: number, vel: number, out: AudioNo
   noise.buffer = buf;
   const hp = ctx.createBiquadFilter();
   hp.type = 'highpass';
-  hp.frequency.value = 7000;
+  hp.frequency.value = hpHz;
   const g = ctx.createGain();
-  g.gain.setValueAtTime(0.12 * vel, when);
-  g.gain.exponentialRampToValueAtTime(0.0001, when + 0.05);
+  g.gain.setValueAtTime(gainPeak * vel, when);
+  g.gain.exponentialRampToValueAtTime(0.0001, when + decaySec);
   noise.connect(hp);
   hp.connect(g);
   g.connect(out);
   noise.start(when);
-  noise.stop(when + 0.08);
+  noise.stop(when + decaySec + 0.03);
 }
 
 function triggerPerc(ctx: AudioContext, when: number, vel: number, out: AudioNode) {
@@ -732,7 +765,10 @@ export default function GrooveMachine() {
   useEffect(() => {
     tracksRef.current = activeTracks;
     swingRef.current = preset.swing;
-  }, [activeTracks, preset.swing]);
+    // Push the active preset's voice tweaks to the module-level slot
+    // every voice trigger reads from. Defaults if unset.
+    setCurrentVoiceTweaks(preset.voiceTweaks);
+  }, [activeTracks, preset.swing, preset.voiceTweaks]);
 
   /**
    * Apply a preset: switch presetId, set bpm + swing + active set.

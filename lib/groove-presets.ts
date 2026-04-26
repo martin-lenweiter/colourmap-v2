@@ -33,6 +33,49 @@ export type TrackId =
   | 'pad'
   | 'chop';
 
+/** Per-voice tweaks that let each preset shape the same synth with
+ *  its own timbre. All fields are optional; absent values fall back
+ *  to the engine defaults so a preset without `voiceTweaks` sounds
+ *  identical to a pre-tweak preset. */
+export interface PresetVoiceTweaks {
+  kick?: {
+    /** Starting frequency of the body sweep, Hz. Default 150. */
+    freqStart?: number;
+    /** Ending frequency of the body sweep, Hz. Default 40. */
+    freqEnd?: number;
+    /** Sweep duration in seconds. Default 0.12. */
+    sweepSec?: number;
+    /** Body decay duration in seconds. Default 0.35. */
+    decaySec?: number;
+    /** Click (beater) gain. Default 0.18. Set 0 to remove the click. */
+    clickGain?: number;
+    /** Click high-pass cutoff Hz. Default 4000. Lower = thuddier. */
+    clickHpHz?: number;
+    /** Body gain at peak. Default 0.9. */
+    bodyGain?: number;
+  };
+  snare?: {
+    /** Noise high-pass cutoff Hz. Default 1200. */
+    noiseHpHz?: number;
+    /** Noise decay seconds. Default 0.15. */
+    noiseDecaySec?: number;
+    /** Tonal body start Hz. Default 220. */
+    bodyFreq?: number;
+    /** Body decay seconds. Default 0.1. */
+    bodyDecaySec?: number;
+    /** Noise gain at peak. Default 0.35. */
+    noiseGain?: number;
+  };
+  hihat?: {
+    /** High-pass cutoff Hz. Default 7000. */
+    hpHz?: number;
+    /** Decay seconds. Default 0.05. Higher = more "open" hat feel. */
+    decaySec?: number;
+    /** Gain at peak. Default 0.12. */
+    gain?: number;
+  };
+}
+
 export interface GroovePreset {
   id: string;
   name: string;
@@ -56,6 +99,10 @@ export interface GroovePreset {
    *  Keeps the groove from sounding repetitive after a minute.
    *  See docs/specs/groove-machine-infinite-tracks.md. */
   variationPools?: Partial<Record<TrackId, number[][]>>;
+  /** Per-voice timbre tweaks (kick/snare/hihat envelopes + filters)
+   *  so the same synth speaks differently per preset. Partial — any
+   *  field can be omitted to fall back to engine defaults. */
+  voiceTweaks?: PresetVoiceTweaks;
 }
 
 /* ─── Arc phases ───────────────────────────────────────────────
@@ -163,6 +210,11 @@ export const GROOVE_PRESETS: readonly GroovePreset[] = [
     dot: '#C4A060',
     bpm: 112,
     swing: 0.17,
+    voiceTweaks: {
+      kick: { freqStart: 160, freqEnd: 45, bodyGain: 0.95 },
+      snare: { bodyFreq: 230, noiseHpHz: 1400 },
+      hihat: { hpHz: 7500, gain: 0.13 },
+    },
     activeSet: {
       kick: true,
       snare: true,
@@ -222,6 +274,19 @@ export const GROOVE_PRESETS: readonly GroovePreset[] = [
     dot: '#3A6890',
     bpm: 124,
     swing: 0.04, // tight, almost zero
+    voiceTweaks: {
+      // Punchy, short, mechanical — fast attack and crisp click.
+      kick: {
+        freqStart: 200,
+        freqEnd: 50,
+        sweepSec: 0.08,
+        decaySec: 0.22,
+        clickGain: 0.25,
+        clickHpHz: 5000,
+      },
+      snare: { noiseHpHz: 2000, noiseDecaySec: 0.08, bodyFreq: 240 },
+      hihat: { hpHz: 9000, decaySec: 0.04, gain: 0.1 },
+    },
     activeSet: {
       kick: true,
       hihat: true,
@@ -281,6 +346,12 @@ export const GROOVE_PRESETS: readonly GroovePreset[] = [
   {
     id: 'tropical',
     name: 'Tropical',
+    voiceTweaks: {
+      // Light, bright — kick is more rim than thump, snare papery.
+      kick: { freqStart: 130, freqEnd: 55, bodyGain: 0.7, clickGain: 0.1 },
+      snare: { noiseHpHz: 1500, noiseGain: 0.28, bodyFreq: 250 },
+      hihat: { hpHz: 6500, gain: 0.1 },
+    },
     vibe: 'Kygo sunset · steel pan + marimba',
     dot: '#E08858',
     bpm: 104,
@@ -348,6 +419,19 @@ export const GROOVE_PRESETS: readonly GroovePreset[] = [
   {
     id: 'slow-roll',
     name: 'Slow Roll',
+    voiceTweaks: {
+      // Long-tail deep kick + thicker snare body — warm and patient.
+      kick: {
+        freqStart: 120,
+        freqEnd: 35,
+        sweepSec: 0.18,
+        decaySec: 0.5,
+        bodyGain: 1.0,
+        clickGain: 0.1,
+      },
+      snare: { noiseHpHz: 1000, noiseDecaySec: 0.2, bodyFreq: 200 },
+      hihat: { decaySec: 0.07 },
+    },
     vibe: 'sexy R&B · low-BPM bedroom soul',
     dot: '#7A3850',
     bpm: 78,
@@ -412,6 +496,19 @@ export const GROOVE_PRESETS: readonly GroovePreset[] = [
   {
     id: 'boom-bap',
     name: 'Boom Bap',
+    voiceTweaks: {
+      // Dusty, lo-fi'd kick (bigger noise click, lower hp) + tight
+      // crackly snare. Hat sits dirty and short.
+      kick: {
+        freqStart: 110,
+        freqEnd: 38,
+        decaySec: 0.3,
+        clickGain: 0.3,
+        clickHpHz: 3000,
+      },
+      snare: { noiseHpHz: 900, bodyFreq: 200, noiseGain: 0.4 },
+      hihat: { hpHz: 6000, decaySec: 0.04 },
+    },
     vibe: 'Biggie · Nas · J Dilla · 1995 Brooklyn',
     dot: '#6A4A2A',
     bpm: 90,
@@ -479,6 +576,19 @@ export const GROOVE_PRESETS: readonly GroovePreset[] = [
   {
     id: 'epic-electro',
     name: 'Epic Electro',
+    voiceTweaks: {
+      // Big, room-filling kick (wider sweep) + bright snare + sizzly
+      // hat. The "festival mainroom" weight without going dirty.
+      kick: {
+        freqStart: 180,
+        freqEnd: 38,
+        sweepSec: 0.15,
+        bodyGain: 1.0,
+        clickGain: 0.25,
+      },
+      snare: { noiseHpHz: 1800, noiseGain: 0.42, bodyFreq: 240 },
+      hihat: { hpHz: 9500, gain: 0.14 },
+    },
     vibe: 'Justice · Discovery-era Daft Punk · Madeon',
     dot: '#3868D8',
     bpm: 126,
@@ -558,6 +668,22 @@ export const GROOVE_PRESETS: readonly GroovePreset[] = [
   {
     id: 'lofi-rooftop',
     name: 'Lofi Rooftop',
+    voiceTweaks: {
+      // Muffled slow kick (no click attack, low body), dampened
+      // snare, dusty short hat. The "tape passed through three
+      // generations" feel.
+      kick: {
+        freqStart: 110,
+        freqEnd: 50,
+        sweepSec: 0.18,
+        decaySec: 0.4,
+        clickGain: 0.05,
+        clickHpHz: 2500,
+        bodyGain: 0.75,
+      },
+      snare: { noiseHpHz: 800, noiseDecaySec: 0.18, bodyFreq: 200, noiseGain: 0.3 },
+      hihat: { hpHz: 5500, decaySec: 0.06, gain: 0.1 },
+    },
     vibe: 'Nujabes · J Dilla · study beats',
     dot: '#6A4A7A',
     bpm: 82,
