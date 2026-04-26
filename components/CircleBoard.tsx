@@ -1,18 +1,26 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 
 import { useKeyboardAware } from '@/components/hooks/useKeyboardAware';
+import {
+  type CircleDetail as ApiCircleDetail,
+  type CircleMember as ApiCircleMember,
+  type CircleMission as ApiCircleMission,
+  type CircleNote as ApiCircleNote,
+  useCircles,
+} from '@/lib/use-circles';
 
 /* ═══════════════════════════════════════════════════════════
    CIRCLE BOARD — shared mission board for a group of people.
    Create circles, join with a code, shared missions + log.
-   Phase 1: localStorage only (single device, demo mode).
+   Phase 2: Supabase-backed via /api/circles + useCircles() hook.
+   Per Martin (2026-04-26): "all cicles needs supabase wire up."
+   localStorage caches the last-seen state for offline-friendly
+   first paint; mutations route through the API.
    ═══════════════════════════════════════════════════════════ */
 
-const LS_CIRCLES = 'colourmap:circles';
-const LS_ACTIVE = 'colourmap:active-circle';
-const LS_ME = 'colourmap:circle-me';
+const LS_ANNOTATIONS = 'colourmap:circle-annotations';
 
 interface ChapterMeaning {
   memberId: string;
@@ -104,35 +112,110 @@ interface Note {
 
 const CIRCLE_COLORS = ['#D4805A', '#6890B0', '#7AAA58', '#9B6BA0', '#C4A060', '#5A8AAA'];
 
-function ls<T>(key: string, fallback: T): T {
-  if (typeof window === 'undefined') return fallback;
+/* ─── Local annotations layer ─────────────────────────────────
+ *
+ * The Supabase API supports the core surface (circle metadata,
+ * members, missions, notes, pulse). It does NOT yet support:
+ *   - per-mission notes thread (m.notes[])
+ *   - chapter + chapterMeanings on a circle
+ *
+ * These live in localStorage keyed by circle id, and are merged
+ * into the API-backed shape by `augmentCircle()` so the existing
+ * UI keeps working. Wire these into the API in a follow-up PR.
+ */
+interface CircleAnnotations {
+  chapter?: string;
+  chapterMeanings?: ChapterMeaning[];
+  missionNotes?: Record<string, MissionNote[]>;
+}
+
+type AnnotationStore = Record<string, CircleAnnotations>;
+
+function loadAnnotations(): AnnotationStore {
+  if (typeof window === 'undefined') return {};
   try {
-    const raw = localStorage.getItem(key);
-    return raw ? (JSON.parse(raw) as T) : fallback;
+    const raw = localStorage.getItem(LS_ANNOTATIONS);
+    return raw ? (JSON.parse(raw) as AnnotationStore) : {};
   } catch {
-    return fallback;
+    return {};
   }
 }
 
-function ss(key: string, val: unknown) {
+function persistAnnotations(store: AnnotationStore) {
   try {
-    localStorage.setItem(key, JSON.stringify(val));
-  } catch {}
+    localStorage.setItem(LS_ANNOTATIONS, JSON.stringify(store));
+  } catch {
+    /* silent */
+  }
 }
 
-function genCode(): string {
-  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
-  let code = '';
-  for (let i = 0; i < 6; i++) code += chars[Math.floor(Math.random() * chars.length)];
-  return code;
+/** Convert an API CircleDetail into the legacy local Circle shape
+ *  the UI was originally written against. Maps `dueDate` → `due`,
+ *  `userId` → `id`, and overlays local annotations. */
+function augmentCircle(api: ApiCircleDetail, annotations: AnnotationStore): Circle {
+  const ann = annotations[api.id] || {};
+  const missionNotes = ann.missionNotes ?? {};
+  return {
+    id: api.id,
+    name: api.name,
+    code: api.code,
+    color: api.color,
+    createdAt: api.createdAt ?? '',
+    members: api.members.map(
+      (m: ApiCircleMember): Member => ({
+        id: m.userId, // use real auth user id as the local id
+        name: m.name,
+        color: m.color,
+        pulse: m.pulse ?? undefined,
+        pulseColor: m.pulseColor ?? undefined,
+      }),
+    ),
+    missions: api.missions.map(
+      (m: ApiCircleMission): Mission => ({
+        id: m.id,
+        text: m.text,
+        claimedBy: m.claimedBy ?? undefined,
+        done: m.done,
+        due: m.dueDate ?? undefined,
+        notes: missionNotes[m.id] ?? [],
+        createdAt: m.createdAt ?? '',
+      }),
+    ),
+    notes: api.notes.map(
+      (n: ApiCircleNote): Note => ({
+        id: n.id,
+        authorId: n.authorId,
+        authorName: n.authorName,
+        text: n.text,
+        createdAt: n.createdAt,
+      }),
+    ),
+    chapter: ann.chapter,
+    chapterMeanings: ann.chapterMeanings,
+  };
 }
 
 type View = 'list' | 'board';
 
 export default function CircleBoard() {
-  const [circles, setCircles] = useState<Circle[]>([]);
-  const [activeId, setActiveId] = useState<string | null>(null);
-  const [me, setMe] = useState<{ id: string; name: string }>({ id: '', name: '' });
+  // Supabase-backed via the useCircles() hook. Annotations
+  // (chapter, mission notes thread) layer on top from localStorage.
+  const hook = useCircles();
+  const [annotations, setAnnotations] = useState<AnnotationStore>({});
+  useEffect(() => {
+    setAnnotations(loadAnnotations());
+  }, []);
+
+  // The circles array the UI reads from — augmented with local
+  // annotations so chapter + mission notes still work.
+  const circles = useMemo<Circle[]>(
+    () => hook.circles.map((c) => augmentCircle(c, annotations)),
+    [hook.circles, annotations],
+  );
+  const activeId = hook.activeId;
+  const active = circles.find((c) => c.id === activeId);
+  const me = hook.me;
+
   const [view, setView] = useState<View>('list');
   const [creating, setCreating] = useState(false);
   const [joining, setJoining] = useState(false);
@@ -148,144 +231,89 @@ export default function CircleBoard() {
   const [howOpen, setHowOpen] = useState(false);
   const boardRef = useKeyboardAware<HTMLDivElement>();
 
+  // First-run name capture. Auto-opens the editor if no me.name.
   useEffect(() => {
-    setCircles(ls<Circle[]>(LS_CIRCLES, []));
-    setActiveId(ls<string | null>(LS_ACTIVE, null));
-    const savedMe = ls<{ id: string; name: string }>(LS_ME, {
-      id: crypto.randomUUID(),
-      name: '',
-    });
-    setMe(savedMe);
-    if (!savedMe.name) setEditingMe(true);
-  }, []);
+    if (!hook.loading && !me.name) setEditingMe(true);
+  }, [hook.loading, me.name]);
 
-  function persist(next: Circle[]) {
-    setCircles(next);
-    ss(LS_CIRCLES, next);
+  // When the user picks an active circle, switch to board view.
+  useEffect(() => {
+    if (activeId) setView('board');
+  }, [activeId]);
+
+  /**
+   * Update local annotations for a circle (chapter, mission notes,
+   * etc.) and persist to localStorage. This is the only writer for
+   * non-API fields.
+   */
+  function updateAnnotations(circleId: string, patch: Partial<CircleAnnotations>) {
+    const next: AnnotationStore = {
+      ...annotations,
+      [circleId]: { ...(annotations[circleId] || {}), ...patch },
+    };
+    setAnnotations(next);
+    persistAnnotations(next);
   }
 
   function selectCircle(id: string) {
-    setActiveId(id);
-    ss(LS_ACTIVE, id);
+    hook.selectCircle(id);
     setView('board');
   }
 
   function saveMe(name: string) {
     const trimmed = name.trim();
     if (!trimmed) return;
-    const updated = { ...me, name: trimmed };
-    if (!updated.id) updated.id = crypto.randomUUID();
-    setMe(updated);
-    ss(LS_ME, updated);
+    hook.setMyName(trimmed);
     setEditingMe(false);
   }
 
-  function createCircle() {
+  async function createCircle() {
     const name = newName.trim();
     if (!name || !me.name) return;
-    const circle: Circle = {
-      id: crypto.randomUUID(),
-      name,
-      code: genCode(),
-      color: CIRCLE_COLORS[circles.length % CIRCLE_COLORS.length],
-      members: [{ id: me.id, name: me.name, color: CIRCLE_COLORS[0] }],
-      missions: [],
-      notes: [],
-      createdAt: new Date().toISOString(),
-    };
-    const next = [...circles, circle];
-    persist(next);
-    selectCircle(circle.id);
-    setNewName('');
-    setCreating(false);
+    const detail = await hook.createCircle(name);
+    if (detail) {
+      setNewName('');
+      setCreating(false);
+    }
   }
 
-  function joinCircle() {
+  async function joinCircle() {
     const code = joinCode.trim().toUpperCase();
-    const circle = circles.find((c) => c.code === code);
-    if (!circle) return;
-    if (circle.members.some((m) => m.id === me.id)) {
-      selectCircle(circle.id);
+    if (!code || !me.name) return;
+    const detail = await hook.joinCircle(code);
+    if (detail) {
       setJoining(false);
       setJoinCode('');
-      return;
     }
-    const memberColor = CIRCLE_COLORS[circle.members.length % CIRCLE_COLORS.length];
-    const updated = circles.map((c) =>
-      c.id === circle.id
-        ? { ...c, members: [...c.members, { id: me.id, name: me.name, color: memberColor }] }
-        : c,
-    );
-    persist(updated);
-    selectCircle(circle.id);
-    setJoining(false);
-    setJoinCode('');
   }
 
-  function addMission() {
+  async function addMission() {
     const text = missionInput.trim();
     if (!text || !activeId) return;
-    const mission: Mission = {
-      id: crypto.randomUUID(),
-      text,
-      done: false,
-      due: missionDueInput || undefined,
-      notes: [],
-      createdAt: new Date().toISOString(),
-    };
-    const updated = circles.map((c) =>
-      c.id === activeId ? { ...c, missions: [...c.missions, mission] } : c,
-    );
-    persist(updated);
+    await hook.addMission(text, missionDueInput || null);
     setMissionInput('');
     setMissionDueInput('');
   }
 
-  function toggleMission(missionId: string) {
-    const updated = circles.map((c) =>
-      c.id === activeId
-        ? {
-            ...c,
-            missions: c.missions.map((m) => (m.id === missionId ? { ...m, done: !m.done } : m)),
-          }
-        : c,
-    );
-    persist(updated);
+  async function toggleMission(missionId: string) {
+    await hook.toggleMissionDone(missionId);
   }
 
   /** Toggle "I'm working on this" — claims for me if unclaimed,
    *  unclaims if I already had it. Drives the doing-state chip. */
-  function claimMission(missionId: string) {
-    const updated = circles.map((c) =>
-      c.id === activeId
-        ? {
-            ...c,
-            missions: c.missions.map((m) =>
-              m.id === missionId
-                ? { ...m, claimedBy: m.claimedBy === me.id ? undefined : me.id }
-                : m,
-            ),
-          }
-        : c,
-    );
-    persist(updated);
+  async function claimMission(missionId: string) {
+    await hook.claimMission(missionId);
   }
 
-  function setMissionDue(missionId: string, due: string | undefined) {
-    const updated = circles.map((c) =>
-      c.id === activeId
-        ? {
-            ...c,
-            missions: c.missions.map((m) => (m.id === missionId ? { ...m, due } : m)),
-          }
-        : c,
-    );
-    persist(updated);
+  async function setMissionDue(missionId: string, due: string | undefined) {
+    await hook.setMissionDue(missionId, due ?? null);
   }
 
+  /** Add a note to a mission's local thread. Stays localStorage-only
+   *  for now — API extension is a follow-up. */
   function addMissionNote(missionId: string, text: string) {
     const trimmed = text.trim();
-    if (!trimmed) return;
+    if (!trimmed || !activeId) return;
     const note: MissionNote = {
       id: crypto.randomUUID(),
       authorId: me.id,
@@ -293,46 +321,29 @@ export default function CircleBoard() {
       text: trimmed,
       createdAt: new Date().toISOString(),
     };
-    const updated = circles.map((c) =>
-      c.id === activeId
-        ? {
-            ...c,
-            missions: c.missions.map((m) =>
-              m.id === missionId ? { ...m, notes: [...(m.notes || []), note] } : m,
-            ),
-          }
-        : c,
-    );
-    persist(updated);
+    const existing = annotations[activeId]?.missionNotes ?? {};
+    updateAnnotations(activeId, {
+      missionNotes: {
+        ...existing,
+        [missionId]: [...(existing[missionId] || []), note],
+      },
+    });
   }
 
-  function removeMission(missionId: string) {
-    const updated = circles.map((c) =>
-      c.id === activeId ? { ...c, missions: c.missions.filter((m) => m.id !== missionId) } : c,
-    );
-    persist(updated);
+  async function removeMission(missionId: string) {
+    await hook.removeMission(missionId);
   }
 
-  function addNote() {
+  async function addNote() {
     const text = noteInput.trim();
     if (!text || !activeId) return;
-    const note: Note = {
-      id: crypto.randomUUID(),
-      authorId: me.id,
-      authorName: me.name,
-      text,
-      createdAt: new Date().toISOString(),
-    };
-    const updated = circles.map((c) =>
-      c.id === activeId ? { ...c, notes: [note, ...c.notes].slice(0, 100) } : c,
-    );
-    persist(updated);
+    await hook.addNote(text);
     setNoteInput('');
   }
 
-  const active = circles.find((c) => c.id === activeId);
-
-  // Read pulse from check-in — only on circle switch
+  // Read pulse from check-in — only on circle switch. Posts to the
+  // /api/circles/:id/pulse endpoint via the hook so other members
+  // see the user's current Hawkins state.
   // biome-ignore lint/correctness/useExhaustiveDependencies: intentionally runs only on activeId change
   useEffect(() => {
     if (!active || !me.id) return;
@@ -364,20 +375,13 @@ export default function CircleBoard() {
       ];
       const pulse = HAWKINS_LABELS[hawkinsIdx] || 'Neutral';
       const pulseColor = HAWKINS_COLORS[hawkinsIdx] || '#C4A060';
-      const updated = circles.map((c) =>
-        c.id === activeId
-          ? {
-              ...c,
-              members: c.members.map((m) => (m.id === me.id ? { ...m, pulse, pulseColor } : m)),
-            }
-          : c,
-      );
-      // Only persist if pulse actually changed
       const currentMember = active.members.find((m) => m.id === me.id);
       if (currentMember?.pulse !== pulse) {
-        persist(updated);
+        void hook.setMyPulse(pulse, pulseColor);
       }
-    } catch {}
+    } catch {
+      /* silent */
+    }
   }, [activeId]);
 
   const font = 'var(--font-serif)';
@@ -747,41 +751,39 @@ export default function CircleBoard() {
   const [assigningMission, setAssigningMission] = useState<string | null>(null);
 
   function setChapter(text: string) {
-    const updated = circles.map((c) => (c.id === activeId ? { ...c, chapter: text } : c));
-    persist(updated);
+    if (!activeId) return;
+    updateAnnotations(activeId, { chapter: text });
     setEditingChapter(false);
   }
 
   function addMeaning() {
     const text = meaningInput.trim();
-    if (!text || !active) return;
+    if (!text || !active || !activeId) return;
     const meaning: ChapterMeaning = { memberId: me.id, memberName: me.name, text };
     const existing = active.chapterMeanings || [];
-    // Replace if same member already wrote one
-    const updated = circles.map((c) =>
-      c.id === activeId
-        ? {
-            ...c,
-            chapterMeanings: [...existing.filter((m) => m.memberId !== me.id), meaning],
-          }
-        : c,
-    );
-    persist(updated);
+    updateAnnotations(activeId, {
+      chapterMeanings: [...existing.filter((m) => m.memberId !== me.id), meaning],
+    });
     setMeaningInput('');
   }
 
-  function assignMissionTo(missionId: string, memberId: string) {
-    const updated = circles.map((c) =>
-      c.id === activeId
-        ? {
-            ...c,
-            missions: c.missions.map((m) =>
-              m.id === missionId ? { ...m, claimedBy: memberId } : m,
-            ),
-          }
-        : c,
-    );
-    persist(updated);
+  /** Assign a mission to a specific member. The hook's claimMission
+   *  toggles based on me.id; for assigning to anyone else we go
+   *  directly through patchMission via setMissionDue's sibling
+   *  pathway. Today: when assigning to someone other than me, just
+   *  set claimedBy via the API PATCH. */
+  async function assignMissionTo(missionId: string, memberId: string) {
+    if (!activeId) return;
+    try {
+      await fetch(`/api/circles/${activeId}/missions/${missionId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ claimedBy: memberId }),
+      });
+      await hook.refresh();
+    } catch {
+      /* silent — surface in UI in a follow-up */
+    }
     setAssigningMission(null);
   }
 
