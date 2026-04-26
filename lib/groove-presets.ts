@@ -74,6 +74,19 @@ export interface PresetVoiceTweaks {
     /** Gain at peak. Default 0.12. */
     gain?: number;
   };
+  rhodes?: {
+    /** Lowpass cutoff Hz for the rhodes tone. Default 2500. Lower
+     *  = mellower / dustier; higher = brighter electric piano. */
+    lpHz?: number;
+    /** Decay seconds. Default 0.45. Longer = sustained pad-like
+     *  rhodes; shorter = stab. */
+    decaySec?: number;
+    /** Peak gain. Default 0.3. */
+    gain?: number;
+    /** Ratio of upper-partial triangle to fundamental sine. Default
+     *  3 (third octave). 1.5 = clean-mellow; 4 = bell-like. */
+    overtoneRatio?: number;
+  };
   bass?: {
     /** Oscillator type. Default 'sawtooth'. */
     oscType?: OscillatorType;
@@ -507,6 +520,8 @@ export const GROOVE_PRESETS: readonly GroovePreset[] = [
         gain: 0.7,
         decaySec: 0.45,
       },
+      // Slow Roll rhodes — wide cinematic chord, long sustain, bright.
+      rhodes: { lpHz: 3200, decaySec: 0.85, gain: 0.32, overtoneRatio: 3 },
     },
     vibe: 'sexy R&B · low-BPM bedroom soul',
     dot: '#7A3850',
@@ -596,6 +611,8 @@ export const GROOVE_PRESETS: readonly GroovePreset[] = [
         gain: 0.65,
         decaySec: 0.32,
       },
+      // Boom Bap rhodes — dusty stab, muffled tone, short decay.
+      rhodes: { lpHz: 1600, decaySec: 0.35, gain: 0.28, overtoneRatio: 2 },
     },
     vibe: 'Biggie · Nas · J Dilla · 1995 Brooklyn',
     dot: '#6A4A2A',
@@ -811,6 +828,8 @@ export const GROOVE_PRESETS: readonly GroovePreset[] = [
         gain: 0.5,
         decaySec: 0.3,
       },
+      // Lofi rhodes — warm tape-saturated chord, mellow + sustained.
+      rhodes: { lpHz: 1400, decaySec: 0.7, gain: 0.3, overtoneRatio: 2 },
     },
     vibe: 'Nujabes · J Dilla · study beats',
     dot: '#6A4A7A',

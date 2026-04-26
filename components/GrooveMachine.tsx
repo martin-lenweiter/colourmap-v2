@@ -420,28 +420,33 @@ function triggerSubPulse(
 }
 
 function triggerRhodes(ctx: AudioContext, when: number, vel: number, out: AudioNode, freq: number) {
-  // Rhodes: sine + triangle fifth, short attack, medium decay
+  const tw = CURRENT_TWEAKS.rhodes ?? {};
+  const lpHz = tw.lpHz ?? 2500;
+  const decaySec = tw.decaySec ?? 0.45;
+  const gainPeak = tw.gain ?? 0.3;
+  const overtoneRatio = tw.overtoneRatio ?? 3;
+
   const osc1 = ctx.createOscillator();
   osc1.type = 'sine';
   osc1.frequency.value = freq;
   const osc2 = ctx.createOscillator();
   osc2.type = 'triangle';
-  osc2.frequency.value = freq * 3;
+  osc2.frequency.value = freq * overtoneRatio;
   const lp = ctx.createBiquadFilter();
   lp.type = 'lowpass';
-  lp.frequency.value = 2500;
+  lp.frequency.value = lpHz;
   const g = ctx.createGain();
   g.gain.setValueAtTime(0.0001, when);
-  g.gain.exponentialRampToValueAtTime(0.3 * vel, when + 0.01);
-  g.gain.exponentialRampToValueAtTime(0.0001, when + 0.45);
+  g.gain.exponentialRampToValueAtTime(gainPeak * vel, when + 0.01);
+  g.gain.exponentialRampToValueAtTime(0.0001, when + decaySec);
   osc1.connect(lp);
   osc2.connect(lp);
   lp.connect(g);
   g.connect(out);
   osc1.start(when);
   osc2.start(when);
-  osc1.stop(when + 0.5);
-  osc2.stop(when + 0.5);
+  osc1.stop(when + decaySec + 0.05);
+  osc2.stop(when + decaySec + 0.05);
 }
 
 function triggerGuitar(ctx: AudioContext, when: number, vel: number, out: AudioNode, freq: number) {
