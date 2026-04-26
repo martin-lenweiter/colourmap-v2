@@ -685,86 +685,34 @@ export default function FeedbackOverlay() {
                   {listening ? 'stop' : 'mic'}
                 </button>
               )}
-              <button
-                type="button"
-                onPointerDown={(e) => e.stopPropagation()}
-                onClick={() => setNoteSize({ w: 140, h: 100 })}
-                aria-label="Shrink note to small"
-                title="Small"
-                style={{
-                  background: 'transparent',
-                  border: '1px solid #A87A4055',
-                  color: '#A87A40',
-                  borderRadius: 6,
-                  padding: '2px 7px',
-                  fontSize: 10,
-                  fontFamily: 'var(--font-serif)',
-                  cursor: 'pointer',
-                  fontWeight: 700,
-                }}
-              >
-                S
-              </button>
-              <button
-                type="button"
-                onPointerDown={(e) => e.stopPropagation()}
-                onClick={() => setNoteSize({ w: 280, h: 180 })}
-                aria-label="Medium note"
-                title="Medium"
-                style={{
-                  background: 'transparent',
-                  border: '1px solid #A87A4055',
-                  color: '#A87A40',
-                  borderRadius: 6,
-                  padding: '2px 7px',
-                  fontSize: 10,
-                  fontFamily: 'var(--font-serif)',
-                  cursor: 'pointer',
-                  fontWeight: 700,
-                }}
-              >
-                M
-              </button>
-              <button
-                type="button"
-                onPointerDown={(e) => e.stopPropagation()}
-                onClick={() =>
-                  setNoteSize({
-                    w: Math.min(420, window.innerWidth - 32),
-                    h: Math.min(420, window.innerHeight - 120),
-                  })
-                }
-                aria-label="Large note"
-                title="Large"
-                style={{
-                  background: 'transparent',
-                  border: '1px solid #A87A4055',
-                  color: '#A87A40',
-                  borderRadius: 6,
-                  padding: '2px 7px',
-                  fontSize: 10,
-                  fontFamily: 'var(--font-serif)',
-                  cursor: 'pointer',
-                  fontWeight: 700,
-                }}
-              >
-                L
-              </button>
             </div>
           </div>
-          {/* Text-size slider — small for screenshot-sized notes,
-              big for comfortable writing. Persisted between sessions. */}
+          {/* Text-size slider — drag to shrink or grow the note text.
+              Box dimensions live on the corner handle below; this is
+              just for the typed text. Persisted between sessions. */}
           <div
             style={{
               display: 'flex',
               alignItems: 'center',
-              gap: 6,
+              gap: 8,
               padding: '0 4px 4px',
               fontFamily: 'var(--font-serif)',
               fontSize: 10,
               color: '#A87A40',
             }}
+            onPointerDown={(e) => e.stopPropagation()}
           >
+            <span
+              style={{
+                fontSize: 9,
+                fontWeight: 700,
+                letterSpacing: '0.14em',
+                textTransform: 'uppercase',
+                opacity: 0.7,
+              }}
+            >
+              text
+            </span>
             <span
               aria-hidden="true"
               style={{
@@ -797,6 +745,19 @@ export default function FeedbackOverlay() {
               }}
             >
               A
+            </span>
+            <span
+              style={{
+                fontSize: 10,
+                fontWeight: 700,
+                color: '#A87A40',
+                opacity: 0.85,
+                minWidth: 22,
+                textAlign: 'right',
+              }}
+              aria-hidden="true"
+            >
+              {fontSize}
             </span>
           </div>
           {/* Area pill row — tag the observation with the part of the
