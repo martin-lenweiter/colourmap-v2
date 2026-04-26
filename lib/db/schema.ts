@@ -236,3 +236,14 @@ export const circleDecisionVotes = pgTable('circle_decision_votes', {
   value: text('value').notNull(),
   createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
 });
+
+// ─── Designer observations — feedback log captured via the
+// triple-tap dev overlay. Each entry is one block of feedback
+// + the part of the app it's about (Day, Music, Circles, etc.).
+export const designerObservations = pgTable('designer_observations', {
+  id: uuid('id').defaultRandom().primaryKey(),
+  userId: uuid('user_id').notNull(),
+  area: text('area'),
+  text: text('text').notNull(),
+  createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+});
