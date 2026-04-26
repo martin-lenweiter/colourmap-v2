@@ -99,21 +99,41 @@ export default function LifeCategoriesEmptyState() {
   // the Overview render.
   if (categories.length > 0) return null;
 
-  function add(name: string) {
+  async function add(name: string) {
     const trimmed = name.trim();
     if (!trimmed) return;
-    const next: LifeCategoryLite[] = [
-      ...categories!,
-      {
-        id: crypto.randomUUID(),
-        name: trimmed,
-        color: CAT_COLORS[(categories?.length ?? 0) % CAT_COLORS.length],
-        createdAt: new Date().toISOString(),
-      },
-    ];
-    saveCategories(next);
-    setCategories(next);
+    const colour = CAT_COLORS[(categories?.length ?? 0) % CAT_COLORS.length];
+    // Optimistic local insert so the strip + categories grid show
+    // it immediately. Then POST to the API so it persists to
+    // Supabase and survives reloads / appears on other devices.
+    const optimisticId = crypto.randomUUID();
+    const optimistic: LifeCategoryLite = {
+      id: optimisticId,
+      name: trimmed,
+      color: colour,
+      createdAt: new Date().toISOString(),
+    };
+    const optimisticNext = [...(categories ?? []), optimistic];
+    saveCategories(optimisticNext);
+    setCategories(optimisticNext);
     setInput('');
+    try {
+      const res = await fetch('/api/life-categories', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: trimmed, color: colour }),
+      });
+      if (res.ok) {
+        const real = (await res.json()) as LifeCategoryLite;
+        // Replace the optimistic id with the server-issued one so
+        // future PATCH/DELETE calls hit the right row.
+        const persisted = optimisticNext.map((c) => (c.id === optimisticId ? real : c));
+        saveCategories(persisted);
+        setCategories(persisted);
+      }
+    } catch {
+      /* silent — optimistic value already in localStorage */
+    }
   }
 
   return (
