@@ -3074,10 +3074,12 @@ export default function FeelingCheckInCard() {
                           Challenge
                         </span>
                       </div>
-                      <div className="relative flex items-end gap-2">
+                      <div className="relative flex flex-col gap-2 md:flex-row md:items-end">
                         {/* Auto-grow textarea — Enter inserts newline so the
                         user can write the full extent of a thought.
-                        Cmd/Ctrl+Enter saves; tag picker stays inline. */}
+                        Cmd/Ctrl+Enter saves. Tag picker drops below the
+                        textarea on phone so the writing area gets the
+                        full horizontal space. */}
                         <textarea
                           rows={1}
                           value={challengeInput}
@@ -3154,9 +3156,11 @@ export default function FeelingCheckInCard() {
                           Flow
                         </span>
                       </div>
-                      <div className="relative flex items-end gap-2">
+                      <div className="relative flex flex-col gap-2 md:flex-row md:items-end">
                         {/* Auto-grow textarea — same pattern as Challenge:
-                        Enter wraps, Cmd/Ctrl+Enter saves. */}
+                        Enter wraps, Cmd/Ctrl+Enter saves. Tag picker
+                        drops below on phone so the textarea gets the
+                        full horizontal space. */}
                         <textarea
                           rows={1}
                           value={flowInput}

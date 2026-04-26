@@ -176,12 +176,12 @@ export default function ColourmapBrandButton() {
         title="About Colourmap"
       >
         <p
-          className="text-[18px] font-normal tracking-[0.1em] font-serif text-center"
+          className="text-[22px] font-bold tracking-[0.08em] font-serif text-center"
           style={{ color: '#B33A2B' }}
         >
           Colourmap
         </p>
-        <svg width={16} height={16} viewBox="0 0 20 20" style={{ marginTop: 3 }} aria-hidden="true">
+        <svg width={18} height={18} viewBox="0 0 20 20" style={{ marginTop: 3 }} aria-hidden="true">
           {(() => {
             const cx = 10;
             const cy = 10;

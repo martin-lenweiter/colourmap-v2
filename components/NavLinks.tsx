@@ -50,15 +50,17 @@ export default function NavLinks() {
     return () => document.removeEventListener('mousedown', onClickOutside);
   }, [moreOpen]);
 
-  // Phone nav: tight gap + smaller text so Focus doesn't get pushed
-  // off-screen. Center-justified + flex-wrap so the row stays
-  // balanced. Less padding (px-2) on phone reclaims edge width.
+  // Phone nav: horizontal scroll so labels never get clipped at the
+  // edge — Martin saw "Focus" cropped to "ocus" on his iPhone with
+  // the previous centered + flex-wrap layout. Now the row is flex +
+  // overflow-x-auto with start-justify, so every label is reachable
+  // by swiping the strip left/right, and nothing falls off-screen.
   return (
     <nav
       className={`mx-auto flex w-full items-center pb-3 ${
         isPhone
-          ? 'flex-wrap justify-center gap-3 px-2 text-[13px]'
-          : 'max-w-5xl gap-8 px-4 text-base justify-center'
+          ? 'gap-4 overflow-x-auto px-3 text-[14px] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden'
+          : 'max-w-5xl justify-center gap-8 px-4 text-base'
       }`}
     >
       {primary.map((link) => {

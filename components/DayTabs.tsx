@@ -130,7 +130,10 @@ export default function DayTabs({
               color: '#7A5438',
               opacity: 0.7,
               letterSpacing: '0.06em',
-              marginTop: 14,
+              // Symmetric vertical breathing room — same negative space
+              // above and below so the date sits visually centered in
+              // its band, not pushed down by the global nav above.
+              marginTop: 6,
               marginBottom: 6,
             }}
           >
