@@ -11,7 +11,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 const CATS_KEY = 'colourmap:life-categories';
 const TARGETS_KEY = 'colourmap:life-targets';
 const LOG_KEY = 'colourmap:life-log';
-const VIEW_KEY = 'colourmap:life-view';
+// VIEW_KEY removed when polygon mode was locked (2026-04-26).
 const POS_KEY = 'colourmap:life-positions';
 const RIVER_KEY = 'colourmap:life-river';
 
@@ -202,7 +202,13 @@ export default function LifeCategories() {
     if (typeof window === 'undefined') return true;
     return localStorage.getItem('colourmap:life-categories-open') !== 'false';
   });
-  const [viewMode, setViewMode] = useState<'list' | 'polygon' | 'cells' | 'river'>('polygon');
+  // Locked to polygon per Martin (2026-04-26): "keep life categories
+  // in polygon mode." The other view modes (list, cells, river) are
+  // dead code paths kept for now in case we re-introduce them as a
+  // designer-mode toggle later — typed as the wide union so the
+  // existing equality checks still compile.
+  type ViewMode = 'list' | 'polygon' | 'cells' | 'river';
+  const viewMode = 'polygon' as ViewMode;
   const [riverSnapshots, setRiverSnapshots] = useState<RiverSnapshot[]>([]);
   const [cellPositions, setCellPositions] = useState<Record<string, { x: number; y: number }>>({});
   const dragRef = useRef<{
@@ -233,24 +239,9 @@ export default function LifeCategories() {
     setMindIdx(loadNum('colourmap:presence-idx', 5));
     setModeIdx(loadNum('colourmap:engagement-idx', 4));
 
-    // View mode & cell positions
-    try {
-      const v = localStorage.getItem(VIEW_KEY);
-      if (v === 'list') {
-        setViewMode('list');
-      } else if (
-        v === 'polygon' ||
-        v === 'cells' ||
-        v === 'river' ||
-        v === 'cell' ||
-        v === 'blobs'
-      ) {
-        // Legacy values: 'cell' and 'blobs' → 'cells'
-        setViewMode(v === 'cell' || v === 'blobs' ? 'cells' : (v as 'polygon' | 'cells' | 'river'));
-      }
-    } catch {
-      /* silent */
-    }
+    // View mode is locked to polygon — the localStorage restore was
+    // removed when Martin asked to "keep life categories in polygon
+    // mode" on 2026-04-26.
     setCellPositions(ls<Record<string, { x: number; y: number }>>(POS_KEY, {}));
     setRiverSnapshots(ls<RiverSnapshot[]>(RIVER_KEY, []));
 
@@ -269,24 +260,9 @@ export default function LifeCategories() {
       .catch(() => {});
   }, []);
 
-  const cycleView = useCallback(() => {
-    setViewMode((prev) => {
-      const next =
-        prev === 'list'
-          ? 'polygon'
-          : prev === 'polygon'
-            ? 'cells'
-            : prev === 'cells'
-              ? 'river'
-              : 'list';
-      try {
-        localStorage.setItem(VIEW_KEY, next);
-      } catch {
-        /* silent */
-      }
-      return next;
-    });
-  }, []);
+  // cycleView removed when Martin locked Life Categories to polygon
+  // mode on 2026-04-26. View toggle button below was hidden at the
+  // same time. Re-introduce as a designer-mode toggle if needed.
 
   /* ─── River: save today's rating for a category ─── */
   const setRiverRating = useCallback((categoryId: string, rating: number) => {
@@ -545,30 +521,8 @@ export default function LifeCategories() {
             ▾
           </span>
         </button>
-        {/* View toggle — cycles list → polygon → blobs */}
-        {sectionOpen && categories.length > 0 && (
-          <button
-            type="button"
-            onClick={cycleView}
-            className="absolute right-0 top-1/2 flex -translate-y-1/2 cursor-pointer items-center gap-1.5"
-            style={{ background: 'none', border: 'none' }}
-            aria-label="Toggle view"
-          >
-            <span
-              className="text-[10px] font-semibold uppercase tracking-wider"
-              style={{ color: '#C4A06080' }}
-            >
-              {viewMode}
-            </span>
-            <span
-              className="flex h-4 w-4 rotate-45 items-center justify-center rounded-[2px]"
-              style={{
-                background: viewMode === 'list' ? '#C4A06015' : '#C4A06040',
-                border: '1px solid #C4A06030',
-              }}
-            />
-          </button>
-        )}
+        {/* View toggle removed — Life Categories is locked to polygon
+            mode (2026-04-26). */}
       </div>
 
       {sectionOpen && (
@@ -670,13 +624,11 @@ export default function LifeCategories() {
                           key={cat.id}
                           style={{ cursor: 'pointer' }}
                           onClick={() => {
-                            setViewMode('list');
+                            // Polygon-locked: just set the expanded id;
+                            // no mode switch. Detail rendering for
+                            // polygon-clicked categories is the next
+                            // follow-up.
                             setExpandedId(cat.id);
-                            try {
-                              localStorage.setItem(VIEW_KEY, 'list');
-                            } catch {
-                              /* silent */
-                            }
                           }}
                         >
                           {/* Main vertex circle — no outer progress ring */}
@@ -848,13 +800,8 @@ export default function LifeCategories() {
                       };
                     }}
                     onDoubleClick={() => {
-                      setViewMode('list');
+                      // Polygon-locked: no mode switch.
                       setExpandedId(cat.id);
-                      try {
-                        localStorage.setItem(VIEW_KEY, 'list');
-                      } catch {
-                        /* silent */
-                      }
                     }}
                   >
                     <span className="mb-1 h-2 w-2 rounded-full" style={{ background: cat.color }} />

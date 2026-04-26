@@ -17,7 +17,6 @@ import NowBar from '@/components/NowBar';
 import QuietNotes from '@/components/QuietNotes';
 import ReflectBox from '@/components/ReflectBox';
 import SlowWins from '@/components/SlowWins';
-import SoundscapeGarden from '@/components/SoundscapeGarden';
 import { StyleProvider } from '@/components/StyleContext';
 import TrackLines from '@/components/TrackLines';
 import WeekShape from '@/components/WeekShape';
@@ -55,7 +54,6 @@ function DayContent() {
               <LifeCategoriesStrip />
               <CompassFlower />
               <TrackLines />
-              <SoundscapeGarden />
               <QuietNotes />
               <SlowWins />
               <CompassCarousel />
