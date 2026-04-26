@@ -140,12 +140,15 @@ export default function CompassFlower() {
   }
 
   return (
+    // Phone: no card wrapper, just breathing room. Desktop: soft tan
+    // card so the compass sits inside the column rhythm. (Martin
+    // 2026-04-26: "drop the white box around the compasses in phone
+    // view.")
     <div
-      className="rounded-xl"
+      className="rounded-xl px-1 py-3 md:border md:px-3.5 md:py-3"
       style={{
-        background: '#C4A06010',
-        border: '1px solid #C4A06022',
-        padding: '14px 14px 12px',
+        background: 'transparent',
+        borderColor: '#C4A06022',
       }}
     >
       <p

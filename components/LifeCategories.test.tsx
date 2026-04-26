@@ -46,67 +46,10 @@ describe('LifeCategories', () => {
     expect(stored[0].name).toBe('Shoulder');
   });
 
-  it('cycles view modes through the toggle (list → polygon → cells → river → list)', async () => {
-    const user = userEvent.setup();
-    localStorage.setItem(
-      CATS_KEY,
-      JSON.stringify([
-        { id: 'a', name: 'Music', color: '#D4805A', createdAt: new Date().toISOString() },
-      ]),
-    );
-    // Seed the view mode to 'list' so the cycle order under test is exercised
-    // explicitly — the component default switched to polygon but the cycle
-    // sequence list → polygon → cells → river → list itself is the contract.
-    localStorage.setItem('colourmap:life-view', 'list');
-    render(<LifeCategories />);
-
-    const toggle = screen.getByLabelText(/toggle view/i);
-
-    await user.click(toggle);
-    await waitFor(() => {
-      expect(toggle.textContent?.toLowerCase()).toContain('polygon');
-    });
-
-    await user.click(toggle);
-    await waitFor(() => {
-      expect(toggle.textContent?.toLowerCase()).toContain('cells');
-    });
-
-    await user.click(toggle);
-    await waitFor(() => {
-      expect(toggle.textContent?.toLowerCase()).toContain('river');
-    });
-
-    await user.click(toggle);
-    await waitFor(() => {
-      expect(toggle.textContent?.toLowerCase()).toContain('list');
-    });
-  });
-
-  it('expands a category on click and reveals the targets + logbook section', async () => {
-    const user = userEvent.setup();
-    localStorage.setItem(
-      CATS_KEY,
-      JSON.stringify([
-        { id: 'a', name: 'Organisation', color: '#C4A060', createdAt: new Date().toISOString() },
-      ]),
-    );
-    // Force list view — in polygon view the category label sits inside an
-    // SVG <foreignObject> with pointer-events:none, so the click target
-    // isn't reachable. The category-row click-to-expand interaction is the
-    // contract under test, regardless of which view is the visual default.
-    localStorage.setItem('colourmap:life-view', 'list');
-    render(<LifeCategories />);
-
-    // The clickable expand target is an absolute button labelled "Expand <name>"
-    // (the visible name span has pointer-events:none so the state pill next
-    // to it doesn't capture the row click).
-    await user.click(screen.getByLabelText(/expand organisation/i));
-
-    await waitFor(() => {
-      expect(screen.getByText('Targets')).toBeDefined();
-      expect(screen.getByText('Logbook')).toBeDefined();
-      expect(screen.getByPlaceholderText(/\+ add target/i)).toBeDefined();
-    });
-  });
+  // The view-mode toggle and the click-to-expand-into-list flow were
+  // removed when Martin locked Life Categories to polygon mode
+  // (2026-04-26). The cycle/expand tests that lived here were tied
+  // to those interactions and have been deleted with them. If the
+  // detail-panel rendering returns under polygon mode, add a focused
+  // test for that interaction.
 });
