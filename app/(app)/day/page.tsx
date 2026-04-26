@@ -1,5 +1,6 @@
 'use client';
 
+import ActiveCategoryBanner from '@/components/ActiveCategoryBanner';
 import CategoryCompass from '@/components/CategoryCompass';
 import CheckInPing from '@/components/CheckInPing';
 import CompassCarousel from '@/components/CompassCarousel';
@@ -65,12 +66,16 @@ function DayContent() {
           }
           // ROAD — wide-angle life map. The compasses, categories, and
           // long-arc surfaces live here so they don't compete with the
-          // daily-pulse trio for the same band of space.
+          // daily-pulse trio for the same band of space. The
+          // <ActiveCategoryBanner /> surfaces which life category the
+          // compass cluster is currently scoped to (set from the
+          // strip dots or the polygon vertices).
           roadContent={
             <div className="space-y-4">
               <LifeCategoriesEmptyState />
               <WeekShape />
               <LifeCategoriesStrip />
+              <ActiveCategoryBanner />
               <CompassFlower />
               <TrackLines />
               <QuietNotes />

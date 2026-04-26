@@ -2,6 +2,8 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 
+import { setActiveCategoryId } from '@/lib/active-category';
+
 /* ═══════════════════════════════════════════════════════════
    LIFE CATEGORIES — Track what matters over time
    Name your areas. Challenge + Flow in each. See last entry.
@@ -624,11 +626,11 @@ export default function LifeCategories() {
                           key={cat.id}
                           style={{ cursor: 'pointer' }}
                           onClick={() => {
-                            // Polygon-locked: just set the expanded id;
-                            // no mode switch. Detail rendering for
-                            // polygon-clicked categories is the next
-                            // follow-up.
+                            // Polygon-locked: just set the expanded id
+                            // and broadcast the active category so the
+                            // compass row scopes to it.
                             setExpandedId(cat.id);
+                            setActiveCategoryId(cat.id);
                           }}
                         >
                           {/* Main vertex circle — no outer progress ring */}
@@ -800,8 +802,10 @@ export default function LifeCategories() {
                       };
                     }}
                     onDoubleClick={() => {
-                      // Polygon-locked: no mode switch.
+                      // Polygon-locked: no mode switch. Also broadcast
+                      // the active category so the compass row scopes.
                       setExpandedId(cat.id);
+                      setActiveCategoryId(cat.id);
                     }}
                   >
                     <span className="mb-1 h-2 w-2 rounded-full" style={{ background: cat.color }} />
