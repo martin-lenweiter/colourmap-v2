@@ -41,12 +41,57 @@ interface Member {
   pulseColor?: string;
 }
 
+interface MissionNote {
+  id: string;
+  authorId: string;
+  authorName: string;
+  text: string;
+  createdAt: string;
+}
+
 interface Mission {
   id: string;
   text: string;
   claimedBy?: string;
   done: boolean;
+  /** Optional ISO date the mission is due (YYYY-MM-DD or full ISO). */
+  due?: string;
+  /** Inline notes thread on this specific mission. */
+  notes?: MissionNote[];
   createdAt: string;
+}
+
+/**
+ * Derive a 3-state status from the existing fields, so we don't
+ * have to migrate the localStorage schema.
+ *  - 'open'  → unclaimed and not done
+ *  - 'doing' → claimed by someone, not done
+ *  - 'done'  → done = true
+ */
+function getMissionStatus(m: Mission): 'open' | 'doing' | 'done' {
+  if (m.done) return 'done';
+  if (m.claimedBy) return 'doing';
+  return 'open';
+}
+
+/** Format a YYYY-MM-DD or ISO date as a soft relative phrase. */
+function dueLabel(
+  due: string | undefined,
+): { text: string; tone: 'soon' | 'overdue' | 'far' } | null {
+  if (!due) return null;
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const dueDate = new Date(due);
+  if (Number.isNaN(dueDate.getTime())) return null;
+  dueDate.setHours(0, 0, 0, 0);
+  const diffMs = dueDate.getTime() - today.getTime();
+  const diffDays = Math.round(diffMs / 86_400_000);
+  if (diffDays < 0) return { text: `overdue ${Math.abs(diffDays)}d`, tone: 'overdue' };
+  if (diffDays === 0) return { text: 'today', tone: 'soon' };
+  if (diffDays === 1) return { text: 'tomorrow', tone: 'soon' };
+  if (diffDays <= 7) return { text: `in ${diffDays}d`, tone: 'soon' };
+  if (diffDays <= 30) return { text: `in ${Math.round(diffDays / 7)}w`, tone: 'far' };
+  return { text: dueDate.toLocaleDateString([], { month: 'short', day: 'numeric' }), tone: 'far' };
 }
 
 interface Note {
@@ -94,6 +139,9 @@ export default function CircleBoard() {
   const [newName, setNewName] = useState('');
   const [joinCode, setJoinCode] = useState('');
   const [missionInput, setMissionInput] = useState('');
+  const [missionDueInput, setMissionDueInput] = useState('');
+  const [expandedMissionId, setExpandedMissionId] = useState<string | null>(null);
+  const [missionNoteInput, setMissionNoteInput] = useState('');
   const [noteInput, setNoteInput] = useState('');
   const [editingMe, setEditingMe] = useState(false);
   const [meNameInput, setMeNameInput] = useState('');
@@ -181,6 +229,8 @@ export default function CircleBoard() {
       id: crypto.randomUUID(),
       text,
       done: false,
+      due: missionDueInput || undefined,
+      notes: [],
       createdAt: new Date().toISOString(),
     };
     const updated = circles.map((c) =>
@@ -188,6 +238,7 @@ export default function CircleBoard() {
     );
     persist(updated);
     setMissionInput('');
+    setMissionDueInput('');
   }
 
   function toggleMission(missionId: string) {
@@ -202,7 +253,9 @@ export default function CircleBoard() {
     persist(updated);
   }
 
-  function _claimMission(missionId: string) {
+  /** Toggle "I'm working on this" — claims for me if unclaimed,
+   *  unclaims if I already had it. Drives the doing-state chip. */
+  function claimMission(missionId: string) {
     const updated = circles.map((c) =>
       c.id === activeId
         ? {
@@ -211,6 +264,41 @@ export default function CircleBoard() {
               m.id === missionId
                 ? { ...m, claimedBy: m.claimedBy === me.id ? undefined : me.id }
                 : m,
+            ),
+          }
+        : c,
+    );
+    persist(updated);
+  }
+
+  function setMissionDue(missionId: string, due: string | undefined) {
+    const updated = circles.map((c) =>
+      c.id === activeId
+        ? {
+            ...c,
+            missions: c.missions.map((m) => (m.id === missionId ? { ...m, due } : m)),
+          }
+        : c,
+    );
+    persist(updated);
+  }
+
+  function addMissionNote(missionId: string, text: string) {
+    const trimmed = text.trim();
+    if (!trimmed) return;
+    const note: MissionNote = {
+      id: crypto.randomUUID(),
+      authorId: me.id,
+      authorName: me.name,
+      text: trimmed,
+      createdAt: new Date().toISOString(),
+    };
+    const updated = circles.map((c) =>
+      c.id === activeId
+        ? {
+            ...c,
+            missions: c.missions.map((m) =>
+              m.id === missionId ? { ...m, notes: [...(m.notes || []), note] } : m,
             ),
           }
         : c,
@@ -1015,41 +1103,237 @@ export default function CircleBoard() {
                   {member.name}
                 </span>
               </div>
-              {memberMissions.map((m) => (
-                <div key={m.id} className="flex items-center gap-2 pl-3">
-                  <button
-                    type="button"
-                    onClick={() => toggleMission(m.id)}
-                    className="flex shrink-0 cursor-pointer items-center justify-center rounded-sm"
-                    style={{
-                      width: 16,
-                      height: 16,
-                      border: `1.5px solid ${member.pulseColor || member.color}40`,
-                      background: 'transparent',
-                    }}
-                  />
-                  <span
-                    className="flex-1"
-                    style={{ fontFamily: font, fontSize: '13px', color: '#5C3018' }}
-                  >
-                    {m.text}
-                  </span>
-                  <button
-                    type="button"
-                    onClick={() => removeMission(m.id)}
-                    className="cursor-pointer text-[10px]"
-                    style={{ color: '#8A6A4A', opacity: 0.15, background: 'none', border: 'none' }}
-                  >
-                    ×
-                  </button>
-                </div>
-              ))}
+              {memberMissions.map((m) => {
+                const status = getMissionStatus(m);
+                const memberColor = member.pulseColor || member.color;
+                const due = dueLabel(m.due);
+                const noteCount = m.notes?.length ?? 0;
+                const isExpanded = expandedMissionId === m.id;
+                const isMine = m.claimedBy === me.id;
+                const statusColour =
+                  status === 'done' ? '#7AAA58' : status === 'doing' ? memberColor : '#8A6A4A';
+                return (
+                  <div key={m.id} className="rounded-lg" style={{ paddingLeft: 12 }}>
+                    {/* Top row — tick + status chip + text + due + count */}
+                    <div className="flex items-center gap-2">
+                      <button
+                        type="button"
+                        onClick={() => toggleMission(m.id)}
+                        className="flex shrink-0 cursor-pointer items-center justify-center rounded-sm transition-all"
+                        style={{
+                          width: 16,
+                          height: 16,
+                          border: `1.5px solid ${memberColor}55`,
+                          background: status === 'done' ? `${statusColour}30` : 'transparent',
+                        }}
+                        aria-label={status === 'done' ? 'Mark not done' : 'Mark done'}
+                      >
+                        {status === 'done' && (
+                          <span style={{ fontSize: '9px', color: statusColour, opacity: 0.8 }}>
+                            ✓
+                          </span>
+                        )}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setExpandedMissionId(isExpanded ? null : m.id)}
+                        className="flex flex-1 cursor-pointer items-center gap-2 bg-transparent text-left"
+                        style={{ border: 'none', padding: 0 }}
+                      >
+                        {/* Status chip — tiny pill */}
+                        <span
+                          className="rounded-full"
+                          style={{
+                            fontFamily: font,
+                            fontSize: '9px',
+                            fontWeight: 700,
+                            letterSpacing: '0.1em',
+                            textTransform: 'uppercase',
+                            padding: '1px 6px',
+                            background: `${statusColour}18`,
+                            color: statusColour,
+                            border: `1px solid ${statusColour}35`,
+                          }}
+                        >
+                          {status}
+                        </span>
+                        <span
+                          className="flex-1"
+                          style={{
+                            fontFamily: font,
+                            fontSize: '13px',
+                            color: status === 'done' ? '#8A6A4A' : '#5C3018',
+                            opacity: status === 'done' ? 0.5 : 1,
+                            textDecoration: status === 'done' ? 'line-through' : 'none',
+                          }}
+                        >
+                          {m.text}
+                        </span>
+                        {due && (
+                          <span
+                            className="shrink-0 rounded-full"
+                            style={{
+                              fontFamily: font,
+                              fontSize: '9.5px',
+                              fontWeight: 600,
+                              padding: '1px 6px',
+                              color:
+                                due.tone === 'overdue'
+                                  ? '#B33A2B'
+                                  : due.tone === 'soon'
+                                    ? '#C4A060'
+                                    : '#8A6A4A',
+                              opacity: 0.85,
+                            }}
+                          >
+                            {due.text}
+                          </span>
+                        )}
+                        {noteCount > 0 && (
+                          <span
+                            className="shrink-0"
+                            style={{
+                              fontFamily: font,
+                              fontSize: '10px',
+                              color: '#8A6A4A',
+                              opacity: 0.55,
+                            }}
+                          >
+                            💬 {noteCount}
+                          </span>
+                        )}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => removeMission(m.id)}
+                        className="cursor-pointer text-[10px]"
+                        style={{
+                          color: '#8A6A4A',
+                          opacity: 0.15,
+                          background: 'none',
+                          border: 'none',
+                        }}
+                        aria-label="Delete mission"
+                      >
+                        ×
+                      </button>
+                    </div>
+
+                    {/* Expanded — claim button, due picker, notes thread */}
+                    {isExpanded && (
+                      <div
+                        className="mt-1.5 ml-6 space-y-2 rounded-lg animate-in fade-in duration-150"
+                        style={{
+                          padding: '8px 10px',
+                          background: `${memberColor}08`,
+                          border: `1px solid ${memberColor}1A`,
+                        }}
+                      >
+                        <div className="flex flex-wrap items-center gap-1.5">
+                          <button
+                            type="button"
+                            onClick={() => claimMission(m.id)}
+                            className="cursor-pointer rounded-full px-2.5 py-1 transition-all"
+                            style={{
+                              fontFamily: font,
+                              fontSize: '10px',
+                              fontWeight: 600,
+                              letterSpacing: '0.08em',
+                              background: isMine ? `${memberColor}22` : 'transparent',
+                              border: `1px solid ${memberColor}50`,
+                              color: memberColor,
+                            }}
+                          >
+                            {isMine ? '✓ on it' : 'I’m on it'}
+                          </button>
+                          <input
+                            type="date"
+                            value={m.due ? m.due.slice(0, 10) : ''}
+                            onChange={(e) => setMissionDue(m.id, e.target.value || undefined)}
+                            className="rounded-full bg-transparent px-2 py-0.5 outline-none"
+                            style={{
+                              fontFamily: font,
+                              fontSize: '10px',
+                              color: '#7A5438',
+                              border: '1px solid #C4A06035',
+                            }}
+                            title="Set due date"
+                          />
+                        </div>
+                        {/* Notes thread on this mission */}
+                        {(m.notes || []).map((n) => (
+                          <div key={n.id} className="flex items-start gap-2">
+                            <span
+                              className="rounded-full"
+                              style={{
+                                width: 6,
+                                height: 6,
+                                marginTop: 6,
+                                background: memberColor,
+                                opacity: 0.5,
+                                flexShrink: 0,
+                              }}
+                            />
+                            <div className="flex-1">
+                              <span
+                                style={{
+                                  fontFamily: font,
+                                  fontSize: '10px',
+                                  fontWeight: 600,
+                                  color: memberColor,
+                                  opacity: 0.7,
+                                  marginRight: 6,
+                                }}
+                              >
+                                {n.authorName}
+                              </span>
+                              <span
+                                style={{
+                                  fontFamily: font,
+                                  fontSize: '11px',
+                                  color: '#5C3018',
+                                  opacity: 0.85,
+                                }}
+                              >
+                                {n.text}
+                              </span>
+                            </div>
+                          </div>
+                        ))}
+                        {/* Add a note */}
+                        <div className="flex gap-1.5">
+                          <input
+                            type="text"
+                            value={isExpanded ? missionNoteInput : ''}
+                            onChange={(e) => setMissionNoteInput(e.target.value)}
+                            onKeyDown={(e) => {
+                              if (e.key === 'Enter' && missionNoteInput.trim()) {
+                                addMissionNote(m.id, missionNoteInput);
+                                setMissionNoteInput('');
+                              }
+                            }}
+                            placeholder="leave a note…"
+                            className="flex-1 border-b bg-transparent px-1 pb-0.5 outline-none placeholder:italic placeholder:text-[#8A6A4A] placeholder:opacity-40"
+                            style={{
+                              fontFamily: font,
+                              fontSize: '11px',
+                              color: '#5C3018',
+                              borderColor: `${memberColor}20`,
+                            }}
+                          />
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
             </div>
           );
         })}
 
-        {/* Add mission */}
-        <div className="flex gap-2 pt-1">
+        {/* Add mission — text + optional due date. Once you click on the
+            mission you can also claim it / re-set the due date. */}
+        <div className="flex flex-wrap items-center gap-2 pt-1">
           <input
             type="text"
             value={missionInput}
@@ -1064,8 +1348,41 @@ export default function CircleBoard() {
               fontSize: '13px',
               color: '#5C3018',
               borderColor: `${active.color}20`,
+              minWidth: 160,
             }}
           />
+          <input
+            type="date"
+            value={missionDueInput}
+            onChange={(e) => setMissionDueInput(e.target.value)}
+            className="rounded-full bg-transparent px-2 py-0.5 outline-none"
+            style={{
+              fontFamily: font,
+              fontSize: '10px',
+              color: '#7A5438',
+              border: `1px solid ${active.color}25`,
+            }}
+            title="Optional due date"
+          />
+          {missionInput.trim() && (
+            <button
+              type="button"
+              onClick={addMission}
+              className="cursor-pointer rounded-full px-3 py-1 transition-all"
+              style={{
+                fontFamily: font,
+                fontSize: '10px',
+                fontWeight: 700,
+                letterSpacing: '0.1em',
+                textTransform: 'uppercase',
+                color: active.color,
+                background: `${active.color}10`,
+                border: `1px solid ${active.color}40`,
+              }}
+            >
+              add
+            </button>
+          )}
         </div>
 
         {/* Done */}
