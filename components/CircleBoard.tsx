@@ -2,6 +2,12 @@
 
 import { useEffect, useState } from 'react';
 
+import CircleAgenda from '@/components/CircleAgenda';
+import CircleAudio from '@/components/CircleAudio';
+import CircleDecisions from '@/components/CircleDecisions';
+import CircleEvents from '@/components/CircleEvents';
+import CircleMoney from '@/components/CircleMoney';
+import CircleRainbow from '@/components/CircleRainbow';
 import { useKeyboardAware } from '@/components/hooks/useKeyboardAware';
 
 /* ═══════════════════════════════════════════════════════════
@@ -982,6 +988,17 @@ export default function CircleBoard() {
         })}
       </div>
 
+      {/* Agenda — 14-day strip of mission due dates, coloured by owner */}
+      <CircleAgenda
+        missions={active.missions}
+        members={active.members.map((m) => ({
+          id: m.id,
+          name: m.name,
+          color: m.pulseColor || m.color,
+        }))}
+        onTapMission={(id) => setExpandedMissionId(id)}
+      />
+
       {/* Missions — grouped by person */}
       <div
         className="space-y-3 rounded-2xl border px-4 py-3"
@@ -1422,6 +1439,58 @@ export default function CircleBoard() {
           </div>
         )}
       </div>
+
+      {/* Sync sessions — rehearsals / mix nights / photoshoots */}
+      <CircleEvents
+        circleId={active.id}
+        meId={me.id}
+        meName={me.name}
+        members={active.members.map((m) => ({
+          id: m.id,
+          name: m.name,
+          color: m.pulseColor || m.color,
+        }))}
+      />
+
+      {/* Decisions — proposals + voting log */}
+      <CircleDecisions
+        circleId={active.id}
+        meId={me.id}
+        meName={me.name}
+        members={active.members.map((m) => ({
+          id: m.id,
+          name: m.name,
+          color: m.pulseColor || m.color,
+        }))}
+      />
+
+      {/* Money — shared expenses + balances */}
+      <CircleMoney
+        circleId={active.id}
+        meId={me.id}
+        meName={me.name}
+        members={active.members.map((m) => ({
+          id: m.id,
+          name: m.name,
+          color: m.pulseColor || m.color,
+        }))}
+      />
+
+      {/* Audio — recordings + voice memos with reflections */}
+      <CircleAudio
+        circleId={active.id}
+        meId={me.id}
+        meName={me.name}
+        meColour={active.members.find((m) => m.id === me.id)?.color || active.color}
+      />
+
+      {/* Rainbow — vertical Hawkins reflection band, threaded over time */}
+      <CircleRainbow
+        circleId={active.id}
+        meId={me.id}
+        meName={me.name}
+        meColour={active.members.find((m) => m.id === me.id)?.color || active.color}
+      />
 
       {/* Log */}
       <div

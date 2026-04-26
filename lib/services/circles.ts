@@ -1,26 +1,34 @@
 import { getDb } from '@/lib/db/client';
 import {
   type Circle,
+  type CircleDecision,
+  type CircleDecisionVote,
   type CircleMember,
   type CircleMission,
   type CircleNote,
   type CircleSession,
+  deleteCircleDecision,
   deleteCircleMission,
   endCircleSession,
   getActiveSession,
   getCircleByCode,
   getCircleById,
+  getCircleDecisions,
   getCircleMembers,
   getCircleMissions,
   getCircleNotes,
   getCirclesByUser,
+  getVotesForDecisions,
   insertCircle,
+  insertCircleDecision,
   insertCircleMember,
   insertCircleMission,
   insertCircleNote,
   insertCircleSession,
+  updateCircleDecision,
   updateCircleMission,
   updateMemberPulse,
+  upsertDecisionVote,
 } from '@/lib/db/queries/circles';
 
 const MAX_TEXT_LENGTH = 500;
@@ -274,4 +282,105 @@ export async function listCircleNotes(circleId: string, limit?: number): Promise
 
 export async function getActiveCircleSession(circleId: string): Promise<CircleSession | null> {
   return getActiveSession(getDb(), circleId);
+}
+
+// ─── Decisions ───
+
+const VOTE_VALUES = ['yes', 'no', 'unsure'] as const;
+type VoteValue = (typeof VOTE_VALUES)[number];
+
+export interface DecisionWithVotes extends CircleDecision {
+  votes: CircleDecisionVote[];
+}
+
+export async function listCircleDecisions(circleId: string): Promise<DecisionWithVotes[]> {
+  const db = getDb();
+  const decisions = await getCircleDecisions(db, circleId);
+  if (decisions.length === 0) return [];
+  const allVotes = await getVotesForDecisions(
+    db,
+    decisions.map((d) => d.id),
+  );
+  return decisions.map((d) => ({
+    ...d,
+    votes: allVotes.filter((v) => v.decisionId === d.id),
+  }));
+}
+
+export async function proposeDecision(
+  userId: string,
+  circleId: string,
+  title: string,
+  description?: string,
+): Promise<CircleDecision> {
+  const trimmedTitle = title.trim();
+  if (!trimmedTitle) {
+    throw new CircleValidationError('Decision title is required');
+  }
+  await requireMembership(userId, circleId);
+  const db = getDb();
+  return insertCircleDecision(db, {
+    circleId,
+    title: trimmedTitle.slice(0, MAX_NAME_LENGTH),
+    description: description?.trim().slice(0, MAX_TEXT_LENGTH) || null,
+    createdBy: userId,
+  });
+}
+
+export async function castDecisionVote(
+  userId: string,
+  circleId: string,
+  decisionId: string,
+  value: VoteValue,
+  memberName: string,
+): Promise<CircleDecisionVote> {
+  if (!VOTE_VALUES.includes(value)) {
+    throw new CircleValidationError('Vote value must be yes, no, or unsure');
+  }
+  await requireMembership(userId, circleId);
+  const db = getDb();
+  return upsertDecisionVote(db, {
+    decisionId,
+    memberId: userId,
+    memberName: memberName.trim().slice(0, MAX_NAME_LENGTH),
+    value,
+  });
+}
+
+export async function finalizeDecision(
+  userId: string,
+  circleId: string,
+  decisionId: string,
+  decision: 'yes' | 'no',
+): Promise<CircleDecision | null> {
+  if (decision !== 'yes' && decision !== 'no') {
+    throw new CircleValidationError('Decision must be yes or no');
+  }
+  await requireMembership(userId, circleId);
+  const db = getDb();
+  return updateCircleDecision(db, decisionId, {
+    status: 'decided',
+    decision,
+    decidedAt: new Date(),
+  });
+}
+
+export async function archiveDecision(
+  userId: string,
+  circleId: string,
+  decisionId: string,
+): Promise<CircleDecision | null> {
+  await requireMembership(userId, circleId);
+  const db = getDb();
+  return updateCircleDecision(db, decisionId, { status: 'archived' });
+}
+
+export async function removeDecision(
+  userId: string,
+  circleId: string,
+  decisionId: string,
+): Promise<boolean> {
+  await requireMembership(userId, circleId);
+  const db = getDb();
+  return deleteCircleDecision(db, decisionId);
 }

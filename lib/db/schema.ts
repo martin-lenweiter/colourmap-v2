@@ -215,3 +215,24 @@ export const circleSessions = pgTable('circle_sessions', {
   endedAt: timestamp('ended_at', { withTimezone: true }),
   summary: text('summary'),
 });
+
+export const circleDecisions = pgTable('circle_decisions', {
+  id: uuid('id').defaultRandom().primaryKey(),
+  circleId: uuid('circle_id').notNull(),
+  title: text('title').notNull(),
+  description: text('description'),
+  status: text('status').notNull().default('proposed'),
+  decision: text('decision'),
+  decidedAt: timestamp('decided_at', { withTimezone: true }),
+  createdBy: uuid('created_by').notNull(),
+  createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+});
+
+export const circleDecisionVotes = pgTable('circle_decision_votes', {
+  id: uuid('id').defaultRandom().primaryKey(),
+  decisionId: uuid('decision_id').notNull(),
+  memberId: uuid('member_id').notNull(),
+  memberName: text('member_name').notNull(),
+  value: text('value').notNull(),
+  createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+});
