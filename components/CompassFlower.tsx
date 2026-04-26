@@ -155,7 +155,7 @@ export default function CompassFlower() {
         className="mb-2 text-center uppercase"
         style={{
           fontFamily: 'var(--font-serif)',
-          fontSize: 11,
+          fontSize: 13,
           fontWeight: 700,
           letterSpacing: '0.18em',
           color: '#7A5438',
@@ -218,7 +218,7 @@ export default function CompassFlower() {
                 dominantBaseline="middle"
                 style={{
                   fontFamily: 'var(--font-serif)',
-                  fontSize: 12,
+                  fontSize: 14,
                   fontWeight: 700,
                   fill: p.colour,
                   letterSpacing: '0.04em',
@@ -236,9 +236,9 @@ export default function CompassFlower() {
         className="mt-2 text-center italic"
         style={{
           fontFamily: 'var(--font-serif)',
-          fontSize: 12,
+          fontSize: 14,
           color: '#7A5438',
-          opacity: 0.85,
+          opacity: 0.9,
           lineHeight: 1.5,
         }}
       >

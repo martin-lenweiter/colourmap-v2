@@ -347,7 +347,7 @@ export default function CircleBoard() {
       const HAWKINS_LABELS = [
         'Shame',
         'Apathy',
-        'Grief',
+        'Sadness',
         'Fear',
         'Anger',
         'Courage',

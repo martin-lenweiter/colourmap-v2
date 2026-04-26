@@ -43,9 +43,9 @@ const HAWKINS = [
     desc: 'You believe you did something wrong. To move: acknowledge it, make amends if possible, then let it go. You are not your worst moment.',
   },
   {
-    level: 'Grief',
+    level: 'Sadness',
     color: '#D45050',
-    desc: 'The weight of loss. To move: let yourself feel it fully without rushing. Grief is the doorway to acceptance.',
+    desc: 'The weight of loss. To move: let yourself feel it fully without rushing. Sadness is the doorway to acceptance.',
   },
   {
     level: 'Fear',
@@ -1241,7 +1241,7 @@ export default function CheckInForm({ missions = [], onCheckInComplete }: CheckI
               const prompts: Record<string, string> = {
                 Shame: 'What feels heavy?',
                 Guilt: "What's weighing on you?",
-                Grief: 'What are you letting go of?',
+                Sadness: 'What are you letting go of?',
                 Fear: 'What feels threatening?',
                 Desire: 'What are you craving?',
                 Anger: 'What crossed a line?',

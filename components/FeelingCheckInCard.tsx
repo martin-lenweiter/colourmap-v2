@@ -40,10 +40,10 @@ const HAWKINS = [
     color: '#D8B0C8',
     hawkins: 50,
     desc: 'Nothing matters. You have given up. The world feels grey.',
-    evolve: 'Move toward Grief by letting yourself care about one small thing again.',
+    evolve: 'Move toward Sadness by letting yourself care about one small thing again.',
   },
   {
-    level: 'Grief',
+    level: 'Sadness',
     color: '#E8A0C4',
     hawkins: 75,
     desc: 'The weight of loss. You feel the absence of something important.',

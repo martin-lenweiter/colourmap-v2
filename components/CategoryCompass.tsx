@@ -223,14 +223,14 @@ export default function CategoryCompass() {
                           dominantBaseline="middle"
                           style={{
                             fontFamily: 'var(--font-serif)',
-                            fontSize: cats.length > 4 ? '10px' : '11px',
+                            fontSize: cats.length > 4 ? '12px' : '13px',
                             fontWeight: 700,
                             fill: '#5C3018',
-                            opacity: isSelected ? 0.9 : 0.5,
+                            opacity: isSelected ? 0.95 : 0.65,
                             pointerEvents: 'none',
                           }}
                         >
-                          {cat.name.length > 6 ? `${cat.name.slice(0, 5)}…` : cat.name}
+                          {cat.name.length > 7 ? `${cat.name.slice(0, 6)}…` : cat.name}
                         </text>
                         {/* State dot */}
                         {cat.state && (
@@ -253,9 +253,9 @@ export default function CategoryCompass() {
                     dominantBaseline="middle"
                     style={{
                       fontFamily: 'var(--font-serif)',
-                      fontSize: '10px',
+                      fontSize: '12px',
                       fill: '#8A6A4A',
-                      opacity: 0.3,
+                      opacity: 0.4,
                     }}
                   >
                     empty
@@ -270,10 +270,10 @@ export default function CategoryCompass() {
               <span
                 style={{
                   fontFamily: 'var(--font-serif)',
-                  fontSize: '12px',
+                  fontSize: '14px',
                   fontWeight: 700,
                   color: compass.color,
-                  opacity: 0.7,
+                  opacity: 0.85,
                 }}
               >
                 {compass.label}
@@ -320,9 +320,9 @@ export default function CategoryCompass() {
             className="text-center"
             style={{
               fontFamily: 'var(--font-serif)',
-              fontSize: '11px',
+              fontSize: '13px',
               color: '#8A6A4A',
-              opacity: 0.5,
+              opacity: 0.65,
             }}
           >
             tap a category, then tap a compass to assign it
@@ -355,7 +355,7 @@ export default function CategoryCompass() {
                 <span
                   style={{
                     fontFamily: 'var(--font-serif)',
-                    fontSize: '11px',
+                    fontSize: '13px',
                     color: cat.color,
                     fontWeight: 600,
                   }}
@@ -374,9 +374,9 @@ export default function CategoryCompass() {
           className="text-center italic"
           style={{
             fontFamily: 'var(--font-serif)',
-            fontSize: '11px',
+            fontSize: '13px',
             color: '#7AAA58',
-            opacity: 0.6,
+            opacity: 0.7,
           }}
         >
           all categories assigned
@@ -389,9 +389,9 @@ export default function CategoryCompass() {
           className="text-center italic"
           style={{
             fontFamily: 'var(--font-serif)',
-            fontSize: '12px',
+            fontSize: '14px',
             color: '#8A6A4A',
-            opacity: 0.4,
+            opacity: 0.55,
           }}
         >
           add life categories first — they become your compass slices
@@ -467,9 +467,9 @@ export default function CategoryCompass() {
                   <span
                     style={{
                       fontFamily: 'var(--font-serif)',
-                      fontSize: '10px',
+                      fontSize: '12px',
                       color: '#8A6A4A',
-                      opacity: 0.4,
+                      opacity: 0.55,
                       flexShrink: 0,
                       marginTop: 2,
                     }}
@@ -497,9 +497,9 @@ export default function CategoryCompass() {
               className="italic"
               style={{
                 fontFamily: 'var(--font-serif)',
-                fontSize: '12px',
+                fontSize: '13px',
                 color: '#8A6A4A',
-                opacity: 0.35,
+                opacity: 0.5,
               }}
             >
               no entries yet
