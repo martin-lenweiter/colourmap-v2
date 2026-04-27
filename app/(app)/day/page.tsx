@@ -1,5 +1,6 @@
 'use client';
 
+import ActiveCategoryBanner from '@/components/ActiveCategoryBanner';
 import CategoryCompass from '@/components/CategoryCompass';
 import CheckInPing from '@/components/CheckInPing';
 import CompassCarousel from '@/components/CompassCarousel';
@@ -15,9 +16,8 @@ import LifeCategoriesStrip from '@/components/LifeCategoriesStrip';
 import MoodSuggestion from '@/components/MoodSuggestion';
 import NowBar from '@/components/NowBar';
 import QuietNotes from '@/components/QuietNotes';
-import ReflectBox from '@/components/ReflectBox';
+import ReflectThreeDots from '@/components/ReflectThreeDots';
 import SlowWins from '@/components/SlowWins';
-import SoundscapeGarden from '@/components/SoundscapeGarden';
 import { StyleProvider } from '@/components/StyleContext';
 import TrackLines from '@/components/TrackLines';
 import WeekShape from '@/components/WeekShape';
@@ -40,28 +40,49 @@ function DayContent() {
         <CheckInPing />
         <DayTabs
           dateLabel={dateStr}
-          checkinContent={
+          // FEELING — emotion register: where am I, what's around me.
+          feelingContent={
             <div className="space-y-4">
               <MoodSuggestion />
               <FeelingCheckInCard />
+            </div>
+          }
+          // DOING — agenda + missions: what's the day for.
+          doingContent={
+            <div className="space-y-4">
+              <NowBar />
               <DailyAgenda />
             </div>
           }
-          overviewContent={
+          // SHARING — three-dot reflect surface. The Sharing axis
+          // (Lonely → Connected) lives here alongside Feeling and
+          // Doing so the user can journal at any level of any axis;
+          // each entry is timestamped and threads under its level
+          // over time.
+          sharingContent={
+            <div className="space-y-4">
+              <ReflectThreeDots />
+            </div>
+          }
+          // ROAD — wide-angle life map. The compasses, categories, and
+          // long-arc surfaces live here so they don't compete with the
+          // daily-pulse trio for the same band of space. The
+          // <ActiveCategoryBanner /> surfaces which life category the
+          // compass cluster is currently scoped to (set from the
+          // strip dots or the polygon vertices).
+          roadContent={
             <div className="space-y-4">
               <LifeCategoriesEmptyState />
-              <NowBar />
               <WeekShape />
               <LifeCategoriesStrip />
+              <ActiveCategoryBanner />
               <CompassFlower />
               <TrackLines />
-              <SoundscapeGarden />
               <QuietNotes />
               <SlowWins />
               <CompassCarousel />
               <CategoryCompass />
               <LifeCategories />
-              <ReflectBox />
             </div>
           }
         />

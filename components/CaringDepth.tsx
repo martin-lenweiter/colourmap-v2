@@ -163,7 +163,7 @@ const HAWKINS_LEVELS = [
   { level: 150, name: 'Anger', color: '#EE9090', text: '#702828' },
   { level: 125, name: 'Desire', color: '#E0A0C8', text: '#682858' },
   { level: 100, name: 'Fear', color: '#C8A8D8', text: '#583068' },
-  { level: 75, name: 'Grief', color: '#B0B0D8', text: '#383868' },
+  { level: 75, name: 'Sadness', color: '#B0B0D8', text: '#383868' },
   { level: 50, name: 'Apathy', color: '#B8B8C8', text: '#383850' },
   { level: 30, name: 'Guilt', color: '#C0C0CC', text: '#383848' },
   { level: 20, name: 'Shame', color: '#C8C8D0', text: '#383840' },
@@ -175,7 +175,7 @@ const _COMPONENT_SUGGESTIONS: Record<string, string[]> = {
   Fear: ['Uncertainty', 'Loss', 'Shame', 'Loneliness'],
   Joy: ['Gratitude', 'Wonder', 'Connection', 'Freedom'],
   Love: ['Tenderness', 'Devotion', 'Acceptance', 'Presence'],
-  Grief: ['Loss', 'Longing', 'Tenderness', 'Memory'],
+  Sadness: ['Loss', 'Longing', 'Tenderness', 'Memory'],
   Pride: ['Recognition', 'Self-worth', 'Accomplishment', 'Comparison'],
   Acceptance: ['Surrender', 'Peace', 'Wisdom', 'Patience'],
 };

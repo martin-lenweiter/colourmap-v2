@@ -2,6 +2,8 @@
 
 import { useEffect, useRef, useState } from 'react';
 
+import { setActiveCategoryId, useActiveCategoryId } from '@/lib/active-category';
+
 /*
  * LifeCategoriesStrip — horizontal scrollable row of big colour
  * dots, one per life category. Tap a dot to focus it (highlights +
@@ -71,7 +73,9 @@ function loadLog(): LogEntryLite[] {
 export default function LifeCategoriesStrip() {
   const [categories, setCategories] = useState<LifeCategoryLite[]>([]);
   const [log, setLog] = useState<LogEntryLite[]>([]);
-  const [focusedId, setFocusedId] = useState<string | null>(null);
+  // Focus state is shared across surfaces via the active-category
+  // utility — tapping a dot here also focuses the compasses below.
+  const focusedId = useActiveCategoryId();
   const scrollRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
@@ -129,7 +133,7 @@ export default function LifeCategoriesStrip() {
             <button
               key={cat.id}
               type="button"
-              onClick={() => setFocusedId(isFocused ? null : cat.id)}
+              onClick={() => setActiveCategoryId(isFocused ? null : cat.id)}
               className="flex shrink-0 cursor-pointer snap-center flex-col items-center gap-2 bg-transparent transition-all"
               style={{
                 border: 'none',

@@ -89,7 +89,7 @@ const HAWKINS_SLIDER: SliderDef = {
   levels: [
     { label: 'Shame', color: '#C83030' },
     { label: 'Guilt', color: '#D44040' },
-    { label: 'Grief', color: '#D45050' },
+    { label: 'Sadness', color: '#D45050' },
     { label: 'Fear', color: '#D46050' },
     { label: 'Desire', color: '#D87048' },
     { label: 'Anger', color: '#E0844A' },

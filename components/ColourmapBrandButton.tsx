@@ -4,10 +4,20 @@ import { useEffect, useRef, useState } from 'react';
 
 /*
  * Clickable "Colourmap" brand in the top header.
- * Opens an About modal with a short tagline, credits, and a losange
- * that expands a rolling changelog of recent PRs so the user knows
- * where we are in the build.
+ * Opens an About modal with a short tagline, credits, the user's
+ * initials + sign-out, and a losange that expands a rolling
+ * changelog of recent PRs so the user knows where we are in the
+ * build.
  */
+
+interface ColourmapBrandButtonProps {
+  /** User initials shown inside the modal, e.g. "ML". Optional —
+   *  when absent, the initials section is hidden (e.g. server-side
+   *  render before auth is resolved). */
+  initials?: string;
+  /** User email surfaced under the initials in the modal. */
+  email?: string;
+}
 
 // Rolling changelog — keep this updated as PRs ship. The losange in
 // the modal expands to show this list. Newest first.
@@ -149,7 +159,7 @@ const VISION_SECTIONS: { title: string; color: string; summary: string; next: st
   },
 ];
 
-export default function ColourmapBrandButton() {
+export default function ColourmapBrandButton({ initials, email }: ColourmapBrandButtonProps = {}) {
   const [open, setOpen] = useState(false);
   const [changelogOpen, setChangelogOpen] = useState(false);
   const [visionOpen, setVisionOpen] = useState(false);
@@ -176,12 +186,12 @@ export default function ColourmapBrandButton() {
         title="About Colourmap"
       >
         <p
-          className="text-[18px] font-normal tracking-[0.1em] font-serif text-center"
+          className="text-[22px] font-bold tracking-[0.08em] font-serif text-center"
           style={{ color: '#B33A2B' }}
         >
           Colourmap
         </p>
-        <svg width={16} height={16} viewBox="0 0 20 20" style={{ marginTop: 3 }} aria-hidden="true">
+        <svg width={18} height={18} viewBox="0 0 20 20" style={{ marginTop: 3 }} aria-hidden="true">
           {(() => {
             const cx = 10;
             const cy = 10;
@@ -191,7 +201,14 @@ export default function ColourmapBrandButton() {
             for (let i = 0; i < 8; i++) {
               const a = -Math.PI / 2 + (i * Math.PI) / 4;
               const r = i % 2 === 0 ? r1 : r2;
-              pts.push(`${cx + r * Math.cos(a)},${cy + r * Math.sin(a)}`);
+              // Round to 3 decimals so server-render and client-render
+              // produce identical strings — Math.cos/sin can drift in
+              // the last digit between V8 and Node, breaking SSR
+              // hydration if the values are stringified at full
+              // precision.
+              const x = (cx + r * Math.cos(a)).toFixed(3);
+              const y = (cy + r * Math.sin(a)).toFixed(3);
+              pts.push(`${x},${y}`);
             }
             return <polygon points={pts.join(' ')} fill="#B33A2B" opacity={0.85} />;
           })()}
@@ -254,7 +271,14 @@ export default function ColourmapBrandButton() {
                   for (let i = 0; i < 8; i++) {
                     const a = -Math.PI / 2 + (i * Math.PI) / 4;
                     const r = i % 2 === 0 ? r1 : r2;
-                    pts.push(`${cx + r * Math.cos(a)},${cy + r * Math.sin(a)}`);
+                    // Round to 3 decimals so server-render and client-render
+                    // produce identical strings — Math.cos/sin can drift in
+                    // the last digit between V8 and Node, breaking SSR
+                    // hydration if the values are stringified at full
+                    // precision.
+                    const x = (cx + r * Math.cos(a)).toFixed(3);
+                    const y = (cy + r * Math.sin(a)).toFixed(3);
+                    pts.push(`${x},${y}`);
                   }
                   return <polygon points={pts.join(' ')} fill="#B33A2B" opacity={0.85} />;
                 })()}
@@ -275,6 +299,64 @@ export default function ColourmapBrandButton() {
               className="mb-5"
               style={{ height: 1, background: 'var(--border)' }}
             />
+
+            {/* Signed-in user — initials + email + sign-out. Lives
+                here (in the title's modal) instead of as a standalone
+                pill in the header so the right slot can hold the
+                theme palette. (Per Martin 2026-04-26.) */}
+            {initials && (
+              <div
+                className="mb-5 flex items-center gap-3 rounded-2xl px-4 py-3"
+                style={{ background: '#C4A06010', border: '1px solid #C4A06028' }}
+              >
+                <span
+                  className="flex shrink-0 items-center justify-center rounded-full text-[12px] font-semibold uppercase tracking-[0.08em]"
+                  style={{
+                    width: 36,
+                    height: 36,
+                    color: '#5C3018',
+                    background: '#C4A06028',
+                    border: '1px solid #C4A06055',
+                  }}
+                >
+                  {initials}
+                </span>
+                <div className="min-w-0 flex-1">
+                  {email && (
+                    <p
+                      className="truncate"
+                      style={{
+                        fontFamily: 'var(--font-serif)',
+                        fontSize: 12,
+                        color: 'var(--muted-foreground)',
+                        opacity: 0.8,
+                      }}
+                    >
+                      {email}
+                    </p>
+                  )}
+                  <form action="/logout" method="post" className="mt-0.5">
+                    <button
+                      type="submit"
+                      className="cursor-pointer transition-colors hover:opacity-70"
+                      style={{
+                        fontFamily: 'var(--font-serif)',
+                        fontSize: 11,
+                        fontWeight: 600,
+                        letterSpacing: '0.14em',
+                        textTransform: 'uppercase',
+                        color: '#B33A2B',
+                        background: 'none',
+                        border: 'none',
+                        padding: 0,
+                      }}
+                    >
+                      Sign out
+                    </button>
+                  </form>
+                </div>
+              </div>
+            )}
 
             {/* Credits — simplified to just the two names */}
             <p

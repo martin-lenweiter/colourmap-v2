@@ -2,6 +2,12 @@
 
 import { useEffect, useMemo, useState } from 'react';
 
+import CircleAgenda from '@/components/CircleAgenda';
+import CircleAudio from '@/components/CircleAudio';
+import CircleDecisions from '@/components/CircleDecisions';
+import CircleEvents from '@/components/CircleEvents';
+import CircleMoney from '@/components/CircleMoney';
+import CircleRainbow from '@/components/CircleRainbow';
 import { useKeyboardAware } from '@/components/hooks/useKeyboardAware';
 import {
   type CircleDetail as ApiCircleDetail,
@@ -229,6 +235,16 @@ export default function CircleBoard() {
   const [editingMe, setEditingMe] = useState(false);
   const [meNameInput, setMeNameInput] = useState('');
   const [howOpen, setHowOpen] = useState(false);
+  // Board-view-only state — declared at the top so the hook count stays
+  // stable across renders. (Earlier these lived AFTER the list/setup
+  // early returns, which crashed React when the user switched views:
+  // hook count went from N → N+5 mid-flight, "rendered more hooks than
+  // during the previous render" → blank screen.)
+  const [editingChapter, setEditingChapter] = useState(false);
+  const [chapterInput, setChapterInput] = useState('');
+  const [chapterOpen, setChapterOpen] = useState(false);
+  const [meaningInput, setMeaningInput] = useState('');
+  const [assigningMission, setAssigningMission] = useState<string | null>(null);
   const boardRef = useKeyboardAware<HTMLDivElement>();
 
   // First-run name capture. Auto-opens the editor if no me.name.
@@ -352,7 +368,7 @@ export default function CircleBoard() {
       const HAWKINS_LABELS = [
         'Shame',
         'Apathy',
-        'Grief',
+        'Sadness',
         'Fear',
         'Anger',
         'Courage',
@@ -541,13 +557,7 @@ export default function CircleBoard() {
               <p>
                 A <strong>Circle</strong> is a small group of people you trust.
               </p>
-              <p>
-                Make one, invite friends with a code, share what you're working on, see each other's
-                pulse. Quiet — not a chat, not a feed.
-              </p>
-              <p className="italic" style={{ fontSize: 15, opacity: 0.7, color: '#8A6A4A' }}>
-                More coming soon: cross-device sync, shared focus sessions, weekly digests.
-              </p>
+              <p>Share what you're working on and organise missions together.</p>
             </div>
           )}
         </div>
@@ -742,13 +752,6 @@ export default function CircleBoard() {
       missionsByMember.set(m.claimedBy, list);
     }
   }
-
-  // Chapter state
-  const [editingChapter, setEditingChapter] = useState(false);
-  const [chapterInput, setChapterInput] = useState(active.chapter || '');
-  const [chapterOpen, setChapterOpen] = useState(false);
-  const [meaningInput, setMeaningInput] = useState('');
-  const [assigningMission, setAssigningMission] = useState<string | null>(null);
 
   function setChapter(text: string) {
     if (!activeId) return;
@@ -983,6 +986,17 @@ export default function CircleBoard() {
           );
         })}
       </div>
+
+      {/* Agenda — 14-day strip of mission due dates, coloured by owner */}
+      <CircleAgenda
+        missions={active.missions}
+        members={active.members.map((m) => ({
+          id: m.id,
+          name: m.name,
+          color: m.pulseColor || m.color,
+        }))}
+        onTapMission={(id) => setExpandedMissionId(id)}
+      />
 
       {/* Missions — grouped by person */}
       <div
@@ -1424,6 +1438,58 @@ export default function CircleBoard() {
           </div>
         )}
       </div>
+
+      {/* Sync sessions — rehearsals / mix nights / photoshoots */}
+      <CircleEvents
+        circleId={active.id}
+        meId={me.id}
+        meName={me.name}
+        members={active.members.map((m) => ({
+          id: m.id,
+          name: m.name,
+          color: m.pulseColor || m.color,
+        }))}
+      />
+
+      {/* Decisions — proposals + voting log */}
+      <CircleDecisions
+        circleId={active.id}
+        meId={me.id}
+        meName={me.name}
+        members={active.members.map((m) => ({
+          id: m.id,
+          name: m.name,
+          color: m.pulseColor || m.color,
+        }))}
+      />
+
+      {/* Money — shared expenses + balances */}
+      <CircleMoney
+        circleId={active.id}
+        meId={me.id}
+        meName={me.name}
+        members={active.members.map((m) => ({
+          id: m.id,
+          name: m.name,
+          color: m.pulseColor || m.color,
+        }))}
+      />
+
+      {/* Audio — recordings + voice memos with reflections */}
+      <CircleAudio
+        circleId={active.id}
+        meId={me.id}
+        meName={me.name}
+        meColour={active.members.find((m) => m.id === me.id)?.color || active.color}
+      />
+
+      {/* Rainbow — vertical Hawkins reflection band, threaded over time */}
+      <CircleRainbow
+        circleId={active.id}
+        meId={me.id}
+        meName={me.name}
+        meColour={active.members.find((m) => m.id === me.id)?.color || active.color}
+      />
 
       {/* Log */}
       <div

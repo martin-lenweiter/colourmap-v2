@@ -254,8 +254,8 @@ function SuperCompassView({
     <div>
       <svg width="100%" height={H} viewBox={`0 0 ${W} ${H}`}>
         <title>Supercompass — Caring inside Doing</title>
-        {renderRing(outerSlices, outerR, innerR + 22, (outerR + innerR + 22) / 2, 14)}
-        {renderRing(innerSlices, innerR, 0, innerR * 0.45, 11)}
+        {renderRing(outerSlices, outerR, innerR + 22, (outerR + innerR + 22) / 2, 15)}
+        {renderRing(innerSlices, innerR, 0, innerR * 0.45, 13)}
       </svg>
     </div>
   );
