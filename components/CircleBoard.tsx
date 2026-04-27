@@ -226,6 +226,7 @@ export default function CircleBoard() {
   const [creating, setCreating] = useState(false);
   const [joining, setJoining] = useState(false);
   const [newName, setNewName] = useState('');
+  const [createError, setCreateError] = useState('');
   const [joinCode, setJoinCode] = useState('');
   const [missionInput, setMissionInput] = useState('');
   const [missionDueInput, setMissionDueInput] = useState('');
@@ -285,11 +286,19 @@ export default function CircleBoard() {
 
   async function createCircle() {
     const name = newName.trim();
-    if (!name || !me.name) return;
+    if (!name) return;
+    if (!me.name) {
+      setCreateError('Set your name first (tap your name above).');
+      setEditingMe(true);
+      return;
+    }
+    setCreateError('');
     const detail = await hook.createCircle(name);
     if (detail) {
       setNewName('');
       setCreating(false);
+    } else {
+      setCreateError('Could not create — check your connection and try again.');
     }
   }
 
@@ -649,14 +658,16 @@ export default function CircleBoard() {
               onKeyDown={(e) => {
                 if (e.key === 'Enter') createCircle();
               }}
-              placeholder="circle name... (e.g. Rock Band)"
+              placeholder="circle name..."
               autoFocus
-              className="w-full border-b bg-transparent pb-1 outline-none placeholder:italic placeholder:text-[#8A6A4A] placeholder:opacity-50"
+              className="w-full border-b bg-transparent pb-2 text-center outline-none placeholder:italic placeholder:text-[#8A6A4A] placeholder:opacity-40"
               style={{
-                fontFamily: font,
-                fontSize: '15px',
+                fontFamily: 'var(--font-handwritten)',
+                fontSize: '26px',
+                fontWeight: 700,
                 color: '#5C3018',
                 borderColor: '#7AAA5830',
+                letterSpacing: '0.04em',
               }}
             />
             <div className="flex gap-2">
@@ -670,13 +681,21 @@ export default function CircleBoard() {
               </button>
               <button
                 type="button"
-                onClick={() => setCreating(false)}
+                onClick={() => {
+                  setCreating(false);
+                  setCreateError('');
+                }}
                 className="cursor-pointer text-[11px]"
                 style={{ color: '#8A6A4A', opacity: 0.4, background: 'none', border: 'none' }}
               >
                 cancel
               </button>
             </div>
+            {createError && (
+              <p className="text-[11px] italic" style={{ color: '#D4605A' }}>
+                {createError}
+              </p>
+            )}
           </div>
         )}
 

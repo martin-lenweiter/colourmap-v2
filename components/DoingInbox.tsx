@@ -80,7 +80,7 @@ function CategoryDot({
 }
 
 interface DoingInboxProps {
-  categoryFilter: DoingCategory[];
+  categoryFilter: string[];
 }
 
 export default function DoingInbox({ categoryFilter }: DoingInboxProps) {
@@ -196,8 +196,12 @@ export default function DoingInbox({ categoryFilter }: DoingInboxProps) {
             if (e.key === 'Enter') add();
           }}
           placeholder="Add task..."
-          className="flex-1 bg-transparent text-sm outline-none placeholder:text-muted-foreground/30"
-          style={{ color: '#7a5438', fontFamily: 'var(--font-handwritten)' }}
+          className="flex-1 bg-transparent outline-none placeholder:opacity-40"
+          style={{
+            color: '#7a5438',
+            fontFamily: 'var(--font-handwritten)',
+            fontSize: '20px',
+          }}
         />
         {input.trim() && (
           <button
@@ -308,11 +312,12 @@ function TaskRow({
 
       {/* Text */}
       <span
-        className="flex-1 text-sm leading-relaxed"
+        className="flex-1 leading-relaxed"
         style={{
-          color: task.done ? '#7a543860' : '#7a5438',
-          textDecoration: task.done ? 'line-through' : 'none',
+          color: task.done ? '#7a543840' : '#7a5438',
           fontFamily: 'var(--font-handwritten)',
+          fontSize: '20px',
+          opacity: task.done ? 0.5 : 1,
         }}
       >
         {task.text}

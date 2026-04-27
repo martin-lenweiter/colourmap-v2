@@ -2,48 +2,34 @@
 
 import { useEffect, useState } from 'react';
 import DailyAgenda from '@/components/DailyAgenda';
-import DoingCategoryRail, {
-  DOING_CATEGORIES,
-  type DoingCategory,
-} from '@/components/DoingCategoryRail';
+import DoingCategoryRail from '@/components/DoingCategoryRail';
+import DoingContextBar from '@/components/DoingContextBar';
 import DoingInbox from '@/components/DoingInbox';
 import FeelingCheckInCard from '@/components/FeelingCheckInCard';
-import MissionTracker from '@/components/MissionTracker';
-import NowBar from '@/components/NowBar';
 
 const FILTER_KEY = 'colourmap:doing-category-filter';
 
-function loadFilter(): DoingCategory[] {
+function loadFilter(): string[] {
   try {
     const raw = localStorage.getItem(FILTER_KEY);
     if (!raw) return [];
     const parsed = JSON.parse(raw);
-    const validIds = DOING_CATEGORIES.map((c) => c.id);
-    return (parsed as string[]).filter((id): id is DoingCategory =>
-      validIds.includes(id as DoingCategory),
-    );
+    return Array.isArray(parsed) ? (parsed as string[]) : [];
   } catch {
     return [];
   }
 }
 
 export default function DoingPanel() {
-  const [filter, setFilter] = useState<DoingCategory[]>([]);
+  const [filter, setFilter] = useState<string[]>([]);
 
   useEffect(() => {
     setFilter(loadFilter());
   }, []);
 
-  function toggleCategory(cat: DoingCategory) {
+  function toggleCategory(id: string) {
     setFilter((prev) => {
-      let next: DoingCategory[];
-      if (prev.includes(cat)) {
-        next = prev.filter((c) => c !== cat);
-      } else {
-        next = [...prev, cat];
-      }
-      // All selected == same as no filter — normalise to empty
-      if (next.length === DOING_CATEGORIES.length) next = [];
+      const next = prev.includes(id) ? prev.filter((c) => c !== id) : [...prev, id];
       try {
         localStorage.setItem(FILTER_KEY, JSON.stringify(next));
       } catch {
@@ -55,21 +41,21 @@ export default function DoingPanel() {
 
   return (
     <div className="space-y-5">
-      <NowBar />
+      <DoingContextBar />
 
-      {/* Category filter rail */}
+      {/* Life category dot filter */}
       <DoingCategoryRail selected={filter} onToggle={toggleCategory} />
 
-      {/* Current objectives + Push for tomorrow — from FeelingCheckInCard doing segment */}
+      {/* Current objectives + push for tomorrow */}
       <FeelingCheckInCard segment="doing" />
 
-      {/* Missions — Supabase backed */}
-      <MissionTracker categoryFilter={filter} />
-
-      {/* Quick tasks + Tomorrow shelf — localStorage */}
+      {/* Quick tasks inbox */}
       <DoingInbox categoryFilter={filter} />
 
-      {/* Agenda — Supabase backed, manual scheduling target */}
+      {/* Breathing space before agenda */}
+      <div style={{ height: 16 }} />
+
+      {/* Agenda — Supabase backed */}
       <DailyAgenda />
     </div>
   );
