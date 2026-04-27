@@ -109,7 +109,7 @@ function composeSentence(): string {
   const lastCheckin = checkins[checkins.length - 1];
   const lastMix = mixes[0]; // saved-mixes are stored newest-first
 
-  const parts: string[] = [partOfDayPhrase(timeOfDay()) + '.'];
+  const parts: string[] = [`${partOfDayPhrase(timeOfDay())}.`];
 
   if (lastMix) {
     const baseHz = lastMix.base ? `${lastMix.base}Hz` : '';
