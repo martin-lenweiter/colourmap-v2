@@ -1,12 +1,13 @@
 import { NextResponse } from 'next/server';
 
 import { jsonError, parseJsonBody, withAuthenticatedUser } from '@/lib/api/route-helpers';
-import type { SparkCategory, SparkTimeWindow } from '@/lib/db/schema';
 import {
   createSpark,
   listCircleSparks,
   listMySparks,
   listNearbySparks,
+  type SparkCategory,
+  type SparkTimeWindow,
   SparkValidationError,
 } from '@/lib/services/sparks';
 

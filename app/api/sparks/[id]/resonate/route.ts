@@ -1,8 +1,12 @@
 import { NextResponse } from 'next/server';
 
 import { jsonError, parseJsonBody, withAuthenticatedUser } from '@/lib/api/route-helpers';
-import type { ResonanceStatus } from '@/lib/db/schema';
-import { resonateWithSpark, respondToResonance, SparkValidationError } from '@/lib/services/sparks';
+import {
+  type ResonanceStatus,
+  resonateWithSpark,
+  respondToResonance,
+  SparkValidationError,
+} from '@/lib/services/sparks';
 
 // POST /api/sparks/[id]/resonate
 // Body: { type: 'resonate' | 'join_request' }

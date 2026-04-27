@@ -22,7 +22,10 @@
     "app/api/circles/[id]/missions/[missionId]/route.ts": "lib/services/circles.ts",
     "app/api/circles/[id]/notes/route.ts": "lib/services/circles.ts",
     "app/api/circles/[id]/pulse/route.ts": "lib/services/circles.ts",
-    "app/api/circles/[id]/sessions/route.ts": "lib/services/circles.ts"
+    "app/api/circles/[id]/sessions/route.ts": "lib/services/circles.ts",
+    "app/api/sparks/route.ts": "lib/services/sparks.ts",
+    "app/api/sparks/[id]/route.ts": "lib/services/sparks.ts",
+    "app/api/sparks/[id]/resonate/route.ts": "lib/services/sparks.ts"
   },
   "testPairExceptions": {
     "routes": [

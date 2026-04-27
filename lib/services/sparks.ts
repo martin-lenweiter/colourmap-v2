@@ -16,6 +16,8 @@ import {
 } from '@/lib/db/queries/sparks';
 import type { ResonanceStatus, SparkCategory, SparkTimeWindow } from '@/lib/db/schema';
 
+export type { ResonanceStatus, SparkCategory, SparkTimeWindow };
+
 export class SparkValidationError extends Error {
   constructor(message: string) {
     super(message);
