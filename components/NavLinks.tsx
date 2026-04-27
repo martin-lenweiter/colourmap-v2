@@ -13,7 +13,7 @@ import { useViewMode } from './ViewModeContext';
 const PRIMARY_LINKS: { href: string; label: string }[] = [
   { href: '/day', label: 'Focus' },
   { href: '/circles', label: 'Teamwork' },
-  { href: '/desires', label: 'Desires' },
+  { href: '/sparks', label: 'Sparks' },
   { href: '/notebook', label: 'Notebook' },
   { href: '/sounds', label: 'Music' },
 ];

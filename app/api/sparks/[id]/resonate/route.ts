@@ -2,13 +2,9 @@ import { NextResponse } from 'next/server';
 
 import { jsonError, parseJsonBody, withAuthenticatedUser } from '@/lib/api/route-helpers';
 import type { ResonanceStatus } from '@/lib/db/schema';
-import {
-  DesireValidationError,
-  resonateWithDesire,
-  respondToResonance,
-} from '@/lib/services/desires';
+import { resonateWithSpark, respondToResonance, SparkValidationError } from '@/lib/services/sparks';
 
-// POST /api/desires/[id]/resonate
+// POST /api/sparks/[id]/resonate
 // Body: { type: 'resonate' | 'join_request' }
 export async function POST(request: Request, { params }: { params: Promise<{ id: string }> }) {
   return withAuthenticatedUser(async (user) => {
@@ -20,18 +16,18 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
     const type = body.type === 'join_request' ? 'join_request' : 'resonate';
 
     try {
-      const resonance = await resonateWithDesire(id, user.id, type);
+      const resonance = await resonateWithSpark(id, user.id, type);
       return NextResponse.json(resonance, { status: 201 });
     } catch (err) {
-      if (err instanceof DesireValidationError) return jsonError(err.message, 400);
+      if (err instanceof SparkValidationError) return jsonError(err.message, 400);
       throw err;
     }
   });
 }
 
-// PATCH /api/desires/[id]/resonate
+// PATCH /api/sparks/[id]/resonate
 // Body: { userId: string, status: 'accepted' | 'ignored' }
-// Called by the desire owner to respond to a join request.
+// Called by the spark owner to respond to a join request.
 export async function PATCH(request: Request, { params }: { params: Promise<{ id: string }> }) {
   return withAuthenticatedUser(async (user) => {
     const { id } = await params;
@@ -48,7 +44,7 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
       await respondToResonance(id, user.id, body.userId, body.status);
       return NextResponse.json({ ok: true });
     } catch (err) {
-      if (err instanceof DesireValidationError) return jsonError(err.message, 400);
+      if (err instanceof SparkValidationError) return jsonError(err.message, 400);
       throw err;
     }
   });

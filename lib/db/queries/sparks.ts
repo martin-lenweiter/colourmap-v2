@@ -2,21 +2,21 @@ import { and, desc, eq, inArray, sql } from 'drizzle-orm';
 
 import { getDb } from '@/lib/db/client';
 import {
-  type DesireCategory,
-  type DesireStatus,
-  type DesireTimeWindow,
-  desireResonances,
-  desires,
   type ResonanceStatus,
   type ResonanceType,
+  type SparkCategory,
+  type SparkStatus,
+  type SparkTimeWindow,
+  sparkResonances,
+  sparks,
 } from '@/lib/db/schema';
 
-export type InsertDesire = {
+export type InsertSpark = {
   userId: string;
   circleId?: string | null;
   text: string;
-  category: DesireCategory;
-  timeWindow: DesireTimeWindow;
+  category: SparkCategory;
+  timeWindow: SparkTimeWindow;
   isOpen: boolean;
   lat?: number | null;
   lng?: number | null;
@@ -24,26 +24,26 @@ export type InsertDesire = {
   expiresAt?: Date | null;
 };
 
-export type DesireRow = typeof desires.$inferSelect;
-export type ResonanceRow = typeof desireResonances.$inferSelect;
+export type SparkRow = typeof sparks.$inferSelect;
+export type ResonanceRow = typeof sparkResonances.$inferSelect;
 
 // ─── Writes ───────────────────────────────────────────────────────────────────
 
-export async function insertDesire(data: InsertDesire): Promise<DesireRow> {
+export async function insertSpark(data: InsertSpark): Promise<SparkRow> {
   const db = getDb();
-  const [row] = await db.insert(desires).values(data).returning();
+  const [row] = await db.insert(sparks).values(data).returning();
   return row;
 }
 
-export async function updateDesireStatus(id: string, userId: string, status: DesireStatus) {
+export async function updateSparkStatus(id: string, userId: string, status: SparkStatus) {
   const db = getDb();
   await db
-    .update(desires)
+    .update(sparks)
     .set({ status })
-    .where(and(eq(desires.id, id), eq(desires.userId, userId)));
+    .where(and(eq(sparks.id, id), eq(sparks.userId, userId)));
 }
 
-export async function setDesireOpen(
+export async function setSparkOpen(
   id: string,
   userId: string,
   isOpen: boolean,
@@ -53,46 +53,46 @@ export async function setDesireOpen(
 ) {
   const db = getDb();
   await db
-    .update(desires)
+    .update(sparks)
     .set({ isOpen, lat, lng, zoneLabel })
-    .where(and(eq(desires.id, id), eq(desires.userId, userId)));
+    .where(and(eq(sparks.id, id), eq(sparks.userId, userId)));
 }
 
-export async function deleteDesire(id: string, userId: string) {
+export async function deleteSpark(id: string, userId: string) {
   const db = getDb();
-  await db.delete(desires).where(and(eq(desires.id, id), eq(desires.userId, userId)));
+  await db.delete(sparks).where(and(eq(sparks.id, id), eq(sparks.userId, userId)));
 }
 
 // ─── Reads ────────────────────────────────────────────────────────────────────
 
-export async function getDesiresByUser(userId: string): Promise<DesireRow[]> {
+export async function getSparksByUser(userId: string): Promise<SparkRow[]> {
   const db = getDb();
   return db
     .select()
-    .from(desires)
-    .where(and(eq(desires.userId, userId), eq(desires.status, 'active')))
-    .orderBy(desc(desires.createdAt))
+    .from(sparks)
+    .where(and(eq(sparks.userId, userId), eq(sparks.status, 'active')))
+    .orderBy(desc(sparks.createdAt))
     .limit(100);
 }
 
-export async function getDesiresByCircle(circleId: string): Promise<DesireRow[]> {
+export async function getSparksByCircle(circleId: string): Promise<SparkRow[]> {
   const db = getDb();
   return db
     .select()
-    .from(desires)
-    .where(and(eq(desires.circleId, circleId), eq(desires.status, 'active')))
-    .orderBy(desc(desires.createdAt))
+    .from(sparks)
+    .where(and(eq(sparks.circleId, circleId), eq(sparks.status, 'active')))
+    .orderBy(desc(sparks.createdAt))
     .limit(100);
 }
 
-export async function getDesireById(id: string): Promise<DesireRow | null> {
+export async function getSparkById(id: string): Promise<SparkRow | null> {
   const db = getDb();
-  const [row] = await db.select().from(desires).where(eq(desires.id, id)).limit(1);
+  const [row] = await db.select().from(sparks).where(eq(sparks.id, id)).limit(1);
   return row ?? null;
 }
 
 /**
- * Geo query — finds open+active desires within radiusKm of the given point.
+ * Geo query — finds open+active sparks within radiusKm of the given point.
  * Uses PostGIS ST_DWithin against the functional GIST index, so this stays
  * fast at any user count. Results are capped at 100 per request.
  *
@@ -100,12 +100,12 @@ export async function getDesireById(id: string): Promise<DesireRow | null> {
  *   1. Bounding-box pre-filter (cheap, uses the index).
  *   2. ST_DWithin exact filter (runs on the pre-filtered set only).
  */
-export async function getNearbyOpenDesires(
+export async function getNearbyOpenSparks(
   lat: number,
   lng: number,
   radiusKm: number,
   limit = 100,
-): Promise<(DesireRow & { distanceKm: number })[]> {
+): Promise<(SparkRow & { distanceKm: number })[]> {
   const db = getDb();
   const radiusM = radiusKm * 1000;
 
@@ -119,7 +119,7 @@ export async function getNearbyOpenDesires(
         ) / 1000.0,
         2
       )::float AS "distanceKm"
-    FROM desires d
+    FROM sparks d
     WHERE
       d.is_open = TRUE
       AND d.status = 'active'
@@ -134,22 +134,22 @@ export async function getNearbyOpenDesires(
     LIMIT ${limit}
   `);
 
-  return rows as unknown as (DesireRow & { distanceKm: number })[];
+  return rows as unknown as (SparkRow & { distanceKm: number })[];
 }
 
 // ─── Resonances ───────────────────────────────────────────────────────────────
 
 export async function upsertResonance(
-  desireId: string,
+  sparkId: string,
   userId: string,
   type: ResonanceType,
 ): Promise<ResonanceRow> {
   const db = getDb();
   const [row] = await db
-    .insert(desireResonances)
-    .values({ desireId, userId, type, status: 'pending' })
+    .insert(sparkResonances)
+    .values({ sparkId, userId, type, status: 'pending' })
     .onConflictDoUpdate({
-      target: [desireResonances.desireId, desireResonances.userId],
+      target: [sparkResonances.sparkId, sparkResonances.userId],
       set: { type, status: 'pending' },
     })
     .returning();
@@ -157,48 +157,46 @@ export async function upsertResonance(
 }
 
 export async function updateResonanceStatus(
-  desireId: string,
+  sparkId: string,
   resonatingUserId: string,
   status: ResonanceStatus,
 ) {
   const db = getDb();
   await db
-    .update(desireResonances)
+    .update(sparkResonances)
     .set({ status })
-    .where(
-      and(eq(desireResonances.desireId, desireId), eq(desireResonances.userId, resonatingUserId)),
-    );
+    .where(and(eq(sparkResonances.sparkId, sparkId), eq(sparkResonances.userId, resonatingUserId)));
 }
 
-export async function getResonancesForDesire(desireId: string): Promise<ResonanceRow[]> {
+export async function getResonancesForSpark(sparkId: string): Promise<ResonanceRow[]> {
   const db = getDb();
   return db
     .select()
-    .from(desireResonances)
-    .where(eq(desireResonances.desireId, desireId))
-    .orderBy(desc(desireResonances.createdAt));
+    .from(sparkResonances)
+    .where(eq(sparkResonances.sparkId, sparkId))
+    .orderBy(desc(sparkResonances.createdAt));
 }
 
 export async function getResonancesByUser(userId: string): Promise<ResonanceRow[]> {
   const db = getDb();
   return db
     .select()
-    .from(desireResonances)
-    .where(eq(desireResonances.userId, userId))
-    .orderBy(desc(desireResonances.createdAt))
+    .from(sparkResonances)
+    .where(eq(sparkResonances.userId, userId))
+    .orderBy(desc(sparkResonances.createdAt))
     .limit(200);
 }
 
-export async function getResonanceCounts(desireIds: string[]): Promise<Record<string, number>> {
-  if (desireIds.length === 0) return {};
+export async function getResonanceCounts(sparkIds: string[]): Promise<Record<string, number>> {
+  if (sparkIds.length === 0) return {};
   const db = getDb();
   const rows = await db
     .select({
-      desireId: desireResonances.desireId,
+      sparkId: sparkResonances.sparkId,
       count: sql<number>`COUNT(*)::int`,
     })
-    .from(desireResonances)
-    .where(inArray(desireResonances.desireId, desireIds))
-    .groupBy(desireResonances.desireId);
-  return Object.fromEntries(rows.map((r) => [r.desireId, r.count]));
+    .from(sparkResonances)
+    .where(inArray(sparkResonances.sparkId, sparkIds))
+    .groupBy(sparkResonances.sparkId);
+  return Object.fromEntries(rows.map((r) => [r.sparkId, r.count]));
 }

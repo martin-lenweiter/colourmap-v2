@@ -259,15 +259,15 @@ export const designerObservations = pgTable('designer_observations', {
   createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
 });
 
-// ─── Desires ──────────────────────────────────────────────────────────────────
+// ─── Sparks ───────────────────────────────────────────────────────────────────
 
-export type DesireCategory = 'fun' | 'creative' | 'professional' | 'growth';
-export type DesireTimeWindow = 'this_week' | 'this_month' | 'no_rush';
-export type DesireStatus = 'active' | 'fulfilled' | 'expired';
+export type SparkCategory = 'fun' | 'creative' | 'professional' | 'growth';
+export type SparkTimeWindow = 'this_week' | 'this_month' | 'no_rush';
+export type SparkStatus = 'active' | 'fulfilled' | 'expired';
 export type ResonanceType = 'resonate' | 'join_request';
 export type ResonanceStatus = 'pending' | 'accepted' | 'ignored';
 
-export const desires = pgTable('desires', {
+export const sparks = pgTable('sparks', {
   id: uuid('id').defaultRandom().primaryKey(),
   userId: uuid('user_id').notNull(),
   circleId: uuid('circle_id'),
@@ -283,9 +283,9 @@ export const desires = pgTable('desires', {
   createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
 });
 
-export const desireResonances = pgTable('desire_resonances', {
+export const sparkResonances = pgTable('spark_resonances', {
   id: uuid('id').defaultRandom().primaryKey(),
-  desireId: uuid('desire_id').notNull(),
+  sparkId: uuid('spark_id').notNull(),
   userId: uuid('user_id').notNull(),
   type: text('type').notNull().default('resonate'),
   status: text('status').notNull().default('pending'),

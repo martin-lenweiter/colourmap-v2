@@ -15,12 +15,12 @@ L.Icon.Default.mergeOptions({
   shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
 });
 
-type DesireCategory = 'fun' | 'creative' | 'professional' | 'growth';
+type SparkCategory = 'fun' | 'creative' | 'professional' | 'growth';
 
-interface NearbyDesire {
+interface NearbySparkProps {
   id: string;
   text: string;
-  category: DesireCategory;
+  category: SparkCategory;
   timeWindow: string;
   zoneLabel: string | null;
   lat: number;
@@ -29,21 +29,21 @@ interface NearbyDesire {
   distanceKm: number;
 }
 
-const CATEGORY_COLORS: Record<DesireCategory, string> = {
+const CATEGORY_COLORS: Record<SparkCategory, string> = {
   fun: '#7AAA58',
   creative: '#C4A060',
   professional: '#6890B0',
   growth: '#9B6BA0',
 };
 
-const CATEGORY_LABELS: Record<DesireCategory, string> = {
+const CATEGORY_LABELS: Record<SparkCategory, string> = {
   fun: 'fun',
   creative: 'creative',
   professional: 'work',
   growth: 'growth',
 };
 
-function makeDesireDot(color: string, count: number): L.DivIcon {
+function makeSparkDot(color: string, count: number): L.DivIcon {
   const size = Math.min(10 + count * 2, 22);
   return L.divIcon({
     className: '',
@@ -62,17 +62,17 @@ function makeDesireDot(color: string, count: number): L.DivIcon {
   });
 }
 
-interface DesireMapProps {
+interface SparkMapProps {
   onClose?: () => void;
 }
 
-export default function DesireMap({ onClose }: DesireMapProps) {
+export default function SparkMap({ onClose }: SparkMapProps) {
   const mapRef = useRef<HTMLDivElement>(null);
   const leafletMap = useRef<L.Map | null>(null);
   const markersRef = useRef<L.Marker[]>([]);
 
-  const [desires, setDesires] = useState<NearbyDesire[]>([]);
-  const [selected, setSelected] = useState<NearbyDesire | null>(null);
+  const [sparks, setSparks] = useState<NearbySparkProps[]>([]);
+  const [selected, setSelected] = useState<NearbySparkProps | null>(null);
   const [loading, setLoading] = useState(true);
   const [locError, setLocError] = useState('');
   const [userPos, setUserPos] = useState<{ lat: number; lng: number } | null>(null);
@@ -101,7 +101,7 @@ export default function DesireMap({ onClose }: DesireMapProps) {
     };
   }, []);
 
-  // Geolocate user then fetch desires.
+  // Geolocate user then fetch sparks.
   useEffect(() => {
     if (!navigator.geolocation) {
       setLocError('Geolocation not available on this device.');
@@ -126,10 +126,10 @@ export default function DesireMap({ onClose }: DesireMapProps) {
             .addTo(leafletMap.current);
         }
 
-        fetch(`/api/desires?lat=${lat}&lng=${lng}&radius=10`)
+        fetch(`/api/sparks?lat=${lat}&lng=${lng}&radius=10`)
           .then((r) => (r.ok ? r.json() : []))
-          .then((data: NearbyDesire[]) => {
-            setDesires(data);
+          .then((data: NearbySparkProps[]) => {
+            setSparks(data);
             setLoading(false);
           })
           .catch(() => setLoading(false));
@@ -142,7 +142,7 @@ export default function DesireMap({ onClose }: DesireMapProps) {
     );
   }, []);
 
-  // Render markers whenever desires change.
+  // Render markers whenever sparks change.
   useEffect(() => {
     const map = leafletMap.current;
     if (!map) return;
@@ -151,15 +151,15 @@ export default function DesireMap({ onClose }: DesireMapProps) {
     for (const m of markersRef.current) m.remove();
     markersRef.current = [];
 
-    for (const d of desires) {
+    for (const d of sparks) {
       const color = CATEGORY_COLORS[d.category] ?? '#C4A060';
-      const icon = makeDesireDot(color, d.resonanceCount);
+      const icon = makeSparkDot(color, d.resonanceCount);
       const marker = L.marker([d.lat, d.lng], { icon })
         .addTo(map)
         .on('click', () => setSelected(d));
       markersRef.current.push(marker);
     }
-  }, [desires]);
+  }, [sparks]);
 
   const font = 'var(--font-handwritten)';
 
@@ -241,7 +241,7 @@ export default function DesireMap({ onClose }: DesireMapProps) {
             className="italic"
             style={{ fontFamily: font, fontSize: fontSize.base, color: '#8A6A4A' }}
           >
-            finding desires near you…
+            finding sparks near you…
           </p>
         </div>
       )}
@@ -287,7 +287,7 @@ export default function DesireMap({ onClose }: DesireMapProps) {
             gap: 4,
           }}
         >
-          {(Object.entries(CATEGORY_COLORS) as [DesireCategory, string][]).map(([cat, color]) => (
+          {(Object.entries(CATEGORY_COLORS) as [SparkCategory, string][]).map(([cat, color]) => (
             <div key={cat} style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
               <span
                 style={{
@@ -307,7 +307,7 @@ export default function DesireMap({ onClose }: DesireMapProps) {
       )}
 
       {/* Empty state */}
-      {!loading && userPos && desires.length === 0 && (
+      {!loading && userPos && sparks.length === 0 && (
         <div
           style={{
             position: 'absolute',
@@ -326,14 +326,14 @@ export default function DesireMap({ onClose }: DesireMapProps) {
             className="italic"
             style={{ fontFamily: font, fontSize: '14px', color: '#8A6A4A', lineHeight: 1.5 }}
           >
-            no open desires near you yet.
+            no open sparks near you yet.
             <br />
             post one and put it on the map.
           </p>
         </div>
       )}
 
-      {/* Selected desire card */}
+      {/* Selected spark card */}
       {selected && (
         <div
           style={{
@@ -407,7 +407,7 @@ export default function DesireMap({ onClose }: DesireMapProps) {
             <button
               type="button"
               onClick={async () => {
-                await fetch(`/api/desires/${selected.id}/resonate`, {
+                await fetch(`/api/sparks/${selected.id}/resonate`, {
                   method: 'POST',
                   headers: { 'Content-Type': 'application/json' },
                   body: JSON.stringify({ type: 'resonate' }),
@@ -432,7 +432,7 @@ export default function DesireMap({ onClose }: DesireMapProps) {
             <button
               type="button"
               onClick={async () => {
-                await fetch(`/api/desires/${selected.id}/resonate`, {
+                await fetch(`/api/sparks/${selected.id}/resonate`, {
                   method: 'POST',
                   headers: { 'Content-Type': 'application/json' },
                   body: JSON.stringify({ type: 'join_request' }),

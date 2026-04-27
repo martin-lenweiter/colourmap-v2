@@ -4,32 +4,32 @@ import { useEffect, useRef, useState } from 'react';
 
 import { radii, space } from '@/lib/design-tokens';
 
-type DesireCategory = 'fun' | 'creative' | 'professional' | 'growth';
-type DesireTimeWindow = 'this_week' | 'this_month' | 'no_rush';
+type SparkCategory = 'fun' | 'creative' | 'professional' | 'growth';
+type SparkTimeWindow = 'this_week' | 'this_month' | 'no_rush';
 
-const CATEGORIES: { id: DesireCategory; label: string; color: string }[] = [
+const CATEGORIES: { id: SparkCategory; label: string; color: string }[] = [
   { id: 'fun', label: 'fun', color: '#7AAA58' },
   { id: 'creative', label: 'creative', color: '#C4A060' },
   { id: 'professional', label: 'work', color: '#6890B0' },
   { id: 'growth', label: 'growth', color: '#9B6BA0' },
 ];
 
-const TIME_WINDOWS: { id: DesireTimeWindow; label: string }[] = [
+const TIME_WINDOWS: { id: SparkTimeWindow; label: string }[] = [
   { id: 'this_week', label: 'this week' },
   { id: 'this_month', label: 'this month' },
   { id: 'no_rush', label: 'no rush' },
 ];
 
-interface DesireComposerProps {
+interface SparkComposerProps {
   circleId?: string;
   onPosted?: () => void;
   onCancel?: () => void;
 }
 
-export default function DesireComposer({ circleId, onPosted, onCancel }: DesireComposerProps) {
+export default function SparkComposer({ circleId, onPosted, onCancel }: SparkComposerProps) {
   const [text, setText] = useState('');
-  const [category, setCategory] = useState<DesireCategory>('fun');
-  const [timeWindow, setTimeWindow] = useState<DesireTimeWindow>('this_week');
+  const [category, setCategory] = useState<SparkCategory>('fun');
+  const [timeWindow, setTimeWindow] = useState<SparkTimeWindow>('this_week');
   const [isOpen, setIsOpen] = useState(false);
   const [zoneLabel, setZoneLabel] = useState('');
   const [locating, setLocating] = useState(false);
@@ -81,7 +81,7 @@ export default function DesireComposer({ circleId, onPosted, onCancel }: DesireC
     setPosting(true);
     setError('');
     try {
-      const res = await fetch('/api/desires', {
+      const res = await fetch('/api/sparks', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

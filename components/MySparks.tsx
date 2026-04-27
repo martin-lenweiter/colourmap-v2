@@ -3,14 +3,14 @@
 import { useEffect, useState } from 'react';
 
 import { radii, space } from '@/lib/design-tokens';
-import DesireComposer from './DesireComposer';
+import SparkComposer from './SparkComposer';
 
-type DesireCategory = 'fun' | 'creative' | 'professional' | 'growth';
+type SparkCategory = 'fun' | 'creative' | 'professional' | 'growth';
 
-interface Desire {
+interface Spark {
   id: string;
   text: string;
-  category: DesireCategory;
+  category: SparkCategory;
   timeWindow: string;
   isOpen: boolean;
   zoneLabel: string | null;
@@ -19,7 +19,7 @@ interface Desire {
   createdAt: string;
 }
 
-const CATEGORY_COLORS: Record<DesireCategory, string> = {
+const CATEGORY_COLORS: Record<SparkCategory, string> = {
   fun: '#7AAA58',
   creative: '#C4A060',
   professional: '#6890B0',
@@ -32,19 +32,19 @@ const TIME_LABELS: Record<string, string> = {
   no_rush: 'no rush',
 };
 
-interface MyDesiresProps {
+interface MySparksProps {
   onOpenMap?: () => void;
 }
 
-export default function MyDesires({ onOpenMap }: MyDesiresProps) {
-  const [desires, setDesires] = useState<Desire[]>([]);
+export default function MySparks({ onOpenMap }: MySparksProps) {
+  const [sparks, setSparks] = useState<Spark[]>([]);
   const [loading, setLoading] = useState(true);
   const [composing, setComposing] = useState(false);
 
   async function load() {
     try {
-      const res = await fetch('/api/desires');
-      if (res.ok) setDesires(await res.json());
+      const res = await fetch('/api/sparks');
+      if (res.ok) setSparks(await res.json());
     } finally {
       setLoading(false);
     }
@@ -56,31 +56,31 @@ export default function MyDesires({ onOpenMap }: MyDesiresProps) {
   }, []);
 
   async function fulfill(id: string) {
-    await fetch(`/api/desires/${id}`, {
+    await fetch(`/api/sparks/${id}`, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ action: 'fulfill' }),
     });
-    setDesires((prev) => prev.filter((d) => d.id !== id));
+    setSparks((prev) => prev.filter((d) => d.id !== id));
   }
 
   async function remove(id: string) {
-    await fetch(`/api/desires/${id}`, { method: 'DELETE' });
-    setDesires((prev) => prev.filter((d) => d.id !== id));
+    await fetch(`/api/sparks/${id}`, { method: 'DELETE' });
+    setSparks((prev) => prev.filter((d) => d.id !== id));
   }
 
-  async function toggleMap(desire: Desire) {
-    if (desire.isOpen) {
-      await fetch(`/api/desires/${desire.id}`, {
+  async function toggleMap(spark: Spark) {
+    if (spark.isOpen) {
+      await fetch(`/api/sparks/${spark.id}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ action: 'close' }),
       });
-      setDesires((prev) => prev.map((d) => (d.id === desire.id ? { ...d, isOpen: false } : d)));
+      setSparks((prev) => prev.map((d) => (d.id === spark.id ? { ...d, isOpen: false } : d)));
     } else {
       if (!navigator.geolocation) return;
       navigator.geolocation.getCurrentPosition(async (pos) => {
-        await fetch(`/api/desires/${desire.id}`, {
+        await fetch(`/api/sparks/${spark.id}`, {
           method: 'PATCH',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
@@ -89,7 +89,7 @@ export default function MyDesires({ onOpenMap }: MyDesiresProps) {
             lng: pos.coords.longitude,
           }),
         });
-        setDesires((prev) => prev.map((d) => (d.id === desire.id ? { ...d, isOpen: true } : d)));
+        setSparks((prev) => prev.map((d) => (d.id === spark.id ? { ...d, isOpen: true } : d)));
       });
     }
   }
@@ -121,7 +121,7 @@ export default function MyDesires({ onOpenMap }: MyDesiresProps) {
             textTransform: 'uppercase',
           }}
         >
-          your desires
+          your sparks
         </p>
         <div style={{ display: 'flex', gap: space.sm }}>
           {onOpenMap && (
@@ -165,7 +165,7 @@ export default function MyDesires({ onOpenMap }: MyDesiresProps) {
 
       {/* Composer */}
       {composing && (
-        <DesireComposer
+        <SparkComposer
           onPosted={() => {
             setComposing(false);
             void load();
@@ -175,7 +175,7 @@ export default function MyDesires({ onOpenMap }: MyDesiresProps) {
       )}
 
       {/* Empty state */}
-      {!composing && desires.length === 0 && (
+      {!composing && sparks.length === 0 && (
         <div
           style={{
             textAlign: 'center',
@@ -190,7 +190,7 @@ export default function MyDesires({ onOpenMap }: MyDesiresProps) {
           >
             what do you want to do?
             <br />
-            <span style={{ fontSize: '13px', opacity: 0.6 }}>post a desire and find who's in</span>
+            <span style={{ fontSize: '13px', opacity: 0.6 }}>post a spark and find who's in</span>
           </p>
           <button
             type="button"
@@ -213,8 +213,8 @@ export default function MyDesires({ onOpenMap }: MyDesiresProps) {
         </div>
       )}
 
-      {/* Desire cards */}
-      {desires.map((d) => {
+      {/* Spark cards */}
+      {sparks.map((d) => {
         const color = CATEGORY_COLORS[d.category] ?? '#C4A060';
         return (
           <div
