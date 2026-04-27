@@ -190,9 +190,7 @@ export default function DailyAgenda() {
     }
   });
   const [selectedDate, setSelectedDate] = useState(todayStr);
-  const [showMission, setShowMission] = useState(true);
-  const [showEmotion, setShowEmotion] = useState(true);
-  const [showSocial, setShowSocial] = useState(false);
+  const [axisFilter, setAxisFilter] = useState<ObjectiveType | 'all'>('all');
   const [roadView, setRoadView] = useState(false);
   const [blocks, setBlocks] = useState<AgendaBlock[]>([]);
   const [outings, setOutings] = useState<Outing[]>([]);
@@ -213,7 +211,6 @@ export default function DailyAgenda() {
   const [objectives, setObjectives] = useState<
     { id: string; text: string; done: boolean; type?: ObjectiveType }[]
   >([]);
-  const [missionFilter, setMissionFilter] = useState<ObjectiveType | 'all'>('all');
   const [showDone, setShowDone] = useState(false);
   const [doneObjectives, setDoneObjectives] = useState<
     {
@@ -528,75 +525,49 @@ export default function DailyAgenda() {
               </button>
             ))}
           </div>
-          {/* Row 2 (secondary): mission / emotion / social filters +
-              road/list view toggle. Lower visual weight — these are
-              optional layer toggles on top of the primary scale.
-              Per Martin 2026-04-25: "mission emotion and social on a
-              lower layer in agenda than week month". */}
+          {/* Row 2 (secondary): F · D · S axis filter — single-select.
+              One active at a time; 'all' when none selected. */}
           <div className="flex items-center justify-center gap-2 opacity-85">
-            {/* Layer toggles — mirror the compass-pill vocabulary: a dot
-                + its label, so the three layers read as a deliberate
-                choice rather than three anonymous dots. */}
             <div className="flex gap-2">
               {(
                 [
-                  {
-                    key: 'mission',
-                    label: 'Mission',
-                    color: '#6890B0',
-                    active: showMission,
-                    toggle: () => setShowMission((s: boolean) => !s),
-                  },
-                  {
-                    key: 'emotion',
-                    label: 'Emotion',
-                    color: '#9B6BA0',
-                    active: showEmotion,
-                    toggle: () => setShowEmotion((s: boolean) => !s),
-                  },
-                  {
-                    key: 'social',
-                    label: 'Social',
-                    color: '#6B7F4E',
-                    active: showSocial,
-                    toggle: () => setShowSocial((s: boolean) => !s),
-                  },
+                  { key: 'feeling' as const, label: 'Feeling', color: '#D4805A' },
+                  { key: 'doing' as const, label: 'Doing', color: '#6890B0' },
+                  { key: 'sharing' as const, label: 'Sharing', color: '#6B7F4E' },
                 ] as const
-              ).map((l) => (
-                <button
-                  key={l.key}
-                  type="button"
-                  onClick={l.toggle}
-                  className="flex cursor-pointer items-center gap-1.5 rounded-full px-2 py-1 transition-all"
-                  style={{
-                    background: l.active ? `${l.color}18` : 'transparent',
-                    border: `1px solid ${l.active ? `${l.color}50` : `${l.color}20`}`,
-                    opacity: l.active ? 1 : 0.65,
-                  }}
-                  title={l.label}
-                  aria-pressed={l.active}
-                >
-                  <span
-                    className="block rounded-full"
+              ).map((l) => {
+                const isActive = axisFilter === l.key;
+                return (
+                  <button
+                    key={l.key}
+                    type="button"
+                    onClick={() => setAxisFilter(isActive ? 'all' : l.key)}
+                    className="flex cursor-pointer items-center gap-1.5 rounded-full px-2 py-1 transition-all"
                     style={{
-                      width: 10,
-                      height: 10,
-                      background: l.color,
+                      background: isActive ? `${l.color}18` : 'transparent',
+                      border: `1px solid ${isActive ? `${l.color}50` : `${l.color}20`}`,
+                      opacity: isActive ? 1 : 0.65,
                     }}
-                  />
-                  <span
-                    style={{
-                      fontFamily: 'var(--font-serif)',
-                      fontSize: 11,
-                      fontWeight: 600,
-                      color: l.color,
-                      letterSpacing: '0.04em',
-                    }}
+                    aria-pressed={isActive}
                   >
-                    {l.label}
-                  </span>
-                </button>
-              ))}
+                    <span
+                      className="block rounded-full"
+                      style={{ width: 10, height: 10, background: l.color }}
+                    />
+                    <span
+                      style={{
+                        fontFamily: 'var(--font-serif)',
+                        fontSize: 11,
+                        fontWeight: 600,
+                        color: l.color,
+                        letterSpacing: '0.04em',
+                      }}
+                    >
+                      {l.label}
+                    </span>
+                  </button>
+                );
+              })}
               {/* Road / List toggle */}
               <div className="ml-2 flex gap-1">
                 <button
@@ -640,7 +611,7 @@ export default function DailyAgenda() {
                       Tap again or 'all' to clear. */}
                   <div className="flex items-center gap-1.5 px-1">
                     {MISSION_TYPES.map((mt) => {
-                      const isActive = missionFilter === mt.id;
+                      const isActive = axisFilter === mt.id;
                       const typedCount = objectives.filter(
                         (o) => !o.done && (o.type ?? 'doing') === mt.id,
                       ).length;
@@ -648,7 +619,7 @@ export default function DailyAgenda() {
                         <button
                           key={mt.id}
                           type="button"
-                          onClick={() => setMissionFilter(isActive ? 'all' : mt.id)}
+                          onClick={() => setAxisFilter(isActive ? 'all' : mt.id)}
                           className="flex flex-1 cursor-pointer items-center justify-center gap-1.5 rounded-xl transition-all hover:opacity-90"
                           style={{
                             background: isActive ? `${mt.color}22` : `${mt.color}08`,
@@ -697,10 +668,10 @@ export default function DailyAgenda() {
                       );
                     })}
                   </div>
-                  {missionFilter !== 'all' && (
+                  {axisFilter !== 'all' && (
                     <button
                       type="button"
-                      onClick={() => setMissionFilter('all')}
+                      onClick={() => setAxisFilter('all')}
                       className="cursor-pointer block mx-auto"
                       style={{
                         background: 'none',
@@ -722,9 +693,7 @@ export default function DailyAgenda() {
                       const alreadyInAgenda = new Set(blocks.map((b) => b.text));
                       return objectives
                         .filter((o) => !o.done)
-                        .filter(
-                          (o) => missionFilter === 'all' || (o.type ?? 'daily') === missionFilter,
-                        )
+                        .filter((o) => axisFilter === 'all' || (o.type ?? 'doing') === axisFilter)
                         .map((o) => {
                           const scheduled = alreadyInAgenda.has(o.text);
                           const type = o.type ?? 'doing';
@@ -893,9 +862,14 @@ export default function DailyAgenda() {
           {/* Day view — full timeline or road view */}
           {agendaView === 'day' &&
             (() => {
-              const filtered = dayBlocks.filter(
-                (b) =>
-                  (showMission && b.kind === 'mission') || (showEmotion && b.kind === 'emotion'),
+              const filtered = dayBlocks.filter((b) =>
+                axisFilter === 'all'
+                  ? b.kind === 'mission' || b.kind === 'emotion'
+                  : axisFilter === 'doing'
+                    ? b.kind === 'mission'
+                    : axisFilter === 'feeling'
+                      ? b.kind === 'emotion'
+                      : false,
               );
               if (roadView) {
                 return (
@@ -907,7 +881,7 @@ export default function DailyAgenda() {
               return (
                 <VerticalView
                   blocks={filtered}
-                  layer={showEmotion && !showMission ? 'emotion' : 'mission'}
+                  layer={axisFilter === 'feeling' ? 'emotion' : 'mission'}
                   addingAt={addingAt}
                   setAddingAt={setAddingAt}
                   newText={newText}
@@ -934,7 +908,7 @@ export default function DailyAgenda() {
             })()}
 
           {/* Social layer — outings for current period */}
-          {showSocial &&
+          {(axisFilter === 'sharing' || axisFilter === 'all') &&
             (() => {
               const filtered = outings.filter((o) => {
                 if (agendaView === 'day') return o.date === selectedDate;
