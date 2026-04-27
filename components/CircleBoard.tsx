@@ -8,6 +8,7 @@ import CircleDecisions from '@/components/CircleDecisions';
 import CircleEvents from '@/components/CircleEvents';
 import CircleMoney from '@/components/CircleMoney';
 import CircleRainbow from '@/components/CircleRainbow';
+import CircleSparks from '@/components/CircleSparks';
 import { useKeyboardAware } from '@/components/hooks/useKeyboardAware';
 import {
   type CircleDetail as ApiCircleDetail,
@@ -1297,42 +1298,30 @@ export default function CircleBoard() {
                         </div>
                         {/* Notes thread on this mission */}
                         {(m.notes || []).map((n) => (
-                          <div key={n.id} className="flex items-start gap-2">
+                          <div key={n.id} className="space-y-0.5">
                             <span
-                              className="rounded-full"
                               style={{
-                                width: 6,
-                                height: 6,
-                                marginTop: 6,
-                                background: memberColor,
-                                opacity: 0.5,
-                                flexShrink: 0,
+                                fontFamily: font,
+                                fontSize: '10px',
+                                fontWeight: 600,
+                                color: memberColor,
+                                opacity: 0.7,
                               }}
-                            />
-                            <div className="flex-1">
-                              <span
-                                style={{
-                                  fontFamily: font,
-                                  fontSize: '10px',
-                                  fontWeight: 600,
-                                  color: memberColor,
-                                  opacity: 0.7,
-                                  marginRight: 6,
-                                }}
-                              >
-                                {n.authorName}
-                              </span>
-                              <span
-                                style={{
-                                  fontFamily: font,
-                                  fontSize: '11px',
-                                  color: '#5C3018',
-                                  opacity: 0.85,
-                                }}
-                              >
-                                {n.text}
-                              </span>
-                            </div>
+                            >
+                              {n.authorName}
+                            </span>
+                            <p
+                              style={{
+                                fontFamily: font,
+                                fontSize: '11px',
+                                color: '#5C3018',
+                                opacity: 0.85,
+                                lineHeight: 1.45,
+                                wordBreak: 'break-word',
+                              }}
+                            >
+                              {n.text}
+                            </p>
                           </div>
                         ))}
                         {/* Add a note */}
@@ -1458,6 +1447,9 @@ export default function CircleBoard() {
         )}
       </div>
 
+      {/* Sparks — shared intentions, what the group wants to do */}
+      <CircleSparks circleId={active.id} meId={me.id} circleColor={active.color} />
+
       {/* Sync sessions — rehearsals / mix nights / photoshoots */}
       <CircleEvents
         circleId={active.id}
@@ -1546,34 +1538,45 @@ export default function CircleBoard() {
           />
         </div>
         {active.notes.slice(0, 20).map((n) => (
-          <div key={n.id} className="flex items-start gap-2">
-            <span
+          <div key={n.id} className="space-y-0.5">
+            <div className="flex items-center gap-2">
+              <span
+                style={{
+                  fontFamily: font,
+                  fontSize: '11px',
+                  color: '#5C3018',
+                  fontWeight: 600,
+                  opacity: 0.7,
+                }}
+              >
+                {n.authorName}
+              </span>
+              <span
+                style={{
+                  fontFamily: font,
+                  fontSize: '10px',
+                  color: '#8A6A4A',
+                  opacity: 0.35,
+                }}
+              >
+                {new Date(n.createdAt).toLocaleTimeString([], {
+                  hour: '2-digit',
+                  minute: '2-digit',
+                })}
+              </span>
+            </div>
+            <p
               style={{
                 fontFamily: font,
-                fontSize: '10px',
-                color: '#8A6A4A',
-                opacity: 0.4,
-                flexShrink: 0,
-                marginTop: 2,
-              }}
-            >
-              {new Date(n.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-            </span>
-            <span
-              style={{
-                fontFamily: font,
-                fontSize: '11px',
+                fontSize: '13px',
                 color: '#5C3018',
-                fontWeight: 600,
-                opacity: 0.6,
-                flexShrink: 0,
+                opacity: 0.85,
+                lineHeight: 1.5,
+                wordBreak: 'break-word',
               }}
             >
-              {n.authorName}
-            </span>
-            <span style={{ fontFamily: font, fontSize: '13px', color: '#5C3018', opacity: 0.8 }}>
               {n.text}
-            </span>
+            </p>
           </div>
         ))}
         {active.notes.length === 0 && (

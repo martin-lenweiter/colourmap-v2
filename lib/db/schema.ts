@@ -1,4 +1,15 @@
-import { boolean, date, integer, jsonb, pgTable, text, timestamp, uuid } from 'drizzle-orm/pg-core';
+import {
+  boolean,
+  date,
+  doublePrecision,
+  integer,
+  jsonb,
+  pgTable,
+  text,
+  timestamp,
+  uuid,
+  varchar,
+} from 'drizzle-orm/pg-core';
 
 export type CheckInFacingEntry = {
   label: string;
@@ -245,5 +256,38 @@ export const designerObservations = pgTable('designer_observations', {
   userId: uuid('user_id').notNull(),
   area: text('area'),
   text: text('text').notNull(),
+  createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+});
+
+// ─── Sparks ───────────────────────────────────────────────────────────────────
+
+export type SparkCategory = 'fun' | 'creative' | 'professional' | 'growth';
+export type SparkTimeWindow = 'this_week' | 'this_month' | 'no_rush';
+export type SparkStatus = 'active' | 'fulfilled' | 'expired';
+export type ResonanceType = 'resonate' | 'join_request';
+export type ResonanceStatus = 'pending' | 'accepted' | 'ignored';
+
+export const sparks = pgTable('sparks', {
+  id: uuid('id').defaultRandom().primaryKey(),
+  userId: uuid('user_id').notNull(),
+  circleId: uuid('circle_id'),
+  text: varchar('text', { length: 200 }).notNull(),
+  category: text('category').notNull().default('fun'),
+  timeWindow: text('time_window').notNull().default('this_week'),
+  isOpen: boolean('is_open').notNull().default(false),
+  lat: doublePrecision('lat'),
+  lng: doublePrecision('lng'),
+  zoneLabel: text('zone_label'),
+  status: text('status').notNull().default('active'),
+  expiresAt: timestamp('expires_at', { withTimezone: true }),
+  createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+});
+
+export const sparkResonances = pgTable('spark_resonances', {
+  id: uuid('id').defaultRandom().primaryKey(),
+  sparkId: uuid('spark_id').notNull(),
+  userId: uuid('user_id').notNull(),
+  type: text('type').notNull().default('resonate'),
+  status: text('status').notNull().default('pending'),
   createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
 });

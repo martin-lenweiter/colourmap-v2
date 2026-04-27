@@ -1,0 +1,486 @@
+'use client';
+
+import { useEffect, useState } from 'react';
+
+import { radii, space } from '@/lib/design-tokens';
+import SparkComposer from './SparkComposer';
+
+type SparkCategory = 'fun' | 'creative' | 'professional' | 'growth';
+
+interface Spark {
+  id: string;
+  text: string;
+  category: SparkCategory;
+  timeWindow: string;
+  isOpen: boolean;
+  zoneLabel: string | null;
+  status: string;
+  resonanceCount: number;
+  createdAt: string;
+}
+
+const CATEGORY_COLORS: Record<SparkCategory, string> = {
+  fun: '#7AAA58',
+  creative: '#C4A060',
+  professional: '#6890B0',
+  growth: '#9B6BA0',
+};
+
+const TIME_LABELS: Record<string, string> = {
+  this_week: 'this week',
+  this_month: 'this month',
+  no_rush: 'no rush',
+};
+
+interface MySparksProps {
+  onOpenMap?: () => void;
+}
+
+interface InboundResonance {
+  id: string;
+  sparkId: string;
+  userId: string;
+  type: string;
+  status: string;
+  createdAt: string;
+  sparkText?: string;
+}
+
+export default function MySparks({ onOpenMap }: MySparksProps) {
+  const [sparks, setSparks] = useState<Spark[]>([]);
+  const [inbound, setInbound] = useState<InboundResonance[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [composing, setComposing] = useState(false);
+
+  async function load() {
+    try {
+      const [sparksRes, inboundRes] = await Promise.all([
+        fetch('/api/sparks'),
+        fetch('/api/sparks/resonances/inbound'),
+      ]);
+      if (sparksRes.ok) {
+        const sparkData: Spark[] = await sparksRes.json();
+        setSparks(sparkData);
+        if (inboundRes.ok) {
+          const resonanceData: InboundResonance[] = await inboundRes.json();
+          // Attach spark text for display
+          const sparkMap = Object.fromEntries(sparkData.map((s) => [s.id, s.text]));
+          setInbound(resonanceData.map((r) => ({ ...r, sparkText: sparkMap[r.sparkId] })));
+        }
+      }
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  // biome-ignore lint/correctness/useExhaustiveDependencies: load on mount only
+  useEffect(() => {
+    void load();
+  }, []);
+
+  async function respondToResonance(
+    sparkId: string,
+    resonatingUserId: string,
+    status: 'accepted' | 'ignored',
+  ) {
+    await fetch(`/api/sparks/${sparkId}/resonate`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ userId: resonatingUserId, status }),
+    });
+    setInbound((prev) =>
+      prev.filter((r) => !(r.sparkId === sparkId && r.userId === resonatingUserId)),
+    );
+  }
+
+  async function fulfill(id: string) {
+    await fetch(`/api/sparks/${id}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'fulfill' }),
+    });
+    setSparks((prev) => prev.filter((d) => d.id !== id));
+  }
+
+  async function remove(id: string) {
+    await fetch(`/api/sparks/${id}`, { method: 'DELETE' });
+    setSparks((prev) => prev.filter((d) => d.id !== id));
+  }
+
+  async function toggleMap(spark: Spark) {
+    if (spark.isOpen) {
+      await fetch(`/api/sparks/${spark.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'close' }),
+      });
+      setSparks((prev) => prev.map((d) => (d.id === spark.id ? { ...d, isOpen: false } : d)));
+    } else {
+      if (!navigator.geolocation) return;
+      navigator.geolocation.getCurrentPosition(async (pos) => {
+        await fetch(`/api/sparks/${spark.id}`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            action: 'open',
+            lat: pos.coords.latitude,
+            lng: pos.coords.longitude,
+          }),
+        });
+        setSparks((prev) => prev.map((d) => (d.id === spark.id ? { ...d, isOpen: true } : d)));
+      });
+    }
+  }
+
+  const font = 'var(--font-handwritten)';
+
+  if (loading) {
+    return (
+      <p
+        className="text-center italic"
+        style={{ fontFamily: font, fontSize: '13px', color: '#8A6A4A', opacity: 0.5 }}
+      >
+        loading…
+      </p>
+    );
+  }
+
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: space.md }}>
+      {/* Header row */}
+      {/* Resonance inbox — join requests from the map */}
+      {inbound.filter((r) => r.type === 'join_request' && r.status === 'pending').length > 0 && (
+        <div
+          style={{
+            background: '#9B6BA008',
+            border: '1px solid #9B6BA025',
+            borderRadius: radii.xl,
+            padding: `${space.md}px`,
+            display: 'flex',
+            flexDirection: 'column',
+            gap: space.sm,
+          }}
+        >
+          <p
+            style={{
+              fontFamily: font,
+              fontSize: '10px',
+              fontWeight: 700,
+              color: '#9B6BA0',
+              opacity: 0.6,
+              letterSpacing: '0.12em',
+              textTransform: 'uppercase',
+            }}
+          >
+            resonances
+          </p>
+          {inbound
+            .filter((r) => r.type === 'join_request' && r.status === 'pending')
+            .map((r) => (
+              <div key={r.id} style={{ display: 'flex', alignItems: 'center', gap: space.sm }}>
+                <div style={{ flex: 1 }}>
+                  <p
+                    style={{
+                      fontFamily: font,
+                      fontSize: '13px',
+                      color: '#5C3018',
+                      fontWeight: 600,
+                    }}
+                  >
+                    someone wants to join
+                  </p>
+                  {r.sparkText && (
+                    <p
+                      style={{
+                        fontFamily: font,
+                        fontSize: '11px',
+                        color: '#8A6A4A',
+                        opacity: 0.7,
+                        fontStyle: 'italic',
+                      }}
+                    >
+                      "{r.sparkText}"
+                    </p>
+                  )}
+                </div>
+                <button
+                  type="button"
+                  onClick={() => respondToResonance(r.sparkId, r.userId, 'accepted')}
+                  style={{
+                    fontFamily: font,
+                    fontSize: '11px',
+                    fontWeight: 600,
+                    color: '#fff',
+                    background: '#9B6BA0',
+                    border: 'none',
+                    borderRadius: radii.pill,
+                    padding: `3px 10px`,
+                    cursor: 'pointer',
+                  }}
+                >
+                  yes
+                </button>
+                <button
+                  type="button"
+                  onClick={() => respondToResonance(r.sparkId, r.userId, 'ignored')}
+                  style={{
+                    fontFamily: font,
+                    fontSize: '11px',
+                    color: '#8A6A4A',
+                    opacity: 0.4,
+                    background: 'none',
+                    border: 'none',
+                    cursor: 'pointer',
+                  }}
+                >
+                  ×
+                </button>
+              </div>
+            ))}
+        </div>
+      )}
+
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <p
+          style={{
+            fontFamily: font,
+            fontSize: '12px',
+            color: '#8A6A4A',
+            opacity: 0.5,
+            letterSpacing: '0.12em',
+            textTransform: 'uppercase',
+          }}
+        >
+          your sparks
+        </p>
+        <div style={{ display: 'flex', gap: space.sm }}>
+          {onOpenMap && (
+            <button
+              type="button"
+              onClick={onOpenMap}
+              style={{
+                fontFamily: font,
+                fontSize: '11px',
+                fontWeight: 600,
+                color: '#6890B0',
+                background: '#6890B010',
+                border: '1px solid #6890B030',
+                borderRadius: radii.pill,
+                padding: `2px 10px`,
+                cursor: 'pointer',
+              }}
+            >
+              see map
+            </button>
+          )}
+          <button
+            type="button"
+            onClick={() => setComposing(true)}
+            style={{
+              fontFamily: font,
+              fontSize: '11px',
+              fontWeight: 600,
+              color: '#7AAA58',
+              background: '#7AAA5810',
+              border: '1px solid #7AAA5825',
+              borderRadius: radii.pill,
+              padding: `2px 10px`,
+              cursor: 'pointer',
+            }}
+          >
+            + new
+          </button>
+        </div>
+      </div>
+
+      {/* Composer */}
+      {composing && (
+        <SparkComposer
+          onPosted={() => {
+            setComposing(false);
+            void load();
+          }}
+          onCancel={() => setComposing(false)}
+        />
+      )}
+
+      {/* Empty state */}
+      {!composing && sparks.length === 0 && (
+        <div
+          style={{
+            textAlign: 'center',
+            padding: `${space.xl}px`,
+            border: '1px dashed #C4A06025',
+            borderRadius: radii.xl,
+          }}
+        >
+          <p
+            className="italic"
+            style={{ fontFamily: font, fontSize: '15px', color: '#8A6A4A', lineHeight: 1.55 }}
+          >
+            what do you want to do?
+            <br />
+            <span style={{ fontSize: '13px', opacity: 0.6 }}>post a spark and find who's in</span>
+          </p>
+          <button
+            type="button"
+            onClick={() => setComposing(true)}
+            style={{
+              marginTop: space.md,
+              fontFamily: font,
+              fontSize: '13px',
+              fontWeight: 700,
+              color: '#7AAA58',
+              background: '#7AAA5812',
+              border: '1px solid #7AAA5830',
+              borderRadius: radii.pill,
+              padding: `${space.sm}px ${space.lg}px`,
+              cursor: 'pointer',
+            }}
+          >
+            write something
+          </button>
+        </div>
+      )}
+
+      {/* Spark cards */}
+      {sparks.map((d) => {
+        const color = CATEGORY_COLORS[d.category] ?? '#C4A060';
+        return (
+          <div
+            key={d.id}
+            style={{
+              background: `${color}06`,
+              border: `1px solid ${color}20`,
+              borderRadius: radii.xl,
+              padding: `${space.md}px ${space.lg}px`,
+              display: 'flex',
+              flexDirection: 'column',
+              gap: 6,
+            }}
+          >
+            {/* Top row: dot + text */}
+            <div style={{ display: 'flex', alignItems: 'flex-start', gap: 8 }}>
+              <span
+                style={{
+                  width: 8,
+                  height: 8,
+                  borderRadius: '50%',
+                  background: color,
+                  flexShrink: 0,
+                  marginTop: 6,
+                }}
+              />
+              <p
+                style={{
+                  fontFamily: font,
+                  fontSize: '17px',
+                  fontWeight: 700,
+                  color: '#5C3018',
+                  lineHeight: 1.3,
+                  flex: 1,
+                  wordBreak: 'break-word',
+                }}
+              >
+                {d.text}
+              </p>
+            </div>
+
+            {/* Meta row */}
+            <div
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: 8,
+                paddingLeft: 16,
+                flexWrap: 'wrap',
+              }}
+            >
+              <span
+                style={{
+                  fontFamily: font,
+                  fontSize: '10px',
+                  color,
+                  opacity: 0.8,
+                  letterSpacing: '0.06em',
+                }}
+              >
+                {d.category}
+              </span>
+              <span style={{ fontFamily: font, fontSize: '10px', color: '#8A6A4A', opacity: 0.5 }}>
+                {TIME_LABELS[d.timeWindow] ?? d.timeWindow}
+              </span>
+              {d.resonanceCount > 0 && (
+                <span
+                  style={{ fontFamily: font, fontSize: '10px', color: '#9B6BA0', opacity: 0.8 }}
+                >
+                  {d.resonanceCount} interested
+                </span>
+              )}
+              {d.isOpen && (
+                <span
+                  style={{ fontFamily: font, fontSize: '10px', color: '#7AAA58', opacity: 0.8 }}
+                >
+                  · on map
+                </span>
+              )}
+            </div>
+
+            {/* Actions */}
+            <div style={{ display: 'flex', gap: 6, paddingLeft: 16 }}>
+              <button
+                type="button"
+                onClick={() => toggleMap(d)}
+                style={{
+                  fontFamily: font,
+                  fontSize: '10px',
+                  fontWeight: 600,
+                  color: d.isOpen ? '#D4605A' : '#7AAA58',
+                  background: 'transparent',
+                  border: `1px solid ${d.isOpen ? '#D4605A30' : '#7AAA5830'}`,
+                  borderRadius: radii.pill,
+                  padding: `2px 8px`,
+                  cursor: 'pointer',
+                }}
+              >
+                {d.isOpen ? 'remove from map' : 'put on map'}
+              </button>
+              <button
+                type="button"
+                onClick={() => fulfill(d.id)}
+                style={{
+                  fontFamily: font,
+                  fontSize: '10px',
+                  fontWeight: 600,
+                  color: '#C4A060',
+                  background: 'transparent',
+                  border: '1px solid #C4A06030',
+                  borderRadius: radii.pill,
+                  padding: `2px 8px`,
+                  cursor: 'pointer',
+                }}
+              >
+                done ✓
+              </button>
+              <button
+                type="button"
+                onClick={() => remove(d.id)}
+                style={{
+                  fontFamily: font,
+                  fontSize: '10px',
+                  color: '#8A6A4A',
+                  opacity: 0.3,
+                  background: 'transparent',
+                  border: 'none',
+                  cursor: 'pointer',
+                }}
+              >
+                ×
+              </button>
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  );
+}

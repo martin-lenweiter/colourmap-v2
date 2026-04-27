@@ -21,6 +21,7 @@ import ReflectThreeDots from '@/components/ReflectThreeDots';
 import SharingCheckIn from '@/components/SharingCheckIn';
 import SlowWins from '@/components/SlowWins';
 import { StyleProvider } from '@/components/StyleContext';
+import TodaysField from '@/components/TodaysField';
 import TrackLines from '@/components/TrackLines';
 import WeekShape from '@/components/WeekShape';
 
@@ -39,6 +40,7 @@ function DayContent() {
     <div className="mx-auto w-full max-w-7xl px-4 py-3 lg:flex lg:gap-6 lg:px-6 lg:py-6">
       <div className="mx-auto w-full max-w-2xl space-y-4 md:max-w-4xl lg:mx-0 lg:flex-1">
         <FirstRunOnboarding />
+        <TodaysField />
         <CheckInPing />
         <DayTabs
           dateLabel={dateStr}
