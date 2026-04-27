@@ -1,8 +1,30 @@
 'use client';
 
 import { useCallback, useEffect, useRef, useState } from 'react';
-
+import { DOING_CATEGORIES, type DoingCategory } from '@/components/DoingCategoryRail';
 import { getEmotionalWord } from '@/lib/emotional-vocabulary';
+
+// ============================================================
+// MISSION CATEGORY — stored in localStorage per mission
+// ============================================================
+
+function getMissionCategory(id: string): DoingCategory {
+  try {
+    const v = localStorage.getItem(`mission_category_${id}`);
+    if (v && DOING_CATEGORIES.some((c) => c.id === v)) return v as DoingCategory;
+  } catch {
+    /* silent */
+  }
+  return 'org';
+}
+
+function setMissionCategory(id: string, cat: DoingCategory) {
+  try {
+    localStorage.setItem(`mission_category_${id}`, cat);
+  } catch {
+    /* silent */
+  }
+}
 
 // ============================================================
 // TYPES
@@ -86,9 +108,14 @@ function daysSince(dateStr: string): number {
 interface MissionTrackerProps {
   onMissionsChange?: () => void;
   refreshKey?: number;
+  categoryFilter?: DoingCategory[];
 }
 
-export default function MissionTracker({ onMissionsChange, refreshKey = 0 }: MissionTrackerProps) {
+export default function MissionTracker({
+  onMissionsChange,
+  refreshKey = 0,
+  categoryFilter = [],
+}: MissionTrackerProps) {
   const [missions, setMissions] = useState<Mission[]>([]);
   const [loading, setLoading] = useState(true);
   const [newTitle, setNewTitle] = useState('');
@@ -151,7 +178,11 @@ export default function MissionTracker({ onMissionsChange, refreshKey = 0 }: Mis
     setMissions((prev) => prev.map((m) => (m.id === id ? { ...m, [field]: value } : m)));
   }
 
-  const active = missions.filter((m) => !m.completed);
+  const filterActive = categoryFilter.length > 0 && categoryFilter.length < DOING_CATEGORIES.length;
+
+  const active = missions
+    .filter((m) => !m.completed)
+    .filter((m) => !filterActive || categoryFilter.includes(getMissionCategory(m.id)));
   const done = missions.filter((m) => m.completed);
 
   if (loading) {
@@ -166,6 +197,14 @@ export default function MissionTracker({ onMissionsChange, refreshKey = 0 }: Mis
 
   return (
     <div className="space-y-4">
+      {/* Section label */}
+      <p
+        className="text-xs font-semibold uppercase tracking-widest"
+        style={{ color: '#C4A06060', fontFamily: 'var(--font-serif)' }}
+      >
+        Missions
+      </p>
+
       {/* Add mission — always visible input */}
       <form onSubmit={handleAdd} className="flex gap-2">
         <input
@@ -288,9 +327,16 @@ function MissionCard({
   const lastLoadKey = useRef(-1);
   const [color, setColor] = useState('#C4A060');
   const [showColorPicker, setShowColorPicker] = useState(false);
+  const [category, setCategory] = useState<DoingCategory>('org');
+  const [showCatPicker, setShowCatPicker] = useState(false);
+  // scheduleHour: keyed by objective index — tracks pending hour picker
+  const [schedulingIdx, setSchedulingIdx] = useState<number | null>(null);
+  // scheduledAt: keyed by objective index → hour string
+  const [scheduledAt, setScheduledAt] = useState<Record<number, number>>({});
 
   useEffect(() => {
     setColor(getMissionColor(mission.id));
+    setCategory(getMissionCategory(mission.id));
   }, [mission.id]);
 
   useEffect(() => {
@@ -322,9 +368,40 @@ function MissionCard({
     save(field, value);
   }
 
+  function handleCategoryChange(cat: DoingCategory) {
+    setCategory(cat);
+    setMissionCategory(mission.id, cat);
+    setShowCatPicker(false);
+  }
+
+  async function scheduleObjective(objText: string, objIdx: number, hour: number) {
+    setSchedulingIdx(null);
+    const today = new Date().toISOString().slice(0, 10);
+    try {
+      await fetch('/api/agenda-blocks', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          text: objText,
+          date: today,
+          startHour: hour,
+          durationMinutes: 60,
+          color,
+          kind: 'mission',
+          tagName: mission.title,
+          tagColor: color,
+        }),
+      });
+      setScheduledAt((prev) => ({ ...prev, [objIdx]: hour }));
+    } catch {
+      /* silent — agenda will refresh on next open */
+    }
+  }
+
   const objectives = (mission.nextStep || '').split('\n').filter((s) => s.trim());
   const hasBlocker = Boolean(mission.blocking?.trim());
   const days = daysSince(mission.createdAt);
+  const catConfig = DOING_CATEGORIES.find((c) => c.id === category)!;
 
   // ---- COLLAPSED ----
   if (!expanded) {
@@ -339,6 +416,12 @@ function MissionCard({
           <div className="flex-1 min-w-0">
             <p className="text-base font-semibold truncate">{mission.title}</p>
             <div className="flex items-center gap-3 mt-1">
+              {/* Category dot */}
+              <span
+                className="h-2 w-2 rounded-full shrink-0"
+                style={{ background: catConfig.color }}
+                title={catConfig.label}
+              />
               {objectives.length > 0 && (
                 <span className="text-xs text-muted-foreground/40">
                   {objectives.length} objective{objectives.length > 1 ? 's' : ''}
@@ -398,6 +481,36 @@ function MissionCard({
             )}
           </div>
 
+          {/* Category dot + picker */}
+          <div className="relative mt-1">
+            <button
+              type="button"
+              onClick={() => setShowCatPicker(!showCatPicker)}
+              className="h-4 w-4 rounded-full transition-all hover:scale-125 shrink-0"
+              style={{ background: catConfig.color }}
+              title={catConfig.label}
+            />
+            {showCatPicker && (
+              <div className="absolute top-6 left-0 z-50 flex flex-col gap-1 p-2 rounded-lg border border-border bg-card shadow-lg animate-in fade-in duration-100 min-w-[120px]">
+                {DOING_CATEGORIES.map((c) => (
+                  <button
+                    key={c.id}
+                    type="button"
+                    onClick={() => handleCategoryChange(c.id)}
+                    className="flex items-center gap-2 px-1 py-0.5 rounded text-xs text-left transition-colors hover:bg-muted"
+                    style={{ color: c.id === category ? c.color : '#7a5438' }}
+                  >
+                    <span
+                      className="h-2.5 w-2.5 rounded-full shrink-0"
+                      style={{ background: c.color, opacity: c.id === category ? 1 : 0.4 }}
+                    />
+                    {c.label}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+
           {/* Editable title */}
           <input
             type="text"
@@ -446,6 +559,49 @@ function MissionCard({
                 style={{ background: color, opacity: 0.4 }}
               />
               <span className="text-sm flex-1 leading-relaxed">{obj}</span>
+
+              {/* Schedule indicator or picker */}
+              {scheduledAt[i] !== undefined ? (
+                <span className="text-[10px] shrink-0" style={{ color: `${color}70` }}>
+                  {scheduledAt[i] < 12
+                    ? `${scheduledAt[i]}am`
+                    : scheduledAt[i] === 12
+                      ? '12pm'
+                      : `${scheduledAt[i] - 12}pm`}
+                </span>
+              ) : schedulingIdx === i ? (
+                <div className="flex flex-wrap gap-1 shrink-0 max-w-[140px] animate-in fade-in duration-150">
+                  {Array.from({ length: 16 }, (_, h) => h + 6).map((h) => (
+                    <button
+                      key={h}
+                      type="button"
+                      onClick={() => scheduleObjective(obj, i, h)}
+                      className="text-[9px] px-1 py-0.5 rounded transition-colors hover:bg-muted"
+                      style={{ color: `${color}80` }}
+                    >
+                      {h < 12 ? `${h}a` : h === 12 ? '12p' : `${h - 12}p`}
+                    </button>
+                  ))}
+                  <button
+                    type="button"
+                    onClick={() => setSchedulingIdx(null)}
+                    className="text-[9px] px-1 py-0.5 rounded text-muted-foreground/40"
+                  >
+                    ✕
+                  </button>
+                </div>
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => setSchedulingIdx(i)}
+                  className="text-[10px] opacity-0 group-hover:opacity-40 hover:!opacity-80 transition-all shrink-0"
+                  style={{ color }}
+                  title="Schedule on agenda"
+                >
+                  ◷
+                </button>
+              )}
+
               <button
                 type="button"
                 onClick={() => {
