@@ -1686,7 +1686,7 @@ export default function FeelingCheckInCard() {
                 width: 20,
                 height: 20,
                 background: '#D8BE94',
-                opacity: 1,
+                opacity: 0.3,
                 borderRadius: '50%',
                 display: 'block',
               }}
@@ -2582,7 +2582,7 @@ export default function FeelingCheckInCard() {
             <p
               className="text-center text-lg font-bold transition-all duration-300"
               style={{
-                color: variantIdx === 6 ? HAWKINS[hawkinsIdx].color : BALANCE[balanceIdx].color,
+                color: '#1a1a1a',
                 fontFamily: 'var(--font-serif)',
               }}
             >
@@ -2677,7 +2677,7 @@ export default function FeelingCheckInCard() {
                         height: 14,
                         background: '#C4A060',
                         borderRadius: '50%',
-                        opacity: 0.6,
+                        opacity: 0.22,
                       }}
                     />
                   </button>
@@ -2785,13 +2785,7 @@ export default function FeelingCheckInCard() {
                   </div>
                   <p
                     style={{
-                      // Acceptance's raw yellow (#F0E060) doesn't read against the cream
-                      // paper background — swap to a readable ochre while keeping the
-                      // yellow swatch in the slider itself.
-                      color:
-                        HAWKINS[hawkinsIdx].level === 'Acceptance'
-                          ? '#B8860B'
-                          : HAWKINS[hawkinsIdx].color,
+                      color: '#1a1a1a',
                       fontFamily: 'var(--font-serif)',
                       fontSize: '18px',
                       fontWeight: 700,

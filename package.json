@@ -3,8 +3,8 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev",
-    "build": "next build",
+    "dev": "bun scripts/gen-changelog.ts && next dev",
+    "build": "bun scripts/gen-changelog.ts && next build",
     "start": "next start",
     "lint": "biome check .",
     "typecheck": "tsc --noEmit",
@@ -17,6 +17,7 @@
     "collab:setup": "bash scripts/setup-collab.sh",
     "collab:doctor": "bash scripts/collab-doctor.sh",
     "db:generate": "drizzle-kit generate",
+    "db:migrate": "bun --env-file=.env.local node_modules/.bin/drizzle-kit migrate",
     "policy:architecture-boundaries": "bun scripts/check-architecture-policy.ts",
     "policy:lockfile": "bash scripts/check-lockfile-policy.sh",
     "policy:protected-paths": "bash scripts/check-protected-paths.sh",

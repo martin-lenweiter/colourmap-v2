@@ -71,22 +71,22 @@ export default function NavLinks() {
       ref={(el) => {
         navRef.current = el;
       }}
-      className={`mx-auto flex w-full items-center px-4 pb-3 ${
+      className={`mx-auto flex w-full items-center px-4 pb-3 pt-2 ${
         isPhone
-          ? 'gap-6 text-[15px] overflow-x-auto justify-start scrollbar-none relative'
-          : 'max-w-5xl gap-8 text-base justify-center'
+          ? 'gap-7 overflow-x-auto justify-start scrollbar-none relative'
+          : 'max-w-5xl gap-10 justify-center'
       }`}
       style={
         isPhone
           ? {
               scrollbarWidth: 'none',
               scrollSnapType: 'x proximity',
-              // Soft fade on the right edge so the user can see there's
-              // more tabs to slide to. Left fade only when scrolled.
+              // Only fade the right edge — left must stay fully visible
+              // so Focus (the first tab) is never clipped at position 0.
               WebkitMaskImage:
-                'linear-gradient(to right, transparent 0, black 12px, black calc(100% - 28px), transparent 100%)',
+                'linear-gradient(to right, black 0, black calc(100% - 32px), transparent 100%)',
               maskImage:
-                'linear-gradient(to right, transparent 0, black 12px, black calc(100% - 28px), transparent 100%)',
+                'linear-gradient(to right, black 0, black calc(100% - 32px), transparent 100%)',
             }
           : undefined
       }
@@ -113,7 +113,10 @@ export default function NavLinks() {
                 ? 'text-foreground font-semibold'
                 : 'text-muted-foreground hover:text-foreground'
             }`}
-            style={{ scrollSnapAlign: 'center' }}
+            style={{
+              scrollSnapAlign: 'center',
+              fontSize: isPhone ? 16 : 15,
+            }}
           >
             {link.label}
             {isActive && (

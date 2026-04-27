@@ -2,84 +2,18 @@
 
 import { useEffect, useRef, useState } from 'react';
 
+import { BUILD_DATE, CHANGELOG, CURRENT_BRANCH, LATEST_HASH } from '@/lib/generated/changelog';
+
 /*
  * Clickable "Colourmap" brand in the top header.
- * Opens an About modal with a short tagline, credits, the user's
- * initials + sign-out, and a losange that expands a rolling
- * changelog of recent PRs so the user knows where we are in the
- * build.
+ * Opens an About modal with changelog (auto-generated from git log),
+ * vision / next steps, user card, and technical primer.
  */
 
 interface ColourmapBrandButtonProps {
-  /** User initials shown inside the modal, e.g. "ML". Optional —
-   *  when absent, the initials section is hidden (e.g. server-side
-   *  render before auth is resolved). */
   initials?: string;
-  /** User email surfaced under the initials in the modal. */
   email?: string;
 }
-
-// Rolling changelog — keep this updated as PRs ship. The losange in
-// the modal expands to show this list. Newest first.
-// Rolling changelog. `date` is the ISO date the PR landed on main —
-// shown next to the PR number so the user knows which version is live.
-const RECENT_PRS: { num: number; title: string; date: string }[] = [
-  {
-    num: 98,
-    date: '2026-04-25',
-    title:
-      '3-dot Check-in landing (Feeling · Doing) + nuke the djembe + simpler Circles description + nav phone fix',
-  },
-  {
-    num: 97,
-    date: '2026-04-25',
-    title:
-      'Chill Machine + Groove Machine, day cockpit polish, palette pass — instruments, layers reorg, effects, real instruments strip, wave reactivity',
-  },
-  {
-    num: 95,
-    date: '2026-04-24',
-    title:
-      'Phone-cockpit + Relax Sounds cleanup — nav rename, compass wheels, drums fix, sacred-freq cards, fullscreen visualizer',
-  },
-  {
-    num: 86,
-    date: '2026-04-23',
-    title: 'Dev mode stays pinned on scroll (portal) + bottom-right trigger',
-  },
-  {
-    num: 85,
-    date: '2026-04-23',
-    title: 'Onboarding opaque, 1-card with new copy + FrequencyBox deleted',
-  },
-  {
-    num: 84,
-    date: '2026-04-23',
-    title:
-      'Overview restored, compass pills (Feeling/Doing/Sharing), Sounds moved to /sounds, wake-up time wheel, no-rainbow wave, no-glyph nav',
-  },
-  { num: 83, date: '2026-04-22', title: 'Feedback overlay: resizable note + collapsible toolbar' },
-  { num: 82, date: '2026-04-22', title: 'Feedback overlay: triple-tap dev mode with note + draw' },
-  {
-    num: 81,
-    date: '2026-04-22',
-    title: 'Phone check-in: no outer boxes, bigger text, auto-grow, opaque design popover',
-  },
-  { num: 80, date: '2026-04-21', title: 'Desktop Day rail (streak · last check-in · last tuned)' },
-  { num: 79, date: '2026-04-21', title: 'Nav glyphs (later removed per feedback)' },
-  { num: 78, date: '2026-04-21', title: 'Haptic feedback wired into play + tab switches' },
-  { num: 77, date: '2026-04-20', title: 'Keyboard shortcuts primitive' },
-  { num: 76, date: '2026-04-20', title: 'First-run onboarding' },
-  { num: 74, date: '2026-04-19', title: 'Music setlist + Projects/habits design spec' },
-  { num: 73, date: '2026-04-19', title: 'Real piano/violin/flute/harp in Calming Sounds melodies' },
-  { num: 72, date: '2026-04-18', title: 'Check-in ping banner' },
-  { num: 71, date: '2026-04-18', title: 'Jargon pass — brain-wave rate' },
-  { num: 70, date: '2026-04-17', title: 'Haptics wrapper' },
-  { num: 68, date: '2026-04-15', title: 'Pleasant phase 1 — type scale + spacing' },
-  { num: 66, date: '2026-04-13', title: 'Soft-beat bed + fix shaman-drum sample' },
-];
-const LATEST_PR = RECENT_PRS[0].num;
-const LATEST_PR_DATE = RECENT_PRS[0].date;
 
 // Vision sections — distilled from docs/pdfs/colourmap-vision-2026-04.pdf
 // (the master vision PDF). Each entry has a one-line summary +
@@ -159,10 +93,152 @@ const VISION_SECTIONS: { title: string; color: string; summary: string; next: st
   },
 ];
 
+const PRIMER_SECTIONS: { title: string; items: { term: string; def: string }[] }[] = [
+  {
+    title: 'Git & GitHub',
+    items: [
+      { term: 'Commit', def: 'A saved snapshot of changes — like a permanent, labelled Save.' },
+      {
+        term: 'Branch',
+        def: 'A parallel version of the code where you build without touching main.',
+      },
+      {
+        term: 'PR (Pull Request)',
+        def: 'A proposal to merge a branch into main. CI runs checks before it can merge.',
+      },
+      { term: 'Merge', def: 'Combining a branch back into main. Permanent.' },
+      {
+        term: 'Cherry-pick',
+        def: 'Taking one commit from a stale branch and applying it to another.',
+      },
+      {
+        term: 'Merge conflict',
+        def: 'Two branches changed the same line — you resolve it by choosing one version.',
+      },
+      {
+        term: 'Branch protection',
+        def: 'A GitHub rule that blocks pushing directly to main. All changes must go through a PR.',
+      },
+    ],
+  },
+  {
+    title: 'CI / Automated Checks',
+    items: [
+      {
+        term: 'CI',
+        def: 'Continuous Integration — GitHub runs 14 checks automatically on every PR.',
+      },
+      {
+        term: 'Pre-push hook',
+        def: 'A script that runs on your machine before code reaches GitHub (lint, tests, typecheck).',
+      },
+      { term: 'Coverage gate', def: 'CI fails if test coverage drops below a minimum threshold.' },
+    ],
+  },
+  {
+    title: 'The Tech Stack',
+    items: [
+      {
+        term: 'TypeScript',
+        def: 'JavaScript with types — the compiler catches mismatches before the code runs.',
+      },
+      { term: 'React', def: 'Library for building UI out of self-contained components.' },
+      {
+        term: 'Next.js',
+        def: 'Framework on top of React. Handles routing, server logic, and builds. A file at app/(app)/day/page.tsx becomes /day.',
+      },
+      {
+        term: 'Bun',
+        def: 'The runtime that runs the code. Faster than Node. `bun run dev` starts the local server.',
+      },
+      {
+        term: 'Supabase',
+        def: 'Backend-as-a-service: database, auth, and API without managing a server.',
+      },
+      {
+        term: 'PostgreSQL',
+        def: 'The database. Relational — data lives in tables. SQL queries it.',
+      },
+      {
+        term: 'PostGIS',
+        def: 'A PostgreSQL extension for geographic queries (e.g. "find sparks within 10km").',
+      },
+      { term: 'Drizzle ORM', def: 'Translates TypeScript into SQL. Also manages migrations.' },
+      {
+        term: 'Migration',
+        def: 'A SQL file that changes the DB schema (new table, new column). Run in order; permanent.',
+      },
+      { term: 'API route', def: 'A server endpoint. app/api/field/route.ts → GET /api/field.' },
+      {
+        term: 'Environment variable',
+        def: 'Secrets stored outside the code in .env.local. Never committed to Git.',
+      },
+      {
+        term: 'Tailwind CSS',
+        def: 'Style by adding class names directly to HTML elements. Design tokens in tailwind.config.ts.',
+      },
+    ],
+  },
+  {
+    title: 'Testing',
+    items: [
+      { term: 'Unit test', def: 'Tests one function or component in isolation.' },
+      { term: 'Vitest', def: 'The test framework. Run with `bun run test`.' },
+      {
+        term: 'Mock',
+        def: 'A fake version of a dependency (e.g. fake DB) used in tests to keep them fast.',
+      },
+      {
+        term: 'Test pair',
+        def: 'Repo policy: every service file and API route must have a matching .test.ts file.',
+      },
+    ],
+  },
+  {
+    title: 'Architecture',
+    items: [
+      {
+        term: 'Service layer',
+        def: 'lib/services/ — owns all business logic and rules. API routes call this; never the DB directly.',
+      },
+      {
+        term: 'DB queries layer',
+        def: 'lib/db/queries/ — pure database reads and writes, no logic.',
+      },
+      {
+        term: 'Component',
+        def: 'A reusable piece of UI in components/. Pages assemble components.',
+      },
+    ],
+  },
+  {
+    title: 'Vibe Coding',
+    items: [
+      {
+        term: 'Vibe coding',
+        def: 'Building by describing what you want in natural language. AI writes the code; you steer with vision and judgment.',
+      },
+      {
+        term: 'Diff',
+        def: 'What changed in a file — green lines added, red lines removed. Reading diffs is how you verify AI output.',
+      },
+      {
+        term: 'Hallucination',
+        def: 'When AI states something confidently but incorrectly. Tests and the build catch these mechanically.',
+      },
+      {
+        term: 'Context window',
+        def: "The AI's short-term memory. Important decisions go into files (specs, CLAUDE.md) so they survive past the window.",
+      },
+    ],
+  },
+];
+
 export default function ColourmapBrandButton({ initials, email }: ColourmapBrandButtonProps = {}) {
   const [open, setOpen] = useState(false);
   const [changelogOpen, setChangelogOpen] = useState(false);
   const [visionOpen, setVisionOpen] = useState(false);
+  const [primerOpen, setPrimerOpen] = useState(false);
   const overlayRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
@@ -388,6 +464,112 @@ export default function ColourmapBrandButton({ initials, email }: ColourmapBrand
               style={{ height: 1, background: 'var(--border)' }}
             />
 
+            {/* Useful information — technical primer in pill form */}
+            <div className="flex items-center justify-between gap-3 mb-3">
+              <p
+                style={{
+                  fontFamily: 'var(--font-serif)',
+                  fontSize: 12,
+                  color: '#8A6A4A',
+                  opacity: 0.85,
+                  letterSpacing: '0.06em',
+                }}
+              >
+                useful <strong style={{ color: '#5C3018', fontWeight: 700 }}>information</strong>
+              </p>
+              <button
+                type="button"
+                onClick={() => setPrimerOpen((s) => !s)}
+                aria-label={primerOpen ? 'Hide technical primer' : 'Show technical primer'}
+                aria-expanded={primerOpen}
+                className="flex cursor-pointer items-center justify-center transition-all hover:opacity-80"
+                style={{
+                  width: 28,
+                  height: 28,
+                  background: primerOpen ? '#5C301818' : 'transparent',
+                  border: '1px solid #5C301855',
+                  borderRadius: 6,
+                  transform: 'rotate(45deg)',
+                  padding: 0,
+                }}
+              >
+                <span
+                  aria-hidden="true"
+                  style={{
+                    transform: 'rotate(-45deg)',
+                    color: '#5C3018',
+                    fontWeight: 700,
+                    fontSize: 13,
+                    lineHeight: 1,
+                  }}
+                >
+                  {primerOpen ? '−' : '+'}
+                </span>
+              </button>
+            </div>
+
+            {primerOpen && (
+              <div
+                className="mb-4 rounded-lg animate-in fade-in duration-150"
+                style={{
+                  background: '#F5E8C812',
+                  border: '1px solid #5C301825',
+                  padding: '12px 14px',
+                  maxHeight: 380,
+                  overflowY: 'auto',
+                }}
+              >
+                {PRIMER_SECTIONS.map((section) => (
+                  <div key={section.title} className="mb-4 last:mb-0">
+                    <p
+                      style={{
+                        fontFamily: 'var(--font-serif)',
+                        fontSize: 10,
+                        fontWeight: 700,
+                        color: '#8A6A4A',
+                        letterSpacing: '0.2em',
+                        textTransform: 'uppercase',
+                        marginBottom: 6,
+                        opacity: 0.7,
+                      }}
+                    >
+                      {section.title}
+                    </p>
+                    <dl className="space-y-2">
+                      {section.items.map((item) => (
+                        <div key={item.term}>
+                          <dt
+                            style={{
+                              fontFamily: 'var(--font-serif)',
+                              fontSize: 12,
+                              fontWeight: 700,
+                              color: '#5C3018',
+                              marginBottom: 1,
+                            }}
+                          >
+                            {item.term}
+                          </dt>
+                          <dd
+                            style={{
+                              fontFamily: 'var(--font-serif)',
+                              fontSize: 11.5,
+                              color: 'var(--muted-foreground)',
+                              lineHeight: 1.5,
+                              opacity: 0.9,
+                              paddingLeft: 0,
+                              margin: 0,
+                            }}
+                          >
+                            {item.def}
+                          </dd>
+                        </div>
+                      ))}
+                    </dl>
+                  </div>
+                ))}
+              </div>
+            )}
+
             {/* Vision losange — tap to expand the master-vision
                 summary + core next step for each surface (Day,
                 Music, Notebook, Circles, Overview, etc.). Sourced
@@ -515,8 +697,7 @@ export default function ColourmapBrandButton({ initials, email }: ColourmapBrand
               </div>
             )}
 
-            {/* Changelog losange — tap to expand a rolling list of
-                recent PRs so the user can see what just shipped. */}
+            {/* Changelog — auto-generated from git log at build time */}
             <div className="flex items-center justify-between gap-3">
               <p
                 style={{
@@ -527,18 +708,16 @@ export default function ColourmapBrandButton({ initials, email }: ColourmapBrand
                   letterSpacing: '0.06em',
                 }}
               >
-                latest:{' '}
-                <strong style={{ color: '#B33A2B', fontWeight: 700 }}>PR #{LATEST_PR}</strong>
-                <span style={{ color: '#8A6A4A', opacity: 0.7, marginLeft: 6 }}>
-                  · {LATEST_PR_DATE}
+                <strong style={{ color: '#B33A2B', fontWeight: 700 }}>{LATEST_HASH}</strong>
+                <span style={{ color: '#8A6A4A', opacity: 0.55, marginLeft: 6 }}>
+                  · {BUILD_DATE} · {CURRENT_BRANCH.replace(/^(feature|fix|feat|chore)\//, '')}
                 </span>
               </p>
               <button
                 type="button"
                 onClick={() => setChangelogOpen((s) => !s)}
-                aria-label={changelogOpen ? 'Hide recent PR list' : 'Show recent PR list'}
+                aria-label={changelogOpen ? 'Hide recent changes' : 'Show recent changes'}
                 aria-expanded={changelogOpen}
-                title="Recent shipped PRs"
                 className="flex cursor-pointer items-center justify-center transition-all hover:opacity-80"
                 style={{
                   width: 28,
@@ -577,42 +756,38 @@ export default function ColourmapBrandButton({ initials, email }: ColourmapBrand
                 }}
               >
                 <ul className="space-y-2">
-                  {RECENT_PRS.map((pr) => (
+                  {CHANGELOG.map((entry) => (
                     <li
-                      key={pr.num}
+                      key={entry.hash}
                       className="flex items-start gap-2"
                       style={{ fontFamily: 'var(--font-serif)' }}
                     >
                       <span
                         className="flex flex-col items-end shrink-0"
-                        style={{
-                          marginTop: 2,
-                          minWidth: 56,
-                        }}
+                        style={{ marginTop: 2, minWidth: 48 }}
                       >
                         <span
                           style={{
-                            fontSize: 11,
+                            fontSize: 10,
                             fontWeight: 700,
-                            color: '#B33A2B',
+                            color: entry.prNum ? '#B33A2B' : '#8A6A4A',
                             letterSpacing: '0.04em',
                             lineHeight: 1.1,
+                            fontFamily: 'monospace',
                           }}
                         >
-                          #{pr.num}
+                          {entry.prNum ? `#${entry.prNum}` : entry.hash}
                         </span>
                         <span
                           style={{
                             fontSize: 9,
-                            fontWeight: 500,
                             color: '#8A6A4A',
-                            opacity: 0.7,
-                            letterSpacing: '0.02em',
+                            opacity: 0.55,
                             lineHeight: 1.1,
                             marginTop: 1,
                           }}
                         >
-                          {pr.date}
+                          {entry.date}
                         </span>
                       </span>
                       <span
@@ -623,7 +798,7 @@ export default function ColourmapBrandButton({ initials, email }: ColourmapBrand
                           opacity: 0.9,
                         }}
                       >
-                        {pr.title}
+                        {entry.subject}
                       </span>
                     </li>
                   ))}

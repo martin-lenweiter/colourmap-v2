@@ -52,3 +52,6 @@ next-env.d.ts
 
 # agent runtime (user-specific)
 .claude/settings.local.json
+
+# Build-time generated files
+lib/generated/

@@ -2,8 +2,6 @@
 
 import { useEffect, useRef, useState } from 'react';
 
-import { radii, space } from '@/lib/design-tokens';
-
 type SparkCategory = 'fun' | 'creative' | 'professional' | 'growth';
 type SparkTimeWindow = 'this_week' | 'this_month' | 'no_rush';
 
@@ -25,6 +23,8 @@ interface SparkComposerProps {
   onPosted?: () => void;
   onCancel?: () => void;
 }
+
+const font = 'var(--font-serif)';
 
 export default function SparkComposer({ circleId, onPosted, onCancel }: SparkComposerProps) {
   const [text, setText] = useState('');
@@ -60,7 +60,7 @@ export default function SparkComposer({ circleId, onPosted, onCancel }: SparkCom
         setLocating(false);
       },
       () => {
-        setError('Could not get location. Allow location access and try again.');
+        setError('Could not get location.');
         setLocating(false);
       },
       { timeout: 8000 },
@@ -77,7 +77,6 @@ export default function SparkComposer({ circleId, onPosted, onCancel }: SparkCom
       setError('Tap "put on map" to share your location first.');
       return;
     }
-
     setPosting(true);
     setError('');
     try {
@@ -108,22 +107,11 @@ export default function SparkComposer({ circleId, onPosted, onCancel }: SparkCom
     }
   }
 
-  const font = 'var(--font-handwritten)';
   const activeCategory = CATEGORIES.find((c) => c.id === category)!;
 
   return (
-    <div
-      style={{
-        background: '#FDFAF5',
-        border: `1.5px solid ${activeCategory.color}30`,
-        borderRadius: radii.xl,
-        padding: `${space.lg}px`,
-        display: 'flex',
-        flexDirection: 'column',
-        gap: space.md,
-      }}
-    >
-      {/* Text input */}
+    <div className="space-y-5 py-2">
+      {/* Text input — borderless, large */}
       <textarea
         ref={textareaRef}
         value={text}
@@ -136,70 +124,91 @@ export default function SparkComposer({ circleId, onPosted, onCancel }: SparkCom
         maxLength={200}
         style={{
           fontFamily: font,
-          fontSize: '20px',
+          fontSize: 22,
           fontWeight: 700,
-          color: '#5C3018',
+          color: '#3C2010',
           background: 'transparent',
           border: 'none',
+          borderBottom: `2px solid ${activeCategory.color}40`,
           outline: 'none',
           resize: 'none',
           overflow: 'hidden',
           width: '100%',
           lineHeight: 1.35,
+          paddingBottom: 6,
         }}
       />
 
-      {/* Category pills */}
-      <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
-        {CATEGORIES.map((cat) => (
-          <button
-            key={cat.id}
-            type="button"
-            onClick={() => setCategory(cat.id)}
-            style={{
-              fontFamily: font,
-              fontSize: '11px',
-              fontWeight: 600,
-              letterSpacing: '0.08em',
-              color: cat.color,
-              background: category === cat.id ? `${cat.color}18` : 'transparent',
-              border: `1px solid ${category === cat.id ? cat.color : `${cat.color}40`}`,
-              borderRadius: radii.pill,
-              padding: `3px 10px`,
-              cursor: 'pointer',
-            }}
-          >
-            {cat.label}
-          </button>
-        ))}
+      {/* Category — dots with labels */}
+      <div className="flex items-center gap-5">
+        {CATEGORIES.map((cat) => {
+          const active = category === cat.id;
+          return (
+            <button
+              key={cat.id}
+              type="button"
+              onClick={() => setCategory(cat.id)}
+              className="flex flex-col items-center gap-1.5 cursor-pointer transition-all"
+              style={{ background: 'none', border: 'none', padding: 0 }}
+            >
+              <span
+                style={{
+                  width: active ? 18 : 14,
+                  height: active ? 18 : 14,
+                  borderRadius: '50%',
+                  background: cat.color,
+                  opacity: active ? 1 : 0.35,
+                  display: 'block',
+                  transition: 'all 0.15s',
+                  boxShadow: active ? `0 3px 10px -2px ${cat.color}` : 'none',
+                }}
+              />
+              <span
+                style={{
+                  fontFamily: font,
+                  fontSize: 12,
+                  fontWeight: active ? 700 : 500,
+                  color: active ? cat.color : '#8A6A4A',
+                  opacity: active ? 1 : 0.55,
+                  letterSpacing: '0.04em',
+                }}
+              >
+                {cat.label}
+              </span>
+            </button>
+          );
+        })}
       </div>
 
       {/* Time window */}
-      <div style={{ display: 'flex', gap: 6 }}>
-        {TIME_WINDOWS.map((tw) => (
-          <button
-            key={tw.id}
-            type="button"
-            onClick={() => setTimeWindow(tw.id)}
-            style={{
-              fontFamily: font,
-              fontSize: '11px',
-              color: '#7A5438',
-              background: timeWindow === tw.id ? '#C4A06014' : 'transparent',
-              border: `1px solid ${timeWindow === tw.id ? '#C4A06050' : '#C4A06020'}`,
-              borderRadius: radii.pill,
-              padding: `3px 10px`,
-              cursor: 'pointer',
-              opacity: timeWindow === tw.id ? 1 : 0.6,
-            }}
-          >
-            {tw.label}
-          </button>
-        ))}
+      <div className="flex items-center gap-4">
+        {TIME_WINDOWS.map((tw) => {
+          const active = timeWindow === tw.id;
+          return (
+            <button
+              key={tw.id}
+              type="button"
+              onClick={() => setTimeWindow(tw.id)}
+              style={{
+                fontFamily: font,
+                fontSize: 13,
+                fontWeight: active ? 700 : 500,
+                color: active ? '#5C3018' : '#8A6A4A',
+                opacity: active ? 1 : 0.5,
+                background: 'none',
+                border: 'none',
+                padding: 0,
+                cursor: 'pointer',
+              }}
+            >
+              {tw.label}
+            </button>
+          );
+        })}
       </div>
 
-      {/* Open to map toggle */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: space.sm }}>
+      {/* Map toggle */}
+      <div className="flex items-center gap-3">
         <button
           type="button"
           onClick={
@@ -213,13 +222,12 @@ export default function SparkComposer({ circleId, onPosted, onCancel }: SparkCom
           disabled={locating}
           style={{
             fontFamily: font,
-            fontSize: '11px',
+            fontSize: 13,
             fontWeight: 600,
-            color: isOpen ? '#fff' : '#7A5438',
-            background: isOpen ? '#7AAA58' : 'transparent',
-            border: `1px solid ${isOpen ? '#7AAA58' : '#C4A06030'}`,
-            borderRadius: radii.pill,
-            padding: `3px 12px`,
+            color: isOpen ? '#7AAA58' : '#8A6A4A',
+            background: 'none',
+            border: 'none',
+            padding: 0,
             cursor: locating ? 'wait' : 'pointer',
             opacity: locating ? 0.5 : 1,
           }}
@@ -235,11 +243,11 @@ export default function SparkComposer({ circleId, onPosted, onCancel }: SparkCom
             maxLength={80}
             style={{
               fontFamily: font,
-              fontSize: '11px',
+              fontSize: 13,
               color: '#5C3018',
               background: 'transparent',
               border: 'none',
-              borderBottom: '1px solid #C4A06030',
+              borderBottom: '1px solid #C4A06025',
               outline: 'none',
               flex: 1,
               paddingBottom: 2,
@@ -249,25 +257,26 @@ export default function SparkComposer({ circleId, onPosted, onCancel }: SparkCom
       </div>
 
       {error && (
-        <p style={{ fontFamily: font, fontSize: '12px', color: '#D4605A', fontStyle: 'italic' }}>
+        <p style={{ fontFamily: font, fontSize: 13, color: '#D4605A', fontStyle: 'italic' }}>
           {error}
         </p>
       )}
 
-      {/* Actions */}
-      <div style={{ display: 'flex', gap: space.sm, justifyContent: 'flex-end' }}>
+      {/* Post button */}
+      <div className="flex items-center justify-between">
         {onCancel && (
           <button
             type="button"
             onClick={onCancel}
             style={{
               fontFamily: font,
-              fontSize: '12px',
+              fontSize: 13,
               color: '#8A6A4A',
-              opacity: 0.5,
+              opacity: 0.45,
               background: 'none',
               border: 'none',
               cursor: 'pointer',
+              padding: 0,
             }}
           >
             cancel
@@ -279,15 +288,16 @@ export default function SparkComposer({ circleId, onPosted, onCancel }: SparkCom
           disabled={posting || !text.trim()}
           style={{
             fontFamily: font,
-            fontSize: '13px',
+            fontSize: 15,
             fontWeight: 700,
             color: '#fff',
-            background: text.trim() ? activeCategory.color : '#C4A06040',
+            background: text.trim() ? activeCategory.color : '#C4A06035',
             border: 'none',
-            borderRadius: radii.pill,
-            padding: `${space.sm}px ${space.lg}px`,
+            borderRadius: 20,
+            padding: '7px 24px',
             cursor: posting || !text.trim() ? 'default' : 'pointer',
             transition: 'background 0.15s',
+            marginLeft: 'auto',
           }}
         >
           {posting ? 'posting…' : 'post'}
