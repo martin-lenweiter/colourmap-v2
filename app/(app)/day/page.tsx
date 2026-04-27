@@ -5,17 +5,15 @@ import CategoryCompass from '@/components/CategoryCompass';
 import CheckInPing from '@/components/CheckInPing';
 import CompassCarousel from '@/components/CompassCarousel';
 import CompassFlower from '@/components/CompassFlower';
-import DailyAgenda from '@/components/DailyAgenda';
 import DayRail from '@/components/DayRail';
 import DayTabs from '@/components/DayTabs';
+import DoingPanel from '@/components/DoingPanel';
 import FeelingCheckInCard from '@/components/FeelingCheckInCard';
 import FirstRunOnboarding from '@/components/FirstRunOnboarding';
 import LifeCategories from '@/components/LifeCategories';
 import LifeCategoriesEmptyState from '@/components/LifeCategoriesEmptyState';
 import LifeCategoriesStrip from '@/components/LifeCategoriesStrip';
-import MissionTracker from '@/components/MissionTracker';
 import MoodSuggestion from '@/components/MoodSuggestion';
-import NowBar from '@/components/NowBar';
 import OverviewSections from '@/components/OverviewSections';
 import OverviewVisualDemos from '@/components/OverviewVisualDemos';
 import QuietNotes from '@/components/QuietNotes';
@@ -51,14 +49,8 @@ function DayContent() {
               <FeelingCheckInCard segment="feeling" />
             </div>
           }
-          // DOING — agenda + missions: what's the day for.
-          doingContent={
-            <div className="space-y-4">
-              <NowBar />
-              <MissionTracker />
-              <DailyAgenda />
-            </div>
-          }
+          // DOING — three-layer panel: NowBar + MissionTracker + DoingInbox + DailyAgenda.
+          doingContent={<DoingPanel />}
           // SHARING — personal social axis. Big dot Lonely → Connected.
           sharingContent={
             <div className="space-y-4">

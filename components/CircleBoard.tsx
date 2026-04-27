@@ -116,7 +116,7 @@ interface Note {
   createdAt: string;
 }
 
-const CIRCLE_COLORS = ['#D4805A', '#6890B0', '#7AAA58', '#9B6BA0', '#C4A060', '#5A8AAA'];
+const _CIRCLE_COLORS = ['#D4805A', '#6890B0', '#7AAA58', '#9B6BA0', '#C4A060', '#5A8AAA'];
 
 /* ─── Local annotations layer ─────────────────────────────────
  *

@@ -525,8 +525,37 @@ export default function DailyAgenda() {
               </button>
             ))}
           </div>
-          {/* Row 2 (secondary): F · D · S axis filter — single-select.
-              One active at a time; 'all' when none selected. */}
+          {/* Row 2: List / Road view toggle */}
+          <div className="flex items-center justify-center gap-1">
+            <button
+              type="button"
+              onClick={() => setRoadView(false)}
+              className="cursor-pointer rounded-full px-3 py-1 text-[11px] font-semibold uppercase tracking-wider transition-all"
+              style={{
+                color: '#C4A060',
+                background: !roadView ? '#C4A06015' : 'transparent',
+                border: `1px solid ${!roadView ? '#C4A06040' : '#C4A06015'}`,
+                opacity: !roadView ? 1 : 0.4,
+              }}
+            >
+              list
+            </button>
+            <button
+              type="button"
+              onClick={() => setRoadView(true)}
+              className="cursor-pointer rounded-full px-3 py-1 text-[11px] font-semibold uppercase tracking-wider transition-all"
+              style={{
+                color: '#C4A060',
+                background: roadView ? '#C4A06015' : 'transparent',
+                border: `1px solid ${roadView ? '#C4A06040' : '#C4A06015'}`,
+                opacity: roadView ? 1 : 0.4,
+              }}
+            >
+              road
+            </button>
+          </div>
+
+          {/* Row 3 (tertiary): F · D · S axis filter — single-select. */}
           <div className="flex items-center justify-center gap-2 opacity-85">
             <div className="flex gap-2">
               {(
@@ -568,35 +597,6 @@ export default function DailyAgenda() {
                   </button>
                 );
               })}
-              {/* Road / List toggle */}
-              <div className="ml-2 flex gap-1">
-                <button
-                  type="button"
-                  onClick={() => setRoadView(false)}
-                  className="cursor-pointer rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider transition-all"
-                  style={{
-                    color: '#C4A060',
-                    background: !roadView ? '#C4A06015' : 'transparent',
-                    border: `1px solid ${!roadView ? '#C4A06040' : '#C4A06015'}`,
-                    opacity: !roadView ? 1 : 0.4,
-                  }}
-                >
-                  list
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setRoadView(true)}
-                  className="cursor-pointer rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider transition-all"
-                  style={{
-                    color: '#C4A060',
-                    background: roadView ? '#C4A06015' : 'transparent',
-                    border: `1px solid ${roadView ? '#C4A06040' : '#C4A06015'}`,
-                    opacity: roadView ? 1 : 0.4,
-                  }}
-                >
-                  road
-                </button>
-              </div>
             </div>
           </div>
 
