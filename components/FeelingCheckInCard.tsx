@@ -442,12 +442,19 @@ function loadNum(key: string, fallback: number): number {
   }
 }
 
-export default function FeelingCheckInCard() {
+export default function FeelingCheckInCard({
+  segment: forcedSegment,
+}: {
+  segment?: 'feeling' | 'doing';
+} = {}) {
   // Landing-page picker: 2-dot entry (Feeling / Doing) on phone +
   // desktop. Tapping a dot opens that segment full-width; the other
   // is hidden. Persisted so a returning user lands back on whichever
   // segment they last engaged.
+  // If `segment` prop is provided, that segment is always active and
+  // the landing dots + back button are hidden.
   const [selectedSegment, setSelectedSegment] = useState<'feeling' | 'doing' | null>(() => {
+    if (forcedSegment) return forcedSegment;
     if (typeof window === 'undefined') return null;
     try {
       const v = localStorage.getItem('colourmap:checkin-segment');
@@ -1707,7 +1714,7 @@ export default function FeelingCheckInCard() {
   // nothing is selected, this shows. Tap → opens that segment full
   // width; the other hides. Sharing comes later as a 3rd dot.
   // ─────────────────────────────────────────────────────────────
-  if (selectedSegment === null) {
+  if (selectedSegment === null && !forcedSegment) {
     return (
       <div className="mx-auto flex max-w-md flex-col items-center gap-6 py-8">
         <p
@@ -1836,7 +1843,7 @@ export default function FeelingCheckInCard() {
 
   // Helper to render the back-to-landing pill above whichever segment
   // is open.
-  const segmentBack = (
+  const segmentBack = forcedSegment ? null : (
     <button
       type="button"
       onClick={() => setSelectedSegment(null)}
