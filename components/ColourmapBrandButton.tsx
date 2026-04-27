@@ -475,7 +475,7 @@ export default function ColourmapBrandButton({ initials, email }: ColourmapBrand
                   letterSpacing: '0.06em',
                 }}
               >
-                useful <strong style={{ color: '#5C3018', fontWeight: 700 }}>information</strong>
+                learn · <strong style={{ color: '#5C3018', fontWeight: 700 }}>vocabulary</strong>
               </p>
               <button
                 type="button"
@@ -584,8 +584,7 @@ export default function ColourmapBrandButton({ initials, email }: ColourmapBrand
                   letterSpacing: '0.06em',
                 }}
               >
-                vision ·{' '}
-                <strong style={{ color: '#5C3018', fontWeight: 700 }}>core next steps</strong>
+                vision · <strong style={{ color: '#5C3018', fontWeight: 700 }}>next steps</strong>
               </p>
               <button
                 type="button"
@@ -708,10 +707,8 @@ export default function ColourmapBrandButton({ initials, email }: ColourmapBrand
                   letterSpacing: '0.06em',
                 }}
               >
-                <strong style={{ color: '#B33A2B', fontWeight: 700 }}>{LATEST_HASH}</strong>
-                <span style={{ color: '#8A6A4A', opacity: 0.55, marginLeft: 6 }}>
-                  · {BUILD_DATE} · {CURRENT_BRANCH.replace(/^(feature|fix|feat|chore)\//, '')}
-                </span>
+                build ·{' '}
+                <strong style={{ color: '#C4A060', fontWeight: 700 }}>recent changes</strong>
               </p>
               <button
                 type="button"
@@ -755,6 +752,19 @@ export default function ColourmapBrandButton({ initials, email }: ColourmapBrand
                   overflowY: 'auto',
                 }}
               >
+                <p
+                  style={{
+                    fontFamily: 'monospace',
+                    fontSize: 10,
+                    color: '#8A6A4A',
+                    opacity: 0.55,
+                    marginBottom: 8,
+                    letterSpacing: '0.04em',
+                  }}
+                >
+                  {LATEST_HASH} · {BUILD_DATE} ·{' '}
+                  {CURRENT_BRANCH.replace(/^(feature|fix|feat|chore)\//, '')}
+                </p>
                 <ul className="space-y-2">
                   {CHANGELOG.map((entry) => (
                     <li
