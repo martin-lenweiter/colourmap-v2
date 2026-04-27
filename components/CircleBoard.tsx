@@ -152,6 +152,16 @@ export default function CircleBoard() {
   const [editingMe, setEditingMe] = useState(false);
   const [meNameInput, setMeNameInput] = useState('');
   const [howOpen, setHowOpen] = useState(false);
+  // Board-view-only state — declared at the top so the hook count stays
+  // stable across renders. (Earlier these lived AFTER the list/setup
+  // early returns, which crashed React when the user switched views:
+  // hook count went from N → N+5 mid-flight, "rendered more hooks than
+  // during the previous render" → blank screen.)
+  const [editingChapter, setEditingChapter] = useState(false);
+  const [chapterInput, setChapterInput] = useState('');
+  const [chapterOpen, setChapterOpen] = useState(false);
+  const [meaningInput, setMeaningInput] = useState('');
+  const [assigningMission, setAssigningMission] = useState<string | null>(null);
   const boardRef = useKeyboardAware<HTMLDivElement>();
 
   useEffect(() => {
@@ -738,13 +748,6 @@ export default function CircleBoard() {
       missionsByMember.set(m.claimedBy, list);
     }
   }
-
-  // Chapter state
-  const [editingChapter, setEditingChapter] = useState(false);
-  const [chapterInput, setChapterInput] = useState(active.chapter || '');
-  const [chapterOpen, setChapterOpen] = useState(false);
-  const [meaningInput, setMeaningInput] = useState('');
-  const [assigningMission, setAssigningMission] = useState<string | null>(null);
 
   function setChapter(text: string) {
     const updated = circles.map((c) => (c.id === activeId ? { ...c, chapter: text } : c));
