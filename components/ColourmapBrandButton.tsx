@@ -201,7 +201,14 @@ export default function ColourmapBrandButton({ initials, email }: ColourmapBrand
             for (let i = 0; i < 8; i++) {
               const a = -Math.PI / 2 + (i * Math.PI) / 4;
               const r = i % 2 === 0 ? r1 : r2;
-              pts.push(`${cx + r * Math.cos(a)},${cy + r * Math.sin(a)}`);
+              // Round to 3 decimals so server-render and client-render
+              // produce identical strings — Math.cos/sin can drift in
+              // the last digit between V8 and Node, breaking SSR
+              // hydration if the values are stringified at full
+              // precision.
+              const x = (cx + r * Math.cos(a)).toFixed(3);
+              const y = (cy + r * Math.sin(a)).toFixed(3);
+              pts.push(`${x},${y}`);
             }
             return <polygon points={pts.join(' ')} fill="#B33A2B" opacity={0.85} />;
           })()}
@@ -264,7 +271,14 @@ export default function ColourmapBrandButton({ initials, email }: ColourmapBrand
                   for (let i = 0; i < 8; i++) {
                     const a = -Math.PI / 2 + (i * Math.PI) / 4;
                     const r = i % 2 === 0 ? r1 : r2;
-                    pts.push(`${cx + r * Math.cos(a)},${cy + r * Math.sin(a)}`);
+                    // Round to 3 decimals so server-render and client-render
+                    // produce identical strings — Math.cos/sin can drift in
+                    // the last digit between V8 and Node, breaking SSR
+                    // hydration if the values are stringified at full
+                    // precision.
+                    const x = (cx + r * Math.cos(a)).toFixed(3);
+                    const y = (cy + r * Math.sin(a)).toFixed(3);
+                    pts.push(`${x},${y}`);
                   }
                   return <polygon points={pts.join(' ')} fill="#B33A2B" opacity={0.85} />;
                 })()}
