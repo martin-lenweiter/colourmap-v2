@@ -7,6 +7,7 @@ import DoingCategoryRail, {
   type DoingCategory,
 } from '@/components/DoingCategoryRail';
 import DoingInbox from '@/components/DoingInbox';
+import FeelingCheckInCard from '@/components/FeelingCheckInCard';
 import MissionTracker from '@/components/MissionTracker';
 import NowBar from '@/components/NowBar';
 
@@ -58,6 +59,9 @@ export default function DoingPanel() {
 
       {/* Category filter rail */}
       <DoingCategoryRail selected={filter} onToggle={toggleCategory} />
+
+      {/* Current objectives + Push for tomorrow — from FeelingCheckInCard doing segment */}
+      <FeelingCheckInCard segment="doing" />
 
       {/* Missions — Supabase backed */}
       <MissionTracker categoryFilter={filter} />
