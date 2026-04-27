@@ -310,6 +310,12 @@ One big dot, personal dimension only, Lonely → Connected. No sub-sections, no 
 ### Relationship to Circles
 Circles is the *group* layer — shared sessions, band rooms, co-working. The Sharing check-in is the *personal reflection* layer — how do I feel about my connections right now. They are complementary, not redundant.
 
+## Segment Landing — Two-Dot Entry (Future: Roadlights)
+
+When `FeelingCheckInCard` is used standalone (not embedded inside a named tab), it shows a two-dot landing: Feeling dot + Doing dot. The user taps a dot to open that segment full-width.
+
+**Future direction — "Roadlights":** The landing will grow to three dots (Feeling / Doing / Sharing), possibly named *Roadlights*. The component already supports a `segment` prop to bypass the landing entirely (used by the DayTabs Feeling tab). The landing dots and their color palette picker should remain available for any context where the component is used standalone.
+
 ## Dependencies
 
 - Supabase auth and database (Key Decision: real persistence from day one).

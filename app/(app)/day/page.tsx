@@ -13,6 +13,7 @@ import FirstRunOnboarding from '@/components/FirstRunOnboarding';
 import LifeCategories from '@/components/LifeCategories';
 import LifeCategoriesEmptyState from '@/components/LifeCategoriesEmptyState';
 import LifeCategoriesStrip from '@/components/LifeCategoriesStrip';
+import MissionTracker from '@/components/MissionTracker';
 import MoodSuggestion from '@/components/MoodSuggestion';
 import NowBar from '@/components/NowBar';
 import OverviewSections from '@/components/OverviewSections';
@@ -47,13 +48,14 @@ function DayContent() {
           feelingContent={
             <div className="space-y-4">
               <MoodSuggestion />
-              <FeelingCheckInCard />
+              <FeelingCheckInCard segment="feeling" />
             </div>
           }
           // DOING — agenda + missions: what's the day for.
           doingContent={
             <div className="space-y-4">
               <NowBar />
+              <MissionTracker />
               <DailyAgenda />
             </div>
           }
