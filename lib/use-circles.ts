@@ -173,7 +173,17 @@ export function useCircles(): UseCircles {
       activeId: null,
       me: DEFAULT_ME,
     });
-    if (Array.isArray(cached.circles)) setCircles(cached.circles);
+    if (Array.isArray(cached.circles)) {
+      setCircles(
+        cached.circles.map((c) => ({
+          ...c,
+          members: c.members ?? [],
+          missions: c.missions ?? [],
+          notes: c.notes ?? [],
+          activeSession: c.activeSession ?? null,
+        })),
+      );
+    }
     setActiveId(loadJSON<string | null>(LS_ACTIVE, cached.activeId ?? null));
     const cachedMe = loadJSON<MeIdentity>(LS_ME, cached.me);
     setMe(cachedMe);
@@ -205,7 +215,7 @@ export function useCircles(): UseCircles {
           } catch {
             // If detail fetch fails, keep the summary (members) + empty
             // missions/notes.
-            return { ...s, missions: [], notes: [] } as CircleDetail;
+            return { ...s, missions: [], notes: [], activeSession: null } as CircleDetail;
           }
         }),
       );
