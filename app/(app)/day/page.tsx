@@ -15,6 +15,8 @@ import LifeCategoriesEmptyState from '@/components/LifeCategoriesEmptyState';
 import LifeCategoriesStrip from '@/components/LifeCategoriesStrip';
 import MoodSuggestion from '@/components/MoodSuggestion';
 import NowBar from '@/components/NowBar';
+import OverviewSections from '@/components/OverviewSections';
+import OverviewVisualDemos from '@/components/OverviewVisualDemos';
 import QuietNotes from '@/components/QuietNotes';
 import ReflectThreeDots from '@/components/ReflectThreeDots';
 import SlowWins from '@/components/SlowWins';
@@ -72,6 +74,7 @@ function DayContent() {
           // strip dots or the polygon vertices).
           roadContent={
             <div className="space-y-4">
+              <OverviewSections />
               <LifeCategoriesEmptyState />
               <WeekShape />
               <LifeCategoriesStrip />
@@ -83,6 +86,7 @@ function DayContent() {
               <CompassCarousel />
               <CategoryCompass />
               <LifeCategories />
+              <OverviewVisualDemos />
             </div>
           }
         />
