@@ -19,6 +19,7 @@ import OverviewSections from '@/components/OverviewSections';
 import OverviewVisualDemos from '@/components/OverviewVisualDemos';
 import QuietNotes from '@/components/QuietNotes';
 import ReflectThreeDots from '@/components/ReflectThreeDots';
+import SharingCheckIn from '@/components/SharingCheckIn';
 import SlowWins from '@/components/SlowWins';
 import { StyleProvider } from '@/components/StyleContext';
 import TrackLines from '@/components/TrackLines';
@@ -56,14 +57,10 @@ function DayContent() {
               <DailyAgenda />
             </div>
           }
-          // SHARING — three-dot reflect surface. The Sharing axis
-          // (Lonely → Connected) lives here alongside Feeling and
-          // Doing so the user can journal at any level of any axis;
-          // each entry is timestamped and threads under its level
-          // over time.
+          // SHARING — personal social axis. Big dot Lonely → Connected.
           sharingContent={
             <div className="space-y-4">
-              <ReflectThreeDots />
+              <SharingCheckIn />
             </div>
           }
           // ROAD — wide-angle life map. The compasses, categories, and
@@ -75,6 +72,7 @@ function DayContent() {
           roadContent={
             <div className="space-y-4">
               <OverviewSections />
+              <ReflectThreeDots />
               <LifeCategoriesEmptyState />
               <WeekShape />
               <LifeCategoriesStrip />
