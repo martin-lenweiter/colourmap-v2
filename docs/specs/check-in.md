@@ -279,6 +279,37 @@ Each CARE axis opens a set of sub-pill "lenses" except `Emotions`. Picking a sub
 
 The 8-word poetic scale (`Crushed → Expansive`) mapped across 0–100 is specified separately. Used wherever a 0–100 check-in value is surfaced — cockpit summary, check-in history, post-submit reflection. Not used by the box-1 variants (which run on the 7-level balance scale) or the boxes variant (10-level Hawkins scale).
 
+## Sharing Tab — Vision (2026-04-27)
+
+The Sharing axis is about how you are showing up in the world outside yourself. It has two distinct dimensions that must never be collapsed into one:
+
+### Personal dimension — Lonely → Connected
+How alive are your personal relationships right now? Friends, family, intimate connections, community. A single big dot on a 7-level scale from Lonely to Connected is the entry point. Both extremes are valid states — deep solitude can be chosen and restorative; overwhelming social presence can be draining.
+
+Scale (7 levels):
+```
+Lonely · Withdrawn · Distant · Present · Warm · Close · Connected
+```
+
+### Professional dimension — Isolated → Networked
+Separate from personal life: how alive is your professional network? Collaborators, peers, career relationships, creative partners. Same 7-level dot format, different color and language.
+
+Scale (7 levels):
+```
+Isolated · Quiet · Peripheral · Engaged · Active · Wired · Networked
+```
+
+### Long-term: your actual people
+Beyond the two dots, the Sharing tab will surface real connections — a short list of people in your life, with last-contact log, relationship quality note, and a nudge to reach out. Not a social feed. Not followers. A quiet list of the people who matter, split across personal and professional.
+
+The professional / individual split is the key design decision: work relationships and personal relationships live in different emotional registers. Mixing them (as LinkedIn and Instagram both do in different directions) is the root of the hollow feeling both platforms create. Colourmap keeps them separate so the user can be honest about both without performing either.
+
+### Current implementation (placeholder)
+One big dot, personal dimension only, Lonely → Connected. No sub-sections, no network list yet. The professional dimension and the people list land in a follow-up pass.
+
+### Relationship to Circles
+Circles is the *group* layer — shared sessions, band rooms, co-working. The Sharing check-in is the *personal reflection* layer — how do I feel about my connections right now. They are complementary, not redundant.
+
 ## Dependencies
 
 - Supabase auth and database (Key Decision: real persistence from day one).
