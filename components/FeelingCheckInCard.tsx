@@ -1092,14 +1092,53 @@ export default function FeelingCheckInCard({
     else persistTodos(todos.filter((t) => t.id !== id));
   };
   const moveToPush = (text: string, fromList: 'daily' | 'current', id?: string) => {
-    persistTodos([...todos, { id: crypto.randomUUID(), text, done: false }]);
-    if (fromList === 'daily' && id)
-      persistTodayObjectives(todayObjectives.filter((t) => t.id !== id));
+    if (fromList === 'daily' && id) {
+      // Keep the existing id — PATCH list on backend instead of creating an orphan
+      const item = todayObjectives.find((t) => t.id === id);
+      if (item) {
+        persistTodos([...todos, { ...item, done: false }]);
+        persistTodayObjectives(todayObjectives.filter((t) => t.id !== id));
+        fetch(`/api/daily-objectives/${id}`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ list: 'tomorrow' }),
+        }).catch(() => {});
+        return;
+      }
+    }
+    // 'current' source has no persisted id — create new on backend
+    const newId = crypto.randomUUID();
+    persistTodos([...todos, { id: newId, text, done: false }]);
+    fetch('/api/daily-objectives', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ text, list: 'tomorrow' }),
+    }).catch(() => {});
     if (fromList === 'current') setObjective('');
   };
   const moveToDaily = (text: string, fromList: 'push' | 'current', id?: string) => {
-    persistTodayObjectives([...todayObjectives, { id: crypto.randomUUID(), text, done: false }]);
-    if (fromList === 'push' && id) persistTodos(todos.filter((t) => t.id !== id));
+    if (fromList === 'push' && id) {
+      // Keep the existing id — PATCH list on backend instead of creating an orphan
+      const item = todos.find((t) => t.id === id);
+      if (item) {
+        persistTodayObjectives([...todayObjectives, { ...item, done: false }]);
+        persistTodos(todos.filter((t) => t.id !== id));
+        fetch(`/api/daily-objectives/${id}`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ list: 'today' }),
+        }).catch(() => {});
+        return;
+      }
+    }
+    // 'current' source has no persisted id — create new on backend
+    const newId = crypto.randomUUID();
+    persistTodayObjectives([...todayObjectives, { id: newId, text, done: false }]);
+    fetch('/api/daily-objectives', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ text, list: 'today' }),
+    }).catch(() => {});
     if (fromList === 'current') setObjective('');
   };
 
