@@ -7,7 +7,7 @@
     "build": "bun scripts/gen-changelog.ts && next build",
     "start": "next start",
     "lint": "biome check .",
-    "typecheck": "tsc --noEmit",
+    "typecheck": "bun scripts/gen-changelog.ts && tsc --noEmit",
     "format": "biome check --write .",
     "test": "vitest run",
     "test:coverage": "vitest run --coverage && node scripts/check-coverage-thresholds.mjs",
