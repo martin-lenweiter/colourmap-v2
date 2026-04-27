@@ -54,7 +54,7 @@ type Tab = 'feeling' | 'doing' | 'sharing';
 
 const SCOPES: { id: Scope; label: string }[] = [
   { id: 'list', label: 'List' },
-  { id: 'road', label: 'Road' },
+  { id: 'road', label: 'Overview' },
 ];
 
 const TABS: { id: Tab; label: string }[] = [

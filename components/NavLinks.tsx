@@ -59,7 +59,7 @@ export default function NavLinks() {
     <nav
       className={`mx-auto flex w-full items-center pb-3 ${
         isPhone
-          ? 'gap-4 overflow-x-auto px-3 text-[14px] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden'
+          ? 'gap-4 overflow-x-auto pl-1 pr-3 text-[14px] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden'
           : 'max-w-5xl justify-center gap-8 px-4 text-base'
       }`}
     >

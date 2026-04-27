@@ -3675,11 +3675,16 @@ export default function FeelingCheckInCard({
                   </span>
                 </button>
                 <div className="relative w-full">
-                  <input
-                    type="text"
+                  <textarea
                     value={objective}
                     onChange={(e) => setObjective(e.target.value)}
+                    onInput={(e) => {
+                      const el = e.currentTarget;
+                      el.style.height = 'auto';
+                      el.style.height = `${el.scrollHeight}px`;
+                    }}
                     placeholder="set an objective..."
+                    rows={1}
                     className="w-full border-b bg-transparent pb-3 pt-2 text-center outline-none placeholder:text-[#7A5438] placeholder:opacity-50"
                     style={{
                       color: '#5C3018',
@@ -3688,12 +3693,14 @@ export default function FeelingCheckInCard({
                       fontSize: '26px',
                       fontWeight: 700,
                       letterSpacing: '0.06em',
-                      paddingLeft: '64px',
-                      paddingRight: '64px',
+                      paddingLeft: '8px',
+                      paddingRight: '44px',
                       lineHeight: 1.3,
+                      resize: 'none',
+                      overflow: 'hidden',
                     }}
                   />
-                  <div className="absolute right-0 top-1/2 flex -translate-y-1/2 items-center gap-1.5">
+                  <div className="absolute right-0 top-2 flex items-center gap-1.5">
                     {objective.trim().length > 0 && (
                       <CategoryTagPicker
                         value={objectiveTag}
@@ -4647,7 +4654,48 @@ export default function FeelingCheckInCard({
                                       </span>
                                     )}
                                   </button>
-                                  {/* Status indicator */}
+                                  {/* Category dot — tap to assign a life category */}
+                                  {(() => {
+                                    const tagCat = t.tag?.categoryId
+                                      ? lifeCategories.find((c) => c.id === t.tag?.categoryId)
+                                      : null;
+                                    return (
+                                      <button
+                                        type="button"
+                                        title={tagCat ? tagCat.name : 'Assign category'}
+                                        onClick={() => {
+                                          const nextIdx = tagCat
+                                            ? (lifeCategories.findIndex((c) => c.id === tagCat.id) +
+                                                1) %
+                                              lifeCategories.length
+                                            : 0;
+                                          const next = lifeCategories[nextIdx];
+                                          if (next) {
+                                            const next2 = todos.map((item) =>
+                                              item.id === t.id
+                                                ? {
+                                                    ...item,
+                                                    tag: {
+                                                      name: next.name,
+                                                      color: next.color,
+                                                      categoryId: next.id,
+                                                    },
+                                                  }
+                                                : item,
+                                            );
+                                            persistTodos(next2);
+                                          }
+                                        }}
+                                        className="mt-[5px] shrink-0 rounded-full transition-all hover:scale-125"
+                                        style={{
+                                          width: 10,
+                                          height: 10,
+                                          background: tagCat ? tagCat.color : 'transparent',
+                                          border: `1.5px solid ${tagCat ? tagCat.color : '#C4A06040'}`,
+                                        }}
+                                      />
+                                    );
+                                  })()}
                                   {/* Status dot */}
                                   {!t.done && t.status && t.status !== 'active' && (
                                     <span
