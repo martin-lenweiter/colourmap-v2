@@ -38,10 +38,10 @@ describe('DayTabs', () => {
     localStorage.clear();
   });
 
-  it('renders the List/Road scope strip and the Feeling/Doing/Sharing trio', () => {
+  it('renders the List/Overview scope strip and the Feeling/Doing/Sharing trio', () => {
     renderTabs();
     expect(screen.getByText('List')).toBeDefined();
-    expect(screen.getByText('Road')).toBeDefined();
+    expect(screen.getByText('Overview')).toBeDefined();
     expect(screen.getByText('Feeling')).toBeDefined();
     expect(screen.getByText('Doing')).toBeDefined();
     expect(screen.getByText('Sharing')).toBeDefined();
@@ -59,10 +59,10 @@ describe('DayTabs', () => {
     expect(screen.getByText('doing-content')).toBeDefined();
   });
 
-  it('switches to Road and hides the inner trio when Road is clicked', async () => {
+  it('switches to Overview and hides the inner trio when Overview is clicked', async () => {
     const user = userEvent.setup();
     renderTabs();
-    await user.click(screen.getByText('Road'));
+    await user.click(screen.getByText('Overview'));
     expect(screen.getByText('road-content')).toBeDefined();
     // Inner trio is hidden when scope = road, so Doing/Sharing buttons
     // shouldn't be reachable as buttons.
