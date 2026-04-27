@@ -114,6 +114,11 @@ const PULSE_LAYER_IDS = new Set([
   'chacapa',
   'sand-maraca',
   'ceremony-heartbeat',
+  // Series 2
+  'river-seeds',
+  'ghost-shaker',
+  'tresillo-pod',
+  'breath-rattle',
 ]);
 
 function getLayerCategory(layer: { id: string; group: string }): LayerCategory {
@@ -1078,6 +1083,187 @@ const LAYERS: LayerDef[] = [
       f.frequency.value = 130;
       s.connect(f);
       return { node: f, source: s };
+    },
+  },
+  // ── Pulse / Ceremony — Series 2 ──────────────────────────────────────
+  {
+    id: 'river-seeds',
+    label: 'River Seeds',
+    color: '#A0783A',
+    group: 'ambient' as const,
+    build: (ctx: AudioContext) => {
+      // Bamboo-bead rattle: 16th-note rolling pattern (4 hits per beat).
+      // Downbeat of each group of 4 is accented; inner 16ths are ghosts.
+      // Crisper and faster than sand-maraca — feels like pebbles in water.
+      const bpm = 72;
+      const beatLen = Math.floor((ctx.sampleRate * 60) / bpm);
+      const beats = 4;
+      const n = beatLen * beats;
+      const stepLen = Math.floor(beatLen / 4);
+      const steps = beats * 4;
+      const accents = [1, 0.5, 0.35, 0.6];
+      const b = ctx.createBuffer(2, n, ctx.sampleRate);
+      for (let c = 0; c < 2; c++) {
+        const d = b.getChannelData(c);
+        for (let step = 0; step < steps; step++) {
+          const offset = step * stepLen;
+          const accent = accents[step % 4];
+          const hitLen = Math.floor(ctx.sampleRate * 0.048);
+          for (let i = 0; i < hitLen && offset + i < n; i++) {
+            const t = i / hitLen;
+            const env = Math.exp(-t * 24) * (1 - Math.exp(-t * 90));
+            d[offset + i] += (Math.random() * 2 - 1) * env * 0.16 * accent;
+          }
+        }
+      }
+      const s = ctx.createBufferSource();
+      s.buffer = b;
+      s.loop = true;
+      const hp = ctx.createBiquadFilter();
+      hp.type = 'highpass';
+      hp.frequency.value = 4200;
+      const bp = ctx.createBiquadFilter();
+      bp.type = 'bandpass';
+      bp.frequency.value = 7500;
+      bp.Q.value = 0.55;
+      s.connect(hp);
+      hp.connect(bp);
+      return { node: bp, source: s };
+    },
+  },
+  {
+    id: 'ghost-shaker',
+    label: 'Ghost Shaker',
+    color: '#C49A5A',
+    group: 'ambient' as const,
+    build: (ctx: AudioContext) => {
+      // Triplet shaker: 3 evenly-spaced hits per beat creates a 6/8
+      // waltz feel against the 4/4 grid. Softer and lower than sand-maraca
+      // with a longer tail — feels like water turning slowly in an eddy.
+      const bpm = 72;
+      const beatLen = Math.floor((ctx.sampleRate * 60) / bpm);
+      const beats = 4;
+      const n = beatLen * beats;
+      const triplet = Math.floor(beatLen / 3);
+      const b = ctx.createBuffer(2, n, ctx.sampleRate);
+      for (let c = 0; c < 2; c++) {
+        const d = b.getChannelData(c);
+        for (let beat = 0; beat < beats; beat++) {
+          for (let t3 = 0; t3 < 3; t3++) {
+            const offset = beat * beatLen + t3 * triplet;
+            const accent = t3 === 0 ? 1 : 0.58;
+            const hitLen = Math.floor(ctx.sampleRate * 0.19);
+            for (let i = 0; i < hitLen && offset + i < n; i++) {
+              const t = i / hitLen;
+              const env = Math.exp(-t * 9) * (1 - Math.exp(-t * 35));
+              d[offset + i] += (Math.random() * 2 - 1) * env * 0.13 * accent;
+            }
+          }
+        }
+      }
+      const s = ctx.createBufferSource();
+      s.buffer = b;
+      s.loop = true;
+      const hp = ctx.createBiquadFilter();
+      hp.type = 'highpass';
+      hp.frequency.value = 2800;
+      const bp = ctx.createBiquadFilter();
+      bp.type = 'bandpass';
+      bp.frequency.value = 5200;
+      bp.Q.value = 0.5;
+      s.connect(hp);
+      hp.connect(bp);
+      return { node: bp, source: s };
+    },
+  },
+  {
+    id: 'tresillo-pod',
+    label: 'Tresillo Pod',
+    color: '#8A6A3A',
+    group: 'ambient' as const,
+    build: (ctx: AudioContext) => {
+      // Dried seed-pod clave: tresillo (3+3+2) pattern in 8th-note steps.
+      // Over 4 beats: hits at 8th positions 0,3,6,8,11,14. Classic
+      // Afro-Cuban syncopation — pulls against the beat without rushing it.
+      // Tonal click at 1.4kHz gives woody dried-wood body.
+      const bpm = 72;
+      const beatLen = Math.floor((ctx.sampleRate * 60) / bpm);
+      const beats = 4;
+      const n = beatLen * beats;
+      const eighth = Math.floor(beatLen / 2);
+      const tresilloSteps = [0, 3, 6, 8, 11, 14];
+      const b = ctx.createBuffer(2, n, ctx.sampleRate);
+      for (let c = 0; c < 2; c++) {
+        const d = b.getChannelData(c);
+        for (const step of tresilloSteps) {
+          const offset = step * eighth;
+          if (offset >= n) continue;
+          const hitLen = Math.floor(ctx.sampleRate * 0.068);
+          for (let i = 0; i < hitLen && offset + i < n; i++) {
+            const t = i / hitLen;
+            const env = Math.exp(-t * 17);
+            const tone = Math.sin((i / ctx.sampleRate) * 1400 * Math.PI * 2) * 0.28;
+            const noise = (Math.random() * 2 - 1) * 0.72;
+            d[offset + i] += (tone + noise) * env * 0.14;
+          }
+        }
+      }
+      const s = ctx.createBufferSource();
+      s.buffer = b;
+      s.loop = true;
+      const hp = ctx.createBiquadFilter();
+      hp.type = 'highpass';
+      hp.frequency.value = 900;
+      const bp = ctx.createBiquadFilter();
+      bp.type = 'bandpass';
+      bp.frequency.value = 3000;
+      bp.Q.value = 0.85;
+      s.connect(hp);
+      hp.connect(bp);
+      return { node: bp, source: s };
+    },
+  },
+  {
+    id: 'breath-rattle',
+    label: 'Breath Rattle',
+    color: '#B89060',
+    group: 'ambient' as const,
+    build: (ctx: AudioContext) => {
+      // Upbeat-only shaker: one long hit per beat, placed on the "and"
+      // (half-beat offset). Slow swell-and-fall envelope, warm mid-range
+      // frequency — feels like a soft exhale between heartbeats.
+      const bpm = 72;
+      const beatLen = Math.floor((ctx.sampleRate * 60) / bpm);
+      const beats = 4;
+      const n = beatLen * beats;
+      const halfBeat = Math.floor(beatLen / 2);
+      const b = ctx.createBuffer(2, n, ctx.sampleRate);
+      for (let c = 0; c < 2; c++) {
+        const d = b.getChannelData(c);
+        for (let beat = 0; beat < beats; beat++) {
+          const offset = beat * beatLen + halfBeat;
+          const hitLen = Math.floor(ctx.sampleRate * 0.3);
+          for (let i = 0; i < hitLen && offset + i < n; i++) {
+            const t = i / hitLen;
+            const env = t < 0.18 ? t / 0.18 : Math.exp(-(t - 0.18) * 5.2);
+            const am = 0.65 + 0.35 * Math.sin((i / ctx.sampleRate) * 17 * Math.PI * 2);
+            d[offset + i] += (Math.random() * 2 - 1) * env * am * 0.14;
+          }
+        }
+      }
+      const s = ctx.createBufferSource();
+      s.buffer = b;
+      s.loop = true;
+      const hp = ctx.createBiquadFilter();
+      hp.type = 'highpass';
+      hp.frequency.value = 1100;
+      const bp = ctx.createBiquadFilter();
+      bp.type = 'bandpass';
+      bp.frequency.value = 2700;
+      bp.Q.value = 0.62;
+      s.connect(hp);
+      hp.connect(bp);
+      return { node: bp, source: s };
     },
   },
 ];
