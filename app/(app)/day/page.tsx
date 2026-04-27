@@ -48,7 +48,7 @@ function DayContent() {
           feelingContent={
             <div className="space-y-4">
               <MoodSuggestion />
-              <FeelingCheckInCard segment="feeling" />
+              <FeelingCheckInCard />
             </div>
           }
           // DOING — three-layer panel: NowBar + MissionTracker + DoingInbox + DailyAgenda.
