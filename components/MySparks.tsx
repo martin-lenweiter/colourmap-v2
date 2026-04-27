@@ -36,15 +36,38 @@ interface MySparksProps {
   onOpenMap?: () => void;
 }
 
+interface InboundResonance {
+  id: string;
+  sparkId: string;
+  userId: string;
+  type: string;
+  status: string;
+  createdAt: string;
+  sparkText?: string;
+}
+
 export default function MySparks({ onOpenMap }: MySparksProps) {
   const [sparks, setSparks] = useState<Spark[]>([]);
+  const [inbound, setInbound] = useState<InboundResonance[]>([]);
   const [loading, setLoading] = useState(true);
   const [composing, setComposing] = useState(false);
 
   async function load() {
     try {
-      const res = await fetch('/api/sparks');
-      if (res.ok) setSparks(await res.json());
+      const [sparksRes, inboundRes] = await Promise.all([
+        fetch('/api/sparks'),
+        fetch('/api/sparks/resonances/inbound'),
+      ]);
+      if (sparksRes.ok) {
+        const sparkData: Spark[] = await sparksRes.json();
+        setSparks(sparkData);
+        if (inboundRes.ok) {
+          const resonanceData: InboundResonance[] = await inboundRes.json();
+          // Attach spark text for display
+          const sparkMap = Object.fromEntries(sparkData.map((s) => [s.id, s.text]));
+          setInbound(resonanceData.map((r) => ({ ...r, sparkText: sparkMap[r.sparkId] })));
+        }
+      }
     } finally {
       setLoading(false);
     }
@@ -54,6 +77,21 @@ export default function MySparks({ onOpenMap }: MySparksProps) {
   useEffect(() => {
     void load();
   }, []);
+
+  async function respondToResonance(
+    sparkId: string,
+    resonatingUserId: string,
+    status: 'accepted' | 'ignored',
+  ) {
+    await fetch(`/api/sparks/${sparkId}/resonate`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ userId: resonatingUserId, status }),
+    });
+    setInbound((prev) =>
+      prev.filter((r) => !(r.sparkId === sparkId && r.userId === resonatingUserId)),
+    );
+  }
 
   async function fulfill(id: string) {
     await fetch(`/api/sparks/${id}`, {
@@ -110,6 +148,98 @@ export default function MySparks({ onOpenMap }: MySparksProps) {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: space.md }}>
       {/* Header row */}
+      {/* Resonance inbox — join requests from the map */}
+      {inbound.filter((r) => r.type === 'join_request' && r.status === 'pending').length > 0 && (
+        <div
+          style={{
+            background: '#9B6BA008',
+            border: '1px solid #9B6BA025',
+            borderRadius: radii.xl,
+            padding: `${space.md}px`,
+            display: 'flex',
+            flexDirection: 'column',
+            gap: space.sm,
+          }}
+        >
+          <p
+            style={{
+              fontFamily: font,
+              fontSize: '10px',
+              fontWeight: 700,
+              color: '#9B6BA0',
+              opacity: 0.6,
+              letterSpacing: '0.12em',
+              textTransform: 'uppercase',
+            }}
+          >
+            resonances
+          </p>
+          {inbound
+            .filter((r) => r.type === 'join_request' && r.status === 'pending')
+            .map((r) => (
+              <div key={r.id} style={{ display: 'flex', alignItems: 'center', gap: space.sm }}>
+                <div style={{ flex: 1 }}>
+                  <p
+                    style={{
+                      fontFamily: font,
+                      fontSize: '13px',
+                      color: '#5C3018',
+                      fontWeight: 600,
+                    }}
+                  >
+                    someone wants to join
+                  </p>
+                  {r.sparkText && (
+                    <p
+                      style={{
+                        fontFamily: font,
+                        fontSize: '11px',
+                        color: '#8A6A4A',
+                        opacity: 0.7,
+                        fontStyle: 'italic',
+                      }}
+                    >
+                      "{r.sparkText}"
+                    </p>
+                  )}
+                </div>
+                <button
+                  type="button"
+                  onClick={() => respondToResonance(r.sparkId, r.userId, 'accepted')}
+                  style={{
+                    fontFamily: font,
+                    fontSize: '11px',
+                    fontWeight: 600,
+                    color: '#fff',
+                    background: '#9B6BA0',
+                    border: 'none',
+                    borderRadius: radii.pill,
+                    padding: `3px 10px`,
+                    cursor: 'pointer',
+                  }}
+                >
+                  yes
+                </button>
+                <button
+                  type="button"
+                  onClick={() => respondToResonance(r.sparkId, r.userId, 'ignored')}
+                  style={{
+                    fontFamily: font,
+                    fontSize: '11px',
+                    color: '#8A6A4A',
+                    opacity: 0.4,
+                    background: 'none',
+                    border: 'none',
+                    cursor: 'pointer',
+                  }}
+                >
+                  ×
+                </button>
+              </div>
+            ))}
+        </div>
+      )}
+
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <p
           style={{

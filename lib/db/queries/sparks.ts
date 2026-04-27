@@ -187,6 +187,27 @@ export async function getResonancesByUser(userId: string): Promise<ResonanceRow[
     .limit(200);
 }
 
+// Returns resonances on sparks owned by ownerId — their "inbox".
+export async function getInboundResonances(ownerId: string): Promise<ResonanceRow[]> {
+  const db = getDb();
+  const ownedSparks = await db
+    .select({ id: sparks.id })
+    .from(sparks)
+    .where(eq(sparks.userId, ownerId));
+  if (ownedSparks.length === 0) return [];
+  return db
+    .select()
+    .from(sparkResonances)
+    .where(
+      inArray(
+        sparkResonances.sparkId,
+        ownedSparks.map((s) => s.id),
+      ),
+    )
+    .orderBy(desc(sparkResonances.createdAt))
+    .limit(100);
+}
+
 export async function getResonanceCounts(sparkIds: string[]): Promise<Record<string, number>> {
   if (sparkIds.length === 0) return {};
   const db = getDb();

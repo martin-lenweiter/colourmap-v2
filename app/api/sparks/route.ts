@@ -4,18 +4,21 @@ import { jsonError, parseJsonBody, withAuthenticatedUser } from '@/lib/api/route
 import type { SparkCategory, SparkTimeWindow } from '@/lib/db/schema';
 import {
   createSpark,
+  listCircleSparks,
   listMySparks,
   listNearbySparks,
   SparkValidationError,
 } from '@/lib/services/sparks';
 
-// GET /api/sparks?lat=48.85&lng=2.35&radius=10
-// Returns nearby open sparks (map) OR the user's own sparks (no lat/lng).
+// GET /api/sparks?lat=48.85&lng=2.35&radius=10  — nearby map
+// GET /api/sparks?circleId=xxx                  — sparks for a circle
+// GET /api/sparks                               — user's own sparks
 export async function GET(request: Request) {
   return withAuthenticatedUser(async (user) => {
     const { searchParams } = new URL(request.url);
     const latStr = searchParams.get('lat');
     const lngStr = searchParams.get('lng');
+    const circleId = searchParams.get('circleId');
 
     if (latStr && lngStr) {
       const lat = Number.parseFloat(latStr);
@@ -29,6 +32,11 @@ export async function GET(request: Request) {
       const radius = Math.min(Number.parseFloat(searchParams.get('radius') ?? '10'), 50);
       const results = await listNearbySparks(lat, lng, radius);
       return NextResponse.json(results);
+    }
+
+    if (circleId) {
+      const sparks = await listCircleSparks(circleId);
+      return NextResponse.json(sparks);
     }
 
     const mine = await listMySparks(user.id);

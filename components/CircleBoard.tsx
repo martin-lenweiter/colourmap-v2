@@ -8,6 +8,7 @@ import CircleDecisions from '@/components/CircleDecisions';
 import CircleEvents from '@/components/CircleEvents';
 import CircleMoney from '@/components/CircleMoney';
 import CircleRainbow from '@/components/CircleRainbow';
+import CircleSparks from '@/components/CircleSparks';
 import { useKeyboardAware } from '@/components/hooks/useKeyboardAware';
 import {
   type CircleDetail as ApiCircleDetail,
@@ -1445,6 +1446,9 @@ export default function CircleBoard() {
           </div>
         )}
       </div>
+
+      {/* Sparks — shared intentions, what the group wants to do */}
+      <CircleSparks circleId={active.id} meId={me.id} circleColor={active.color} />
 
       {/* Sync sessions — rehearsals / mix nights / photoshoots */}
       <CircleEvents
