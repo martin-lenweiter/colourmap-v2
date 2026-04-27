@@ -4408,7 +4408,7 @@ const VALID_MODES: VisualizerMode[] = [
   'solar',
 ];
 
-function VisualizerBox() {
+function _VisualizerBox() {
   const [mode, setMode] = useState<VisualizerMode>('atom');
   // Speed default 0.25 — most calm, relaxing stable spot for the whole
   // family. Other stable spots are at 0.4 (gentle), 0.6 (flowing),
