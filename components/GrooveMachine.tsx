@@ -703,6 +703,41 @@ const VOICES: Record<TrackId, Voice> = {
 };
 
 // ─────────────────────────────────────────────────────────────
+// Blend helper — lerp numeric fields in voiceTweaks sub-objects
+// ─────────────────────────────────────────────────────────────
+
+function blendVoiceTweaks(
+  a: PresetVoiceTweaks,
+  b: PresetVoiceTweaks,
+  t: number,
+): PresetVoiceTweaks {
+  function lerpObj<T extends object>(objA: T | undefined, objB: T | undefined): T | undefined {
+    if (!objA && !objB) return undefined;
+    const result: Record<string, unknown> = {};
+    const keys = new Set([...Object.keys(objA ?? {}), ...Object.keys(objB ?? {})]);
+    for (const k of keys) {
+      const va = (objA as Record<string, unknown> | undefined)?.[k];
+      const vb = (objB as Record<string, unknown> | undefined)?.[k];
+      result[k] =
+        typeof va === 'number' && typeof vb === 'number'
+          ? va * (1 - t) + vb * t
+          : t < 0.5
+            ? (va ?? vb)
+            : (vb ?? va);
+    }
+    return result as T;
+  }
+  return {
+    kick: lerpObj(a.kick, b.kick),
+    snare: lerpObj(a.snare, b.snare),
+    hihat: lerpObj(a.hihat, b.hihat),
+    bass: lerpObj(a.bass, b.bass),
+    pad: lerpObj(a.pad, b.pad),
+    rhodes: lerpObj(a.rhodes, b.rhodes),
+  };
+}
+
+// ─────────────────────────────────────────────────────────────
 // Component
 // ─────────────────────────────────────────────────────────────
 
@@ -746,6 +781,15 @@ export default function GrooveMachine() {
     pads: false,
   });
   const [step, setStep] = useState(0);
+  // ── Pattern sequencer ──
+  const [showSequencer, setShowSequencer] = useState(false);
+  const [customPatterns, setCustomPatterns] = useState<Partial<Record<TrackId, number[]>>>({});
+  // ── Layer blend ──
+  const [showLayering, setShowLayering] = useState(false);
+  const [blendPresetId, setBlendPresetId] = useState<string | null>(null);
+  const [blend, setBlend] = useState(0);
+  // ── Tempo sync ──
+  const [tempoSyncEnabled, setTempoSyncEnabled] = useState(false);
 
   const ctxRef = useRef<AudioContext | null>(null);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
@@ -762,6 +806,10 @@ export default function GrooveMachine() {
   // place. Built once in startAudio. Without this everything plays
   // dry and clipped; with it the mix has glue.
   const masterInRef = useRef<GainNode | null>(null);
+  const customPatternsRef = useRef<Partial<Record<TrackId, number[]>>>({});
+  const blendRef = useRef(0);
+  const blendPresetRef = useRef<GroovePreset | null>(null);
+  const paintStateRef = useRef<{ active: boolean; targetVel: number } | null>(null);
 
   useEffect(() => {
     modeRef.current = mode;
@@ -785,14 +833,40 @@ export default function GrooveMachine() {
       })),
     [preset],
   );
+  const blendPreset = useMemo(
+    () => (blendPresetId ? getPreset(blendPresetId) : null),
+    [blendPresetId],
+  );
+
+  // When blend > 0, interpolate BPM between A and B presets
+  const effectiveBpm = useMemo(
+    () =>
+      blend > 0 && blendPreset ? Math.round(bpm * (1 - blend) + blendPreset.bpm * blend) : bpm,
+    [bpm, blend, blendPreset],
+  );
+
+  // Effective patterns: user custom edits overlay the preset-derived patterns
+  const effectivePatterns = useMemo(() => {
+    const result: Partial<Record<TrackId, number[]>> = {};
+    for (const t of activeTracks) {
+      result[t.id] = customPatterns[t.id] ?? t.pattern;
+    }
+    return result;
+  }, [activeTracks, customPatterns]);
+
   const tracksRef = useRef(activeTracks);
   useEffect(() => {
     tracksRef.current = activeTracks;
-    swingRef.current = preset.swing;
-    // Push the active preset's voice tweaks to the module-level slot
-    // every voice trigger reads from. Defaults if unset.
-    setCurrentVoiceTweaks(preset.voiceTweaks);
-  }, [activeTracks, preset.swing, preset.voiceTweaks]);
+    swingRef.current =
+      blend > 0 && blendPreset
+        ? preset.swing * (1 - blend) + blendPreset.swing * blend
+        : preset.swing;
+    const tweaks =
+      blend > 0 && blendPreset
+        ? blendVoiceTweaks(preset.voiceTweaks ?? {}, blendPreset.voiceTweaks ?? {}, blend)
+        : preset.voiceTweaks;
+    setCurrentVoiceTweaks(tweaks);
+  }, [activeTracks, preset.swing, preset.voiceTweaks, blend, blendPreset]);
 
   /**
    * Apply a preset: switch presetId, set bpm + swing + active set.
@@ -803,6 +877,7 @@ export default function GrooveMachine() {
       setPresetId(p.id);
       setBpm(p.bpm);
       swingRef.current = p.swing;
+      setCustomPatterns({});
       // New active set: only tracks listed in the preset's
       // activeSet are on; everything else off.
       const next: Record<TrackId, boolean> = {
@@ -848,6 +923,42 @@ export default function GrooveMachine() {
     } catch {
       /* silent */
     }
+  }, []);
+
+  // Keep refs in sync with state for scheduler closure access
+  useEffect(() => {
+    customPatternsRef.current = customPatterns;
+  }, [customPatterns]);
+  useEffect(() => {
+    blendRef.current = blend;
+    blendPresetRef.current = blendPreset;
+  }, [blend, blendPreset]);
+  useEffect(() => {
+    bpmRef.current = effectiveBpm;
+  }, [effectiveBpm]);
+
+  // Tempo sync: listen for binaural beat frequency events
+  useEffect(() => {
+    if (!tempoSyncEnabled) return;
+    function handler(e: Event) {
+      const hz = (e as CustomEvent<{ hz: number }>).detail.hz;
+      setBpm(Math.max(80, Math.min(140, Math.round(60 + hz * 10))));
+    }
+    window.addEventListener('binaural:beatfreq', handler);
+    return () => window.removeEventListener('binaural:beatfreq', handler);
+  }, [tempoSyncEnabled]);
+
+  // Paint mode — end drag on mouse/touch up anywhere in the document
+  useEffect(() => {
+    function onUp() {
+      paintStateRef.current = null;
+    }
+    window.addEventListener('mouseup', onUp);
+    window.addEventListener('touchend', onUp);
+    return () => {
+      window.removeEventListener('mouseup', onUp);
+      window.removeEventListener('touchend', onUp);
+    };
   }, []);
 
   // Per-bar cached variation patterns. At the start of each bar
@@ -916,10 +1027,21 @@ export default function GrooveMachine() {
           if (track.group === 'drums') allowed = false;
         }
         if (!allowed) continue;
-        // Use a per-bar variation if the preset provides one for
-        // this track; otherwise fall back to the static pattern.
+        // Resolve pattern: custom edit > blend > variation pool > base pattern
+        const customPat = customPatternsRef.current[track.id];
         const variationPattern = barPatternsRef.current[track.id];
-        const patternForBar = variationPattern ?? track.pattern;
+        const bl = blendRef.current;
+        const blendPr = blendPresetRef.current;
+        let patternForBar: number[];
+        if (customPat) {
+          patternForBar = customPat;
+        } else if (bl > 0 && blendPr) {
+          const bPat = blendPr.patternOverrides?.[track.id] ?? track.pattern;
+          const aPat = variationPattern ?? track.pattern;
+          patternForBar = aPat.map((v, i) => v * (1 - bl) + (bPat[i] ?? 0) * bl);
+        } else {
+          patternForBar = variationPattern ?? track.pattern;
+        }
         let vel = patternForBar[stepIdx];
         // Fill bar: add extra snare + kick hits on 14-15 to sell the
         // approach to the downbeat.
@@ -1059,6 +1181,29 @@ export default function GrooveMachine() {
     }
     setActive(next);
     if (mode !== 'full') setMode('full');
+  }
+
+  // ── Sequencer handlers ──
+  function handleStepMouseDown(trackId: TrackId, stepIdx: number, currentVel: number) {
+    const targetVel = currentVel > 0 ? 0 : 0.8;
+    paintStateRef.current = { active: true, targetVel };
+    setCustomPatterns((prev) => {
+      const base = prev[trackId] ?? activeTracks.find((t) => t.id === trackId)?.pattern ?? [];
+      const next = [...base];
+      next[stepIdx] = targetVel;
+      return { ...prev, [trackId]: next };
+    });
+  }
+
+  function handleStepMouseEnter(trackId: TrackId, stepIdx: number) {
+    if (!paintStateRef.current?.active) return;
+    const targetVel = paintStateRef.current.targetVel;
+    setCustomPatterns((prev) => {
+      const base = prev[trackId] ?? activeTracks.find((t) => t.id === trackId)?.pattern ?? [];
+      const next = [...base];
+      next[stepIdx] = targetVel;
+      return { ...prev, [trackId]: next };
+    });
   }
 
   const activeCount = Object.values(active).filter(Boolean).length;
@@ -1216,6 +1361,42 @@ export default function GrooveMachine() {
       <div className="space-y-5 md:grid md:grid-cols-[1fr_320px] md:gap-8 md:space-y-0">
         {/* LEFT — track channel strips */}
         <div className="space-y-3">
+          {/* Sequencer toggle */}
+          <div className="flex items-center justify-between px-1">
+            <button
+              type="button"
+              onClick={() => setShowSequencer((v) => !v)}
+              className="cursor-pointer rounded-lg px-3 py-1.5 transition-all"
+              style={{
+                background: showSequencer ? '#5C3018' : 'transparent',
+                border: `1.5px solid ${showSequencer ? '#5C3018' : '#C4A06040'}`,
+                color: showSequencer ? '#F3E8D2' : '#8A6A4A',
+                fontFamily: 'var(--font-serif)',
+                fontSize: '11px',
+                fontWeight: 600,
+                letterSpacing: '0.16em',
+                textTransform: 'uppercase',
+              }}
+            >
+              {showSequencer ? '✕ Sequencer' : '⊞ Sequencer'}
+            </button>
+            {showSequencer && Object.keys(customPatterns).length > 0 && (
+              <button
+                type="button"
+                onClick={() => setCustomPatterns({})}
+                className="cursor-pointer text-xs underline"
+                style={{
+                  color: '#8A6A4A',
+                  fontFamily: 'var(--font-serif)',
+                  fontSize: '11px',
+                  background: 'none',
+                  border: 'none',
+                }}
+              >
+                reset edits
+              </button>
+            )}
+          </div>
           {GROUPS.map((grp) => {
             const tracksInGroup = TRACKS.filter((t) => t.group === grp.id);
             const groupActiveCount = tracksInGroup.filter((t) => active[t.id]).length;
@@ -1263,56 +1444,101 @@ export default function GrooveMachine() {
                     {tracksInGroup.map((t) => {
                       const on = active[t.id];
                       return (
-                        <button
-                          key={t.id}
-                          type="button"
-                          onClick={() => toggleTrack(t.id)}
-                          className="flex w-full cursor-pointer items-center gap-3 rounded-xl px-3 py-2.5 transition-all"
-                          style={{
-                            background: on ? `${t.color}1E` : 'transparent',
-                            border: `1px solid ${on ? `${t.color}60` : `${t.color}20`}`,
-                          }}
-                          aria-pressed={on}
-                        >
-                          <span
-                            className="block shrink-0 rounded-full"
+                        <div key={t.id}>
+                          <button
+                            type="button"
+                            onClick={() => toggleTrack(t.id)}
+                            className="flex w-full cursor-pointer items-center gap-3 rounded-xl px-3 py-2.5 transition-all"
                             style={{
-                              width: 12,
-                              height: 12,
-                              background: on ? t.color : 'transparent',
-                              border: `2px solid ${t.color}`,
+                              background: on ? `${t.color}1E` : 'transparent',
+                              border: `1px solid ${on ? `${t.color}60` : `${t.color}20`}`,
                             }}
-                          />
-                          <span
-                            className="flex-1 text-left"
-                            style={{
-                              fontFamily: 'var(--font-serif)',
-                              fontSize: '14px',
-                              fontWeight: on ? 700 : 500,
-                              color: on ? t.color : '#5C3018',
-                              opacity: on ? 1 : 0.75,
-                            }}
+                            aria-pressed={on}
                           >
-                            {t.label}
-                          </span>
-                          {/* 16-step mini-sequencer view — shows when this track fires */}
-                          <div className="hidden md:flex gap-[2px]">
-                            {t.pattern.map((v, i) => (
-                              <span
-                                key={i}
-                                className="block rounded-sm"
-                                style={{
-                                  width: 4,
-                                  height: v > 0 ? 10 : 4,
-                                  background: t.color,
-                                  opacity:
-                                    playing && step === i && on ? 1 : v > 0 && on ? 0.5 : 0.15,
-                                  transition: 'opacity 60ms',
-                                }}
-                              />
-                            ))}
-                          </div>
-                        </button>
+                            <span
+                              className="block shrink-0 rounded-full"
+                              style={{
+                                width: 12,
+                                height: 12,
+                                background: on ? t.color : 'transparent',
+                                border: `2px solid ${t.color}`,
+                              }}
+                            />
+                            <span
+                              className="flex-1 text-left"
+                              style={{
+                                fontFamily: 'var(--font-serif)',
+                                fontSize: '14px',
+                                fontWeight: on ? 700 : 500,
+                                color: on ? t.color : '#5C3018',
+                                opacity: on ? 1 : 0.75,
+                              }}
+                            >
+                              {t.label}
+                            </span>
+                            {/* Mini step display (hidden when sequencer is open) */}
+                            {!showSequencer && (
+                              <div className="hidden md:flex gap-[2px]">
+                                {(effectivePatterns[t.id] ?? t.pattern).map((v, i) => (
+                                  <span
+                                    key={i}
+                                    className="block rounded-sm"
+                                    style={{
+                                      width: 4,
+                                      height: v > 0 ? 10 : 4,
+                                      background: t.color,
+                                      opacity:
+                                        playing && step === i && on ? 1 : v > 0 && on ? 0.5 : 0.15,
+                                      transition: 'opacity 60ms',
+                                    }}
+                                  />
+                                ))}
+                              </div>
+                            )}
+                          </button>
+                          {/* Interactive step sequencer grid */}
+                          {showSequencer && (
+                            <div
+                              className="px-3 pb-2"
+                              style={{ userSelect: 'none', touchAction: 'none' }}
+                            >
+                              <div className="mt-1 flex gap-px">
+                                {(effectivePatterns[t.id] ?? t.pattern).map((vel, i) => {
+                                  const isActive = vel > 0;
+                                  const isCurrent = playing && step === i;
+                                  return (
+                                    <button
+                                      key={i}
+                                      type="button"
+                                      className="flex-1 rounded-sm"
+                                      style={{
+                                        minWidth: 0,
+                                        height: 20,
+                                        background: isActive
+                                          ? `${t.color}${on ? 'CC' : '55'}`
+                                          : `${t.color}18`,
+                                        border: `1px solid ${
+                                          isCurrent
+                                            ? t.color
+                                            : isActive
+                                              ? `${t.color}70`
+                                              : `${t.color}20`
+                                        }`,
+                                        boxShadow: isCurrent && on ? `0 0 4px ${t.color}` : 'none',
+                                        cursor: 'pointer',
+                                        transition: 'background 60ms',
+                                      }}
+                                      onMouseDown={() => handleStepMouseDown(t.id, i, vel)}
+                                      onMouseEnter={() => handleStepMouseEnter(t.id, i)}
+                                      aria-pressed={isActive}
+                                      aria-label={`Step ${i + 1} ${isActive ? 'on' : 'off'}`}
+                                    />
+                                  );
+                                })}
+                              </div>
+                            </div>
+                          )}
+                        </div>
                       );
                     })}
                   </div>
@@ -1363,36 +1589,64 @@ export default function GrooveMachine() {
                 )}
               </button>
               <div className="text-right">
-                <p
-                  style={{
-                    fontFamily: 'var(--font-serif)',
-                    fontSize: '11px',
-                    letterSpacing: '0.18em',
-                    textTransform: 'uppercase',
-                    color: '#8A6A4A',
-                  }}
-                >
-                  Tempo
-                </p>
-                <p
-                  style={{
-                    fontFamily: 'var(--font-serif)',
-                    fontSize: '26px',
-                    fontWeight: 700,
-                    color: '#5C3018',
-                  }}
-                >
-                  {bpm}
-                  <span style={{ fontSize: '13px', opacity: 0.65, marginLeft: 4 }}>bpm</span>
-                </p>
+                <div className="flex items-center justify-end gap-2">
+                  {/* Binaural tempo sync toggle */}
+                  <button
+                    type="button"
+                    onClick={() => setTempoSyncEnabled((v) => !v)}
+                    title="Sync BPM to Binaural Tuner beat frequency"
+                    className="cursor-pointer rounded-lg px-2 py-1 transition-all"
+                    style={{
+                      background: tempoSyncEnabled ? '#6890B020' : 'transparent',
+                      border: `1px solid ${tempoSyncEnabled ? '#6890B0' : '#C4A06040'}`,
+                      color: tempoSyncEnabled ? '#6890B0' : '#8A6A4A',
+                      fontFamily: 'var(--font-serif)',
+                      fontSize: '10px',
+                      fontWeight: 600,
+                      letterSpacing: '0.1em',
+                    }}
+                  >
+                    ⟲ sync
+                  </button>
+                  <div>
+                    <p
+                      style={{
+                        fontFamily: 'var(--font-serif)',
+                        fontSize: '11px',
+                        letterSpacing: '0.18em',
+                        textTransform: 'uppercase',
+                        color: '#8A6A4A',
+                      }}
+                    >
+                      Tempo
+                    </p>
+                    <p
+                      style={{
+                        fontFamily: 'var(--font-serif)',
+                        fontSize: '26px',
+                        fontWeight: 700,
+                        color: '#5C3018',
+                      }}
+                    >
+                      {effectiveBpm}
+                      <span style={{ fontSize: '13px', opacity: 0.65, marginLeft: 4 }}>bpm</span>
+                      {blend > 0 && blendPreset && (
+                        <span style={{ fontSize: '10px', opacity: 0.5, marginLeft: 4 }}>
+                          ×{Math.round(blend * 100)}%B
+                        </span>
+                      )}
+                    </p>
+                  </div>
+                </div>
               </div>
             </div>
-            {/* Tempo slider */}
+            {/* Tempo slider — disabled when blending (BPM driven by blend) */}
             <input
               type="range"
               min={80}
               max={140}
-              value={bpm}
+              value={blend > 0 && blendPreset ? effectiveBpm : bpm}
+              disabled={blend > 0 && blendPreset !== null}
               onChange={(e) => setBpm(Number(e.target.value))}
               className="mt-4 w-full cursor-pointer"
               aria-label="Tempo"
@@ -1556,6 +1810,157 @@ export default function GrooveMachine() {
                         ? 'grooving'
                         : 'full throttle'}
             </p>
+          </div>
+
+          {/* Layer blend — crossfade between two presets */}
+          <div
+            className="rounded-2xl border px-4 py-4"
+            style={{ background: '#F3E8D2', borderColor: '#C4A06030' }}
+          >
+            <button
+              type="button"
+              onClick={() => {
+                setShowLayering((v) => !v);
+                if (showLayering) {
+                  setBlend(0);
+                  setBlendPresetId(null);
+                }
+              }}
+              className="flex w-full cursor-pointer items-center justify-between"
+              style={{ background: 'none', border: 'none' }}
+            >
+              <span
+                className="uppercase"
+                style={{
+                  fontFamily: 'var(--font-serif)',
+                  fontSize: '11px',
+                  letterSpacing: '0.2em',
+                  color: blendPresetId && blend > 0 ? '#9B6BA0' : '#8A6A4A',
+                  fontWeight: blendPresetId && blend > 0 ? 700 : 400,
+                }}
+              >
+                Layer
+              </span>
+              <span style={{ fontSize: '11px', color: '#8A6A4A' }}>{showLayering ? '▾' : '▸'}</span>
+            </button>
+
+            {showLayering && (
+              <div className="mt-3 space-y-3 animate-in fade-in duration-150">
+                {/* B preset picker — smaller dots */}
+                <p
+                  style={{
+                    fontFamily: 'var(--font-serif)',
+                    fontSize: '10px',
+                    letterSpacing: '0.15em',
+                    textTransform: 'uppercase',
+                    color: '#8A6A4A',
+                    marginBottom: 6,
+                  }}
+                >
+                  B Preset
+                </p>
+                <div className="flex flex-wrap gap-2">
+                  {GROOVE_PRESETS.filter((p) => p.id !== presetId).map((p) => {
+                    const isSelected = p.id === blendPresetId;
+                    return (
+                      <button
+                        key={p.id}
+                        type="button"
+                        onClick={() => {
+                          setBlendPresetId(p.id);
+                          if (blend === 0) setBlend(0.5);
+                        }}
+                        title={p.name}
+                        className="flex cursor-pointer items-center gap-1.5 rounded-lg px-2 py-1 transition-all"
+                        style={{
+                          background: isSelected ? `${p.dot}18` : 'transparent',
+                          border: `1.5px solid ${isSelected ? p.dot : `${p.dot}40`}`,
+                        }}
+                      >
+                        <span
+                          className="block rounded-full"
+                          style={{ width: 10, height: 10, background: p.dot, flexShrink: 0 }}
+                        />
+                        <span
+                          style={{
+                            fontFamily: 'var(--font-serif)',
+                            fontSize: '11px',
+                            fontWeight: isSelected ? 700 : 500,
+                            color: isSelected ? p.dot : '#5C3018',
+                          }}
+                        >
+                          {p.name}
+                        </span>
+                      </button>
+                    );
+                  })}
+                </div>
+
+                {blendPresetId && (
+                  <>
+                    {/* Crossfader */}
+                    <div className="flex items-center justify-between">
+                      <span
+                        style={{
+                          fontFamily: 'var(--font-serif)',
+                          fontSize: '10px',
+                          color: preset.dot,
+                          fontWeight: 700,
+                        }}
+                      >
+                        {preset.name}
+                      </span>
+                      <span
+                        style={{
+                          fontFamily: 'var(--font-serif)',
+                          fontSize: '10px',
+                          color: '#8A6A4A',
+                          opacity: 0.6,
+                        }}
+                      >
+                        {Math.round(blend * 100)}%
+                      </span>
+                      <span
+                        style={{
+                          fontFamily: 'var(--font-serif)',
+                          fontSize: '10px',
+                          color: blendPreset?.dot ?? '#9B6BA0',
+                          fontWeight: 700,
+                        }}
+                      >
+                        {blendPreset?.name}
+                      </span>
+                    </div>
+                    <input
+                      type="range"
+                      min={0}
+                      max={100}
+                      value={Math.round(blend * 100)}
+                      onChange={(e) => setBlend(Number(e.target.value) / 100)}
+                      className="w-full cursor-pointer"
+                      aria-label="Blend between A and B preset"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setBlend(0);
+                        setBlendPresetId(null);
+                      }}
+                      className="w-full cursor-pointer rounded-xl py-1.5 transition-all hover:opacity-85"
+                      style={{
+                        background: 'transparent',
+                        border: '1px solid #C4A06040',
+                        color: '#8A6A4A',
+                        fontFamily: 'var(--font-serif)',
+                        fontSize: '11px',
+                      }}
+                    >
+                      clear blend
+                    </button>
+                  </>
+                )}
+              </div>
+            )}
           </div>
 
           {/* Future-sharing hint */}

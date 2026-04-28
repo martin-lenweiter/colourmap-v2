@@ -54,7 +54,6 @@ export default function NavLinks() {
   // /notebook scrolls Day off-screen and you feel 'lost'.
   // biome-ignore lint/correctness/useExhaustiveDependencies: pathname is the real trigger; refs are stable
   useEffect(() => {
-    if (!isPhone) return;
     const el = activeLinkRef.current;
     const nav = navRef.current;
     if (!el || !nav) return;
@@ -63,7 +62,7 @@ export default function NavLinks() {
     // Center the active link in the visible nav strip when possible.
     const target = el.offsetLeft - navRect.width / 2 + linkRect.width / 2;
     nav.scrollTo({ left: Math.max(0, target), behavior: 'smooth' });
-  }, [pathname, isPhone]);
+  }, [pathname]);
 
   // On phone, the nav scrolls horizontally with scroll-snap + fade
   // edges so the user feels like they're flipping through tabs.
@@ -72,25 +71,15 @@ export default function NavLinks() {
       ref={(el) => {
         navRef.current = el;
       }}
-      className={`mx-auto flex w-full items-center px-4 pb-3 pt-2 ${
-        isPhone
-          ? 'gap-7 overflow-x-auto justify-start scrollbar-none relative'
-          : 'max-w-5xl gap-10 justify-center'
-      }`}
-      style={
-        isPhone
-          ? {
-              scrollbarWidth: 'none',
-              scrollSnapType: 'x proximity',
-              // Only fade the right edge — left must stay fully visible
-              // so Focus (the first tab) is never clipped at position 0.
-              WebkitMaskImage:
-                'linear-gradient(to right, black 0, black calc(100% - 32px), transparent 100%)',
-              maskImage:
-                'linear-gradient(to right, black 0, black calc(100% - 32px), transparent 100%)',
-            }
-          : undefined
-      }
+      className="mx-auto flex w-full items-center gap-7 overflow-x-auto justify-start scrollbar-none relative px-4 pb-3 pt-2"
+      style={{
+        scrollbarWidth: 'none',
+        scrollSnapType: 'x proximity',
+        WebkitMaskImage:
+          'linear-gradient(to right, black 0, black calc(100% - 40px), transparent 100%)',
+        maskImage: 'linear-gradient(to right, black 0, black calc(100% - 40px), transparent 100%)',
+        maxWidth: isPhone ? undefined : '100%',
+      }}
     >
       {primary.map((link) => {
         const isActive = link.href.startsWith('/#')
@@ -116,7 +105,7 @@ export default function NavLinks() {
             }`}
             style={{
               scrollSnapAlign: 'center',
-              fontSize: isPhone ? 16 : 15,
+              fontSize: 16,
             }}
           >
             {link.label}

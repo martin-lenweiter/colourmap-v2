@@ -580,7 +580,6 @@ export default function FeelingCheckInCard() {
     setRenamingSection(null);
   }
 
-  const [dailyObjOpen, setDailyObjOpen] = useState(true);
   const [pushTomorrowOpen, setPushTomorrowOpen] = useState(true);
   const [doneOpen, setDoneOpen] = useState(false);
   const [otherMissionsOpen, setOtherMissionsOpen] = useState(() => {
@@ -3327,9 +3326,9 @@ export default function FeelingCheckInCard() {
         >
           doing
         </p>
-        {/* CURRENT OBJECTIVE — frame removed on phone. */}
+        {/* CURRENT OBJECTIVE */}
         <div
-          className="space-y-2 rounded-none border-0 bg-transparent px-0 py-1 transition-all md:rounded-2xl md:border md:px-4 md:py-3"
+          className="space-y-2 px-0 py-1 transition-all"
           onDragOver={(e) => {
             e.preventDefault();
             e.dataTransfer.dropEffect = 'move';
@@ -3340,10 +3339,6 @@ export default function FeelingCheckInCard() {
               const data = JSON.parse(e.dataTransfer.getData('text/plain'));
               if (data.from && data.text) moveToCurrent(data.text, data.from, data.id);
             } catch {}
-          }}
-          style={{
-            borderColor: '#C4A06030',
-            background: 'rgba(245,236,220,0.45)',
           }}
         >
           <div className="flex flex-col items-center gap-2">
@@ -3453,13 +3448,8 @@ export default function FeelingCheckInCard() {
           {/* Done archive moved to Other Missions Done tab */}
         </div>
 
-        {/* DAILY OBJECTIVES + TO-DO — frame removed on phone. */}
-        <div
-          className="space-y-3 rounded-none border-0 bg-transparent px-0 py-1 md:rounded-2xl md:border md:px-4 md:py-3"
-          style={{
-            borderColor: '#C4A06030',
-          }}
-        >
+        {/* DAILY OBJECTIVES + TO-DO */}
+        <div className="space-y-3 px-0 py-1">
           <div className="flex justify-center">
             <button
               type="button"
@@ -3541,704 +3531,637 @@ export default function FeelingCheckInCard() {
                   } catch {}
                 }}
               >
-                <button
-                  type="button"
-                  onClick={() => setDailyObjOpen((s) => !s)}
-                  className="flex cursor-pointer items-center gap-1.5 px-1"
-                  style={{ background: 'none', border: 'none' }}
-                >
-                  <span
-                    className="font-semibold uppercase tracking-[0.22em]"
-                    style={{ color: '#C4A060', fontSize: '13px' }}
-                  >
-                    {renamingSection === 'daily' ? (
-                      <input
-                        type="text"
-                        value={renameValue}
-                        onChange={(e) => setRenameValue(e.target.value)}
-                        onBlur={() => commitRename('daily', 'Daily Objectives')}
-                        onKeyDown={(e) => {
-                          if (e.key === 'Enter') commitRename('daily', 'Daily Objectives');
-                          if (e.key === 'Escape') setRenamingSection(null);
+                {todayObjectives
+                  .filter((o) => !o.done)
+                  .map((o) => {
+                    const isExpanded = expandedTodayId === o.id;
+                    const isDragging = draggedTodayId === o.id;
+                    const isDropTarget = dragOverTodayId === o.id && draggedTodayId !== o.id;
+                    return (
+                      <div
+                        key={o.id}
+                        className="space-y-1"
+                        draggable
+                        onDragStart={(e) => {
+                          setDraggedTodayId(o.id);
+                          e.dataTransfer.setData(
+                            'text/plain',
+                            JSON.stringify({ from: 'daily', id: o.id, text: o.text }),
+                          );
                         }}
-                        autoFocus
-                        onClick={(e) => e.stopPropagation()}
-                        className="bg-transparent font-semibold uppercase tracking-[0.18em] outline-none border-b"
-                        style={{ color: '#C4A060', fontSize: '13px', borderColor: '#C4A06040' }}
-                      />
-                    ) : (
-                      <span
-                        className="cursor-pointer"
-                        onDoubleClick={(e) => {
-                          e.stopPropagation();
-                          setRenamingSection('daily');
-                          setRenameValue(sectionLabel('daily', 'Daily Objectives'));
+                        onDragOver={(e) => {
+                          e.preventDefault();
+                          if (draggedTodayId !== null && draggedTodayId !== o.id) {
+                            setDragOverTodayId(o.id);
+                          }
                         }}
-                        title="Double-click to rename"
+                        onDragLeave={(e) => {
+                          // Only clear if leaving to something outside this row
+                          if (!(e.currentTarget as HTMLElement).contains(e.relatedTarget as Node)) {
+                            setDragOverTodayId((prev) => (prev === o.id ? null : prev));
+                          }
+                        }}
+                        onDrop={(e) => {
+                          e.preventDefault();
+                          if (draggedTodayId !== null) {
+                            reorderTodayObjectives(draggedTodayId, o.id);
+                          }
+                          setDraggedTodayId(null);
+                          setDragOverTodayId(null);
+                        }}
+                        onDragEnd={() => {
+                          setDraggedTodayId(null);
+                          setDragOverTodayId(null);
+                        }}
+                        style={{
+                          opacity: isDragging ? 0.4 : 1,
+                          borderTop: isDropTarget ? '2px solid #C4A060' : '2px solid transparent',
+                          cursor: 'grab',
+                          transition: 'opacity 120ms, border-color 120ms',
+                        }}
                       >
-                        {sectionLabel('daily', 'Daily Objectives')}
-                      </span>
-                    )}
-                  </span>
-                  <span
-                    className="text-[10px] transition-transform duration-200"
-                    style={{
-                      color: '#C4A06080',
-                      transform: dailyObjOpen ? 'rotate(180deg)' : 'rotate(0deg)',
-                    }}
-                  >
-                    ▾
-                  </span>
-                </button>
-                {dailyObjOpen && (
-                  <>
-                    {todayObjectives
-                      .filter((o) => !o.done)
-                      .map((o) => {
-                        const isExpanded = expandedTodayId === o.id;
-                        const isDragging = draggedTodayId === o.id;
-                        const isDropTarget = dragOverTodayId === o.id && draggedTodayId !== o.id;
-                        return (
-                          <div
-                            key={o.id}
-                            className="space-y-1"
-                            draggable
-                            onDragStart={(e) => {
-                              setDraggedTodayId(o.id);
-                              e.dataTransfer.setData(
-                                'text/plain',
-                                JSON.stringify({ from: 'daily', id: o.id, text: o.text }),
-                              );
-                            }}
-                            onDragOver={(e) => {
-                              e.preventDefault();
-                              if (draggedTodayId !== null && draggedTodayId !== o.id) {
-                                setDragOverTodayId(o.id);
-                              }
-                            }}
-                            onDragLeave={(e) => {
-                              // Only clear if leaving to something outside this row
-                              if (
-                                !(e.currentTarget as HTMLElement).contains(e.relatedTarget as Node)
-                              ) {
-                                setDragOverTodayId((prev) => (prev === o.id ? null : prev));
-                              }
-                            }}
-                            onDrop={(e) => {
-                              e.preventDefault();
-                              if (draggedTodayId !== null) {
-                                reorderTodayObjectives(draggedTodayId, o.id);
-                              }
-                              setDraggedTodayId(null);
-                              setDragOverTodayId(null);
-                            }}
-                            onDragEnd={() => {
-                              setDraggedTodayId(null);
-                              setDragOverTodayId(null);
-                            }}
+                        <div className="group flex items-start gap-2">
+                          <button
+                            type="button"
+                            onClick={() => toggleTodayObjective(o.id)}
+                            title={o.done ? 'Mark as not done' : 'Mark as done'}
+                            className="mt-[3px] flex h-5 w-5 shrink-0 cursor-pointer items-center justify-center rounded border transition-all hover:scale-110"
                             style={{
-                              opacity: isDragging ? 0.4 : 1,
-                              borderTop: isDropTarget
-                                ? '2px solid #C4A060'
-                                : '2px solid transparent',
-                              cursor: 'grab',
-                              transition: 'opacity 120ms, border-color 120ms',
+                              borderColor: o.done ? '#7AAA5860' : '#C4A06060',
+                              background: o.done ? '#7AAA5810' : 'transparent',
                             }}
                           >
-                            <div className="group flex items-start gap-2">
-                              <button
-                                type="button"
-                                onClick={() => toggleTodayObjective(o.id)}
-                                title={o.done ? 'Mark as not done' : 'Mark as done'}
-                                className="mt-[3px] flex h-5 w-5 shrink-0 cursor-pointer items-center justify-center rounded border transition-all hover:scale-110"
-                                style={{
-                                  borderColor: o.done ? '#7AAA5860' : '#C4A06060',
-                                  background: o.done ? '#7AAA5810' : 'transparent',
-                                }}
-                              >
-                                {o.done && (
-                                  <span className="text-xs" style={{ color: '#7AAA58' }}>
-                                    ✓
-                                  </span>
-                                )}
-                              </button>
-                              {/* Status dot */}
-                              {!o.done && o.status && o.status !== 'active' && (
+                            {o.done && (
+                              <span className="text-xs" style={{ color: '#7AAA58' }}>
+                                ✓
+                              </span>
+                            )}
+                          </button>
+                          {/* Status dot */}
+                          {!o.done && o.status && o.status !== 'active' && (
+                            <span
+                              className="mt-[5px] block shrink-0 rounded-full"
+                              style={{
+                                width: 7,
+                                height: 7,
+                                background: STATUS_CONFIG[o.status].color,
+                              }}
+                              title={STATUS_CONFIG[o.status].label}
+                            />
+                          )}
+                          {renamingObjId === o.id ? (
+                            <input
+                              type="text"
+                              value={renameObjValue}
+                              onChange={(e) => setRenameObjValue(e.target.value)}
+                              onBlur={() => {
+                                const trimmed = renameObjValue.trim();
+                                if (trimmed && trimmed !== o.text)
+                                  updateTodayField(o.id, 'text', trimmed);
+                                setRenamingObjId(null);
+                              }}
+                              onKeyDown={(e) => {
+                                if (e.key === 'Enter') {
+                                  const trimmed = renameObjValue.trim();
+                                  if (trimmed && trimmed !== o.text)
+                                    updateTodayField(o.id, 'text', trimmed);
+                                  setRenamingObjId(null);
+                                }
+                                if (e.key === 'Escape') setRenamingObjId(null);
+                              }}
+                              autoFocus
+                              className="flex-1 bg-transparent text-left outline-none border-b"
+                              style={{
+                                color: '#7a5438',
+                                fontFamily: 'var(--font-handwritten)',
+                                fontSize: '20px',
+                                borderColor: '#C4A06040',
+                              }}
+                            />
+                          ) : (
+                            <button
+                              type="button"
+                              onClick={() => setExpandedTodayId(isExpanded ? null : o.id)}
+                              onDoubleClick={(e) => {
+                                e.stopPropagation();
+                                setRenamingObjId(o.id);
+                                setRenameObjValue(o.text);
+                              }}
+                              className="flex-1 cursor-pointer bg-transparent text-left"
+                              style={{
+                                color: o.done
+                                  ? '#C4A060'
+                                  : o.status === 'waiting'
+                                    ? '#A08060'
+                                    : '#7a5438',
+                                fontFamily: 'var(--font-handwritten)',
+                                fontSize: '20px',
+                                opacity: o.done ? 0.5 : o.status === 'waiting' ? 0.5 : 1,
+                                border: 'none',
+                                fontStyle: o.status === 'waiting' ? 'italic' : 'normal',
+                              }}
+                              title="Click to expand · Double-click to rename"
+                            >
+                              {o.text}
+                              {o.status === 'waiting' && (
                                 <span
-                                  className="mt-[5px] block shrink-0 rounded-full"
-                                  style={{
-                                    width: 7,
-                                    height: 7,
-                                    background: STATUS_CONFIG[o.status].color,
-                                  }}
-                                  title={STATUS_CONFIG[o.status].label}
-                                />
-                              )}
-                              {renamingObjId === o.id ? (
-                                <input
-                                  type="text"
-                                  value={renameObjValue}
-                                  onChange={(e) => setRenameObjValue(e.target.value)}
-                                  onBlur={() => {
-                                    const trimmed = renameObjValue.trim();
-                                    if (trimmed && trimmed !== o.text)
-                                      updateTodayField(o.id, 'text', trimmed);
-                                    setRenamingObjId(null);
-                                  }}
-                                  onKeyDown={(e) => {
-                                    if (e.key === 'Enter') {
-                                      const trimmed = renameObjValue.trim();
-                                      if (trimmed && trimmed !== o.text)
-                                        updateTodayField(o.id, 'text', trimmed);
-                                      setRenamingObjId(null);
-                                    }
-                                    if (e.key === 'Escape') setRenamingObjId(null);
-                                  }}
-                                  autoFocus
-                                  className="flex-1 bg-transparent text-left outline-none border-b"
-                                  style={{
-                                    color: '#7a5438',
-                                    fontFamily: 'var(--font-handwritten)',
-                                    fontSize: '20px',
-                                    borderColor: '#C4A06040',
-                                  }}
-                                />
-                              ) : (
-                                <button
-                                  type="button"
-                                  onClick={() => setExpandedTodayId(isExpanded ? null : o.id)}
-                                  onDoubleClick={(e) => {
-                                    e.stopPropagation();
-                                    setRenamingObjId(o.id);
-                                    setRenameObjValue(o.text);
-                                  }}
-                                  className="flex-1 cursor-pointer bg-transparent text-left"
-                                  style={{
-                                    color: o.done
-                                      ? '#C4A060'
-                                      : o.status === 'waiting'
-                                        ? '#A08060'
-                                        : '#7a5438',
-                                    fontFamily: 'var(--font-handwritten)',
-                                    fontSize: '20px',
-                                    opacity: o.done ? 0.5 : o.status === 'waiting' ? 0.5 : 1,
-                                    border: 'none',
-                                    fontStyle: o.status === 'waiting' ? 'italic' : 'normal',
-                                  }}
-                                  title="Click to expand · Double-click to rename"
+                                  className="ml-2 text-xs"
+                                  style={{ color: '#A08060', fontStyle: 'italic' }}
                                 >
-                                  {o.text}
-                                  {o.status === 'waiting' && (
-                                    <span
-                                      className="ml-2 text-xs"
-                                      style={{ color: '#A08060', fontStyle: 'italic' }}
-                                    >
-                                      waiting
-                                    </span>
-                                  )}
-                                  {o.notes && o.notes.trim().length > 0 && !isExpanded && (
-                                    <span
-                                      className="ml-2 text-xs no-underline"
-                                      style={{ color: '#C4A06080' }}
-                                    >
-                                      ·
-                                    </span>
-                                  )}
-                                </button>
+                                  waiting
+                                </span>
                               )}
+                              {o.notes && o.notes.trim().length > 0 && !isExpanded && (
+                                <span
+                                  className="ml-2 text-xs no-underline"
+                                  style={{ color: '#C4A06080' }}
+                                >
+                                  ·
+                                </span>
+                              )}
+                            </button>
+                          )}
+                          <button
+                            type="button"
+                            onClick={() => removeTodayObjective(o.id)}
+                            title="Remove"
+                            className="mt-[3px] cursor-pointer text-sm opacity-0 transition-opacity group-hover:opacity-40"
+                            style={{ color: '#7a5438', background: 'none', border: 'none' }}
+                          >
+                            ✕
+                          </button>
+                        </div>
+                        {isExpanded && (
+                          <>
+                            <textarea
+                              value={o.notes || ''}
+                              onChange={(e) => updateTodayNotes(o.id, e.target.value)}
+                              placeholder="advancements, next steps..."
+                              rows={2}
+                              className="ml-7 w-[calc(100%-1.75rem)] resize-none border-b bg-transparent pb-1 pt-0.5 outline-none placeholder:text-[#7A5438] placeholder:opacity-50 animate-in fade-in duration-150"
+                              style={{
+                                color: '#7a5438',
+                                borderColor: '#C4A06025',
+                                fontFamily: 'var(--font-handwritten)',
+                                fontSize: '17px',
+                                lineHeight: 1.4,
+                              }}
+                            />
+                            {/* Status toggle — Active / Waiting */}
+                            <div className="ml-7 pt-1">
                               <button
                                 type="button"
-                                onClick={() => removeTodayObjective(o.id)}
-                                title="Remove"
-                                className="mt-[3px] cursor-pointer text-sm opacity-0 transition-opacity group-hover:opacity-40"
-                                style={{ color: '#7a5438', background: 'none', border: 'none' }}
+                                onClick={() =>
+                                  updateTodayField(
+                                    o.id,
+                                    'status',
+                                    o.status === 'waiting' ? 'active' : 'waiting',
+                                  )
+                                }
+                                className="flex cursor-pointer items-center gap-2 transition-all"
+                                style={{ background: 'none', border: 'none' }}
                               >
-                                ✕
+                                <span
+                                  className="block rounded-full"
+                                  style={{
+                                    width: 10,
+                                    height: 10,
+                                    background: o.status === 'waiting' ? '#A08060' : '#7AAA58',
+                                  }}
+                                />
+                                <span
+                                  style={{
+                                    fontFamily: 'var(--font-serif)',
+                                    fontSize: '12px',
+                                    color: o.status === 'waiting' ? '#A08060' : '#7AAA58',
+                                    fontWeight: 600,
+                                  }}
+                                >
+                                  {o.status === 'waiting' ? 'Waiting for reply' : 'Active'}
+                                </span>
                               </button>
                             </div>
-                            {isExpanded && (
-                              <>
-                                <textarea
-                                  value={o.notes || ''}
-                                  onChange={(e) => updateTodayNotes(o.id, e.target.value)}
-                                  placeholder="advancements, next steps..."
-                                  rows={2}
-                                  className="ml-7 w-[calc(100%-1.75rem)] resize-none border-b bg-transparent pb-1 pt-0.5 outline-none placeholder:text-[#7A5438] placeholder:opacity-50 animate-in fade-in duration-150"
-                                  style={{
-                                    color: '#7a5438',
-                                    borderColor: '#C4A06025',
-                                    fontFamily: 'var(--font-handwritten)',
-                                    fontSize: '17px',
-                                    lineHeight: 1.4,
-                                  }}
-                                />
-                                {/* Status toggle — Active / Waiting */}
-                                <div className="ml-7 pt-1">
+                            {/* Category losange picker */}
+                            <div className="ml-7 pt-1">
+                              <CategoryTagPicker
+                                value={o.tag || null}
+                                onChange={(tag) => updateTodayTag(o.id, tag)}
+                                open={objTagPickerId === o.id}
+                                onToggle={() =>
+                                  setObjTagPickerId(objTagPickerId === o.id ? null : o.id)
+                                }
+                                onClose={() => setObjTagPickerId(null)}
+                                lifeCategories={lifeCategories}
+                                compassAxes={COMPASS_AXES}
+                              />
+                            </div>
+                            {/* Ease + Weight + Urgency — compact or expanded */}
+                            {(() => {
+                              const easeLabels = [
+                                '',
+                                'Complex',
+                                'Hard',
+                                'Medium',
+                                'Doable',
+                                'Easy',
+                              ];
+                              const easeColors = [
+                                '#E0844A',
+                                '#D8C078',
+                                '#C0D088',
+                                '#A0C8A0',
+                                '#7AAA58',
+                              ];
+                              const weightLabels = [
+                                '',
+                                'Light',
+                                'Mild',
+                                'Present',
+                                'Heavy',
+                                'Crushing',
+                              ];
+                              const weightColors = [
+                                '#A0B0D0',
+                                '#90C0C0',
+                                '#D8C078',
+                                '#E8A878',
+                                '#E0908A',
+                              ];
+                              const urgencyLabels = [
+                                '',
+                                'No rush',
+                                'When you can',
+                                'This week',
+                                'Soon',
+                                'Finish now',
+                              ];
+                              const urgencyColors = [
+                                '#A0C8A0',
+                                '#C0D088',
+                                '#D8C078',
+                                '#E8A060',
+                                '#D06040',
+                              ];
+                              const hasValues =
+                                (o.ease || 0) > 0 || (o.weight || 0) > 0 || (o.urgency || 0) > 0;
+                              const isSliderOpen = slidersOpenId === o.id;
+
+                              // Compact summary — dots + labels
+                              if (hasValues && !isSliderOpen) {
+                                return (
                                   <button
                                     type="button"
-                                    onClick={() =>
-                                      updateTodayField(
-                                        o.id,
-                                        'status',
-                                        o.status === 'waiting' ? 'active' : 'waiting',
-                                      )
-                                    }
-                                    className="flex cursor-pointer items-center gap-2 transition-all"
+                                    onClick={() => setSlidersOpenId(o.id)}
+                                    className="ml-7 flex cursor-pointer flex-wrap items-center gap-3 pt-2 pb-1 transition-all"
                                     style={{ background: 'none', border: 'none' }}
                                   >
-                                    <span
-                                      className="block rounded-full"
-                                      style={{
-                                        width: 10,
-                                        height: 10,
-                                        background: o.status === 'waiting' ? '#A08060' : '#7AAA58',
-                                      }}
-                                    />
-                                    <span
-                                      style={{
-                                        fontFamily: 'var(--font-serif)',
-                                        fontSize: '12px',
-                                        color: o.status === 'waiting' ? '#A08060' : '#7AAA58',
-                                        fontWeight: 600,
-                                      }}
-                                    >
-                                      {o.status === 'waiting' ? 'Waiting for reply' : 'Active'}
-                                    </span>
-                                  </button>
-                                </div>
-                                {/* Category losange picker */}
-                                <div className="ml-7 pt-1">
-                                  <CategoryTagPicker
-                                    value={o.tag || null}
-                                    onChange={(tag) => updateTodayTag(o.id, tag)}
-                                    open={objTagPickerId === o.id}
-                                    onToggle={() =>
-                                      setObjTagPickerId(objTagPickerId === o.id ? null : o.id)
-                                    }
-                                    onClose={() => setObjTagPickerId(null)}
-                                    lifeCategories={lifeCategories}
-                                    compassAxes={COMPASS_AXES}
-                                  />
-                                </div>
-                                {/* Ease + Weight + Urgency — compact or expanded */}
-                                {(() => {
-                                  const easeLabels = [
-                                    '',
-                                    'Complex',
-                                    'Hard',
-                                    'Medium',
-                                    'Doable',
-                                    'Easy',
-                                  ];
-                                  const easeColors = [
-                                    '#E0844A',
-                                    '#D8C078',
-                                    '#C0D088',
-                                    '#A0C8A0',
-                                    '#7AAA58',
-                                  ];
-                                  const weightLabels = [
-                                    '',
-                                    'Light',
-                                    'Mild',
-                                    'Present',
-                                    'Heavy',
-                                    'Crushing',
-                                  ];
-                                  const weightColors = [
-                                    '#A0B0D0',
-                                    '#90C0C0',
-                                    '#D8C078',
-                                    '#E8A878',
-                                    '#E0908A',
-                                  ];
-                                  const urgencyLabels = [
-                                    '',
-                                    'No rush',
-                                    'When you can',
-                                    'This week',
-                                    'Soon',
-                                    'Finish now',
-                                  ];
-                                  const urgencyColors = [
-                                    '#A0C8A0',
-                                    '#C0D088',
-                                    '#D8C078',
-                                    '#E8A060',
-                                    '#D06040',
-                                  ];
-                                  const hasValues =
-                                    (o.ease || 0) > 0 ||
-                                    (o.weight || 0) > 0 ||
-                                    (o.urgency || 0) > 0;
-                                  const isSliderOpen = slidersOpenId === o.id;
-
-                                  // Compact summary — dots + labels
-                                  if (hasValues && !isSliderOpen) {
-                                    return (
-                                      <button
-                                        type="button"
-                                        onClick={() => setSlidersOpenId(o.id)}
-                                        className="ml-7 flex cursor-pointer flex-wrap items-center gap-3 pt-2 pb-1 transition-all"
-                                        style={{ background: 'none', border: 'none' }}
-                                      >
-                                        {(o.ease || 0) > 0 && (
-                                          <span className="flex items-center gap-1.5">
-                                            <span
-                                              className="block rounded-full"
-                                              style={{
-                                                width: 8,
-                                                height: 8,
-                                                background: easeColors[(o.ease || 1) - 1],
-                                              }}
-                                            />
-                                            <span
-                                              style={{
-                                                fontFamily: 'var(--font-serif)',
-                                                fontSize: '12px',
-                                                fontWeight: 600,
-                                                color: easeColors[(o.ease || 1) - 1],
-                                              }}
-                                            >
-                                              {easeLabels[o.ease || 0]}
-                                            </span>
-                                          </span>
-                                        )}
-                                        {(o.weight || 0) > 0 && (
-                                          <span className="flex items-center gap-1.5">
-                                            <span
-                                              className="block rounded-full"
-                                              style={{
-                                                width: 8,
-                                                height: 8,
-                                                background: weightColors[(o.weight || 1) - 1],
-                                              }}
-                                            />
-                                            <span
-                                              style={{
-                                                fontFamily: 'var(--font-serif)',
-                                                fontSize: '12px',
-                                                fontWeight: 600,
-                                                color: weightColors[(o.weight || 1) - 1],
-                                              }}
-                                            >
-                                              {weightLabels[o.weight || 0]}
-                                            </span>
-                                          </span>
-                                        )}
-                                        {(o.urgency || 0) > 0 && (
-                                          <span className="flex items-center gap-1.5">
-                                            <span
-                                              className="block rounded-full"
-                                              style={{
-                                                width: 8,
-                                                height: 8,
-                                                background: urgencyColors[(o.urgency || 1) - 1],
-                                              }}
-                                            />
-                                            <span
-                                              style={{
-                                                fontFamily: 'var(--font-serif)',
-                                                fontSize: '12px',
-                                                fontWeight: 600,
-                                                color: urgencyColors[(o.urgency || 1) - 1],
-                                              }}
-                                            >
-                                              {urgencyLabels[o.urgency || 0]}
-                                            </span>
-                                          </span>
-                                        )}
-                                      </button>
-                                    );
-                                  }
-
-                                  return (
-                                    <div className="ml-7 space-y-2 pt-2 pb-1">
-                                      {hasValues && (
-                                        <button
-                                          type="button"
-                                          onClick={() => setSlidersOpenId(null)}
-                                          className="cursor-pointer text-[10px]"
+                                    {(o.ease || 0) > 0 && (
+                                      <span className="flex items-center gap-1.5">
+                                        <span
+                                          className="block rounded-full"
                                           style={{
-                                            background: 'none',
-                                            border: 'none',
-                                            color: '#8A6A4A',
-                                            opacity: 0.5,
+                                            width: 8,
+                                            height: 8,
+                                            background: easeColors[(o.ease || 1) - 1],
+                                          }}
+                                        />
+                                        <span
+                                          style={{
+                                            fontFamily: 'var(--font-serif)',
+                                            fontSize: '12px',
+                                            fontWeight: 600,
+                                            color: easeColors[(o.ease || 1) - 1],
                                           }}
                                         >
-                                          collapse
-                                        </button>
-                                      )}
-                                      {/* Ease slider */}
-                                      <div>
-                                        <div className="flex items-center justify-between mb-1">
-                                          <span
-                                            style={{
-                                              fontFamily: 'var(--font-serif)',
-                                              fontSize: '12px',
-                                              color: '#7A5438',
-                                              opacity: 0.7,
-                                            }}
-                                          >
-                                            how easy to solve?
-                                          </span>
-                                          {(o.ease || 0) > 0 && (
-                                            <span
-                                              style={{
-                                                fontFamily: 'var(--font-serif)',
-                                                fontSize: '12px',
-                                                color: easeColors[(o.ease || 1) - 1],
-                                                fontWeight: 600,
-                                              }}
-                                            >
-                                              {easeLabels[o.ease || 0]}
-                                            </span>
-                                          )}
-                                        </div>
-                                        <div className="flex gap-[3px]">
-                                          {easeColors.map((color, i) => {
-                                            const n = i + 1;
-                                            const active = (o.ease || 0) >= n;
-                                            return (
-                                              <button
-                                                key={n}
-                                                type="button"
-                                                onClick={() =>
-                                                  updateTodayField(
-                                                    o.id,
-                                                    'ease',
-                                                    o.ease === n ? 0 : n,
-                                                  )
-                                                }
-                                                className="flex-1 transition-all duration-150"
-                                                style={{
-                                                  height: 14,
-                                                  borderRadius: 7,
-                                                  background: color,
-                                                  opacity: active ? 0.9 : 0.15,
-                                                  border: 'none',
-                                                  cursor: 'pointer',
-                                                }}
-                                              />
-                                            );
-                                          })}
-                                        </div>
-                                      </div>
-                                      {/* Weight slider */}
-                                      <div>
-                                        <div className="flex items-center justify-between mb-1">
-                                          <span
-                                            style={{
-                                              fontFamily: 'var(--font-serif)',
-                                              fontSize: '12px',
-                                              color: '#7A5438',
-                                              opacity: 0.7,
-                                            }}
-                                          >
-                                            how heavy does this feel?
-                                          </span>
-                                          {(o.weight || 0) > 0 && (
-                                            <span
-                                              style={{
-                                                fontFamily: 'var(--font-serif)',
-                                                fontSize: '12px',
-                                                color: weightColors[(o.weight || 1) - 1],
-                                                fontWeight: 600,
-                                              }}
-                                            >
-                                              {weightLabels[o.weight || 0]}
-                                            </span>
-                                          )}
-                                        </div>
-                                        <div className="flex gap-[3px]">
-                                          {weightColors.map((color, i) => {
-                                            const n = i + 1;
-                                            const active = (o.weight || 0) >= n;
-                                            return (
-                                              <button
-                                                key={n}
-                                                type="button"
-                                                onClick={() =>
-                                                  updateTodayField(
-                                                    o.id,
-                                                    'weight',
-                                                    o.weight === n ? 0 : n,
-                                                  )
-                                                }
-                                                className="flex-1 transition-all duration-150"
-                                                style={{
-                                                  height: 14,
-                                                  borderRadius: 7,
-                                                  background: color,
-                                                  opacity: active ? 0.9 : 0.15,
-                                                  border: 'none',
-                                                  cursor: 'pointer',
-                                                }}
-                                              />
-                                            );
-                                          })}
-                                        </div>
-                                      </div>
-                                      {/* Urgency slider */}
-                                      <div>
-                                        <div className="flex items-center justify-between mb-1">
-                                          <span
-                                            style={{
-                                              fontFamily: 'var(--font-serif)',
-                                              fontSize: '12px',
-                                              color: '#7A5438',
-                                              opacity: 0.7,
-                                            }}
-                                          >
-                                            how pressing is it?
-                                          </span>
-                                          {(o.urgency || 0) > 0 && (
-                                            <span
-                                              style={{
-                                                fontFamily: 'var(--font-serif)',
-                                                fontSize: '12px',
-                                                color: urgencyColors[(o.urgency || 1) - 1],
-                                                fontWeight: 600,
-                                              }}
-                                            >
-                                              {urgencyLabels[o.urgency || 0]}
-                                            </span>
-                                          )}
-                                        </div>
-                                        <div className="flex gap-[3px]">
-                                          {urgencyColors.map((color, i) => {
-                                            const n = i + 1;
-                                            const active = (o.urgency || 0) >= n;
-                                            return (
-                                              <button
-                                                key={n}
-                                                type="button"
-                                                onClick={() =>
-                                                  updateTodayField(
-                                                    o.id,
-                                                    'urgency',
-                                                    o.urgency === n ? 0 : n,
-                                                  )
-                                                }
-                                                className="flex-1 transition-all duration-150"
-                                                style={{
-                                                  height: 14,
-                                                  borderRadius: 7,
-                                                  background: color,
-                                                  opacity: active ? 0.9 : 0.15,
-                                                  border: 'none',
-                                                  cursor: 'pointer',
-                                                }}
-                                              />
-                                            );
-                                          })}
-                                        </div>
-                                      </div>
-                                    </div>
-                                  );
-                                })()}
-                                {/* Linked emotions for this mission */}
-                                {(() => {
-                                  const linked = sessionEmotions.filter(
-                                    (e) => e.missionId === o.id,
-                                  );
-                                  return (
-                                    <div className="ml-7 space-y-1.5 pt-2">
-                                      {linked.length > 0 && (
-                                        <div className="space-y-1">
-                                          {linked.map((e, ei) => (
-                                            <div
-                                              key={`me-${ei}`}
-                                              className="flex items-start gap-2"
-                                              style={{ minHeight: 24 }}
-                                            >
-                                              <span
-                                                className="shrink-0"
-                                                style={{
-                                                  color: '#8A6A4A',
-                                                  opacity: 0.6,
-                                                  fontSize: '11px',
-                                                  lineHeight: '24px',
-                                                }}
-                                              >
-                                                {e.time}
-                                              </span>
-                                              <span
-                                                className="mt-[8px] h-1.5 w-1.5 shrink-0 rounded-full"
-                                                style={{ background: e.mindColor, opacity: 0.7 }}
-                                              />
-                                              <span
-                                                style={{
-                                                  color: '#7a5438',
-                                                  fontFamily: 'var(--font-handwritten)',
-                                                  fontSize: '16px',
-                                                  lineHeight: '24px',
-                                                }}
-                                              >
-                                                {e.text}
-                                              </span>
-                                            </div>
-                                          ))}
-                                        </div>
-                                      )}
-                                      <input
-                                        type="text"
-                                        placeholder="how are you feeling about this?"
-                                        className="w-full border-b bg-transparent pb-1 outline-none placeholder:text-[#7A5438] placeholder:opacity-50"
+                                          {easeLabels[o.ease || 0]}
+                                        </span>
+                                      </span>
+                                    )}
+                                    {(o.weight || 0) > 0 && (
+                                      <span className="flex items-center gap-1.5">
+                                        <span
+                                          className="block rounded-full"
+                                          style={{
+                                            width: 8,
+                                            height: 8,
+                                            background: weightColors[(o.weight || 1) - 1],
+                                          }}
+                                        />
+                                        <span
+                                          style={{
+                                            fontFamily: 'var(--font-serif)',
+                                            fontSize: '12px',
+                                            fontWeight: 600,
+                                            color: weightColors[(o.weight || 1) - 1],
+                                          }}
+                                        >
+                                          {weightLabels[o.weight || 0]}
+                                        </span>
+                                      </span>
+                                    )}
+                                    {(o.urgency || 0) > 0 && (
+                                      <span className="flex items-center gap-1.5">
+                                        <span
+                                          className="block rounded-full"
+                                          style={{
+                                            width: 8,
+                                            height: 8,
+                                            background: urgencyColors[(o.urgency || 1) - 1],
+                                          }}
+                                        />
+                                        <span
+                                          style={{
+                                            fontFamily: 'var(--font-serif)',
+                                            fontSize: '12px',
+                                            fontWeight: 600,
+                                            color: urgencyColors[(o.urgency || 1) - 1],
+                                          }}
+                                        >
+                                          {urgencyLabels[o.urgency || 0]}
+                                        </span>
+                                      </span>
+                                    )}
+                                  </button>
+                                );
+                              }
+
+                              return (
+                                <div className="ml-7 space-y-2 pt-2 pb-1">
+                                  {hasValues && (
+                                    <button
+                                      type="button"
+                                      onClick={() => setSlidersOpenId(null)}
+                                      className="cursor-pointer text-[10px]"
+                                      style={{
+                                        background: 'none',
+                                        border: 'none',
+                                        color: '#8A6A4A',
+                                        opacity: 0.5,
+                                      }}
+                                    >
+                                      collapse
+                                    </button>
+                                  )}
+                                  {/* Ease slider */}
+                                  <div>
+                                    <div className="flex items-center justify-between mb-1">
+                                      <span
                                         style={{
-                                          color: '#7a5438',
-                                          borderColor: '#C4A06020',
-                                          fontFamily: 'var(--font-handwritten)',
-                                          fontSize: '16px',
+                                          fontFamily: 'var(--font-serif)',
+                                          fontSize: '12px',
+                                          color: '#7A5438',
+                                          opacity: 0.7,
                                         }}
-                                        onKeyDown={(e) => {
-                                          if (e.key === 'Enter') {
-                                            const text = (
-                                              e.target as HTMLInputElement
-                                            ).value.trim();
-                                            if (!text) return;
-                                            const entry = {
-                                              time: new Date().toLocaleTimeString([], {
-                                                hour: '2-digit',
-                                                minute: '2-digit',
-                                              }),
-                                              text,
-                                              mind: 'challenge',
-                                              mindColor: '#C4A060',
-                                              missionId: o.id,
-                                              missionText: o.text,
-                                            };
-                                            setSessionEmotions((prev) => [...prev, entry]);
-                                            (e.target as HTMLInputElement).value = '';
-                                          }
-                                        }}
-                                      />
+                                      >
+                                        how easy to solve?
+                                      </span>
+                                      {(o.ease || 0) > 0 && (
+                                        <span
+                                          style={{
+                                            fontFamily: 'var(--font-serif)',
+                                            fontSize: '12px',
+                                            color: easeColors[(o.ease || 1) - 1],
+                                            fontWeight: 600,
+                                          }}
+                                        >
+                                          {easeLabels[o.ease || 0]}
+                                        </span>
+                                      )}
                                     </div>
-                                  );
-                                })()}
-                              </>
-                            )}
-                          </div>
-                        );
-                      })}
-                    <input
-                      type="text"
-                      value={todayInput}
-                      onChange={(e) => setTodayInput(e.target.value)}
-                      onKeyDown={(e) => {
-                        if (e.key === 'Enter') addTodayObjective();
-                      }}
-                      placeholder="+ add objective for today..."
-                      className="w-full border-b bg-transparent pb-1 outline-none placeholder:text-[#7A5438] placeholder:opacity-50"
-                      style={{
-                        color: '#7a5438',
-                        borderColor: '#C4A06020',
-                        fontFamily: 'var(--font-handwritten)',
-                        fontSize: '20px',
-                      }}
-                    />
-                  </>
-                )}
+                                    <div className="flex gap-[3px]">
+                                      {easeColors.map((color, i) => {
+                                        const n = i + 1;
+                                        const active = (o.ease || 0) >= n;
+                                        return (
+                                          <button
+                                            key={n}
+                                            type="button"
+                                            onClick={() =>
+                                              updateTodayField(o.id, 'ease', o.ease === n ? 0 : n)
+                                            }
+                                            className="flex-1 transition-all duration-150"
+                                            style={{
+                                              height: 14,
+                                              borderRadius: 7,
+                                              background: color,
+                                              opacity: active ? 0.9 : 0.15,
+                                              border: 'none',
+                                              cursor: 'pointer',
+                                            }}
+                                          />
+                                        );
+                                      })}
+                                    </div>
+                                  </div>
+                                  {/* Weight slider */}
+                                  <div>
+                                    <div className="flex items-center justify-between mb-1">
+                                      <span
+                                        style={{
+                                          fontFamily: 'var(--font-serif)',
+                                          fontSize: '12px',
+                                          color: '#7A5438',
+                                          opacity: 0.7,
+                                        }}
+                                      >
+                                        how heavy does this feel?
+                                      </span>
+                                      {(o.weight || 0) > 0 && (
+                                        <span
+                                          style={{
+                                            fontFamily: 'var(--font-serif)',
+                                            fontSize: '12px',
+                                            color: weightColors[(o.weight || 1) - 1],
+                                            fontWeight: 600,
+                                          }}
+                                        >
+                                          {weightLabels[o.weight || 0]}
+                                        </span>
+                                      )}
+                                    </div>
+                                    <div className="flex gap-[3px]">
+                                      {weightColors.map((color, i) => {
+                                        const n = i + 1;
+                                        const active = (o.weight || 0) >= n;
+                                        return (
+                                          <button
+                                            key={n}
+                                            type="button"
+                                            onClick={() =>
+                                              updateTodayField(
+                                                o.id,
+                                                'weight',
+                                                o.weight === n ? 0 : n,
+                                              )
+                                            }
+                                            className="flex-1 transition-all duration-150"
+                                            style={{
+                                              height: 14,
+                                              borderRadius: 7,
+                                              background: color,
+                                              opacity: active ? 0.9 : 0.15,
+                                              border: 'none',
+                                              cursor: 'pointer',
+                                            }}
+                                          />
+                                        );
+                                      })}
+                                    </div>
+                                  </div>
+                                  {/* Urgency slider */}
+                                  <div>
+                                    <div className="flex items-center justify-between mb-1">
+                                      <span
+                                        style={{
+                                          fontFamily: 'var(--font-serif)',
+                                          fontSize: '12px',
+                                          color: '#7A5438',
+                                          opacity: 0.7,
+                                        }}
+                                      >
+                                        how pressing is it?
+                                      </span>
+                                      {(o.urgency || 0) > 0 && (
+                                        <span
+                                          style={{
+                                            fontFamily: 'var(--font-serif)',
+                                            fontSize: '12px',
+                                            color: urgencyColors[(o.urgency || 1) - 1],
+                                            fontWeight: 600,
+                                          }}
+                                        >
+                                          {urgencyLabels[o.urgency || 0]}
+                                        </span>
+                                      )}
+                                    </div>
+                                    <div className="flex gap-[3px]">
+                                      {urgencyColors.map((color, i) => {
+                                        const n = i + 1;
+                                        const active = (o.urgency || 0) >= n;
+                                        return (
+                                          <button
+                                            key={n}
+                                            type="button"
+                                            onClick={() =>
+                                              updateTodayField(
+                                                o.id,
+                                                'urgency',
+                                                o.urgency === n ? 0 : n,
+                                              )
+                                            }
+                                            className="flex-1 transition-all duration-150"
+                                            style={{
+                                              height: 14,
+                                              borderRadius: 7,
+                                              background: color,
+                                              opacity: active ? 0.9 : 0.15,
+                                              border: 'none',
+                                              cursor: 'pointer',
+                                            }}
+                                          />
+                                        );
+                                      })}
+                                    </div>
+                                  </div>
+                                </div>
+                              );
+                            })()}
+                            {/* Linked emotions for this mission */}
+                            {(() => {
+                              const linked = sessionEmotions.filter((e) => e.missionId === o.id);
+                              return (
+                                <div className="ml-7 space-y-1.5 pt-2">
+                                  {linked.length > 0 && (
+                                    <div className="space-y-1">
+                                      {linked.map((e, ei) => (
+                                        <div
+                                          key={`me-${ei}`}
+                                          className="flex items-start gap-2"
+                                          style={{ minHeight: 24 }}
+                                        >
+                                          <span
+                                            className="shrink-0"
+                                            style={{
+                                              color: '#8A6A4A',
+                                              opacity: 0.6,
+                                              fontSize: '11px',
+                                              lineHeight: '24px',
+                                            }}
+                                          >
+                                            {e.time}
+                                          </span>
+                                          <span
+                                            className="mt-[8px] h-1.5 w-1.5 shrink-0 rounded-full"
+                                            style={{ background: e.mindColor, opacity: 0.7 }}
+                                          />
+                                          <span
+                                            style={{
+                                              color: '#7a5438',
+                                              fontFamily: 'var(--font-handwritten)',
+                                              fontSize: '16px',
+                                              lineHeight: '24px',
+                                            }}
+                                          >
+                                            {e.text}
+                                          </span>
+                                        </div>
+                                      ))}
+                                    </div>
+                                  )}
+                                  <input
+                                    type="text"
+                                    placeholder="how are you feeling about this?"
+                                    className="w-full border-b bg-transparent pb-1 outline-none placeholder:text-[#7A5438] placeholder:opacity-50"
+                                    style={{
+                                      color: '#7a5438',
+                                      borderColor: '#C4A06020',
+                                      fontFamily: 'var(--font-handwritten)',
+                                      fontSize: '16px',
+                                    }}
+                                    onKeyDown={(e) => {
+                                      if (e.key === 'Enter') {
+                                        const text = (e.target as HTMLInputElement).value.trim();
+                                        if (!text) return;
+                                        const entry = {
+                                          time: new Date().toLocaleTimeString([], {
+                                            hour: '2-digit',
+                                            minute: '2-digit',
+                                          }),
+                                          text,
+                                          mind: 'challenge',
+                                          mindColor: '#C4A060',
+                                          missionId: o.id,
+                                          missionText: o.text,
+                                        };
+                                        setSessionEmotions((prev) => [...prev, entry]);
+                                        (e.target as HTMLInputElement).value = '';
+                                      }
+                                    }}
+                                  />
+                                </div>
+                              );
+                            })()}
+                          </>
+                        )}
+                      </div>
+                    );
+                  })}
+                <input
+                  type="text"
+                  value={todayInput}
+                  onChange={(e) => setTodayInput(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') addTodayObjective();
+                  }}
+                  placeholder="+ add objective for today..."
+                  className="w-full border-b bg-transparent pb-1 outline-none placeholder:text-[#7A5438] placeholder:opacity-40"
+                  style={{
+                    color: '#7a5438',
+                    borderColor: '#C4A06020',
+                    fontFamily: 'var(--font-handwritten)',
+                    fontSize: '24px',
+                  }}
+                />
               </div>
 
               {/* Divider */}
