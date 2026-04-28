@@ -291,3 +291,38 @@ export const sparkResonances = pgTable('spark_resonances', {
   status: text('status').notNull().default('pending'),
   createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
 });
+
+// ─── Chat ────────────────────────────────────────────────────────────────────
+
+export type ChatEntityType = 'circle' | 'spark';
+
+export const conversations = pgTable('conversations', {
+  id: uuid('id').defaultRandom().primaryKey(),
+  name: text('name'), // null → 1:1 DM
+  entityType: text('entity_type').$type<ChatEntityType>(), // 'circle' | 'spark' | null
+  entityId: uuid('entity_id'), // FK to circle/spark when entityType is set
+  createdBy: uuid('created_by').notNull(),
+  createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+});
+
+export const conversationMembers = pgTable('conversation_members', {
+  conversationId: uuid('conversation_id').notNull(),
+  userId: uuid('user_id').notNull(),
+  joinedAt: timestamp('joined_at', { withTimezone: true }).defaultNow().notNull(),
+});
+
+export const channels = pgTable('channels', {
+  id: uuid('id').defaultRandom().primaryKey(),
+  conversationId: uuid('conversation_id').notNull(),
+  name: text('name').notNull(),
+  position: integer('position').notNull().default(0),
+  createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+});
+
+export const messages = pgTable('messages', {
+  id: uuid('id').defaultRandom().primaryKey(),
+  channelId: uuid('channel_id').notNull(),
+  userId: uuid('user_id').notNull(),
+  text: text('text').notNull(),
+  createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+});
