@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useRef, useState } from 'react';
+import MusicRecordings from '@/components/MusicRecordings';
 
 // ============================================================
 // AI GENERATION (preserved from music toolkit)
@@ -130,6 +131,7 @@ const DEFAULT_NOTEBOOKS: Notebook[] = [
   { id: 'rhymes', label: 'Rhymes', color: '#D4605A', isMusic: true },
   { id: 'practice_log', label: 'Practice', color: '#7A8A50', isMusic: true },
   { id: 'errors', label: 'Lessons', color: '#D45050', isMusic: true },
+  { id: 'recordings', label: 'Recordings', color: '#E04878', isMusic: true },
 ];
 
 const NOTEBOOK_STORAGE = 'colourmap:notebooks-v2';
@@ -833,437 +835,458 @@ export default function NotebookPage() {
                 {activeNb?.label}
               </h2>
               <div className="flex-1" />
-              <span className="text-xs text-muted-foreground/50">{filtered.length} notes</span>
+              {activeNotebook !== 'recordings' && (
+                <span className="text-xs text-muted-foreground/50">{filtered.length} notes</span>
+              )}
             </div>
 
-            {/* Add note */}
-            <form
-              onSubmit={(e) => {
-                e.preventDefault();
-                handleAdd();
-              }}
-              className="flex gap-2"
-            >
-              <input
-                type="text"
-                value={newTitle}
-                onChange={(e) => setNewTitle(e.target.value)}
-                placeholder={placeholder}
-                className="flex-1 rounded-lg border px-3 py-2.5 outline-none placeholder:italic placeholder:text-[#8A6A4A] placeholder:opacity-60"
-                style={{
-                  borderColor: `${activeNb?.color || '#C4A060'}20`,
-                  background: `${activeNb?.color || '#C4A060'}05`,
-                  fontFamily: 'var(--font-serif)',
-                  fontSize: '15px',
-                  color: '#5C3018',
-                }}
+            {/* Recordings tab — special UI, no note form */}
+            {activeNotebook === 'recordings' && (
+              <MusicRecordings
+                songs={entries
+                  .filter((e) => e.category === 'song_ideas')
+                  .map((e) => ({ id: e.id, title: e.title }))}
               />
-              {newTitle.trim() && (
-                <button
-                  type="submit"
-                  disabled={adding}
-                  className="text-xs font-medium px-3 py-2 rounded-lg"
-                  style={{ color: activeNb?.color, background: `${activeNb?.color}10` }}
-                >
-                  {adding ? '...' : 'Add'}
-                </button>
-              )}
-            </form>
-
-            {/* Notes list */}
-            {filtered.length === 0 && (
-              <div className="text-center py-12">
-                <div
-                  className="h-8 w-8 rounded-full mx-auto"
-                  style={{ background: activeNb?.color, opacity: 0.1 }}
-                />
-                <p className="text-sm text-muted-foreground/50 mt-2">No notes yet</p>
-              </div>
             )}
 
-            {filtered.map((entry) => {
-              const isExpanded = expandedId === entry.id;
-              const isEditing = editingId === entry.id;
-              const color = activeNb?.color || '#C4A060';
-              const style = getNoteStyle(entry.id);
-              const isSong = entry.category === 'song_ideas';
-              const isProject = entry.category === 'projects';
-              const projectSongs = isProject
-                ? entries.filter((e) => e.category === 'song_ideas' && e.tags?.includes(entry.id))
-                : [];
-
-              return (
-                <div
-                  key={entry.id}
-                  className="rounded-2xl border transition-all overflow-hidden"
-                  style={{
-                    borderColor: isExpanded ? `${color}30` : `${color}0A`,
-                    background: isExpanded ? style.color || `${color}04` : 'transparent',
+            {/* Add note + notes list — hidden for recordings tab */}
+            {activeNotebook !== 'recordings' && (
+              <>
+                <form
+                  onSubmit={(e) => {
+                    e.preventDefault();
+                    handleAdd();
                   }}
+                  className="flex gap-2"
                 >
-                  {/* ---- COLLAPSED ---- */}
-                  {!isExpanded && (
+                  <input
+                    type="text"
+                    value={newTitle}
+                    onChange={(e) => setNewTitle(e.target.value)}
+                    placeholder={placeholder}
+                    className="flex-1 rounded-lg border px-3 py-2.5 outline-none placeholder:italic placeholder:text-[#8A6A4A] placeholder:opacity-60"
+                    style={{
+                      borderColor: `${activeNb?.color || '#C4A060'}20`,
+                      background: `${activeNb?.color || '#C4A060'}05`,
+                      fontFamily: 'var(--font-serif)',
+                      fontSize: '15px',
+                      color: '#5C3018',
+                    }}
+                  />
+                  {newTitle.trim() && (
                     <button
-                      type="button"
-                      onClick={() => {
-                        setExpandedId(entry.id);
-                        setEditingId(entry.id);
-                      }}
-                      className="flex w-full cursor-pointer items-center gap-3 px-4 py-3 text-left transition-all hover:bg-[#C4A06008]"
-                      style={{ background: 'none', border: 'none' }}
+                      type="submit"
+                      disabled={adding}
+                      className="text-xs font-medium px-3 py-2 rounded-lg"
+                      style={{ color: activeNb?.color, background: `${activeNb?.color}10` }}
                     >
-                      <div
-                        className="w-1.5 h-6 rounded-full shrink-0"
-                        style={{ background: color, opacity: 0.35 }}
-                      />
-                      <div className="flex-1 min-w-0">
-                        <p
-                          className="truncate"
-                          style={{
-                            fontFamily: 'var(--font-serif)',
-                            fontSize: '15px',
-                            fontWeight: 600,
-                            color: '#5C3018',
-                          }}
-                        >
-                          {entry.title}
-                        </p>
-                        {entry.content && (
-                          <p
-                            className="truncate mt-0.5"
-                            style={{
-                              fontFamily: 'var(--font-serif)',
-                              fontSize: '12px',
-                              color: '#8A6A4A',
-                              opacity: 0.5,
-                            }}
-                          >
-                            {entry.content
-                              .replace(/<[^>]*>/g, '')
-                              .replace(/\|\|\|CHORDS\|\|\|.*/, '')
-                              .slice(0, 60)}
-                          </p>
-                        )}
-                      </div>
-                      <span
-                        style={{
-                          fontFamily: 'var(--font-serif)',
-                          fontSize: '11px',
-                          color: '#8A6A4A',
-                          opacity: 0.4,
-                        }}
-                      >
-                        {new Date(entry.createdAt).toLocaleDateString([], {
-                          month: 'short',
-                          day: 'numeric',
-                        })}
-                      </span>
+                      {adding ? '...' : 'Add'}
                     </button>
                   )}
+                </form>
 
-                  {/* ---- EXPANDED ---- */}
-                  {isExpanded && (
-                    <div className="animate-in fade-in duration-200">
-                      {/* Title bar + close */}
-                      <div
-                        className="px-4 pt-3 pb-2 flex items-center gap-3"
-                        style={{ borderBottom: `1px solid ${color}15` }}
-                      >
-                        <div
-                          className="w-2 h-8 rounded-full shrink-0"
-                          style={{ background: color, opacity: 0.5 }}
-                        />
-                        <input
-                          type="text"
-                          value={entry.title}
-                          onChange={(e) => updateLocal(entry.id, 'title', e.target.value)}
-                          className="flex-1 bg-transparent outline-none"
-                          style={{
-                            color: '#5C3018',
-                            fontFamily: 'var(--font-serif)',
-                            fontSize: '17px',
-                            fontWeight: 700,
-                            textAlign: style.align as 'left' | 'center' | 'right',
-                          }}
-                        />
-                        <button
-                          type="button"
-                          onClick={() => setSpellCheckOn((s) => !s)}
-                          className="flex cursor-pointer items-center justify-center rounded-full px-2.5 py-1 transition-all"
-                          style={{
-                            background: spellCheckOn ? `${color}08` : 'transparent',
-                            border: `1px solid ${spellCheckOn ? color + '20' : color + '10'}`,
-                            fontFamily: 'var(--font-serif)',
-                            fontSize: '11px',
-                            fontWeight: 600,
-                            color: spellCheckOn ? color : `${color}60`,
-                          }}
-                          title={
-                            spellCheckOn ? 'Spell check on (tap to turn off)' : 'Spell check off'
-                          }
-                        >
-                          abc
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => setFullViewId(entry.id)}
-                          className="flex cursor-pointer items-center justify-center rounded-full px-3 py-1 transition-all"
-                          style={{
-                            background: `${color}08`,
-                            border: `1px solid ${color}15`,
-                            fontFamily: 'var(--font-serif)',
-                            fontSize: '11px',
-                            fontWeight: 600,
-                            color,
-                            opacity: 0.7,
-                          }}
-                          title="Full view (Esc to exit)"
-                        >
-                          expand
-                        </button>
+                {/* Notes list */}
+                {filtered.length === 0 && (
+                  <div className="text-center py-12">
+                    <div
+                      className="h-8 w-8 rounded-full mx-auto"
+                      style={{ background: activeNb?.color, opacity: 0.1 }}
+                    />
+                    <p className="text-sm text-muted-foreground/50 mt-2">No notes yet</p>
+                  </div>
+                )}
+
+                {filtered.map((entry) => {
+                  const isExpanded = expandedId === entry.id;
+                  const isEditing = editingId === entry.id;
+                  const color = activeNb?.color || '#C4A060';
+                  const style = getNoteStyle(entry.id);
+                  const isSong = entry.category === 'song_ideas';
+                  const isProject = entry.category === 'projects';
+                  const projectSongs = isProject
+                    ? entries.filter(
+                        (e) => e.category === 'song_ideas' && e.tags?.includes(entry.id),
+                      )
+                    : [];
+
+                  return (
+                    <div
+                      key={entry.id}
+                      className="rounded-2xl border transition-all overflow-hidden"
+                      style={{
+                        borderColor: isExpanded ? `${color}30` : `${color}0A`,
+                        background: isExpanded ? style.color || `${color}04` : 'transparent',
+                      }}
+                    >
+                      {/* ---- COLLAPSED ---- */}
+                      {!isExpanded && (
                         <button
                           type="button"
                           onClick={() => {
-                            setExpandedId(null);
-                            setEditingId(null);
+                            setExpandedId(entry.id);
+                            setEditingId(entry.id);
                           }}
-                          className="flex cursor-pointer items-center justify-center rounded-full px-3 py-1 transition-all"
-                          style={{
-                            background: `${color}10`,
-                            border: `1px solid ${color}20`,
-                            fontFamily: 'var(--font-serif)',
-                            fontSize: '11px',
-                            fontWeight: 600,
-                            color,
-                          }}
+                          className="flex w-full cursor-pointer items-center gap-3 px-4 py-3 text-left transition-all hover:bg-[#C4A06008]"
+                          style={{ background: 'none', border: 'none' }}
                         >
-                          close
-                        </button>
-                      </div>
-
-                      {/* Format toolbar */}
-                      <div className="px-4 py-1 border-b border-border/20">
-                        <FormatToolbar
-                          noteColor={style.color}
-                          onNoteColor={(c) => saveNoteStyle(entry.id, { ...style, color: c })}
-                          noteFont={style.font}
-                          onNoteFont={(f) => saveNoteStyle(entry.id, { ...style, font: f })}
-                          noteSize={style.size || '16'}
-                          onNoteSize={(s) => saveNoteStyle(entry.id, { ...style, size: s })}
-                          align={style.align}
-                          onAlign={(a) => saveNoteStyle(entry.id, { ...style, align: a })}
-                        />
-                      </div>
-
-                      {/* Content area */}
-                      <div className="px-4 pb-4 pt-2 space-y-3">
-                        {/* Song: lyrics + chords + AI */}
-                        {isSong ? (
-                          (() => {
-                            const parts = (entry.content || '').split('|||CHORDS|||');
-                            const lyrics = parts[0] || '';
-                            const chords = parts[1] || '';
-                            function updateSong(l: string, c: string) {
-                              updateLocal(
-                                entry.id,
-                                'content',
-                                c.trim() ? `${l}|||CHORDS|||${c}` : l,
-                              );
-                            }
-                            return (
-                              <div className="space-y-3">
-                                {isEditing ? (
-                                  <>
-                                    <textarea
-                                      id="note-editor"
-                                      value={lyrics}
-                                      onChange={(e) => updateSong(e.target.value, chords)}
-                                      placeholder="Write lyrics or melody ideas..."
-                                      className="w-full min-h-[100px] rounded-lg border border-border/20 bg-transparent p-3 text-sm resize-none outline-none"
-                                      style={{
-                                        color: '#5A4535',
-                                        fontFamily: style.font,
-                                        textAlign: style.align as 'left' | 'center' | 'right',
-                                      }}
-                                      spellCheck={spellCheckOn}
-                                      lang="fr"
-                                      onInput={(e) => {
-                                        const t = e.target as HTMLTextAreaElement;
-                                        t.style.height = 'auto';
-                                        t.style.height = `${t.scrollHeight}px`;
-                                      }}
-                                    />
-                                    <textarea
-                                      value={chords}
-                                      onChange={(e) => updateSong(lyrics, e.target.value)}
-                                      placeholder="Am - F - C - G..."
-                                      className="w-full min-h-[40px] rounded-lg border border-[#C88820]/10 bg-[#C88820]/3 p-3 text-sm resize-none outline-none font-mono"
-                                      style={{ color: '#8A7A5A' }}
-                                      onInput={(e) => {
-                                        const t = e.target as HTMLTextAreaElement;
-                                        t.style.height = 'auto';
-                                        t.style.height = `${t.scrollHeight}px`;
-                                      }}
-                                    />
-                                  </>
-                                ) : (
-                                  <div
-                                    onClick={() => setEditingId(entry.id)}
-                                    className="cursor-text"
-                                  >
-                                    <NotePreview
-                                      content={lyrics}
-                                      font={style.font}
-                                      align={style.align}
-                                      color="transparent"
-                                    />
-                                    {chords && (
-                                      <div
-                                        className="mt-2 rounded-lg p-2 font-mono text-xs"
-                                        style={{ background: '#C88820/5', color: '#8A7A5A' }}
-                                      >
-                                        {chords}
-                                      </div>
-                                    )}
-                                  </div>
-                                )}
-                                <GenerateButtons
-                                  context={[entry.title, lyrics, chords].filter(Boolean).join('\n')}
-                                />
-                              </div>
-                            );
-                          })()
-                        ) : (
                           <div
-                            id="note-editor"
-                            contentEditable
-                            suppressContentEditableWarning
-                            ref={(el) => {
-                              if (el && isEditing && !el.innerHTML && entry.content) {
-                                el.innerHTML = entry.content;
-                              }
-                              if (el && isEditing && !entry.content && el.innerHTML === '') {
-                                el.focus();
-                              }
-                            }}
-                            onInput={(e) => {
-                              const html = (e.target as HTMLDivElement).innerHTML;
-                              updateLocal(entry.id, 'content', html === '<br>' ? '' : html);
-                            }}
-                            className="w-full min-h-[200px] rounded-lg border border-border/20 bg-transparent p-3 outline-none"
-                            style={{
-                              color: '#5A4535',
-                              fontFamily: style.font || 'var(--font-serif)',
-                              fontSize: `${style.size || 16}px`,
-                              textAlign: style.align as 'left' | 'center' | 'right',
-                              lineHeight: 1.6,
-                            }}
-                            data-placeholder="start writing..."
-                            spellCheck={spellCheckOn}
-                            lang="fr"
+                            className="w-1.5 h-6 rounded-full shrink-0"
+                            style={{ background: color, opacity: 0.35 }}
                           />
-                        )}
-
-                        {/* Project links for songs */}
-                        {isSong && projectEntries.length > 0 && (
-                          <div className="flex gap-1.5 flex-wrap">
-                            {projectEntries.map((p) => {
-                              const linked = entry.tags?.includes(p.id);
-                              return (
-                                <button
-                                  key={p.id}
-                                  type="button"
-                                  onClick={() => {
-                                    const tags = entry.tags || [];
-                                    const next = linked
-                                      ? tags.filter((t) => t !== p.id)
-                                      : [...tags, p.id];
-                                    setEntries((prev) =>
-                                      prev.map((e) =>
-                                        e.id === entry.id ? { ...e, tags: next } : e,
-                                      ),
-                                    );
-                                    fetch(`/api/notebook/${entry.id}`, {
-                                      method: 'PATCH',
-                                      headers: { 'Content-Type': 'application/json' },
-                                      body: JSON.stringify({ tags: next }),
-                                    });
-                                  }}
-                                  className="px-2 py-0.5 rounded-lg text-[11px] font-medium"
-                                  style={{
-                                    background: linked ? '#3A8AC420' : 'transparent',
-                                    border: `1px solid ${linked ? '#3A8AC4' : '#3A8AC430'}`,
-                                    color: '#3A8AC4',
-                                  }}
-                                >
-                                  {p.title}
-                                </button>
-                              );
-                            })}
-                          </div>
-                        )}
-
-                        {/* Songs in project */}
-                        {isProject && projectSongs.length > 0 && (
-                          <div className="space-y-1">
-                            {projectSongs.map((s) => (
-                              <button
-                                key={s.id}
-                                type="button"
-                                onClick={() => {
-                                  setActiveNotebook('song_ideas');
-                                  setExpandedId(s.id);
+                          <div className="flex-1 min-w-0">
+                            <p
+                              className="truncate"
+                              style={{
+                                fontFamily: 'var(--font-serif)',
+                                fontSize: '15px',
+                                fontWeight: 600,
+                                color: '#5C3018',
+                              }}
+                            >
+                              {entry.title}
+                            </p>
+                            {entry.content && (
+                              <p
+                                className="truncate mt-0.5"
+                                style={{
+                                  fontFamily: 'var(--font-serif)',
+                                  fontSize: '12px',
+                                  color: '#8A6A4A',
+                                  opacity: 0.5,
                                 }}
-                                className="flex items-center gap-2 text-xs text-muted-foreground hover:text-foreground transition-colors"
                               >
-                                <span className="opacity-40">♪</span> {s.title}
-                              </button>
-                            ))}
+                                {entry.content
+                                  .replace(/<[^>]*>/g, '')
+                                  .replace(/\|\|\|CHORDS\|\|\|.*/, '')
+                                  .slice(0, 60)}
+                              </p>
+                            )}
                           </div>
-                        )}
-
-                        {/* Actions */}
-                        <div className="flex items-center justify-between pt-2 border-t border-border/10">
-                          <span className="text-[11px] text-muted-foreground/40">
+                          <span
+                            style={{
+                              fontFamily: 'var(--font-serif)',
+                              fontSize: '11px',
+                              color: '#8A6A4A',
+                              opacity: 0.4,
+                            }}
+                          >
                             {new Date(entry.createdAt).toLocaleDateString([], {
-                              weekday: 'short',
                               month: 'short',
                               day: 'numeric',
                             })}
                           </span>
-                          <div className="flex gap-2">
-                            {isEditing ? (
-                              <button
-                                type="button"
-                                onClick={() => setEditingId(null)}
-                                className="text-xs text-muted-foreground/40 hover:text-muted-foreground"
-                              >
-                                Done
-                              </button>
-                            ) : (
-                              <button
-                                type="button"
-                                onClick={() => setEditingId(entry.id)}
-                                className="text-xs text-muted-foreground/50 hover:text-muted-foreground"
-                              >
-                                Edit
-                              </button>
-                            )}
+                        </button>
+                      )}
+
+                      {/* ---- EXPANDED ---- */}
+                      {isExpanded && (
+                        <div className="animate-in fade-in duration-200">
+                          {/* Title bar + close */}
+                          <div
+                            className="px-4 pt-3 pb-2 flex items-center gap-3"
+                            style={{ borderBottom: `1px solid ${color}15` }}
+                          >
+                            <div
+                              className="w-2 h-8 rounded-full shrink-0"
+                              style={{ background: color, opacity: 0.5 }}
+                            />
+                            <input
+                              type="text"
+                              value={entry.title}
+                              onChange={(e) => updateLocal(entry.id, 'title', e.target.value)}
+                              className="flex-1 bg-transparent outline-none"
+                              style={{
+                                color: '#5C3018',
+                                fontFamily: 'var(--font-serif)',
+                                fontSize: '17px',
+                                fontWeight: 700,
+                                textAlign: style.align as 'left' | 'center' | 'right',
+                              }}
+                            />
                             <button
                               type="button"
-                              onClick={() => handleDelete(entry.id)}
-                              className="text-xs text-muted-foreground/40 hover:text-destructive"
+                              onClick={() => setSpellCheckOn((s) => !s)}
+                              className="flex cursor-pointer items-center justify-center rounded-full px-2.5 py-1 transition-all"
+                              style={{
+                                background: spellCheckOn ? `${color}08` : 'transparent',
+                                border: `1px solid ${spellCheckOn ? color + '20' : color + '10'}`,
+                                fontFamily: 'var(--font-serif)',
+                                fontSize: '11px',
+                                fontWeight: 600,
+                                color: spellCheckOn ? color : `${color}60`,
+                              }}
+                              title={
+                                spellCheckOn
+                                  ? 'Spell check on (tap to turn off)'
+                                  : 'Spell check off'
+                              }
                             >
-                              Delete
+                              abc
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => setFullViewId(entry.id)}
+                              className="flex cursor-pointer items-center justify-center rounded-full px-3 py-1 transition-all"
+                              style={{
+                                background: `${color}08`,
+                                border: `1px solid ${color}15`,
+                                fontFamily: 'var(--font-serif)',
+                                fontSize: '11px',
+                                fontWeight: 600,
+                                color,
+                                opacity: 0.7,
+                              }}
+                              title="Full view (Esc to exit)"
+                            >
+                              expand
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setExpandedId(null);
+                                setEditingId(null);
+                              }}
+                              className="flex cursor-pointer items-center justify-center rounded-full px-3 py-1 transition-all"
+                              style={{
+                                background: `${color}10`,
+                                border: `1px solid ${color}20`,
+                                fontFamily: 'var(--font-serif)',
+                                fontSize: '11px',
+                                fontWeight: 600,
+                                color,
+                              }}
+                            >
+                              close
                             </button>
                           </div>
+
+                          {/* Format toolbar */}
+                          <div className="px-4 py-1 border-b border-border/20">
+                            <FormatToolbar
+                              noteColor={style.color}
+                              onNoteColor={(c) => saveNoteStyle(entry.id, { ...style, color: c })}
+                              noteFont={style.font}
+                              onNoteFont={(f) => saveNoteStyle(entry.id, { ...style, font: f })}
+                              noteSize={style.size || '16'}
+                              onNoteSize={(s) => saveNoteStyle(entry.id, { ...style, size: s })}
+                              align={style.align}
+                              onAlign={(a) => saveNoteStyle(entry.id, { ...style, align: a })}
+                            />
+                          </div>
+
+                          {/* Content area */}
+                          <div className="px-4 pb-4 pt-2 space-y-3">
+                            {/* Song: lyrics + chords + AI */}
+                            {isSong ? (
+                              (() => {
+                                const parts = (entry.content || '').split('|||CHORDS|||');
+                                const lyrics = parts[0] || '';
+                                const chords = parts[1] || '';
+                                function updateSong(l: string, c: string) {
+                                  updateLocal(
+                                    entry.id,
+                                    'content',
+                                    c.trim() ? `${l}|||CHORDS|||${c}` : l,
+                                  );
+                                }
+                                return (
+                                  <div className="space-y-3">
+                                    {isEditing ? (
+                                      <>
+                                        <textarea
+                                          id="note-editor"
+                                          value={lyrics}
+                                          onChange={(e) => updateSong(e.target.value, chords)}
+                                          placeholder="Write lyrics or melody ideas..."
+                                          className="w-full min-h-[100px] rounded-lg border border-border/20 bg-transparent p-3 text-sm resize-none outline-none"
+                                          style={{
+                                            color: '#5A4535',
+                                            fontFamily: style.font,
+                                            textAlign: style.align as 'left' | 'center' | 'right',
+                                          }}
+                                          spellCheck={spellCheckOn}
+                                          lang="fr"
+                                          onInput={(e) => {
+                                            const t = e.target as HTMLTextAreaElement;
+                                            t.style.height = 'auto';
+                                            t.style.height = `${t.scrollHeight}px`;
+                                          }}
+                                        />
+                                        <textarea
+                                          value={chords}
+                                          onChange={(e) => updateSong(lyrics, e.target.value)}
+                                          placeholder="Am - F - C - G..."
+                                          className="w-full min-h-[40px] rounded-lg border border-[#C88820]/10 bg-[#C88820]/3 p-3 text-sm resize-none outline-none font-mono"
+                                          style={{ color: '#8A7A5A' }}
+                                          onInput={(e) => {
+                                            const t = e.target as HTMLTextAreaElement;
+                                            t.style.height = 'auto';
+                                            t.style.height = `${t.scrollHeight}px`;
+                                          }}
+                                        />
+                                      </>
+                                    ) : (
+                                      <div
+                                        onClick={() => setEditingId(entry.id)}
+                                        className="cursor-text"
+                                      >
+                                        <NotePreview
+                                          content={lyrics}
+                                          font={style.font}
+                                          align={style.align}
+                                          color="transparent"
+                                        />
+                                        {chords && (
+                                          <div
+                                            className="mt-2 rounded-lg p-2 font-mono text-xs"
+                                            style={{ background: '#C88820/5', color: '#8A7A5A' }}
+                                          >
+                                            {chords}
+                                          </div>
+                                        )}
+                                      </div>
+                                    )}
+                                    <GenerateButtons
+                                      context={[entry.title, lyrics, chords]
+                                        .filter(Boolean)
+                                        .join('\n')}
+                                    />
+                                  </div>
+                                );
+                              })()
+                            ) : (
+                              <div
+                                id="note-editor"
+                                contentEditable
+                                suppressContentEditableWarning
+                                ref={(el) => {
+                                  if (el && isEditing && !el.innerHTML && entry.content) {
+                                    el.innerHTML = entry.content;
+                                  }
+                                  if (el && isEditing && !entry.content && el.innerHTML === '') {
+                                    el.focus();
+                                  }
+                                }}
+                                onInput={(e) => {
+                                  const html = (e.target as HTMLDivElement).innerHTML;
+                                  updateLocal(entry.id, 'content', html === '<br>' ? '' : html);
+                                }}
+                                className="w-full min-h-[200px] rounded-lg border border-border/20 bg-transparent p-3 outline-none"
+                                style={{
+                                  color: '#5A4535',
+                                  fontFamily: style.font || 'var(--font-serif)',
+                                  fontSize: `${style.size || 16}px`,
+                                  textAlign: style.align as 'left' | 'center' | 'right',
+                                  lineHeight: 1.6,
+                                }}
+                                data-placeholder="start writing..."
+                                spellCheck={spellCheckOn}
+                                lang="fr"
+                              />
+                            )}
+
+                            {/* Project links for songs */}
+                            {isSong && projectEntries.length > 0 && (
+                              <div className="flex gap-1.5 flex-wrap">
+                                {projectEntries.map((p) => {
+                                  const linked = entry.tags?.includes(p.id);
+                                  return (
+                                    <button
+                                      key={p.id}
+                                      type="button"
+                                      onClick={() => {
+                                        const tags = entry.tags || [];
+                                        const next = linked
+                                          ? tags.filter((t) => t !== p.id)
+                                          : [...tags, p.id];
+                                        setEntries((prev) =>
+                                          prev.map((e) =>
+                                            e.id === entry.id ? { ...e, tags: next } : e,
+                                          ),
+                                        );
+                                        fetch(`/api/notebook/${entry.id}`, {
+                                          method: 'PATCH',
+                                          headers: { 'Content-Type': 'application/json' },
+                                          body: JSON.stringify({ tags: next }),
+                                        });
+                                      }}
+                                      className="px-2 py-0.5 rounded-lg text-[11px] font-medium"
+                                      style={{
+                                        background: linked ? '#3A8AC420' : 'transparent',
+                                        border: `1px solid ${linked ? '#3A8AC4' : '#3A8AC430'}`,
+                                        color: '#3A8AC4',
+                                      }}
+                                    >
+                                      {p.title}
+                                    </button>
+                                  );
+                                })}
+                              </div>
+                            )}
+
+                            {/* Songs in project */}
+                            {isProject && projectSongs.length > 0 && (
+                              <div className="space-y-1">
+                                {projectSongs.map((s) => (
+                                  <button
+                                    key={s.id}
+                                    type="button"
+                                    onClick={() => {
+                                      setActiveNotebook('song_ideas');
+                                      setExpandedId(s.id);
+                                    }}
+                                    className="flex items-center gap-2 text-xs text-muted-foreground hover:text-foreground transition-colors"
+                                  >
+                                    <span className="opacity-40">♪</span> {s.title}
+                                  </button>
+                                ))}
+                              </div>
+                            )}
+
+                            {/* Actions */}
+                            <div className="flex items-center justify-between pt-2 border-t border-border/10">
+                              <span className="text-[11px] text-muted-foreground/40">
+                                {new Date(entry.createdAt).toLocaleDateString([], {
+                                  weekday: 'short',
+                                  month: 'short',
+                                  day: 'numeric',
+                                })}
+                              </span>
+                              <div className="flex gap-2">
+                                {isEditing ? (
+                                  <button
+                                    type="button"
+                                    onClick={() => setEditingId(null)}
+                                    className="text-xs text-muted-foreground/40 hover:text-muted-foreground"
+                                  >
+                                    Done
+                                  </button>
+                                ) : (
+                                  <button
+                                    type="button"
+                                    onClick={() => setEditingId(entry.id)}
+                                    className="text-xs text-muted-foreground/50 hover:text-muted-foreground"
+                                  >
+                                    Edit
+                                  </button>
+                                )}
+                                <button
+                                  type="button"
+                                  onClick={() => handleDelete(entry.id)}
+                                  className="text-xs text-muted-foreground/40 hover:text-destructive"
+                                >
+                                  Delete
+                                </button>
+                              </div>
+                            </div>
+                          </div>
                         </div>
-                      </div>
+                      )}
                     </div>
-                  )}
-                </div>
-              );
-            })}
+                  );
+                })}
+              </>
+            )}
           </div>
         </div>
       </main>
