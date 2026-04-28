@@ -4,6 +4,7 @@ import CheckInPing from '@/components/CheckInPing';
 import DayRail from '@/components/DayRail';
 import DayTabs from '@/components/DayTabs';
 import DoingPanel from '@/components/DoingPanel';
+import FeelingCheckInCard from '@/components/FeelingCheckInCard';
 import FirstRunOnboarding from '@/components/FirstRunOnboarding';
 import MoodSuggestion from '@/components/MoodSuggestion';
 import RoadView from '@/components/RoadView';
@@ -30,13 +31,14 @@ function DayContent() {
         <CheckInPing />
         <DayTabs
           dateLabel={dateStr}
-          // FEELING — emotion register: where am I, what's around me.
+          // FEELING — full emotional register: presence, consciousness, challenge/flow, objectives.
           feelingContent={
             <div className="space-y-4">
+              <FeelingCheckInCard />
               <MoodSuggestion />
             </div>
           }
-          // DOING — objectives + tasks + agenda.
+          // DOING — execution: tasks inbox + agenda.
           doingContent={<DoingPanel />}
           // SHARING — personal social axis. Big dot Lonely → Connected.
           sharingContent={
