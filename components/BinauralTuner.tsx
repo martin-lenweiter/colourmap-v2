@@ -2395,6 +2395,12 @@ export default function BinauralTuner() {
   }, [baseFreq, beatFreq]);
 
   useEffect(() => {
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new CustomEvent('binaural:beatfreq', { detail: { hz: beatFreq } }));
+    }
+  }, [beatFreq]);
+
+  useEffect(() => {
     if (gainRef.current) gainRef.current.gain.value = volume;
   }, [volume]);
 
