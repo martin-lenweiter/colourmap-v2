@@ -1422,11 +1422,14 @@ export default function BinauralTuner() {
   const layerWetRef = useRef<GainNode | null>(null);
   // Harmony tones — musical intervals relative to base frequency
   const HARMONICS = [
-    { id: 'fifth', label: 'Fifth', ratio: 3 / 2, color: '#6890B0' },
-    { id: 'octave', label: 'Octave', ratio: 2, color: '#7AAA58' },
+    { id: 'sub-octave', label: 'Sub Octave', ratio: 1 / 2, color: '#5A2E48' },
+    { id: 'sub-fifth', label: 'Sub Fifth', ratio: 2 / 3, color: '#7A3850' },
+    { id: 'sub-fourth', label: 'Sub Fourth', ratio: 3 / 4, color: '#9A4858' },
+    { id: 'sub-third', label: 'Sub Third', ratio: 4 / 5, color: '#B85A50' },
     { id: 'third', label: 'Third', ratio: 5 / 4, color: '#D4805A' },
     { id: 'fourth', label: 'Fourth', ratio: 4 / 3, color: '#9B6BA0' },
-    { id: 'minor3', label: 'Minor 3rd', ratio: 6 / 5, color: '#C4A060' },
+    { id: 'fifth', label: 'Fifth', ratio: 3 / 2, color: '#6890B0' },
+    { id: 'octave', label: 'Octave', ratio: 2, color: '#7AAA58' },
   ] as const;
   const [activeHarmonics, setActiveHarmonics] = useState<Set<string>>(new Set());
   const harmOscsRef = useRef<Map<string, { osc: OscillatorNode; gain: GainNode }>>(new Map());
