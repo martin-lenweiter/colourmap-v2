@@ -2,6 +2,8 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 
+import { createClient } from '@/lib/supabase/client';
+
 interface Channel {
   id: string;
   name: string;
@@ -101,24 +103,56 @@ export default function ChatPanel({
     }
   }, [conversationId, initialChannels.length]);
 
-  // Load + poll messages when channel changes
+  // Load messages + subscribe via Supabase Realtime when channel changes.
+  // Realtime requires the `messages` table to have realtime enabled in the
+  // Supabase dashboard (Database → Replication → Tables → messages).
+  // Falls back to a 3-second poll if the subscription fails.
   // biome-ignore lint/correctness/useExhaustiveDependencies: loadMessages is stable
   useEffect(() => {
     if (!activeChannelId) return;
     void loadMessages(activeChannelId);
 
-    pollRef.current = setInterval(async () => {
-      const res = await fetch(messagesUrl(activeChannelId));
-      if (!res.ok) return;
-      const data: Message[] = await res.json();
-      const lastId = data.length ? data[data.length - 1].id : null;
-      if (lastId && lastId !== lastMsgIdRef.current) {
-        setMessages(data);
-        lastMsgIdRef.current = lastId;
-      }
-    }, 1500);
+    const supabase = createClient();
+    const channelName = `messages:${activeChannelId}`;
+
+    const sub = supabase
+      .channel(channelName)
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'messages',
+          filter: `channel_id=eq.${activeChannelId}`,
+        },
+        (payload) => {
+          const msg = payload.new as Message;
+          setMessages((prev) => {
+            // Skip if it's already in the list (could be an optimistic message)
+            if (prev.some((m) => m.id === msg.id)) return prev;
+            return [...prev, msg];
+          });
+          lastMsgIdRef.current = msg.id;
+        },
+      )
+      .subscribe((status) => {
+        // If realtime subscription fails, fall back to polling
+        if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT') {
+          pollRef.current = setInterval(async () => {
+            const res = await fetch(messagesUrl(activeChannelId));
+            if (!res.ok) return;
+            const data: Message[] = await res.json();
+            const lastId = data.length ? data[data.length - 1].id : null;
+            if (lastId && lastId !== lastMsgIdRef.current) {
+              setMessages(data);
+              lastMsgIdRef.current = lastId;
+            }
+          }, 3000);
+        }
+      });
 
     return () => {
+      void supabase.removeChannel(sub);
       if (pollRef.current) clearInterval(pollRef.current);
     };
   }, [activeChannelId]);

@@ -4,7 +4,9 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 
 import AtomVisualizer, { type VisualizerMode } from '@/components/AtomVisualizer';
 import InfoTooltip from '@/components/InfoTooltip';
+import VoiceProviderSelector from '@/components/VoiceProviderSelector';
 import { haptic } from '@/lib/haptics';
+import { useTTS } from '@/lib/hooks/use-tts';
 import { playSampledNote, type SamplePackId } from '@/lib/sample-pack';
 
 /* ═══════════════════════════════════════════════════════════
@@ -1852,30 +1854,13 @@ export default function BinauralTuner() {
   const [voiceMode, setVoiceMode] = useState<'off' | 'affirmations' | 'meditation' | 'poetry'>(
     'off',
   );
-  const [voiceRate, setVoiceRate] = useState(0.7); // 0.5-1.0
-  const [voicePitch, setVoicePitch] = useState(1.0); // 0.5-1.5
-  const [voiceVolume, setVoiceVolume] = useState(0.8);
+  const { speak: ttsSpeak, stop: ttsStop } = useTTS();
   const voiceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const voiceIdxRef = useRef(0);
   const voiceActiveRef = useRef(false);
 
   function speakLine(text: string) {
-    if (typeof window === 'undefined' || !window.speechSynthesis) return;
-    const utter = new SpeechSynthesisUtterance(text);
-    utter.rate = voiceRate;
-    utter.pitch = voicePitch;
-    utter.volume = voiceVolume;
-    // Try to find a soft/calm voice
-    const voices = window.speechSynthesis.getVoices();
-    const preferred = voices.find(
-      (v) =>
-        v.lang.startsWith('en') &&
-        (v.name.includes('Samantha') || v.name.includes('Karen') || v.name.includes('Female')),
-    );
-    if (preferred) utter.voice = preferred;
-    else if (voices.length > 0)
-      utter.voice = voices.find((v) => v.lang.startsWith('en')) || voices[0];
-    window.speechSynthesis.speak(utter);
+    void ttsSpeak(text);
   }
 
   function scheduleNextVoiceLine() {
@@ -1905,7 +1890,7 @@ export default function BinauralTuner() {
     } else {
       voiceActiveRef.current = false;
       if (voiceTimerRef.current) clearTimeout(voiceTimerRef.current);
-      if (typeof window !== 'undefined') window.speechSynthesis?.cancel();
+      ttsStop();
     }
     return () => {
       voiceActiveRef.current = false;
@@ -3815,100 +3800,8 @@ export default function BinauralTuner() {
               })}
             </div>
             {voiceMode !== 'off' && (
-              <div className="flex justify-center gap-4 pt-2">
-                <div className="flex items-center gap-2">
-                  <span
-                    style={{
-                      fontFamily: 'var(--font-serif)',
-                      fontSize: '12px',
-                      color: '#8A6A4A',
-                    }}
-                  >
-                    speed
-                  </span>
-                  <div
-                    className="flex gap-[2px] cursor-pointer"
-                    onClick={(e) => {
-                      const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
-                      setVoiceRate(0.5 + ((e.clientX - rect.left) / rect.width) * 0.5);
-                    }}
-                  >
-                    {Array.from({ length: 6 }, (_, i) => (
-                      <div
-                        key={i}
-                        className="rounded-[2px] transition-all"
-                        style={{
-                          width: 8,
-                          height: 5,
-                          background: '#9B6BA0',
-                          opacity: i / 5 <= (voiceRate - 0.5) / 0.5 ? 0.4 + (i / 5) * 0.4 : 0.08,
-                        }}
-                      />
-                    ))}
-                  </div>
-                </div>
-                <div className="flex items-center gap-2">
-                  <span
-                    style={{
-                      fontFamily: 'var(--font-serif)',
-                      fontSize: '12px',
-                      color: '#8A6A4A',
-                    }}
-                  >
-                    pitch
-                  </span>
-                  <div
-                    className="flex gap-[2px] cursor-pointer"
-                    onClick={(e) => {
-                      const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
-                      setVoicePitch(0.5 + ((e.clientX - rect.left) / rect.width) * 1.0);
-                    }}
-                  >
-                    {Array.from({ length: 6 }, (_, i) => (
-                      <div
-                        key={i}
-                        className="rounded-[2px] transition-all"
-                        style={{
-                          width: 8,
-                          height: 5,
-                          background: '#9B6BA0',
-                          opacity: i / 5 <= (voicePitch - 0.5) / 1.0 ? 0.4 + (i / 5) * 0.4 : 0.08,
-                        }}
-                      />
-                    ))}
-                  </div>
-                </div>
-                <div className="flex items-center gap-2">
-                  <span
-                    style={{
-                      fontFamily: 'var(--font-serif)',
-                      fontSize: '12px',
-                      color: '#8A6A4A',
-                    }}
-                  >
-                    vol
-                  </span>
-                  <div
-                    className="flex gap-[2px] cursor-pointer"
-                    onClick={(e) => {
-                      const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
-                      setVoiceVolume(Math.max(0.1, (e.clientX - rect.left) / rect.width));
-                    }}
-                  >
-                    {Array.from({ length: 6 }, (_, i) => (
-                      <div
-                        key={i}
-                        className="rounded-[2px] transition-all"
-                        style={{
-                          width: 8,
-                          height: 5,
-                          background: '#9B6BA0',
-                          opacity: i / 5 <= voiceVolume ? 0.4 + (i / 5) * 0.4 : 0.08,
-                        }}
-                      />
-                    ))}
-                  </div>
-                </div>
+              <div className="px-1 pt-3">
+                <VoiceProviderSelector />
               </div>
             )}
           </div>
