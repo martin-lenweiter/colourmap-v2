@@ -4,9 +4,10 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 
 import AtomVisualizer, { type VisualizerMode } from '@/components/AtomVisualizer';
 import InfoTooltip from '@/components/InfoTooltip';
+import VoiceProviderSelector from '@/components/VoiceProviderSelector';
 import { haptic } from '@/lib/haptics';
+import { useTTS } from '@/lib/hooks/use-tts';
 import { playSampledNote, type SamplePackId } from '@/lib/sample-pack';
-import { useSoundSession } from '@/lib/sound-session';
 
 /* ═══════════════════════════════════════════════════════════
    BINAURAL TUNER — adaptive soundscape generator.
@@ -16,19 +17,24 @@ import { useSoundSession } from '@/lib/sound-session';
    ═══════════════════════════════════════════════════════════ */
 
 // ── Wave visualization styles ──
-type WaveStyle = 'sine' | 'pulse' | 'double' | 'zigzag';
+type WaveStyle = 'sine' | 'layered' | 'pulse' | 'double' | 'zigzag';
 const WAVE_STYLES: { id: WaveStyle; label: string }[] = [
   { id: 'sine', label: 'sine' },
+  { id: 'layered', label: 'layered' },
   { id: 'pulse', label: 'pulse' },
   { id: 'double', label: 'double' },
   { id: 'zigzag', label: 'zigzag' },
 ];
 
-// Soft-beat bed (Djembe drum pattern) was deleted from Chill Machine
-// after a stuck-state bug kept the drums playing on every page load
-// even after multiple "fix" attempts. The Chill surface is now drum-
-// free; rhythmic percussion lives in Groove Machine instead. Sample
-// files at public/sounds/drums/ remain for Groove Machine use.
+// ── Soft-beat bed (gentle percussion on a user-chosen tempo) ──
+type BeatPreset = 'off' | 'heartbeat' | 'walking' | 'dance';
+const BEAT_PRESETS: { id: BeatPreset; label: string; intervalMs: number }[] = [
+  { id: 'off', label: 'off', intervalMs: 0 },
+  { id: 'heartbeat', label: 'heartbeat', intervalMs: 857 }, // ~70 BPM
+  { id: 'walking', label: 'walking', intervalMs: 600 }, // 100 BPM
+  { id: 'dance', label: 'dance', intervalMs: 500 }, // 120 BPM
+];
+const BEAT_SAMPLE_URL = '/sounds/drums/Djembe.ogg';
 
 // ── Brain state presets ──
 const PRESETS = [
@@ -41,16 +47,13 @@ const PRESETS = [
 ];
 
 // ── Default layers per preset ──
-// 'breath' (bandpass-filtered noise layer) removed from all defaults
-// per user — the sound wasn't reading as "breath", felt like noise on
-// top. Users can still manually toggle the layer from the layers list.
 const PRESET_LAYERS: Record<string, string[]> = {
   'deep-sleep': ['ocean', 'sub'],
-  meditation: ['rain', 'bowl'],
+  meditation: ['rain', 'breath'],
   creativity: ['birds', 'wind', 'bowl'],
   'calm-focus': ['hum', 'wind'],
-  presence: ['drone'],
-  stillness: ['bowl'],
+  presence: ['breath', 'drone'],
+  stillness: ['bowl', 'breath'],
 };
 
 // ── Soundscape layers ──
@@ -63,96 +66,6 @@ interface LayerDef {
     ctx: AudioContext,
     baseFreq: number,
   ) => { node: AudioNode; source: AudioBufferSourceNode | OscillatorNode };
-}
-
-// ── Display categories ──
-// User-facing categories grouping layers by *character*, not engineering
-// taxonomy. The original `group` field stays so saved-mix restoration
-// still works; this is a derived view for the UI only.
-type LayerCategory = 'waters' | 'birds' | 'drones' | 'textures' | 'digital' | 'pulse';
-
-const CATEGORY_LABELS: Record<LayerCategory, string> = {
-  waters: 'Waters',
-  birds: 'Birds & Forest',
-  drones: 'Drones & Voices',
-  textures: 'Textures',
-  digital: 'Digital',
-  pulse: 'Pulse & Ceremony',
-};
-
-const CATEGORY_COLORS: Record<LayerCategory, string> = {
-  waters: '#5AA8B0', // teal — rain, ocean, thunder, waves
-  birds: '#7AAA58', // sage — birds, forest, creatures, wind
-  drones: '#9B6BA0', // plum — sustained tones, chant, choir
-  textures: '#B8843A', // gold — vinyl, hum, bowls, chimes, fire
-  digital: '#5A7AAA', // blue-grey — synthetic / sci-fi
-  pulse: '#7A4A2C', // burnt sienna — frame drum, rattle, shaker, ceremonial heartbeat
-};
-
-const CATEGORY_ORDER: LayerCategory[] = [
-  'waters',
-  'birds',
-  'drones',
-  'textures',
-  'pulse',
-  'digital',
-];
-
-/** Per-category gain ceiling. Pulse layers are rhythmic and can be
- *  fatiguing at full volume — cap them at 0.5 so the slider's
- *  "almost full" still feels grounded, not tense. */
-const CATEGORY_VOLUME_CAP: Partial<Record<LayerCategory, number>> = {
-  pulse: 0.5,
-};
-
-// Synthesized ceremonial-percussion layer ids — they share group: 'ambient'
-// with the digital family for save-mix compatibility but read as 'pulse'
-// in the UI so they live alongside drones rather than synth blips.
-const PULSE_LAYER_IDS = new Set([
-  'frame-drum',
-  'shaman-drum',
-  'chacapa',
-  'sand-maraca',
-  'ceremony-heartbeat',
-  // Series 2
-  'river-seeds',
-  'ghost-shaker',
-  'tresillo-pod',
-  'breath-rattle',
-]);
-
-function getLayerCategory(layer: { id: string; group: string }): LayerCategory {
-  // Drones — every tone-group layer is sustained pitched material
-  if (layer.group === 'tones') return 'drones';
-  // Textures — small grainy character layers
-  if (layer.group === 'texture') return 'textures';
-  // Pulse — ceremonial percussion (frame drums, rattles, shakers)
-  if (PULSE_LAYER_IDS.has(layer.id)) return 'pulse';
-  // Digital — anything synthetic / sci-fi / modern
-  if (layer.group === 'ambient') return 'digital';
-  // Nature — split: birds + forest live separately from water-character
-  if (layer.group === 'nature') {
-    if (layer.id === 'birds' || layer.id === 'forest' || layer.id === 'wind') return 'birds';
-    if (layer.id === 'fire') return 'textures';
-    return 'waters';
-  }
-  // Real samples — split by id substring
-  if (layer.group === 'real') {
-    const id = layer.id;
-    if (id.includes('rain') || id.includes('thunder') || id === 'real-wind') return 'waters';
-    if (
-      id === 'real-birds' ||
-      id === 'real-garden' ||
-      id === 'real-forest' ||
-      id === 'real-cicada' ||
-      id === 'real-sheep' ||
-      id === 'real-wolf' ||
-      id === 'real-bear'
-    )
-      return 'birds';
-    return 'textures';
-  }
-  return 'textures';
 }
 
 function buildNoise(
@@ -191,56 +104,6 @@ function buildTone(
   osc.type = type;
   osc.frequency.value = freq;
   return { node: osc, source: osc };
-}
-
-// Chant — a low sawtooth tone passed through a vocal-formant
-// bandpass filter. Creates an "ahhhhh" drone character without
-// needing any audio samples. Sits comfortably under any base tone
-// because the filter does most of the shaping.
-function buildChant(
-  ctx: AudioContext,
-  baseFreq: number,
-): { node: AudioNode; source: OscillatorNode } {
-  const osc = ctx.createOscillator();
-  osc.type = 'sawtooth';
-  osc.frequency.value = baseFreq;
-  const formant = ctx.createBiquadFilter();
-  formant.type = 'bandpass';
-  formant.frequency.value = 750; // "ah" vowel formant F1
-  formant.Q.value = 4;
-  const gain = ctx.createGain();
-  gain.gain.value = 0.22;
-  osc.connect(formant);
-  formant.connect(gain);
-  return { node: gain, source: osc };
-}
-
-// Choir — richer than Chant. Uses a custom PeriodicWave with
-// harmonic partials (root + octave + fifth + double octave + ...)
-// so a single oscillator sounds like a stacked chord. Passed through
-// a vocal formant filter for chorus-pad quality.
-function buildChoir(
-  ctx: AudioContext,
-  baseFreq: number,
-): { node: AudioNode; source: OscillatorNode } {
-  const osc = ctx.createOscillator();
-  // Harmonic amplitudes: 1, 2, 3, 4, 5, 6, 7, 8
-  // Weighted for choir-like: strong root, fifth (3rd harmonic),
-  // octave (2nd), twelfth (3rd), slightly duller upper partials.
-  const real = new Float32Array([0, 1, 0.65, 0.55, 0.3, 0.35, 0.15, 0.25, 0.1]);
-  const imag = new Float32Array(real.length);
-  const wave = ctx.createPeriodicWave(real, imag, { disableNormalization: false });
-  osc.setPeriodicWave(wave);
-  osc.frequency.value = baseFreq;
-  const formant = ctx.createBiquadFilter();
-  formant.type = 'bandpass';
-  formant.frequency.value = 1100; // brighter formant, "ehh"-ward
-  formant.Q.value = 2.5;
-  const gain = ctx.createGain();
-  gain.gain.value = 0.18;
-  osc.connect(formant);
-  formant.connect(gain);
-  return { node: gain, source: osc };
 }
 
 const LAYERS: LayerDef[] = [
@@ -323,22 +186,6 @@ const LAYERS: LayerDef[] = [
     group: 'tones',
     build: (ctx, base) => buildTone(ctx, base * 2, 'triangle'),
   },
-  // Voice-like drones — synthesized from scratch with PeriodicWave +
-  // vocal-formant filtering. No audio samples needed.
-  {
-    id: 'chant',
-    label: 'Chant',
-    color: '#7A4A5F',
-    group: 'tones',
-    build: (ctx, base) => buildChant(ctx, base / 2),
-  },
-  {
-    id: 'choir',
-    label: 'Choir',
-    color: '#A07490',
-    group: 'tones',
-    build: (ctx, base) => buildChoir(ctx, base),
-  },
   {
     id: 'sub',
     label: 'Sub Bass',
@@ -354,9 +201,13 @@ const LAYERS: LayerDef[] = [
     group: 'texture',
     build: (ctx) => buildNoise(ctx, 'highpass', 3000, 0.3),
   },
-  // 'breath' layer removed — the bandpass-noise output didn't read as
-  // breathing, just added a layer of hiss. Can be reintroduced with a
-  // proper breath sample if we want the concept back.
+  {
+    id: 'breath',
+    label: 'Breath',
+    color: '#C8C8A0',
+    group: 'texture',
+    build: (ctx) => buildNoise(ctx, 'bandpass', 500, 0.5),
+  },
   {
     id: 'hum',
     label: 'Room Hum',
@@ -868,404 +719,6 @@ const LAYERS: LayerDef[] = [
       return { node: f, source: s };
     },
   },
-  // ── Pulse / Ceremony — synthesized rhythmic percussion ──
-  // All five layers below pre-render a 4-beat loop at 72 BPM (≈ resting
-  // heart rate). They share the same beat grid so when stacked they read
-  // as one ceremonial ensemble even without a runtime scheduler.
-  // Synthesized end-to-end so we ship App-Store-clean with zero sample
-  // licensing risk; CC0 sample drop-in is documented in
-  // docs/specs/chill-machine-ceremonial-percussion.md.
-  {
-    id: 'frame-drum',
-    label: 'Frame Drum',
-    color: '#7A4A2C',
-    group: 'ambient' as const,
-    build: (ctx: AudioContext) => {
-      const bpm = 72;
-      const beatLen = Math.floor((ctx.sampleRate * 60) / bpm);
-      const beats = 4;
-      const n = beatLen * beats;
-      const b = ctx.createBuffer(2, n, ctx.sampleRate);
-      for (let c = 0; c < 2; c++) {
-        const d = b.getChannelData(c);
-        for (let beat = 0; beat < beats; beat++) {
-          const offset = beat * beatLen;
-          const accent = beat === 0 ? 1 : beat === 2 ? 0.7 : 0.55;
-          // Soft membrane: 100Hz fundamental sliding to 70Hz, exp decay
-          const hitLen = Math.floor(ctx.sampleRate * 0.32);
-          for (let i = 0; i < hitLen && offset + i < n; i++) {
-            const t = i / hitLen;
-            const env = Math.exp(-t * 5);
-            const freq = 100 - 30 * t;
-            d[offset + i] +=
-              Math.sin((i / ctx.sampleRate) * freq * Math.PI * 2) * env * 0.18 * accent;
-          }
-        }
-      }
-      const s = ctx.createBufferSource();
-      s.buffer = b;
-      s.loop = true;
-      const f = ctx.createBiquadFilter();
-      f.type = 'lowpass';
-      f.frequency.value = 250;
-      s.connect(f);
-      return { node: f, source: s };
-    },
-  },
-  {
-    id: 'shaman-drum',
-    label: 'Shaman Drum',
-    color: '#5C2818',
-    group: 'ambient' as const,
-    build: (ctx: AudioContext) => {
-      const bpm = 72;
-      const beatLen = Math.floor((ctx.sampleRate * 60) / bpm);
-      const beats = 4;
-      const n = beatLen * beats;
-      const b = ctx.createBuffer(2, n, ctx.sampleRate);
-      for (let c = 0; c < 2; c++) {
-        const d = b.getChannelData(c);
-        // Hits on beats 0 and 2 (slow ceremonial pulse — half the frame drum)
-        for (const beat of [0, 2]) {
-          const offset = beat * beatLen;
-          const hitLen = Math.floor(ctx.sampleRate * 0.55);
-          for (let i = 0; i < hitLen && offset + i < n; i++) {
-            const t = i / hitLen;
-            const env = Math.exp(-t * 3.2);
-            // Deeper fundamental: 60Hz sliding to 40Hz
-            const freq = 60 - 20 * t;
-            const body = Math.sin((i / ctx.sampleRate) * freq * Math.PI * 2);
-            // A whisper of noise at the attack for stick-on-skin grit
-            const noise = i < hitLen * 0.05 ? (Math.random() * 2 - 1) * 0.4 : 0;
-            d[offset + i] += (body + noise) * env * 0.22;
-          }
-        }
-      }
-      const s = ctx.createBufferSource();
-      s.buffer = b;
-      s.loop = true;
-      const f = ctx.createBiquadFilter();
-      f.type = 'lowpass';
-      f.frequency.value = 180;
-      s.connect(f);
-      return { node: f, source: s };
-    },
-  },
-  {
-    id: 'chacapa',
-    label: 'Chacapa Rattle',
-    color: '#8E6B3A',
-    group: 'ambient' as const,
-    build: (ctx: AudioContext) => {
-      // Icaro-style leaf-bundle rattle: a swelling-then-falling burst
-      // of grainy bandpass noise per beat. Lighter than maracas, drier,
-      // longer tail. Used by Amazonian curanderos to mark the breath
-      // of the song rather than the metronome.
-      const bpm = 72;
-      const beatLen = Math.floor((ctx.sampleRate * 60) / bpm);
-      const beats = 4;
-      const n = beatLen * beats;
-      const b = ctx.createBuffer(2, n, ctx.sampleRate);
-      for (let c = 0; c < 2; c++) {
-        const d = b.getChannelData(c);
-        for (let beat = 0; beat < beats; beat++) {
-          const offset = beat * beatLen;
-          const sweepLen = Math.floor(ctx.sampleRate * 0.55);
-          for (let i = 0; i < sweepLen && offset + i < n; i++) {
-            const t = i / sweepLen;
-            // Swell-attack envelope: rises to 0.4, holds, falls
-            const env = t < 0.4 ? t / 0.4 : Math.exp(-(t - 0.4) * 4);
-            // Noise carrier with mild AM at ~24 Hz (leaf-flutter rate)
-            const am = 0.7 + 0.3 * Math.sin((i / ctx.sampleRate) * 24 * Math.PI * 2);
-            d[offset + i] += (Math.random() * 2 - 1) * env * am * 0.12;
-          }
-        }
-      }
-      const s = ctx.createBufferSource();
-      s.buffer = b;
-      s.loop = true;
-      const hp = ctx.createBiquadFilter();
-      hp.type = 'highpass';
-      hp.frequency.value = 800;
-      const bp = ctx.createBiquadFilter();
-      bp.type = 'bandpass';
-      bp.frequency.value = 2400;
-      bp.Q.value = 0.7;
-      s.connect(hp);
-      hp.connect(bp);
-      return { node: bp, source: s };
-    },
-  },
-  {
-    id: 'sand-maraca',
-    label: 'Sand Maraca',
-    color: '#B8843A',
-    group: 'ambient' as const,
-    build: (ctx: AudioContext) => {
-      // Sand-filled shaker — short scratchy bursts on every 8th note
-      // (twice per beat) for a rolling pulse, with the on-beat hits
-      // slightly louder so the underlying tempo is felt, not counted.
-      const bpm = 72;
-      const beatLen = Math.floor((ctx.sampleRate * 60) / bpm);
-      const beats = 4;
-      const n = beatLen * beats;
-      const halfBeat = Math.floor(beatLen / 2);
-      const b = ctx.createBuffer(2, n, ctx.sampleRate);
-      for (let c = 0; c < 2; c++) {
-        const d = b.getChannelData(c);
-        for (let step = 0; step < beats * 2; step++) {
-          const offset = step * halfBeat;
-          const onBeat = step % 2 === 0;
-          const accent = onBeat ? 1 : 0.55;
-          const hitLen = Math.floor(ctx.sampleRate * 0.13);
-          for (let i = 0; i < hitLen && offset + i < n; i++) {
-            const t = i / hitLen;
-            // Fast attack, fast decay — grain of sand falling in plastic
-            const env = Math.exp(-t * 14) * (1 - Math.exp(-t * 60));
-            d[offset + i] += (Math.random() * 2 - 1) * env * 0.18 * accent;
-          }
-        }
-      }
-      const s = ctx.createBufferSource();
-      s.buffer = b;
-      s.loop = true;
-      const hp = ctx.createBiquadFilter();
-      hp.type = 'highpass';
-      hp.frequency.value = 3500;
-      const bp = ctx.createBiquadFilter();
-      bp.type = 'bandpass';
-      bp.frequency.value = 6000;
-      bp.Q.value = 0.5;
-      s.connect(hp);
-      hp.connect(bp);
-      return { node: bp, source: s };
-    },
-  },
-  {
-    id: 'ceremony-heartbeat',
-    label: 'Ceremony Heart',
-    color: '#9C3C1C',
-    group: 'ambient' as const,
-    build: (ctx: AudioContext) => {
-      // Warmer, slower lub-dub than the digital 'heartbeat'. 72 BPM
-      // matches the rest of the pulse family so they layer cleanly.
-      const bpm = 72;
-      const beatLen = Math.floor((ctx.sampleRate * 60) / bpm);
-      const beats = 4;
-      const n = beatLen * beats;
-      const b = ctx.createBuffer(2, n, ctx.sampleRate);
-      for (let c = 0; c < 2; c++) {
-        const d = b.getChannelData(c);
-        for (let beat = 0; beat < beats; beat++) {
-          const offset = beat * beatLen;
-          // Lub — deep
-          const lubLen = Math.floor(ctx.sampleRate * 0.1);
-          for (let i = 0; i < lubLen && offset + i < n; i++) {
-            const t = i / lubLen;
-            d[offset + i] +=
-              Math.sin((i / ctx.sampleRate) * 42 * Math.PI * 2) * (1 - t) ** 2 * 0.16;
-          }
-          // Dub — slightly higher, slightly delayed
-          const dubOffset = offset + Math.floor(ctx.sampleRate * 0.18);
-          const dubLen = Math.floor(ctx.sampleRate * 0.075);
-          for (let i = 0; i < dubLen && dubOffset + i < n; i++) {
-            const t = i / dubLen;
-            d[dubOffset + i] +=
-              Math.sin((i / ctx.sampleRate) * 58 * Math.PI * 2) * (1 - t) ** 2 * 0.1;
-          }
-        }
-      }
-      const s = ctx.createBufferSource();
-      s.buffer = b;
-      s.loop = true;
-      const f = ctx.createBiquadFilter();
-      f.type = 'lowpass';
-      f.frequency.value = 130;
-      s.connect(f);
-      return { node: f, source: s };
-    },
-  },
-  // ── Pulse / Ceremony — Series 2 ──────────────────────────────────────
-  {
-    id: 'river-seeds',
-    label: 'River Seeds',
-    color: '#A0783A',
-    group: 'ambient' as const,
-    build: (ctx: AudioContext) => {
-      // Bamboo-bead rattle: 16th-note rolling pattern (4 hits per beat).
-      // Downbeat of each group of 4 is accented; inner 16ths are ghosts.
-      // Crisper and faster than sand-maraca — feels like pebbles in water.
-      const bpm = 72;
-      const beatLen = Math.floor((ctx.sampleRate * 60) / bpm);
-      const beats = 4;
-      const n = beatLen * beats;
-      const stepLen = Math.floor(beatLen / 4);
-      const steps = beats * 4;
-      const accents = [1, 0.5, 0.35, 0.6];
-      const b = ctx.createBuffer(2, n, ctx.sampleRate);
-      for (let c = 0; c < 2; c++) {
-        const d = b.getChannelData(c);
-        for (let step = 0; step < steps; step++) {
-          const offset = step * stepLen;
-          const accent = accents[step % 4];
-          const hitLen = Math.floor(ctx.sampleRate * 0.048);
-          for (let i = 0; i < hitLen && offset + i < n; i++) {
-            const t = i / hitLen;
-            const env = Math.exp(-t * 24) * (1 - Math.exp(-t * 90));
-            d[offset + i] += (Math.random() * 2 - 1) * env * 0.16 * accent;
-          }
-        }
-      }
-      const s = ctx.createBufferSource();
-      s.buffer = b;
-      s.loop = true;
-      const hp = ctx.createBiquadFilter();
-      hp.type = 'highpass';
-      hp.frequency.value = 4200;
-      const bp = ctx.createBiquadFilter();
-      bp.type = 'bandpass';
-      bp.frequency.value = 7500;
-      bp.Q.value = 0.55;
-      s.connect(hp);
-      hp.connect(bp);
-      return { node: bp, source: s };
-    },
-  },
-  {
-    id: 'ghost-shaker',
-    label: 'Ghost Shaker',
-    color: '#C49A5A',
-    group: 'ambient' as const,
-    build: (ctx: AudioContext) => {
-      // Triplet shaker: 3 evenly-spaced hits per beat creates a 6/8
-      // waltz feel against the 4/4 grid. Softer and lower than sand-maraca
-      // with a longer tail — feels like water turning slowly in an eddy.
-      const bpm = 72;
-      const beatLen = Math.floor((ctx.sampleRate * 60) / bpm);
-      const beats = 4;
-      const n = beatLen * beats;
-      const triplet = Math.floor(beatLen / 3);
-      const b = ctx.createBuffer(2, n, ctx.sampleRate);
-      for (let c = 0; c < 2; c++) {
-        const d = b.getChannelData(c);
-        for (let beat = 0; beat < beats; beat++) {
-          for (let t3 = 0; t3 < 3; t3++) {
-            const offset = beat * beatLen + t3 * triplet;
-            const accent = t3 === 0 ? 1 : 0.58;
-            const hitLen = Math.floor(ctx.sampleRate * 0.19);
-            for (let i = 0; i < hitLen && offset + i < n; i++) {
-              const t = i / hitLen;
-              const env = Math.exp(-t * 9) * (1 - Math.exp(-t * 35));
-              d[offset + i] += (Math.random() * 2 - 1) * env * 0.13 * accent;
-            }
-          }
-        }
-      }
-      const s = ctx.createBufferSource();
-      s.buffer = b;
-      s.loop = true;
-      const hp = ctx.createBiquadFilter();
-      hp.type = 'highpass';
-      hp.frequency.value = 2800;
-      const bp = ctx.createBiquadFilter();
-      bp.type = 'bandpass';
-      bp.frequency.value = 5200;
-      bp.Q.value = 0.5;
-      s.connect(hp);
-      hp.connect(bp);
-      return { node: bp, source: s };
-    },
-  },
-  {
-    id: 'tresillo-pod',
-    label: 'Tresillo Pod',
-    color: '#8A6A3A',
-    group: 'ambient' as const,
-    build: (ctx: AudioContext) => {
-      // Dried seed-pod clave: tresillo (3+3+2) pattern in 8th-note steps.
-      // Over 4 beats: hits at 8th positions 0,3,6,8,11,14. Classic
-      // Afro-Cuban syncopation — pulls against the beat without rushing it.
-      // Tonal click at 1.4kHz gives woody dried-wood body.
-      const bpm = 72;
-      const beatLen = Math.floor((ctx.sampleRate * 60) / bpm);
-      const beats = 4;
-      const n = beatLen * beats;
-      const eighth = Math.floor(beatLen / 2);
-      const tresilloSteps = [0, 3, 6, 8, 11, 14];
-      const b = ctx.createBuffer(2, n, ctx.sampleRate);
-      for (let c = 0; c < 2; c++) {
-        const d = b.getChannelData(c);
-        for (const step of tresilloSteps) {
-          const offset = step * eighth;
-          if (offset >= n) continue;
-          const hitLen = Math.floor(ctx.sampleRate * 0.068);
-          for (let i = 0; i < hitLen && offset + i < n; i++) {
-            const t = i / hitLen;
-            const env = Math.exp(-t * 17);
-            const tone = Math.sin((i / ctx.sampleRate) * 1400 * Math.PI * 2) * 0.28;
-            const noise = (Math.random() * 2 - 1) * 0.72;
-            d[offset + i] += (tone + noise) * env * 0.14;
-          }
-        }
-      }
-      const s = ctx.createBufferSource();
-      s.buffer = b;
-      s.loop = true;
-      const hp = ctx.createBiquadFilter();
-      hp.type = 'highpass';
-      hp.frequency.value = 900;
-      const bp = ctx.createBiquadFilter();
-      bp.type = 'bandpass';
-      bp.frequency.value = 3000;
-      bp.Q.value = 0.85;
-      s.connect(hp);
-      hp.connect(bp);
-      return { node: bp, source: s };
-    },
-  },
-  {
-    id: 'breath-rattle',
-    label: 'Breath Rattle',
-    color: '#B89060',
-    group: 'ambient' as const,
-    build: (ctx: AudioContext) => {
-      // Upbeat-only shaker: one long hit per beat, placed on the "and"
-      // (half-beat offset). Slow swell-and-fall envelope, warm mid-range
-      // frequency — feels like a soft exhale between heartbeats.
-      const bpm = 72;
-      const beatLen = Math.floor((ctx.sampleRate * 60) / bpm);
-      const beats = 4;
-      const n = beatLen * beats;
-      const halfBeat = Math.floor(beatLen / 2);
-      const b = ctx.createBuffer(2, n, ctx.sampleRate);
-      for (let c = 0; c < 2; c++) {
-        const d = b.getChannelData(c);
-        for (let beat = 0; beat < beats; beat++) {
-          const offset = beat * beatLen + halfBeat;
-          const hitLen = Math.floor(ctx.sampleRate * 0.3);
-          for (let i = 0; i < hitLen && offset + i < n; i++) {
-            const t = i / hitLen;
-            const env = t < 0.18 ? t / 0.18 : Math.exp(-(t - 0.18) * 5.2);
-            const am = 0.65 + 0.35 * Math.sin((i / ctx.sampleRate) * 17 * Math.PI * 2);
-            d[offset + i] += (Math.random() * 2 - 1) * env * am * 0.14;
-          }
-        }
-      }
-      const s = ctx.createBufferSource();
-      s.buffer = b;
-      s.loop = true;
-      const hp = ctx.createBiquadFilter();
-      hp.type = 'highpass';
-      hp.frequency.value = 1100;
-      const bp = ctx.createBiquadFilter();
-      bp.type = 'bandpass';
-      bp.frequency.value = 2700;
-      bp.Q.value = 0.62;
-      s.connect(hp);
-      hp.connect(bp);
-      return { node: bp, source: s };
-    },
-  },
 ];
 
 // Audio file cache for real recorded sounds
@@ -1411,12 +864,32 @@ const REAL_LAYERS: LayerDef[] = [
     group: 'real',
     build: (ctx) => buildRealSound(ctx, '/sounds/real-rain-heavy-recording.ogg'),
   },
-  // Drum-loop layers (Djembe / Schamanische_Reise / Tambourine) removed
-  // from Relaxing Sounds — they don't belong here. Djembe in particular
-  // looped as a continuous fast drum that auto-restored from saved state
-  // and felt anything but relaxing. The samples still live in
-  // public/sounds/drums/ and can be revived inside Groove Machine if we
-  // want a real-percussion track there.
+  // Percussion (Public Domain — see public/sounds/ATTRIBUTIONS.md).
+  // Djembe is a hand drum used here as the "Shaman Drum" layer — a deep,
+  // steady pulse when looped. The Schamanische_Reise.ogg file is a
+  // 60-minute ambient trance recording (too long + too thin to loop as a
+  // drum) — surfaced as "Shaman Journey" ambient so the character fits.
+  {
+    id: 'real-shaman-drum',
+    label: 'Shaman Drum',
+    color: '#B33A2B',
+    group: 'real',
+    build: (ctx) => buildRealSound(ctx, '/sounds/drums/Djembe.ogg'),
+  },
+  {
+    id: 'real-shaman-journey',
+    label: 'Shaman Journey',
+    color: '#8A3A2B',
+    group: 'real',
+    build: (ctx) => buildRealSound(ctx, '/sounds/drums/Schamanische_Reise.ogg'),
+  },
+  {
+    id: 'real-tambourine',
+    label: 'Tambourine',
+    color: '#E8B568',
+    group: 'real',
+    build: (ctx) => buildRealSound(ctx, '/sounds/drums/Tambourine.ogg'),
+  },
   // Synthesized sci-fi / cyberpunk
   {
     id: 'spaceship',
@@ -1738,7 +1211,7 @@ const GENRES: Genre[] = [
   },
 ];
 
-function getBrainState(beat: number): string {
+function _getBrainState(beat: number): string {
   if (beat <= 4) return 'delta · deep rest';
   if (beat <= 8) return 'theta · meditation';
   if (beat <= 14) return 'alpha · relaxed focus';
@@ -1852,7 +1325,6 @@ function SavedShapeIcon({ shape, color }: { shape: SavedShape; color: string }) 
 }
 
 export default function BinauralTuner() {
-  const soundSession = useSoundSession();
   const [playing, setPlaying] = useState(false);
   const [binauralOn, setBinauralOn] = useState(true);
   const [baseToneOn, setBaseToneOn] = useState(true);
@@ -1869,22 +1341,9 @@ export default function BinauralTuner() {
   const oscLGainRef = useRef<GainNode | null>(null);
   const oscRGainRef = useRef<GainNode | null>(null);
   const [baseFreq, setBaseFreq] = useState(60);
-  // Keep the ref in sync so playMelodyNote (stable useCallback) can
-  // tune sampled instruments to the current base frequency.
-  useEffect(() => {
-    baseFreqRef.current = baseFreq;
-  }, [baseFreq]);
   const [beatFreq, setBeatFreq] = useState(4);
   const [volume, setVolume] = useState(0.15);
   const [activeLayers, setActiveLayers] = useState<Record<string, number>>({});
-  // Pulse-category tempo. The percussion buffers are pre-rendered at 72 BPM
-  // so playbackRate = pulseBpm / 72. Only affects pulse layers; everything
-  // else stays at rate 1.0. Default 72 = resting heart-rate territory.
-  const [pulseBpm, setPulseBpm] = useState(72);
-  const pulseBpmRef = useRef(72);
-  useEffect(() => {
-    pulseBpmRef.current = pulseBpm;
-  }, [pulseBpm]);
   const [activeGenre, setActiveGenre] = useState<string | null>(null);
   const [_showSuggestion, _setShowSuggestion] = useState(true);
   const [_view, _setView] = useState<'presets' | 'layers' | 'genres'>('presets');
@@ -1906,31 +1365,37 @@ export default function BinauralTuner() {
       /* silent */
     }
   }, [waveStyle]);
-  // beatPreset / beatVolume / beatTimer / beatBuffer / beatGain
-  // intentionally absent — beat-bed feature deleted from Chill Machine.
-  // Old localStorage keys are purged once on mount so any persisted
-  // 'heartbeat' / 'walking' / 'dance' value cannot reanimate.
+  const [beatPreset, setBeatPreset] = useState<BeatPreset>('off');
+  const [beatVolume, setBeatVolume] = useState(0.3);
+  const beatTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const beatBufferRef = useRef<AudioBuffer | null>(null);
+  const beatGainRef = useRef<GainNode | null>(null);
   useEffect(() => {
     try {
-      localStorage.removeItem('colourmap:beat-preset');
-      localStorage.removeItem('colourmap:beat-volume');
+      const stored = localStorage.getItem('colourmap:beat-preset');
+      if (stored && BEAT_PRESETS.some((b) => b.id === stored)) {
+        setBeatPreset(stored as BeatPreset);
+      }
+      const v = Number.parseFloat(localStorage.getItem('colourmap:beat-volume') ?? '');
+      if (!Number.isNaN(v) && v >= 0 && v <= 1) setBeatVolume(v);
     } catch {
       /* silent */
     }
   }, []);
-  // Placeholder kept to preserve the surrounding useEffect's [beatVolume]
-  // dependency declarations elsewhere; kept as a constant so the value
-  // exists for the (no-op) beatVolume save effect below.
-  const [beatVolume, _setBeatVolume] = useState(0.3);
+  useEffect(() => {
+    try {
+      localStorage.setItem('colourmap:beat-preset', beatPreset);
+    } catch {
+      /* silent */
+    }
+  }, [beatPreset]);
   useEffect(() => {
     try {
       localStorage.setItem('colourmap:beat-volume', String(beatVolume));
     } catch {
       /* silent */
     }
-    // beatGainRef gone with the rest of the beat-bed feature; nothing
-    // to update on beatVolume change. Kept the state purely so old
-    // saved-mix loads don't crash on `setBeatVolume` references.
+    if (beatGainRef.current) beatGainRef.current.gain.value = beatVolume;
   }, [beatVolume]);
   const warmth = 0.3; // always-on gentle warmth for smoother sound
   const filterFreq = 5000; // wide open — no muffling
@@ -1955,61 +1420,29 @@ export default function BinauralTuner() {
   const layerReverbRef = useRef<ConvolverNode | null>(null);
   const layerDryRef = useRef<GainNode | null>(null);
   const layerWetRef = useRef<GainNode | null>(null);
-  // baseFreq mirror for use inside the melody scheduler — playMelodyNote
-  // is a stable useCallback (refs-only deps) so we can't read baseFreq
-  // directly. The melody root is octave-shifted from this reference so
-  // the melody actually sits in tune with the user's chosen drone
-  // (e.g. 528Hz, 432Hz, 174Hz). Without this the melody plays a fixed
-  // C-rooted scale regardless of context.
-  const baseFreqRef = useRef(60);
-  // Harmony tones — musical intervals relative to base frequency.
-  // Ordered low → high so the row reads like a pitch ladder. Below 1×
-  // are subharmonics (undertones) which ground the mix with warmth;
-  // above 1× are the classical overtones. Ratios are exact just
-  // intonation so they beat cleanly against the root.
-  // Harmonious rainbow progression low → high. Warm wine at the
-  // bottom of the pitch range, through rose / terracotta / gold /
-  // sage / teal / sky blue at the top. Avoids grey/ochre/purple
-  // mixing — the row reads as one fluid spectrum.
+  // Harmony tones — musical intervals relative to base frequency
   const HARMONICS = [
-    { id: 'sub-octave', label: 'Sub Octave', ratio: 1 / 2, color: '#5A2E48' }, // wine
-    { id: 'sub-fifth', label: 'Sub Fifth', ratio: 2 / 3, color: '#7A3850' }, // mauve
-    { id: 'sub-fourth', label: 'Sub Fourth', ratio: 3 / 4, color: '#9A4858' }, // rose-brown
-    { id: 'sub-third', label: 'Sub Third', ratio: 4 / 5, color: '#B85A50' }, // terracotta
-    { id: 'minor3', label: 'Minor 3rd', ratio: 6 / 5, color: '#D4805A' }, // warm orange
-    { id: 'third', label: 'Third', ratio: 5 / 4, color: '#DCA050' }, // gold
-    { id: 'fourth', label: 'Fourth', ratio: 4 / 3, color: '#C8B854' }, // chartreuse
-    { id: 'fifth', label: 'Fifth', ratio: 3 / 2, color: '#88B868' }, // sage
-    { id: 'octave', label: 'Octave', ratio: 2, color: '#5AA8B0' }, // teal
-    { id: 'double-oct', label: 'Double Oct', ratio: 4, color: '#6890C8' }, // sky
+    { id: 'fifth', label: 'Fifth', ratio: 3 / 2, color: '#6890B0' },
+    { id: 'octave', label: 'Octave', ratio: 2, color: '#7AAA58' },
+    { id: 'third', label: 'Third', ratio: 5 / 4, color: '#D4805A' },
+    { id: 'fourth', label: 'Fourth', ratio: 4 / 3, color: '#9B6BA0' },
+    { id: 'minor3', label: 'Minor 3rd', ratio: 6 / 5, color: '#C4A060' },
   ] as const;
   const [activeHarmonics, setActiveHarmonics] = useState<Set<string>>(new Set());
   const harmOscsRef = useRef<Map<string, { osc: OscillatorNode; gain: GainNode }>>(new Map());
 
-  // Sacred / Solfeggio frequencies. Deep end (32–174) are lower
-  // anchoring tones — grounding / earth resonance; mid-range are the
-  // canonical Solfeggio; 963 at the top for higher-self.
-  // Sacred frequency colours sweep a rainbow as you read down the
-  // list — low Hz (root) reads deep red, mid-list shifts through
-  // orange/gold/green/cyan, top of list (higher self) lands in
-  // violet. Per Martin (2026-04-26): "make rainbow colour
-  // progressions going down. on the Hz." Hex values so the
-  // existing `${color}XX` alpha-suffix patterns still work.
+  // Sacred / Solfeggio frequencies
   const SACRED = [
-    { id: 's032', label: '32', freq: 32, desc: 'root', color: '#C8463E' },
-    { id: 's063', label: '63', freq: 63, desc: 'earth', color: '#D6604E' },
-    { id: 's108', label: '108', freq: 108, desc: 'unity', color: '#DC7A4A' },
-    { id: 's136', label: '136', freq: 136.1, desc: 'om', color: '#D89846' },
-    { id: 's174', label: '174', freq: 174, desc: 'foundation', color: '#C8B046' },
-    { id: 's285', label: '285', freq: 285, desc: 'healing', color: '#A8B848' },
-    { id: 's396', label: '396', freq: 396, desc: 'liberation', color: '#7AB85A' },
-    { id: 's417', label: '417', freq: 417, desc: 'change', color: '#5AB088' },
-    { id: 's432', label: '432', freq: 432, desc: 'nature', color: '#48A4AA' },
-    { id: 's528', label: '528', freq: 528, desc: 'love', color: '#4C90C2' },
-    { id: 's639', label: '639', freq: 639, desc: 'connection', color: '#5778C8' },
-    { id: 's741', label: '741', freq: 741, desc: 'intuition', color: '#7064C0' },
-    { id: 's852', label: '852', freq: 852, desc: 'spiritual', color: '#8E58B6' },
-    { id: 's963', label: '963', freq: 963, desc: 'higher self', color: '#A4509E' },
+    { id: 's174', label: '174', freq: 174, desc: 'foundation', color: '#A0907A' },
+    { id: 's285', label: '285', freq: 285, desc: 'healing', color: '#88B0C8' },
+    { id: 's396', label: '396', freq: 396, desc: 'liberation', color: '#9B6BA0' },
+    { id: 's417', label: '417', freq: 417, desc: 'change', color: '#D4805A' },
+    { id: 's432', label: '432', freq: 432, desc: 'nature', color: '#7AAA58' },
+    { id: 's528', label: '528', freq: 528, desc: 'love', color: '#C4A060' },
+    { id: 's639', label: '639', freq: 639, desc: 'connection', color: '#6890B0' },
+    { id: 's741', label: '741', freq: 741, desc: 'intuition', color: '#B0A0C8' },
+    { id: 's852', label: '852', freq: 852, desc: 'spiritual', color: '#D8A878' },
+    { id: 's963', label: '963', freq: 963, desc: 'higher self', color: '#88C8E8' },
   ] as const;
   const [activeSacred, setActiveSacred] = useState<Set<string>>(new Set());
   const sacredOscsRef = useRef<Map<string, { osc: OscillatorNode; gain: GainNode }>>(new Map());
@@ -2125,99 +1558,6 @@ export default function BinauralTuner() {
       octave: 5,
       sampledPack: 'harp',
     },
-    // New CC0 instruments pulled from tonejs-instruments (VSCO 2).
-    // Each sits in public/sounds/<pack>/ with an index.json + per-note
-    // mp3 samples. Colours chosen to match the instrument's character.
-    {
-      id: 'real-cello',
-      label: 'Cello',
-      color: '#6A3A2A',
-      type: 'sine' as OscillatorType,
-      attack: 0.15,
-      release: 4.5,
-      octave: 3,
-      sampledPack: 'cello',
-    },
-    {
-      id: 'real-nylon',
-      label: 'Nylon Guitar',
-      color: '#A07040',
-      type: 'sine' as OscillatorType,
-      attack: 0.1,
-      release: 3,
-      octave: 4,
-      sampledPack: 'guitar-nylon',
-    },
-    {
-      id: 'real-contrabass',
-      label: 'Contrabass',
-      color: '#3A2A1E',
-      type: 'sine' as OscillatorType,
-      attack: 0.2,
-      release: 5,
-      octave: 2,
-      sampledPack: 'contrabass',
-    },
-    {
-      id: 'real-french-horn',
-      label: 'French Horn',
-      color: '#8A5A3A',
-      type: 'sine' as OscillatorType,
-      attack: 0.2,
-      release: 4,
-      octave: 3,
-      sampledPack: 'french-horn',
-    },
-    {
-      id: 'real-organ',
-      label: 'Organ',
-      color: '#7A4A5F',
-      type: 'sine' as OscillatorType,
-      attack: 0.1,
-      release: 4,
-      octave: 4,
-      sampledPack: 'organ',
-    },
-    {
-      id: 'real-saxophone',
-      label: 'Saxophone',
-      color: '#B8843A',
-      type: 'sine' as OscillatorType,
-      attack: 0.15,
-      release: 3.5,
-      octave: 4,
-      sampledPack: 'saxophone',
-    },
-    {
-      id: 'real-bassoon',
-      label: 'Bassoon',
-      color: '#5A3A2A',
-      type: 'sine' as OscillatorType,
-      attack: 0.15,
-      release: 4,
-      octave: 3,
-      sampledPack: 'bassoon',
-    },
-    {
-      id: 'real-clarinet',
-      label: 'Clarinet',
-      color: '#6A8A4A',
-      type: 'sine' as OscillatorType,
-      attack: 0.1,
-      release: 3,
-      octave: 4,
-      sampledPack: 'clarinet',
-    },
-    {
-      id: 'real-xylophone',
-      label: 'Xylophone',
-      color: '#D4A058',
-      type: 'sine' as OscillatorType,
-      attack: 0.02,
-      release: 1.2,
-      octave: 5,
-      sampledPack: 'xylophone',
-    },
   ];
   // Musical scales for melodies
   const MELODY_SCALES: Record<string, { label: string; notes: number[] }> = {
@@ -2234,21 +1574,10 @@ export default function BinauralTuner() {
   const [melodySpeed, setMelodySpeed] = useState(50); // 0-100, 0=very slow, 100=fast
   const [melodyReverb, setMelodyReverb] = useState(80); // 0-100
   const [melodyVolume, setMelodyVolume] = useState(1); // 0-1, multiplies per-note vol
-  const [wahOn, setWahOn] = useState(false);
-  const [wahSpeed, setWahSpeed] = useState(0.5); // 0-1 → 0.2Hz to 3Hz LFO
-  const [echoOn, setEchoOn] = useState(false);
-  const [echoAmount, setEchoAmount] = useState(0.4); // 0-1 → wet send level
   const melodyTimersRef = useRef<Map<string, ReturnType<typeof setTimeout>>>(new Map());
   const melodyActiveIdsRef = useRef<Set<string>>(new Set());
   const melodyReverbRef = useRef<ConvolverNode | null>(null);
   const melodyDryRef = useRef<GainNode | null>(null);
-  // Effects: wah (filter LFO send), echo (delay with feedback)
-  const wahFilterRef = useRef<BiquadFilterNode | null>(null);
-  const wahLfoRef = useRef<OscillatorNode | null>(null);
-  const wahWetRef = useRef<GainNode | null>(null);
-  const echoDelayRef = useRef<DelayNode | null>(null);
-  const echoFeedbackRef = useRef<GainNode | null>(null);
-  const echoWetRef = useRef<GainNode | null>(null);
   const melodyWetRef = useRef<GainNode | null>(null);
 
   // biome-ignore lint/correctness/useExhaustiveDependencies: uses refs, stable
@@ -2266,17 +1595,7 @@ export default function BinauralTuner() {
     // oscillator stack below.
     if (melDef.sampledPack) {
       const octavesFromCenter = Math.floor(noteIdx / 12);
-      // Tune the melody root to the current base frequency so the
-      // sampled instrument actually sits with the drone instead of
-      // playing a fixed C-rooted scale. Octave-shift baseFreq into a
-      // singing register (~C4 ± a fourth), then apply the
-      // instrument's octave preference. Without this, the nylon
-      // guitar / cello / etc. sound out of tune with the chosen
-      // sacred frequency or harmonic.
-      let referenceRoot = baseFreqRef.current || 261.63;
-      while (referenceRoot < 180) referenceRoot *= 2;
-      while (referenceRoot >= 360) referenceRoot /= 2;
-      const baseNote = referenceRoot * 2 ** (melDef.octave - 4);
+      const baseNote = 261.63 * 2 ** (melDef.octave - 4);
       const freq = baseNote * 2 ** (noteIdx / 12);
       const output = melodyDryRef.current ?? gain;
       // Per-note volume × user-controlled melodyVolume (0-1).
@@ -2284,12 +1603,6 @@ export default function BinauralTuner() {
       playSampledNote(ctx, melDef.sampledPack, freq, vol, output);
       if (melodyReverbRef.current) {
         playSampledNote(ctx, melDef.sampledPack, freq, vol * 0.6, melodyReverbRef.current);
-      }
-      if (wahFilterRef.current) {
-        playSampledNote(ctx, melDef.sampledPack, freq, vol * 0.7, wahFilterRef.current);
-      }
-      if (echoDelayRef.current) {
-        playSampledNote(ctx, melDef.sampledPack, freq, vol * 0.7, echoDelayRef.current);
       }
       // Schedule next note on the same cadence as the other melodies
       const speedMult =
@@ -2328,12 +1641,7 @@ export default function BinauralTuner() {
     if (finalOctave < 1) safeOctaveOffset += 12 * (1 - finalOctave);
     else if (finalOctave > 7) safeOctaveOffset -= 12 * (finalOctave - 7);
 
-    // Same base-freq-aware tuning as the sampled path so synth voices
-    // also sit with the drone.
-    let referenceRoot = baseFreqRef.current || 261.63;
-    while (referenceRoot < 180) referenceRoot *= 2;
-    while (referenceRoot >= 360) referenceRoot /= 2;
-    const baseNote = referenceRoot * 2 ** (melDef.octave - 4);
+    const baseNote = 261.63 * 2 ** (melDef.octave - 4); // C of the octave
     const freq = baseNote * 2 ** ((noteIdx + safeOctaveOffset) / 12);
 
     const osc = ctx.createOscillator();
@@ -2404,14 +1712,10 @@ export default function BinauralTuner() {
       osc2.stop(now + melDef.attack + melDef.release + 0.1);
     }
 
-    // Route through melody reverb if set up, otherwise direct.
-    // Also fan out to wah + echo sends — their wet gains decide
-    // whether they're audible.
+    // Route through melody reverb if set up, otherwise direct
     if (melodyDryRef.current && melodyReverbRef.current) {
       env.connect(melodyDryRef.current);
       env.connect(melodyReverbRef.current);
-      if (wahFilterRef.current) env.connect(wahFilterRef.current);
-      if (echoDelayRef.current) env.connect(echoDelayRef.current);
     } else {
       env.connect(gain);
     }
@@ -2445,9 +1749,7 @@ export default function BinauralTuner() {
       if (activeMelodies.has(m.id) && !melodyActiveIdsRef.current.has(m.id) && ctxRef.current) {
         melodyActiveIdsRef.current.add(m.id);
 
-        // Set up melody reverb + effects (wah, echo) on first melody
-        // activation. All effects live as parallel sends — toggling
-        // them on adjusts a wet gain, no need to rewire.
+        // Set up melody reverb on first melody activation
         if (!melodyReverbRef.current && ctxRef.current) {
           const ctx = ctxRef.current;
           const len = ctx.sampleRate * 4;
@@ -2470,46 +1772,6 @@ export default function BinauralTuner() {
           dry.connect(ctx.destination);
           rev.connect(wet);
           wet.connect(ctx.destination);
-
-          // Wah send: bandpass filter on a slow LFO. Wet gain starts at
-          // 0; toggling wahOn ramps it up. Each note's env will fan
-          // into wahFilter as well as melodyDryRef when notes play.
-          const wahFilter = ctx.createBiquadFilter();
-          wahFilter.type = 'bandpass';
-          wahFilter.frequency.value = 1000;
-          wahFilter.Q.value = 6;
-          const wahLfo = ctx.createOscillator();
-          wahLfo.type = 'sine';
-          wahLfo.frequency.value = 0.2 + wahSpeed * 2.8; // 0.2–3 Hz
-          const wahLfoGain = ctx.createGain();
-          wahLfoGain.gain.value = 1500; // sweep ±1500 Hz around 1000 Hz
-          wahLfo.connect(wahLfoGain);
-          wahLfoGain.connect(wahFilter.frequency);
-          wahLfo.start();
-          const wahWet = ctx.createGain();
-          wahWet.gain.value = wahOn ? 0.7 : 0;
-          wahFilter.connect(wahWet);
-          wahWet.connect(ctx.destination);
-          wahFilterRef.current = wahFilter;
-          wahLfoRef.current = wahLfo;
-          wahWetRef.current = wahWet;
-
-          // Echo send: stereo-ish delay with feedback for a tape-echo
-          // smear. Send level starts at 0; toggling echoOn ramps it.
-          const echoDelay = ctx.createDelay(2);
-          echoDelay.delayTime.value = 0.36; // ~quarter note at 100 BPM
-          const echoFeedback = ctx.createGain();
-          echoFeedback.gain.value = 0.45;
-          const echoWet = ctx.createGain();
-          echoWet.gain.value = echoOn ? echoAmount : 0;
-          // Feedback loop: delay → feedback gain → back into delay
-          echoDelay.connect(echoFeedback);
-          echoFeedback.connect(echoDelay);
-          echoDelay.connect(echoWet);
-          echoWet.connect(ctx.destination);
-          echoDelayRef.current = echoDelay;
-          echoFeedbackRef.current = echoFeedback;
-          echoWetRef.current = echoWet;
         }
 
         playMelodyNote(m);
@@ -2541,17 +1803,6 @@ export default function BinauralTuner() {
     if (melodyDryRef.current) melodyDryRef.current.gain.value = 1 - melodyReverb / 100;
     if (melodyWetRef.current) melodyWetRef.current.gain.value = melodyReverb / 100;
   }, [melodyReverb]);
-
-  // Wah send + LFO speed
-  useEffect(() => {
-    if (wahWetRef.current) wahWetRef.current.gain.value = wahOn ? 0.7 : 0;
-    if (wahLfoRef.current) wahLfoRef.current.frequency.value = 0.2 + wahSpeed * 2.8;
-  }, [wahOn, wahSpeed]);
-
-  // Echo send level
-  useEffect(() => {
-    if (echoWetRef.current) echoWetRef.current.gain.value = echoOn ? echoAmount : 0;
-  }, [echoOn, echoAmount]);
 
   // Layer reverb mix update
   useEffect(() => {
@@ -2603,30 +1854,13 @@ export default function BinauralTuner() {
   const [voiceMode, setVoiceMode] = useState<'off' | 'affirmations' | 'meditation' | 'poetry'>(
     'off',
   );
-  const [voiceRate, setVoiceRate] = useState(0.7); // 0.5-1.0
-  const [voicePitch, setVoicePitch] = useState(1.0); // 0.5-1.5
-  const [voiceVolume, setVoiceVolume] = useState(0.8);
+  const { speak: ttsSpeak, stop: ttsStop } = useTTS();
   const voiceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const voiceIdxRef = useRef(0);
   const voiceActiveRef = useRef(false);
 
   function speakLine(text: string) {
-    if (typeof window === 'undefined' || !window.speechSynthesis) return;
-    const utter = new SpeechSynthesisUtterance(text);
-    utter.rate = voiceRate;
-    utter.pitch = voicePitch;
-    utter.volume = voiceVolume;
-    // Try to find a soft/calm voice
-    const voices = window.speechSynthesis.getVoices();
-    const preferred = voices.find(
-      (v) =>
-        v.lang.startsWith('en') &&
-        (v.name.includes('Samantha') || v.name.includes('Karen') || v.name.includes('Female')),
-    );
-    if (preferred) utter.voice = preferred;
-    else if (voices.length > 0)
-      utter.voice = voices.find((v) => v.lang.startsWith('en')) || voices[0];
-    window.speechSynthesis.speak(utter);
+    void ttsSpeak(text);
   }
 
   function scheduleNextVoiceLine() {
@@ -2656,7 +1890,7 @@ export default function BinauralTuner() {
     } else {
       voiceActiveRef.current = false;
       if (voiceTimerRef.current) clearTimeout(voiceTimerRef.current);
-      if (typeof window !== 'undefined') window.speechSynthesis?.cancel();
+      ttsStop();
     }
     return () => {
       voiceActiveRef.current = false;
@@ -2672,14 +1906,7 @@ export default function BinauralTuner() {
   const [simpleMode, setSimpleMode] = useState(true);
   const [layersOpen, setLayersOpen] = useState(true);
   const [genresOpen, setGenresOpen] = useState(false);
-  // Which layer category is showing in the phone tab strip (desktop
-  // groups all 5 in a row). Default to 'waters' as the most universal
-  // entry point.
-  const [activeLayerGroup, setActiveLayerGroup] = useState<LayerCategory>('waters');
-  // brainStatesOpen state kept (write-only) so saved-state restore
-  // doesn't break — but the value is never read after merging Genre +
-  // Brain State under one Presets pill (genresOpen drives both).
-  const [_brainStatesOpen, setBrainStatesOpen] = useState(false);
+  const [brainStatesOpen, setBrainStatesOpen] = useState(false);
   const [savedSoundsOpen, setSavedSoundsOpen] = useState(false);
 
   // Auto-save current sound state to localStorage
@@ -2698,24 +1925,7 @@ export default function BinauralTuner() {
         if (s.baseToneOn !== undefined) setBaseToneOn(s.baseToneOn);
         if (s.engineBreathing !== undefined) setEngineBreathing(s.engineBreathing);
         if (s.tremolo !== undefined) setTremolo(s.tremolo);
-        if (s.activeLayers) {
-          // Strip any drum-loop layers from saved state. These layers no
-          // longer exist in Relaxing Sounds, but old saves can still
-          // reference them — keeping them in the restored state would
-          // try to play them as ghost layers (and historically did, as
-          // a fast Djembe loop the user couldn't see to disable).
-          const RETIRED_IDS = new Set([
-            'real-shaman-drum',
-            'real-shaman-journey',
-            'real-tambourine',
-            'breath',
-          ]);
-          const cleaned: Record<string, number> = {};
-          for (const [id, vol] of Object.entries(s.activeLayers)) {
-            if (!RETIRED_IDS.has(id)) cleaned[id] = vol as number;
-          }
-          setActiveLayers(cleaned);
-        }
+        if (s.activeLayers) setActiveLayers(s.activeLayers);
         if (s.activeGenre) setActiveGenre(s.activeGenre);
         if (s.activeHarmonics) setActiveHarmonics(new Set(s.activeHarmonics));
         if (s.activeSacred) setActiveSacred(new Set(s.activeSacred));
@@ -2801,88 +2011,6 @@ export default function BinauralTuner() {
     localStorage.setItem('colourmap:tuner-mixes', JSON.stringify(next));
     setSaveName('');
     setShowSave(false);
-  }
-
-  // "Save this moment" — capture a snapshot of the current sound
-  // state and POST it to the user's Notebook (category 'moments').
-  // Falls back to the local moments cache if the API is unreachable
-  // so it always succeeds from the user's perspective. Used by the
-  // small button in the saved-sounds drawer.
-  const [momentStatus, setMomentStatus] = useState<null | 'saving' | 'saved' | 'error'>(null);
-  async function saveMomentToNotebook() {
-    const activeLayerLabels = ALL_LAYERS.filter((l) => (activeLayers[l.id] || 0) > 0)
-      .map((l) => l.label)
-      .join(', ');
-    const harmonicLabels = HARMONICS.filter((h) => activeHarmonics.has(h.id))
-      .map((h) => h.label)
-      .join(', ');
-    const sacredLabels = SACRED.filter((s) => activeSacred.has(s.id))
-      .map((s) => `${s.freq}Hz (${s.desc})`)
-      .join(', ');
-    const melodyLabels = MELODIES.filter((m) => activeMelodies.has(m.id))
-      .map((m) => m.label)
-      .join(', ');
-
-    const stamp = new Date().toLocaleString([], {
-      month: 'short',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
-    });
-    const title = saveName.trim()
-      ? `${saveName.trim()} — ${baseFreq}Hz`
-      : `Chill moment · ${stamp} · ${baseFreq}Hz`;
-
-    const lines = [
-      `Base ${baseFreq}Hz · brain-wave ${beatFreq}Hz (${getBrainState(beatFreq)})`,
-      `Volume ${Math.round(volume * 100)}% · binaural ${binauralOn ? 'on' : 'off'}`,
-    ];
-    if (activeLayerLabels) lines.push(`Layers: ${activeLayerLabels}`);
-    if (harmonicLabels) lines.push(`Harmonics: ${harmonicLabels}`);
-    if (sacredLabels) lines.push(`Sacred freqs: ${sacredLabels}`);
-    if (melodyLabels) lines.push(`Melody: ${melodyLabels} · scale ${melodyScale}`);
-    if (wahOn || echoOn) {
-      lines.push(`Effects: ${[wahOn && 'wah', echoOn && 'echo'].filter(Boolean).join(' + ')}`);
-    }
-
-    const body = {
-      category: 'ideas',
-      title,
-      content: lines.join('\n'),
-      tags: ['chill-machine', 'sound-snapshot'],
-    };
-
-    setMomentStatus('saving');
-    try {
-      const res = await fetch('/api/notebook', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(body),
-      });
-      if (!res.ok) throw new Error('api');
-      setMomentStatus('saved');
-    } catch {
-      // Fallback: queue into local moments cache so the snapshot
-      // isn't lost even if the API is unreachable. Notebook page
-      // will pick this up via its localStorage fallback.
-      try {
-        const raw = localStorage.getItem('colourmap:notebook-entries');
-        const existing = raw ? JSON.parse(raw) : [];
-        const localEntry = {
-          id: crypto.randomUUID(),
-          ...body,
-          createdAt: new Date().toISOString(),
-        };
-        localStorage.setItem(
-          'colourmap:notebook-entries',
-          JSON.stringify([localEntry, ...existing]),
-        );
-        setMomentStatus('saved');
-      } catch {
-        setMomentStatus('error');
-      }
-    }
-    setTimeout(() => setMomentStatus(null), 1800);
   }
 
   const SHAPE_CYCLE = ['dot', 'star', 'heart', 'losange', 'triangle', 'square'] as const;
@@ -3050,9 +2178,6 @@ export default function BinauralTuner() {
       oscL.start();
       oscR.start();
       setPlaying(true);
-      // Register with the global SoundSession so the MiniPlayer
-      // shows the Chill pill when the user navigates away.
-      soundSession.setActive('chill-machine', `${baseFreq}Hz · ${beatFreq}Hz beat`);
 
       // Start any active layers
       for (const [layerId, vol] of Object.entries(activeLayers)) {
@@ -3061,7 +2186,7 @@ export default function BinauralTuner() {
     } catch {
       setAudioError('could not start audio');
     }
-  }, [baseFreq, beatFreq, volume, activeLayers, soundSession]);
+  }, [baseFreq, beatFreq, volume, activeLayers]);
 
   const stopAudio = useCallback(() => {
     for (const [, node] of layerNodesRef.current) {
@@ -3079,8 +2204,7 @@ export default function BinauralTuner() {
     oscRightRef.current = null;
     gainRef.current = null;
     setPlaying(false);
-    soundSession.setPlaying(false);
-  }, [soundSession]);
+  }, []);
 
   function ensureLayerReverb(ctx: AudioContext) {
     if (layerReverbRef.current) return;
@@ -3106,31 +2230,11 @@ export default function BinauralTuner() {
     wet.connect(ctx.destination);
   }
 
-  function applyPulseRate(layerId: string, source: AudioBufferSourceNode | OscillatorNode) {
-    if (!PULSE_LAYER_IDS.has(layerId)) return;
-    if (!('playbackRate' in source)) return;
-    source.playbackRate.value = pulseBpmRef.current / 72;
-  }
-
-  // Re-tune already-running pulse layers when the user moves the BPM slider.
-  // Uses playbackRate (a smooth AudioParam) so the change is glitch-free.
-  useEffect(() => {
-    const rate = pulseBpm / 72;
-    for (const [id, entry] of layerNodesRef.current) {
-      if (!PULSE_LAYER_IDS.has(id)) continue;
-      const source = entry.source;
-      if ('playbackRate' in source) {
-        source.playbackRate.value = rate;
-      }
-    }
-  }, [pulseBpm]);
-
   function startLayer(ctx: AudioContext, layerId: string, vol: number) {
     const def = ALL_LAYERS.find((l) => l.id === layerId);
     if (!def) return;
     ensureLayerReverb(ctx);
     const { node, source } = def.build(ctx, baseFreq);
-    applyPulseRate(layerId, source);
     const layerGain = ctx.createGain();
     layerGain.gain.value = vol;
     node.connect(layerGain);
@@ -3150,7 +2254,6 @@ export default function BinauralTuner() {
     if (!def) return;
     ensureLayerReverb(ctx);
     const { node, source } = def.build(ctx, baseFreq);
-    applyPulseRate(layerId, source);
     const layerGain = ctx.createGain();
     layerGain.gain.value = 0;
     node.connect(layerGain);
@@ -3208,12 +2311,9 @@ export default function BinauralTuner() {
   }
 
   function setLayerVol(layerId: string, vol: number) {
-    const layer = ALL_LAYERS.find((l) => l.id === layerId);
-    const cap = layer ? CATEGORY_VOLUME_CAP[getLayerCategory(layer)] : undefined;
-    const clamped = cap !== undefined ? Math.min(vol, cap) : vol;
-    setActiveLayers((prev) => ({ ...prev, [layerId]: clamped }));
+    setActiveLayers((prev) => ({ ...prev, [layerId]: vol }));
     const existing = layerNodesRef.current.get(layerId);
-    if (existing) existing.gain.gain.value = clamped;
+    if (existing) existing.gain.gain.value = vol;
   }
 
   function applyGenre(genre: Genre) {
@@ -3600,11 +2700,59 @@ export default function BinauralTuner() {
     }
   }, [tremolo, volume]);
 
-  // Soft-beat bed scheduler — DELETED. Used to fetch /sounds/drums/
-  // Djembe.ogg and loop it forever; multiple "fix" attempts at killing
-  // the auto-restoration left the door open and users still heard the
-  // djembe on every page load. Nuked from Chill Machine. Rhythmic
-  // percussion lives in Groove Machine.
+  // Soft-beat bed — schedules a percussion sample at the chosen tempo.
+  // Uses a dedicated gain node so beat volume is independent of main.
+  useEffect(() => {
+    const ctx: AudioContext | null = ctxRef.current;
+    if (!ctx || !playing || beatPreset === 'off') return;
+    const interval = BEAT_PRESETS.find((b) => b.id === beatPreset)?.intervalMs ?? 0;
+    if (!interval) return;
+
+    let cancelled = false;
+    const gain = ctx.createGain();
+    gain.gain.value = beatVolume;
+    gain.connect(ctx.destination);
+    beatGainRef.current = gain;
+
+    async function start() {
+      if (!beatBufferRef.current) {
+        try {
+          const res = await fetch(BEAT_SAMPLE_URL);
+          const buf = await res.arrayBuffer();
+          if (!ctx) return;
+          const decoded = await ctx.decodeAudioData(buf);
+          beatBufferRef.current = decoded;
+        } catch {
+          return;
+        }
+      }
+      if (cancelled) return;
+      const play = () => {
+        if (cancelled || !ctxRef.current || !beatBufferRef.current) return;
+        const src = ctxRef.current.createBufferSource();
+        src.buffer = beatBufferRef.current;
+        src.connect(gain);
+        src.start();
+      };
+      play();
+      beatTimerRef.current = setInterval(play, interval);
+    }
+    start();
+
+    return () => {
+      cancelled = true;
+      if (beatTimerRef.current) {
+        clearInterval(beatTimerRef.current);
+        beatTimerRef.current = null;
+      }
+      try {
+        gain.disconnect();
+      } catch {
+        /* already disconnected */
+      }
+      beatGainRef.current = null;
+    };
+  }, [playing, beatPreset, beatVolume]);
 
   useEffect(() => {
     return () => {
@@ -3650,13 +2798,13 @@ export default function BinauralTuner() {
         ? 1 - 0.35 * Math.sin(waveTime * tremoloSpeed * Math.PI * 2 + (x / W) * 0.5)
         : 1;
     const amplitude = baseAmplitude * tremoloMod;
-    // Gentle time-drift so 'sine' and 'zigzag' breathe along instead of
-    // sitting perfectly still. 0.35 rad/s ≈ one full drift every 18s —
-    // calm, not twitchy.
-    const drift = waveTime * 0.35;
-    const phase = (x / wavelength) * Math.PI * 2 + drift;
+    const phase = (x / wavelength) * Math.PI * 2;
     let sample: number;
     switch (waveStyle) {
+      case 'layered':
+        // Fundamental + second harmonic at 1/3 amplitude — richer body
+        sample = Math.sin(phase) * 0.75 + Math.sin(phase * 2) * 0.25;
+        break;
       case 'pulse': {
         // Very slow amplitude envelope on top of the sine — meditative
         // breath, not a heartbeat. Cycle roughly every 8-10 seconds
@@ -3670,9 +2818,8 @@ export default function BinauralTuner() {
         sample = (Math.sin(phase) + Math.sin(phase * 1.07 + waveTime * 0.8)) * 0.5;
         break;
       case 'zigzag': {
-        // Symmetric triangle wave — same period as sine, sharper edges.
-        // Offset by drift so it also gently scrolls.
-        const t = ((((x + (drift * wavelength) / (Math.PI * 2)) / wavelength) % 1) + 1) % 1;
+        // Symmetric triangle wave — same period as sine, sharper edges
+        const t = (((x / wavelength) % 1) + 1) % 1;
         sample = t < 0.5 ? 4 * t - 1 : 3 - 4 * t;
         break;
       }
@@ -3720,52 +2867,68 @@ export default function BinauralTuner() {
             color: '#5C3018',
           }}
         >
-          Chill Machine
+          Calming Sounds
         </p>
-        {/* Status strip — one-line readout of everything audible right
-            now. Makes it impossible for a stuck layer or drum bed to
-            hide somewhere down the page. When nothing is playing we
-            show a gentle "tap play to begin" hint in the same slot. */}
-        {(() => {
-          const parts: string[] = [];
-          if (playing) {
-            if (baseToneOn) parts.push(`${baseFreq}Hz`);
-            if (binauralOn) parts.push(`${beatFreq}Hz beat`);
-            const layerIds = Object.keys(activeLayers).filter((id) => (activeLayers[id] ?? 0) > 0);
-            if (layerIds.length > 0) {
-              const labels = layerIds
-                .map((id) => LAYERS.find((l) => l.id === id)?.label ?? id)
-                .filter(Boolean);
-              parts.push(labels.join(' · '));
-            }
-            // beat-bed deleted — no drums in Chill Machine status
-            if (activeMelodies.size > 0) parts.push(`${activeMelodies.size} melodies`);
-            if (activeSacred.size > 0) parts.push(`${activeSacred.size} sacred`);
-          }
-          const text = !playing
-            ? 'tap play to begin'
-            : parts.length === 0
-              ? 'silent'
-              : parts.join('  ·  ');
-          return (
-            <p
-              className="px-3"
-              style={{
-                fontFamily: 'var(--font-serif)',
-                fontSize: '12px',
-                fontStyle: 'italic',
-                color: '#8A6A4A',
-                opacity: playing ? 0.85 : 0.55,
-                lineHeight: 1.5,
-                maxWidth: 520,
-                margin: '0 auto',
-              }}
-              aria-live="polite"
-            >
-              {text}
-            </p>
-          );
-        })()}
+        {/* Binaural quick-shortcut. Shows what's currently playing (base
+            Hz + beat Hz + breathing). Tap to jump into full Studio mode
+            for fine-tuning. "Live readout doubles as a door." */}
+        <button
+          type="button"
+          onClick={() => setSimpleMode(false)}
+          className="italic cursor-pointer transition-opacity hover:opacity-85"
+          style={{
+            fontFamily: 'var(--font-serif)',
+            fontSize: '15px',
+            color: '#8A6A4A',
+            opacity: 0.95,
+            minHeight: '1.4em',
+            background: 'none',
+            border: 'none',
+            padding: '2px 8px',
+            borderRadius: 10,
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: 6,
+          }}
+          title="Open the studio to tune frequencies"
+          aria-live="polite"
+        >
+          {playing ? (
+            <>
+              {baseToneOn ? (
+                <span style={{ color: '#5C3018', fontWeight: 600, fontStyle: 'normal' }}>
+                  {baseFreq}
+                  <span style={{ fontSize: '11px', opacity: 0.7, marginLeft: 2 }}>Hz</span>
+                </span>
+              ) : (
+                <span style={{ opacity: 0.45 }}>no base tone</span>
+              )}
+              {binauralOn && (
+                <>
+                  <span style={{ opacity: 0.4 }}>·</span>
+                  <span style={{ color: '#7A5438', fontWeight: 600, fontStyle: 'normal' }}>
+                    {beatFreq}
+                    <span style={{ fontSize: '11px', opacity: 0.7, marginLeft: 2 }}>Hz beat</span>
+                  </span>
+                </>
+              )}
+            </>
+          ) : (
+            <span style={{ opacity: 0.55 }}>tap play to begin</span>
+          )}
+          <span
+            aria-hidden="true"
+            style={{
+              fontSize: 10,
+              opacity: 0.45,
+              letterSpacing: '0.08em',
+              textTransform: 'uppercase',
+              fontStyle: 'normal',
+            }}
+          >
+            open studio ›
+          </span>
+        </button>
       </div>
 
       {/* Simple / Full toggle */}
@@ -3785,201 +2948,120 @@ export default function BinauralTuner() {
         </button>
       </div>
 
-      {/* Wave visualization with gradient fill + play button overlay.
-          SVG now width="100%" + viewBox so it scales to the parent
-          width. Wrapped in a bounded relative div so the overlay play
-          button pins to the SVG edge, not the page.
-
-          The wave reacts to the mix: more active layers = thicker
-          stroke + a coloured halo of the dominant active layer's tone.
-          Idle = thin and quiet, full mix = thick and tinted. */}
-      {(() => {
-        // Pull the layer ids that are currently audible, find the one
-        // with the highest volume, use it as the dominant tint colour.
-        const activeIds = Object.keys(activeLayers).filter((id) => (activeLayers[id] ?? 0) > 0);
-        const dominantId = activeIds.reduce<string | null>((best, id) => {
-          const v = activeLayers[id] ?? 0;
-          if (best === null) return id;
-          return v > (activeLayers[best] ?? 0) ? id : best;
-        }, null);
-        const dominantColor =
-          (dominantId && ALL_LAYERS.find((l) => l.id === dominantId)?.color) || activeColor;
-        // Stroke gets thicker as layer count grows. Caps at 5 px so it
-        // never gets cartoonish.
-        const layerThickness = Math.min(activeIds.length * 0.5, 2.5);
-        const strokeWidth = 2.5 + layerThickness;
-        const haloOpacity = 0.08 + Math.min(activeIds.length * 0.02, 0.15);
-        return (
-          <div className="flex w-full justify-center">
-            <div className="relative w-full" style={{ maxWidth: 480 }}>
-              <svg
-                width="100%"
-                height={H}
-                viewBox={`0 0 ${W} ${H}`}
-                preserveAspectRatio="xMidYMid meet"
-              >
-                <defs>
-                  <linearGradient id="waveGrad" x1="0" y1="0" x2="1" y2="0">
-                    {RAINBOW.map((c, i) => (
-                      // index key — RAINBOW repeats #E0908A at start and end for
-                      // a wrap-around gradient, so color alone would collide.
-                      <stop
-                        key={i}
-                        offset={`${(i / (RAINBOW.length - 1)) * 100}%`}
-                        stopColor={c}
-                        stopOpacity={0.15}
-                      />
-                    ))}
-                  </linearGradient>
-                  <linearGradient id="waveStroke" x1="0" y1="0" x2="1" y2="0">
-                    {RAINBOW.map((c, i) => (
-                      <stop
-                        key={i}
-                        offset={`${(i / (RAINBOW.length - 1)) * 100}%`}
-                        stopColor={c}
-                        stopOpacity={playing ? 0.8 : 0.4}
-                      />
-                    ))}
-                  </linearGradient>
-                </defs>
-                {/* Wide soft tint of the dominant layer colour underneath
-                — the more layers active, the more it glows. */}
-                {playing && activeIds.length > 0 && (
-                  <path
-                    d={pathD}
-                    fill="none"
-                    stroke={dominantColor}
-                    strokeWidth={18}
-                    strokeLinecap="round"
-                    opacity={haloOpacity}
-                  />
-                )}
-                {/* Just the wave line — rainbow fill removed per user
-              feedback (clutter). Keep the subtle rainbow stroke
-              because it still reads as a single line. Stroke grows
-              with active layer count. */}
-                <path
-                  d={pathD}
-                  fill="none"
-                  stroke="url(#waveStroke)"
-                  strokeWidth={strokeWidth}
-                  strokeLinecap="round"
+      {/* Wave visualization with gradient fill + play button overlay */}
+      <div className="relative flex justify-center">
+        <svg width={W} height={H}>
+          <defs>
+            <linearGradient id="waveGrad" x1="0" y1="0" x2="1" y2="0">
+              {RAINBOW.map((c, i) => (
+                // index key — RAINBOW repeats #E0908A at start and end for
+                // a wrap-around gradient, so color alone would collide.
+                <stop
+                  key={i}
+                  offset={`${(i / (RAINBOW.length - 1)) * 100}%`}
+                  stopColor={c}
+                  stopOpacity={0.15}
                 />
-                {/* Glow when playing */}
-                {playing && (
-                  <path
-                    d={pathD}
-                    fill="none"
-                    stroke={activeColor}
-                    strokeWidth={8}
-                    strokeLinecap="round"
-                    opacity={0.12}
-                  />
-                )}
-              </svg>
-              {/* Play button — overlaid on the right */}
-              <button
-                type="button"
-                onClick={() => {
-                  haptic(playing ? 'tick' : 'tap');
-                  if (playing) stopAudio();
-                  else startAudio();
-                }}
-                className="absolute right-2 top-1/2 -translate-y-1/2 flex cursor-pointer items-center justify-center rounded-full transition-all"
-                style={{
-                  width: 36,
-                  height: 36,
-                  background: playing ? `${activeColor}25` : `${activeColor}10`,
-                  border: `2px solid ${activeColor}${playing ? '50' : '25'}`,
-                }}
-              >
-                {playing ? (
-                  <div className="flex gap-0.5">
-                    <span
-                      className="block rounded-sm"
-                      style={{ width: 3, height: 12, background: activeColor }}
-                    />
-                    <span
-                      className="block rounded-sm"
-                      style={{ width: 3, height: 12, background: activeColor }}
-                    />
-                  </div>
-                ) : (
-                  <span
-                    className="block"
-                    style={{
-                      width: 0,
-                      height: 0,
-                      borderLeft: `10px solid ${activeColor}`,
-                      borderTop: '6px solid transparent',
-                      borderBottom: '6px solid transparent',
-                      marginLeft: 1,
-                    }}
-                  />
-                )}
-              </button>
-            </div>
-          </div>
-        );
-      })()}
-
-      {/* Wave-style picker — 4-position dot slider. Each dot represents
-          one waveform style; the active one grows + brightens. Same
-          visual language as the speed/reverb/volume sliders. */}
-      <div className="mx-auto flex max-w-md items-center gap-3 px-1">
-        <span
-          className="shrink-0 text-left uppercase"
+              ))}
+            </linearGradient>
+            <linearGradient id="waveStroke" x1="0" y1="0" x2="1" y2="0">
+              {RAINBOW.map((c, i) => (
+                <stop
+                  key={i}
+                  offset={`${(i / (RAINBOW.length - 1)) * 100}%`}
+                  stopColor={c}
+                  stopOpacity={playing ? 0.8 : 0.4}
+                />
+              ))}
+            </linearGradient>
+          </defs>
+          {/* Just the wave line — rainbow fill removed per user
+              feedback (clutter). Keep the subtle rainbow stroke
+              because it still reads as a single line. */}
+          <path
+            d={pathD}
+            fill="none"
+            stroke="url(#waveStroke)"
+            strokeWidth={2.5}
+            strokeLinecap="round"
+          />
+          {/* Glow when playing */}
+          {playing && (
+            <path
+              d={pathD}
+              fill="none"
+              stroke={activeColor}
+              strokeWidth={8}
+              strokeLinecap="round"
+              opacity={0.12}
+            />
+          )}
+        </svg>
+        {/* Play button — overlaid on the right */}
+        <button
+          type="button"
+          onClick={() => {
+            haptic(playing ? 'tick' : 'tap');
+            if (playing) stopAudio();
+            else startAudio();
+          }}
+          className="absolute right-2 top-1/2 -translate-y-1/2 flex cursor-pointer items-center justify-center rounded-full transition-all"
           style={{
-            fontFamily: 'var(--font-serif)',
-            fontSize: '11px',
-            letterSpacing: '0.12em',
-            color: activeColor,
-            opacity: 0.9,
-            fontWeight: 700,
-            width: 64,
+            width: 36,
+            height: 36,
+            background: playing ? `${activeColor}25` : `${activeColor}10`,
+            border: `2px solid ${activeColor}${playing ? '50' : '25'}`,
           }}
         >
-          Wave
-        </span>
-        <div className="flex flex-1 items-center justify-between">
-          {WAVE_STYLES.map((w) => {
-            const isActive = waveStyle === w.id;
-            return (
-              <button
-                key={w.id}
-                type="button"
-                onClick={() => setWaveStyle(w.id)}
-                title={w.label}
-                aria-label={`Wave style ${w.label}`}
-                className="flex cursor-pointer flex-col items-center gap-1 bg-transparent"
-                style={{ border: 'none', padding: '4px 0' }}
-              >
-                <span
-                  className="block rounded-full transition-all"
-                  style={{
-                    width: isActive ? 14 : 7,
-                    height: isActive ? 14 : 7,
-                    background: activeColor,
-                    opacity: isActive ? 1 : 0.35,
-                  }}
-                />
-                <span
-                  style={{
-                    fontFamily: 'var(--font-serif)',
-                    fontSize: '9px',
-                    letterSpacing: '0.1em',
-                    textTransform: 'uppercase',
-                    color: activeColor,
-                    opacity: isActive ? 1 : 0.5,
-                    fontWeight: isActive ? 700 : 500,
-                  }}
-                >
-                  {w.label}
-                </span>
-              </button>
-            );
-          })}
-        </div>
+          {playing ? (
+            <div className="flex gap-0.5">
+              <span
+                className="block rounded-sm"
+                style={{ width: 3, height: 12, background: activeColor }}
+              />
+              <span
+                className="block rounded-sm"
+                style={{ width: 3, height: 12, background: activeColor }}
+              />
+            </div>
+          ) : (
+            <span
+              className="block"
+              style={{
+                width: 0,
+                height: 0,
+                borderLeft: `10px solid ${activeColor}`,
+                borderTop: '6px solid transparent',
+                borderBottom: '6px solid transparent',
+                marginLeft: 1,
+              }}
+            />
+          )}
+        </button>
+      </div>
+
+      {/* Wave-style picker — pick the visual shape of the waveform */}
+      <div className="flex flex-wrap justify-center gap-1.5">
+        {WAVE_STYLES.map((w) => {
+          const isActive = waveStyle === w.id;
+          return (
+            <button
+              key={w.id}
+              type="button"
+              onClick={() => setWaveStyle(w.id)}
+              className="cursor-pointer rounded-full px-2.5 py-0.5 text-[10px] uppercase tracking-[0.12em] transition-all"
+              style={{
+                color: isActive ? '#5C3018' : '#8A6A4A',
+                background: isActive ? `${activeColor}20` : 'transparent',
+                border: `1px solid ${isActive ? `${activeColor}60` : '#5C301818'}`,
+                fontFamily: 'var(--font-serif)',
+                opacity: isActive ? 1 : 0.7,
+              }}
+            >
+              {w.label}
+            </button>
+          );
+        })}
       </div>
 
       {/* Beat bed UI removed per user feedback — clutter in studio.
@@ -4080,7 +3162,8 @@ export default function BinauralTuner() {
               );
             })}
           </div>
-          {/* Volume — smooth track */}
+          {/* Volume — brown dots, longer than the reverb row per user.
+              Drag-to-slide: pointer-capture + move updates volume. */}
           <div className="flex items-center gap-3 px-1 py-2">
             <span
               style={{
@@ -4088,77 +3171,59 @@ export default function BinauralTuner() {
                 fontSize: '13px',
                 color: '#C4A060',
                 fontWeight: 600,
+                width: 60,
+                flexShrink: 0,
               }}
             >
               volume
             </span>
-            <div
-              className="relative flex-1 cursor-pointer"
-              style={{ height: 20, touchAction: 'none' }}
-              onMouseDown={(e) => {
-                const el = e.currentTarget as HTMLElement;
+            <button
+              type="button"
+              aria-label="Volume"
+              className="flex flex-1 cursor-pointer gap-[3px]"
+              style={{
+                height: 20,
+                touchAction: 'none',
+                background: 'none',
+                border: 'none',
+                padding: 0,
+              }}
+              onPointerDown={(e) => {
+                const el = e.currentTarget;
+                el.setPointerCapture(e.pointerId);
                 const set = (cx: number) => {
                   const r = el.getBoundingClientRect();
                   setVolume(Math.max(0.02, Math.min(1, (cx - r.left) / r.width)));
                 };
                 set(e.clientX);
-                const onMove = (ev: MouseEvent) => set(ev.clientX);
-                const onUp = () => {
-                  window.removeEventListener('mousemove', onMove);
-                  window.removeEventListener('mouseup', onUp);
-                };
-                window.addEventListener('mousemove', onMove);
-                window.addEventListener('mouseup', onUp);
               }}
-              onTouchStart={(e) => {
-                const el = e.currentTarget as HTMLElement;
-                const set = (cx: number) => {
-                  const r = el.getBoundingClientRect();
-                  setVolume(Math.max(0.02, Math.min(1, (cx - r.left) / r.width)));
-                };
-                set(e.touches[0].clientX);
-                const onMove = (ev: TouchEvent) => {
-                  ev.preventDefault();
-                  set(ev.touches[0].clientX);
-                };
-                const onEnd = () => {
-                  window.removeEventListener('touchmove', onMove);
-                  window.removeEventListener('touchend', onEnd);
-                };
-                window.addEventListener('touchmove', onMove, { passive: false });
-                window.addEventListener('touchend', onEnd);
+              onPointerMove={(e) => {
+                if ((e.buttons & 1) === 0 && e.pointerType === 'mouse') return;
+                const el = e.currentTarget;
+                const r = el.getBoundingClientRect();
+                setVolume(Math.max(0.02, Math.min(1, (e.clientX - r.left) / r.width)));
               }}
             >
-              <div
-                className="absolute top-1/2 -translate-y-1/2 left-0 right-0 rounded-full"
-                style={{ height: 4, background: '#C4A06015' }}
-              />
-              <div
-                className="absolute top-1/2 -translate-y-1/2 left-0 rounded-full"
-                style={{
-                  height: 4,
-                  width: `${volume * 100}%`,
-                  background: 'linear-gradient(90deg, #C4A06030, #C4A060)',
-                }}
-              />
-              <div
-                className="absolute top-1/2 rounded-full"
-                style={{
-                  left: `${volume * 100}%`,
-                  width: 14,
-                  height: 14,
-                  background: '#C4A060',
-                  transform: 'translate(-50%, -50%)',
-                  boxShadow: '0 2px 6px rgba(196,160,96,0.4)',
-                }}
-              />
-            </div>
+              {Array.from({ length: 14 }, (_, i) => (
+                <div
+                  key={i}
+                  className="flex-1 rounded-[3px] transition-all pointer-events-none"
+                  style={{
+                    background: '#7A5438',
+                    opacity: i / 13 <= volume ? 0.4 + (i / 13) * 0.5 : 0.1,
+                  }}
+                />
+              ))}
+            </button>
             <span
               style={{
                 fontFamily: 'var(--font-serif)',
                 fontSize: '12px',
                 color: '#C4A060',
                 fontWeight: 600,
+                width: 40,
+                flexShrink: 0,
+                textAlign: 'right',
               }}
             >
               {Math.round(volume * 100)}%
@@ -4167,13 +3232,9 @@ export default function BinauralTuner() {
         </div>
       )}
 
-      {/* ── FULL MODE: all controls ── DJ-mix-table layout on desktop.
-          On md+ the sections stop stacking vertically and flow into
-          two columns, each column behaving like a DJ channel strip
-          so the whole instrument spreads across the screen. Phone
-          stays as a single column for reading. */}
+      {/* ── FULL MODE: all controls ── */}
       {!simpleMode && (
-        <div className="space-y-6 md:grid md:grid-cols-2 md:gap-x-8 md:gap-y-6 md:space-y-0">
+        <>
           {/* Sliders: tone first, then binaural beat, reverb (dots), wave */}
           <div className="space-y-3 px-2">
             <SliderRow
@@ -4280,63 +3341,91 @@ export default function BinauralTuner() {
             />
           </div>
 
-          {/* Volume — 20-circle dot slider matching the speed/reverb/
-              volume melody sliders. Click anywhere to set. Drag is
-              gone (uniform with the rest of the dot-slider family);
-              touch/mouse single-tap is sufficient. */}
+          {/* Volume — smooth gradient track with draggable thumb */}
           <div className="px-2">
-            <div className="mx-auto flex max-w-md items-center gap-3">
+            <div className="flex items-center gap-3 px-1 py-2">
               <span
-                className="shrink-0 text-left uppercase"
                 style={{
                   fontFamily: 'var(--font-serif)',
-                  fontSize: '11px',
-                  letterSpacing: '0.12em',
-                  color: '#C4A060',
-                  opacity: 0.9,
-                  fontWeight: 700,
-                  width: 64,
-                }}
-              >
-                Volume
-              </span>
-              <button
-                type="button"
-                aria-label={`Volume ${Math.round(volume * 100)}%`}
-                className="flex flex-1 cursor-pointer items-center justify-between bg-transparent"
-                style={{ border: 'none', padding: '10px 0' }}
-                onClick={(e) => {
-                  const r = (e.currentTarget as HTMLElement).getBoundingClientRect();
-                  setVolume(Math.max(0.02, Math.min(1, (e.clientX - r.left) / r.width)));
-                }}
-              >
-                {Array.from({ length: 20 }, (_, i) => {
-                  const ratio = i / 19;
-                  const filled = ratio <= volume;
-                  return (
-                    <span
-                      key={i}
-                      className="block rounded-full transition-all"
-                      style={{
-                        width: filled ? 13 : 7,
-                        height: filled ? 13 : 7,
-                        background: SLIDER_PROGRESSIONS.volume[i],
-                        opacity: filled ? 0.55 + ratio * 0.4 : 0.2,
-                      }}
-                    />
-                  );
-                })}
-              </button>
-              <span
-                className="hidden md:inline"
-                style={{
-                  fontFamily: 'var(--font-serif)',
-                  fontSize: '11px',
+                  fontSize: '13px',
                   color: '#C4A060',
                   fontWeight: 600,
-                  width: 32,
+                  width: 60,
                   flexShrink: 0,
                   textAlign: 'right',
+                }}
+              >
+                volume
+              </span>
+              <div
+                className="relative flex-1 cursor-pointer"
+                style={{ height: 20, touchAction: 'none' }}
+                onMouseDown={(e) => {
+                  const el = e.currentTarget as HTMLElement;
+                  const set = (cx: number) => {
+                    const r = el.getBoundingClientRect();
+                    setVolume(Math.max(0.02, Math.min(1, (cx - r.left) / r.width)));
+                  };
+                  set(e.clientX);
+                  const onMove = (ev: MouseEvent) => set(ev.clientX);
+                  const onUp = () => {
+                    window.removeEventListener('mousemove', onMove);
+                    window.removeEventListener('mouseup', onUp);
+                  };
+                  window.addEventListener('mousemove', onMove);
+                  window.addEventListener('mouseup', onUp);
+                }}
+                onTouchStart={(e) => {
+                  const el = e.currentTarget as HTMLElement;
+                  const set = (cx: number) => {
+                    const r = el.getBoundingClientRect();
+                    setVolume(Math.max(0.02, Math.min(1, (cx - r.left) / r.width)));
+                  };
+                  set(e.touches[0].clientX);
+                  const onMove = (ev: TouchEvent) => {
+                    ev.preventDefault();
+                    set(ev.touches[0].clientX);
+                  };
+                  const onEnd = () => {
+                    window.removeEventListener('touchmove', onMove);
+                    window.removeEventListener('touchend', onEnd);
+                  };
+                  window.addEventListener('touchmove', onMove, { passive: false });
+                  window.addEventListener('touchend', onEnd);
+                }}
+              >
+                <div
+                  className="absolute top-1/2 -translate-y-1/2 left-0 right-0 rounded-full"
+                  style={{ height: 4, background: '#C4A06015' }}
+                />
+                <div
+                  className="absolute top-1/2 -translate-y-1/2 left-0 rounded-full"
+                  style={{
+                    height: 4,
+                    width: `${volume * 100}%`,
+                    background: 'linear-gradient(90deg, #C4A06030, #C4A060)',
+                  }}
+                />
+                <div
+                  className="absolute top-1/2 rounded-full"
+                  style={{
+                    left: `${volume * 100}%`,
+                    width: 14,
+                    height: 14,
+                    background: '#C4A060',
+                    transform: 'translate(-50%, -50%)',
+                    boxShadow: '0 2px 6px rgba(196,160,96,0.4)',
+                  }}
+                />
+              </div>
+              <span
+                style={{
+                  fontFamily: 'var(--font-serif)',
+                  fontSize: '12px',
+                  color: '#C4A060',
+                  fontWeight: 600,
+                  width: 40,
+                  flexShrink: 0,
                 }}
               >
                 {Math.round(volume * 100)}%
@@ -4344,37 +3433,29 @@ export default function BinauralTuner() {
             </div>
           </div>
 
-          {/* VisualizerBox moved to the dedicated Visuals tab in SoundLab —
-              keep this page focused on tuning, not decoration. */}
+          {/* VisualizerBox removed from Calming Sounds per user feedback —
+              Visuals is now a separate 4th category in SoundLab. The
+              <VisualizerBox/> function is kept in this file so the
+              import still works; it's just not rendered here. */}
 
           {/* Harmony — musical intervals that fit the base tone */}
           <div className="px-2">
-            <div className="mb-3 flex justify-center">
-              <span
-                className="flex items-center uppercase rounded-full px-5 py-1.5"
-                style={{
-                  fontFamily: 'var(--font-serif)',
-                  fontSize: '14px',
-                  fontWeight: 700,
-                  color: '#C4A060',
-                  letterSpacing: '0.18em',
-                  background: '#C4A06015',
-                  border: '1px solid #C4A06040',
-                }}
-              >
-                Harmonics · {baseFreq}Hz
-              </span>
-            </div>
-            {/* Bigger harmony pills — 2-column grid on phone, 5 across on
-                desktop so the 10 over+under-tones all fit without cramming.
-                Each card: big dot, label, ratio line, Hz. */}
-            <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 md:grid-cols-5">
+            <p
+              className="text-center mb-2 uppercase"
+              style={{
+                fontFamily: 'var(--font-serif)',
+                fontSize: '14px',
+                fontWeight: 700,
+                color: '#5C3018',
+                letterSpacing: '0.18em',
+              }}
+            >
+              Harmonics · {baseFreq}Hz
+            </p>
+            <div className="flex justify-center gap-2">
               {HARMONICS.map((h) => {
                 const isOn = activeHarmonics.has(h.id);
-                const freq = Math.round(baseFreq * h.ratio * 100) / 100;
-                const freqDisplay = freq < 20 ? freq.toFixed(1) : Math.round(freq);
-                const ratioDisplay =
-                  h.ratio < 1 ? `÷${Math.round((1 / h.ratio) * 100) / 100}` : `×${h.ratio}`;
+                const freq = Math.round(baseFreq * h.ratio);
                 return (
                   <button
                     key={h.id}
@@ -4387,19 +3468,17 @@ export default function BinauralTuner() {
                         return next;
                       });
                     }}
-                    className="flex cursor-pointer flex-col items-center justify-center gap-1 rounded-2xl px-3 py-3 transition-all"
+                    className="flex cursor-pointer flex-col items-center gap-1 rounded-xl px-2.5 py-2 transition-all"
                     style={{
-                      background: isOn ? `${h.color}1E` : 'transparent',
-                      border: `1px solid ${isOn ? `${h.color}60` : '#C4A06020'}`,
-                      minHeight: 88,
+                      background: isOn ? `${h.color}15` : 'transparent',
+                      border: `1px solid ${isOn ? `${h.color}40` : '#C4A06012'}`,
                     }}
-                    aria-pressed={isOn}
                   >
                     <span
                       className="block rounded-full"
                       style={{
-                        width: 14,
-                        height: 14,
+                        width: 10,
+                        height: 10,
                         background: h.color,
                         opacity: isOn ? 1 : 0.7,
                       }}
@@ -4407,11 +3486,10 @@ export default function BinauralTuner() {
                     <span
                       style={{
                         fontFamily: 'var(--font-serif)',
-                        fontSize: '13px',
-                        fontWeight: isOn ? 700 : 600,
-                        color: isOn ? h.color : '#5C3018',
-                        opacity: isOn ? 1 : 0.85,
-                        lineHeight: 1.1,
+                        fontSize: '12px',
+                        fontWeight: isOn ? 700 : 500,
+                        color: isOn ? h.color : '#8A6A4A',
+                        opacity: isOn ? 1 : 0.8,
                       }}
                     >
                       {h.label}
@@ -4419,14 +3497,11 @@ export default function BinauralTuner() {
                     <span
                       style={{
                         fontFamily: 'var(--font-serif)',
-                        fontSize: '11px',
-                        fontStyle: 'italic',
-                        color: isOn ? h.color : '#8A6A4A',
-                        opacity: isOn ? 0.85 : 0.6,
-                        letterSpacing: '0.02em',
+                        fontSize: '12px',
+                        color: '#8A6A4A',
                       }}
                     >
-                      {ratioDisplay} · {freqDisplay}Hz
+                      {freq}Hz
                     </span>
                   </button>
                 );
@@ -4436,29 +3511,22 @@ export default function BinauralTuner() {
 
           {/* Sacred frequencies — Solfeggio + 432Hz */}
           <div className="px-2">
-            <div className="mb-3 flex justify-center">
-              <span
-                className="flex items-center uppercase rounded-full px-5 py-1.5"
-                style={{
-                  fontFamily: 'var(--font-serif)',
-                  fontSize: '14px',
-                  fontWeight: 700,
-                  color: '#C4A060',
-                  letterSpacing: '0.18em',
-                  background: '#C4A06015',
-                  border: '1px solid #C4A06040',
-                }}
-              >
-                Sacred Frequencies
-              </span>
-            </div>
-            {/* 2-per-row cards on phone (3-per-row on desktop). Each
-                card shows the Hz number big on top with the descriptor
-                ("om", "foundation", "healing"…) right below it. Much
-                easier to scan than the earlier wrapping mini-pills. */}
-            <div className="grid grid-cols-2 gap-2 md:grid-cols-3">
+            <p
+              className="text-center mb-2 uppercase"
+              style={{
+                fontFamily: 'var(--font-serif)',
+                fontSize: '14px',
+                fontWeight: 700,
+                color: '#5C3018',
+                letterSpacing: '0.18em',
+              }}
+            >
+              Sacred Frequencies
+            </p>
+            <div className="flex flex-wrap justify-center gap-1.5">
               {SACRED.map((s) => {
                 const isOn = activeSacred.has(s.id);
+                // Check if this sacred freq is a harmonic of the base tone (within 5%)
                 const ratio = s.freq / baseFreq;
                 const nearestInt = Math.round(ratio);
                 const isAligned =
@@ -4475,58 +3543,48 @@ export default function BinauralTuner() {
                         return next;
                       });
                     }}
-                    className="flex cursor-pointer flex-col items-center justify-center rounded-xl px-3 py-2.5 transition-all"
+                    className="flex cursor-pointer items-center gap-1 rounded-full px-2 py-1 transition-all"
                     style={{
-                      // Active = clearly visible filled box. Off = no
-                      // box at all so active vs idle is unmistakable.
-                      // (Per Martin 2026-04-26: "make sure u understand
-                      // well if they are active or not by making colour
-                      // box more opaque.")
-                      background: isOn ? `${s.color}45` : 'transparent',
-                      border: `1px solid ${isOn ? s.color : 'transparent'}`,
-                      minHeight: 56,
+                      background: isOn
+                        ? `${s.color}18`
+                        : isAligned
+                          ? `${s.color}08`
+                          : 'transparent',
+                      border: `1px solid ${isOn ? `${s.color}40` : isAligned ? `${s.color}20` : '#C4A06010'}`,
                     }}
                     title={`${s.desc}${isAligned ? ` · harmonic ×${nearestInt} of ${baseFreq}Hz` : ''}`}
-                    aria-pressed={isOn}
                   >
+                    <span
+                      className="block rounded-full"
+                      style={{
+                        width: 6,
+                        height: 6,
+                        background: s.color,
+                        opacity: isOn ? 1 : isAligned ? 0.6 : 0.3,
+                      }}
+                    />
                     <span
                       style={{
                         fontFamily: 'var(--font-serif)',
-                        fontSize: '17px',
-                        fontWeight: 700,
-                        color: isOn ? s.color : '#5C3018',
-                        opacity: isOn ? 1 : 0.85,
-                        lineHeight: 1.1,
+                        fontSize: '12px',
+                        fontWeight: isOn ? 700 : 500,
+                        color: isOn ? s.color : '#8A6A4A',
+                        opacity: isOn ? 1 : isAligned ? 0.7 : 0.45,
                       }}
                     >
                       {s.label}
+                    </span>
+                    {isAligned && !isOn && (
                       <span
                         style={{
-                          fontSize: '10px',
-                          fontWeight: 500,
-                          opacity: 0.55,
-                          marginLeft: 2,
+                          fontFamily: 'var(--font-serif)',
+                          fontSize: '8px',
+                          color: s.color,
                         }}
                       >
-                        Hz
+                        ×{nearestInt}
                       </span>
-                    </span>
-                    <span
-                      style={{
-                        fontFamily: 'var(--font-serif)',
-                        fontSize: '11px',
-                        fontStyle: 'italic',
-                        color: isOn ? s.color : '#8A6A4A',
-                        opacity: isOn ? 0.85 : 0.55,
-                        letterSpacing: '0.02em',
-                        marginTop: 2,
-                      }}
-                    >
-                      {s.desc}
-                      {isAligned && !isOn && (
-                        <span style={{ marginLeft: 4, fontSize: '9px' }}>×{nearestInt}</span>
-                      )}
-                    </span>
+                    )}
                   </button>
                 );
               })}
@@ -4535,164 +3593,56 @@ export default function BinauralTuner() {
 
           {/* Generative melodies */}
           <div className="px-2">
-            <div className="mb-3 flex justify-center">
-              <span
-                className="flex items-center uppercase rounded-full px-5 py-1.5"
-                style={{
-                  fontFamily: 'var(--font-serif)',
-                  fontSize: '14px',
-                  fontWeight: 700,
-                  color: '#C4A060',
-                  letterSpacing: '0.18em',
-                  background: '#C4A06015',
-                  border: '1px solid #C4A06040',
-                }}
-              >
-                Melodies
-              </span>
+            <p
+              className="text-center mb-2"
+              style={{
+                fontFamily: 'var(--font-serif)',
+                fontSize: '12px',
+                color: '#7A5438',
+              }}
+            >
+              melodies
+            </p>
+            <div className="flex flex-wrap justify-center gap-1.5">
+              {MELODIES.map((m) => {
+                const isOn = activeMelodies.has(m.id);
+                return (
+                  <button
+                    key={m.id}
+                    type="button"
+                    onClick={() => {
+                      setActiveMelodies((prev) => {
+                        const next = new Set(prev);
+                        if (next.has(m.id)) next.delete(m.id);
+                        else next.add(m.id);
+                        return next;
+                      });
+                    }}
+                    className="flex cursor-pointer items-center gap-1.5 rounded-full px-2.5 py-1.5 transition-all"
+                    style={{
+                      background: isOn ? `${m.color}18` : 'transparent',
+                      border: `1px solid ${isOn ? `${m.color}40` : '#C4A06010'}`,
+                    }}
+                  >
+                    <span
+                      className="block rounded-full"
+                      style={{ width: 7, height: 7, background: m.color, opacity: isOn ? 1 : 0.3 }}
+                    />
+                    <span
+                      style={{
+                        fontFamily: 'var(--font-serif)',
+                        fontSize: '12px',
+                        fontWeight: isOn ? 700 : 500,
+                        color: isOn ? m.color : '#8A6A4A',
+                        opacity: isOn ? 1 : 0.8,
+                      }}
+                    >
+                      {m.label}
+                    </span>
+                  </button>
+                );
+              })}
             </div>
-            {/* Real instruments live in their own horizontal scroll
-                strip above the synthesized melodies. They're recorded
-                CC0 samples (cello, sax, harp, etc) — distinct enough
-                in character that pulling them out of the synth grid
-                makes the surface easier to scan. Each card carries a
-                tiny ♪ glyph in the instrument's colour as a stand-in
-                for proper silhouettes. */}
-            {(() => {
-              const realMelodies = MELODIES.filter((m) => m.sampledPack);
-              const synthMelodies = MELODIES.filter((m) => !m.sampledPack);
-              return (
-                <>
-                  {realMelodies.length > 0 && (
-                    <div className="mb-3">
-                      <p
-                        className="mb-1.5 text-center uppercase"
-                        style={{
-                          fontFamily: 'var(--font-serif)',
-                          fontSize: '10px',
-                          fontWeight: 700,
-                          color: '#8A6A4A',
-                          letterSpacing: '0.18em',
-                          opacity: 0.65,
-                        }}
-                      >
-                        Real Instruments
-                      </p>
-                      <div
-                        className="flex gap-2 overflow-x-auto pb-1"
-                        style={{ scrollbarWidth: 'none' }}
-                      >
-                        {realMelodies.map((m) => {
-                          const isOn = activeMelodies.has(m.id);
-                          return (
-                            <button
-                              key={m.id}
-                              type="button"
-                              onClick={() => {
-                                setActiveMelodies((prev) => {
-                                  const next = new Set(prev);
-                                  if (next.has(m.id)) next.delete(m.id);
-                                  else next.add(m.id);
-                                  return next;
-                                });
-                              }}
-                              className="shrink-0 cursor-pointer rounded-2xl px-4 py-3 transition-all"
-                              style={{
-                                // Active = filled box, off = no box.
-                                background: isOn ? `${m.color}45` : 'transparent',
-                                border: `1.5px solid ${isOn ? m.color : 'transparent'}`,
-                                minWidth: 96,
-                              }}
-                              aria-pressed={isOn}
-                            >
-                              <div
-                                className="mb-1 flex items-center justify-center"
-                                style={{
-                                  width: 28,
-                                  height: 28,
-                                  borderRadius: '50%',
-                                  margin: '0 auto',
-                                  background: `${m.color}25`,
-                                  border: `1px solid ${m.color}50`,
-                                }}
-                              >
-                                <span
-                                  style={{
-                                    fontFamily: 'var(--font-serif)',
-                                    fontSize: 16,
-                                    color: m.color,
-                                    opacity: isOn ? 1 : 0.7,
-                                    lineHeight: 1,
-                                  }}
-                                >
-                                  ♪
-                                </span>
-                              </div>
-                              <p
-                                className="text-center"
-                                style={{
-                                  fontFamily: 'var(--font-serif)',
-                                  fontSize: '12px',
-                                  fontWeight: isOn ? 700 : 600,
-                                  color: isOn ? m.color : '#5C3018',
-                                  opacity: isOn ? 1 : 0.8,
-                                  lineHeight: 1.1,
-                                  whiteSpace: 'nowrap',
-                                }}
-                              >
-                                {m.label.replace(/^Real /, '')}
-                              </p>
-                            </button>
-                          );
-                        })}
-                      </div>
-                    </div>
-                  )}
-                  {/* Synth melodies — 2 per row on phone, 3 on sm, 5 md+. */}
-                  <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 md:grid-cols-5">
-                    {synthMelodies.map((m) => {
-                      const isOn = activeMelodies.has(m.id);
-                      return (
-                        <button
-                          key={m.id}
-                          type="button"
-                          onClick={() => {
-                            setActiveMelodies((prev) => {
-                              const next = new Set(prev);
-                              if (next.has(m.id)) next.delete(m.id);
-                              else next.add(m.id);
-                              return next;
-                            });
-                          }}
-                          className="flex cursor-pointer items-center justify-center rounded-2xl px-3 py-3 transition-all"
-                          style={{
-                            // Active = filled box, off = no box.
-                            background: isOn ? `${m.color}45` : 'transparent',
-                            border: `1px solid ${isOn ? m.color : 'transparent'}`,
-                            minHeight: 56,
-                          }}
-                          aria-pressed={isOn}
-                        >
-                          <span
-                            className="text-center"
-                            style={{
-                              fontFamily: 'var(--font-serif)',
-                              fontSize: '13px',
-                              fontWeight: isOn ? 700 : 600,
-                              color: isOn ? m.color : '#5C3018',
-                              opacity: isOn ? 1 : 0.7,
-                              lineHeight: 1.15,
-                            }}
-                          >
-                            {m.label}
-                          </span>
-                        </button>
-                      );
-                    })}
-                  </div>
-                </>
-              );
-            })()}
             {/* Scale selector */}
             <div className="flex flex-wrap justify-center gap-1 pt-1">
               {Object.entries(MELODY_SCALES).map(([id, s]) => (
@@ -4714,231 +3664,119 @@ export default function BinauralTuner() {
               ))}
             </div>
             {activeMelodies.size > 0 && (
-              <div className="mx-auto max-w-md space-y-3 pt-3">
-                {(
-                  [
-                    {
-                      label: 'speed',
-                      color: '#B85A8A', // warm rose — energy
-                      value: melodySpeed / 100,
-                      onChange: (v: number) => setMelodySpeed(Math.round(v * 100)),
-                    },
-                    {
-                      label: 'reverb',
-                      color: '#5AA8B0', // teal — space
-                      value: melodyReverb / 100,
-                      onChange: (v: number) => setMelodyReverb(Math.round(v * 100)),
-                    },
-                    {
-                      label: 'volume',
-                      color: '#D4805A', // warm orange — presence
-                      value: melodyVolume,
-                      onChange: (v: number) => setMelodyVolume(v),
-                    },
-                  ] as const
-                ).map((s) => {
-                  const DOTS = 20;
-                  return (
-                    <div key={s.label} className="flex items-center gap-3">
-                      <span
-                        className="shrink-0 text-left uppercase"
+              <div className="flex justify-center gap-4 pt-2">
+                <div className="flex items-center gap-2">
+                  <span
+                    style={{
+                      fontFamily: 'var(--font-serif)',
+                      fontSize: '12px',
+                      color: '#8A6A4A',
+                    }}
+                  >
+                    speed
+                  </span>
+                  <div
+                    className="flex gap-[2px] cursor-pointer"
+                    onClick={(e) => {
+                      const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
+                      setMelodySpeed(Math.round(((e.clientX - rect.left) / rect.width) * 100));
+                    }}
+                  >
+                    {Array.from({ length: 8 }, (_, i) => (
+                      <div
+                        key={i}
+                        className="rounded-[2px] transition-all"
                         style={{
-                          fontFamily: 'var(--font-serif)',
-                          fontSize: '11px',
-                          letterSpacing: '0.12em',
-                          color: s.color,
-                          opacity: 0.9,
-                          fontWeight: 700,
-                          width: 64,
+                          width: 10,
+                          height: 6,
+                          background: '#9B6BA0',
+                          opacity: i / 7 <= melodySpeed / 100 ? 0.4 + (i / 7) * 0.4 : 0.08,
                         }}
-                      >
-                        {s.label}
-                      </span>
-                      <button
-                        type="button"
-                        aria-label={`${s.label} ${Math.round(s.value * 100)}%`}
-                        className="flex flex-1 cursor-pointer items-center justify-between bg-transparent"
-                        style={{ border: 'none', padding: '4px 0' }}
-                        onClick={(e) => {
-                          const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
-                          s.onChange(
-                            Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width)),
-                          );
+                      />
+                    ))}
+                  </div>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span
+                    style={{
+                      fontFamily: 'var(--font-serif)',
+                      fontSize: '12px',
+                      color: '#8A6A4A',
+                    }}
+                  >
+                    reverb
+                  </span>
+                  <div
+                    className="flex gap-[2px] cursor-pointer"
+                    onClick={(e) => {
+                      const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
+                      setMelodyReverb(Math.round(((e.clientX - rect.left) / rect.width) * 100));
+                    }}
+                  >
+                    {Array.from({ length: 8 }, (_, i) => (
+                      <div
+                        key={i}
+                        className="rounded-[2px] transition-all"
+                        style={{
+                          width: 10,
+                          height: 6,
+                          background: '#A0907A',
+                          opacity: i / 7 <= melodyReverb / 100 ? 0.4 + (i / 7) * 0.4 : 0.08,
                         }}
-                      >
-                        {Array.from({ length: DOTS }, (_, i) => {
-                          const filled = i / (DOTS - 1) <= s.value;
-                          return (
-                            <span
-                              key={i}
-                              className="block rounded-full transition-all"
-                              style={{
-                                width: filled ? 8 : 5,
-                                height: filled ? 8 : 5,
-                                background: s.color,
-                                opacity: filled ? 0.55 + (i / (DOTS - 1)) * 0.4 : 0.2,
-                              }}
-                            />
-                          );
-                        })}
-                      </button>
-                    </div>
-                  );
-                })}
+                      />
+                    ))}
+                  </div>
+                </div>
+                {/* Melody volume — independent of main mix */}
+                <div className="flex items-center gap-2">
+                  <span
+                    style={{
+                      fontFamily: 'var(--font-serif)',
+                      fontSize: '12px',
+                      color: '#8A6A4A',
+                    }}
+                  >
+                    volume
+                  </span>
+                  <div
+                    className="flex gap-[2px] cursor-pointer"
+                    onClick={(e) => {
+                      const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
+                      setMelodyVolume(
+                        Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width)),
+                      );
+                    }}
+                  >
+                    {Array.from({ length: 8 }, (_, i) => (
+                      <div
+                        key={i}
+                        className="rounded-[2px] transition-all"
+                        style={{
+                          width: 10,
+                          height: 6,
+                          background: '#C4A060',
+                          opacity: i / 7 <= melodyVolume ? 0.4 + (i / 7) * 0.4 : 0.08,
+                        }}
+                      />
+                    ))}
+                  </div>
+                </div>
               </div>
             )}
           </div>
 
-          {/* Effects — wah + echo on the melody chain */}
-          <div className="px-2">
-            <div className="mb-3 flex justify-center">
-              <span
-                className="flex items-center uppercase rounded-full px-5 py-1.5"
-                style={{
-                  fontFamily: 'var(--font-serif)',
-                  fontSize: '14px',
-                  fontWeight: 700,
-                  color: '#C4A060',
-                  letterSpacing: '0.18em',
-                  background: '#C4A06015',
-                  border: '1px solid #C4A06040',
-                }}
-              >
-                Effects
-              </span>
-            </div>
-            <div className="mx-auto max-w-md space-y-3">
-              {/* Wah */}
-              <div className="flex items-center gap-3">
-                <button
-                  type="button"
-                  onClick={() => setWahOn((s) => !s)}
-                  className="shrink-0 rounded-full px-3 py-1.5 transition-all cursor-pointer"
-                  style={{
-                    background: wahOn ? '#B85A8A20' : 'transparent',
-                    border: `1.5px solid ${wahOn ? '#B85A8A' : '#B85A8A40'}`,
-                    color: wahOn ? '#B85A8A' : '#7A5438',
-                    fontFamily: 'var(--font-serif)',
-                    fontSize: '11px',
-                    fontWeight: 700,
-                    letterSpacing: '0.16em',
-                    textTransform: 'uppercase',
-                    width: 80,
-                  }}
-                  aria-pressed={wahOn}
-                >
-                  Wah
-                </button>
-                <button
-                  type="button"
-                  className="flex flex-1 cursor-pointer items-center justify-between bg-transparent"
-                  style={{ border: 'none', padding: '10px 0', opacity: wahOn ? 1 : 0.4 }}
-                  onClick={(e) => {
-                    const r = (e.currentTarget as HTMLElement).getBoundingClientRect();
-                    setWahSpeed(Math.max(0, Math.min(1, (e.clientX - r.left) / r.width)));
-                  }}
-                  aria-label="Wah speed"
-                >
-                  {Array.from({ length: 20 }, (_, i) => {
-                    const ratio = i / 19;
-                    const filled = ratio <= wahSpeed;
-                    return (
-                      <span
-                        key={i}
-                        className="block rounded-full transition-all"
-                        style={{
-                          width: filled ? 13 : 7,
-                          height: filled ? 13 : 7,
-                          background: SLIDER_PROGRESSIONS.wah[i],
-                          opacity: filled ? 0.55 + ratio * 0.4 : 0.2,
-                        }}
-                      />
-                    );
-                  })}
-                </button>
-              </div>
-              {/* Echo */}
-              <div className="flex items-center gap-3">
-                <button
-                  type="button"
-                  onClick={() => setEchoOn((s) => !s)}
-                  className="shrink-0 rounded-full px-3 py-1.5 transition-all cursor-pointer"
-                  style={{
-                    background: echoOn ? '#5AA8B020' : 'transparent',
-                    border: `1.5px solid ${echoOn ? '#5AA8B0' : '#5AA8B040'}`,
-                    color: echoOn ? '#5AA8B0' : '#7A5438',
-                    fontFamily: 'var(--font-serif)',
-                    fontSize: '11px',
-                    fontWeight: 700,
-                    letterSpacing: '0.16em',
-                    textTransform: 'uppercase',
-                    width: 80,
-                  }}
-                  aria-pressed={echoOn}
-                >
-                  Echo
-                </button>
-                <button
-                  type="button"
-                  className="flex flex-1 cursor-pointer items-center justify-between bg-transparent"
-                  style={{ border: 'none', padding: '10px 0', opacity: echoOn ? 1 : 0.4 }}
-                  onClick={(e) => {
-                    const r = (e.currentTarget as HTMLElement).getBoundingClientRect();
-                    setEchoAmount(Math.max(0, Math.min(1, (e.clientX - r.left) / r.width)));
-                  }}
-                  aria-label="Echo amount"
-                >
-                  {Array.from({ length: 20 }, (_, i) => {
-                    const ratio = i / 19;
-                    const filled = ratio <= echoAmount;
-                    return (
-                      <span
-                        key={i}
-                        className="block rounded-full transition-all"
-                        style={{
-                          width: filled ? 13 : 7,
-                          height: filled ? 13 : 7,
-                          background: SLIDER_PROGRESSIONS.echo[i],
-                          opacity: filled ? 0.55 + ratio * 0.4 : 0.2,
-                        }}
-                      />
-                    );
-                  })}
-                </button>
-              </div>
-              <p
-                className="text-center italic"
-                style={{
-                  fontFamily: 'var(--font-serif)',
-                  fontSize: '11px',
-                  color: '#8A6A4A',
-                  opacity: 0.6,
-                  marginTop: 6,
-                }}
-              >
-                effects route on the melody chain
-              </p>
-            </div>
-          </div>
-
           {/* Voice / Poetry */}
           <div className="px-2">
-            <div className="mb-3 flex justify-center">
-              <span
-                className="flex items-center uppercase rounded-full px-5 py-1.5"
-                style={{
-                  fontFamily: 'var(--font-serif)',
-                  fontSize: '14px',
-                  fontWeight: 700,
-                  color: '#C4A060',
-                  letterSpacing: '0.18em',
-                  background: '#C4A06015',
-                  border: '1px solid #C4A06040',
-                }}
-              >
-                Voices
-              </span>
-            </div>
+            <p
+              className="text-center mb-2"
+              style={{
+                fontFamily: 'var(--font-serif)',
+                fontSize: '12px',
+                color: '#7A5438',
+              }}
+            >
+              voices
+            </p>
             <div className="flex justify-center gap-2">
               {(['off', 'affirmations', 'meditation', 'poetry'] as const).map((mode) => {
                 const isOn = voiceMode === mode;
@@ -4962,100 +3800,8 @@ export default function BinauralTuner() {
               })}
             </div>
             {voiceMode !== 'off' && (
-              <div className="flex justify-center gap-4 pt-2">
-                <div className="flex items-center gap-2">
-                  <span
-                    style={{
-                      fontFamily: 'var(--font-serif)',
-                      fontSize: '12px',
-                      color: '#8A6A4A',
-                    }}
-                  >
-                    speed
-                  </span>
-                  <div
-                    className="flex gap-[2px] cursor-pointer"
-                    onClick={(e) => {
-                      const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
-                      setVoiceRate(0.5 + ((e.clientX - rect.left) / rect.width) * 0.5);
-                    }}
-                  >
-                    {Array.from({ length: 6 }, (_, i) => (
-                      <div
-                        key={i}
-                        className="rounded-[2px] transition-all"
-                        style={{
-                          width: 8,
-                          height: 5,
-                          background: '#9B6BA0',
-                          opacity: i / 5 <= (voiceRate - 0.5) / 0.5 ? 0.4 + (i / 5) * 0.4 : 0.08,
-                        }}
-                      />
-                    ))}
-                  </div>
-                </div>
-                <div className="flex items-center gap-2">
-                  <span
-                    style={{
-                      fontFamily: 'var(--font-serif)',
-                      fontSize: '12px',
-                      color: '#8A6A4A',
-                    }}
-                  >
-                    pitch
-                  </span>
-                  <div
-                    className="flex gap-[2px] cursor-pointer"
-                    onClick={(e) => {
-                      const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
-                      setVoicePitch(0.5 + ((e.clientX - rect.left) / rect.width) * 1.0);
-                    }}
-                  >
-                    {Array.from({ length: 6 }, (_, i) => (
-                      <div
-                        key={i}
-                        className="rounded-[2px] transition-all"
-                        style={{
-                          width: 8,
-                          height: 5,
-                          background: '#9B6BA0',
-                          opacity: i / 5 <= (voicePitch - 0.5) / 1.0 ? 0.4 + (i / 5) * 0.4 : 0.08,
-                        }}
-                      />
-                    ))}
-                  </div>
-                </div>
-                <div className="flex items-center gap-2">
-                  <span
-                    style={{
-                      fontFamily: 'var(--font-serif)',
-                      fontSize: '12px',
-                      color: '#8A6A4A',
-                    }}
-                  >
-                    vol
-                  </span>
-                  <div
-                    className="flex gap-[2px] cursor-pointer"
-                    onClick={(e) => {
-                      const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
-                      setVoiceVolume(Math.max(0.1, (e.clientX - rect.left) / rect.width));
-                    }}
-                  >
-                    {Array.from({ length: 6 }, (_, i) => (
-                      <div
-                        key={i}
-                        className="rounded-[2px] transition-all"
-                        style={{
-                          width: 8,
-                          height: 5,
-                          background: '#9B6BA0',
-                          opacity: i / 5 <= voiceVolume ? 0.4 + (i / 5) * 0.4 : 0.08,
-                        }}
-                      />
-                    ))}
-                  </div>
-                </div>
+              <div className="px-1 pt-3">
+                <VoiceProviderSelector />
               </div>
             )}
           </div>
@@ -5086,9 +3832,8 @@ export default function BinauralTuner() {
             </button>
             {layersOpen && (
               <div className="animate-in fade-in duration-150 space-y-2 pt-1">
-                {/* Layer softness — circle-dot slider, no greys, same
-                    long format as the speed/reverb/volume sliders. */}
-                <div className="mx-auto flex max-w-md items-center gap-3 px-1">
+                {/* Layer softness control — smooth bar + click-to-explain label */}
+                <div className="flex items-center justify-center gap-2">
                   <InfoTooltip
                     title="Layer Softness (Reverb)"
                     content={
@@ -5100,34 +3845,30 @@ export default function BinauralTuner() {
                         </p>
                         <p style={{ margin: '8px 0 0 0' }}>
                           Technically it's a shared reverb bus that all active layers run through,
-                          so the whole mix breathes together.
+                          so the whole mix breathes together. The percentage is how much of each
+                          layer is sent into that bus.
                         </p>
                       </>
                     }
                     trigger={
                       <span
-                        className="shrink-0 text-left uppercase"
                         style={{
                           fontFamily: 'var(--font-serif)',
-                          fontSize: '11px',
-                          letterSpacing: '0.12em',
-                          color: '#9B6BA0',
-                          opacity: 0.9,
-                          fontWeight: 700,
-                          width: 88,
-                          borderBottom: '1px dotted #9B6BA060',
+                          fontSize: '13px',
+                          fontWeight: 600,
+                          color: '#7A5438',
+                          letterSpacing: '0.02em',
+                          borderBottom: '1px dotted #7A543860',
                           paddingBottom: 1,
                         }}
                       >
-                        Softness
+                        layer softness
                       </span>
                     }
                   />
-                  <button
-                    type="button"
-                    aria-label={`Layer softness ${layerReverb}%`}
-                    className="flex flex-1 cursor-pointer items-center justify-between bg-transparent"
-                    style={{ border: 'none', padding: '10px 0' }}
+                  <div
+                    className="relative cursor-pointer"
+                    style={{ width: 120, height: 14 }}
                     onClick={(e) => {
                       const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
                       setLayerReverb(
@@ -5137,30 +3878,36 @@ export default function BinauralTuner() {
                       );
                     }}
                   >
-                    {Array.from({ length: 20 }, (_, i) => {
-                      const ratio = i / 19;
-                      const filled = ratio <= layerReverb / 100;
-                      return (
-                        <span
-                          key={i}
-                          className="block rounded-full transition-all"
-                          style={{
-                            width: filled ? 13 : 7,
-                            height: filled ? 13 : 7,
-                            background: SLIDER_PROGRESSIONS.softness[i],
-                            opacity: filled ? 0.55 + ratio * 0.4 : 0.2,
-                          }}
-                        />
-                      );
-                    })}
-                  </button>
+                    <div
+                      className="absolute top-1/2 -translate-y-1/2 left-0 right-0 rounded-full"
+                      style={{ height: 4, background: '#C4A06015' }}
+                    />
+                    <div
+                      className="absolute top-1/2 -translate-y-1/2 left-0 rounded-full"
+                      style={{
+                        height: 4,
+                        width: `${layerReverb}%`,
+                        background: 'linear-gradient(90deg, #A0907A30, #A0907A)',
+                      }}
+                    />
+                    <div
+                      className="absolute top-1/2 rounded-full"
+                      style={{
+                        left: `${layerReverb}%`,
+                        width: 12,
+                        height: 12,
+                        background: '#A0907A',
+                        transform: 'translate(-50%, -50%)',
+                        boxShadow: '0 1px 3px rgba(160,144,122,0.5)',
+                      }}
+                    />
+                  </div>
                   <span
-                    className="hidden md:inline"
                     style={{
                       fontFamily: 'var(--font-serif)',
-                      fontSize: '11px',
+                      fontSize: '12px',
                       fontWeight: 600,
-                      color: '#9B6BA0',
+                      color: '#8A6A4A',
                       width: 30,
                       flexShrink: 0,
                       textAlign: 'right',
@@ -5169,311 +3916,66 @@ export default function BinauralTuner() {
                     {layerReverb}%
                   </span>
                 </div>
-                {/* Active layers chip strip — always on, shows what's
-                    currently playing with tap-to-remove. */}
-                {(() => {
-                  const active = ALL_LAYERS.filter((l) => (activeLayers[l.id] || 0) > 0);
-                  if (active.length === 0) return null;
-                  return (
-                    <div className="flex flex-wrap gap-1.5 mb-3">
-                      {active.map((l) => (
-                        <button
-                          key={l.id}
-                          type="button"
-                          onClick={() => toggleLayer(l.id)}
-                          className="flex cursor-pointer items-center gap-1.5 rounded-full px-2.5 py-1 transition-opacity hover:opacity-85"
-                          style={{
-                            background: `${l.color}20`,
-                            border: `1px solid ${l.color}55`,
-                          }}
-                          title={`Remove ${l.label}`}
-                          aria-label={`Remove ${l.label}`}
-                        >
-                          <span
-                            style={{
-                              width: 8,
-                              height: 8,
-                              borderRadius: '50%',
-                              background: l.color,
-                            }}
-                          />
-                          <span
-                            style={{
-                              fontFamily: 'var(--font-serif)',
-                              fontSize: 12,
-                              fontWeight: 600,
-                              color: l.color,
-                            }}
-                          >
-                            {l.label}
-                          </span>
-                          <span
-                            aria-hidden="true"
-                            style={{ color: l.color, opacity: 0.6, fontSize: 13, lineHeight: 1 }}
-                          >
-                            ×
-                          </span>
-                        </button>
-                      ))}
-                    </div>
-                  );
-                })()}
-
-                {/* Phone: horizontal category tab strip + single-column list.
-                    Categories now group by character (Waters / Birds /
-                    Drones / Textures / Digital) instead of engineering
-                    taxonomy. */}
-                <div className="md:hidden">
-                  <div className="flex gap-1.5 overflow-x-auto mb-2 pb-1">
-                    {CATEGORY_ORDER.map((cat) => {
-                      const isActive = activeLayerGroup === cat;
-                      const color = CATEGORY_COLORS[cat];
-                      return (
-                        <button
-                          key={cat}
-                          type="button"
-                          onClick={() => setActiveLayerGroup(cat)}
-                          className="shrink-0 cursor-pointer rounded-full px-3 py-1.5 uppercase tracking-[0.14em] transition-all"
-                          style={{
-                            fontFamily: 'var(--font-serif)',
-                            fontSize: 12,
-                            fontWeight: 700,
-                            color: isActive ? color : '#8A6A4A',
-                            background: isActive ? `${color}15` : 'transparent',
-                            border: `1px solid ${isActive ? `${color}60` : '#C4A06018'}`,
-                          }}
-                        >
-                          {CATEGORY_LABELS[cat]}
-                        </button>
-                      );
-                    })}
-                  </div>
-                  {activeLayerGroup === 'pulse' && (
-                    <div
-                      className="mb-2.5 flex items-center gap-2.5 rounded-xl px-3 py-2.5"
-                      style={{
-                        background: `${CATEGORY_COLORS.pulse}10`,
-                        border: `1px solid ${CATEGORY_COLORS.pulse}28`,
-                      }}
-                    >
-                      <span
-                        className="uppercase tracking-[0.14em]"
-                        style={{
-                          fontFamily: 'var(--font-serif)',
-                          fontSize: 11,
-                          fontWeight: 700,
-                          color: CATEGORY_COLORS.pulse,
-                          opacity: 0.85,
-                        }}
-                      >
-                        Tempo
-                      </span>
-                      <input
-                        type="range"
-                        min={50}
-                        max={100}
-                        step={1}
-                        value={pulseBpm}
-                        onChange={(e) => setPulseBpm(Number(e.target.value))}
-                        className="flex-1 cursor-pointer"
-                        style={{ accentColor: CATEGORY_COLORS.pulse }}
-                        aria-label="Pulse BPM"
-                      />
-                      <span
-                        style={{
-                          fontFamily: 'var(--font-serif)',
-                          fontSize: 13,
-                          fontWeight: 700,
-                          color: CATEGORY_COLORS.pulse,
-                          minWidth: 56,
-                          textAlign: 'right',
-                        }}
-                      >
-                        {pulseBpm} bpm
-                      </span>
-                    </div>
-                  )}
-                  <div className="space-y-1.5">
-                    {ALL_LAYERS.filter((l) => getLayerCategory(l) === activeLayerGroup).map((l) => {
-                      const vol = activeLayers[l.id] || 0;
-                      const isOn = vol > 0;
-                      return (
-                        <div key={l.id} className="space-y-1">
-                          <button
-                            type="button"
-                            onClick={() => toggleLayer(l.id)}
-                            className="flex w-full cursor-pointer items-center gap-2.5 rounded-2xl px-4 py-3 transition-all"
-                            style={{
-                              background: isOn ? `${l.color}1E` : `${l.color}08`,
-                              border: `1.5px solid ${isOn ? `${l.color}60` : `${l.color}22`}`,
-                              minHeight: 52,
-                            }}
-                            aria-pressed={isOn}
-                          >
-                            <span
-                              className="block rounded-full shrink-0"
-                              style={{
-                                width: 12,
-                                height: 12,
-                                background: l.color,
-                                opacity: isOn ? 1 : 0.6,
-                              }}
-                            />
-                            <span
-                              style={{
-                                fontFamily: 'var(--font-serif)',
-                                fontSize: isOn ? 17 : 16,
-                                fontWeight: isOn ? 700 : 600,
-                                color: l.color,
-                                opacity: isOn ? 1 : 0.85,
-                                lineHeight: 1.2,
-                              }}
-                            >
-                              {l.label}
-                            </span>
-                          </button>
-                          {isOn && (
-                            <button
-                              type="button"
-                              className="flex w-full cursor-pointer items-center justify-between px-2 py-2.5"
-                              onClick={(e) => {
-                                const rect = (
-                                  e.currentTarget as HTMLElement
-                                ).getBoundingClientRect();
-                                const x = Math.max(
-                                  0.05,
-                                  Math.min(1, (e.clientX - rect.left) / rect.width),
-                                );
-                                setLayerVol(l.id, x);
-                              }}
-                              aria-label={`${l.label} volume`}
-                              style={{ background: 'none', border: 'none' }}
-                            >
-                              {Array.from({ length: 20 }, (_, i) => {
-                                const ratio = i / 19;
-                                const filled = ratio <= vol;
-                                return (
-                                  <span
-                                    key={i}
-                                    className="block rounded-full transition-all"
-                                    style={{
-                                      width: filled ? 13 : 7,
-                                      height: filled ? 13 : 7,
-                                      // Soft hue shift: blend the layer color with the
-                                      // next group's accent so the slider reads as a
-                                      // gradient rather than a flat colour wash.
-                                      background: l.color,
-                                      filter: `hue-rotate(${(ratio * 18 - 9).toFixed(0)}deg) saturate(${(0.85 + ratio * 0.3).toFixed(2)})`,
-                                      opacity: filled ? 0.55 + ratio * 0.4 : 0.18,
-                                    }}
-                                  />
-                                );
-                              })}
-                            </button>
-                          )}
-                        </div>
-                      );
-                    })}
-                  </div>
-                </div>
-
-                {/* Desktop: 6-column grid using the new character-led
-                    categories (Waters / Birds & Forest / Drones &
-                    Voices / Textures / Pulse & Ceremony / Digital). */}
-                <div className="hidden md:grid md:grid-cols-6 md:gap-1.5">
-                  {CATEGORY_ORDER.map((cat) => {
-                    const color = CATEGORY_COLORS[cat];
+                <div className="grid grid-cols-5 gap-1.5">
+                  {(['real', 'nature', 'tones', 'texture', 'ambient'] as const).map((group) => {
+                    const groupColors: Record<string, string> = {
+                      real: '#D4805A',
+                      nature: '#7AAA58',
+                      tones: '#C4A060',
+                      texture: '#A0907A',
+                      ambient: '#6890B0',
+                    };
                     return (
-                      <div key={cat} className="space-y-1">
+                      <div key={group} className="space-y-1">
                         <p
                           className="uppercase tracking-[0.14em] text-center"
                           style={{
                             fontFamily: 'var(--font-serif)',
                             fontSize: '12px',
                             fontWeight: 700,
-                            color,
+                            color: groupColors[group] || '#5C3018',
                           }}
                         >
-                          {CATEGORY_LABELS[cat]}
+                          {group}
                         </p>
-                        {cat === 'pulse' && (
-                          <div
-                            className="mt-0.5 mb-1 rounded-lg px-2 py-1.5"
-                            style={{
-                              background: `${color}10`,
-                              border: `1px solid ${color}28`,
-                            }}
-                          >
-                            <input
-                              type="range"
-                              min={50}
-                              max={100}
-                              step={1}
-                              value={pulseBpm}
-                              onChange={(e) => setPulseBpm(Number(e.target.value))}
-                              className="w-full cursor-pointer"
-                              style={{ accentColor: color }}
-                              aria-label="Pulse BPM"
-                            />
-                            <p
-                              className="text-center"
-                              style={{
-                                fontFamily: 'var(--font-serif)',
-                                fontSize: 11,
-                                fontWeight: 700,
-                                color,
-                                opacity: 0.85,
-                                marginTop: 2,
-                              }}
-                            >
-                              {pulseBpm} bpm
-                            </p>
-                          </div>
-                        )}
-                        {ALL_LAYERS.filter((l) => getLayerCategory(l) === cat).map((l) => {
+                        {ALL_LAYERS.filter((l) => l.group === group).map((l) => {
                           const vol = activeLayers[l.id] || 0;
                           const isOn = vol > 0;
                           return (
-                            <div key={l.id} className="space-y-1">
+                            <div key={l.id} className="space-y-0.5">
                               <button
                                 type="button"
                                 onClick={() => toggleLayer(l.id)}
-                                className="flex w-full cursor-pointer items-center gap-2 rounded-xl px-3 py-2.5 transition-all"
+                                className="flex w-full cursor-pointer items-center gap-1.5 rounded-lg px-2 py-1.5 transition-all"
                                 style={{
-                                  background: isOn ? `${l.color}1E` : `${l.color}06`,
-                                  border: `1px solid ${isOn ? `${l.color}55` : `${l.color}18`}`,
-                                  minHeight: 40,
+                                  background: isOn ? `${l.color}15` : 'transparent',
+                                  border: `1px solid ${isOn ? `${l.color}35` : '#C4A06010'}`,
                                 }}
-                                aria-pressed={isOn}
                               >
                                 <span
                                   className="block rounded-full shrink-0"
                                   style={{
-                                    width: 10,
-                                    height: 10,
+                                    width: 7,
+                                    height: 7,
                                     background: l.color,
-                                    opacity: isOn ? 1 : 0.6,
+                                    opacity: isOn ? 1 : 0.8,
                                   }}
                                 />
                                 <span
                                   style={{
                                     fontFamily: 'var(--font-serif)',
-                                    fontSize: '14px',
-                                    fontWeight: isOn ? 700 : 600,
+                                    fontSize: '12px',
+                                    fontWeight: isOn ? 700 : 500,
                                     color: l.color,
-                                    opacity: isOn ? 1 : 0.85,
-                                    lineHeight: 1.15,
-                                    textAlign: 'left',
+                                    opacity: isOn ? 1 : 0.8,
                                   }}
                                 >
                                   {l.label}
                                 </span>
                               </button>
                               {isOn && (
-                                <button
-                                  type="button"
-                                  className="flex w-full cursor-pointer items-center justify-between px-1 py-1"
-                                  style={{ background: 'none', border: 'none' }}
+                                <div
+                                  className="flex gap-[3px] px-1 cursor-pointer"
                                   onClick={(e) => {
                                     const rect = (
                                       e.currentTarget as HTMLElement
@@ -5485,24 +3987,18 @@ export default function BinauralTuner() {
                                     setLayerVol(l.id, x);
                                   }}
                                 >
-                                  {Array.from({ length: 14 }, (_, i) => {
-                                    const ratio = i / 13;
-                                    const filled = ratio <= vol;
-                                    return (
-                                      <span
-                                        key={i}
-                                        className="block rounded-full transition-all"
-                                        style={{
-                                          width: filled ? 7 : 4,
-                                          height: filled ? 7 : 4,
-                                          background: l.color,
-                                          filter: `hue-rotate(${(ratio * 18 - 9).toFixed(0)}deg) saturate(${(0.85 + ratio * 0.3).toFixed(2)})`,
-                                          opacity: filled ? 0.55 + ratio * 0.4 : 0.18,
-                                        }}
-                                      />
-                                    );
-                                  })}
-                                </button>
+                                  {Array.from({ length: 6 }, (_, i) => (
+                                    <div
+                                      key={i}
+                                      className="flex-1 rounded-[3px] transition-all"
+                                      style={{
+                                        height: 8,
+                                        background: l.color,
+                                        opacity: i / 5 <= vol ? 0.55 + (i / 5) * 0.4 : 0.15,
+                                      }}
+                                    />
+                                  ))}
+                                </div>
                               )}
                             </div>
                           );
@@ -5515,162 +4011,141 @@ export default function BinauralTuner() {
             )}
           </div>
 
-          {/* Unified Presets pill — Genre + Brain State live under the
-              same ochre title now. One toggle opens both rows. */}
+          {/* Collapsible: Genres */}
           <div className="px-2">
-            <div className="mb-2 flex justify-center">
-              <button
-                type="button"
-                onClick={() => {
-                  const next = !genresOpen;
-                  setGenresOpen(next);
-                  setBrainStatesOpen(next);
-                }}
-                className="flex cursor-pointer items-center gap-2 rounded-full px-5 py-1.5 transition-all"
-                style={{ background: '#C4A06015', border: '1px solid #C4A06040' }}
+            <button
+              type="button"
+              onClick={() => setGenresOpen((s) => !s)}
+              className="flex w-full cursor-pointer items-center justify-center gap-2 py-2"
+              style={{ background: 'none', border: 'none' }}
+            >
+              <span
+                className="text-center text-sm font-semibold uppercase tracking-[0.22em]"
+                style={{ color: '#C4A060' }}
               >
-                <span
-                  className="uppercase"
-                  style={{
-                    fontFamily: 'var(--font-serif)',
-                    fontSize: '14px',
-                    fontWeight: 700,
-                    color: '#C4A060',
-                    letterSpacing: '0.18em',
-                  }}
-                >
-                  Presets
-                </span>
-                <span
-                  className="text-sm transition-transform duration-200"
-                  style={{
-                    color: '#C4A06080',
-                    transform: genresOpen ? 'rotate(180deg)' : 'rotate(0deg)',
-                  }}
-                >
-                  ▾
-                </span>
-              </button>
-            </div>
+                genres
+              </span>
+              <span
+                style={{
+                  transform: genresOpen ? 'rotate(180deg)' : 'rotate(0deg)',
+                  transition: 'transform 0.2s',
+                  color: '#C4A060',
+                }}
+              >
+                ▾
+              </span>
+            </button>
             {genresOpen && (
-              <div className="animate-in fade-in duration-150 space-y-3 pt-1">
-                {/* GENRE row */}
-                <div>
-                  <p
-                    className="mb-1.5 text-center uppercase"
-                    style={{
-                      fontFamily: 'var(--font-serif)',
-                      fontSize: '10px',
-                      fontWeight: 700,
-                      color: '#8A6A4A',
-                      letterSpacing: '0.18em',
-                      opacity: 0.65,
-                    }}
-                  >
-                    Genre
-                  </p>
-                  <div className="flex flex-wrap justify-center gap-2">
-                    {GENRES.map((g) => {
-                      const isActive = activeGenre === g.id;
-                      return (
-                        <button
-                          key={g.id}
-                          type="button"
-                          onClick={() => applyGenre(g)}
-                          className="flex cursor-pointer items-center gap-1.5 rounded-full px-3 py-1.5 transition-all"
+              <div className="animate-in fade-in duration-150 flex flex-wrap justify-center gap-2 pt-1">
+                {GENRES.map((g) => {
+                  const isActive = activeGenre === g.id;
+                  return (
+                    <button
+                      key={g.id}
+                      type="button"
+                      onClick={() => applyGenre(g)}
+                      className="flex cursor-pointer items-center gap-1.5 rounded-full px-3 py-1.5 transition-all"
+                      style={{
+                        background: isActive ? `${g.color}18` : '#C4A06006',
+                        border: `1px solid ${isActive ? `${g.color}40` : '#C4A06015'}`,
+                      }}
+                      title={g.subtitle}
+                    >
+                      <span
+                        className="block rounded-full shrink-0"
+                        style={{
+                          width: 8,
+                          height: 8,
+                          background: g.color,
+                          opacity: isActive ? 1 : 0.7,
+                        }}
+                      />
+                      <span
+                        style={{
+                          fontFamily: 'var(--font-serif)',
+                          fontSize: '12px',
+                          fontWeight: isActive ? 700 : 500,
+                          color: isActive ? g.color : '#7A5438',
+                          opacity: isActive ? 1 : 0.8,
+                        }}
+                      >
+                        {g.label}
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+
+          {/* Collapsible: Brain States */}
+          <div className="px-2">
+            <button
+              type="button"
+              onClick={() => setBrainStatesOpen((s) => !s)}
+              className="flex w-full cursor-pointer items-center justify-center gap-2 py-2"
+              style={{ background: 'none', border: 'none' }}
+            >
+              <span
+                className="text-center text-sm font-semibold uppercase tracking-[0.22em]"
+                style={{ color: '#C4A060' }}
+              >
+                brain states
+              </span>
+              <span
+                style={{
+                  transform: brainStatesOpen ? 'rotate(180deg)' : 'rotate(0deg)',
+                  transition: 'transform 0.2s',
+                  color: '#C4A060',
+                }}
+              >
+                ▾
+              </span>
+            </button>
+            {brainStatesOpen && (
+              <div className="animate-in fade-in duration-150">
+                <div className="flex flex-wrap justify-center gap-1.5 pt-1">
+                  {PRESETS.map((p) => {
+                    const isActive = p.base === baseFreq && p.beat === beatFreq;
+                    const presetLayers = PRESET_LAYERS[p.id] || [];
+                    return (
+                      <button
+                        key={p.id}
+                        type="button"
+                        onClick={() => applyPresetWithLayers(p)}
+                        className="cursor-pointer rounded-full px-3 py-1.5 text-left transition-all"
+                        style={{
+                          background: isActive ? `${p.color}15` : 'transparent',
+                          border: `1px solid ${isActive ? `${p.color}40` : '#C4A06015'}`,
+                        }}
+                      >
+                        <span
                           style={{
-                            background: isActive ? `${g.color}18` : '#C4A06006',
-                            border: `1px solid ${isActive ? `${g.color}40` : '#C4A06015'}`,
+                            fontFamily: 'var(--font-serif)',
+                            fontSize: '12px',
+                            fontWeight: 600,
+                            color: isActive ? p.color : '#7A5438',
+                            opacity: isActive ? 1 : 0.8,
                           }}
-                          title={g.subtitle}
                         >
-                          <span
-                            className="block rounded-full shrink-0"
-                            style={{
-                              width: 8,
-                              height: 8,
-                              background: g.color,
-                              opacity: isActive ? 1 : 0.7,
-                            }}
-                          />
+                          {p.label}
+                        </span>
+                        {isActive && presetLayers.length > 0 && (
                           <span
                             style={{
                               fontFamily: 'var(--font-serif)',
                               fontSize: '12px',
-                              fontWeight: isActive ? 700 : 500,
-                              color: isActive ? g.color : '#7A5438',
-                              opacity: isActive ? 1 : 0.8,
+                              color: p.color,
+
+                              marginLeft: 4,
                             }}
                           >
-                            {g.label}
+                            +{presetLayers.length}
                           </span>
-                        </button>
-                      );
-                    })}
-                  </div>
-                </div>
-
-                {/* BRAIN STATE row */}
-                <div>
-                  <p
-                    className="mb-1.5 text-center uppercase"
-                    style={{
-                      fontFamily: 'var(--font-serif)',
-                      fontSize: '10px',
-                      fontWeight: 700,
-                      color: '#8A6A4A',
-                      letterSpacing: '0.18em',
-                      opacity: 0.65,
-                    }}
-                  >
-                    Brain State
-                  </p>
-                  <div
-                    className="flex gap-1.5 overflow-x-auto px-2 pb-1 pt-1"
-                    style={{ scrollbarWidth: 'none' }}
-                  >
-                    {PRESETS.map((p) => {
-                      const isActive = p.base === baseFreq && p.beat === beatFreq;
-                      const presetLayers = PRESET_LAYERS[p.id] || [];
-                      return (
-                        <button
-                          key={p.id}
-                          type="button"
-                          onClick={() => applyPresetWithLayers(p)}
-                          className="shrink-0 cursor-pointer whitespace-nowrap rounded-full px-3 py-1.5 text-left transition-all"
-                          style={{
-                            background: isActive ? `${p.color}15` : 'transparent',
-                            border: `1px solid ${isActive ? `${p.color}40` : '#C4A06015'}`,
-                          }}
-                        >
-                          <span
-                            style={{
-                              fontFamily: 'var(--font-serif)',
-                              fontSize: '12px',
-                              fontWeight: 600,
-                              color: isActive ? p.color : '#7A5438',
-                              opacity: isActive ? 1 : 0.8,
-                            }}
-                          >
-                            {p.label}
-                          </span>
-                          {isActive && presetLayers.length > 0 && (
-                            <span
-                              style={{
-                                fontFamily: 'var(--font-serif)',
-                                fontSize: '12px',
-                                color: p.color,
-
-                                marginLeft: 4,
-                              }}
-                            >
-                              +{presetLayers.length}
-                            </span>
-                          )}
-                        </button>
-                      );
-                    })}
-                  </div>
+                        )}
+                      </button>
+                    );
+                  })}
                 </div>
               </div>
             )}
@@ -5735,34 +4210,6 @@ export default function BinauralTuner() {
                   >
                     save
                   </button>
-                  {/* Save this moment → Notebook (Ideas). Captures
-                      a snapshot of base/beat/layers/harmonics/effects
-                      so the user can find this exact tuning later
-                      from the Notebook surface. */}
-                  <button
-                    type="button"
-                    onClick={saveMomentToNotebook}
-                    disabled={momentStatus === 'saving'}
-                    title="Save this moment to your Notebook (Ideas)"
-                    className="cursor-pointer rounded-lg px-2 py-1 disabled:opacity-50"
-                    style={{
-                      fontFamily: 'var(--font-serif)',
-                      fontSize: '12px',
-                      fontWeight: 600,
-                      color: momentStatus === 'saved' ? '#7AAA58' : '#9B6BA0',
-                      background: momentStatus === 'saved' ? '#7AAA5810' : '#9B6BA010',
-                      border: `1px solid ${momentStatus === 'saved' ? '#7AAA5830' : '#9B6BA030'}`,
-                      whiteSpace: 'nowrap',
-                    }}
-                  >
-                    {momentStatus === 'saving'
-                      ? '…'
-                      : momentStatus === 'saved'
-                        ? '✓ saved'
-                        : momentStatus === 'error'
-                          ? 'error'
-                          : '→ notebook'}
-                  </button>
                 </div>
                 {/* Saved mixes list */}
                 {savedMixes.length > 0 && (
@@ -5825,7 +4272,7 @@ export default function BinauralTuner() {
               </div>
             )}
           </div>
-        </div>
+        </>
       )}
 
       {/* Suggestion removed — was "balanced state alpha waves to maintain" */}
@@ -5854,10 +4301,6 @@ const VALID_MODES: VisualizerMode[] = [
   'solar',
 ];
 
-// Kept as dead code for now — Visuals surface was lifted out of the
-// tuner into the Sounds → Visuals tab. Delete fully once we're sure
-// we don't want an in-tuner option back. `_` prefix tells biome to
-// ignore the unused-function warning.
 function _VisualizerBox() {
   const [mode, setMode] = useState<VisualizerMode>('atom');
   // Speed default 0.25 — most calm, relaxing stable spot for the whole
@@ -6420,108 +4863,6 @@ const RAINBOW = [
   '#E0908A',
 ];
 
-// Per-slider colour progressions for the chill-machine inline dot
-// sliders. Each is a 20-step palette (matches the 20 dots) running
-// from a soft tint at the low end to a saturated note of the
-// slider's identity colour at the high end. Picked so each slider
-// reads as a "one-fluid-thing" gradient rather than a flat colour
-// wash. Per Martin 2026-04-25: "make all chill sliders rainbow or
-// colour progressions".
-const SLIDER_PROGRESSIONS = {
-  // Volume: pale gold → deep amber
-  volume: [
-    '#F2E4C0',
-    '#EEDDB0',
-    '#EAD6A0',
-    '#E6CF90',
-    '#E2C880',
-    '#DEC174',
-    '#D8B868',
-    '#D2AF5C',
-    '#CCA650',
-    '#C49C48',
-    '#BC9240',
-    '#B48838',
-    '#AC7E30',
-    '#A4742A',
-    '#9A6A24',
-    '#90601E',
-    '#86561A',
-    '#7C4C16',
-    '#724212',
-    '#683810',
-  ],
-  // Wah: pale rose → magenta-violet
-  wah: [
-    '#F0D8E4',
-    '#ECCCDC',
-    '#E8C0D4',
-    '#E4B4CC',
-    '#E0A8C4',
-    '#DC9CBC',
-    '#D490B4',
-    '#CC84AC',
-    '#C478A4',
-    '#BC6C9C',
-    '#B46094',
-    '#AC548C',
-    '#A44884',
-    '#9C3C7C',
-    '#943074',
-    '#88286C',
-    '#7C2064',
-    '#70185C',
-    '#641054',
-    '#58084C',
-  ],
-  // Echo: pale aqua → deep teal-blue
-  echo: [
-    '#D8EEEC',
-    '#C8E6E2',
-    '#B8DED8',
-    '#A8D6CE',
-    '#98CEC4',
-    '#88C6BA',
-    '#78BCB0',
-    '#68B2A6',
-    '#5CA89C',
-    '#509E92',
-    '#449488',
-    '#388A7E',
-    '#308074',
-    '#28766A',
-    '#206C60',
-    '#186258',
-    '#125850',
-    '#0E4E48',
-    '#0A4440',
-    '#083A38',
-  ],
-  // Layer softness: pale lavender → deep violet
-  softness: [
-    '#EBDFEC',
-    '#E2D2E4',
-    '#D9C5DC',
-    '#D0B8D4',
-    '#C7ABCC',
-    '#BE9EC4',
-    '#B591BC',
-    '#AC84B4',
-    '#A37CAC',
-    '#9A74A4',
-    '#916C9C',
-    '#886494',
-    '#7F5C8C',
-    '#765484',
-    '#6D4C7C',
-    '#644474',
-    '#5C3C6C',
-    '#543464',
-    '#4C2C5C',
-    '#442454',
-  ],
-} as const;
-
 function SliderRow({
   label,
   value,
@@ -6546,7 +4887,7 @@ function SliderRow({
   const count = 20;
   const pct = (value - min) / (max - min);
   const activeIdx = Math.round(pct * (count - 1));
-  const sq = 15;
+  const sq = 12;
   const gap = 3;
   const muted = toggleOn === false;
 

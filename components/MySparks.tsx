@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from 'react';
 
-import { radii, space } from '@/lib/design-tokens';
 import SparkComposer from './SparkComposer';
 
 type SparkCategory = 'fun' | 'creative' | 'professional' | 'growth';
@@ -19,22 +18,20 @@ interface Spark {
   createdAt: string;
 }
 
-const CATEGORY_COLORS: Record<SparkCategory, string> = {
-  fun: '#7AAA58',
-  creative: '#C4A060',
-  professional: '#6890B0',
-  growth: '#9B6BA0',
+const CATEGORY_META: Record<SparkCategory, { label: string; color: string }> = {
+  fun: { label: 'fun', color: '#7AAA58' },
+  creative: { label: 'creative', color: '#C4A060' },
+  professional: { label: 'work', color: '#6890B0' },
+  growth: { label: 'growth', color: '#9B6BA0' },
 };
+
+const CATEGORY_ORDER: SparkCategory[] = ['fun', 'creative', 'professional', 'growth'];
 
 const TIME_LABELS: Record<string, string> = {
   this_week: 'this week',
   this_month: 'this month',
   no_rush: 'no rush',
 };
-
-interface MySparksProps {
-  onOpenMap?: () => void;
-}
 
 interface InboundResonance {
   id: string;
@@ -45,6 +42,12 @@ interface InboundResonance {
   createdAt: string;
   sparkText?: string;
 }
+
+interface MySparksProps {
+  onOpenMap?: () => void;
+}
+
+const font = 'var(--font-serif)';
 
 export default function MySparks({ onOpenMap }: MySparksProps) {
   const [sparks, setSparks] = useState<Spark[]>([]);
@@ -63,7 +66,6 @@ export default function MySparks({ onOpenMap }: MySparksProps) {
         setSparks(sparkData);
         if (inboundRes.ok) {
           const resonanceData: InboundResonance[] = await inboundRes.json();
-          // Attach spark text for display
           const sparkMap = Object.fromEntries(sparkData.map((s) => [s.id, s.text]));
           setInbound(resonanceData.map((r) => ({ ...r, sparkText: sparkMap[r.sparkId] })));
         }
@@ -80,17 +82,15 @@ export default function MySparks({ onOpenMap }: MySparksProps) {
 
   async function respondToResonance(
     sparkId: string,
-    resonatingUserId: string,
+    userId: string,
     status: 'accepted' | 'ignored',
   ) {
     await fetch(`/api/sparks/${sparkId}/resonate`, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ userId: resonatingUserId, status }),
+      body: JSON.stringify({ userId, status }),
     });
-    setInbound((prev) =>
-      prev.filter((r) => !(r.sparkId === sparkId && r.userId === resonatingUserId)),
-    );
+    setInbound((prev) => prev.filter((r) => !(r.sparkId === sparkId && r.userId === userId)));
   }
 
   async function fulfill(id: string) {
@@ -132,163 +132,77 @@ export default function MySparks({ onOpenMap }: MySparksProps) {
     }
   }
 
-  const font = 'var(--font-handwritten)';
-
   if (loading) {
     return (
       <p
         className="text-center italic"
-        style={{ fontFamily: font, fontSize: '13px', color: '#8A6A4A', opacity: 0.5 }}
+        style={{ fontFamily: font, fontSize: 14, color: '#8A6A4A', opacity: 0.5 }}
       >
         loading…
       </p>
     );
   }
 
-  return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: space.md }}>
-      {/* Header row */}
-      {/* Resonance inbox — join requests from the map */}
-      {inbound.filter((r) => r.type === 'join_request' && r.status === 'pending').length > 0 && (
-        <div
-          style={{
-            background: '#9B6BA008',
-            border: '1px solid #9B6BA025',
-            borderRadius: radii.xl,
-            padding: `${space.md}px`,
-            display: 'flex',
-            flexDirection: 'column',
-            gap: space.sm,
-          }}
-        >
-          <p
-            style={{
-              fontFamily: font,
-              fontSize: '10px',
-              fontWeight: 700,
-              color: '#9B6BA0',
-              opacity: 0.6,
-              letterSpacing: '0.12em',
-              textTransform: 'uppercase',
-            }}
-          >
-            resonances
-          </p>
-          {inbound
-            .filter((r) => r.type === 'join_request' && r.status === 'pending')
-            .map((r) => (
-              <div key={r.id} style={{ display: 'flex', alignItems: 'center', gap: space.sm }}>
-                <div style={{ flex: 1 }}>
-                  <p
-                    style={{
-                      fontFamily: font,
-                      fontSize: '13px',
-                      color: '#5C3018',
-                      fontWeight: 600,
-                    }}
-                  >
-                    someone wants to join
-                  </p>
-                  {r.sparkText && (
-                    <p
-                      style={{
-                        fontFamily: font,
-                        fontSize: '11px',
-                        color: '#8A6A4A',
-                        opacity: 0.7,
-                        fontStyle: 'italic',
-                      }}
-                    >
-                      "{r.sparkText}"
-                    </p>
-                  )}
-                </div>
-                <button
-                  type="button"
-                  onClick={() => respondToResonance(r.sparkId, r.userId, 'accepted')}
-                  style={{
-                    fontFamily: font,
-                    fontSize: '11px',
-                    fontWeight: 600,
-                    color: '#fff',
-                    background: '#9B6BA0',
-                    border: 'none',
-                    borderRadius: radii.pill,
-                    padding: `3px 10px`,
-                    cursor: 'pointer',
-                  }}
-                >
-                  yes
-                </button>
-                <button
-                  type="button"
-                  onClick={() => respondToResonance(r.sparkId, r.userId, 'ignored')}
-                  style={{
-                    fontFamily: font,
-                    fontSize: '11px',
-                    color: '#8A6A4A',
-                    opacity: 0.4,
-                    background: 'none',
-                    border: 'none',
-                    cursor: 'pointer',
-                  }}
-                >
-                  ×
-                </button>
-              </div>
-            ))}
-        </div>
-      )}
+  // Group active sparks by category
+  const grouped = CATEGORY_ORDER.map((cat) => ({
+    cat,
+    items: sparks.filter((s) => s.category === cat),
+  })).filter((g) => g.items.length > 0);
 
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-        <p
+  const pendingResonances = inbound.filter(
+    (r) => r.type === 'join_request' && r.status === 'pending',
+  );
+
+  return (
+    <div className="space-y-6">
+      {/* Page header */}
+      <div className="flex items-center justify-between">
+        <h2
           style={{
             fontFamily: font,
-            fontSize: '12px',
-            color: '#8A6A4A',
-            opacity: 0.5,
-            letterSpacing: '0.12em',
-            textTransform: 'uppercase',
+            fontSize: 22,
+            fontWeight: 700,
+            color: '#5C3018',
+            letterSpacing: '0.04em',
           }}
         >
-          your sparks
-        </p>
-        <div style={{ display: 'flex', gap: space.sm }}>
+          Sparks
+        </h2>
+        <div className="flex items-center gap-3">
           {onOpenMap && (
             <button
               type="button"
               onClick={onOpenMap}
               style={{
                 fontFamily: font,
-                fontSize: '11px',
+                fontSize: 13,
                 fontWeight: 600,
                 color: '#6890B0',
-                background: '#6890B010',
-                border: '1px solid #6890B030',
-                borderRadius: radii.pill,
-                padding: `2px 10px`,
+                background: 'none',
+                border: 'none',
                 cursor: 'pointer',
+                opacity: 0.8,
               }}
             >
-              see map
+              map
             </button>
           )}
           <button
             type="button"
-            onClick={() => setComposing(true)}
+            onClick={() => setComposing((s) => !s)}
             style={{
               fontFamily: font,
-              fontSize: '11px',
-              fontWeight: 600,
-              color: '#7AAA58',
-              background: '#7AAA5810',
-              border: '1px solid #7AAA5825',
-              borderRadius: radii.pill,
-              padding: `2px 10px`,
+              fontSize: 13,
+              fontWeight: 700,
+              color: composing ? '#8A6A4A' : '#fff',
+              background: composing ? 'transparent' : '#7AAA58',
+              border: composing ? '1px solid #C4A06030' : 'none',
+              borderRadius: 20,
+              padding: '5px 16px',
               cursor: 'pointer',
             }}
           >
-            + new
+            {composing ? 'cancel' : '+ new spark'}
           </button>
         </div>
       </div>
@@ -304,37 +218,110 @@ export default function MySparks({ onOpenMap }: MySparksProps) {
         />
       )}
 
+      {/* Resonance inbox */}
+      {pendingResonances.length > 0 && (
+        <div className="space-y-3">
+          <p
+            style={{
+              fontFamily: font,
+              fontSize: 11,
+              fontWeight: 700,
+              color: '#9B6BA0',
+              letterSpacing: '0.18em',
+              textTransform: 'uppercase',
+              opacity: 0.7,
+            }}
+          >
+            resonances
+          </p>
+          {pendingResonances.map((r) => (
+            <div key={r.id} className="flex items-center gap-3">
+              <div className="flex-1">
+                <p style={{ fontFamily: font, fontSize: 15, color: '#5C3018', fontWeight: 600 }}>
+                  someone wants to join
+                </p>
+                {r.sparkText && (
+                  <p
+                    style={{
+                      fontFamily: font,
+                      fontSize: 13,
+                      color: '#8A6A4A',
+                      fontStyle: 'italic',
+                      marginTop: 2,
+                    }}
+                  >
+                    "{r.sparkText}"
+                  </p>
+                )}
+              </div>
+              <button
+                type="button"
+                onClick={() => respondToResonance(r.sparkId, r.userId, 'accepted')}
+                style={{
+                  fontFamily: font,
+                  fontSize: 13,
+                  fontWeight: 700,
+                  color: '#fff',
+                  background: '#9B6BA0',
+                  border: 'none',
+                  borderRadius: 16,
+                  padding: '4px 14px',
+                  cursor: 'pointer',
+                }}
+              >
+                yes
+              </button>
+              <button
+                type="button"
+                onClick={() => respondToResonance(r.sparkId, r.userId, 'ignored')}
+                style={{
+                  fontFamily: font,
+                  fontSize: 16,
+                  color: '#8A6A4A',
+                  opacity: 0.4,
+                  background: 'none',
+                  border: 'none',
+                  cursor: 'pointer',
+                }}
+              >
+                ×
+              </button>
+            </div>
+          ))}
+          <div style={{ height: 1, background: '#C4A06018', marginTop: 4 }} />
+        </div>
+      )}
+
       {/* Empty state */}
       {!composing && sparks.length === 0 && (
-        <div
-          style={{
-            textAlign: 'center',
-            padding: `${space.xl}px`,
-            border: '1px dashed #C4A06025',
-            borderRadius: radii.xl,
-          }}
-        >
+        <div className="py-10 text-center space-y-3">
           <p
-            className="italic"
-            style={{ fontFamily: font, fontSize: '15px', color: '#8A6A4A', lineHeight: 1.55 }}
+            style={{
+              fontFamily: font,
+              fontSize: 18,
+              color: '#5C3018',
+              fontWeight: 600,
+              lineHeight: 1.4,
+            }}
           >
             what do you want to do?
-            <br />
-            <span style={{ fontSize: '13px', opacity: 0.6 }}>post a spark and find who's in</span>
+          </p>
+          <p style={{ fontFamily: font, fontSize: 14, color: '#8A6A4A', opacity: 0.65 }}>
+            post a spark — find who's in
           </p>
           <button
             type="button"
             onClick={() => setComposing(true)}
             style={{
-              marginTop: space.md,
+              marginTop: 8,
               fontFamily: font,
-              fontSize: '13px',
+              fontSize: 14,
               fontWeight: 700,
               color: '#7AAA58',
-              background: '#7AAA5812',
-              border: '1px solid #7AAA5830',
-              borderRadius: radii.pill,
-              padding: `${space.sm}px ${space.lg}px`,
+              background: 'none',
+              border: '1px solid #7AAA5840',
+              borderRadius: 20,
+              padding: '6px 20px',
               cursor: 'pointer',
             }}
           >
@@ -343,141 +330,132 @@ export default function MySparks({ onOpenMap }: MySparksProps) {
         </div>
       )}
 
-      {/* Spark cards */}
-      {sparks.map((d) => {
-        const color = CATEGORY_COLORS[d.category] ?? '#C4A060';
+      {/* Grouped spark sections */}
+      {grouped.map(({ cat, items }) => {
+        const meta = CATEGORY_META[cat];
         return (
-          <div
-            key={d.id}
-            style={{
-              background: `${color}06`,
-              border: `1px solid ${color}20`,
-              borderRadius: radii.xl,
-              padding: `${space.md}px ${space.lg}px`,
-              display: 'flex',
-              flexDirection: 'column',
-              gap: 6,
-            }}
-          >
-            {/* Top row: dot + text */}
-            <div style={{ display: 'flex', alignItems: 'flex-start', gap: 8 }}>
+          <div key={cat} className="space-y-3">
+            {/* Section label */}
+            <div className="flex items-center gap-2">
               <span
                 style={{
                   width: 8,
                   height: 8,
                   borderRadius: '50%',
-                  background: color,
+                  background: meta.color,
+                  display: 'inline-block',
                   flexShrink: 0,
-                  marginTop: 6,
                 }}
               />
-              <p
-                style={{
-                  fontFamily: font,
-                  fontSize: '17px',
-                  fontWeight: 700,
-                  color: '#5C3018',
-                  lineHeight: 1.3,
-                  flex: 1,
-                  wordBreak: 'break-word',
-                }}
-              >
-                {d.text}
-              </p>
-            </div>
-
-            {/* Meta row */}
-            <div
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: 8,
-                paddingLeft: 16,
-                flexWrap: 'wrap',
-              }}
-            >
               <span
                 style={{
                   fontFamily: font,
-                  fontSize: '10px',
-                  color,
-                  opacity: 0.8,
-                  letterSpacing: '0.06em',
+                  fontSize: 11,
+                  fontWeight: 700,
+                  color: meta.color,
+                  letterSpacing: '0.18em',
+                  textTransform: 'uppercase',
+                  opacity: 0.85,
                 }}
               >
-                {d.category}
+                {meta.label}
               </span>
-              <span style={{ fontFamily: font, fontSize: '10px', color: '#8A6A4A', opacity: 0.5 }}>
-                {TIME_LABELS[d.timeWindow] ?? d.timeWindow}
-              </span>
-              {d.resonanceCount > 0 && (
-                <span
-                  style={{ fontFamily: font, fontSize: '10px', color: '#9B6BA0', opacity: 0.8 }}
-                >
-                  {d.resonanceCount} interested
-                </span>
-              )}
-              {d.isOpen && (
-                <span
-                  style={{ fontFamily: font, fontSize: '10px', color: '#7AAA58', opacity: 0.8 }}
-                >
-                  · on map
-                </span>
-              )}
             </div>
 
-            {/* Actions */}
-            <div style={{ display: 'flex', gap: 6, paddingLeft: 16 }}>
-              <button
-                type="button"
-                onClick={() => toggleMap(d)}
-                style={{
-                  fontFamily: font,
-                  fontSize: '10px',
-                  fontWeight: 600,
-                  color: d.isOpen ? '#D4605A' : '#7AAA58',
-                  background: 'transparent',
-                  border: `1px solid ${d.isOpen ? '#D4605A30' : '#7AAA5830'}`,
-                  borderRadius: radii.pill,
-                  padding: `2px 8px`,
-                  cursor: 'pointer',
-                }}
+            {/* Spark rows */}
+            {items.map((d) => (
+              <div
+                key={d.id}
+                className="space-y-2 pl-4"
+                style={{ borderLeft: `2px solid ${meta.color}30` }}
               >
-                {d.isOpen ? 'remove from map' : 'put on map'}
-              </button>
-              <button
-                type="button"
-                onClick={() => fulfill(d.id)}
-                style={{
-                  fontFamily: font,
-                  fontSize: '10px',
-                  fontWeight: 600,
-                  color: '#C4A060',
-                  background: 'transparent',
-                  border: '1px solid #C4A06030',
-                  borderRadius: radii.pill,
-                  padding: `2px 8px`,
-                  cursor: 'pointer',
-                }}
-              >
-                done ✓
-              </button>
-              <button
-                type="button"
-                onClick={() => remove(d.id)}
-                style={{
-                  fontFamily: font,
-                  fontSize: '10px',
-                  color: '#8A6A4A',
-                  opacity: 0.3,
-                  background: 'transparent',
-                  border: 'none',
-                  cursor: 'pointer',
-                }}
-              >
-                ×
-              </button>
-            </div>
+                {/* Spark text */}
+                <p
+                  style={{
+                    fontFamily: font,
+                    fontSize: 18,
+                    fontWeight: 700,
+                    color: '#3C2010',
+                    lineHeight: 1.35,
+                  }}
+                >
+                  {d.text}
+                </p>
+
+                {/* Meta */}
+                <div className="flex items-center gap-3" style={{ flexWrap: 'wrap' }}>
+                  <span style={{ fontFamily: font, fontSize: 13, color: '#8A6A4A', opacity: 0.65 }}>
+                    {TIME_LABELS[d.timeWindow] ?? d.timeWindow}
+                  </span>
+                  {d.resonanceCount > 0 && (
+                    <span
+                      style={{ fontFamily: font, fontSize: 13, color: '#9B6BA0', fontWeight: 600 }}
+                    >
+                      {d.resonanceCount} interested
+                    </span>
+                  )}
+                  {d.isOpen && (
+                    <span
+                      style={{ fontFamily: font, fontSize: 13, color: '#7AAA58', opacity: 0.85 }}
+                    >
+                      on map
+                    </span>
+                  )}
+                </div>
+
+                {/* Actions */}
+                <div className="flex items-center gap-4">
+                  <button
+                    type="button"
+                    onClick={() => toggleMap(d)}
+                    style={{
+                      fontFamily: font,
+                      fontSize: 12,
+                      fontWeight: 600,
+                      color: d.isOpen ? '#D4605A' : '#7AAA58',
+                      background: 'none',
+                      border: 'none',
+                      cursor: 'pointer',
+                      padding: 0,
+                    }}
+                  >
+                    {d.isOpen ? 'remove from map' : 'put on map'}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => fulfill(d.id)}
+                    style={{
+                      fontFamily: font,
+                      fontSize: 12,
+                      fontWeight: 600,
+                      color: '#C4A060',
+                      background: 'none',
+                      border: 'none',
+                      cursor: 'pointer',
+                      padding: 0,
+                    }}
+                  >
+                    done
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => remove(d.id)}
+                    style={{
+                      fontFamily: font,
+                      fontSize: 15,
+                      color: '#8A6A4A',
+                      opacity: 0.25,
+                      background: 'none',
+                      border: 'none',
+                      cursor: 'pointer',
+                      padding: 0,
+                    }}
+                  >
+                    ×
+                  </button>
+                </div>
+              </div>
+            ))}
           </div>
         );
       })}

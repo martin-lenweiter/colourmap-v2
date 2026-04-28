@@ -486,9 +486,11 @@ export default function LifeCategories() {
     <div
       className="space-y-3 rounded-3xl border px-5 py-5"
       style={{
-        borderColor: '#8A6A4A50',
-        background: 'linear-gradient(180deg, rgba(245,236,220,0.97), rgba(240,228,208,0.95))',
-        boxShadow: '0 28px 55px -36px rgba(92,48,24,0.3)',
+        // Match the Feeling/Doing cards above so the 'life map' reads
+        // as part of the same warm surface, not a cooler/whiter break.
+        borderColor: '#7a543833',
+        background: 'linear-gradient(180deg, rgba(251,244,232,0.95), rgba(246,236,221,0.92))',
+        boxShadow: '0 24px 50px -34px rgba(92,48,24,0.35)',
       }}
     >
       {/* Header */}
