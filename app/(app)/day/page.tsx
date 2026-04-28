@@ -1,29 +1,15 @@
 'use client';
 
-import ActiveCategoryBanner from '@/components/ActiveCategoryBanner';
-import CategoryCompass from '@/components/CategoryCompass';
 import CheckInPing from '@/components/CheckInPing';
-import CompassCarousel from '@/components/CompassCarousel';
-import CompassFlower from '@/components/CompassFlower';
 import DayRail from '@/components/DayRail';
 import DayTabs from '@/components/DayTabs';
 import DoingPanel from '@/components/DoingPanel';
-import FeelingCheckInCard from '@/components/FeelingCheckInCard';
 import FirstRunOnboarding from '@/components/FirstRunOnboarding';
-import LifeCategories from '@/components/LifeCategories';
-import LifeCategoriesEmptyState from '@/components/LifeCategoriesEmptyState';
-import LifeCategoriesStrip from '@/components/LifeCategoriesStrip';
 import MoodSuggestion from '@/components/MoodSuggestion';
-import OverviewSections from '@/components/OverviewSections';
-import OverviewVisualDemos from '@/components/OverviewVisualDemos';
-import QuietNotes from '@/components/QuietNotes';
-import ReflectThreeDots from '@/components/ReflectThreeDots';
+import RoadView from '@/components/RoadView';
 import SharingCheckIn from '@/components/SharingCheckIn';
-import SlowWins from '@/components/SlowWins';
 import { StyleProvider } from '@/components/StyleContext';
 import TodaysField from '@/components/TodaysField';
-import TrackLines from '@/components/TrackLines';
-import WeekShape from '@/components/WeekShape';
 
 function DayContent() {
   const dateStr = new Date().toLocaleDateString('en-GB', {
@@ -48,10 +34,9 @@ function DayContent() {
           feelingContent={
             <div className="space-y-4">
               <MoodSuggestion />
-              <FeelingCheckInCard />
             </div>
           }
-          // DOING — three-layer panel: NowBar + MissionTracker + DoingInbox + DailyAgenda.
+          // DOING — objectives + tasks + agenda.
           doingContent={<DoingPanel />}
           // SHARING — personal social axis. Big dot Lonely → Connected.
           sharingContent={
@@ -59,30 +44,7 @@ function DayContent() {
               <SharingCheckIn />
             </div>
           }
-          // ROAD — wide-angle life map. The compasses, categories, and
-          // long-arc surfaces live here so they don't compete with the
-          // daily-pulse trio for the same band of space. The
-          // <ActiveCategoryBanner /> surfaces which life category the
-          // compass cluster is currently scoped to (set from the
-          // strip dots or the polygon vertices).
-          roadContent={
-            <div className="space-y-4">
-              <OverviewSections />
-              <ReflectThreeDots />
-              <LifeCategoriesEmptyState />
-              <WeekShape />
-              <LifeCategoriesStrip />
-              <ActiveCategoryBanner />
-              <CompassFlower />
-              <TrackLines />
-              <QuietNotes />
-              <SlowWins />
-              <CompassCarousel />
-              <CategoryCompass />
-              <LifeCategories />
-              <OverviewVisualDemos />
-            </div>
-          }
+          roadContent={<RoadView />}
         />
       </div>
       <DayRail />
