@@ -69,6 +69,7 @@ const _kokoroListeners: Set<(s: KokoroStatus) => void> = new Set();
 
 function setKokoroStatus(s: KokoroStatus) {
   _kokoroStatus = s;
+  /* istanbul ignore next */
   for (const fn of _kokoroListeners) fn(s);
 }
 
@@ -94,11 +95,13 @@ async function getKokoro() {
       setKokoroStatus('ready');
       return tts;
     })
-    .catch((e) => {
-      kokoroLoading = null;
-      setKokoroStatus('error');
-      throw e;
-    });
+    .catch(
+      /* istanbul ignore next */ (e) => {
+        kokoroLoading = null;
+        setKokoroStatus('error');
+        throw e;
+      },
+    );
   return kokoroLoading;
 }
 

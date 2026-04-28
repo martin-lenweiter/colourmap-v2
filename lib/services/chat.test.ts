@@ -5,6 +5,7 @@ import {
   addChannelToConversation,
   createNewConversation,
   fetchMessages,
+  getConversationDetail,
   listConversations,
   postMessage,
 } from './chat';
@@ -112,6 +113,15 @@ describe('chat service', () => {
       await expect(
         postMessage({ channelId: 'ch-1', userId: 'user-1', text: 'a'.repeat(2001) }),
       ).rejects.toThrow('message too long');
+    });
+  });
+
+  describe('getConversationDetail', () => {
+    it('delegates to query layer', async () => {
+      q.getConversation.mockResolvedValue(null);
+      const result = await getConversationDetail('conv-1', 'user-1');
+      expect(q.getConversation).toHaveBeenCalledWith('conv-1', 'user-1');
+      expect(result).toBeNull();
     });
   });
 
