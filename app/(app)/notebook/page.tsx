@@ -1271,6 +1271,7 @@ export default function NotebookPage() {
         (() => {
           const fEntry = entries.find((e) => e.id === fullViewId);
           if (!fEntry) return null;
+          const fEntryId = fEntry.id;
           const fNb = notebooks.find((n) => n.id === fEntry.category);
           const fColor = fNb?.color || '#C4A060';
           const fStyle = getNoteStyle(fEntry.id);
@@ -1340,7 +1341,7 @@ export default function NotebookPage() {
                     const lyrics = parts[0] || '';
                     const chords = parts[1] || '';
                     function updateSong(l: string, c: string) {
-                      updateLocal(fEntry.id, 'content', c.trim() ? `${l}|||CHORDS|||${c}` : l);
+                      updateLocal(fEntryId, 'content', c.trim() ? `${l}|||CHORDS|||${c}` : l);
                     }
                     return (
                       <div className="space-y-4 max-w-2xl mx-auto">
