@@ -74,6 +74,21 @@ function DragSlider({ idx, onSelect }: { idx: number; onSelect: (i: number) => v
           borderRadius: 2,
         }}
       />
+      {/* Tick marks below each stop */}
+      {SHARING_LEVELS.map((_, i) => (
+        <div
+          key={`tick-${i}`}
+          className="absolute"
+          style={{
+            left: i * (DOT + GAP) + DOT / 2 - 1,
+            top: '72%',
+            width: 2,
+            height: 6,
+            background: 'rgba(26,18,9,0.35)',
+            borderRadius: 1,
+          }}
+        />
+      ))}
       {/* Stop dots */}
       {SHARING_LEVELS.map((l, i) => {
         const isActive = i === idx;
@@ -127,15 +142,7 @@ export default function SharingCheckIn() {
   const current = SHARING_LEVELS[idx];
 
   return (
-    <div
-      className="flex flex-col items-center gap-6 rounded-3xl border px-5 py-8"
-      style={{
-        borderColor: `${current.color}30`,
-        background: 'linear-gradient(180deg, rgba(245,236,220,0.97), rgba(240,228,208,0.95))',
-        boxShadow: '0 28px 55px -36px rgba(92,48,24,0.3)',
-        transition: 'border-color 0.3s',
-      }}
-    >
+    <div className="flex flex-col items-center gap-6 px-5 py-8">
       <p
         className="text-center font-semibold uppercase"
         style={{

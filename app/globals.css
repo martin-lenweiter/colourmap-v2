@@ -361,3 +361,15 @@
     /* transparent; acts purely as a hit-area expander */
   }
 }
+
+/* Spell-check underlines: replace harsh red with warm brown.
+   Works in Chrome/Edge (text-decoration-color on ::spelling-error)
+   and Firefox. Safari ignores the colour override but uses system. */
+::spelling-error {
+  text-decoration-color: #8a6a4a;
+  text-decoration-style: wavy;
+}
+::grammar-error {
+  text-decoration-color: #a0907a;
+  text-decoration-style: wavy;
+}

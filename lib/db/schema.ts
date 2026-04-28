@@ -292,6 +292,21 @@ export const sparkResonances = pgTable('spark_resonances', {
   createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
 });
 
+// ─── Music recordings ────────────────────────────────────────────────────────
+
+export const recordings = pgTable('recordings', {
+  id: uuid('id').defaultRandom().primaryKey(),
+  userId: uuid('user_id').notNull(),
+  title: text('title').notNull(),
+  storagePath: text('storage_path').notNull(),
+  publicUrl: text('public_url').notNull(),
+  durationSecs: integer('duration_secs'),
+  songId: uuid('song_id'),
+  category: text('category').notNull().default('solo'),
+  notes: text('notes'),
+  createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+});
+
 // ─── Chat ────────────────────────────────────────────────────────────────────
 
 export type ChatEntityType = 'circle' | 'spark';
