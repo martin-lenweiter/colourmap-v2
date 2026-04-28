@@ -113,7 +113,7 @@ export default function MusicRecordings({ songs }: { songs: Song[] }) {
   }, [load]);
 
   // ─── Audio player ─────────────────────────────────────────────────────────
-  function playPause(rec: Recording) {
+  async function playPause(rec: Recording) {
     if (playingId === rec.id) {
       audioRef.current?.pause();
       setPlayingId(null);
@@ -121,7 +121,13 @@ export default function MusicRecordings({ songs }: { songs: Song[] }) {
     }
     if (audioRef.current) {
       audioRef.current.pause();
-      audioRef.current.src = rec.publicUrl;
+      // Private bucket — generate a 1-hour signed URL each time the user plays.
+      const supabase = createClient();
+      const { data: signed } = await supabase.storage
+        .from(BUCKET)
+        .createSignedUrl(rec.storagePath, 3600);
+      if (!signed?.signedUrl) return;
+      audioRef.current.src = signed.signedUrl;
       audioRef.current.play().catch(() => {});
       setPlayingId(rec.id);
     }
@@ -151,10 +157,16 @@ export default function MusicRecordings({ songs }: { songs: Song[] }) {
   // ─── File upload ──────────────────────────────────────────────────────────
   async function uploadBlob(blob: Blob, suggestedName: string, durSecs: number | null) {
     const supabase = createClient();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    if (!user) throw new Error('Not authenticated');
+
     const ext = blob.type.includes('mp4') ? 'mp4' : blob.type.includes('ogg') ? 'ogg' : 'webm';
     const ts = Date.now();
     const safe = suggestedName.replace(/[^a-zA-Z0-9_-]/g, '_').slice(0, 60);
-    const path = `${ts}-${safe}.${ext}`;
+    // Path scoped to userId — private bucket RLS enforces per-user isolation.
+    const path = `${user.id}/${ts}-${safe}.${ext}`;
 
     const { error: storageErr } = await supabase.storage.from(BUCKET).upload(path, blob, {
       contentType: blob.type || 'audio/webm',
@@ -165,9 +177,7 @@ export default function MusicRecordings({ songs }: { songs: Song[] }) {
       throw new Error(storageErr.message);
     }
 
-    const { data: urlData } = supabase.storage.from(BUCKET).getPublicUrl(path);
-
-    return { path, url: urlData.publicUrl, durSecs };
+    return { path, durSecs };
   }
 
   async function commitUpload() {
@@ -175,14 +185,14 @@ export default function MusicRecordings({ songs }: { songs: Song[] }) {
     setUploading(true);
     setUploadError('');
     try {
-      const { path, url, durSecs } = await uploadBlob(pendingBlob, pendingName, pendingDuration);
+      const { path, durSecs } = await uploadBlob(pendingBlob, pendingName, pendingDuration);
       const res = await fetch('/api/recordings', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           title: pendingName || 'Untitled',
           storagePath: path,
-          publicUrl: url,
+          publicUrl: path, // private bucket — storagePath is the canonical ref; signed URLs generated on play
           durationSecs: durSecs,
           songId: pendingSongId,
           category: pendingCategory,

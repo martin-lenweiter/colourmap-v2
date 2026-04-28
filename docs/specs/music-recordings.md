@@ -35,8 +35,9 @@ recordings
 
 ## Supabase Storage Setup (one-time)
 
-Create a public bucket named `recordings` in Supabase Dashboard → Storage.
-Add an RLS policy that allows authenticated users to upload/read/delete within `{user_id}/` prefix.
+Create a **private** bucket named `recordings` in Supabase Dashboard → Storage.
+Files are stored under `{user_id}/{filename}` — the userId prefix + RLS enforce per-user isolation.
+Playback uses short-lived signed URLs (1 hour TTL) generated on demand; no public URLs are used.
 
 ## Done When
 
