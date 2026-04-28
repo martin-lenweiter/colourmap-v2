@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import AtomVisualizer, { type VisualizerMode } from '@/components/AtomVisualizer';
 import BinauralTuner from '@/components/BinauralTuner';
 import GrooveMachine from '@/components/GrooveMachine';
@@ -36,6 +36,8 @@ export default function SoundLab() {
   const [visualMode, setVisualMode] = useState<VisualizerMode>('atom');
   const [visualSize, setVisualSize] = useState({ width: 360, height: 240 });
   const [fullscreen, setFullscreen] = useState(false);
+  const navRef = useRef<HTMLDivElement>(null);
+  const activeTabRef = useRef<HTMLButtonElement | null>(null);
 
   useEffect(() => {
     function update() {
@@ -58,36 +60,77 @@ export default function SoundLab() {
     return () => window.removeEventListener('keydown', onKey);
   }, [fullscreen]);
 
+  // Auto-scroll active tab into view — same pattern as NavLinks
+  // biome-ignore lint/correctness/useExhaustiveDependencies: mode is the real trigger; refs are stable
+  useEffect(() => {
+    const el = activeTabRef.current;
+    const nav = navRef.current;
+    if (!el || !nav) return;
+    const target = el.offsetLeft - nav.clientWidth / 2 + el.clientWidth / 2;
+    nav.scrollTo({ left: Math.max(0, target), behavior: 'smooth' });
+  }, [mode]);
+
+  const TABS: readonly { id: Mode; label: string }[] = [
+    { id: 'tuner', label: 'Chill Machine' },
+    { id: 'groove', label: 'Groove Machine' },
+    { id: 'maker', label: 'Magic Maker' },
+    { id: 'looper', label: 'Lo-fi Looper' },
+    { id: 'visuals', label: 'Visuals' },
+    { id: 'songs', label: 'Songs' },
+  ];
+
   return (
     <div className="space-y-5">
-      {/* Category tabs — flat text with an underline marker on active.
-          No pill boxes, no outer frame: sits directly on the page
-          background so the content below gets the full width. */}
-      <div className="flex flex-wrap justify-center gap-x-5 gap-y-2 px-2">
-        {(
-          [
-            { id: 'tuner' as const, label: 'Chill Machine' },
-            { id: 'groove' as const, label: 'Groove Machine' },
-            { id: 'maker' as const, label: 'Magic Maker' },
-            { id: 'looper' as const, label: 'Lo-fi Looper' },
-            { id: 'visuals' as const, label: 'Visuals' },
-            { id: 'songs' as const, label: 'Songs' },
-          ] satisfies readonly { id: Mode; label: string }[]
-        ).map((m) => {
+      {/* Scrollable tab strip — same pattern as NavLinks:
+          overflow-x-auto, scroll-snap, fade-right mask, no wrapping. */}
+      <div
+        ref={navRef}
+        className="flex w-full items-center gap-7 overflow-x-auto px-4 pb-3 pt-1 scrollbar-none"
+        style={{
+          scrollbarWidth: 'none',
+          scrollSnapType: 'x proximity',
+          WebkitMaskImage:
+            'linear-gradient(to right, black 0, black calc(100% - 40px), transparent 100%)',
+          maskImage:
+            'linear-gradient(to right, black 0, black calc(100% - 40px), transparent 100%)',
+        }}
+      >
+        {TABS.map((m) => {
           const active = mode === m.id;
           return (
             <button
               key={m.id}
+              ref={
+                active
+                  ? (el) => {
+                      activeTabRef.current = el;
+                    }
+                  : undefined
+              }
               type="button"
               onClick={() => setMode(m.id)}
-              className="cursor-pointer bg-transparent px-1 pb-1 text-[13px] font-semibold uppercase tracking-[0.16em] transition-all"
+              className="shrink-0 cursor-pointer whitespace-nowrap bg-transparent transition-colors"
               style={{
-                color: '#5C3018',
-                opacity: active ? 1 : 0.55,
-                borderBottom: active ? '1.5px solid #5C3018' : '1.5px solid transparent',
+                scrollSnapAlign: 'center',
+                fontSize: 16,
+                fontWeight: active ? 600 : 400,
+                color: active ? 'var(--foreground)' : 'var(--muted-foreground)',
               }}
             >
               {m.label}
+              {active && (
+                <span
+                  aria-hidden="true"
+                  className="mx-auto block"
+                  style={{
+                    height: 2,
+                    width: '100%',
+                    background: '#C4A060',
+                    borderRadius: 2,
+                    marginTop: 2,
+                  }}
+                />
+              )}
             </button>
           );
         })}
