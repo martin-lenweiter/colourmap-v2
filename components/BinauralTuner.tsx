@@ -2899,10 +2899,6 @@ export default function BinauralTuner() {
     const phase = (x / wavelength) * Math.PI * 2;
     let sample: number;
     switch (waveStyle) {
-      case 'layered':
-        // Fundamental + second harmonic at 1/3 amplitude — richer body
-        sample = Math.sin(phase) * 0.75 + Math.sin(phase * 2) * 0.25;
-        break;
       case 'pulse': {
         // Very slow amplitude envelope on top of the sine — meditative
         // breath, not a heartbeat. Cycle roughly every 8-10 seconds
