@@ -47,7 +47,7 @@ export default function DoingPanel() {
       <DoingCategoryRail selected={filter} onToggle={toggleCategory} />
 
       {/* Current objectives + push for tomorrow */}
-      <FeelingCheckInCard segment="doing" />
+      <FeelingCheckInCard />
 
       {/* Quick tasks inbox */}
       <DoingInbox categoryFilter={filter} />

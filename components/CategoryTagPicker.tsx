@@ -73,54 +73,31 @@ export default function CategoryTagPicker({
 
   return (
     <div ref={ref} className="relative shrink-0" style={{ zIndex: open ? 50 : 'auto' }}>
-      {/* Single trigger dot. Click opens straight into the 3-bigger-dots
-          picker (Feeling / Doing / Sharing with labels underneath). The
-          old two-step showThree flow is removed — one tap gets to the
-          decision the user actually wants to make. */}
+      {/* Three decorative dots — tap anywhere to open the picker.
+          When a tag is selected the active dot lights up in its color. */}
       <button
         type="button"
         onClick={onToggle}
         aria-label={value ? `Tag: ${value.name} (tap to change)` : 'Tag with a category'}
-        className="flex cursor-pointer items-center gap-1.5 rounded-md px-1.5 py-1 transition-all"
-        style={{
-          background: value ? `${value.color}15` : 'transparent',
-          border: value ? `1px solid ${value.color}60` : 'none',
-        }}
+        className="flex cursor-pointer items-center gap-[5px] py-1 px-1 transition-opacity hover:opacity-70"
+        style={{ background: 'none', border: 'none' }}
       >
-        {value ? (
-          <>
+        {COMPASSES.map((c) => {
+          const isActive = value?.name === c.label;
+          return (
             <span
-              className="block rounded-full"
-              style={{ width: 10, height: 10, background: value.color }}
-            />
-            <span
+              key={c.id}
+              className="block rounded-full transition-all"
               style={{
-                color: value.color,
-                fontFamily: 'var(--font-serif)',
-                fontSize: '12px',
-                fontWeight: 600,
-                letterSpacing: '0.02em',
-                lineHeight: 1,
-                maxWidth: 80,
-                overflow: 'hidden',
-                textOverflow: 'ellipsis',
-                whiteSpace: 'nowrap',
+                width: isActive ? 9 : 7,
+                height: isActive ? 9 : 7,
+                background: isActive ? c.color : '#C4A060',
+                opacity: isActive ? 1 : 0.28,
+                flexShrink: 0,
               }}
-            >
-              {value.name}
-            </span>
-          </>
-        ) : (
-          <span
-            className="block rounded-full transition-all"
-            style={{
-              width: 12,
-              height: 12,
-              background: '#C4A060',
-              opacity: 0.55,
-            }}
-          />
-        )}
+            />
+          );
+        })}
       </button>
 
       {/* Dropdown — 3 compass dots + user categories */}

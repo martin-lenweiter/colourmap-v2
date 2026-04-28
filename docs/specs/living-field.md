@@ -229,126 +229,7 @@ completions). Phases 2-3 are larger.
 
 ---
 
-## Layer 6 — Field Gatherings (AI for Humanity)
-
-> "The field doesn't just reflect what humanity feels — it calls forth
-> the experiences humanity needs."
-
-**What:** A new kind of event platform where the collective emotional
-field is the curator. Not "here are events near you." Not a calendar.
-A living signal: *the field is calling for this gathering — are you in?*
-
-**The concept:**
-
-When enough people in a city or community share an emotional state for
-long enough, the AI proposes a real-world happening that meets that
-energy. A concert. A community dinner. A late-night build session. A
-meditation circle. A film screening. A spontaneous park gathering.
-Any happening — curated by collective intelligence, not individual
-planning.
-
-**Examples of field → gathering translations:**
-```
-Field: 60 people · Restless + Searching · 3 days running
-→ "The field is calling for a gathering.
-   Something needs to move. An evening of live music + open space."
-
-Field: 40 people · Fear + Courage simultaneously
-→ "The field is at a threshold. A circle is forming —
-   people who are scared and going anyway."
-
-Field: 80 people · Building mode · weekend
-→ "Late-night builders session. Create something together.
-   The field has been in this energy all week."
-
-Field: 30 people · Lonely · sustained
-→ "A simple dinner. No agenda. Just people, food, presence."
-```
-
-**Who creates the gathering:**
-
-Three roles:
-1. **The Field** — AI reads the collective state and proposes a
-   gathering type, timing, and brief
-2. **The Organiser** — a human (anyone, or Colourmap itself) accepts
-   the proposal, confirms the space and time, publishes it
-3. **The Community** — people whose state matches get invited; they
-   RSVP through the app
-
-The AI is never the host. A human is always the host. The AI is the
-intelligence that sensed the need.
-
-**The brief AI generates for the organiser:**
-```
-The field has been in [state] for [duration] in [area].
-[N] people are carrying this energy right now.
-They need [what the state calls for]:
-  [3 sentences on what kind of experience would serve this]
-Suggested format: [concert / circle / dinner / sprint / ritual / open space]
-Suggested duration: [2h / evening / full day]
-What to prepare: [minimal, specific]
-```
-
-**Types of gatherings (non-exhaustive):**
-- Live music / concerts — field-briefed artists play for a known mood
-- Community dinners — no agenda, presence as the offering
-- Creation sprints — build something together in one session
-- Movement / dance — embodied release of collective energy
-- Reflection circles — guided by the field's current tone
-- Outdoor / nature gatherings — for sustained Searching or Peace states
-- Spontaneous pop-ups — small, fast, when the field spikes suddenly
-
-**The identity shift this creates:**
-
-For attendees: *"I didn't find this event. The field called me to it."*
-For organisers: *"I didn't invent this. I responded to what was needed."*
-For artists: *"I know what the room is carrying before I walk in."*
-
-This is AI for humanity — not AI replacing human creativity or
-connection, but AI making it possible for humans to respond to each
-other at a scale and with a precision that was never possible before.
-
-**Tone:**
-Never "AI recommends." Never "algorithm suggests."
-The language is always the field speaking:
-- "The field is calling for..."
-- "Something is gathering in [city]..."
-- "38 people are carrying this. A space is opening."
-
-**Phase 1 — Manual (launch now):**
-- Colourmap team reads Today's Field manually
-- Curates and posts one gathering per week based on field state
-- App shows a simple "Gatherings" card on the home screen
-- RSVP links to a form or WhatsApp group — no complex infra needed
-- Each gathering is publicly described with its field context
-
-**Phase 2 — Semi-automated:**
-- AI generates the gathering brief automatically when field thresholds
-  are crossed (sustained state × N people × time window)
-- Organiser receives a notification: "The field is calling for something.
-  Here's the brief. Will you host it?"
-- RSVP natively in the app, auto-creates a Circle for attendees
-
-**Phase 3 — Full platform:**
-- Artists, venues, and community organisers have profiles
-- AI matches the right host to the right field state
-- Post-event: attendees check in during / after the gathering,
-  feeding the field with what happened
-- The gathering becomes a moment in the collective memory
-
-**Build complexity:**
-- Phase 1: Zero. Pure editorial + a static card component.
-- Phase 2: Medium. Threshold detection on field data + Claude API brief
-  generation + organiser notification + RSVP.
-- Phase 3: High. Full marketplace with profiles, matching, post-event
-  check-in loop.
-
-**Data needed:** 10+ active users checking in consistently (already
-the threshold for Today's Field).
-
----
-
-## Layer 7 — The Augmented Feeling (Design Principle)
+## Layer 6 — The Augmented Feeling (Design Principle)
 
 This is not a feature. It is the design principle that governs all five
 layers above.
@@ -379,12 +260,9 @@ they move through.
 
 | Layer | Complexity | Users needed | Build now? |
 |-------|-----------|-------------|------------|
-| 1 · Today's Field | Low | 10+ | **Done** |
+| 1 · Today's Field | Low | 10+ | **Yes — this week** |
 | 4 · Field Contributor | Low | 10+ | **Yes — this week** |
-| 6 · Gatherings Phase 1 | Zero | 10+ | **Yes — editorial only** |
 | 2 · The Pattern | Medium | 1 (just your own data) | Next |
 | 3 · Serendipity | Medium | 50+ | After Pattern |
-| 6 · Gatherings Phase 2 | Medium | 50+ | After Serendipity |
 | 5 · Creation Circles | High | 5+ per circle | Later |
-| 6 · Gatherings Phase 3 | High | 200+ | Later |
-| 7 · Design Principle | — | — | Ongoing |
+| 6 · Design Principle | — | — | Ongoing |

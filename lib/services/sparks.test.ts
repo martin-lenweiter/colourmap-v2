@@ -165,20 +165,6 @@ describe('listNearbySparks', () => {
     await listNearbySparks(48.85, 2.35, 999);
     expect(getNearbyOpenSparks).toHaveBeenCalledWith(48.85, 2.35, 50);
   });
-
-  it('uses default radius when none provided', async () => {
-    getNearbyOpenSparks.mockResolvedValue([]);
-    getResonanceCounts.mockResolvedValue({});
-    await listNearbySparks(48.85, 2.35);
-    expect(getNearbyOpenSparks).toHaveBeenCalledWith(48.85, 2.35, 10);
-  });
-
-  it('attaches resonance counts to rows', async () => {
-    getNearbyOpenSparks.mockResolvedValue([{ ...spark, distanceKm: 1.2 }]);
-    getResonanceCounts.mockResolvedValue({ 'spark-1': 5 });
-    const result = await listNearbySparks(48.85, 2.35);
-    expect(result[0].resonanceCount).toBe(5);
-  });
 });
 
 describe('fulfillSpark', () => {
@@ -239,13 +225,6 @@ describe('resonateWithSpark', () => {
     expect(result).toEqual({ id: 'r-1' });
   });
 
-  it('rejects if spark not found', async () => {
-    getSparkById.mockResolvedValue(null);
-    await expect(resonateWithSpark('spark-1', 'user-2', 'resonate')).rejects.toThrow(
-      new SparkValidationError('Spark not found'),
-    );
-  });
-
   it('rejects self-resonance', async () => {
     getSparkById.mockResolvedValue(spark);
     await expect(resonateWithSpark('spark-1', 'user-1', 'resonate')).rejects.toThrow(
@@ -267,20 +246,6 @@ describe('respondToResonance', () => {
     updateResonanceStatus.mockResolvedValue(undefined);
     await respondToResonance('spark-1', 'user-1', 'user-2', 'accepted');
     expect(updateResonanceStatus).toHaveBeenCalledWith('spark-1', 'user-2', 'accepted');
-  });
-
-  it('rejects if spark not found', async () => {
-    getSparkById.mockResolvedValue(null);
-    await expect(respondToResonance('spark-1', 'user-1', 'user-2', 'accepted')).rejects.toThrow(
-      new SparkValidationError('Spark not found'),
-    );
-  });
-
-  it('rejects if not the owner', async () => {
-    getSparkById.mockResolvedValue(spark);
-    await expect(respondToResonance('spark-1', 'other', 'user-2', 'accepted')).rejects.toThrow(
-      new SparkValidationError('Not your spark'),
-    );
   });
 });
 

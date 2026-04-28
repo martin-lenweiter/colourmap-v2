@@ -36,6 +36,25 @@ const nextConfig: NextConfig = {
     NEXT_PUBLIC_BUILD_REF: buildRef,
     NEXT_PUBLIC_BUILD_SHA: buildSha,
   },
+  // Allow kokoro-js (ONNX Runtime Web) to run client-side.
+  // onnxruntime-node is the server-only binding — exclude it from
+  // the browser bundle so the WASM backend loads instead.
+  turbopack: {
+    resolveAlias: {
+      'onnxruntime-node': { browser: './lib/browser-stubs/onnxruntime-node' },
+      sharp: { browser: './lib/browser-stubs/sharp' },
+    },
+  },
+  webpack: (config, { isServer }) => {
+    if (!isServer) {
+      config.resolve.alias = {
+        ...config.resolve.alias,
+        'onnxruntime-node': false,
+        sharp: false,
+      };
+    }
+    return config;
+  },
 };
 
 export default nextConfig;
