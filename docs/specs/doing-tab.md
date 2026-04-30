@@ -66,6 +66,30 @@ Each objective inside a mission has a small schedule icon (◷) visible on hover
 - Scheduled objectives show a time indicator.
 - No data is auto-pushed to the agenda — user always initiates scheduling.
 
+## Tab Ownership Boundary
+
+The following items live **exclusively in the Doing tab** and must never appear in the Feeling tab:
+
+| Item | Component | Notes |
+|------|-----------|-------|
+| Daily Objectives (today) | `DailyObjectives` | add / check-off / reorder for the current day |
+| Push for Tomorrow shelf | `DailyObjectives` | deferred items, midnight roll-over |
+| Quick Tasks inbox | `DoingInbox` | fast in-day tasks with category dot |
+| Category dot filter rail | `DoingCategoryRail` | filters objectives + tasks |
+| Daily Agenda schedule | `DailyAgenda` | time-blocked view of today |
+
+The following items live **exclusively in the Feeling tab** and must never appear in the Doing tab:
+
+| Item | Component | Notes |
+|------|-----------|-------|
+| Check-in slider (Lonely → Connected) | `FeelingCheckInCard` | mood/energy capture |
+| Emotion wheel / colour pick | `FeelingCheckInCard` | emotional vocabulary |
+| Facing questions (FDS) | `FeelingCheckInCard` | structured self-reflection prompts |
+| Pulses (body / attitude / structure) | `FeelingCheckInCard` | inner state sensors |
+| Feeling Compass | `FeelingCheckInCard` | four-quadrant attitude map |
+
+If a new feature needs to touch both doing and feeling data, it must use a shared service layer (e.g. `/api/daily-objectives`) — **never** by importing one tab's component into the other.
+
 ## Dependencies
 
 - `MissionTracker` (Supabase missions).

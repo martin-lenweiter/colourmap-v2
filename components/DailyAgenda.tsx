@@ -96,8 +96,8 @@ function monthDates(ref: string): string[] {
   const month = d.getMonth();
   const last = new Date(year, month + 1, 0).getDate();
   return Array.from({ length: last }, (_, i) => {
-    const dd = new Date(year, month, i + 1);
-    return dd.toISOString().split('T')[0];
+    const day = i + 1;
+    return `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
   });
 }
 
@@ -1552,17 +1552,18 @@ function VerticalView({
             {/* Hour label */}
             <span
               style={{
-                width: 48,
+                width: 36,
                 flexShrink: 0,
                 color: '#5C3018',
                 opacity: 0.85,
-                fontSize: '16px',
+                fontSize: '17px',
                 fontWeight: 700,
                 fontFamily: 'var(--font-serif)',
                 fontVariantNumeric: 'tabular-nums',
                 lineHeight: '36px',
-                textAlign: 'right',
-                paddingRight: 10,
+                textAlign: 'left',
+                paddingLeft: 2,
+                paddingRight: 6,
               }}
             >
               {String(hour).padStart(2, '0')}
@@ -1641,7 +1642,7 @@ function VerticalView({
                             flex: 1,
                             textAlign: 'left',
                             fontFamily: 'var(--font-serif)',
-                            fontSize: '16px',
+                            fontSize: '18px',
                             fontWeight: 600,
                             color: '#5C3018',
                             overflow: 'hidden',
@@ -1788,12 +1789,37 @@ function VerticalView({
                     background: 'transparent',
                     border: 'none',
                     cursor: 'pointer',
-                    opacity: 0,
+                    display: 'flex',
+                    alignItems: 'center',
+                    paddingLeft: 8,
                   }}
-                  className="hover:opacity-30 transition-opacity"
+                  className="hover:opacity-60 transition-opacity"
                   title={`Add block at ${hour}:00`}
                 >
-                  <span style={{ fontSize: '16px', color: '#C4A060' }}>+</span>
+                  <span style={{ fontSize: '14px', color: '#C4A060', opacity: 0.25 }}>+</span>
+                </button>
+              )}
+              {/* Occupied slot — show a faint + to allow adding another block */}
+              {hasBlock && !isAdding && (
+                <button
+                  type="button"
+                  onClick={() => setAddingAt(hour)}
+                  style={{
+                    position: 'absolute',
+                    right: 4,
+                    top: 4,
+                    background: 'none',
+                    border: 'none',
+                    cursor: 'pointer',
+                    fontSize: '12px',
+                    color: '#C4A060',
+                    opacity: 0.2,
+                    padding: '2px 4px',
+                  }}
+                  className="hover:opacity-60 transition-opacity"
+                  title={`Add another block at ${hour}:00`}
+                >
+                  +
                 </button>
               )}
 
