@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from 'react';
 import type { CompassAxis, LifeCategoryLike } from '@/components/CategoryTagPicker';
 import CategoryTagPicker from '@/components/CategoryTagPicker';
+import MicDot from '@/components/MicDot';
 
 /* ═══════════════════════════════════════════════════════════
    DAILY OBJECTIVES — today's list + push for tomorrow.
@@ -879,22 +880,29 @@ export default function DailyObjectives() {
               })}
 
             {/* Add objective — centered */}
-            <input
-              type="text"
-              value={todayInput}
-              onChange={(e) => setTodayInput(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter') addTodayObjective();
-              }}
-              placeholder="+ add objective for today..."
-              className="w-full border-b bg-transparent pb-1 outline-none text-center placeholder:text-[#7A5438] placeholder:opacity-40"
-              style={{
-                color: '#7a5438',
-                borderColor: '#C4A06020',
-                fontFamily: 'var(--font-handwritten)',
-                fontSize: '24px',
-              }}
-            />
+            <div className="flex items-end gap-2">
+              <input
+                type="text"
+                value={todayInput}
+                onChange={(e) => setTodayInput(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') addTodayObjective();
+                }}
+                placeholder="+ add objective for today..."
+                className="flex-1 border-b bg-transparent pb-1 outline-none text-center placeholder:text-[#7A5438] placeholder:opacity-40"
+                style={{
+                  color: '#7a5438',
+                  borderColor: '#C4A06020',
+                  fontFamily: 'var(--font-handwritten)',
+                  fontSize: '24px',
+                }}
+              />
+              <MicDot
+                visible={todayInput.length > 0}
+                value={todayInput}
+                onTranscript={setTodayInput}
+              />
+            </div>
           </div>
 
           {/* Divider */}
@@ -1173,22 +1181,29 @@ export default function DailyObjectives() {
                       </div>
                     );
                   })}
-                <input
-                  type="text"
-                  value={todoInput}
-                  onChange={(e) => setTodoInput(e.target.value)}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter') addTodo();
-                  }}
-                  placeholder="+ add to-do..."
-                  className="w-full border-b bg-transparent pb-1 outline-none placeholder:text-[#7A5438] placeholder:opacity-50"
-                  style={{
-                    color: '#7a5438',
-                    borderColor: '#C4A06020',
-                    fontFamily: 'var(--font-handwritten)',
-                    fontSize: '20px',
-                  }}
-                />
+                <div className="flex items-end gap-2">
+                  <input
+                    type="text"
+                    value={todoInput}
+                    onChange={(e) => setTodoInput(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') addTodo();
+                    }}
+                    placeholder="+ add to-do..."
+                    className="flex-1 border-b bg-transparent pb-1 outline-none placeholder:text-[#7A5438] placeholder:opacity-50"
+                    style={{
+                      color: '#7a5438',
+                      borderColor: '#C4A06020',
+                      fontFamily: 'var(--font-handwritten)',
+                      fontSize: '20px',
+                    }}
+                  />
+                  <MicDot
+                    visible={todoInput.length > 0}
+                    value={todoInput}
+                    onTranscript={setTodoInput}
+                  />
+                </div>
               </>
             )}
           </div>
