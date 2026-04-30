@@ -8,8 +8,7 @@ import CompassFlower from '@/components/CompassFlower';
 import LifeCategories from '@/components/LifeCategories';
 import LifeCategoriesEmptyState from '@/components/LifeCategoriesEmptyState';
 import LifeCategoriesStrip from '@/components/LifeCategoriesStrip';
-import OverviewSections from '@/components/OverviewSections';
-import OverviewVisualDemos from '@/components/OverviewVisualDemos';
+import LifePathDots from '@/components/LifePathDots';
 import ProgressTab from '@/components/ProgressTab';
 import QuietNotes from '@/components/QuietNotes';
 import ReflectThreeDots from '@/components/ReflectThreeDots';
@@ -81,8 +80,10 @@ export default function RoadView() {
       {/* Content */}
       <div className="animate-in fade-in duration-200">
         {tab === 'overview' && (
-          <div className="space-y-4">
-            <OverviewSections />
+          <div className="space-y-6">
+            {/* F / D / S axis dots — path + domains */}
+            <LifePathDots />
+            {/* Reflect — journaling across emotional / wellbeing levels */}
             <ReflectThreeDots />
             <LifeCategoriesEmptyState />
             <WeekShape />
@@ -95,7 +96,6 @@ export default function RoadView() {
             <CompassCarousel />
             <CategoryCompass />
             <LifeCategories />
-            <OverviewVisualDemos />
           </div>
         )}
         {tab === 'progress' && <ProgressTab />}
