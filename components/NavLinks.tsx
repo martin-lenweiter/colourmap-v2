@@ -67,78 +67,83 @@ export default function NavLinks() {
   // On phone, the nav scrolls horizontally with scroll-snap + fade
   // edges so the user feels like they're flipping through tabs.
   return (
-    <nav
-      ref={(el) => {
-        navRef.current = el;
-      }}
-      className="mx-auto flex w-full items-center gap-7 overflow-x-auto justify-start scrollbar-none relative px-4 pb-3 pt-2"
-      style={{
-        scrollbarWidth: 'none',
-        scrollSnapType: 'x proximity',
-        WebkitMaskImage:
-          'linear-gradient(to right, black 0, black calc(100% - 40px), transparent 100%)',
-        maskImage: 'linear-gradient(to right, black 0, black calc(100% - 40px), transparent 100%)',
-        maxWidth: isPhone ? undefined : '100%',
-      }}
-    >
-      {primary.map((link) => {
-        const isActive = link.href.startsWith('/#')
-          ? pathname === '/' &&
-            typeof window !== 'undefined' &&
-            window.location.hash === link.href.slice(1)
-          : pathname === link.href;
-        return (
-          <Link
-            key={link.href}
-            href={link.href}
-            ref={
-              isActive
-                ? (el) => {
-                    activeLinkRef.current = el;
-                  }
-                : undefined
-            }
-            className={`shrink-0 whitespace-nowrap transition-colors tracking-[0.04em] ${
-              isActive
-                ? 'text-foreground font-semibold'
-                : 'text-muted-foreground hover:text-foreground'
-            }`}
-            style={{
-              scrollSnapAlign: 'center',
-              fontSize: 16,
-            }}
-          >
-            {link.label}
-            {isActive && (
-              <span
-                aria-hidden="true"
-                className="block mx-auto"
-                style={{
-                  height: 2,
-                  width: '100%',
-                  background: '#C4A060',
-                  borderRadius: 2,
-                  marginTop: 2,
-                }}
-              />
-            )}
-          </Link>
-        );
-      })}
+    <div className="relative flex items-center w-full">
+      <nav
+        ref={(el) => {
+          navRef.current = el;
+        }}
+        className="mx-auto flex flex-1 items-center gap-7 overflow-x-auto justify-start scrollbar-none relative px-4 pb-3 pt-2"
+        style={{
+          scrollbarWidth: 'none',
+          scrollSnapType: 'x proximity',
+          WebkitMaskImage:
+            'linear-gradient(to right, black 0, black calc(100% - 40px), transparent 100%)',
+          maskImage:
+            'linear-gradient(to right, black 0, black calc(100% - 40px), transparent 100%)',
+          maxWidth: isPhone ? undefined : '100%',
+        }}
+      >
+        {primary.map((link) => {
+          const isActive = link.href.startsWith('/#')
+            ? pathname === '/' &&
+              typeof window !== 'undefined' &&
+              window.location.hash === link.href.slice(1)
+            : pathname === link.href;
+          return (
+            <Link
+              key={link.href}
+              href={link.href}
+              ref={
+                isActive
+                  ? (el) => {
+                      activeLinkRef.current = el;
+                    }
+                  : undefined
+              }
+              className={`shrink-0 whitespace-nowrap transition-colors tracking-[0.04em] ${
+                isActive
+                  ? 'text-foreground font-semibold'
+                  : 'text-muted-foreground hover:text-foreground'
+              }`}
+              style={{
+                scrollSnapAlign: 'center',
+                fontSize: 16,
+              }}
+            >
+              {link.label}
+              {isActive && (
+                <span
+                  aria-hidden="true"
+                  className="block mx-auto"
+                  style={{
+                    height: 2,
+                    width: '100%',
+                    background: '#C4A060',
+                    borderRadius: 2,
+                    marginTop: 2,
+                  }}
+                />
+              )}
+            </Link>
+          );
+        })}
+      </nav>
 
-      {/* More menu */}
-      <div className="relative shrink-0" ref={menuRef}>
+      {/* More menu — outside overflow-x:auto so dropdown is never clipped */}
+      <div className="relative shrink-0 pr-3 pb-1 pt-1" ref={menuRef}>
         <button
           type="button"
           onClick={() => setMoreOpen(!moreOpen)}
-          className="flex h-5 w-5 items-center justify-center rotate-45 transition-all hover:scale-110"
+          className="flex h-6 w-6 items-center justify-center rotate-45 transition-all hover:scale-110"
           style={{
             background: isMoreActive ? '#C4A060' : '#C4A06040',
-            borderRadius: 2,
+            borderRadius: 3,
           }}
+          aria-label="More navigation"
+          aria-expanded={moreOpen}
         >
           <span
-            className="text-[11px] leading-none -rotate-45 font-bold"
+            className="text-[13px] leading-none -rotate-45 font-bold"
             style={{ color: isMoreActive ? '#fff' : '#C4A060' }}
           >
             +
@@ -146,13 +151,13 @@ export default function NavLinks() {
         </button>
 
         {moreOpen && (
-          <div className="absolute top-full mt-2 right-0 z-50 min-w-[140px] rounded-lg border border-border bg-card shadow-lg py-1 animate-in fade-in slide-in-from-top-1 duration-150">
+          <div className="absolute top-full mt-1 right-0 z-[200] min-w-[160px] rounded-xl border border-border bg-card shadow-xl py-2 animate-in fade-in slide-in-from-top-1 duration-150">
             {MORE_LINKS.map((link) => (
               <Link
                 key={link.href}
                 href={link.href}
                 onClick={() => setMoreOpen(false)}
-                className={`block px-4 py-2 text-sm transition-colors ${
+                className={`block px-4 py-2.5 text-sm transition-colors ${
                   pathname === link.href
                     ? 'text-foreground font-medium'
                     : 'text-muted-foreground hover:text-foreground hover:bg-muted/50'
@@ -164,6 +169,6 @@ export default function NavLinks() {
           </div>
         )}
       </div>
-    </nav>
+    </div>
   );
 }

@@ -17,6 +17,7 @@ export interface DesignerObservation {
   userId: string;
   area: string | null;
   text: string;
+  done: boolean;
   createdAt: string;
 }
 
@@ -111,5 +112,21 @@ export function useDesignerObservations() {
     [observations, persistAndSet],
   );
 
-  return { observations, loading, register, remove, refresh };
+  const setDone = useCallback(
+    async (id: string, done: boolean) => {
+      persistAndSet((prev) => prev.map((o) => (o.id === id ? { ...o, done } : o)));
+      try {
+        await fetch(`/api/designer-observations/${id}`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ done }),
+        });
+      } catch {
+        /* silent — optimistic update stays */
+      }
+    },
+    [persistAndSet],
+  );
+
+  return { observations, loading, register, remove, setDone, refresh };
 }

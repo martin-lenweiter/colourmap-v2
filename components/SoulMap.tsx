@@ -76,7 +76,7 @@ function buildTerritories(data: SoulMapData): Territory[] {
     },
     {
       id: 'energy',
-      name: 'Energy',
+      name: 'Focus',
       cx: 78,
       cy: 22,
       r: 16,

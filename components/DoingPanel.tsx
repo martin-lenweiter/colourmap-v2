@@ -2,10 +2,9 @@
 
 import { useEffect, useState } from 'react';
 import DailyAgenda from '@/components/DailyAgenda';
+import DailyObjectives from '@/components/DailyObjectives';
 import DoingCategoryRail from '@/components/DoingCategoryRail';
 import DoingContextBar from '@/components/DoingContextBar';
-import DoingInbox from '@/components/DoingInbox';
-import FeelingCheckInCard from '@/components/FeelingCheckInCard';
 
 const FILTER_KEY = 'colourmap:doing-category-filter';
 
@@ -46,11 +45,8 @@ export default function DoingPanel() {
       {/* Life category dot filter */}
       <DoingCategoryRail selected={filter} onToggle={toggleCategory} />
 
-      {/* Current Objective + Daily Objectives */}
-      <FeelingCheckInCard />
-
-      {/* Quick tasks inbox */}
-      <DoingInbox categoryFilter={filter} />
+      {/* Daily objectives + push for tomorrow */}
+      <DailyObjectives />
 
       {/* Breathing space before agenda */}
       <div style={{ height: 16 }} />

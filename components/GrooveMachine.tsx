@@ -781,9 +781,20 @@ export default function GrooveMachine() {
     pads: false,
   });
   const [step, setStep] = useState(0);
-  // ── Pattern sequencer ──
+  // ── Pattern sequencer (global toggle kept for power users) ──
   const [showSequencer, setShowSequencer] = useState(false);
   const [customPatterns, setCustomPatterns] = useState<Partial<Record<TrackId, number[]>>>({});
+  // ── Per-group pads (open = show MPC step grid for that section) ──
+  const [groupPadsOpen, setGroupPadsOpen] = useState<Record<Group, boolean>>({
+    drums: false,
+    bass: false,
+    keys: false,
+    lead: false,
+    pads: false,
+  });
+  function toggleGroupPads(grp: Group) {
+    setGroupPadsOpen((prev) => ({ ...prev, [grp]: !prev[grp] }));
+  }
   // ── Layer blend ──
   const [showLayering, setShowLayering] = useState(false);
   const [blendPresetId, setBlendPresetId] = useState<string | null>(null);
@@ -1407,38 +1418,56 @@ export default function GrooveMachine() {
                 className="overflow-hidden rounded-2xl border"
                 style={{ borderColor: `${grp.accent}30` }}
               >
-                <button
-                  type="button"
-                  onClick={() => toggleGroup(grp.id)}
-                  className="flex w-full cursor-pointer items-center justify-between px-4 py-3 transition-all"
-                  style={{
-                    background: `${grp.accent}10`,
-                    border: 'none',
-                  }}
-                >
-                  <span
-                    className="uppercase"
-                    style={{
-                      fontFamily: 'var(--font-serif)',
-                      fontSize: '14px',
-                      fontWeight: 700,
-                      letterSpacing: '0.18em',
-                      color: grp.accent,
-                    }}
+                <div className="flex items-center" style={{ background: `${grp.accent}10` }}>
+                  <button
+                    type="button"
+                    onClick={() => toggleGroup(grp.id)}
+                    className="flex flex-1 cursor-pointer items-center justify-between px-4 py-3 transition-all"
+                    style={{ background: 'none', border: 'none' }}
                   >
-                    {grp.label}
-                  </span>
-                  <span
-                    style={{
-                      fontFamily: 'var(--font-serif)',
-                      fontSize: '11px',
-                      color: grp.accent,
-                      opacity: 0.7,
-                    }}
-                  >
-                    {groupActiveCount}/{tracksInGroup.length} · {isOpen ? '▾' : '▸'}
-                  </span>
-                </button>
+                    <span
+                      className="uppercase"
+                      style={{
+                        fontFamily: 'var(--font-serif)',
+                        fontSize: '14px',
+                        fontWeight: 700,
+                        letterSpacing: '0.18em',
+                        color: grp.accent,
+                      }}
+                    >
+                      {grp.label}
+                    </span>
+                    <span
+                      style={{
+                        fontFamily: 'var(--font-serif)',
+                        fontSize: '11px',
+                        color: grp.accent,
+                        opacity: 0.7,
+                      }}
+                    >
+                      {groupActiveCount}/{tracksInGroup.length} · {isOpen ? '▾' : '▸'}
+                    </span>
+                  </button>
+                  {isOpen && (
+                    <button
+                      type="button"
+                      onClick={() => toggleGroupPads(grp.id)}
+                      className="cursor-pointer rounded-lg px-2.5 py-1 transition-all mr-3"
+                      style={{
+                        fontFamily: 'var(--font-serif)',
+                        fontSize: '10px',
+                        fontWeight: 600,
+                        letterSpacing: '0.14em',
+                        textTransform: 'uppercase',
+                        background: groupPadsOpen[grp.id] ? `${grp.accent}25` : 'transparent',
+                        border: `1px solid ${groupPadsOpen[grp.id] ? `${grp.accent}60` : `${grp.accent}30`}`,
+                        color: groupPadsOpen[grp.id] ? grp.accent : `${grp.accent}99`,
+                      }}
+                    >
+                      {groupPadsOpen[grp.id] ? '✕ pads' : '⊞ pads'}
+                    </button>
+                  )}
+                </div>
                 {isOpen && (
                   <div className="space-y-1.5 bg-transparent px-3 py-2 animate-in fade-in duration-150">
                     {tracksInGroup.map((t) => {
@@ -1541,6 +1570,118 @@ export default function GrooveMachine() {
                         </div>
                       );
                     })}
+
+                    {/* Per-group pads panel — MPC-style, open/closable per section */}
+                    {groupPadsOpen[grp.id] && (
+                      <div
+                        className="mt-2 rounded-xl animate-in fade-in duration-150"
+                        style={{
+                          border: `1px solid ${grp.accent}20`,
+                          background: `${grp.accent}08`,
+                          padding: '10px 8px 8px',
+                        }}
+                      >
+                        <div className="space-y-2">
+                          {tracksInGroup.map((t) => {
+                            const on = active[t.id];
+                            const pattern = effectivePatterns[t.id] ?? t.pattern;
+                            return (
+                              <div key={t.id} className="flex items-center gap-2">
+                                <span
+                                  style={{
+                                    fontFamily: 'var(--font-serif)',
+                                    fontSize: '10px',
+                                    fontWeight: on ? 700 : 500,
+                                    color: on ? t.color : '#8A6A4A',
+                                    opacity: on ? 1 : 0.5,
+                                    width: 40,
+                                    flexShrink: 0,
+                                    textAlign: 'right',
+                                    letterSpacing: '0.04em',
+                                  }}
+                                >
+                                  {t.label}
+                                </span>
+                                {/* 4 beat groups × 4 steps = 16 pads */}
+                                <div
+                                  className="flex flex-1 gap-[3px]"
+                                  style={{ userSelect: 'none', touchAction: 'none' }}
+                                >
+                                  {[0, 4, 8, 12].map((beatStart) => (
+                                    <div key={beatStart} className="flex flex-1 gap-[2px]">
+                                      {Array.from({ length: 4 }, (_, j) => {
+                                        const i = beatStart + j;
+                                        const vel = pattern[i] ?? 0;
+                                        const isActive = vel > 0;
+                                        const isCurrent = playing && step === i;
+                                        return (
+                                          <button
+                                            key={i}
+                                            type="button"
+                                            className="flex-1 rounded-sm transition-all"
+                                            style={{
+                                              minWidth: 0,
+                                              height: 24,
+                                              background: isCurrent
+                                                ? t.color
+                                                : isActive
+                                                  ? `${t.color}${on ? 'BB' : '55'}`
+                                                  : `${t.color}1A`,
+                                              border: `1px solid ${
+                                                isCurrent
+                                                  ? t.color
+                                                  : isActive
+                                                    ? `${t.color}65`
+                                                    : `${t.color}22`
+                                              }`,
+                                              boxShadow:
+                                                isCurrent && on ? `0 0 5px ${t.color}80` : 'none',
+                                              cursor: 'pointer',
+                                              transition: 'background 60ms',
+                                            }}
+                                            onMouseDown={() => handleStepMouseDown(t.id, i, vel)}
+                                            onMouseEnter={() => handleStepMouseEnter(t.id, i)}
+                                            aria-pressed={isActive}
+                                            aria-label={`${t.label} step ${i + 1}`}
+                                          />
+                                        );
+                                      })}
+                                    </div>
+                                  ))}
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
+                        {tracksInGroup.some((t) => customPatterns[t.id]) && (
+                          <div className="mt-2 flex justify-end">
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setCustomPatterns((prev) => {
+                                  const next = { ...prev };
+                                  for (const t of tracksInGroup) delete next[t.id];
+                                  return next;
+                                });
+                              }}
+                              className="cursor-pointer"
+                              style={{
+                                fontFamily: 'var(--font-serif)',
+                                fontSize: '10px',
+                                color: grp.accent,
+                                opacity: 0.7,
+                                background: 'none',
+                                border: 'none',
+                                textDecoration: 'underline',
+                                cursor: 'pointer',
+                              }}
+                            >
+                              reset {grp.label.toLowerCase()}
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                    )}
                   </div>
                 )}
               </div>
@@ -1648,7 +1789,7 @@ export default function GrooveMachine() {
               value={blend > 0 && blendPreset ? effectiveBpm : bpm}
               disabled={blend > 0 && blendPreset !== null}
               onChange={(e) => setBpm(Number(e.target.value))}
-              className="mt-4 w-full cursor-pointer"
+              className="mt-4 w-full cursor-pointer groove-rainbow-slider"
               aria-label="Tempo"
             />
           </div>
@@ -1937,7 +2078,7 @@ export default function GrooveMachine() {
                       max={100}
                       value={Math.round(blend * 100)}
                       onChange={(e) => setBlend(Number(e.target.value) / 100)}
-                      className="w-full cursor-pointer"
+                      className="w-full cursor-pointer groove-rainbow-slider"
                       aria-label="Blend between A and B preset"
                     />
                     <button

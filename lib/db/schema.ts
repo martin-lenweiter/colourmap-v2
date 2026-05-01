@@ -256,6 +256,7 @@ export const designerObservations = pgTable('designer_observations', {
   userId: uuid('user_id').notNull(),
   area: text('area'),
   text: text('text').notNull(),
+  done: boolean('done').default(false).notNull(),
   createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
 });
 
@@ -289,6 +290,21 @@ export const sparkResonances = pgTable('spark_resonances', {
   userId: uuid('user_id').notNull(),
   type: text('type').notNull().default('resonate'),
   status: text('status').notNull().default('pending'),
+  createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+});
+
+// ─── Music recordings ────────────────────────────────────────────────────────
+
+export const recordings = pgTable('recordings', {
+  id: uuid('id').defaultRandom().primaryKey(),
+  userId: uuid('user_id').notNull(),
+  title: text('title').notNull(),
+  storagePath: text('storage_path').notNull(),
+  publicUrl: text('public_url').notNull(),
+  durationSecs: integer('duration_secs'),
+  songId: uuid('song_id'),
+  category: text('category').notNull().default('solo'),
+  notes: text('notes'),
   createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
 });
 

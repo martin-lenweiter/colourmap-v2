@@ -94,6 +94,44 @@ of breaking.
   and only deletes if the id matches one they own. Cheap because the
   per-user list is bounded (~hundreds of rows, indexed by user_id).
 
+## Done state (2026-05-01)
+
+> Martin: "put done in dev box. wire that to backend supabase. so it
+> doesnt just stay local."
+
+Each observation card now has a **✓** button that marks it done.
+Done observations move into a collapsible "done · N ▸" section at the
+bottom of the log, separate from the active list.
+
+### Data model addition
+
+```sql
+ALTER TABLE designer_observations
+  ADD COLUMN IF NOT EXISTS done BOOLEAN NOT NULL DEFAULT false;
+```
+
+Migration: `drizzle/migrations/0014_add_obs_done.sql`.
+
+### Layers changed
+
+| Layer | Change |
+|-------|--------|
+| `lib/db/schema.ts` | `done boolean default false notNull` column added |
+| `lib/db/queries/designer-observations.ts` | `setDesignerObservationDone(db, id, done)` |
+| `lib/services/designer-observations.ts` | `markDesignerObservationDone(userId, id, done)` — scoped to caller |
+| `app/api/designer-observations/[id]/route.ts` | `PATCH` handler — body `{ done: boolean }` |
+| `lib/hooks/use-designer-observations.ts` | `setDone(id, done)` optimistic update + PATCH |
+| `components/FeedbackOverlay.tsx` | Active / done split; ✓ button; collapsible done section |
+
+### UI additions inside the overlay log
+
+- Each active observation row gets a small **✓** button (right side).
+  Clicking it fires `setDone(id, true)`, which optimistically moves the
+  card to the done section and PATCHes `/api/designer-observations/:id`.
+- A **done · N ▸** toggle appears below the active list when at least
+  one observation is done. Expanding shows done cards (greyed out) with
+  a **↩** button to restore them.
+
 ## Out of scope for this PR
 
 - **Editing** an existing observation — for now, delete + re-register.

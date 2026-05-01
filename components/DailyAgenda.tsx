@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import AgendaRoadView from '@/components/AgendaRoadView';
 import type { CompassAxis, LifeCategoryLike, TagValue } from '@/components/CategoryTagPicker';
 import CategoryTagPicker from '@/components/CategoryTagPicker';
+import MicDot from '@/components/MicDot';
 
 /* ═══════════════════════════════════════════════════════════
    AGENDA — day/week/month planner with mission + emotion layers.
@@ -96,8 +97,8 @@ function monthDates(ref: string): string[] {
   const month = d.getMonth();
   const last = new Date(year, month + 1, 0).getDate();
   return Array.from({ length: last }, (_, i) => {
-    const dd = new Date(year, month, i + 1);
-    return dd.toISOString().split('T')[0];
+    const day = i + 1;
+    return `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
   });
 }
 
@@ -555,51 +556,6 @@ export default function DailyAgenda() {
             </button>
           </div>
 
-          {/* Row 3 (tertiary): F · D · S axis filter — single-select. */}
-          <div className="flex items-center justify-center gap-2 opacity-85">
-            <div className="flex gap-2">
-              {(
-                [
-                  { key: 'feeling' as const, label: 'Feeling', color: '#D4805A' },
-                  { key: 'doing' as const, label: 'Doing', color: '#6890B0' },
-                  { key: 'sharing' as const, label: 'Sharing', color: '#6B7F4E' },
-                ] as const
-              ).map((l) => {
-                const isActive = axisFilter === l.key;
-                return (
-                  <button
-                    key={l.key}
-                    type="button"
-                    onClick={() => setAxisFilter(isActive ? 'all' : l.key)}
-                    className="flex cursor-pointer items-center gap-1.5 rounded-full px-2 py-1 transition-all"
-                    style={{
-                      background: isActive ? `${l.color}18` : 'transparent',
-                      border: `1px solid ${isActive ? `${l.color}50` : `${l.color}20`}`,
-                      opacity: isActive ? 1 : 0.65,
-                    }}
-                    aria-pressed={isActive}
-                  >
-                    <span
-                      className="block rounded-full"
-                      style={{ width: 10, height: 10, background: l.color }}
-                    />
-                    <span
-                      style={{
-                        fontFamily: 'var(--font-serif)',
-                        fontSize: 11,
-                        fontWeight: 600,
-                        color: l.color,
-                        letterSpacing: '0.04em',
-                      }}
-                    >
-                      {l.label}
-                    </span>
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-
           {/* Daily Objectives expanded */}
           {objectives.filter((o) => !o.done).length > 0 && (
             <div>
@@ -630,16 +586,6 @@ export default function DailyAgenda() {
                           aria-label={`Filter to ${mt.label} missions`}
                           aria-pressed={isActive}
                         >
-                          <span
-                            style={{
-                              width: 10,
-                              height: 10,
-                              borderRadius: '50%',
-                              background: mt.color,
-                              opacity: isActive ? 1 : 0.7,
-                              flexShrink: 0,
-                            }}
-                          />
                           <span
                             style={{
                               fontFamily: 'var(--font-serif)',
@@ -1552,17 +1498,18 @@ function VerticalView({
             {/* Hour label */}
             <span
               style={{
-                width: 48,
+                width: 36,
                 flexShrink: 0,
                 color: '#5C3018',
                 opacity: 0.85,
-                fontSize: '16px',
+                fontSize: '17px',
                 fontWeight: 700,
                 fontFamily: 'var(--font-serif)',
                 fontVariantNumeric: 'tabular-nums',
                 lineHeight: '36px',
-                textAlign: 'right',
-                paddingRight: 10,
+                textAlign: 'left',
+                paddingLeft: 2,
+                paddingRight: 6,
               }}
             >
               {String(hour).padStart(2, '0')}
@@ -1641,7 +1588,7 @@ function VerticalView({
                             flex: 1,
                             textAlign: 'left',
                             fontFamily: 'var(--font-serif)',
-                            fontSize: '16px',
+                            fontSize: '18px',
                             fontWeight: 600,
                             color: '#5C3018',
                             overflow: 'hidden',
@@ -1788,12 +1735,37 @@ function VerticalView({
                     background: 'transparent',
                     border: 'none',
                     cursor: 'pointer',
-                    opacity: 0,
+                    display: 'flex',
+                    alignItems: 'center',
+                    paddingLeft: 8,
                   }}
-                  className="hover:opacity-30 transition-opacity"
+                  className="hover:opacity-60 transition-opacity"
                   title={`Add block at ${hour}:00`}
                 >
-                  <span style={{ fontSize: '16px', color: '#C4A060' }}>+</span>
+                  <span style={{ fontSize: '14px', color: '#C4A060', opacity: 0.25 }}>+</span>
+                </button>
+              )}
+              {/* Occupied slot — show a faint + to allow adding another block */}
+              {hasBlock && !isAdding && (
+                <button
+                  type="button"
+                  onClick={() => setAddingAt(hour)}
+                  style={{
+                    position: 'absolute',
+                    right: 4,
+                    top: 4,
+                    background: 'none',
+                    border: 'none',
+                    cursor: 'pointer',
+                    fontSize: '12px',
+                    color: '#C4A060',
+                    opacity: 0.2,
+                    padding: '2px 4px',
+                  }}
+                  className="hover:opacity-60 transition-opacity"
+                  title={`Add another block at ${hour}:00`}
+                >
+                  +
                 </button>
               )}
 
@@ -1811,28 +1783,38 @@ function VerticalView({
                     border: '1px dashed #C4A06040',
                   }}
                 >
-                  <input
-                    type="text"
-                    value={newText}
-                    onChange={(e) => setNewText(e.target.value)}
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter')
-                        onAdd(hour, layer === 'emotion' ? 'emotion' : 'mission');
-                      if (e.key === 'Escape') setAddingAt(null);
-                    }}
-                    placeholder={layer === 'emotion' ? 'how are you feeling?' : "what's happening?"}
-                    autoFocus
-                    style={{
-                      background: 'transparent',
-                      border: 'none',
-                      borderBottom: '1px solid #C4A06030',
-                      outline: 'none',
-                      color: '#5C3018',
-                      fontFamily: 'var(--font-handwritten)',
-                      fontSize: '18px',
-                      padding: '4px 0',
-                    }}
-                  />
+                  <div style={{ display: 'flex', alignItems: 'flex-end', gap: 6 }}>
+                    <input
+                      type="text"
+                      value={newText}
+                      onChange={(e) => setNewText(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter')
+                          onAdd(hour, layer === 'emotion' ? 'emotion' : 'mission');
+                        if (e.key === 'Escape') setAddingAt(null);
+                      }}
+                      placeholder={
+                        layer === 'emotion' ? 'how are you feeling?' : "what's happening?"
+                      }
+                      autoFocus
+                      style={{
+                        flex: 1,
+                        background: 'transparent',
+                        border: 'none',
+                        borderBottom: '1px solid #C4A06030',
+                        outline: 'none',
+                        color: '#5C3018',
+                        fontFamily: 'var(--font-handwritten)',
+                        fontSize: '18px',
+                        padding: '4px 0',
+                      }}
+                    />
+                    <MicDot
+                      visible={newText.length > 0}
+                      value={newText}
+                      onTranscript={setNewText}
+                    />
+                  </div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                     {/* Duration */}
                     <select

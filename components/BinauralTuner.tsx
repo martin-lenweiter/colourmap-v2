@@ -17,10 +17,9 @@ import { playSampledNote, type SamplePackId } from '@/lib/sample-pack';
    ═══════════════════════════════════════════════════════════ */
 
 // ── Wave visualization styles ──
-type WaveStyle = 'sine' | 'layered' | 'pulse' | 'double' | 'zigzag';
+type WaveStyle = 'sine' | 'pulse' | 'double' | 'zigzag';
 const WAVE_STYLES: { id: WaveStyle; label: string }[] = [
   { id: 'sine', label: 'sine' },
-  { id: 'layered', label: 'layered' },
   { id: 'pulse', label: 'pulse' },
   { id: 'double', label: 'double' },
   { id: 'zigzag', label: 'zigzag' },
@@ -1125,6 +1124,87 @@ const REAL_LAYERS: LayerDef[] = [
 
 const ALL_LAYERS = [...LAYERS, ...REAL_LAYERS];
 
+// ── Layer category system ──
+type LayerCategory = 'waters' | 'birds' | 'drones' | 'textures' | 'wild' | 'digital';
+const CATEGORY_LABELS: Record<LayerCategory, string> = {
+  waters: 'Waters',
+  birds: 'Birds & Forest',
+  drones: 'Drones & Tones',
+  textures: 'Textures',
+  wild: 'Wild & Ceremony',
+  digital: 'Digital',
+};
+const CATEGORY_COLORS: Record<LayerCategory, string> = {
+  waters: '#6890B0',
+  birds: '#7AAA58',
+  drones: '#9B6BA0',
+  textures: '#A0907A',
+  wild: '#B33A2B',
+  digital: '#5060A0',
+};
+const CATEGORY_ORDER: LayerCategory[] = [
+  'waters',
+  'birds',
+  'drones',
+  'textures',
+  'wild',
+  'digital',
+];
+function getLayerCategory(id: string): LayerCategory {
+  if (
+    ['rain', 'ocean', 'wind', 'waves', 'rollingwaves', 'real-rain', 'real-heavy-rain'].includes(id)
+  )
+    return 'waters';
+  if (['birds', 'forest', 'real-birds', 'real-garden', 'real-forest', 'real-cicada'].includes(id))
+    return 'birds';
+  if (
+    [
+      'drone',
+      'bowl',
+      'harmonic',
+      'sub',
+      'tibetanbowl',
+      'real-singing-bowl',
+      'chimes',
+      'bubbles',
+      'echoes',
+    ].includes(id)
+  )
+    return 'drones';
+  if (
+    [
+      'crackle',
+      'vinylwarm',
+      'scratchlp',
+      'tapeglitch',
+      'whitenoise',
+      'pinknoise',
+      'brownnoise',
+      'breath',
+      'hum',
+    ].includes(id)
+  )
+    return 'textures';
+  if (
+    [
+      'fire',
+      'thunder',
+      'real-thunder',
+      'real-wind',
+      'real-wolf',
+      'real-bear',
+      'real-sheep',
+      'real-shaman-drum',
+      'real-shaman-journey',
+      'real-tambourine',
+      'real-windchimes',
+      'real-clock',
+    ].includes(id)
+  )
+    return 'wild';
+  return 'digital';
+}
+
 // ── Genre modes ──
 interface Genre {
   id: string;
@@ -1348,8 +1428,12 @@ export default function BinauralTuner() {
   const [_showSuggestion, _setShowSuggestion] = useState(true);
   const [_view, _setView] = useState<'presets' | 'layers' | 'genres'>('presets');
   const [tremolo, setTremolo] = useState(false);
+  const [waveAmount, setWaveAmount] = useState(0);
   const tremoloSpeed = 0.15;
-  const [waveStyle, setWaveStyle] = useState<WaveStyle>('sine');
+  const [waveStyle, setWaveStyle] = useState<WaveStyle>('zigzag');
+  useEffect(() => {
+    setTremolo(waveAmount > 0);
+  }, [waveAmount]);
   useEffect(() => {
     try {
       const stored = localStorage.getItem('colourmap:wave-style');
@@ -1908,6 +1992,11 @@ export default function BinauralTuner() {
   // Collapsible section state
   const [simpleMode, setSimpleMode] = useState(true);
   const [layersOpen, setLayersOpen] = useState(true);
+  const [harmonicsOpen, setHarmonicsOpen] = useState(false);
+  const [sacredOpen, setSacredOpen] = useState(false);
+  const [melodiesOpen, setMelodiesOpen] = useState(false);
+  const [voicesOpen, setVoicesOpen] = useState(false);
+  const [controlsOpen, setControlsOpen] = useState(true);
   const [genresOpen, setGenresOpen] = useState(false);
   const [brainStatesOpen, setBrainStatesOpen] = useState(false);
   const [savedSoundsOpen, setSavedSoundsOpen] = useState(false);
@@ -2199,6 +2288,9 @@ export default function BinauralTuner() {
       node.gain.disconnect();
     }
     layerNodesRef.current.clear();
+    // Clear harmonic and sacred oscillator refs so the next startAudio creates fresh ones
+    harmOscsRef.current.clear();
+    sacredOscsRef.current.clear();
     oscLeftRef.current?.stop();
     oscRightRef.current?.stop();
     ctxRef.current?.close();
@@ -2785,9 +2877,9 @@ export default function BinauralTuner() {
   const wavelength = Math.max(20, 80 - beatFreq * 1.5);
   const baseAmplitude = 15 + volume * 30;
   const [waveTime, setWaveTime] = useState(0);
-  // Animate whenever sound is playing OR tremolo is on (so non-sine styles
-  // like pulse/double visibly breathe even without tremolo).
-  const shouldAnimate = playing || tremolo;
+  // Animate whenever sound is playing, tremolo is on, or zigzag style is selected
+  // (zigzag flows continuously so the user can see the pattern before hitting play).
+  const shouldAnimate = playing || tremolo || waveStyle === 'zigzag';
   useEffect(() => {
     if (!shouldAnimate) return;
     let raf: number;
@@ -2810,10 +2902,6 @@ export default function BinauralTuner() {
     const phase = (x / wavelength) * Math.PI * 2;
     let sample: number;
     switch (waveStyle) {
-      case 'layered':
-        // Fundamental + second harmonic at 1/3 amplitude — richer body
-        sample = Math.sin(phase) * 0.75 + Math.sin(phase * 2) * 0.25;
-        break;
       case 'pulse': {
         // Very slow amplitude envelope on top of the sine — meditative
         // breath, not a heartbeat. Cycle roughly every 8-10 seconds
@@ -2827,8 +2915,8 @@ export default function BinauralTuner() {
         sample = (Math.sin(phase) + Math.sin(phase * 1.07 + waveTime * 0.8)) * 0.5;
         break;
       case 'zigzag': {
-        // Symmetric triangle wave — same period as sine, sharper edges
-        const t = (((x / wavelength) % 1) + 1) % 1;
+        // Triangle wave that flows left→right via waveTime scroll
+        const t = (((x / wavelength - waveTime * 0.4) % 1) + 1) % 1;
         sample = t < 0.5 ? 4 * t - 1 : 3 - 4 * t;
         break;
       }
@@ -3213,16 +3301,23 @@ export default function BinauralTuner() {
                 setVolume(Math.max(0.02, Math.min(1, (e.clientX - r.left) / r.width)));
               }}
             >
-              {Array.from({ length: 14 }, (_, i) => (
-                <div
-                  key={i}
-                  className="flex-1 rounded-[3px] transition-all pointer-events-none"
-                  style={{
-                    background: '#7A5438',
-                    opacity: i / 13 <= volume ? 0.4 + (i / 13) * 0.5 : 0.1,
-                  }}
-                />
-              ))}
+              {Array.from({ length: 14 }, (_, i) => {
+                const active = i / 13 <= volume;
+                const rainbowIdx = Math.min(
+                  RAINBOW.length - 1,
+                  Math.floor((i / 13) * RAINBOW.length),
+                );
+                return (
+                  <div
+                    key={i}
+                    className="flex-1 rounded-[3px] transition-all pointer-events-none"
+                    style={{
+                      background: active ? RAINBOW[rainbowIdx] : '#7A5438',
+                      opacity: active ? 0.55 + (i / 13) * 0.4 : 0.1,
+                    }}
+                  />
+                );
+              })}
             </button>
             <span
               style={{
@@ -3244,202 +3339,306 @@ export default function BinauralTuner() {
       {/* ── FULL MODE: all controls ── */}
       {!simpleMode && (
         <>
-          {/* Sliders: tone first, then binaural beat, reverb (dots), wave */}
-          <div className="space-y-3 px-2">
-            <SliderRow
-              label="tone"
-              value={baseFreq}
-              min={30}
-              max={80}
-              unit="Hz"
-              color="#C4A060"
-              onChange={setBaseFreq}
-              toggleOn={baseToneOn}
-              onToggle={() => setBaseToneOn((s) => !s)}
-            />
-            <SliderRow
-              label="brain-wave rate"
-              value={beatFreq}
-              min={1}
-              max={10}
-              unit="Hz"
-              color={activeColor}
-              onChange={setBeatFreq}
-              toggleOn={binauralOn}
-              onToggle={() => setBinauralOn((s) => !s)}
-            />
-            {/* Engine-breathing toggle removed from UI per user feedback.
-                Scheduler state still exists (useState defaults to false)
-                so the logic stays wired if we want to bring it back. */}
-            {/* Reverb as dots */}
-            <div className="flex items-center gap-2">
+          {/* Controls — closable pillbox: tone, rate, reverb, wave, volume */}
+          <div className="px-2">
+            <button
+              type="button"
+              onClick={() => setControlsOpen((s) => !s)}
+              className="flex w-full cursor-pointer items-center justify-center gap-2 py-2"
+              style={{ background: 'none', border: 'none' }}
+            >
+              <span
+                className="text-center text-sm font-semibold uppercase tracking-[0.22em]"
+                style={{ color: '#C4A060' }}
+              >
+                controls
+              </span>
               <span
                 style={{
-                  fontFamily: 'var(--font-serif)',
-                  fontSize: '13px',
-                  color: '#C4A060',
-                  fontWeight: 600,
-                  width: 60,
-                  flexShrink: 0,
-                  textAlign: 'right',
+                  transform: controlsOpen ? 'rotate(180deg)' : 'rotate(0deg)',
+                  transition: 'transform 0.2s',
+                  color: '#C4A06080',
                 }}
               >
-                reverb
+                ▾
               </span>
-              <div
-                className="flex flex-1 justify-center gap-2 cursor-pointer"
-                style={{ touchAction: 'none' }}
-                onClick={(e) => {
-                  const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
-                  setReverbMix(Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width)));
-                }}
-                onMouseDown={(e) => {
-                  const el = e.currentTarget as HTMLElement;
-                  const onMove = (ev: MouseEvent) => {
-                    const r = el.getBoundingClientRect();
-                    setReverbMix(Math.max(0, Math.min(1, (ev.clientX - r.left) / r.width)));
-                  };
-                  const onUp = () => {
-                    window.removeEventListener('mousemove', onMove);
-                    window.removeEventListener('mouseup', onUp);
-                  };
-                  window.addEventListener('mousemove', onMove);
-                  window.addEventListener('mouseup', onUp);
-                }}
-              >
-                {Array.from({ length: 12 }, (_, i) => {
-                  const active = i / 11 <= reverbMix;
-                  const dotColor = RAINBOW[i % RAINBOW.length];
-                  return (
+            </button>
+            {controlsOpen && (
+              <div className="animate-in fade-in duration-150 space-y-3 pt-1">
+                <SliderRow
+                  label="tone"
+                  value={baseFreq}
+                  min={30}
+                  max={80}
+                  unit="Hz"
+                  color="#C4A060"
+                  onChange={setBaseFreq}
+                  toggleOn={baseToneOn}
+                  onToggle={() => setBaseToneOn((s) => !s)}
+                />
+                <SliderRow
+                  label="brain-wave rate"
+                  value={beatFreq}
+                  min={1}
+                  max={10}
+                  unit="Hz"
+                  color={activeColor}
+                  onChange={setBeatFreq}
+                  toggleOn={binauralOn}
+                  onToggle={() => setBinauralOn((s) => !s)}
+                />
+                {/* Reverb as rainbow dots */}
+                <div className="flex items-center gap-2">
+                  <span
+                    style={{
+                      fontFamily: 'var(--font-serif)',
+                      fontSize: '13px',
+                      color: '#C4A060',
+                      fontWeight: 600,
+                      width: 60,
+                      flexShrink: 0,
+                      textAlign: 'right',
+                    }}
+                  >
+                    reverb
+                  </span>
+                  <div
+                    className="flex flex-1 justify-center gap-2 cursor-pointer"
+                    style={{ touchAction: 'none' }}
+                    onClick={(e) => {
+                      const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
+                      setReverbMix(Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width)));
+                    }}
+                    onMouseDown={(e) => {
+                      const el = e.currentTarget as HTMLElement;
+                      const onMove = (ev: MouseEvent) => {
+                        const r = el.getBoundingClientRect();
+                        setReverbMix(Math.max(0, Math.min(1, (ev.clientX - r.left) / r.width)));
+                      };
+                      const onUp = () => {
+                        window.removeEventListener('mousemove', onMove);
+                        window.removeEventListener('mouseup', onUp);
+                      };
+                      window.addEventListener('mousemove', onMove);
+                      window.addEventListener('mouseup', onUp);
+                    }}
+                  >
+                    {Array.from({ length: 12 }, (_, i) => {
+                      const active = i / 11 <= reverbMix;
+                      const dotColor = RAINBOW[i % RAINBOW.length];
+                      return (
+                        <div
+                          key={i}
+                          className="rounded-full transition-all"
+                          style={{
+                            width: active ? 10 : 7,
+                            height: active ? 10 : 7,
+                            background: dotColor,
+                            opacity: active ? 0.6 + (i / 11) * 0.3 : 0.12,
+                          }}
+                        />
+                      );
+                    })}
+                  </div>
+                  <span
+                    style={{
+                      fontFamily: 'var(--font-serif)',
+                      fontSize: '12px',
+                      color: '#A0907A',
+                      fontWeight: 600,
+                      width: 40,
+                      flexShrink: 0,
+                    }}
+                  >
+                    {Math.round(reverbMix * 100)}%
+                  </span>
+                </div>
+                {/* Wave — depth slider (dot system, 0 = off) */}
+                <div className="flex items-center gap-2">
+                  <span
+                    style={{
+                      fontFamily: 'var(--font-serif)',
+                      fontSize: '13px',
+                      color: '#C4A060',
+                      fontWeight: 600,
+                      width: 60,
+                      flexShrink: 0,
+                      textAlign: 'right',
+                    }}
+                  >
+                    wave
+                  </span>
+                  <div
+                    className="flex flex-1 justify-center gap-2 cursor-pointer"
+                    style={{ touchAction: 'none' }}
+                    onClick={(e) => {
+                      const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
+                      const pct = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
+                      setWaveAmount(Math.round(pct * 100));
+                    }}
+                    onMouseDown={(e) => {
+                      const el = e.currentTarget as HTMLElement;
+                      const onMove = (ev: MouseEvent) => {
+                        const r = el.getBoundingClientRect();
+                        setWaveAmount(
+                          Math.round(
+                            Math.max(0, Math.min(1, (ev.clientX - r.left) / r.width)) * 100,
+                          ),
+                        );
+                      };
+                      const onUp = () => {
+                        window.removeEventListener('mousemove', onMove);
+                        window.removeEventListener('mouseup', onUp);
+                      };
+                      window.addEventListener('mousemove', onMove);
+                      window.addEventListener('mouseup', onUp);
+                    }}
+                    onTouchStart={(e) => {
+                      const el = e.currentTarget as HTMLElement;
+                      const set = (cx: number) => {
+                        const r = el.getBoundingClientRect();
+                        setWaveAmount(
+                          Math.round(Math.max(0, Math.min(1, (cx - r.left) / r.width)) * 100),
+                        );
+                      };
+                      set(e.touches[0].clientX);
+                      const onMove = (ev: TouchEvent) => {
+                        ev.preventDefault();
+                        set(ev.touches[0].clientX);
+                      };
+                      const onEnd = () => {
+                        window.removeEventListener('touchmove', onMove);
+                        window.removeEventListener('touchend', onEnd);
+                      };
+                      window.addEventListener('touchmove', onMove, { passive: false });
+                      window.addEventListener('touchend', onEnd);
+                    }}
+                  >
+                    {Array.from({ length: 12 }, (_, i) => {
+                      const active = i / 11 <= waveAmount / 100;
+                      const dotColor = RAINBOW[i % RAINBOW.length];
+                      return (
+                        <div
+                          key={i}
+                          className="rounded-full transition-all"
+                          style={{
+                            width: active ? 10 : 7,
+                            height: active ? 10 : 7,
+                            background: dotColor,
+                            opacity: active ? 0.6 + (i / 11) * 0.3 : 0.12,
+                          }}
+                        />
+                      );
+                    })}
+                  </div>
+                  <span
+                    style={{
+                      fontFamily: 'var(--font-serif)',
+                      fontSize: '12px',
+                      color: '#A0907A',
+                      fontWeight: 600,
+                      width: 40,
+                      flexShrink: 0,
+                    }}
+                  >
+                    {waveAmount}%
+                  </span>
+                </div>
+                {/* Volume — rainbow gradient track */}
+                <div className="flex items-center gap-3 px-1 py-1">
+                  <span
+                    style={{
+                      fontFamily: 'var(--font-serif)',
+                      fontSize: '13px',
+                      color: '#C4A060',
+                      fontWeight: 600,
+                      width: 60,
+                      flexShrink: 0,
+                      textAlign: 'right',
+                    }}
+                  >
+                    volume
+                  </span>
+                  <div
+                    className="relative flex-1 cursor-pointer"
+                    style={{ height: 20, touchAction: 'none' }}
+                    onMouseDown={(e) => {
+                      const el = e.currentTarget as HTMLElement;
+                      const set = (cx: number) => {
+                        const r = el.getBoundingClientRect();
+                        setVolume(Math.max(0.02, Math.min(1, (cx - r.left) / r.width)));
+                      };
+                      set(e.clientX);
+                      const onMove = (ev: MouseEvent) => set(ev.clientX);
+                      const onUp = () => {
+                        window.removeEventListener('mousemove', onMove);
+                        window.removeEventListener('mouseup', onUp);
+                      };
+                      window.addEventListener('mousemove', onMove);
+                      window.addEventListener('mouseup', onUp);
+                    }}
+                    onTouchStart={(e) => {
+                      const el = e.currentTarget as HTMLElement;
+                      const set = (cx: number) => {
+                        const r = el.getBoundingClientRect();
+                        setVolume(Math.max(0.02, Math.min(1, (cx - r.left) / r.width)));
+                      };
+                      set(e.touches[0].clientX);
+                      const onMove = (ev: TouchEvent) => {
+                        ev.preventDefault();
+                        set(ev.touches[0].clientX);
+                      };
+                      const onEnd = () => {
+                        window.removeEventListener('touchmove', onMove);
+                        window.removeEventListener('touchend', onEnd);
+                      };
+                      window.addEventListener('touchmove', onMove, { passive: false });
+                      window.addEventListener('touchend', onEnd);
+                    }}
+                  >
                     <div
-                      key={i}
-                      className="rounded-full transition-all"
+                      className="absolute top-1/2 -translate-y-1/2 left-0 right-0 rounded-full"
+                      style={{ height: 6, background: '#C4A06010' }}
+                    />
+                    <div
+                      className="absolute top-1/2 -translate-y-1/2 left-0 rounded-full"
                       style={{
-                        width: active ? 10 : 7,
-                        height: active ? 10 : 7,
-                        background: dotColor,
-                        opacity: active ? 0.6 + (i / 11) * 0.3 : 0.12,
+                        height: 6,
+                        width: `${volume * 100}%`,
+                        background: `linear-gradient(90deg, ${RAINBOW[0]}, ${RAINBOW[4]}, ${RAINBOW[8]})`,
+                        opacity: 0.8,
                       }}
                     />
-                  );
-                })}
+                    <div
+                      className="absolute top-1/2 rounded-full"
+                      style={{
+                        left: `${volume * 100}%`,
+                        width: 14,
+                        height: 14,
+                        background:
+                          RAINBOW[
+                            Math.min(RAINBOW.length - 1, Math.floor(volume * RAINBOW.length))
+                          ],
+                        transform: 'translate(-50%, -50%)',
+                        boxShadow: '0 2px 6px rgba(196,160,96,0.35)',
+                      }}
+                    />
+                  </div>
+                  <span
+                    style={{
+                      fontFamily: 'var(--font-serif)',
+                      fontSize: '12px',
+                      color: '#C4A060',
+                      fontWeight: 600,
+                      width: 40,
+                      flexShrink: 0,
+                    }}
+                  >
+                    {Math.round(volume * 100)}%
+                  </span>
+                </div>
               </div>
-              <span
-                style={{
-                  fontFamily: 'var(--font-serif)',
-                  fontSize: '12px',
-                  color: '#A0907A',
-                  fontWeight: 600,
-                  width: 40,
-                  flexShrink: 0,
-                }}
-              >
-                {Math.round(reverbMix * 100)}%
-              </span>
-            </div>
-            <SliderRow
-              label="wave"
-              value={tremolo ? 1 : 0}
-              min={0}
-              max={1}
-              unit=""
-              color="#6890B0"
-              onChange={() => setTremolo((s) => !s)}
-              toggleOn={tremolo}
-              onToggle={() => setTremolo((s) => !s)}
-            />
-          </div>
-
-          {/* Volume — smooth gradient track with draggable thumb */}
-          <div className="px-2">
-            <div className="flex items-center gap-3 px-1 py-2">
-              <span
-                style={{
-                  fontFamily: 'var(--font-serif)',
-                  fontSize: '13px',
-                  color: '#C4A060',
-                  fontWeight: 600,
-                  width: 60,
-                  flexShrink: 0,
-                  textAlign: 'right',
-                }}
-              >
-                volume
-              </span>
-              <div
-                className="relative flex-1 cursor-pointer"
-                style={{ height: 20, touchAction: 'none' }}
-                onMouseDown={(e) => {
-                  const el = e.currentTarget as HTMLElement;
-                  const set = (cx: number) => {
-                    const r = el.getBoundingClientRect();
-                    setVolume(Math.max(0.02, Math.min(1, (cx - r.left) / r.width)));
-                  };
-                  set(e.clientX);
-                  const onMove = (ev: MouseEvent) => set(ev.clientX);
-                  const onUp = () => {
-                    window.removeEventListener('mousemove', onMove);
-                    window.removeEventListener('mouseup', onUp);
-                  };
-                  window.addEventListener('mousemove', onMove);
-                  window.addEventListener('mouseup', onUp);
-                }}
-                onTouchStart={(e) => {
-                  const el = e.currentTarget as HTMLElement;
-                  const set = (cx: number) => {
-                    const r = el.getBoundingClientRect();
-                    setVolume(Math.max(0.02, Math.min(1, (cx - r.left) / r.width)));
-                  };
-                  set(e.touches[0].clientX);
-                  const onMove = (ev: TouchEvent) => {
-                    ev.preventDefault();
-                    set(ev.touches[0].clientX);
-                  };
-                  const onEnd = () => {
-                    window.removeEventListener('touchmove', onMove);
-                    window.removeEventListener('touchend', onEnd);
-                  };
-                  window.addEventListener('touchmove', onMove, { passive: false });
-                  window.addEventListener('touchend', onEnd);
-                }}
-              >
-                <div
-                  className="absolute top-1/2 -translate-y-1/2 left-0 right-0 rounded-full"
-                  style={{ height: 4, background: '#C4A06015' }}
-                />
-                <div
-                  className="absolute top-1/2 -translate-y-1/2 left-0 rounded-full"
-                  style={{
-                    height: 4,
-                    width: `${volume * 100}%`,
-                    background: 'linear-gradient(90deg, #C4A06030, #C4A060)',
-                  }}
-                />
-                <div
-                  className="absolute top-1/2 rounded-full"
-                  style={{
-                    left: `${volume * 100}%`,
-                    width: 14,
-                    height: 14,
-                    background: '#C4A060',
-                    transform: 'translate(-50%, -50%)',
-                    boxShadow: '0 2px 6px rgba(196,160,96,0.4)',
-                  }}
-                />
-              </div>
-              <span
-                style={{
-                  fontFamily: 'var(--font-serif)',
-                  fontSize: '12px',
-                  color: '#C4A060',
-                  fontWeight: 600,
-                  width: 40,
-                  flexShrink: 0,
-                }}
-              >
-                {Math.round(volume * 100)}%
-              </span>
-            </div>
+            )}
           </div>
 
           {/* VisualizerBox removed from Calming Sounds per user feedback —
@@ -3447,375 +3646,412 @@ export default function BinauralTuner() {
               <VisualizerBox/> function is kept in this file so the
               import still works; it's just not rendered here. */}
 
-          {/* Harmony — musical intervals that fit the base tone */}
+          {/* Harmonics — closable pillbox */}
           <div className="px-2">
-            <p
-              className="text-center mb-2 uppercase"
-              style={{
-                fontFamily: 'var(--font-serif)',
-                fontSize: '14px',
-                fontWeight: 700,
-                color: '#5C3018',
-                letterSpacing: '0.18em',
-              }}
+            <button
+              type="button"
+              onClick={() => setHarmonicsOpen((s) => !s)}
+              className="flex w-full cursor-pointer items-center justify-center gap-2 py-2"
+              style={{ background: 'none', border: 'none' }}
             >
-              Harmonics · {baseFreq}Hz
-            </p>
-            <div className="flex justify-center gap-2">
-              {HARMONICS.map((h) => {
-                const isOn = activeHarmonics.has(h.id);
-                const freq = Math.round(baseFreq * h.ratio);
-                return (
-                  <button
-                    key={h.id}
-                    type="button"
-                    onClick={() => {
-                      setActiveHarmonics((prev) => {
-                        const next = new Set(prev);
-                        if (next.has(h.id)) next.delete(h.id);
-                        else next.add(h.id);
-                        return next;
-                      });
-                    }}
-                    className="flex cursor-pointer flex-col items-center gap-1 rounded-xl px-2.5 py-2 transition-all"
-                    style={{
-                      background: isOn ? `${h.color}15` : 'transparent',
-                      border: `1px solid ${isOn ? `${h.color}40` : '#C4A06012'}`,
-                    }}
-                  >
-                    <span
-                      className="block rounded-full"
-                      style={{
-                        width: 10,
-                        height: 10,
-                        background: h.color,
-                        opacity: isOn ? 1 : 0.7,
+              <span
+                className="text-center text-sm font-semibold uppercase tracking-[0.22em]"
+                style={{ color: '#9B6BA0' }}
+              >
+                harmonics · {baseFreq}Hz
+              </span>
+              <span
+                style={{
+                  transform: harmonicsOpen ? 'rotate(180deg)' : 'rotate(0deg)',
+                  transition: 'transform 0.2s',
+                  color: '#9B6BA080',
+                }}
+              >
+                ▾
+              </span>
+            </button>
+            {harmonicsOpen && (
+              <div className="animate-in fade-in duration-150 grid grid-cols-4 gap-1.5 pt-1">
+                {HARMONICS.map((h, idx) => {
+                  const isOn = activeHarmonics.has(h.id);
+                  const freq = Math.round(baseFreq * h.ratio);
+                  const hColor = RAINBOW[idx % RAINBOW.length];
+                  return (
+                    <button
+                      key={h.id}
+                      type="button"
+                      onClick={() => {
+                        setActiveHarmonics((prev) => {
+                          const next = new Set(prev);
+                          if (next.has(h.id)) next.delete(h.id);
+                          else next.add(h.id);
+                          return next;
+                        });
                       }}
-                    />
-                    <span
+                      className="flex cursor-pointer flex-col items-center gap-1 rounded-xl px-2 py-2.5 transition-all"
                       style={{
-                        fontFamily: 'var(--font-serif)',
-                        fontSize: '12px',
-                        fontWeight: isOn ? 700 : 500,
-                        color: isOn ? h.color : '#8A6A4A',
-                        opacity: isOn ? 1 : 0.8,
+                        background: isOn ? `${hColor}18` : '#C4A06006',
+                        border: `1px solid ${isOn ? `${hColor}50` : '#C4A06018'}`,
                       }}
                     >
-                      {h.label}
-                    </span>
-                    <span
-                      style={{
-                        fontFamily: 'var(--font-serif)',
-                        fontSize: '12px',
-                        color: '#8A6A4A',
-                      }}
-                    >
-                      {freq}Hz
-                    </span>
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-
-          {/* Sacred frequencies — Solfeggio + 432Hz */}
-          <div className="px-2">
-            <p
-              className="text-center mb-2 uppercase"
-              style={{
-                fontFamily: 'var(--font-serif)',
-                fontSize: '14px',
-                fontWeight: 700,
-                color: '#5C3018',
-                letterSpacing: '0.18em',
-              }}
-            >
-              Sacred Frequencies
-            </p>
-            <div className="flex flex-wrap justify-center gap-1.5">
-              {SACRED.map((s) => {
-                const isOn = activeSacred.has(s.id);
-                // Check if this sacred freq is a harmonic of the base tone (within 5%)
-                const ratio = s.freq / baseFreq;
-                const nearestInt = Math.round(ratio);
-                const isAligned =
-                  nearestInt >= 2 && nearestInt <= 16 && Math.abs(ratio - nearestInt) < 0.05;
-                return (
-                  <button
-                    key={s.id}
-                    type="button"
-                    onClick={() => {
-                      setActiveSacred((prev) => {
-                        const next = new Set(prev);
-                        if (next.has(s.id)) next.delete(s.id);
-                        else next.add(s.id);
-                        return next;
-                      });
-                    }}
-                    className="flex cursor-pointer items-center gap-1 rounded-full px-2 py-1 transition-all"
-                    style={{
-                      background: isOn
-                        ? `${s.color}18`
-                        : isAligned
-                          ? `${s.color}08`
-                          : 'transparent',
-                      border: `1px solid ${isOn ? `${s.color}40` : isAligned ? `${s.color}20` : '#C4A06010'}`,
-                    }}
-                    title={`${s.desc}${isAligned ? ` · harmonic ×${nearestInt} of ${baseFreq}Hz` : ''}`}
-                  >
-                    <span
-                      className="block rounded-full"
-                      style={{
-                        width: 6,
-                        height: 6,
-                        background: s.color,
-                        opacity: isOn ? 1 : isAligned ? 0.6 : 0.3,
-                      }}
-                    />
-                    <span
-                      style={{
-                        fontFamily: 'var(--font-serif)',
-                        fontSize: '12px',
-                        fontWeight: isOn ? 700 : 500,
-                        color: isOn ? s.color : '#8A6A4A',
-                        opacity: isOn ? 1 : isAligned ? 0.7 : 0.45,
-                      }}
-                    >
-                      {s.label}
-                    </span>
-                    {isAligned && !isOn && (
                       <span
                         style={{
                           fontFamily: 'var(--font-serif)',
-                          fontSize: '8px',
-                          color: s.color,
+                          fontSize: '11px',
+                          fontWeight: isOn ? 700 : 500,
+                          color: isOn ? hColor : '#8A6A4A',
+                          opacity: isOn ? 1 : 0.75,
+                          lineHeight: 1.2,
                         }}
                       >
-                        ×{nearestInt}
+                        {h.label}
                       </span>
-                    )}
-                  </button>
-                );
-              })}
-            </div>
+                      <span
+                        style={{
+                          fontFamily: 'var(--font-serif)',
+                          fontSize: '10px',
+                          color: isOn ? hColor : '#A0907A',
+                          opacity: isOn ? 0.85 : 0.55,
+                        }}
+                      >
+                        {freq}Hz
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
+            )}
           </div>
 
-          {/* Generative melodies */}
+          {/* Sacred Melodies — closable pillbox */}
           <div className="px-2">
-            <p
-              className="text-center mb-2"
-              style={{
-                fontFamily: 'var(--font-serif)',
-                fontSize: '12px',
-                color: '#7A5438',
-              }}
+            <button
+              type="button"
+              onClick={() => setSacredOpen((s) => !s)}
+              className="flex w-full cursor-pointer items-center justify-center gap-2 py-2"
+              style={{ background: 'none', border: 'none' }}
             >
-              melodies
-            </p>
-            <div className="flex flex-wrap justify-center gap-1.5">
-              {MELODIES.map((m) => {
-                const isOn = activeMelodies.has(m.id);
-                return (
-                  <button
-                    key={m.id}
-                    type="button"
-                    onClick={() => {
-                      setActiveMelodies((prev) => {
-                        const next = new Set(prev);
-                        if (next.has(m.id)) next.delete(m.id);
-                        else next.add(m.id);
-                        return next;
-                      });
-                    }}
-                    className="flex cursor-pointer items-center gap-1.5 rounded-full px-2.5 py-1.5 transition-all"
-                    style={{
-                      background: isOn ? `${m.color}18` : 'transparent',
-                      border: `1px solid ${isOn ? `${m.color}40` : '#C4A06010'}`,
-                    }}
-                  >
-                    <span
-                      className="block rounded-full"
-                      style={{ width: 7, height: 7, background: m.color, opacity: isOn ? 1 : 0.3 }}
-                    />
-                    <span
+              <span
+                className="text-center text-sm font-semibold uppercase tracking-[0.22em]"
+                style={{ color: '#C4A060' }}
+              >
+                sacred melodies
+              </span>
+              <span
+                style={{
+                  transform: sacredOpen ? 'rotate(180deg)' : 'rotate(0deg)',
+                  transition: 'transform 0.2s',
+                  color: '#C4A06080',
+                }}
+              >
+                ▾
+              </span>
+            </button>
+            {sacredOpen && (
+              <div className="animate-in fade-in duration-150 grid grid-cols-5 gap-1.5 pt-1">
+                {SACRED.map((s) => {
+                  const isOn = activeSacred.has(s.id);
+                  const ratio = s.freq / baseFreq;
+                  const nearestInt = Math.round(ratio);
+                  const isAligned =
+                    nearestInt >= 2 && nearestInt <= 16 && Math.abs(ratio - nearestInt) < 0.05;
+                  return (
+                    <button
+                      key={s.id}
+                      type="button"
+                      onClick={() => {
+                        setActiveSacred((prev) => {
+                          const next = new Set(prev);
+                          if (next.has(s.id)) next.delete(s.id);
+                          else next.add(s.id);
+                          return next;
+                        });
+                      }}
+                      className="flex cursor-pointer flex-col items-center gap-0.5 rounded-xl px-1.5 py-2 transition-all"
                       style={{
+                        background: isOn
+                          ? `${s.color}18`
+                          : isAligned
+                            ? `${s.color}08`
+                            : '#C4A06006',
+                        border: `1px solid ${isOn ? `${s.color}40` : isAligned ? `${s.color}20` : '#C4A06018'}`,
+                      }}
+                      title={`${s.desc}${isAligned ? ` · harmonic ×${nearestInt} of ${baseFreq}Hz` : ''}`}
+                    >
+                      <span
+                        style={{
+                          fontFamily: 'var(--font-serif)',
+                          fontSize: '12px',
+                          fontWeight: isOn ? 700 : 600,
+                          color: isOn ? s.color : '#8A6A4A',
+                          opacity: isOn ? 1 : isAligned ? 0.7 : 0.55,
+                        }}
+                      >
+                        {s.label}
+                      </span>
+                      <span
+                        style={{
+                          fontFamily: 'var(--font-serif)',
+                          fontSize: '9px',
+                          color: isOn ? s.color : '#A0907A',
+                          opacity: isOn ? 0.85 : 0.45,
+                          letterSpacing: '0.04em',
+                        }}
+                      >
+                        {s.desc}
+                        {isAligned && !isOn ? ` ×${nearestInt}` : ''}
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+
+          {/* Generative melodies — closable pillbox */}
+          <div className="px-2">
+            <button
+              type="button"
+              onClick={() => setMelodiesOpen((s) => !s)}
+              className="flex w-full cursor-pointer items-center justify-center gap-2 py-2"
+              style={{ background: 'none', border: 'none' }}
+            >
+              <span
+                className="text-center text-sm font-semibold uppercase tracking-[0.22em]"
+                style={{ color: '#C4A060' }}
+              >
+                melodies
+              </span>
+              <span
+                style={{
+                  transform: melodiesOpen ? 'rotate(180deg)' : 'rotate(0deg)',
+                  transition: 'transform 0.2s',
+                  color: '#C4A06080',
+                }}
+              >
+                ▾
+              </span>
+            </button>
+            {melodiesOpen && (
+              <div className="animate-in fade-in duration-150 space-y-2 pt-1">
+                <div className="grid grid-cols-3 gap-1.5">
+                  {MELODIES.map((m) => {
+                    const isOn = activeMelodies.has(m.id);
+                    return (
+                      <button
+                        key={m.id}
+                        type="button"
+                        onClick={() => {
+                          setActiveMelodies((prev) => {
+                            const next = new Set(prev);
+                            if (next.has(m.id)) next.delete(m.id);
+                            else next.add(m.id);
+                            return next;
+                          });
+                        }}
+                        className="w-full cursor-pointer rounded-lg px-2 py-2 text-center transition-all"
+                        style={{
+                          background: isOn ? `${m.color}18` : '#C4A06006',
+                          border: `1px solid ${isOn ? `${m.color}45` : '#C4A06018'}`,
+                          minHeight: 38,
+                        }}
+                      >
+                        <span
+                          style={{
+                            fontFamily: 'var(--font-serif)',
+                            fontSize: '12px',
+                            fontWeight: isOn ? 700 : 400,
+                            color: isOn ? m.color : '#8A6A4A',
+                            opacity: isOn ? 1 : 0.7,
+                          }}
+                        >
+                          {m.label}
+                        </span>
+                      </button>
+                    );
+                  })}
+                </div>
+                {/* Scale selector */}
+                <div className="flex flex-wrap justify-center gap-1">
+                  {Object.entries(MELODY_SCALES).map(([id, s]) => (
+                    <button
+                      key={id}
+                      type="button"
+                      onClick={() => setMelodyScale(id)}
+                      className="cursor-pointer rounded-full px-3 py-1 text-[12px] font-semibold transition-all"
+                      style={{
+                        color: melodyScale === id ? '#5C3018' : '#8A6A4A',
+                        background: melodyScale === id ? '#5C301810' : 'transparent',
+                        border: `1px solid ${melodyScale === id ? '#5C301830' : '#C4A06008'}`,
+                        opacity: melodyScale === id ? 1 : 0.7,
                         fontFamily: 'var(--font-serif)',
-                        fontSize: '12px',
-                        fontWeight: isOn ? 700 : 500,
-                        color: isOn ? m.color : '#8A6A4A',
-                        opacity: isOn ? 1 : 0.8,
                       }}
                     >
-                      {m.label}
-                    </span>
-                  </button>
-                );
-              })}
-            </div>
-            {/* Scale selector */}
-            <div className="flex flex-wrap justify-center gap-1 pt-1">
-              {Object.entries(MELODY_SCALES).map(([id, s]) => (
-                <button
-                  key={id}
-                  type="button"
-                  onClick={() => setMelodyScale(id)}
-                  className="cursor-pointer rounded-full px-3 py-1 text-[12px] font-semibold transition-all"
-                  style={{
-                    color: melodyScale === id ? '#5C3018' : '#8A6A4A',
-                    background: melodyScale === id ? '#5C301810' : 'transparent',
-                    border: `1px solid ${melodyScale === id ? '#5C301830' : '#C4A06008'}`,
-                    opacity: melodyScale === id ? 1 : 0.7,
-                    fontFamily: 'var(--font-serif)',
-                  }}
-                >
-                  {s.label}
-                </button>
-              ))}
-            </div>
-            {activeMelodies.size > 0 && (
-              <div className="flex justify-center gap-4 pt-2">
-                <div className="flex items-center gap-2">
-                  <span
-                    style={{
-                      fontFamily: 'var(--font-serif)',
-                      fontSize: '12px',
-                      color: '#8A6A4A',
-                    }}
-                  >
-                    speed
-                  </span>
-                  <div
-                    className="flex gap-[2px] cursor-pointer"
-                    onClick={(e) => {
-                      const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
-                      setMelodySpeed(Math.round(((e.clientX - rect.left) / rect.width) * 100));
-                    }}
-                  >
-                    {Array.from({ length: 8 }, (_, i) => (
-                      <div
-                        key={i}
-                        className="rounded-[2px] transition-all"
-                        style={{
-                          width: 10,
-                          height: 6,
-                          background: '#9B6BA0',
-                          opacity: i / 7 <= melodySpeed / 100 ? 0.4 + (i / 7) * 0.4 : 0.08,
-                        }}
-                      />
-                    ))}
-                  </div>
+                      {s.label}
+                    </button>
+                  ))}
                 </div>
-                <div className="flex items-center gap-2">
-                  <span
-                    style={{
-                      fontFamily: 'var(--font-serif)',
-                      fontSize: '12px',
-                      color: '#8A6A4A',
-                    }}
-                  >
-                    reverb
-                  </span>
-                  <div
-                    className="flex gap-[2px] cursor-pointer"
-                    onClick={(e) => {
-                      const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
-                      setMelodyReverb(Math.round(((e.clientX - rect.left) / rect.width) * 100));
-                    }}
-                  >
-                    {Array.from({ length: 8 }, (_, i) => (
-                      <div
-                        key={i}
-                        className="rounded-[2px] transition-all"
+                {activeMelodies.size > 0 && (
+                  <div className="flex justify-center gap-4 pt-1">
+                    <div className="flex items-center gap-2">
+                      <span
                         style={{
-                          width: 10,
-                          height: 6,
-                          background: '#A0907A',
-                          opacity: i / 7 <= melodyReverb / 100 ? 0.4 + (i / 7) * 0.4 : 0.08,
+                          fontFamily: 'var(--font-serif)',
+                          fontSize: '12px',
+                          color: '#8A6A4A',
                         }}
-                      />
-                    ))}
-                  </div>
-                </div>
-                {/* Melody volume — independent of main mix */}
-                <div className="flex items-center gap-2">
-                  <span
-                    style={{
-                      fontFamily: 'var(--font-serif)',
-                      fontSize: '12px',
-                      color: '#8A6A4A',
-                    }}
-                  >
-                    volume
-                  </span>
-                  <div
-                    className="flex gap-[2px] cursor-pointer"
-                    onClick={(e) => {
-                      const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
-                      setMelodyVolume(
-                        Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width)),
-                      );
-                    }}
-                  >
-                    {Array.from({ length: 8 }, (_, i) => (
+                      >
+                        speed
+                      </span>
                       <div
-                        key={i}
-                        className="rounded-[2px] transition-all"
-                        style={{
-                          width: 10,
-                          height: 6,
-                          background: '#C4A060',
-                          opacity: i / 7 <= melodyVolume ? 0.4 + (i / 7) * 0.4 : 0.08,
+                        className="flex gap-[2px] cursor-pointer"
+                        onClick={(e) => {
+                          const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
+                          setMelodySpeed(Math.round(((e.clientX - rect.left) / rect.width) * 100));
                         }}
-                      />
-                    ))}
+                      >
+                        {Array.from({ length: 8 }, (_, i) => (
+                          <div
+                            key={i}
+                            className="rounded-[2px] transition-all"
+                            style={{
+                              width: 10,
+                              height: 6,
+                              background: RAINBOW[i % RAINBOW.length],
+                              opacity: i / 7 <= melodySpeed / 100 ? 0.4 + (i / 7) * 0.4 : 0.08,
+                            }}
+                          />
+                        ))}
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span
+                        style={{
+                          fontFamily: 'var(--font-serif)',
+                          fontSize: '12px',
+                          color: '#8A6A4A',
+                        }}
+                      >
+                        reverb
+                      </span>
+                      <div
+                        className="flex gap-[2px] cursor-pointer"
+                        onClick={(e) => {
+                          const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
+                          setMelodyReverb(Math.round(((e.clientX - rect.left) / rect.width) * 100));
+                        }}
+                      >
+                        {Array.from({ length: 8 }, (_, i) => (
+                          <div
+                            key={i}
+                            className="rounded-[2px] transition-all"
+                            style={{
+                              width: 10,
+                              height: 6,
+                              background: RAINBOW[(i + 4) % RAINBOW.length],
+                              opacity: i / 7 <= melodyReverb / 100 ? 0.4 + (i / 7) * 0.4 : 0.08,
+                            }}
+                          />
+                        ))}
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span
+                        style={{
+                          fontFamily: 'var(--font-serif)',
+                          fontSize: '12px',
+                          color: '#8A6A4A',
+                        }}
+                      >
+                        vol
+                      </span>
+                      <div
+                        className="flex gap-[2px] cursor-pointer"
+                        onClick={(e) => {
+                          const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
+                          setMelodyVolume(
+                            Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width)),
+                          );
+                        }}
+                      >
+                        {Array.from({ length: 8 }, (_, i) => (
+                          <div
+                            key={i}
+                            className="rounded-[2px] transition-all"
+                            style={{
+                              width: 10,
+                              height: 6,
+                              background: RAINBOW[(i + 2) % RAINBOW.length],
+                              opacity: i / 7 <= melodyVolume ? 0.4 + (i / 7) * 0.4 : 0.08,
+                            }}
+                          />
+                        ))}
+                      </div>
+                    </div>
                   </div>
-                </div>
+                )}
               </div>
             )}
           </div>
 
-          {/* Voice / Poetry */}
+          {/* Voices — closable pillbox */}
           <div className="px-2">
-            <p
-              className="text-center mb-2"
-              style={{
-                fontFamily: 'var(--font-serif)',
-                fontSize: '12px',
-                color: '#7A5438',
-              }}
+            <button
+              type="button"
+              onClick={() => setVoicesOpen((s) => !s)}
+              className="flex w-full cursor-pointer items-center justify-center gap-2 py-2"
+              style={{ background: 'none', border: 'none' }}
             >
-              voices
-            </p>
-            <div className="flex justify-center gap-2">
-              {(['off', 'affirmations', 'meditation', 'poetry'] as const).map((mode) => {
-                const isOn = voiceMode === mode;
-                return (
-                  <button
-                    key={mode}
-                    type="button"
-                    onClick={() => setVoiceMode(isOn ? 'off' : mode)}
-                    className="cursor-pointer rounded-full px-2.5 py-1 text-[12px] font-semibold transition-all"
-                    style={{
-                      color: isOn ? '#9B6BA0' : '#8A6A4A',
-                      background: isOn ? '#9B6BA015' : 'transparent',
-                      border: `1px solid ${isOn ? '#9B6BA040' : '#C4A06010'}`,
-                      opacity: isOn ? 1 : mode === 'off' ? 0.5 : 0.8,
-                      fontFamily: 'var(--font-serif)',
-                    }}
-                  >
-                    {mode}
-                  </button>
-                );
-              })}
-            </div>
-            {voiceMode !== 'off' && (
-              <div className="px-1 pt-3">
-                <VoiceProviderSelector />
+              <span
+                className="text-center text-sm font-semibold uppercase tracking-[0.22em]"
+                style={{ color: '#C4A060' }}
+              >
+                voices
+              </span>
+              <span
+                style={{
+                  transform: voicesOpen ? 'rotate(180deg)' : 'rotate(0deg)',
+                  transition: 'transform 0.2s',
+                  color: '#C4A06080',
+                }}
+              >
+                ▾
+              </span>
+            </button>
+            {voicesOpen && (
+              <div className="animate-in fade-in duration-150 space-y-3 pt-1">
+                <div className="flex justify-center gap-2 flex-wrap">
+                  {(['off', 'affirmations', 'meditation', 'poetry'] as const).map((mode) => {
+                    const isOn = voiceMode === mode;
+                    return (
+                      <button
+                        key={mode}
+                        type="button"
+                        onClick={() => setVoiceMode(isOn ? 'off' : mode)}
+                        className="cursor-pointer rounded-full px-2.5 py-1 text-[12px] font-semibold transition-all"
+                        style={{
+                          color: isOn ? '#9B6BA0' : '#8A6A4A',
+                          background: isOn ? '#9B6BA015' : 'transparent',
+                          border: `1px solid ${isOn ? '#9B6BA040' : '#C4A06010'}`,
+                          opacity: isOn ? 1 : mode === 'off' ? 0.5 : 0.8,
+                          fontFamily: 'var(--font-serif)',
+                        }}
+                      >
+                        {mode}
+                      </button>
+                    );
+                  })}
+                </div>
+                {voiceMode !== 'off' && (
+                  <div className="px-1">
+                    <VoiceProviderSelector />
+                  </div>
+                )}
               </div>
             )}
           </div>
 
-          {/* Layers — closable, 3-column grid with volume */}
+          {/* Layers — closable, categories with rectangle pad cards */}
           <div className="px-2">
             <button
               type="button"
@@ -3840,22 +4076,21 @@ export default function BinauralTuner() {
               </span>
             </button>
             {layersOpen && (
-              <div className="animate-in fade-in duration-150 space-y-2 pt-1">
-                {/* Layer softness control — smooth bar + click-to-explain label */}
+              <div className="animate-in fade-in duration-150 space-y-4 pt-1">
+                {/* Layer softness control */}
                 <div className="flex items-center justify-center gap-2">
                   <InfoTooltip
                     title="Layer Softness (Reverb)"
                     content={
                       <>
                         <p style={{ margin: 0 }}>
-                          Reverb makes every layer sound like it's playing in a bigger space — a
-                          room, a hall, a cathedral. Turn it up and sounds feel softer, further
+                          Reverb makes every layer sound like it&apos;s playing in a bigger space —
+                          a room, a hall, a cathedral. Turn it up and sounds feel softer, further
                           away, more dreamlike. Turn it down and they feel tight and close.
                         </p>
                         <p style={{ margin: '8px 0 0 0' }}>
-                          Technically it's a shared reverb bus that all active layers run through,
-                          so the whole mix breathes together. The percentage is how much of each
-                          layer is sent into that bus.
+                          Technically it&apos;s a shared reverb bus that all active layers run
+                          through, so the whole mix breathes together.
                         </p>
                       </>
                     }
@@ -3871,13 +4106,13 @@ export default function BinauralTuner() {
                           paddingBottom: 1,
                         }}
                       >
-                        layer softness
+                        softness
                       </span>
                     }
                   />
                   <div
                     className="relative cursor-pointer"
-                    style={{ width: 120, height: 14 }}
+                    style={{ width: 140, height: 28, touchAction: 'none' }}
                     onClick={(e) => {
                       const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
                       setLayerReverb(
@@ -3886,28 +4121,72 @@ export default function BinauralTuner() {
                         ),
                       );
                     }}
+                    onMouseDown={(e) => {
+                      const el = e.currentTarget as HTMLElement;
+                      const onMove = (ev: MouseEvent) => {
+                        const r = el.getBoundingClientRect();
+                        setLayerReverb(
+                          Math.round(
+                            Math.max(0, Math.min(1, (ev.clientX - r.left) / r.width)) * 100,
+                          ),
+                        );
+                      };
+                      const onUp = () => {
+                        window.removeEventListener('mousemove', onMove);
+                        window.removeEventListener('mouseup', onUp);
+                      };
+                      window.addEventListener('mousemove', onMove);
+                      window.addEventListener('mouseup', onUp);
+                    }}
+                    onTouchStart={(e) => {
+                      const el = e.currentTarget as HTMLElement;
+                      const set = (cx: number) => {
+                        const r = el.getBoundingClientRect();
+                        setLayerReverb(
+                          Math.round(Math.max(0, Math.min(1, (cx - r.left) / r.width)) * 100),
+                        );
+                      };
+                      set(e.touches[0].clientX);
+                      const onMove = (ev: TouchEvent) => {
+                        ev.preventDefault();
+                        set(ev.touches[0].clientX);
+                      };
+                      const onEnd = () => {
+                        window.removeEventListener('touchmove', onMove);
+                        window.removeEventListener('touchend', onEnd);
+                      };
+                      window.addEventListener('touchmove', onMove, { passive: false });
+                      window.addEventListener('touchend', onEnd);
+                    }}
                   >
                     <div
                       className="absolute top-1/2 -translate-y-1/2 left-0 right-0 rounded-full"
-                      style={{ height: 4, background: '#C4A06015' }}
+                      style={{ height: 6, background: '#C4A06010' }}
                     />
                     <div
                       className="absolute top-1/2 -translate-y-1/2 left-0 rounded-full"
                       style={{
-                        height: 4,
+                        height: 6,
                         width: `${layerReverb}%`,
-                        background: 'linear-gradient(90deg, #A0907A30, #A0907A)',
+                        background: `linear-gradient(90deg, ${RAINBOW[0]}, ${RAINBOW[4]}, ${RAINBOW[8]})`,
+                        opacity: 0.7,
                       }}
                     />
                     <div
                       className="absolute top-1/2 rounded-full"
                       style={{
                         left: `${layerReverb}%`,
-                        width: 12,
-                        height: 12,
-                        background: '#A0907A',
+                        width: 16,
+                        height: 16,
+                        background:
+                          RAINBOW[
+                            Math.min(
+                              RAINBOW.length - 1,
+                              Math.floor((layerReverb / 100) * RAINBOW.length),
+                            )
+                          ],
                         transform: 'translate(-50%, -50%)',
-                        boxShadow: '0 1px 3px rgba(160,144,122,0.5)',
+                        boxShadow: '0 2px 8px rgba(160,144,122,0.4)',
                       }}
                     />
                   </div>
@@ -3925,58 +4204,49 @@ export default function BinauralTuner() {
                     {layerReverb}%
                   </span>
                 </div>
-                <div className="grid grid-cols-5 gap-1.5">
-                  {(['real', 'nature', 'tones', 'texture', 'ambient'] as const).map((group) => {
-                    const groupColors: Record<string, string> = {
-                      real: '#D4805A',
-                      nature: '#7AAA58',
-                      tones: '#C4A060',
-                      texture: '#A0907A',
-                      ambient: '#6890B0',
-                    };
-                    return (
-                      <div key={group} className="space-y-1">
-                        <p
-                          className="uppercase tracking-[0.14em] text-center"
-                          style={{
-                            fontFamily: 'var(--font-serif)',
-                            fontSize: '12px',
-                            fontWeight: 700,
-                            color: groupColors[group] || '#5C3018',
-                          }}
-                        >
-                          {group}
-                        </p>
-                        {ALL_LAYERS.filter((l) => l.group === group).map((l) => {
+
+                {/* Category groups — each with a natural-language title + 3-col pad grid */}
+                {CATEGORY_ORDER.map((cat) => {
+                  const catLayers = ALL_LAYERS.filter((l) => getLayerCategory(l.id) === cat);
+                  if (catLayers.length === 0) return null;
+                  const catColor = CATEGORY_COLORS[cat];
+                  return (
+                    <div key={cat} className="space-y-1.5">
+                      <p
+                        className="uppercase tracking-[0.2em]"
+                        style={{
+                          fontFamily: 'var(--font-serif)',
+                          fontSize: '10px',
+                          fontWeight: 700,
+                          color: catColor,
+                          opacity: 0.7,
+                        }}
+                      >
+                        {CATEGORY_LABELS[cat]}
+                      </p>
+                      <div className="grid grid-cols-3 gap-1.5">
+                        {catLayers.map((l) => {
                           const vol = activeLayers[l.id] || 0;
                           const isOn = vol > 0;
                           return (
-                            <div key={l.id} className="space-y-0.5">
+                            <div key={l.id} className="space-y-1">
                               <button
                                 type="button"
                                 onClick={() => toggleLayer(l.id)}
-                                className="flex w-full cursor-pointer items-center gap-1.5 rounded-lg px-2 py-1.5 transition-all"
+                                className="w-full cursor-pointer rounded-lg px-2 py-2 text-center transition-all"
                                 style={{
-                                  background: isOn ? `${l.color}15` : 'transparent',
-                                  border: `1px solid ${isOn ? `${l.color}35` : '#C4A06010'}`,
+                                  background: isOn ? `${l.color}18` : '#C4A06006',
+                                  border: `1px solid ${isOn ? `${l.color}45` : '#C4A06018'}`,
+                                  minHeight: 40,
                                 }}
                               >
                                 <span
-                                  className="block rounded-full shrink-0"
-                                  style={{
-                                    width: 7,
-                                    height: 7,
-                                    background: l.color,
-                                    opacity: isOn ? 1 : 0.8,
-                                  }}
-                                />
-                                <span
                                   style={{
                                     fontFamily: 'var(--font-serif)',
-                                    fontSize: '12px',
-                                    fontWeight: isOn ? 700 : 500,
-                                    color: l.color,
-                                    opacity: isOn ? 1 : 0.8,
+                                    fontSize: '13px',
+                                    fontWeight: isOn ? 700 : 400,
+                                    color: isOn ? l.color : '#8A6A4A',
+                                    opacity: isOn ? 1 : 0.65,
                                   }}
                                 >
                                   {l.label}
@@ -3984,26 +4254,71 @@ export default function BinauralTuner() {
                               </button>
                               {isOn && (
                                 <div
-                                  className="flex gap-[3px] px-1 cursor-pointer"
+                                  className="flex gap-[3px] cursor-pointer"
+                                  style={{ padding: '4px 0', touchAction: 'none' }}
                                   onClick={(e) => {
                                     const rect = (
                                       e.currentTarget as HTMLElement
                                     ).getBoundingClientRect();
-                                    const x = Math.max(
-                                      0.05,
-                                      Math.min(1, (e.clientX - rect.left) / rect.width),
+                                    setLayerVol(
+                                      l.id,
+                                      Math.max(
+                                        0.05,
+                                        Math.min(1, (e.clientX - rect.left) / rect.width),
+                                      ),
                                     );
-                                    setLayerVol(l.id, x);
+                                  }}
+                                  onMouseDown={(e) => {
+                                    const el = e.currentTarget as HTMLElement;
+                                    const onMove = (ev: MouseEvent) => {
+                                      const r = el.getBoundingClientRect();
+                                      setLayerVol(
+                                        l.id,
+                                        Math.max(
+                                          0.05,
+                                          Math.min(1, (ev.clientX - r.left) / r.width),
+                                        ),
+                                      );
+                                    };
+                                    const onUp = () => {
+                                      window.removeEventListener('mousemove', onMove);
+                                      window.removeEventListener('mouseup', onUp);
+                                    };
+                                    window.addEventListener('mousemove', onMove);
+                                    window.addEventListener('mouseup', onUp);
+                                  }}
+                                  onTouchStart={(e) => {
+                                    const el = e.currentTarget as HTMLElement;
+                                    const set = (cx: number) => {
+                                      const r = el.getBoundingClientRect();
+                                      setLayerVol(
+                                        l.id,
+                                        Math.max(0.05, Math.min(1, (cx - r.left) / r.width)),
+                                      );
+                                    };
+                                    set(e.touches[0].clientX);
+                                    const onMove = (ev: TouchEvent) => {
+                                      ev.preventDefault();
+                                      set(ev.touches[0].clientX);
+                                    };
+                                    const onEnd = () => {
+                                      window.removeEventListener('touchmove', onMove);
+                                      window.removeEventListener('touchend', onEnd);
+                                    };
+                                    window.addEventListener('touchmove', onMove, {
+                                      passive: false,
+                                    });
+                                    window.addEventListener('touchend', onEnd);
                                   }}
                                 >
-                                  {Array.from({ length: 6 }, (_, i) => (
+                                  {Array.from({ length: 5 }, (_, i) => (
                                     <div
                                       key={i}
                                       className="flex-1 rounded-[3px] transition-all"
                                       style={{
-                                        height: 8,
+                                        height: 14,
                                         background: l.color,
-                                        opacity: i / 5 <= vol ? 0.55 + (i / 5) * 0.4 : 0.15,
+                                        opacity: i / 4 <= vol ? 0.5 + (i / 4) * 0.45 : 0.1,
                                       }}
                                     />
                                   ))}
@@ -4013,9 +4328,9 @@ export default function BinauralTuner() {
                           );
                         })}
                       </div>
-                    );
-                  })}
-                </div>
+                    </div>
+                  );
+                })}
               </div>
             )}
           </div>
@@ -4893,12 +5208,9 @@ function SliderRow({
   toggleOn?: boolean;
   onToggle?: () => void;
 }) {
-  const count = 20;
   const pct = (value - min) / (max - min);
-  const activeIdx = Math.round(pct * (count - 1));
-  const sq = 12;
-  const gap = 3;
   const muted = toggleOn === false;
+  const thumbColor = RAINBOW[Math.min(RAINBOW.length - 1, Math.floor(pct * RAINBOW.length))];
 
   function handleDrag(clientX: number, el: HTMLElement) {
     const rect = el.getBoundingClientRect();
@@ -4945,8 +5257,8 @@ function SliderRow({
         </span>
       )}
       <div
-        className="flex flex-1 justify-center cursor-pointer"
-        style={{ gap, touchAction: 'none' }}
+        className="relative flex-1 cursor-pointer"
+        style={{ height: 28, touchAction: 'none' }}
         onMouseDown={(e) => {
           const el = e.currentTarget as HTMLElement;
           handleDrag(e.clientX, el);
@@ -4973,24 +5285,33 @@ function SliderRow({
           window.addEventListener('touchend', onEnd);
         }}
       >
-        {Array.from({ length: count }, (_, i) => {
-          const selected = i === activeIdx;
-          const segColor = RAINBOW[i % RAINBOW.length];
-          return (
-            <div
-              key={i}
-              className="rounded-[3px] transition-all"
-              style={{
-                width: sq,
-                height: sq,
-                background: segColor,
-                opacity: selected ? 1 : i <= activeIdx ? 0.6 : 0.15,
-                transform: selected ? 'scale(1.15)' : 'scale(1)',
-                boxShadow: selected ? `0 4px 12px -4px ${segColor}` : 'none',
-              }}
-            />
-          );
-        })}
+        {/* Track bg */}
+        <div
+          className="absolute top-1/2 -translate-y-1/2 left-0 right-0 rounded-full"
+          style={{ height: 6, background: '#C4A06010' }}
+        />
+        {/* Filled rainbow track */}
+        <div
+          className="absolute top-1/2 -translate-y-1/2 left-0 rounded-full"
+          style={{
+            height: 6,
+            width: `${pct * 100}%`,
+            background: `linear-gradient(90deg, ${RAINBOW[0]}, ${RAINBOW[4]}, ${RAINBOW[8]})`,
+            opacity: 0.75,
+          }}
+        />
+        {/* Thumb */}
+        <div
+          className="absolute top-1/2 rounded-full"
+          style={{
+            left: `${pct * 100}%`,
+            width: 16,
+            height: 16,
+            background: thumbColor,
+            transform: 'translate(-50%, -50%)',
+            boxShadow: `0 2px 8px ${thumbColor}60`,
+          }}
+        />
       </div>
       <span
         style={{

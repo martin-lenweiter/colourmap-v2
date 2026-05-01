@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import MicDot from '@/components/MicDot';
 
 /* ═══════════════════════════════════════════════════════════
    ReflectThreeDots — three unlabeled colored dots (Feeling /
@@ -297,26 +298,32 @@ export default function ReflectThreeDots() {
                     className="space-y-2 px-3 pb-3 animate-in fade-in duration-150"
                     style={{ borderTop: `1px dashed ${level.color}40` }}
                   >
-                    <textarea
-                      value={input}
-                      onChange={(e) => setInput(e.target.value)}
-                      onKeyDown={(e) => {
-                        if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) {
-                          e.preventDefault();
-                          addEntry(activeAxisDef.id, level.name, input);
-                        }
-                      }}
-                      placeholder={`what's in ${level.name.toLowerCase()} for you right now?`}
-                      rows={2}
-                      className="mt-2 w-full resize-none rounded-lg bg-white/60 px-3 py-2 outline-none placeholder:italic placeholder:text-[#8A6A4A] placeholder:opacity-55"
-                      style={{
-                        fontFamily: 'var(--font-serif)',
-                        fontSize: 14,
-                        color: '#5C3018',
-                        border: `1px solid ${level.color}40`,
-                        lineHeight: 1.45,
-                      }}
-                    />
+                    <div className="relative mt-2">
+                      <textarea
+                        value={input}
+                        onChange={(e) => setInput(e.target.value)}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) {
+                            e.preventDefault();
+                            addEntry(activeAxisDef.id, level.name, input);
+                          }
+                        }}
+                        placeholder={`what's in ${level.name.toLowerCase()} for you right now?`}
+                        rows={2}
+                        className="w-full resize-none rounded-lg bg-white/60 px-3 py-2 outline-none placeholder:italic placeholder:text-[#8A6A4A] placeholder:opacity-55"
+                        style={{
+                          fontFamily: 'var(--font-serif)',
+                          fontSize: 14,
+                          color: '#5C3018',
+                          border: `1px solid ${level.color}40`,
+                          lineHeight: 1.45,
+                          paddingRight: input.length > 0 ? 24 : undefined,
+                        }}
+                      />
+                      <span className="absolute right-2 bottom-2">
+                        <MicDot visible={input.length > 0} value={input} onTranscript={setInput} />
+                      </span>
+                    </div>
                     {input.trim() && (
                       <button
                         type="button"

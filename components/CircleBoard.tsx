@@ -483,7 +483,7 @@ export default function CircleBoard() {
               fontSize: '22px',
               fontWeight: 700,
               fontStyle: 'italic',
-              color: '#5C3018',
+              color: '#C47830',
             }}
           >
             Circles
@@ -500,7 +500,7 @@ export default function CircleBoard() {
               lineHeight: 1.5,
             }}
           >
-            a shared space to align missions and become effective in the process.
+            a co-working space. share what you're working on and organise missions together.
           </p>
         </div>
 
@@ -631,7 +631,7 @@ export default function CircleBoard() {
               type="button"
               onClick={() => setCreating(true)}
               className="cursor-pointer rounded-full px-4 py-2 text-[12px] font-semibold transition-all"
-              style={{ color: '#7AAA58', background: '#7AAA5810', border: '1px solid #7AAA5825' }}
+              style={{ color: '#C47830', background: '#C4783010', border: '1px solid #C4783030' }}
             >
               create circle
             </button>
@@ -639,7 +639,7 @@ export default function CircleBoard() {
               type="button"
               onClick={() => setJoining(true)}
               className="cursor-pointer rounded-full px-4 py-2 text-[12px] font-semibold transition-all"
-              style={{ color: '#6890B0', background: '#6890B010', border: '1px solid #6890B025' }}
+              style={{ color: '#8A5A20', background: '#8A5A2010', border: '1px solid #8A5A2030' }}
             >
               join with code
             </button>
@@ -650,7 +650,7 @@ export default function CircleBoard() {
         {creating && (
           <div
             className="space-y-3 rounded-2xl border px-4 py-4 animate-in fade-in duration-150"
-            style={{ borderColor: '#7AAA5830', background: '#7AAA5806' }}
+            style={{ borderColor: '#C4783030', background: '#C4783006' }}
           >
             <input
               type="text"
@@ -667,7 +667,7 @@ export default function CircleBoard() {
                 fontSize: '26px',
                 fontWeight: 700,
                 color: '#5C3018',
-                borderColor: '#7AAA5830',
+                borderColor: '#C4783030',
                 letterSpacing: '0.04em',
               }}
             />
@@ -676,7 +676,7 @@ export default function CircleBoard() {
                 type="button"
                 onClick={createCircle}
                 className="cursor-pointer rounded-full px-4 py-1.5 text-[12px] font-semibold"
-                style={{ color: '#7AAA58', background: '#7AAA5812', border: '1px solid #7AAA5830' }}
+                style={{ color: '#C47830', background: '#C4783012', border: '1px solid #C4783030' }}
               >
                 create
               </button>
@@ -704,7 +704,7 @@ export default function CircleBoard() {
         {joining && (
           <div
             className="space-y-3 rounded-2xl border px-4 py-4 animate-in fade-in duration-150"
-            style={{ borderColor: '#6890B030', background: '#6890B006' }}
+            style={{ borderColor: '#8A5A2030', background: '#8A5A2006' }}
           >
             <input
               type="text"
@@ -721,7 +721,7 @@ export default function CircleBoard() {
                 fontFamily: font,
                 fontSize: '18px',
                 color: '#5C3018',
-                borderColor: '#6890B030',
+                borderColor: '#8A5A2030',
               }}
             />
             <div className="flex justify-center gap-2">
@@ -729,7 +729,7 @@ export default function CircleBoard() {
                 type="button"
                 onClick={joinCircle}
                 className="cursor-pointer rounded-full px-4 py-1.5 text-[12px] font-semibold"
-                style={{ color: '#6890B0', background: '#6890B012', border: '1px solid #6890B030' }}
+                style={{ color: '#8A5A20', background: '#8A5A2012', border: '1px solid #8A5A2030' }}
               >
                 join
               </button>
