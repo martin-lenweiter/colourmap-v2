@@ -36,7 +36,7 @@ high memory, growing worse over time.
 **Fix:** Add `.limit(200)` to the backlog query so the app stays fast
 regardless of how much data accumulates.
 
-**Done:** — _(in progress)_
+**Done:** commit `16b9d92`
 
 ---
 
@@ -47,7 +47,7 @@ with 10 users, noticeably slow with 1 000+.
 
 **Fix:** Drizzle migration adding indexes on the sparse tables.
 
-**Done:** — _(in progress)_
+**Done:** commit `16b9d92`
 
 ---
 
@@ -63,7 +63,7 @@ the app.
 - Add a reusable `<ErrorBoundary>` component.
 - Place it in the app shell so every page has a safety net.
 
-**Done:** — _(in progress)_
+**Done:** commit `16b9d92`
 
 ---
 
@@ -79,7 +79,7 @@ accessed.
 that holds user data. After migration, run `bun run db:migrate` once
 against Supabase.
 
-**Done:** — _(in progress)_
+**Done:** commit `16b9d92`
 
 ---
 
