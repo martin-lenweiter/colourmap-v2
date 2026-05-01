@@ -2,13 +2,11 @@
 
 import { useEffect, useState } from 'react';
 import ActiveCategoryBanner from '@/components/ActiveCategoryBanner';
-import CompassCarousel from '@/components/CompassCarousel';
+import FdsPanel from '@/components/FdsPanel';
 import LifeCategories from '@/components/LifeCategories';
 import LifeCategoriesEmptyState from '@/components/LifeCategoriesEmptyState';
 import LifeCategoriesStrip from '@/components/LifeCategoriesStrip';
-import LifePathDots from '@/components/LifePathDots';
 import ProgressTab from '@/components/ProgressTab';
-import ReflectThreeDots from '@/components/ReflectThreeDots';
 import SlowWins from '@/components/SlowWins';
 import { useStyle } from '@/components/StyleContext';
 import WeekShape from '@/components/WeekShape';
@@ -77,17 +75,18 @@ export default function RoadView() {
       <div className="animate-in fade-in duration-200">
         {tab === 'overview' && (
           <div className="space-y-6">
-            {/* F / D / S axis dots — path + domains */}
-            <LifePathDots />
-            {/* Reflect — journaling across emotional / wellbeing levels */}
-            <ReflectThreeDots />
+            {/* ── FDS ── unified axis panel: dots + compass + reflect */}
+            <FdsPanel />
+
+            {/* ── Life categories ── personal organic layer */}
             <LifeCategoriesEmptyState />
-            <WeekShape />
             <LifeCategoriesStrip />
             <ActiveCategoryBanner />
-            <SlowWins />
-            <CompassCarousel />
             <LifeCategories />
+
+            {/* ── Below the fold ── passive display, user to judge */}
+            <WeekShape />
+            <SlowWins />
           </div>
         )}
         {tab === 'progress' && <ProgressTab />}

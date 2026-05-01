@@ -1521,7 +1521,7 @@ export default function BinauralTuner() {
   // Sacred / Solfeggio frequencies
   const SACRED = [
     { id: 's174', label: '174', freq: 174, desc: 'foundation', color: '#A0907A' },
-    { id: 's285', label: '285', freq: 285, desc: 'healing', color: '#88B0C8' },
+    { id: 's285', label: '285', freq: 285, desc: 'healing', color: '#6A90B8' },
     { id: 's396', label: '396', freq: 396, desc: 'liberation', color: '#9B6BA0' },
     { id: 's417', label: '417', freq: 417, desc: 'change', color: '#D4805A' },
     { id: 's432', label: '432', freq: 432, desc: 'nature', color: '#7AAA58' },
@@ -1529,7 +1529,7 @@ export default function BinauralTuner() {
     { id: 's639', label: '639', freq: 639, desc: 'connection', color: '#6890B0' },
     { id: 's741', label: '741', freq: 741, desc: 'intuition', color: '#B0A0C8' },
     { id: 's852', label: '852', freq: 852, desc: 'spiritual', color: '#D8A878' },
-    { id: 's963', label: '963', freq: 963, desc: 'higher self', color: '#88C8E8' },
+    { id: 's963', label: '963', freq: 963, desc: 'higher self', color: '#5A88C0' },
   ] as const;
   const [activeSacred, setActiveSacred] = useState<Set<string>>(new Set());
   const sacredOscsRef = useRef<Map<string, { osc: OscillatorNode; gain: GainNode }>>(new Map());
@@ -1560,7 +1560,7 @@ export default function BinauralTuner() {
     {
       id: 'musicbox',
       label: 'Music Box',
-      color: '#88C8E8',
+      color: '#7A9AB8',
       type: 'sine' as OscillatorType,
       attack: 0.4,
       release: 3.0,
@@ -1596,7 +1596,7 @@ export default function BinauralTuner() {
     {
       id: 'guitar',
       label: 'Boat Sounds',
-      color: '#B33A2B',
+      color: '#8A8AAA',
       type: 'sawtooth' as OscillatorType,
       attack: 0.2,
       release: 4.0,
@@ -1628,7 +1628,7 @@ export default function BinauralTuner() {
     {
       id: 'real-flute',
       label: 'Real Flute',
-      color: '#6890B0',
+      color: '#5A7A9A',
       type: 'sine' as OscillatorType,
       attack: 0.1,
       release: 3.5,
@@ -1638,7 +1638,7 @@ export default function BinauralTuner() {
     {
       id: 'real-harp',
       label: 'Real Harp',
-      color: '#C4A060',
+      color: '#A8906A',
       type: 'sine' as OscillatorType,
       attack: 0.1,
       release: 3.5,
@@ -1654,7 +1654,6 @@ export default function BinauralTuner() {
     japanese: { label: 'Japanese', notes: [0, 1, 5, 7, 8, 12, 13, 17, 19, 20] },
     blues: { label: 'Blues', notes: [0, 3, 5, 6, 7, 10, 12, 15, 17, 18, 19, 22] },
     arabic: { label: 'Arabic', notes: [0, 1, 4, 5, 7, 8, 11, 12, 13, 16, 17, 19] },
-    wholeTone: { label: 'Whole Tone', notes: [0, 2, 4, 6, 8, 10, 12, 14, 16, 18, 20, 22] },
   };
   const [melodyScale, setMelodyScale] = useState('pentatonic');
   const [activeMelodies, setActiveMelodies] = useState<Set<string>>(new Set());
@@ -2934,25 +2933,6 @@ export default function BinauralTuner() {
 
   return (
     <div className="space-y-4">
-      {/* Mobile-only gentle banner: the browser suspends audio when
-          the tab is hidden. Let the user know so they don't think the
-          app is broken when sound stops after switching apps. */}
-      {playing && (
-        <div
-          className="md:hidden mx-auto max-w-md rounded-xl border border-border bg-muted/40 px-3 py-2 text-center"
-          style={{
-            fontFamily: 'var(--font-serif)',
-            fontSize: 12,
-            color: 'var(--muted-foreground)',
-            lineHeight: 1.45,
-          }}
-          role="note"
-        >
-          Keep the app open to hear the sound continuously. Switching apps or locking your phone
-          will pause audio — it resumes when you return.
-        </div>
-      )}
-
       {/* Title */}
       <div className="text-center space-y-1.5">
         <p
@@ -2966,66 +2946,31 @@ export default function BinauralTuner() {
         >
           Calming Sounds
         </p>
-        {/* Binaural quick-shortcut. Shows what's currently playing (base
-            Hz + beat Hz + breathing). Tap to jump into full Studio mode
-            for fine-tuning. "Live readout doubles as a door." */}
-        <button
-          type="button"
-          onClick={() => setSimpleMode(false)}
-          className="italic cursor-pointer transition-opacity hover:opacity-85"
-          style={{
-            fontFamily: 'var(--font-serif)',
-            fontSize: '15px',
-            color: '#8A6A4A',
-            opacity: 0.95,
-            minHeight: '1.4em',
-            background: 'none',
-            border: 'none',
-            padding: '2px 8px',
-            borderRadius: 10,
-            display: 'inline-flex',
-            alignItems: 'center',
-            gap: 6,
-          }}
-          title="Open the studio to tune frequencies"
-          aria-live="polite"
-        >
-          {playing ? (
-            <>
-              {baseToneOn ? (
-                <span style={{ color: '#5C3018', fontWeight: 600, fontStyle: 'normal' }}>
-                  {baseFreq}
-                  <span style={{ fontSize: '11px', opacity: 0.7, marginLeft: 2 }}>Hz</span>
-                </span>
-              ) : (
-                <span style={{ opacity: 0.45 }}>no base tone</span>
-              )}
-              {binauralOn && (
-                <>
-                  <span style={{ opacity: 0.4 }}>·</span>
-                  <span style={{ color: '#7A5438', fontWeight: 600, fontStyle: 'normal' }}>
-                    {beatFreq}
-                    <span style={{ fontSize: '11px', opacity: 0.7, marginLeft: 2 }}>Hz beat</span>
-                  </span>
-                </>
-              )}
-            </>
-          ) : (
-            <span style={{ opacity: 0.55 }}>tap play to begin</span>
-          )}
-          <span
-            aria-hidden="true"
+        {playing && (
+          <p
+            className="italic"
             style={{
-              fontSize: 10,
-              opacity: 0.45,
-              letterSpacing: '0.08em',
-              textTransform: 'uppercase',
-              fontStyle: 'normal',
+              fontFamily: 'var(--font-serif)',
+              fontSize: '14px',
+              color: '#8A6A4A',
+              opacity: 0.85,
             }}
           >
-            open studio ›
-          </span>
-        </button>
+            {baseToneOn ? (
+              <span style={{ color: '#5C3018', fontWeight: 600, fontStyle: 'normal' }}>
+                {baseFreq}
+                <span style={{ fontSize: '11px', opacity: 0.7, marginLeft: 2 }}>Hz</span>
+              </span>
+            ) : null}
+            {binauralOn && baseToneOn && <span style={{ opacity: 0.4 }}> · </span>}
+            {binauralOn ? (
+              <span style={{ color: '#7A5438', fontWeight: 600, fontStyle: 'normal' }}>
+                {beatFreq}
+                <span style={{ fontSize: '11px', opacity: 0.7, marginLeft: 2 }}>Hz beat</span>
+              </span>
+            ) : null}
+          </p>
+        )}
       </div>
 
       {/* Simple / Full toggle */}
@@ -3033,15 +2978,18 @@ export default function BinauralTuner() {
         <button
           type="button"
           onClick={() => setSimpleMode((s) => !s)}
-          className="cursor-pointer rounded-full px-5 py-1.5 text-[12px] font-semibold uppercase tracking-[0.12em] transition-all hover:opacity-85"
+          className="cursor-pointer bg-transparent border-none transition-opacity hover:opacity-100"
           style={{
-            color: '#7A5438',
-            background: '#F5E8C8',
-            border: '1px solid rgba(196, 160, 96, 0.35)',
-            boxShadow: '0 1px 2px rgba(94, 58, 20, 0.06)',
+            fontFamily: 'var(--font-serif)',
+            fontSize: '11px',
+            color: 'var(--muted-foreground)',
+            opacity: 0.5,
+            letterSpacing: '0.1em',
+            textTransform: 'uppercase',
+            padding: '2px 0',
           }}
         >
-          {simpleMode ? 'open studio' : 'back to simple'}
+          {simpleMode ? 'studio' : 'simple'}
         </button>
       </div>
 
@@ -3137,8 +3085,8 @@ export default function BinauralTuner() {
         </button>
       </div>
 
-      {/* Wave-style picker — pick the visual shape of the waveform */}
-      <div className="flex flex-wrap justify-center gap-1.5">
+      {/* Wave-style picker — 4 small dots, no labels */}
+      <div className="flex justify-center gap-2">
         {WAVE_STYLES.map((w) => {
           const isActive = waveStyle === w.id;
           return (
@@ -3146,17 +3094,17 @@ export default function BinauralTuner() {
               key={w.id}
               type="button"
               onClick={() => setWaveStyle(w.id)}
-              className="cursor-pointer rounded-full px-2.5 py-0.5 text-[10px] uppercase tracking-[0.12em] transition-all"
+              title={w.label}
+              className="cursor-pointer transition-all"
               style={{
-                color: isActive ? '#5C3018' : '#8A6A4A',
-                background: isActive ? `${activeColor}20` : 'transparent',
-                border: `1px solid ${isActive ? `${activeColor}60` : '#5C301818'}`,
-                fontFamily: 'var(--font-serif)',
-                opacity: isActive ? 1 : 0.7,
+                width: 7,
+                height: 7,
+                borderRadius: '50%',
+                background: isActive ? activeColor : 'transparent',
+                border: `1.5px solid ${isActive ? activeColor : '#C4A06050'}`,
+                padding: 0,
               }}
-            >
-              {w.label}
-            </button>
+            />
           );
         })}
       </div>
@@ -3231,19 +3179,10 @@ export default function BinauralTuner() {
                   className="flex cursor-pointer items-center gap-1.5 rounded-full px-3 py-2 transition-all"
                   style={{
                     background: isActive ? `${g.color}18` : '#C4A06006',
-                    border: `1px solid ${isActive ? `${g.color}40` : '#C4A06015'}`,
+                    border: `1px solid ${isActive ? `${g.color}55` : `${g.color}30`}`,
                   }}
                   title={g.subtitle}
                 >
-                  <span
-                    className="block rounded-full"
-                    style={{
-                      width: 10,
-                      height: 10,
-                      background: g.color,
-                      opacity: isActive ? 1 : 0.7,
-                    }}
-                  />
                   <span
                     style={{
                       fontFamily: 'var(--font-serif)',
@@ -3348,7 +3287,7 @@ export default function BinauralTuner() {
               style={{ background: 'none', border: 'none' }}
             >
               <span
-                className="text-center text-sm font-semibold uppercase tracking-[0.22em]"
+                className="text-center text-base font-bold uppercase tracking-[0.22em]"
                 style={{ color: '#C4A060' }}
               >
                 controls
@@ -3655,7 +3594,7 @@ export default function BinauralTuner() {
               style={{ background: 'none', border: 'none' }}
             >
               <span
-                className="text-center text-sm font-semibold uppercase tracking-[0.22em]"
+                className="text-center text-base font-bold uppercase tracking-[0.22em]"
                 style={{ color: '#9B6BA0' }}
               >
                 harmonics · {baseFreq}Hz
@@ -3732,7 +3671,7 @@ export default function BinauralTuner() {
               style={{ background: 'none', border: 'none' }}
             >
               <span
-                className="text-center text-sm font-semibold uppercase tracking-[0.22em]"
+                className="text-center text-base font-bold uppercase tracking-[0.22em]"
                 style={{ color: '#C4A060' }}
               >
                 sacred melodies
@@ -3817,7 +3756,7 @@ export default function BinauralTuner() {
               style={{ background: 'none', border: 'none' }}
             >
               <span
-                className="text-center text-sm font-semibold uppercase tracking-[0.22em]"
+                className="text-center text-base font-bold uppercase tracking-[0.22em]"
                 style={{ color: '#C4A060' }}
               >
                 melodies
@@ -3892,7 +3831,7 @@ export default function BinauralTuner() {
                   ))}
                 </div>
                 {activeMelodies.size > 0 && (
-                  <div className="flex justify-center gap-4 pt-1">
+                  <div className="space-y-2 pt-2 px-2">
                     <div className="flex items-center gap-2">
                       <span
                         style={{
@@ -3904,7 +3843,7 @@ export default function BinauralTuner() {
                         speed
                       </span>
                       <div
-                        className="flex gap-[2px] cursor-pointer"
+                        className="flex flex-1 gap-[2px] cursor-pointer"
                         onClick={(e) => {
                           const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
                           setMelodySpeed(Math.round(((e.clientX - rect.left) / rect.width) * 100));
@@ -3913,9 +3852,8 @@ export default function BinauralTuner() {
                         {Array.from({ length: 8 }, (_, i) => (
                           <div
                             key={i}
-                            className="rounded-[2px] transition-all"
+                            className="flex-1 rounded-[3px] transition-all"
                             style={{
-                              width: 10,
                               height: 6,
                               background: RAINBOW[i % RAINBOW.length],
                               opacity: i / 7 <= melodySpeed / 100 ? 0.4 + (i / 7) * 0.4 : 0.08,
@@ -3935,7 +3873,7 @@ export default function BinauralTuner() {
                         reverb
                       </span>
                       <div
-                        className="flex gap-[2px] cursor-pointer"
+                        className="flex flex-1 gap-[2px] cursor-pointer"
                         onClick={(e) => {
                           const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
                           setMelodyReverb(Math.round(((e.clientX - rect.left) / rect.width) * 100));
@@ -3944,9 +3882,8 @@ export default function BinauralTuner() {
                         {Array.from({ length: 8 }, (_, i) => (
                           <div
                             key={i}
-                            className="rounded-[2px] transition-all"
+                            className="flex-1 rounded-[3px] transition-all"
                             style={{
-                              width: 10,
                               height: 6,
                               background: RAINBOW[(i + 4) % RAINBOW.length],
                               opacity: i / 7 <= melodyReverb / 100 ? 0.4 + (i / 7) * 0.4 : 0.08,
@@ -3966,7 +3903,7 @@ export default function BinauralTuner() {
                         vol
                       </span>
                       <div
-                        className="flex gap-[2px] cursor-pointer"
+                        className="flex flex-1 gap-[2px] cursor-pointer"
                         onClick={(e) => {
                           const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
                           setMelodyVolume(
@@ -3977,9 +3914,8 @@ export default function BinauralTuner() {
                         {Array.from({ length: 8 }, (_, i) => (
                           <div
                             key={i}
-                            className="rounded-[2px] transition-all"
+                            className="flex-1 rounded-[3px] transition-all"
                             style={{
-                              width: 10,
                               height: 6,
                               background: RAINBOW[(i + 2) % RAINBOW.length],
                               opacity: i / 7 <= melodyVolume ? 0.4 + (i / 7) * 0.4 : 0.08,
@@ -4003,7 +3939,7 @@ export default function BinauralTuner() {
               style={{ background: 'none', border: 'none' }}
             >
               <span
-                className="text-center text-sm font-semibold uppercase tracking-[0.22em]"
+                className="text-center text-base font-bold uppercase tracking-[0.22em]"
                 style={{ color: '#C4A060' }}
               >
                 voices
@@ -4060,7 +3996,7 @@ export default function BinauralTuner() {
               style={{ background: 'none', border: 'none' }}
             >
               <span
-                className="text-center text-sm font-semibold uppercase tracking-[0.22em]"
+                className="text-center text-base font-bold uppercase tracking-[0.22em]"
                 style={{ color: '#7A5438' }}
               >
                 layers
@@ -4216,10 +4152,10 @@ export default function BinauralTuner() {
                         className="uppercase tracking-[0.2em]"
                         style={{
                           fontFamily: 'var(--font-serif)',
-                          fontSize: '10px',
+                          fontSize: '13px',
                           fontWeight: 700,
                           color: catColor,
-                          opacity: 0.7,
+                          opacity: 1,
                         }}
                       >
                         {CATEGORY_LABELS[cat]}
@@ -4344,7 +4280,7 @@ export default function BinauralTuner() {
               style={{ background: 'none', border: 'none' }}
             >
               <span
-                className="text-center text-sm font-semibold uppercase tracking-[0.22em]"
+                className="text-center text-base font-bold uppercase tracking-[0.22em]"
                 style={{ color: '#C4A060' }}
               >
                 genres
@@ -4371,19 +4307,10 @@ export default function BinauralTuner() {
                       className="flex cursor-pointer items-center gap-1.5 rounded-full px-3 py-1.5 transition-all"
                       style={{
                         background: isActive ? `${g.color}18` : '#C4A06006',
-                        border: `1px solid ${isActive ? `${g.color}40` : '#C4A06015'}`,
+                        border: `1px solid ${isActive ? `${g.color}55` : `${g.color}30`}`,
                       }}
                       title={g.subtitle}
                     >
-                      <span
-                        className="block rounded-full shrink-0"
-                        style={{
-                          width: 8,
-                          height: 8,
-                          background: g.color,
-                          opacity: isActive ? 1 : 0.7,
-                        }}
-                      />
                       <span
                         style={{
                           fontFamily: 'var(--font-serif)',
@@ -4411,7 +4338,7 @@ export default function BinauralTuner() {
               style={{ background: 'none', border: 'none' }}
             >
               <span
-                className="text-center text-sm font-semibold uppercase tracking-[0.22em]"
+                className="text-center text-base font-bold uppercase tracking-[0.22em]"
                 style={{ color: '#C4A060' }}
               >
                 brain states
@@ -4440,7 +4367,7 @@ export default function BinauralTuner() {
                         className="cursor-pointer rounded-full px-3 py-1.5 text-left transition-all"
                         style={{
                           background: isActive ? `${p.color}15` : 'transparent',
-                          border: `1px solid ${isActive ? `${p.color}40` : '#C4A06015'}`,
+                          border: `1px solid ${isActive ? `${p.color}55` : `${p.color}30`}`,
                         }}
                       >
                         <span
@@ -4484,7 +4411,7 @@ export default function BinauralTuner() {
               style={{ background: 'none', border: 'none' }}
             >
               <span
-                className="text-center text-sm font-semibold uppercase tracking-[0.22em]"
+                className="text-center text-base font-bold uppercase tracking-[0.22em]"
                 style={{ color: '#C4A060' }}
               >
                 saved sounds

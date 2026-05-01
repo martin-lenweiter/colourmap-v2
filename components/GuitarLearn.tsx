@@ -122,6 +122,176 @@ function PentatonicBox() {
   );
 }
 
+/* Inline lick diagram — shows a short passage on a fret window */
+interface LickNote {
+  string: number; // 0=high e, 5=low E
+  fret: number; // absolute fret
+  technique?: 'bend' | 'slide' | 'hammer' | 'pull'; // decorates the dot
+}
+
+function LickDiagram({
+  notes,
+  fretMin,
+  fretMax,
+  label,
+}: {
+  notes: LickNote[];
+  fretMin: number;
+  fretMax: number;
+  label: string;
+}) {
+  const STRINGS = ['e', 'B', 'G', 'D', 'A', 'E'];
+  const CELL_W = 26;
+  const CELL_H = 20;
+  const LEFT = 20;
+  const TOP = 10;
+  const fretCount = fretMax - fretMin + 1;
+  const W = LEFT + fretCount * CELL_W + 10;
+  const H = TOP + 5 * CELL_H + 20;
+
+  const TECH_COLORS: Record<string, string> = {
+    bend: '#C4A060',
+    slide: '#7A9870',
+    hammer: '#C07838',
+    pull: '#9B6BA0',
+  };
+
+  return (
+    <div className="overflow-x-auto">
+      <svg width={W} height={H} viewBox={`0 0 ${W} ${H}`} aria-label={label}>
+        {/* Fret numbers */}
+        {Array.from({ length: fretCount }, (_, i) => (
+          <text
+            key={i}
+            x={LEFT + (i + 0.5) * CELL_W}
+            y={TOP - 2}
+            textAnchor="middle"
+            fontSize={7}
+            fill="#A08060"
+            fontFamily="var(--font-serif)"
+          >
+            {fretMin + i}
+          </text>
+        ))}
+        {/* Neck */}
+        <rect
+          x={LEFT}
+          y={TOP}
+          width={fretCount * CELL_W}
+          height={5 * CELL_H}
+          rx={2}
+          fill="#221208"
+          opacity={0.85}
+        />
+        {/* Fret bars */}
+        {Array.from({ length: fretCount + 1 }, (_, i) => (
+          <line
+            key={i}
+            x1={LEFT + i * CELL_W}
+            y1={TOP}
+            x2={LEFT + i * CELL_W}
+            y2={TOP + 5 * CELL_H}
+            stroke="#6B4820"
+            strokeWidth={i === 0 ? 2.5 : 0.8}
+          />
+        ))}
+        {/* Strings */}
+        {STRINGS.map((s, si) => (
+          <g key={s}>
+            <line
+              x1={LEFT}
+              y1={TOP + si * CELL_H}
+              x2={LEFT + fretCount * CELL_W}
+              y2={TOP + si * CELL_H}
+              stroke="#A09070"
+              strokeWidth={0.8 + (5 - si) * 0.22}
+            />
+            <text
+              x={LEFT - 4}
+              y={TOP + si * CELL_H + 4}
+              textAnchor="end"
+              fontSize={7}
+              fill="#908060"
+              fontFamily="var(--font-serif)"
+            >
+              {s}
+            </text>
+          </g>
+        ))}
+        {/* Notes */}
+        {notes.map((n, i) => {
+          const cx = LEFT + (n.fret - fretMin + 0.5) * CELL_W;
+          const cy = TOP + n.string * CELL_H;
+          const color = n.technique ? TECH_COLORS[n.technique] : '#7A5A3A';
+          return (
+            <g key={i}>
+              <circle
+                cx={cx}
+                cy={cy}
+                r={7}
+                fill={color}
+                stroke={color}
+                strokeWidth={0.5}
+                opacity={0.9}
+              />
+              {n.technique === 'bend' && (
+                <text
+                  x={cx + 7}
+                  y={cy - 4}
+                  fontSize={7}
+                  fill="#C4A060"
+                  fontFamily="var(--font-serif)"
+                >
+                  ↑
+                </text>
+              )}
+              {n.technique === 'slide' && (
+                <text
+                  x={cx + 7}
+                  y={cy + 3}
+                  fontSize={7}
+                  fill="#7A9870"
+                  fontFamily="var(--font-serif)"
+                >
+                  /
+                </text>
+              )}
+              {n.technique === 'hammer' && (
+                <text
+                  x={cx + 7}
+                  y={cy + 3}
+                  fontSize={7}
+                  fill="#C07838"
+                  fontFamily="var(--font-serif)"
+                >
+                  h
+                </text>
+              )}
+              {n.technique === 'pull' && (
+                <text
+                  x={cx + 7}
+                  y={cy + 3}
+                  fontSize={7}
+                  fill="#9B6BA0"
+                  fontFamily="var(--font-serif)"
+                >
+                  p
+                </text>
+              )}
+            </g>
+          );
+        })}
+      </svg>
+      <p
+        className="mt-1 text-[9px]"
+        style={{ color: 'var(--muted-foreground)', fontFamily: 'var(--font-serif)' }}
+      >
+        {label}
+      </p>
+    </div>
+  );
+}
+
 function ScaleFormula({
   name,
   intervals,
@@ -729,6 +899,393 @@ const CHAPTERS: Chapter[] = [
             chords={['Am7', 'Dm7', 'G7', 'Cmaj7']}
             note="Im7 → IVm7 → V7 → bVIImaj7 — the rhythm and soul of Marvin Gaye and Stevie Wonder."
           />
+        </div>
+      </div>
+    ),
+  },
+  {
+    n: 8,
+    title: 'Blues Licks — The Vocabulary',
+    desc: 'Classic Am pentatonic licks — bends, hammer-ons, turnarounds. Each lick connects a chord change or decorates a chord.',
+    content: (
+      <div className="space-y-5">
+        <p
+          className="text-[13px] leading-relaxed"
+          style={{ color: 'var(--muted-foreground)', fontFamily: 'var(--font-serif)' }}
+        >
+          Blues licks are phrases — short melodic ideas that live between chord changes or sit on
+          top of a chord. Learn each one as a unit, then string them together over a 12-bar backing.
+        </p>
+
+        {/* Lick 1 — Classic bend */}
+        <div className="space-y-2">
+          <p
+            className="text-[11px] font-semibold uppercase tracking-[0.1em]"
+            style={{ color: '#5A7EA8' }}
+          >
+            Lick 1 — The Am Bend (over A7)
+          </p>
+          <LickDiagram
+            label="G-string bend fret 7 + B-string — over A7"
+            fretMin={5}
+            fretMax={9}
+            notes={[
+              { string: 2, fret: 7, technique: 'bend' },
+              { string: 1, fret: 5 },
+              { string: 2, fret: 5 },
+              { string: 3, fret: 7 },
+            ]}
+          />
+          <p
+            className="text-[12px]"
+            style={{ color: 'var(--muted-foreground)', fontFamily: 'var(--font-serif)' }}
+          >
+            Bend G-string fret 7 (D→E), release, then descend to fret 5 on B, and resolve on
+            D-string fret 7. The bend is the emotional core — push it slowly.
+          </p>
+        </div>
+
+        {/* Lick 2 — Turnaround lick */}
+        <div className="space-y-2">
+          <p
+            className="text-[11px] font-semibold uppercase tracking-[0.1em]"
+            style={{ color: '#5A7EA8' }}
+          >
+            Lick 2 — Turnaround (A7 → E9)
+          </p>
+          <LickDiagram
+            label="Classic A-blues turnaround, low strings"
+            fretMin={0}
+            fretMax={5}
+            notes={[
+              { string: 5, fret: 5 },
+              { string: 5, fret: 4 },
+              { string: 5, fret: 3 },
+              { string: 5, fret: 2 },
+              { string: 4, fret: 2 },
+              { string: 4, fret: 0 },
+            ]}
+          />
+          <p
+            className="text-[12px]"
+            style={{ color: 'var(--muted-foreground)', fontFamily: 'var(--font-serif)' }}
+          >
+            Descend the low E string frets 5→4→3→2, then A string 2→0. This chromatic descent is the
+            classic A-blues turnaround. Lands on the open A (root) going into E9.
+          </p>
+        </div>
+
+        {/* Lick 3 — Hammer on connector */}
+        <div className="space-y-2">
+          <p
+            className="text-[11px] font-semibold uppercase tracking-[0.1em]"
+            style={{ color: '#5A7EA8' }}
+          >
+            Lick 3 — Hammer-On Connector (A7 → D9)
+          </p>
+          <LickDiagram
+            label="Hammer-on phrase connecting I to IV"
+            fretMin={5}
+            fretMax={8}
+            notes={[
+              { string: 3, fret: 5, technique: 'hammer' },
+              { string: 3, fret: 7 },
+              { string: 2, fret: 5, technique: 'hammer' },
+              { string: 2, fret: 8 },
+              { string: 1, fret: 5 },
+            ]}
+          />
+          <p
+            className="text-[12px]"
+            style={{ color: 'var(--muted-foreground)', fontFamily: 'var(--font-serif)' }}
+          >
+            Hammer from D-string fret 5 to 7, then B-string 5 to 8 — land on high e fret 5. This
+            cascading hammer phrase resolves on the 9th of D9, perfectly leading into the IV chord.
+          </p>
+        </div>
+
+        {/* Lick 4 — Triple repeat call */}
+        <div className="space-y-2">
+          <p
+            className="text-[11px] font-semibold uppercase tracking-[0.1em]"
+            style={{ color: '#5A7EA8' }}
+          >
+            Lick 4 — The Triple Repeat (over D9)
+          </p>
+          <LickDiagram
+            label="Repeated high note phrase over D9"
+            fretMin={7}
+            fretMax={10}
+            notes={[
+              { string: 0, fret: 8, technique: 'bend' },
+              { string: 0, fret: 8, technique: 'bend' },
+              { string: 0, fret: 8, technique: 'bend' },
+              { string: 0, fret: 10 },
+              { string: 1, fret: 8 },
+            ]}
+          />
+          <p
+            className="text-[12px]"
+            style={{ color: 'var(--muted-foreground)', fontFamily: 'var(--font-serif)' }}
+          >
+            Repeat-bend the high e fret 8 three times — this is the call. Then answer by stepping up
+            to fret 10 and landing on B-string 8. Albert King's signature: make the guitar say
+            words.
+          </p>
+        </div>
+
+        {/* Lick 5 — Sliding 6ths */}
+        <div className="space-y-2">
+          <p
+            className="text-[11px] font-semibold uppercase tracking-[0.1em]"
+            style={{ color: '#5A7EA8' }}
+          >
+            Lick 5 — Sliding 6ths (over E9 → A7)
+          </p>
+          <LickDiagram
+            label="Double-stop 6ths sliding down to A resolution"
+            fretMin={4}
+            fretMax={9}
+            notes={[
+              { string: 0, fret: 9, technique: 'slide' },
+              { string: 2, fret: 9, technique: 'slide' },
+              { string: 0, fret: 7 },
+              { string: 2, fret: 7 },
+              { string: 0, fret: 5 },
+              { string: 2, fret: 5 },
+            ]}
+          />
+          <p
+            className="text-[12px]"
+            style={{ color: 'var(--muted-foreground)', fontFamily: 'var(--font-serif)' }}
+          >
+            Play e and G strings together (6th interval) at fret 9, slide down to 7, then 5. This is
+            the V→I lick — feels like a sigh of resolution. Use ring + index together and let them
+            slide.
+          </p>
+        </div>
+
+        <div
+          className="rounded-lg px-3 py-2.5 text-[12px] space-y-1.5"
+          style={{
+            background: '#5A7EA808',
+            border: '1px solid #5A7EA820',
+            fontFamily: 'var(--font-serif)',
+          }}
+        >
+          <p className="font-semibold" style={{ color: '#5A7EA8' }}>
+            How to practice these over a 12-bar
+          </p>
+          <p style={{ color: 'var(--muted-foreground)' }}>
+            1. Put on a slow A blues backing (80–90 BPM). Play Lick 1 over bars 1–4 (A7).
+          </p>
+          <p style={{ color: 'var(--muted-foreground)' }}>
+            2. Use Lick 3 as the connecting phrase going into D9 (bar 5).
+          </p>
+          <p style={{ color: 'var(--muted-foreground)' }}>
+            3. Use Lick 4 over bars 5–6 (D9) — triple repeat over the IV chord.
+          </p>
+          <p style={{ color: 'var(--muted-foreground)' }}>
+            4. Lick 5 over E9 → A7 (bar 9–10). Lick 2 for the turnaround (bar 11–12).
+          </p>
+        </div>
+      </div>
+    ),
+  },
+  {
+    n: 9,
+    title: 'Blues for Rock — Applied Vocabulary',
+    desc: 'How blues licks translate directly into rock solos. Chuck Berry double-stops, the pentatonic riff, and minor blues over power chords.',
+    content: (
+      <div className="space-y-5">
+        <p
+          className="text-[13px] leading-relaxed"
+          style={{ color: 'var(--muted-foreground)', fontFamily: 'var(--font-serif)' }}
+        >
+          Rock guitar IS blues guitar — applied to louder amplifiers and heavier rhythms. Every
+          great rock solo (Page, Hendrix, SRV, Angus Young, Clapton) is built from the same Am
+          pentatonic vocabulary. The blues framework just runs at a different energy level.
+        </p>
+
+        {/* Double stops — Chuck Berry */}
+        <div className="space-y-2">
+          <p
+            className="text-[11px] font-semibold uppercase tracking-[0.1em]"
+            style={{ color: '#5A7EA8' }}
+          >
+            Double-Stop Rock Riff (Chuck Berry / Keith Richards)
+          </p>
+          <LickDiagram
+            label="Classic rock double-stop in A — D + G strings"
+            fretMin={4}
+            fretMax={7}
+            notes={[
+              { string: 2, fret: 5 },
+              { string: 3, fret: 5 },
+              { string: 2, fret: 7 },
+              { string: 3, fret: 7 },
+              { string: 2, fret: 5 },
+              { string: 3, fret: 5 },
+            ]}
+          />
+          <p
+            className="text-[12px]"
+            style={{ color: 'var(--muted-foreground)', fontFamily: 'var(--font-serif)' }}
+          >
+            Play D and G strings together. Fret 5 (A+D), then slide to fret 7 (B+E), back to 5. This
+            is the Chuck Berry "Johnny B. Goode" rock-and-roll riff. Over A power chord or A7.
+          </p>
+        </div>
+
+        {/* Power riff with blues note */}
+        <div className="space-y-2">
+          <p
+            className="text-[11px] font-semibold uppercase tracking-[0.1em]"
+            style={{ color: '#5A7EA8' }}
+          >
+            Blues Scale Power Riff (Zeppelin / Angus Young)
+          </p>
+          <LickDiagram
+            label="E minor blues scale into a rock riff — low strings"
+            fretMin={0}
+            fretMax={5}
+            notes={[
+              { string: 5, fret: 0 },
+              { string: 5, fret: 2 },
+              { string: 5, fret: 3 },
+              { string: 4, fret: 0, technique: 'hammer' },
+              { string: 4, fret: 2 },
+              { string: 4, fret: 3 },
+            ]}
+          />
+          <p
+            className="text-[12px]"
+            style={{ color: 'var(--muted-foreground)', fontFamily: 'var(--font-serif)' }}
+          >
+            E minor blues scale on the low strings: E0 → E2 → E3 (the blue note Gb) → A0 → A2 → A3.
+            This is the riff spine of "Whole Lotta Love," "Back in Black," and hundreds more. The Gb
+            (b5) is the "blue note" that gives rock its grit.
+          </p>
+        </div>
+
+        {/* Minor pentatonic over power chords */}
+        <div className="space-y-2">
+          <p
+            className="text-[11px] font-semibold uppercase tracking-[0.1em]"
+            style={{ color: '#5A7EA8' }}
+          >
+            Minor Pentatonic Over Em–D–A Rock Progression
+          </p>
+          <Progression
+            chords={['Em', 'D', 'A', 'Em']}
+            note="Use Am/Em pentatonic (frets 5–8) throughout. Works over all three chords — that's the magic of pentatonic."
+          />
+          <div
+            className="rounded-lg px-3 py-2.5 text-[12px] space-y-1"
+            style={{
+              background: '#C4A06008',
+              border: '1px solid #C4A06018',
+              fontFamily: 'var(--font-serif)',
+            }}
+          >
+            <p style={{ color: 'var(--muted-foreground)' }}>
+              The Am pentatonic (A C D E G) works as a solo scale over Em, D, and A chords — they
+              all draw notes from it.
+            </p>
+            <p style={{ color: 'var(--muted-foreground)' }}>
+              Over Em: land on E (root) at e-string fret 5. Over D: land on D (root) at B-string
+              fret 7. Over A: land on A (root) at A-string fret 5.
+            </p>
+          </div>
+        </div>
+
+        {/* Rock vs Blues feel */}
+        <div className="space-y-2">
+          <p
+            className="text-[11px] font-semibold uppercase tracking-[0.1em]"
+            style={{ color: '#5A7EA8' }}
+          >
+            Blues Feel vs Rock Feel — same notes, different delivery
+          </p>
+          <div
+            className="grid grid-cols-2 gap-2 text-[11px]"
+            style={{ fontFamily: 'var(--font-serif)' }}
+          >
+            <div
+              className="rounded-lg px-3 py-2.5"
+              style={{ background: '#5A7EA810', border: '1px solid #5A7EA825' }}
+            >
+              <p className="font-semibold mb-1" style={{ color: '#5A7EA8' }}>
+                Blues
+              </p>
+              <p style={{ color: 'var(--muted-foreground)' }}>
+                Slow vibrato · wide bends · space between notes · call and response · emotion first
+              </p>
+            </div>
+            <div
+              className="rounded-lg px-3 py-2.5"
+              style={{ background: '#C4A06010', border: '1px solid #C4A06025' }}
+            >
+              <p className="font-semibold mb-1" style={{ color: '#C4A060' }}>
+                Rock
+              </p>
+              <p style={{ color: 'var(--muted-foreground)' }}>
+                Fast runs · palm muting · power chords · sustained distortion · energy and
+                aggression
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {/* SRV / Hendrix crossover */}
+        <div className="space-y-2">
+          <p
+            className="text-[11px] font-semibold uppercase tracking-[0.1em]"
+            style={{ color: '#5A7EA8' }}
+          >
+            The Crossover: SRV / Hendrix Style
+          </p>
+          <p
+            className="text-[12px]"
+            style={{ color: 'var(--muted-foreground)', fontFamily: 'var(--font-serif)' }}
+          >
+            SRV and Hendrix lived exactly at the crossover — blues vocabulary at rock volume and
+            intensity. The key is mixing the E7#9 (Hendrix chord) with pentatonic runs and full-tone
+            bends. Try: E7#9 held (2 bars) → burst of Am pentatonic licks → resolve back to E7#9.
+            That's the template.
+          </p>
+          <Progression
+            chords={['E7#9', 'Am7', 'D9', 'E7#9']}
+            note="Hendrix blues-rock loop. Hold E7#9 rhythmically, solo in Am pent over Am7 and D9, snap back."
+          />
+        </div>
+
+        <div
+          className="rounded-lg px-3 py-2.5 text-[12px] space-y-1.5"
+          style={{
+            background: '#5A7EA808',
+            border: '1px solid #5A7EA820',
+            fontFamily: 'var(--font-serif)',
+          }}
+        >
+          <p className="font-semibold" style={{ color: '#5A7EA8' }}>
+            Practice path
+          </p>
+          <p style={{ color: 'var(--muted-foreground)' }}>
+            1. Learn Licks 1–3 from the Blues Vocabulary chapter. Make them fluent.
+          </p>
+          <p style={{ color: 'var(--muted-foreground)' }}>
+            2. Play them over Em–D–A at a heavier, faster tempo. Notice how the same phrase sounds
+            different with rock energy.
+          </p>
+          <p style={{ color: 'var(--muted-foreground)' }}>
+            3. Add palm muting on the rhythm chord, then release into the lick. That contrast IS
+            rock guitar.
+          </p>
+          <p style={{ color: 'var(--muted-foreground)' }}>
+            4. Learn the Chuck Berry double-stop riff and use it as the rhythmic foundation between
+            licks.
+          </p>
         </div>
       </div>
     ),

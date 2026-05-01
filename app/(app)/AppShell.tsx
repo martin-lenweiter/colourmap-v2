@@ -2,7 +2,9 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { useState } from 'react';
 import ErrorBoundary from '@/components/ErrorBoundary';
+import GuitarStudio from '@/components/GuitarStudio';
 import SoundLab from '@/components/SoundLab';
 import { useViewMode } from '@/components/ViewModeContext';
 
@@ -12,11 +14,14 @@ const SOCIAL_ROUTES = [
   { href: '/chat', label: 'Chat' },
 ];
 
+type MusicSection = 'makers' | 'guitar';
+
 export default function AppShell({ children }: { children: React.ReactNode }) {
   const { mode } = useViewMode();
   const pathname = usePathname();
   const onMusic = pathname === '/music';
   const onSocial = SOCIAL_ROUTES.some((r) => r.href === pathname);
+  const [musicSection, setMusicSection] = useState<MusicSection>('makers');
 
   const containerClass =
     mode === 'phone' ? 'mx-auto w-full max-w-sm px-4 py-6' : 'mx-auto w-full max-w-7xl px-6 py-10';
@@ -28,17 +33,53 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
             display:none hides it but never unmounts — audio survives
             route changes. Only visible when on /music. */}
         <div style={{ display: onMusic ? 'block' : 'none' }}>
-          <div className="flex items-center gap-4 pb-1 mb-2">
+          {/* Music top-nav: Music Studio · Guitar Studio */}
+          <div className="flex items-center gap-3 pb-1 mb-3">
             <div style={{ flex: 1, height: 1, background: '#C4A06020' }} />
-            <span
-              className="shrink-0 text-[11px] uppercase tracking-[0.18em]"
-              style={{ color: '#C4A060', fontFamily: 'var(--font-serif)', fontWeight: 700 }}
+            <button
+              type="button"
+              onClick={() => setMusicSection('makers')}
+              className="shrink-0 cursor-pointer bg-transparent border-none transition-opacity"
+              style={{
+                fontFamily: 'var(--font-serif)',
+                fontSize: '11px',
+                fontWeight: musicSection === 'makers' ? 700 : 500,
+                letterSpacing: '0.18em',
+                textTransform: 'uppercase',
+                color: musicSection === 'makers' ? '#C4A060' : '#A0907A',
+                opacity: musicSection === 'makers' ? 1 : 0.55,
+                padding: 0,
+              }}
             >
-              Music Makers
-            </span>
+              Music Studio
+            </button>
+            <span style={{ color: '#C4A06030', fontSize: 11 }}>·</span>
+            <button
+              type="button"
+              onClick={() => setMusicSection('guitar')}
+              className="shrink-0 cursor-pointer bg-transparent border-none transition-opacity"
+              style={{
+                fontFamily: 'var(--font-serif)',
+                fontSize: '11px',
+                fontWeight: musicSection === 'guitar' ? 700 : 500,
+                letterSpacing: '0.18em',
+                textTransform: 'uppercase',
+                color: musicSection === 'guitar' ? '#C4A060' : '#A0907A',
+                opacity: musicSection === 'guitar' ? 1 : 0.55,
+                padding: 0,
+              }}
+            >
+              Guitar Studio
+            </button>
             <div style={{ flex: 1, height: 1, background: '#C4A06020' }} />
           </div>
-          <SoundLab />
+
+          {/* SoundLab: always mounted so audio keeps running */}
+          <div style={{ display: musicSection === 'makers' ? 'block' : 'none' }}>
+            <SoundLab />
+          </div>
+          {/* GuitarStudio: shown when selected */}
+          {musicSection === 'guitar' && <GuitarStudio />}
         </div>
 
         {/* Social sub-navigation — shown on /circles, /sparks, /chat */}

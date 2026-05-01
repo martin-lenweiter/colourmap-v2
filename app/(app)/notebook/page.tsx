@@ -467,6 +467,8 @@ export default function NotebookPage() {
   const [trashEntries, setTrashEntries] = useState<(Entry & { deletedAt: string })[]>([]);
   const [renamingNbId, setRenamingNbId] = useState<string | null>(null);
   const [renameNbValue, setRenameNbValue] = useState('');
+  const [dragId, setDragId] = useState<string | null>(null);
+  const [dragOverId, setDragOverId] = useState<string | null>(null);
   const saveTimers = useRef<Map<string, ReturnType<typeof setTimeout>>>(new Map());
 
   // Escape exits full view
@@ -675,6 +677,30 @@ export default function NotebookPage() {
     }
   }
 
+  function handleDragStart(id: string) {
+    setDragId(id);
+  }
+  function handleDragOver(id: string, e: React.DragEvent) {
+    e.preventDefault();
+    if (id !== dragId) setDragOverId(id);
+  }
+  function handleDrop(targetId: string) {
+    if (!dragId || dragId === targetId) return;
+    const from = notebooks.findIndex((n) => n.id === dragId);
+    const to = notebooks.findIndex((n) => n.id === targetId);
+    if (from === -1 || to === -1) return;
+    const next = [...notebooks];
+    const [moved] = next.splice(from, 1);
+    next.splice(to, 0, moved);
+    saveNotebooks(next);
+    setDragId(null);
+    setDragOverId(null);
+  }
+  function handleDragEnd() {
+    setDragId(null);
+    setDragOverId(null);
+  }
+
   function commitRenameNb(id: string) {
     const trimmed = renameNbValue.trim();
     if (trimmed) {
@@ -740,10 +766,17 @@ export default function NotebookPage() {
                 <div className="mt-2 flex flex-wrap gap-2 pb-1">
                   {notebooks.map((nb) => {
                     const isActive = activeNotebook === nb.id;
+                    const isDragging = dragId === nb.id;
+                    const isOver = dragOverId === nb.id;
                     return (
                       <button
                         key={nb.id}
                         type="button"
+                        draggable
+                        onDragStart={() => handleDragStart(nb.id)}
+                        onDragOver={(e) => handleDragOver(nb.id, e)}
+                        onDrop={() => handleDrop(nb.id)}
+                        onDragEnd={handleDragEnd}
                         onClick={() => {
                           setActiveNotebook(nb.id);
                           setShowNbMenu(false);
@@ -751,9 +784,13 @@ export default function NotebookPage() {
                         className="shrink-0 rounded-full px-3 py-1.5 text-xs font-medium transition-all"
                         style={{
                           background: isActive ? `${nb.color}18` : 'transparent',
-                          border: `1px solid ${isActive ? nb.color + '40' : nb.color + '18'}`,
+                          border: `1px solid ${isOver ? nb.color + '80' : isActive ? nb.color + '40' : nb.color + '18'}`,
                           color: isActive ? nb.color : `${nb.color}60`,
                           whiteSpace: 'nowrap',
+                          opacity: isDragging ? 0.35 : 1,
+                          cursor: 'grab',
+                          outline: isOver ? `2px solid ${nb.color}40` : undefined,
+                          outlineOffset: isOver ? 2 : undefined,
                         }}
                       >
                         {nb.label}
@@ -778,16 +815,34 @@ export default function NotebookPage() {
                   const isActive = activeNotebook === nb.id;
                   const count = entries.filter((e) => e.category === nb.id).length;
                   const isRenaming = renamingNbId === nb.id;
+                  const isDragging = dragId === nb.id;
+                  const isOver = dragOverId === nb.id;
                   return (
                     <div
                       key={nb.id}
+                      draggable
+                      onDragStart={() => handleDragStart(nb.id)}
+                      onDragOver={(e) => handleDragOver(nb.id, e)}
+                      onDrop={() => handleDrop(nb.id)}
+                      onDragEnd={handleDragEnd}
                       className="group flex items-center gap-2 px-3 py-2 rounded-xl transition-all cursor-pointer"
                       style={{
                         background: isActive ? `${nb.color}15` : 'transparent',
-                        border: isActive ? `1px solid ${nb.color}30` : '1px solid transparent',
+                        border: isOver
+                          ? `1px solid ${nb.color}60`
+                          : isActive
+                            ? `1px solid ${nb.color}30`
+                            : '1px solid transparent',
+                        opacity: isDragging ? 0.35 : 1,
                       }}
                       onClick={() => !isRenaming && setActiveNotebook(nb.id)}
                     >
+                      <span
+                        className="shrink-0 opacity-0 group-hover:opacity-30 transition-opacity select-none"
+                        style={{ fontSize: 9, color: nb.color, cursor: 'grab', lineHeight: 1 }}
+                      >
+                        ⠿
+                      </span>
                       <div
                         className="h-3 w-3 rounded-full shrink-0"
                         style={{ background: nb.color, opacity: isActive ? 0.8 : 0.3 }}
@@ -861,17 +916,36 @@ export default function NotebookPage() {
                   .map((nb) => {
                     const isActive = activeNotebook === nb.id;
                     const count = entries.filter((e) => e.category === nb.id).length;
+                    const isDragging = dragId === nb.id;
+                    const isOver = dragOverId === nb.id;
                     return (
                       <button
                         key={nb.id}
                         type="button"
+                        draggable
+                        onDragStart={() => handleDragStart(nb.id)}
+                        onDragOver={(e) => handleDragOver(nb.id, e)}
+                        onDrop={() => handleDrop(nb.id)}
+                        onDragEnd={handleDragEnd}
                         onClick={() => setActiveNotebook(nb.id)}
-                        className="w-full flex items-center gap-2 px-3 py-2 rounded-xl text-left transition-all"
+                        className="group w-full flex items-center gap-2 px-3 py-2 rounded-xl text-left transition-all"
                         style={{
                           background: isActive ? `${nb.color}15` : 'transparent',
-                          border: isActive ? `1px solid ${nb.color}30` : '1px solid transparent',
+                          border: isOver
+                            ? `1px solid ${nb.color}60`
+                            : isActive
+                              ? `1px solid ${nb.color}30`
+                              : '1px solid transparent',
+                          opacity: isDragging ? 0.35 : 1,
+                          cursor: 'grab',
                         }}
                       >
+                        <span
+                          className="shrink-0 opacity-0 group-hover:opacity-30 transition-opacity select-none"
+                          style={{ fontSize: 9, color: nb.color, lineHeight: 1 }}
+                        >
+                          ⠿
+                        </span>
                         <div
                           className="h-3 w-3 rounded-full shrink-0"
                           style={{ background: nb.color, opacity: isActive ? 0.8 : 0.3 }}
