@@ -4444,7 +4444,7 @@ export default function BinauralTuner() {
             )}
           </div>
 
-          {/* Collapsible: Saved Sounds */}
+          {/* Collapsible: Daily Note */}
           <div className="px-2">
             <button
               type="button"
@@ -4456,7 +4456,7 @@ export default function BinauralTuner() {
                 className="text-center text-base font-bold uppercase tracking-[0.22em]"
                 style={{ color: '#C4A060' }}
               >
-                saved sounds
+                daily note
               </span>
               <span
                 style={{
@@ -4469,120 +4469,32 @@ export default function BinauralTuner() {
               </span>
             </button>
             {savedSoundsOpen && (
-              <div className="animate-in fade-in duration-150 space-y-2 pt-1">
-                {/* Save input */}
-                <div className="flex items-center gap-1.5">
-                  <input
-                    type="text"
-                    value={saveName}
-                    onChange={(e) => setSaveName(e.target.value)}
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter') saveMix();
-                    }}
-                    placeholder="name this mix..."
-                    className="flex-1 rounded-lg border bg-transparent px-2 py-1 outline-none placeholder:italic placeholder:text-[#8A6A4A] placeholder:opacity-50"
-                    style={{
-                      fontFamily: 'var(--font-serif)',
-                      fontSize: '16px',
-                      color: '#5C3018',
-                      borderColor: '#C4A06025',
-                    }}
-                  />
-                  <button
-                    type="button"
-                    onClick={saveMix}
-                    className="cursor-pointer rounded-lg px-2 py-1"
-                    style={{
-                      fontFamily: 'var(--font-serif)',
-                      fontSize: '12px',
-                      fontWeight: 600,
-                      color: '#7AAA58',
-                      background: '#7AAA5810',
-                      border: '1px solid #7AAA5830',
-                    }}
-                  >
-                    save
-                  </button>
-                </div>
-                {/* Saved mixes list */}
-                {savedMixes.length > 0 && (
-                  <div className="space-y-1">
-                    {savedMixes.map((mix, i) => (
-                      <div
-                        key={`${mix.name}-${i}`}
-                        className="flex w-full items-center gap-2 rounded-lg px-3 py-1.5 transition-all hover:bg-[#C4A06008]"
-                      >
-                        <button
-                          type="button"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            cycleMixShape(i);
-                          }}
-                          title="Tap to change marker shape"
-                          className="shrink-0 cursor-pointer"
-                          style={{
-                            width: 14,
-                            height: 14,
-                            padding: 0,
-                            background: 'none',
-                            border: 'none',
-                            display: 'inline-flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                          }}
-                        >
-                          <SavedShapeIcon shape={mix.shape ?? 'dot'} color="#C4A060" />
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => loadMix(mix)}
-                          className="flex flex-1 cursor-pointer items-center gap-2 text-left"
-                          style={{ background: 'none', border: 'none', padding: 0 }}
-                        >
-                          <span
-                            style={{
-                              fontFamily: 'var(--font-serif)',
-                              fontSize: '13px',
-                              color: '#5C3018',
-                              fontWeight: 600,
-                            }}
-                          >
-                            {mix.name}
-                          </span>
-                          <span
-                            style={{
-                              fontFamily: 'var(--font-serif)',
-                              fontSize: '12px',
-                              color: '#8A6A4A',
-                              marginLeft: 'auto',
-                            }}
-                          >
-                            {mix.beat}Hz · {Object.values(mix.layers).filter((v) => v > 0).length}{' '}
-                            layers
-                          </span>
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => deleteMix(i)}
-                          title="Delete this mix"
-                          style={{
-                            background: 'none',
-                            border: 'none',
-                            cursor: 'pointer',
-                            color: '#8A6A4A',
-                            opacity: 0.4,
-                            fontSize: 14,
-                            lineHeight: 1,
-                            padding: '0 2px',
-                            flexShrink: 0,
-                          }}
-                        >
-                          ×
-                        </button>
-                      </div>
-                    ))}
-                  </div>
-                )}
+              <div className="animate-in fade-in duration-150 pt-1 pb-3">
+                <p
+                  className="text-center italic leading-relaxed"
+                  style={{
+                    fontFamily: 'var(--font-serif)',
+                    fontSize: '14px',
+                    color: '#8A6A4A',
+                    opacity: 0.85,
+                    padding: '8px 12px',
+                    border: '1px solid #C4A06020',
+                    borderRadius: 10,
+                    background: '#C4A06008',
+                  }}
+                >
+                  {
+                    [
+                      'Structure is the scaffolding of freedom.',
+                      'Every action you take is a vote for who you want to become.',
+                      'The present moment is where your power lives.',
+                      'Build the life you want one hour at a time.',
+                      'Rest is not a reward — it is a foundation.',
+                      'Creativity is intelligence having fun.',
+                      'What you practice in private shows up in public.',
+                    ][new Date().getDay()]
+                  }
+                </p>
               </div>
             )}
           </div>

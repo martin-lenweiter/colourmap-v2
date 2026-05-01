@@ -1,19 +1,18 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 
 /*
- * DoingStateCircle — big circle + drag slider for the Doing tab.
- * Mirrors the SharingCheckIn circle+slider pattern so F / D / S
- * all share the same visual anchor: colour circle → label → drag dots.
- * Scale: Deep Rest → Tunnel Vision (engagement / focus intensity).
+ * DoingStateCircle — big circle + dot selector for the Doing tab.
+ * 7 stops from green (Deep Rest) to blue (Tunnel Vision).
+ * Mirrors the SharingCheckIn circle pattern so F / D / S share the same anchor.
  */
 
 const DOING_LEVELS = [
-  { label: 'Deep Rest', color: '#A8B8D0' },
-  { label: 'Drifting', color: '#90A8C0' },
-  { label: 'Present', color: '#7898B0' },
-  { label: 'Working', color: '#6890B0' },
+  { label: 'Deep Rest', color: '#5A9A70' },
+  { label: 'Drifting', color: '#4A9A85' },
+  { label: 'Present', color: '#4A9898' },
+  { label: 'Working', color: '#4A8AA8' },
   { label: 'Focused', color: '#5080A8' },
   { label: 'Driven', color: '#3870A0' },
   { label: 'Tunnel Vision', color: '#286098' },
@@ -31,99 +30,41 @@ function loadIdx(): number {
   }
 }
 
-function DragSlider({ idx, onSelect }: { idx: number; onSelect: (i: number) => void }) {
-  const containerRef = useRef<HTMLDivElement>(null);
+function DotSelector({ idx, onSelect }: { idx: number; onSelect: (i: number) => void }) {
   const n = DOING_LEVELS.length;
   const DOT = 28;
   const GAP = 6;
-  const TOTAL = n * DOT + (n - 1) * GAP;
-
-  function idxFromX(clientX: number) {
-    const el = containerRef.current;
-    if (!el) return idx;
-    const rect = el.getBoundingClientRect();
-    const x = clientX - rect.left;
-    return Math.max(0, Math.min(n - 1, Math.round((x / rect.width) * (n - 1))));
-  }
 
   return (
-    <div
-      ref={containerRef}
-      className="relative flex cursor-pointer items-center"
-      style={{ width: TOTAL, height: DOT, touchAction: 'none' }}
-      onMouseDown={(e) => onSelect(idxFromX(e.clientX))}
-      onMouseMove={(e) => {
-        if (e.buttons > 0) onSelect(idxFromX(e.clientX));
-      }}
-      onTouchStart={(e) => onSelect(idxFromX(e.touches[0].clientX))}
-      onTouchMove={(e) => {
-        e.preventDefault();
-        onSelect(idxFromX(e.touches[0].clientX));
-      }}
-    >
-      {/* Track line */}
-      <div
-        className="absolute"
-        style={{
-          left: DOT / 2,
-          right: DOT / 2,
-          top: '50%',
-          height: 2,
-          transform: 'translateY(-50%)',
-          background: `linear-gradient(to right, ${DOING_LEVELS[0].color}60, ${DOING_LEVELS[n - 1].color}60)`,
-          borderRadius: 2,
-        }}
-      />
-      {/* Tick marks */}
-      {DOING_LEVELS.map((_, i) => (
-        <div
-          key={`tick-${i}`}
-          className="absolute"
-          style={{
-            left: i * (DOT + GAP) + DOT / 2 - 1,
-            top: '72%',
-            width: 2,
-            height: 6,
-            background: 'rgba(26,18,9,0.35)',
-            borderRadius: 1,
-          }}
-        />
-      ))}
-      {/* Stop dots */}
+    <div className="flex items-center" style={{ gap: GAP }}>
       {DOING_LEVELS.map((l, i) => {
         const isActive = i === idx;
         const dist = Math.abs(i - idx);
         return (
-          <div
+          <button
             key={l.label}
-            className="absolute transition-all duration-150"
+            type="button"
+            onClick={() => onSelect(i)}
+            className="cursor-pointer transition-all duration-200"
             style={{
-              left: i * (DOT + GAP),
-              width: DOT,
-              height: DOT,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
+              width: isActive ? DOT : 10,
+              height: isActive ? DOT : 10,
+              borderRadius: '50%',
+              background: l.color,
+              opacity: isActive ? 1 : dist === 1 ? 0.5 : 0.25,
+              boxShadow: isActive ? `0 4px 14px ${l.color}66` : 'none',
+              border: 'none',
+              padding: 0,
+              flexShrink: 0,
             }}
-          >
-            <span
-              className="block rounded-full transition-all duration-200"
-              style={{
-                width: isActive ? DOT : 10,
-                height: isActive ? DOT : 10,
-                background: l.color,
-                opacity: isActive ? 1 : dist === 1 ? 0.5 : 0.25,
-                boxShadow: isActive ? `0 4px 14px ${l.color}66` : 'none',
-              }}
-            />
-          </div>
+          />
         );
       })}
     </div>
   );
 }
 
-export default function DoingStateCircle() {
+export default function DoingStateCircle({ onDone }: { onDone?: () => void }) {
   const [idx, setIdx] = useState(3);
 
   useEffect(() => {
@@ -183,20 +124,27 @@ export default function DoingStateCircle() {
         </span>
       </div>
 
-      {/* Drag slider */}
-      <DragSlider idx={idx} onSelect={pick} />
+      {/* Dot selector — no track line, no tick marks */}
+      <DotSelector idx={idx} onSelect={pick} />
 
-      <p
-        className="text-center italic"
+      {/* Done button */}
+      <button
+        type="button"
+        onClick={onDone}
+        className="cursor-pointer rounded-full px-6 py-1.5"
         style={{
           fontFamily: 'var(--font-serif)',
           fontSize: '12px',
-          color: '#8A6A4A',
-          opacity: 0.5,
+          fontWeight: 700,
+          letterSpacing: '0.18em',
+          textTransform: 'uppercase',
+          color: '#C4A060',
+          background: '#C4A06012',
+          border: '1px solid #C4A06040',
         }}
       >
-        Deep Rest · Tunnel Vision
-      </p>
+        Done
+      </button>
     </div>
   );
 }
