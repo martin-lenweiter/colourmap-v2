@@ -373,3 +373,92 @@
   text-decoration-color: #a0907a;
   text-decoration-style: wavy;
 }
+
+/* GrooveMachine BPM + blend sliders — rainbow track */
+input[type="range"].groove-rainbow-slider {
+  -webkit-appearance: none;
+  appearance: none;
+  background: transparent;
+}
+input[type="range"].groove-rainbow-slider::-webkit-slider-runnable-track {
+  height: 6px;
+  border-radius: 3px;
+  background: linear-gradient(
+    to right,
+    hsl(0, 70%, 65%),
+    hsl(45, 75%, 60%),
+    hsl(90, 65%, 55%),
+    hsl(160, 60%, 55%),
+    hsl(210, 65%, 60%),
+    hsl(260, 60%, 65%),
+    hsl(310, 65%, 65%)
+  );
+}
+input[type="range"].groove-rainbow-slider::-moz-range-track {
+  height: 6px;
+  border-radius: 3px;
+  background: linear-gradient(
+    to right,
+    hsl(0, 70%, 65%),
+    hsl(45, 75%, 60%),
+    hsl(90, 65%, 55%),
+    hsl(160, 60%, 55%),
+    hsl(210, 65%, 60%),
+    hsl(260, 60%, 65%),
+    hsl(310, 65%, 65%)
+  );
+}
+input[type="range"].groove-rainbow-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: #fff;
+  border: 2px solid #c4a060;
+  margin-top: -6px;
+  cursor: pointer;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.18);
+}
+input[type="range"].groove-rainbow-slider::-moz-range-thumb {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: #fff;
+  border: 2px solid #c4a060;
+  cursor: pointer;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.18);
+}
+
+/* Feedback overlay text-size slider — warm brown track instead of white */
+input[type="range"].feedback-slider {
+  -webkit-appearance: none;
+  appearance: none;
+  background: transparent;
+}
+input[type="range"].feedback-slider::-webkit-slider-runnable-track {
+  height: 3px;
+  border-radius: 2px;
+  background: #d4b890;
+}
+input[type="range"].feedback-slider::-moz-range-track {
+  height: 3px;
+  border-radius: 2px;
+  background: #d4b890;
+}
+input[type="range"].feedback-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: #a87a40;
+  margin-top: -5.5px;
+  cursor: pointer;
+}
+input[type="range"].feedback-slider::-moz-range-thumb {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: #a87a40;
+  border: none;
+  cursor: pointer;
+}

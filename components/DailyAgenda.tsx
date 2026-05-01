@@ -556,51 +556,6 @@ export default function DailyAgenda() {
             </button>
           </div>
 
-          {/* Row 3 (tertiary): F · D · S axis filter — single-select. */}
-          <div className="flex items-center justify-center gap-2 opacity-85">
-            <div className="flex gap-2">
-              {(
-                [
-                  { key: 'feeling' as const, label: 'Feeling', color: '#D4805A' },
-                  { key: 'doing' as const, label: 'Doing', color: '#6890B0' },
-                  { key: 'sharing' as const, label: 'Sharing', color: '#6B7F4E' },
-                ] as const
-              ).map((l) => {
-                const isActive = axisFilter === l.key;
-                return (
-                  <button
-                    key={l.key}
-                    type="button"
-                    onClick={() => setAxisFilter(isActive ? 'all' : l.key)}
-                    className="flex cursor-pointer items-center gap-1.5 rounded-full px-2 py-1 transition-all"
-                    style={{
-                      background: isActive ? `${l.color}18` : 'transparent',
-                      border: `1px solid ${isActive ? `${l.color}50` : `${l.color}20`}`,
-                      opacity: isActive ? 1 : 0.65,
-                    }}
-                    aria-pressed={isActive}
-                  >
-                    <span
-                      className="block rounded-full"
-                      style={{ width: 10, height: 10, background: l.color }}
-                    />
-                    <span
-                      style={{
-                        fontFamily: 'var(--font-serif)',
-                        fontSize: 11,
-                        fontWeight: 600,
-                        color: l.color,
-                        letterSpacing: '0.04em',
-                      }}
-                    >
-                      {l.label}
-                    </span>
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-
           {/* Daily Objectives expanded */}
           {objectives.filter((o) => !o.done).length > 0 && (
             <div>
@@ -631,16 +586,6 @@ export default function DailyAgenda() {
                           aria-label={`Filter to ${mt.label} missions`}
                           aria-pressed={isActive}
                         >
-                          <span
-                            style={{
-                              width: 10,
-                              height: 10,
-                              borderRadius: '50%',
-                              background: mt.color,
-                              opacity: isActive ? 1 : 0.7,
-                              flexShrink: 0,
-                            }}
-                          />
                           <span
                             style={{
                               fontFamily: 'var(--font-serif)',

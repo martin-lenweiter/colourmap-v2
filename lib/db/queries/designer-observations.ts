@@ -36,3 +36,16 @@ export async function deleteDesignerObservation(db: Db, id: string): Promise<boo
     .returning();
   return result.length > 0;
 }
+
+export async function setDesignerObservationDone(
+  db: Db,
+  id: string,
+  done: boolean,
+): Promise<DesignerObservation | null> {
+  const [row] = await db
+    .update(designerObservations)
+    .set({ done })
+    .where(eq(designerObservations.id, id))
+    .returning();
+  return row ?? null;
+}

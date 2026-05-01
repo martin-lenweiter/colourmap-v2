@@ -22,7 +22,8 @@ export async function getBacklogItems(
     .select()
     .from(backlog)
     .where(eq(backlog.userId, userId))
-    .orderBy(desc(backlog.createdAt));
+    .orderBy(desc(backlog.createdAt))
+    .limit(200);
 }
 
 export async function toggleBacklogItem(

@@ -65,7 +65,10 @@ export default async function AppLayout({
                 centered on every viewport — not just desktop. Left column
                 is an empty spacer matching the width of the right column
                 so the middle is truly centered even on phone. */}
-            <div className="mx-auto grid w-full max-w-5xl grid-cols-[1fr_auto_1fr] items-center gap-3 px-4 py-2">
+            <div
+              className="mx-auto grid w-full max-w-5xl grid-cols-[1fr_auto_1fr] items-center gap-3 px-4 py-2"
+              style={{ background: 'var(--secondary)' }}
+            >
               <div />
               {/* Brand button now also carries the user's initials —
                   tapping the title opens an About modal with the user

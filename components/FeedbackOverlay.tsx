@@ -148,9 +148,15 @@ export default function FeedbackOverlay() {
   const textBeforeListenRef = useRef<string>('');
   const [voiceSupported, setVoiceSupported] = useState(false);
   // Observation log — Supabase-backed list of past feedback blocks.
-  const { observations, register, remove: removeObservation } = useDesignerObservations();
+  const {
+    observations,
+    register,
+    remove: removeObservation,
+    setDone: setObsDone,
+  } = useDesignerObservations();
   const [selectedAreaId, setSelectedAreaId] = useState<string | null>(null);
   const [logOpen, setLogOpen] = useState(false);
+  const [doneOpen, setDoneOpen] = useState(false);
   const [registerStatus, setRegisterStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>(
     'idle',
   );
@@ -277,6 +283,77 @@ export default function FeedbackOverlay() {
       setRegisterStatus('error');
     }
   }, [text, selectedAreaId, register]);
+
+  function renderObsText(text: string) {
+    const lines = text.split('\n');
+    return lines.map((line, i) => {
+      const numbered = line.match(/^(\d+)\.\s(.+)/);
+      const bullet = line.match(/^[-*]\s(.+)/);
+      const checkedDone = line.match(/^[-*]\s\[x\]\s(.+)/i);
+      const checkedOpen = line.match(/^[-*]\s\[\s\]\s(.+)/i);
+      if (checkedDone) {
+        return (
+          <div
+            key={i}
+            style={{ display: 'flex', alignItems: 'flex-start', gap: 5, marginBottom: 1 }}
+          >
+            <span style={{ marginTop: 1, color: '#7A9860', fontWeight: 700 }}>✓</span>
+            <span style={{ textDecoration: 'line-through', opacity: 0.55 }}>{checkedDone[1]}</span>
+          </div>
+        );
+      }
+      if (checkedOpen) {
+        return (
+          <div
+            key={i}
+            style={{ display: 'flex', alignItems: 'flex-start', gap: 5, marginBottom: 1 }}
+          >
+            <span
+              style={{
+                marginTop: 1,
+                width: 11,
+                height: 11,
+                border: '1.5px solid #A87A40',
+                borderRadius: 2,
+                flexShrink: 0,
+                display: 'inline-block',
+              }}
+            />
+            <span>{checkedOpen[1]}</span>
+          </div>
+        );
+      }
+      if (numbered) {
+        return (
+          <div
+            key={i}
+            style={{ display: 'flex', alignItems: 'flex-start', gap: 5, marginBottom: 1 }}
+          >
+            <span style={{ color: '#A87A40', fontWeight: 700, minWidth: 14, textAlign: 'right' }}>
+              {numbered[1]}.
+            </span>
+            <span>{numbered[2]}</span>
+          </div>
+        );
+      }
+      if (bullet) {
+        return (
+          <div
+            key={i}
+            style={{ display: 'flex', alignItems: 'flex-start', gap: 5, marginBottom: 1 }}
+          >
+            <span style={{ color: '#A87A40', marginTop: 1 }}>·</span>
+            <span>{bullet[1]}</span>
+          </div>
+        );
+      }
+      return (
+        <div key={i} style={{ marginBottom: line === '' ? 4 : 1 }}>
+          {line || ' '}
+        </div>
+      );
+    });
+  }
 
   const openOverlay = useCallback(() => {
     setOpen(true);
@@ -733,6 +810,7 @@ export default function FeedbackOverlay() {
               onChange={(e) => setFontSize(Number.parseInt(e.target.value, 10))}
               onPointerDown={(e) => e.stopPropagation()}
               aria-label="Text size"
+              className="feedback-slider"
               style={{ flex: 1, accentColor: '#A87A40', minHeight: 20 }}
             />
             <span
@@ -880,23 +958,13 @@ export default function FeedbackOverlay() {
               </button>
             )}
           </div>
-          {/* Log — all past observations, newest first. Each block
-              shows its area pill + relative time + text + delete. */}
-          {logOpen && observations.length > 0 && (
-            <div
-              style={{
-                marginTop: 6,
-                paddingTop: 6,
-                borderTop: '1px dashed #A87A4035',
-                overflowY: 'auto',
-                maxHeight: 220,
-                display: 'flex',
-                flexDirection: 'column',
-                gap: 6,
-              }}
-              onPointerDown={(e) => e.stopPropagation()}
-            >
-              {observations.map((obs) => {
+          {/* Log — active and done sections */}
+          {logOpen &&
+            observations.length > 0 &&
+            (() => {
+              const active = observations.filter((o) => !o.done);
+              const done = observations.filter((o) => o.done);
+              const obsCard = (obs: (typeof observations)[0], isDone: boolean) => {
                 const opt = AREA_OPTIONS.find((o) => o.label === obs.area);
                 const color = opt?.color ?? '#8A6A4A';
                 return (
@@ -905,18 +973,12 @@ export default function FeedbackOverlay() {
                     style={{
                       borderRadius: 8,
                       padding: '6px 8px',
-                      background: 'rgba(255,255,255,0.45)',
+                      background: isDone ? 'rgba(255,255,255,0.25)' : 'rgba(255,255,255,0.45)',
                       border: `1px solid ${color}30`,
+                      opacity: isDone ? 0.6 : 1,
                     }}
                   >
-                    <div
-                      style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: 6,
-                        marginBottom: 3,
-                      }}
-                    >
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 3 }}>
                       {obs.area && (
                         <span
                           style={{
@@ -944,41 +1006,97 @@ export default function FeedbackOverlay() {
                       >
                         {relativeWhen(obs.createdAt)}
                       </span>
-                      <button
-                        type="button"
-                        onClick={() => removeObservation(obs.id)}
-                        aria-label="Delete observation"
-                        style={{
-                          marginLeft: 'auto',
-                          background: 'transparent',
-                          border: 'none',
-                          color: '#A87A4080',
-                          fontSize: 14,
-                          cursor: 'pointer',
-                          padding: '0 4px',
-                          lineHeight: 1,
-                        }}
-                      >
-                        ×
-                      </button>
+                      <div style={{ marginLeft: 'auto', display: 'flex', gap: 2 }}>
+                        <button
+                          type="button"
+                          onClick={() => setObsDone(obs.id, !isDone)}
+                          aria-label={isDone ? 'Restore observation' : 'Mark done'}
+                          style={{
+                            background: 'transparent',
+                            border: 'none',
+                            color: isDone ? '#7A9860' : '#A87A4060',
+                            fontSize: 13,
+                            cursor: 'pointer',
+                            padding: '0 3px',
+                            lineHeight: 1,
+                          }}
+                        >
+                          ✓
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => removeObservation(obs.id)}
+                          aria-label="Delete observation"
+                          style={{
+                            background: 'transparent',
+                            border: 'none',
+                            color: '#A87A4080',
+                            fontSize: 14,
+                            cursor: 'pointer',
+                            padding: '0 3px',
+                            lineHeight: 1,
+                          }}
+                        >
+                          ×
+                        </button>
+                      </div>
                     </div>
-                    <p
+                    <div
                       style={{
                         fontFamily: 'var(--font-serif)',
                         fontSize: 12.5,
                         color: '#1f1208',
                         lineHeight: 1.4,
-                        whiteSpace: 'pre-wrap',
                         wordBreak: 'break-word',
                       }}
                     >
-                      {obs.text}
-                    </p>
+                      {renderObsText(obs.text)}
+                    </div>
                   </div>
                 );
-              })}
-            </div>
-          )}
+              };
+              return (
+                <div
+                  style={{
+                    marginTop: 6,
+                    paddingTop: 6,
+                    borderTop: '1px dashed #A87A4035',
+                    overflowY: 'auto',
+                    maxHeight: 260,
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: 6,
+                  }}
+                  onPointerDown={(e) => e.stopPropagation()}
+                >
+                  {active.map((obs) => obsCard(obs, false))}
+                  {done.length > 0 && (
+                    <>
+                      <button
+                        type="button"
+                        onClick={() => setDoneOpen((p) => !p)}
+                        style={{
+                          background: 'none',
+                          border: 'none',
+                          fontFamily: 'var(--font-serif)',
+                          fontSize: 10,
+                          color: '#A87A40',
+                          opacity: 0.6,
+                          cursor: 'pointer',
+                          letterSpacing: '0.1em',
+                          textTransform: 'uppercase',
+                          textAlign: 'left',
+                          padding: '2px 0',
+                        }}
+                      >
+                        done · {done.length} {doneOpen ? '▾' : '▸'}
+                      </button>
+                      {doneOpen && done.map((obs) => obsCard(obs, true))}
+                    </>
+                  )}
+                </div>
+              );
+            })()}
           {/* Bottom-right resize handle — drag to any custom size.
               Uses a <button> so aria-label is valid and the element
               is naturally interactive. type=button keeps it out of

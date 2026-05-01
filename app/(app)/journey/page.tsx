@@ -911,8 +911,8 @@ export default function JourneyPage() {
               },
               energy: {
                 color: '#E0844A',
-                question: 'What gives you energy?',
-                placeholder: 'What charges you...',
+                question: 'What are you focused on?',
+                placeholder: 'What demands your attention...',
               },
               body: {
                 color: '#D4605A',
@@ -967,7 +967,15 @@ export default function JourneyPage() {
                               ? 'flow_energy_list'
                               : selectedTerritory === 'vision'
                                 ? 'vision_where'
-                                : '';
+                                : selectedTerritory === 'emotions'
+                                  ? 'terrain_emotions_notes'
+                                  : selectedTerritory === 'body'
+                                    ? 'terrain_body_notes'
+                                    : selectedTerritory === 'shadows'
+                                      ? 'terrain_shadows_notes'
+                                      : selectedTerritory === 'gratitude'
+                                        ? 'terrain_gratitude_list'
+                                        : '';
                       if (key) {
                         const current = answers[key] || '';
                         const updated =

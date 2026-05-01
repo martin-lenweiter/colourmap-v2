@@ -23,14 +23,14 @@ describe('ThemeSwitcher', () => {
   it('renders the Design toggle button', () => {
     render(<ThemeSwitcher />);
 
-    expect(screen.getByText('Design')).toBeDefined();
+    expect(screen.getByLabelText('Design settings')).toBeDefined();
   });
 
   it('shows color theme options when opened', async () => {
     const user = userEvent.setup();
     render(<ThemeSwitcher />);
 
-    await user.click(screen.getByText('Design'));
+    await user.click(screen.getByLabelText('Design settings'));
 
     expect(screen.getByText('Paper')).toBeDefined();
     expect(screen.getByText('Golden')).toBeDefined();
@@ -41,7 +41,7 @@ describe('ThemeSwitcher', () => {
     const user = userEvent.setup();
     render(<ThemeSwitcher />);
 
-    await user.click(screen.getByText('Design'));
+    await user.click(screen.getByLabelText('Design settings'));
     await user.click(screen.getByText('Golden'));
 
     expect(document.documentElement.classList.contains('golden')).toBe(true);
@@ -52,7 +52,7 @@ describe('ThemeSwitcher', () => {
     const user = userEvent.setup();
     render(<ThemeSwitcher />);
 
-    await user.click(screen.getByText('Design'));
+    await user.click(screen.getByLabelText('Design settings'));
     await user.click(screen.getByText('Night'));
 
     expect(document.documentElement.classList.contains('dark')).toBe(true);
@@ -64,13 +64,13 @@ describe('ThemeSwitcher', () => {
     render(<ThemeSwitcher />);
 
     // Apply Night theme
-    await user.click(screen.getByText('Design'));
+    await user.click(screen.getByLabelText('Design settings'));
     await user.click(screen.getByText('Night'));
     expect(document.documentElement.classList.contains('dark')).toBe(true);
 
     // Menu may close after click, reopen and switch to Golden
     if (!screen.queryByText('Golden')) {
-      await user.click(screen.getByText('Design'));
+      await user.click(screen.getByLabelText('Design settings'));
     }
     await user.click(screen.getByText('Golden'));
     expect(document.documentElement.classList.contains('dark')).toBe(false);
@@ -88,7 +88,7 @@ describe('ThemeSwitcher', () => {
     const user = userEvent.setup();
     render(<ThemeSwitcher />);
 
-    await user.click(screen.getByText('Design'));
+    await user.click(screen.getByLabelText('Design settings'));
 
     expect(screen.getByText('Night Brown')).toBeDefined();
     expect(screen.getByText('Night Blue')).toBeDefined();
@@ -99,7 +99,7 @@ describe('ThemeSwitcher', () => {
     const user = userEvent.setup();
     render(<ThemeSwitcher />);
 
-    await user.click(screen.getByText('Design'));
+    await user.click(screen.getByLabelText('Design settings'));
     await user.click(screen.getByText('Night Blue'));
 
     expect(document.documentElement.classList.contains('dark')).toBe(true);
@@ -111,12 +111,12 @@ describe('ThemeSwitcher', () => {
     const user = userEvent.setup();
     render(<ThemeSwitcher />);
 
-    await user.click(screen.getByText('Design'));
+    await user.click(screen.getByLabelText('Design settings'));
     await user.click(screen.getByText('Night Purple'));
     expect(document.documentElement.classList.contains('night-purple')).toBe(true);
 
     if (!screen.queryByText('Paper')) {
-      await user.click(screen.getByText('Design'));
+      await user.click(screen.getByLabelText('Design settings'));
     }
     await user.click(screen.getByText('Paper'));
     expect(document.documentElement.classList.contains('dark')).toBe(false);
@@ -129,7 +129,7 @@ describe('ThemeSwitcher', () => {
     const user = userEvent.setup();
     render(<ThemeSwitcher />);
 
-    await user.click(screen.getByText('Design'));
+    await user.click(screen.getByLabelText('Design settings'));
     await user.click(screen.getByText('Typography'));
 
     expect(screen.getByText('Normal')).toBeDefined();
