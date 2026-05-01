@@ -13,7 +13,7 @@ const PRIMARY_LINKS: { href: string; label: string }[] = [
   { href: '/sparks', label: 'Sparks' },
   { href: '/chat', label: 'Chat' },
   { href: '/notebook', label: 'Notebook' },
-  { href: '/sounds', label: 'Music' },
+  { href: '/music', label: 'Music' },
 ];
 
 const PHONE_PRIMARY_LINKS = PRIMARY_LINKS;
