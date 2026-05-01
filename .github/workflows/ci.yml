@@ -12,7 +12,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: oven-sh/setup-bun@v2
-      - run: bun install --frozen-lockfile
+      - run: bun install --frozen-lockfile || (sleep 10 && bun install --frozen-lockfile) || (sleep 20 && bun install --frozen-lockfile)
       - run: bun run lint
 
   typecheck:
@@ -20,7 +20,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: oven-sh/setup-bun@v2
-      - run: bun install --frozen-lockfile
+      - run: bun install --frozen-lockfile || (sleep 10 && bun install --frozen-lockfile) || (sleep 20 && bun install --frozen-lockfile)
       - run: bun run typecheck
 
   build:
@@ -28,7 +28,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: oven-sh/setup-bun@v2
-      - run: bun install --frozen-lockfile
+      - run: bun install --frozen-lockfile || (sleep 10 && bun install --frozen-lockfile) || (sleep 20 && bun install --frozen-lockfile)
       - run: bun run build
 
   test:
@@ -36,7 +36,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: oven-sh/setup-bun@v2
-      - run: bun install --frozen-lockfile
+      - run: bun install --frozen-lockfile || (sleep 10 && bun install --frozen-lockfile) || (sleep 20 && bun install --frozen-lockfile)
       - run: bun run test
 
   coverage-gate:
@@ -44,7 +44,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: oven-sh/setup-bun@v2
-      - run: bun install --frozen-lockfile
+      - run: bun install --frozen-lockfile || (sleep 10 && bun install --frozen-lockfile) || (sleep 20 && bun install --frozen-lockfile)
       - run: bun run coverage
 
   policy-deps:
@@ -102,7 +102,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: oven-sh/setup-bun@v2
-      - run: bun install --frozen-lockfile
+      - run: bun install --frozen-lockfile || (sleep 10 && bun install --frozen-lockfile) || (sleep 20 && bun install --frozen-lockfile)
       - run: bun run policy:architecture-boundaries
 
   policy-test-pairs:
@@ -111,7 +111,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: oven-sh/setup-bun@v2
-      - run: bun install --frozen-lockfile
+      - run: bun install --frozen-lockfile || (sleep 10 && bun install --frozen-lockfile) || (sleep 20 && bun install --frozen-lockfile)
       - run: bun run policy:test-pairs
 
   policy-agent-system:
@@ -126,7 +126,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: oven-sh/setup-bun@v2
-      - run: bun install --frozen-lockfile
+      - run: bun install --frozen-lockfile || (sleep 10 && bun install --frozen-lockfile) || (sleep 20 && bun install --frozen-lockfile)
       - name: Install Playwright browsers
         run: bunx playwright install --with-deps chromium
       - name: Run smoke tests
