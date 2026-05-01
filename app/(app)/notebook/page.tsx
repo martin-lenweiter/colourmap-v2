@@ -827,15 +827,22 @@ export default function NotebookPage() {
           {/* ========== RIGHT: NOTES ========== */}
           <div className="flex-1 min-w-0 space-y-3">
             {/* Notebook header */}
-            <div className="flex items-center gap-3 mb-2">
+            <div className="flex flex-col items-center gap-1 mb-3">
               <div
-                className="h-4 w-4 rounded-full"
-                style={{ background: activeNb?.color, opacity: 0.6 }}
+                className="h-3 w-3 rounded-full mb-0.5"
+                style={{ background: activeNb?.color, opacity: 0.7 }}
               />
-              <h2 className="text-lg font-serif" style={{ color: activeNb?.color }}>
+              <h2
+                className="font-serif text-center"
+                style={{
+                  color: activeNb?.color,
+                  fontSize: '18px',
+                  fontWeight: 700,
+                  letterSpacing: '0.04em',
+                }}
+              >
                 {activeNb?.label}
               </h2>
-              <div className="flex-1" />
               {activeNotebook !== 'recordings' && (
                 <span className="text-xs text-muted-foreground/50">{filtered.length} notes</span>
               )}
@@ -931,16 +938,16 @@ export default function NotebookPage() {
                           style={{ background: 'none', border: 'none' }}
                         >
                           <div
-                            className="w-1.5 h-6 rounded-full shrink-0"
-                            style={{ background: color, opacity: 0.35 }}
+                            className="w-2.5 h-2.5 rounded-full shrink-0"
+                            style={{ background: color, opacity: 0.55 }}
                           />
                           <div className="flex-1 min-w-0">
                             <p
                               className="truncate"
                               style={{
                                 fontFamily: 'var(--font-serif)',
-                                fontSize: '15px',
-                                fontWeight: 600,
+                                fontSize: '17px',
+                                fontWeight: 700,
                                 color: '#5C3018',
                               }}
                             >

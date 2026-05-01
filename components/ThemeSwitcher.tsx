@@ -86,13 +86,13 @@ export default function ThemeSwitcher() {
       <button
         type="button"
         onClick={() => setOpen(!open)}
-        className="flex items-center gap-1.5 text-xs text-muted-foreground transition-colors hover:text-foreground"
+        className="flex items-center transition-colors hover:opacity-70"
+        aria-label="Design settings"
       >
         <div
-          className="h-4 w-4 rounded-full border border-border"
+          className="h-5 w-5 rounded-full border border-border"
           style={{ backgroundColor: activeColor.color }}
         />
-        <span>Design</span>
       </button>
       {open && (
         <div className="absolute right-0 top-8 z-50 rounded-xl border border-border bg-card p-2 shadow-lg animate-in fade-in duration-150 min-w-[180px]">

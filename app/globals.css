@@ -373,3 +373,37 @@
   text-decoration-color: #a0907a;
   text-decoration-style: wavy;
 }
+
+/* Feedback overlay text-size slider — warm brown track instead of white */
+input[type="range"].feedback-slider {
+  -webkit-appearance: none;
+  appearance: none;
+  background: transparent;
+}
+input[type="range"].feedback-slider::-webkit-slider-runnable-track {
+  height: 3px;
+  border-radius: 2px;
+  background: #d4b890;
+}
+input[type="range"].feedback-slider::-moz-range-track {
+  height: 3px;
+  border-radius: 2px;
+  background: #d4b890;
+}
+input[type="range"].feedback-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: #a87a40;
+  margin-top: -5.5px;
+  cursor: pointer;
+}
+input[type="range"].feedback-slider::-moz-range-thumb {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: #a87a40;
+  border: none;
+  cursor: pointer;
+}

@@ -256,6 +256,7 @@ export const designerObservations = pgTable('designer_observations', {
   userId: uuid('user_id').notNull(),
   area: text('area'),
   text: text('text').notNull(),
+  done: boolean('done').default(false).notNull(),
   createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
 });
 

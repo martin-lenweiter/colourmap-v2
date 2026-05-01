@@ -4,6 +4,7 @@ import {
   deleteDesignerObservation,
   insertDesignerObservation,
   listDesignerObservationsByUser,
+  setDesignerObservationDone,
 } from '@/lib/db/queries/designer-observations';
 
 const MAX_TEXT_LENGTH = 4000;
@@ -46,4 +47,15 @@ export async function removeDesignerObservation(userId: string, id: string): Pro
     return false;
   }
   return deleteDesignerObservation(db, id);
+}
+
+export async function markDesignerObservationDone(
+  userId: string,
+  id: string,
+  done: boolean,
+): Promise<DesignerObservation | null> {
+  const db = getDb();
+  const all = await listDesignerObservationsByUser(db, userId, 1000);
+  if (!all.some((row) => row.id === id)) return null;
+  return setDesignerObservationDone(db, id, done);
 }
