@@ -456,6 +456,7 @@ export default function NotebookPage() {
   const [spellCheckOn, setSpellCheckOn] = useState(true);
   const [newTitle, setNewTitle] = useState('');
   const [adding, setAdding] = useState(false);
+  const [showNbMenu, setShowNbMenu] = useState(false);
   const [showAddNotebook, setShowAddNotebook] = useState(false);
   const [newNbName, setNewNbName] = useState('');
   const [newNbColor, setNewNbColor] = useState('#C4A060');
@@ -638,30 +639,52 @@ export default function NotebookPage() {
         <div className="flex flex-col gap-4 md:flex-row md:gap-6">
           {/* ========== LEFT: NOTEBOOK TABS (vertical on md+, horizontal scroll on phone) ========== */}
           <div className="md:w-[140px] md:shrink-0 md:space-y-1">
-            {/* On phone: horizontal scroll strip */}
-            <div
-              className="flex gap-2 overflow-x-auto pb-1 scrollbar-none md:hidden"
-              style={{ scrollbarWidth: 'none' }}
-            >
-              {notebooks.map((nb) => {
-                const isActive = activeNotebook === nb.id;
-                return (
-                  <button
-                    key={nb.id}
-                    type="button"
-                    onClick={() => setActiveNotebook(nb.id)}
-                    className="shrink-0 rounded-full px-3 py-1.5 text-xs font-medium transition-all"
-                    style={{
-                      background: isActive ? `${nb.color}18` : 'transparent',
-                      border: `1px solid ${isActive ? nb.color + '40' : nb.color + '18'}`,
-                      color: isActive ? nb.color : `${nb.color}80`,
-                      whiteSpace: 'nowrap',
-                    }}
-                  >
-                    {nb.label}
-                  </button>
-                );
-              })}
+            {/* On phone: single collapsed pill → tap to expand all categories */}
+            <div className="md:hidden">
+              <button
+                type="button"
+                onClick={() => setShowNbMenu((s) => !s)}
+                className="flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold transition-all"
+                style={{
+                  background: activeNb ? `${activeNb.color}18` : 'transparent',
+                  border: `1px solid ${activeNb ? activeNb.color + '40' : '#C4A06040'}`,
+                  color: activeNb?.color ?? '#C4A060',
+                }}
+              >
+                {activeNb?.label ?? 'Notebook'}
+                <span
+                  className="transition-transform duration-200"
+                  style={{ fontSize: 8, transform: showNbMenu ? 'rotate(180deg)' : 'rotate(0deg)' }}
+                >
+                  ▾
+                </span>
+              </button>
+              {showNbMenu && (
+                <div className="mt-2 flex flex-wrap gap-2 pb-1">
+                  {notebooks.map((nb) => {
+                    const isActive = activeNotebook === nb.id;
+                    return (
+                      <button
+                        key={nb.id}
+                        type="button"
+                        onClick={() => {
+                          setActiveNotebook(nb.id);
+                          setShowNbMenu(false);
+                        }}
+                        className="shrink-0 rounded-full px-3 py-1.5 text-xs font-medium transition-all"
+                        style={{
+                          background: isActive ? `${nb.color}18` : 'transparent',
+                          border: `1px solid ${isActive ? nb.color + '40' : nb.color + '18'}`,
+                          color: isActive ? nb.color : `${nb.color}60`,
+                          whiteSpace: 'nowrap',
+                        }}
+                      >
+                        {nb.label}
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
             </div>
             {/* On md+: vertical list (existing layout, hidden on phone) */}
             <div className="hidden md:block space-y-1">

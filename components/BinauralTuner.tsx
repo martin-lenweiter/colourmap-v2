@@ -2288,6 +2288,9 @@ export default function BinauralTuner() {
       node.gain.disconnect();
     }
     layerNodesRef.current.clear();
+    // Clear harmonic and sacred oscillator refs so the next startAudio creates fresh ones
+    harmOscsRef.current.clear();
+    sacredOscsRef.current.clear();
     oscLeftRef.current?.stop();
     oscRightRef.current?.stop();
     ctxRef.current?.close();
@@ -2874,9 +2877,9 @@ export default function BinauralTuner() {
   const wavelength = Math.max(20, 80 - beatFreq * 1.5);
   const baseAmplitude = 15 + volume * 30;
   const [waveTime, setWaveTime] = useState(0);
-  // Animate whenever sound is playing OR tremolo is on (so non-sine styles
-  // like pulse/double visibly breathe even without tremolo).
-  const shouldAnimate = playing || tremolo;
+  // Animate whenever sound is playing, tremolo is on, or zigzag style is selected
+  // (zigzag flows continuously so the user can see the pattern before hitting play).
+  const shouldAnimate = playing || tremolo || waveStyle === 'zigzag';
   useEffect(() => {
     if (!shouldAnimate) return;
     let raf: number;
@@ -2912,8 +2915,8 @@ export default function BinauralTuner() {
         sample = (Math.sin(phase) + Math.sin(phase * 1.07 + waveTime * 0.8)) * 0.5;
         break;
       case 'zigzag': {
-        // Symmetric triangle wave — same period as sine, sharper edges
-        const t = (((x / wavelength) % 1) + 1) % 1;
+        // Triangle wave that flows left→right via waveTime scroll
+        const t = (((x / wavelength - waveTime * 0.4) % 1) + 1) % 1;
         sample = t < 0.5 ? 4 * t - 1 : 3 - 4 * t;
         break;
       }
@@ -4313,7 +4316,7 @@ export default function BinauralTuner() {
                                       key={i}
                                       className="flex-1 rounded-[3px] transition-all"
                                       style={{
-                                        height: 8,
+                                        height: 14,
                                         background: l.color,
                                         opacity: i / 4 <= vol ? 0.5 + (i / 4) * 0.45 : 0.1,
                                       }}

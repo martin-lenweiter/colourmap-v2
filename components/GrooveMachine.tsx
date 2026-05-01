@@ -1789,7 +1789,7 @@ export default function GrooveMachine() {
               value={blend > 0 && blendPreset ? effectiveBpm : bpm}
               disabled={blend > 0 && blendPreset !== null}
               onChange={(e) => setBpm(Number(e.target.value))}
-              className="mt-4 w-full cursor-pointer"
+              className="mt-4 w-full cursor-pointer groove-rainbow-slider"
               aria-label="Tempo"
             />
           </div>
@@ -2078,7 +2078,7 @@ export default function GrooveMachine() {
                       max={100}
                       value={Math.round(blend * 100)}
                       onChange={(e) => setBlend(Number(e.target.value) / 100)}
-                      className="w-full cursor-pointer"
+                      className="w-full cursor-pointer groove-rainbow-slider"
                       aria-label="Blend between A and B preset"
                     />
                     <button

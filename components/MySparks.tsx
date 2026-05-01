@@ -175,16 +175,18 @@ export default function MySparks({ onOpenMap }: MySparksProps) {
               onClick={onOpenMap}
               style={{
                 fontFamily: font,
-                fontSize: 13,
-                fontWeight: 600,
-                color: '#6890B0',
+                fontSize: 11,
+                fontWeight: 700,
+                color: '#C47830',
                 background: 'none',
                 border: 'none',
                 cursor: 'pointer',
                 opacity: 0.8,
+                letterSpacing: '0.08em',
+                textTransform: 'uppercase' as const,
               }}
             >
-              map
+              Map new spark
             </button>
           )}
           <button
@@ -195,7 +197,7 @@ export default function MySparks({ onOpenMap }: MySparksProps) {
               fontSize: 13,
               fontWeight: 700,
               color: composing ? '#8A6A4A' : '#fff',
-              background: composing ? 'transparent' : '#7AAA58',
+              background: composing ? 'transparent' : '#C47830',
               border: composing ? '1px solid #C4A06030' : 'none',
               borderRadius: 20,
               padding: '5px 16px',
@@ -317,15 +319,17 @@ export default function MySparks({ onOpenMap }: MySparksProps) {
               fontFamily: font,
               fontSize: 14,
               fontWeight: 700,
-              color: '#7AAA58',
+              color: '#C47830',
               background: 'none',
-              border: '1px solid #7AAA5840',
+              border: '1px solid #C4783040',
               borderRadius: 20,
               padding: '6px 20px',
               cursor: 'pointer',
+              letterSpacing: '0.1em',
+              textTransform: 'uppercase' as const,
             }}
           >
-            write something
+            Write something
           </button>
         </div>
       )}
