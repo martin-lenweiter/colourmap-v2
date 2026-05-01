@@ -24,7 +24,13 @@ type Axis = 'feeling' | 'doing' | 'sharing';
 type Layout = 'h' | 'v' | 'compass' | 'super';
 
 const LS_ENTRIES = 'colourmap:reflect-entries';
+const LS_ITEM_DATA = 'colourmap:fds-item-data';
 const font = 'var(--font-serif)';
+
+interface ItemData {
+  level: number;
+  tasks: Record<string, boolean>;
+}
 
 interface ReflectEntry {
   id: string;
@@ -34,12 +40,19 @@ interface ReflectEntry {
   createdAt: string;
 }
 
+interface AxisItem {
+  name: string;
+  color: string;
+  subtitle: string;
+  program: { id: string; text: string }[];
+}
+
 const AXES: Record<
   Axis,
   {
     label: string;
     color: string;
-    items: { name: string; color: string }[];
+    items: AxisItem[];
     levels: { name: string; color: string }[];
     Compass: React.ComponentType<{ initialSlice?: string }>;
   }
@@ -48,10 +61,50 @@ const AXES: Record<
     label: 'F',
     color: '#D4805A',
     items: [
-      { name: 'Care', color: '#D4B088' },
-      { name: 'Attitude', color: '#D09060' },
-      { name: 'Rest', color: '#C47850' },
-      { name: 'Emotions', color: '#B85A30' },
+      {
+        name: 'Care',
+        color: '#D4B088',
+        subtitle: 'how you hold yourself and others',
+        program: [
+          { id: 'f-care-1', text: 'Check in: am I giving from fullness or from depletion' },
+          { id: 'f-care-2', text: 'Do one act of care for yourself today' },
+          { id: 'f-care-3', text: 'Notice a moment when you felt genuinely cared for' },
+          { id: 'f-care-4', text: 'Offer warmth to someone with no expectation back' },
+        ],
+      },
+      {
+        name: 'Attitude',
+        color: '#D09060',
+        subtitle: 'the lens you bring to each moment',
+        program: [
+          { id: 'f-att-1', text: 'Name the story you are telling yourself right now' },
+          { id: 'f-att-2', text: 'Identify one rigid belief that is making life harder' },
+          { id: 'f-att-3', text: 'Find something to be genuinely grateful for today' },
+          { id: 'f-att-4', text: 'Respond to one frustration with curiosity, not reaction' },
+        ],
+      },
+      {
+        name: 'Rest',
+        color: '#C47850',
+        subtitle: 'restoration and recovery',
+        program: [
+          { id: 'f-rest-1', text: 'Sleep before midnight — three nights in a row' },
+          { id: 'f-rest-2', text: 'Take one hour with nothing to accomplish' },
+          { id: 'f-rest-3', text: 'Do a body scan — notice where tension lives' },
+          { id: 'f-rest-4', text: 'Build a transition ritual between work and rest' },
+        ],
+      },
+      {
+        name: 'Emotions',
+        color: '#B85A30',
+        subtitle: 'what moves through you',
+        program: [
+          { id: 'f-emo-1', text: 'Name the feeling most present right now, without judging it' },
+          { id: 'f-emo-2', text: 'Let an emotion pass without acting on it' },
+          { id: 'f-emo-3', text: 'Write 10 lines about what you are actually feeling' },
+          { id: 'f-emo-4', text: 'Find the need underneath a strong emotional reaction' },
+        ],
+      },
     ],
     levels: [
       { name: 'Peace', color: '#88C8E8' },
@@ -71,10 +124,50 @@ const AXES: Record<
     label: 'D',
     color: '#6890B0',
     items: [
-      { name: 'Structure', color: '#9AABB8' },
-      { name: 'Target', color: '#7A98B0' },
-      { name: 'Action', color: '#5A88A8' },
-      { name: 'Resources', color: '#4878A8' },
+      {
+        name: 'Structure',
+        color: '#9AABB8',
+        subtitle: 'the frame that holds your work',
+        program: [
+          { id: 'd-str-1', text: 'Write out your ideal weekly schedule' },
+          { id: 'd-str-2', text: 'Block time for your top three priorities' },
+          { id: 'd-str-3', text: 'Identify a recurring disruption and design around it' },
+          { id: 'd-str-4', text: 'Create a simple closing ritual for your day' },
+        ],
+      },
+      {
+        name: 'Target',
+        color: '#7A98B0',
+        subtitle: 'what you are actually aiming at',
+        program: [
+          { id: 'd-tgt-1', text: 'State your main goal in one clear sentence' },
+          { id: 'd-tgt-2', text: 'Name three milestones between now and the goal' },
+          { id: 'd-tgt-3', text: "Ask: is this goal mine or someone else's expectation" },
+          { id: 'd-tgt-4', text: 'Review your progress every Sunday' },
+        ],
+      },
+      {
+        name: 'Action',
+        color: '#5A88A8',
+        subtitle: 'doing the thing',
+        program: [
+          { id: 'd-act-1', text: 'Start before you feel ready' },
+          { id: 'd-act-2', text: 'Work 25 minutes on your most avoided task' },
+          { id: 'd-act-3', text: 'Remove one friction point that slows you down' },
+          { id: 'd-act-4', text: 'Ship something small today' },
+        ],
+      },
+      {
+        name: 'Resources',
+        color: '#4878A8',
+        subtitle: 'what you have to work with',
+        program: [
+          { id: 'd-res-1', text: 'List your available time, energy, money and skills' },
+          { id: 'd-res-2', text: 'Find the constraint limiting you most right now' },
+          { id: 'd-res-3', text: 'Ask for help in the area where you are most stuck' },
+          { id: 'd-res-4', text: 'Invest in one tool or skill that multiplies your output' },
+        ],
+      },
     ],
     levels: [
       { name: 'In Flow', color: '#90B8D8' },
@@ -89,10 +182,50 @@ const AXES: Record<
     label: 'S',
     color: '#6B7F4E',
     items: [
-      { name: 'Social Life', color: '#9AAF80' },
-      { name: 'Authentic', color: '#7A9860' },
-      { name: 'Roots', color: '#5A8840' },
-      { name: 'Express', color: '#4A6A2A' },
+      {
+        name: 'Social Life',
+        color: '#9AAF80',
+        subtitle: 'your connections and presence',
+        program: [
+          { id: 's-soc-1', text: 'Reach out to someone you have been meaning to contact' },
+          { id: 's-soc-2', text: 'Be fully present in your next conversation — no phone' },
+          { id: 's-soc-3', text: 'Plan one meaningful interaction this week' },
+          { id: 's-soc-4', text: 'Notice when you are performing vs genuinely connecting' },
+        ],
+      },
+      {
+        name: 'Authentic',
+        color: '#7A9860',
+        subtitle: 'showing up as yourself',
+        program: [
+          { id: 's-aut-1', text: 'Say what you actually think in one conversation today' },
+          { id: 's-aut-2', text: 'Drop one mask you wear in a specific context' },
+          { id: 's-aut-3', text: 'Share something real with someone you trust' },
+          { id: 's-aut-4', text: 'Notice the gap between who you are and who you perform' },
+        ],
+      },
+      {
+        name: 'Roots',
+        color: '#5A8840',
+        subtitle: 'where you come from',
+        program: [
+          { id: 's-roo-1', text: 'Spend time with family or with your origins' },
+          { id: 's-roo-2', text: 'Honour one tradition that matters to you' },
+          { id: 's-roo-3', text: 'Reflect on what shaped your deepest values' },
+          { id: 's-roo-4', text: 'Write about a memory from your past with gratitude' },
+        ],
+      },
+      {
+        name: 'Express',
+        color: '#4A6A2A',
+        subtitle: 'putting something of yourself out there',
+        program: [
+          { id: 's-exp-1', text: 'Make something today, no matter how small' },
+          { id: 's-exp-2', text: 'Share your perspective where it matters' },
+          { id: 's-exp-3', text: 'Create without worrying if it is good' },
+          { id: 's-exp-4', text: 'Say something that needed to be said' },
+        ],
+      },
     ],
     levels: [
       { name: 'Connected', color: '#88D8B0' },
@@ -395,74 +528,267 @@ function ReflectSection({ axis, axisId }: { axis: (typeof AXES)[Axis]; axisId: A
   );
 }
 
-/* ── 4 dots — horizontal: dot above, label below ── */
-function DotsHorizontal({ items }: { items: { name: string; color: string }[] }) {
+interface DotsProps {
+  items: AxisItem[];
+  axisKey: Axis;
+  itemData: Record<string, ItemData>;
+  openItem: string | null;
+  setOpenItem: (k: string | null) => void;
+  setItemLevel: (k: string, level: number) => void;
+  toggleItemTask: (k: string, taskId: string) => void;
+}
+
+function ItemProgram({
+  item,
+  itemKey,
+  data,
+  setItemLevel,
+  toggleItemTask,
+}: {
+  item: AxisItem;
+  itemKey: string;
+  data: ItemData;
+  setItemLevel: (k: string, level: number) => void;
+  toggleItemTask: (k: string, taskId: string) => void;
+}) {
   return (
-    <div className="flex justify-center gap-6">
-      {items.map((item) => (
-        <div key={item.name} className="flex flex-col items-center gap-3" style={{ minWidth: 56 }}>
-          {/* Dot */}
-          <span
-            style={{
-              width: 22,
-              height: 22,
-              borderRadius: '50%',
-              background: item.color,
-              display: 'block',
-              flexShrink: 0,
-            }}
-          />
-          {/* Label */}
-          <span
-            style={{
-              fontFamily: font,
-              fontSize: 11,
-              fontWeight: 600,
-              color: 'var(--foreground)',
-              letterSpacing: '0.04em',
-              textAlign: 'center',
-              lineHeight: 1.25,
-            }}
-          >
-            {item.name}
-          </span>
+    <div className="space-y-3 pt-3 pb-1 animate-in fade-in duration-150">
+      <p
+        className="italic"
+        style={{
+          fontFamily: font,
+          fontSize: 13,
+          color: 'var(--muted-foreground)',
+          opacity: 0.85,
+          lineHeight: 1.4,
+        }}
+      >
+        {item.subtitle}
+      </p>
+      {/* Level slider — domains style */}
+      <div className="space-y-1.5">
+        <p
+          className="italic"
+          style={{ fontFamily: font, fontSize: 12, color: 'var(--muted-foreground)', opacity: 0.7 }}
+        >
+          where are you?
+        </p>
+        <div className="flex gap-[5px]">
+          {[1, 2, 3, 4, 5].map((n) => (
+            <button
+              key={n}
+              type="button"
+              onClick={() => setItemLevel(itemKey, data.level === n ? 0 : n)}
+              className="flex-1 cursor-pointer rounded-full transition-all"
+              style={{
+                height: 11,
+                background: item.color,
+                opacity: data.level >= n ? 0.85 : 0.14,
+                border: 'none',
+              }}
+            />
+          ))}
         </div>
-      ))}
+      </div>
+      {/* Program checklist */}
+      <div className="space-y-2">
+        {item.program.map((task) => {
+          const done = !!data.tasks[task.id];
+          return (
+            <div key={task.id} className="flex items-start gap-2.5">
+              <button
+                type="button"
+                onClick={() => toggleItemTask(itemKey, task.id)}
+                className="mt-[3px] flex h-4 w-4 shrink-0 cursor-pointer items-center justify-center rounded-full border transition-all"
+                style={{
+                  borderColor: done ? `${item.color}60` : `${item.color}35`,
+                  background: done ? `${item.color}18` : 'transparent',
+                }}
+              >
+                {done && <span style={{ fontSize: 9, color: item.color, lineHeight: 1 }}>✓</span>}
+              </button>
+              <span
+                style={{
+                  fontFamily: font,
+                  fontSize: 13,
+                  color: done ? item.color : 'var(--foreground)',
+                  opacity: done ? 0.5 : 0.85,
+                  textDecoration: done ? 'line-through' : 'none',
+                  lineHeight: 1.45,
+                }}
+              >
+                {task.text}
+              </span>
+            </div>
+          );
+        })}
+      </div>
     </div>
   );
 }
 
-/* ── 4 dots — vertical: dot left, label right ── */
-function DotsVertical({ items }: { items: { name: string; color: string }[] }) {
+/* ── 4 items — horizontal: dot + label, tap → expand below ── */
+function DotsHorizontal({
+  items,
+  axisKey,
+  itemData,
+  openItem,
+  setOpenItem,
+  setItemLevel,
+  toggleItemTask,
+}: DotsProps) {
+  const activeItem = items.find((item) => openItem === `${axisKey}:${item.name}`);
   return (
-    <div className="flex flex-col gap-3 px-2">
-      {items.map((item) => (
-        <div key={item.name} className="flex items-center gap-4">
-          {/* Dot */}
-          <span
-            style={{
-              width: 20,
-              height: 20,
-              borderRadius: '50%',
-              background: item.color,
-              display: 'block',
-              flexShrink: 0,
-            }}
+    <div className="space-y-3">
+      <div className="flex justify-center gap-5">
+        {items.map((item) => {
+          const key = `${axisKey}:${item.name}`;
+          const isActive = openItem === key;
+          const data = itemData[key] ?? { level: 0, tasks: {} };
+          const doneCount = item.program.filter((t) => data.tasks[t.id]).length;
+          return (
+            <button
+              key={item.name}
+              type="button"
+              onClick={() => setOpenItem(isActive ? null : key)}
+              className="flex flex-col items-center gap-2 cursor-pointer transition-all"
+              style={{ background: 'none', border: 'none', minWidth: 60 }}
+            >
+              <span
+                className="block rounded-full transition-all"
+                style={{
+                  width: isActive ? 22 : 16,
+                  height: isActive ? 22 : 16,
+                  background: item.color,
+                  opacity: isActive ? 1 : 0.75,
+                  boxShadow: isActive ? `0 3px 10px -3px ${item.color}` : 'none',
+                }}
+              />
+              <span
+                style={{
+                  fontFamily: font,
+                  fontSize: 10,
+                  fontWeight: 600,
+                  color: 'var(--foreground)',
+                  letterSpacing: '0.08em',
+                  textAlign: 'center',
+                  lineHeight: 1.2,
+                  textTransform: 'uppercase',
+                  opacity: isActive ? 1 : 0.65,
+                }}
+              >
+                {item.name}
+                {doneCount > 0 && (
+                  <span style={{ display: 'block', fontSize: 9, color: item.color, opacity: 0.9 }}>
+                    {doneCount}/{item.program.length}
+                  </span>
+                )}
+              </span>
+            </button>
+          );
+        })}
+      </div>
+      {activeItem && (
+        <div className="px-2">
+          <ItemProgram
+            item={activeItem}
+            itemKey={`${axisKey}:${activeItem.name}`}
+            data={itemData[`${axisKey}:${activeItem.name}`] ?? { level: 0, tasks: {} }}
+            setItemLevel={setItemLevel}
+            toggleItemTask={toggleItemTask}
           />
-          {/* Label */}
-          <span
-            style={{
-              fontFamily: font,
-              fontSize: 15,
-              fontWeight: 500,
-              color: 'var(--foreground)',
-              letterSpacing: '0.04em',
-            }}
-          >
-            {item.name}
-          </span>
         </div>
-      ))}
+      )}
+    </div>
+  );
+}
+
+/* ── 4 items — vertical: dot + title + subtitle, tap → expand inline ── */
+function DotsVertical({
+  items,
+  axisKey,
+  itemData,
+  openItem,
+  setOpenItem,
+  setItemLevel,
+  toggleItemTask,
+}: DotsProps) {
+  return (
+    <div className="space-y-4 px-1">
+      {items.map((item) => {
+        const key = `${axisKey}:${item.name}`;
+        const isExpanded = openItem === key;
+        const data = itemData[key] ?? { level: 0, tasks: {} };
+        const doneCount = item.program.filter((t) => data.tasks[t.id]).length;
+        return (
+          <div key={item.name}>
+            <button
+              type="button"
+              onClick={() => setOpenItem(isExpanded ? null : key)}
+              className="flex w-full cursor-pointer items-start gap-4 text-left transition-all"
+              style={{ background: 'none', border: 'none', padding: 0 }}
+            >
+              <span
+                className="mt-[3px] block shrink-0 rounded-full transition-all"
+                style={{
+                  width: isExpanded ? 20 : 15,
+                  height: isExpanded ? 20 : 15,
+                  background: item.color,
+                  opacity: isExpanded ? 1 : 0.82,
+                  boxShadow: isExpanded ? `0 3px 12px -3px ${item.color}` : 'none',
+                }}
+              />
+              <div className="flex-1">
+                <p
+                  style={{
+                    fontFamily: font,
+                    fontSize: 14,
+                    fontWeight: 700,
+                    color: 'var(--foreground)',
+                    letterSpacing: '0.16em',
+                    textTransform: 'uppercase',
+                  }}
+                >
+                  {item.name}
+                  {doneCount > 0 && (
+                    <span
+                      style={{ marginLeft: 7, color: item.color, fontSize: 12, fontWeight: 400 }}
+                    >
+                      {doneCount === item.program.length
+                        ? '✓'
+                        : `${doneCount}/${item.program.length}`}
+                    </span>
+                  )}
+                </p>
+                {!isExpanded && (
+                  <p
+                    className="italic"
+                    style={{
+                      fontFamily: font,
+                      fontSize: 13,
+                      color: 'var(--muted-foreground)',
+                      opacity: 0.8,
+                    }}
+                  >
+                    {item.subtitle}
+                  </p>
+                )}
+              </div>
+            </button>
+            {isExpanded && (
+              <div className="ml-9">
+                <ItemProgram
+                  item={item}
+                  itemKey={key}
+                  data={data}
+                  setItemLevel={setItemLevel}
+                  toggleItemTask={toggleItemTask}
+                />
+              </div>
+            )}
+          </div>
+        );
+      })}
     </div>
   );
 }
@@ -588,6 +914,35 @@ function SuperCompass() {
 export default function FdsPanel() {
   const [active, setActive] = useState<Axis | null>(null);
   const [layout, setLayout] = useState<Layout>('h');
+  const [openItem, setOpenItem] = useState<string | null>(null);
+  const [itemData, setItemData] = useState<Record<string, ItemData>>({});
+
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem(LS_ITEM_DATA);
+      if (raw) setItemData(JSON.parse(raw));
+    } catch {}
+  }, []);
+
+  function setItemLevel(key: string, level: number) {
+    setItemData((prev) => {
+      const next = { ...prev, [key]: { ...(prev[key] ?? { tasks: {} }), level } };
+      localStorage.setItem(LS_ITEM_DATA, JSON.stringify(next));
+      return next;
+    });
+  }
+
+  function toggleItemTask(key: string, taskId: string) {
+    setItemData((prev) => {
+      const cur = prev[key] ?? { level: 0, tasks: {} };
+      const next = {
+        ...prev,
+        [key]: { ...cur, tasks: { ...cur.tasks, [taskId]: !cur.tasks[taskId] } },
+      };
+      localStorage.setItem(LS_ITEM_DATA, JSON.stringify(next));
+      return next;
+    });
+  }
 
   const isSuper = layout === 'super';
   const axisDef = active && !isSuper ? AXES[active] : null;
@@ -607,6 +962,7 @@ export default function FdsPanel() {
               onClick={() => {
                 setActive(isOn ? null : id);
                 setLayout('h');
+                setOpenItem(null);
               }}
               style={{
                 display: 'flex',
@@ -711,7 +1067,10 @@ export default function FdsPanel() {
               <button
                 key={id}
                 type="button"
-                onClick={() => setLayout(id)}
+                onClick={() => {
+                  setLayout(id);
+                  setOpenItem(null);
+                }}
                 style={{
                   background: layout === id ? `${axisDef.color}18` : 'transparent',
                   border: `1px solid ${layout === id ? `${axisDef.color}40` : `${axisDef.color}18`}`,
@@ -734,8 +1093,28 @@ export default function FdsPanel() {
           </div>
 
           {/* Content */}
-          {layout === 'h' && <DotsHorizontal items={axisDef.items} />}
-          {layout === 'v' && <DotsVertical items={axisDef.items} />}
+          {layout === 'h' && (
+            <DotsHorizontal
+              items={axisDef.items}
+              axisKey={active}
+              itemData={itemData}
+              openItem={openItem}
+              setOpenItem={setOpenItem}
+              setItemLevel={setItemLevel}
+              toggleItemTask={toggleItemTask}
+            />
+          )}
+          {layout === 'v' && (
+            <DotsVertical
+              items={axisDef.items}
+              axisKey={active}
+              itemData={itemData}
+              openItem={openItem}
+              setOpenItem={setOpenItem}
+              setItemLevel={setItemLevel}
+              toggleItemTask={toggleItemTask}
+            />
+          )}
           {layout === 'compass' && (
             <div className="animate-in fade-in duration-200">
               <axisDef.Compass />
