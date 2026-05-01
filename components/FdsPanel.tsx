@@ -590,11 +590,12 @@ export default function FdsPanel() {
 
   return (
     <div className="space-y-4">
-      {/* F / D / S pills + ⊚ super */}
-      <div className="flex items-center justify-center gap-3">
+      {/* F / D / S big dots + ⊚ super */}
+      <div className="flex items-center justify-center gap-6">
         {ORDER.map((id) => {
           const a = AXES[id];
           const isOn = active === id && !isSuper;
+          const dimmed = (active !== null && !isOn && !isSuper) || isSuper;
           return (
             <button
               key={id}
@@ -604,26 +605,52 @@ export default function FdsPanel() {
                 setLayout('h');
               }}
               style={{
-                fontFamily: font,
-                fontSize: 15,
-                fontWeight: 700,
-                letterSpacing: '0.14em',
-                color: isOn ? a.color : '#8A6A4A',
-                background: isOn ? `${a.color}15` : 'transparent',
-                border: `1px solid ${isOn ? `${a.color}50` : '#C4A06025'}`,
-                borderRadius: 20,
-                padding: '5px 20px',
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                gap: 6,
+                background: 'none',
+                border: 'none',
                 cursor: 'pointer',
-                opacity: (active !== null && !isOn && !isSuper) || isSuper ? 0.38 : 1,
-                transition: 'all 0.15s',
+                padding: 0,
+                opacity: dimmed ? 0.3 : 1,
+                transition: 'opacity 0.15s',
               }}
             >
-              {a.label}
+              <span
+                style={{
+                  width: 64,
+                  height: 64,
+                  borderRadius: '50%',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  background: isOn ? `${a.color}22` : `${a.color}0C`,
+                  border: `2px solid ${isOn ? a.color : `${a.color}40`}`,
+                  boxShadow: isOn ? `0 0 0 4px ${a.color}18` : 'none',
+                  transition: 'all 0.18s',
+                  fontFamily: font,
+                  fontSize: 26,
+                  fontWeight: 800,
+                  letterSpacing: '0.04em',
+                  color: isOn ? a.color : `${a.color}80`,
+                }}
+              >
+                {a.label}
+              </span>
             </button>
           );
         })}
         {/* Divider */}
-        <span style={{ width: 1, height: 16, background: '#C4A06030', display: 'block' }} />
+        <span
+          style={{
+            width: 1,
+            height: 20,
+            background: '#C4A06030',
+            display: 'block',
+            alignSelf: 'center',
+          }}
+        />
         {/* ⊚ SuperCompass toggle */}
         <button
           type="button"
@@ -636,16 +663,21 @@ export default function FdsPanel() {
             }
           }}
           style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            width: 40,
+            height: 40,
+            borderRadius: '50%',
             fontFamily: font,
-            fontSize: 16,
+            fontSize: 18,
             color: isSuper ? '#C4A060' : '#8A6A4A',
-            background: isSuper ? '#C4A06015' : 'transparent',
-            border: `1px solid ${isSuper ? '#C4A06050' : '#C4A06025'}`,
-            borderRadius: 20,
-            padding: '4px 14px',
+            background: isSuper ? '#C4A06018' : 'transparent',
+            border: `1.5px solid ${isSuper ? '#C4A06055' : '#C4A06028'}`,
             cursor: 'pointer',
-            opacity: isSuper ? 1 : 0.55,
+            opacity: isSuper ? 1 : 0.5,
             transition: 'all 0.15s',
+            alignSelf: 'center',
           }}
           title="SuperCompass — Feeling + Doing"
         >
