@@ -54,6 +54,7 @@ export default function MySparks({ onOpenMap }: MySparksProps) {
   const [inbound, setInbound] = useState<InboundResonance[]>([]);
   const [loading, setLoading] = useState(true);
   const [composing, setComposing] = useState(false);
+  const [howOpen, setHowOpen] = useState(false);
 
   async function load() {
     try {
@@ -207,6 +208,54 @@ export default function MySparks({ onOpenMap }: MySparksProps) {
             {composing ? 'cancel' : '+ new spark'}
           </button>
         </div>
+      </div>
+
+      {/* How Sparks works */}
+      <div className="rounded-2xl border border-border bg-muted/30 px-4 py-3">
+        <button
+          type="button"
+          onClick={() => setHowOpen((o) => !o)}
+          className="flex w-full cursor-pointer items-center justify-between"
+          style={{ background: 'none', border: 'none', padding: 0 }}
+          aria-expanded={howOpen}
+        >
+          <span
+            className="uppercase"
+            style={{
+              fontFamily: font,
+              fontSize: 14,
+              fontWeight: 700,
+              letterSpacing: '0.12em',
+              color: '#5C3018',
+            }}
+          >
+            How Sparks works
+          </span>
+          <span
+            style={{
+              transform: howOpen ? 'rotate(180deg)' : 'rotate(0deg)',
+              transition: 'transform 0.2s',
+              color: '#8A6A4A',
+            }}
+          >
+            ▾
+          </span>
+        </button>
+        {howOpen && (
+          <div
+            className="mt-4 space-y-3 animate-in fade-in duration-150"
+            style={{ fontFamily: font, fontSize: 16, lineHeight: 1.55, color: '#5C3018' }}
+          >
+            <p>
+              A <strong>Spark</strong> is an idea, intention, or energy you want to put out into the
+              world.
+            </p>
+            <p>
+              Share it openly or within a Circle. Others can resonate with it — no comments, just a
+              signal that it landed.
+            </p>
+          </div>
+        )}
       </div>
 
       {/* Composer */}
