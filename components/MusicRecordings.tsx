@@ -54,11 +54,17 @@ function getCategoryColor(cat: string) {
   return CATEGORIES.find((c) => c.id === cat)?.color ?? '#C4A060';
 }
 
-export default function MusicRecordings({ songs }: { songs: Song[] }) {
+export default function MusicRecordings({
+  songs,
+  initialSongId,
+}: {
+  songs: Song[];
+  initialSongId?: string | null;
+}) {
   const [recordings, setRecordings] = useState<Recording[]>([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<RecordingCategory | 'all'>('all');
-  const [filterSongId, setFilterSongId] = useState<string | null>(null);
+  const [filterSongId, setFilterSongId] = useState<string | null>(initialSongId ?? null);
 
   // Playback
   const audioRef = useRef<HTMLAudioElement | null>(null);
