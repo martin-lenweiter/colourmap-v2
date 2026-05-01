@@ -2934,25 +2934,6 @@ export default function BinauralTuner() {
 
   return (
     <div className="space-y-4">
-      {/* Mobile-only gentle banner: the browser suspends audio when
-          the tab is hidden. Let the user know so they don't think the
-          app is broken when sound stops after switching apps. */}
-      {playing && (
-        <div
-          className="md:hidden mx-auto max-w-md rounded-xl border border-border bg-muted/40 px-3 py-2 text-center"
-          style={{
-            fontFamily: 'var(--font-serif)',
-            fontSize: 12,
-            color: 'var(--muted-foreground)',
-            lineHeight: 1.45,
-          }}
-          role="note"
-        >
-          Keep the app open to hear the sound continuously. Switching apps or locking your phone
-          will pause audio — it resumes when you return.
-        </div>
-      )}
-
       {/* Title */}
       <div className="text-center space-y-1.5">
         <p
@@ -2966,66 +2947,31 @@ export default function BinauralTuner() {
         >
           Calming Sounds
         </p>
-        {/* Binaural quick-shortcut. Shows what's currently playing (base
-            Hz + beat Hz + breathing). Tap to jump into full Studio mode
-            for fine-tuning. "Live readout doubles as a door." */}
-        <button
-          type="button"
-          onClick={() => setSimpleMode(false)}
-          className="italic cursor-pointer transition-opacity hover:opacity-85"
-          style={{
-            fontFamily: 'var(--font-serif)',
-            fontSize: '15px',
-            color: '#8A6A4A',
-            opacity: 0.95,
-            minHeight: '1.4em',
-            background: 'none',
-            border: 'none',
-            padding: '2px 8px',
-            borderRadius: 10,
-            display: 'inline-flex',
-            alignItems: 'center',
-            gap: 6,
-          }}
-          title="Open the studio to tune frequencies"
-          aria-live="polite"
-        >
-          {playing ? (
-            <>
-              {baseToneOn ? (
-                <span style={{ color: '#5C3018', fontWeight: 600, fontStyle: 'normal' }}>
-                  {baseFreq}
-                  <span style={{ fontSize: '11px', opacity: 0.7, marginLeft: 2 }}>Hz</span>
-                </span>
-              ) : (
-                <span style={{ opacity: 0.45 }}>no base tone</span>
-              )}
-              {binauralOn && (
-                <>
-                  <span style={{ opacity: 0.4 }}>·</span>
-                  <span style={{ color: '#7A5438', fontWeight: 600, fontStyle: 'normal' }}>
-                    {beatFreq}
-                    <span style={{ fontSize: '11px', opacity: 0.7, marginLeft: 2 }}>Hz beat</span>
-                  </span>
-                </>
-              )}
-            </>
-          ) : (
-            <span style={{ opacity: 0.55 }}>tap play to begin</span>
-          )}
-          <span
-            aria-hidden="true"
+        {playing && (
+          <p
+            className="italic"
             style={{
-              fontSize: 10,
-              opacity: 0.45,
-              letterSpacing: '0.08em',
-              textTransform: 'uppercase',
-              fontStyle: 'normal',
+              fontFamily: 'var(--font-serif)',
+              fontSize: '14px',
+              color: '#8A6A4A',
+              opacity: 0.85,
             }}
           >
-            open studio ›
-          </span>
-        </button>
+            {baseToneOn ? (
+              <span style={{ color: '#5C3018', fontWeight: 600, fontStyle: 'normal' }}>
+                {baseFreq}
+                <span style={{ fontSize: '11px', opacity: 0.7, marginLeft: 2 }}>Hz</span>
+              </span>
+            ) : null}
+            {binauralOn && baseToneOn && <span style={{ opacity: 0.4 }}> · </span>}
+            {binauralOn ? (
+              <span style={{ color: '#7A5438', fontWeight: 600, fontStyle: 'normal' }}>
+                {beatFreq}
+                <span style={{ fontSize: '11px', opacity: 0.7, marginLeft: 2 }}>Hz beat</span>
+              </span>
+            ) : null}
+          </p>
+        )}
       </div>
 
       {/* Simple / Full toggle */}
@@ -3033,15 +2979,18 @@ export default function BinauralTuner() {
         <button
           type="button"
           onClick={() => setSimpleMode((s) => !s)}
-          className="cursor-pointer rounded-full px-5 py-1.5 text-[12px] font-semibold uppercase tracking-[0.12em] transition-all hover:opacity-85"
+          className="cursor-pointer bg-transparent border-none transition-opacity hover:opacity-100"
           style={{
-            color: '#7A5438',
-            background: '#F5E8C8',
-            border: '1px solid rgba(196, 160, 96, 0.35)',
-            boxShadow: '0 1px 2px rgba(94, 58, 20, 0.06)',
+            fontFamily: 'var(--font-serif)',
+            fontSize: '11px',
+            color: 'var(--muted-foreground)',
+            opacity: 0.5,
+            letterSpacing: '0.1em',
+            textTransform: 'uppercase',
+            padding: '2px 0',
           }}
         >
-          {simpleMode ? 'open studio' : 'back to simple'}
+          {simpleMode ? 'studio' : 'simple'}
         </button>
       </div>
 
@@ -3137,8 +3086,8 @@ export default function BinauralTuner() {
         </button>
       </div>
 
-      {/* Wave-style picker — pick the visual shape of the waveform */}
-      <div className="flex flex-wrap justify-center gap-1.5">
+      {/* Wave-style picker — 4 small dots, no labels */}
+      <div className="flex justify-center gap-2">
         {WAVE_STYLES.map((w) => {
           const isActive = waveStyle === w.id;
           return (
@@ -3146,17 +3095,17 @@ export default function BinauralTuner() {
               key={w.id}
               type="button"
               onClick={() => setWaveStyle(w.id)}
-              className="cursor-pointer rounded-full px-2.5 py-0.5 text-[10px] uppercase tracking-[0.12em] transition-all"
+              title={w.label}
+              className="cursor-pointer transition-all"
               style={{
-                color: isActive ? '#5C3018' : '#8A6A4A',
-                background: isActive ? `${activeColor}20` : 'transparent',
-                border: `1px solid ${isActive ? `${activeColor}60` : '#5C301818'}`,
-                fontFamily: 'var(--font-serif)',
-                opacity: isActive ? 1 : 0.7,
+                width: 7,
+                height: 7,
+                borderRadius: '50%',
+                background: isActive ? activeColor : 'transparent',
+                border: `1.5px solid ${isActive ? activeColor : '#C4A06050'}`,
+                padding: 0,
               }}
-            >
-              {w.label}
-            </button>
+            />
           );
         })}
       </div>
