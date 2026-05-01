@@ -1,17 +1,28 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
+import BluesProgram from '@/components/BluesProgram';
 import GuitarChords from '@/components/GuitarChords';
 import GuitarFretboard from '@/components/GuitarFretboard';
 import GuitarLearn from '@/components/GuitarLearn';
 import GuitarPractice from '@/components/GuitarPractice';
 import HarmonyMap from '@/components/HarmonyMap';
+import HendrixLearn from '@/components/HendrixLearn';
 import MusicRecordings from '@/components/MusicRecordings';
 import SongStudio from '@/components/SongStudio';
 
 const LS_SONGS = 'colourmap:songs';
 
-type Tab = 'songs' | 'fretboard' | 'chords' | 'harmony' | 'learn' | 'practice' | 'recordings';
+type Tab =
+  | 'songs'
+  | 'fretboard'
+  | 'chords'
+  | 'harmony'
+  | 'learn'
+  | 'blues'
+  | 'hendrix'
+  | 'practice'
+  | 'recordings';
 
 const TABS: { id: Tab; label: string }[] = [
   { id: 'songs', label: 'Songs' },
@@ -20,6 +31,8 @@ const TABS: { id: Tab; label: string }[] = [
   { id: 'chords', label: 'Chords' },
   { id: 'harmony', label: 'Harmony' },
   { id: 'learn', label: 'Learn' },
+  { id: 'blues', label: 'Blues' },
+  { id: 'hendrix', label: 'Hendrix' },
   { id: 'practice', label: 'Practice' },
 ];
 
@@ -144,6 +157,8 @@ export default function GuitarStudio() {
       {tab === 'chords' && <GuitarChords />}
       {tab === 'harmony' && <HarmonyMap />}
       {tab === 'learn' && <GuitarLearn />}
+      {tab === 'blues' && <BluesProgram />}
+      {tab === 'hendrix' && <HendrixLearn />}
       {tab === 'practice' && <GuitarPractice />}
     </div>
   );
