@@ -292,6 +292,150 @@ function LickDiagram({
   );
 }
 
+/* ─── Mini chord diagrams for progressions ──────────────────── */
+
+const MINI_CHORDS: Record<string, number[]> = {
+  // frets: [low-E, A, D, G, B, high-e]  -1=muted  0=open
+  Am: [-1, 0, 2, 2, 1, 0],
+  E: [0, 2, 2, 1, 0, 0],
+  G: [3, 2, 0, 0, 0, 3],
+  C: [-1, 3, 2, 0, 1, 0],
+  D: [-1, -1, 0, 2, 3, 2],
+  F: [1, 1, 2, 3, 3, 1],
+  Em: [0, 2, 2, 0, 0, 0],
+  Dm: [-1, -1, 0, 2, 3, 1],
+  Dm7: [-1, -1, 0, 2, 1, 1],
+  G7: [3, 2, 0, 0, 0, 1],
+  Cmaj7: [-1, 3, 2, 0, 0, 0],
+  Am7: [-1, 0, 2, 0, 1, 0],
+  'E7#9': [0, 7, 6, 7, 8, 0],
+  D9: [-1, -1, 0, 2, 0, 2],
+  A: [-1, 0, 2, 2, 2, 0],
+  A7: [-1, 0, 2, 0, 2, 0],
+};
+
+function MiniChordDiagram({ chord }: { chord: string }) {
+  const frets = MINI_CHORDS[chord];
+  if (!frets) return null;
+
+  const STRINGS = 6;
+  const FRETS_SHOWN = 4;
+  const CW = 11;
+  const CH = 10;
+  const LEFT = 12;
+  const TOP = 14;
+  const W = LEFT + (STRINGS - 1) * CW + 10;
+  const H = TOP + FRETS_SHOWN * CH + 8;
+
+  const pressed = frets.filter((f) => f > 0);
+  const minFret = pressed.length > 0 ? Math.min(...pressed) : 1;
+  const startFret = minFret > 3 ? minFret - 1 : 1;
+
+  return (
+    <svg
+      width={W}
+      height={H}
+      viewBox={`0 0 ${W} ${H}`}
+      aria-label={`${chord} chord`}
+      className="shrink-0"
+    >
+      {/* Nut */}
+      {startFret === 1 && (
+        <rect
+          x={LEFT}
+          y={TOP}
+          width={(STRINGS - 1) * CW}
+          height={3}
+          fill="#8A6A4A"
+          opacity={0.9}
+          rx={1}
+        />
+      )}
+      {/* Position marker */}
+      {startFret > 1 && (
+        <text
+          x={LEFT - 4}
+          y={TOP + CH * 0.75}
+          fontSize={7}
+          fill="#8A6A4A"
+          textAnchor="end"
+          fontFamily="var(--font-serif)"
+        >
+          {startFret}
+        </text>
+      )}
+      {/* Fret lines */}
+      {Array.from({ length: FRETS_SHOWN + 1 }, (_, i) => (
+        <line
+          key={`f${i}`}
+          x1={LEFT}
+          y1={TOP + i * CH}
+          x2={LEFT + (STRINGS - 1) * CW}
+          y2={TOP + i * CH}
+          stroke="#8A6A4A"
+          strokeWidth={0.6}
+          opacity={0.5}
+        />
+      ))}
+      {/* String lines */}
+      {Array.from({ length: STRINGS }, (_, s) => (
+        <line
+          key={`s${s}`}
+          x1={LEFT + s * CW}
+          y1={TOP}
+          x2={LEFT + s * CW}
+          y2={TOP + FRETS_SHOWN * CH}
+          stroke="#8A6A4A"
+          strokeWidth={0.7}
+          opacity={0.5}
+        />
+      ))}
+      {/* Note markers */}
+      {frets.map((fret, s) => {
+        const x = LEFT + s * CW;
+        if (fret === -1)
+          return (
+            <text
+              key={`m${s}`}
+              x={x}
+              y={TOP - 4}
+              textAnchor="middle"
+              fontSize={7}
+              fill="#8A6A4A"
+              opacity={0.7}
+            >
+              ×
+            </text>
+          );
+        if (fret === 0)
+          return (
+            <circle
+              key={`o${s}`}
+              cx={x}
+              cy={TOP - 5}
+              r={3}
+              fill="none"
+              stroke="#C4A060"
+              strokeWidth={0.9}
+            />
+          );
+        const rel = fret - startFret + 1;
+        if (rel < 1 || rel > FRETS_SHOWN) return null;
+        return (
+          <circle
+            key={`n${s}`}
+            cx={x}
+            cy={TOP + (rel - 0.5) * CH}
+            r={4}
+            fill="#C4A060"
+            opacity={0.88}
+          />
+        );
+      })}
+    </svg>
+  );
+}
+
 function ScaleFormula({
   name,
   intervals,
@@ -339,6 +483,23 @@ function ScaleFormula({
   );
 }
 
+const INTERVAL_DESC: Record<string, string> = {
+  '1': 'Root — the tonal center',
+  '2': 'Major 2nd — bright step',
+  b2: 'Minor 2nd — semitone tension',
+  '3': 'Major 3rd — bright, resolved',
+  b3: 'Minor 3rd — dark, emotional',
+  '#3': 'Augmented 3rd',
+  '4': 'Perfect 4th — open, suspended',
+  '#4': 'Tritone — unstable, tense',
+  b5: 'Diminished 5th — the blue note',
+  '5': 'Perfect 5th — stable, strong',
+  '6': 'Major 6th — soul, warm',
+  b6: 'Minor 6th — melancholic',
+  b7: 'Minor 7th — bluesy tension',
+  '7': 'Major 7th — dreamy, jazzy',
+};
+
 function ChordStack({
   label,
   intervals,
@@ -348,47 +509,158 @@ function ChordStack({
   intervals: string;
   color: string;
 }) {
+  const [openInterval, setOpenInterval] = useState<string | null>(null);
+  const parts = intervals.split(' · ');
+
   return (
     <div
-      className="flex flex-col items-center gap-1 rounded-xl px-3 py-2.5"
+      className="flex flex-col items-center gap-1.5 rounded-xl px-3 py-2.5"
       style={{ background: `${color}10`, border: `1px solid ${color}25` }}
     >
       <span className="text-[14px] font-bold" style={{ color }}>
         {label}
       </span>
-      <span
-        className="text-[10px]"
-        style={{ color: 'var(--muted-foreground)', fontFamily: 'var(--font-serif)' }}
-      >
-        {intervals}
-      </span>
+      <div className="flex gap-1 flex-wrap justify-center">
+        {parts.map((iv) => {
+          const isOpen = openInterval === iv;
+          return (
+            <button
+              key={iv}
+              type="button"
+              onClick={() => setOpenInterval(isOpen ? null : iv)}
+              className="rounded px-1.5 py-0.5 text-[10px] font-mono cursor-pointer transition-all"
+              style={{
+                background:
+                  iv.startsWith('b') || iv.startsWith('#')
+                    ? isOpen
+                      ? '#C0604025'
+                      : '#C0604015'
+                    : isOpen
+                      ? '#C4A06025'
+                      : '#C4A06015',
+                color: iv.startsWith('b') || iv.startsWith('#') ? '#C06040' : '#C4A060',
+                border: `1px solid ${isOpen ? (iv.startsWith('b') || iv.startsWith('#') ? '#C0604040' : '#C4A06040') : 'transparent'}`,
+              }}
+            >
+              {iv}
+            </button>
+          );
+        })}
+      </div>
+      {openInterval && INTERVAL_DESC[openInterval] && (
+        <p
+          className="text-[10px] italic text-center animate-in fade-in duration-150"
+          style={{
+            color: 'var(--muted-foreground)',
+            fontFamily: 'var(--font-serif)',
+            opacity: 0.85,
+          }}
+        >
+          {INTERVAL_DESC[openInterval]}
+        </p>
+      )}
     </div>
   );
 }
 
-function Progression({ chords, note }: { chords: string[]; note?: string }) {
+function Progression({ chords, note, label }: { chords: string[]; note?: string; label?: string }) {
+  const [open, setOpen] = useState(true);
+  const [activeChord, setActiveChord] = useState<string | null>(null);
+
   return (
-    <div className="space-y-1">
-      <div className="flex items-center gap-2 flex-wrap">
-        {chords.map((ch, i) => (
-          <span key={i} className="flex items-center gap-2">
-            <span
-              className="rounded-lg px-3 py-1.5 text-[13px] font-bold"
-              style={{ background: '#C4A06015', color: '#C4A060', border: '1px solid #C4A06030' }}
-            >
-              {ch}
+    <div className="space-y-1.5">
+      {/* Collapsible header pill */}
+      <button
+        type="button"
+        onClick={() => {
+          setOpen((o) => !o);
+          setActiveChord(null);
+        }}
+        className="flex items-center gap-2 cursor-pointer"
+        style={{ background: 'none', border: 'none', padding: 0 }}
+      >
+        <div className="flex items-center gap-2 flex-wrap">
+          {chords.map((ch, i) => (
+            <span key={i} className="flex items-center gap-1.5">
+              <span
+                className="rounded-lg px-3 py-1.5 text-[13px] font-bold"
+                style={{
+                  background: open && activeChord === ch ? '#C4A06030' : '#C4A06015',
+                  color: '#C4A060',
+                  border: `1px solid ${open && activeChord === ch ? '#C4A06060' : '#C4A06030'}`,
+                }}
+              >
+                {ch}
+              </span>
+              {i < chords.length - 1 && <span style={{ color: '#C4A06060', fontSize: 11 }}>→</span>}
             </span>
-            {i < chords.length - 1 && <span style={{ color: '#C4A06060' }}>→</span>}
-          </span>
-        ))}
-      </div>
-      {note && (
-        <p
-          className="text-[11px] italic"
-          style={{ color: 'var(--muted-foreground)', fontFamily: 'var(--font-serif)' }}
+          ))}
+        </div>
+        <span
+          style={{
+            fontSize: 10,
+            color: '#C4A06060',
+            transform: open ? 'rotate(180deg)' : 'rotate(0deg)',
+            transition: 'transform 0.15s',
+            marginLeft: 2,
+          }}
         >
-          {note}
-        </p>
+          ▾
+        </span>
+      </button>
+
+      {open && (
+        <div className="space-y-2 animate-in fade-in duration-150">
+          {/* Individual chord click row */}
+          <div className="flex items-center gap-2 flex-wrap">
+            {chords
+              .filter((ch, i, a) => a.indexOf(ch) === i)
+              .map((ch) => (
+                <button
+                  key={ch}
+                  type="button"
+                  onClick={() => setActiveChord(activeChord === ch ? null : ch)}
+                  className="rounded-lg px-3 py-1.5 text-[13px] font-bold cursor-pointer transition-all"
+                  style={{
+                    background: activeChord === ch ? '#C4A06028' : '#C4A06010',
+                    color: '#C4A060',
+                    border: `1px solid ${activeChord === ch ? '#C4A06055' : '#C4A06020'}`,
+                  }}
+                >
+                  {ch}
+                </button>
+              ))}
+          </div>
+
+          {/* Mini chord diagram */}
+          {activeChord && MINI_CHORDS[activeChord] && (
+            <div
+              className="rounded-lg px-3 py-2 animate-in fade-in duration-150"
+              style={{
+                background: '#C4A06008',
+                border: '1px solid #C4A06018',
+                display: 'inline-block',
+              }}
+            >
+              <p
+                className="mb-1 text-[10px] font-semibold uppercase tracking-[0.1em]"
+                style={{ color: '#C4A060' }}
+              >
+                {activeChord}
+              </p>
+              <MiniChordDiagram chord={activeChord} />
+            </div>
+          )}
+
+          {note && (
+            <p
+              className="text-[11px] italic"
+              style={{ color: 'var(--muted-foreground)', fontFamily: 'var(--font-serif)' }}
+            >
+              {note}
+            </p>
+          )}
+        </div>
       )}
     </div>
   );

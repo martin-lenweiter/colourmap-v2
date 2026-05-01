@@ -1520,16 +1520,16 @@ export default function BinauralTuner() {
 
   // Sacred / Solfeggio frequencies
   const SACRED = [
-    { id: 's174', label: '174', freq: 174, desc: 'foundation', color: '#A0907A' },
+    { id: 's174', label: '174', freq: 174, desc: 'foundation', color: '#5A8A6A' },
     { id: 's285', label: '285', freq: 285, desc: 'healing', color: '#6A90B8' },
     { id: 's396', label: '396', freq: 396, desc: 'liberation', color: '#9B6BA0' },
     { id: 's417', label: '417', freq: 417, desc: 'change', color: '#D4805A' },
     { id: 's432', label: '432', freq: 432, desc: 'nature', color: '#7AAA58' },
-    { id: 's528', label: '528', freq: 528, desc: 'love', color: '#C4A060' },
+    { id: 's528', label: '528', freq: 528, desc: 'love', color: '#5FAA70' },
     { id: 's639', label: '639', freq: 639, desc: 'connection', color: '#6890B0' },
     { id: 's741', label: '741', freq: 741, desc: 'intuition', color: '#B0A0C8' },
     { id: 's852', label: '852', freq: 852, desc: 'spiritual', color: '#D8A878' },
-    { id: 's963', label: '963', freq: 963, desc: 'higher self', color: '#5A88C0' },
+    { id: 's963', label: '963', freq: 963, desc: 'higher self', color: '#1E7A50' },
   ] as const;
   const [activeSacred, setActiveSacred] = useState<Set<string>>(new Set());
   const sacredOscsRef = useRef<Map<string, { osc: OscillatorNode; gain: GainNode }>>(new Map());
@@ -1608,7 +1608,7 @@ export default function BinauralTuner() {
     {
       id: 'real-piano',
       label: 'Real Piano',
-      color: '#5C3018',
+      color: '#9B6BA0',
       type: 'sine' as OscillatorType,
       attack: 0.1,
       release: 3.5,
@@ -1618,7 +1618,7 @@ export default function BinauralTuner() {
     {
       id: 'real-violin',
       label: 'Real Violin',
-      color: '#8A3A2B',
+      color: '#D4805A',
       type: 'sine' as OscillatorType,
       attack: 0.1,
       release: 3.5,
@@ -1638,7 +1638,7 @@ export default function BinauralTuner() {
     {
       id: 'real-harp',
       label: 'Real Harp',
-      color: '#A8906A',
+      color: '#6890B0',
       type: 'sine' as OscillatorType,
       attack: 0.1,
       release: 3.5,
@@ -3889,7 +3889,7 @@ export default function BinauralTuner() {
                             key={i}
                             className="flex-1 rounded-[3px] transition-all"
                             style={{
-                              height: 6,
+                              height: 10,
                               background: RAINBOW[i % RAINBOW.length],
                               opacity: i / 7 <= melodySpeed / 100 ? 0.4 + (i / 7) * 0.4 : 0.08,
                             }}
@@ -3919,7 +3919,7 @@ export default function BinauralTuner() {
                             key={i}
                             className="flex-1 rounded-[3px] transition-all"
                             style={{
-                              height: 6,
+                              height: 10,
                               background: RAINBOW[(i + 4) % RAINBOW.length],
                               opacity: i / 7 <= melodyReverb / 100 ? 0.4 + (i / 7) * 0.4 : 0.08,
                             }}
@@ -3951,7 +3951,7 @@ export default function BinauralTuner() {
                             key={i}
                             className="flex-1 rounded-[3px] transition-all"
                             style={{
-                              height: 6,
+                              height: 10,
                               background: RAINBOW[(i + 2) % RAINBOW.length],
                               opacity: i / 7 <= melodyVolume ? 0.4 + (i / 7) * 0.4 : 0.08,
                             }}
@@ -4132,12 +4132,12 @@ export default function BinauralTuner() {
                   >
                     <div
                       className="absolute top-1/2 -translate-y-1/2 left-0 right-0 rounded-full"
-                      style={{ height: 6, background: '#C4A06010' }}
+                      style={{ height: 10, background: '#C4A06010' }}
                     />
                     <div
                       className="absolute top-1/2 -translate-y-1/2 left-0 rounded-full"
                       style={{
-                        height: 6,
+                        height: 10,
                         width: `${layerReverb}%`,
                         background: `linear-gradient(90deg, ${RAINBOW[0]}, ${RAINBOW[4]}, ${RAINBOW[8]})`,
                         opacity: 0.7,
@@ -4196,9 +4196,16 @@ export default function BinauralTuner() {
                         {CATEGORY_LABELS[cat]}
                       </p>
                       <div className="grid grid-cols-3 gap-1.5">
-                        {catLayers.map((l) => {
+                        {catLayers.map((l, layerIdx) => {
                           const vol = activeLayers[l.id] || 0;
                           const isOn = vol > 0;
+                          const colT = (layerIdx % 3) / 2; // 0.0, 0.5, 1.0 left→right
+                          const bgAlpha = Math.round(10 + colT * 18)
+                            .toString(16)
+                            .padStart(2, '0');
+                          const borderAlpha = Math.round(28 + colT * 32)
+                            .toString(16)
+                            .padStart(2, '0');
                           return (
                             <div key={l.id} className="space-y-1">
                               <button
@@ -4206,8 +4213,8 @@ export default function BinauralTuner() {
                                 onClick={() => toggleLayer(l.id)}
                                 className="w-full cursor-pointer rounded-lg px-2 py-2 text-center transition-all"
                                 style={{
-                                  background: isOn ? `${l.color}18` : '#C4A06006',
-                                  border: `1px solid ${isOn ? `${l.color}45` : '#C4A06018'}`,
+                                  background: isOn ? `${catColor}${bgAlpha}` : '#C4A06006',
+                                  border: `1px solid ${isOn ? `${catColor}${borderAlpha}` : '#C4A06018'}`,
                                   minHeight: 40,
                                 }}
                               >
@@ -4216,8 +4223,8 @@ export default function BinauralTuner() {
                                     fontFamily: 'var(--font-serif)',
                                     fontSize: '13px',
                                     fontWeight: isOn ? 700 : 400,
-                                    color: isOn ? l.color : '#8A6A4A',
-                                    opacity: isOn ? 1 : 0.65,
+                                    color: isOn ? catColor : '#8A6A4A',
+                                    opacity: isOn ? 0.6 + colT * 0.4 : 0.65,
                                   }}
                                 >
                                   {l.label}
@@ -4287,8 +4294,8 @@ export default function BinauralTuner() {
                                       key={i}
                                       className="flex-1 rounded-[3px] transition-all"
                                       style={{
-                                        height: 14,
-                                        background: l.color,
+                                        height: 18,
+                                        background: catColor,
                                         opacity: i / 4 <= vol ? 0.5 + (i / 4) * 0.45 : 0.1,
                                       }}
                                     />
@@ -4349,7 +4356,7 @@ export default function BinauralTuner() {
                       <span
                         style={{
                           fontFamily: 'var(--font-serif)',
-                          fontSize: '12px',
+                          fontSize: '15px',
                           fontWeight: isActive ? 700 : 500,
                           color: isActive ? g.color : '#7A5438',
                           opacity: isActive ? 1 : 0.8,
@@ -4408,7 +4415,7 @@ export default function BinauralTuner() {
                         <span
                           style={{
                             fontFamily: 'var(--font-serif)',
-                            fontSize: '12px',
+                            fontSize: '15px',
                             fontWeight: 600,
                             color: isActive ? p.color : '#7A5438',
                             opacity: isActive ? 1 : 0.8,
@@ -4476,7 +4483,7 @@ export default function BinauralTuner() {
                     className="flex-1 rounded-lg border bg-transparent px-2 py-1 outline-none placeholder:italic placeholder:text-[#8A6A4A] placeholder:opacity-50"
                     style={{
                       fontFamily: 'var(--font-serif)',
-                      fontSize: '12px',
+                      fontSize: '16px',
                       color: '#5C3018',
                       borderColor: '#C4A06025',
                     }}
