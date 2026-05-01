@@ -31,7 +31,6 @@ function loadIdx(): number {
 }
 
 function DotSelector({ idx, onSelect }: { idx: number; onSelect: (i: number) => void }) {
-  const n = DOING_LEVELS.length;
   const DOT = 28;
   const GAP = 6;
 

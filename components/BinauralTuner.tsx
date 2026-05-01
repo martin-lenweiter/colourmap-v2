@@ -1984,7 +1984,6 @@ export default function BinauralTuner() {
     };
   }, [voiceMode]);
 
-  const [saveName, setSaveName] = useState('');
   const [_showSave, setShowSave] = useState(false);
   const crossfadingRef = useRef(false);
 
@@ -2085,37 +2084,6 @@ export default function BinauralTuner() {
       if (raw) setSavedMixes(JSON.parse(raw));
     } catch {}
   }, []);
-
-  function saveMix() {
-    if (!saveName.trim()) return;
-    const mix = {
-      name: saveName.trim(),
-      base: baseFreq,
-      beat: beatFreq,
-      vol: volume,
-      layers: { ...activeLayers },
-      binaural: binauralOn,
-      shape: 'dot' as const,
-    };
-    const next = [mix, ...savedMixes].slice(0, 20);
-    setSavedMixes(next);
-    localStorage.setItem('colourmap:tuner-mixes', JSON.stringify(next));
-    setSaveName('');
-    setShowSave(false);
-  }
-
-  const SHAPE_CYCLE = ['dot', 'star', 'heart', 'losange', 'triangle', 'square'] as const;
-
-  function cycleMixShape(index: number) {
-    setSavedMixes((prev) => {
-      const next = [...prev];
-      const current = next[index].shape ?? 'dot';
-      const nextShape = SHAPE_CYCLE[(SHAPE_CYCLE.indexOf(current) + 1) % SHAPE_CYCLE.length];
-      next[index] = { ...next[index], shape: nextShape };
-      localStorage.setItem('colourmap:tuner-mixes', JSON.stringify(next));
-      return next;
-    });
-  }
 
   function deleteMix(index: number) {
     setSavedMixes((prev) => {
