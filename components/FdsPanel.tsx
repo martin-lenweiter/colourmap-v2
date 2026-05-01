@@ -395,30 +395,33 @@ function ReflectSection({ axis, axisId }: { axis: (typeof AXES)[Axis]; axisId: A
   );
 }
 
-/* ── 4 losange dots — horizontal ── */
+/* ── 4 dots — horizontal: dot above, label below ── */
 function DotsHorizontal({ items }: { items: { name: string; color: string }[] }) {
   return (
-    <div className="flex justify-center gap-7">
+    <div className="flex justify-center gap-6">
       {items.map((item) => (
-        <div key={item.name} className="flex flex-col items-center gap-2.5">
+        <div key={item.name} className="flex flex-col items-center gap-3" style={{ minWidth: 56 }}>
+          {/* Dot */}
           <span
             style={{
-              width: 14,
-              height: 14,
+              width: 22,
+              height: 22,
+              borderRadius: '50%',
               background: item.color,
               display: 'block',
-              transform: 'rotate(45deg)',
-              borderRadius: 2,
+              flexShrink: 0,
             }}
           />
+          {/* Label */}
           <span
             style={{
               fontFamily: font,
               fontSize: 11,
-              fontWeight: 500,
-              color: item.color,
-              letterSpacing: '0.06em',
+              fontWeight: 600,
+              color: 'var(--foreground)',
+              letterSpacing: '0.04em',
               textAlign: 'center',
+              lineHeight: 1.25,
             }}
           >
             {item.name}
@@ -429,30 +432,31 @@ function DotsHorizontal({ items }: { items: { name: string; color: string }[] })
   );
 }
 
-/* ── 4 losange dots — vertical ── */
+/* ── 4 dots — vertical: dot left, label right ── */
 function DotsVertical({ items }: { items: { name: string; color: string }[] }) {
   return (
-    <div className="flex flex-col items-center gap-3">
+    <div className="flex flex-col gap-3 px-2">
       {items.map((item) => (
-        <div key={item.name} className="flex items-center gap-3">
+        <div key={item.name} className="flex items-center gap-4">
+          {/* Dot */}
           <span
             style={{
-              width: 12,
-              height: 12,
+              width: 20,
+              height: 20,
+              borderRadius: '50%',
               background: item.color,
               display: 'block',
-              transform: 'rotate(45deg)',
-              borderRadius: 2,
               flexShrink: 0,
             }}
           />
+          {/* Label */}
           <span
             style={{
               fontFamily: font,
-              fontSize: 14,
+              fontSize: 15,
               fontWeight: 500,
-              color: item.color,
-              letterSpacing: '0.06em',
+              color: 'var(--foreground)',
+              letterSpacing: '0.04em',
             }}
           >
             {item.name}
