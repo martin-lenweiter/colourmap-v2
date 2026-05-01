@@ -1,9 +1,9 @@
-import MusicSetlist from '@/components/MusicSetlist';
+import GuitarStudio from '@/components/GuitarStudio';
 
 export const metadata = {
   title: 'Music · Colourmap',
 };
 
 export default function MusicPage() {
-  return <MusicSetlist />;
+  return <GuitarStudio />;
 }

@@ -6,14 +6,15 @@ import BinauralTuner from '@/components/BinauralTuner';
 import GrooveMachine from '@/components/GrooveMachine';
 import LofiLooper from '@/components/LofiLooper';
 import MagicMaker from '@/components/MagicMaker';
-import MusicSetlist from '@/components/MusicSetlist';
 
 /* ═══════════════════════════════════════════════════════════
-   MUSIC (fka Sound Lab) — category tabs: Relaxing / Maker /
-   Looper / Visuals / Songs.
+   Sound Lab — ambient / emotional audio tools.
+   Tabs: Chill Machine / Groove Machine / Magic Maker /
+         Lo-fi Looper / Visuals.
+   Songs tab moved to Guitar Studio (music/page.tsx).
    ═══════════════════════════════════════════════════════════ */
 
-type Mode = 'tuner' | 'groove' | 'maker' | 'looper' | 'visuals' | 'songs';
+type Mode = 'tuner' | 'groove' | 'maker' | 'looper' | 'visuals';
 
 const VISUALIZER_MODES: { id: VisualizerMode; label: string }[] = [
   { id: 'atom', label: 'Atom' },
@@ -76,7 +77,6 @@ export default function SoundLab() {
     { id: 'maker', label: 'Magic Maker' },
     { id: 'looper', label: 'Lo-fi Looper' },
     { id: 'visuals', label: 'Visuals' },
-    { id: 'songs', label: 'Songs' },
   ];
 
   return (
@@ -155,7 +155,6 @@ export default function SoundLab() {
       <div style={{ display: mode === 'looper' ? 'block' : 'none' }}>
         <LofiLooper />
       </div>
-      {mode === 'songs' && <MusicSetlist />}
       {mode === 'visuals' && (
         <div className="space-y-4">
           <div className="relative flex justify-center">
