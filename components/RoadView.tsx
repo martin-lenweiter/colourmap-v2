@@ -2,19 +2,15 @@
 
 import { useEffect, useState } from 'react';
 import ActiveCategoryBanner from '@/components/ActiveCategoryBanner';
-import CategoryCompass from '@/components/CategoryCompass';
 import CompassCarousel from '@/components/CompassCarousel';
-import CompassFlower from '@/components/CompassFlower';
 import LifeCategories from '@/components/LifeCategories';
 import LifeCategoriesEmptyState from '@/components/LifeCategoriesEmptyState';
 import LifeCategoriesStrip from '@/components/LifeCategoriesStrip';
 import LifePathDots from '@/components/LifePathDots';
 import ProgressTab from '@/components/ProgressTab';
-import QuietNotes from '@/components/QuietNotes';
 import ReflectThreeDots from '@/components/ReflectThreeDots';
 import SlowWins from '@/components/SlowWins';
 import { useStyle } from '@/components/StyleContext';
-import TrackLines from '@/components/TrackLines';
 import WeekShape from '@/components/WeekShape';
 import { haptic } from '@/lib/haptics';
 
@@ -89,12 +85,8 @@ export default function RoadView() {
             <WeekShape />
             <LifeCategoriesStrip />
             <ActiveCategoryBanner />
-            <CompassFlower />
-            <TrackLines />
-            <QuietNotes />
             <SlowWins />
             <CompassCarousel />
-            <CategoryCompass />
             <LifeCategories />
           </div>
         )}

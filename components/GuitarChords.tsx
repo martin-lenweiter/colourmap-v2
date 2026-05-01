@@ -54,14 +54,23 @@ const CHORDS: ChordDef[] = [
 ];
 
 /* ─── SVG chord box ──────────────────────────────────────── */
+/* Horizontal layout: strings = horizontal rows (E top, e bottom),
+   frets = vertical columns, nut = thick bar on the left.
+   Matches how the GuitarFretboard displays the neck. */
 
-const BOX_CELL_W = 18;
-const BOX_CELL_H = 16;
-const BOX_STRINGS = 6;
-const BOX_FRETS = 5;
-const BOX_LEFT = 14; // x where string 0 starts
-const BOX_TOP = 22; // y where nut/fret-1 starts
-const DOT_R = 6;
+const CB_CELL_W = 18; // fret column width (px)
+const CB_CELL_H = 16; // string row spacing (px)
+const CB_FRETS = 4; // fret columns shown
+const CB_LEFT = 32; // x where nut bar is drawn (room for labels + X/O)
+const CB_TOP = 14; // y of string 0 (low E)
+const CB_DOT_R = 5.5; // fingering dot radius
+
+// String labels and thickness (index 0 = low E, 5 = high e)
+const STRING_LABELS = ['E', 'A', 'D', 'G', 'B', 'e'];
+const STRING_WIDTHS = [2.2, 1.8, 1.4, 1.2, 1.0, 0.8];
+
+const CB_W = CB_LEFT + CB_FRETS * CB_CELL_W + 10;
+const CB_H = CB_TOP + 5 * CB_CELL_H + 14;
 
 interface ChordBoxProps {
   chord: ChordDef;
@@ -70,29 +79,39 @@ interface ChordBoxProps {
 function ChordBox({ chord }: ChordBoxProps) {
   const { fretStart, strings, barre, name, style } = chord;
   const showOpen = fretStart === 1;
-  const totalW = BOX_LEFT + (BOX_STRINGS - 1) * BOX_CELL_W + BOX_LEFT;
-  const totalH = BOX_TOP + BOX_FRETS * BOX_CELL_H + 8;
 
   const styleColor: Record<ChordStyle, string> = {
     open: '#C4A060',
-    soul: '#7090B8',
+    soul: '#C07838',
     flamenco: '#C06040',
   };
   const color = styleColor[style];
 
   return (
     <svg
-      width={totalW}
-      height={totalH}
-      viewBox={`0 0 ${totalW} ${totalH}`}
+      width={CB_W}
+      height={CB_H}
+      viewBox={`0 0 ${CB_W} ${CB_H}`}
       aria-label={`${name} chord diagram`}
     >
-      {/* Fret position marker if not open */}
+      {/* Neck background */}
+      <rect
+        x={CB_LEFT}
+        y={CB_TOP - 6}
+        width={CB_FRETS * CB_CELL_W}
+        height={5 * CB_CELL_H + 12}
+        rx={3}
+        fill="#221208"
+        opacity={0.9}
+      />
+
+      {/* Fret position label for non-open chords */}
       {!showOpen && (
         <text
-          x={2}
-          y={BOX_TOP + BOX_CELL_H * 0.6}
-          fontSize={9}
+          x={CB_LEFT - 4}
+          y={CB_TOP - 2}
+          textAnchor="end"
+          fontSize={8}
           fill="#A08060"
           fontFamily="var(--font-serif)"
         >
@@ -100,67 +119,68 @@ function ChordBox({ chord }: ChordBoxProps) {
         </text>
       )}
 
-      {/* Nut (thick bar) or top line */}
-      <line
-        x1={BOX_LEFT}
-        y1={BOX_TOP}
-        x2={BOX_LEFT + (BOX_STRINGS - 1) * BOX_CELL_W}
-        y2={BOX_TOP}
-        stroke={showOpen ? '#C8A878' : '#5A3C20'}
-        strokeWidth={showOpen ? 4 : 1.5}
-      />
+      {/* Fret bars (vertical) — fret 0 = nut */}
+      {Array.from({ length: CB_FRETS + 1 }, (_, f) => {
+        const x = CB_LEFT + f * CB_CELL_W;
+        const isNut = f === 0;
+        return (
+          <line
+            key={f}
+            x1={x}
+            y1={CB_TOP - 5}
+            x2={x}
+            y2={CB_TOP + 5 * CB_CELL_H + 5}
+            stroke={isNut && showOpen ? '#C8A878' : '#6B4820'}
+            strokeWidth={isNut && showOpen ? 4 : 1.2}
+          />
+        );
+      })}
 
-      {/* Fret lines */}
-      {Array.from({ length: BOX_FRETS }, (_, f) => (
-        <line
-          key={f}
-          x1={BOX_LEFT}
-          y1={BOX_TOP + (f + 1) * BOX_CELL_H}
-          x2={BOX_LEFT + (BOX_STRINGS - 1) * BOX_CELL_W}
-          y2={BOX_TOP + (f + 1) * BOX_CELL_H}
-          stroke="#5A3C20"
-          strokeWidth={1}
-        />
-      ))}
+      {/* String lines (horizontal) + labels — E top, e bottom */}
+      {STRING_LABELS.map((label, s) => {
+        const y = CB_TOP + s * CB_CELL_H;
+        return (
+          <g key={s}>
+            <line
+              x1={CB_LEFT}
+              y1={y}
+              x2={CB_LEFT + CB_FRETS * CB_CELL_W}
+              y2={y}
+              stroke="#A09070"
+              strokeWidth={STRING_WIDTHS[s]}
+            />
+            {/* String label to the left of the nut */}
+            <text x={4} y={y + 4} fontSize={9} fill="#908060" fontFamily="var(--font-serif)">
+              {label}
+            </text>
+          </g>
+        );
+      })}
 
-      {/* String lines */}
-      {Array.from({ length: BOX_STRINGS }, (_, s) => (
-        <line
-          key={s}
-          x1={BOX_LEFT + s * BOX_CELL_W}
-          y1={BOX_TOP}
-          x2={BOX_LEFT + s * BOX_CELL_W}
-          y2={BOX_TOP + BOX_FRETS * BOX_CELL_H}
-          stroke="#5A3C20"
-          strokeWidth={1}
-        />
-      ))}
-
-      {/* Barre bar */}
+      {/* Barre — vertical bar at the barre fret spanning all strings */}
       {barre !== undefined && (
         <rect
-          x={BOX_LEFT + DOT_R * 0.5}
-          y={BOX_TOP + (barre - fretStart) * BOX_CELL_H + BOX_CELL_H / 2 - DOT_R}
-          width={(BOX_STRINGS - 1) * BOX_CELL_W - DOT_R}
-          height={DOT_R * 2}
-          rx={DOT_R}
+          x={CB_LEFT + (barre - fretStart) * CB_CELL_W + CB_CELL_W * 0.5 - CB_DOT_R}
+          y={CB_TOP - CB_DOT_R}
+          width={CB_DOT_R * 2}
+          height={5 * CB_CELL_H + CB_DOT_R * 2}
+          rx={CB_DOT_R}
           fill={color}
-          opacity={0.7}
+          opacity={0.72}
         />
       )}
 
       {/* X / O markers + finger dots */}
       {strings.map((fret, s) => {
-        const cx = BOX_LEFT + s * BOX_CELL_W;
+        const cy = CB_TOP + s * CB_CELL_H;
         if (fret === -1) {
-          // Muted: X above nut
           return (
             <text
               key={s}
-              x={cx}
-              y={BOX_TOP - 6}
+              x={CB_LEFT - 10}
+              y={cy + 4}
               textAnchor="middle"
-              fontSize={9}
+              fontSize={10}
               fill="#C06040"
               fontWeight="bold"
             >
@@ -169,12 +189,11 @@ function ChordBox({ chord }: ChordBoxProps) {
           );
         }
         if (fret === 0 && showOpen) {
-          // Open: O above nut
           return (
             <circle
               key={s}
-              cx={cx}
-              cy={BOX_TOP - 7}
+              cx={CB_LEFT - 10}
+              cy={cy}
               r={4}
               fill="none"
               stroke="#A08060"
@@ -183,15 +202,15 @@ function ChordBox({ chord }: ChordBoxProps) {
           );
         }
         if (fret > 0) {
-          const relFret = fret - fretStart + 1; // row in box (1-based)
-          const cy = BOX_TOP + (relFret - 0.5) * BOX_CELL_H;
-          const isBarreString = barre === fret;
+          const relFret = fret - fretStart + 1; // 1-based column
+          const cx = CB_LEFT + (relFret - 0.5) * CB_CELL_W;
+          const isBarreString = barre !== undefined && barre === fret;
           return (
             <circle
               key={s}
               cx={cx}
               cy={cy}
-              r={DOT_R}
+              r={CB_DOT_R}
               fill={color}
               opacity={isBarreString ? 0 : 1}
             />
@@ -220,7 +239,7 @@ const STYLE_LABELS: Record<ChordStyle, string> = {
 };
 const STYLE_COLORS: Record<ChordStyle, string> = {
   open: '#C4A060',
-  soul: '#7090B8',
+  soul: '#C07838',
   flamenco: '#C06040',
 };
 

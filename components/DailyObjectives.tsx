@@ -135,9 +135,10 @@ function DragSlider({
 export default function DailyObjectives() {
   const [open, setOpen] = useState(() => {
     try {
-      return localStorage.getItem('colourmap:other-missions-open') === 'true';
+      const stored = localStorage.getItem('colourmap:other-missions-open');
+      return stored === null ? true : stored === 'true';
     } catch {
-      return false;
+      return true;
     }
   });
   const [pushTomorrowOpen, setPushTomorrowOpen] = useState(true);
