@@ -1,19 +1,23 @@
-# Music Tab — Sound Lab + Guitar Studio
+# Music Tab — Music Studio + Guitar Studio
 
 > Martin (2026-05-01): "under one music tab. also make sure the chill
 > sounds works when u move to other parts of the app. build all this."
+> "guitar studio should be a full category next to music studio as two
+> categories of MUSIC main subtitles."
 
 ## Overview
 
-The `/music` route becomes a single unified tab with two clearly distinct
-sections:
+The `/music` route hosts two peer sections toggled by a top-level pill:
 
-1. **Sound Lab** — emotional self-regulation tools (existing: Chill
-   Machine, Groove Machine, Magic Maker, Lo-fi Looper, Visuals). Audio
-   persists when the user navigates away.
-2. **Guitar Studio** — musician creation and learning tools (new): Songs
-   with segment editor, Fretboard scale visualizer, Chord library, Theory
-   path, Practice log.
+1. **Music Studio** — emotional self-regulation / ambient audio tools
+   (existing: Chill Machine, Groove Machine, Magic Maker, Lo-fi Looper,
+   Visuals). Audio persists when the user navigates away.
+2. **Guitar Studio** — musician creation and learning tools: Songs with
+   segment editor, Fretboard scale visualizer, Chord library (Soul +
+   Flamenco), Theory path, Practice log.
+
+`app/(app)/music/page.tsx` returns `null` — all rendering is owned by
+`AppShell` so the Web Audio context is never unmounted.
 
 The old `/sounds` route redirects to `/music`.
 
@@ -166,8 +170,8 @@ Supabase migration (`songs` + `song_segments` tables) is tracked in
 | Layer | File |
 |-------|------|
 | Spec | `docs/specs/music-tab.md` |
-| Persistent audio | `app/(app)/AppShell.tsx` — always mount SoundLab |
-| Unified page | `app/(app)/music/page.tsx` — Guitar Studio section |
+| Section toggle + persistent audio | `app/(app)/AppShell.tsx` — Music Studio · Guitar Studio toggle; always mount SoundLab |
+| Page (no-op) | `app/(app)/music/page.tsx` — returns null; AppShell owns rendering |
 | Redirect | `app/(app)/sounds/page.tsx` — redirect to /music |
 | Nav | `components/NavLinks.tsx` — href /sounds → /music |
 | SoundLab | `components/SoundLab.tsx` — remove Songs tab |
@@ -177,3 +181,25 @@ Supabase migration (`songs` + `song_segments` tables) is tracked in
 | Songs | `components/SongStudio.tsx` |
 | Learn stub | `components/GuitarLearn.tsx` |
 | Practice stub | `components/GuitarPractice.tsx` |
+
+---
+
+## Overview tab — FdsPanel (same PR)
+
+The Overview sub-tab on `/day` replaces three separate components
+(LifePathDots, ReflectThreeDots, CompassCarousel) with a single
+`FdsPanel` surface:
+
+- **F / D / S pill selector** — one axis active at a time
+- **4 losange sub-item dots** per axis in H (horizontal), V (vertical),
+  or ◎ (individual compass) layout
+- **Reflect section** — collapsible per axis; rainbow level rows with
+  write areas; entries stored at `colourmap:reflect-entries`
+- **⊚ SuperCompass** — 4th mode: Feeling inner pizza + Doing outer donut
+  as nested SVG rings
+
+Overview order: FdsPanel → LifeCategoriesStrip → ActiveCategoryBanner
+→ LifeCategories → WeekShape → SlowWins.
+
+Notebook pillboxes gain HTML5 drag-to-reorder (mobile + desktop);
+order persisted to localStorage.
