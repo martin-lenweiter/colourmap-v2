@@ -3,11 +3,15 @@
 import DailyAgenda from '@/components/DailyAgenda';
 import DailyObjectives from '@/components/DailyObjectives';
 import DoingContextBar from '@/components/DoingContextBar';
+import DoingStateCircle from '@/components/DoingStateCircle';
 
 export default function DoingPanel() {
   return (
     <div className="space-y-5">
       <DoingContextBar />
+
+      {/* State circle — Deep Rest → Tunnel Vision */}
+      <DoingStateCircle />
 
       {/* Daily objectives + push for tomorrow */}
       <DailyObjectives />
