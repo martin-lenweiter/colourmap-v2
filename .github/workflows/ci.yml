@@ -12,6 +12,11 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: oven-sh/setup-bun@v2
+      - uses: actions/cache@v4
+        with:
+          path: ~/.bun/install/cache
+          key: ${{ runner.os }}-bun-${{ hashFiles('bun.lockb') }}
+          restore-keys: ${{ runner.os }}-bun-
       - run: bun install --frozen-lockfile || (sleep 10 && bun install --frozen-lockfile) || (sleep 20 && bun install --frozen-lockfile)
       - run: bun run lint
 
@@ -20,6 +25,11 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: oven-sh/setup-bun@v2
+      - uses: actions/cache@v4
+        with:
+          path: ~/.bun/install/cache
+          key: ${{ runner.os }}-bun-${{ hashFiles('bun.lockb') }}
+          restore-keys: ${{ runner.os }}-bun-
       - run: bun install --frozen-lockfile || (sleep 10 && bun install --frozen-lockfile) || (sleep 20 && bun install --frozen-lockfile)
       - run: bun run typecheck
 
@@ -28,6 +38,11 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: oven-sh/setup-bun@v2
+      - uses: actions/cache@v4
+        with:
+          path: ~/.bun/install/cache
+          key: ${{ runner.os }}-bun-${{ hashFiles('bun.lockb') }}
+          restore-keys: ${{ runner.os }}-bun-
       - run: bun install --frozen-lockfile || (sleep 10 && bun install --frozen-lockfile) || (sleep 20 && bun install --frozen-lockfile)
       - run: bun run build
 
@@ -36,6 +51,11 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: oven-sh/setup-bun@v2
+      - uses: actions/cache@v4
+        with:
+          path: ~/.bun/install/cache
+          key: ${{ runner.os }}-bun-${{ hashFiles('bun.lockb') }}
+          restore-keys: ${{ runner.os }}-bun-
       - run: bun install --frozen-lockfile || (sleep 10 && bun install --frozen-lockfile) || (sleep 20 && bun install --frozen-lockfile)
       - run: bun run test
 
@@ -44,6 +64,11 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: oven-sh/setup-bun@v2
+      - uses: actions/cache@v4
+        with:
+          path: ~/.bun/install/cache
+          key: ${{ runner.os }}-bun-${{ hashFiles('bun.lockb') }}
+          restore-keys: ${{ runner.os }}-bun-
       - run: bun install --frozen-lockfile || (sleep 10 && bun install --frozen-lockfile) || (sleep 20 && bun install --frozen-lockfile)
       - run: bun run coverage
 
@@ -102,6 +127,11 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: oven-sh/setup-bun@v2
+      - uses: actions/cache@v4
+        with:
+          path: ~/.bun/install/cache
+          key: ${{ runner.os }}-bun-${{ hashFiles('bun.lockb') }}
+          restore-keys: ${{ runner.os }}-bun-
       - run: bun install --frozen-lockfile || (sleep 10 && bun install --frozen-lockfile) || (sleep 20 && bun install --frozen-lockfile)
       - run: bun run policy:architecture-boundaries
 
@@ -111,6 +141,11 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: oven-sh/setup-bun@v2
+      - uses: actions/cache@v4
+        with:
+          path: ~/.bun/install/cache
+          key: ${{ runner.os }}-bun-${{ hashFiles('bun.lockb') }}
+          restore-keys: ${{ runner.os }}-bun-
       - run: bun install --frozen-lockfile || (sleep 10 && bun install --frozen-lockfile) || (sleep 20 && bun install --frozen-lockfile)
       - run: bun run policy:test-pairs
 
@@ -126,6 +161,11 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: oven-sh/setup-bun@v2
+      - uses: actions/cache@v4
+        with:
+          path: ~/.bun/install/cache
+          key: ${{ runner.os }}-bun-${{ hashFiles('bun.lockb') }}
+          restore-keys: ${{ runner.os }}-bun-
       - run: bun install --frozen-lockfile || (sleep 10 && bun install --frozen-lockfile) || (sleep 20 && bun install --frozen-lockfile)
       - name: Install Playwright browsers
         run: bunx playwright install --with-deps chromium
