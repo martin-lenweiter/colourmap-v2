@@ -916,7 +916,7 @@ function SuperCompass() {
 
 export default function FdsPanel() {
   const [active, setActive] = useState<Axis | null>(null);
-  const [layout, setLayout] = useState<Layout>('h');
+  const [layout, setLayout] = useState<Layout>('v');
   const [openItem, setOpenItem] = useState<string | null>(null);
   const [itemData, setItemData] = useState<Record<string, ItemData>>({});
 
@@ -964,7 +964,7 @@ export default function FdsPanel() {
               type="button"
               onClick={() => {
                 setActive(isOn ? null : id);
-                setLayout('h');
+                setLayout('v');
                 setOpenItem(null);
               }}
               style={{

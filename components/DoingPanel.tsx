@@ -8,10 +8,10 @@ import DoingStateCircle from '@/components/DoingStateCircle';
 export default function DoingPanel() {
   return (
     <div className="space-y-5">
-      <DoingContextBar />
-
       {/* State circle — Deep Rest → Tunnel Vision */}
       <DoingStateCircle />
+
+      <DoingContextBar />
 
       {/* Daily objectives + push for tomorrow */}
       <DailyObjectives />

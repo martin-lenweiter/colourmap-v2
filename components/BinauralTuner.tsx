@@ -1520,16 +1520,16 @@ export default function BinauralTuner() {
 
   // Sacred / Solfeggio frequencies
   const SACRED = [
-    { id: 's174', label: '174', freq: 174, desc: 'foundation', color: '#A0907A' },
+    { id: 's174', label: '174', freq: 174, desc: 'foundation', color: '#5A8A6A' },
     { id: 's285', label: '285', freq: 285, desc: 'healing', color: '#6A90B8' },
     { id: 's396', label: '396', freq: 396, desc: 'liberation', color: '#9B6BA0' },
     { id: 's417', label: '417', freq: 417, desc: 'change', color: '#D4805A' },
     { id: 's432', label: '432', freq: 432, desc: 'nature', color: '#7AAA58' },
-    { id: 's528', label: '528', freq: 528, desc: 'love', color: '#C4A060' },
+    { id: 's528', label: '528', freq: 528, desc: 'love', color: '#5FAA70' },
     { id: 's639', label: '639', freq: 639, desc: 'connection', color: '#6890B0' },
     { id: 's741', label: '741', freq: 741, desc: 'intuition', color: '#B0A0C8' },
     { id: 's852', label: '852', freq: 852, desc: 'spiritual', color: '#D8A878' },
-    { id: 's963', label: '963', freq: 963, desc: 'higher self', color: '#5A88C0' },
+    { id: 's963', label: '963', freq: 963, desc: 'higher self', color: '#1E7A50' },
   ] as const;
   const [activeSacred, setActiveSacred] = useState<Set<string>>(new Set());
   const sacredOscsRef = useRef<Map<string, { osc: OscillatorNode; gain: GainNode }>>(new Map());
@@ -1608,7 +1608,7 @@ export default function BinauralTuner() {
     {
       id: 'real-piano',
       label: 'Real Piano',
-      color: '#5C3018',
+      color: '#9B6BA0',
       type: 'sine' as OscillatorType,
       attack: 0.1,
       release: 3.5,
@@ -1618,7 +1618,7 @@ export default function BinauralTuner() {
     {
       id: 'real-violin',
       label: 'Real Violin',
-      color: '#8A3A2B',
+      color: '#D4805A',
       type: 'sine' as OscillatorType,
       attack: 0.1,
       release: 3.5,
@@ -1638,7 +1638,7 @@ export default function BinauralTuner() {
     {
       id: 'real-harp',
       label: 'Real Harp',
-      color: '#A8906A',
+      color: '#6890B0',
       type: 'sine' as OscillatorType,
       attack: 0.1,
       release: 3.5,
@@ -1984,8 +1984,7 @@ export default function BinauralTuner() {
     };
   }, [voiceMode]);
 
-  const [saveName, setSaveName] = useState('');
-  const [_showSave, setShowSave] = useState(false);
+  const [_showSave, _setShowSave] = useState(false);
   const crossfadingRef = useRef(false);
 
   // Collapsible section state
@@ -2085,37 +2084,6 @@ export default function BinauralTuner() {
       if (raw) setSavedMixes(JSON.parse(raw));
     } catch {}
   }, []);
-
-  function saveMix() {
-    if (!saveName.trim()) return;
-    const mix = {
-      name: saveName.trim(),
-      base: baseFreq,
-      beat: beatFreq,
-      vol: volume,
-      layers: { ...activeLayers },
-      binaural: binauralOn,
-      shape: 'dot' as const,
-    };
-    const next = [mix, ...savedMixes].slice(0, 20);
-    setSavedMixes(next);
-    localStorage.setItem('colourmap:tuner-mixes', JSON.stringify(next));
-    setSaveName('');
-    setShowSave(false);
-  }
-
-  const SHAPE_CYCLE = ['dot', 'star', 'heart', 'losange', 'triangle', 'square'] as const;
-
-  function cycleMixShape(index: number) {
-    setSavedMixes((prev) => {
-      const next = [...prev];
-      const current = next[index].shape ?? 'dot';
-      const nextShape = SHAPE_CYCLE[(SHAPE_CYCLE.indexOf(current) + 1) % SHAPE_CYCLE.length];
-      next[index] = { ...next[index], shape: nextShape };
-      localStorage.setItem('colourmap:tuner-mixes', JSON.stringify(next));
-      return next;
-    });
-  }
 
   function deleteMix(index: number) {
     setSavedMixes((prev) => {
@@ -3889,7 +3857,7 @@ export default function BinauralTuner() {
                             key={i}
                             className="flex-1 rounded-[3px] transition-all"
                             style={{
-                              height: 6,
+                              height: 10,
                               background: RAINBOW[i % RAINBOW.length],
                               opacity: i / 7 <= melodySpeed / 100 ? 0.4 + (i / 7) * 0.4 : 0.08,
                             }}
@@ -3919,7 +3887,7 @@ export default function BinauralTuner() {
                             key={i}
                             className="flex-1 rounded-[3px] transition-all"
                             style={{
-                              height: 6,
+                              height: 10,
                               background: RAINBOW[(i + 4) % RAINBOW.length],
                               opacity: i / 7 <= melodyReverb / 100 ? 0.4 + (i / 7) * 0.4 : 0.08,
                             }}
@@ -3951,7 +3919,7 @@ export default function BinauralTuner() {
                             key={i}
                             className="flex-1 rounded-[3px] transition-all"
                             style={{
-                              height: 6,
+                              height: 10,
                               background: RAINBOW[(i + 2) % RAINBOW.length],
                               opacity: i / 7 <= melodyVolume ? 0.4 + (i / 7) * 0.4 : 0.08,
                             }}
@@ -4132,12 +4100,12 @@ export default function BinauralTuner() {
                   >
                     <div
                       className="absolute top-1/2 -translate-y-1/2 left-0 right-0 rounded-full"
-                      style={{ height: 6, background: '#C4A06010' }}
+                      style={{ height: 10, background: '#C4A06010' }}
                     />
                     <div
                       className="absolute top-1/2 -translate-y-1/2 left-0 rounded-full"
                       style={{
-                        height: 6,
+                        height: 10,
                         width: `${layerReverb}%`,
                         background: `linear-gradient(90deg, ${RAINBOW[0]}, ${RAINBOW[4]}, ${RAINBOW[8]})`,
                         opacity: 0.7,
@@ -4196,9 +4164,16 @@ export default function BinauralTuner() {
                         {CATEGORY_LABELS[cat]}
                       </p>
                       <div className="grid grid-cols-3 gap-1.5">
-                        {catLayers.map((l) => {
+                        {catLayers.map((l, layerIdx) => {
                           const vol = activeLayers[l.id] || 0;
                           const isOn = vol > 0;
+                          const colT = (layerIdx % 3) / 2; // 0.0, 0.5, 1.0 left→right
+                          const bgAlpha = Math.round(10 + colT * 18)
+                            .toString(16)
+                            .padStart(2, '0');
+                          const borderAlpha = Math.round(28 + colT * 32)
+                            .toString(16)
+                            .padStart(2, '0');
                           return (
                             <div key={l.id} className="space-y-1">
                               <button
@@ -4206,8 +4181,8 @@ export default function BinauralTuner() {
                                 onClick={() => toggleLayer(l.id)}
                                 className="w-full cursor-pointer rounded-lg px-2 py-2 text-center transition-all"
                                 style={{
-                                  background: isOn ? `${l.color}18` : '#C4A06006',
-                                  border: `1px solid ${isOn ? `${l.color}45` : '#C4A06018'}`,
+                                  background: isOn ? `${catColor}${bgAlpha}` : '#C4A06006',
+                                  border: `1px solid ${isOn ? `${catColor}${borderAlpha}` : '#C4A06018'}`,
                                   minHeight: 40,
                                 }}
                               >
@@ -4216,8 +4191,8 @@ export default function BinauralTuner() {
                                     fontFamily: 'var(--font-serif)',
                                     fontSize: '13px',
                                     fontWeight: isOn ? 700 : 400,
-                                    color: isOn ? l.color : '#8A6A4A',
-                                    opacity: isOn ? 1 : 0.65,
+                                    color: isOn ? catColor : '#8A6A4A',
+                                    opacity: isOn ? 0.6 + colT * 0.4 : 0.65,
                                   }}
                                 >
                                   {l.label}
@@ -4287,8 +4262,8 @@ export default function BinauralTuner() {
                                       key={i}
                                       className="flex-1 rounded-[3px] transition-all"
                                       style={{
-                                        height: 14,
-                                        background: l.color,
+                                        height: 18,
+                                        background: catColor,
                                         opacity: i / 4 <= vol ? 0.5 + (i / 4) * 0.45 : 0.1,
                                       }}
                                     />
@@ -4349,7 +4324,7 @@ export default function BinauralTuner() {
                       <span
                         style={{
                           fontFamily: 'var(--font-serif)',
-                          fontSize: '12px',
+                          fontSize: '15px',
                           fontWeight: isActive ? 700 : 500,
                           color: isActive ? g.color : '#7A5438',
                           opacity: isActive ? 1 : 0.8,
@@ -4408,7 +4383,7 @@ export default function BinauralTuner() {
                         <span
                           style={{
                             fontFamily: 'var(--font-serif)',
-                            fontSize: '12px',
+                            fontSize: '15px',
                             fontWeight: 600,
                             color: isActive ? p.color : '#7A5438',
                             opacity: isActive ? 1 : 0.8,
@@ -4437,7 +4412,7 @@ export default function BinauralTuner() {
             )}
           </div>
 
-          {/* Collapsible: Saved Sounds */}
+          {/* Collapsible: Daily Note */}
           <div className="px-2">
             <button
               type="button"
@@ -4449,7 +4424,7 @@ export default function BinauralTuner() {
                 className="text-center text-base font-bold uppercase tracking-[0.22em]"
                 style={{ color: '#C4A060' }}
               >
-                saved sounds
+                daily note
               </span>
               <span
                 style={{
@@ -4462,120 +4437,32 @@ export default function BinauralTuner() {
               </span>
             </button>
             {savedSoundsOpen && (
-              <div className="animate-in fade-in duration-150 space-y-2 pt-1">
-                {/* Save input */}
-                <div className="flex items-center gap-1.5">
-                  <input
-                    type="text"
-                    value={saveName}
-                    onChange={(e) => setSaveName(e.target.value)}
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter') saveMix();
-                    }}
-                    placeholder="name this mix..."
-                    className="flex-1 rounded-lg border bg-transparent px-2 py-1 outline-none placeholder:italic placeholder:text-[#8A6A4A] placeholder:opacity-50"
-                    style={{
-                      fontFamily: 'var(--font-serif)',
-                      fontSize: '12px',
-                      color: '#5C3018',
-                      borderColor: '#C4A06025',
-                    }}
-                  />
-                  <button
-                    type="button"
-                    onClick={saveMix}
-                    className="cursor-pointer rounded-lg px-2 py-1"
-                    style={{
-                      fontFamily: 'var(--font-serif)',
-                      fontSize: '12px',
-                      fontWeight: 600,
-                      color: '#7AAA58',
-                      background: '#7AAA5810',
-                      border: '1px solid #7AAA5830',
-                    }}
-                  >
-                    save
-                  </button>
-                </div>
-                {/* Saved mixes list */}
-                {savedMixes.length > 0 && (
-                  <div className="space-y-1">
-                    {savedMixes.map((mix, i) => (
-                      <div
-                        key={`${mix.name}-${i}`}
-                        className="flex w-full items-center gap-2 rounded-lg px-3 py-1.5 transition-all hover:bg-[#C4A06008]"
-                      >
-                        <button
-                          type="button"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            cycleMixShape(i);
-                          }}
-                          title="Tap to change marker shape"
-                          className="shrink-0 cursor-pointer"
-                          style={{
-                            width: 14,
-                            height: 14,
-                            padding: 0,
-                            background: 'none',
-                            border: 'none',
-                            display: 'inline-flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                          }}
-                        >
-                          <SavedShapeIcon shape={mix.shape ?? 'dot'} color="#C4A060" />
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => loadMix(mix)}
-                          className="flex flex-1 cursor-pointer items-center gap-2 text-left"
-                          style={{ background: 'none', border: 'none', padding: 0 }}
-                        >
-                          <span
-                            style={{
-                              fontFamily: 'var(--font-serif)',
-                              fontSize: '13px',
-                              color: '#5C3018',
-                              fontWeight: 600,
-                            }}
-                          >
-                            {mix.name}
-                          </span>
-                          <span
-                            style={{
-                              fontFamily: 'var(--font-serif)',
-                              fontSize: '12px',
-                              color: '#8A6A4A',
-                              marginLeft: 'auto',
-                            }}
-                          >
-                            {mix.beat}Hz · {Object.values(mix.layers).filter((v) => v > 0).length}{' '}
-                            layers
-                          </span>
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => deleteMix(i)}
-                          title="Delete this mix"
-                          style={{
-                            background: 'none',
-                            border: 'none',
-                            cursor: 'pointer',
-                            color: '#8A6A4A',
-                            opacity: 0.4,
-                            fontSize: 14,
-                            lineHeight: 1,
-                            padding: '0 2px',
-                            flexShrink: 0,
-                          }}
-                        >
-                          ×
-                        </button>
-                      </div>
-                    ))}
-                  </div>
-                )}
+              <div className="animate-in fade-in duration-150 pt-1 pb-3">
+                <p
+                  className="text-center italic leading-relaxed"
+                  style={{
+                    fontFamily: 'var(--font-serif)',
+                    fontSize: '14px',
+                    color: '#8A6A4A',
+                    opacity: 0.85,
+                    padding: '8px 12px',
+                    border: '1px solid #C4A06020',
+                    borderRadius: 10,
+                    background: '#C4A06008',
+                  }}
+                >
+                  {
+                    [
+                      'Structure is the scaffolding of freedom.',
+                      'Every action you take is a vote for who you want to become.',
+                      'The present moment is where your power lives.',
+                      'Build the life you want one hour at a time.',
+                      'Rest is not a reward — it is a foundation.',
+                      'Creativity is intelligence having fun.',
+                      'What you practice in private shows up in public.',
+                    ][new Date().getDay()]
+                  }
+                </p>
               </div>
             )}
           </div>

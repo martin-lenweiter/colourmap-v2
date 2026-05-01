@@ -58,23 +58,24 @@ Each objective inside a mission has a small schedule icon (◷) visible on hover
 
 ## Focus State Circle (DoingStateCircle)
 
-A coloured circle + drag-slider sits above DailyObjectives in the Doing sub-tab.
+A coloured circle + dot selector sits above DailyObjectives in the Doing sub-tab.
 
 - **Purpose**: visual anchor identical to FeelingCheckInCard's emotion circle and SharingCheckIn's connection circle — so navigating F → D → S always feels like the same gesture.
-- **Scale**: 7 levels from Deep Rest → Tunnel Vision, each with a distinct blue-steel hue.
+- **Scale**: 7 levels from Deep Rest (green) → Tunnel Vision (deep blue). Color degrades green → blue across the scale.
 
 | # | Label | Color |
 |---|-------|-------|
-| 0 | Deep Rest | #A8B8D0 |
-| 1 | Drifting | #90A8C0 |
-| 2 | Present | #7898B0 |
-| 3 | Working (default) | #6890B0 |
+| 0 | Deep Rest | #5A9A70 |
+| 1 | Drifting | #4A9A85 |
+| 2 | Present | #4A9898 |
+| 3 | Working (default) | #4A8AA8 |
 | 4 | Focused | #5080A8 |
 | 5 | Driven | #3870A0 |
 | 6 | Tunnel Vision | #286098 |
 
 - Circle is 96 px; colour and label transition smoothly.
-- Drag slider: 7 stop-dots, DOT=28, GAP=6, identical to SharingCheckIn.
+- Selector: 7 dots (DOT=28, GAP=6), no track line, no tick marks. Active dot is full size; neighbours fade at 0.5/0.25 opacity.
+- "Done" button below, centered, ochre (#C4A060).
 - Persists selection in localStorage `colourmap:doing-state-idx`.
 - Component: `DoingStateCircle`.
 

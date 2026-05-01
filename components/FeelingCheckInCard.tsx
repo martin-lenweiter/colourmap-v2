@@ -506,6 +506,7 @@ export default function FeelingCheckInCard() {
   }
 
   const [sliderVisible, setSliderVisible] = useState(true);
+  const [showChallengeFlow, setShowChallengeFlow] = useState(false);
   const [showHawkinsDesc, setShowHawkinsDesc] = useState(false);
   const [logbookSectionOpen, setLogbookSectionOpen] = useState(() => {
     try {
@@ -2554,115 +2555,171 @@ export default function FeelingCheckInCard() {
                 </button>
               </div>
 
-              {/* Two writing spots — challenge (top) + flow (bottom, ochre) */}
-              <div className="space-y-2">
-                {/* CHALLENGE — label above, question as placeholder on write line */}
-                <div className="space-y-1">
-                  <div className="flex items-center gap-2 px-1">
-                    <span
-                      className="block h-2.5 w-2.5 shrink-0 rounded-full"
-                      style={{ background: '#C4A060', opacity: 0.85 }}
-                    />
-                    <span
-                      className="shrink-0 font-semibold uppercase tracking-[0.22em]"
-                      style={{ color: '#C4A060', fontSize: '16px' }}
-                    >
-                      Challenge
-                    </span>
-                  </div>
-                  <div className="relative flex items-end gap-2">
-                    <input
-                      type="text"
-                      value={challengeInput}
-                      onChange={(e) => setChallengeInput(e.target.value)}
-                      onKeyDown={(e) => {
-                        if (e.key === 'Enter') saveChallenge();
-                      }}
-                      placeholder="what is your main tension right now?"
-                      className="flex-1 border-b bg-transparent pb-1 outline-none placeholder:italic placeholder:text-[#8A6A4A] placeholder:opacity-[0.95]"
-                      style={{
-                        color: '#7a5438',
-                        borderColor: '#C4A06030',
-                        fontFamily: 'var(--font-serif)',
-                        fontSize: '16px',
-                      }}
-                    />
-                    <CategoryTagPicker
-                      value={challengeTag}
-                      onChange={setChallengeTag}
-                      open={showChallengeTagPicker}
-                      onToggle={() => setShowChallengeTagPicker((o) => !o)}
-                      onClose={() => setShowChallengeTagPicker(false)}
-                      lifeCategories={lifeCategories}
-                      compassAxes={COMPASS_AXES}
-                    />
-                  </div>
+              {/* Star toggle — opens challenge + flow writing section */}
+              <div className="space-y-3">
+                {/* ★ star opener */}
+                <div className="flex justify-center">
+                  <button
+                    type="button"
+                    onClick={() => setShowChallengeFlow((s) => !s)}
+                    title={showChallengeFlow ? 'Close' : 'Open challenge & flow'}
+                    style={{
+                      background: 'none',
+                      border: 'none',
+                      cursor: 'pointer',
+                      padding: '2px 8px',
+                      color: '#C4A060',
+                      opacity: showChallengeFlow ? 1 : 0.4,
+                      transition: 'opacity 0.2s',
+                      fontSize: 24,
+                      lineHeight: 1,
+                    }}
+                  >
+                    ★
+                  </button>
                 </div>
 
-                {/* Challenge depth — guided follow-ups */}
-                <ChallengeDepth
-                  onSave={(text) => {
-                    setSessionEmotions([
-                      ...sessionEmotions,
-                      {
-                        time: new Date().toLocaleTimeString([], {
-                          hour: '2-digit',
-                          minute: '2-digit',
-                        }),
-                        text,
-                        mind: 'challenge',
-                        mindColor: '#C4A060',
-                        ...(challengeTag && {
-                          tag: challengeTag.name,
-                          tagColor: challengeTag.color,
-                        }),
-                      },
-                    ]);
-                  }}
-                />
+                {showChallengeFlow && (
+                  <div className="space-y-5 animate-in fade-in duration-150">
+                    {/* CHALLENGE */}
+                    <div className="space-y-2">
+                      <p
+                        className="text-center font-semibold uppercase tracking-[0.22em]"
+                        style={{ color: '#C4A060', fontSize: '16px' }}
+                      >
+                        Challenge
+                      </p>
+                      <input
+                        type="text"
+                        value={challengeInput}
+                        onChange={(e) => setChallengeInput(e.target.value)}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter') saveChallenge();
+                        }}
+                        placeholder="what is your main tension right now?"
+                        className="w-full border-b bg-transparent pb-1 outline-none placeholder:italic placeholder:text-[#8A6A4A] placeholder:opacity-[0.95]"
+                        style={{
+                          color: '#7a5438',
+                          borderColor: '#C4A06030',
+                          fontFamily: 'var(--font-serif)',
+                          fontSize: '16px',
+                        }}
+                      />
+                      {/* Challenge entries inline */}
+                      {sessionEmotions
+                        .filter((e) => e.mind === 'challenge')
+                        .map((e, i) => (
+                          <div key={`ci-${i}`} className="flex items-center gap-2">
+                            <span
+                              className="h-2 w-2 shrink-0 rounded-full"
+                              style={{ background: '#C4A060', opacity: 0.7 }}
+                            />
+                            <span
+                              style={{
+                                color: '#7a5438',
+                                fontFamily: 'var(--font-handwritten)',
+                                fontSize: '18px',
+                                opacity: 0.85,
+                              }}
+                            >
+                              {e.text}
+                            </span>
+                          </div>
+                        ))}
+                      <div className="flex justify-end">
+                        <CategoryTagPicker
+                          value={challengeTag}
+                          onChange={setChallengeTag}
+                          open={showChallengeTagPicker}
+                          onToggle={() => setShowChallengeTagPicker((o) => !o)}
+                          onClose={() => setShowChallengeTagPicker(false)}
+                          lifeCategories={lifeCategories}
+                          compassAxes={COMPASS_AXES}
+                        />
+                      </div>
+                    </div>
 
-                {/* FLOW — label above, question as placeholder on write line */}
-                <div className="space-y-1">
-                  <div className="flex items-center gap-2 px-1">
-                    <span
-                      className="block h-2.5 w-2.5 shrink-0 rounded-full"
-                      style={{ background: '#C4A060', opacity: 0.85 }}
-                    />
-                    <span
-                      className="shrink-0 font-semibold uppercase tracking-[0.22em]"
-                      style={{ color: '#C4A060', fontSize: '16px' }}
-                    >
-                      Flow
-                    </span>
-                  </div>
-                  <div className="relative flex items-end gap-2">
-                    <input
-                      type="text"
-                      value={flowInput}
-                      onChange={(e) => setFlowInput(e.target.value)}
-                      onKeyDown={(e) => {
-                        if (e.key === 'Enter') saveFlow();
-                      }}
-                      placeholder="what is working well? how are you celebrating?"
-                      className="flex-1 border-b bg-transparent pb-1 outline-none placeholder:italic placeholder:text-[#8A6A4A] placeholder:opacity-[0.95]"
-                      style={{
-                        color: '#7a5438',
-                        borderColor: '#C4A06030',
-                        fontFamily: 'var(--font-serif)',
-                        fontSize: '16px',
+                    {/* Challenge depth — guided follow-ups */}
+                    <ChallengeDepth
+                      onSave={(text) => {
+                        setSessionEmotions([
+                          ...sessionEmotions,
+                          {
+                            time: new Date().toLocaleTimeString([], {
+                              hour: '2-digit',
+                              minute: '2-digit',
+                            }),
+                            text,
+                            mind: 'challenge',
+                            mindColor: '#C4A060',
+                            ...(challengeTag && {
+                              tag: challengeTag.name,
+                              tagColor: challengeTag.color,
+                            }),
+                          },
+                        ]);
                       }}
                     />
-                    <CategoryTagPicker
-                      value={flowTag}
-                      onChange={setFlowTag}
-                      open={showFlowTagPicker}
-                      onToggle={() => setShowFlowTagPicker((o) => !o)}
-                      onClose={() => setShowFlowTagPicker(false)}
-                      lifeCategories={lifeCategories}
-                      compassAxes={COMPASS_AXES}
-                    />
+
+                    {/* FLOW */}
+                    <div className="space-y-2">
+                      <p
+                        className="text-center font-semibold uppercase tracking-[0.22em]"
+                        style={{ color: '#C4A060', fontSize: '16px' }}
+                      >
+                        Flow
+                      </p>
+                      <input
+                        type="text"
+                        value={flowInput}
+                        onChange={(e) => setFlowInput(e.target.value)}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter') saveFlow();
+                        }}
+                        placeholder="what is working well?"
+                        className="w-full border-b bg-transparent pb-1 outline-none placeholder:italic placeholder:text-[#8A6A4A] placeholder:opacity-[0.95]"
+                        style={{
+                          color: '#7a5438',
+                          borderColor: '#C4A06030',
+                          fontFamily: 'var(--font-serif)',
+                          fontSize: '16px',
+                        }}
+                      />
+                      {/* Flow entries inline */}
+                      {sessionEmotions
+                        .filter((e) => e.mind === 'flow')
+                        .map((e, i) => (
+                          <div key={`fi-${i}`} className="flex items-center gap-2">
+                            <span
+                              className="h-2 w-2 shrink-0 rounded-full"
+                              style={{ background: '#6890B0', opacity: 0.7 }}
+                            />
+                            <span
+                              style={{
+                                color: '#7a5438',
+                                fontFamily: 'var(--font-handwritten)',
+                                fontSize: '18px',
+                                opacity: 0.85,
+                              }}
+                            >
+                              {e.text}
+                            </span>
+                          </div>
+                        ))}
+                      <div className="flex justify-end">
+                        <CategoryTagPicker
+                          value={flowTag}
+                          onChange={setFlowTag}
+                          open={showFlowTagPicker}
+                          onToggle={() => setShowFlowTagPicker((o) => !o)}
+                          onClose={() => setShowFlowTagPicker(false)}
+                          lifeCategories={lifeCategories}
+                          compassAxes={COMPASS_AXES}
+                        />
+                      </div>
+                    </div>
                   </div>
-                </div>
+                )}
 
                 {/* Notes toggle — transparent pill that collapses/expands the entry list */}
                 {sessionEmotions.length > 0 && (

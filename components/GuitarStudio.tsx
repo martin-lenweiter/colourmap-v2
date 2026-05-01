@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useRef, useState } from 'react';
 import BluesProgram from '@/components/BluesProgram';
 import GuitarChords from '@/components/GuitarChords';
 import GuitarFretboard from '@/components/GuitarFretboard';
@@ -8,10 +8,7 @@ import GuitarLearn from '@/components/GuitarLearn';
 import GuitarPractice from '@/components/GuitarPractice';
 import HarmonyMap from '@/components/HarmonyMap';
 import HendrixLearn from '@/components/HendrixLearn';
-import MusicRecordings from '@/components/MusicRecordings';
 import SongStudio from '@/components/SongStudio';
-
-const LS_SONGS = 'colourmap:songs';
 
 type Tab =
   | 'songs'
@@ -21,12 +18,10 @@ type Tab =
   | 'learn'
   | 'blues'
   | 'hendrix'
-  | 'practice'
-  | 'recordings';
+  | 'practice';
 
 const TABS: { id: Tab; label: string }[] = [
   { id: 'songs', label: 'Songs' },
-  { id: 'recordings', label: 'Recordings' },
   { id: 'fretboard', label: 'Fretboard' },
   { id: 'chords', label: 'Chords' },
   { id: 'harmony', label: 'Harmony' },
@@ -36,44 +31,21 @@ const TABS: { id: Tab; label: string }[] = [
   { id: 'practice', label: 'Practice' },
 ];
 
-interface SongRef {
-  id: string;
-  title: string;
-}
-
-function loadSongRefs(): SongRef[] {
-  try {
-    const raw = localStorage.getItem(LS_SONGS);
-    if (!raw) return [];
-    const parsed = JSON.parse(raw);
-    if (!Array.isArray(parsed)) return [];
-    return parsed.map((s: { id: string; title: string }) => ({ id: s.id, title: s.title }));
-  } catch {
-    return [];
-  }
-}
-
-export default function GuitarStudio() {
+export default function GuitarStudio({
+  onShowRecordingsSection,
+}: {
+  onShowRecordingsSection?: (songId?: string) => void;
+}) {
   const [tab, setTab] = useState<Tab>('songs');
-  const [recordingsFilterSongId, setRecordingsFilterSongId] = useState<string | null>(null);
-  const [songs, setSongs] = useState<SongRef[]>([]);
   const navRef = useRef<HTMLDivElement>(null);
   const activeTabRef = useRef<HTMLButtonElement | null>(null);
 
-  useEffect(() => {
-    setSongs(loadSongRefs());
-  }, []);
-
-  // Reload song list when switching to Recordings tab so the filter dropdown is fresh
   function switchTab(id: Tab) {
-    if (id === 'recordings') setSongs(loadSongRefs());
     setTab(id);
   }
 
   function handleShowRecordings(songId: string) {
-    setRecordingsFilterSongId(songId);
-    setSongs(loadSongRefs());
-    setTab('recordings');
+    onShowRecordingsSection?.(songId);
   }
 
   return (
@@ -146,13 +118,6 @@ export default function GuitarStudio() {
 
       {/* Tab content */}
       {tab === 'songs' && <SongStudio onShowRecordings={handleShowRecordings} />}
-      {tab === 'recordings' && (
-        <MusicRecordings
-          songs={songs}
-          initialSongId={recordingsFilterSongId}
-          key={recordingsFilterSongId ?? 'all'}
-        />
-      )}
       {tab === 'fretboard' && <GuitarFretboard />}
       {tab === 'chords' && <GuitarChords />}
       {tab === 'harmony' && <HarmonyMap />}

@@ -931,55 +931,68 @@ export default function DailyObjectives() {
               } catch {}
             }}
           >
-            <button
-              type="button"
-              onClick={() => setPushTomorrowOpen((s) => !s)}
-              className="flex cursor-pointer items-center gap-1.5 px-1"
-              style={{ background: 'none', border: 'none' }}
-            >
-              <span
-                className="font-semibold uppercase tracking-[0.22em]"
-                style={{ color: '#C4A060', fontSize: '13px' }}
+            <div className="flex justify-center">
+              <button
+                type="button"
+                onClick={() => setPushTomorrowOpen((s) => !s)}
+                className="flex cursor-pointer items-center gap-2 rounded-full px-5 py-1.5 transition-all"
+                style={{ background: '#C4A06015', border: '1px solid #C4A06040' }}
               >
-                {renamingSection === 'push' ? (
-                  <input
-                    type="text"
-                    value={renameValue}
-                    onChange={(e) => setRenameValue(e.target.value)}
-                    onBlur={() => commitRename('push', 'Push for tomorrow')}
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter') commitRename('push', 'Push for tomorrow');
-                      if (e.key === 'Escape') setRenamingSection(null);
-                    }}
-                    autoFocus
-                    onClick={(e) => e.stopPropagation()}
-                    className="bg-transparent font-semibold uppercase tracking-[0.18em] outline-none border-b"
-                    style={{ color: '#C4A060', fontSize: '13px', borderColor: '#C4A06040' }}
-                  />
-                ) : (
-                  <span
-                    className="cursor-pointer"
-                    onDoubleClick={(e) => {
-                      e.stopPropagation();
-                      setRenamingSection('push');
-                      setRenameValue(sectionLabel('push', 'Push for tomorrow'));
-                    }}
-                    title="Double-click to rename"
-                  >
-                    {sectionLabel('push', 'Push for tomorrow')}
-                  </span>
-                )}
-              </span>
-              <span
-                className="text-[10px] transition-transform duration-200"
-                style={{
-                  color: '#C4A06080',
-                  transform: pushTomorrowOpen ? 'rotate(180deg)' : 'rotate(0deg)',
-                }}
-              >
-                ▾
-              </span>
-            </button>
+                <span
+                  className="text-center uppercase"
+                  style={{
+                    color: '#C4A060',
+                    fontSize: '15px',
+                    fontWeight: 700,
+                    letterSpacing: '0.22em',
+                  }}
+                >
+                  {renamingSection === 'push' ? (
+                    <input
+                      type="text"
+                      value={renameValue}
+                      onChange={(e) => setRenameValue(e.target.value)}
+                      onBlur={() => commitRename('push', 'Push for tomorrow')}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') commitRename('push', 'Push for tomorrow');
+                        if (e.key === 'Escape') setRenamingSection(null);
+                      }}
+                      autoFocus
+                      onClick={(e) => e.stopPropagation()}
+                      className="bg-transparent text-center uppercase outline-none border-b"
+                      style={{
+                        color: '#C4A060',
+                        fontSize: '15px',
+                        fontWeight: 700,
+                        letterSpacing: '0.22em',
+                        borderColor: '#C4A06040',
+                      }}
+                    />
+                  ) : (
+                    <span
+                      className="cursor-pointer"
+                      onDoubleClick={(e) => {
+                        e.stopPropagation();
+                        setRenamingSection('push');
+                        setRenameValue(sectionLabel('push', 'Push for tomorrow'));
+                      }}
+                      title="Double-click to rename"
+                    >
+                      {sectionLabel('push', 'Push for tomorrow')}
+                    </span>
+                  )}
+                </span>
+                <span
+                  className="text-sm transition-transform duration-200"
+                  style={{
+                    color: '#C4A06080',
+                    transform: pushTomorrowOpen ? 'rotate(180deg)' : 'rotate(0deg)',
+                  }}
+                >
+                  ▾
+                </span>
+              </button>
+            </div>
 
             {pushTomorrowOpen && (
               <>
