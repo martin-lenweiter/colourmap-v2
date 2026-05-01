@@ -7,7 +7,7 @@ import { useState } from 'react';
 // -1=muted, 0=open, N=absolute fret number
 // Open tuning semitones: E=4, A=9, D=2, G=7, B=11, e=4
 
-type ChordStyle = 'open' | 'soul' | 'spanish';
+type ChordStyle = 'open' | 'soul' | 'spanish' | 'blues';
 
 interface ChordVoicing {
   fretStart: number;
@@ -294,6 +294,105 @@ const CHORDS: ChordInfo[] = [
     ],
   },
 
+  // ═══ BLUES ════════════════════════════════════════════════
+  {
+    name: 'A7',
+    style: 'blues',
+    feel: 'Grimy, dominant, down-home',
+    theory:
+      'I7 in A blues — the root chord of the 12-bar. b7 (G) gives it that aching, unresolved quality.',
+    voicings: [
+      { fretStart: 1, strings: [-1, 0, 2, 0, 2, 0], label: 'open' },
+      { fretStart: 5, strings: [5, 7, 5, 6, 5, 5], barre: 5, label: 'barre 5' },
+    ],
+  },
+  {
+    name: 'D9',
+    style: 'blues',
+    feel: 'Fat IV chord, soulful grunt',
+    theory:
+      'D dominant 9th — the IV chord in A blues. Adds the 9th (E) for extra shimmer. Grip it high.',
+    voicings: [
+      { fretStart: 4, strings: [-1, 5, 4, 5, 5, -1], label: 'jazz grip' },
+      { fretStart: 1, strings: [-1, -1, 0, 2, 1, 2], label: 'open D7 base' },
+    ],
+  },
+  {
+    name: 'E9',
+    style: 'blues',
+    feel: 'V chord snap, peak tension',
+    theory: 'E dominant 9th — the V7 in A blues. Highest tension bar; resolves hard back to A7.',
+    voicings: [
+      { fretStart: 1, strings: [0, 2, 0, 1, 0, 2], label: 'open' },
+      { fretStart: 7, strings: [-1, 7, 6, 7, 7, -1], label: 'jazz close' },
+    ],
+  },
+  {
+    name: 'A13',
+    style: 'blues',
+    feel: 'Lush, swing-blues, jazzy I chord',
+    theory:
+      'A dominant 13th — adds the 13th (F#) to A7. Sounds swing-era and sophisticated. Keep it on the top strings.',
+    voicings: [{ fretStart: 5, strings: [-1, 5, 4, 4, 5, -1], label: 'jazz upper' }],
+  },
+  {
+    name: 'G7#9',
+    style: 'blues',
+    feel: 'Hendrix grit, chromatic edge',
+    theory:
+      'G dominant 7#9 — the "Purple Haze" grip in G. The #9 (A#) clashes beautifully against the b7.',
+    voicings: [
+      { fretStart: 3, strings: [3, 5, 3, 4, 6, -1], label: 'jazz barre 3' },
+      { fretStart: 3, strings: [-1, -1, 3, 4, 3, 4], label: 'top-4 grip' },
+    ],
+  },
+  {
+    name: 'B7',
+    style: 'blues',
+    feel: 'Turnaround tension, quick V',
+    theory:
+      'V7 in E blues. Appears in the classic I-IV-I-V turnaround. Resolves back to E with authority.',
+    voicings: [
+      { fretStart: 1, strings: [-1, 2, 1, 2, 0, 2], label: 'open' },
+      { fretStart: 7, strings: [7, 9, 7, 8, 7, 7], barre: 7, label: 'barre 7' },
+    ],
+  },
+  {
+    name: 'E7#9',
+    style: 'blues',
+    feel: 'Electric, raw, explosive',
+    theory:
+      'E dominant 7#9 — the Hendrix chord. G natural (#9) over E7. Both major and minor at once.',
+    voicings: [
+      { fretStart: 1, strings: [0, 2, 2, 1, 3, 3], label: 'open grip' },
+      { fretStart: 7, strings: [-1, 7, 6, 7, 8, -1], label: 'barre 7' },
+    ],
+  },
+  {
+    name: 'C9',
+    style: 'blues',
+    feel: 'Warm IV chord, gospel shimmer',
+    theory:
+      'C dominant 9th — IV chord in G blues. The gospel and R&B IV chord. Straddle the top strings.',
+    voicings: [{ fretStart: 3, strings: [-1, 3, 2, 3, 3, -1], label: 'jazz grip' }],
+  },
+  {
+    name: 'Bb7',
+    style: 'blues',
+    feel: 'Dark blues, bVI dominant',
+    theory:
+      'Bb dominant 7th — common in jazz blues, especially in F or Eb blues. Adds chromatic tension before the V.',
+    voicings: [{ fretStart: 1, strings: [-1, 1, 3, 1, 3, 1], barre: 1, label: 'barre 1' }],
+  },
+  {
+    name: 'Ab7',
+    style: 'blues',
+    feel: 'Chromatic approach, slick',
+    theory:
+      'Ab dominant 7th — the chromatic half-step below A7. Use as a quick approach chord: Ab7 → A7 for a jazzy slide-in.',
+    voicings: [{ fretStart: 4, strings: [4, 6, 4, 5, 4, 4], barre: 4, label: 'barre 4' }],
+  },
+
   // ═══ SPANISH / FLAMENCO ═══════════════════════════════════
   {
     name: 'Am',
@@ -387,6 +486,71 @@ const CHORDS: ChordInfo[] = [
       'bIII in Am. The relative major. Provides contrast and momentary brightness in minor pieces.',
     voicings: [{ fretStart: 1, strings: [-1, 3, 2, 0, 1, 0], label: 'open' }],
   },
+  {
+    name: 'E7b9',
+    style: 'spanish',
+    feel: 'Maximum flamenco tension',
+    theory:
+      'V7b9 in Am — E dominant with flat 9th (F natural). The single most tense chord in flamenco. Resolves to Am with devastating finality.',
+    voicings: [
+      { fretStart: 1, strings: [0, 2, 0, 1, 3, 1], label: 'open' },
+      { fretStart: 1, strings: [0, 2, 3, 1, 3, 0], label: 'alt (full)' },
+    ],
+  },
+  {
+    name: 'F#m',
+    style: 'spanish',
+    feel: 'Dark relative minor, Phrygian tension',
+    theory:
+      'vi in A Phrygian Dominant. Adds a deeper minor shade. Heard in Soleares and Taranta passages between E and Am.',
+    voicings: [
+      { fretStart: 2, strings: [2, 4, 4, 2, 2, 2], barre: 2, label: 'barre 2' },
+      { fretStart: 9, strings: [9, 11, 11, 9, 9, 9], barre: 9, label: 'barre 9' },
+    ],
+  },
+  {
+    name: 'D/F#',
+    style: 'spanish',
+    feel: 'Rising stepping stone',
+    theory:
+      'D major with F# bass. Creates a chromatic bass line: Am/E → D/F# → G → E. Heard in Fandango and Granaína.',
+    voicings: [{ fretStart: 1, strings: [2, -1, 0, 2, 3, 2], label: 'F# bass' }],
+  },
+  {
+    name: 'Gm7',
+    style: 'spanish',
+    feel: 'Minor 7th darkness, Andalusian weight',
+    theory:
+      'bVII minor 7th in Am. Appears in minor jazz-flamenco fusions. Heavier than plain Gm, adds the minor 7th colour.',
+    voicings: [{ fretStart: 3, strings: [3, 5, 3, 3, 3, 3], barre: 3, label: 'barre 3' }],
+  },
+  {
+    name: 'A7sus4',
+    style: 'spanish',
+    feel: 'Suspended then resolved — breathing',
+    theory:
+      'Suspend the 3rd with the 4th (D), then resolve to A7. This sus4 → dominant resolution is a flamenco breath — tension with a heartbeat before the pull.',
+    voicings: [
+      { fretStart: 1, strings: [-1, 0, 2, 2, 3, 0], label: 'sus4' },
+      { fretStart: 1, strings: [-1, 0, 2, 0, 2, 0], label: 'resolve A7' },
+    ],
+  },
+  {
+    name: 'Fmaj7',
+    style: 'spanish',
+    feel: 'Luminous bVI, unexpected softness',
+    theory:
+      'bVI maj7 in Am Phrygian. The F with major 7th (E) creates a shimmering, unexpected softness inside a minor descent. Rare but beautiful.',
+    voicings: [{ fretStart: 1, strings: [-1, -1, 3, 2, 1, 0], label: 'open' }],
+  },
+  {
+    name: 'Em7b5',
+    style: 'spanish',
+    feel: 'Half-diminished, Spanish jazz',
+    theory:
+      'E half-diminished (ø) — the vii chord in Am. Appears in modern flamenco-jazz writing. The b5 (Bb) gives it a distinctive bite before resolving to Am.',
+    voicings: [{ fretStart: 1, strings: [0, 2, 2, 0, 3, 0], label: 'open' }],
+  },
 ];
 
 /* ─── Progressions ───────────────────────────────────────── */
@@ -454,6 +618,56 @@ const PROGRESSIONS: ProgressionDef[] = [
     feel: 'Flowing sophistication',
   },
 
+  // Blues
+  {
+    name: '12-Bar Blues in A',
+    style: 'blues',
+    chords: ['A7', 'A7', 'A7', 'A7', 'D9', 'D9', 'A7', 'A7', 'E9', 'D9', 'A7', 'E9'],
+    description:
+      'The essential 12-bar form. 4 bars on I (A7), 2 on IV (D9), 2 on I, 2 on V–IV–I–V turnaround. Play one chord per bar.',
+    feel: 'The blues skeleton',
+  },
+  {
+    name: 'Quick-Change Blues',
+    style: 'blues',
+    chords: ['A7', 'D9', 'A7', 'A7', 'D9', 'D9', 'A7', 'A7', 'E9', 'D9', 'A7', 'E9'],
+    description:
+      'Hits the IV (D9) on bar 2 — the "quick change." Gives the groove an immediate push. Standard in Chicago and Texas blues.',
+    feel: 'Immediate IV push',
+  },
+  {
+    name: 'Jazz Blues',
+    style: 'blues',
+    chords: ['A13', 'D9', 'A7', 'Bb7', 'D9', 'D9', 'A7', 'G7#9', 'E9', 'D9', 'A7', 'E9'],
+    description:
+      'The bebop 12-bar — substitutions on bars 4 and 8. Bb7 is a chromatic approach to D9; G7#9 adds Hendrix-era colour before the V.',
+    feel: 'Bebop sophistication',
+  },
+  {
+    name: 'Minor Blues',
+    style: 'blues',
+    chords: ['Am7', 'Am7', 'Am7', 'Am7', 'Dm7', 'Dm7', 'Am7', 'Am7', 'E9', 'Dm7', 'Am7', 'E9'],
+    description:
+      'Minor I (Am7) + minor IV (Dm7) + dominant V (E9). Darker and more introspective than major blues. Slow it down and bend hard.',
+    feel: 'Dark and slow',
+  },
+  {
+    name: 'Turnaround',
+    style: 'blues',
+    chords: ['A7', 'G7#9', 'D9', 'E9'],
+    description:
+      'The last 4 bars of any A blues. I-bVII-IV-V — classic turnaround walk. Creates tension that circles straight back to the top.',
+    feel: 'Circling back',
+  },
+  {
+    name: 'Slow Blues',
+    style: 'blues',
+    chords: ['A7', 'D9', 'E9', 'Ab7', 'A7'],
+    description:
+      '2-bar I followed by IV → V → chromatic approach (Ab7 sliding up to A7). Expressive; leave space for bends and vibrato.',
+    feel: 'Space and expression',
+  },
+
   // Spanish / Flamenco
   {
     name: 'Andalusian Cadence',
@@ -508,6 +722,46 @@ const PROGRESSIONS: ProgressionDef[] = [
       'Same harmony as Andalusian but at blistering speed with percussive staccato attack.',
     feel: 'Fast percussive fire',
   },
+  {
+    name: 'Soleares Deep',
+    style: 'spanish',
+    chords: ['Am', 'G', 'F', 'E7b9', 'Am'],
+    description:
+      'Andalusian cadence with E7b9 replacing plain E — maximum tension before the Am resolution. The E7b9 (with F natural) is the signature of deep Soleares.',
+    feel: 'Maximum cante jondo',
+  },
+  {
+    name: 'Taranta Descent',
+    style: 'spanish',
+    chords: ['F#m', 'E', 'D/F#', 'C#'],
+    description:
+      'The Taranta tonal world — F# minor Phrygian. Descends F#m → E → D/F# → C# (the local dominant). Dark, Andalusian, and uncommon.',
+    feel: 'Taranta darkness',
+  },
+  {
+    name: 'Granaína Turn',
+    style: 'spanish',
+    chords: ['Dm', 'C', 'Bb', 'A7'],
+    description:
+      'Granaína cadence — descends in D Phrygian. Dm → C → Bb → A7 (dominant). The A7 feels like a surprise resolution because Granaína sits in a shifted tonal centre.',
+    feel: 'Granada tonal shift',
+  },
+  {
+    name: 'Phrygian Dominant Full',
+    style: 'spanish',
+    chords: ['Am', 'G', 'F', 'E7b9', 'Am', 'Dm', 'A7sus4', 'E7b9'],
+    description:
+      'Extended Phrygian Dominant loop — adds the IV (Dm) and the sus4→7 breath before the dominant resolution. Full 8-bar flamenco cycle.',
+    feel: 'Full Phrygian arc',
+  },
+  {
+    name: 'Siguiriya',
+    style: 'spanish',
+    chords: ['Am', 'Gm7', 'F', 'E7b9'],
+    description:
+      'Siguiriya — the most serious of the palos. Gm7 (minor bVII) replaces plain Gm, adding weight. Very slow, very deep. Only for cante jondo.',
+    feel: 'Siguiriya gravity',
+  },
 ];
 
 /* ─── SVG chord box — horizontal strings ─────────────────── */
@@ -529,12 +783,14 @@ const STYLE_COLORS: Record<ChordStyle, string> = {
   open: '#C4A060',
   soul: '#C07838',
   spanish: '#C06040',
+  blues: '#5A7EA8',
 };
 
 const STYLE_LABELS: Record<ChordStyle, string> = {
   open: 'Open',
   soul: 'Soul',
   spanish: 'Spanish',
+  blues: 'Blues',
 };
 
 function ChordBox({ voicing, color }: { voicing: ChordVoicing; color: string }) {
@@ -868,9 +1124,10 @@ function ProgressionCard({
 type Filter = 'all' | ChordStyle;
 const FILTERS: { id: Filter; label: string }[] = [
   { id: 'all', label: 'All' },
-  { id: 'open', label: 'Open' },
+  { id: 'blues', label: 'Blues' },
   { id: 'soul', label: 'Soul' },
   { id: 'spanish', label: 'Spanish' },
+  { id: 'open', label: 'Open' },
 ];
 
 /* ─── Main component ─────────────────────────────────────── */
@@ -882,9 +1139,9 @@ export default function GuitarChords() {
   const visibleChords = filter === 'all' ? CHORDS : CHORDS.filter((c) => c.style === filter);
 
   const visibleProgressions =
-    filter === 'all' || filter === 'open'
+    filter === 'all'
       ? PROGRESSIONS
-      : PROGRESSIONS.filter((p) => p.style === filter);
+      : PROGRESSIONS.filter((p) => p.style === filter || (filter === 'open' && p.style === 'open'));
 
   const highlightedProgressions = selectedChord
     ? new Set(PROGRESSIONS.filter((p) => p.chords.includes(selectedChord)).map((p) => p.name))
