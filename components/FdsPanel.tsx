@@ -544,27 +544,31 @@ function ItemProgram({
   data,
   setItemLevel,
   toggleItemTask,
+  hideSubtitle,
 }: {
   item: AxisItem;
   itemKey: string;
   data: ItemData;
   setItemLevel: (k: string, level: number) => void;
   toggleItemTask: (k: string, taskId: string) => void;
+  hideSubtitle?: boolean;
 }) {
   return (
     <div className="space-y-3 pt-3 pb-1 animate-in fade-in duration-150">
-      <p
-        className="italic"
-        style={{
-          fontFamily: font,
-          fontSize: 13,
-          color: 'var(--muted-foreground)',
-          opacity: 0.85,
-          lineHeight: 1.4,
-        }}
-      >
-        {item.subtitle}
-      </p>
+      {!hideSubtitle && (
+        <p
+          className="italic"
+          style={{
+            fontFamily: font,
+            fontSize: 13,
+            color: 'var(--muted-foreground)',
+            opacity: 0.85,
+            lineHeight: 1.4,
+          }}
+        >
+          {item.subtitle}
+        </p>
+      )}
       {/* Level slider — domains style */}
       <div className="space-y-1.5">
         <p
@@ -760,19 +764,17 @@ function DotsVertical({
                     </span>
                   )}
                 </p>
-                {!isExpanded && (
-                  <p
-                    className="italic"
-                    style={{
-                      fontFamily: font,
-                      fontSize: 13,
-                      color: 'var(--muted-foreground)',
-                      opacity: 0.8,
-                    }}
-                  >
-                    {item.subtitle}
-                  </p>
-                )}
+                <p
+                  className="italic"
+                  style={{
+                    fontFamily: font,
+                    fontSize: 13,
+                    color: 'var(--muted-foreground)',
+                    opacity: 0.8,
+                  }}
+                >
+                  {item.subtitle}
+                </p>
               </div>
             </button>
             {isExpanded && (
@@ -783,6 +785,7 @@ function DotsVertical({
                   data={data}
                   setItemLevel={setItemLevel}
                   toggleItemTask={toggleItemTask}
+                  hideSubtitle
                 />
               </div>
             )}
