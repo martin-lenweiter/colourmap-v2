@@ -8,6 +8,7 @@ import FeelingCompass from '@/components/FeelingCompass';
 import FeelingStageSelector from '@/components/FeelingStageSelector';
 import FeelingSupportChips from '@/components/FeelingSupportChips';
 import { useKeyboardAware } from '@/components/hooks/useKeyboardAware';
+import MicDot from '@/components/MicDot';
 import PostCheckInInsight from '@/components/PostCheckInInsight';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
@@ -1227,39 +1228,47 @@ export default function CheckInForm({ missions = [], onCheckInComplete }: CheckI
             })()}
           </div>
 
-          <Textarea
-            id="check-in-note"
-            className="border-0 bg-transparent px-0 text-[16px] leading-relaxed focus-visible:ring-0 focus-visible:border-0 md:text-[16px]"
-            style={{ fontFamily: 'var(--font-serif)' }}
-            placeholder={(() => {
-              const time = new Date().toLocaleTimeString([], {
-                hour: '2-digit',
-                minute: '2-digit',
-              });
-              if (!barActive) return `${time}  What's on your mind?`;
-              const idx = Math.min(Math.round((sliderValue / 100) * 13), 13);
-              const prompts: Record<string, string> = {
-                Shame: 'What feels heavy?',
-                Guilt: "What's weighing on you?",
-                Sadness: 'What are you letting go of?',
-                Fear: 'What feels threatening?',
-                Desire: 'What are you craving?',
-                Anger: 'What crossed a line?',
-                Pride: 'What are you proving?',
-                Courage: 'What shifted?',
-                Willingness: 'What are you open to?',
-                Acceptance: 'What did you let in?',
-                Reason: 'What are you figuring out?',
-                Love: 'What are you nurturing?',
-                Joy: 'What lit you up?',
-                Peace: 'What feels still?',
-              };
-              return `${time}  ${prompts[HAWKINS[idx].level] || "What's on your mind?"}`;
-            })()}
-            value={note}
-            onChange={(e) => setNote(e.target.value)}
-            rows={2}
-          />
+          <div style={{ position: 'relative' }}>
+            <Textarea
+              id="check-in-note"
+              className="border-0 bg-transparent px-0 text-[16px] leading-relaxed focus-visible:ring-0 focus-visible:border-0 md:text-[16px]"
+              style={{
+                fontFamily: 'var(--font-serif)',
+                paddingRight: note.length > 0 ? 20 : undefined,
+              }}
+              placeholder={(() => {
+                const time = new Date().toLocaleTimeString([], {
+                  hour: '2-digit',
+                  minute: '2-digit',
+                });
+                if (!barActive) return `${time}  What's on your mind?`;
+                const idx = Math.min(Math.round((sliderValue / 100) * 13), 13);
+                const prompts: Record<string, string> = {
+                  Shame: 'What feels heavy?',
+                  Guilt: "What's weighing on you?",
+                  Sadness: 'What are you letting go of?',
+                  Fear: 'What feels threatening?',
+                  Desire: 'What are you craving?',
+                  Anger: 'What crossed a line?',
+                  Pride: 'What are you proving?',
+                  Courage: 'What shifted?',
+                  Willingness: 'What are you open to?',
+                  Acceptance: 'What did you let in?',
+                  Reason: 'What are you figuring out?',
+                  Love: 'What are you nurturing?',
+                  Joy: 'What lit you up?',
+                  Peace: 'What feels still?',
+                };
+                return `${time}  ${prompts[HAWKINS[idx].level] || "What's on your mind?"}`;
+              })()}
+              value={note}
+              onChange={(e) => setNote(e.target.value)}
+              rows={2}
+            />
+            <span style={{ position: 'absolute', right: 4, bottom: 6 }}>
+              <MicDot visible={note.length > 0} value={note} onTranscript={setNote} />
+            </span>
+          </div>
         </div>
       </section>
 

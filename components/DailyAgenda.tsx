@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import AgendaRoadView from '@/components/AgendaRoadView';
 import type { CompassAxis, LifeCategoryLike, TagValue } from '@/components/CategoryTagPicker';
 import CategoryTagPicker from '@/components/CategoryTagPicker';
+import MicDot from '@/components/MicDot';
 
 /* ═══════════════════════════════════════════════════════════
    AGENDA — day/week/month planner with mission + emotion layers.
@@ -1837,28 +1838,38 @@ function VerticalView({
                     border: '1px dashed #C4A06040',
                   }}
                 >
-                  <input
-                    type="text"
-                    value={newText}
-                    onChange={(e) => setNewText(e.target.value)}
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter')
-                        onAdd(hour, layer === 'emotion' ? 'emotion' : 'mission');
-                      if (e.key === 'Escape') setAddingAt(null);
-                    }}
-                    placeholder={layer === 'emotion' ? 'how are you feeling?' : "what's happening?"}
-                    autoFocus
-                    style={{
-                      background: 'transparent',
-                      border: 'none',
-                      borderBottom: '1px solid #C4A06030',
-                      outline: 'none',
-                      color: '#5C3018',
-                      fontFamily: 'var(--font-handwritten)',
-                      fontSize: '18px',
-                      padding: '4px 0',
-                    }}
-                  />
+                  <div style={{ display: 'flex', alignItems: 'flex-end', gap: 6 }}>
+                    <input
+                      type="text"
+                      value={newText}
+                      onChange={(e) => setNewText(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter')
+                          onAdd(hour, layer === 'emotion' ? 'emotion' : 'mission');
+                        if (e.key === 'Escape') setAddingAt(null);
+                      }}
+                      placeholder={
+                        layer === 'emotion' ? 'how are you feeling?' : "what's happening?"
+                      }
+                      autoFocus
+                      style={{
+                        flex: 1,
+                        background: 'transparent',
+                        border: 'none',
+                        borderBottom: '1px solid #C4A06030',
+                        outline: 'none',
+                        color: '#5C3018',
+                        fontFamily: 'var(--font-handwritten)',
+                        fontSize: '18px',
+                        padding: '4px 0',
+                      }}
+                    />
+                    <MicDot
+                      visible={newText.length > 0}
+                      value={newText}
+                      onTranscript={setNewText}
+                    />
+                  </div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                     {/* Duration */}
                     <select

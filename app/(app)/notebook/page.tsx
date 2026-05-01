@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useRef, useState } from 'react';
+import MicDot from '@/components/MicDot';
 import MusicRecordings from '@/components/MusicRecordings';
 
 // ============================================================
@@ -1368,28 +1369,38 @@ export default function NotebookPage() {
                     }
                     return (
                       <div className="space-y-4 max-w-2xl mx-auto">
-                        <textarea
-                          value={lyrics}
-                          onChange={(e) => updateSong(e.target.value, chords)}
-                          placeholder="Lyrics…"
-                          className="w-full resize-none rounded-xl border px-4 py-3 outline-none"
-                          style={{
-                            minHeight: 280,
-                            fontFamily:
-                              fStyle.font === 'mono'
-                                ? 'monospace'
-                                : fStyle.font === 'serif'
-                                  ? 'var(--font-serif)'
-                                  : 'sans-serif',
-                            fontSize: `${fStyle.size || 16}px`,
-                            textAlign: fStyle.align as 'left' | 'center' | 'right',
-                            color: fStyle.color || '#5C3018',
-                            borderColor: `${fColor}20`,
-                            background: `${fColor}04`,
-                          }}
-                          spellCheck
-                          lang="fr"
-                        />
+                        <div style={{ position: 'relative' }}>
+                          <textarea
+                            value={lyrics}
+                            onChange={(e) => updateSong(e.target.value, chords)}
+                            placeholder="Lyrics…"
+                            className="w-full resize-none rounded-xl border px-4 py-3 outline-none"
+                            style={{
+                              minHeight: 280,
+                              fontFamily:
+                                fStyle.font === 'mono'
+                                  ? 'monospace'
+                                  : fStyle.font === 'serif'
+                                    ? 'var(--font-serif)'
+                                    : 'sans-serif',
+                              fontSize: `${fStyle.size || 16}px`,
+                              textAlign: fStyle.align as 'left' | 'center' | 'right',
+                              color: fStyle.color || '#5C3018',
+                              borderColor: `${fColor}20`,
+                              background: `${fColor}04`,
+                              paddingRight: lyrics.length > 0 ? 28 : undefined,
+                            }}
+                            spellCheck
+                            lang="fr"
+                          />
+                          <span style={{ position: 'absolute', right: 8, bottom: 10 }}>
+                            <MicDot
+                              visible={lyrics.length > 0}
+                              value={lyrics}
+                              onTranscript={(v) => updateSong(v, chords)}
+                            />
+                          </span>
+                        </div>
                         <textarea
                           value={chords}
                           onChange={(e) => updateSong(lyrics, e.target.value)}
@@ -1407,26 +1418,36 @@ export default function NotebookPage() {
                     );
                   })()
                 ) : (
-                  <textarea
-                    value={fEntry.content || ''}
-                    onChange={(e) => updateLocal(fEntry.id, 'content', e.target.value)}
-                    placeholder="Write…"
-                    className="w-full resize-none bg-transparent outline-none max-w-2xl mx-auto block"
-                    style={{
-                      minHeight: 'calc(100vh - 200px)',
-                      fontFamily:
-                        fStyle.font === 'mono'
-                          ? 'monospace'
-                          : fStyle.font === 'serif'
-                            ? 'var(--font-serif)'
-                            : 'sans-serif',
-                      fontSize: `${fStyle.size || 16}px`,
-                      textAlign: fStyle.align as 'left' | 'center' | 'right',
-                      color: fStyle.color || '#5C3018',
-                    }}
-                    spellCheck
-                    lang="fr"
-                  />
+                  <div style={{ position: 'relative' }}>
+                    <textarea
+                      value={fEntry.content || ''}
+                      onChange={(e) => updateLocal(fEntry.id, 'content', e.target.value)}
+                      placeholder="Write…"
+                      className="w-full resize-none bg-transparent outline-none max-w-2xl mx-auto block"
+                      style={{
+                        minHeight: 'calc(100vh - 200px)',
+                        fontFamily:
+                          fStyle.font === 'mono'
+                            ? 'monospace'
+                            : fStyle.font === 'serif'
+                              ? 'var(--font-serif)'
+                              : 'sans-serif',
+                        fontSize: `${fStyle.size || 16}px`,
+                        textAlign: fStyle.align as 'left' | 'center' | 'right',
+                        color: fStyle.color || '#5C3018',
+                        paddingRight: (fEntry.content || '').length > 0 ? 28 : undefined,
+                      }}
+                      spellCheck
+                      lang="fr"
+                    />
+                    <span style={{ position: 'fixed', right: 20, bottom: 24 }}>
+                      <MicDot
+                        visible={(fEntry.content || '').length > 0}
+                        value={fEntry.content || ''}
+                        onTranscript={(v) => updateLocal(fEntry.id, 'content', v)}
+                      />
+                    </span>
+                  </div>
                 )}
               </div>
             </div>
