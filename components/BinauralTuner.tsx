@@ -1984,7 +1984,7 @@ export default function BinauralTuner() {
     };
   }, [voiceMode]);
 
-  const [_showSave, setShowSave] = useState(false);
+  const [_showSave, _setShowSave] = useState(false);
   const crossfadingRef = useRef(false);
 
   // Collapsible section state
