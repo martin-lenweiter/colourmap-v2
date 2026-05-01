@@ -33,7 +33,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
             display:none hides it but never unmounts — audio survives
             route changes. Only visible when on /music. */}
         <div style={{ display: onMusic ? 'block' : 'none' }}>
-          {/* Music top-nav: Music Makers · Guitar Studio */}
+          {/* Music top-nav: Music Studio · Guitar Studio */}
           <div className="flex items-center gap-3 pb-1 mb-3">
             <div style={{ flex: 1, height: 1, background: '#C4A06020' }} />
             <button
@@ -51,7 +51,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
                 padding: 0,
               }}
             >
-              Music Makers
+              Music Studio
             </button>
             <span style={{ color: '#C4A06030', fontSize: 11 }}>·</span>
             <button
