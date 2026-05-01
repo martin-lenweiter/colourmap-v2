@@ -5,14 +5,16 @@ import GuitarChords from '@/components/GuitarChords';
 import GuitarFretboard from '@/components/GuitarFretboard';
 import GuitarLearn from '@/components/GuitarLearn';
 import GuitarPractice from '@/components/GuitarPractice';
+import HarmonyMap from '@/components/HarmonyMap';
 import SongStudio from '@/components/SongStudio';
 
-type Tab = 'songs' | 'fretboard' | 'chords' | 'learn' | 'practice';
+type Tab = 'songs' | 'fretboard' | 'chords' | 'harmony' | 'learn' | 'practice';
 
 const TABS: { id: Tab; label: string }[] = [
   { id: 'songs', label: 'Songs' },
   { id: 'fretboard', label: 'Fretboard' },
   { id: 'chords', label: 'Chords' },
+  { id: 'harmony', label: 'Harmony' },
   { id: 'learn', label: 'Learn' },
   { id: 'practice', label: 'Practice' },
 ];
@@ -94,6 +96,7 @@ export default function GuitarStudio() {
       {tab === 'songs' && <SongStudio />}
       {tab === 'fretboard' && <GuitarFretboard />}
       {tab === 'chords' && <GuitarChords />}
+      {tab === 'harmony' && <HarmonyMap />}
       {tab === 'learn' && <GuitarLearn />}
       {tab === 'practice' && <GuitarPractice />}
     </div>

@@ -9,12 +9,13 @@ import { useViewMode } from './ViewModeContext';
 // Plain text labels — no glyphs (user: 'no smileys').
 const PRIMARY_LINKS: { href: string; label: string }[] = [
   { href: '/day', label: 'Focus' },
-  { href: '/circles', label: 'Teamwork' },
-  { href: '/sparks', label: 'Sparks' },
-  { href: '/chat', label: 'Chat' },
   { href: '/notebook', label: 'Notebook' },
   { href: '/music', label: 'Music' },
+  { href: '/circles', label: 'Social' },
 ];
+
+// Routes that belong under the Social nav item
+const SOCIAL_ROUTES = ['/circles', '/sparks', '/chat'];
 
 const PHONE_PRIMARY_LINKS = PRIMARY_LINKS;
 
@@ -67,7 +68,7 @@ export default function NavLinks() {
   // On phone, the nav scrolls horizontally with scroll-snap + fade
   // edges so the user feels like they're flipping through tabs.
   return (
-    <div className="relative flex items-center w-full">
+    <div className="relative flex items-center w-full" style={{ background: 'var(--secondary)' }}>
       <nav
         ref={(el) => {
           navRef.current = el;
@@ -84,11 +85,14 @@ export default function NavLinks() {
         }}
       >
         {primary.map((link) => {
+          const isSocial = link.href === '/circles';
           const isActive = link.href.startsWith('/#')
             ? pathname === '/' &&
               typeof window !== 'undefined' &&
               window.location.hash === link.href.slice(1)
-            : pathname === link.href;
+            : isSocial
+              ? SOCIAL_ROUTES.includes(pathname)
+              : pathname === link.href;
           return (
             <Link
               key={link.href}

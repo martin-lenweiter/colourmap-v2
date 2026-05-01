@@ -155,14 +155,7 @@ export default function ReflectThreeDots() {
   const activeAxisDef = AXES.find((a) => a.id === activeAxis) ?? null;
 
   return (
-    <div
-      className="space-y-4 rounded-3xl border px-5 py-5"
-      style={{
-        borderColor: '#9B6BA050',
-        background: 'linear-gradient(180deg, rgba(245,236,220,0.97), rgba(240,228,208,0.95))',
-        boxShadow: '0 28px 55px -36px rgba(92,48,24,0.3)',
-      }}
-    >
+    <div className="space-y-4">
       {/* Header */}
       <p
         className="text-center font-semibold uppercase"
@@ -209,7 +202,7 @@ export default function ReflectThreeDots() {
                   fontWeight: isOn ? 700 : 600,
                   letterSpacing: '0.14em',
                   textTransform: 'uppercase',
-                  color: isOn ? axis.dotColor : '#8A6A4A',
+                  color: isOn ? axis.dotColor : 'var(--muted-foreground)',
                   opacity: isOn ? 1 : 0.65,
                 }}
               >
@@ -228,8 +221,8 @@ export default function ReflectThreeDots() {
             style={{
               fontFamily: 'var(--font-serif)',
               fontSize: 12,
-              color: '#8A6A4A',
-              opacity: 0.7,
+              color: 'var(--muted-foreground)',
+              opacity: 0.65,
               marginBottom: 8,
             }}
           >
@@ -258,13 +251,16 @@ export default function ReflectThreeDots() {
                   className="flex w-full cursor-pointer items-center gap-3 px-3 py-2.5"
                   style={{ background: 'none', border: 'none' }}
                 >
+                  {/* Diamond / losange opener */}
                   <span
-                    className="block rounded-full"
+                    className="block transition-all"
                     style={{
-                      width: 14,
-                      height: 14,
+                      width: 10,
+                      height: 10,
                       background: level.color,
                       flexShrink: 0,
+                      transform: isActive ? 'rotate(45deg) scale(1.2)' : 'rotate(45deg)',
+                      opacity: isActive ? 1 : 0.75,
                     }}
                   />
                   <span
@@ -310,11 +306,12 @@ export default function ReflectThreeDots() {
                         }}
                         placeholder={`what's in ${level.name.toLowerCase()} for you right now?`}
                         rows={2}
-                        className="w-full resize-none rounded-lg bg-white/60 px-3 py-2 outline-none placeholder:italic placeholder:text-[#8A6A4A] placeholder:opacity-55"
+                        className="w-full resize-none rounded-lg px-3 py-2 outline-none placeholder:italic"
                         style={{
                           fontFamily: 'var(--font-serif)',
                           fontSize: 14,
-                          color: '#5C3018',
+                          color: 'var(--foreground)',
+                          background: 'var(--secondary)',
                           border: `1px solid ${level.color}40`,
                           lineHeight: 1.45,
                           paddingRight: input.length > 0 ? 24 : undefined,
@@ -353,7 +350,7 @@ export default function ReflectThreeDots() {
                         key={entry.id}
                         className="rounded-md"
                         style={{
-                          background: 'rgba(255,255,255,0.55)',
+                          background: 'var(--secondary)',
                           padding: '6px 10px',
                         }}
                       >
@@ -362,8 +359,8 @@ export default function ReflectThreeDots() {
                             style={{
                               fontFamily: 'var(--font-serif)',
                               fontSize: 11,
-                              color: '#8A6A4A',
-                              opacity: 0.65,
+                              color: 'var(--muted-foreground)',
+                              opacity: 0.8,
                             }}
                           >
                             {relativeWhen(entry.createdAt)}
@@ -391,9 +388,9 @@ export default function ReflectThreeDots() {
                           style={{
                             fontFamily: 'var(--font-serif)',
                             fontSize: 13,
-                            color: '#5C3018',
+                            color: 'var(--foreground)',
                             lineHeight: 1.45,
-                            opacity: 0.92,
+                            opacity: 0.9,
                           }}
                         >
                           {entry.text}
@@ -415,13 +412,12 @@ export default function ReflectThreeDots() {
           style={{
             fontFamily: 'var(--font-serif)',
             fontSize: 13,
-            color: '#8A6A4A',
+            color: 'var(--muted-foreground)',
             opacity: 0.6,
             lineHeight: 1.5,
           }}
         >
-          tap a dot to open its column · journal what's alive at each level. each entry is dated so
-          the trace builds over time.
+          tap a dot · a column of levels opens · write what's alive there right now
         </p>
       )}
     </div>

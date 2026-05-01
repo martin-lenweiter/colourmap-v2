@@ -136,6 +136,9 @@ const DEFAULT_NOTEBOOKS: Notebook[] = [
 ];
 
 const NOTEBOOK_STORAGE = 'colourmap:notebooks-v2';
+const TRASH_STORAGE = 'colourmap:notebook-trash';
+const DELETED_NB_ID = '__deleted__';
+const TRASH_TTL_DAYS = 14;
 const COLOR_PICKER = [
   '#C4A060',
   '#E0844A',
@@ -461,6 +464,9 @@ export default function NotebookPage() {
   const [newNbName, setNewNbName] = useState('');
   const [newNbColor, setNewNbColor] = useState('#C4A060');
   const [showMusic, setShowMusic] = useState(false);
+  const [trashEntries, setTrashEntries] = useState<(Entry & { deletedAt: string })[]>([]);
+  const [renamingNbId, setRenamingNbId] = useState<string | null>(null);
+  const [renameNbValue, setRenameNbValue] = useState('');
   const saveTimers = useRef<Map<string, ReturnType<typeof setTimeout>>>(new Map());
 
   // Escape exits full view
@@ -484,6 +490,19 @@ export default function NotebookPage() {
       if (saved) setNotebooks(JSON.parse(saved));
       const styles = localStorage.getItem('colourmap:note-styles');
       if (styles) setNoteStyles(JSON.parse(styles));
+    } catch {
+      /* */
+    }
+    // Load trash and auto-purge entries older than TRASH_TTL_DAYS
+    try {
+      const raw = localStorage.getItem(TRASH_STORAGE);
+      if (raw) {
+        const all: (Entry & { deletedAt: string })[] = JSON.parse(raw);
+        const cutoff = Date.now() - TRASH_TTL_DAYS * 86400_000;
+        const fresh = all.filter((e) => new Date(e.deletedAt).getTime() > cutoff);
+        setTrashEntries(fresh);
+        localStorage.setItem(TRASH_STORAGE, JSON.stringify(fresh));
+      }
     } catch {
       /* */
     }
@@ -598,13 +617,71 @@ export default function NotebookPage() {
     autoSave(id, field, value);
   }
 
-  async function handleDelete(id: string) {
+  function handleDelete(id: string) {
+    const entry = entries.find((e) => e.id === id);
+    if (!entry) return;
+    // Soft-delete: move to trash with timestamp
+    const deleted = { ...entry, deletedAt: new Date().toISOString() };
+    const nextTrash = [deleted, ...trashEntries];
+    setTrashEntries(nextTrash);
+    try {
+      localStorage.setItem(TRASH_STORAGE, JSON.stringify(nextTrash));
+    } catch {
+      /* */
+    }
+    // Remove from active entries
     setEntries((prev) => prev.filter((e) => e.id !== id));
     if (expandedId === id) {
       setExpandedId(null);
       setEditingId(null);
     }
-    await fetch(`/api/notebook/${id}`, { method: 'DELETE' });
+    // Also delete from server so it doesn't come back on next fetch
+    fetch(`/api/notebook/${id}`, { method: 'DELETE' }).catch(() => {});
+  }
+
+  async function handleRestore(id: string) {
+    const entry = trashEntries.find((e) => e.id === id);
+    if (!entry) return;
+    const { deletedAt: _d, ...base } = entry;
+    // Re-create on server
+    try {
+      const res = await fetch('/api/notebook', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ category: base.category, title: base.title }),
+      });
+      const created = res.ok ? await res.json() : { ...base, id: base.id };
+      setEntries((prev) => [{ ...base, id: created.id }, ...prev]);
+    } catch {
+      setEntries((prev) => [base, ...prev]);
+    }
+    const nextTrash = trashEntries.filter((e) => e.id !== id);
+    setTrashEntries(nextTrash);
+    try {
+      localStorage.setItem(TRASH_STORAGE, JSON.stringify(nextTrash));
+    } catch {
+      /* */
+    }
+    setActiveNotebook(entry.category);
+  }
+
+  function handlePermanentDelete(id: string) {
+    const nextTrash = trashEntries.filter((e) => e.id !== id);
+    setTrashEntries(nextTrash);
+    try {
+      localStorage.setItem(TRASH_STORAGE, JSON.stringify(nextTrash));
+    } catch {
+      /* */
+    }
+  }
+
+  function commitRenameNb(id: string) {
+    const trimmed = renameNbValue.trim();
+    if (trimmed) {
+      const next = notebooks.map((nb) => (nb.id === id ? { ...nb, label: trimmed } : nb));
+      saveNotebooks(next);
+    }
+    setRenamingNbId(null);
   }
 
   const activeNb = notebooks.find((n) => n.id === activeNotebook);
@@ -700,35 +777,58 @@ export default function NotebookPage() {
                 .map((nb) => {
                   const isActive = activeNotebook === nb.id;
                   const count = entries.filter((e) => e.category === nb.id).length;
+                  const isRenaming = renamingNbId === nb.id;
                   return (
-                    <button
+                    <div
                       key={nb.id}
-                      type="button"
-                      onClick={() => setActiveNotebook(nb.id)}
-                      className="w-full flex items-center gap-2 px-3 py-2 rounded-xl text-left transition-all"
+                      className="group flex items-center gap-2 px-3 py-2 rounded-xl transition-all cursor-pointer"
                       style={{
                         background: isActive ? `${nb.color}15` : 'transparent',
                         border: isActive ? `1px solid ${nb.color}30` : '1px solid transparent',
                       }}
+                      onClick={() => !isRenaming && setActiveNotebook(nb.id)}
                     >
                       <div
                         className="h-3 w-3 rounded-full shrink-0"
                         style={{ background: nb.color, opacity: isActive ? 0.8 : 0.3 }}
                       />
                       <div className="flex-1 min-w-0">
-                        <p
-                          className="text-xs font-medium truncate"
-                          style={{ color: isActive ? nb.color : `${nb.color}80` }}
-                        >
-                          {nb.label}
-                        </p>
+                        {isRenaming ? (
+                          <input
+                            type="text"
+                            value={renameNbValue}
+                            onChange={(e) => setRenameNbValue(e.target.value)}
+                            onBlur={() => commitRenameNb(nb.id)}
+                            onKeyDown={(e) => {
+                              if (e.key === 'Enter') commitRenameNb(nb.id);
+                              if (e.key === 'Escape') setRenamingNbId(null);
+                            }}
+                            autoFocus
+                            className="w-full bg-transparent text-xs outline-none border-b"
+                            style={{ color: nb.color, borderColor: `${nb.color}40` }}
+                            onClick={(e) => e.stopPropagation()}
+                          />
+                        ) : (
+                          <p
+                            className="text-xs font-medium truncate"
+                            style={{ color: isActive ? nb.color : `${nb.color}80` }}
+                            onDoubleClick={(e) => {
+                              e.stopPropagation();
+                              setRenamingNbId(nb.id);
+                              setRenameNbValue(nb.label);
+                            }}
+                            title="Double-click to rename"
+                          >
+                            {nb.label}
+                          </p>
+                        )}
                         {count > 0 && (
                           <p className="text-[11px]" style={{ color: `${nb.color}40` }}>
                             {count}
                           </p>
                         )}
                       </div>
-                    </button>
+                    </div>
                   );
                 })}
 
@@ -793,6 +893,41 @@ export default function NotebookPage() {
                     );
                   })}
 
+              {/* Deleted (trash) virtual notebook */}
+              {trashEntries.length > 0 && (
+                <button
+                  type="button"
+                  onClick={() => setActiveNotebook(DELETED_NB_ID)}
+                  className="w-full flex items-center gap-2 px-3 py-2 rounded-xl text-left transition-all"
+                  style={{
+                    background: activeNotebook === DELETED_NB_ID ? '#D4605A15' : 'transparent',
+                    border:
+                      activeNotebook === DELETED_NB_ID
+                        ? '1px solid #D4605A30'
+                        : '1px solid transparent',
+                  }}
+                >
+                  <div
+                    className="h-3 w-3 rounded-full shrink-0"
+                    style={{
+                      background: '#D4605A',
+                      opacity: activeNotebook === DELETED_NB_ID ? 0.8 : 0.3,
+                    }}
+                  />
+                  <div className="flex-1 min-w-0">
+                    <p
+                      className="text-xs font-medium truncate"
+                      style={{ color: activeNotebook === DELETED_NB_ID ? '#D4605A' : '#D4605A80' }}
+                    >
+                      Deleted
+                    </p>
+                    <p className="text-[11px]" style={{ color: '#D4605A40' }}>
+                      {trashEntries.length}
+                    </p>
+                  </div>
+                </button>
+              )}
+
               {/* Add notebook */}
               <button
                 type="button"
@@ -853,23 +988,103 @@ export default function NotebookPage() {
             <div className="flex flex-col items-center gap-1 mb-3">
               <div
                 className="h-3 w-3 rounded-full mb-0.5"
-                style={{ background: activeNb?.color, opacity: 0.7 }}
+                style={{
+                  background: activeNotebook === DELETED_NB_ID ? '#D4605A' : activeNb?.color,
+                  opacity: 0.7,
+                }}
               />
               <h2
                 className="font-serif text-center"
                 style={{
-                  color: activeNb?.color,
+                  color: activeNotebook === DELETED_NB_ID ? '#D4605A' : activeNb?.color,
                   fontSize: '18px',
                   fontWeight: 700,
                   letterSpacing: '0.04em',
                 }}
               >
-                {activeNb?.label}
+                {activeNotebook === DELETED_NB_ID ? 'Deleted' : activeNb?.label}
               </h2>
-              {activeNotebook !== 'recordings' && (
+              {activeNotebook !== 'recordings' && activeNotebook !== DELETED_NB_ID && (
                 <span className="text-xs text-muted-foreground/50">{filtered.length} notes</span>
               )}
+              {activeNotebook === DELETED_NB_ID && (
+                <span
+                  className="text-xs"
+                  style={{ color: '#D4605A80', fontFamily: 'var(--font-serif)' }}
+                >
+                  Recoverable for {TRASH_TTL_DAYS} days
+                </span>
+              )}
             </div>
+
+            {/* Deleted / Trash view */}
+            {activeNotebook === DELETED_NB_ID && (
+              <div className="space-y-2">
+                {trashEntries.length === 0 ? (
+                  <p
+                    className="text-center text-sm py-8"
+                    style={{ color: 'var(--muted-foreground)' }}
+                  >
+                    Trash is empty
+                  </p>
+                ) : (
+                  trashEntries.map((entry) => {
+                    const daysLeft = Math.ceil(
+                      (new Date(entry.deletedAt).getTime() +
+                        TRASH_TTL_DAYS * 86400_000 -
+                        Date.now()) /
+                        86400_000,
+                    );
+                    return (
+                      <div
+                        key={entry.id}
+                        className="flex items-center gap-3 rounded-xl px-4 py-3"
+                        style={{ background: '#D4605A08', border: '1px solid #D4605A18' }}
+                      >
+                        <div className="flex-1 min-w-0">
+                          <p
+                            className="text-[13px] truncate"
+                            style={{ color: 'var(--foreground)', opacity: 0.6 }}
+                          >
+                            {entry.title}
+                          </p>
+                          <p
+                            className="text-[11px] mt-0.5"
+                            style={{
+                              color: 'var(--muted-foreground)',
+                              fontFamily: 'var(--font-serif)',
+                            }}
+                          >
+                            {daysLeft > 0 ? `${daysLeft}d left` : 'expires today'}
+                          </p>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => handleRestore(entry.id)}
+                          className="cursor-pointer rounded-full px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.1em] transition-all hover:opacity-80"
+                          style={{
+                            background: '#C4A06015',
+                            color: '#C4A060',
+                            border: '1px solid #C4A06030',
+                          }}
+                        >
+                          Restore
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => handlePermanentDelete(entry.id)}
+                          className="cursor-pointer text-[11px] transition-all hover:opacity-80"
+                          style={{ color: '#D4605A60', background: 'none', border: 'none' }}
+                          title="Permanently delete"
+                        >
+                          ✕
+                        </button>
+                      </div>
+                    );
+                  })
+                )}
+              </div>
+            )}
 
             {/* Recordings tab — special UI, no note form */}
             {activeNotebook === 'recordings' && (
@@ -880,8 +1095,8 @@ export default function NotebookPage() {
               />
             )}
 
-            {/* Add note + notes list — hidden for recordings tab */}
-            {activeNotebook !== 'recordings' && (
+            {/* Add note + notes list — hidden for recordings and deleted tabs */}
+            {activeNotebook !== 'recordings' && activeNotebook !== DELETED_NB_ID && (
               <>
                 <form
                   onSubmit={(e) => {
@@ -1136,7 +1351,7 @@ export default function NotebookPage() {
                                             textAlign: style.align as 'left' | 'center' | 'right',
                                           }}
                                           spellCheck={spellCheckOn}
-                                          lang="fr"
+                                          lang="en-US"
                                           onInput={(e) => {
                                             const t = e.target as HTMLTextAreaElement;
                                             t.style.height = 'auto';
@@ -1212,7 +1427,7 @@ export default function NotebookPage() {
                                 }}
                                 data-placeholder="start writing..."
                                 spellCheck={spellCheckOn}
-                                lang="fr"
+                                lang="en-US"
                               />
                             )}
 
@@ -1288,7 +1503,8 @@ export default function NotebookPage() {
                                   <button
                                     type="button"
                                     onClick={() => setEditingId(null)}
-                                    className="text-xs text-muted-foreground/40 hover:text-muted-foreground"
+                                    className="cursor-pointer rounded-full px-4 py-1 text-[11px] font-semibold uppercase tracking-[0.1em] transition-all hover:opacity-80"
+                                    style={{ background: '#C4A060', color: '#fff' }}
                                   >
                                     Done
                                   </button>
@@ -1296,7 +1512,12 @@ export default function NotebookPage() {
                                   <button
                                     type="button"
                                     onClick={() => setEditingId(entry.id)}
-                                    className="text-xs text-muted-foreground/50 hover:text-muted-foreground"
+                                    className="cursor-pointer rounded-full px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.1em] transition-all hover:opacity-80"
+                                    style={{
+                                      background: '#C4A06015',
+                                      color: '#C4A060',
+                                      border: '1px solid #C4A06030',
+                                    }}
                                   >
                                     Edit
                                   </button>
@@ -1421,7 +1642,7 @@ export default function NotebookPage() {
                               paddingRight: lyrics.length > 0 ? 28 : undefined,
                             }}
                             spellCheck
-                            lang="fr"
+                            lang="en-US"
                           />
                           <span style={{ position: 'absolute', right: 8, bottom: 10 }}>
                             <MicDot
@@ -1468,7 +1689,7 @@ export default function NotebookPage() {
                         paddingRight: (fEntry.content || '').length > 0 ? 28 : undefined,
                       }}
                       spellCheck
-                      lang="fr"
+                      lang="en-US"
                     />
                     <span style={{ position: 'fixed', right: 20, bottom: 24 }}>
                       <MicDot

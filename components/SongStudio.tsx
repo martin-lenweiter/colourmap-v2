@@ -79,8 +79,172 @@ function segColor(type: SegmentType) {
   return SEGMENT_TYPES.find((t) => t.id === type)?.color ?? '#A0907A';
 }
 
+function segLabel(type: SegmentType) {
+  return SEGMENT_TYPES.find((t) => t.id === type)?.label ?? type;
+}
+
 function statusColor(s: SongStatus) {
   return s === 'ready' ? '#7AAA58' : s === 'rehearsed' ? '#C4A060' : '#A0907A';
+}
+
+/* ─── Song flow strip ────────────────────────────────────── */
+function SongFlowStrip({ segments }: { segments: SongSegment[] }) {
+  if (segments.length === 0) return null;
+  return (
+    <div
+      className="flex items-center gap-0.5 overflow-x-auto mt-2 pb-0.5"
+      style={{ scrollbarWidth: 'none' }}
+    >
+      {segments.map((seg) => {
+        const color = segColor(seg.type);
+        const label = segLabel(seg.type);
+        return (
+          <span
+            key={seg.id}
+            className="shrink-0 rounded px-1.5 py-0.5 text-[8px] font-semibold uppercase tracking-[0.06em]"
+            style={{
+              background: `${color}22`,
+              color,
+              border: `1px solid ${color}40`,
+            }}
+          >
+            {label}
+          </span>
+        );
+      })}
+    </div>
+  );
+}
+
+/* ─── Song view (read/play mode) ─────────────────────────── */
+function SongView({
+  song,
+  onEdit,
+  onBack,
+}: {
+  song: Song;
+  onEdit: () => void;
+  onBack: () => void;
+}) {
+  return (
+    <div className="space-y-6">
+      {/* Nav */}
+      <div className="flex items-center gap-3">
+        <button
+          type="button"
+          onClick={onBack}
+          className="cursor-pointer text-[12px] uppercase tracking-[0.1em] transition-all hover:opacity-70"
+          style={{ color: 'var(--muted-foreground)', fontFamily: 'var(--font-serif)' }}
+        >
+          ← Songs
+        </button>
+        <button
+          type="button"
+          onClick={onEdit}
+          className="ml-auto cursor-pointer rounded-full px-4 py-1.5 text-[11px] font-semibold uppercase tracking-[0.1em] transition-all hover:opacity-80"
+          style={{ background: '#C4A06018', color: '#C4A060', border: '1px solid #C4A06040' }}
+        >
+          Edit
+        </button>
+      </div>
+
+      {/* Header */}
+      <div>
+        <div className="flex items-start gap-3 flex-wrap">
+          <h2
+            className="text-[22px] font-bold flex-1 min-w-0"
+            style={{ color: 'var(--foreground)', letterSpacing: '0.02em' }}
+          >
+            {song.title}
+          </h2>
+          <span
+            className="mt-1 rounded-full px-3 py-0.5 text-[10px] uppercase tracking-[0.1em] shrink-0"
+            style={{
+              background: `${statusColor(song.status)}20`,
+              color: statusColor(song.status),
+              fontFamily: 'var(--font-serif)',
+              fontWeight: 700,
+            }}
+          >
+            {song.status}
+          </span>
+        </div>
+        <p
+          className="mt-1 text-[12px]"
+          style={{ color: 'var(--muted-foreground)', fontFamily: 'var(--font-serif)' }}
+        >
+          {[song.key && `Key: ${song.key}`, song.genre, song.tempo ? `${song.tempo} bpm` : '']
+            .filter(Boolean)
+            .join(' · ')}
+        </p>
+      </div>
+
+      {/* Flow strip */}
+      {song.segments.length > 0 && (
+        <div>
+          <p
+            className="mb-2 text-[10px] uppercase tracking-[0.1em]"
+            style={{ color: 'var(--muted-foreground)', fontFamily: 'var(--font-serif)' }}
+          >
+            Structure
+          </p>
+          <SongFlowStrip segments={song.segments} />
+        </div>
+      )}
+
+      {/* Segments */}
+      <div className="space-y-4">
+        {song.segments.map((seg) => {
+          const color = segColor(seg.type);
+          return (
+            <div key={seg.id} className="space-y-1.5">
+              <div className="flex items-center gap-2">
+                <span
+                  className="h-2 w-2 rounded-sm shrink-0"
+                  style={{ background: color, transform: 'rotate(45deg)' }}
+                />
+                <span
+                  className="text-[11px] font-semibold uppercase tracking-[0.12em]"
+                  style={{ color, fontFamily: 'var(--font-serif)' }}
+                >
+                  {segLabel(seg.type)}
+                </span>
+                {seg.chords && (
+                  <span
+                    className="ml-2 font-mono text-[12px]"
+                    style={{ color: '#C4A060', letterSpacing: '0.06em' }}
+                  >
+                    {seg.chords}
+                  </span>
+                )}
+              </div>
+              {seg.text && (
+                <p
+                  className="pl-5 text-[14px] leading-relaxed whitespace-pre-wrap"
+                  style={{
+                    color: 'var(--foreground)',
+                    fontFamily: 'var(--font-serif)',
+                    opacity: 0.9,
+                  }}
+                >
+                  {seg.text}
+                </p>
+              )}
+            </div>
+          );
+        })}
+      </div>
+
+      {song.segments.length === 0 && (
+        <p
+          className="text-center italic text-[13px] py-6"
+          style={{ color: 'var(--muted-foreground)', fontFamily: 'var(--font-serif)' }}
+        >
+          No segments yet — tap Edit to add them
+        </p>
+      )}
+    </div>
+  );
 }
 
 /* ─── Song editor ────────────────────────────────────────── */
@@ -147,7 +311,7 @@ function SongEditor({
           className="cursor-pointer text-[12px] uppercase tracking-[0.1em] transition-all hover:opacity-70"
           style={{ color: 'var(--muted-foreground)', fontFamily: 'var(--font-serif)' }}
         >
-          ← Back
+          ← Cancel
         </button>
         <button
           type="button"
@@ -262,6 +426,9 @@ function SongEditor({
           </select>
         </div>
       </div>
+
+      {/* Flow preview */}
+      {s.segments.length > 0 && <SongFlowStrip segments={s.segments} />}
 
       {/* Segments */}
       <div className="space-y-3">
@@ -378,9 +545,11 @@ function SongEditor({
 
 /* ─── Song list ──────────────────────────────────────────── */
 
+type SongMode = { kind: 'list' } | { kind: 'view'; id: string } | { kind: 'edit'; id: string };
+
 export default function SongStudio() {
   const [songs, setSongs] = useState<Song[]>([]);
-  const [openId, setOpenId] = useState<string | null>(null);
+  const [mode, setMode] = useState<SongMode>({ kind: 'list' });
   const [newTitle, setNewTitle] = useState('');
 
   useEffect(() => {
@@ -407,23 +576,43 @@ export default function SongStudio() {
     const next = [song, ...songs];
     persist(next);
     setNewTitle('');
-    setOpenId(song.id);
+    setMode({ kind: 'edit', id: song.id });
   }
 
   function saveSong(updated: Song) {
     persist(songs.map((s) => (s.id === updated.id ? updated : s)));
-    setOpenId(null);
+    setMode({ kind: 'view', id: updated.id });
   }
 
   function deleteSong(id: string) {
     persist(songs.filter((s) => s.id !== id));
-    if (openId === id) setOpenId(null);
+    setMode({ kind: 'list' });
   }
 
-  const openSong = songs.find((s) => s.id === openId);
+  if (mode.kind === 'view') {
+    const song = songs.find((s) => s.id === mode.id);
+    if (song) {
+      return (
+        <SongView
+          song={song}
+          onEdit={() => setMode({ kind: 'edit', id: song.id })}
+          onBack={() => setMode({ kind: 'list' })}
+        />
+      );
+    }
+  }
 
-  if (openSong) {
-    return <SongEditor song={openSong} onSave={saveSong} onBack={() => setOpenId(null)} />;
+  if (mode.kind === 'edit') {
+    const song = songs.find((s) => s.id === mode.id);
+    if (song) {
+      return (
+        <SongEditor
+          song={song}
+          onSave={saveSong}
+          onBack={() => setMode({ kind: 'view', id: song.id })}
+        />
+      );
+    }
   }
 
   return (
@@ -465,52 +654,52 @@ export default function SongStudio() {
           {songs.map((song) => (
             <div
               key={song.id}
-              className="flex cursor-pointer items-center gap-3 rounded-xl px-4 py-3 transition-all hover:opacity-80"
+              className="flex cursor-pointer flex-col gap-1 rounded-xl px-4 py-3 transition-all hover:opacity-80"
               style={{ background: '#C4A06010', border: '1px solid #C4A06020' }}
-              onClick={() => setOpenId(song.id)}
+              onClick={() => setMode({ kind: 'view', id: song.id })}
             >
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-2 flex-wrap">
-                  <span
-                    className="text-[14px] font-semibold truncate"
-                    style={{ color: 'var(--foreground)' }}
-                  >
-                    {song.title}
-                  </span>
-                  <span
-                    className="rounded-full px-2 py-0.5 text-[9px] uppercase tracking-[0.1em] shrink-0"
-                    style={{
-                      background: `${statusColor(song.status)}20`,
-                      color: statusColor(song.status),
-                      fontFamily: 'var(--font-serif)',
-                      fontWeight: 700,
-                    }}
-                  >
-                    {song.status}
-                  </span>
-                </div>
-                <p
-                  className="mt-0.5 text-[11px]"
+              <div className="flex items-center gap-2 flex-wrap">
+                <span
+                  className="text-[14px] font-semibold flex-1 min-w-0 truncate"
+                  style={{ color: 'var(--foreground)' }}
+                >
+                  {song.title}
+                </span>
+                <span
+                  className="rounded-full px-2 py-0.5 text-[9px] uppercase tracking-[0.1em] shrink-0"
+                  style={{
+                    background: `${statusColor(song.status)}20`,
+                    color: statusColor(song.status),
+                    fontFamily: 'var(--font-serif)',
+                    fontWeight: 700,
+                  }}
+                >
+                  {song.status}
+                </span>
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    deleteSong(song.id);
+                  }}
+                  className="shrink-0 cursor-pointer text-[11px] uppercase tracking-[0.08em] transition-all hover:opacity-70"
                   style={{ color: 'var(--muted-foreground)', fontFamily: 'var(--font-serif)' }}
                 >
-                  {[song.key, song.genre, song.tempo ? `${song.tempo} bpm` : '']
-                    .filter(Boolean)
-                    .join(' · ')}
-                  {song.segments.length > 0 &&
-                    ` · ${song.segments.length} segment${song.segments.length > 1 ? 's' : ''}`}
-                </p>
+                  del
+                </button>
               </div>
-              <button
-                type="button"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  deleteSong(song.id);
-                }}
-                className="shrink-0 cursor-pointer text-[11px] uppercase tracking-[0.08em] transition-all hover:opacity-70"
+              <p
+                className="text-[11px]"
                 style={{ color: 'var(--muted-foreground)', fontFamily: 'var(--font-serif)' }}
               >
-                del
-              </button>
+                {[song.key && `Key: ${song.key}`, song.genre, song.tempo ? `${song.tempo} bpm` : '']
+                  .filter(Boolean)
+                  .join(' · ')}
+                {song.segments.length > 0 &&
+                  ` · ${song.segments.length} segment${song.segments.length > 1 ? 's' : ''}`}
+              </p>
+              {/* Flow strip */}
+              <SongFlowStrip segments={song.segments} />
             </div>
           ))}
         </div>

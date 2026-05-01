@@ -10,13 +10,13 @@ import { useEffect, useRef, useState } from 'react';
    ═══════════════════════════════════════════════════════════ */
 
 export const SHARING_LEVELS = [
-  { label: 'Lonely', color: '#7B6FA0' },
-  { label: 'Withdrawn', color: '#8880B0' },
-  { label: 'Distant', color: '#8BAAC8' },
-  { label: 'Present', color: '#7ABCB8' },
-  { label: 'Warm', color: '#6ABDA8' },
-  { label: 'Close', color: '#5AAFA0' },
-  { label: 'Connected', color: '#48A898' },
+  { label: 'Lonely', color: '#A08878' },
+  { label: 'Withdrawn', color: '#B09878' },
+  { label: 'Distant', color: '#BEA878' },
+  { label: 'Present', color: '#C4A060' },
+  { label: 'Warm', color: '#A8A868' },
+  { label: 'Close', color: '#80A870' },
+  { label: 'Connected', color: '#5AA880' },
 ];
 
 export const SHARING_IDX_KEY = 'colourmap:sharing-idx';
