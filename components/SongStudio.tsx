@@ -1,6 +1,7 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { createClient } from '@/lib/supabase/client';
 
 /* ─── Data model ─────────────────────────────────────────── */
 
@@ -116,15 +117,382 @@ function SongFlowStrip({ segments }: { segments: SongSegment[] }) {
   );
 }
 
+/* ─── Song recordings panel ──────────────────────────────── */
+
+const BUCKET = 'recordings';
+
+interface SongRec {
+  id: string;
+  title: string;
+  storagePath: string;
+  durationSecs: number | null;
+  category: string;
+  createdAt: string;
+}
+
+function formatDur(secs: number | null) {
+  if (!secs) return '';
+  return `${Math.floor(secs / 60)}:${String(Math.floor(secs % 60)).padStart(2, '0')}`;
+}
+
+function SongRecordingsPanel({
+  songId,
+  songTitle,
+  onShowAll,
+}: {
+  songId: string;
+  songTitle: string;
+  onShowAll: () => void;
+}) {
+  const [recs, setRecs] = useState<SongRec[]>([]);
+  const [loaded, setLoaded] = useState(false);
+  const [recording, setRecording] = useState(false);
+  const [recSecs, setRecSecs] = useState(0);
+  const [uploading, setUploading] = useState(false);
+  const [playingId, setPlayingId] = useState<string | null>(null);
+  const [renamingId, setRenamingId] = useState<string | null>(null);
+  const [renameVal, setRenameVal] = useState('');
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+  const mrRef = useRef<MediaRecorder | null>(null);
+  const chunksRef = useRef<Blob[]>([]);
+  const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
+
+  const load = useCallback(async () => {
+    try {
+      const res = await fetch('/api/recordings');
+      if (res.ok) {
+        const all: SongRec[] = await res.json();
+        setRecs(all.filter((r: SongRec & { songId?: string | null }) => r.songId === songId));
+      }
+    } catch {}
+    setLoaded(true);
+  }, [songId]);
+
+  useEffect(() => {
+    load();
+    const audio = new Audio();
+    audioRef.current = audio;
+    audio.addEventListener('ended', () => {
+      setPlayingId(null);
+    });
+    return () => {
+      audio.pause();
+    };
+  }, [load]);
+
+  async function play(rec: SongRec) {
+    if (playingId === rec.id) {
+      audioRef.current?.pause();
+      setPlayingId(null);
+      return;
+    }
+    const supabase = createClient();
+    const { data } = await supabase.storage.from(BUCKET).createSignedUrl(rec.storagePath, 3600);
+    if (!data?.signedUrl || !audioRef.current) return;
+    audioRef.current.src = data.signedUrl;
+    audioRef.current.play().catch(() => {});
+    setPlayingId(rec.id);
+  }
+
+  async function saveRec(blob: Blob, name: string, durSecs: number | null) {
+    setUploading(true);
+    try {
+      const supabase = createClient();
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      if (!user) return;
+      const ext = blob.type.includes('mp4') ? 'mp4' : blob.type.includes('ogg') ? 'ogg' : 'webm';
+      const path = `${user.id}/${Date.now()}-${name.replace(/[^a-zA-Z0-9_-]/g, '_').slice(0, 40)}.${ext}`;
+      await supabase.storage
+        .from(BUCKET)
+        .upload(path, blob, { contentType: blob.type || 'audio/webm' });
+      const res = await fetch('/api/recordings', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          title: name,
+          storagePath: path,
+          publicUrl: path,
+          durationSecs: durSecs,
+          songId,
+          category: 'solo',
+          notes: null,
+        }),
+      });
+      if (res.ok) {
+        const row = await res.json();
+        setRecs((prev) => [row, ...prev]);
+      }
+    } catch {}
+    setUploading(false);
+  }
+
+  async function startRecording() {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const mr = new MediaRecorder(stream);
+      mrRef.current = mr;
+      chunksRef.current = [];
+      mr.ondataavailable = (e) => {
+        if (e.data.size > 0) chunksRef.current.push(e.data);
+      };
+      mr.onstop = () => {
+        const blob = new Blob(chunksRef.current, { type: 'audio/webm' });
+        const name = `${songTitle} — ${new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}`;
+        void saveRec(blob, name, recSecs);
+        stream.getTracks().forEach((t) => t.stop());
+      };
+      mr.start();
+      setRecording(true);
+      setRecSecs(0);
+      timerRef.current = setInterval(() => setRecSecs((s) => s + 1), 1000);
+    } catch {}
+  }
+
+  function stopRecording() {
+    if (timerRef.current) clearInterval(timerRef.current);
+    mrRef.current?.stop();
+    setRecording(false);
+  }
+
+  function onFile(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    e.target.value = '';
+    const audio = document.createElement('audio');
+    audio.src = URL.createObjectURL(file);
+    audio.addEventListener('loadedmetadata', () => {
+      void saveRec(file, file.name.replace(/\.[^.]+$/, ''), Math.round(audio.duration));
+      URL.revokeObjectURL(audio.src);
+    });
+    audio.addEventListener('error', () => {
+      void saveRec(file, file.name.replace(/\.[^.]+$/, ''), null);
+    });
+  }
+
+  async function rename(rec: SongRec) {
+    const trimmed = renameVal.trim();
+    if (!trimmed) {
+      setRenamingId(null);
+      return;
+    }
+    const res = await fetch(`/api/recordings/${rec.id}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ title: trimmed }),
+    });
+    if (res.ok) {
+      const updated = await res.json();
+      setRecs((prev) =>
+        prev.map((r) => (r.id === updated.id ? { ...r, title: updated.title } : r)),
+      );
+    }
+    setRenamingId(null);
+  }
+
+  async function deleteRec(rec: SongRec) {
+    const supabase = createClient();
+    await supabase.storage.from(BUCKET).remove([rec.storagePath]);
+    await fetch(`/api/recordings/${rec.id}`, { method: 'DELETE' });
+    setRecs((prev) => prev.filter((r) => r.id !== rec.id));
+    if (playingId === rec.id) {
+      audioRef.current?.pause();
+      setPlayingId(null);
+    }
+  }
+
+  return (
+    <div className="space-y-3">
+      {/* Header */}
+      <div className="flex items-center gap-2">
+        <div style={{ flex: 1, height: 1, background: '#D4605A20' }} />
+        <span
+          className="shrink-0 text-[10px] uppercase tracking-[0.16em]"
+          style={{ color: '#D4605A', fontFamily: 'var(--font-serif)', fontWeight: 700 }}
+        >
+          Recordings {recs.length > 0 && `· ${recs.length}`}
+        </span>
+        <div style={{ flex: 1, height: 1, background: '#D4605A20' }} />
+      </div>
+
+      {/* Actions */}
+      <div className="flex items-center gap-2 flex-wrap">
+        {recording ? (
+          <button
+            type="button"
+            onClick={stopRecording}
+            className="flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[12px] font-semibold text-white"
+            style={{ background: '#D4605A' }}
+          >
+            <span
+              className="inline-block rounded-full"
+              style={{ width: 6, height: 6, background: 'white' }}
+            />
+            {formatDur(recSecs)} · stop
+          </button>
+        ) : (
+          <button
+            type="button"
+            onClick={startRecording}
+            disabled={uploading}
+            className="flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[12px] font-semibold disabled:opacity-40"
+            style={{ background: 'transparent', border: '1px solid #D4605A60', color: '#D4605A' }}
+          >
+            ● Record
+          </button>
+        )}
+        <button
+          type="button"
+          onClick={() => fileInputRef.current?.click()}
+          disabled={recording || uploading}
+          className="rounded-full px-3 py-1.5 text-[12px] disabled:opacity-40"
+          style={{
+            background: 'transparent',
+            border: '1px solid #C4A06030',
+            color: 'var(--muted-foreground)',
+          }}
+        >
+          {uploading ? 'Saving…' : '↑ Upload'}
+        </button>
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept="audio/*"
+          className="hidden"
+          onChange={onFile}
+        />
+        {recs.length > 0 && (
+          <button
+            type="button"
+            onClick={onShowAll}
+            className="ml-auto text-[11px] uppercase tracking-[0.08em]"
+            style={{
+              color: '#D4605A',
+              background: 'none',
+              border: 'none',
+              cursor: 'pointer',
+              fontFamily: 'var(--font-serif)',
+              fontWeight: 600,
+            }}
+          >
+            All recordings →
+          </button>
+        )}
+      </div>
+
+      {/* List */}
+      {loaded && recs.length === 0 && !uploading && (
+        <p
+          className="text-[12px] italic"
+          style={{ color: 'var(--muted-foreground)', fontFamily: 'var(--font-serif)' }}
+        >
+          No recordings yet for this song
+        </p>
+      )}
+      {recs.map((rec) => {
+        const isPlaying = playingId === rec.id;
+        return (
+          <div
+            key={rec.id}
+            className="flex items-center gap-2 rounded-xl px-3 py-2"
+            style={{
+              background: isPlaying ? '#D4605A0C' : '#C4A0600A',
+              border: `1px solid ${isPlaying ? '#D4605A30' : '#C4A06018'}`,
+            }}
+          >
+            <button
+              type="button"
+              onClick={() => play(rec)}
+              className="shrink-0 flex items-center justify-center rounded-full text-[13px]"
+              style={{ width: 32, height: 32, background: '#D4605A20', color: '#D4605A' }}
+            >
+              {isPlaying ? '❚❚' : '▶'}
+            </button>
+            <div className="flex-1 min-w-0">
+              {renamingId === rec.id ? (
+                <input
+                  autoFocus
+                  value={renameVal}
+                  onChange={(e) => setRenameVal(e.target.value)}
+                  onBlur={() => rename(rec)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') rename(rec);
+                    if (e.key === 'Escape') setRenamingId(null);
+                  }}
+                  className="w-full rounded bg-background/50 px-1 py-0.5 text-[13px] outline-none"
+                  style={{ border: '1px solid #C4A06030' }}
+                />
+              ) : (
+                <p
+                  className="truncate text-[13px] font-medium"
+                  style={{ color: 'var(--foreground)' }}
+                >
+                  {rec.title}
+                </p>
+              )}
+              <p
+                className="text-[10px]"
+                style={{ color: 'var(--muted-foreground)', fontFamily: 'var(--font-serif)' }}
+              >
+                {formatDur(rec.durationSecs)}
+                {rec.durationSecs ? ' · ' : ''}
+                {new Date(rec.createdAt).toLocaleDateString('en-GB', {
+                  day: 'numeric',
+                  month: 'short',
+                })}
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={() => {
+                setRenamingId(rec.id);
+                setRenameVal(rec.title);
+              }}
+              className="shrink-0 text-[10px] uppercase tracking-[0.06em]"
+              style={{
+                color: 'var(--muted-foreground)',
+                background: 'none',
+                border: 'none',
+                cursor: 'pointer',
+                fontFamily: 'var(--font-serif)',
+              }}
+            >
+              rename
+            </button>
+            <button
+              type="button"
+              onClick={() => deleteRec(rec)}
+              className="shrink-0 text-[10px] uppercase tracking-[0.06em]"
+              style={{
+                color: '#C06040',
+                background: 'none',
+                border: 'none',
+                cursor: 'pointer',
+                fontFamily: 'var(--font-serif)',
+              }}
+            >
+              del
+            </button>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
 /* ─── Song view (read/play mode) ─────────────────────────── */
 function SongView({
   song,
   onEdit,
   onBack,
+  onShowRecordings,
 }: {
   song: Song;
   onEdit: () => void;
   onBack: () => void;
+  onShowRecordings: (songId: string) => void;
 }) {
   return (
     <div className="space-y-6">
@@ -243,6 +611,13 @@ function SongView({
           No segments yet — tap Edit to add them
         </p>
       )}
+
+      {/* Recordings for this song */}
+      <SongRecordingsPanel
+        songId={song.id}
+        songTitle={song.title}
+        onShowAll={() => onShowRecordings(song.id)}
+      />
     </div>
   );
 }
@@ -547,7 +922,11 @@ function SongEditor({
 
 type SongMode = { kind: 'list' } | { kind: 'view'; id: string } | { kind: 'edit'; id: string };
 
-export default function SongStudio() {
+export default function SongStudio({
+  onShowRecordings,
+}: {
+  onShowRecordings?: (songId: string) => void;
+}) {
   const [songs, setSongs] = useState<Song[]>([]);
   const [mode, setMode] = useState<SongMode>({ kind: 'list' });
   const [newTitle, setNewTitle] = useState('');
@@ -597,6 +976,7 @@ export default function SongStudio() {
           song={song}
           onEdit={() => setMode({ kind: 'edit', id: song.id })}
           onBack={() => setMode({ kind: 'list' })}
+          onShowRecordings={(songId) => onShowRecordings?.(songId)}
         />
       );
     }

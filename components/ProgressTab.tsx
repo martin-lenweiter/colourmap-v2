@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import CockpitSections from '@/components/CockpitSection';
+import LifeCategories from '@/components/LifeCategories';
 import MasteryBox from '@/components/MasteryBox';
 import { useStyle } from '@/components/StyleContext';
 
@@ -62,6 +63,22 @@ export default function ProgressTab() {
             caretColor: '#C4A060',
           }}
         />
+      </div>
+
+      {/* ── Life categories ──────────────────────────────── */}
+      <div>
+        <p
+          className="mb-3 uppercase tracking-[0.22em]"
+          style={{
+            fontFamily: style.headingFont,
+            fontSize: '11px',
+            color: '#C4A060',
+            opacity: 0.7,
+          }}
+        >
+          my life areas
+        </p>
+        <LifeCategories />
       </div>
 
       {/* ── Mastery domains ───────────────────────────────── */}

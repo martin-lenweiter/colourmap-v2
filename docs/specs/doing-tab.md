@@ -56,6 +56,28 @@ Each objective inside a mission has a small schedule icon (◷) visible on hover
 - Mission category stored in localStorage `mission_category_${id}`.
 - Midnight promotion: on mount, if `colourmap:inbox-date` !== today, all `when: 'tomorrow'` → `when: 'today'` and the date key updates.
 
+## Focus State Circle (DoingStateCircle)
+
+A coloured circle + drag-slider sits above DailyObjectives in the Doing sub-tab.
+
+- **Purpose**: visual anchor identical to FeelingCheckInCard's emotion circle and SharingCheckIn's connection circle — so navigating F → D → S always feels like the same gesture.
+- **Scale**: 7 levels from Deep Rest → Tunnel Vision, each with a distinct blue-steel hue.
+
+| # | Label | Color |
+|---|-------|-------|
+| 0 | Deep Rest | #A8B8D0 |
+| 1 | Drifting | #90A8C0 |
+| 2 | Present | #7898B0 |
+| 3 | Working (default) | #6890B0 |
+| 4 | Focused | #5080A8 |
+| 5 | Driven | #3870A0 |
+| 6 | Tunnel Vision | #286098 |
+
+- Circle is 96 px; colour and label transition smoothly.
+- Drag slider: 7 stop-dots, DOT=28, GAP=6, identical to SharingCheckIn.
+- Persists selection in localStorage `colourmap:doing-state-idx`.
+- Component: `DoingStateCircle`.
+
 ## Done When
 
 - Category filter rail renders above missions and quick tasks.

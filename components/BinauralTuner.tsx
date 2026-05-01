@@ -2117,6 +2117,14 @@ export default function BinauralTuner() {
     });
   }
 
+  function deleteMix(index: number) {
+    setSavedMixes((prev) => {
+      const next = prev.filter((_, i) => i !== index);
+      localStorage.setItem('colourmap:tuner-mixes', JSON.stringify(next));
+      return next;
+    });
+  }
+
   function loadMix(mix: (typeof savedMixes)[0]) {
     setBaseFreq(mix.base);
     setBeatFreq(mix.beat);
@@ -3133,34 +3141,61 @@ export default function BinauralTuner() {
           {savedMixes.length > 0 && (
             <div className="flex flex-wrap justify-center gap-1.5">
               {savedMixes.map((mix, i) => (
-                <button
+                <div
                   key={`${mix.name}-${i}`}
-                  type="button"
-                  onClick={() => {
-                    loadMix(mix);
-                    if (!playing) startAudio();
-                  }}
-                  className="flex cursor-pointer items-center gap-1.5 rounded-full px-3 py-1.5 transition-all"
+                  className="flex cursor-pointer items-center gap-1.5 rounded-full transition-all"
                   style={{
                     background: '#C4A06012',
                     border: '1px solid #C4A06035',
+                    paddingLeft: 10,
+                    paddingRight: 4,
+                    paddingTop: 4,
+                    paddingBottom: 4,
                   }}
-                  title={`Load "${mix.name}" — ${mix.beat}Hz · ${
-                    Object.values(mix.layers).filter((v) => v > 0).length
-                  } layers`}
                 >
-                  <SavedShapeIcon shape={mix.shape ?? 'dot'} color="#C4A060" />
-                  <span
+                  <button
+                    type="button"
+                    onClick={() => {
+                      loadMix(mix);
+                      if (!playing) startAudio();
+                    }}
+                    className="flex items-center gap-1.5"
+                    style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
+                    title={`Load "${mix.name}" — ${mix.beat}Hz · ${Object.values(mix.layers).filter((v) => v > 0).length} layers`}
+                  >
+                    <SavedShapeIcon shape={mix.shape ?? 'dot'} color="#C4A060" />
+                    <span
+                      style={{
+                        fontFamily: 'var(--font-serif)',
+                        fontSize: '13px',
+                        fontWeight: 600,
+                        color: '#5C3018',
+                      }}
+                    >
+                      {mix.name}
+                    </span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      deleteMix(i);
+                    }}
+                    title="Delete this mix"
                     style={{
-                      fontFamily: 'var(--font-serif)',
-                      fontSize: '13px',
-                      fontWeight: 600,
-                      color: '#5C3018',
+                      background: 'none',
+                      border: 'none',
+                      cursor: 'pointer',
+                      color: '#8A6A4A',
+                      opacity: 0.45,
+                      fontSize: 14,
+                      lineHeight: 1,
+                      padding: '0 4px',
                     }}
                   >
-                    {mix.name}
-                  </span>
-                </button>
+                    ×
+                  </button>
+                </div>
               ))}
             </div>
           )}
@@ -4466,12 +4501,9 @@ export default function BinauralTuner() {
                 {savedMixes.length > 0 && (
                   <div className="space-y-1">
                     {savedMixes.map((mix, i) => (
-                      <button
+                      <div
                         key={`${mix.name}-${i}`}
-                        type="button"
-                        onClick={() => loadMix(mix)}
-                        className="flex w-full cursor-pointer items-center gap-2 rounded-lg px-3 py-1.5 text-left transition-all hover:bg-[#C4A06008]"
-                        style={{ background: 'none', border: 'none' }}
+                        className="flex w-full items-center gap-2 rounded-lg px-3 py-1.5 transition-all hover:bg-[#C4A06008]"
                       >
                         <button
                           type="button"
@@ -4494,29 +4526,53 @@ export default function BinauralTuner() {
                         >
                           <SavedShapeIcon shape={mix.shape ?? 'dot'} color="#C4A060" />
                         </button>
-                        <span
-                          style={{
-                            fontFamily: 'var(--font-serif)',
-                            fontSize: '13px',
-                            color: '#5C3018',
-                            fontWeight: 600,
-                          }}
+                        <button
+                          type="button"
+                          onClick={() => loadMix(mix)}
+                          className="flex flex-1 cursor-pointer items-center gap-2 text-left"
+                          style={{ background: 'none', border: 'none', padding: 0 }}
                         >
-                          {mix.name}
-                        </span>
-                        <span
+                          <span
+                            style={{
+                              fontFamily: 'var(--font-serif)',
+                              fontSize: '13px',
+                              color: '#5C3018',
+                              fontWeight: 600,
+                            }}
+                          >
+                            {mix.name}
+                          </span>
+                          <span
+                            style={{
+                              fontFamily: 'var(--font-serif)',
+                              fontSize: '12px',
+                              color: '#8A6A4A',
+                              marginLeft: 'auto',
+                            }}
+                          >
+                            {mix.beat}Hz · {Object.values(mix.layers).filter((v) => v > 0).length}{' '}
+                            layers
+                          </span>
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => deleteMix(i)}
+                          title="Delete this mix"
                           style={{
-                            fontFamily: 'var(--font-serif)',
-                            fontSize: '12px',
+                            background: 'none',
+                            border: 'none',
+                            cursor: 'pointer',
                             color: '#8A6A4A',
-
-                            marginLeft: 'auto',
+                            opacity: 0.4,
+                            fontSize: 14,
+                            lineHeight: 1,
+                            padding: '0 2px',
+                            flexShrink: 0,
                           }}
                         >
-                          {mix.beat}Hz · {Object.values(mix.layers).filter((v) => v > 0).length}{' '}
-                          layers
-                        </span>
-                      </button>
+                          ×
+                        </button>
+                      </div>
                     ))}
                   </div>
                 )}

@@ -162,5 +162,27 @@ Compass positions: Sh left, A top, R right, E bottom.
 - Doing lists: `colourmap:doing-todos`, `colourmap:doing-missions-list`, `colourmap:doing-trackers-list`
 - Sharing lists: `colourmap:sharing-people`, `colourmap:sharing-gratitude`, `colourmap:sharing-reachout`
 
+## FDS Panel — Overview Tab Item Programs
+
+The four items under each F / D / S axis in the Overview panel (`FdsPanel`) are rendered as **path-style expandable rows**, matching the MasteryBox "Your path / Your domains" pattern.
+
+### Item row (collapsed)
+- Colored dot + uppercase title + italic subtitle — all on one line.
+- Tap → expands inline. Subtitle stays visible in the row header at all times.
+
+### Item row (expanded)
+- Subtitle is **suppressed inside the program panel** (already shown in the row header) to avoid duplication.
+- "where are you?" label + 5-segment filled pill slider (domains style).
+- 4-task program checklist — each task has a rounded-circle checkbox; checked tasks show strikethrough + color tint.
+- Progress badge (e.g. `2/4`) appears on collapsed row when any tasks are checked.
+
+### Layout modes
+- **Horizontal (h)**: 4 dots in a row; tapping one expands a shared program panel below all dots.
+- **Vertical (v)**: 4 stacked rows with dot + title + subtitle; tapping expands inline with `ml-9` indent.
+
+### Data
+- Item state stored in localStorage `colourmap:fds-item-data` as `Record<"axis:ItemName", { level: number; tasks: Record<taskId, boolean> }>`.
+- `openItem` resets when axis or layout changes.
+
 ## Unity (Future)
 The three compasses merge into a single double/triple-ring compass showing all 12 dimensions. This will be built as a separate view that reads from the same localStorage keys.

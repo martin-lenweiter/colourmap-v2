@@ -1065,6 +1065,314 @@ const CHAPTERS: Chapter[] = [
           </p>
         </div>
 
+        {/* Lick 6 — BB King Vibrato Phrase */}
+        <div className="space-y-2">
+          <p
+            className="text-[11px] font-semibold uppercase tracking-[0.1em]"
+            style={{ color: '#5A7EA8' }}
+          >
+            Lick 6 — BB King Vibrato (over A7)
+          </p>
+          <LickDiagram
+            label="Hammer to B-string fret 8, hold with wide vibrato"
+            fretMin={6}
+            fretMax={10}
+            notes={[
+              { string: 2, fret: 7 },
+              { string: 1, fret: 7, technique: 'hammer' },
+              { string: 1, fret: 8, technique: 'bend' },
+              { string: 0, fret: 8 },
+              { string: 1, fret: 8, technique: 'bend' },
+            ]}
+          />
+          <p
+            className="text-[12px]"
+            style={{ color: 'var(--muted-foreground)', fontFamily: 'var(--font-serif)' }}
+          >
+            Hammer onto B-string fret 7→8, then bend fret 8 and hold with slow, wide vibrato. The
+            bent note hovers — don't rush off it. This is the BB King "crying" tone. Vibrato
+            direction: push down (toward floor), not upward.
+          </p>
+        </div>
+
+        {/* Lick 7 — Box 2 Position Run */}
+        <div className="space-y-2">
+          <p
+            className="text-[11px] font-semibold uppercase tracking-[0.1em]"
+            style={{ color: '#5A7EA8' }}
+          >
+            Lick 7 — Box 2 Descending Run (over D9)
+          </p>
+          <LickDiagram
+            label="Pentatonic box 2 — frets 8–10, high strings down"
+            fretMin={8}
+            fretMax={11}
+            notes={[
+              { string: 0, fret: 10 },
+              { string: 0, fret: 8 },
+              { string: 1, fret: 10 },
+              { string: 1, fret: 8, technique: 'pull' },
+              { string: 2, fret: 9 },
+              { string: 2, fret: 8 },
+            ]}
+          />
+          <p
+            className="text-[12px]"
+            style={{ color: 'var(--muted-foreground)', fontFamily: 'var(--font-serif)' }}
+          >
+            Box 2 sits two frets higher than box 1. This descending run (e fret 10→8, B fret 10→8
+            pull-off, G fret 9→8) shifts your position and adds variety. Practise connecting box 1
+            (frets 5–8) to box 2 (frets 8–10) with a slide on fret 8.
+          </p>
+        </div>
+
+        {/* Lick 8 — Albert King Oblique Bend */}
+        <div className="space-y-2">
+          <p
+            className="text-[11px] font-semibold uppercase tracking-[0.1em]"
+            style={{ color: '#5A7EA8' }}
+          >
+            Lick 8 — Oblique Bend (Albert King style)
+          </p>
+          <LickDiagram
+            label="G-string bend while B-string rings — two-note tension"
+            fretMin={6}
+            fretMax={9}
+            notes={[
+              { string: 1, fret: 8 },
+              { string: 2, fret: 7, technique: 'bend' },
+              { string: 1, fret: 8 },
+              { string: 2, fret: 8 },
+              { string: 1, fret: 8 },
+            ]}
+          />
+          <p
+            className="text-[12px]"
+            style={{ color: 'var(--muted-foreground)', fontFamily: 'var(--font-serif)' }}
+          >
+            Hold B-string fret 8 with index, then bend G-string fret 7 UP toward the B-string. The
+            two notes create a dissonant cluster that resolves when the bend reaches pitch. Albert
+            King built entire solos on this move — the bend "reaches up" toward the static note.
+          </p>
+        </div>
+
+        {/* Lick 9 — Double-Stop Bend Resolution */}
+        <div className="space-y-2">
+          <p
+            className="text-[11px] font-semibold uppercase tracking-[0.1em]"
+            style={{ color: '#5A7EA8' }}
+          >
+            Lick 9 — Double-Stop Bend (over E9)
+          </p>
+          <LickDiagram
+            label="Bend both B and G together for raw emotion"
+            fretMin={7}
+            fretMax={10}
+            notes={[
+              { string: 1, fret: 9, technique: 'bend' },
+              { string: 2, fret: 9, technique: 'bend' },
+              { string: 1, fret: 7 },
+              { string: 2, fret: 7 },
+              { string: 3, fret: 9 },
+            ]}
+          />
+          <p
+            className="text-[12px]"
+            style={{ color: 'var(--muted-foreground)', fontFamily: 'var(--font-serif)' }}
+          >
+            Bend B and G strings simultaneously at fret 9 — one full tone. This is raw and powerful.
+            Then release, drop to fret 7 double stop, and resolve on D-string fret 9. Works over E9
+            in a 12-bar turnaround bar.
+          </p>
+        </div>
+
+        {/* Lick 10 — Question & Answer */}
+        <div className="space-y-2">
+          <p
+            className="text-[11px] font-semibold uppercase tracking-[0.1em]"
+            style={{ color: '#5A7EA8' }}
+          >
+            Lick 10 — Question & Answer (full bar over A7)
+          </p>
+          <LickDiagram
+            label="Ascending phrase = question; descending = answer"
+            fretMin={5}
+            fretMax={9}
+            notes={[
+              { string: 3, fret: 7 },
+              { string: 2, fret: 5, technique: 'hammer' },
+              { string: 2, fret: 8 },
+              { string: 1, fret: 8, technique: 'bend' },
+              { string: 1, fret: 5 },
+              { string: 2, fret: 5 },
+              { string: 3, fret: 5 },
+            ]}
+          />
+          <p
+            className="text-[12px]"
+            style={{ color: 'var(--muted-foreground)', fontFamily: 'var(--font-serif)' }}
+          >
+            The first 4 notes ascend and end on a bend (the "question" — tension unresolved). The
+            last 3 descend back to the root area (the "answer" — tension resolved). This call-and-
+            response structure is the deepest blues conversation. Leave a breath between phrases.
+          </p>
+        </div>
+
+        {/* Lick 11 — Chicago Shuffle Walk */}
+        <div className="space-y-2">
+          <p
+            className="text-[11px] font-semibold uppercase tracking-[0.1em]"
+            style={{ color: '#5A7EA8' }}
+          >
+            Lick 11 — Chicago Shuffle Walk (A7 → D9)
+          </p>
+          <LickDiagram
+            label="Walking low-string shuffle into the IV chord"
+            fretMin={2}
+            fretMax={7}
+            notes={[
+              { string: 5, fret: 5 },
+              { string: 4, fret: 4 },
+              { string: 4, fret: 5 },
+              { string: 4, fret: 7, technique: 'slide' },
+              { string: 3, fret: 5 },
+              { string: 3, fret: 7 },
+            ]}
+          />
+          <p
+            className="text-[12px]"
+            style={{ color: 'var(--muted-foreground)', fontFamily: 'var(--font-serif)' }}
+          >
+            Start on low E fret 5 (A), walk up the A string (4→5→slide to 7), then land on D string
+            (5→7). This creates the classic Chicago shuffle walk from I to IV. Muddy Waters and
+            Little Walter built entire songs on this movement.
+          </p>
+        </div>
+
+        {/* Lick 12 — SRV Descending Run */}
+        <div className="space-y-2">
+          <p
+            className="text-[11px] font-semibold uppercase tracking-[0.1em]"
+            style={{ color: '#5A7EA8' }}
+          >
+            Lick 12 — SRV Descending Run (over Am)
+          </p>
+          <LickDiagram
+            label="Fast pull-off run down from fret 12 area"
+            fretMin={8}
+            fretMax={13}
+            notes={[
+              { string: 0, fret: 13 },
+              { string: 0, fret: 10, technique: 'pull' },
+              { string: 1, fret: 12 },
+              { string: 1, fret: 10, technique: 'pull' },
+              { string: 2, fret: 9, technique: 'pull' },
+              { string: 2, fret: 8 },
+            ]}
+          />
+          <p
+            className="text-[12px]"
+            style={{ color: 'var(--muted-foreground)', fontFamily: 'var(--font-serif)' }}
+          >
+            Start high (e fret 13), pull off to 10, cross to B fret 12 → pull to 10, then G fret 9 →
+            pull to 8. This waterfall of pull-offs is pure SRV — fluid, fast, emotional. Practice
+            slowly: each pull-off must ring clearly before speeding up.
+          </p>
+        </div>
+
+        {/* Lick 13 — Chromatic Grace Note */}
+        <div className="space-y-2">
+          <p
+            className="text-[11px] font-semibold uppercase tracking-[0.1em]"
+            style={{ color: '#5A7EA8' }}
+          >
+            Lick 13 — Chromatic Approach / Grace Note (into A7)
+          </p>
+          <LickDiagram
+            label="Half-step slide into A chord tone — jazz blues grace"
+            fretMin={4}
+            fretMax={8}
+            notes={[
+              { string: 1, fret: 4, technique: 'slide' },
+              { string: 1, fret: 5 },
+              { string: 2, fret: 5 },
+              { string: 2, fret: 7 },
+              { string: 3, fret: 7 },
+              { string: 3, fret: 5 },
+            ]}
+          />
+          <p
+            className="text-[12px]"
+            style={{ color: 'var(--muted-foreground)', fontFamily: 'var(--font-serif)' }}
+          >
+            Slide from fret 4 to 5 on B-string (half step into A) — this chromatic "grace note"
+            approach is borrowed from jazz. It decorates the target note by approaching from a
+            semitone below. Use it to start a phrase on the "and" of beat 4 going into bar 1.
+          </p>
+        </div>
+
+        {/* Lick 14 — Position Shift Connector */}
+        <div className="space-y-2">
+          <p
+            className="text-[11px] font-semibold uppercase tracking-[0.1em]"
+            style={{ color: '#5A7EA8' }}
+          >
+            Lick 14 — Position Shift (Box 1 → Box 2)
+          </p>
+          <LickDiagram
+            label="Slide at fret 8 bridges pentatonic box 1 and box 2"
+            fretMin={5}
+            fretMax={10}
+            notes={[
+              { string: 2, fret: 5 },
+              { string: 2, fret: 7 },
+              { string: 1, fret: 5 },
+              { string: 1, fret: 8, technique: 'slide' },
+              { string: 0, fret: 8 },
+              { string: 0, fret: 10 },
+            ]}
+          />
+          <p
+            className="text-[12px]"
+            style={{ color: 'var(--muted-foreground)', fontFamily: 'var(--font-serif)' }}
+          >
+            Start in box 1 (frets 5–7), then slide on B-string from 5 to 8 — the slide bridges the
+            two positions. Continue in box 2 (frets 8–10). Mastering position shifts is the key to
+            covering the whole neck. Most players stay trapped in one box; this lick breaks you out.
+          </p>
+        </div>
+
+        {/* Lick 15 — Delta Blues Open Position */}
+        <div className="space-y-2">
+          <p
+            className="text-[11px] font-semibold uppercase tracking-[0.1em]"
+            style={{ color: '#5A7EA8' }}
+          >
+            Lick 15 — Delta Blues (Robert Johnson open position)
+          </p>
+          <LickDiagram
+            label="Open-position A blues lick — raw delta feel"
+            fretMin={0}
+            fretMax={5}
+            notes={[
+              { string: 4, fret: 0 },
+              { string: 4, fret: 2 },
+              { string: 3, fret: 0, technique: 'hammer' },
+              { string: 3, fret: 2 },
+              { string: 2, fret: 2, technique: 'bend' },
+              { string: 4, fret: 0 },
+            ]}
+          />
+          <p
+            className="text-[12px]"
+            style={{ color: 'var(--muted-foreground)', fontFamily: 'var(--font-serif)' }}
+          >
+            In open position: open A → A fret 2, open D → hammer D fret 2, bend G fret 2, and return
+            to open A. This is the raw sound of Robert Johnson and Mississippi Delta blues — earthy,
+            simple, and deeply expressive. The open strings ring and sustain naturally.
+          </p>
+        </div>
+
         <div
           className="rounded-lg px-3 py-2.5 text-[12px] space-y-1.5"
           style={{
@@ -1077,16 +1385,23 @@ const CHAPTERS: Chapter[] = [
             How to practice these over a 12-bar
           </p>
           <p style={{ color: 'var(--muted-foreground)' }}>
-            1. Put on a slow A blues backing (80–90 BPM). Play Lick 1 over bars 1–4 (A7).
+            Bars 1–4 (A7): Lick 1 (bend), Lick 6 (BB King vibrato), Lick 10 (Q&A), Lick 13
+            (chromatic grace into bar 1).
           </p>
           <p style={{ color: 'var(--muted-foreground)' }}>
-            2. Use Lick 3 as the connecting phrase going into D9 (bar 5).
+            Bar 4→5 connector (A7 → D9): Lick 3 (hammer-on), Lick 11 (Chicago shuffle walk).
           </p>
           <p style={{ color: 'var(--muted-foreground)' }}>
-            3. Use Lick 4 over bars 5–6 (D9) — triple repeat over the IV chord.
+            Bars 5–6 (D9): Lick 4 (triple repeat), Lick 7 (box 2 run), Lick 8 (Albert oblique bend).
           </p>
           <p style={{ color: 'var(--muted-foreground)' }}>
-            4. Lick 5 over E9 → A7 (bar 9–10). Lick 2 for the turnaround (bar 11–12).
+            Bars 7–8 (A7): Lick 12 (SRV descend), Lick 14 (position shift box 1→2).
+          </p>
+          <p style={{ color: 'var(--muted-foreground)' }}>
+            Bars 9–10 (E9 → A7): Lick 5 (sliding 6ths), Lick 9 (double-stop bend).
+          </p>
+          <p style={{ color: 'var(--muted-foreground)' }}>
+            Bars 11–12 (turnaround): Lick 2 (classic turnaround), Lick 15 (delta open position).
           </p>
         </div>
       </div>
