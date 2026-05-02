@@ -891,9 +891,13 @@ function SongEditor({
                 value={seg.text}
                 onChange={(e) => updateSeg(seg.id, { text: e.target.value })}
                 placeholder="Lyrics or playing notes…"
-                rows={3}
-                className="w-full resize-none bg-transparent text-[13px] outline-none leading-relaxed"
-                style={{ color: 'var(--foreground)', fontFamily: 'var(--font-serif)' }}
+                rows={4}
+                className="w-full resize-y bg-transparent text-[13px] outline-none leading-relaxed"
+                style={{
+                  color: 'var(--foreground)',
+                  fontFamily: 'var(--font-serif)',
+                  minHeight: 72,
+                }}
               />
             </div>
           );
