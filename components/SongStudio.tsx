@@ -520,8 +520,12 @@ function SongView({
       <div>
         <div className="flex items-start gap-3 flex-wrap">
           <h2
-            className="text-[22px] font-bold flex-1 min-w-0"
-            style={{ color: 'var(--foreground)', letterSpacing: '0.02em' }}
+            className="text-[26px] font-bold flex-1 min-w-0"
+            style={{
+              color: 'var(--foreground)',
+              fontFamily: 'var(--font-serif)',
+              letterSpacing: '0.02em',
+            }}
           >
             {song.title}
           </h2>
@@ -580,7 +584,7 @@ function SongView({
                 {seg.chords && (
                   <span
                     className="ml-2 font-mono text-[12px]"
-                    style={{ color: '#C4A060', letterSpacing: '0.06em' }}
+                    style={{ color: '#7A5438', letterSpacing: '0.06em' }}
                   >
                     {seg.chords}
                   </span>
@@ -705,8 +709,12 @@ function SongEditor({
             value={s.title}
             onChange={(e) => field('title', e.target.value)}
             placeholder="Song title…"
-            className="w-full bg-transparent text-[18px] font-semibold outline-none"
-            style={{ color: 'var(--foreground)', borderBottom: '1px solid #C4A06030' }}
+            className="w-full bg-transparent text-[20px] font-bold outline-none"
+            style={{
+              color: 'var(--foreground)',
+              fontFamily: 'var(--font-serif)',
+              borderBottom: '1px solid #C4A06030',
+            }}
           />
         </div>
         <div>
@@ -879,7 +887,7 @@ function SongEditor({
                 placeholder="Chord progression — Am G F E…"
                 className="w-full bg-transparent text-[12px] outline-none"
                 style={{
-                  color: 'var(--foreground)',
+                  color: '#7A5438',
                   borderBottom: `1px solid ${color}25`,
                   fontFamily: 'var(--font-serif)',
                   paddingBottom: 3,
@@ -1044,8 +1052,8 @@ export default function SongStudio({
             >
               <div className="flex items-center gap-2 flex-wrap">
                 <span
-                  className="text-[14px] font-semibold flex-1 min-w-0 truncate"
-                  style={{ color: 'var(--foreground)' }}
+                  className="text-[17px] font-bold flex-1 min-w-0 truncate"
+                  style={{ color: 'var(--foreground)', fontFamily: 'var(--font-serif)' }}
                 >
                   {song.title}
                 </span>
