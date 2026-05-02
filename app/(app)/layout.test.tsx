@@ -43,6 +43,7 @@ vi.mock('@/components/ThemeSwitcher', () => ({
 
 vi.mock('@/components/ViewModeContext', () => ({
   ViewModeProvider: ({ children }: { children: React.ReactNode }) => <>{children}</>,
+  useViewMode: () => ({ mode: 'desktop', navPosition: 'top' }),
 }));
 
 vi.mock('@/components/ViewModeSwitcher', () => ({

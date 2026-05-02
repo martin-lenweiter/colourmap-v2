@@ -435,8 +435,9 @@ export default function GeometryField() {
     function resize() {
       const dpr = window.devicePixelRatio || 1;
       dprRef.current = dpr;
-      canvas.width = wrapper.offsetWidth * dpr;
-      canvas.height = wrapper.offsetHeight * dpr;
+      // canvas and wrapper are const and guarded above; assert non-null for TS closure narrowing
+      canvas!.width = wrapper!.offsetWidth * dpr;
+      canvas!.height = wrapper!.offsetHeight * dpr;
     }
     resize();
     const ro = new ResizeObserver(resize);
@@ -444,8 +445,8 @@ export default function GeometryField() {
 
     function tick(t: number) {
       const dpr = dprRef.current;
-      const W = canvas.width / dpr;
-      const H = canvas.height / dpr;
+      const W = canvas!.width / dpr;
+      const H = canvas!.height / dpr;
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
       drawFrame(ctx, W, H, cfgRef.current, dotsRef.current, t);
       animRef.current = requestAnimationFrame(tick);
