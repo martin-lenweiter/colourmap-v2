@@ -3761,7 +3761,7 @@ export default function BinauralTuner() {
                       <span
                         style={{
                           fontFamily: 'var(--font-serif)',
-                          fontSize: '11px',
+                          fontSize: '13px',
                           fontWeight: isOn ? 700 : 500,
                           color: isOn ? hColor : '#8A6A4A',
                           opacity: isOn ? 1 : 0.75,
@@ -3773,7 +3773,7 @@ export default function BinauralTuner() {
                       <span
                         style={{
                           fontFamily: 'var(--font-serif)',
-                          fontSize: '10px',
+                          fontSize: '12px',
                           color: isOn ? hColor : '#A0907A',
                           opacity: isOn ? 0.85 : 0.55,
                         }}
@@ -3924,7 +3924,7 @@ export default function BinauralTuner() {
                         <span
                           style={{
                             fontFamily: 'var(--font-serif)',
-                            fontSize: '12px',
+                            fontSize: '14px',
                             fontWeight: isOn ? 700 : 400,
                             color: isOn ? m.color : '#8A6A4A',
                             opacity: isOn ? 1 : 0.7,
