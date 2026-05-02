@@ -1142,6 +1142,16 @@ const CATEGORY_COLORS: Record<LayerCategory, string> = {
   wild: '#B33A2B',
   digital: '#5060A0',
 };
+// 5-stop degrade per category: pale → saturated, used for layer volume sliders
+const CATEGORY_GRADIENTS: Record<LayerCategory, [string, string, string, string, string]> = {
+  waters: ['#C8DFF0', '#A0C0D8', '#7AAAC0', '#5880A8', '#3860A0'],
+  birds: ['#C0DCA0', '#98C878', '#78B058', '#5A9840', '#3A8828'],
+  drones: ['#D8C0E8', '#C0A0D0', '#A880B8', '#8860A0', '#6840A0'],
+  textures: ['#D8C8B8', '#C0A890', '#A88870', '#907058', '#785840'],
+  wild: ['#F0C0A0', '#E09078', '#D06050', '#C04030', '#A02020'],
+  digital: ['#C0C8E0', '#9898C8', '#7080B0', '#4868A0', '#2850A0'],
+};
+
 const CATEGORY_ORDER: LayerCategory[] = [
   'waters',
   'birds',
@@ -4273,8 +4283,8 @@ export default function BinauralTuner() {
                                       className="flex-1 rounded-[3px] transition-all"
                                       style={{
                                         height: 18,
-                                        background: catColor,
-                                        opacity: i / 4 <= vol ? 0.5 + (i / 4) * 0.45 : 0.1,
+                                        background: CATEGORY_GRADIENTS[cat][i],
+                                        opacity: i / 4 <= vol ? 0.85 : 0.12,
                                       }}
                                     />
                                   ))}
