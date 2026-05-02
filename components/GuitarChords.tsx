@@ -1057,6 +1057,13 @@ function ProgressionCard({
   selectedChord: string | null;
 }) {
   const color = STYLE_COLORS[prog.style];
+  const [activeChordName, setActiveChordName] = useState<string | null>(null);
+
+  const activeChordInfo = activeChordName
+    ? (CHORDS.find((c) => c.name === activeChordName && c.style === prog.style) ??
+      CHORDS.find((c) => c.name === activeChordName))
+    : null;
+
   return (
     <div
       className="rounded-xl px-4 py-3 space-y-2 transition-all"
@@ -1079,23 +1086,26 @@ function ProgressionCard({
         </div>
       </div>
 
-      {/* Chord sequence */}
+      {/* Chord sequence — tap a pill to see its diagram */}
       <div className="flex flex-wrap items-center gap-1">
         {prog.chords.map((name, i) => {
-          const isActive = selectedChord === name;
+          const isGlobalActive = selectedChord === name;
+          const isLocalActive = activeChordName === name;
           return (
             <span key={`${name}-${i}`} className="flex items-center gap-1">
-              <span
-                className="rounded-full px-2.5 py-0.5 text-[11px] font-semibold transition-all"
+              <button
+                type="button"
+                onClick={() => setActiveChordName((prev) => (prev === name ? null : name))}
+                className="rounded-full px-2.5 py-0.5 text-[11px] font-semibold transition-all cursor-pointer"
                 style={{
-                  background: isActive ? color : `${color}15`,
-                  color: isActive ? '#fff' : color,
-                  border: `1px solid ${isActive ? color : `${color}30`}`,
+                  background: isLocalActive ? color : isGlobalActive ? `${color}30` : `${color}15`,
+                  color: isLocalActive ? '#fff' : color,
+                  border: `1px solid ${isLocalActive || isGlobalActive ? color : `${color}30`}`,
                   fontFamily: 'var(--font-serif)',
                 }}
               >
                 {name}
-              </span>
+              </button>
               {i < prog.chords.length - 1 && (
                 <span
                   className="text-[10px]"
@@ -1108,6 +1118,39 @@ function ProgressionCard({
           );
         })}
       </div>
+
+      {/* Inline chord diagram when a pill is tapped */}
+      {activeChordInfo && (
+        <div
+          className="flex items-start gap-3 rounded-lg p-2 animate-in fade-in duration-150"
+          style={{ background: `${color}0c`, border: `1px solid ${color}25` }}
+        >
+          <ChordBox
+            voicing={activeChordInfo.voicings[0]}
+            color={STYLE_COLORS[activeChordInfo.style]}
+          />
+          <div className="flex-1 min-w-0 pt-1">
+            <p
+              className="text-[14px] font-bold"
+              style={{ color: 'var(--foreground)', fontFamily: 'var(--font-serif)' }}
+            >
+              {activeChordInfo.name}
+            </p>
+            <p
+              className="text-[11px] italic mt-0.5"
+              style={{ color, fontFamily: 'var(--font-serif)' }}
+            >
+              {activeChordInfo.feel}
+            </p>
+            <p
+              className="text-[10px] leading-relaxed mt-1"
+              style={{ color: 'var(--muted-foreground)', fontFamily: 'var(--font-serif)' }}
+            >
+              {activeChordInfo.theory}
+            </p>
+          </div>
+        </div>
+      )}
 
       <p
         className="text-[11px] leading-relaxed"

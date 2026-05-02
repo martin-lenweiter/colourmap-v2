@@ -21,6 +21,7 @@ const PHONE_PRIMARY_LINKS = PRIMARY_LINKS;
 
 // V2 features — hidden for now, restore by moving back to PRIMARY_LINKS
 const MORE_LINKS = [
+  { href: '/geometry-field', label: 'Geometry Field' },
   { href: '/journey', label: 'Journey' },
   { href: '/life-scan', label: 'Life Scan' },
   { href: '/programs', label: 'Programs' },
