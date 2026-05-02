@@ -173,31 +173,10 @@ const LAYERS: LayerDef[] = [
   },
   {
     id: 'bowl',
-    label: 'Engine',
+    label: 'Bowl',
     color: '#9B6BA0',
     group: 'tones',
-    build: (ctx, base) => {
-      // Low engine hum — fundamental + slight detuned partial for mechanical variation
-      const osc = ctx.createOscillator();
-      osc.type = 'sawtooth';
-      osc.frequency.value = base * 0.5;
-      // Slow LFO for engine variation (rpm fluctuation)
-      const lfo = ctx.createOscillator();
-      lfo.type = 'sine';
-      lfo.frequency.value = 0.8; // ~0.8 Hz wobble
-      const lfoGain = ctx.createGain();
-      lfoGain.gain.value = base * 0.008; // subtle ±0.8% pitch variation
-      lfo.connect(lfoGain);
-      lfoGain.connect(osc.frequency);
-      lfo.start();
-      // Lowpass to keep it warm/rounded
-      const lp = ctx.createBiquadFilter();
-      lp.type = 'lowpass';
-      lp.frequency.value = 400;
-      lp.Q.value = 0.7;
-      osc.connect(lp);
-      return { node: lp, source: osc };
-    },
+    build: (ctx, base) => buildTone(ctx, base * 1.5, 'sine'),
   },
   {
     id: 'harmonic',
@@ -486,21 +465,20 @@ const LAYERS: LayerDef[] = [
     color: '#B0A0D0',
     group: 'ambient' as const,
     build: (ctx: AudioContext) => {
-      // Deep, slow ambient echoes — sub-bass tones with long decay and wide spacing
-      const n = ctx.sampleRate * 24;
+      const n = ctx.sampleRate * 10;
       const b = ctx.createBuffer(2, n, ctx.sampleRate);
       for (let c = 0; c < 2; c++) {
         const d = b.getChannelData(c);
-        for (let j = 0; j < 4; j++) {
-          const p = Math.floor((j / 4) * (n - ctx.sampleRate * 6));
-          const f = 55 + Math.random() * 90; // deep 55–145 Hz range
-          for (let rep = 0; rep < 3; rep++) {
-            const offset = p + Math.floor(rep * ctx.sampleRate * 2.5); // 2.5 s spacing
-            const vol = 0.1 * 0.65 ** rep;
-            const l = Math.floor(ctx.sampleRate * 1.8); // long 1.8 s note
+        for (let j = 0; j < 5; j++) {
+          const p = Math.floor(Math.random() * (n - ctx.sampleRate * 2));
+          const f = 300 + Math.random() * 200;
+          for (let rep = 0; rep < 4; rep++) {
+            const offset = p + Math.floor(rep * ctx.sampleRate * 0.4);
+            const vol = 0.08 * 0.8 ** rep;
+            const l = Math.floor(ctx.sampleRate * 0.15);
             for (let i = 0; i < l && offset + i < n; i++) {
-              const env = Math.exp(-i / (ctx.sampleRate * 0.8)); // exponential tail
-              d[offset + i] += Math.sin((i / ctx.sampleRate) * f * Math.PI * 2) * env * vol;
+              d[offset + i] +=
+                Math.sin((i / ctx.sampleRate) * f * Math.PI * 2) * (1 - i / l) ** 2 * vol;
             }
           }
         }
@@ -508,12 +486,7 @@ const LAYERS: LayerDef[] = [
       const s = ctx.createBufferSource();
       s.buffer = b;
       s.loop = true;
-      const lp = ctx.createBiquadFilter();
-      lp.type = 'lowpass';
-      lp.frequency.value = 200;
-      lp.Q.value = 0.5;
-      s.connect(lp);
-      return { node: lp, source: s };
+      return { node: s as AudioNode, source: s };
     },
   },
   {
@@ -715,8 +688,8 @@ const LAYERS: LayerDef[] = [
   },
   {
     id: 'stream',
-    label: 'Shake',
-    color: '#B33A2B',
+    label: 'Stream',
+    color: '#70A8C0',
     group: 'nature' as const,
     build: (ctx: AudioContext) => {
       // Babbling brook — filtered noise with rhythmic amplitude modulation
@@ -1169,16 +1142,6 @@ const CATEGORY_COLORS: Record<LayerCategory, string> = {
   wild: '#B33A2B',
   digital: '#5060A0',
 };
-// 5-stop degrade per category: pale → saturated, used for layer volume sliders
-const CATEGORY_GRADIENTS: Record<LayerCategory, [string, string, string, string, string]> = {
-  waters: ['#C8DFF0', '#A0C0D8', '#7AAAC0', '#5880A8', '#3860A0'],
-  birds: ['#C0DCA0', '#98C878', '#78B058', '#5A9840', '#3A8828'],
-  drones: ['#D8C0E8', '#C0A0D0', '#A880B8', '#8860A0', '#6840A0'],
-  textures: ['#D8C8B8', '#C0A890', '#A88870', '#907058', '#785840'],
-  wild: ['#F0C0A0', '#E09078', '#D06050', '#C04030', '#A02020'],
-  digital: ['#C0C8E0', '#9898C8', '#7080B0', '#4868A0', '#2850A0'],
-};
-
 const CATEGORY_ORDER: LayerCategory[] = [
   'waters',
   'birds',
@@ -1226,7 +1189,6 @@ function getLayerCategory(id: string): LayerCategory {
     [
       'fire',
       'thunder',
-      'stream',
       'real-thunder',
       'real-wind',
       'real-wolf',
@@ -1544,16 +1506,14 @@ export default function BinauralTuner() {
   const layerWetRef = useRef<GainNode | null>(null);
   // Harmony tones — musical intervals relative to base frequency
   const HARMONICS = [
-    // Row 1: harmonics above base (left=highest, right=lowest above)
-    { id: 'octave', label: 'Octave', ratio: 2, color: '#7AAA58' },
-    { id: 'fifth', label: 'Fifth', ratio: 3 / 2, color: '#6890B0' },
-    { id: 'fourth', label: 'Fourth', ratio: 4 / 3, color: '#9B6BA0' },
-    { id: 'third', label: 'Third', ratio: 5 / 4, color: '#D4805A' },
-    // Row 2: sub-harmonics below base — aligned under their counterpart above
-    { id: 'sub-third', label: 'Sub Third', ratio: 4 / 5, color: '#B85A50' },
-    { id: 'sub-fourth', label: 'Sub Fourth', ratio: 3 / 4, color: '#9A4858' },
-    { id: 'sub-fifth', label: 'Sub Fifth', ratio: 2 / 3, color: '#7A3850' },
     { id: 'sub-octave', label: 'Sub Octave', ratio: 1 / 2, color: '#5A2E48' },
+    { id: 'sub-fifth', label: 'Sub Fifth', ratio: 2 / 3, color: '#7A3850' },
+    { id: 'sub-fourth', label: 'Sub Fourth', ratio: 3 / 4, color: '#9A4858' },
+    { id: 'sub-third', label: 'Sub Third', ratio: 4 / 5, color: '#B85A50' },
+    { id: 'third', label: 'Third', ratio: 5 / 4, color: '#D4805A' },
+    { id: 'fourth', label: 'Fourth', ratio: 4 / 3, color: '#9B6BA0' },
+    { id: 'fifth', label: 'Fifth', ratio: 3 / 2, color: '#6890B0' },
+    { id: 'octave', label: 'Octave', ratio: 2, color: '#7AAA58' },
   ] as const;
   const [activeHarmonics, setActiveHarmonics] = useState<Set<string>>(new Set());
   const harmOscsRef = useRef<Map<string, { osc: OscillatorNode; gain: GainNode }>>(new Map());
@@ -1634,22 +1594,13 @@ export default function BinauralTuner() {
       octave: 3,
     },
     {
-      id: 'cello',
-      label: 'Cello',
-      color: '#8A5A3A',
-      type: 'sawtooth' as OscillatorType,
-      attack: 0.6,
-      release: 6.0,
-      octave: 2,
-    },
-    {
       id: 'guitar',
       label: 'Boat Sounds',
       color: '#8A8AAA',
       type: 'sawtooth' as OscillatorType,
       attack: 0.2,
       release: 4.0,
-      octave: 2,
+      octave: 3,
     },
     // Real sampled instruments (CC0, from public/sounds/<pack>/).
     // When sampledPack is set, the melody loop plays a real recording
@@ -1683,6 +1634,16 @@ export default function BinauralTuner() {
       release: 3.5,
       octave: 5,
       sampledPack: 'flute',
+    },
+    {
+      id: 'real-harp',
+      label: 'Real Harp',
+      color: '#6890B0',
+      type: 'sine' as OscillatorType,
+      attack: 0.1,
+      release: 3.5,
+      octave: 5,
+      sampledPack: 'harp',
     },
   ];
   // Musical scales for melodies
@@ -1773,13 +1734,13 @@ export default function BinauralTuner() {
     osc.type = melDef.type;
     osc.frequency.value = freq;
 
-    // For strings / cello, add lowpass filter
+    // For strings, add lowpass filter
     let source: AudioNode = osc;
-    if (melDef.id === 'strings' || melDef.id === 'cello') {
+    if (melDef.id === 'strings') {
       const lp = ctx.createBiquadFilter();
       lp.type = 'lowpass';
-      lp.frequency.value = melDef.id === 'cello' ? 500 : 800; // cello is warmer/darker
-      lp.Q.value = 0.6;
+      lp.frequency.value = 800;
+      lp.Q.value = 0.5;
       osc.connect(lp);
       source = lp;
     }
@@ -1795,10 +1756,10 @@ export default function BinauralTuner() {
       }
       ws.curve = curve;
       ws.oversample = '2x';
-      // Deep lowpass — keep only bass/sub frequencies for boat rumble
+      // Lowpass to tame highs
       const lp = ctx.createBiquadFilter();
       lp.type = 'lowpass';
-      lp.frequency.value = 350;
+      lp.frequency.value = 1200;
       lp.Q.value = 1;
       osc.connect(ws);
       ws.connect(lp);
@@ -2035,19 +1996,8 @@ export default function BinauralTuner() {
   const [voicesOpen, setVoicesOpen] = useState(false);
   const [controlsOpen, setControlsOpen] = useState(true);
   const [genresOpen, setGenresOpen] = useState(false);
+  const [brainStatesOpen, setBrainStatesOpen] = useState(false);
   const [savedSoundsOpen, setSavedSoundsOpen] = useState(false);
-  // Custom user presets
-  const LS_CUSTOM = 'colourmap:custom-sound-presets';
-  type CustomPreset = { id: string; name: string; ts: number; state: Record<string, unknown> };
-  const [customPresets, setCustomPresets] = useState<CustomPreset[]>(() => {
-    try {
-      const raw = localStorage.getItem(LS_CUSTOM);
-      return raw ? (JSON.parse(raw) as CustomPreset[]) : [];
-    } catch {
-      return [];
-    }
-  });
-  const [newPresetName, setNewPresetName] = useState('');
 
   // Auto-save current sound state to localStorage
   const LS_STATE = 'colourmap:calming-sounds-state';
@@ -2316,19 +2266,6 @@ export default function BinauralTuner() {
     // Clear harmonic and sacred oscillator refs so the next startAudio creates fresh ones
     harmOscsRef.current.clear();
     sacredOscsRef.current.clear();
-    // Clear melody timer chains so they don't fire on a dead/null context,
-    // and clear melodyActiveIdsRef so the restart effect sees them as new.
-    for (const [, timer] of melodyTimersRef.current) clearTimeout(timer);
-    melodyTimersRef.current.clear();
-    melodyActiveIdsRef.current.clear();
-    // Null out reverb buses — nodes belong to the context being closed.
-    // ensureLayerReverb / melody setup will create fresh ones on the new context.
-    layerReverbRef.current = null;
-    layerDryRef.current = null;
-    layerWetRef.current = null;
-    melodyReverbRef.current = null;
-    melodyDryRef.current = null;
-    melodyWetRef.current = null;
     oscLeftRef.current?.stop();
     oscRightRef.current?.stop();
     ctxRef.current?.close();
@@ -2424,59 +2361,7 @@ export default function BinauralTuner() {
     );
   }
 
-  const [soloedLayer, setSoloedLayer] = useState<string | null>(null);
-  const preSoloLayersRef = useRef<Record<string, number>>({});
-  const soloTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-
-  function soloLayer(layerId: string) {
-    preSoloLayersRef.current = { ...activeLayers };
-    setSoloedLayer(layerId);
-    // Mute all layers except this one; ensure this one is audible
-    const next: Record<string, number> = {};
-    for (const id of Object.keys(activeLayers)) {
-      next[id] = id === layerId ? Math.max(activeLayers[id] || 0, 0.3) : 0;
-    }
-    if (!next[layerId] || next[layerId] === 0) next[layerId] = 0.3;
-    setActiveLayers(next);
-    if (ctxRef.current) {
-      for (const [id, node] of layerNodesRef.current) {
-        node.gain.gain.value = id === layerId ? Math.max(activeLayers[id] || 0, 0.3) : 0;
-      }
-      if (!layerNodesRef.current.has(layerId) && next[layerId] > 0) {
-        startLayer(ctxRef.current, layerId, next[layerId]);
-      }
-    }
-  }
-
-  function unsoloLayer() {
-    setSoloedLayer(null);
-    const prev = preSoloLayersRef.current;
-    setActiveLayers(prev);
-    if (ctxRef.current) {
-      for (const [id, node] of layerNodesRef.current) {
-        const vol = prev[id] || 0;
-        node.gain.gain.value = vol;
-        if (vol === 0) {
-          try {
-            node.source.stop();
-          } catch {}
-          node.gain.disconnect();
-          layerNodesRef.current.delete(id);
-        }
-      }
-      for (const [id, vol] of Object.entries(prev)) {
-        if (vol > 0 && !layerNodesRef.current.has(id)) {
-          startLayer(ctxRef.current, id, vol);
-        }
-      }
-    }
-  }
-
   function toggleLayer(layerId: string) {
-    if (soloedLayer) {
-      unsoloLayer();
-      return;
-    }
     const current = activeLayers[layerId] || 0;
     const newVol = current > 0 ? 0 : 0.25;
     setActiveLayers((prev) => ({ ...prev, [layerId]: newVol }));
@@ -2628,15 +2513,6 @@ export default function BinauralTuner() {
       g.gain.cancelScheduledValues(now);
       g.gain.setValueAtTime(g.gain.value, now);
       g.gain.linearRampToValueAtTime(volume, now + 0.5);
-      // Re-kickstart any melody whose timer chain died while the page was hidden
-      // (e.g. the last scheduled timeout fired while the context was suspended and
-      // returned early, leaving no follow-up timer queued).
-      for (const id of melodyActiveIdsRef.current) {
-        if (!melodyTimersRef.current.has(id)) {
-          const melDef = MELODIES.find((m) => m.id === id);
-          if (melDef) playMelodyNote(melDef);
-        }
-      }
     }
 
     function onVisibilityChange() {
@@ -2646,7 +2522,7 @@ export default function BinauralTuner() {
 
     document.addEventListener('visibilitychange', onVisibilityChange);
     return () => document.removeEventListener('visibilitychange', onVisibilityChange);
-  }, [playing, volume, MELODIES.find, playMelodyNote]);
+  }, [playing, volume]);
 
   // Binaural beat (right osc) toggle
   useEffect(() => {
@@ -3415,7 +3291,7 @@ export default function BinauralTuner() {
             >
               <span
                 className="text-center text-base font-bold uppercase tracking-[0.22em]"
-                style={{ color: controlsOpen ? '#7A5438' : '#C4A060' }}
+                style={{ color: '#C4A060' }}
               >
                 controls
               </span>
@@ -3461,9 +3337,9 @@ export default function BinauralTuner() {
                       fontSize: '13px',
                       color: '#C4A060',
                       fontWeight: 600,
-                      width: 72,
+                      width: 60,
                       flexShrink: 0,
-                      textAlign: 'left',
+                      textAlign: 'right',
                     }}
                   >
                     reverb
@@ -3527,9 +3403,9 @@ export default function BinauralTuner() {
                       fontSize: '13px',
                       color: '#C4A060',
                       fontWeight: 600,
-                      width: 72,
+                      width: 60,
                       flexShrink: 0,
-                      textAlign: 'left',
+                      textAlign: 'right',
                     }}
                   >
                     wave
@@ -3611,16 +3487,16 @@ export default function BinauralTuner() {
                   </span>
                 </div>
                 {/* Volume — rainbow gradient track */}
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-3 px-1 py-1">
                   <span
                     style={{
                       fontFamily: 'var(--font-serif)',
                       fontSize: '13px',
                       color: '#C4A060',
                       fontWeight: 600,
-                      width: 72,
+                      width: 60,
                       flexShrink: 0,
-                      textAlign: 'left',
+                      textAlign: 'right',
                     }}
                   >
                     volume
@@ -3722,7 +3598,7 @@ export default function BinauralTuner() {
             >
               <span
                 className="text-center text-base font-bold uppercase tracking-[0.22em]"
-                style={{ color: harmonicsOpen ? '#7A5438' : '#9B6BA0' }}
+                style={{ color: '#9B6BA0' }}
               >
                 harmonics · {baseFreq}Hz
               </span>
@@ -3763,7 +3639,7 @@ export default function BinauralTuner() {
                       <span
                         style={{
                           fontFamily: 'var(--font-serif)',
-                          fontSize: '13px',
+                          fontSize: '11px',
                           fontWeight: isOn ? 700 : 500,
                           color: isOn ? hColor : '#8A6A4A',
                           opacity: isOn ? 1 : 0.75,
@@ -3775,7 +3651,7 @@ export default function BinauralTuner() {
                       <span
                         style={{
                           fontFamily: 'var(--font-serif)',
-                          fontSize: '12px',
+                          fontSize: '10px',
                           color: isOn ? hColor : '#A0907A',
                           opacity: isOn ? 0.85 : 0.55,
                         }}
@@ -3789,8 +3665,8 @@ export default function BinauralTuner() {
             )}
           </div>
 
-          {/* Sacred Melodies — hidden for now, kept in code */}
-          <div className="px-2" style={{ display: 'none' }}>
+          {/* Sacred Melodies — closable pillbox */}
+          <div className="px-2">
             <button
               type="button"
               onClick={() => setSacredOpen((s) => !s)}
@@ -3799,7 +3675,7 @@ export default function BinauralTuner() {
             >
               <span
                 className="text-center text-base font-bold uppercase tracking-[0.22em]"
-                style={{ color: sacredOpen ? '#7A5438' : '#C4A060' }}
+                style={{ color: '#C4A060' }}
               >
                 sacred melodies
               </span>
@@ -3884,7 +3760,7 @@ export default function BinauralTuner() {
             >
               <span
                 className="text-center text-base font-bold uppercase tracking-[0.22em]"
-                style={{ color: melodiesOpen ? '#7A5438' : '#C4A060' }}
+                style={{ color: '#C4A060' }}
               >
                 melodies
               </span>
@@ -3899,8 +3775,7 @@ export default function BinauralTuner() {
               </span>
             </button>
             {melodiesOpen && (
-              <div className="animate-in fade-in duration-150 space-y-4 pt-1">
-                {/* Instruments */}
+              <div className="animate-in fade-in duration-150 space-y-2 pt-1">
                 <div className="grid grid-cols-3 gap-1.5">
                   {MELODIES.map((m) => {
                     const isOn = activeMelodies.has(m.id);
@@ -3926,7 +3801,7 @@ export default function BinauralTuner() {
                         <span
                           style={{
                             fontFamily: 'var(--font-serif)',
-                            fontSize: '14px',
+                            fontSize: '12px',
                             fontWeight: isOn ? 700 : 400,
                             color: isOn ? m.color : '#8A6A4A',
                             opacity: isOn ? 1 : 0.7,
@@ -3938,18 +3813,34 @@ export default function BinauralTuner() {
                     );
                   })}
                 </div>
-
-                {/* Speed / reverb / vol — shown when an instrument is active */}
+                {/* Scale selector */}
+                <div className="flex flex-wrap justify-center gap-1">
+                  {Object.entries(MELODY_SCALES).map(([id, s]) => (
+                    <button
+                      key={id}
+                      type="button"
+                      onClick={() => setMelodyScale(id)}
+                      className="cursor-pointer rounded-full px-3 py-1 text-[12px] font-semibold transition-all"
+                      style={{
+                        color: melodyScale === id ? '#5C3018' : '#8A6A4A',
+                        background: melodyScale === id ? '#5C301810' : 'transparent',
+                        border: `1px solid ${melodyScale === id ? '#5C301830' : '#C4A06008'}`,
+                        opacity: melodyScale === id ? 1 : 0.7,
+                        fontFamily: 'var(--font-serif)',
+                      }}
+                    >
+                      {s.label}
+                    </button>
+                  ))}
+                </div>
                 {activeMelodies.size > 0 && (
-                  <div className="space-y-4 px-2">
+                  <div className="space-y-2 pt-2 px-2">
                     <div className="flex items-center gap-2">
                       <span
                         style={{
                           fontFamily: 'var(--font-serif)',
                           fontSize: '12px',
                           color: '#8A6A4A',
-                          width: 44,
-                          flexShrink: 0,
                         }}
                       >
                         speed
@@ -3980,8 +3871,6 @@ export default function BinauralTuner() {
                           fontFamily: 'var(--font-serif)',
                           fontSize: '12px',
                           color: '#8A6A4A',
-                          width: 44,
-                          flexShrink: 0,
                         }}
                       >
                         reverb
@@ -4012,8 +3901,6 @@ export default function BinauralTuner() {
                           fontFamily: 'var(--font-serif)',
                           fontSize: '12px',
                           color: '#8A6A4A',
-                          width: 44,
-                          flexShrink: 0,
                         }}
                       >
                         vol
@@ -4042,27 +3929,6 @@ export default function BinauralTuner() {
                     </div>
                   </div>
                 )}
-
-                {/* Scales / gammes */}
-                <div className="flex flex-wrap justify-center gap-1">
-                  {Object.entries(MELODY_SCALES).map(([id, s]) => (
-                    <button
-                      key={id}
-                      type="button"
-                      onClick={() => setMelodyScale(id)}
-                      className="cursor-pointer rounded-full px-3 py-1 text-[12px] font-semibold transition-all"
-                      style={{
-                        color: melodyScale === id ? '#5C3018' : '#8A6A4A',
-                        background: melodyScale === id ? '#5C301810' : 'transparent',
-                        border: `1px solid ${melodyScale === id ? '#5C301830' : '#C4A06008'}`,
-                        opacity: melodyScale === id ? 1 : 0.7,
-                        fontFamily: 'var(--font-serif)',
-                      }}
-                    >
-                      {s.label}
-                    </button>
-                  ))}
-                </div>
               </div>
             )}
           </div>
@@ -4077,7 +3943,7 @@ export default function BinauralTuner() {
             >
               <span
                 className="text-center text-base font-bold uppercase tracking-[0.22em]"
-                style={{ color: voicesOpen ? '#7A5438' : '#C4A060' }}
+                style={{ color: '#C4A060' }}
               >
                 voices
               </span>
@@ -4308,49 +4174,25 @@ export default function BinauralTuner() {
                           const borderAlpha = Math.round(28 + colT * 32)
                             .toString(16)
                             .padStart(2, '0');
-                          const isSoloed = soloedLayer === l.id;
                           return (
                             <div key={l.id} className="space-y-1">
                               <button
                                 type="button"
-                                onPointerDown={() => {
-                                  soloTimerRef.current = setTimeout(() => {
-                                    soloTimerRef.current = null;
-                                    soloLayer(l.id);
-                                  }, 400);
-                                }}
-                                onPointerUp={() => {
-                                  if (soloTimerRef.current !== null) {
-                                    clearTimeout(soloTimerRef.current);
-                                    soloTimerRef.current = null;
-                                    toggleLayer(l.id);
-                                  }
-                                }}
-                                onPointerLeave={() => {
-                                  if (soloTimerRef.current !== null) {
-                                    clearTimeout(soloTimerRef.current);
-                                    soloTimerRef.current = null;
-                                  }
-                                }}
+                                onClick={() => toggleLayer(l.id)}
                                 className="w-full cursor-pointer rounded-lg px-2 py-2 text-center transition-all"
                                 style={{
-                                  background: isSoloed
-                                    ? `${catColor}35`
-                                    : isOn
-                                      ? `${catColor}${bgAlpha}`
-                                      : '#C4A06006',
-                                  border: `1px solid ${isSoloed ? catColor : isOn ? `${catColor}${borderAlpha}` : '#C4A06018'}`,
+                                  background: isOn ? `${catColor}${bgAlpha}` : '#C4A06006',
+                                  border: `1px solid ${isOn ? `${catColor}${borderAlpha}` : '#C4A06018'}`,
                                   minHeight: 40,
-                                  boxShadow: isSoloed ? `0 0 12px -4px ${catColor}` : 'none',
                                 }}
                               >
                                 <span
                                   style={{
                                     fontFamily: 'var(--font-serif)',
                                     fontSize: '13px',
-                                    fontWeight: isOn || isSoloed ? 700 : 400,
-                                    color: isOn || isSoloed ? catColor : '#8A6A4A',
-                                    opacity: isSoloed ? 1 : isOn ? 0.6 + colT * 0.4 : 0.65,
+                                    fontWeight: isOn ? 700 : 400,
+                                    color: isOn ? catColor : '#8A6A4A',
+                                    opacity: isOn ? 0.6 + colT * 0.4 : 0.65,
                                   }}
                                 >
                                   {l.label}
@@ -4421,8 +4263,8 @@ export default function BinauralTuner() {
                                       className="flex-1 rounded-[3px] transition-all"
                                       style={{
                                         height: 18,
-                                        background: CATEGORY_GRADIENTS[cat][i],
-                                        opacity: i / 4 <= vol ? 0.85 : 0.12,
+                                        background: catColor,
+                                        opacity: i / 4 <= vol ? 0.5 + (i / 4) * 0.45 : 0.1,
                                       }}
                                     />
                                   ))}
@@ -4439,7 +4281,7 @@ export default function BinauralTuner() {
             )}
           </div>
 
-          {/* Collapsible: Moods & States (genres + brain states merged) */}
+          {/* Collapsible: Genres */}
           <div className="px-2">
             <button
               type="button"
@@ -4449,57 +4291,81 @@ export default function BinauralTuner() {
             >
               <span
                 className="text-center text-base font-bold uppercase tracking-[0.22em]"
-                style={{ color: genresOpen ? '#7A5438' : '#C4A060' }}
+                style={{ color: '#C4A060' }}
               >
-                moods &amp; states
+                genres
               </span>
               <span
                 style={{
                   transform: genresOpen ? 'rotate(180deg)' : 'rotate(0deg)',
                   transition: 'transform 0.2s',
-                  color: '#C4A06080',
+                  color: '#C4A060',
                 }}
               >
                 ▾
               </span>
             </button>
             {genresOpen && (
-              <div className="animate-in fade-in duration-150 space-y-3 pt-1 pb-2">
-                {/* Genres */}
-                <div className="flex flex-wrap justify-center gap-2">
-                  {GENRES.map((g) => {
-                    const isActive = activeGenre === g.id;
-                    return (
-                      <button
-                        key={g.id}
-                        type="button"
-                        onClick={() => applyGenre(g)}
-                        className="flex cursor-pointer items-center gap-1.5 rounded-full px-3 py-1.5 transition-all"
+              <div className="animate-in fade-in duration-150 flex flex-wrap justify-center gap-2 pt-1">
+                {GENRES.map((g) => {
+                  const isActive = activeGenre === g.id;
+                  return (
+                    <button
+                      key={g.id}
+                      type="button"
+                      onClick={() => applyGenre(g)}
+                      className="flex cursor-pointer items-center gap-1.5 rounded-full px-3 py-1.5 transition-all"
+                      style={{
+                        background: isActive ? `${g.color}18` : '#C4A06006',
+                        border: `1px solid ${isActive ? `${g.color}55` : `${g.color}30`}`,
+                      }}
+                      title={g.subtitle}
+                    >
+                      <span
                         style={{
-                          background: isActive ? `${g.color}18` : '#C4A06006',
-                          border: `1px solid ${isActive ? `${g.color}55` : `${g.color}30`}`,
+                          fontFamily: 'var(--font-serif)',
+                          fontSize: '15px',
+                          fontWeight: isActive ? 700 : 500,
+                          color: isActive ? g.color : '#7A5438',
+                          opacity: isActive ? 1 : 0.8,
                         }}
-                        title={g.subtitle}
                       >
-                        <span
-                          style={{
-                            fontFamily: 'var(--font-serif)',
-                            fontSize: '14px',
-                            fontWeight: isActive ? 700 : 500,
-                            color: isActive ? g.color : '#7A5438',
-                            opacity: isActive ? 1 : 0.8,
-                          }}
-                        >
-                          {g.label}
-                        </span>
-                      </button>
-                    );
-                  })}
-                </div>
-                {/* Divider */}
-                <div style={{ height: 1, background: '#C4A06018' }} />
-                {/* Brain states */}
-                <div className="flex flex-wrap justify-center gap-1.5">
+                        {g.label}
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+
+          {/* Collapsible: Brain States */}
+          <div className="px-2">
+            <button
+              type="button"
+              onClick={() => setBrainStatesOpen((s) => !s)}
+              className="flex w-full cursor-pointer items-center justify-center gap-2 py-2"
+              style={{ background: 'none', border: 'none' }}
+            >
+              <span
+                className="text-center text-base font-bold uppercase tracking-[0.22em]"
+                style={{ color: '#C4A060' }}
+              >
+                brain states
+              </span>
+              <span
+                style={{
+                  transform: brainStatesOpen ? 'rotate(180deg)' : 'rotate(0deg)',
+                  transition: 'transform 0.2s',
+                  color: '#C4A060',
+                }}
+              >
+                ▾
+              </span>
+            </button>
+            {brainStatesOpen && (
+              <div className="animate-in fade-in duration-150">
+                <div className="flex flex-wrap justify-center gap-1.5 pt-1">
                   {PRESETS.map((p) => {
                     const isActive = p.base === baseFreq && p.beat === beatFreq;
                     const presetLayers = PRESET_LAYERS[p.id] || [];
@@ -4517,7 +4383,7 @@ export default function BinauralTuner() {
                         <span
                           style={{
                             fontFamily: 'var(--font-serif)',
-                            fontSize: '14px',
+                            fontSize: '15px',
                             fontWeight: 600,
                             color: isActive ? p.color : '#7A5438',
                             opacity: isActive ? 1 : 0.8,
@@ -4529,8 +4395,9 @@ export default function BinauralTuner() {
                           <span
                             style={{
                               fontFamily: 'var(--font-serif)',
-                              fontSize: '11px',
+                              fontSize: '12px',
                               color: p.color,
+
                               marginLeft: 4,
                             }}
                           >
@@ -4545,7 +4412,7 @@ export default function BinauralTuner() {
             )}
           </div>
 
-          {/* Collapsible: My Sounds — save / load custom presets */}
+          {/* Collapsible: Daily Note */}
           <div className="px-2">
             <button
               type="button"
@@ -4555,179 +4422,47 @@ export default function BinauralTuner() {
             >
               <span
                 className="text-center text-base font-bold uppercase tracking-[0.22em]"
-                style={{ color: savedSoundsOpen ? '#7A5438' : '#C4A060' }}
+                style={{ color: '#C4A060' }}
               >
-                my sounds
+                daily note
               </span>
               <span
                 style={{
                   transform: savedSoundsOpen ? 'rotate(180deg)' : 'rotate(0deg)',
                   transition: 'transform 0.2s',
-                  color: '#C4A06080',
+                  color: '#C4A060',
                 }}
               >
                 ▾
               </span>
             </button>
             {savedSoundsOpen && (
-              <div className="animate-in fade-in duration-150 space-y-2 pt-1 pb-3">
-                {/* Save current sound */}
-                <div className="flex gap-2">
-                  <input
-                    type="text"
-                    value={newPresetName}
-                    onChange={(e) => setNewPresetName(e.target.value)}
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter' && newPresetName.trim()) {
-                        const preset: CustomPreset = {
-                          id: Date.now().toString(36),
-                          name: newPresetName.trim(),
-                          ts: Date.now(),
-                          state: {
-                            baseFreq,
-                            beatFreq,
-                            volume,
-                            reverbMix,
-                            binauralOn,
-                            baseToneOn,
-                            activeLayers,
-                            activeGenre,
-                            activeMelodies: [...activeMelodies],
-                            melodyScale,
-                            melodySpeed,
-                            melodyReverb,
-                            layerReverb,
-                          },
-                        };
-                        const next = [preset, ...customPresets];
-                        setCustomPresets(next);
-                        try {
-                          localStorage.setItem(LS_CUSTOM, JSON.stringify(next));
-                        } catch {}
-                        setNewPresetName('');
-                      }
-                    }}
-                    placeholder="Name this sound…"
-                    className="flex-1 rounded-xl bg-transparent px-3 py-1.5 text-[13px] outline-none"
-                    style={{
-                      border: '1px solid #C4A06030',
-                      color: 'var(--foreground)',
-                      fontFamily: 'var(--font-serif)',
-                    }}
-                  />
-                  <button
-                    type="button"
-                    onClick={() => {
-                      if (!newPresetName.trim()) return;
-                      const preset: CustomPreset = {
-                        id: Date.now().toString(36),
-                        name: newPresetName.trim(),
-                        ts: Date.now(),
-                        state: {
-                          baseFreq,
-                          beatFreq,
-                          volume,
-                          reverbMix,
-                          binauralOn,
-                          baseToneOn,
-                          activeLayers,
-                          activeGenre,
-                          activeMelodies: [...activeMelodies],
-                          melodyScale,
-                          melodySpeed,
-                          melodyReverb,
-                          layerReverb,
-                        },
-                      };
-                      const next = [preset, ...customPresets];
-                      setCustomPresets(next);
-                      try {
-                        localStorage.setItem(LS_CUSTOM, JSON.stringify(next));
-                      } catch {}
-                      setNewPresetName('');
-                    }}
-                    className="cursor-pointer rounded-xl px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.1em] transition-all hover:opacity-80"
-                    style={{
-                      background: '#C4A060',
-                      color: '#fff',
-                      fontFamily: 'var(--font-serif)',
-                    }}
-                  >
-                    Save
-                  </button>
-                </div>
-                {/* Saved presets list */}
-                {customPresets.length === 0 ? (
-                  <p
-                    className="text-center text-[12px] py-2 italic"
-                    style={{ color: 'var(--muted-foreground)', fontFamily: 'var(--font-serif)' }}
-                  >
-                    No saved sounds yet
-                  </p>
-                ) : (
-                  <div className="space-y-1">
-                    {customPresets.map((cp) => (
-                      <div
-                        key={cp.id}
-                        className="flex items-center gap-2 rounded-xl px-3 py-2"
-                        style={{ background: '#C4A06008', border: '1px solid #C4A06020' }}
-                      >
-                        <span
-                          className="flex-1 text-[13px]"
-                          style={{ color: 'var(--foreground)', fontFamily: 'var(--font-serif)' }}
-                        >
-                          {cp.name}
-                        </span>
-                        <button
-                          type="button"
-                          onClick={() => {
-                            const s = cp.state as Record<string, unknown>;
-                            if (s.baseFreq) setBaseFreq(s.baseFreq as number);
-                            if (s.beatFreq) setBeatFreq(s.beatFreq as number);
-                            if (s.volume) setVolume(s.volume as number);
-                            if (s.reverbMix !== undefined) setReverbMix(s.reverbMix as number);
-                            if (s.binauralOn !== undefined) setBinauralOn(s.binauralOn as boolean);
-                            if (s.baseToneOn !== undefined) setBaseToneOn(s.baseToneOn as boolean);
-                            if (s.activeLayers)
-                              setActiveLayers(s.activeLayers as Record<string, number>);
-                            if (s.activeGenre) setActiveGenre(s.activeGenre as string);
-                            if (s.activeMelodies)
-                              setActiveMelodies(new Set(s.activeMelodies as string[]));
-                            if (s.melodyScale) setMelodyScale(s.melodyScale as string);
-                            if (s.melodySpeed !== undefined)
-                              setMelodySpeed(s.melodySpeed as number);
-                            if (s.melodyReverb !== undefined)
-                              setMelodyReverb(s.melodyReverb as number);
-                            if (s.layerReverb !== undefined)
-                              setLayerReverb(s.layerReverb as number);
-                          }}
-                          className="cursor-pointer text-[11px] uppercase tracking-[0.08em] transition-all hover:opacity-80"
-                          style={{
-                            color: '#C4A060',
-                            fontFamily: 'var(--font-serif)',
-                            fontWeight: 700,
-                          }}
-                        >
-                          load
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => {
-                            const next = customPresets.filter((p) => p.id !== cp.id);
-                            setCustomPresets(next);
-                            try {
-                              localStorage.setItem(LS_CUSTOM, JSON.stringify(next));
-                            } catch {}
-                          }}
-                          className="cursor-pointer text-[11px] uppercase tracking-[0.08em] transition-all hover:opacity-70"
-                          style={{ color: '#C06040', fontFamily: 'var(--font-serif)' }}
-                        >
-                          ×
-                        </button>
-                      </div>
-                    ))}
-                  </div>
-                )}
+              <div className="animate-in fade-in duration-150 pt-1 pb-3">
+                <p
+                  className="text-center italic leading-relaxed"
+                  style={{
+                    fontFamily: 'var(--font-serif)',
+                    fontSize: '14px',
+                    color: '#8A6A4A',
+                    opacity: 0.85,
+                    padding: '8px 12px',
+                    border: '1px solid #C4A06020',
+                    borderRadius: 10,
+                    background: '#C4A06008',
+                  }}
+                >
+                  {
+                    [
+                      'Structure is the scaffolding of freedom.',
+                      'Every action you take is a vote for who you want to become.',
+                      'The present moment is where your power lives.',
+                      'Build the life you want one hour at a time.',
+                      'Rest is not a reward — it is a foundation.',
+                      'Creativity is intelligence having fun.',
+                      'What you practice in private shows up in public.',
+                    ][new Date().getDay()]
+                  }
+                </p>
               </div>
             )}
           </div>
@@ -5365,9 +5100,9 @@ function SliderRow({
             fontSize: '13px',
             color: muted ? '#8A6A4A' : '#C4A060',
             fontWeight: 600,
-            width: 72,
+            width: 60,
             flexShrink: 0,
-            textAlign: 'left',
+            textAlign: 'right',
             background: 'none',
             border: 'none',
             textDecoration: muted ? 'line-through' : 'none',
@@ -5383,9 +5118,9 @@ function SliderRow({
             fontSize: '13px',
             color: '#C4A060',
             fontWeight: 600,
-            width: 72,
+            width: 60,
             flexShrink: 0,
-            textAlign: 'left',
+            textAlign: 'right',
           }}
         >
           {label}

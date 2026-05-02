@@ -67,38 +67,38 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
             display:none hides it but never unmounts — audio survives
             route changes. Only visible when on /music. */}
         <div style={{ display: onMusic ? 'block' : 'none' }}>
-          {/* Music top-nav: Music Studio | Guitar Studio | Recordings */}
-          <div className="flex items-center justify-center gap-2 pb-1 mb-4">
+          {/* Music top-nav: Music Studio · Guitar Studio · Recordings */}
+          <div className="flex items-center gap-3 pb-1 mb-3">
+            <div style={{ flex: 1, height: 1, background: '#C4A06020' }} />
             {(
               [
                 { id: 'makers', label: 'Music Studio' },
                 { id: 'guitar', label: 'Guitar Studio' },
                 { id: 'recordings', label: 'Recordings' },
               ] as { id: MusicSection; label: string }[]
-            ).map(({ id, label }) => {
-              const active = musicSection === id;
-              return (
+            ).map(({ id, label }, i, arr) => (
+              <span key={id} className="flex items-center gap-3">
                 <button
-                  key={id}
                   type="button"
                   onClick={() => setMusicSection(id)}
-                  className="shrink-0 cursor-pointer rounded-full px-4 py-1.5 transition-all"
+                  className="shrink-0 cursor-pointer bg-transparent border-none transition-opacity"
                   style={{
                     fontFamily: 'var(--font-serif)',
-                    fontSize: '12px',
-                    fontWeight: 700,
-                    letterSpacing: '0.14em',
+                    fontSize: '11px',
+                    fontWeight: musicSection === id ? 700 : 500,
+                    letterSpacing: '0.18em',
                     textTransform: 'uppercase',
-                    background: active ? '#C4A060' : 'transparent',
-                    color: active ? '#fff' : '#A0907A',
-                    border: `1px solid ${active ? '#C4A060' : '#C4A06035'}`,
-                    opacity: active ? 1 : 0.7,
+                    color: musicSection === id ? '#C4A060' : '#A0907A',
+                    opacity: musicSection === id ? 1 : 0.55,
+                    padding: 0,
                   }}
                 >
                   {label}
                 </button>
-              );
-            })}
+                {i < arr.length - 1 && <span style={{ color: '#C4A06030', fontSize: 11 }}>·</span>}
+              </span>
+            ))}
+            <div style={{ flex: 1, height: 1, background: '#C4A06020' }} />
           </div>
 
           {/* SoundLab: always mounted so audio keeps running */}

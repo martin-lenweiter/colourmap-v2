@@ -2,7 +2,6 @@
 
 import { useEffect, useRef, useState } from 'react';
 import CategoryTagPicker from '@/components/CategoryTagPicker';
-import { useViewMode } from '@/components/ViewModeContext';
 
 /* ═══════════════════════════════════════════════════════════
    FEELING CHECK-IN CARD — Zen circle + losange gateway
@@ -363,8 +362,6 @@ function loadNum(key: string, fallback: number): number {
 }
 
 export default function FeelingCheckInCard() {
-  const { navPosition, setNavPosition } = useViewMode();
-
   // Presence — 5 levels (Absent → Flowing), default mid (idx 2 = Drifting)
   const [mindIdx, setMindIdx] = useState(() => {
     const v = loadNum('colourmap:presence-idx', 2);
@@ -508,7 +505,7 @@ export default function FeelingCheckInCard() {
     setRenamingSection(null);
   }
 
-  const [_sliderVisible, _setSliderVisible] = useState(true);
+  const [sliderVisible, setSliderVisible] = useState(true);
   const [showChallengeFlow, setShowChallengeFlow] = useState(false);
   const [showHawkinsDesc, setShowHawkinsDesc] = useState(false);
   const [logbookSectionOpen, setLogbookSectionOpen] = useState(() => {
@@ -564,7 +561,7 @@ export default function FeelingCheckInCard() {
   // Emotional-register variant — nine ways to render the same balance level.
   // 1 arc · 2 circle · 3 rings · 4 mountain · 5 slider · 6 boxes · 7 quadrant · 8 bars · 9 grid
   type Variant = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9;
-  const _VARIANTS: { id: Variant; label: string }[] = [
+  const VARIANTS: { id: Variant; label: string }[] = [
     { id: 1, label: 'arc' },
     { id: 2, label: 'circle' },
     { id: 3, label: 'rings' },
@@ -575,12 +572,12 @@ export default function FeelingCheckInCard() {
     { id: 8, label: 'bars' },
     { id: 9, label: 'grid' },
   ];
-  const [variantIdx, _setVariantIdx] = useState<Variant>(() => {
+  const [variantIdx, setVariantIdx] = useState<Variant>(() => {
     const v = loadNum('colourmap:design-variant', 1);
     return Math.max(1, Math.min(9, v)) as Variant;
   });
   useEffect(() => {
-    localStorage.setItem('colourmap:design-variant', String(variantIdx)); // eslint-disable-line
+    localStorage.setItem('colourmap:design-variant', String(variantIdx));
   }, [variantIdx]);
   const [designsOpen, setDesignsOpen] = useState(false);
 
@@ -1341,11 +1338,22 @@ export default function FeelingCheckInCard() {
 
   return (
     <>
-      {/* BOX A: FEELING — opaque background on all viewports so content behind never bleeds through. */}
-      <div
-        className="relative space-y-2.5 rounded-none border-0 px-0 py-0 shadow-none md:space-y-5 md:rounded-3xl md:border md:border-[#7a543833] md:px-5 md:py-6 md:shadow-[0_24px_50px_-34px_rgba(92,48,24,0.35)]"
-        style={{ background: 'rgba(251,244,232,0.92)' }}
-      >
+      {/* BOX A: FEELING — frame removed on phone to reclaim margins.
+          Desktop keeps the beige card for visual grouping. */}
+      <div className="relative space-y-2.5 rounded-none border-0 bg-transparent px-0 py-0 shadow-none md:space-y-5 md:rounded-3xl md:border md:border-[#7a543833] md:px-5 md:py-6 md:bg-[linear-gradient(180deg,rgba(251,244,232,0.95),rgba(246,236,221,0.92))] md:shadow-[0_24px_50px_-34px_rgba(92,48,24,0.35)]">
+        <p
+          className="text-center uppercase tracking-[0.2em] md:tracking-[0.24em]"
+          style={{
+            fontFamily: 'var(--font-serif)',
+            // Tighter on phone per user: go deeper, smaller.
+            fontSize: 'clamp(10px, 2.4vw, 13px)',
+            fontWeight: 700,
+            color: '#D4805A',
+            opacity: 0.7,
+          }}
+        >
+          feeling
+        </p>
         {/* Discrete design toggle — tiny losange at top-right, opens variant picker */}
         <div className="absolute right-4 top-4" style={{ zIndex: 10 }}>
           <button
@@ -1387,107 +1395,52 @@ export default function FeelingCheckInCard() {
                 backdropFilter: 'none',
               }}
             >
-              {/* Nav position toggle */}
-              <div className="px-3 py-2 space-y-1">
-                <span
-                  style={{
-                    fontFamily: 'var(--font-serif)',
-                    fontSize: '11px',
-                    fontWeight: 700,
-                    color: '#8A6A4A',
-                    letterSpacing: '0.14em',
-                    textTransform: 'uppercase' as const,
-                    opacity: 0.55,
-                  }}
-                >
-                  nav
-                </span>
-                <div className="flex gap-2 pt-1">
-                  {(['top', 'bottom'] as const).map((pos) => {
-                    const active = navPosition === pos;
-                    return (
-                      <button
-                        key={pos}
-                        type="button"
-                        onClick={() => {
-                          setNavPosition(pos);
-                          setDesignsOpen(false);
-                        }}
-                        className="flex-1 cursor-pointer rounded-lg py-1.5 transition-all"
-                        style={{
-                          fontFamily: 'var(--font-serif)',
-                          fontSize: '13px',
-                          fontWeight: active ? 700 : 400,
-                          color: active ? '#5C3018' : '#8A6A4A',
-                          background: active ? '#C4A06020' : 'transparent',
-                          border: active ? '1px solid #C4A06040' : '1px solid transparent',
-                        }}
-                      >
-                        {pos}
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
+              {VARIANTS.map((v) => {
+                const active = variantIdx === v.id;
+                return (
+                  <button
+                    key={v.id}
+                    type="button"
+                    onClick={() => {
+                      setVariantIdx(v.id);
+                      setDesignsOpen(false);
+                    }}
+                    className="flex w-full cursor-pointer items-center gap-2.5 px-3 py-2 text-left transition-all hover:bg-muted/30"
+                    style={{
+                      border: 'none',
+                      background: active ? '#C4A06012' : 'transparent',
+                    }}
+                  >
+                    <span
+                      className="rotate-45"
+                      style={{
+                        width: 7,
+                        height: 7,
+                        background: '#C4A060',
+                        opacity: active ? 1 : 0.35,
+                        borderRadius: 1,
+                        display: 'block',
+                      }}
+                    />
+                    <span
+                      style={{
+                        fontFamily: 'var(--font-serif)',
+                        fontSize: '14px',
+                        fontWeight: active ? 700 : 400,
+                        color: active ? '#5C3018' : '#8A6A4A',
+                      }}
+                    >
+                      {v.label}
+                    </span>
+                  </button>
+                );
+              })}
             </div>
           )}
         </div>
 
-        {/* ─── Main circle — same placement as DoingStateCircle and SharingCheckIn ─── */}
-        <div className="flex flex-col items-center gap-6 py-6">
-          <div className="flex flex-col items-center gap-3">
-            <span
-              className="block rounded-full"
-              style={{
-                width: 96,
-                height: 96,
-                background: HAWKINS[hawkinsIdx].color,
-                opacity: 0.92,
-                boxShadow: `0 12px 32px -8px ${HAWKINS[hawkinsIdx].color}88`,
-                transition: 'background 0.3s, box-shadow 0.3s',
-              }}
-            />
-            <span
-              className="uppercase"
-              style={{
-                fontFamily: 'var(--font-serif)',
-                fontSize: '15px',
-                fontWeight: 700,
-                color: '#3A2010',
-                letterSpacing: '0.18em',
-                transition: 'color 0.3s',
-              }}
-            >
-              {HAWKINS[hawkinsIdx].level}
-            </span>
-          </div>
-
-          {/* Hawkins bars — always visible */}
-          <div className="flex gap-[3px]" style={{ width: '100%', maxWidth: 280 }}>
-            {HAWKINS.map((h, i) => {
-              const selected = hawkinsIdx === i;
-              return (
-                <button
-                  key={h.level}
-                  type="button"
-                  onClick={() => setHawkinsIdx(i)}
-                  className="flex-1 cursor-pointer rounded-[3px] transition-all"
-                  style={{
-                    height: 18,
-                    background: h.color,
-                    opacity: selected ? 1 : 0.18,
-                    border: 'none',
-                    boxShadow: selected ? `0 2px 8px -2px ${h.color}` : 'none',
-                  }}
-                  title={h.level}
-                />
-              );
-            })}
-          </div>
-        </div>
-
-        {/* ─── Emotional register variants — hidden, kept for future access via design picker ─── */}
-        <div className="flex flex-col items-center gap-2" style={{ display: 'none' }}>
+        {/* ─── Emotional register — 6 variants (pick the visual that fits the moment) */}
+        <div className="flex flex-col items-center gap-2">
           {/* Variant 1: Arc — cosine bow */}
           {variantIdx === 1 && (
             <div className="relative" style={{ width: 300, height: 95 }}>
@@ -2366,8 +2319,8 @@ export default function FeelingCheckInCard() {
 
           {logbookSectionOpen && (
             <>
-              {/* Hawkins slider moved to top-level circle section — always visible above */}
-              {false && (
+              {/* Hawkins emotional slider — toggled by losange below */}
+              {sliderVisible && (
                 <div className="relative flex flex-col items-center gap-2 pt-4 pb-2">
                   {/* Style toggle — pushed to the top-right corner of
                       the slider container with z-index 2 so it sits
@@ -2577,6 +2530,30 @@ export default function FeelingCheckInCard() {
                   )}
                 </div>
               )}
+
+              {/* Losange toggle — show/hide slider + emotion name */}
+              <div className="flex justify-center py-1">
+                <button
+                  type="button"
+                  onClick={() => setSliderVisible((s) => !s)}
+                  className="cursor-pointer transition-all hover:scale-125"
+                  style={{ background: 'none', border: 'none', padding: 4 }}
+                  title={sliderVisible ? 'Hide slider' : 'Show slider'}
+                >
+                  <span
+                    style={{
+                      display: 'block',
+                      width: 10,
+                      height: 10,
+                      background: HAWKINS[hawkinsIdx].color,
+                      opacity: sliderVisible ? 0.6 : 0.3,
+                      borderRadius: 2,
+                      transform: 'rotate(45deg)',
+                      transition: 'opacity 0.2s',
+                    }}
+                  />
+                </button>
+              </div>
 
               {/* Star toggle — opens challenge + flow writing section */}
               <div className="space-y-3">
@@ -3082,6 +3059,18 @@ export default function FeelingCheckInCard() {
 
       {/* BOX B: DOING — frame removed on phone to reclaim margins. */}
       <div className="space-y-2.5 rounded-none border-0 bg-transparent px-0 py-0 shadow-none md:space-y-4 md:rounded-3xl md:border md:border-[#7a543833] md:px-5 md:py-6 md:bg-[linear-gradient(180deg,rgba(251,244,232,0.95),rgba(246,236,221,0.92))] md:shadow-[0_24px_50px_-34px_rgba(92,48,24,0.35)]">
+        <p
+          className="text-center uppercase tracking-[0.24em]"
+          style={{
+            fontFamily: 'var(--font-serif)',
+            fontSize: '10px',
+            fontWeight: 700,
+            color: '#6890B0',
+            opacity: 0.5,
+          }}
+        >
+          doing
+        </p>
         {/* CURRENT OBJECTIVE */}
         <div className="space-y-2 px-0 py-1 transition-all">
           <div className="flex flex-col items-center gap-2">
