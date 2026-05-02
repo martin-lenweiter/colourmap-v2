@@ -3291,7 +3291,7 @@ export default function BinauralTuner() {
             >
               <span
                 className="text-center text-base font-bold uppercase tracking-[0.22em]"
-                style={{ color: '#C4A060' }}
+                style={{ color: controlsOpen ? '#7A5438' : '#C4A060' }}
               >
                 controls
               </span>
@@ -3337,9 +3337,9 @@ export default function BinauralTuner() {
                       fontSize: '13px',
                       color: '#C4A060',
                       fontWeight: 600,
-                      width: 60,
+                      width: 72,
                       flexShrink: 0,
-                      textAlign: 'right',
+                      textAlign: 'left',
                     }}
                   >
                     reverb
@@ -3403,9 +3403,9 @@ export default function BinauralTuner() {
                       fontSize: '13px',
                       color: '#C4A060',
                       fontWeight: 600,
-                      width: 60,
+                      width: 72,
                       flexShrink: 0,
-                      textAlign: 'right',
+                      textAlign: 'left',
                     }}
                   >
                     wave
@@ -3487,16 +3487,16 @@ export default function BinauralTuner() {
                   </span>
                 </div>
                 {/* Volume — rainbow gradient track */}
-                <div className="flex items-center gap-3 px-1 py-1">
+                <div className="flex items-center gap-2">
                   <span
                     style={{
                       fontFamily: 'var(--font-serif)',
                       fontSize: '13px',
                       color: '#C4A060',
                       fontWeight: 600,
-                      width: 60,
+                      width: 72,
                       flexShrink: 0,
-                      textAlign: 'right',
+                      textAlign: 'left',
                     }}
                   >
                     volume
@@ -3598,7 +3598,7 @@ export default function BinauralTuner() {
             >
               <span
                 className="text-center text-base font-bold uppercase tracking-[0.22em]"
-                style={{ color: '#9B6BA0' }}
+                style={{ color: harmonicsOpen ? '#7A5438' : '#9B6BA0' }}
               >
                 harmonics · {baseFreq}Hz
               </span>
@@ -3675,7 +3675,7 @@ export default function BinauralTuner() {
             >
               <span
                 className="text-center text-base font-bold uppercase tracking-[0.22em]"
-                style={{ color: '#C4A060' }}
+                style={{ color: sacredOpen ? '#7A5438' : '#C4A060' }}
               >
                 sacred melodies
               </span>
@@ -3760,7 +3760,7 @@ export default function BinauralTuner() {
             >
               <span
                 className="text-center text-base font-bold uppercase tracking-[0.22em]"
-                style={{ color: '#C4A060' }}
+                style={{ color: melodiesOpen ? '#7A5438' : '#C4A060' }}
               >
                 melodies
               </span>
@@ -3834,7 +3834,7 @@ export default function BinauralTuner() {
                   ))}
                 </div>
                 {activeMelodies.size > 0 && (
-                  <div className="space-y-2 pt-2 px-2">
+                  <div className="space-y-4 pt-2 px-2">
                     <div className="flex items-center gap-2">
                       <span
                         style={{
@@ -3943,7 +3943,7 @@ export default function BinauralTuner() {
             >
               <span
                 className="text-center text-base font-bold uppercase tracking-[0.22em]"
-                style={{ color: '#C4A060' }}
+                style={{ color: voicesOpen ? '#7A5438' : '#C4A060' }}
               >
                 voices
               </span>
@@ -5100,9 +5100,9 @@ function SliderRow({
             fontSize: '13px',
             color: muted ? '#8A6A4A' : '#C4A060',
             fontWeight: 600,
-            width: 60,
+            width: 72,
             flexShrink: 0,
-            textAlign: 'right',
+            textAlign: 'left',
             background: 'none',
             border: 'none',
             textDecoration: muted ? 'line-through' : 'none',
@@ -5118,9 +5118,9 @@ function SliderRow({
             fontSize: '13px',
             color: '#C4A060',
             fontWeight: 600,
-            width: 60,
+            width: 72,
             flexShrink: 0,
-            textAlign: 'right',
+            textAlign: 'left',
           }}
         >
           {label}

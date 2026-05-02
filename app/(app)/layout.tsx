@@ -2,11 +2,11 @@ import { isAuthSessionMissingError } from '@supabase/supabase-js';
 import { redirect } from 'next/navigation';
 
 import ColourmapBrandButton from '@/components/ColourmapBrandButton';
+import ConditionalTopNav from '@/components/ConditionalTopNav';
 import DevBranchHud from '@/components/DevBranchHud';
 import FeedbackOverlay from '@/components/FeedbackOverlay';
 import MiniPlayer from '@/components/MiniPlayer';
 import MobileViewportBoot from '@/components/MobileViewportBoot';
-import NavLinks from '@/components/NavLinks';
 import ThemeSwitcher from '@/components/ThemeSwitcher';
 import { ViewModeProvider } from '@/components/ViewModeContext';
 import ViewModeSwitcher from '@/components/ViewModeSwitcher';
@@ -95,7 +95,7 @@ export default async function AppLayout({
             </div>
             {/* Thin rule above the nav — makes it read as a distinct channel */}
             <div style={{ height: 1, background: 'var(--border)', opacity: 0.6 }} />
-            <NavLinks />
+            <ConditionalTopNav />
           </header>
           <AppShell>{children}</AppShell>
         </div>

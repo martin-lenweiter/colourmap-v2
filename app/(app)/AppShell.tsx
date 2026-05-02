@@ -6,6 +6,7 @@ import { useEffect, useState } from 'react';
 import ErrorBoundary from '@/components/ErrorBoundary';
 import GuitarStudio from '@/components/GuitarStudio';
 import MusicRecordings from '@/components/MusicRecordings';
+import NavLinks from '@/components/NavLinks';
 import SoundLab from '@/components/SoundLab';
 import { useViewMode } from '@/components/ViewModeContext';
 
@@ -38,7 +39,7 @@ function loadSongRefs(): SongRef[] {
 }
 
 export default function AppShell({ children }: { children: React.ReactNode }) {
-  const { mode } = useViewMode();
+  const { mode, navPosition } = useViewMode();
   const pathname = usePathname();
   const onMusic = pathname === '/music';
   const onSocial = SOCIAL_ROUTES.some((r) => r.href === pathname);
@@ -158,6 +159,16 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
 
         {children}
       </div>
+
+      {/* Bottom nav — shown when navPosition='bottom' */}
+      {navPosition === 'bottom' && (
+        <div
+          className="fixed bottom-0 left-0 right-0 border-t border-border"
+          style={{ background: 'var(--secondary)', zIndex: 100 }}
+        >
+          <NavLinks />
+        </div>
+      )}
     </ErrorBoundary>
   );
 }
