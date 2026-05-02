@@ -3775,7 +3775,8 @@ export default function BinauralTuner() {
               </span>
             </button>
             {melodiesOpen && (
-              <div className="animate-in fade-in duration-150 space-y-2 pt-1">
+              <div className="animate-in fade-in duration-150 space-y-4 pt-1">
+                {/* Instruments */}
                 <div className="grid grid-cols-3 gap-1.5">
                   {MELODIES.map((m) => {
                     const isOn = activeMelodies.has(m.id);
@@ -3813,34 +3814,18 @@ export default function BinauralTuner() {
                     );
                   })}
                 </div>
-                {/* Scale selector */}
-                <div className="flex flex-wrap justify-center gap-1">
-                  {Object.entries(MELODY_SCALES).map(([id, s]) => (
-                    <button
-                      key={id}
-                      type="button"
-                      onClick={() => setMelodyScale(id)}
-                      className="cursor-pointer rounded-full px-3 py-1 text-[12px] font-semibold transition-all"
-                      style={{
-                        color: melodyScale === id ? '#5C3018' : '#8A6A4A',
-                        background: melodyScale === id ? '#5C301810' : 'transparent',
-                        border: `1px solid ${melodyScale === id ? '#5C301830' : '#C4A06008'}`,
-                        opacity: melodyScale === id ? 1 : 0.7,
-                        fontFamily: 'var(--font-serif)',
-                      }}
-                    >
-                      {s.label}
-                    </button>
-                  ))}
-                </div>
+
+                {/* Speed / reverb / vol — shown when an instrument is active */}
                 {activeMelodies.size > 0 && (
-                  <div className="space-y-4 pt-2 px-2">
+                  <div className="space-y-4 px-2">
                     <div className="flex items-center gap-2">
                       <span
                         style={{
                           fontFamily: 'var(--font-serif)',
                           fontSize: '12px',
                           color: '#8A6A4A',
+                          width: 44,
+                          flexShrink: 0,
                         }}
                       >
                         speed
@@ -3871,6 +3856,8 @@ export default function BinauralTuner() {
                           fontFamily: 'var(--font-serif)',
                           fontSize: '12px',
                           color: '#8A6A4A',
+                          width: 44,
+                          flexShrink: 0,
                         }}
                       >
                         reverb
@@ -3901,6 +3888,8 @@ export default function BinauralTuner() {
                           fontFamily: 'var(--font-serif)',
                           fontSize: '12px',
                           color: '#8A6A4A',
+                          width: 44,
+                          flexShrink: 0,
                         }}
                       >
                         vol
@@ -3929,6 +3918,27 @@ export default function BinauralTuner() {
                     </div>
                   </div>
                 )}
+
+                {/* Scales / gammes */}
+                <div className="flex flex-wrap justify-center gap-1">
+                  {Object.entries(MELODY_SCALES).map(([id, s]) => (
+                    <button
+                      key={id}
+                      type="button"
+                      onClick={() => setMelodyScale(id)}
+                      className="cursor-pointer rounded-full px-3 py-1 text-[12px] font-semibold transition-all"
+                      style={{
+                        color: melodyScale === id ? '#5C3018' : '#8A6A4A',
+                        background: melodyScale === id ? '#5C301810' : 'transparent',
+                        border: `1px solid ${melodyScale === id ? '#5C301830' : '#C4A06008'}`,
+                        opacity: melodyScale === id ? 1 : 0.7,
+                        fontFamily: 'var(--font-serif)',
+                      }}
+                    >
+                      {s.label}
+                    </button>
+                  ))}
+                </div>
               </div>
             )}
           </div>
