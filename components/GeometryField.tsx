@@ -9,7 +9,19 @@ import { UnrealBloomPass } from 'three/examples/jsm/postprocessing/UnrealBloomPa
 
 /* ── Types ─────────────────────────────────────────────────── */
 
-type Mode = 'sacred' | 'burst' | 'lissajous' | 'golden' | 'kaleidoscope' | 'torus';
+type Mode =
+  | 'sacred'
+  | 'burst'
+  | 'lissajous'
+  | 'golden'
+  | 'kaleidoscope'
+  | 'torus'
+  | 'tunnel'
+  | 'vitral'
+  | 'fibonacci'
+  | 'clifford'
+  | 'hypercube'
+  | 'warp';
 
 interface Pal {
   bg0: string;
@@ -30,6 +42,7 @@ interface Cfg {
   intensity: number;
   particles: number;
   luminous: number;
+  stars: number;
   mode: Mode;
 }
 
@@ -123,6 +136,60 @@ const PAL: Record<string, Pal> = {
     dots: 'rgba(180,150,255,0.72)',
     rgb: [140, 100, 255],
   },
+  'Warp Tunnel': {
+    bg0: '#010510',
+    bg1: '#010209',
+    line: 'rgba(80,240,255,0.65)',
+    fill: 'rgba(60,220,255,0.08)',
+    glow: 'rgba(50,210,255,0.42)',
+    dots: 'rgba(140,255,255,0.7)',
+    rgb: [80, 240, 255],
+  },
+  'Sacred Vitral': {
+    bg0: '#050204',
+    bg1: '#020102',
+    line: 'rgba(220,180,80,0.6)',
+    fill: 'rgba(220,180,80,0.05)',
+    glow: 'rgba(200,160,60,0.35)',
+    dots: 'rgba(240,210,120,0.65)',
+    rgb: [220, 180, 80],
+  },
+  'Fibonacci Bloom': {
+    bg0: '#090600',
+    bg1: '#040200',
+    line: 'rgba(255,200,40,0.65)',
+    fill: 'rgba(255,185,20,0.07)',
+    glow: 'rgba(240,170,10,0.45)',
+    dots: 'rgba(255,220,90,0.72)',
+    rgb: [255, 200, 40],
+  },
+  'Clifford Dream': {
+    bg0: '#030010',
+    bg1: '#010008',
+    line: 'rgba(120,80,255,0.65)',
+    fill: 'rgba(110,70,255,0.07)',
+    glow: 'rgba(100,60,255,0.42)',
+    dots: 'rgba(170,130,255,0.72)',
+    rgb: [120, 80, 255],
+  },
+  '4D Crystal': {
+    bg0: '#020308',
+    bg1: '#010205',
+    line: 'rgba(160,220,255,0.65)',
+    fill: 'rgba(140,200,255,0.07)',
+    glow: 'rgba(120,190,255,0.42)',
+    dots: 'rgba(200,235,255,0.72)',
+    rgb: [160, 220, 255],
+  },
+  'Warp Drive': {
+    bg0: '#000508',
+    bg1: '#000204',
+    line: 'rgba(80,255,200,0.65)',
+    fill: 'rgba(60,240,180,0.07)',
+    glow: 'rgba(50,230,170,0.42)',
+    dots: 'rgba(140,255,220,0.72)',
+    rgb: [80, 255, 200],
+  },
 };
 
 /* ── Preset configs ─────────────────────────────────────────── */
@@ -137,6 +204,7 @@ const PRESETS: Record<string, Cfg> = {
     intensity: 6.5,
     particles: 4,
     luminous: 3,
+    stars: 2,
     mode: 'sacred',
   },
   'Golden Source': {
@@ -148,6 +216,7 @@ const PRESETS: Record<string, Cfg> = {
     intensity: 9,
     particles: 5,
     luminous: 4,
+    stars: 1,
     mode: 'sacred',
   },
   'Blue Astral': {
@@ -159,6 +228,7 @@ const PRESETS: Record<string, Cfg> = {
     intensity: 7,
     particles: 6,
     luminous: 4,
+    stars: 4,
     mode: 'sacred',
   },
   'Violet Portal': {
@@ -170,6 +240,7 @@ const PRESETS: Record<string, Cfg> = {
     intensity: 8,
     particles: 7,
     luminous: 5,
+    stars: 3,
     mode: 'sacred',
   },
   'Forest Ceremony': {
@@ -181,6 +252,7 @@ const PRESETS: Record<string, Cfg> = {
     intensity: 7,
     particles: 5,
     luminous: 3,
+    stars: 1,
     mode: 'sacred',
   },
   'Minimal Light': {
@@ -192,6 +264,7 @@ const PRESETS: Record<string, Cfg> = {
     intensity: 4,
     particles: 2,
     luminous: 3,
+    stars: 5,
     mode: 'sacred',
   },
   'DMT Vision': {
@@ -203,6 +276,7 @@ const PRESETS: Record<string, Cfg> = {
     intensity: 9,
     particles: 6,
     luminous: 8,
+    stars: 2,
     mode: 'burst',
   },
   'Cosmic Indigo': {
@@ -214,7 +288,80 @@ const PRESETS: Record<string, Cfg> = {
     intensity: 8,
     particles: 5,
     luminous: 7,
+    stars: 6,
     mode: 'kaleidoscope',
+  },
+  'Warp Tunnel': {
+    preset: 'Warp Tunnel',
+    symmetry: 8,
+    complexity: 6,
+    glow: 7,
+    breathSpeed: 1.8,
+    intensity: 9,
+    particles: 2,
+    luminous: 7,
+    stars: 8,
+    mode: 'tunnel',
+  },
+  'Sacred Vitral': {
+    preset: 'Sacred Vitral',
+    symmetry: 12,
+    complexity: 6,
+    glow: 5,
+    breathSpeed: 0.6,
+    intensity: 7,
+    particles: 0,
+    luminous: 4,
+    stars: 0,
+    mode: 'vitral',
+  },
+  'Fibonacci Bloom': {
+    preset: 'Fibonacci Bloom',
+    symmetry: 5,
+    complexity: 6,
+    glow: 7,
+    breathSpeed: 0.8,
+    intensity: 8,
+    particles: 2,
+    luminous: 5,
+    stars: 3,
+    mode: 'fibonacci',
+  },
+  'Clifford Dream': {
+    preset: 'Clifford Dream',
+    symmetry: 8,
+    complexity: 6,
+    glow: 6,
+    breathSpeed: 0.4,
+    intensity: 9,
+    particles: 0,
+    luminous: 6,
+    stars: 4,
+    mode: 'clifford',
+  },
+  '4D Crystal': {
+    preset: '4D Crystal',
+    symmetry: 8,
+    complexity: 5,
+    glow: 8,
+    breathSpeed: 0.7,
+    intensity: 8,
+    particles: 0,
+    luminous: 7,
+    stars: 5,
+    mode: 'hypercube',
+  },
+  'Warp Drive': {
+    preset: 'Warp Drive',
+    symmetry: 12,
+    complexity: 6,
+    glow: 7,
+    breathSpeed: 2.2,
+    intensity: 9,
+    particles: 0,
+    luminous: 8,
+    stars: 9,
+    mode: 'warp',
   },
 };
 
@@ -230,6 +377,13 @@ function resolveIntention(w: string): string {
   if (/nature|earth|ground|grow|forest|root|green/.test(t)) return 'Forest Ceremony';
   if (/dmt|psychedel|vision|burst|ray|expand/.test(t)) return 'DMT Vision';
   if (/indigo|cosmic|infinite|deep|void/.test(t)) return 'Cosmic Indigo';
+  if (/tunnel|warp|speed|fly|dive|rush|hyper|space/.test(t)) return 'Warp Tunnel';
+  if (/vitral|glass|stained|church|window|cathedral|colour|color|rainbow/.test(t))
+    return 'Sacred Vitral';
+  if (/fibonacci|fib|spiral|nautilus|snail|nature|sequence/.test(t)) return 'Fibonacci Bloom';
+  if (/chaos|attractor|strange|clifford|fractal|evolv|morph/.test(t)) return 'Clifford Dream';
+  if (/4d|four.?d|hyper|tesseract|hopf|dimension/.test(t)) return '4D Crystal';
+  if (/warp|drive|streak|hyperspace|starfield|jump/.test(t)) return 'Warp Drive';
   const keys = Object.keys(PRESETS);
   return keys[Math.floor(Math.random() * keys.length)];
 }
@@ -400,22 +554,32 @@ function updateParticles(
   updateMat(particles, rgb, iF, 1.5);
 }
 
-function buildCenter(rgb: [number, number, number], iF: number, scale: number): THREE.Points {
-  const geo = new THREE.BufferGeometry();
-  geo.setAttribute('position', new THREE.BufferAttribute(new Float32Array([0, 0, 0]), 3));
-  return new THREE.Points(geo, ptsMat(hdrColor(rgb, iF, 6), 10 * scale, 1.0));
+function buildCenter(rgb: [number, number, number], iF: number, _scale: number): THREE.Group {
+  const g = new THREE.Group();
+  // Concentric rings bloom into a soft glowing disc — no square artifact
+  const radii = [2, 5, 9, 15];
+  for (let i = 0; i < radii.length; i++) {
+    const brightness = iF * 7 * (1 - i * 0.2);
+    const ring = new THREE.Line(circleGeo(32), lineMat(hdrColor(rgb, brightness, 2.2), 1.0));
+    ring.scale.setScalar(radii[i]);
+    ring.userData.baseR = radii[i];
+    g.add(ring);
+  }
+  return g;
 }
 
 function updateCenter(
-  center: THREE.Points,
+  g: THREE.Group,
   breath: number,
   rgb: [number, number, number],
   iF: number,
-  scale: number,
+  _scale: number,
 ): void {
-  const mat = center.material as THREE.PointsMaterial;
-  mat.size = (8 + breath * 4) * scale;
-  updateMat(center, rgb, iF, 6);
+  g.children.forEach((ring, i) => {
+    const baseR = ring.userData.baseR as number;
+    ring.scale.setScalar(baseR * (0.82 + breath * 0.18));
+    updateMat(ring as THREE.Object3D, rgb, iF * 7 * (1 - i * 0.2) * (0.65 + breath * 0.35), 2.2);
+  });
 }
 
 /* ── Ripple ring system ─────────────────────────────────────── */
@@ -480,6 +644,18 @@ function buildModeGroup(cfg: Cfg, R: number): THREE.Group {
       return buildKaleidoscope(cfg, R);
     case 'torus':
       return buildTorus(cfg, R);
+    case 'tunnel':
+      return buildTunnel(cfg, R);
+    case 'vitral':
+      return buildVitral(cfg, R);
+    case 'fibonacci':
+      return buildFibonacci(cfg, R);
+    case 'clifford':
+      return buildClifford(cfg, R);
+    case 'hypercube':
+      return buildHypercube(cfg, R);
+    case 'warp':
+      return buildWarp(cfg, R);
     default:
       return buildSacred(cfg, R);
   }
@@ -501,6 +677,24 @@ function updateModeGroup(group: THREE.Group, cfg: Cfg, dots: Dot[], t: number, R
       break;
     case 'torus':
       updateTorus(group, cfg, t, R);
+      break;
+    case 'tunnel':
+      updateTunnel(group, cfg, t, R);
+      break;
+    case 'vitral':
+      updateVitral(group, cfg, t, R);
+      break;
+    case 'fibonacci':
+      updateFibonacci(group, cfg, t, R);
+      break;
+    case 'clifford':
+      updateClifford(group, cfg, t, R);
+      break;
+    case 'hypercube':
+      updateHypercube(group, cfg, t, R);
+      break;
+    case 'warp':
+      updateWarp(group, cfg, t, R);
       break;
     default:
       updateSacred(group, cfg, dots, t, R);
@@ -680,7 +874,7 @@ function updateSacred(group: THREE.Group, cfg: Cfg, dots: Dot[], t: number, R: n
     } else if (tag === 'particles') {
       updateParticles(child as THREE.Points, dots, cfg.breathSpeed, R, [rr, gg, bb], iF);
     } else if (tag === 'center') {
-      updateCenter(child as THREE.Points, breath, [rr, gg, bb], iF, scale);
+      updateCenter(child as THREE.Group, breath, [rr, gg, bb], iF, scale);
     }
   }
 }
@@ -776,7 +970,7 @@ function updateBurst(group: THREE.Group, cfg: Cfg, t: number, R: number): void {
       updateRings(child as THREE.Group, bs, [rr, gg, bb], iF);
       (child as THREE.Group).rotation.z = t * 0.000012;
     } else if (tag === 'center') {
-      updateCenter(child as THREE.Points, breath, [rr, gg, bb], iF, scale);
+      updateCenter(child as THREE.Group, breath, [rr, gg, bb], iF, scale);
     }
   }
 }
@@ -868,7 +1062,7 @@ function updateLissajous(group: THREE.Group, cfg: Cfg, t: number, R: number): vo
         updateMat(curve as THREE.Object3D, [rr, gg, bb], (0.35 - li * 0.04) * iF, 2);
       });
     } else if (child.userData.tag === 'center') {
-      updateCenter(child as THREE.Points, breath, [rr, gg, bb], iF, scale);
+      updateCenter(child as THREE.Group, breath, [rr, gg, bb], iF, scale);
     }
   }
 }
@@ -976,7 +1170,7 @@ function updateGolden(group: THREE.Group, cfg: Cfg, t: number, R: number): void 
         updateMat(ring as THREE.Object3D, [rr, gg, bb], iF * 0.15, 2);
       });
     } else if (tag === 'center') {
-      updateCenter(child as THREE.Points, breath, [rr, gg, bb], iF, scale);
+      updateCenter(child as THREE.Group, breath, [rr, gg, bb], iF, scale);
     }
   }
 }
@@ -1056,7 +1250,7 @@ function updateKaleidoscope(group: THREE.Group, cfg: Cfg, t: number, R: number):
     } else if (tag === 'rings') {
       updateRings(child as THREE.Group, bs, [rr, gg, bb], iF);
     } else if (tag === 'center') {
-      updateCenter(child as THREE.Points, breath, [rr, gg, bb], iF, scale);
+      updateCenter(child as THREE.Group, breath, [rr, gg, bb], iF, scale);
     }
   }
 }
@@ -1195,7 +1389,781 @@ function updateTorus(group: THREE.Group, cfg: Cfg, t: number, R: number): void {
       mat.opacity = (0.3 + breath * 0.3) * iF;
       updateMat(child as THREE.Object3D, [rr, gg, bb], iF, 2);
     } else if (tag === 'center') {
-      updateCenter(child as THREE.Points, breath, [rr, gg, bb], iF, scale);
+      updateCenter(child as THREE.Group, breath, [rr, gg, bb], iF, scale);
+    }
+  }
+}
+
+/* ── TUNNEL mode ────────────────────────────────────────────── */
+
+function buildTunnel(cfg: Cfg, _R: number): THREE.Group {
+  const pal = PAL[cfg.preset] ?? PAL['Warp Tunnel'];
+  const [rr, gg, bb] = pal.rgb;
+  const iF = cfg.intensity / 10;
+  const sym = Math.round(cfg.symmetry);
+  const layers = Math.max(1, Math.round(cfg.complexity));
+  const ringCount = 6 + layers * 3;
+  const CIRC = 48;
+  const vertsPerRing = CIRC * 2 + sym * 2;
+  const group = new THREE.Group();
+
+  for (let i = 0; i < ringCount; i++) {
+    const t0 = i / ringCount;
+    const pos = new Float32Array(vertsPerRing * 3);
+    const geo = new THREE.BufferGeometry();
+    geo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+    const ring = new THREE.LineSegments(
+      geo,
+      lineMat(hdrColor([rr, gg, bb], iF * (0.2 + t0 * 0.8), 2.5), 1.0),
+    );
+    ring.userData.tag = 'tunnelRing';
+    ring.userData.t = t0;
+    ring.userData.rollOff = (i % 2 === 0 ? 1 : -1) * (i * 0.04);
+    group.add(ring);
+  }
+
+  const center = buildCenter([rr, gg, bb], iF * 1.5, _R / 210);
+  center.userData.tag = 'center';
+  group.add(center);
+  return group;
+}
+
+function updateTunnel(group: THREE.Group, cfg: Cfg, t: number, R: number): void {
+  const pal = PAL[cfg.preset] ?? PAL['Warp Tunnel'];
+  const [rr, gg, bb] = pal.rgb;
+  const iF = cfg.intensity / 10;
+  const scale = R / 210;
+  const breath = (Math.sin(t * 0.001 * cfg.breathSpeed) + 1) * 0.5;
+  const sym = Math.round(cfg.symmetry);
+  const CIRC = 48;
+  const TAU = Math.PI * 2;
+  const speed = cfg.breathSpeed * 0.00055;
+
+  for (const child of group.children) {
+    const tag = child.userData.tag as string;
+    if (tag === 'tunnelRing') {
+      const ring = child as THREE.LineSegments;
+      ring.userData.t = ((ring.userData.t as number) + speed) % 1;
+      const tVal = ring.userData.t as number;
+      const rollOff = ring.userData.rollOff as number;
+
+      // Perspective projection: tiny at vanishing point, large as it flies past viewer
+      const screenR = R * 1.85 * tVal ** 1.5;
+      const brightness = tVal ** 0.55 * iF * 2.4;
+      const opacity = Math.min(1, tVal * 4) * 0.9;
+
+      const pos = ring.geometry.attributes.position.array as Float32Array;
+
+      // Circle: pairs (p_i → p_{i+1})
+      for (let seg = 0; seg < CIRC; seg++) {
+        const a0 = (seg / CIRC) * TAU + rollOff;
+        const a1 = ((seg + 1) / CIRC) * TAU + rollOff;
+        const base = seg * 6;
+        pos[base] = Math.cos(a0) * screenR;
+        pos[base + 1] = Math.sin(a0) * screenR;
+        pos[base + 2] = 0;
+        pos[base + 3] = Math.cos(a1) * screenR;
+        pos[base + 4] = Math.sin(a1) * screenR;
+        pos[base + 5] = 0;
+      }
+
+      // Spokes: centre → rim
+      const spokeBase = CIRC * 6;
+      for (let s = 0; s < sym; s++) {
+        const a = (s / sym) * TAU + rollOff;
+        const si = spokeBase + s * 6;
+        pos[si] = 0;
+        pos[si + 1] = 0;
+        pos[si + 2] = 0;
+        pos[si + 3] = Math.cos(a) * screenR;
+        pos[si + 4] = Math.sin(a) * screenR;
+        pos[si + 5] = 0;
+      }
+
+      ring.geometry.attributes.position.needsUpdate = true;
+      const mat = ring.material as THREE.LineBasicMaterial;
+      mat.opacity = opacity;
+      mat.color.setRGB((rr / 255) * brightness, (gg / 255) * brightness, (bb / 255) * brightness);
+    } else if (tag === 'center') {
+      updateCenter(child as THREE.Group, breath, [rr, gg, bb], iF * 1.5, scale);
+    }
+  }
+}
+
+/* ── VITRAL (stained glass) mode ────────────────────────────── */
+
+function buildVitral(cfg: Cfg, _R: number): THREE.Group {
+  const pal = PAL[cfg.preset] ?? PAL['Sacred Vitral'];
+  const [rr, gg, bb] = pal.rgb;
+  const iF = cfg.intensity / 10;
+  const sym = Math.round(cfg.symmetry);
+  const layers = Math.min(Math.max(1, Math.round(cfg.complexity)), 8);
+  const TAU = Math.PI * 2;
+  const ARC = 10;
+  const group = new THREE.Group();
+
+  // Normalised ring radii (group scaled to R each frame in update)
+  const ringRadii: number[] = [];
+  for (let i = 0; i <= layers; i++) ringRadii.push(0.04 + (i / layers) * 0.93);
+
+  // Coloured cell meshes
+  for (let sector = 0; sector < sym; sector++) {
+    const a1 = (sector / sym) * TAU;
+    const a2 = ((sector + 1) / sym) * TAU;
+    for (let layer = 0; layer < ringRadii.length - 1; layer++) {
+      const innerR = ringRadii[layer];
+      const outerR = ringRadii[layer + 1];
+      const shape = new THREE.Shape();
+      shape.moveTo(Math.cos(a1) * innerR, Math.sin(a1) * innerR);
+      shape.lineTo(Math.cos(a1) * outerR, Math.sin(a1) * outerR);
+      for (let k = 1; k <= ARC; k++) {
+        const a = a1 + (k / ARC) * (a2 - a1);
+        shape.lineTo(Math.cos(a) * outerR, Math.sin(a) * outerR);
+      }
+      shape.lineTo(Math.cos(a2) * innerR, Math.sin(a2) * innerR);
+      for (let k = ARC - 1; k >= 0; k--) {
+        const a = a1 + (k / ARC) * (a2 - a1);
+        shape.lineTo(Math.cos(a) * innerR, Math.sin(a) * innerR);
+      }
+      shape.closePath();
+      const geo = new THREE.ShapeGeometry(shape);
+      const hue = (sector / sym + (layer / layers) * 0.12) % 1.0;
+      const mat = new THREE.MeshBasicMaterial({
+        color: new THREE.Color().setHSL(hue, 0.9, 0.5),
+        transparent: true,
+        opacity: 0.15,
+        blending: THREE.AdditiveBlending,
+        depthWrite: false,
+        side: THREE.DoubleSide,
+      });
+      const mesh = new THREE.Mesh(geo, mat);
+      mesh.userData.tag = 'cell';
+      mesh.userData.sector = sector;
+      mesh.userData.layer = layer;
+      group.add(mesh);
+    }
+  }
+
+  // Lead lines — rings
+  for (const normR of ringRadii) {
+    const ring = new THREE.Line(circleGeo(96), lineMat(hdrColor([rr, gg, bb], iF * 0.35, 2), 1.0));
+    ring.scale.setScalar(normR);
+    ring.userData.tag = 'vitralRing';
+    group.add(ring);
+  }
+
+  // Lead lines — radials
+  const radPos = new Float32Array(sym * 6);
+  for (let s = 0; s < sym; s++) {
+    const a = (s / sym) * TAU;
+    radPos[s * 6] = Math.cos(a) * ringRadii[0];
+    radPos[s * 6 + 1] = Math.sin(a) * ringRadii[0];
+    radPos[s * 6 + 3] = Math.cos(a) * ringRadii[ringRadii.length - 1];
+    radPos[s * 6 + 4] = Math.sin(a) * ringRadii[ringRadii.length - 1];
+  }
+  const radGeo = new THREE.BufferGeometry();
+  radGeo.setAttribute('position', new THREE.BufferAttribute(radPos, 3));
+  group.add(
+    Object.assign(
+      new THREE.LineSegments(radGeo, lineMat(hdrColor([rr, gg, bb], iF * 0.4, 2), 1.0)),
+      {
+        userData: { tag: 'vitralRad' },
+      },
+    ),
+  );
+
+  void _R;
+  return group;
+}
+
+function updateVitral(group: THREE.Group, cfg: Cfg, t: number, R: number): void {
+  const pal = PAL[cfg.preset] ?? PAL['Sacred Vitral'];
+  const [rr, gg, bb] = pal.rgb;
+  const iF = cfg.intensity / 10;
+  const sym = Math.round(cfg.symmetry);
+  const layers = Math.min(Math.max(1, Math.round(cfg.complexity)), 8);
+  const breath = (Math.sin(t * 0.001 * cfg.breathSpeed) + 1) * 0.5;
+  const tDrift = t * 0.000032;
+
+  group.scale.setScalar(R);
+  group.rotation.z = t * 0.000028;
+
+  for (const child of group.children) {
+    const tag = child.userData.tag as string;
+    if (tag === 'cell') {
+      const mesh = child as THREE.Mesh;
+      const sector = mesh.userData.sector as number;
+      const layer = mesh.userData.layer as number;
+      const hue = (sector / sym + (layer / layers) * 0.14 + tDrift) % 1.0;
+      const wave = Math.sin(t * 0.001 * cfg.breathSpeed + sector * 0.62 + layer * 1.05) * 0.5 + 0.5;
+      const mat = mesh.material as THREE.MeshBasicMaterial;
+      mat.color.setHSL(hue, 0.92, 0.52);
+      mat.opacity = (0.06 + wave * 0.2) * iF;
+    } else if (tag === 'vitralRing' || tag === 'vitralRad') {
+      updateMat(child as THREE.Object3D, [rr, gg, bb], iF * (0.3 + breath * 0.25), 2);
+    }
+  }
+}
+
+/* ── FIBONACCI mode ─────────────────────────────────────────── */
+
+function buildFibonacci(cfg: Cfg, R: number): THREE.Group {
+  const pal = PAL[cfg.preset] ?? PAL['Fibonacci Bloom'];
+  const [rr, gg, bb] = pal.rgb;
+  const iF = cfg.intensity / 10;
+  const sym = Math.round(cfg.symmetry);
+  const layers = Math.max(1, Math.round(cfg.complexity));
+  const PHI = 1.6180339887;
+  const GOLDEN_ANGLE = Math.PI * (3 - Math.sqrt(5));
+  const STEPS = 420;
+  const scale = R / 210;
+  const group = new THREE.Group();
+
+  // One logarithmic spiral arm per symmetry copy (positions updated each frame)
+  for (let s = 0; s < sym; s++) {
+    const pts = new Float32Array((STEPS + 1) * 3);
+    const geo = new THREE.BufferGeometry();
+    geo.setAttribute('position', new THREE.BufferAttribute(pts, 3));
+    const sp = new THREE.Line(geo, lineMat(hdrColor([rr, gg, bb], iF * 0.7, 2.2), 1.0));
+    sp.userData.tag = 'fibSpiral';
+    sp.userData.armIdx = s;
+    group.add(sp);
+  }
+
+  // Fibonacci rings at normalised radii — static scale, updated each frame
+  const fibSeq: number[] = [1, 1];
+  while (fibSeq[fibSeq.length - 1] < 300) {
+    const n = fibSeq.length;
+    fibSeq.push(fibSeq[n - 1] + fibSeq[n - 2]);
+  }
+  const ringCount = Math.min(4 + layers * 2, fibSeq.length - 1);
+  const maxFib = fibSeq[ringCount];
+
+  for (let i = 2; i <= ringCount; i++) {
+    const normR = (fibSeq[i] / maxFib) * R;
+    const ring = new THREE.Line(
+      circleGeo(80),
+      lineMat(hdrColor([rr, gg, bb], iF * (0.08 + (i / ringCount) * 0.22), 1.8), 1.0),
+    );
+    ring.scale.setScalar(normR);
+    ring.userData.tag = 'fibRing';
+    ring.userData.normR = normR;
+    ring.userData.ringIdx = i;
+    group.add(ring);
+
+    // Golden-angle dots on this ring (count = the Fibonacci number itself, capped)
+    const dotCount = Math.min(fibSeq[i], 55);
+    const dotPos = new Float32Array(dotCount * 3);
+    for (let d = 0; d < dotCount; d++) {
+      const a = d * GOLDEN_ANGLE;
+      dotPos[d * 3] = Math.cos(a) * normR;
+      dotPos[d * 3 + 1] = Math.sin(a) * normR;
+    }
+    const dGeo = new THREE.BufferGeometry();
+    dGeo.setAttribute('position', new THREE.BufferAttribute(dotPos, 3));
+    const dots = new THREE.Points(
+      dGeo,
+      ptsMat(hdrColor([rr, gg, bb], iF * 1.3, 2.2), 2.2 * scale, 0.7),
+    );
+    dots.userData.tag = 'fibDots';
+    dots.userData.normR = normR;
+    group.add(dots);
+  }
+
+  // Extra: connecting radials along golden angle — shows the hidden spiral arms
+  const armCount = Math.min(Math.round(layers * 1.5 + 3), 13);
+  const armPos = new Float32Array(armCount * 6);
+  for (let i = 0; i < armCount; i++) {
+    const a = i * GOLDEN_ANGLE * PHI;
+    armPos[i * 6] = 0;
+    armPos[i * 6 + 1] = 0;
+    armPos[i * 6 + 3] = Math.cos(a) * R;
+    armPos[i * 6 + 4] = Math.sin(a) * R;
+  }
+  const armGeo = new THREE.BufferGeometry();
+  armGeo.setAttribute('position', new THREE.BufferAttribute(armPos, 3));
+  const armLines = new THREE.LineSegments(
+    armGeo,
+    lineMat(hdrColor([rr, gg, bb], iF * 0.12, 1.8), 1.0),
+  );
+  armLines.userData.tag = 'fibArms';
+  group.add(armLines);
+
+  const center = buildCenter([rr, gg, bb], iF, scale);
+  center.userData.tag = 'center';
+  group.add(center);
+  return group;
+}
+
+function updateFibonacci(group: THREE.Group, cfg: Cfg, t: number, R: number): void {
+  const pal = PAL[cfg.preset] ?? PAL['Fibonacci Bloom'];
+  const [rr, gg, bb] = pal.rgb;
+  const iF = cfg.intensity / 10;
+  const scale = R / 210;
+  const PHI = 1.6180339887;
+  const b = (2 / Math.PI) * Math.log(PHI); // logarithmic growth rate
+  const breath = (Math.sin(t * 0.001 * cfg.breathSpeed) + 1) * 0.5;
+  const bs = 0.9 + breath * 0.1;
+  const sym = Math.round(cfg.symmetry);
+  const layers = Math.max(1, Math.round(cfg.complexity));
+  const turns = 2.5 + layers * 0.4;
+  const STEPS = 420;
+  const TAU = Math.PI * 2;
+  const maxTheta = turns * TAU;
+  const tOff = t * 0.00008;
+
+  for (const child of group.children) {
+    const tag = child.userData.tag as string;
+    if (tag === 'fibSpiral') {
+      const sp = child as THREE.Line;
+      const armIdx = sp.userData.armIdx as number;
+      const pos = sp.geometry.attributes.position.array as Float32Array;
+      const rotOff = (armIdx / sym) * TAU + tOff;
+      for (let i = 0; i <= STEPS; i++) {
+        const theta = (i / STEPS) * maxTheta;
+        // r(θ) = R at θ=maxTheta, tiny at θ=0 — pure logarithmic spiral
+        const r = R * bs * Math.exp(b * (theta - maxTheta));
+        pos[i * 3] = Math.cos(theta + rotOff) * r;
+        pos[i * 3 + 1] = Math.sin(theta + rotOff) * r;
+        pos[i * 3 + 2] = 0;
+      }
+      sp.geometry.attributes.position.needsUpdate = true;
+      updateMat(sp, [rr, gg, bb], iF * 0.7, 2.2);
+    } else if (tag === 'fibRing') {
+      const ring = child as THREE.Line;
+      ring.scale.setScalar((ring.userData.normR as number) * bs);
+      const ri = ring.userData.ringIdx as number;
+      updateMat(ring, [rr, gg, bb], iF * (0.08 + (ri / 10) * 0.22), 1.8);
+    } else if (tag === 'fibDots') {
+      const dots = child as THREE.Points;
+      dots.scale.setScalar(bs);
+      dots.rotation.z = tOff * 0.4;
+      const mat = dots.material as THREE.PointsMaterial;
+      mat.opacity = (0.4 + breath * 0.4) * iF;
+      mat.size = (1.6 + breath * 1.4) * scale;
+      updateMat(dots, [rr, gg, bb], iF * 1.3, 2.2);
+    } else if (tag === 'fibArms') {
+      child.rotation.z = tOff * 0.6;
+      updateMat(child as THREE.Object3D, [rr, gg, bb], iF * 0.12, 1.8);
+    } else if (tag === 'center') {
+      updateCenter(child as THREE.Group, breath, [rr, gg, bb], iF, scale);
+    }
+  }
+}
+
+/* ── CLIFFORD ATTRACTOR mode ────────────────────────────────── */
+
+// Known beautiful (a, b, c, d) parameter sets
+const CLIFFORD_SETS: [number, number, number, number][] = [
+  [-1.4, 1.6, 1.0, 0.7],
+  [-1.7, 1.3, -0.1, -1.21],
+  [-2.0, 1.0, -0.1, -1.0],
+  [-1.7, 1.8, -1.9, -0.4],
+  [-1.5, -1.8, 1.6, 0.9],
+  [-1.9, -1.3, -1.8, -1.4],
+  [1.7, 1.7, 0.6, 1.2],
+];
+
+function buildClifford(cfg: Cfg, R: number): THREE.Group {
+  const pal = PAL[cfg.preset] ?? PAL['Clifford Dream'];
+  const [rr, gg, bb] = pal.rgb;
+  const iF = cfg.intensity / 10;
+  const scale = R / 210;
+  const N = 18000;
+  const group = new THREE.Group();
+
+  const pos = new Float32Array(N * 3);
+  const geo = new THREE.BufferGeometry();
+  geo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+  const pts = new THREE.Points(geo, ptsMat(hdrColor([rr, gg, bb], iF, 1.6), 1.1 * scale, 0.6));
+  pts.userData.tag = 'attractor';
+  pts.userData.N = N;
+  pts.userData.x = 0.1;
+  pts.userData.y = 0.1;
+  pts.userData.writeIdx = 0;
+  group.add(pts);
+
+  const center = buildCenter([rr, gg, bb], iF * 1.2, scale);
+  center.userData.tag = 'center';
+  group.add(center);
+  return group;
+}
+
+function updateClifford(group: THREE.Group, cfg: Cfg, t: number, R: number): void {
+  const pal = PAL[cfg.preset] ?? PAL['Clifford Dream'];
+  const [rr, gg, bb] = pal.rgb;
+  const iF = cfg.intensity / 10;
+  const scale = R / 210;
+  const breath = (Math.sin(t * 0.001 * cfg.breathSpeed) + 1) * 0.5;
+  const layers = Math.max(1, Math.round(cfg.complexity));
+
+  // Drift slowly between parameter sets
+  const drift = t * 0.000018 * cfg.breathSpeed;
+  const setIdx = Math.floor(drift) % CLIFFORD_SETS.length;
+  const frac = drift - Math.floor(drift);
+  const [a1, b1, c1, d1] = CLIFFORD_SETS[setIdx];
+  const [a2, b2, c2, d2] = CLIFFORD_SETS[(setIdx + 1) % CLIFFORD_SETS.length];
+  const lp = (x: number, y: number, f: number) => x + (y - x) * f;
+  const a = lp(a1, a2, frac);
+  const b = lp(b1, b2, frac);
+  const c = lp(c1, c2, frac);
+  const d = lp(d1, d2, frac);
+
+  // Scale: Clifford outputs roughly in [-2.5, 2.5]
+  const sc = R * 0.38 * (0.92 + breath * 0.08);
+
+  const ptsPerFrame = 80 + layers * 60;
+
+  for (const child of group.children) {
+    const tag = child.userData.tag as string;
+    if (tag === 'attractor') {
+      const pts = child as THREE.Points;
+      const N = pts.userData.N as number;
+      const pos = pts.geometry.attributes.position.array as Float32Array;
+      let x = pts.userData.x as number;
+      let y = pts.userData.y as number;
+      let wi = pts.userData.writeIdx as number;
+
+      for (let i = 0; i < ptsPerFrame; i++) {
+        const nx = Math.sin(a * y) + c * Math.cos(a * x);
+        const ny = Math.sin(b * x) + d * Math.cos(b * y);
+        x = nx;
+        y = ny;
+        pos[wi * 3] = x * sc;
+        pos[wi * 3 + 1] = y * sc;
+        pos[wi * 3 + 2] = 0;
+        wi = (wi + 1) % N;
+      }
+
+      pts.userData.x = x;
+      pts.userData.y = y;
+      pts.userData.writeIdx = wi;
+      pts.geometry.attributes.position.needsUpdate = true;
+
+      const mat = pts.material as THREE.PointsMaterial;
+      mat.size = (0.9 + breath * 0.4) * scale;
+      updateMat(pts, [rr, gg, bb], iF, 1.6);
+    } else if (tag === 'center') {
+      updateCenter(child as THREE.Group, breath, [rr, gg, bb], iF * 1.2, scale);
+    }
+  }
+}
+
+/* ── 4D HYPERCUBE + HOPF FIBRATION mode ─────────────────────── */
+
+// 16 vertices of tesseract: all (±1,±1,±1,±1) bit-pattern combinations
+const T4_VERTS: [number, number, number, number][] = Array.from({ length: 16 }, (_, i) => [
+  i & 1 ? 1 : -1,
+  i & 2 ? 1 : -1,
+  i & 4 ? 1 : -1,
+  i & 8 ? 1 : -1,
+]);
+
+// 32 edges: every pair of vertices differing in exactly one coordinate
+const T4_EDGES: [number, number][] = (() => {
+  const out: [number, number][] = [];
+  for (let i = 0; i < 16; i++) {
+    for (let bit = 0; bit < 4; bit++) {
+      const j = i ^ (1 << bit);
+      if (j > i) out.push([i, j]);
+    }
+  }
+  return out;
+})();
+
+function buildHypercube(cfg: Cfg, R: number): THREE.Group {
+  const pal = PAL[cfg.preset] ?? PAL['4D Crystal'];
+  const [rr, gg, bb] = pal.rgb;
+  const iF = cfg.intensity / 10;
+  const scale = R / 210;
+  const group = new THREE.Group();
+
+  // Tesseract edge segments — positions written every frame
+  const edgePos = new Float32Array(T4_EDGES.length * 2 * 3);
+  const edgeGeo = new THREE.BufferGeometry();
+  edgeGeo.setAttribute('position', new THREE.BufferAttribute(edgePos, 3));
+  const edges = new THREE.LineSegments(
+    edgeGeo,
+    lineMat(hdrColor([rr, gg, bb], iF * 0.9, 2.2), 1.0),
+  );
+  edges.userData.tag = 'hyperEdges';
+  group.add(edges);
+
+  // Hopf fibration circles — one circle per base point sampled on S²
+  const N_FIBERS = 10;
+  const FIBER_STEPS = 72;
+  for (let fi = 0; fi < N_FIBERS; fi++) {
+    const pos = new Float32Array((FIBER_STEPS + 1) * 3);
+    const geo = new THREE.BufferGeometry();
+    geo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+    const fiber = new THREE.Line(geo, lineMat(hdrColor([rr, gg, bb], iF * 0.55, 2.0), 0.85));
+    fiber.userData.tag = 'hopfFiber';
+    fiber.userData.fi = fi;
+    fiber.userData.nf = N_FIBERS;
+    fiber.userData.steps = FIBER_STEPS;
+    group.add(fiber);
+  }
+
+  const center = buildCenter([rr, gg, bb], iF * 1.2, scale);
+  center.userData.tag = 'center';
+  group.add(center);
+  return group;
+}
+
+function updateHypercube(group: THREE.Group, cfg: Cfg, t: number, R: number): void {
+  const pal = PAL[cfg.preset] ?? PAL['4D Crystal'];
+  const [rr, gg, bb] = pal.rgb;
+  const iF = cfg.intensity / 10;
+  const scale = R / 210;
+  const breath = (Math.sin(t * 0.001 * cfg.breathSpeed) + 1) * 0.5;
+
+  // Pre-compute sin/cos for all 6 planes of 4D rotation
+  const sp = cfg.breathSpeed * 0.00028;
+  const c0 = Math.cos(t * sp * 0.7),
+    s0 = Math.sin(t * sp * 0.7); // XY
+  const c1 = Math.cos(t * sp * 0.5),
+    s1 = Math.sin(t * sp * 0.5); // XZ
+  const c2 = Math.cos(t * sp * 1.1),
+    s2 = Math.sin(t * sp * 1.1); // XW
+  const c3 = Math.cos(t * sp * 0.9),
+    s3 = Math.sin(t * sp * 0.9); // YZ
+  const c4 = Math.cos(t * sp * 0.6),
+    s4 = Math.sin(t * sp * 0.6); // YW
+  const c5 = Math.cos(t * sp * 0.4),
+    s5 = Math.sin(t * sp * 0.4); // ZW
+
+  const rot4 = (
+    vx: number,
+    vy: number,
+    vz: number,
+    vw: number,
+  ): [number, number, number, number] => {
+    let x = vx,
+      y = vy,
+      z = vz,
+      w = vw,
+      tmp: number;
+    tmp = x * c0 - y * s0;
+    y = x * s0 + y * c0;
+    x = tmp;
+    tmp = x * c1 - z * s1;
+    z = x * s1 + z * c1;
+    x = tmp;
+    tmp = x * c2 - w * s2;
+    w = x * s2 + w * c2;
+    x = tmp;
+    tmp = y * c3 - z * s3;
+    z = y * s3 + z * c3;
+    y = tmp;
+    tmp = y * c4 - w * s4;
+    w = y * s4 + w * c4;
+    y = tmp;
+    tmp = z * c5 - w * s5;
+    w = z * s5 + w * c5;
+    z = tmp;
+    return [x, y, z, w];
+  };
+
+  const proj4 = (x: number, y: number, _z: number, w: number): [number, number] => {
+    const wf = 1.0 / (2.0 - w * 0.45);
+    return [x * wf * R * 0.5, y * wf * R * 0.5];
+  };
+
+  // Pre-project all 16 tesseract vertices
+  const vProj: [number, number][] = T4_VERTS.map(([vx, vy, vz, vw]) => {
+    const [rx, ry, rz, rw] = rot4(vx, vy, vz, vw);
+    return proj4(rx, ry, rz, rw);
+  });
+
+  const tmpCol = new THREE.Color();
+
+  for (const child of group.children) {
+    const tag = child.userData.tag as string;
+    if (tag === 'hyperEdges') {
+      const edges = child as THREE.LineSegments;
+      const pos = edges.geometry.attributes.position.array as Float32Array;
+      for (let ei = 0; ei < T4_EDGES.length; ei++) {
+        const [ai, bi] = T4_EDGES[ei];
+        pos[ei * 6] = vProj[ai][0];
+        pos[ei * 6 + 1] = vProj[ai][1];
+        pos[ei * 6 + 2] = 0;
+        pos[ei * 6 + 3] = vProj[bi][0];
+        pos[ei * 6 + 4] = vProj[bi][1];
+        pos[ei * 6 + 5] = 0;
+      }
+      edges.geometry.attributes.position.needsUpdate = true;
+      const br = iF * (0.7 + breath * 0.3) * 2.2;
+      (edges.material as THREE.LineBasicMaterial).color.setRGB(
+        (rr / 255) * br,
+        (gg / 255) * br,
+        (bb / 255) * br,
+      );
+    } else if (tag === 'hopfFiber') {
+      const fiber = child as THREE.Line;
+      const fi = fiber.userData.fi as number;
+      const nf = fiber.userData.nf as number;
+      const STEPS = fiber.userData.steps as number;
+
+      // Golden-angle sampling of S² for base point of each fiber
+      const theta = Math.acos(1 - 2 * ((fi + 0.5) / nf));
+      const phi = fi * 2.399963 + t * 0.00012; // slow azimuthal drift
+      const st = Math.sin(theta / 2),
+        ct = Math.cos(theta / 2);
+
+      const pos = fiber.geometry.attributes.position.array as Float32Array;
+      for (let k = 0; k <= STEPS; k++) {
+        const psi = (k / STEPS) * Math.PI * 2;
+        // S³ point on this Hopf fiber
+        const [rx, ry, rz, rw] = rot4(
+          st * Math.cos(phi + psi),
+          st * Math.sin(phi + psi),
+          ct * Math.cos(psi),
+          ct * Math.sin(psi),
+        );
+        const [px, py] = proj4(rx, ry, rz, rw);
+        pos[k * 3] = px;
+        pos[k * 3 + 1] = py;
+        pos[k * 3 + 2] = 0;
+      }
+      fiber.geometry.attributes.position.needsUpdate = true;
+
+      const br = iF * (0.4 + breath * 0.35) * 2.0;
+      tmpCol.setHSL(fi / nf, 0.85, 0.55);
+      (fiber.material as THREE.LineBasicMaterial).color.setRGB(
+        tmpCol.r * br,
+        tmpCol.g * br,
+        tmpCol.b * br,
+      );
+      (fiber.material as THREE.LineBasicMaterial).opacity = 0.5 + breath * 0.35;
+    } else if (tag === 'center') {
+      updateCenter(child as THREE.Group, breath, [rr, gg, bb], iF * 1.2, scale);
+    }
+  }
+}
+
+/* ── WARP DRIVE mode ────────────────────────────────────────── */
+
+const WARP_COUNT = 140;
+
+function buildWarp(cfg: Cfg, R: number): THREE.Group {
+  const pal = PAL[cfg.preset] ?? PAL['Warp Drive'];
+  const [rr, gg, bb] = pal.rgb;
+  const iF = cfg.intensity / 10;
+  const group = new THREE.Group();
+  const sym = Math.round(cfg.symmetry);
+  const TAU = Math.PI * 2;
+
+  for (let i = 0; i < WARP_COUNT; i++) {
+    const pos = new Float32Array(2 * 3);
+    const geo = new THREE.BufferGeometry();
+    geo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+    const streak = new THREE.Line(geo, lineMat(hdrColor([rr, gg, bb], iF * 0.8, 2.2), 0.9));
+    // Align streaks to symmetry axes with a little jitter
+    const sectorAngle =
+      sym > 1 ? Math.round((i / WARP_COUNT) * sym) * (TAU / sym) : (i / WARP_COUNT) * TAU;
+    streak.userData.tag = 'warpStreak';
+    streak.userData.angle =
+      sectorAngle + (Math.random() - 0.5) * (sym > 1 ? (TAU / sym) * 0.6 : 0.22);
+    streak.userData.r = Math.random() * R * 0.3;
+    streak.userData.spd = 1.2 + Math.random() * 2.8;
+    streak.userData.len = (0.06 + Math.random() * 0.14) * R;
+    group.add(streak);
+  }
+  return group;
+}
+
+function updateWarp(group: THREE.Group, cfg: Cfg, t: number, R: number): void {
+  const pal = PAL[cfg.preset] ?? PAL['Warp Drive'];
+  const [rr, gg, bb] = pal.rgb;
+  const iF = cfg.intensity / 10;
+  const speed = cfg.breathSpeed;
+
+  for (const child of group.children) {
+    if (child.userData.tag !== 'warpStreak') continue;
+    const streak = child as THREE.Line;
+
+    streak.userData.r = (streak.userData.r as number) + (streak.userData.spd as number) * speed;
+    const r = streak.userData.r as number;
+
+    if (r > R * 1.5) {
+      // Respawn from near-centre with a fresh angle
+      streak.userData.r = Math.random() * 0.04 * R;
+      streak.userData.angle = (t * 0.00001 + Math.random()) * Math.PI * 2;
+      streak.userData.spd = 1.2 + Math.random() * 2.8;
+      streak.userData.len = (0.06 + Math.random() * 0.14) * R;
+    }
+
+    const angle = streak.userData.angle as number;
+    const len = streak.userData.len as number;
+    const r0 = Math.max(0, r - len);
+    const progress = Math.min(1, r / (R * 0.85));
+
+    const pos = streak.geometry.attributes.position.array as Float32Array;
+    pos[0] = Math.cos(angle) * r0;
+    pos[1] = Math.sin(angle) * r0;
+    pos[2] = 0;
+    pos[3] = Math.cos(angle) * r;
+    pos[4] = Math.sin(angle) * r;
+    pos[5] = 0;
+    streak.geometry.attributes.position.needsUpdate = true;
+
+    const twinkle = 0.8 + 0.2 * Math.sin(t * 0.002 + angle * 7.3);
+    const br = progress * iF * 2.4;
+    (streak.material as THREE.LineBasicMaterial).color.setRGB(
+      (rr / 255) * br,
+      (gg / 255) * br,
+      (bb / 255) * br,
+    );
+    (streak.material as THREE.LineBasicMaterial).opacity = progress * 0.88 * twinkle;
+  }
+}
+
+/* ── Background stars ───────────────────────────────────────── */
+
+function buildStars(count: number, W: number, H: number): THREE.Group {
+  const g = new THREE.Group();
+  if (count <= 0) return g;
+  const totalN = Math.round(count * 55 + 25);
+  const half = Math.max(W, H) * 0.62;
+  const layers = [
+    { frac: 0.65, size: 0.8, phase: 0 },
+    { frac: 0.28, size: 1.4, phase: 2.1 },
+    { frac: 0.07, size: 2.4, phase: 4.3 },
+  ];
+  for (const layer of layers) {
+    const N = Math.round(totalN * layer.frac);
+    const pos = new Float32Array(N * 3);
+    for (let i = 0; i < N; i++) {
+      pos[i * 3] = (Math.random() - 0.5) * 2 * half;
+      pos[i * 3 + 1] = (Math.random() - 0.5) * 2 * half;
+    }
+    const geo = new THREE.BufferGeometry();
+    geo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+    const mat = new THREE.PointsMaterial({
+      color: new THREE.Color(1.6, 1.6, 2.0),
+      size: layer.size,
+      sizeAttenuation: false,
+      transparent: true,
+      opacity: 0.35,
+      blending: THREE.AdditiveBlending,
+      depthWrite: false,
+    });
+    const pts = new THREE.Points(geo, mat);
+    pts.userData.tag = 'starLayer';
+    pts.userData.phase = layer.phase;
+    g.add(pts);
+  }
+  return g;
+}
+
+function updateStars(group: THREE.Group, t: number): void {
+  for (const child of group.children) {
+    if (child.userData.tag === 'starLayer') {
+      const phase = child.userData.phase as number;
+      if ((child as THREE.Points).material instanceof THREE.PointsMaterial) {
+        ((child as THREE.Points).material as THREE.PointsMaterial).opacity =
+          0.2 + 0.18 * Math.sin(t * 0.00075 + phase);
+      }
     }
   }
 }
@@ -1210,6 +2178,7 @@ const SLIDERS = [
   { key: 'intensity', label: 'Colour', min: 0, max: 10, step: 0.5 },
   { key: 'particles', label: 'Particles', min: 0, max: 10, step: 1 },
   { key: 'luminous', label: 'Luminous', min: 0, max: 10, step: 0.5 },
+  { key: 'stars', label: 'Stars', min: 0, max: 10, step: 1 },
 ] as const;
 
 /* ── Mode pill definitions ──────────────────────────────────── */
@@ -1221,6 +2190,12 @@ const MODES: { mode: Mode; label: string }[] = [
   { mode: 'golden', label: 'φ Golden' },
   { mode: 'kaleidoscope', label: '⬡ Kaleidoscope' },
   { mode: 'torus', label: '◎ Torus' },
+  { mode: 'tunnel', label: '⊙ Tunnel' },
+  { mode: 'vitral', label: '✧ Vitral' },
+  { mode: 'fibonacci', label: 'φ² Fibonacci' },
+  { mode: 'clifford', label: '∞ Clifford' },
+  { mode: 'hypercube', label: '◈ Hypercube' },
+  { mode: 'warp', label: '⋙ Warp' },
 ];
 
 /* ── Component ──────────────────────────────────────────────── */
@@ -1242,6 +2217,8 @@ export default function GeometryField() {
   const bloomPassRef = useRef<UnrealBloomPass | null>(null);
   const modeGroupRef = useRef<THREE.Group | null>(null);
   const builtKeyRef = useRef('');
+  const starsGroupRef = useRef<THREE.Group | null>(null);
+  const builtStarsKeyRef = useRef('');
   const sizeRef = useRef({ W: 0, H: 0 });
   const clearColorRef = useRef(new THREE.Color());
   const rippleRingsRef = useRef<THREE.Line[]>([]);
@@ -1328,6 +2305,19 @@ export default function GeometryField() {
       bloomPass.threshold = 0.05;
       bloomPass.radius = 0.4 + currentCfg.luminous * 0.04;
 
+      // Rebuild stars when count or viewport changes
+      const starsKey = `${Math.round(currentCfg.stars)}-${Math.round(W)}-${Math.round(H)}`;
+      if (starsKey !== builtStarsKeyRef.current) {
+        if (starsGroupRef.current) {
+          scene.remove(starsGroupRef.current);
+          disposeGroup(starsGroupRef.current);
+        }
+        starsGroupRef.current = buildStars(currentCfg.stars, W, H);
+        scene.add(starsGroupRef.current);
+        builtStarsKeyRef.current = starsKey;
+      }
+      if (starsGroupRef.current) updateStars(starsGroupRef.current, t);
+
       // Rebuild mode group when topology changes
       const key = `${currentCfg.mode}-${currentCfg.symmetry}-${Math.round(currentCfg.complexity)}`;
       if (key !== builtKeyRef.current || modeGroupRef.current === null) {
@@ -1363,15 +2353,14 @@ export default function GeometryField() {
     return () => {
       cancelAnimationFrame(animRef.current);
       ro.disconnect();
-      // Clean up ripple rings
       for (const r of rippleRingsRef.current) {
         scene.remove(r);
         r.geometry.dispose();
         (r.material as THREE.Material).dispose();
       }
       rippleRingsRef.current = [];
-      // Dispose scene
       if (modeGroupRef.current) disposeGroup(modeGroupRef.current);
+      if (starsGroupRef.current) disposeGroup(starsGroupRef.current);
       composer.dispose();
       renderer.dispose();
     };
@@ -1402,7 +2391,20 @@ export default function GeometryField() {
   function handleRandomize() {
     const keys = Object.keys(PRESETS);
     const base = PRESETS[keys[Math.floor(Math.random() * keys.length)]];
-    const modeKeys: Mode[] = ['sacred', 'burst', 'lissajous', 'golden', 'kaleidoscope', 'torus'];
+    const modeKeys: Mode[] = [
+      'sacred',
+      'burst',
+      'lissajous',
+      'golden',
+      'kaleidoscope',
+      'torus',
+      'tunnel',
+      'vitral',
+      'fibonacci',
+      'clifford',
+      'hypercube',
+      'warp',
+    ];
     setCfg({
       ...base,
       symmetry: 4 + Math.floor(Math.random() * 20),
@@ -1412,6 +2414,7 @@ export default function GeometryField() {
       intensity: 4 + Math.random() * 6,
       particles: Math.floor(Math.random() * 10),
       luminous: Math.random() * 10,
+      stars: Math.floor(Math.random() * 8),
       mode: modeKeys[Math.floor(Math.random() * modeKeys.length)],
     });
   }
