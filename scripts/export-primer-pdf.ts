@@ -1,5 +1,5 @@
-import { execSync } from 'child_process';
-import { readFileSync, writeFileSync } from 'fs';
+import { execSync } from 'node:child_process';
+import { readFileSync, writeFileSync } from 'node:fs';
 
 const md = readFileSync('docs/technical-primer.md', 'utf-8');
 

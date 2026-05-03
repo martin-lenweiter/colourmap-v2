@@ -750,7 +750,7 @@ export default function NotebookPage() {
                 className="flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold transition-all"
                 style={{
                   background: activeNb ? `${activeNb.color}18` : 'transparent',
-                  border: `1px solid ${activeNb ? activeNb.color + '40' : '#C4A06040'}`,
+                  border: `1px solid ${activeNb ? `${activeNb.color}40` : '#C4A06040'}`,
                   color: activeNb?.color ?? '#C4A060',
                 }}
               >
@@ -784,7 +784,7 @@ export default function NotebookPage() {
                         className="shrink-0 rounded-full px-3 py-1.5 text-xs font-medium transition-all"
                         style={{
                           background: isActive ? `${nb.color}18` : 'transparent',
-                          border: `1px solid ${isOver ? nb.color + '80' : isActive ? nb.color + '40' : nb.color + '18'}`,
+                          border: `1px solid ${isOver ? `${nb.color}80` : isActive ? `${nb.color}40` : `${nb.color}18`}`,
                           color: isActive ? nb.color : `${nb.color}60`,
                           whiteSpace: 'nowrap',
                           opacity: isDragging ? 0.35 : 1,
@@ -1329,7 +1329,7 @@ export default function NotebookPage() {
                               className="flex cursor-pointer items-center justify-center rounded-full px-2.5 py-1 transition-all"
                               style={{
                                 background: spellCheckOn ? `${color}08` : 'transparent',
-                                border: `1px solid ${spellCheckOn ? color + '20' : color + '10'}`,
+                                border: `1px solid ${spellCheckOn ? `${color}20` : `${color}10`}`,
                                 fontFamily: 'var(--font-serif)',
                                 fontSize: '11px',
                                 fontWeight: 600,

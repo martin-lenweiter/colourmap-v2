@@ -30,7 +30,7 @@ export default function VoiceProviderSelector() {
   const { provider, setProvider, speaking, kokoroStatus, speak, stop, config, setConfig } =
     useTTS();
   const [testPhrase, setTestPhrase] = useState(TEST_PHRASES[0]);
-  const [expanded, setExpanded] = useState<TTSProvider | null>(null);
+  const [_expanded, setExpanded] = useState<TTSProvider | null>(null);
 
   const color = PROVIDER_COLORS[provider];
 

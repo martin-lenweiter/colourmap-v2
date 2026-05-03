@@ -5,7 +5,7 @@ import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
 import { useEffect, useRef, useState } from 'react';
 
-import { colours, fontSize, radii, space } from '@/lib/design-tokens';
+import { fontSize, radii, space } from '@/lib/design-tokens';
 
 // Fix Leaflet's default icon path issue with bundlers.
 delete (L.Icon.Default.prototype as unknown as Record<string, unknown>)._getIconUrl;

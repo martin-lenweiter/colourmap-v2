@@ -63,7 +63,7 @@ interface ContextShape {
 
 function composeBrief(ctx: ContextShape): string {
   const time = timePhrase(timeOfDay());
-  const parts: string[] = [time + '.'];
+  const parts: string[] = [`${time}.`];
 
   if (ctx.chapter) {
     parts.push(`${ctx.chapter}.`);

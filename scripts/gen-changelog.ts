@@ -3,8 +3,8 @@
  * Reads the last 30 git commits and writes lib/generated/changelog.ts
  * so ColourmapBrandButton always shows real history without manual updates.
  */
-import { execSync } from 'child_process';
-import { mkdirSync, writeFileSync } from 'fs';
+import { execSync } from 'node:child_process';
+import { mkdirSync, writeFileSync } from 'node:fs';
 
 function run(cmd: string): string {
   try {

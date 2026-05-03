@@ -1341,19 +1341,6 @@ export default function FeelingCheckInCard() {
       {/* BOX A: FEELING — frame removed on phone to reclaim margins.
           Desktop keeps the beige card for visual grouping. */}
       <div className="relative space-y-2.5 rounded-none border-0 bg-transparent px-0 py-0 shadow-none md:space-y-5 md:rounded-3xl md:border md:border-[#7a543833] md:px-5 md:py-6 md:bg-[linear-gradient(180deg,rgba(251,244,232,0.95),rgba(246,236,221,0.92))] md:shadow-[0_24px_50px_-34px_rgba(92,48,24,0.35)]">
-        <p
-          className="text-center uppercase tracking-[0.2em] md:tracking-[0.24em]"
-          style={{
-            fontFamily: 'var(--font-serif)',
-            // Tighter on phone per user: go deeper, smaller.
-            fontSize: 'clamp(10px, 2.4vw, 13px)',
-            fontWeight: 700,
-            color: '#D4805A',
-            opacity: 0.7,
-          }}
-        >
-          feeling
-        </p>
         {/* Discrete design toggle — tiny losange at top-right, opens variant picker */}
         <div className="absolute right-4 top-4" style={{ zIndex: 10 }}>
           <button
@@ -3057,129 +3044,117 @@ export default function FeelingCheckInCard() {
         </div>
       </div>
 
-      {/* BOX B: DOING — frame removed on phone to reclaim margins. */}
-      <div className="space-y-2.5 rounded-none border-0 bg-transparent px-0 py-0 shadow-none md:space-y-4 md:rounded-3xl md:border md:border-[#7a543833] md:px-5 md:py-6 md:bg-[linear-gradient(180deg,rgba(251,244,232,0.95),rgba(246,236,221,0.92))] md:shadow-[0_24px_50px_-34px_rgba(92,48,24,0.35)]">
-        <p
-          className="text-center uppercase tracking-[0.24em]"
-          style={{
-            fontFamily: 'var(--font-serif)',
-            fontSize: '10px',
-            fontWeight: 700,
-            color: '#6890B0',
-            opacity: 0.5,
-          }}
-        >
-          doing
-        </p>
-        {/* CURRENT OBJECTIVE */}
-        <div className="space-y-2 px-0 py-1 transition-all">
-          <div className="flex flex-col items-center gap-2">
-            <button
-              type="button"
-              onClick={toggleObjectiveSection}
-              className="flex cursor-pointer items-center gap-2 rounded-full px-5 py-1.5 transition-all"
-              style={{
-                background: '#C4A06015',
-                border: '1px solid #C4A06040',
-              }}
-            >
-              <span
-                className="text-center text-sm font-semibold uppercase tracking-[0.22em]"
-                style={{ color: '#C4A060' }}
-              >
-                {renamingSection === 'current' ? (
-                  <input
-                    type="text"
-                    value={renameValue}
-                    onChange={(e) => setRenameValue(e.target.value)}
-                    onBlur={() => commitRename('current', 'Current Objective')}
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter') commitRename('current', 'Current Objective');
-                      if (e.key === 'Escape') setRenamingSection(null);
-                    }}
-                    autoFocus
-                    className="bg-transparent text-center text-sm font-semibold uppercase tracking-[0.22em] outline-none border-b"
-                    style={{ color: '#C4A060', borderColor: '#C4A06040' }}
-                  />
-                ) : (
-                  <span
-                    className="cursor-pointer"
-                    onDoubleClick={() => {
-                      setRenamingSection('current');
-                      setRenameValue(sectionLabel('current', 'Current Objective'));
-                    }}
-                    title="Double-click to rename"
-                  >
-                    {sectionLabel('current', 'Current Objective')}
-                  </span>
-                )}
-              </span>
-              <span
-                className="text-sm transition-transform duration-200"
+      {false /* BOX B: DOING removed — Current Objective lives in DoingPanel only */ && (
+        <div>
+          <div className="space-y-2 px-0 py-1 transition-all">
+            <div className="flex flex-col items-center gap-2">
+              <button
+                type="button"
+                onClick={toggleObjectiveSection}
+                className="flex cursor-pointer items-center gap-2 rounded-full px-5 py-1.5 transition-all"
                 style={{
-                  color: '#C4A06080',
-                  transform: objectiveSectionOpen ? 'rotate(180deg)' : 'rotate(0deg)',
+                  background: '#C4A06015',
+                  border: '1px solid #C4A06040',
                 }}
               >
-                ▾
-              </span>
-            </button>
-            <div className="relative w-full">
-              <input
-                type="text"
-                value={objective}
-                onChange={(e) => setObjective(e.target.value)}
-                placeholder="set an objective..."
-                className="w-full border-b bg-transparent pb-1 text-center outline-none placeholder:text-[#7A5438] placeholder:opacity-50"
-                style={{
-                  color: '#5C3018',
-                  borderColor: '#C4A06020',
-                  fontFamily: 'var(--font-handwritten)',
-                  fontSize: '24px',
-                  fontWeight: 700,
-                  letterSpacing: '0.06em',
-                  paddingLeft: '64px',
-                  paddingRight: '64px',
-                }}
-              />
-              <div className="absolute right-0 top-1/2 flex -translate-y-1/2 items-center gap-1.5">
-                {objective.trim().length > 0 && (
-                  <CategoryTagPicker
-                    value={objectiveTag}
-                    onChange={(v) => {
-                      setObjectiveTag(v);
-                      if (v?.categoryId) tagObjectiveToCategory(v.categoryId);
-                    }}
-                    open={showCategoryPicker}
-                    onToggle={() => setShowCategoryPicker(!showCategoryPicker)}
-                    onClose={() => setShowCategoryPicker(false)}
-                    lifeCategories={lifeCategories}
-                    compassAxes={COMPASS_AXES}
-                  />
-                )}
-                {objective.trim().length > 0 && (
-                  <button
-                    type="button"
-                    onClick={() => completeObjective(objective)}
-                    title="Mark as done"
-                    className="flex h-5 w-5 shrink-0 cursor-pointer items-center justify-center rounded border transition-all hover:scale-110"
-                    style={{
-                      borderColor: '#7AAA5860',
-                      background: '#7AAA5810',
-                    }}
-                  >
-                    <span className="text-xs" style={{ color: '#7AAA58' }}>
-                      ✓
+                <span
+                  className="text-center text-sm font-semibold uppercase tracking-[0.22em]"
+                  style={{ color: '#C4A060' }}
+                >
+                  {renamingSection === 'current' ? (
+                    <input
+                      type="text"
+                      value={renameValue}
+                      onChange={(e) => setRenameValue(e.target.value)}
+                      onBlur={() => commitRename('current', 'Current Objective')}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') commitRename('current', 'Current Objective');
+                        if (e.key === 'Escape') setRenamingSection(null);
+                      }}
+                      autoFocus
+                      className="bg-transparent text-center text-sm font-semibold uppercase tracking-[0.22em] outline-none border-b"
+                      style={{ color: '#C4A060', borderColor: '#C4A06040' }}
+                    />
+                  ) : (
+                    <span
+                      className="cursor-pointer"
+                      onDoubleClick={() => {
+                        setRenamingSection('current');
+                        setRenameValue(sectionLabel('current', 'Current Objective'));
+                      }}
+                      title="Double-click to rename"
+                    >
+                      {sectionLabel('current', 'Current Objective')}
                     </span>
-                  </button>
-                )}
+                  )}
+                </span>
+                <span
+                  className="text-sm transition-transform duration-200"
+                  style={{
+                    color: '#C4A06080',
+                    transform: objectiveSectionOpen ? 'rotate(180deg)' : 'rotate(0deg)',
+                  }}
+                >
+                  ▾
+                </span>
+              </button>
+              <div className="relative w-full">
+                <input
+                  type="text"
+                  value={objective}
+                  onChange={(e) => setObjective(e.target.value)}
+                  placeholder="set an objective..."
+                  className="w-full border-b bg-transparent pb-1 text-center outline-none placeholder:text-[#7A5438] placeholder:opacity-50"
+                  style={{
+                    color: '#5C3018',
+                    borderColor: '#C4A06020',
+                    fontFamily: 'var(--font-handwritten)',
+                    fontSize: '24px',
+                    fontWeight: 700,
+                    letterSpacing: '0.06em',
+                    paddingLeft: '64px',
+                    paddingRight: '64px',
+                  }}
+                />
+                <div className="absolute right-0 top-1/2 flex -translate-y-1/2 items-center gap-1.5">
+                  {objective.trim().length > 0 && (
+                    <CategoryTagPicker
+                      value={objectiveTag}
+                      onChange={(v) => {
+                        setObjectiveTag(v);
+                        if (v?.categoryId) tagObjectiveToCategory(v.categoryId);
+                      }}
+                      open={showCategoryPicker}
+                      onToggle={() => setShowCategoryPicker(!showCategoryPicker)}
+                      onClose={() => setShowCategoryPicker(false)}
+                      lifeCategories={lifeCategories}
+                      compassAxes={COMPASS_AXES}
+                    />
+                  )}
+                  {objective.trim().length > 0 && (
+                    <button
+                      type="button"
+                      onClick={() => completeObjective(objective)}
+                      title="Mark as done"
+                      className="flex h-5 w-5 shrink-0 cursor-pointer items-center justify-center rounded border transition-all hover:scale-110"
+                      style={{
+                        borderColor: '#7AAA5860',
+                        background: '#7AAA5810',
+                      }}
+                    >
+                      <span className="text-xs" style={{ color: '#7AAA58' }}>
+                        ✓
+                      </span>
+                    </button>
+                  )}
+                </div>
               </div>
             </div>
-          </div>
 
-          {/* Done archive moved to Other Missions Done tab */}
+            {/* Done archive moved to Other Missions Done tab */}
+          </div>
         </div>
-      </div>
+      )}
     </>
   );
 }

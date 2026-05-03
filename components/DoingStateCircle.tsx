@@ -2,12 +2,6 @@
 
 import { useEffect, useState } from 'react';
 
-/*
- * DoingStateCircle — big circle + dot selector for the Doing tab.
- * 7 stops from green (Deep Rest) to blue (Tunnel Vision).
- * Mirrors the SharingCheckIn circle pattern so F / D / S share the same anchor.
- */
-
 const DOING_LEVELS = [
   { label: 'Deep Rest', color: '#5A9A70' },
   { label: 'Drifting', color: '#4A9A85' },
@@ -28,39 +22,6 @@ function loadIdx(): number {
   } catch {
     return 3;
   }
-}
-
-function DotSelector({ idx, onSelect }: { idx: number; onSelect: (i: number) => void }) {
-  const DOT = 28;
-  const GAP = 6;
-
-  return (
-    <div className="flex items-center" style={{ gap: GAP }}>
-      {DOING_LEVELS.map((l, i) => {
-        const isActive = i === idx;
-        const dist = Math.abs(i - idx);
-        return (
-          <button
-            key={l.label}
-            type="button"
-            onClick={() => onSelect(i)}
-            className="cursor-pointer transition-all duration-200"
-            style={{
-              width: isActive ? DOT : 10,
-              height: isActive ? DOT : 10,
-              borderRadius: '50%',
-              background: l.color,
-              opacity: isActive ? 1 : dist === 1 ? 0.5 : 0.25,
-              boxShadow: isActive ? `0 4px 14px ${l.color}66` : 'none',
-              border: 'none',
-              padding: 0,
-              flexShrink: 0,
-            }}
-          />
-        );
-      })}
-    </div>
-  );
 }
 
 export default function DoingStateCircle({ onDone }: { onDone?: () => void }) {
@@ -111,8 +72,40 @@ export default function DoingStateCircle({ onDone }: { onDone?: () => void }) {
         </span>
       </div>
 
-      {/* Dot selector — no track line, no tick marks */}
-      <DotSelector idx={idx} onSelect={pick} />
+      {/* Range slider */}
+      <input
+        type="range"
+        min={0}
+        max={DOING_LEVELS.length - 1}
+        step={1}
+        value={idx}
+        onChange={(e) => pick(Number(e.target.value))}
+        style={{ width: '100%', maxWidth: 220, accentColor: current.color, cursor: 'pointer' }}
+      />
+      <div className="flex w-full justify-between" style={{ maxWidth: 220 }}>
+        <span
+          className="italic"
+          style={{
+            fontFamily: 'var(--font-serif)',
+            fontSize: '11px',
+            color: DOING_LEVELS[0].color,
+            opacity: 0.6,
+          }}
+        >
+          Deep Rest
+        </span>
+        <span
+          className="italic"
+          style={{
+            fontFamily: 'var(--font-serif)',
+            fontSize: '11px',
+            color: DOING_LEVELS[DOING_LEVELS.length - 1].color,
+            opacity: 0.6,
+          }}
+        >
+          Tunnel Vision
+        </span>
+      </div>
 
       {/* Done button */}
       <button

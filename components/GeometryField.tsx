@@ -21,7 +21,11 @@ type Mode =
   | 'fibonacci'
   | 'clifford'
   | 'hypercube'
-  | 'warp';
+  | 'warp'
+  | 'lorenz'
+  | 'knot'
+  | 'orbital'
+  | 'geodesic';
 
 interface Pal {
   bg0: string;
@@ -189,6 +193,42 @@ const PAL: Record<string, Pal> = {
     glow: 'rgba(50,230,170,0.42)',
     dots: 'rgba(140,255,220,0.72)',
     rgb: [80, 255, 200],
+  },
+  'Lorenz Storm': {
+    bg0: '#030612',
+    bg1: '#010308',
+    line: 'rgba(80,180,255,0.65)',
+    fill: 'rgba(60,160,255,0.07)',
+    glow: 'rgba(50,150,255,0.40)',
+    dots: 'rgba(140,210,255,0.72)',
+    rgb: [80, 180, 255],
+  },
+  'Knot Garden': {
+    bg0: '#080010',
+    bg1: '#040008',
+    line: 'rgba(200,100,255,0.65)',
+    fill: 'rgba(180,80,255,0.07)',
+    glow: 'rgba(160,60,255,0.40)',
+    dots: 'rgba(220,150,255,0.72)',
+    rgb: [200, 100, 255],
+  },
+  'Orbital Shell': {
+    bg0: '#001408',
+    bg1: '#000a04',
+    line: 'rgba(80,255,160,0.65)',
+    fill: 'rgba(60,240,140,0.07)',
+    glow: 'rgba(50,220,130,0.40)',
+    dots: 'rgba(140,255,200,0.72)',
+    rgb: [80, 255, 160],
+  },
+  'Crystal Lattice': {
+    bg0: '#060610',
+    bg1: '#030308',
+    line: 'rgba(200,220,255,0.65)',
+    fill: 'rgba(180,200,255,0.07)',
+    glow: 'rgba(160,190,255,0.40)',
+    dots: 'rgba(220,235,255,0.72)',
+    rgb: [200, 220, 255],
   },
 };
 
@@ -363,6 +403,54 @@ const PRESETS: Record<string, Cfg> = {
     stars: 9,
     mode: 'warp',
   },
+  'Lorenz Storm': {
+    preset: 'Lorenz Storm',
+    symmetry: 8,
+    complexity: 4,
+    glow: 7,
+    breathSpeed: 0.6,
+    intensity: 8,
+    particles: 0,
+    luminous: 7,
+    stars: 5,
+    mode: 'lorenz',
+  },
+  'Knot Garden': {
+    preset: 'Knot Garden',
+    symmetry: 3,
+    complexity: 3,
+    glow: 7,
+    breathSpeed: 0.5,
+    intensity: 8,
+    particles: 0,
+    luminous: 7,
+    stars: 4,
+    mode: 'knot',
+  },
+  'Orbital Shell': {
+    preset: 'Orbital Shell',
+    symmetry: 6,
+    complexity: 2,
+    glow: 6,
+    breathSpeed: 0.7,
+    intensity: 8,
+    particles: 0,
+    luminous: 6,
+    stars: 3,
+    mode: 'orbital',
+  },
+  'Crystal Lattice': {
+    preset: 'Crystal Lattice',
+    symmetry: 3,
+    complexity: 5,
+    glow: 8,
+    breathSpeed: 0.5,
+    intensity: 8,
+    particles: 0,
+    luminous: 8,
+    stars: 6,
+    mode: 'geodesic',
+  },
 };
 
 /* ── Intention resolver ─────────────────────────────────────── */
@@ -384,6 +472,10 @@ function resolveIntention(w: string): string {
   if (/chaos|attractor|strange|clifford|fractal|evolv|morph/.test(t)) return 'Clifford Dream';
   if (/4d|four.?d|hyper|tesseract|hopf|dimension/.test(t)) return '4D Crystal';
   if (/warp|drive|streak|hyperspace|starfield|jump/.test(t)) return 'Warp Drive';
+  if (/lorenz|storm|butter|attractor|chaos3d|three.?d/.test(t)) return 'Lorenz Storm';
+  if (/knot|torus|braid|link|trefoil|knotted/.test(t)) return 'Knot Garden';
+  if (/orbital|atom|electron|quantum|shell|molecule/.test(t)) return 'Orbital Shell';
+  if (/crystal|lattice|platonic|polyhedron|geodesic|icosa|dodeca/.test(t)) return 'Crystal Lattice';
   const keys = Object.keys(PRESETS);
   return keys[Math.floor(Math.random() * keys.length)];
 }
@@ -656,6 +748,14 @@ function buildModeGroup(cfg: Cfg, R: number): THREE.Group {
       return buildHypercube(cfg, R);
     case 'warp':
       return buildWarp(cfg, R);
+    case 'lorenz':
+      return buildLorenz(cfg, R);
+    case 'knot':
+      return buildKnot(cfg, R);
+    case 'orbital':
+      return buildOrbital(cfg, R);
+    case 'geodesic':
+      return buildGeodesic(cfg, R);
     default:
       return buildSacred(cfg, R);
   }
@@ -695,6 +795,18 @@ function updateModeGroup(group: THREE.Group, cfg: Cfg, dots: Dot[], t: number, R
       break;
     case 'warp':
       updateWarp(group, cfg, t, R);
+      break;
+    case 'lorenz':
+      updateLorenz(group, cfg, t, R);
+      break;
+    case 'knot':
+      updateKnot(group, cfg, t, R);
+      break;
+    case 'orbital':
+      updateOrbital(group, cfg, t, R);
+      break;
+    case 'geodesic':
+      updateGeodesic(group, cfg, t, R);
       break;
     default:
       updateSacred(group, cfg, dots, t, R);
@@ -2118,6 +2230,429 @@ function updateWarp(group: THREE.Group, cfg: Cfg, t: number, R: number): void {
   }
 }
 
+/* ── LORENZ ATTRACTOR (3D) mode ─────────────────────────────── */
+
+function buildLorenz(cfg: Cfg, R: number): THREE.Group {
+  const pal = PAL[cfg.preset] ?? PAL['Lorenz Storm'];
+  const [rr, gg, bb] = pal.rgb;
+  const iF = cfg.intensity / 10;
+  const scale = R / 210;
+  const N = 22000;
+  const group = new THREE.Group();
+
+  const pos = new Float32Array(N * 3);
+  const geo = new THREE.BufferGeometry();
+  geo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+
+  // Pre-warm — run ~500 steps to land on the attractor
+  let lx = 0.1,
+    ly = 0,
+    lz = 10;
+  const σ = 10,
+    ρ = 28,
+    β = 8 / 3,
+    dt = 0.005;
+  for (let i = 0; i < 500; i++) {
+    const dx = σ * (ly - lx),
+      dy = lx * (ρ - lz) - ly,
+      dz = lx * ly - β * lz;
+    lx += dx * dt;
+    ly += dy * dt;
+    lz += dz * dt;
+  }
+
+  const sc = R * 0.026; // Lorenz ~[-20,20]; sc*20 ≈ 0.52R
+  for (let i = 0; i < N; i++) {
+    const dx = σ * (ly - lx),
+      dy = lx * (ρ - lz) - ly,
+      dz = lx * ly - β * lz;
+    lx += dx * dt;
+    ly += dy * dt;
+    lz += dz * dt;
+    pos[i * 3] = lx * sc;
+    pos[i * 3 + 1] = ly * sc;
+    pos[i * 3 + 2] = (lz - 25) * sc;
+  }
+
+  const pts = new THREE.Points(geo, ptsMat(hdrColor([rr, gg, bb], iF, 1.6), 2.5 * scale, 0.65));
+  pts.userData.tag = 'lorenzPts';
+  pts.userData.N = N;
+  pts.userData.lx = lx;
+  pts.userData.ly = ly;
+  pts.userData.lz = lz;
+  pts.userData.wi = 0;
+  group.add(pts);
+
+  const center = buildCenter([rr, gg, bb], iF * 0.8, scale);
+  center.userData.tag = 'center';
+  group.add(center);
+  return group;
+}
+
+function updateLorenz(group: THREE.Group, cfg: Cfg, t: number, R: number): void {
+  const pal = PAL[cfg.preset] ?? PAL['Lorenz Storm'];
+  const [rr, gg, bb] = pal.rgb;
+  const iF = cfg.intensity / 10;
+  const scale = R / 210;
+  const breath = (Math.sin(t * 0.001 * cfg.breathSpeed) + 1) * 0.5;
+  const layers = Math.max(1, Math.round(cfg.complexity));
+  const σ = 10,
+    ρ = 28,
+    β = 8 / 3,
+    dt = 0.005;
+  const sc = R * 0.026;
+
+  group.rotation.x = t * 0.00018 * cfg.breathSpeed;
+  group.rotation.y = t * 0.00011 * cfg.breathSpeed;
+
+  for (const child of group.children) {
+    const tag = child.userData.tag as string;
+    if (tag === 'lorenzPts') {
+      const pts = child as THREE.Points;
+      const N = pts.userData.N as number;
+      const pos = pts.geometry.attributes.position.array as Float32Array;
+      let lx = pts.userData.lx as number;
+      let ly = pts.userData.ly as number;
+      let lz = pts.userData.lz as number;
+      let wi = pts.userData.wi as number;
+
+      const ptsPerFrame = 50 + layers * 40;
+      for (let i = 0; i < ptsPerFrame; i++) {
+        const dx = σ * (ly - lx),
+          dy = lx * (ρ - lz) - ly,
+          dz = lx * ly - β * lz;
+        lx += dx * dt;
+        ly += dy * dt;
+        lz += dz * dt;
+        pos[wi * 3] = lx * sc;
+        pos[wi * 3 + 1] = ly * sc;
+        pos[wi * 3 + 2] = (lz - 25) * sc;
+        wi = (wi + 1) % N;
+      }
+
+      pts.userData.lx = lx;
+      pts.userData.ly = ly;
+      pts.userData.lz = lz;
+      pts.userData.wi = wi;
+      pts.geometry.attributes.position.needsUpdate = true;
+      const mat = pts.material as THREE.PointsMaterial;
+      mat.size = (2.1 + breath * 0.8) * scale;
+      updateMat(pts, [rr, gg, bb], iF, 1.6);
+    } else if (tag === 'center') {
+      updateCenter(child as THREE.Group, breath, [rr, gg, bb], iF * 0.8, scale);
+    }
+  }
+}
+
+/* ── TORUS KNOT (3D) mode ───────────────────────────────────── */
+
+// (p, q) pairs — each coprime pair gives a distinct knot topology
+const KNOT_PQ: [number, number][] = [
+  [2, 3],
+  [3, 2],
+  [3, 4],
+  [4, 3],
+  [5, 2],
+  [5, 3],
+  [7, 3],
+  [7, 4],
+  [5, 7],
+];
+
+function buildKnot(cfg: Cfg, R: number): THREE.Group {
+  const pal = PAL[cfg.preset] ?? PAL['Knot Garden'];
+  const [rr, gg, bb] = pal.rgb;
+  const iF = cfg.intensity / 10;
+  const group = new THREE.Group();
+  const [p, q] = KNOT_PQ[Math.min(Math.max(0, Math.round(cfg.complexity) - 1), KNOT_PQ.length - 1)];
+  const strands = Math.max(1, Math.min(6, Math.round(cfg.symmetry)));
+  const STEPS = 600;
+  const TAU = Math.PI * 2;
+  const bigR = R * 0.36,
+    smallR = R * 0.12;
+
+  for (let si = 0; si < strands; si++) {
+    const phaseOff = (si / strands) * TAU;
+    const pts = new Float32Array((STEPS + 1) * 3);
+    for (let i = 0; i <= STEPS; i++) {
+      const t2 = (i / STEPS) * TAU;
+      const phi = p * t2 + phaseOff * 0.3;
+      const theta = q * t2;
+      const rT = bigR + smallR * Math.cos(theta);
+      pts[i * 3] = rT * Math.cos(phi);
+      pts[i * 3 + 1] = rT * Math.sin(phi);
+      pts[i * 3 + 2] = smallR * Math.sin(theta);
+    }
+    const geo = new THREE.BufferGeometry();
+    geo.setAttribute('position', new THREE.BufferAttribute(pts, 3));
+    const brightness = si === 0 ? iF * 1.1 : iF * 0.55;
+    const hue = si / strands;
+    const col = new THREE.Color().setHSL(hue, 0.8, 0.55);
+    const mat = new THREE.LineBasicMaterial({
+      color: new THREE.Color(
+        col.r * brightness * 2.2,
+        col.g * brightness * 2.2,
+        col.b * brightness * 2.2,
+      ),
+      transparent: true,
+      opacity: si === 0 ? 0.95 : 0.6,
+      blending: THREE.AdditiveBlending,
+      depthWrite: false,
+    });
+    const strand = new THREE.Line(geo, mat);
+    strand.userData.tag = 'knotStrand';
+    strand.userData.hue0 = hue;
+    group.add(strand);
+  }
+
+  void rr;
+  void gg;
+  void bb;
+  return group;
+}
+
+function updateKnot(group: THREE.Group, cfg: Cfg, t: number, R: number): void {
+  const iF = cfg.intensity / 10;
+  const breath = (Math.sin(t * 0.001 * cfg.breathSpeed) + 1) * 0.5;
+
+  group.rotation.x = t * 0.00022 * cfg.breathSpeed;
+  group.rotation.y = t * 0.00015 * cfg.breathSpeed;
+  group.rotation.z = t * 0.00008 * cfg.breathSpeed;
+
+  const tmpCol = new THREE.Color();
+  let strandIdx = 0;
+  for (const child of group.children) {
+    if (child.userData.tag !== 'knotStrand') continue;
+    const hue = ((child.userData.hue0 as number) + t * 0.000055) % 1.0;
+    const br = iF * (strandIdx === 0 ? 0.9 + breath * 0.2 : 0.4 + breath * 0.25) * 2.2;
+    tmpCol.setHSL(hue, 0.82, 0.55);
+    const mat = (child as THREE.Line).material as THREE.LineBasicMaterial;
+    mat.color.setRGB(tmpCol.r * br, tmpCol.g * br, tmpCol.b * br);
+    mat.opacity = strandIdx === 0 ? 0.9 : 0.5 + breath * 0.25;
+    strandIdx++;
+  }
+  void R;
+}
+
+/* ── ATOMIC ORBITAL (3D) mode ───────────────────────────────── */
+
+// (l, m) quantum number pairs — each gives a distinct orbital shape
+const ORBITAL_LM: [number, number][] = [
+  [1, 0], // p_z: two lobes
+  [2, 0], // d_z²: figure-8 + ring
+  [2, 2], // d_x²-y²: 4 petals
+  [3, 0], // f_z³: 8 lobes
+  [3, 2], // f complex
+  [3, 3], // f 6-petal
+  [4, 0], // g_0 complex
+  [4, 4], // g 8-petal
+];
+
+function realSH(l: number, m: number, theta: number, phi: number): number {
+  const c = Math.cos(theta),
+    s = Math.sin(theta);
+  const c2 = c * c,
+    s2 = s * s;
+  if (l === 1) {
+    if (m === 0) return c;
+    if (m === 1) return s * Math.cos(phi);
+    if (m === -1) return s * Math.sin(phi);
+  }
+  if (l === 2) {
+    if (m === 0) return (3 * c2 - 1) * 0.5;
+    if (m === 1) return s * c * Math.cos(phi);
+    if (m === -1) return s * c * Math.sin(phi);
+    if (m === 2) return s2 * Math.cos(2 * phi);
+    if (m === -2) return s2 * Math.sin(2 * phi);
+  }
+  if (l === 3) {
+    if (m === 0) return c * (5 * c2 - 3) * 0.5;
+    if (m === 1) return s * (5 * c2 - 1) * Math.cos(phi) * 0.5;
+    if (m === -1) return s * (5 * c2 - 1) * Math.sin(phi) * 0.5;
+    if (m === 2) return s2 * c * Math.cos(2 * phi);
+    if (m === -2) return s2 * c * Math.sin(2 * phi);
+    if (m === 3) return s2 * s * Math.cos(3 * phi);
+    if (m === -3) return s2 * s * Math.sin(3 * phi);
+  }
+  if (l === 4) {
+    if (m === 0) return (35 * c2 * c2 - 30 * c2 + 3) * 0.125;
+    if (m === 2) return s2 * (7 * c2 - 1) * Math.cos(2 * phi) * 0.5;
+    if (m === -2) return s2 * (7 * c2 - 1) * Math.sin(2 * phi) * 0.5;
+    if (m === 4) return s2 * s2 * Math.cos(4 * phi);
+    if (m === -4) return s2 * s2 * Math.sin(4 * phi);
+  }
+  return 0;
+}
+
+function buildOrbital(cfg: Cfg, R: number): THREE.Group {
+  const pal = PAL[cfg.preset] ?? PAL['Orbital Shell'];
+  const [rr, gg, bb] = pal.rgb;
+  const iF = cfg.intensity / 10;
+  const group = new THREE.Group();
+
+  const idx = Math.min(Math.max(0, Math.round(cfg.complexity) - 1), ORBITAL_LM.length - 1);
+  const [l, m] = ORBITAL_LM[idx];
+
+  const NΘ = 64,
+    NΦ = 128;
+
+  // Meridional lines (constant φ, vary θ)
+  for (let pi = 0; pi < NΦ; pi += 4) {
+    const phi = (pi / NΦ) * Math.PI * 2;
+    const pts = new Float32Array((NΘ + 1) * 3);
+    for (let ti = 0; ti <= NΘ; ti++) {
+      const theta = (ti / NΘ) * Math.PI;
+      const sh = realSH(l, m, theta, phi);
+      const r = R * 0.52 * sh * sh;
+      pts[ti * 3] = r * Math.sin(theta) * Math.cos(phi);
+      pts[ti * 3 + 1] = r * Math.sin(theta) * Math.sin(phi);
+      pts[ti * 3 + 2] = r * Math.cos(theta);
+    }
+    const geo = new THREE.BufferGeometry();
+    geo.setAttribute('position', new THREE.BufferAttribute(pts, 3));
+    const line = new THREE.Line(geo, lineMat(hdrColor([rr, gg, bb], iF * 0.65, 2.0), 0.85));
+    line.userData.tag = 'orbMerid';
+    group.add(line);
+  }
+
+  // Latitudinal lines (constant θ, vary φ)
+  for (let ti = 1; ti < NΘ; ti += 3) {
+    const theta = (ti / NΘ) * Math.PI;
+    const pts = new Float32Array((NΦ + 1) * 3);
+    for (let pi = 0; pi <= NΦ; pi++) {
+      const phi = (pi / NΦ) * Math.PI * 2;
+      const sh = realSH(l, m, theta, phi);
+      const r = R * 0.52 * sh * sh;
+      pts[pi * 3] = r * Math.sin(theta) * Math.cos(phi);
+      pts[pi * 3 + 1] = r * Math.sin(theta) * Math.sin(phi);
+      pts[pi * 3 + 2] = r * Math.cos(theta);
+    }
+    const geo = new THREE.BufferGeometry();
+    geo.setAttribute('position', new THREE.BufferAttribute(pts, 3));
+    const line = new THREE.Line(geo, lineMat(hdrColor([rr, gg, bb], iF * 0.45, 1.8), 0.7));
+    line.userData.tag = 'orbLat';
+    group.add(line);
+  }
+
+  return group;
+}
+
+function updateOrbital(group: THREE.Group, cfg: Cfg, t: number, R: number): void {
+  const pal = PAL[cfg.preset] ?? PAL['Orbital Shell'];
+  const [rr, gg, bb] = pal.rgb;
+  const iF = cfg.intensity / 10;
+  const breath = (Math.sin(t * 0.001 * cfg.breathSpeed) + 1) * 0.5;
+
+  group.rotation.x = t * 0.00019 * cfg.breathSpeed;
+  group.rotation.y = t * 0.00013 * cfg.breathSpeed;
+  group.rotation.z = t * 0.00007 * cfg.breathSpeed;
+
+  for (const child of group.children) {
+    const tag = child.userData.tag as string;
+    const baseBr = tag === 'orbMerid' ? 0.6 + breath * 0.25 : 0.4 + breath * 0.2;
+    const mult = tag === 'orbMerid' ? 2.0 : 1.8;
+    updateMat(child as THREE.Object3D, [rr, gg, bb], iF * baseBr, mult);
+  }
+  void R;
+}
+
+/* ── GEODESIC CRYSTAL (3D) mode ─────────────────────────────── */
+
+function makeEdgeLines(
+  geo: THREE.BufferGeometry,
+  rgb: [number, number, number],
+  iF: number,
+  mult: number,
+  opacity: number,
+): THREE.LineSegments {
+  const edges = new THREE.EdgesGeometry(geo);
+  geo.dispose();
+  return new THREE.LineSegments(edges, lineMat(hdrColor(rgb, iF, mult), opacity));
+}
+
+// Form index → builder function returning geometry (scale=1, caller sets scale)
+const GEO_FORMS: ((s: number) => THREE.BufferGeometry)[] = [
+  (s) => new THREE.TetrahedronGeometry(s),
+  (s) => new THREE.OctahedronGeometry(s),
+  (s) => new THREE.BoxGeometry(s, s, s),
+  (s) => new THREE.DodecahedronGeometry(s),
+  (s) => new THREE.IcosahedronGeometry(s),
+  (s) => new THREE.IcosahedronGeometry(s, 2), // geodesic sphere
+  (s) => new THREE.IcosahedronGeometry(s, 3), // finer geodesic
+];
+
+function buildGeodesic(cfg: Cfg, R: number): THREE.Group {
+  const pal = PAL[cfg.preset] ?? PAL['Crystal Lattice'];
+  const [rr, gg, bb] = pal.rgb;
+  const iF = cfg.intensity / 10;
+  const group = new THREE.Group();
+
+  const formIdx = Math.min(Math.max(0, Math.round(cfg.complexity) - 1), GEO_FORMS.length - 1);
+  const shells = Math.max(1, Math.min(5, Math.round(cfg.symmetry)));
+  const tmpCol = new THREE.Color();
+
+  for (let sh = 1; sh <= shells; sh++) {
+    const frac = sh / shells;
+    const s = R * 0.78 * frac;
+    const hue = frac * 0.72;
+    const br = (0.25 + frac * 0.75) * iF;
+    tmpCol.setHSL(hue, 0.75, 0.55);
+    const col: [number, number, number] = [tmpCol.r * 255, tmpCol.g * 255, tmpCol.b * 255];
+    const lines = makeEdgeLines(GEO_FORMS[formIdx](s), col, br, 2.4, 0.9 - sh * 0.08);
+    lines.userData.tag = 'geoPoly';
+    lines.userData.rotDir = sh % 2 === 0 ? 1 : -1;
+    lines.userData.hue0 = hue;
+    group.add(lines);
+
+    // Dual or companion form for the outermost shell
+    if (sh === shells && formIdx <= 1) {
+      const dualIdx = formIdx === 0 ? 1 : 0;
+      const dualLines = makeEdgeLines(
+        GEO_FORMS[dualIdx](s * 0.9),
+        [rr, gg, bb],
+        br * 0.45,
+        2.0,
+        0.55,
+      );
+      dualLines.userData.tag = 'geoPoly';
+      dualLines.userData.rotDir = -1;
+      dualLines.userData.hue0 = (hue + 0.5) % 1.0;
+      group.add(dualLines);
+    }
+  }
+
+  const center = buildCenter([rr, gg, bb], iF * 1.2, R / 210);
+  center.userData.tag = 'center';
+  group.add(center);
+  return group;
+}
+
+function updateGeodesic(group: THREE.Group, cfg: Cfg, t: number, R: number): void {
+  const pal = PAL[cfg.preset] ?? PAL['Crystal Lattice'];
+  const [rr, gg, bb] = pal.rgb;
+  const iF = cfg.intensity / 10;
+  const scale = R / 210;
+  const breath = (Math.sin(t * 0.001 * cfg.breathSpeed) + 1) * 0.5;
+
+  group.rotation.x = t * 0.00016 * cfg.breathSpeed;
+  group.rotation.y = t * 0.00022 * cfg.breathSpeed;
+
+  const tmpCol = new THREE.Color();
+  for (const child of group.children) {
+    const tag = child.userData.tag as string;
+    if (tag === 'geoPoly') {
+      const hue = ((child.userData.hue0 as number) + t * 0.000035) % 1.0;
+      const br = iF * (0.45 + breath * 0.45) * 2.4;
+      tmpCol.setHSL(hue, 0.75, 0.55);
+      const mat = (child as THREE.LineSegments).material as THREE.LineBasicMaterial;
+      mat.color.setRGB(tmpCol.r * br, tmpCol.g * br, tmpCol.b * br);
+      mat.opacity = 0.55 + breath * 0.35;
+    } else if (tag === 'center') {
+      updateCenter(child as THREE.Group, breath, [rr, gg, bb], iF * 1.2, scale);
+    }
+  }
+}
+
 /* ── Background stars ───────────────────────────────────────── */
 
 function buildStars(count: number, W: number, H: number): THREE.Group {
@@ -2170,18 +2705,125 @@ function updateStars(group: THREE.Group, t: number): void {
 
 /* ── Slider definitions ─────────────────────────────────────── */
 
-const SLIDERS = [
+type SliderDef = { key: keyof Cfg; label: string; min: number; max: number; step: number };
+
+const DEFAULT_SLIDERS: SliderDef[] = [
   { key: 'symmetry', label: 'Symmetry', min: 4, max: 24, step: 1 },
   { key: 'complexity', label: 'Complexity', min: 1, max: 10, step: 0.5 },
   { key: 'glow', label: 'Glow', min: 0, max: 10, step: 0.5 },
-  { key: 'breathSpeed', label: 'Breath', min: 0.2, max: 3, step: 0.1 },
+  { key: 'breathSpeed', label: 'Speed', min: 0.2, max: 3, step: 0.1 },
   { key: 'intensity', label: 'Colour', min: 0, max: 10, step: 0.5 },
   { key: 'particles', label: 'Particles', min: 0, max: 10, step: 1 },
   { key: 'luminous', label: 'Luminous', min: 0, max: 10, step: 0.5 },
   { key: 'stars', label: 'Stars', min: 0, max: 10, step: 1 },
-] as const;
+];
+
+const MODE_SLIDERS: Partial<Record<Mode, SliderDef[]>> = {
+  tunnel: [
+    { key: 'symmetry', label: 'Spokes', min: 4, max: 24, step: 1 },
+    { key: 'glow', label: 'Glow', min: 0, max: 10, step: 0.5 },
+    { key: 'breathSpeed', label: 'Speed', min: 0.2, max: 3, step: 0.1 },
+    { key: 'intensity', label: 'Colour', min: 0, max: 10, step: 0.5 },
+    { key: 'luminous', label: 'Luminous', min: 0, max: 10, step: 0.5 },
+    { key: 'stars', label: 'Stars', min: 0, max: 10, step: 1 },
+  ],
+  vitral: [
+    { key: 'symmetry', label: 'Cells', min: 4, max: 24, step: 1 },
+    { key: 'complexity', label: 'Layers', min: 1, max: 8, step: 1 },
+    { key: 'glow', label: 'Glow', min: 0, max: 10, step: 0.5 },
+    { key: 'breathSpeed', label: 'Speed', min: 0.2, max: 3, step: 0.1 },
+    { key: 'intensity', label: 'Colour', min: 0, max: 10, step: 0.5 },
+    { key: 'luminous', label: 'Luminous', min: 0, max: 10, step: 0.5 },
+  ],
+  fibonacci: [
+    { key: 'complexity', label: 'Arms', min: 1, max: 10, step: 1 },
+    { key: 'symmetry', label: 'Rings', min: 2, max: 16, step: 1 },
+    { key: 'glow', label: 'Glow', min: 0, max: 10, step: 0.5 },
+    { key: 'breathSpeed', label: 'Speed', min: 0.2, max: 3, step: 0.1 },
+    { key: 'intensity', label: 'Colour', min: 0, max: 10, step: 0.5 },
+    { key: 'luminous', label: 'Luminous', min: 0, max: 10, step: 0.5 },
+    { key: 'stars', label: 'Stars', min: 0, max: 10, step: 1 },
+  ],
+  clifford: [
+    { key: 'complexity', label: 'Density', min: 1, max: 10, step: 1 },
+    { key: 'glow', label: 'Glow', min: 0, max: 10, step: 0.5 },
+    { key: 'breathSpeed', label: 'Speed', min: 0.1, max: 3, step: 0.1 },
+    { key: 'intensity', label: 'Colour', min: 0, max: 10, step: 0.5 },
+    { key: 'luminous', label: 'Luminous', min: 0, max: 10, step: 0.5 },
+    { key: 'stars', label: 'Stars', min: 0, max: 10, step: 1 },
+  ],
+  hypercube: [
+    { key: 'complexity', label: 'Fibers', min: 2, max: 20, step: 2 },
+    { key: 'glow', label: 'Glow', min: 0, max: 10, step: 0.5 },
+    { key: 'breathSpeed', label: 'Speed', min: 0.1, max: 3, step: 0.1 },
+    { key: 'intensity', label: 'Colour', min: 0, max: 10, step: 0.5 },
+    { key: 'luminous', label: 'Luminous', min: 0, max: 10, step: 0.5 },
+    { key: 'stars', label: 'Stars', min: 0, max: 10, step: 1 },
+  ],
+  warp: [
+    { key: 'symmetry', label: 'Sectors', min: 1, max: 12, step: 1 },
+    { key: 'glow', label: 'Glow', min: 0, max: 10, step: 0.5 },
+    { key: 'breathSpeed', label: 'Speed', min: 0.2, max: 3, step: 0.1 },
+    { key: 'intensity', label: 'Colour', min: 0, max: 10, step: 0.5 },
+    { key: 'luminous', label: 'Luminous', min: 0, max: 10, step: 0.5 },
+    { key: 'stars', label: 'Stars', min: 0, max: 10, step: 1 },
+  ],
+  lorenz: [
+    { key: 'complexity', label: 'Density', min: 1, max: 8, step: 1 },
+    { key: 'glow', label: 'Glow', min: 0, max: 10, step: 0.5 },
+    { key: 'breathSpeed', label: 'Speed', min: 0.1, max: 3, step: 0.1 },
+    { key: 'intensity', label: 'Colour', min: 0, max: 10, step: 0.5 },
+    { key: 'luminous', label: 'Luminous', min: 0, max: 10, step: 0.5 },
+    { key: 'stars', label: 'Stars', min: 0, max: 10, step: 1 },
+  ],
+  knot: [
+    { key: 'complexity', label: 'Knot', min: 1, max: 9, step: 1 },
+    { key: 'symmetry', label: 'Strands', min: 1, max: 6, step: 1 },
+    { key: 'glow', label: 'Glow', min: 0, max: 10, step: 0.5 },
+    { key: 'breathSpeed', label: 'Speed', min: 0.1, max: 3, step: 0.1 },
+    { key: 'intensity', label: 'Colour', min: 0, max: 10, step: 0.5 },
+    { key: 'luminous', label: 'Luminous', min: 0, max: 10, step: 0.5 },
+    { key: 'stars', label: 'Stars', min: 0, max: 10, step: 1 },
+  ],
+  orbital: [
+    { key: 'complexity', label: 'Orbital', min: 1, max: 8, step: 1 },
+    { key: 'glow', label: 'Glow', min: 0, max: 10, step: 0.5 },
+    { key: 'breathSpeed', label: 'Speed', min: 0.1, max: 3, step: 0.1 },
+    { key: 'intensity', label: 'Colour', min: 0, max: 10, step: 0.5 },
+    { key: 'luminous', label: 'Luminous', min: 0, max: 10, step: 0.5 },
+    { key: 'stars', label: 'Stars', min: 0, max: 10, step: 1 },
+  ],
+  geodesic: [
+    { key: 'complexity', label: 'Form', min: 1, max: 7, step: 1 },
+    { key: 'symmetry', label: 'Shells', min: 1, max: 5, step: 1 },
+    { key: 'glow', label: 'Glow', min: 0, max: 10, step: 0.5 },
+    { key: 'breathSpeed', label: 'Speed', min: 0.1, max: 3, step: 0.1 },
+    { key: 'intensity', label: 'Colour', min: 0, max: 10, step: 0.5 },
+    { key: 'luminous', label: 'Luminous', min: 0, max: 10, step: 0.5 },
+    { key: 'stars', label: 'Stars', min: 0, max: 10, step: 1 },
+  ],
+};
+
+function slidersFor(mode: Mode): SliderDef[] {
+  return MODE_SLIDERS[mode] ?? DEFAULT_SLIDERS;
+}
 
 /* ── Mode pill definitions ──────────────────────────────────── */
+
+const MODE_TO_PRESET: Partial<Record<Mode, string>> = {
+  burst: 'DMT Vision',
+  kaleidoscope: 'Cosmic Indigo',
+  tunnel: 'Warp Tunnel',
+  vitral: 'Sacred Vitral',
+  fibonacci: 'Fibonacci Bloom',
+  clifford: 'Clifford Dream',
+  hypercube: '4D Crystal',
+  warp: 'Warp Drive',
+  lorenz: 'Lorenz Storm',
+  knot: 'Knot Garden',
+  orbital: 'Orbital Shell',
+  geodesic: 'Crystal Lattice',
+};
 
 const MODES: { mode: Mode; label: string }[] = [
   { mode: 'sacred', label: '✦ Sacred' },
@@ -2196,6 +2838,10 @@ const MODES: { mode: Mode; label: string }[] = [
   { mode: 'clifford', label: '∞ Clifford' },
   { mode: 'hypercube', label: '◈ Hypercube' },
   { mode: 'warp', label: '⋙ Warp' },
+  { mode: 'lorenz', label: '𝛔 Lorenz' },
+  { mode: 'knot', label: '∮ Knot' },
+  { mode: 'orbital', label: '⊛ Orbital' },
+  { mode: 'geodesic', label: '⬡ Geodesic' },
 ];
 
 /* ── Component ──────────────────────────────────────────────── */
@@ -2257,7 +2903,7 @@ export default function GeometryField() {
     const scene = new THREE.Scene();
     sceneRef.current = scene;
 
-    const camera = new THREE.OrthographicCamera(-1, 1, 1, -1, -10, 10);
+    const camera = new THREE.OrthographicCamera(-1, 1, 1, -1, -2000, 2000);
     camera.position.z = 5;
     cameraRef.current = camera;
 
@@ -2404,6 +3050,10 @@ export default function GeometryField() {
       'clifford',
       'hypercube',
       'warp',
+      'lorenz',
+      'knot',
+      'orbital',
+      'geodesic',
     ];
     setCfg({
       ...base,
@@ -2577,7 +3227,11 @@ export default function GeometryField() {
                 <button
                   key={mode}
                   type="button"
-                  onClick={() => update('mode', mode)}
+                  onClick={() => {
+                    const p = MODE_TO_PRESET[mode];
+                    if (p) applyPreset(p);
+                    else update('mode', mode);
+                  }}
                   style={{
                     flexShrink: 0,
                     background: active ? accent : accentFaint,
@@ -2639,53 +3293,55 @@ export default function GeometryField() {
             })}
           </div>
 
-          {/* Intention input */}
-          <form
-            onSubmit={handleIntention}
-            style={{ display: 'flex', gap: 8, marginTop: 2, marginBottom: 12 }}
-          >
-            <input
-              type="text"
-              placeholder="Type an intention — clarity, release, courage…"
-              value={intention}
-              onChange={(e) => setIntention(e.target.value)}
-              style={{
-                flex: 1,
-                background: accentFaint,
-                border: `1px solid ${accentMid}`,
-                borderRadius: 99,
-                padding: '7px 14px',
-                color: 'rgba(255,255,255,0.82)',
-                fontFamily: 'var(--font-serif)',
-                fontSize: 12,
-                outline: 'none',
-              }}
-            />
-            <button
-              type="submit"
-              style={{
-                background: tuned ? accent : accentFaint,
-                border: `1px solid ${accent}`,
-                borderRadius: 99,
-                padding: '7px 16px',
-                color: tuned ? '#fff' : accent,
-                fontFamily: 'var(--font-serif)',
-                fontSize: 11,
-                fontWeight: 700,
-                letterSpacing: '0.08em',
-                cursor: 'pointer',
-                transition: 'all 0.2s',
-                whiteSpace: 'nowrap',
-              }}
+          {/* Intention input — hidden */}
+          {false && (
+            <form
+              onSubmit={handleIntention}
+              style={{ display: 'flex', gap: 8, marginTop: 2, marginBottom: 12 }}
             >
-              {tuned ? '✦ Tuned' : 'Tune'}
-            </button>
-          </form>
+              <input
+                type="text"
+                placeholder="Type an intention — clarity, release, courage…"
+                value={intention}
+                onChange={(e) => setIntention(e.target.value)}
+                style={{
+                  flex: 1,
+                  background: accentFaint,
+                  border: `1px solid ${accentMid}`,
+                  borderRadius: 99,
+                  padding: '7px 14px',
+                  color: 'rgba(255,255,255,0.82)',
+                  fontFamily: 'var(--font-serif)',
+                  fontSize: 12,
+                  outline: 'none',
+                }}
+              />
+              <button
+                type="submit"
+                style={{
+                  background: tuned ? accent : accentFaint,
+                  border: `1px solid ${accent}`,
+                  borderRadius: 99,
+                  padding: '7px 16px',
+                  color: tuned ? '#fff' : accent,
+                  fontFamily: 'var(--font-serif)',
+                  fontSize: 11,
+                  fontWeight: 700,
+                  letterSpacing: '0.08em',
+                  cursor: 'pointer',
+                  transition: 'all 0.2s',
+                  whiteSpace: 'nowrap',
+                }}
+              >
+                {tuned ? '✦ Tuned' : 'Tune'}
+              </button>
+            </form>
+          )}
 
           {/* Sliders */}
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px 20px' }}>
-            {SLIDERS.map(({ key, label, min, max, step }) => {
-              const val = cfg[key as keyof Cfg] as number;
+            {slidersFor(cfg.mode).map(({ key, label, min, max, step }) => {
+              const val = cfg[key] as number;
               return (
                 <div key={key}>
                   <div
