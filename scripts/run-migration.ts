@@ -1,4 +1,4 @@
-import { readFileSync } from 'fs';
+import { readFileSync } from 'node:fs';
 import postgres from 'postgres';
 
 const url = process.env.DATABASE_URL;

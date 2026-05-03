@@ -2274,7 +2274,7 @@ function buildLorenz(cfg: Cfg, R: number): THREE.Group {
     pos[i * 3 + 2] = (lz - 25) * sc;
   }
 
-  const pts = new THREE.Points(geo, ptsMat(hdrColor([rr, gg, bb], iF, 1.6), 1.0 * scale, 0.65));
+  const pts = new THREE.Points(geo, ptsMat(hdrColor([rr, gg, bb], iF, 1.6), 2.5 * scale, 0.65));
   pts.userData.tag = 'lorenzPts';
   pts.userData.N = N;
   pts.userData.lx = lx;
@@ -2336,7 +2336,7 @@ function updateLorenz(group: THREE.Group, cfg: Cfg, t: number, R: number): void 
       pts.userData.wi = wi;
       pts.geometry.attributes.position.needsUpdate = true;
       const mat = pts.material as THREE.PointsMaterial;
-      mat.size = (0.85 + breath * 0.4) * scale;
+      mat.size = (2.1 + breath * 0.8) * scale;
       updateMat(pts, [rr, gg, bb], iF, 1.6);
     } else if (tag === 'center') {
       updateCenter(child as THREE.Group, breath, [rr, gg, bb], iF * 0.8, scale);
@@ -2810,6 +2810,21 @@ function slidersFor(mode: Mode): SliderDef[] {
 
 /* ── Mode pill definitions ──────────────────────────────────── */
 
+const MODE_TO_PRESET: Partial<Record<Mode, string>> = {
+  burst: 'DMT Vision',
+  kaleidoscope: 'Cosmic Indigo',
+  tunnel: 'Warp Tunnel',
+  vitral: 'Sacred Vitral',
+  fibonacci: 'Fibonacci Bloom',
+  clifford: 'Clifford Dream',
+  hypercube: '4D Crystal',
+  warp: 'Warp Drive',
+  lorenz: 'Lorenz Storm',
+  knot: 'Knot Garden',
+  orbital: 'Orbital Shell',
+  geodesic: 'Crystal Lattice',
+};
+
 const MODES: { mode: Mode; label: string }[] = [
   { mode: 'sacred', label: '✦ Sacred' },
   { mode: 'burst', label: '✤ Burst' },
@@ -3212,7 +3227,11 @@ export default function GeometryField() {
                 <button
                   key={mode}
                   type="button"
-                  onClick={() => update('mode', mode)}
+                  onClick={() => {
+                    const p = MODE_TO_PRESET[mode];
+                    if (p) applyPreset(p);
+                    else update('mode', mode);
+                  }}
                   style={{
                     flexShrink: 0,
                     background: active ? accent : accentFaint,

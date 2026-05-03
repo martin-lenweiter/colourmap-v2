@@ -60,7 +60,7 @@ function InfoBox({ children, color = '#5A7EA8' }: { children: React.ReactNode; c
   );
 }
 
-function Chord({ label, color = '#5A7EA8' }: { label: string; color?: string }) {
+function _Chord({ label, color = '#5A7EA8' }: { label: string; color?: string }) {
   return (
     <span
       className="inline-block rounded-md px-2 py-0.5 text-[11px] font-semibold"
