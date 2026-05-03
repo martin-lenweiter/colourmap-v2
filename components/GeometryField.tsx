@@ -3293,48 +3293,50 @@ export default function GeometryField() {
             })}
           </div>
 
-          {/* Intention input */}
-          <form
-            onSubmit={handleIntention}
-            style={{ display: 'flex', gap: 8, marginTop: 2, marginBottom: 12 }}
-          >
-            <input
-              type="text"
-              placeholder="Type an intention — clarity, release, courage…"
-              value={intention}
-              onChange={(e) => setIntention(e.target.value)}
-              style={{
-                flex: 1,
-                background: accentFaint,
-                border: `1px solid ${accentMid}`,
-                borderRadius: 99,
-                padding: '7px 14px',
-                color: 'rgba(255,255,255,0.82)',
-                fontFamily: 'var(--font-serif)',
-                fontSize: 12,
-                outline: 'none',
-              }}
-            />
-            <button
-              type="submit"
-              style={{
-                background: tuned ? accent : accentFaint,
-                border: `1px solid ${accent}`,
-                borderRadius: 99,
-                padding: '7px 16px',
-                color: tuned ? '#fff' : accent,
-                fontFamily: 'var(--font-serif)',
-                fontSize: 11,
-                fontWeight: 700,
-                letterSpacing: '0.08em',
-                cursor: 'pointer',
-                transition: 'all 0.2s',
-                whiteSpace: 'nowrap',
-              }}
+          {/* Intention input — hidden */}
+          {false && (
+            <form
+              onSubmit={handleIntention}
+              style={{ display: 'flex', gap: 8, marginTop: 2, marginBottom: 12 }}
             >
-              {tuned ? '✦ Tuned' : 'Tune'}
-            </button>
-          </form>
+              <input
+                type="text"
+                placeholder="Type an intention — clarity, release, courage…"
+                value={intention}
+                onChange={(e) => setIntention(e.target.value)}
+                style={{
+                  flex: 1,
+                  background: accentFaint,
+                  border: `1px solid ${accentMid}`,
+                  borderRadius: 99,
+                  padding: '7px 14px',
+                  color: 'rgba(255,255,255,0.82)',
+                  fontFamily: 'var(--font-serif)',
+                  fontSize: 12,
+                  outline: 'none',
+                }}
+              />
+              <button
+                type="submit"
+                style={{
+                  background: tuned ? accent : accentFaint,
+                  border: `1px solid ${accent}`,
+                  borderRadius: 99,
+                  padding: '7px 16px',
+                  color: tuned ? '#fff' : accent,
+                  fontFamily: 'var(--font-serif)',
+                  fontSize: 11,
+                  fontWeight: 700,
+                  letterSpacing: '0.08em',
+                  cursor: 'pointer',
+                  transition: 'all 0.2s',
+                  whiteSpace: 'nowrap',
+                }}
+              >
+                {tuned ? '✦ Tuned' : 'Tune'}
+              </button>
+            </form>
+          )}
 
           {/* Sliders */}
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px 20px' }}>
