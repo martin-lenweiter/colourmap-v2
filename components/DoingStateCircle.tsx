@@ -83,18 +83,6 @@ export default function DoingStateCircle({ onDone }: { onDone?: () => void }) {
 
   return (
     <div className="flex flex-col items-center gap-6 px-5 py-8">
-      <p
-        className="text-center font-semibold uppercase"
-        style={{
-          color: current.color,
-          fontSize: '12px',
-          letterSpacing: '0.22em',
-          transition: 'color 0.3s',
-        }}
-      >
-        Doing
-      </p>
-
       {/* Big circle */}
       <div className="flex flex-col items-center gap-3">
         <span
@@ -114,7 +102,7 @@ export default function DoingStateCircle({ onDone }: { onDone?: () => void }) {
             fontFamily: 'var(--font-serif)',
             fontSize: '15px',
             fontWeight: 700,
-            color: current.color,
+            color: '#3A2010',
             letterSpacing: '0.18em',
             transition: 'color 0.3s',
           }}

@@ -317,45 +317,80 @@ function SongRecordingsPanel({
         <div style={{ flex: 1, height: 1, background: '#D4605A20' }} />
       </div>
 
-      {/* Actions */}
-      <div className="flex items-center gap-2 flex-wrap">
-        {recording ? (
+      {/* Actions — two big circles stacked vertically */}
+      <div className="flex flex-col items-center gap-5 py-2">
+        {/* Record / Stop circle */}
+        <div className="flex flex-col items-center gap-2">
           <button
             type="button"
-            onClick={stopRecording}
-            className="flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[12px] font-semibold text-white"
-            style={{ background: '#D4605A' }}
-          >
-            <span
-              className="inline-block rounded-full"
-              style={{ width: 6, height: 6, background: 'white' }}
-            />
-            {formatDur(recSecs)} · stop
-          </button>
-        ) : (
-          <button
-            type="button"
-            onClick={startRecording}
+            onClick={recording ? stopRecording : startRecording}
             disabled={uploading}
-            className="flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[12px] font-semibold disabled:opacity-40"
-            style={{ background: 'transparent', border: '1px solid #D4605A60', color: '#D4605A' }}
+            className="flex items-center justify-center rounded-full cursor-pointer transition-all disabled:opacity-40"
+            style={{
+              width: 100,
+              height: 100,
+              background: recording ? '#D4605A' : '#D4605A12',
+              border: `3px solid ${recording ? '#D4605A' : '#D4605A60'}`,
+              boxShadow: recording ? '0 0 28px -6px #D4605Acc' : 'none',
+            }}
           >
-            ● Record
+            {recording ? (
+              <div className="flex flex-col items-center gap-1">
+                <span
+                  className="inline-block rounded-sm"
+                  style={{ width: 22, height: 22, background: 'white' }}
+                />
+                <span
+                  style={{
+                    fontSize: '11px',
+                    color: 'white',
+                    fontFamily: 'var(--font-serif)',
+                    fontWeight: 700,
+                  }}
+                >
+                  {formatDur(recSecs)}
+                </span>
+              </div>
+            ) : (
+              <span
+                className="rounded-full"
+                style={{ width: 36, height: 36, background: '#D4605A', display: 'block' }}
+              />
+            )}
           </button>
-        )}
-        <button
-          type="button"
-          onClick={() => fileInputRef.current?.click()}
-          disabled={recording || uploading}
-          className="rounded-full px-3 py-1.5 text-[12px] disabled:opacity-40"
-          style={{
-            background: 'transparent',
-            border: '1px solid #C4A06030',
-            color: 'var(--muted-foreground)',
-          }}
-        >
-          {uploading ? 'Saving…' : '↑ Upload'}
-        </button>
+          <span
+            className="text-[12px] uppercase tracking-[0.14em]"
+            style={{ fontFamily: 'var(--font-serif)', fontWeight: 700, color: '#D4605A' }}
+          >
+            {recording ? 'Stop' : 'Record'}
+          </span>
+        </div>
+
+        {/* Upload circle */}
+        <div className="flex flex-col items-center gap-2">
+          <button
+            type="button"
+            onClick={() => fileInputRef.current?.click()}
+            disabled={recording || uploading}
+            className="flex items-center justify-center rounded-full cursor-pointer transition-all disabled:opacity-40"
+            style={{
+              width: 100,
+              height: 100,
+              background: uploading ? '#C4A06025' : '#C4A06012',
+              border: '3px solid #C4A06055',
+              boxShadow: uploading ? '0 0 28px -6px #C4A060aa' : 'none',
+            }}
+          >
+            <span style={{ fontSize: '32px', color: '#C4A060', lineHeight: 1 }}>↑</span>
+          </button>
+          <span
+            className="text-[12px] uppercase tracking-[0.14em]"
+            style={{ fontFamily: 'var(--font-serif)', fontWeight: 700, color: '#C4A060' }}
+          >
+            {uploading ? 'Saving…' : 'Upload'}
+          </span>
+        </div>
+
         <input
           ref={fileInputRef}
           type="file"
@@ -363,11 +398,12 @@ function SongRecordingsPanel({
           className="hidden"
           onChange={onFile}
         />
+
         {recs.length > 0 && (
           <button
             type="button"
             onClick={onShowAll}
-            className="ml-auto text-[11px] uppercase tracking-[0.08em]"
+            className="text-[11px] uppercase tracking-[0.08em]"
             style={{
               color: '#D4605A',
               background: 'none',
@@ -520,8 +556,12 @@ function SongView({
       <div>
         <div className="flex items-start gap-3 flex-wrap">
           <h2
-            className="text-[22px] font-bold flex-1 min-w-0"
-            style={{ color: 'var(--foreground)', letterSpacing: '0.02em' }}
+            className="text-[26px] font-bold flex-1 min-w-0"
+            style={{
+              color: 'var(--foreground)',
+              fontFamily: 'var(--font-serif)',
+              letterSpacing: '0.02em',
+            }}
           >
             {song.title}
           </h2>
@@ -580,7 +620,7 @@ function SongView({
                 {seg.chords && (
                   <span
                     className="ml-2 font-mono text-[12px]"
-                    style={{ color: '#C4A060', letterSpacing: '0.06em' }}
+                    style={{ color: '#7A5438', letterSpacing: '0.06em' }}
                   >
                     {seg.chords}
                   </span>
@@ -705,8 +745,12 @@ function SongEditor({
             value={s.title}
             onChange={(e) => field('title', e.target.value)}
             placeholder="Song title…"
-            className="w-full bg-transparent text-[18px] font-semibold outline-none"
-            style={{ color: 'var(--foreground)', borderBottom: '1px solid #C4A06030' }}
+            className="w-full bg-transparent text-[20px] font-bold outline-none"
+            style={{
+              color: 'var(--foreground)',
+              fontFamily: 'var(--font-serif)',
+              borderBottom: '1px solid #C4A06030',
+            }}
           />
         </div>
         <div>
@@ -879,7 +923,7 @@ function SongEditor({
                 placeholder="Chord progression — Am G F E…"
                 className="w-full bg-transparent text-[12px] outline-none"
                 style={{
-                  color: 'var(--foreground)',
+                  color: '#7A5438',
                   borderBottom: `1px solid ${color}25`,
                   fontFamily: 'var(--font-serif)',
                   paddingBottom: 3,
@@ -891,9 +935,13 @@ function SongEditor({
                 value={seg.text}
                 onChange={(e) => updateSeg(seg.id, { text: e.target.value })}
                 placeholder="Lyrics or playing notes…"
-                rows={3}
-                className="w-full resize-none bg-transparent text-[13px] outline-none leading-relaxed"
-                style={{ color: 'var(--foreground)', fontFamily: 'var(--font-serif)' }}
+                rows={4}
+                className="w-full resize-y bg-transparent text-[13px] outline-none leading-relaxed"
+                style={{
+                  color: 'var(--foreground)',
+                  fontFamily: 'var(--font-serif)',
+                  minHeight: 72,
+                }}
               />
             </div>
           );
@@ -1040,8 +1088,8 @@ export default function SongStudio({
             >
               <div className="flex items-center gap-2 flex-wrap">
                 <span
-                  className="text-[14px] font-semibold flex-1 min-w-0 truncate"
-                  style={{ color: 'var(--foreground)' }}
+                  className="text-[17px] font-bold flex-1 min-w-0 truncate"
+                  style={{ color: 'var(--foreground)', fontFamily: 'var(--font-serif)' }}
                 >
                   {song.title}
                 </span>
