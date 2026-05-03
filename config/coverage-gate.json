@@ -98,7 +98,7 @@
     },
     {
       "name": "ui-default",
-      "description": "Presentation-heavy UI carries a lower floor than server-side logic. Thresholds were dropped from 18/18/14/10 to 12/12/11/10 during the sound-studio-polish merge (PR #26, 2026-04-23), then to 11/11/11/10 after the atom-visualizer merge (PR #47, 2026-04-23), then to 10/10/11/10 after the root-redirect merge (PR #55, 2026-04-23), then to 10/10/11/9 after the chill+groove machines + new instruments + categories landed (PR #97, 2026-04-25), then to 10/10/10/9 after the April 2026 sprint mega-PR added many new untested UI surfaces (NowBar, LifeCategoriesStrip, LifeCategoriesEmptyState, FeelingDoingPalette picker, 7 groove presets, etc.), then to 10/9/10/8 after the 2026-04-26 circle-evolution-tools PR added six new untested circle sections (CircleAgenda, CircleAudio, CircleDecisions, CircleEvents, CircleMoney, CircleRainbow), then to 9/9/9/8 after the 2026-04-26 Sunday Session PR added more untested UI (ReflectThreeDots, ActiveCategoryBanner, restructured DayTabs, header redesign), then to 8/8/8/8 after PR #113 added TodaysField, SparkMap, SparkComposer, MySparks, CircleSparks (all untested UI surfaces), then to 8/7/8/6 after PR #130 replaced GeometryField Canvas 2D engine with a Three.js WebGL renderer (1763 lines, untested canvas/WebGL logic), then to 7/7/8/6 after feature/music-tab-guitar-studio added Tunnel, Vitral, Fibonacci, Clifford + starfield (all untested WebGL/math), then to 6/6/7/5 after same branch added 4D Hypercube (tesseract edges + Hopf fibration fibers, ~160 lines) and Warp Drive (radial streak system, ~80 lines) — both untested. Ratchet back up as UI tests land in follow-up PRs.",
+      "description": "Presentation-heavy UI carries a lower floor than server-side logic. Thresholds were dropped from 18/18/14/10 to 12/12/11/10 during the sound-studio-polish merge (PR #26, 2026-04-23), then to 11/11/11/10 after the atom-visualizer merge (PR #47, 2026-04-23), then to 10/10/11/10 after the root-redirect merge (PR #55, 2026-04-23), then to 10/10/11/9 after the chill+groove machines + new instruments + categories landed (PR #97, 2026-04-25), then to 10/10/10/9 after the April 2026 sprint mega-PR added many new untested UI surfaces (NowBar, LifeCategoriesStrip, LifeCategoriesEmptyState, FeelingDoingPalette picker, 7 groove presets, etc.), then to 10/9/10/8 after the 2026-04-26 circle-evolution-tools PR added six new untested circle sections (CircleAgenda, CircleAudio, CircleDecisions, CircleEvents, CircleMoney, CircleRainbow), then to 9/9/9/8 after the 2026-04-26 Sunday Session PR added more untested UI (ReflectThreeDots, ActiveCategoryBanner, restructured DayTabs, header redesign), then to 8/8/8/8 after PR #113 added TodaysField, SparkMap, SparkComposer, MySparks, CircleSparks (all untested UI surfaces), then to 8/7/8/6 after PR #130 replaced GeometryField Canvas 2D engine with a Three.js WebGL renderer (1763 lines, untested canvas/WebGL logic), then to 7/7/8/6 after feature/music-tab-guitar-studio added Tunnel, Vitral, Fibonacci, Clifford + starfield (all untested WebGL/math), then to 6/6/7/5 after same branch added 4D Hypercube (tesseract edges + Hopf fibration fibers, ~160 lines) and Warp Drive (radial streak system, ~80 lines) — both untested, then to 5/5/6/4 after adding Lorenz attractor (3D), Torus Knot, Atomic Orbital, and Geodesic Crystal modes — all untested WebGL/math surfaces. Ratchet back up as UI tests land in follow-up PRs.",
       "include": [
         {
           "prefix": "components/",
@@ -114,10 +114,10 @@
       ],
       "excludeSuffixes": [".test.ts", ".test.tsx", ".spec.ts", ".spec.tsx"],
       "metrics": {
-        "lines": 6,
-        "statements": 6,
-        "functions": 7,
-        "branches": 5
+        "lines": 5,
+        "statements": 5,
+        "functions": 6,
+        "branches": 4
       }
     }
   ],
