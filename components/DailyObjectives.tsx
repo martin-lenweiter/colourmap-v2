@@ -993,6 +993,18 @@ export default function DailyObjectives() {
                 </span>
               </button>
             </div>
+            <p
+              className="text-center uppercase tracking-[0.18em]"
+              style={{
+                fontFamily: 'var(--font-serif)',
+                fontSize: '10px',
+                color: '#C4A060',
+                opacity: 0.45,
+                marginTop: 4,
+              }}
+            >
+              to do
+            </p>
 
             {pushTomorrowOpen && (
               <>
