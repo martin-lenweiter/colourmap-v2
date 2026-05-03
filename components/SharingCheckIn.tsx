@@ -27,29 +27,6 @@ function loadIdx(): number {
   }
 }
 
-function RainbowSlider({ idx, onSelect }: { idx: number; onSelect: (i: number) => void }) {
-  return (
-    <div className="flex w-full gap-[5px]" style={{ maxWidth: 220 }}>
-      {SHARING_LEVELS.map((l, i) => (
-        <button
-          key={l.label}
-          type="button"
-          onClick={() => onSelect(i)}
-          className="flex-1 cursor-pointer transition-all duration-200"
-          style={{
-            height: 14,
-            borderRadius: 3,
-            background: l.color,
-            opacity: i <= idx ? 0.85 : 0.15,
-            border: 'none',
-            boxShadow: i === idx ? `0 2px 8px ${l.color}55` : 'none',
-          }}
-        />
-      ))}
-    </div>
-  );
-}
-
 export default function SharingCheckIn() {
   const [idx, setIdx] = useState(2);
 
@@ -98,8 +75,16 @@ export default function SharingCheckIn() {
         </span>
       </div>
 
-      {/* 5-square rainbow slider */}
-      <RainbowSlider idx={idx} onSelect={pick} />
+      {/* Range slider */}
+      <input
+        type="range"
+        min={0}
+        max={SHARING_LEVELS.length - 1}
+        step={1}
+        value={idx}
+        onChange={(e) => pick(Number(e.target.value))}
+        style={{ width: '100%', maxWidth: 220, accentColor: current.color, cursor: 'pointer' }}
+      />
 
       <div className="flex w-full justify-between" style={{ maxWidth: 220 }}>
         <span
