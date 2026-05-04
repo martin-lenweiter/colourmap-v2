@@ -80,7 +80,7 @@ function TodoList({ fontFamily }: { fontFamily: string }) {
           if (e.key === 'Enter') add(input);
         }}
         placeholder="+ add task..."
-        className="w-full border-b bg-transparent pb-2 text-base outline-none"
+        className="w-full border-b bg-transparent pb-2 text-base outline-none text-center placeholder:text-center"
         style={{ color: '#7a5438', borderColor: `${DOING_COLOR}20`, fontFamily }}
       />
     </div>

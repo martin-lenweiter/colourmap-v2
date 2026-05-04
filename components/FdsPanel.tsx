@@ -25,7 +25,11 @@ type Layout = 'h' | 'v' | 'compass' | 'super';
 
 const LS_ENTRIES = 'colourmap:reflect-entries';
 const LS_ITEM_DATA = 'colourmap:fds-item-data';
+const LS_AXIS_LEVELS = 'colourmap:fds-axis-levels';
+const LS_SLIDER_STYLE = 'colourmap:fds-slider-style';
 const font = 'var(--font-serif)';
+
+type SliderStyle = 1 | 2 | 3 | 4 | 5;
 
 interface ItemData {
   level: number;
@@ -914,11 +918,236 @@ function SuperCompass() {
   );
 }
 
+/* ── AxisSlider — 5 visual styles for the D / S level picker ── */
+function AxisSlider({
+  levels,
+  selectedIdx,
+  onSelect,
+  axisColor,
+  style,
+}: {
+  levels: { name: string; color: string }[];
+  selectedIdx: number;
+  onSelect: (i: number) => void;
+  axisColor: string;
+  style: SliderStyle;
+}) {
+  const n = levels.length;
+  const cur = levels[selectedIdx];
+
+  /* style 3 — gradient line with thumb */
+  if (style === 3) {
+    const pct = n > 1 ? (selectedIdx / (n - 1)) * 100 : 0;
+    const allColors = levels.map((l) => l.color).join(', ');
+    return (
+      <div className="relative flex items-center" style={{ flex: 1, height: 28 }}>
+        <div
+          style={{
+            position: 'absolute',
+            left: 8,
+            right: 8,
+            height: 3,
+            borderRadius: 2,
+            background: `linear-gradient(to right,${allColors})`,
+            opacity: 0.2,
+          }}
+        />
+        <div
+          style={{
+            position: 'absolute',
+            left: 8,
+            right: `calc(${100 - pct}% * ((100% - 16px) / 100%))`,
+            height: 3,
+            borderRadius: 2,
+            background: `linear-gradient(to right,${allColors})`,
+            opacity: 0.75,
+            width: `calc((100% - 16px) * ${pct / 100})`,
+          }}
+        />
+        <div
+          style={{
+            position: 'absolute',
+            left: `calc(8px + (100% - 16px) * ${pct / 100} - 7px)`,
+            top: '50%',
+            transform: 'translateY(-50%)',
+            width: 14,
+            height: 14,
+            borderRadius: '50%',
+            background: cur.color,
+            boxShadow: `0 2px 8px -2px ${cur.color}`,
+            pointerEvents: 'none',
+            zIndex: 2,
+          }}
+        />
+        <div className="absolute inset-0 flex">
+          {levels.map((_, i) => (
+            <button
+              key={i}
+              type="button"
+              onClick={() => onSelect(i)}
+              style={{
+                flex: 1,
+                height: '100%',
+                background: 'none',
+                border: 'none',
+                cursor: 'pointer',
+              }}
+            />
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  /* style 4 — bowed arc */
+  if (style === 4) {
+    const H = 44;
+    const dotSize = 15;
+    return (
+      <div className="relative" style={{ flex: 1, height: H }}>
+        {levels.map((level, i) => {
+          const pct = n > 1 ? i / (n - 1) : 0;
+          const angle = (pct - 0.5) * Math.PI;
+          const ry = H * 0.45;
+          const cy = H * 0.72;
+          const y = cy - ry * Math.cos(angle) - dotSize / 2;
+          const selected = selectedIdx === i;
+          return (
+            <button
+              key={level.name}
+              type="button"
+              onClick={() => onSelect(i)}
+              className="absolute cursor-pointer rounded-full transition-all"
+              style={{
+                left: `calc(${pct * 100}% - ${dotSize / 2}px)`,
+                top: y,
+                width: dotSize,
+                height: dotSize,
+                background: level.color,
+                opacity: selected ? 1 : 0.22,
+                border: 'none',
+                boxShadow: selected ? `0 3px 10px -3px ${level.color}` : 'none',
+                transform: selected ? 'scale(1.25)' : 'scale(1)',
+              }}
+            />
+          );
+        })}
+      </div>
+    );
+  }
+
+  /* style 5 — vertical bars (EQ) */
+  if (style === 5) {
+    return (
+      <div className="flex items-end gap-[3px]" style={{ flex: 1, height: 32, paddingBottom: 2 }}>
+        {levels.map((level, i) => {
+          const heightPct = 20 + (i / Math.max(n - 1, 1)) * 80;
+          const selected = selectedIdx === i;
+          return (
+            <button
+              key={level.name}
+              type="button"
+              onClick={() => onSelect(i)}
+              className="flex-1 cursor-pointer transition-all"
+              style={{
+                height: `${heightPct}%`,
+                background: level.color,
+                opacity: selected ? 1 : i <= selectedIdx ? 0.45 : 0.15,
+                border: 'none',
+                borderRadius: '2px 2px 0 0',
+              }}
+            />
+          );
+        })}
+      </div>
+    );
+  }
+
+  /* styles 1 (rainbow dots) and 2 (colour dots) — track + dots */
+  const selPct = n > 1 ? (selectedIdx / (n - 1)) * 100 : 0;
+  return (
+    <div className="relative flex items-center" style={{ flex: 1, height: 28 }}>
+      {/* Full track */}
+      <div
+        style={{
+          position: 'absolute',
+          left: 0,
+          right: 0,
+          height: 2,
+          borderRadius: 1,
+          background: axisColor,
+          opacity: 0.15,
+        }}
+      />
+      {/* Filled track up to selected */}
+      <div
+        style={{
+          position: 'absolute',
+          left: 0,
+          width: `${selPct}%`,
+          height: 2,
+          borderRadius: 1,
+          background:
+            style === 1
+              ? `linear-gradient(to right,${levels
+                  .slice(0, selectedIdx + 1)
+                  .map((l) => l.color)
+                  .join(',')})`
+              : axisColor,
+          opacity: 0.6,
+        }}
+      />
+      {/* Dots */}
+      {levels.map((level, i) => {
+        const selected = selectedIdx === i;
+        const pct = n > 1 ? (i / (n - 1)) * 100 : 50;
+        const bg = style === 1 ? level.color : axisColor;
+        return (
+          <button
+            key={level.name}
+            type="button"
+            onClick={() => onSelect(i)}
+            className="absolute cursor-pointer rounded-full transition-all"
+            style={{
+              left: `${pct}%`,
+              top: '50%',
+              transform: 'translate(-50%,-50%)',
+              width: selected ? 18 : 12,
+              height: selected ? 18 : 12,
+              background: bg,
+              opacity: selected ? 1 : i <= selectedIdx ? 0.55 : 0.28,
+              border: 'none',
+              boxShadow: selected ? `0 2px 8px -2px ${bg}` : 'none',
+              zIndex: selected ? 2 : 1,
+            }}
+          />
+        );
+      })}
+    </div>
+  );
+}
+
 export default function FdsPanel() {
   const [active, setActive] = useState<Axis | null>(null);
   const [layout, setLayout] = useState<Layout>('v');
   const [openItem, setOpenItem] = useState<string | null>(null);
   const [itemData, setItemData] = useState<Record<string, ItemData>>({});
+  const [axisLevels, setAxisLevels] = useState<Record<Axis, number>>(() => {
+    try {
+      const raw = localStorage.getItem(LS_AXIS_LEVELS);
+      return raw ? JSON.parse(raw) : { feeling: 0, doing: 0, sharing: 0 };
+    } catch {
+      return { feeling: 0, doing: 0, sharing: 0 };
+    }
+  });
+  const [sliderStyle, setSliderStyle] = useState<SliderStyle>(() => {
+    try {
+      const v = Number(localStorage.getItem(LS_SLIDER_STYLE));
+      return (v >= 1 && v <= 5 ? v : 1) as SliderStyle;
+    } catch {
+      return 1;
+    }
+  });
 
   useEffect(() => {
     try {
@@ -947,74 +1176,119 @@ export default function FdsPanel() {
     });
   }
 
+  function setAxisLevel(axis: Axis, level: number) {
+    setAxisLevels((prev) => {
+      const next = { ...prev, [axis]: level };
+      localStorage.setItem(LS_AXIS_LEVELS, JSON.stringify(next));
+      return next;
+    });
+  }
+
+  function cycleSliderStyle() {
+    setSliderStyle((s) => {
+      const next = (s >= 5 ? 1 : s + 1) as SliderStyle;
+      localStorage.setItem(LS_SLIDER_STYLE, String(next));
+      return next;
+    });
+  }
+
   const isSuper = layout === 'super';
   const axisDef = active && !isSuper ? AXES[active] : null;
 
   return (
-    <div className="space-y-4">
-      {/* F / D / S big dots + ⊚ super */}
-      <div className="flex items-center justify-center gap-6">
+    <div className="space-y-3">
+      {/* F / D / S — each axis as its own row: circle + slider */}
+      <div className="relative space-y-3">
+        {/* Style picker — tiny beige dot, top-right. Cycles D/S slider style only. */}
+        <button
+          type="button"
+          onClick={cycleSliderStyle}
+          title={`Slider style ${sliderStyle} of 5`}
+          className="absolute cursor-pointer"
+          style={{ right: 0, top: 0, background: 'none', border: 'none', padding: 4, zIndex: 1 }}
+        >
+          <span
+            style={{
+              display: 'block',
+              width: 12,
+              height: 12,
+              borderRadius: '50%',
+              background: '#C4A060',
+              opacity: 0.25,
+            }}
+          />
+        </button>
+
         {ORDER.map((id) => {
           const a = AXES[id];
           const isOn = active === id && !isSuper;
-          const dimmed = (active !== null && !isOn && !isSuper) || isSuper;
+          const level = axisLevels[id];
+          const curLevel = a.levels[level];
+          const isFeeling = id === 'feeling';
           return (
-            <button
-              key={id}
-              type="button"
-              onClick={() => {
-                setActive(isOn ? null : id);
-                setLayout('v');
-                setOpenItem(null);
-              }}
-              style={{
-                display: 'flex',
-                flexDirection: 'column',
-                alignItems: 'center',
-                gap: 6,
-                background: 'none',
-                border: 'none',
-                cursor: 'pointer',
-                padding: 0,
-                opacity: dimmed ? 0.3 : 1,
-                transition: 'opacity 0.15s',
-              }}
-            >
-              <span
+            <div key={id} className="flex items-center gap-3">
+              {/* Circle — tap to expand */}
+              <button
+                type="button"
+                onClick={() => {
+                  setActive(isOn ? null : id);
+                  setLayout('v');
+                  setOpenItem(null);
+                }}
                 style={{
-                  width: 64,
-                  height: 64,
+                  width: 46,
+                  height: 46,
                   borderRadius: '50%',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
                   background: isOn ? `${a.color}22` : `${a.color}0C`,
-                  border: `2px solid ${isOn ? a.color : `${a.color}40`}`,
+                  border: `2px solid ${isOn ? a.color : `${a.color}38`}`,
                   boxShadow: isOn ? `0 0 0 4px ${a.color}18` : 'none',
                   transition: 'all 0.18s',
                   fontFamily: font,
-                  fontSize: 26,
+                  fontSize: 20,
                   fontWeight: 800,
-                  letterSpacing: '0.04em',
                   color: isOn ? a.color : `${a.color}80`,
+                  cursor: 'pointer',
+                  flexShrink: 0,
                 }}
               >
                 {a.label}
+              </button>
+
+              {/* Slider — F always rainbow dots; D + S use chosen style */}
+              <AxisSlider
+                levels={a.levels}
+                selectedIdx={level}
+                onSelect={(i) => setAxisLevel(id, i)}
+                axisColor={a.color}
+                style={isFeeling ? 1 : sliderStyle}
+              />
+
+              {/* Level name */}
+              <span
+                style={{
+                  fontFamily: font,
+                  fontSize: 11,
+                  fontWeight: 600,
+                  color: curLevel.color,
+                  width: 62,
+                  textAlign: 'right',
+                  letterSpacing: '0.05em',
+                  flexShrink: 0,
+                  lineHeight: 1.2,
+                }}
+              >
+                {curLevel.name}
               </span>
-            </button>
+            </div>
           );
         })}
-        {/* Divider */}
-        <span
-          style={{
-            width: 1,
-            height: 20,
-            background: '#C4A06030',
-            display: 'block',
-            alignSelf: 'center',
-          }}
-        />
-        {/* ⊚ SuperCompass toggle */}
+      </div>
+
+      {/* ⊚ SuperCompass toggle */}
+      <div className="flex justify-center">
         <button
           type="button"
           onClick={() => {
@@ -1029,18 +1303,17 @@ export default function FdsPanel() {
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            width: 40,
-            height: 40,
+            width: 32,
+            height: 32,
             borderRadius: '50%',
             fontFamily: font,
-            fontSize: 18,
+            fontSize: 15,
             color: isSuper ? '#C4A060' : '#8A6A4A',
             background: isSuper ? '#C4A06018' : 'transparent',
-            border: `1.5px solid ${isSuper ? '#C4A06055' : '#C4A06028'}`,
+            border: `1.5px solid ${isSuper ? '#C4A06055' : '#C4A06020'}`,
             cursor: 'pointer',
-            opacity: isSuper ? 1 : 0.5,
+            opacity: isSuper ? 1 : 0.45,
             transition: 'all 0.15s',
-            alignSelf: 'center',
           }}
           title="SuperCompass — Feeling + Doing"
         >
@@ -1127,22 +1400,6 @@ export default function FdsPanel() {
           {/* Reflect losange */}
           <ReflectSection axis={axisDef} axisId={active} />
         </div>
-      )}
-
-      {/* Idle hint */}
-      {!active && (
-        <p
-          className="text-center italic"
-          style={{
-            fontFamily: font,
-            fontSize: 13,
-            color: 'var(--muted-foreground)',
-            opacity: 0.55,
-            lineHeight: 1.5,
-          }}
-        >
-          tap F · D · S
-        </p>
       )}
     </div>
   );
