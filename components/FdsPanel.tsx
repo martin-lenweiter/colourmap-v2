@@ -578,7 +578,6 @@ function ItemProgram({
   sliderStyle: SliderStyle;
 }) {
   const levels5 = [1, 2, 3, 4, 5].map((n) => ({ name: String(n), color: item.color }));
-  const sel = data.level > 0 ? data.level - 1 : 0;
 
   return (
     <div className="space-y-3 pt-3 pb-1 animate-in fade-in duration-150">
@@ -1652,8 +1651,7 @@ function SharingProgram() {
                   color: 'var(--foreground)',
                   borderColor: `${S_COLOR}30`,
                   overflow: 'hidden',
-                  // @ts-expect-error fieldSizing not yet in TS types
-                  fieldSizing: 'content',
+                  fieldSizing: 'content' as React.CSSProperties['fieldSizing'],
                 }}
               />
             </div>
