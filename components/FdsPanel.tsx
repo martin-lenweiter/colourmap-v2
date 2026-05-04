@@ -27,9 +27,26 @@ const LS_ENTRIES = 'colourmap:reflect-entries';
 const LS_ITEM_DATA = 'colourmap:fds-item-data';
 const LS_AXIS_LEVELS = 'colourmap:fds-axis-levels';
 const LS_SLIDER_STYLE = 'colourmap:fds-slider-style';
+const LS_SHARING_LOG = 'colourmap:sharing-logbook';
+const LS_SHARING_CONN = 'colourmap:sharing-connections';
+const LS_SHARING_EXPR = 'colourmap:sharing-expression';
 const font = 'var(--font-serif)';
+const S_COLOR = '#6B7F4E';
 
-type SliderStyle = 1 | 2 | 3 | 4 | 5;
+type SliderStyle = 1 | 2 | 3 | 4 | 5 | 6 | 7;
+
+interface SLogEntry {
+  id: string;
+  prompt: string;
+  text: string;
+  createdAt: string;
+}
+
+interface Contact {
+  id: string;
+  name: string;
+  days: boolean[];
+}
 
 interface ItemData {
   level: number;
@@ -1063,6 +1080,66 @@ function AxisSlider({
     );
   }
 
+  /* style 6 — pill / segment blocks */
+  if (style === 6) {
+    return (
+      <div className="flex items-center gap-1" style={{ flex: 1, height: 28 }}>
+        {levels.map((level, i) => {
+          const selected = selectedIdx === i;
+          return (
+            <button
+              key={level.name}
+              type="button"
+              onClick={() => onSelect(i)}
+              className="flex-1 cursor-pointer transition-all"
+              style={{
+                height: selected ? 16 : 10,
+                borderRadius: 6,
+                background: style === 6 ? level.color : axisColor,
+                opacity: selected ? 0.95 : i <= selectedIdx ? 0.45 : 0.14,
+                border: 'none',
+                boxShadow: selected ? `0 2px 8px -2px ${level.color}` : 'none',
+              }}
+            />
+          );
+        })}
+      </div>
+    );
+  }
+
+  /* style 7 — graduated dots (grow in size left → right) */
+  if (style === 7) {
+    return (
+      <div className="relative flex items-center" style={{ flex: 1, height: 32 }}>
+        {levels.map((level, i) => {
+          const pct = n > 1 ? (i / (n - 1)) * 100 : 50;
+          const base = 7 + (i / Math.max(n - 1, 1)) * 11;
+          const selected = selectedIdx === i;
+          return (
+            <button
+              key={level.name}
+              type="button"
+              onClick={() => onSelect(i)}
+              className="absolute cursor-pointer rounded-full transition-all"
+              style={{
+                left: `${pct}%`,
+                top: '50%',
+                transform: 'translate(-50%,-50%)',
+                width: selected ? base + 4 : base,
+                height: selected ? base + 4 : base,
+                background: level.color,
+                opacity: selected ? 1 : i <= selectedIdx ? 0.55 : 0.2,
+                border: 'none',
+                boxShadow: selected ? `0 2px 10px -2px ${level.color}` : 'none',
+                zIndex: selected ? 2 : 1,
+              }}
+            />
+          );
+        })}
+      </div>
+    );
+  }
+
   /* styles 1 (rainbow dots) and 2 (colour dots) — track + dots */
   const selPct = n > 1 ? (selectedIdx / (n - 1)) * 100 : 0;
   return (
@@ -1127,6 +1204,405 @@ function AxisSlider({
   );
 }
 
+/* ── Shared losange divider ── */
+function LosingeDivider({
+  label,
+  open,
+  onToggle,
+}: {
+  label: string;
+  open: boolean;
+  onToggle: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onToggle}
+      className="flex w-full cursor-pointer items-center gap-3"
+      style={{ background: 'none', border: 'none', padding: '4px 0' }}
+    >
+      <div style={{ flex: 1, height: 1, background: `${S_COLOR}20` }} />
+      <span
+        style={{
+          width: 10,
+          height: 10,
+          background: open ? S_COLOR : 'transparent',
+          border: `1.5px solid ${S_COLOR}`,
+          display: 'block',
+          transform: 'rotate(45deg)',
+          borderRadius: 2,
+          flexShrink: 0,
+          transition: 'background 0.15s',
+        }}
+      />
+      <span
+        style={{
+          fontFamily: font,
+          fontSize: 11,
+          fontWeight: 700,
+          letterSpacing: '0.14em',
+          textTransform: 'uppercase',
+          color: S_COLOR,
+          opacity: open ? 1 : 0.6,
+        }}
+      >
+        {label}
+      </span>
+      <div style={{ flex: 1, height: 1, background: `${S_COLOR}20` }} />
+    </button>
+  );
+}
+
+/* ── Sharing logbook — 3 prompts, saved entries ── */
+function SharingLogbook() {
+  const [open, setOpen] = useState(false);
+  const [answers, setAnswers] = useState<Record<string, string>>({});
+  const [entries, setEntries] = useState<SLogEntry[]>(() => {
+    try {
+      return JSON.parse(localStorage.getItem(LS_SHARING_LOG) || '[]') as SLogEntry[];
+    } catch {
+      return [];
+    }
+  });
+
+  const PROMPTS = [
+    { key: 'reached', label: 'who did you reach out to?' },
+    { key: 'hard', label: 'what felt hard to share?' },
+    { key: 'expressed', label: 'what did you make or express?' },
+  ];
+
+  function persist(next: SLogEntry[]) {
+    setEntries(next);
+    localStorage.setItem(LS_SHARING_LOG, JSON.stringify(next));
+  }
+
+  function saveAll() {
+    const now = new Date().toISOString();
+    const newEntries = PROMPTS.filter((p) => answers[p.key]?.trim()).map((p) => ({
+      id: crypto.randomUUID(),
+      prompt: p.label,
+      text: answers[p.key].trim(),
+      createdAt: now,
+    }));
+    if (newEntries.length === 0) return;
+    persist([...newEntries, ...entries]);
+    setAnswers({});
+  }
+
+  const hasFilled = PROMPTS.some((p) => answers[p.key]?.trim());
+
+  return (
+    <div className="mt-2">
+      <LosingeDivider label="Journal" open={open} onToggle={() => setOpen((o) => !o)} />
+      {open && (
+        <div className="mt-3 space-y-2 animate-in fade-in duration-150">
+          {PROMPTS.map((p) => (
+            <input
+              key={p.key}
+              type="text"
+              value={answers[p.key] || ''}
+              onChange={(e) => setAnswers((prev) => ({ ...prev, [p.key]: e.target.value }))}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') saveAll();
+              }}
+              placeholder={p.label}
+              className="w-full border-b bg-transparent pb-1 outline-none placeholder:italic"
+              style={{
+                fontFamily: font,
+                fontSize: 14,
+                color: 'var(--foreground)',
+                borderColor: `${S_COLOR}30`,
+              }}
+            />
+          ))}
+          {hasFilled && (
+            <button
+              type="button"
+              onClick={saveAll}
+              className="cursor-pointer rounded-full px-3 py-1"
+              style={{
+                fontFamily: font,
+                fontSize: 11,
+                fontWeight: 700,
+                letterSpacing: '0.1em',
+                textTransform: 'uppercase',
+                color: S_COLOR,
+                background: `${S_COLOR}22`,
+                border: `1px solid ${S_COLOR}70`,
+              }}
+            >
+              log
+            </button>
+          )}
+          {entries.length > 0 && (
+            <div className="space-y-2 pt-2" style={{ borderTop: `1px dashed ${S_COLOR}20` }}>
+              {entries.slice(0, 10).map((e) => (
+                <div key={e.id} className="flex items-start gap-2">
+                  <span
+                    style={{
+                      width: 6,
+                      height: 6,
+                      borderRadius: '50%',
+                      background: S_COLOR,
+                      opacity: 0.4,
+                      marginTop: 5,
+                      flexShrink: 0,
+                    }}
+                  />
+                  <div className="flex-1 min-w-0">
+                    <p
+                      style={{
+                        fontFamily: font,
+                        fontSize: 10,
+                        color: S_COLOR,
+                        opacity: 0.55,
+                        letterSpacing: '0.06em',
+                      }}
+                    >
+                      {e.prompt}
+                    </p>
+                    <p
+                      style={{
+                        fontFamily: font,
+                        fontSize: 13,
+                        color: 'var(--foreground)',
+                        opacity: 0.85,
+                        lineHeight: 1.4,
+                      }}
+                    >
+                      {e.text}
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => persist(entries.filter((x) => x.id !== e.id))}
+                    style={{
+                      background: 'none',
+                      border: 'none',
+                      color: S_COLOR,
+                      opacity: 0.3,
+                      cursor: 'pointer',
+                      fontSize: 12,
+                      flexShrink: 0,
+                    }}
+                  >
+                    ×
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
+/* ── Connection map — named contacts + 7-day dot history ── */
+function ConnectionMap() {
+  const [open, setOpen] = useState(false);
+  const [contacts, setContacts] = useState<Contact[]>(() => {
+    try {
+      return JSON.parse(localStorage.getItem(LS_SHARING_CONN) || '[]') as Contact[];
+    } catch {
+      return [];
+    }
+  });
+  const [input, setInput] = useState('');
+  const today = new Date().getDay();
+  const labels = ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
+
+  function save(next: Contact[]) {
+    setContacts(next);
+    localStorage.setItem(LS_SHARING_CONN, JSON.stringify(next));
+  }
+
+  function addContact(name: string) {
+    if (!name.trim()) return;
+    save([
+      ...contacts,
+      { id: crypto.randomUUID(), name: name.trim(), days: Array(7).fill(false) as boolean[] },
+    ]);
+    setInput('');
+  }
+
+  function toggleDay(id: string, di: number) {
+    save(
+      contacts.map((c) =>
+        c.id !== id ? c : { ...c, days: c.days.map((d, j) => (j === di ? !d : d)) },
+      ),
+    );
+  }
+
+  return (
+    <div className="mt-1">
+      <LosingeDivider label="Connections" open={open} onToggle={() => setOpen((o) => !o)} />
+      {open && (
+        <div className="mt-3 space-y-2 animate-in fade-in duration-150">
+          {contacts.map((c) => (
+            <div
+              key={c.id}
+              className="group rounded-xl px-3 py-2.5"
+              style={{ background: `${S_COLOR}07`, border: `1px solid ${S_COLOR}18` }}
+            >
+              <div className="mb-2 flex items-center gap-2">
+                <span
+                  style={{
+                    fontFamily: font,
+                    fontSize: 13,
+                    fontWeight: 700,
+                    color: S_COLOR,
+                    flex: 1,
+                  }}
+                >
+                  {c.name}
+                </span>
+                <span
+                  style={{
+                    fontFamily: font,
+                    fontSize: 11,
+                    color: S_COLOR,
+                    opacity: 0.4,
+                  }}
+                >
+                  {c.days.filter(Boolean).length}/7
+                </span>
+                <button
+                  type="button"
+                  onClick={() => save(contacts.filter((x) => x.id !== c.id))}
+                  className="cursor-pointer opacity-0 transition-opacity group-hover:opacity-40"
+                  style={{ background: 'none', border: 'none', color: S_COLOR, fontSize: 12 }}
+                >
+                  ✕
+                </button>
+              </div>
+              <div className="flex items-center gap-1.5">
+                {c.days.map((done, di) => (
+                  <button
+                    key={di}
+                    type="button"
+                    onClick={() => toggleDay(c.id, di)}
+                    className="flex cursor-pointer flex-col items-center gap-0.5"
+                    style={{ background: 'none', border: 'none', padding: 0 }}
+                  >
+                    <div
+                      className="rounded-full transition-all duration-200"
+                      style={{
+                        width: 22,
+                        height: 22,
+                        background: done ? S_COLOR : `${S_COLOR}14`,
+                        opacity: done ? 0.75 : 0.4,
+                        border: di === today ? `2px solid ${S_COLOR}` : 'none',
+                      }}
+                    />
+                    <span style={{ fontSize: 9, color: S_COLOR, opacity: 0.4, fontFamily: font }}>
+                      {labels[di]}
+                    </span>
+                  </button>
+                ))}
+              </div>
+            </div>
+          ))}
+          <input
+            type="text"
+            value={input}
+            onChange={(e) => setInput(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') addContact(input);
+            }}
+            placeholder="+ add person..."
+            className="w-full border-b bg-transparent pb-2 text-sm outline-none"
+            style={{ color: `${S_COLOR}cc`, borderColor: `${S_COLOR}25`, fontFamily: font }}
+          />
+        </div>
+      )}
+    </div>
+  );
+}
+
+/* ── Expression streak — 7-day "made something" tracker ── */
+function ExpressionStreak() {
+  const [days, setDays] = useState<boolean[]>(() => {
+    try {
+      const raw = localStorage.getItem(LS_SHARING_EXPR);
+      const parsed = raw ? (JSON.parse(raw) as boolean[]) : null;
+      return Array.isArray(parsed) && parsed.length === 7 ? parsed : Array(7).fill(false);
+    } catch {
+      return Array(7).fill(false);
+    }
+  });
+
+  const today = new Date().getDay();
+  const labels = ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
+
+  function toggle(i: number) {
+    const next = days.map((d, j) => (j === i ? !d : d));
+    setDays(next);
+    localStorage.setItem(LS_SHARING_EXPR, JSON.stringify(next));
+  }
+
+  return (
+    <div
+      className="mt-1 rounded-2xl px-4 py-3"
+      style={{ background: `${S_COLOR}07`, border: `1px solid ${S_COLOR}15` }}
+    >
+      <div className="mb-2 flex items-center justify-between">
+        <span
+          style={{
+            fontFamily: font,
+            fontSize: 12,
+            fontWeight: 700,
+            color: S_COLOR,
+            letterSpacing: '0.1em',
+            textTransform: 'uppercase',
+          }}
+        >
+          Created
+        </span>
+        <span style={{ fontFamily: font, fontSize: 11, color: S_COLOR, opacity: 0.4 }}>
+          {days.filter(Boolean).length}/7
+        </span>
+      </div>
+      <div className="flex items-center gap-2">
+        {days.map((done, di) => (
+          <button
+            key={di}
+            type="button"
+            onClick={() => toggle(di)}
+            className="flex cursor-pointer flex-col items-center gap-1"
+            style={{ background: 'none', border: 'none', padding: 0 }}
+          >
+            <div
+              className="rounded-full transition-all duration-200"
+              style={{
+                width: 28,
+                height: 28,
+                background: done ? S_COLOR : `${S_COLOR}12`,
+                opacity: done ? 0.7 : 0.4,
+                border: di === today ? `2px solid ${S_COLOR}` : 'none',
+              }}
+            />
+            <span style={{ fontSize: 10, color: S_COLOR, opacity: 0.5, fontFamily: font }}>
+              {labels[di]}
+            </span>
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+/* ── All sharing extras — rendered only when S is active ── */
+function SharingExtras() {
+  return (
+    <div className="space-y-3">
+      <SharingLogbook />
+      <ConnectionMap />
+      <ExpressionStreak />
+    </div>
+  );
+}
+
 export default function FdsPanel() {
   const [active, setActive] = useState<Axis | null>(null);
   const [layout, setLayout] = useState<Layout>('v');
@@ -1143,7 +1619,7 @@ export default function FdsPanel() {
   const [sliderStyle, setSliderStyle] = useState<SliderStyle>(() => {
     try {
       const v = Number(localStorage.getItem(LS_SLIDER_STYLE));
-      return (v >= 1 && v <= 5 ? v : 1) as SliderStyle;
+      return (v >= 1 && v <= 7 ? v : 1) as SliderStyle;
     } catch {
       return 1;
     }
@@ -1186,7 +1662,7 @@ export default function FdsPanel() {
 
   function cycleSliderStyle() {
     setSliderStyle((s) => {
-      const next = (s >= 5 ? 1 : s + 1) as SliderStyle;
+      const next = (s >= 7 ? 1 : s + 1) as SliderStyle;
       localStorage.setItem(LS_SLIDER_STYLE, String(next));
       return next;
     });
@@ -1198,33 +1674,12 @@ export default function FdsPanel() {
   return (
     <div className="space-y-3">
       {/* F / D / S — each axis as its own row: circle + slider */}
-      <div className="relative space-y-3">
-        {/* Style picker — tiny beige dot, top-right. Cycles D/S slider style only. */}
-        <button
-          type="button"
-          onClick={cycleSliderStyle}
-          title={`Slider style ${sliderStyle} of 5`}
-          className="absolute cursor-pointer"
-          style={{ right: 0, top: 0, background: 'none', border: 'none', padding: 4, zIndex: 1 }}
-        >
-          <span
-            style={{
-              display: 'block',
-              width: 12,
-              height: 12,
-              borderRadius: '50%',
-              background: '#C4A060',
-              opacity: 0.25,
-            }}
-          />
-        </button>
-
+      <div className="space-y-3">
         {ORDER.map((id) => {
           const a = AXES[id];
           const isOn = active === id && !isSuper;
           const level = axisLevels[id];
           const curLevel = a.levels[level];
-          const isFeeling = id === 'feeling';
           return (
             <div key={id} className="flex items-center gap-3">
               {/* Circle — tap to expand */}
@@ -1257,13 +1712,13 @@ export default function FdsPanel() {
                 {a.label}
               </button>
 
-              {/* Slider — F always rainbow dots; D + S use chosen style */}
+              {/* Slider — all axes use chosen style */}
               <AxisSlider
                 levels={a.levels}
                 selectedIdx={level}
                 onSelect={(i) => setAxisLevel(id, i)}
                 axisColor={a.color}
-                style={isFeeling ? 1 : sliderStyle}
+                style={sliderStyle}
               />
 
               {/* Level name */}
@@ -1285,6 +1740,40 @@ export default function FdsPanel() {
             </div>
           );
         })}
+
+        {/* Ochre dot — style picker, right-aligned below rows */}
+        <div className="flex items-center justify-end gap-2 pt-1">
+          <span
+            style={{
+              fontFamily: font,
+              fontSize: 10,
+              color: '#C4A060',
+              opacity: 0.5,
+              letterSpacing: '0.1em',
+            }}
+          >
+            {sliderStyle}/7
+          </span>
+          <button
+            type="button"
+            onClick={cycleSliderStyle}
+            title={`Slider style ${sliderStyle} of 7 — click to change`}
+            className="cursor-pointer transition-all hover:scale-110"
+            style={{ background: 'none', border: 'none', padding: 0 }}
+          >
+            <span
+              style={{
+                display: 'block',
+                width: 14,
+                height: 14,
+                borderRadius: '50%',
+                background: '#C4A060',
+                opacity: 0.7,
+                boxShadow: '0 1px 6px -1px #C4A06080',
+              }}
+            />
+          </button>
+        </div>
       </div>
 
       {/* ⊚ SuperCompass toggle */}
@@ -1399,6 +1888,9 @@ export default function FdsPanel() {
 
           {/* Reflect losange */}
           <ReflectSection axis={axisDef} axisId={active} />
+
+          {/* Sharing-specific extras */}
+          {active === 'sharing' && <SharingExtras />}
         </div>
       )}
     </div>
