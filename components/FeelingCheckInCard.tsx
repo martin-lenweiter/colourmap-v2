@@ -313,12 +313,12 @@ function ChallengeDepth({ onSave }: { onSave: (text: string) => void }) {
             if (e.key === 'Enter') saveAll();
           }}
           placeholder={q.placeholder}
-          className="w-full border-b bg-transparent pb-1 outline-none placeholder:italic placeholder:text-[#8A6A4A] placeholder:opacity-50"
+          className="w-full border-b bg-transparent pb-1 outline-none placeholder:text-[#5C3018] placeholder:opacity-60"
           style={{
-            color: '#7a5438',
-            borderColor: '#C4A06020',
-            fontFamily: 'var(--font-serif)',
-            fontSize: '14px',
+            color: '#1a1a1a',
+            borderColor: '#C4A06030',
+            fontFamily: 'var(--font-handwritten)',
+            fontSize: '18px',
           }}
         />
       ))}
@@ -2263,13 +2263,8 @@ export default function FeelingCheckInCard() {
           )}
         </div>
 
-        {/* LOGBOOK & EMOTIONS — frame removed on phone. */}
-        <div
-          className="space-y-2 rounded-none border-0 bg-transparent px-0 py-1 md:rounded-2xl md:border md:px-4 md:py-3"
-          style={{
-            borderColor: '#C4A06030',
-          }}
-        >
+        {/* LOGBOOK & EMOTIONS */}
+        <div className="space-y-2 px-0 py-1">
           {/* Hawkins emotional slider — visible only while interacting with circle */}
           {sliderVisible && (
             <div className="relative flex flex-col items-center gap-2 pt-4 pb-2 animate-in fade-in duration-200">
@@ -2497,8 +2492,8 @@ export default function FeelingCheckInCard() {
                     display: 'block',
                     width: 16,
                     height: 16,
-                    background: HAWKINS[hawkinsIdx].color,
-                    opacity: showChallengeFlow ? 0.75 : 0.35,
+                    background: '#C4A060',
+                    opacity: showChallengeFlow ? 0.8 : 0.4,
                     borderRadius: 3,
                     transform: 'rotate(45deg)',
                     transition: 'opacity 0.2s',
@@ -2530,7 +2525,7 @@ export default function FeelingCheckInCard() {
                     rows={1}
                     className="w-full resize-none border-b bg-transparent pb-1 outline-none text-center placeholder:italic placeholder:text-[#8A6A4A] placeholder:opacity-[0.95]"
                     style={{
-                      color: '#7a5438',
+                      color: '#1a1a1a',
                       borderColor: '#C4A06030',
                       fontFamily: 'var(--font-serif)',
                       fontSize: '19px',
@@ -2616,7 +2611,7 @@ export default function FeelingCheckInCard() {
                     rows={1}
                     className="w-full resize-none border-b bg-transparent pb-1 outline-none text-center placeholder:italic placeholder:text-[#8A6A4A] placeholder:opacity-[0.95]"
                     style={{
-                      color: '#7a5438',
+                      color: '#1a1a1a',
                       borderColor: '#C4A06030',
                       fontFamily: 'var(--font-serif)',
                       fontSize: '19px',

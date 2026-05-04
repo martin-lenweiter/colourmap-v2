@@ -37,7 +37,7 @@ const BEAT_SAMPLE_URL = '/sounds/drums/Djembe.ogg';
 
 // ── Brain state presets ──
 const PRESETS = [
-  { id: 'deep-sleep', label: 'Deep Sleep', base: 40, beat: 2, color: '#9B6BA0' },
+  { id: 'deep-sleep', label: 'Deep Sleep', base: 40, beat: 2, color: '#C4A060' },
   { id: 'meditation', label: 'Meditation', base: 60, beat: 5, color: '#6890B0' },
   { id: 'creativity', label: 'Creativity', base: 70, beat: 6, color: '#D4805A' },
   { id: 'calm-focus', label: 'Calm Focus', base: 80, beat: 8, color: '#7AAA58' },
@@ -174,7 +174,7 @@ const LAYERS: LayerDef[] = [
   {
     id: 'bowl',
     label: 'Bowl',
-    color: '#9B6BA0',
+    color: '#C4A060',
     group: 'tones',
     build: (ctx, base) => buildTone(ctx, base * 1.5, 'sine'),
   },
@@ -462,7 +462,7 @@ const LAYERS: LayerDef[] = [
   {
     id: 'echoes',
     label: 'Echoes',
-    color: '#B0A0D0',
+    color: '#D4B870',
     group: 'ambient' as const,
     build: (ctx: AudioContext) => {
       const n = ctx.sampleRate * 10;
@@ -1137,7 +1137,7 @@ const CATEGORY_LABELS: Record<LayerCategory, string> = {
 const CATEGORY_COLORS: Record<LayerCategory, string> = {
   waters: '#6890B0',
   birds: '#7AAA58',
-  drones: '#9B6BA0',
+  drones: '#C4A060',
   textures: '#A0907A',
   wild: '#B33A2B',
   digital: '#5060A0',
@@ -1265,7 +1265,7 @@ const GENRES: Genre[] = [
   {
     id: 'trippy',
     label: 'Trippy',
-    color: '#9B6BA0',
+    color: '#C4A060',
     subtitle: 'harmonic · ocean · floating',
     beat: 4,
     base: 50,
@@ -1511,7 +1511,7 @@ export default function BinauralTuner() {
     { id: 'sub-fourth', label: 'Sub Fourth', ratio: 3 / 4, color: '#9A4858' },
     { id: 'sub-third', label: 'Sub Third', ratio: 4 / 5, color: '#B85A50' },
     { id: 'third', label: 'Third', ratio: 5 / 4, color: '#D4805A' },
-    { id: 'fourth', label: 'Fourth', ratio: 4 / 3, color: '#9B6BA0' },
+    { id: 'fourth', label: 'Fourth', ratio: 4 / 3, color: '#C4A060' },
     { id: 'fifth', label: 'Fifth', ratio: 3 / 2, color: '#6890B0' },
     { id: 'octave', label: 'Octave', ratio: 2, color: '#7AAA58' },
   ] as const;
@@ -1522,12 +1522,12 @@ export default function BinauralTuner() {
   const SACRED = [
     { id: 's174', label: '174', freq: 174, desc: 'foundation', color: '#5A8A6A' },
     { id: 's285', label: '285', freq: 285, desc: 'healing', color: '#6A90B8' },
-    { id: 's396', label: '396', freq: 396, desc: 'liberation', color: '#9B6BA0' },
+    { id: 's396', label: '396', freq: 396, desc: 'liberation', color: '#C4A060' },
     { id: 's417', label: '417', freq: 417, desc: 'change', color: '#D4805A' },
     { id: 's432', label: '432', freq: 432, desc: 'nature', color: '#7AAA58' },
     { id: 's528', label: '528', freq: 528, desc: 'love', color: '#5FAA70' },
     { id: 's639', label: '639', freq: 639, desc: 'connection', color: '#6890B0' },
-    { id: 's741', label: '741', freq: 741, desc: 'intuition', color: '#B0A0C8' },
+    { id: 's741', label: '741', freq: 741, desc: 'intuition', color: '#D4B870' },
     { id: 's852', label: '852', freq: 852, desc: 'spiritual', color: '#D8A878' },
     { id: 's963', label: '963', freq: 963, desc: 'higher self', color: '#1E7A50' },
   ] as const;
@@ -1551,7 +1551,7 @@ export default function BinauralTuner() {
     {
       id: 'piano',
       label: 'Soft Piano',
-      color: '#9B6BA0',
+      color: '#C4A060',
       type: 'triangle' as OscillatorType,
       attack: 0.3,
       release: 3.5,
@@ -1596,7 +1596,7 @@ export default function BinauralTuner() {
     {
       id: 'guitar',
       label: 'Boat Sounds',
-      color: '#8A8AAA',
+      color: '#A88848',
       type: 'sawtooth' as OscillatorType,
       attack: 0.2,
       release: 4.0,
@@ -1608,7 +1608,7 @@ export default function BinauralTuner() {
     {
       id: 'real-piano',
       label: 'Real Piano',
-      color: '#9B6BA0',
+      color: '#C4A060',
       type: 'sine' as OscillatorType,
       attack: 0.1,
       release: 3.5,
@@ -3598,7 +3598,7 @@ export default function BinauralTuner() {
             >
               <span
                 className="text-center text-base font-bold uppercase tracking-[0.22em]"
-                style={{ color: '#9B6BA0' }}
+                style={{ color: '#C4A060' }}
               >
                 harmonics · {baseFreq}Hz
               </span>
@@ -3606,7 +3606,7 @@ export default function BinauralTuner() {
                 style={{
                   transform: harmonicsOpen ? 'rotate(180deg)' : 'rotate(0deg)',
                   transition: 'transform 0.2s',
-                  color: '#9B6BA080',
+                  color: '#C4A06080',
                 }}
               >
                 ▾
@@ -3969,9 +3969,9 @@ export default function BinauralTuner() {
                         onClick={() => setVoiceMode(isOn ? 'off' : mode)}
                         className="cursor-pointer rounded-full px-2.5 py-1 text-[12px] font-semibold transition-all"
                         style={{
-                          color: isOn ? '#9B6BA0' : '#8A6A4A',
-                          background: isOn ? '#9B6BA015' : 'transparent',
-                          border: `1px solid ${isOn ? '#9B6BA040' : '#C4A06010'}`,
+                          color: isOn ? '#C4A060' : '#8A6A4A',
+                          background: isOn ? '#C4A06015' : 'transparent',
+                          border: `1px solid ${isOn ? '#C4A06040' : '#C4A06010'}`,
                           opacity: isOn ? 1 : mode === 'off' ? 0.5 : 0.8,
                           fontFamily: 'var(--font-serif)',
                         }}
@@ -5052,7 +5052,7 @@ const RAINBOW = [
   '#A0C8A0',
   '#90C0C0',
   '#A0B0D0',
-  '#B0A0C8',
+  '#D4B870',
   '#C8A8C8',
   '#E0908A',
 ];
