@@ -25,7 +25,9 @@ type Mode =
   | 'lorenz'
   | 'knot'
   | 'orbital'
-  | 'geodesic';
+  | 'geodesic'
+  | 'rainbow'
+  | 'cathedral';
 
 interface Pal {
   bg0: string;
@@ -230,6 +232,33 @@ const PAL: Record<string, Pal> = {
     dots: 'rgba(220,235,255,0.72)',
     rgb: [200, 220, 255],
   },
+  Matrix: {
+    bg0: '#000800',
+    bg1: '#000400',
+    line: 'rgba(0,255,65,0.65)',
+    fill: 'rgba(0,255,65,0.06)',
+    glow: 'rgba(0,200,50,0.38)',
+    dots: 'rgba(100,255,130,0.70)',
+    rgb: [0, 255, 65],
+  },
+  'Laser Dome': {
+    bg0: '#060008',
+    bg1: '#030005',
+    line: 'rgba(255,60,200,0.65)',
+    fill: 'rgba(255,60,200,0.06)',
+    glow: 'rgba(200,30,255,0.40)',
+    dots: 'rgba(255,140,255,0.72)',
+    rgb: [255, 60, 200],
+  },
+  'Sacred Architecture': {
+    bg0: '#080500',
+    bg1: '#040200',
+    line: 'rgba(220,175,70,0.65)',
+    fill: 'rgba(200,155,50,0.06)',
+    glow: 'rgba(180,130,40,0.38)',
+    dots: 'rgba(240,210,110,0.72)',
+    rgb: [220, 175, 70],
+  },
 };
 
 /* ── Preset configs ─────────────────────────────────────────── */
@@ -315,7 +344,7 @@ const PRESETS: Record<string, Cfg> = {
     breathSpeed: 1.0,
     intensity: 9,
     particles: 6,
-    luminous: 8,
+    luminous: 5,
     stars: 2,
     mode: 'burst',
   },
@@ -327,7 +356,7 @@ const PRESETS: Record<string, Cfg> = {
     breathSpeed: 0.9,
     intensity: 8,
     particles: 5,
-    luminous: 7,
+    luminous: 5,
     stars: 6,
     mode: 'kaleidoscope',
   },
@@ -336,10 +365,10 @@ const PRESETS: Record<string, Cfg> = {
     symmetry: 8,
     complexity: 6,
     glow: 7,
-    breathSpeed: 1.8,
+    breathSpeed: 1.4,
     intensity: 9,
     particles: 2,
-    luminous: 7,
+    luminous: 5,
     stars: 8,
     mode: 'tunnel',
   },
@@ -375,7 +404,7 @@ const PRESETS: Record<string, Cfg> = {
     breathSpeed: 0.4,
     intensity: 9,
     particles: 0,
-    luminous: 6,
+    luminous: 5,
     stars: 4,
     mode: 'clifford',
   },
@@ -387,7 +416,7 @@ const PRESETS: Record<string, Cfg> = {
     breathSpeed: 0.7,
     intensity: 8,
     particles: 0,
-    luminous: 7,
+    luminous: 5,
     stars: 5,
     mode: 'hypercube',
   },
@@ -396,10 +425,10 @@ const PRESETS: Record<string, Cfg> = {
     symmetry: 12,
     complexity: 6,
     glow: 7,
-    breathSpeed: 2.2,
+    breathSpeed: 1.4,
     intensity: 9,
     particles: 0,
-    luminous: 8,
+    luminous: 5,
     stars: 9,
     mode: 'warp',
   },
@@ -411,7 +440,7 @@ const PRESETS: Record<string, Cfg> = {
     breathSpeed: 0.6,
     intensity: 8,
     particles: 0,
-    luminous: 7,
+    luminous: 5,
     stars: 5,
     mode: 'lorenz',
   },
@@ -423,7 +452,7 @@ const PRESETS: Record<string, Cfg> = {
     breathSpeed: 0.5,
     intensity: 8,
     particles: 0,
-    luminous: 7,
+    luminous: 5,
     stars: 4,
     mode: 'knot',
   },
@@ -435,7 +464,7 @@ const PRESETS: Record<string, Cfg> = {
     breathSpeed: 0.7,
     intensity: 8,
     particles: 0,
-    luminous: 6,
+    luminous: 5,
     stars: 3,
     mode: 'orbital',
   },
@@ -447,38 +476,433 @@ const PRESETS: Record<string, Cfg> = {
     breathSpeed: 0.5,
     intensity: 8,
     particles: 0,
-    luminous: 8,
+    luminous: 4,
     stars: 6,
     mode: 'geodesic',
   },
+  Matrix: {
+    preset: 'Matrix',
+    symmetry: 8,
+    complexity: 4,
+    glow: 5,
+    breathSpeed: 0.2,
+    intensity: 7,
+    particles: 2,
+    luminous: 2,
+    stars: 0,
+    mode: 'sacred',
+  },
+  'Laser Dome': {
+    preset: 'Laser Dome',
+    symmetry: 12,
+    complexity: 6,
+    glow: 8,
+    breathSpeed: 0.5,
+    intensity: 9,
+    particles: 0,
+    luminous: 3,
+    stars: 2,
+    mode: 'rainbow',
+  },
+  'Sacred Architecture': {
+    preset: 'Sacred Architecture',
+    symmetry: 8,
+    complexity: 5,
+    glow: 6,
+    breathSpeed: 0.2,
+    intensity: 8,
+    particles: 0,
+    luminous: 3,
+    stars: 1,
+    mode: 'cathedral',
+  },
 };
 
-/* ── Intention resolver ─────────────────────────────────────── */
+/* ── Journey system ─────────────────────────────────────────── */
 
-function resolveIntention(w: string): string {
-  const t = w.toLowerCase();
-  if (/clear|focus|vision|clarif/.test(t)) return 'Blue Astral';
-  if (/release|let.?go|flow|open|surrender/.test(t)) return 'Calm Field';
-  if (/energy|power|fire|strong|courage|bold|activ/.test(t)) return 'Golden Source';
-  if (/peace|calm|still|quiet|rest|breath|soft/.test(t)) return 'Minimal Light';
-  if (/spirit|portal|cosmos|divine|mystic|dream/.test(t)) return 'Violet Portal';
-  if (/nature|earth|ground|grow|forest|root|green/.test(t)) return 'Forest Ceremony';
-  if (/dmt|psychedel|vision|burst|ray|expand/.test(t)) return 'DMT Vision';
-  if (/indigo|cosmic|infinite|deep|void/.test(t)) return 'Cosmic Indigo';
-  if (/tunnel|warp|speed|fly|dive|rush|hyper|space/.test(t)) return 'Warp Tunnel';
-  if (/vitral|glass|stained|church|window|cathedral|colour|color|rainbow/.test(t))
-    return 'Sacred Vitral';
-  if (/fibonacci|fib|spiral|nautilus|snail|nature|sequence/.test(t)) return 'Fibonacci Bloom';
-  if (/chaos|attractor|strange|clifford|fractal|evolv|morph/.test(t)) return 'Clifford Dream';
-  if (/4d|four.?d|hyper|tesseract|hopf|dimension/.test(t)) return '4D Crystal';
-  if (/warp|drive|streak|hyperspace|starfield|jump/.test(t)) return 'Warp Drive';
-  if (/lorenz|storm|butter|attractor|chaos3d|three.?d/.test(t)) return 'Lorenz Storm';
-  if (/knot|torus|braid|link|trefoil|knotted/.test(t)) return 'Knot Garden';
-  if (/orbital|atom|electron|quantum|shell|molecule/.test(t)) return 'Orbital Shell';
-  if (/crystal|lattice|platonic|polyhedron|geodesic|icosa|dodeca/.test(t)) return 'Crystal Lattice';
-  const keys = Object.keys(PRESETS);
-  return keys[Math.floor(Math.random() * keys.length)];
+interface JourneyStage {
+  preset: string;
+  mode: Mode;
+  duration: number;
+  symmetry?: number;
+  complexity?: number;
+  glow?: number;
+  breathSpeed?: number;
+  intensity?: number;
+  particles?: number;
+  luminous?: number;
+  stars?: number;
 }
+
+interface Journey {
+  id: number;
+  name: string;
+  icon: string;
+  desc: string;
+  stages: JourneyStage[];
+}
+
+function lerp(a: number, b: number, t: number) {
+  return a + (b - a) * t;
+}
+
+function smoothstep(t: number) {
+  return t * t * (3 - 2 * t);
+}
+
+function journeyLerpCfg(a: JourneyStage, b: JourneyStage, t: number): Cfg {
+  const pa = PRESETS[a.preset] ?? PRESETS['Calm Field'];
+  const pb = PRESETS[b.preset] ?? PRESETS['Calm Field'];
+  const st = smoothstep(Math.max(0, Math.min(1, t)));
+  return {
+    preset: t < 0.5 ? a.preset : b.preset,
+    mode: t < 0.5 ? a.mode : b.mode,
+    symmetry: Math.round(lerp(a.symmetry ?? pa.symmetry, b.symmetry ?? pb.symmetry, st)),
+    complexity: lerp(a.complexity ?? pa.complexity, b.complexity ?? pb.complexity, st),
+    glow: lerp(a.glow ?? pa.glow, b.glow ?? pb.glow, st),
+    breathSpeed: lerp(a.breathSpeed ?? pa.breathSpeed, b.breathSpeed ?? pb.breathSpeed, st),
+    intensity: lerp(a.intensity ?? pa.intensity, b.intensity ?? pb.intensity, st),
+    particles: lerp(a.particles ?? pa.particles, b.particles ?? pb.particles, st),
+    luminous: lerp(a.luminous ?? pa.luminous, b.luminous ?? pb.luminous, st),
+    stars: lerp(a.stars ?? pa.stars, b.stars ?? pb.stars, st),
+  };
+}
+
+const JOURNEYS: Journey[] = [
+  {
+    id: 1,
+    name: 'Bloom',
+    icon: '✿',
+    desc: 'Flowers, Fibonacci spirals, infinite petals — slow golden growth',
+    stages: [
+      {
+        preset: 'Fibonacci Bloom',
+        mode: 'fibonacci',
+        duration: 45,
+        breathSpeed: 0.18,
+        luminous: 2,
+        stars: 1,
+        complexity: 6,
+      },
+      {
+        preset: 'Calm Field',
+        mode: 'sacred',
+        duration: 45,
+        symmetry: 12,
+        breathSpeed: 0.15,
+        luminous: 2,
+        particles: 4,
+        glow: 5,
+      },
+      {
+        preset: 'Golden Source',
+        mode: 'kaleidoscope',
+        duration: 40,
+        symmetry: 16,
+        breathSpeed: 0.22,
+        luminous: 2,
+        glow: 6,
+      },
+      {
+        preset: 'Fibonacci Bloom',
+        mode: 'burst',
+        duration: 35,
+        breathSpeed: 0.3,
+        luminous: 3,
+        particles: 6,
+        glow: 7,
+      },
+      {
+        preset: 'Calm Field',
+        mode: 'orbital',
+        duration: 40,
+        breathSpeed: 0.12,
+        luminous: 2,
+        stars: 2,
+        symmetry: 8,
+      },
+    ],
+  },
+  {
+    id: 2,
+    name: 'Space Tunnel',
+    icon: '⊙',
+    desc: 'Stars, vortex tunnels, DMT depth — travelling through space',
+    stages: [
+      {
+        preset: 'Warp Drive',
+        mode: 'warp',
+        duration: 40,
+        breathSpeed: 0.6,
+        luminous: 3,
+        stars: 9,
+        glow: 6,
+      },
+      {
+        preset: 'Warp Tunnel',
+        mode: 'tunnel',
+        duration: 45,
+        breathSpeed: 0.7,
+        luminous: 3,
+        stars: 7,
+        glow: 5,
+      },
+      {
+        preset: 'Cosmic Indigo',
+        mode: 'lorenz',
+        duration: 40,
+        breathSpeed: 0.3,
+        luminous: 3,
+        stars: 5,
+      },
+      {
+        preset: 'Blue Astral',
+        mode: 'lissajous',
+        duration: 35,
+        breathSpeed: 0.45,
+        luminous: 3,
+        stars: 7,
+      },
+      {
+        preset: 'Warp Tunnel',
+        mode: 'tunnel',
+        duration: 40,
+        breathSpeed: 0.8,
+        luminous: 4,
+        stars: 9,
+        glow: 7,
+      },
+    ],
+  },
+  {
+    id: 3,
+    name: 'Sacred Geometry',
+    icon: '⬡',
+    desc: '4D crystal forms, torus knots, platonic solids transforming',
+    stages: [
+      {
+        preset: 'Crystal Lattice',
+        mode: 'geodesic',
+        duration: 45,
+        complexity: 5,
+        breathSpeed: 0.18,
+        luminous: 2,
+        glow: 6,
+      },
+      {
+        preset: '4D Crystal',
+        mode: 'hypercube',
+        duration: 45,
+        breathSpeed: 0.25,
+        luminous: 3,
+        glow: 7,
+        complexity: 8,
+      },
+      {
+        preset: 'Knot Garden',
+        mode: 'knot',
+        duration: 40,
+        breathSpeed: 0.22,
+        luminous: 2,
+        complexity: 5,
+        symmetry: 3,
+      },
+      {
+        preset: 'Sacred Vitral',
+        mode: 'vitral',
+        duration: 40,
+        breathSpeed: 0.15,
+        luminous: 2,
+        symmetry: 12,
+      },
+      {
+        preset: 'Orbital Shell',
+        mode: 'orbital',
+        duration: 40,
+        breathSpeed: 0.18,
+        luminous: 2,
+        symmetry: 6,
+      },
+    ],
+  },
+  {
+    id: 4,
+    name: 'Big Bang',
+    icon: '✦',
+    desc: 'Atoms to galaxies — the full spectrum of cosmic creation in colour',
+    stages: [
+      {
+        preset: 'Violet Portal',
+        mode: 'burst',
+        duration: 35,
+        breathSpeed: 0.5,
+        luminous: 4,
+        particles: 8,
+        glow: 8,
+        stars: 2,
+      },
+      {
+        preset: 'Clifford Dream',
+        mode: 'clifford',
+        duration: 40,
+        breathSpeed: 0.3,
+        luminous: 3,
+        complexity: 8,
+        glow: 6,
+      },
+      {
+        preset: 'Forest Ceremony',
+        mode: 'golden',
+        duration: 40,
+        breathSpeed: 0.22,
+        luminous: 2,
+        stars: 5,
+        symmetry: 10,
+      },
+      {
+        preset: 'Cosmic Indigo',
+        mode: 'kaleidoscope',
+        duration: 40,
+        symmetry: 14,
+        breathSpeed: 0.4,
+        luminous: 3,
+        stars: 6,
+        glow: 7,
+      },
+      {
+        preset: 'Warp Drive',
+        mode: 'warp',
+        duration: 35,
+        breathSpeed: 0.55,
+        luminous: 4,
+        stars: 9,
+        glow: 7,
+      },
+    ],
+  },
+  {
+    id: 5,
+    name: 'Matrix',
+    icon: '⌗',
+    desc: 'Code rain morphing into blooming mandalas — data becomes nature',
+    stages: [
+      {
+        preset: 'Matrix',
+        mode: 'sacred',
+        duration: 40,
+        symmetry: 6,
+        breathSpeed: 0.12,
+        luminous: 2,
+        stars: 0,
+        particles: 1,
+      },
+      {
+        preset: 'Matrix',
+        mode: 'fibonacci',
+        duration: 40,
+        breathSpeed: 0.15,
+        luminous: 2,
+        stars: 0,
+        complexity: 7,
+      },
+      {
+        preset: 'Matrix',
+        mode: 'kaleidoscope',
+        duration: 35,
+        symmetry: 12,
+        breathSpeed: 0.18,
+        luminous: 2,
+        glow: 5,
+      },
+      {
+        preset: 'Matrix',
+        mode: 'burst',
+        duration: 30,
+        breathSpeed: 0.22,
+        luminous: 3,
+        particles: 5,
+        glow: 6,
+      },
+      {
+        preset: 'Matrix',
+        mode: 'sacred',
+        duration: 35,
+        symmetry: 16,
+        breathSpeed: 0.1,
+        luminous: 2,
+        particles: 2,
+      },
+    ],
+  },
+  {
+    id: 6,
+    name: 'Sacred Architecture',
+    icon: '⛪',
+    desc: 'Islamic arches, Gothic cathedrals, rose windows — human sacred geometry across all cultures',
+    stages: [
+      {
+        preset: 'Sacred Architecture',
+        mode: 'cathedral',
+        duration: 50,
+        symmetry: 6,
+        complexity: 3,
+        breathSpeed: 0.12,
+        luminous: 2,
+        glow: 2,
+        stars: 1,
+      },
+      {
+        preset: 'Sacred Vitral',
+        mode: 'vitral',
+        duration: 45,
+        symmetry: 12,
+        breathSpeed: 0.1,
+        luminous: 2,
+        glow: 3,
+      },
+      {
+        preset: 'Sacred Architecture',
+        mode: 'cathedral',
+        duration: 50,
+        symmetry: 12,
+        complexity: 6,
+        breathSpeed: 0.15,
+        luminous: 3,
+        glow: 7,
+      },
+      {
+        preset: 'Knot Garden',
+        mode: 'knot',
+        duration: 40,
+        breathSpeed: 0.14,
+        luminous: 2,
+        complexity: 4,
+        glow: 4,
+      },
+      {
+        preset: 'Sacred Architecture',
+        mode: 'rainbow',
+        duration: 45,
+        symmetry: 16,
+        complexity: 8,
+        breathSpeed: 0.2,
+        luminous: 3,
+        glow: 8,
+      },
+      {
+        preset: 'Sacred Architecture',
+        mode: 'cathedral',
+        duration: 50,
+        symmetry: 8,
+        complexity: 7,
+        breathSpeed: 0.1,
+        luminous: 2,
+        glow: 5,
+        stars: 2,
+      },
+    ],
+  },
+];
 
 /* ── Particle helpers ───────────────────────────────────────── */
 
@@ -756,6 +1180,10 @@ function buildModeGroup(cfg: Cfg, R: number): THREE.Group {
       return buildOrbital(cfg, R);
     case 'geodesic':
       return buildGeodesic(cfg, R);
+    case 'rainbow':
+      return buildRainbow(cfg, R);
+    case 'cathedral':
+      return buildCathedral(cfg, R);
     default:
       return buildSacred(cfg, R);
   }
@@ -807,6 +1235,12 @@ function updateModeGroup(group: THREE.Group, cfg: Cfg, dots: Dot[], t: number, R
       break;
     case 'geodesic':
       updateGeodesic(group, cfg, t, R);
+      break;
+    case 'rainbow':
+      updateRainbow(group, cfg, t, R);
+      break;
+    case 'cathedral':
+      updateCathedral(group, cfg, t, R);
       break;
     default:
       updateSacred(group, cfg, dots, t, R);
@@ -2653,6 +3087,318 @@ function updateGeodesic(group: THREE.Group, cfg: Cfg, t: number, R: number): voi
   }
 }
 
+/* ── RAINBOW mode — multi-colour laser dome ─────────────────── */
+
+function buildRainbow(cfg: Cfg, R: number): THREE.Group {
+  const TAU = Math.PI * 2;
+  const sym = Math.max(3, Math.round(cfg.symmetry));
+  const layers = Math.max(2, Math.round(cfg.complexity));
+  const group = new THREE.Group();
+  const tmpCol = new THREE.Color();
+
+  // Concentric coloured rings — each ring a different hue
+  for (let i = 1; i <= layers; i++) {
+    const hue = (i / layers) % 1.0;
+    const r = R * (i / layers);
+    tmpCol.setHSL(hue, 1.0, 0.55);
+    const col: [number, number, number] = [tmpCol.r * 255, tmpCol.g * 255, tmpCol.b * 255];
+    const ring = new THREE.Line(
+      circleGeo(96),
+      lineMat(hdrColor(col, cfg.intensity / 10, 2.2), 1.0),
+    );
+    ring.scale.setScalar(r);
+    ring.userData.tag = 'rainbowRing';
+    ring.userData.hue = hue;
+    ring.userData.baseR = r;
+    ring.userData.layer = i;
+    group.add(ring);
+  }
+
+  // Radial spoke lines — each spoke in a different hue
+  for (let s = 0; s < sym; s++) {
+    const hue = (s / sym + 0.1) % 1.0;
+    tmpCol.setHSL(hue, 1.0, 0.6);
+    const col: [number, number, number] = [tmpCol.r * 255, tmpCol.g * 255, tmpCol.b * 255];
+    const a = (s / sym) * TAU;
+    const pts = new Float32Array([0, 0, 0, Math.cos(a) * R, Math.sin(a) * R, 0]);
+    const geo = new THREE.BufferGeometry();
+    geo.setAttribute('position', new THREE.BufferAttribute(pts, 3));
+    const spoke = new THREE.Line(geo, lineMat(hdrColor(col, (cfg.intensity / 10) * 0.6, 1.8), 1.0));
+    spoke.userData.tag = 'rainbowSpoke';
+    spoke.userData.hue = hue;
+    spoke.userData.angle = s / sym;
+    group.add(spoke);
+  }
+
+  // Dome polygon outline — icosahedron projected 2D
+  const icoGeo = new THREE.IcosahedronGeometry(R * 0.92, 1);
+  const edges = new THREE.EdgesGeometry(icoGeo);
+  icoGeo.dispose();
+  const domeColor = new THREE.Color();
+  domeColor.setHSL(0.0, 1.0, 0.55);
+  const dome = new THREE.LineSegments(
+    edges,
+    lineMat(hdrColor([255, 255, 255], (cfg.intensity / 10) * 0.25, 1.5), 0.8),
+  );
+  dome.userData.tag = 'rainbowDome';
+  group.add(dome);
+
+  return group;
+}
+
+function updateRainbow(group: THREE.Group, cfg: Cfg, t: number, R: number): void {
+  const iF = cfg.intensity / 10;
+  const breathSpeed = cfg.breathSpeed;
+  const breath = (Math.sin(t * 0.001 * breathSpeed) + 1) * 0.5;
+  const timeHue = (t * 0.00008) % 1.0;
+  // glow 0..10 controls colour saturation: 0 = monochrome (use palette), 10 = full rainbow
+  const rainbow = cfg.glow / 10;
+  const tmpCol = new THREE.Color();
+  const pal = PAL[cfg.preset] ?? PAL['Calm Field'];
+
+  for (const child of group.children) {
+    const tag = child.userData.tag as string;
+    if (tag === 'rainbowRing') {
+      const hue = ((child.userData.hue as number) + timeHue) % 1.0;
+      // Blend between palette colour and full rainbow
+      const rainbowRgb: [number, number, number] = [0, 0, 0];
+      tmpCol.setHSL(hue, 1.0, 0.55);
+      rainbowRgb[0] = lerp(pal.rgb[0], tmpCol.r * 255, rainbow);
+      rainbowRgb[1] = lerp(pal.rgb[1], tmpCol.g * 255, rainbow);
+      rainbowRgb[2] = lerp(pal.rgb[2], tmpCol.b * 255, rainbow);
+      const bs = 0.88 + breath * 0.12;
+      child.scale.setScalar((child.userData.baseR as number) * bs);
+      child.rotation.z = t * 0.00012 * breathSpeed * (child.userData.layer % 2 === 0 ? 1 : -1);
+      updateMat(child as THREE.Object3D, rainbowRgb, iF, 2.2);
+    } else if (tag === 'rainbowSpoke') {
+      const hue = ((child.userData.hue as number) + timeHue * 0.5) % 1.0;
+      const rainbowRgb: [number, number, number] = [0, 0, 0];
+      tmpCol.setHSL(hue, 1.0, 0.6);
+      rainbowRgb[0] = lerp(pal.rgb[0], tmpCol.r * 255, rainbow);
+      rainbowRgb[1] = lerp(pal.rgb[1], tmpCol.g * 255, rainbow);
+      rainbowRgb[2] = lerp(pal.rgb[2], tmpCol.b * 255, rainbow);
+      child.rotation.z = t * 0.00006 * breathSpeed;
+      updateMat(child as THREE.Object3D, rainbowRgb, iF * 0.6, 1.8);
+    } else if (tag === 'rainbowDome') {
+      child.rotation.x = t * 0.00018 * breathSpeed;
+      child.rotation.y = t * 0.00022 * breathSpeed;
+      const wRgb: [number, number, number] = [
+        lerp(pal.rgb[0], 255, rainbow * 0.4),
+        lerp(pal.rgb[1], 255, rainbow * 0.4),
+        lerp(pal.rgb[2], 255, rainbow * 0.4),
+      ];
+      updateMat(child as THREE.Object3D, wRgb, iF * 0.25, 1.5);
+    }
+  }
+}
+
+/* ── CATHEDRAL mode — sacred architecture builder ───────────── */
+
+function buildCathedral(cfg: Cfg, R: number): THREE.Group {
+  const TAU = Math.PI * 2;
+  const pal = PAL[cfg.preset] ?? PAL['Sacred Vitral'];
+  const [rr, gg, bb] = pal.rgb;
+  const iF = cfg.intensity / 10;
+  const sym = Math.max(4, Math.round(cfg.symmetry));
+  const layers = Math.max(1, Math.round(cfg.complexity));
+  const group = new THREE.Group();
+  const tmpCol = new THREE.Color();
+
+  // Gothic arches — pairs of mirrored bezier curves radiating outward
+  for (let s = 0; s < sym; s++) {
+    const ang = (s / sym) * TAU;
+    const archGroup = new THREE.Group();
+    archGroup.rotation.z = ang;
+    archGroup.userData.tag = 'arch';
+    archGroup.userData.sectorIdx = s;
+
+    for (let l = 1; l <= layers; l++) {
+      const archH = R * (l / layers) * 0.95;
+      const archW = archH * 0.28;
+      const pts: number[] = [];
+      const N = 24;
+
+      // Left pillar + gothic arch: vertical + pointed curve
+      for (let k = 0; k <= N; k++) {
+        const ti = k / N;
+        // Bezier: base at (±archW, 0) to apex at (0, archH) with gothic point
+        const x = (1 - ti) * (1 - ti) * archW + 2 * ti * (1 - ti) * (archW * 0.15) + ti * ti * 0;
+        const y = (1 - ti) * (1 - ti) * 0 + 2 * ti * (1 - ti) * archH * 0.7 + ti * ti * archH;
+        pts.push(x, y, 0);
+      }
+      for (let k = N; k >= 0; k--) {
+        const ti = k / N;
+        const x = -(1 - ti) * (1 - ti) * archW - 2 * ti * (1 - ti) * (archW * 0.15) - ti * ti * 0;
+        const y = (1 - ti) * (1 - ti) * 0 + 2 * ti * (1 - ti) * archH * 0.7 + ti * ti * archH;
+        pts.push(x, y, 0);
+      }
+
+      const hue = ((l / layers) * 0.35 + (s / sym) * 0.1) % 1.0;
+      tmpCol.setHSL(hue, 0.7, 0.55);
+      const archCol: [number, number, number] = [
+        lerp(rr, tmpCol.r * 255, cfg.glow / 10),
+        lerp(gg, tmpCol.g * 255, cfg.glow / 10),
+        lerp(bb, tmpCol.b * 255, cfg.glow / 10),
+      ];
+      const geo = new THREE.BufferGeometry();
+      geo.setAttribute('position', new THREE.BufferAttribute(new Float32Array(pts), 3));
+      const arch = new THREE.Line(
+        geo,
+        lineMat(hdrColor(archCol, iF * (0.4 + (l / layers) * 0.6), 1.8), 0.85),
+      );
+      arch.userData.archLayer = l;
+      archGroup.add(arch);
+    }
+    group.add(archGroup);
+  }
+
+  // Rose window — concentric rings + radial tracery (Islamic geometric pattern)
+  const roseSym = sym * 2;
+  for (let i = 1; i <= Math.min(layers + 2, 6); i++) {
+    const r = R * 0.25 * (i / 6);
+    const hue = (i * 0.14 + 0.55) % 1.0;
+    tmpCol.setHSL(hue, 0.85, 0.55);
+    const roseCol: [number, number, number] = [
+      lerp(rr, tmpCol.r * 255, cfg.glow / 10),
+      lerp(gg, tmpCol.g * 255, cfg.glow / 10),
+      lerp(bb, tmpCol.b * 255, cfg.glow / 10),
+    ];
+    const ring = new THREE.Line(circleGeo(64), lineMat(hdrColor(roseCol, iF * 0.9, 2.0), 0.9));
+    ring.scale.setScalar(r);
+    ring.userData.tag = 'roseRing';
+    ring.userData.baseR = r;
+    ring.userData.hue = hue;
+    group.add(ring);
+  }
+  // Tracery spokes
+  for (let s = 0; s < roseSym; s++) {
+    const a = (s / roseSym) * TAU;
+    const maxR = R * 0.25;
+    const pts = new Float32Array([0, 0, 0, Math.cos(a) * maxR, Math.sin(a) * maxR, 0]);
+    const geo = new THREE.BufferGeometry();
+    geo.setAttribute('position', new THREE.BufferAttribute(pts, 3));
+    const hue = ((s / roseSym) * 0.4 + 0.6) % 1.0;
+    tmpCol.setHSL(hue, 0.8, 0.55);
+    const spokeCol: [number, number, number] = [
+      lerp(rr, tmpCol.r * 255, (cfg.glow / 10) * 0.7),
+      lerp(gg, tmpCol.g * 255, (cfg.glow / 10) * 0.7),
+      lerp(bb, tmpCol.b * 255, (cfg.glow / 10) * 0.7),
+    ];
+    const spoke = new THREE.Line(geo, lineMat(hdrColor(spokeCol, iF * 0.5, 1.5), 0.7));
+    spoke.userData.tag = 'roseSpoke';
+    spoke.userData.hue = hue;
+    group.add(spoke);
+  }
+
+  // Central spire — tall pointed obelisk lines
+  const spireH = R * 0.55;
+  const spireW = R * 0.06;
+  const spirePts = new Float32Array([
+    -spireW,
+    0,
+    0,
+    0,
+    spireH,
+    0,
+    0,
+    spireH,
+    0,
+    spireW,
+    0,
+    0,
+    -spireW,
+    spireH * 0.3,
+    0,
+    spireW,
+    spireH * 0.3,
+    0,
+    -spireW * 0.6,
+    spireH * 0.6,
+    0,
+    spireW * 0.6,
+    spireH * 0.6,
+    0,
+  ]);
+  const spireGeo = new THREE.BufferGeometry();
+  spireGeo.setAttribute('position', new THREE.BufferAttribute(spirePts, 3));
+  const spire = new THREE.LineSegments(
+    spireGeo,
+    lineMat(hdrColor([rr, gg, bb], iF * 0.7, 2.0), 0.9),
+  );
+  spire.userData.tag = 'spire';
+  group.add(spire);
+
+  const center = buildCenter([rr, gg, bb], iF * 0.8, R / 210);
+  center.userData.tag = 'center';
+  group.add(center);
+
+  return group;
+}
+
+function updateCathedral(group: THREE.Group, cfg: Cfg, t: number, R: number): void {
+  const pal = PAL[cfg.preset] ?? PAL['Sacred Vitral'];
+  const [rr, gg, bb] = pal.rgb;
+  const iF = cfg.intensity / 10;
+  const breathSpeed = cfg.breathSpeed;
+  const breath = (Math.sin(t * 0.001 * breathSpeed) + 1) * 0.5;
+  const bs = 0.94 + breath * 0.06;
+  const timeHue = (t * 0.000045) % 1.0;
+  const tmpCol = new THREE.Color();
+
+  for (const child of group.children) {
+    const tag = child.userData.tag as string;
+    if (tag === 'arch') {
+      const sectorIdx = child.userData.sectorIdx as number;
+      // Arches breathe outward and rotate very slowly
+      const sector = child as THREE.Group;
+      sector.scale.setScalar(bs);
+      sector.rotation.z =
+        (sectorIdx / Math.max(1, cfg.symmetry)) * Math.PI * 2 + t * 0.00004 * breathSpeed;
+      sector.children.forEach((arch, li) => {
+        const hue = ((li / sector.children.length) * 0.35 + timeHue) % 1.0;
+        tmpCol.setHSL(hue, 0.7, 0.55);
+        const col: [number, number, number] = [
+          lerp(rr, tmpCol.r * 255, cfg.glow / 10),
+          lerp(gg, tmpCol.g * 255, cfg.glow / 10),
+          lerp(bb, tmpCol.b * 255, cfg.glow / 10),
+        ];
+        updateMat(
+          arch as THREE.Object3D,
+          col,
+          iF * (0.4 + ((li + 1) / sector.children.length) * 0.6),
+          1.8,
+        );
+      });
+    } else if (tag === 'roseRing') {
+      const hue = ((child.userData.hue as number) + timeHue * 1.5) % 1.0;
+      tmpCol.setHSL(hue, 0.85, 0.55);
+      const col: [number, number, number] = [
+        lerp(rr, tmpCol.r * 255, cfg.glow / 10),
+        lerp(gg, tmpCol.g * 255, cfg.glow / 10),
+        lerp(bb, tmpCol.b * 255, cfg.glow / 10),
+      ];
+      child.rotation.z = t * 0.00025 * breathSpeed;
+      child.scale.setScalar((child.userData.baseR as number) * (0.96 + breath * 0.04));
+      updateMat(child as THREE.Object3D, col, iF * 0.9, 2.0);
+    } else if (tag === 'roseSpoke') {
+      const hue = ((child.userData.hue as number) + timeHue * 0.8) % 1.0;
+      tmpCol.setHSL(hue, 0.8, 0.55);
+      const col: [number, number, number] = [
+        lerp(rr, tmpCol.r * 255, (cfg.glow / 10) * 0.7),
+        lerp(gg, tmpCol.g * 255, (cfg.glow / 10) * 0.7),
+        lerp(bb, tmpCol.b * 255, (cfg.glow / 10) * 0.7),
+      ];
+      child.rotation.z = t * 0.00015 * breathSpeed;
+      updateMat(child as THREE.Object3D, col, iF * 0.5, 1.5);
+    } else if (tag === 'spire') {
+      child.scale.setScalar(bs);
+      updateMat(child as THREE.Object3D, [rr, gg, bb], iF * 0.7, 2.0);
+    } else if (tag === 'center') {
+      updateCenter(child as THREE.Group, breath, [rr, gg, bb], iF * 0.8, R / 210);
+    }
+  }
+}
+
 /* ── Background stars ───────────────────────────────────────── */
 
 function buildStars(count: number, W: number, H: number): THREE.Group {
@@ -2711,10 +3457,10 @@ const DEFAULT_SLIDERS: SliderDef[] = [
   { key: 'symmetry', label: 'Symmetry', min: 4, max: 24, step: 1 },
   { key: 'complexity', label: 'Complexity', min: 1, max: 10, step: 0.5 },
   { key: 'glow', label: 'Glow', min: 0, max: 10, step: 0.5 },
-  { key: 'breathSpeed', label: 'Speed', min: 0.2, max: 3, step: 0.1 },
+  { key: 'breathSpeed', label: 'Speed', min: 0.05, max: 1.5, step: 0.05 },
   { key: 'intensity', label: 'Colour', min: 0, max: 10, step: 0.5 },
   { key: 'particles', label: 'Particles', min: 0, max: 10, step: 1 },
-  { key: 'luminous', label: 'Luminous', min: 0, max: 10, step: 0.5 },
+  { key: 'luminous', label: 'Luminous', min: 0, max: 5, step: 0.5 },
   { key: 'stars', label: 'Stars', min: 0, max: 10, step: 1 },
 ];
 
@@ -2722,85 +3468,102 @@ const MODE_SLIDERS: Partial<Record<Mode, SliderDef[]>> = {
   tunnel: [
     { key: 'symmetry', label: 'Spokes', min: 4, max: 24, step: 1 },
     { key: 'glow', label: 'Glow', min: 0, max: 10, step: 0.5 },
-    { key: 'breathSpeed', label: 'Speed', min: 0.2, max: 3, step: 0.1 },
+    { key: 'breathSpeed', label: 'Speed', min: 0.05, max: 1.5, step: 0.05 },
     { key: 'intensity', label: 'Colour', min: 0, max: 10, step: 0.5 },
-    { key: 'luminous', label: 'Luminous', min: 0, max: 10, step: 0.5 },
+    { key: 'luminous', label: 'Luminous', min: 0, max: 5, step: 0.5 },
     { key: 'stars', label: 'Stars', min: 0, max: 10, step: 1 },
   ],
   vitral: [
     { key: 'symmetry', label: 'Cells', min: 4, max: 24, step: 1 },
     { key: 'complexity', label: 'Layers', min: 1, max: 8, step: 1 },
     { key: 'glow', label: 'Glow', min: 0, max: 10, step: 0.5 },
-    { key: 'breathSpeed', label: 'Speed', min: 0.2, max: 3, step: 0.1 },
+    { key: 'breathSpeed', label: 'Speed', min: 0.05, max: 1.5, step: 0.05 },
     { key: 'intensity', label: 'Colour', min: 0, max: 10, step: 0.5 },
-    { key: 'luminous', label: 'Luminous', min: 0, max: 10, step: 0.5 },
+    { key: 'luminous', label: 'Luminous', min: 0, max: 5, step: 0.5 },
   ],
   fibonacci: [
     { key: 'complexity', label: 'Arms', min: 1, max: 10, step: 1 },
     { key: 'symmetry', label: 'Rings', min: 2, max: 16, step: 1 },
     { key: 'glow', label: 'Glow', min: 0, max: 10, step: 0.5 },
-    { key: 'breathSpeed', label: 'Speed', min: 0.2, max: 3, step: 0.1 },
+    { key: 'breathSpeed', label: 'Speed', min: 0.05, max: 1.5, step: 0.05 },
     { key: 'intensity', label: 'Colour', min: 0, max: 10, step: 0.5 },
-    { key: 'luminous', label: 'Luminous', min: 0, max: 10, step: 0.5 },
+    { key: 'luminous', label: 'Luminous', min: 0, max: 5, step: 0.5 },
     { key: 'stars', label: 'Stars', min: 0, max: 10, step: 1 },
   ],
   clifford: [
     { key: 'complexity', label: 'Density', min: 1, max: 10, step: 1 },
     { key: 'glow', label: 'Glow', min: 0, max: 10, step: 0.5 },
-    { key: 'breathSpeed', label: 'Speed', min: 0.1, max: 3, step: 0.1 },
+    { key: 'breathSpeed', label: 'Speed', min: 0.05, max: 1.5, step: 0.05 },
     { key: 'intensity', label: 'Colour', min: 0, max: 10, step: 0.5 },
-    { key: 'luminous', label: 'Luminous', min: 0, max: 10, step: 0.5 },
+    { key: 'luminous', label: 'Luminous', min: 0, max: 5, step: 0.5 },
     { key: 'stars', label: 'Stars', min: 0, max: 10, step: 1 },
   ],
   hypercube: [
     { key: 'complexity', label: 'Fibers', min: 2, max: 20, step: 2 },
     { key: 'glow', label: 'Glow', min: 0, max: 10, step: 0.5 },
-    { key: 'breathSpeed', label: 'Speed', min: 0.1, max: 3, step: 0.1 },
+    { key: 'breathSpeed', label: 'Speed', min: 0.05, max: 1.5, step: 0.05 },
     { key: 'intensity', label: 'Colour', min: 0, max: 10, step: 0.5 },
-    { key: 'luminous', label: 'Luminous', min: 0, max: 10, step: 0.5 },
+    { key: 'luminous', label: 'Luminous', min: 0, max: 5, step: 0.5 },
     { key: 'stars', label: 'Stars', min: 0, max: 10, step: 1 },
   ],
   warp: [
     { key: 'symmetry', label: 'Sectors', min: 1, max: 12, step: 1 },
     { key: 'glow', label: 'Glow', min: 0, max: 10, step: 0.5 },
-    { key: 'breathSpeed', label: 'Speed', min: 0.2, max: 3, step: 0.1 },
+    { key: 'breathSpeed', label: 'Speed', min: 0.05, max: 1.5, step: 0.05 },
     { key: 'intensity', label: 'Colour', min: 0, max: 10, step: 0.5 },
-    { key: 'luminous', label: 'Luminous', min: 0, max: 10, step: 0.5 },
+    { key: 'luminous', label: 'Luminous', min: 0, max: 5, step: 0.5 },
     { key: 'stars', label: 'Stars', min: 0, max: 10, step: 1 },
   ],
   lorenz: [
     { key: 'complexity', label: 'Density', min: 1, max: 8, step: 1 },
     { key: 'glow', label: 'Glow', min: 0, max: 10, step: 0.5 },
-    { key: 'breathSpeed', label: 'Speed', min: 0.1, max: 3, step: 0.1 },
+    { key: 'breathSpeed', label: 'Speed', min: 0.05, max: 1.5, step: 0.05 },
     { key: 'intensity', label: 'Colour', min: 0, max: 10, step: 0.5 },
-    { key: 'luminous', label: 'Luminous', min: 0, max: 10, step: 0.5 },
+    { key: 'luminous', label: 'Luminous', min: 0, max: 5, step: 0.5 },
     { key: 'stars', label: 'Stars', min: 0, max: 10, step: 1 },
   ],
   knot: [
     { key: 'complexity', label: 'Knot', min: 1, max: 9, step: 1 },
     { key: 'symmetry', label: 'Strands', min: 1, max: 6, step: 1 },
     { key: 'glow', label: 'Glow', min: 0, max: 10, step: 0.5 },
-    { key: 'breathSpeed', label: 'Speed', min: 0.1, max: 3, step: 0.1 },
+    { key: 'breathSpeed', label: 'Speed', min: 0.05, max: 1.5, step: 0.05 },
     { key: 'intensity', label: 'Colour', min: 0, max: 10, step: 0.5 },
-    { key: 'luminous', label: 'Luminous', min: 0, max: 10, step: 0.5 },
+    { key: 'luminous', label: 'Luminous', min: 0, max: 5, step: 0.5 },
     { key: 'stars', label: 'Stars', min: 0, max: 10, step: 1 },
   ],
   orbital: [
     { key: 'complexity', label: 'Orbital', min: 1, max: 8, step: 1 },
     { key: 'glow', label: 'Glow', min: 0, max: 10, step: 0.5 },
-    { key: 'breathSpeed', label: 'Speed', min: 0.1, max: 3, step: 0.1 },
+    { key: 'breathSpeed', label: 'Speed', min: 0.05, max: 1.5, step: 0.05 },
     { key: 'intensity', label: 'Colour', min: 0, max: 10, step: 0.5 },
-    { key: 'luminous', label: 'Luminous', min: 0, max: 10, step: 0.5 },
+    { key: 'luminous', label: 'Luminous', min: 0, max: 5, step: 0.5 },
     { key: 'stars', label: 'Stars', min: 0, max: 10, step: 1 },
   ],
   geodesic: [
     { key: 'complexity', label: 'Form', min: 1, max: 7, step: 1 },
     { key: 'symmetry', label: 'Shells', min: 1, max: 5, step: 1 },
     { key: 'glow', label: 'Glow', min: 0, max: 10, step: 0.5 },
-    { key: 'breathSpeed', label: 'Speed', min: 0.1, max: 3, step: 0.1 },
+    { key: 'breathSpeed', label: 'Speed', min: 0.05, max: 1.5, step: 0.05 },
     { key: 'intensity', label: 'Colour', min: 0, max: 10, step: 0.5 },
-    { key: 'luminous', label: 'Luminous', min: 0, max: 10, step: 0.5 },
+    { key: 'luminous', label: 'Luminous', min: 0, max: 5, step: 0.5 },
     { key: 'stars', label: 'Stars', min: 0, max: 10, step: 1 },
+  ],
+  rainbow: [
+    { key: 'symmetry', label: 'Spokes', min: 3, max: 24, step: 1 },
+    { key: 'complexity', label: 'Rings', min: 2, max: 12, step: 1 },
+    { key: 'glow', label: 'Rainbow', min: 0, max: 10, step: 0.5 },
+    { key: 'breathSpeed', label: 'Speed', min: 0.05, max: 1.5, step: 0.05 },
+    { key: 'intensity', label: 'Colour', min: 0, max: 10, step: 0.5 },
+    { key: 'luminous', label: 'Luminous', min: 0, max: 5, step: 0.5 },
+  ],
+  cathedral: [
+    { key: 'symmetry', label: 'Arches', min: 4, max: 16, step: 1 },
+    { key: 'complexity', label: 'Height', min: 1, max: 8, step: 1 },
+    { key: 'glow', label: 'Colour Mix', min: 0, max: 10, step: 0.5 },
+    { key: 'breathSpeed', label: 'Speed', min: 0.05, max: 1.0, step: 0.05 },
+    { key: 'intensity', label: 'Colour', min: 0, max: 10, step: 0.5 },
+    { key: 'luminous', label: 'Luminous', min: 0, max: 5, step: 0.5 },
+    { key: 'stars', label: 'Stars', min: 0, max: 5, step: 1 },
   ],
 };
 
@@ -2823,6 +3586,8 @@ const MODE_TO_PRESET: Partial<Record<Mode, string>> = {
   knot: 'Knot Garden',
   orbital: 'Orbital Shell',
   geodesic: 'Crystal Lattice',
+  rainbow: 'Laser Dome',
+  cathedral: 'Sacred Architecture',
 };
 
 const MODES: { mode: Mode; label: string }[] = [
@@ -2842,6 +3607,8 @@ const MODES: { mode: Mode; label: string }[] = [
   { mode: 'knot', label: '∮ Knot' },
   { mode: 'orbital', label: '⊛ Orbital' },
   { mode: 'geodesic', label: '⬡ Geodesic' },
+  { mode: 'rainbow', label: '◉ Rainbow' },
+  { mode: 'cathedral', label: '⛪ Cathedral' },
 ];
 
 /* ── Component ──────────────────────────────────────────────── */
@@ -2849,11 +3616,23 @@ const MODES: { mode: Mode; label: string }[] = [
 export default function GeometryField() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const wrapperRef = useRef<HTMLDivElement>(null);
+  const canvasContainerRef = useRef<HTMLDivElement>(null);
+  const matrixCanvasRef = useRef<HTMLCanvasElement>(null);
   const animRef = useRef<number>(0);
+  const matrixAnimRef = useRef<number>(0);
   const dprRef = useRef<number>(1);
   const cfgRef = useRef<Cfg>(PRESETS['Calm Field']);
+  const journeyCfgRef = useRef<Cfg | null>(null);
   const dotsRef = useRef<Dot[]>(makeDots(160));
   const ripplesRef = useRef<Ripple[]>([]);
+
+  // Journey refs (read by tick without re-render)
+  const journeyRunningRef = useRef(false);
+  const journeyIdRef = useRef(1);
+  const journeyStartRef = useRef(0);
+  const matrixActiveRef = useRef(false);
+  const matrixDropsRef = useRef<number[]>([]);
+  const phaseInfoRef = useRef({ phaseIdx: 0, phaseProgress: 0 });
 
   // Three.js refs
   const rendererRef = useRef<THREE.WebGLRenderer | null>(null);
@@ -2871,8 +3650,10 @@ export default function GeometryField() {
 
   const [cfg, setCfg] = useState<Cfg>(PRESETS['Calm Field']);
   const [open, setOpen] = useState(true);
-  const [intention, setIntention] = useState('');
-  const [tuned, setTuned] = useState(false);
+  const [tab, setTab] = useState<'builder' | 'journey'>('builder');
+  const [journeyId, setJourneyId] = useState(1);
+  const [journeyRunning, setJourneyRunning] = useState(false);
+  const [journeyPhaseInfo, setJourneyPhaseInfo] = useState({ phaseIdx: 0, phaseProgress: 0 });
 
   useEffect(() => {
     cfgRef.current = cfg;
@@ -2884,7 +3665,7 @@ export default function GeometryField() {
 
   useEffect(() => {
     const canvas = canvasRef.current;
-    const wrapper = wrapperRef.current;
+    const wrapper = canvasContainerRef.current;
     if (!canvas || !wrapper) return;
 
     // Renderer
@@ -2936,8 +3717,38 @@ export default function GeometryField() {
     const ro = new ResizeObserver(resize);
     ro.observe(wrapper);
 
+    let phaseUpdateTimer = 0;
+
     function tick(t: number) {
-      const currentCfg = cfgRef.current;
+      // Journey auto-pilot
+      if (journeyRunningRef.current) {
+        const jData = JOURNEYS[journeyIdRef.current - 1];
+        if (jData) {
+          const elapsed = (t - journeyStartRef.current) / 1000;
+          const totalDur = jData.stages.reduce((s, st) => s + st.duration, 0);
+          const loopTime = elapsed % totalDur;
+          let acc = 0;
+          for (let i = 0; i < jData.stages.length; i++) {
+            const stage = jData.stages[i];
+            if (loopTime < acc + stage.duration || i === jData.stages.length - 1) {
+              const stageP = Math.min(1, (loopTime - acc) / stage.duration);
+              const nextStage = jData.stages[(i + 1) % jData.stages.length];
+              journeyCfgRef.current = journeyLerpCfg(stage, nextStage, stageP);
+              // Update phase info every ~500ms to avoid excessive re-renders
+              if (t - phaseUpdateTimer > 500) {
+                phaseUpdateTimer = t;
+                phaseInfoRef.current = { phaseIdx: i, phaseProgress: stageP };
+              }
+              break;
+            }
+            acc += stage.duration;
+          }
+        }
+      } else {
+        journeyCfgRef.current = null;
+      }
+
+      const currentCfg = journeyCfgRef.current ?? cfgRef.current;
       const { W, H } = sizeRef.current;
       const R = Math.min(W, H) * 0.42;
 
@@ -3012,6 +3823,82 @@ export default function GeometryField() {
     };
   }, []);
 
+  // Sync phase info to state for UI (throttled via interval)
+  useEffect(() => {
+    if (!journeyRunning) return;
+    const id = setInterval(() => {
+      setJourneyPhaseInfo({ ...phaseInfoRef.current });
+    }, 800);
+    return () => clearInterval(id);
+  }, [journeyRunning]);
+
+  // Matrix canvas code rain
+  useEffect(() => {
+    if (!journeyRunning || journeyId !== 5) {
+      matrixActiveRef.current = false;
+      cancelAnimationFrame(matrixAnimRef.current);
+      const mc = matrixCanvasRef.current;
+      if (mc) {
+        const ctx = mc.getContext('2d');
+        if (ctx) ctx.clearRect(0, 0, mc.width, mc.height);
+      }
+      return;
+    }
+    const mc = matrixCanvasRef.current;
+    if (!mc) return;
+    const ctx = mc.getContext('2d');
+    if (!ctx) return;
+    mc.width = mc.offsetWidth || mc.clientWidth || 400;
+    mc.height = mc.offsetHeight || mc.clientHeight || 600;
+    const fontSize = 13;
+    const cols = Math.floor(mc.width / fontSize);
+    matrixDropsRef.current = Array(cols).fill(1);
+    matrixActiveRef.current = true;
+    const chars = '01アイウエオカキ∞∮∑∇◈⬡✦{}[]<>!@#$%'.split('');
+    const mctx = ctx;
+    const mmc = mc;
+    function drawMatrix() {
+      if (!matrixActiveRef.current) return;
+      mctx.fillStyle = 'rgba(0,4,0,0.07)';
+      mctx.fillRect(0, 0, mmc.width, mmc.height);
+      mctx.font = `${fontSize}px monospace`;
+      const drops = matrixDropsRef.current;
+      for (let i = 0; i < drops.length; i++) {
+        const ch = chars[Math.floor(Math.random() * chars.length)];
+        const bright = Math.random() > 0.94 ? 220 : 65 + Math.floor(Math.random() * 60);
+        mctx.fillStyle = `rgba(0,${bright},30,0.9)`;
+        mctx.fillText(ch, i * fontSize, drops[i] * fontSize);
+        if (drops[i] * fontSize > mmc.height && Math.random() > 0.975) drops[i] = 0;
+        drops[i]++;
+      }
+      matrixAnimRef.current = requestAnimationFrame(drawMatrix);
+    }
+    matrixAnimRef.current = requestAnimationFrame(drawMatrix);
+    return () => {
+      matrixActiveRef.current = false;
+      cancelAnimationFrame(matrixAnimRef.current);
+    };
+  }, [journeyRunning, journeyId]);
+
+  function startJourney(id: number) {
+    setJourneyId(id);
+    journeyIdRef.current = id;
+    journeyStartRef.current = performance.now();
+    journeyRunningRef.current = true;
+    setJourneyRunning(true);
+    phaseInfoRef.current = { phaseIdx: 0, phaseProgress: 0 };
+    setJourneyPhaseInfo({ phaseIdx: 0, phaseProgress: 0 });
+  }
+
+  function stopJourney() {
+    journeyRunningRef.current = false;
+    setJourneyRunning(false);
+    if (journeyCfgRef.current) {
+      setCfg(journeyCfgRef.current);
+      journeyCfgRef.current = null;
+    }
+  }
+
   function handleCanvasClick(e: React.MouseEvent<HTMLCanvasElement>) {
     const rect = canvasRef.current!.getBoundingClientRect();
     ripplesRef.current.push({
@@ -3024,14 +3911,6 @@ export default function GeometryField() {
 
   function applyPreset(name: string) {
     setCfg(PRESETS[name] ?? PRESETS['Calm Field']);
-  }
-
-  function handleIntention(e: React.FormEvent) {
-    e.preventDefault();
-    if (!intention.trim()) return;
-    applyPreset(resolveIntention(intention));
-    setTuned(true);
-    setTimeout(() => setTuned(false), 1800);
   }
 
   function handleRandomize() {
@@ -3060,10 +3939,10 @@ export default function GeometryField() {
       symmetry: 4 + Math.floor(Math.random() * 20),
       complexity: 2 + Math.random() * 8,
       glow: 1 + Math.random() * 9,
-      breathSpeed: 0.3 + Math.random() * 2.5,
+      breathSpeed: 0.1 + Math.random() * 1.0,
       intensity: 4 + Math.random() * 6,
       particles: Math.floor(Math.random() * 10),
-      luminous: Math.random() * 10,
+      luminous: Math.random() * 5,
       stars: Math.floor(Math.random() * 8),
       mode: modeKeys[Math.floor(Math.random() * modeKeys.length)],
     });
@@ -3089,17 +3968,53 @@ export default function GeometryField() {
     setCfg((prev) => ({ ...prev, [key]: val }));
   }
 
-  const pal = PAL[cfg.preset] ?? PAL['Calm Field'];
+  const displayCfg = journeyCfgRef.current ?? cfg;
+  const pal = PAL[displayCfg.preset] ?? PAL['Calm Field'];
   const [pr, pg, pb] = pal.rgb;
   const accent = `rgb(${pr},${pg},${pb})`;
   const accentFaint = `rgba(${pr},${pg},${pb},0.12)`;
   const accentMid = `rgba(${pr},${pg},${pb},0.35)`;
 
+  const activeJourney = JOURNEYS[journeyId - 1];
+  const currentStage = activeJourney?.stages[journeyPhaseInfo.phaseIdx];
+  const totalJourneyDur = activeJourney?.stages.reduce((s, st) => s + st.duration, 0) ?? 0;
+  const elapsed = journeyRunning
+    ? activeJourney?.stages
+        .slice(0, journeyPhaseInfo.phaseIdx)
+        .reduce((s, st) => s + st.duration, 0) +
+      journeyPhaseInfo.phaseProgress * (currentStage?.duration ?? 0)
+    : 0;
+
+  const pill = (txt: string, active: boolean, onClick: () => void, small = false) => (
+    <button
+      type="button"
+      onClick={onClick}
+      style={{
+        flexShrink: 0,
+        background: active ? accent : accentFaint,
+        border: `1px solid ${active ? accent : accentMid}`,
+        borderRadius: 99,
+        padding: small ? '4px 10px' : '5px 13px',
+        color: active ? '#fff' : accent,
+        fontFamily: 'var(--font-serif)',
+        fontSize: small ? 10 : 11,
+        fontWeight: active ? 700 : 400,
+        letterSpacing: '0.05em',
+        cursor: 'pointer',
+        transition: 'all 0.15s',
+        whiteSpace: 'nowrap',
+      }}
+    >
+      {txt}
+    </button>
+  );
+
   return (
     <div
       ref={wrapperRef}
       style={{
-        position: 'relative',
+        display: 'flex',
+        flexDirection: 'column',
         width: '100%',
         height: 'calc(100svh - 110px)',
         minHeight: 420,
@@ -3108,90 +4023,153 @@ export default function GeometryField() {
         background: '#080604',
       }}
     >
-      <canvas
-        ref={canvasRef}
-        onClick={handleCanvasClick}
-        style={{
-          position: 'absolute',
-          inset: 0,
-          width: '100%',
-          height: '100%',
-          display: 'block',
-          cursor: 'crosshair',
-        }}
-      />
-
-      {/* Page title — floats above canvas */}
-      <div
-        style={{
-          position: 'absolute',
-          top: 14,
-          left: 0,
-          right: 0,
-          textAlign: 'center',
-          pointerEvents: 'none',
-        }}
-      >
-        <p
-          style={{
-            fontFamily: 'var(--font-serif)',
-            fontSize: 11,
-            letterSpacing: '0.24em',
-            color: `rgba(${pr},${pg},${pb},0.45)`,
-            textTransform: 'uppercase',
-          }}
-        >
-          Geometry Field
-        </p>
-      </div>
-
-      {/* Show-controls button when panel closed */}
-      {!open && (
-        <button
-          type="button"
-          onClick={() => setOpen(true)}
+      {/* Canvas area — fills remaining space */}
+      <div ref={canvasContainerRef} style={{ flex: 1, position: 'relative', minHeight: 0 }}>
+        <canvas
+          ref={canvasRef}
+          onClick={handleCanvasClick}
           style={{
             position: 'absolute',
-            bottom: 16,
-            left: '50%',
-            transform: 'translateX(-50%)',
-            background: 'rgba(8,6,4,0.72)',
-            border: `1px solid ${accentMid}`,
-            borderRadius: 99,
-            padding: '6px 22px',
-            color: accent,
-            fontFamily: 'var(--font-serif)',
-            fontSize: 10,
-            letterSpacing: '0.14em',
-            textTransform: 'uppercase',
-            cursor: 'pointer',
-            backdropFilter: 'blur(10px)',
-            zIndex: 20,
+            inset: 0,
+            width: '100%',
+            height: '100%',
+            display: 'block',
+            cursor: 'crosshair',
           }}
-        >
-          ▲ Controls
-        </button>
-      )}
+        />
 
-      {/* Control panel */}
-      {open && (
+        {/* Matrix code-rain overlay */}
+        {journeyRunning && journeyId === 5 && (
+          <canvas
+            ref={matrixCanvasRef}
+            style={{
+              position: 'absolute',
+              inset: 0,
+              width: '100%',
+              height: '100%',
+              mixBlendMode: 'screen',
+              opacity: 0.5,
+              pointerEvents: 'none',
+            }}
+          />
+        )}
+
+        {/* Page title */}
         <div
           style={{
             position: 'absolute',
-            bottom: 0,
+            top: 14,
             left: 0,
             right: 0,
-            background: 'rgba(8,5,3,0.86)',
-            backdropFilter: 'blur(18px)',
-            borderTop: `1px solid ${accentMid}`,
-            padding: '10px 16px 20px',
-            zIndex: 10,
-            maxHeight: '60%',
-            overflowY: 'auto',
+            textAlign: 'center',
+            pointerEvents: 'none',
           }}
         >
-          {/* Collapse handle */}
-          <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 10 }}>
+          <p
+            style={{
+              fontFamily: 'var(--font-serif)',
+              fontSize: 11,
+              letterSpacing: '0.24em',
+              color: `rgba(${pr},${pg},${pb},0.45)`,
+              textTransform: 'uppercase',
+            }}
+          >
+            Geometry Field
+          </p>
+        </div>
+
+        {/* Journey live phase badge */}
+        {journeyRunning && open && (
+          <div
+            style={{
+              position: 'absolute',
+              top: 14,
+              right: 14,
+              background: 'rgba(0,0,0,0.55)',
+              backdropFilter: 'blur(8px)',
+              border: `1px solid ${accentMid}`,
+              borderRadius: 8,
+              padding: '5px 10px',
+              pointerEvents: 'none',
+            }}
+          >
+            <div
+              style={{
+                fontFamily: 'var(--font-serif)',
+                fontSize: 9,
+                color: accent,
+                letterSpacing: '0.14em',
+                textTransform: 'uppercase',
+                opacity: 0.7,
+              }}
+            >
+              {activeJourney?.name} — Phase {journeyPhaseInfo.phaseIdx + 1}/
+              {activeJourney?.stages.length}
+            </div>
+            <div
+              style={{
+                fontFamily: 'var(--font-serif)',
+                fontSize: 9,
+                color: `rgba(${pr},${pg},${pb},0.5)`,
+                marginTop: 2,
+              }}
+            >
+              {currentStage?.mode} · {Math.floor(elapsed ?? 0)}s / {Math.floor(totalJourneyDur)}s
+            </div>
+          </div>
+        )}
+
+        {/* Show-controls button when panel closed */}
+        {!open && (
+          <button
+            type="button"
+            onClick={() => setOpen(true)}
+            style={{
+              position: 'absolute',
+              bottom: 16,
+              left: '50%',
+              transform: 'translateX(-50%)',
+              background: 'rgba(8,6,4,0.72)',
+              border: `1px solid ${accentMid}`,
+              borderRadius: 99,
+              padding: '6px 22px',
+              color: accent,
+              fontFamily: 'var(--font-serif)',
+              fontSize: 10,
+              letterSpacing: '0.14em',
+              textTransform: 'uppercase',
+              cursor: 'pointer',
+              backdropFilter: 'blur(10px)',
+              zIndex: 20,
+            }}
+          >
+            ▲ Controls
+          </button>
+        )}
+      </div>
+
+      {/* Control panel — fixed 50% height when open */}
+      {open && (
+        <div
+          style={{
+            flexShrink: 0,
+            height: '50%',
+            background: 'rgba(8,5,3,0.94)',
+            backdropFilter: 'blur(18px)',
+            borderTop: `1px solid ${accentMid}`,
+            padding: '8px 16px 16px',
+            overflowY: 'auto',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: 8,
+          }}
+        >
+          {/* Collapse handle + tab switcher */}
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <div style={{ display: 'flex', gap: 6 }}>
+              {pill('Builder', tab === 'builder', () => setTab('builder'), true)}
+              {pill('Journey', tab === 'journey', () => setTab('journey'), true)}
+            </div>
             <button
               type="button"
               onClick={() => setOpen(false)}
@@ -3199,7 +4177,7 @@ export default function GeometryField() {
                 background: accentFaint,
                 border: `1px solid ${accentMid}`,
                 borderRadius: 99,
-                padding: '3px 22px',
+                padding: '3px 18px',
                 color: accent,
                 fontFamily: 'var(--font-serif)',
                 fontSize: 10,
@@ -3211,210 +4189,284 @@ export default function GeometryField() {
             </button>
           </div>
 
-          {/* Mode pills */}
-          <div
-            style={{
-              display: 'flex',
-              gap: 6,
-              overflowX: 'auto',
-              paddingBottom: 10,
-              scrollbarWidth: 'none',
-            }}
-          >
-            {MODES.map(({ mode, label }) => {
-              const active = cfg.mode === mode;
-              return (
-                <button
-                  key={mode}
-                  type="button"
-                  onClick={() => {
-                    const p = MODE_TO_PRESET[mode];
-                    if (p) applyPreset(p);
-                    else update('mode', mode);
-                  }}
-                  style={{
-                    flexShrink: 0,
-                    background: active ? accent : accentFaint,
-                    border: `1px solid ${active ? accent : accentMid}`,
-                    borderRadius: 99,
-                    padding: '5px 13px',
-                    color: active ? '#fff' : accent,
-                    fontFamily: 'var(--font-serif)',
-                    fontSize: 11,
-                    fontWeight: active ? 700 : 400,
-                    letterSpacing: '0.05em',
-                    cursor: 'pointer',
-                    transition: 'all 0.15s',
-                    whiteSpace: 'nowrap',
-                  }}
-                >
-                  {label}
-                </button>
-              );
-            })}
-          </div>
+          {/* ── BUILDER TAB ── */}
+          {tab === 'builder' && (
+            <>
+              {/* Mode pills */}
+              <div style={{ display: 'flex', gap: 5, overflowX: 'auto', scrollbarWidth: 'none' }}>
+                {MODES.map(({ mode, label }) =>
+                  pill(
+                    label,
+                    cfg.mode === mode,
+                    () => {
+                      const p = MODE_TO_PRESET[mode];
+                      if (p) applyPreset(p);
+                      else update('mode', mode);
+                    },
+                    true,
+                  ),
+                )}
+              </div>
 
-          {/* Preset pills */}
-          <div
-            style={{
-              display: 'flex',
-              gap: 6,
-              overflowX: 'auto',
-              paddingBottom: 10,
-              scrollbarWidth: 'none',
-            }}
-          >
-            {Object.keys(PRESETS).map((name) => {
-              const active = cfg.preset === name;
-              return (
-                <button
-                  key={name}
-                  type="button"
-                  onClick={() => applyPreset(name)}
-                  style={{
-                    flexShrink: 0,
-                    background: active ? accent : accentFaint,
-                    border: `1px solid ${active ? accent : accentMid}`,
-                    borderRadius: 99,
-                    padding: '5px 13px',
-                    color: active ? '#fff' : accent,
-                    fontFamily: 'var(--font-serif)',
-                    fontSize: 11,
-                    fontWeight: active ? 700 : 400,
-                    letterSpacing: '0.05em',
-                    cursor: 'pointer',
-                    transition: 'all 0.15s',
-                    whiteSpace: 'nowrap',
-                  }}
-                >
-                  {name}
-                </button>
-              );
-            })}
-          </div>
+              {/* Preset pills */}
+              <div style={{ display: 'flex', gap: 5, overflowX: 'auto', scrollbarWidth: 'none' }}>
+                {Object.keys(PRESETS).map((name) =>
+                  pill(name, cfg.preset === name, () => applyPreset(name), true),
+                )}
+              </div>
 
-          {/* Intention input — hidden */}
-          {false && (
-            <form
-              onSubmit={handleIntention}
-              style={{ display: 'flex', gap: 8, marginTop: 2, marginBottom: 12 }}
-            >
-              <input
-                type="text"
-                placeholder="Type an intention — clarity, release, courage…"
-                value={intention}
-                onChange={(e) => setIntention(e.target.value)}
-                style={{
-                  flex: 1,
-                  background: accentFaint,
-                  border: `1px solid ${accentMid}`,
-                  borderRadius: 99,
-                  padding: '7px 14px',
-                  color: 'rgba(255,255,255,0.82)',
-                  fontFamily: 'var(--font-serif)',
-                  fontSize: 12,
-                  outline: 'none',
-                }}
-              />
-              <button
-                type="submit"
-                style={{
-                  background: tuned ? accent : accentFaint,
-                  border: `1px solid ${accent}`,
-                  borderRadius: 99,
-                  padding: '7px 16px',
-                  color: tuned ? '#fff' : accent,
-                  fontFamily: 'var(--font-serif)',
-                  fontSize: 11,
-                  fontWeight: 700,
-                  letterSpacing: '0.08em',
-                  cursor: 'pointer',
-                  transition: 'all 0.2s',
-                  whiteSpace: 'nowrap',
-                }}
-              >
-                {tuned ? '✦ Tuned' : 'Tune'}
-              </button>
-            </form>
+              {/* Sliders */}
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '6px 20px' }}>
+                {slidersFor(cfg.mode).map(({ key, label, min, max, step }) => {
+                  const val = cfg[key] as number;
+                  return (
+                    <div key={key}>
+                      <div
+                        style={{
+                          display: 'flex',
+                          justifyContent: 'space-between',
+                          marginBottom: 2,
+                        }}
+                      >
+                        <span
+                          style={{
+                            fontFamily: 'var(--font-serif)',
+                            fontSize: 9,
+                            color: `rgba(${pr},${pg},${pb},0.6)`,
+                            letterSpacing: '0.1em',
+                            textTransform: 'uppercase',
+                          }}
+                        >
+                          {label}
+                        </span>
+                        <span
+                          style={{ fontFamily: 'var(--font-serif)', fontSize: 9, color: accent }}
+                        >
+                          {step < 1 ? val.toFixed(2) : Math.round(val)}
+                        </span>
+                      </div>
+                      <input
+                        type="range"
+                        min={min}
+                        max={max}
+                        step={step}
+                        value={val}
+                        onChange={(e) => update(key as keyof Cfg, parseFloat(e.target.value))}
+                        style={{ width: '100%', accentColor: accent, cursor: 'pointer' }}
+                      />
+                    </div>
+                  );
+                })}
+              </div>
+
+              {/* Action buttons */}
+              <div style={{ display: 'flex', gap: 6, justifyContent: 'center', flexWrap: 'wrap' }}>
+                {(
+                  [
+                    ['Randomize', handleRandomize],
+                    ['Save', handleSave],
+                    ['Reset', () => applyPreset('Calm Field')],
+                    ['Fullscreen', handleFullscreen],
+                  ] as [string, () => void][]
+                ).map(([label, fn]) => (
+                  <button
+                    key={label}
+                    type="button"
+                    onClick={fn}
+                    style={{
+                      background: accentFaint,
+                      border: `1px solid ${accentMid}`,
+                      borderRadius: 99,
+                      padding: '5px 14px',
+                      color: accent,
+                      fontFamily: 'var(--font-serif)',
+                      fontSize: 10,
+                      cursor: 'pointer',
+                    }}
+                  >
+                    {label}
+                  </button>
+                ))}
+              </div>
+            </>
           )}
 
-          {/* Sliders */}
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px 20px' }}>
-            {slidersFor(cfg.mode).map(({ key, label, min, max, step }) => {
-              const val = cfg[key] as number;
-              return (
-                <div key={key}>
-                  <div
-                    style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 3 }}
-                  >
-                    <span
-                      style={{
-                        fontFamily: 'var(--font-serif)',
-                        fontSize: 10,
-                        color: `rgba(${pr},${pg},${pb},0.6)`,
-                        letterSpacing: '0.1em',
-                        textTransform: 'uppercase',
-                      }}
-                    >
-                      {label}
-                    </span>
-                    <span style={{ fontFamily: 'var(--font-serif)', fontSize: 10, color: accent }}>
-                      {step < 1 ? val.toFixed(1) : Math.round(val)}
-                    </span>
-                  </div>
-                  <input
-                    type="range"
-                    min={min}
-                    max={max}
-                    step={step}
-                    value={val}
-                    onChange={(e) => update(key as keyof Cfg, parseFloat(e.target.value))}
-                    style={{ width: '100%', accentColor: accent, cursor: 'pointer' }}
-                  />
-                </div>
-              );
-            })}
-          </div>
+          {/* ── JOURNEY TAB ── */}
+          {tab === 'journey' && (
+            <>
+              {/* Journey selection */}
+              <div style={{ display: 'flex', gap: 6, overflowX: 'auto', scrollbarWidth: 'none' }}>
+                {JOURNEYS.map((j) =>
+                  pill(`${j.icon} ${j.name}`, journeyId === j.id, () => {
+                    setJourneyId(j.id);
+                    journeyIdRef.current = j.id;
+                    if (journeyRunning) {
+                      journeyStartRef.current = performance.now();
+                      phaseInfoRef.current = { phaseIdx: 0, phaseProgress: 0 };
+                    }
+                  }),
+                )}
+              </div>
 
-          {/* Action buttons */}
-          <div
-            style={{
-              display: 'flex',
-              gap: 8,
-              marginTop: 14,
-              justifyContent: 'center',
-              flexWrap: 'wrap',
-            }}
-          >
-            {(
-              [
-                ['Randomize', handleRandomize],
-                ['Save Image', handleSave],
-                ['Reset', () => applyPreset('Calm Field')],
-                ['Fullscreen', handleFullscreen],
-              ] as [string, () => void][]
-            ).map(([label, fn]) => (
-              <button
-                key={label}
-                type="button"
-                onClick={fn}
+              {/* Journey description */}
+              <p
                 style={{
-                  background: accentFaint,
-                  border: `1px solid ${accentMid}`,
-                  borderRadius: 99,
-                  padding: '6px 16px',
-                  color: accent,
                   fontFamily: 'var(--font-serif)',
                   fontSize: 11,
-                  letterSpacing: '0.07em',
-                  cursor: 'pointer',
-                  transition: 'opacity 0.15s',
+                  color: `rgba(${pr},${pg},${pb},0.55)`,
+                  fontStyle: 'italic',
+                  lineHeight: 1.5,
                 }}
               >
-                {label}
-              </button>
-            ))}
-          </div>
+                {activeJourney?.desc}
+              </p>
+
+              {/* Phase list */}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                <div
+                  style={{
+                    fontFamily: 'var(--font-serif)',
+                    fontSize: 9,
+                    color: `rgba(${pr},${pg},${pb},0.4)`,
+                    letterSpacing: '0.12em',
+                    textTransform: 'uppercase',
+                    marginBottom: 2,
+                  }}
+                >
+                  Phases — {Math.floor(totalJourneyDur / 60)}m{Math.round(totalJourneyDur % 60)}s
+                  total
+                </div>
+                {activeJourney?.stages.map((stage, i) => {
+                  const isActive = journeyRunning && journeyPhaseInfo.phaseIdx === i;
+                  const prog = isActive ? journeyPhaseInfo.phaseProgress : 0;
+                  return (
+                    <div
+                      key={i}
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: 8,
+                        padding: '5px 8px',
+                        borderRadius: 6,
+                        background: isActive ? accentFaint : 'transparent',
+                        border: `1px solid ${isActive ? accentMid : 'rgba(255,255,255,0.05)'}`,
+                        position: 'relative',
+                        overflow: 'hidden',
+                      }}
+                    >
+                      {isActive && (
+                        <div
+                          style={{
+                            position: 'absolute',
+                            left: 0,
+                            top: 0,
+                            bottom: 0,
+                            width: `${prog * 100}%`,
+                            background: `rgba(${pr},${pg},${pb},0.08)`,
+                            transition: 'width 0.5s linear',
+                          }}
+                        />
+                      )}
+                      <span
+                        style={{
+                          fontFamily: 'var(--font-serif)',
+                          fontSize: 9,
+                          color: accent,
+                          opacity: 0.5,
+                          flexShrink: 0,
+                        }}
+                      >
+                        {i + 1}
+                      </span>
+                      <span
+                        style={{
+                          fontFamily: 'var(--font-serif)',
+                          fontSize: 10,
+                          color: isActive
+                            ? `rgb(${pr},${pg},${pb})`
+                            : `rgba(${pr},${pg},${pb},0.5)`,
+                          flex: 1,
+                          textTransform: 'capitalize',
+                        }}
+                      >
+                        {stage.mode} · {stage.preset}
+                      </span>
+                      <span
+                        style={{
+                          fontFamily: 'var(--font-serif)',
+                          fontSize: 9,
+                          color: `rgba(${pr},${pg},${pb},0.35)`,
+                          flexShrink: 0,
+                        }}
+                      >
+                        {stage.duration}s
+                      </span>
+                      {isActive && <span style={{ fontSize: 8, color: accent }}>▶</span>}
+                    </div>
+                  );
+                })}
+              </div>
+
+              {/* Play / Stop */}
+              <div style={{ display: 'flex', gap: 8, justifyContent: 'center', marginTop: 4 }}>
+                {!journeyRunning ? (
+                  <button
+                    type="button"
+                    onClick={() => startJourney(journeyId)}
+                    style={{
+                      background: accent,
+                      border: 'none',
+                      borderRadius: 99,
+                      padding: '8px 32px',
+                      color: '#000',
+                      fontFamily: 'var(--font-serif)',
+                      fontSize: 12,
+                      fontWeight: 700,
+                      letterSpacing: '0.1em',
+                      cursor: 'pointer',
+                    }}
+                  >
+                    ▶ Start Journey
+                  </button>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={stopJourney}
+                    style={{
+                      background: accentFaint,
+                      border: `1px solid ${accentMid}`,
+                      borderRadius: 99,
+                      padding: '8px 32px',
+                      color: accent,
+                      fontFamily: 'var(--font-serif)',
+                      fontSize: 12,
+                      fontWeight: 700,
+                      letterSpacing: '0.1em',
+                      cursor: 'pointer',
+                    }}
+                  >
+                    ◼ Stop
+                  </button>
+                )}
+                <button
+                  type="button"
+                  onClick={handleFullscreen}
+                  style={{
+                    background: accentFaint,
+                    border: `1px solid ${accentMid}`,
+                    borderRadius: 99,
+                    padding: '8px 16px',
+                    color: accent,
+                    fontFamily: 'var(--font-serif)',
+                    fontSize: 11,
+                    cursor: 'pointer',
+                  }}
+                >
+                  Fullscreen
+                </button>
+              </div>
+            </>
+          )}
         </div>
       )}
     </div>
