@@ -283,16 +283,17 @@ function ChallengeDepth({ onSave }: { onSave: (text: string) => void }) {
       <button
         type="button"
         onClick={() => setOpen(true)}
-        className="cursor-pointer rounded-full px-2.5 py-1 text-[10px] font-semibold italic transition-all"
+        className="w-full cursor-pointer rounded-full px-3 py-1.5 text-center font-semibold italic transition-all hover:opacity-70"
         style={{
           color: '#8A6A4A',
-          opacity: 0.4,
+          opacity: 0.55,
           background: 'transparent',
           border: 'none',
-          marginLeft: 14,
+          fontFamily: 'var(--font-serif)',
+          fontSize: '15px',
         }}
       >
-        go deeper...
+        go deeper…
       </button>
     );
   }
@@ -505,7 +506,8 @@ export default function FeelingCheckInCard() {
     setRenamingSection(null);
   }
 
-  const [sliderVisible, setSliderVisible] = useState(true);
+  const [sliderVisible, setSliderVisible] = useState(false);
+  const sliderHideTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [showChallengeFlow, setShowChallengeFlow] = useState(false);
   const [showHawkinsDesc, setShowHawkinsDesc] = useState(false);
   const [logbookSectionOpen, setLogbookSectionOpen] = useState(() => {
@@ -800,9 +802,9 @@ export default function FeelingCheckInCard() {
     try {
       const v = localStorage.getItem('colourmap:hawkins-style');
       if (v === 'dots' || v === 'losanges') return v;
-      return 'squares';
+      return 'dots';
     } catch {
-      return 'squares';
+      return 'dots';
     }
   });
   useEffect(() => {
@@ -1283,6 +1285,13 @@ export default function FeelingCheckInCard() {
     setHawkinsDragging(true);
   };
 
+  const startCircleInteraction = (clientX: number) => {
+    if (sliderHideTimerRef.current) clearTimeout(sliderHideTimerRef.current);
+    setSliderVisible(true);
+    hawkinsDragRef.current = { startX: clientX, startIdx: hawkinsIdxRef.current };
+    setHawkinsDragging(true);
+  };
+
   const mindIdxRef = useRef(mindIdx);
   mindIdxRef.current = mindIdx;
   const modeIdxRef = useRef(modeIdx);
@@ -1326,6 +1335,7 @@ export default function FeelingCheckInCard() {
       if (hawkinsDragRef.current) {
         hawkinsDragRef.current = null;
         setHawkinsDragging(false);
+        sliderHideTimerRef.current = setTimeout(() => setSliderVisible(false), 2000);
       }
     };
     window.addEventListener('mousemove', onMove);
@@ -1340,7 +1350,7 @@ export default function FeelingCheckInCard() {
     <>
       {/* BOX A: FEELING — frame removed on phone to reclaim margins.
           Desktop keeps the beige card for visual grouping. */}
-      <div className="relative space-y-2.5 rounded-none border-0 bg-transparent px-0 py-0 shadow-none md:space-y-5 md:rounded-3xl md:border md:border-[#7a543833] md:px-5 md:py-6 md:bg-[linear-gradient(180deg,rgba(251,244,232,0.95),rgba(246,236,221,0.92))] md:shadow-[0_24px_50px_-34px_rgba(92,48,24,0.35)]">
+      <div className="relative space-y-2.5 px-0 py-0">
         {/* Discrete design toggle — tiny losange at top-right, opens variant picker */}
         <div className="absolute right-4 top-4" style={{ zIndex: 10 }}>
           <button
@@ -1427,7 +1437,12 @@ export default function FeelingCheckInCard() {
         </div>
 
         {/* ─── Emotional register — 6 variants (pick the visual that fits the moment) */}
-        <div className="flex flex-col items-center gap-2">
+        <div
+          className="flex flex-col items-center gap-2"
+          onMouseDown={(e) => startCircleInteraction(e.clientX)}
+          onTouchStart={(e) => startCircleInteraction(e.touches[0].clientX)}
+          style={{ touchAction: 'none' }}
+        >
           {/* Variant 1: Arc — cosine bow */}
           {variantIdx === 1 && (
             <div className="relative" style={{ width: 300, height: 95 }}>
@@ -2273,268 +2288,235 @@ export default function FeelingCheckInCard() {
             borderColor: '#C4A06030',
           }}
         >
-          {/* Pill header — click to open/close */}
-          <div className="flex items-center justify-between">
-            <span className="w-12" />
-            <button
-              type="button"
-              onClick={toggleLogbookSection}
-              className="flex cursor-pointer items-center gap-2 rounded-full px-5 py-1.5 transition-all"
-              style={{
-                background: '#C4A06015',
-                border: '1px solid #C4A06040',
-              }}
-            >
-              <span
-                className="text-center text-sm font-semibold uppercase tracking-[0.22em]"
-                style={{ color: '#C4A060' }}
-              >
-                Emotions
-              </span>
-              <span
-                className="text-sm transition-transform duration-200"
-                style={{
-                  color: '#C4A06080',
-                  transform: logbookSectionOpen ? 'rotate(180deg)' : 'rotate(0deg)',
-                }}
-              >
-                ▾
-              </span>
-            </button>
-            <span className="w-12" />
-          </div>
-
-          {logbookSectionOpen && (
-            <>
-              {/* Hawkins emotional slider — toggled by losange below */}
-              {sliderVisible && (
-                <div className="relative flex flex-col items-center gap-2 pt-4 pb-2">
-                  {/* Style toggle — pushed to the top-right corner of
+          {/* Hawkins emotional slider */}
+          <>
+            <div className="relative flex flex-col items-center gap-2 pt-4 pb-2">
+              {/* Style toggle — pushed to the top-right corner of
                       the slider container with z-index 2 so it sits
                       ABOVE the slider squares on phone (was hidden
                       behind them before). Bigger tap target (28px)
                       and more visible border so it doesn't look like
                       a faded dot. */}
-                  {/* Design-style toggle — plain beige dot on both
+              {/* Design-style toggle — plain beige dot on both
                       phone and desktop. User feedback: 'jsut a biege
                       dot liek in feeling' + 'do it a small bit higher'.
                       Title carries the current design number so they
                       can long-press to read it without visual clutter. */}
-                  <button
-                    type="button"
-                    onClick={() =>
-                      setHawkinsStyle((s) =>
-                        s === 'squares' ? 'dots' : s === 'dots' ? 'losanges' : 'squares',
-                      )
-                    }
-                    aria-label={`Slider design ${
-                      hawkinsStyle === 'squares' ? 1 : hawkinsStyle === 'dots' ? 2 : 3
-                    } of 3 — tap to cycle`}
-                    title={`Design ${
-                      hawkinsStyle === 'squares' ? 1 : hawkinsStyle === 'dots' ? 2 : 3
-                    } of 3`}
-                    className="absolute cursor-pointer flex items-center justify-center"
-                    style={{
-                      right: 2,
-                      top: 4,
-                      width: 22,
-                      height: 22,
-                      background: 'transparent',
-                      border: 'none',
-                      padding: 4,
-                      zIndex: 2,
-                    }}
-                  >
-                    <span
-                      aria-hidden="true"
-                      style={{
-                        width: 14,
-                        height: 14,
-                        background: '#C4A060',
-                        borderRadius: '50%',
-                        opacity: 0.22,
-                      }}
-                    />
-                  </button>
+              <button
+                type="button"
+                onClick={() =>
+                  setHawkinsStyle((s) =>
+                    s === 'squares' ? 'dots' : s === 'dots' ? 'losanges' : 'squares',
+                  )
+                }
+                aria-label={`Slider design ${
+                  hawkinsStyle === 'squares' ? 1 : hawkinsStyle === 'dots' ? 2 : 3
+                } of 3 — tap to cycle`}
+                title={`Design ${
+                  hawkinsStyle === 'squares' ? 1 : hawkinsStyle === 'dots' ? 2 : 3
+                } of 3`}
+                className="absolute cursor-pointer flex items-center justify-center"
+                style={{
+                  right: 2,
+                  top: 4,
+                  width: 22,
+                  height: 22,
+                  background: 'transparent',
+                  border: 'none',
+                  padding: 4,
+                  zIndex: 2,
+                }}
+              >
+                <span
+                  aria-hidden="true"
+                  style={{
+                    width: 14,
+                    height: 14,
+                    background: '#C4A060',
+                    borderRadius: '50%',
+                    opacity: 0.22,
+                  }}
+                />
+              </button>
 
-                  <div className="relative" style={{ width: 300, height: 40 }}>
-                    {(() => {
-                      if (hawkinsStyle === 'losanges') {
-                        // LOSANGES — rotated squares (diamonds). A rotated 18px square
-                        // visually occupies ~25.4px diagonal, so gap 13 yields ~4px
-                        // clean negative space between adjacent losanges.
-                        const sq = 18;
-                        const gap = 13;
-                        const totalW = HAWKINS.length * sq + (HAWKINS.length - 1) * gap;
-                        const offsetX = (300 - totalW) / 2;
-                        const baseY = (40 - sq) / 2;
-                        return HAWKINS.map((h, i) => {
-                          const selected = hawkinsIdx === i;
-                          const x = offsetX + i * (sq + gap);
-                          return (
-                            <button
-                              key={h.level}
-                              type="button"
-                              onClick={() => setHawkinsIdx(i)}
-                              className="absolute cursor-pointer transition-all"
-                              style={{
-                                left: x,
-                                top: baseY,
-                                width: sq,
-                                height: sq,
-                                background: h.color,
-                                opacity: selected ? 1 : 0.45,
-                                border: 'none',
-                                borderRadius: '2px',
-                                transform: selected ? 'rotate(45deg) scale(1.15)' : 'rotate(45deg)',
-                                boxShadow: selected ? `0 4px 14px -4px ${h.color}` : 'none',
-                              }}
-                              title={h.level}
-                            />
-                          );
-                        });
-                      }
-                      if (hawkinsStyle === 'dots') {
-                        // DOTS style — circular dots in a straight horizontal line,
-                        // same vocabulary as variant 1 (arc) but flat instead of bowed.
-                        const dotSize = 22;
-                        const totalW = HAWKINS.length * dotSize + (HAWKINS.length - 1) * 6;
-                        const offsetX = (300 - totalW) / 2;
-                        const baseY = (40 - dotSize) / 2;
-                        return HAWKINS.map((h, i) => {
-                          const selected = hawkinsIdx === i;
-                          const x = offsetX + i * (dotSize + 6);
-                          return (
-                            <button
-                              key={h.level}
-                              type="button"
-                              onClick={() => setHawkinsIdx(i)}
-                              className="absolute cursor-pointer rounded-full transition-all"
-                              style={{
-                                left: x,
-                                top: baseY,
-                                width: dotSize,
-                                height: dotSize,
-                                background: h.color,
-                                opacity: selected ? 1 : 0.55,
-                                border: 'none',
-                                transform: selected ? 'scale(1.15)' : 'scale(1)',
-                                boxShadow: selected ? `0 4px 14px -4px ${h.color}` : 'none',
-                              }}
-                              title={h.level}
-                            />
-                          );
-                        });
-                      }
-                      // SQUARES style — original 20×20 rounded squares
-                      const sq = 20;
-                      const gap = 6;
-                      const totalW = HAWKINS.length * sq + (HAWKINS.length - 1) * gap;
-                      const offsetX = (300 - totalW) / 2;
-                      const baseY = (40 - sq) / 2;
-                      return HAWKINS.map((h, i) => {
-                        const selected = hawkinsIdx === i;
-                        const x = offsetX + i * (sq + gap);
-                        return (
-                          <button
-                            key={h.level}
-                            type="button"
-                            onClick={() => setHawkinsIdx(i)}
-                            className="absolute cursor-pointer rounded-[3px] transition-all"
-                            style={{
-                              left: x,
-                              top: baseY,
-                              width: sq,
-                              height: sq,
-                              background: h.color,
-                              opacity: selected ? 1 : 0.35,
-                              border: 'none',
-                              transform: selected ? 'scale(1.15)' : 'scale(1)',
-                              boxShadow: selected ? `0 4px 14px -4px ${h.color}` : 'none',
-                            }}
-                            title={h.level}
-                          />
-                        );
-                      });
-                    })()}
-                  </div>
+              <div className="relative" style={{ width: 300, height: 40 }}>
+                {(() => {
+                  if (hawkinsStyle === 'losanges') {
+                    // LOSANGES — rotated squares (diamonds). A rotated 18px square
+                    // visually occupies ~25.4px diagonal, so gap 13 yields ~4px
+                    // clean negative space between adjacent losanges.
+                    const sq = 18;
+                    const gap = 13;
+                    const totalW = HAWKINS.length * sq + (HAWKINS.length - 1) * gap;
+                    const offsetX = (300 - totalW) / 2;
+                    const baseY = (40 - sq) / 2;
+                    return HAWKINS.map((h, i) => {
+                      const selected = hawkinsIdx === i;
+                      const x = offsetX + i * (sq + gap);
+                      return (
+                        <button
+                          key={h.level}
+                          type="button"
+                          onClick={() => setHawkinsIdx(i)}
+                          className="absolute cursor-pointer transition-all"
+                          style={{
+                            left: x,
+                            top: baseY,
+                            width: sq,
+                            height: sq,
+                            background: h.color,
+                            opacity: selected ? 1 : 0.45,
+                            border: 'none',
+                            borderRadius: '2px',
+                            transform: selected ? 'rotate(45deg) scale(1.15)' : 'rotate(45deg)',
+                            boxShadow: selected ? `0 4px 14px -4px ${h.color}` : 'none',
+                          }}
+                          title={h.level}
+                        />
+                      );
+                    });
+                  }
+                  if (hawkinsStyle === 'dots') {
+                    // DOTS style — circular dots in a straight horizontal line,
+                    // same vocabulary as variant 1 (arc) but flat instead of bowed.
+                    const dotSize = 22;
+                    const totalW = HAWKINS.length * dotSize + (HAWKINS.length - 1) * 6;
+                    const offsetX = (300 - totalW) / 2;
+                    const baseY = (40 - dotSize) / 2;
+                    return HAWKINS.map((h, i) => {
+                      const selected = hawkinsIdx === i;
+                      const x = offsetX + i * (dotSize + 6);
+                      return (
+                        <button
+                          key={h.level}
+                          type="button"
+                          onClick={() => setHawkinsIdx(i)}
+                          className="absolute cursor-pointer rounded-full transition-all"
+                          style={{
+                            left: x,
+                            top: baseY,
+                            width: dotSize,
+                            height: dotSize,
+                            background: h.color,
+                            opacity: selected ? 1 : 0.55,
+                            border: 'none',
+                            transform: selected ? 'scale(1.15)' : 'scale(1)',
+                            boxShadow: selected ? `0 4px 14px -4px ${h.color}` : 'none',
+                          }}
+                          title={h.level}
+                        />
+                      );
+                    });
+                  }
+                  // SQUARES style — original 20×20 rounded squares
+                  const sq = 20;
+                  const gap = 6;
+                  const totalW = HAWKINS.length * sq + (HAWKINS.length - 1) * gap;
+                  const offsetX = (300 - totalW) / 2;
+                  const baseY = (40 - sq) / 2;
+                  return HAWKINS.map((h, i) => {
+                    const selected = hawkinsIdx === i;
+                    const x = offsetX + i * (sq + gap);
+                    return (
+                      <button
+                        key={h.level}
+                        type="button"
+                        onClick={() => setHawkinsIdx(i)}
+                        className="absolute cursor-pointer rounded-[3px] transition-all"
+                        style={{
+                          left: x,
+                          top: baseY,
+                          width: sq,
+                          height: sq,
+                          background: h.color,
+                          opacity: selected ? 1 : 0.35,
+                          border: 'none',
+                          transform: selected ? 'scale(1.15)' : 'scale(1)',
+                          boxShadow: selected ? `0 4px 14px -4px ${h.color}` : 'none',
+                        }}
+                        title={h.level}
+                      />
+                    );
+                  });
+                })()}
+              </div>
+              <p
+                style={{
+                  color: '#1a1a1a',
+                  fontFamily: 'var(--font-serif)',
+                  fontSize: '18px',
+                  fontWeight: 700,
+                  letterSpacing: '0.04em',
+                  opacity: 1,
+                }}
+              >
+                <button
+                  type="button"
+                  onClick={() => setShowHawkinsDesc((s) => !s)}
+                  className="cursor-pointer transition-all hover:opacity-80"
+                  style={{
+                    background: 'none',
+                    border: 'none',
+                    padding: 0,
+                    color: 'inherit',
+                    font: 'inherit',
+                    fontWeight: 'inherit',
+                    letterSpacing: 'inherit',
+                  }}
+                >
+                  {HAWKINS[hawkinsIdx].level}
+                </button>
+              </p>
+              {showHawkinsDesc && (
+                <div className="animate-in fade-in duration-200 space-y-2 px-4 pt-1 pb-2">
                   <p
                     style={{
-                      color: '#1a1a1a',
                       fontFamily: 'var(--font-serif)',
-                      fontSize: '18px',
-                      fontWeight: 700,
-                      letterSpacing: '0.04em',
-                      opacity: 1,
+                      fontSize: '14px',
+                      color: '#5C3018',
+                      lineHeight: 1.5,
+                      opacity: 0.85,
                     }}
                   >
-                    <button
-                      type="button"
-                      onClick={() => setShowHawkinsDesc((s) => !s)}
-                      className="cursor-pointer transition-all hover:opacity-80"
-                      style={{
-                        background: 'none',
-                        border: 'none',
-                        padding: 0,
-                        color: 'inherit',
-                        font: 'inherit',
-                        fontWeight: 'inherit',
-                        letterSpacing: 'inherit',
-                      }}
-                    >
-                      {HAWKINS[hawkinsIdx].level}
-                    </button>
+                    {HAWKINS[hawkinsIdx].desc}
                   </p>
-                  {showHawkinsDesc && (
-                    <div className="animate-in fade-in duration-200 space-y-2 px-4 pt-1 pb-2">
-                      <p
-                        style={{
-                          fontFamily: 'var(--font-serif)',
-                          fontSize: '14px',
-                          color: '#5C3018',
-                          lineHeight: 1.5,
-                          opacity: 0.85,
-                        }}
-                      >
-                        {HAWKINS[hawkinsIdx].desc}
-                      </p>
-                      <p
-                        className="italic"
-                        style={{
-                          fontFamily: 'var(--font-serif)',
-                          fontSize: '13px',
-                          color:
-                            HAWKINS[hawkinsIdx].color === '#F0E060'
-                              ? '#B8860B'
-                              : HAWKINS[hawkinsIdx].color,
-                          lineHeight: 1.4,
-                          opacity: 0.75,
-                        }}
-                      >
-                        {HAWKINS[hawkinsIdx].evolve}
-                      </p>
-                    </div>
-                  )}
+                  <p
+                    className="italic"
+                    style={{
+                      fontFamily: 'var(--font-serif)',
+                      fontSize: '13px',
+                      color:
+                        HAWKINS[hawkinsIdx].color === '#F0E060'
+                          ? '#B8860B'
+                          : HAWKINS[hawkinsIdx].color,
+                      lineHeight: 1.4,
+                      opacity: 0.75,
+                    }}
+                  >
+                    {HAWKINS[hawkinsIdx].evolve}
+                  </p>
                 </div>
               )}
+            </div>
 
-              {/* Losange toggle — show/hide slider + emotion name */}
+            {/* Losange — opens challenge + flow logbook */}
+            <div className="space-y-3">
               <div className="flex justify-center py-1">
                 <button
                   type="button"
-                  onClick={() => setSliderVisible((s) => !s)}
+                  onClick={() => setShowChallengeFlow((s) => !s)}
                   className="cursor-pointer transition-all hover:scale-125"
                   style={{ background: 'none', border: 'none', padding: 4 }}
-                  title={sliderVisible ? 'Hide slider' : 'Show slider'}
+                  title={showChallengeFlow ? 'Close' : 'Open challenge & flow'}
                 >
                   <span
                     style={{
                       display: 'block',
-                      width: 10,
-                      height: 10,
+                      width: 16,
+                      height: 16,
                       background: HAWKINS[hawkinsIdx].color,
-                      opacity: sliderVisible ? 0.6 : 0.3,
-                      borderRadius: 2,
+                      opacity: showChallengeFlow ? 0.75 : 0.35,
+                      borderRadius: 3,
                       transform: 'rotate(45deg)',
                       transition: 'opacity 0.2s',
                     }}
@@ -2542,393 +2524,380 @@ export default function FeelingCheckInCard() {
                 </button>
               </div>
 
-              {/* Star toggle — opens challenge + flow writing section */}
-              <div className="space-y-3">
-                {/* ★ star opener */}
-                <div className="flex justify-center">
+              {showChallengeFlow && (
+                <div className="space-y-5 animate-in fade-in duration-150">
+                  {/* CHALLENGE */}
+                  <div className="space-y-2">
+                    <p
+                      className="text-center font-semibold uppercase tracking-[0.22em]"
+                      style={{ color: '#C4A060', fontSize: '22px' }}
+                    >
+                      Challenge
+                    </p>
+                    <textarea
+                      value={challengeInput}
+                      onChange={(e) => setChallengeInput(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter' && !e.shiftKey) {
+                          e.preventDefault();
+                          saveChallenge();
+                        }
+                      }}
+                      placeholder="What is your main tension right now?"
+                      rows={1}
+                      className="w-full resize-none border-b bg-transparent pb-1 outline-none text-center placeholder:italic placeholder:text-[#8A6A4A] placeholder:opacity-[0.95]"
+                      style={{
+                        color: '#7a5438',
+                        borderColor: '#C4A06030',
+                        fontFamily: 'var(--font-serif)',
+                        fontSize: '19px',
+                        overflow: 'hidden',
+                        fieldSizing: 'content' as React.CSSProperties['fieldSizing'],
+                      }}
+                    />
+                    {/* Challenge entries inline */}
+                    {sessionEmotions
+                      .filter((e) => e.mind === 'challenge')
+                      .map((e, i) => (
+                        <div key={`ci-${i}`} className="flex items-start gap-2">
+                          <span
+                            className="h-2 w-2 shrink-0 rounded-full mt-[6px]"
+                            style={{ background: '#C4A060', opacity: 0.7 }}
+                          />
+                          <span
+                            style={{
+                              color: '#7a5438',
+                              fontFamily: 'var(--font-handwritten)',
+                              fontSize: '22px',
+                              opacity: 0.85,
+                              lineHeight: 1.35,
+                            }}
+                          >
+                            {e.text}
+                          </span>
+                        </div>
+                      ))}
+                    <div className="flex justify-end">
+                      <CategoryTagPicker
+                        value={challengeTag}
+                        onChange={setChallengeTag}
+                        open={showChallengeTagPicker}
+                        onToggle={() => setShowChallengeTagPicker((o) => !o)}
+                        onClose={() => setShowChallengeTagPicker(false)}
+                        lifeCategories={lifeCategories}
+                        compassAxes={COMPASS_AXES}
+                      />
+                    </div>
+                  </div>
+
+                  {/* Challenge depth — guided follow-ups */}
+                  <ChallengeDepth
+                    onSave={(text) => {
+                      setSessionEmotions([
+                        ...sessionEmotions,
+                        {
+                          time: new Date().toLocaleTimeString([], {
+                            hour: '2-digit',
+                            minute: '2-digit',
+                          }),
+                          text,
+                          mind: 'challenge',
+                          mindColor: '#C4A060',
+                          ...(challengeTag && {
+                            tag: challengeTag.name,
+                            tagColor: challengeTag.color,
+                          }),
+                        },
+                      ]);
+                    }}
+                  />
+
+                  {/* FLOW */}
+                  <div className="space-y-2">
+                    <p
+                      className="text-center font-semibold uppercase tracking-[0.22em]"
+                      style={{ color: '#C4A060', fontSize: '22px' }}
+                    >
+                      Flow
+                    </p>
+                    <textarea
+                      value={flowInput}
+                      onChange={(e) => setFlowInput(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter' && !e.shiftKey) {
+                          e.preventDefault();
+                          saveFlow();
+                        }
+                      }}
+                      placeholder="What is working well?"
+                      rows={1}
+                      className="w-full resize-none border-b bg-transparent pb-1 outline-none text-center placeholder:italic placeholder:text-[#8A6A4A] placeholder:opacity-[0.95]"
+                      style={{
+                        color: '#7a5438',
+                        borderColor: '#C4A06030',
+                        fontFamily: 'var(--font-serif)',
+                        fontSize: '19px',
+                        overflow: 'hidden',
+                        fieldSizing: 'content' as React.CSSProperties['fieldSizing'],
+                      }}
+                    />
+                    {/* Flow entries inline */}
+                    {sessionEmotions
+                      .filter((e) => e.mind === 'flow')
+                      .map((e, i) => (
+                        <div key={`fi-${i}`} className="flex items-start gap-2">
+                          <span
+                            className="h-2 w-2 shrink-0 rounded-full mt-[6px]"
+                            style={{ background: '#6890B0', opacity: 0.7 }}
+                          />
+                          <span
+                            style={{
+                              color: '#7a5438',
+                              fontFamily: 'var(--font-handwritten)',
+                              fontSize: '22px',
+                              opacity: 0.85,
+                              lineHeight: 1.35,
+                            }}
+                          >
+                            {e.text}
+                          </span>
+                        </div>
+                      ))}
+                    <div className="flex justify-end">
+                      <CategoryTagPicker
+                        value={flowTag}
+                        onChange={setFlowTag}
+                        open={showFlowTagPicker}
+                        onToggle={() => setShowFlowTagPicker((o) => !o)}
+                        onClose={() => setShowFlowTagPicker(false)}
+                        lifeCategories={lifeCategories}
+                        compassAxes={COMPASS_AXES}
+                      />
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Notes toggle — transparent pill that collapses/expands the entry list */}
+              {sessionEmotions.length > 0 && (
+                <div className="flex justify-center gap-2 pt-2">
                   <button
                     type="button"
-                    onClick={() => setShowChallengeFlow((s) => !s)}
-                    title={showChallengeFlow ? 'Close' : 'Open challenge & flow'}
+                    onClick={() => setShowLogbookEntries(!showLogbookEntries)}
+                    className="flex cursor-pointer items-center gap-1.5 rounded-full bg-transparent px-3 py-0.5 font-semibold uppercase tracking-wider transition-all"
                     style={{
-                      background: 'none',
-                      border: 'none',
-                      cursor: 'pointer',
-                      padding: '2px 8px',
-                      color: '#C4A060',
-                      opacity: showChallengeFlow ? 1 : 0.4,
-                      transition: 'opacity 0.2s',
-                      fontSize: 24,
-                      lineHeight: 1,
+                      color: '#8A6A4A',
+                      border: '1px dashed #C4A06070',
+                      fontSize: '12px',
                     }}
+                    title={showLogbookEntries ? 'Hide notes' : 'Show notes'}
                   >
-                    ★
+                    notes · {sessionEmotions.length}
+                    <span
+                      className="text-[10px] transition-transform duration-200"
+                      style={{
+                        color: '#C4A06080',
+                        transform: showLogbookEntries ? 'rotate(180deg)' : 'rotate(0deg)',
+                      }}
+                    >
+                      ▾
+                    </span>
                   </button>
+                  {showLogbookEntries && (
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setLogbookMode(logbookMode === 'grouped' ? 'mixed' : 'grouped')
+                      }
+                      className="cursor-pointer rounded-md bg-transparent px-2 py-0.5 font-semibold uppercase tracking-wider transition-all"
+                      style={{
+                        color: '#8A6A4A',
+                        border: '1px solid #C4A06050',
+                        fontSize: '12px',
+                      }}
+                      title={`Switch to ${logbookMode === 'grouped' ? 'chronological (mixed)' : 'grouped'} view`}
+                    >
+                      {logbookMode === 'grouped' ? 'mixed' : 'grouped'}
+                    </button>
+                  )}
                 </div>
+              )}
 
-                {showChallengeFlow && (
-                  <div className="space-y-5 animate-in fade-in duration-150">
-                    {/* CHALLENGE */}
-                    <div className="space-y-2">
+              {showLogbookEntries && sessionEmotions.length > 0 && logbookMode === 'mixed' && (
+                <div className="space-y-1 pt-1">
+                  {sessionEmotions.map((e, i) => (
+                    <div
+                      key={`m-${i}`}
+                      className="flex items-start gap-2"
+                      style={{ minHeight: 28 }}
+                    >
+                      <span
+                        className="shrink-0"
+                        style={{
+                          color: '#8A6A4A',
+                          opacity: 0.75,
+                          fontSize: '12px',
+                          lineHeight: '28px',
+                        }}
+                      >
+                        {e.time}
+                      </span>
+                      <span
+                        className="mt-[10px] h-2 w-2 shrink-0 rounded-full"
+                        style={{ background: e.mindColor, opacity: 0.7 }}
+                      />
+                      <span
+                        style={{
+                          color: '#7a5438',
+                          fontFamily: 'var(--font-handwritten)',
+                          fontSize: '20px',
+                          lineHeight: '28px',
+                        }}
+                      >
+                        {e.text}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              )}
+              {showLogbookEntries && sessionEmotions.length > 0 && logbookMode === 'grouped' && (
+                <div className="space-y-3 pt-1">
+                  {/* CHALLENGE stack — red entries */}
+                  {sessionEmotions.some((e) => e.mind === 'challenge') && (
+                    <div className="space-y-1">
                       <p
-                        className="text-center font-semibold uppercase tracking-[0.22em]"
-                        style={{ color: '#C4A060', fontSize: '16px' }}
+                        className="font-semibold uppercase tracking-[0.22em]"
+                        style={{ color: '#C4A060', fontSize: '14px' }}
                       >
                         Challenge
                       </p>
-                      <input
-                        type="text"
-                        value={challengeInput}
-                        onChange={(e) => setChallengeInput(e.target.value)}
-                        onKeyDown={(e) => {
-                          if (e.key === 'Enter') saveChallenge();
-                        }}
-                        placeholder="what is your main tension right now?"
-                        className="w-full border-b bg-transparent pb-1 outline-none placeholder:italic placeholder:text-[#8A6A4A] placeholder:opacity-[0.95]"
-                        style={{
-                          color: '#7a5438',
-                          borderColor: '#C4A06030',
-                          fontFamily: 'var(--font-serif)',
-                          fontSize: '16px',
-                        }}
-                      />
-                      {/* Challenge entries inline */}
                       {sessionEmotions
                         .filter((e) => e.mind === 'challenge')
                         .map((e, i) => (
-                          <div key={`ci-${i}`} className="flex items-center gap-2">
+                          <div
+                            key={`c-${i}`}
+                            className="flex items-center gap-2"
+                            style={{ minHeight: 28 }}
+                          >
+                            <span
+                              className="shrink-0"
+                              style={{
+                                color: '#8A6A4A',
+                                opacity: 0.75,
+                                fontSize: '12px',
+                                lineHeight: '28px',
+                              }}
+                            >
+                              {e.time}
+                            </span>
                             <span
                               className="h-2 w-2 shrink-0 rounded-full"
-                              style={{ background: '#C4A060', opacity: 0.7 }}
+                              style={{ background: e.mindColor, opacity: 0.7 }}
                             />
                             <span
                               style={{
                                 color: '#7a5438',
                                 fontFamily: 'var(--font-handwritten)',
-                                fontSize: '18px',
-                                opacity: 0.85,
+                                fontSize: '20px',
+                                lineHeight: '28px',
                               }}
                             >
                               {e.text}
                             </span>
                           </div>
                         ))}
-                      <div className="flex justify-end">
-                        <CategoryTagPicker
-                          value={challengeTag}
-                          onChange={setChallengeTag}
-                          open={showChallengeTagPicker}
-                          onToggle={() => setShowChallengeTagPicker((o) => !o)}
-                          onClose={() => setShowChallengeTagPicker(false)}
-                          lifeCategories={lifeCategories}
-                          compassAxes={COMPASS_AXES}
-                        />
-                      </div>
                     </div>
-
-                    {/* Challenge depth — guided follow-ups */}
-                    <ChallengeDepth
-                      onSave={(text) => {
-                        setSessionEmotions([
-                          ...sessionEmotions,
-                          {
-                            time: new Date().toLocaleTimeString([], {
-                              hour: '2-digit',
-                              minute: '2-digit',
-                            }),
-                            text,
-                            mind: 'challenge',
-                            mindColor: '#C4A060',
-                            ...(challengeTag && {
-                              tag: challengeTag.name,
-                              tagColor: challengeTag.color,
-                            }),
-                          },
-                        ]);
-                      }}
-                    />
-
-                    {/* FLOW */}
-                    <div className="space-y-2">
+                  )}
+                  {/* FLOW stack — green entries */}
+                  {sessionEmotions.some((e) => e.mind === 'flow') && (
+                    <div className="space-y-1">
                       <p
-                        className="text-center font-semibold uppercase tracking-[0.22em]"
-                        style={{ color: '#C4A060', fontSize: '16px' }}
+                        className="font-semibold uppercase tracking-[0.22em]"
+                        style={{ color: '#C4A060', fontSize: '14px' }}
                       >
                         Flow
                       </p>
-                      <input
-                        type="text"
-                        value={flowInput}
-                        onChange={(e) => setFlowInput(e.target.value)}
-                        onKeyDown={(e) => {
-                          if (e.key === 'Enter') saveFlow();
-                        }}
-                        placeholder="what is working well?"
-                        className="w-full border-b bg-transparent pb-1 outline-none placeholder:italic placeholder:text-[#8A6A4A] placeholder:opacity-[0.95]"
-                        style={{
-                          color: '#7a5438',
-                          borderColor: '#C4A06030',
-                          fontFamily: 'var(--font-serif)',
-                          fontSize: '16px',
-                        }}
-                      />
-                      {/* Flow entries inline */}
                       {sessionEmotions
                         .filter((e) => e.mind === 'flow')
                         .map((e, i) => (
-                          <div key={`fi-${i}`} className="flex items-center gap-2">
+                          <div
+                            key={`f-${i}`}
+                            className="flex items-center gap-2"
+                            style={{ minHeight: 28 }}
+                          >
+                            <span
+                              className="shrink-0"
+                              style={{
+                                color: '#8A6A4A',
+                                opacity: 0.75,
+                                fontSize: '12px',
+                                lineHeight: '28px',
+                              }}
+                            >
+                              {e.time}
+                            </span>
                             <span
                               className="h-2 w-2 shrink-0 rounded-full"
-                              style={{ background: '#6890B0', opacity: 0.7 }}
+                              style={{ background: e.mindColor, opacity: 0.7 }}
                             />
                             <span
                               style={{
                                 color: '#7a5438',
                                 fontFamily: 'var(--font-handwritten)',
-                                fontSize: '18px',
-                                opacity: 0.85,
+                                fontSize: '20px',
+                                lineHeight: '28px',
                               }}
                             >
                               {e.text}
                             </span>
                           </div>
                         ))}
-                      <div className="flex justify-end">
-                        <CategoryTagPicker
-                          value={flowTag}
-                          onChange={setFlowTag}
-                          open={showFlowTagPicker}
-                          onToggle={() => setShowFlowTagPicker((o) => !o)}
-                          onClose={() => setShowFlowTagPicker(false)}
-                          lifeCategories={lifeCategories}
-                          compassAxes={COMPASS_AXES}
-                        />
-                      </div>
                     </div>
-                  </div>
-                )}
-
-                {/* Notes toggle — transparent pill that collapses/expands the entry list */}
-                {sessionEmotions.length > 0 && (
-                  <div className="flex justify-center gap-2 pt-2">
-                    <button
-                      type="button"
-                      onClick={() => setShowLogbookEntries(!showLogbookEntries)}
-                      className="flex cursor-pointer items-center gap-1.5 rounded-full bg-transparent px-3 py-0.5 font-semibold uppercase tracking-wider transition-all"
-                      style={{
-                        color: '#8A6A4A',
-                        border: '1px dashed #C4A06070',
-                        fontSize: '12px',
-                      }}
-                      title={showLogbookEntries ? 'Hide notes' : 'Show notes'}
-                    >
-                      notes · {sessionEmotions.length}
-                      <span
-                        className="text-[10px] transition-transform duration-200"
-                        style={{
-                          color: '#C4A06080',
-                          transform: showLogbookEntries ? 'rotate(180deg)' : 'rotate(0deg)',
-                        }}
-                      >
-                        ▾
-                      </span>
-                    </button>
-                    {showLogbookEntries && (
-                      <button
-                        type="button"
-                        onClick={() =>
-                          setLogbookMode(logbookMode === 'grouped' ? 'mixed' : 'grouped')
-                        }
-                        className="cursor-pointer rounded-md bg-transparent px-2 py-0.5 font-semibold uppercase tracking-wider transition-all"
-                        style={{
-                          color: '#8A6A4A',
-                          border: '1px solid #C4A06050',
-                          fontSize: '12px',
-                        }}
-                        title={`Switch to ${logbookMode === 'grouped' ? 'chronological (mixed)' : 'grouped'} view`}
-                      >
-                        {logbookMode === 'grouped' ? 'mixed' : 'grouped'}
-                      </button>
-                    )}
-                  </div>
-                )}
-
-                {showLogbookEntries && sessionEmotions.length > 0 && logbookMode === 'mixed' && (
-                  <div className="space-y-1 pt-1">
-                    {sessionEmotions.map((e, i) => (
-                      <div
-                        key={`m-${i}`}
-                        className="flex items-start gap-2"
-                        style={{ minHeight: 28 }}
-                      >
-                        <span
-                          className="shrink-0"
-                          style={{
-                            color: '#8A6A4A',
-                            opacity: 0.75,
-                            fontSize: '12px',
-                            lineHeight: '28px',
-                          }}
-                        >
-                          {e.time}
-                        </span>
-                        <span
-                          className="mt-[10px] h-2 w-2 shrink-0 rounded-full"
-                          style={{ background: e.mindColor, opacity: 0.7 }}
-                        />
-                        <span
-                          style={{
-                            color: '#7a5438',
-                            fontFamily: 'var(--font-handwritten)',
-                            fontSize: '20px',
-                            lineHeight: '28px',
-                          }}
-                        >
-                          {e.text}
-                        </span>
-                      </div>
-                    ))}
-                  </div>
-                )}
-                {showLogbookEntries && sessionEmotions.length > 0 && logbookMode === 'grouped' && (
-                  <div className="space-y-3 pt-1">
-                    {/* CHALLENGE stack — red entries */}
-                    {sessionEmotions.some((e) => e.mind === 'challenge') && (
-                      <div className="space-y-1">
-                        <p
-                          className="font-semibold uppercase tracking-[0.22em]"
-                          style={{ color: '#C4A060', fontSize: '14px' }}
-                        >
-                          Challenge
-                        </p>
-                        {sessionEmotions
-                          .filter((e) => e.mind === 'challenge')
-                          .map((e, i) => (
-                            <div
-                              key={`c-${i}`}
-                              className="flex items-center gap-2"
-                              style={{ minHeight: 28 }}
+                  )}
+                  {/* Untagged entries (neither challenge nor flow) */}
+                  {sessionEmotions.some((e) => e.mind !== 'challenge' && e.mind !== 'flow') && (
+                    <div className="space-y-1">
+                      {sessionEmotions
+                        .filter((e) => e.mind !== 'challenge' && e.mind !== 'flow')
+                        .map((e, i) => (
+                          <div
+                            key={`u-${i}`}
+                            className="flex items-center gap-2"
+                            style={{ minHeight: 28 }}
+                          >
+                            <span
+                              className="shrink-0"
+                              style={{
+                                color: '#8A6A4A',
+                                opacity: 0.75,
+                                fontSize: '12px',
+                                lineHeight: '28px',
+                              }}
                             >
-                              <span
-                                className="shrink-0"
-                                style={{
-                                  color: '#8A6A4A',
-                                  opacity: 0.75,
-                                  fontSize: '12px',
-                                  lineHeight: '28px',
-                                }}
-                              >
-                                {e.time}
-                              </span>
-                              <span
-                                className="h-2 w-2 shrink-0 rounded-full"
-                                style={{ background: e.mindColor, opacity: 0.7 }}
-                              />
-                              <span
-                                style={{
-                                  color: '#7a5438',
-                                  fontFamily: 'var(--font-handwritten)',
-                                  fontSize: '20px',
-                                  lineHeight: '28px',
-                                }}
-                              >
-                                {e.text}
-                              </span>
-                            </div>
-                          ))}
-                      </div>
-                    )}
-                    {/* FLOW stack — green entries */}
-                    {sessionEmotions.some((e) => e.mind === 'flow') && (
-                      <div className="space-y-1">
-                        <p
-                          className="font-semibold uppercase tracking-[0.22em]"
-                          style={{ color: '#C4A060', fontSize: '14px' }}
-                        >
-                          Flow
-                        </p>
-                        {sessionEmotions
-                          .filter((e) => e.mind === 'flow')
-                          .map((e, i) => (
-                            <div
-                              key={`f-${i}`}
-                              className="flex items-center gap-2"
-                              style={{ minHeight: 28 }}
+                              {e.time}
+                            </span>
+                            <span
+                              className="h-2 w-2 shrink-0 rounded-full"
+                              style={{ background: e.mindColor, opacity: 0.6 }}
+                            />
+                            <span
+                              style={{
+                                color: '#7a5438',
+                                fontFamily: 'var(--font-handwritten)',
+                                fontSize: '20px',
+                                lineHeight: '28px',
+                              }}
                             >
-                              <span
-                                className="shrink-0"
-                                style={{
-                                  color: '#8A6A4A',
-                                  opacity: 0.75,
-                                  fontSize: '12px',
-                                  lineHeight: '28px',
-                                }}
-                              >
-                                {e.time}
-                              </span>
-                              <span
-                                className="h-2 w-2 shrink-0 rounded-full"
-                                style={{ background: e.mindColor, opacity: 0.7 }}
-                              />
-                              <span
-                                style={{
-                                  color: '#7a5438',
-                                  fontFamily: 'var(--font-handwritten)',
-                                  fontSize: '20px',
-                                  lineHeight: '28px',
-                                }}
-                              >
-                                {e.text}
-                              </span>
-                            </div>
-                          ))}
-                      </div>
-                    )}
-                    {/* Untagged entries (neither challenge nor flow) */}
-                    {sessionEmotions.some((e) => e.mind !== 'challenge' && e.mind !== 'flow') && (
-                      <div className="space-y-1">
-                        {sessionEmotions
-                          .filter((e) => e.mind !== 'challenge' && e.mind !== 'flow')
-                          .map((e, i) => (
-                            <div
-                              key={`u-${i}`}
-                              className="flex items-center gap-2"
-                              style={{ minHeight: 28 }}
-                            >
-                              <span
-                                className="shrink-0"
-                                style={{
-                                  color: '#8A6A4A',
-                                  opacity: 0.75,
-                                  fontSize: '12px',
-                                  lineHeight: '28px',
-                                }}
-                              >
-                                {e.time}
-                              </span>
-                              <span
-                                className="h-2 w-2 shrink-0 rounded-full"
-                                style={{ background: e.mindColor, opacity: 0.6 }}
-                              />
-                              <span
-                                style={{
-                                  color: '#7a5438',
-                                  fontFamily: 'var(--font-handwritten)',
-                                  fontSize: '20px',
-                                  lineHeight: '28px',
-                                }}
-                              >
-                                {e.text}
-                              </span>
-                            </div>
-                          ))}
-                      </div>
-                    )}
-                  </div>
-                )}
-              </div>
-            </>
-          )}
+                              {e.text}
+                            </span>
+                          </div>
+                        ))}
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          </>
         </div>
 
         {/* Save star + post-save summary */}
