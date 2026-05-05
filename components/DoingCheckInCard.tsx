@@ -202,7 +202,7 @@ function MissionsList({ fontFamily }: { fontFamily: string }) {
           if (e.key === 'Enter') add(input);
         }}
         placeholder="+ add mission..."
-        className="w-full border-b bg-transparent pb-2 text-base outline-none"
+        className="w-full border-b bg-transparent pb-2 text-base outline-none text-center placeholder:text-center"
         style={{ color: '#7a5438', borderColor: `${DOING_COLOR}20`, fontFamily }}
       />
     </div>
@@ -296,7 +296,7 @@ function TrackersList({ fontFamily }: { fontFamily: string }) {
           if (e.key === 'Enter') add(input);
         }}
         placeholder="+ add tracker..."
-        className="w-full border-b bg-transparent pb-2 text-base outline-none"
+        className="w-full border-b bg-transparent pb-2 text-base outline-none text-center placeholder:text-center"
         style={{ color: '#7a5438', borderColor: `${DOING_COLOR}20`, fontFamily }}
       />
     </div>
