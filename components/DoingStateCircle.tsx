@@ -42,6 +42,7 @@ export default function DoingStateCircle({ onDone: _onDone }: { onDone?: () => v
     try {
       localStorage.setItem(LS_KEY, String(clamped));
     } catch {}
+    setTimeout(() => setOpen(false), 320);
   }
 
   const current = DOING_LEVELS[idx];
