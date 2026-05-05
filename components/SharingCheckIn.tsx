@@ -1,16 +1,15 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import PulseDots from '@/components/PulseDots';
 import SharingReflect from '@/components/SharingReflect';
 import SquareSlider from '@/components/SquareSlider';
 
 export const SHARING_LEVELS = [
-  { label: 'Disconnected', color: '#A08878' },
-  { label: 'Distant', color: '#BEA878' },
-  { label: 'Present', color: '#C4A060' },
-  { label: 'Warm', color: '#80A870' },
-  { label: 'Flowing', color: '#5AA880' },
+  { label: 'Disconnected', color: '#9E5040' },
+  { label: 'Distant', color: '#AE6040' },
+  { label: 'Present', color: '#BE7840' },
+  { label: 'Warm', color: '#C89040' },
+  { label: 'Flowing', color: '#C49830' },
 ];
 
 export const SHARING_IDX_KEY = 'colourmap:sharing-idx';
@@ -27,6 +26,7 @@ function loadIdx(): number {
 
 export default function SharingCheckIn() {
   const [idx, setIdx] = useState(2);
+  const [dragging, setDragging] = useState(false);
   const dragRef = useRef<{ startX: number; startIdx: number } | null>(null);
   const idxRef = useRef(idx);
   idxRef.current = idx;
@@ -46,6 +46,7 @@ export default function SharingCheckIn() {
   function onCirclePointerDown(e: React.PointerEvent<HTMLSpanElement>) {
     e.currentTarget.setPointerCapture(e.pointerId);
     dragRef.current = { startX: e.clientX, startIdx: idxRef.current };
+    setDragging(true);
   }
 
   function onCirclePointerMove(e: React.PointerEvent<HTMLSpanElement>) {
@@ -57,14 +58,13 @@ export default function SharingCheckIn() {
 
   function onCirclePointerUp() {
     dragRef.current = null;
+    setDragging(false);
   }
 
   const current = SHARING_LEVELS[idx];
 
   return (
     <div className="flex flex-col items-center gap-6 px-5 py-8">
-      <PulseDots axisKey="sharing" />
-
       {/* Big dot — draggable */}
       <div className="flex flex-col items-center gap-3">
         <span
@@ -88,9 +88,9 @@ export default function SharingCheckIn() {
           className="uppercase"
           style={{
             fontFamily: 'var(--font-serif)',
-            fontSize: '15px',
+            fontSize: 22,
             fontWeight: 700,
-            color: '#3A2010',
+            color: current.color,
             letterSpacing: '0.18em',
             transition: 'color 0.3s',
           }}
@@ -99,8 +99,24 @@ export default function SharingCheckIn() {
         </span>
       </div>
 
-      {/* Square slider */}
-      <SquareSlider colors={SHARING_LEVELS.map((l) => l.color)} value={idx} onChange={pick} />
+      {/* Square slider — visible only while dragging */}
+      <div
+        style={{
+          maxHeight: dragging ? 40 : 0,
+          opacity: dragging ? 1 : 0,
+          overflow: 'hidden',
+          transition: 'max-height 0.15s, opacity 0.15s',
+          pointerEvents: dragging ? 'auto' : 'none',
+        }}
+      >
+        <SquareSlider
+          colors={SHARING_LEVELS.map((l) => l.color)}
+          value={idx}
+          onChange={pick}
+          size={18}
+          gap={6}
+        />
+      </div>
 
       <div className="w-full">
         <SharingReflect />

@@ -49,6 +49,9 @@
         "noUnusedFunctionParameters": "off",
         "useHookAtTopLevel": "off"
       },
+      "complexity": {
+        "noImportantStyles": "off"
+      },
       "performance": {
         "noImgElement": "off"
       }

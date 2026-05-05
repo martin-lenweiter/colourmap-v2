@@ -55,7 +55,7 @@ function PillList({ label, storageKey }: { label: string; storageKey: string }) 
       <p
         style={{
           fontFamily: font,
-          fontSize: 11,
+          fontSize: 13,
           fontWeight: 700,
           color: S_COLOR,
           opacity: 0.7,
@@ -103,8 +103,13 @@ function PillList({ label, storageKey }: { label: string; storageKey: string }) 
           }
         }}
         placeholder="+ add…"
-        className="w-full border-b bg-transparent pb-1 text-sm outline-none placeholder:italic text-center placeholder:text-center"
-        style={{ fontFamily: font, color: 'var(--foreground)', borderColor: `${S_COLOR}20` }}
+        className="w-full border-b bg-transparent pb-1 outline-none placeholder:italic text-center placeholder:text-center"
+        style={{
+          fontFamily: font,
+          fontSize: 16,
+          color: 'var(--foreground)',
+          borderColor: `${S_COLOR}20`,
+        }}
       />
     </div>
   );
@@ -135,13 +140,12 @@ export default function SharingReflect() {
         className="flex w-full cursor-pointer items-center gap-3"
         style={{ background: 'none', border: 'none', padding: '4px 0' }}
       >
-        <div style={{ flex: 1, height: 1, background: `${S_COLOR}20` }} />
+        <div style={{ flex: 1, height: 1, background: '#C4A06030' }} />
         <span
           style={{
-            width: 10,
-            height: 10,
-            background: open ? S_COLOR : 'transparent',
-            border: `1.5px solid ${S_COLOR}`,
+            width: 14,
+            height: 14,
+            background: open ? '#C4A060' : '#C4A06040',
             display: 'block',
             transform: 'rotate(45deg)',
             borderRadius: 2,
@@ -152,17 +156,17 @@ export default function SharingReflect() {
         <span
           style={{
             fontFamily: font,
-            fontSize: 11,
+            fontSize: 14,
             fontWeight: 700,
             letterSpacing: '0.14em',
             textTransform: 'uppercase',
-            color: S_COLOR,
-            opacity: open ? 1 : 0.6,
+            color: '#C4A060',
+            opacity: open ? 1 : 0.7,
           }}
         >
-          Programme
+          Program
         </span>
-        <div style={{ flex: 1, height: 1, background: `${S_COLOR}20` }} />
+        <div style={{ flex: 1, height: 1, background: '#C4A06030' }} />
       </button>
 
       {open && (
@@ -178,7 +182,7 @@ export default function SharingReflect() {
               <p
                 style={{
                   fontFamily: font,
-                  fontSize: 11,
+                  fontSize: 13,
                   fontWeight: 700,
                   color: S_COLOR,
                   opacity: 0.7,
@@ -197,7 +201,7 @@ export default function SharingReflect() {
                 className="w-full resize-none border-b bg-transparent pb-1 outline-none placeholder:italic"
                 style={{
                   fontFamily: font,
-                  fontSize: 13,
+                  fontSize: 17,
                   color: 'var(--foreground)',
                   borderColor: `${S_COLOR}25`,
                   overflow: 'hidden',

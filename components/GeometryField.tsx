@@ -38,7 +38,12 @@ type Mode =
   | 'tknot3d'
   | 'lorenz3d'
   | 'rose3d'
-  | 'helix3d';
+  | 'helix3d'
+  | 'orbital3d'
+  | 'firework3d'
+  | 'fibonacci3d'
+  | 'yantra3d'
+  | 'rainbow3d';
 
 interface Pal {
   bg0: string;
@@ -297,7 +302,61 @@ const PAL: Record<string, Pal> = {
     dots: 'rgba(240,210,110,0.72)',
     rgb: [220, 175, 70],
   },
+  'Pale Gold': {
+    bg0: '#0c0b04',
+    bg1: '#060500',
+    line: 'rgba(240,225,150,0.6)',
+    fill: 'rgba(240,225,150,0.05)',
+    glow: 'rgba(230,215,130,0.30)',
+    dots: 'rgba(252,242,190,0.68)',
+    rgb: [240, 225, 150],
+  },
+  'Rose Quartz': {
+    bg0: '#0e0408',
+    bg1: '#070204',
+    line: 'rgba(255,165,195,0.62)',
+    fill: 'rgba(255,150,180,0.06)',
+    glow: 'rgba(240,130,165,0.32)',
+    dots: 'rgba(255,200,220,0.70)',
+    rgb: [255, 165, 195],
+  },
+  'Neon Mint': {
+    bg0: '#01080a',
+    bg1: '#010405',
+    line: 'rgba(60,255,200,0.65)',
+    fill: 'rgba(40,240,180,0.06)',
+    glow: 'rgba(30,220,170,0.34)',
+    dots: 'rgba(130,255,230,0.70)',
+    rgb: [60, 255, 200],
+  },
+  'Deep Crimson': {
+    bg0: '#0e0101',
+    bg1: '#060000',
+    line: 'rgba(255,60,80,0.65)',
+    fill: 'rgba(240,40,60,0.06)',
+    glow: 'rgba(220,30,50,0.36)',
+    dots: 'rgba(255,120,140,0.70)',
+    rgb: [255, 60, 80],
+  },
 };
+
+function _rgbHue(r: number, g: number, b: number): number {
+  const rn = r / 255,
+    gn = g / 255,
+    bn = b / 255;
+  const max = Math.max(rn, gn, bn),
+    min = Math.min(rn, gn, bn);
+  if (max === min) return 0;
+  const d = max - min;
+  let h = 0;
+  if (max === rn) h = (gn - bn) / d + (gn < bn ? 6 : 0);
+  else if (max === gn) h = (bn - rn) / d + 2;
+  else h = (rn - gn) / d + 4;
+  return h / 6;
+}
+const PAL_SORTED: [string, Pal][] = Object.entries(PAL).sort(
+  (a, b) => _rgbHue(...a[1].rgb) - _rgbHue(...b[1].rgb),
+);
 
 /* ── Preset configs ─────────────────────────────────────────── */
 
@@ -346,7 +405,7 @@ const PRESETS: Record<string, Cfg> = {
     breathSpeed: 0.4,
     intensity: 8,
     particles: 4,
-    luminous: 3,
+    luminous: 1,
     stars: 2,
     mode: 'lissajous3d',
   },
@@ -358,7 +417,7 @@ const PRESETS: Record<string, Cfg> = {
     breathSpeed: 0.3,
     intensity: 8,
     particles: 3,
-    luminous: 4,
+    luminous: 1,
     stars: 3,
     mode: 'tknot3d',
   },
@@ -370,7 +429,7 @@ const PRESETS: Record<string, Cfg> = {
     breathSpeed: 0.5,
     intensity: 8,
     particles: 3,
-    luminous: 4,
+    luminous: 1,
     stars: 2,
     mode: 'lorenz3d',
   },
@@ -382,7 +441,7 @@ const PRESETS: Record<string, Cfg> = {
     breathSpeed: 0.35,
     intensity: 8,
     particles: 5,
-    luminous: 3,
+    luminous: 1,
     stars: 2,
     mode: 'rose3d',
   },
@@ -394,9 +453,69 @@ const PRESETS: Record<string, Cfg> = {
     breathSpeed: 0.4,
     intensity: 8,
     particles: 4,
-    luminous: 3,
+    luminous: 1,
     stars: 2,
     mode: 'helix3d',
+  },
+  'Orbital 3D': {
+    preset: 'Orbital Shell',
+    symmetry: 8,
+    complexity: 3,
+    glow: 4,
+    breathSpeed: 0.3,
+    intensity: 7,
+    particles: 5,
+    luminous: 1,
+    stars: 3,
+    mode: 'orbital3d',
+  },
+  'Firework 3D': {
+    preset: 'DMT Vision',
+    symmetry: 24,
+    complexity: 6,
+    glow: 5,
+    breathSpeed: 0.5,
+    intensity: 8,
+    particles: 5,
+    luminous: 1,
+    stars: 3,
+    mode: 'firework3d',
+  },
+  'Fibonacci 3D': {
+    preset: 'Fibonacci Bloom',
+    symmetry: 8,
+    complexity: 5,
+    glow: 4,
+    breathSpeed: 0.35,
+    intensity: 7,
+    particles: 6,
+    luminous: 1,
+    stars: 2,
+    mode: 'fibonacci3d',
+  },
+  'Yantra 3D': {
+    preset: 'Yantra Fire',
+    symmetry: 9,
+    complexity: 5,
+    glow: 5,
+    breathSpeed: 0.3,
+    intensity: 8,
+    particles: 4,
+    luminous: 1,
+    stars: 2,
+    mode: 'yantra3d',
+  },
+  'Rainbow 3D': {
+    preset: 'Laser Dome',
+    symmetry: 12,
+    complexity: 6,
+    glow: 8,
+    breathSpeed: 0.4,
+    intensity: 8,
+    particles: 4,
+    luminous: 1,
+    stars: 3,
+    mode: 'rainbow3d',
   },
   'Violet Portal': {
     preset: 'Violet Portal',
@@ -1555,6 +1674,16 @@ function buildModeGroup(cfg: Cfg, R: number): THREE.Group {
       return buildRose3D(cfg, R);
     case 'helix3d':
       return buildHelix3D(cfg, R);
+    case 'orbital3d':
+      return buildOrbital3D(cfg, R);
+    case 'firework3d':
+      return buildFirework3D(cfg, R);
+    case 'fibonacci3d':
+      return buildFibonacci3D(cfg, R);
+    case 'yantra3d':
+      return buildYantra3D(cfg, R);
+    case 'rainbow3d':
+      return buildRainbow3D(cfg, R);
     case 'golden':
       return buildGolden(cfg, R);
     case 'kaleidoscope':
@@ -1624,6 +1753,21 @@ function updateModeGroup(group: THREE.Group, cfg: Cfg, dots: Dot[], t: number, R
       break;
     case 'helix3d':
       updateHelix3D(group, cfg, t, R);
+      break;
+    case 'orbital3d':
+      updateOrbital3D(group, cfg, t, R);
+      break;
+    case 'firework3d':
+      updateFirework3D(group, cfg, t, R);
+      break;
+    case 'fibonacci3d':
+      updateFibonacci3D(group, cfg, t, R);
+      break;
+    case 'yantra3d':
+      updateYantra3D(group, cfg, t, R);
+      break;
+    case 'rainbow3d':
+      updateRainbow3D(group, cfg, t, R);
       break;
     case 'golden':
       updateGolden(group, cfg, t, R);
@@ -2066,7 +2210,7 @@ function buildLissajous3D(cfg: Cfg, R: number): THREE.Group {
   const [rr, gg, bb] = pal.rgb;
   const iF = Math.max(0.1, cfg.intensity / 10);
   const layers = Math.max(1, Math.round(cfg.particles));
-  const STEPS = 800;
+  const STEPS = 2400;
   const group = new THREE.Group();
 
   for (let li = 0; li < layers; li++) {
@@ -2090,7 +2234,7 @@ function updateLissajous3D(group: THREE.Group, cfg: Cfg, t: number, R: number): 
   const [rr, gg, bb] = pal.rgb;
   const iF = Math.max(0.1, cfg.intensity / 10);
   const layers = Math.max(1, Math.round(cfg.particles));
-  const STEPS = 800;
+  const STEPS = 2400;
   const TAU = Math.PI * 2;
   const fx = Math.max(1, Math.round(cfg.symmetry));
   const fy = Math.max(1, Math.round(cfg.complexity));
@@ -2413,6 +2557,517 @@ function updateHelix3D(group: THREE.Group, cfg: Cfg, t: number, R: number): void
   }
 }
 
+/* ── ORBITAL 3D ─────────────────────────────────────────────── */
+// Armillary-sphere / orrery: concentric inclined ring orbits
+
+function buildOrbital3D(cfg: Cfg, R: number): THREE.Group {
+  const pal = PAL[cfg.preset] ?? PAL['Orbital Shell'];
+  const [rr, gg, bb] = pal.rgb;
+  const iF = Math.max(0.1, cfg.intensity / 10);
+  const shells = Math.max(1, Math.round(cfg.complexity));
+  const orbs = Math.max(2, Math.round(cfg.symmetry));
+  const STEPS = 120;
+  const group = new THREE.Group();
+
+  for (let sh = 0; sh < shells; sh++) {
+    const shellR = R * 0.3 + (sh / Math.max(1, shells - 1)) * R * 0.6;
+    for (let oi = 0; oi < orbs; oi++) {
+      const pts = new Float32Array((STEPS + 1) * 3);
+      const geo = new THREE.BufferGeometry();
+      geo.setAttribute('position', new THREE.BufferAttribute(pts, 3));
+      const opacity = (0.55 - sh * 0.06) * iF;
+      const line = new THREE.Line(
+        geo,
+        lineMat(hdrColor([rr, gg, bb], Math.max(0.04, opacity), 2.0), 1.0),
+      );
+      line.userData.tag = 'orb3d';
+      line.userData.sh = sh;
+      line.userData.oi = oi;
+      line.userData.shellR = shellR;
+      group.add(line);
+    }
+  }
+  return group;
+}
+
+function updateOrbital3D(group: THREE.Group, cfg: Cfg, t: number, R: number): void {
+  const pal = PAL[cfg.preset] ?? PAL['Orbital Shell'];
+  const [rr, gg, bb] = pal.rgb;
+  const iF = Math.max(0.1, cfg.intensity / 10);
+  const _shells = Math.max(1, Math.round(cfg.complexity));
+  const orbs = Math.max(2, Math.round(cfg.symmetry));
+  const ecc = (cfg.glow / 10) * 0.55;
+  const STEPS = 120;
+  const TAU = Math.PI * 2;
+  const speed = cfg.breathSpeed * 0.00008;
+  const breath = (Math.sin(t * 0.0007 * cfg.breathSpeed) + 1) * 0.5;
+  const bs = 0.88 + breath * 0.12;
+  const twistK = cfg.particles * 0.18;
+
+  for (const child of group.children) {
+    if (child.userData.tag !== 'orb3d') continue;
+    const sh = child.userData.sh as number;
+    const oi = child.userData.oi as number;
+    const shellR = (child.userData.shellR as number) * bs;
+    const line = child as THREE.Line;
+    const pos = line.geometry.attributes.position.array as Float32Array;
+
+    const inc = (oi / orbs) * Math.PI;
+    const az = (oi / orbs) * TAU * twistK + t * speed * (sh % 2 === 0 ? 1 : -0.6);
+    const cosI = Math.cos(inc);
+    const sinI = Math.sin(inc);
+    const cosA = Math.cos(az);
+    const sinA = Math.sin(az);
+    const a = shellR;
+    const b = shellR * (1 - ecc);
+
+    for (let step = 0; step <= STEPS; step++) {
+      const ang = (step / STEPS) * TAU;
+      // Ellipse in local XY plane
+      const lx = a * Math.cos(ang);
+      const ly = b * Math.sin(ang);
+      // Tilt around X axis by inclination
+      const tx = lx;
+      const ty = ly * cosI;
+      const tz = ly * sinI;
+      // Rotate around Z axis by azimuth
+      pos[step * 3] = tx * cosA - ty * sinA;
+      pos[step * 3 + 1] = tx * sinA + ty * cosA;
+      pos[step * 3 + 2] = tz;
+    }
+    line.geometry.attributes.position.needsUpdate = true;
+    updateMat(child as THREE.Object3D, [rr, gg, bb], (0.55 - sh * 0.06) * iF, 2.0);
+  }
+}
+
+/* ── FIREWORK 3D mode ───────────────────────────────────────── */
+
+const FW3D_PER_BURST = 48;
+const FW3D_MAX_BURSTS = 8;
+const FW3D_TOTAL = FW3D_MAX_BURSTS * FW3D_PER_BURST;
+
+function buildFirework3D(cfg: Cfg, R: number): THREE.Group {
+  const pal = PAL[cfg.preset] ?? PAL['DMT Vision'];
+  const [rr, gg, bb] = pal.rgb;
+  const iF = cfg.intensity / 10;
+  const group = new THREE.Group();
+
+  const px = new Float32Array(FW3D_TOTAL);
+  const py = new Float32Array(FW3D_TOTAL);
+  const pz = new Float32Array(FW3D_TOTAL);
+  const vx = new Float32Array(FW3D_TOTAL);
+  const vy = new Float32Array(FW3D_TOTAL);
+  const vz = new Float32Array(FW3D_TOTAL);
+  const age = new Float32Array(FW3D_TOTAL);
+  const maxAge = new Float32Array(FW3D_TOTAL);
+  const burstTimer = new Float32Array(FW3D_MAX_BURSTS);
+
+  for (let b = 0; b < FW3D_MAX_BURSTS; b++) burstTimer[b] = b * 15 + Math.random() * 10;
+  for (let i = 0; i < FW3D_TOTAL; i++) {
+    age[i] = 99999;
+    maxAge[i] = 1;
+  }
+
+  group.userData.fw3d = { px, py, pz, vx, vy, vz, age, maxAge, burstTimer };
+
+  for (let i = 0; i < FW3D_TOTAL; i++) {
+    const pts = new Float32Array(6);
+    const geo = new THREE.BufferGeometry();
+    geo.setAttribute('position', new THREE.BufferAttribute(pts, 3));
+    const line = new THREE.Line(geo, lineMat(hdrColor([rr, gg, bb], iF, 2.5), 1.0));
+    line.userData.tag = 'fw3dParticle';
+    line.userData.idx = i;
+    group.add(line);
+  }
+  return group;
+}
+
+function updateFirework3D(group: THREE.Group, cfg: Cfg, t: number, R: number): void {
+  const iF = cfg.intensity / 10;
+  const fw = group.userData.fw3d as {
+    px: Float32Array;
+    py: Float32Array;
+    pz: Float32Array;
+    vx: Float32Array;
+    vy: Float32Array;
+    vz: Float32Array;
+    age: Float32Array;
+    maxAge: Float32Array;
+    burstTimer: Float32Array;
+  };
+  const nBursts = Math.min(FW3D_MAX_BURSTS, Math.max(1, Math.round(cfg.particles)));
+  const speed = cfg.breathSpeed;
+  const gravity = 0.035 * speed;
+  const burstR = R * (0.3 + cfg.glow * 0.05);
+  const baseColor = new THREE.Color();
+
+  for (let b = 0; b < nBursts; b++) {
+    fw.burstTimer[b] -= speed;
+    if (fw.burstTimer[b] <= 0) {
+      const angH = Math.random() * Math.PI * 2;
+      const angV = (Math.random() - 0.5) * Math.PI * 0.8;
+      const dist = (0.1 + Math.random() * 0.5) * burstR;
+      const cx = Math.cos(angH) * Math.cos(angV) * dist;
+      const cy = Math.sin(angV) * dist * 0.6;
+      const cz = Math.sin(angH) * Math.cos(angV) * dist;
+      const spd0 = burstR * (0.011 + Math.random() * 0.012) * speed;
+      const nP = Math.round(cfg.symmetry);
+      const TAU = Math.PI * 2;
+      for (let p = 0; p < FW3D_PER_BURST; p++) {
+        const i = b * FW3D_PER_BURST + p;
+        if (p < nP) {
+          const phi = Math.acos(1 - (2 * (p + 0.5)) / nP);
+          const theta = TAU * p * 1.6180339887;
+          const s = spd0 * (0.7 + Math.random() * 0.6);
+          fw.px[i] = cx;
+          fw.py[i] = cy;
+          fw.pz[i] = cz;
+          fw.vx[i] = Math.sin(phi) * Math.cos(theta) * s;
+          fw.vy[i] = Math.cos(phi) * s;
+          fw.vz[i] = Math.sin(phi) * Math.sin(theta) * s;
+          fw.age[i] = 0;
+          fw.maxAge[i] = 50 + Math.random() * 30;
+        } else {
+          fw.age[i] = 99999;
+          fw.maxAge[i] = 1;
+        }
+      }
+      fw.burstTimer[b] = (30 + Math.random() * 35) / speed;
+    }
+  }
+
+  for (const child of group.children) {
+    if (child.userData.tag !== 'fw3dParticle') continue;
+    const idx = child.userData.idx as number;
+    const line = child as THREE.Line;
+    const pos = line.geometry.attributes.position.array as Float32Array;
+    const b = Math.floor(idx / FW3D_PER_BURST);
+    const alive = b < nBursts && fw.age[idx] < fw.maxAge[idx];
+
+    if (!alive) {
+      pos[1] = pos[4] = -9999;
+      line.geometry.attributes.position.needsUpdate = true;
+      (line.material as THREE.LineBasicMaterial).opacity = 0;
+      continue;
+    }
+
+    fw.vy[idx] -= gravity;
+    fw.px[idx] += fw.vx[idx];
+    fw.py[idx] += fw.vy[idx];
+    fw.pz[idx] += fw.vz[idx];
+    fw.age[idx]++;
+
+    const progress = fw.age[idx] / fw.maxAge[idx];
+    const trailMult = 0.04 + (1 - progress) * 0.06;
+    const spd = Math.sqrt(fw.vx[idx] ** 2 + fw.vy[idx] ** 2 + fw.vz[idx] ** 2) || 1;
+    const trailLen = trailMult * R;
+    const nx = (fw.vx[idx] / spd) * trailLen;
+    const ny = (fw.vy[idx] / spd) * trailLen;
+    const nz = (fw.vz[idx] / spd) * trailLen;
+
+    pos[0] = fw.px[idx] - nx;
+    pos[1] = fw.py[idx] - ny;
+    pos[2] = fw.pz[idx] - nz;
+    pos[3] = fw.px[idx];
+    pos[4] = fw.py[idx];
+    pos[5] = fw.pz[idx];
+    line.geometry.attributes.position.needsUpdate = true;
+
+    const hue = FW_HUES[b % FW_HUES.length];
+    baseColor.setHSL(hue, 0.8, (0.55 + (1 - progress) * 0.3) * iF * 0.8);
+    const mat = line.material as THREE.LineBasicMaterial;
+    mat.color.copy(baseColor);
+    mat.opacity = (1 - progress) ** 0.6 * 0.9;
+  }
+}
+
+/* ── FIBONACCI 3D mode ──────────────────────────────────────── */
+
+function buildFibonacci3D(cfg: Cfg, R: number): THREE.Group {
+  const pal = PAL[cfg.preset] ?? PAL['Fibonacci Bloom'];
+  const [rr, gg, bb] = pal.rgb;
+  const iF = cfg.intensity / 10;
+  const N = Math.max(60, Math.round(cfg.complexity) * 80 + 120);
+  const group = new THREE.Group();
+
+  // Fibonacci sphere: N points on sphere using golden angle
+  const dotPos = new Float32Array(N * 3);
+  const dotGeo = new THREE.BufferGeometry();
+  dotGeo.setAttribute('position', new THREE.BufferAttribute(dotPos, 3));
+  const dots = new THREE.Points(dotGeo, ptsMat(hdrColor([rr, gg, bb], iF * 0.9, 2.0), 3.5, 0.8));
+  dots.userData.tag = 'fib3dDots';
+  dots.userData.N = N;
+  group.add(dots);
+
+  // Spiral arms connecting golden-angle neighbours
+  const armCount = Math.max(1, Math.round(cfg.particles));
+  const STEPS = 300;
+  for (let arm = 0; arm < armCount; arm++) {
+    const pts = new Float32Array((STEPS + 1) * 3);
+    const geo = new THREE.BufferGeometry();
+    geo.setAttribute('position', new THREE.BufferAttribute(pts, 3));
+    const line = new THREE.Line(
+      geo,
+      lineMat(hdrColor([rr, gg, bb], iF * (0.6 - arm * 0.06), 2.2), 1.0),
+    );
+    line.userData.tag = 'fib3dArm';
+    line.userData.arm = arm;
+    group.add(line);
+  }
+  return group;
+}
+
+function updateFibonacci3D(group: THREE.Group, cfg: Cfg, t: number, R: number): void {
+  const pal = PAL[cfg.preset] ?? PAL['Fibonacci Bloom'];
+  const [rr, gg, bb] = pal.rgb;
+  const iF = cfg.intensity / 10;
+  const TAU = Math.PI * 2;
+  const GOLDEN_ANGLE = Math.PI * (3 - Math.sqrt(5));
+  const spin = t * cfg.breathSpeed * 0.00008;
+  const tilt = t * cfg.breathSpeed * 0.000032;
+  const armCount = Math.max(1, Math.round(cfg.particles));
+  const STEPS = 300;
+
+  for (const child of group.children) {
+    const tag = child.userData.tag as string;
+
+    if (tag === 'fib3dDots') {
+      const N = child.userData.N as number;
+      const pts = child as THREE.Points;
+      const pos = pts.geometry.attributes.position.array as Float32Array;
+      for (let i = 0; i < N; i++) {
+        const theta = Math.acos(1 - (2 * (i + 0.5)) / N);
+        const phi = GOLDEN_ANGLE * i + spin;
+        const r = R * (0.7 + Math.sin(tilt + i * 0.02) * 0.18);
+        pos[i * 3] = r * Math.sin(theta) * Math.cos(phi);
+        pos[i * 3 + 1] = r * Math.cos(theta);
+        pos[i * 3 + 2] = r * Math.sin(theta) * Math.sin(phi);
+      }
+      pts.geometry.attributes.position.needsUpdate = true;
+      updateMat(pts, [rr, gg, bb], iF * 0.9, 2.0);
+    } else if (tag === 'fib3dArm') {
+      const arm = child.userData.arm as number;
+      if (arm >= armCount) {
+        (child as THREE.Line).geometry.setDrawRange(0, 0);
+        continue;
+      }
+      const line = child as THREE.Line;
+      const pos = line.geometry.attributes.position.array as Float32Array;
+      const armPhase = (arm / armCount) * TAU;
+      for (let step = 0; step <= STEPS; step++) {
+        const frac = step / STEPS;
+        const theta = Math.acos(1 - 2 * frac);
+        const phi = GOLDEN_ANGLE * step * (arm + 1) * 0.5 + spin + armPhase;
+        const r = R * (0.65 + Math.sin(tilt + frac * Math.PI) * 0.22);
+        pos[step * 3] = r * Math.sin(theta) * Math.cos(phi);
+        pos[step * 3 + 1] = r * Math.cos(theta);
+        pos[step * 3 + 2] = r * Math.sin(theta) * Math.sin(phi);
+      }
+      line.geometry.attributes.position.needsUpdate = true;
+      line.geometry.setDrawRange(0, STEPS + 1);
+      updateMat(line, [rr, gg, bb], iF * (0.6 - arm * 0.06), 2.2);
+    }
+  }
+}
+
+/* ── YANTRA 3D mode ─────────────────────────────────────────── */
+
+function buildYantra3D(cfg: Cfg, R: number): THREE.Group {
+  const pal = PAL[cfg.preset] ?? PAL['Yantra Fire'];
+  const [rr, gg, bb] = pal.rgb;
+  const iF = cfg.intensity / 10;
+  const sym = Math.max(1, Math.round(cfg.symmetry));
+  const layers = Math.max(1, Math.round(cfg.complexity));
+  const group = new THREE.Group();
+
+  // Layered rotating triangles/stars on different planes in 3D
+  for (let la = 0; la < layers; la++) {
+    for (let s = 0; s < sym; s++) {
+      const pts = new Float32Array((s + 3 + 1) * 3);
+      const geo = new THREE.BufferGeometry();
+      geo.setAttribute('position', new THREE.BufferAttribute(pts, 3));
+      const opacity = (0.7 - la * 0.1) * iF;
+      const line = new THREE.Line(geo, lineMat(hdrColor([rr, gg, bb], opacity, 2.5), 1.0));
+      line.userData.tag = 'yantra3dLine';
+      line.userData.la = la;
+      line.userData.s = s;
+      line.userData.nVerts = s + 3;
+      group.add(line);
+    }
+  }
+  return group;
+}
+
+function updateYantra3D(group: THREE.Group, cfg: Cfg, t: number, R: number): void {
+  const pal = PAL[cfg.preset] ?? PAL['Yantra Fire'];
+  const [rr, gg, bb] = pal.rgb;
+  const iF = cfg.intensity / 10;
+  const TAU = Math.PI * 2;
+  const layers = Math.max(1, Math.round(cfg.complexity));
+  const sym = Math.max(1, Math.round(cfg.symmetry));
+  const speed = cfg.breathSpeed * 0.00008;
+  const glow = cfg.glow;
+
+  for (const child of group.children) {
+    if (child.userData.tag !== 'yantra3dLine') continue;
+    const la = child.userData.la as number;
+    const s = child.userData.s as number;
+    const nVerts = child.userData.nVerts as number;
+    if (la >= layers || s >= sym) {
+      (child as THREE.Line).geometry.setDrawRange(0, 0);
+      continue;
+    }
+
+    const line = child as THREE.Line;
+    const pos = line.geometry.attributes.position.array as Float32Array;
+
+    // Each shape lives in a DIFFERENT 3D plane for genuine 3D appearance
+    // Axis of rotation alternates: X, Y, Z, diagonal...
+    const planeAxis = (la * 2 + s) % 3; // 0=XY, 1=XZ, 2=YZ
+    const planeAngle = la * (Math.PI / (layers + 1)) + s * (Math.PI / (sym + 1));
+    const rotSpeed = speed * (1 + s * 0.25) * (la % 2 === 0 ? 1 : -1);
+    const ang = t * rotSpeed + la * 0.6;
+
+    const layerFrac = la / Math.max(1, layers - 1);
+    // Pyramid shape: large at bottom, tapering to top
+    const r = R * (0.8 - layerFrac * 0.55);
+    const zHeight = R * (layerFrac * 1.1 - 0.55) * (0.5 + glow * 0.05);
+
+    for (let v = 0; v <= nVerts; v++) {
+      const a = (v / nVerts) * TAU + ang;
+      const cr = Math.cos(a) * r;
+      const sr = Math.sin(a) * r;
+      const cp = Math.cos(planeAngle);
+      const sp = Math.sin(planeAngle);
+      if (planeAxis === 0) {
+        // XY plane, tilted by planeAngle around X
+        pos[v * 3] = cr;
+        pos[v * 3 + 1] = sr * cp + zHeight * sp;
+        pos[v * 3 + 2] = -sr * sp + zHeight * cp;
+      } else if (planeAxis === 1) {
+        // XZ plane, tilted by planeAngle around Y
+        pos[v * 3] = cr * cp + zHeight * sp;
+        pos[v * 3 + 1] = zHeight * 0.5 + sr;
+        pos[v * 3 + 2] = -cr * sp + zHeight * cp;
+      } else {
+        // YZ plane, tilted by planeAngle around Z
+        pos[v * 3] = zHeight * cp - sr * sp;
+        pos[v * 3 + 1] = zHeight * sp + sr * cp;
+        pos[v * 3 + 2] = cr;
+      }
+    }
+    line.geometry.attributes.position.needsUpdate = true;
+    line.geometry.setDrawRange(0, nVerts + 1);
+    const opacity = (0.65 - la * 0.05) * iF;
+    updateMat(line, [rr, gg, bb], opacity, 2.5);
+  }
+}
+
+/* ── RAINBOW 3D mode — sphere of great circles ──────────────── */
+
+const RB3D_MAX_CIRCLES = 36;
+const RB3D_STEPS = 120;
+
+function buildRainbow3D(cfg: Cfg, R: number): THREE.Group {
+  const iF = cfg.intensity / 10;
+  const group = new THREE.Group();
+  const tmpCol = new THREE.Color();
+
+  for (let i = 0; i < RB3D_MAX_CIRCLES; i++) {
+    const pts = new Float32Array((RB3D_STEPS + 1) * 3);
+    const colorArr = new Float32Array((RB3D_STEPS + 1) * 3);
+    const hue = i / RB3D_MAX_CIRCLES;
+    tmpCol.setHSL(hue, 1.0, 0.55 * iF);
+    for (let step = 0; step <= RB3D_STEPS; step++) {
+      colorArr[step * 3] = tmpCol.r;
+      colorArr[step * 3 + 1] = tmpCol.g;
+      colorArr[step * 3 + 2] = tmpCol.b;
+    }
+    const geo = new THREE.BufferGeometry();
+    geo.setAttribute('position', new THREE.BufferAttribute(pts, 3));
+    geo.setAttribute('color', new THREE.BufferAttribute(colorArr, 3));
+    geo.setDrawRange(0, 0);
+    const mat = new THREE.LineBasicMaterial({
+      vertexColors: true,
+      transparent: true,
+      opacity: 0.72,
+    });
+    const line = new THREE.Line(geo, mat);
+    line.userData.tag = 'rb3d';
+    line.userData.idx = i;
+    group.add(line);
+  }
+  return group;
+}
+
+function updateRainbow3D(group: THREE.Group, cfg: Cfg, t: number, R: number): void {
+  const iF = cfg.intensity / 10;
+  const meridians = Math.max(1, Math.round(cfg.symmetry));
+  const latitudes = Math.max(0, Math.round(cfg.complexity));
+  const TAU = Math.PI * 2;
+  const speed = cfg.breathSpeed * 0.00008;
+  const glow = cfg.glow;
+  const tmpCol = new THREE.Color();
+  const totalActive = Math.min(RB3D_MAX_CIRCLES, meridians + latitudes);
+
+  for (const child of group.children) {
+    if (child.userData.tag !== 'rb3d') continue;
+    const idx = child.userData.idx as number;
+    const line = child as THREE.Line;
+    const pos = line.geometry.attributes.position.array as Float32Array;
+    const colorArr = line.geometry.attributes.color.array as Float32Array;
+
+    if (idx >= totalActive) {
+      line.geometry.setDrawRange(0, 0);
+      continue;
+    }
+
+    const hue = (idx / totalActive + t * 0.00002) % 1.0;
+    const ripple = 1 + Math.sin(t * speed * glow + idx * 0.5) * 0.06;
+
+    if (idx < meridians) {
+      // Great circles (meridians) — pass through poles
+      const az = (idx / meridians) * Math.PI + t * speed * 0.5;
+      const cosAz = Math.cos(az),
+        sinAz = Math.sin(az);
+      for (let step = 0; step <= RB3D_STEPS; step++) {
+        const a = (step / RB3D_STEPS) * TAU;
+        const r = R * ripple;
+        const lx = Math.cos(a) * r;
+        const lz = Math.sin(a) * r;
+        pos[step * 3] = lx * cosAz;
+        pos[step * 3 + 1] = lz;
+        pos[step * 3 + 2] = lx * sinAz;
+      }
+    } else {
+      // Latitude rings (parallels)
+      const latIdx = idx - meridians;
+      const latFrac = (latIdx + 1) / (latitudes + 1);
+      const latAngle = latFrac * Math.PI - Math.PI / 2;
+      const ringR = R * Math.cos(latAngle) * ripple;
+      const y = R * Math.sin(latAngle) * ripple;
+      const phaseShift = t * speed * (latIdx % 2 === 0 ? 1 : -1);
+      for (let step = 0; step <= RB3D_STEPS; step++) {
+        const a = (step / RB3D_STEPS) * TAU + phaseShift;
+        pos[step * 3] = Math.cos(a) * ringR;
+        pos[step * 3 + 1] = y;
+        pos[step * 3 + 2] = Math.sin(a) * ringR;
+      }
+    }
+    line.geometry.attributes.position.needsUpdate = true;
+    line.geometry.setDrawRange(0, RB3D_STEPS + 1);
+
+    tmpCol.setHSL(hue, 1.0, 0.55 * iF);
+    for (let step = 0; step <= RB3D_STEPS; step++) {
+      colorArr[step * 3] = tmpCol.r;
+      colorArr[step * 3 + 1] = tmpCol.g;
+      colorArr[step * 3 + 2] = tmpCol.b;
+    }
+    line.geometry.attributes.color.needsUpdate = true;
+    (line.material as THREE.LineBasicMaterial).opacity = 0.72;
+  }
+}
+
 /* ── GOLDEN mode ────────────────────────────────────────────── */
 
 function buildGolden(cfg: Cfg, R: number): THREE.Group {
@@ -2521,42 +3176,39 @@ function updateGolden(group: THREE.Group, cfg: Cfg, t: number, R: number): void 
   }
 }
 
-/* ── KALEIDOSCOPE mode ──────────────────────────────────────── */
+/* ── KALEIDOSCOPE mode — infinite outward zoom tunnel ───────── */
+
+const K_SLICES = 40;
+const K_MAX_VERTS = 49;
+const K_MAX_SPOKES = 24;
 
 function buildKaleidoscope(cfg: Cfg, R: number): THREE.Group {
   const pal = PAL[cfg.preset] ?? PAL['Violet Portal'];
   const [rr, gg, bb] = pal.rgb;
   const iF = cfg.intensity / 10;
-  const sym = Math.round(cfg.symmetry);
-  const layers = Math.max(1, Math.round(cfg.complexity));
-  const TAU = Math.PI * 2;
-  const scale = R / 210;
-  const wedge = TAU / sym;
-  const blobCount = 2 + layers;
-
   const group = new THREE.Group();
 
-  // One Points object per wedge sector
-  for (let s = 0; s < sym; s++) {
-    const blobPos = new Float32Array(blobCount * 3);
+  for (let i = 0; i < K_SLICES; i++) {
+    const pts = new Float32Array(K_MAX_VERTS * 3);
     const geo = new THREE.BufferGeometry();
-    geo.setAttribute('position', new THREE.BufferAttribute(blobPos, 3));
-    const blobs = new THREE.Points(geo, ptsMat(hdrColor([rr, gg, bb], iF, 2.5), 12 * scale, 0.7));
-    blobs.userData.tag = 'wedgeBlobs';
-    blobs.userData.sector = s;
-    blobs.userData.wedge = wedge;
-    blobs.userData.blobCount = blobCount;
-    group.add(blobs);
+    geo.setAttribute('position', new THREE.BufferAttribute(pts, 3));
+    geo.setDrawRange(0, 0);
+    const line = new THREE.Line(geo, lineMat(hdrColor([rr, gg, bb], 0.5 * iF, 2.5), 1.0));
+    line.userData.tag = 'kring';
+    line.userData.idx = i;
+    group.add(line);
   }
 
-  // Rings on top
-  const rings = buildRings(5 + layers, R, [rr, gg, bb], iF);
-  rings.userData.tag = 'rings';
-  group.add(rings);
+  for (let s = 0; s < K_MAX_SPOKES; s++) {
+    const pts = new Float32Array(6);
+    const geo = new THREE.BufferGeometry();
+    geo.setAttribute('position', new THREE.BufferAttribute(pts, 3));
+    const line = new THREE.Line(geo, lineMat(hdrColor([rr, gg, bb], 0.15 * iF, 2.0), 1.0));
+    line.userData.tag = 'kspoke';
+    line.userData.sIdx = s;
+    group.add(line);
+  }
 
-  const center = buildCenter([rr, gg, bb], iF, scale);
-  center.userData.tag = 'center';
-  group.add(center);
   return group;
 }
 
@@ -2564,39 +3216,60 @@ function updateKaleidoscope(group: THREE.Group, cfg: Cfg, t: number, R: number):
   const pal = PAL[cfg.preset] ?? PAL['Violet Portal'];
   const [rr, gg, bb] = pal.rgb;
   const iF = cfg.intensity / 10;
-  const scale = R / 210;
-  const breath = (Math.sin(t * 0.001 * cfg.breathSpeed) + 1) * 0.5;
-  const bs = 0.9 + breath * 0.1;
-  const sym = Math.round(cfg.symmetry);
+  const sym = Math.min(K_MAX_VERTS - 1, Math.max(3, Math.round(cfg.symmetry)));
   const TAU = Math.PI * 2;
-  const wedge = TAU / sym;
+  const speed = cfg.breathSpeed * 0.0001;
+  const R_max = R * 2.8;
+  const rotRate = cfg.glow * 0.000025;
+  const activeSpokes = Math.max(0, Math.round(cfg.complexity));
 
   for (const child of group.children) {
     const tag = child.userData.tag as string;
-    if (tag === 'wedgeBlobs') {
-      const sector = child.userData.sector as number;
-      const blobCount = child.userData.blobCount as number;
-      const blobs = child as THREE.Points;
-      const pos = blobs.geometry.attributes.position.array as Float32Array;
-      const baseAng = sector * wedge + t * 0.00012;
 
-      for (let b = 0; b < blobCount; b++) {
-        const phase = b / blobCount;
-        const r = R * (0.15 + phase * 0.7) * bs;
-        const a = baseAng + phase * wedge * 0.8 + wedge * 0.1;
-        const pulse = 0.8 + breath * 0.4;
-        pos[b * 3] = Math.cos(a) * r * pulse;
-        pos[b * 3 + 1] = Math.sin(a) * r * pulse;
-        pos[b * 3 + 2] = 0;
+    if (tag === 'kring') {
+      const idx = child.userData.idx as number;
+      const line = child as THREE.Line;
+      const pos = line.geometry.attributes.position.array as Float32Array;
+
+      const rawPhase = (idx / K_SLICES + t * speed) % 1.0;
+      const frac = rawPhase ** 0.55;
+      const r = R_max * frac;
+
+      const sign = idx % 2 === 0 ? 1 : -1;
+      const ang = t * rotRate * sign;
+
+      for (let v = 0; v <= sym; v++) {
+        const a = (v / sym) * TAU + ang;
+        pos[v * 3] = Math.cos(a) * r;
+        pos[v * 3 + 1] = Math.sin(a) * r;
+        pos[v * 3 + 2] = 0;
       }
-      blobs.geometry.attributes.position.needsUpdate = true;
-      const mat = blobs.material as THREE.PointsMaterial;
-      mat.size = (8 + breath * 6) * scale;
-      updateMat(blobs, [rr, gg, bb], iF, 2.5);
-    } else if (tag === 'rings') {
-      updateRings(child as THREE.Group, bs, [rr, gg, bb], iF);
-    } else if (tag === 'center') {
-      updateCenter(child as THREE.Group, breath, [rr, gg, bb], iF, scale);
+      line.geometry.attributes.position.needsUpdate = true;
+      line.geometry.setDrawRange(0, sym + 1);
+
+      const opacity = Math.min(1, frac * 1.8) * iF * 0.7;
+      updateMat(line, [rr, gg, bb], opacity, 2.5);
+    } else if (tag === 'kspoke') {
+      const sIdx = child.userData.sIdx as number;
+      const line = child as THREE.Line;
+      const pos = line.geometry.attributes.position.array as Float32Array;
+
+      if (sIdx >= activeSpokes || activeSpokes === 0) {
+        pos[1] = pos[4] = -9999;
+        line.geometry.attributes.position.needsUpdate = true;
+        (line.material as THREE.LineBasicMaterial).opacity = 0;
+        continue;
+      }
+
+      const spokeAngle = (sIdx / activeSpokes) * TAU + t * rotRate;
+      pos[0] = 0;
+      pos[1] = 0;
+      pos[2] = 0;
+      pos[3] = Math.cos(spokeAngle) * R_max;
+      pos[4] = Math.sin(spokeAngle) * R_max;
+      pos[5] = 0;
+      line.geometry.attributes.position.needsUpdate = true;
+      updateMat(line, [rr, gg, bb], 0.12 * iF, 2.0);
     }
   }
 }
@@ -3389,78 +4062,136 @@ function updateHypercube(group: THREE.Group, cfg: Cfg, t: number, R: number): vo
 
 /* ── WARP DRIVE mode ────────────────────────────────────────── */
 
-const WARP_COUNT = 140;
+/* ── FIREWORK (warp) mode ────────────────────────────────────── */
+
+const FW_PARTS_PER_BURST = 36;
+const FW_MAX_BURSTS = 8;
+const FW_TOTAL = FW_MAX_BURSTS * FW_PARTS_PER_BURST;
+
+const FW_HUES = [0, 0.08, 0.15, 0.55, 0.65, 0.75, 0.85, 0.95];
 
 function buildWarp(cfg: Cfg, R: number): THREE.Group {
   const pal = PAL[cfg.preset] ?? PAL['Warp Drive'];
   const [rr, gg, bb] = pal.rgb;
   const iF = cfg.intensity / 10;
   const group = new THREE.Group();
-  const sym = Math.round(cfg.symmetry);
-  const TAU = Math.PI * 2;
 
-  for (let i = 0; i < WARP_COUNT; i++) {
-    const pos = new Float32Array(2 * 3);
+  const px = new Float32Array(FW_TOTAL);
+  const py = new Float32Array(FW_TOTAL);
+  const vx = new Float32Array(FW_TOTAL);
+  const vy = new Float32Array(FW_TOTAL);
+  const age = new Float32Array(FW_TOTAL);
+  const maxAge = new Float32Array(FW_TOTAL);
+  const burstTimer = new Float32Array(FW_MAX_BURSTS);
+
+  for (let b = 0; b < FW_MAX_BURSTS; b++) {
+    burstTimer[b] = b * 18 + Math.random() * 12;
+  }
+
+  group.userData.fw = { px, py, vx, vy, age, maxAge, burstTimer, dead: true };
+
+  for (let i = 0; i < FW_TOTAL; i++) {
+    const pts = new Float32Array(6);
     const geo = new THREE.BufferGeometry();
-    geo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
-    const streak = new THREE.Line(geo, lineMat(hdrColor([rr, gg, bb], iF * 0.8, 2.2), 0.9));
-    // Align streaks to symmetry axes with a little jitter
-    const sectorAngle =
-      sym > 1 ? Math.round((i / WARP_COUNT) * sym) * (TAU / sym) : (i / WARP_COUNT) * TAU;
-    streak.userData.tag = 'warpStreak';
-    streak.userData.angle =
-      sectorAngle + (Math.random() - 0.5) * (sym > 1 ? (TAU / sym) * 0.6 : 0.22);
-    streak.userData.r = Math.random() * R * 0.3;
-    streak.userData.spd = 1.2 + Math.random() * 2.8;
-    streak.userData.len = (0.06 + Math.random() * 0.14) * R;
-    group.add(streak);
+    geo.setAttribute('position', new THREE.BufferAttribute(pts, 3));
+    const line = new THREE.Line(geo, lineMat(hdrColor([rr, gg, bb], iF, 2.5), 1.0));
+    line.userData.tag = 'fwParticle';
+    line.userData.idx = i;
+    group.add(line);
   }
   return group;
 }
 
 function updateWarp(group: THREE.Group, cfg: Cfg, t: number, R: number): void {
-  const pal = PAL[cfg.preset] ?? PAL['Warp Drive'];
-  const [rr, gg, bb] = pal.rgb;
   const iF = cfg.intensity / 10;
+  const fw = group.userData.fw as {
+    px: Float32Array;
+    py: Float32Array;
+    vx: Float32Array;
+    vy: Float32Array;
+    age: Float32Array;
+    maxAge: Float32Array;
+    burstTimer: Float32Array;
+  };
+  const nBursts = Math.min(FW_MAX_BURSTS, Math.max(1, Math.round(cfg.particles)));
   const speed = cfg.breathSpeed;
+  const gravity = 0.04 * speed;
+  const burstR = R * (0.35 + cfg.glow * 0.055);
+  const baseColor = new THREE.Color();
+
+  for (let b = 0; b < nBursts; b++) {
+    fw.burstTimer[b] -= speed;
+    if (fw.burstTimer[b] <= 0) {
+      const ang0 = Math.random() * Math.PI * 2;
+      const dist = (0.1 + Math.random() * 0.55) * burstR;
+      const cx = Math.cos(ang0) * dist;
+      const cy = Math.sin(ang0) * dist * 0.6 + R * 0.1;
+      const spd0 = burstR * (0.012 + Math.random() * 0.014) * speed;
+      const nP = Math.max(8, Math.round(cfg.symmetry) * 2);
+      const partsForBurst = Math.min(FW_PARTS_PER_BURST, nP);
+      for (let p = 0; p < FW_PARTS_PER_BURST; p++) {
+        const i = b * FW_PARTS_PER_BURST + p;
+        if (p < partsForBurst) {
+          const a = (p / partsForBurst) * Math.PI * 2 + (Math.random() - 0.5) * 0.3;
+          const s = spd0 * (0.7 + Math.random() * 0.6);
+          fw.px[i] = cx;
+          fw.py[i] = cy;
+          fw.vx[i] = Math.cos(a) * s;
+          fw.vy[i] = Math.sin(a) * s;
+          fw.age[i] = 0;
+          fw.maxAge[i] = 55 + Math.random() * 30;
+        } else {
+          fw.age[i] = 99999;
+          fw.maxAge[i] = 1;
+        }
+      }
+      const interval = (35 + Math.random() * 40) / speed;
+      fw.burstTimer[b] = interval;
+    }
+  }
 
   for (const child of group.children) {
-    if (child.userData.tag !== 'warpStreak') continue;
-    const streak = child as THREE.Line;
+    if (child.userData.tag !== 'fwParticle') continue;
+    const idx = child.userData.idx as number;
+    const line = child as THREE.Line;
+    const pos = line.geometry.attributes.position.array as Float32Array;
 
-    streak.userData.r = (streak.userData.r as number) + (streak.userData.spd as number) * speed;
-    const r = streak.userData.r as number;
+    const b = Math.floor(idx / FW_PARTS_PER_BURST);
+    const alive = b < nBursts && fw.age[idx] < fw.maxAge[idx];
 
-    if (r > R * 1.5) {
-      // Respawn from near-centre with a fresh angle
-      streak.userData.r = Math.random() * 0.04 * R;
-      streak.userData.angle = (t * 0.00001 + Math.random()) * Math.PI * 2;
-      streak.userData.spd = 1.2 + Math.random() * 2.8;
-      streak.userData.len = (0.06 + Math.random() * 0.14) * R;
+    if (!alive) {
+      pos[0] = pos[3] = 0;
+      pos[1] = pos[4] = -9999;
+      pos[2] = pos[5] = 0;
+      line.geometry.attributes.position.needsUpdate = true;
+      (line.material as THREE.LineBasicMaterial).opacity = 0;
+      continue;
     }
 
-    const angle = streak.userData.angle as number;
-    const len = streak.userData.len as number;
-    const r0 = Math.max(0, r - len);
-    const progress = Math.min(1, r / (R * 0.85));
+    fw.vy[idx] -= gravity;
+    fw.px[idx] += fw.vx[idx];
+    fw.py[idx] += fw.vy[idx];
+    fw.age[idx]++;
 
-    const pos = streak.geometry.attributes.position.array as Float32Array;
-    pos[0] = Math.cos(angle) * r0;
-    pos[1] = Math.sin(angle) * r0;
+    const progress = fw.age[idx] / fw.maxAge[idx];
+    const trailLen = (0.04 + (1 - progress) * 0.06) * R;
+    const angle = Math.atan2(fw.vy[idx], fw.vx[idx]);
+
+    pos[0] = fw.px[idx] - Math.cos(angle) * trailLen;
+    pos[1] = fw.py[idx] - Math.sin(angle) * trailLen;
     pos[2] = 0;
-    pos[3] = Math.cos(angle) * r;
-    pos[4] = Math.sin(angle) * r;
+    pos[3] = fw.px[idx];
+    pos[4] = fw.py[idx];
     pos[5] = 0;
-    streak.geometry.attributes.position.needsUpdate = true;
+    line.geometry.attributes.position.needsUpdate = true;
 
-    const twinkle = 0.8 + 0.2 * Math.sin(t * 0.002 + angle * 7.3);
-    const br = progress * iF * 2.4;
-    (streak.material as THREE.LineBasicMaterial).color.setRGB(
-      (rr / 255) * br,
-      (gg / 255) * br,
-      (bb / 255) * br,
-    );
-    (streak.material as THREE.LineBasicMaterial).opacity = progress * 0.88 * twinkle;
+    const hue = FW_HUES[b % FW_HUES.length];
+    const saturation = 0.7 + cfg.complexity * 0.03;
+    const lightness = (0.5 + (1 - progress) * 0.3) * iF * 0.8;
+    baseColor.setHSL(hue, saturation, lightness);
+    const mat = line.material as THREE.LineBasicMaterial;
+    mat.color.copy(baseColor);
+    mat.opacity = (1 - progress) ** 0.6 * 0.9;
   }
 }
 
@@ -5312,14 +6043,6 @@ const MODE_SLIDERS: Partial<Record<Mode, SliderDef[]>> = {
     { key: 'luminous', label: 'Luminous', min: 0, max: 5, step: 0.5 },
     { key: 'stars', label: 'Stars', min: 0, max: 10, step: 1 },
   ],
-  warp: [
-    { key: 'symmetry', label: 'Sectors', min: 1, max: 12, step: 1 },
-    { key: 'glow', label: 'Glow', min: 0, max: 10, step: 0.5 },
-    { key: 'breathSpeed', label: 'Speed', min: 0.05, max: 1.5, step: 0.05 },
-    { key: 'intensity', label: 'Colour', min: 0, max: 10, step: 0.5 },
-    { key: 'luminous', label: 'Luminous', min: 0, max: 5, step: 0.5 },
-    { key: 'stars', label: 'Stars', min: 0, max: 10, step: 1 },
-  ],
   lorenz: [
     { key: 'complexity', label: 'Density', min: 1, max: 8, step: 1 },
     { key: 'glow', label: 'Glow', min: 0, max: 10, step: 0.5 },
@@ -5472,6 +6195,70 @@ const MODE_SLIDERS: Partial<Record<Mode, SliderDef[]>> = {
     { key: 'luminous', label: 'Bloom', min: 0, max: 5, step: 0.5 },
     { key: 'stars', label: 'Stars', min: 0, max: 10, step: 1 },
   ],
+  orbital3d: [
+    { key: 'symmetry', label: 'Orbits', min: 1, max: 12, step: 1 },
+    { key: 'complexity', label: 'Shells', min: 1, max: 6, step: 1 },
+    { key: 'glow', label: 'Shape', min: 0, max: 10, step: 0.5 },
+    { key: 'particles', label: 'Fan', min: 1, max: 8, step: 1 },
+    { key: 'breathSpeed', label: 'Speed', min: 0.05, max: 2.0, step: 0.05 },
+    { key: 'intensity', label: 'Colour', min: 1, max: 10, step: 0.5 },
+    { key: 'luminous', label: 'Bloom', min: 0, max: 5, step: 0.5 },
+    { key: 'stars', label: 'Stars', min: 0, max: 10, step: 1 },
+  ],
+  kaleidoscope: [
+    { key: 'symmetry', label: 'Sides', min: 3, max: 16, step: 1 },
+    { key: 'complexity', label: 'Spokes', min: 0, max: 24, step: 1 },
+    { key: 'glow', label: 'Rotate', min: 0, max: 10, step: 0.5 },
+    { key: 'breathSpeed', label: 'Speed', min: 0.05, max: 2.0, step: 0.05 },
+    { key: 'intensity', label: 'Colour', min: 1, max: 10, step: 0.5 },
+    { key: 'luminous', label: 'Bloom', min: 0, max: 5, step: 0.5 },
+    { key: 'stars', label: 'Stars', min: 0, max: 10, step: 1 },
+  ],
+  warp: [
+    { key: 'particles', label: 'Bursts', min: 1, max: 8, step: 1 },
+    { key: 'symmetry', label: 'Sparks', min: 4, max: 36, step: 1 },
+    { key: 'glow', label: 'Range', min: 1, max: 10, step: 0.5 },
+    { key: 'complexity', label: 'Colours', min: 1, max: 10, step: 1 },
+    { key: 'breathSpeed', label: 'Speed', min: 0.1, max: 3.0, step: 0.1 },
+    { key: 'intensity', label: 'Bright', min: 1, max: 10, step: 0.5 },
+    { key: 'luminous', label: 'Bloom', min: 0, max: 5, step: 0.5 },
+    { key: 'stars', label: 'Stars', min: 0, max: 10, step: 1 },
+  ],
+  firework3d: [
+    { key: 'particles', label: 'Bursts', min: 1, max: 8, step: 1 },
+    { key: 'symmetry', label: 'Sparks', min: 4, max: 48, step: 1 },
+    { key: 'glow', label: 'Range', min: 1, max: 10, step: 0.5 },
+    { key: 'breathSpeed', label: 'Speed', min: 0.1, max: 3.0, step: 0.1 },
+    { key: 'intensity', label: 'Bright', min: 1, max: 10, step: 0.5 },
+    { key: 'luminous', label: 'Bloom', min: 0, max: 5, step: 0.5 },
+    { key: 'stars', label: 'Stars', min: 0, max: 10, step: 1 },
+  ],
+  fibonacci3d: [
+    { key: 'complexity', label: 'Density', min: 1, max: 8, step: 1 },
+    { key: 'particles', label: 'Arms', min: 1, max: 8, step: 1 },
+    { key: 'breathSpeed', label: 'Speed', min: 0.05, max: 2.0, step: 0.05 },
+    { key: 'intensity', label: 'Colour', min: 1, max: 10, step: 0.5 },
+    { key: 'luminous', label: 'Bloom', min: 0, max: 5, step: 0.5 },
+    { key: 'stars', label: 'Stars', min: 0, max: 10, step: 1 },
+  ],
+  yantra3d: [
+    { key: 'symmetry', label: 'Shapes', min: 1, max: 12, step: 1 },
+    { key: 'complexity', label: 'Layers', min: 1, max: 8, step: 1 },
+    { key: 'glow', label: 'Bright', min: 1, max: 10, step: 0.5 },
+    { key: 'breathSpeed', label: 'Speed', min: 0.05, max: 2.0, step: 0.05 },
+    { key: 'intensity', label: 'Colour', min: 1, max: 10, step: 0.5 },
+    { key: 'luminous', label: 'Bloom', min: 0, max: 5, step: 0.5 },
+    { key: 'stars', label: 'Stars', min: 0, max: 10, step: 1 },
+  ],
+  rainbow3d: [
+    { key: 'complexity', label: 'Layers', min: 2, max: 12, step: 1 },
+    { key: 'symmetry', label: 'Loops', min: 1, max: 12, step: 1 },
+    { key: 'glow', label: 'Ripple', min: 0, max: 10, step: 0.5 },
+    { key: 'breathSpeed', label: 'Speed', min: 0.05, max: 2.0, step: 0.05 },
+    { key: 'intensity', label: 'Bright', min: 1, max: 10, step: 0.5 },
+    { key: 'luminous', label: 'Bloom', min: 0, max: 5, step: 0.5 },
+    { key: 'stars', label: 'Stars', min: 0, max: 10, step: 1 },
+  ],
 };
 
 function slidersFor(mode: Mode): SliderDef[] {
@@ -5506,6 +6293,11 @@ const MODE_TO_PRESET: Partial<Record<Mode, string>> = {
   lorenz3d: 'Lorenz 3D',
   rose3d: 'Rose 3D',
   helix3d: 'Helix 3D',
+  orbital3d: 'Orbital 3D',
+  firework3d: 'Firework 3D',
+  fibonacci3d: 'Fibonacci 3D',
+  yantra3d: 'Yantra 3D',
+  rainbow3d: 'Rainbow 3D',
 };
 
 const MODES: { mode: Mode; label: string }[] = [
@@ -5520,7 +6312,7 @@ const MODES: { mode: Mode; label: string }[] = [
   { mode: 'fibonacci', label: 'φ² Fibonacci' },
   { mode: 'clifford', label: '∞ Clifford' },
   { mode: 'hypercube', label: '◈ Hypercube' },
-  { mode: 'warp', label: '⋙ Warp' },
+  { mode: 'warp', label: '🎆 Firework' },
   { mode: 'lorenz', label: '𝛔 Lorenz' },
   { mode: 'knot', label: '∮ Knot' },
   { mode: 'orbital', label: '⊛ Orbital' },
@@ -5538,6 +6330,11 @@ const MODES: { mode: Mode; label: string }[] = [
   { mode: 'lorenz3d', label: '𝛔 Lorenz 3D' },
   { mode: 'rose3d', label: '✾ Rose 3D' },
   { mode: 'helix3d', label: '⟳ Helix 3D' },
+  { mode: 'orbital3d', label: '⊛ Orbital 3D' },
+  { mode: 'firework3d', label: '🎆 Firework 3D' },
+  { mode: 'fibonacci3d', label: 'φ Fibonacci 3D' },
+  { mode: 'yantra3d', label: '△ Yantra 3D' },
+  { mode: 'rainbow3d', label: '◉ Rainbow 3D' },
 ];
 
 /* ── Component ──────────────────────────────────────────────── */
@@ -5728,7 +6525,12 @@ export default function GeometryField() {
         currentCfg.mode === 'tknot3d' ||
         currentCfg.mode === 'lorenz3d' ||
         currentCfg.mode === 'rose3d' ||
-        currentCfg.mode === 'helix3d';
+        currentCfg.mode === 'helix3d' ||
+        currentCfg.mode === 'orbital3d' ||
+        currentCfg.mode === 'firework3d' ||
+        currentCfg.mode === 'fibonacci3d' ||
+        currentCfg.mode === 'yantra3d' ||
+        currentCfg.mode === 'rainbow3d';
       if (is3D && modeGroupRef.current) {
         if (!l3dDragRef.current) {
           // Slow auto-spin when not dragging
@@ -5873,7 +6675,8 @@ export default function GeometryField() {
   }
 
   function applyPreset(name: string) {
-    setCfg(PRESETS[name] ?? PRESETS['Calm Field']);
+    const p = PRESETS[name] ?? PRESETS['Calm Field'];
+    setCfg({ ...p, luminous: Math.min(1.5, p.luminous) });
   }
 
   function handleRandomize() {
@@ -5997,7 +6800,12 @@ export default function GeometryField() {
               cfg.mode === 'tknot3d' ||
               cfg.mode === 'lorenz3d' ||
               cfg.mode === 'rose3d' ||
-              cfg.mode === 'helix3d';
+              cfg.mode === 'helix3d' ||
+              cfg.mode === 'orbital3d' ||
+              cfg.mode === 'firework3d' ||
+              cfg.mode === 'fibonacci3d' ||
+              cfg.mode === 'yantra3d' ||
+              cfg.mode === 'rainbow3d';
             if (!is3d) return;
             e.currentTarget.setPointerCapture(e.pointerId);
             l3dDragRef.current = { lastX: e.clientX, lastY: e.clientY };
@@ -6008,7 +6816,12 @@ export default function GeometryField() {
               cfg.mode === 'tknot3d' ||
               cfg.mode === 'lorenz3d' ||
               cfg.mode === 'rose3d' ||
-              cfg.mode === 'helix3d';
+              cfg.mode === 'helix3d' ||
+              cfg.mode === 'orbital3d' ||
+              cfg.mode === 'firework3d' ||
+              cfg.mode === 'fibonacci3d' ||
+              cfg.mode === 'yantra3d' ||
+              cfg.mode === 'rainbow3d';
             if (!is3d || !l3dDragRef.current) return;
             const dx = e.clientX - l3dDragRef.current.lastX;
             const dy = e.clientY - l3dDragRef.current.lastY;
@@ -6030,7 +6843,12 @@ export default function GeometryField() {
               cfg.mode === 'tknot3d' ||
               cfg.mode === 'lorenz3d' ||
               cfg.mode === 'rose3d' ||
-              cfg.mode === 'helix3d'
+              cfg.mode === 'helix3d' ||
+              cfg.mode === 'orbital3d' ||
+              cfg.mode === 'firework3d' ||
+              cfg.mode === 'fibonacci3d' ||
+              cfg.mode === 'yantra3d' ||
+              cfg.mode === 'rainbow3d'
                 ? 'grab'
                 : 'crosshair',
           }}
@@ -6155,42 +6973,45 @@ export default function GeometryField() {
             background: 'rgba(8,5,3,0.94)',
             backdropFilter: 'blur(18px)',
             borderTop: `1px solid ${accentMid}`,
-            padding: '8px 16px 16px',
-            overflowY: 'auto',
             display: 'flex',
             flexDirection: 'column',
-            gap: 8,
           }}
         >
-          {/* Collapse handle + tab switcher */}
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-            <div style={{ display: 'flex', gap: 6 }}>
-              {pill('Builder', tab === 'builder', () => setTab('builder'), true)}
-              {pill('Journey', tab === 'journey', () => setTab('journey'), true)}
+          {/* ── Sticky header: tabs + view toggle (never scrolls) ── */}
+          <div
+            style={{
+              flexShrink: 0,
+              padding: '8px 16px 6px',
+              borderBottom: `1px solid rgba(${pr},${pg},${pb},0.1)`,
+              display: 'flex',
+              flexDirection: 'column',
+              gap: 6,
+            }}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <div style={{ display: 'flex', gap: 6 }}>
+                {pill('Builder', tab === 'builder', () => setTab('builder'), true)}
+                {pill('Journey', tab === 'journey', () => setTab('journey'), true)}
+              </div>
+              <button
+                type="button"
+                onClick={() => setOpen(false)}
+                style={{
+                  background: accentFaint,
+                  border: `1px solid ${accentMid}`,
+                  borderRadius: 99,
+                  padding: '3px 18px',
+                  color: accent,
+                  fontFamily: 'var(--font-serif)',
+                  fontSize: 10,
+                  letterSpacing: '0.1em',
+                  cursor: 'pointer',
+                }}
+              >
+                ▼
+              </button>
             </div>
-            <button
-              type="button"
-              onClick={() => setOpen(false)}
-              style={{
-                background: accentFaint,
-                border: `1px solid ${accentMid}`,
-                borderRadius: 99,
-                padding: '3px 18px',
-                color: accent,
-                fontFamily: 'var(--font-serif)',
-                fontSize: 10,
-                letterSpacing: '0.1em',
-                cursor: 'pointer',
-              }}
-            >
-              ▼
-            </button>
-          </div>
-
-          {/* ── BUILDER TAB ── */}
-          {tab === 'builder' && (
-            <>
-              {/* View toggle header */}
+            {tab === 'builder' && (
               <div
                 style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}
               >
@@ -6231,300 +7052,330 @@ export default function GeometryField() {
                   ))}
                 </div>
               </div>
-
-              {/* Programs grid */}
-              {builderView === 'programs' && (
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 5 }}>
-                  {MODES.map(({ mode, label }) => {
-                    const isActive = cfg.mode === mode;
-                    return (
-                      <button
-                        key={mode}
-                        type="button"
-                        onClick={() => {
-                          const p = MODE_TO_PRESET[mode];
-                          if (p) applyPreset(p);
-                          else update('mode', mode);
-                          setBuilderView('sliders');
-                        }}
-                        style={{
-                          background: isActive ? accentFaint : 'transparent',
-                          border: `1px solid ${isActive ? accentMid : `rgba(${pr},${pg},${pb},0.15)`}`,
-                          borderRadius: 8,
-                          padding: '7px 6px',
-                          color: isActive ? accent : `rgba(${pr},${pg},${pb},0.6)`,
-                          fontFamily: 'var(--font-serif)',
-                          fontSize: 10,
-                          fontWeight: isActive ? 700 : 400,
-                          cursor: 'pointer',
-                          letterSpacing: '0.06em',
-                          textAlign: 'center',
-                        }}
-                      >
-                        {label}
-                      </button>
-                    );
-                  })}
-                </div>
-              )}
-
-              {/* Sliders + actions */}
-              {builderView === 'sliders' && (
-                <>
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '6px 20px' }}>
-                    {slidersFor(cfg.mode).map(({ key, label, min, max, step }) => {
-                      const val = cfg[key] as number;
+            )}
+          </div>
+          {/* ── Scrollable content ── */}
+          <div
+            style={{
+              flex: 1,
+              overflowY: 'auto',
+              padding: '8px 16px 16px',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: 8,
+            }}
+          >
+            {/* ── BUILDER TAB ── */}
+            {tab === 'builder' && (
+              <>
+                {/* Programs grid */}
+                {builderView === 'programs' && (
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 6 }}>
+                    {MODES.map(({ mode, label }, idx) => {
+                      const isActive = cfg.mode === mode;
                       return (
-                        <div key={key}>
-                          <div
+                        <button
+                          key={mode}
+                          type="button"
+                          onClick={() => {
+                            const p = MODE_TO_PRESET[mode];
+                            if (p) applyPreset(p);
+                            else update('mode', mode);
+                          }}
+                          style={{
+                            background: isActive ? accentFaint : 'transparent',
+                            border: `1px solid ${isActive ? accentMid : `rgba(${pr},${pg},${pb},0.15)`}`,
+                            borderRadius: 8,
+                            padding: '9px 6px 7px',
+                            color: isActive ? accent : `rgba(${pr},${pg},${pb},0.6)`,
+                            fontFamily: 'var(--font-serif)',
+                            cursor: 'pointer',
+                            textAlign: 'center',
+                            display: 'flex',
+                            flexDirection: 'column',
+                            alignItems: 'center',
+                            gap: 2,
+                          }}
+                        >
+                          <span style={{ fontSize: 8, opacity: 0.45, letterSpacing: '0.08em' }}>
+                            {String(idx + 1).padStart(2, '0')}
+                          </span>
+                          <span
                             style={{
-                              display: 'flex',
-                              justifyContent: 'space-between',
-                              marginBottom: 2,
+                              fontSize: 11,
+                              fontWeight: isActive ? 700 : 400,
+                              letterSpacing: '0.05em',
                             }}
                           >
-                            <span
-                              style={{
-                                fontFamily: 'var(--font-serif)',
-                                fontSize: 9,
-                                color: `rgba(${pr},${pg},${pb},0.6)`,
-                                letterSpacing: '0.1em',
-                                textTransform: 'uppercase',
-                              }}
-                            >
-                              {label}
-                            </span>
-                            <span
-                              style={{
-                                fontFamily: 'var(--font-serif)',
-                                fontSize: 9,
-                                color: accent,
-                              }}
-                            >
-                              {step < 1 ? val.toFixed(2) : Math.round(val)}
-                            </span>
-                          </div>
-                          <input
-                            type="range"
-                            min={min}
-                            max={max}
-                            step={step}
-                            value={val}
-                            onChange={(e) => update(key as keyof Cfg, parseFloat(e.target.value))}
-                            style={{ width: '100%', accentColor: accent, cursor: 'pointer' }}
-                          />
-                        </div>
+                            {label}
+                          </span>
+                        </button>
                       );
                     })}
                   </div>
-
-                  <div
-                    style={{ display: 'flex', gap: 6, justifyContent: 'center', flexWrap: 'wrap' }}
-                  >
-                    {(
-                      [
-                        ['Randomize', handleRandomize],
-                        ['Save', handleSave],
-                        ['Reset', () => applyPreset('Calm Field')],
-                        ['Fullscreen', handleFullscreen],
-                      ] as [string, () => void][]
-                    ).map(([label, fn]) => (
-                      <button
-                        key={label}
-                        type="button"
-                        onClick={fn}
-                        style={{
-                          background: accentFaint,
-                          border: `1px solid ${accentMid}`,
-                          borderRadius: 99,
-                          padding: '5px 14px',
-                          color: accent,
-                          fontFamily: 'var(--font-serif)',
-                          fontSize: 10,
-                          cursor: 'pointer',
-                        }}
-                      >
-                        {label}
-                      </button>
-                    ))}
-                  </div>
-                </>
-              )}
-            </>
-          )}
-
-          {/* ── JOURNEY TAB ── */}
-          {tab === 'journey' && (
-            <>
-              {/* Journey selection */}
-              <div style={{ display: 'flex', gap: 6, overflowX: 'auto', scrollbarWidth: 'none' }}>
-                {JOURNEYS.map((j) =>
-                  pill(`${j.icon} ${j.name}`, journeyId === j.id, () => {
-                    setJourneyId(j.id);
-                    journeyIdRef.current = j.id;
-                    if (journeyRunning) {
-                      journeyStartRef.current = performance.now();
-                      phaseInfoRef.current = { phaseIdx: 0, phaseProgress: 0 };
-                    }
-                  }),
                 )}
-              </div>
 
-              {/* Journey description */}
-              <p
-                style={{
-                  fontFamily: 'var(--font-serif)',
-                  fontSize: 11,
-                  color: `rgba(${pr},${pg},${pb},0.55)`,
-                  fontStyle: 'italic',
-                  lineHeight: 1.5,
-                }}
-              >
-                {activeJourney?.desc}
-              </p>
-
-              {/* Phase list */}
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-                <div
-                  style={{
-                    fontFamily: 'var(--font-serif)',
-                    fontSize: 9,
-                    color: `rgba(${pr},${pg},${pb},0.4)`,
-                    letterSpacing: '0.12em',
-                    textTransform: 'uppercase',
-                    marginBottom: 2,
-                  }}
-                >
-                  Phases — {Math.floor(totalJourneyDur / 60)}m{Math.round(totalJourneyDur % 60)}s
-                  total
-                </div>
-                {activeJourney?.stages.map((stage, i) => {
-                  const isActive = journeyRunning && journeyPhaseInfo.phaseIdx === i;
-                  const prog = isActive ? journeyPhaseInfo.phaseProgress : 0;
-                  return (
+                {/* Sliders + actions */}
+                {builderView === 'sliders' && (
+                  <>
                     <div
-                      key={i}
-                      onClick={() => journeyRunning && skipToPhase(i)}
+                      style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '6px 20px' }}
+                    >
+                      {slidersFor(cfg.mode).map(({ key, label, min, max, step }) => {
+                        const val = cfg[key] as number;
+                        return (
+                          <div key={key}>
+                            <div
+                              style={{
+                                display: 'flex',
+                                justifyContent: 'space-between',
+                                marginBottom: 2,
+                              }}
+                            >
+                              <span
+                                style={{
+                                  fontFamily: 'var(--font-serif)',
+                                  fontSize: 9,
+                                  color: `rgba(${pr},${pg},${pb},0.6)`,
+                                  letterSpacing: '0.1em',
+                                  textTransform: 'uppercase',
+                                }}
+                              >
+                                {label}
+                              </span>
+                              <span
+                                style={{
+                                  fontFamily: 'var(--font-serif)',
+                                  fontSize: 9,
+                                  color: accent,
+                                }}
+                              >
+                                {step < 1 ? val.toFixed(2) : Math.round(val)}
+                              </span>
+                            </div>
+                            <input
+                              type="range"
+                              min={min}
+                              max={max}
+                              step={step}
+                              value={val}
+                              onChange={(e) => update(key as keyof Cfg, parseFloat(e.target.value))}
+                              style={{ width: '100%', accentColor: accent, cursor: 'pointer' }}
+                            />
+                          </div>
+                        );
+                      })}
+                    </div>
+
+                    {/* Colour bar — horizontal scrollable squares */}
+                    <div
                       style={{
                         display: 'flex',
-                        alignItems: 'center',
-                        gap: 8,
-                        padding: '5px 8px',
-                        borderRadius: 6,
-                        background: isActive ? accentFaint : 'transparent',
-                        border: `1px solid ${isActive ? accentMid : 'rgba(255,255,255,0.05)'}`,
-                        position: 'relative',
-                        overflow: 'hidden',
-                        cursor: journeyRunning ? 'pointer' : 'default',
+                        gap: 3,
+                        overflowX: 'auto',
+                        scrollbarWidth: 'none',
+                        paddingBottom: 2,
                       }}
                     >
-                      {isActive && (
-                        <div
-                          style={{
-                            position: 'absolute',
-                            left: 0,
-                            top: 0,
-                            bottom: 0,
-                            width: `${prog * 100}%`,
-                            background: `rgba(${pr},${pg},${pb},0.08)`,
-                            transition: 'width 0.5s linear',
-                          }}
-                        />
-                      )}
-                      <span
-                        style={{
-                          fontFamily: 'var(--font-serif)',
-                          fontSize: 9,
-                          color: accent,
-                          opacity: 0.5,
-                          flexShrink: 0,
-                        }}
-                      >
-                        {i + 1}
-                      </span>
-                      <span
-                        style={{
-                          fontFamily: 'var(--font-serif)',
-                          fontSize: 10,
-                          color: isActive
-                            ? `rgb(${pr},${pg},${pb})`
-                            : `rgba(${pr},${pg},${pb},0.5)`,
-                          flex: 1,
-                          textTransform: 'capitalize',
-                        }}
-                      >
-                        {stage.mode} · {stage.preset}
-                      </span>
-                      <span
-                        style={{
-                          fontFamily: 'var(--font-serif)',
-                          fontSize: 9,
-                          color: `rgba(${pr},${pg},${pb},0.35)`,
-                          flexShrink: 0,
-                        }}
-                      >
-                        {stage.duration}s
-                      </span>
-                      {isActive && <span style={{ fontSize: 8, color: accent }}>▶</span>}
+                      {PAL_SORTED.map(([name, p]) => {
+                        const [cr, cg, cb] = p.rgb;
+                        const isActive = cfg.preset === name;
+                        return (
+                          <button
+                            key={name}
+                            type="button"
+                            title={name}
+                            onClick={() => update('preset', name)}
+                            style={{
+                              width: 18,
+                              height: 18,
+                              flexShrink: 0,
+                              borderRadius: 3,
+                              background: `rgb(${cr},${cg},${cb})`,
+                              border: isActive
+                                ? `2px solid rgba(255,255,255,0.85)`
+                                : '1px solid rgba(255,255,255,0.1)',
+                              boxShadow: isActive
+                                ? `0 0 6px 2px rgba(${cr},${cg},${cb},0.6)`
+                                : 'none',
+                              cursor: 'pointer',
+                              padding: 0,
+                              outline: 'none',
+                            }}
+                          />
+                        );
+                      })}
                     </div>
-                  );
-                })}
-              </div>
 
-              {/* Play / Stop */}
-              <div style={{ display: 'flex', gap: 8, justifyContent: 'center', marginTop: 4 }}>
-                {!journeyRunning ? (
-                  <button
-                    type="button"
-                    onClick={() => startJourney(journeyId)}
+                    <div
+                      style={{
+                        display: 'flex',
+                        gap: 6,
+                        justifyContent: 'center',
+                        flexWrap: 'wrap',
+                      }}
+                    >
+                      {(
+                        [
+                          ['Randomize', handleRandomize],
+                          ['Save', handleSave],
+                          ['Reset', () => applyPreset('Calm Field')],
+                          ['Fullscreen', handleFullscreen],
+                        ] as [string, () => void][]
+                      ).map(([label, fn]) => (
+                        <button
+                          key={label}
+                          type="button"
+                          onClick={fn}
+                          style={{
+                            background: accentFaint,
+                            border: `1px solid ${accentMid}`,
+                            borderRadius: 99,
+                            padding: '5px 14px',
+                            color: accent,
+                            fontFamily: 'var(--font-serif)',
+                            fontSize: 10,
+                            cursor: 'pointer',
+                          }}
+                        >
+                          {label}
+                        </button>
+                      ))}
+                    </div>
+                  </>
+                )}
+              </>
+            )}
+
+            {/* ── JOURNEY TAB ── */}
+            {tab === 'journey' && (
+              <>
+                {/* Journey selection */}
+                <div style={{ display: 'flex', gap: 6, overflowX: 'auto', scrollbarWidth: 'none' }}>
+                  {JOURNEYS.map((j) =>
+                    pill(`${j.icon} ${j.name}`, journeyId === j.id, () => {
+                      setJourneyId(j.id);
+                      journeyIdRef.current = j.id;
+                      if (journeyRunning) {
+                        journeyStartRef.current = performance.now();
+                        phaseInfoRef.current = { phaseIdx: 0, phaseProgress: 0 };
+                      }
+                    }),
+                  )}
+                </div>
+
+                {/* Journey description */}
+                <p
+                  style={{
+                    fontFamily: 'var(--font-serif)',
+                    fontSize: 11,
+                    color: `rgba(${pr},${pg},${pb},0.55)`,
+                    fontStyle: 'italic',
+                    lineHeight: 1.5,
+                  }}
+                >
+                  {activeJourney?.desc}
+                </p>
+
+                {/* Phase list */}
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                  <div
                     style={{
-                      background: accent,
-                      border: 'none',
-                      borderRadius: 99,
-                      padding: '8px 32px',
-                      color: '#000',
                       fontFamily: 'var(--font-serif)',
-                      fontSize: 12,
-                      fontWeight: 700,
-                      letterSpacing: '0.1em',
-                      cursor: 'pointer',
+                      fontSize: 9,
+                      color: `rgba(${pr},${pg},${pb},0.4)`,
+                      letterSpacing: '0.12em',
+                      textTransform: 'uppercase',
+                      marginBottom: 2,
                     }}
                   >
-                    ▶ Start Journey
-                  </button>
-                ) : (
-                  <>
+                    Phases — {Math.floor(totalJourneyDur / 60)}m{Math.round(totalJourneyDur % 60)}s
+                    total
+                  </div>
+                  {activeJourney?.stages.map((stage, i) => {
+                    const isActive = journeyRunning && journeyPhaseInfo.phaseIdx === i;
+                    const prog = isActive ? journeyPhaseInfo.phaseProgress : 0;
+                    return (
+                      <div
+                        key={i}
+                        onClick={() => journeyRunning && skipToPhase(i)}
+                        style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: 8,
+                          padding: '5px 8px',
+                          borderRadius: 6,
+                          background: isActive ? accentFaint : 'transparent',
+                          border: `1px solid ${isActive ? accentMid : 'rgba(255,255,255,0.05)'}`,
+                          position: 'relative',
+                          overflow: 'hidden',
+                          cursor: journeyRunning ? 'pointer' : 'default',
+                        }}
+                      >
+                        {isActive && (
+                          <div
+                            style={{
+                              position: 'absolute',
+                              left: 0,
+                              top: 0,
+                              bottom: 0,
+                              width: `${prog * 100}%`,
+                              background: `rgba(${pr},${pg},${pb},0.08)`,
+                              transition: 'width 0.5s linear',
+                            }}
+                          />
+                        )}
+                        <span
+                          style={{
+                            fontFamily: 'var(--font-serif)',
+                            fontSize: 9,
+                            color: accent,
+                            opacity: 0.5,
+                            flexShrink: 0,
+                          }}
+                        >
+                          {i + 1}
+                        </span>
+                        <span
+                          style={{
+                            fontFamily: 'var(--font-serif)',
+                            fontSize: 10,
+                            color: isActive
+                              ? `rgb(${pr},${pg},${pb})`
+                              : `rgba(${pr},${pg},${pb},0.5)`,
+                            flex: 1,
+                            textTransform: 'capitalize',
+                          }}
+                        >
+                          {stage.mode} · {stage.preset}
+                        </span>
+                        <span
+                          style={{
+                            fontFamily: 'var(--font-serif)',
+                            fontSize: 9,
+                            color: `rgba(${pr},${pg},${pb},0.35)`,
+                            flexShrink: 0,
+                          }}
+                        >
+                          {stage.duration}s
+                        </span>
+                        {isActive && <span style={{ fontSize: 8, color: accent }}>▶</span>}
+                      </div>
+                    );
+                  })}
+                </div>
+
+                {/* Play / Stop */}
+                <div style={{ display: 'flex', gap: 8, justifyContent: 'center', marginTop: 4 }}>
+                  {!journeyRunning ? (
                     <button
                       type="button"
-                      onClick={stopJourney}
-                      style={{
-                        background: accentFaint,
-                        border: `1px solid ${accentMid}`,
-                        borderRadius: 99,
-                        padding: '8px 20px',
-                        color: accent,
-                        fontFamily: 'var(--font-serif)',
-                        fontSize: 12,
-                        fontWeight: 700,
-                        letterSpacing: '0.1em',
-                        cursor: 'pointer',
-                      }}
-                    >
-                      ◼ Stop
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        const jData = JOURNEYS[journeyIdRef.current - 1];
-                        if (!jData) return;
-                        const next = (journeyPhaseInfo.phaseIdx + 1) % jData.stages.length;
-                        skipToPhase(next);
-                      }}
+                      onClick={() => startJourney(journeyId)}
                       style={{
                         background: accent,
                         border: 'none',
                         borderRadius: 99,
-                        padding: '8px 20px',
+                        padding: '8px 32px',
                         color: '#000',
                         fontFamily: 'var(--font-serif)',
                         fontSize: 12,
@@ -6533,29 +7384,73 @@ export default function GeometryField() {
                         cursor: 'pointer',
                       }}
                     >
-                      ▶▶ Next
+                      ▶ Start Journey
                     </button>
-                  </>
-                )}
-                <button
-                  type="button"
-                  onClick={handleFullscreen}
-                  style={{
-                    background: accentFaint,
-                    border: `1px solid ${accentMid}`,
-                    borderRadius: 99,
-                    padding: '8px 16px',
-                    color: accent,
-                    fontFamily: 'var(--font-serif)',
-                    fontSize: 11,
-                    cursor: 'pointer',
-                  }}
-                >
-                  Fullscreen
-                </button>
-              </div>
-            </>
-          )}
+                  ) : (
+                    <>
+                      <button
+                        type="button"
+                        onClick={stopJourney}
+                        style={{
+                          background: accentFaint,
+                          border: `1px solid ${accentMid}`,
+                          borderRadius: 99,
+                          padding: '8px 20px',
+                          color: accent,
+                          fontFamily: 'var(--font-serif)',
+                          fontSize: 12,
+                          fontWeight: 700,
+                          letterSpacing: '0.1em',
+                          cursor: 'pointer',
+                        }}
+                      >
+                        ◼ Stop
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const jData = JOURNEYS[journeyIdRef.current - 1];
+                          if (!jData) return;
+                          const next = (journeyPhaseInfo.phaseIdx + 1) % jData.stages.length;
+                          skipToPhase(next);
+                        }}
+                        style={{
+                          background: accent,
+                          border: 'none',
+                          borderRadius: 99,
+                          padding: '8px 20px',
+                          color: '#000',
+                          fontFamily: 'var(--font-serif)',
+                          fontSize: 12,
+                          fontWeight: 700,
+                          letterSpacing: '0.1em',
+                          cursor: 'pointer',
+                        }}
+                      >
+                        ▶▶ Next
+                      </button>
+                    </>
+                  )}
+                  <button
+                    type="button"
+                    onClick={handleFullscreen}
+                    style={{
+                      background: accentFaint,
+                      border: `1px solid ${accentMid}`,
+                      borderRadius: 99,
+                      padding: '8px 16px',
+                      color: accent,
+                      fontFamily: 'var(--font-serif)',
+                      fontSize: 11,
+                      cursor: 'pointer',
+                    }}
+                  >
+                    Fullscreen
+                  </button>
+                </div>
+              </>
+            )}
+          </div>
         </div>
       )}
     </div>

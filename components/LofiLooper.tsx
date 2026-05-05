@@ -268,6 +268,61 @@ const BASS_TYPES: BassType[] = [
   { id: 'funk', label: 'Funk', color: '#D06040', play: bassFunk },
 ];
 
+// ── Rhodes synthesis: two detuned triangles for warm electric-piano feel ──
+function playRhodes(ctx: AudioContext, dest: AudioNode, t: number, freq: number, v: number) {
+  const o1 = ctx.createOscillator();
+  o1.type = 'triangle';
+  o1.frequency.value = freq;
+  o1.detune.value = -7;
+  const o2 = ctx.createOscillator();
+  o2.type = 'triangle';
+  o2.frequency.value = freq;
+  o2.detune.value = 7;
+  const g = ctx.createGain();
+  g.gain.setValueAtTime(0, t);
+  g.gain.linearRampToValueAtTime(v * 0.18, t + 0.012);
+  g.gain.exponentialRampToValueAtTime(0.001, t + 0.7);
+  o1.connect(g);
+  o2.connect(g);
+  g.connect(dest);
+  o1.start(t);
+  o2.start(t);
+  o1.stop(t + 0.75);
+  o2.stop(t + 0.75);
+}
+
+// ── Lo-fi jazz chord voicings ──
+interface LofiChord {
+  name: string;
+  freqs: number[];
+  color: string;
+}
+
+const LOFI_CHORDS: LofiChord[] = [
+  { name: 'Cmaj7', freqs: [261.63, 329.63, 392.0, 493.88], color: '#C4A060' },
+  { name: 'Cmin7', freqs: [261.63, 311.13, 392.0, 466.16], color: '#9B6BA0' },
+  { name: 'Fmaj7', freqs: [174.61, 220.0, 261.63, 329.63], color: '#C4A060' },
+  { name: 'Dmin9', freqs: [146.83, 174.61, 220.0, 261.63, 329.63], color: '#88B0C8' },
+  { name: 'Amin7', freqs: [220.0, 261.63, 329.63, 392.0], color: '#D4805A' },
+  { name: 'Emin7', freqs: [164.81, 196.0, 246.94, 293.66], color: '#7AAA58' },
+  { name: 'G7', freqs: [196.0, 246.94, 293.66, 349.23], color: '#D4805A' },
+  { name: 'Bbmaj7', freqs: [233.08, 293.66, 349.23, 440.0], color: '#9B6BA0' },
+  { name: 'Ebmaj7', freqs: [155.56, 196.0, 233.08, 293.66], color: '#88B0C8' },
+  { name: 'Dmin7', freqs: [146.83, 174.61, 220.0, 261.63], color: '#7AAA58' },
+];
+
+function playChordVoicing(
+  ctx: AudioContext,
+  dest: AudioNode,
+  t: number,
+  chordIdx: number,
+  v: number,
+) {
+  const chord = LOFI_CHORDS[chordIdx];
+  if (!chord) return;
+  for (const freq of chord.freqs) playRhodes(ctx, dest, t, freq, v);
+}
+
 // ── Melody synthesis ──
 function playMelody(
   ctx: AudioContext,
@@ -314,7 +369,7 @@ const DRUMS: {
   { id: 'shaker', label: 'Shaker', color: '#A0907A', play: playShaker },
 ];
 
-type Layer = 'beat' | 'bass' | 'melody';
+type Layer = 'beat' | 'bass' | 'melody' | 'chords';
 
 // ── Lazy Genius Arrangements ──
 interface Arrangement {
@@ -326,6 +381,7 @@ interface Arrangement {
   bass: (number | null)[];
   melody: (number | null)[];
   melodyInst: string;
+  chords?: (number | null)[];
 }
 
 const EMPTY_BEAT: Record<DrumId, boolean[]> = {
@@ -388,6 +444,8 @@ const ARRANGEMENTS: Arrangement[] = [
       null,
     ],
     melodyInst: 'piano',
+    // Cmaj7 → Fmaj7 → Amin7 → G7
+    chords: [0, null, null, null, 2, null, null, null, 4, null, null, null, 6, null, null, null],
   },
   {
     id: 'latenight',
@@ -438,6 +496,8 @@ const ARRANGEMENTS: Arrangement[] = [
       null,
     ],
     melodyInst: 'pad',
+    // Cmin7 → Bbmaj7 → Ebmaj7 → Dmin7
+    chords: [1, null, null, null, 7, null, null, null, 8, null, null, null, 9, null, null, null],
   },
   {
     id: 'coffee',
@@ -488,6 +548,8 @@ const ARRANGEMENTS: Arrangement[] = [
       null,
     ],
     melodyInst: 'piano',
+    // Fmaj7 → Dmin9 → Amin7 → Cmaj7
+    chords: [2, null, null, null, 3, null, null, null, 4, null, null, null, 0, null, null, null],
   },
   {
     id: 'rainy',
@@ -538,6 +600,8 @@ const ARRANGEMENTS: Arrangement[] = [
       null,
     ],
     melodyInst: 'flute',
+    // Amin7 → Fmaj7 → Cmaj7 → Emin7
+    chords: [4, null, null, null, 2, null, null, null, 0, null, null, null, 5, null, null, null],
   },
   {
     id: 'groovy',
@@ -588,6 +652,8 @@ const ARRANGEMENTS: Arrangement[] = [
       null,
     ],
     melodyInst: 'lead',
+    // Dmin9 → G7 → Cmaj7 → Amin7
+    chords: [3, null, null, null, 6, null, null, null, 0, null, null, null, 4, null, null, null],
   },
   {
     id: 'deepfocus',
@@ -638,6 +704,25 @@ const ARRANGEMENTS: Arrangement[] = [
       null,
     ],
     melodyInst: 'pad',
+    // Ebmaj7 long → Cmin7 long (sparse, meditative)
+    chords: [
+      8,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      1,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+    ],
   },
   // ── 6 new presets ──
   {
@@ -996,6 +1081,7 @@ interface SavedState {
   beat: Record<DrumId, boolean[]>;
   bass: (number | null)[];
   melody: (number | null)[];
+  chords: (number | null)[];
   bpm: number;
   activePreset: string | null;
   swing: number;
@@ -1007,6 +1093,10 @@ interface SavedState {
   muteBeat: boolean;
   muteBass: boolean;
   muteMelody: boolean;
+  muteChords: boolean;
+  vinylOn: boolean;
+  rainOn: boolean;
+  activeChord: number;
 }
 
 function loadSavedState(): Partial<SavedState> | null {
@@ -1034,6 +1124,11 @@ export default function LofiLooper() {
   const [reverbMix, setReverbMix] = useState(0.15); // 0-1
   const [activePreset, setActivePreset] = useState<string | null>(null);
   const [momentStatus, setMomentStatus] = useState<SaveStatus>(null);
+  const [vinylOn, setVinylOn] = useState(false);
+  const [rainOn, setRainOn] = useState(false);
+  const [chords, setChords] = useState<(number | null)[]>(Array(STEPS).fill(null));
+  const [muteChords, setMuteChords] = useState(false);
+  const [activeChord, setActiveChord] = useState(0);
 
   /**
    * Save the current Lofi loop to the user's Notebook. Captures
@@ -1082,14 +1177,23 @@ export default function LofiLooper() {
   bassRef.current = bass;
   const melodyRef = useRef(melody);
   melodyRef.current = melody;
-  const mutesRef = useRef({ beat: muteBeat, bass: muteBass, melody: muteMelody });
-  mutesRef.current = { beat: muteBeat, bass: muteBass, melody: muteMelody };
+  const mutesRef = useRef({
+    beat: muteBeat,
+    bass: muteBass,
+    melody: muteMelody,
+    chords: muteChords,
+  });
+  mutesRef.current = { beat: muteBeat, bass: muteBass, melody: muteMelody, chords: muteChords };
   const melodyInstRef = useRef(melodyInst);
   melodyInstRef.current = melodyInst;
   const bassTypeRef = useRef(bassType);
   bassTypeRef.current = bassType;
   const swingRef = useRef(swing);
   swingRef.current = swing;
+  const chordsRef = useRef(chords);
+  chordsRef.current = chords;
+  const vinylSrcRef = useRef<AudioBufferSourceNode | null>(null);
+  const rainSrcRef = useRef<AudioBufferSourceNode | null>(null);
 
   // Master effects chain refs
   const masterGainRef = useRef<GainNode | null>(null);
@@ -1118,6 +1222,11 @@ export default function LofiLooper() {
     if (saved.muteBeat !== undefined) setMuteBeat(saved.muteBeat);
     if (saved.muteBass !== undefined) setMuteBass(saved.muteBass);
     if (saved.muteMelody !== undefined) setMuteMelody(saved.muteMelody);
+    if (saved.chords) setChords(saved.chords);
+    if (saved.muteChords !== undefined) setMuteChords(saved.muteChords);
+    if (saved.vinylOn !== undefined) setVinylOn(saved.vinylOn);
+    if (saved.rainOn !== undefined) setRainOn(saved.rainOn);
+    if (saved.activeChord !== undefined) setActiveChord(saved.activeChord);
   }, []);
 
   // ── Save state on any change ──
@@ -1126,6 +1235,7 @@ export default function LofiLooper() {
       beat,
       bass,
       melody,
+      chords,
       bpm,
       activePreset,
       swing,
@@ -1137,6 +1247,10 @@ export default function LofiLooper() {
       muteBeat,
       muteBass,
       muteMelody,
+      muteChords,
+      vinylOn,
+      rainOn,
+      activeChord,
     };
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
@@ -1147,6 +1261,7 @@ export default function LofiLooper() {
     beat,
     bass,
     melody,
+    chords,
     bpm,
     activePreset,
     swing,
@@ -1158,6 +1273,10 @@ export default function LofiLooper() {
     muteBeat,
     muteBass,
     muteMelody,
+    muteChords,
+    vinylOn,
+    rainOn,
+    activeChord,
   ]);
 
   function getCtx() {
@@ -1217,6 +1336,84 @@ export default function LofiLooper() {
     if (wetGainRef.current) wetGainRef.current.gain.value = reverbMix;
   }, [reverbMix]);
 
+  function startVinyl() {
+    if (vinylSrcRef.current) return;
+    const ctx = getCtx();
+    const dest = ensureEffectsChain(ctx);
+    const len = ctx.sampleRate * 3;
+    const buf = ctx.createBuffer(1, len, ctx.sampleRate);
+    const d = buf.getChannelData(0);
+    for (let i = 0; i < len; i++) {
+      d[i] =
+        Math.random() < 0.0004 ? (Math.random() * 2 - 1) * 0.7 : (Math.random() * 2 - 1) * 0.009;
+    }
+    const src = ctx.createBufferSource();
+    src.buffer = buf;
+    src.loop = true;
+    const hpf = ctx.createBiquadFilter();
+    hpf.type = 'highpass';
+    hpf.frequency.value = 1600;
+    const g = ctx.createGain();
+    g.gain.value = 0.85;
+    src.connect(hpf);
+    hpf.connect(g);
+    g.connect(dest);
+    src.start();
+    vinylSrcRef.current = src;
+  }
+
+  function stopVinyl() {
+    try {
+      vinylSrcRef.current?.stop();
+    } catch {}
+    vinylSrcRef.current = null;
+  }
+
+  function startRain() {
+    if (rainSrcRef.current) return;
+    const ctx = getCtx();
+    const dest = ensureEffectsChain(ctx);
+    const len = ctx.sampleRate * 4;
+    const buf = ctx.createBuffer(2, len, ctx.sampleRate);
+    for (let ch = 0; ch < 2; ch++) {
+      const d = buf.getChannelData(ch);
+      for (let i = 0; i < len; i++) d[i] = Math.random() * 2 - 1;
+    }
+    const src = ctx.createBufferSource();
+    src.buffer = buf;
+    src.loop = true;
+    const lpf = ctx.createBiquadFilter();
+    lpf.type = 'lowpass';
+    lpf.frequency.value = 3200;
+    lpf.Q.value = 0.5;
+    const g = ctx.createGain();
+    g.gain.value = 0.038;
+    src.connect(lpf);
+    lpf.connect(g);
+    g.connect(dest);
+    src.start();
+    rainSrcRef.current = src;
+  }
+
+  function stopRain() {
+    try {
+      rainSrcRef.current?.stop();
+    } catch {}
+    rainSrcRef.current = null;
+  }
+
+  // biome-ignore lint/correctness/useExhaustiveDependencies: startVinyl/stopVinyl use refs
+  useEffect(() => {
+    if (playing && vinylOn) startVinyl();
+    else stopVinyl();
+  }, [playing, vinylOn]);
+
+  // biome-ignore lint/correctness/useExhaustiveDependencies: startRain/stopRain use refs
+  useEffect(() => {
+    if (playing && rainOn) startRain();
+    else stopRain();
+  }, [playing, rainOn]);
+
   // biome-ignore lint/correctness/useExhaustiveDependencies: getCtx and ensureEffectsChain use refs
   const scheduleLoop = useCallback(() => {
     const ctx = getCtx();
@@ -1261,6 +1458,11 @@ export default function LofiLooper() {
         if (!m.melody) {
           const freq = melodyRef.current[step];
           if (freq) playMelody(ctx, dest, now, freq, volume, melodyInstRef.current);
+        }
+        // Chords
+        if (!m.chords) {
+          const ci = chordsRef.current[step];
+          if (ci !== null) playChordVoicing(ctx, dest, now, ci, volume * 0.7);
         }
         setCurrentStep(step);
       }, delayMs);
@@ -1307,6 +1509,12 @@ export default function LofiLooper() {
   useEffect(
     () => () => {
       for (const t of timerRef.current) clearTimeout(t);
+      try {
+        vinylSrcRef.current?.stop();
+      } catch {}
+      try {
+        rainSrcRef.current?.stop();
+      } catch {}
       if (ctxRef.current) ctxRef.current.close();
     },
     [],
@@ -1316,18 +1524,21 @@ export default function LofiLooper() {
     setBeat({ ...arr.beat });
     setBass([...arr.bass]);
     setMelody([...arr.melody]);
+    setChords([...(arr.chords ?? Array(STEPS).fill(null))]);
     setBpm(arr.bpm);
     setMelodyInst(arr.melodyInst);
     setActivePreset(arr.id);
     setMuteBeat(false);
     setMuteBass(false);
     setMuteMelody(false);
+    setMuteChords(false);
   }
 
   function clearAll() {
     setBeat({ ...EMPTY_BEAT });
     setBass(Array(STEPS).fill(null));
     setMelody(Array(STEPS).fill(null));
+    setChords(Array(STEPS).fill(null));
     setActivePreset(null);
   }
 
@@ -1376,9 +1587,18 @@ export default function LofiLooper() {
     setActivePreset(null);
   }
 
+  function randomizeChords() {
+    const next: (number | null)[] = Array.from({ length: STEPS }, (_, i) =>
+      i % 4 === 0 ? Math.floor(Math.random() * LOFI_CHORDS.length) : null,
+    );
+    setChords(next);
+    setActivePreset(null);
+  }
+
   function randomizeActive() {
     if (activeLayer === 'beat') randomizeBeat();
     else if (activeLayer === 'bass') randomizeBass();
+    else if (activeLayer === 'chords') randomizeChords();
     else randomizeMelody();
   }
 
@@ -1502,7 +1722,7 @@ export default function LofiLooper() {
       {/* ── LAYER TABS ── */}
       <div className="flex items-center justify-between">
         <div className="flex gap-1.5">
-          {(['beat', 'bass', 'melody'] as const).map((l) => (
+          {(['beat', 'bass', 'melody', 'chords'] as const).map((l) => (
             <button
               key={l}
               type="button"
@@ -1576,6 +1796,20 @@ export default function LofiLooper() {
             }}
           >
             M
+          </button>
+          <button
+            type="button"
+            onClick={() => setMuteChords((s) => !s)}
+            title="Mute chords"
+            className="cursor-pointer rounded-full px-1.5 py-0.5 text-[9px] uppercase tracking-wider"
+            style={{
+              color: '#C4A060',
+              opacity: muteChords ? 0.25 : 0.8,
+              background: 'none',
+              border: 'none',
+            }}
+          >
+            Ch
           </button>
         </div>
       </div>
@@ -1839,6 +2073,97 @@ export default function LofiLooper() {
         </div>
       )}
 
+      {/* ── CHORDS SEQUENCER ── */}
+      {activeLayer === 'chords' && (
+        <div className="space-y-2">
+          {/* Chord picker */}
+          <div className="flex flex-wrap gap-1 justify-center">
+            {LOFI_CHORDS.map((chord, idx) => (
+              <button
+                key={chord.name}
+                type="button"
+                onClick={() => setActiveChord(idx)}
+                style={{
+                  background: activeChord === idx ? `${chord.color}18` : 'transparent',
+                  border: `1px solid ${activeChord === idx ? `${chord.color}50` : '#C4A06012'}`,
+                  borderRadius: 99,
+                  padding: '3px 9px',
+                  color: activeChord === idx ? chord.color : '#8A6A4A',
+                  fontFamily: 'var(--font-serif)',
+                  fontSize: 10,
+                  fontWeight: activeChord === idx ? 700 : 500,
+                  opacity: activeChord === idx ? 1 : 0.5,
+                  cursor: 'pointer',
+                  letterSpacing: '0.05em',
+                }}
+              >
+                {chord.name}
+              </button>
+            ))}
+          </div>
+          {/* Step grid */}
+          <div className="flex gap-[2px]">
+            {Array.from({ length: STEPS }, (_, s) => {
+              const ci = chords[s];
+              const isOn = ci !== null;
+              const cur = currentStep === s;
+              const chord = isOn ? LOFI_CHORDS[ci] : null;
+              return (
+                <button
+                  key={s}
+                  type="button"
+                  onClick={() => {
+                    const next = [...chords];
+                    next[s] = isOn && ci === activeChord ? null : activeChord;
+                    setChords(next);
+                    setActivePreset(null);
+                  }}
+                  style={{
+                    flex: 1,
+                    height: 40,
+                    background: isOn
+                      ? `${chord!.color}18`
+                      : cur
+                        ? '#C4A06010'
+                        : s % 4 === 0
+                          ? '#C4A06006'
+                          : 'transparent',
+                    border: `1px solid ${isOn ? `${chord!.color}45` : 'transparent'}`,
+                    borderRadius: 4,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    cursor: 'pointer',
+                    color: chord?.color ?? '#C4A060',
+                    fontFamily: 'var(--font-serif)',
+                    fontSize: 7.5,
+                    fontWeight: 700,
+                    letterSpacing: '0.03em',
+                    boxShadow: cur && isOn ? `0 0 8px ${chord!.color}40` : 'none',
+                  }}
+                >
+                  {chord?.name ?? ''}
+                </button>
+              );
+            })}
+          </div>
+          {/* Playhead */}
+          <div className="flex gap-[2px]">
+            {Array.from({ length: STEPS }, (_, s) => (
+              <div
+                key={s}
+                className="flex-1 rounded-full transition-all"
+                style={{
+                  height: 3,
+                  background: '#C4A060',
+                  opacity: currentStep === s ? 0.8 : 0.06,
+                }}
+              />
+            ))}
+          </div>
+        </div>
+      )}
+
       {/* ── TRANSPORT ── */}
       <div className="flex items-center justify-center gap-4">
         <button
@@ -1919,6 +2244,50 @@ export default function LofiLooper() {
             />
           ))}
         </div>
+      </div>
+
+      {/* ── Ambient toggles: vinyl crackle + rain ── */}
+      <div className="flex items-center justify-center gap-3">
+        <button
+          type="button"
+          onClick={() => setVinylOn((v) => !v)}
+          style={{
+            background: vinylOn ? '#C4A06015' : 'transparent',
+            border: `1px solid ${vinylOn ? '#C4A06050' : '#C4A06018'}`,
+            borderRadius: 99,
+            padding: '4px 14px',
+            color: '#C4A060',
+            fontFamily: 'var(--font-serif)',
+            fontSize: 9,
+            fontWeight: vinylOn ? 700 : 500,
+            opacity: vinylOn ? 1 : 0.38,
+            cursor: 'pointer',
+            letterSpacing: '0.12em',
+            textTransform: 'uppercase',
+          }}
+        >
+          vinyl
+        </button>
+        <button
+          type="button"
+          onClick={() => setRainOn((v) => !v)}
+          style={{
+            background: rainOn ? '#6890B015' : 'transparent',
+            border: `1px solid ${rainOn ? '#6890B050' : '#6890B018'}`,
+            borderRadius: 99,
+            padding: '4px 14px',
+            color: '#6890B0',
+            fontFamily: 'var(--font-serif)',
+            fontSize: 9,
+            fontWeight: rainOn ? 700 : 500,
+            opacity: rainOn ? 1 : 0.38,
+            cursor: 'pointer',
+            letterSpacing: '0.12em',
+            textTransform: 'uppercase',
+          }}
+        >
+          rain
+        </button>
       </div>
 
       {/* Volume */}

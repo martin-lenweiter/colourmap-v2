@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import SquareSlider from '@/components/SquareSlider';
 
 const DOING_LEVELS = [
@@ -28,11 +28,9 @@ function loadIdx(): number {
   }
 }
 
-export default function DoingStateCircle({ onDone }: { onDone?: () => void }) {
+export default function DoingStateCircle({ onDone: _onDone }: { onDone?: () => void }) {
   const [idx, setIdx] = useState(3);
-  const dragRef = useRef<{ startX: number; startIdx: number } | null>(null);
-  const idxRef = useRef(idx);
-  idxRef.current = idx;
+  const [open, setOpen] = useState(false);
 
   useEffect(() => {
     setIdx(loadIdx());
@@ -44,64 +42,107 @@ export default function DoingStateCircle({ onDone }: { onDone?: () => void }) {
     try {
       localStorage.setItem(LS_KEY, String(clamped));
     } catch {}
-  }
-
-  function onCirclePointerDown(e: React.PointerEvent<HTMLSpanElement>) {
-    e.currentTarget.setPointerCapture(e.pointerId);
-    dragRef.current = { startX: e.clientX, startIdx: idxRef.current };
-  }
-
-  function onCirclePointerMove(e: React.PointerEvent<HTMLSpanElement>) {
-    if (!dragRef.current || e.buttons !== 1) return;
-    const dx = e.clientX - dragRef.current.startX;
-    const steps = Math.round(dx / 18);
-    pick(dragRef.current.startIdx + steps);
-  }
-
-  function onCirclePointerUp() {
-    dragRef.current = null;
+    setTimeout(() => setOpen(false), 320);
   }
 
   const current = DOING_LEVELS[idx];
 
   return (
-    <div className="flex flex-col items-center gap-6 px-5 py-8">
-      {/* Big circle — draggable */}
-      <div className="flex flex-col items-center gap-3">
+    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8 }}>
+      {/* Diamond trigger + label */}
+      <button
+        type="button"
+        onClick={() => setOpen((v) => !v)}
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: 9,
+          background: 'none',
+          border: 'none',
+          cursor: 'pointer',
+          padding: '2px 0',
+        }}
+      >
         <span
-          className="block rounded-full"
-          onPointerDown={onCirclePointerDown}
-          onPointerMove={onCirclePointerMove}
-          onPointerUp={onCirclePointerUp}
           style={{
-            width: 96,
-            height: 96,
-            background: current.color,
-            opacity: 0.92,
-            boxShadow: `0 12px 32px -8px ${current.color}88`,
-            transition: 'background 0.3s, box-shadow 0.3s',
-            cursor: 'ew-resize',
-            touchAction: 'none',
-            userSelect: 'none',
+            display: 'block',
+            width: 13,
+            height: 13,
+            background: open ? current.color : '#C4A060',
+            transform: 'rotate(45deg)',
+            transition: 'background 0.3s',
+            flexShrink: 0,
           }}
         />
         <span
-          className="uppercase"
           style={{
             fontFamily: 'var(--font-serif)',
-            fontSize: '15px',
+            fontSize: 13,
             fontWeight: 700,
-            color: '#3A2010',
-            letterSpacing: '0.18em',
+            color: open ? current.color : '#C4A060',
+            letterSpacing: '0.14em',
+            textTransform: 'uppercase',
             transition: 'color 0.3s',
           }}
         >
           {current.label}
         </span>
-      </div>
+      </button>
 
-      {/* Square slider */}
-      <SquareSlider colors={DOING_LEVELS.map((l) => l.color)} value={idx} onChange={pick} />
+      {/* Slider — expands on click */}
+      <div
+        style={{
+          maxHeight: open ? 60 : 0,
+          opacity: open ? 1 : 0,
+          overflow: 'hidden',
+          transition: 'max-height 0.18s ease, opacity 0.18s ease',
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          gap: 5,
+          width: '100%',
+        }}
+      >
+        <SquareSlider
+          colors={DOING_LEVELS.map((l) => l.color)}
+          value={idx}
+          onChange={pick}
+          size={16}
+          gap={5}
+        />
+        <div
+          style={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            width: '100%',
+          }}
+        >
+          <span
+            style={{
+              fontFamily: 'var(--font-serif)',
+              fontSize: 9,
+              color: DOING_LEVELS[0].color,
+              opacity: 0.45,
+              letterSpacing: '0.1em',
+              textTransform: 'uppercase',
+            }}
+          >
+            Disconnected
+          </span>
+          <span
+            style={{
+              fontFamily: 'var(--font-serif)',
+              fontSize: 9,
+              color: DOING_LEVELS[DOING_LEVELS.length - 1].color,
+              opacity: 0.45,
+              letterSpacing: '0.1em',
+              textTransform: 'uppercase',
+            }}
+          >
+            Tunnel Vision
+          </span>
+        </div>
+      </div>
     </div>
   );
 }

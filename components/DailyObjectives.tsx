@@ -115,6 +115,7 @@ export default function DailyObjectives() {
   const [slidersOpenId, setSlidersOpenId] = useState<string | null>(null);
   const [draggedTodayId, setDraggedTodayId] = useState<string | null>(null);
   const [dragOverTodayId, setDragOverTodayId] = useState<string | null>(null);
+  const [noteSpell, setNoteSpell] = useState(false);
 
   const persistTodayObjectives = (next: TodoItem[]) => {
     setTodayObjectives(next);
@@ -346,6 +347,9 @@ export default function DailyObjectives() {
                   if (e.key === 'Escape') setRenamingSection(null);
                 }}
                 autoFocus
+                spellCheck={false}
+                autoCorrect="off"
+                autoCapitalize="off"
                 className="bg-transparent text-center uppercase outline-none border-b"
                 style={{
                   color: '#C4A060',
@@ -379,6 +383,35 @@ export default function DailyObjectives() {
 
       {open && (
         <>
+          {/* Add objective — above the list */}
+          <div className="flex items-end gap-2">
+            <input
+              type="text"
+              value={todayInput}
+              onChange={(e) => setTodayInput(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') addTodayObjective();
+              }}
+              placeholder="add an objective for today..."
+              spellCheck={false}
+              autoCorrect="off"
+              autoCapitalize="off"
+              className="flex-1 border-b bg-transparent pb-1 outline-none text-center placeholder:text-[#7A5438] placeholder:opacity-40"
+              style={{
+                color: '#7a5438',
+                borderColor: '#C4A06020',
+                fontFamily: 'var(--font-handwritten)',
+                fontSize: '24px',
+                fontWeight: 700,
+              }}
+            />
+            <MicDot
+              visible={todayInput.length > 0}
+              value={todayInput}
+              onTranscript={setTodayInput}
+            />
+          </div>
+
           {/* Today objectives — drag-and-drop drop zone */}
           <div
             className="space-y-1.5 transition-all"
@@ -483,7 +516,10 @@ export default function DailyObjectives() {
                             if (e.key === 'Escape') setRenamingObjId(null);
                           }}
                           autoFocus
-                          className="flex-1 bg-transparent text-left outline-none border-b"
+                          spellCheck={false}
+                          autoCorrect="off"
+                          autoCapitalize="off"
+                          className="flex-1 bg-transparent text-center outline-none border-b"
                           style={{
                             color: '#7a5438',
                             fontFamily: 'var(--font-handwritten)',
@@ -500,7 +536,7 @@ export default function DailyObjectives() {
                             setRenamingObjId(o.id);
                             setRenameObjValue(o.text);
                           }}
-                          className="flex-1 cursor-pointer bg-transparent text-left"
+                          className="flex-1 cursor-pointer bg-transparent text-center"
                           style={{
                             color: o.done
                               ? '#C4A060'
@@ -546,20 +582,48 @@ export default function DailyObjectives() {
                     </div>
                     {isExpanded && (
                       <>
-                        <textarea
-                          value={o.notes || ''}
-                          onChange={(e) => updateTodayNotes(o.id, e.target.value)}
-                          placeholder="advancements, next steps..."
-                          rows={2}
-                          className="ml-[60px] w-[calc(100%-3.75rem)] resize-none border-b bg-transparent pb-1 pt-0.5 outline-none placeholder:text-[#7A5438] placeholder:opacity-50 animate-in fade-in duration-150"
-                          style={{
-                            color: '#7a5438',
-                            borderColor: '#C4A06025',
-                            fontFamily: 'var(--font-handwritten)',
-                            fontSize: '17px',
-                            lineHeight: 1.4,
-                          }}
-                        />
+                        <div style={{ position: 'relative' }}>
+                          <textarea
+                            value={o.notes || ''}
+                            onChange={(e) => updateTodayNotes(o.id, e.target.value)}
+                            placeholder="advancements, next steps..."
+                            rows={2}
+                            spellCheck={noteSpell}
+                            className="ml-[60px] w-[calc(100%-3.75rem)] resize-none border-b bg-transparent pb-1 pt-0.5 outline-none placeholder:text-[#7A5438] placeholder:opacity-50 animate-in fade-in duration-150"
+                            style={{
+                              color: '#7a5438',
+                              borderColor: '#C4A06025',
+                              fontFamily: 'var(--font-handwritten)',
+                              fontSize: '17px',
+                              lineHeight: 1.4,
+                            }}
+                          />
+                          <button
+                            type="button"
+                            onClick={() => setNoteSpell((v) => !v)}
+                            title={
+                              noteSpell
+                                ? 'Spell check on — click to turn off'
+                                : 'Spell check off — click to turn on'
+                            }
+                            style={{
+                              position: 'absolute',
+                              right: 0,
+                              bottom: 6,
+                              fontFamily: 'var(--font-serif)',
+                              fontSize: 9,
+                              color: '#8A6A4A',
+                              opacity: noteSpell ? 0.65 : 0.22,
+                              background: 'none',
+                              border: 'none',
+                              cursor: 'pointer',
+                              letterSpacing: '0.08em',
+                              padding: 0,
+                            }}
+                          >
+                            abc
+                          </button>
+                        </div>
                         <div className="ml-[60px] pt-1">
                           <button
                             type="button"
@@ -788,32 +852,6 @@ export default function DailyObjectives() {
                   </div>
                 );
               })}
-
-            {/* Add objective — centered */}
-            <div className="flex items-end gap-2">
-              <input
-                type="text"
-                value={todayInput}
-                onChange={(e) => setTodayInput(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter') addTodayObjective();
-                }}
-                placeholder="add an objective for today..."
-                className="flex-1 border-b bg-transparent pb-1 outline-none text-center placeholder:text-[#7A5438] placeholder:opacity-40"
-                style={{
-                  color: '#7a5438',
-                  borderColor: '#C4A06020',
-                  fontFamily: 'var(--font-handwritten)',
-                  fontSize: '24px',
-                  fontWeight: 700,
-                }}
-              />
-              <MicDot
-                visible={todayInput.length > 0}
-                value={todayInput}
-                onTranscript={setTodayInput}
-              />
-            </div>
           </div>
 
           {/* Divider */}
@@ -998,7 +1036,7 @@ export default function DailyObjectives() {
                                 if (e.key === 'Escape') setRenamingTodoId(null);
                               }}
                               autoFocus
-                              className="flex-1 bg-transparent text-left outline-none border-b"
+                              className="flex-1 bg-transparent text-center outline-none border-b"
                               style={{
                                 color: '#7a5438',
                                 fontFamily: 'var(--font-handwritten)',
@@ -1017,7 +1055,7 @@ export default function DailyObjectives() {
                                 setRenamingTodoId(t.id);
                                 setRenameTodoValue(t.text);
                               }}
-                              className="flex-1 cursor-pointer bg-transparent text-left"
+                              className="flex-1 cursor-pointer bg-transparent text-center"
                               style={{
                                 color: t.done
                                   ? '#C4A060'
