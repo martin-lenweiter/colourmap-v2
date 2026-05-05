@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
+import SquareSlider from '@/components/SquareSlider';
 
 const BODY_LEVELS = [
   { label: 'Depleted', color: '#B89898' },
@@ -52,6 +53,7 @@ function DraggableCircle({
   onChange: (i: number) => void;
   title: string;
 }) {
+  const [dragging, setDragging] = useState(false);
   const dragRef = useRef<{ startX: number; startIdx: number } | null>(null);
   const idxRef = useRef(idx);
   idxRef.current = idx;
@@ -73,11 +75,13 @@ function DraggableCircle({
       >
         {title}
       </span>
+
       <span
         className="block rounded-full"
         onPointerDown={(e) => {
           e.currentTarget.setPointerCapture(e.pointerId);
           dragRef.current = { startX: e.clientX, startIdx: idxRef.current };
+          setDragging(true);
         }}
         onPointerMove={(e) => {
           if (!dragRef.current || e.buttons !== 1) return;
@@ -88,6 +92,7 @@ function DraggableCircle({
         }}
         onPointerUp={() => {
           dragRef.current = null;
+          setDragging(false);
         }}
         style={{
           display: 'block',
@@ -101,6 +106,7 @@ function DraggableCircle({
           userSelect: 'none',
         }}
       />
+
       <span
         style={{
           fontFamily: 'var(--font-serif)',
@@ -114,6 +120,25 @@ function DraggableCircle({
       >
         {current.label}
       </span>
+
+      {/* Slider — appears while dragging */}
+      <div
+        style={{
+          maxHeight: dragging ? 40 : 0,
+          opacity: dragging ? 1 : 0,
+          overflow: 'hidden',
+          transition: 'max-height 0.15s, opacity 0.15s',
+          pointerEvents: dragging ? 'auto' : 'none',
+        }}
+      >
+        <SquareSlider
+          colors={levels.map((l) => l.color)}
+          value={idx}
+          onChange={onChange}
+          size={16}
+          gap={5}
+        />
+      </div>
     </div>
   );
 }
@@ -154,8 +179,9 @@ export default function FeelingCircles() {
     <div
       style={{
         display: 'flex',
-        justifyContent: 'space-around',
-        alignItems: 'flex-start',
+        flexDirection: 'column',
+        alignItems: 'center',
+        gap: 24,
         padding: '12px 0 16px',
       }}
     >
