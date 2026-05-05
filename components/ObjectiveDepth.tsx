@@ -12,7 +12,7 @@ const inputStyle = {
   borderBottom: '1px solid rgba(90,60,30,0.12)',
   fontFamily: 'var(--font-handwritten)',
   fontStyle: 'italic' as const,
-  fontSize: 22,
+  fontSize: 28,
   color: '#5C3018',
   padding: '2px 0',
   outline: 'none',
@@ -21,7 +21,7 @@ const inputStyle = {
 
 const labelStyle = {
   fontFamily: 'var(--font-serif)',
-  fontSize: 13,
+  fontSize: 16,
   fontWeight: 700,
   color: '#8A6A4A',
   opacity: 0.5,
@@ -87,7 +87,7 @@ export default function ObjectiveDepth() {
         <span
           style={{
             fontFamily: 'var(--font-serif)',
-            fontSize: 10,
+            fontSize: 13,
             color: '#8A6A4A',
             opacity: open ? 0.9 : 0.45,
             letterSpacing: '0.12em',
@@ -104,7 +104,7 @@ export default function ObjectiveDepth() {
       {/* Expandable */}
       <div
         style={{
-          maxHeight: open ? 180 : 0,
+          maxHeight: open ? 240 : 0,
           opacity: open ? 1 : 0,
           overflow: 'hidden',
           transition: 'max-height 0.2s ease, opacity 0.18s ease',

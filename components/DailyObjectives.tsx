@@ -383,6 +383,35 @@ export default function DailyObjectives() {
 
       {open && (
         <>
+          {/* Add objective — above the list */}
+          <div className="flex items-end gap-2">
+            <input
+              type="text"
+              value={todayInput}
+              onChange={(e) => setTodayInput(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') addTodayObjective();
+              }}
+              placeholder="add an objective for today..."
+              spellCheck={false}
+              autoCorrect="off"
+              autoCapitalize="off"
+              className="flex-1 border-b bg-transparent pb-1 outline-none text-center placeholder:text-[#7A5438] placeholder:opacity-40"
+              style={{
+                color: '#7a5438',
+                borderColor: '#C4A06020',
+                fontFamily: 'var(--font-handwritten)',
+                fontSize: '24px',
+                fontWeight: 700,
+              }}
+            />
+            <MicDot
+              visible={todayInput.length > 0}
+              value={todayInput}
+              onTranscript={setTodayInput}
+            />
+          </div>
+
           {/* Today objectives — drag-and-drop drop zone */}
           <div
             className="space-y-1.5 transition-all"
@@ -490,7 +519,7 @@ export default function DailyObjectives() {
                           spellCheck={false}
                           autoCorrect="off"
                           autoCapitalize="off"
-                          className="flex-1 bg-transparent text-left outline-none border-b"
+                          className="flex-1 bg-transparent text-center outline-none border-b"
                           style={{
                             color: '#7a5438',
                             fontFamily: 'var(--font-handwritten)',
@@ -507,7 +536,7 @@ export default function DailyObjectives() {
                             setRenamingObjId(o.id);
                             setRenameObjValue(o.text);
                           }}
-                          className="flex-1 cursor-pointer bg-transparent text-left"
+                          className="flex-1 cursor-pointer bg-transparent text-center"
                           style={{
                             color: o.done
                               ? '#C4A060'
@@ -823,35 +852,6 @@ export default function DailyObjectives() {
                   </div>
                 );
               })}
-
-            {/* Add objective — centered */}
-            <div className="flex items-end gap-2">
-              <input
-                type="text"
-                value={todayInput}
-                onChange={(e) => setTodayInput(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter') addTodayObjective();
-                }}
-                placeholder="add an objective for today..."
-                spellCheck={false}
-                autoCorrect="off"
-                autoCapitalize="off"
-                className="flex-1 border-b bg-transparent pb-1 outline-none text-center placeholder:text-[#7A5438] placeholder:opacity-40"
-                style={{
-                  color: '#7a5438',
-                  borderColor: '#C4A06020',
-                  fontFamily: 'var(--font-handwritten)',
-                  fontSize: '24px',
-                  fontWeight: 700,
-                }}
-              />
-              <MicDot
-                visible={todayInput.length > 0}
-                value={todayInput}
-                onTranscript={setTodayInput}
-              />
-            </div>
           </div>
 
           {/* Divider */}
@@ -1036,7 +1036,7 @@ export default function DailyObjectives() {
                                 if (e.key === 'Escape') setRenamingTodoId(null);
                               }}
                               autoFocus
-                              className="flex-1 bg-transparent text-left outline-none border-b"
+                              className="flex-1 bg-transparent text-center outline-none border-b"
                               style={{
                                 color: '#7a5438',
                                 fontFamily: 'var(--font-handwritten)',
@@ -1055,7 +1055,7 @@ export default function DailyObjectives() {
                                 setRenamingTodoId(t.id);
                                 setRenameTodoValue(t.text);
                               }}
-                              className="flex-1 cursor-pointer bg-transparent text-left"
+                              className="flex-1 cursor-pointer bg-transparent text-center"
                               style={{
                                 color: t.done
                                   ? '#C4A060'
