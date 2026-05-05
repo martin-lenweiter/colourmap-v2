@@ -46,7 +46,7 @@ export default function ObjectiveDepth() {
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8 }}>
-      {/* Trigger — collapsed summary */}
+      {/* Ochre diamond trigger */}
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}
@@ -65,7 +65,7 @@ export default function ObjectiveDepth() {
             display: 'block',
             width: 7,
             height: 7,
-            background: open ? '#C4A060' : hasContent ? '#C4A060' : '#C4A06055',
+            background: hasContent ? '#C4A060' : '#C4A06050',
             transform: 'rotate(45deg)',
             transition: 'background 0.2s',
             flexShrink: 0,
@@ -83,17 +83,15 @@ export default function ObjectiveDepth() {
           }}
         >
           {!open && hasContent
-            ? [challenge.trim() && challenge.trim(), flowIdx !== 2 && flow.label]
-                .filter(Boolean)
-                .join(' · ')
+            ? [challenge.trim(), flowIdx !== 2 && flow.label].filter(Boolean).join(' · ')
             : 'challenge · flow'}
         </span>
       </button>
 
-      {/* Expandable panel */}
+      {/* Expandable */}
       <div
         style={{
-          maxHeight: open ? 120 : 0,
+          maxHeight: open ? 130 : 0,
           opacity: open ? 1 : 0,
           overflow: 'hidden',
           transition: 'max-height 0.2s ease, opacity 0.18s ease',
@@ -104,12 +102,11 @@ export default function ObjectiveDepth() {
           gap: 10,
         }}
       >
-        {/* Challenge input */}
         <input
           type="text"
           value={challenge}
           onChange={(e) => saveChallenge(e.target.value)}
-          placeholder="what's the challenge right now..."
+          placeholder="challenge..."
           spellCheck={false}
           autoCorrect="off"
           autoCapitalize="off"
@@ -128,8 +125,6 @@ export default function ObjectiveDepth() {
             opacity: 0.8,
           }}
         />
-
-        {/* Flow slider */}
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 5 }}>
           <span
             style={{
