@@ -1768,14 +1768,14 @@ export default function FdsPanel() {
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  background: isOn ? `${a.color}22` : `${a.color}0C`,
-                  border: `2px solid ${isOn ? a.color : `${a.color}38`}`,
-                  boxShadow: isOn ? `0 0 0 4px ${a.color}18` : 'none',
+                  background: isOn ? `${curLevel.color}28` : `${curLevel.color}10`,
+                  border: `2px solid ${isOn ? curLevel.color : `${curLevel.color}50`}`,
+                  boxShadow: isOn ? `0 0 0 4px ${curLevel.color}20` : 'none',
                   transition: 'all 0.18s',
                   fontFamily: font,
                   fontSize: 20,
                   fontWeight: 800,
-                  color: isOn ? a.color : `${a.color}80`,
+                  color: isOn ? curLevel.color : `${curLevel.color}90`,
                   cursor: 'pointer',
                   flexShrink: 0,
                 }}
@@ -1791,23 +1791,6 @@ export default function FdsPanel() {
                 axisColor={a.color}
                 style={sliderStyle}
               />
-
-              {/* Level name */}
-              <span
-                style={{
-                  fontFamily: font,
-                  fontSize: 11,
-                  fontWeight: 600,
-                  color: curLevel.color,
-                  width: 62,
-                  textAlign: 'right',
-                  letterSpacing: '0.05em',
-                  flexShrink: 0,
-                  lineHeight: 1.2,
-                }}
-              >
-                {curLevel.name}
-              </span>
             </div>
           );
         })}
