@@ -362,6 +362,65 @@
   }
 }
 
+/* ── Global type scale-up ──────────────────────────────────────
+   Bumps every inline px font-size up ~2 px so the whole app reads
+   larger without touching individual components. Uses !important to
+   win over inline styles. Tailwind rem-based classes scale via the
+   html font-size bump below.
+   ──────────────────────────────────────────────────────────── */
+html {
+  font-size: 17px;
+}
+
+:where([style*="font-size: 9px"]),
+:where([style*="font-size:9px"]) {
+  font-size: 11px !important;
+}
+:where([style*="font-size: 10px"]),
+:where([style*="font-size:10px"]) {
+  font-size: 12px !important;
+}
+:where([style*="font-size: 11px"]),
+:where([style*="font-size:11px"]) {
+  font-size: 13px !important;
+}
+:where([style*="font-size: 12px"]),
+:where([style*="font-size:12px"]) {
+  font-size: 14px !important;
+}
+:where([style*="font-size: 13px"]),
+:where([style*="font-size:13px"]) {
+  font-size: 15px !important;
+}
+:where([style*="font-size: 15px"]),
+:where([style*="font-size:15px"]) {
+  font-size: 17px !important;
+}
+:where([style*="font-size: 17px"]),
+:where([style*="font-size:17px"]) {
+  font-size: 19px !important;
+}
+:where([style*="font-size: 18px"]),
+:where([style*="font-size:18px"]) {
+  font-size: 20px !important;
+}
+:where([style*="font-size: 19px"]),
+:where([style*="font-size:19px"]) {
+  font-size: 21px !important;
+}
+:where([style*="font-size: 20px"]),
+:where([style*="font-size:20px"]) {
+  font-size: 22px !important;
+}
+:where([style*="font-size: 22px"]),
+:where([style*="font-size:22px"]) {
+  font-size: 24px !important;
+}
+:where([style*="font-size: 24px"]),
+:where([style*="font-size:24px"]) {
+  font-size: 27px !important;
+}
+
 /* Spell-check underlines: replace harsh red with warm brown.
    Works in Chrome/Edge (text-decoration-color on ::spelling-error)
    and Firefox. Safari ignores the colour override but uses system. */
