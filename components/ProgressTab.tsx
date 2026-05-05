@@ -5,6 +5,7 @@ import CockpitSections from '@/components/CockpitSection';
 import LifeCategories from '@/components/LifeCategories';
 import MasteryBox from '@/components/MasteryBox';
 import { useStyle } from '@/components/StyleContext';
+import WeekShape from '@/components/WeekShape';
 
 const VISION_KEY = 'colourmap:vision';
 
@@ -111,6 +112,22 @@ export default function ProgressTab() {
           what I do daily
         </p>
         <CockpitSections />
+      </div>
+
+      {/* ── Test ideas ────────────────────────────────────── */}
+      <div>
+        <p
+          className="mb-3 uppercase tracking-[0.22em]"
+          style={{
+            fontFamily: style.headingFont,
+            fontSize: '11px',
+            color: '#C4A060',
+            opacity: 0.7,
+          }}
+        >
+          test ideas
+        </p>
+        <WeekShape />
       </div>
     </div>
   );

@@ -5,7 +5,7 @@ import FdsPanel from '@/components/FdsPanel';
 import ProgressTab from '@/components/ProgressTab';
 import SlowWins from '@/components/SlowWins';
 import { useStyle } from '@/components/StyleContext';
-import WeekShape from '@/components/WeekShape';
+
 import { haptic } from '@/lib/haptics';
 
 type RoadTab = 'overview' | 'progress';
@@ -13,7 +13,7 @@ const ROAD_TAB_KEY = 'colourmap:road-tab';
 
 const ROAD_TABS: { id: RoadTab; label: string }[] = [
   { id: 'overview', label: 'Overview' },
-  { id: 'progress', label: 'Progress' },
+  { id: 'progress', label: 'Test Ideas' },
 ];
 
 export default function RoadView() {
@@ -74,8 +74,7 @@ export default function RoadView() {
             {/* ── FDS ── unified axis panel: dots + compass + reflect */}
             <FdsPanel />
 
-            {/* ── Below the fold ── passive display, user to judge */}
-            <WeekShape />
+            {/* ── Below the fold ── */}
             <SlowWins />
           </div>
         )}

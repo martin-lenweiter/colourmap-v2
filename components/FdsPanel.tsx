@@ -1967,7 +1967,7 @@ function SharingExtras() {
 }
 
 export default function FdsPanel() {
-  const [active, setActive] = useState<Axis | null>(null);
+  const [active, setActive] = useState<Axis>('feeling');
   const [layout, setLayout] = useState<Layout>('v');
   const [openItem, setOpenItem] = useState<string | null>(null);
   const [itemData, setItemData] = useState<Record<string, ItemData>>({});
@@ -2016,14 +2016,14 @@ export default function FdsPanel() {
   }
 
   const isSuper = layout === 'super';
-  const axisDef = active && !isSuper ? AXES[active] : null;
+  const axisDef = !isSuper ? AXES[active] : null;
   const modeColor = axisDef?.color ?? '#8A6A4A';
   const DOING_COLOR = AXES.doing.color;
 
   return (
     <div className="space-y-3">
       {/* F / D / S circles — tap to toggle axis */}
-      <div className="flex items-center gap-3">
+      <div className="flex items-center justify-center gap-3">
         {ORDER.map((id) => {
           const a = AXES[id];
           const isOn = active === id && !isSuper;
@@ -2032,7 +2032,7 @@ export default function FdsPanel() {
               key={id}
               type="button"
               onClick={() => {
-                setActive(isOn ? null : id);
+                setActive(id);
                 if (layout === 'super') setLayout('v');
                 setOpenItem(null);
               }}
@@ -2103,7 +2103,6 @@ export default function FdsPanel() {
             if (isSuper) {
               setLayout('v');
             } else {
-              setActive(null);
               setLayout('super');
             }
           }}
@@ -2137,7 +2136,7 @@ export default function FdsPanel() {
       )}
 
       {/* Expanded axis content */}
-      {axisDef && active && (
+      {axisDef && (
         <div className="animate-in fade-in duration-150 space-y-4">
           {/* Content */}
           {layout === 'h' && (

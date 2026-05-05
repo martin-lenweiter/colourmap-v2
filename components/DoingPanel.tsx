@@ -1,5 +1,6 @@
 'use client';
 
+import CurrentObjective from '@/components/CurrentObjective';
 import DailyAgenda from '@/components/DailyAgenda';
 import DailyObjectives from '@/components/DailyObjectives';
 import DoingStateCircle from '@/components/DoingStateCircle';
@@ -11,6 +12,9 @@ export default function DoingPanel() {
       <PulseDots axisKey="doing" />
       {/* State circle — Deep Rest → Tunnel Vision */}
       <DoingStateCircle />
+
+      {/* Current objective */}
+      <CurrentObjective />
 
       {/* Daily objectives + push for tomorrow */}
       <DailyObjectives />

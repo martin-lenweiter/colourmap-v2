@@ -333,7 +333,7 @@ export default function DailyObjectives() {
         >
           <span
             className="text-center uppercase"
-            style={{ color: '#C4A060', fontSize: '15px', fontWeight: 700, letterSpacing: '0.22em' }}
+            style={{ color: '#C4A060', fontSize: '17px', fontWeight: 700, letterSpacing: '0.22em' }}
           >
             {renamingSection === 'other' ? (
               <input
@@ -349,7 +349,7 @@ export default function DailyObjectives() {
                 className="bg-transparent text-center uppercase outline-none border-b"
                 style={{
                   color: '#C4A060',
-                  fontSize: '15px',
+                  fontSize: '17px',
                   fontWeight: 700,
                   letterSpacing: '0.22em',
                   borderColor: '#C4A06040',
@@ -798,13 +798,14 @@ export default function DailyObjectives() {
                 onKeyDown={(e) => {
                   if (e.key === 'Enter') addTodayObjective();
                 }}
-                placeholder="+ add objective for today..."
+                placeholder="add an objective for today..."
                 className="flex-1 border-b bg-transparent pb-1 outline-none text-center placeholder:text-[#7A5438] placeholder:opacity-40"
                 style={{
                   color: '#7a5438',
                   borderColor: '#C4A06020',
                   fontFamily: 'var(--font-handwritten)',
                   fontSize: '24px',
+                  fontWeight: 700,
                 }}
               />
               <MicDot
@@ -851,7 +852,7 @@ export default function DailyObjectives() {
                   className="text-center uppercase"
                   style={{
                     color: '#C4A060',
-                    fontSize: '15px',
+                    fontSize: '17px',
                     fontWeight: 700,
                     letterSpacing: '0.22em',
                   }}
@@ -871,7 +872,7 @@ export default function DailyObjectives() {
                       className="bg-transparent text-center uppercase outline-none border-b"
                       style={{
                         color: '#C4A060',
-                        fontSize: '15px',
+                        fontSize: '17px',
                         fontWeight: 700,
                         letterSpacing: '0.22em',
                         borderColor: '#C4A06040',
@@ -1111,13 +1112,14 @@ export default function DailyObjectives() {
                     onKeyDown={(e) => {
                       if (e.key === 'Enter') addTodo();
                     }}
-                    placeholder="+ add to-do..."
+                    placeholder="add a to-do..."
                     className="flex-1 border-b bg-transparent pb-1 outline-none text-center placeholder:text-center placeholder:text-[#7A5438] placeholder:opacity-50"
                     style={{
                       color: '#7a5438',
                       borderColor: '#C4A06020',
                       fontFamily: 'var(--font-handwritten)',
-                      fontSize: '20px',
+                      fontSize: '24px',
+                      fontWeight: 700,
                     }}
                   />
                   <MicDot

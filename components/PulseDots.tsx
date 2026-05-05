@@ -1,12 +1,12 @@
 'use client';
 
-import { useState } from 'react';
-
-/* ── PulseDots — three zen circles, one tap cycles dim → half → full ──
-   One set per axis: Body/Heart/Mind · Clarity/Drive/Progress · Closeness/Expression/Nourishment
-   Closed by default (three whisper-thin trigger dots). */
+import { useEffect, useState } from 'react';
+import SquareSlider from '@/components/SquareSlider';
 
 type PulseAxis = 'feeling' | 'doing' | 'sharing';
+
+const LS_PULSE = 'colourmap:fds-pulse';
+const font = 'var(--font-serif)';
 
 const AXIS_COLORS: Record<PulseAxis, string> = {
   feeling: '#D4805A',
@@ -14,45 +14,151 @@ const AXIS_COLORS: Record<PulseAxis, string> = {
   sharing: '#6B7F4E',
 };
 
-const PULSE_DIMS: Record<PulseAxis, { key: string; label: string }[]> = {
+const PULSE_DIMS: Record<
+  PulseAxis,
+  { key: string; label: string; scale: string[]; levels: string[] }[]
+> = {
   feeling: [
-    { key: 'body', label: 'Body' },
-    { key: 'heart', label: 'Heart' },
-    { key: 'mind', label: 'Mind' },
+    {
+      key: 'body',
+      label: 'Body',
+      scale: ['#AABCCC', '#B8B4CC', '#CCACB8', '#D8A8A0', '#D49890'],
+      levels: ['Exhausted', 'Heavy', 'Neutral', 'Energised', 'Vibrant'],
+    },
+    {
+      key: 'heart',
+      label: 'Heart',
+      scale: ['#A8C8C0', '#B0C4B4', '#C4B4C0', '#D0A8B8', '#CC98A8'],
+      levels: ['Numb', 'Heavy', 'Tender', 'Open', 'Glowing'],
+    },
+    {
+      key: 'mind',
+      label: 'Mind',
+      scale: ['#D8CCA8', '#C4C4C4', '#B0B8D4', '#98AACC', '#8898C0'],
+      levels: ['Foggy', 'Scattered', 'Present', 'Clear', 'Sharp'],
+    },
   ],
   doing: [
-    { key: 'clarity', label: 'Clarity' },
-    { key: 'drive', label: 'Drive' },
-    { key: 'progress', label: 'Progress' },
+    {
+      key: 'clarity',
+      label: 'Clarity',
+      scale: ['#D8C8A0', '#C0C8A8', '#A8C4B8', '#90B8D0', '#78A8C8'],
+      levels: ['Lost', 'Hazy', 'Oriented', 'Focused', 'Locked in'],
+    },
+    {
+      key: 'drive',
+      label: 'Drive',
+      scale: ['#A8C4B0', '#B8C4A0', '#D0BC90', '#D8A878', '#CC9060'],
+      levels: ['Drained', 'Slow', 'Moving', 'Motivated', 'On fire'],
+    },
+    {
+      key: 'progress',
+      label: 'Progress',
+      scale: ['#C0B4D4', '#A8BCC8', '#90C0B4', '#78BCA0', '#6CB488'],
+      levels: ['Stuck', 'Crawling', 'Steady', 'Flowing', 'Momentum'],
+    },
   ],
   sharing: [
-    { key: 'closeness', label: 'Closeness' },
-    { key: 'expression', label: 'Expression' },
-    { key: 'nourishment', label: 'Nourishment' },
+    {
+      key: 'closeness',
+      label: 'Closeness',
+      scale: ['#D4C0C0', '#C4C4B8', '#B4C8B0', '#98C0A4', '#84B490'],
+      levels: ['Isolated', 'Distant', 'Present', 'Connected', 'Intimate'],
+    },
+    {
+      key: 'expression',
+      label: 'Expression',
+      scale: ['#A8C0D8', '#B8C0C4', '#C8BEB0', '#D4B890', '#CCA870'],
+      levels: ['Muted', 'Guarded', 'Open', 'Expressive', 'Flowing'],
+    },
+    {
+      key: 'nourishment',
+      label: 'Nourishment',
+      scale: ['#C0B0D4', '#A8BCC8', '#A0C4B8', '#8CC0A8', '#7AB494'],
+      levels: ['Depleted', 'Hungry', 'Sustained', 'Fed', 'Nourished'],
+    },
   ],
 };
 
-const LS_PULSE = 'colourmap:fds-pulse';
-const font = 'var(--font-serif)';
+function DimCard({
+  dim,
+  val,
+  onSlide,
+  isFirst,
+  onCollapse,
+}: {
+  dim: (typeof PULSE_DIMS)[PulseAxis][number];
+  val: number;
+  onSlide: (i: number) => void;
+  isFirst?: boolean;
+  onCollapse?: () => void;
+}) {
+  const color = dim.scale[val];
+  return (
+    <div className="flex flex-col items-center gap-2 w-full">
+      <div
+        onClick={isFirst ? onCollapse : undefined}
+        style={{
+          width: 64,
+          height: 64,
+          borderRadius: '50%',
+          background: color,
+          opacity: 0.92,
+          boxShadow: `0 8px 24px -8px ${color}99`,
+          transition: 'background 0.3s, box-shadow 0.3s',
+          cursor: isFirst ? 'pointer' : 'default',
+        }}
+      />
+      <span
+        style={{
+          fontFamily: font,
+          fontSize: 13,
+          fontWeight: 700,
+          letterSpacing: '0.18em',
+          textTransform: 'uppercase',
+          color,
+          transition: 'color 0.3s',
+        }}
+      >
+        {dim.label}
+      </span>
+      <span
+        className="italic"
+        style={{
+          fontFamily: font,
+          fontSize: 14,
+          color: '#1A1A1A',
+          opacity: 0.75,
+          letterSpacing: '0.03em',
+        }}
+      >
+        {dim.levels[val]}
+      </span>
+      <SquareSlider colors={dim.scale} value={val} onChange={onSlide} />
+    </div>
+  );
+}
 
 export default function PulseDots({ axisKey }: { axisKey: PulseAxis }) {
-  const color = AXIS_COLORS[axisKey];
+  const axisColor = AXIS_COLORS[axisKey];
   const dims = PULSE_DIMS[axisKey];
 
   const [open, setOpen] = useState(false);
-  const [values, setValues] = useState<Record<string, 0 | 1 | 2>>(() => {
+  const [values, setValues] = useState<Record<string, number>>({});
+
+  useEffect(() => {
     try {
       const raw = localStorage.getItem(LS_PULSE);
       const all = raw ? (JSON.parse(raw) as Record<string, Record<string, number>>) : {};
-      return (all[axisKey] ?? {}) as Record<string, 0 | 1 | 2>;
-    } catch {
-      return {};
-    }
-  });
+      const saved = all[axisKey] ?? {};
+      const defaults: Record<string, number> = {};
+      for (const d of dims) defaults[d.key] = saved[d.key] ?? 2;
+      setValues(defaults);
+    } catch {}
+  }, [axisKey, dims]);
 
-  function cycle(key: string) {
-    const next = (((values[key] ?? 0) + 1) % 3) as 0 | 1 | 2;
-    const updated = { ...values, [key]: next };
+  function slide(key: string, val: number) {
+    const updated = { ...values, [key]: val };
     setValues(updated);
     try {
       const raw = localStorage.getItem(LS_PULSE);
@@ -62,97 +168,45 @@ export default function PulseDots({ axisKey }: { axisKey: PulseAxis }) {
   }
 
   return (
-    <div className="flex flex-col items-center py-1">
-      {/* Trigger — three whisper-thin dots */}
-      <button
-        type="button"
-        onClick={() => setOpen((o) => !o)}
-        style={{
-          background: 'none',
-          border: 'none',
-          cursor: 'pointer',
-          padding: '6px 16px',
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          gap: 7,
-        }}
-        title="Pulse"
-      >
-        {[0, 1, 2].map((i) => (
+    <div className="flex flex-col items-center w-full py-1">
+      {!open ? (
+        <button
+          type="button"
+          onClick={() => setOpen(true)}
+          style={{
+            background: 'none',
+            border: 'none',
+            cursor: 'pointer',
+            padding: '6px 16px',
+          }}
+        >
           <span
-            key={i}
             style={{
               display: 'block',
-              width: open ? 5 : 4,
-              height: open ? 5 : 4,
+              width: 64,
+              height: 64,
               borderRadius: '50%',
-              background: open ? color : `${color}88`,
-              opacity: open ? 1 - i * 0.18 : 0.28,
-              transition: 'all 0.22s',
+              background: axisColor,
+              opacity: 0.2,
+              transition: 'opacity 0.22s',
             }}
           />
-        ))}
-      </button>
-
-      {/* Three zen circles */}
-      {open && (
+        </button>
+      ) : (
         <div
-          className="flex flex-col items-center gap-9 pb-6 pt-2 animate-in fade-in duration-400"
-          style={{ minWidth: 80 }}
+          className="flex flex-col items-center gap-6 pb-6 pt-2 animate-in fade-in duration-300"
+          style={{ width: 200 }}
         >
-          {dims.map(({ key, label }, i) => {
-            const val = values[key] ?? 0;
-            return (
-              <button
-                key={key}
-                type="button"
-                onClick={() => cycle(key)}
-                className="flex flex-col items-center gap-2.5 cursor-pointer transition-all hover:scale-105"
-                style={{
-                  background: 'none',
-                  border: 'none',
-                  padding: 0,
-                  animationDelay: `${i * 55}ms`,
-                }}
-              >
-                <div
-                  style={{
-                    width: 54,
-                    height: 54,
-                    borderRadius: '50%',
-                    background:
-                      val === 2
-                        ? `radial-gradient(circle, ${color}28 0%, ${color}0A 65%, transparent 100%)`
-                        : val === 1
-                          ? `${color}0C`
-                          : 'transparent',
-                    border: `${val === 2 ? 1.5 : 1}px solid ${
-                      val === 2 ? color : val === 1 ? `${color}55` : `${color}1A`
-                    }`,
-                    boxShadow:
-                      val === 2
-                        ? `0 0 36px -10px ${color}65, inset 0 0 18px -10px ${color}30`
-                        : 'none',
-                    transition: 'all 0.35s cubic-bezier(0.4, 0, 0.2, 1)',
-                  }}
-                />
-                <span
-                  style={{
-                    fontFamily: font,
-                    fontSize: 9,
-                    letterSpacing: '0.22em',
-                    textTransform: 'uppercase',
-                    color,
-                    opacity: val === 2 ? 0.75 : val === 1 ? 0.5 : 0.25,
-                    transition: 'opacity 0.35s',
-                  }}
-                >
-                  {label}
-                </span>
-              </button>
-            );
-          })}
+          {dims.map((dim, i) => (
+            <DimCard
+              key={dim.key}
+              dim={dim}
+              val={values[dim.key] ?? 2}
+              onSlide={(v) => slide(dim.key, v)}
+              isFirst={i === 0}
+              onCollapse={() => setOpen(false)}
+            />
+          ))}
         </div>
       )}
     </div>
