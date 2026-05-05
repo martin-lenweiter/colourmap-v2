@@ -147,6 +147,7 @@ export default function FeelingCircles() {
   const [bodyIdx, setBodyIdx] = useState(2);
   const [mindIdx, setMindIdx] = useState(3);
   const [emotionIdx, setEmotionIdx] = useState(4);
+  const [depthOpen, setDepthOpen] = useState(false);
 
   useEffect(() => {
     setBodyIdx(Math.min(BODY_LEVELS.length - 1, loadNum('colourmap:body-idx', 2)));
@@ -185,14 +186,72 @@ export default function FeelingCircles() {
         padding: '12px 0 16px',
       }}
     >
-      <DraggableCircle levels={BODY_LEVELS} idx={bodyIdx} onChange={pickBody} title="Body" />
-      <DraggableCircle levels={MIND_LEVELS} idx={mindIdx} onChange={pickMind} title="Mind" />
+      {/* Primary: Emotion circle always visible */}
       <DraggableCircle
         levels={EMOTION_LEVELS}
         idx={emotionIdx}
         onChange={pickEmotion}
         title="Emotions"
       />
+
+      {/* Ochre diamond — expands Body + Mind */}
+      <button
+        type="button"
+        onClick={() => setDepthOpen((v) => !v)}
+        style={{
+          background: 'none',
+          border: 'none',
+          cursor: 'pointer',
+          display: 'flex',
+          alignItems: 'center',
+          gap: 8,
+          padding: '0',
+        }}
+      >
+        <span
+          style={{
+            display: 'block',
+            width: 10,
+            height: 10,
+            background: depthOpen ? '#C4A060' : '#C4A06050',
+            transform: 'rotate(45deg)',
+            transition: 'background 0.2s',
+            flexShrink: 0,
+          }}
+        />
+        <span
+          style={{
+            fontFamily: 'var(--font-serif)',
+            fontSize: 11,
+            fontWeight: 700,
+            color: '#C4A060',
+            opacity: depthOpen ? 0.9 : 0.5,
+            letterSpacing: '0.16em',
+            textTransform: 'uppercase',
+            transition: 'opacity 0.2s',
+          }}
+        >
+          body · mind
+        </span>
+      </button>
+
+      {/* Body + Mind — expand below */}
+      <div
+        style={{
+          maxHeight: depthOpen ? 400 : 0,
+          opacity: depthOpen ? 1 : 0,
+          overflow: 'hidden',
+          transition: 'max-height 0.25s ease, opacity 0.2s ease',
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          gap: 24,
+          width: '100%',
+        }}
+      >
+        <DraggableCircle levels={BODY_LEVELS} idx={bodyIdx} onChange={pickBody} title="Body" />
+        <DraggableCircle levels={MIND_LEVELS} idx={mindIdx} onChange={pickMind} title="Mind" />
+      </div>
     </div>
   );
 }
