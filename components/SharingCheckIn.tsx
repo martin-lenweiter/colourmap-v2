@@ -5,11 +5,11 @@ import SharingReflect from '@/components/SharingReflect';
 import SquareSlider from '@/components/SquareSlider';
 
 export const SHARING_LEVELS = [
-  { label: 'Disconnected', color: '#9A8070' },
-  { label: 'Distant', color: '#B8957A' },
-  { label: 'Present', color: '#C49068' },
-  { label: 'Warm', color: '#CC7858' },
-  { label: 'Flowing', color: '#C06040' },
+  { label: 'Disconnected', color: '#C09898' },
+  { label: 'Distant', color: '#C8A890' },
+  { label: 'Present', color: '#D0BA88' },
+  { label: 'Warm', color: '#D4C87A' },
+  { label: 'Flowing', color: '#CCC868' },
 ];
 
 export const SHARING_IDX_KEY = 'colourmap:sharing-idx';
