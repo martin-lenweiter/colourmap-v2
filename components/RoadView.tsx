@@ -1,11 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import ActiveCategoryBanner from '@/components/ActiveCategoryBanner';
 import FdsPanel from '@/components/FdsPanel';
-import LifeCategories from '@/components/LifeCategories';
-import LifeCategoriesEmptyState from '@/components/LifeCategoriesEmptyState';
-import LifeCategoriesStrip from '@/components/LifeCategoriesStrip';
 import ProgressTab from '@/components/ProgressTab';
 import SlowWins from '@/components/SlowWins';
 import { useStyle } from '@/components/StyleContext';
@@ -77,12 +73,6 @@ export default function RoadView() {
           <div className="space-y-6">
             {/* ── FDS ── unified axis panel: dots + compass + reflect */}
             <FdsPanel />
-
-            {/* ── Life categories ── personal organic layer */}
-            <LifeCategoriesEmptyState />
-            <LifeCategoriesStrip />
-            <ActiveCategoryBanner />
-            <LifeCategories />
 
             {/* ── Below the fold ── passive display, user to judge */}
             <WeekShape />
