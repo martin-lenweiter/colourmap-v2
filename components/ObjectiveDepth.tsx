@@ -12,16 +12,19 @@ const FLOW_LEVELS = [
 ];
 
 const LS_CHALLENGE = 'colourmap:objective-challenge';
+const LS_FLOW_TEXT = 'colourmap:objective-flow-text';
 const LS_FLOW = 'colourmap:objective-flow-idx';
 
 export default function ObjectiveDepth() {
   const [open, setOpen] = useState(false);
   const [challenge, setChallenge] = useState('');
+  const [flowText, setFlowText] = useState('');
   const [flowIdx, setFlowIdx] = useState(2);
 
   useEffect(() => {
     try {
       setChallenge(localStorage.getItem(LS_CHALLENGE) ?? '');
+      setFlowText(localStorage.getItem(LS_FLOW_TEXT) ?? '');
       const v = localStorage.getItem(LS_FLOW);
       if (v !== null) setFlowIdx(Math.max(0, Math.min(FLOW_LEVELS.length - 1, Number(v))));
     } catch {}
@@ -42,7 +45,14 @@ export default function ObjectiveDepth() {
   }
 
   const flow = FLOW_LEVELS[flowIdx];
-  const hasContent = challenge.trim() || flowIdx !== 2;
+  function saveFlowText(val: string) {
+    setFlowText(val);
+    try {
+      localStorage.setItem(LS_FLOW_TEXT, val);
+    } catch {}
+  }
+
+  const hasContent = challenge.trim() || flowText.trim() || flowIdx !== 2;
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8 }}>
@@ -83,7 +93,9 @@ export default function ObjectiveDepth() {
           }}
         >
           {!open && hasContent
-            ? [challenge.trim(), flowIdx !== 2 && flow.label].filter(Boolean).join(' · ')
+            ? [challenge.trim(), flowText.trim() || (flowIdx !== 2 && flow.label)]
+                .filter(Boolean)
+                .join(' · ')
             : 'challenge · flow'}
         </span>
       </button>
@@ -91,7 +103,7 @@ export default function ObjectiveDepth() {
       {/* Expandable */}
       <div
         style={{
-          maxHeight: open ? 200 : 0,
+          maxHeight: open ? 280 : 0,
           opacity: open ? 1 : 0,
           overflow: 'hidden',
           transition: 'max-height 0.2s ease, opacity 0.18s ease',
@@ -156,6 +168,28 @@ export default function ObjectiveDepth() {
           >
             Flow
           </span>
+          <input
+            type="text"
+            value={flowText}
+            onChange={(e) => saveFlowText(e.target.value)}
+            placeholder="what's flowing..."
+            spellCheck={false}
+            autoCorrect="off"
+            autoCapitalize="off"
+            style={{
+              width: '100%',
+              background: 'transparent',
+              border: 'none',
+              borderBottom: '1px solid rgba(90,60,30,0.12)',
+              fontFamily: 'var(--font-handwritten)',
+              fontStyle: 'italic',
+              fontSize: 17,
+              color: '#5C3018',
+              padding: '2px 0',
+              outline: 'none',
+              opacity: 0.8,
+            }}
+          />
           <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
             <span
               style={{
