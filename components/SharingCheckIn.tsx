@@ -1,6 +1,8 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import PulseDots from '@/components/PulseDots';
+import SharingReflect from '@/components/SharingReflect';
 
 /* ═══════════════════════════════════════════════════════════
    SHARING CHECK-IN — big dot + 5-square rainbow selector.
@@ -47,6 +49,8 @@ export default function SharingCheckIn() {
 
   return (
     <div className="flex flex-col items-center gap-6 px-5 py-8">
+      <PulseDots axisKey="sharing" />
+      <SharingReflect />
       {/* Big dot */}
       <div className="flex flex-col items-center gap-3">
         <span

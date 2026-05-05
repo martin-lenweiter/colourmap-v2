@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import CategoryTagPicker from '@/components/CategoryTagPicker';
+import PulseDots from '@/components/PulseDots';
 
 /* ═══════════════════════════════════════════════════════════
    FEELING CHECK-IN CARD — Zen circle + losange gateway
@@ -1330,6 +1331,7 @@ export default function FeelingCheckInCard() {
 
   return (
     <>
+      <PulseDots axisKey="feeling" />
       {/* BOX A: FEELING — frame removed on phone to reclaim margins.
           Desktop keeps the beige card for visual grouping. */}
       <div className="relative space-y-2.5 px-0 py-0">
