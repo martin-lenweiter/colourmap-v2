@@ -1797,6 +1797,9 @@ function VerticalView({
                         layer === 'emotion' ? 'how are you feeling?' : "what's happening?"
                       }
                       autoFocus
+                      spellCheck={false}
+                      autoCorrect="off"
+                      autoCapitalize="off"
                       style={{
                         flex: 1,
                         background: 'transparent',

@@ -45,6 +45,9 @@ export default function CurrentObjective() {
           value={objective}
           onChange={(e) => save(e.target.value)}
           placeholder="set an objective..."
+          spellCheck={false}
+          autoCorrect="off"
+          autoCapitalize="off"
           className="w-full border-b bg-transparent pb-1 text-center outline-none placeholder:text-[#7A5438] placeholder:opacity-50"
           style={{
             color: '#5C3018',

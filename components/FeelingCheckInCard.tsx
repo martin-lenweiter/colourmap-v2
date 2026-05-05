@@ -314,6 +314,9 @@ function ChallengeDepth({ onSave }: { onSave: (text: string) => void }) {
             if (e.key === 'Enter') saveAll();
           }}
           placeholder={q.placeholder}
+          spellCheck={false}
+          autoCorrect="off"
+          autoCapitalize="off"
           className="w-full border-b bg-transparent pb-1 outline-none placeholder:text-[#5C3018] placeholder:opacity-60"
           style={{
             color: '#1a1a1a',
@@ -2463,6 +2466,8 @@ export default function FeelingCheckInCard() {
                     }}
                     placeholder="What is your main tension right now?"
                     rows={1}
+                    spellCheck={false}
+                    autoCorrect="off"
                     className="w-full resize-none border-b bg-transparent pb-1 outline-none text-center placeholder:italic placeholder:text-[#8A6A4A] placeholder:opacity-[0.95]"
                     style={{
                       color: '#1a1a1a',

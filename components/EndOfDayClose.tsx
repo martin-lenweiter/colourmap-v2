@@ -40,6 +40,7 @@ export default function EndOfDayClose({ onSaved }: Props) {
   const [existing, setExisting] = useState<EodClose | null>(null);
   const [editing, setEditing] = useState(false);
   const [saved, setSaved] = useState(false);
+  const [noteSpell, setNoteSpell] = useState(false);
 
   useEffect(() => {
     const h = getHistory();
@@ -218,26 +219,53 @@ export default function EndOfDayClose({ onSaved }: Props) {
       ))}
 
       {/* Note */}
-      <input
-        type="text"
-        placeholder="one word for today — optional"
-        value={note}
-        onChange={(e) => setNote(e.target.value)}
-        maxLength={80}
-        style={{
-          width: '100%',
-          background: 'transparent',
-          border: 'none',
-          borderBottom: '1px solid rgba(90,60,30,0.1)',
-          fontFamily: 'var(--font-serif)',
-          fontStyle: 'italic',
-          fontSize: 12,
-          color: '#5C3018',
-          padding: '4px 0',
-          outline: 'none',
-          opacity: 0.65,
-        }}
-      />
+      <div style={{ position: 'relative' }}>
+        <input
+          type="text"
+          placeholder="one word for today — optional"
+          value={note}
+          onChange={(e) => setNote(e.target.value)}
+          maxLength={80}
+          spellCheck={noteSpell}
+          autoCorrect="off"
+          style={{
+            width: '100%',
+            background: 'transparent',
+            border: 'none',
+            borderBottom: '1px solid rgba(90,60,30,0.1)',
+            fontFamily: 'var(--font-serif)',
+            fontStyle: 'italic',
+            fontSize: 12,
+            color: '#5C3018',
+            padding: '4px 0',
+            outline: 'none',
+            opacity: 0.65,
+          }}
+        />
+        <button
+          type="button"
+          onClick={() => setNoteSpell((v) => !v)}
+          title={
+            noteSpell ? 'Spell check on — click to turn off' : 'Spell check off — click to turn on'
+          }
+          style={{
+            position: 'absolute',
+            right: 0,
+            bottom: 6,
+            fontFamily: 'var(--font-serif)',
+            fontSize: 9,
+            color: '#8A6A4A',
+            opacity: noteSpell ? 0.65 : 0.22,
+            background: 'none',
+            border: 'none',
+            cursor: 'pointer',
+            letterSpacing: '0.08em',
+            padding: 0,
+          }}
+        >
+          abc
+        </button>
+      </div>
 
       <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8, alignItems: 'center' }}>
         {editing && (
