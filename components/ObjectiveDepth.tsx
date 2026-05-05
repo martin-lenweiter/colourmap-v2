@@ -91,7 +91,7 @@ export default function ObjectiveDepth() {
       {/* Expandable */}
       <div
         style={{
-          maxHeight: open ? 130 : 0,
+          maxHeight: open ? 200 : 0,
           opacity: open ? 1 : 0,
           overflow: 'hidden',
           transition: 'max-height 0.2s ease, opacity 0.18s ease',
@@ -102,50 +102,82 @@ export default function ObjectiveDepth() {
           gap: 10,
         }}
       >
-        <input
-          type="text"
-          value={challenge}
-          onChange={(e) => saveChallenge(e.target.value)}
-          placeholder="challenge..."
-          spellCheck={false}
-          autoCorrect="off"
-          autoCapitalize="off"
-          style={{
-            width: '100%',
-            background: 'transparent',
-            border: 'none',
-            borderBottom: '1px solid rgba(90,60,30,0.12)',
-            fontFamily: 'var(--font-handwritten)',
-            fontStyle: 'italic',
-            fontSize: 17,
-            color: '#5C3018',
-            padding: '2px 0',
-            outline: 'none',
-            textAlign: 'center',
-            opacity: 0.8,
-          }}
-        />
-        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 5 }}>
+        {/* Challenge */}
+        <div style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: 4 }}>
           <span
             style={{
               fontFamily: 'var(--font-serif)',
-              fontSize: 11,
+              fontSize: 10,
               fontWeight: 700,
-              color: flow.color,
-              letterSpacing: '0.12em',
+              color: '#8A6A4A',
+              opacity: 0.5,
+              letterSpacing: '0.16em',
               textTransform: 'uppercase',
-              transition: 'color 0.2s',
             }}
           >
-            {flow.label}
+            Challenge
           </span>
-          <SquareSlider
-            colors={FLOW_LEVELS.map((l) => l.color)}
-            value={flowIdx}
-            onChange={pickFlow}
-            size={14}
-            gap={4}
+          <input
+            type="text"
+            value={challenge}
+            onChange={(e) => saveChallenge(e.target.value)}
+            placeholder="what's blocking you..."
+            spellCheck={false}
+            autoCorrect="off"
+            autoCapitalize="off"
+            style={{
+              width: '100%',
+              background: 'transparent',
+              border: 'none',
+              borderBottom: '1px solid rgba(90,60,30,0.12)',
+              fontFamily: 'var(--font-handwritten)',
+              fontStyle: 'italic',
+              fontSize: 17,
+              color: '#5C3018',
+              padding: '2px 0',
+              outline: 'none',
+              opacity: 0.8,
+            }}
           />
+        </div>
+
+        {/* Flow */}
+        <div style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: 6 }}>
+          <span
+            style={{
+              fontFamily: 'var(--font-serif)',
+              fontSize: 10,
+              fontWeight: 700,
+              color: '#8A6A4A',
+              opacity: 0.5,
+              letterSpacing: '0.16em',
+              textTransform: 'uppercase',
+            }}
+          >
+            Flow
+          </span>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+            <span
+              style={{
+                fontFamily: 'var(--font-serif)',
+                fontSize: 11,
+                fontWeight: 700,
+                color: flow.color,
+                letterSpacing: '0.12em',
+                textTransform: 'uppercase',
+                transition: 'color 0.2s',
+              }}
+            >
+              {flow.label}
+            </span>
+            <SquareSlider
+              colors={FLOW_LEVELS.map((l) => l.color)}
+              value={flowIdx}
+              onChange={pickFlow}
+              size={14}
+              gap={4}
+            />
+          </div>
         </div>
       </div>
     </div>
