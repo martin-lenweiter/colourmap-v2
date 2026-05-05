@@ -32,8 +32,8 @@ export default function CurrentObjective() {
           style={{ background: '#C4A06015', border: '1px solid #C4A06040' }}
         >
           <span
-            className="text-center text-sm font-semibold uppercase tracking-[0.22em]"
-            style={{ color: '#C4A060' }}
+            className="text-center font-bold uppercase tracking-[0.22em]"
+            style={{ fontSize: '17px', color: '#C4A060' }}
           >
             Current Objective
           </span>

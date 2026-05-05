@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import type { CompassAxis, LifeCategoryLike } from '@/components/CategoryTagPicker';
 import CategoryTagPicker from '@/components/CategoryTagPicker';
 import MicDot from '@/components/MicDot';
@@ -9,14 +9,6 @@ import MicDot from '@/components/MicDot';
    DAILY OBJECTIVES — today's list + push for tomorrow.
    Lives in the Doing tab. Synced with /api/daily-objectives.
    ═══════════════════════════════════════════════════════════ */
-
-const CLARITY_MISSIONS = [
-  { level: 'Lost', color: '#E0908A' },
-  { level: 'Foggy', color: '#C8A8C8' },
-  { level: 'Some', color: '#D8C088' },
-  { level: 'Clear', color: '#A8CCA0' },
-  { level: 'Crystal', color: '#B0D0E8' },
-] as const;
 
 const COMPASS_AXES: CompassAxis[] = [
   { name: 'Care', color: '#D4805A', group: 'Feeling' },
@@ -58,80 +50,6 @@ const WEIGHT_COLORS = ['#A0B0D0', '#90C0C0', '#D8C078', '#E8A878', '#E0908A'];
 const URGENCY_LABELS = ['', 'No rush', 'When you can', 'This week', 'Soon', 'Finish now'];
 const URGENCY_COLORS = ['#A0C8A0', '#C0D088', '#D8C078', '#E8A060', '#D06040'];
 
-function loadNum(key: string, fallback: number): number {
-  try {
-    const v = localStorage.getItem(key);
-    return v !== null ? Number(v) : fallback;
-  } catch {
-    return fallback;
-  }
-}
-
-function DragSlider({
-  items,
-  selectedIdx,
-  onSelect,
-  size = 22,
-}: {
-  items: readonly { level: string; color: string }[];
-  selectedIdx: number;
-  onSelect: (idx: number) => void;
-  size?: number;
-}) {
-  const containerRef = useRef<HTMLDivElement>(null);
-  const gap = 2;
-
-  const idxFromX = (clientX: number) => {
-    const el = containerRef.current;
-    if (!el) return selectedIdx;
-    const rect = el.getBoundingClientRect();
-    const x = clientX - rect.left;
-    const step = size + gap;
-    return Math.max(0, Math.min(items.length - 1, Math.floor(x / step)));
-  };
-
-  return (
-    <div
-      ref={containerRef}
-      className="flex cursor-pointer"
-      style={{
-        gap: `${gap}px`,
-        touchAction: 'none',
-        width: 'fit-content',
-        marginLeft: 'auto',
-        marginRight: 'auto',
-      }}
-      onMouseDown={(e) => onSelect(idxFromX(e.clientX))}
-      onMouseMove={(e) => {
-        if (e.buttons > 0) onSelect(idxFromX(e.clientX));
-      }}
-      onTouchStart={(e) => onSelect(idxFromX(e.touches[0].clientX))}
-      onTouchMove={(e) => {
-        e.preventDefault();
-        onSelect(idxFromX(e.touches[0].clientX));
-      }}
-    >
-      {items.map((h, i) => {
-        const isSelected = i === selectedIdx;
-        const dist = Math.abs(i - selectedIdx);
-        return (
-          <div
-            key={h.level}
-            style={{
-              width: size,
-              height: size,
-              background: h.color,
-              opacity: isSelected ? 1 : dist === 1 ? 0.55 : 0.2,
-              borderRadius: 3,
-              transition: 'opacity 0.15s',
-            }}
-          />
-        );
-      })}
-    </div>
-  );
-}
-
 export default function DailyObjectives() {
   const [open, setOpen] = useState(() => {
     try {
@@ -143,15 +61,6 @@ export default function DailyObjectives() {
   });
   const [pushTomorrowOpen, setPushTomorrowOpen] = useState(true);
   const [doneOpen, setDoneOpen] = useState(false);
-  const [clarityOpen, setClarityOpen] = useState(false);
-  const [clarityMissionsIdx, setClarityMissionsIdx] = useState(() => {
-    const v = loadNum('colourmap:clarity-missions-idx', 2);
-    return Math.max(0, Math.min(CLARITY_MISSIONS.length - 1, v));
-  });
-
-  useEffect(() => {
-    localStorage.setItem('colourmap:clarity-missions-idx', String(clarityMissionsIdx));
-  }, [clarityMissionsIdx]);
 
   const toggleOpen = () => {
     setOpen((prev) => {
@@ -424,7 +333,7 @@ export default function DailyObjectives() {
         >
           <span
             className="text-center uppercase"
-            style={{ color: '#C4A060', fontSize: '15px', fontWeight: 700, letterSpacing: '0.22em' }}
+            style={{ color: '#C4A060', fontSize: '17px', fontWeight: 700, letterSpacing: '0.22em' }}
           >
             {renamingSection === 'other' ? (
               <input
@@ -440,7 +349,7 @@ export default function DailyObjectives() {
                 className="bg-transparent text-center uppercase outline-none border-b"
                 style={{
                   color: '#C4A060',
-                  fontSize: '15px',
+                  fontSize: '17px',
                   fontWeight: 700,
                   letterSpacing: '0.22em',
                   borderColor: '#C4A06040',
@@ -889,13 +798,14 @@ export default function DailyObjectives() {
                 onKeyDown={(e) => {
                   if (e.key === 'Enter') addTodayObjective();
                 }}
-                placeholder="+ add objective for today..."
+                placeholder="add an objective for today..."
                 className="flex-1 border-b bg-transparent pb-1 outline-none text-center placeholder:text-[#7A5438] placeholder:opacity-40"
                 style={{
                   color: '#7a5438',
                   borderColor: '#C4A06020',
                   fontFamily: 'var(--font-handwritten)',
                   fontSize: '24px',
+                  fontWeight: 700,
                 }}
               />
               <MicDot
@@ -942,7 +852,7 @@ export default function DailyObjectives() {
                   className="text-center uppercase"
                   style={{
                     color: '#C4A060',
-                    fontSize: '15px',
+                    fontSize: '17px',
                     fontWeight: 700,
                     letterSpacing: '0.22em',
                   }}
@@ -962,7 +872,7 @@ export default function DailyObjectives() {
                       className="bg-transparent text-center uppercase outline-none border-b"
                       style={{
                         color: '#C4A060',
-                        fontSize: '15px',
+                        fontSize: '17px',
                         fontWeight: 700,
                         letterSpacing: '0.22em',
                         borderColor: '#C4A06040',
@@ -993,19 +903,6 @@ export default function DailyObjectives() {
                 </span>
               </button>
             </div>
-            <p
-              className="text-center uppercase tracking-[0.18em]"
-              style={{
-                fontFamily: 'var(--font-serif)',
-                fontSize: '10px',
-                color: '#C4A060',
-                opacity: 0.45,
-                marginTop: 4,
-              }}
-            >
-              to do
-            </p>
-
             {pushTomorrowOpen && (
               <>
                 {todos
@@ -1215,13 +1112,14 @@ export default function DailyObjectives() {
                     onKeyDown={(e) => {
                       if (e.key === 'Enter') addTodo();
                     }}
-                    placeholder="+ add to-do..."
-                    className="flex-1 border-b bg-transparent pb-1 outline-none placeholder:text-[#7A5438] placeholder:opacity-50"
+                    placeholder="add a to-do..."
+                    className="flex-1 border-b bg-transparent pb-1 outline-none text-center placeholder:text-center placeholder:text-[#7A5438] placeholder:opacity-50"
                     style={{
                       color: '#7a5438',
                       borderColor: '#C4A06020',
                       fontFamily: 'var(--font-handwritten)',
-                      fontSize: '20px',
+                      fontSize: '24px',
+                      fontWeight: 700,
                     }}
                   />
                   <MicDot
@@ -1323,66 +1221,6 @@ export default function DailyObjectives() {
               )}
             </div>
           )}
-
-          {/* Clarity check */}
-          <div className="space-y-1.5 pt-2">
-            <button
-              type="button"
-              onClick={() => setClarityOpen((o) => !o)}
-              className="flex w-full cursor-pointer items-center justify-center gap-2 bg-transparent italic"
-              style={{
-                color: '#8A6A4A',
-                fontFamily: 'var(--font-serif)',
-                fontSize: '15px',
-                opacity: 0.95,
-                border: 'none',
-                padding: '4px 0',
-              }}
-            >
-              <svg width={14} height={14} viewBox="0 0 20 20" style={{ flexShrink: 0 }}>
-                {(() => {
-                  const cx = 10;
-                  const cy = 10;
-                  const r1 = 9;
-                  const r2 = 3.5;
-                  const pts: string[] = [];
-                  for (let i = 0; i < 8; i++) {
-                    const a = -Math.PI / 2 + (i * Math.PI) / 4;
-                    const r = i % 2 === 0 ? r1 : r2;
-                    pts.push(`${cx + r * Math.cos(a)},${cy + r * Math.sin(a)}`);
-                  }
-                  return (
-                    <polygon
-                      points={pts.join(' ')}
-                      fill={clarityOpen ? CLARITY_MISSIONS[clarityMissionsIdx].color : '#C4A060'}
-                      opacity={clarityOpen ? 1 : 0.55}
-                    />
-                  );
-                })()}
-              </svg>
-              are you clear on next missions?
-            </button>
-            {clarityOpen && (
-              <div className="space-y-1.5 animate-in fade-in duration-200">
-                <DragSlider
-                  items={CLARITY_MISSIONS}
-                  selectedIdx={clarityMissionsIdx}
-                  onSelect={setClarityMissionsIdx}
-                  size={36}
-                />
-                <p
-                  className="text-center font-bold transition-all duration-300"
-                  style={{
-                    color: CLARITY_MISSIONS[clarityMissionsIdx].color,
-                    fontFamily: 'var(--font-serif)',
-                    fontSize: '16px',
-                  }}
-                >
-                  {CLARITY_MISSIONS[clarityMissionsIdx].level}
-                </p>
-              </div>
-            )}
-          </div>
         </>
       )}
     </div>

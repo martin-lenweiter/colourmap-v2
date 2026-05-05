@@ -33,7 +33,12 @@ type Mode =
   | 'celtic'
   | 'bloom'
   | 'lava'
-  | 'spire';
+  | 'spire'
+  | 'lissajous3d'
+  | 'tknot3d'
+  | 'lorenz3d'
+  | 'rose3d'
+  | 'helix3d';
 
 interface Pal {
   bg0: string;
@@ -332,6 +337,66 @@ const PRESETS: Record<string, Cfg> = {
     luminous: 4,
     stars: 4,
     mode: 'sacred',
+  },
+  'Lissajous 3D': {
+    preset: 'Blue Astral',
+    symmetry: 3,
+    complexity: 2,
+    glow: 5,
+    breathSpeed: 0.4,
+    intensity: 8,
+    particles: 4,
+    luminous: 3,
+    stars: 2,
+    mode: 'lissajous3d',
+  },
+  'Torus Knot': {
+    preset: 'Violet Portal',
+    symmetry: 2,
+    complexity: 3,
+    glow: 5,
+    breathSpeed: 0.3,
+    intensity: 8,
+    particles: 3,
+    luminous: 4,
+    stars: 3,
+    mode: 'tknot3d',
+  },
+  'Lorenz 3D': {
+    preset: 'Lorenz Storm',
+    symmetry: 10,
+    complexity: 14,
+    glow: 5,
+    breathSpeed: 0.5,
+    intensity: 8,
+    particles: 3,
+    luminous: 4,
+    stars: 2,
+    mode: 'lorenz3d',
+  },
+  'Rose 3D': {
+    preset: 'Yantra Fire',
+    symmetry: 3,
+    complexity: 5,
+    glow: 2,
+    breathSpeed: 0.35,
+    intensity: 8,
+    particles: 5,
+    luminous: 3,
+    stars: 2,
+    mode: 'rose3d',
+  },
+  'Helix 3D': {
+    preset: 'Celtic Forest',
+    symmetry: 3,
+    complexity: 4,
+    glow: 6,
+    breathSpeed: 0.4,
+    intensity: 8,
+    particles: 4,
+    luminous: 3,
+    stars: 2,
+    mode: 'helix3d',
   },
   'Violet Portal': {
     preset: 'Violet Portal',
@@ -1480,6 +1545,16 @@ function buildModeGroup(cfg: Cfg, R: number): THREE.Group {
       return buildBurst(cfg, R);
     case 'lissajous':
       return buildLissajous(cfg, R);
+    case 'lissajous3d':
+      return buildLissajous3D(cfg, R);
+    case 'tknot3d':
+      return buildTknot3D(cfg, R);
+    case 'lorenz3d':
+      return buildLorenz3D(cfg, R);
+    case 'rose3d':
+      return buildRose3D(cfg, R);
+    case 'helix3d':
+      return buildHelix3D(cfg, R);
     case 'golden':
       return buildGolden(cfg, R);
     case 'kaleidoscope':
@@ -1534,6 +1609,21 @@ function updateModeGroup(group: THREE.Group, cfg: Cfg, dots: Dot[], t: number, R
       break;
     case 'lissajous':
       updateLissajous(group, cfg, t, R);
+      break;
+    case 'lissajous3d':
+      updateLissajous3D(group, cfg, t, R);
+      break;
+    case 'tknot3d':
+      updateTknot3D(group, cfg, t, R);
+      break;
+    case 'lorenz3d':
+      updateLorenz3D(group, cfg, t, R);
+      break;
+    case 'rose3d':
+      updateRose3D(group, cfg, t, R);
+      break;
+    case 'helix3d':
+      updateHelix3D(group, cfg, t, R);
       break;
     case 'golden':
       updateGolden(group, cfg, t, R);
@@ -1966,6 +2056,360 @@ function updateLissajous(group: THREE.Group, cfg: Cfg, t: number, R: number): vo
     } else if (child.userData.tag === 'center') {
       updateCenter(child as THREE.Group, breath, [rr, gg, bb], iF, scale);
     }
+  }
+}
+
+/* ── LISSAJOUS 3D mode ──────────────────────────────────────── */
+
+function buildLissajous3D(cfg: Cfg, R: number): THREE.Group {
+  const pal = PAL[cfg.preset] ?? PAL['Blue Astral'];
+  const [rr, gg, bb] = pal.rgb;
+  const iF = Math.max(0.1, cfg.intensity / 10);
+  const layers = Math.max(1, Math.round(cfg.particles));
+  const STEPS = 800;
+  const group = new THREE.Group();
+
+  for (let li = 0; li < layers; li++) {
+    const pts = new Float32Array((STEPS + 1) * 3);
+    const geo = new THREE.BufferGeometry();
+    geo.setAttribute('position', new THREE.BufferAttribute(pts, 3));
+    const opacity = (0.7 - li * 0.08) * iF;
+    const line = new THREE.Line(
+      geo,
+      lineMat(hdrColor([rr, gg, bb], Math.max(0.05, opacity), 2.5), 1.0),
+    );
+    line.userData.tag = 'trace3d';
+    line.userData.li = li;
+    group.add(line);
+  }
+  return group;
+}
+
+function updateLissajous3D(group: THREE.Group, cfg: Cfg, t: number, R: number): void {
+  const pal = PAL[cfg.preset] ?? PAL['Blue Astral'];
+  const [rr, gg, bb] = pal.rgb;
+  const iF = Math.max(0.1, cfg.intensity / 10);
+  const layers = Math.max(1, Math.round(cfg.particles));
+  const STEPS = 800;
+  const TAU = Math.PI * 2;
+  const fx = Math.max(1, Math.round(cfg.symmetry));
+  const fy = Math.max(1, Math.round(cfg.complexity));
+  const fz = Math.max(1, Math.round(cfg.glow));
+  const speed = cfg.breathSpeed * 0.00018;
+  const breath = (Math.sin(t * 0.0008 * cfg.breathSpeed) + 1) * 0.5;
+  const bs = 0.82 + breath * 0.18;
+
+  for (const child of group.children) {
+    if (child.userData.tag !== 'trace3d') continue;
+    const li = child.userData.li as number;
+    const phaseShift = (li / Math.max(1, layers - 1)) * Math.PI * 0.6;
+    const line = child as THREE.Line;
+    const pos = line.geometry.attributes.position.array as Float32Array;
+    const phase = t * speed + phaseShift;
+
+    for (let step = 0; step <= STEPS; step++) {
+      const tp = (step / STEPS) * TAU;
+      pos[step * 3] = R * bs * Math.sin(fx * tp + phase);
+      pos[step * 3 + 1] = R * bs * Math.sin(fy * tp);
+      pos[step * 3 + 2] = R * bs * Math.sin(fz * tp + phase * 0.71);
+    }
+    line.geometry.attributes.position.needsUpdate = true;
+    updateMat(child as THREE.Object3D, [rr, gg, bb], (0.7 - li * 0.08) * iF, 2.5);
+  }
+}
+
+/* ── TORUS KNOT 3D ──────────────────────────────────────────── */
+
+function buildTknot3D(cfg: Cfg, R: number): THREE.Group {
+  const pal = PAL[cfg.preset] ?? PAL['Blue Astral'];
+  const [rr, gg, bb] = pal.rgb;
+  const iF = Math.max(0.1, cfg.intensity / 10);
+  const traces = Math.max(1, Math.round(cfg.particles));
+  const STEPS = 1800;
+  const group = new THREE.Group();
+  for (let ti = 0; ti < traces; ti++) {
+    const pts = new Float32Array((STEPS + 1) * 3);
+    const geo = new THREE.BufferGeometry();
+    geo.setAttribute('position', new THREE.BufferAttribute(pts, 3));
+    const opacity = (0.75 - ti * 0.1) * iF;
+    const line = new THREE.Line(
+      geo,
+      lineMat(hdrColor([rr, gg, bb], Math.max(0.04, opacity), 2.5), 1.0),
+    );
+    line.userData.tag = 'tknot';
+    line.userData.ti = ti;
+    group.add(line);
+  }
+  return group;
+}
+
+function updateTknot3D(group: THREE.Group, cfg: Cfg, t: number, R: number): void {
+  const pal = PAL[cfg.preset] ?? PAL['Blue Astral'];
+  const [rr, gg, bb] = pal.rgb;
+  const iF = Math.max(0.1, cfg.intensity / 10);
+  const p = Math.max(2, Math.round(cfg.symmetry));
+  const q = Math.max(2, Math.round(cfg.complexity));
+  const traces = Math.max(1, Math.round(cfg.particles));
+  const tubeRatio = 0.22 + (cfg.glow / 10) * 0.42;
+  const STEPS = 1800;
+  const TAU = Math.PI * 2;
+  const speed = cfg.breathSpeed * 0.00005;
+  const breath = (Math.sin(t * 0.0007 * cfg.breathSpeed) + 1) * 0.5;
+  const bs = 0.78 + breath * 0.22;
+  const Rmaj = R * bs * 0.68;
+  const Rmin = Rmaj * tubeRatio;
+
+  for (const child of group.children) {
+    if (child.userData.tag !== 'tknot') continue;
+    const ti = child.userData.ti as number;
+    const phaseShift = (ti / Math.max(1, traces)) * 0.18;
+    const line = child as THREE.Line;
+    const pos = line.geometry.attributes.position.array as Float32Array;
+    const phase = t * speed + phaseShift;
+
+    for (let step = 0; step <= STEPS; step++) {
+      const ang = (step / STEPS) * TAU + phase;
+      pos[step * 3] = (Rmaj + Rmin * Math.cos(q * ang)) * Math.cos(p * ang);
+      pos[step * 3 + 1] = (Rmaj + Rmin * Math.cos(q * ang)) * Math.sin(p * ang);
+      pos[step * 3 + 2] = Rmin * Math.sin(q * ang);
+    }
+    line.geometry.attributes.position.needsUpdate = true;
+    updateMat(child as THREE.Object3D, [rr, gg, bb], (0.75 - ti * 0.1) * iF, 2.5);
+  }
+}
+
+/* ── LORENZ ATTRACTOR 3D ────────────────────────────────────── */
+
+function buildLorenz3D(cfg: Cfg, R: number): THREE.Group {
+  const sigma = 5 + cfg.symmetry * 1.0;
+  const rho = 15 + cfg.complexity * 2.0;
+  const beta = 0.5 + (cfg.glow / 10) * 2.5;
+  const nPts = 7000;
+  const dt = 0.007;
+  let lx = 0.1,
+    ly = 0,
+    lz = 20;
+  // burn transient
+  for (let i = 0; i < 800; i++) {
+    const dx = sigma * (ly - lx);
+    const dy = lx * (rho - lz) - ly;
+    const dz = lx * ly - beta * lz;
+    lx += dx * dt;
+    ly += dy * dt;
+    lz += dz * dt;
+  }
+  const raw = new Float32Array(nPts * 3);
+  for (let i = 0; i < nPts; i++) {
+    raw[i * 3] = lx;
+    raw[i * 3 + 1] = ly;
+    raw[i * 3 + 2] = lz;
+    const dx = sigma * (ly - lx);
+    const dy = lx * (rho - lz) - ly;
+    const dz = lx * ly - beta * lz;
+    lx += dx * dt;
+    ly += dy * dt;
+    lz += dz * dt;
+  }
+  // center + normalize
+  let mx = 0,
+    my = 0,
+    mz = 0;
+  for (let i = 0; i < nPts; i++) {
+    mx += raw[i * 3];
+    my += raw[i * 3 + 1];
+    mz += raw[i * 3 + 2];
+  }
+  mx /= nPts;
+  my /= nPts;
+  mz /= nPts;
+  let maxR = 0;
+  for (let i = 0; i < nPts; i++) {
+    const dx = raw[i * 3] - mx,
+      dy = raw[i * 3 + 1] - my,
+      dz = raw[i * 3 + 2] - mz;
+    maxR = Math.max(maxR, Math.sqrt(dx * dx + dy * dy + dz * dz));
+  }
+  const sc = (R * 0.88) / Math.max(maxR, 1);
+  for (let i = 0; i < nPts; i++) {
+    raw[i * 3] = (raw[i * 3] - mx) * sc;
+    raw[i * 3 + 1] = (raw[i * 3 + 1] - my) * sc;
+    raw[i * 3 + 2] = (raw[i * 3 + 2] - mz) * sc;
+  }
+
+  const pal = PAL[cfg.preset] ?? PAL['Blue Astral'];
+  const [rr, gg, bb] = pal.rgb;
+  const iF = Math.max(0.1, cfg.intensity / 10);
+  const trails = Math.max(1, Math.round(cfg.particles));
+  const trailLen = Math.floor(nPts / trails);
+  const group = new THREE.Group();
+  group.userData.raw = raw;
+  group.userData.nPts = nPts;
+  group.userData.trailLen = trailLen;
+
+  for (let ti = 0; ti < trails; ti++) {
+    const pts = new Float32Array((trailLen + 1) * 3);
+    const geo = new THREE.BufferGeometry();
+    geo.setAttribute('position', new THREE.BufferAttribute(pts, 3));
+    const opacity = (0.7 - ti * 0.1) * iF;
+    const line = new THREE.Line(
+      geo,
+      lineMat(hdrColor([rr, gg, bb], Math.max(0.04, opacity), 2.5), 1.0),
+    );
+    line.userData.tag = 'lorenz3d';
+    line.userData.ti = ti;
+    group.add(line);
+  }
+  return group;
+}
+
+function updateLorenz3D(group: THREE.Group, cfg: Cfg, t: number, _R: number): void {
+  const pal = PAL[cfg.preset] ?? PAL['Blue Astral'];
+  const [rr, gg, bb] = pal.rgb;
+  const iF = Math.max(0.1, cfg.intensity / 10);
+  const raw = group.userData.raw as Float32Array | undefined;
+  const nPts = group.userData.nPts as number | undefined;
+  const trailLen = group.userData.trailLen as number | undefined;
+  if (!raw || !nPts || !trailLen) return;
+
+  const speed = cfg.breathSpeed * 0.08;
+  const offset = Math.floor(t * speed) % nPts;
+
+  for (const child of group.children) {
+    if (child.userData.tag !== 'lorenz3d') continue;
+    const ti = child.userData.ti as number;
+    const line = child as THREE.Line;
+    const pos = line.geometry.attributes.position.array as Float32Array;
+    const start = (offset + ti * trailLen) % nPts;
+
+    for (let i = 0; i <= trailLen; i++) {
+      const idx = (start + i) % nPts;
+      pos[i * 3] = raw[idx * 3];
+      pos[i * 3 + 1] = raw[idx * 3 + 1];
+      pos[i * 3 + 2] = raw[idx * 3 + 2];
+    }
+    line.geometry.attributes.position.needsUpdate = true;
+    updateMat(child as THREE.Object3D, [rr, gg, bb], (0.7 - ti * 0.1) * iF, 2.5);
+  }
+}
+
+/* ── ROSE 3D ────────────────────────────────────────────────── */
+
+function buildRose3D(cfg: Cfg, R: number): THREE.Group {
+  const pal = PAL[cfg.preset] ?? PAL['Blue Astral'];
+  const [rr, gg, bb] = pal.rgb;
+  const iF = Math.max(0.1, cfg.intensity / 10);
+  const traces = Math.max(1, Math.round(cfg.particles));
+  const STEPS = 1200;
+  const group = new THREE.Group();
+  for (let ti = 0; ti < traces; ti++) {
+    const pts = new Float32Array((STEPS + 1) * 3);
+    const geo = new THREE.BufferGeometry();
+    geo.setAttribute('position', new THREE.BufferAttribute(pts, 3));
+    const opacity = (0.7 - ti * 0.09) * iF;
+    const line = new THREE.Line(
+      geo,
+      lineMat(hdrColor([rr, gg, bb], Math.max(0.04, opacity), 2.5), 1.0),
+    );
+    line.userData.tag = 'rose3d';
+    line.userData.ti = ti;
+    group.add(line);
+  }
+  return group;
+}
+
+function updateRose3D(group: THREE.Group, cfg: Cfg, t: number, R: number): void {
+  const pal = PAL[cfg.preset] ?? PAL['Blue Astral'];
+  const [rr, gg, bb] = pal.rgb;
+  const iF = Math.max(0.1, cfg.intensity / 10);
+  const a = Math.max(1, Math.round(cfg.symmetry));
+  const b = Math.max(1, Math.round(cfg.complexity));
+  const c = Math.max(1, Math.round(cfg.glow));
+  const traces = Math.max(1, Math.round(cfg.particles));
+  const STEPS = 1200;
+  const TAU = Math.PI * 2;
+  const speed = cfg.breathSpeed * 0.00014;
+  const breath = (Math.sin(t * 0.0009 * cfg.breathSpeed) + 1) * 0.5;
+  const bs = 0.76 + breath * 0.24;
+
+  for (const child of group.children) {
+    if (child.userData.tag !== 'rose3d') continue;
+    const ti = child.userData.ti as number;
+    const phaseShift = (ti / Math.max(1, traces)) * Math.PI * 0.7;
+    const line = child as THREE.Line;
+    const pos = line.geometry.attributes.position.array as Float32Array;
+    const phase = t * speed + phaseShift;
+
+    for (let step = 0; step <= STEPS; step++) {
+      const tp = (step / STEPS) * TAU * Math.max(a, b, c);
+      const r = R * bs * Math.abs(Math.cos(a * tp + phase * 0.3));
+      pos[step * 3] = r * Math.cos(b * tp + phase);
+      pos[step * 3 + 1] = r * Math.sin(b * tp);
+      pos[step * 3 + 2] = R * bs * 0.6 * Math.sin(c * tp + phase * 0.5);
+    }
+    line.geometry.attributes.position.needsUpdate = true;
+    updateMat(child as THREE.Object3D, [rr, gg, bb], (0.7 - ti * 0.09) * iF, 2.5);
+  }
+}
+
+/* ── HELIX 3D ───────────────────────────────────────────────── */
+
+function buildHelix3D(cfg: Cfg, R: number): THREE.Group {
+  const pal = PAL[cfg.preset] ?? PAL['Blue Astral'];
+  const [rr, gg, bb] = pal.rgb;
+  const iF = Math.max(0.1, cfg.intensity / 10);
+  const strands = Math.max(1, Math.round(cfg.particles));
+  const STEPS = 1000;
+  const group = new THREE.Group();
+  for (let si = 0; si < strands; si++) {
+    const pts = new Float32Array((STEPS + 1) * 3);
+    const geo = new THREE.BufferGeometry();
+    geo.setAttribute('position', new THREE.BufferAttribute(pts, 3));
+    const opacity = (0.72 - si * 0.08) * iF;
+    const line = new THREE.Line(
+      geo,
+      lineMat(hdrColor([rr, gg, bb], Math.max(0.04, opacity), 2.5), 1.0),
+    );
+    line.userData.tag = 'helix3d';
+    line.userData.si = si;
+    group.add(line);
+  }
+  return group;
+}
+
+function updateHelix3D(group: THREE.Group, cfg: Cfg, t: number, R: number): void {
+  const pal = PAL[cfg.preset] ?? PAL['Blue Astral'];
+  const [rr, gg, bb] = pal.rgb;
+  const iF = Math.max(0.1, cfg.intensity / 10);
+  const strands = Math.max(1, Math.round(cfg.particles));
+  const turns = Math.max(1, Math.round(cfg.symmetry));
+  const bulges = Math.max(1, Math.round(cfg.complexity));
+  const twist = cfg.glow / 10;
+  const STEPS = 1000;
+  const TAU = Math.PI * 2;
+  const speed = cfg.breathSpeed * 0.00016;
+  const breath = (Math.sin(t * 0.0008 * cfg.breathSpeed) + 1) * 0.5;
+  const bs = 0.8 + breath * 0.2;
+
+  for (const child of group.children) {
+    if (child.userData.tag !== 'helix3d') continue;
+    const si = child.userData.si as number;
+    const strandPhase = (si / strands) * TAU;
+    const line = child as THREE.Line;
+    const pos = line.geometry.attributes.position.array as Float32Array;
+    const phase = t * speed;
+
+    for (let step = 0; step <= STEPS; step++) {
+      const u = (step / STEPS) * TAU * turns;
+      const bulge = 1 + 0.35 * Math.cos(bulges * u + phase * 3);
+      const rr2 = R * bs * 0.62 * bulge;
+      const taper = Math.sin((step / STEPS) * Math.PI); // fade ends
+      pos[step * 3] = rr2 * taper * Math.cos(u + strandPhase + phase);
+      pos[step * 3 + 1] = rr2 * taper * Math.sin(u + strandPhase + phase);
+      pos[step * 3 + 2] =
+        R * bs * (step / STEPS - 0.5) * 1.6 + R * 0.22 * Math.sin(twist * TAU * u + phase * 2);
+    }
+    line.geometry.attributes.position.needsUpdate = true;
+    updateMat(child as THREE.Object3D, [rr, gg, bb], (0.72 - si * 0.08) * iF, 2.5);
   }
 }
 
@@ -4978,6 +5422,56 @@ const MODE_SLIDERS: Partial<Record<Mode, SliderDef[]>> = {
     { key: 'luminous', label: 'Luminous', min: 0, max: 5, step: 0.5 },
     { key: 'stars', label: 'Stars', min: 0, max: 5, step: 1 },
   ],
+  lissajous3d: [
+    { key: 'symmetry', label: 'Freq X', min: 1, max: 9, step: 1 },
+    { key: 'complexity', label: 'Freq Y', min: 1, max: 9, step: 1 },
+    { key: 'glow', label: 'Freq Z', min: 1, max: 9, step: 1 },
+    { key: 'particles', label: 'Traces', min: 1, max: 8, step: 1 },
+    { key: 'breathSpeed', label: 'Speed', min: 0.05, max: 2.0, step: 0.05 },
+    { key: 'intensity', label: 'Colour', min: 1, max: 10, step: 0.5 },
+    { key: 'luminous', label: 'Bloom', min: 0, max: 5, step: 0.5 },
+    { key: 'stars', label: 'Stars', min: 0, max: 10, step: 1 },
+  ],
+  tknot3d: [
+    { key: 'symmetry', label: 'Winds P', min: 2, max: 7, step: 1 },
+    { key: 'complexity', label: 'Winds Q', min: 2, max: 9, step: 1 },
+    { key: 'glow', label: 'Tube', min: 1, max: 10, step: 0.5 },
+    { key: 'particles', label: 'Traces', min: 1, max: 6, step: 1 },
+    { key: 'breathSpeed', label: 'Speed', min: 0.05, max: 1.5, step: 0.05 },
+    { key: 'intensity', label: 'Colour', min: 1, max: 10, step: 0.5 },
+    { key: 'luminous', label: 'Bloom', min: 0, max: 5, step: 0.5 },
+    { key: 'stars', label: 'Stars', min: 0, max: 10, step: 1 },
+  ],
+  lorenz3d: [
+    { key: 'symmetry', label: 'Sigma', min: 1, max: 20, step: 1 },
+    { key: 'complexity', label: 'Rho', min: 1, max: 20, step: 1 },
+    { key: 'glow', label: 'Beta', min: 0, max: 10, step: 0.5 },
+    { key: 'particles', label: 'Trails', min: 1, max: 6, step: 1 },
+    { key: 'breathSpeed', label: 'Flow', min: 0.05, max: 2.0, step: 0.05 },
+    { key: 'intensity', label: 'Colour', min: 1, max: 10, step: 0.5 },
+    { key: 'luminous', label: 'Bloom', min: 0, max: 5, step: 0.5 },
+    { key: 'stars', label: 'Stars', min: 0, max: 10, step: 1 },
+  ],
+  rose3d: [
+    { key: 'symmetry', label: 'Freq A', min: 1, max: 9, step: 1 },
+    { key: 'complexity', label: 'Freq B', min: 1, max: 9, step: 1 },
+    { key: 'glow', label: 'Freq C', min: 1, max: 9, step: 1 },
+    { key: 'particles', label: 'Petals', min: 1, max: 8, step: 1 },
+    { key: 'breathSpeed', label: 'Speed', min: 0.05, max: 2.0, step: 0.05 },
+    { key: 'intensity', label: 'Colour', min: 1, max: 10, step: 0.5 },
+    { key: 'luminous', label: 'Bloom', min: 0, max: 5, step: 0.5 },
+    { key: 'stars', label: 'Stars', min: 0, max: 10, step: 1 },
+  ],
+  helix3d: [
+    { key: 'particles', label: 'Strands', min: 1, max: 8, step: 1 },
+    { key: 'symmetry', label: 'Turns', min: 1, max: 12, step: 1 },
+    { key: 'complexity', label: 'Bulges', min: 1, max: 10, step: 1 },
+    { key: 'glow', label: 'Twist', min: 0, max: 10, step: 0.5 },
+    { key: 'breathSpeed', label: 'Speed', min: 0.05, max: 2.0, step: 0.05 },
+    { key: 'intensity', label: 'Colour', min: 1, max: 10, step: 0.5 },
+    { key: 'luminous', label: 'Bloom', min: 0, max: 5, step: 0.5 },
+    { key: 'stars', label: 'Stars', min: 0, max: 10, step: 1 },
+  ],
 };
 
 function slidersFor(mode: Mode): SliderDef[] {
@@ -5007,6 +5501,11 @@ const MODE_TO_PRESET: Partial<Record<Mode, string>> = {
   bloom: 'Infinite Bloom',
   lava: 'Lava Dream',
   spire: 'Gothic Spire',
+  lissajous3d: 'Lissajous 3D',
+  tknot3d: 'Torus Knot',
+  lorenz3d: 'Lorenz 3D',
+  rose3d: 'Rose 3D',
+  helix3d: 'Helix 3D',
 };
 
 const MODES: { mode: Mode; label: string }[] = [
@@ -5034,6 +5533,11 @@ const MODES: { mode: Mode; label: string }[] = [
   { mode: 'bloom', label: '🌸 Bloom' },
   { mode: 'lava', label: '🌋 Lava' },
   { mode: 'spire', label: '⛪ Spire' },
+  { mode: 'lissajous3d', label: '∿³ Lissajous 3D' },
+  { mode: 'tknot3d', label: '⌀ Torus Knot' },
+  { mode: 'lorenz3d', label: '𝛔 Lorenz 3D' },
+  { mode: 'rose3d', label: '✾ Rose 3D' },
+  { mode: 'helix3d', label: '⟳ Helix 3D' },
 ];
 
 /* ── Component ──────────────────────────────────────────────── */
@@ -5072,10 +5576,13 @@ export default function GeometryField() {
   const sizeRef = useRef({ W: 0, H: 0 });
   const clearColorRef = useRef(new THREE.Color());
   const rippleRingsRef = useRef<THREE.Line[]>([]);
+  const l3dRotRef = useRef({ x: 0.4, y: 0.0 });
+  const l3dDragRef = useRef<{ lastX: number; lastY: number } | null>(null);
 
   const [cfg, setCfg] = useState<Cfg>(PRESETS['Calm Field']);
   const [open, setOpen] = useState(true);
   const [tab, setTab] = useState<'builder' | 'journey'>('builder');
+  const [builderView, setBuilderView] = useState<'programs' | 'sliders'>('sliders');
   const [journeyId, setJourneyId] = useState(1);
   const [journeyRunning, setJourneyRunning] = useState(false);
   const [journeyPhaseInfo, setJourneyPhaseInfo] = useState({ phaseIdx: 0, phaseProgress: 0 });
@@ -5215,6 +5722,22 @@ export default function GeometryField() {
       // Update mode each frame
       updateModeGroup(modeGroupRef.current!, currentCfg, dotsRef.current, t, R);
 
+      // Apply 3D rotation for spinnable modes
+      const is3D =
+        currentCfg.mode === 'lissajous3d' ||
+        currentCfg.mode === 'tknot3d' ||
+        currentCfg.mode === 'lorenz3d' ||
+        currentCfg.mode === 'rose3d' ||
+        currentCfg.mode === 'helix3d';
+      if (is3D && modeGroupRef.current) {
+        if (!l3dDragRef.current) {
+          // Slow auto-spin when not dragging
+          l3dRotRef.current.y += 0.003;
+        }
+        modeGroupRef.current.rotation.x = l3dRotRef.current.x;
+        modeGroupRef.current.rotation.y = l3dRotRef.current.y;
+      }
+
       // Store W/H for ripple positioning
       scene.userData.W = W;
       scene.userData.H = H;
@@ -5313,6 +5836,21 @@ export default function GeometryField() {
     setJourneyRunning(true);
     phaseInfoRef.current = { phaseIdx: 0, phaseProgress: 0 };
     setJourneyPhaseInfo({ phaseIdx: 0, phaseProgress: 0 });
+  }
+
+  function skipToPhase(phaseIdx: number) {
+    if (!journeyRunning) return;
+    const jData = JOURNEYS[journeyIdRef.current - 1];
+    if (!jData) return;
+    const totalDur = jData.stages.reduce(
+      (s: number, st: { duration: number }) => s + st.duration,
+      0,
+    );
+    let acc = 0;
+    for (let i = 0; i < phaseIdx; i++) acc += jData.stages[i].duration;
+    journeyStartRef.current = performance.now() - (acc % totalDur) * 1000;
+    phaseInfoRef.current = { phaseIdx, phaseProgress: 0 };
+    setJourneyPhaseInfo({ phaseIdx, phaseProgress: 0 });
   }
 
   function stopJourney() {
@@ -5453,13 +5991,48 @@ export default function GeometryField() {
         <canvas
           ref={canvasRef}
           onClick={handleCanvasClick}
+          onPointerDown={(e) => {
+            const is3d =
+              cfg.mode === 'lissajous3d' ||
+              cfg.mode === 'tknot3d' ||
+              cfg.mode === 'lorenz3d' ||
+              cfg.mode === 'rose3d' ||
+              cfg.mode === 'helix3d';
+            if (!is3d) return;
+            e.currentTarget.setPointerCapture(e.pointerId);
+            l3dDragRef.current = { lastX: e.clientX, lastY: e.clientY };
+          }}
+          onPointerMove={(e) => {
+            const is3d =
+              cfg.mode === 'lissajous3d' ||
+              cfg.mode === 'tknot3d' ||
+              cfg.mode === 'lorenz3d' ||
+              cfg.mode === 'rose3d' ||
+              cfg.mode === 'helix3d';
+            if (!is3d || !l3dDragRef.current) return;
+            const dx = e.clientX - l3dDragRef.current.lastX;
+            const dy = e.clientY - l3dDragRef.current.lastY;
+            l3dRotRef.current.y += dx * 0.008;
+            l3dRotRef.current.x += dy * 0.008;
+            l3dDragRef.current = { lastX: e.clientX, lastY: e.clientY };
+          }}
+          onPointerUp={() => {
+            l3dDragRef.current = null;
+          }}
           style={{
             position: 'absolute',
             inset: 0,
             width: '100%',
             height: '100%',
             display: 'block',
-            cursor: 'crosshair',
+            cursor:
+              cfg.mode === 'lissajous3d' ||
+              cfg.mode === 'tknot3d' ||
+              cfg.mode === 'lorenz3d' ||
+              cfg.mode === 'rose3d' ||
+              cfg.mode === 'helix3d'
+                ? 'grab'
+                : 'crosshair',
           }}
         />
 
@@ -5617,102 +6190,166 @@ export default function GeometryField() {
           {/* ── BUILDER TAB ── */}
           {tab === 'builder' && (
             <>
-              {/* Mode pills */}
-              <div style={{ display: 'flex', gap: 5, overflowX: 'auto', scrollbarWidth: 'none' }}>
-                {MODES.map(({ mode, label }) =>
-                  pill(
-                    label,
-                    cfg.mode === mode,
-                    () => {
-                      const p = MODE_TO_PRESET[mode];
-                      if (p) applyPreset(p);
-                      else update('mode', mode);
-                    },
-                    true,
-                  ),
-                )}
+              {/* View toggle header */}
+              <div
+                style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}
+              >
+                <span
+                  style={{
+                    fontFamily: 'var(--font-serif)',
+                    fontSize: 11,
+                    fontWeight: 700,
+                    color: accent,
+                    letterSpacing: '0.12em',
+                    textTransform: 'uppercase',
+                    opacity: 0.9,
+                  }}
+                >
+                  {MODES.find((m) => m.mode === cfg.mode)?.label ?? cfg.mode}
+                </span>
+                <div style={{ display: 'flex', gap: 4 }}>
+                  {(['programs', 'sliders'] as const).map((v) => (
+                    <button
+                      key={v}
+                      type="button"
+                      onClick={() => setBuilderView(v)}
+                      style={{
+                        background: builderView === v ? accentFaint : 'transparent',
+                        border: `1px solid ${builderView === v ? accentMid : `rgba(${pr},${pg},${pb},0.15)`}`,
+                        borderRadius: 99,
+                        padding: '3px 10px',
+                        color: builderView === v ? accent : `rgba(${pr},${pg},${pb},0.45)`,
+                        fontFamily: 'var(--font-serif)',
+                        fontSize: 9,
+                        cursor: 'pointer',
+                        letterSpacing: '0.08em',
+                        textTransform: 'uppercase',
+                      }}
+                    >
+                      {v}
+                    </button>
+                  ))}
+                </div>
               </div>
 
-              {/* Preset pills */}
-              <div style={{ display: 'flex', gap: 5, overflowX: 'auto', scrollbarWidth: 'none' }}>
-                {Object.keys(PRESETS).map((name) =>
-                  pill(name, cfg.preset === name, () => applyPreset(name), true),
-                )}
-              </div>
-
-              {/* Sliders */}
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '6px 20px' }}>
-                {slidersFor(cfg.mode).map(({ key, label, min, max, step }) => {
-                  const val = cfg[key] as number;
-                  return (
-                    <div key={key}>
-                      <div
+              {/* Programs grid */}
+              {builderView === 'programs' && (
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 5 }}>
+                  {MODES.map(({ mode, label }) => {
+                    const isActive = cfg.mode === mode;
+                    return (
+                      <button
+                        key={mode}
+                        type="button"
+                        onClick={() => {
+                          const p = MODE_TO_PRESET[mode];
+                          if (p) applyPreset(p);
+                          else update('mode', mode);
+                          setBuilderView('sliders');
+                        }}
                         style={{
-                          display: 'flex',
-                          justifyContent: 'space-between',
-                          marginBottom: 2,
+                          background: isActive ? accentFaint : 'transparent',
+                          border: `1px solid ${isActive ? accentMid : `rgba(${pr},${pg},${pb},0.15)`}`,
+                          borderRadius: 8,
+                          padding: '7px 6px',
+                          color: isActive ? accent : `rgba(${pr},${pg},${pb},0.6)`,
+                          fontFamily: 'var(--font-serif)',
+                          fontSize: 10,
+                          fontWeight: isActive ? 700 : 400,
+                          cursor: 'pointer',
+                          letterSpacing: '0.06em',
+                          textAlign: 'center',
                         }}
                       >
-                        <span
-                          style={{
-                            fontFamily: 'var(--font-serif)',
-                            fontSize: 9,
-                            color: `rgba(${pr},${pg},${pb},0.6)`,
-                            letterSpacing: '0.1em',
-                            textTransform: 'uppercase',
-                          }}
-                        >
-                          {label}
-                        </span>
-                        <span
-                          style={{ fontFamily: 'var(--font-serif)', fontSize: 9, color: accent }}
-                        >
-                          {step < 1 ? val.toFixed(2) : Math.round(val)}
-                        </span>
-                      </div>
-                      <input
-                        type="range"
-                        min={min}
-                        max={max}
-                        step={step}
-                        value={val}
-                        onChange={(e) => update(key as keyof Cfg, parseFloat(e.target.value))}
-                        style={{ width: '100%', accentColor: accent, cursor: 'pointer' }}
-                      />
-                    </div>
-                  );
-                })}
-              </div>
+                        {label}
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
 
-              {/* Action buttons */}
-              <div style={{ display: 'flex', gap: 6, justifyContent: 'center', flexWrap: 'wrap' }}>
-                {(
-                  [
-                    ['Randomize', handleRandomize],
-                    ['Save', handleSave],
-                    ['Reset', () => applyPreset('Calm Field')],
-                    ['Fullscreen', handleFullscreen],
-                  ] as [string, () => void][]
-                ).map(([label, fn]) => (
-                  <button
-                    key={label}
-                    type="button"
-                    onClick={fn}
-                    style={{
-                      background: accentFaint,
-                      border: `1px solid ${accentMid}`,
-                      borderRadius: 99,
-                      padding: '5px 14px',
-                      color: accent,
-                      fontFamily: 'var(--font-serif)',
-                      fontSize: 10,
-                      cursor: 'pointer',
-                    }}
+              {/* Sliders + actions */}
+              {builderView === 'sliders' && (
+                <>
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '6px 20px' }}>
+                    {slidersFor(cfg.mode).map(({ key, label, min, max, step }) => {
+                      const val = cfg[key] as number;
+                      return (
+                        <div key={key}>
+                          <div
+                            style={{
+                              display: 'flex',
+                              justifyContent: 'space-between',
+                              marginBottom: 2,
+                            }}
+                          >
+                            <span
+                              style={{
+                                fontFamily: 'var(--font-serif)',
+                                fontSize: 9,
+                                color: `rgba(${pr},${pg},${pb},0.6)`,
+                                letterSpacing: '0.1em',
+                                textTransform: 'uppercase',
+                              }}
+                            >
+                              {label}
+                            </span>
+                            <span
+                              style={{
+                                fontFamily: 'var(--font-serif)',
+                                fontSize: 9,
+                                color: accent,
+                              }}
+                            >
+                              {step < 1 ? val.toFixed(2) : Math.round(val)}
+                            </span>
+                          </div>
+                          <input
+                            type="range"
+                            min={min}
+                            max={max}
+                            step={step}
+                            value={val}
+                            onChange={(e) => update(key as keyof Cfg, parseFloat(e.target.value))}
+                            style={{ width: '100%', accentColor: accent, cursor: 'pointer' }}
+                          />
+                        </div>
+                      );
+                    })}
+                  </div>
+
+                  <div
+                    style={{ display: 'flex', gap: 6, justifyContent: 'center', flexWrap: 'wrap' }}
                   >
-                    {label}
-                  </button>
-                ))}
-              </div>
+                    {(
+                      [
+                        ['Randomize', handleRandomize],
+                        ['Save', handleSave],
+                        ['Reset', () => applyPreset('Calm Field')],
+                        ['Fullscreen', handleFullscreen],
+                      ] as [string, () => void][]
+                    ).map(([label, fn]) => (
+                      <button
+                        key={label}
+                        type="button"
+                        onClick={fn}
+                        style={{
+                          background: accentFaint,
+                          border: `1px solid ${accentMid}`,
+                          borderRadius: 99,
+                          padding: '5px 14px',
+                          color: accent,
+                          fontFamily: 'var(--font-serif)',
+                          fontSize: 10,
+                          cursor: 'pointer',
+                        }}
+                      >
+                        {label}
+                      </button>
+                    ))}
+                  </div>
+                </>
+              )}
             </>
           )}
 
@@ -5767,6 +6404,7 @@ export default function GeometryField() {
                   return (
                     <div
                       key={i}
+                      onClick={() => journeyRunning && skipToPhase(i)}
                       style={{
                         display: 'flex',
                         alignItems: 'center',
@@ -5777,6 +6415,7 @@ export default function GeometryField() {
                         border: `1px solid ${isActive ? accentMid : 'rgba(255,255,255,0.05)'}`,
                         position: 'relative',
                         overflow: 'hidden',
+                        cursor: journeyRunning ? 'pointer' : 'default',
                       }}
                     >
                       {isActive && (
@@ -5854,24 +6493,49 @@ export default function GeometryField() {
                     ▶ Start Journey
                   </button>
                 ) : (
-                  <button
-                    type="button"
-                    onClick={stopJourney}
-                    style={{
-                      background: accentFaint,
-                      border: `1px solid ${accentMid}`,
-                      borderRadius: 99,
-                      padding: '8px 32px',
-                      color: accent,
-                      fontFamily: 'var(--font-serif)',
-                      fontSize: 12,
-                      fontWeight: 700,
-                      letterSpacing: '0.1em',
-                      cursor: 'pointer',
-                    }}
-                  >
-                    ◼ Stop
-                  </button>
+                  <>
+                    <button
+                      type="button"
+                      onClick={stopJourney}
+                      style={{
+                        background: accentFaint,
+                        border: `1px solid ${accentMid}`,
+                        borderRadius: 99,
+                        padding: '8px 20px',
+                        color: accent,
+                        fontFamily: 'var(--font-serif)',
+                        fontSize: 12,
+                        fontWeight: 700,
+                        letterSpacing: '0.1em',
+                        cursor: 'pointer',
+                      }}
+                    >
+                      ◼ Stop
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const jData = JOURNEYS[journeyIdRef.current - 1];
+                        if (!jData) return;
+                        const next = (journeyPhaseInfo.phaseIdx + 1) % jData.stages.length;
+                        skipToPhase(next);
+                      }}
+                      style={{
+                        background: accent,
+                        border: 'none',
+                        borderRadius: 99,
+                        padding: '8px 20px',
+                        color: '#000',
+                        fontFamily: 'var(--font-serif)',
+                        fontSize: 12,
+                        fontWeight: 700,
+                        letterSpacing: '0.1em',
+                        cursor: 'pointer',
+                      }}
+                    >
+                      ▶▶ Next
+                    </button>
+                  </>
                 )}
                 <button
                   type="button"

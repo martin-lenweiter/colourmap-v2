@@ -1,15 +1,11 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import ActiveCategoryBanner from '@/components/ActiveCategoryBanner';
 import FdsPanel from '@/components/FdsPanel';
-import LifeCategories from '@/components/LifeCategories';
-import LifeCategoriesEmptyState from '@/components/LifeCategoriesEmptyState';
-import LifeCategoriesStrip from '@/components/LifeCategoriesStrip';
 import ProgressTab from '@/components/ProgressTab';
 import SlowWins from '@/components/SlowWins';
 import { useStyle } from '@/components/StyleContext';
-import WeekShape from '@/components/WeekShape';
+
 import { haptic } from '@/lib/haptics';
 
 type RoadTab = 'overview' | 'progress';
@@ -17,7 +13,7 @@ const ROAD_TAB_KEY = 'colourmap:road-tab';
 
 const ROAD_TABS: { id: RoadTab; label: string }[] = [
   { id: 'overview', label: 'Overview' },
-  { id: 'progress', label: 'Progress' },
+  { id: 'progress', label: 'Test Ideas' },
 ];
 
 export default function RoadView() {
@@ -78,14 +74,7 @@ export default function RoadView() {
             {/* ── FDS ── unified axis panel: dots + compass + reflect */}
             <FdsPanel />
 
-            {/* ── Life categories ── personal organic layer */}
-            <LifeCategoriesEmptyState />
-            <LifeCategoriesStrip />
-            <ActiveCategoryBanner />
-            <LifeCategories />
-
-            {/* ── Below the fold ── passive display, user to judge */}
-            <WeekShape />
+            {/* ── Below the fold ── */}
             <SlowWins />
           </div>
         )}

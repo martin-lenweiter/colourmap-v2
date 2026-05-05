@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import CategoryTagPicker from '@/components/CategoryTagPicker';
+import PulseDots from '@/components/PulseDots';
 
 /* ═══════════════════════════════════════════════════════════
    FEELING CHECK-IN CARD — Zen circle + losange gateway
@@ -509,7 +510,7 @@ export default function FeelingCheckInCard() {
   const [sliderVisible, setSliderVisible] = useState(false);
   const sliderHideTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [showChallengeFlow, setShowChallengeFlow] = useState(false);
-  const [showHawkinsDesc, setShowHawkinsDesc] = useState(false);
+  const [_showHawkinsDesc, _setShowHawkinsDesc] = useState(false);
   const [_presenceSectionOpen, setPresenceSectionOpen] = useState(() => {
     try {
       return localStorage.getItem('colourmap:presence-section-open') === 'true';
@@ -1330,6 +1331,7 @@ export default function FeelingCheckInCard() {
 
   return (
     <>
+      <PulseDots axisKey="feeling" />
       {/* BOX A: FEELING — frame removed on phone to reclaim margins.
           Desktop keeps the beige card for visual grouping. */}
       <div className="relative space-y-2.5 px-0 py-0">
@@ -1478,63 +1480,24 @@ export default function FeelingCheckInCard() {
             </div>
           )}
 
-          {/* Variant 2: Circle — single draggable color disc */}
+          {/* Variant 2: Circle — single draggable color disc (Hawkins scale) */}
           {variantIdx === 2 && (
             <div
               className="relative flex items-center justify-center select-none"
               style={{ width: 300, height: 95 }}
             >
               <div
-                className="cursor-grab rounded-full transition-colors duration-500 active:cursor-grabbing"
+                className="cursor-grab rounded-full active:cursor-grabbing"
                 style={{
                   width: 90,
                   height: 90,
-                  // Pastel: blend the raw BALANCE colour with the cream paper base
-                  // via a semi-transparent overlay. The 60% alpha lets the warm
-                  // parchment tone show through, softening every variant.
-                  background: `linear-gradient(rgba(245,236,220,0.45), rgba(245,236,220,0.45)), ${BALANCE[balanceIdx].color}`,
+                  background: HAWKINS[hawkinsIdx].color,
+                  boxShadow: `0 12px 32px -8px ${HAWKINS[hawkinsIdx].color}88`,
+                  transition: 'background 0.3s, box-shadow 0.3s',
                   touchAction: 'none',
                 }}
-                onClick={(e) => {
-                  const rect = (e.target as HTMLElement).getBoundingClientRect();
-                  const cx = rect.left + rect.width / 2;
-                  if (e.clientX < cx && balanceIdx > 0) setBalanceIdx(balanceIdx - 1);
-                  else if (e.clientX > cx && balanceIdx < BALANCE.length - 1)
-                    setBalanceIdx(balanceIdx + 1);
-                }}
-                onMouseDown={(e) => {
-                  const startX = e.clientX;
-                  const startIdx = balanceIdx;
-                  const onMove = (ev: MouseEvent) => {
-                    const dx = ev.clientX - startX;
-                    const steps = Math.round(dx / 30);
-                    const next = Math.max(0, Math.min(BALANCE.length - 1, startIdx + steps));
-                    if (next !== balanceIdx) setBalanceIdx(next);
-                  };
-                  const onUp = () => {
-                    window.removeEventListener('mousemove', onMove);
-                    window.removeEventListener('mouseup', onUp);
-                  };
-                  window.addEventListener('mousemove', onMove);
-                  window.addEventListener('mouseup', onUp);
-                }}
-                onTouchStart={(e) => {
-                  const startX = e.touches[0].clientX;
-                  const startIdx = balanceIdx;
-                  const onMove = (ev: TouchEvent) => {
-                    ev.preventDefault();
-                    const dx = ev.touches[0].clientX - startX;
-                    const steps = Math.round(dx / 30);
-                    const next = Math.max(0, Math.min(BALANCE.length - 1, startIdx + steps));
-                    if (next !== balanceIdx) setBalanceIdx(next);
-                  };
-                  const onEnd = () => {
-                    window.removeEventListener('touchmove', onMove);
-                    window.removeEventListener('touchend', onEnd);
-                  };
-                  window.addEventListener('touchmove', onMove, { passive: false });
-                  window.addEventListener('touchend', onEnd);
-                }}
+                onMouseDown={(e) => startCircleInteraction(e.clientX)}
+                onTouchStart={(e) => startCircleInteraction(e.touches[0].clientX)}
               />
             </div>
           )}
@@ -2258,7 +2221,9 @@ export default function FeelingCheckInCard() {
                 fontFamily: 'var(--font-serif)',
               }}
             >
-              {variantIdx === 6 ? HAWKINS[hawkinsIdx].level : BALANCE[balanceIdx].label}
+              {variantIdx === 2 || variantIdx === 6
+                ? HAWKINS[hawkinsIdx].level
+                : BALANCE[balanceIdx].label}
             </p>
           )}
         </div>
@@ -2316,7 +2281,32 @@ export default function FeelingCheckInCard() {
                 />
               </button>
 
-              <div className="relative" style={{ width: 300, height: 40 }}>
+              <div
+                className="relative"
+                style={{ width: 300, height: 40, touchAction: 'none', cursor: 'pointer' }}
+                onPointerDown={(e) => {
+                  e.currentTarget.setPointerCapture(e.pointerId);
+                  const rect = e.currentTarget.getBoundingClientRect();
+                  const x = e.clientX - rect.left;
+                  const sq = hawkinsStyle === 'dots' ? 22 : hawkinsStyle === 'losanges' ? 18 : 20;
+                  const gap = hawkinsStyle === 'dots' ? 6 : hawkinsStyle === 'losanges' ? 13 : 6;
+                  const totalW = HAWKINS.length * sq + (HAWKINS.length - 1) * gap;
+                  const offsetX = (300 - totalW) / 2;
+                  const i = Math.round((x - offsetX) / (sq + gap));
+                  setHawkinsIdx(Math.max(0, Math.min(HAWKINS.length - 1, i)));
+                }}
+                onPointerMove={(e) => {
+                  if (e.buttons !== 1) return;
+                  const rect = e.currentTarget.getBoundingClientRect();
+                  const x = e.clientX - rect.left;
+                  const sq = hawkinsStyle === 'dots' ? 22 : hawkinsStyle === 'losanges' ? 18 : 20;
+                  const gap = hawkinsStyle === 'dots' ? 6 : hawkinsStyle === 'losanges' ? 13 : 6;
+                  const totalW = HAWKINS.length * sq + (HAWKINS.length - 1) * gap;
+                  const offsetX = (300 - totalW) / 2;
+                  const i = Math.round((x - offsetX) / (sq + gap));
+                  setHawkinsIdx(Math.max(0, Math.min(HAWKINS.length - 1, i)));
+                }}
+              >
                 {(() => {
                   if (hawkinsStyle === 'losanges') {
                     // LOSANGES — rotated squares (diamonds). A rotated 18px square
@@ -2417,63 +2407,6 @@ export default function FeelingCheckInCard() {
                   });
                 })()}
               </div>
-              <p
-                style={{
-                  color: '#1a1a1a',
-                  fontFamily: 'var(--font-serif)',
-                  fontSize: '18px',
-                  fontWeight: 700,
-                  letterSpacing: '0.04em',
-                  opacity: 1,
-                }}
-              >
-                <button
-                  type="button"
-                  onClick={() => setShowHawkinsDesc((s) => !s)}
-                  className="cursor-pointer transition-all hover:opacity-80"
-                  style={{
-                    background: 'none',
-                    border: 'none',
-                    padding: 0,
-                    color: 'inherit',
-                    font: 'inherit',
-                    fontWeight: 'inherit',
-                    letterSpacing: 'inherit',
-                  }}
-                >
-                  {HAWKINS[hawkinsIdx].level}
-                </button>
-              </p>
-              {showHawkinsDesc && (
-                <div className="animate-in fade-in duration-200 space-y-2 px-4 pt-1 pb-2">
-                  <p
-                    style={{
-                      fontFamily: 'var(--font-serif)',
-                      fontSize: '14px',
-                      color: '#5C3018',
-                      lineHeight: 1.5,
-                      opacity: 0.85,
-                    }}
-                  >
-                    {HAWKINS[hawkinsIdx].desc}
-                  </p>
-                  <p
-                    className="italic"
-                    style={{
-                      fontFamily: 'var(--font-serif)',
-                      fontSize: '13px',
-                      color:
-                        HAWKINS[hawkinsIdx].color === '#F0E060'
-                          ? '#B8860B'
-                          : HAWKINS[hawkinsIdx].color,
-                      lineHeight: 1.4,
-                      opacity: 0.75,
-                    }}
-                  >
-                    {HAWKINS[hawkinsIdx].evolve}
-                  </p>
-                </div>
-              )}
             </div>
           )}
 
@@ -2506,12 +2439,19 @@ export default function FeelingCheckInCard() {
               <div className="space-y-5 animate-in fade-in duration-150">
                 {/* CHALLENGE */}
                 <div className="space-y-2">
-                  <p
-                    className="text-center font-semibold uppercase tracking-[0.22em]"
-                    style={{ color: '#C4A060', fontSize: '22px' }}
-                  >
-                    Challenge
-                  </p>
+                  <div className="flex justify-center">
+                    <div
+                      className="flex items-center rounded-full px-5 py-1.5"
+                      style={{ background: '#C4A06015', border: '1px solid #C4A06040' }}
+                    >
+                      <span
+                        className="text-center font-semibold uppercase tracking-[0.22em]"
+                        style={{ color: '#C4A060', fontSize: '22px' }}
+                      >
+                        Challenge
+                      </span>
+                    </div>
+                  </div>
                   <textarea
                     value={challengeInput}
                     onChange={(e) => setChallengeInput(e.target.value)}
@@ -2592,12 +2532,19 @@ export default function FeelingCheckInCard() {
 
                 {/* FLOW */}
                 <div className="space-y-2">
-                  <p
-                    className="text-center font-semibold uppercase tracking-[0.22em]"
-                    style={{ color: '#C4A060', fontSize: '22px' }}
-                  >
-                    Flow
-                  </p>
+                  <div className="flex justify-center">
+                    <div
+                      className="flex items-center rounded-full px-5 py-1.5"
+                      style={{ background: '#C4A06015', border: '1px solid #C4A06040' }}
+                    >
+                      <span
+                        className="text-center font-semibold uppercase tracking-[0.22em]"
+                        style={{ color: '#C4A060', fontSize: '22px' }}
+                      >
+                        Flow
+                      </span>
+                    </div>
+                  </div>
                   <textarea
                     value={flowInput}
                     onChange={(e) => setFlowInput(e.target.value)}
@@ -2662,11 +2609,12 @@ export default function FeelingCheckInCard() {
                 <button
                   type="button"
                   onClick={() => setShowLogbookEntries(!showLogbookEntries)}
-                  className="flex cursor-pointer items-center gap-1.5 rounded-full bg-transparent px-3 py-0.5 font-semibold uppercase tracking-wider transition-all"
+                  className="flex cursor-pointer items-center gap-1.5 rounded-full px-4 py-1 font-semibold uppercase tracking-[0.22em] transition-all"
                   style={{
-                    color: '#8A6A4A',
-                    border: '1px dashed #C4A06070',
-                    fontSize: '12px',
+                    background: '#C4A06015',
+                    border: '1px solid #C4A06040',
+                    color: '#C4A060',
+                    fontSize: '15px',
                   }}
                   title={showLogbookEntries ? 'Hide notes' : 'Show notes'}
                 >

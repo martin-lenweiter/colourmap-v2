@@ -1,14 +1,18 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
+import SquareSlider from '@/components/SquareSlider';
 
 const DOING_LEVELS = [
-  { label: 'Deep Rest', color: '#5A9A70' },
+  { label: 'Disconnected', color: '#5A9A70' },
+  { label: 'Idle', color: '#529888' },
+  { label: 'Distracted', color: '#4A9890' },
   { label: 'Drifting', color: '#4A9A85' },
   { label: 'Present', color: '#4A9898' },
   { label: 'Working', color: '#4A8AA8' },
   { label: 'Focused', color: '#5080A8' },
   { label: 'Driven', color: '#3870A0' },
+  { label: 'Absorbed', color: '#2E68A0' },
   { label: 'Tunnel Vision', color: '#286098' },
 ];
 
@@ -26,28 +30,49 @@ function loadIdx(): number {
 
 export default function DoingStateCircle({ onDone }: { onDone?: () => void }) {
   const [idx, setIdx] = useState(3);
+  const dragRef = useRef<{ startX: number; startIdx: number } | null>(null);
+  const idxRef = useRef(idx);
+  idxRef.current = idx;
 
   useEffect(() => {
     setIdx(loadIdx());
   }, []);
 
   function pick(i: number) {
-    setIdx(i);
+    const clamped = Math.max(0, Math.min(DOING_LEVELS.length - 1, i));
+    setIdx(clamped);
     try {
-      localStorage.setItem(LS_KEY, String(i));
-    } catch {
-      /* silent */
-    }
+      localStorage.setItem(LS_KEY, String(clamped));
+    } catch {}
+  }
+
+  function onCirclePointerDown(e: React.PointerEvent<HTMLSpanElement>) {
+    e.currentTarget.setPointerCapture(e.pointerId);
+    dragRef.current = { startX: e.clientX, startIdx: idxRef.current };
+  }
+
+  function onCirclePointerMove(e: React.PointerEvent<HTMLSpanElement>) {
+    if (!dragRef.current || e.buttons !== 1) return;
+    const dx = e.clientX - dragRef.current.startX;
+    const steps = Math.round(dx / 18);
+    pick(dragRef.current.startIdx + steps);
+  }
+
+  function onCirclePointerUp() {
+    dragRef.current = null;
   }
 
   const current = DOING_LEVELS[idx];
 
   return (
     <div className="flex flex-col items-center gap-6 px-5 py-8">
-      {/* Big circle */}
+      {/* Big circle — draggable */}
       <div className="flex flex-col items-center gap-3">
         <span
           className="block rounded-full"
+          onPointerDown={onCirclePointerDown}
+          onPointerMove={onCirclePointerMove}
+          onPointerUp={onCirclePointerUp}
           style={{
             width: 96,
             height: 96,
@@ -55,6 +80,9 @@ export default function DoingStateCircle({ onDone }: { onDone?: () => void }) {
             opacity: 0.92,
             boxShadow: `0 12px 32px -8px ${current.color}88`,
             transition: 'background 0.3s, box-shadow 0.3s',
+            cursor: 'ew-resize',
+            touchAction: 'none',
+            userSelect: 'none',
           }}
         />
         <span
@@ -72,59 +100,8 @@ export default function DoingStateCircle({ onDone }: { onDone?: () => void }) {
         </span>
       </div>
 
-      {/* Range slider */}
-      <input
-        type="range"
-        min={0}
-        max={DOING_LEVELS.length - 1}
-        step={1}
-        value={idx}
-        onChange={(e) => pick(Number(e.target.value))}
-        style={{ width: '100%', maxWidth: 220, accentColor: current.color, cursor: 'pointer' }}
-      />
-      <div className="flex w-full justify-between" style={{ maxWidth: 220 }}>
-        <span
-          className="italic"
-          style={{
-            fontFamily: 'var(--font-serif)',
-            fontSize: '11px',
-            color: DOING_LEVELS[0].color,
-            opacity: 0.6,
-          }}
-        >
-          Deep Rest
-        </span>
-        <span
-          className="italic"
-          style={{
-            fontFamily: 'var(--font-serif)',
-            fontSize: '11px',
-            color: DOING_LEVELS[DOING_LEVELS.length - 1].color,
-            opacity: 0.6,
-          }}
-        >
-          Tunnel Vision
-        </span>
-      </div>
-
-      {/* Done button */}
-      <button
-        type="button"
-        onClick={onDone}
-        className="cursor-pointer rounded-full px-6 py-1.5"
-        style={{
-          fontFamily: 'var(--font-serif)',
-          fontSize: '12px',
-          fontWeight: 700,
-          letterSpacing: '0.18em',
-          textTransform: 'uppercase',
-          color: '#C4A060',
-          background: '#C4A06012',
-          border: '1px solid #C4A06040',
-        }}
-      >
-        Done
-      </button>
+      {/* Square slider */}
+      <SquareSlider colors={DOING_LEVELS.map((l) => l.color)} value={idx} onChange={pick} />
     </div>
   );
 }

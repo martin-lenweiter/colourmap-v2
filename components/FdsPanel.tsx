@@ -552,32 +552,45 @@ function ReflectSection({ axis, axisId }: { axis: (typeof AXES)[Axis]; axisId: A
 interface DotsProps {
   items: AxisItem[];
   axisKey: Axis;
+  axisLevel: number;
   itemData: Record<string, ItemData>;
   openItem: string | null;
   setOpenItem: (k: string | null) => void;
   setItemLevel: (k: string, level: number) => void;
   toggleItemTask: (k: string, taskId: string) => void;
   sliderStyle: SliderStyle;
+  setSliderStyle: (s: SliderStyle) => void;
 }
 
 function ItemProgram({
   item,
   itemKey,
   data,
+  axisKey,
   setItemLevel,
   toggleItemTask,
   hideSubtitle,
+  hideSlider,
   sliderStyle,
 }: {
   item: AxisItem;
   itemKey: string;
   data: ItemData;
+  axisKey: Axis;
   setItemLevel: (k: string, level: number) => void;
   toggleItemTask: (k: string, taskId: string) => void;
   hideSubtitle?: boolean;
+  hideSlider?: boolean;
   sliderStyle: SliderStyle;
 }) {
-  const levels5 = [1, 2, 3, 4, 5].map((n) => ({ name: String(n), color: item.color }));
+  // Map the axis's emotional levels (10 / 5 / 6) onto 5 item levels so
+  // the slider colours carry the same vocabulary as the axis overview.
+  const axisLevels = AXES[axisKey].levels;
+  const n = axisLevels.length;
+  const levels5 = [0, 1, 2, 3, 4].map((i) => {
+    const idx = Math.round((i / 4) * (n - 1));
+    return { name: String(i + 1), color: axisLevels[idx].color };
+  });
 
   return (
     <div className="space-y-3 pt-3 pb-1 animate-in fade-in duration-150">
@@ -595,22 +608,29 @@ function ItemProgram({
           {item.subtitle}
         </p>
       )}
-      {/* Level slider — styled via chosen SliderStyle */}
-      <div className="space-y-1.5">
-        <p
-          className="italic"
-          style={{ fontFamily: font, fontSize: 12, color: 'var(--muted-foreground)', opacity: 0.7 }}
-        >
-          where are you?
-        </p>
-        <AxisSlider
-          levels={levels5}
-          selectedIdx={data.level > 0 ? data.level - 1 : -1}
-          onSelect={(i) => setItemLevel(itemKey, data.level === i + 1 ? 0 : i + 1)}
-          axisColor={item.color}
-          style={sliderStyle}
-        />
-      </div>
+      {/* Level slider — only when not shown inline by parent */}
+      {!hideSlider && (
+        <div className="space-y-1.5">
+          <p
+            className="italic"
+            style={{
+              fontFamily: font,
+              fontSize: 12,
+              color: 'var(--muted-foreground)',
+              opacity: 0.7,
+            }}
+          >
+            where are you?
+          </p>
+          <AxisSlider
+            levels={levels5}
+            selectedIdx={data.level > 0 ? data.level - 1 : -1}
+            onSelect={(i) => setItemLevel(itemKey, data.level === i + 1 ? 0 : i + 1)}
+            axisColor={item.color}
+            style={sliderStyle}
+          />
+        </div>
+      )}
       {/* Program checklist */}
       <div className="space-y-2">
         {item.program.map((task) => {
@@ -659,6 +679,7 @@ function DotsHorizontal({
   toggleItemTask,
   sliderStyle,
 }: DotsProps) {
+  // axisLevel / setSliderStyle consumed only by DotsVertical
   const activeItem = items.find((item) => openItem === `${axisKey}:${item.name}`);
   return (
     <div className="space-y-3">
@@ -716,6 +737,7 @@ function DotsHorizontal({
             item={activeItem}
             itemKey={`${axisKey}:${activeItem.name}`}
             data={itemData[`${axisKey}:${activeItem.name}`] ?? { level: 0, tasks: {} }}
+            axisKey={axisKey}
             setItemLevel={setItemLevel}
             toggleItemTask={toggleItemTask}
             sliderStyle={sliderStyle}
@@ -730,20 +752,164 @@ function DotsHorizontal({
 function DotsVertical({
   items,
   axisKey,
+  axisLevel,
   itemData,
   openItem,
   setOpenItem,
   setItemLevel,
   toggleItemTask,
   sliderStyle,
+  setSliderStyle,
 }: DotsProps) {
+  const axisLevelColor = AXES[axisKey].levels[axisLevel]?.color ?? AXES[axisKey].color;
+
   return (
     <div className="space-y-4 px-1">
+      {/* Style picker — 5 options visible at once */}
+      <div className="flex items-center justify-end gap-1.5">
+        {([1, 3, 5, 6, 7] as SliderStyle[]).map((s) => {
+          const isActive = sliderStyle === s;
+          const icons: Record<number, React.ReactNode> = {
+            1: (
+              <svg width="28" height="14" viewBox="0 0 28 14">
+                <line
+                  x1="2"
+                  y1="7"
+                  x2="26"
+                  y2="7"
+                  stroke={axisLevelColor}
+                  strokeWidth="1.5"
+                  strokeOpacity="0.25"
+                />
+                {[0, 1, 2, 3, 4].map((i) => (
+                  <circle
+                    key={i}
+                    cx={2 + i * 6}
+                    cy="7"
+                    r={i === 2 ? 4 : 2.5}
+                    fill={axisLevelColor}
+                    opacity={i === 2 ? 1 : 0.35 + i * 0.1}
+                  />
+                ))}
+              </svg>
+            ),
+            3: (
+              <svg width="28" height="14" viewBox="0 0 28 14">
+                <line
+                  x1="2"
+                  y1="7"
+                  x2="26"
+                  y2="7"
+                  stroke={axisLevelColor}
+                  strokeWidth="1.5"
+                  strokeOpacity="0.2"
+                />
+                <line
+                  x1="2"
+                  y1="7"
+                  x2="16"
+                  y2="7"
+                  stroke={axisLevelColor}
+                  strokeWidth="1.5"
+                  strokeOpacity="0.7"
+                />
+                <circle cx="16" cy="7" r="4" fill={axisLevelColor} opacity="0.9" />
+              </svg>
+            ),
+            5: (
+              <svg width="28" height="14" viewBox="0 0 28 14">
+                {[0, 1, 2, 3, 4].map((i) => (
+                  <rect
+                    key={i}
+                    x={2 + i * 5.5}
+                    y={14 - (5 + i * 2)}
+                    width="4"
+                    height={5 + i * 2}
+                    rx="1"
+                    fill={axisLevelColor}
+                    opacity={0.3 + i * 0.15}
+                  />
+                ))}
+              </svg>
+            ),
+            6: (
+              <svg width="28" height="14" viewBox="0 0 28 14">
+                {[0, 1, 2, 3, 4].map((i) => (
+                  <rect
+                    key={i}
+                    x={1 + i * 5.5}
+                    y={i === 2 ? 3 : 5}
+                    width="5"
+                    height={i === 2 ? 8 : 4}
+                    rx="2"
+                    fill={axisLevelColor}
+                    opacity={i === 2 ? 0.9 : 0.35}
+                  />
+                ))}
+              </svg>
+            ),
+            7: (
+              <svg width="28" height="14" viewBox="0 0 28 14">
+                <line
+                  x1="2"
+                  y1="7"
+                  x2="26"
+                  y2="7"
+                  stroke={axisLevelColor}
+                  strokeWidth="1"
+                  strokeOpacity="0.2"
+                />
+                {[0, 1, 2, 3, 4].map((i) => (
+                  <circle
+                    key={i}
+                    cx={2 + i * 6}
+                    cy="7"
+                    r={2 + i * 1.2}
+                    fill={axisLevelColor}
+                    opacity={0.25 + i * 0.18}
+                  />
+                ))}
+              </svg>
+            ),
+          };
+          return (
+            <button
+              key={s}
+              type="button"
+              onClick={() => {
+                setSliderStyle(s);
+                localStorage.setItem(LS_SLIDER_STYLE, String(s));
+              }}
+              className="cursor-pointer transition-all"
+              style={{
+                background: isActive ? `${axisLevelColor}18` : 'transparent',
+                border: `1px solid ${isActive ? `${axisLevelColor}55` : `${axisLevelColor}20`}`,
+                borderRadius: 6,
+                padding: '3px 4px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                opacity: isActive ? 1 : 0.45,
+              }}
+            >
+              {icons[s]}
+            </button>
+          );
+        })}
+      </div>
+
       {items.map((item) => {
         const key = `${axisKey}:${item.name}`;
         const isExpanded = openItem === key;
         const data = itemData[key] ?? { level: 0, tasks: {} };
         const doneCount = item.program.filter((t) => data.tasks[t.id]).length;
+        const axisLevelsArr = AXES[axisKey].levels;
+        const nLevels = axisLevelsArr.length;
+        const levels5 = [0, 1, 2, 3, 4].map((i) => {
+          const idx = Math.round((i / 4) * (nLevels - 1));
+          return { name: String(i + 1), color: axisLevelsArr[idx].color };
+        });
+        const dotColor = isExpanded ? item.color : axisLevelColor;
         return (
           <div key={item.name}>
             <button
@@ -757,9 +923,9 @@ function DotsVertical({
                 style={{
                   width: isExpanded ? 20 : 15,
                   height: isExpanded ? 20 : 15,
-                  background: item.color,
+                  background: dotColor,
                   opacity: isExpanded ? 1 : 0.82,
-                  boxShadow: isExpanded ? `0 3px 12px -3px ${item.color}` : 'none',
+                  boxShadow: isExpanded ? `0 3px 12px -3px ${dotColor}` : 'none',
                 }}
               />
               <div className="flex-1">
@@ -797,16 +963,28 @@ function DotsVertical({
                 </p>
               </div>
             </button>
+            {/* Slider always visible below the row */}
+            <div className="ml-9 mt-2">
+              <AxisSlider
+                levels={levels5}
+                selectedIdx={data.level > 0 ? data.level - 1 : -1}
+                onSelect={(i) => setItemLevel(key, data.level === i + 1 ? 0 : i + 1)}
+                axisColor={item.color}
+                style={sliderStyle}
+              />
+            </div>
             {isExpanded && (
               <div className="ml-9">
                 <ItemProgram
                   item={item}
                   itemKey={key}
                   data={data}
+                  axisKey={axisKey}
                   setItemLevel={setItemLevel}
                   toggleItemTask={toggleItemTask}
                   sliderStyle={sliderStyle}
                   hideSubtitle
+                  hideSlider
                 />
               </div>
             )}
@@ -846,6 +1024,7 @@ function SuperCompass() {
     rInner: number,
     labelR: number,
     fontSize: number,
+    fillOpacity = 0.28,
   ) {
     return slices.map((slice, i) => {
       const startAngle = -Math.PI / 4 + (i / 4) * Math.PI * 2;
@@ -876,7 +1055,7 @@ function SuperCompass() {
           <path
             d={d}
             fill={slice.color}
-            fillOpacity={0.28}
+            fillOpacity={fillOpacity}
             stroke={slice.color}
             strokeWidth={0.8}
             strokeOpacity={0.5}
@@ -903,8 +1082,8 @@ function SuperCompass() {
     <div className="flex flex-col items-center gap-1">
       <svg width="100%" height={H} viewBox={`0 0 ${W} ${H}`}>
         <title>SuperCompass — Feeling inside Doing</title>
-        {renderRing(outerSlices, outerR, innerR + 20, (outerR + innerR + 20) / 2, 13)}
-        {renderRing(innerSlices, innerR, 0, innerR * 0.48, 11)}
+        {renderRing(outerSlices, outerR, innerR + 20, (outerR + innerR + 20) / 2, 13, 0.38)}
+        {renderRing(innerSlices, innerR, 0, innerR * 0.48, 11, 0.22)}
         <circle cx={cx} cy={cy} r={3} fill="#C4A060" opacity={0.6} />
       </svg>
       <div className="flex justify-center gap-6 pb-1">
@@ -1592,16 +1771,118 @@ function ExpressionStreak() {
   );
 }
 
-const LS_SHARING_REFLECT = 'colourmap:sharing-reflect';
+const LS_SHARING_REFLECT = 'colourmap:sharing-reflect-v2';
 
-const SHARING_QUESTIONS = [
-  { key: 'close', label: 'as-tu des amis proches à qui te confier ?' },
-  { key: 'new', label: 'est-ce que tu rencontres de nouvelles personnes ?' },
-  { key: 'happy', label: "es-tu content·e des personnes qui t'entourent ?" },
-  { key: 'improve', label: 'travailles-tu à améliorer tes relations ?' },
-  { key: 'need', label: 'de quoi aurais-tu besoin des autres en ce moment ?' },
-  { key: 'give', label: "qu'as-tu envie d'offrir à ceux qui comptent pour toi ?" },
+const SHARING_REFLECT_QUESTIONS = [
+  { key: 'weight', label: 'Did you share what was weighing you down?' },
+  { key: 'lift', label: 'Did you share what was lifting you up?' },
+  { key: 'happy', label: 'Are you happy with the people around you?' },
+  { key: 'impact', label: 'Whose life could your presence make lighter right now?' },
+  { key: 'need', label: 'What do you need from others?' },
 ];
+
+const SHARING_PILL_LISTS = [
+  {
+    key: 'catchup',
+    label: 'People I want to catch up with',
+    storageKey: 'colourmap:sharing-catchup',
+  },
+  { key: 'met', label: 'People I recently met', storageKey: 'colourmap:sharing-met' },
+  { key: 'meet', label: 'People I should meet', storageKey: 'colourmap:sharing-meet' },
+  { key: 'lifters', label: 'Who lifts me up', storageKey: 'colourmap:sharing-lifters' },
+  {
+    key: 'live',
+    label: 'Things I want to live in the next months',
+    storageKey: 'colourmap:sharing-live',
+  },
+] as const;
+
+function loadSharingList(key: string): { id: string; text: string }[] {
+  try {
+    const raw = localStorage.getItem(key);
+    return raw ? (JSON.parse(raw) as { id: string; text: string }[]) : [];
+  } catch {
+    return [];
+  }
+}
+
+function SharingPillList({ label, storageKey }: { label: string; storageKey: string }) {
+  const [items, setItems] = useState<{ id: string; text: string }[]>(() =>
+    loadSharingList(storageKey),
+  );
+  const [input, setInput] = useState('');
+
+  function save(next: typeof items) {
+    setItems(next);
+    localStorage.setItem(storageKey, JSON.stringify(next));
+  }
+
+  function add(text: string) {
+    if (!text.trim()) return;
+    save([...items, { id: crypto.randomUUID(), text: text.trim() }]);
+    setInput('');
+  }
+
+  return (
+    <div className="space-y-2">
+      <p
+        style={{
+          fontFamily: font,
+          fontSize: 11,
+          fontWeight: 700,
+          color: S_COLOR,
+          opacity: 0.7,
+          letterSpacing: '0.08em',
+          textTransform: 'uppercase',
+        }}
+      >
+        {label}
+      </p>
+      {items.length > 0 && (
+        <div className="flex flex-wrap gap-1.5">
+          {items.map((item) => (
+            <span
+              key={item.id}
+              className="group inline-flex items-center gap-1 rounded-full px-3 py-1"
+              style={{
+                background: `${S_COLOR}0E`,
+                border: `1px solid ${S_COLOR}30`,
+                fontFamily: font,
+                fontSize: 12,
+                color: S_COLOR,
+              }}
+            >
+              {item.text}
+              <button
+                type="button"
+                onClick={() => save(items.filter((i) => i.id !== item.id))}
+                className="cursor-pointer opacity-0 transition-opacity group-hover:opacity-50 text-xs"
+                style={{ background: 'none', border: 'none', padding: 0, color: S_COLOR }}
+              >
+                ✕
+              </button>
+            </span>
+          ))}
+        </div>
+      )}
+      <input
+        type="text"
+        value={input}
+        onChange={(e) => setInput(e.target.value)}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter') add(input);
+        }}
+        placeholder="+ add…"
+        className="w-full border-b bg-transparent pb-1 text-sm outline-none placeholder:italic"
+        style={{
+          fontFamily: font,
+          color: 'var(--foreground)',
+          borderColor: `${S_COLOR}20`,
+        }}
+      />
+    </div>
+  );
+}
 
 /* ── Sharing reflection program ── */
 function SharingProgram() {
@@ -1624,17 +1905,28 @@ function SharingProgram() {
     <div className="mt-1">
       <LosingeDivider label="Programme" open={open} onToggle={() => setOpen((o) => !o)} />
       {open && (
-        <div className="mt-3 space-y-3 animate-in fade-in duration-150">
-          {SHARING_QUESTIONS.map((q) => (
+        <div className="mt-3 space-y-5 animate-in fade-in duration-150">
+          {/* Pill lists */}
+          {SHARING_PILL_LISTS.map((pl) => (
+            <SharingPillList key={pl.key} label={pl.label} storageKey={pl.storageKey} />
+          ))}
+
+          {/* Divider */}
+          <div style={{ height: 1, background: `${S_COLOR}15` }} />
+
+          {/* Reflection questions */}
+          {SHARING_REFLECT_QUESTIONS.map((q) => (
             <div key={q.key}>
               <p
                 style={{
                   fontFamily: font,
                   fontSize: 11,
+                  fontWeight: 700,
                   color: S_COLOR,
-                  opacity: 0.65,
-                  marginBottom: 4,
-                  letterSpacing: '0.04em',
+                  opacity: 0.7,
+                  marginBottom: 5,
+                  letterSpacing: '0.08em',
+                  textTransform: 'uppercase',
                 }}
               >
                 {q.label}
@@ -1649,7 +1941,7 @@ function SharingProgram() {
                   fontFamily: font,
                   fontSize: 13,
                   color: 'var(--foreground)',
-                  borderColor: `${S_COLOR}30`,
+                  borderColor: `${S_COLOR}25`,
                   overflow: 'hidden',
                   fieldSizing: 'content' as React.CSSProperties['fieldSizing'],
                 }}
@@ -1675,11 +1967,11 @@ function SharingExtras() {
 }
 
 export default function FdsPanel() {
-  const [active, setActive] = useState<Axis | null>(null);
+  const [active, setActive] = useState<Axis>('feeling');
   const [layout, setLayout] = useState<Layout>('v');
   const [openItem, setOpenItem] = useState<string | null>(null);
   const [itemData, setItemData] = useState<Record<string, ItemData>>({});
-  const [axisLevels, setAxisLevels] = useState<Record<Axis, number>>(() => {
+  const [axisLevels, _setAxisLevels] = useState<Record<Axis, number>>(() => {
     try {
       const raw = localStorage.getItem(LS_AXIS_LEVELS);
       return raw ? JSON.parse(raw) : { feeling: 0, doing: 0, sharing: 0 };
@@ -1723,122 +2015,94 @@ export default function FdsPanel() {
     });
   }
 
-  function setAxisLevel(axis: Axis, level: number) {
-    setAxisLevels((prev) => {
-      const next = { ...prev, [axis]: level };
-      localStorage.setItem(LS_AXIS_LEVELS, JSON.stringify(next));
-      return next;
-    });
-  }
-
-  function cycleSliderStyle() {
-    setSliderStyle((s) => {
-      const next = (s >= 7 ? 1 : s + 1) as SliderStyle;
-      localStorage.setItem(LS_SLIDER_STYLE, String(next));
-      return next;
-    });
-  }
-
   const isSuper = layout === 'super';
-  const axisDef = active && !isSuper ? AXES[active] : null;
+  const axisDef = !isSuper ? AXES[active] : null;
+  const modeColor = axisDef?.color ?? '#8A6A4A';
+  const DOING_COLOR = AXES.doing.color;
 
   return (
     <div className="space-y-3">
-      {/* F / D / S — each axis as its own row: circle + slider */}
-      <div className="space-y-3">
+      {/* F / D / S circles — tap to toggle axis */}
+      <div className="flex items-center justify-center gap-3">
         {ORDER.map((id) => {
           const a = AXES[id];
           const isOn = active === id && !isSuper;
-          const level = axisLevels[id];
-          const curLevel = a.levels[level];
           return (
-            <div key={id} className="flex items-center gap-3">
-              {/* Circle — tap to expand */}
-              <button
-                type="button"
-                onClick={() => {
-                  setActive(isOn ? null : id);
-                  setLayout('v');
-                  setOpenItem(null);
-                }}
-                style={{
-                  width: 46,
-                  height: 46,
-                  borderRadius: '50%',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  background: isOn ? `${curLevel.color}28` : `${curLevel.color}10`,
-                  border: `2px solid ${isOn ? curLevel.color : `${curLevel.color}50`}`,
-                  boxShadow: isOn ? `0 0 0 4px ${curLevel.color}20` : 'none',
-                  transition: 'all 0.18s',
-                  fontFamily: font,
-                  fontSize: 20,
-                  fontWeight: 800,
-                  color: isOn ? curLevel.color : `${curLevel.color}90`,
-                  cursor: 'pointer',
-                  flexShrink: 0,
-                }}
-              >
-                {a.label}
-              </button>
-
-              {/* Slider — all axes use chosen style */}
-              <AxisSlider
-                levels={a.levels}
-                selectedIdx={level}
-                onSelect={(i) => setAxisLevel(id, i)}
-                axisColor={a.color}
-                style={sliderStyle}
-              />
-            </div>
+            <button
+              key={id}
+              type="button"
+              onClick={() => {
+                setActive(id);
+                if (layout === 'super') setLayout('v');
+                setOpenItem(null);
+              }}
+              style={{
+                width: 46,
+                height: 46,
+                borderRadius: '50%',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                background: isOn ? `${a.color}22` : `${a.color}0C`,
+                border: `2px solid ${isOn ? a.color : `${a.color}38`}`,
+                boxShadow: isOn ? `0 0 0 4px ${a.color}18` : 'none',
+                transition: 'all 0.18s',
+                fontFamily: font,
+                fontSize: 20,
+                fontWeight: 800,
+                color: isOn ? a.color : `${a.color}80`,
+                cursor: 'pointer',
+                flexShrink: 0,
+              }}
+            >
+              {a.label}
+            </button>
           );
         })}
-
-        {/* Ochre dot — style picker, right-aligned below rows */}
-        <div className="flex items-center justify-end gap-2 pt-1">
-          <span
-            style={{
-              fontFamily: font,
-              fontSize: 10,
-              color: '#C4A060',
-              opacity: 0.5,
-              letterSpacing: '0.1em',
-            }}
-          >
-            {sliderStyle}/7
-          </span>
-          <button
-            type="button"
-            onClick={cycleSliderStyle}
-            title={`Slider style ${sliderStyle} of 7 — click to change`}
-            className="cursor-pointer transition-all hover:scale-110"
-            style={{ background: 'none', border: 'none', padding: 0 }}
-          >
-            <span
-              style={{
-                display: 'block',
-                width: 14,
-                height: 14,
-                borderRadius: '50%',
-                background: '#C4A060',
-                opacity: 0.7,
-                boxShadow: '0 1px 6px -1px #C4A06080',
-              }}
-            />
-          </button>
-        </div>
       </div>
 
-      {/* ⊚ SuperCompass toggle */}
-      <div className="flex justify-center">
+      {/* Layout mode buttons — always visible in overview */}
+      <div className="flex items-center justify-center gap-1.5">
+        {(
+          [
+            { id: 'h', icon: '—' },
+            { id: 'v', icon: 'List' },
+            { id: 'compass', icon: '◎' },
+          ] as { id: Layout; icon: string }[]
+        ).map(({ id, icon }) => (
+          <button
+            key={id}
+            type="button"
+            onClick={() => {
+              setLayout(id);
+              setOpenItem(null);
+            }}
+            style={{
+              background: layout === id ? `${modeColor}18` : 'transparent',
+              border: `1px solid ${layout === id ? `${modeColor}40` : `${modeColor}18`}`,
+              borderRadius: 20,
+              padding: '2px 12px',
+              cursor: 'pointer',
+              fontSize: id === 'compass' ? 13 : 11,
+              fontFamily: font,
+              fontWeight: 600,
+              color: modeColor,
+              opacity: layout === id ? 1 : 0.45,
+              letterSpacing: id === 'h' || id === 'v' ? '0.1em' : undefined,
+              textTransform: 'uppercase',
+              transition: 'all 0.15s',
+            }}
+          >
+            {icon}
+          </button>
+        ))}
+        {/* ⊚ SuperCompass — Doing feel */}
         <button
           type="button"
           onClick={() => {
             if (isSuper) {
-              setLayout('h');
+              setLayout('v');
             } else {
-              setActive(null);
               setLayout('super');
             }
           }}
@@ -1851,11 +2115,11 @@ export default function FdsPanel() {
             borderRadius: '50%',
             fontFamily: font,
             fontSize: 15,
-            color: isSuper ? '#C4A060' : '#8A6A4A',
-            background: isSuper ? '#C4A06018' : 'transparent',
-            border: `1.5px solid ${isSuper ? '#C4A06055' : '#C4A06020'}`,
+            color: isSuper ? DOING_COLOR : DOING_COLOR,
+            background: isSuper ? `${DOING_COLOR}18` : 'transparent',
+            border: `1.5px solid ${isSuper ? `${DOING_COLOR}55` : `${DOING_COLOR}25`}`,
             cursor: 'pointer',
-            opacity: isSuper ? 1 : 0.45,
+            opacity: isSuper ? 1 : 0.5,
             transition: 'all 0.15s',
           }}
           title="SuperCompass — Feeling + Doing"
@@ -1871,105 +2135,36 @@ export default function FdsPanel() {
         </div>
       )}
 
-      {/* Expanded axis panel */}
-      {axisDef && active && (
+      {/* Expanded axis content */}
+      {axisDef && (
         <div className="animate-in fade-in duration-150 space-y-4">
-          {/* H / V / ◎ mode toggle */}
-          <div className="flex justify-center gap-1.5">
-            {(
-              [
-                { id: 'h', icon: '—' },
-                { id: 'v', icon: '|' },
-                { id: 'compass', icon: '◎' },
-              ] as { id: Layout; icon: string }[]
-            ).map(({ id, icon }) => (
-              <button
-                key={id}
-                type="button"
-                onClick={() => {
-                  setLayout(id);
-                  setOpenItem(null);
-                }}
-                style={{
-                  background: layout === id ? `${axisDef.color}18` : 'transparent',
-                  border: `1px solid ${layout === id ? `${axisDef.color}40` : `${axisDef.color}18`}`,
-                  borderRadius: 20,
-                  padding: '2px 12px',
-                  cursor: 'pointer',
-                  fontSize: id === 'compass' ? 13 : 11,
-                  fontFamily: font,
-                  fontWeight: 600,
-                  color: axisDef.color,
-                  opacity: layout === id ? 1 : 0.45,
-                  letterSpacing: id === 'h' || id === 'v' ? '0.1em' : undefined,
-                  textTransform: 'uppercase',
-                  transition: 'all 0.15s',
-                }}
-              >
-                {icon}
-              </button>
-            ))}
-          </div>
-
-          {/* Slider style picker — only in list views for D and S */}
-          {(layout === 'h' || layout === 'v') && active !== 'feeling' && (
-            <div className="flex items-center justify-end gap-2">
-              <span
-                style={{
-                  fontFamily: font,
-                  fontSize: 10,
-                  color: '#C4A060',
-                  opacity: 0.45,
-                  letterSpacing: '0.1em',
-                }}
-              >
-                {sliderStyle}/7
-              </span>
-              <button
-                type="button"
-                onClick={cycleSliderStyle}
-                title={`Slider style ${sliderStyle} of 7`}
-                className="cursor-pointer transition-all hover:scale-110"
-                style={{ background: 'none', border: 'none', padding: 0 }}
-              >
-                <span
-                  style={{
-                    display: 'block',
-                    width: 12,
-                    height: 12,
-                    borderRadius: '50%',
-                    background: '#C4A060',
-                    opacity: 0.6,
-                    boxShadow: '0 1px 5px -1px #C4A06070',
-                  }}
-                />
-              </button>
-            </div>
-          )}
-
           {/* Content */}
           {layout === 'h' && (
             <DotsHorizontal
               items={axisDef.items}
               axisKey={active}
+              axisLevel={axisLevels[active]}
               itemData={itemData}
               openItem={openItem}
               setOpenItem={setOpenItem}
               setItemLevel={setItemLevel}
               toggleItemTask={toggleItemTask}
               sliderStyle={sliderStyle}
+              setSliderStyle={setSliderStyle}
             />
           )}
           {layout === 'v' && (
             <DotsVertical
               items={axisDef.items}
               axisKey={active}
+              axisLevel={axisLevels[active]}
               itemData={itemData}
               openItem={openItem}
               setOpenItem={setOpenItem}
               setItemLevel={setItemLevel}
               toggleItemTask={toggleItemTask}
               sliderStyle={sliderStyle}
+              setSliderStyle={setSliderStyle}
             />
           )}
           {layout === 'compass' && (

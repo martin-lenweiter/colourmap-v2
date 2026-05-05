@@ -1,11 +1,9 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-
-/* ═══════════════════════════════════════════════════════════
-   SHARING CHECK-IN — big dot + 5-square rainbow selector.
-   Scale: Disconnected → Flowing (5 levels).
-   ═══════════════════════════════════════════════════════════ */
+import { useEffect, useRef, useState } from 'react';
+import PulseDots from '@/components/PulseDots';
+import SharingReflect from '@/components/SharingReflect';
+import SquareSlider from '@/components/SquareSlider';
 
 export const SHARING_LEVELS = [
   { label: 'Disconnected', color: '#A08878' },
@@ -29,28 +27,51 @@ function loadIdx(): number {
 
 export default function SharingCheckIn() {
   const [idx, setIdx] = useState(2);
+  const dragRef = useRef<{ startX: number; startIdx: number } | null>(null);
+  const idxRef = useRef(idx);
+  idxRef.current = idx;
 
   useEffect(() => {
     setIdx(loadIdx());
   }, []);
 
   function pick(i: number) {
-    setIdx(i);
+    const clamped = Math.max(0, Math.min(SHARING_LEVELS.length - 1, i));
+    setIdx(clamped);
     try {
-      localStorage.setItem(SHARING_IDX_KEY, String(i));
-    } catch {
-      /* silent */
-    }
+      localStorage.setItem(SHARING_IDX_KEY, String(clamped));
+    } catch {}
+  }
+
+  function onCirclePointerDown(e: React.PointerEvent<HTMLSpanElement>) {
+    e.currentTarget.setPointerCapture(e.pointerId);
+    dragRef.current = { startX: e.clientX, startIdx: idxRef.current };
+  }
+
+  function onCirclePointerMove(e: React.PointerEvent<HTMLSpanElement>) {
+    if (!dragRef.current || e.buttons !== 1) return;
+    const dx = e.clientX - dragRef.current.startX;
+    const steps = Math.round(dx / 24);
+    pick(dragRef.current.startIdx + steps);
+  }
+
+  function onCirclePointerUp() {
+    dragRef.current = null;
   }
 
   const current = SHARING_LEVELS[idx];
 
   return (
     <div className="flex flex-col items-center gap-6 px-5 py-8">
-      {/* Big dot */}
+      <PulseDots axisKey="sharing" />
+
+      {/* Big dot — draggable */}
       <div className="flex flex-col items-center gap-3">
         <span
           className="block rounded-full"
+          onPointerDown={onCirclePointerDown}
+          onPointerMove={onCirclePointerMove}
+          onPointerUp={onCirclePointerUp}
           style={{
             width: 96,
             height: 96,
@@ -58,6 +79,9 @@ export default function SharingCheckIn() {
             opacity: 0.92,
             boxShadow: `0 12px 32px -8px ${current.color}88`,
             transition: 'background 0.3s, box-shadow 0.3s',
+            cursor: 'ew-resize',
+            touchAction: 'none',
+            userSelect: 'none',
           }}
         />
         <span
@@ -75,40 +99,11 @@ export default function SharingCheckIn() {
         </span>
       </div>
 
-      {/* Range slider */}
-      <input
-        type="range"
-        min={0}
-        max={SHARING_LEVELS.length - 1}
-        step={1}
-        value={idx}
-        onChange={(e) => pick(Number(e.target.value))}
-        style={{ width: '100%', maxWidth: 220, accentColor: current.color, cursor: 'pointer' }}
-      />
+      {/* Square slider */}
+      <SquareSlider colors={SHARING_LEVELS.map((l) => l.color)} value={idx} onChange={pick} />
 
-      <div className="flex w-full justify-between" style={{ maxWidth: 220 }}>
-        <span
-          className="italic"
-          style={{
-            fontFamily: 'var(--font-serif)',
-            fontSize: '11px',
-            color: SHARING_LEVELS[0].color,
-            opacity: 0.6,
-          }}
-        >
-          Disconnected
-        </span>
-        <span
-          className="italic"
-          style={{
-            fontFamily: 'var(--font-serif)',
-            fontSize: '11px',
-            color: SHARING_LEVELS[4].color,
-            opacity: 0.6,
-          }}
-        >
-          Flowing
-        </span>
+      <div className="w-full">
+        <SharingReflect />
       </div>
     </div>
   );
