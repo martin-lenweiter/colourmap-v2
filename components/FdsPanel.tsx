@@ -552,18 +552,21 @@ function ReflectSection({ axis, axisId }: { axis: (typeof AXES)[Axis]; axisId: A
 interface DotsProps {
   items: AxisItem[];
   axisKey: Axis;
+  axisLevel: number;
   itemData: Record<string, ItemData>;
   openItem: string | null;
   setOpenItem: (k: string | null) => void;
   setItemLevel: (k: string, level: number) => void;
   toggleItemTask: (k: string, taskId: string) => void;
   sliderStyle: SliderStyle;
+  setSliderStyle: (s: SliderStyle) => void;
 }
 
 function ItemProgram({
   item,
   itemKey,
   data,
+  axisKey,
   setItemLevel,
   toggleItemTask,
   hideSubtitle,
@@ -572,12 +575,20 @@ function ItemProgram({
   item: AxisItem;
   itemKey: string;
   data: ItemData;
+  axisKey: Axis;
   setItemLevel: (k: string, level: number) => void;
   toggleItemTask: (k: string, taskId: string) => void;
   hideSubtitle?: boolean;
   sliderStyle: SliderStyle;
 }) {
-  const levels5 = [1, 2, 3, 4, 5].map((n) => ({ name: String(n), color: item.color }));
+  // Map the axis's emotional levels (10 / 5 / 6) onto 5 item levels so
+  // the slider colours carry the same vocabulary as the axis overview.
+  const axisLevels = AXES[axisKey].levels;
+  const n = axisLevels.length;
+  const levels5 = [0, 1, 2, 3, 4].map((i) => {
+    const idx = Math.round((i / 4) * (n - 1));
+    return { name: String(i + 1), color: axisLevels[idx].color };
+  });
 
   return (
     <div className="space-y-3 pt-3 pb-1 animate-in fade-in duration-150">
@@ -659,6 +670,7 @@ function DotsHorizontal({
   toggleItemTask,
   sliderStyle,
 }: DotsProps) {
+  // axisLevel / setSliderStyle consumed only by DotsVertical
   const activeItem = items.find((item) => openItem === `${axisKey}:${item.name}`);
   return (
     <div className="space-y-3">
@@ -716,6 +728,7 @@ function DotsHorizontal({
             item={activeItem}
             itemKey={`${axisKey}:${activeItem.name}`}
             data={itemData[`${axisKey}:${activeItem.name}`] ?? { level: 0, tasks: {} }}
+            axisKey={axisKey}
             setItemLevel={setItemLevel}
             toggleItemTask={toggleItemTask}
             sliderStyle={sliderStyle}
@@ -730,20 +743,159 @@ function DotsHorizontal({
 function DotsVertical({
   items,
   axisKey,
+  axisLevel,
   itemData,
   openItem,
   setOpenItem,
   setItemLevel,
   toggleItemTask,
   sliderStyle,
+  setSliderStyle,
 }: DotsProps) {
+  const axisLevelColor = AXES[axisKey].levels[axisLevel]?.color ?? AXES[axisKey].color;
+
   return (
     <div className="space-y-4 px-1">
+      {/* Style picker — 5 options visible at once */}
+      <div className="flex items-center justify-end gap-1.5">
+        {([1, 3, 5, 6, 7] as SliderStyle[]).map((s) => {
+          const isActive = sliderStyle === s;
+          const icons: Record<number, React.ReactNode> = {
+            1: (
+              <svg width="28" height="14" viewBox="0 0 28 14">
+                <line
+                  x1="2"
+                  y1="7"
+                  x2="26"
+                  y2="7"
+                  stroke={axisLevelColor}
+                  strokeWidth="1.5"
+                  strokeOpacity="0.25"
+                />
+                {[0, 1, 2, 3, 4].map((i) => (
+                  <circle
+                    key={i}
+                    cx={2 + i * 6}
+                    cy="7"
+                    r={i === 2 ? 4 : 2.5}
+                    fill={axisLevelColor}
+                    opacity={i === 2 ? 1 : 0.35 + i * 0.1}
+                  />
+                ))}
+              </svg>
+            ),
+            3: (
+              <svg width="28" height="14" viewBox="0 0 28 14">
+                <line
+                  x1="2"
+                  y1="7"
+                  x2="26"
+                  y2="7"
+                  stroke={axisLevelColor}
+                  strokeWidth="1.5"
+                  strokeOpacity="0.2"
+                />
+                <line
+                  x1="2"
+                  y1="7"
+                  x2="16"
+                  y2="7"
+                  stroke={axisLevelColor}
+                  strokeWidth="1.5"
+                  strokeOpacity="0.7"
+                />
+                <circle cx="16" cy="7" r="4" fill={axisLevelColor} opacity="0.9" />
+              </svg>
+            ),
+            5: (
+              <svg width="28" height="14" viewBox="0 0 28 14">
+                {[0, 1, 2, 3, 4].map((i) => (
+                  <rect
+                    key={i}
+                    x={2 + i * 5.5}
+                    y={14 - (5 + i * 2)}
+                    width="4"
+                    height={5 + i * 2}
+                    rx="1"
+                    fill={axisLevelColor}
+                    opacity={0.3 + i * 0.15}
+                  />
+                ))}
+              </svg>
+            ),
+            6: (
+              <svg width="28" height="14" viewBox="0 0 28 14">
+                {[0, 1, 2, 3, 4].map((i) => (
+                  <rect
+                    key={i}
+                    x={1 + i * 5.5}
+                    y={i === 2 ? 3 : 5}
+                    width="5"
+                    height={i === 2 ? 8 : 4}
+                    rx="2"
+                    fill={axisLevelColor}
+                    opacity={i === 2 ? 0.9 : 0.35}
+                  />
+                ))}
+              </svg>
+            ),
+            7: (
+              <svg width="28" height="14" viewBox="0 0 28 14">
+                <line
+                  x1="2"
+                  y1="7"
+                  x2="26"
+                  y2="7"
+                  stroke={axisLevelColor}
+                  strokeWidth="1"
+                  strokeOpacity="0.2"
+                />
+                {[0, 1, 2, 3, 4].map((i) => (
+                  <circle
+                    key={i}
+                    cx={2 + i * 6}
+                    cy="7"
+                    r={2 + i * 1.2}
+                    fill={axisLevelColor}
+                    opacity={0.25 + i * 0.18}
+                  />
+                ))}
+              </svg>
+            ),
+          };
+          return (
+            <button
+              key={s}
+              type="button"
+              onClick={() => {
+                setSliderStyle(s);
+                localStorage.setItem(LS_SLIDER_STYLE, String(s));
+              }}
+              className="cursor-pointer transition-all"
+              style={{
+                background: isActive ? `${axisLevelColor}18` : 'transparent',
+                border: `1px solid ${isActive ? `${axisLevelColor}55` : `${axisLevelColor}20`}`,
+                borderRadius: 6,
+                padding: '3px 4px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                opacity: isActive ? 1 : 0.45,
+              }}
+            >
+              {icons[s]}
+            </button>
+          );
+        })}
+      </div>
+
       {items.map((item) => {
         const key = `${axisKey}:${item.name}`;
         const isExpanded = openItem === key;
         const data = itemData[key] ?? { level: 0, tasks: {} };
         const doneCount = item.program.filter((t) => data.tasks[t.id]).length;
+        // Circle dot colour: axis level colour when collapsed, item colour when expanded
+        const dotColor = isExpanded ? item.color : axisLevelColor;
         return (
           <div key={item.name}>
             <button
@@ -757,9 +909,9 @@ function DotsVertical({
                 style={{
                   width: isExpanded ? 20 : 15,
                   height: isExpanded ? 20 : 15,
-                  background: item.color,
+                  background: dotColor,
                   opacity: isExpanded ? 1 : 0.82,
-                  boxShadow: isExpanded ? `0 3px 12px -3px ${item.color}` : 'none',
+                  boxShadow: isExpanded ? `0 3px 12px -3px ${dotColor}` : 'none',
                 }}
               />
               <div className="flex-1">
@@ -803,6 +955,7 @@ function DotsVertical({
                   item={item}
                   itemKey={key}
                   data={data}
+                  axisKey={axisKey}
                   setItemLevel={setItemLevel}
                   toggleItemTask={toggleItemTask}
                   sliderStyle={sliderStyle}
@@ -1768,14 +1921,14 @@ export default function FdsPanel() {
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  background: isOn ? `${curLevel.color}28` : `${curLevel.color}10`,
-                  border: `2px solid ${isOn ? curLevel.color : `${curLevel.color}50`}`,
-                  boxShadow: isOn ? `0 0 0 4px ${curLevel.color}20` : 'none',
+                  background: isOn ? `${a.color}22` : `${a.color}0C`,
+                  border: `2px solid ${isOn ? a.color : `${a.color}38`}`,
+                  boxShadow: isOn ? `0 0 0 4px ${a.color}18` : 'none',
                   transition: 'all 0.18s',
                   fontFamily: font,
                   fontSize: 20,
                   fontWeight: 800,
-                  color: isOn ? curLevel.color : `${curLevel.color}90`,
+                  color: isOn ? a.color : `${a.color}80`,
                   cursor: 'pointer',
                   flexShrink: 0,
                 }}
@@ -1794,139 +1947,6 @@ export default function FdsPanel() {
             </div>
           );
         })}
-
-        {/* Slider style picker — 5 options visible at once */}
-        <div className="flex items-center justify-end gap-1.5 pt-2">
-          {([1, 3, 5, 6, 7] as SliderStyle[]).map((s) => {
-            const active = sliderStyle === s;
-            const icons: Record<number, React.ReactNode> = {
-              1: (
-                <svg width="28" height="14" viewBox="0 0 28 14">
-                  <line
-                    x1="2"
-                    y1="7"
-                    x2="26"
-                    y2="7"
-                    stroke="#C4A060"
-                    strokeWidth="1.5"
-                    strokeOpacity="0.3"
-                  />
-                  {[0, 1, 2, 3, 4].map((i) => (
-                    <circle
-                      key={i}
-                      cx={2 + i * 6}
-                      cy="7"
-                      r={i === 2 ? 4 : 2.5}
-                      fill={['#88C8E8', '#A8E090', '#F8C040', '#F0A088', '#F080B8'][i]}
-                      opacity={i === 2 ? 1 : 0.55}
-                    />
-                  ))}
-                </svg>
-              ),
-              3: (
-                <svg width="28" height="14" viewBox="0 0 28 14">
-                  <line
-                    x1="2"
-                    y1="7"
-                    x2="26"
-                    y2="7"
-                    stroke="#C4A060"
-                    strokeWidth="1.5"
-                    strokeOpacity="0.2"
-                  />
-                  <line
-                    x1="2"
-                    y1="7"
-                    x2="16"
-                    y2="7"
-                    stroke="#C4A060"
-                    strokeWidth="1.5"
-                    strokeOpacity="0.7"
-                  />
-                  <circle cx="16" cy="7" r="4" fill="#C4A060" opacity="0.9" />
-                </svg>
-              ),
-              5: (
-                <svg width="28" height="14" viewBox="0 0 28 14">
-                  {[0, 1, 2, 3, 4].map((i) => (
-                    <rect
-                      key={i}
-                      x={2 + i * 5.5}
-                      y={14 - (5 + i * 2)}
-                      width="4"
-                      height={5 + i * 2}
-                      rx="1"
-                      fill={['#88C8E8', '#A8E090', '#F8C040', '#F0A088', '#F080B8'][i]}
-                      opacity={i === 2 ? 1 : 0.5}
-                    />
-                  ))}
-                </svg>
-              ),
-              6: (
-                <svg width="28" height="14" viewBox="0 0 28 14">
-                  {[0, 1, 2, 3, 4].map((i) => (
-                    <rect
-                      key={i}
-                      x={1 + i * 5.5}
-                      y={i === 2 ? 3 : 5}
-                      width="5"
-                      height={i === 2 ? 8 : 4}
-                      rx="2"
-                      fill={['#88C8E8', '#A8E090', '#F8C040', '#F0A088', '#F080B8'][i]}
-                      opacity={i === 2 ? 0.9 : 0.4}
-                    />
-                  ))}
-                </svg>
-              ),
-              7: (
-                <svg width="28" height="14" viewBox="0 0 28 14">
-                  <line
-                    x1="2"
-                    y1="7"
-                    x2="26"
-                    y2="7"
-                    stroke="#C4A060"
-                    strokeWidth="1"
-                    strokeOpacity="0.2"
-                  />
-                  {[0, 1, 2, 3, 4].map((i) => (
-                    <circle
-                      key={i}
-                      cx={2 + i * 6}
-                      cy="7"
-                      r={2 + i * 1.2}
-                      fill={['#88C8E8', '#A8E090', '#F8C040', '#F0A088', '#F080B8'][i]}
-                      opacity={i === 2 ? 1 : 0.45}
-                    />
-                  ))}
-                </svg>
-              ),
-            };
-            return (
-              <button
-                key={s}
-                type="button"
-                onClick={() => {
-                  setSliderStyle(s);
-                  localStorage.setItem(LS_SLIDER_STYLE, String(s));
-                }}
-                className="cursor-pointer transition-all"
-                style={{
-                  background: active ? '#C4A06015' : 'transparent',
-                  border: `1px solid ${active ? '#C4A06055' : '#C4A06020'}`,
-                  borderRadius: 6,
-                  padding: '3px 4px',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  opacity: active ? 1 : 0.45,
-                }}
-              >
-                {icons[s]}
-              </button>
-            );
-          })}
-        </div>
       </div>
 
       {/* ⊚ SuperCompass toggle */}
@@ -1978,7 +1998,7 @@ export default function FdsPanel() {
             {(
               [
                 { id: 'h', icon: '—' },
-                { id: 'v', icon: '|' },
+                { id: 'v', icon: 'List' },
                 { id: 'compass', icon: '◎' },
               ] as { id: Layout; icon: string }[]
             ).map(({ id, icon }) => (
@@ -2051,24 +2071,28 @@ export default function FdsPanel() {
             <DotsHorizontal
               items={axisDef.items}
               axisKey={active}
+              axisLevel={axisLevels[active]}
               itemData={itemData}
               openItem={openItem}
               setOpenItem={setOpenItem}
               setItemLevel={setItemLevel}
               toggleItemTask={toggleItemTask}
               sliderStyle={sliderStyle}
+              setSliderStyle={setSliderStyle}
             />
           )}
           {layout === 'v' && (
             <DotsVertical
               items={axisDef.items}
               axisKey={active}
+              axisLevel={axisLevels[active]}
               itemData={itemData}
               openItem={openItem}
               setOpenItem={setOpenItem}
               setItemLevel={setItemLevel}
               toggleItemTask={toggleItemTask}
               sliderStyle={sliderStyle}
+              setSliderStyle={setSliderStyle}
             />
           )}
           {layout === 'compass' && (
