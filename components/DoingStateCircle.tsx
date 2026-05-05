@@ -68,9 +68,9 @@ export default function DoingStateCircle({ onDone: _onDone }: { onDone?: () => v
             display: 'block',
             width: 13,
             height: 13,
-            background: current.color,
+            background: open ? current.color : '#C4A060',
             transform: 'rotate(45deg)',
-            transition: 'background 0.2s',
+            transition: 'background 0.3s',
             flexShrink: 0,
           }}
         />
@@ -79,10 +79,10 @@ export default function DoingStateCircle({ onDone: _onDone }: { onDone?: () => v
             fontFamily: 'var(--font-serif)',
             fontSize: 13,
             fontWeight: 700,
-            color: current.color,
+            color: open ? current.color : '#C4A060',
             letterSpacing: '0.14em',
             textTransform: 'uppercase',
-            transition: 'color 0.2s',
+            transition: 'color 0.3s',
           }}
         >
           {current.label}
