@@ -557,6 +557,7 @@ interface DotsProps {
   setOpenItem: (k: string | null) => void;
   setItemLevel: (k: string, level: number) => void;
   toggleItemTask: (k: string, taskId: string) => void;
+  sliderStyle: SliderStyle;
 }
 
 function ItemProgram({
@@ -566,6 +567,7 @@ function ItemProgram({
   setItemLevel,
   toggleItemTask,
   hideSubtitle,
+  sliderStyle,
 }: {
   item: AxisItem;
   itemKey: string;
@@ -573,7 +575,10 @@ function ItemProgram({
   setItemLevel: (k: string, level: number) => void;
   toggleItemTask: (k: string, taskId: string) => void;
   hideSubtitle?: boolean;
+  sliderStyle: SliderStyle;
 }) {
+  const levels5 = [1, 2, 3, 4, 5].map((n) => ({ name: String(n), color: item.color }));
+
   return (
     <div className="space-y-3 pt-3 pb-1 animate-in fade-in duration-150">
       {!hideSubtitle && (
@@ -590,7 +595,7 @@ function ItemProgram({
           {item.subtitle}
         </p>
       )}
-      {/* Level slider — domains style */}
+      {/* Level slider — styled via chosen SliderStyle */}
       <div className="space-y-1.5">
         <p
           className="italic"
@@ -598,22 +603,13 @@ function ItemProgram({
         >
           where are you?
         </p>
-        <div className="flex gap-[5px]">
-          {[1, 2, 3, 4, 5].map((n) => (
-            <button
-              key={n}
-              type="button"
-              onClick={() => setItemLevel(itemKey, data.level === n ? 0 : n)}
-              className="flex-1 cursor-pointer rounded-full transition-all"
-              style={{
-                height: 11,
-                background: item.color,
-                opacity: data.level >= n ? 0.85 : 0.14,
-                border: 'none',
-              }}
-            />
-          ))}
-        </div>
+        <AxisSlider
+          levels={levels5}
+          selectedIdx={data.level > 0 ? data.level - 1 : -1}
+          onSelect={(i) => setItemLevel(itemKey, data.level === i + 1 ? 0 : i + 1)}
+          axisColor={item.color}
+          style={sliderStyle}
+        />
       </div>
       {/* Program checklist */}
       <div className="space-y-2">
@@ -661,6 +657,7 @@ function DotsHorizontal({
   setOpenItem,
   setItemLevel,
   toggleItemTask,
+  sliderStyle,
 }: DotsProps) {
   const activeItem = items.find((item) => openItem === `${axisKey}:${item.name}`);
   return (
@@ -721,6 +718,7 @@ function DotsHorizontal({
             data={itemData[`${axisKey}:${activeItem.name}`] ?? { level: 0, tasks: {} }}
             setItemLevel={setItemLevel}
             toggleItemTask={toggleItemTask}
+            sliderStyle={sliderStyle}
           />
         </div>
       )}
@@ -737,6 +735,7 @@ function DotsVertical({
   setOpenItem,
   setItemLevel,
   toggleItemTask,
+  sliderStyle,
 }: DotsProps) {
   return (
     <div className="space-y-4 px-1">
@@ -806,6 +805,7 @@ function DotsVertical({
                   data={data}
                   setItemLevel={setItemLevel}
                   toggleItemTask={toggleItemTask}
+                  sliderStyle={sliderStyle}
                   hideSubtitle
                 />
               </div>
@@ -1592,10 +1592,81 @@ function ExpressionStreak() {
   );
 }
 
+const LS_SHARING_REFLECT = 'colourmap:sharing-reflect';
+
+const SHARING_QUESTIONS = [
+  { key: 'close', label: 'as-tu des amis proches à qui te confier ?' },
+  { key: 'new', label: 'est-ce que tu rencontres de nouvelles personnes ?' },
+  { key: 'happy', label: "es-tu content·e des personnes qui t'entourent ?" },
+  { key: 'improve', label: 'travailles-tu à améliorer tes relations ?' },
+  { key: 'need', label: 'de quoi aurais-tu besoin des autres en ce moment ?' },
+  { key: 'give', label: "qu'as-tu envie d'offrir à ceux qui comptent pour toi ?" },
+];
+
+/* ── Sharing reflection program ── */
+function SharingProgram() {
+  const [open, setOpen] = useState(false);
+  const [answers, setAnswers] = useState<Record<string, string>>(() => {
+    try {
+      return JSON.parse(localStorage.getItem(LS_SHARING_REFLECT) || '{}') as Record<string, string>;
+    } catch {
+      return {};
+    }
+  });
+
+  function save(key: string, value: string) {
+    const next = { ...answers, [key]: value };
+    setAnswers(next);
+    localStorage.setItem(LS_SHARING_REFLECT, JSON.stringify(next));
+  }
+
+  return (
+    <div className="mt-1">
+      <LosingeDivider label="Programme" open={open} onToggle={() => setOpen((o) => !o)} />
+      {open && (
+        <div className="mt-3 space-y-3 animate-in fade-in duration-150">
+          {SHARING_QUESTIONS.map((q) => (
+            <div key={q.key}>
+              <p
+                style={{
+                  fontFamily: font,
+                  fontSize: 11,
+                  color: S_COLOR,
+                  opacity: 0.65,
+                  marginBottom: 4,
+                  letterSpacing: '0.04em',
+                }}
+              >
+                {q.label}
+              </p>
+              <textarea
+                value={answers[q.key] || ''}
+                onChange={(e) => save(q.key, e.target.value)}
+                placeholder="…"
+                rows={1}
+                className="w-full resize-none border-b bg-transparent pb-1 outline-none placeholder:italic"
+                style={{
+                  fontFamily: font,
+                  fontSize: 13,
+                  color: 'var(--foreground)',
+                  borderColor: `${S_COLOR}30`,
+                  overflow: 'hidden',
+                  fieldSizing: 'content' as React.CSSProperties['fieldSizing'],
+                }}
+              />
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
 /* ── All sharing extras — rendered only when S is active ── */
 function SharingExtras() {
   return (
     <div className="space-y-3">
+      <SharingProgram />
       <SharingLogbook />
       <ConnectionMap />
       <ExpressionStreak />
@@ -1697,14 +1768,14 @@ export default function FdsPanel() {
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  background: isOn ? `${a.color}22` : `${a.color}0C`,
-                  border: `2px solid ${isOn ? a.color : `${a.color}38`}`,
-                  boxShadow: isOn ? `0 0 0 4px ${a.color}18` : 'none',
+                  background: isOn ? `${curLevel.color}28` : `${curLevel.color}10`,
+                  border: `2px solid ${isOn ? curLevel.color : `${curLevel.color}50`}`,
+                  boxShadow: isOn ? `0 0 0 4px ${curLevel.color}20` : 'none',
                   transition: 'all 0.18s',
                   fontFamily: font,
                   fontSize: 20,
                   fontWeight: 800,
-                  color: isOn ? a.color : `${a.color}80`,
+                  color: isOn ? curLevel.color : `${curLevel.color}90`,
                   cursor: 'pointer',
                   flexShrink: 0,
                 }}
@@ -1720,23 +1791,6 @@ export default function FdsPanel() {
                 axisColor={a.color}
                 style={sliderStyle}
               />
-
-              {/* Level name */}
-              <span
-                style={{
-                  fontFamily: font,
-                  fontSize: 11,
-                  fontWeight: 600,
-                  color: curLevel.color,
-                  width: 62,
-                  textAlign: 'right',
-                  letterSpacing: '0.05em',
-                  flexShrink: 0,
-                  lineHeight: 1.2,
-                }}
-              >
-                {curLevel.name}
-              </span>
             </div>
           );
         })}
@@ -1857,6 +1911,42 @@ export default function FdsPanel() {
             ))}
           </div>
 
+          {/* Slider style picker — only in list views for D and S */}
+          {(layout === 'h' || layout === 'v') && active !== 'feeling' && (
+            <div className="flex items-center justify-end gap-2">
+              <span
+                style={{
+                  fontFamily: font,
+                  fontSize: 10,
+                  color: '#C4A060',
+                  opacity: 0.45,
+                  letterSpacing: '0.1em',
+                }}
+              >
+                {sliderStyle}/7
+              </span>
+              <button
+                type="button"
+                onClick={cycleSliderStyle}
+                title={`Slider style ${sliderStyle} of 7`}
+                className="cursor-pointer transition-all hover:scale-110"
+                style={{ background: 'none', border: 'none', padding: 0 }}
+              >
+                <span
+                  style={{
+                    display: 'block',
+                    width: 12,
+                    height: 12,
+                    borderRadius: '50%',
+                    background: '#C4A060',
+                    opacity: 0.6,
+                    boxShadow: '0 1px 5px -1px #C4A06070',
+                  }}
+                />
+              </button>
+            </div>
+          )}
+
           {/* Content */}
           {layout === 'h' && (
             <DotsHorizontal
@@ -1867,6 +1957,7 @@ export default function FdsPanel() {
               setOpenItem={setOpenItem}
               setItemLevel={setItemLevel}
               toggleItemTask={toggleItemTask}
+              sliderStyle={sliderStyle}
             />
           )}
           {layout === 'v' && (
@@ -1878,6 +1969,7 @@ export default function FdsPanel() {
               setOpenItem={setOpenItem}
               setItemLevel={setItemLevel}
               toggleItemTask={toggleItemTask}
+              sliderStyle={sliderStyle}
             />
           )}
           {layout === 'compass' && (

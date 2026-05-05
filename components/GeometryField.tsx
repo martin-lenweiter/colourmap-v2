@@ -25,7 +25,15 @@ type Mode =
   | 'lorenz'
   | 'knot'
   | 'orbital'
-  | 'geodesic';
+  | 'geodesic'
+  | 'rainbow'
+  | 'cathedral'
+  | 'islamic'
+  | 'yantra'
+  | 'celtic'
+  | 'bloom'
+  | 'lava'
+  | 'spire';
 
 interface Pal {
   bg0: string;
@@ -230,6 +238,60 @@ const PAL: Record<string, Pal> = {
     dots: 'rgba(220,235,255,0.72)',
     rgb: [200, 220, 255],
   },
+  Matrix: {
+    bg0: '#000800',
+    bg1: '#000400',
+    line: 'rgba(0,255,65,0.65)',
+    fill: 'rgba(0,255,65,0.06)',
+    glow: 'rgba(0,200,50,0.38)',
+    dots: 'rgba(100,255,130,0.70)',
+    rgb: [0, 255, 65],
+  },
+  'Islamic Garden': {
+    bg0: '#020810',
+    bg1: '#010408',
+    line: 'rgba(100,210,200,0.65)',
+    fill: 'rgba(80,190,180,0.06)',
+    glow: 'rgba(60,180,170,0.38)',
+    dots: 'rgba(160,240,230,0.72)',
+    rgb: [100, 210, 200],
+  },
+  'Yantra Fire': {
+    bg0: '#100200',
+    bg1: '#060100',
+    line: 'rgba(255,120,30,0.68)',
+    fill: 'rgba(255,100,20,0.06)',
+    glow: 'rgba(220,80,10,0.42)',
+    dots: 'rgba(255,180,80,0.72)',
+    rgb: [255, 120, 30],
+  },
+  'Celtic Forest': {
+    bg0: '#010a03',
+    bg1: '#010502',
+    line: 'rgba(60,210,100,0.65)',
+    fill: 'rgba(50,190,80,0.06)',
+    glow: 'rgba(40,170,70,0.38)',
+    dots: 'rgba(120,240,150,0.72)',
+    rgb: [60, 210, 100],
+  },
+  'Laser Dome': {
+    bg0: '#060008',
+    bg1: '#030005',
+    line: 'rgba(255,60,200,0.65)',
+    fill: 'rgba(255,60,200,0.06)',
+    glow: 'rgba(200,30,255,0.40)',
+    dots: 'rgba(255,140,255,0.72)',
+    rgb: [255, 60, 200],
+  },
+  'Sacred Architecture': {
+    bg0: '#080500',
+    bg1: '#040200',
+    line: 'rgba(220,175,70,0.65)',
+    fill: 'rgba(200,155,50,0.06)',
+    glow: 'rgba(180,130,40,0.38)',
+    dots: 'rgba(240,210,110,0.72)',
+    rgb: [220, 175, 70],
+  },
 };
 
 /* ── Preset configs ─────────────────────────────────────────── */
@@ -315,7 +377,7 @@ const PRESETS: Record<string, Cfg> = {
     breathSpeed: 1.0,
     intensity: 9,
     particles: 6,
-    luminous: 8,
+    luminous: 5,
     stars: 2,
     mode: 'burst',
   },
@@ -327,7 +389,7 @@ const PRESETS: Record<string, Cfg> = {
     breathSpeed: 0.9,
     intensity: 8,
     particles: 5,
-    luminous: 7,
+    luminous: 5,
     stars: 6,
     mode: 'kaleidoscope',
   },
@@ -336,10 +398,10 @@ const PRESETS: Record<string, Cfg> = {
     symmetry: 8,
     complexity: 6,
     glow: 7,
-    breathSpeed: 1.8,
+    breathSpeed: 1.4,
     intensity: 9,
     particles: 2,
-    luminous: 7,
+    luminous: 5,
     stars: 8,
     mode: 'tunnel',
   },
@@ -375,7 +437,7 @@ const PRESETS: Record<string, Cfg> = {
     breathSpeed: 0.4,
     intensity: 9,
     particles: 0,
-    luminous: 6,
+    luminous: 5,
     stars: 4,
     mode: 'clifford',
   },
@@ -387,7 +449,7 @@ const PRESETS: Record<string, Cfg> = {
     breathSpeed: 0.7,
     intensity: 8,
     particles: 0,
-    luminous: 7,
+    luminous: 5,
     stars: 5,
     mode: 'hypercube',
   },
@@ -396,10 +458,10 @@ const PRESETS: Record<string, Cfg> = {
     symmetry: 12,
     complexity: 6,
     glow: 7,
-    breathSpeed: 2.2,
+    breathSpeed: 1.4,
     intensity: 9,
     particles: 0,
-    luminous: 8,
+    luminous: 5,
     stars: 9,
     mode: 'warp',
   },
@@ -411,7 +473,7 @@ const PRESETS: Record<string, Cfg> = {
     breathSpeed: 0.6,
     intensity: 8,
     particles: 0,
-    luminous: 7,
+    luminous: 5,
     stars: 5,
     mode: 'lorenz',
   },
@@ -423,7 +485,7 @@ const PRESETS: Record<string, Cfg> = {
     breathSpeed: 0.5,
     intensity: 8,
     particles: 0,
-    luminous: 7,
+    luminous: 5,
     stars: 4,
     mode: 'knot',
   },
@@ -435,7 +497,7 @@ const PRESETS: Record<string, Cfg> = {
     breathSpeed: 0.7,
     intensity: 8,
     particles: 0,
-    luminous: 6,
+    luminous: 5,
     stars: 3,
     mode: 'orbital',
   },
@@ -447,38 +509,726 @@ const PRESETS: Record<string, Cfg> = {
     breathSpeed: 0.5,
     intensity: 8,
     particles: 0,
-    luminous: 8,
+    luminous: 4,
     stars: 6,
     mode: 'geodesic',
   },
+  Matrix: {
+    preset: 'Matrix',
+    symmetry: 8,
+    complexity: 4,
+    glow: 5,
+    breathSpeed: 0.2,
+    intensity: 7,
+    particles: 2,
+    luminous: 2,
+    stars: 0,
+    mode: 'sacred',
+  },
+  'Islamic Garden': {
+    preset: 'Islamic Garden',
+    symmetry: 12,
+    complexity: 5,
+    glow: 5,
+    breathSpeed: 0.18,
+    intensity: 8,
+    particles: 0,
+    luminous: 2,
+    stars: 1,
+    mode: 'islamic',
+  },
+  'Yantra Fire': {
+    preset: 'Yantra Fire',
+    symmetry: 9,
+    complexity: 5,
+    glow: 5,
+    breathSpeed: 0.15,
+    intensity: 8,
+    particles: 0,
+    luminous: 2,
+    stars: 0,
+    mode: 'yantra',
+  },
+  'Celtic Forest': {
+    preset: 'Celtic Forest',
+    symmetry: 6,
+    complexity: 3,
+    glow: 4,
+    breathSpeed: 0.2,
+    intensity: 8,
+    particles: 0,
+    luminous: 2,
+    stars: 1,
+    mode: 'celtic',
+  },
+  'Laser Dome': {
+    preset: 'Laser Dome',
+    symmetry: 12,
+    complexity: 6,
+    glow: 8,
+    breathSpeed: 0.5,
+    intensity: 9,
+    particles: 0,
+    luminous: 3,
+    stars: 2,
+    mode: 'rainbow',
+  },
+  'Sacred Architecture': {
+    preset: 'Sacred Architecture',
+    symmetry: 8,
+    complexity: 5,
+    glow: 6,
+    breathSpeed: 0.2,
+    intensity: 8,
+    particles: 0,
+    luminous: 3,
+    stars: 1,
+    mode: 'cathedral',
+  },
+  'Infinite Bloom': {
+    preset: 'Infinite Bloom',
+    symmetry: 8,
+    complexity: 7,
+    glow: 6,
+    breathSpeed: 0.25,
+    intensity: 8,
+    particles: 0,
+    luminous: 3,
+    stars: 2,
+    mode: 'bloom',
+  },
+  'Lava Dream': {
+    preset: 'Lava Dream',
+    symmetry: 6,
+    complexity: 6,
+    glow: 7,
+    breathSpeed: 0.18,
+    intensity: 9,
+    particles: 0,
+    luminous: 4,
+    stars: 0,
+    mode: 'lava',
+  },
+  'Gothic Spire': {
+    preset: 'Gothic Spire',
+    symmetry: 12,
+    complexity: 7,
+    glow: 6,
+    breathSpeed: 0.15,
+    intensity: 8,
+    particles: 0,
+    luminous: 3,
+    stars: 1,
+    mode: 'spire',
+  },
 };
 
-/* ── Intention resolver ─────────────────────────────────────── */
+/* ── Journey system ─────────────────────────────────────────── */
 
-function resolveIntention(w: string): string {
-  const t = w.toLowerCase();
-  if (/clear|focus|vision|clarif/.test(t)) return 'Blue Astral';
-  if (/release|let.?go|flow|open|surrender/.test(t)) return 'Calm Field';
-  if (/energy|power|fire|strong|courage|bold|activ/.test(t)) return 'Golden Source';
-  if (/peace|calm|still|quiet|rest|breath|soft/.test(t)) return 'Minimal Light';
-  if (/spirit|portal|cosmos|divine|mystic|dream/.test(t)) return 'Violet Portal';
-  if (/nature|earth|ground|grow|forest|root|green/.test(t)) return 'Forest Ceremony';
-  if (/dmt|psychedel|vision|burst|ray|expand/.test(t)) return 'DMT Vision';
-  if (/indigo|cosmic|infinite|deep|void/.test(t)) return 'Cosmic Indigo';
-  if (/tunnel|warp|speed|fly|dive|rush|hyper|space/.test(t)) return 'Warp Tunnel';
-  if (/vitral|glass|stained|church|window|cathedral|colour|color|rainbow/.test(t))
-    return 'Sacred Vitral';
-  if (/fibonacci|fib|spiral|nautilus|snail|nature|sequence/.test(t)) return 'Fibonacci Bloom';
-  if (/chaos|attractor|strange|clifford|fractal|evolv|morph/.test(t)) return 'Clifford Dream';
-  if (/4d|four.?d|hyper|tesseract|hopf|dimension/.test(t)) return '4D Crystal';
-  if (/warp|drive|streak|hyperspace|starfield|jump/.test(t)) return 'Warp Drive';
-  if (/lorenz|storm|butter|attractor|chaos3d|three.?d/.test(t)) return 'Lorenz Storm';
-  if (/knot|torus|braid|link|trefoil|knotted/.test(t)) return 'Knot Garden';
-  if (/orbital|atom|electron|quantum|shell|molecule/.test(t)) return 'Orbital Shell';
-  if (/crystal|lattice|platonic|polyhedron|geodesic|icosa|dodeca/.test(t)) return 'Crystal Lattice';
-  const keys = Object.keys(PRESETS);
-  return keys[Math.floor(Math.random() * keys.length)];
+interface JourneyStage {
+  name: string;
+  preset: string;
+  mode: Mode;
+  duration: number;
+  symmetry?: number;
+  complexity?: number;
+  glow?: number;
+  breathSpeed?: number;
+  intensity?: number;
+  particles?: number;
+  luminous?: number;
+  stars?: number;
 }
+
+interface Journey {
+  id: number;
+  name: string;
+  icon: string;
+  desc: string;
+  stages: JourneyStage[];
+}
+
+function lerp(a: number, b: number, t: number) {
+  return a + (b - a) * t;
+}
+
+function smoothstep(t: number) {
+  return t * t * (3 - 2 * t);
+}
+
+function journeyLerpCfg(a: JourneyStage, b: JourneyStage, t: number, tint?: string): Cfg {
+  const pa = PRESETS[a.preset] ?? PRESETS['Calm Field'];
+  const pb = PRESETS[b.preset] ?? PRESETS['Calm Field'];
+  const st = smoothstep(Math.max(0, Math.min(1, t)));
+  const preset = tint ?? (t < 0.5 ? a.preset : b.preset);
+  return {
+    preset,
+    mode: t < 0.5 ? a.mode : b.mode,
+    symmetry: Math.round(lerp(a.symmetry ?? pa.symmetry, b.symmetry ?? pb.symmetry, st)),
+    complexity: lerp(a.complexity ?? pa.complexity, b.complexity ?? pb.complexity, st),
+    glow: lerp(a.glow ?? pa.glow, b.glow ?? pb.glow, st),
+    breathSpeed: lerp(a.breathSpeed ?? pa.breathSpeed, b.breathSpeed ?? pb.breathSpeed, st),
+    intensity: lerp(a.intensity ?? pa.intensity, b.intensity ?? pb.intensity, st),
+    particles: lerp(a.particles ?? pa.particles, b.particles ?? pb.particles, st),
+    luminous: lerp(a.luminous ?? pa.luminous, b.luminous ?? pb.luminous, st),
+    stars: lerp(a.stars ?? pa.stars, b.stars ?? pb.stars, st),
+  };
+}
+
+const JOURNEYS: Journey[] = [
+  {
+    id: 1,
+    name: 'Bloom',
+    icon: '✿',
+    desc: 'Flowers, Fibonacci spirals, infinite petals — slow golden growth',
+    stages: [
+      {
+        name: 'Fibonacci Seed',
+        preset: 'Fibonacci Bloom',
+        mode: 'fibonacci',
+        duration: 45,
+        breathSpeed: 0.18,
+        luminous: 2,
+        stars: 1,
+        complexity: 6,
+      },
+      {
+        name: 'Petals Unfurl',
+        preset: 'Calm Field',
+        mode: 'sacred',
+        duration: 45,
+        symmetry: 12,
+        breathSpeed: 0.15,
+        luminous: 2,
+        particles: 4,
+        glow: 5,
+      },
+      {
+        name: 'Kaleidoscope Bloom',
+        preset: 'Golden Source',
+        mode: 'kaleidoscope',
+        duration: 40,
+        symmetry: 16,
+        breathSpeed: 0.22,
+        luminous: 2,
+        glow: 6,
+      },
+      {
+        name: 'Burst of Life',
+        preset: 'Fibonacci Bloom',
+        mode: 'burst',
+        duration: 35,
+        breathSpeed: 0.3,
+        luminous: 3,
+        particles: 6,
+        glow: 7,
+      },
+      {
+        name: 'Orbital Garden',
+        preset: 'Calm Field',
+        mode: 'orbital',
+        duration: 40,
+        breathSpeed: 0.12,
+        luminous: 2,
+        stars: 2,
+        symmetry: 8,
+      },
+    ],
+  },
+  {
+    id: 2,
+    name: 'Space Tunnel',
+    icon: '⊙',
+    desc: 'Stars, vortex tunnels, DMT depth — travelling through space',
+    stages: [
+      {
+        name: 'Hyperspace Jump',
+        preset: 'Warp Drive',
+        mode: 'warp',
+        duration: 40,
+        breathSpeed: 0.6,
+        luminous: 3,
+        stars: 9,
+        glow: 6,
+      },
+      {
+        name: 'Vortex Descent',
+        preset: 'Warp Tunnel',
+        mode: 'tunnel',
+        duration: 45,
+        breathSpeed: 0.7,
+        luminous: 3,
+        stars: 7,
+        glow: 5,
+      },
+      {
+        name: 'Lorenz Attractor',
+        preset: 'Cosmic Indigo',
+        mode: 'lorenz',
+        duration: 40,
+        breathSpeed: 0.3,
+        luminous: 3,
+        stars: 5,
+      },
+      {
+        name: 'Wave Interference',
+        preset: 'Blue Astral',
+        mode: 'lissajous',
+        duration: 35,
+        breathSpeed: 0.45,
+        luminous: 3,
+        stars: 7,
+      },
+      {
+        name: 'Deep Tunnel',
+        preset: 'Warp Tunnel',
+        mode: 'tunnel',
+        duration: 40,
+        breathSpeed: 0.8,
+        luminous: 4,
+        stars: 9,
+        glow: 7,
+      },
+    ],
+  },
+  {
+    id: 3,
+    name: 'Sacred Geometry',
+    icon: '⬡',
+    desc: '4D crystal forms, torus knots, platonic solids transforming',
+    stages: [
+      {
+        name: 'Crystal Lattice',
+        preset: 'Crystal Lattice',
+        mode: 'geodesic',
+        duration: 45,
+        complexity: 5,
+        breathSpeed: 0.18,
+        luminous: 2,
+        glow: 6,
+      },
+      {
+        name: 'Hypercube Fold',
+        preset: '4D Crystal',
+        mode: 'hypercube',
+        duration: 45,
+        breathSpeed: 0.25,
+        luminous: 3,
+        glow: 7,
+        complexity: 8,
+      },
+      {
+        name: 'Torus Braid',
+        preset: 'Knot Garden',
+        mode: 'knot',
+        duration: 40,
+        breathSpeed: 0.22,
+        luminous: 2,
+        complexity: 5,
+        symmetry: 3,
+      },
+      {
+        name: 'Vitral Window',
+        preset: 'Sacred Vitral',
+        mode: 'vitral',
+        duration: 40,
+        breathSpeed: 0.15,
+        luminous: 2,
+        symmetry: 12,
+      },
+      {
+        name: 'Orbital Shell',
+        preset: 'Orbital Shell',
+        mode: 'orbital',
+        duration: 40,
+        breathSpeed: 0.18,
+        luminous: 2,
+        symmetry: 6,
+      },
+    ],
+  },
+  {
+    id: 4,
+    name: 'Big Bang',
+    icon: '✦',
+    desc: 'Atoms to galaxies — the full spectrum of cosmic creation in colour',
+    stages: [
+      {
+        name: 'Singularity',
+        preset: 'Violet Portal',
+        mode: 'burst',
+        duration: 35,
+        breathSpeed: 0.5,
+        luminous: 4,
+        particles: 8,
+        glow: 8,
+        stars: 2,
+      },
+      {
+        name: 'Chaos Expansion',
+        preset: 'Clifford Dream',
+        mode: 'clifford',
+        duration: 40,
+        breathSpeed: 0.3,
+        luminous: 3,
+        complexity: 8,
+        glow: 6,
+      },
+      {
+        name: 'Stellar Birth',
+        preset: 'Forest Ceremony',
+        mode: 'golden',
+        duration: 40,
+        breathSpeed: 0.22,
+        luminous: 2,
+        stars: 5,
+        symmetry: 10,
+      },
+      {
+        name: 'Galaxy Formation',
+        preset: 'Cosmic Indigo',
+        mode: 'kaleidoscope',
+        duration: 40,
+        symmetry: 14,
+        breathSpeed: 0.4,
+        luminous: 3,
+        stars: 6,
+        glow: 7,
+      },
+      {
+        name: 'Cosmic Drift',
+        preset: 'Warp Drive',
+        mode: 'warp',
+        duration: 35,
+        breathSpeed: 0.55,
+        luminous: 4,
+        stars: 9,
+        glow: 7,
+      },
+    ],
+  },
+  {
+    id: 5,
+    name: 'Matrix',
+    icon: '⌗',
+    desc: 'Code rain morphing into blooming mandalas — data becomes nature',
+    stages: [
+      {
+        name: 'Code Rain',
+        preset: 'Matrix',
+        mode: 'sacred',
+        duration: 40,
+        symmetry: 6,
+        breathSpeed: 0.12,
+        luminous: 2,
+        stars: 0,
+        particles: 1,
+      },
+      {
+        name: 'Data Fibonacci',
+        preset: 'Matrix',
+        mode: 'fibonacci',
+        duration: 40,
+        breathSpeed: 0.15,
+        luminous: 2,
+        stars: 0,
+        complexity: 7,
+      },
+      {
+        name: 'System Kaleidoscope',
+        preset: 'Matrix',
+        mode: 'kaleidoscope',
+        duration: 35,
+        symmetry: 12,
+        breathSpeed: 0.18,
+        luminous: 2,
+        glow: 5,
+      },
+      {
+        name: 'Buffer Overflow',
+        preset: 'Matrix',
+        mode: 'burst',
+        duration: 30,
+        breathSpeed: 0.22,
+        luminous: 3,
+        particles: 5,
+        glow: 6,
+      },
+      {
+        name: 'Deep Mandala',
+        preset: 'Matrix',
+        mode: 'sacred',
+        duration: 35,
+        symmetry: 16,
+        breathSpeed: 0.1,
+        luminous: 2,
+        particles: 2,
+      },
+    ],
+  },
+  {
+    id: 6,
+    name: 'Sacred Architecture',
+    icon: '⛪',
+    desc: 'Islamic arches, Gothic rose windows, yantra — sacred geometry across all human cultures',
+    stages: [
+      {
+        name: 'Islamic Courtyard',
+        preset: 'Islamic Garden',
+        mode: 'islamic',
+        duration: 50,
+        symmetry: 12,
+        complexity: 5,
+        breathSpeed: 0.12,
+        luminous: 2,
+        glow: 4,
+        stars: 1,
+      },
+      {
+        name: 'Vitral Windows',
+        preset: 'Sacred Vitral',
+        mode: 'vitral',
+        duration: 45,
+        symmetry: 12,
+        breathSpeed: 0.1,
+        luminous: 2,
+        glow: 3,
+      },
+      {
+        name: 'Gothic Cathedral',
+        preset: 'Sacred Architecture',
+        mode: 'cathedral',
+        duration: 50,
+        symmetry: 10,
+        complexity: 6,
+        breathSpeed: 0.14,
+        luminous: 3,
+        glow: 7,
+      },
+      {
+        name: 'Hindu Yantra',
+        preset: 'Yantra Fire',
+        mode: 'yantra',
+        duration: 45,
+        symmetry: 9,
+        complexity: 5,
+        breathSpeed: 0.12,
+        luminous: 2,
+        glow: 5,
+      },
+      {
+        name: 'Celtic Weave',
+        preset: 'Celtic Forest',
+        mode: 'celtic',
+        duration: 40,
+        symmetry: 6,
+        complexity: 3,
+        breathSpeed: 0.15,
+        luminous: 2,
+        glow: 4,
+      },
+      {
+        name: 'Rainbow Convergence',
+        preset: 'Sacred Architecture',
+        mode: 'rainbow',
+        duration: 50,
+        symmetry: 16,
+        complexity: 8,
+        breathSpeed: 0.18,
+        luminous: 3,
+        glow: 9,
+      },
+    ],
+  },
+  {
+    id: 7,
+    name: 'Fibonacci Mandala',
+    icon: 'φ',
+    desc: 'Infinite bloom — slow, meditative, eternal mathematical growth. ~10 min ambient loop.',
+    stages: [
+      {
+        name: 'Primordial Seed',
+        preset: 'Fibonacci Bloom',
+        mode: 'fibonacci',
+        duration: 90,
+        breathSpeed: 0.08,
+        luminous: 1,
+        stars: 1,
+        complexity: 4,
+        glow: 4,
+      },
+      {
+        name: 'First Petals',
+        preset: 'Calm Field',
+        mode: 'sacred',
+        duration: 120,
+        symmetry: 8,
+        breathSpeed: 0.07,
+        luminous: 1,
+        particles: 3,
+        glow: 5,
+      },
+      {
+        name: 'Golden Proportion',
+        preset: 'Golden Source',
+        mode: 'golden',
+        duration: 120,
+        symmetry: 12,
+        breathSpeed: 0.09,
+        luminous: 2,
+        glow: 5,
+        stars: 2,
+      },
+      {
+        name: 'Infinite Garden',
+        preset: 'Fibonacci Bloom',
+        mode: 'kaleidoscope',
+        duration: 120,
+        symmetry: 16,
+        breathSpeed: 0.1,
+        luminous: 2,
+        glow: 6,
+      },
+      {
+        name: 'Orbital Meditation',
+        preset: 'Calm Field',
+        mode: 'orbital',
+        duration: 120,
+        breathSpeed: 0.06,
+        luminous: 1,
+        stars: 3,
+        symmetry: 8,
+      },
+      {
+        name: 'Return to Source',
+        preset: 'Fibonacci Bloom',
+        mode: 'fibonacci',
+        duration: 60,
+        breathSpeed: 0.07,
+        luminous: 1,
+        stars: 1,
+        complexity: 6,
+      },
+    ],
+  },
+  {
+    id: 8,
+    name: 'Fire & Earth',
+    icon: '🔥',
+    desc: 'Tectonic forces, lava flows, plasma storms — primal earth energy',
+    stages: [
+      {
+        name: 'Tectonic Awakening',
+        preset: 'Golden Source',
+        mode: 'burst',
+        duration: 35,
+        breathSpeed: 0.45,
+        luminous: 4,
+        particles: 7,
+        glow: 8,
+        stars: 1,
+      },
+      {
+        name: 'Lava Flow',
+        preset: 'DMT Vision',
+        mode: 'clifford',
+        duration: 40,
+        breathSpeed: 0.28,
+        luminous: 3,
+        complexity: 7,
+        glow: 6,
+      },
+      {
+        name: 'Storm Attractor',
+        preset: 'Lorenz Storm',
+        mode: 'lorenz',
+        duration: 40,
+        breathSpeed: 0.35,
+        luminous: 3,
+        stars: 3,
+        complexity: 5,
+      },
+      {
+        name: 'Core Plasma',
+        preset: 'Golden Source',
+        mode: 'warp',
+        duration: 35,
+        breathSpeed: 0.5,
+        luminous: 4,
+        stars: 5,
+        glow: 7,
+      },
+      {
+        name: 'Phoenix Flame',
+        preset: 'DMT Vision',
+        mode: 'burst',
+        duration: 30,
+        breathSpeed: 0.55,
+        luminous: 4,
+        particles: 8,
+        glow: 9,
+      },
+    ],
+  },
+  {
+    id: 9,
+    name: 'Ocean Depths',
+    icon: '🌊',
+    desc: 'Bioluminescence, thermoclines, abyssal vortices — deep blue meditation',
+    stages: [
+      {
+        name: 'Surface Ripples',
+        preset: 'Blue Astral',
+        mode: 'warp',
+        duration: 40,
+        breathSpeed: 0.25,
+        luminous: 2,
+        stars: 6,
+        glow: 4,
+      },
+      {
+        name: 'Bioluminescence',
+        preset: 'Forest Ceremony',
+        mode: 'orbital',
+        duration: 45,
+        breathSpeed: 0.15,
+        luminous: 2,
+        stars: 4,
+        symmetry: 10,
+      },
+      {
+        name: 'Thermocline',
+        preset: 'Cosmic Indigo',
+        mode: 'lorenz',
+        duration: 45,
+        breathSpeed: 0.2,
+        luminous: 2,
+        stars: 3,
+        complexity: 4,
+      },
+      {
+        name: 'Abyss Vortex',
+        preset: 'Blue Astral',
+        mode: 'tunnel',
+        duration: 40,
+        breathSpeed: 0.4,
+        luminous: 3,
+        stars: 7,
+        glow: 5,
+      },
+      {
+        name: 'Deep Current',
+        preset: 'Warp Tunnel',
+        mode: 'lissajous',
+        duration: 40,
+        breathSpeed: 0.18,
+        luminous: 2,
+        stars: 5,
+        glow: 4,
+      },
+    ],
+  },
+];
 
 /* ── Particle helpers ───────────────────────────────────────── */
 
@@ -756,6 +1506,22 @@ function buildModeGroup(cfg: Cfg, R: number): THREE.Group {
       return buildOrbital(cfg, R);
     case 'geodesic':
       return buildGeodesic(cfg, R);
+    case 'rainbow':
+      return buildRainbow(cfg, R);
+    case 'cathedral':
+      return buildCathedral(cfg, R);
+    case 'islamic':
+      return buildIslamic(cfg, R);
+    case 'yantra':
+      return buildYantra(cfg, R);
+    case 'celtic':
+      return buildCeltic(cfg, R);
+    case 'bloom':
+      return buildBloom(cfg, R);
+    case 'lava':
+      return buildLava(cfg, R);
+    case 'spire':
+      return buildSpire(cfg, R);
     default:
       return buildSacred(cfg, R);
   }
@@ -807,6 +1573,30 @@ function updateModeGroup(group: THREE.Group, cfg: Cfg, dots: Dot[], t: number, R
       break;
     case 'geodesic':
       updateGeodesic(group, cfg, t, R);
+      break;
+    case 'rainbow':
+      updateRainbow(group, cfg, t, R);
+      break;
+    case 'cathedral':
+      updateCathedral(group, cfg, t, R);
+      break;
+    case 'islamic':
+      updateIslamic(group, cfg, t, R);
+      break;
+    case 'yantra':
+      updateYantra(group, cfg, t, R);
+      break;
+    case 'celtic':
+      updateCeltic(group, cfg, t, R);
+      break;
+    case 'bloom':
+      updateBloom(group, cfg, t, R);
+      break;
+    case 'lava':
+      updateLava(group, cfg, t, R);
+      break;
+    case 'spire':
+      updateSpire(group, cfg, t, R);
       break;
     default:
       updateSacred(group, cfg, dots, t, R);
@@ -2653,6 +3443,1324 @@ function updateGeodesic(group: THREE.Group, cfg: Cfg, t: number, R: number): voi
   }
 }
 
+/* ── ISLAMIC mode — girih star polygon geometry ─────────────── */
+
+function starPolygonPts(n: number, r1: number, r2: number): Float32Array {
+  const pts = new Float32Array((n * 2 + 1) * 3);
+  for (let i = 0; i <= n * 2; i++) {
+    const a = (i / (n * 2)) * Math.PI * 2 - Math.PI / 2;
+    const r = i % 2 === 0 ? r1 : r2;
+    pts[i * 3] = Math.cos(a) * r;
+    pts[i * 3 + 1] = Math.sin(a) * r;
+    pts[i * 3 + 2] = 0;
+  }
+  return pts;
+}
+
+function buildIslamic(cfg: Cfg, R: number): THREE.Group {
+  const pal = PAL[cfg.preset] ?? PAL['Islamic Garden'];
+  const [rr, gg, bb] = pal.rgb;
+  const iF = cfg.intensity / 10;
+  const n = Math.max(6, Math.round(cfg.symmetry));
+  const layers = Math.max(1, Math.round(cfg.complexity));
+  const group = new THREE.Group();
+  const tmpCol = new THREE.Color();
+
+  for (let l = 1; l <= layers; l++) {
+    const r1 = R * (l / layers);
+    const r2 = r1 * 0.42;
+    const hue = ((l / layers) * 0.6) % 1.0;
+    tmpCol.setHSL(hue, 0.85, 0.55);
+    const col: [number, number, number] = [
+      lerp(rr, tmpCol.r * 255, cfg.glow / 10),
+      lerp(gg, tmpCol.g * 255, cfg.glow / 10),
+      lerp(bb, tmpCol.b * 255, cfg.glow / 10),
+    ];
+    const pts = starPolygonPts(n, r1, r2);
+    const geo = new THREE.BufferGeometry();
+    geo.setAttribute('position', new THREE.BufferAttribute(pts, 3));
+    const star = new THREE.Line(
+      geo,
+      lineMat(hdrColor(col, iF * (0.5 + (l / layers) * 0.5), 2.0), 0.9),
+    );
+    star.userData.tag = 'islamicStar';
+    star.userData.hue = hue;
+    star.userData.layer = l;
+    star.userData.baseR = r1;
+    star.userData.dir = l % 2 === 0 ? 1 : -1;
+    group.add(star);
+  }
+
+  // Inner ring of smaller stars arranged in a circle
+  const ringN = n;
+  const ringR = R * 0.48;
+  const smallR = R * 0.18;
+  for (let i = 0; i < ringN; i++) {
+    const ang = (i / ringN) * Math.PI * 2;
+    const hue = ((i / ringN) * 0.4 + 0.5) % 1.0;
+    tmpCol.setHSL(hue, 0.9, 0.55);
+    const col: [number, number, number] = [
+      lerp(rr, tmpCol.r * 255, (cfg.glow / 10) * 0.8),
+      lerp(gg, tmpCol.g * 255, (cfg.glow / 10) * 0.8),
+      lerp(bb, tmpCol.b * 255, (cfg.glow / 10) * 0.8),
+    ];
+    const pts = starPolygonPts(6, smallR, smallR * 0.4);
+    const geo = new THREE.BufferGeometry();
+    geo.setAttribute('position', new THREE.BufferAttribute(pts, 3));
+    const sub = new THREE.Line(geo, lineMat(hdrColor(col, iF * 0.6, 1.8), 0.75));
+    sub.position.set(Math.cos(ang) * ringR, Math.sin(ang) * ringR, 0);
+    sub.userData.tag = 'islamicRingStar';
+    sub.userData.hue = hue;
+    sub.userData.angle = ang;
+    group.add(sub);
+  }
+
+  // Connecting geometry — lines from outer star tips to neighbours
+  const TAU = Math.PI * 2;
+  const outerR = R;
+  const connPts: number[] = [];
+  for (let i = 0; i < n; i++) {
+    const a0 = (i / n) * TAU - Math.PI / 2;
+    const a1 = ((i + 1) / n) * TAU - Math.PI / 2;
+    connPts.push(
+      Math.cos(a0) * outerR,
+      Math.sin(a0) * outerR,
+      0,
+      Math.cos(a1) * outerR * 0.65,
+      Math.sin(a1) * outerR * 0.65,
+      0,
+    );
+  }
+  const connGeo = new THREE.BufferGeometry();
+  connGeo.setAttribute('position', new THREE.BufferAttribute(new Float32Array(connPts), 3));
+  const conn = new THREE.LineSegments(connGeo, lineMat(hdrColor([rr, gg, bb], iF * 0.3, 1.5), 0.6));
+  conn.userData.tag = 'islamicConn';
+  group.add(conn);
+
+  const center = buildCenter([rr, gg, bb], iF * 0.9, R / 210);
+  center.userData.tag = 'center';
+  group.add(center);
+
+  return group;
+}
+
+function updateIslamic(group: THREE.Group, cfg: Cfg, t: number, R: number): void {
+  const pal = PAL[cfg.preset] ?? PAL['Islamic Garden'];
+  const [rr, gg, bb] = pal.rgb;
+  const iF = cfg.intensity / 10;
+  const breath = (Math.sin(t * 0.001 * cfg.breathSpeed) + 1) * 0.5;
+  const timeHue = (t * 0.00006) % 1.0;
+  const tmpCol = new THREE.Color();
+
+  for (const child of group.children) {
+    const tag = child.userData.tag as string;
+    if (tag === 'islamicStar') {
+      const hue = ((child.userData.hue as number) + timeHue) % 1.0;
+      tmpCol.setHSL(hue, 0.85, 0.55);
+      const col: [number, number, number] = [
+        lerp(rr, tmpCol.r * 255, cfg.glow / 10),
+        lerp(gg, tmpCol.g * 255, cfg.glow / 10),
+        lerp(bb, tmpCol.b * 255, cfg.glow / 10),
+      ];
+      const dir = child.userData.dir as number;
+      child.rotation.z = t * 0.00008 * cfg.breathSpeed * dir;
+      child.scale.setScalar(0.94 + breath * 0.06);
+      updateMat(
+        child as THREE.Object3D,
+        col,
+        iF * (0.5 + ((child.userData.layer as number) / 5) * 0.5),
+        2.0,
+      );
+    } else if (tag === 'islamicRingStar') {
+      const hue = ((child.userData.hue as number) + timeHue * 1.5) % 1.0;
+      tmpCol.setHSL(hue, 0.9, 0.55);
+      const col: [number, number, number] = [
+        lerp(rr, tmpCol.r * 255, (cfg.glow / 10) * 0.8),
+        lerp(gg, tmpCol.g * 255, (cfg.glow / 10) * 0.8),
+        lerp(bb, tmpCol.b * 255, (cfg.glow / 10) * 0.8),
+      ];
+      child.rotation.z = t * 0.00022 * cfg.breathSpeed;
+      updateMat(child as THREE.Object3D, col, iF * 0.6, 1.8);
+    } else if (tag === 'islamicConn') {
+      child.rotation.z = t * 0.00005 * cfg.breathSpeed;
+      updateMat(child as THREE.Object3D, [rr, gg, bb], iF * 0.3, 1.5);
+    } else if (tag === 'center') {
+      updateCenter(child as THREE.Group, breath, [rr, gg, bb], iF * 0.9, R / 210);
+    }
+  }
+}
+
+/* ── YANTRA mode — sacred Hindu triangle geometry ───────────── */
+
+function buildYantra(cfg: Cfg, R: number): THREE.Group {
+  const pal = PAL[cfg.preset] ?? PAL['Yantra Fire'];
+  const [rr, gg, bb] = pal.rgb;
+  const iF = cfg.intensity / 10;
+  const nPairs = Math.max(2, Math.round(cfg.complexity));
+  const group = new THREE.Group();
+  const tmpCol = new THREE.Color();
+  const TAU = Math.PI * 2;
+
+  // Nested interlocking up/down triangles
+  for (let i = 1; i <= nPairs; i++) {
+    const r = R * (i / nPairs) * 0.88;
+    const brightness = iF * (0.4 + (i / nPairs) * 0.6);
+    const hue = ((i / nPairs) * 0.45) % 1.0;
+    tmpCol.setHSL(hue, 0.9, 0.55);
+    const col: [number, number, number] = [
+      lerp(rr, tmpCol.r * 255, cfg.glow / 10),
+      lerp(gg, tmpCol.g * 255, cfg.glow / 10),
+      lerp(bb, tmpCol.b * 255, cfg.glow / 10),
+    ];
+
+    // Upward triangle (Shiva)
+    const upPts = new Float32Array(4 * 3);
+    for (let k = 0; k < 3; k++) {
+      const a = (k / 3) * TAU - Math.PI / 2;
+      upPts[k * 3] = Math.cos(a) * r;
+      upPts[k * 3 + 1] = Math.sin(a) * r;
+    }
+    upPts[9] = upPts[0];
+    upPts[10] = upPts[1];
+    upPts[11] = 0;
+    const upGeo = new THREE.BufferGeometry();
+    upGeo.setAttribute('position', new THREE.BufferAttribute(upPts, 3));
+    const up = new THREE.Line(upGeo, lineMat(hdrColor(col, brightness, 2.0), 0.9));
+    up.userData.tag = 'yantraUp';
+    up.userData.hue = hue;
+    up.userData.layer = i;
+    up.userData.baseR = r;
+    group.add(up);
+
+    // Downward triangle (Shakti) — slightly smaller, inverted
+    const downR = r * 0.88;
+    const downPts = new Float32Array(4 * 3);
+    for (let k = 0; k < 3; k++) {
+      const a = (k / 3) * TAU + Math.PI / 2;
+      downPts[k * 3] = Math.cos(a) * downR;
+      downPts[k * 3 + 1] = Math.sin(a) * downR;
+    }
+    downPts[9] = downPts[0];
+    downPts[10] = downPts[1];
+    downPts[11] = 0;
+    const downGeo = new THREE.BufferGeometry();
+    downGeo.setAttribute('position', new THREE.BufferAttribute(downPts, 3));
+    const hue2 = (hue + 0.18) % 1.0;
+    tmpCol.setHSL(hue2, 0.85, 0.55);
+    const col2: [number, number, number] = [
+      lerp(rr, tmpCol.r * 255, cfg.glow / 10),
+      lerp(gg, tmpCol.g * 255, cfg.glow / 10),
+      lerp(bb, tmpCol.b * 255, cfg.glow / 10),
+    ];
+    const down = new THREE.Line(downGeo, lineMat(hdrColor(col2, brightness * 0.85, 1.8), 0.85));
+    down.userData.tag = 'yantraDown';
+    down.userData.hue = hue2;
+    down.userData.layer = i;
+    group.add(down);
+  }
+
+  // Lotus petal ring — 8 petals
+  const petalSym = Math.max(4, Math.round(cfg.symmetry));
+  const petalR = R * 0.32;
+  for (let s = 0; s < petalSym; s++) {
+    const ang = (s / petalSym) * TAU;
+    const px = Math.cos(ang) * petalR;
+    const py = Math.sin(ang) * petalR;
+    const pw = petalR * 0.35;
+    const ph = petalR * 0.55;
+    const pts: number[] = [];
+    const N = 16;
+    for (let k = 0; k <= N; k++) {
+      const ti = k / N;
+      const a = ti * Math.PI * 2;
+      pts.push(px + Math.cos(a) * pw * Math.sin(ti * Math.PI), py + Math.sin(a) * ph * 0.5, 0);
+    }
+    const pGeo = new THREE.BufferGeometry();
+    pGeo.setAttribute('position', new THREE.BufferAttribute(new Float32Array(pts), 3));
+    const hue3 = ((s / petalSym) * 0.3 + 0.55) % 1.0;
+    tmpCol.setHSL(hue3, 0.8, 0.55);
+    const col3: [number, number, number] = [
+      lerp(rr, tmpCol.r * 255, (cfg.glow / 10) * 0.7),
+      lerp(gg, tmpCol.g * 255, (cfg.glow / 10) * 0.7),
+      lerp(bb, tmpCol.b * 255, (cfg.glow / 10) * 0.7),
+    ];
+    const petal = new THREE.Line(pGeo, lineMat(hdrColor(col3, iF * 0.5, 1.6), 0.7));
+    petal.userData.tag = 'yantraPetal';
+    petal.userData.hue = hue3;
+    group.add(petal);
+  }
+
+  // Bindu (central point) + circles
+  for (let ci = 1; ci <= 3; ci++) {
+    const cr = R * 0.12 * ci;
+    const ring = new THREE.Line(circleGeo(48), lineMat(hdrColor([rr, gg, bb], iF * 0.6, 1.8), 0.7));
+    ring.scale.setScalar(cr);
+    ring.userData.tag = 'yantraCircle';
+    ring.userData.baseR = cr;
+    group.add(ring);
+  }
+
+  const center = buildCenter([rr, gg, bb], iF, R / 210);
+  center.userData.tag = 'center';
+  group.add(center);
+
+  return group;
+}
+
+function updateYantra(group: THREE.Group, cfg: Cfg, t: number, R: number): void {
+  const pal = PAL[cfg.preset] ?? PAL['Yantra Fire'];
+  const [rr, gg, bb] = pal.rgb;
+  const iF = cfg.intensity / 10;
+  const breath = (Math.sin(t * 0.001 * cfg.breathSpeed) + 1) * 0.5;
+  const timeHue = (t * 0.00005) % 1.0;
+  const tmpCol = new THREE.Color();
+
+  for (const child of group.children) {
+    const tag = child.userData.tag as string;
+    if (tag === 'yantraUp' || tag === 'yantraDown') {
+      const hue = ((child.userData.hue as number) + timeHue) % 1.0;
+      tmpCol.setHSL(hue, 0.9, 0.55);
+      const col: [number, number, number] = [
+        lerp(rr, tmpCol.r * 255, cfg.glow / 10),
+        lerp(gg, tmpCol.g * 255, cfg.glow / 10),
+        lerp(bb, tmpCol.b * 255, cfg.glow / 10),
+      ];
+      const l = child.userData.layer as number;
+      const bs = 0.94 + breath * 0.06;
+      child.scale.setScalar(bs);
+      child.rotation.z = t * 0.000035 * cfg.breathSpeed * (tag === 'yantraUp' ? 1 : -1);
+      updateMat(child as THREE.Object3D, col, iF * (0.4 + (l / 5) * 0.6), 2.0);
+    } else if (tag === 'yantraPetal') {
+      const hue = ((child.userData.hue as number) + timeHue * 1.5) % 1.0;
+      tmpCol.setHSL(hue, 0.8, 0.55);
+      const col: [number, number, number] = [
+        lerp(rr, tmpCol.r * 255, (cfg.glow / 10) * 0.7),
+        lerp(gg, tmpCol.g * 255, (cfg.glow / 10) * 0.7),
+        lerp(bb, tmpCol.b * 255, (cfg.glow / 10) * 0.7),
+      ];
+      child.rotation.z = t * 0.00012 * cfg.breathSpeed;
+      updateMat(child as THREE.Object3D, col, iF * 0.5, 1.6);
+    } else if (tag === 'yantraCircle') {
+      const bs = 0.95 + breath * 0.05;
+      child.scale.setScalar((child.userData.baseR as number) * bs);
+      updateMat(child as THREE.Object3D, [rr, gg, bb], iF * 0.6, 1.8);
+    } else if (tag === 'center') {
+      updateCenter(child as THREE.Group, breath, [rr, gg, bb], iF, R / 210);
+    }
+  }
+}
+
+/* ── CELTIC mode — interlocking torus knot bands ────────────── */
+
+function buildCeltic(cfg: Cfg, R: number): THREE.Group {
+  const pal = PAL[cfg.preset] ?? PAL['Celtic Forest'];
+  const [rr, gg, bb] = pal.rgb;
+  const iF = cfg.intensity / 10;
+  const nKnots = Math.max(1, Math.min(4, Math.round(cfg.complexity)));
+  const group = new THREE.Group();
+  const tmpCol = new THREE.Color();
+  const N = 800;
+
+  const knotDefs: [number, number][] = [
+    [2, 3],
+    [3, 5],
+    [2, 5],
+    [3, 7],
+  ];
+
+  for (let ki = 0; ki < nKnots; ki++) {
+    const [p, q] = knotDefs[ki];
+    const pts = new Float32Array((N + 1) * 3);
+    for (let i = 0; i <= N; i++) {
+      const t = (i / N) * Math.PI * 2;
+      const r = Math.cos(q * t) + 2.4;
+      pts[i * 3] = r * Math.cos(p * t) * R * 0.36;
+      pts[i * 3 + 1] = r * Math.sin(p * t) * R * 0.36;
+      pts[i * 3 + 2] = -Math.sin(q * t) * R * 0.18;
+    }
+    const hue = ((ki / nKnots) * 0.45 + 0.2) % 1.0;
+    tmpCol.setHSL(hue, 0.9, 0.55);
+    const col: [number, number, number] = [
+      lerp(rr, tmpCol.r * 255, cfg.glow / 10),
+      lerp(gg, tmpCol.g * 255, cfg.glow / 10),
+      lerp(bb, tmpCol.b * 255, cfg.glow / 10),
+    ];
+    const geo = new THREE.BufferGeometry();
+    geo.setAttribute('position', new THREE.BufferAttribute(pts, 3));
+    const knot = new THREE.Line(geo, lineMat(hdrColor(col, iF * (0.5 + ki * 0.1), 2.0), 0.85));
+    knot.userData.tag = 'celticKnot';
+    knot.userData.hue = hue;
+    knot.userData.ki = ki;
+    group.add(knot);
+  }
+
+  // Interlocking rings border
+  const sym = Math.max(4, Math.round(cfg.symmetry));
+  const ringR = R * 0.9;
+  for (let s = 0; s < sym; s++) {
+    const ang = (s / sym) * Math.PI * 2;
+    const ring = new THREE.Line(circleGeo(32), lineMat(hdrColor([rr, gg, bb], iF * 0.3, 1.5), 0.5));
+    const subR = ((ringR * Math.PI) / sym) * 0.55;
+    ring.scale.setScalar(subR);
+    ring.position.set(Math.cos(ang) * ringR, Math.sin(ang) * ringR, 0);
+    ring.userData.tag = 'celticRing';
+    ring.userData.ang = ang;
+    ring.userData.baseR = subR;
+    group.add(ring);
+  }
+
+  const center = buildCenter([rr, gg, bb], iF * 0.8, R / 210);
+  center.userData.tag = 'center';
+  group.add(center);
+
+  return group;
+}
+
+function updateCeltic(group: THREE.Group, cfg: Cfg, t: number, R: number): void {
+  const pal = PAL[cfg.preset] ?? PAL['Celtic Forest'];
+  const [rr, gg, bb] = pal.rgb;
+  const iF = cfg.intensity / 10;
+  const breath = (Math.sin(t * 0.001 * cfg.breathSpeed) + 1) * 0.5;
+  const timeHue = (t * 0.00006) % 1.0;
+  const tmpCol = new THREE.Color();
+
+  group.rotation.x = t * 0.00012 * cfg.breathSpeed;
+  group.rotation.y = t * 0.00018 * cfg.breathSpeed;
+
+  for (const child of group.children) {
+    const tag = child.userData.tag as string;
+    if (tag === 'celticKnot') {
+      const ki = child.userData.ki as number;
+      const hue = ((child.userData.hue as number) + timeHue) % 1.0;
+      tmpCol.setHSL(hue, 0.9, 0.55);
+      const col: [number, number, number] = [
+        lerp(rr, tmpCol.r * 255, cfg.glow / 10),
+        lerp(gg, tmpCol.g * 255, cfg.glow / 10),
+        lerp(bb, tmpCol.b * 255, cfg.glow / 10),
+      ];
+      child.rotation.z = t * 0.00014 * cfg.breathSpeed * (ki % 2 === 0 ? 1 : -1);
+      updateMat(child as THREE.Object3D, col, iF * (0.5 + ki * 0.1), 2.0);
+    } else if (tag === 'celticRing') {
+      child.scale.setScalar((child.userData.baseR as number) * (0.9 + breath * 0.1));
+      child.rotation.z = t * 0.00025 * cfg.breathSpeed;
+      updateMat(child as THREE.Object3D, [rr, gg, bb], iF * 0.3, 1.5);
+    } else if (tag === 'center') {
+      updateCenter(child as THREE.Group, breath, [rr, gg, bb], iF * 0.8, R / 210);
+    }
+  }
+}
+
+/* ── RAINBOW mode — multi-colour laser dome ─────────────────── */
+
+function buildRainbow(cfg: Cfg, R: number): THREE.Group {
+  const TAU = Math.PI * 2;
+  const sym = Math.max(3, Math.round(cfg.symmetry));
+  const layers = Math.max(2, Math.round(cfg.complexity));
+  const group = new THREE.Group();
+  const tmpCol = new THREE.Color();
+
+  // Concentric coloured rings — each ring a different hue
+  for (let i = 1; i <= layers; i++) {
+    const hue = (i / layers) % 1.0;
+    const r = R * (i / layers);
+    tmpCol.setHSL(hue, 1.0, 0.55);
+    const col: [number, number, number] = [tmpCol.r * 255, tmpCol.g * 255, tmpCol.b * 255];
+    const ring = new THREE.Line(
+      circleGeo(96),
+      lineMat(hdrColor(col, cfg.intensity / 10, 2.2), 1.0),
+    );
+    ring.scale.setScalar(r);
+    ring.userData.tag = 'rainbowRing';
+    ring.userData.hue = hue;
+    ring.userData.baseR = r;
+    ring.userData.layer = i;
+    group.add(ring);
+  }
+
+  // Radial spoke lines — each spoke in a different hue
+  for (let s = 0; s < sym; s++) {
+    const hue = (s / sym + 0.1) % 1.0;
+    tmpCol.setHSL(hue, 1.0, 0.6);
+    const col: [number, number, number] = [tmpCol.r * 255, tmpCol.g * 255, tmpCol.b * 255];
+    const a = (s / sym) * TAU;
+    const pts = new Float32Array([0, 0, 0, Math.cos(a) * R, Math.sin(a) * R, 0]);
+    const geo = new THREE.BufferGeometry();
+    geo.setAttribute('position', new THREE.BufferAttribute(pts, 3));
+    const spoke = new THREE.Line(geo, lineMat(hdrColor(col, (cfg.intensity / 10) * 0.6, 1.8), 1.0));
+    spoke.userData.tag = 'rainbowSpoke';
+    spoke.userData.hue = hue;
+    spoke.userData.angle = s / sym;
+    group.add(spoke);
+  }
+
+  // Dome polygon outline — icosahedron projected 2D
+  const icoGeo = new THREE.IcosahedronGeometry(R * 0.92, 1);
+  const edges = new THREE.EdgesGeometry(icoGeo);
+  icoGeo.dispose();
+  const domeColor = new THREE.Color();
+  domeColor.setHSL(0.0, 1.0, 0.55);
+  const dome = new THREE.LineSegments(
+    edges,
+    lineMat(hdrColor([255, 255, 255], (cfg.intensity / 10) * 0.25, 1.5), 0.8),
+  );
+  dome.userData.tag = 'rainbowDome';
+  group.add(dome);
+
+  return group;
+}
+
+function updateRainbow(group: THREE.Group, cfg: Cfg, t: number, R: number): void {
+  const iF = cfg.intensity / 10;
+  const breathSpeed = cfg.breathSpeed;
+  const breath = (Math.sin(t * 0.001 * breathSpeed) + 1) * 0.5;
+  const timeHue = (t * 0.00008) % 1.0;
+  // glow 0..10 controls colour saturation: 0 = monochrome (use palette), 10 = full rainbow
+  const rainbow = cfg.glow / 10;
+  const tmpCol = new THREE.Color();
+  const pal = PAL[cfg.preset] ?? PAL['Calm Field'];
+
+  for (const child of group.children) {
+    const tag = child.userData.tag as string;
+    if (tag === 'rainbowRing') {
+      const hue = ((child.userData.hue as number) + timeHue) % 1.0;
+      // Blend between palette colour and full rainbow
+      const rainbowRgb: [number, number, number] = [0, 0, 0];
+      tmpCol.setHSL(hue, 1.0, 0.55);
+      rainbowRgb[0] = lerp(pal.rgb[0], tmpCol.r * 255, rainbow);
+      rainbowRgb[1] = lerp(pal.rgb[1], tmpCol.g * 255, rainbow);
+      rainbowRgb[2] = lerp(pal.rgb[2], tmpCol.b * 255, rainbow);
+      const bs = 0.88 + breath * 0.12;
+      child.scale.setScalar((child.userData.baseR as number) * bs);
+      child.rotation.z = t * 0.00012 * breathSpeed * (child.userData.layer % 2 === 0 ? 1 : -1);
+      updateMat(child as THREE.Object3D, rainbowRgb, iF, 2.2);
+    } else if (tag === 'rainbowSpoke') {
+      const hue = ((child.userData.hue as number) + timeHue * 0.5) % 1.0;
+      const rainbowRgb: [number, number, number] = [0, 0, 0];
+      tmpCol.setHSL(hue, 1.0, 0.6);
+      rainbowRgb[0] = lerp(pal.rgb[0], tmpCol.r * 255, rainbow);
+      rainbowRgb[1] = lerp(pal.rgb[1], tmpCol.g * 255, rainbow);
+      rainbowRgb[2] = lerp(pal.rgb[2], tmpCol.b * 255, rainbow);
+      child.rotation.z = t * 0.00006 * breathSpeed;
+      updateMat(child as THREE.Object3D, rainbowRgb, iF * 0.6, 1.8);
+    } else if (tag === 'rainbowDome') {
+      child.rotation.x = t * 0.00018 * breathSpeed;
+      child.rotation.y = t * 0.00022 * breathSpeed;
+      const wRgb: [number, number, number] = [
+        lerp(pal.rgb[0], 255, rainbow * 0.4),
+        lerp(pal.rgb[1], 255, rainbow * 0.4),
+        lerp(pal.rgb[2], 255, rainbow * 0.4),
+      ];
+      updateMat(child as THREE.Object3D, wRgb, iF * 0.25, 1.5);
+    }
+  }
+}
+
+/* ── CATHEDRAL mode — sacred architecture builder ───────────── */
+
+function buildCathedral(cfg: Cfg, R: number): THREE.Group {
+  const TAU = Math.PI * 2;
+  const pal = PAL[cfg.preset] ?? PAL['Sacred Vitral'];
+  const [rr, gg, bb] = pal.rgb;
+  const iF = cfg.intensity / 10;
+  const sym = Math.max(4, Math.round(cfg.symmetry));
+  const layers = Math.max(1, Math.round(cfg.complexity));
+  const group = new THREE.Group();
+  const tmpCol = new THREE.Color();
+
+  // Gothic arches — pairs of mirrored bezier curves radiating outward
+  for (let s = 0; s < sym; s++) {
+    const ang = (s / sym) * TAU;
+    const archGroup = new THREE.Group();
+    archGroup.rotation.z = ang;
+    archGroup.userData.tag = 'arch';
+    archGroup.userData.sectorIdx = s;
+
+    for (let l = 1; l <= layers; l++) {
+      const archH = R * (l / layers) * 0.95;
+      const archW = archH * 0.28;
+      const pts: number[] = [];
+      const N = 24;
+
+      // Left pillar + gothic arch: vertical + pointed curve
+      for (let k = 0; k <= N; k++) {
+        const ti = k / N;
+        // Bezier: base at (±archW, 0) to apex at (0, archH) with gothic point
+        const x = (1 - ti) * (1 - ti) * archW + 2 * ti * (1 - ti) * (archW * 0.15) + ti * ti * 0;
+        const y = (1 - ti) * (1 - ti) * 0 + 2 * ti * (1 - ti) * archH * 0.7 + ti * ti * archH;
+        pts.push(x, y, 0);
+      }
+      for (let k = N; k >= 0; k--) {
+        const ti = k / N;
+        const x = -(1 - ti) * (1 - ti) * archW - 2 * ti * (1 - ti) * (archW * 0.15) - ti * ti * 0;
+        const y = (1 - ti) * (1 - ti) * 0 + 2 * ti * (1 - ti) * archH * 0.7 + ti * ti * archH;
+        pts.push(x, y, 0);
+      }
+
+      const hue = ((l / layers) * 0.35 + (s / sym) * 0.1) % 1.0;
+      tmpCol.setHSL(hue, 0.7, 0.55);
+      const archCol: [number, number, number] = [
+        lerp(rr, tmpCol.r * 255, cfg.glow / 10),
+        lerp(gg, tmpCol.g * 255, cfg.glow / 10),
+        lerp(bb, tmpCol.b * 255, cfg.glow / 10),
+      ];
+      const geo = new THREE.BufferGeometry();
+      geo.setAttribute('position', new THREE.BufferAttribute(new Float32Array(pts), 3));
+      const arch = new THREE.Line(
+        geo,
+        lineMat(hdrColor(archCol, iF * (0.4 + (l / layers) * 0.6), 1.8), 0.85),
+      );
+      arch.userData.archLayer = l;
+      archGroup.add(arch);
+    }
+    group.add(archGroup);
+  }
+
+  // Rose window — concentric rings + radial tracery (Islamic geometric pattern)
+  const roseSym = sym * 2;
+  for (let i = 1; i <= Math.min(layers + 2, 6); i++) {
+    const r = R * 0.25 * (i / 6);
+    const hue = (i * 0.14 + 0.55) % 1.0;
+    tmpCol.setHSL(hue, 0.85, 0.55);
+    const roseCol: [number, number, number] = [
+      lerp(rr, tmpCol.r * 255, cfg.glow / 10),
+      lerp(gg, tmpCol.g * 255, cfg.glow / 10),
+      lerp(bb, tmpCol.b * 255, cfg.glow / 10),
+    ];
+    const ring = new THREE.Line(circleGeo(64), lineMat(hdrColor(roseCol, iF * 0.9, 2.0), 0.9));
+    ring.scale.setScalar(r);
+    ring.userData.tag = 'roseRing';
+    ring.userData.baseR = r;
+    ring.userData.hue = hue;
+    group.add(ring);
+  }
+  // Tracery spokes
+  for (let s = 0; s < roseSym; s++) {
+    const a = (s / roseSym) * TAU;
+    const maxR = R * 0.25;
+    const pts = new Float32Array([0, 0, 0, Math.cos(a) * maxR, Math.sin(a) * maxR, 0]);
+    const geo = new THREE.BufferGeometry();
+    geo.setAttribute('position', new THREE.BufferAttribute(pts, 3));
+    const hue = ((s / roseSym) * 0.4 + 0.6) % 1.0;
+    tmpCol.setHSL(hue, 0.8, 0.55);
+    const spokeCol: [number, number, number] = [
+      lerp(rr, tmpCol.r * 255, (cfg.glow / 10) * 0.7),
+      lerp(gg, tmpCol.g * 255, (cfg.glow / 10) * 0.7),
+      lerp(bb, tmpCol.b * 255, (cfg.glow / 10) * 0.7),
+    ];
+    const spoke = new THREE.Line(geo, lineMat(hdrColor(spokeCol, iF * 0.5, 1.5), 0.7));
+    spoke.userData.tag = 'roseSpoke';
+    spoke.userData.hue = hue;
+    group.add(spoke);
+  }
+
+  // Central spire — tall pointed obelisk lines
+  const spireH = R * 0.55;
+  const spireW = R * 0.06;
+  const spirePts = new Float32Array([
+    -spireW,
+    0,
+    0,
+    0,
+    spireH,
+    0,
+    0,
+    spireH,
+    0,
+    spireW,
+    0,
+    0,
+    -spireW,
+    spireH * 0.3,
+    0,
+    spireW,
+    spireH * 0.3,
+    0,
+    -spireW * 0.6,
+    spireH * 0.6,
+    0,
+    spireW * 0.6,
+    spireH * 0.6,
+    0,
+  ]);
+  const spireGeo = new THREE.BufferGeometry();
+  spireGeo.setAttribute('position', new THREE.BufferAttribute(spirePts, 3));
+  const spire = new THREE.LineSegments(
+    spireGeo,
+    lineMat(hdrColor([rr, gg, bb], iF * 0.7, 2.0), 0.9),
+  );
+  spire.userData.tag = 'spire';
+  group.add(spire);
+
+  const center = buildCenter([rr, gg, bb], iF * 0.8, R / 210);
+  center.userData.tag = 'center';
+  group.add(center);
+
+  return group;
+}
+
+function updateCathedral(group: THREE.Group, cfg: Cfg, t: number, R: number): void {
+  const pal = PAL[cfg.preset] ?? PAL['Sacred Vitral'];
+  const [rr, gg, bb] = pal.rgb;
+  const iF = cfg.intensity / 10;
+  const breathSpeed = cfg.breathSpeed;
+  const breath = (Math.sin(t * 0.001 * breathSpeed) + 1) * 0.5;
+  const bs = 0.94 + breath * 0.06;
+  const timeHue = (t * 0.000045) % 1.0;
+  const tmpCol = new THREE.Color();
+
+  for (const child of group.children) {
+    const tag = child.userData.tag as string;
+    if (tag === 'arch') {
+      const sectorIdx = child.userData.sectorIdx as number;
+      // Arches breathe outward and rotate very slowly
+      const sector = child as THREE.Group;
+      sector.scale.setScalar(bs);
+      sector.rotation.z =
+        (sectorIdx / Math.max(1, cfg.symmetry)) * Math.PI * 2 + t * 0.00004 * breathSpeed;
+      sector.children.forEach((arch, li) => {
+        const hue = ((li / sector.children.length) * 0.35 + timeHue) % 1.0;
+        tmpCol.setHSL(hue, 0.7, 0.55);
+        const col: [number, number, number] = [
+          lerp(rr, tmpCol.r * 255, cfg.glow / 10),
+          lerp(gg, tmpCol.g * 255, cfg.glow / 10),
+          lerp(bb, tmpCol.b * 255, cfg.glow / 10),
+        ];
+        updateMat(
+          arch as THREE.Object3D,
+          col,
+          iF * (0.4 + ((li + 1) / sector.children.length) * 0.6),
+          1.8,
+        );
+      });
+    } else if (tag === 'roseRing') {
+      const hue = ((child.userData.hue as number) + timeHue * 1.5) % 1.0;
+      tmpCol.setHSL(hue, 0.85, 0.55);
+      const col: [number, number, number] = [
+        lerp(rr, tmpCol.r * 255, cfg.glow / 10),
+        lerp(gg, tmpCol.g * 255, cfg.glow / 10),
+        lerp(bb, tmpCol.b * 255, cfg.glow / 10),
+      ];
+      child.rotation.z = t * 0.00025 * breathSpeed;
+      child.scale.setScalar((child.userData.baseR as number) * (0.96 + breath * 0.04));
+      updateMat(child as THREE.Object3D, col, iF * 0.9, 2.0);
+    } else if (tag === 'roseSpoke') {
+      const hue = ((child.userData.hue as number) + timeHue * 0.8) % 1.0;
+      tmpCol.setHSL(hue, 0.8, 0.55);
+      const col: [number, number, number] = [
+        lerp(rr, tmpCol.r * 255, (cfg.glow / 10) * 0.7),
+        lerp(gg, tmpCol.g * 255, (cfg.glow / 10) * 0.7),
+        lerp(bb, tmpCol.b * 255, (cfg.glow / 10) * 0.7),
+      ];
+      child.rotation.z = t * 0.00015 * breathSpeed;
+      updateMat(child as THREE.Object3D, col, iF * 0.5, 1.5);
+    } else if (tag === 'spire') {
+      child.scale.setScalar(bs);
+      updateMat(child as THREE.Object3D, [rr, gg, bb], iF * 0.7, 2.0);
+    } else if (tag === 'center') {
+      updateCenter(child as THREE.Group, breath, [rr, gg, bb], iF * 0.8, R / 210);
+    }
+  }
+}
+
+/* ── BLOOM mode — infinite mandala expansion illusion ───────── */
+
+function buildBloom(cfg: Cfg, R: number): THREE.Group {
+  const TAU = Math.PI * 2;
+  const pal = PAL[cfg.preset] ?? PAL['Calm Field'];
+  const [rr, gg, bb] = pal.rgb;
+  const iF = cfg.intensity / 10;
+  const sym = Math.max(4, Math.round(cfg.symmetry));
+  const N_LAYERS = Math.max(6, Math.round(cfg.complexity * 1.6));
+  const group = new THREE.Group();
+  const tmpCol = new THREE.Color();
+
+  for (let li = 0; li < N_LAYERS; li++) {
+    const phase = li / N_LAYERS;
+    const layerGroup = new THREE.Group();
+    layerGroup.userData.tag = 'bloomLayer';
+    layerGroup.userData.phase = phase;
+    layerGroup.userData.li = li;
+
+    // Sym teardrop petals at unit radius (scale applied at runtime)
+    for (let s = 0; s < sym; s++) {
+      const ang = (s / sym) * TAU;
+      const hue = ((s / sym) * 0.45 + (li / N_LAYERS) * 0.3) % 1.0;
+      tmpCol.setHSL(hue, 0.82, 0.55);
+      const col: [number, number, number] = [
+        lerp(rr, tmpCol.r * 255, cfg.glow / 10),
+        lerp(gg, tmpCol.g * 255, cfg.glow / 10),
+        lerp(bb, tmpCol.b * 255, cfg.glow / 10),
+      ];
+      const pts: number[] = [];
+      const N = 28;
+      const orbit = 0.52;
+      const petalA = 0.2;
+      const petalB = 0.1; // ellipse half-axes for petal shape
+      for (let k = 0; k <= N; k++) {
+        const a = (k / N) * TAU;
+        // Ellipse rotated to point outward from center
+        const px =
+          Math.cos(ang) * orbit +
+          Math.cos(ang) * petalA * Math.cos(a) -
+          Math.sin(ang) * petalB * Math.sin(a);
+        const py =
+          Math.sin(ang) * orbit +
+          Math.sin(ang) * petalA * Math.cos(a) +
+          Math.cos(ang) * petalB * Math.sin(a);
+        pts.push(px, py, 0);
+      }
+      const geo = new THREE.BufferGeometry();
+      geo.setAttribute('position', new THREE.BufferAttribute(new Float32Array(pts), 3));
+      const petal = new THREE.Line(geo, lineMat(hdrColor(col, iF, 1.9), 0.85));
+      petal.userData.hue = hue;
+      layerGroup.add(petal);
+    }
+
+    // Inner circle at unit scale
+    const ring = new THREE.Line(
+      circleGeo(48),
+      lineMat(hdrColor([rr, gg, bb], iF * 0.55, 1.4), 0.5),
+    );
+    ring.scale.setScalar(0.24);
+    ring.userData.tag = 'bloomCenter';
+    layerGroup.add(ring);
+
+    // Outer ring
+    const outerRing = new THREE.Line(
+      circleGeo(64),
+      lineMat(hdrColor([rr, gg, bb], iF * 0.28, 1.0), 0.35),
+    );
+    outerRing.scale.setScalar(0.88);
+    outerRing.userData.tag = 'bloomOuter';
+    layerGroup.add(outerRing);
+
+    group.add(layerGroup);
+  }
+
+  return group;
+}
+
+function updateBloom(group: THREE.Group, cfg: Cfg, t: number, R: number): void {
+  const pal = PAL[cfg.preset] ?? PAL['Calm Field'];
+  const [rr, gg, bb] = pal.rgb;
+  const iF = cfg.intensity / 10;
+  const breathSpeed = cfg.breathSpeed;
+  const sym = Math.max(4, Math.round(cfg.symmetry));
+  const N_LAYERS = group.children.filter((c) => c.userData.tag === 'bloomLayer').length;
+  const timeHue = (t * 0.000028) % 1.0;
+  const tmpCol = new THREE.Color();
+
+  for (const child of group.children) {
+    if (child.userData.tag !== 'bloomLayer') continue;
+    const layer = child as THREE.Group;
+
+    // Advance phase: full cycle ~10s at speed=1
+    let phase = (layer.userData.phase as number) + breathSpeed * 0.00007;
+    if (phase >= 1.0) phase -= 1.0;
+    layer.userData.phase = phase;
+
+    // Scale from near-zero to R
+    const sc = Math.max(0.0008, phase) * R;
+    layer.scale.setScalar(sc);
+
+    // Opacity: smooth fade in then out using a bell curve
+    const op = phase < 0.18 ? phase / 0.18 : phase > 0.72 ? (1 - phase) / 0.28 : 1.0;
+
+    // Slow rotation — inner layers rotate slightly faster
+    const li = layer.userData.li as number;
+    const rotDir = li % 2 === 0 ? 1 : -1;
+    layer.rotation.z = t * 0.000055 * breathSpeed * rotDir * (1 + (N_LAYERS - li) * 0.04);
+
+    // Update petal colors
+    let petalIdx = 0;
+    for (const c of layer.children) {
+      if (c.userData.tag === 'bloomCenter' || c.userData.tag === 'bloomOuter') {
+        if ((c as THREE.Line).material instanceof THREE.LineBasicMaterial) {
+          ((c as THREE.Line).material as THREE.LineBasicMaterial).opacity =
+            op * (c.userData.tag === 'bloomOuter' ? 0.35 : 0.5);
+        }
+      } else {
+        const hue = ((petalIdx / sym) * 0.45 + timeHue + (li / N_LAYERS) * 0.25) % 1.0;
+        tmpCol.setHSL(hue, 0.82, 0.55);
+        const col: [number, number, number] = [
+          lerp(rr, tmpCol.r * 255, cfg.glow / 10),
+          lerp(gg, tmpCol.g * 255, cfg.glow / 10),
+          lerp(bb, tmpCol.b * 255, cfg.glow / 10),
+        ];
+        if ((c as THREE.Line).material instanceof THREE.LineBasicMaterial) {
+          const mat = (c as THREE.Line).material as THREE.LineBasicMaterial;
+          mat.color.copy(hdrColor(col, iF, 1.9));
+          mat.opacity = op * 0.88;
+        }
+        petalIdx++;
+      }
+    }
+  }
+}
+
+/* ── LAVA mode — organic morphing blob lava lamp ────────────── */
+
+const LAVA_BLOBS = [
+  { freqX: 0.31, freqY: 0.23, phX: 0.0, phY: 1.2, size: 0.33, hueSeed: 0.04 },
+  { freqX: 0.17, freqY: 0.29, phX: 2.1, phY: 0.5, size: 0.27, hueSeed: 0.08 },
+  { freqX: 0.41, freqY: 0.11, phX: 4.3, phY: 2.8, size: 0.21, hueSeed: 0.01 },
+  { freqX: 0.23, freqY: 0.37, phX: 1.5, phY: 4.1, size: 0.31, hueSeed: 0.12 },
+  { freqX: 0.13, freqY: 0.44, phX: 3.7, phY: 0.9, size: 0.2, hueSeed: 0.06 },
+  { freqX: 0.38, freqY: 0.16, phX: 0.8, phY: 3.3, size: 0.24, hueSeed: 0.09 },
+  { freqX: 0.28, freqY: 0.33, phX: 5.1, phY: 1.7, size: 0.18, hueSeed: 0.15 },
+  { freqX: 0.19, freqY: 0.27, phX: 2.9, phY: 5.4, size: 0.22, hueSeed: 0.03 },
+];
+
+function buildLava(cfg: Cfg, R: number): THREE.Group {
+  const pal = PAL[cfg.preset] ?? PAL['Calm Field'];
+  const [rr, gg, bb] = pal.rgb;
+  const iF = cfg.intensity / 10;
+  const nBlobs = Math.max(3, Math.min(8, Math.round(cfg.complexity * 0.85 + 2)));
+  const group = new THREE.Group();
+  const tmpCol = new THREE.Color();
+
+  for (let i = 0; i < nBlobs; i++) {
+    const bd = LAVA_BLOBS[i % LAVA_BLOBS.length];
+    const radius = R * bd.size * (0.85 + Math.random() * 0.3);
+    const geo = new THREE.SphereGeometry(radius, 28, 20);
+    const hue = (bd.hueSeed + cfg.glow * 0.025) % 1.0;
+    tmpCol.setHSL(hue, 0.9, 0.52);
+    const mat = new THREE.MeshBasicMaterial({
+      color: new THREE.Color(
+        lerp(rr / 255, tmpCol.r, iF * 0.75),
+        lerp(gg / 255, tmpCol.g, iF * 0.75),
+        lerp(bb / 255, tmpCol.b, iF * 0.75),
+      ),
+      transparent: true,
+      opacity: 0.42,
+      blending: THREE.AdditiveBlending,
+      depthWrite: false,
+    });
+    const blob = new THREE.Mesh(geo, mat);
+    blob.userData.tag = 'lavaBlob';
+    blob.userData.freqX = bd.freqX;
+    blob.userData.freqY = bd.freqY;
+    blob.userData.phX = bd.phX;
+    blob.userData.phY = bd.phY;
+    blob.userData.baseRadius = radius;
+    blob.userData.hueSeed = bd.hueSeed;
+    blob.userData.phasePulse = Math.random() * Math.PI * 2;
+    group.add(blob);
+  }
+
+  return group;
+}
+
+function updateLava(group: THREE.Group, cfg: Cfg, t: number, R: number): void {
+  const pal = PAL[cfg.preset] ?? PAL['Calm Field'];
+  const [rr, gg, bb] = pal.rgb;
+  const iF = cfg.intensity / 10;
+  const breathSpeed = cfg.breathSpeed;
+  const ts = t * 0.001 * breathSpeed * 0.28; // very slow time
+  const breath = (Math.sin(t * 0.001 * breathSpeed) + 1) * 0.5;
+  const timeHue = (t * 0.000032) % 1.0;
+  const tmpCol = new THREE.Color();
+
+  for (const child of group.children) {
+    if (child.userData.tag !== 'lavaBlob') continue;
+    const blob = child as THREE.Mesh;
+    const freqX = blob.userData.freqX as number;
+    const freqY = blob.userData.freqY as number;
+    const phX = blob.userData.phX as number;
+    const phY = blob.userData.phY as number;
+    const phasePulse = blob.userData.phasePulse as number;
+
+    // Lissajous-like gentle drift, biased upward/downward for lamp feel
+    blob.position.x = Math.sin(ts * freqX + phX) * R * 0.52;
+    const rawY = Math.sin(ts * freqY + phY);
+    // Soft bounce off top and bottom
+    blob.position.y = Math.tanh(rawY * 1.4) * R * 0.62;
+
+    // Organic size pulse — each blob breathes independently
+    const sizePulse = 0.88 + 0.14 * Math.sin(ts * 1.1 + phasePulse);
+    blob.scale.setScalar(sizePulse + breath * 0.06);
+
+    // Slow color morph
+    const hue = ((blob.userData.hueSeed as number) + timeHue + cfg.glow * 0.018) % 1.0;
+    tmpCol.setHSL(hue, 0.9, 0.52);
+    if (blob.material instanceof THREE.MeshBasicMaterial) {
+      blob.material.color.setRGB(
+        lerp(rr / 255, tmpCol.r, iF * 0.75),
+        lerp(gg / 255, tmpCol.g, iF * 0.75),
+        lerp(bb / 255, tmpCol.b, iF * 0.75),
+      );
+      blob.material.opacity = 0.36 + breath * 0.1 + sizePulse * 0.04;
+    }
+  }
+}
+
+/* ── SPIRE mode — gothic cathedral facade from ground up ─────── */
+
+function buildSpire(cfg: Cfg, R: number): THREE.Group {
+  const pal = PAL[cfg.preset] ?? PAL['Calm Field'];
+  const [rr, gg, bb] = pal.rgb;
+  const iF = cfg.intensity / 10;
+  const complexity = Math.max(1, Math.round(cfg.complexity));
+  const group = new THREE.Group();
+  const tmpCol = new THREE.Color();
+
+  // Helpers
+  const px = (x: number) => x * R;
+  const py = (y: number) => y * R;
+  const glowFrac = cfg.glow / 10;
+
+  function glassCol(): [number, number, number] {
+    const hue = (glowFrac * 0.35 + 0.55) % 1.0;
+    tmpCol.setHSL(hue, 0.88, 0.55);
+    return [
+      lerp(rr, tmpCol.r * 255, glowFrac),
+      lerp(gg, tmpCol.g * 255, glowFrac),
+      lerp(bb, tmpCol.b * 255, glowFrac),
+    ];
+  }
+
+  function addLine(pts: number[], col: [number, number, number], bright = 1.0, op = 1.0, tag = '') {
+    const geo = new THREE.BufferGeometry();
+    geo.setAttribute('position', new THREE.BufferAttribute(new Float32Array(pts), 3));
+    const obj = new THREE.Line(geo, lineMat(hdrColor(col, iF * bright, 1.9), op));
+    if (tag) obj.userData.tag = tag;
+    group.add(obj);
+  }
+
+  function addSegs(pts: number[], col: [number, number, number], bright = 1.0, op = 1.0, tag = '') {
+    const geo = new THREE.BufferGeometry();
+    geo.setAttribute('position', new THREE.BufferAttribute(new Float32Array(pts), 3));
+    const obj = new THREE.LineSegments(geo, lineMat(hdrColor(col, iF * bright, 1.9), op));
+    if (tag) obj.userData.tag = tag;
+    group.add(obj);
+  }
+
+  function gothicArch(
+    x0: number,
+    y0: number,
+    x1: number,
+    y1: number,
+    peakX: number,
+    peakY: number,
+    col: [number, number, number],
+    bright: number,
+    op: number,
+    tag: string,
+  ) {
+    const N = 24;
+    const pts: number[] = [];
+    // Left half bezier: (x0,y0) -> ctrl -> (peakX,peakY)
+    const lc1x = x0 + (peakX - x0) * 0.1;
+    const lc1y = y0 + (peakY - y0) * 0.72;
+    for (let k = 0; k <= N; k++) {
+      const ti = k / N;
+      const u = 1 - ti;
+      pts.push(
+        u * u * x0 + 2 * u * ti * lc1x + ti * ti * peakX,
+        u * u * y0 + 2 * u * ti * lc1y + ti * ti * peakY,
+        0,
+      );
+    }
+    // Right half bezier: (peakX,peakY) -> ctrl -> (x1,y1)
+    const rc1x = peakX + (x1 - peakX) * 0.9;
+    const rc1y = peakY + (y1 - peakY) * 0.28;
+    for (let k = 0; k <= N; k++) {
+      const ti = k / N;
+      const u = 1 - ti;
+      pts.push(
+        u * u * peakX + 2 * u * ti * rc1x + ti * ti * x1,
+        u * u * peakY + 2 * u * ti * rc1y + ti * ti * y1,
+        0,
+      );
+    }
+    addLine(pts, col, bright, op, tag);
+  }
+
+  // ── Proportions (all in R units)
+  const bY = -0.9; // base Y
+  const tW = 0.14; // tower half-width
+  const lTC = -0.54; // left tower center X
+  const rTC = 0.54; // right tower center X
+  const nHW = 0.36; // nave half-width
+  const tH = 0.6; // tower top (before pediment)
+  const nH = 0.18; // nave top
+  const aH = -0.15; // aisle top
+  const spH = 0.95; // spire tip
+
+  const stone: [number, number, number] = [rr, gg, bb];
+  const glass = glassCol();
+
+  // ── 1. Foundation
+  addSegs([px(-0.9), py(bY), 0, px(0.9), py(bY), 0], stone, 0.65, 0.9, 'stone');
+
+  // ── 2. Towers (always visible)
+  if (complexity >= 1) {
+    for (const [tc] of [
+      [lTC, -1],
+      [rTC, 1],
+    ] as [number, number][]) {
+      addLine(
+        [
+          px(tc - tW),
+          py(bY),
+          0,
+          px(tc - tW),
+          py(tH),
+          0,
+          px(tc + tW),
+          py(tH),
+          0,
+          px(tc + tW),
+          py(bY),
+          0,
+        ],
+        stone,
+        0.92,
+        1.0,
+        'stone',
+      );
+      // Tower vertical center line
+      addLine([px(tc), py(bY), 0, px(tc), py(tH), 0], stone, 0.4, 0.35, 'stone');
+    }
+  }
+
+  // ── 3. Nave walls
+  if (complexity >= 1) {
+    addLine([px(-nHW), py(bY), 0, px(-nHW), py(nH), 0], stone, 0.88, 0.95, 'stone');
+    addLine([px(nHW), py(bY), 0, px(nHW), py(nH), 0], stone, 0.88, 0.95, 'stone');
+  }
+
+  // ── 4. Aisle roofs + floors
+  if (complexity >= 2) {
+    addLine([px(lTC + tW), py(aH), 0, px(-nHW), py(aH), 0], stone, 0.72, 0.85, 'stone');
+    addLine([px(rTC - tW), py(aH), 0, px(nHW), py(aH), 0], stone, 0.72, 0.85, 'stone');
+  }
+
+  // ── 5. Main portal: large pointed arch at base center
+  if (complexity >= 2) {
+    const apW = nHW * 0.58;
+    const apH = nH - bY;
+    gothicArch(
+      px(-apW),
+      py(bY),
+      px(apW),
+      py(bY),
+      px(0),
+      py(bY + apH * 0.8),
+      glass,
+      1.15,
+      1.0,
+      'glass',
+    );
+  }
+
+  // ── 6. Nave clerestory arch
+  if (complexity >= 3) {
+    const navePts: number[] = [];
+    const N = 28;
+    for (let k = 0; k <= N; k++) {
+      const ti = k / N;
+      const x = lerp(px(-nHW), px(0), ti);
+      const y =
+        py(aH) + (py(nH) - py(aH)) * (Math.sin(ti * Math.PI) * (1 + Math.cos(ti * Math.PI) * 0.12));
+      navePts.push(x, y, 0);
+    }
+    for (let k = N; k >= 0; k--) {
+      const ti = k / N;
+      const x = lerp(px(0), px(nHW), 1 - ti);
+      const y =
+        py(aH) + (py(nH) - py(aH)) * (Math.sin(ti * Math.PI) * (1 + Math.cos(ti * Math.PI) * 0.12));
+      navePts.push(x, y, 0);
+    }
+    addLine(navePts, stone, 0.82, 0.88, 'stone');
+  }
+
+  // ── 7. Rose window
+  if (complexity >= 3) {
+    const rR = py(0.16);
+    const rCY = py(-0.02);
+    const ring1 = new THREE.Line(circleGeo(64), lineMat(hdrColor(glass, iF * 1.15, 2.3), 1.0));
+    ring1.scale.setScalar(rR);
+    ring1.position.y = rCY;
+    ring1.userData.tag = 'roseOuter';
+    group.add(ring1);
+
+    const ring2 = new THREE.Line(circleGeo(48), lineMat(hdrColor(glass, iF * 0.85, 2.0), 0.8));
+    ring2.scale.setScalar(rR * 0.58);
+    ring2.position.y = rCY;
+    ring2.userData.tag = 'roseInner';
+    group.add(ring2);
+
+    const spokeSym = Math.max(8, Math.round(cfg.symmetry));
+    const spokePts: number[] = [];
+    for (let s = 0; s < spokeSym; s++) {
+      const a = (s / spokeSym) * Math.PI * 2;
+      spokePts.push(0, rCY, 0, Math.cos(a) * rR, rCY + Math.sin(a) * rR, 0);
+    }
+    const spokeGeo = new THREE.BufferGeometry();
+    spokeGeo.setAttribute('position', new THREE.BufferAttribute(new Float32Array(spokePts), 3));
+    const spokes = new THREE.LineSegments(spokeGeo, lineMat(hdrColor(glass, iF * 0.75, 1.8), 0.65));
+    spokes.userData.tag = 'roseSpokes';
+    group.add(spokes);
+  }
+
+  // ── 8. Flying buttresses
+  if (complexity >= 4) {
+    const nFb = Math.min(3, Math.floor((complexity - 2) * 0.8));
+    for (let i = 0; i < nFb; i++) {
+      const frac = (i + 1) / (nFb + 1);
+      const sY = py(bY + (nH - bY) * frac);
+      for (const [naveX, pierX] of [
+        [px(-nHW), px(lTC + tW + 0.04)],
+        [px(nHW), px(rTC - tW - 0.04)],
+      ] as [number, number][]) {
+        const endY = sY - R * 0.14;
+        const pts: number[] = [];
+        const N = 20;
+        for (let k = 0; k <= N; k++) {
+          const ti = k / N;
+          pts.push(
+            lerp(naveX, pierX, ti),
+            lerp(sY, endY, ti) + Math.sin(ti * Math.PI) * R * 0.07,
+            0,
+          );
+        }
+        addLine(pts, stone, 0.55, 0.6, 'stone');
+      }
+    }
+  }
+
+  // ── 9. Tower lancet windows
+  if (complexity >= 4) {
+    const nWin = Math.min(3, complexity - 2);
+    for (let i = 0; i < nWin; i++) {
+      const frac = (i + 1) / (nWin + 1);
+      const wY = py(bY + (tH - bY) * frac);
+      const wH = R * 0.13;
+      const wHW = R * 0.055;
+      for (const tc of [lTC, rTC]) {
+        gothicArch(px(tc) - wHW, wY, px(tc) + wHW, wY, px(tc), wY + wH, glass, 0.9, 0.85, 'glass');
+      }
+    }
+  }
+
+  // ── 10. Tower pinnacles / crenellations
+  if (complexity >= 5) {
+    const nCrens = 4;
+    const cPts: number[] = [];
+    for (const [tl, tr] of [
+      [lTC - tW, lTC + tW],
+      [rTC - tW, rTC + tW],
+    ] as [number, number][]) {
+      for (let k = 0; k < nCrens; k++) {
+        const x1 = lerp(px(tl), px(tr), k / nCrens);
+        const x2 = lerp(px(tl), px(tr), (k + 0.42) / nCrens);
+        const x3 = lerp(px(tl), px(tr), (k + 0.58) / nCrens);
+        const x4 = lerp(px(tl), px(tr), (k + 1) / nCrens);
+        const yB = py(tH);
+        const yT = py(tH + 0.045);
+        cPts.push(x1, yB, 0, x1, yT, 0, x1, yT, 0, x2, yT, 0, x2, yT, 0, x2, yB, 0);
+        cPts.push(x3, yB, 0, x3, yT, 0, x3, yT, 0, x4, yT, 0, x4, yT, 0, x4, yB, 0);
+      }
+    }
+    addSegs(cPts, stone, 0.75, 0.8, 'stone');
+  }
+
+  // ── 11. Central spire
+  if (complexity >= 6) {
+    const sBW = R * 0.085;
+    const sBY = py(nH + 0.08);
+    const sTY = py(spH);
+    const spPts = new Float32Array([
+      -sBW,
+      sBY,
+      0,
+      0,
+      sTY,
+      0,
+      0,
+      sTY,
+      0,
+      sBW,
+      sBY,
+      0,
+      -sBW * 0.72,
+      sBY + (sTY - sBY) * 0.28,
+      0,
+      sBW * 0.72,
+      sBY + (sTY - sBY) * 0.28,
+      0,
+      -sBW * 0.44,
+      sBY + (sTY - sBY) * 0.56,
+      0,
+      sBW * 0.44,
+      sBY + (sTY - sBY) * 0.56,
+      0,
+    ]);
+    const spGeo = new THREE.BufferGeometry();
+    spGeo.setAttribute('position', new THREE.BufferAttribute(spPts, 3));
+    const spire = new THREE.LineSegments(spGeo, lineMat(hdrColor(stone, iF * 1.2, 2.3), 1.0));
+    spire.userData.tag = 'centralSpire';
+    group.add(spire);
+  }
+
+  // ── 12. Side aisle pointed arches (decorative)
+  if (complexity >= 7) {
+    const nArches = 3;
+    for (let side = -1; side <= 1; side += 2) {
+      const x0 = side < 0 ? lTC + tW : nHW;
+      const x1 = side < 0 ? -nHW : rTC - tW;
+      for (let i = 0; i < nArches; i++) {
+        const frac = i / nArches;
+        const ax0 = lerp(px(x0), px(x1), frac);
+        const ax1 = lerp(px(x0), px(x1), frac + 1 / nArches);
+        const axMid = (ax0 + ax1) * 0.5;
+        gothicArch(ax0, py(bY), ax1, py(bY), axMid, py(aH - 0.05), glass, 0.78, 0.72, 'glass');
+      }
+    }
+  }
+
+  return group;
+}
+
+function updateSpire(group: THREE.Group, cfg: Cfg, t: number, R: number): void {
+  const pal = PAL[cfg.preset] ?? PAL['Calm Field'];
+  const [rr, gg, bb] = pal.rgb;
+  const iF = cfg.intensity / 10;
+  const breathSpeed = cfg.breathSpeed;
+  const breath = (Math.sin(t * 0.001 * breathSpeed) + 1) * 0.5;
+  const timeHue = (t * 0.000028) % 1.0;
+  const glowFrac = cfg.glow / 10;
+  const tmpCol = new THREE.Color();
+
+  // Recompute glass color for update
+  const glassH = (glowFrac * 0.35 + timeHue * 0.5 + 0.52) % 1.0;
+  tmpCol.setHSL(glassH, 0.88, 0.55);
+  const glass: [number, number, number] = [
+    lerp(rr, tmpCol.r * 255, glowFrac),
+    lerp(gg, tmpCol.g * 255, glowFrac),
+    lerp(bb, tmpCol.b * 255, glowFrac),
+  ];
+  const stone: [number, number, number] = [rr, gg, bb];
+
+  for (const child of group.children) {
+    const tag = child.userData.tag as string;
+
+    if (tag === 'roseOuter' || tag === 'roseInner' || tag === 'roseSpokes' || tag === 'glass') {
+      // Stained glass: glow pulses and hue shifts
+      const glowPulse = 1.0 + breath * 0.35;
+      updateMat(child as THREE.Object3D, glass, iF * glowPulse, 2.3);
+      if (tag === 'roseOuter') child.rotation.z = t * 0.0001 * breathSpeed;
+      if (tag === 'roseInner') child.rotation.z = -t * 0.00015 * breathSpeed;
+    } else if (tag === 'centralSpire') {
+      const spPulse = 0.9 + breath * 0.2;
+      updateMat(child as THREE.Object3D, stone, iF * 1.2 * spPulse, 2.3);
+    } else if (tag === 'stone') {
+      updateMat(child as THREE.Object3D, stone, iF * (0.68 + breath * 0.16), 1.7);
+    }
+  }
+}
+
 /* ── Background stars ───────────────────────────────────────── */
 
 function buildStars(count: number, W: number, H: number): THREE.Group {
@@ -2711,10 +4819,10 @@ const DEFAULT_SLIDERS: SliderDef[] = [
   { key: 'symmetry', label: 'Symmetry', min: 4, max: 24, step: 1 },
   { key: 'complexity', label: 'Complexity', min: 1, max: 10, step: 0.5 },
   { key: 'glow', label: 'Glow', min: 0, max: 10, step: 0.5 },
-  { key: 'breathSpeed', label: 'Speed', min: 0.2, max: 3, step: 0.1 },
+  { key: 'breathSpeed', label: 'Speed', min: 0.05, max: 1.5, step: 0.05 },
   { key: 'intensity', label: 'Colour', min: 0, max: 10, step: 0.5 },
   { key: 'particles', label: 'Particles', min: 0, max: 10, step: 1 },
-  { key: 'luminous', label: 'Luminous', min: 0, max: 10, step: 0.5 },
+  { key: 'luminous', label: 'Luminous', min: 0, max: 5, step: 0.5 },
   { key: 'stars', label: 'Stars', min: 0, max: 10, step: 1 },
 ];
 
@@ -2722,85 +4830,153 @@ const MODE_SLIDERS: Partial<Record<Mode, SliderDef[]>> = {
   tunnel: [
     { key: 'symmetry', label: 'Spokes', min: 4, max: 24, step: 1 },
     { key: 'glow', label: 'Glow', min: 0, max: 10, step: 0.5 },
-    { key: 'breathSpeed', label: 'Speed', min: 0.2, max: 3, step: 0.1 },
+    { key: 'breathSpeed', label: 'Speed', min: 0.05, max: 1.5, step: 0.05 },
     { key: 'intensity', label: 'Colour', min: 0, max: 10, step: 0.5 },
-    { key: 'luminous', label: 'Luminous', min: 0, max: 10, step: 0.5 },
+    { key: 'luminous', label: 'Luminous', min: 0, max: 5, step: 0.5 },
     { key: 'stars', label: 'Stars', min: 0, max: 10, step: 1 },
   ],
   vitral: [
     { key: 'symmetry', label: 'Cells', min: 4, max: 24, step: 1 },
     { key: 'complexity', label: 'Layers', min: 1, max: 8, step: 1 },
     { key: 'glow', label: 'Glow', min: 0, max: 10, step: 0.5 },
-    { key: 'breathSpeed', label: 'Speed', min: 0.2, max: 3, step: 0.1 },
+    { key: 'breathSpeed', label: 'Speed', min: 0.05, max: 1.5, step: 0.05 },
     { key: 'intensity', label: 'Colour', min: 0, max: 10, step: 0.5 },
-    { key: 'luminous', label: 'Luminous', min: 0, max: 10, step: 0.5 },
+    { key: 'luminous', label: 'Luminous', min: 0, max: 5, step: 0.5 },
   ],
   fibonacci: [
     { key: 'complexity', label: 'Arms', min: 1, max: 10, step: 1 },
     { key: 'symmetry', label: 'Rings', min: 2, max: 16, step: 1 },
     { key: 'glow', label: 'Glow', min: 0, max: 10, step: 0.5 },
-    { key: 'breathSpeed', label: 'Speed', min: 0.2, max: 3, step: 0.1 },
+    { key: 'breathSpeed', label: 'Speed', min: 0.05, max: 1.5, step: 0.05 },
     { key: 'intensity', label: 'Colour', min: 0, max: 10, step: 0.5 },
-    { key: 'luminous', label: 'Luminous', min: 0, max: 10, step: 0.5 },
+    { key: 'luminous', label: 'Luminous', min: 0, max: 5, step: 0.5 },
     { key: 'stars', label: 'Stars', min: 0, max: 10, step: 1 },
   ],
   clifford: [
     { key: 'complexity', label: 'Density', min: 1, max: 10, step: 1 },
     { key: 'glow', label: 'Glow', min: 0, max: 10, step: 0.5 },
-    { key: 'breathSpeed', label: 'Speed', min: 0.1, max: 3, step: 0.1 },
+    { key: 'breathSpeed', label: 'Speed', min: 0.05, max: 1.5, step: 0.05 },
     { key: 'intensity', label: 'Colour', min: 0, max: 10, step: 0.5 },
-    { key: 'luminous', label: 'Luminous', min: 0, max: 10, step: 0.5 },
+    { key: 'luminous', label: 'Luminous', min: 0, max: 5, step: 0.5 },
     { key: 'stars', label: 'Stars', min: 0, max: 10, step: 1 },
   ],
   hypercube: [
     { key: 'complexity', label: 'Fibers', min: 2, max: 20, step: 2 },
     { key: 'glow', label: 'Glow', min: 0, max: 10, step: 0.5 },
-    { key: 'breathSpeed', label: 'Speed', min: 0.1, max: 3, step: 0.1 },
+    { key: 'breathSpeed', label: 'Speed', min: 0.05, max: 1.5, step: 0.05 },
     { key: 'intensity', label: 'Colour', min: 0, max: 10, step: 0.5 },
-    { key: 'luminous', label: 'Luminous', min: 0, max: 10, step: 0.5 },
+    { key: 'luminous', label: 'Luminous', min: 0, max: 5, step: 0.5 },
     { key: 'stars', label: 'Stars', min: 0, max: 10, step: 1 },
   ],
   warp: [
     { key: 'symmetry', label: 'Sectors', min: 1, max: 12, step: 1 },
     { key: 'glow', label: 'Glow', min: 0, max: 10, step: 0.5 },
-    { key: 'breathSpeed', label: 'Speed', min: 0.2, max: 3, step: 0.1 },
+    { key: 'breathSpeed', label: 'Speed', min: 0.05, max: 1.5, step: 0.05 },
     { key: 'intensity', label: 'Colour', min: 0, max: 10, step: 0.5 },
-    { key: 'luminous', label: 'Luminous', min: 0, max: 10, step: 0.5 },
+    { key: 'luminous', label: 'Luminous', min: 0, max: 5, step: 0.5 },
     { key: 'stars', label: 'Stars', min: 0, max: 10, step: 1 },
   ],
   lorenz: [
     { key: 'complexity', label: 'Density', min: 1, max: 8, step: 1 },
     { key: 'glow', label: 'Glow', min: 0, max: 10, step: 0.5 },
-    { key: 'breathSpeed', label: 'Speed', min: 0.1, max: 3, step: 0.1 },
+    { key: 'breathSpeed', label: 'Speed', min: 0.05, max: 1.5, step: 0.05 },
     { key: 'intensity', label: 'Colour', min: 0, max: 10, step: 0.5 },
-    { key: 'luminous', label: 'Luminous', min: 0, max: 10, step: 0.5 },
+    { key: 'luminous', label: 'Luminous', min: 0, max: 5, step: 0.5 },
     { key: 'stars', label: 'Stars', min: 0, max: 10, step: 1 },
   ],
   knot: [
     { key: 'complexity', label: 'Knot', min: 1, max: 9, step: 1 },
     { key: 'symmetry', label: 'Strands', min: 1, max: 6, step: 1 },
     { key: 'glow', label: 'Glow', min: 0, max: 10, step: 0.5 },
-    { key: 'breathSpeed', label: 'Speed', min: 0.1, max: 3, step: 0.1 },
+    { key: 'breathSpeed', label: 'Speed', min: 0.05, max: 1.5, step: 0.05 },
     { key: 'intensity', label: 'Colour', min: 0, max: 10, step: 0.5 },
-    { key: 'luminous', label: 'Luminous', min: 0, max: 10, step: 0.5 },
+    { key: 'luminous', label: 'Luminous', min: 0, max: 5, step: 0.5 },
     { key: 'stars', label: 'Stars', min: 0, max: 10, step: 1 },
   ],
   orbital: [
     { key: 'complexity', label: 'Orbital', min: 1, max: 8, step: 1 },
     { key: 'glow', label: 'Glow', min: 0, max: 10, step: 0.5 },
-    { key: 'breathSpeed', label: 'Speed', min: 0.1, max: 3, step: 0.1 },
+    { key: 'breathSpeed', label: 'Speed', min: 0.05, max: 1.5, step: 0.05 },
     { key: 'intensity', label: 'Colour', min: 0, max: 10, step: 0.5 },
-    { key: 'luminous', label: 'Luminous', min: 0, max: 10, step: 0.5 },
+    { key: 'luminous', label: 'Luminous', min: 0, max: 5, step: 0.5 },
     { key: 'stars', label: 'Stars', min: 0, max: 10, step: 1 },
   ],
   geodesic: [
     { key: 'complexity', label: 'Form', min: 1, max: 7, step: 1 },
     { key: 'symmetry', label: 'Shells', min: 1, max: 5, step: 1 },
     { key: 'glow', label: 'Glow', min: 0, max: 10, step: 0.5 },
-    { key: 'breathSpeed', label: 'Speed', min: 0.1, max: 3, step: 0.1 },
+    { key: 'breathSpeed', label: 'Speed', min: 0.05, max: 1.5, step: 0.05 },
     { key: 'intensity', label: 'Colour', min: 0, max: 10, step: 0.5 },
-    { key: 'luminous', label: 'Luminous', min: 0, max: 10, step: 0.5 },
+    { key: 'luminous', label: 'Luminous', min: 0, max: 5, step: 0.5 },
     { key: 'stars', label: 'Stars', min: 0, max: 10, step: 1 },
+  ],
+  rainbow: [
+    { key: 'symmetry', label: 'Spokes', min: 3, max: 24, step: 1 },
+    { key: 'complexity', label: 'Rings', min: 2, max: 12, step: 1 },
+    { key: 'glow', label: 'Rainbow', min: 0, max: 10, step: 0.5 },
+    { key: 'breathSpeed', label: 'Speed', min: 0.05, max: 1.5, step: 0.05 },
+    { key: 'intensity', label: 'Colour', min: 0, max: 10, step: 0.5 },
+    { key: 'luminous', label: 'Luminous', min: 0, max: 5, step: 0.5 },
+  ],
+  cathedral: [
+    { key: 'symmetry', label: 'Arches', min: 4, max: 16, step: 1 },
+    { key: 'complexity', label: 'Height', min: 1, max: 8, step: 1 },
+    { key: 'glow', label: 'Colour Mix', min: 0, max: 10, step: 0.5 },
+    { key: 'breathSpeed', label: 'Speed', min: 0.05, max: 1.0, step: 0.05 },
+    { key: 'intensity', label: 'Colour', min: 0, max: 10, step: 0.5 },
+    { key: 'luminous', label: 'Luminous', min: 0, max: 5, step: 0.5 },
+    { key: 'stars', label: 'Stars', min: 0, max: 5, step: 1 },
+  ],
+  islamic: [
+    { key: 'symmetry', label: 'Star Points', min: 6, max: 16, step: 1 },
+    { key: 'complexity', label: 'Layers', min: 1, max: 8, step: 1 },
+    { key: 'glow', label: 'Colour Mix', min: 0, max: 10, step: 0.5 },
+    { key: 'breathSpeed', label: 'Speed', min: 0.05, max: 1.0, step: 0.05 },
+    { key: 'intensity', label: 'Colour', min: 0, max: 10, step: 0.5 },
+    { key: 'luminous', label: 'Luminous', min: 0, max: 5, step: 0.5 },
+    { key: 'stars', label: 'Stars', min: 0, max: 5, step: 1 },
+  ],
+  yantra: [
+    { key: 'complexity', label: 'Triangle Pairs', min: 2, max: 9, step: 1 },
+    { key: 'symmetry', label: 'Lotus Petals', min: 4, max: 16, step: 1 },
+    { key: 'glow', label: 'Colour Mix', min: 0, max: 10, step: 0.5 },
+    { key: 'breathSpeed', label: 'Speed', min: 0.05, max: 0.8, step: 0.05 },
+    { key: 'intensity', label: 'Colour', min: 0, max: 10, step: 0.5 },
+    { key: 'luminous', label: 'Luminous', min: 0, max: 5, step: 0.5 },
+  ],
+  celtic: [
+    { key: 'complexity', label: 'Knot Count', min: 1, max: 4, step: 1 },
+    { key: 'symmetry', label: 'Ring Circle', min: 4, max: 12, step: 1 },
+    { key: 'glow', label: 'Colour Mix', min: 0, max: 10, step: 0.5 },
+    { key: 'breathSpeed', label: 'Speed', min: 0.05, max: 1.0, step: 0.05 },
+    { key: 'intensity', label: 'Colour', min: 0, max: 10, step: 0.5 },
+    { key: 'luminous', label: 'Luminous', min: 0, max: 5, step: 0.5 },
+    { key: 'stars', label: 'Stars', min: 0, max: 5, step: 1 },
+  ],
+  bloom: [
+    { key: 'symmetry', label: 'Petals', min: 4, max: 16, step: 1 },
+    { key: 'complexity', label: 'Layers', min: 4, max: 12, step: 1 },
+    { key: 'glow', label: 'Colour Shift', min: 0, max: 10, step: 0.5 },
+    { key: 'breathSpeed', label: 'Bloom Speed', min: 0.05, max: 1.2, step: 0.05 },
+    { key: 'intensity', label: 'Brightness', min: 0, max: 10, step: 0.5 },
+    { key: 'luminous', label: 'Luminous', min: 0, max: 5, step: 0.5 },
+    { key: 'stars', label: 'Stars', min: 0, max: 10, step: 1 },
+  ],
+  lava: [
+    { key: 'complexity', label: 'Blobs', min: 3, max: 8, step: 1 },
+    { key: 'glow', label: 'Colour Shift', min: 0, max: 10, step: 0.5 },
+    { key: 'breathSpeed', label: 'Flow Speed', min: 0.05, max: 1.0, step: 0.05 },
+    { key: 'intensity', label: 'Brightness', min: 0, max: 10, step: 0.5 },
+    { key: 'luminous', label: 'Luminous', min: 0, max: 5, step: 0.5 },
+  ],
+  spire: [
+    { key: 'complexity', label: 'Detail Level', min: 1, max: 8, step: 1 },
+    { key: 'symmetry', label: 'Rose Spokes', min: 8, max: 24, step: 2 },
+    { key: 'glow', label: 'Glass Colour', min: 0, max: 10, step: 0.5 },
+    { key: 'breathSpeed', label: 'Speed', min: 0.05, max: 0.8, step: 0.05 },
+    { key: 'intensity', label: 'Brightness', min: 0, max: 10, step: 0.5 },
+    { key: 'luminous', label: 'Luminous', min: 0, max: 5, step: 0.5 },
+    { key: 'stars', label: 'Stars', min: 0, max: 5, step: 1 },
   ],
 };
 
@@ -2823,6 +4999,14 @@ const MODE_TO_PRESET: Partial<Record<Mode, string>> = {
   knot: 'Knot Garden',
   orbital: 'Orbital Shell',
   geodesic: 'Crystal Lattice',
+  rainbow: 'Laser Dome',
+  cathedral: 'Sacred Architecture',
+  islamic: 'Islamic Garden',
+  yantra: 'Yantra Fire',
+  celtic: 'Celtic Forest',
+  bloom: 'Infinite Bloom',
+  lava: 'Lava Dream',
+  spire: 'Gothic Spire',
 };
 
 const MODES: { mode: Mode; label: string }[] = [
@@ -2842,6 +5026,14 @@ const MODES: { mode: Mode; label: string }[] = [
   { mode: 'knot', label: '∮ Knot' },
   { mode: 'orbital', label: '⊛ Orbital' },
   { mode: 'geodesic', label: '⬡ Geodesic' },
+  { mode: 'rainbow', label: '◉ Rainbow' },
+  { mode: 'cathedral', label: '⛪ Cathedral' },
+  { mode: 'islamic', label: '☪ Islamic' },
+  { mode: 'yantra', label: '△ Yantra' },
+  { mode: 'celtic', label: '☘ Celtic' },
+  { mode: 'bloom', label: '🌸 Bloom' },
+  { mode: 'lava', label: '🌋 Lava' },
+  { mode: 'spire', label: '⛪ Spire' },
 ];
 
 /* ── Component ──────────────────────────────────────────────── */
@@ -2849,11 +5041,23 @@ const MODES: { mode: Mode; label: string }[] = [
 export default function GeometryField() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const wrapperRef = useRef<HTMLDivElement>(null);
+  const canvasContainerRef = useRef<HTMLDivElement>(null);
+  const matrixCanvasRef = useRef<HTMLCanvasElement>(null);
   const animRef = useRef<number>(0);
+  const matrixAnimRef = useRef<number>(0);
   const dprRef = useRef<number>(1);
   const cfgRef = useRef<Cfg>(PRESETS['Calm Field']);
+  const journeyCfgRef = useRef<Cfg | null>(null);
   const dotsRef = useRef<Dot[]>(makeDots(160));
   const ripplesRef = useRef<Ripple[]>([]);
+
+  // Journey refs (read by tick without re-render)
+  const journeyRunningRef = useRef(false);
+  const journeyIdRef = useRef(1);
+  const journeyStartRef = useRef(0);
+  const matrixActiveRef = useRef(false);
+  const matrixDropsRef = useRef<number[]>([]);
+  const phaseInfoRef = useRef({ phaseIdx: 0, phaseProgress: 0 });
 
   // Three.js refs
   const rendererRef = useRef<THREE.WebGLRenderer | null>(null);
@@ -2871,8 +5075,10 @@ export default function GeometryField() {
 
   const [cfg, setCfg] = useState<Cfg>(PRESETS['Calm Field']);
   const [open, setOpen] = useState(true);
-  const [intention, setIntention] = useState('');
-  const [tuned, setTuned] = useState(false);
+  const [tab, setTab] = useState<'builder' | 'journey'>('builder');
+  const [journeyId, setJourneyId] = useState(1);
+  const [journeyRunning, setJourneyRunning] = useState(false);
+  const [journeyPhaseInfo, setJourneyPhaseInfo] = useState({ phaseIdx: 0, phaseProgress: 0 });
 
   useEffect(() => {
     cfgRef.current = cfg;
@@ -2884,7 +5090,7 @@ export default function GeometryField() {
 
   useEffect(() => {
     const canvas = canvasRef.current;
-    const wrapper = wrapperRef.current;
+    const wrapper = canvasContainerRef.current;
     if (!canvas || !wrapper) return;
 
     // Renderer
@@ -2936,8 +5142,38 @@ export default function GeometryField() {
     const ro = new ResizeObserver(resize);
     ro.observe(wrapper);
 
+    let phaseUpdateTimer = 0;
+
     function tick(t: number) {
-      const currentCfg = cfgRef.current;
+      // Journey auto-pilot
+      if (journeyRunningRef.current) {
+        const jData = JOURNEYS[journeyIdRef.current - 1];
+        if (jData) {
+          const elapsed = (t - journeyStartRef.current) / 1000;
+          const totalDur = jData.stages.reduce((s, st) => s + st.duration, 0);
+          const loopTime = elapsed % totalDur;
+          let acc = 0;
+          for (let i = 0; i < jData.stages.length; i++) {
+            const stage = jData.stages[i];
+            if (loopTime < acc + stage.duration || i === jData.stages.length - 1) {
+              const stageP = Math.min(1, (loopTime - acc) / stage.duration);
+              const nextStage = jData.stages[(i + 1) % jData.stages.length];
+              journeyCfgRef.current = journeyLerpCfg(stage, nextStage, stageP);
+              // Update phase info every ~500ms to avoid excessive re-renders
+              if (t - phaseUpdateTimer > 500) {
+                phaseUpdateTimer = t;
+                phaseInfoRef.current = { phaseIdx: i, phaseProgress: stageP };
+              }
+              break;
+            }
+            acc += stage.duration;
+          }
+        }
+      } else {
+        journeyCfgRef.current = null;
+      }
+
+      const currentCfg = journeyCfgRef.current ?? cfgRef.current;
       const { W, H } = sizeRef.current;
       const R = Math.min(W, H) * 0.42;
 
@@ -3012,6 +5248,82 @@ export default function GeometryField() {
     };
   }, []);
 
+  // Sync phase info to state for UI (throttled via interval)
+  useEffect(() => {
+    if (!journeyRunning) return;
+    const id = setInterval(() => {
+      setJourneyPhaseInfo({ ...phaseInfoRef.current });
+    }, 800);
+    return () => clearInterval(id);
+  }, [journeyRunning]);
+
+  // Matrix canvas code rain
+  useEffect(() => {
+    if (!journeyRunning || journeyId !== 5) {
+      matrixActiveRef.current = false;
+      cancelAnimationFrame(matrixAnimRef.current);
+      const mc = matrixCanvasRef.current;
+      if (mc) {
+        const ctx = mc.getContext('2d');
+        if (ctx) ctx.clearRect(0, 0, mc.width, mc.height);
+      }
+      return;
+    }
+    const mc = matrixCanvasRef.current;
+    if (!mc) return;
+    const ctx = mc.getContext('2d');
+    if (!ctx) return;
+    mc.width = mc.offsetWidth || mc.clientWidth || 400;
+    mc.height = mc.offsetHeight || mc.clientHeight || 600;
+    const fontSize = 13;
+    const cols = Math.floor(mc.width / fontSize);
+    matrixDropsRef.current = Array(cols).fill(1);
+    matrixActiveRef.current = true;
+    const chars = '01アイウエオカキ∞∮∑∇◈⬡✦{}[]<>!@#$%'.split('');
+    const mctx = ctx;
+    const mmc = mc;
+    function drawMatrix() {
+      if (!matrixActiveRef.current) return;
+      mctx.fillStyle = 'rgba(0,4,0,0.07)';
+      mctx.fillRect(0, 0, mmc.width, mmc.height);
+      mctx.font = `${fontSize}px monospace`;
+      const drops = matrixDropsRef.current;
+      for (let i = 0; i < drops.length; i++) {
+        const ch = chars[Math.floor(Math.random() * chars.length)];
+        const bright = Math.random() > 0.94 ? 220 : 65 + Math.floor(Math.random() * 60);
+        mctx.fillStyle = `rgba(0,${bright},30,0.9)`;
+        mctx.fillText(ch, i * fontSize, drops[i] * fontSize);
+        if (drops[i] * fontSize > mmc.height && Math.random() > 0.975) drops[i] = 0;
+        drops[i]++;
+      }
+      matrixAnimRef.current = requestAnimationFrame(drawMatrix);
+    }
+    matrixAnimRef.current = requestAnimationFrame(drawMatrix);
+    return () => {
+      matrixActiveRef.current = false;
+      cancelAnimationFrame(matrixAnimRef.current);
+    };
+  }, [journeyRunning, journeyId]);
+
+  function startJourney(id: number) {
+    setJourneyId(id);
+    journeyIdRef.current = id;
+    journeyStartRef.current = performance.now();
+    journeyRunningRef.current = true;
+    setJourneyRunning(true);
+    phaseInfoRef.current = { phaseIdx: 0, phaseProgress: 0 };
+    setJourneyPhaseInfo({ phaseIdx: 0, phaseProgress: 0 });
+  }
+
+  function stopJourney() {
+    journeyRunningRef.current = false;
+    setJourneyRunning(false);
+    if (journeyCfgRef.current) {
+      setCfg(journeyCfgRef.current);
+      journeyCfgRef.current = null;
+    }
+  }
+
   function handleCanvasClick(e: React.MouseEvent<HTMLCanvasElement>) {
     const rect = canvasRef.current!.getBoundingClientRect();
     ripplesRef.current.push({
@@ -3024,14 +5336,6 @@ export default function GeometryField() {
 
   function applyPreset(name: string) {
     setCfg(PRESETS[name] ?? PRESETS['Calm Field']);
-  }
-
-  function handleIntention(e: React.FormEvent) {
-    e.preventDefault();
-    if (!intention.trim()) return;
-    applyPreset(resolveIntention(intention));
-    setTuned(true);
-    setTimeout(() => setTuned(false), 1800);
   }
 
   function handleRandomize() {
@@ -3060,10 +5364,10 @@ export default function GeometryField() {
       symmetry: 4 + Math.floor(Math.random() * 20),
       complexity: 2 + Math.random() * 8,
       glow: 1 + Math.random() * 9,
-      breathSpeed: 0.3 + Math.random() * 2.5,
+      breathSpeed: 0.1 + Math.random() * 1.0,
       intensity: 4 + Math.random() * 6,
       particles: Math.floor(Math.random() * 10),
-      luminous: Math.random() * 10,
+      luminous: Math.random() * 5,
       stars: Math.floor(Math.random() * 8),
       mode: modeKeys[Math.floor(Math.random() * modeKeys.length)],
     });
@@ -3089,17 +5393,53 @@ export default function GeometryField() {
     setCfg((prev) => ({ ...prev, [key]: val }));
   }
 
-  const pal = PAL[cfg.preset] ?? PAL['Calm Field'];
+  const displayCfg = journeyCfgRef.current ?? cfg;
+  const pal = PAL[displayCfg.preset] ?? PAL['Calm Field'];
   const [pr, pg, pb] = pal.rgb;
   const accent = `rgb(${pr},${pg},${pb})`;
   const accentFaint = `rgba(${pr},${pg},${pb},0.12)`;
   const accentMid = `rgba(${pr},${pg},${pb},0.35)`;
 
+  const activeJourney = JOURNEYS[journeyId - 1];
+  const currentStage = activeJourney?.stages[journeyPhaseInfo.phaseIdx];
+  const totalJourneyDur = activeJourney?.stages.reduce((s, st) => s + st.duration, 0) ?? 0;
+  const elapsed = journeyRunning
+    ? activeJourney?.stages
+        .slice(0, journeyPhaseInfo.phaseIdx)
+        .reduce((s, st) => s + st.duration, 0) +
+      journeyPhaseInfo.phaseProgress * (currentStage?.duration ?? 0)
+    : 0;
+
+  const pill = (txt: string, active: boolean, onClick: () => void, small = false) => (
+    <button
+      type="button"
+      onClick={onClick}
+      style={{
+        flexShrink: 0,
+        background: active ? accent : accentFaint,
+        border: `1px solid ${active ? accent : accentMid}`,
+        borderRadius: 99,
+        padding: small ? '4px 10px' : '5px 13px',
+        color: active ? '#fff' : accent,
+        fontFamily: 'var(--font-serif)',
+        fontSize: small ? 10 : 11,
+        fontWeight: active ? 700 : 400,
+        letterSpacing: '0.05em',
+        cursor: 'pointer',
+        transition: 'all 0.15s',
+        whiteSpace: 'nowrap',
+      }}
+    >
+      {txt}
+    </button>
+  );
+
   return (
     <div
       ref={wrapperRef}
       style={{
-        position: 'relative',
+        display: 'flex',
+        flexDirection: 'column',
         width: '100%',
         height: 'calc(100svh - 110px)',
         minHeight: 420,
@@ -3108,90 +5448,153 @@ export default function GeometryField() {
         background: '#080604',
       }}
     >
-      <canvas
-        ref={canvasRef}
-        onClick={handleCanvasClick}
-        style={{
-          position: 'absolute',
-          inset: 0,
-          width: '100%',
-          height: '100%',
-          display: 'block',
-          cursor: 'crosshair',
-        }}
-      />
-
-      {/* Page title — floats above canvas */}
-      <div
-        style={{
-          position: 'absolute',
-          top: 14,
-          left: 0,
-          right: 0,
-          textAlign: 'center',
-          pointerEvents: 'none',
-        }}
-      >
-        <p
-          style={{
-            fontFamily: 'var(--font-serif)',
-            fontSize: 11,
-            letterSpacing: '0.24em',
-            color: `rgba(${pr},${pg},${pb},0.45)`,
-            textTransform: 'uppercase',
-          }}
-        >
-          Geometry Field
-        </p>
-      </div>
-
-      {/* Show-controls button when panel closed */}
-      {!open && (
-        <button
-          type="button"
-          onClick={() => setOpen(true)}
+      {/* Canvas area — fills remaining space */}
+      <div ref={canvasContainerRef} style={{ flex: 1, position: 'relative', minHeight: 0 }}>
+        <canvas
+          ref={canvasRef}
+          onClick={handleCanvasClick}
           style={{
             position: 'absolute',
-            bottom: 16,
-            left: '50%',
-            transform: 'translateX(-50%)',
-            background: 'rgba(8,6,4,0.72)',
-            border: `1px solid ${accentMid}`,
-            borderRadius: 99,
-            padding: '6px 22px',
-            color: accent,
-            fontFamily: 'var(--font-serif)',
-            fontSize: 10,
-            letterSpacing: '0.14em',
-            textTransform: 'uppercase',
-            cursor: 'pointer',
-            backdropFilter: 'blur(10px)',
-            zIndex: 20,
+            inset: 0,
+            width: '100%',
+            height: '100%',
+            display: 'block',
+            cursor: 'crosshair',
           }}
-        >
-          ▲ Controls
-        </button>
-      )}
+        />
 
-      {/* Control panel */}
-      {open && (
+        {/* Matrix code-rain overlay */}
+        {journeyRunning && journeyId === 5 && (
+          <canvas
+            ref={matrixCanvasRef}
+            style={{
+              position: 'absolute',
+              inset: 0,
+              width: '100%',
+              height: '100%',
+              mixBlendMode: 'screen',
+              opacity: 0.5,
+              pointerEvents: 'none',
+            }}
+          />
+        )}
+
+        {/* Page title */}
         <div
           style={{
             position: 'absolute',
-            bottom: 0,
+            top: 14,
             left: 0,
             right: 0,
-            background: 'rgba(8,5,3,0.86)',
-            backdropFilter: 'blur(18px)',
-            borderTop: `1px solid ${accentMid}`,
-            padding: '10px 16px 20px',
-            zIndex: 10,
-            maxHeight: '60%',
-            overflowY: 'auto',
+            textAlign: 'center',
+            pointerEvents: 'none',
           }}
         >
-          {/* Collapse handle */}
-          <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 10 }}>
+          <p
+            style={{
+              fontFamily: 'var(--font-serif)',
+              fontSize: 11,
+              letterSpacing: '0.24em',
+              color: `rgba(${pr},${pg},${pb},0.45)`,
+              textTransform: 'uppercase',
+            }}
+          >
+            Geometry Field
+          </p>
+        </div>
+
+        {/* Journey live phase badge */}
+        {journeyRunning && open && (
+          <div
+            style={{
+              position: 'absolute',
+              top: 14,
+              right: 14,
+              background: 'rgba(0,0,0,0.55)',
+              backdropFilter: 'blur(8px)',
+              border: `1px solid ${accentMid}`,
+              borderRadius: 8,
+              padding: '5px 10px',
+              pointerEvents: 'none',
+            }}
+          >
+            <div
+              style={{
+                fontFamily: 'var(--font-serif)',
+                fontSize: 9,
+                color: accent,
+                letterSpacing: '0.14em',
+                textTransform: 'uppercase',
+                opacity: 0.7,
+              }}
+            >
+              {activeJourney?.name} — Phase {journeyPhaseInfo.phaseIdx + 1}/
+              {activeJourney?.stages.length}
+            </div>
+            <div
+              style={{
+                fontFamily: 'var(--font-serif)',
+                fontSize: 9,
+                color: `rgba(${pr},${pg},${pb},0.5)`,
+                marginTop: 2,
+              }}
+            >
+              {currentStage?.mode} · {Math.floor(elapsed ?? 0)}s / {Math.floor(totalJourneyDur)}s
+            </div>
+          </div>
+        )}
+
+        {/* Show-controls button when panel closed */}
+        {!open && (
+          <button
+            type="button"
+            onClick={() => setOpen(true)}
+            style={{
+              position: 'absolute',
+              bottom: 16,
+              left: '50%',
+              transform: 'translateX(-50%)',
+              background: 'rgba(8,6,4,0.72)',
+              border: `1px solid ${accentMid}`,
+              borderRadius: 99,
+              padding: '6px 22px',
+              color: accent,
+              fontFamily: 'var(--font-serif)',
+              fontSize: 10,
+              letterSpacing: '0.14em',
+              textTransform: 'uppercase',
+              cursor: 'pointer',
+              backdropFilter: 'blur(10px)',
+              zIndex: 20,
+            }}
+          >
+            ▲ Controls
+          </button>
+        )}
+      </div>
+
+      {/* Control panel — fixed 50% height when open */}
+      {open && (
+        <div
+          style={{
+            flexShrink: 0,
+            height: '50%',
+            background: 'rgba(8,5,3,0.94)',
+            backdropFilter: 'blur(18px)',
+            borderTop: `1px solid ${accentMid}`,
+            padding: '8px 16px 16px',
+            overflowY: 'auto',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: 8,
+          }}
+        >
+          {/* Collapse handle + tab switcher */}
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <div style={{ display: 'flex', gap: 6 }}>
+              {pill('Builder', tab === 'builder', () => setTab('builder'), true)}
+              {pill('Journey', tab === 'journey', () => setTab('journey'), true)}
+            </div>
             <button
               type="button"
               onClick={() => setOpen(false)}
@@ -3199,7 +5602,7 @@ export default function GeometryField() {
                 background: accentFaint,
                 border: `1px solid ${accentMid}`,
                 borderRadius: 99,
-                padding: '3px 22px',
+                padding: '3px 18px',
                 color: accent,
                 fontFamily: 'var(--font-serif)',
                 fontSize: 10,
@@ -3211,210 +5614,284 @@ export default function GeometryField() {
             </button>
           </div>
 
-          {/* Mode pills */}
-          <div
-            style={{
-              display: 'flex',
-              gap: 6,
-              overflowX: 'auto',
-              paddingBottom: 10,
-              scrollbarWidth: 'none',
-            }}
-          >
-            {MODES.map(({ mode, label }) => {
-              const active = cfg.mode === mode;
-              return (
-                <button
-                  key={mode}
-                  type="button"
-                  onClick={() => {
-                    const p = MODE_TO_PRESET[mode];
-                    if (p) applyPreset(p);
-                    else update('mode', mode);
-                  }}
-                  style={{
-                    flexShrink: 0,
-                    background: active ? accent : accentFaint,
-                    border: `1px solid ${active ? accent : accentMid}`,
-                    borderRadius: 99,
-                    padding: '5px 13px',
-                    color: active ? '#fff' : accent,
-                    fontFamily: 'var(--font-serif)',
-                    fontSize: 11,
-                    fontWeight: active ? 700 : 400,
-                    letterSpacing: '0.05em',
-                    cursor: 'pointer',
-                    transition: 'all 0.15s',
-                    whiteSpace: 'nowrap',
-                  }}
-                >
-                  {label}
-                </button>
-              );
-            })}
-          </div>
+          {/* ── BUILDER TAB ── */}
+          {tab === 'builder' && (
+            <>
+              {/* Mode pills */}
+              <div style={{ display: 'flex', gap: 5, overflowX: 'auto', scrollbarWidth: 'none' }}>
+                {MODES.map(({ mode, label }) =>
+                  pill(
+                    label,
+                    cfg.mode === mode,
+                    () => {
+                      const p = MODE_TO_PRESET[mode];
+                      if (p) applyPreset(p);
+                      else update('mode', mode);
+                    },
+                    true,
+                  ),
+                )}
+              </div>
 
-          {/* Preset pills */}
-          <div
-            style={{
-              display: 'flex',
-              gap: 6,
-              overflowX: 'auto',
-              paddingBottom: 10,
-              scrollbarWidth: 'none',
-            }}
-          >
-            {Object.keys(PRESETS).map((name) => {
-              const active = cfg.preset === name;
-              return (
-                <button
-                  key={name}
-                  type="button"
-                  onClick={() => applyPreset(name)}
-                  style={{
-                    flexShrink: 0,
-                    background: active ? accent : accentFaint,
-                    border: `1px solid ${active ? accent : accentMid}`,
-                    borderRadius: 99,
-                    padding: '5px 13px',
-                    color: active ? '#fff' : accent,
-                    fontFamily: 'var(--font-serif)',
-                    fontSize: 11,
-                    fontWeight: active ? 700 : 400,
-                    letterSpacing: '0.05em',
-                    cursor: 'pointer',
-                    transition: 'all 0.15s',
-                    whiteSpace: 'nowrap',
-                  }}
-                >
-                  {name}
-                </button>
-              );
-            })}
-          </div>
+              {/* Preset pills */}
+              <div style={{ display: 'flex', gap: 5, overflowX: 'auto', scrollbarWidth: 'none' }}>
+                {Object.keys(PRESETS).map((name) =>
+                  pill(name, cfg.preset === name, () => applyPreset(name), true),
+                )}
+              </div>
 
-          {/* Intention input — hidden */}
-          {false && (
-            <form
-              onSubmit={handleIntention}
-              style={{ display: 'flex', gap: 8, marginTop: 2, marginBottom: 12 }}
-            >
-              <input
-                type="text"
-                placeholder="Type an intention — clarity, release, courage…"
-                value={intention}
-                onChange={(e) => setIntention(e.target.value)}
-                style={{
-                  flex: 1,
-                  background: accentFaint,
-                  border: `1px solid ${accentMid}`,
-                  borderRadius: 99,
-                  padding: '7px 14px',
-                  color: 'rgba(255,255,255,0.82)',
-                  fontFamily: 'var(--font-serif)',
-                  fontSize: 12,
-                  outline: 'none',
-                }}
-              />
-              <button
-                type="submit"
-                style={{
-                  background: tuned ? accent : accentFaint,
-                  border: `1px solid ${accent}`,
-                  borderRadius: 99,
-                  padding: '7px 16px',
-                  color: tuned ? '#fff' : accent,
-                  fontFamily: 'var(--font-serif)',
-                  fontSize: 11,
-                  fontWeight: 700,
-                  letterSpacing: '0.08em',
-                  cursor: 'pointer',
-                  transition: 'all 0.2s',
-                  whiteSpace: 'nowrap',
-                }}
-              >
-                {tuned ? '✦ Tuned' : 'Tune'}
-              </button>
-            </form>
+              {/* Sliders */}
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '6px 20px' }}>
+                {slidersFor(cfg.mode).map(({ key, label, min, max, step }) => {
+                  const val = cfg[key] as number;
+                  return (
+                    <div key={key}>
+                      <div
+                        style={{
+                          display: 'flex',
+                          justifyContent: 'space-between',
+                          marginBottom: 2,
+                        }}
+                      >
+                        <span
+                          style={{
+                            fontFamily: 'var(--font-serif)',
+                            fontSize: 9,
+                            color: `rgba(${pr},${pg},${pb},0.6)`,
+                            letterSpacing: '0.1em',
+                            textTransform: 'uppercase',
+                          }}
+                        >
+                          {label}
+                        </span>
+                        <span
+                          style={{ fontFamily: 'var(--font-serif)', fontSize: 9, color: accent }}
+                        >
+                          {step < 1 ? val.toFixed(2) : Math.round(val)}
+                        </span>
+                      </div>
+                      <input
+                        type="range"
+                        min={min}
+                        max={max}
+                        step={step}
+                        value={val}
+                        onChange={(e) => update(key as keyof Cfg, parseFloat(e.target.value))}
+                        style={{ width: '100%', accentColor: accent, cursor: 'pointer' }}
+                      />
+                    </div>
+                  );
+                })}
+              </div>
+
+              {/* Action buttons */}
+              <div style={{ display: 'flex', gap: 6, justifyContent: 'center', flexWrap: 'wrap' }}>
+                {(
+                  [
+                    ['Randomize', handleRandomize],
+                    ['Save', handleSave],
+                    ['Reset', () => applyPreset('Calm Field')],
+                    ['Fullscreen', handleFullscreen],
+                  ] as [string, () => void][]
+                ).map(([label, fn]) => (
+                  <button
+                    key={label}
+                    type="button"
+                    onClick={fn}
+                    style={{
+                      background: accentFaint,
+                      border: `1px solid ${accentMid}`,
+                      borderRadius: 99,
+                      padding: '5px 14px',
+                      color: accent,
+                      fontFamily: 'var(--font-serif)',
+                      fontSize: 10,
+                      cursor: 'pointer',
+                    }}
+                  >
+                    {label}
+                  </button>
+                ))}
+              </div>
+            </>
           )}
 
-          {/* Sliders */}
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px 20px' }}>
-            {slidersFor(cfg.mode).map(({ key, label, min, max, step }) => {
-              const val = cfg[key] as number;
-              return (
-                <div key={key}>
-                  <div
-                    style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 3 }}
-                  >
-                    <span
-                      style={{
-                        fontFamily: 'var(--font-serif)',
-                        fontSize: 10,
-                        color: `rgba(${pr},${pg},${pb},0.6)`,
-                        letterSpacing: '0.1em',
-                        textTransform: 'uppercase',
-                      }}
-                    >
-                      {label}
-                    </span>
-                    <span style={{ fontFamily: 'var(--font-serif)', fontSize: 10, color: accent }}>
-                      {step < 1 ? val.toFixed(1) : Math.round(val)}
-                    </span>
-                  </div>
-                  <input
-                    type="range"
-                    min={min}
-                    max={max}
-                    step={step}
-                    value={val}
-                    onChange={(e) => update(key as keyof Cfg, parseFloat(e.target.value))}
-                    style={{ width: '100%', accentColor: accent, cursor: 'pointer' }}
-                  />
-                </div>
-              );
-            })}
-          </div>
+          {/* ── JOURNEY TAB ── */}
+          {tab === 'journey' && (
+            <>
+              {/* Journey selection */}
+              <div style={{ display: 'flex', gap: 6, overflowX: 'auto', scrollbarWidth: 'none' }}>
+                {JOURNEYS.map((j) =>
+                  pill(`${j.icon} ${j.name}`, journeyId === j.id, () => {
+                    setJourneyId(j.id);
+                    journeyIdRef.current = j.id;
+                    if (journeyRunning) {
+                      journeyStartRef.current = performance.now();
+                      phaseInfoRef.current = { phaseIdx: 0, phaseProgress: 0 };
+                    }
+                  }),
+                )}
+              </div>
 
-          {/* Action buttons */}
-          <div
-            style={{
-              display: 'flex',
-              gap: 8,
-              marginTop: 14,
-              justifyContent: 'center',
-              flexWrap: 'wrap',
-            }}
-          >
-            {(
-              [
-                ['Randomize', handleRandomize],
-                ['Save Image', handleSave],
-                ['Reset', () => applyPreset('Calm Field')],
-                ['Fullscreen', handleFullscreen],
-              ] as [string, () => void][]
-            ).map(([label, fn]) => (
-              <button
-                key={label}
-                type="button"
-                onClick={fn}
+              {/* Journey description */}
+              <p
                 style={{
-                  background: accentFaint,
-                  border: `1px solid ${accentMid}`,
-                  borderRadius: 99,
-                  padding: '6px 16px',
-                  color: accent,
                   fontFamily: 'var(--font-serif)',
                   fontSize: 11,
-                  letterSpacing: '0.07em',
-                  cursor: 'pointer',
-                  transition: 'opacity 0.15s',
+                  color: `rgba(${pr},${pg},${pb},0.55)`,
+                  fontStyle: 'italic',
+                  lineHeight: 1.5,
                 }}
               >
-                {label}
-              </button>
-            ))}
-          </div>
+                {activeJourney?.desc}
+              </p>
+
+              {/* Phase list */}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                <div
+                  style={{
+                    fontFamily: 'var(--font-serif)',
+                    fontSize: 9,
+                    color: `rgba(${pr},${pg},${pb},0.4)`,
+                    letterSpacing: '0.12em',
+                    textTransform: 'uppercase',
+                    marginBottom: 2,
+                  }}
+                >
+                  Phases — {Math.floor(totalJourneyDur / 60)}m{Math.round(totalJourneyDur % 60)}s
+                  total
+                </div>
+                {activeJourney?.stages.map((stage, i) => {
+                  const isActive = journeyRunning && journeyPhaseInfo.phaseIdx === i;
+                  const prog = isActive ? journeyPhaseInfo.phaseProgress : 0;
+                  return (
+                    <div
+                      key={i}
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: 8,
+                        padding: '5px 8px',
+                        borderRadius: 6,
+                        background: isActive ? accentFaint : 'transparent',
+                        border: `1px solid ${isActive ? accentMid : 'rgba(255,255,255,0.05)'}`,
+                        position: 'relative',
+                        overflow: 'hidden',
+                      }}
+                    >
+                      {isActive && (
+                        <div
+                          style={{
+                            position: 'absolute',
+                            left: 0,
+                            top: 0,
+                            bottom: 0,
+                            width: `${prog * 100}%`,
+                            background: `rgba(${pr},${pg},${pb},0.08)`,
+                            transition: 'width 0.5s linear',
+                          }}
+                        />
+                      )}
+                      <span
+                        style={{
+                          fontFamily: 'var(--font-serif)',
+                          fontSize: 9,
+                          color: accent,
+                          opacity: 0.5,
+                          flexShrink: 0,
+                        }}
+                      >
+                        {i + 1}
+                      </span>
+                      <span
+                        style={{
+                          fontFamily: 'var(--font-serif)',
+                          fontSize: 10,
+                          color: isActive
+                            ? `rgb(${pr},${pg},${pb})`
+                            : `rgba(${pr},${pg},${pb},0.5)`,
+                          flex: 1,
+                          textTransform: 'capitalize',
+                        }}
+                      >
+                        {stage.mode} · {stage.preset}
+                      </span>
+                      <span
+                        style={{
+                          fontFamily: 'var(--font-serif)',
+                          fontSize: 9,
+                          color: `rgba(${pr},${pg},${pb},0.35)`,
+                          flexShrink: 0,
+                        }}
+                      >
+                        {stage.duration}s
+                      </span>
+                      {isActive && <span style={{ fontSize: 8, color: accent }}>▶</span>}
+                    </div>
+                  );
+                })}
+              </div>
+
+              {/* Play / Stop */}
+              <div style={{ display: 'flex', gap: 8, justifyContent: 'center', marginTop: 4 }}>
+                {!journeyRunning ? (
+                  <button
+                    type="button"
+                    onClick={() => startJourney(journeyId)}
+                    style={{
+                      background: accent,
+                      border: 'none',
+                      borderRadius: 99,
+                      padding: '8px 32px',
+                      color: '#000',
+                      fontFamily: 'var(--font-serif)',
+                      fontSize: 12,
+                      fontWeight: 700,
+                      letterSpacing: '0.1em',
+                      cursor: 'pointer',
+                    }}
+                  >
+                    ▶ Start Journey
+                  </button>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={stopJourney}
+                    style={{
+                      background: accentFaint,
+                      border: `1px solid ${accentMid}`,
+                      borderRadius: 99,
+                      padding: '8px 32px',
+                      color: accent,
+                      fontFamily: 'var(--font-serif)',
+                      fontSize: 12,
+                      fontWeight: 700,
+                      letterSpacing: '0.1em',
+                      cursor: 'pointer',
+                    }}
+                  >
+                    ◼ Stop
+                  </button>
+                )}
+                <button
+                  type="button"
+                  onClick={handleFullscreen}
+                  style={{
+                    background: accentFaint,
+                    border: `1px solid ${accentMid}`,
+                    borderRadius: 99,
+                    padding: '8px 16px',
+                    color: accent,
+                    fontFamily: 'var(--font-serif)',
+                    fontSize: 11,
+                    cursor: 'pointer',
+                  }}
+                >
+                  Fullscreen
+                </button>
+              </div>
+            </>
+          )}
         </div>
       )}
     </div>

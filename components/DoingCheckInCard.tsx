@@ -43,13 +43,9 @@ function TodoList({ fontFamily }: { fontFamily: string }) {
     <div className="space-y-3">
       <div className="space-y-1.5">
         {items.map((item) => (
-          <div
-            key={item.id}
-            className="group flex cursor-pointer items-center gap-2"
-            onClick={() => save(items.map((i) => (i.id === item.id ? { ...i, done: !i.done } : i)))}
-          >
+          <div key={item.id} className="group flex items-center gap-2">
             <span
-              className="text-base"
+              className="flex-1 text-base"
               style={{
                 color: item.done ? '#7a543860' : '#7a5438',
                 textDecoration: item.done ? 'line-through' : 'none',
@@ -59,13 +55,31 @@ function TodoList({ fontFamily }: { fontFamily: string }) {
             >
               {item.text}
             </span>
-            <span
-              className="text-xs opacity-0 transition-opacity group-hover:opacity-40 cursor-pointer"
-              style={{ color: '#7a5438' }}
-              onClick={(e) => {
-                e.stopPropagation();
-                save(items.filter((i) => i.id !== item.id));
+            {/* Done pill — right end */}
+            <button
+              type="button"
+              onClick={() =>
+                save(items.map((i) => (i.id === item.id ? { ...i, done: !i.done } : i)))
+              }
+              className="cursor-pointer transition-all shrink-0"
+              style={{
+                width: 18,
+                height: 18,
+                borderRadius: '50%',
+                background: item.done ? DOING_COLOR : 'transparent',
+                border: `1.5px solid ${item.done ? DOING_COLOR : `${DOING_COLOR}45`}`,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                opacity: item.done ? 0.7 : 0.35,
               }}
+            >
+              {item.done && <span style={{ fontSize: 9, color: '#fff', lineHeight: 1 }}>✓</span>}
+            </button>
+            <span
+              className="text-xs opacity-0 transition-opacity group-hover:opacity-40 cursor-pointer shrink-0"
+              style={{ color: '#7a5438' }}
+              onClick={() => save(items.filter((i) => i.id !== item.id))}
             >
               ✕
             </span>
@@ -89,9 +103,9 @@ function TodoList({ fontFamily }: { fontFamily: string }) {
 
 /* ─── Missions — pills with progress fill ─── */
 function MissionsList({ fontFamily }: { fontFamily: string }) {
-  const [missions, setMissions] = useState<{ id: string; name: string; progress: number }[]>(() =>
-    loadJson(MISSIONS_KEY, []),
-  );
+  const [missions, setMissions] = useState<
+    { id: string; name: string; progress: number; tomorrow?: boolean }[]
+  >(() => loadJson(MISSIONS_KEY, []));
   const [input, setInput] = useState('');
   const save = (next: typeof missions) => {
     setMissions(next);
@@ -103,20 +117,30 @@ function MissionsList({ fontFamily }: { fontFamily: string }) {
     setInput('');
   };
 
+  const sorted = [...missions].sort((a, b) => (b.tomorrow ? 1 : 0) - (a.tomorrow ? 1 : 0));
+
   return (
     <div className="space-y-3">
       <div className="flex flex-wrap gap-2">
-        {missions.map((m) => (
+        {sorted.map((m) => (
           <div
             key={m.id}
             className="group relative overflow-hidden rounded-full transition-all hover:scale-105"
-            style={{ border: `1.5px solid ${DOING_COLOR}30`, background: `${DOING_COLOR}06` }}
+            style={{
+              border: `1.5px solid ${m.tomorrow ? `${DOING_COLOR}70` : `${DOING_COLOR}30`}`,
+              background: m.tomorrow ? `${DOING_COLOR}12` : `${DOING_COLOR}06`,
+            }}
           >
             <div
               className="absolute inset-0 rounded-full transition-all duration-300"
               style={{ width: `${m.progress}%`, background: DOING_COLOR, opacity: 0.12 }}
             />
-            <div className="relative flex items-center gap-1.5 px-4 py-2">
+            <div className="relative flex items-center gap-1.5 px-3 py-2">
+              {m.tomorrow && (
+                <span style={{ fontSize: 10, color: DOING_COLOR, opacity: 0.6, fontFamily }}>
+                  →
+                </span>
+              )}
               <button
                 type="button"
                 onClick={() =>
@@ -141,6 +165,24 @@ function MissionsList({ fontFamily }: { fontFamily: string }) {
               <span className="text-xs" style={{ color: DOING_COLOR, opacity: 0.5, fontFamily }}>
                 {m.progress}%
               </span>
+              {/* Push to tomorrow */}
+              <button
+                type="button"
+                onClick={() =>
+                  save(missions.map((x) => (x.id === m.id ? { ...x, tomorrow: !x.tomorrow } : x)))
+                }
+                className="cursor-pointer text-xs opacity-0 transition-opacity group-hover:opacity-60"
+                style={{
+                  color: DOING_COLOR,
+                  background: 'none',
+                  border: 'none',
+                  padding: '0 2px',
+                  fontFamily,
+                }}
+                title="push to tomorrow"
+              >
+                →
+              </button>
               <span
                 className="cursor-pointer text-xs opacity-0 transition-opacity group-hover:opacity-50"
                 style={{ color: DOING_COLOR }}
