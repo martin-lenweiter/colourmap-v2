@@ -1795,38 +1795,137 @@ export default function FdsPanel() {
           );
         })}
 
-        {/* Ochre dot — style picker, right-aligned below rows */}
-        <div className="flex items-center justify-end gap-2 pt-1">
-          <span
-            style={{
-              fontFamily: font,
-              fontSize: 10,
-              color: '#C4A060',
-              opacity: 0.5,
-              letterSpacing: '0.1em',
-            }}
-          >
-            {sliderStyle}/7
-          </span>
-          <button
-            type="button"
-            onClick={cycleSliderStyle}
-            title={`Slider style ${sliderStyle} of 7 — click to change`}
-            className="cursor-pointer transition-all hover:scale-110"
-            style={{ background: 'none', border: 'none', padding: 0 }}
-          >
-            <span
-              style={{
-                display: 'block',
-                width: 14,
-                height: 14,
-                borderRadius: '50%',
-                background: '#C4A060',
-                opacity: 0.7,
-                boxShadow: '0 1px 6px -1px #C4A06080',
-              }}
-            />
-          </button>
+        {/* Slider style picker — 5 options visible at once */}
+        <div className="flex items-center justify-end gap-1.5 pt-2">
+          {([1, 3, 5, 6, 7] as SliderStyle[]).map((s) => {
+            const active = sliderStyle === s;
+            const icons: Record<number, React.ReactNode> = {
+              1: (
+                <svg width="28" height="14" viewBox="0 0 28 14">
+                  <line
+                    x1="2"
+                    y1="7"
+                    x2="26"
+                    y2="7"
+                    stroke="#C4A060"
+                    strokeWidth="1.5"
+                    strokeOpacity="0.3"
+                  />
+                  {[0, 1, 2, 3, 4].map((i) => (
+                    <circle
+                      key={i}
+                      cx={2 + i * 6}
+                      cy="7"
+                      r={i === 2 ? 4 : 2.5}
+                      fill={['#88C8E8', '#A8E090', '#F8C040', '#F0A088', '#F080B8'][i]}
+                      opacity={i === 2 ? 1 : 0.55}
+                    />
+                  ))}
+                </svg>
+              ),
+              3: (
+                <svg width="28" height="14" viewBox="0 0 28 14">
+                  <line
+                    x1="2"
+                    y1="7"
+                    x2="26"
+                    y2="7"
+                    stroke="#C4A060"
+                    strokeWidth="1.5"
+                    strokeOpacity="0.2"
+                  />
+                  <line
+                    x1="2"
+                    y1="7"
+                    x2="16"
+                    y2="7"
+                    stroke="#C4A060"
+                    strokeWidth="1.5"
+                    strokeOpacity="0.7"
+                  />
+                  <circle cx="16" cy="7" r="4" fill="#C4A060" opacity="0.9" />
+                </svg>
+              ),
+              5: (
+                <svg width="28" height="14" viewBox="0 0 28 14">
+                  {[0, 1, 2, 3, 4].map((i) => (
+                    <rect
+                      key={i}
+                      x={2 + i * 5.5}
+                      y={14 - (5 + i * 2)}
+                      width="4"
+                      height={5 + i * 2}
+                      rx="1"
+                      fill={['#88C8E8', '#A8E090', '#F8C040', '#F0A088', '#F080B8'][i]}
+                      opacity={i === 2 ? 1 : 0.5}
+                    />
+                  ))}
+                </svg>
+              ),
+              6: (
+                <svg width="28" height="14" viewBox="0 0 28 14">
+                  {[0, 1, 2, 3, 4].map((i) => (
+                    <rect
+                      key={i}
+                      x={1 + i * 5.5}
+                      y={i === 2 ? 3 : 5}
+                      width="5"
+                      height={i === 2 ? 8 : 4}
+                      rx="2"
+                      fill={['#88C8E8', '#A8E090', '#F8C040', '#F0A088', '#F080B8'][i]}
+                      opacity={i === 2 ? 0.9 : 0.4}
+                    />
+                  ))}
+                </svg>
+              ),
+              7: (
+                <svg width="28" height="14" viewBox="0 0 28 14">
+                  <line
+                    x1="2"
+                    y1="7"
+                    x2="26"
+                    y2="7"
+                    stroke="#C4A060"
+                    strokeWidth="1"
+                    strokeOpacity="0.2"
+                  />
+                  {[0, 1, 2, 3, 4].map((i) => (
+                    <circle
+                      key={i}
+                      cx={2 + i * 6}
+                      cy="7"
+                      r={2 + i * 1.2}
+                      fill={['#88C8E8', '#A8E090', '#F8C040', '#F0A088', '#F080B8'][i]}
+                      opacity={i === 2 ? 1 : 0.45}
+                    />
+                  ))}
+                </svg>
+              ),
+            };
+            return (
+              <button
+                key={s}
+                type="button"
+                onClick={() => {
+                  setSliderStyle(s);
+                  localStorage.setItem(LS_SLIDER_STYLE, String(s));
+                }}
+                className="cursor-pointer transition-all"
+                style={{
+                  background: active ? '#C4A06015' : 'transparent',
+                  border: `1px solid ${active ? '#C4A06055' : '#C4A06020'}`,
+                  borderRadius: 6,
+                  padding: '3px 4px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  opacity: active ? 1 : 0.45,
+                }}
+              >
+                {icons[s]}
+              </button>
+            );
+          })}
         </div>
       </div>
 
