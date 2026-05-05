@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import SquareSlider from '@/components/SquareSlider';
 
 const DOING_LEVELS = [
   { label: 'Disconnected', color: '#5A9A70' },
@@ -45,21 +46,41 @@ export default function DoingStateCircle({ onDone: _onDone }: { onDone?: () => v
   const current = DOING_LEVELS[idx];
 
   return (
-    <div style={{ padding: '2px 0 6px' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8 }}>
+      <span
+        style={{
+          fontFamily: 'var(--font-serif)',
+          fontSize: 13,
+          fontWeight: 700,
+          color: current.color,
+          letterSpacing: '0.14em',
+          textTransform: 'uppercase',
+          transition: 'color 0.2s',
+        }}
+      >
+        {current.label}
+      </span>
+      <SquareSlider
+        colors={DOING_LEVELS.map((l) => l.color)}
+        value={idx}
+        onChange={pick}
+        size={16}
+        gap={5}
+      />
       <div
         style={{
           display: 'flex',
           justifyContent: 'space-between',
-          alignItems: 'baseline',
-          marginBottom: 6,
+          width: '100%',
+          paddingTop: 2,
         }}
       >
         <span
           style={{
             fontFamily: 'var(--font-serif)',
             fontSize: 9,
-            color: '#6890B0',
-            opacity: 0.4,
+            color: DOING_LEVELS[0].color,
+            opacity: 0.45,
             letterSpacing: '0.1em',
             textTransform: 'uppercase',
           }}
@@ -69,22 +90,9 @@ export default function DoingStateCircle({ onDone: _onDone }: { onDone?: () => v
         <span
           style={{
             fontFamily: 'var(--font-serif)',
-            fontSize: 12,
-            fontWeight: 700,
-            color: current.color,
-            letterSpacing: '0.14em',
-            textTransform: 'uppercase',
-            transition: 'color 0.25s',
-          }}
-        >
-          {current.label}
-        </span>
-        <span
-          style={{
-            fontFamily: 'var(--font-serif)',
             fontSize: 9,
-            color: '#6890B0',
-            opacity: 0.4,
+            color: DOING_LEVELS[DOING_LEVELS.length - 1].color,
+            opacity: 0.45,
             letterSpacing: '0.1em',
             textTransform: 'uppercase',
           }}
@@ -92,15 +100,6 @@ export default function DoingStateCircle({ onDone: _onDone }: { onDone?: () => v
           Tunnel Vision
         </span>
       </div>
-      <input
-        type="range"
-        min={0}
-        max={DOING_LEVELS.length - 1}
-        step={1}
-        value={idx}
-        onChange={(e) => pick(Number(e.target.value))}
-        style={{ width: '100%', accentColor: current.color, cursor: 'pointer' }}
-      />
     </div>
   );
 }
