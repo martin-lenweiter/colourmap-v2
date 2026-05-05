@@ -6973,42 +6973,45 @@ export default function GeometryField() {
             background: 'rgba(8,5,3,0.94)',
             backdropFilter: 'blur(18px)',
             borderTop: `1px solid ${accentMid}`,
-            padding: '8px 16px 16px',
-            overflowY: 'auto',
             display: 'flex',
             flexDirection: 'column',
-            gap: 8,
           }}
         >
-          {/* Collapse handle + tab switcher */}
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-            <div style={{ display: 'flex', gap: 6 }}>
-              {pill('Builder', tab === 'builder', () => setTab('builder'), true)}
-              {pill('Journey', tab === 'journey', () => setTab('journey'), true)}
+          {/* ── Sticky header: tabs + view toggle (never scrolls) ── */}
+          <div
+            style={{
+              flexShrink: 0,
+              padding: '8px 16px 6px',
+              borderBottom: `1px solid rgba(${pr},${pg},${pb},0.1)`,
+              display: 'flex',
+              flexDirection: 'column',
+              gap: 6,
+            }}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <div style={{ display: 'flex', gap: 6 }}>
+                {pill('Builder', tab === 'builder', () => setTab('builder'), true)}
+                {pill('Journey', tab === 'journey', () => setTab('journey'), true)}
+              </div>
+              <button
+                type="button"
+                onClick={() => setOpen(false)}
+                style={{
+                  background: accentFaint,
+                  border: `1px solid ${accentMid}`,
+                  borderRadius: 99,
+                  padding: '3px 18px',
+                  color: accent,
+                  fontFamily: 'var(--font-serif)',
+                  fontSize: 10,
+                  letterSpacing: '0.1em',
+                  cursor: 'pointer',
+                }}
+              >
+                ▼
+              </button>
             </div>
-            <button
-              type="button"
-              onClick={() => setOpen(false)}
-              style={{
-                background: accentFaint,
-                border: `1px solid ${accentMid}`,
-                borderRadius: 99,
-                padding: '3px 18px',
-                color: accent,
-                fontFamily: 'var(--font-serif)',
-                fontSize: 10,
-                letterSpacing: '0.1em',
-                cursor: 'pointer',
-              }}
-            >
-              ▼
-            </button>
-          </div>
-
-          {/* ── BUILDER TAB ── */}
-          {tab === 'builder' && (
-            <>
-              {/* View toggle header */}
+            {tab === 'builder' && (
               <div
                 style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}
               >
@@ -7049,351 +7052,330 @@ export default function GeometryField() {
                   ))}
                 </div>
               </div>
-
-              {/* Programs grid */}
-              {builderView === 'programs' && (
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 6 }}>
-                  {MODES.map(({ mode, label }, idx) => {
-                    const isActive = cfg.mode === mode;
-                    return (
-                      <button
-                        key={mode}
-                        type="button"
-                        onClick={() => {
-                          const p = MODE_TO_PRESET[mode];
-                          if (p) applyPreset(p);
-                          else update('mode', mode);
-                        }}
-                        style={{
-                          background: isActive ? accentFaint : 'transparent',
-                          border: `1px solid ${isActive ? accentMid : `rgba(${pr},${pg},${pb},0.15)`}`,
-                          borderRadius: 8,
-                          padding: '9px 6px 7px',
-                          color: isActive ? accent : `rgba(${pr},${pg},${pb},0.6)`,
-                          fontFamily: 'var(--font-serif)',
-                          cursor: 'pointer',
-                          textAlign: 'center',
-                          display: 'flex',
-                          flexDirection: 'column',
-                          alignItems: 'center',
-                          gap: 2,
-                        }}
-                      >
-                        <span style={{ fontSize: 8, opacity: 0.45, letterSpacing: '0.08em' }}>
-                          {String(idx + 1).padStart(2, '0')}
-                        </span>
-                        <span
+            )}
+          </div>
+          {/* ── Scrollable content ── */}
+          <div
+            style={{
+              flex: 1,
+              overflowY: 'auto',
+              padding: '8px 16px 16px',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: 8,
+            }}
+          >
+            {/* ── BUILDER TAB ── */}
+            {tab === 'builder' && (
+              <>
+                {/* Programs grid */}
+                {builderView === 'programs' && (
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 6 }}>
+                    {MODES.map(({ mode, label }, idx) => {
+                      const isActive = cfg.mode === mode;
+                      return (
+                        <button
+                          key={mode}
+                          type="button"
+                          onClick={() => {
+                            const p = MODE_TO_PRESET[mode];
+                            if (p) applyPreset(p);
+                            else update('mode', mode);
+                          }}
                           style={{
-                            fontSize: 11,
-                            fontWeight: isActive ? 700 : 400,
-                            letterSpacing: '0.05em',
+                            background: isActive ? accentFaint : 'transparent',
+                            border: `1px solid ${isActive ? accentMid : `rgba(${pr},${pg},${pb},0.15)`}`,
+                            borderRadius: 8,
+                            padding: '9px 6px 7px',
+                            color: isActive ? accent : `rgba(${pr},${pg},${pb},0.6)`,
+                            fontFamily: 'var(--font-serif)',
+                            cursor: 'pointer',
+                            textAlign: 'center',
+                            display: 'flex',
+                            flexDirection: 'column',
+                            alignItems: 'center',
+                            gap: 2,
+                          }}
+                        >
+                          <span style={{ fontSize: 8, opacity: 0.45, letterSpacing: '0.08em' }}>
+                            {String(idx + 1).padStart(2, '0')}
+                          </span>
+                          <span
+                            style={{
+                              fontSize: 11,
+                              fontWeight: isActive ? 700 : 400,
+                              letterSpacing: '0.05em',
+                            }}
+                          >
+                            {label}
+                          </span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                )}
+
+                {/* Sliders + actions */}
+                {builderView === 'sliders' && (
+                  <>
+                    <div
+                      style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '6px 20px' }}
+                    >
+                      {slidersFor(cfg.mode).map(({ key, label, min, max, step }) => {
+                        const val = cfg[key] as number;
+                        return (
+                          <div key={key}>
+                            <div
+                              style={{
+                                display: 'flex',
+                                justifyContent: 'space-between',
+                                marginBottom: 2,
+                              }}
+                            >
+                              <span
+                                style={{
+                                  fontFamily: 'var(--font-serif)',
+                                  fontSize: 9,
+                                  color: `rgba(${pr},${pg},${pb},0.6)`,
+                                  letterSpacing: '0.1em',
+                                  textTransform: 'uppercase',
+                                }}
+                              >
+                                {label}
+                              </span>
+                              <span
+                                style={{
+                                  fontFamily: 'var(--font-serif)',
+                                  fontSize: 9,
+                                  color: accent,
+                                }}
+                              >
+                                {step < 1 ? val.toFixed(2) : Math.round(val)}
+                              </span>
+                            </div>
+                            <input
+                              type="range"
+                              min={min}
+                              max={max}
+                              step={step}
+                              value={val}
+                              onChange={(e) => update(key as keyof Cfg, parseFloat(e.target.value))}
+                              style={{ width: '100%', accentColor: accent, cursor: 'pointer' }}
+                            />
+                          </div>
+                        );
+                      })}
+                    </div>
+
+                    {/* Colour bar — horizontal scrollable squares */}
+                    <div
+                      style={{
+                        display: 'flex',
+                        gap: 3,
+                        overflowX: 'auto',
+                        scrollbarWidth: 'none',
+                        paddingBottom: 2,
+                      }}
+                    >
+                      {PAL_SORTED.map(([name, p]) => {
+                        const [cr, cg, cb] = p.rgb;
+                        const isActive = cfg.preset === name;
+                        return (
+                          <button
+                            key={name}
+                            type="button"
+                            title={name}
+                            onClick={() => update('preset', name)}
+                            style={{
+                              width: 18,
+                              height: 18,
+                              flexShrink: 0,
+                              borderRadius: 3,
+                              background: `rgb(${cr},${cg},${cb})`,
+                              border: isActive
+                                ? `2px solid rgba(255,255,255,0.85)`
+                                : '1px solid rgba(255,255,255,0.1)',
+                              boxShadow: isActive
+                                ? `0 0 6px 2px rgba(${cr},${cg},${cb},0.6)`
+                                : 'none',
+                              cursor: 'pointer',
+                              padding: 0,
+                              outline: 'none',
+                            }}
+                          />
+                        );
+                      })}
+                    </div>
+
+                    <div
+                      style={{
+                        display: 'flex',
+                        gap: 6,
+                        justifyContent: 'center',
+                        flexWrap: 'wrap',
+                      }}
+                    >
+                      {(
+                        [
+                          ['Randomize', handleRandomize],
+                          ['Save', handleSave],
+                          ['Reset', () => applyPreset('Calm Field')],
+                          ['Fullscreen', handleFullscreen],
+                        ] as [string, () => void][]
+                      ).map(([label, fn]) => (
+                        <button
+                          key={label}
+                          type="button"
+                          onClick={fn}
+                          style={{
+                            background: accentFaint,
+                            border: `1px solid ${accentMid}`,
+                            borderRadius: 99,
+                            padding: '5px 14px',
+                            color: accent,
+                            fontFamily: 'var(--font-serif)',
+                            fontSize: 10,
+                            cursor: 'pointer',
                           }}
                         >
                           {label}
+                        </button>
+                      ))}
+                    </div>
+                  </>
+                )}
+              </>
+            )}
+
+            {/* ── JOURNEY TAB ── */}
+            {tab === 'journey' && (
+              <>
+                {/* Journey selection */}
+                <div style={{ display: 'flex', gap: 6, overflowX: 'auto', scrollbarWidth: 'none' }}>
+                  {JOURNEYS.map((j) =>
+                    pill(`${j.icon} ${j.name}`, journeyId === j.id, () => {
+                      setJourneyId(j.id);
+                      journeyIdRef.current = j.id;
+                      if (journeyRunning) {
+                        journeyStartRef.current = performance.now();
+                        phaseInfoRef.current = { phaseIdx: 0, phaseProgress: 0 };
+                      }
+                    }),
+                  )}
+                </div>
+
+                {/* Journey description */}
+                <p
+                  style={{
+                    fontFamily: 'var(--font-serif)',
+                    fontSize: 11,
+                    color: `rgba(${pr},${pg},${pb},0.55)`,
+                    fontStyle: 'italic',
+                    lineHeight: 1.5,
+                  }}
+                >
+                  {activeJourney?.desc}
+                </p>
+
+                {/* Phase list */}
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                  <div
+                    style={{
+                      fontFamily: 'var(--font-serif)',
+                      fontSize: 9,
+                      color: `rgba(${pr},${pg},${pb},0.4)`,
+                      letterSpacing: '0.12em',
+                      textTransform: 'uppercase',
+                      marginBottom: 2,
+                    }}
+                  >
+                    Phases — {Math.floor(totalJourneyDur / 60)}m{Math.round(totalJourneyDur % 60)}s
+                    total
+                  </div>
+                  {activeJourney?.stages.map((stage, i) => {
+                    const isActive = journeyRunning && journeyPhaseInfo.phaseIdx === i;
+                    const prog = isActive ? journeyPhaseInfo.phaseProgress : 0;
+                    return (
+                      <div
+                        key={i}
+                        onClick={() => journeyRunning && skipToPhase(i)}
+                        style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: 8,
+                          padding: '5px 8px',
+                          borderRadius: 6,
+                          background: isActive ? accentFaint : 'transparent',
+                          border: `1px solid ${isActive ? accentMid : 'rgba(255,255,255,0.05)'}`,
+                          position: 'relative',
+                          overflow: 'hidden',
+                          cursor: journeyRunning ? 'pointer' : 'default',
+                        }}
+                      >
+                        {isActive && (
+                          <div
+                            style={{
+                              position: 'absolute',
+                              left: 0,
+                              top: 0,
+                              bottom: 0,
+                              width: `${prog * 100}%`,
+                              background: `rgba(${pr},${pg},${pb},0.08)`,
+                              transition: 'width 0.5s linear',
+                            }}
+                          />
+                        )}
+                        <span
+                          style={{
+                            fontFamily: 'var(--font-serif)',
+                            fontSize: 9,
+                            color: accent,
+                            opacity: 0.5,
+                            flexShrink: 0,
+                          }}
+                        >
+                          {i + 1}
                         </span>
-                      </button>
+                        <span
+                          style={{
+                            fontFamily: 'var(--font-serif)',
+                            fontSize: 10,
+                            color: isActive
+                              ? `rgb(${pr},${pg},${pb})`
+                              : `rgba(${pr},${pg},${pb},0.5)`,
+                            flex: 1,
+                            textTransform: 'capitalize',
+                          }}
+                        >
+                          {stage.mode} · {stage.preset}
+                        </span>
+                        <span
+                          style={{
+                            fontFamily: 'var(--font-serif)',
+                            fontSize: 9,
+                            color: `rgba(${pr},${pg},${pb},0.35)`,
+                            flexShrink: 0,
+                          }}
+                        >
+                          {stage.duration}s
+                        </span>
+                        {isActive && <span style={{ fontSize: 8, color: accent }}>▶</span>}
+                      </div>
                     );
                   })}
                 </div>
-              )}
 
-              {/* Sliders + actions */}
-              {builderView === 'sliders' && (
-                <>
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '6px 20px' }}>
-                    {slidersFor(cfg.mode).map(({ key, label, min, max, step }) => {
-                      const val = cfg[key] as number;
-                      return (
-                        <div key={key}>
-                          <div
-                            style={{
-                              display: 'flex',
-                              justifyContent: 'space-between',
-                              marginBottom: 2,
-                            }}
-                          >
-                            <span
-                              style={{
-                                fontFamily: 'var(--font-serif)',
-                                fontSize: 9,
-                                color: `rgba(${pr},${pg},${pb},0.6)`,
-                                letterSpacing: '0.1em',
-                                textTransform: 'uppercase',
-                              }}
-                            >
-                              {label}
-                            </span>
-                            <span
-                              style={{
-                                fontFamily: 'var(--font-serif)',
-                                fontSize: 9,
-                                color: accent,
-                              }}
-                            >
-                              {step < 1 ? val.toFixed(2) : Math.round(val)}
-                            </span>
-                          </div>
-                          <input
-                            type="range"
-                            min={min}
-                            max={max}
-                            step={step}
-                            value={val}
-                            onChange={(e) => update(key as keyof Cfg, parseFloat(e.target.value))}
-                            style={{ width: '100%', accentColor: accent, cursor: 'pointer' }}
-                          />
-                        </div>
-                      );
-                    })}
-                  </div>
-
-                  {/* Colour bar — horizontal scrollable squares */}
-                  <div
-                    style={{
-                      display: 'flex',
-                      gap: 3,
-                      overflowX: 'auto',
-                      scrollbarWidth: 'none',
-                      paddingBottom: 2,
-                    }}
-                  >
-                    {PAL_SORTED.map(([name, p]) => {
-                      const [cr, cg, cb] = p.rgb;
-                      const isActive = cfg.preset === name;
-                      return (
-                        <button
-                          key={name}
-                          type="button"
-                          title={name}
-                          onClick={() => update('preset', name)}
-                          style={{
-                            width: 18,
-                            height: 18,
-                            flexShrink: 0,
-                            borderRadius: 3,
-                            background: `rgb(${cr},${cg},${cb})`,
-                            border: isActive
-                              ? `2px solid rgba(255,255,255,0.85)`
-                              : '1px solid rgba(255,255,255,0.1)',
-                            boxShadow: isActive
-                              ? `0 0 6px 2px rgba(${cr},${cg},${cb},0.6)`
-                              : 'none',
-                            cursor: 'pointer',
-                            padding: 0,
-                            outline: 'none',
-                          }}
-                        />
-                      );
-                    })}
-                  </div>
-
-                  <div
-                    style={{ display: 'flex', gap: 6, justifyContent: 'center', flexWrap: 'wrap' }}
-                  >
-                    {(
-                      [
-                        ['Randomize', handleRandomize],
-                        ['Save', handleSave],
-                        ['Reset', () => applyPreset('Calm Field')],
-                        ['Fullscreen', handleFullscreen],
-                      ] as [string, () => void][]
-                    ).map(([label, fn]) => (
-                      <button
-                        key={label}
-                        type="button"
-                        onClick={fn}
-                        style={{
-                          background: accentFaint,
-                          border: `1px solid ${accentMid}`,
-                          borderRadius: 99,
-                          padding: '5px 14px',
-                          color: accent,
-                          fontFamily: 'var(--font-serif)',
-                          fontSize: 10,
-                          cursor: 'pointer',
-                        }}
-                      >
-                        {label}
-                      </button>
-                    ))}
-                  </div>
-                </>
-              )}
-            </>
-          )}
-
-          {/* ── JOURNEY TAB ── */}
-          {tab === 'journey' && (
-            <>
-              {/* Journey selection */}
-              <div style={{ display: 'flex', gap: 6, overflowX: 'auto', scrollbarWidth: 'none' }}>
-                {JOURNEYS.map((j) =>
-                  pill(`${j.icon} ${j.name}`, journeyId === j.id, () => {
-                    setJourneyId(j.id);
-                    journeyIdRef.current = j.id;
-                    if (journeyRunning) {
-                      journeyStartRef.current = performance.now();
-                      phaseInfoRef.current = { phaseIdx: 0, phaseProgress: 0 };
-                    }
-                  }),
-                )}
-              </div>
-
-              {/* Journey description */}
-              <p
-                style={{
-                  fontFamily: 'var(--font-serif)',
-                  fontSize: 11,
-                  color: `rgba(${pr},${pg},${pb},0.55)`,
-                  fontStyle: 'italic',
-                  lineHeight: 1.5,
-                }}
-              >
-                {activeJourney?.desc}
-              </p>
-
-              {/* Phase list */}
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-                <div
-                  style={{
-                    fontFamily: 'var(--font-serif)',
-                    fontSize: 9,
-                    color: `rgba(${pr},${pg},${pb},0.4)`,
-                    letterSpacing: '0.12em',
-                    textTransform: 'uppercase',
-                    marginBottom: 2,
-                  }}
-                >
-                  Phases — {Math.floor(totalJourneyDur / 60)}m{Math.round(totalJourneyDur % 60)}s
-                  total
-                </div>
-                {activeJourney?.stages.map((stage, i) => {
-                  const isActive = journeyRunning && journeyPhaseInfo.phaseIdx === i;
-                  const prog = isActive ? journeyPhaseInfo.phaseProgress : 0;
-                  return (
-                    <div
-                      key={i}
-                      onClick={() => journeyRunning && skipToPhase(i)}
-                      style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: 8,
-                        padding: '5px 8px',
-                        borderRadius: 6,
-                        background: isActive ? accentFaint : 'transparent',
-                        border: `1px solid ${isActive ? accentMid : 'rgba(255,255,255,0.05)'}`,
-                        position: 'relative',
-                        overflow: 'hidden',
-                        cursor: journeyRunning ? 'pointer' : 'default',
-                      }}
-                    >
-                      {isActive && (
-                        <div
-                          style={{
-                            position: 'absolute',
-                            left: 0,
-                            top: 0,
-                            bottom: 0,
-                            width: `${prog * 100}%`,
-                            background: `rgba(${pr},${pg},${pb},0.08)`,
-                            transition: 'width 0.5s linear',
-                          }}
-                        />
-                      )}
-                      <span
-                        style={{
-                          fontFamily: 'var(--font-serif)',
-                          fontSize: 9,
-                          color: accent,
-                          opacity: 0.5,
-                          flexShrink: 0,
-                        }}
-                      >
-                        {i + 1}
-                      </span>
-                      <span
-                        style={{
-                          fontFamily: 'var(--font-serif)',
-                          fontSize: 10,
-                          color: isActive
-                            ? `rgb(${pr},${pg},${pb})`
-                            : `rgba(${pr},${pg},${pb},0.5)`,
-                          flex: 1,
-                          textTransform: 'capitalize',
-                        }}
-                      >
-                        {stage.mode} · {stage.preset}
-                      </span>
-                      <span
-                        style={{
-                          fontFamily: 'var(--font-serif)',
-                          fontSize: 9,
-                          color: `rgba(${pr},${pg},${pb},0.35)`,
-                          flexShrink: 0,
-                        }}
-                      >
-                        {stage.duration}s
-                      </span>
-                      {isActive && <span style={{ fontSize: 8, color: accent }}>▶</span>}
-                    </div>
-                  );
-                })}
-              </div>
-
-              {/* Play / Stop */}
-              <div style={{ display: 'flex', gap: 8, justifyContent: 'center', marginTop: 4 }}>
-                {!journeyRunning ? (
-                  <button
-                    type="button"
-                    onClick={() => startJourney(journeyId)}
-                    style={{
-                      background: accent,
-                      border: 'none',
-                      borderRadius: 99,
-                      padding: '8px 32px',
-                      color: '#000',
-                      fontFamily: 'var(--font-serif)',
-                      fontSize: 12,
-                      fontWeight: 700,
-                      letterSpacing: '0.1em',
-                      cursor: 'pointer',
-                    }}
-                  >
-                    ▶ Start Journey
-                  </button>
-                ) : (
-                  <>
+                {/* Play / Stop */}
+                <div style={{ display: 'flex', gap: 8, justifyContent: 'center', marginTop: 4 }}>
+                  {!journeyRunning ? (
                     <button
                       type="button"
-                      onClick={stopJourney}
-                      style={{
-                        background: accentFaint,
-                        border: `1px solid ${accentMid}`,
-                        borderRadius: 99,
-                        padding: '8px 20px',
-                        color: accent,
-                        fontFamily: 'var(--font-serif)',
-                        fontSize: 12,
-                        fontWeight: 700,
-                        letterSpacing: '0.1em',
-                        cursor: 'pointer',
-                      }}
-                    >
-                      ◼ Stop
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        const jData = JOURNEYS[journeyIdRef.current - 1];
-                        if (!jData) return;
-                        const next = (journeyPhaseInfo.phaseIdx + 1) % jData.stages.length;
-                        skipToPhase(next);
-                      }}
+                      onClick={() => startJourney(journeyId)}
                       style={{
                         background: accent,
                         border: 'none',
                         borderRadius: 99,
-                        padding: '8px 20px',
+                        padding: '8px 32px',
                         color: '#000',
                         fontFamily: 'var(--font-serif)',
                         fontSize: 12,
@@ -7402,29 +7384,73 @@ export default function GeometryField() {
                         cursor: 'pointer',
                       }}
                     >
-                      ▶▶ Next
+                      ▶ Start Journey
                     </button>
-                  </>
-                )}
-                <button
-                  type="button"
-                  onClick={handleFullscreen}
-                  style={{
-                    background: accentFaint,
-                    border: `1px solid ${accentMid}`,
-                    borderRadius: 99,
-                    padding: '8px 16px',
-                    color: accent,
-                    fontFamily: 'var(--font-serif)',
-                    fontSize: 11,
-                    cursor: 'pointer',
-                  }}
-                >
-                  Fullscreen
-                </button>
-              </div>
-            </>
-          )}
+                  ) : (
+                    <>
+                      <button
+                        type="button"
+                        onClick={stopJourney}
+                        style={{
+                          background: accentFaint,
+                          border: `1px solid ${accentMid}`,
+                          borderRadius: 99,
+                          padding: '8px 20px',
+                          color: accent,
+                          fontFamily: 'var(--font-serif)',
+                          fontSize: 12,
+                          fontWeight: 700,
+                          letterSpacing: '0.1em',
+                          cursor: 'pointer',
+                        }}
+                      >
+                        ◼ Stop
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const jData = JOURNEYS[journeyIdRef.current - 1];
+                          if (!jData) return;
+                          const next = (journeyPhaseInfo.phaseIdx + 1) % jData.stages.length;
+                          skipToPhase(next);
+                        }}
+                        style={{
+                          background: accent,
+                          border: 'none',
+                          borderRadius: 99,
+                          padding: '8px 20px',
+                          color: '#000',
+                          fontFamily: 'var(--font-serif)',
+                          fontSize: 12,
+                          fontWeight: 700,
+                          letterSpacing: '0.1em',
+                          cursor: 'pointer',
+                        }}
+                      >
+                        ▶▶ Next
+                      </button>
+                    </>
+                  )}
+                  <button
+                    type="button"
+                    onClick={handleFullscreen}
+                    style={{
+                      background: accentFaint,
+                      border: `1px solid ${accentMid}`,
+                      borderRadius: 99,
+                      padding: '8px 16px',
+                      color: accent,
+                      fontFamily: 'var(--font-serif)',
+                      fontSize: 11,
+                      cursor: 'pointer',
+                    }}
+                  >
+                    Fullscreen
+                  </button>
+                </div>
+              </>
+            )}
+          </div>
         </div>
       )}
     </div>
