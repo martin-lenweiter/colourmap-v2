@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import SharingReflect from '@/components/SharingReflect';
 import SquareSlider from '@/components/SquareSlider';
 
@@ -14,8 +14,6 @@ export const SHARING_LEVELS = [
 
 export const SHARING_IDX_KEY = 'colourmap:sharing-idx';
 
-import { useState } from 'react';
-
 function loadIdx(): number {
   if (typeof window === 'undefined') return 2;
   try {
@@ -28,6 +26,10 @@ function loadIdx(): number {
 
 export default function SharingCheckIn() {
   const [idx, setIdx] = useState(2);
+  const [dragging, setDragging] = useState(false);
+  const dragRef = useRef<{ startX: number; startIdx: number } | null>(null);
+  const idxRef = useRef(idx);
+  idxRef.current = idx;
 
   useEffect(() => {
     setIdx(loadIdx());
@@ -41,25 +43,72 @@ export default function SharingCheckIn() {
     } catch {}
   }
 
+  function onCirclePointerDown(e: React.PointerEvent<HTMLSpanElement>) {
+    e.currentTarget.setPointerCapture(e.pointerId);
+    dragRef.current = { startX: e.clientX, startIdx: idxRef.current };
+    setDragging(true);
+  }
+
+  function onCirclePointerMove(e: React.PointerEvent<HTMLSpanElement>) {
+    if (!dragRef.current || e.buttons !== 1) return;
+    const dx = e.clientX - dragRef.current.startX;
+    const steps = Math.round(dx / 24);
+    pick(dragRef.current.startIdx + steps);
+  }
+
+  function onCirclePointerUp() {
+    dragRef.current = null;
+    setDragging(false);
+  }
+
   const current = SHARING_LEVELS[idx];
 
   return (
-    <div className="space-y-6 px-1 py-4">
-      {/* Level label + slider */}
-      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 10 }}>
+    <div className="flex flex-col items-center gap-6 px-5 py-8">
+      {/* Big dot — draggable */}
+      <div className="flex flex-col items-center gap-3">
         <span
+          className="block rounded-full"
+          onPointerDown={onCirclePointerDown}
+          onPointerMove={onCirclePointerMove}
+          onPointerUp={onCirclePointerUp}
+          style={{
+            width: 96,
+            height: 96,
+            background: current.color,
+            opacity: 0.92,
+            boxShadow: `0 12px 32px -8px ${current.color}88`,
+            transition: 'background 0.3s, box-shadow 0.3s',
+            cursor: 'ew-resize',
+            touchAction: 'none',
+            userSelect: 'none',
+          }}
+        />
+        <span
+          className="uppercase"
           style={{
             fontFamily: 'var(--font-serif)',
             fontSize: 22,
             fontWeight: 700,
             color: current.color,
-            letterSpacing: '0.14em',
-            textTransform: 'uppercase',
-            transition: 'color 0.2s',
+            letterSpacing: '0.18em',
+            transition: 'color 0.3s',
           }}
         >
           {current.label}
         </span>
+      </div>
+
+      {/* Square slider — visible only while dragging */}
+      <div
+        style={{
+          maxHeight: dragging ? 40 : 0,
+          opacity: dragging ? 1 : 0,
+          overflow: 'hidden',
+          transition: 'max-height 0.15s, opacity 0.15s',
+          pointerEvents: dragging ? 'auto' : 'none',
+        }}
+      >
         <SquareSlider
           colors={SHARING_LEVELS.map((l) => l.color)}
           value={idx}
@@ -67,42 +116,11 @@ export default function SharingCheckIn() {
           size={18}
           gap={6}
         />
-        <div
-          style={{
-            display: 'flex',
-            justifyContent: 'space-between',
-            width: '100%',
-            paddingTop: 2,
-          }}
-        >
-          <span
-            style={{
-              fontFamily: 'var(--font-serif)',
-              fontSize: 10,
-              color: SHARING_LEVELS[0].color,
-              opacity: 0.45,
-              letterSpacing: '0.1em',
-              textTransform: 'uppercase',
-            }}
-          >
-            Disconnected
-          </span>
-          <span
-            style={{
-              fontFamily: 'var(--font-serif)',
-              fontSize: 10,
-              color: SHARING_LEVELS[SHARING_LEVELS.length - 1].color,
-              opacity: 0.45,
-              letterSpacing: '0.1em',
-              textTransform: 'uppercase',
-            }}
-          >
-            Flowing
-          </span>
-        </div>
       </div>
 
-      <SharingReflect />
+      <div className="w-full">
+        <SharingReflect />
+      </div>
     </div>
   );
 }
