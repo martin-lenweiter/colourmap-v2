@@ -30,6 +30,7 @@ function loadIdx(): number {
 
 export default function DoingStateCircle({ onDone: _onDone }: { onDone?: () => void }) {
   const [idx, setIdx] = useState(3);
+  const [open, setOpen] = useState(false);
 
   useEffect(() => {
     setIdx(loadIdx());
@@ -47,58 +48,99 @@ export default function DoingStateCircle({ onDone: _onDone }: { onDone?: () => v
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8 }}>
-      <span
-        style={{
-          fontFamily: 'var(--font-serif)',
-          fontSize: 13,
-          fontWeight: 700,
-          color: current.color,
-          letterSpacing: '0.14em',
-          textTransform: 'uppercase',
-          transition: 'color 0.2s',
-        }}
-      >
-        {current.label}
-      </span>
-      <SquareSlider
-        colors={DOING_LEVELS.map((l) => l.color)}
-        value={idx}
-        onChange={pick}
-        size={16}
-        gap={5}
-      />
-      <div
+      {/* Diamond trigger + label */}
+      <button
+        type="button"
+        onClick={() => setOpen((v) => !v)}
         style={{
           display: 'flex',
-          justifyContent: 'space-between',
-          width: '100%',
-          paddingTop: 2,
+          alignItems: 'center',
+          gap: 9,
+          background: 'none',
+          border: 'none',
+          cursor: 'pointer',
+          padding: '2px 0',
         }}
       >
         <span
           style={{
-            fontFamily: 'var(--font-serif)',
-            fontSize: 9,
-            color: DOING_LEVELS[0].color,
-            opacity: 0.45,
-            letterSpacing: '0.1em',
-            textTransform: 'uppercase',
+            display: 'block',
+            width: 13,
+            height: 13,
+            background: current.color,
+            transform: 'rotate(45deg)',
+            transition: 'background 0.2s',
+            flexShrink: 0,
           }}
-        >
-          Disconnected
-        </span>
+        />
         <span
           style={{
             fontFamily: 'var(--font-serif)',
-            fontSize: 9,
-            color: DOING_LEVELS[DOING_LEVELS.length - 1].color,
-            opacity: 0.45,
-            letterSpacing: '0.1em',
+            fontSize: 13,
+            fontWeight: 700,
+            color: current.color,
+            letterSpacing: '0.14em',
             textTransform: 'uppercase',
+            transition: 'color 0.2s',
           }}
         >
-          Tunnel Vision
+          {current.label}
         </span>
+      </button>
+
+      {/* Slider — expands on click */}
+      <div
+        style={{
+          maxHeight: open ? 60 : 0,
+          opacity: open ? 1 : 0,
+          overflow: 'hidden',
+          transition: 'max-height 0.18s ease, opacity 0.18s ease',
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          gap: 5,
+          width: '100%',
+        }}
+      >
+        <SquareSlider
+          colors={DOING_LEVELS.map((l) => l.color)}
+          value={idx}
+          onChange={pick}
+          size={16}
+          gap={5}
+        />
+        <div
+          style={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            width: '100%',
+          }}
+        >
+          <span
+            style={{
+              fontFamily: 'var(--font-serif)',
+              fontSize: 9,
+              color: DOING_LEVELS[0].color,
+              opacity: 0.45,
+              letterSpacing: '0.1em',
+              textTransform: 'uppercase',
+            }}
+          >
+            Disconnected
+          </span>
+          <span
+            style={{
+              fontFamily: 'var(--font-serif)',
+              fontSize: 9,
+              color: DOING_LEVELS[DOING_LEVELS.length - 1].color,
+              opacity: 0.45,
+              letterSpacing: '0.1em',
+              textTransform: 'uppercase',
+            }}
+          >
+            Tunnel Vision
+          </span>
+        </div>
       </div>
     </div>
   );
