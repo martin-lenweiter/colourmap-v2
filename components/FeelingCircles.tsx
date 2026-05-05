@@ -4,33 +4,33 @@ import { useEffect, useRef, useState } from 'react';
 import SquareSlider from '@/components/SquareSlider';
 
 const BODY_LEVELS = [
-  { label: 'Depleted', color: '#B89898' },
-  { label: 'Tired', color: '#C8A888' },
-  { label: 'Okay', color: '#D4BC80' },
-  { label: 'Good', color: '#A0C898' },
-  { label: 'Energized', color: '#78C8A8' },
+  { label: 'Depleted', color: '#A89090' },
+  { label: 'Tired', color: '#B8A080' },
+  { label: 'Okay', color: '#C4B478' },
+  { label: 'Good', color: '#98B890' },
+  { label: 'Energized', color: '#70B098' },
 ];
 
 const MIND_LEVELS = [
-  { label: 'Absent', color: '#E0908A' },
-  { label: 'Scattered', color: '#E8B898' },
-  { label: 'Confused', color: '#C8A8C8' },
-  { label: 'Drifting', color: '#D8C088' },
-  { label: 'Present', color: '#A8CCA0' },
-  { label: 'Flowing', color: '#B0A0D0' },
+  { label: 'Absent', color: '#B89088' },
+  { label: 'Scattered', color: '#C4A888' },
+  { label: 'Confused', color: '#B0A0B8' },
+  { label: 'Drifting', color: '#C4B880' },
+  { label: 'Present', color: '#98BC90' },
+  { label: 'Flowing', color: '#A098C0' },
 ];
 
 const EMOTION_LEVELS = [
-  { label: 'Shame', color: '#B8D0E8' },
-  { label: 'Apathy', color: '#D8B0C8' },
-  { label: 'Grief', color: '#E8A0C4' },
-  { label: 'Fear', color: '#F080B8' },
-  { label: 'Anger', color: '#F0A088' },
-  { label: 'Courage', color: '#F8C040' },
-  { label: 'Acceptance', color: '#F0E060' },
-  { label: 'Reason', color: '#A8E090' },
-  { label: 'Love', color: '#88D8B0' },
-  { label: 'Peace', color: '#88C8E8' },
+  { label: 'Shame', color: '#A8C0D0' },
+  { label: 'Apathy', color: '#C0A0B8' },
+  { label: 'Grief', color: '#C098B0' },
+  { label: 'Fear', color: '#C07898' },
+  { label: 'Anger', color: '#C49080' },
+  { label: 'Courage', color: '#C8A858' },
+  { label: 'Acceptance', color: '#C4C068' },
+  { label: 'Reason', color: '#90B880' },
+  { label: 'Love', color: '#80B898' },
+  { label: 'Peace', color: '#80B0C8' },
 ];
 
 function loadNum(key: string, fallback: number): number {
