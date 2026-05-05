@@ -7,7 +7,7 @@ import DayRail from '@/components/DayRail';
 import DayTabs from '@/components/DayTabs';
 import DoingPanel from '@/components/DoingPanel';
 import EndOfDayClose from '@/components/EndOfDayClose';
-import FeelingCheckInCard from '@/components/FeelingCheckInCard';
+import FeelingCircles from '@/components/FeelingCircles';
 import FirstRunOnboarding from '@/components/FirstRunOnboarding';
 import MoodSuggestion from '@/components/MoodSuggestion';
 import RoadView from '@/components/RoadView';
@@ -49,7 +49,7 @@ function DayContent() {
           // FEELING — full emotional register: presence, consciousness, challenge/flow, objectives.
           feelingContent={
             <div className="space-y-4">
-              <FeelingCheckInCard />
+              <FeelingCircles />
               <MoodSuggestion />
             </div>
           }
