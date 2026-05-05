@@ -12,7 +12,7 @@ const inputStyle = {
   borderBottom: '1px solid rgba(90,60,30,0.12)',
   fontFamily: 'var(--font-handwritten)',
   fontStyle: 'italic' as const,
-  fontSize: 17,
+  fontSize: 22,
   color: '#5C3018',
   padding: '2px 0',
   outline: 'none',
@@ -21,7 +21,7 @@ const inputStyle = {
 
 const labelStyle = {
   fontFamily: 'var(--font-serif)',
-  fontSize: 10,
+  fontSize: 13,
   fontWeight: 700,
   color: '#8A6A4A',
   opacity: 0.5,
