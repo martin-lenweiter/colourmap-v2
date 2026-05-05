@@ -4,11 +4,13 @@ import CurrentObjective from '@/components/CurrentObjective';
 import DailyAgenda from '@/components/DailyAgenda';
 import DailyObjectives from '@/components/DailyObjectives';
 import DoingStateCircle from '@/components/DoingStateCircle';
+import ObjectiveDepth from '@/components/ObjectiveDepth';
 
 export default function DoingPanel() {
   return (
     <div className="space-y-5">
       <CurrentObjective />
+      <ObjectiveDepth />
       <DoingStateCircle />
       <DailyObjectives />
       <div style={{ height: 16 }} />
