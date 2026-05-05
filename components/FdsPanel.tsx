@@ -1783,13 +1783,13 @@ export default function FdsPanel() {
                 {a.label}
               </button>
 
-              {/* Slider — overview always rainbow dots */}
+              {/* Slider — all axes use chosen style */}
               <AxisSlider
                 levels={a.levels}
                 selectedIdx={level}
                 onSelect={(i) => setAxisLevel(id, i)}
                 axisColor={a.color}
-                style={1}
+                style={sliderStyle}
               />
 
               {/* Level name */}
@@ -1811,6 +1811,40 @@ export default function FdsPanel() {
             </div>
           );
         })}
+
+        {/* Ochre dot — style picker, right-aligned below rows */}
+        <div className="flex items-center justify-end gap-2 pt-1">
+          <span
+            style={{
+              fontFamily: font,
+              fontSize: 10,
+              color: '#C4A060',
+              opacity: 0.5,
+              letterSpacing: '0.1em',
+            }}
+          >
+            {sliderStyle}/7
+          </span>
+          <button
+            type="button"
+            onClick={cycleSliderStyle}
+            title={`Slider style ${sliderStyle} of 7 — click to change`}
+            className="cursor-pointer transition-all hover:scale-110"
+            style={{ background: 'none', border: 'none', padding: 0 }}
+          >
+            <span
+              style={{
+                display: 'block',
+                width: 14,
+                height: 14,
+                borderRadius: '50%',
+                background: '#C4A060',
+                opacity: 0.7,
+                boxShadow: '0 1px 6px -1px #C4A06080',
+              }}
+            />
+          </button>
+        </div>
       </div>
 
       {/* ⊚ SuperCompass toggle */}
