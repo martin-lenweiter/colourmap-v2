@@ -1,9 +1,12 @@
 'use client';
 
+import { useState } from 'react';
+
 import CheckInPing from '@/components/CheckInPing';
 import DayRail from '@/components/DayRail';
 import DayTabs from '@/components/DayTabs';
 import DoingPanel from '@/components/DoingPanel';
+import EndOfDayClose from '@/components/EndOfDayClose';
 import FeelingCheckInCard from '@/components/FeelingCheckInCard';
 import FirstRunOnboarding from '@/components/FirstRunOnboarding';
 import MoodSuggestion from '@/components/MoodSuggestion';
@@ -11,6 +14,18 @@ import RoadView from '@/components/RoadView';
 import SharingCheckIn from '@/components/SharingCheckIn';
 import { StyleProvider } from '@/components/StyleContext';
 import TodaysField from '@/components/TodaysField';
+import WeeklyRhythmView from '@/components/WeeklyRhythmView';
+
+function DayOverview() {
+  const [rev, setRev] = useState(0);
+  return (
+    <div className="space-y-6">
+      <WeeklyRhythmView refreshKey={rev} />
+      <EndOfDayClose onSaved={() => setRev((n) => n + 1)} />
+      <RoadView />
+    </div>
+  );
+}
 
 function DayContent() {
   const dateStr = new Date().toLocaleDateString('en-GB', {
@@ -46,7 +61,7 @@ function DayContent() {
               <SharingCheckIn />
             </div>
           }
-          roadContent={<RoadView />}
+          roadContent={<DayOverview />}
         />
       </div>
       <DayRail />
