@@ -510,7 +510,7 @@ export default function FeelingCheckInCard() {
   const [sliderVisible, setSliderVisible] = useState(false);
   const sliderHideTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [showChallengeFlow, setShowChallengeFlow] = useState(false);
-  const [showHawkinsDesc, setShowHawkinsDesc] = useState(false);
+  const [_showHawkinsDesc, _setShowHawkinsDesc] = useState(false);
   const [_presenceSectionOpen, setPresenceSectionOpen] = useState(() => {
     try {
       return localStorage.getItem('colourmap:presence-section-open') === 'true';

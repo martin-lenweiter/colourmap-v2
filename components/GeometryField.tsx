@@ -2266,7 +2266,6 @@ function updateLorenz3D(group: THREE.Group, cfg: Cfg, t: number, _R: number): vo
   const pal = PAL[cfg.preset] ?? PAL['Blue Astral'];
   const [rr, gg, bb] = pal.rgb;
   const iF = Math.max(0.1, cfg.intensity / 10);
-  const trails = Math.max(1, Math.round(cfg.particles));
   const raw = group.userData.raw as Float32Array | undefined;
   const nPts = group.userData.nPts as number | undefined;
   const trailLen = group.userData.trailLen as number | undefined;
