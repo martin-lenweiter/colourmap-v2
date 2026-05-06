@@ -6470,6 +6470,7 @@ const MODES: { mode: Mode; label: string }[] = [
   { mode: 'orbital3d', label: '⊛ Orbital 3D' },
   { mode: 'firework3d', label: '🎆 Firework 3D' },
   { mode: 'fibonacci3d', label: 'φ Fibonacci 3D' },
+  { mode: 'yantra3d', label: '△ Yantra 3D' },
   { mode: 'rainbow3d', label: '◉ Rainbow 3D' },
 ];
 
