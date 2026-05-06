@@ -5,8 +5,7 @@ import SquareSlider from '@/components/SquareSlider';
 
 const BODY_LEVELS = [
   { label: 'Depleted', color: '#A89090' },
-  { label: 'Tired', color: '#B8A080' },
-  { label: 'Okay', color: '#C4B478' },
+  { label: 'Tense', color: '#C09878' },
   { label: 'Good', color: '#98B890' },
   { label: 'Energized', color: '#70B098' },
 ];
@@ -150,7 +149,7 @@ export default function FeelingCircles() {
   const [depthOpen, setDepthOpen] = useState(false);
 
   useEffect(() => {
-    setBodyIdx(Math.min(BODY_LEVELS.length - 1, loadNum('colourmap:body-idx', 2)));
+    setBodyIdx(Math.min(BODY_LEVELS.length - 1, loadNum('colourmap:body-idx', 1)));
     setMindIdx(Math.min(MIND_LEVELS.length - 1, loadNum('colourmap:presence-idx', 3)));
     setEmotionIdx(Math.min(EMOTION_LEVELS.length - 1, loadNum('colourmap:process-idx', 4)));
   }, []);

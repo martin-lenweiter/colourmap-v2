@@ -21,9 +21,11 @@ function renderTabs() {
   return render(
     <DayTabs
       feelingContent={<div>feeling-content</div>}
+      ringContent={<div>ring-content</div>}
       doingContent={<div>doing-content</div>}
       sharingContent={<div>sharing-content</div>}
       roadContent={<div>road-content</div>}
+      list2Content={<div>list2-content</div>}
     />,
   );
 }
@@ -38,10 +40,10 @@ describe('DayTabs', () => {
     localStorage.clear();
   });
 
-  it('renders the List/Overview scope strip and the Feeling/Doing/Sharing trio', () => {
+  it('renders the List/List 2 scope strip and the Feeling/Doing/Sharing trio', () => {
     renderTabs();
     expect(screen.getByText('List')).toBeDefined();
-    expect(screen.getByText('Overview')).toBeDefined();
+    expect(screen.getByText('List 2')).toBeDefined();
     expect(screen.getByText('Feeling')).toBeDefined();
     expect(screen.getByText('Doing')).toBeDefined();
     expect(screen.getByText('Sharing')).toBeDefined();
@@ -59,13 +61,15 @@ describe('DayTabs', () => {
     expect(screen.getByText('doing-content')).toBeDefined();
   });
 
-  it('switches to Overview and hides the inner trio when Overview is clicked', async () => {
+  it('switches to List 2 scope and shows Emotion/Mission/Progress tabs', async () => {
     const user = userEvent.setup();
     renderTabs();
-    await user.click(screen.getByText('Overview'));
-    expect(screen.getByText('road-content')).toBeDefined();
-    // Inner trio is hidden when scope = road, so Doing/Sharing buttons
-    // shouldn't be reachable as buttons.
+    await user.click(screen.getByText('List 2'));
+    // List 2 scope shows its own inner trio
+    expect(screen.getByText('Emotion')).toBeDefined();
+    expect(screen.getByText('Mission')).toBeDefined();
+    expect(screen.getByText('Progress')).toBeDefined();
+    // Old List tabs are gone
     expect(screen.queryByText('Doing')).toBeNull();
     expect(screen.queryByText('Sharing')).toBeNull();
   });

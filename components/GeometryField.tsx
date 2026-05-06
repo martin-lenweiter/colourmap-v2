@@ -34,6 +34,7 @@ type Mode =
   | 'bloom'
   | 'lava'
   | 'spire'
+  | 'lissajous2'
   | 'lissajous3d'
   | 'tknot3d'
   | 'lorenz3d'
@@ -337,6 +338,51 @@ const PAL: Record<string, Pal> = {
     glow: 'rgba(220,30,50,0.36)',
     dots: 'rgba(255,120,140,0.70)',
     rgb: [255, 60, 80],
+  },
+  'Amber Dust': {
+    bg0: '#0d0800',
+    bg1: '#060400',
+    line: 'rgba(190,145,75,0.6)',
+    fill: 'rgba(175,130,60,0.05)',
+    glow: 'rgba(160,115,45,0.32)',
+    dots: 'rgba(210,170,100,0.68)',
+    rgb: [190, 145, 75],
+  },
+  'Old Bronze': {
+    bg0: '#0a0600',
+    bg1: '#050300',
+    line: 'rgba(155,110,55,0.6)',
+    fill: 'rgba(140,95,40,0.05)',
+    glow: 'rgba(125,85,35,0.30)',
+    dots: 'rgba(180,135,75,0.65)',
+    rgb: [155, 110, 55],
+  },
+  'Warm Sienna': {
+    bg0: '#0c0401',
+    bg1: '#060200',
+    line: 'rgba(175,100,55,0.6)',
+    fill: 'rgba(160,85,40,0.05)',
+    glow: 'rgba(145,75,35,0.30)',
+    dots: 'rgba(200,130,80,0.65)',
+    rgb: [175, 100, 55],
+  },
+  Parchment: {
+    bg0: '#0d0b07',
+    bg1: '#070602',
+    line: 'rgba(210,195,155,0.55)',
+    fill: 'rgba(200,185,140,0.04)',
+    glow: 'rgba(185,170,125,0.25)',
+    dots: 'rgba(228,215,175,0.62)',
+    rgb: [210, 195, 155],
+  },
+  'Rainbow Mist': {
+    bg0: '#050508',
+    bg1: '#020205',
+    line: 'rgba(180,160,210,0.58)',
+    fill: 'rgba(165,140,200,0.05)',
+    glow: 'rgba(150,120,200,0.30)',
+    dots: 'rgba(210,195,240,0.65)',
+    rgb: [180, 160, 210],
   },
 };
 
@@ -1664,6 +1710,8 @@ function buildModeGroup(cfg: Cfg, R: number): THREE.Group {
       return buildBurst(cfg, R);
     case 'lissajous':
       return buildLissajous(cfg, R);
+    case 'lissajous2':
+      return buildLissajousExpand(cfg, R);
     case 'lissajous3d':
       return buildLissajous3D(cfg, R);
     case 'tknot3d':
@@ -1738,6 +1786,9 @@ function updateModeGroup(group: THREE.Group, cfg: Cfg, dots: Dot[], t: number, R
       break;
     case 'lissajous':
       updateLissajous(group, cfg, t, R);
+      break;
+    case 'lissajous2':
+      updateLissajousExpand(group, cfg, t, R);
       break;
     case 'lissajous3d':
       updateLissajous3D(group, cfg, t, R);
@@ -2184,7 +2235,7 @@ function updateLissajous(group: THREE.Group, cfg: Cfg, t: number, R: number): vo
       const b = cg.userData.b as number;
       const delta0 = cg.userData.delta0 as number;
       const li = cg.userData.li as number;
-      const delta = delta0 + t * 0.00025 * (li % 2 === 0 ? 1 : -0.7);
+      const delta = delta0 + t * 0.00025 * cfg.breathSpeed * (li % 2 === 0 ? 1 : -0.7);
 
       cg.children.forEach((curve) => {
         const pos = (curve as THREE.Line).geometry.attributes.position.array as Float32Array;
@@ -2200,6 +2251,77 @@ function updateLissajous(group: THREE.Group, cfg: Cfg, t: number, R: number): vo
     } else if (child.userData.tag === 'center') {
       updateCenter(child as THREE.Group, breath, [rr, gg, bb], iF, scale);
     }
+  }
+}
+
+/* ── LISSAJOUS EXPAND mode — shells flow outward continuously ── */
+
+const LIS2_SHELLS = 14;
+
+function buildLissajousExpand(cfg: Cfg, R: number): THREE.Group {
+  const pal = PAL[cfg.preset] ?? PAL['Blue Astral'];
+  const [rr, gg, bb] = pal.rgb;
+  const iF = cfg.intensity / 10;
+  const sym = Math.max(1, Math.round(cfg.symmetry));
+  const TAU = Math.PI * 2;
+  const STEPS = 360;
+  const group = new THREE.Group();
+
+  for (let i = 0; i < LIS2_SHELLS; i++) {
+    const shellGroup = new THREE.Group();
+    shellGroup.userData.tag = 'lis2shell';
+    shellGroup.userData.shellIdx = i;
+    for (let s = 0; s < sym; s++) {
+      const pts = new Float32Array((STEPS + 1) * 3);
+      const geo = new THREE.BufferGeometry();
+      geo.setAttribute('position', new THREE.BufferAttribute(pts, 3));
+      const curve = new THREE.Line(geo, lineMat(hdrColor([rr, gg, bb], iF * 0.3, 2.2), 1.0));
+      curve.rotation.z = (s / sym) * TAU;
+      shellGroup.add(curve);
+    }
+    group.add(shellGroup);
+  }
+  return group;
+}
+
+function updateLissajousExpand(group: THREE.Group, cfg: Cfg, t: number, R: number): void {
+  const pal = PAL[cfg.preset] ?? PAL['Blue Astral'];
+  const [rr, gg, bb] = pal.rgb;
+  const iF = cfg.intensity / 10;
+  const STEPS = 360;
+  const TAU = Math.PI * 2;
+  const R_max = R * 2.6;
+  const speed = cfg.breathSpeed * 0.000028;
+
+  const ratioIdx = Math.min(
+    LISSAJOUS_RATIOS.length - 1,
+    Math.max(0, Math.round(cfg.complexity) - 1),
+  );
+  const [a, b, delta0] = LISSAJOUS_RATIOS[ratioIdx];
+  // Delta slowly evolves so the shape morphs over time
+  const delta = delta0 + t * 0.00006 * cfg.breathSpeed;
+
+  for (const child of group.children) {
+    if (child.userData.tag !== 'lis2shell') continue;
+    const shellIdx = child.userData.shellIdx as number;
+    const rawPhase = (shellIdx / LIS2_SHELLS + t * speed) % 1.0;
+    const frac = rawPhase ** 0.52;
+    const r = R_max * frac;
+    // Fade in fast from center, fade out gently near edge
+    const opacity = Math.min(1, frac * 5.0) * Math.max(0, 1 - frac * 0.82) * iF * 0.58;
+
+    const cg = child as THREE.Group;
+    cg.children.forEach((curve) => {
+      const pos = (curve as THREE.Line).geometry.attributes.position.array as Float32Array;
+      for (let step = 0; step <= STEPS; step++) {
+        const tp = (step / STEPS) * TAU;
+        pos[step * 3] = r * Math.sin(a * tp + delta);
+        pos[step * 3 + 1] = r * Math.sin(b * tp);
+        pos[step * 3 + 2] = 0;
+      }
+      (curve as THREE.Line).geometry.attributes.position.needsUpdate = true;
+      updateMat(curve as THREE.Object3D, [rr, gg, bb], opacity, 2.2);
+    });
   }
 }
 
@@ -4999,9 +5121,6 @@ function updateCeltic(group: THREE.Group, cfg: Cfg, t: number, R: number): void 
   const timeHue = (t * 0.00006) % 1.0;
   const tmpCol = new THREE.Color();
 
-  group.rotation.x = t * 0.00012 * cfg.breathSpeed;
-  group.rotation.y = t * 0.00018 * cfg.breathSpeed;
-
   for (const child of group.children) {
     const tag = child.userData.tag as string;
     if (tag === 'celticKnot') {
@@ -5029,7 +5148,7 @@ function updateCeltic(group: THREE.Group, cfg: Cfg, t: number, R: number): void 
 
 function buildRainbow(cfg: Cfg, R: number): THREE.Group {
   const TAU = Math.PI * 2;
-  const sym = Math.max(3, Math.round(cfg.symmetry));
+  const sym = Math.max(0, Math.round(cfg.symmetry));
   const layers = Math.max(2, Math.round(cfg.complexity));
   const group = new THREE.Group();
   const tmpCol = new THREE.Color();
@@ -6002,6 +6121,22 @@ const DEFAULT_SLIDERS: SliderDef[] = [
 ];
 
 const MODE_SLIDERS: Partial<Record<Mode, SliderDef[]>> = {
+  lissajous: [
+    { key: 'symmetry', label: 'Copies', min: 1, max: 12, step: 1 },
+    { key: 'complexity', label: 'Curves', min: 1, max: 6, step: 1 },
+    { key: 'glow', label: 'Glow', min: 0, max: 10, step: 0.5 },
+    { key: 'breathSpeed', label: 'Speed', min: 0.005, max: 1.5, step: 0.005 },
+    { key: 'intensity', label: 'Colour', min: 0, max: 10, step: 0.5 },
+    { key: 'luminous', label: 'Luminous', min: 0, max: 5, step: 0.5 },
+  ],
+  lissajous2: [
+    { key: 'symmetry', label: 'Copies', min: 1, max: 12, step: 1 },
+    { key: 'complexity', label: 'Ratio', min: 1, max: 6, step: 1 },
+    { key: 'glow', label: 'Glow', min: 0, max: 10, step: 0.5 },
+    { key: 'breathSpeed', label: 'Speed', min: 0.005, max: 2.0, step: 0.005 },
+    { key: 'intensity', label: 'Colour', min: 0, max: 10, step: 0.5 },
+    { key: 'luminous', label: 'Luminous', min: 0, max: 5, step: 0.5 },
+  ],
   tunnel: [
     { key: 'symmetry', label: 'Spokes', min: 4, max: 24, step: 1 },
     { key: 'glow', label: 'Glow', min: 0, max: 10, step: 0.5 },
@@ -6078,7 +6213,7 @@ const MODE_SLIDERS: Partial<Record<Mode, SliderDef[]>> = {
     { key: 'stars', label: 'Stars', min: 0, max: 10, step: 1 },
   ],
   rainbow: [
-    { key: 'symmetry', label: 'Spokes', min: 3, max: 24, step: 1 },
+    { key: 'symmetry', label: 'Spokes', min: 0, max: 24, step: 1 },
     { key: 'complexity', label: 'Rings', min: 2, max: 12, step: 1 },
     { key: 'glow', label: 'Rainbow', min: 0, max: 10, step: 0.5 },
     { key: 'breathSpeed', label: 'Speed', min: 0.05, max: 1.5, step: 0.05 },
@@ -6301,9 +6436,14 @@ const MODE_TO_PRESET: Partial<Record<Mode, string>> = {
 };
 
 const MODES: { mode: Mode; label: string }[] = [
+  { mode: 'lissajous', label: '∿ Lissajous' },
+  { mode: 'lissajous2', label: '∿ Expand' },
+  { mode: 'lissajous3d', label: '∿³ Lissajous 3D' },
+  { mode: 'yantra3d', label: '△ Yantra 3D' },
+  { mode: 'rainbow', label: '◉ Rainbow' },
+  { mode: 'geodesic', label: '⬡ Geodesic' },
   { mode: 'sacred', label: '✦ Sacred' },
   { mode: 'burst', label: '✤ Burst' },
-  { mode: 'lissajous', label: '∿ Lissajous' },
   { mode: 'golden', label: 'φ Golden' },
   { mode: 'kaleidoscope', label: '⬡ Kaleidoscope' },
   { mode: 'torus', label: '◎ Torus' },
@@ -6316,8 +6456,6 @@ const MODES: { mode: Mode; label: string }[] = [
   { mode: 'lorenz', label: '𝛔 Lorenz' },
   { mode: 'knot', label: '∮ Knot' },
   { mode: 'orbital', label: '⊛ Orbital' },
-  { mode: 'geodesic', label: '⬡ Geodesic' },
-  { mode: 'rainbow', label: '◉ Rainbow' },
   { mode: 'cathedral', label: '⛪ Cathedral' },
   { mode: 'islamic', label: '☪ Islamic' },
   { mode: 'yantra', label: '△ Yantra' },
@@ -6325,7 +6463,6 @@ const MODES: { mode: Mode; label: string }[] = [
   { mode: 'bloom', label: '🌸 Bloom' },
   { mode: 'lava', label: '🌋 Lava' },
   { mode: 'spire', label: '⛪ Spire' },
-  { mode: 'lissajous3d', label: '∿³ Lissajous 3D' },
   { mode: 'tknot3d', label: '⌀ Torus Knot' },
   { mode: 'lorenz3d', label: '𝛔 Lorenz 3D' },
   { mode: 'rose3d', label: '✾ Rose 3D' },
@@ -6521,6 +6658,7 @@ export default function GeometryField() {
 
       // Apply 3D rotation for spinnable modes
       const is3D =
+        currentCfg.mode === 'celtic' ||
         currentCfg.mode === 'lissajous3d' ||
         currentCfg.mode === 'tknot3d' ||
         currentCfg.mode === 'lorenz3d' ||
@@ -6796,6 +6934,7 @@ export default function GeometryField() {
           onClick={handleCanvasClick}
           onPointerDown={(e) => {
             const is3d =
+              cfg.mode === 'celtic' ||
               cfg.mode === 'lissajous3d' ||
               cfg.mode === 'tknot3d' ||
               cfg.mode === 'lorenz3d' ||
@@ -6812,6 +6951,7 @@ export default function GeometryField() {
           }}
           onPointerMove={(e) => {
             const is3d =
+              cfg.mode === 'celtic' ||
               cfg.mode === 'lissajous3d' ||
               cfg.mode === 'tknot3d' ||
               cfg.mode === 'lorenz3d' ||
@@ -6839,6 +6979,7 @@ export default function GeometryField() {
             height: '100%',
             display: 'block',
             cursor:
+              cfg.mode === 'celtic' ||
               cfg.mode === 'lissajous3d' ||
               cfg.mode === 'tknot3d' ||
               cfg.mode === 'lorenz3d' ||
@@ -7174,12 +7315,18 @@ export default function GeometryField() {
                         gap: 3,
                         overflowX: 'auto',
                         scrollbarWidth: 'none',
-                        paddingBottom: 2,
+                        paddingBottom: 6,
+                        paddingTop: 2,
+                        minHeight: 30,
                       }}
                     >
                       {PAL_SORTED.map(([name, p]) => {
                         const [cr, cg, cb] = p.rgb;
                         const isActive = cfg.preset === name;
+                        // Desaturate: lerp toward a warm grey so swatches aren't neon
+                        const dr = Math.round(cr * 0.55 + 55 * 0.45);
+                        const dg = Math.round(cg * 0.55 + 50 * 0.45);
+                        const db = Math.round(cb * 0.55 + 45 * 0.45);
                         return (
                           <button
                             key={name}
@@ -7191,12 +7338,12 @@ export default function GeometryField() {
                               height: 18,
                               flexShrink: 0,
                               borderRadius: 3,
-                              background: `rgb(${cr},${cg},${cb})`,
+                              background: `rgb(${dr},${dg},${db})`,
                               border: isActive
                                 ? `2px solid rgba(255,255,255,0.85)`
                                 : '1px solid rgba(255,255,255,0.1)',
                               boxShadow: isActive
-                                ? `0 0 6px 2px rgba(${cr},${cg},${cb},0.6)`
+                                ? `0 0 6px 2px rgba(${dr},${dg},${db},0.7)`
                                 : 'none',
                               cursor: 'pointer',
                               padding: 0,

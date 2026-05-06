@@ -263,7 +263,7 @@ export default function ColourmapBrandButton({ initials, email }: ColourmapBrand
       >
         <p
           className="text-[22px] font-bold tracking-[0.08em] font-serif text-center"
-          style={{ color: '#B33A2B' }}
+          style={{ color: '#5C3018' }}
         >
           Colourmap
         </p>
@@ -286,7 +286,7 @@ export default function ColourmapBrandButton({ initials, email }: ColourmapBrand
               const y = (cy + r * Math.sin(a)).toFixed(3);
               pts.push(`${x},${y}`);
             }
-            return <polygon points={pts.join(' ')} fill="#B33A2B" opacity={0.85} />;
+            return <polygon points={pts.join(' ')} fill="#5C3018" opacity={0.85} />;
           })()}
         </svg>
       </button>

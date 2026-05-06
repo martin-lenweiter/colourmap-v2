@@ -410,6 +410,26 @@ export default function DailyObjectives() {
               value={todayInput}
               onTranscript={setTodayInput}
             />
+            <button
+              type="button"
+              onClick={addTodayObjective}
+              className="shrink-0 cursor-pointer rounded-full transition-all hover:opacity-80"
+              style={{
+                width: 32,
+                height: 32,
+                background: todayInput.trim() ? '#C4A060' : '#C4A06025',
+                border: '1.5px solid #C4A06050',
+                color: todayInput.trim() ? '#fff' : '#C4A06070',
+                fontSize: 22,
+                lineHeight: 1,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                transition: 'background 0.2s, color 0.2s',
+              }}
+            >
+              +
+            </button>
           </div>
 
           {/* Today objectives — drag-and-drop drop zone */}
