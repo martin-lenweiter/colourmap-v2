@@ -38,9 +38,12 @@ import { useDesignerObservations } from '@/lib/hooks/use-designer-observations';
 
 const LS_LAST_NOTE = 'colourmap:feedback-overlay-last';
 const LS_LAST_AREA = 'colourmap:feedback-overlay-last-area';
+const LS_CORRECTIONS = 'colourmap:notebook-corrections';
+const LS_REFLECTIONS = 'colourmap:notebook-reflections';
 const TRIPLE_TAP_WINDOW_MS = 700;
 
-type Mode = 'note' | 'draw';
+type Mode = 'note' | 'draw' | 'books';
+type BookTab = 'corrections' | 'reflections';
 
 interface AreaOption {
   id: string;
@@ -157,6 +160,23 @@ export default function FeedbackOverlay() {
   const [selectedAreaId, setSelectedAreaId] = useState<string | null>(null);
   const [logOpen, setLogOpen] = useState(false);
   const [doneOpen, setDoneOpen] = useState(false);
+  const [bookTab, setBookTab] = useState<BookTab>('corrections');
+  const [correctionsText, setCorrectionsText] = useState('');
+  const [reflectionsText, setReflectionsText] = useState('');
+  const [bookPos, setBookPos] = useState<{ x: number; y: number }>({ x: 16, y: 60 });
+  const [bookSize, setBookSize] = useState<{ w: number; h: number }>({ w: 320, h: 320 });
+  const bookDragRef = useRef<{
+    startX: number;
+    startY: number;
+    origX: number;
+    origY: number;
+  } | null>(null);
+  const bookResizeRef = useRef<{
+    startX: number;
+    startY: number;
+    origW: number;
+    origH: number;
+  } | null>(null);
   const [registerStatus, setRegisterStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>(
     'idle',
   );
@@ -240,6 +260,12 @@ export default function FeedbackOverlay() {
       if (last) setText(last);
       const lastArea = localStorage.getItem(LS_LAST_AREA);
       if (lastArea && AREA_OPTIONS.some((o) => o.id === lastArea)) setSelectedAreaId(lastArea);
+      // Notebooks — corrections falls back to existing feedback text so
+      // content written before notebooks existed isn't lost.
+      const corr = localStorage.getItem(LS_CORRECTIONS);
+      setCorrectionsText(corr ?? last ?? '');
+      const refl = localStorage.getItem(LS_REFLECTIONS);
+      if (refl) setReflectionsText(refl);
     } catch {
       /* silent */
     }
@@ -604,12 +630,17 @@ export default function FeedbackOverlay() {
       >
         <div
           className="flex items-center gap-1 rounded-full border-2 p-1 shadow-[0_4px_16px_rgba(0,0,0,0.18)]"
-          style={{ background: '#FFFFFF', borderColor: '#A87A40' }}
+          style={{ background: '#F3E0B8', borderColor: '#A87A40' }}
         >
           {!toolbarCollapsed && (
             <>
               <ModeButton active={mode === 'note'} onClick={() => setMode('note')} label="note" />
               <ModeButton active={mode === 'draw'} onClick={() => setMode('draw')} label="draw" />
+              <ModeButton
+                active={mode === 'books'}
+                onClick={() => setMode('books')}
+                label="books"
+              />
               {mode === 'draw' && (
                 <>
                   <ColorSwatch
@@ -1120,6 +1151,181 @@ export default function FeedbackOverlay() {
               padding: 0,
               border: 'none',
               // Visual cue — a small diagonal stripe
+              background:
+                'linear-gradient(135deg, transparent 35%, #A87A40 35%, #A87A40 45%, transparent 45%, transparent 60%, #A87A40 60%, #A87A40 70%, transparent 70%)',
+              borderBottomRightRadius: 10,
+            }}
+          />
+        </div>
+      )}
+
+      {/* ── Books mode — two notebooks: Corrections + Reflections ── */}
+      {mode === 'books' && (
+        <div
+          className="fixed rounded-xl border-2 shadow-[0_12px_30px_-10px_rgba(0,0,0,0.35)]"
+          style={{
+            top: bookPos.y,
+            left: bookPos.x,
+            width: bookSize.w,
+            height: bookSize.h,
+            maxWidth: 'calc(100vw - 16px)',
+            maxHeight: 'calc(100vh - 80px)',
+            background: '#F3E0B8',
+            borderColor: '#A87A40',
+            padding: 10,
+            pointerEvents: 'auto',
+            zIndex: 9999,
+            display: 'flex',
+            flexDirection: 'column',
+            boxSizing: 'border-box',
+          }}
+        >
+          {/* Drag handle */}
+          <div
+            onPointerDown={(e) => {
+              e.currentTarget.setPointerCapture(e.pointerId);
+              bookDragRef.current = {
+                startX: e.clientX,
+                startY: e.clientY,
+                origX: bookPos.x,
+                origY: bookPos.y,
+              };
+            }}
+            onPointerMove={(e) => {
+              const s = bookDragRef.current;
+              if (!s) return;
+              setBookPos({ x: s.origX + e.clientX - s.startX, y: s.origY + e.clientY - s.startY });
+            }}
+            onPointerUp={() => {
+              bookDragRef.current = null;
+            }}
+            onPointerCancel={() => {
+              bookDragRef.current = null;
+            }}
+            style={{
+              cursor: 'grab',
+              padding: '2px 4px 6px',
+              fontFamily: 'var(--font-serif)',
+              fontSize: 10,
+              letterSpacing: '0.14em',
+              textTransform: 'uppercase',
+              color: '#A87A40',
+              fontWeight: 700,
+              touchAction: 'none',
+              userSelect: 'none',
+            }}
+          >
+            notebooks · drag
+          </div>
+
+          {/* Tab switcher */}
+          <div
+            style={{ display: 'flex', gap: 6, padding: '0 4px 8px' }}
+            onPointerDown={(e) => e.stopPropagation()}
+          >
+            {(['corrections', 'reflections'] as BookTab[]).map((t) => (
+              <button
+                key={t}
+                type="button"
+                onClick={() => setBookTab(t)}
+                style={{
+                  fontFamily: 'var(--font-serif)',
+                  fontSize: 12,
+                  fontWeight: 700,
+                  letterSpacing: '0.1em',
+                  textTransform: 'uppercase',
+                  background: bookTab === t ? '#A87A40' : 'transparent',
+                  color: bookTab === t ? '#FFFFFF' : '#A87A40',
+                  border: `1px solid #A87A4060`,
+                  borderRadius: 999,
+                  padding: '3px 12px',
+                  cursor: 'pointer',
+                }}
+              >
+                {t}
+              </button>
+            ))}
+          </div>
+
+          {/* Textarea */}
+          <textarea
+            value={bookTab === 'corrections' ? correctionsText : reflectionsText}
+            onChange={(e) => {
+              const val = e.target.value;
+              if (bookTab === 'corrections') {
+                setCorrectionsText(val);
+                try {
+                  localStorage.setItem(LS_CORRECTIONS, val);
+                } catch {}
+              } else {
+                setReflectionsText(val);
+                try {
+                  localStorage.setItem(LS_REFLECTIONS, val);
+                } catch {}
+              }
+            }}
+            placeholder={
+              bookTab === 'corrections'
+                ? 'Small corrections, quick fixes, things to tweak…'
+                : 'Big reflections, deeper thoughts, longer ideas…'
+            }
+            style={{
+              flex: 1,
+              width: '100%',
+              background: 'transparent',
+              color: '#1f1208',
+              border: 'none',
+              resize: 'none',
+              fontSize: bookTab === 'reflections' ? 16 : 13,
+              lineHeight: 1.5,
+              fontFamily: 'var(--font-serif)',
+              outline: 'none',
+              padding: 4,
+              minHeight: 0,
+              overflow: 'auto',
+            }}
+            onPointerDown={(e) => e.stopPropagation()}
+          />
+
+          {/* Resize handle */}
+          <button
+            type="button"
+            onPointerDown={(e) => {
+              e.stopPropagation();
+              e.currentTarget.setPointerCapture(e.pointerId);
+              bookResizeRef.current = {
+                startX: e.clientX,
+                startY: e.clientY,
+                origW: bookSize.w,
+                origH: bookSize.h,
+              };
+            }}
+            onPointerMove={(e) => {
+              const s = bookResizeRef.current;
+              if (!s) return;
+              e.stopPropagation();
+              setBookSize({
+                w: Math.max(200, Math.min(480, s.origW + e.clientX - s.startX)),
+                h: Math.max(160, Math.min(600, s.origH + e.clientY - s.startY)),
+              });
+            }}
+            onPointerUp={() => {
+              bookResizeRef.current = null;
+            }}
+            onPointerCancel={() => {
+              bookResizeRef.current = null;
+            }}
+            aria-label="Resize notebook"
+            style={{
+              position: 'absolute',
+              right: 0,
+              bottom: 0,
+              width: 20,
+              height: 20,
+              cursor: 'nwse-resize',
+              touchAction: 'none',
+              padding: 0,
+              border: 'none',
               background:
                 'linear-gradient(135deg, transparent 35%, #A87A40 35%, #A87A40 45%, transparent 45%, transparent 60%, #A87A40 60%, #A87A40 70%, transparent 70%)',
               borderBottomRightRadius: 10,
