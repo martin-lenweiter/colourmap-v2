@@ -30,6 +30,7 @@ function deriveInitials(fullName: string | undefined, email: string): string {
   return local.slice(0, 2).toUpperCase();
 }
 
+import StarField from '@/components/StarField';
 import AppShell from './AppShell';
 
 export default async function AppLayout({
@@ -61,7 +62,8 @@ export default async function AppLayout({
       <SoundSessionProvider>
         <MobileViewportBoot />
         <PhoneFrame>
-          <div className="min-h-svh bg-background">
+          <div className="min-h-svh bg-background" style={{ position: 'relative' }}>
+            <StarField />
             <header className="border-b border-border">
               {/* Three-column grid so the Colourmap brand stays visually
                 centered on every viewport — not just desktop. Left column

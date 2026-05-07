@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from 'react';
 import SquareSlider from '@/components/SquareSlider';
 
-/* ─── Focus + Emotion levels ─────────────────────────────────── */
+/* ─── Focus levels — 8 steps ─────────────────────────────────── */
 const FOCUS_LEVELS = [
   { label: 'Scattered', color: '#9098A8' },
   { label: 'Distracted', color: '#A898B0' },
@@ -12,33 +12,7 @@ const FOCUS_LEVELS = [
   { label: 'Present', color: '#C4B058' },
   { label: 'Locked', color: '#A8B870' },
   { label: 'Flowing', color: '#88B888' },
-];
-
-const EMOTION_LEVELS = [
-  { label: 'Shame', color: '#A8C0D0' },
-  { label: 'Apathy', color: '#C0A0B8' },
-  { label: 'Grief', color: '#C098B0' },
-  { label: 'Fear', color: '#C07898' },
-  { label: 'Anger', color: '#C49080' },
-  { label: 'Courage', color: '#C8A858' },
-  { label: 'Acceptance', color: '#C4C068' },
-  { label: 'Reason', color: '#90B880' },
-  { label: 'Love', color: '#80B898' },
-  { label: 'Peace', color: '#80B0C8' },
-];
-
-const BODY_LEVELS = [
-  { label: 'Depleted', color: '#A89090' },
-  { label: 'Tense', color: '#C09878' },
-  { label: 'Good', color: '#98B890' },
-  { label: 'Energized', color: '#70B098' },
-];
-
-const MOOD_DOTS = [
-  { bg: '#C07878', border: '#C07878' },
-  { bg: 'transparent', border: '#A8B870' },
-  { bg: '#80B0C8', border: '#80B0C8' },
-  { bg: 'transparent', border: '#C4A868' },
+  { label: 'Zone', color: '#60C890' },
 ];
 
 /* ─── Tokens ─────────────────────────────────────────────────── */
@@ -60,7 +34,6 @@ function Section({
   open: boolean;
   onToggle: () => void;
   children: React.ReactNode;
-  textStyle?: number;
 }) {
   return (
     <div
@@ -76,16 +49,13 @@ function Section({
         style={{
           padding: '10px 16px',
           borderBottom: open ? `1px solid ${CARD_BORDER}` : 'none',
-          textAlign: 'center',
           background: 'rgba(196,160,96,0.1)',
           cursor: 'pointer',
           display: 'flex',
           alignItems: 'center',
-          justifyContent: 'center',
-          gap: 8,
-          position: 'relative',
         }}
       >
+        <span style={{ flex: 1 }} />
         <span
           style={{
             fontFamily: 'var(--font-serif)',
@@ -98,18 +68,18 @@ function Section({
         >
           {title}
         </span>
-        <span
-          style={{
-            position: 'absolute',
-            right: 14,
-            color: OCHRE,
-            opacity: 0.4,
-            fontSize: 11,
-            transform: open ? 'rotate(180deg)' : 'rotate(0deg)',
-            transition: 'transform 0.2s',
-          }}
-        >
-          ▾
+        <span style={{ flex: 1, display: 'flex', justifyContent: 'flex-end' }}>
+          <span
+            style={{
+              color: OCHRE,
+              opacity: 0.4,
+              fontSize: 11,
+              transform: open ? 'rotate(180deg)' : 'rotate(0deg)',
+              transition: 'transform 0.2s',
+            }}
+          >
+            ▾
+          </span>
         </span>
       </div>
       {open && children}
@@ -117,77 +87,25 @@ function Section({
   );
 }
 
-/* ─── Compass axes ───────────────────────────────────────────── */
-const AXIS_GROUPS = [
-  {
-    id: 'feeling',
-    dot: '#D4805A',
-    axes: [
-      { name: 'Care', color: '#D4805A' },
-      { name: 'Attitude', color: '#C4A070' },
-      { name: 'Rest', color: '#C4906A' },
-      { name: 'Emotions', color: '#B07A5A' },
-    ],
-  },
-  {
-    id: 'doing',
-    dot: '#7AAA58',
-    axes: [
-      { name: 'Clarity', color: '#7AAA58' },
-      { name: 'Target', color: '#7A9A7A' },
-      { name: 'Resources', color: '#8AB0A0' },
-      { name: 'Action', color: '#9AB090' },
-    ],
-  },
-  {
-    id: 'sharing',
-    dot: '#6B7F4E',
-    axes: [
-      { name: 'Voice', color: '#6B7F4E' },
-      { name: 'Listen', color: '#8CA46E' },
-      { name: 'Bond', color: '#7B9560' },
-      { name: 'Boundary', color: '#5F7447' },
-    ],
-  },
-];
-
-const AXES = AXIS_GROUPS.flatMap((g) => g.axes);
-
 /* ─── Types ──────────────────────────────────────────────────── */
-type EmoState = 'stuck' | 'heavy' | 'flowing' | null;
+type Subtask = { id: string; text: string; done: boolean };
 
 type CardItem = {
   id: string;
   text: string;
   done: boolean;
-  feels?: string;
-  blocking?: string;
-  flowing?: string;
-  emotionalState?: EmoState;
-  compassAxis?: string;
   createdAt?: string;
-  notes?: string;
-  ease?: number;
-  weight?: number;
-  urgency?: number;
-  status?: 'active' | 'waiting';
-  tag?: { name: string; color: string; categoryId?: string };
-  textStyle?: number;
   timeFrame?: string;
   focusIdx?: number;
-  emotionIdx?: number;
-  bodyIdx?: number;
   blockingLog?: string[];
   flowingLog?: string[];
+  subtasks?: Subtask[];
+  ideas?: string[];
+  status?: 'active' | 'waiting';
+  tag?: { name: string; color: string; categoryId?: string };
 };
 
-const EMO: { id: EmoState; label: string; color: string }[] = [
-  { id: 'stuck', label: 'Stuck', color: '#C4A060' },
-  { id: 'heavy', label: 'Heavy', color: '#C4A060' },
-  { id: 'flowing', label: 'Flowing', color: '#C4A060' },
-];
-
-/* ─── Typography presets — cycled by the design dot ─────────────── */
+/* ─── Typography presets ─────────────────────────────────────── */
 const TEXT_STYLES = [
   {
     font: 'var(--font-handwritten)',
@@ -223,12 +141,11 @@ const TEXT_STYLES = [
   },
 ] as const;
 
-/* Dot visual per style */
 const STYLE_DOTS = [
-  { bg: BROWN, border: BROWN, rotate: false, scale: 1 }, // handwritten – warm filled
-  { bg: 'transparent', border: OCHRE, rotate: false, scale: 1 }, // serif        – outlined
-  { bg: `${OCHRE}55`, border: OCHRE, rotate: true, scale: 1 }, // italic       – tilted diamond
-  { bg: LABEL_COLOR, border: LABEL_COLOR, rotate: false, scale: 0.55 }, // small caps   – tiny dot
+  { bg: BROWN, border: BROWN, rotate: false, scale: 1 },
+  { bg: 'transparent', border: OCHRE, rotate: false, scale: 1 },
+  { bg: `${OCHRE}55`, border: OCHRE, rotate: true, scale: 1 },
+  { bg: LABEL_COLOR, border: LABEL_COLOR, rotate: false, scale: 0.55 },
 ] as const;
 
 /* ─── Fragment input ─────────────────────────────────────────── */
@@ -292,7 +209,7 @@ function FragInput({
   );
 }
 
-/* ─── Log + handwritten textarea ────────────────────────────────── */
+/* ─── Append-only log textarea ───────────────────────────────── */
 function LogFragInput({
   label,
   log,
@@ -379,664 +296,597 @@ function LogFragInput({
   );
 }
 
-/* ─── Emotion circle — rounded draggable dot, centered ────────── */
-function EmotionCircle({
-  levels,
-  idx,
+/* ─── Sub-section toggle strip ───────────────────────────────── */
+const SUBSECTIONS = [
+  { id: 'process' as const, label: 'Process' },
+  { id: 'focus' as const, label: 'Focus' },
+  { id: 'ideas' as const, label: 'Ideas' },
+];
+type SubKey = 'process' | 'focus' | 'ideas';
+
+/* ─── ProcessBox — subtask checklist ────────────────────────── */
+function ProcessBox({
+  item,
   onChange,
 }: {
-  levels: { label: string; color: string }[];
-  idx: number;
-  onChange: (i: number) => void;
+  item: CardItem;
+  onChange: (f: Partial<CardItem>) => void;
 }) {
-  const [dragging, setDragging] = useState(false);
-  const dragRef = useRef<{ startX: number; startIdx: number } | null>(null);
-  const idxRef = useRef(idx);
-  idxRef.current = idx;
-  const level = levels[idx] ?? levels[0];
+  const [val, setVal] = useState('');
+  const subtasks = item.subtasks ?? [];
+
+  function add() {
+    const t = val.trim();
+    if (!t) return;
+    onChange({ subtasks: [...subtasks, { id: crypto.randomUUID(), text: t, done: false }] });
+    setVal('');
+  }
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8 }}>
-      <span
-        style={{
-          fontFamily: 'var(--font-serif)',
-          fontSize: 9,
-          fontWeight: 700,
-          letterSpacing: '0.16em',
-          textTransform: 'uppercase',
-          color: LABEL_COLOR,
-          opacity: 0.4,
-        }}
-      >
-        How do you feel?
-      </span>
-
-      <span
-        className="block rounded-full"
-        onPointerDown={(e) => {
-          (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
-          dragRef.current = { startX: e.clientX, startIdx: idxRef.current };
-          setDragging(true);
-        }}
-        onPointerMove={(e) => {
-          if (!dragRef.current || e.buttons !== 1) return;
-          const steps = Math.round((e.clientX - dragRef.current.startX) / 20);
-          const next = Math.max(0, Math.min(levels.length - 1, dragRef.current.startIdx + steps));
-          if (next !== idxRef.current) onChange(next);
-        }}
-        onPointerUp={() => {
-          dragRef.current = null;
-          setDragging(false);
-        }}
-        style={{
-          display: 'block',
-          width: 88,
-          height: 88,
-          background: level.color,
-          boxShadow: `0 10px 28px -8px ${level.color}88`,
-          transition: 'background 0.3s, box-shadow 0.3s',
-          cursor: 'ew-resize',
-          touchAction: 'none',
-          userSelect: 'none',
-        }}
-      />
-
-      <span
-        style={{
-          fontFamily: 'var(--font-serif)',
-          fontSize: 12,
-          fontWeight: 700,
-          color: level.color,
-          letterSpacing: '0.1em',
-          textTransform: 'uppercase',
-          transition: 'color 0.3s',
-        }}
-      >
-        {level.label}
-      </span>
-
-      {/* SquareSlider — appears while dragging */}
-      <div
-        style={{
-          maxHeight: dragging ? 32 : 0,
-          opacity: dragging ? 1 : 0,
-          overflow: 'hidden',
-          transition: 'max-height 0.15s, opacity 0.15s',
-          pointerEvents: dragging ? 'auto' : 'none',
-        }}
-      >
-        <SquareSlider
-          colors={levels.map((l) => l.color)}
-          value={idx}
-          onChange={onChange}
-          size={14}
-          gap={4}
+    <div
+      style={{
+        background: INNER_DIV,
+        borderRadius: 10,
+        padding: '10px 14px',
+        display: 'flex',
+        flexDirection: 'column',
+        gap: 8,
+      }}
+    >
+      {subtasks.map((s) => (
+        <div key={s.id} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          <button
+            type="button"
+            onClick={() =>
+              onChange({
+                subtasks: subtasks.map((x) => (x.id === s.id ? { ...x, done: !x.done } : x)),
+              })
+            }
+            style={{
+              flexShrink: 0,
+              width: 16,
+              height: 16,
+              borderRadius: '50%',
+              border: `1.5px solid ${s.done ? OCHRE : 'rgba(196,160,96,0.4)'}`,
+              background: s.done ? OCHRE : 'transparent',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}
+          >
+            {s.done && <span style={{ color: '#fff', fontSize: 9, lineHeight: 1 }}>✓</span>}
+          </button>
+          <span
+            style={{
+              flex: 1,
+              fontFamily: 'var(--font-handwritten)',
+              fontStyle: 'italic',
+              fontSize: 17,
+              color: BROWN,
+              opacity: s.done ? 0.4 : 1,
+              textDecoration: s.done ? 'line-through' : 'none',
+            }}
+          >
+            {s.text}
+          </span>
+          <button
+            type="button"
+            onClick={() => onChange({ subtasks: subtasks.filter((x) => x.id !== s.id) })}
+            style={{
+              background: 'none',
+              border: 'none',
+              color: LABEL_COLOR,
+              opacity: 0.3,
+              cursor: 'pointer',
+              fontSize: 14,
+              lineHeight: 1,
+            }}
+          >
+            ×
+          </button>
+        </div>
+      ))}
+      <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+        <div style={{ width: 16, flexShrink: 0 }} />
+        <input
+          type="text"
+          value={val}
+          onChange={(e) => setVal(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter') add();
+          }}
+          placeholder="add step…"
+          spellCheck={false}
+          autoCorrect="off"
+          autoCapitalize="off"
+          style={{
+            flex: 1,
+            background: 'transparent',
+            border: 'none',
+            outline: 'none',
+            borderBottom: `1px solid rgba(196,160,96,0.18)`,
+            fontFamily: 'var(--font-handwritten)',
+            fontStyle: 'italic',
+            fontSize: 17,
+            color: BROWN,
+            padding: '2px 0',
+          }}
         />
       </div>
     </div>
   );
 }
 
-/* ─── Mood section — 4-mode dot cycles state pickers ─────────── */
-function MoodSection({
+/* ─── FocusBox — slider + blocking / helping logs ───────────── */
+function FocusBox({
   item,
   onChange,
 }: {
   item: CardItem;
   onChange: (f: Partial<CardItem>) => void;
 }) {
-  const [mode, setMode] = useState(0);
-  const dot = MOOD_DOTS[mode];
-
+  const focusIdx = item.focusIdx ?? 3;
+  const focusLevel = FOCUS_LEVELS[focusIdx];
   return (
-    <div style={{ position: 'relative' }}>
-      <button
-        type="button"
-        onClick={() => setMode((m) => (m + 1) % 4)}
-        style={{
-          position: 'absolute',
-          top: 2,
-          right: -4,
-          width: 10,
-          height: 10,
-          borderRadius: '50%',
-          background: dot.bg,
-          border: `1.5px solid ${dot.border}`,
-          cursor: 'pointer',
-          padding: 0,
-        }}
+    <div
+      style={{
+        background: INNER_DIV,
+        borderRadius: 10,
+        padding: '10px 14px',
+        display: 'flex',
+        flexDirection: 'column',
+        gap: 14,
+      }}
+    >
+      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6 }}>
+        <span
+          style={{
+            fontFamily: 'var(--font-serif)',
+            fontSize: 9,
+            fontWeight: 700,
+            letterSpacing: '0.16em',
+            textTransform: 'uppercase',
+            color: LABEL_COLOR,
+            opacity: 0.4,
+          }}
+        >
+          Focus · {focusLevel.label}
+        </span>
+        <SquareSlider
+          colors={FOCUS_LEVELS.map((l) => l.color)}
+          value={focusIdx}
+          onChange={(i) => onChange({ focusIdx: i })}
+          size={18}
+          gap={6}
+        />
+      </div>
+      <LogFragInput
+        label="What is taking your focus away?"
+        log={item.blockingLog ?? []}
+        onAdd={(entry) => onChange({ blockingLog: [...(item.blockingLog ?? []), entry] })}
       />
-
-      {mode === 0 && (
-        <div style={{ display: 'flex', gap: 8, justifyContent: 'center' }}>
-          {EMO.map((e) => (
-            <button
-              key={e.id}
-              type="button"
-              onClick={() =>
-                onChange({ emotionalState: item.emotionalState === e.id ? null : e.id })
-              }
-              style={{
-                fontFamily: 'var(--font-serif)',
-                fontSize: 11,
-                fontWeight: 700,
-                letterSpacing: '0.08em',
-                textTransform: 'uppercase',
-                background: item.emotionalState === e.id ? e.color : `${e.color}15`,
-                color: item.emotionalState === e.id ? '#fff' : e.color,
-                border: `1px solid ${e.color}${item.emotionalState === e.id ? 'cc' : '40'}`,
-                borderRadius: 4,
-                padding: '10px 0',
-                cursor: 'pointer',
-                flex: 1,
-                transition: 'all 0.15s',
-              }}
-            >
-              {e.label}
-            </button>
-          ))}
-        </div>
-      )}
-
-      {mode === 1 && (
-        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6 }}>
-          <span
-            style={{
-              fontFamily: 'var(--font-serif)',
-              fontSize: 9,
-              fontWeight: 700,
-              letterSpacing: '0.16em',
-              textTransform: 'uppercase',
-              color: LABEL_COLOR,
-              opacity: 0.4,
-            }}
-          >
-            Focus · {FOCUS_LEVELS[item.focusIdx ?? 3]?.label ?? ''}
-          </span>
-          <SquareSlider
-            colors={FOCUS_LEVELS.map((l) => l.color)}
-            value={item.focusIdx ?? 3}
-            onChange={(i) => onChange({ focusIdx: i })}
-            size={18}
-            gap={6}
-          />
-        </div>
-      )}
-
-      {mode === 2 && (
-        <div style={{ display: 'flex', justifyContent: 'center' }}>
-          <EmotionCircle
-            levels={EMOTION_LEVELS}
-            idx={item.emotionIdx ?? 4}
-            onChange={(i) => onChange({ emotionIdx: i })}
-          />
-        </div>
-      )}
-
-      {mode === 3 && (
-        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6 }}>
-          <span
-            style={{
-              fontFamily: 'var(--font-serif)',
-              fontSize: 9,
-              fontWeight: 700,
-              letterSpacing: '0.16em',
-              textTransform: 'uppercase',
-              color: LABEL_COLOR,
-              opacity: 0.4,
-            }}
-          >
-            Energy · {BODY_LEVELS[item.bodyIdx ?? 1]?.label ?? ''}
-          </span>
-          <SquareSlider
-            colors={BODY_LEVELS.map((l) => l.color)}
-            value={item.bodyIdx ?? 1}
-            onChange={(i) => onChange({ bodyIdx: i })}
-            size={22}
-            gap={8}
-          />
-        </div>
-      )}
+      <LogFragInput
+        label="What is helping?"
+        log={item.flowingLog ?? []}
+        onAdd={(entry) => onChange({ flowingLog: [...(item.flowingLog ?? []), entry] })}
+      />
     </div>
   );
 }
 
-function LogField({
-  label,
-  log,
-  onAdd,
+/* ─── IdeasBox — free-form idea capture ─────────────────────── */
+function IdeasBox({
+  item,
+  onChange,
 }: {
-  label: string;
-  log: string[];
-  onAdd: (entry: string) => void;
+  item: CardItem;
+  onChange: (f: Partial<CardItem>) => void;
 }) {
   const [val, setVal] = useState('');
+  const ideas = item.ideas ?? [];
+
+  function add() {
+    const t = val.trim();
+    if (!t) return;
+    onChange({ ideas: [...ideas, t] });
+    setVal('');
+  }
+
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 5 }}>
-      <span
-        style={{
-          fontFamily: 'var(--font-serif)',
-          fontSize: 9,
-          fontWeight: 700,
-          letterSpacing: '0.14em',
-          textTransform: 'uppercase',
-          color: LABEL_COLOR,
-          opacity: 0.4,
-          textAlign: 'center',
-        }}
-      >
-        {label}
-      </span>
-      {log.map((entry, i) => (
-        <span
-          key={i}
-          style={{
-            fontFamily: 'var(--font-serif)',
-            fontStyle: 'italic',
-            fontSize: 13,
-            color: BROWN,
-            opacity: 0.75,
-            lineHeight: 1.4,
-            textAlign: 'center',
-          }}
-        >
-          {entry}
-        </span>
+    <div
+      style={{
+        background: INNER_DIV,
+        borderRadius: 10,
+        padding: '10px 14px',
+        display: 'flex',
+        flexDirection: 'column',
+        gap: 8,
+      }}
+    >
+      {ideas.map((idea, i) => (
+        <div key={i} style={{ display: 'flex', gap: 8, alignItems: 'flex-start' }}>
+          <span style={{ color: OCHRE, opacity: 0.5, fontSize: 12, paddingTop: 2, flexShrink: 0 }}>
+            ·
+          </span>
+          <span
+            style={{
+              flex: 1,
+              fontFamily: 'var(--font-handwritten)',
+              fontStyle: 'italic',
+              fontSize: 17,
+              color: BROWN,
+              lineHeight: 1.35,
+            }}
+          >
+            {idea}
+          </span>
+          <button
+            type="button"
+            onClick={() => onChange({ ideas: ideas.filter((_, j) => j !== i) })}
+            style={{
+              background: 'none',
+              border: 'none',
+              color: LABEL_COLOR,
+              opacity: 0.3,
+              cursor: 'pointer',
+              fontSize: 14,
+              lineHeight: 1,
+            }}
+          >
+            ×
+          </button>
+        </div>
       ))}
-      <input
-        type="text"
+      <textarea
         value={val}
-        onChange={(e) => setVal(e.target.value)}
+        rows={1}
+        onChange={(e) => {
+          setVal(e.target.value);
+          const el = e.currentTarget;
+          el.style.height = 'auto';
+          el.style.height = `${Math.min(el.scrollHeight, 72)}px`;
+        }}
         onKeyDown={(e) => {
-          if (e.key === 'Enter' && val.trim()) {
-            onAdd(val.trim());
-            setVal('');
+          if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault();
+            add();
           }
         }}
-        placeholder="…"
+        placeholder="spark an idea…"
         spellCheck={false}
         autoCorrect="off"
+        autoCapitalize="off"
         style={{
           background: 'transparent',
           border: 'none',
           outline: 'none',
-          borderBottom: `1px solid ${INNER_DIV}`,
-          fontFamily: 'var(--font-serif)',
+          borderBottom: `1px solid rgba(196,160,96,0.18)`,
+          fontFamily: 'var(--font-handwritten)',
           fontStyle: 'italic',
-          fontSize: 13,
+          fontSize: 17,
           color: BROWN,
-          width: '80%',
-          padding: '3px 0',
-          textAlign: 'center',
+          padding: '2px 0',
+          width: '100%',
+          resize: 'none',
+          overflow: 'hidden',
+          lineHeight: 1.35,
+          maxHeight: 72,
         }}
       />
     </div>
   );
 }
 
-/* ─── Mission card — row inside a Section box ────────────────── */
+/* ─── Mission card ───────────────────────────────────────────── */
 function MissionCard({
   item,
   expanded,
   onToggle,
   onChange,
   onDone,
-  onDelete,
   last,
   textStyle,
+  isDragging,
+  dropIndicator,
+  onDragStart,
+  onDragEnd,
+  onDragOver,
+  onDrop,
+  onDragLeave,
 }: {
   item: CardItem;
   expanded: boolean;
   onToggle: () => void;
   onChange: (f: Partial<CardItem>) => void;
   onDone: () => void;
-  onDelete: () => void;
   last?: boolean;
   textStyle: number;
+  isDragging: boolean;
+  dropIndicator: 'before' | 'after' | null;
+  onDragStart: () => void;
+  onDragEnd: () => void;
+  onDragOver: (pos: 'before' | 'after') => void;
+  onDrop: () => void;
+  onDragLeave: () => void;
 }) {
-  const axis = AXES.find((a) => a.name === item.compassAxis);
-  const emo = EMO.find((e) => e.id === item.emotionalState);
-
-  const [axisGroup, setAxisGroup] = useState<number | null>(() => {
-    if (!item.compassAxis) return null;
-    const i = AXIS_GROUPS.findIndex((g) => g.axes.some((a) => a.name === item.compassAxis));
-    return i >= 0 ? i : null;
+  const [subOpen, setSubOpen] = useState<Record<SubKey, boolean>>({
+    process: false,
+    focus: false,
+    ideas: false,
   });
 
-  useEffect(() => {
-    if (item.compassAxis) {
-      const i = AXIS_GROUPS.findIndex((g) => g.axes.some((a) => a.name === item.compassAxis));
-      if (i >= 0) setAxisGroup(i);
-    }
-  }, [item.compassAxis]);
+  function toggleSub(key: SubKey) {
+    setSubOpen((prev) => ({ ...prev, [key]: !prev[key] }));
+  }
+
+  const ts = TEXT_STYLES[textStyle % TEXT_STYLES.length];
 
   return (
     <div
+      onDragOver={(e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        const rect = e.currentTarget.getBoundingClientRect();
+        onDragOver(e.clientY < rect.top + rect.height / 2 ? 'before' : 'after');
+      }}
+      onDrop={(e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        onDrop();
+      }}
+      onDragLeave={(e) => {
+        if (!e.currentTarget.contains(e.relatedTarget as Node)) onDragLeave();
+      }}
       style={{
-        padding: '12px 16px',
+        position: 'relative',
         borderBottom: last ? 'none' : `1px solid ${INNER_DIV}`,
-        opacity: item.done ? 0.45 : 1,
-        transition: 'opacity 0.2s',
+        opacity: isDragging ? 0.28 : item.done ? 0.45 : 1,
+        transition: 'opacity 0.15s',
       }}
     >
-      {/* ── Header ──────────────────────────────────────────── */}
-      <div
-        onClick={onToggle}
-        style={{ display: 'flex', alignItems: 'center', gap: 10, cursor: 'pointer' }}
-      >
-        <button
-          type="button"
-          onClick={(e) => {
-            e.stopPropagation();
-            onDone();
-          }}
+      {/* Drop-before line */}
+      {dropIndicator === 'before' && (
+        <div
           style={{
-            flexShrink: 0,
-            width: 20,
-            height: 20,
-            borderRadius: '50%',
-            border: `1.5px solid ${item.done ? OCHRE : 'rgba(196,160,96,0.4)'}`,
-            background: item.done ? OCHRE : 'transparent',
-            cursor: 'pointer',
+            position: 'absolute',
+            top: 0,
+            left: 14,
+            right: 14,
+            height: 2,
+            background: OCHRE,
+            borderRadius: 1,
+            zIndex: 10,
+          }}
+        />
+      )}
+
+      <div style={{ padding: '12px 16px' }}>
+        {/* ── Title row ───────────────────────────────────────── */}
+        <div
+          onClick={onToggle}
+          style={{ display: 'flex', alignItems: 'center', gap: 10, cursor: 'pointer' }}
+        >
+          {/* Grip handle */}
+          <div
+            draggable
+            onDragStart={(e) => {
+              e.stopPropagation();
+              e.dataTransfer.effectAllowed = 'move';
+              onDragStart();
+            }}
+            onDragEnd={(e) => {
+              e.stopPropagation();
+              onDragEnd();
+            }}
+            onClick={(e) => e.stopPropagation()}
+            style={{
+              display: 'grid',
+              gridTemplateColumns: '1fr 1fr',
+              gap: '3px',
+              width: 12,
+              flexShrink: 0,
+              cursor: 'grab',
+              padding: '1px 0',
+            }}
+          >
+            {[0, 1, 2, 3, 4, 5].map((i) => (
+              <span
+                key={i}
+                style={{
+                  width: 3,
+                  height: 3,
+                  borderRadius: '50%',
+                  background: OCHRE,
+                  opacity: 0.25,
+                }}
+              />
+            ))}
+          </div>
+
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              onDone();
+            }}
+            style={{
+              flexShrink: 0,
+              width: 20,
+              height: 20,
+              borderRadius: '50%',
+              border: `1.5px solid ${item.done ? OCHRE : 'rgba(196,160,96,0.4)'}`,
+              background: item.done ? OCHRE : 'transparent',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              transition: 'all 0.15s',
+            }}
+          >
+            {item.done && <span style={{ color: '#fff', fontSize: 11, lineHeight: 1 }}>✓</span>}
+          </button>
+
+          <textarea
+            value={item.text}
+            placeholder="untitled"
+            spellCheck={false}
+            autoCorrect="off"
+            autoCapitalize="off"
+            rows={1}
+            onClick={(e) => e.stopPropagation()}
+            onChange={(e) => onChange({ text: e.target.value })}
+            onInput={(e) => {
+              const el = e.currentTarget;
+              el.style.height = 'auto';
+              el.style.height = `${el.scrollHeight}px`;
+            }}
+            style={{
+              flex: 1,
+              minWidth: 0,
+              background: 'transparent',
+              border: 'none',
+              outline: 'none',
+              fontFamily: ts.font,
+              fontSize: ts.size,
+              fontWeight: ts.weight,
+              fontStyle: ts.fStyle,
+              letterSpacing: ts.spacing,
+              textTransform: ts.transform,
+              color: item.done ? OCHRE : BROWN,
+              textDecoration: item.done ? 'line-through' : 'none',
+              lineHeight: 1.3,
+              padding: 0,
+              cursor: 'text',
+              textAlign: 'center',
+              resize: 'none',
+              overflow: 'hidden',
+            }}
+          />
+
+          <span
+            style={{
+              color: OCHRE,
+              opacity: 0.45,
+              fontSize: 11,
+              flexShrink: 0,
+              transform: expanded ? 'rotate(180deg)' : 'rotate(0deg)',
+              transition: 'transform 0.2s',
+            }}
+          >
+            ▾
+          </span>
+        </div>
+
+        {/* ── By When — always visible ────────────────────────── */}
+        <div
+          style={{
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            transition: 'all 0.15s',
+            gap: 8,
+            paddingTop: 5,
           }}
         >
-          {item.done && <span style={{ color: '#fff', fontSize: 11, lineHeight: 1 }}>✓</span>}
-        </button>
-
-        {(() => {
-          const ts = TEXT_STYLES[textStyle % TEXT_STYLES.length];
-          return (
-            <textarea
-              value={item.text}
-              placeholder="untitled"
-              spellCheck={false}
-              autoCorrect="off"
-              autoCapitalize="off"
-              rows={1}
-              onClick={(e) => e.stopPropagation()}
-              onChange={(e) => onChange({ text: e.target.value })}
-              onInput={(e) => {
-                const el = e.currentTarget;
-                el.style.height = 'auto';
-                el.style.height = `${el.scrollHeight}px`;
-              }}
-              style={{
-                flex: 1,
-                minWidth: 0,
-                background: 'transparent',
-                border: 'none',
-                outline: 'none',
-                fontFamily: ts.font,
-                fontSize: ts.size,
-                fontWeight: ts.weight,
-                fontStyle: ts.fStyle,
-                letterSpacing: ts.spacing,
-                textTransform: ts.transform,
-                color: item.done ? OCHRE : BROWN,
-                textDecoration: item.done ? 'line-through' : 'none',
-                lineHeight: 1.3,
-                padding: 0,
-                cursor: 'text',
-                textAlign: 'center',
-                resize: 'none',
-                overflow: 'hidden',
-              }}
-            />
-          );
-        })()}
-
-        {axis && (
           <span
             style={{
               fontFamily: 'var(--font-serif)',
               fontSize: 10,
               fontWeight: 700,
-              letterSpacing: '0.08em',
+              letterSpacing: '0.18em',
               textTransform: 'uppercase',
-              background: `${axis.color}18`,
-              color: axis.color,
-              border: `1px solid ${axis.color}45`,
-              borderRadius: 999,
-              padding: '2px 8px',
-              whiteSpace: 'nowrap',
+              color: LABEL_COLOR,
+              opacity: 0.5,
               flexShrink: 0,
             }}
           >
-            {axis.name}
+            by
           </span>
-        )}
-
-        <span
-          style={{
-            color: OCHRE,
-            opacity: 0.45,
-            fontSize: 11,
-            flexShrink: 0,
-            transform: expanded ? 'rotate(180deg)' : 'rotate(0deg)',
-            transition: 'transform 0.2s',
-          }}
-        >
-          ▾
-        </span>
-      </div>
-
-      {/* ── Collapsed subtitle: by when · emo state ─────────── */}
-      {!expanded && (item.timeFrame || emo) && (
-        <div
-          style={{
-            display: 'flex',
-            gap: 8,
-            alignItems: 'center',
-            justifyContent: 'center',
-            paddingTop: 3,
-          }}
-        >
-          {item.timeFrame && (
-            <span
-              style={{
-                fontFamily: 'var(--font-serif)',
-                fontStyle: 'italic',
-                fontSize: 11,
-                color: OCHRE,
-                opacity: 0.55,
-              }}
-            >
-              {item.timeFrame}
-            </span>
-          )}
-          {item.timeFrame && emo && (
-            <span style={{ color: OCHRE, opacity: 0.25, fontSize: 10 }}>·</span>
-          )}
-          {emo && (
-            <span
-              style={{
-                fontFamily: 'var(--font-serif)',
-                fontStyle: 'italic',
-                fontSize: 11,
-                color: emo.color,
-                opacity: 0.7,
-              }}
-            >
-              {emo.label}
-            </span>
-          )}
+          <input
+            type="text"
+            value={item.timeFrame ?? ''}
+            onChange={(e) => onChange({ timeFrame: e.target.value || undefined })}
+            onClick={(e) => e.stopPropagation()}
+            placeholder="when…"
+            spellCheck={false}
+            autoCorrect="off"
+            autoCapitalize="off"
+            style={{
+              background: 'transparent',
+              border: 'none',
+              outline: 'none',
+              borderBottom: `1px solid rgba(196,160,96,0.18)`,
+              fontFamily: 'var(--font-serif)',
+              fontSize: 13,
+              color: BROWN,
+              padding: '2px 0',
+              textAlign: 'center',
+              width: 100,
+            }}
+          />
         </div>
-      )}
 
-      {/* ── Expanded body ───────────────────────────────────── */}
-      {expanded && (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 14, marginTop: 14 }}>
-          <MoodSection item={item} onChange={onChange} />
-
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-            <LogFragInput
-              label="What is taking your focus away?"
-              log={item.blockingLog ?? []}
-              onAdd={(entry) => onChange({ blockingLog: [...(item.blockingLog ?? []), entry] })}
-            />
-            <LogFragInput
-              label="What is helping?"
-              log={item.flowingLog ?? []}
-              onAdd={(entry) => onChange({ flowingLog: [...(item.flowingLog ?? []), entry] })}
-            />
-          </div>
-
-          {/* ── Compass axis — 3 group dots → 4 axis pills ──── */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 10, alignItems: 'center' }}>
-            <span
-              style={{
-                fontFamily: 'var(--font-serif)',
-                fontSize: 10,
-                fontWeight: 700,
-                letterSpacing: '0.18em',
-                textTransform: 'uppercase',
-                color: LABEL_COLOR,
-                opacity: 0.5,
-              }}
-            >
-              Compass axis
-            </span>
-            <div style={{ display: 'flex', gap: 24 }}>
-              {AXIS_GROUPS.map((group, i) => {
-                const isOn = axisGroup === i;
-                const hasThis = group.axes.some((a) => a.name === item.compassAxis);
+        {/* ── Expanded body ───────────────────────────────────── */}
+        {expanded && (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginTop: 14 }}>
+            <div style={{ display: 'flex', gap: 8 }}>
+              {SUBSECTIONS.map((sec) => {
+                const isOpen = subOpen[sec.id];
                 return (
                   <button
-                    key={group.id}
+                    key={sec.id}
                     type="button"
-                    onClick={() => setAxisGroup(isOn ? null : i)}
-                    style={{
-                      width: 22,
-                      height: 22,
-                      borderRadius: '50%',
-                      flexShrink: 0,
-                      background: isOn || hasThis ? group.dot : `${group.dot}30`,
-                      border: `2.5px solid ${isOn || hasThis ? group.dot : `${group.dot}50`}`,
-                      boxShadow: isOn ? `0 0 0 4px ${group.dot}25` : 'none',
-                      cursor: 'pointer',
-                      transition: 'all 0.15s',
-                    }}
-                  />
-                );
-              })}
-            </div>
-            {axisGroup !== null && (
-              <div
-                style={{
-                  display: 'grid',
-                  gridTemplateColumns: '1fr 1fr',
-                  gap: 6,
-                  width: '100%',
-                }}
-              >
-                {AXIS_GROUPS[axisGroup].axes.map((a) => (
-                  <button
-                    key={a.name}
-                    type="button"
-                    onClick={() =>
-                      onChange({ compassAxis: item.compassAxis === a.name ? undefined : a.name })
-                    }
+                    onClick={() => toggleSub(sec.id)}
                     style={{
                       fontFamily: 'var(--font-serif)',
                       fontSize: 11,
                       fontWeight: 700,
-                      letterSpacing: '0.07em',
+                      letterSpacing: '0.08em',
                       textTransform: 'uppercase',
-                      background: item.compassAxis === a.name ? a.color : `${a.color}15`,
-                      color: item.compassAxis === a.name ? '#fff' : a.color,
-                      border: `1px solid ${a.color}${item.compassAxis === a.name ? 'cc' : '40'}`,
+                      background: isOpen ? `${OCHRE}28` : `${OCHRE}15`,
+                      color: isOpen ? BROWN : OCHRE,
+                      border: `1px solid ${OCHRE}${isOpen ? 'cc' : '40'}`,
                       borderRadius: 4,
-                      padding: '14px 0',
+                      padding: '10px 0',
                       cursor: 'pointer',
+                      flex: 1,
                       transition: 'all 0.15s',
-                      textAlign: 'center',
                     }}
                   >
-                    {a.name}
+                    {sec.label}
                   </button>
-                ))}
-              </div>
-            )}
+                );
+              })}
+            </div>
+            {subOpen.process && <ProcessBox item={item} onChange={onChange} />}
+            {subOpen.focus && <FocusBox item={item} onChange={onChange} />}
+            {subOpen.ideas && <IdeasBox item={item} onChange={onChange} />}
           </div>
+        )}
+      </div>
 
-          {/* Time frame */}
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
-            <span
-              style={{
-                fontFamily: 'var(--font-serif)',
-                fontSize: 10,
-                fontWeight: 700,
-                letterSpacing: '0.18em',
-                textTransform: 'uppercase',
-                color: LABEL_COLOR,
-                opacity: 0.5,
-                flexShrink: 0,
-              }}
-            >
-              by
-            </span>
-            <input
-              type="text"
-              value={item.timeFrame ?? ''}
-              onChange={(e) => onChange({ timeFrame: e.target.value || undefined })}
-              placeholder="when…"
-              spellCheck={false}
-              autoCorrect="off"
-              autoCapitalize="off"
-              style={{
-                background: 'transparent',
-                border: 'none',
-                outline: 'none',
-                borderBottom: `1px solid rgba(196,160,96,0.18)`,
-                fontFamily: 'var(--font-serif)',
-                fontSize: 13,
-                color: BROWN,
-                padding: '2px 0',
-                textAlign: 'center',
-                width: 100,
-              }}
-            />
-          </div>
-
-          <button
-            type="button"
-            onClick={onDelete}
-            style={{
-              alignSelf: 'center',
-              background: 'none',
-              border: 'none',
-              fontFamily: 'var(--font-serif)',
-              fontSize: 11,
-              color: LABEL_COLOR,
-              opacity: 0.35,
-              cursor: 'pointer',
-              letterSpacing: '0.08em',
-            }}
-          >
-            remove
-          </button>
-        </div>
+      {/* Drop-after line */}
+      {dropIndicator === 'after' && (
+        <div
+          style={{
+            position: 'absolute',
+            bottom: 0,
+            left: 14,
+            right: 14,
+            height: 2,
+            background: OCHRE,
+            borderRadius: 1,
+            zIndex: 10,
+          }}
+        />
       )}
     </div>
   );
 }
 
-/* ─── Add input row — inside a Section box ───────────────────── */
-function AddRow({
-  placeholder,
-  onAdd,
-  textStyle = 0,
-}: {
-  placeholder: string;
-  onAdd: (text: string) => void;
-  textStyle?: number;
-}) {
+/* ─── Add input row ──────────────────────────────────────────── */
+function AddRow({ placeholder, onAdd }: { placeholder: string; onAdd: (text: string) => void }) {
   const [val, setVal] = useState('');
-  const ts = TEXT_STYLES[textStyle % TEXT_STYLES.length];
   function submit() {
     const t = val.trim();
     if (!t) return;
@@ -1062,13 +912,12 @@ function AddRow({
           background: 'transparent',
           border: 'none',
           outline: 'none',
-          fontFamily: ts.font,
-          fontSize: ts.size,
-          fontWeight: ts.weight,
-          fontStyle: ts.fStyle,
-          letterSpacing: ts.spacing,
-          textTransform: ts.transform,
-          color: BROWN,
+          fontFamily: 'var(--font-serif)',
+          fontSize: 12,
+          fontWeight: 500,
+          letterSpacing: '0.06em',
+          color: LABEL_COLOR,
+          opacity: 0.7,
           textAlign: 'center',
         }}
       />
@@ -1104,7 +953,12 @@ export default function DoingCardsPanel() {
   const [globalStyle, setGlobalStyle] = useState(0);
   const [objItem, setObjItem] = useState<CardItem>({ id: 'current', text: '', done: false });
   const [objOpen, setObjOpen] = useState(false);
-  const [secOpen, setSecOpen] = useState({ mission: true, daily: true, push: true, done: true });
+  const [secOpen, setSecOpen] = useState({
+    mission: false,
+    daily: false,
+    push: false,
+    done: false,
+  });
 
   const [missions, setMissions] = useState<CardItem[]>([]);
   const [expandedId, setExpandedId] = useState<string | null>(null);
@@ -1112,20 +966,29 @@ export default function DoingCardsPanel() {
   const [pushExpandedId, setPushExpandedId] = useState<string | null>(null);
   const [chapter, setChapter] = useState('');
 
+  /* ── Drag state ─────────────────────────────────────────────── */
+  const dragSrcRef = useRef<{ id: string; src: 'daily' | 'push' } | null>(null);
+  const [draggingId, setDraggingId] = useState<string | null>(null);
+  const [dropTarget, setDropTarget] = useState<{ id: string; pos: 'before' | 'after' } | null>(
+    null,
+  );
+
   useEffect(() => {
     try {
       const obj = localStorage.getItem('colourmap:current-objective') ?? '';
-      const chal = localStorage.getItem('colourmap:objective-challenge') ?? '';
-      const flow = localStorage.getItem('colourmap:objective-flow-text') ?? '';
       const blRaw = localStorage.getItem('colourmap:objective-blocking-log');
       const flRaw = localStorage.getItem('colourmap:objective-flowing-log');
+      const stRaw = localStorage.getItem('colourmap:objective-subtasks');
+      const idRaw = localStorage.getItem('colourmap:objective-ideas');
+      const tf = localStorage.getItem('colourmap:objective-timeframe');
       setObjItem((prev) => ({
         ...prev,
         text: obj,
-        blocking: chal,
-        flowing: flow,
+        timeFrame: tf ?? undefined,
         blockingLog: blRaw ? JSON.parse(blRaw) : [],
         flowingLog: flRaw ? JSON.parse(flRaw) : [],
+        subtasks: stRaw ? JSON.parse(stRaw) : [],
+        ideas: idRaw ? JSON.parse(idRaw) : [],
       }));
       const raw = localStorage.getItem('colourmap:today-objectives');
       if (raw) setMissions(JSON.parse(raw));
@@ -1158,14 +1021,16 @@ export default function DoingCardsPanel() {
     setObjItem((prev) => ({ ...prev, ...f }));
     try {
       if (f.text !== undefined) localStorage.setItem('colourmap:current-objective', f.text);
-      if (f.blocking !== undefined)
-        localStorage.setItem('colourmap:objective-challenge', f.blocking ?? '');
-      if (f.flowing !== undefined)
-        localStorage.setItem('colourmap:objective-flow-text', f.flowing ?? '');
+      if (f.timeFrame !== undefined)
+        localStorage.setItem('colourmap:objective-timeframe', f.timeFrame ?? '');
       if (f.blockingLog !== undefined)
         localStorage.setItem('colourmap:objective-blocking-log', JSON.stringify(f.blockingLog));
       if (f.flowingLog !== undefined)
         localStorage.setItem('colourmap:objective-flowing-log', JSON.stringify(f.flowingLog));
+      if (f.subtasks !== undefined)
+        localStorage.setItem('colourmap:objective-subtasks', JSON.stringify(f.subtasks));
+      if (f.ideas !== undefined)
+        localStorage.setItem('colourmap:objective-ideas', JSON.stringify(f.ideas));
       if (f.done !== undefined) localStorage.setItem('colourmap:objective-done', String(f.done));
     } catch {}
   }
@@ -1182,12 +1047,7 @@ export default function DoingCardsPanel() {
   function addMission(text: string) {
     persistMissions([
       ...missions,
-      {
-        id: crypto.randomUUID(),
-        text,
-        done: false,
-        createdAt: new Date().toISOString(),
-      },
+      { id: crypto.randomUUID(), text, done: false, createdAt: new Date().toISOString() },
     ]);
   }
 
@@ -1203,13 +1063,98 @@ export default function DoingCardsPanel() {
   function addPush(text: string) {
     persistPush([
       ...push,
-      {
-        id: crypto.randomUUID(),
-        text,
-        done: false,
-        createdAt: new Date().toISOString(),
-      },
+      { id: crypto.randomUUID(), text, done: false, createdAt: new Date().toISOString() },
     ]);
+  }
+
+  /* ── Drag handlers ──────────────────────────────────────────── */
+  function startDrag(id: string, src: 'daily' | 'push') {
+    dragSrcRef.current = { id, src };
+    setDraggingId(id);
+  }
+
+  function endDrag() {
+    dragSrcRef.current = null;
+    setDraggingId(null);
+    setDropTarget(null);
+  }
+
+  function hoverCard(targetId: string, pos: 'before' | 'after') {
+    setDropTarget({ id: targetId, pos });
+  }
+
+  function dropOnCard(targetId: string, dest: 'daily' | 'push') {
+    const ds = dragSrcRef.current;
+    const dt = dropTarget;
+    if (!ds || !dt || ds.id === targetId) {
+      endDrag();
+      return;
+    }
+    const { id: srcId, src } = ds;
+    const { pos } = dt;
+
+    const activeMiss = missions.filter((m) => !m.done);
+    const doneMiss = missions.filter((m) => m.done);
+    const activePsh = push.filter((p) => !p.done);
+    const donePsh = push.filter((p) => p.done);
+
+    const srcArr = src === 'daily' ? activeMiss : activePsh;
+    const srcItem = srcArr.find((m) => m.id === srcId);
+    if (!srcItem) {
+      endDrag();
+      return;
+    }
+
+    if (src === dest) {
+      const arr = srcArr.filter((m) => m.id !== srcId);
+      const ti = arr.findIndex((m) => m.id === targetId);
+      const ii = pos === 'before' ? ti : ti + 1;
+      const next = [...arr.slice(0, ii), srcItem, ...arr.slice(ii)];
+      if (src === 'daily') persistMissions([...next, ...doneMiss]);
+      else persistPush([...next, ...donePsh]);
+    } else {
+      const srcNew = srcArr.filter((m) => m.id !== srcId);
+      const destArr = dest === 'daily' ? activeMiss : activePsh;
+      const ti = destArr.findIndex((m) => m.id === targetId);
+      const ii = pos === 'before' ? ti : ti + 1;
+      const destNew = [...destArr.slice(0, ii), srcItem, ...destArr.slice(ii)];
+      if (src === 'daily') persistMissions([...srcNew, ...doneMiss]);
+      else persistPush([...srcNew, ...donePsh]);
+      if (dest === 'daily') persistMissions([...destNew, ...doneMiss]);
+      else persistPush([...destNew, ...donePsh]);
+    }
+    endDrag();
+  }
+
+  function dropAtSectionEnd(dest: 'daily' | 'push') {
+    const ds = dragSrcRef.current;
+    if (!ds) {
+      endDrag();
+      return;
+    }
+    const { id: srcId, src } = ds;
+    const activeMiss = missions.filter((m) => !m.done);
+    const doneMiss = missions.filter((m) => m.done);
+    const activePsh = push.filter((p) => !p.done);
+    const donePsh = push.filter((p) => p.done);
+    const srcArr = src === 'daily' ? activeMiss : activePsh;
+    const srcItem = srcArr.find((m) => m.id === srcId);
+    if (!srcItem) {
+      endDrag();
+      return;
+    }
+    const srcNew = srcArr.filter((m) => m.id !== srcId);
+    if (src === dest) {
+      if (src === 'daily') persistMissions([...srcNew, srcItem, ...doneMiss]);
+      else persistPush([...srcNew, srcItem, ...donePsh]);
+    } else {
+      if (src === 'daily') persistMissions([...srcNew, ...doneMiss]);
+      else persistPush([...srcNew, ...donePsh]);
+      const destArr = dest === 'daily' ? activeMiss : activePsh;
+      if (dest === 'daily') persistMissions([...destArr, srcItem, ...doneMiss]);
+      else persistPush([...destArr, srcItem, ...donePsh]);
+    }
+    endDrag();
   }
 
   const activeMissions = missions.filter((m) => !m.done);
@@ -1270,12 +1215,11 @@ export default function DoingCardsPanel() {
         </button>
       </div>
 
-      {/* ── Current Mission ─────────────────────────────────── */}
+      {/* ── Current Mission ──────────────────────────────────── */}
       <Section
         title="Current Mission"
         open={secOpen.mission}
         onToggle={() => setSecOpen((s) => ({ ...s, mission: !s.mission }))}
-        textStyle={globalStyle}
       >
         <MissionCard
           item={objItem}
@@ -1283,8 +1227,14 @@ export default function DoingCardsPanel() {
           onToggle={() => setObjOpen((v) => !v)}
           onChange={updateObj}
           onDone={() => updateObj({ done: !objItem.done })}
-          onDelete={() => {}}
           textStyle={globalStyle}
+          isDragging={false}
+          dropIndicator={null}
+          onDragStart={() => {}}
+          onDragEnd={() => {}}
+          onDragOver={() => {}}
+          onDrop={() => {}}
+          onDragLeave={() => {}}
           last
         />
         {secOpen.mission && (
@@ -1319,9 +1269,8 @@ export default function DoingCardsPanel() {
         title="Daily Missions"
         open={secOpen.daily}
         onToggle={() => setSecOpen((s) => ({ ...s, daily: !s.daily }))}
-        textStyle={globalStyle}
       >
-        {activeMissions.map((m, i) => (
+        {activeMissions.map((m) => (
           <MissionCard
             key={m.id}
             item={m}
@@ -1329,11 +1278,33 @@ export default function DoingCardsPanel() {
             onToggle={() => setExpandedId(expandedId === m.id ? null : m.id)}
             onChange={(f) => updateMission(m.id, f)}
             onDone={() => updateMission(m.id, { done: true })}
-            onDelete={() => persistMissions(missions.filter((x) => x.id !== m.id))}
             textStyle={globalStyle}
+            isDragging={draggingId === m.id}
+            dropIndicator={dropTarget?.id === m.id ? dropTarget.pos : null}
+            onDragStart={() => startDrag(m.id, 'daily')}
+            onDragEnd={endDrag}
+            onDragOver={(pos) => hoverCard(m.id, pos)}
+            onDrop={() => dropOnCard(m.id, 'daily')}
+            onDragLeave={() => setDropTarget(null)}
           />
         ))}
-        <AddRow placeholder="add a mission…" onAdd={addMission} textStyle={globalStyle} />
+        {/* Section-end drop zone */}
+        {draggingId && (
+          <div
+            onDragOver={(e) => {
+              e.preventDefault();
+              setDropTarget(null);
+            }}
+            onDrop={(e) => {
+              e.preventDefault();
+              dropAtSectionEnd('daily');
+            }}
+            style={{ height: 32, display: 'flex', alignItems: 'center', paddingLeft: 16 }}
+          >
+            <div style={{ height: 2, flex: 1, borderRadius: 1, background: `${OCHRE}20` }} />
+          </div>
+        )}
+        <AddRow placeholder="add a mission…" onAdd={addMission} />
       </Section>
 
       {/* ── Push for Tomorrow ────────────────────────────────── */}
@@ -1341,7 +1312,6 @@ export default function DoingCardsPanel() {
         title="Push for Tomorrow"
         open={secOpen.push}
         onToggle={() => setSecOpen((s) => ({ ...s, push: !s.push }))}
-        textStyle={globalStyle}
       >
         {activePush.map((p) => (
           <MissionCard
@@ -1351,14 +1321,36 @@ export default function DoingCardsPanel() {
             onToggle={() => setPushExpandedId(pushExpandedId === p.id ? null : p.id)}
             onChange={(f) => updatePush(p.id, f)}
             onDone={() => updatePush(p.id, { done: true })}
-            onDelete={() => persistPush(push.filter((x) => x.id !== p.id))}
             textStyle={globalStyle}
+            isDragging={draggingId === p.id}
+            dropIndicator={dropTarget?.id === p.id ? dropTarget.pos : null}
+            onDragStart={() => startDrag(p.id, 'push')}
+            onDragEnd={endDrag}
+            onDragOver={(pos) => hoverCard(p.id, pos)}
+            onDrop={() => dropOnCard(p.id, 'push')}
+            onDragLeave={() => setDropTarget(null)}
           />
         ))}
-        <AddRow placeholder="push for tomorrow…" onAdd={addPush} textStyle={globalStyle} />
+        {/* Section-end drop zone */}
+        {draggingId && (
+          <div
+            onDragOver={(e) => {
+              e.preventDefault();
+              setDropTarget(null);
+            }}
+            onDrop={(e) => {
+              e.preventDefault();
+              dropAtSectionEnd('push');
+            }}
+            style={{ height: 32, display: 'flex', alignItems: 'center', paddingLeft: 16 }}
+          >
+            <div style={{ height: 2, flex: 1, borderRadius: 1, background: `${OCHRE}20` }} />
+          </div>
+        )}
+        <AddRow placeholder="push for tomorrow…" onAdd={addPush} />
       </Section>
 
-      {/* ── Done ────────────────────────────────────────────────── */}
+      {/* ── Done ─────────────────────────────────────────────── */}
       {allDone.length > 0 && (
         <div
           style={{
@@ -1366,7 +1358,6 @@ export default function DoingCardsPanel() {
             borderRadius: 16,
             background: CARD_BG,
             overflow: 'hidden',
-            /* Narrower horizontal footprint when closed — indent both sides */
             marginLeft: secOpen.done ? 0 : 24,
             marginRight: secOpen.done ? 0 : 24,
             transition: 'margin 0.2s ease',
@@ -1377,16 +1368,13 @@ export default function DoingCardsPanel() {
             style={{
               padding: '8px 16px',
               borderBottom: secOpen.done ? `1px solid ${CARD_BORDER}` : 'none',
-              textAlign: 'center',
               background: 'rgba(196,160,96,0.06)',
               display: 'flex',
               alignItems: 'center',
-              justifyContent: 'center',
-              gap: 8,
               cursor: 'pointer',
-              position: 'relative',
             }}
           >
+            <span style={{ flex: 1 }} />
             <span
               style={{
                 fontFamily: 'var(--font-serif)',
@@ -1406,22 +1394,23 @@ export default function DoingCardsPanel() {
                 fontSize: 11,
                 color: LABEL_COLOR,
                 opacity: 0.35,
+                marginLeft: 5,
               }}
             >
               {allDone.length}
             </span>
-            <span
-              style={{
-                position: 'absolute',
-                right: 14,
-                color: OCHRE,
-                opacity: 0.4,
-                fontSize: 11,
-                transform: secOpen.done ? 'rotate(180deg)' : 'rotate(0deg)',
-                transition: 'transform 0.2s',
-              }}
-            >
-              ▾
+            <span style={{ flex: 1, display: 'flex', justifyContent: 'flex-end' }}>
+              <span
+                style={{
+                  color: OCHRE,
+                  opacity: 0.4,
+                  fontSize: 11,
+                  transform: secOpen.done ? 'rotate(180deg)' : 'rotate(0deg)',
+                  transition: 'transform 0.2s',
+                }}
+              >
+                ▾
+              </span>
             </span>
           </div>
           {secOpen.done && (
@@ -1450,7 +1439,6 @@ export default function DoingCardsPanel() {
                     opacity: 0.45,
                   }}
                 >
-                  {/* Undo */}
                   <button
                     type="button"
                     onClick={() => {
@@ -1472,7 +1460,6 @@ export default function DoingCardsPanel() {
                   >
                     <span style={{ color: '#fff', fontSize: 11, lineHeight: 1 }}>✓</span>
                   </button>
-                  {/* Title */}
                   <span
                     style={{
                       flex: 1,
@@ -1493,7 +1480,6 @@ export default function DoingCardsPanel() {
                   >
                     {item.text}
                   </span>
-                  {/* Source label */}
                   <span
                     style={{
                       fontFamily: 'var(--font-serif)',
@@ -1508,7 +1494,6 @@ export default function DoingCardsPanel() {
                   >
                     {item._src === 'push' ? 'tmrw' : 'daily'}
                   </span>
-                  {/* Delete */}
                   <button
                     type="button"
                     onClick={() => {

@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
+import MapOfSelf from './MapOfSelf';
 import { useViewMode } from './ViewModeContext';
 
 // ── Palette ──────────────────────────────────────────────────────────
@@ -2053,6 +2054,7 @@ export default function Overview2() {
         <ChapterSummary onTap={() => open('chapter')} />
         <FocusSummary onTap={() => open('focus')} />
         <ArenasSummary onTapArena={(id) => open(`arena:${id}`)} onTapAdd={() => open('arenas')} />
+        <MapOfSelf />
       </div>
 
       {panel === 'chapter' && (

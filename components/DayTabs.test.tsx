@@ -5,7 +5,6 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import DayTabs from './DayTabs';
 
-// Mock StyleContext
 vi.mock('@/components/StyleContext', () => ({
   useStyle: () => ({
     style: {
@@ -20,12 +19,9 @@ vi.mock('@/components/StyleContext', () => ({
 function renderTabs() {
   return render(
     <DayTabs
-      feelingContent={<div>feeling-content</div>}
-      ringContent={<div>ring-content</div>}
-      doingContent={<div>doing-content</div>}
-      sharingContent={<div>sharing-content</div>}
-      roadContent={<div>road-content</div>}
-      list2Content={<div>list2-content</div>}
+      emotionContent={<div>emotion-content</div>}
+      missionContent={<div>mission-content</div>}
+      progressContent={<div>progress-content</div>}
     />,
   );
 }
@@ -40,37 +36,29 @@ describe('DayTabs', () => {
     localStorage.clear();
   });
 
-  it('renders the List/List 2 scope strip and the Feeling/Doing/Sharing trio', () => {
+  it('renders the Emotion / Mission / Progress tab strip', () => {
     renderTabs();
-    expect(screen.getByText('List')).toBeDefined();
-    expect(screen.getByText('List 2')).toBeDefined();
-    expect(screen.getByText('Feeling')).toBeDefined();
-    expect(screen.getByText('Doing')).toBeDefined();
-    expect(screen.getByText('Sharing')).toBeDefined();
-  });
-
-  it('shows feeling content by default (List scope, Feeling tab)', () => {
-    renderTabs();
-    expect(screen.getByText('feeling-content')).toBeDefined();
-  });
-
-  it('switches to Doing when the Doing tab is clicked', async () => {
-    const user = userEvent.setup();
-    renderTabs();
-    await user.click(screen.getByText('Doing'));
-    expect(screen.getByText('doing-content')).toBeDefined();
-  });
-
-  it('switches to List 2 scope and shows Emotion/Mission/Progress tabs', async () => {
-    const user = userEvent.setup();
-    renderTabs();
-    await user.click(screen.getByText('List 2'));
-    // List 2 scope shows its own inner trio
     expect(screen.getByText('Emotion')).toBeDefined();
     expect(screen.getByText('Mission')).toBeDefined();
     expect(screen.getByText('Progress')).toBeDefined();
-    // Old List tabs are gone
-    expect(screen.queryByText('Doing')).toBeNull();
-    expect(screen.queryByText('Sharing')).toBeNull();
+  });
+
+  it('shows emotion content by default', () => {
+    renderTabs();
+    expect(screen.getByText('emotion-content')).toBeDefined();
+  });
+
+  it('switches to Mission when the Mission tab is clicked', async () => {
+    const user = userEvent.setup();
+    renderTabs();
+    await user.click(screen.getByText('Mission'));
+    expect(screen.getByText('mission-content')).toBeDefined();
+  });
+
+  it('switches to Progress when the Progress tab is clicked', async () => {
+    const user = userEvent.setup();
+    renderTabs();
+    await user.click(screen.getByText('Progress'));
+    expect(screen.getByText('progress-content')).toBeDefined();
   });
 });
