@@ -19,6 +19,8 @@ const COLOR_THEMES = [
     className: 'dark night-purple',
     color: '#1E0E34',
   },
+  { id: 'comic-blue', label: 'Comic Blue', className: 'dark comic-blue', color: '#0d1a2e' },
+  { id: 'comic-green', label: 'Comic Green', className: 'dark comic-green', color: '#111a0a' },
 ] as const;
 
 const TYPO_THEMES = [

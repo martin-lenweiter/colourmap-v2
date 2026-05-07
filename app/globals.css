@@ -261,6 +261,78 @@
   --sidebar-ring: #8858c4;
 }
 
+/* ─── Comic Blue (deep warm navy, not dark-dark) ─── */
+.dark.comic-blue,
+.comic-blue {
+  --background: #0d1a2e;
+  --foreground: #d8e8f8;
+  --card: #132240;
+  --card-foreground: #d8e8f8;
+  --popover: #132240;
+  --popover-foreground: #d8e8f8;
+  --primary: #d8e8f8;
+  --primary-foreground: #0d1a2e;
+  --secondary: #1c3258;
+  --secondary-foreground: #d8e8f8;
+  --muted: #1c3258;
+  --muted-foreground: #88acd0;
+  --accent: #2a5090;
+  --accent-foreground: #d8e8f8;
+  --destructive: #d46870;
+  --border: rgba(120, 170, 220, 0.2);
+  --input: rgba(120, 170, 220, 0.22);
+  --ring: #4888c0;
+  --chart-1: #60a8e0;
+  --chart-2: #88c8f8;
+  --chart-3: #c4d880;
+  --chart-4: #e0b860;
+  --chart-5: #68c8a0;
+  --sidebar: #132240;
+  --sidebar-foreground: #d8e8f8;
+  --sidebar-primary: #60a8e0;
+  --sidebar-primary-foreground: #0d1a2e;
+  --sidebar-accent: #1c3258;
+  --sidebar-accent-foreground: #d8e8f8;
+  --sidebar-border: rgba(120, 170, 220, 0.2);
+  --sidebar-ring: #4888c0;
+}
+
+/* ─── Comic Green (camo olive, warm forest) ─── */
+.dark.comic-green,
+.comic-green {
+  --background: #111a0a;
+  --foreground: #d0ddc0;
+  --card: #182210;
+  --card-foreground: #d0ddc0;
+  --popover: #182210;
+  --popover-foreground: #d0ddc0;
+  --primary: #d0ddc0;
+  --primary-foreground: #111a0a;
+  --secondary: #253818;
+  --secondary-foreground: #d0ddc0;
+  --muted: #253818;
+  --muted-foreground: #90aa78;
+  --accent: #3a5820;
+  --accent-foreground: #d0ddc0;
+  --destructive: #c86860;
+  --border: rgba(140, 170, 100, 0.2);
+  --input: rgba(140, 170, 100, 0.22);
+  --ring: #70a040;
+  --chart-1: #90c060;
+  --chart-2: #c8b858;
+  --chart-3: #68c098;
+  --chart-4: #e09060;
+  --chart-5: #8888d0;
+  --sidebar: #182210;
+  --sidebar-foreground: #d0ddc0;
+  --sidebar-primary: #90c060;
+  --sidebar-primary-foreground: #111a0a;
+  --sidebar-accent: #253818;
+  --sidebar-accent-foreground: #d0ddc0;
+  --sidebar-border: rgba(140, 170, 100, 0.2);
+  --sidebar-ring: #70a040;
+}
+
 @layer base {
   * {
     @apply border-border outline-ring/50;

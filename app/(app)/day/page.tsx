@@ -1,15 +1,12 @@
 'use client';
 
 import CheckInPing from '@/components/CheckInPing';
+import DailyRituals from '@/components/DailyRituals';
 import DayTabs from '@/components/DayTabs';
 import DoingCardsPanel from '@/components/DoingCardsPanel';
-import DoingPanel from '@/components/DoingPanel';
-import FeelingCircles from '@/components/FeelingCircles';
 import FeelingCircles2 from '@/components/FeelingCircles2';
 import FirstRunOnboarding from '@/components/FirstRunOnboarding';
-import MoodSuggestion from '@/components/MoodSuggestion';
 import Overview2 from '@/components/Overview2';
-import SharingCheckIn from '@/components/SharingCheckIn';
 import { StyleProvider } from '@/components/StyleContext';
 import TodaysField from '@/components/TodaysField';
 
@@ -26,21 +23,14 @@ function DayContent() {
       <CheckInPing />
       <DayTabs
         dateLabel={dateStr}
-        feelingContent={
-          <div className="space-y-4">
-            <FeelingCircles />
-            <MoodSuggestion />
+        emotionContent={<FeelingCircles2 />}
+        missionContent={
+          <div className="space-y-3">
+            <DoingCardsPanel />
+            <DailyRituals />
           </div>
         }
-        ringContent={<FeelingCircles2 />}
-        doingContent={<DoingPanel />}
-        list2Content={<DoingCardsPanel />}
-        sharingContent={
-          <div className="space-y-4">
-            <SharingCheckIn />
-          </div>
-        }
-        roadContent={<Overview2 />}
+        progressContent={<Overview2 />}
       />
     </div>
   );

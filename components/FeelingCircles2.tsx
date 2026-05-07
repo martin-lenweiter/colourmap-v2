@@ -3,13 +3,16 @@
 import { useEffect, useRef, useState } from 'react';
 import SquareSlider from '@/components/SquareSlider';
 
+/* ─── Circle configs ─────────────────────────────────────────── */
 const CIRCLES = [
   {
     id: 'emotions',
     title: 'Emotions',
     lsIdxKey: 'colourmap:process-idx',
     lsFragKey: 'colourmap:ring-emotions-frag',
+    lsLogKey: 'colourmap:emotions-log',
     defaultIdx: 4,
+    reflectPrompt: 'What are you feeling right now?',
     levels: [
       { label: 'Shame', color: '#A8C0D0' },
       { label: 'Apathy', color: '#C0A0B8' },
@@ -28,11 +31,17 @@ const CIRCLES = [
     title: 'Body',
     lsIdxKey: 'colourmap:body-idx',
     lsFragKey: 'colourmap:ring-body-frag',
-    defaultIdx: 1,
+    lsLogKey: 'colourmap:body-log',
+    defaultIdx: 3,
+    reflectPrompt: 'How does your body feel?',
     levels: [
       { label: 'Depleted', color: '#A89090' },
+      { label: 'Drained', color: '#B09890' },
+      { label: 'Heavy', color: '#B8A088' },
       { label: 'Tense', color: '#C09878' },
+      { label: 'Warming', color: '#B0A878' },
       { label: 'Good', color: '#98B890' },
+      { label: 'Active', color: '#80B898' },
       { label: 'Energized', color: '#70B098' },
     ],
   },
@@ -41,7 +50,9 @@ const CIRCLES = [
     title: 'Mind',
     lsIdxKey: 'colourmap:presence-idx',
     lsFragKey: 'colourmap:ring-mind-frag',
+    lsLogKey: 'colourmap:mind-log',
     defaultIdx: 3,
+    reflectPrompt: 'Where is your mind at?',
     levels: [
       { label: 'Absent', color: '#B89088' },
       { label: 'Scattered', color: '#C4A888' },
@@ -53,45 +64,646 @@ const CIRCLES = [
   },
 ];
 
+/* ─── Focus levels ───────────────────────────────────────────── */
+const FOCUS_LEVELS = [
+  { label: 'Scattered', color: '#9098A8' },
+  { label: 'Distracted', color: '#A898B0' },
+  { label: 'Restless', color: '#B8A890' },
+  { label: 'Warming', color: '#C4A868' },
+  { label: 'Present', color: '#C4B058' },
+  { label: 'Locked', color: '#A8B870' },
+  { label: 'Flowing', color: '#88B888' },
+  { label: 'Zone', color: '#60C890' },
+];
+
+/* ─── Types ──────────────────────────────────────────────────── */
+type TrackEntry = { ts: string; idx: number; note: string };
+type FocusEntry = { ts: string; focusIdx: number; note: string; kind: 'reflect' | 'idea' };
+type Circle = (typeof CIRCLES)[number];
+
+/* ─── Ring constants (used by VizRing) ──────────────────────── */
 const SIZE = 210;
 const STROKE = 20;
 const R = (SIZE - STROKE) / 2;
 
-function useCircleState(circle: (typeof CIRCLES)[number]) {
-  const [idx, setIdx] = useState<number>(circle.defaultIdx);
-  const [fragment, setFragment] = useState('');
-  const [editing, setEditing] = useState(false);
-  const dragRef = useRef<{ startX: number; startIdx: number } | null>(null);
-  const idxRef = useRef<number>(idx);
-  const inputRef = useRef<HTMLInputElement>(null);
-  idxRef.current = idx;
+/* ─── Circle visual variants ─────────────────────────────────── */
+type VizProps = {
+  idx: number;
+  levels: { color: string; label: string }[];
+  dragging: boolean;
+  onPointerDown: (e: React.PointerEvent) => void;
+  onPointerMove: (e: React.PointerEvent) => void;
+  onPointerUp: () => void;
+};
 
-  useEffect(() => {
-    try {
-      const v = localStorage.getItem(circle.lsIdxKey);
-      if (v !== null) setIdx(Math.min(circle.levels.length - 1, Math.max(0, Number(v))));
-      const f = localStorage.getItem(circle.lsFragKey);
-      if (f) setFragment(f);
-    } catch {}
-  }, [circle.lsIdxKey, circle.lsFragKey, circle.levels.length]);
+/* V1 — Ball (draggable sphere) */
+function VizBall({ idx, levels, dragging, onPointerDown, onPointerMove, onPointerUp }: VizProps) {
+  const c = levels[idx]?.color ?? '#C4A060';
+  return (
+    <div
+      style={{
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        gap: 10,
+        touchAction: 'none',
+        userSelect: 'none',
+      }}
+    >
+      <span
+        className="block rounded-full"
+        onPointerDown={onPointerDown}
+        onPointerMove={onPointerMove}
+        onPointerUp={onPointerUp}
+        style={{
+          display: 'block',
+          width: 90,
+          height: 90,
+          background: c,
+          boxShadow: `0 12px 32px -8px ${c}88`,
+          transition: 'background 0.3s, box-shadow 0.3s',
+          cursor: 'ew-resize',
+          touchAction: 'none',
+          userSelect: 'none',
+        }}
+      />
+      <span
+        style={{
+          fontFamily: 'var(--font-serif)',
+          fontSize: 12,
+          fontWeight: 700,
+          color: c,
+          letterSpacing: '0.12em',
+          textTransform: 'uppercase',
+          transition: 'color 0.3s',
+        }}
+      >
+        {levels[idx]?.label}
+      </span>
+      <div
+        style={{
+          maxHeight: dragging ? 40 : 0,
+          opacity: dragging ? 1 : 0,
+          overflow: 'hidden',
+          transition: 'max-height 0.15s, opacity 0.15s',
+          pointerEvents: dragging ? 'auto' : 'none',
+        }}
+      >
+        <SquareSlider
+          colors={levels.map((l) => l.color)}
+          value={idx}
+          onChange={() => {}}
+          size={16}
+          gap={5}
+        />
+      </div>
+    </div>
+  );
+}
 
-  function saveIdx(i: number) {
-    const c = Math.max(0, Math.min(circle.levels.length - 1, i));
-    setIdx(c);
-    idxRef.current = c;
-    try {
-      localStorage.setItem(circle.lsIdxKey, String(c));
-    } catch {}
+/* V2 — Ring (SVG fill ring) */
+function VizRing({ idx, levels, onPointerDown, onPointerMove, onPointerUp }: VizProps) {
+  const c = levels[idx]?.color ?? '#C4A060';
+  return (
+    <div
+      style={{ display: 'flex', justifyContent: 'center', touchAction: 'none', userSelect: 'none' }}
+    >
+      <div style={{ position: 'relative', width: SIZE, height: SIZE }}>
+        <svg
+          width={SIZE}
+          height={SIZE}
+          style={{ display: 'block', cursor: 'ew-resize' }}
+          onPointerDown={onPointerDown}
+          onPointerMove={onPointerMove}
+          onPointerUp={onPointerUp}
+        >
+          <circle
+            cx={SIZE / 2}
+            cy={SIZE / 2}
+            r={R}
+            fill="none"
+            stroke={`${c}20`}
+            strokeWidth={STROKE}
+          />
+          <circle
+            cx={SIZE / 2}
+            cy={SIZE / 2}
+            r={R}
+            fill="none"
+            stroke={c}
+            strokeWidth={STROKE}
+            style={{ transition: 'stroke 0.3s' }}
+          />
+        </svg>
+        <div
+          style={{
+            position: 'absolute',
+            inset: STROKE,
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: 4,
+            pointerEvents: 'none',
+          }}
+        >
+          <span
+            style={{
+              fontFamily: 'var(--font-handwritten)',
+              fontSize: 26,
+              fontWeight: 700,
+              color: c,
+              lineHeight: 1.1,
+              textAlign: 'center',
+              transition: 'color 0.3s',
+            }}
+          >
+            {levels[idx]?.label}
+          </span>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* V3 — Arc gauge (speedometer) */
+function VizArc({ idx, levels, onPointerDown, onPointerMove, onPointerUp }: VizProps) {
+  const ACX = 70,
+    ACY = 72,
+    AR = 52;
+  const START = 135,
+    TOTAL = 270;
+  const c = levels[idx]?.color ?? '#C4A060';
+  const rat = levels.length > 1 ? idx / (levels.length - 1) : 0;
+  function ap(deg: number) {
+    const r = (deg * Math.PI) / 180;
+    return { x: ACX + AR * Math.cos(r), y: ACY + AR * Math.sin(r) };
   }
+  const p0 = ap(START),
+    pE = ap(START + rat * TOTAL),
+    pF = ap(START + TOTAL);
+  const bg = `M ${p0.x} ${p0.y} A ${AR} ${AR} 0 1 1 ${pF.x} ${pF.y}`;
+  const large = rat * TOTAL > 180 ? 1 : 0;
+  const fill = rat > 0 ? `M ${p0.x} ${p0.y} A ${AR} ${AR} 0 ${large} 1 ${pE.x} ${pE.y}` : '';
+  return (
+    <div
+      style={{
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        gap: 6,
+        touchAction: 'none',
+        userSelect: 'none',
+      }}
+    >
+      <svg
+        width={140}
+        height={120}
+        style={{ display: 'block', cursor: 'ew-resize', overflow: 'visible' }}
+        onPointerDown={onPointerDown}
+        onPointerMove={onPointerMove}
+        onPointerUp={onPointerUp}
+      >
+        <defs>
+          <filter id="arc-g">
+            <feGaussianBlur stdDeviation="3" result="b" />
+            <feMerge>
+              <feMergeNode in="b" />
+              <feMergeNode in="SourceGraphic" />
+            </feMerge>
+          </filter>
+        </defs>
+        <path d={bg} fill="none" stroke={c} strokeWidth={11} opacity={0.12} strokeLinecap="round" />
+        {rat > 0 && (
+          <path
+            d={fill}
+            fill="none"
+            stroke={c}
+            strokeWidth={11}
+            strokeLinecap="round"
+            filter="url(#arc-g)"
+          />
+        )}
+        <circle cx={pE.x} cy={pE.y} r={9} fill={c} filter="url(#arc-g)" />
+        <circle cx={pE.x} cy={pE.y} r={3.5} fill="rgba(255,255,255,0.9)" />
+      </svg>
+      <span
+        style={{
+          fontFamily: 'var(--font-serif)',
+          fontSize: 12,
+          fontWeight: 700,
+          color: c,
+          letterSpacing: '0.12em',
+          textTransform: 'uppercase',
+        }}
+      >
+        {levels[idx]?.label}
+      </span>
+    </div>
+  );
+}
 
-  function saveFrag(v: string) {
-    setFragment(v);
-    try {
-      localStorage.setItem(circle.lsFragKey, v);
-    } catch {}
-  }
+/* V4 — Segment ring (N dots arranged in circle) */
+function VizSegments({ idx, levels, onPointerDown, onPointerMove, onPointerUp }: VizProps) {
+  const SCX = 70,
+    SCY = 70,
+    SR = 54;
+  const n = levels.length;
+  const c = levels[idx]?.color ?? '#C4A060';
+  return (
+    <div style={{ touchAction: 'none', userSelect: 'none' }}>
+      <svg
+        width={140}
+        height={140}
+        style={{ display: 'block', cursor: 'ew-resize', overflow: 'visible' }}
+        onPointerDown={onPointerDown}
+        onPointerMove={onPointerMove}
+        onPointerUp={onPointerUp}
+      >
+        <defs>
+          <filter id="seg-g">
+            <feGaussianBlur stdDeviation="4" result="b" />
+            <feMerge>
+              <feMergeNode in="b" />
+              <feMergeNode in="SourceGraphic" />
+            </feMerge>
+          </filter>
+        </defs>
+        {levels.map((lv, i) => {
+          const ang = (i / n) * 360 - 90;
+          const rad = (ang * Math.PI) / 180;
+          const x = SCX + SR * Math.cos(rad),
+            y = SCY + SR * Math.sin(rad);
+          const active = i <= idx,
+            isCur = i === idx;
+          return (
+            <g key={i}>
+              {isCur && (
+                <circle cx={x} cy={y} r={14} fill={lv.color} opacity={0.2} filter="url(#seg-g)" />
+              )}
+              <circle
+                cx={x}
+                cy={y}
+                r={active ? (isCur ? 8 : 5) : 3.5}
+                fill={lv.color}
+                opacity={active ? 1 : 0.18}
+              />
+              {isCur && <circle cx={x} cy={y} r={3} fill="rgba(255,255,255,0.9)" />}
+            </g>
+          );
+        })}
+        <text
+          x={SCX}
+          y={SCY - 5}
+          textAnchor="middle"
+          fill={c}
+          fontSize={11}
+          fontWeight={700}
+          style={{
+            fontFamily: 'var(--font-serif)',
+            letterSpacing: '0.1em',
+            textTransform: 'uppercase',
+          }}
+        >
+          {levels[idx]?.label}
+        </text>
+        <text
+          x={SCX}
+          y={SCY + 9}
+          textAnchor="middle"
+          fill={c}
+          fontSize={8}
+          opacity={0.45}
+          style={{ fontFamily: 'var(--font-serif)' }}
+        >
+          {idx + 1} / {n}
+        </text>
+      </svg>
+    </div>
+  );
+}
 
-  return { idx, fragment, editing, setEditing, dragRef, idxRef, inputRef, saveIdx, saveFrag };
+/* V5 — Liquid fill */
+function VizLiquid({ idx, levels, onPointerDown, onPointerMove, onPointerUp }: VizProps) {
+  const LCX = 60,
+    LCY = 60,
+    LR = 50;
+  const c = levels[idx]?.color ?? '#C4A060';
+  const rat = levels.length > 1 ? idx / (levels.length - 1) : 0;
+  const fillY = LCY + LR - rat * 2 * LR;
+  return (
+    <div
+      style={{
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        gap: 10,
+        touchAction: 'none',
+        userSelect: 'none',
+      }}
+    >
+      <svg
+        width={120}
+        height={120}
+        style={{ display: 'block', cursor: 'ew-resize', overflow: 'visible' }}
+        onPointerDown={onPointerDown}
+        onPointerMove={onPointerMove}
+        onPointerUp={onPointerUp}
+      >
+        <defs>
+          <clipPath id="liq-clip">
+            <circle cx={LCX} cy={LCY} r={LR} />
+          </clipPath>
+          <filter id="liq-g">
+            <feGaussianBlur stdDeviation="3" result="b" />
+            <feMerge>
+              <feMergeNode in="b" />
+              <feMergeNode in="SourceGraphic" />
+            </feMerge>
+          </filter>
+        </defs>
+        <circle cx={LCX} cy={LCY} r={LR} fill="none" stroke={c} strokeWidth={1.5} opacity={0.3} />
+        {rat > 0 && (
+          <rect
+            x={LCX - LR}
+            y={fillY}
+            width={LR * 2}
+            height={LCY + LR - fillY}
+            fill={c}
+            opacity={0.7}
+            clipPath="url(#liq-clip)"
+            filter="url(#liq-g)"
+          />
+        )}
+        {rat > 0 && rat < 1 && (
+          <line
+            x1={LCX - LR + 2}
+            y1={fillY}
+            x2={LCX + LR - 2}
+            y2={fillY}
+            stroke={c}
+            strokeWidth={1.5}
+            opacity={0.55}
+            clipPath="url(#liq-clip)"
+          />
+        )}
+        <text
+          x={LCX}
+          y={LCY + 5}
+          textAnchor="middle"
+          fill="rgba(255,255,255,0.92)"
+          fontSize={11}
+          fontWeight={700}
+          opacity={rat > 0.45 ? 1 : 0}
+          style={{
+            fontFamily: 'var(--font-serif)',
+            letterSpacing: '0.1em',
+            textTransform: 'uppercase',
+            transition: 'opacity 0.3s',
+          }}
+        >
+          {levels[idx]?.label}
+        </text>
+      </svg>
+      <span
+        style={{
+          fontFamily: 'var(--font-serif)',
+          fontSize: 12,
+          fontWeight: 700,
+          color: c,
+          letterSpacing: '0.12em',
+          textTransform: 'uppercase',
+          opacity: rat <= 0.45 ? 1 : 0,
+          transition: 'opacity 0.3s',
+        }}
+      >
+        {levels[idx]?.label}
+      </span>
+    </div>
+  );
+}
+
+const CIRCLE_VIZS = [VizBall, VizRing, VizArc, VizSegments, VizLiquid] as const;
+const CIRCLE_VIZ_LABELS = ['Ball', 'Ring', 'Arc', 'Dots', 'Liquid'] as const;
+
+/* ─── Shared helpers ─────────────────────────────────────────── */
+function timeAgo(ts: string) {
+  const diff = Date.now() - new Date(ts).getTime();
+  const m = Math.floor(diff / 60000);
+  if (m < 1) return 'now';
+  if (m < 60) return `${m}m`;
+  const h = Math.floor(m / 60);
+  if (h < 24) return `${h}h`;
+  return `${Math.floor(h / 24)}d`;
+}
+
+function getLast7Days(log: TrackEntry[], levels: { color: string }[]) {
+  return Array.from({ length: 7 }, (_, i) => {
+    const d = new Date();
+    d.setDate(d.getDate() - (6 - i));
+    const start = new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime();
+    const end = start + 86400000;
+    const entry = log.find((e) => {
+      const t = new Date(e.ts).getTime();
+      return t >= start && t < end;
+    });
+    return {
+      dayLabel: ['S', 'M', 'T', 'W', 'T', 'F', 'S'][d.getDay()],
+      isToday: i === 6,
+      color: entry ? (levels[entry.idx]?.color ?? null) : null,
+    };
+  });
+}
+
+/* ─── Shared sub-components ──────────────────────────────────── */
+function ReflectInput({
+  placeholder,
+  onAdd,
+}: {
+  placeholder: string;
+  onAdd: (note: string) => void;
+}) {
+  const [val, setVal] = useState('');
+  return (
+    <textarea
+      value={val}
+      rows={1}
+      onChange={(e) => {
+        setVal(e.target.value);
+        const el = e.currentTarget;
+        el.style.height = 'auto';
+        el.style.height = `${Math.min(el.scrollHeight, 72)}px`;
+      }}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter' && !e.shiftKey) {
+          e.preventDefault();
+          if (val.trim()) {
+            onAdd(val.trim());
+            setVal('');
+          }
+        }
+      }}
+      placeholder={placeholder}
+      spellCheck={false}
+      autoCorrect="off"
+      autoCapitalize="off"
+      style={{
+        background: 'transparent',
+        border: 'none',
+        outline: 'none',
+        borderBottom: `1px solid rgba(196,160,96,0.18)`,
+        fontFamily: 'var(--font-handwritten)',
+        fontStyle: 'italic',
+        fontSize: 17,
+        color: '#5C3018',
+        padding: '2px 0',
+        width: '100%',
+        resize: 'none',
+        overflow: 'hidden',
+        lineHeight: 1.35,
+        maxHeight: 72,
+        textAlign: 'center',
+      }}
+    />
+  );
+}
+
+function WeekRow({ log, levels }: { log: TrackEntry[]; levels: { color: string }[] }) {
+  const days = getLast7Days(log, levels);
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+      <span
+        style={{
+          fontFamily: 'var(--font-serif)',
+          fontSize: 9,
+          fontWeight: 700,
+          letterSpacing: '0.18em',
+          textTransform: 'uppercase',
+          color: '#8A6A4A',
+          opacity: 0.38,
+          textAlign: 'center',
+        }}
+      >
+        Week
+      </span>
+      <div style={{ display: 'flex', gap: 5, justifyContent: 'center' }}>
+        {days.map(({ dayLabel, isToday, color }, i) => (
+          <div
+            key={i}
+            style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3 }}
+          >
+            <span
+              style={{
+                display: 'block',
+                width: 26,
+                height: 26,
+                borderRadius: 6,
+                background: color ?? 'rgba(196,160,96,0.1)',
+                border: isToday
+                  ? `1.5px solid rgba(196,160,96,0.5)`
+                  : `1px solid rgba(196,160,96,0.15)`,
+                transition: 'background 0.3s',
+              }}
+            />
+            <span
+              style={{
+                fontFamily: 'var(--font-serif)',
+                fontSize: 9,
+                color: '#8A6A4A',
+                opacity: isToday ? 0.7 : 0.3,
+              }}
+            >
+              {dayLabel}
+            </span>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function HistoryList({
+  log,
+  levels,
+}: {
+  log: TrackEntry[];
+  levels: { label: string; color: string }[];
+}) {
+  if (log.length === 0) return null;
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 7 }}>
+      <span
+        style={{
+          fontFamily: 'var(--font-serif)',
+          fontSize: 9,
+          fontWeight: 700,
+          letterSpacing: '0.18em',
+          textTransform: 'uppercase',
+          color: '#8A6A4A',
+          opacity: 0.38,
+          textAlign: 'center',
+        }}
+      >
+        History
+      </span>
+      {log.slice(0, 8).map((entry, i) => {
+        const lv = levels[entry.idx];
+        return (
+          <div key={i} style={{ display: 'flex', gap: 8, alignItems: 'baseline' }}>
+            <span
+              style={{
+                fontFamily: 'var(--font-serif)',
+                fontSize: 10,
+                color: '#8A6A4A',
+                opacity: 0.32,
+                flexShrink: 0,
+                minWidth: 26,
+                textAlign: 'right',
+              }}
+            >
+              {timeAgo(entry.ts)}
+            </span>
+            <span
+              style={{
+                display: 'inline-block',
+                width: 6,
+                height: 6,
+                borderRadius: 1.5,
+                background: lv?.color,
+                flexShrink: 0,
+                alignSelf: 'center',
+              }}
+            />
+            <span
+              style={{
+                fontFamily: 'var(--font-serif)',
+                fontSize: 10,
+                fontWeight: 700,
+                textTransform: 'uppercase',
+                letterSpacing: '0.06em',
+                color: lv?.color,
+                flexShrink: 0,
+              }}
+            >
+              {lv?.label}
+            </span>
+            <span
+              style={{
+                fontFamily: 'var(--font-serif)',
+                fontStyle: 'italic',
+                fontSize: 12,
+                color: '#5C3018',
+                opacity: 0.52,
+                lineHeight: 1.3,
+              }}
+            >
+              {entry.note}
+            </span>
+          </div>
+        );
+      })}
+    </div>
+  );
 }
 
 function FragmentField({
@@ -161,241 +773,631 @@ function FragmentField({
   );
 }
 
-/* ── Emotions: same DraggableCircle + SquareSlider as FeelingCircles ── */
-function SliderCircle({ circle }: { circle: (typeof CIRCLES)[number] }) {
-  const { idx, fragment, editing, setEditing, dragRef, idxRef, inputRef, saveIdx, saveFrag } =
-    useCircleState(circle);
+/* ─── CircleTracker — cockpit strip + expanded ───────────────── */
+function CircleTracker({ circle, circleVariant }: { circle: Circle; circleVariant: number }) {
+  const [idx, setIdx] = useState(circle.defaultIdx);
+  const [fragment, setFragment] = useState('');
+  const [editing, setEditing] = useState(false);
   const [dragging, setDragging] = useState(false);
+  const [log, setLog] = useState<TrackEntry[]>([]);
+  const [expanded, setExpanded] = useState(false);
+  const dragRef = useRef<{ startX: number; startIdx: number } | null>(null);
+  const idxRef = useRef(idx);
+  const inputRef = useRef<HTMLInputElement>(null);
+  idxRef.current = idx;
+
+  useEffect(() => {
+    try {
+      const v = localStorage.getItem(circle.lsIdxKey);
+      if (v !== null) setIdx(Math.min(circle.levels.length - 1, Math.max(0, Number(v))));
+      const f = localStorage.getItem(circle.lsFragKey);
+      if (f) setFragment(f);
+      const l = localStorage.getItem(circle.lsLogKey);
+      if (l) setLog(JSON.parse(l));
+    } catch {}
+  }, [circle.lsIdxKey, circle.lsFragKey, circle.lsLogKey, circle.levels.length]);
+
+  function saveIdx(i: number) {
+    const c = Math.max(0, Math.min(circle.levels.length - 1, i));
+    setIdx(c);
+    idxRef.current = c;
+    try {
+      localStorage.setItem(circle.lsIdxKey, String(c));
+    } catch {}
+  }
+
+  function saveFrag(v: string) {
+    setFragment(v);
+    try {
+      localStorage.setItem(circle.lsFragKey, v);
+    } catch {}
+  }
+
+  function addEntry(note: string) {
+    const entry: TrackEntry = { ts: new Date().toISOString(), idx: idxRef.current, note };
+    const next = [entry, ...log];
+    setLog(next);
+    try {
+      localStorage.setItem(circle.lsLogKey, JSON.stringify(next.slice(0, 100)));
+    } catch {}
+  }
 
   const level = circle.levels[idx] ?? circle.levels[0];
 
   return (
     <div
       style={{
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        gap: 8,
-        touchAction: 'none',
-        userSelect: 'none',
+        border: `1px solid rgba(196,160,96,0.2)`,
+        borderRadius: 16,
+        background: 'rgba(255,255,255,0.03)',
+        overflow: 'hidden',
       }}
     >
-      <span
-        style={{
-          fontFamily: 'var(--font-serif)',
-          fontSize: 10,
-          fontWeight: 700,
-          color: '#7A5438',
-          opacity: 0.5,
-          letterSpacing: '0.18em',
-          textTransform: 'uppercase',
-        }}
-      >
-        {circle.title}
-      </span>
-
-      {/* 90×90 colored block — drag left/right */}
-      <span
-        className="block rounded-full"
-        onPointerDown={(e) => {
-          (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
-          dragRef.current = { startX: e.clientX, startIdx: idxRef.current };
-          setDragging(true);
-        }}
-        onPointerMove={(e) => {
-          if (!dragRef.current || e.buttons !== 1) return;
-          const steps = Math.round((e.clientX - dragRef.current.startX) / 22);
-          const next = Math.max(
-            0,
-            Math.min(circle.levels.length - 1, dragRef.current.startIdx + steps),
-          );
-          if (next !== idxRef.current) saveIdx(next);
-        }}
-        onPointerUp={() => {
-          dragRef.current = null;
-          setDragging(false);
-        }}
-        style={{
-          display: 'block',
-          width: 90,
-          height: 90,
-          background: level.color,
-          boxShadow: `0 12px 32px -8px ${level.color}88`,
-          transition: 'background 0.3s, box-shadow 0.3s',
-          cursor: 'ew-resize',
-          touchAction: 'none',
-          userSelect: 'none',
-        }}
-      />
-
-      <span
-        style={{
-          fontFamily: 'var(--font-serif)',
-          fontSize: 12,
-          fontWeight: 700,
-          color: level.color,
-          letterSpacing: '0.12em',
-          textTransform: 'uppercase',
-          transition: 'color 0.3s',
-        }}
-      >
-        {level.label}
-      </span>
-
-      {/* SquareSlider — appears while dragging */}
+      {/* ── Header ───────────────────────────────────────────── */}
       <div
+        onClick={() => setExpanded((e) => !e)}
         style={{
-          maxHeight: dragging ? 40 : 0,
-          opacity: dragging ? 1 : 0,
-          overflow: 'hidden',
-          transition: 'max-height 0.15s, opacity 0.15s',
-          pointerEvents: dragging ? 'auto' : 'none',
-        }}
-      >
-        <SquareSlider
-          colors={circle.levels.map((l) => l.color)}
-          value={idx}
-          onChange={saveIdx}
-          size={16}
-          gap={5}
-        />
-      </div>
-
-      <FragmentField
-        fragment={fragment}
-        editing={editing}
-        setEditing={setEditing}
-        saveFrag={saveFrag}
-        inputRef={inputRef}
-        color={level.color}
-      />
-    </div>
-  );
-}
-
-/* ── Body / Mind: SVG ring ── */
-function RingCircle({ circle }: { circle: (typeof CIRCLES)[number] }) {
-  const { idx, fragment, editing, setEditing, dragRef, idxRef, inputRef, saveIdx, saveFrag } =
-    useCircleState(circle);
-
-  const level = circle.levels[idx] ?? circle.levels[0];
-
-  return (
-    <div
-      style={{
-        position: 'relative',
-        width: SIZE,
-        height: SIZE,
-        touchAction: 'none',
-        userSelect: 'none',
-      }}
-    >
-      <svg
-        width={SIZE}
-        height={SIZE}
-        style={{ display: 'block', cursor: 'ew-resize' }}
-        onPointerDown={(e) => {
-          if (editing) return;
-          (e.currentTarget as SVGSVGElement).setPointerCapture(e.pointerId);
-          dragRef.current = { startX: e.clientX, startIdx: idxRef.current };
-        }}
-        onPointerMove={(e) => {
-          if (!dragRef.current) return;
-          const steps = Math.round((e.clientX - dragRef.current.startX) / 22);
-          saveIdx(dragRef.current.startIdx + steps);
-        }}
-        onPointerUp={() => {
-          dragRef.current = null;
-        }}
-      >
-        <circle
-          cx={SIZE / 2}
-          cy={SIZE / 2}
-          r={R}
-          fill="none"
-          stroke={`${level.color}20`}
-          strokeWidth={STROKE}
-        />
-        <circle
-          cx={SIZE / 2}
-          cy={SIZE / 2}
-          r={R}
-          fill="none"
-          stroke={level.color}
-          strokeWidth={STROKE}
-          style={{ transition: 'stroke 0.3s' }}
-        />
-      </svg>
-
-      <div
-        style={{
-          position: 'absolute',
-          inset: STROKE,
+          padding: '10px 16px',
+          borderBottom: expanded ? `1px solid rgba(196,160,96,0.2)` : 'none',
+          background: 'rgba(196,160,96,0.1)',
+          cursor: 'pointer',
           display: 'flex',
-          flexDirection: 'column',
           alignItems: 'center',
-          justifyContent: 'center',
-          gap: 4,
-          pointerEvents: 'none',
         }}
       >
+        <span style={{ flex: 1 }} />
         <span
           style={{
             fontFamily: 'var(--font-serif)',
-            fontSize: 10,
-            fontWeight: 700,
-            letterSpacing: '0.22em',
+            fontSize: 13,
+            fontWeight: 800,
             textTransform: 'uppercase',
-            color: level.color,
-            opacity: 0.65,
+            letterSpacing: '0.14em',
+            color: '#5C3018',
           }}
         >
           {circle.title}
         </span>
-        <span
-          style={{
-            fontFamily: 'var(--font-handwritten)',
-            fontSize: 26,
-            fontWeight: 700,
-            color: level.color,
-            lineHeight: 1.1,
-            textAlign: 'center',
-            transition: 'color 0.3s',
-          }}
-        >
-          {level.label}
+        <span style={{ flex: 1, display: 'flex', justifyContent: 'flex-end' }}>
+          <span
+            style={{
+              color: '#C4A060',
+              opacity: 0.4,
+              fontSize: 11,
+              transform: expanded ? 'rotate(180deg)' : 'rotate(0deg)',
+              transition: 'transform 0.2s',
+            }}
+          >
+            ▾
+          </span>
         </span>
-        <FragmentField
-          fragment={fragment}
-          editing={editing}
-          setEditing={setEditing}
-          saveFrag={saveFrag}
-          inputRef={inputRef}
-          color={level.color}
-        />
       </div>
+
+      {/* ── Expanded ─────────────────────────────────────────── */}
+      {expanded && (
+        <div
+          style={{ padding: '22px 16px 20px', display: 'flex', flexDirection: 'column', gap: 24 }}
+        >
+          {/* Circle visual */}
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 10 }}>
+            {(() => {
+              const Viz = CIRCLE_VIZS[circleVariant] ?? VizBall;
+              return (
+                <Viz
+                  idx={idx}
+                  levels={circle.levels}
+                  dragging={dragging}
+                  onPointerDown={(e) => {
+                    (e.currentTarget as Element).setPointerCapture(e.pointerId);
+                    dragRef.current = { startX: e.clientX, startIdx: idxRef.current };
+                    setDragging(true);
+                  }}
+                  onPointerMove={(e) => {
+                    if (!dragRef.current || e.buttons !== 1) return;
+                    const steps = Math.round((e.clientX - dragRef.current.startX) / 22);
+                    const next = Math.max(
+                      0,
+                      Math.min(circle.levels.length - 1, dragRef.current.startIdx + steps),
+                    );
+                    if (next !== idxRef.current) saveIdx(next);
+                  }}
+                  onPointerUp={() => {
+                    dragRef.current = null;
+                    setDragging(false);
+                  }}
+                />
+              );
+            })()}
+            <FragmentField
+              fragment={fragment}
+              editing={editing}
+              setEditing={setEditing}
+              saveFrag={saveFrag}
+              inputRef={inputRef}
+              color={level.color}
+            />
+          </div>
+
+          {/* Reflect */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
+            <span
+              style={{
+                fontFamily: 'var(--font-serif)',
+                fontSize: 9,
+                fontWeight: 700,
+                letterSpacing: '0.18em',
+                textTransform: 'uppercase',
+                color: '#8A6A4A',
+                opacity: 0.45,
+                textAlign: 'center',
+              }}
+            >
+              Reflect
+            </span>
+            {log.slice(0, 3).map((e, i) => (
+              <span
+                key={i}
+                style={{
+                  fontFamily: 'var(--font-handwritten)',
+                  fontStyle: 'italic',
+                  fontSize: 16,
+                  color: '#5C3018',
+                  opacity: 0.65,
+                  lineHeight: 1.35,
+                  textAlign: 'center',
+                }}
+              >
+                {e.note}
+              </span>
+            ))}
+            <ReflectInput placeholder={circle.reflectPrompt} onAdd={addEntry} />
+          </div>
+
+          {/* Weekly tracker */}
+          <WeekRow log={log} levels={circle.levels} />
+
+          {/* History */}
+          <HistoryList log={log} levels={circle.levels} />
+        </div>
+      )}
     </div>
   );
 }
 
-export default function FeelingCircles2() {
+/* ─── Focus log input ────────────────────────────────────────── */
+function FocusLogSection({
+  label,
+  placeholder,
+  entries,
+  onAdd,
+}: {
+  label: string;
+  placeholder: string;
+  entries: FocusEntry[];
+  onAdd: (note: string) => void;
+}) {
+  const [val, setVal] = useState('');
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
+      <span
+        style={{
+          fontFamily: 'var(--font-serif)',
+          fontSize: 9,
+          fontWeight: 700,
+          letterSpacing: '0.18em',
+          textTransform: 'uppercase',
+          color: '#8A6A4A',
+          opacity: 0.45,
+          textAlign: 'center',
+        }}
+      >
+        {label}
+      </span>
+      {entries.slice(-3).map((e, i) => (
+        <span
+          key={i}
+          style={{
+            fontFamily: 'var(--font-handwritten)',
+            fontStyle: 'italic',
+            fontSize: 16,
+            color: '#5C3018',
+            opacity: 0.65,
+            lineHeight: 1.35,
+            textAlign: 'center',
+          }}
+        >
+          {e.note}
+        </span>
+      ))}
+      <textarea
+        value={val}
+        rows={1}
+        onChange={(e) => {
+          setVal(e.target.value);
+          const el = e.currentTarget;
+          el.style.height = 'auto';
+          el.style.height = `${Math.min(el.scrollHeight, 72)}px`;
+        }}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault();
+            if (val.trim()) {
+              onAdd(val.trim());
+              setVal('');
+            }
+          }
+        }}
+        placeholder={placeholder}
+        spellCheck={false}
+        autoCorrect="off"
+        autoCapitalize="off"
+        style={{
+          background: 'transparent',
+          border: 'none',
+          outline: 'none',
+          borderBottom: `1px solid rgba(196,160,96,0.18)`,
+          fontFamily: 'var(--font-handwritten)',
+          fontStyle: 'italic',
+          fontSize: 17,
+          color: '#5C3018',
+          padding: '2px 0',
+          width: '100%',
+          resize: 'none',
+          overflow: 'hidden',
+          lineHeight: 1.35,
+          maxHeight: 72,
+          textAlign: 'center',
+        }}
+      />
+    </div>
+  );
+}
+
+/* ─── Focus tracker ──────────────────────────────────────────── */
+function FocusTracker({ circleVariant }: { circleVariant: number }) {
+  const [focusIdx, setFocusIdx] = useState(3);
+  const [dragging, setDragging] = useState(false);
+  const [log, setLog] = useState<FocusEntry[]>([]);
+  const [expanded, setExpanded] = useState(false);
+  const dragRef = useRef<{ startX: number; startIdx: number } | null>(null);
+  const idxRef = useRef(focusIdx);
+  idxRef.current = focusIdx;
+
+  useEffect(() => {
+    try {
+      const v = localStorage.getItem('colourmap:focus-idx');
+      if (v !== null) setFocusIdx(Math.min(7, Math.max(0, Number(v))));
+      const l = localStorage.getItem('colourmap:focus-log');
+      if (l) setLog(JSON.parse(l));
+    } catch {}
+  }, []);
+
+  function saveIdx(i: number) {
+    const c = Math.max(0, Math.min(7, i));
+    setFocusIdx(c);
+    idxRef.current = c;
+    try {
+      localStorage.setItem('colourmap:focus-idx', String(c));
+    } catch {}
+  }
+
+  function addEntry(note: string, kind: 'reflect' | 'idea') {
+    const entry: FocusEntry = {
+      ts: new Date().toISOString(),
+      focusIdx: idxRef.current,
+      note,
+      kind,
+    };
+    const next = [entry, ...log];
+    setLog(next);
+    try {
+      localStorage.setItem('colourmap:focus-log', JSON.stringify(next.slice(0, 50)));
+    } catch {}
+  }
+
+  const level = FOCUS_LEVELS[focusIdx];
+  const reflections = log.filter((e) => e.kind === 'reflect');
+  const ideas = log.filter((e) => e.kind === 'idea');
+
+  /* weekly tracker for focus */
+  const focusWeekDays = Array.from({ length: 7 }, (_, i) => {
+    const d = new Date();
+    d.setDate(d.getDate() - (6 - i));
+    const start = new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime();
+    const end = start + 86400000;
+    const entry = log.find((e) => {
+      const t = new Date(e.ts).getTime();
+      return t >= start && t < end;
+    });
+    return {
+      dayLabel: ['S', 'M', 'T', 'W', 'T', 'F', 'S'][d.getDay()],
+      isToday: i === 6,
+      color: entry ? (FOCUS_LEVELS[entry.focusIdx]?.color ?? null) : null,
+    };
+  });
+
   return (
     <div
       style={{
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        gap: 36,
-        padding: '12px 0 32px',
+        border: `1px solid rgba(196,160,96,0.2)`,
+        borderRadius: 16,
+        background: 'rgba(255,255,255,0.03)',
+        overflow: 'hidden',
       }}
     >
-      {CIRCLES.map((c) =>
-        c.id === 'emotions' ? (
-          <SliderCircle key={c.id} circle={c} />
-        ) : (
-          <RingCircle key={c.id} circle={c} />
-        ),
+      {/* Header */}
+      <div
+        onClick={() => setExpanded((e) => !e)}
+        style={{
+          padding: '10px 16px',
+          borderBottom: expanded ? `1px solid rgba(196,160,96,0.2)` : 'none',
+          background: 'rgba(196,160,96,0.1)',
+          cursor: 'pointer',
+          display: 'flex',
+          alignItems: 'center',
+        }}
+      >
+        <span style={{ flex: 1 }} />
+        <span
+          style={{
+            fontFamily: 'var(--font-serif)',
+            fontSize: 13,
+            fontWeight: 800,
+            textTransform: 'uppercase',
+            letterSpacing: '0.14em',
+            color: '#5C3018',
+          }}
+        >
+          Focus
+        </span>
+        <span style={{ flex: 1, display: 'flex', justifyContent: 'flex-end' }}>
+          <span
+            style={{
+              color: '#C4A060',
+              opacity: 0.4,
+              fontSize: 11,
+              transform: expanded ? 'rotate(180deg)' : 'rotate(0deg)',
+              transition: 'transform 0.2s',
+            }}
+          >
+            ▾
+          </span>
+        </span>
+      </div>
+
+      {/* Expanded */}
+      {expanded && (
+        <div
+          style={{ padding: '22px 16px 20px', display: 'flex', flexDirection: 'column', gap: 24 }}
+        >
+          {/* Focus visual */}
+          {(() => {
+            const Viz = CIRCLE_VIZS[circleVariant] ?? VizBall;
+            return (
+              <div style={{ display: 'flex', justifyContent: 'center' }}>
+                <Viz
+                  idx={focusIdx}
+                  levels={FOCUS_LEVELS}
+                  dragging={dragging}
+                  onPointerDown={(e) => {
+                    (e.currentTarget as Element).setPointerCapture(e.pointerId);
+                    dragRef.current = { startX: e.clientX, startIdx: idxRef.current };
+                    setDragging(true);
+                  }}
+                  onPointerMove={(e) => {
+                    if (!dragRef.current || e.buttons !== 1) return;
+                    const steps = Math.round((e.clientX - dragRef.current.startX) / 22);
+                    const next = Math.max(0, Math.min(7, dragRef.current.startIdx + steps));
+                    if (next !== idxRef.current) saveIdx(next);
+                  }}
+                  onPointerUp={() => {
+                    dragRef.current = null;
+                    setDragging(false);
+                  }}
+                />
+              </div>
+            );
+          })()}
+
+          <FocusLogSection
+            label="Reflect"
+            placeholder="What's your experience right now?"
+            entries={reflections}
+            onAdd={(note) => addEntry(note, 'reflect')}
+          />
+          <FocusLogSection
+            label="Ideas to improve"
+            placeholder="What could sharpen your focus?"
+            entries={ideas}
+            onAdd={(note) => addEntry(note, 'idea')}
+          />
+
+          {/* Weekly */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+            <span
+              style={{
+                fontFamily: 'var(--font-serif)',
+                fontSize: 9,
+                fontWeight: 700,
+                letterSpacing: '0.18em',
+                textTransform: 'uppercase',
+                color: '#8A6A4A',
+                opacity: 0.38,
+                textAlign: 'center',
+              }}
+            >
+              Week
+            </span>
+            <div style={{ display: 'flex', gap: 5, justifyContent: 'center' }}>
+              {focusWeekDays.map(({ dayLabel, isToday, color }, i) => (
+                <div
+                  key={i}
+                  style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3 }}
+                >
+                  <span
+                    style={{
+                      display: 'block',
+                      width: 26,
+                      height: 26,
+                      borderRadius: 6,
+                      background: color ?? 'rgba(196,160,96,0.1)',
+                      border: isToday
+                        ? `1.5px solid rgba(196,160,96,0.5)`
+                        : `1px solid rgba(196,160,96,0.15)`,
+                      transition: 'background 0.3s',
+                    }}
+                  />
+                  <span
+                    style={{
+                      fontFamily: 'var(--font-serif)',
+                      fontSize: 9,
+                      color: '#8A6A4A',
+                      opacity: isToday ? 0.7 : 0.3,
+                    }}
+                  >
+                    {dayLabel}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* History */}
+          {log.length > 0 && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 7 }}>
+              <span
+                style={{
+                  fontFamily: 'var(--font-serif)',
+                  fontSize: 9,
+                  fontWeight: 700,
+                  letterSpacing: '0.18em',
+                  textTransform: 'uppercase',
+                  color: '#8A6A4A',
+                  opacity: 0.38,
+                  textAlign: 'center',
+                }}
+              >
+                History
+              </span>
+              {log.slice(0, 8).map((entry, i) => {
+                const el = FOCUS_LEVELS[entry.focusIdx];
+                return (
+                  <div key={i} style={{ display: 'flex', gap: 8, alignItems: 'baseline' }}>
+                    <span
+                      style={{
+                        fontFamily: 'var(--font-serif)',
+                        fontSize: 10,
+                        color: '#8A6A4A',
+                        opacity: 0.32,
+                        flexShrink: 0,
+                        minWidth: 26,
+                        textAlign: 'right',
+                      }}
+                    >
+                      {timeAgo(entry.ts)}
+                    </span>
+                    <span
+                      style={{
+                        display: 'inline-block',
+                        width: 6,
+                        height: 6,
+                        borderRadius: 1.5,
+                        background: el?.color,
+                        flexShrink: 0,
+                        alignSelf: 'center',
+                      }}
+                    />
+                    <span
+                      style={{
+                        fontFamily: 'var(--font-serif)',
+                        fontSize: 10,
+                        fontWeight: 700,
+                        textTransform: 'uppercase',
+                        letterSpacing: '0.06em',
+                        color: el?.color,
+                        flexShrink: 0,
+                      }}
+                    >
+                      {el?.label}
+                    </span>
+                    <span
+                      style={{
+                        fontFamily: 'var(--font-serif)',
+                        fontStyle: 'italic',
+                        fontSize: 12,
+                        color: '#5C3018',
+                        opacity: 0.52,
+                        lineHeight: 1.3,
+                      }}
+                    >
+                      {entry.note}
+                    </span>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </div>
       )}
+    </div>
+  );
+}
+
+/* ─── Export ─────────────────────────────────────────────────── */
+export default function FeelingCircles2() {
+  const [circleVariant, setCircleVariant] = useState(0);
+
+  useEffect(() => {
+    try {
+      const v = localStorage.getItem('colourmap:circle-variant');
+      if (v !== null) setCircleVariant(Math.min(CIRCLE_VIZS.length - 1, Math.max(0, Number(v))));
+    } catch {}
+  }, []);
+
+  function switchCircleVariant(v: number) {
+    setCircleVariant(v);
+    try {
+      localStorage.setItem('colourmap:circle-variant', String(v));
+    } catch {}
+  }
+
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 12, padding: '8px 0 32px' }}>
+      {/* Design dot switcher */}
+      <div
+        style={{
+          display: 'flex',
+          justifyContent: 'center',
+          gap: 7,
+          alignItems: 'center',
+          paddingBottom: 4,
+        }}
+      >
+        {CIRCLE_VIZ_LABELS.map((lbl, i) => (
+          <button
+            key={i}
+            type="button"
+            onClick={() => switchCircleVariant(i)}
+            title={lbl}
+            style={{
+              width: circleVariant === i ? 10 : 7,
+              height: circleVariant === i ? 10 : 7,
+              borderRadius: '50%',
+              border: 'none',
+              padding: 0,
+              cursor: 'pointer',
+              background: circleVariant === i ? '#C4A060' : 'rgba(196,160,96,0.28)',
+              boxShadow: circleVariant === i ? '0 0 8px #C4A06099' : 'none',
+              transition: 'all 0.2s',
+              flexShrink: 0,
+            }}
+          />
+        ))}
+      </div>
+      {CIRCLES.map((c) => (
+        <CircleTracker key={c.id} circle={c} circleVariant={circleVariant} />
+      ))}
+      <FocusTracker circleVariant={circleVariant} />
     </div>
   );
 }
