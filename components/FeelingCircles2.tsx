@@ -1343,6 +1343,429 @@ function FocusTracker({ circleVariant }: { circleVariant: number }) {
   );
 }
 
+/* ─── Behaviour tracker ──────────────────────────────────────── */
+const BEHAVIOUR_COLORS = [
+  '#C4A060',
+  '#90B880',
+  '#80B0C8',
+  '#C07898',
+  '#C4B058',
+  '#A098C0',
+  '#B8A088',
+  '#60C890',
+];
+const CONTEXT_TAGS = ['stress', 'weekend', 'morning', 'evening', 'tired', 'social', 'alone', 'ill'];
+
+type Behaviour = { id: string; name: string; colorIdx: number };
+type BehaviourEntry = { ts: string; behaviourId: string; contexts: string[] };
+
+const DEFAULT_BEHAVIOURS: Behaviour[] = [
+  { id: 'bdef1', name: 'Exercise', colorIdx: 1 },
+  { id: 'bdef2', name: 'Overate', colorIdx: 3 },
+  { id: 'bdef3', name: 'Avoided calls', colorIdx: 4 },
+  { id: 'bdef4', name: 'Journalled', colorIdx: 0 },
+];
+
+function BehaviourTracker() {
+  const [expanded, setExpanded] = useState(false);
+  const [behaviours, setBehaviours] = useState<Behaviour[]>([]);
+  const [log, setLog] = useState<BehaviourEntry[]>([]);
+  const [activeContexts, setActiveContexts] = useState<string[]>([]);
+  const [adding, setAdding] = useState(false);
+  const [newName, setNewName] = useState('');
+  const addRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    try {
+      const b = localStorage.getItem('colourmap:behaviours');
+      setBehaviours(b ? JSON.parse(b) : DEFAULT_BEHAVIOURS);
+      const l = localStorage.getItem('colourmap:behaviour-log');
+      if (l) setLog(JSON.parse(l));
+    } catch {}
+  }, []);
+
+  function saveBehaviours(next: Behaviour[]) {
+    setBehaviours(next);
+    try {
+      localStorage.setItem('colourmap:behaviours', JSON.stringify(next));
+    } catch {}
+  }
+
+  function saveLog(next: BehaviourEntry[]) {
+    setLog(next);
+    try {
+      localStorage.setItem('colourmap:behaviour-log', JSON.stringify(next.slice(0, 500)));
+    } catch {}
+  }
+
+  function toggleLog(bId: string) {
+    const todayStart = new Date();
+    todayStart.setHours(0, 0, 0, 0);
+    const alreadyIdx = log.findIndex((e) => e.behaviourId === bId && new Date(e.ts) >= todayStart);
+    if (alreadyIdx !== -1) {
+      saveLog(log.filter((_, i) => i !== alreadyIdx));
+    } else {
+      saveLog([
+        { ts: new Date().toISOString(), behaviourId: bId, contexts: activeContexts },
+        ...log,
+      ]);
+    }
+  }
+
+  function addBehaviour() {
+    const name = newName.trim();
+    if (!name) return;
+    const next: Behaviour[] = [
+      ...behaviours,
+      { id: `b${Date.now()}`, name, colorIdx: behaviours.length % BEHAVIOUR_COLORS.length },
+    ];
+    saveBehaviours(next);
+    setNewName('');
+    setAdding(false);
+  }
+
+  function toggleContext(tag: string) {
+    setActiveContexts((prev) =>
+      prev.includes(tag) ? prev.filter((t) => t !== tag) : [...prev, tag],
+    );
+  }
+
+  function isLoggedToday(bId: string) {
+    const start = new Date();
+    start.setHours(0, 0, 0, 0);
+    return log.some((e) => e.behaviourId === bId && new Date(e.ts) >= start);
+  }
+
+  const dayLabels = Array.from({ length: 7 }, (_, i) => {
+    const d = new Date();
+    d.setDate(d.getDate() - (6 - i));
+    return ['S', 'M', 'T', 'W', 'T', 'F', 'S'][d.getDay()];
+  });
+
+  function weekDots(bId: string) {
+    return Array.from({ length: 7 }, (_, i) => {
+      const d = new Date();
+      d.setDate(d.getDate() - (6 - i));
+      const start = new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime();
+      const end = start + 86400000;
+      const entries = log.filter(
+        (e) =>
+          e.behaviourId === bId &&
+          new Date(e.ts).getTime() >= start &&
+          new Date(e.ts).getTime() < end,
+      );
+      return {
+        isToday: i === 6,
+        logged: entries.length > 0,
+        stress: entries.some((e) => e.contexts.includes('stress')),
+        weekend: entries.some((e) => e.contexts.includes('weekend')),
+      };
+    });
+  }
+
+  return (
+    <div
+      style={{
+        border: '1px solid rgba(196,160,96,0.2)',
+        borderRadius: 16,
+        background: 'rgba(255,255,255,0.03)',
+        overflow: 'hidden',
+      }}
+    >
+      {/* Header */}
+      <div
+        onClick={() => setExpanded((v) => !v)}
+        style={{
+          padding: '10px 16px',
+          borderBottom: expanded ? '1px solid rgba(196,160,96,0.2)' : 'none',
+          background: 'rgba(196,160,96,0.1)',
+          cursor: 'pointer',
+          display: 'flex',
+          alignItems: 'center',
+        }}
+      >
+        <span style={{ flex: 1 }} />
+        <span
+          style={{
+            fontFamily: 'var(--font-serif)',
+            fontSize: 13,
+            fontWeight: 800,
+            textTransform: 'uppercase',
+            letterSpacing: '0.14em',
+            color: '#5C3018',
+          }}
+        >
+          Behaviours
+        </span>
+        <span style={{ flex: 1, display: 'flex', justifyContent: 'flex-end' }}>
+          <span
+            style={{
+              color: '#C4A060',
+              opacity: 0.4,
+              fontSize: 11,
+              transform: expanded ? 'rotate(180deg)' : 'rotate(0deg)',
+              transition: 'transform 0.2s',
+            }}
+          >
+            ▾
+          </span>
+        </span>
+      </div>
+
+      {expanded && (
+        <div
+          style={{ padding: '18px 16px 20px', display: 'flex', flexDirection: 'column', gap: 16 }}
+        >
+          {/* Context tags */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 7 }}>
+            <span
+              style={{
+                fontFamily: 'var(--font-serif)',
+                fontSize: 9,
+                fontWeight: 700,
+                letterSpacing: '0.18em',
+                textTransform: 'uppercase',
+                color: '#8A6A4A',
+                opacity: 0.45,
+                textAlign: 'center',
+              }}
+            >
+              Context today
+            </span>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 5, justifyContent: 'center' }}>
+              {CONTEXT_TAGS.map((tag) => {
+                const on = activeContexts.includes(tag);
+                return (
+                  <button
+                    key={tag}
+                    type="button"
+                    onClick={() => toggleContext(tag)}
+                    style={{
+                      padding: '3px 10px',
+                      borderRadius: 99,
+                      border: `1px solid ${on ? '#C4A060' : 'rgba(196,160,96,0.2)'}`,
+                      background: on ? 'rgba(196,160,96,0.15)' : 'transparent',
+                      fontFamily: 'var(--font-serif)',
+                      fontSize: 10,
+                      fontWeight: 700,
+                      color: on ? '#C4A060' : '#8A6A4A',
+                      opacity: on ? 1 : 0.5,
+                      cursor: 'pointer',
+                      letterSpacing: '0.07em',
+                      transition: 'all 0.15s',
+                    }}
+                  >
+                    {tag}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Day-label header row */}
+          {behaviours.length > 0 && (
+            <div style={{ display: 'flex', alignItems: 'center', paddingRight: 26 }}>
+              <div style={{ flex: 1 }} />
+              <div style={{ display: 'flex', gap: 5 }}>
+                {dayLabels.map((l, i) => (
+                  <span
+                    key={i}
+                    style={{
+                      width: 22,
+                      textAlign: 'center',
+                      fontFamily: 'var(--font-serif)',
+                      fontSize: 9,
+                      color: '#8A6A4A',
+                      opacity: i === 6 ? 0.65 : 0.25,
+                    }}
+                  >
+                    {l}
+                  </span>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Behaviour rows */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+            {behaviours.map((b) => {
+              const c = BEHAVIOUR_COLORS[b.colorIdx % BEHAVIOUR_COLORS.length];
+              const dots = weekDots(b.id);
+              const done = isLoggedToday(b.id);
+              return (
+                <div
+                  key={b.id}
+                  onClick={() => toggleLog(b.id)}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 9,
+                    padding: '7px 9px',
+                    borderRadius: 10,
+                    background: done ? 'rgba(196,160,96,0.09)' : 'rgba(255,255,255,0.02)',
+                    border: `1px solid ${done ? 'rgba(196,160,96,0.3)' : 'rgba(196,160,96,0.1)'}`,
+                    cursor: 'pointer',
+                    transition: 'all 0.2s',
+                  }}
+                >
+                  {/* Colour dot */}
+                  <span
+                    style={{
+                      width: 7,
+                      height: 7,
+                      borderRadius: '50%',
+                      background: c,
+                      flexShrink: 0,
+                      boxShadow: `0 0 7px ${c}99`,
+                      transition: 'box-shadow 0.2s',
+                    }}
+                  />
+                  {/* Name */}
+                  <span
+                    style={{
+                      fontFamily: 'var(--font-serif)',
+                      fontSize: 11,
+                      fontWeight: 700,
+                      color: done ? c : '#8A6A4A',
+                      flex: 1,
+                      letterSpacing: '0.05em',
+                      opacity: done ? 1 : 0.5,
+                      transition: 'all 0.2s',
+                    }}
+                  >
+                    {b.name}
+                  </span>
+                  {/* Checkmark */}
+                  {done && (
+                    <span style={{ fontSize: 10, color: c, opacity: 0.7, flexShrink: 0 }}>✓</span>
+                  )}
+                  {/* Week grid */}
+                  <div style={{ display: 'flex', gap: 5, flexShrink: 0 }}>
+                    {dots.map((dot, i) => (
+                      <span
+                        key={i}
+                        style={{
+                          width: 22,
+                          height: 22,
+                          borderRadius: 6,
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          background: dot.logged ? `${c}AA` : 'rgba(196,160,96,0.07)',
+                          border: dot.isToday
+                            ? `1.5px solid ${c}55`
+                            : '1px solid rgba(196,160,96,0.1)',
+                          transition: 'background 0.25s',
+                          fontSize: 8,
+                          flexShrink: 0,
+                        }}
+                      >
+                        {dot.logged && dot.stress && <span style={{ opacity: 0.75 }}>⚡</span>}
+                        {dot.logged && !dot.stress && dot.weekend && (
+                          <span style={{ opacity: 0.6 }}>☀</span>
+                        )}
+                      </span>
+                    ))}
+                  </div>
+                  {/* Delete */}
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      saveBehaviours(behaviours.filter((bv) => bv.id !== b.id));
+                    }}
+                    style={{
+                      background: 'none',
+                      border: 'none',
+                      cursor: 'pointer',
+                      color: 'rgba(196,160,96,0.2)',
+                      fontSize: 13,
+                      lineHeight: 1,
+                      padding: '0 2px',
+                      flexShrink: 0,
+                    }}
+                  >
+                    ×
+                  </button>
+                </div>
+              );
+            })}
+          </div>
+
+          {/* Add behaviour */}
+          {adding ? (
+            <div style={{ display: 'flex', gap: 8 }}>
+              <input
+                ref={addRef}
+                value={newName}
+                onChange={(e) => setNewName(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') addBehaviour();
+                  if (e.key === 'Escape') {
+                    setAdding(false);
+                    setNewName('');
+                  }
+                }}
+                placeholder="Name this behaviour…"
+                style={{
+                  flex: 1,
+                  background: 'rgba(255,255,255,0.04)',
+                  border: '1px solid rgba(196,160,96,0.25)',
+                  borderRadius: 8,
+                  padding: '7px 10px',
+                  fontFamily: 'var(--font-serif)',
+                  fontSize: 12,
+                  color: '#5C3018',
+                  outline: 'none',
+                }}
+              />
+              <button
+                type="button"
+                onClick={addBehaviour}
+                style={{
+                  background: 'rgba(196,160,96,0.15)',
+                  border: '1px solid rgba(196,160,96,0.3)',
+                  borderRadius: 8,
+                  padding: '0 12px',
+                  fontFamily: 'var(--font-serif)',
+                  fontSize: 11,
+                  fontWeight: 700,
+                  color: '#C4A060',
+                  cursor: 'pointer',
+                  letterSpacing: '0.08em',
+                }}
+              >
+                ADD
+              </button>
+            </div>
+          ) : (
+            <button
+              type="button"
+              onClick={() => {
+                setAdding(true);
+                setTimeout(() => addRef.current?.focus(), 0);
+              }}
+              style={{
+                background: 'none',
+                border: 'none',
+                cursor: 'pointer',
+                padding: '2px 0 4px',
+                fontFamily: 'var(--font-serif)',
+                fontSize: 11,
+                color: 'rgba(196,160,96,0.35)',
+                letterSpacing: '0.06em',
+                alignSelf: 'flex-start',
+              }}
+            >
+              + add behaviour
+            </button>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
 /* ─── Export ─────────────────────────────────────────────────── */
 export default function FeelingCircles2() {
   const [circleVariant, setCircleVariant] = useState(0);
@@ -1398,6 +1821,7 @@ export default function FeelingCircles2() {
         <CircleTracker key={c.id} circle={c} circleVariant={circleVariant} />
       ))}
       <FocusTracker circleVariant={circleVariant} />
+      <BehaviourTracker />
     </div>
   );
 }
