@@ -2951,8 +2951,9 @@ function buildModeGroup(cfg: Cfg, R: number): THREE.Group {
       return buildTreeoflife3d(cfg, R);
     case 'breath':
     case 'stream':
-    case 'entropy':
       return buildCanvasMode(cfg, R);
+    case 'entropy':
+      return buildEntropy3D(cfg, R);
     default:
       return buildSacred(cfg, R);
   }
@@ -3124,8 +3125,10 @@ function updateModeGroup(group: THREE.Group, cfg: Cfg, dots: Dot[], t: number, R
       break;
     case 'breath':
     case 'stream':
-    case 'entropy':
       updateCanvasMode(group, cfg, t, R);
+      break;
+    case 'entropy':
+      updateEntropy3D(group, cfg, t, R);
       break;
     default:
       updateSacred(group, cfg, dots, t, R);
@@ -10219,12 +10222,148 @@ function updateTreeoflife3d(group: THREE.Group, cfg: Cfg, t: number, R: number):
   group.rotation.y += 0.001;
 }
 
-/* ── Breath / Stream / Entropy — canvas-only modes ──────────── */
+/* ── Breath / Stream — canvas-only modes ─────────────────────── */
 // Three.js layer is empty; canvas overlay carries all rendering
 function buildCanvasMode(_cfg: Cfg, _R: number): THREE.Group {
   return new THREE.Group();
 }
 function updateCanvasMode(_group: THREE.Group, _cfg: Cfg, _t: number, _R: number): void {}
+
+/* ── Entropy 3D — characters floating as sprites in 3D volume ─── */
+const ENTROPY_CHARS = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZΩπ∞∑∮√∆ψφλμσεδγβα∀∃∈'.split('');
+
+function makeCharTexture(
+  ch: string,
+  rr: number,
+  gg: number,
+  bb: number,
+  alpha: number,
+  fontSize: number,
+): THREE.CanvasTexture {
+  const cv = document.createElement('canvas');
+  cv.width = 64;
+  cv.height = 64;
+  const ctx = cv.getContext('2d')!;
+  ctx.clearRect(0, 0, 64, 64);
+  ctx.font = `bold ${fontSize}px monospace`;
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillStyle = `rgba(${rr},${gg},${bb},${alpha.toFixed(2)})`;
+  ctx.fillText(ch, 32, 32);
+  return new THREE.CanvasTexture(cv);
+}
+
+function buildEntropy3D(cfg: Cfg, R: number): THREE.Group {
+  const group = new THREE.Group();
+  const pal = PAL[cfg.preset] ?? PAL['Calm Field'];
+  const [rr, gg, bb] = pal.rgb;
+  const iF = cfg.intensity / 10;
+  const N = Math.round(55 + cfg.complexity * 6);
+
+  for (let i = 0; i < N; i++) {
+    const ch = ENTROPY_CHARS[Math.floor(Math.random() * ENTROPY_CHARS.length)];
+    const fontSize = 24 + Math.random() * 18;
+    const baseAlpha = (0.45 + Math.random() * 0.5) * iF;
+    const tex = makeCharTexture(ch, rr, gg, bb, baseAlpha, fontSize);
+
+    const mat = new THREE.SpriteMaterial({
+      map: tex,
+      transparent: true,
+      blending: THREE.AdditiveBlending,
+      depthWrite: false,
+    });
+    const sprite = new THREE.Sprite(mat);
+
+    // Random position in sphere volume
+    const theta = Math.random() * Math.PI * 2;
+    const phi = Math.acos(2 * Math.random() - 1);
+    const r = R * (0.12 + Math.random() * 0.82);
+    sprite.position.set(
+      Math.sin(phi) * Math.cos(theta) * r,
+      Math.sin(phi) * Math.sin(theta) * r,
+      Math.cos(phi) * r,
+    );
+
+    const sc = 0.28 + Math.random() * 0.38;
+    sprite.scale.set(sc, sc, 1);
+
+    const spd = cfg.breathSpeed;
+    sprite.userData.vx = (Math.random() - 0.5) * 0.006 * spd;
+    sprite.userData.vy = (Math.random() - 0.5) * 0.006 * spd;
+    sprite.userData.vz = (Math.random() - 0.5) * 0.006 * spd;
+    sprite.userData.age = Math.random() * 180;
+    sprite.userData.maxAge = 160 + Math.random() * 220;
+    sprite.userData.baseAlpha = baseAlpha;
+    sprite.userData.fontSize = fontSize;
+    sprite.userData.nextSwap = performance.now() + 1500 + Math.random() * 3500;
+    group.add(sprite);
+  }
+  return group;
+}
+
+function updateEntropy3D(group: THREE.Group, cfg: Cfg, t: number, R: number): void {
+  const pal = PAL[cfg.preset] ?? PAL['Calm Field'];
+  const [rr, gg, bb] = pal.rgb;
+  const iF = cfg.intensity / 10;
+  const spd = cfg.breathSpeed;
+  const now = performance.now();
+
+  for (const child of group.children) {
+    const sprite = child as THREE.Sprite;
+    const ud = sprite.userData;
+
+    // Drift
+    sprite.position.x += ud.vx * spd;
+    sprite.position.y += ud.vy * spd;
+    sprite.position.z += ud.vz * spd;
+
+    // Life cycle opacity
+    ud.age++;
+    const lifeT = ud.age / ud.maxAge;
+    const lifeFade = Math.sin(lifeT * Math.PI);
+
+    // Depth-based opacity: characters far in z get dimmer (simulates fog)
+    const zNorm = Math.max(0, 1 - Math.abs(sprite.position.z) / (R * 1.1));
+    const opacity = lifeFade * ud.baseAlpha * (0.35 + 0.65 * zNorm) * iF;
+    (sprite.material as THREE.SpriteMaterial).opacity = Math.max(0, Math.min(1, opacity));
+
+    // Respawn when life ends or strays far
+    const dist = sprite.position.length();
+    if (ud.age > ud.maxAge || dist > R * 1.6) {
+      const theta = Math.random() * Math.PI * 2;
+      const phi = Math.acos(2 * Math.random() - 1);
+      const r = R * (0.12 + Math.random() * 0.82);
+      sprite.position.set(
+        Math.sin(phi) * Math.cos(theta) * r,
+        Math.sin(phi) * Math.sin(theta) * r,
+        Math.cos(phi) * r,
+      );
+      ud.age = 0;
+      ud.maxAge = 160 + Math.random() * 220;
+      ud.vx = (Math.random() - 0.5) * 0.006 * spd;
+      ud.vy = (Math.random() - 0.5) * 0.006 * spd;
+      ud.vz = (Math.random() - 0.5) * 0.006 * spd;
+    }
+
+    // Swap character texture every few seconds
+    if (now > ud.nextSwap) {
+      ud.nextSwap = now + 1500 + Math.random() * 3500;
+      const newCh = ENTROPY_CHARS[Math.floor(Math.random() * ENTROPY_CHARS.length)];
+      const newAlpha = (0.45 + Math.random() * 0.5) * iF;
+      ud.baseAlpha = newAlpha;
+      const newTex = makeCharTexture(newCh, rr, gg, bb, newAlpha, ud.fontSize);
+      const mat = sprite.material as THREE.SpriteMaterial;
+      mat.map?.dispose();
+      mat.map = newTex;
+      mat.needsUpdate = true;
+    }
+  }
+
+  // Slow scene drift (different from group arcball rotation)
+  group.rotation.y += 0.0006;
+  group.rotation.x += 0.0002;
+  void t;
+}
 
 /* ── Component ──────────────────────────────────────────────── */
 
@@ -10434,7 +10573,8 @@ export default function GeometryField() {
         currentCfg.mode === 'orbit' ||
         currentCfg.mode === 'weave' ||
         currentCfg.mode === 'chaostri3d' ||
-        currentCfg.mode === 'treeoflife3d';
+        currentCfg.mode === 'treeoflife3d' ||
+        currentCfg.mode === 'entropy';
       if (is3D && modeGroupRef.current) {
         if (!l3dDragRef.current) {
           // Slow auto-spin when not dragging
@@ -10675,7 +10815,7 @@ export default function GeometryField() {
 
   // Canvas overlay for Breath / Stream / Entropy modes
   useEffect(() => {
-    const isCanvasMode = cfg.mode === 'breath' || cfg.mode === 'stream' || cfg.mode === 'entropy';
+    const isCanvasMode = cfg.mode === 'breath' || cfg.mode === 'stream';
     if (!isCanvasMode) {
       canvasModeActiveRef.current = false;
       cancelAnimationFrame(canvasModeAnimRef.current);
