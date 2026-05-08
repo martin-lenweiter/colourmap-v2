@@ -2026,7 +2026,7 @@ function CenterCard({
 //  BOTTOM SHEET — arenas only
 // ══════════════════════════════════════════════════════════════════════
 
-function BottomSheet({ panel, onClose }: { panel: string; onClose: () => void }) {
+function _BottomSheet({ panel, onClose }: { panel: string; onClose: () => void }) {
   const isArena = panel.startsWith('arena:');
   const arenaId = isArena ? panel.slice(6) : null;
 
