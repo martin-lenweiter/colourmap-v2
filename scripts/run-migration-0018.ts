@@ -5,7 +5,10 @@ import postgres from 'postgres';
 const sql = postgres(process.env.DATABASE_URL!);
 
 const migration = readFileSync(
-  resolve((import.meta as { dir: string }).dir, '../drizzle/migrations/0018_day_sync_tables.sql'),
+  resolve(
+    (import.meta as unknown as { dir: string }).dir,
+    '../drizzle/migrations/0018_day_sync_tables.sql',
+  ),
   'utf8',
 );
 
