@@ -6,22 +6,20 @@ import { useEffect, useRef, useState } from 'react';
 
 import { useViewMode } from './ViewModeContext';
 
-// Plain text labels — no glyphs (user: 'no smileys').
 const PRIMARY_LINKS: { href: string; label: string }[] = [
   { href: '/day', label: 'Focus' },
   { href: '/notebook', label: 'Notebook' },
   { href: '/music', label: 'Music' },
-  { href: '/circles', label: 'Social' },
+  { href: '/geometry-field', label: 'Art' },
 ];
 
-// Routes that belong under the Social nav item
+// Routes that belong under the Social nav item (used in AppShell too)
 const SOCIAL_ROUTES = ['/circles', '/sparks', '/chat'];
 
 const PHONE_PRIMARY_LINKS = PRIMARY_LINKS;
 
-// V2 features — hidden for now, restore by moving back to PRIMARY_LINKS
 const MORE_LINKS = [
-  { href: '/geometry-field', label: 'Geometry Field' },
+  { href: '/circles', label: 'Social' },
   { href: '/journey', label: 'Journey' },
   { href: '/life-scan', label: 'Life Scan' },
   { href: '/programs', label: 'Programs' },
@@ -38,7 +36,7 @@ export default function NavLinks() {
   const activeLinkRef = useRef<HTMLAnchorElement | null>(null);
 
   const primary = isPhone ? PHONE_PRIMARY_LINKS : PRIMARY_LINKS;
-  const isMoreActive = MORE_LINKS.some((l) => l.href === pathname);
+  const _isMoreActive = MORE_LINKS.some((l) => l.href === pathname);
 
   useEffect(() => {
     function onClickOutside(e: MouseEvent) {
@@ -69,7 +67,10 @@ export default function NavLinks() {
   // On phone, the nav scrolls horizontally with scroll-snap + fade
   // edges so the user feels like they're flipping through tabs.
   return (
-    <div className="relative flex items-center w-full" style={{ background: 'var(--secondary)' }}>
+    <div
+      className="relative flex items-center w-full"
+      style={{ background: 'var(--nav-bg, #d4b896)' }}
+    >
       {/* Nav centered in full width — More button is absolutely positioned so it doesn't shift the center */}
       <nav
         ref={(el) => {
@@ -79,14 +80,11 @@ export default function NavLinks() {
         style={{ scrollbarWidth: 'none' }}
       >
         {primary.map((link) => {
-          const isSocial = link.href === '/circles';
           const isActive = link.href.startsWith('/#')
             ? pathname === '/' &&
               typeof window !== 'undefined' &&
               window.location.hash === link.href.slice(1)
-            : isSocial
-              ? SOCIAL_ROUTES.includes(pathname)
-              : pathname === link.href;
+            : pathname === link.href;
           return (
             <Link
               key={link.href}
@@ -133,8 +131,8 @@ export default function NavLinks() {
           aria-expanded={moreOpen}
           className="h-5 w-5 rounded-full border border-border transition-all"
           style={{
-            background: isMoreActive ? '#C4A060' : 'transparent',
-            boxShadow: isMoreActive ? '0 0 7px rgba(196,160,96,0.6)' : 'none',
+            background: '#C4A060',
+            boxShadow: 'none',
             cursor: 'pointer',
             padding: 0,
             flexShrink: 0,
@@ -143,21 +141,37 @@ export default function NavLinks() {
         />
 
         {moreOpen && (
-          <div className="absolute top-full mt-1 right-0 z-[200] min-w-[160px] rounded-xl border border-border bg-card shadow-xl py-2 animate-in fade-in slide-in-from-top-1 duration-150">
-            {MORE_LINKS.map((link) => (
-              <Link
-                key={link.href}
-                href={link.href}
-                onClick={() => setMoreOpen(false)}
-                className={`block px-4 py-2.5 text-sm transition-colors ${
-                  pathname === link.href
-                    ? 'text-foreground font-medium'
-                    : 'text-muted-foreground hover:text-foreground hover:bg-muted/50'
-                }`}
-              >
-                {link.label}
-              </Link>
-            ))}
+          <div
+            className="absolute top-full mt-1 right-0 z-[200] min-w-[160px] rounded-xl py-2 animate-in fade-in slide-in-from-top-1 duration-150"
+            style={{
+              background: '#fbf3d8',
+              border: '1px solid rgba(160,110,40,0.18)',
+              boxShadow: '0 8px 24px rgba(0,0,0,0.14)',
+            }}
+          >
+            {MORE_LINKS.map((link) => {
+              const isSocialLink = link.href === '/circles';
+              const isActive = isSocialLink
+                ? SOCIAL_ROUTES.includes(pathname)
+                : pathname === link.href;
+              return (
+                <Link
+                  key={link.href}
+                  href={link.href}
+                  onClick={() => setMoreOpen(false)}
+                  style={{
+                    display: 'block',
+                    padding: '8px 16px',
+                    fontSize: 13,
+                    color: isActive ? '#5C3018' : '#7A5438',
+                    fontWeight: isActive ? 600 : 400,
+                    textDecoration: 'none',
+                  }}
+                >
+                  {link.label}
+                </Link>
+              );
+            })}
           </div>
         )}
       </div>
