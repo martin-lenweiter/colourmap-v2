@@ -334,7 +334,7 @@ export default function MissionOverview() {
     if (!bar) return;
 
     function computeVal(clientX: number) {
-      const rect = bar.getBoundingClientRect();
+      const rect = bar!.getBoundingClientRect();
       return Math.round(Math.min(100, Math.max(0, ((clientX - rect.left) / rect.width) * 100)));
     }
 

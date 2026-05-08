@@ -68,7 +68,8 @@ type Mode =
   | 'breath'
   | 'stream'
   | 'entropy'
-  | 'entropy3d';
+  | 'entropy3d'
+  | 'embf3d';
 
 interface Pal {
   bg0: string;
@@ -1848,14 +1849,14 @@ const PRESETS: Record<string, Cfg> = {
     mode: 'entropy',
   },
   'Entropy 3D': {
-    preset: 'Calm Field',
-    symmetry: 8,
-    complexity: 8,
-    glow: 6,
-    breathSpeed: 0.5,
+    preset: 'Cosmic Indigo',
+    symmetry: 6,
+    complexity: 7,
+    glow: 7,
+    breathSpeed: 0.55,
     intensity: 8,
     particles: 0,
-    luminous: 2,
+    luminous: 3,
     stars: 0,
     mode: 'entropy3d',
   },
@@ -1870,6 +1871,114 @@ const PRESETS: Record<string, Cfg> = {
     luminous: 2,
     stars: 0,
     mode: 'entropy3d',
+  },
+  'Soul Map': {
+    preset: 'Violet Portal',
+    symmetry: 8,
+    complexity: 10,
+    glow: 9,
+    breathSpeed: 0.5,
+    intensity: 9,
+    particles: 0,
+    luminous: 3,
+    stars: 3,
+    mode: 'cbloom',
+  },
+  'Mind Current': {
+    preset: 'Blue Astral',
+    symmetry: 7,
+    complexity: 9,
+    glow: 8,
+    breathSpeed: 0.45,
+    intensity: 8,
+    particles: 0,
+    luminous: 2,
+    stars: 2,
+    mode: 'lorenz3d',
+  },
+  'Body Flow': {
+    preset: 'Forest Ceremony',
+    symmetry: 6,
+    complexity: 8,
+    glow: 6,
+    breathSpeed: 0.4,
+    intensity: 8,
+    particles: 0,
+    luminous: 2,
+    stars: 1,
+    mode: 'weave',
+  },
+  'Focus Arc': {
+    preset: 'Golden Source',
+    symmetry: 3,
+    complexity: 7,
+    glow: 8,
+    breathSpeed: 0.55,
+    intensity: 9,
+    particles: 4,
+    luminous: 3,
+    stars: 2,
+    mode: 'tknot3d',
+  },
+  'Inner Temple': {
+    preset: 'Sacred Architecture',
+    symmetry: 8,
+    complexity: 9,
+    glow: 7,
+    breathSpeed: 0.45,
+    intensity: 8,
+    particles: 0,
+    luminous: 2,
+    stars: 3,
+    mode: 'orbit',
+  },
+  'EMBF Live': {
+    preset: 'Calm Field',
+    symmetry: 6,
+    complexity: 6,
+    glow: 7,
+    breathSpeed: 0.5,
+    intensity: 8,
+    particles: 0,
+    luminous: 3,
+    stars: 0,
+    mode: 'embf3d',
+  },
+  'EMBF Cosmos': {
+    preset: 'Cosmic Indigo',
+    symmetry: 6,
+    complexity: 7,
+    glow: 8,
+    breathSpeed: 0.45,
+    intensity: 9,
+    particles: 0,
+    luminous: 3,
+    stars: 2,
+    mode: 'embf3d',
+  },
+  'EMBF Forest': {
+    preset: 'Forest Ceremony',
+    symmetry: 6,
+    complexity: 6,
+    glow: 6,
+    breathSpeed: 0.4,
+    intensity: 8,
+    particles: 0,
+    luminous: 2,
+    stars: 1,
+    mode: 'embf3d',
+  },
+  'EMBF Storm': {
+    preset: 'Blue Astral',
+    symmetry: 7,
+    complexity: 8,
+    glow: 8,
+    breathSpeed: 0.55,
+    intensity: 9,
+    particles: 0,
+    luminous: 3,
+    stars: 3,
+    mode: 'embf3d',
   },
   'Drift Field': {
     preset: 'Blue Astral',
@@ -3052,6 +3161,8 @@ function buildModeGroup(cfg: Cfg, R: number): THREE.Group {
       return buildCanvasMode(cfg, R);
     case 'entropy3d':
       return buildEntropy3D(cfg, R);
+    case 'embf3d':
+      return buildEmbf3D(cfg, R);
     default:
       return buildSacred(cfg, R);
   }
@@ -3228,6 +3339,9 @@ function updateModeGroup(group: THREE.Group, cfg: Cfg, dots: Dot[], t: number, R
       break;
     case 'entropy3d':
       updateEntropy3D(group, cfg, t, R);
+      break;
+    case 'embf3d':
+      updateEmbf3D(group, cfg, t, R);
       break;
     default:
       updateSacred(group, cfg, dots, t, R);
@@ -4255,14 +4369,17 @@ function buildFibonacci3D(cfg: Cfg, R: number): THREE.Group {
   const pal = PAL[cfg.preset] ?? PAL['Fibonacci Bloom'];
   const [rr, gg, bb] = pal.rgb;
   const iF = cfg.intensity / 10;
-  const N = Math.max(60, Math.round(cfg.complexity) * 80 + 120);
+  const N = Math.max(40, Math.round(cfg.complexity) * 30 + 60);
   const group = new THREE.Group();
 
   // Fibonacci sphere: N points on sphere using golden angle
   const dotPos = new Float32Array(N * 3);
   const dotGeo = new THREE.BufferGeometry();
   dotGeo.setAttribute('position', new THREE.BufferAttribute(dotPos, 3));
-  const dots = new THREE.Points(dotGeo, ptsMat(hdrColor([rr, gg, bb], iF * 0.9, 2.0), 3.5, 0.8));
+  const dots = new THREE.Points(
+    dotGeo,
+    circlePtsMat(hdrColor([rr, gg, bb], iF * 0.9, 2.0), 3.5, 0.8),
+  );
   dots.userData.tag = 'fib3dDots';
   dots.userData.N = N;
   group.add(dots);
@@ -8790,6 +8907,21 @@ const MODE_SLIDERS: Partial<Record<Mode, SliderDef[]>> = {
     { key: 'intensity', label: 'Rings', min: 1, max: 10, step: 0.5 },
     { key: 'luminous', label: 'Bloom', min: 0, max: 5, step: 0.1 },
   ],
+  entropy3d: [
+    { key: 'complexity', label: 'Density', min: 1, max: 10, step: 1 },
+    { key: 'breathSpeed', label: 'Speed', min: 0.05, max: 2.0, step: 0.05 },
+    { key: 'glow', label: 'Glow', min: 0, max: 10, step: 0.5 },
+    { key: 'intensity', label: 'Colour', min: 1, max: 10, step: 0.5 },
+    { key: 'luminous', label: 'Bloom', min: 0, max: 5, step: 0.1 },
+  ],
+  embf3d: [
+    { key: 'breathSpeed', label: 'Speed', min: 0.05, max: 2.0, step: 0.05 },
+    { key: 'glow', label: 'Glow', min: 0, max: 10, step: 0.5 },
+    { key: 'intensity', label: 'Colour', min: 1, max: 10, step: 0.5 },
+    { key: 'luminous', label: 'Bloom', min: 0, max: 5, step: 0.1 },
+    { key: 'complexity', label: 'Density', min: 1, max: 10, step: 1 },
+    { key: 'stars', label: 'Stars', min: 0, max: 10, step: 1 },
+  ],
 };
 
 function slidersFor(mode: Mode): SliderDef[] {
@@ -8840,6 +8972,7 @@ const MODE_TO_PRESET: Partial<Record<Mode, string>> = {
   matrix: 'Matrix Rain',
   matrix3d: 'Matrix Rain',
   pulse: 'Rorschach Pulse',
+  embf3d: 'Calm Field',
 };
 
 const MODES: { mode: Mode; label: string }[] = [
@@ -8902,6 +9035,7 @@ const MODES: { mode: Mode; label: string }[] = [
   { mode: 'stream', label: '∿ Stream' },
   { mode: 'entropy', label: '⋮ Entropy' },
   { mode: 'entropy3d', label: '⋮³ Entropy 3D' },
+  { mode: 'embf3d', label: '◎ EMBF 3D' },
 ];
 
 type FeaturedItem = { name: string; tag: string } | { header: string; dim?: boolean };
@@ -8909,10 +9043,20 @@ type FeaturedItem = { name: string; tag: string } | { header: string; dim?: bool
 const FEATURED_PRESETS: FeaturedItem[] = [
   // ── Entropy ──
   { header: '— Entropy —' },
-  { name: 'Entropy Gold', tag: 'ENTR' },
-  { name: 'Entropy Dark', tag: 'ENTR' },
   { name: 'Entropy 3D', tag: 'ENTR·3D' },
-  { name: 'Entropy 3D Indigo', tag: 'ENTR·3D' },
+  // ── Self Map ──
+  { header: '— Self Map —' },
+  { name: 'Soul Map', tag: '3D' },
+  { name: 'Mind Current', tag: '3D' },
+  { name: 'Body Flow', tag: '3D' },
+  { name: 'Focus Arc', tag: '3D' },
+  { name: 'Inner Temple', tag: '3D' },
+  // ── EMBF Live ──
+  { header: '— EMBF —' },
+  { name: 'EMBF Live', tag: 'EMBF' },
+  { name: 'EMBF Cosmos', tag: 'EMBF' },
+  { name: 'EMBF Forest', tag: 'EMBF' },
+  { name: 'EMBF Storm', tag: 'EMBF' },
   // ── Chaos ──
   { header: '— Chaos —' },
   { name: 'Chaos Field', tag: 'CHAOS' },
@@ -8950,12 +9094,14 @@ const FEATURED_PRESETS: FeaturedItem[] = [
   { name: 'Atom 3D', tag: 'ATOM' },
   { name: 'Tangka Mandala', tag: 'TIB' },
   { name: 'Tangka Wheel', tag: 'TIB' },
-  { name: 'Tangka Lotus', tag: 'TIB' },
   { name: 'Tangka Sky', tag: 'TIB' },
   { name: 'Tangka Fire', tag: 'TIB' },
   { name: 'Orbital Atom', tag: 'ATOM' },
   { name: 'Aurora Globe', tag: 'GLOB' },
   { name: 'Crystal Globe', tag: 'GLOB' },
+  { name: 'Entropy Gold', tag: 'ENTR' },
+  { name: 'Entropy Dark', tag: 'ENTR' },
+  { name: 'Entropy 3D Indigo', tag: 'ENTR·3D' },
 ];
 
 /* ── Finger distortion (module-level, single-instance) ───────── */
@@ -10347,9 +10493,9 @@ function buildCanvasMode(_cfg: Cfg, _R: number): THREE.Group {
 function updateCanvasMode(_group: THREE.Group, _cfg: Cfg, _t: number, _R: number): void {}
 
 /* ── Entropy 3D — characters floating as sprites in 3D volume ─── */
-const ENTROPY_CHARS = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZΩπ∞∑∮√∆ψφλμσεδγβα∀∃∈'.split('');
+const _ENTROPY_CHARS = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZΩπ∞∑∮√∆ψφλμσεδγβα∀∃∈'.split('');
 
-function makeCharTexture(
+function _makeCharTexture(
   ch: string,
   rr: number,
   gg: number,
@@ -10375,46 +10521,81 @@ function buildEntropy3D(cfg: Cfg, R: number): THREE.Group {
   const pal = PAL[cfg.preset] ?? PAL['Calm Field'];
   const [rr, gg, bb] = pal.rgb;
   const iF = cfg.intensity / 10;
-  const N = Math.round(55 + cfg.complexity * 6);
+  const N = Math.round(60 + cfg.complexity * 10);
 
-  for (let i = 0; i < N; i++) {
-    const ch = ENTROPY_CHARS[Math.floor(Math.random() * ENTROPY_CHARS.length)];
-    const fontSize = 24 + Math.random() * 18;
-    const baseAlpha = (0.45 + Math.random() * 0.5) * iF;
-    const tex = makeCharTexture(ch, rr, gg, bb, baseAlpha, fontSize);
+  // Three concentric particle shells for clear 3D depth
+  const shells = [
+    { frac: 0.28, count: Math.round(N * 0.25), size: 4.8, alpha: 0.92, tag: 'inner' },
+    { frac: 0.58, count: Math.round(N * 0.45), size: 3.2, alpha: 0.72, tag: 'mid' },
+    { frac: 0.88, count: Math.round(N * 0.3), size: 2.0, alpha: 0.46, tag: 'outer' },
+  ];
 
-    const mat = new THREE.SpriteMaterial({
-      map: tex,
-      transparent: true,
-      blending: THREE.AdditiveBlending,
-      depthWrite: false,
-    });
-    const sprite = new THREE.Sprite(mat);
-
-    // Random position in sphere volume
-    const theta = Math.random() * Math.PI * 2;
-    const phi = Math.acos(2 * Math.random() - 1);
-    const r = R * (0.12 + Math.random() * 0.82);
-    sprite.position.set(
-      Math.sin(phi) * Math.cos(theta) * r,
-      Math.sin(phi) * Math.sin(theta) * r,
-      Math.cos(phi) * r,
+  for (const shell of shells) {
+    const cnt = shell.count;
+    const positions = new Float32Array(cnt * 3);
+    for (let i = 0; i < cnt; i++) {
+      const theta = Math.random() * Math.PI * 2;
+      const phi = Math.acos(2 * Math.random() - 1);
+      // Slightly flatten on Z to emphasise the toroidal ring band visually
+      const r = R * (shell.frac + (Math.random() - 0.5) * 0.12);
+      positions[i * 3] = Math.sin(phi) * Math.cos(theta) * r;
+      positions[i * 3 + 1] = Math.sin(phi) * Math.sin(theta) * r;
+      positions[i * 3 + 2] = Math.cos(phi) * r * 0.55;
+    }
+    const geo = new THREE.BufferGeometry();
+    const posAttr = new THREE.BufferAttribute(positions, 3);
+    posAttr.setUsage(THREE.DynamicDrawUsage);
+    geo.setAttribute('position', posAttr);
+    const mat = circlePtsMat(
+      hdrColor([rr, gg, bb], shell.alpha * iF, 1.6),
+      shell.size,
+      shell.alpha * iF,
     );
-
-    const sc = 0.28 + Math.random() * 0.38;
-    sprite.scale.set(sc, sc, 1);
-
-    const spd = cfg.breathSpeed;
-    sprite.userData.vx = (Math.random() - 0.5) * 0.006 * spd;
-    sprite.userData.vy = (Math.random() - 0.5) * 0.006 * spd;
-    sprite.userData.vz = (Math.random() - 0.5) * 0.006 * spd;
-    sprite.userData.age = Math.random() * 180;
-    sprite.userData.maxAge = 160 + Math.random() * 220;
-    sprite.userData.baseAlpha = baseAlpha;
-    sprite.userData.fontSize = fontSize;
-    sprite.userData.nextSwap = performance.now() + 1500 + Math.random() * 3500;
-    group.add(sprite);
+    const pts = new THREE.Points(geo, mat);
+    pts.userData.tag = shell.tag;
+    pts.userData.baseAlpha = shell.alpha * iF;
+    group.add(pts);
   }
+
+  // Wireframe meridians (great circle arcs)
+  const lineSegs = 56;
+  for (let li = 0; li < 8; li++) {
+    const a = (li / 8) * Math.PI * 2;
+    const linePos = new Float32Array(lineSegs * 3);
+    for (let p = 0; p < lineSegs; p++) {
+      const phi2 = (p / (lineSegs - 1)) * Math.PI;
+      const rad = R * 0.72;
+      linePos[p * 3] = Math.sin(phi2) * Math.cos(a) * rad;
+      linePos[p * 3 + 1] = Math.sin(phi2) * Math.sin(a) * rad;
+      linePos[p * 3 + 2] = Math.cos(phi2) * rad * 0.55;
+    }
+    const lineGeo = new THREE.BufferGeometry();
+    lineGeo.setAttribute('position', new THREE.BufferAttribute(linePos, 3));
+    const lm = new THREE.Line(lineGeo, lineMat(hdrColor([rr, gg, bb], iF * 0.1, 1.4), 0.5));
+    lm.userData.tag = 'meridian';
+    group.add(lm);
+  }
+
+  // Latitude rings (equatorial bands)
+  for (const latFrac of [0.35, 0.58, 0.76]) {
+    const latN = 64;
+    const latPos = new Float32Array(latN * 3);
+    for (let p = 0; p < latN; p++) {
+      const a2 = (p / (latN - 1)) * Math.PI * 2;
+      latPos[p * 3] = Math.cos(a2) * R * latFrac;
+      latPos[p * 3 + 1] = Math.sin(a2) * R * latFrac;
+      latPos[p * 3 + 2] = 0;
+    }
+    const latGeo = new THREE.BufferGeometry();
+    latGeo.setAttribute('position', new THREE.BufferAttribute(latPos, 3));
+    const latLine = new THREE.LineLoop(
+      latGeo,
+      lineMat(hdrColor([rr, gg, bb], iF * 0.15, 1.4), 0.6),
+    );
+    latLine.userData.tag = 'latband';
+    group.add(latLine);
+  }
+
   return group;
 }
 
@@ -10423,63 +10604,181 @@ function updateEntropy3D(group: THREE.Group, cfg: Cfg, t: number, R: number): vo
   const [rr, gg, bb] = pal.rgb;
   const iF = cfg.intensity / 10;
   const spd = cfg.breathSpeed;
-  const now = performance.now();
+  const glowF = cfg.glow / 10;
 
   for (const child of group.children) {
-    const sprite = child as THREE.Sprite;
-    const ud = sprite.userData;
+    const tag = child.userData.tag as string;
 
-    // Drift
-    sprite.position.x += ud.vx * spd;
-    sprite.position.y += ud.vy * spd;
-    sprite.position.z += ud.vz * spd;
-
-    // Life cycle opacity
-    ud.age++;
-    const lifeT = ud.age / ud.maxAge;
-    const lifeFade = Math.sin(lifeT * Math.PI);
-
-    // Depth-based opacity: characters far in z get dimmer (simulates fog)
-    const zNorm = Math.max(0, 1 - Math.abs(sprite.position.z) / (R * 1.1));
-    const opacity = lifeFade * ud.baseAlpha * (0.35 + 0.65 * zNorm) * iF;
-    (sprite.material as THREE.SpriteMaterial).opacity = Math.max(0, Math.min(1, opacity));
-
-    // Respawn when life ends or strays far
-    const dist = sprite.position.length();
-    if (ud.age > ud.maxAge || dist > R * 1.6) {
-      const theta = Math.random() * Math.PI * 2;
-      const phi = Math.acos(2 * Math.random() - 1);
-      const r = R * (0.12 + Math.random() * 0.82);
-      sprite.position.set(
-        Math.sin(phi) * Math.cos(theta) * r,
-        Math.sin(phi) * Math.sin(theta) * r,
-        Math.cos(phi) * r,
-      );
-      ud.age = 0;
-      ud.maxAge = 160 + Math.random() * 220;
-      ud.vx = (Math.random() - 0.5) * 0.006 * spd;
-      ud.vy = (Math.random() - 0.5) * 0.006 * spd;
-      ud.vz = (Math.random() - 0.5) * 0.006 * spd;
-    }
-
-    // Swap character texture every few seconds
-    if (now > ud.nextSwap) {
-      ud.nextSwap = now + 1500 + Math.random() * 3500;
-      const newCh = ENTROPY_CHARS[Math.floor(Math.random() * ENTROPY_CHARS.length)];
-      const newAlpha = (0.45 + Math.random() * 0.5) * iF;
-      ud.baseAlpha = newAlpha;
-      const newTex = makeCharTexture(newCh, rr, gg, bb, newAlpha, ud.fontSize);
-      const mat = sprite.material as THREE.SpriteMaterial;
-      mat.map?.dispose();
-      mat.map = newTex;
-      mat.needsUpdate = true;
+    if (tag === 'inner') {
+      const pts = child as THREE.Points;
+      const mat = pts.material as THREE.PointsMaterial;
+      const pulse = 0.72 + 0.28 * Math.sin(t * 0.0014 * spd);
+      mat.opacity = (child.userData.baseAlpha as number) * pulse;
+      mat.size = (4.8 + glowF * 2) * (0.88 + 0.12 * pulse);
+      mat.color.setRGB(rr / 255, gg / 255, bb / 255);
+      child.rotation.y += 0.0009 * spd;
+    } else if (tag === 'mid') {
+      const pts = child as THREE.Points;
+      const mat = pts.material as THREE.PointsMaterial;
+      const pulse = 0.8 + 0.2 * Math.sin(t * 0.0009 * spd + 1.1);
+      mat.opacity = (child.userData.baseAlpha as number) * pulse;
+      mat.color.setRGB(rr / 255, gg / 255, bb / 255);
+      child.rotation.x += 0.0005 * spd;
+    } else if (tag === 'outer') {
+      const pts = child as THREE.Points;
+      const mat = pts.material as THREE.PointsMaterial;
+      mat.opacity = (child.userData.baseAlpha as number) * 0.6;
+      mat.color.setRGB(rr / 255, gg / 255, bb / 255);
+      child.rotation.z += 0.0003 * spd;
+    } else if (tag === 'meridian' || tag === 'latband') {
+      const mat = (child as THREE.Line).material as THREE.LineBasicMaterial;
+      mat.opacity = iF * (tag === 'latband' ? 0.15 : 0.1) * (0.5 + 0.5 * glowF);
+      mat.color.setRGB(rr / 255, gg / 255, bb / 255);
     }
   }
 
-  // Slow scene drift (different from group arcball rotation)
-  group.rotation.y += 0.0006;
-  group.rotation.x += 0.0002;
-  void t;
+  group.rotation.y += 0.0004;
+  void R;
+}
+
+/* ── EMBF 3D — arc slices matching the life-map ring ─────────── */
+
+function getEmbfValues(): [number, number, number, number] {
+  if (typeof window === 'undefined') return [0.5, 0.5, 0.5, 0.5];
+  const clamp = (v: number, mx: number) => Math.max(0.04, Math.min(1, v / mx));
+  return [
+    clamp(Number(localStorage.getItem('colourmap:process-idx') || '4'), 9),
+    clamp(Number(localStorage.getItem('colourmap:presence-idx') || '3'), 5),
+    clamp(Number(localStorage.getItem('colourmap:body-idx') || '3'), 7),
+    clamp(Number(localStorage.getItem('colourmap:focus-idx') || '3'), 7),
+  ];
+}
+
+// Arc geometry mirrors the life-map ring layout
+const _EMBF_R_FRAC = [0.3, 0.44, 0.58, 0.7];
+const _EMBF_START = [-90, 0, 90, 180]; // degrees — same quadrants as MiniRing
+const _EMBF_SPAN = 78; // degrees per arc — same as MiniRing QUAD_DEG
+const _EMBF_ARC_PTS = 130; // dense enough to look solid
+
+function buildEmbf3D(cfg: Cfg, R: number): THREE.Group {
+  const group = new THREE.Group();
+  const iF = cfg.intensity / 10;
+
+  for (let ai = 0; ai < 4; ai++) {
+    const [rr2, gg2, bb2] = WELL_COLORS[ai];
+    const ringR = R * _EMBF_R_FRAC[ai];
+    const startDeg = _EMBF_START[ai];
+    // Slight Z offset per ring so rotation reveals depth
+    const zOff = ai * R * 0.055;
+
+    // Pre-compute arc positions (ordered start→end for setDrawRange fill)
+    const positions = new Float32Array(_EMBF_ARC_PTS * 3);
+    for (let i = 0; i < _EMBF_ARC_PTS; i++) {
+      const deg = startDeg + (i / (_EMBF_ARC_PTS - 1)) * _EMBF_SPAN;
+      const rad = (deg * Math.PI) / 180;
+      positions[i * 3] = Math.cos(rad) * ringR;
+      positions[i * 3 + 1] = Math.sin(rad) * ringR;
+      positions[i * 3 + 2] = zOff;
+    }
+
+    // Dim track (full arc)
+    const trackGeo = new THREE.BufferGeometry();
+    trackGeo.setAttribute('position', new THREE.BufferAttribute(positions.slice(), 3));
+    const track = new THREE.Points(
+      trackGeo,
+      circlePtsMat(hdrColor([rr2, gg2, bb2], iF * 0.18, 1.3), 5, 0.18 * iF),
+    );
+    track.userData.tag = 'embfTrack';
+    group.add(track);
+
+    // Bright fill arc — setDrawRange drives the fill level
+    const fillGeo = new THREE.BufferGeometry();
+    const fillAttr = new THREE.BufferAttribute(positions.slice(), 3);
+    fillAttr.setUsage(THREE.DynamicDrawUsage);
+    fillGeo.setAttribute('position', fillAttr);
+    fillGeo.setDrawRange(0, 0);
+    const fill = new THREE.Points(
+      fillGeo,
+      circlePtsMat(hdrColor([rr2, gg2, bb2], iF * 0.9, 1.8), 5.5, 0.88 * iF),
+    );
+    fill.userData.tag = 'embfFill';
+    fill.userData.ai = ai;
+    fill.userData.baseAlpha = 0.88 * iF;
+    group.add(fill);
+
+    // Tip glow — one large dot at the live arc endpoint
+    const tipGeo = new THREE.BufferGeometry();
+    const tipAttr = new THREE.BufferAttribute(new Float32Array(3), 3);
+    tipAttr.setUsage(THREE.DynamicDrawUsage);
+    tipGeo.setAttribute('position', tipAttr);
+    tipGeo.setDrawRange(0, 0);
+    const tip = new THREE.Points(tipGeo, circlePtsMat(hdrColor([rr2, gg2, bb2], iF, 2.2), 12, iF));
+    tip.userData.tag = 'embfTip';
+    tip.userData.ai = ai;
+    tip.userData.ringR = ringR;
+    tip.userData.zOff = zOff;
+    group.add(tip);
+  }
+
+  // Centre dot — pulses with average value
+  const centGeo = new THREE.BufferGeometry();
+  centGeo.setAttribute('position', new THREE.BufferAttribute(new Float32Array(3), 3));
+  const cent = new THREE.Points(centGeo, circlePtsMat(new THREE.Color(1, 0.97, 0.9), 8, 0.75 * iF));
+  cent.userData.tag = 'embfCenter';
+  group.add(cent);
+
+  return group;
+}
+
+function updateEmbf3D(group: THREE.Group, cfg: Cfg, t: number, _R: number): void {
+  const iF = cfg.intensity / 10;
+  const spd = cfg.breathSpeed;
+  const glowF = cfg.glow / 10;
+  const vals = getEmbfValues();
+
+  for (const child of group.children) {
+    const tag = child.userData.tag as string;
+
+    if (tag === 'embfFill') {
+      const ai = child.userData.ai as number;
+      const val = vals[ai];
+      const pts = child as THREE.Points;
+      const mat = pts.material as THREE.PointsMaterial;
+      pts.geometry.setDrawRange(0, Math.max(1, Math.round(_EMBF_ARC_PTS * val)));
+      const pulse = 0.84 + 0.16 * Math.sin(t * 0.0012 * spd + ai * 0.85);
+      mat.opacity = (child.userData.baseAlpha as number) * pulse;
+      mat.size = 5.5 + glowF * 2.5 + val * 1.5;
+    } else if (tag === 'embfTip') {
+      const ai = child.userData.ai as number;
+      const val = vals[ai];
+      const pts = child as THREE.Points;
+      const mat = pts.material as THREE.PointsMaterial;
+      if (val < 0.05) {
+        pts.geometry.setDrawRange(0, 0);
+      } else {
+        const tipDeg = _EMBF_START[ai] + val * _EMBF_SPAN;
+        const tipRad = (tipDeg * Math.PI) / 180;
+        const arr = (pts.geometry.getAttribute('position') as THREE.BufferAttribute)
+          .array as Float32Array;
+        arr[0] = Math.cos(tipRad) * (child.userData.ringR as number);
+        arr[1] = Math.sin(tipRad) * (child.userData.ringR as number);
+        arr[2] = child.userData.zOff as number;
+        (pts.geometry.getAttribute('position') as THREE.BufferAttribute).needsUpdate = true;
+        pts.geometry.setDrawRange(0, 1);
+        const pulse = 0.7 + 0.3 * Math.sin(t * 0.002 * spd + ai * 1.1);
+        mat.opacity = iF * pulse;
+        mat.size = 12 + glowF * 4;
+      }
+    } else if (tag === 'embfTrack') {
+      ((child as THREE.Points).material as THREE.PointsMaterial).opacity = 0.18 * iF;
+    } else if (tag === 'embfCenter') {
+      const avg = (vals[0] + vals[1] + vals[2] + vals[3]) / 4;
+      const pulse = 0.6 + 0.4 * Math.sin(t * 0.002 * spd);
+      const mat = (child as THREE.Points).material as THREE.PointsMaterial;
+      mat.opacity = 0.75 * iF * pulse * (0.3 + 0.7 * avg);
+      mat.size = 8 + glowF * 3;
+    }
+  }
 }
 
 /* ── Component ──────────────────────────────────────────────── */
@@ -10691,7 +10990,8 @@ export default function GeometryField() {
         currentCfg.mode === 'weave' ||
         currentCfg.mode === 'chaostri3d' ||
         currentCfg.mode === 'treeoflife3d' ||
-        currentCfg.mode === 'entropy3d';
+        currentCfg.mode === 'entropy3d' ||
+        currentCfg.mode === 'embf3d';
       if (is3D && modeGroupRef.current) {
         if (!l3dDragRef.current) {
           // Slow auto-spin when not dragging
@@ -11432,10 +11732,13 @@ export default function GeometryField() {
           }}
         />
 
-        {/* Matrix code-rain overlay — active for journey phase 5 and standalone matrix mode */}
+        {/* Canvas overlay — matrix rain, breath, stream, entropy, journey phase 5 */}
         {((journeyRunning && journeyId === 5) ||
           cfg.mode === 'matrix' ||
-          cfg.mode === 'matrix3d') && (
+          cfg.mode === 'matrix3d' ||
+          cfg.mode === 'breath' ||
+          cfg.mode === 'stream' ||
+          cfg.mode === 'entropy') && (
           <canvas
             ref={matrixCanvasRef}
             style={{
@@ -11444,7 +11747,7 @@ export default function GeometryField() {
               width: '100%',
               height: '100%',
               mixBlendMode: 'screen',
-              opacity: cfg.mode === 'matrix' || cfg.mode === 'matrix3d' ? 0.85 : 0.5,
+              opacity: cfg.mode === 'matrix' || cfg.mode === 'matrix3d' ? 0.85 : 1,
               pointerEvents: 'none',
             }}
           />

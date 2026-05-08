@@ -150,6 +150,7 @@ function Card({
 function ChapterSummary({ onTap }: { onTap: () => void }) {
   const [chapter, setChapter] = useState('');
   const [sub, setSub] = useState('');
+  const [descOpen, setDescOpen] = useState(false);
 
   useEffect(() => {
     try {
@@ -158,38 +159,29 @@ function ChapterSummary({ onTap }: { onTap: () => void }) {
     } catch {}
   }, []);
 
+  function saveSub(v: string) {
+    setSub(v);
+    try {
+      localStorage.setItem(LS_CHAPTER_SUB, v);
+    } catch {}
+  }
+
   return (
-    <div style={{ position: 'relative' }}>
+    <div>
       <Card title="Life Chapter" onClick={onTap}>
         <div style={{ padding: '16px', textAlign: 'center' }}>
           {chapter ? (
-            <>
-              <p
-                style={{
-                  fontFamily: 'var(--font-handwritten)',
-                  fontSize: 26,
-                  fontWeight: 700,
-                  color: BROWN,
-                  lineHeight: 1.2,
-                  marginBottom: sub ? 6 : 0,
-                }}
-              >
-                {chapter}
-              </p>
-              {sub && (
-                <p
-                  style={{
-                    fontFamily: 'var(--font-serif)',
-                    fontStyle: 'italic',
-                    fontSize: 13,
-                    color: LABEL_COLOR,
-                    opacity: 0.8,
-                  }}
-                >
-                  {sub}
-                </p>
-              )}
-            </>
+            <p
+              style={{
+                fontFamily: 'var(--font-handwritten)',
+                fontSize: 26,
+                fontWeight: 700,
+                color: BROWN,
+                lineHeight: 1.2,
+              }}
+            >
+              {chapter}
+            </p>
           ) : (
             <p
               style={{
@@ -205,6 +197,86 @@ function ChapterSummary({ onTap }: { onTap: () => void }) {
           )}
         </div>
       </Card>
+
+      {/* Collapsible description segment */}
+      <div
+        style={{
+          border: `1px solid ${CARD_BORDER}`,
+          borderTop: 'none',
+          borderRadius: '0 0 14px 14px',
+          background: CARD_BG,
+          overflow: 'hidden',
+        }}
+      >
+        <button
+          type="button"
+          onClick={() => setDescOpen((v) => !v)}
+          style={{
+            width: '100%',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: 6,
+            padding: '6px 16px',
+            background: 'none',
+            border: 'none',
+            cursor: 'pointer',
+            borderTop: `1px solid ${CARD_BORDER}`,
+          }}
+        >
+          <span
+            style={{
+              fontFamily: 'var(--font-serif)',
+              fontSize: 9,
+              fontWeight: 700,
+              letterSpacing: '0.16em',
+              textTransform: 'uppercase',
+              color: LABEL_COLOR,
+              opacity: 0.4,
+            }}
+          >
+            {sub && !descOpen ? sub : 'Description'}
+          </span>
+          <span
+            style={{
+              color: OCHRE,
+              opacity: 0.35,
+              fontSize: 10,
+              transform: descOpen ? 'rotate(90deg)' : 'rotate(0deg)',
+              transition: 'transform 0.2s',
+            }}
+          >
+            ›
+          </span>
+        </button>
+
+        {descOpen && (
+          <div style={{ padding: '4px 16px 14px' }}>
+            <textarea
+              value={sub}
+              rows={2}
+              onChange={(e) => saveSub(e.target.value)}
+              placeholder="what this chapter is about…"
+              spellCheck={false}
+              style={{
+                width: '100%',
+                background: 'rgba(196,160,96,0.06)',
+                border: `1px solid ${CARD_BORDER}`,
+                borderRadius: 8,
+                outline: 'none',
+                resize: 'none',
+                fontFamily: 'var(--font-serif)',
+                fontStyle: 'italic',
+                fontSize: 14,
+                color: BROWN,
+                padding: '8px 12px',
+                lineHeight: 1.5,
+                boxSizing: 'border-box',
+              }}
+            />
+          </div>
+        )}
+      </div>
     </div>
   );
 }
@@ -326,7 +398,7 @@ function FocusSummary({ onTap }: { onTap: () => void }) {
   );
 }
 
-function arenasSentence(arenas: Arena[]): string {
+function _arenasSentence(arenas: Arena[]): string {
   if (arenas.length === 0) return 'No arenas yet. Tap to add one.';
   const scored = arenas.map((a) => ({ ...a, active: a.days.filter(Boolean).length }));
   const flowing = scored.filter((a) => a.active >= 5);
@@ -346,7 +418,7 @@ function arenasSentence(arenas: Arena[]): string {
   if (flowing.length > 0) parts.push(`${join(flowing.map((a) => a.name))} flowing`);
   if (building.length > 0) parts.push(`${join(building.map((a) => a.name))} building`);
   if (quiet.length > 0) parts.push(`${join(quiet.map((a) => a.name))} still quiet`);
-  return parts.join('. ') + '.';
+  return `${parts.join('. ')}.`;
 }
 
 function ArenasSummary({
@@ -876,7 +948,7 @@ function relativeWhen(iso: string): string {
 
 // ── Full-screen deep journal editor ────────────────────────────────────
 
-function DeepJournalView({
+function _DeepJournalView({
   entry,
   color,
   onChange,
@@ -1765,7 +1837,7 @@ function ArenasEditor() {
 //  LIFE CHAPTER — FULL SCREEN VIEW
 // ══════════════════════════════════════════════════════════════════════
 
-function ChapterFullScreen({ onClose }: { onClose: () => void }) {
+function _ChapterFullScreen({ onClose }: { onClose: () => void }) {
   const { mode } = useViewMode();
   const isPhone = mode === 'phone';
 
