@@ -5,6 +5,62 @@ import * as THREE from 'three';
 
 import { getTodayEntries, type TimelineEntry } from '@/lib/day-timeline';
 
+/* ── EMBF axes ──────────────────────────────────────────────────── */
+const EMBF_AXES = [
+  {
+    axis: 'emotion',
+    label: 'Emotion',
+    key: 'colourmap:process-idx',
+    max: 9,
+    labels: [
+      'Shame',
+      'Apathy',
+      'Grief',
+      'Fear',
+      'Anger',
+      'Courage',
+      'Acceptance',
+      'Reason',
+      'Love',
+      'Peace',
+    ],
+    color: '#C4A060',
+  },
+  {
+    axis: 'mind',
+    label: 'Mind',
+    key: 'colourmap:presence-idx',
+    max: 5,
+    labels: ['Absent', 'Scattered', 'Confused', 'Drifting', 'Present', 'Flowing'],
+    color: '#A098C0',
+  },
+  {
+    axis: 'body',
+    label: 'Body',
+    key: 'colourmap:body-idx',
+    max: 7,
+    labels: ['Depleted', 'Drained', 'Heavy', 'Tense', 'Warming', 'Good', 'Active', 'Energized'],
+    color: '#C4A878',
+  },
+  {
+    axis: 'focus',
+    label: 'Focus',
+    key: 'colourmap:focus-idx',
+    max: 7,
+    labels: [
+      'Scattered',
+      'Distracted',
+      'Restless',
+      'Warming',
+      'Present',
+      'Locked',
+      'Flowing',
+      'Zone',
+    ],
+    color: '#88D098',
+  },
+] as const;
+
 /* ── Types ──────────────────────────────────────────────────────── */
 type NodeKind = 'emotion' | 'mind' | 'body' | 'focus' | 'mission' | 'hub';
 
@@ -104,11 +160,37 @@ export default function DayView3D({ onClose }: { onClose?: () => void }) {
   const mountRef = useRef<HTMLDivElement>(null);
   const [selected, setSelected] = useState<SceneNode | null>(null);
   const [entries, setEntries] = useState<TimelineEntry[]>([]);
+  const [activeBox, setActiveBox] = useState<string | null>(null);
+  const [vals, setVals] = useState<Record<string, number>>({});
+  const [refreshKey, setRefreshKey] = useState(0);
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: refreshKey is an intentional re-run trigger
   useEffect(() => {
     setEntries(getTodayEntries());
-  }, []);
+    const loaded: Record<string, number> = {};
+    for (const ax of EMBF_AXES) {
+      try {
+        const v = localStorage.getItem(ax.key);
+        loaded[ax.axis] =
+          v !== null ? Math.min(ax.max, Math.max(0, Number(v))) : Math.floor(ax.max / 2);
+      } catch {
+        loaded[ax.axis] = Math.floor(ax.max / 2);
+      }
+    }
+    setVals(loaded);
+  }, [refreshKey]);
 
+  function setAxisVal(axis: string, key: string, idx: number) {
+    try {
+      localStorage.setItem(key, String(idx));
+    } catch {}
+    setVals((prev) => ({ ...prev, [axis]: idx }));
+    setActiveBox(null);
+    setSelected(null);
+    setRefreshKey((k) => k + 1);
+  }
+
+  // biome-ignore lint/correctness/useExhaustiveDependencies: refreshKey is an intentional re-run trigger
   useEffect(() => {
     const mount = mountRef.current;
     if (!mount) return;
@@ -280,7 +362,6 @@ export default function DayView3D({ onClose }: { onClose?: () => void }) {
 
     const sceneNodes: SceneNode[] = [];
     const meshToNode = new Map<THREE.Mesh, SceneNode>();
-    const spinRates: { x: number; y: number }[] = [];
 
     for (const n of defs) {
       const rgb = NODE_RGB[n.kind];
@@ -318,10 +399,6 @@ export default function DayView3D({ onClose }: { onClose?: () => void }) {
       };
       sceneNodes.push(sNode);
       meshToNode.set(mesh, sNode);
-      spinRates.push({
-        x: (0.003 + Math.random() * 0.004) * (Math.random() > 0.5 ? 1 : -1),
-        y: (0.005 + Math.random() * 0.005) * (Math.random() > 0.5 ? 1 : -1),
-      });
     }
 
     /* ── Interaction — arcball ── */
@@ -410,28 +487,19 @@ export default function DayView3D({ onClose }: { onClose?: () => void }) {
     renderer.domElement.addEventListener('touchmove', onTM, { passive: false });
     renderer.domElement.addEventListener('touchend', onTE);
 
-    const autoAxis = new THREE.Vector3(0.15, 1, 0.08).normalize();
-    const autoQ = new THREE.Quaternion().setFromAxisAngle(autoAxis, 0.0007);
-
     let rafId = 0;
     function animate() {
       rafId = requestAnimationFrame(animate);
-      if (!dragging) {
-        vel.x *= 0.92;
-        vel.y *= 0.92;
+      if (!dragging && (Math.abs(vel.x) > 0.05 || Math.abs(vel.y) > 0.05)) {
+        vel.x *= 0.88;
+        vel.y *= 0.88;
         const speed = Math.sqrt(vel.x ** 2 + vel.y ** 2);
-        if (speed > 0.2) {
+        if (speed > 0.05) {
           const axis = new THREE.Vector3(-vel.y / speed, vel.x / speed, 0);
-          quaternion.premultiply(new THREE.Quaternion().setFromAxisAngle(axis, speed * 0.003));
-        } else {
-          quaternion.premultiply(autoQ);
+          quaternion.premultiply(new THREE.Quaternion().setFromAxisAngle(axis, speed * 0.002));
         }
       }
       group.setRotationFromQuaternion(quaternion);
-      sceneNodes.forEach((n, i) => {
-        n.mesh.rotation.x += spinRates[i].x;
-        n.mesh.rotation.y += spinRates[i].y;
-      });
       camera.position.z = camZ;
       renderer.render(scene, camera);
     }
@@ -458,7 +526,7 @@ export default function DayView3D({ onClose }: { onClose?: () => void }) {
       renderer.dispose();
       if (mount.contains(renderer.domElement)) mount.removeChild(renderer.domElement);
     };
-  }, []);
+  }, [refreshKey]);
 
   return (
     <div
@@ -616,13 +684,95 @@ export default function DayView3D({ onClose }: { onClose?: () => void }) {
               letterSpacing: '0.18em',
               textTransform: 'uppercase',
               color: 'rgba(196,160,96,0.2)',
-              padding: '6px 0 14px',
+              padding: '4px 0 6px',
               margin: 0,
             }}
           >
-            drag to rotate · pinch to zoom · tap to explore
+            drag to rotate · tap to explore
           </p>
         )}
+
+        {/* EMBF boxes */}
+        <div
+          style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(4,1fr)',
+            gap: 6,
+            padding: '4px 12px 8px',
+          }}
+        >
+          {EMBF_AXES.map((ax) => {
+            const idx = vals[ax.axis] ?? Math.floor(ax.max / 2);
+            const isOpen = activeBox === ax.axis;
+            return (
+              <button
+                key={ax.axis}
+                type="button"
+                onClick={() => setActiveBox(isOpen ? null : ax.axis)}
+                style={{
+                  background: isOpen ? `${ax.color}1a` : 'rgba(255,255,255,0.03)',
+                  border: `1px solid ${isOpen ? ax.color : `${ax.color}44`}`,
+                  borderRadius: 10,
+                  padding: '8px 4px 7px',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  gap: 2,
+                  fontFamily: 'var(--font-serif)',
+                }}
+              >
+                <span
+                  style={{
+                    fontSize: 10,
+                    fontWeight: 700,
+                    letterSpacing: '0.06em',
+                    textTransform: 'uppercase',
+                    color: isOpen ? ax.color : `${ax.color}bb`,
+                  }}
+                >
+                  {ax.label}
+                </span>
+                <span style={{ fontSize: 7, letterSpacing: '0.06em', color: `${ax.color}66` }}>
+                  {ax.labels[idx]}
+                </span>
+              </button>
+            );
+          })}
+        </div>
+
+        {/* Axis picker */}
+        {activeBox &&
+          (() => {
+            const ax = EMBF_AXES.find((x) => x.axis === activeBox);
+            if (!ax) return null;
+            const cur = vals[ax.axis] ?? Math.floor(ax.max / 2);
+            return (
+              <div style={{ padding: '0 12px 16px', display: 'flex', flexWrap: 'wrap', gap: 5 }}>
+                {ax.labels.map((lbl, i) => (
+                  <button
+                    key={i}
+                    type="button"
+                    onClick={() => setAxisVal(ax.axis, ax.key, i)}
+                    style={{
+                      padding: '4px 10px',
+                      borderRadius: 20,
+                      border: `1px solid ${cur === i ? ax.color : `${ax.color}33`}`,
+                      background: cur === i ? `${ax.color}22` : 'transparent',
+                      color: cur === i ? ax.color : `${ax.color}88`,
+                      fontSize: 10,
+                      fontWeight: cur === i ? 700 : 400,
+                      letterSpacing: '0.04em',
+                      cursor: 'pointer',
+                      fontFamily: 'var(--font-serif)',
+                    }}
+                  >
+                    {lbl}
+                  </button>
+                ))}
+              </div>
+            );
+          })()}
       </div>
     </div>
   );

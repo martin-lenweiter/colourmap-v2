@@ -261,9 +261,14 @@ export default function ColourmapBrandButton({ initials, email }: ColourmapBrand
         aria-expanded={open}
         title="About Colourmap"
       >
+        {/* Invisible spacer matching the star width — keeps "Colourmap" text visually centred */}
+        <span
+          aria-hidden="true"
+          style={{ display: 'inline-block', width: 18, height: 18, flexShrink: 0 }}
+        />
         <p
           className="text-[22px] font-bold tracking-[0.08em] font-serif text-center"
-          style={{ color: '#5C3018' }}
+          style={{ color: 'var(--header-text, #C8A858)' }}
         >
           Colourmap
         </p>
@@ -286,7 +291,9 @@ export default function ColourmapBrandButton({ initials, email }: ColourmapBrand
               const y = (cy + r * Math.sin(a)).toFixed(3);
               pts.push(`${x},${y}`);
             }
-            return <polygon points={pts.join(' ')} fill="#5C3018" opacity={0.85} />;
+            return (
+              <polygon points={pts.join(' ')} fill="var(--header-text, #C8A858)" opacity={0.9} />
+            );
           })()}
         </svg>
       </button>

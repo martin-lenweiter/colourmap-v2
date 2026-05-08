@@ -67,7 +67,8 @@ type Mode =
   | 'treeoflife3d'
   | 'breath'
   | 'stream'
-  | 'entropy';
+  | 'entropy'
+  | 'entropy3d';
 
 interface Pal {
   bg0: string;
@@ -1846,6 +1847,30 @@ const PRESETS: Record<string, Cfg> = {
     stars: 0,
     mode: 'entropy',
   },
+  'Entropy 3D': {
+    preset: 'Calm Field',
+    symmetry: 8,
+    complexity: 8,
+    glow: 6,
+    breathSpeed: 0.5,
+    intensity: 8,
+    particles: 0,
+    luminous: 2,
+    stars: 0,
+    mode: 'entropy3d',
+  },
+  'Entropy 3D Indigo': {
+    preset: 'Cosmic Indigo',
+    symmetry: 8,
+    complexity: 9,
+    glow: 7,
+    breathSpeed: 0.55,
+    intensity: 9,
+    particles: 0,
+    luminous: 2,
+    stars: 0,
+    mode: 'entropy3d',
+  },
   'Drift Field': {
     preset: 'Blue Astral',
     symmetry: 7,
@@ -3023,8 +3048,9 @@ function buildModeGroup(cfg: Cfg, R: number): THREE.Group {
       return buildTreeoflife3d(cfg, R);
     case 'breath':
     case 'stream':
-      return buildCanvasMode(cfg, R);
     case 'entropy':
+      return buildCanvasMode(cfg, R);
+    case 'entropy3d':
       return buildEntropy3D(cfg, R);
     default:
       return buildSacred(cfg, R);
@@ -3197,9 +3223,10 @@ function updateModeGroup(group: THREE.Group, cfg: Cfg, dots: Dot[], t: number, R
       break;
     case 'breath':
     case 'stream':
+    case 'entropy':
       updateCanvasMode(group, cfg, t, R);
       break;
-    case 'entropy':
+    case 'entropy3d':
       updateEntropy3D(group, cfg, t, R);
       break;
     default:
@@ -8874,43 +8901,58 @@ const MODES: { mode: Mode; label: string }[] = [
   { mode: 'breath', label: '◉ Breath' },
   { mode: 'stream', label: '∿ Stream' },
   { mode: 'entropy', label: '⋮ Entropy' },
+  { mode: 'entropy3d', label: '⋮³ Entropy 3D' },
 ];
 
-const FEATURED_PRESETS: { name: string; tag: string }[] = [
-  // ── New dot/particle worlds ──
+type FeaturedItem = { name: string; tag: string } | { header: string; dim?: boolean };
+
+const FEATURED_PRESETS: FeaturedItem[] = [
+  // ── Entropy ──
+  { header: '— Entropy —' },
+  { name: 'Entropy Gold', tag: 'ENTR' },
+  { name: 'Entropy Dark', tag: 'ENTR' },
+  { name: 'Entropy 3D', tag: 'ENTR·3D' },
+  { name: 'Entropy 3D Indigo', tag: 'ENTR·3D' },
+  // ── Chaos ──
+  { header: '— Chaos —' },
+  { name: 'Chaos Field', tag: 'CHAOS' },
+  { name: 'Chaos Triangles', tag: 'CHAOS·3D' },
+  { name: 'Chaos Storm 3D', tag: 'CHAOS·3D' },
+  { name: 'Chaos Pulse', tag: 'CHAOS' },
+  // ── 3D Interactive ──
+  { header: '— 3D —' },
+  { name: 'Bloom Evo', tag: '3D' },
+  { name: 'Bloom Gold', tag: '3D' },
+  { name: 'Drift Field', tag: '3D' },
+  { name: 'Orbit EMBF', tag: '3D' },
   { name: 'Current 3D', tag: '3D' },
   { name: 'Vortex 3D', tag: '3D' },
-  { name: 'Nebula Drift', tag: '3D' },
   { name: 'Deep Flow 3D', tag: '3D' },
-  { name: 'Matrix Rain', tag: 'DOT' },
-  { name: 'Code Storm', tag: 'DOT' },
-  { name: 'Neon Rain', tag: 'DOT' },
-  // ── Rorschach / Pulse ──
+  { name: 'Nebula Drift', tag: '3D' },
+  // ── 2D Patterns ──
+  { header: '— 2D —' },
   { name: 'Rorschach Pulse', tag: 'PULSE' },
   { name: 'Rorschach Colour', tag: 'PULSE' },
   { name: 'Ink Pulse', tag: 'PULSE' },
-  { name: 'Chaos Pulse', tag: 'PULSE' },
   { name: 'Slow Breath', tag: 'PULSE' },
-  // ── Chaos & randomness ──
-  { name: 'Chaos Field', tag: 'CHAOS' },
-  { name: 'Chaos Storm 3D', tag: 'CHAOS' },
-  { name: 'Entropy', tag: 'CHAOS' },
   { name: 'Random Burst', tag: 'CHAOS' },
   { name: 'Quantum Chaos', tag: 'CHAOS' },
-  // ── Colour cycles (yantra / fibonacci) ──
   { name: 'Yantra Prism', tag: 'CLR' },
   { name: 'Yantra Colour', tag: 'CLR' },
   { name: 'Yantra Mono', tag: 'CLR' },
+  // ── Not working well ──
+  { header: '— Not Working —', dim: true },
+  { name: 'Matrix Rain', tag: 'DOT' },
+  { name: 'Code Storm', tag: 'DOT' },
+  { name: 'Neon Rain', tag: 'DOT' },
   { name: 'Fibonacci Prism', tag: 'CLR' },
   { name: 'Fibonacci Colour', tag: 'CLR' },
-  // ── Tangka series ──
+  { name: 'Atom 3D', tag: 'ATOM' },
   { name: 'Tangka Mandala', tag: 'TIB' },
   { name: 'Tangka Wheel', tag: 'TIB' },
   { name: 'Tangka Lotus', tag: 'TIB' },
   { name: 'Tangka Sky', tag: 'TIB' },
   { name: 'Tangka Fire', tag: 'TIB' },
-  // ── Atom / Globe ──
-  { name: 'Atom 3D', tag: 'ATOM' },
   { name: 'Orbital Atom', tag: 'ATOM' },
   { name: 'Aurora Globe', tag: 'GLOB' },
   { name: 'Crystal Globe', tag: 'GLOB' },
@@ -9052,8 +9094,9 @@ function updateEmotion(group: THREE.Group, cfg: Cfg, t: number, R: number): void
   const pal = PAL[cfg.preset] ?? PAL['Calm Field'];
   const [rr, gg, bb] = pal.rgb;
   const iF = cfg.intensity / 10;
+  const speed = cfg.breathSpeed * 0.4;
   const noiseAmp = R * lerp(0.42, 0.03, norm);
-  const rotSpeed = lerp(0.011, 0.0018, norm);
+  const rotSpeed = lerp(0.004, 0.0008, norm) * speed;
 
   // Agitated color: dark blood red. Calm color: palette color
   const cr = lerp(140, rr, norm);
@@ -9078,9 +9121,9 @@ function updateEmotion(group: THREE.Group, cfg: Cfg, t: number, R: number): void
           ny = oy / len,
           nz = oz / len;
         const noise =
-          Math.sin(nx * 5.1 + t * 0.00088) * 0.5 +
-          Math.sin(ny * 7.4 + t * 0.00063) * 0.32 +
-          Math.sin(nz * 11.2 + t * 0.00041) * 0.18;
+          Math.sin(nx * 5.1 + t * 0.00088 * speed) * 0.5 +
+          Math.sin(ny * 7.4 + t * 0.00063 * speed) * 0.32 +
+          Math.sin(nz * 11.2 + t * 0.00041 * speed) * 0.18;
         const d = noiseAmp * noise * c;
         arr[i] = ox + nx * d;
         arr[i + 1] = oy + ny * d;
@@ -9392,11 +9435,13 @@ function buildCBloom(cfg: Cfg, R: number): THREE.Group {
   rGeo.setAttribute('position', rPosAttr);
   rGeo.setAttribute('color', rColAttr);
   const rMat = new THREE.PointsMaterial({
-    size: 4,
+    size: 8,
+    map: getCircleTex(),
     vertexColors: true,
     transparent: true,
     opacity: 0.88 * iF,
     sizeAttenuation: false,
+    alphaTest: 0.01,
     blending: THREE.AdditiveBlending,
     depthWrite: false,
   });
@@ -10646,7 +10691,7 @@ export default function GeometryField() {
         currentCfg.mode === 'weave' ||
         currentCfg.mode === 'chaostri3d' ||
         currentCfg.mode === 'treeoflife3d' ||
-        currentCfg.mode === 'entropy';
+        currentCfg.mode === 'entropy3d';
       if (is3D && modeGroupRef.current) {
         if (!l3dDragRef.current) {
           // Slow auto-spin when not dragging
@@ -10887,7 +10932,7 @@ export default function GeometryField() {
 
   // Canvas overlay for Breath / Stream / Entropy modes
   useEffect(() => {
-    const isCanvasMode = cfg.mode === 'breath' || cfg.mode === 'stream';
+    const isCanvasMode = cfg.mode === 'breath' || cfg.mode === 'stream' || cfg.mode === 'entropy';
     if (!isCanvasMode) {
       canvasModeActiveRef.current = false;
       cancelAnimationFrame(canvasModeAnimRef.current);
@@ -11606,69 +11651,89 @@ export default function GeometryField() {
                 {/* Programs grid */}
                 {builderView === 'programs' && (
                   <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-                    {/* Featured new presets */}
-                    <div
-                      style={{
-                        fontFamily: 'var(--font-serif)',
-                        fontSize: 8,
-                        letterSpacing: '0.18em',
-                        textTransform: 'uppercase',
-                        color: `rgba(${pr},${pg},${pb},0.45)`,
-                        paddingBottom: 2,
-                      }}
-                    >
-                      New
-                    </div>
+                    {/* Featured presets — numbered, 2D/3D groups */}
                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 5 }}>
-                      {FEATURED_PRESETS.map(({ name, tag }) => {
-                        const isActive =
-                          Object.keys(PRESETS).includes(name) &&
-                          (() => {
-                            const p = PRESETS[name];
-                            return p && cfg.preset === (p.preset ?? name) && cfg.mode === p.mode;
-                          })();
-                        return (
-                          <button
-                            key={name}
-                            type="button"
-                            onClick={() => applyPreset(name)}
-                            style={{
-                              background: isActive ? accentFaint : 'transparent',
-                              border: `1px solid ${isActive ? accentMid : `rgba(${pr},${pg},${pb},0.12)`}`,
-                              borderRadius: 8,
-                              padding: '7px 5px 6px',
-                              color: isActive ? accent : `rgba(${pr},${pg},${pb},0.62)`,
-                              fontFamily: 'var(--font-serif)',
-                              cursor: 'pointer',
-                              textAlign: 'center',
-                              display: 'flex',
-                              flexDirection: 'column',
-                              alignItems: 'center',
-                              gap: 2,
-                            }}
-                          >
-                            <span
+                      {(() => {
+                        let n = 0;
+                        let dim = false;
+                        return FEATURED_PRESETS.map((item, i) => {
+                          if ('header' in item) {
+                            dim = item.dim ?? false;
+                            return (
+                              <div
+                                key={`h-${i}`}
+                                style={{
+                                  gridColumn: '1 / -1',
+                                  fontFamily: 'var(--font-serif)',
+                                  fontSize: 7,
+                                  letterSpacing: '0.18em',
+                                  textTransform: 'uppercase' as const,
+                                  color: `rgba(${pr},${pg},${pb},${dim ? 0.22 : 0.38})`,
+                                  textAlign: 'center' as const,
+                                  paddingTop: 6,
+                                  paddingBottom: 2,
+                                }}
+                              >
+                                {item.header}
+                              </div>
+                            );
+                          }
+                          const { name, tag } = item;
+                          const num = ++n;
+                          const isActive =
+                            Object.keys(PRESETS).includes(name) &&
+                            (() => {
+                              const p = PRESETS[name];
+                              return p && cfg.preset === (p.preset ?? name) && cfg.mode === p.mode;
+                            })();
+                          return (
+                            <button
+                              key={name}
+                              type="button"
+                              onClick={() => applyPreset(name)}
                               style={{
-                                fontSize: 7,
-                                opacity: 0.4,
-                                letterSpacing: '0.1em',
-                                color: accent,
+                                background: isActive ? accentFaint : 'transparent',
+                                border: `1px solid ${isActive ? accentMid : `rgba(${pr},${pg},${pb},${dim ? 0.07 : 0.12})`}`,
+                                borderRadius: 8,
+                                padding: '7px 5px 6px',
+                                color: isActive
+                                  ? accent
+                                  : `rgba(${pr},${pg},${pb},${dim ? 0.35 : 0.62})`,
+                                fontFamily: 'var(--font-serif)',
+                                cursor: 'pointer',
+                                textAlign: 'center' as const,
+                                display: 'flex',
+                                flexDirection: 'column' as const,
+                                alignItems: 'center',
+                                gap: 1,
                               }}
                             >
-                              {tag}
-                            </span>
-                            <span
-                              style={{
-                                fontSize: 10,
-                                fontWeight: isActive ? 700 : 400,
-                                letterSpacing: '0.04em',
-                              }}
-                            >
-                              {name}
-                            </span>
-                          </button>
-                        );
-                      })}
+                              <span style={{ fontSize: 6, opacity: 0.28, color: accent }}>
+                                {num}
+                              </span>
+                              <span
+                                style={{
+                                  fontSize: 7,
+                                  opacity: 0.4,
+                                  letterSpacing: '0.1em',
+                                  color: accent,
+                                }}
+                              >
+                                {tag}
+                              </span>
+                              <span
+                                style={{
+                                  fontSize: 10,
+                                  fontWeight: isActive ? 700 : 400,
+                                  letterSpacing: '0.04em',
+                                }}
+                              >
+                                {name}
+                              </span>
+                            </button>
+                          );
+                        });
+                      })()}
                     </div>
 
                     {/* All modes */}

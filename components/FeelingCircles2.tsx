@@ -1147,7 +1147,15 @@ function FragmentField({
 }
 
 /* ─── CircleTracker — cockpit strip + expanded ───────────────── */
-function CircleTracker({ circle, circleVariant }: { circle: Circle; circleVariant: number }) {
+function CircleTracker({
+  circle,
+  circleVariant,
+  onVariantChange,
+}: {
+  circle: Circle;
+  circleVariant: number;
+  onVariantChange: (v: number) => void;
+}) {
   const [idx, setIdx] = useState(circle.defaultIdx);
   const [fragment, setFragment] = useState('');
   const [editing, setEditing] = useState(false);
@@ -1281,6 +1289,33 @@ function CircleTracker({ circle, circleVariant }: { circle: Circle; circleVarian
                 />
               );
             })()}
+
+            {/* Design picker — inline pills */}
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4, justifyContent: 'center' }}>
+              {CIRCLE_VIZ_LABELS.map((lbl, i) => (
+                <button
+                  key={i}
+                  type="button"
+                  onClick={() => onVariantChange(i)}
+                  style={{
+                    padding: '3px 8px',
+                    borderRadius: 20,
+                    border: `1px solid ${circleVariant === i ? 'rgba(196,160,96,0.7)' : 'rgba(196,160,96,0.18)'}`,
+                    background: circleVariant === i ? 'rgba(196,160,96,0.18)' : 'transparent',
+                    color: circleVariant === i ? '#C4A060' : 'rgba(196,160,96,0.42)',
+                    fontSize: 8,
+                    fontWeight: circleVariant === i ? 700 : 400,
+                    letterSpacing: '0.1em',
+                    textTransform: 'uppercase' as const,
+                    cursor: 'pointer',
+                    fontFamily: 'var(--font-serif)',
+                  }}
+                >
+                  {lbl}
+                </button>
+              ))}
+            </div>
+
             <FragmentField
               fragment={fragment}
               editing={editing}
@@ -2158,7 +2193,6 @@ function BehaviourTracker() {
 /* ─── Export ─────────────────────────────────────────────────── */
 export default function FeelingCircles2() {
   const [circleVariant, setCircleVariant] = useState(0);
-  const [showPicker, setShowPicker] = useState(false);
 
   useEffect(() => {
     try {
@@ -2176,128 +2210,13 @@ export default function FeelingCircles2() {
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 12, padding: '8px 0 32px' }}>
-      {/* Design picker button */}
-      <div style={{ display: 'flex', justifyContent: 'center', position: 'relative' }}>
-        <button
-          type="button"
-          onClick={() => setShowPicker((v) => !v)}
-          style={{
-            background: showPicker ? 'rgba(196,160,96,0.16)' : 'rgba(196,160,96,0.08)',
-            border: `1.5px solid ${showPicker ? 'rgba(196,160,96,0.55)' : 'rgba(196,160,96,0.22)'}`,
-            borderRadius: 20,
-            padding: '6px 16px',
-            cursor: 'pointer',
-            display: 'flex',
-            alignItems: 'center',
-            gap: 7,
-            transition: 'all 0.2s',
-          }}
-        >
-          <span
-            style={{
-              width: 9,
-              height: 9,
-              borderRadius: '50%',
-              background: '#C4A060',
-              boxShadow: '0 0 8px #C4A06099',
-              flexShrink: 0,
-            }}
-          />
-          <span
-            style={{
-              fontFamily: 'var(--font-serif)',
-              fontSize: 11,
-              fontWeight: 700,
-              textTransform: 'uppercase',
-              letterSpacing: '0.14em',
-              color: '#C4A060',
-            }}
-          >
-            {CIRCLE_VIZ_LABELS[circleVariant]}
-          </span>
-          <span
-            style={{
-              color: '#C4A060',
-              fontSize: 10,
-              opacity: 0.6,
-              transform: `rotate(${showPicker ? 180 : 0}deg)`,
-              transition: 'transform 0.2s',
-            }}
-          >
-            ▾
-          </span>
-        </button>
-
-        {showPicker && (
-          <div
-            style={{
-              position: 'absolute',
-              top: 'calc(100% + 8px)',
-              left: '50%',
-              transform: 'translateX(-50%)',
-              background: '#1C0A04',
-              border: '1.5px solid rgba(196,160,96,0.45)',
-              borderRadius: 14,
-              padding: '14px 14px',
-              zIndex: 50,
-              display: 'grid',
-              gridTemplateColumns: 'repeat(3, 1fr)',
-              gap: 8,
-              minWidth: 220,
-            }}
-          >
-            {CIRCLE_VIZ_LABELS.map((lbl, i) => (
-              <button
-                key={i}
-                type="button"
-                onClick={() => {
-                  switchCircleVariant(i);
-                  setShowPicker(false);
-                }}
-                style={{
-                  background: circleVariant === i ? 'rgba(196,160,96,0.18)' : '#2A1208',
-                  border: `1.5px solid ${circleVariant === i ? '#C4A060' : 'rgba(196,160,96,0.2)'}`,
-                  borderRadius: 10,
-                  padding: '10px 6px',
-                  cursor: 'pointer',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  alignItems: 'center',
-                  gap: 6,
-                  transition: 'all 0.15s',
-                }}
-              >
-                <span
-                  style={{
-                    width: circleVariant === i ? 11 : 8,
-                    height: circleVariant === i ? 11 : 8,
-                    borderRadius: '50%',
-                    background: circleVariant === i ? '#C4A060' : 'rgba(196,160,96,0.35)',
-                    boxShadow: circleVariant === i ? '0 0 8px #C4A06099' : 'none',
-                    display: 'block',
-                    transition: 'all 0.15s',
-                  }}
-                />
-                <span
-                  style={{
-                    fontFamily: 'var(--font-serif)',
-                    fontSize: 9,
-                    fontWeight: 700,
-                    textTransform: 'uppercase',
-                    letterSpacing: '0.1em',
-                    color: circleVariant === i ? '#C4A060' : 'rgba(196,160,96,0.55)',
-                    transition: 'color 0.15s',
-                  }}
-                >
-                  {lbl}
-                </span>
-              </button>
-            ))}
-          </div>
-        )}
-      </div>
       {CIRCLES.map((c) => (
-        <CircleTracker key={c.id} circle={c} circleVariant={circleVariant} />
+        <CircleTracker
+          key={c.id}
+          circle={c}
+          circleVariant={circleVariant}
+          onVariantChange={switchCircleVariant}
+        />
       ))}
       <FocusTracker circleVariant={circleVariant} />
       <BehaviourTracker />

@@ -8,6 +8,15 @@ function midnightToday(): number {
   return d.getTime();
 }
 
+export function forceAppendEntry(indices: number[]): void {
+  if (typeof window === 'undefined') return;
+  const entries = getTodayEntries();
+  entries.push({ t: Date.now(), i: [...indices] });
+  try {
+    localStorage.setItem(KEY, JSON.stringify(entries));
+  } catch {}
+}
+
 export function appendEntry(indices: number[]): void {
   if (typeof window === 'undefined') return;
   const entries = getTodayEntries();

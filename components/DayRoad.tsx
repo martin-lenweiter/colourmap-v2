@@ -2,7 +2,12 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 
-import { appendEntry, getTodayEntries, type TimelineEntry } from '@/lib/day-timeline';
+import {
+  appendEntry,
+  forceAppendEntry,
+  getTodayEntries,
+  type TimelineEntry,
+} from '@/lib/day-timeline';
 
 /* ── Axis config ────────────────────────────────────────────────── */
 const AXES = [
@@ -318,6 +323,31 @@ function smoothPath(pts: { x: number; y: number }[]): string {
   return d;
 }
 
+/* ── Example generator ──────────────────────────────────────────── */
+function generateExampleEntries(): TimelineEntry[] {
+  const midnight = new Date();
+  midnight.setHours(0, 0, 0, 0);
+  const t0 = midnight.getTime();
+  const DAY = 24 * 60 * 60 * 1000;
+  const N = 16;
+  // Start from morning lows
+  const vals = AXES.map((a) => Math.floor(a.max * 0.2 + Math.random() * a.max * 0.2));
+  const entries: TimelineEntry[] = [];
+  for (let i = 0; i < N; i++) {
+    const t = t0 + (i / (N - 1)) * DAY;
+    entries.push({ t, i: [...vals] });
+    for (let ai = 0; ai < AXES.length; ai++) {
+      const a = AXES[ai];
+      // Sinusoidal arc: peaks in midday, low at edges
+      const arc = Math.sin(((i + 1) / N) * Math.PI) * a.max * 0.45;
+      const noise = (Math.random() - 0.45) * a.max * 0.35;
+      const target = a.max * 0.3 + arc + noise;
+      vals[ai] = Math.max(0, Math.min(a.max, Math.round(vals[ai] * 0.55 + target * 0.45)));
+    }
+  }
+  return entries;
+}
+
 /* ── Graph constants ────────────────────────────────────────────── */
 const GW = 340;
 const GH = 150;
@@ -330,6 +360,11 @@ export default function DayRoad({ onClose }: { onClose?: () => void }) {
   const [entries, setEntries] = useState<TimelineEntry[]>([]);
   const [live, setLive] = useState(() => AXES.map((a) => a.def));
   const [activeAxis, setActiveAxis] = useState<number | null>(null);
+  const [justLogged, setJustLogged] = useState(false);
+  const [tab, setTab] = useState<'today' | 'example'>('today');
+  const [exampleEntries, setExampleEntries] = useState<TimelineEntry[]>(() =>
+    generateExampleEntries(),
+  );
 
   const loadFromStorage = useCallback(() => {
     setEntries(getTodayEntries());
@@ -372,22 +407,32 @@ export default function DayRoad({ onClose }: { onClose?: () => void }) {
   })();
   const base: TimelineEntry[] = entries.length > 0 ? entries : [{ t: midnight, i: live }];
   const all: TimelineEntry[] = [...base, { t: now, i: live }];
-  const tMin = Math.min(midnight, all[0].t);
-  const tRange = now - tMin || 1;
+
+  /* Graph data depends on active tab */
+  const isExample = tab === 'example';
+  const graphEntries = isExample ? exampleEntries : all;
+  const tMin = isExample ? exampleEntries[0].t : Math.min(midnight, all[0].t);
+  const tEnd = isExample ? exampleEntries[exampleEntries.length - 1].t : now;
+  const tRange = tEnd - tMin || 1;
+  const exRingIndices = (() => {
+    const mid = exampleEntries[Math.floor(exampleEntries.length / 2)];
+    return mid?.i ?? live;
+  })();
 
   function toPoints(ai: number) {
-    return all.map((e) => ({
+    return graphEntries.map((e) => ({
       x: PAD.left + ((e.t - tMin) / tRange) * PW,
       y: PAD.top + (1 - (e.i[ai] ?? 0) / AXES[ai].max) * PH,
     }));
   }
 
   const timeLabels: { x: number; label: string }[] = [];
-  for (const h of [6, 9, 12, 15, 18, 21]) {
+  const hourSet = isExample ? [6, 9, 12, 15, 18, 21] : [6, 9, 12, 15, 18, 21];
+  for (const h of hourSet) {
     const d = new Date();
     d.setHours(h, 0, 0, 0);
     const ts = d.getTime();
-    if (ts >= tMin && ts <= now) {
+    if (ts >= tMin && ts <= tEnd) {
       const x = PAD.left + ((ts - tMin) / tRange) * PW;
       timeLabels.push({ x, label: h < 12 ? `${h}am` : h === 12 ? '12' : `${h - 12}pm` });
     }
@@ -438,14 +483,7 @@ export default function DayRoad({ onClose }: { onClose?: () => void }) {
         </div>
 
         {/* Header */}
-        <div
-          style={{
-            padding: '2px 20px 10px',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-          }}
-        >
+        <div style={{ padding: '2px 20px 10px', display: 'flex', alignItems: 'center', gap: 8 }}>
           <span
             style={{
               fontSize: 10,
@@ -453,10 +491,34 @@ export default function DayRoad({ onClose }: { onClose?: () => void }) {
               letterSpacing: '0.22em',
               textTransform: 'uppercase',
               color: 'rgba(196,160,96,0.45)',
+              flex: 1,
             }}
           >
             Day Road
           </span>
+          {/* Tab switcher */}
+          {(['today', 'example'] as const).map((t) => (
+            <button
+              key={t}
+              type="button"
+              onClick={() => setTab(t)}
+              style={{
+                padding: '3px 10px',
+                borderRadius: 20,
+                border: `1px solid rgba(196,160,96,${tab === t ? '0.55' : '0.2'})`,
+                background: tab === t ? 'rgba(196,160,96,0.14)' : 'transparent',
+                color: tab === t ? '#C4A060' : 'rgba(196,160,96,0.4)',
+                fontSize: 9,
+                fontWeight: 700,
+                letterSpacing: '0.12em',
+                textTransform: 'uppercase',
+                cursor: 'pointer',
+                fontFamily: 'var(--font-serif)',
+              }}
+            >
+              {t}
+            </button>
+          ))}
           <button
             type="button"
             onClick={onClose}
@@ -474,70 +536,151 @@ export default function DayRoad({ onClose }: { onClose?: () => void }) {
           </button>
         </div>
 
-        {/* EMBF axis selector boxes */}
-        <div style={{ display: 'flex', justifyContent: 'center', gap: 8, padding: '0 20px 14px' }}>
-          {AXES.map((ax, ai) => {
-            const on = activeAxis === ai;
-            return (
+        {/* Today: EMBF boxes + mandala + log */}
+        {tab === 'today' && (
+          <>
+            <div
+              style={{ display: 'flex', justifyContent: 'center', gap: 8, padding: '0 20px 14px' }}
+            >
+              {AXES.map((ax, ai) => {
+                const on = activeAxis === ai;
+                return (
+                  <button
+                    key={ai}
+                    type="button"
+                    onClick={() => setActiveAxis(on ? null : ai)}
+                    style={{
+                      flex: 1,
+                      padding: '6px 4px',
+                      borderRadius: 10,
+                      border: on ? `1px solid ${ax.color}` : '1px solid rgba(196,160,96,0.2)',
+                      background: on ? `${ax.color}18` : 'transparent',
+                      cursor: 'pointer',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      alignItems: 'center',
+                      gap: 3,
+                      transition: 'all 0.15s',
+                      boxShadow: on ? `0 0 10px ${ax.color}33` : 'none',
+                    }}
+                  >
+                    <span
+                      style={{
+                        fontSize: 13,
+                        fontWeight: 800,
+                        letterSpacing: '0.06em',
+                        color: on ? ax.color : 'rgba(196,160,96,0.4)',
+                        fontFamily: 'var(--font-serif)',
+                      }}
+                    >
+                      {ax.short}
+                    </span>
+                    <span
+                      style={{
+                        fontSize: 7.5,
+                        fontWeight: 700,
+                        letterSpacing: '0.1em',
+                        textTransform: 'uppercase',
+                        color: on ? ax.color : 'rgba(196,160,96,0.28)',
+                      }}
+                    >
+                      {ax.levels[live[ai]]}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+            <div style={{ position: 'relative' }}>
+              <div style={{ display: 'flex', justifyContent: 'center', paddingBottom: 12 }}>
+                <MiniRing indices={live} />
+              </div>
+              {activeAxis !== null && (
+                <AxisSlider
+                  ai={activeAxis}
+                  value={live[activeAxis]}
+                  onChange={(v) => setAxisValue(activeAxis, v)}
+                />
+              )}
+            </div>
+            <div style={{ display: 'flex', justifyContent: 'center', paddingBottom: 10 }}>
               <button
-                key={ai}
                 type="button"
-                onClick={() => setActiveAxis(on ? null : ai)}
+                onClick={() => {
+                  forceAppendEntry(live);
+                  setEntries(getTodayEntries());
+                  setJustLogged(true);
+                  setTimeout(() => setJustLogged(false), 900);
+                }}
                 style={{
-                  flex: 1,
-                  padding: '6px 4px',
-                  borderRadius: 10,
-                  border: on ? `1px solid ${ax.color}` : '1px solid rgba(196,160,96,0.2)',
-                  background: on ? `${ax.color}18` : 'transparent',
+                  padding: '6px 20px',
+                  borderRadius: 20,
+                  border: `1px solid rgba(196,160,96,${justLogged ? '0.7' : '0.35'})`,
+                  background: justLogged ? 'rgba(196,160,96,0.18)' : 'transparent',
+                  color: justLogged ? '#C8A858' : 'rgba(196,160,96,0.6)',
+                  fontSize: 10,
+                  fontWeight: 700,
+                  letterSpacing: '0.14em',
+                  textTransform: 'uppercase',
                   cursor: 'pointer',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  alignItems: 'center',
-                  gap: 3,
-                  transition: 'all 0.15s',
-                  boxShadow: on ? `0 0 10px ${ax.color}33` : 'none',
+                  fontFamily: 'var(--font-serif)',
+                  transition: 'all 0.2s',
                 }}
               >
-                <span
-                  style={{
-                    fontSize: 13,
-                    fontWeight: 800,
-                    letterSpacing: '0.06em',
-                    color: on ? ax.color : 'rgba(196,160,96,0.4)',
-                    fontFamily: 'var(--font-serif)',
-                  }}
-                >
-                  {ax.short}
-                </span>
-                <span
-                  style={{
-                    fontSize: 7.5,
-                    fontWeight: 700,
-                    letterSpacing: '0.1em',
-                    textTransform: 'uppercase',
-                    color: on ? ax.color : 'rgba(196,160,96,0.28)',
-                  }}
-                >
-                  {ax.levels[live[ai]]}
-                </span>
+                {justLogged ? '✓ logged' : '+ log point'}
               </button>
-            );
-          })}
-        </div>
+            </div>
+          </>
+        )}
 
-        {/* Mandala + optional slider */}
-        <div style={{ position: 'relative' }}>
-          <div style={{ display: 'flex', justifyContent: 'center', paddingBottom: 12 }}>
-            <MiniRing indices={live} />
+        {/* Example: mini ring preview + shuffle */}
+        {tab === 'example' && (
+          <div
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              padding: '0 20px 14px',
+            }}
+          >
+            <MiniRing indices={exRingIndices} />
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8 }}>
+              <p
+                style={{
+                  fontSize: 9,
+                  fontWeight: 700,
+                  letterSpacing: '0.18em',
+                  textTransform: 'uppercase',
+                  color: 'rgba(196,160,96,0.35)',
+                  textAlign: 'center',
+                  margin: 0,
+                }}
+              >
+                simulated
+                <br />
+                full day
+              </p>
+              <button
+                type="button"
+                onClick={() => setExampleEntries(generateExampleEntries())}
+                style={{
+                  padding: '6px 16px',
+                  borderRadius: 20,
+                  border: '1px solid rgba(196,160,96,0.35)',
+                  background: 'transparent',
+                  color: 'rgba(196,160,96,0.65)',
+                  fontSize: 10,
+                  fontWeight: 700,
+                  letterSpacing: '0.14em',
+                  textTransform: 'uppercase',
+                  cursor: 'pointer',
+                  fontFamily: 'var(--font-serif)',
+                }}
+              >
+                ↺ shuffle
+              </button>
+            </div>
           </div>
-          {activeAxis !== null && (
-            <AxisSlider
-              ai={activeAxis}
-              value={live[activeAxis]}
-              onChange={(v) => setAxisValue(activeAxis, v)}
-            />
-          )}
-        </div>
+        )}
 
         {/* Horizon */}
         <div
@@ -591,15 +734,17 @@ export default function DayRoad({ onClose }: { onClose?: () => void }) {
                 {label}
               </text>
             ))}
-            <line
-              x1={PAD.left + PW}
-              y1={PAD.top}
-              x2={PAD.left + PW}
-              y2={PAD.top + PH}
-              stroke="rgba(196,160,96,0.18)"
-              strokeWidth={0.5}
-              strokeDasharray="2,3"
-            />
+            {!isExample && (
+              <line
+                x1={PAD.left + PW}
+                y1={PAD.top}
+                x2={PAD.left + PW}
+                y2={PAD.top + PH}
+                stroke="rgba(196,160,96,0.18)"
+                strokeWidth={0.5}
+                strokeDasharray="2,3"
+              />
+            )}
             {AXES.map((ax, ai) => {
               const pts = toPoints(ai);
               const isActive = activeAxis === ai;

@@ -64,14 +64,16 @@ export default async function AppLayout({
         <PhoneFrame>
           <div className="min-h-svh bg-background" style={{ position: 'relative' }}>
             <StarField />
-            <header className="border-b border-border">
+            <header
+              style={{ borderBottom: '1px solid var(--header-border, rgba(196,160,96,0.22))' }}
+            >
               {/* Three-column grid so the Colourmap brand stays visually
                 centered on every viewport — not just desktop. Left column
                 is an empty spacer matching the width of the right column
                 so the middle is truly centered even on phone. */}
               <div
                 className="grid w-full grid-cols-[1fr_auto_1fr] items-center gap-3 px-4 py-2"
-                style={{ background: 'var(--secondary)' }}
+                style={{ background: 'var(--header-bg, rgba(30,16,8,0.92))' }}
               >
                 <div />
                 {/* Brand button now also carries the user's initials —

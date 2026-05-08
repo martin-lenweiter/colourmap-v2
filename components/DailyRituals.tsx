@@ -591,9 +591,9 @@ export default function DailyRituals() {
   return (
     <div
       style={{
-        border: `1.5px solid ${peaked ? 'rgba(200,168,88,0.6)' : 'rgba(196,160,96,0.22)'}`,
+        border: `1.5px solid ${peaked ? 'rgba(200,168,88,0.6)' : 'var(--header-border, rgba(196,160,96,0.22))'}`,
         borderRadius: 16,
-        background: 'rgba(30,16,8,0.55)',
+        background: 'var(--header-bg, rgba(30,16,8,0.55))',
         overflow: 'hidden',
         transition: 'border-color 0.4s',
       }}
