@@ -759,10 +759,13 @@ export default function InfographicsView({
         position: 'relative',
         width: '100%',
         maxWidth: embedded ? undefined : 480,
+        maxHeight: embedded ? undefined : 'calc(100dvh - 72px)',
         background: embedded ? 'transparent' : '#0c0806',
         borderTop: embedded ? 'none' : '1px solid rgba(196,160,96,0.2)',
         borderRadius: embedded ? 0 : '20px 20px 0 0',
-        overflow: 'visible',
+        overflow: embedded ? 'visible' : 'hidden',
+        display: 'flex',
+        flexDirection: 'column',
         fontFamily: 'var(--font-serif)',
         paddingBottom: embedded ? 0 : 'env(safe-area-inset-bottom)',
       }}
@@ -905,783 +908,796 @@ export default function InfographicsView({
         )}
       </div>
 
-      {/* ── Axis view ── mini constellation + inline detail */}
-      {view === 'axis' &&
-        activeKind &&
-        (() => {
-          const kindColor = AXIS_COLOR[activeKind] ?? '#C4A060';
-          const kindLabels = AXIS_LABELS[activeKind] ?? EMOTION_LABELS;
-          const kindContexts = allContexts[activeKind] ?? [];
-          const kindTitle = EMBF_AXES.find((a) => a.axis === activeKind)?.label ?? activeKind;
-          const labelMax = kindLabels.length - 1;
-          const ax = EMBF_AXES.find((a) => a.axis === activeKind)!;
-          const curAxisVal = vals[activeKind] ?? Math.floor(ax.max / 2);
+      {/* scrollable body */}
+      <div style={{ flex: 1, overflowY: 'auto' as const }}>
+        {/* ── Axis view ── mini constellation + inline detail */}
+        {view === 'axis' &&
+          activeKind &&
+          (() => {
+            const kindColor = AXIS_COLOR[activeKind] ?? '#C4A060';
+            const kindLabels = AXIS_LABELS[activeKind] ?? EMOTION_LABELS;
+            const kindContexts = allContexts[activeKind] ?? [];
+            const kindTitle = EMBF_AXES.find((a) => a.axis === activeKind)?.label ?? activeKind;
+            const labelMax = kindLabels.length - 1;
+            const ax = EMBF_AXES.find((a) => a.axis === activeKind)!;
+            const curAxisVal = vals[activeKind] ?? Math.floor(ax.max / 2);
 
-          const AW = 340;
-          const AH = 210;
-          const acx = AW / 2;
-          const acy = AH / 2;
-          const n = kindContexts.length;
-          const spread = n <= 3 ? 88 : n <= 5 ? 82 : 72;
+            const AW = 340;
+            const AH = 210;
+            const acx = AW / 2;
+            const acy = AH / 2;
+            const n = kindContexts.length;
+            const spread = n <= 3 ? 88 : n <= 5 ? 82 : 72;
 
-          const ctxBubbleData = kindContexts.map((ctx, i) => {
-            const angle = n > 0 ? (i / n) * Math.PI * 2 - Math.PI / 2 : 0;
-            const latest = ctx.entries[ctx.entries.length - 1];
-            return {
-              ctx,
-              x: Math.max(26, Math.min(AW - 26, acx + Math.cos(angle) * spread)),
-              y: Math.max(26, Math.min(AH - 26, acy + Math.sin(angle) * spread)),
-              latest,
-              accent: latest ? stateColor(latest.idx, labelMax) : undefined,
-              isActive: ctx.id === activeCtx,
-            };
-          });
+            const ctxBubbleData = kindContexts.map((ctx, i) => {
+              const angle = n > 0 ? (i / n) * Math.PI * 2 - Math.PI / 2 : 0;
+              const latest = ctx.entries[ctx.entries.length - 1];
+              return {
+                ctx,
+                x: Math.max(26, Math.min(AW - 26, acx + Math.cos(angle) * spread)),
+                y: Math.max(26, Math.min(AH - 26, acy + Math.sin(angle) * spread)),
+                latest,
+                accent: latest ? stateColor(latest.idx, labelMax) : undefined,
+                isActive: ctx.id === activeCtx,
+              };
+            });
 
-          const activeCtxDef = activeCtx ? kindContexts.find((c) => c.id === activeCtx) : null;
-          const cur =
-            ctxPickerIdx ?? activeCtxDef?.entries.slice(-1)[0]?.idx ?? Math.floor(labelMax / 2);
+            const activeCtxDef = activeCtx ? kindContexts.find((c) => c.id === activeCtx) : null;
+            const cur =
+              ctxPickerIdx ?? activeCtxDef?.entries.slice(-1)[0]?.idx ?? Math.floor(labelMax / 2);
 
-          return (
-            <div>
-              {/* Axis header */}
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '0 16px 6px' }}>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setView('map');
-                    setActiveKind(null);
-                    setActiveCtx(null);
-                    setAddingCtx(false);
-                  }}
-                  style={{
-                    background: 'none',
-                    border: 'none',
-                    cursor: 'pointer',
-                    color: `${kindColor}99`,
-                    fontSize: 18,
-                    lineHeight: 1,
-                    padding: '0 4px 0 0',
-                  }}
+            return (
+              <div>
+                {/* Axis header */}
+                <div
+                  style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '0 16px 6px' }}
                 >
-                  ‹
-                </button>
-                <span
-                  style={{
-                    flex: 1,
-                    fontSize: 11,
-                    fontWeight: 800,
-                    letterSpacing: '0.2em',
-                    textTransform: 'uppercase',
-                    color: `${kindColor}88`,
-                  }}
-                >
-                  {kindTitle}
-                </span>
-                {!addingCtx && (
-                  <button
-                    type="button"
-                    onClick={() => setAddingCtx(true)}
-                    style={{
-                      background: 'none',
-                      border: `1px solid ${kindColor}4d`,
-                      borderRadius: 20,
-                      cursor: 'pointer',
-                      color: `${kindColor}99`,
-                      fontSize: 11,
-                      padding: '2px 10px',
-                      letterSpacing: '0.1em',
-                    }}
-                  >
-                    + add
-                  </button>
-                )}
-              </div>
-
-              {/* Add context input */}
-              {addingCtx && (
-                <div style={{ display: 'flex', gap: 6, padding: '0 12px 10px' }}>
-                  <input
-                    autoFocus
-                    value={newCtxLabel}
-                    onChange={(e) => setNewCtxLabel(e.target.value)}
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter') addContext(activeKind, newCtxLabel);
-                      if (e.key === 'Escape') {
-                        setAddingCtx(false);
-                        setNewCtxLabel('');
-                      }
-                    }}
-                    placeholder="e.g. Morning routine"
-                    style={{
-                      flex: 1,
-                      background: 'rgba(255,255,255,0.04)',
-                      border: `1px solid ${kindColor}40`,
-                      borderRadius: 8,
-                      padding: '6px 10px',
-                      color: `${kindColor}e6`,
-                      fontSize: 12,
-                      fontFamily: 'var(--font-serif)',
-                      outline: 'none',
-                    }}
-                  />
-                  <button
-                    type="button"
-                    onClick={() => addContext(activeKind, newCtxLabel)}
-                    style={{
-                      background: `${kindColor}26`,
-                      border: `1px solid ${kindColor}59`,
-                      borderRadius: 8,
-                      cursor: 'pointer',
-                      color: kindColor,
-                      fontSize: 11,
-                      padding: '0 10px',
-                    }}
-                  >
-                    Save
-                  </button>
                   <button
                     type="button"
                     onClick={() => {
+                      setView('map');
+                      setActiveKind(null);
+                      setActiveCtx(null);
                       setAddingCtx(false);
-                      setNewCtxLabel('');
                     }}
                     style={{
                       background: 'none',
                       border: 'none',
                       cursor: 'pointer',
-                      color: `${kindColor}66`,
-                      fontSize: 16,
+                      color: `${kindColor}99`,
+                      fontSize: 18,
+                      lineHeight: 1,
+                      padding: '0 4px 0 0',
                     }}
                   >
-                    ×
+                    ‹
                   </button>
-                </div>
-              )}
-
-              {/* Mini constellation */}
-              <svg
-                ref={axissvgRef}
-                viewBox={`0 0 ${AW} ${AH}`}
-                width="100%"
-                style={{ display: 'block' }}
-              >
-                {ctxBubbleData.map(({ ctx, x, y, isActive }) => (
-                  <line
-                    key={ctx.id}
-                    x1={acx}
-                    y1={acy}
-                    x2={x}
-                    y2={y}
-                    stroke={isActive ? kindColor : `${kindColor}30`}
-                    strokeWidth={isActive ? 1.2 : 0.7}
-                    strokeDasharray={isActive ? 'none' : '3,5'}
-                  />
-                ))}
-
-                {/* Center axis bubble — interactive arc slider */}
-                <g transform={`translate(${acx},${acy})`}>
-                  {(() => {
-                    const sliderR = 36;
-                    const radFn = (d: number) => (d * Math.PI) / 180;
-                    const sliderAngle = -135 + (curAxisVal / ax.max) * 270;
-                    const sx = Math.cos(radFn(-135)) * sliderR;
-                    const sy = Math.sin(radFn(-135)) * sliderR;
-                    const ex = Math.cos(radFn(135)) * sliderR;
-                    const ey = Math.sin(radFn(135)) * sliderR;
-                    const hx = Math.cos(radFn(sliderAngle)) * sliderR;
-                    const hy = Math.sin(radFn(sliderAngle)) * sliderR;
-                    const activeDeg = sliderAngle + 135;
-                    const largeArc = activeDeg > 180 ? 1 : 0;
-                    const handleColor = stateColor(curAxisVal, ax.max);
-                    return (
-                      <>
-                        <circle r={44} fill={`${kindColor}05`} />
-                        <circle r={24} fill={`${kindColor}12`} />
-                        {/* Track 270° */}
-                        <path
-                          d={`M ${sx} ${sy} A ${sliderR} ${sliderR} 0 1 1 ${ex} ${ey}`}
-                          fill="none"
-                          stroke={kindColor}
-                          strokeWidth={3.5}
-                          opacity={0.13}
-                          strokeLinecap="round"
-                        />
-                        {/* Active arc */}
-                        {curAxisVal > 0 && (
-                          <path
-                            d={`M ${sx} ${sy} A ${sliderR} ${sliderR} 0 ${largeArc} 1 ${hx} ${hy}`}
-                            fill="none"
-                            stroke={handleColor}
-                            strokeWidth={3.5}
-                            opacity={0.75}
-                            strokeLinecap="round"
-                          />
-                        )}
-                        {/* Ball handle */}
-                        <circle
-                          cx={hx}
-                          cy={hy}
-                          r={6.5}
-                          fill={`${handleColor}28`}
-                          stroke={handleColor}
-                          strokeWidth={1.5}
-                        />
-                        <circle cx={hx} cy={hy} r={2.8} fill={handleColor} />
-                        {/* Labels */}
-                        <text
-                          textAnchor="middle"
-                          dominantBaseline="middle"
-                          y={-4}
-                          fill={handleColor}
-                          fontSize={9}
-                          fontWeight={700}
-                          fontFamily="var(--font-serif)"
-                          letterSpacing="0.04em"
-                          style={{ pointerEvents: 'none' }}
-                        >
-                          {kindLabels[curAxisVal]}
-                        </text>
-                        <text
-                          textAnchor="middle"
-                          dominantBaseline="middle"
-                          y={7}
-                          fill={`${kindColor}55`}
-                          fontSize={6}
-                          fontWeight={600}
-                          fontFamily="var(--font-serif)"
-                          letterSpacing="0.14em"
-                          style={{ pointerEvents: 'none' }}
-                        >
-                          {kindTitle.toUpperCase()}
-                        </text>
-                        {/* Drag interaction area */}
-                        <circle
-                          r={44}
-                          fill="transparent"
-                          style={{ cursor: 'grab' }}
-                          onPointerDown={(e) => {
-                            axisSliderDraggingRef.current = true;
-                            (e.currentTarget as Element).setPointerCapture(e.pointerId);
-                            const val = pointerToAxisVal(e.clientX, e.clientY, ax.max);
-                            setAxisValLive(ax.axis, ax.key, val);
-                          }}
-                          onPointerMove={(e) => {
-                            if (!axisSliderDraggingRef.current) return;
-                            const val = pointerToAxisVal(e.clientX, e.clientY, ax.max);
-                            setAxisValLive(ax.axis, ax.key, val);
-                          }}
-                          onPointerUp={() => {
-                            if (axisSliderDraggingRef.current) {
-                              axisSliderDraggingRef.current = false;
-                              refreshBubbles();
-                            }
-                          }}
-                        />
-                      </>
-                    );
-                  })()}
-                </g>
-
-                {/* Context bubbles */}
-                {ctxBubbleData.map(({ ctx, x, y, accent, isActive, latest }) => (
-                  <g
-                    key={ctx.id}
-                    transform={`translate(${x},${y})`}
-                    style={{ cursor: 'pointer' }}
-                    onClick={() => {
-                      if (isActive) {
-                        setActiveCtx(null);
-                      } else {
-                        setActiveCtx(ctx.id);
-                        setCtxPickerIdx(latest?.idx ?? Math.floor(labelMax / 2));
-                        setCtxNote('');
-                      }
+                  <span
+                    style={{
+                      flex: 1,
+                      fontSize: 11,
+                      fontWeight: 800,
+                      letterSpacing: '0.2em',
+                      textTransform: 'uppercase',
+                      color: `${kindColor}88`,
                     }}
                   >
-                    {isActive && (
-                      <circle
-                        r={30}
-                        fill="none"
-                        stroke={kindColor}
-                        strokeWidth={0.8}
-                        strokeOpacity={0.35}
-                        strokeDasharray="2,3"
-                      />
-                    )}
-                    <circle
-                      r={24}
-                      fill={accent ? `${accent}1a` : `${kindColor}0d`}
-                      stroke={isActive ? kindColor : (accent ?? `${kindColor}50`)}
-                      strokeWidth={isActive ? 1.5 : 0.8}
-                    />
-                    <text
-                      textAnchor="middle"
-                      dominantBaseline="middle"
-                      y={latest ? -5 : 0}
-                      fill={accent ?? kindColor}
-                      fontSize={8}
-                      fontWeight={700}
-                      fontFamily="var(--font-serif)"
-                      letterSpacing="0.03em"
-                      style={{ pointerEvents: 'none' }}
-                    >
-                      {ctx.label}
-                    </text>
-                    {latest && (
-                      <text
-                        textAnchor="middle"
-                        dominantBaseline="middle"
-                        y={6}
-                        fill={accent ?? `${kindColor}80`}
-                        fontSize={6}
-                        fontFamily="var(--font-serif)"
-                        letterSpacing="0.06em"
-                        style={{ pointerEvents: 'none' }}
-                      >
-                        {kindLabels[Math.min(latest.idx, labelMax)]}
-                      </text>
-                    )}
-                  </g>
-                ))}
-
-                {n === 0 && (
-                  <text
-                    x={acx}
-                    y={acy + 72}
-                    textAnchor="middle"
-                    fill={`${kindColor}40`}
-                    fontSize={10}
-                    fontFamily="var(--font-serif)"
-                  >
-                    tap + add to create contexts
-                  </text>
-                )}
-              </svg>
-
-              {/* Context detail — inline below constellation */}
-              {activeCtxDef && (
-                <div style={{ borderTop: `1px solid ${kindColor}1a`, padding: '14px 12px 16px' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
-                    <span
-                      style={{
-                        flex: 1,
-                        fontSize: 13,
-                        fontWeight: 700,
-                        color: `${kindColor}d9`,
-                        letterSpacing: '0.06em',
-                      }}
-                    >
-                      {activeCtxDef.label}
-                    </span>
+                    {kindTitle}
+                  </span>
+                  {!addingCtx && (
                     <button
                       type="button"
-                      onClick={() => removeContext(activeKind, activeCtxDef.id)}
+                      onClick={() => setAddingCtx(true)}
+                      style={{
+                        background: 'none',
+                        border: `1px solid ${kindColor}4d`,
+                        borderRadius: 20,
+                        cursor: 'pointer',
+                        color: `${kindColor}99`,
+                        fontSize: 11,
+                        padding: '2px 10px',
+                        letterSpacing: '0.1em',
+                      }}
+                    >
+                      + add
+                    </button>
+                  )}
+                </div>
+
+                {/* Add context input */}
+                {addingCtx && (
+                  <div style={{ display: 'flex', gap: 6, padding: '0 12px 10px' }}>
+                    <input
+                      autoFocus
+                      value={newCtxLabel}
+                      onChange={(e) => setNewCtxLabel(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') addContext(activeKind, newCtxLabel);
+                        if (e.key === 'Escape') {
+                          setAddingCtx(false);
+                          setNewCtxLabel('');
+                        }
+                      }}
+                      placeholder="e.g. Morning routine"
+                      style={{
+                        flex: 1,
+                        background: 'rgba(255,255,255,0.04)',
+                        border: `1px solid ${kindColor}40`,
+                        borderRadius: 8,
+                        padding: '6px 10px',
+                        color: `${kindColor}e6`,
+                        fontSize: 12,
+                        fontFamily: 'var(--font-serif)',
+                        outline: 'none',
+                      }}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => addContext(activeKind, newCtxLabel)}
+                      style={{
+                        background: `${kindColor}26`,
+                        border: `1px solid ${kindColor}59`,
+                        borderRadius: 8,
+                        cursor: 'pointer',
+                        color: kindColor,
+                        fontSize: 11,
+                        padding: '0 10px',
+                      }}
+                    >
+                      Save
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setAddingCtx(false);
+                        setNewCtxLabel('');
+                      }}
                       style={{
                         background: 'none',
                         border: 'none',
                         cursor: 'pointer',
-                        color: `${kindColor}40`,
-                        fontSize: 11,
+                        color: `${kindColor}66`,
+                        fontSize: 16,
                       }}
                     >
-                      remove
+                      ×
                     </button>
                   </div>
+                )}
 
-                  {/* Color squares slider */}
-                  <div style={{ marginBottom: 14 }}>
-                    <div
-                      style={{
-                        fontSize: 10,
-                        fontWeight: 700,
-                        color: stateColor(cur, labelMax),
-                        fontFamily: 'var(--font-serif)',
-                        letterSpacing: '0.1em',
-                        textTransform: 'uppercase',
-                        marginBottom: 7,
-                        textAlign: 'center',
-                      }}
-                    >
-                      {kindLabels[cur]}
-                    </div>
-                    <div
-                      style={{
-                        display: 'flex',
-                        gap: 3,
-                        alignItems: 'flex-end',
-                        height: 26,
-                        touchAction: 'none',
-                        cursor: 'pointer',
-                      }}
-                      onPointerDown={(e) => {
-                        const rect = (e.currentTarget as HTMLDivElement).getBoundingClientRect();
-                        const idx = Math.max(
-                          0,
-                          Math.min(
-                            labelMax,
-                            Math.floor(((e.clientX - rect.left) / rect.width) * kindLabels.length),
-                          ),
-                        );
-                        setCtxPickerIdx(idx);
-                        (e.currentTarget as Element).setPointerCapture(e.pointerId);
-                      }}
-                      onPointerMove={(e) => {
-                        if (e.buttons === 0) return;
-                        const rect = (e.currentTarget as HTMLDivElement).getBoundingClientRect();
-                        const idx = Math.max(
-                          0,
-                          Math.min(
-                            labelMax,
-                            Math.floor(((e.clientX - rect.left) / rect.width) * kindLabels.length),
-                          ),
-                        );
-                        setCtxPickerIdx(idx);
-                      }}
-                    >
-                      {kindLabels.map((_, i) => {
-                        const base = stateColor(i, labelMax);
-                        const isActive = cur === i;
-                        return (
-                          <div
-                            key={i}
-                            style={{
-                              flex: 1,
-                              height: isActive ? 26 : 16,
-                              borderRadius: 3,
-                              background: isActive ? base : `${base}4a`,
-                              border: isActive ? `1px solid ${base}cc` : 'none',
-                              transition: 'height 0.1s',
+                {/* Mini constellation */}
+                <svg
+                  ref={axissvgRef}
+                  viewBox={`0 0 ${AW} ${AH}`}
+                  width="100%"
+                  style={{ display: 'block' }}
+                >
+                  {ctxBubbleData.map(({ ctx, x, y, isActive }) => (
+                    <line
+                      key={ctx.id}
+                      x1={acx}
+                      y1={acy}
+                      x2={x}
+                      y2={y}
+                      stroke={isActive ? kindColor : `${kindColor}30`}
+                      strokeWidth={isActive ? 1.2 : 0.7}
+                      strokeDasharray={isActive ? 'none' : '3,5'}
+                    />
+                  ))}
+
+                  {/* Center axis bubble — interactive arc slider */}
+                  <g transform={`translate(${acx},${acy})`}>
+                    {(() => {
+                      const sliderR = 36;
+                      const radFn = (d: number) => (d * Math.PI) / 180;
+                      const sliderAngle = -135 + (curAxisVal / ax.max) * 270;
+                      const sx = Math.cos(radFn(-135)) * sliderR;
+                      const sy = Math.sin(radFn(-135)) * sliderR;
+                      const ex = Math.cos(radFn(135)) * sliderR;
+                      const ey = Math.sin(radFn(135)) * sliderR;
+                      const hx = Math.cos(radFn(sliderAngle)) * sliderR;
+                      const hy = Math.sin(radFn(sliderAngle)) * sliderR;
+                      const activeDeg = sliderAngle + 135;
+                      const largeArc = activeDeg > 180 ? 1 : 0;
+                      const handleColor = stateColor(curAxisVal, ax.max);
+                      return (
+                        <>
+                          <circle r={44} fill={`${kindColor}05`} />
+                          <circle r={24} fill={`${kindColor}12`} />
+                          {/* Track 270° */}
+                          <path
+                            d={`M ${sx} ${sy} A ${sliderR} ${sliderR} 0 1 1 ${ex} ${ey}`}
+                            fill="none"
+                            stroke={kindColor}
+                            strokeWidth={3.5}
+                            opacity={0.13}
+                            strokeLinecap="round"
+                          />
+                          {/* Active arc */}
+                          {curAxisVal > 0 && (
+                            <path
+                              d={`M ${sx} ${sy} A ${sliderR} ${sliderR} 0 ${largeArc} 1 ${hx} ${hy}`}
+                              fill="none"
+                              stroke={handleColor}
+                              strokeWidth={3.5}
+                              opacity={0.75}
+                              strokeLinecap="round"
+                            />
+                          )}
+                          {/* Ball handle */}
+                          <circle
+                            cx={hx}
+                            cy={hy}
+                            r={6.5}
+                            fill={`${handleColor}28`}
+                            stroke={handleColor}
+                            strokeWidth={1.5}
+                          />
+                          <circle cx={hx} cy={hy} r={2.8} fill={handleColor} />
+                          {/* Labels */}
+                          <text
+                            textAnchor="middle"
+                            dominantBaseline="middle"
+                            y={-4}
+                            fill={handleColor}
+                            fontSize={9}
+                            fontWeight={700}
+                            fontFamily="var(--font-serif)"
+                            letterSpacing="0.04em"
+                            style={{ pointerEvents: 'none' }}
+                          >
+                            {kindLabels[curAxisVal]}
+                          </text>
+                          <text
+                            textAnchor="middle"
+                            dominantBaseline="middle"
+                            y={7}
+                            fill={`${kindColor}55`}
+                            fontSize={6}
+                            fontWeight={600}
+                            fontFamily="var(--font-serif)"
+                            letterSpacing="0.14em"
+                            style={{ pointerEvents: 'none' }}
+                          >
+                            {kindTitle.toUpperCase()}
+                          </text>
+                          {/* Drag interaction area */}
+                          <circle
+                            r={44}
+                            fill="transparent"
+                            style={{ cursor: 'grab' }}
+                            onPointerDown={(e) => {
+                              axisSliderDraggingRef.current = true;
+                              (e.currentTarget as Element).setPointerCapture(e.pointerId);
+                              const val = pointerToAxisVal(e.clientX, e.clientY, ax.max);
+                              setAxisValLive(ax.axis, ax.key, val);
+                            }}
+                            onPointerMove={(e) => {
+                              if (!axisSliderDraggingRef.current) return;
+                              const val = pointerToAxisVal(e.clientX, e.clientY, ax.max);
+                              setAxisValLive(ax.axis, ax.key, val);
+                            }}
+                            onPointerUp={() => {
+                              if (axisSliderDraggingRef.current) {
+                                axisSliderDraggingRef.current = false;
+                                refreshBubbles();
+                              }
                             }}
                           />
-                        );
-                      })}
-                    </div>
-                  </div>
+                        </>
+                      );
+                    })()}
+                  </g>
 
-                  <textarea
-                    value={ctxNote}
-                    onChange={(e) => setCtxNote(e.target.value)}
-                    placeholder="Reflection… (optional)"
-                    rows={2}
-                    style={{
-                      width: '100%',
-                      boxSizing: 'border-box',
-                      background: 'rgba(255,255,255,0.04)',
-                      border: `1px solid ${kindColor}33`,
-                      borderRadius: 8,
-                      padding: '8px 10px',
-                      color: `${kindColor}d9`,
-                      fontSize: 12,
-                      fontFamily: 'var(--font-serif)',
-                      resize: 'none',
-                      outline: 'none',
-                      marginBottom: 8,
-                    }}
-                  />
+                  {/* Context bubbles */}
+                  {ctxBubbleData.map(({ ctx, x, y, accent, isActive, latest }) => (
+                    <g
+                      key={ctx.id}
+                      transform={`translate(${x},${y})`}
+                      style={{ cursor: 'pointer' }}
+                      onClick={() => {
+                        if (isActive) {
+                          setActiveCtx(null);
+                        } else {
+                          setActiveCtx(ctx.id);
+                          setCtxPickerIdx(latest?.idx ?? Math.floor(labelMax / 2));
+                          setCtxNote('');
+                        }
+                      }}
+                    >
+                      {isActive && (
+                        <circle
+                          r={30}
+                          fill="none"
+                          stroke={kindColor}
+                          strokeWidth={0.8}
+                          strokeOpacity={0.35}
+                          strokeDasharray="2,3"
+                        />
+                      )}
+                      <circle
+                        r={24}
+                        fill={accent ? `${accent}1a` : `${kindColor}0d`}
+                        stroke={isActive ? kindColor : (accent ?? `${kindColor}50`)}
+                        strokeWidth={isActive ? 1.5 : 0.8}
+                      />
+                      <text
+                        textAnchor="middle"
+                        dominantBaseline="middle"
+                        y={latest ? -5 : 0}
+                        fill={accent ?? kindColor}
+                        fontSize={8}
+                        fontWeight={700}
+                        fontFamily="var(--font-serif)"
+                        letterSpacing="0.03em"
+                        style={{ pointerEvents: 'none' }}
+                      >
+                        {ctx.label}
+                      </text>
+                      {latest && (
+                        <text
+                          textAnchor="middle"
+                          dominantBaseline="middle"
+                          y={6}
+                          fill={accent ?? `${kindColor}80`}
+                          fontSize={6}
+                          fontFamily="var(--font-serif)"
+                          letterSpacing="0.06em"
+                          style={{ pointerEvents: 'none' }}
+                        >
+                          {kindLabels[Math.min(latest.idx, labelMax)]}
+                        </text>
+                      )}
+                    </g>
+                  ))}
 
-                  <button
-                    type="button"
-                    onClick={() => saveContextEntry(activeKind, activeCtxDef.id, cur, ctxNote)}
-                    style={{
-                      width: '100%',
-                      background: `${stateColor(cur, labelMax)}22`,
-                      border: `1px solid ${stateColor(cur, labelMax)}66`,
-                      borderRadius: 10,
-                      padding: '9px 0',
-                      cursor: 'pointer',
-                      color: stateColor(cur, labelMax),
-                      fontSize: 12,
-                      fontWeight: 700,
-                      letterSpacing: '0.1em',
-                      textTransform: 'uppercase',
-                      fontFamily: 'var(--font-serif)',
-                      marginBottom: 12,
-                    }}
-                  >
-                    Check in
-                  </button>
+                  {n === 0 && (
+                    <text
+                      x={acx}
+                      y={acy + 72}
+                      textAnchor="middle"
+                      fill={`${kindColor}40`}
+                      fontSize={10}
+                      fontFamily="var(--font-serif)"
+                    >
+                      tap + add to create contexts
+                    </text>
+                  )}
+                </svg>
 
-                  {activeCtxDef.entries.length > 0 && (
-                    <div>
-                      <p
+                {/* Context detail — inline below constellation */}
+                {activeCtxDef && (
+                  <div style={{ borderTop: `1px solid ${kindColor}1a`, padding: '14px 12px 16px' }}>
+                    <div
+                      style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}
+                    >
+                      <span
                         style={{
-                          fontSize: 9,
+                          flex: 1,
+                          fontSize: 13,
                           fontWeight: 700,
-                          letterSpacing: '0.18em',
-                          textTransform: 'uppercase',
-                          color: `${kindColor}59`,
-                          marginBottom: 8,
+                          color: `${kindColor}d9`,
+                          letterSpacing: '0.06em',
                         }}
                       >
-                        History
-                      </p>
+                        {activeCtxDef.label}
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => removeContext(activeKind, activeCtxDef.id)}
+                        style={{
+                          background: 'none',
+                          border: 'none',
+                          cursor: 'pointer',
+                          color: `${kindColor}40`,
+                          fontSize: 11,
+                        }}
+                      >
+                        remove
+                      </button>
+                    </div>
+
+                    {/* Color squares slider */}
+                    <div style={{ marginBottom: 14 }}>
+                      <div
+                        style={{
+                          fontSize: 10,
+                          fontWeight: 700,
+                          color: stateColor(cur, labelMax),
+                          fontFamily: 'var(--font-serif)',
+                          letterSpacing: '0.1em',
+                          textTransform: 'uppercase',
+                          marginBottom: 7,
+                          textAlign: 'center',
+                        }}
+                      >
+                        {kindLabels[cur]}
+                      </div>
                       <div
                         style={{
                           display: 'flex',
-                          flexDirection: 'column',
-                          gap: 5,
-                          maxHeight: 120,
-                          overflowY: 'auto',
+                          gap: 3,
+                          alignItems: 'flex-end',
+                          height: 26,
+                          touchAction: 'none',
+                          cursor: 'pointer',
+                        }}
+                        onPointerDown={(e) => {
+                          const rect = (e.currentTarget as HTMLDivElement).getBoundingClientRect();
+                          const idx = Math.max(
+                            0,
+                            Math.min(
+                              labelMax,
+                              Math.floor(
+                                ((e.clientX - rect.left) / rect.width) * kindLabels.length,
+                              ),
+                            ),
+                          );
+                          setCtxPickerIdx(idx);
+                          (e.currentTarget as Element).setPointerCapture(e.pointerId);
+                        }}
+                        onPointerMove={(e) => {
+                          if (e.buttons === 0) return;
+                          const rect = (e.currentTarget as HTMLDivElement).getBoundingClientRect();
+                          const idx = Math.max(
+                            0,
+                            Math.min(
+                              labelMax,
+                              Math.floor(
+                                ((e.clientX - rect.left) / rect.width) * kindLabels.length,
+                              ),
+                            ),
+                          );
+                          setCtxPickerIdx(idx);
                         }}
                       >
-                        {[...activeCtxDef.entries].reverse().map((entry, i) => (
-                          <div
-                            key={i}
-                            style={{ display: 'flex', alignItems: 'flex-start', gap: 8 }}
-                          >
+                        {kindLabels.map((_, i) => {
+                          const base = stateColor(i, labelMax);
+                          const isActive = cur === i;
+                          return (
                             <div
+                              key={i}
                               style={{
-                                width: 8,
-                                height: 8,
-                                borderRadius: '50%',
-                                background: stateColor(entry.idx, labelMax),
-                                marginTop: 4,
-                                flexShrink: 0,
+                                flex: 1,
+                                height: isActive ? 26 : 16,
+                                borderRadius: 3,
+                                background: isActive ? base : `${base}4a`,
+                                border: isActive ? `1px solid ${base}cc` : 'none',
+                                transition: 'height 0.1s',
                               }}
                             />
-                            <div style={{ flex: 1, minWidth: 0 }}>
-                              {entry.note ? (
-                                <p
-                                  style={{
-                                    fontSize: 10,
-                                    color: `${kindColor}80`,
-                                    margin: 0,
-                                    lineHeight: 1.4,
-                                  }}
-                                >
-                                  {entry.note}
-                                </p>
-                              ) : (
-                                <span style={{ fontSize: 9, color: `${kindColor}44` }}>—</span>
-                              )}
-                            </div>
-                            <span
-                              style={{
-                                fontSize: 9,
-                                color: `${kindColor}4d`,
-                                flexShrink: 0,
-                                marginTop: 2,
-                              }}
-                            >
-                              {entry.date}
-                            </span>
-                          </div>
-                        ))}
+                          );
+                        })}
                       </div>
                     </div>
-                  )}
-                </div>
-              )}
-            </div>
-          );
-        })()}
 
-      {/* ── Map view ── */}
-      {view === 'map' && (
-        <>
-          {/* Axis filter tabs */}
-          <div
-            style={{ display: 'flex', gap: 5, padding: '0 12px 10px', justifyContent: 'center' }}
-          >
-            {EMBF_AXES.map((ax) => {
-              const active = filterKind === ax.axis;
-              return (
-                <button
-                  key={ax.axis}
-                  type="button"
-                  onClick={() => setFilterKind(active ? null : ax.axis)}
-                  style={{
-                    padding: '3px 12px',
-                    borderRadius: 20,
-                    border: `1px solid ${active ? ax.color : `${ax.color}44`}`,
-                    background: active ? `${ax.color}22` : 'transparent',
-                    color: active ? ax.color : `${ax.color}77`,
-                    fontSize: 9,
-                    fontWeight: active ? 700 : 500,
-                    letterSpacing: '0.12em',
-                    textTransform: 'uppercase',
-                    cursor: 'pointer',
-                    fontFamily: 'var(--font-serif)',
-                  }}
-                >
-                  {ax.label}
-                </button>
-              );
-            })}
-          </div>
+                    <textarea
+                      value={ctxNote}
+                      onChange={(e) => setCtxNote(e.target.value)}
+                      placeholder="Reflection… (optional)"
+                      rows={2}
+                      style={{
+                        width: '100%',
+                        boxSizing: 'border-box',
+                        background: 'rgba(255,255,255,0.04)',
+                        border: `1px solid ${kindColor}33`,
+                        borderRadius: 8,
+                        padding: '8px 10px',
+                        color: `${kindColor}d9`,
+                        fontSize: 12,
+                        fontFamily: 'var(--font-serif)',
+                        resize: 'none',
+                        outline: 'none',
+                        marginBottom: 8,
+                      }}
+                    />
 
-          <svg
-            ref={svgRef}
-            viewBox={`0 0 ${W} ${H}`}
-            width="100%"
-            style={{ display: 'block' }}
-            onPointerMove={onPointerMove}
-            onPointerUp={onPointerUp}
-          >
-            {Array.from({ length: 8 }, (_, i) => (
-              <line
-                key={`h${i}`}
-                x1={0}
-                y1={((i + 1) * H) / 9}
-                x2={W}
-                y2={((i + 1) * H) / 9}
-                stroke="rgba(196,160,96,0.04)"
-                strokeWidth={0.5}
-              />
-            ))}
-            {Array.from({ length: 6 }, (_, i) => (
-              <line
-                key={`v${i}`}
-                x1={((i + 1) * W) / 7}
-                y1={0}
-                x2={((i + 1) * W) / 7}
-                y2={H}
-                stroke="rgba(196,160,96,0.04)"
-                strokeWidth={0.5}
-              />
-            ))}
+                    <button
+                      type="button"
+                      onClick={() => saveContextEntry(activeKind, activeCtxDef.id, cur, ctxNote)}
+                      style={{
+                        width: '100%',
+                        background: `${stateColor(cur, labelMax)}22`,
+                        border: `1px solid ${stateColor(cur, labelMax)}66`,
+                        borderRadius: 10,
+                        padding: '9px 0',
+                        cursor: 'pointer',
+                        color: stateColor(cur, labelMax),
+                        fontSize: 12,
+                        fontWeight: 700,
+                        letterSpacing: '0.1em',
+                        textTransform: 'uppercase',
+                        fontFamily: 'var(--font-serif)',
+                        marginBottom: 12,
+                      }}
+                    >
+                      Check in
+                    </button>
 
-            <defs>
-              {edges.map((edge) => {
-                const a = bubbles.find((b) => b.id === edge.from);
-                const bub = bubbles.find((b) => b.id === edge.to);
-                if (!a || !bub) return null;
-                const ca = KIND_COLOR[a.kind];
-                const cb2 = KIND_COLOR[bub.kind];
+                    {activeCtxDef.entries.length > 0 && (
+                      <div>
+                        <p
+                          style={{
+                            fontSize: 9,
+                            fontWeight: 700,
+                            letterSpacing: '0.18em',
+                            textTransform: 'uppercase',
+                            color: `${kindColor}59`,
+                            marginBottom: 8,
+                          }}
+                        >
+                          History
+                        </p>
+                        <div
+                          style={{
+                            display: 'flex',
+                            flexDirection: 'column',
+                            gap: 5,
+                            maxHeight: 120,
+                            overflowY: 'auto',
+                          }}
+                        >
+                          {[...activeCtxDef.entries].reverse().map((entry, i) => (
+                            <div
+                              key={i}
+                              style={{ display: 'flex', alignItems: 'flex-start', gap: 8 }}
+                            >
+                              <div
+                                style={{
+                                  width: 8,
+                                  height: 8,
+                                  borderRadius: '50%',
+                                  background: stateColor(entry.idx, labelMax),
+                                  marginTop: 4,
+                                  flexShrink: 0,
+                                }}
+                              />
+                              <div style={{ flex: 1, minWidth: 0 }}>
+                                {entry.note ? (
+                                  <p
+                                    style={{
+                                      fontSize: 10,
+                                      color: `${kindColor}80`,
+                                      margin: 0,
+                                      lineHeight: 1.4,
+                                    }}
+                                  >
+                                    {entry.note}
+                                  </p>
+                                ) : (
+                                  <span style={{ fontSize: 9, color: `${kindColor}44` }}>—</span>
+                                )}
+                              </div>
+                              <span
+                                style={{
+                                  fontSize: 9,
+                                  color: `${kindColor}4d`,
+                                  flexShrink: 0,
+                                  marginTop: 2,
+                                }}
+                              >
+                                {entry.date}
+                              </span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+            );
+          })()}
+
+        {/* ── Map view ── */}
+        {view === 'map' && (
+          <>
+            {/* Axis filter tabs */}
+            <div
+              style={{ display: 'flex', gap: 5, padding: '0 12px 10px', justifyContent: 'center' }}
+            >
+              {EMBF_AXES.map((ax) => {
+                const active = filterKind === ax.axis;
                 return (
-                  <linearGradient
-                    key={`eg-${edge.from}-${edge.to}`}
-                    id={`eg-${edge.from}-${edge.to}`}
-                    x1={a.x}
-                    y1={a.y}
-                    x2={bub.x}
-                    y2={bub.y}
-                    gradientUnits="userSpaceOnUse"
-                  >
-                    <stop offset="0%" stopColor={ca.border} />
-                    <stop offset="100%" stopColor={cb2.border} />
-                  </linearGradient>
-                );
-              })}
-            </defs>
-
-            {showLines &&
-              edges.map((edge) => {
-                const a = bubbles.find((b) => b.id === edge.from);
-                const bub = bubbles.find((b) => b.id === edge.to);
-                if (!a || !bub) return null;
-                const edgeVisible =
-                  !filterKind ||
-                  (isBubbleVisible(edge.from, filterKind) && isBubbleVisible(edge.to, filterKind));
-                return (
-                  <line
-                    key={`${edge.from}-${edge.to}`}
-                    x1={a.x}
-                    y1={a.y}
-                    x2={bub.x}
-                    y2={bub.y}
-                    stroke={`url(#eg-${edge.from}-${edge.to})`}
-                    strokeWidth={1}
-                    opacity={edgeVisible ? 0.35 : 0.04}
-                    strokeDasharray="3,4"
-                  />
-                );
-              })}
-
-            {bubbles.map((b) => {
-              const visible = !filterKind || isBubbleVisible(b.id, filterKind);
-              return (
-                <g key={b.id} opacity={visible ? 1 : 0.08} style={{ transition: 'opacity 0.2s' }}>
-                  <BubbleNode
-                    b={b}
-                    dragging={draggingId === b.id}
-                    design={design}
-                    onDragStart={(e) => {
-                      e.stopPropagation();
-                      onDragStart(b.id, e);
-                    }}
-                  />
-                </g>
-              );
-            })}
-          </svg>
-
-          {/* EMBF boxes */}
-          <div
-            style={{
-              display: 'grid',
-              gridTemplateColumns: 'repeat(4,1fr)',
-              gap: 6,
-              padding: '4px 12px 12px',
-            }}
-          >
-            {EMBF_AXES.map((ax) => {
-              const idx = vals[ax.axis] ?? Math.floor(ax.max / 2);
-              const currentDesignIdx = DESIGNS.findIndex((d) => d.id === design);
-              const _currentDesign = DESIGNS[currentDesignIdx];
-              return (
-                <div
-                  key={ax.axis}
-                  onClick={() => {
-                    setView('axis');
-                    setActiveKind(ax.axis);
-                    setActiveCtx(null);
-                    setActiveBox(null);
-                  }}
-                  style={{
-                    position: 'relative',
-                    background: 'rgba(255,255,255,0.03)',
-                    border: `1px solid ${ax.color}44`,
-                    borderRadius: 10,
-                    padding: '18px 4px 7px',
-                    cursor: 'pointer',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    alignItems: 'center',
-                    gap: 2,
-                    fontFamily: 'var(--font-serif)',
-                  }}
-                >
-                  {/* Design cycle dot */}
                   <button
+                    key={ax.axis}
                     type="button"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setDesign(DESIGNS[(currentDesignIdx + 1) % DESIGNS.length].id);
-                    }}
+                    onClick={() => setFilterKind(active ? null : ax.axis)}
                     style={{
-                      position: 'absolute',
-                      top: 4,
-                      right: 4,
-                      width: 8,
-                      height: 8,
-                      borderRadius: '50%',
-                      border: `1px solid ${ax.color}66`,
-                      background: `${ax.color}33`,
-                      cursor: 'pointer',
-                      padding: 0,
-                    }}
-                  />
-                  <span
-                    style={{
-                      fontSize: 10,
-                      fontWeight: 700,
-                      letterSpacing: '0.06em',
+                      padding: '3px 12px',
+                      borderRadius: 20,
+                      border: `1px solid ${active ? ax.color : `${ax.color}44`}`,
+                      background: active ? `${ax.color}22` : 'transparent',
+                      color: active ? ax.color : `${ax.color}77`,
+                      fontSize: 9,
+                      fontWeight: active ? 700 : 500,
+                      letterSpacing: '0.12em',
                       textTransform: 'uppercase',
-                      color: `${ax.color}bb`,
+                      cursor: 'pointer',
+                      fontFamily: 'var(--font-serif)',
                     }}
                   >
                     {ax.label}
-                  </span>
-                  <span style={{ fontSize: 7, letterSpacing: '0.06em', color: `${ax.color}66` }}>
-                    {ax.labels[idx]}
-                  </span>
-                </div>
-              );
-            })}
-          </div>
-        </>
-      )}
+                  </button>
+                );
+              })}
+            </div>
+
+            <svg
+              ref={svgRef}
+              viewBox={`0 0 ${W} ${H}`}
+              width="100%"
+              style={{ display: 'block' }}
+              onPointerMove={onPointerMove}
+              onPointerUp={onPointerUp}
+            >
+              {Array.from({ length: 8 }, (_, i) => (
+                <line
+                  key={`h${i}`}
+                  x1={0}
+                  y1={((i + 1) * H) / 9}
+                  x2={W}
+                  y2={((i + 1) * H) / 9}
+                  stroke="rgba(196,160,96,0.04)"
+                  strokeWidth={0.5}
+                />
+              ))}
+              {Array.from({ length: 6 }, (_, i) => (
+                <line
+                  key={`v${i}`}
+                  x1={((i + 1) * W) / 7}
+                  y1={0}
+                  x2={((i + 1) * W) / 7}
+                  y2={H}
+                  stroke="rgba(196,160,96,0.04)"
+                  strokeWidth={0.5}
+                />
+              ))}
+
+              <defs>
+                {edges.map((edge) => {
+                  const a = bubbles.find((b) => b.id === edge.from);
+                  const bub = bubbles.find((b) => b.id === edge.to);
+                  if (!a || !bub) return null;
+                  const ca = KIND_COLOR[a.kind];
+                  const cb2 = KIND_COLOR[bub.kind];
+                  return (
+                    <linearGradient
+                      key={`eg-${edge.from}-${edge.to}`}
+                      id={`eg-${edge.from}-${edge.to}`}
+                      x1={a.x}
+                      y1={a.y}
+                      x2={bub.x}
+                      y2={bub.y}
+                      gradientUnits="userSpaceOnUse"
+                    >
+                      <stop offset="0%" stopColor={ca.border} />
+                      <stop offset="100%" stopColor={cb2.border} />
+                    </linearGradient>
+                  );
+                })}
+              </defs>
+
+              {showLines &&
+                edges.map((edge) => {
+                  const a = bubbles.find((b) => b.id === edge.from);
+                  const bub = bubbles.find((b) => b.id === edge.to);
+                  if (!a || !bub) return null;
+                  const edgeVisible =
+                    !filterKind ||
+                    (isBubbleVisible(edge.from, filterKind) &&
+                      isBubbleVisible(edge.to, filterKind));
+                  return (
+                    <line
+                      key={`${edge.from}-${edge.to}`}
+                      x1={a.x}
+                      y1={a.y}
+                      x2={bub.x}
+                      y2={bub.y}
+                      stroke={`url(#eg-${edge.from}-${edge.to})`}
+                      strokeWidth={1}
+                      opacity={edgeVisible ? 0.35 : 0.04}
+                      strokeDasharray="3,4"
+                    />
+                  );
+                })}
+
+              {bubbles.map((b) => {
+                const visible = !filterKind || isBubbleVisible(b.id, filterKind);
+                return (
+                  <g key={b.id} opacity={visible ? 1 : 0.08} style={{ transition: 'opacity 0.2s' }}>
+                    <BubbleNode
+                      b={b}
+                      dragging={draggingId === b.id}
+                      design={design}
+                      onDragStart={(e) => {
+                        e.stopPropagation();
+                        onDragStart(b.id, e);
+                      }}
+                    />
+                  </g>
+                );
+              })}
+            </svg>
+
+            {/* EMBF boxes */}
+            <div
+              style={{
+                display: 'grid',
+                gridTemplateColumns: 'repeat(4,1fr)',
+                gap: 6,
+                padding: '4px 12px 12px',
+              }}
+            >
+              {EMBF_AXES.map((ax) => {
+                const idx = vals[ax.axis] ?? Math.floor(ax.max / 2);
+                const currentDesignIdx = DESIGNS.findIndex((d) => d.id === design);
+                const _currentDesign = DESIGNS[currentDesignIdx];
+                return (
+                  <div
+                    key={ax.axis}
+                    onClick={() => {
+                      setView('axis');
+                      setActiveKind(ax.axis);
+                      setActiveCtx(null);
+                      setActiveBox(null);
+                    }}
+                    style={{
+                      position: 'relative',
+                      background: 'rgba(255,255,255,0.03)',
+                      border: `1px solid ${ax.color}44`,
+                      borderRadius: 10,
+                      padding: '18px 4px 7px',
+                      cursor: 'pointer',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      alignItems: 'center',
+                      gap: 2,
+                      fontFamily: 'var(--font-serif)',
+                    }}
+                  >
+                    {/* Design cycle dot */}
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setDesign(DESIGNS[(currentDesignIdx + 1) % DESIGNS.length].id);
+                      }}
+                      style={{
+                        position: 'absolute',
+                        top: 4,
+                        right: 4,
+                        width: 8,
+                        height: 8,
+                        borderRadius: '50%',
+                        border: `1px solid ${ax.color}66`,
+                        background: `${ax.color}33`,
+                        cursor: 'pointer',
+                        padding: 0,
+                      }}
+                    />
+                    <span
+                      style={{
+                        fontSize: 10,
+                        fontWeight: 700,
+                        letterSpacing: '0.06em',
+                        textTransform: 'uppercase',
+                        color: `${ax.color}bb`,
+                      }}
+                    >
+                      {ax.label}
+                    </span>
+                    <span style={{ fontSize: 7, letterSpacing: '0.06em', color: `${ax.color}66` }}>
+                      {ax.labels[idx]}
+                    </span>
+                  </div>
+                );
+              })}
+            </div>
+          </>
+        )}
+      </div>
+      {/* end scrollable body */}
     </div>
   );
 

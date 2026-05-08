@@ -1,8 +1,9 @@
 'use client';
 
-import { useState } from 'react';
-
+import { useEffect, useState } from 'react';
+import ActiveCompartments from '@/components/ActiveCompartments';
 import CheckInPing from '@/components/CheckInPing';
+import ColourMapPanel from '@/components/ColourMapPanel';
 import DailyRituals from '@/components/DailyRituals';
 import DayRoad from '@/components/DayRoad';
 import DayTabs from '@/components/DayTabs';
@@ -10,15 +11,26 @@ import DayView3D from '@/components/DayView3D';
 import DoingCardsPanel from '@/components/DoingCardsPanel';
 import FeelingCircles2 from '@/components/FeelingCircles2';
 import FirstRunOnboarding from '@/components/FirstRunOnboarding';
+import IdeaConstellation from '@/components/IdeaConstellation';
 import InfographicsView from '@/components/InfographicsView';
+import MissionOverview from '@/components/MissionOverview';
 import Overview2 from '@/components/Overview2';
 import { StyleProvider } from '@/components/StyleContext';
 import TodaysField from '@/components/TodaysField';
+import { hydrate } from '@/lib/sync';
 
 function DayContent() {
   const [roadOpen, setRoadOpen] = useState(false);
   const [mapOpen, setMapOpen] = useState(false);
   const [viewOpen, setViewOpen] = useState(false);
+  const [starsOpen, setStarsOpen] = useState(false);
+
+  // Silently restore server state into localStorage on mount.
+  // Current session renders from whatever is already local (instant).
+  // Next session (or cross-device) benefits from the restored values.
+  useEffect(() => {
+    hydrate();
+  }, []);
   const dateStr = new Date().toLocaleDateString('en-GB', {
     weekday: 'long',
     day: 'numeric',
@@ -32,6 +44,7 @@ function DayContent() {
       {roadOpen && <DayRoad onClose={() => setRoadOpen(false)} />}
       {mapOpen && <InfographicsView onClose={() => setMapOpen(false)} />}
       {viewOpen && <DayView3D onClose={() => setViewOpen(false)} />}
+      {starsOpen && <IdeaConstellation onClose={() => setStarsOpen(false)} />}
       {/* Fixed date at the bottom */}
       <div
         style={{
@@ -89,8 +102,32 @@ function DayContent() {
         emotionContent={<FeelingCircles2 />}
         missionContent={
           <div className="space-y-3">
+            <ActiveCompartments />
+            <ColourMapPanel />
+            <MissionOverview />
             <DoingCardsPanel />
             <DailyRituals />
+            <div style={{ display: 'flex', justifyContent: 'center', paddingTop: 4 }}>
+              <button
+                type="button"
+                onClick={() => setStarsOpen(true)}
+                style={{
+                  padding: '5px 20px',
+                  borderRadius: 999,
+                  border: '1px solid rgba(122,84,56,0.28)',
+                  background: 'transparent',
+                  color: '#7A5438',
+                  fontFamily: 'var(--font-serif)',
+                  fontSize: 11,
+                  fontWeight: 500,
+                  letterSpacing: '0.1em',
+                  textTransform: 'uppercase',
+                  cursor: 'pointer',
+                }}
+              >
+                Constellation
+              </button>
+            </div>
           </div>
         }
         progressContent={<Overview2 />}
