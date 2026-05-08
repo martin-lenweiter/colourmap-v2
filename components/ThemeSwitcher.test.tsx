@@ -125,16 +125,15 @@ describe('ThemeSwitcher', () => {
     expect(document.documentElement.classList.contains('night-brown')).toBe(false);
   });
 
-  it('shows Typography tab when clicked', async () => {
+  it('shows Header tab when clicked', async () => {
     const user = userEvent.setup();
     render(<ThemeSwitcher />);
 
     await user.click(screen.getByLabelText('Design settings'));
-    await user.click(screen.getByText('Typography'));
+    await user.click(screen.getByText('Header'));
 
-    expect(screen.getByText('Normal')).toBeDefined();
-    expect(screen.getByText('Cowboy')).toBeDefined();
-    expect(screen.getByText('Groovy')).toBeDefined();
-    expect(screen.getByText('Minimal')).toBeDefined();
+    expect(screen.getByText('Soft Beige')).toBeDefined();
+    expect(screen.getByText('Brown')).toBeDefined();
+    expect(screen.getByText('Full Header')).toBeDefined();
   });
 });
