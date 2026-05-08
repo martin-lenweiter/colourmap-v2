@@ -45,23 +45,6 @@ const CIRCLES = [
       { label: 'Energized', color: '#70B098' },
     ],
   },
-  {
-    id: 'mind',
-    title: 'Mind',
-    lsIdxKey: 'colourmap:presence-idx',
-    lsFragKey: 'colourmap:ring-mind-frag',
-    lsLogKey: 'colourmap:mind-log',
-    defaultIdx: 3,
-    reflectPrompt: 'Where is your mind at?',
-    levels: [
-      { label: 'Absent', color: '#B89088' },
-      { label: 'Scattered', color: '#C4A888' },
-      { label: 'Confused', color: '#B0A0B8' },
-      { label: 'Drifting', color: '#C4B880' },
-      { label: 'Present', color: '#98BC90' },
-      { label: 'Flowing', color: '#A098C0' },
-    ],
-  },
 ];
 
 /* ─── Focus levels ───────────────────────────────────────────── */
@@ -483,8 +466,398 @@ function VizLiquid({ idx, levels, onPointerDown, onPointerMove, onPointerUp }: V
   );
 }
 
-const CIRCLE_VIZS = [VizBall, VizRing, VizArc, VizSegments, VizLiquid] as const;
-const CIRCLE_VIZ_LABELS = ['Ball', 'Ring', 'Arc', 'Dots', 'Liquid'] as const;
+/* V6 — Bar (horizontal fill) */
+function VizBar({ idx, levels, onPointerDown, onPointerMove, onPointerUp }: VizProps) {
+  const c = levels[idx]?.color ?? '#C4A060';
+  const rat = levels.length > 1 ? idx / (levels.length - 1) : 0;
+  return (
+    <div
+      style={{
+        width: '100%',
+        touchAction: 'none',
+        userSelect: 'none',
+        padding: '4px 8px 8px',
+        display: 'flex',
+        flexDirection: 'column',
+        gap: 10,
+        alignItems: 'center',
+      }}
+    >
+      <span
+        style={{
+          fontFamily: 'var(--font-serif)',
+          fontSize: 13,
+          fontWeight: 700,
+          color: c,
+          letterSpacing: '0.12em',
+          textTransform: 'uppercase',
+          transition: 'color 0.3s',
+        }}
+      >
+        {levels[idx]?.label}
+      </span>
+      <div
+        onPointerDown={onPointerDown}
+        onPointerMove={onPointerMove}
+        onPointerUp={onPointerUp}
+        style={{
+          position: 'relative',
+          height: 28,
+          width: '100%',
+          borderRadius: 14,
+          background: `${c}18`,
+          border: `1.5px solid ${c}40`,
+          overflow: 'hidden',
+          cursor: 'ew-resize',
+        }}
+      >
+        <div
+          style={{
+            position: 'absolute',
+            left: 0,
+            top: 0,
+            bottom: 0,
+            width: `${Math.max(rat * 100, 2)}%`,
+            background: `linear-gradient(90deg, ${c}55, ${c})`,
+            borderRadius: 14,
+            boxShadow: `0 0 14px ${c}55`,
+            transition: 'width 0.2s, background 0.3s',
+          }}
+        />
+        <div
+          style={{
+            position: 'absolute',
+            inset: 0,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'flex-end',
+            paddingRight: 12,
+          }}
+        >
+          <span
+            style={{
+              fontFamily: 'var(--font-serif)',
+              fontSize: 10,
+              fontWeight: 700,
+              color: c,
+              opacity: 0.75,
+            }}
+          >
+            {idx + 1} / {levels.length}
+          </span>
+        </div>
+      </div>
+      <div
+        style={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          width: '100%',
+          padding: '0 2px',
+        }}
+      >
+        {levels.map((lv, i) => (
+          <div
+            key={i}
+            style={{
+              width: 3,
+              height: i === idx ? 10 : 6,
+              borderRadius: 1.5,
+              background: i <= idx ? lv.color : `${lv.color}22`,
+              transition: 'all 0.2s',
+            }}
+          />
+        ))}
+      </div>
+    </div>
+  );
+}
+
+/* V7 — Pulse (concentric rings fill outward) */
+function VizPulse({ idx, levels, onPointerDown, onPointerMove, onPointerUp }: VizProps) {
+  const n = levels.length;
+  const c = levels[idx]?.color ?? '#C4A060';
+  const CX = 70,
+    CY = 70,
+    maxR = 60;
+  return (
+    <div style={{ touchAction: 'none', userSelect: 'none' }}>
+      <svg
+        width={140}
+        height={140}
+        style={{ display: 'block', cursor: 'ew-resize', overflow: 'visible' }}
+        onPointerDown={onPointerDown}
+        onPointerMove={onPointerMove}
+        onPointerUp={onPointerUp}
+      >
+        <defs>
+          <filter id="pls-g">
+            <feGaussianBlur stdDeviation="3.5" result="b" />
+            <feMerge>
+              <feMergeNode in="b" />
+              <feMergeNode in="SourceGraphic" />
+            </feMerge>
+          </filter>
+        </defs>
+        {levels.map((lv, i) => {
+          const r = ((i + 1) / n) * maxR;
+          const active = i <= idx;
+          const isCur = i === idx;
+          return (
+            <g key={i}>
+              {isCur && (
+                <circle
+                  cx={CX}
+                  cy={CY}
+                  r={r + 6}
+                  fill={lv.color}
+                  opacity={0.12}
+                  filter="url(#pls-g)"
+                />
+              )}
+              <circle
+                cx={CX}
+                cy={CY}
+                r={r}
+                fill="none"
+                stroke={lv.color}
+                strokeWidth={isCur ? 3 : active ? 2 : 1}
+                opacity={isCur ? 1 : active ? 0.45 : 0.1}
+                style={{ transition: 'all 0.25s' }}
+              />
+            </g>
+          );
+        })}
+        <circle
+          cx={CX}
+          cy={CY}
+          r={5}
+          fill={c}
+          filter="url(#pls-g)"
+          style={{ transition: 'fill 0.3s' }}
+        />
+        <circle cx={CX} cy={CY} r={2.5} fill="rgba(255,255,255,0.9)" />
+        <text
+          x={CX}
+          y={CY + 22}
+          textAnchor="middle"
+          fill={c}
+          fontSize={11}
+          fontWeight={700}
+          style={{
+            fontFamily: 'var(--font-serif)',
+            letterSpacing: '0.1em',
+            textTransform: 'uppercase',
+          }}
+        >
+          {levels[idx]?.label}
+        </text>
+      </svg>
+    </div>
+  );
+}
+
+/* V8 — Petals (radial flower petals) */
+function VizPetals({ idx, levels, onPointerDown, onPointerMove, onPointerUp }: VizProps) {
+  const n = levels.length;
+  const c = levels[idx]?.color ?? '#C4A060';
+  const CX = 70,
+    CY = 70,
+    dist = 36,
+    petalR = 18;
+  return (
+    <div style={{ touchAction: 'none', userSelect: 'none' }}>
+      <svg
+        width={140}
+        height={140}
+        style={{ display: 'block', cursor: 'ew-resize', overflow: 'visible' }}
+        onPointerDown={onPointerDown}
+        onPointerMove={onPointerMove}
+        onPointerUp={onPointerUp}
+      >
+        <defs>
+          <filter id="pet-g">
+            <feGaussianBlur stdDeviation="4" result="b" />
+            <feMerge>
+              <feMergeNode in="b" />
+              <feMergeNode in="SourceGraphic" />
+            </feMerge>
+          </filter>
+        </defs>
+        {levels.map((lv, i) => {
+          const ang = (i / n) * Math.PI * 2 - Math.PI / 2;
+          const px = CX + Math.cos(ang) * dist;
+          const py = CY + Math.sin(ang) * dist;
+          const active = i <= idx;
+          const isCur = i === idx;
+          const r = isCur ? petalR : active ? petalR * 0.65 : petalR * 0.28;
+          return (
+            <g key={i}>
+              {isCur && (
+                <circle
+                  cx={px}
+                  cy={py}
+                  r={petalR + 6}
+                  fill={lv.color}
+                  opacity={0.15}
+                  filter="url(#pet-g)"
+                />
+              )}
+              <circle
+                cx={px}
+                cy={py}
+                r={r}
+                fill={active ? lv.color : 'none'}
+                stroke={lv.color}
+                strokeWidth={active ? 0 : 1}
+                opacity={active ? 1 : 0.2}
+                style={{ transition: 'all 0.25s' }}
+              />
+            </g>
+          );
+        })}
+        <circle
+          cx={CX}
+          cy={CY}
+          r={13}
+          fill={c}
+          filter="url(#pet-g)"
+          style={{ transition: 'fill 0.3s' }}
+        />
+        <text
+          x={CX}
+          y={CY + 5}
+          textAnchor="middle"
+          fill="rgba(255,255,255,0.9)"
+          fontSize={8}
+          fontWeight={800}
+          style={{ fontFamily: 'var(--font-serif)', letterSpacing: '0.06em' }}
+        >
+          {idx + 1}
+        </text>
+      </svg>
+    </div>
+  );
+}
+
+/* V9 — Diamond / lozenge (perfect square rotated 45°, fill from bottom) */
+function VizDiamond({ idx, levels, onPointerDown, onPointerMove, onPointerUp }: VizProps) {
+  const c = levels[idx]?.color ?? '#C4A060';
+  const rat = levels.length > 1 ? idx / (levels.length - 1) : 0;
+  // Perfect square diamond: W = H so all four arms are equal
+  const S = 142; // SVG canvas size
+  const CX = S / 2,
+    CY = S / 2;
+  const HALF = 56; // half-arm length — equal in all directions
+  const top = `${CX},${CY - HALF}`;
+  const right = `${CX + HALF},${CY}`;
+  const bottom = `${CX},${CY + HALF}`;
+  const left = `${CX - HALF},${CY}`;
+  const outline = `M${top} L${right} L${bottom} L${left} Z`;
+  // Fill rises from the bottom point
+  const fillY = CY + HALF - rat * HALF * 2;
+  const clipId = `dia-clip-${idx}`;
+  const filterId = `dia-glow-${idx}`;
+  return (
+    <div
+      style={{
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        gap: 8,
+        touchAction: 'none',
+        userSelect: 'none',
+      }}
+    >
+      <svg
+        width={S}
+        height={S}
+        viewBox={`0 0 ${S} ${S}`}
+        style={{ display: 'block', cursor: 'ew-resize', overflow: 'visible' }}
+        onPointerDown={onPointerDown}
+        onPointerMove={onPointerMove}
+        onPointerUp={onPointerUp}
+      >
+        <defs>
+          <clipPath id={clipId}>
+            <path d={outline} />
+          </clipPath>
+          <filter id={filterId} x="-30%" y="-30%" width="160%" height="160%">
+            <feGaussianBlur stdDeviation="3.5" result="b" />
+            <feMerge>
+              <feMergeNode in="b" />
+              <feMergeNode in="SourceGraphic" />
+            </feMerge>
+          </filter>
+          <linearGradient id={`dia-grad-${idx}`} x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor={c} stopOpacity="0.95" />
+            <stop offset="100%" stopColor={c} stopOpacity="0.55" />
+          </linearGradient>
+        </defs>
+        {/* Outer glow */}
+        <path d={outline} fill="none" stroke={c} strokeWidth={3} opacity={0.1} />
+        {/* Outline */}
+        <path d={outline} fill="none" stroke={c} strokeWidth={1.5} opacity={rat > 0 ? 0.55 : 0.3} />
+        {/* Fill */}
+        {rat > 0 && (
+          <rect
+            x={CX - HALF - 1}
+            y={fillY}
+            width={HALF * 2 + 2}
+            height={CY + HALF - fillY + 1}
+            fill={`url(#dia-grad-${idx})`}
+            clipPath={`url(#${clipId})`}
+            filter={`url(#${filterId})`}
+          />
+        )}
+        {/* Tick marks at each arm tip */}
+        {[top, right, bottom, left].map((pt, i) => {
+          const [px, py] = pt.split(',').map(Number);
+          return <circle key={i} cx={px} cy={py} r={2.2} fill={c} opacity={rat > 0 ? 0.7 : 0.25} />;
+        })}
+        {/* Label */}
+        <text
+          x={CX}
+          y={CY + 5}
+          textAnchor="middle"
+          fill={rat > 0.45 ? 'rgba(255,255,255,0.92)' : c}
+          fontSize={11}
+          fontWeight={700}
+          style={{
+            fontFamily: 'var(--font-serif)',
+            letterSpacing: '0.1em',
+            textTransform: 'uppercase',
+            transition: 'fill 0.3s',
+          }}
+        >
+          {levels[idx]?.label}
+        </text>
+      </svg>
+    </div>
+  );
+}
+
+const CIRCLE_VIZS = [
+  VizBall,
+  VizRing,
+  VizArc,
+  VizSegments,
+  VizLiquid,
+  VizBar,
+  VizPulse,
+  VizPetals,
+  VizDiamond,
+] as const;
+const CIRCLE_VIZ_LABELS = [
+  'Ball',
+  'Ring',
+  'Arc',
+  'Dots',
+  'Liquid',
+  'Bar',
+  'Pulse',
+  'Petals',
+  'Diamond',
+] as const;
 
 /* ─── Shared helpers ─────────────────────────────────────────── */
 function timeAgo(ts: string) {
@@ -774,7 +1147,15 @@ function FragmentField({
 }
 
 /* ─── CircleTracker — cockpit strip + expanded ───────────────── */
-function CircleTracker({ circle, circleVariant }: { circle: Circle; circleVariant: number }) {
+function CircleTracker({
+  circle,
+  circleVariant,
+  onVariantChange,
+}: {
+  circle: Circle;
+  circleVariant: number;
+  onVariantChange: (v: number) => void;
+}) {
   const [idx, setIdx] = useState(circle.defaultIdx);
   const [fragment, setFragment] = useState('');
   const [editing, setEditing] = useState(false);
@@ -908,6 +1289,33 @@ function CircleTracker({ circle, circleVariant }: { circle: Circle; circleVarian
                 />
               );
             })()}
+
+            {/* Design picker — inline pills */}
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4, justifyContent: 'center' }}>
+              {CIRCLE_VIZ_LABELS.map((lbl, i) => (
+                <button
+                  key={i}
+                  type="button"
+                  onClick={() => onVariantChange(i)}
+                  style={{
+                    padding: '3px 8px',
+                    borderRadius: 20,
+                    border: `1px solid ${circleVariant === i ? 'rgba(196,160,96,0.7)' : 'rgba(196,160,96,0.18)'}`,
+                    background: circleVariant === i ? 'rgba(196,160,96,0.18)' : 'transparent',
+                    color: circleVariant === i ? '#C4A060' : 'rgba(196,160,96,0.42)',
+                    fontSize: 8,
+                    fontWeight: circleVariant === i ? 700 : 400,
+                    letterSpacing: '0.1em',
+                    textTransform: 'uppercase' as const,
+                    cursor: 'pointer',
+                    fontFamily: 'var(--font-serif)',
+                  }}
+                >
+                  {lbl}
+                </button>
+              ))}
+            </div>
+
             <FragmentField
               fragment={fragment}
               editing={editing}
@@ -919,7 +1327,7 @@ function CircleTracker({ circle, circleVariant }: { circle: Circle; circleVarian
           </div>
 
           {/* Reflect */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
             <span
               style={{
                 fontFamily: 'var(--font-serif)',
@@ -934,15 +1342,32 @@ function CircleTracker({ circle, circleVariant }: { circle: Circle; circleVarian
             >
               Reflect
             </span>
+            {/* Prompt — shown prominently as the writing cue */}
+            <span
+              style={{
+                fontFamily: 'var(--font-serif)',
+                fontStyle: 'italic',
+                fontSize: 14,
+                fontWeight: 600,
+                color: '#5C3018',
+                opacity: 0.82,
+                textAlign: 'center',
+                letterSpacing: '0.01em',
+                lineHeight: 1.4,
+              }}
+            >
+              {circle.reflectPrompt}
+            </span>
+            <ReflectInput placeholder="…" onAdd={addEntry} />
             {log.slice(0, 3).map((e, i) => (
               <span
                 key={i}
                 style={{
                   fontFamily: 'var(--font-handwritten)',
                   fontStyle: 'italic',
-                  fontSize: 16,
+                  fontSize: 14,
                   color: '#5C3018',
-                  opacity: 0.65,
+                  opacity: 0.4,
                   lineHeight: 1.35,
                   textAlign: 'center',
                 }}
@@ -950,7 +1375,6 @@ function CircleTracker({ circle, circleVariant }: { circle: Circle; circleVarian
                 {e.note}
               </span>
             ))}
-            <ReflectInput placeholder={circle.reflectPrompt} onAdd={addEntry} />
           </div>
 
           {/* Weekly tracker */}
@@ -1095,7 +1519,7 @@ function FocusTracker({ circleVariant }: { circleVariant: number }) {
     } catch {}
   }
 
-  const level = FOCUS_LEVELS[focusIdx];
+  const _level = FOCUS_LEVELS[focusIdx];
   const reflections = log.filter((e) => e.kind === 'reflect');
   const ideas = log.filter((e) => e.kind === 'idea');
 
@@ -1343,6 +1767,429 @@ function FocusTracker({ circleVariant }: { circleVariant: number }) {
   );
 }
 
+/* ─── Behaviour tracker ──────────────────────────────────────── */
+const BEHAVIOUR_COLORS = [
+  '#C4A060',
+  '#90B880',
+  '#80B0C8',
+  '#C07898',
+  '#C4B058',
+  '#A098C0',
+  '#B8A088',
+  '#60C890',
+];
+const CONTEXT_TAGS = ['stress', 'weekend', 'morning', 'evening', 'tired', 'social', 'alone', 'ill'];
+
+type Behaviour = { id: string; name: string; colorIdx: number };
+type BehaviourEntry = { ts: string; behaviourId: string; contexts: string[] };
+
+const DEFAULT_BEHAVIOURS: Behaviour[] = [
+  { id: 'bdef1', name: 'Exercise', colorIdx: 1 },
+  { id: 'bdef2', name: 'Overate', colorIdx: 3 },
+  { id: 'bdef3', name: 'Avoided calls', colorIdx: 4 },
+  { id: 'bdef4', name: 'Journalled', colorIdx: 0 },
+];
+
+function BehaviourTracker() {
+  const [expanded, setExpanded] = useState(false);
+  const [behaviours, setBehaviours] = useState<Behaviour[]>([]);
+  const [log, setLog] = useState<BehaviourEntry[]>([]);
+  const [activeContexts, setActiveContexts] = useState<string[]>([]);
+  const [adding, setAdding] = useState(false);
+  const [newName, setNewName] = useState('');
+  const addRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    try {
+      const b = localStorage.getItem('colourmap:behaviours');
+      setBehaviours(b ? JSON.parse(b) : DEFAULT_BEHAVIOURS);
+      const l = localStorage.getItem('colourmap:behaviour-log');
+      if (l) setLog(JSON.parse(l));
+    } catch {}
+  }, []);
+
+  function saveBehaviours(next: Behaviour[]) {
+    setBehaviours(next);
+    try {
+      localStorage.setItem('colourmap:behaviours', JSON.stringify(next));
+    } catch {}
+  }
+
+  function saveLog(next: BehaviourEntry[]) {
+    setLog(next);
+    try {
+      localStorage.setItem('colourmap:behaviour-log', JSON.stringify(next.slice(0, 500)));
+    } catch {}
+  }
+
+  function toggleLog(bId: string) {
+    const todayStart = new Date();
+    todayStart.setHours(0, 0, 0, 0);
+    const alreadyIdx = log.findIndex((e) => e.behaviourId === bId && new Date(e.ts) >= todayStart);
+    if (alreadyIdx !== -1) {
+      saveLog(log.filter((_, i) => i !== alreadyIdx));
+    } else {
+      saveLog([
+        { ts: new Date().toISOString(), behaviourId: bId, contexts: activeContexts },
+        ...log,
+      ]);
+    }
+  }
+
+  function addBehaviour() {
+    const name = newName.trim();
+    if (!name) return;
+    const next: Behaviour[] = [
+      ...behaviours,
+      { id: `b${Date.now()}`, name, colorIdx: behaviours.length % BEHAVIOUR_COLORS.length },
+    ];
+    saveBehaviours(next);
+    setNewName('');
+    setAdding(false);
+  }
+
+  function toggleContext(tag: string) {
+    setActiveContexts((prev) =>
+      prev.includes(tag) ? prev.filter((t) => t !== tag) : [...prev, tag],
+    );
+  }
+
+  function isLoggedToday(bId: string) {
+    const start = new Date();
+    start.setHours(0, 0, 0, 0);
+    return log.some((e) => e.behaviourId === bId && new Date(e.ts) >= start);
+  }
+
+  const dayLabels = Array.from({ length: 7 }, (_, i) => {
+    const d = new Date();
+    d.setDate(d.getDate() - (6 - i));
+    return ['S', 'M', 'T', 'W', 'T', 'F', 'S'][d.getDay()];
+  });
+
+  function weekDots(bId: string) {
+    return Array.from({ length: 7 }, (_, i) => {
+      const d = new Date();
+      d.setDate(d.getDate() - (6 - i));
+      const start = new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime();
+      const end = start + 86400000;
+      const entries = log.filter(
+        (e) =>
+          e.behaviourId === bId &&
+          new Date(e.ts).getTime() >= start &&
+          new Date(e.ts).getTime() < end,
+      );
+      return {
+        isToday: i === 6,
+        logged: entries.length > 0,
+        stress: entries.some((e) => e.contexts.includes('stress')),
+        weekend: entries.some((e) => e.contexts.includes('weekend')),
+      };
+    });
+  }
+
+  return (
+    <div
+      style={{
+        border: '1px solid rgba(196,160,96,0.2)',
+        borderRadius: 16,
+        background: 'rgba(255,255,255,0.03)',
+        overflow: 'hidden',
+      }}
+    >
+      {/* Header */}
+      <div
+        onClick={() => setExpanded((v) => !v)}
+        style={{
+          padding: '10px 16px',
+          borderBottom: expanded ? '1px solid rgba(196,160,96,0.2)' : 'none',
+          background: 'rgba(196,160,96,0.1)',
+          cursor: 'pointer',
+          display: 'flex',
+          alignItems: 'center',
+        }}
+      >
+        <span style={{ flex: 1 }} />
+        <span
+          style={{
+            fontFamily: 'var(--font-serif)',
+            fontSize: 13,
+            fontWeight: 800,
+            textTransform: 'uppercase',
+            letterSpacing: '0.14em',
+            color: '#5C3018',
+          }}
+        >
+          Behaviours
+        </span>
+        <span style={{ flex: 1, display: 'flex', justifyContent: 'flex-end' }}>
+          <span
+            style={{
+              color: '#C4A060',
+              opacity: 0.4,
+              fontSize: 11,
+              transform: expanded ? 'rotate(180deg)' : 'rotate(0deg)',
+              transition: 'transform 0.2s',
+            }}
+          >
+            ▾
+          </span>
+        </span>
+      </div>
+
+      {expanded && (
+        <div
+          style={{ padding: '18px 16px 20px', display: 'flex', flexDirection: 'column', gap: 16 }}
+        >
+          {/* Context tags */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 7 }}>
+            <span
+              style={{
+                fontFamily: 'var(--font-serif)',
+                fontSize: 9,
+                fontWeight: 700,
+                letterSpacing: '0.18em',
+                textTransform: 'uppercase',
+                color: '#8A6A4A',
+                opacity: 0.45,
+                textAlign: 'center',
+              }}
+            >
+              Context today
+            </span>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 5, justifyContent: 'center' }}>
+              {CONTEXT_TAGS.map((tag) => {
+                const on = activeContexts.includes(tag);
+                return (
+                  <button
+                    key={tag}
+                    type="button"
+                    onClick={() => toggleContext(tag)}
+                    style={{
+                      padding: '3px 10px',
+                      borderRadius: 99,
+                      border: `1px solid ${on ? '#C4A060' : 'rgba(196,160,96,0.2)'}`,
+                      background: on ? 'rgba(196,160,96,0.15)' : 'transparent',
+                      fontFamily: 'var(--font-serif)',
+                      fontSize: 10,
+                      fontWeight: 700,
+                      color: on ? '#C4A060' : '#8A6A4A',
+                      opacity: on ? 1 : 0.5,
+                      cursor: 'pointer',
+                      letterSpacing: '0.07em',
+                      transition: 'all 0.15s',
+                    }}
+                  >
+                    {tag}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Day-label header row */}
+          {behaviours.length > 0 && (
+            <div style={{ display: 'flex', alignItems: 'center', paddingRight: 26 }}>
+              <div style={{ flex: 1 }} />
+              <div style={{ display: 'flex', gap: 5 }}>
+                {dayLabels.map((l, i) => (
+                  <span
+                    key={i}
+                    style={{
+                      width: 22,
+                      textAlign: 'center',
+                      fontFamily: 'var(--font-serif)',
+                      fontSize: 9,
+                      color: '#8A6A4A',
+                      opacity: i === 6 ? 0.65 : 0.25,
+                    }}
+                  >
+                    {l}
+                  </span>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Behaviour rows */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+            {behaviours.map((b) => {
+              const c = BEHAVIOUR_COLORS[b.colorIdx % BEHAVIOUR_COLORS.length];
+              const dots = weekDots(b.id);
+              const done = isLoggedToday(b.id);
+              return (
+                <div
+                  key={b.id}
+                  onClick={() => toggleLog(b.id)}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 9,
+                    padding: '7px 9px',
+                    borderRadius: 10,
+                    background: done ? 'rgba(196,160,96,0.09)' : 'rgba(255,255,255,0.02)',
+                    border: `1px solid ${done ? 'rgba(196,160,96,0.3)' : 'rgba(196,160,96,0.1)'}`,
+                    cursor: 'pointer',
+                    transition: 'all 0.2s',
+                  }}
+                >
+                  {/* Colour dot */}
+                  <span
+                    style={{
+                      width: 7,
+                      height: 7,
+                      borderRadius: '50%',
+                      background: c,
+                      flexShrink: 0,
+                      boxShadow: `0 0 7px ${c}99`,
+                      transition: 'box-shadow 0.2s',
+                    }}
+                  />
+                  {/* Name */}
+                  <span
+                    style={{
+                      fontFamily: 'var(--font-serif)',
+                      fontSize: 11,
+                      fontWeight: 700,
+                      color: done ? c : '#8A6A4A',
+                      flex: 1,
+                      letterSpacing: '0.05em',
+                      opacity: done ? 1 : 0.5,
+                      transition: 'all 0.2s',
+                    }}
+                  >
+                    {b.name}
+                  </span>
+                  {/* Checkmark */}
+                  {done && (
+                    <span style={{ fontSize: 10, color: c, opacity: 0.7, flexShrink: 0 }}>✓</span>
+                  )}
+                  {/* Week grid */}
+                  <div style={{ display: 'flex', gap: 5, flexShrink: 0 }}>
+                    {dots.map((dot, i) => (
+                      <span
+                        key={i}
+                        style={{
+                          width: 22,
+                          height: 22,
+                          borderRadius: 6,
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          background: dot.logged ? `${c}AA` : 'rgba(196,160,96,0.07)',
+                          border: dot.isToday
+                            ? `1.5px solid ${c}55`
+                            : '1px solid rgba(196,160,96,0.1)',
+                          transition: 'background 0.25s',
+                          fontSize: 8,
+                          flexShrink: 0,
+                        }}
+                      >
+                        {dot.logged && dot.stress && <span style={{ opacity: 0.75 }}>⚡</span>}
+                        {dot.logged && !dot.stress && dot.weekend && (
+                          <span style={{ opacity: 0.6 }}>☀</span>
+                        )}
+                      </span>
+                    ))}
+                  </div>
+                  {/* Delete */}
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      saveBehaviours(behaviours.filter((bv) => bv.id !== b.id));
+                    }}
+                    style={{
+                      background: 'none',
+                      border: 'none',
+                      cursor: 'pointer',
+                      color: 'rgba(196,160,96,0.2)',
+                      fontSize: 13,
+                      lineHeight: 1,
+                      padding: '0 2px',
+                      flexShrink: 0,
+                    }}
+                  >
+                    ×
+                  </button>
+                </div>
+              );
+            })}
+          </div>
+
+          {/* Add behaviour */}
+          {adding ? (
+            <div style={{ display: 'flex', gap: 8 }}>
+              <input
+                ref={addRef}
+                value={newName}
+                onChange={(e) => setNewName(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') addBehaviour();
+                  if (e.key === 'Escape') {
+                    setAdding(false);
+                    setNewName('');
+                  }
+                }}
+                placeholder="Name this behaviour…"
+                style={{
+                  flex: 1,
+                  background: 'rgba(255,255,255,0.04)',
+                  border: '1px solid rgba(196,160,96,0.25)',
+                  borderRadius: 8,
+                  padding: '7px 10px',
+                  fontFamily: 'var(--font-serif)',
+                  fontSize: 12,
+                  color: '#5C3018',
+                  outline: 'none',
+                }}
+              />
+              <button
+                type="button"
+                onClick={addBehaviour}
+                style={{
+                  background: 'rgba(196,160,96,0.15)',
+                  border: '1px solid rgba(196,160,96,0.3)',
+                  borderRadius: 8,
+                  padding: '0 12px',
+                  fontFamily: 'var(--font-serif)',
+                  fontSize: 11,
+                  fontWeight: 700,
+                  color: '#C4A060',
+                  cursor: 'pointer',
+                  letterSpacing: '0.08em',
+                }}
+              >
+                ADD
+              </button>
+            </div>
+          ) : (
+            <button
+              type="button"
+              onClick={() => {
+                setAdding(true);
+                setTimeout(() => addRef.current?.focus(), 0);
+              }}
+              style={{
+                background: 'none',
+                border: 'none',
+                cursor: 'pointer',
+                padding: '2px 0 4px',
+                fontFamily: 'var(--font-serif)',
+                fontSize: 11,
+                color: 'rgba(196,160,96,0.35)',
+                letterSpacing: '0.06em',
+                alignSelf: 'flex-start',
+              }}
+            >
+              + add behaviour
+            </button>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
 /* ─── Export ─────────────────────────────────────────────────── */
 export default function FeelingCircles2() {
   const [circleVariant, setCircleVariant] = useState(0);
@@ -1363,41 +2210,16 @@ export default function FeelingCircles2() {
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 12, padding: '8px 0 32px' }}>
-      {/* Design dot switcher */}
-      <div
-        style={{
-          display: 'flex',
-          justifyContent: 'center',
-          gap: 7,
-          alignItems: 'center',
-          paddingBottom: 4,
-        }}
-      >
-        {CIRCLE_VIZ_LABELS.map((lbl, i) => (
-          <button
-            key={i}
-            type="button"
-            onClick={() => switchCircleVariant(i)}
-            title={lbl}
-            style={{
-              width: circleVariant === i ? 10 : 7,
-              height: circleVariant === i ? 10 : 7,
-              borderRadius: '50%',
-              border: 'none',
-              padding: 0,
-              cursor: 'pointer',
-              background: circleVariant === i ? '#C4A060' : 'rgba(196,160,96,0.28)',
-              boxShadow: circleVariant === i ? '0 0 8px #C4A06099' : 'none',
-              transition: 'all 0.2s',
-              flexShrink: 0,
-            }}
-          />
-        ))}
-      </div>
       {CIRCLES.map((c) => (
-        <CircleTracker key={c.id} circle={c} circleVariant={circleVariant} />
+        <CircleTracker
+          key={c.id}
+          circle={c}
+          circleVariant={circleVariant}
+          onVariantChange={switchCircleVariant}
+        />
       ))}
       <FocusTracker circleVariant={circleVariant} />
+      <BehaviourTracker />
     </div>
   );
 }

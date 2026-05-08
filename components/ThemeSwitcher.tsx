@@ -23,15 +23,56 @@ const COLOR_THEMES = [
   { id: 'comic-green', label: 'Comic Green', className: 'dark comic-green', color: '#111a0a' },
 ] as const;
 
-const TYPO_THEMES = [
-  { id: 'normal', label: 'Normal', font: 'var(--font-serif)', preview: 'Aa' },
-  { id: 'cowboy', label: 'Cowboy', font: 'var(--font-cowboy)', preview: 'Aa' },
-  { id: 'groovy', label: 'Groovy', font: 'var(--font-groovy)', preview: 'Aa' },
-  { id: 'minimal', label: 'Minimal', font: 'var(--font-minimal)', preview: 'Aa' },
+const HEADER_THEMES = [
+  {
+    id: 'beige',
+    label: 'Soft Beige',
+    bg: 'rgba(242,232,208,0.97)',
+    border: 'rgba(196,160,96,0.18)',
+    text: '#5C3018',
+    textInactive: 'rgba(92,48,24,0.55)',
+    swatch: '#EDE4CC',
+  },
+  {
+    id: 'brown',
+    label: 'Brown',
+    bg: 'rgba(30,16,8,0.92)',
+    border: 'rgba(196,160,96,0.22)',
+    text: '#C8A858',
+    textInactive: 'rgba(200,168,88,0.55)',
+    swatch: '#1E1008',
+  },
+  {
+    id: 'olive',
+    label: 'Olive Green',
+    bg: 'rgba(18,26,8,0.92)',
+    border: 'rgba(140,168,80,0.22)',
+    text: '#C8A858',
+    textInactive: 'rgba(200,168,88,0.55)',
+    swatch: '#121A08',
+  },
+  {
+    id: 'navy',
+    label: 'Deep Navy',
+    bg: 'rgba(4,12,30,0.92)',
+    border: 'rgba(80,120,200,0.22)',
+    text: '#C8A858',
+    textInactive: 'rgba(200,168,88,0.55)',
+    swatch: '#040C1E',
+  },
+  {
+    id: 'burgundy',
+    label: 'Burgundy',
+    bg: 'rgba(30,8,18,0.92)',
+    border: 'rgba(180,80,100,0.22)',
+    text: '#C8A858',
+    textInactive: 'rgba(200,168,88,0.55)',
+    swatch: '#1E0812',
+  },
 ] as const;
 
 type ColorId = (typeof COLOR_THEMES)[number]['id'];
-type TypoId = (typeof TYPO_THEMES)[number]['id'];
+type HeaderId = (typeof HEADER_THEMES)[number]['id'];
 
 function applyColorTheme(id: ColorId) {
   const theme = COLOR_THEMES.find((t) => t.id === id);
@@ -46,20 +87,30 @@ function applyColorTheme(id: ColorId) {
     html.classList.add(cls);
   }
   localStorage.setItem('colourmap-theme', id);
+  document.documentElement.style.setProperty('--theme-dot-color', theme.color);
 }
 
-function applyTypoTheme(id: TypoId) {
-  const typo = TYPO_THEMES.find((t) => t.id === id);
-  if (!typo) return;
-  document.documentElement.style.setProperty('--font-heading', typo.font);
-  localStorage.setItem('colourmap-typo', id);
+function applyHeaderTheme(id: HeaderId) {
+  const theme = HEADER_THEMES.find((t) => t.id === id);
+  if (!theme) return;
+  const root = document.documentElement;
+  root.style.setProperty('--header-bg', theme.bg);
+  root.style.setProperty('--header-border', theme.border);
+  root.style.setProperty('--header-text', theme.text);
+  localStorage.setItem('colourmap-header', id);
+}
+
+function applyFullHeader(on: boolean) {
+  document.documentElement.style.setProperty('--nav-bg', on ? 'var(--header-bg)' : '#d4b896');
+  localStorage.setItem('colourmap-full-header', on ? '1' : '0');
 }
 
 export default function ThemeSwitcher() {
   const [colorActive, setColorActive] = useState<ColorId>('paper');
-  const [typoActive, setTypoActive] = useState<TypoId>('normal');
+  const [headerActive, setHeaderActive] = useState<HeaderId>('brown');
+  const [fullHeader, setFullHeader] = useState(false);
   const [open, setOpen] = useState(false);
-  const [tab, setTab] = useState<'color' | 'typo'>('color');
+  const [tab, setTab] = useState<'color' | 'header'>('color');
 
   useEffect(() => {
     const savedColor = localStorage.getItem('colourmap-theme') as ColorId | null;
@@ -67,11 +118,13 @@ export default function ThemeSwitcher() {
       setColorActive(savedColor);
       applyColorTheme(savedColor);
     }
-    const savedTypo = localStorage.getItem('colourmap-typo') as TypoId | null;
-    if (savedTypo && TYPO_THEMES.some((t) => t.id === savedTypo)) {
-      setTypoActive(savedTypo);
-      applyTypoTheme(savedTypo);
-    }
+    const savedHeaderId = (localStorage.getItem('colourmap-header') ?? 'brown') as HeaderId;
+    const resolvedId = HEADER_THEMES.some((t) => t.id === savedHeaderId) ? savedHeaderId : 'brown';
+    setHeaderActive(resolvedId);
+    applyHeaderTheme(resolvedId);
+    const fh = localStorage.getItem('colourmap-full-header') === '1';
+    setFullHeader(fh);
+    applyFullHeader(fh);
   }, []);
 
   useEffect(() => {
@@ -81,7 +134,7 @@ export default function ThemeSwitcher() {
     return () => document.removeEventListener('click', close);
   }, [open]);
 
-  const activeColor = COLOR_THEMES.find((t) => t.id === colorActive) ?? COLOR_THEMES[0];
+  const _activeColor = COLOR_THEMES.find((t) => t.id === colorActive) ?? COLOR_THEMES[0];
 
   return (
     <div className="relative" onClick={(e) => e.stopPropagation()}>
@@ -93,11 +146,14 @@ export default function ThemeSwitcher() {
       >
         <div
           className="h-5 w-5 rounded-full border border-border"
-          style={{ backgroundColor: activeColor.color }}
+          style={{ backgroundColor: '#C4A060' }}
         />
       </button>
       {open && (
-        <div className="absolute right-0 top-8 z-50 rounded-xl border border-border bg-card p-2 shadow-lg animate-in fade-in duration-150 min-w-[180px]">
+        <div
+          className="absolute right-0 top-8 z-50 rounded-xl p-2 shadow-lg animate-in fade-in duration-150 min-w-[180px]"
+          style={{ background: '#fbf3d8', border: '1px solid rgba(160,110,40,0.18)' }}
+        >
           {/* Tabs */}
           <div className="flex gap-1 mb-2">
             <button
@@ -109,10 +165,10 @@ export default function ThemeSwitcher() {
             </button>
             <button
               type="button"
-              onClick={() => setTab('typo')}
-              className={`flex-1 text-xs py-1 rounded-lg transition-colors ${tab === 'typo' ? 'bg-accent font-medium' : 'text-muted-foreground hover:bg-accent/50'}`}
+              onClick={() => setTab('header')}
+              className={`flex-1 text-xs py-1 rounded-lg transition-colors ${tab === 'header' ? 'bg-accent font-medium' : 'text-muted-foreground hover:bg-accent/50'}`}
             >
-              Typography
+              Header
             </button>
           </div>
 
@@ -141,27 +197,53 @@ export default function ThemeSwitcher() {
             </div>
           )}
 
-          {/* Typography options */}
-          {tab === 'typo' && (
+          {/* Header options */}
+          {tab === 'header' && (
             <div className="flex flex-col gap-1">
-              {TYPO_THEMES.map((typo) => (
+              {HEADER_THEMES.map((theme) => (
                 <button
-                  key={typo.id}
+                  key={theme.id}
                   type="button"
                   className={`flex items-center gap-2 rounded-lg px-3 py-1.5 text-xs transition-colors ${
-                    typoActive === typo.id ? 'bg-accent font-medium' : 'hover:bg-accent/50'
+                    headerActive === theme.id ? 'bg-accent font-medium' : 'hover:bg-accent/50'
                   }`}
                   onClick={() => {
-                    setTypoActive(typo.id);
-                    applyTypoTheme(typo.id);
+                    setHeaderActive(theme.id);
+                    applyHeaderTheme(theme.id);
                   }}
                 >
-                  <span className="text-sm w-6 text-center" style={{ fontFamily: typo.font }}>
-                    {typo.preview}
-                  </span>
-                  <span>{typo.label}</span>
+                  <div
+                    className="h-3.5 w-3.5 rounded-full border border-border flex items-center justify-center"
+                    style={{ backgroundColor: theme.swatch }}
+                  >
+                    <div
+                      className="h-1.5 w-1.5 rounded-full"
+                      style={{ backgroundColor: theme.text }}
+                    />
+                  </div>
+                  <span>{theme.label}</span>
                 </button>
               ))}
+              <div className="mt-1 pt-1" style={{ borderTop: '1px solid rgba(160,110,40,0.14)' }}>
+                <button
+                  type="button"
+                  className={`flex w-full items-center gap-2 rounded-lg px-3 py-1.5 text-xs transition-colors ${
+                    fullHeader
+                      ? 'bg-accent font-medium'
+                      : 'hover:bg-accent/50 text-muted-foreground'
+                  }`}
+                  onClick={() => {
+                    const next = !fullHeader;
+                    setFullHeader(next);
+                    applyFullHeader(next);
+                  }}
+                >
+                  <span className="flex-1 text-left">Full Header</span>
+                  <span style={{ opacity: fullHeader ? 1 : 0.45 }}>
+                    {fullHeader ? 'on' : 'off'}
+                  </span>
+                </button>
+              </div>
             </div>
           )}
         </div>

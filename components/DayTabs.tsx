@@ -19,14 +19,14 @@ interface DayTabsProps {
   emotionContent: React.ReactNode;
   missionContent: React.ReactNode;
   progressContent: React.ReactNode;
-  dateLabel?: string;
+  belowTabs?: React.ReactNode;
 }
 
 export default function DayTabs({
   emotionContent,
   missionContent,
   progressContent,
-  dateLabel,
+  belowTabs,
 }: DayTabsProps) {
   const [active, setActive] = useState<Tab>('emotion');
   const { style } = useStyle();
@@ -52,22 +52,6 @@ export default function DayTabs({
   return (
     <div className="space-y-5">
       <div className="space-y-3">
-        {dateLabel && (
-          <p
-            className="text-center italic"
-            style={{
-              fontFamily: 'var(--font-serif)',
-              fontSize: '14px',
-              color: '#7A5438',
-              opacity: 0.7,
-              letterSpacing: '0.06em',
-              marginTop: 6,
-              marginBottom: 6,
-            }}
-          >
-            {dateLabel}
-          </p>
-        )}
         <div className="flex gap-3">
           {TABS.map((tab) => {
             const isActive = active === tab.id;
@@ -95,6 +79,11 @@ export default function DayTabs({
             );
           })}
         </div>
+        {belowTabs && (
+          <div style={{ display: 'flex', justifyContent: 'center', paddingTop: 8 }}>
+            {belowTabs}
+          </div>
+        )}
       </div>
 
       <div className="animate-in fade-in duration-200">

@@ -2,10 +2,9 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import ErrorBoundary from '@/components/ErrorBoundary';
 import GuitarStudio from '@/components/GuitarStudio';
-import MusicRecordings from '@/components/MusicRecordings';
 import NavLinks from '@/components/NavLinks';
 import SoundLab from '@/components/SoundLab';
 import { useViewMode } from '@/components/ViewModeContext';
@@ -16,27 +15,7 @@ const SOCIAL_ROUTES = [
   { href: '/chat', label: 'Chat' },
 ];
 
-const LS_SONGS = 'colourmap:songs';
-
-type MusicSection = 'makers' | 'guitar' | 'recordings';
-
-interface SongRef {
-  id: string;
-  title: string;
-}
-
-function loadSongRefs(): SongRef[] {
-  try {
-    const raw = localStorage.getItem(LS_SONGS);
-    if (!raw) return [];
-    const parsed = JSON.parse(raw);
-    return Array.isArray(parsed)
-      ? parsed.map((s: { id: string; title: string }) => ({ id: s.id, title: s.title }))
-      : [];
-  } catch {
-    return [];
-  }
-}
+type MusicSection = 'makers' | 'guitar';
 
 export default function AppShell({ children }: { children: React.ReactNode }) {
   const { mode, navPosition } = useViewMode();
@@ -44,17 +23,8 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
   const onMusic = pathname === '/music';
   const onSocial = SOCIAL_ROUTES.some((r) => r.href === pathname);
   const [musicSection, setMusicSection] = useState<MusicSection>('makers');
-  const [songs, setSongs] = useState<SongRef[]>([]);
-  const [recordingsInitialSongId, setRecordingsInitialSongId] = useState<string | null>(null);
-
-  useEffect(() => {
-    setSongs(loadSongRefs());
-  }, []);
-
-  function showRecordingsSection(songId?: string) {
-    setSongs(loadSongRefs());
-    setRecordingsInitialSongId(songId ?? null);
-    setMusicSection('recordings');
+  function showRecordingsSection(_songId?: string) {
+    // Recordings hidden for now — no-op
   }
 
   const containerClass =
@@ -67,38 +37,34 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
             display:none hides it but never unmounts — audio survives
             route changes. Only visible when on /music. */}
         <div style={{ display: onMusic ? 'block' : 'none' }}>
-          {/* Music top-nav: Music Studio · Guitar Studio · Recordings */}
-          <div className="flex items-center gap-3 pb-1 mb-3">
-            <div style={{ flex: 1, height: 1, background: '#C4A06020' }} />
+          {/* Music top-nav: Music Studio · Guitar Studio */}
+          <div className="flex items-center justify-center gap-8 pb-1 mb-4">
             {(
               [
                 { id: 'makers', label: 'Music Studio' },
                 { id: 'guitar', label: 'Guitar Studio' },
-                { id: 'recordings', label: 'Recordings' },
               ] as { id: MusicSection; label: string }[]
-            ).map(({ id, label }, i, arr) => (
-              <span key={id} className="flex items-center gap-3">
-                <button
-                  type="button"
-                  onClick={() => setMusicSection(id)}
-                  className="shrink-0 cursor-pointer bg-transparent border-none transition-opacity"
-                  style={{
-                    fontFamily: 'var(--font-serif)',
-                    fontSize: '11px',
-                    fontWeight: musicSection === id ? 700 : 500,
-                    letterSpacing: '0.18em',
-                    textTransform: 'uppercase',
-                    color: musicSection === id ? '#C4A060' : '#A0907A',
-                    opacity: musicSection === id ? 1 : 0.55,
-                    padding: 0,
-                  }}
-                >
-                  {label}
-                </button>
-                {i < arr.length - 1 && <span style={{ color: '#C4A06030', fontSize: 11 }}>·</span>}
-              </span>
+            ).map(({ id, label }) => (
+              <button
+                key={id}
+                type="button"
+                onClick={() => setMusicSection(id)}
+                className="shrink-0 cursor-pointer bg-transparent border-none transition-opacity"
+                style={{
+                  fontFamily: 'var(--font-serif)',
+                  fontSize: '11px',
+                  fontWeight: musicSection === id ? 700 : 500,
+                  letterSpacing: '0.18em',
+                  textTransform: 'uppercase',
+                  color: musicSection === id ? '#C4A060' : '#A0907A',
+                  opacity: musicSection === id ? 1 : 0.55,
+                  padding: '4px 0',
+                  borderBottom: musicSection === id ? '2px solid #C4A060' : '2px solid transparent',
+                }}
+              >
+                {label}
+              </button>
             ))}
-            <div style={{ flex: 1, height: 1, background: '#C4A06020' }} />
           </div>
 
           {/* SoundLab: always mounted so audio keeps running */}
@@ -108,14 +74,6 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
           {/* GuitarStudio: shown when selected */}
           {musicSection === 'guitar' && (
             <GuitarStudio onShowRecordingsSection={showRecordingsSection} />
-          )}
-          {/* Recordings: top-level dedicated section */}
-          {musicSection === 'recordings' && (
-            <MusicRecordings
-              songs={songs}
-              initialSongId={recordingsInitialSongId}
-              key={recordingsInitialSongId ?? 'all'}
-            />
           )}
         </div>
 
