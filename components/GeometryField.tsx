@@ -8920,7 +8920,6 @@ const MODE_SLIDERS: Partial<Record<Mode, SliderDef[]>> = {
     { key: 'intensity', label: 'Colour', min: 1, max: 10, step: 0.5 },
     { key: 'luminous', label: 'Bloom', min: 0, max: 5, step: 0.1 },
     { key: 'complexity', label: 'Density', min: 1, max: 10, step: 1 },
-    { key: 'stars', label: 'Stars', min: 0, max: 10, step: 1 },
   ],
 };
 
@@ -9094,6 +9093,7 @@ const FEATURED_PRESETS: FeaturedItem[] = [
   { name: 'Atom 3D', tag: 'ATOM' },
   { name: 'Tangka Mandala', tag: 'TIB' },
   { name: 'Tangka Wheel', tag: 'TIB' },
+  { name: 'Tangka Lotus', tag: 'TIB' },
   { name: 'Tangka Sky', tag: 'TIB' },
   { name: 'Tangka Fire', tag: 'TIB' },
   { name: 'Orbital Atom', tag: 'ATOM' },

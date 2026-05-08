@@ -342,3 +342,25 @@ export const messages = pgTable('messages', {
   text: text('text').notNull(),
   createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
 });
+
+// ── Day-sync tables ───────────────────────────────────────────────────────────
+// Append-only event log for all time-series tracking (axis readings, notes,
+// ritual completions, behavior logs). New event kinds = new `type` string;
+// no schema change required.
+export const dayEvents = pgTable('day_events', {
+  id: uuid('id').defaultRandom().primaryKey(),
+  userId: uuid('user_id').notNull(),
+  date: date('date').notNull(),
+  type: text('type').notNull(),
+  payload: jsonb('payload').notNull(),
+  createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+});
+
+// Key-value store for config blobs and preferences that aren't time-series:
+// ritual/behavior definitions, card lists, UI settings, etc.
+export const userPrefs = pgTable('user_prefs', {
+  userId: uuid('user_id').notNull(),
+  key: text('key').notNull(),
+  value: jsonb('value').notNull(),
+  updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow().notNull(),
+});
