@@ -45,23 +45,6 @@ const CIRCLES = [
       { label: 'Energized', color: '#70B098' },
     ],
   },
-  {
-    id: 'mind',
-    title: 'Mind',
-    lsIdxKey: 'colourmap:presence-idx',
-    lsFragKey: 'colourmap:ring-mind-frag',
-    lsLogKey: 'colourmap:mind-log',
-    defaultIdx: 3,
-    reflectPrompt: 'Where is your mind at?',
-    levels: [
-      { label: 'Absent', color: '#B89088' },
-      { label: 'Scattered', color: '#C4A888' },
-      { label: 'Confused', color: '#B0A0B8' },
-      { label: 'Drifting', color: '#C4B880' },
-      { label: 'Present', color: '#98BC90' },
-      { label: 'Flowing', color: '#A098C0' },
-    ],
-  },
 ];
 
 /* ─── Focus levels ───────────────────────────────────────────── */
@@ -483,8 +466,398 @@ function VizLiquid({ idx, levels, onPointerDown, onPointerMove, onPointerUp }: V
   );
 }
 
-const CIRCLE_VIZS = [VizBall, VizRing, VizArc, VizSegments, VizLiquid] as const;
-const CIRCLE_VIZ_LABELS = ['Ball', 'Ring', 'Arc', 'Dots', 'Liquid'] as const;
+/* V6 — Bar (horizontal fill) */
+function VizBar({ idx, levels, onPointerDown, onPointerMove, onPointerUp }: VizProps) {
+  const c = levels[idx]?.color ?? '#C4A060';
+  const rat = levels.length > 1 ? idx / (levels.length - 1) : 0;
+  return (
+    <div
+      style={{
+        width: '100%',
+        touchAction: 'none',
+        userSelect: 'none',
+        padding: '4px 8px 8px',
+        display: 'flex',
+        flexDirection: 'column',
+        gap: 10,
+        alignItems: 'center',
+      }}
+    >
+      <span
+        style={{
+          fontFamily: 'var(--font-serif)',
+          fontSize: 13,
+          fontWeight: 700,
+          color: c,
+          letterSpacing: '0.12em',
+          textTransform: 'uppercase',
+          transition: 'color 0.3s',
+        }}
+      >
+        {levels[idx]?.label}
+      </span>
+      <div
+        onPointerDown={onPointerDown}
+        onPointerMove={onPointerMove}
+        onPointerUp={onPointerUp}
+        style={{
+          position: 'relative',
+          height: 28,
+          width: '100%',
+          borderRadius: 14,
+          background: `${c}18`,
+          border: `1.5px solid ${c}40`,
+          overflow: 'hidden',
+          cursor: 'ew-resize',
+        }}
+      >
+        <div
+          style={{
+            position: 'absolute',
+            left: 0,
+            top: 0,
+            bottom: 0,
+            width: `${Math.max(rat * 100, 2)}%`,
+            background: `linear-gradient(90deg, ${c}55, ${c})`,
+            borderRadius: 14,
+            boxShadow: `0 0 14px ${c}55`,
+            transition: 'width 0.2s, background 0.3s',
+          }}
+        />
+        <div
+          style={{
+            position: 'absolute',
+            inset: 0,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'flex-end',
+            paddingRight: 12,
+          }}
+        >
+          <span
+            style={{
+              fontFamily: 'var(--font-serif)',
+              fontSize: 10,
+              fontWeight: 700,
+              color: c,
+              opacity: 0.75,
+            }}
+          >
+            {idx + 1} / {levels.length}
+          </span>
+        </div>
+      </div>
+      <div
+        style={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          width: '100%',
+          padding: '0 2px',
+        }}
+      >
+        {levels.map((lv, i) => (
+          <div
+            key={i}
+            style={{
+              width: 3,
+              height: i === idx ? 10 : 6,
+              borderRadius: 1.5,
+              background: i <= idx ? lv.color : `${lv.color}22`,
+              transition: 'all 0.2s',
+            }}
+          />
+        ))}
+      </div>
+    </div>
+  );
+}
+
+/* V7 — Pulse (concentric rings fill outward) */
+function VizPulse({ idx, levels, onPointerDown, onPointerMove, onPointerUp }: VizProps) {
+  const n = levels.length;
+  const c = levels[idx]?.color ?? '#C4A060';
+  const CX = 70,
+    CY = 70,
+    maxR = 60;
+  return (
+    <div style={{ touchAction: 'none', userSelect: 'none' }}>
+      <svg
+        width={140}
+        height={140}
+        style={{ display: 'block', cursor: 'ew-resize', overflow: 'visible' }}
+        onPointerDown={onPointerDown}
+        onPointerMove={onPointerMove}
+        onPointerUp={onPointerUp}
+      >
+        <defs>
+          <filter id="pls-g">
+            <feGaussianBlur stdDeviation="3.5" result="b" />
+            <feMerge>
+              <feMergeNode in="b" />
+              <feMergeNode in="SourceGraphic" />
+            </feMerge>
+          </filter>
+        </defs>
+        {levels.map((lv, i) => {
+          const r = ((i + 1) / n) * maxR;
+          const active = i <= idx;
+          const isCur = i === idx;
+          return (
+            <g key={i}>
+              {isCur && (
+                <circle
+                  cx={CX}
+                  cy={CY}
+                  r={r + 6}
+                  fill={lv.color}
+                  opacity={0.12}
+                  filter="url(#pls-g)"
+                />
+              )}
+              <circle
+                cx={CX}
+                cy={CY}
+                r={r}
+                fill="none"
+                stroke={lv.color}
+                strokeWidth={isCur ? 3 : active ? 2 : 1}
+                opacity={isCur ? 1 : active ? 0.45 : 0.1}
+                style={{ transition: 'all 0.25s' }}
+              />
+            </g>
+          );
+        })}
+        <circle
+          cx={CX}
+          cy={CY}
+          r={5}
+          fill={c}
+          filter="url(#pls-g)"
+          style={{ transition: 'fill 0.3s' }}
+        />
+        <circle cx={CX} cy={CY} r={2.5} fill="rgba(255,255,255,0.9)" />
+        <text
+          x={CX}
+          y={CY + 22}
+          textAnchor="middle"
+          fill={c}
+          fontSize={11}
+          fontWeight={700}
+          style={{
+            fontFamily: 'var(--font-serif)',
+            letterSpacing: '0.1em',
+            textTransform: 'uppercase',
+          }}
+        >
+          {levels[idx]?.label}
+        </text>
+      </svg>
+    </div>
+  );
+}
+
+/* V8 — Petals (radial flower petals) */
+function VizPetals({ idx, levels, onPointerDown, onPointerMove, onPointerUp }: VizProps) {
+  const n = levels.length;
+  const c = levels[idx]?.color ?? '#C4A060';
+  const CX = 70,
+    CY = 70,
+    dist = 36,
+    petalR = 18;
+  return (
+    <div style={{ touchAction: 'none', userSelect: 'none' }}>
+      <svg
+        width={140}
+        height={140}
+        style={{ display: 'block', cursor: 'ew-resize', overflow: 'visible' }}
+        onPointerDown={onPointerDown}
+        onPointerMove={onPointerMove}
+        onPointerUp={onPointerUp}
+      >
+        <defs>
+          <filter id="pet-g">
+            <feGaussianBlur stdDeviation="4" result="b" />
+            <feMerge>
+              <feMergeNode in="b" />
+              <feMergeNode in="SourceGraphic" />
+            </feMerge>
+          </filter>
+        </defs>
+        {levels.map((lv, i) => {
+          const ang = (i / n) * Math.PI * 2 - Math.PI / 2;
+          const px = CX + Math.cos(ang) * dist;
+          const py = CY + Math.sin(ang) * dist;
+          const active = i <= idx;
+          const isCur = i === idx;
+          const r = isCur ? petalR : active ? petalR * 0.65 : petalR * 0.28;
+          return (
+            <g key={i}>
+              {isCur && (
+                <circle
+                  cx={px}
+                  cy={py}
+                  r={petalR + 6}
+                  fill={lv.color}
+                  opacity={0.15}
+                  filter="url(#pet-g)"
+                />
+              )}
+              <circle
+                cx={px}
+                cy={py}
+                r={r}
+                fill={active ? lv.color : 'none'}
+                stroke={lv.color}
+                strokeWidth={active ? 0 : 1}
+                opacity={active ? 1 : 0.2}
+                style={{ transition: 'all 0.25s' }}
+              />
+            </g>
+          );
+        })}
+        <circle
+          cx={CX}
+          cy={CY}
+          r={13}
+          fill={c}
+          filter="url(#pet-g)"
+          style={{ transition: 'fill 0.3s' }}
+        />
+        <text
+          x={CX}
+          y={CY + 5}
+          textAnchor="middle"
+          fill="rgba(255,255,255,0.9)"
+          fontSize={8}
+          fontWeight={800}
+          style={{ fontFamily: 'var(--font-serif)', letterSpacing: '0.06em' }}
+        >
+          {idx + 1}
+        </text>
+      </svg>
+    </div>
+  );
+}
+
+/* V9 — Diamond / lozenge (perfect square rotated 45°, fill from bottom) */
+function VizDiamond({ idx, levels, onPointerDown, onPointerMove, onPointerUp }: VizProps) {
+  const c = levels[idx]?.color ?? '#C4A060';
+  const rat = levels.length > 1 ? idx / (levels.length - 1) : 0;
+  // Perfect square diamond: W = H so all four arms are equal
+  const S = 142; // SVG canvas size
+  const CX = S / 2,
+    CY = S / 2;
+  const HALF = 56; // half-arm length — equal in all directions
+  const top = `${CX},${CY - HALF}`;
+  const right = `${CX + HALF},${CY}`;
+  const bottom = `${CX},${CY + HALF}`;
+  const left = `${CX - HALF},${CY}`;
+  const outline = `M${top} L${right} L${bottom} L${left} Z`;
+  // Fill rises from the bottom point
+  const fillY = CY + HALF - rat * HALF * 2;
+  const clipId = `dia-clip-${idx}`;
+  const filterId = `dia-glow-${idx}`;
+  return (
+    <div
+      style={{
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        gap: 8,
+        touchAction: 'none',
+        userSelect: 'none',
+      }}
+    >
+      <svg
+        width={S}
+        height={S}
+        viewBox={`0 0 ${S} ${S}`}
+        style={{ display: 'block', cursor: 'ew-resize', overflow: 'visible' }}
+        onPointerDown={onPointerDown}
+        onPointerMove={onPointerMove}
+        onPointerUp={onPointerUp}
+      >
+        <defs>
+          <clipPath id={clipId}>
+            <path d={outline} />
+          </clipPath>
+          <filter id={filterId} x="-30%" y="-30%" width="160%" height="160%">
+            <feGaussianBlur stdDeviation="3.5" result="b" />
+            <feMerge>
+              <feMergeNode in="b" />
+              <feMergeNode in="SourceGraphic" />
+            </feMerge>
+          </filter>
+          <linearGradient id={`dia-grad-${idx}`} x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor={c} stopOpacity="0.95" />
+            <stop offset="100%" stopColor={c} stopOpacity="0.55" />
+          </linearGradient>
+        </defs>
+        {/* Outer glow */}
+        <path d={outline} fill="none" stroke={c} strokeWidth={3} opacity={0.1} />
+        {/* Outline */}
+        <path d={outline} fill="none" stroke={c} strokeWidth={1.5} opacity={rat > 0 ? 0.55 : 0.3} />
+        {/* Fill */}
+        {rat > 0 && (
+          <rect
+            x={CX - HALF - 1}
+            y={fillY}
+            width={HALF * 2 + 2}
+            height={CY + HALF - fillY + 1}
+            fill={`url(#dia-grad-${idx})`}
+            clipPath={`url(#${clipId})`}
+            filter={`url(#${filterId})`}
+          />
+        )}
+        {/* Tick marks at each arm tip */}
+        {[top, right, bottom, left].map((pt, i) => {
+          const [px, py] = pt.split(',').map(Number);
+          return <circle key={i} cx={px} cy={py} r={2.2} fill={c} opacity={rat > 0 ? 0.7 : 0.25} />;
+        })}
+        {/* Label */}
+        <text
+          x={CX}
+          y={CY + 5}
+          textAnchor="middle"
+          fill={rat > 0.45 ? 'rgba(255,255,255,0.92)' : c}
+          fontSize={11}
+          fontWeight={700}
+          style={{
+            fontFamily: 'var(--font-serif)',
+            letterSpacing: '0.1em',
+            textTransform: 'uppercase',
+            transition: 'fill 0.3s',
+          }}
+        >
+          {levels[idx]?.label}
+        </text>
+      </svg>
+    </div>
+  );
+}
+
+const CIRCLE_VIZS = [
+  VizBall,
+  VizRing,
+  VizArc,
+  VizSegments,
+  VizLiquid,
+  VizBar,
+  VizPulse,
+  VizPetals,
+  VizDiamond,
+] as const;
+const CIRCLE_VIZ_LABELS = [
+  'Ball',
+  'Ring',
+  'Arc',
+  'Dots',
+  'Liquid',
+  'Bar',
+  'Pulse',
+  'Petals',
+  'Diamond',
+] as const;
 
 /* ─── Shared helpers ─────────────────────────────────────────── */
 function timeAgo(ts: string) {
@@ -919,7 +1292,7 @@ function CircleTracker({ circle, circleVariant }: { circle: Circle; circleVarian
           </div>
 
           {/* Reflect */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
             <span
               style={{
                 fontFamily: 'var(--font-serif)',
@@ -934,15 +1307,32 @@ function CircleTracker({ circle, circleVariant }: { circle: Circle; circleVarian
             >
               Reflect
             </span>
+            {/* Prompt — shown prominently as the writing cue */}
+            <span
+              style={{
+                fontFamily: 'var(--font-serif)',
+                fontStyle: 'italic',
+                fontSize: 14,
+                fontWeight: 600,
+                color: '#5C3018',
+                opacity: 0.82,
+                textAlign: 'center',
+                letterSpacing: '0.01em',
+                lineHeight: 1.4,
+              }}
+            >
+              {circle.reflectPrompt}
+            </span>
+            <ReflectInput placeholder="…" onAdd={addEntry} />
             {log.slice(0, 3).map((e, i) => (
               <span
                 key={i}
                 style={{
                   fontFamily: 'var(--font-handwritten)',
                   fontStyle: 'italic',
-                  fontSize: 16,
+                  fontSize: 14,
                   color: '#5C3018',
-                  opacity: 0.65,
+                  opacity: 0.4,
                   lineHeight: 1.35,
                   textAlign: 'center',
                 }}
@@ -950,7 +1340,6 @@ function CircleTracker({ circle, circleVariant }: { circle: Circle; circleVarian
                 {e.note}
               </span>
             ))}
-            <ReflectInput placeholder={circle.reflectPrompt} onAdd={addEntry} />
           </div>
 
           {/* Weekly tracker */}
@@ -1095,7 +1484,7 @@ function FocusTracker({ circleVariant }: { circleVariant: number }) {
     } catch {}
   }
 
-  const level = FOCUS_LEVELS[focusIdx];
+  const _level = FOCUS_LEVELS[focusIdx];
   const reflections = log.filter((e) => e.kind === 'reflect');
   const ideas = log.filter((e) => e.kind === 'idea');
 
@@ -1769,6 +2158,7 @@ function BehaviourTracker() {
 /* ─── Export ─────────────────────────────────────────────────── */
 export default function FeelingCircles2() {
   const [circleVariant, setCircleVariant] = useState(0);
+  const [showPicker, setShowPicker] = useState(false);
 
   useEffect(() => {
     try {
@@ -1786,36 +2176,125 @@ export default function FeelingCircles2() {
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 12, padding: '8px 0 32px' }}>
-      {/* Design dot switcher */}
-      <div
-        style={{
-          display: 'flex',
-          justifyContent: 'center',
-          gap: 7,
-          alignItems: 'center',
-          paddingBottom: 4,
-        }}
-      >
-        {CIRCLE_VIZ_LABELS.map((lbl, i) => (
-          <button
-            key={i}
-            type="button"
-            onClick={() => switchCircleVariant(i)}
-            title={lbl}
+      {/* Design picker button */}
+      <div style={{ display: 'flex', justifyContent: 'center', position: 'relative' }}>
+        <button
+          type="button"
+          onClick={() => setShowPicker((v) => !v)}
+          style={{
+            background: showPicker ? 'rgba(196,160,96,0.16)' : 'rgba(196,160,96,0.08)',
+            border: `1.5px solid ${showPicker ? 'rgba(196,160,96,0.55)' : 'rgba(196,160,96,0.22)'}`,
+            borderRadius: 20,
+            padding: '6px 16px',
+            cursor: 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+            gap: 7,
+            transition: 'all 0.2s',
+          }}
+        >
+          <span
             style={{
-              width: circleVariant === i ? 10 : 7,
-              height: circleVariant === i ? 10 : 7,
+              width: 9,
+              height: 9,
               borderRadius: '50%',
-              border: 'none',
-              padding: 0,
-              cursor: 'pointer',
-              background: circleVariant === i ? '#C4A060' : 'rgba(196,160,96,0.28)',
-              boxShadow: circleVariant === i ? '0 0 8px #C4A06099' : 'none',
-              transition: 'all 0.2s',
+              background: '#C4A060',
+              boxShadow: '0 0 8px #C4A06099',
               flexShrink: 0,
             }}
           />
-        ))}
+          <span
+            style={{
+              fontFamily: 'var(--font-serif)',
+              fontSize: 11,
+              fontWeight: 700,
+              textTransform: 'uppercase',
+              letterSpacing: '0.14em',
+              color: '#C4A060',
+            }}
+          >
+            {CIRCLE_VIZ_LABELS[circleVariant]}
+          </span>
+          <span
+            style={{
+              color: '#C4A060',
+              fontSize: 10,
+              opacity: 0.6,
+              transform: `rotate(${showPicker ? 180 : 0}deg)`,
+              transition: 'transform 0.2s',
+            }}
+          >
+            ▾
+          </span>
+        </button>
+
+        {showPicker && (
+          <div
+            style={{
+              position: 'absolute',
+              top: 'calc(100% + 8px)',
+              left: '50%',
+              transform: 'translateX(-50%)',
+              background: '#1C0A04',
+              border: '1.5px solid rgba(196,160,96,0.45)',
+              borderRadius: 14,
+              padding: '14px 14px',
+              zIndex: 50,
+              display: 'grid',
+              gridTemplateColumns: 'repeat(3, 1fr)',
+              gap: 8,
+              minWidth: 220,
+            }}
+          >
+            {CIRCLE_VIZ_LABELS.map((lbl, i) => (
+              <button
+                key={i}
+                type="button"
+                onClick={() => {
+                  switchCircleVariant(i);
+                  setShowPicker(false);
+                }}
+                style={{
+                  background: circleVariant === i ? 'rgba(196,160,96,0.18)' : '#2A1208',
+                  border: `1.5px solid ${circleVariant === i ? '#C4A060' : 'rgba(196,160,96,0.2)'}`,
+                  borderRadius: 10,
+                  padding: '10px 6px',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  gap: 6,
+                  transition: 'all 0.15s',
+                }}
+              >
+                <span
+                  style={{
+                    width: circleVariant === i ? 11 : 8,
+                    height: circleVariant === i ? 11 : 8,
+                    borderRadius: '50%',
+                    background: circleVariant === i ? '#C4A060' : 'rgba(196,160,96,0.35)',
+                    boxShadow: circleVariant === i ? '0 0 8px #C4A06099' : 'none',
+                    display: 'block',
+                    transition: 'all 0.15s',
+                  }}
+                />
+                <span
+                  style={{
+                    fontFamily: 'var(--font-serif)',
+                    fontSize: 9,
+                    fontWeight: 700,
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.1em',
+                    color: circleVariant === i ? '#C4A060' : 'rgba(196,160,96,0.55)',
+                    transition: 'color 0.15s',
+                  }}
+                >
+                  {lbl}
+                </span>
+              </button>
+            ))}
+          </div>
+        )}
       </div>
       {CIRCLES.map((c) => (
         <CircleTracker key={c.id} circle={c} circleVariant={circleVariant} />

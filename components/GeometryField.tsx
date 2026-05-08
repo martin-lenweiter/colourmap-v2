@@ -44,7 +44,27 @@ type Mode =
   | 'firework3d'
   | 'fibonacci3d'
   | 'yantra3d'
-  | 'rainbow3d';
+  | 'rainbow3d'
+  | 'prism'
+  | 'prism3d'
+  | 'liquid'
+  | 'cells'
+  | 'current'
+  | 'plasma'
+  | 'globe'
+  | 'current3d'
+  | 'matrix'
+  | 'matrix3d'
+  | 'pulse'
+  | 'emotion'
+  | 'constellation'
+  | 'drift'
+  | 'cbloom'
+  | 'orbit'
+  | 'weave'
+  | 'chaostri3d'
+  | 'treeoflife'
+  | 'treeoflife3d';
 
 interface Pal {
   bg0: string;
@@ -383,6 +403,177 @@ const PAL: Record<string, Pal> = {
     glow: 'rgba(150,120,200,0.30)',
     dots: 'rgba(210,195,240,0.65)',
     rgb: [180, 160, 210],
+  },
+  'Prism Warm': {
+    bg0: '#080400',
+    bg1: '#040200',
+    line: 'rgba(255,215,120,0.60)',
+    fill: 'rgba(255,200,80,0.06)',
+    glow: 'rgba(255,180,60,0.32)',
+    dots: 'rgba(255,235,160,0.70)',
+    rgb: [255, 215, 120],
+  },
+  'Prism Ice': {
+    bg0: '#00050a',
+    bg1: '#000308',
+    line: 'rgba(160,220,255,0.60)',
+    fill: 'rgba(120,200,255,0.05)',
+    glow: 'rgba(100,180,255,0.30)',
+    dots: 'rgba(200,240,255,0.68)',
+    rgb: [160, 220, 255],
+  },
+  'Prism Rose': {
+    bg0: '#080006',
+    bg1: '#040003',
+    line: 'rgba(255,140,200,0.58)',
+    fill: 'rgba(255,100,180,0.05)',
+    glow: 'rgba(240,80,160,0.28)',
+    dots: 'rgba(255,190,230,0.65)',
+    rgb: [255, 140, 200],
+  },
+  'Prism Forest': {
+    bg0: '#000a04',
+    bg1: '#000602',
+    line: 'rgba(100,220,140,0.58)',
+    fill: 'rgba(80,200,120,0.05)',
+    glow: 'rgba(60,180,100,0.28)',
+    dots: 'rgba(150,240,180,0.65)',
+    rgb: [100, 220, 140],
+  },
+  'Prism Void': {
+    bg0: '#030010',
+    bg1: '#020008',
+    line: 'rgba(160,100,255,0.60)',
+    fill: 'rgba(140,80,240,0.06)',
+    glow: 'rgba(120,60,220,0.30)',
+    dots: 'rgba(200,160,255,0.68)',
+    rgb: [160, 100, 255],
+  },
+  'Liquid Pearl': {
+    bg0: '#030305',
+    bg1: '#010102',
+    line: 'rgba(220,220,235,0.65)',
+    fill: 'rgba(200,200,220,0.05)',
+    glow: 'rgba(180,180,210,0.28)',
+    dots: 'rgba(240,240,255,0.72)',
+    rgb: [220, 220, 235],
+  },
+  'Cell Biolum': {
+    bg0: '#000a04',
+    bg1: '#000502',
+    line: 'rgba(80,220,140,0.62)',
+    fill: 'rgba(60,200,120,0.05)',
+    glow: 'rgba(40,180,100,0.26)',
+    dots: 'rgba(130,240,175,0.68)',
+    rgb: [80, 220, 140],
+  },
+  'Deep Current': {
+    bg0: '#000510',
+    bg1: '#000308',
+    line: 'rgba(55,155,220,0.62)',
+    fill: 'rgba(40,130,200,0.05)',
+    glow: 'rgba(25,110,190,0.26)',
+    dots: 'rgba(100,190,255,0.68)',
+    rgb: [55, 155, 220],
+  },
+  'Solar Plasma': {
+    bg0: '#0a0300',
+    bg1: '#060200',
+    line: 'rgba(255,195,60,0.65)',
+    fill: 'rgba(255,170,30,0.06)',
+    glow: 'rgba(255,140,10,0.30)',
+    dots: 'rgba(255,230,140,0.72)',
+    rgb: [255, 195, 60],
+  },
+  'Terra Globe': {
+    bg0: '#000508',
+    bg1: '#000305',
+    line: 'rgba(55,175,200,0.60)',
+    fill: 'rgba(40,155,180,0.05)',
+    glow: 'rgba(25,135,160,0.26)',
+    dots: 'rgba(100,210,230,0.68)',
+    rgb: [55, 175, 200],
+  },
+  'Matrix Green': {
+    bg0: '#000a02',
+    bg1: '#000601',
+    line: 'rgba(50,240,100,0.68)',
+    fill: 'rgba(30,200,80,0.05)',
+    glow: 'rgba(20,180,70,0.30)',
+    dots: 'rgba(100,255,140,0.75)',
+    rgb: [50, 240, 100],
+  },
+  'Matrix Indigo': {
+    bg0: '#01000e',
+    bg1: '#010008',
+    line: 'rgba(120,80,255,0.65)',
+    fill: 'rgba(100,60,240,0.05)',
+    glow: 'rgba(80,40,220,0.28)',
+    dots: 'rgba(180,140,255,0.72)',
+    rgb: [120, 80, 255],
+  },
+  'Matrix Crimson': {
+    bg0: '#0a0001',
+    bg1: '#060001',
+    line: 'rgba(255,50,70,0.72)',
+    fill: 'rgba(220,30,50,0.05)',
+    glow: 'rgba(200,20,40,0.32)',
+    dots: 'rgba(255,110,120,0.78)',
+    rgb: [255, 50, 70],
+  },
+  'Matrix Gold': {
+    bg0: '#0a0700',
+    bg1: '#060400',
+    line: 'rgba(240,185,30,0.75)',
+    fill: 'rgba(220,165,15,0.07)',
+    glow: 'rgba(200,145,10,0.40)',
+    dots: 'rgba(255,215,90,0.80)',
+    rgb: [240, 185, 30],
+  },
+  'Matrix Arctic': {
+    bg0: '#000408',
+    bg1: '#000205',
+    line: 'rgba(140,230,255,0.72)',
+    fill: 'rgba(100,210,255,0.06)',
+    glow: 'rgba(80,200,255,0.35)',
+    dots: 'rgba(200,245,255,0.78)',
+    rgb: [140, 230, 255],
+  },
+  'Matrix Sacred': {
+    bg0: '#04000a',
+    bg1: '#020006',
+    line: 'rgba(200,140,255,0.70)',
+    fill: 'rgba(180,110,255,0.06)',
+    glow: 'rgba(160,90,240,0.35)',
+    dots: 'rgba(230,190,255,0.78)',
+    rgb: [200, 140, 255],
+  },
+  'Tangka Gold': {
+    bg0: '#0a0600',
+    bg1: '#060400',
+    line: 'rgba(255,185,30,0.72)',
+    fill: 'rgba(240,160,20,0.07)',
+    glow: 'rgba(220,140,10,0.38)',
+    dots: 'rgba(255,220,110,0.78)',
+    rgb: [255, 185, 30],
+  },
+  'Tangka Crimson': {
+    bg0: '#0a0002',
+    bg1: '#060001',
+    line: 'rgba(230,50,70,0.68)',
+    fill: 'rgba(210,40,55,0.06)',
+    glow: 'rgba(190,30,45,0.30)',
+    dots: 'rgba(255,110,125,0.72)',
+    rgb: [230, 50, 70],
+  },
+  'Tangka Lapis': {
+    bg0: '#00020e',
+    bg1: '#000109',
+    line: 'rgba(40,110,230,0.68)',
+    fill: 'rgba(30,90,210,0.06)',
+    glow: 'rgba(20,75,200,0.28)',
+    dots: 'rgba(100,170,255,0.72)',
+    rgb: [40, 110, 230],
   },
 };
 
@@ -850,6 +1041,891 @@ const PRESETS: Record<string, Cfg> = {
     luminous: 3,
     stars: 1,
     mode: 'spire',
+  },
+  'Prism Seed': {
+    preset: 'Prism Warm',
+    symmetry: 6,
+    complexity: 4,
+    glow: 9,
+    breathSpeed: 0.4,
+    intensity: 7,
+    particles: 0,
+    luminous: 2,
+    stars: 0,
+    mode: 'prism',
+  },
+  'Prism Bloom': {
+    preset: 'Prism Rose',
+    symmetry: 8,
+    complexity: 6,
+    glow: 7,
+    breathSpeed: 0.5,
+    intensity: 8,
+    particles: 0,
+    luminous: 3,
+    stars: 0,
+    mode: 'prism',
+  },
+  'Cathedral Glass': {
+    preset: 'Prism Warm',
+    symmetry: 12,
+    complexity: 7,
+    glow: 5,
+    breathSpeed: 0.3,
+    intensity: 9,
+    particles: 0,
+    luminous: 3,
+    stars: 0,
+    mode: 'prism',
+  },
+  'Solar Crown': {
+    preset: 'Prism Ice',
+    symmetry: 10,
+    complexity: 6,
+    glow: 3,
+    breathSpeed: 0.6,
+    intensity: 10,
+    particles: 0,
+    luminous: 4,
+    stars: 0,
+    mode: 'prism',
+  },
+  'Ice Prism': {
+    preset: 'Prism Ice',
+    symmetry: 7,
+    complexity: 5,
+    glow: 2,
+    breathSpeed: 0.35,
+    intensity: 8,
+    particles: 0,
+    luminous: 2,
+    stars: 0,
+    mode: 'prism',
+  },
+  'Prism3D Core': {
+    preset: 'Prism Void',
+    symmetry: 8,
+    complexity: 6,
+    glow: 7,
+    breathSpeed: 0.45,
+    intensity: 8,
+    particles: 0,
+    luminous: 3,
+    stars: 0,
+    mode: 'prism3d',
+  },
+  'Crystal Storm': {
+    preset: 'Prism Forest',
+    symmetry: 12,
+    complexity: 7,
+    glow: 1,
+    breathSpeed: 0.7,
+    intensity: 9,
+    particles: 0,
+    luminous: 4,
+    stars: 0,
+    mode: 'prism3d',
+  },
+  'Oil Film': {
+    preset: 'Liquid Pearl',
+    symmetry: 6,
+    complexity: 8,
+    glow: 10,
+    breathSpeed: 0.5,
+    intensity: 7,
+    particles: 0,
+    luminous: 2,
+    stars: 0,
+    mode: 'liquid',
+  },
+  'Soap Bubble': {
+    preset: 'Liquid Pearl',
+    symmetry: 12,
+    complexity: 10,
+    glow: 8,
+    breathSpeed: 0.4,
+    intensity: 8,
+    particles: 0,
+    luminous: 3,
+    stars: 0,
+    mode: 'liquid',
+  },
+  'Living Tissue': {
+    preset: 'Cell Biolum',
+    symmetry: 6,
+    complexity: 5,
+    glow: 7,
+    breathSpeed: 0.5,
+    intensity: 7,
+    particles: 0,
+    luminous: 2,
+    stars: 0,
+    mode: 'cells',
+  },
+  'Petri Bloom': {
+    preset: 'Cell Biolum',
+    symmetry: 8,
+    complexity: 9,
+    glow: 5,
+    breathSpeed: 0.4,
+    intensity: 8,
+    particles: 0,
+    luminous: 3,
+    stars: 0,
+    mode: 'cells',
+  },
+  'Ocean Drift': {
+    preset: 'Deep Current',
+    symmetry: 4,
+    complexity: 5,
+    glow: 3,
+    breathSpeed: 0.35,
+    intensity: 7,
+    particles: 0,
+    luminous: 2,
+    stars: 0,
+    mode: 'current',
+  },
+  'Storm Spiral': {
+    preset: 'Deep Current',
+    symmetry: 8,
+    complexity: 7,
+    glow: 6,
+    breathSpeed: 0.8,
+    intensity: 9,
+    particles: 0,
+    luminous: 3,
+    stars: 0,
+    mode: 'current',
+  },
+  'Solar Flare': {
+    preset: 'Solar Plasma',
+    symmetry: 6,
+    complexity: 6,
+    glow: 8,
+    breathSpeed: 0.7,
+    intensity: 10,
+    particles: 0,
+    luminous: 4,
+    stars: 0,
+    mode: 'plasma',
+  },
+  'Plasma Field': {
+    preset: 'Solar Plasma',
+    symmetry: 4,
+    complexity: 5,
+    glow: 4,
+    breathSpeed: 0.5,
+    intensity: 8,
+    particles: 0,
+    luminous: 3,
+    stars: 0,
+    mode: 'plasma',
+  },
+  'Emotion Globe': {
+    preset: 'Terra Globe',
+    symmetry: 8,
+    complexity: 6,
+    glow: 8,
+    breathSpeed: 0.4,
+    intensity: 7,
+    particles: 0,
+    luminous: 2,
+    stars: 0,
+    mode: 'globe',
+  },
+  'Storm Globe': {
+    preset: 'Terra Globe',
+    symmetry: 12,
+    complexity: 8,
+    glow: 5,
+    breathSpeed: 0.7,
+    intensity: 9,
+    particles: 0,
+    luminous: 3,
+    stars: 0,
+    mode: 'globe',
+  },
+  // ── Yantra 3D colour variants ──
+  'Yantra Prism': {
+    preset: 'Yantra Fire',
+    symmetry: 8,
+    complexity: 6,
+    glow: 10,
+    breathSpeed: 0.18,
+    intensity: 8,
+    particles: 4,
+    luminous: 1,
+    stars: 0,
+    mode: 'yantra3d',
+  },
+  'Yantra Colour': {
+    preset: 'Fibonacci Bloom',
+    symmetry: 12,
+    complexity: 7,
+    glow: 7,
+    breathSpeed: 0.22,
+    intensity: 9,
+    particles: 5,
+    luminous: 2,
+    stars: 0,
+    mode: 'yantra3d',
+  },
+  'Yantra Mono': {
+    preset: 'Yantra Fire',
+    symmetry: 6,
+    complexity: 4,
+    glow: 0,
+    breathSpeed: 0.25,
+    intensity: 8,
+    particles: 3,
+    luminous: 1,
+    stars: 0,
+    mode: 'yantra3d',
+  },
+  // ── Fibonacci 3D colour variants ──
+  'Fibonacci Prism': {
+    preset: 'Fibonacci Bloom',
+    symmetry: 8,
+    complexity: 5,
+    glow: 10,
+    breathSpeed: 0.2,
+    intensity: 8,
+    particles: 5,
+    luminous: 1,
+    stars: 0,
+    mode: 'fibonacci3d',
+  },
+  'Fibonacci Colour': {
+    preset: 'Fibonacci Bloom',
+    symmetry: 6,
+    complexity: 6,
+    glow: 6,
+    breathSpeed: 0.28,
+    intensity: 7,
+    particles: 4,
+    luminous: 1,
+    stars: 0,
+    mode: 'fibonacci3d',
+  },
+  // ── Current 3D (3D curl flow) ──
+  'Current 3D': {
+    preset: 'Deep Current',
+    symmetry: 5,
+    complexity: 5,
+    glow: 4,
+    breathSpeed: 0.45,
+    intensity: 8,
+    particles: 0,
+    luminous: 2,
+    stars: 0,
+    mode: 'current3d',
+  },
+  'Vortex 3D': {
+    preset: 'Solar Plasma',
+    symmetry: 8,
+    complexity: 7,
+    glow: 9,
+    breathSpeed: 0.7,
+    intensity: 9,
+    particles: 0,
+    luminous: 3,
+    stars: 0,
+    mode: 'current3d',
+  },
+  'Deep Flow 3D': {
+    preset: 'Terra Globe',
+    symmetry: 4,
+    complexity: 4,
+    glow: 2,
+    breathSpeed: 0.3,
+    intensity: 7,
+    particles: 0,
+    luminous: 2,
+    stars: 0,
+    mode: 'current3d',
+  },
+  'Nebula Drift': {
+    preset: 'Clifford Dream',
+    symmetry: 6,
+    complexity: 6,
+    glow: 8,
+    breathSpeed: 0.35,
+    intensity: 8,
+    particles: 0,
+    luminous: 2,
+    stars: 0,
+    mode: 'current3d',
+  },
+  // ── Matrix rain (dot columns) ──
+  'Matrix Rain': {
+    preset: 'Matrix Green',
+    symmetry: 4,
+    complexity: 5,
+    glow: 0,
+    breathSpeed: 0.9,
+    intensity: 8,
+    particles: 0,
+    luminous: 1,
+    stars: 0,
+    mode: 'matrix',
+  },
+  'Code Storm': {
+    preset: 'Matrix Green',
+    symmetry: 6,
+    complexity: 8,
+    glow: 0,
+    breathSpeed: 1.4,
+    intensity: 9,
+    particles: 0,
+    luminous: 1,
+    stars: 0,
+    mode: 'matrix',
+  },
+  'Neon Rain': {
+    preset: 'Matrix Indigo',
+    symmetry: 4,
+    complexity: 6,
+    glow: 10,
+    breathSpeed: 0.7,
+    intensity: 8,
+    particles: 0,
+    luminous: 1,
+    stars: 0,
+    mode: 'matrix',
+  },
+  'Blood Matrix': {
+    preset: 'Matrix Crimson',
+    symmetry: 4,
+    complexity: 7,
+    glow: 4,
+    breathSpeed: 0.6,
+    intensity: 9,
+    particles: 0,
+    luminous: 2,
+    stars: 0,
+    mode: 'matrix',
+  },
+  'Gold Script': {
+    preset: 'Matrix Gold',
+    symmetry: 6,
+    complexity: 5,
+    glow: 3,
+    breathSpeed: 0.5,
+    intensity: 8,
+    particles: 0,
+    luminous: 2,
+    stars: 1,
+    mode: 'matrix',
+  },
+  'Frost Code': {
+    preset: 'Matrix Arctic',
+    symmetry: 4,
+    complexity: 6,
+    glow: 6,
+    breathSpeed: 0.55,
+    intensity: 8,
+    particles: 0,
+    luminous: 3,
+    stars: 2,
+    mode: 'matrix',
+  },
+  'Dream Script': {
+    preset: 'Matrix Sacred',
+    symmetry: 8,
+    complexity: 6,
+    glow: 7,
+    breathSpeed: 0.45,
+    intensity: 8,
+    particles: 0,
+    luminous: 3,
+    stars: 1,
+    mode: 'matrix',
+  },
+  'Matrix 3D': {
+    preset: 'Matrix Green',
+    symmetry: 4,
+    complexity: 7,
+    glow: 5,
+    breathSpeed: 0.7,
+    intensity: 9,
+    particles: 0,
+    luminous: 2,
+    stars: 0,
+    mode: 'matrix3d',
+  },
+  'Matrix 3D Indigo': {
+    preset: 'Matrix Indigo',
+    symmetry: 4,
+    complexity: 8,
+    glow: 8,
+    breathSpeed: 0.65,
+    intensity: 9,
+    particles: 0,
+    luminous: 3,
+    stars: 0,
+    mode: 'matrix3d',
+  },
+  // ── Tibetan Tangka series ──
+  'Tangka Mandala': {
+    preset: 'Tangka Gold',
+    symmetry: 16,
+    complexity: 8,
+    glow: 3,
+    breathSpeed: 0.12,
+    intensity: 8,
+    particles: 6,
+    luminous: 3,
+    stars: 0,
+    mode: 'yantra3d',
+  },
+  'Tangka Wheel': {
+    preset: 'Tangka Crimson',
+    symmetry: 8,
+    complexity: 6,
+    glow: 2,
+    breathSpeed: 0.15,
+    intensity: 9,
+    particles: 5,
+    luminous: 3,
+    stars: 0,
+    mode: 'sacred',
+  },
+  'Tangka Lotus': {
+    preset: 'Tangka Gold',
+    symmetry: 12,
+    complexity: 7,
+    glow: 4,
+    breathSpeed: 0.1,
+    intensity: 8,
+    particles: 4,
+    luminous: 4,
+    stars: 0,
+    mode: 'fibonacci3d',
+  },
+  'Tangka Sky': {
+    preset: 'Tangka Lapis',
+    symmetry: 10,
+    complexity: 6,
+    glow: 5,
+    breathSpeed: 0.14,
+    intensity: 7,
+    particles: 5,
+    luminous: 3,
+    stars: 0,
+    mode: 'fibonacci3d',
+  },
+  'Tangka Fire': {
+    preset: 'Tangka Crimson',
+    symmetry: 9,
+    complexity: 5,
+    glow: 6,
+    breathSpeed: 0.2,
+    intensity: 9,
+    particles: 5,
+    luminous: 4,
+    stars: 0,
+    mode: 'yantra3d',
+  },
+  // ── Atom 3D (quantum electron cloud) ──
+  'Atom 3D': {
+    preset: '4D Crystal',
+    symmetry: 6,
+    complexity: 5,
+    glow: 8,
+    breathSpeed: 0.55,
+    intensity: 8,
+    particles: 8,
+    luminous: 2,
+    stars: 0,
+    mode: 'fibonacci3d',
+  },
+  'Orbital Atom': {
+    preset: 'Orbital Shell',
+    symmetry: 4,
+    complexity: 3,
+    glow: 5,
+    breathSpeed: 0.4,
+    intensity: 8,
+    particles: 3,
+    luminous: 2,
+    stars: 0,
+    mode: 'current3d',
+  },
+  // ── Aurora Globe variants ──
+  'Aurora Globe': {
+    preset: 'Terra Globe',
+    symmetry: 6,
+    complexity: 7,
+    glow: 10,
+    breathSpeed: 0.28,
+    intensity: 8,
+    particles: 0,
+    luminous: 3,
+    stars: 0,
+    mode: 'globe',
+  },
+  'Crystal Globe': {
+    preset: 'Liquid Pearl',
+    symmetry: 10,
+    complexity: 8,
+    glow: 8,
+    breathSpeed: 0.22,
+    intensity: 8,
+    particles: 0,
+    luminous: 3,
+    stars: 0,
+    mode: 'globe',
+  },
+  // ── Pulse / Rorschach series ──
+  'Rorschach Pulse': {
+    preset: 'Calm Field',
+    symmetry: 8,
+    complexity: 6,
+    glow: 0,
+    breathSpeed: 0.55,
+    intensity: 8,
+    particles: 0,
+    luminous: 3,
+    stars: 0,
+    mode: 'pulse',
+  },
+  'Rorschach Colour': {
+    preset: 'Fibonacci Bloom',
+    symmetry: 8,
+    complexity: 7,
+    glow: 9,
+    breathSpeed: 0.4,
+    intensity: 8,
+    particles: 0,
+    luminous: 3,
+    stars: 0,
+    mode: 'pulse',
+  },
+  'Ink Pulse': {
+    preset: 'Calm Field',
+    symmetry: 3,
+    complexity: 8,
+    glow: 0,
+    breathSpeed: 0.32,
+    intensity: 9,
+    particles: 0,
+    luminous: 4,
+    stars: 0,
+    mode: 'pulse',
+  },
+  'Chaos Pulse': {
+    preset: 'DMT Vision',
+    symmetry: 8,
+    complexity: 10,
+    glow: 10,
+    breathSpeed: 1.2,
+    intensity: 9,
+    particles: 0,
+    luminous: 5,
+    stars: 0,
+    mode: 'pulse',
+  },
+  'Slow Breath': {
+    preset: 'Prism Warm',
+    symmetry: 6,
+    complexity: 2,
+    glow: 3,
+    breathSpeed: 0.18,
+    intensity: 7,
+    particles: 0,
+    luminous: 2,
+    stars: 0,
+    mode: 'pulse',
+  },
+  // ── Chaos & Randomness series ──
+  'Chaos Field': {
+    preset: 'Deep Current',
+    symmetry: 8,
+    complexity: 9,
+    glow: 8,
+    breathSpeed: 1.6,
+    intensity: 9,
+    particles: 0,
+    luminous: 3,
+    stars: 0,
+    mode: 'current',
+  },
+  'Chaos Storm 3D': {
+    preset: 'Solar Plasma',
+    symmetry: 9,
+    complexity: 8,
+    glow: 10,
+    breathSpeed: 1.8,
+    intensity: 10,
+    particles: 0,
+    luminous: 4,
+    stars: 0,
+    mode: 'current3d',
+  },
+  Entropy: {
+    preset: 'Cell Biolum',
+    symmetry: 12,
+    complexity: 9,
+    glow: 9,
+    breathSpeed: 1.4,
+    intensity: 9,
+    particles: 0,
+    luminous: 3,
+    stars: 0,
+    mode: 'cells',
+  },
+  'Random Burst': {
+    preset: 'DMT Vision',
+    symmetry: 24,
+    complexity: 10,
+    glow: 10,
+    breathSpeed: 1.5,
+    intensity: 10,
+    particles: 8,
+    luminous: 5,
+    stars: 5,
+    mode: 'burst',
+  },
+  'Quantum Chaos': {
+    preset: 'Clifford Dream',
+    symmetry: 7,
+    complexity: 8,
+    glow: 9,
+    breathSpeed: 1.2,
+    intensity: 9,
+    particles: 0,
+    luminous: 4,
+    stars: 0,
+    mode: 'current3d',
+  },
+  'Emotion Field': {
+    preset: 'Calm Field',
+    symmetry: 6,
+    complexity: 7,
+    glow: 8,
+    breathSpeed: 0.9,
+    intensity: 8,
+    particles: 0,
+    luminous: 3,
+    stars: 2,
+    mode: 'emotion',
+  },
+  'Emotion Storm': {
+    preset: 'Deep Fire',
+    symmetry: 4,
+    complexity: 10,
+    glow: 10,
+    breathSpeed: 1.8,
+    intensity: 9,
+    particles: 0,
+    luminous: 5,
+    stars: 1,
+    mode: 'emotion',
+  },
+  'Star Map': {
+    preset: 'Blue Astral',
+    symmetry: 6,
+    complexity: 7,
+    glow: 7,
+    breathSpeed: 0.5,
+    intensity: 7,
+    particles: 0,
+    luminous: 3,
+    stars: 5,
+    mode: 'constellation',
+  },
+  'Constellation Gold': {
+    preset: 'Calm Field',
+    symmetry: 8,
+    complexity: 8,
+    glow: 6,
+    breathSpeed: 0.4,
+    intensity: 8,
+    particles: 0,
+    luminous: 2,
+    stars: 3,
+    mode: 'constellation',
+  },
+  'Drift Field': {
+    preset: 'Blue Astral',
+    symmetry: 7,
+    complexity: 9,
+    glow: 7,
+    breathSpeed: 0.5,
+    intensity: 8,
+    particles: 0,
+    luminous: 2,
+    stars: 3,
+    mode: 'drift',
+  },
+  'Drift Gold': {
+    preset: 'Calm Field',
+    symmetry: 6,
+    complexity: 8,
+    glow: 6,
+    breathSpeed: 0.4,
+    intensity: 7,
+    particles: 0,
+    luminous: 2,
+    stars: 2,
+    mode: 'drift',
+  },
+  'Bloom Evo': {
+    preset: 'Violet Portal',
+    symmetry: 8,
+    complexity: 10,
+    glow: 9,
+    breathSpeed: 0.6,
+    intensity: 9,
+    particles: 0,
+    luminous: 3,
+    stars: 3,
+    mode: 'cbloom',
+  },
+  'Bloom Gold': {
+    preset: 'Fibonacci Bloom',
+    symmetry: 7,
+    complexity: 9,
+    glow: 7,
+    breathSpeed: 0.5,
+    intensity: 8,
+    particles: 0,
+    luminous: 2,
+    stars: 2,
+    mode: 'cbloom',
+  },
+  'Orbit EMBF': {
+    preset: 'Forest Ceremony',
+    symmetry: 8,
+    complexity: 10,
+    glow: 7,
+    breathSpeed: 0.5,
+    intensity: 8,
+    particles: 0,
+    luminous: 2,
+    stars: 3,
+    mode: 'orbit',
+  },
+  'Orbit Indigo': {
+    preset: 'Cosmic Indigo',
+    symmetry: 8,
+    complexity: 9,
+    glow: 8,
+    breathSpeed: 0.4,
+    intensity: 9,
+    particles: 0,
+    luminous: 3,
+    stars: 3,
+    mode: 'orbit',
+  },
+  'Weave Silk': {
+    preset: 'DMT Vision',
+    symmetry: 8,
+    complexity: 10,
+    glow: 8,
+    breathSpeed: 0.5,
+    intensity: 8,
+    particles: 0,
+    luminous: 3,
+    stars: 3,
+    mode: 'weave',
+  },
+  'Weave Crystal': {
+    preset: '4D Crystal',
+    symmetry: 7,
+    complexity: 9,
+    glow: 7,
+    breathSpeed: 0.4,
+    intensity: 8,
+    particles: 0,
+    luminous: 2,
+    stars: 2,
+    mode: 'weave',
+  },
+  'Chaos Triangles': {
+    preset: 'Deep Current',
+    symmetry: 8,
+    complexity: 9,
+    glow: 8,
+    breathSpeed: 1.4,
+    intensity: 9,
+    particles: 0,
+    luminous: 3,
+    stars: 0,
+    mode: 'chaostri3d',
+  },
+  'Chaos Tri Gold': {
+    preset: 'Calm Field',
+    symmetry: 7,
+    complexity: 8,
+    glow: 7,
+    breathSpeed: 1.0,
+    intensity: 8,
+    particles: 0,
+    luminous: 2,
+    stars: 0,
+    mode: 'chaostri3d',
+  },
+  'Tree of Life': {
+    preset: 'Forest Ceremony',
+    symmetry: 8,
+    complexity: 8,
+    glow: 6,
+    breathSpeed: 0.5,
+    intensity: 8,
+    particles: 0,
+    luminous: 2,
+    stars: 2,
+    mode: 'treeoflife',
+  },
+  'Tree Gold': {
+    preset: 'Calm Field',
+    symmetry: 8,
+    complexity: 8,
+    glow: 6,
+    breathSpeed: 0.4,
+    intensity: 8,
+    particles: 0,
+    luminous: 2,
+    stars: 2,
+    mode: 'treeoflife',
+  },
+  'Tree Violet': {
+    preset: 'Violet Portal',
+    symmetry: 8,
+    complexity: 9,
+    glow: 8,
+    breathSpeed: 0.5,
+    intensity: 9,
+    particles: 0,
+    luminous: 3,
+    stars: 3,
+    mode: 'treeoflife',
+  },
+  'Tree 3D Gold': {
+    preset: 'Calm Field',
+    symmetry: 8,
+    complexity: 8,
+    glow: 7,
+    breathSpeed: 0.4,
+    intensity: 8,
+    particles: 0,
+    luminous: 2,
+    stars: 3,
+    mode: 'treeoflife3d',
+  },
+  'Tree 3D Indigo': {
+    preset: 'Cosmic Indigo',
+    symmetry: 8,
+    complexity: 9,
+    glow: 8,
+    breathSpeed: 0.5,
+    intensity: 9,
+    particles: 0,
+    luminous: 3,
+    stars: 3,
+    mode: 'treeoflife3d',
   },
 };
 
@@ -1505,6 +2581,38 @@ function ptsMat(color: THREE.Color, size: number, opacity = 0.8): THREE.PointsMa
   });
 }
 
+let _circleTex: THREE.Texture | null = null;
+function getCircleTex(): THREE.Texture {
+  if (_circleTex) return _circleTex;
+  const sz = 64;
+  const canvas = document.createElement('canvas');
+  canvas.width = canvas.height = sz;
+  const ctx = canvas.getContext('2d')!;
+  const g = ctx.createRadialGradient(sz / 2, sz / 2, 0, sz / 2, sz / 2, sz / 2);
+  g.addColorStop(0, 'rgba(255,255,255,1)');
+  g.addColorStop(0.45, 'rgba(255,255,255,0.85)');
+  g.addColorStop(0.8, 'rgba(255,255,255,0.22)');
+  g.addColorStop(1, 'rgba(255,255,255,0)');
+  ctx.fillStyle = g;
+  ctx.fillRect(0, 0, sz, sz);
+  _circleTex = new THREE.CanvasTexture(canvas);
+  return _circleTex;
+}
+
+function circlePtsMat(color: THREE.Color, size: number, opacity = 0.8): THREE.PointsMaterial {
+  return new THREE.PointsMaterial({
+    color,
+    size,
+    map: getCircleTex(),
+    sizeAttenuation: false,
+    transparent: true,
+    opacity,
+    alphaTest: 0.01,
+    blending: THREE.AdditiveBlending,
+    depthWrite: false,
+  });
+}
+
 function circleGeo(segments = 96): THREE.BufferGeometry {
   const pts = new Float32Array((segments + 1) * 3);
   for (let i = 0; i <= segments; i++) {
@@ -1774,6 +2882,46 @@ function buildModeGroup(cfg: Cfg, R: number): THREE.Group {
       return buildLava(cfg, R);
     case 'spire':
       return buildSpire(cfg, R);
+    case 'prism':
+      return buildPrism(cfg, R);
+    case 'prism3d':
+      return buildPrism3D(cfg, R);
+    case 'liquid':
+      return buildLiquid(cfg, R);
+    case 'cells':
+      return buildCells(cfg, R);
+    case 'current':
+      return buildCurrent(cfg, R);
+    case 'plasma':
+      return buildPlasma(cfg, R);
+    case 'globe':
+      return buildGlobe(cfg, R);
+    case 'current3d':
+      return buildCurrent3D(cfg, R);
+    case 'matrix':
+      return buildMatrix(cfg, R);
+    case 'matrix3d':
+      return buildMatrix3D(cfg, R);
+    case 'pulse':
+      return buildPulse(cfg, R);
+    case 'emotion':
+      return buildEmotion(cfg, R);
+    case 'constellation':
+      return buildConstellation(cfg, R);
+    case 'drift':
+      return buildDrift(cfg, R);
+    case 'cbloom':
+      return buildCBloom(cfg, R);
+    case 'orbit':
+      return buildOrbit(cfg, R);
+    case 'weave':
+      return buildWeave(cfg, R);
+    case 'chaostri3d':
+      return buildChaostri3d(cfg, R);
+    case 'treeoflife':
+      return buildTreeoflife(cfg, R);
+    case 'treeoflife3d':
+      return buildTreeoflife3d(cfg, R);
     default:
       return buildSacred(cfg, R);
   }
@@ -1882,6 +3030,66 @@ function updateModeGroup(group: THREE.Group, cfg: Cfg, dots: Dot[], t: number, R
       break;
     case 'spire':
       updateSpire(group, cfg, t, R);
+      break;
+    case 'prism':
+      updatePrism(group, cfg, t, R);
+      break;
+    case 'prism3d':
+      updatePrism3D(group, cfg, t, R);
+      break;
+    case 'liquid':
+      updateLiquid(group, cfg, t, R);
+      break;
+    case 'cells':
+      updateCells(group, cfg, t, R);
+      break;
+    case 'current':
+      updateCurrent(group, cfg, t, R);
+      break;
+    case 'plasma':
+      updatePlasma(group, cfg, t, R);
+      break;
+    case 'globe':
+      updateGlobe(group, cfg, t, R);
+      break;
+    case 'current3d':
+      updateCurrent3D(group, cfg, t, R);
+      break;
+    case 'matrix':
+      updateMatrix(group, cfg, t, R);
+      break;
+    case 'matrix3d':
+      updateMatrix3D(group, cfg, t, R);
+      break;
+    case 'pulse':
+      updatePulse(group, cfg, t, R);
+      break;
+    case 'emotion':
+      updateEmotion(group, cfg, t, R);
+      break;
+    case 'constellation':
+      updateConstellation(group, cfg, t, R);
+      break;
+    case 'drift':
+      updateDrift(group, cfg, t, R);
+      break;
+    case 'cbloom':
+      updateCBloom(group, cfg, t, R);
+      break;
+    case 'orbit':
+      updateOrbit(group, cfg, t, R);
+      break;
+    case 'weave':
+      updateWeave(group, cfg, t, R);
+      break;
+    case 'chaostri3d':
+      updateChaostri3d(group, cfg, t, R);
+      break;
+    case 'treeoflife':
+      updateTreeoflife(group, cfg, t, R);
+      break;
+    case 'treeoflife3d':
+      updateTreeoflife3d(group, cfg, t, R);
       break;
     default:
       updateSacred(group, cfg, dots, t, R);
@@ -2949,6 +4157,9 @@ function updateFibonacci3D(group: THREE.Group, cfg: Cfg, t: number, R: number): 
   const tilt = t * cfg.breathSpeed * 0.000032;
   const armCount = Math.max(1, Math.round(cfg.particles));
   const STEPS = 300;
+  const rainbow = cfg.glow / 10;
+  const timeHue = (t * 0.000045) % 1.0;
+  const tmpColF = new THREE.Color();
 
   for (const child of group.children) {
     const tag = child.userData.tag as string;
@@ -2966,7 +4177,13 @@ function updateFibonacci3D(group: THREE.Group, cfg: Cfg, t: number, R: number): 
         pos[i * 3 + 2] = r * Math.sin(theta) * Math.sin(phi);
       }
       pts.geometry.attributes.position.needsUpdate = true;
-      updateMat(pts, [rr, gg, bb], iF * 0.9, 2.0);
+      tmpColF.setHSL(timeHue, 1.0, 0.55);
+      const dotCol: [number, number, number] = [
+        lerp(rr, tmpColF.r * 255, rainbow),
+        lerp(gg, tmpColF.g * 255, rainbow),
+        lerp(bb, tmpColF.b * 255, rainbow),
+      ];
+      updateMat(pts, dotCol, iF * 0.9, 2.0);
     } else if (tag === 'fib3dArm') {
       const arm = child.userData.arm as number;
       if (arm >= armCount) {
@@ -2987,7 +4204,14 @@ function updateFibonacci3D(group: THREE.Group, cfg: Cfg, t: number, R: number): 
       }
       line.geometry.attributes.position.needsUpdate = true;
       line.geometry.setDrawRange(0, STEPS + 1);
-      updateMat(line, [rr, gg, bb], iF * (0.6 - arm * 0.06), 2.2);
+      const armHue = ((arm / Math.max(1, armCount)) * 0.7 + timeHue) % 1.0;
+      tmpColF.setHSL(armHue, 1.0, 0.55);
+      const armCol: [number, number, number] = [
+        lerp(rr, tmpColF.r * 255, rainbow),
+        lerp(gg, tmpColF.g * 255, rainbow),
+        lerp(bb, tmpColF.b * 255, rainbow),
+      ];
+      updateMat(line, armCol, iF * (0.6 - arm * 0.06), 2.2);
     }
   }
 }
@@ -3029,6 +4253,9 @@ function updateYantra3D(group: THREE.Group, cfg: Cfg, t: number, R: number): voi
   const sym = Math.max(1, Math.round(cfg.symmetry));
   const speed = cfg.breathSpeed * 0.00008;
   const glow = cfg.glow;
+  const rainbow = glow / 10;
+  const timeHue = (t * 0.000055) % 1.0;
+  const tmpColR = new THREE.Color();
 
   for (const child of group.children) {
     if (child.userData.tag !== 'yantra3dLine') continue;
@@ -3081,7 +4308,14 @@ function updateYantra3D(group: THREE.Group, cfg: Cfg, t: number, R: number): voi
     line.geometry.attributes.position.needsUpdate = true;
     line.geometry.setDrawRange(0, nVerts + 1);
     const opacity = (0.65 - la * 0.05) * iF;
-    updateMat(line, [rr, gg, bb], opacity, 2.5);
+    const layerHue = (la / Math.max(1, layers) + (s / Math.max(1, sym)) * 0.5 + timeHue) % 1.0;
+    tmpColR.setHSL(layerHue, 1.0, 0.55);
+    const colY: [number, number, number] = [
+      lerp(rr, tmpColR.r * 255, rainbow),
+      lerp(gg, tmpColR.g * 255, rainbow),
+      lerp(bb, tmpColR.b * 255, rainbow),
+    ];
+    updateMat(line, colY, opacity, 2.5);
   }
 }
 
@@ -5249,6 +6483,1007 @@ function updateRainbow(group: THREE.Group, cfg: Cfg, t: number, R: number): void
   }
 }
 
+/* ── PRISM / PRISM3D modes — diffuse spectral light halos ───── */
+
+const SPEC_HUES = [0.0, 0.06, 0.14, 0.33, 0.55, 0.68, 0.78]; // ROYGBIV
+
+function buildPrism(cfg: Cfg, R: number): THREE.Group {
+  const TAU = Math.PI * 2;
+  const iF = cfg.intensity / 10;
+  const glowF = cfg.glow / 10;
+  const facets = Math.max(3, Math.round(cfg.symmetry));
+  const rings = Math.max(2, Math.round(cfg.complexity));
+  const group = new THREE.Group();
+  const tmpCol = new THREE.Color();
+  const rnd = (n = 1) => (Math.random() - 0.5) * 2 * n;
+
+  // Warm nucleus: concentric particle halos from white-hot center → amber → gold
+  for (let n = 0; n < 5; n++) {
+    const frac = n / 4;
+    const nr = 0.06 + frac * 0.22;
+    const hue = lerp(0.08, 0.13, frac);
+    tmpCol.setHSL(hue, lerp(0.15, 0.95, frac), lerp(0.95, 0.55, frac));
+    const pCount = Math.max(20, Math.round(lerp(200, 60, frac) * iF));
+    const pos = new Float32Array(pCount * 3);
+    for (let i = 0; i < pCount; i++) {
+      const a = (i / pCount) * TAU + rnd(0.12);
+      const r = 1.0 + rnd(0.14);
+      pos[i * 3] = Math.cos(a) * r;
+      pos[i * 3 + 1] = Math.sin(a) * r;
+      pos[i * 3 + 2] = 0;
+    }
+    const geo = new THREE.BufferGeometry();
+    geo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+    const pts = new THREE.Points(
+      geo,
+      circlePtsMat(
+        hdrColor([tmpCol.r * 255, tmpCol.g * 255, tmpCol.b * 255], iF, lerp(4.2, 1.8, frac)),
+        lerp(3.6, 2.0, frac),
+        lerp(0.92, 0.28, frac),
+      ),
+    );
+    pts.scale.setScalar(nr * R);
+    pts.userData.tag = 'prismNucleus';
+    pts.userData.layer = n;
+    pts.userData.baseR = nr * R;
+    pts.userData.hue = hue;
+    group.add(pts);
+  }
+
+  // Spectral halo rings — point halos, arc coverage shrinks at low glow
+  for (let ri = 0; ri < rings; ri++) {
+    const hue = SPEC_HUES[ri % SPEC_HUES.length];
+    const ringR = R * (0.3 + (ri / Math.max(1, rings - 1)) * 0.64);
+    tmpCol.setHSL(hue, 1.0, 0.6);
+    const rgb: [number, number, number] = [tmpCol.r * 255, tmpCol.g * 255, tmpCol.b * 255];
+    // Band width: wide/diffuse at high glow, narrow/crisp at low glow
+    const bandHalf = lerp(0.025, 0.22, glowF);
+    // Arc coverage per facet sector (0=55% covered with 45% gap, 1=98% almost closed)
+    const arcFrac = lerp(0.55, 0.98, glowF);
+    const pCount = Math.max(20, Math.round(lerp(120, 320, iF)));
+    const positions: number[] = [];
+
+    for (let i = 0; i < pCount; i++) {
+      const rawA = (i / pCount) * TAU + rnd(0.06);
+      if (glowF < 0.95) {
+        const sectorPos = ((((rawA / TAU) * facets) % 1) + 1) % 1;
+        if (sectorPos > arcFrac) continue;
+      }
+      const r = 1.0 + rnd(bandHalf);
+      positions.push(Math.cos(rawA) * r, Math.sin(rawA) * r, 0);
+    }
+
+    if (positions.length < 3) continue;
+    const geo = new THREE.BufferGeometry();
+    geo.setAttribute('position', new THREE.BufferAttribute(new Float32Array(positions), 3));
+    const ptSize = lerp(3.8, 2.2, ri / Math.max(1, rings - 1));
+    const opacity = lerp(0.78, 0.45, ri / Math.max(1, rings - 1));
+    const pts = new THREE.Points(geo, circlePtsMat(hdrColor(rgb, iF, 2.6), ptSize, opacity));
+    pts.scale.setScalar(ringR);
+    pts.userData.tag = 'prismRing';
+    pts.userData.hue = hue;
+    pts.userData.layer = ri;
+    pts.userData.baseR = ringR;
+    group.add(pts);
+  }
+
+  // Diffuse light spokes — sparse particle rays from centre outward
+  for (let s = 0; s < facets; s++) {
+    const ang = (s / facets) * TAU;
+    const hue = SPEC_HUES[s % SPEC_HUES.length];
+    tmpCol.setHSL(hue, 1.0, 0.72);
+    const rgb: [number, number, number] = [tmpCol.r * 255, tmpCol.g * 255, tmpCol.b * 255];
+    const pCount = Math.max(10, Math.round(lerp(18, 45, iF)));
+    const pos = new Float32Array(pCount * 3);
+    for (let i = 0; i < pCount; i++) {
+      const d = Math.random() ** 0.55 * R * 0.3;
+      const spread = d * 0.07;
+      pos[i * 3] = Math.cos(ang) * d + rnd(spread);
+      pos[i * 3 + 1] = Math.sin(ang) * d + rnd(spread);
+      pos[i * 3 + 2] = 0;
+    }
+    const geo = new THREE.BufferGeometry();
+    geo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+    const pts = new THREE.Points(
+      geo,
+      circlePtsMat(hdrColor(rgb, iF, 2.0), 2.6, lerp(0.55, 0.15, glowF)),
+    );
+    pts.userData.tag = 'prismSpoke';
+    pts.userData.hue = hue;
+    pts.userData.ang = ang;
+    group.add(pts);
+  }
+
+  return group;
+}
+
+function updatePrism(group: THREE.Group, cfg: Cfg, t: number, R: number): void {
+  const iF = cfg.intensity / 10;
+  const breathSpeed = cfg.breathSpeed;
+  const breath = (Math.sin(t * 0.001 * breathSpeed) + 1) * 0.5;
+  const timeHue = (t * 0.00006) % 1.0;
+  const tmpCol = new THREE.Color();
+
+  for (const child of group.children) {
+    const tag = child.userData.tag as string;
+
+    if (tag === 'prismNucleus') {
+      const frac = (child.userData.layer as number) / 4;
+      const h = ((child.userData.hue as number) + timeHue * 0.25) % 1.0;
+      tmpCol.setHSL(h, lerp(0.15, 0.95, frac), lerp(0.95, 0.55, frac));
+      const rgb: [number, number, number] = [tmpCol.r * 255, tmpCol.g * 255, tmpCol.b * 255];
+      const pulse = 1.0 + Math.sin(t * 0.0012 * breathSpeed + frac * 1.8) * 0.07;
+      child.scale.setScalar((child.userData.baseR as number) * pulse);
+      updateMat(child, rgb, iF * lerp(3.5, 1.5, frac), 1.0);
+    } else if (tag === 'prismRing') {
+      const hue = ((child.userData.hue as number) + timeHue) % 1.0;
+      tmpCol.setHSL(hue, 1.0, 0.6);
+      const rgb: [number, number, number] = [tmpCol.r * 255, tmpCol.g * 255, tmpCol.b * 255];
+      const layer = child.userData.layer as number;
+      const bs =
+        (0.92 + breath * 0.08) * (1.0 + Math.sin(t * 0.0007 * breathSpeed + layer * 0.9) * 0.03);
+      child.scale.setScalar((child.userData.baseR as number) * bs);
+      child.rotation.z = t * 0.00009 * breathSpeed * (layer % 2 === 0 ? 1 : -1);
+      updateMat(child, rgb, iF, 2.4);
+    } else if (tag === 'prismSpoke') {
+      const hue = ((child.userData.hue as number) + timeHue) % 1.0;
+      tmpCol.setHSL(hue, 1.0, 0.72);
+      const rgb: [number, number, number] = [tmpCol.r * 255, tmpCol.g * 255, tmpCol.b * 255];
+      child.rotation.z = t * 0.00005 * breathSpeed;
+      updateMat(child, rgb, iF * 0.7, 1.8);
+    }
+  }
+}
+
+/* ── PRISM3D mode — tilted spectral discs in 3D depth ───────── */
+
+function buildPrism3D(cfg: Cfg, R: number): THREE.Group {
+  const TAU = Math.PI * 2;
+  const iF = cfg.intensity / 10;
+  const glowF = cfg.glow / 10;
+  const facets = Math.max(3, Math.round(cfg.symmetry));
+  const rings = Math.max(2, Math.round(cfg.complexity));
+  const group = new THREE.Group();
+  const tmpCol = new THREE.Color();
+  const rnd = (n = 1) => (Math.random() - 0.5) * 2 * n;
+
+  // Warm core sphere — dense white-amber point cloud
+  const coreCount = Math.max(30, Math.round(lerp(80, 240, iF)));
+  const corePos = new Float32Array(coreCount * 3);
+  for (let i = 0; i < coreCount; i++) {
+    const a = Math.random() * TAU;
+    const b = Math.acos(2 * Math.random() - 1);
+    const r = R * 0.12 * Math.random() ** 0.35;
+    corePos[i * 3] = Math.cos(a) * Math.sin(b) * r;
+    corePos[i * 3 + 1] = Math.sin(a) * Math.sin(b) * r;
+    corePos[i * 3 + 2] = Math.cos(b) * r;
+  }
+  const coreGeo = new THREE.BufferGeometry();
+  coreGeo.setAttribute('position', new THREE.BufferAttribute(corePos, 3));
+  const corePts = new THREE.Points(
+    coreGeo,
+    circlePtsMat(hdrColor([255, 245, 200], iF, 3.8), 3.2, 0.92),
+  );
+  corePts.userData.tag = 'prism3dCore';
+  group.add(corePts);
+
+  // Spectral rings tilted and stacked in Z
+  for (let ri = 0; ri < rings; ri++) {
+    const frac = ri / Math.max(1, rings - 1);
+    const hue = SPEC_HUES[ri % SPEC_HUES.length];
+    const ringR = R * (0.2 + frac * 0.76);
+    const zOff = R * lerp(-0.4, 0.4, frac);
+    const tilt = frac * Math.PI * 0.32;
+    tmpCol.setHSL(hue, 1.0, 0.58);
+    const rgb: [number, number, number] = [tmpCol.r * 255, tmpCol.g * 255, tmpCol.b * 255];
+
+    const bandHalf = lerp(0.025, 0.2, glowF);
+    const arcFrac = lerp(0.52, 0.98, glowF);
+    const pCount = Math.max(20, Math.round(lerp(100, 260, iF)));
+    const positions: number[] = [];
+
+    for (let i = 0; i < pCount; i++) {
+      const rawA = (i / pCount) * TAU + rnd(0.05);
+      if (glowF < 0.95) {
+        const sectorPos = ((((rawA / TAU) * facets) % 1) + 1) % 1;
+        if (sectorPos > arcFrac) continue;
+      }
+      const r = 1.0 + rnd(bandHalf);
+      positions.push(Math.cos(rawA) * r, Math.sin(rawA) * r, 0);
+    }
+
+    if (positions.length < 3) continue;
+    const geo = new THREE.BufferGeometry();
+    geo.setAttribute('position', new THREE.BufferAttribute(new Float32Array(positions), 3));
+    const ptSize = lerp(3.8, 2.2, frac);
+    const opacity = lerp(0.82, 0.38, frac);
+    const pts = new THREE.Points(geo, circlePtsMat(hdrColor(rgb, iF, 2.8), ptSize, opacity));
+    pts.scale.setScalar(ringR);
+    pts.position.z = zOff;
+    pts.rotation.x = tilt;
+    pts.userData.tag = 'prism3dRing';
+    pts.userData.hue = hue;
+    pts.userData.layer = ri;
+    pts.userData.baseR = ringR;
+    pts.userData.baseZ = zOff;
+    pts.userData.tilt = tilt;
+    group.add(pts);
+  }
+
+  // Radial diffuse spokes extending out from centre, scattered in Z
+  for (let s = 0; s < facets; s++) {
+    const ang = (s / facets) * TAU;
+    const hue = SPEC_HUES[s % SPEC_HUES.length];
+    tmpCol.setHSL(hue, 1.0, 0.68);
+    const rgb: [number, number, number] = [tmpCol.r * 255, tmpCol.g * 255, tmpCol.b * 255];
+    const pCount = Math.max(10, Math.round(lerp(14, 38, iF)));
+    const pos = new Float32Array(pCount * 3);
+    for (let i = 0; i < pCount; i++) {
+      const d = Math.random() ** 0.5 * R * 0.9;
+      const spread = d * 0.045;
+      pos[i * 3] = Math.cos(ang) * d + rnd(spread);
+      pos[i * 3 + 1] = Math.sin(ang) * d + rnd(spread);
+      pos[i * 3 + 2] = rnd(R * 0.14);
+    }
+    const geo = new THREE.BufferGeometry();
+    geo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+    const pts = new THREE.Points(geo, circlePtsMat(hdrColor(rgb, iF, 1.8), 2.2, 0.42 * iF));
+    pts.userData.tag = 'prism3dSpoke';
+    pts.userData.hue = hue;
+    pts.userData.ang = ang;
+    group.add(pts);
+  }
+
+  return group;
+}
+
+function updatePrism3D(group: THREE.Group, cfg: Cfg, t: number, R: number): void {
+  const iF = cfg.intensity / 10;
+  const breathSpeed = cfg.breathSpeed;
+  const breath = (Math.sin(t * 0.001 * breathSpeed) + 1) * 0.5;
+  const timeHue = (t * 0.00005) % 1.0;
+  const tmpCol = new THREE.Color();
+
+  group.rotation.y = t * 0.00022 * breathSpeed;
+  group.rotation.x = Math.sin(t * 0.00011 * breathSpeed) * 0.28;
+
+  for (const child of group.children) {
+    const tag = child.userData.tag as string;
+
+    if (tag === 'prism3dCore') {
+      child.rotation.z = t * 0.00028 * breathSpeed;
+      child.rotation.y = t * 0.00018 * breathSpeed;
+    } else if (tag === 'prism3dRing') {
+      const hue = ((child.userData.hue as number) + timeHue) % 1.0;
+      tmpCol.setHSL(hue, 1.0, 0.58);
+      const rgb: [number, number, number] = [tmpCol.r * 255, tmpCol.g * 255, tmpCol.b * 255];
+      const layer = child.userData.layer as number;
+      const bs = 0.93 + breath * 0.07;
+      child.scale.setScalar((child.userData.baseR as number) * bs);
+      child.position.z =
+        (child.userData.baseZ as number) + Math.sin(t * 0.0009 * breathSpeed + layer) * R * 0.04;
+      child.rotation.z = t * 0.00011 * breathSpeed * (layer % 2 === 0 ? 1 : -1);
+      child.rotation.x = (child.userData.tilt as number) + Math.sin(t * 0.0006 + layer) * 0.06;
+      updateMat(child, rgb, iF, 2.6);
+    } else if (tag === 'prism3dSpoke') {
+      const hue = ((child.userData.hue as number) + timeHue * 0.6) % 1.0;
+      tmpCol.setHSL(hue, 1.0, 0.68);
+      const rgb: [number, number, number] = [tmpCol.r * 255, tmpCol.g * 255, tmpCol.b * 255];
+      child.rotation.z = t * 0.00006 * breathSpeed;
+      updateMat(child, rgb, iF * 0.55, 1.8);
+    }
+  }
+}
+
+/* ── LIQUID mode — iridescent oil-film rainbow bands ─────────── */
+
+function buildLiquid(cfg: Cfg, R: number): THREE.Group {
+  const TAU = Math.PI * 2;
+  const iF = cfg.intensity / 10;
+  const glowF = cfg.glow / 10;
+  const sym = Math.max(1, Math.round(cfg.symmetry));
+  const bandCount = Math.max(2, Math.round(cfg.complexity));
+  const group = new THREE.Group();
+  const tmpCol = new THREE.Color();
+
+  for (let b = 0; b < bandCount; b++) {
+    const frac = b / Math.max(1, bandCount - 1);
+    const hue = frac;
+    const bandR = R * (0.06 + frac * 0.9);
+    tmpCol.setHSL(hue, 1.0, 0.62);
+    const rgb: [number, number, number] = [tmpCol.r * 255, tmpCol.g * 255, tmpCol.b * 255];
+    const bandW = lerp(0.03, 0.22, glowF);
+    const pCount = Math.max(60, Math.round(lerp(100, 280, iF)));
+    const pos = new Float32Array(pCount * 3);
+    for (let i = 0; i < pCount; i++) {
+      const a = (i / pCount) * TAU;
+      const ripple = Math.sin(a * sym + b * 0.85) * 0.08;
+      const r = 1.0 + ripple + (Math.random() - 0.5) * bandW;
+      pos[i * 3] = Math.cos(a) * r;
+      pos[i * 3 + 1] = Math.sin(a) * r;
+    }
+    const geo = new THREE.BufferGeometry();
+    geo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+    const ptSize = lerp(3.8, 2.0, frac);
+    const opacity = lerp(0.85, 0.46, frac);
+    const pts = new THREE.Points(geo, ptsMat(hdrColor(rgb, iF, 3.0), ptSize, opacity));
+    pts.scale.setScalar(bandR);
+    pts.userData.tag = 'liquidBand';
+    pts.userData.hue = hue;
+    pts.userData.layer = b;
+    pts.userData.baseR = bandR;
+    group.add(pts);
+  }
+
+  // Bright central pearl core
+  const nCount = Math.max(20, Math.round(90 * iF));
+  const nPos = new Float32Array(nCount * 3);
+  for (let i = 0; i < nCount; i++) {
+    const a = Math.random() * TAU;
+    const r = Math.random() * R * 0.055;
+    nPos[i * 3] = Math.cos(a) * r;
+    nPos[i * 3 + 1] = Math.sin(a) * r;
+  }
+  const nGeo = new THREE.BufferGeometry();
+  nGeo.setAttribute('position', new THREE.BufferAttribute(nPos, 3));
+  const core = new THREE.Points(nGeo, ptsMat(hdrColor([255, 250, 240], iF, 4.5), 3.2, 0.94));
+  core.userData.tag = 'liquidCore';
+  group.add(core);
+
+  return group;
+}
+
+function updateLiquid(group: THREE.Group, cfg: Cfg, t: number, R: number): void {
+  const iF = cfg.intensity / 10;
+  const breathSpeed = cfg.breathSpeed;
+  const breath = (Math.sin(t * 0.001 * breathSpeed) + 1) * 0.5;
+  const timeHue = (t * 0.0001) % 1.0;
+  const tmpCol = new THREE.Color();
+
+  for (const child of group.children) {
+    const tag = child.userData.tag as string;
+    if (tag === 'liquidBand') {
+      const layer = child.userData.layer as number;
+      const hue = ((child.userData.hue as number) + timeHue + layer * 0.04) % 1.0;
+      tmpCol.setHSL(hue, 1.0, 0.62);
+      const rgb: [number, number, number] = [tmpCol.r * 255, tmpCol.g * 255, tmpCol.b * 255];
+      const pulse = 1.0 + Math.sin(t * 0.0009 * breathSpeed + layer * 0.7) * 0.05;
+      child.scale.setScalar((child.userData.baseR as number) * pulse);
+      child.rotation.z = t * 0.00007 * breathSpeed * (layer % 2 === 0 ? 1 : -1);
+      updateMat(child, rgb, iF, 2.8);
+    } else if (tag === 'liquidCore') {
+      const h = (timeHue * 0.4) % 1.0;
+      tmpCol.setHSL(h, 0.22, 0.97);
+      const rgb: [number, number, number] = [tmpCol.r * 255, tmpCol.g * 255, tmpCol.b * 255];
+      child.scale.setScalar(1.0 + breath * 0.1);
+      updateMat(child, rgb, iF * 1.6, 2.5);
+    }
+  }
+}
+
+/* ── CELLS mode — bioluminescent tissue / petri dish ─────────── */
+
+function buildCells(cfg: Cfg, R: number): THREE.Group {
+  const TAU = Math.PI * 2;
+  const iF = cfg.intensity / 10;
+  const glowF = cfg.glow / 10;
+  const N = Math.max(3, Math.round(cfg.complexity * 1.4) + 1);
+  const group = new THREE.Group();
+  const tmpCol = new THREE.Color();
+  const phi = 2.399963;
+
+  for (let ci = 0; ci < N; ci++) {
+    const frac = ci / N;
+    const ang = ci * phi;
+    const r = Math.sqrt((ci + 0.5) / N) * R * 0.8;
+    const cx = Math.cos(ang) * r;
+    const cy = Math.sin(ang) * r;
+    const hue = (frac + 0.32) % 1.0;
+    const phase = Math.random() * TAU;
+
+    const nucR = R * lerp(0.022, 0.055, iF);
+    const nucCount = Math.max(8, Math.round(22 * iF));
+    const nucPos = new Float32Array(nucCount * 3);
+    for (let i = 0; i < nucCount; i++) {
+      const a = Math.random() * TAU;
+      const nr = Math.random() * nucR;
+      nucPos[i * 3] = Math.cos(a) * nr;
+      nucPos[i * 3 + 1] = Math.sin(a) * nr;
+    }
+    tmpCol.setHSL(hue, 0.6, 0.88);
+    const nGeo = new THREE.BufferGeometry();
+    nGeo.setAttribute('position', new THREE.BufferAttribute(nucPos, 3));
+    const nPts = new THREE.Points(
+      nGeo,
+      ptsMat(hdrColor([tmpCol.r * 255, tmpCol.g * 255, tmpCol.b * 255], iF, 3.8), 2.8, 0.92),
+    );
+    nPts.position.set(cx, cy, 0);
+    nPts.userData.tag = 'cellNucleus';
+    nPts.userData.hue = hue;
+    nPts.userData.phase = phase;
+    group.add(nPts);
+
+    const haloR = R * (lerp(0.06, 0.16, glowF) + 0.02);
+    const haloCount = Math.max(30, Math.round(lerp(60, 150, iF)));
+    const haloPos = new Float32Array(haloCount * 3);
+    for (let i = 0; i < haloCount; i++) {
+      const a = (i / haloCount) * TAU + (Math.random() - 0.5) * 0.18;
+      const hr = haloR * (1.0 + (Math.random() - 0.5) * 0.28);
+      haloPos[i * 3] = Math.cos(a) * hr;
+      haloPos[i * 3 + 1] = Math.sin(a) * hr;
+    }
+    tmpCol.setHSL(hue, 0.9, 0.55);
+    const hGeo = new THREE.BufferGeometry();
+    hGeo.setAttribute('position', new THREE.BufferAttribute(haloPos, 3));
+    const hPts = new THREE.Points(
+      hGeo,
+      ptsMat(hdrColor([tmpCol.r * 255, tmpCol.g * 255, tmpCol.b * 255], iF, 2.2), 2.0, 0.55),
+    );
+    hPts.position.set(cx, cy, 0);
+    hPts.userData.tag = 'cellHalo';
+    hPts.userData.hue = hue;
+    hPts.userData.phase = phase + 0.9;
+    group.add(hPts);
+  }
+
+  return group;
+}
+
+function updateCells(group: THREE.Group, cfg: Cfg, t: number, R: number): void {
+  const iF = cfg.intensity / 10;
+  const breathSpeed = cfg.breathSpeed;
+  const timeHue = (t * 0.00004) % 1.0;
+  const tmpCol = new THREE.Color();
+
+  for (const child of group.children) {
+    const tag = child.userData.tag as string;
+    const hue = ((child.userData.hue as number) + timeHue * 0.4) % 1.0;
+    const phase = child.userData.phase as number;
+
+    if (tag === 'cellNucleus') {
+      tmpCol.setHSL(hue, 0.6, 0.88);
+      const rgb: [number, number, number] = [tmpCol.r * 255, tmpCol.g * 255, tmpCol.b * 255];
+      child.scale.setScalar(1.0 + Math.sin(t * 0.0009 * breathSpeed + phase) * 0.09);
+      updateMat(child, rgb, iF * 1.9, 2.5);
+    } else if (tag === 'cellHalo') {
+      tmpCol.setHSL(hue, 0.9, 0.55);
+      const rgb: [number, number, number] = [tmpCol.r * 255, tmpCol.g * 255, tmpCol.b * 255];
+      child.scale.setScalar(0.93 + Math.sin(t * 0.0006 * breathSpeed + phase) * 0.07);
+      updateMat(child, rgb, iF, 2.0);
+    }
+  }
+}
+
+/* ── CURRENT mode — flowing particle currents (curl field) ───── */
+
+function buildCurrent(cfg: Cfg, R: number): THREE.Group {
+  const TAU = Math.PI * 2;
+  const iF = cfg.intensity / 10;
+  const glowF = cfg.glow / 10;
+  const count = Math.max(400, Math.round(lerp(800, 2500, iF)));
+  const group = new THREE.Group();
+  const tmpCol = new THREE.Color();
+
+  const positions = new Float32Array(count * 3);
+  for (let i = 0; i < count; i++) {
+    const a = Math.random() * TAU;
+    const r = Math.sqrt(Math.random()) * R * 0.9;
+    positions[i * 3] = Math.cos(a) * r;
+    positions[i * 3 + 1] = Math.sin(a) * r;
+  }
+  const geo = new THREE.BufferGeometry();
+  const posAttr = new THREE.BufferAttribute(positions, 3);
+  posAttr.setUsage(THREE.DynamicDrawUsage);
+  geo.setAttribute('position', posAttr);
+
+  tmpCol.setHSL(lerp(0.58, 0.33, glowF), 1.0, 0.58);
+  const pts = new THREE.Points(
+    geo,
+    ptsMat(hdrColor([tmpCol.r * 255, tmpCol.g * 255, tmpCol.b * 255], iF, 2.6), 1.7, 0.72),
+  );
+  pts.userData.tag = 'currentField';
+  pts.userData.count = count;
+  pts.userData.prevT = -1;
+  group.add(pts);
+
+  return group;
+}
+
+function updateCurrent(group: THREE.Group, cfg: Cfg, t: number, R: number): void {
+  const iF = cfg.intensity / 10;
+  const glowF = cfg.glow / 10;
+  const speed = cfg.breathSpeed * 0.7;
+  const freq = (Math.max(1, Math.round(cfg.symmetry)) * Math.PI) / Math.max(R, 1);
+  const timeHue = (t * 0.00004) % 1.0;
+  const tmpCol = new THREE.Color();
+  const R2 = R * R * 0.88;
+
+  for (const child of group.children) {
+    if ((child.userData.tag as string) !== 'currentField') continue;
+    const pts = child as THREE.Points;
+    const posAttr = pts.geometry.getAttribute('position') as THREE.BufferAttribute;
+    const arr = posAttr.array as Float32Array;
+    const count = child.userData.count as number;
+    const prevT = child.userData.prevT as number;
+    const dt = prevT < 0 ? 16 : Math.min(t - prevT, 32);
+    child.userData.prevT = t;
+    const amplitude = R * 0.014 * speed * (dt / 16);
+    const tSlow = t * 0.0005 * speed;
+
+    for (let i = 0; i < count; i++) {
+      const x = arr[i * 3];
+      const y = arr[i * 3 + 1];
+      // Divergence-free curl of stream function ψ = sin(x·f)·sin(y·f + tSlow)
+      const vx = Math.sin(x * freq) * Math.cos(y * freq + tSlow) * amplitude;
+      const vy = -Math.cos(x * freq) * Math.sin(y * freq + tSlow) * amplitude;
+      let nx = x + vx;
+      let ny = y + vy;
+      if (nx * nx + ny * ny > R2) {
+        const a = Math.random() * Math.PI * 2;
+        const r = Math.sqrt(Math.random() * 0.5) * R * 0.55;
+        nx = Math.cos(a) * r;
+        ny = Math.sin(a) * r;
+      }
+      // Finger distortion: repel particles from pointer
+      if (_distortActive) {
+        const dx = nx - _distortWorldX,
+          dy = ny - _distortWorldY;
+        const d2 = dx * dx + dy * dy + 4;
+        const repF = Math.min((R * 0.55 * (R * 0.55)) / d2, amplitude * 8);
+        nx += (dx / Math.sqrt(d2)) * repF;
+        ny += (dy / Math.sqrt(d2)) * repF;
+      }
+      arr[i * 3] = nx;
+      arr[i * 3 + 1] = ny;
+    }
+    posAttr.needsUpdate = true;
+
+    const h = lerp(0.58, timeHue, glowF) % 1.0;
+    tmpCol.setHSL(h, 0.88, 0.6);
+    const rgb: [number, number, number] = [tmpCol.r * 255, tmpCol.g * 255, tmpCol.b * 255];
+    updateMat(child, rgb, iF, 2.2);
+  }
+}
+
+/* ── PLASMA mode — solar filaments with central attractor ────── */
+
+function buildPlasma(cfg: Cfg, R: number): THREE.Group {
+  const TAU = Math.PI * 2;
+  const iF = cfg.intensity / 10;
+  const count = Math.max(400, Math.round(lerp(800, 2200, iF)));
+  const group = new THREE.Group();
+  const tmpCol = new THREE.Color();
+
+  const positions = new Float32Array(count * 3);
+  for (let i = 0; i < count; i++) {
+    const a = Math.random() * TAU;
+    const r = Math.sqrt(Math.random()) * R * 0.88;
+    positions[i * 3] = Math.cos(a) * r;
+    positions[i * 3 + 1] = Math.sin(a) * r;
+  }
+  const geo = new THREE.BufferGeometry();
+  const posAttr = new THREE.BufferAttribute(positions, 3);
+  posAttr.setUsage(THREE.DynamicDrawUsage);
+  geo.setAttribute('position', posAttr);
+  tmpCol.setHSL(0.08, 1.0, 0.6);
+  const pts = new THREE.Points(
+    geo,
+    ptsMat(hdrColor([tmpCol.r * 255, tmpCol.g * 255, tmpCol.b * 255], iF, 2.8), 1.8, 0.7),
+  );
+  pts.userData.tag = 'plasmaField';
+  pts.userData.count = count;
+  pts.userData.prevT = -1;
+  group.add(pts);
+
+  // Bright solar core
+  const sunCount = Math.max(20, Math.round(100 * iF));
+  const sunPos = new Float32Array(sunCount * 3);
+  for (let i = 0; i < sunCount; i++) {
+    const a = Math.random() * TAU;
+    const r = Math.random() * R * 0.08;
+    sunPos[i * 3] = Math.cos(a) * r;
+    sunPos[i * 3 + 1] = Math.sin(a) * r;
+  }
+  const sGeo = new THREE.BufferGeometry();
+  sGeo.setAttribute('position', new THREE.BufferAttribute(sunPos, 3));
+  const sun = new THREE.Points(sGeo, ptsMat(hdrColor([255, 245, 190], iF, 3.2), 2.8, 0.8));
+  sun.userData.tag = 'plasmaSun';
+  group.add(sun);
+
+  return group;
+}
+
+function updatePlasma(group: THREE.Group, cfg: Cfg, t: number, R: number): void {
+  const iF = cfg.intensity / 10;
+  const glowF = cfg.glow / 10;
+  const speed = cfg.breathSpeed * 0.8;
+  const freq = (Math.max(1, Math.round(cfg.symmetry)) * Math.PI) / Math.max(R, 1);
+  const timeHue = (t * 0.00006) % 1.0;
+  const tmpCol = new THREE.Color();
+
+  for (const child of group.children) {
+    const tag = child.userData.tag as string;
+
+    if (tag === 'plasmaField') {
+      const pts = child as THREE.Points;
+      const posAttr = pts.geometry.getAttribute('position') as THREE.BufferAttribute;
+      const arr = posAttr.array as Float32Array;
+      const count = child.userData.count as number;
+      const prevT = child.userData.prevT as number;
+      const dt = prevT < 0 ? 16 : Math.min(t - prevT, 32);
+      child.userData.prevT = t;
+      const amplitude = R * 0.014 * speed * (dt / 16);
+      const tSlow = t * 0.0006 * speed;
+
+      for (let i = 0; i < count; i++) {
+        const x = arr[i * 3];
+        const y = arr[i * 3 + 1];
+        const r = Math.max(Math.sqrt(x * x + y * y), 1);
+        const cosA = x / r;
+        const sinA = y / r;
+        // Curl wave vorticity
+        const vx = Math.sin(x * freq) * Math.cos(y * freq + tSlow) * amplitude;
+        const vy = -Math.cos(x * freq) * Math.sin(y * freq + tSlow) * amplitude;
+        // Tangential rotation (stronger near centre)
+        const vRot = amplitude * 1.3 * Math.max(0, 1 - r / R);
+        // Gentle inward spiral beyond inner core
+        const vIn = r > R * 0.12 ? -amplitude * 0.22 : amplitude * 0.5;
+        let nx = x + vx + -sinA * vRot + cosA * vIn;
+        let ny = y + vy + cosA * vRot + sinA * vIn;
+        const nr = Math.sqrt(nx * nx + ny * ny);
+        if (nr > R * 0.88 || nr < R * 0.018) {
+          const a = Math.random() * Math.PI * 2;
+          const rr = (0.15 + Math.random() * 0.65) * R;
+          nx = Math.cos(a) * rr;
+          ny = Math.sin(a) * rr;
+        }
+        // Finger distortion: chaotic outward burst from pointer
+        if (_distortActive) {
+          const dx = nx - _distortWorldX,
+            dy = ny - _distortWorldY;
+          const d2 = dx * dx + dy * dy + 4;
+          const repF = Math.min((R * 0.48 * (R * 0.48)) / d2, amplitude * 12);
+          nx += (dx / Math.sqrt(d2)) * repF;
+          ny += (dy / Math.sqrt(d2)) * repF;
+        }
+        arr[i * 3] = nx;
+        arr[i * 3 + 1] = ny;
+      }
+      posAttr.needsUpdate = true;
+
+      const h = lerp(0.08, timeHue, glowF);
+      tmpCol.setHSL(h, 1.0, 0.62);
+      const rgb: [number, number, number] = [tmpCol.r * 255, tmpCol.g * 255, tmpCol.b * 255];
+      updateMat(child, rgb, iF, 2.6);
+    } else if (tag === 'plasmaSun') {
+      const pulse = 1.0 + Math.sin(t * 0.0014 * speed) * 0.1;
+      child.scale.setScalar(pulse);
+      tmpCol.setHSL(timeHue * 0.1, 0.22, 0.92);
+      const rgb: [number, number, number] = [tmpCol.r * 255, tmpCol.g * 255, tmpCol.b * 255];
+      updateMat(child, rgb, iF * 1.15, 2.2);
+    }
+  }
+}
+
+/* ── GLOBE mode — 3D sphere with spectral latitude bands ─────── */
+
+function buildGlobe(cfg: Cfg, R: number): THREE.Group {
+  const TAU = Math.PI * 2;
+  const iF = cfg.intensity / 10;
+  const glowF = cfg.glow / 10;
+  const latBands = Math.max(3, Math.round(cfg.complexity) + 2);
+  const group = new THREE.Group();
+  const tmpCol = new THREE.Color();
+
+  // Sphere surface ambient point cloud
+  const totalPts = Math.max(200, Math.round(lerp(500, 2000, iF)));
+  const surfPos = new Float32Array(totalPts * 3);
+  for (let i = 0; i < totalPts; i++) {
+    const theta = TAU * Math.random();
+    const phi = Math.acos(2 * Math.random() - 1);
+    const sr = R * lerp(0.88, 0.94, glowF);
+    surfPos[i * 3] = sr * Math.sin(phi) * Math.cos(theta);
+    surfPos[i * 3 + 1] = sr * Math.sin(phi) * Math.sin(theta);
+    surfPos[i * 3 + 2] = sr * Math.cos(phi);
+  }
+  const surfGeo = new THREE.BufferGeometry();
+  surfGeo.setAttribute('position', new THREE.BufferAttribute(surfPos, 3));
+  tmpCol.setHSL(0.58, 0.8, 0.4);
+  const surfPts = new THREE.Points(
+    surfGeo,
+    ptsMat(hdrColor([tmpCol.r * 255, tmpCol.g * 255, tmpCol.b * 255], iF, 2.0), 1.5, 0.55),
+  );
+  surfPts.userData.tag = 'globeSurface';
+  group.add(surfPts);
+
+  // Spectral latitude rings
+  for (let lat = 1; lat < latBands; lat++) {
+    const frac = lat / latBands;
+    const coLat = Math.PI * frac;
+    const latR = R * 0.92 * Math.sin(coLat);
+    const zLat = R * 0.92 * Math.cos(coLat);
+    if (latR < R * 0.04) continue;
+    const hue = SPEC_HUES[lat % SPEC_HUES.length];
+    tmpCol.setHSL(hue, 1.0, 0.58);
+    const rgb: [number, number, number] = [tmpCol.r * 255, tmpCol.g * 255, tmpCol.b * 255];
+    const latPtsCount = Math.max(20, Math.round((latR / R) * 200 * iF));
+    const latPos = new Float32Array(latPtsCount * 3);
+    for (let i = 0; i < latPtsCount; i++) {
+      const a = (i / latPtsCount) * TAU + (Math.random() - 0.5) * 0.06;
+      const lr = latR * (1.0 + (Math.random() - 0.5) * 0.04);
+      latPos[i * 3] = Math.cos(a) * lr;
+      latPos[i * 3 + 1] = Math.sin(a) * lr;
+      latPos[i * 3 + 2] = zLat;
+    }
+    const latGeo = new THREE.BufferGeometry();
+    latGeo.setAttribute('position', new THREE.BufferAttribute(latPos, 3));
+    const latPts = new THREE.Points(latGeo, ptsMat(hdrColor(rgb, iF, 2.7), 2.2, 0.7));
+    latPts.userData.tag = 'globeLatRing';
+    latPts.userData.hue = hue;
+    latPts.userData.lat = lat;
+    group.add(latPts);
+  }
+
+  return group;
+}
+
+function updateGlobe(group: THREE.Group, cfg: Cfg, t: number, R: number): void {
+  const iF = cfg.intensity / 10;
+  const breathSpeed = cfg.breathSpeed;
+  const timeHue = (t * 0.00004) % 1.0;
+  const tmpCol = new THREE.Color();
+
+  group.rotation.y = t * 0.00018 * breathSpeed;
+  group.rotation.x = Math.sin(t * 0.00009 * breathSpeed) * 0.2;
+
+  for (const child of group.children) {
+    const tag = child.userData.tag as string;
+    if (tag === 'globeSurface') {
+      const h = (0.56 + timeHue * 0.12) % 1.0;
+      tmpCol.setHSL(h, 0.8, 0.42);
+      const rgb: [number, number, number] = [tmpCol.r * 255, tmpCol.g * 255, tmpCol.b * 255];
+      updateMat(child, rgb, iF * 0.65, 1.8);
+    } else if (tag === 'globeLatRing') {
+      const lat = child.userData.lat as number;
+      const hue = ((child.userData.hue as number) + timeHue) % 1.0;
+      tmpCol.setHSL(hue, 1.0, 0.58);
+      const rgb: [number, number, number] = [tmpCol.r * 255, tmpCol.g * 255, tmpCol.b * 255];
+      child.rotation.z = t * 0.00014 * breathSpeed * (lat % 2 === 0 ? 1 : -1);
+      updateMat(child, rgb, iF, 2.5);
+    }
+  }
+}
+
+/* ── CURRENT 3D mode — 3D divergence-free curl flow ─────────── */
+
+function buildCurrent3D(cfg: Cfg, R: number): THREE.Group {
+  const TAU = Math.PI * 2;
+  const iF = cfg.intensity / 10;
+  const glowF = cfg.glow / 10;
+  const count = Math.max(600, Math.round(lerp(1500, 4000, iF)));
+  const group = new THREE.Group();
+  const tmpCol = new THREE.Color();
+  const positions = new Float32Array(count * 3);
+  for (let i = 0; i < count; i++) {
+    const theta = Math.random() * TAU;
+    const phi = Math.acos(2 * Math.random() - 1);
+    const r = Math.cbrt(Math.random()) * R * 0.88;
+    positions[i * 3] = r * Math.sin(phi) * Math.cos(theta);
+    positions[i * 3 + 1] = r * Math.sin(phi) * Math.sin(theta);
+    positions[i * 3 + 2] = r * Math.cos(phi);
+  }
+  const geo = new THREE.BufferGeometry();
+  const posAttr = new THREE.BufferAttribute(positions, 3);
+  posAttr.setUsage(THREE.DynamicDrawUsage);
+  geo.setAttribute('position', posAttr);
+  tmpCol.setHSL(lerp(0.58, 0.72, glowF), 1.0, 0.58);
+  const pts = new THREE.Points(
+    geo,
+    ptsMat(hdrColor([tmpCol.r * 255, tmpCol.g * 255, tmpCol.b * 255], iF, 2.4), 1.5, 0.65),
+  );
+  pts.userData.tag = 'current3dField';
+  pts.userData.count = count;
+  pts.userData.prevT = -1;
+  group.add(pts);
+  return group;
+}
+
+function updateCurrent3D(group: THREE.Group, cfg: Cfg, t: number, R: number): void {
+  const iF = cfg.intensity / 10;
+  const glowF = cfg.glow / 10;
+  const speed = cfg.breathSpeed * 0.7;
+  const freq = (Math.max(1, Math.round(cfg.symmetry)) * Math.PI) / Math.max(R, 1);
+  const timeHue = (t * 0.000045) % 1.0;
+  const tmpCol = new THREE.Color();
+  const R2 = R * R * 0.84;
+
+  for (const child of group.children) {
+    if ((child.userData.tag as string) !== 'current3dField') continue;
+    const pts = child as THREE.Points;
+    const posAttr = pts.geometry.getAttribute('position') as THREE.BufferAttribute;
+    const arr = posAttr.array as Float32Array;
+    const count = child.userData.count as number;
+    const prevT = child.userData.prevT as number;
+    const dt = prevT < 0 ? 16 : Math.min(t - prevT, 32);
+    child.userData.prevT = t;
+    const amp = R * 0.011 * speed * (dt / 16);
+    const ts = t * 0.00035 * speed;
+    const f = freq;
+
+    for (let i = 0; i < count; i++) {
+      const x = arr[i * 3];
+      const y = arr[i * 3 + 1];
+      const z = arr[i * 3 + 2];
+      // Divergence-free 3D curl: curl(ψ) where ψ = (sin(y·f+ts), sin(z·f+ts·0.7), sin(x·f+ts·0.5))
+      const vx = (Math.cos(z * f + ts * 0.7) * f - Math.cos(y * f + ts) * f) * amp;
+      const vy = (Math.cos(x * f + ts * 0.5) * f - Math.cos(z * f + ts * 0.7) * f) * amp;
+      const vz = (Math.cos(y * f + ts) * f - Math.cos(x * f + ts * 0.5) * f) * amp;
+      let nx = x + vx;
+      let ny = y + vy;
+      let nz = z + vz;
+      if (nx * nx + ny * ny + nz * nz > R2) {
+        const theta = Math.random() * Math.PI * 2;
+        const phi = Math.acos(2 * Math.random() - 1);
+        const r = Math.cbrt(Math.random() * 0.5) * R * 0.62;
+        nx = r * Math.sin(phi) * Math.cos(theta);
+        ny = r * Math.sin(phi) * Math.sin(theta);
+        nz = r * Math.cos(phi);
+      }
+      // Finger distortion: 3D repulsion from projected pointer
+      if (_distortActive) {
+        const dx = nx - _distortWorldX,
+          dy = ny - _distortWorldY;
+        const d2 = dx * dx + dy * dy + nz * nz * 0.5 + 4;
+        const repF = Math.min((R * 0.5 * (R * 0.5)) / d2, amp * 10);
+        nx += (dx / Math.sqrt(d2)) * repF;
+        ny += (dy / Math.sqrt(d2)) * repF;
+        nz += (nz / Math.sqrt(d2 + 1)) * repF * 0.3;
+      }
+      arr[i * 3] = nx;
+      arr[i * 3 + 1] = ny;
+      arr[i * 3 + 2] = nz;
+    }
+    posAttr.needsUpdate = true;
+
+    const h = lerp(0.58, timeHue, glowF) % 1.0;
+    tmpCol.setHSL(h, 0.92, 0.6);
+    const rgb: [number, number, number] = [tmpCol.r * 255, tmpCol.g * 255, tmpCol.b * 255];
+    updateMat(child, rgb, iF, 2.2);
+    group.rotation.y += 0.00022 * speed * (dt / 16);
+    group.rotation.x += 0.00011 * speed * (dt / 16);
+  }
+}
+
+/* ── MATRIX mode — canvas overlay carries all rendering ──────── */
+
+const MATRIX_COLS = 48;
+const MATRIX_TAIL = 20;
+const _MATRIX_TOTAL = MATRIX_COLS * MATRIX_TAIL;
+
+// Three.js layer intentionally empty — canvas overlay renders char rain + rings
+function buildMatrix(_cfg: Cfg, _R: number): THREE.Group {
+  return new THREE.Group();
+}
+
+function updateMatrix(_group: THREE.Group, _cfg: Cfg, _t: number, _R: number): void {
+  // Canvas overlay handles all matrix rendering
+}
+
+/* ── MATRIX 3D — multi-depth column rain in Three.js ────────── */
+const MTX3D_LAYERS = 5;
+const MTX3D_COLS = 28;
+const MTX3D_TAIL = 22;
+const _MTX3D_TOTAL = MTX3D_LAYERS * MTX3D_COLS * MTX3D_TAIL;
+
+function buildMatrix3D(cfg: Cfg, R: number): THREE.Group {
+  const group = new THREE.Group();
+  const pal = PAL[cfg.preset] ?? PAL['Matrix Green'];
+  const [rr, gg, bb] = pal.rgb;
+  const iF = cfg.intensity / 10;
+
+  for (let layer = 0; layer < MTX3D_LAYERS; layer++) {
+    const zPos = R * ((layer / (MTX3D_LAYERS - 1)) * 1.8 - 0.9);
+    const positions = new Float32Array(MTX3D_COLS * MTX3D_TAIL * 3);
+    const colors = new Float32Array(MTX3D_COLS * MTX3D_TAIL * 3);
+    const geo = new THREE.BufferGeometry();
+    const posAttr = new THREE.BufferAttribute(positions, 3);
+    posAttr.setUsage(THREE.DynamicDrawUsage);
+    const colAttr = new THREE.BufferAttribute(colors, 3);
+    colAttr.setUsage(THREE.DynamicDrawUsage);
+    geo.setAttribute('position', posAttr);
+    geo.setAttribute('color', colAttr);
+
+    const depthFade = 1 - Math.abs(zPos) / (R * 1.2);
+    const mat = new THREE.PointsMaterial({
+      size: 2.8 + depthFade * 1.4,
+      vertexColors: true,
+      sizeAttenuation: false,
+      transparent: true,
+      opacity: iF * (0.28 + depthFade * 0.62),
+      blending: THREE.AdditiveBlending,
+      depthWrite: false,
+    });
+    const pts = new THREE.Points(geo, mat);
+    pts.userData.tag = 'mtx3dLayer';
+    pts.userData.layer = layer;
+    pts.userData.zPos = zPos;
+
+    const headYs = new Float32Array(MTX3D_COLS);
+    const speeds = new Float32Array(MTX3D_COLS);
+    for (let c = 0; c < MTX3D_COLS; c++) {
+      headYs[c] = (Math.random() * 2 - 1) * R;
+      speeds[c] = (0.3 + Math.random() * 0.7) * (0.4 + depthFade * 0.6);
+    }
+    pts.userData.headYs = headYs;
+    pts.userData.speeds = speeds;
+    pts.userData.rr = rr;
+    pts.userData.gg = gg;
+    pts.userData.bb = bb;
+    group.add(pts);
+  }
+  return group;
+}
+
+function updateMatrix3D(group: THREE.Group, cfg: Cfg, t: number, R: number): void {
+  const iF = cfg.intensity / 10;
+  const glowF = cfg.glow / 10;
+  const breathSpeed = cfg.breathSpeed;
+  const pal = PAL[cfg.preset] ?? PAL['Matrix Green'];
+  const [pr, pg, pb] = pal.rgb;
+  const timeHue = (t * 0.000028) % 1.0;
+  const tmpCol = new THREE.Color();
+  void t;
+
+  for (const child of group.children) {
+    if ((child.userData.tag as string) !== 'mtx3dLayer') continue;
+    const pts = child as THREE.Points;
+    const zPos = child.userData.zPos as number;
+    const headYs = child.userData.headYs as Float32Array;
+    const speeds = child.userData.speeds as Float32Array;
+    const posAttr = pts.geometry.getAttribute('position') as THREE.BufferAttribute;
+    const colAttr = pts.geometry.getAttribute('color') as THREE.BufferAttribute;
+    const posArr = posAttr.array as Float32Array;
+    const colArr = colAttr.array as Float32Array;
+    const depthFade = 1 - Math.abs(zPos) / (R * 1.2);
+
+    const colSpacing = (R * 1.7) / (MTX3D_COLS + 1);
+    const rowSpacing = (R * 2.0) / MTX3D_TAIL;
+
+    for (let c = 0; c < MTX3D_COLS; c++) {
+      const cx = -R * 0.85 + (c + 1) * colSpacing;
+      headYs[c] -= speeds[c] * breathSpeed * rowSpacing * 0.012;
+      if (headYs[c] < -R - MTX3D_TAIL * rowSpacing) headYs[c] = R * 1.1;
+
+      for (let dot = 0; dot < MTX3D_TAIL; dot++) {
+        const idx = c * MTX3D_TAIL + dot;
+        posArr[idx * 3] = cx + zPos * 0.18 * (c / MTX3D_COLS - 0.5);
+        posArr[idx * 3 + 1] = headYs[c] + dot * rowSpacing;
+        posArr[idx * 3 + 2] = zPos;
+
+        const tailFrac = 1 - dot / MTX3D_TAIL;
+        const bright = tailFrac * tailFrac * depthFade;
+        if (dot === 0) {
+          // Head: bright white flash
+          const hw = 0.7 + depthFade * 0.3;
+          colArr[idx * 3] = hw;
+          colArr[idx * 3 + 1] = 1.0;
+          colArr[idx * 3 + 2] = hw * 0.88;
+        } else {
+          const colHue = (timeHue + (c / MTX3D_COLS) * 0.6 + dot * 0.02) % 1.0;
+          tmpCol.setHSL(colHue, 0.95, 0.48 * bright);
+          colArr[idx * 3] = lerp((pr / 255) * bright, tmpCol.r, glowF);
+          colArr[idx * 3 + 1] = lerp((pg / 255) * bright, tmpCol.g, glowF);
+          colArr[idx * 3 + 2] = lerp((pb / 255) * bright, tmpCol.b, glowF);
+        }
+      }
+    }
+    posAttr.needsUpdate = true;
+    colAttr.needsUpdate = true;
+    pts.geometry.setDrawRange(0, MTX3D_COLS * MTX3D_TAIL);
+    (pts.material as THREE.PointsMaterial).opacity = iF * (0.28 + depthFade * 0.62);
+  }
+}
+
 /* ── CATHEDRAL mode — sacred architecture builder ───────────── */
 
 function buildCathedral(cfg: Cfg, R: number): THREE.Group {
@@ -6116,7 +8351,7 @@ const DEFAULT_SLIDERS: SliderDef[] = [
   { key: 'breathSpeed', label: 'Speed', min: 0.05, max: 1.5, step: 0.05 },
   { key: 'intensity', label: 'Colour', min: 0, max: 10, step: 0.5 },
   { key: 'particles', label: 'Particles', min: 0, max: 10, step: 1 },
-  { key: 'luminous', label: 'Luminous', min: 0, max: 5, step: 0.5 },
+  { key: 'luminous', label: 'Luminous', min: 0, max: 5, step: 0.1 },
   { key: 'stars', label: 'Stars', min: 0, max: 10, step: 1 },
 ];
 
@@ -6127,7 +8362,7 @@ const MODE_SLIDERS: Partial<Record<Mode, SliderDef[]>> = {
     { key: 'glow', label: 'Glow', min: 0, max: 10, step: 0.5 },
     { key: 'breathSpeed', label: 'Speed', min: 0.005, max: 1.5, step: 0.005 },
     { key: 'intensity', label: 'Colour', min: 0, max: 10, step: 0.5 },
-    { key: 'luminous', label: 'Luminous', min: 0, max: 5, step: 0.5 },
+    { key: 'luminous', label: 'Luminous', min: 0, max: 5, step: 0.1 },
   ],
   lissajous2: [
     { key: 'symmetry', label: 'Copies', min: 1, max: 12, step: 1 },
@@ -6135,14 +8370,14 @@ const MODE_SLIDERS: Partial<Record<Mode, SliderDef[]>> = {
     { key: 'glow', label: 'Glow', min: 0, max: 10, step: 0.5 },
     { key: 'breathSpeed', label: 'Speed', min: 0.005, max: 2.0, step: 0.005 },
     { key: 'intensity', label: 'Colour', min: 0, max: 10, step: 0.5 },
-    { key: 'luminous', label: 'Luminous', min: 0, max: 5, step: 0.5 },
+    { key: 'luminous', label: 'Luminous', min: 0, max: 5, step: 0.1 },
   ],
   tunnel: [
     { key: 'symmetry', label: 'Spokes', min: 4, max: 24, step: 1 },
     { key: 'glow', label: 'Glow', min: 0, max: 10, step: 0.5 },
     { key: 'breathSpeed', label: 'Speed', min: 0.05, max: 1.5, step: 0.05 },
     { key: 'intensity', label: 'Colour', min: 0, max: 10, step: 0.5 },
-    { key: 'luminous', label: 'Luminous', min: 0, max: 5, step: 0.5 },
+    { key: 'luminous', label: 'Luminous', min: 0, max: 5, step: 0.1 },
     { key: 'stars', label: 'Stars', min: 0, max: 10, step: 1 },
   ],
   vitral: [
@@ -6151,7 +8386,7 @@ const MODE_SLIDERS: Partial<Record<Mode, SliderDef[]>> = {
     { key: 'glow', label: 'Glow', min: 0, max: 10, step: 0.5 },
     { key: 'breathSpeed', label: 'Speed', min: 0.05, max: 1.5, step: 0.05 },
     { key: 'intensity', label: 'Colour', min: 0, max: 10, step: 0.5 },
-    { key: 'luminous', label: 'Luminous', min: 0, max: 5, step: 0.5 },
+    { key: 'luminous', label: 'Luminous', min: 0, max: 5, step: 0.1 },
   ],
   fibonacci: [
     { key: 'complexity', label: 'Arms', min: 1, max: 10, step: 1 },
@@ -6159,7 +8394,7 @@ const MODE_SLIDERS: Partial<Record<Mode, SliderDef[]>> = {
     { key: 'glow', label: 'Glow', min: 0, max: 10, step: 0.5 },
     { key: 'breathSpeed', label: 'Speed', min: 0.05, max: 1.5, step: 0.05 },
     { key: 'intensity', label: 'Colour', min: 0, max: 10, step: 0.5 },
-    { key: 'luminous', label: 'Luminous', min: 0, max: 5, step: 0.5 },
+    { key: 'luminous', label: 'Luminous', min: 0, max: 5, step: 0.1 },
     { key: 'stars', label: 'Stars', min: 0, max: 10, step: 1 },
   ],
   clifford: [
@@ -6167,7 +8402,7 @@ const MODE_SLIDERS: Partial<Record<Mode, SliderDef[]>> = {
     { key: 'glow', label: 'Glow', min: 0, max: 10, step: 0.5 },
     { key: 'breathSpeed', label: 'Speed', min: 0.05, max: 1.5, step: 0.05 },
     { key: 'intensity', label: 'Colour', min: 0, max: 10, step: 0.5 },
-    { key: 'luminous', label: 'Luminous', min: 0, max: 5, step: 0.5 },
+    { key: 'luminous', label: 'Luminous', min: 0, max: 5, step: 0.1 },
     { key: 'stars', label: 'Stars', min: 0, max: 10, step: 1 },
   ],
   hypercube: [
@@ -6175,7 +8410,7 @@ const MODE_SLIDERS: Partial<Record<Mode, SliderDef[]>> = {
     { key: 'glow', label: 'Glow', min: 0, max: 10, step: 0.5 },
     { key: 'breathSpeed', label: 'Speed', min: 0.05, max: 1.5, step: 0.05 },
     { key: 'intensity', label: 'Colour', min: 0, max: 10, step: 0.5 },
-    { key: 'luminous', label: 'Luminous', min: 0, max: 5, step: 0.5 },
+    { key: 'luminous', label: 'Luminous', min: 0, max: 5, step: 0.1 },
     { key: 'stars', label: 'Stars', min: 0, max: 10, step: 1 },
   ],
   lorenz: [
@@ -6183,7 +8418,7 @@ const MODE_SLIDERS: Partial<Record<Mode, SliderDef[]>> = {
     { key: 'glow', label: 'Glow', min: 0, max: 10, step: 0.5 },
     { key: 'breathSpeed', label: 'Speed', min: 0.05, max: 1.5, step: 0.05 },
     { key: 'intensity', label: 'Colour', min: 0, max: 10, step: 0.5 },
-    { key: 'luminous', label: 'Luminous', min: 0, max: 5, step: 0.5 },
+    { key: 'luminous', label: 'Luminous', min: 0, max: 5, step: 0.1 },
     { key: 'stars', label: 'Stars', min: 0, max: 10, step: 1 },
   ],
   knot: [
@@ -6192,7 +8427,7 @@ const MODE_SLIDERS: Partial<Record<Mode, SliderDef[]>> = {
     { key: 'glow', label: 'Glow', min: 0, max: 10, step: 0.5 },
     { key: 'breathSpeed', label: 'Speed', min: 0.05, max: 1.5, step: 0.05 },
     { key: 'intensity', label: 'Colour', min: 0, max: 10, step: 0.5 },
-    { key: 'luminous', label: 'Luminous', min: 0, max: 5, step: 0.5 },
+    { key: 'luminous', label: 'Luminous', min: 0, max: 5, step: 0.1 },
     { key: 'stars', label: 'Stars', min: 0, max: 10, step: 1 },
   ],
   orbital: [
@@ -6200,7 +8435,7 @@ const MODE_SLIDERS: Partial<Record<Mode, SliderDef[]>> = {
     { key: 'glow', label: 'Glow', min: 0, max: 10, step: 0.5 },
     { key: 'breathSpeed', label: 'Speed', min: 0.05, max: 1.5, step: 0.05 },
     { key: 'intensity', label: 'Colour', min: 0, max: 10, step: 0.5 },
-    { key: 'luminous', label: 'Luminous', min: 0, max: 5, step: 0.5 },
+    { key: 'luminous', label: 'Luminous', min: 0, max: 5, step: 0.1 },
     { key: 'stars', label: 'Stars', min: 0, max: 10, step: 1 },
   ],
   geodesic: [
@@ -6209,7 +8444,7 @@ const MODE_SLIDERS: Partial<Record<Mode, SliderDef[]>> = {
     { key: 'glow', label: 'Glow', min: 0, max: 10, step: 0.5 },
     { key: 'breathSpeed', label: 'Speed', min: 0.05, max: 1.5, step: 0.05 },
     { key: 'intensity', label: 'Colour', min: 0, max: 10, step: 0.5 },
-    { key: 'luminous', label: 'Luminous', min: 0, max: 5, step: 0.5 },
+    { key: 'luminous', label: 'Luminous', min: 0, max: 5, step: 0.1 },
     { key: 'stars', label: 'Stars', min: 0, max: 10, step: 1 },
   ],
   rainbow: [
@@ -6218,7 +8453,7 @@ const MODE_SLIDERS: Partial<Record<Mode, SliderDef[]>> = {
     { key: 'glow', label: 'Rainbow', min: 0, max: 10, step: 0.5 },
     { key: 'breathSpeed', label: 'Speed', min: 0.05, max: 1.5, step: 0.05 },
     { key: 'intensity', label: 'Colour', min: 0, max: 10, step: 0.5 },
-    { key: 'luminous', label: 'Luminous', min: 0, max: 5, step: 0.5 },
+    { key: 'luminous', label: 'Luminous', min: 0, max: 5, step: 0.1 },
   ],
   cathedral: [
     { key: 'symmetry', label: 'Arches', min: 4, max: 16, step: 1 },
@@ -6226,7 +8461,7 @@ const MODE_SLIDERS: Partial<Record<Mode, SliderDef[]>> = {
     { key: 'glow', label: 'Colour Mix', min: 0, max: 10, step: 0.5 },
     { key: 'breathSpeed', label: 'Speed', min: 0.05, max: 1.0, step: 0.05 },
     { key: 'intensity', label: 'Colour', min: 0, max: 10, step: 0.5 },
-    { key: 'luminous', label: 'Luminous', min: 0, max: 5, step: 0.5 },
+    { key: 'luminous', label: 'Luminous', min: 0, max: 5, step: 0.1 },
     { key: 'stars', label: 'Stars', min: 0, max: 5, step: 1 },
   ],
   islamic: [
@@ -6235,7 +8470,7 @@ const MODE_SLIDERS: Partial<Record<Mode, SliderDef[]>> = {
     { key: 'glow', label: 'Colour Mix', min: 0, max: 10, step: 0.5 },
     { key: 'breathSpeed', label: 'Speed', min: 0.05, max: 1.0, step: 0.05 },
     { key: 'intensity', label: 'Colour', min: 0, max: 10, step: 0.5 },
-    { key: 'luminous', label: 'Luminous', min: 0, max: 5, step: 0.5 },
+    { key: 'luminous', label: 'Luminous', min: 0, max: 5, step: 0.1 },
     { key: 'stars', label: 'Stars', min: 0, max: 5, step: 1 },
   ],
   yantra: [
@@ -6244,7 +8479,7 @@ const MODE_SLIDERS: Partial<Record<Mode, SliderDef[]>> = {
     { key: 'glow', label: 'Colour Mix', min: 0, max: 10, step: 0.5 },
     { key: 'breathSpeed', label: 'Speed', min: 0.05, max: 0.8, step: 0.05 },
     { key: 'intensity', label: 'Colour', min: 0, max: 10, step: 0.5 },
-    { key: 'luminous', label: 'Luminous', min: 0, max: 5, step: 0.5 },
+    { key: 'luminous', label: 'Luminous', min: 0, max: 5, step: 0.1 },
   ],
   celtic: [
     { key: 'complexity', label: 'Knot Count', min: 1, max: 4, step: 1 },
@@ -6252,7 +8487,7 @@ const MODE_SLIDERS: Partial<Record<Mode, SliderDef[]>> = {
     { key: 'glow', label: 'Colour Mix', min: 0, max: 10, step: 0.5 },
     { key: 'breathSpeed', label: 'Speed', min: 0.05, max: 1.0, step: 0.05 },
     { key: 'intensity', label: 'Colour', min: 0, max: 10, step: 0.5 },
-    { key: 'luminous', label: 'Luminous', min: 0, max: 5, step: 0.5 },
+    { key: 'luminous', label: 'Luminous', min: 0, max: 5, step: 0.1 },
     { key: 'stars', label: 'Stars', min: 0, max: 5, step: 1 },
   ],
   bloom: [
@@ -6261,7 +8496,7 @@ const MODE_SLIDERS: Partial<Record<Mode, SliderDef[]>> = {
     { key: 'glow', label: 'Colour Shift', min: 0, max: 10, step: 0.5 },
     { key: 'breathSpeed', label: 'Bloom Speed', min: 0.05, max: 1.2, step: 0.05 },
     { key: 'intensity', label: 'Brightness', min: 0, max: 10, step: 0.5 },
-    { key: 'luminous', label: 'Luminous', min: 0, max: 5, step: 0.5 },
+    { key: 'luminous', label: 'Luminous', min: 0, max: 5, step: 0.1 },
     { key: 'stars', label: 'Stars', min: 0, max: 10, step: 1 },
   ],
   lava: [
@@ -6269,7 +8504,7 @@ const MODE_SLIDERS: Partial<Record<Mode, SliderDef[]>> = {
     { key: 'glow', label: 'Colour Shift', min: 0, max: 10, step: 0.5 },
     { key: 'breathSpeed', label: 'Flow Speed', min: 0.05, max: 1.0, step: 0.05 },
     { key: 'intensity', label: 'Brightness', min: 0, max: 10, step: 0.5 },
-    { key: 'luminous', label: 'Luminous', min: 0, max: 5, step: 0.5 },
+    { key: 'luminous', label: 'Luminous', min: 0, max: 5, step: 0.1 },
   ],
   spire: [
     { key: 'complexity', label: 'Detail Level', min: 1, max: 8, step: 1 },
@@ -6277,7 +8512,7 @@ const MODE_SLIDERS: Partial<Record<Mode, SliderDef[]>> = {
     { key: 'glow', label: 'Glass Colour', min: 0, max: 10, step: 0.5 },
     { key: 'breathSpeed', label: 'Speed', min: 0.05, max: 0.8, step: 0.05 },
     { key: 'intensity', label: 'Brightness', min: 0, max: 10, step: 0.5 },
-    { key: 'luminous', label: 'Luminous', min: 0, max: 5, step: 0.5 },
+    { key: 'luminous', label: 'Luminous', min: 0, max: 5, step: 0.1 },
     { key: 'stars', label: 'Stars', min: 0, max: 5, step: 1 },
   ],
   lissajous3d: [
@@ -6287,7 +8522,7 @@ const MODE_SLIDERS: Partial<Record<Mode, SliderDef[]>> = {
     { key: 'particles', label: 'Traces', min: 1, max: 8, step: 1 },
     { key: 'breathSpeed', label: 'Speed', min: 0.05, max: 2.0, step: 0.05 },
     { key: 'intensity', label: 'Colour', min: 1, max: 10, step: 0.5 },
-    { key: 'luminous', label: 'Bloom', min: 0, max: 5, step: 0.5 },
+    { key: 'luminous', label: 'Bloom', min: 0, max: 5, step: 0.1 },
     { key: 'stars', label: 'Stars', min: 0, max: 10, step: 1 },
   ],
   tknot3d: [
@@ -6297,7 +8532,7 @@ const MODE_SLIDERS: Partial<Record<Mode, SliderDef[]>> = {
     { key: 'particles', label: 'Traces', min: 1, max: 6, step: 1 },
     { key: 'breathSpeed', label: 'Speed', min: 0.05, max: 1.5, step: 0.05 },
     { key: 'intensity', label: 'Colour', min: 1, max: 10, step: 0.5 },
-    { key: 'luminous', label: 'Bloom', min: 0, max: 5, step: 0.5 },
+    { key: 'luminous', label: 'Bloom', min: 0, max: 5, step: 0.1 },
     { key: 'stars', label: 'Stars', min: 0, max: 10, step: 1 },
   ],
   lorenz3d: [
@@ -6307,7 +8542,7 @@ const MODE_SLIDERS: Partial<Record<Mode, SliderDef[]>> = {
     { key: 'particles', label: 'Trails', min: 1, max: 6, step: 1 },
     { key: 'breathSpeed', label: 'Flow', min: 0.05, max: 2.0, step: 0.05 },
     { key: 'intensity', label: 'Colour', min: 1, max: 10, step: 0.5 },
-    { key: 'luminous', label: 'Bloom', min: 0, max: 5, step: 0.5 },
+    { key: 'luminous', label: 'Bloom', min: 0, max: 5, step: 0.1 },
     { key: 'stars', label: 'Stars', min: 0, max: 10, step: 1 },
   ],
   rose3d: [
@@ -6317,7 +8552,7 @@ const MODE_SLIDERS: Partial<Record<Mode, SliderDef[]>> = {
     { key: 'particles', label: 'Petals', min: 1, max: 8, step: 1 },
     { key: 'breathSpeed', label: 'Speed', min: 0.05, max: 2.0, step: 0.05 },
     { key: 'intensity', label: 'Colour', min: 1, max: 10, step: 0.5 },
-    { key: 'luminous', label: 'Bloom', min: 0, max: 5, step: 0.5 },
+    { key: 'luminous', label: 'Bloom', min: 0, max: 5, step: 0.1 },
     { key: 'stars', label: 'Stars', min: 0, max: 10, step: 1 },
   ],
   helix3d: [
@@ -6327,7 +8562,7 @@ const MODE_SLIDERS: Partial<Record<Mode, SliderDef[]>> = {
     { key: 'glow', label: 'Twist', min: 0, max: 10, step: 0.5 },
     { key: 'breathSpeed', label: 'Speed', min: 0.05, max: 2.0, step: 0.05 },
     { key: 'intensity', label: 'Colour', min: 1, max: 10, step: 0.5 },
-    { key: 'luminous', label: 'Bloom', min: 0, max: 5, step: 0.5 },
+    { key: 'luminous', label: 'Bloom', min: 0, max: 5, step: 0.1 },
     { key: 'stars', label: 'Stars', min: 0, max: 10, step: 1 },
   ],
   orbital3d: [
@@ -6337,7 +8572,7 @@ const MODE_SLIDERS: Partial<Record<Mode, SliderDef[]>> = {
     { key: 'particles', label: 'Fan', min: 1, max: 8, step: 1 },
     { key: 'breathSpeed', label: 'Speed', min: 0.05, max: 2.0, step: 0.05 },
     { key: 'intensity', label: 'Colour', min: 1, max: 10, step: 0.5 },
-    { key: 'luminous', label: 'Bloom', min: 0, max: 5, step: 0.5 },
+    { key: 'luminous', label: 'Bloom', min: 0, max: 5, step: 0.1 },
     { key: 'stars', label: 'Stars', min: 0, max: 10, step: 1 },
   ],
   kaleidoscope: [
@@ -6346,7 +8581,7 @@ const MODE_SLIDERS: Partial<Record<Mode, SliderDef[]>> = {
     { key: 'glow', label: 'Rotate', min: 0, max: 10, step: 0.5 },
     { key: 'breathSpeed', label: 'Speed', min: 0.05, max: 2.0, step: 0.05 },
     { key: 'intensity', label: 'Colour', min: 1, max: 10, step: 0.5 },
-    { key: 'luminous', label: 'Bloom', min: 0, max: 5, step: 0.5 },
+    { key: 'luminous', label: 'Bloom', min: 0, max: 5, step: 0.1 },
     { key: 'stars', label: 'Stars', min: 0, max: 10, step: 1 },
   ],
   warp: [
@@ -6356,7 +8591,7 @@ const MODE_SLIDERS: Partial<Record<Mode, SliderDef[]>> = {
     { key: 'complexity', label: 'Colours', min: 1, max: 10, step: 1 },
     { key: 'breathSpeed', label: 'Speed', min: 0.1, max: 3.0, step: 0.1 },
     { key: 'intensity', label: 'Bright', min: 1, max: 10, step: 0.5 },
-    { key: 'luminous', label: 'Bloom', min: 0, max: 5, step: 0.5 },
+    { key: 'luminous', label: 'Bloom', min: 0, max: 5, step: 0.1 },
     { key: 'stars', label: 'Stars', min: 0, max: 10, step: 1 },
   ],
   firework3d: [
@@ -6365,7 +8600,7 @@ const MODE_SLIDERS: Partial<Record<Mode, SliderDef[]>> = {
     { key: 'glow', label: 'Range', min: 1, max: 10, step: 0.5 },
     { key: 'breathSpeed', label: 'Speed', min: 0.1, max: 3.0, step: 0.1 },
     { key: 'intensity', label: 'Bright', min: 1, max: 10, step: 0.5 },
-    { key: 'luminous', label: 'Bloom', min: 0, max: 5, step: 0.5 },
+    { key: 'luminous', label: 'Bloom', min: 0, max: 5, step: 0.1 },
     { key: 'stars', label: 'Stars', min: 0, max: 10, step: 1 },
   ],
   fibonacci3d: [
@@ -6373,7 +8608,7 @@ const MODE_SLIDERS: Partial<Record<Mode, SliderDef[]>> = {
     { key: 'particles', label: 'Arms', min: 1, max: 8, step: 1 },
     { key: 'breathSpeed', label: 'Speed', min: 0.05, max: 2.0, step: 0.05 },
     { key: 'intensity', label: 'Colour', min: 1, max: 10, step: 0.5 },
-    { key: 'luminous', label: 'Bloom', min: 0, max: 5, step: 0.5 },
+    { key: 'luminous', label: 'Bloom', min: 0, max: 5, step: 0.1 },
     { key: 'stars', label: 'Stars', min: 0, max: 10, step: 1 },
   ],
   yantra3d: [
@@ -6382,7 +8617,7 @@ const MODE_SLIDERS: Partial<Record<Mode, SliderDef[]>> = {
     { key: 'glow', label: 'Bright', min: 1, max: 10, step: 0.5 },
     { key: 'breathSpeed', label: 'Speed', min: 0.05, max: 2.0, step: 0.05 },
     { key: 'intensity', label: 'Colour', min: 1, max: 10, step: 0.5 },
-    { key: 'luminous', label: 'Bloom', min: 0, max: 5, step: 0.5 },
+    { key: 'luminous', label: 'Bloom', min: 0, max: 5, step: 0.1 },
     { key: 'stars', label: 'Stars', min: 0, max: 10, step: 1 },
   ],
   rainbow3d: [
@@ -6391,8 +8626,31 @@ const MODE_SLIDERS: Partial<Record<Mode, SliderDef[]>> = {
     { key: 'glow', label: 'Ripple', min: 0, max: 10, step: 0.5 },
     { key: 'breathSpeed', label: 'Speed', min: 0.05, max: 2.0, step: 0.05 },
     { key: 'intensity', label: 'Bright', min: 1, max: 10, step: 0.5 },
-    { key: 'luminous', label: 'Bloom', min: 0, max: 5, step: 0.5 },
+    { key: 'luminous', label: 'Bloom', min: 0, max: 5, step: 0.1 },
     { key: 'stars', label: 'Stars', min: 0, max: 10, step: 1 },
+  ],
+  current3d: [
+    { key: 'symmetry', label: 'Turbulence', min: 1, max: 12, step: 1 },
+    { key: 'complexity', label: 'Density', min: 1, max: 10, step: 0.5 },
+    { key: 'glow', label: 'Colour', min: 0, max: 10, step: 0.5 },
+    { key: 'breathSpeed', label: 'Speed', min: 0.05, max: 2.0, step: 0.05 },
+    { key: 'intensity', label: 'Bright', min: 1, max: 10, step: 0.5 },
+    { key: 'luminous', label: 'Bloom', min: 0, max: 5, step: 0.1 },
+  ],
+  matrix: [
+    { key: 'complexity', label: 'Tail Length', min: 1, max: 10, step: 1 },
+    { key: 'glow', label: 'Colour', min: 0, max: 10, step: 0.5 },
+    { key: 'breathSpeed', label: 'Speed', min: 0.05, max: 2.0, step: 0.05 },
+    { key: 'intensity', label: 'Density', min: 1, max: 10, step: 0.5 },
+    { key: 'luminous', label: 'Bloom', min: 0, max: 5, step: 0.1 },
+  ],
+  pulse: [
+    { key: 'symmetry', label: 'Mirror', min: 1, max: 12, step: 1 },
+    { key: 'complexity', label: 'Chaos', min: 1, max: 10, step: 0.5 },
+    { key: 'glow', label: 'Colour', min: 0, max: 10, step: 0.5 },
+    { key: 'breathSpeed', label: 'Speed', min: 0.05, max: 2.0, step: 0.05 },
+    { key: 'intensity', label: 'Rings', min: 1, max: 10, step: 0.5 },
+    { key: 'luminous', label: 'Bloom', min: 0, max: 5, step: 0.1 },
   ],
 };
 
@@ -6433,6 +8691,17 @@ const MODE_TO_PRESET: Partial<Record<Mode, string>> = {
   fibonacci3d: 'Fibonacci 3D',
   yantra3d: 'Yantra 3D',
   rainbow3d: 'Rainbow 3D',
+  prism: 'Prism Seed',
+  prism3d: 'Prism3D Core',
+  liquid: 'Oil Film',
+  cells: 'Living Tissue',
+  current: 'Ocean Drift',
+  plasma: 'Solar Flare',
+  globe: 'Emotion Globe',
+  current3d: 'Current 3D',
+  matrix: 'Matrix Rain',
+  matrix3d: 'Matrix Rain',
+  pulse: 'Rorschach Pulse',
 };
 
 const MODES: { mode: Mode; label: string }[] = [
@@ -6470,9 +8739,1446 @@ const MODES: { mode: Mode; label: string }[] = [
   { mode: 'orbital3d', label: '⊛ Orbital 3D' },
   { mode: 'firework3d', label: '🎆 Firework 3D' },
   { mode: 'fibonacci3d', label: 'φ Fibonacci 3D' },
-  { mode: 'yantra3d', label: '△ Yantra 3D' },
   { mode: 'rainbow3d', label: '◉ Rainbow 3D' },
+  { mode: 'prism', label: '◇ Prism' },
+  { mode: 'prism3d', label: '◈ Prism 3D' },
+  { mode: 'liquid', label: '〰 Liquid' },
+  { mode: 'cells', label: '⬡ Cells' },
+  { mode: 'current', label: '∿ Current' },
+  { mode: 'current3d', label: '∿³ Current 3D' },
+  { mode: 'plasma', label: '☀ Plasma' },
+  { mode: 'globe', label: '◎ Globe' },
+  { mode: 'matrix', label: '⋮ Matrix' },
+  { mode: 'matrix3d', label: '⋮³ Matrix 3D' },
+  { mode: 'pulse', label: '◉ Pulse' },
+  { mode: 'emotion', label: '◉ Emotion' },
+  { mode: 'constellation', label: '✦ Constellation' },
+  { mode: 'drift', label: '∿ Drift' },
+  { mode: 'cbloom', label: '⊛ Bloom Evo' },
+  { mode: 'orbit', label: '◎ Orbit' },
+  { mode: 'weave', label: '∾ Weave' },
+  { mode: 'chaostri3d', label: '△ Chaos Tri 3D' },
+  { mode: 'treeoflife', label: '✦ Tree of Life' },
+  { mode: 'treeoflife3d', label: '✦³ Tree 3D' },
 ];
+
+const FEATURED_PRESETS: { name: string; tag: string }[] = [
+  // ── New dot/particle worlds ──
+  { name: 'Current 3D', tag: '3D' },
+  { name: 'Vortex 3D', tag: '3D' },
+  { name: 'Nebula Drift', tag: '3D' },
+  { name: 'Deep Flow 3D', tag: '3D' },
+  { name: 'Matrix Rain', tag: 'DOT' },
+  { name: 'Code Storm', tag: 'DOT' },
+  { name: 'Neon Rain', tag: 'DOT' },
+  // ── Rorschach / Pulse ──
+  { name: 'Rorschach Pulse', tag: 'PULSE' },
+  { name: 'Rorschach Colour', tag: 'PULSE' },
+  { name: 'Ink Pulse', tag: 'PULSE' },
+  { name: 'Chaos Pulse', tag: 'PULSE' },
+  { name: 'Slow Breath', tag: 'PULSE' },
+  // ── Chaos & randomness ──
+  { name: 'Chaos Field', tag: 'CHAOS' },
+  { name: 'Chaos Storm 3D', tag: 'CHAOS' },
+  { name: 'Entropy', tag: 'CHAOS' },
+  { name: 'Random Burst', tag: 'CHAOS' },
+  { name: 'Quantum Chaos', tag: 'CHAOS' },
+  // ── Colour cycles (yantra / fibonacci) ──
+  { name: 'Yantra Prism', tag: 'CLR' },
+  { name: 'Yantra Colour', tag: 'CLR' },
+  { name: 'Yantra Mono', tag: 'CLR' },
+  { name: 'Fibonacci Prism', tag: 'CLR' },
+  { name: 'Fibonacci Colour', tag: 'CLR' },
+  // ── Tangka series ──
+  { name: 'Tangka Mandala', tag: 'TIB' },
+  { name: 'Tangka Wheel', tag: 'TIB' },
+  { name: 'Tangka Lotus', tag: 'TIB' },
+  { name: 'Tangka Sky', tag: 'TIB' },
+  { name: 'Tangka Fire', tag: 'TIB' },
+  // ── Atom / Globe ──
+  { name: 'Atom 3D', tag: 'ATOM' },
+  { name: 'Orbital Atom', tag: 'ATOM' },
+  { name: 'Aurora Globe', tag: 'GLOB' },
+  { name: 'Crystal Globe', tag: 'GLOB' },
+];
+
+/* ── Finger distortion (module-level, single-instance) ───────── */
+let _distortActive = false;
+let _distortWorldX = 0;
+let _distortWorldY = 0;
+
+/* ── PULSE mode — rorschach pulsing rings ────────────────────── */
+
+const PULSE_MAX_RINGS = 14;
+const PULSE_PTS = 80;
+
+function buildPulse(cfg: Cfg, R: number): THREE.Group {
+  const group = new THREE.Group();
+  const iF = cfg.intensity / 10;
+  const pal = PAL[cfg.preset] ?? PAL['Calm Field'];
+  const [rr, gg, bb] = pal.rgb;
+  for (let ri = 0; ri < PULSE_MAX_RINGS; ri++) {
+    const positions = new Float32Array(PULSE_PTS * 3);
+    const geo = new THREE.BufferGeometry();
+    const posAttr = new THREE.BufferAttribute(positions, 3);
+    posAttr.setUsage(THREE.DynamicDrawUsage);
+    geo.setAttribute('position', posAttr);
+    const pts = new THREE.Points(geo, ptsMat(hdrColor([rr, gg, bb], iF * 0.82, 2.2), 2.2, 0.75));
+    pts.userData.tag = 'pulseRing';
+    pts.userData.ri = ri;
+    group.add(pts);
+  }
+  return group;
+}
+
+function updatePulse(group: THREE.Group, cfg: Cfg, t: number, R: number): void {
+  const pal = PAL[cfg.preset] ?? PAL['Calm Field'];
+  const [rr, gg, bb] = pal.rgb;
+  const iF = cfg.intensity / 10;
+  const glowF = cfg.glow / 10;
+  const ringCount = Math.max(2, Math.round(lerp(4, PULSE_MAX_RINGS, iF)));
+  const speed = cfg.breathSpeed;
+  const chaosAmt = Math.max(0, cfg.complexity - 1) / 9;
+  const TAU = Math.PI * 2;
+  const halfPts = PULSE_PTS >> 1;
+  const timeHue = (t * 0.00004) % 1.0;
+  const tmpCol = new THREE.Color();
+  const sym = cfg.symmetry > 4; // bilateral rorschach mirror
+
+  for (const child of group.children) {
+    if ((child.userData.tag as string) !== 'pulseRing') continue;
+    const ri = child.userData.ri as number;
+    const pts = child as THREE.Points;
+    if (ri >= ringCount) {
+      (pts.material as THREE.PointsMaterial).opacity = 0;
+      continue;
+    }
+
+    const phaseOff = ri / ringCount;
+    const phase = (t * 0.00052 * speed + phaseOff) % 1.0;
+    // Smooth pulse: expand and contract with ease
+    const rFrac = 0.5 - 0.5 * Math.cos(phase * TAU);
+    const radius = rFrac * R * 0.96;
+    const opacity = Math.sin(phase * Math.PI) * iF * 0.88;
+
+    const posAttr = pts.geometry.getAttribute('position') as THREE.BufferAttribute;
+    const arr = posAttr.array as Float32Array;
+
+    for (let p = 0; p < halfPts; p++) {
+      const a = (p / halfPts) * Math.PI; // 0..PI (one side)
+      const noise =
+        Math.sin(a * 4 + t * 0.00068 * speed + ri * 1.4) * 0.55 +
+        Math.sin(a * 9 + t * 0.00031 * speed + ri * 0.8) * 0.35 +
+        Math.sin(a * 17 + t * 0.00014 * speed) * 0.1;
+      const rOff = sym ? noise * chaosAmt * R * 0.32 : noise * chaosAmt * R * 0.28 * Math.sin(a);
+      const r2 = Math.max(0, radius + rOff);
+      // Right side
+      arr[p * 3] = Math.cos(a) * r2;
+      arr[p * 3 + 1] = Math.sin(a) * r2;
+      arr[p * 3 + 2] = 0;
+      // Mirrored left side (rorschach)
+      arr[(halfPts + p) * 3] = -Math.cos(a) * r2;
+      arr[(halfPts + p) * 3 + 1] = Math.sin(a) * r2;
+      arr[(halfPts + p) * 3 + 2] = 0;
+    }
+    posAttr.needsUpdate = true;
+    pts.geometry.setDrawRange(0, PULSE_PTS);
+
+    const ringHue = ((ri / ringCount) * 0.72 + timeHue) % 1.0;
+    tmpCol.setHSL(ringHue, 0.96, 0.54);
+    const col: [number, number, number] = [
+      lerp(rr, tmpCol.r * 255, glowF),
+      lerp(gg, tmpCol.g * 255, glowF),
+      lerp(bb, tmpCol.b * 255, glowF),
+    ];
+    updateMat(pts, col, opacity, 2.4);
+  }
+}
+
+/* ── Emotion ────────────────────────────────────────────────── */
+function buildEmotion(_cfg: Cfg, R: number): THREE.Group {
+  const group = new THREE.Group();
+  const geo = new THREE.IcosahedronGeometry(R * 0.52, 4);
+  const posAttr = geo.getAttribute('position') as THREE.BufferAttribute;
+  const orig = new Float32Array(posAttr.array as Float32Array);
+  geo.userData.orig = orig;
+  (posAttr as THREE.BufferAttribute).setUsage(THREE.DynamicDrawUsage);
+  const mat = new THREE.MeshBasicMaterial({
+    color: new THREE.Color(0.5, 0.16, 0.2),
+    wireframe: true,
+    transparent: true,
+    opacity: 0.72,
+  });
+  const mesh = new THREE.Mesh(geo, mat);
+  mesh.userData.tag = 'emotionSphere';
+  group.add(mesh);
+
+  // Outer halo ring
+  const ringGeo = new THREE.RingGeometry(R * 0.62, R * 0.64, 64);
+  const ringMat = new THREE.MeshBasicMaterial({
+    color: new THREE.Color(0.76, 0.63, 0.38),
+    side: THREE.DoubleSide,
+    transparent: true,
+    opacity: 0.18,
+  });
+  const ring = new THREE.Mesh(ringGeo, ringMat);
+  ring.userData.tag = 'emotionRing';
+  group.add(ring);
+  return group;
+}
+
+function updateEmotion(group: THREE.Group, cfg: Cfg, t: number, R: number): void {
+  let emoIdx = 4;
+  try {
+    const v = typeof window !== 'undefined' ? localStorage.getItem('colourmap:process-idx') : null;
+    if (v !== null) emoIdx = Math.min(9, Math.max(0, Number(v)));
+  } catch {}
+
+  const norm = emoIdx / 9;
+  const pal = PAL[cfg.preset] ?? PAL['Calm Field'];
+  const [rr, gg, bb] = pal.rgb;
+  const iF = cfg.intensity / 10;
+  const noiseAmp = R * lerp(0.42, 0.03, norm);
+  const rotSpeed = lerp(0.011, 0.0018, norm);
+
+  // Agitated color: dark blood red. Calm color: palette color
+  const cr = lerp(140, rr, norm);
+  const cg = lerp(36, gg, norm);
+  const cb = lerp(52, bb, norm);
+
+  for (const child of group.children) {
+    if (child.userData.tag === 'emotionSphere') {
+      const mesh = child as THREE.Mesh;
+      const geo = mesh.geometry as THREE.BufferGeometry;
+      const orig = geo.userData.orig as Float32Array;
+      const posAttr = geo.getAttribute('position') as THREE.BufferAttribute;
+      const arr = posAttr.array as Float32Array;
+      const c = cfg.complexity / 10;
+
+      for (let i = 0; i < arr.length; i += 3) {
+        const ox = orig[i],
+          oy = orig[i + 1],
+          oz = orig[i + 2];
+        const len = Math.sqrt(ox * ox + oy * oy + oz * oz) || 1;
+        const nx = ox / len,
+          ny = oy / len,
+          nz = oz / len;
+        const noise =
+          Math.sin(nx * 5.1 + t * 0.00088) * 0.5 +
+          Math.sin(ny * 7.4 + t * 0.00063) * 0.32 +
+          Math.sin(nz * 11.2 + t * 0.00041) * 0.18;
+        const d = noiseAmp * noise * c;
+        arr[i] = ox + nx * d;
+        arr[i + 1] = oy + ny * d;
+        arr[i + 2] = oz + nz * d;
+      }
+      posAttr.needsUpdate = true;
+      (mesh.material as THREE.MeshBasicMaterial).color.setRGB(cr / 255, cg / 255, cb / 255);
+      (mesh.material as THREE.MeshBasicMaterial).opacity = lerp(0.48, 0.76, norm) * iF;
+      mesh.rotation.x += rotSpeed * 0.65;
+      mesh.rotation.y += rotSpeed;
+      mesh.rotation.z += rotSpeed * 0.28;
+    }
+    if (child.userData.tag === 'emotionRing') {
+      const mesh = child as THREE.Mesh;
+      (mesh.material as THREE.MeshBasicMaterial).color.setRGB(cr / 255, cg / 255, cb / 255);
+      (mesh.material as THREE.MeshBasicMaterial).opacity = lerp(0.08, 0.28, norm) * iF;
+      mesh.rotation.z += rotSpeed * 0.2;
+    }
+  }
+}
+
+/* ── Constellation ──────────────────────────────────────────── */
+const CONST_NODES = 48;
+const CONST_EDGES = 64;
+
+function buildConstellation(cfg: Cfg, R: number): THREE.Group {
+  const group = new THREE.Group();
+  const pal = PAL[cfg.preset] ?? PAL['Calm Field'];
+  const [rr, gg, bb] = pal.rgb;
+  const iF = cfg.intensity / 10;
+  const sym = Math.max(1, cfg.symmetry);
+  const nodeCount = Math.max(12, Math.round(CONST_NODES * (cfg.complexity / 10)));
+
+  // Generate node positions
+  const nodes: THREE.Vector3[] = [];
+  for (let i = 0; i < nodeCount; i++) {
+    const theta = (i / nodeCount) * Math.PI * 2 * sym + Math.random() * 0.4;
+    const phi = Math.acos(2 * Math.random() - 1);
+    const r = R * (0.3 + Math.random() * 0.62);
+    nodes.push(
+      new THREE.Vector3(
+        r * Math.sin(phi) * Math.cos(theta),
+        r * Math.sin(phi) * Math.sin(theta),
+        r * Math.cos(phi),
+      ),
+    );
+  }
+  group.userData.nodes = nodes;
+
+  // Node points
+  const nodePos = new Float32Array(nodeCount * 3);
+  nodes.forEach((n, i) => {
+    nodePos[i * 3] = n.x;
+    nodePos[i * 3 + 1] = n.y;
+    nodePos[i * 3 + 2] = n.z;
+  });
+  const nodeGeo = new THREE.BufferGeometry();
+  const nodePosAttr = new THREE.BufferAttribute(nodePos, 3);
+  nodePosAttr.setUsage(THREE.DynamicDrawUsage);
+  nodeGeo.setAttribute('position', nodePosAttr);
+  const nodeMat = new THREE.PointsMaterial({
+    size: 3.2,
+    color: new THREE.Color(rr / 255, gg / 255, bb / 255),
+    transparent: true,
+    opacity: 0.88 * iF,
+    sizeAttenuation: false,
+    blending: THREE.AdditiveBlending,
+    depthWrite: false,
+  });
+  const nodePts = new THREE.Points(nodeGeo, nodeMat);
+  nodePts.userData.tag = 'constNodes';
+  group.add(nodePts);
+
+  // Edges — connect nearest-ish nodes
+  const edgeCount = Math.min(CONST_EDGES, Math.round(nodeCount * 1.4));
+  const edgePos = new Float32Array(edgeCount * 2 * 3);
+  const used = new Set<string>();
+  let ei = 0;
+  for (let i = 0; i < nodeCount && ei < edgeCount; i++) {
+    // Find closest node not yet connected
+    let best = -1,
+      bestDist = Infinity;
+    for (let j = 0; j < nodeCount; j++) {
+      if (i === j) continue;
+      const key = i < j ? `${i}-${j}` : `${j}-${i}`;
+      if (used.has(key)) continue;
+      const d = nodes[i].distanceTo(nodes[j]);
+      if (d < bestDist && d < R * 0.85) {
+        bestDist = d;
+        best = j;
+      }
+    }
+    if (best < 0) continue;
+    const key = i < best ? `${i}-${best}` : `${best}-${i}`;
+    used.add(key);
+    const a = nodes[i],
+      b = nodes[best];
+    edgePos[ei * 6 + 0] = a.x;
+    edgePos[ei * 6 + 1] = a.y;
+    edgePos[ei * 6 + 2] = a.z;
+    edgePos[ei * 6 + 3] = b.x;
+    edgePos[ei * 6 + 4] = b.y;
+    edgePos[ei * 6 + 5] = b.z;
+    ei++;
+  }
+  const edgeGeo = new THREE.BufferGeometry();
+  const edgePosAttr = new THREE.BufferAttribute(edgePos.slice(0, ei * 6), 3);
+  edgePosAttr.setUsage(THREE.DynamicDrawUsage);
+  edgeGeo.setAttribute('position', edgePosAttr);
+  edgeGeo.setDrawRange(0, ei * 2);
+  const edgeMat = new THREE.LineBasicMaterial({
+    color: new THREE.Color(rr / 255, gg / 255, bb / 255),
+    transparent: true,
+    opacity: 0.22 * iF,
+    blending: THREE.AdditiveBlending,
+  });
+  const edgeLines = new THREE.LineSegments(edgeGeo, edgeMat);
+  edgeLines.userData.tag = 'constEdges';
+  group.add(edgeLines);
+
+  return group;
+}
+
+function updateConstellation(group: THREE.Group, cfg: Cfg, t: number, _R: number): void {
+  const pal = PAL[cfg.preset] ?? PAL['Calm Field'];
+  const [rr, gg, bb] = pal.rgb;
+  const iF = cfg.intensity / 10;
+  const speed = cfg.breathSpeed * 0.00028;
+  const nodes = group.userData.nodes as THREE.Vector3[] | undefined;
+  if (!nodes) return;
+
+  for (const child of group.children) {
+    if (child.userData.tag === 'constNodes') {
+      const pts = child as THREE.Points;
+      const posAttr = pts.geometry.getAttribute('position') as THREE.BufferAttribute;
+      const arr = posAttr.array as Float32Array;
+      nodes.forEach((n, i) => {
+        const drift = Math.sin(t * speed + i * 1.7) * 3.5;
+        arr[i * 3] = n.x + Math.cos(t * speed * 0.7 + i) * drift;
+        arr[i * 3 + 1] = n.y + Math.sin(t * speed * 0.9 + i * 1.3) * drift;
+        arr[i * 3 + 2] = n.z + Math.cos(t * speed * 0.5 + i * 0.8) * drift;
+      });
+      posAttr.needsUpdate = true;
+      (pts.material as THREE.PointsMaterial).color.setRGB(rr / 255, gg / 255, bb / 255);
+      (pts.material as THREE.PointsMaterial).opacity = 0.88 * iF;
+    }
+    if (child.userData.tag === 'constEdges') {
+      const lines = child as THREE.LineSegments;
+      (lines.material as THREE.LineBasicMaterial).color.setRGB(rr / 255, gg / 255, bb / 255);
+      (lines.material as THREE.LineBasicMaterial).opacity = 0.22 * iF;
+    }
+  }
+  // Slow steady rotation
+  group.rotation.y += 0.0018;
+  group.rotation.x += 0.0006;
+}
+
+/* ── Drift — nodes breathe through noise-space, edges rebuild ── */
+function buildDrift(cfg: Cfg, R: number): THREE.Group {
+  const group = new THREE.Group();
+  const pal = PAL[cfg.preset] ?? PAL['Blue Astral'];
+  const [rr, gg, bb] = pal.rgb;
+  const iF = cfg.intensity / 10;
+  const n = Math.max(20, Math.round(28 + cfg.complexity * 3.5));
+
+  const seeds: THREE.Vector3[] = [];
+  for (let i = 0; i < n; i++) {
+    const theta = Math.random() * Math.PI * 2;
+    const phi = Math.acos(2 * Math.random() - 1);
+    const r = R * (0.18 + Math.random() ** 0.6 * 0.72);
+    seeds.push(
+      new THREE.Vector3(
+        r * Math.sin(phi) * Math.cos(theta),
+        r * Math.sin(phi) * Math.sin(theta),
+        r * Math.cos(phi),
+      ),
+    );
+  }
+  group.userData.seeds = seeds;
+  group.userData.n = n;
+
+  // Node points — positions updated each frame
+  const nodePos = new Float32Array(n * 3);
+  seeds.forEach((s, i) => {
+    nodePos[i * 3] = s.x;
+    nodePos[i * 3 + 1] = s.y;
+    nodePos[i * 3 + 2] = s.z;
+  });
+  const nGeo = new THREE.BufferGeometry();
+  const nAttr = new THREE.BufferAttribute(nodePos, 3);
+  nAttr.setUsage(THREE.DynamicDrawUsage);
+  nGeo.setAttribute('position', nAttr);
+  const nMat = new THREE.PointsMaterial({
+    size: 3.8,
+    color: new THREE.Color(rr / 255, gg / 255, bb / 255),
+    transparent: true,
+    opacity: 0.92 * iF,
+    sizeAttenuation: false,
+    blending: THREE.AdditiveBlending,
+    depthWrite: false,
+  });
+  const nPts = new THREE.Points(nGeo, nMat);
+  nPts.userData.tag = 'driftNodes';
+  group.add(nPts);
+
+  // Edge line pool — enough slots for n*(n-1)/2 pairs, draw subset
+  const MAX_E = Math.min(n * 4, 120);
+  const ePos = new Float32Array(MAX_E * 2 * 3);
+  const eGeo = new THREE.BufferGeometry();
+  const eAttr = new THREE.BufferAttribute(ePos, 3);
+  eAttr.setUsage(THREE.DynamicDrawUsage);
+  eGeo.setAttribute('position', eAttr);
+  eGeo.setDrawRange(0, 0);
+  const eMat = new THREE.LineBasicMaterial({
+    color: new THREE.Color(rr / 255, gg / 255, bb / 255),
+    transparent: true,
+    opacity: 0.28 * iF,
+    blending: THREE.AdditiveBlending,
+  });
+  const eLines = new THREE.LineSegments(eGeo, eMat);
+  eLines.userData.tag = 'driftEdges';
+  eLines.userData.maxE = MAX_E;
+  group.add(eLines);
+  return group;
+}
+
+function updateDrift(group: THREE.Group, cfg: Cfg, t: number, R: number): void {
+  const pal = PAL[cfg.preset] ?? PAL['Blue Astral'];
+  const [rr, gg, bb] = pal.rgb;
+  const iF = cfg.intensity / 10;
+  const speed = cfg.breathSpeed * 0.00022;
+  const amp = R * 0.14 * (cfg.complexity / 10);
+  const seeds = group.userData.seeds as THREE.Vector3[];
+  const n = group.userData.n as number;
+  if (!seeds) return;
+
+  // Compute live positions
+  const live: THREE.Vector3[] = seeds.map(
+    (s, i) =>
+      new THREE.Vector3(
+        s.x + Math.sin(t * speed * 1.1 + i * 2.3 + 0.7) * amp,
+        s.y + Math.cos(t * speed * 0.9 + i * 1.7 + 1.3) * amp,
+        s.z + Math.sin(t * speed * 0.7 + i * 1.1 + 2.1) * amp,
+      ),
+  );
+
+  for (const child of group.children) {
+    if (child.userData.tag === 'driftNodes') {
+      const pts = child as THREE.Points;
+      const arr = (pts.geometry.getAttribute('position') as THREE.BufferAttribute)
+        .array as Float32Array;
+      live.forEach((v, i) => {
+        arr[i * 3] = v.x;
+        arr[i * 3 + 1] = v.y;
+        arr[i * 3 + 2] = v.z;
+      });
+      (pts.geometry.getAttribute('position') as THREE.BufferAttribute).needsUpdate = true;
+      (pts.material as THREE.PointsMaterial).color.setRGB(rr / 255, gg / 255, bb / 255);
+      (pts.material as THREE.PointsMaterial).opacity = 0.92 * iF;
+    }
+    if (child.userData.tag === 'driftEdges') {
+      const lines = child as THREE.LineSegments;
+      const maxE = child.userData.maxE as number;
+      const arr = (lines.geometry.getAttribute('position') as THREE.BufferAttribute)
+        .array as Float32Array;
+      // Connect nearest pairs within threshold
+      const thresh = R * 0.62;
+      let ei = 0;
+      for (let a = 0; a < n && ei < maxE; a++) {
+        for (let b = a + 1; b < n && ei < maxE; b++) {
+          if (live[a].distanceTo(live[b]) < thresh) {
+            arr[ei * 6 + 0] = live[a].x;
+            arr[ei * 6 + 1] = live[a].y;
+            arr[ei * 6 + 2] = live[a].z;
+            arr[ei * 6 + 3] = live[b].x;
+            arr[ei * 6 + 4] = live[b].y;
+            arr[ei * 6 + 5] = live[b].z;
+            ei++;
+          }
+        }
+      }
+      (lines.geometry.getAttribute('position') as THREE.BufferAttribute).needsUpdate = true;
+      lines.geometry.setDrawRange(0, ei * 2);
+      (lines.material as THREE.LineBasicMaterial).color.setRGB(rr / 255, gg / 255, bb / 255);
+      (lines.material as THREE.LineBasicMaterial).opacity = 0.22 * iF;
+    }
+  }
+  group.rotation.y += 0.0014;
+  group.rotation.x += 0.0005;
+}
+
+/* ── CBloom — rings of nodes pulse outward like petals ───────── */
+function buildCBloom(cfg: Cfg, R: number): THREE.Group {
+  const group = new THREE.Group();
+  const pal = PAL[cfg.preset] ?? PAL['Calm Field'];
+  const [rr, gg, bb] = pal.rgb;
+  const iF = cfg.intensity / 10;
+  const rings = Math.max(3, Math.round(cfg.symmetry * 0.7));
+  const perRing = Math.max(6, Math.round(cfg.complexity * 1.4));
+  const total = rings * perRing + 1; // +1 for center
+
+  const rPos = new Float32Array(total * 3);
+  const rCol = new Float32Array(total * 3);
+  const rGeo = new THREE.BufferGeometry();
+  const rPosAttr = new THREE.BufferAttribute(rPos, 3);
+  rPosAttr.setUsage(THREE.DynamicDrawUsage);
+  const rColAttr = new THREE.BufferAttribute(rCol, 3);
+  rColAttr.setUsage(THREE.DynamicDrawUsage);
+  rGeo.setAttribute('position', rPosAttr);
+  rGeo.setAttribute('color', rColAttr);
+  const rMat = new THREE.PointsMaterial({
+    size: 4,
+    vertexColors: true,
+    transparent: true,
+    opacity: 0.88 * iF,
+    sizeAttenuation: false,
+    blending: THREE.AdditiveBlending,
+    depthWrite: false,
+  });
+  const rPts = new THREE.Points(rGeo, rMat);
+  rPts.userData.tag = 'bloomNodes';
+  rPts.userData.rings = rings;
+  rPts.userData.perRing = perRing;
+  group.add(rPts);
+
+  // Spoke edges center → ring nodes
+  const spokePos = new Float32Array(perRing * 2 * 3);
+  const sGeo = new THREE.BufferGeometry();
+  const sPosAttr = new THREE.BufferAttribute(spokePos, 3);
+  sPosAttr.setUsage(THREE.DynamicDrawUsage);
+  sGeo.setAttribute('position', sPosAttr);
+  sGeo.setDrawRange(0, perRing * 2);
+  const sMat = new THREE.LineBasicMaterial({
+    color: new THREE.Color(rr / 255, gg / 255, bb / 255),
+    transparent: true,
+    opacity: 0.18 * iF,
+    blending: THREE.AdditiveBlending,
+  });
+  const sLines = new THREE.LineSegments(sGeo, sMat);
+  sLines.userData.tag = 'bloomSpokes';
+  group.add(sLines);
+  return group;
+}
+
+function updateCBloom(group: THREE.Group, cfg: Cfg, t: number, R: number): void {
+  const pal = PAL[cfg.preset] ?? PAL['Calm Field'];
+  const [rr, gg, bb] = pal.rgb;
+  const iF = cfg.intensity / 10;
+  const speed = cfg.breathSpeed;
+  const tmpCol = new THREE.Color();
+  const timeHue = (t * 0.000032) % 1.0;
+  const glowF = cfg.glow / 10;
+
+  for (const child of group.children) {
+    if (child.userData.tag === 'bloomNodes') {
+      const pts = child as THREE.Points;
+      const rings = child.userData.rings as number;
+      const perRing = child.userData.perRing as number;
+      const pAttr = pts.geometry.getAttribute('position') as THREE.BufferAttribute;
+      const cAttr = pts.geometry.getAttribute('color') as THREE.BufferAttribute;
+      const pArr = pAttr.array as Float32Array;
+      const cArr = cAttr.array as Float32Array;
+
+      // Center
+      pArr[0] = 0;
+      pArr[1] = 0;
+      pArr[2] = 0;
+      cArr[0] = rr / 255;
+      cArr[1] = gg / 255;
+      cArr[2] = bb / 255;
+
+      for (let ri = 0; ri < rings; ri++) {
+        const baseR = R * (0.18 + (ri / (rings - 1)) * 0.72);
+        const pulse = Math.sin(t * 0.00065 * speed + ri * Math.PI * 0.5) * 0.18;
+        const radius = baseR * (1 + pulse);
+        const tiltZ = ri * 0.28; // z-depth per ring
+        const ringRot = t * 0.0002 * speed * (ri % 2 === 0 ? 1 : -1) * (ri + 1) * 0.4;
+
+        for (let ni = 0; ni < perRing; ni++) {
+          const angle = (ni / perRing) * Math.PI * 2 + ringRot;
+          const idx = 1 + ri * perRing + ni;
+          pArr[idx * 3] = Math.cos(angle) * radius;
+          pArr[idx * 3 + 1] = Math.sin(angle) * radius;
+          pArr[idx * 3 + 2] = tiltZ * Math.sin(angle * 2);
+
+          const h = (timeHue + (ri / rings) * 0.8 + (ni / perRing) * 0.2) % 1.0;
+          tmpCol.setHSL(h, 0.95, 0.6);
+          const bright = 0.55 + 0.45 * ((rings - ri) / rings);
+          cArr[idx * 3] = lerp(rr / 255, tmpCol.r, glowF) * bright;
+          cArr[idx * 3 + 1] = lerp(gg / 255, tmpCol.g, glowF) * bright;
+          cArr[idx * 3 + 2] = lerp(bb / 255, tmpCol.b, glowF) * bright;
+        }
+      }
+      pAttr.needsUpdate = true;
+      cAttr.needsUpdate = true;
+      pts.geometry.setDrawRange(0, 1 + rings * perRing);
+      (pts.material as THREE.PointsMaterial).opacity = 0.88 * iF;
+    }
+    if (child.userData.tag === 'bloomSpokes') {
+      const lines = child as THREE.LineSegments;
+      (lines.material as THREE.LineBasicMaterial).color.setRGB(rr / 255, gg / 255, bb / 255);
+      (lines.material as THREE.LineBasicMaterial).opacity = 0.16 * iF;
+    }
+  }
+  group.rotation.y += 0.0012;
+  group.rotation.z += 0.0004;
+}
+
+/* ── Orbit — nodes orbit 4 gravity wells (EMBF axes) ─────────── */
+const ORBIT_WELLS = 4;
+function buildOrbit(cfg: Cfg, R: number): THREE.Group {
+  const group = new THREE.Group();
+  const pal = PAL[cfg.preset] ?? PAL['Blue Astral'];
+  const [rr, gg, bb] = pal.rgb;
+  const iF = cfg.intensity / 10;
+  const n = Math.max(12, Math.round(cfg.complexity * 5));
+
+  // Gravity well positions (tetrahedral)
+  const wellPos = [
+    new THREE.Vector3(R * 0.45, R * 0.45, R * 0.45),
+    new THREE.Vector3(-R * 0.45, -R * 0.45, R * 0.45),
+    new THREE.Vector3(R * 0.45, -R * 0.45, -R * 0.45),
+    new THREE.Vector3(-R * 0.45, R * 0.45, -R * 0.45),
+  ];
+  group.userData.wellPos = wellPos;
+
+  // Node orbital params: [wellIdx, radius, phase, inclination, speed]
+  const orbits: number[][] = [];
+  for (let i = 0; i < n; i++) {
+    orbits.push([
+      i % ORBIT_WELLS,
+      R * (0.12 + Math.random() * 0.38),
+      Math.random() * Math.PI * 2,
+      Math.random() * Math.PI,
+      (0.3 + Math.random() * 0.7) * (Math.random() > 0.5 ? 1 : -1),
+    ]);
+  }
+  group.userData.orbits = orbits;
+  group.userData.n = n;
+
+  const nodePos = new Float32Array(n * 3);
+  const nodeCol = new Float32Array(n * 3);
+  const nGeo = new THREE.BufferGeometry();
+  const nPosAttr = new THREE.BufferAttribute(nodePos, 3);
+  nPosAttr.setUsage(THREE.DynamicDrawUsage);
+  const nColAttr = new THREE.BufferAttribute(nodeCol, 3);
+  nColAttr.setUsage(THREE.DynamicDrawUsage);
+  nGeo.setAttribute('position', nPosAttr);
+  nGeo.setAttribute('color', nColAttr);
+  const nMat = new THREE.PointsMaterial({
+    size: 4.2,
+    vertexColors: true,
+    transparent: true,
+    opacity: 0.9 * iF,
+    sizeAttenuation: false,
+    blending: THREE.AdditiveBlending,
+    depthWrite: false,
+  });
+  const nPts = new THREE.Points(nGeo, nMat);
+  nPts.userData.tag = 'orbitNodes';
+  group.add(nPts);
+
+  // Well markers
+  const wPos = new Float32Array(ORBIT_WELLS * 3);
+  wellPos.forEach((w, wi) => {
+    wPos[wi * 3] = w.x;
+    wPos[wi * 3 + 1] = w.y;
+    wPos[wi * 3 + 2] = w.z;
+  });
+  const wGeo = new THREE.BufferGeometry();
+  wGeo.setAttribute('position', new THREE.BufferAttribute(wPos, 3));
+  const wMat = new THREE.PointsMaterial({
+    size: 7,
+    color: new THREE.Color(rr / 255, gg / 255, bb / 255),
+    transparent: true,
+    opacity: 0.6 * iF,
+    sizeAttenuation: false,
+    blending: THREE.AdditiveBlending,
+    depthWrite: false,
+  });
+  const wPts = new THREE.Points(wGeo, wMat);
+  wPts.userData.tag = 'orbitWells';
+  group.add(wPts);
+
+  // Edge trails between same-well nodes
+  const MAX_E = n * 2;
+  const ePos = new Float32Array(MAX_E * 2 * 3);
+  const eGeo = new THREE.BufferGeometry();
+  const ePosAttr = new THREE.BufferAttribute(ePos, 3);
+  ePosAttr.setUsage(THREE.DynamicDrawUsage);
+  eGeo.setAttribute('position', ePosAttr);
+  eGeo.setDrawRange(0, 0);
+  const eMat = new THREE.LineBasicMaterial({
+    color: new THREE.Color(rr / 255, gg / 255, bb / 255),
+    transparent: true,
+    opacity: 0.2 * iF,
+    blending: THREE.AdditiveBlending,
+  });
+  const eLines = new THREE.LineSegments(eGeo, eMat);
+  eLines.userData.tag = 'orbitEdges';
+  eLines.userData.maxE = MAX_E;
+  group.add(eLines);
+  return group;
+}
+
+// Axis colors: Emotion=gold, Mind=lavender, Body=teal, Focus=green
+const WELL_COLORS = [
+  [196, 160, 96],
+  [184, 152, 208],
+  [120, 192, 168],
+  [136, 208, 152],
+] as const;
+
+function updateOrbit(group: THREE.Group, cfg: Cfg, t: number, _R: number): void {
+  const pal = PAL[cfg.preset] ?? PAL['Blue Astral'];
+  const [rr, gg, bb] = pal.rgb;
+  const iF = cfg.intensity / 10;
+  const glowF = cfg.glow / 10;
+  const speed = cfg.breathSpeed * 0.001;
+  const wellPos = group.userData.wellPos as THREE.Vector3[];
+  const orbits = group.userData.orbits as number[][];
+  const n = group.userData.n as number;
+  if (!orbits) return;
+
+  // Compute live node positions
+  const live: THREE.Vector3[] = orbits.map((o) => {
+    const [wi, r, phase, incl, spd] = o;
+    const well = wellPos[wi];
+    const angle = phase + t * speed * spd;
+    return new THREE.Vector3(
+      well.x + r * Math.cos(angle) * Math.sin(incl),
+      well.y + r * Math.sin(angle) * Math.sin(incl),
+      well.z + r * Math.cos(incl),
+    );
+  });
+
+  const tmpCol = new THREE.Color();
+
+  for (const child of group.children) {
+    if (child.userData.tag === 'orbitNodes') {
+      const pts = child as THREE.Points;
+      const pArr = (pts.geometry.getAttribute('position') as THREE.BufferAttribute)
+        .array as Float32Array;
+      const cArr = (pts.geometry.getAttribute('color') as THREE.BufferAttribute)
+        .array as Float32Array;
+      live.forEach((v, i) => {
+        pArr[i * 3] = v.x;
+        pArr[i * 3 + 1] = v.y;
+        pArr[i * 3 + 2] = v.z;
+        const wi = orbits[i][0];
+        const wc = WELL_COLORS[wi];
+        tmpCol.setHSL((t * 0.000015 + wi * 0.25) % 1.0, 0.9, 0.58);
+        cArr[i * 3] = lerp(wc[0] / 255, tmpCol.r, glowF);
+        cArr[i * 3 + 1] = lerp(wc[1] / 255, tmpCol.g, glowF);
+        cArr[i * 3 + 2] = lerp(wc[2] / 255, tmpCol.b, glowF);
+      });
+      (pts.geometry.getAttribute('position') as THREE.BufferAttribute).needsUpdate = true;
+      (pts.geometry.getAttribute('color') as THREE.BufferAttribute).needsUpdate = true;
+      pts.geometry.setDrawRange(0, n);
+      (pts.material as THREE.PointsMaterial).opacity = 0.9 * iF;
+    }
+    if (child.userData.tag === 'orbitWells') {
+      (child as THREE.Points).material &&
+        ((child as THREE.Points).material as THREE.PointsMaterial).color.setRGB(
+          rr / 255,
+          gg / 255,
+          bb / 255,
+        );
+    }
+    if (child.userData.tag === 'orbitEdges') {
+      const lines = child as THREE.LineSegments;
+      const maxE = child.userData.maxE as number;
+      const arr = (lines.geometry.getAttribute('position') as THREE.BufferAttribute)
+        .array as Float32Array;
+      const thresh = orbits[0]?.[1] * 2.2 || 60;
+      let ei = 0;
+      for (let a = 0; a < n && ei < maxE; a++) {
+        const wa = orbits[a][0];
+        for (let b = a + 1; b < n && ei < maxE; b++) {
+          if (orbits[b][0] === wa && live[a].distanceTo(live[b]) < thresh) {
+            arr[ei * 6 + 0] = live[a].x;
+            arr[ei * 6 + 1] = live[a].y;
+            arr[ei * 6 + 2] = live[a].z;
+            arr[ei * 6 + 3] = live[b].x;
+            arr[ei * 6 + 4] = live[b].y;
+            arr[ei * 6 + 5] = live[b].z;
+            ei++;
+          }
+        }
+      }
+      (lines.geometry.getAttribute('position') as THREE.BufferAttribute).needsUpdate = true;
+      lines.geometry.setDrawRange(0, ei * 2);
+      (lines.material as THREE.LineBasicMaterial).color.setRGB(rr / 255, gg / 255, bb / 255);
+      (lines.material as THREE.LineBasicMaterial).opacity = 0.2 * iF;
+    }
+  }
+  group.rotation.y += 0.001;
+  group.rotation.x += 0.0004;
+}
+
+/* ── Weave — nodes flow in interlocking sinusoidal paths ─────── */
+function buildWeave(cfg: Cfg, R: number): THREE.Group {
+  const group = new THREE.Group();
+  const pal = PAL[cfg.preset] ?? PAL['Violet Portal'];
+  const [rr, gg, bb] = pal.rgb;
+  const iF = cfg.intensity / 10;
+  const strands = Math.max(3, Math.round(cfg.symmetry * 0.6));
+  const perStrand = Math.max(8, Math.round(cfg.complexity * 2.2));
+  const total = strands * perStrand;
+
+  const nodePos = new Float32Array(total * 3);
+  const nodeCol = new Float32Array(total * 3);
+  const nGeo = new THREE.BufferGeometry();
+  const nPosAttr = new THREE.BufferAttribute(nodePos, 3);
+  nPosAttr.setUsage(THREE.DynamicDrawUsage);
+  const nColAttr = new THREE.BufferAttribute(nodeCol, 3);
+  nColAttr.setUsage(THREE.DynamicDrawUsage);
+  nGeo.setAttribute('position', nPosAttr);
+  nGeo.setAttribute('color', nColAttr);
+  const nMat = new THREE.PointsMaterial({
+    size: 3.4,
+    vertexColors: true,
+    transparent: true,
+    opacity: 0.86 * iF,
+    sizeAttenuation: false,
+    blending: THREE.AdditiveBlending,
+    depthWrite: false,
+  });
+  const nPts = new THREE.Points(nGeo, nMat);
+  nPts.userData.tag = 'weaveNodes';
+  nPts.userData.strands = strands;
+  nPts.userData.perStrand = perStrand;
+  group.add(nPts);
+
+  // Strand lines (consecutive nodes per strand)
+  const linePos = new Float32Array((perStrand - 1) * strands * 2 * 3);
+  const lGeo = new THREE.BufferGeometry();
+  const lAttr = new THREE.BufferAttribute(linePos, 3);
+  lAttr.setUsage(THREE.DynamicDrawUsage);
+  lGeo.setAttribute('position', lAttr);
+  lGeo.setDrawRange(0, (perStrand - 1) * strands * 2);
+  const lMat = new THREE.LineBasicMaterial({
+    color: new THREE.Color(rr / 255, gg / 255, bb / 255),
+    transparent: true,
+    opacity: 0.3 * iF,
+    blending: THREE.AdditiveBlending,
+  });
+  const lLines = new THREE.LineSegments(lGeo, lMat);
+  lLines.userData.tag = 'weaveLines';
+  group.add(lLines);
+  return group;
+}
+
+function updateWeave(group: THREE.Group, cfg: Cfg, t: number, R: number): void {
+  const pal = PAL[cfg.preset] ?? PAL['Violet Portal'];
+  const [rr, gg, bb] = pal.rgb;
+  const iF = cfg.intensity / 10;
+  const glowF = cfg.glow / 10;
+  const speed = cfg.breathSpeed * 0.00055;
+  const timeHue = (t * 0.000025) % 1.0;
+  const tmpCol = new THREE.Color();
+
+  for (const child of group.children) {
+    if (child.userData.tag === 'weaveNodes') {
+      const pts = child as THREE.Points;
+      const strands = child.userData.strands as number;
+      const perStrand = child.userData.perStrand as number;
+      const pArr = (pts.geometry.getAttribute('position') as THREE.BufferAttribute)
+        .array as Float32Array;
+      const cArr = (pts.geometry.getAttribute('color') as THREE.BufferAttribute)
+        .array as Float32Array;
+
+      for (let si = 0; si < strands; si++) {
+        const strandAngle = (si / strands) * Math.PI * 2;
+        const freqA = 1.5 + si * 0.7;
+        const freqB = 2.0 + si * 0.5;
+        for (let ni = 0; ni < perStrand; ni++) {
+          const u = (ni / (perStrand - 1)) * Math.PI * 4;
+          const phase = strandAngle + t * speed;
+          const x = Math.cos(strandAngle) * R * 0.7 + Math.cos(u * freqA + phase) * R * 0.22;
+          const y = Math.sin(u * 0.5 + phase * 0.7) * R * 0.68;
+          const z = Math.sin(strandAngle) * R * 0.7 + Math.sin(u * freqB + phase * 0.8) * R * 0.22;
+          const idx = si * perStrand + ni;
+          pArr[idx * 3] = x;
+          pArr[idx * 3 + 1] = y;
+          pArr[idx * 3 + 2] = z;
+          const h = (timeHue + (si / strands) * 0.9 + (ni / perStrand) * 0.1) % 1.0;
+          tmpCol.setHSL(h, 0.92, 0.56);
+          cArr[idx * 3] = lerp(rr / 255, tmpCol.r, glowF);
+          cArr[idx * 3 + 1] = lerp(gg / 255, tmpCol.g, glowF);
+          cArr[idx * 3 + 2] = lerp(bb / 255, tmpCol.b, glowF);
+        }
+      }
+      (pts.geometry.getAttribute('position') as THREE.BufferAttribute).needsUpdate = true;
+      (pts.geometry.getAttribute('color') as THREE.BufferAttribute).needsUpdate = true;
+      pts.geometry.setDrawRange(0, strands * perStrand);
+      (pts.material as THREE.PointsMaterial).opacity = 0.86 * iF;
+    }
+    if (child.userData.tag === 'weaveLines') {
+      const lines = child as THREE.LineSegments;
+      const strands =
+        ((group.children.find((c) => c.userData.tag === 'weaveNodes') as THREE.Points | undefined)
+          ?.userData.strands as number) ?? 4;
+      const perStrand =
+        ((group.children.find((c) => c.userData.tag === 'weaveNodes') as THREE.Points | undefined)
+          ?.userData.perStrand as number) ?? 8;
+      const pArr = (lines.geometry.getAttribute('position') as THREE.BufferAttribute)
+        .array as Float32Array;
+      const nodePArr = (
+        (
+          group.children.find((c) => c.userData.tag === 'weaveNodes') as THREE.Points
+        ).geometry.getAttribute('position') as THREE.BufferAttribute
+      ).array as Float32Array;
+      let ei = 0;
+      for (let si = 0; si < strands; si++) {
+        for (let ni = 0; ni < perStrand - 1; ni++) {
+          const a = si * perStrand + ni,
+            b = a + 1;
+          pArr[ei * 6 + 0] = nodePArr[a * 3];
+          pArr[ei * 6 + 1] = nodePArr[a * 3 + 1];
+          pArr[ei * 6 + 2] = nodePArr[a * 3 + 2];
+          pArr[ei * 6 + 3] = nodePArr[b * 3];
+          pArr[ei * 6 + 4] = nodePArr[b * 3 + 1];
+          pArr[ei * 6 + 5] = nodePArr[b * 3 + 2];
+          ei++;
+        }
+      }
+      (lines.geometry.getAttribute('position') as THREE.BufferAttribute).needsUpdate = true;
+      lines.geometry.setDrawRange(0, ei * 2);
+      (lines.material as THREE.LineBasicMaterial).color.setRGB(rr / 255, gg / 255, bb / 255);
+      (lines.material as THREE.LineBasicMaterial).opacity = 0.3 * iF;
+    }
+  }
+  group.rotation.y += 0.0016;
+  group.rotation.x += 0.0007;
+}
+
+/* ── Chaos Triangle 3D — floating triangles in 3D chaos drift ── */
+const TRI3D_N = 120;
+
+function buildChaostri3d(cfg: Cfg, R: number): THREE.Group {
+  const group = new THREE.Group();
+  const pal = PAL[cfg.preset] ?? PAL['Calm Field'];
+  const [rr, gg, bb] = pal.rgb;
+  const iF = cfg.intensity / 10;
+  const sz = R * 0.055;
+
+  // N individual triangle meshes stored in a single instanced mesh
+  const triGeo = new THREE.BufferGeometry();
+  triGeo.setAttribute(
+    'position',
+    new THREE.BufferAttribute(
+      new Float32Array([0, sz, 0, -sz * 0.86, -sz * 0.5, 0, sz * 0.86, -sz * 0.5, 0]),
+      3,
+    ),
+  );
+  triGeo.setIndex([0, 1, 2]);
+  triGeo.computeVertexNormals();
+
+  const mat = new THREE.MeshBasicMaterial({
+    color: new THREE.Color(rr / 255, gg / 255, bb / 255),
+    transparent: true,
+    opacity: 0.55 * iF,
+    side: THREE.DoubleSide,
+    blending: THREE.AdditiveBlending,
+    depthWrite: false,
+  });
+
+  const seeds: Float32Array = new Float32Array(TRI3D_N * 6); // x,y,z,vx,vy,vz per tri
+  for (let i = 0; i < TRI3D_N; i++) {
+    const theta = Math.random() * Math.PI * 2;
+    const phi = Math.acos(2 * Math.random() - 1);
+    const r = R * (0.15 + Math.random() * 0.75);
+    seeds[i * 6 + 0] = Math.sin(phi) * Math.cos(theta) * r;
+    seeds[i * 6 + 1] = Math.sin(phi) * Math.sin(theta) * r;
+    seeds[i * 6 + 2] = Math.cos(phi) * r;
+    seeds[i * 6 + 3] = (Math.random() - 0.5) * 0.012;
+    seeds[i * 6 + 4] = (Math.random() - 0.5) * 0.012;
+    seeds[i * 6 + 5] = (Math.random() - 0.5) * 0.012;
+  }
+
+  for (let i = 0; i < TRI3D_N; i++) {
+    const mesh = new THREE.Mesh(triGeo, mat);
+    mesh.position.set(seeds[i * 6], seeds[i * 6 + 1], seeds[i * 6 + 2]);
+    mesh.rotation.set(
+      Math.random() * Math.PI * 2,
+      Math.random() * Math.PI * 2,
+      Math.random() * Math.PI * 2,
+    );
+    mesh.userData.tag = 'tri3d';
+    mesh.userData.seed = i;
+    group.add(mesh);
+  }
+  group.userData.seeds = seeds;
+  return group;
+}
+
+function updateChaostri3d(group: THREE.Group, cfg: Cfg, t: number, R: number): void {
+  const pal = PAL[cfg.preset] ?? PAL['Calm Field'];
+  const [rr, gg, bb] = pal.rgb;
+  const iF = cfg.intensity / 10;
+  const speed = cfg.breathSpeed * 0.6;
+  const seeds = group.userData.seeds as Float32Array;
+  const noiseAmp = R * 0.28 * (cfg.complexity / 10);
+
+  for (const child of group.children) {
+    if (child.userData.tag !== 'tri3d') continue;
+    const mesh = child as THREE.Mesh;
+    const i = child.userData.seed as number;
+    const tx = t * 0.00045 * speed + i * 0.37;
+    const ty = t * 0.00038 * speed + i * 0.53;
+    const tz = t * 0.00031 * speed + i * 0.71;
+    mesh.position.x = seeds[i * 6] + Math.sin(tx + Math.cos(ty) * 0.7) * noiseAmp;
+    mesh.position.y = seeds[i * 6 + 1] + Math.cos(ty + Math.sin(tz) * 0.7) * noiseAmp;
+    mesh.position.z = seeds[i * 6 + 2] + Math.sin(tz + Math.cos(tx) * 0.7) * noiseAmp;
+    mesh.rotation.x += 0.006 * speed * (seeds[i * 6 + 3] > 0 ? 1 : -1);
+    mesh.rotation.y += 0.008 * speed * (seeds[i * 6 + 4] > 0 ? 1 : -1);
+    mesh.rotation.z += 0.004 * speed;
+    (mesh.material as THREE.MeshBasicMaterial).color.setRGB(rr / 255, gg / 255, bb / 255);
+    (mesh.material as THREE.MeshBasicMaterial).opacity = 0.45 * iF;
+  }
+  group.rotation.y += 0.0012;
+  group.rotation.x += 0.0004;
+}
+
+/* ── Tree of Life 2D — Sephirot tree with pulsing energy dots ─── */
+
+// 10 sephirot + optional Da'at at normalized coords (x ∈ [-1,1], y ∈ [-1,1])
+const TOL_NODES = [
+  { id: 0, name: 'Kether', x: 0.0, y: 0.92 },
+  { id: 1, name: 'Chokmah', x: 0.46, y: 0.6 },
+  { id: 2, name: 'Binah', x: -0.46, y: 0.6 },
+  { id: 3, name: 'Chesed', x: 0.46, y: 0.18 },
+  { id: 4, name: 'Geburah', x: -0.46, y: 0.18 },
+  { id: 5, name: 'Tiphareth', x: 0.0, y: 0.0 },
+  { id: 6, name: 'Netzach', x: 0.46, y: -0.38 },
+  { id: 7, name: 'Hod', x: -0.46, y: -0.38 },
+  { id: 8, name: 'Yesod', x: 0.0, y: -0.65 },
+  { id: 9, name: 'Malkuth', x: 0.0, y: -0.92 },
+];
+
+const TOL_EDGES = [
+  [0, 1],
+  [0, 2],
+  [0, 5],
+  [1, 2],
+  [1, 3],
+  [2, 4],
+  [3, 4],
+  [3, 5],
+  [4, 5],
+  [3, 6],
+  [4, 7],
+  [5, 6],
+  [5, 7],
+  [5, 8],
+  [6, 7],
+  [6, 8],
+  [7, 8],
+  [8, 9],
+  [1, 5],
+  [2, 5],
+];
+
+// Pulse path: Malkuth → Yesod → Hod/Netzach → Tiphareth → Geburah/Chesed → Binah/Chokmah → Kether
+const TOL_PULSE_PATH = [9, 8, 7, 6, 5, 4, 3, 2, 1, 0];
+
+function buildTreeoflife(cfg: Cfg, R: number): THREE.Group {
+  const group = new THREE.Group();
+  const pal = PAL[cfg.preset] ?? PAL['Calm Field'];
+  const [rr, gg, bb] = pal.rgb;
+  const iF = cfg.intensity / 10;
+  const symF = cfg.symmetry / 10; // x-spread factor
+  const cplxF = cfg.complexity / 10; // y-stretch (top vs bottom)
+
+  function nodeXY(node: (typeof TOL_NODES)[0]) {
+    // symmetry stretches x, complexity shifts top/bottom balance
+    const x = node.x * R * 0.72 * symF;
+    const yBias = node.y > 0 ? cplxF : 2 - cplxF;
+    const y = -node.y * R * 0.72 * yBias * 0.5;
+    return { x, y };
+  }
+
+  // Edge lines
+  const edgePositions = new Float32Array(TOL_EDGES.length * 4 * 3);
+  let ei = 0;
+  for (const [a, b] of TOL_EDGES) {
+    const pa = nodeXY(TOL_NODES[a]);
+    const pb = nodeXY(TOL_NODES[b]);
+    edgePositions[ei++] = pa.x;
+    edgePositions[ei++] = pa.y;
+    edgePositions[ei++] = 0;
+    edgePositions[ei++] = pb.x;
+    edgePositions[ei++] = pb.y;
+    edgePositions[ei++] = 0;
+  }
+  const eGeo = new THREE.BufferGeometry();
+  eGeo.setAttribute('position', new THREE.BufferAttribute(edgePositions, 3));
+  eGeo.setDrawRange(0, TOL_EDGES.length * 2);
+  const eMat = new THREE.LineBasicMaterial({
+    color: new THREE.Color(rr / 255, gg / 255, bb / 255),
+    transparent: true,
+    opacity: 0.28 * iF,
+    blending: THREE.AdditiveBlending,
+  });
+  const eLines = new THREE.LineSegments(eGeo, eMat);
+  eLines.userData.tag = 'tolEdges';
+  group.add(eLines);
+
+  // Node circles (rings)
+  for (const node of TOL_NODES) {
+    const { x, y } = nodeXY(node);
+    const r =
+      node.id === 0 ? R * 0.068 : node.id === 9 ? R * 0.074 : node.id === 5 ? R * 0.062 : R * 0.05;
+    const pts = 32;
+    const circPos = new Float32Array(pts * 3);
+    for (let i = 0; i < pts; i++) {
+      const a = (i / pts) * Math.PI * 2;
+      circPos[i * 3] = x + Math.cos(a) * r;
+      circPos[i * 3 + 1] = y + Math.sin(a) * r;
+      circPos[i * 3 + 2] = 0;
+    }
+    const cGeo = new THREE.BufferGeometry();
+    cGeo.setAttribute('position', new THREE.BufferAttribute(circPos, 3));
+    const cMat = new THREE.LineBasicMaterial({
+      color: new THREE.Color(rr / 255, gg / 255, bb / 255),
+      transparent: true,
+      opacity: 0.55 * iF,
+      blending: THREE.AdditiveBlending,
+    });
+    const circ = new THREE.LineLoop(cGeo, cMat);
+    circ.userData.tag = 'tolNode';
+    circ.userData.nodeId = node.id;
+    group.add(circ);
+  }
+
+  // Pulse dots (points moving up the tree)
+  const PULSE_N = 24;
+  const pPos = new Float32Array(PULSE_N * 3);
+  const pGeo = new THREE.BufferGeometry();
+  const pAttr = new THREE.BufferAttribute(pPos, 3);
+  pAttr.setUsage(THREE.DynamicDrawUsage);
+  pGeo.setAttribute('position', pAttr);
+  pGeo.setDrawRange(0, PULSE_N);
+  const pMat = new THREE.PointsMaterial({
+    size: 5,
+    color: new THREE.Color(rr / 255, gg / 255, bb / 255),
+    transparent: true,
+    opacity: 0.9 * iF,
+    sizeAttenuation: false,
+    blending: THREE.AdditiveBlending,
+    depthWrite: false,
+  });
+  const pPts = new THREE.Points(pGeo, pMat);
+  pPts.userData.tag = 'tolPulse';
+  group.add(pPts);
+
+  group.userData.cfg_sym = symF;
+  group.userData.cfg_cplx = cplxF;
+  return group;
+}
+
+function updateTreeoflife(group: THREE.Group, cfg: Cfg, t: number, R: number): void {
+  const pal = PAL[cfg.preset] ?? PAL['Calm Field'];
+  const [rr, gg, bb] = pal.rgb;
+  const iF = cfg.intensity / 10;
+  const speed = cfg.breathSpeed;
+  const symF = cfg.symmetry / 10;
+  const cplxF = cfg.complexity / 10;
+
+  function nodeXY(node: (typeof TOL_NODES)[0]) {
+    const x = node.x * R * 0.72 * symF;
+    const yBias = node.y > 0 ? cplxF : 2 - cplxF;
+    const y = -node.y * R * 0.72 * yBias * 0.5;
+    return { x, y };
+  }
+
+  const pathPositions = TOL_PULSE_PATH.map((id) => nodeXY(TOL_NODES[id]));
+  const pathLen = pathPositions.length - 1;
+
+  for (const child of group.children) {
+    if (child.userData.tag === 'tolEdges') {
+      // Rebuild edges when sym/cplx change
+      const lines = child as THREE.LineSegments;
+      const pArr = (lines.geometry.getAttribute('position') as THREE.BufferAttribute)
+        .array as Float32Array;
+      let ei = 0;
+      for (const [a, b] of TOL_EDGES) {
+        const pa = nodeXY(TOL_NODES[a]);
+        const pb = nodeXY(TOL_NODES[b]);
+        pArr[ei++] = pa.x;
+        pArr[ei++] = pa.y;
+        pArr[ei++] = 0;
+        pArr[ei++] = pb.x;
+        pArr[ei++] = pb.y;
+        pArr[ei++] = 0;
+      }
+      (lines.geometry.getAttribute('position') as THREE.BufferAttribute).needsUpdate = true;
+      (lines.material as THREE.LineBasicMaterial).color.setRGB(rr / 255, gg / 255, bb / 255);
+      (lines.material as THREE.LineBasicMaterial).opacity = 0.28 * iF;
+    }
+    if (child.userData.tag === 'tolNode') {
+      const nodeId = child.userData.nodeId as number;
+      const node = TOL_NODES[nodeId];
+      const { x, y } = nodeXY(node);
+      const loop = child as THREE.LineLoop;
+      const r =
+        nodeId === 0 ? R * 0.068 : nodeId === 9 ? R * 0.074 : nodeId === 5 ? R * 0.062 : R * 0.05;
+      // pulse brightness at each node when a dot passes through
+      const pArr = (loop.geometry.getAttribute('position') as THREE.BufferAttribute)
+        .array as Float32Array;
+      for (let i = 0; i < 32; i++) {
+        const a = (i / 32) * Math.PI * 2;
+        pArr[i * 3] = x + Math.cos(a) * r;
+        pArr[i * 3 + 1] = y + Math.sin(a) * r;
+      }
+      (loop.geometry.getAttribute('position') as THREE.BufferAttribute).needsUpdate = true;
+      const bright = 0.45 + 0.5 * Math.abs(Math.sin(t * 0.0008 * speed + nodeId * 0.7));
+      (loop.material as THREE.LineBasicMaterial).color.setRGB(rr / 255, gg / 255, bb / 255);
+      (loop.material as THREE.LineBasicMaterial).opacity = bright * iF;
+    }
+    if (child.userData.tag === 'tolPulse') {
+      const pts = child as THREE.Points;
+      const pArr = (pts.geometry.getAttribute('position') as THREE.BufferAttribute)
+        .array as Float32Array;
+      const PULSE_N = 24;
+      for (let pi = 0; pi < PULSE_N; pi++) {
+        const phase = (t * 0.00055 * speed + pi / PULSE_N) % 1.0;
+        const seg = phase * pathLen;
+        const segIdx = Math.min(pathLen - 1, Math.floor(seg));
+        const frac = seg - segIdx;
+        const pa = pathPositions[segIdx];
+        const pb = pathPositions[segIdx + 1];
+        pArr[pi * 3] = pa.x + (pb.x - pa.x) * frac;
+        pArr[pi * 3 + 1] = pa.y + (pb.y - pa.y) * frac;
+        pArr[pi * 3 + 2] = 0;
+      }
+      (pts.geometry.getAttribute('position') as THREE.BufferAttribute).needsUpdate = true;
+      (pts.material as THREE.PointsMaterial).color.setRGB(rr / 255, gg / 255, bb / 255);
+      (pts.material as THREE.PointsMaterial).opacity = 0.9 * iF;
+    }
+  }
+}
+
+/* ── Tree of Life 3D — sephirot tree in depth with 3D orbit ───── */
+
+function buildTreeoflife3d(cfg: Cfg, R: number): THREE.Group {
+  const group = new THREE.Group();
+  const pal = PAL[cfg.preset] ?? PAL['Calm Field'];
+  const [rr, gg, bb] = pal.rgb;
+  const iF = cfg.intensity / 10;
+  const symF = cfg.symmetry / 10;
+  const cplxF = cfg.complexity / 10;
+
+  // 3D positions: pillars at different Z depths
+  // Left pillar: Z = -R*0.18, Center: Z = 0, Right pillar: Z = R*0.18
+  function nodeXYZ(node: (typeof TOL_NODES)[0]) {
+    const x = node.x * R * 0.68 * symF;
+    const yBias = node.y > 0 ? cplxF : 2 - cplxF;
+    const y = -node.y * R * 0.68 * yBias * 0.5;
+    // Left column (x<-0.2): z = -R*0.22, Right: z = R*0.22, Center: z=0
+    const z = node.x < -0.2 ? -R * 0.22 : node.x > 0.2 ? R * 0.22 : 0;
+    return { x, y, z };
+  }
+
+  // Edges
+  const edgePositions = new Float32Array(TOL_EDGES.length * 2 * 3);
+  let ei = 0;
+  for (const [a, b] of TOL_EDGES) {
+    const pa = nodeXYZ(TOL_NODES[a]);
+    const pb = nodeXYZ(TOL_NODES[b]);
+    edgePositions[ei++] = pa.x;
+    edgePositions[ei++] = pa.y;
+    edgePositions[ei++] = pa.z;
+    edgePositions[ei++] = pb.x;
+    edgePositions[ei++] = pb.y;
+    edgePositions[ei++] = pb.z;
+  }
+  const eGeo = new THREE.BufferGeometry();
+  eGeo.setAttribute('position', new THREE.BufferAttribute(edgePositions, 3));
+  eGeo.setDrawRange(0, TOL_EDGES.length * 2);
+  const eMat = new THREE.LineBasicMaterial({
+    color: new THREE.Color(rr / 255, gg / 255, bb / 255),
+    transparent: true,
+    opacity: 0.3 * iF,
+    blending: THREE.AdditiveBlending,
+  });
+  const eLines = new THREE.LineSegments(eGeo, eMat);
+  eLines.userData.tag = 'tol3dEdges';
+  group.add(eLines);
+
+  // Node spheres (small icosahedra)
+  for (const node of TOL_NODES) {
+    const pos = nodeXYZ(node);
+    const r =
+      node.id === 0 ? R * 0.065 : node.id === 9 ? R * 0.07 : node.id === 5 ? R * 0.06 : R * 0.048;
+    const sGeo = new THREE.IcosahedronGeometry(r, 1);
+    const sMat = new THREE.MeshBasicMaterial({
+      color: new THREE.Color(rr / 255, gg / 255, bb / 255),
+      wireframe: true,
+      transparent: true,
+      opacity: 0.5 * iF,
+      blending: THREE.AdditiveBlending,
+    });
+    const sphere = new THREE.Mesh(sGeo, sMat);
+    sphere.position.set(pos.x, pos.y, pos.z);
+    sphere.userData.tag = 'tol3dNode';
+    sphere.userData.nodeId = node.id;
+    group.add(sphere);
+  }
+
+  // Pulse dots
+  const PULSE_N = 30;
+  const pPos = new Float32Array(PULSE_N * 3);
+  const pGeo = new THREE.BufferGeometry();
+  const pAttr = new THREE.BufferAttribute(pPos, 3);
+  pAttr.setUsage(THREE.DynamicDrawUsage);
+  pGeo.setAttribute('position', pAttr);
+  pGeo.setDrawRange(0, PULSE_N);
+  const pMat = new THREE.PointsMaterial({
+    size: 6,
+    color: new THREE.Color(rr / 255, gg / 255, bb / 255),
+    transparent: true,
+    opacity: 0.9 * iF,
+    sizeAttenuation: false,
+    blending: THREE.AdditiveBlending,
+    depthWrite: false,
+  });
+  const pPts = new THREE.Points(pGeo, pMat);
+  pPts.userData.tag = 'tol3dPulse';
+  group.add(pPts);
+
+  return group;
+}
+
+function updateTreeoflife3d(group: THREE.Group, cfg: Cfg, t: number, R: number): void {
+  const pal = PAL[cfg.preset] ?? PAL['Calm Field'];
+  const [rr, gg, bb] = pal.rgb;
+  const iF = cfg.intensity / 10;
+  const speed = cfg.breathSpeed;
+  const symF = cfg.symmetry / 10;
+  const cplxF = cfg.complexity / 10;
+
+  function nodeXYZ(node: (typeof TOL_NODES)[0]) {
+    const x = node.x * R * 0.68 * symF;
+    const yBias = node.y > 0 ? cplxF : 2 - cplxF;
+    const y = -node.y * R * 0.68 * yBias * 0.5;
+    const z = node.x < -0.2 ? -R * 0.22 : node.x > 0.2 ? R * 0.22 : 0;
+    return { x, y, z };
+  }
+
+  const pathPositions = TOL_PULSE_PATH.map((id) => nodeXYZ(TOL_NODES[id]));
+  const pathLen = pathPositions.length - 1;
+
+  for (const child of group.children) {
+    if (child.userData.tag === 'tol3dEdges') {
+      const lines = child as THREE.LineSegments;
+      const pArr = (lines.geometry.getAttribute('position') as THREE.BufferAttribute)
+        .array as Float32Array;
+      let ei = 0;
+      for (const [a, b] of TOL_EDGES) {
+        const pa = nodeXYZ(TOL_NODES[a]);
+        const pb = nodeXYZ(TOL_NODES[b]);
+        pArr[ei++] = pa.x;
+        pArr[ei++] = pa.y;
+        pArr[ei++] = pa.z;
+        pArr[ei++] = pb.x;
+        pArr[ei++] = pb.y;
+        pArr[ei++] = pb.z;
+      }
+      (lines.geometry.getAttribute('position') as THREE.BufferAttribute).needsUpdate = true;
+      (lines.material as THREE.LineBasicMaterial).color.setRGB(rr / 255, gg / 255, bb / 255);
+      (lines.material as THREE.LineBasicMaterial).opacity = 0.3 * iF;
+    }
+    if (child.userData.tag === 'tol3dNode') {
+      const nodeId = child.userData.nodeId as number;
+      const node = TOL_NODES[nodeId];
+      const pos = nodeXYZ(node);
+      child.position.set(pos.x, pos.y, pos.z);
+      const bright = 0.38 + 0.52 * Math.abs(Math.sin(t * 0.0009 * speed + nodeId * 0.7));
+      (child as THREE.Mesh).rotation.y += 0.008;
+      (child as THREE.Mesh).rotation.x += 0.005;
+      ((child as THREE.Mesh).material as THREE.MeshBasicMaterial).color.setRGB(
+        rr / 255,
+        gg / 255,
+        bb / 255,
+      );
+      ((child as THREE.Mesh).material as THREE.MeshBasicMaterial).opacity = bright * iF;
+    }
+    if (child.userData.tag === 'tol3dPulse') {
+      const pts = child as THREE.Points;
+      const pArr = (pts.geometry.getAttribute('position') as THREE.BufferAttribute)
+        .array as Float32Array;
+      const PULSE_N = 30;
+      for (let pi = 0; pi < PULSE_N; pi++) {
+        const phase = (t * 0.0006 * speed + pi / PULSE_N) % 1.0;
+        const seg = phase * pathLen;
+        const segIdx = Math.min(pathLen - 1, Math.floor(seg));
+        const frac = seg - segIdx;
+        const pa = pathPositions[segIdx];
+        const pb = pathPositions[segIdx + 1];
+        pArr[pi * 3] = pa.x + (pb.x - pa.x) * frac;
+        pArr[pi * 3 + 1] = pa.y + (pb.y - pa.y) * frac;
+        pArr[pi * 3 + 2] = pa.z + (pb.z - pa.z) * frac;
+      }
+      (pts.geometry.getAttribute('position') as THREE.BufferAttribute).needsUpdate = true;
+      (pts.material as THREE.PointsMaterial).color.setRGB(rr / 255, gg / 255, bb / 255);
+      (pts.material as THREE.PointsMaterial).opacity = 0.9 * iF;
+    }
+  }
+  group.rotation.y += 0.001;
+}
 
 /* ── Component ──────────────────────────────────────────────── */
 
@@ -6495,6 +10201,8 @@ export default function GeometryField() {
   const journeyStartRef = useRef(0);
   const matrixActiveRef = useRef(false);
   const matrixDropsRef = useRef<number[]>([]);
+  const matrixNumActiveRef = useRef(false);
+  const matrixNumAnimRef = useRef<number>(0);
   const phaseInfoRef = useRef({ phaseIdx: 0, phaseProgress: 0 });
 
   // Three.js refs
@@ -6512,8 +10220,10 @@ export default function GeometryField() {
   const rippleRingsRef = useRef<THREE.Line[]>([]);
   const l3dRotRef = useRef({ x: 0.4, y: 0.0 });
   const l3dDragRef = useRef<{ lastX: number; lastY: number } | null>(null);
+  const fingerDistortRef = useRef(false);
 
   const [cfg, setCfg] = useState<Cfg>(PRESETS['Calm Field']);
+  const [fingerDistort, setFingerDistort] = useState(false);
   const [open, setOpen] = useState(true);
   const [tab, setTab] = useState<'builder' | 'journey'>('builder');
   const [builderView, setBuilderView] = useState<'programs' | 'sliders'>('sliders');
@@ -6668,7 +10378,15 @@ export default function GeometryField() {
         currentCfg.mode === 'firework3d' ||
         currentCfg.mode === 'fibonacci3d' ||
         currentCfg.mode === 'yantra3d' ||
-        currentCfg.mode === 'rainbow3d';
+        currentCfg.mode === 'rainbow3d' ||
+        currentCfg.mode === 'emotion' ||
+        currentCfg.mode === 'constellation' ||
+        currentCfg.mode === 'drift' ||
+        currentCfg.mode === 'cbloom' ||
+        currentCfg.mode === 'orbit' ||
+        currentCfg.mode === 'weave' ||
+        currentCfg.mode === 'chaostri3d' ||
+        currentCfg.mode === 'treeoflife3d';
       if (is3D && modeGroupRef.current) {
         if (!l3dDragRef.current) {
           // Slow auto-spin when not dragging
@@ -6768,6 +10486,145 @@ export default function GeometryField() {
     };
   }, [journeyRunning, journeyId]);
 
+  // Standalone matrix-text mode — character rain + concentric number rings (7 rings, ~400+ chars)
+  useEffect(() => {
+    const isMatrix = cfg.mode === 'matrix' || cfg.mode === 'matrix3d';
+    if (!isMatrix) {
+      matrixNumActiveRef.current = false;
+      cancelAnimationFrame(matrixNumAnimRef.current);
+      const mc = matrixCanvasRef.current;
+      if (mc && !matrixActiveRef.current) {
+        const ctx2 = mc.getContext('2d');
+        if (ctx2) ctx2.clearRect(0, 0, mc.width, mc.height);
+      }
+      return;
+    }
+    const mc = matrixCanvasRef.current;
+    if (!mc) return;
+    const ctx2 = mc.getContext('2d');
+    if (!ctx2) return;
+
+    const FS = 14;
+    const resize = () => {
+      mc.width = mc.offsetWidth || 400;
+      mc.height = mc.offsetHeight || 600;
+      matrixDropsRef.current = Array(Math.floor(mc.width / FS)).fill(1);
+    };
+    resize();
+    matrixNumActiveRef.current = true;
+
+    const pal = PAL[cfg.preset] ?? PAL['Matrix Green'];
+    const [pr, pg, pb] = pal.rgb;
+
+    // Rich character set — numbers, symbols, japanese, greek, math
+    const ALL_CHARS =
+      '0123456789012345678901234567890123456789ABCDEFGHIJKLMNOPQRSTUVWXYZアイウエオカキクケコサシスセソΩ∞∑∮∇◈✦∫√π∆ψφλμσεδγβα∀∃∈⊂∪∩{}[]<>!?/=+−×÷ℕℤℝℂ¹²³⁴⁵⁶⁷⁸⁹⁰'.split(
+        '',
+      );
+    // Rings use only digits + symbols for density
+    const RING_CHARS = '0123456789∞∑∮∇Ω◈✦πψφλ∆αβγδεζηθικλμνξπρστυφχψω'.split('');
+
+    // Ring config: 7 rings, 20→88 chars each  ≈ 364 total
+    const RING_CFG = [
+      { countBase: 20, fontSize: FS - 2, rotSpeed: 0.06, dir: 1, alphaBase: 0.72 },
+      { countBase: 32, fontSize: FS - 1, rotSpeed: 0.05, dir: -1, alphaBase: 0.62 },
+      { countBase: 44, fontSize: FS, rotSpeed: 0.04, dir: 1, alphaBase: 0.52 },
+      { countBase: 56, fontSize: FS, rotSpeed: 0.035, dir: -1, alphaBase: 0.44 },
+      { countBase: 68, fontSize: FS + 1, rotSpeed: 0.028, dir: 1, alphaBase: 0.36 },
+      { countBase: 80, fontSize: FS + 1, rotSpeed: 0.022, dir: -1, alphaBase: 0.28 },
+      { countBase: 92, fontSize: FS + 2, rotSpeed: 0.016, dir: 1, alphaBase: 0.2 },
+    ];
+
+    let frameCount = 0;
+
+    function draw() {
+      if (!matrixNumActiveRef.current) return;
+      frameCount++;
+      const W = mc!.width;
+      const H = mc!.height;
+
+      // Slow fade trail
+      ctx2!.fillStyle = `rgba(0,0,0,0.055)`;
+      ctx2!.fillRect(0, 0, W, H);
+
+      ctx2!.font = `bold ${FS}px monospace`;
+      const drops = matrixDropsRef.current;
+
+      // Character rain — advance every 3rd frame for slower fall
+      for (let i = 0; i < drops.length; i++) {
+        const ch = ALL_CHARS[Math.floor(Math.random() * ALL_CHARS.length)];
+        const y = drops[i] * FS;
+        if (y < H) {
+          const isHead = drops[i] > 0 && Math.random() > 0.88;
+          const bright = isHead ? 0.98 : 0.35 + Math.random() * 0.35;
+          ctx2!.fillStyle = isHead
+            ? `rgba(255,255,255,${bright})`
+            : `rgba(${pr},${pg},${pb},${bright})`;
+          ctx2!.fillText(ch, i * FS, y);
+        }
+        if (frameCount % 3 === 0) {
+          if (y > H && Math.random() > 0.972) drops[i] = 0;
+          else drops[i]++;
+        }
+      }
+
+      // 7 concentric rings of numbers — slow, beautiful rotation
+      const cx = W / 2;
+      const cy = H / 2;
+      const maxR = Math.min(W, H) * 0.47;
+      const tSec = performance.now() * 0.001;
+
+      ctx2!.textAlign = 'center';
+      ctx2!.textBaseline = 'middle';
+
+      RING_CFG.forEach((ring, ri) => {
+        const r = maxR * ((ri + 1) / RING_CFG.length);
+        const count = ring.countBase;
+        const angle0 = tSec * ring.rotSpeed * ring.dir;
+        ctx2!.font = `bold ${ring.fontSize}px monospace`;
+
+        for (let n = 0; n < count; n++) {
+          const angle = (n / count) * Math.PI * 2 + angle0;
+          const x = cx + r * Math.cos(angle);
+          const y2 = cy + r * Math.sin(angle);
+
+          // Chars cycle based on time so they shimmer
+          const charIdx = (n + Math.floor(tSec * (ri + 1) * 1.2)) % RING_CHARS.length;
+          const ch = RING_CHARS[charIdx];
+
+          // Alpha pulses subtly
+          const pulse = 0.85 + 0.15 * Math.sin(tSec * 1.4 + n * 0.8 + ri);
+          const alpha = ring.alphaBase * pulse;
+
+          ctx2!.fillStyle = `rgba(${pr},${pg},${pb},${alpha})`;
+          ctx2!.fillText(ch, x, y2);
+        }
+
+        // Subtle ring outline
+        ctx2!.strokeStyle = `rgba(${pr},${pg},${pb},0.08)`;
+        ctx2!.lineWidth = 0.4;
+        ctx2!.beginPath();
+        ctx2!.arc(cx, cy, r, 0, Math.PI * 2);
+        ctx2!.stroke();
+      });
+
+      ctx2!.textAlign = 'start';
+      ctx2!.textBaseline = 'alphabetic';
+      matrixNumAnimRef.current = requestAnimationFrame(draw);
+    }
+
+    matrixNumAnimRef.current = requestAnimationFrame(draw);
+    const ro = new ResizeObserver(resize);
+    ro.observe(mc);
+    return () => {
+      matrixNumActiveRef.current = false;
+      cancelAnimationFrame(matrixNumAnimRef.current);
+      ro.disconnect();
+      const ctx3 = mc.getContext('2d');
+      if (ctx3) ctx3.clearRect(0, 0, mc.width, mc.height);
+    };
+  }, [cfg.mode, cfg.preset]);
+
   function startJourney(id: number) {
     setJourneyId(id);
     journeyIdRef.current = id;
@@ -6810,6 +10667,26 @@ export default function GeometryField() {
       born: performance.now(),
     });
     if (ripplesRef.current.length > 10) ripplesRef.current.shift();
+  }
+
+  function handleCanvasPointerMove(e: React.PointerEvent<HTMLCanvasElement>) {
+    if (!fingerDistortRef.current) return;
+    const rect = canvasRef.current!.getBoundingClientRect();
+    const { W, H } = sizeRef.current;
+    _distortWorldX = e.clientX - rect.left - W / 2;
+    _distortWorldY = -(e.clientY - rect.top - H / 2);
+    _distortActive = true;
+  }
+
+  function handleCanvasPointerLeave() {
+    _distortActive = false;
+  }
+
+  function toggleFingerDistort() {
+    const next = !fingerDistortRef.current;
+    fingerDistortRef.current = next;
+    setFingerDistort(next);
+    if (!next) _distortActive = false;
   }
 
   function applyPreset(name: string) {
@@ -6950,6 +10827,7 @@ export default function GeometryField() {
             l3dDragRef.current = { lastX: e.clientX, lastY: e.clientY };
           }}
           onPointerMove={(e) => {
+            handleCanvasPointerMove(e);
             const is3d =
               cfg.mode === 'celtic' ||
               cfg.mode === 'lissajous3d' ||
@@ -6969,6 +10847,7 @@ export default function GeometryField() {
             l3dRotRef.current.x += dy * 0.008;
             l3dDragRef.current = { lastX: e.clientX, lastY: e.clientY };
           }}
+          onPointerLeave={handleCanvasPointerLeave}
           onPointerUp={() => {
             l3dDragRef.current = null;
           }}
@@ -6995,8 +10874,10 @@ export default function GeometryField() {
           }}
         />
 
-        {/* Matrix code-rain overlay */}
-        {journeyRunning && journeyId === 5 && (
+        {/* Matrix code-rain overlay — active for journey phase 5 and standalone matrix mode */}
+        {((journeyRunning && journeyId === 5) ||
+          cfg.mode === 'matrix' ||
+          cfg.mode === 'matrix3d') && (
           <canvas
             ref={matrixCanvasRef}
             style={{
@@ -7005,7 +10886,7 @@ export default function GeometryField() {
               width: '100%',
               height: '100%',
               mixBlendMode: 'screen',
-              opacity: 0.5,
+              opacity: cfg.mode === 'matrix' || cfg.mode === 'matrix3d' ? 0.85 : 0.5,
               pointerEvents: 'none',
             }}
           />
@@ -7211,48 +11092,129 @@ export default function GeometryField() {
               <>
                 {/* Programs grid */}
                 {builderView === 'programs' && (
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 6 }}>
-                    {MODES.map(({ mode, label }, idx) => {
-                      const isActive = cfg.mode === mode;
-                      return (
-                        <button
-                          key={mode}
-                          type="button"
-                          onClick={() => {
-                            const p = MODE_TO_PRESET[mode];
-                            if (p) applyPreset(p);
-                            else update('mode', mode);
-                          }}
-                          style={{
-                            background: isActive ? accentFaint : 'transparent',
-                            border: `1px solid ${isActive ? accentMid : `rgba(${pr},${pg},${pb},0.15)`}`,
-                            borderRadius: 8,
-                            padding: '9px 6px 7px',
-                            color: isActive ? accent : `rgba(${pr},${pg},${pb},0.6)`,
-                            fontFamily: 'var(--font-serif)',
-                            cursor: 'pointer',
-                            textAlign: 'center',
-                            display: 'flex',
-                            flexDirection: 'column',
-                            alignItems: 'center',
-                            gap: 2,
-                          }}
-                        >
-                          <span style={{ fontSize: 8, opacity: 0.45, letterSpacing: '0.08em' }}>
-                            {String(idx + 1).padStart(2, '0')}
-                          </span>
-                          <span
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                    {/* Featured new presets */}
+                    <div
+                      style={{
+                        fontFamily: 'var(--font-serif)',
+                        fontSize: 8,
+                        letterSpacing: '0.18em',
+                        textTransform: 'uppercase',
+                        color: `rgba(${pr},${pg},${pb},0.45)`,
+                        paddingBottom: 2,
+                      }}
+                    >
+                      New
+                    </div>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 5 }}>
+                      {FEATURED_PRESETS.map(({ name, tag }) => {
+                        const isActive =
+                          Object.keys(PRESETS).includes(name) &&
+                          (() => {
+                            const p = PRESETS[name];
+                            return p && cfg.preset === (p.preset ?? name) && cfg.mode === p.mode;
+                          })();
+                        return (
+                          <button
+                            key={name}
+                            type="button"
+                            onClick={() => applyPreset(name)}
                             style={{
-                              fontSize: 11,
-                              fontWeight: isActive ? 700 : 400,
-                              letterSpacing: '0.05em',
+                              background: isActive ? accentFaint : 'transparent',
+                              border: `1px solid ${isActive ? accentMid : `rgba(${pr},${pg},${pb},0.12)`}`,
+                              borderRadius: 8,
+                              padding: '7px 5px 6px',
+                              color: isActive ? accent : `rgba(${pr},${pg},${pb},0.62)`,
+                              fontFamily: 'var(--font-serif)',
+                              cursor: 'pointer',
+                              textAlign: 'center',
+                              display: 'flex',
+                              flexDirection: 'column',
+                              alignItems: 'center',
+                              gap: 2,
                             }}
                           >
-                            {label}
-                          </span>
-                        </button>
-                      );
-                    })}
+                            <span
+                              style={{
+                                fontSize: 7,
+                                opacity: 0.4,
+                                letterSpacing: '0.1em',
+                                color: accent,
+                              }}
+                            >
+                              {tag}
+                            </span>
+                            <span
+                              style={{
+                                fontSize: 10,
+                                fontWeight: isActive ? 700 : 400,
+                                letterSpacing: '0.04em',
+                              }}
+                            >
+                              {name}
+                            </span>
+                          </button>
+                        );
+                      })}
+                    </div>
+
+                    {/* All modes */}
+                    <div
+                      style={{
+                        fontFamily: 'var(--font-serif)',
+                        fontSize: 8,
+                        letterSpacing: '0.18em',
+                        textTransform: 'uppercase',
+                        color: `rgba(${pr},${pg},${pb},0.45)`,
+                        paddingTop: 4,
+                        paddingBottom: 2,
+                      }}
+                    >
+                      All Programs
+                    </div>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 6 }}>
+                      {MODES.map(({ mode, label }, idx) => {
+                        const isActive = cfg.mode === mode;
+                        return (
+                          <button
+                            key={mode}
+                            type="button"
+                            onClick={() => {
+                              const p = MODE_TO_PRESET[mode];
+                              if (p) applyPreset(p);
+                              else update('mode', mode);
+                            }}
+                            style={{
+                              background: isActive ? accentFaint : 'transparent',
+                              border: `1px solid ${isActive ? accentMid : `rgba(${pr},${pg},${pb},0.15)`}`,
+                              borderRadius: 8,
+                              padding: '9px 6px 7px',
+                              color: isActive ? accent : `rgba(${pr},${pg},${pb},0.6)`,
+                              fontFamily: 'var(--font-serif)',
+                              cursor: 'pointer',
+                              textAlign: 'center',
+                              display: 'flex',
+                              flexDirection: 'column',
+                              alignItems: 'center',
+                              gap: 2,
+                            }}
+                          >
+                            <span style={{ fontSize: 8, opacity: 0.45, letterSpacing: '0.08em' }}>
+                              {String(idx + 1).padStart(2, '0')}
+                            </span>
+                            <span
+                              style={{
+                                fontSize: 11,
+                                fontWeight: isActive ? 700 : 400,
+                                letterSpacing: '0.05em',
+                              }}
+                            >
+                              {label}
+                            </span>
+                          </button>
+                        );
+                      })}
+                    </div>
                   </div>
                 )}
 
@@ -7307,6 +11269,29 @@ export default function GeometryField() {
                         );
                       })}
                     </div>
+
+                    {/* Finger Distortion toggle */}
+                    <button
+                      type="button"
+                      onClick={toggleFingerDistort}
+                      style={{
+                        width: '100%',
+                        marginBottom: 8,
+                        padding: '6px 0',
+                        borderRadius: 8,
+                        background: fingerDistort ? `rgba(${pr},${pg},${pb},0.18)` : 'transparent',
+                        border: `1px solid ${fingerDistort ? accent : `rgba(${pr},${pg},${pb},0.20)`}`,
+                        color: fingerDistort ? accent : `rgba(${pr},${pg},${pb},0.55)`,
+                        fontFamily: 'var(--font-serif)',
+                        fontSize: 9,
+                        letterSpacing: '0.12em',
+                        textTransform: 'uppercase',
+                        cursor: 'pointer',
+                        transition: 'all 0.2s',
+                      }}
+                    >
+                      {fingerDistort ? '✦ Finger Distortion ON' : '◇ Finger Distortion'}
+                    </button>
 
                     {/* Colour bar — horizontal scrollable squares */}
                     <div

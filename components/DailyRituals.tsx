@@ -33,6 +33,8 @@ type Ritual = {
   lastDone: string | null;
 };
 
+type DropTarget = { id: string; pos: 'before' | 'after' } | null;
+
 /* ── Helpers ─────────────────────────────────────────────────── */
 function save(rituals: Ritual[]) {
   try {
@@ -48,120 +50,220 @@ function isStreakAlive(r: Ritual) {
   return r.lastDone === TODAY || r.lastDone === YESTERDAY;
 }
 
+/* ── Insertion line ──────────────────────────────────────────── */
+function DropLine() {
+  return (
+    <div
+      style={{
+        position: 'absolute',
+        left: 0,
+        right: 0,
+        height: 2,
+        borderRadius: 2,
+        background: 'rgba(196,160,96,0.95)',
+        boxShadow: '0 0 8px rgba(196,160,96,0.7)',
+        zIndex: 10,
+        pointerEvents: 'none',
+      }}
+    >
+      {/* Left dot */}
+      <div
+        style={{
+          position: 'absolute',
+          left: -1,
+          top: '50%',
+          transform: 'translateY(-50%)',
+          width: 7,
+          height: 7,
+          borderRadius: '50%',
+          background: '#C4A060',
+          boxShadow: '0 0 5px rgba(196,160,96,0.9)',
+        }}
+      />
+    </div>
+  );
+}
+
 /* ── Ritual row ──────────────────────────────────────────────── */
 function RitualRow({
   ritual,
   checked,
   onToggle,
   onDelete,
+  onDragStart,
+  isDragging,
+  dropEdge,
 }: {
   ritual: Ritual;
   checked: boolean;
   onToggle: () => void;
   onDelete: () => void;
+  onDragStart: (id: string) => void;
+  isDragging: boolean;
+  dropEdge: 'before' | 'after' | null;
 }) {
   const alive = isStreakAlive(ritual);
   return (
     <div
+      data-ritual-id={ritual.id}
       style={{
-        display: 'flex',
-        alignItems: 'center',
-        gap: 10,
-        padding: '10px 12px',
-        borderRadius: 10,
-        marginBottom: 6,
-        cursor: 'pointer',
-        background: checked ? 'rgba(196,160,96,0.13)' : 'rgba(255,255,255,0.025)',
-        border: `1px solid ${checked ? 'rgba(196,160,96,0.45)' : 'rgba(196,160,96,0.1)'}`,
-        boxShadow: checked ? '0 0 14px rgba(196,160,96,0.1) inset' : 'none',
-        transition: 'background 0.25s, border 0.25s, box-shadow 0.25s',
         position: 'relative',
+        marginBottom: 6,
+        // Push rows apart slightly when a drop line is showing
+        paddingTop: dropEdge === 'before' ? 10 : 2,
+        paddingBottom: dropEdge === 'after' ? 10 : 2,
+        transition: 'padding 0.12s',
       }}
-      onClick={onToggle}
     >
-      {/* Checkbox */}
-      <div
-        style={{
-          width: 20,
-          height: 20,
-          borderRadius: 6,
-          border: `1.5px solid ${checked ? '#C8A858' : 'rgba(196,160,96,0.22)'}`,
-          background: checked ? '#C4A060' : 'transparent',
-          flexShrink: 0,
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          transition: 'all 0.2s',
-        }}
-      >
-        {checked && (
-          <span
-            style={{
-              color: '#3A1E08',
-              fontSize: 12,
-              fontWeight: 900,
-              lineHeight: 1,
-              marginTop: -1,
-            }}
-          >
-            ✓
-          </span>
-        )}
-      </div>
-
-      {/* Name */}
-      <span
-        style={{
-          fontFamily: 'var(--font-serif)',
-          fontSize: 12,
-          fontWeight: checked ? 700 : 500,
-          color: checked ? '#F0D898' : 'rgba(240,216,152,0.45)',
-          flex: 1,
-          letterSpacing: '0.03em',
-          transition: 'color 0.2s',
-        }}
-      >
-        {ritual.name}
-      </span>
-
-      {/* Streak */}
-      {ritual.streakCount > 1 && alive && (
-        <div style={{ display: 'flex', alignItems: 'center', gap: 3, flexShrink: 0 }}>
-          <span style={{ fontSize: 11 }}>🔥</span>
-          <span
-            style={{
-              fontFamily: 'var(--font-serif)',
-              fontSize: 10,
-              fontWeight: 700,
-              color: '#C8A858',
-              opacity: 0.8,
-            }}
-          >
-            {ritual.streakCount}
-          </span>
+      {/* Drop line — ABOVE */}
+      {dropEdge === 'before' && (
+        <div style={{ position: 'absolute', top: 3, left: 0, right: 0 }}>
+          <DropLine />
         </div>
       )}
 
-      {/* Delete (subtle ×) */}
-      <button
-        type="button"
-        onClick={(e) => {
-          e.stopPropagation();
-          onDelete();
-        }}
+      <div
         style={{
-          background: 'none',
-          border: 'none',
-          cursor: 'pointer',
-          padding: '0 2px',
-          color: 'rgba(196,160,96,0.2)',
-          fontSize: 13,
-          lineHeight: 1,
-          flexShrink: 0,
+          display: 'flex',
+          alignItems: 'center',
+          gap: 8,
+          padding: '10px 10px 10px 4px',
+          borderRadius: 10,
+          background: isDragging
+            ? 'rgba(196,160,96,0.18)'
+            : checked
+              ? 'rgba(196,160,96,0.13)'
+              : 'rgba(255,255,255,0.025)',
+          border: `1px solid ${isDragging ? 'rgba(196,160,96,0.55)' : checked ? 'rgba(196,160,96,0.45)' : 'rgba(196,160,96,0.1)'}`,
+          opacity: isDragging ? 0.45 : 1,
+          transition: 'background 0.15s, border 0.15s, opacity 0.15s',
+          userSelect: 'none',
+          touchAction: 'none',
         }}
       >
-        ×
-      </button>
+        {/* Drag handle */}
+        <button
+          type="button"
+          onPointerDown={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            onDragStart(ritual.id);
+          }}
+          style={{
+            background: 'none',
+            border: 'none',
+            cursor: 'grab',
+            padding: '2px 6px',
+            color: 'rgba(196,160,96,0.35)',
+            flexShrink: 0,
+            touchAction: 'none',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: 3,
+            alignItems: 'center',
+            justifyContent: 'center',
+          }}
+        >
+          <span style={{ display: 'block', width: 14, borderTop: '1.5px solid currentColor' }} />
+          <span style={{ display: 'block', width: 14, borderTop: '1.5px solid currentColor' }} />
+          <span style={{ display: 'block', width: 14, borderTop: '1.5px solid currentColor' }} />
+        </button>
+
+        {/* Checkbox */}
+        <div
+          onClick={onToggle}
+          style={{
+            width: 20,
+            height: 20,
+            borderRadius: 6,
+            flexShrink: 0,
+            cursor: 'pointer',
+            border: `1.5px solid ${checked ? '#C8A858' : 'rgba(196,160,96,0.22)'}`,
+            background: checked ? '#C4A060' : 'transparent',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            transition: 'all 0.2s',
+          }}
+        >
+          {checked && (
+            <span
+              style={{
+                color: '#3A1E08',
+                fontSize: 12,
+                fontWeight: 900,
+                lineHeight: 1,
+                marginTop: -1,
+              }}
+            >
+              ✓
+            </span>
+          )}
+        </div>
+
+        {/* Name */}
+        <span
+          onClick={onToggle}
+          style={{
+            fontFamily: 'var(--font-serif)',
+            fontSize: 14,
+            fontWeight: checked ? 700 : 400,
+            color: checked ? '#F0D898' : 'rgba(240,216,152,0.72)',
+            flex: 1,
+            letterSpacing: '0.02em',
+            transition: 'color 0.2s',
+            cursor: 'pointer',
+          }}
+        >
+          {ritual.name}
+        </span>
+
+        {/* Streak */}
+        {ritual.streakCount > 1 && alive && (
+          <div style={{ display: 'flex', alignItems: 'center', gap: 3, flexShrink: 0 }}>
+            <span style={{ fontSize: 11 }}>🔥</span>
+            <span
+              style={{
+                fontFamily: 'var(--font-serif)',
+                fontSize: 10,
+                fontWeight: 700,
+                color: '#C8A858',
+                opacity: 0.8,
+              }}
+            >
+              {ritual.streakCount}
+            </span>
+          </div>
+        )}
+
+        {/* Delete */}
+        <button
+          type="button"
+          onClick={(e) => {
+            e.stopPropagation();
+            onDelete();
+          }}
+          style={{
+            background: 'none',
+            border: 'none',
+            cursor: 'pointer',
+            padding: '0 2px',
+            color: 'rgba(196,160,96,0.2)',
+            fontSize: 13,
+            lineHeight: 1,
+            flexShrink: 0,
+          }}
+        >
+          ×
+        </button>
+      </div>
+
+      {/* Drop line — BELOW */}
+      {dropEdge === 'after' && (
+        <div style={{ position: 'absolute', bottom: 3, left: 0, right: 0 }}>
+          <DropLine />
+        </div>
+      )}
     </div>
   );
 }
@@ -201,8 +303,8 @@ function AddRitual({
           cursor: 'pointer',
           padding: '4px 4px 10px',
           fontFamily: 'var(--font-serif)',
-          fontSize: 11,
-          color: 'rgba(196,160,96,0.35)',
+          fontSize: 12,
+          color: 'rgba(196,160,96,0.55)',
           letterSpacing: '0.06em',
           display: 'block',
         }}
@@ -266,6 +368,9 @@ function TimeSection({
   onToggle,
   onDelete,
   onAdd,
+  onDragStart,
+  dragId,
+  dropTarget,
 }: {
   label: string;
   icon: string;
@@ -274,6 +379,9 @@ function TimeSection({
   onToggle: (id: string) => void;
   onDelete: (id: string) => void;
   onAdd: (name: string) => void;
+  onDragStart: (id: string) => void;
+  dragId: string | null;
+  dropTarget: DropTarget;
 }) {
   if (rituals.length === 0 && label === 'EVENING') {
     return (
@@ -302,11 +410,11 @@ function TimeSection({
         <span
           style={{
             fontFamily: 'var(--font-serif)',
-            fontSize: 9,
-            fontWeight: 800,
+            fontSize: 11,
+            fontWeight: 700,
             textTransform: 'uppercase',
-            letterSpacing: '0.22em',
-            color: 'rgba(196,160,96,0.4)',
+            letterSpacing: '0.18em',
+            color: 'rgba(196,160,96,0.65)',
           }}
         >
           {icon} {label}
@@ -319,6 +427,9 @@ function TimeSection({
           checked={checkedIds.has(r.id)}
           onToggle={() => onToggle(r.id)}
           onDelete={() => onDelete(r.id)}
+          onDragStart={onDragStart}
+          isDragging={dragId === r.id}
+          dropEdge={dropTarget?.id === r.id && dragId !== r.id ? dropTarget.pos : null}
         />
       ))}
       <AddRitual time={label === 'MORNING' ? 'morning' : 'evening'} onAdd={onAdd} />
@@ -332,6 +443,10 @@ export default function DailyRituals() {
   const [doneIds, setDoneIds] = useState<Set<string>>(new Set());
   const [open, setOpen] = useState(false);
   const [quoteIdx, setQuoteIdx] = useState(0);
+  const [dragId, setDragId] = useState<string | null>(null);
+  const [dropTarget, setDropTarget] = useState<DropTarget>(null);
+  const dragIdRef = useRef<string | null>(null);
+  const dropTargetRef = useRef<DropTarget>(null);
 
   /* load */
   useEffect(() => {
@@ -350,27 +465,84 @@ export default function DailyRituals() {
     return () => clearInterval(t);
   }, []);
 
+  /* ── Drag logic ── */
+  function startDrag(id: string) {
+    dragIdRef.current = id;
+    dropTargetRef.current = null;
+    setDragId(id);
+    setDropTarget(null);
+
+    function onMove(e: PointerEvent) {
+      const el = document.elementFromPoint(e.clientX, e.clientY) as HTMLElement | null;
+      const row = el?.closest('[data-ritual-id]') as HTMLElement | null;
+      const overId = row?.dataset.ritualId ?? null;
+
+      if (!overId || overId === dragIdRef.current) {
+        if (dropTargetRef.current !== null) {
+          dropTargetRef.current = null;
+          setDropTarget(null);
+        }
+        return;
+      }
+
+      const rect = row!.getBoundingClientRect();
+      const pos: 'before' | 'after' = e.clientY < rect.top + rect.height / 2 ? 'before' : 'after';
+
+      if (dropTargetRef.current?.id !== overId || dropTargetRef.current?.pos !== pos) {
+        const next: DropTarget = { id: overId, pos };
+        dropTargetRef.current = next;
+        setDropTarget(next);
+      }
+    }
+
+    function onUp() {
+      document.removeEventListener('pointermove', onMove);
+      document.removeEventListener('pointerup', onUp);
+
+      const fromId = dragIdRef.current;
+      const target = dropTargetRef.current;
+
+      dragIdRef.current = null;
+      dropTargetRef.current = null;
+      setDragId(null);
+      setDropTarget(null);
+
+      if (!fromId || !target) return;
+
+      setRituals((prev) => {
+        const next = [...prev];
+        const fromIdx = next.findIndex((r) => r.id === fromId);
+        const toIdx = next.findIndex((r) => r.id === target.id);
+        if (fromIdx < 0 || toIdx < 0) return prev;
+        const [item] = next.splice(fromIdx, 1);
+        // Recompute toIdx after splice
+        const newToIdx = next.findIndex((r) => r.id === target.id);
+        const insertAt = target.pos === 'before' ? newToIdx : newToIdx + 1;
+        next.splice(insertAt, 0, item);
+        save(next);
+        return next;
+      });
+    }
+
+    document.addEventListener('pointermove', onMove);
+    document.addEventListener('pointerup', onUp);
+  }
+
   function toggle(id: string) {
     const nowDone = new Set(doneIds);
     const ritual = rituals.find((r) => r.id === id);
     if (!ritual) return;
-
     if (nowDone.has(id)) {
       nowDone.delete(id);
     } else {
       nowDone.add(id);
-      /* update streak */
       setRituals((prev) => {
         const next = prev.map((r) => {
           if (r.id !== id) return r;
           const wasYesterday = r.lastDone === YESTERDAY;
           const wasToday = r.lastDone === TODAY;
           if (wasToday) return r;
-          return {
-            ...r,
-            streakCount: wasYesterday ? r.streakCount + 1 : 1,
-            lastDone: TODAY,
-          };
+          return { ...r, streakCount: wasYesterday ? r.streakCount + 1 : 1, lastDone: TODAY };
         });
         save(next);
         return next;
@@ -404,6 +576,18 @@ export default function DailyRituals() {
   const score = total > 0 ? Math.round((done / total) * 100) : 0;
   const peaked = score === 100 && total > 0;
 
+  function scoreLabel(s: number): string {
+    if (s === 0) return 'Starting…';
+    if (s <= 20) return 'Waking up';
+    if (s <= 40) return 'Building';
+    if (s <= 60) return 'Flowing';
+    if (s <= 80) return 'Rising';
+    if (s < 100) return 'Almost there';
+    return 'Peak ✦';
+  }
+
+  const sectionProps = { onDragStart: startDrag, dragId, dropTarget };
+
   return (
     <div
       style={{
@@ -414,7 +598,7 @@ export default function DailyRituals() {
         transition: 'border-color 0.4s',
       }}
     >
-      {/* ── Header (comic title card) ── */}
+      {/* Header */}
       <div
         onClick={() => setOpen((v) => !v)}
         style={{
@@ -432,7 +616,7 @@ export default function DailyRituals() {
           <div
             style={{
               fontFamily: 'var(--font-serif)',
-              fontSize: 13,
+              fontSize: 15,
               fontWeight: 900,
               textTransform: 'uppercase',
               letterSpacing: '0.18em',
@@ -445,11 +629,11 @@ export default function DailyRituals() {
           <div
             style={{
               fontFamily: 'var(--font-serif)',
-              fontSize: 8,
-              fontWeight: 700,
+              fontSize: 10,
+              fontWeight: 600,
               textTransform: 'uppercase',
-              letterSpacing: '0.22em',
-              color: 'rgba(196,160,96,0.4)',
+              letterSpacing: '0.18em',
+              color: 'rgba(196,160,96,0.60)',
               marginTop: 2,
             }}
           >
@@ -473,12 +657,9 @@ export default function DailyRituals() {
 
       {open && (
         <>
-          {/* ── Alignment bar ── */}
+          {/* Alignment bar */}
           <div
-            style={{
-              padding: '12px 16px 10px',
-              borderBottom: '1px solid rgba(196,160,96,0.08)',
-            }}
+            style={{ padding: '12px 16px 10px', borderBottom: '1px solid rgba(196,160,96,0.08)' }}
           >
             <div
               style={{
@@ -491,11 +672,11 @@ export default function DailyRituals() {
               <span
                 style={{
                   fontFamily: 'var(--font-serif)',
-                  fontSize: 8,
-                  fontWeight: 700,
+                  fontSize: 11,
+                  fontWeight: 600,
                   textTransform: 'uppercase',
-                  letterSpacing: '0.2em',
-                  color: 'rgba(196,160,96,0.4)',
+                  letterSpacing: '0.16em',
+                  color: 'rgba(196,160,96,0.65)',
                 }}
               >
                 Today's Alignment
@@ -504,12 +685,14 @@ export default function DailyRituals() {
                 style={{
                   fontFamily: 'var(--font-serif)',
                   fontSize: 12,
-                  fontWeight: 800,
+                  fontWeight: 700,
+                  fontStyle: 'italic',
                   color: peaked ? '#F0D090' : '#C8A858',
                   transition: 'color 0.3s',
+                  letterSpacing: '0.04em',
                 }}
               >
-                {score}%
+                {scoreLabel(score)}
               </span>
             </div>
             <div
@@ -535,53 +718,53 @@ export default function DailyRituals() {
             </div>
           </div>
 
-          {/* ── Morning rituals ── */}
-          {morning.length > 0 && (
+          {/* Morning */}
+          {morning.length > 0 ? (
             <TimeSection
               label="MORNING"
-              icon="○"
+              icon="·"
               rituals={morning}
               checkedIds={doneIds}
               onToggle={toggle}
               onDelete={deleteRitual}
-              onAdd={(name) => addRitual(name, 'morning')}
+              onAdd={(n) => addRitual(n, 'morning')}
+              {...sectionProps}
             />
-          )}
-          {morning.length === 0 && (
+          ) : (
             <div style={{ padding: '0 16px 4px' }}>
               <div style={{ padding: '10px 0 6px' }}>
                 <span
                   style={{
                     fontFamily: 'var(--font-serif)',
-                    fontSize: 9,
-                    fontWeight: 800,
+                    fontSize: 11,
+                    fontWeight: 700,
                     textTransform: 'uppercase',
-                    letterSpacing: '0.22em',
-                    color: 'rgba(196,160,96,0.35)',
+                    letterSpacing: '0.18em',
+                    color: 'rgba(196,160,96,0.60)',
                   }}
                 >
-                  ○ MORNING
+                  · MORNING
                 </span>
               </div>
-              <AddRitual time="morning" onAdd={(name) => addRitual(name, 'morning')} />
+              <AddRitual time="morning" onAdd={(n) => addRitual(n, 'morning')} />
             </div>
           )}
 
-          {/* Divider */}
           <div style={{ margin: '2px 16px', height: 1, background: 'rgba(196,160,96,0.08)' }} />
 
-          {/* ── Evening rituals ── */}
+          {/* Evening */}
           <TimeSection
             label="EVENING"
-            icon="◑"
+            icon="·"
             rituals={evening}
             checkedIds={doneIds}
             onToggle={toggle}
             onDelete={deleteRitual}
-            onAdd={(name) => addRitual(name, 'evening')}
+            onAdd={(n) => addRitual(n, 'evening')}
+            {...sectionProps}
           />
 
-          {/* ── Quote ── */}
+          {/* Quote */}
           <div
             style={{
               padding: '10px 20px 16px',
@@ -592,13 +775,12 @@ export default function DailyRituals() {
             <p
               style={{
                 fontFamily: 'var(--font-serif)',
-                fontSize: 10,
+                fontSize: 12,
                 fontStyle: 'italic',
-                color: 'rgba(196,160,96,0.35)',
-                letterSpacing: '0.04em',
-                lineHeight: 1.55,
+                color: 'rgba(196,160,96,0.62)',
+                letterSpacing: '0.03em',
+                lineHeight: 1.6,
                 margin: 0,
-                transition: 'opacity 0.5s',
               }}
             >
               {QUOTES[quoteIdx]}

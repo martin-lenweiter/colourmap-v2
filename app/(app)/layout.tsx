@@ -97,8 +97,6 @@ export default async function AppLayout({
                   <ThemeSwitcher />
                 </div>
               </div>
-              {/* Thin rule above the nav — makes it read as a distinct channel */}
-              <div style={{ height: 1, background: 'var(--border)', opacity: 0.6 }} />
               <ConditionalTopNav />
             </header>
             <AppShell>{children}</AppShell>

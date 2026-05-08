@@ -70,20 +70,13 @@ export default function NavLinks() {
   // edges so the user feels like they're flipping through tabs.
   return (
     <div className="relative flex items-center w-full" style={{ background: 'var(--secondary)' }}>
+      {/* Nav centered in full width — More button is absolutely positioned so it doesn't shift the center */}
       <nav
         ref={(el) => {
           navRef.current = el;
         }}
-        className="mx-auto flex flex-1 items-center gap-7 overflow-x-auto justify-start scrollbar-none relative px-4 pb-3 pt-2"
-        style={{
-          scrollbarWidth: 'none',
-          scrollSnapType: 'x proximity',
-          WebkitMaskImage:
-            'linear-gradient(to right, black 0, black calc(100% - 40px), transparent 100%)',
-          maskImage:
-            'linear-gradient(to right, black 0, black calc(100% - 40px), transparent 100%)',
-          maxWidth: isPhone ? undefined : '100%',
-        }}
+        className="flex w-full items-center gap-7 justify-center scrollbar-none px-4 pb-3 pt-2"
+        style={{ scrollbarWidth: 'none' }}
       >
         {primary.map((link) => {
           const isSocial = link.href === '/circles';
@@ -107,7 +100,6 @@ export default function NavLinks() {
               }
               className="shrink-0 whitespace-nowrap transition-colors tracking-[0.04em]"
               style={{
-                scrollSnapAlign: 'center',
                 fontSize: 16,
                 color: isActive ? '#5C3018' : '#7A5438',
                 fontWeight: isActive ? 600 : 400,
@@ -132,26 +124,23 @@ export default function NavLinks() {
         })}
       </nav>
 
-      {/* More menu — outside overflow-x:auto so dropdown is never clipped */}
-      <div className="relative shrink-0 pr-3 pb-1 pt-1" ref={menuRef}>
+      {/* More menu — absolute, right-aligned to match ThemeSwitcher dot above */}
+      <div className="absolute right-4 top-1/2 -translate-y-1/2" ref={menuRef}>
         <button
           type="button"
           onClick={() => setMoreOpen(!moreOpen)}
-          className="flex h-6 w-6 items-center justify-center rotate-45 transition-all hover:scale-110"
-          style={{
-            background: isMoreActive ? '#C4A060' : '#C4A06040',
-            borderRadius: 3,
-          }}
           aria-label="More navigation"
           aria-expanded={moreOpen}
-        >
-          <span
-            className="text-[13px] leading-none -rotate-45 font-bold"
-            style={{ color: isMoreActive ? '#fff' : '#C4A060' }}
-          >
-            +
-          </span>
-        </button>
+          className="h-5 w-5 rounded-full border border-border transition-all"
+          style={{
+            background: isMoreActive ? '#C4A060' : 'transparent',
+            boxShadow: isMoreActive ? '0 0 7px rgba(196,160,96,0.6)' : 'none',
+            cursor: 'pointer',
+            padding: 0,
+            flexShrink: 0,
+            display: 'block',
+          }}
+        />
 
         {moreOpen && (
           <div className="absolute top-full mt-1 right-0 z-[200] min-w-[160px] rounded-xl border border-border bg-card shadow-xl py-2 animate-in fade-in slide-in-from-top-1 duration-150">

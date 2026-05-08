@@ -784,19 +784,17 @@ function MissionCard({
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            gap: 8,
+            gap: 3,
             paddingTop: 5,
           }}
         >
           <span
             style={{
               fontFamily: 'var(--font-serif)',
-              fontSize: 10,
-              fontWeight: 700,
-              letterSpacing: '0.18em',
-              textTransform: 'uppercase',
-              color: LABEL_COLOR,
-              opacity: 0.5,
+              fontSize: 13,
+              fontWeight: 400,
+              letterSpacing: '0.04em',
+              color: BROWN,
               flexShrink: 0,
             }}
           >
