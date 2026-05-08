@@ -64,7 +64,10 @@ type Mode =
   | 'weave'
   | 'chaostri3d'
   | 'treeoflife'
-  | 'treeoflife3d';
+  | 'treeoflife3d'
+  | 'breath'
+  | 'stream'
+  | 'entropy';
 
 interface Pal {
   bg0: string;
@@ -1394,78 +1397,6 @@ const PRESETS: Record<string, Cfg> = {
     stars: 0,
     mode: 'matrix',
   },
-  'Blood Matrix': {
-    preset: 'Matrix Crimson',
-    symmetry: 4,
-    complexity: 7,
-    glow: 4,
-    breathSpeed: 0.6,
-    intensity: 9,
-    particles: 0,
-    luminous: 2,
-    stars: 0,
-    mode: 'matrix',
-  },
-  'Gold Script': {
-    preset: 'Matrix Gold',
-    symmetry: 6,
-    complexity: 5,
-    glow: 3,
-    breathSpeed: 0.5,
-    intensity: 8,
-    particles: 0,
-    luminous: 2,
-    stars: 1,
-    mode: 'matrix',
-  },
-  'Frost Code': {
-    preset: 'Matrix Arctic',
-    symmetry: 4,
-    complexity: 6,
-    glow: 6,
-    breathSpeed: 0.55,
-    intensity: 8,
-    particles: 0,
-    luminous: 3,
-    stars: 2,
-    mode: 'matrix',
-  },
-  'Dream Script': {
-    preset: 'Matrix Sacred',
-    symmetry: 8,
-    complexity: 6,
-    glow: 7,
-    breathSpeed: 0.45,
-    intensity: 8,
-    particles: 0,
-    luminous: 3,
-    stars: 1,
-    mode: 'matrix',
-  },
-  'Matrix 3D': {
-    preset: 'Matrix Green',
-    symmetry: 4,
-    complexity: 7,
-    glow: 5,
-    breathSpeed: 0.7,
-    intensity: 9,
-    particles: 0,
-    luminous: 2,
-    stars: 0,
-    mode: 'matrix3d',
-  },
-  'Matrix 3D Indigo': {
-    preset: 'Matrix Indigo',
-    symmetry: 4,
-    complexity: 8,
-    glow: 8,
-    breathSpeed: 0.65,
-    intensity: 9,
-    particles: 0,
-    luminous: 3,
-    stars: 0,
-    mode: 'matrix3d',
-  },
   // ── Tibetan Tangka series ──
   'Tangka Mandala': {
     preset: 'Tangka Gold',
@@ -1746,6 +1677,102 @@ const PRESETS: Record<string, Cfg> = {
     luminous: 2,
     stars: 3,
     mode: 'constellation',
+  },
+  'Breath Gold': {
+    preset: 'Calm Field',
+    symmetry: 8,
+    complexity: 8,
+    glow: 7,
+    breathSpeed: 0.5,
+    intensity: 8,
+    particles: 0,
+    luminous: 3,
+    stars: 2,
+    mode: 'breath',
+  },
+  'Breath Indigo': {
+    preset: 'Cosmic Indigo',
+    symmetry: 8,
+    complexity: 8,
+    glow: 8,
+    breathSpeed: 0.4,
+    intensity: 8,
+    particles: 0,
+    luminous: 3,
+    stars: 3,
+    mode: 'breath',
+  },
+  'Breath Forest': {
+    preset: 'Forest Ceremony',
+    symmetry: 8,
+    complexity: 9,
+    glow: 7,
+    breathSpeed: 0.45,
+    intensity: 9,
+    particles: 0,
+    luminous: 2,
+    stars: 2,
+    mode: 'breath',
+  },
+  'Stream Gold': {
+    preset: 'Calm Field',
+    symmetry: 8,
+    complexity: 9,
+    glow: 6,
+    breathSpeed: 0.6,
+    intensity: 8,
+    particles: 0,
+    luminous: 2,
+    stars: 2,
+    mode: 'stream',
+  },
+  'Stream Astral': {
+    preset: 'Blue Astral',
+    symmetry: 8,
+    complexity: 9,
+    glow: 7,
+    breathSpeed: 0.7,
+    intensity: 8,
+    particles: 0,
+    luminous: 2,
+    stars: 3,
+    mode: 'stream',
+  },
+  'Stream Violet': {
+    preset: 'Violet Portal',
+    symmetry: 8,
+    complexity: 9,
+    glow: 8,
+    breathSpeed: 0.6,
+    intensity: 9,
+    particles: 0,
+    luminous: 3,
+    stars: 2,
+    mode: 'stream',
+  },
+  'Entropy Gold': {
+    preset: 'Calm Field',
+    symmetry: 8,
+    complexity: 8,
+    glow: 6,
+    breathSpeed: 0.4,
+    intensity: 8,
+    particles: 0,
+    luminous: 2,
+    stars: 0,
+    mode: 'entropy',
+  },
+  'Entropy Dark': {
+    preset: 'Cosmic Indigo',
+    symmetry: 8,
+    complexity: 9,
+    glow: 7,
+    breathSpeed: 0.5,
+    intensity: 9,
+    particles: 0,
+    luminous: 2,
+    stars: 0,
+    mode: 'entropy',
   },
   'Drift Field': {
     preset: 'Blue Astral',
@@ -2922,6 +2949,10 @@ function buildModeGroup(cfg: Cfg, R: number): THREE.Group {
       return buildTreeoflife(cfg, R);
     case 'treeoflife3d':
       return buildTreeoflife3d(cfg, R);
+    case 'breath':
+    case 'stream':
+    case 'entropy':
+      return buildCanvasMode(cfg, R);
     default:
       return buildSacred(cfg, R);
   }
@@ -3090,6 +3121,11 @@ function updateModeGroup(group: THREE.Group, cfg: Cfg, dots: Dot[], t: number, R
       break;
     case 'treeoflife3d':
       updateTreeoflife3d(group, cfg, t, R);
+      break;
+    case 'breath':
+    case 'stream':
+    case 'entropy':
+      updateCanvasMode(group, cfg, t, R);
       break;
     default:
       updateSacred(group, cfg, dots, t, R);
@@ -8760,6 +8796,9 @@ const MODES: { mode: Mode; label: string }[] = [
   { mode: 'chaostri3d', label: '△ Chaos Tri 3D' },
   { mode: 'treeoflife', label: '✦ Tree of Life' },
   { mode: 'treeoflife3d', label: '✦³ Tree 3D' },
+  { mode: 'breath', label: '◉ Breath' },
+  { mode: 'stream', label: '∿ Stream' },
+  { mode: 'entropy', label: '⋮ Entropy' },
 ];
 
 const FEATURED_PRESETS: { name: string; tag: string }[] = [
@@ -10180,6 +10219,13 @@ function updateTreeoflife3d(group: THREE.Group, cfg: Cfg, t: number, R: number):
   group.rotation.y += 0.001;
 }
 
+/* ── Breath / Stream / Entropy — canvas-only modes ──────────── */
+// Three.js layer is empty; canvas overlay carries all rendering
+function buildCanvasMode(_cfg: Cfg, _R: number): THREE.Group {
+  return new THREE.Group();
+}
+function updateCanvasMode(_group: THREE.Group, _cfg: Cfg, _t: number, _R: number): void {}
+
 /* ── Component ──────────────────────────────────────────────── */
 
 export default function GeometryField() {
@@ -10203,6 +10249,8 @@ export default function GeometryField() {
   const matrixDropsRef = useRef<number[]>([]);
   const matrixNumActiveRef = useRef(false);
   const matrixNumAnimRef = useRef<number>(0);
+  const canvasModeActiveRef = useRef(false);
+  const canvasModeAnimRef = useRef<number>(0);
   const phaseInfoRef = useRef({ phaseIdx: 0, phaseProgress: 0 });
 
   // Three.js refs
@@ -10624,6 +10672,259 @@ export default function GeometryField() {
       if (ctx3) ctx3.clearRect(0, 0, mc.width, mc.height);
     };
   }, [cfg.mode, cfg.preset]);
+
+  // Canvas overlay for Breath / Stream / Entropy modes
+  useEffect(() => {
+    const isCanvasMode = cfg.mode === 'breath' || cfg.mode === 'stream' || cfg.mode === 'entropy';
+    if (!isCanvasMode) {
+      canvasModeActiveRef.current = false;
+      cancelAnimationFrame(canvasModeAnimRef.current);
+      const mc = matrixCanvasRef.current;
+      if (mc && !matrixActiveRef.current && !matrixNumActiveRef.current) {
+        const c = mc.getContext('2d');
+        if (c) c.clearRect(0, 0, mc.width, mc.height);
+      }
+      return;
+    }
+    const mc = matrixCanvasRef.current;
+    if (!mc) return;
+    const ctx = mc.getContext('2d');
+    if (!ctx) return;
+
+    const resize = () => {
+      mc.width = mc.offsetWidth || 400;
+      mc.height = mc.offsetHeight || 600;
+    };
+    resize();
+    canvasModeActiveRef.current = true;
+
+    const pal = PAL[cfg.preset] ?? PAL['Calm Field'];
+    const [pr, pg, pb] = pal.rgb;
+    const speed = cfg.breathSpeed;
+    const iF = cfg.intensity / 10;
+
+    /* ── BREATH: dots travel radial spokes inward then burst outward ── */
+    if (cfg.mode === 'breath') {
+      const SPOKES = Math.max(4, Math.round(cfg.symmetry));
+      const DOTS_PER_SPOKE = Math.max(4, Math.round(cfg.complexity * 0.9));
+      const TRAIL = 0.04;
+
+      function drawBreath() {
+        if (!canvasModeActiveRef.current) return;
+        const W = mc!.width;
+        const H = mc!.height;
+        const cx = W / 2;
+        const cy = H / 2;
+        const R = Math.min(W, H) * 0.44;
+
+        // Fade trail
+        ctx!.fillStyle = `rgba(0,0,0,${TRAIL})`;
+        ctx!.fillRect(0, 0, W, H);
+
+        const tSec = performance.now() * 0.001 * speed;
+
+        for (let s = 0; s < SPOKES; s++) {
+          const spokeAngle = (s / SPOKES) * Math.PI * 2;
+          const dx = Math.cos(spokeAngle);
+          const dy = Math.sin(spokeAngle);
+          // Slight perpendicular curl for liquid feel
+          const curlX = -dy * 0.18;
+          const curlY = dx * 0.18;
+
+          for (let d = 0; d < DOTS_PER_SPOKE; d++) {
+            const phase = (tSec * 0.38 + d / DOTS_PER_SPOKE + (s / SPOKES) * 0.5) % 1.0;
+            // 0→0.5: inward (outer→center), 0.5→1.0: outward (center→outer)
+            const inward = phase < 0.5;
+            const t01 = inward ? phase * 2 : (phase - 0.5) * 2;
+            // Ease in/out
+            const eased = t01 * t01 * (3 - 2 * t01);
+            const dist = inward ? R * (1 - eased) : R * eased;
+            const curl = Math.sin(t01 * Math.PI) * R * 0.22;
+
+            const x = cx + dx * dist + curlX * curl;
+            const y = cy + dy * dist + curlY * curl;
+            const opacity = inward ? 0.3 + 0.65 * eased : 0.95 - 0.65 * eased;
+            const size = inward ? 1.5 + 2.5 * eased : 4 - 2.5 * eased;
+
+            ctx!.beginPath();
+            ctx!.arc(x, y, size * iF, 0, Math.PI * 2);
+            ctx!.fillStyle = `rgba(${pr},${pg},${pb},${Math.max(0, Math.min(1, opacity * iF))})`;
+            ctx!.fill();
+          }
+        }
+        // Soft center glow
+        const grd = ctx!.createRadialGradient(cx, cy, 0, cx, cy, R * 0.18);
+        grd.addColorStop(0, `rgba(${pr},${pg},${pb},${0.22 * iF})`);
+        grd.addColorStop(1, 'rgba(0,0,0,0)');
+        ctx!.fillStyle = grd;
+        ctx!.fillRect(0, 0, W, H);
+
+        canvasModeAnimRef.current = requestAnimationFrame(drawBreath);
+      }
+      canvasModeAnimRef.current = requestAnimationFrame(drawBreath);
+    }
+
+    /* ── STREAM: stable vector field flow — no pulse ─────────────── */
+    if (cfg.mode === 'stream') {
+      const N = Math.round(200 + cfg.complexity * 30);
+      type Particle = { x: number; y: number; vx: number; vy: number; age: number; maxAge: number };
+      const particles: Particle[] = [];
+      const W0 = mc.width;
+      const H0 = mc.height;
+      for (let i = 0; i < N; i++) {
+        particles.push({
+          x: Math.random() * W0,
+          y: Math.random() * H0,
+          vx: 0,
+          vy: 0,
+          age: Math.random() * 120,
+          maxAge: 80 + Math.random() * 120,
+        });
+      }
+      const FREQ_X = 0.008 + cfg.complexity * 0.0004;
+      const FREQ_Y = 0.007 + cfg.complexity * 0.0003;
+
+      function drawStream() {
+        if (!canvasModeActiveRef.current) return;
+        const W = mc!.width;
+        const H = mc!.height;
+
+        ctx!.fillStyle = 'rgba(0,0,0,0.032)';
+        ctx!.fillRect(0, 0, W, H);
+
+        const tSec = performance.now() * 0.001 * speed * 0.5;
+
+        for (const p of particles) {
+          // Sine vector field — smooth attractor paths
+          const vx = Math.sin(p.y * FREQ_Y + tSec * 0.6) * 1.8;
+          const vy = Math.cos(p.x * FREQ_X - tSec * 0.5) * 1.8;
+          // Additional cross-field term for spiral tendency
+          const cx2 = W / 2;
+          const cy2 = H / 2;
+          const rx = p.x - cx2;
+          const ry = p.y - cy2;
+          const cfield = 0.00012;
+          p.vx = p.vx * 0.85 + (vx - ry * cfield) * 0.15;
+          p.vy = p.vy * 0.85 + (vy + rx * cfield) * 0.15;
+
+          const prevX = p.x;
+          const prevY = p.y;
+          p.x += p.vx;
+          p.y += p.vy;
+          p.age++;
+
+          const lifeT = p.age / p.maxAge;
+          const opacity = Math.sin(lifeT * Math.PI) * 0.65 * iF;
+
+          ctx!.beginPath();
+          ctx!.moveTo(prevX, prevY);
+          ctx!.lineTo(p.x, p.y);
+          ctx!.strokeStyle = `rgba(${pr},${pg},${pb},${Math.max(0, opacity)})`;
+          ctx!.lineWidth = 1.2;
+          ctx!.stroke();
+
+          if (p.age > p.maxAge || p.x < -20 || p.x > W + 20 || p.y < -20 || p.y > H + 20) {
+            p.x = Math.random() * W;
+            p.y = Math.random() * H;
+            p.vx = 0;
+            p.vy = 0;
+            p.age = 0;
+            p.maxAge = 80 + Math.random() * 120;
+          }
+        }
+        canvasModeAnimRef.current = requestAnimationFrame(drawStream);
+      }
+      canvasModeAnimRef.current = requestAnimationFrame(drawStream);
+    }
+
+    /* ── ENTROPY: scattered number/letter particles drifting ─────── */
+    if (cfg.mode === 'entropy') {
+      const CHARS = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZΩπ∞∑∮√∆ψφλμσεδγβα∀∃∈'.split('');
+      const N = Math.round(80 + cfg.complexity * 18);
+      type EChar = {
+        x: number;
+        y: number;
+        vx: number;
+        vy: number;
+        ch: string;
+        size: number;
+        opacity: number;
+        age: number;
+        maxAge: number;
+        fadeDir: number;
+      };
+      const chars: EChar[] = [];
+      const W0 = mc.width;
+      const H0 = mc.height;
+      for (let i = 0; i < N; i++) {
+        chars.push({
+          x: Math.random() * W0,
+          y: Math.random() * H0,
+          vx: (Math.random() - 0.5) * 0.5 * speed,
+          vy: (Math.random() - 0.5) * 0.5 * speed,
+          ch: CHARS[Math.floor(Math.random() * CHARS.length)],
+          size: 8 + Math.random() * 14,
+          opacity: 0,
+          age: Math.floor(Math.random() * 200),
+          maxAge: 120 + Math.random() * 200,
+          fadeDir: 1,
+        });
+      }
+
+      function drawEntropy() {
+        if (!canvasModeActiveRef.current) return;
+        const W = mc!.width;
+        const H = mc!.height;
+
+        ctx!.fillStyle = 'rgba(0,0,0,0.025)';
+        ctx!.fillRect(0, 0, W, H);
+
+        for (const c of chars) {
+          c.x += c.vx;
+          c.y += c.vy;
+          c.age++;
+
+          // Fade in then out
+          const lifeT = c.age / c.maxAge;
+          c.opacity = Math.sin(lifeT * Math.PI) * 0.85 * iF;
+
+          if (c.opacity > 0.02) {
+            ctx!.font = `${Math.round(c.size)}px monospace`;
+            ctx!.fillStyle = `rgba(${pr},${pg},${pb},${Math.max(0, Math.min(1, c.opacity))})`;
+            ctx!.fillText(c.ch, c.x, c.y);
+          }
+
+          // Slowly drift character change
+          if (Math.random() < 0.002) {
+            c.ch = CHARS[Math.floor(Math.random() * CHARS.length)];
+          }
+
+          if (c.age > c.maxAge || c.x < -40 || c.x > W + 40 || c.y < -40 || c.y > H + 40) {
+            c.x = Math.random() * W;
+            c.y = Math.random() * H;
+            c.vx = (Math.random() - 0.5) * 0.5 * speed;
+            c.vy = (Math.random() - 0.5) * 0.5 * speed;
+            c.ch = CHARS[Math.floor(Math.random() * CHARS.length)];
+            c.size = 8 + Math.random() * 14;
+            c.age = 0;
+            c.maxAge = 120 + Math.random() * 200;
+          }
+        }
+        canvasModeAnimRef.current = requestAnimationFrame(drawEntropy);
+      }
+      canvasModeAnimRef.current = requestAnimationFrame(drawEntropy);
+    }
+
+    const ro = new ResizeObserver(resize);
+    ro.observe(mc);
+    return () => {
+      canvasModeActiveRef.current = false;
+      cancelAnimationFrame(canvasModeAnimRef.current);
+      ro.disconnect();
+      const c = mc.getContext('2d');
+      if (c) c.clearRect(0, 0, mc.width, mc.height);
+    };
+  }, [cfg.mode, cfg.preset, cfg.breathSpeed, cfg.intensity, cfg.complexity, cfg.symmetry]);
 
   function startJourney(id: number) {
     setJourneyId(id);
