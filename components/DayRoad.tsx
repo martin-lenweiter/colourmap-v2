@@ -8,6 +8,7 @@ import {
   getTodayEntries,
   type TimelineEntry,
 } from '@/lib/day-timeline';
+import { syncEvent, syncPref } from '@/lib/sync';
 
 /* ── Axis config ────────────────────────────────────────────────── */
 const AXES = [
@@ -45,7 +46,7 @@ const AXES = [
     label: 'Body',
     max: 7,
     lsKey: 'colourmap:body-idx',
-    color: '#78C0A8',
+    color: '#C09878',
     def: 3,
     levels: ['Depleted', 'Drained', 'Heavy', 'Tense', 'Warming', 'Good', 'Active', 'Energized'],
   },
@@ -54,7 +55,7 @@ const AXES = [
     label: 'Focus',
     max: 7,
     lsKey: 'colourmap:focus-idx',
-    color: '#88D098',
+    color: '#8BA870',
     def: 3,
     levels: [
       'Scattered',
@@ -75,7 +76,7 @@ const RCX = 80;
 const RCY = 80;
 const RING_R = [64, 52, 40, 28];
 const RING_SW = 10;
-const QUAD_DEG = 84;
+const QUAD_DEG = 78;
 const QUAD_START = [-90, 0, 90, 180];
 
 function deg2rad(d: number) {
@@ -119,7 +120,7 @@ function MiniRing({ indices }: { indices: number[] }) {
               fill="none"
               stroke={ax.color}
               strokeWidth={RING_SW}
-              strokeLinecap="butt"
+              strokeLinecap="round"
               opacity={0.1}
             />
             {norm > 0.01 && (
@@ -128,7 +129,7 @@ function MiniRing({ indices }: { indices: number[] }) {
                 fill="none"
                 stroke={ax.color}
                 strokeWidth={RING_SW}
-                strokeLinecap="butt"
+                strokeLinecap="round"
                 opacity={0.88}
                 filter="url(#rg)"
               />
@@ -167,7 +168,7 @@ function MiniRing({ indices }: { indices: number[] }) {
 }
 
 /* ── Vertical axis slider ───────────────────────────────────────── */
-const SLIDER_H = 190;
+const SLIDER_H = 140;
 
 function AxisSlider({
   ai,
@@ -178,8 +179,10 @@ function AxisSlider({
   value: number;
   onChange: (v: number) => void;
 }) {
-  const trackRef = useRef<HTMLDivElement>(null);
+  const trackRef = useRef<SVGSVGElement>(null);
   const ax = AXES[ai];
+  const PAD = 6;
+  const usableH = SLIDER_H - PAD * 2;
 
   function valueFromEvent(clientY: number) {
     const rect = trackRef.current!.getBoundingClientRect();
@@ -188,119 +191,74 @@ function AxisSlider({
   }
 
   return (
-    <div
-      style={{
-        position: 'absolute',
-        right: 14,
-        top: 48,
-        zIndex: 10,
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        gap: 6,
-      }}
-    >
-      {/* Top label (best state) */}
+    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 5 }}>
       <span
         style={{
-          fontSize: 8,
-          fontWeight: 700,
-          letterSpacing: '0.1em',
-          textTransform: 'uppercase',
+          fontSize: 9,
+          fontWeight: 800,
+          letterSpacing: '0.06em',
           color: ax.color,
-          opacity: 0.8,
           fontFamily: 'var(--font-serif)',
         }}
       >
-        {ax.levels[ax.max]}
+        {ax.short}
       </span>
 
-      {/* Track */}
-      <div
+      <svg
         ref={trackRef}
+        width={24}
+        height={SLIDER_H}
+        style={{ display: 'block', overflow: 'visible', cursor: 'ns-resize', touchAction: 'none' }}
         onPointerDown={(e) => {
-          e.currentTarget.setPointerCapture(e.pointerId);
+          (e.currentTarget as SVGSVGElement).setPointerCapture(e.pointerId);
           onChange(valueFromEvent(e.clientY));
         }}
         onPointerMove={(e) => {
           if (e.buttons !== 1) return;
           onChange(valueFromEvent(e.clientY));
         }}
-        style={{
-          width: 28,
-          height: SLIDER_H,
-          position: 'relative',
-          cursor: 'ns-resize',
-          display: 'flex',
-          justifyContent: 'center',
-        }}
       >
-        {/* Track line */}
-        <div
-          style={{
-            width: 2,
-            height: '100%',
-            borderRadius: 2,
-            background: `linear-gradient(to bottom, ${ax.color}CC, ${ax.color}22)`,
-          }}
-        />
-        {/* Handle */}
-        <div
-          style={{
-            position: 'absolute',
-            top: (1 - value / ax.max) * SLIDER_H - 8,
-            left: '50%',
-            transform: 'translateX(-50%)',
-            width: 16,
-            height: 16,
-            borderRadius: '50%',
-            background: ax.color,
-            boxShadow: `0 0 10px ${ax.color}88`,
-            border: '2px solid rgba(255,255,255,0.15)',
-            pointerEvents: 'none',
-          }}
-        />
-        {/* Level ticks */}
-        {ax.levels.map((_, li) => (
-          <div
-            key={li}
-            style={{
-              position: 'absolute',
-              top: (1 - li / ax.max) * SLIDER_H - 0.5,
-              left: '50%',
-              transform: 'translateX(-50%)',
-              width: li === value ? 10 : 5,
-              height: 1,
-              background: li === value ? ax.color : `${ax.color}44`,
-            }}
-          />
-        ))}
-      </div>
+        <defs>
+          <filter id={`asg-${ai}`} x="-120%" y="-120%" width="340%" height="340%">
+            <feGaussianBlur stdDeviation="2.8" result="b" />
+            <feMerge>
+              <feMergeNode in="b" />
+              <feMergeNode in="SourceGraphic" />
+            </feMerge>
+          </filter>
+        </defs>
+        {ax.levels.map((_, li) => {
+          const y = PAD + (1 - li / ax.max) * usableH;
+          const isCur = li === value;
+          const isBelow = li < value;
+          const r = isCur ? 5 : isBelow ? 2.8 : 2.0;
+          const opacity = isCur ? 1 : isBelow ? 0.45 : 0.1;
+          return (
+            <circle
+              key={li}
+              cx={12}
+              cy={y}
+              r={r}
+              fill={ax.color}
+              opacity={opacity}
+              filter={isCur ? `url(#asg-${ai})` : undefined}
+              style={{ transition: 'all 0.2s' }}
+            />
+          );
+        })}
+      </svg>
 
-      {/* Bottom label (lowest state) */}
       <span
         style={{
-          fontSize: 8,
-          fontWeight: 700,
-          letterSpacing: '0.1em',
-          textTransform: 'uppercase',
-          color: ax.color,
-          opacity: 0.4,
-          fontFamily: 'var(--font-serif)',
-        }}
-      >
-        {ax.levels[0]}
-      </span>
-
-      {/* Current level name */}
-      <span
-        style={{
-          fontSize: 9,
+          fontSize: 7,
           fontWeight: 700,
           letterSpacing: '0.06em',
+          textTransform: 'uppercase',
           color: ax.color,
           fontFamily: 'var(--font-serif)',
-          marginTop: 2,
+          textAlign: 'center',
+          maxWidth: 36,
+          lineHeight: 1.2,
         }}
       >
         {ax.levels[value]}
@@ -348,6 +306,258 @@ function generateExampleEntries(): TimelineEntry[] {
   return entries;
 }
 
+/* ── What do you feel? ──────────────────────────────────────────── */
+const LS_FEEL = 'colourmap:road-feel';
+
+function FeelSection({ live, onLog }: { live: number[]; onLog: () => void }) {
+  const [val, setVal] = useState('');
+  const [entries, setEntries] = useState<string[]>([]);
+  const [justLogged, setJustLogged] = useState(false);
+  const inputRef = useRef<HTMLTextAreaElement>(null);
+
+  useEffect(() => {
+    try {
+      const s = localStorage.getItem(LS_FEEL);
+      if (s) setEntries(JSON.parse(s));
+    } catch {}
+  }, []);
+
+  function submit() {
+    const t = val.trim();
+    forceAppendEntry(live);
+    onLog();
+    const next = t ? [t, ...entries].slice(0, 8) : entries;
+    setEntries(next);
+    setVal('');
+    setJustLogged(true);
+    setTimeout(() => setJustLogged(false), 900);
+    try {
+      if (t) localStorage.setItem(LS_FEEL, JSON.stringify(next));
+    } catch {}
+    if (t) {
+      syncEvent('feel_note', { note: t });
+      syncPref(LS_FEEL, next);
+    }
+    if (inputRef.current) {
+      inputRef.current.style.height = 'auto';
+    }
+  }
+
+  return (
+    <div
+      style={{
+        border: `1px solid rgba(196,160,96,${justLogged ? '0.45' : '0.22'})`,
+        borderRadius: 28,
+        padding: '10px 18px 12px',
+        display: 'flex',
+        flexDirection: 'column',
+        gap: 8,
+        background: justLogged ? 'rgba(196,160,96,0.1)' : 'rgba(196,160,96,0.04)',
+        transition: 'all 0.2s',
+      }}
+    >
+      <span
+        style={{
+          fontFamily: 'var(--font-serif)',
+          fontSize: 9,
+          fontWeight: 700,
+          letterSpacing: '0.2em',
+          textTransform: 'uppercase',
+          color: justLogged ? 'rgba(196,160,96,0.8)' : 'rgba(196,160,96,0.5)',
+          textAlign: 'center',
+        }}
+      >
+        {justLogged ? '✓ logged' : 'what do you feel'}
+      </span>
+
+      <textarea
+        ref={inputRef}
+        value={val}
+        rows={1}
+        onChange={(e) => {
+          setVal(e.target.value);
+          const el = e.currentTarget;
+          el.style.height = 'auto';
+          el.style.height = `${Math.min(el.scrollHeight, 80)}px`;
+        }}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault();
+            submit();
+          }
+        }}
+        placeholder="name it…"
+        spellCheck={false}
+        style={{
+          background: 'transparent',
+          border: 'none',
+          borderBottom: '1px solid rgba(196,160,96,0.15)',
+          outline: 'none',
+          fontFamily: 'var(--font-serif)',
+          fontSize: 13,
+          color: '#C09878',
+          padding: '2px 0 6px',
+          width: '100%',
+          resize: 'none',
+          overflow: 'hidden',
+          lineHeight: 1.4,
+          maxHeight: 80,
+          boxSizing: 'border-box',
+          textAlign: 'center',
+        }}
+      />
+
+      {entries.length > 0 && (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+          {entries.map((e, i) => (
+            <span
+              key={i}
+              style={{
+                fontFamily: 'var(--font-serif)',
+                fontSize: 12,
+                color: '#C09878',
+                opacity: 1 - i * 0.1,
+                textAlign: 'center',
+                lineHeight: 1.35,
+              }}
+            >
+              {e}
+            </span>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+/* ── What do you need? ──────────────────────────────────────────── */
+const LS_NEEDS = 'colourmap:road-needs';
+
+function NeedsSection() {
+  const [val, setVal] = useState('');
+  const [entries, setEntries] = useState<string[]>([]);
+  const inputRef = useRef<HTMLTextAreaElement>(null);
+
+  useEffect(() => {
+    try {
+      const s = localStorage.getItem(LS_NEEDS);
+      if (s) setEntries(JSON.parse(s));
+    } catch {}
+  }, []);
+
+  function submit() {
+    const t = val.trim();
+    if (!t) return;
+    const next = [t, ...entries].slice(0, 8);
+    setEntries(next);
+    setVal('');
+    try {
+      localStorage.setItem(LS_NEEDS, JSON.stringify(next));
+    } catch {}
+    syncEvent('needs_note', { note: t });
+    syncPref(LS_NEEDS, next);
+  }
+
+  return (
+    <div
+      style={{
+        padding: '4px 20px 20px',
+        display: 'flex',
+        flexDirection: 'column',
+        gap: 8,
+      }}
+    >
+      {/* Pill box */}
+      <div
+        style={{
+          border: '1px solid rgba(196,160,96,0.22)',
+          borderRadius: 28,
+          padding: '10px 18px 12px',
+          display: 'flex',
+          flexDirection: 'column',
+          gap: 8,
+          background: 'rgba(196,160,96,0.04)',
+        }}
+      >
+        {/* Label */}
+        <span
+          style={{
+            fontFamily: 'var(--font-serif)',
+            fontSize: 9,
+            fontWeight: 700,
+            letterSpacing: '0.2em',
+            textTransform: 'uppercase',
+            color: 'rgba(196,160,96,0.5)',
+            textAlign: 'center',
+          }}
+        >
+          What do you need?
+        </span>
+
+        {/* Input */}
+        <textarea
+          ref={inputRef}
+          value={val}
+          rows={1}
+          onChange={(e) => {
+            setVal(e.target.value);
+            const el = e.currentTarget;
+            el.style.height = 'auto';
+            el.style.height = `${Math.min(el.scrollHeight, 80)}px`;
+          }}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' && !e.shiftKey) {
+              e.preventDefault();
+              submit();
+            }
+          }}
+          placeholder="rest · movement · connection · silence…"
+          spellCheck={false}
+          className="placeholder:uppercase placeholder:tracking-[0.1em] placeholder:text-[9px] placeholder:opacity-40"
+          style={{
+            background: 'transparent',
+            border: 'none',
+            borderBottom: '1px solid rgba(196,160,96,0.15)',
+            outline: 'none',
+            fontFamily: 'var(--font-serif)',
+            fontSize: 13,
+            color: '#C09878',
+            padding: '2px 0 6px',
+            width: '100%',
+            resize: 'none',
+            overflow: 'hidden',
+            lineHeight: 1.4,
+            maxHeight: 80,
+            boxSizing: 'border-box',
+            textAlign: 'center',
+          }}
+        />
+
+        {/* Recent entries */}
+        {entries.length > 0 && (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+            {entries.map((e, i) => (
+              <span
+                key={i}
+                style={{
+                  fontFamily: 'var(--font-serif)',
+                  fontSize: 12,
+                  color: '#C09878',
+                  opacity: 1 - i * 0.1,
+                  textAlign: 'center',
+                  lineHeight: 1.35,
+                }}
+              >
+                {e}
+              </span>
+            ))}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
 /* ── Graph constants ────────────────────────────────────────────── */
 const GW = 340;
 const GH = 150;
@@ -359,8 +569,6 @@ const PH = GH - PAD.top - PAD.bottom;
 export default function DayRoad({ onClose }: { onClose?: () => void }) {
   const [entries, setEntries] = useState<TimelineEntry[]>([]);
   const [live, setLive] = useState(() => AXES.map((a) => a.def));
-  const [activeAxis, setActiveAxis] = useState<number | null>(null);
-  const [justLogged, setJustLogged] = useState(false);
   const [tab, setTab] = useState<'today' | 'example'>('today');
   const [exampleEntries, setExampleEntries] = useState<TimelineEntry[]>(() =>
     generateExampleEntries(),
@@ -470,7 +678,9 @@ export default function DayRoad({ onClose }: { onClose?: () => void }) {
           background: '#0c0806',
           borderTop: '1px solid rgba(196,160,96,0.2)',
           borderRadius: '20px 20px 0 0',
-          overflow: 'hidden',
+          overflowY: 'auto',
+          overflowX: 'hidden',
+          maxHeight: '92svh',
           fontFamily: 'var(--font-serif)',
           paddingBottom: 'env(safe-area-inset-bottom)',
         }}
@@ -536,100 +746,63 @@ export default function DayRoad({ onClose }: { onClose?: () => void }) {
           </button>
         </div>
 
-        {/* Today: EMBF boxes + mandala + log */}
+        {/* Today: 2 sliders | ring (centered) | 2 sliders + log */}
         {tab === 'today' && (
-          <>
+          <div
+            style={{
+              padding: '0 16px 14px',
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              gap: 0,
+            }}
+          >
             <div
-              style={{ display: 'flex', justifyContent: 'center', gap: 8, padding: '0 20px 14px' }}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: 12,
+                width: '100%',
+              }}
             >
-              {AXES.map((ax, ai) => {
-                const on = activeAxis === ai;
-                return (
-                  <button
+              {/* Left sliders: E, M */}
+              <div style={{ display: 'flex', gap: 16 }}>
+                {[0, 1].map((ai) => (
+                  <AxisSlider
                     key={ai}
-                    type="button"
-                    onClick={() => setActiveAxis(on ? null : ai)}
-                    style={{
-                      flex: 1,
-                      padding: '6px 4px',
-                      borderRadius: 10,
-                      border: on ? `1px solid ${ax.color}` : '1px solid rgba(196,160,96,0.2)',
-                      background: on ? `${ax.color}18` : 'transparent',
-                      cursor: 'pointer',
-                      display: 'flex',
-                      flexDirection: 'column',
-                      alignItems: 'center',
-                      gap: 3,
-                      transition: 'all 0.15s',
-                      boxShadow: on ? `0 0 10px ${ax.color}33` : 'none',
-                    }}
-                  >
-                    <span
-                      style={{
-                        fontSize: 13,
-                        fontWeight: 800,
-                        letterSpacing: '0.06em',
-                        color: on ? ax.color : 'rgba(196,160,96,0.4)',
-                        fontFamily: 'var(--font-serif)',
-                      }}
-                    >
-                      {ax.short}
-                    </span>
-                    <span
-                      style={{
-                        fontSize: 7.5,
-                        fontWeight: 700,
-                        letterSpacing: '0.1em',
-                        textTransform: 'uppercase',
-                        color: on ? ax.color : 'rgba(196,160,96,0.28)',
-                      }}
-                    >
-                      {ax.levels[live[ai]]}
-                    </span>
-                  </button>
-                );
-              })}
-            </div>
-            <div style={{ position: 'relative' }}>
-              <div style={{ display: 'flex', justifyContent: 'center', paddingBottom: 12 }}>
+                    ai={ai}
+                    value={live[ai]}
+                    onChange={(v) => setAxisValue(ai, v)}
+                  />
+                ))}
+              </div>
+              {/* Ring centered */}
+              <div style={{ flexShrink: 0 }}>
                 <MiniRing indices={live} />
               </div>
-              {activeAxis !== null && (
-                <AxisSlider
-                  ai={activeAxis}
-                  value={live[activeAxis]}
-                  onChange={(v) => setAxisValue(activeAxis, v)}
-                />
-              )}
+              {/* Right sliders: B, F */}
+              <div style={{ display: 'flex', gap: 16 }}>
+                {[2, 3].map((ai) => (
+                  <AxisSlider
+                    key={ai}
+                    ai={ai}
+                    value={live[ai]}
+                    onChange={(v) => setAxisValue(ai, v)}
+                  />
+                ))}
+              </div>
             </div>
-            <div style={{ display: 'flex', justifyContent: 'center', paddingBottom: 10 }}>
-              <button
-                type="button"
-                onClick={() => {
-                  forceAppendEntry(live);
+            {/* Feel input */}
+            <div style={{ paddingTop: 10, width: '100%' }}>
+              <FeelSection
+                live={live}
+                onLog={() => {
                   setEntries(getTodayEntries());
-                  setJustLogged(true);
-                  setTimeout(() => setJustLogged(false), 900);
                 }}
-                style={{
-                  padding: '6px 20px',
-                  borderRadius: 20,
-                  border: `1px solid rgba(196,160,96,${justLogged ? '0.7' : '0.35'})`,
-                  background: justLogged ? 'rgba(196,160,96,0.18)' : 'transparent',
-                  color: justLogged ? '#C8A858' : 'rgba(196,160,96,0.6)',
-                  fontSize: 10,
-                  fontWeight: 700,
-                  letterSpacing: '0.14em',
-                  textTransform: 'uppercase',
-                  cursor: 'pointer',
-                  fontFamily: 'var(--font-serif)',
-                  transition: 'all 0.2s',
-                }}
-              >
-                {justLogged ? '✓ logged' : '+ log point'}
-              </button>
+              />
             </div>
-          </>
+          </div>
         )}
 
         {/* Example: mini ring preview + shuffle */}
@@ -747,25 +920,24 @@ export default function DayRoad({ onClose }: { onClose?: () => void }) {
             )}
             {AXES.map((ax, ai) => {
               const pts = toPoints(ai);
-              const isActive = activeAxis === ai;
               return (
                 <g key={ai}>
                   <path
                     d={smoothPath(pts)}
                     fill="none"
                     stroke={ax.color}
-                    strokeWidth={isActive ? 2.5 : 1.8}
+                    strokeWidth={1.8}
                     strokeLinecap="round"
                     strokeLinejoin="round"
-                    opacity={isActive ? 1 : activeAxis !== null ? 0.3 : 0.8}
+                    opacity={0.8}
                     filter={`url(#dg${ai})`}
                   />
                   <circle
                     cx={pts[pts.length - 1].x}
                     cy={pts[pts.length - 1].y}
-                    r={isActive ? 4 : 3}
+                    r={3}
                     fill={ax.color}
-                    opacity={isActive ? 1 : activeAxis !== null ? 0.3 : 0.95}
+                    opacity={0.95}
                   />
                 </g>
               );
@@ -773,44 +945,8 @@ export default function DayRoad({ onClose }: { onClose?: () => void }) {
           </svg>
         </div>
 
-        {/* Legend */}
-        <div
-          style={{
-            display: 'flex',
-            gap: 16,
-            justifyContent: 'center',
-            padding: '2px 16px 20px',
-            flexWrap: 'wrap',
-          }}
-        >
-          {AXES.map((a) => (
-            <span
-              key={a.label}
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: 5,
-                fontSize: 9,
-                fontWeight: 700,
-                letterSpacing: '0.12em',
-                textTransform: 'uppercase',
-                color: a.color,
-                opacity: 0.65,
-              }}
-            >
-              <span
-                style={{
-                  width: 18,
-                  height: 2,
-                  background: a.color,
-                  display: 'inline-block',
-                  borderRadius: 1,
-                }}
-              />
-              {a.label}
-            </span>
-          ))}
-        </div>
+        {/* What do you need? */}
+        <NeedsSection />
       </div>
     </div>
   );

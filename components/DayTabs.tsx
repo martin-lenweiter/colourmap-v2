@@ -63,15 +63,17 @@ export default function DayTabs({
                   if (tab.id !== active) haptic('tap');
                   setActive(tab.id);
                 }}
-                className="flex-1 cursor-pointer rounded-2xl py-4 uppercase tracking-[0.14em] transition-all duration-200"
+                className="flex-1 min-w-0 cursor-pointer rounded-2xl px-2 py-4 uppercase transition-all duration-200"
                 style={{
                   background: isActive ? '#C4A06018' : 'transparent',
                   border: `1.5px solid ${isActive ? '#C4A060' : 'hsl(var(--border) / 0.25)'}`,
                   color: 'hsl(var(--foreground))',
                   fontFamily: style.headingFont,
-                  fontSize: '15px',
+                  fontSize: '13px',
                   fontWeight: 700,
+                  letterSpacing: '0.08em',
                   minHeight: 60,
+                  textAlign: 'center',
                 }}
               >
                 {tab.label}

@@ -1,3 +1,5 @@
+import { syncEvent } from '@/lib/sync';
+
 export type TimelineEntry = { t: number; i: number[] };
 
 const KEY = 'colourmap:day-timeline-v1';
@@ -15,6 +17,7 @@ export function forceAppendEntry(indices: number[]): void {
   try {
     localStorage.setItem(KEY, JSON.stringify(entries));
   } catch {}
+  syncEvent('axis_snapshot', { t: Date.now(), axes: indices });
 }
 
 export function appendEntry(indices: number[]): void {

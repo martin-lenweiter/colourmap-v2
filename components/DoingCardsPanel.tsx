@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import SquareSlider from '@/components/SquareSlider';
+import { syncPref } from '@/lib/sync';
 
 /* ─── Focus levels — 8 steps ─────────────────────────────────── */
 const FOCUS_LEVELS = [
@@ -11,8 +12,8 @@ const FOCUS_LEVELS = [
   { label: 'Warming', color: '#C4A868' },
   { label: 'Present', color: '#C4B058' },
   { label: 'Locked', color: '#A8B870' },
-  { label: 'Flowing', color: '#88B888' },
-  { label: 'Zone', color: '#60C890' },
+  { label: 'Flowing', color: '#8BA870' },
+  { label: 'Zone', color: '#7A9E58' },
 ];
 
 /* ─── Tokens ─────────────────────────────────────────────────── */
@@ -193,10 +194,10 @@ function FragInput({
           border: 'none',
           outline: 'none',
           borderBottom: `1px solid rgba(196,160,96,0.18)`,
-          fontFamily: 'var(--font-handwritten)',
-          fontStyle: 'italic',
-          fontSize: 18,
-          color: BROWN,
+          fontFamily: 'var(--font-serif)',
+          fontStyle: 'normal',
+          fontSize: 15,
+          color: '#3A1E08',
           padding: '2px 0',
           width: '100%',
           resize: 'none',
@@ -240,11 +241,10 @@ function LogFragInput({
         <span
           key={i}
           style={{
-            fontFamily: 'var(--font-handwritten)',
-            fontStyle: 'italic',
-            fontSize: 17,
-            color: BROWN,
-            opacity: 0.65,
+            fontFamily: 'var(--font-serif)',
+            fontStyle: 'normal',
+            fontSize: 14,
+            color: '#3A1E08',
             lineHeight: 1.35,
             textAlign: 'center',
           }}
@@ -279,10 +279,10 @@ function LogFragInput({
           border: 'none',
           outline: 'none',
           borderBottom: `1px solid rgba(196,160,96,0.18)`,
-          fontFamily: 'var(--font-handwritten)',
-          fontStyle: 'italic',
-          fontSize: 18,
-          color: BROWN,
+          fontFamily: 'var(--font-serif)',
+          fontStyle: 'normal',
+          fontSize: 15,
+          color: '#3A1E08',
           padding: '2px 0',
           width: '100%',
           resize: 'none',
@@ -641,7 +641,7 @@ function MissionCard({
       style={{
         position: 'relative',
         borderBottom: last ? 'none' : `1px solid ${INNER_DIV}`,
-        opacity: isDragging ? 0.28 : item.done ? 0.45 : 1,
+        opacity: isDragging ? 0.28 : 1,
         transition: 'opacity 0.15s',
       }}
     >
@@ -948,7 +948,7 @@ function AddRow({ placeholder, onAdd }: { placeholder: string; onAdd: (text: str
 
 /* ─── Main panel ─────────────────────────────────────────────── */
 export default function DoingCardsPanel() {
-  const [globalStyle, setGlobalStyle] = useState(0);
+  const [globalStyle, setGlobalStyle] = useState(1);
   const [objItem, setObjItem] = useState<CardItem>({ id: 'current', text: '', done: false });
   const [objOpen, setObjOpen] = useState(false);
   const [secOpen, setSecOpen] = useState({
@@ -994,7 +994,7 @@ export default function DoingCardsPanel() {
       if (rawPush) setPush(JSON.parse(rawPush));
       const gs = localStorage.getItem('colourmap:text-style');
       if (gs !== null) setGlobalStyle(Number(gs));
-      setChapter(localStorage.getItem('colourmap:done-chapter') ?? '');
+      setChapter(localStorage.getItem('colourmap:life-chapter') ?? '');
       const objDone = localStorage.getItem('colourmap:objective-done');
       if (objDone === 'true') setObjItem((prev) => ({ ...prev, done: true }));
     } catch {}
@@ -1003,8 +1003,9 @@ export default function DoingCardsPanel() {
   function saveChapter(v: string) {
     setChapter(v);
     try {
-      localStorage.setItem('colourmap:done-chapter', v);
+      localStorage.setItem('colourmap:life-chapter', v);
     } catch {}
+    syncPref('colourmap:life-chapter', v);
   }
 
   function cycleStyle() {
@@ -1013,6 +1014,7 @@ export default function DoingCardsPanel() {
     try {
       localStorage.setItem('colourmap:text-style', String(next));
     } catch {}
+    syncPref('colourmap:text-style', next);
   }
 
   function updateObj(f: Partial<CardItem>) {
@@ -1038,6 +1040,7 @@ export default function DoingCardsPanel() {
     try {
       localStorage.setItem('colourmap:today-objectives', JSON.stringify(next));
     } catch {}
+    syncPref('colourmap:today-objectives', next);
   }
   function updateMission(id: string, f: Partial<CardItem>) {
     persistMissions(missions.map((m) => (m.id === id ? { ...m, ...f } : m)));
@@ -1054,6 +1057,7 @@ export default function DoingCardsPanel() {
     try {
       localStorage.setItem('colourmap:checkin-todos', JSON.stringify(next));
     } catch {}
+    syncPref('colourmap:checkin-todos', next);
   }
   function updatePush(id: string, f: Partial<CardItem>) {
     persistPush(push.map((p) => (p.id === id ? { ...p, ...f } : p)));
@@ -1434,7 +1438,6 @@ export default function DoingCardsPanel() {
                     display: 'flex',
                     alignItems: 'center',
                     gap: 10,
-                    opacity: 0.45,
                   }}
                 >
                   <button
@@ -1485,8 +1488,7 @@ export default function DoingCardsPanel() {
                       fontWeight: 700,
                       letterSpacing: '0.1em',
                       textTransform: 'uppercase',
-                      color: LABEL_COLOR,
-                      opacity: 0.5,
+                      color: '#C09878',
                       flexShrink: 0,
                     }}
                   >

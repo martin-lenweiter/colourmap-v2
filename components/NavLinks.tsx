@@ -99,7 +99,7 @@ export default function NavLinks() {
               className="shrink-0 whitespace-nowrap transition-colors tracking-[0.04em]"
               style={{
                 fontSize: 16,
-                color: isActive ? '#5C3018' : '#7A5438',
+                color: '#7A5438',
                 fontWeight: isActive ? 600 : 400,
               }}
             >

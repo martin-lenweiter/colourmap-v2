@@ -1,12 +1,14 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
+import { syncEvent, syncPref } from '@/lib/sync';
 
 /* ── Constants ───────────────────────────────────────────────── */
 const TODAY = new Date().toISOString().slice(0, 10);
 const YESTERDAY = new Date(Date.now() - 86400000).toISOString().slice(0, 10);
 const LS_RITUALS = 'colourmap:rituals';
 const LS_DONE = `colourmap:rituals-done-${TODAY}`;
+const LS_SESSIONS = 'colourmap:rituals-sessions';
 
 const QUOTES = [
   'Discipline is hard. Rituals are easy. Systems set you free.',
@@ -28,7 +30,7 @@ const DEFAULT_RITUALS: Ritual[] = [
 type Ritual = {
   id: string;
   name: string;
-  time: 'morning' | 'evening';
+  time: string;
   streakCount: number;
   lastDone: string | null;
 };
@@ -40,11 +42,13 @@ function save(rituals: Ritual[]) {
   try {
     localStorage.setItem(LS_RITUALS, JSON.stringify(rituals));
   } catch {}
+  syncPref(LS_RITUALS, rituals);
 }
 function saveDone(done: Set<string>) {
   try {
     localStorage.setItem(LS_DONE, JSON.stringify([...done]));
   } catch {}
+  syncPref(LS_DONE, [...done]);
 }
 function isStreakAlive(r: Ritual) {
   return r.lastDone === TODAY || r.lastDone === YESTERDAY;
@@ -269,13 +273,7 @@ function RitualRow({
 }
 
 /* ── Add ritual row ──────────────────────────────────────────── */
-function AddRitual({
-  time,
-  onAdd,
-}: {
-  time: 'morning' | 'evening';
-  onAdd: (name: string) => void;
-}) {
+function AddRitual({ time, onAdd }: { time: string; onAdd: (name: string) => void }) {
   const [open, setOpen] = useState(false);
   const [name, setName] = useState('');
   const inputRef = useRef<HTMLInputElement>(null);
@@ -359,6 +357,91 @@ function AddRitual({
   );
 }
 
+/* ── Add session row ─────────────────────────────────────────── */
+function AddSession({ onAdd }: { onAdd: (name: string) => void }) {
+  const [open, setOpen] = useState(false);
+  const [name, setName] = useState('');
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  function submit() {
+    const trimmed = name.trim();
+    if (!trimmed) return;
+    onAdd(trimmed);
+    setName('');
+    setOpen(false);
+  }
+
+  useEffect(() => {
+    if (open) inputRef.current?.focus();
+  }, [open]);
+
+  if (!open) {
+    return (
+      <button
+        type="button"
+        onClick={() => setOpen(true)}
+        style={{
+          background: 'none',
+          border: 'none',
+          cursor: 'pointer',
+          padding: '4px 4px 10px',
+          fontFamily: 'var(--font-serif)',
+          fontSize: 12,
+          color: 'rgba(196,160,96,0.55)',
+          letterSpacing: '0.06em',
+          display: 'block',
+        }}
+      >
+        + add session
+      </button>
+    );
+  }
+
+  return (
+    <div style={{ display: 'flex', gap: 8, marginBottom: 10, padding: '0 2px', flex: 1 }}>
+      <input
+        ref={inputRef}
+        value={name}
+        onChange={(e) => setName(e.target.value)}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter') submit();
+          if (e.key === 'Escape') setOpen(false);
+        }}
+        placeholder="Session name (e.g. Midday)…"
+        style={{
+          flex: 1,
+          background: 'rgba(255,255,255,0.04)',
+          border: '1px solid rgba(196,160,96,0.25)',
+          borderRadius: 8,
+          padding: '7px 10px',
+          fontFamily: 'var(--font-serif)',
+          fontSize: 12,
+          color: '#F0D898',
+          outline: 'none',
+        }}
+      />
+      <button
+        type="button"
+        onClick={submit}
+        style={{
+          background: 'rgba(196,160,96,0.18)',
+          border: '1px solid rgba(196,160,96,0.35)',
+          borderRadius: 8,
+          padding: '0 12px',
+          fontFamily: 'var(--font-serif)',
+          fontSize: 11,
+          fontWeight: 700,
+          color: '#C8A858',
+          cursor: 'pointer',
+          letterSpacing: '0.08em',
+        }}
+      >
+        ADD
+      </button>
+    </div>
+  );
+}
+
 /* ── Time section ────────────────────────────────────────────── */
 function TimeSection({
   label,
@@ -368,6 +451,7 @@ function TimeSection({
   onToggle,
   onDelete,
   onAdd,
+  onAddSession,
   onDragStart,
   dragId,
   dropTarget,
@@ -379,42 +463,31 @@ function TimeSection({
   onToggle: (id: string) => void;
   onDelete: (id: string) => void;
   onAdd: (name: string) => void;
+  onAddSession: (name: string) => void;
   onDragStart: (id: string) => void;
   dragId: string | null;
   dropTarget: DropTarget;
 }) {
-  if (rituals.length === 0 && label === 'EVENING') {
-    return (
-      <div style={{ padding: '0 16px 4px' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '8px 0 6px' }}>
-          <span
-            style={{
-              fontSize: 10,
-              color: 'rgba(196,160,96,0.35)',
-              fontFamily: 'var(--font-serif)',
-              textTransform: 'uppercase',
-              letterSpacing: '0.2em',
-            }}
-          >
-            {icon} {label}
-          </span>
-        </div>
-        <AddRitual time="evening" onAdd={onAdd} />
-      </div>
-    );
-  }
+  const emptyLabel = rituals.length === 0;
 
   return (
     <div style={{ padding: '0 16px 4px' }}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '10px 0 8px' }}>
+      <div
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: 6,
+          padding: emptyLabel ? '8px 0 6px' : '10px 0 8px',
+        }}
+      >
         <span
           style={{
             fontFamily: 'var(--font-serif)',
-            fontSize: 11,
-            fontWeight: 700,
+            fontSize: emptyLabel ? 10 : 11,
+            fontWeight: emptyLabel ? 400 : 700,
             textTransform: 'uppercase',
-            letterSpacing: '0.18em',
-            color: 'rgba(196,160,96,0.65)',
+            letterSpacing: emptyLabel ? '0.2em' : '0.18em',
+            color: emptyLabel ? 'rgba(196,160,96,0.35)' : 'rgba(196,160,96,0.65)',
           }}
         >
           {icon} {label}
@@ -432,7 +505,12 @@ function TimeSection({
           dropEdge={dropTarget?.id === r.id && dragId !== r.id ? dropTarget.pos : null}
         />
       ))}
-      <AddRitual time={label === 'MORNING' ? 'morning' : 'evening'} onAdd={onAdd} />
+      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
+        <div style={{ flex: 1 }}>
+          <AddRitual time={label.toLowerCase()} onAdd={onAdd} />
+        </div>
+        <AddSession onAdd={onAddSession} />
+      </div>
     </div>
   );
 }
@@ -440,6 +518,7 @@ function TimeSection({
 /* ── Main component ──────────────────────────────────────────── */
 export default function DailyRituals() {
   const [rituals, setRituals] = useState<Ritual[]>(DEFAULT_RITUALS);
+  const [sessions, setSessions] = useState<string[]>(['morning', 'evening']);
   const [doneIds, setDoneIds] = useState<Set<string>>(new Set());
   const [open, setOpen] = useState(false);
   const [quoteIdx, setQuoteIdx] = useState(0);
@@ -455,6 +534,8 @@ export default function DailyRituals() {
       if (r) setRituals(JSON.parse(r));
       const d = localStorage.getItem(LS_DONE);
       if (d) setDoneIds(new Set(JSON.parse(d)));
+      const s = localStorage.getItem(LS_SESSIONS);
+      if (s) setSessions(JSON.parse(s));
     } catch {}
     setQuoteIdx(Math.floor(Math.random() * QUOTES.length));
   }, []);
@@ -536,6 +617,7 @@ export default function DailyRituals() {
       nowDone.delete(id);
     } else {
       nowDone.add(id);
+      syncEvent('ritual_done', { ritualId: id, ritualName: ritual.name, session: ritual.time });
       setRituals((prev) => {
         const next = prev.map((r) => {
           if (r.id !== id) return r;
@@ -552,11 +634,22 @@ export default function DailyRituals() {
     saveDone(nowDone);
   }
 
-  function addRitual(name: string, time: 'morning' | 'evening') {
+  function addRitual(name: string, time: string) {
     const r: Ritual = { id: `r${Date.now()}`, name, time, streakCount: 0, lastDone: null };
     const next = [...rituals, r];
     setRituals(next);
     save(next);
+  }
+
+  function addSession(name: string) {
+    const key = name.toLowerCase().trim();
+    if (!key || sessions.includes(key)) return;
+    const next = [...sessions, key];
+    setSessions(next);
+    try {
+      localStorage.setItem(LS_SESSIONS, JSON.stringify(next));
+    } catch {}
+    syncPref(LS_SESSIONS, next);
   }
 
   function deleteRitual(id: string) {
@@ -569,8 +662,6 @@ export default function DailyRituals() {
     saveDone(nowDone);
   }
 
-  const morning = rituals.filter((r) => r.time === 'morning');
-  const evening = rituals.filter((r) => r.time === 'evening');
   const total = rituals.length;
   const done = doneIds.size;
   const score = total > 0 ? Math.round((done / total) * 100) : 0;
@@ -718,51 +809,26 @@ export default function DailyRituals() {
             </div>
           </div>
 
-          {/* Morning */}
-          {morning.length > 0 ? (
-            <TimeSection
-              label="MORNING"
-              icon="·"
-              rituals={morning}
-              checkedIds={doneIds}
-              onToggle={toggle}
-              onDelete={deleteRitual}
-              onAdd={(n) => addRitual(n, 'morning')}
-              {...sectionProps}
-            />
-          ) : (
-            <div style={{ padding: '0 16px 4px' }}>
-              <div style={{ padding: '10px 0 6px' }}>
-                <span
-                  style={{
-                    fontFamily: 'var(--font-serif)',
-                    fontSize: 11,
-                    fontWeight: 700,
-                    textTransform: 'uppercase',
-                    letterSpacing: '0.18em',
-                    color: 'rgba(196,160,96,0.60)',
-                  }}
-                >
-                  · MORNING
-                </span>
-              </div>
-              <AddRitual time="morning" onAdd={(n) => addRitual(n, 'morning')} />
+          {sessions.map((session, si) => (
+            <div key={session}>
+              {si > 0 && (
+                <div
+                  style={{ margin: '2px 16px', height: 1, background: 'rgba(196,160,96,0.08)' }}
+                />
+              )}
+              <TimeSection
+                label={session.toUpperCase()}
+                icon="·"
+                rituals={rituals.filter((r) => r.time === session)}
+                checkedIds={doneIds}
+                onToggle={toggle}
+                onDelete={deleteRitual}
+                onAdd={(n) => addRitual(n, session)}
+                onAddSession={addSession}
+                {...sectionProps}
+              />
             </div>
-          )}
-
-          <div style={{ margin: '2px 16px', height: 1, background: 'rgba(196,160,96,0.08)' }} />
-
-          {/* Evening */}
-          <TimeSection
-            label="EVENING"
-            icon="·"
-            rituals={evening}
-            checkedIds={doneIds}
-            onToggle={toggle}
-            onDelete={deleteRitual}
-            onAdd={(n) => addRitual(n, 'evening')}
-            {...sectionProps}
-          />
+          ))}
 
           {/* Quote */}
           <div
