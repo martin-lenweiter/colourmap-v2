@@ -69,7 +69,12 @@ type Mode =
   | 'stream'
   | 'entropy'
   | 'entropy3d'
-  | 'embf3d';
+  | 'embf3d'
+  | 'wordneon'
+  | 'hopefear'
+  | 'wordecho'
+  | 'wordparticle'
+  | 'wordweave';
 
 interface Pal {
   bg0: string;
@@ -2159,6 +2164,66 @@ const PRESETS: Record<string, Cfg> = {
     luminous: 3,
     stars: 3,
     mode: 'treeoflife3d',
+  },
+  'Neon Word': {
+    preset: 'Warp Tunnel',
+    symmetry: 6,
+    complexity: 5,
+    glow: 9,
+    breathSpeed: 1.2,
+    intensity: 9,
+    particles: 3,
+    luminous: 2,
+    stars: 1,
+    mode: 'wordneon',
+  },
+  Duality: {
+    preset: 'Blue Astral',
+    symmetry: 4,
+    complexity: 4,
+    glow: 7,
+    breathSpeed: 0.6,
+    intensity: 8,
+    particles: 2,
+    luminous: 1,
+    stars: 2,
+    mode: 'hopefear',
+  },
+  'Echo Word': {
+    preset: 'Violet Portal',
+    symmetry: 5,
+    complexity: 8,
+    glow: 6,
+    breathSpeed: 0.5,
+    intensity: 8,
+    particles: 3,
+    luminous: 1,
+    stars: 2,
+    mode: 'wordecho',
+  },
+  'Particle Word': {
+    preset: 'Golden Source',
+    symmetry: 6,
+    complexity: 9,
+    glow: 5,
+    breathSpeed: 0.8,
+    intensity: 7,
+    particles: 5,
+    luminous: 1,
+    stars: 1,
+    mode: 'wordparticle',
+  },
+  'Woven Word': {
+    preset: 'Forest Ceremony',
+    symmetry: 4,
+    complexity: 7,
+    glow: 7,
+    breathSpeed: 0.7,
+    intensity: 8,
+    particles: 3,
+    luminous: 1,
+    stars: 2,
+    mode: 'wordweave',
   },
 };
 
@@ -9035,6 +9100,11 @@ const MODES: { mode: Mode; label: string }[] = [
   { mode: 'entropy', label: '⋮ Entropy' },
   { mode: 'entropy3d', label: '⋮³ Entropy 3D' },
   { mode: 'embf3d', label: '◎ EMBF 3D' },
+  { mode: 'wordneon', label: '✦ Neon Word' },
+  { mode: 'hopefear', label: '◈ Duality' },
+  { mode: 'wordecho', label: '◉ Echo Word' },
+  { mode: 'wordparticle', label: '✤ Particle Word' },
+  { mode: 'wordweave', label: '∾ Woven Word' },
 ];
 
 type FeaturedItem = { name: string; tag: string } | { header: string; dim?: boolean };
@@ -10826,6 +10896,8 @@ export default function GeometryField() {
   const fingerDistortRef = useRef(false);
 
   const [cfg, setCfg] = useState<Cfg>(PRESETS['Calm Field']);
+  const [word, setWord] = useState('HOPE');
+  const wordRef = useRef('HOPE');
   const [fingerDistort, setFingerDistort] = useState(false);
   const [open, setOpen] = useState(true);
   const [tab, setTab] = useState<'builder' | 'journey'>('builder');
@@ -10837,6 +10909,10 @@ export default function GeometryField() {
   useEffect(() => {
     cfgRef.current = cfg;
   }, [cfg]);
+
+  useEffect(() => {
+    wordRef.current = word;
+  }, [word]);
 
   useEffect(() => {
     dotsRef.current = makeDots(Math.round(cfg.particles * 40 + 20));
@@ -11230,9 +11306,17 @@ export default function GeometryField() {
     };
   }, [cfg.mode, cfg.preset]);
 
-  // Canvas overlay for Breath / Stream / Entropy modes
+  // Canvas overlay for Breath / Stream / Entropy / Word modes
   useEffect(() => {
-    const isCanvasMode = cfg.mode === 'breath' || cfg.mode === 'stream' || cfg.mode === 'entropy';
+    const isCanvasMode =
+      cfg.mode === 'breath' ||
+      cfg.mode === 'stream' ||
+      cfg.mode === 'entropy' ||
+      cfg.mode === 'wordneon' ||
+      cfg.mode === 'hopefear' ||
+      cfg.mode === 'wordecho' ||
+      cfg.mode === 'wordparticle' ||
+      cfg.mode === 'wordweave';
     if (!isCanvasMode) {
       canvasModeActiveRef.current = false;
       cancelAnimationFrame(canvasModeAnimRef.current);
@@ -11470,6 +11554,376 @@ export default function GeometryField() {
         canvasModeAnimRef.current = requestAnimationFrame(drawEntropy);
       }
       canvasModeAnimRef.current = requestAnimationFrame(drawEntropy);
+    }
+
+    /* ── WORD NEON: large word glows like a neon sign ─────────────── */
+    if (cfg.mode === 'wordneon') {
+      function drawWordNeon() {
+        if (!canvasModeActiveRef.current) return;
+        const W = mc!.width;
+        const H = mc!.height;
+        const t = performance.now() * 0.001;
+        const w = wordRef.current || 'WORD';
+
+        ctx!.fillStyle = `rgba(0,0,0,0.18)`;
+        ctx!.fillRect(0, 0, W, H);
+
+        const fontSize = Math.min(W * 0.22, H * 0.28, 140);
+        const flicker = 0.85 + 0.15 * Math.sin(t * 11.3) * Math.sin(t * 7.1);
+        const pulse = 1 + 0.04 * Math.sin(t * speed * 1.8);
+        ctx!.save();
+        ctx!.translate(W / 2, H / 2);
+        ctx!.scale(pulse, pulse);
+
+        // Chromatic aberration layers
+        const offsets = [
+          [-2, 0, `rgba(255,80,80,`],
+          [2, 0, `rgba(80,80,255,`],
+          [0, 0, `rgba(${pr},${pg},${pb},`],
+        ] as const;
+        for (const [ox, oy, colorPfx] of offsets) {
+          for (let layer = 0; layer < 4; layer++) {
+            const blur = [60, 30, 12, 0][layer];
+            const alpha = [0.08, 0.12, 0.18, 0.9 * flicker * iF][layer];
+            ctx!.shadowBlur = blur;
+            ctx!.shadowColor = `rgba(${pr},${pg},${pb},${alpha})`;
+            ctx!.font = `900 ${Math.round(fontSize)}px var(--font-serif, serif)`;
+            ctx!.textAlign = 'center';
+            ctx!.textBaseline = 'middle';
+            ctx!.fillStyle = `${colorPfx}${alpha})`;
+            ctx!.fillText(w.toUpperCase(), ox, oy);
+          }
+        }
+        ctx!.restore();
+        canvasModeAnimRef.current = requestAnimationFrame(drawWordNeon);
+      }
+      canvasModeAnimRef.current = requestAnimationFrame(drawWordNeon);
+    }
+
+    /* ── HOPEFEAR / DUALITY: word spins on Y-axis, flips to mirror on back ── */
+    if (cfg.mode === 'hopefear') {
+      function drawHopeFear() {
+        if (!canvasModeActiveRef.current) return;
+        const W = mc!.width;
+        const H = mc!.height;
+        const t = performance.now() * 0.001 * speed * 0.5;
+        const w = wordRef.current || 'HOPE';
+
+        ctx!.fillStyle = 'rgba(0,0,0,0.06)';
+        ctx!.fillRect(0, 0, W, H);
+
+        const fontSize = Math.min(W * 0.18, H * 0.22, 110);
+        const angle = (t * 0.8) % (Math.PI * 2);
+        const cosA = Math.cos(angle);
+        // scaleX: positive when front-facing, negative = back
+        const isFront = cosA >= 0;
+        const scaleX = Math.abs(cosA);
+        const alphaT = Math.abs(cosA);
+
+        // Front: warm gold. Back: mirror + cool blue
+        const [r1, g1, b1] = isFront ? [pr, pg, pb] : [80, 160, 255];
+
+        ctx!.save();
+        ctx!.translate(W / 2, H / 2);
+        ctx!.scale(scaleX, 1);
+        if (!isFront) ctx!.scale(-1, 1); // mirror on back face
+
+        ctx!.shadowBlur = 28;
+        ctx!.shadowColor = `rgba(${r1},${g1},${b1},0.6)`;
+        ctx!.font = `900 ${Math.round(fontSize)}px var(--font-serif, serif)`;
+        ctx!.textAlign = 'center';
+        ctx!.textBaseline = 'middle';
+        ctx!.fillStyle = `rgba(${r1},${g1},${b1},${Math.max(0.1, alphaT * iF)})`;
+        ctx!.fillText(w.toUpperCase(), 0, 0);
+
+        // Subtle reflection below
+        ctx!.scale(1, -0.25);
+        ctx!.globalAlpha = 0.12 * Math.abs(cosA);
+        ctx!.fillText(w.toUpperCase(), 0, -fontSize * 0.6);
+        ctx!.globalAlpha = 1;
+        ctx!.restore();
+
+        canvasModeAnimRef.current = requestAnimationFrame(drawHopeFear);
+      }
+      canvasModeAnimRef.current = requestAnimationFrame(drawHopeFear);
+    }
+
+    /* ── WORD ECHO: word repeats in concentric spiraling rings ──────── */
+    if (cfg.mode === 'wordecho') {
+      function drawWordEcho() {
+        if (!canvasModeActiveRef.current) return;
+        const W = mc!.width;
+        const H = mc!.height;
+        const t = performance.now() * 0.001 * speed * 0.4;
+        const w = wordRef.current || 'ECHO';
+        const N = Math.round(7 + cfg.complexity * 0.5);
+
+        ctx!.fillStyle = 'rgba(0,0,0,0.04)';
+        ctx!.fillRect(0, 0, W, H);
+
+        const baseFont = Math.min(W * 0.18, H * 0.22, 110);
+        ctx!.textAlign = 'center';
+        ctx!.textBaseline = 'middle';
+
+        for (let i = N - 1; i >= 0; i--) {
+          const progress = i / (N - 1);
+          const scale = 0.3 + progress * 0.7 + 0.04 * Math.sin(t + i);
+          const angle = progress * 0.8 + t * 0.3 * (i % 2 === 0 ? 1 : -1);
+          const alpha = (1 - progress) * 0.85 * iF;
+          const fontSize = baseFont * scale;
+
+          ctx!.save();
+          ctx!.translate(W / 2, H / 2);
+          ctx!.rotate(angle);
+          ctx!.shadowBlur = 20 * (1 - progress);
+          ctx!.shadowColor = `rgba(${pr},${pg},${pb},${alpha * 0.8})`;
+          ctx!.font = `900 ${Math.round(fontSize)}px var(--font-serif, serif)`;
+          ctx!.fillStyle = `rgba(${pr},${pg},${pb},${Math.max(0, alpha)})`;
+          ctx!.fillText(w.toUpperCase(), 0, 0);
+          ctx!.restore();
+        }
+
+        canvasModeAnimRef.current = requestAnimationFrame(drawWordEcho);
+      }
+      canvasModeAnimRef.current = requestAnimationFrame(drawWordEcho);
+    }
+
+    /* ── WORD PARTICLE: word made of drifting glowing particles ─────── */
+    if (cfg.mode === 'wordparticle') {
+      const off = document.createElement('canvas');
+      off.width = mc.width;
+      off.height = mc.height;
+      const offCtx = off.getContext('2d')!;
+      const W0 = mc.width;
+      const H0 = mc.height;
+      const fontSize = Math.min(W0 * 0.22, H0 * 0.28, 130);
+      offCtx.font = `900 ${Math.round(fontSize)}px var(--font-serif, serif)`;
+      offCtx.textAlign = 'center';
+      offCtx.textBaseline = 'middle';
+      offCtx.fillStyle = '#fff';
+      offCtx.fillText((wordRef.current || 'WORD').toUpperCase(), W0 / 2, H0 / 2);
+
+      const imgData = offCtx.getImageData(0, 0, W0, H0).data;
+      type WPart = {
+        x: number;
+        y: number;
+        ox: number;
+        oy: number;
+        phase: number;
+        speed2: number;
+        size: number;
+      };
+      const parts: WPart[] = [];
+      const stride = Math.max(3, Math.round(10 - cfg.complexity * 0.5));
+      for (let y = 0; y < H0; y += stride) {
+        for (let x = 0; x < W0; x += stride) {
+          const idx = (y * W0 + x) * 4;
+          if (imgData[idx + 3] > 80) {
+            parts.push({
+              x,
+              y,
+              ox: x,
+              oy: y,
+              phase: Math.random() * Math.PI * 2,
+              speed2: 0.3 + Math.random() * 0.7,
+              size: 1 + Math.random() * 2,
+            });
+          }
+        }
+      }
+
+      let lastWord = wordRef.current;
+      function drawWordParticle() {
+        if (!canvasModeActiveRef.current) return;
+        const W = mc!.width;
+        const H = mc!.height;
+        const t = performance.now() * 0.001 * speed;
+
+        // Rebuild if word changed
+        if (wordRef.current !== lastWord) {
+          lastWord = wordRef.current;
+          off.width = W;
+          off.height = H;
+          const fs2 = Math.min(W * 0.22, H * 0.28, 130);
+          offCtx.clearRect(0, 0, W, H);
+          offCtx.font = `900 ${Math.round(fs2)}px var(--font-serif, serif)`;
+          offCtx.textAlign = 'center';
+          offCtx.textBaseline = 'middle';
+          offCtx.fillStyle = '#fff';
+          offCtx.fillText((wordRef.current || 'WORD').toUpperCase(), W / 2, H / 2);
+          const newData = offCtx.getImageData(0, 0, W, H).data;
+          parts.length = 0;
+          const st2 = Math.max(3, Math.round(10 - cfg.complexity * 0.5));
+          for (let y2 = 0; y2 < H; y2 += st2) {
+            for (let x2 = 0; x2 < W; x2 += st2) {
+              const idx2 = (y2 * W + x2) * 4;
+              if (newData[idx2 + 3] > 80) {
+                parts.push({
+                  x: x2,
+                  y: y2,
+                  ox: x2,
+                  oy: y2,
+                  phase: Math.random() * Math.PI * 2,
+                  speed2: 0.3 + Math.random() * 0.7,
+                  size: 1 + Math.random() * 2,
+                });
+              }
+            }
+          }
+        }
+
+        ctx!.fillStyle = 'rgba(0,0,0,0.12)';
+        ctx!.fillRect(0, 0, W, H);
+
+        for (const p of parts) {
+          const drift = Math.sin(t * p.speed2 + p.phase) * 3 * iF;
+          const driftY = Math.cos(t * p.speed2 * 0.7 + p.phase) * 2 * iF;
+          const px = p.ox + drift;
+          const py = p.oy + driftY;
+          const alpha = 0.5 + 0.5 * Math.sin(t * p.speed2 + p.phase);
+          ctx!.beginPath();
+          ctx!.arc(px, py, p.size, 0, Math.PI * 2);
+          ctx!.fillStyle = `rgba(${pr},${pg},${pb},${alpha * iF})`;
+          ctx!.shadowBlur = 6;
+          ctx!.shadowColor = `rgba(${pr},${pg},${pb},0.5)`;
+          ctx!.fill();
+        }
+
+        canvasModeAnimRef.current = requestAnimationFrame(drawWordParticle);
+      }
+      canvasModeAnimRef.current = requestAnimationFrame(drawWordParticle);
+    }
+
+    /* ── WORD WEAVE: flowing light traces the letter outlines ─────────── */
+    if (cfg.mode === 'wordweave') {
+      const off2 = document.createElement('canvas');
+      off2.width = mc.width;
+      off2.height = mc.height;
+      const offCtx2 = off2.getContext('2d')!;
+      const W0 = mc.width;
+      const H0 = mc.height;
+      const fontSize = Math.min(W0 * 0.22, H0 * 0.28, 130);
+      offCtx2.font = `900 ${Math.round(fontSize)}px var(--font-serif, serif)`;
+      offCtx2.textAlign = 'center';
+      offCtx2.textBaseline = 'middle';
+      offCtx2.fillStyle = '#fff';
+      offCtx2.fillText((wordRef.current || 'WORD').toUpperCase(), W0 / 2, H0 / 2);
+      const imgData2 = offCtx2.getImageData(0, 0, W0, H0).data;
+
+      // Sample outline pixels (edge pixels only)
+      type WEdge = { x: number; y: number };
+      const edgePts: WEdge[] = [];
+      for (let y = 1; y < H0 - 1; y += 2) {
+        for (let x = 1; x < W0 - 1; x += 2) {
+          const idx = (y * W0 + x) * 4;
+          const alpha = imgData2[idx + 3];
+          if (alpha > 60) {
+            // Check if any neighbour is transparent (edge detection)
+            const neighbours = [
+              imgData2[((y - 1) * W0 + x) * 4 + 3],
+              imgData2[((y + 1) * W0 + x) * 4 + 3],
+              imgData2[(y * W0 + x - 1) * 4 + 3],
+              imgData2[(y * W0 + x + 1) * 4 + 3],
+            ];
+            if (neighbours.some((n) => n < 60)) {
+              edgePts.push({ x, y });
+            }
+          }
+        }
+      }
+
+      const NUM_TRACERS = Math.round(3 + cfg.complexity * 0.8);
+      type Tracer = { idx: number; trail: { x: number; y: number }[]; speed3: number };
+      const tracers: Tracer[] = [];
+      for (let i = 0; i < NUM_TRACERS; i++) {
+        tracers.push({
+          idx: Math.floor(Math.random() * Math.max(1, edgePts.length)),
+          trail: [],
+          speed3: 1 + Math.random() * 2,
+        });
+      }
+
+      let lastWord2 = wordRef.current;
+      function drawWordWeave() {
+        if (!canvasModeActiveRef.current) return;
+
+        // Rebuild on word change
+        if (wordRef.current !== lastWord2) {
+          lastWord2 = wordRef.current;
+          off2.width = mc!.width;
+          off2.height = mc!.height;
+          const fs3 = Math.min(off2.width * 0.22, off2.height * 0.28, 130);
+          offCtx2.clearRect(0, 0, off2.width, off2.height);
+          offCtx2.font = `900 ${Math.round(fs3)}px var(--font-serif, serif)`;
+          offCtx2.textAlign = 'center';
+          offCtx2.textBaseline = 'middle';
+          offCtx2.fillStyle = '#fff';
+          offCtx2.fillText(
+            (wordRef.current || 'WORD').toUpperCase(),
+            off2.width / 2,
+            off2.height / 2,
+          );
+          const newData2 = offCtx2.getImageData(0, 0, off2.width, off2.height).data;
+          edgePts.length = 0;
+          for (let y = 1; y < off2.height - 1; y += 2) {
+            for (let x = 1; x < off2.width - 1; x += 2) {
+              const idx = (y * off2.width + x) * 4;
+              if (newData2[idx + 3] > 60) {
+                const n = [
+                  newData2[((y - 1) * off2.width + x) * 4 + 3],
+                  newData2[((y + 1) * off2.width + x) * 4 + 3],
+                  newData2[(y * off2.width + x - 1) * 4 + 3],
+                  newData2[(y * off2.width + x + 1) * 4 + 3],
+                ];
+                if (n.some((v) => v < 60)) edgePts.push({ x, y });
+              }
+            }
+          }
+        }
+
+        ctx!.fillStyle = 'rgba(0,0,0,0.06)';
+        ctx!.fillRect(0, 0, mc!.width, mc!.height);
+
+        if (edgePts.length === 0) {
+          canvasModeAnimRef.current = requestAnimationFrame(drawWordWeave);
+          return;
+        }
+
+        for (const tr of tracers) {
+          const steps = Math.round(tr.speed3 * speed * 2);
+          for (let s = 0; s < steps; s++) {
+            tr.idx = (tr.idx + 1) % edgePts.length;
+            const pt = edgePts[tr.idx];
+            tr.trail.push({ x: pt.x, y: pt.y });
+            if (tr.trail.length > 32) tr.trail.shift();
+          }
+
+          if (tr.trail.length > 1) {
+            ctx!.beginPath();
+            ctx!.moveTo(tr.trail[0].x, tr.trail[0].y);
+            for (let j = 1; j < tr.trail.length; j++) {
+              ctx!.lineTo(tr.trail[j].x, tr.trail[j].y);
+            }
+            const headAlpha = 0.9 * iF;
+            const gradient = ctx!.createLinearGradient(
+              tr.trail[0].x,
+              tr.trail[0].y,
+              tr.trail[tr.trail.length - 1].x,
+              tr.trail[tr.trail.length - 1].y,
+            );
+            gradient.addColorStop(0, `rgba(${pr},${pg},${pb},0)`);
+            gradient.addColorStop(1, `rgba(${pr},${pg},${pb},${headAlpha})`);
+            ctx!.strokeStyle = gradient;
+            ctx!.lineWidth = 2.5;
+            ctx!.shadowBlur = 14;
+            ctx!.shadowColor = `rgba(${pr},${pg},${pb},0.7)`;
+            ctx!.stroke();
+          }
+        }
+
+        canvasModeAnimRef.current = requestAnimationFrame(drawWordWeave);
+      }
+      canvasModeAnimRef.current = requestAnimationFrame(drawWordWeave);
     }
 
     const ro = new ResizeObserver(resize);
@@ -11732,13 +12186,18 @@ export default function GeometryField() {
           }}
         />
 
-        {/* Canvas overlay — matrix rain, breath, stream, entropy, journey phase 5 */}
+        {/* Canvas overlay — matrix rain, breath, stream, entropy, word modes, journey phase 5 */}
         {((journeyRunning && journeyId === 5) ||
           cfg.mode === 'matrix' ||
           cfg.mode === 'matrix3d' ||
           cfg.mode === 'breath' ||
           cfg.mode === 'stream' ||
-          cfg.mode === 'entropy') && (
+          cfg.mode === 'entropy' ||
+          cfg.mode === 'wordneon' ||
+          cfg.mode === 'hopefear' ||
+          cfg.mode === 'wordecho' ||
+          cfg.mode === 'wordparticle' ||
+          cfg.mode === 'wordweave') && (
           <canvas
             ref={matrixCanvasRef}
             style={{
@@ -12150,6 +12609,50 @@ export default function GeometryField() {
                         );
                       })}
                     </div>
+
+                    {/* Word input — shown for word modes */}
+                    {(cfg.mode === 'wordneon' ||
+                      cfg.mode === 'hopefear' ||
+                      cfg.mode === 'wordecho' ||
+                      cfg.mode === 'wordparticle' ||
+                      cfg.mode === 'wordweave') && (
+                      <div style={{ marginBottom: 12 }}>
+                        <div
+                          style={{
+                            fontFamily: 'var(--font-serif)',
+                            fontSize: 9,
+                            color: `rgba(${pr},${pg},${pb},0.6)`,
+                            letterSpacing: '0.12em',
+                            textTransform: 'uppercase',
+                            marginBottom: 5,
+                          }}
+                        >
+                          Your Word
+                        </div>
+                        <input
+                          type="text"
+                          value={word}
+                          onChange={(e) => setWord(e.target.value.slice(0, 20))}
+                          placeholder="TYPE A WORD"
+                          spellCheck={false}
+                          style={{
+                            width: '100%',
+                            background: `rgba(${pr},${pg},${pb},0.06)`,
+                            border: `1px solid rgba(${pr},${pg},${pb},0.28)`,
+                            borderRadius: 8,
+                            padding: '8px 12px',
+                            fontFamily: 'var(--font-serif)',
+                            fontSize: 16,
+                            fontWeight: 700,
+                            letterSpacing: '0.18em',
+                            textTransform: 'uppercase',
+                            color: accent,
+                            outline: 'none',
+                            textAlign: 'center',
+                          }}
+                        />
+                      </div>
+                    )}
 
                     {/* Finger Distortion toggle */}
                     <button
