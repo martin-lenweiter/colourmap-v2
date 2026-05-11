@@ -835,7 +835,6 @@ function VizDiamondFull({
   const bottom = `${CX},${CY + HALF}`;
   const left = `${CX - HALF},${CY}`;
   const outline = `M${top} L${right} L${bottom} L${left} Z`;
-  const filterId = `dia-full-glow-${idx}`;
   return (
     <div
       style={{
@@ -856,25 +855,8 @@ function VizDiamondFull({
         onPointerMove={onPointerMove}
         onPointerUp={onPointerUp}
       >
-        <defs>
-          <filter id={filterId} x="-30%" y="-30%" width="160%" height="160%">
-            <feGaussianBlur stdDeviation="4" result="b" />
-            <feMerge>
-              <feMergeNode in="b" />
-              <feMergeNode in="SourceGraphic" />
-            </feMerge>
-          </filter>
-        </defs>
-        {/* Solid fill */}
-        <path
-          d={outline}
-          fill={c}
-          fillOpacity={0.28}
-          stroke={c}
-          strokeWidth={2.5}
-          strokeLinejoin="miter"
-          filter={`url(#${filterId})`}
-        />
+        {/* Outline only — no fill, no glow */}
+        <path d={outline} fill="none" stroke={c} strokeWidth={2} strokeLinejoin="miter" />
         {/* Name centred */}
         <text
           x={CX}
