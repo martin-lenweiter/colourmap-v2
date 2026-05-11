@@ -1585,10 +1585,10 @@ function CircleTracker({
 
           {/* Write */}
           {circle.id === 'emotions' && <MoodWord />}
-          <ReflectInput placeholder={circle.reflectPrompt} onAdd={addEntry} />
-
-          {/* Emotion Rainbow — above week */}
-          {circle.id === 'emotions' && <EmotionMultiSelect />}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+            <ReflectInput placeholder={circle.reflectPrompt} onAdd={addEntry} />
+            {circle.id === 'emotions' && <EmotionMultiSelect />}
+          </div>
 
           {/* Weekly tracker */}
           <WeekRow log={log} levels={circle.levels} />
