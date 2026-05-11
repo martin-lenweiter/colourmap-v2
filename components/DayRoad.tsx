@@ -388,6 +388,7 @@ function FeelSection({ live, onLog }: { live: number[]; onLog: () => void }) {
         }}
         placeholder="name it…"
         spellCheck={false}
+        autoCorrect="off"
         style={{
           background: 'transparent',
           border: 'none',
@@ -513,6 +514,7 @@ function NeedsSection() {
           }}
           placeholder="rest · movement · connection · silence…"
           spellCheck={false}
+          autoCorrect="off"
           className="placeholder:uppercase placeholder:tracking-[0.1em] placeholder:text-[9px] placeholder:opacity-40"
           style={{
             background: 'transparent',
@@ -566,7 +568,13 @@ const PW = GW - PAD.left - PAD.right;
 const PH = GH - PAD.top - PAD.bottom;
 
 /* ── Main component ─────────────────────────────────────────────── */
-export default function DayRoad({ onClose }: { onClose?: () => void }) {
+export default function DayRoad({
+  onClose,
+  embedded,
+}: {
+  onClose?: () => void;
+  embedded?: boolean;
+}) {
   const [entries, setEntries] = useState<TimelineEntry[]>([]);
   const [live, setLive] = useState(() => AXES.map((a) => a.def));
   const [tab, setTab] = useState<'today' | 'example'>('today');
@@ -646,6 +654,290 @@ export default function DayRoad({ onClose }: { onClose?: () => void }) {
     }
   }
 
+  const inner = (
+    <div
+      style={{
+        position: 'relative',
+        width: '100%',
+        maxWidth: embedded ? undefined : 480,
+        background: '#0c0806',
+        borderTop: '1px solid rgba(196,160,96,0.2)',
+        borderRadius: embedded ? 14 : '20px 20px 0 0',
+        overflowY: 'auto',
+        overflowX: 'hidden',
+        maxHeight: embedded ? undefined : '92svh',
+        fontFamily: 'var(--font-serif)',
+        paddingBottom: embedded ? 0 : 'env(safe-area-inset-bottom)',
+      }}
+    >
+      {!embedded && (
+        <div style={{ display: 'flex', justifyContent: 'center', padding: '10px 0 4px' }}>
+          <div
+            style={{ width: 36, height: 3, borderRadius: 2, background: 'rgba(196,160,96,0.25)' }}
+          />
+        </div>
+      )}
+
+      {/* Header */}
+      <div style={{ padding: '2px 20px 10px', display: 'flex', alignItems: 'center', gap: 8 }}>
+        <span
+          style={{
+            fontSize: 10,
+            fontWeight: 800,
+            letterSpacing: '0.22em',
+            textTransform: 'uppercase',
+            color: 'rgba(196,160,96,0.45)',
+            flex: 1,
+          }}
+        >
+          Day Road
+        </span>
+        {/* Tab switcher */}
+        {(['today', 'example'] as const).map((t) => (
+          <button
+            key={t}
+            type="button"
+            onClick={() => setTab(t)}
+            style={{
+              padding: '3px 10px',
+              borderRadius: 20,
+              border: `1px solid rgba(196,160,96,${tab === t ? '0.55' : '0.2'})`,
+              background: tab === t ? 'rgba(196,160,96,0.14)' : 'transparent',
+              color: tab === t ? '#C4A060' : 'rgba(196,160,96,0.4)',
+              fontSize: 9,
+              fontWeight: 700,
+              letterSpacing: '0.12em',
+              textTransform: 'uppercase',
+              cursor: 'pointer',
+              fontFamily: 'var(--font-serif)',
+            }}
+          >
+            {t}
+          </button>
+        ))}
+        <button
+          type="button"
+          onClick={onClose}
+          style={{
+            background: 'none',
+            border: 'none',
+            cursor: 'pointer',
+            color: 'rgba(196,160,96,0.4)',
+            fontSize: 16,
+            lineHeight: 1,
+            padding: '0 2px',
+          }}
+        >
+          ×
+        </button>
+      </div>
+
+      {/* Today: 2 sliders | ring (centered) | 2 sliders + log */}
+      {tab === 'today' && (
+        <div
+          style={{
+            padding: '0 16px 14px',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            gap: 0,
+          }}
+        >
+          <div
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: 12,
+              width: '100%',
+            }}
+          >
+            {/* Left sliders: E, M */}
+            <div style={{ display: 'flex', gap: 16 }}>
+              {[0, 1].map((ai) => (
+                <AxisSlider
+                  key={ai}
+                  ai={ai}
+                  value={live[ai]}
+                  onChange={(v) => setAxisValue(ai, v)}
+                />
+              ))}
+            </div>
+            {/* Ring centered */}
+            <div style={{ flexShrink: 0 }}>
+              <MiniRing indices={live} />
+            </div>
+            {/* Right sliders: B, F */}
+            <div style={{ display: 'flex', gap: 16 }}>
+              {[2, 3].map((ai) => (
+                <AxisSlider
+                  key={ai}
+                  ai={ai}
+                  value={live[ai]}
+                  onChange={(v) => setAxisValue(ai, v)}
+                />
+              ))}
+            </div>
+          </div>
+          {/* Feel input */}
+          <div style={{ paddingTop: 10, width: '100%' }}>
+            <FeelSection
+              live={live}
+              onLog={() => {
+                setEntries(getTodayEntries());
+              }}
+            />
+          </div>
+        </div>
+      )}
+
+      {/* Example: mini ring preview + shuffle */}
+      {tab === 'example' && (
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            padding: '0 20px 14px',
+          }}
+        >
+          <MiniRing indices={exRingIndices} />
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8 }}>
+            <p
+              style={{
+                fontSize: 9,
+                fontWeight: 700,
+                letterSpacing: '0.18em',
+                textTransform: 'uppercase',
+                color: 'rgba(196,160,96,0.35)',
+                textAlign: 'center',
+                margin: 0,
+              }}
+            >
+              simulated
+              <br />
+              full day
+            </p>
+            <button
+              type="button"
+              onClick={() => setExampleEntries(generateExampleEntries())}
+              style={{
+                padding: '6px 16px',
+                borderRadius: 20,
+                border: '1px solid rgba(196,160,96,0.35)',
+                background: 'transparent',
+                color: 'rgba(196,160,96,0.65)',
+                fontSize: 10,
+                fontWeight: 700,
+                letterSpacing: '0.14em',
+                textTransform: 'uppercase',
+                cursor: 'pointer',
+                fontFamily: 'var(--font-serif)',
+              }}
+            >
+              ↺ shuffle
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Horizon */}
+      <div
+        style={{
+          height: 1,
+          background:
+            'linear-gradient(to right, transparent, rgba(196,160,96,0.3) 20%, rgba(196,160,96,0.3) 80%, transparent)',
+          margin: '0 16px',
+        }}
+      />
+
+      {/* Graph */}
+      <div style={{ padding: '10px 8px 4px' }}>
+        <svg
+          viewBox={`0 0 ${GW} ${GH}`}
+          width="100%"
+          style={{ display: 'block', overflow: 'visible' }}
+        >
+          <defs>
+            {AXES.map((_, i) => (
+              <filter key={i} id={`dg${i}`} x="-50%" y="-50%" width="200%" height="200%">
+                <feGaussianBlur stdDeviation="2" result="b" />
+                <feMerge>
+                  <feMergeNode in="b" />
+                  <feMergeNode in="SourceGraphic" />
+                </feMerge>
+              </filter>
+            ))}
+          </defs>
+          {[0.25, 0.5, 0.75, 1].map((v) => (
+            <line
+              key={v}
+              x1={PAD.left}
+              y1={PAD.top + (1 - v) * PH}
+              x2={PAD.left + PW}
+              y2={PAD.top + (1 - v) * PH}
+              stroke="rgba(196,160,96,0.055)"
+              strokeWidth={0.5}
+            />
+          ))}
+          {timeLabels.map(({ x, label }) => (
+            <text
+              key={label}
+              x={x}
+              y={GH - 5}
+              textAnchor="middle"
+              fill="rgba(196,160,96,0.28)"
+              fontSize={7}
+              fontFamily="var(--font-serif)"
+            >
+              {label}
+            </text>
+          ))}
+          {!isExample && (
+            <line
+              x1={PAD.left + PW}
+              y1={PAD.top}
+              x2={PAD.left + PW}
+              y2={PAD.top + PH}
+              stroke="rgba(196,160,96,0.18)"
+              strokeWidth={0.5}
+              strokeDasharray="2,3"
+            />
+          )}
+          {AXES.map((ax, ai) => {
+            const pts = toPoints(ai);
+            return (
+              <g key={ai}>
+                <path
+                  d={smoothPath(pts)}
+                  fill="none"
+                  stroke={ax.color}
+                  strokeWidth={1.8}
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  opacity={0.8}
+                  filter={`url(#dg${ai})`}
+                />
+                <circle
+                  cx={pts[pts.length - 1].x}
+                  cy={pts[pts.length - 1].y}
+                  r={3}
+                  fill={ax.color}
+                  opacity={0.95}
+                />
+              </g>
+            );
+          })}
+        </svg>
+      </div>
+
+      {/* What do you need? */}
+      <NeedsSection />
+    </div>
+  );
+
+  if (embedded) return inner;
+
   return (
     <div
       style={{
@@ -658,7 +950,6 @@ export default function DayRoad({ onClose }: { onClose?: () => void }) {
       }}
       onClick={onClose}
     >
-      {/* Scrim */}
       <div
         style={{
           position: 'absolute',
@@ -667,287 +958,7 @@ export default function DayRoad({ onClose }: { onClose?: () => void }) {
           backdropFilter: 'blur(4px)',
         }}
       />
-
-      {/* Panel */}
-      <div
-        onClick={(e) => e.stopPropagation()}
-        style={{
-          position: 'relative',
-          width: '100%',
-          maxWidth: 480,
-          background: '#0c0806',
-          borderTop: '1px solid rgba(196,160,96,0.2)',
-          borderRadius: '20px 20px 0 0',
-          overflowY: 'auto',
-          overflowX: 'hidden',
-          maxHeight: '92svh',
-          fontFamily: 'var(--font-serif)',
-          paddingBottom: 'env(safe-area-inset-bottom)',
-        }}
-      >
-        {/* Drag handle */}
-        <div style={{ display: 'flex', justifyContent: 'center', padding: '10px 0 4px' }}>
-          <div
-            style={{ width: 36, height: 3, borderRadius: 2, background: 'rgba(196,160,96,0.25)' }}
-          />
-        </div>
-
-        {/* Header */}
-        <div style={{ padding: '2px 20px 10px', display: 'flex', alignItems: 'center', gap: 8 }}>
-          <span
-            style={{
-              fontSize: 10,
-              fontWeight: 800,
-              letterSpacing: '0.22em',
-              textTransform: 'uppercase',
-              color: 'rgba(196,160,96,0.45)',
-              flex: 1,
-            }}
-          >
-            Day Road
-          </span>
-          {/* Tab switcher */}
-          {(['today', 'example'] as const).map((t) => (
-            <button
-              key={t}
-              type="button"
-              onClick={() => setTab(t)}
-              style={{
-                padding: '3px 10px',
-                borderRadius: 20,
-                border: `1px solid rgba(196,160,96,${tab === t ? '0.55' : '0.2'})`,
-                background: tab === t ? 'rgba(196,160,96,0.14)' : 'transparent',
-                color: tab === t ? '#C4A060' : 'rgba(196,160,96,0.4)',
-                fontSize: 9,
-                fontWeight: 700,
-                letterSpacing: '0.12em',
-                textTransform: 'uppercase',
-                cursor: 'pointer',
-                fontFamily: 'var(--font-serif)',
-              }}
-            >
-              {t}
-            </button>
-          ))}
-          <button
-            type="button"
-            onClick={onClose}
-            style={{
-              background: 'none',
-              border: 'none',
-              cursor: 'pointer',
-              color: 'rgba(196,160,96,0.4)',
-              fontSize: 16,
-              lineHeight: 1,
-              padding: '0 2px',
-            }}
-          >
-            ×
-          </button>
-        </div>
-
-        {/* Today: 2 sliders | ring (centered) | 2 sliders + log */}
-        {tab === 'today' && (
-          <div
-            style={{
-              padding: '0 16px 14px',
-              display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'center',
-              gap: 0,
-            }}
-          >
-            <div
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                gap: 12,
-                width: '100%',
-              }}
-            >
-              {/* Left sliders: E, M */}
-              <div style={{ display: 'flex', gap: 16 }}>
-                {[0, 1].map((ai) => (
-                  <AxisSlider
-                    key={ai}
-                    ai={ai}
-                    value={live[ai]}
-                    onChange={(v) => setAxisValue(ai, v)}
-                  />
-                ))}
-              </div>
-              {/* Ring centered */}
-              <div style={{ flexShrink: 0 }}>
-                <MiniRing indices={live} />
-              </div>
-              {/* Right sliders: B, F */}
-              <div style={{ display: 'flex', gap: 16 }}>
-                {[2, 3].map((ai) => (
-                  <AxisSlider
-                    key={ai}
-                    ai={ai}
-                    value={live[ai]}
-                    onChange={(v) => setAxisValue(ai, v)}
-                  />
-                ))}
-              </div>
-            </div>
-            {/* Feel input */}
-            <div style={{ paddingTop: 10, width: '100%' }}>
-              <FeelSection
-                live={live}
-                onLog={() => {
-                  setEntries(getTodayEntries());
-                }}
-              />
-            </div>
-          </div>
-        )}
-
-        {/* Example: mini ring preview + shuffle */}
-        {tab === 'example' && (
-          <div
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-              padding: '0 20px 14px',
-            }}
-          >
-            <MiniRing indices={exRingIndices} />
-            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8 }}>
-              <p
-                style={{
-                  fontSize: 9,
-                  fontWeight: 700,
-                  letterSpacing: '0.18em',
-                  textTransform: 'uppercase',
-                  color: 'rgba(196,160,96,0.35)',
-                  textAlign: 'center',
-                  margin: 0,
-                }}
-              >
-                simulated
-                <br />
-                full day
-              </p>
-              <button
-                type="button"
-                onClick={() => setExampleEntries(generateExampleEntries())}
-                style={{
-                  padding: '6px 16px',
-                  borderRadius: 20,
-                  border: '1px solid rgba(196,160,96,0.35)',
-                  background: 'transparent',
-                  color: 'rgba(196,160,96,0.65)',
-                  fontSize: 10,
-                  fontWeight: 700,
-                  letterSpacing: '0.14em',
-                  textTransform: 'uppercase',
-                  cursor: 'pointer',
-                  fontFamily: 'var(--font-serif)',
-                }}
-              >
-                ↺ shuffle
-              </button>
-            </div>
-          </div>
-        )}
-
-        {/* Horizon */}
-        <div
-          style={{
-            height: 1,
-            background:
-              'linear-gradient(to right, transparent, rgba(196,160,96,0.3) 20%, rgba(196,160,96,0.3) 80%, transparent)',
-            margin: '0 16px',
-          }}
-        />
-
-        {/* Graph */}
-        <div style={{ padding: '10px 8px 4px' }}>
-          <svg
-            viewBox={`0 0 ${GW} ${GH}`}
-            width="100%"
-            style={{ display: 'block', overflow: 'visible' }}
-          >
-            <defs>
-              {AXES.map((_, i) => (
-                <filter key={i} id={`dg${i}`} x="-50%" y="-50%" width="200%" height="200%">
-                  <feGaussianBlur stdDeviation="2" result="b" />
-                  <feMerge>
-                    <feMergeNode in="b" />
-                    <feMergeNode in="SourceGraphic" />
-                  </feMerge>
-                </filter>
-              ))}
-            </defs>
-            {[0.25, 0.5, 0.75, 1].map((v) => (
-              <line
-                key={v}
-                x1={PAD.left}
-                y1={PAD.top + (1 - v) * PH}
-                x2={PAD.left + PW}
-                y2={PAD.top + (1 - v) * PH}
-                stroke="rgba(196,160,96,0.055)"
-                strokeWidth={0.5}
-              />
-            ))}
-            {timeLabels.map(({ x, label }) => (
-              <text
-                key={label}
-                x={x}
-                y={GH - 5}
-                textAnchor="middle"
-                fill="rgba(196,160,96,0.28)"
-                fontSize={7}
-                fontFamily="var(--font-serif)"
-              >
-                {label}
-              </text>
-            ))}
-            {!isExample && (
-              <line
-                x1={PAD.left + PW}
-                y1={PAD.top}
-                x2={PAD.left + PW}
-                y2={PAD.top + PH}
-                stroke="rgba(196,160,96,0.18)"
-                strokeWidth={0.5}
-                strokeDasharray="2,3"
-              />
-            )}
-            {AXES.map((ax, ai) => {
-              const pts = toPoints(ai);
-              return (
-                <g key={ai}>
-                  <path
-                    d={smoothPath(pts)}
-                    fill="none"
-                    stroke={ax.color}
-                    strokeWidth={1.8}
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    opacity={0.8}
-                    filter={`url(#dg${ai})`}
-                  />
-                  <circle
-                    cx={pts[pts.length - 1].x}
-                    cy={pts[pts.length - 1].y}
-                    r={3}
-                    fill={ax.color}
-                    opacity={0.95}
-                  />
-                </g>
-              );
-            })}
-          </svg>
-        </div>
-
-        {/* What do you need? */}
-        <NeedsSection />
-      </div>
+      {inner}
     </div>
   );
 }

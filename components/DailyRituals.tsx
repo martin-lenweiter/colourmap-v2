@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
+import GuitarStudio from '@/components/GuitarStudio';
 import { syncEvent, syncPref } from '@/lib/sync';
 
 /* ── Constants ───────────────────────────────────────────────── */
@@ -9,6 +10,7 @@ const YESTERDAY = new Date(Date.now() - 86400000).toISOString().slice(0, 10);
 const LS_RITUALS = 'colourmap:rituals';
 const LS_DONE = `colourmap:rituals-done-${TODAY}`;
 const LS_SESSIONS = 'colourmap:rituals-sessions';
+const NB_LS_KEY = 'colourmap:notebook-entries';
 
 const QUOTES = [
   'Discipline is hard. Rituals are easy. Systems set you free.',
@@ -18,13 +20,10 @@ const QUOTES = [
   'Consistency is the only shortcut that actually works.',
 ];
 
-const DEFAULT_RITUALS: Ritual[] = [
-  { id: 'r1', name: 'Morning pages', time: 'morning', streakCount: 0, lastDone: null },
-  { id: 'r2', name: 'Move your body', time: 'morning', streakCount: 0, lastDone: null },
-  { id: 'r3', name: 'Set one intention', time: 'morning', streakCount: 0, lastDone: null },
-  { id: 'r4', name: 'Reflect on the day', time: 'evening', streakCount: 0, lastDone: null },
-  { id: 'r5', name: 'Wind down — no screens', time: 'evening', streakCount: 0, lastDone: null },
-];
+const NB_TITLES: Record<string, string> = {
+  dreams: 'Dream Journal',
+  discoveries: 'Discoveries',
+};
 
 /* ── Types ───────────────────────────────────────────────────── */
 type Ritual = {
@@ -33,9 +32,513 @@ type Ritual = {
   time: string;
   streakCount: number;
   lastDone: string | null;
+  notebookKey?: string;
+  linkTarget?: string; // e.g. 'guitar:songs', 'guitar:practice'
 };
 
+interface NbEntry {
+  id: string;
+  category: string;
+  title: string;
+  content: string | null;
+  tags: string[] | null;
+  createdAt: string;
+}
+
 type DropTarget = { id: string; pos: 'before' | 'after' } | null;
+
+const DEFAULT_RITUALS: Ritual[] = [
+  {
+    id: 'r1',
+    name: 'Write dreams',
+    time: 'morning',
+    notebookKey: 'dreams',
+    streakCount: 0,
+    lastDone: null,
+  },
+  { id: 'r2', name: 'Move your body', time: 'morning', streakCount: 0, lastDone: null },
+  { id: 'r3', name: 'Set one intention', time: 'morning', streakCount: 0, lastDone: null },
+  { id: 'r4', name: 'Reflect on the day', time: 'evening', streakCount: 0, lastDone: null },
+  { id: 'r5', name: 'Wind down — no screens', time: 'evening', streakCount: 0, lastDone: null },
+  {
+    id: 'r6',
+    name: 'Learn and Discover',
+    time: 'evening',
+    notebookKey: 'discoveries',
+    streakCount: 0,
+    lastDone: null,
+  },
+  {
+    id: 'r7',
+    name: 'Play songs',
+    time: 'morning',
+    linkTarget: 'guitar:songs',
+    streakCount: 0,
+    lastDone: null,
+  },
+];
+
+/* ── Notebook helpers ────────────────────────────────────────── */
+function loadNbEntries(): NbEntry[] {
+  try {
+    const raw = localStorage.getItem(NB_LS_KEY);
+    return raw ? (JSON.parse(raw) as NbEntry[]) : [];
+  } catch {
+    return [];
+  }
+}
+function saveNbEntries(entries: NbEntry[]) {
+  try {
+    localStorage.setItem(NB_LS_KEY, JSON.stringify(entries));
+  } catch {}
+}
+function relativeWhen(iso: string): string {
+  const diff = Date.now() - new Date(iso).getTime();
+  if (diff < 60_000) return 'just now';
+  if (diff < 3_600_000) return `${Math.floor(diff / 60_000)}m ago`;
+  if (diff < 86_400_000) return `${Math.floor(diff / 3_600_000)}h ago`;
+  if (diff < 7 * 86_400_000) return `${Math.floor(diff / 86_400_000)}d ago`;
+  return new Date(iso).toLocaleDateString([], { month: 'short', day: 'numeric' });
+}
+
+/* ── Notebook portal ──────────────────────────────────────────── */
+function RitualNotebook({ notebookKey, onClose }: { notebookKey: string; onClose: () => void }) {
+  const category = `ritual:${notebookKey}`;
+  const title = NB_TITLES[notebookKey] ?? notebookKey;
+  const color = '#C4A060';
+  const [entries, setEntries] = useState<NbEntry[]>([]);
+  const [mode, setMode] = useState<'quick' | 'deep'>('quick');
+  const [quickText, setQuickText] = useState('');
+  const [deepTitle, setDeepTitle] = useState('');
+  const [deepContent, setDeepContent] = useState('');
+  const quickRef = useRef<HTMLInputElement>(null);
+  const deepRef = useRef<HTMLTextAreaElement>(null);
+
+  useEffect(() => {
+    const all = loadNbEntries();
+    setEntries(all.filter((e) => e.category === category));
+    setTimeout(() => quickRef.current?.focus(), 80);
+  }, [category]);
+
+  useEffect(() => {
+    function onKey(e: KeyboardEvent) {
+      if (e.key === 'Escape') onClose();
+    }
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [onClose]);
+
+  function saveQuick() {
+    if (!quickText.trim()) return;
+    const entry: NbEntry = {
+      id: crypto.randomUUID(),
+      category,
+      title: quickText.trim(),
+      content: null,
+      tags: ['quick'],
+      createdAt: new Date().toISOString(),
+    };
+    const next = [entry, ...loadNbEntries()];
+    saveNbEntries(next);
+    setEntries(next.filter((e) => e.category === category));
+    setQuickText('');
+  }
+
+  function saveDeep() {
+    if (!deepTitle.trim() && !deepContent.trim()) return;
+    const entry: NbEntry = {
+      id: crypto.randomUUID(),
+      category,
+      title: deepTitle.trim() || deepContent.trim().split('\n')[0].slice(0, 80) || 'Note',
+      content: deepContent.trim() || null,
+      tags: ['deep'],
+      createdAt: new Date().toISOString(),
+    };
+    const next = [entry, ...loadNbEntries()];
+    saveNbEntries(next);
+    setEntries(next.filter((e) => e.category === category));
+    setDeepTitle('');
+    setDeepContent('');
+  }
+
+  function deleteEntry(id: string) {
+    const next = loadNbEntries().filter((e) => e.id !== id);
+    saveNbEntries(next);
+    setEntries(next.filter((e) => e.category === category));
+  }
+
+  return (
+    <div
+      style={{
+        position: 'fixed',
+        inset: 0,
+        zIndex: 120,
+        background: 'rgba(10,6,3,0.98)',
+        display: 'flex',
+        flexDirection: 'column',
+      }}
+    >
+      {/* Top bar */}
+      <div
+        style={{
+          flexShrink: 0,
+          display: 'flex',
+          alignItems: 'center',
+          gap: 12,
+          padding: '14px 20px',
+          borderBottom: `1px solid ${color}20`,
+        }}
+      >
+        <div
+          style={{
+            width: 4,
+            height: 32,
+            borderRadius: 4,
+            background: color,
+            opacity: 0.5,
+            flexShrink: 0,
+          }}
+        />
+        <span
+          style={{
+            flex: 1,
+            fontFamily: 'var(--font-serif)',
+            fontSize: 20,
+            fontWeight: 700,
+            color: 'rgba(240,216,152,0.88)',
+          }}
+        >
+          {title}
+        </span>
+        <button
+          type="button"
+          onClick={onClose}
+          style={{
+            background: `${color}10`,
+            border: `1px solid ${color}25`,
+            borderRadius: 20,
+            padding: '5px 14px',
+            fontFamily: 'var(--font-serif)',
+            fontSize: 11,
+            fontWeight: 700,
+            letterSpacing: '0.12em',
+            textTransform: 'uppercase',
+            color,
+            cursor: 'pointer',
+          }}
+        >
+          ✕ close
+        </button>
+      </div>
+
+      {/* Input area */}
+      <div
+        style={{ flexShrink: 0, padding: '14px 20px 12px', borderBottom: `1px solid ${color}15` }}
+      >
+        <div style={{ display: 'flex', gap: 6, marginBottom: 12 }}>
+          {(['quick', 'deep'] as const).map((m) => (
+            <button
+              key={m}
+              type="button"
+              onClick={() => {
+                setMode(m);
+                setTimeout(() => (m === 'quick' ? quickRef : deepRef).current?.focus(), 50);
+              }}
+              style={{
+                background: mode === m ? `${color}22` : 'transparent',
+                border: `1px solid ${mode === m ? color : `${color}28`}`,
+                borderRadius: 20,
+                padding: '2px 12px',
+                fontFamily: 'var(--font-serif)',
+                fontSize: 10,
+                fontWeight: 700,
+                letterSpacing: '0.1em',
+                textTransform: 'uppercase',
+                color: mode === m ? color : 'rgba(196,160,96,0.45)',
+                cursor: 'pointer',
+                transition: 'all 0.15s',
+              }}
+            >
+              {m === 'quick' ? 'Quick' : 'Deep'}
+            </button>
+          ))}
+        </div>
+
+        {mode === 'quick' && (
+          <input
+            ref={quickRef}
+            type="text"
+            value={quickText}
+            onChange={(e) => setQuickText(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') saveQuick();
+            }}
+            placeholder="Quick note… (Enter to save)"
+            spellCheck={false}
+            autoCorrect="off"
+            style={{
+              width: '100%',
+              background: 'transparent',
+              border: 'none',
+              outline: 'none',
+              borderBottom: `1px solid ${color}28`,
+              fontFamily: 'var(--font-serif)',
+              fontSize: 15,
+              color: 'rgba(240,216,152,0.88)',
+              padding: '4px 0',
+              boxSizing: 'border-box',
+            }}
+          />
+        )}
+
+        {mode === 'deep' && (
+          <div
+            style={{
+              border: `1px solid ${color}28`,
+              borderRadius: 12,
+              background: `${color}07`,
+              padding: '12px 14px',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: 8,
+            }}
+          >
+            <input
+              type="text"
+              value={deepTitle}
+              onChange={(e) => setDeepTitle(e.target.value)}
+              placeholder="Title…"
+              spellCheck={false}
+              autoCorrect="off"
+              style={{
+                background: 'transparent',
+                border: 'none',
+                outline: 'none',
+                borderBottom: `1px solid ${color}20`,
+                fontFamily: 'var(--font-serif)',
+                fontSize: 16,
+                fontWeight: 700,
+                color: 'rgba(240,216,152,0.88)',
+                padding: '2px 0',
+              }}
+            />
+            <textarea
+              ref={deepRef}
+              value={deepContent}
+              onChange={(e) => {
+                setDeepContent(e.target.value);
+                e.target.style.height = 'auto';
+                e.target.style.height = `${Math.min(e.target.scrollHeight, 120)}px`;
+              }}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) {
+                  e.preventDefault();
+                  saveDeep();
+                }
+              }}
+              placeholder="Write… (⌘+Enter to save)"
+              rows={3}
+              spellCheck={false}
+              autoCorrect="off"
+              style={{
+                background: 'transparent',
+                border: 'none',
+                outline: 'none',
+                resize: 'none',
+                overflow: 'hidden',
+                fontFamily: 'var(--font-serif)',
+                fontSize: 14,
+                color: 'rgba(240,216,152,0.78)',
+                lineHeight: 1.6,
+              }}
+            />
+            {(deepTitle.trim() || deepContent.trim()) && (
+              <button
+                type="button"
+                onClick={saveDeep}
+                style={{
+                  alignSelf: 'flex-end',
+                  background: `${color}22`,
+                  border: `1px solid ${color}50`,
+                  borderRadius: 20,
+                  padding: '3px 12px',
+                  fontFamily: 'var(--font-serif)',
+                  fontSize: 11,
+                  fontWeight: 700,
+                  letterSpacing: '0.1em',
+                  textTransform: 'uppercase',
+                  color,
+                  cursor: 'pointer',
+                }}
+              >
+                save
+              </button>
+            )}
+          </div>
+        )}
+      </div>
+
+      {/* Entry list */}
+      <div style={{ flex: 1, overflowY: 'auto', padding: '12px 20px 60px' }}>
+        {entries.length === 0 && (
+          <p
+            style={{
+              fontFamily: 'var(--font-serif)',
+              fontStyle: 'italic',
+              fontSize: 13,
+              color: 'rgba(196,160,96,0.35)',
+              textAlign: 'center',
+              paddingTop: 24,
+            }}
+          >
+            No entries yet
+          </p>
+        )}
+        {entries.map((entry) => {
+          const isDeep = entry.tags?.includes('deep');
+          return (
+            <div key={entry.id} style={{ padding: '12px 0', borderBottom: `1px solid ${color}12` }}>
+              <div style={{ display: 'flex', alignItems: 'baseline', gap: 6, marginBottom: 4 }}>
+                <span
+                  style={{
+                    fontFamily: 'var(--font-serif)',
+                    fontSize: 9,
+                    fontWeight: 700,
+                    letterSpacing: '0.12em',
+                    textTransform: 'uppercase',
+                    color,
+                    opacity: isDeep ? 0.7 : 0.4,
+                  }}
+                >
+                  {isDeep ? 'deep' : 'quick'}
+                </span>
+                <span
+                  style={{
+                    flex: 1,
+                    fontFamily: 'var(--font-serif)',
+                    fontSize: 10,
+                    color: 'rgba(196,160,96,0.4)',
+                  }}
+                >
+                  {relativeWhen(entry.createdAt)}
+                </span>
+                <button
+                  type="button"
+                  onClick={() => deleteEntry(entry.id)}
+                  style={{
+                    background: 'none',
+                    border: 'none',
+                    color: 'rgba(196,160,96,0.22)',
+                    cursor: 'pointer',
+                    fontSize: 13,
+                    lineHeight: 1,
+                  }}
+                >
+                  ×
+                </button>
+              </div>
+              {isDeep && entry.title && (
+                <p
+                  style={{
+                    fontFamily: 'var(--font-serif)',
+                    fontSize: 15,
+                    fontWeight: 700,
+                    color: 'rgba(240,216,152,0.82)',
+                    lineHeight: 1.3,
+                    margin: '0 0 4px',
+                  }}
+                >
+                  {entry.title}
+                </p>
+              )}
+              <p
+                style={{
+                  fontFamily: 'var(--font-serif)',
+                  fontSize: 13,
+                  color: 'rgba(240,216,152,0.65)',
+                  lineHeight: 1.55,
+                  margin: 0,
+                  whiteSpace: 'pre-wrap',
+                }}
+              >
+                {isDeep ? (entry.content ?? '') : entry.title}
+              </p>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+/* ── Guitar studio overlay ───────────────────────────────────── */
+function GuitarOverlay({ tab, onClose }: { tab: string; onClose: () => void }) {
+  useEffect(() => {
+    function onKey(e: KeyboardEvent) {
+      if (e.key === 'Escape') onClose();
+    }
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [onClose]);
+
+  const studioTab = tab as Parameters<typeof GuitarStudio>[0]['initialTab'];
+
+  return (
+    <div
+      style={{
+        position: 'fixed',
+        inset: 0,
+        zIndex: 120,
+        display: 'flex',
+        flexDirection: 'column',
+        background: 'var(--background)',
+      }}
+    >
+      <div
+        style={{
+          flexShrink: 0,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          padding: '14px 20px',
+          borderBottom: '1px solid rgba(196,160,96,0.18)',
+        }}
+      >
+        <span
+          style={{
+            fontFamily: 'var(--font-serif)',
+            fontSize: 10,
+            letterSpacing: '0.2em',
+            textTransform: 'uppercase',
+            color: 'rgba(196,160,96,0.45)',
+          }}
+        >
+          Guitar Studio
+        </span>
+        <button
+          type="button"
+          onClick={onClose}
+          style={{
+            background: 'none',
+            border: '1px solid rgba(196,160,96,0.22)',
+            borderRadius: 999,
+            color: 'rgba(196,160,96,0.45)',
+            fontFamily: 'var(--font-serif)',
+            fontSize: 11,
+            letterSpacing: '0.1em',
+            cursor: 'pointer',
+            padding: '5px 14px',
+          }}
+        >
+          close
+        </button>
+      </div>
+      <div style={{ flex: 1, overflowY: 'auto', padding: '0 0 40px' }}>
+        <GuitarStudio initialTab={studioTab} />
+      </div>
+    </div>
+  );
+}
 
 /* ── Helpers ─────────────────────────────────────────────────── */
 function save(rituals: Ritual[]) {
@@ -70,7 +573,6 @@ function DropLine() {
         pointerEvents: 'none',
       }}
     >
-      {/* Left dot */}
       <div
         style={{
           position: 'absolute',
@@ -97,6 +599,8 @@ function RitualRow({
   onDragStart,
   isDragging,
   dropEdge,
+  onOpenNotebook,
+  onOpenLink,
 }: {
   ritual: Ritual;
   checked: boolean;
@@ -105,6 +609,8 @@ function RitualRow({
   onDragStart: (id: string) => void;
   isDragging: boolean;
   dropEdge: 'before' | 'after' | null;
+  onOpenNotebook?: () => void;
+  onOpenLink?: () => void;
 }) {
   const alive = isStreakAlive(ritual);
   return (
@@ -113,13 +619,11 @@ function RitualRow({
       style={{
         position: 'relative',
         marginBottom: 6,
-        // Push rows apart slightly when a drop line is showing
         paddingTop: dropEdge === 'before' ? 10 : 2,
         paddingBottom: dropEdge === 'after' ? 10 : 2,
         transition: 'padding 0.12s',
       }}
     >
-      {/* Drop line — ABOVE */}
       {dropEdge === 'before' && (
         <div style={{ position: 'absolute', top: 3, left: 0, right: 0 }}>
           <DropLine />
@@ -212,7 +716,9 @@ function RitualRow({
             fontFamily: 'var(--font-serif)',
             fontSize: 14,
             fontWeight: checked ? 700 : 400,
-            color: checked ? '#F0D898' : 'rgba(240,216,152,0.72)',
+            color: checked
+              ? 'var(--palette-panel-text, #C8A858)'
+              : 'var(--palette-panel-muted, rgba(196,160,96,0.72))',
             flex: 1,
             letterSpacing: '0.02em',
             transition: 'color 0.2s',
@@ -221,6 +727,59 @@ function RitualRow({
         >
           {ritual.name}
         </span>
+
+        {/* Notebook link */}
+        {onOpenNotebook && (
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              onOpenNotebook();
+            }}
+            title={NB_TITLES[ritual.notebookKey!] ?? 'Open notebook'}
+            style={{
+              background: 'none',
+              border: '1px solid var(--panel-border, rgba(196,160,96,0.22))',
+              borderRadius: 6,
+              padding: '2px 7px',
+              cursor: 'pointer',
+              fontFamily: 'var(--font-serif)',
+              fontSize: 11,
+              color: 'var(--palette-panel-muted, rgba(196,160,96,0.5))',
+              letterSpacing: '0.04em',
+              flexShrink: 0,
+              transition: 'all 0.15s',
+            }}
+          >
+            ✎
+          </button>
+        )}
+
+        {/* App section link (e.g. guitar) */}
+        {onOpenLink && (
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              onOpenLink();
+            }}
+            title="Open"
+            style={{
+              background: 'none',
+              border: '1px solid var(--panel-border, rgba(196,160,96,0.22))',
+              borderRadius: 6,
+              padding: '2px 7px',
+              cursor: 'pointer',
+              fontFamily: 'var(--font-serif)',
+              fontSize: 12,
+              color: 'var(--palette-panel-muted, rgba(196,160,96,0.5))',
+              flexShrink: 0,
+              transition: 'all 0.15s',
+            }}
+          >
+            ♪
+          </button>
+        )}
 
         {/* Streak */}
         {ritual.streakCount > 1 && alive && (
@@ -231,7 +790,7 @@ function RitualRow({
                 fontFamily: 'var(--font-serif)',
                 fontSize: 10,
                 fontWeight: 700,
-                color: '#C8A858',
+                color: 'var(--palette-panel-muted, #C8A858)',
                 opacity: 0.8,
               }}
             >
@@ -252,7 +811,7 @@ function RitualRow({
             border: 'none',
             cursor: 'pointer',
             padding: '0 2px',
-            color: 'rgba(196,160,96,0.2)',
+            color: 'var(--palette-panel-muted, rgba(196,160,96,0.2))',
             fontSize: 13,
             lineHeight: 1,
             flexShrink: 0,
@@ -262,7 +821,6 @@ function RitualRow({
         </button>
       </div>
 
-      {/* Drop line — BELOW */}
       {dropEdge === 'after' && (
         <div style={{ position: 'absolute', bottom: 3, left: 0, right: 0 }}>
           <DropLine />
@@ -302,7 +860,7 @@ function AddRitual({ time, onAdd }: { time: string; onAdd: (name: string) => voi
           padding: '4px 4px 10px',
           fontFamily: 'var(--font-serif)',
           fontSize: 12,
-          color: 'rgba(196,160,96,0.55)',
+          color: 'var(--palette-panel-muted, rgba(196,160,96,0.55))',
           letterSpacing: '0.06em',
           display: 'block',
         }}
@@ -323,6 +881,8 @@ function AddRitual({ time, onAdd }: { time: string; onAdd: (name: string) => voi
           if (e.key === 'Escape') setOpen(false);
         }}
         placeholder={`New ${time} ritual…`}
+        spellCheck={false}
+        autoCorrect="off"
         style={{
           flex: 1,
           background: 'rgba(255,255,255,0.04)',
@@ -331,7 +891,7 @@ function AddRitual({ time, onAdd }: { time: string; onAdd: (name: string) => voi
           padding: '7px 10px',
           fontFamily: 'var(--font-serif)',
           fontSize: 12,
-          color: '#F0D898',
+          color: 'var(--palette-panel-text, #F0D898)',
           outline: 'none',
         }}
       />
@@ -346,7 +906,7 @@ function AddRitual({ time, onAdd }: { time: string; onAdd: (name: string) => voi
           fontFamily: 'var(--font-serif)',
           fontSize: 11,
           fontWeight: 700,
-          color: '#C8A858',
+          color: 'var(--palette-panel-text, #C8A858)',
           cursor: 'pointer',
           letterSpacing: '0.08em',
         }}
@@ -387,7 +947,7 @@ function AddSession({ onAdd }: { onAdd: (name: string) => void }) {
           padding: '4px 4px 10px',
           fontFamily: 'var(--font-serif)',
           fontSize: 12,
-          color: 'rgba(196,160,96,0.55)',
+          color: 'var(--palette-panel-muted, rgba(196,160,96,0.55))',
           letterSpacing: '0.06em',
           display: 'block',
         }}
@@ -408,6 +968,8 @@ function AddSession({ onAdd }: { onAdd: (name: string) => void }) {
           if (e.key === 'Escape') setOpen(false);
         }}
         placeholder="Session name (e.g. Midday)…"
+        spellCheck={false}
+        autoCorrect="off"
         style={{
           flex: 1,
           background: 'rgba(255,255,255,0.04)',
@@ -416,7 +978,7 @@ function AddSession({ onAdd }: { onAdd: (name: string) => void }) {
           padding: '7px 10px',
           fontFamily: 'var(--font-serif)',
           fontSize: 12,
-          color: '#F0D898',
+          color: 'var(--palette-panel-text, #F0D898)',
           outline: 'none',
         }}
       />
@@ -431,7 +993,7 @@ function AddSession({ onAdd }: { onAdd: (name: string) => void }) {
           fontFamily: 'var(--font-serif)',
           fontSize: 11,
           fontWeight: 700,
-          color: '#C8A858',
+          color: 'var(--palette-panel-text, #C8A858)',
           cursor: 'pointer',
           letterSpacing: '0.08em',
         }}
@@ -455,6 +1017,8 @@ function TimeSection({
   onDragStart,
   dragId,
   dropTarget,
+  onOpenNotebook,
+  onOpenLink,
 }: {
   label: string;
   icon: string;
@@ -467,6 +1031,8 @@ function TimeSection({
   onDragStart: (id: string) => void;
   dragId: string | null;
   dropTarget: DropTarget;
+  onOpenNotebook: (key: string) => void;
+  onOpenLink: (target: string) => void;
 }) {
   const emptyLabel = rituals.length === 0;
 
@@ -487,7 +1053,9 @@ function TimeSection({
             fontWeight: emptyLabel ? 400 : 700,
             textTransform: 'uppercase',
             letterSpacing: emptyLabel ? '0.2em' : '0.18em',
-            color: emptyLabel ? 'rgba(196,160,96,0.35)' : 'rgba(196,160,96,0.65)',
+            color: emptyLabel
+              ? 'var(--palette-panel-muted, rgba(196,160,96,0.35))'
+              : 'var(--palette-panel-muted, rgba(196,160,96,0.65))',
           }}
         >
           {icon} {label}
@@ -503,6 +1071,8 @@ function TimeSection({
           onDragStart={onDragStart}
           isDragging={dragId === r.id}
           dropEdge={dropTarget?.id === r.id && dragId !== r.id ? dropTarget.pos : null}
+          onOpenNotebook={r.notebookKey ? () => onOpenNotebook(r.notebookKey!) : undefined}
+          onOpenLink={r.linkTarget ? () => onOpenLink(r.linkTarget!) : undefined}
         />
       ))}
       <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
@@ -524,6 +1094,8 @@ export default function DailyRituals() {
   const [quoteIdx, setQuoteIdx] = useState(0);
   const [dragId, setDragId] = useState<string | null>(null);
   const [dropTarget, setDropTarget] = useState<DropTarget>(null);
+  const [activeNotebook, setActiveNotebook] = useState<string | null>(null);
+  const [activeLink, setActiveLink] = useState<string | null>(null);
   const dragIdRef = useRef<string | null>(null);
   const dropTargetRef = useRef<DropTarget>(null);
 
@@ -596,7 +1168,6 @@ export default function DailyRituals() {
         const toIdx = next.findIndex((r) => r.id === target.id);
         if (fromIdx < 0 || toIdx < 0) return prev;
         const [item] = next.splice(fromIdx, 1);
-        // Recompute toIdx after splice
         const newToIdx = next.findIndex((r) => r.id === target.id);
         const insertAt = target.pos === 'before' ? newToIdx : newToIdx + 1;
         next.splice(insertAt, 0, item);
@@ -677,183 +1248,206 @@ export default function DailyRituals() {
     return 'Peak ✦';
   }
 
-  const sectionProps = { onDragStart: startDrag, dragId, dropTarget };
+  function handleOpenLink(target: string) {
+    setActiveLink(target);
+  }
+
+  const sectionProps = {
+    onDragStart: startDrag,
+    dragId,
+    dropTarget,
+    onOpenNotebook: setActiveNotebook,
+    onOpenLink: handleOpenLink,
+  };
 
   return (
-    <div
-      style={{
-        border: `1.5px solid ${peaked ? 'rgba(200,168,88,0.6)' : 'var(--header-border, rgba(196,160,96,0.22))'}`,
-        borderRadius: 16,
-        background: 'var(--header-bg, rgba(30,16,8,0.55))',
-        overflow: 'hidden',
-        transition: 'border-color 0.4s',
-      }}
-    >
-      {/* Header */}
+    <>
+      {activeNotebook && (
+        <RitualNotebook notebookKey={activeNotebook} onClose={() => setActiveNotebook(null)} />
+      )}
+      {activeLink?.startsWith('guitar:') && (
+        <GuitarOverlay tab={activeLink.slice(7)} onClose={() => setActiveLink(null)} />
+      )}
+
       <div
-        onClick={() => setOpen((v) => !v)}
         style={{
-          padding: '12px 16px',
-          background: peaked ? 'rgba(196,160,96,0.2)' : 'rgba(196,160,96,0.08)',
-          borderBottom: open ? '1px solid rgba(196,160,96,0.18)' : 'none',
-          cursor: 'pointer',
-          display: 'flex',
-          alignItems: 'center',
-          transition: 'background 0.3s',
+          border: `1px solid ${peaked ? 'rgba(200,168,88,0.6)' : 'var(--panel-border, rgba(196,160,96,0.18))'}`,
+          borderRadius: 14,
+          background: 'var(--palette-l3-bg, rgba(30,16,8,0.55))',
+          overflow: 'hidden',
+          transition: 'border-color 0.4s',
         }}
       >
-        <span style={{ flex: 1 }} />
-        <div style={{ textAlign: 'center' }}>
-          <div
-            style={{
-              fontFamily: 'var(--font-serif)',
-              fontSize: 15,
-              fontWeight: 900,
-              textTransform: 'uppercase',
-              letterSpacing: '0.18em',
-              color: peaked ? '#F0D090' : '#C8A858',
-              transition: 'color 0.3s',
-            }}
-          >
-            Daily Rituals
-          </div>
-          <div
-            style={{
-              fontFamily: 'var(--font-serif)',
-              fontSize: 10,
-              fontWeight: 600,
-              textTransform: 'uppercase',
-              letterSpacing: '0.18em',
-              color: 'rgba(196,160,96,0.60)',
-              marginTop: 2,
-            }}
-          >
-            {peaked ? '✦ Peak Alignment ✦' : 'Build Your Peak'}
-          </div>
-        </div>
-        <span style={{ flex: 1, display: 'flex', justifyContent: 'flex-end' }}>
-          <span
-            style={{
-              color: '#C4A060',
-              opacity: 0.4,
-              fontSize: 11,
-              transform: `rotate(${open ? 180 : 0}deg)`,
-              transition: 'transform 0.2s',
-            }}
-          >
-            ▾
-          </span>
-        </span>
-      </div>
-
-      {open && (
-        <>
-          {/* Alignment bar */}
-          <div
-            style={{ padding: '12px 16px 10px', borderBottom: '1px solid rgba(196,160,96,0.08)' }}
-          >
+        {/* Header */}
+        <div
+          onClick={() => setOpen((v) => !v)}
+          style={{
+            padding: '12px 16px',
+            background: peaked
+              ? 'var(--palette-panel-bg-tint, rgba(196,160,96,0.2))'
+              : 'transparent',
+            borderBottom: open ? '1px solid rgba(196,160,96,0.18)' : 'none',
+            cursor: 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+            transition: 'background 0.3s',
+          }}
+        >
+          <span style={{ flex: 1 }} />
+          <div style={{ textAlign: 'center' }}>
             <div
               style={{
-                display: 'flex',
-                justifyContent: 'space-between',
-                alignItems: 'center',
-                marginBottom: 7,
+                fontFamily: 'var(--font-serif)',
+                fontSize: 15,
+                fontWeight: 900,
+                textTransform: 'uppercase',
+                letterSpacing: '0.18em',
+                color: peaked
+                  ? 'var(--palette-panel-text, #F0D090)'
+                  : 'var(--palette-panel-text, #C8A858)',
+                transition: 'color 0.3s',
               }}
             >
-              <span
-                style={{
-                  fontFamily: 'var(--font-serif)',
-                  fontSize: 11,
-                  fontWeight: 600,
-                  textTransform: 'uppercase',
-                  letterSpacing: '0.16em',
-                  color: 'rgba(196,160,96,0.65)',
-                }}
-              >
-                Today's Alignment
-              </span>
-              <span
-                style={{
-                  fontFamily: 'var(--font-serif)',
-                  fontSize: 12,
-                  fontWeight: 700,
-                  fontStyle: 'italic',
-                  color: peaked ? '#F0D090' : '#C8A858',
-                  transition: 'color 0.3s',
-                  letterSpacing: '0.04em',
-                }}
-              >
-                {scoreLabel(score)}
-              </span>
+              Daily Rituals
             </div>
             <div
               style={{
-                height: 5,
-                borderRadius: 3,
-                background: 'rgba(196,160,96,0.1)',
-                overflow: 'hidden',
+                fontFamily: 'var(--font-serif)',
+                fontSize: 10,
+                fontWeight: 600,
+                textTransform: 'uppercase',
+                letterSpacing: '0.18em',
+                color: 'var(--palette-panel-muted, rgba(196,160,96,0.60))',
+                marginTop: 2,
               }}
+            >
+              {peaked ? '✦ Peak Alignment ✦' : 'Build Your Peak'}
+            </div>
+          </div>
+          <span style={{ flex: 1, display: 'flex', justifyContent: 'flex-end' }}>
+            <span
+              style={{
+                color: 'var(--palette-panel-muted, #C4A060)',
+                opacity: 0.4,
+                fontSize: 11,
+                transform: `rotate(${open ? 180 : 0}deg)`,
+                transition: 'transform 0.2s',
+              }}
+            >
+              ▾
+            </span>
+          </span>
+        </div>
+
+        {open && (
+          <>
+            {/* Alignment bar */}
+            <div
+              style={{ padding: '12px 16px 10px', borderBottom: '1px solid rgba(196,160,96,0.08)' }}
             >
               <div
                 style={{
-                  height: '100%',
-                  borderRadius: 3,
-                  width: `${score}%`,
-                  background: peaked
-                    ? 'linear-gradient(90deg,#C4A060,#E0C870,#C4A060)'
-                    : 'linear-gradient(90deg,#C4A060,#C8B858)',
-                  boxShadow: peaked ? '0 0 10px #C4A06088' : '0 0 5px #C4A06044',
-                  transition: 'width 0.5s ease, box-shadow 0.3s',
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                  marginBottom: 7,
                 }}
-              />
-            </div>
-          </div>
-
-          {sessions.map((session, si) => (
-            <div key={session}>
-              {si > 0 && (
+              >
+                <span
+                  style={{
+                    fontFamily: 'var(--font-serif)',
+                    fontSize: 11,
+                    fontWeight: 600,
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.16em',
+                    color: 'var(--palette-panel-muted, rgba(196,160,96,0.65))',
+                  }}
+                >
+                  Today's Alignment
+                </span>
+                <span
+                  style={{
+                    fontFamily: 'var(--font-serif)',
+                    fontSize: 12,
+                    fontWeight: 700,
+                    fontStyle: 'italic',
+                    color: 'var(--palette-panel-text, #C8A858)',
+                    transition: 'color 0.3s',
+                    letterSpacing: '0.04em',
+                  }}
+                >
+                  {scoreLabel(score)}
+                </span>
+              </div>
+              <div
+                style={{
+                  height: 5,
+                  borderRadius: 3,
+                  background: 'rgba(196,160,96,0.1)',
+                  overflow: 'hidden',
+                }}
+              >
                 <div
-                  style={{ margin: '2px 16px', height: 1, background: 'rgba(196,160,96,0.08)' }}
+                  style={{
+                    height: '100%',
+                    borderRadius: 3,
+                    width: `${score}%`,
+                    background: peaked
+                      ? 'linear-gradient(90deg,#C4A060,#E0C870,#C4A060)'
+                      : 'linear-gradient(90deg,#C4A060,#C8B858)',
+                    boxShadow: peaked ? '0 0 10px #C4A06088' : '0 0 5px #C4A06044',
+                    transition: 'width 0.5s ease, box-shadow 0.3s',
+                  }}
                 />
-              )}
-              <TimeSection
-                label={session.toUpperCase()}
-                icon="·"
-                rituals={rituals.filter((r) => r.time === session)}
-                checkedIds={doneIds}
-                onToggle={toggle}
-                onDelete={deleteRitual}
-                onAdd={(n) => addRitual(n, session)}
-                onAddSession={addSession}
-                {...sectionProps}
-              />
+              </div>
             </div>
-          ))}
 
-          {/* Quote */}
-          <div
-            style={{
-              padding: '10px 20px 16px',
-              textAlign: 'center',
-              borderTop: '1px solid rgba(196,160,96,0.07)',
-            }}
-          >
-            <p
+            {sessions.map((session, si) => (
+              <div key={session}>
+                {si > 0 && (
+                  <div
+                    style={{ margin: '2px 16px', height: 1, background: 'rgba(196,160,96,0.08)' }}
+                  />
+                )}
+                <TimeSection
+                  label={session.toUpperCase()}
+                  icon="·"
+                  rituals={rituals.filter((r) => r.time === session)}
+                  checkedIds={doneIds}
+                  onToggle={toggle}
+                  onDelete={deleteRitual}
+                  onAdd={(n) => addRitual(n, session)}
+                  onAddSession={addSession}
+                  {...sectionProps}
+                />
+              </div>
+            ))}
+
+            {/* Quote */}
+            <div
               style={{
-                fontFamily: 'var(--font-serif)',
-                fontSize: 12,
-                fontStyle: 'italic',
-                color: 'rgba(196,160,96,0.62)',
-                letterSpacing: '0.03em',
-                lineHeight: 1.6,
-                margin: 0,
+                padding: '10px 20px 16px',
+                textAlign: 'center',
+                borderTop: '1px solid rgba(196,160,96,0.07)',
               }}
             >
-              {QUOTES[quoteIdx]}
-            </p>
-          </div>
-        </>
-      )}
-    </div>
+              <p
+                style={{
+                  fontFamily: 'var(--font-serif)',
+                  fontSize: 12,
+                  fontStyle: 'italic',
+                  color: 'rgba(196,160,96,0.62)',
+                  letterSpacing: '0.03em',
+                  lineHeight: 1.6,
+                  margin: 0,
+                }}
+              >
+                {QUOTES[quoteIdx]}
+              </p>
+            </div>
+          </>
+        )}
+      </div>
+    </>
   );
 }

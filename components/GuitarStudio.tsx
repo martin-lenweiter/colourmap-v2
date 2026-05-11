@@ -8,6 +8,7 @@ import GuitarLearn from '@/components/GuitarLearn';
 import GuitarPractice from '@/components/GuitarPractice';
 import HarmonyMap from '@/components/HarmonyMap';
 import HendrixLearn from '@/components/HendrixLearn';
+import Metronome from '@/components/Metronome';
 import SongStudio from '@/components/SongStudio';
 
 type Tab =
@@ -18,7 +19,8 @@ type Tab =
   | 'learn'
   | 'blues'
   | 'hendrix'
-  | 'practice';
+  | 'practice'
+  | 'metronome';
 
 const TABS: { id: Tab; label: string }[] = [
   { id: 'songs', label: 'Songs' },
@@ -29,14 +31,17 @@ const TABS: { id: Tab; label: string }[] = [
   { id: 'blues', label: 'Blues' },
   { id: 'hendrix', label: 'Hendrix' },
   { id: 'practice', label: 'Practice' },
+  { id: 'metronome', label: 'Metronome' },
 ];
 
 export default function GuitarStudio({
   onShowRecordingsSection,
+  initialTab,
 }: {
   onShowRecordingsSection?: (songId?: string) => void;
+  initialTab?: Tab;
 }) {
-  const [tab, setTab] = useState<Tab>('songs');
+  const [tab, setTab] = useState<Tab>(initialTab ?? 'songs');
   const navRef = useRef<HTMLDivElement>(null);
   const activeTabRef = useRef<HTMLButtonElement | null>(null);
 
@@ -125,6 +130,7 @@ export default function GuitarStudio({
       {tab === 'blues' && <BluesProgram />}
       {tab === 'hendrix' && <HendrixLearn />}
       {tab === 'practice' && <GuitarPractice />}
+      {tab === 'metronome' && <Metronome />}
     </div>
   );
 }

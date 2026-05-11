@@ -102,6 +102,8 @@ export default function BackOfMind() {
             onChange={(e) => setNewTitle(e.target.value)}
             className="flex-1 rounded-xl border border-border bg-background px-3 py-2 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
             autoFocus
+            spellCheck={false}
+            autoCorrect="off"
           />
           <button
             type="submit"
@@ -243,6 +245,8 @@ function BacklogItemRow({
             onChange={(e) => handleNotesChange(e.target.value)}
             placeholder="Add more details..."
             rows={2}
+            spellCheck={false}
+            autoCorrect="off"
             className="w-full resize-none rounded-xl border border-border bg-background/60 px-3 py-2 text-sm placeholder:text-muted-foreground/40 outline-none"
           />
           {saved && (

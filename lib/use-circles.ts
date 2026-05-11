@@ -279,16 +279,46 @@ export function useCircles(): UseCircles {
           notes: [],
         };
         setCircles((prev) => [...prev, detail]);
-        // Capture real user id for our local me.
         setMe((prev) => ({ ...prev, id: member.userId }));
         selectCircle(circle.id);
         return detail;
-      } catch (err) {
-        setError((err as Error).message);
-        return null;
+      } catch {
+        // API unavailable — create circle locally so the user can work solo
+        const localId = crypto.randomUUID();
+        const code = Array.from(
+          { length: 6 },
+          () => 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'[Math.floor(Math.random() * 26)],
+        ).join('');
+        const palette = ['#D4805A', '#6890B0', '#7AAA58', '#9B6BA0', '#C4A060', '#5A8AAA'];
+        const color = palette[Math.floor(Math.random() * palette.length)];
+        const myId = me.id || crypto.randomUUID();
+        const localMember: CircleMember = {
+          id: myId,
+          circleId: localId,
+          userId: myId,
+          name: me.name,
+          color: '#C4A060',
+          joinedAt: new Date().toISOString(),
+        };
+        const detail: CircleDetail = {
+          id: localId,
+          name: trimmed,
+          code,
+          color,
+          createdBy: myId,
+          createdAt: new Date().toISOString(),
+          members: [localMember],
+          missions: [],
+          notes: [],
+        };
+        setCircles((prev) => [...prev, detail]);
+        if (!me.id) setMe((prev) => ({ ...prev, id: myId }));
+        setOnline(false);
+        selectCircle(localId);
+        return detail;
       }
     },
-    [me.name, selectCircle],
+    [me.name, me.id, selectCircle],
   );
 
   const joinCircle = useCallback(
@@ -323,19 +353,40 @@ export function useCircles(): UseCircles {
     async (text: string, dueDate?: string | null) => {
       const trimmed = text.trim();
       if (!trimmed || !activeId) return;
+      // Optimistic local add — works offline too
+      const localMission: CircleMission = {
+        id: crypto.randomUUID(),
+        circleId: activeId,
+        text: trimmed,
+        done: false,
+        claimedBy: null,
+        dueDate: dueDate || null,
+        createdBy: me.id,
+        createdAt: new Date().toISOString(),
+      };
+      setCircles((prev) =>
+        prev.map((c) =>
+          c.id === activeId ? { ...c, missions: [...c.missions, localMission] } : c,
+        ),
+      );
       try {
         const mission = await jsonFetch<CircleMission>(`/api/circles/${activeId}/missions`, {
           method: 'POST',
           body: JSON.stringify({ text: trimmed, dueDate: dueDate || undefined }),
         });
+        // Replace local placeholder with the server-assigned record
         setCircles((prev) =>
-          prev.map((c) => (c.id === activeId ? { ...c, missions: [...c.missions, mission] } : c)),
+          prev.map((c) =>
+            c.id === activeId
+              ? { ...c, missions: c.missions.map((m) => (m.id === localMission.id ? mission : m)) }
+              : c,
+          ),
         );
-      } catch (err) {
-        setError((err as Error).message);
+      } catch {
+        setOnline(false);
       }
     },
-    [activeId],
+    [activeId, me.id],
   );
 
   const patchMission = useCallback(
@@ -419,6 +470,19 @@ export function useCircles(): UseCircles {
     async (text: string) => {
       const trimmed = text.trim();
       if (!trimmed || !activeId || !me.name) return;
+      const localNote: CircleNote = {
+        id: crypto.randomUUID(),
+        circleId: activeId,
+        authorId: me.id,
+        authorName: me.name,
+        text: trimmed,
+        createdAt: new Date().toISOString(),
+      };
+      setCircles((prev) =>
+        prev.map((c) =>
+          c.id === activeId ? { ...c, notes: [localNote, ...c.notes].slice(0, 100) } : c,
+        ),
+      );
       try {
         const note = await jsonFetch<CircleNote>(`/api/circles/${activeId}/notes`, {
           method: 'POST',
@@ -426,14 +490,16 @@ export function useCircles(): UseCircles {
         });
         setCircles((prev) =>
           prev.map((c) =>
-            c.id === activeId ? { ...c, notes: [note, ...c.notes].slice(0, 100) } : c,
+            c.id === activeId
+              ? { ...c, notes: c.notes.map((n) => (n.id === localNote.id ? note : n)) }
+              : c,
           ),
         );
-      } catch (err) {
-        setError((err as Error).message);
+      } catch {
+        setOnline(false);
       }
     },
-    [activeId, me.name],
+    [activeId, me.id, me.name],
   );
 
   const setMyPulse = useCallback(

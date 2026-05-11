@@ -40,6 +40,7 @@ const LS_LAST_NOTE = 'colourmap:feedback-overlay-last';
 const LS_LAST_AREA = 'colourmap:feedback-overlay-last-area';
 const LS_CORRECTIONS = 'colourmap:notebook-corrections';
 const LS_REFLECTIONS = 'colourmap:notebook-reflections';
+const LS_HINT_DISMISSED = 'colourmap:feedback-hint-dismissed';
 const TRIPLE_TAP_WINDOW_MS = 700;
 
 type Mode = 'note' | 'draw' | 'books';
@@ -177,9 +178,22 @@ export default function FeedbackOverlay() {
     origW: number;
     origH: number;
   } | null>(null);
-  const [registerStatus, setRegisterStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>(
-    'idle',
-  );
+  const [addStatus, setAddStatus] = useState<'idle' | 'saved'>('idle');
+  const [hintDismissed, setHintDismissed] = useState(true);
+
+  // Check if hint has been dismissed
+  useEffect(() => {
+    try {
+      setHintDismissed(localStorage.getItem(LS_HINT_DISMISSED) === '1');
+    } catch {}
+  }, []);
+
+  function dismissHint() {
+    setHintDismissed(true);
+    try {
+      localStorage.setItem(LS_HINT_DISMISSED, '1');
+    } catch {}
+  }
 
   // Font size for the note textarea. Persisted in localStorage so the
   // user's preference carries between sessions. 9px to 22px range —
@@ -284,31 +298,35 @@ export default function FeedbackOverlay() {
 
   // Reset the saved-status pulse a moment after a successful save.
   useEffect(() => {
-    if (registerStatus !== 'saved') return;
-    const t = setTimeout(() => setRegisterStatus('idle'), 1600);
+    if (addStatus !== 'saved') return;
+    const t = setTimeout(() => setAddStatus('idle'), 1400);
     return () => clearTimeout(t);
-  }, [registerStatus]);
+  }, [addStatus]);
 
-  const onRegister = useCallback(async () => {
+  const onAdd = useCallback(async () => {
     if (!text.trim()) return;
     const areaLabel = selectedAreaId
       ? (AREA_OPTIONS.find((o) => o.id === selectedAreaId)?.label ?? null)
       : null;
-    setRegisterStatus('saving');
-    const result = await register(text, areaLabel);
-    if (result) {
-      setText('');
-      try {
-        localStorage.removeItem(LS_LAST_NOTE);
-      } catch {
-        /* silent */
-      }
-      setRegisterStatus('saved');
-      setLogOpen(true);
-    } else {
-      setRegisterStatus('error');
-    }
+    await register(text, areaLabel);
+    setText('');
+    try {
+      localStorage.removeItem(LS_LAST_NOTE);
+    } catch {}
+    setAddStatus('saved');
+    setLogOpen(true);
   }, [text, selectedAreaId, register]);
+
+  function copyAll() {
+    if (observations.length === 0) return;
+    const lines = observations.map((o) => {
+      const area = o.area ? `[${o.area}]  ` : '';
+      const when = relativeWhen(o.createdAt);
+      return `${area}${when}\n${o.text}`;
+    });
+    const header = `FEEDBACK — ${new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })}`;
+    navigator.clipboard.writeText(`${header}\n\n${lines.join('\n\n─────\n\n')}`).catch(() => {});
+  }
 
   function renderObsText(text: string) {
     const lines = text.split('\n');
@@ -734,6 +752,54 @@ export default function FeedbackOverlay() {
             boxSizing: 'border-box',
           }}
         >
+          {/* Dismissible intro hint */}
+          {!hintDismissed && (
+            <div
+              onPointerDown={(e) => e.stopPropagation()}
+              style={{
+                background: 'rgba(168,122,64,0.12)',
+                border: '1px solid #A87A4040',
+                borderRadius: 8,
+                padding: '7px 10px',
+                marginBottom: 6,
+                display: 'flex',
+                alignItems: 'flex-start',
+                gap: 8,
+              }}
+            >
+              <span
+                style={{
+                  fontFamily: 'var(--font-serif)',
+                  fontSize: 11,
+                  lineHeight: 1.45,
+                  color: '#6B4820',
+                  flex: 1,
+                }}
+              >
+                This is where you give me feedback. Write what&apos;s on your mind, tag the area,
+                tap Add. Build up a list — when you have a batch, hit <strong>Copy All</strong> and
+                paste it to me.
+              </span>
+              <button
+                type="button"
+                onClick={dismissHint}
+                style={{
+                  background: 'none',
+                  border: 'none',
+                  color: '#A87A40',
+                  fontSize: 15,
+                  lineHeight: 1,
+                  cursor: 'pointer',
+                  padding: 0,
+                  flexShrink: 0,
+                  opacity: 0.5,
+                }}
+              >
+                ×
+              </button>
+            </div>
+          )}
+
           <div
             onPointerDown={onNoteDragStart}
             onPointerMove={onNoteDragMove}
@@ -928,65 +994,75 @@ export default function FeedbackOverlay() {
             }}
             aria-label="Feedback note"
           />
-          {/* Register button — explicit save of this block to the
-              Supabase log. Disabled until there's text to save. */}
+          {/* Add + log + copy buttons */}
           <div
             style={{
               display: 'flex',
               alignItems: 'center',
-              gap: 8,
+              gap: 6,
               padding: '4px 4px 0',
+              flexWrap: 'wrap',
             }}
             onPointerDown={(e) => e.stopPropagation()}
           >
             <button
               type="button"
-              onClick={onRegister}
-              disabled={!text.trim() || registerStatus === 'saving'}
+              onClick={onAdd}
+              disabled={!text.trim()}
               style={{
                 fontFamily: 'var(--font-serif)',
                 fontSize: 12,
                 fontWeight: 700,
                 letterSpacing: '0.1em',
                 textTransform: 'uppercase',
-                color:
-                  registerStatus === 'saved' ? '#FFFFFF' : !text.trim() ? '#A87A4055' : '#A87A40',
+                color: addStatus === 'saved' ? '#FFFFFF' : !text.trim() ? '#A87A4040' : '#A87A40',
                 background:
-                  registerStatus === 'saved' ? '#7AAA58' : !text.trim() ? '#A87A4010' : '#A87A4018',
-                border: `1px solid ${registerStatus === 'saved' ? '#7AAA58' : '#A87A4080'}`,
+                  addStatus === 'saved' ? '#7AAA58' : !text.trim() ? '#A87A4008' : '#A87A4018',
+                border: `1px solid ${addStatus === 'saved' ? '#7AAA58' : '#A87A4070'}`,
                 borderRadius: 999,
                 padding: '4px 14px',
-                cursor: !text.trim() || registerStatus === 'saving' ? 'default' : 'pointer',
+                cursor: !text.trim() ? 'default' : 'pointer',
                 transition: 'all 150ms ease',
               }}
-              aria-label="Register this observation"
             >
-              {registerStatus === 'saving'
-                ? 'saving…'
-                : registerStatus === 'saved'
-                  ? '✓ saved'
-                  : registerStatus === 'error'
-                    ? 'try again'
-                    : 'register'}
+              {addStatus === 'saved' ? '✓ added' : 'add'}
             </button>
             {observations.length > 0 && (
-              <button
-                type="button"
-                onClick={() => setLogOpen((s) => !s)}
-                style={{
-                  fontFamily: 'var(--font-serif)',
-                  fontSize: 11,
-                  color: '#A87A40',
-                  background: 'transparent',
-                  border: '1px solid #A87A4040',
-                  borderRadius: 999,
-                  padding: '4px 10px',
-                  cursor: 'pointer',
-                  marginLeft: 'auto',
-                }}
-              >
-                log · {observations.length} {logOpen ? '▾' : '▸'}
-              </button>
+              <>
+                <button
+                  type="button"
+                  onClick={() => setLogOpen((s) => !s)}
+                  style={{
+                    fontFamily: 'var(--font-serif)',
+                    fontSize: 11,
+                    color: '#A87A40',
+                    background: 'transparent',
+                    border: '1px solid #A87A4040',
+                    borderRadius: 999,
+                    padding: '4px 10px',
+                    cursor: 'pointer',
+                  }}
+                >
+                  log · {observations.length} {logOpen ? '▾' : '▸'}
+                </button>
+                <button
+                  type="button"
+                  onClick={copyAll}
+                  style={{
+                    fontFamily: 'var(--font-serif)',
+                    fontSize: 11,
+                    color: '#A87A40',
+                    background: 'transparent',
+                    border: '1px solid #A87A4040',
+                    borderRadius: 999,
+                    padding: '4px 10px',
+                    cursor: 'pointer',
+                    marginLeft: 'auto',
+                  }}
+                >
+                  copy all
+                </button>
+              </>
             )}
           </div>
           {/* Log — active and done sections */}

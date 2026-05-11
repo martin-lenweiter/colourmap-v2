@@ -948,7 +948,7 @@ function AddRow({ placeholder, onAdd }: { placeholder: string; onAdd: (text: str
 
 /* ─── Main panel ─────────────────────────────────────────────── */
 export default function DoingCardsPanel() {
-  const [globalStyle, setGlobalStyle] = useState(1);
+  const globalStyle = 3;
   const [objItem, setObjItem] = useState<CardItem>({ id: 'current', text: '', done: false });
   const [objOpen, setObjOpen] = useState(false);
   const [secOpen, setSecOpen] = useState({
@@ -992,8 +992,7 @@ export default function DoingCardsPanel() {
       if (raw) setMissions(JSON.parse(raw));
       const rawPush = localStorage.getItem('colourmap:checkin-todos');
       if (rawPush) setPush(JSON.parse(rawPush));
-      const gs = localStorage.getItem('colourmap:text-style');
-      if (gs !== null) setGlobalStyle(Number(gs));
+      // text-style no longer user-configurable (fixed at caps)
       setChapter(localStorage.getItem('colourmap:life-chapter') ?? '');
       const objDone = localStorage.getItem('colourmap:objective-done');
       if (objDone === 'true') setObjItem((prev) => ({ ...prev, done: true }));
@@ -1006,15 +1005,6 @@ export default function DoingCardsPanel() {
       localStorage.setItem('colourmap:life-chapter', v);
     } catch {}
     syncPref('colourmap:life-chapter', v);
-  }
-
-  function cycleStyle() {
-    const next = (globalStyle + 1) % TEXT_STYLES.length;
-    setGlobalStyle(next);
-    try {
-      localStorage.setItem('colourmap:text-style', String(next));
-    } catch {}
-    syncPref('colourmap:text-style', next);
   }
 
   function updateObj(f: Partial<CardItem>) {
@@ -1168,55 +1158,8 @@ export default function DoingCardsPanel() {
     ...donePush.map((p) => ({ ...p, _src: 'push' as const })),
   ];
 
-  const dot = STYLE_DOTS[globalStyle % STYLE_DOTS.length];
-
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 16, padding: '4px 0 32px' }}>
-      {/* ── Global typo dot ──────────────────────────────────── */}
-      <div style={{ display: 'flex', justifyContent: 'flex-end', paddingRight: 4 }}>
-        <button
-          type="button"
-          onClick={cycleStyle}
-          title="Change text style"
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: 6,
-            background: 'none',
-            border: 'none',
-            cursor: 'pointer',
-            padding: '2px 4px',
-          }}
-        >
-          <span
-            style={{
-              fontFamily: 'var(--font-serif)',
-              fontSize: 10,
-              fontWeight: 600,
-              letterSpacing: '0.14em',
-              textTransform: 'uppercase',
-              color: LABEL_COLOR,
-              opacity: 0.4,
-            }}
-          >
-            {['handwritten', 'serif', 'italic', 'caps'][globalStyle % 4]}
-          </span>
-          <span
-            style={{
-              display: 'block',
-              width: `${9 * dot.scale}px`,
-              height: `${9 * dot.scale}px`,
-              borderRadius: dot.rotate ? '1.5px' : '50%',
-              transform: dot.rotate ? 'rotate(45deg)' : 'none',
-              background: dot.bg,
-              border: `1.5px solid ${dot.border}`,
-              opacity: 0.6,
-              transition: 'all 0.2s',
-            }}
-          />
-        </button>
-      </div>
-
       {/* ── Current Mission ──────────────────────────────────── */}
       <Section
         title="Current Mission"

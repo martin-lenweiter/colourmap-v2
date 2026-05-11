@@ -125,15 +125,15 @@ describe('ThemeSwitcher', () => {
     expect(document.documentElement.classList.contains('night-brown')).toBe(false);
   });
 
-  it('shows Header tab when clicked', async () => {
+  it('shows Titles tab when clicked', async () => {
     const user = userEvent.setup();
     render(<ThemeSwitcher />);
 
     await user.click(screen.getByLabelText('Design settings'));
-    await user.click(screen.getByText('Header'));
+    await user.click(screen.getByText('Titles'));
 
-    expect(screen.getByText('Soft Beige')).toBeDefined();
+    expect(screen.getByText('Beige')).toBeDefined();
     expect(screen.getByText('Brown')).toBeDefined();
-    expect(screen.getByText('Full Header')).toBeDefined();
+    expect(screen.getByText('Full header')).toBeDefined();
   });
 });

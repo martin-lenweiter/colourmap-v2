@@ -18,21 +18,92 @@ import {
   useCircles,
 } from '@/lib/use-circles';
 
-/* ═══════════════════════════════════════════════════════════
-   CIRCLE BOARD — shared mission board for a group of people.
-   Create circles, join with a code, shared missions + log.
-   Phase 2: Supabase-backed via /api/circles + useCircles() hook.
-   Per Martin (2026-04-26): "all cicles needs supabase wire up."
-   localStorage caches the last-seen state for offline-friendly
-   first paint; mutations route through the API.
-   ═══════════════════════════════════════════════════════════ */
-
 const LS_ANNOTATIONS = 'colourmap:circle-annotations';
+
+/* ─── Types ─────────────────────────────────────────────────── */
 
 interface ChapterMeaning {
   memberId: string;
   memberName: string;
   text: string;
+}
+
+interface Objective {
+  id: string;
+  text: string;
+  createdAt: string;
+}
+
+interface MemberStatus {
+  memberId: string;
+  memberName: string;
+  text: string;
+  updatedAt: string;
+}
+
+interface ProcessEntry {
+  id: string;
+  authorId: string;
+  authorName: string;
+  text: string;
+  createdAt: string;
+}
+
+interface HelpRequest {
+  id: string;
+  authorId: string;
+  authorName: string;
+  text: string;
+  resolved: boolean;
+  helpers: string[];
+  createdAt: string;
+}
+
+interface CircleAnnotations {
+  chapter?: string;
+  chapterMeanings?: ChapterMeaning[];
+  missionNotes?: Record<string, MissionNote[]>;
+  objectives?: Objective[];
+  missionObjectiveMap?: Record<string, string>;
+  memberStatuses?: MemberStatus[];
+  processEntries?: ProcessEntry[];
+  helpRequests?: HelpRequest[];
+}
+
+type AnnotationStore = Record<string, CircleAnnotations>;
+
+interface MissionNote {
+  id: string;
+  authorId: string;
+  authorName: string;
+  text: string;
+  createdAt: string;
+}
+
+interface Member {
+  id: string;
+  name: string;
+  color: string;
+  pulse?: string;
+  pulseColor?: string;
+}
+
+interface Mission {
+  id: string;
+  text: string;
+  claimedBy?: string;
+  done: boolean;
+  due?: string;
+  notes?: MissionNote[];
+  createdAt: string;
+}
+
+interface Note {
+  id: string;
+  authorId: string;
+  authorName: string;
+  text: string;
+  createdAt: string;
 }
 
 interface Circle {
@@ -48,95 +119,7 @@ interface Circle {
   createdAt: string;
 }
 
-interface Member {
-  id: string;
-  name: string;
-  color: string;
-  pulse?: string;
-  pulseColor?: string;
-}
-
-interface MissionNote {
-  id: string;
-  authorId: string;
-  authorName: string;
-  text: string;
-  createdAt: string;
-}
-
-interface Mission {
-  id: string;
-  text: string;
-  claimedBy?: string;
-  done: boolean;
-  /** Optional ISO date the mission is due (YYYY-MM-DD or full ISO). */
-  due?: string;
-  /** Inline notes thread on this specific mission. */
-  notes?: MissionNote[];
-  createdAt: string;
-}
-
-/**
- * Derive a 3-state status from the existing fields, so we don't
- * have to migrate the localStorage schema.
- *  - 'open'  → unclaimed and not done
- *  - 'doing' → claimed by someone, not done
- *  - 'done'  → done = true
- */
-function getMissionStatus(m: Mission): 'open' | 'doing' | 'done' {
-  if (m.done) return 'done';
-  if (m.claimedBy) return 'doing';
-  return 'open';
-}
-
-/** Format a YYYY-MM-DD or ISO date as a soft relative phrase. */
-function dueLabel(
-  due: string | undefined,
-): { text: string; tone: 'soon' | 'overdue' | 'far' } | null {
-  if (!due) return null;
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-  const dueDate = new Date(due);
-  if (Number.isNaN(dueDate.getTime())) return null;
-  dueDate.setHours(0, 0, 0, 0);
-  const diffMs = dueDate.getTime() - today.getTime();
-  const diffDays = Math.round(diffMs / 86_400_000);
-  if (diffDays < 0) return { text: `overdue ${Math.abs(diffDays)}d`, tone: 'overdue' };
-  if (diffDays === 0) return { text: 'today', tone: 'soon' };
-  if (diffDays === 1) return { text: 'tomorrow', tone: 'soon' };
-  if (diffDays <= 7) return { text: `in ${diffDays}d`, tone: 'soon' };
-  if (diffDays <= 30) return { text: `in ${Math.round(diffDays / 7)}w`, tone: 'far' };
-  return { text: dueDate.toLocaleDateString([], { month: 'short', day: 'numeric' }), tone: 'far' };
-}
-
-interface Note {
-  id: string;
-  authorId: string;
-  authorName: string;
-  text: string;
-  createdAt: string;
-}
-
-const _CIRCLE_COLORS = ['#D4805A', '#6890B0', '#7AAA58', '#9B6BA0', '#C4A060', '#5A8AAA'];
-
-/* ─── Local annotations layer ─────────────────────────────────
- *
- * The Supabase API supports the core surface (circle metadata,
- * members, missions, notes, pulse). It does NOT yet support:
- *   - per-mission notes thread (m.notes[])
- *   - chapter + chapterMeanings on a circle
- *
- * These live in localStorage keyed by circle id, and are merged
- * into the API-backed shape by `augmentCircle()` so the existing
- * UI keeps working. Wire these into the API in a follow-up PR.
- */
-interface CircleAnnotations {
-  chapter?: string;
-  chapterMeanings?: ChapterMeaning[];
-  missionNotes?: Record<string, MissionNote[]>;
-}
-
-type AnnotationStore = Record<string, CircleAnnotations>;
+/* ─── Helpers ────────────────────────────────────────────────── */
 
 function loadAnnotations(): AnnotationStore {
   if (typeof window === 'undefined') return {};
@@ -156,9 +139,34 @@ function persistAnnotations(store: AnnotationStore) {
   }
 }
 
-/** Convert an API CircleDetail into the legacy local Circle shape
- *  the UI was originally written against. Maps `dueDate` → `due`,
- *  `userId` → `id`, and overlays local annotations. */
+function timeAgo(iso: string): string {
+  const diff = Date.now() - new Date(iso).getTime();
+  const mins = Math.floor(diff / 60000);
+  if (mins < 1) return 'just now';
+  if (mins < 60) return `${mins}m ago`;
+  const hours = Math.floor(mins / 60);
+  if (hours < 24) return `${hours}h ago`;
+  return `${Math.floor(hours / 24)}d ago`;
+}
+
+function dueLabel(
+  due: string | undefined,
+): { text: string; tone: 'soon' | 'overdue' | 'far' } | null {
+  if (!due) return null;
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const d = new Date(due);
+  if (Number.isNaN(d.getTime())) return null;
+  d.setHours(0, 0, 0, 0);
+  const days = Math.round((d.getTime() - today.getTime()) / 86_400_000);
+  if (days < 0) return { text: `${Math.abs(days)}d overdue`, tone: 'overdue' };
+  if (days === 0) return { text: 'today', tone: 'soon' };
+  if (days === 1) return { text: 'tomorrow', tone: 'soon' };
+  if (days <= 7) return { text: `in ${days}d`, tone: 'soon' };
+  if (days <= 30) return { text: `in ${Math.round(days / 7)}w`, tone: 'far' };
+  return { text: d.toLocaleDateString([], { month: 'short', day: 'numeric' }), tone: 'far' };
+}
+
 function augmentCircle(api: ApiCircleDetail, annotations: AnnotationStore): Circle {
   const ann = annotations[api.id] || {};
   const missionNotes = ann.missionNotes ?? {};
@@ -170,7 +178,7 @@ function augmentCircle(api: ApiCircleDetail, annotations: AnnotationStore): Circ
     createdAt: api.createdAt ?? '',
     members: api.members.map(
       (m: ApiCircleMember): Member => ({
-        id: m.userId, // use real auth user id as the local id
+        id: m.userId,
         name: m.name,
         color: m.color,
         pulse: m.pulse ?? undefined,
@@ -202,19 +210,93 @@ function augmentCircle(api: ApiCircleDetail, annotations: AnnotationStore): Circ
   };
 }
 
+/* ─── Section component ──────────────────────────────────────── */
+
+function Section({
+  label,
+  badge,
+  open,
+  onToggle,
+  children,
+  accent = '#C4A060',
+}: {
+  label: string;
+  badge?: number | string;
+  open: boolean;
+  onToggle: () => void;
+  children: React.ReactNode;
+  accent?: string;
+}) {
+  const font = 'var(--font-serif)';
+  return (
+    <div style={{ borderRadius: 14, border: `1px solid ${accent}20`, overflow: 'hidden' }}>
+      <button
+        type="button"
+        onClick={onToggle}
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: 8,
+          width: '100%',
+          padding: '10px 16px',
+          background: `${accent}06`,
+          border: 'none',
+          cursor: 'pointer',
+        }}
+      >
+        <span
+          style={{
+            fontFamily: font,
+            fontSize: 10,
+            fontWeight: 700,
+            letterSpacing: '0.18em',
+            textTransform: 'uppercase',
+            color: accent,
+            opacity: 0.7,
+            flex: 1,
+            textAlign: 'left',
+          }}
+        >
+          {label}
+        </span>
+        {badge !== undefined && (
+          <span style={{ fontFamily: font, fontSize: 10, color: accent, opacity: 0.45 }}>
+            {badge}
+          </span>
+        )}
+        <span
+          style={{
+            fontSize: 10,
+            color: accent,
+            opacity: 0.4,
+            transform: open ? 'rotate(180deg)' : 'rotate(0deg)',
+            transition: 'transform 0.2s',
+          }}
+        >
+          ▾
+        </span>
+      </button>
+      {open && (
+        <div style={{ padding: '4px 16px 14px', borderTop: `1px solid ${accent}12` }}>
+          {children}
+        </div>
+      )}
+    </div>
+  );
+}
+
 type View = 'list' | 'board';
+type MissionTab = 'backlog' | 'active' | 'done';
+
+/* ─── Component ──────────────────────────────────────────────── */
 
 export default function CircleBoard() {
-  // Supabase-backed via the useCircles() hook. Annotations
-  // (chapter, mission notes thread) layer on top from localStorage.
   const hook = useCircles();
   const [annotations, setAnnotations] = useState<AnnotationStore>({});
   useEffect(() => {
     setAnnotations(loadAnnotations());
   }, []);
 
-  // The circles array the UI reads from — augmented with local
-  // annotations so chapter + mission notes still work.
   const circles = useMemo<Circle[]>(
     () => hook.circles.map((c) => augmentCircle(c, annotations)),
     [hook.circles, annotations],
@@ -223,47 +305,104 @@ export default function CircleBoard() {
   const active = circles.find((c) => c.id === activeId);
   const me = hook.me;
 
+  /* ── UI state (all at top level — no conditional hooks) ── */
   const [view, setView] = useState<View>('list');
   const [creating, setCreating] = useState(false);
   const [joining, setJoining] = useState(false);
   const [newName, setNewName] = useState('');
   const [createError, setCreateError] = useState('');
   const [joinCode, setJoinCode] = useState('');
+  const [editingMe, setEditingMe] = useState(false);
+  const [meNameInput, setMeNameInput] = useState('');
+  const [howOpen, setHowOpen] = useState(false);
+
+  /* Board view state */
+  const [missionTab, setMissionTab] = useState<MissionTab>('backlog');
   const [missionInput, setMissionInput] = useState('');
   const [missionDueInput, setMissionDueInput] = useState('');
   const [expandedMissionId, setExpandedMissionId] = useState<string | null>(null);
   const [missionNoteInput, setMissionNoteInput] = useState('');
+  const [assigningMission, setAssigningMission] = useState<string | null>(null);
   const [noteInput, setNoteInput] = useState('');
-  const [editingMe, setEditingMe] = useState(false);
-  const [meNameInput, setMeNameInput] = useState('');
-  const [howOpen, setHowOpen] = useState(false);
-  // Board-view-only state — declared at the top so the hook count stays
-  // stable across renders. (Earlier these lived AFTER the list/setup
-  // early returns, which crashed React when the user switched views:
-  // hook count went from N → N+5 mid-flight, "rendered more hooks than
-  // during the previous render" → blank screen.)
+
+  /* Objectives */
+  const [objInput, setObjInput] = useState('');
+  const [taggingMission, setTaggingMission] = useState<string | null>(null);
+
+  /* My Status */
+  const [editingMyStatus, setEditingMyStatus] = useState(false);
+  const [myStatusInput, setMyStatusInput] = useState('');
+
+  /* Process & Help */
+  const [processInput, setProcessInput] = useState('');
+  const [helpInput, setHelpInput] = useState('');
+
+  /* Chapter */
   const [editingChapter, setEditingChapter] = useState(false);
   const [chapterInput, setChapterInput] = useState('');
-  const [chapterOpen, setChapterOpen] = useState(false);
-  const [meaningInput, setMeaningInput] = useState('');
-  const [assigningMission, setAssigningMission] = useState<string | null>(null);
+
+  /* Open sections */
+  const [openSections, setOpenSections] = useState<Record<string, boolean>>({
+    objectives: true,
+    missions: true,
+    process: false,
+    help: false,
+    extras: false,
+    log: false,
+  });
+
   const boardRef = useKeyboardAware<HTMLDivElement>();
 
-  // First-run name capture. Auto-opens the editor if no me.name.
   useEffect(() => {
     if (!hook.loading && !me.name) setEditingMe(true);
   }, [hook.loading, me.name]);
 
-  // When the user picks an active circle, switch to board view.
   useEffect(() => {
     if (activeId) setView('board');
   }, [activeId]);
 
-  /**
-   * Update local annotations for a circle (chapter, mission notes,
-   * etc.) and persist to localStorage. This is the only writer for
-   * non-API fields.
-   */
+  // Post Hawkins pulse on circle switch.
+  // biome-ignore lint/correctness/useExhaustiveDependencies: intentionally runs only on activeId change
+  useEffect(() => {
+    if (!active || !me.id) return;
+    try {
+      const idx = Number(localStorage.getItem('colourmap:process-idx') || '4');
+      const LABELS = [
+        'Shame',
+        'Apathy',
+        'Sadness',
+        'Fear',
+        'Anger',
+        'Courage',
+        'Acceptance',
+        'Reason',
+        'Love',
+        'Peace',
+      ];
+      const COLORS = [
+        '#B8D0E8',
+        '#D8B0C8',
+        '#E8A0C4',
+        '#F080B8',
+        '#F0A088',
+        '#F8C040',
+        '#F0E060',
+        '#A8E090',
+        '#88D8B0',
+        '#88C8E8',
+      ];
+      const pulse = LABELS[idx] || 'Neutral';
+      const pulseColor = COLORS[idx] || '#C4A060';
+      const cur = active.members.find((m) => m.id === me.id);
+      if (cur?.pulse !== pulse) void hook.setMyPulse(pulse, pulseColor);
+    } catch {
+      /* silent */
+    }
+  }, [activeId]);
+
+  const font = 'var(--font-serif)';
+
+  /* ── Annotation helpers ── */
   function updateAnnotations(circleId: string, patch: Partial<CircleAnnotations>) {
     const next: AnnotationStore = {
       ...annotations,
@@ -273,23 +412,33 @@ export default function CircleBoard() {
     persistAnnotations(next);
   }
 
+  function ann(): CircleAnnotations {
+    return activeId ? annotations[activeId] || {} : {};
+  }
+
+  function toggleSection(key: string) {
+    setOpenSections((s) => ({ ...s, [key]: !s[key] }));
+  }
+
+  /* ── Identity ── */
+  function saveMe(name: string) {
+    const t = name.trim();
+    if (!t) return;
+    hook.setMyName(t);
+    setEditingMe(false);
+  }
+
   function selectCircle(id: string) {
     hook.selectCircle(id);
     setView('board');
   }
 
-  function saveMe(name: string) {
-    const trimmed = name.trim();
-    if (!trimmed) return;
-    hook.setMyName(trimmed);
-    setEditingMe(false);
-  }
-
+  /* ── Circle CRUD ── */
   async function createCircle() {
     const name = newName.trim();
     if (!name) return;
     if (!me.name) {
-      setCreateError('Set your name first (tap your name above).');
+      setCreateError('Set your name first.');
       setEditingMe(true);
       return;
     }
@@ -298,9 +447,7 @@ export default function CircleBoard() {
     if (detail) {
       setNewName('');
       setCreating(false);
-    } else {
-      setCreateError('Could not create — check your connection and try again.');
-    }
+    } else setCreateError('Could not create — check your connection and try again.');
   }
 
   async function joinCircle() {
@@ -313,6 +460,7 @@ export default function CircleBoard() {
     }
   }
 
+  /* ── Missions ── */
   async function addMission() {
     const text = missionInput.trim();
     if (!text || !activeId) return;
@@ -321,98 +469,164 @@ export default function CircleBoard() {
     setMissionDueInput('');
   }
 
-  async function toggleMission(missionId: string) {
-    await hook.toggleMissionDone(missionId);
+  async function assignMissionTo(missionId: string, memberId: string) {
+    if (!activeId) return;
+    try {
+      await fetch(`/api/circles/${activeId}/missions/${missionId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ claimedBy: memberId }),
+      });
+      await hook.refresh();
+    } catch {
+      /* silent */
+    }
+    setAssigningMission(null);
   }
 
-  /** Toggle "I'm working on this" — claims for me if unclaimed,
-   *  unclaims if I already had it. Drives the doing-state chip. */
-  async function claimMission(missionId: string) {
-    await hook.claimMission(missionId);
-  }
-
-  async function setMissionDue(missionId: string, due: string | undefined) {
-    await hook.setMissionDue(missionId, due ?? null);
-  }
-
-  /** Add a note to a mission's local thread. Stays localStorage-only
-   *  for now — API extension is a follow-up. */
   function addMissionNote(missionId: string, text: string) {
-    const trimmed = text.trim();
-    if (!trimmed || !activeId) return;
+    const t = text.trim();
+    if (!t || !activeId) return;
     const note: MissionNote = {
       id: crypto.randomUUID(),
       authorId: me.id,
       authorName: me.name,
-      text: trimmed,
+      text: t,
       createdAt: new Date().toISOString(),
     };
     const existing = annotations[activeId]?.missionNotes ?? {};
     updateAnnotations(activeId, {
-      missionNotes: {
-        ...existing,
-        [missionId]: [...(existing[missionId] || []), note],
-      },
+      missionNotes: { ...existing, [missionId]: [...(existing[missionId] || []), note] },
     });
   }
 
-  async function removeMission(missionId: string) {
-    await hook.removeMission(missionId);
+  /* ── Objectives ── */
+  function addObjective() {
+    const t = objInput.trim();
+    if (!t || !activeId) return;
+    const obj: Objective = {
+      id: crypto.randomUUID(),
+      text: t,
+      createdAt: new Date().toISOString(),
+    };
+    const existing = ann().objectives ?? [];
+    updateAnnotations(activeId, { objectives: [...existing, obj] });
+    setObjInput('');
   }
 
+  function removeObjective(id: string) {
+    if (!activeId) return;
+    const existing = ann().objectives ?? [];
+    updateAnnotations(activeId, { objectives: existing.filter((o) => o.id !== id) });
+  }
+
+  function tagMission(missionId: string, objectiveId: string | null) {
+    if (!activeId) return;
+    const map = { ...(ann().missionObjectiveMap ?? {}) };
+    if (objectiveId === null) delete map[missionId];
+    else map[missionId] = objectiveId;
+    updateAnnotations(activeId, { missionObjectiveMap: map });
+    setTaggingMission(null);
+  }
+
+  /* ── My Status ── */
+  function saveMyStatus() {
+    const t = myStatusInput.trim();
+    if (!activeId) return;
+    const existing = ann().memberStatuses ?? [];
+    const status: MemberStatus = {
+      memberId: me.id,
+      memberName: me.name,
+      text: t,
+      updatedAt: new Date().toISOString(),
+    };
+    updateAnnotations(activeId, {
+      memberStatuses: [...existing.filter((s) => s.memberId !== me.id), ...(t ? [status] : [])],
+    });
+    setEditingMyStatus(false);
+  }
+
+  /* ── Process ── */
+  function addProcessEntry() {
+    const t = processInput.trim();
+    if (!t || !activeId) return;
+    const entry: ProcessEntry = {
+      id: crypto.randomUUID(),
+      authorId: me.id,
+      authorName: me.name,
+      text: t,
+      createdAt: new Date().toISOString(),
+    };
+    updateAnnotations(activeId, { processEntries: [entry, ...(ann().processEntries ?? [])] });
+    setProcessInput('');
+  }
+
+  function removeProcessEntry(id: string) {
+    if (!activeId) return;
+    updateAnnotations(activeId, {
+      processEntries: (ann().processEntries ?? []).filter((e) => e.id !== id),
+    });
+  }
+
+  /* ── Help ── */
+  function addHelpRequest() {
+    const t = helpInput.trim();
+    if (!t || !activeId) return;
+    const req: HelpRequest = {
+      id: crypto.randomUUID(),
+      authorId: me.id,
+      authorName: me.name,
+      text: t,
+      resolved: false,
+      helpers: [],
+      createdAt: new Date().toISOString(),
+    };
+    updateAnnotations(activeId, { helpRequests: [req, ...(ann().helpRequests ?? [])] });
+    setHelpInput('');
+  }
+
+  function toggleHelper(id: string) {
+    if (!activeId) return;
+    const reqs = ann().helpRequests ?? [];
+    updateAnnotations(activeId, {
+      helpRequests: reqs.map((r) => {
+        if (r.id !== id) return r;
+        const has = r.helpers.includes(me.id);
+        return {
+          ...r,
+          helpers: has ? r.helpers.filter((h) => h !== me.id) : [...r.helpers, me.id],
+        };
+      }),
+    });
+  }
+
+  function resolveHelp(id: string) {
+    if (!activeId) return;
+    updateAnnotations(activeId, {
+      helpRequests: (ann().helpRequests ?? []).map((r) =>
+        r.id === id ? { ...r, resolved: true } : r,
+      ),
+    });
+  }
+
+  /* ── Chapter ── */
+  function setChapter(text: string) {
+    if (!activeId) return;
+    updateAnnotations(activeId, { chapter: text });
+    setEditingChapter(false);
+  }
+
+  /* ── Log ── */
   async function addNote() {
-    const text = noteInput.trim();
-    if (!text || !activeId) return;
-    await hook.addNote(text);
+    const t = noteInput.trim();
+    if (!t || !activeId) return;
+    await hook.addNote(t);
     setNoteInput('');
   }
 
-  // Read pulse from check-in — only on circle switch. Posts to the
-  // /api/circles/:id/pulse endpoint via the hook so other members
-  // see the user's current Hawkins state.
-  // biome-ignore lint/correctness/useExhaustiveDependencies: intentionally runs only on activeId change
-  useEffect(() => {
-    if (!active || !me.id) return;
-    try {
-      const hawkinsIdx = Number(localStorage.getItem('colourmap:process-idx') || '4');
-      const HAWKINS_LABELS = [
-        'Shame',
-        'Apathy',
-        'Sadness',
-        'Fear',
-        'Anger',
-        'Courage',
-        'Acceptance',
-        'Reason',
-        'Love',
-        'Peace',
-      ];
-      const HAWKINS_COLORS = [
-        '#B8D0E8',
-        '#D8B0C8',
-        '#E8A0C4',
-        '#F080B8',
-        '#F0A088',
-        '#F8C040',
-        '#F0E060',
-        '#A8E090',
-        '#88D8B0',
-        '#88C8E8',
-      ];
-      const pulse = HAWKINS_LABELS[hawkinsIdx] || 'Neutral';
-      const pulseColor = HAWKINS_COLORS[hawkinsIdx] || '#C4A060';
-      const currentMember = active.members.find((m) => m.id === me.id);
-      if (currentMember?.pulse !== pulse) {
-        void hook.setMyPulse(pulse, pulseColor);
-      }
-    } catch {
-      /* silent */
-    }
-  }, [activeId]);
-
-  const font = 'var(--font-serif)';
-
-  // ── Name setup ──
+  /* ═══════════════════════════════════════════════════════════ */
+  /* Name setup                                                   */
+  /* ═══════════════════════════════════════════════════════════ */
   if (editingMe || !me.name) {
     return (
       <div ref={boardRef} className="mx-auto max-w-md space-y-6 px-4 py-12">
@@ -420,7 +634,7 @@ export default function CircleBoard() {
           <p
             style={{
               fontFamily: font,
-              fontSize: '22px',
+              fontSize: 22,
               fontWeight: 700,
               fontStyle: 'italic',
               color: '#5C3018',
@@ -430,11 +644,11 @@ export default function CircleBoard() {
           </p>
           <p
             className="italic"
-            style={{ fontFamily: font, fontSize: '14px', color: '#8A6A4A', opacity: 0.8 }}
+            style={{ fontFamily: font, fontSize: 14, color: '#8A6A4A', opacity: 0.8 }}
           >
             coworking with people you trust
           </p>
-          <p style={{ fontFamily: font, fontSize: '13px', color: '#8A6A4A', opacity: 0.6 }}>
+          <p style={{ fontFamily: font, fontSize: 13, color: '#8A6A4A', opacity: 0.6 }}>
             first, what should people call you?
           </p>
         </div>
@@ -451,7 +665,7 @@ export default function CircleBoard() {
             className="border-b bg-transparent pb-2 text-center outline-none placeholder:italic placeholder:text-[#8A6A4A] placeholder:opacity-50"
             style={{
               fontFamily: font,
-              fontSize: '18px',
+              fontSize: 18,
               color: '#5C3018',
               borderColor: '#C4A06030',
               width: 200,
@@ -472,7 +686,9 @@ export default function CircleBoard() {
     );
   }
 
-  // ── Circle list ──
+  /* ═══════════════════════════════════════════════════════════ */
+  /* Circle list                                                  */
+  /* ═══════════════════════════════════════════════════════════ */
   if (view === 'list' || !active) {
     return (
       <div ref={boardRef} className="mx-auto max-w-md space-y-6 px-4 py-8">
@@ -480,7 +696,7 @@ export default function CircleBoard() {
           <p
             style={{
               fontFamily: font,
-              fontSize: '22px',
+              fontSize: 22,
               fontWeight: 700,
               fontStyle: 'italic',
               color: '#C47830',
@@ -492,7 +708,7 @@ export default function CircleBoard() {
             className="italic"
             style={{
               fontFamily: font,
-              fontSize: '15px',
+              fontSize: 15,
               color: '#7A5438',
               opacity: 0.9,
               maxWidth: 360,
@@ -500,13 +716,12 @@ export default function CircleBoard() {
               lineHeight: 1.5,
             }}
           >
-            a co-working space. share what you're working on and organise missions together.
+            a co-working space — share what you're working on and organise missions together.
           </p>
         </div>
 
-        {/* My name */}
         <div className="flex items-center justify-center gap-2">
-          <span style={{ fontFamily: font, fontSize: '13px', color: '#8A6A4A', opacity: 0.5 }}>
+          <span style={{ fontFamily: font, fontSize: 13, color: '#8A6A4A', opacity: 0.5 }}>
             you are
           </span>
           <button
@@ -515,10 +730,10 @@ export default function CircleBoard() {
               setMeNameInput(me.name);
               setEditingMe(true);
             }}
-            className="cursor-pointer font-semibold transition-all"
+            className="cursor-pointer font-semibold"
             style={{
               fontFamily: font,
-              fontSize: '13px',
+              fontSize: 13,
               color: '#5C3018',
               background: 'none',
               border: 'none',
@@ -528,14 +743,12 @@ export default function CircleBoard() {
           </button>
         </div>
 
-        {/* "How Circles works" — auto-open when empty, collapsible otherwise */}
         <div className="rounded-2xl border border-border bg-muted/30 px-4 py-3">
           <button
             type="button"
             onClick={() => setHowOpen((o) => !o)}
             className="flex w-full cursor-pointer items-center justify-between"
             style={{ background: 'none', border: 'none', padding: 0 }}
-            aria-expanded={circles.length === 0 || howOpen}
           >
             <span
               className="uppercase"
@@ -561,18 +774,20 @@ export default function CircleBoard() {
           </button>
           {(circles.length === 0 || howOpen) && (
             <div
-              className="mt-4 space-y-5 animate-in fade-in duration-150"
-              style={{ fontFamily: font, fontSize: 18, lineHeight: 1.55, color: '#5C3018' }}
+              className="mt-4 space-y-3 animate-in fade-in duration-150"
+              style={{ fontFamily: font, fontSize: 14, lineHeight: 1.6, color: '#5C3018' }}
             >
               <p>
-                A <strong>Circle</strong> is a small group of people you trust.
+                A <strong>Circle</strong> is a small group of people working on something together.
               </p>
-              <p>Share what you're working on and organise missions together.</p>
+              <p>
+                Set objectives, claim missions, share what you're on — and ask for help when you
+                need it.
+              </p>
             </div>
           )}
         </div>
 
-        {/* Circle cards */}
         {circles.length > 0 && (
           <div className="space-y-2">
             {circles.map((c) => (
@@ -584,38 +799,30 @@ export default function CircleBoard() {
                 style={{ background: `${c.color}08`, border: `1px solid ${c.color}20` }}
               >
                 <span
-                  className="block rounded-full"
+                  className="block rounded-full shrink-0"
                   style={{ width: 12, height: 12, background: c.color }}
                 />
                 <div className="flex-1">
-                  <p
-                    style={{
-                      fontFamily: font,
-                      fontSize: '15px',
-                      fontWeight: 700,
-                      color: '#5C3018',
-                    }}
-                  >
+                  <p style={{ fontFamily: font, fontSize: 15, fontWeight: 700, color: '#5C3018' }}>
                     {c.name}
                   </p>
-                  <p style={{ fontFamily: font, fontSize: '11px', color: '#8A6A4A', opacity: 0.5 }}>
+                  <p style={{ fontFamily: font, fontSize: 11, color: '#8A6A4A', opacity: 0.5 }}>
                     {c.members.length} {c.members.length === 1 ? 'member' : 'members'} ·{' '}
                     {c.missions.filter((m) => !m.done).length} active
                   </p>
                 </div>
-                {/* Member pulse dots */}
                 <div className="flex gap-1">
                   {c.members.map((m) => (
                     <span
                       key={m.id}
                       className="block rounded-full"
+                      title={`${m.name}${m.pulse ? ` · ${m.pulse}` : ''}`}
                       style={{
                         width: 8,
                         height: 8,
                         background: m.pulseColor || m.color,
                         opacity: m.pulse ? 0.8 : 0.3,
                       }}
-                      title={`${m.name}${m.pulse ? ` · ${m.pulse}` : ''}`}
                     />
                   ))}
                 </div>
@@ -624,7 +831,6 @@ export default function CircleBoard() {
           </div>
         )}
 
-        {/* Create / Join buttons */}
         {!creating && !joining && (
           <div className="flex justify-center gap-3">
             <button
@@ -646,7 +852,6 @@ export default function CircleBoard() {
           </div>
         )}
 
-        {/* Create form */}
         {creating && (
           <div
             className="space-y-3 rounded-2xl border px-4 py-4 animate-in fade-in duration-150"
@@ -664,7 +869,7 @@ export default function CircleBoard() {
               className="w-full border-b bg-transparent pb-2 text-center outline-none placeholder:italic placeholder:text-[#8A6A4A] placeholder:opacity-40"
               style={{
                 fontFamily: 'var(--font-handwritten)',
-                fontSize: '26px',
+                fontSize: 26,
                 fontWeight: 700,
                 color: '#5C3018',
                 borderColor: '#C4783030',
@@ -700,7 +905,6 @@ export default function CircleBoard() {
           </div>
         )}
 
-        {/* Join form */}
         {joining && (
           <div
             className="space-y-3 rounded-2xl border px-4 py-4 animate-in fade-in duration-150"
@@ -717,12 +921,7 @@ export default function CircleBoard() {
               autoFocus
               maxLength={6}
               className="w-full border-b bg-transparent pb-1 text-center uppercase tracking-[0.3em] outline-none placeholder:italic placeholder:text-[#8A6A4A] placeholder:opacity-50 placeholder:tracking-normal"
-              style={{
-                fontFamily: font,
-                fontSize: '18px',
-                color: '#5C3018',
-                borderColor: '#8A5A2030',
-              }}
+              style={{ fontFamily: font, fontSize: 18, color: '#5C3018', borderColor: '#8A5A2030' }}
             />
             <div className="flex justify-center gap-2">
               <button
@@ -748,7 +947,7 @@ export default function CircleBoard() {
         {circles.length === 0 && !creating && !joining && (
           <p
             className="text-center italic"
-            style={{ fontFamily: font, fontSize: '13px', color: '#8A6A4A', opacity: 0.4 }}
+            style={{ fontFamily: font, fontSize: 13, color: '#8A6A4A', opacity: 0.4 }}
           >
             create your first circle to start collaborating
           </p>
@@ -757,227 +956,149 @@ export default function CircleBoard() {
     );
   }
 
-  // ── Board view ──
-  const activeMissions = active.missions.filter((m) => !m.done);
-  const doneMissions = active.missions.filter((m) => m.done);
+  /* ═══════════════════════════════════════════════════════════ */
+  /* Board view                                                   */
+  /* ═══════════════════════════════════════════════════════════ */
+
+  const allAnnotations = ann();
+  const objectives = allAnnotations.objectives ?? [];
+  const missionObjMap = allAnnotations.missionObjectiveMap ?? {};
+  const memberStatuses = allAnnotations.memberStatuses ?? [];
+  const processEntries = allAnnotations.processEntries ?? [];
+  const helpRequests = allAnnotations.helpRequests ?? [];
   const memberMap = new Map(active.members.map((m) => [m.id, m]));
 
-  // Group missions by owner
-  const unclaimed = activeMissions.filter((m) => !m.claimedBy);
-  const missionsByMember = new Map<string, Mission[]>();
-  for (const m of activeMissions) {
-    if (m.claimedBy) {
-      const list = missionsByMember.get(m.claimedBy) || [];
-      list.push(m);
-      missionsByMember.set(m.claimedBy, list);
-    }
-  }
+  const myStatus = memberStatuses.find((s) => s.memberId === me.id);
+  const myStatusText = myStatus?.text || '';
 
-  function setChapter(text: string) {
-    if (!activeId) return;
-    updateAnnotations(activeId, { chapter: text });
-    setEditingChapter(false);
-  }
+  const backlogMissions = active.missions.filter((m) => !m.done && !m.claimedBy);
+  const activeMissions = active.missions.filter((m) => !m.done && !!m.claimedBy);
+  const doneMissions = active.missions.filter((m) => m.done);
 
-  function addMeaning() {
-    const text = meaningInput.trim();
-    if (!text || !active || !activeId) return;
-    const meaning: ChapterMeaning = { memberId: me.id, memberName: me.name, text };
-    const existing = active.chapterMeanings || [];
-    updateAnnotations(activeId, {
-      chapterMeanings: [...existing.filter((m) => m.memberId !== me.id), meaning],
-    });
-    setMeaningInput('');
-  }
+  const missionTabMissions =
+    missionTab === 'backlog'
+      ? backlogMissions
+      : missionTab === 'active'
+        ? activeMissions
+        : doneMissions;
 
-  /** Assign a mission to a specific member. The hook's claimMission
-   *  toggles based on me.id; for assigning to anyone else we go
-   *  directly through patchMission via setMissionDue's sibling
-   *  pathway. Today: when assigning to someone other than me, just
-   *  set claimedBy via the API PATCH. */
-  async function assignMissionTo(missionId: string, memberId: string) {
-    if (!activeId) return;
-    try {
-      await fetch(`/api/circles/${activeId}/missions/${missionId}`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ claimedBy: memberId }),
-      });
-      await hook.refresh();
-    } catch {
-      /* silent — surface in UI in a follow-up */
-    }
-    setAssigningMission(null);
-  }
+  const openHelpCount = helpRequests.filter((r) => !r.resolved).length;
+
+  const memberPropsList = active.members.map((m) => ({
+    id: m.id,
+    name: m.name,
+    color: m.pulseColor || m.color,
+  }));
 
   return (
-    <div ref={boardRef} className="mx-auto max-w-md space-y-5 px-4 py-6">
-      {/* Header */}
+    <div ref={boardRef} className="mx-auto max-w-md space-y-3 px-4 py-5">
+      {/* ── Header ── */}
       <div className="flex items-center gap-3">
         <button
           type="button"
           onClick={() => setView('list')}
-          className="cursor-pointer text-[12px] transition-all"
+          className="cursor-pointer text-[12px] transition-all shrink-0"
           style={{ color: '#8A6A4A', opacity: 0.5, background: 'none', border: 'none' }}
         >
           ‹ back
         </button>
         <div className="flex-1 text-center">
-          <span
-            style={{ fontFamily: font, fontSize: '16px', fontWeight: 700, color: active.color }}
-          >
-            {active.name}
-          </span>
+          {editingChapter ? (
+            <input
+              type="text"
+              value={chapterInput}
+              onChange={(e) => setChapterInput(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') setChapter(chapterInput);
+              }}
+              onBlur={() => setChapter(chapterInput)}
+              placeholder="circle subtitle..."
+              autoFocus
+              className="w-full bg-transparent text-center outline-none placeholder:italic placeholder:text-[#8A6A4A] placeholder:opacity-40"
+              style={{ fontFamily: font, fontSize: 12, color: '#8A6A4A' }}
+            />
+          ) : (
+            <div>
+              <p style={{ fontFamily: font, fontSize: 16, fontWeight: 700, color: active.color }}>
+                {active.name}
+              </p>
+              <button
+                type="button"
+                onClick={() => {
+                  setChapterInput(active.chapter || '');
+                  setEditingChapter(true);
+                }}
+                style={{
+                  fontFamily: font,
+                  fontSize: 11,
+                  color: '#8A6A4A',
+                  opacity: 0.45,
+                  fontStyle: 'italic',
+                  background: 'none',
+                  border: 'none',
+                  cursor: 'pointer',
+                }}
+              >
+                {active.chapter || 'add a subtitle...'}
+              </button>
+            </div>
+          )}
+          {!hook.online && (
+            <span
+              style={{
+                fontFamily: font,
+                fontSize: 9,
+                color: '#8A6A4A',
+                opacity: 0.4,
+                display: 'block',
+                letterSpacing: '0.1em',
+                textTransform: 'uppercase',
+              }}
+            >
+              local · will sync when online
+            </span>
+          )}
         </div>
         <span
           style={{
             fontFamily: font,
-            fontSize: '11px',
+            fontSize: 11,
             color: active.color,
-            opacity: 0.4,
+            opacity: 0.35,
             letterSpacing: '0.15em',
+            flexShrink: 0,
           }}
         >
           {active.code}
         </span>
       </div>
 
-      {/* Chapter */}
-      <div
-        className="rounded-2xl border px-4 py-3"
-        style={{ borderColor: `${active.color}15`, background: `${active.color}04` }}
-      >
-        {editingChapter ? (
-          <input
-            type="text"
-            value={chapterInput}
-            onChange={(e) => setChapterInput(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === 'Enter') setChapter(chapterInput);
-            }}
-            onBlur={() => setChapter(chapterInput)}
-            placeholder="name this chapter..."
-            autoFocus
-            className="w-full bg-transparent text-center outline-none placeholder:italic placeholder:text-[#8A6A4A] placeholder:opacity-50"
-            style={{
-              fontFamily: font,
-              fontSize: '16px',
-              fontWeight: 700,
-              fontStyle: 'italic',
-              color: active.color,
-            }}
-          />
-        ) : (
-          <button
-            type="button"
-            onClick={() => {
-              setChapterInput(active.chapter || '');
-              setEditingChapter(true);
-            }}
-            className="w-full cursor-pointer text-center transition-all"
-            style={{ background: 'none', border: 'none' }}
-          >
-            <p
-              style={{
-                fontFamily: font,
-                fontSize: '16px',
-                fontWeight: 700,
-                fontStyle: 'italic',
-                color: active.color,
-              }}
-            >
-              {active.chapter || 'name this chapter...'}
-            </p>
-          </button>
-        )}
-
-        {/* Tap to see meanings */}
-        {active.chapter && (
-          <button
-            type="button"
-            onClick={() => setChapterOpen((s) => !s)}
-            className="mt-1 w-full cursor-pointer text-center"
-            style={{ background: 'none', border: 'none' }}
-          >
-            <span
-              className="italic"
-              style={{ fontFamily: font, fontSize: '11px', color: '#8A6A4A', opacity: 0.45 }}
-            >
-              {chapterOpen
-                ? 'close'
-                : `what it means to us · ${(active.chapterMeanings || []).length}`}
-            </span>
-          </button>
-        )}
-
-        {chapterOpen && (
-          <div className="mt-3 space-y-2 animate-in fade-in duration-150">
-            {(active.chapterMeanings || []).map((m) => (
-              <div key={m.memberId} className="flex items-start gap-2">
-                <span
-                  className="block shrink-0 rounded-full mt-1"
-                  style={{
-                    width: 6,
-                    height: 6,
-                    background: memberMap.get(m.memberId)?.color || '#C4A060',
-                  }}
-                />
-                <div>
-                  <span
-                    style={{
-                      fontFamily: font,
-                      fontSize: '11px',
-                      fontWeight: 700,
-                      color: '#5C3018',
-                      opacity: 0.6,
-                    }}
-                  >
-                    {m.memberName}
-                  </span>
-                  <p style={{ fontFamily: font, fontSize: '13px', color: '#5C3018', opacity: 0.8 }}>
-                    {m.text}
-                  </p>
-                </div>
-              </div>
-            ))}
-            <input
-              type="text"
-              value={meaningInput}
-              onChange={(e) => setMeaningInput(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter') addMeaning();
-              }}
-              placeholder="what does this chapter mean to you?"
-              className="w-full border-b bg-transparent pb-1 outline-none placeholder:italic placeholder:text-[#8A6A4A] placeholder:opacity-40"
-              style={{
-                fontFamily: font,
-                fontSize: '13px',
-                color: '#5C3018',
-                borderColor: `${active.color}20`,
-              }}
-            />
-          </div>
-        )}
-      </div>
-
-      {/* Member cards */}
-      <div className="flex justify-center gap-2">
+      {/* ── Members strip ── */}
+      <div style={{ display: 'flex', gap: 8, overflowX: 'auto', paddingBottom: 2, paddingTop: 2 }}>
         {active.members.map((m) => {
-          const mCount = activeMissions.filter((mi) => mi.claimedBy === m.id).length;
+          const status = memberStatuses.find((s) => s.memberId === m.id);
+          const isMe = m.id === me.id;
           return (
             <div
               key={m.id}
-              className="flex flex-col items-center gap-1 rounded-xl px-3 py-2 transition-all"
               style={{
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                gap: 4,
+                padding: '8px 12px',
+                borderRadius: 12,
+                flexShrink: 0,
                 background: `${m.pulseColor || m.color}08`,
-                border: `1px solid ${m.pulseColor || m.color}15`,
+                border: `1px solid ${m.pulseColor || m.color}${isMe ? '40' : '18'}`,
+                minWidth: 72,
               }}
             >
               <span
                 className="block rounded-full"
                 style={{
-                  width: 16,
-                  height: 16,
+                  width: 14,
+                  height: 14,
                   background: m.pulseColor || m.color,
                   opacity: m.pulse ? 0.85 : 0.3,
                 }}
@@ -985,379 +1106,622 @@ export default function CircleBoard() {
               <span
                 style={{
                   fontFamily: font,
-                  fontSize: '11px',
+                  fontSize: 11,
                   color: '#5C3018',
-                  fontWeight: m.id === me.id ? 700 : 500,
+                  fontWeight: isMe ? 700 : 500,
                 }}
               >
                 {m.name}
               </span>
               {m.pulse && (
-                <span
-                  style={{ fontFamily: font, fontSize: '9px', color: m.pulseColor, opacity: 0.7 }}
-                >
+                <span style={{ fontFamily: font, fontSize: 9, color: m.pulseColor, opacity: 0.65 }}>
                   {m.pulse}
                 </span>
               )}
-              <span style={{ fontFamily: font, fontSize: '9px', color: '#8A6A4A', opacity: 0.4 }}>
-                {mCount} {mCount === 1 ? 'mission' : 'missions'}
-              </span>
+              {status?.text && (
+                <span
+                  style={{
+                    fontFamily: font,
+                    fontSize: 9,
+                    color: '#8A6A4A',
+                    opacity: 0.55,
+                    textAlign: 'center',
+                    fontStyle: 'italic',
+                    maxWidth: 72,
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                    whiteSpace: 'nowrap',
+                  }}
+                >
+                  {status.text}
+                </span>
+              )}
             </div>
           );
         })}
       </div>
 
-      {/* Agenda — 14-day strip of mission due dates, coloured by owner */}
-      <CircleAgenda
-        missions={active.missions}
-        members={active.members.map((m) => ({
-          id: m.id,
-          name: m.name,
-          color: m.pulseColor || m.color,
-        }))}
-        onTapMission={(id) => setExpandedMissionId(id)}
-      />
-
-      {/* Missions — grouped by person */}
+      {/* ── My Status ── */}
       <div
-        className="space-y-3 rounded-2xl border px-4 py-3"
-        style={{ borderColor: `${active.color}20`, background: `${active.color}04` }}
+        style={{
+          borderRadius: 10,
+          border: '1px solid #C4A06018',
+          padding: '8px 14px',
+          background: '#C4A06006',
+        }}
       >
-        <p
-          className="uppercase tracking-[0.2em] text-center"
-          style={{
-            fontFamily: font,
-            fontSize: '10px',
-            fontWeight: 700,
-            color: active.color,
-            opacity: 0.5,
-          }}
-        >
-          missions
-        </p>
+        {editingMyStatus ? (
+          <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+            <input
+              type="text"
+              value={myStatusInput}
+              onChange={(e) => setMyStatusInput(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') saveMyStatus();
+              }}
+              onBlur={saveMyStatus}
+              placeholder="what are you working on right now?"
+              autoFocus
+              style={{
+                fontFamily: font,
+                fontSize: 12,
+                color: '#5C3018',
+                background: 'transparent',
+                border: 'none',
+                outline: 'none',
+                flex: 1,
+                fontStyle: 'italic',
+              }}
+            />
+          </div>
+        ) : (
+          <button
+            type="button"
+            onClick={() => {
+              setMyStatusInput(myStatusText);
+              setEditingMyStatus(true);
+            }}
+            style={{
+              fontFamily: font,
+              fontSize: 12,
+              color: myStatusText ? '#5C3018' : '#8A6A4A',
+              opacity: myStatusText ? 0.8 : 0.4,
+              fontStyle: 'italic',
+              background: 'none',
+              border: 'none',
+              cursor: 'pointer',
+              width: '100%',
+              textAlign: 'left',
+            }}
+          >
+            {myStatusText || 'what are you working on right now?'}
+          </button>
+        )}
+      </div>
 
-        {/* Unclaimed */}
-        {unclaimed.length > 0 && (
-          <div className="space-y-1">
-            <p style={{ fontFamily: font, fontSize: '10px', color: '#8A6A4A', opacity: 0.4 }}>
-              up for grabs
-            </p>
-            {unclaimed.map((m) => (
-              <div key={m.id} className="flex items-center gap-2">
-                <button
-                  type="button"
-                  onClick={() => toggleMission(m.id)}
-                  className="flex shrink-0 cursor-pointer items-center justify-center rounded-sm"
-                  style={{
-                    width: 18,
-                    height: 18,
-                    border: `1.5px solid ${active.color}40`,
-                    background: 'transparent',
-                  }}
-                />
-                <span
-                  className="flex-1"
-                  style={{ fontFamily: font, fontSize: '14px', color: '#5C3018' }}
-                >
-                  {m.text}
-                </span>
-                {assigningMission === m.id ? (
-                  <div className="flex gap-1">
-                    {active.members.map((member) => (
-                      <button
-                        key={member.id}
-                        type="button"
-                        onClick={() => assignMissionTo(m.id, member.id)}
-                        className="cursor-pointer rounded-full transition-all hover:scale-125"
-                        style={{
-                          width: 14,
-                          height: 14,
-                          background: member.pulseColor || member.color,
-                          opacity: 0.7,
-                          border: 'none',
-                        }}
-                        title={member.name}
-                      />
-                    ))}
-                    <button
-                      type="button"
-                      onClick={() => setAssigningMission(null)}
-                      className="cursor-pointer text-[9px]"
-                      style={{ color: '#8A6A4A', opacity: 0.3, background: 'none', border: 'none' }}
-                    >
-                      ✕
-                    </button>
-                  </div>
-                ) : (
-                  <button
-                    type="button"
-                    onClick={() => setAssigningMission(m.id)}
-                    className="cursor-pointer rounded-full px-1.5 py-0.5 text-[9px] transition-all"
+      {/* ── Objectives ── */}
+      <Section
+        label="objectives"
+        badge={objectives.length || undefined}
+        open={openSections.objectives}
+        onToggle={() => toggleSection('objectives')}
+        accent={active.color}
+      >
+        <div style={{ marginTop: 10, display: 'flex', flexDirection: 'column', gap: 10 }}>
+          {objectives.map((obj) => {
+            const tagged = active.missions.filter((m) => missionObjMap[m.id] === obj.id);
+            const doneCount = tagged.filter((m) => m.done).length;
+            const pct = tagged.length > 0 ? Math.round((doneCount / tagged.length) * 100) : 0;
+            return (
+              <div key={obj.id} style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <span
                     style={{
-                      color: '#8A6A4A',
-                      opacity: 0.3,
-                      background: '#C4A06008',
-                      border: '1px solid #C4A06012',
+                      flex: 1,
+                      fontFamily: font,
+                      fontSize: 13,
+                      color: '#5C3018',
+                      fontWeight: 600,
                     }}
                   >
-                    assign
+                    {obj.text}
+                  </span>
+                  <span
+                    style={{ fontFamily: font, fontSize: 10, color: active.color, opacity: 0.6 }}
+                  >
+                    {pct}%
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => removeObjective(obj.id)}
+                    style={{
+                      fontFamily: font,
+                      fontSize: 11,
+                      color: '#8A6A4A',
+                      opacity: 0.2,
+                      background: 'none',
+                      border: 'none',
+                      cursor: 'pointer',
+                    }}
+                  >
+                    ×
                   </button>
-                )}
-                <button
-                  type="button"
-                  onClick={() => removeMission(m.id)}
-                  className="cursor-pointer text-[10px]"
-                  style={{ color: '#8A6A4A', opacity: 0.15, background: 'none', border: 'none' }}
-                >
-                  ×
-                </button>
-              </div>
-            ))}
-          </div>
-        )}
-
-        {/* Per-member lanes */}
-        {active.members.map((member) => {
-          const memberMissions = missionsByMember.get(member.id) || [];
-          if (memberMissions.length === 0) return null;
-          return (
-            <div key={member.id} className="space-y-1">
-              <div className="flex items-center gap-1.5">
-                <span
-                  className="block rounded-full"
-                  style={{ width: 6, height: 6, background: member.pulseColor || member.color }}
-                />
-                <span
+                </div>
+                <div
                   style={{
-                    fontFamily: font,
-                    fontSize: '10px',
-                    fontWeight: 600,
-                    color: member.pulseColor || member.color,
-                    opacity: 0.7,
+                    height: 3,
+                    borderRadius: 99,
+                    background: `${active.color}18`,
+                    overflow: 'hidden',
                   }}
                 >
-                  {member.name}
-                </span>
+                  <div
+                    style={{
+                      height: '100%',
+                      width: `${pct}%`,
+                      background: active.color,
+                      borderRadius: 99,
+                      transition: 'width 0.4s ease',
+                    }}
+                  />
+                </div>
+                {tagged.length > 0 && (
+                  <p style={{ fontFamily: font, fontSize: 10, color: '#8A6A4A', opacity: 0.45 }}>
+                    {doneCount}/{tagged.length} missions done
+                  </p>
+                )}
               </div>
-              {memberMissions.map((m) => {
-                const status = getMissionStatus(m);
-                const memberColor = member.pulseColor || member.color;
-                const due = dueLabel(m.due);
-                const noteCount = m.notes?.length ?? 0;
-                const isExpanded = expandedMissionId === m.id;
-                const isMine = m.claimedBy === me.id;
-                const statusColour =
-                  status === 'done' ? '#7AAA58' : status === 'doing' ? memberColor : '#8A6A4A';
-                return (
-                  <div key={m.id} className="rounded-lg" style={{ paddingLeft: 12 }}>
-                    {/* Top row — tick + status chip + text + due + count */}
-                    <div className="flex items-center gap-2">
-                      <button
-                        type="button"
-                        onClick={() => toggleMission(m.id)}
-                        className="flex shrink-0 cursor-pointer items-center justify-center rounded-sm transition-all"
-                        style={{
-                          width: 16,
-                          height: 16,
-                          border: `1.5px solid ${memberColor}55`,
-                          background: status === 'done' ? `${statusColour}30` : 'transparent',
-                        }}
-                        aria-label={status === 'done' ? 'Mark not done' : 'Mark done'}
-                      >
-                        {status === 'done' && (
-                          <span style={{ fontSize: '9px', color: statusColour, opacity: 0.8 }}>
-                            ✓
-                          </span>
-                        )}
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => setExpandedMissionId(isExpanded ? null : m.id)}
-                        className="flex flex-1 cursor-pointer items-center gap-2 bg-transparent text-left"
-                        style={{ border: 'none', padding: 0 }}
-                      >
-                        {/* Status chip — tiny pill */}
-                        <span
-                          className="rounded-full"
-                          style={{
-                            fontFamily: font,
-                            fontSize: '9px',
-                            fontWeight: 700,
-                            letterSpacing: '0.1em',
-                            textTransform: 'uppercase',
-                            padding: '1px 6px',
-                            background: `${statusColour}18`,
-                            color: statusColour,
-                            border: `1px solid ${statusColour}35`,
-                          }}
-                        >
-                          {status}
-                        </span>
-                        <span
-                          className="flex-1"
-                          style={{
-                            fontFamily: font,
-                            fontSize: '13px',
-                            color: status === 'done' ? '#8A6A4A' : '#5C3018',
-                            opacity: status === 'done' ? 0.5 : 1,
-                            textDecoration: status === 'done' ? 'line-through' : 'none',
-                          }}
-                        >
-                          {m.text}
-                        </span>
-                        {due && (
-                          <span
-                            className="shrink-0 rounded-full"
-                            style={{
-                              fontFamily: font,
-                              fontSize: '9.5px',
-                              fontWeight: 600,
-                              padding: '1px 6px',
-                              color:
-                                due.tone === 'overdue'
-                                  ? '#B33A2B'
-                                  : due.tone === 'soon'
-                                    ? '#C4A060'
-                                    : '#8A6A4A',
-                              opacity: 0.85,
-                            }}
-                          >
-                            {due.text}
-                          </span>
-                        )}
-                        {noteCount > 0 && (
-                          <span
-                            className="shrink-0"
-                            style={{
-                              fontFamily: font,
-                              fontSize: '10px',
-                              color: '#8A6A4A',
-                              opacity: 0.55,
-                            }}
-                          >
-                            💬 {noteCount}
-                          </span>
-                        )}
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => removeMission(m.id)}
-                        className="cursor-pointer text-[10px]"
-                        style={{
-                          color: '#8A6A4A',
-                          opacity: 0.15,
-                          background: 'none',
-                          border: 'none',
-                        }}
-                        aria-label="Delete mission"
-                      >
-                        ×
-                      </button>
-                    </div>
+            );
+          })}
+          <div style={{ display: 'flex', gap: 8, alignItems: 'center', marginTop: 2 }}>
+            <input
+              type="text"
+              value={objInput}
+              onChange={(e) => setObjInput(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') addObjective();
+              }}
+              placeholder="+ add objective..."
+              style={{
+                fontFamily: font,
+                fontSize: 12,
+                color: '#5C3018',
+                background: 'transparent',
+                border: 'none',
+                borderBottom: `1px solid ${active.color}20`,
+                outline: 'none',
+                flex: 1,
+                paddingBottom: 3,
+                fontStyle: 'italic',
+              }}
+            />
+          </div>
+        </div>
+      </Section>
 
-                    {/* Expanded — claim button, due picker, notes thread */}
-                    {isExpanded && (
-                      <div
-                        className="mt-1.5 ml-6 space-y-2 rounded-lg animate-in fade-in duration-150"
+      {/* ── Missions ── */}
+      <Section
+        label="missions"
+        badge={`${backlogMissions.length + activeMissions.length} open`}
+        open={openSections.missions}
+        onToggle={() => toggleSection('missions')}
+        accent={active.color}
+      >
+        {/* Tabs */}
+        <div style={{ display: 'flex', gap: 4, marginTop: 10, marginBottom: 8 }}>
+          {(['backlog', 'active', 'done'] as MissionTab[]).map((tab) => {
+            const count =
+              tab === 'backlog'
+                ? backlogMissions.length
+                : tab === 'active'
+                  ? activeMissions.length
+                  : doneMissions.length;
+            return (
+              <button
+                key={tab}
+                type="button"
+                onClick={() => setMissionTab(tab)}
+                style={{
+                  fontFamily: font,
+                  fontSize: 10,
+                  fontWeight: missionTab === tab ? 700 : 500,
+                  letterSpacing: '0.1em',
+                  textTransform: 'uppercase',
+                  color: missionTab === tab ? active.color : '#8A6A4A',
+                  background: missionTab === tab ? `${active.color}12` : 'transparent',
+                  border: `1px solid ${missionTab === tab ? active.color + '40' : '#C4A06020'}`,
+                  borderRadius: 99,
+                  padding: '3px 10px',
+                  cursor: 'pointer',
+                }}
+              >
+                {tab} {count > 0 && <span style={{ opacity: 0.6 }}>({count})</span>}
+              </button>
+            );
+          })}
+        </div>
+
+        {/* Mission list */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+          {missionTabMissions.length === 0 && (
+            <p
+              style={{
+                fontFamily: font,
+                fontSize: 12,
+                color: '#8A6A4A',
+                opacity: 0.35,
+                fontStyle: 'italic',
+                textAlign: 'center',
+                padding: '8px 0',
+              }}
+            >
+              {missionTab === 'done' ? 'nothing finished yet' : 'nothing here yet'}
+            </p>
+          )}
+          {missionTabMissions.map((m) => {
+            const claimerMember = m.claimedBy ? memberMap.get(m.claimedBy) : null;
+            const claimerColor = claimerMember
+              ? claimerMember.pulseColor || claimerMember.color
+              : active.color;
+            const due = dueLabel(m.due);
+            const isExpanded = expandedMissionId === m.id;
+            const isMine = m.claimedBy === me.id;
+            const objId = missionObjMap[m.id];
+            const objLabel = objId ? objectives.find((o) => o.id === objId)?.text : null;
+
+            return (
+              <div
+                key={m.id}
+                style={{
+                  borderRadius: 10,
+                  border: `1px solid ${claimerColor}18`,
+                  background: `${claimerColor}04`,
+                  overflow: 'hidden',
+                }}
+              >
+                {/* Main row */}
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '8px 10px' }}>
+                  {/* Tick */}
+                  <button
+                    type="button"
+                    onClick={() => hook.toggleMissionDone(m.id)}
+                    style={{
+                      width: 16,
+                      height: 16,
+                      borderRadius: 4,
+                      flexShrink: 0,
+                      cursor: 'pointer',
+                      border: `1.5px solid ${claimerColor}50`,
+                      background: m.done ? `${claimerColor}30` : 'transparent',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                    }}
+                  >
+                    {m.done && <span style={{ fontSize: 9, color: claimerColor }}>✓</span>}
+                  </button>
+
+                  {/* Text */}
+                  <button
+                    type="button"
+                    onClick={() => setExpandedMissionId(isExpanded ? null : m.id)}
+                    style={{
+                      flex: 1,
+                      textAlign: 'left',
+                      background: 'none',
+                      border: 'none',
+                      cursor: 'pointer',
+                      padding: 0,
+                    }}
+                  >
+                    <span
+                      style={{
+                        fontFamily: font,
+                        fontSize: 13,
+                        color: m.done ? '#8A6A4A' : '#5C3018',
+                        opacity: m.done ? 0.5 : 1,
+                        textDecoration: m.done ? 'line-through' : 'none',
+                      }}
+                    >
+                      {m.text}
+                    </span>
+                  </button>
+
+                  {/* Objective tag */}
+                  {objLabel && (
+                    <span
+                      style={{
+                        fontFamily: font,
+                        fontSize: 9,
+                        color: active.color,
+                        opacity: 0.55,
+                        background: `${active.color}10`,
+                        borderRadius: 99,
+                        padding: '1px 6px',
+                        flexShrink: 0,
+                      }}
+                    >
+                      {objLabel}
+                    </span>
+                  )}
+
+                  {/* Due */}
+                  {due && (
+                    <span
+                      style={{
+                        fontFamily: font,
+                        fontSize: 9,
+                        fontWeight: 600,
+                        flexShrink: 0,
+                        color:
+                          due.tone === 'overdue'
+                            ? '#B33A2B'
+                            : due.tone === 'soon'
+                              ? '#C4A060'
+                              : '#8A6A4A',
+                        opacity: 0.85,
+                      }}
+                    >
+                      {due.text}
+                    </span>
+                  )}
+
+                  {/* Claimer dot */}
+                  {claimerMember && (
+                    <span
+                      className="block rounded-full shrink-0"
+                      style={{ width: 8, height: 8, background: claimerColor, opacity: 0.75 }}
+                      title={claimerMember.name}
+                    />
+                  )}
+
+                  {/* Delete */}
+                  <button
+                    type="button"
+                    onClick={() => hook.removeMission(m.id)}
+                    style={{
+                      color: '#8A6A4A',
+                      opacity: 0.15,
+                      background: 'none',
+                      border: 'none',
+                      cursor: 'pointer',
+                      fontSize: 12,
+                      flexShrink: 0,
+                    }}
+                  >
+                    ×
+                  </button>
+                </div>
+
+                {/* Expanded panel */}
+                {isExpanded && (
+                  <div
+                    style={{
+                      padding: '0 10px 10px 34px',
+                      borderTop: `1px solid ${claimerColor}12`,
+                      background: `${claimerColor}06`,
+                    }}
+                    className="animate-in fade-in duration-150"
+                  >
+                    <div
+                      style={{
+                        display: 'flex',
+                        flexWrap: 'wrap',
+                        gap: 6,
+                        paddingTop: 8,
+                        paddingBottom: 8,
+                      }}
+                    >
+                      {/* Claim */}
+                      <button
+                        type="button"
+                        onClick={() => hook.claimMission(m.id)}
                         style={{
-                          padding: '8px 10px',
-                          background: `${memberColor}08`,
-                          border: `1px solid ${memberColor}1A`,
+                          fontFamily: font,
+                          fontSize: 10,
+                          fontWeight: 600,
+                          letterSpacing: '0.06em',
+                          borderRadius: 99,
+                          padding: '3px 10px',
+                          cursor: 'pointer',
+                          background: isMine ? `${claimerColor}20` : 'transparent',
+                          border: `1px solid ${claimerColor}40`,
+                          color: claimerColor,
                         }}
                       >
-                        <div className="flex flex-wrap items-center gap-1.5">
+                        {isMine ? "✓ I'm on it" : "I'm on it"}
+                      </button>
+
+                      {/* Assign to */}
+                      {assigningMission === m.id ? (
+                        <div style={{ display: 'flex', gap: 4, alignItems: 'center' }}>
+                          {active.members.map((member) => (
+                            <button
+                              key={member.id}
+                              type="button"
+                              onClick={() => assignMissionTo(m.id, member.id)}
+                              title={member.name}
+                              style={{
+                                width: 14,
+                                height: 14,
+                                borderRadius: '50%',
+                                background: member.pulseColor || member.color,
+                                border: 'none',
+                                cursor: 'pointer',
+                              }}
+                            />
+                          ))}
                           <button
                             type="button"
-                            onClick={() => claimMission(m.id)}
-                            className="cursor-pointer rounded-full px-2.5 py-1 transition-all"
+                            onClick={() => setAssigningMission(null)}
                             style={{
-                              fontFamily: font,
-                              fontSize: '10px',
-                              fontWeight: 600,
-                              letterSpacing: '0.08em',
-                              background: isMine ? `${memberColor}22` : 'transparent',
-                              border: `1px solid ${memberColor}50`,
-                              color: memberColor,
+                              fontSize: 9,
+                              color: '#8A6A4A',
+                              opacity: 0.35,
+                              background: 'none',
+                              border: 'none',
+                              cursor: 'pointer',
                             }}
                           >
-                            {isMine ? '✓ on it' : 'I’m on it'}
+                            ✕
                           </button>
-                          <input
-                            type="date"
-                            value={m.due ? m.due.slice(0, 10) : ''}
-                            onChange={(e) => setMissionDue(m.id, e.target.value || undefined)}
-                            className="rounded-full bg-transparent px-2 py-0.5 outline-none"
-                            style={{
-                              fontFamily: font,
-                              fontSize: '10px',
-                              color: '#7A5438',
-                              border: '1px solid #C4A06035',
-                            }}
-                            title="Set due date"
-                          />
                         </div>
-                        {/* Notes thread on this mission */}
-                        {(m.notes || []).map((n) => (
-                          <div key={n.id} className="space-y-0.5">
-                            <span
-                              style={{
-                                fontFamily: font,
-                                fontSize: '10px',
-                                fontWeight: 600,
-                                color: memberColor,
-                                opacity: 0.7,
-                              }}
-                            >
-                              {n.authorName}
-                            </span>
-                            <p
-                              style={{
-                                fontFamily: font,
-                                fontSize: '11px',
-                                color: '#5C3018',
-                                opacity: 0.85,
-                                lineHeight: 1.45,
-                                wordBreak: 'break-word',
-                              }}
-                            >
-                              {n.text}
-                            </p>
-                          </div>
-                        ))}
-                        {/* Add a note */}
-                        <div className="flex gap-1.5">
-                          <input
-                            type="text"
-                            value={isExpanded ? missionNoteInput : ''}
-                            onChange={(e) => setMissionNoteInput(e.target.value)}
-                            onKeyDown={(e) => {
-                              if (e.key === 'Enter' && missionNoteInput.trim()) {
-                                addMissionNote(m.id, missionNoteInput);
-                                setMissionNoteInput('');
-                              }
-                            }}
-                            placeholder="leave a note…"
-                            className="flex-1 border-b bg-transparent px-1 pb-0.5 outline-none placeholder:italic placeholder:text-[#8A6A4A] placeholder:opacity-40"
-                            style={{
-                              fontFamily: font,
-                              fontSize: '11px',
-                              color: '#5C3018',
-                              borderColor: `${memberColor}20`,
-                            }}
-                          />
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                );
-              })}
-            </div>
-          );
-        })}
+                      ) : (
+                        <button
+                          type="button"
+                          onClick={() => setAssigningMission(m.id)}
+                          style={{
+                            fontFamily: font,
+                            fontSize: 10,
+                            borderRadius: 99,
+                            padding: '3px 10px',
+                            color: '#8A6A4A',
+                            opacity: 0.5,
+                            background: '#C4A06008',
+                            border: '1px solid #C4A06018',
+                            cursor: 'pointer',
+                          }}
+                        >
+                          assign
+                        </button>
+                      )}
 
-        {/* Add mission — text + optional due date. Once you click on the
-            mission you can also claim it / re-set the due date. */}
-        <div className="flex flex-wrap items-center gap-2 pt-1">
+                      {/* Tag objective */}
+                      {objectives.length > 0 &&
+                        (taggingMission === m.id ? (
+                          <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}>
+                            <button
+                              type="button"
+                              onClick={() => tagMission(m.id, null)}
+                              style={{
+                                fontFamily: font,
+                                fontSize: 9,
+                                borderRadius: 99,
+                                padding: '2px 8px',
+                                color: '#8A6A4A',
+                                opacity: 0.5,
+                                background: 'transparent',
+                                border: '1px solid #C4A06020',
+                                cursor: 'pointer',
+                              }}
+                            >
+                              no objective
+                            </button>
+                            {objectives.map((obj) => (
+                              <button
+                                key={obj.id}
+                                type="button"
+                                onClick={() => tagMission(m.id, obj.id)}
+                                style={{
+                                  fontFamily: font,
+                                  fontSize: 9,
+                                  borderRadius: 99,
+                                  padding: '2px 8px',
+                                  color: active.color,
+                                  background: `${active.color}10`,
+                                  border: `1px solid ${active.color}30`,
+                                  cursor: 'pointer',
+                                }}
+                              >
+                                {obj.text}
+                              </button>
+                            ))}
+                          </div>
+                        ) : (
+                          <button
+                            type="button"
+                            onClick={() => setTaggingMission(m.id)}
+                            style={{
+                              fontFamily: font,
+                              fontSize: 10,
+                              borderRadius: 99,
+                              padding: '3px 10px',
+                              color: active.color,
+                              opacity: 0.5,
+                              background: `${active.color}06`,
+                              border: `1px solid ${active.color}20`,
+                              cursor: 'pointer',
+                            }}
+                          >
+                            {objLabel || 'tag objective'}
+                          </button>
+                        ))}
+
+                      {/* Due date */}
+                      <input
+                        type="date"
+                        value={m.due ? m.due.slice(0, 10) : ''}
+                        onChange={(e) => hook.setMissionDue(m.id, e.target.value || null)}
+                        style={{
+                          fontFamily: font,
+                          fontSize: 10,
+                          color: '#7A5438',
+                          background: 'transparent',
+                          borderRadius: 99,
+                          padding: '3px 8px',
+                          border: '1px solid #C4A06030',
+                          outline: 'none',
+                        }}
+                        title="Set due date"
+                      />
+                    </div>
+
+                    {/* Notes thread */}
+                    {(m.notes || []).map((n) => (
+                      <div key={n.id} style={{ marginBottom: 6 }}>
+                        <span
+                          style={{
+                            fontFamily: font,
+                            fontSize: 10,
+                            fontWeight: 600,
+                            color: claimerColor,
+                            opacity: 0.7,
+                          }}
+                        >
+                          {n.authorName}{' '}
+                        </span>
+                        <span
+                          style={{ fontFamily: font, fontSize: 11, color: '#5C3018', opacity: 0.8 }}
+                        >
+                          {n.text}
+                        </span>
+                      </div>
+                    ))}
+                    <input
+                      type="text"
+                      value={isExpanded ? missionNoteInput : ''}
+                      onChange={(e) => setMissionNoteInput(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter' && missionNoteInput.trim()) {
+                          addMissionNote(m.id, missionNoteInput);
+                          setMissionNoteInput('');
+                        }
+                      }}
+                      placeholder="leave a note…"
+                      style={{
+                        fontFamily: font,
+                        fontSize: 11,
+                        color: '#5C3018',
+                        background: 'transparent',
+                        border: 'none',
+                        borderBottom: `1px solid ${claimerColor}20`,
+                        outline: 'none',
+                        width: '100%',
+                        paddingBottom: 3,
+                        fontStyle: 'italic',
+                      }}
+                    />
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </div>
+
+        {/* Add mission */}
+        <div
+          style={{ display: 'flex', gap: 8, alignItems: 'center', marginTop: 10, flexWrap: 'wrap' }}
+        >
           <input
             type="text"
             value={missionInput}
@@ -1366,25 +1730,33 @@ export default function CircleBoard() {
               if (e.key === 'Enter') addMission();
             }}
             placeholder="+ add mission..."
-            className="flex-1 border-b bg-transparent pb-1 outline-none placeholder:italic placeholder:text-[#8A6A4A] placeholder:opacity-40"
             style={{
               fontFamily: font,
-              fontSize: '13px',
+              fontSize: 13,
               color: '#5C3018',
-              borderColor: `${active.color}20`,
-              minWidth: 160,
+              background: 'transparent',
+              border: 'none',
+              borderBottom: `1px solid ${active.color}20`,
+              outline: 'none',
+              flex: 1,
+              paddingBottom: 4,
+              minWidth: 150,
+              fontStyle: 'italic',
             }}
           />
           <input
             type="date"
             value={missionDueInput}
             onChange={(e) => setMissionDueInput(e.target.value)}
-            className="rounded-full bg-transparent px-2 py-0.5 outline-none"
             style={{
               fontFamily: font,
-              fontSize: '10px',
+              fontSize: 10,
               color: '#7A5438',
+              background: 'transparent',
+              borderRadius: 99,
+              padding: '3px 8px',
               border: `1px solid ${active.color}25`,
+              outline: 'none',
             }}
             title="Optional due date"
           />
@@ -1392,202 +1764,428 @@ export default function CircleBoard() {
             <button
               type="button"
               onClick={addMission}
-              className="cursor-pointer rounded-full px-3 py-1 transition-all"
               style={{
                 fontFamily: font,
-                fontSize: '10px',
+                fontSize: 10,
                 fontWeight: 700,
                 letterSpacing: '0.1em',
                 textTransform: 'uppercase',
                 color: active.color,
                 background: `${active.color}10`,
                 border: `1px solid ${active.color}40`,
+                borderRadius: 99,
+                padding: '4px 12px',
+                cursor: 'pointer',
               }}
             >
               add
             </button>
           )}
         </div>
+      </Section>
 
-        {/* Done */}
-        {doneMissions.length > 0 && (
-          <div className="space-y-1 pt-2">
-            <p style={{ fontFamily: font, fontSize: '10px', color: '#8A6A4A', opacity: 0.3 }}>
-              done
-            </p>
-            {doneMissions.slice(0, 5).map((m) => (
-              <div key={m.id} className="flex items-center gap-2">
-                <button
-                  type="button"
-                  onClick={() => toggleMission(m.id)}
-                  className="flex shrink-0 cursor-pointer items-center justify-center rounded-sm"
-                  style={{
-                    width: 16,
-                    height: 16,
-                    border: `1.5px solid ${active.color}20`,
-                    background: `${active.color}15`,
-                  }}
-                >
-                  <span style={{ fontSize: '9px', color: active.color, opacity: 0.6 }}>✓</span>
-                </button>
-                <span
-                  style={{
-                    fontFamily: font,
-                    fontSize: '12px',
-                    color: '#8A6A4A',
-                    opacity: 0.4,
-                    textDecoration: 'line-through',
-                  }}
-                >
-                  {m.text}
-                </span>
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
-
-      {/* Sparks — shared intentions, what the group wants to do */}
-      <CircleSparks circleId={active.id} meId={me.id} circleColor={active.color} />
-
-      {/* Sync sessions — rehearsals / mix nights / photoshoots */}
-      <CircleEvents
-        circleId={active.id}
-        meId={me.id}
-        meName={me.name}
-        members={active.members.map((m) => ({
-          id: m.id,
-          name: m.name,
-          color: m.pulseColor || m.color,
-        }))}
-      />
-
-      {/* Decisions — proposals + voting log */}
-      <CircleDecisions
-        circleId={active.id}
-        meId={me.id}
-        meName={me.name}
-        members={active.members.map((m) => ({
-          id: m.id,
-          name: m.name,
-          color: m.pulseColor || m.color,
-        }))}
-      />
-
-      {/* Money — shared expenses + balances */}
-      <CircleMoney
-        circleId={active.id}
-        meId={me.id}
-        meName={me.name}
-        members={active.members.map((m) => ({
-          id: m.id,
-          name: m.name,
-          color: m.pulseColor || m.color,
-        }))}
-      />
-
-      {/* Audio — recordings + voice memos with reflections */}
-      <CircleAudio
-        circleId={active.id}
-        meId={me.id}
-        meName={me.name}
-        meColour={active.members.find((m) => m.id === me.id)?.color || active.color}
-      />
-
-      {/* Rainbow — vertical Hawkins reflection band, threaded over time */}
-      <CircleRainbow
-        circleId={active.id}
-        meId={me.id}
-        meName={me.name}
-        meColour={active.members.find((m) => m.id === me.id)?.color || active.color}
-      />
-
-      {/* Log */}
-      <div
-        className="space-y-2 rounded-2xl border px-4 py-3"
-        style={{ borderColor: '#C4A06015', background: '#C4A06004' }}
+      {/* ── In the Process ── */}
+      <Section
+        label="in the process"
+        badge={processEntries.length || undefined}
+        open={openSections.process}
+        onToggle={() => toggleSection('process')}
+        accent="#9B7A40"
       >
-        <p
-          className="uppercase tracking-[0.2em] text-center"
-          style={{
-            fontFamily: font,
-            fontSize: '10px',
-            fontWeight: 700,
-            color: '#C4A060',
-            opacity: 0.5,
-          }}
-        >
-          log
-        </p>
-        <div className="flex gap-2">
-          <input
-            type="text"
-            value={noteInput}
-            onChange={(e) => setNoteInput(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === 'Enter') addNote();
-            }}
-            placeholder="share a note..."
-            className="flex-1 border-b bg-transparent pb-1 outline-none placeholder:italic placeholder:text-[#8A6A4A] placeholder:opacity-40"
-            style={{
-              fontFamily: font,
-              fontSize: '13px',
-              color: '#5C3018',
-              borderColor: '#C4A06018',
-            }}
-          />
-        </div>
-        {active.notes.slice(0, 20).map((n) => (
-          <div key={n.id} className="space-y-0.5">
-            <div className="flex items-center gap-2">
-              <span
-                style={{
-                  fontFamily: font,
-                  fontSize: '11px',
-                  color: '#5C3018',
-                  fontWeight: 600,
-                  opacity: 0.7,
-                }}
-              >
-                {n.authorName}
-              </span>
-              <span
-                style={{
-                  fontFamily: font,
-                  fontSize: '10px',
-                  color: '#8A6A4A',
-                  opacity: 0.35,
-                }}
-              >
-                {new Date(n.createdAt).toLocaleTimeString([], {
-                  hour: '2-digit',
-                  minute: '2-digit',
-                })}
-              </span>
-            </div>
+        <div style={{ marginTop: 10, display: 'flex', flexDirection: 'column', gap: 10 }}>
+          <div style={{ display: 'flex', gap: 8, alignItems: 'flex-start' }}>
+            <span
+              className="block rounded-full shrink-0 mt-1"
+              style={{
+                width: 8,
+                height: 8,
+                background: active.members.find((m) => m.id === me.id)?.pulseColor || active.color,
+                opacity: 0.6,
+              }}
+            />
+            <input
+              type="text"
+              value={processInput}
+              onChange={(e) => setProcessInput(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') addProcessEntry();
+              }}
+              placeholder="share a process reflection or update..."
+              style={{
+                fontFamily: font,
+                fontSize: 12,
+                color: '#5C3018',
+                background: 'transparent',
+                border: 'none',
+                borderBottom: '1px solid #C4A06018',
+                outline: 'none',
+                flex: 1,
+                paddingBottom: 3,
+                fontStyle: 'italic',
+              }}
+            />
+          </div>
+          {processEntries.map((e) => {
+            const author = memberMap.get(e.authorId);
+            return (
+              <div key={e.id} style={{ display: 'flex', gap: 10, alignItems: 'flex-start' }}>
+                <span
+                  className="block rounded-full shrink-0 mt-1"
+                  style={{
+                    width: 8,
+                    height: 8,
+                    background: author?.pulseColor || author?.color || '#C4A060',
+                    opacity: 0.6,
+                  }}
+                />
+                <div style={{ flex: 1 }}>
+                  <span
+                    style={{
+                      fontFamily: font,
+                      fontSize: 10,
+                      fontWeight: 600,
+                      color: '#8A6A4A',
+                      opacity: 0.6,
+                    }}
+                  >
+                    {e.authorName}{' '}
+                  </span>
+                  <span style={{ fontFamily: font, fontSize: 10, color: '#8A6A4A', opacity: 0.4 }}>
+                    {timeAgo(e.createdAt)}
+                  </span>
+                  <p
+                    style={{
+                      fontFamily: font,
+                      fontSize: 13,
+                      color: '#5C3018',
+                      opacity: 0.85,
+                      fontStyle: 'italic',
+                      marginTop: 2,
+                      lineHeight: 1.5,
+                    }}
+                  >
+                    {e.text}
+                  </p>
+                </div>
+                {e.authorId === me.id && (
+                  <button
+                    type="button"
+                    onClick={() => removeProcessEntry(e.id)}
+                    style={{
+                      fontSize: 11,
+                      color: '#8A6A4A',
+                      opacity: 0.2,
+                      background: 'none',
+                      border: 'none',
+                      cursor: 'pointer',
+                      flexShrink: 0,
+                    }}
+                  >
+                    ×
+                  </button>
+                )}
+              </div>
+            );
+          })}
+          {processEntries.length === 0 && (
             <p
               style={{
                 fontFamily: font,
-                fontSize: '13px',
-                color: '#5C3018',
-                opacity: 0.85,
-                lineHeight: 1.5,
-                wordBreak: 'break-word',
+                fontSize: 12,
+                color: '#8A6A4A',
+                opacity: 0.3,
+                fontStyle: 'italic',
               }}
             >
-              {n.text}
+              share what you're learning or figuring out as you go
             </p>
+          )}
+        </div>
+      </Section>
+
+      {/* ── Help Needed ── */}
+      <Section
+        label="help needed"
+        badge={openHelpCount > 0 ? openHelpCount : undefined}
+        open={openSections.help}
+        onToggle={() => toggleSection('help')}
+        accent="#B33A2B"
+      >
+        <div style={{ marginTop: 10, display: 'flex', flexDirection: 'column', gap: 10 }}>
+          <div style={{ display: 'flex', gap: 8, alignItems: 'flex-start' }}>
+            <span style={{ fontSize: 11, opacity: 0.4, flexShrink: 0, marginTop: 2 }}>🚩</span>
+            <input
+              type="text"
+              value={helpInput}
+              onChange={(e) => setHelpInput(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') addHelpRequest();
+              }}
+              placeholder="what are you blocked on?"
+              style={{
+                fontFamily: font,
+                fontSize: 12,
+                color: '#5C3018',
+                background: 'transparent',
+                border: 'none',
+                borderBottom: '1px solid #B33A2B20',
+                outline: 'none',
+                flex: 1,
+                paddingBottom: 3,
+                fontStyle: 'italic',
+              }}
+            />
           </div>
-        ))}
-        {active.notes.length === 0 && (
-          <p
-            className="text-center italic"
-            style={{ fontFamily: font, fontSize: '12px', color: '#8A6A4A', opacity: 0.3 }}
-          >
-            no notes yet
-          </p>
-        )}
-      </div>
+          {helpRequests.map((r) => {
+            const author = memberMap.get(r.authorId);
+            const iHelp = r.helpers.includes(me.id);
+            return (
+              <div
+                key={r.id}
+                style={{
+                  display: 'flex',
+                  gap: 10,
+                  alignItems: 'flex-start',
+                  padding: '8px 10px',
+                  borderRadius: 10,
+                  background: r.resolved ? '#7AAA5808' : '#B33A2B08',
+                  border: `1px solid ${r.resolved ? '#7AAA5820' : '#B33A2B20'}`,
+                  opacity: r.resolved ? 0.5 : 1,
+                }}
+              >
+                <span
+                  className="block rounded-full shrink-0 mt-1"
+                  style={{
+                    width: 8,
+                    height: 8,
+                    background: author?.pulseColor || author?.color || '#C4A060',
+                    opacity: 0.6,
+                  }}
+                />
+                <div style={{ flex: 1 }}>
+                  <span
+                    style={{
+                      fontFamily: font,
+                      fontSize: 10,
+                      fontWeight: 600,
+                      color: '#8A6A4A',
+                      opacity: 0.6,
+                    }}
+                  >
+                    {r.authorName}{' '}
+                  </span>
+                  <span style={{ fontFamily: font, fontSize: 10, color: '#8A6A4A', opacity: 0.4 }}>
+                    {timeAgo(r.createdAt)}
+                  </span>
+                  <p
+                    style={{
+                      fontFamily: font,
+                      fontSize: 13,
+                      color: '#5C3018',
+                      opacity: 0.9,
+                      marginTop: 2,
+                      lineHeight: 1.5,
+                    }}
+                  >
+                    {r.text}
+                  </p>
+                  {!r.resolved && (
+                    <div style={{ display: 'flex', gap: 6, marginTop: 6 }}>
+                      <button
+                        type="button"
+                        onClick={() => toggleHelper(r.id)}
+                        style={{
+                          fontFamily: font,
+                          fontSize: 10,
+                          borderRadius: 99,
+                          padding: '2px 10px',
+                          cursor: 'pointer',
+                          background: iHelp ? '#B33A2B18' : 'transparent',
+                          border: `1px solid ${iHelp ? '#B33A2B50' : '#C4A06025'}`,
+                          color: iHelp ? '#B33A2B' : '#8A6A4A',
+                        }}
+                      >
+                        {iHelp ? "✓ I'll help" : "I'll help"}
+                        {r.helpers.length > 0 && (
+                          <span style={{ opacity: 0.55 }}> ({r.helpers.length})</span>
+                        )}
+                      </button>
+                      {r.authorId === me.id && (
+                        <button
+                          type="button"
+                          onClick={() => resolveHelp(r.id)}
+                          style={{
+                            fontFamily: font,
+                            fontSize: 10,
+                            borderRadius: 99,
+                            padding: '2px 10px',
+                            cursor: 'pointer',
+                            background: '#7AAA5812',
+                            border: '1px solid #7AAA5840',
+                            color: '#7AAA58',
+                          }}
+                        >
+                          resolved
+                        </button>
+                      )}
+                    </div>
+                  )}
+                  {r.resolved && (
+                    <span
+                      style={{ fontFamily: font, fontSize: 10, color: '#7AAA58', opacity: 0.6 }}
+                    >
+                      ✓ resolved
+                    </span>
+                  )}
+                </div>
+              </div>
+            );
+          })}
+          {helpRequests.length === 0 && (
+            <p
+              style={{
+                fontFamily: font,
+                fontSize: 12,
+                color: '#8A6A4A',
+                opacity: 0.3,
+                fontStyle: 'italic',
+              }}
+            >
+              ask for help — someone will step in
+            </p>
+          )}
+        </div>
+      </Section>
+
+      {/* ── Extras (agenda + extra circle tools) ── */}
+      <Section
+        label="more"
+        open={openSections.extras}
+        onToggle={() => toggleSection('extras')}
+        accent="#7A8A6A"
+      >
+        <div style={{ marginTop: 10, display: 'flex', flexDirection: 'column', gap: 12 }}>
+          <CircleAgenda
+            missions={active.missions}
+            members={memberPropsList}
+            onTapMission={(id) => setExpandedMissionId(id)}
+          />
+          <CircleSparks circleId={active.id} meId={me.id} circleColor={active.color} />
+          <CircleEvents
+            circleId={active.id}
+            meId={me.id}
+            meName={me.name}
+            members={memberPropsList}
+          />
+          <CircleDecisions
+            circleId={active.id}
+            meId={me.id}
+            meName={me.name}
+            members={memberPropsList}
+          />
+          <CircleMoney
+            circleId={active.id}
+            meId={me.id}
+            meName={me.name}
+            members={memberPropsList}
+          />
+          <CircleAudio
+            circleId={active.id}
+            meId={me.id}
+            meName={me.name}
+            meColour={active.members.find((m) => m.id === me.id)?.color || active.color}
+          />
+          <CircleRainbow
+            circleId={active.id}
+            meId={me.id}
+            meName={me.name}
+            meColour={active.members.find((m) => m.id === me.id)?.color || active.color}
+          />
+        </div>
+      </Section>
+
+      {/* ── Log ── */}
+      <Section
+        label="log"
+        badge={active.notes.length > 0 ? active.notes.length : undefined}
+        open={openSections.log}
+        onToggle={() => toggleSection('log')}
+        accent="#8A8A8A"
+      >
+        <div style={{ marginTop: 10, display: 'flex', flexDirection: 'column', gap: 10 }}>
+          <div style={{ display: 'flex', gap: 8 }}>
+            <input
+              type="text"
+              value={noteInput}
+              onChange={(e) => setNoteInput(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') addNote();
+              }}
+              placeholder="share a note..."
+              style={{
+                fontFamily: font,
+                fontSize: 13,
+                color: '#5C3018',
+                background: 'transparent',
+                border: 'none',
+                borderBottom: '1px solid #C4A06018',
+                outline: 'none',
+                flex: 1,
+                paddingBottom: 4,
+              }}
+            />
+          </div>
+          {active.notes.slice(0, 25).map((n) => (
+            <div key={n.id}>
+              <div style={{ display: 'flex', gap: 8, alignItems: 'center', marginBottom: 2 }}>
+                <span
+                  style={{
+                    fontFamily: font,
+                    fontSize: 11,
+                    fontWeight: 600,
+                    color: '#5C3018',
+                    opacity: 0.7,
+                  }}
+                >
+                  {n.authorName}
+                </span>
+                <span style={{ fontFamily: font, fontSize: 10, color: '#8A6A4A', opacity: 0.35 }}>
+                  {new Date(n.createdAt).toLocaleTimeString([], {
+                    hour: '2-digit',
+                    minute: '2-digit',
+                  })}
+                </span>
+              </div>
+              <p
+                style={{
+                  fontFamily: font,
+                  fontSize: 13,
+                  color: '#5C3018',
+                  opacity: 0.85,
+                  lineHeight: 1.5,
+                  wordBreak: 'break-word',
+                }}
+              >
+                {n.text}
+              </p>
+            </div>
+          ))}
+          {active.notes.length === 0 && (
+            <p
+              style={{
+                fontFamily: font,
+                fontSize: 12,
+                color: '#8A6A4A',
+                opacity: 0.3,
+                fontStyle: 'italic',
+                textAlign: 'center',
+              }}
+            >
+              no notes yet
+            </p>
+          )}
+        </div>
+      </Section>
     </div>
   );
 }

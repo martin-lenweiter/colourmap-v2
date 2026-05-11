@@ -1,6 +1,8 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
+import EmotionMultiSelect from '@/components/EmotionMultiSelect';
+import MoodWord from '@/components/MoodWord';
 import SquareSlider from '@/components/SquareSlider';
 import { syncEvent, syncPref } from '@/lib/sync';
 
@@ -61,7 +63,7 @@ const FOCUS_LEVELS = [
 ];
 
 /* ─── Types ──────────────────────────────────────────────────── */
-type TrackEntry = { ts: string; idx: number; note: string };
+type TrackEntry = { ts: string; idx: number; note: string; word?: string };
 type FocusEntry = { ts: string; focusIdx: number; note: string; kind: 'reflect' | 'idea' };
 type Circle = (typeof CIRCLES)[number];
 
@@ -75,6 +77,7 @@ type VizProps = {
   idx: number;
   levels: { color: string; label: string }[];
   dragging: boolean;
+  moodWord?: string;
   onPointerDown: (e: React.PointerEvent) => void;
   onPointerMove: (e: React.PointerEvent) => void;
   onPointerUp: () => void;
@@ -661,15 +664,15 @@ function VizPulse({ idx, levels, onPointerDown, onPointerMove, onPointerUp }: Vi
 function VizPetals({ idx, levels, onPointerDown, onPointerMove, onPointerUp }: VizProps) {
   const n = levels.length;
   const c = levels[idx]?.color ?? '#C4A060';
-  const CX = 70,
-    CY = 70,
-    dist = 36,
-    petalR = 18;
+  const CX = 80,
+    CY = 80,
+    dist = 54,
+    petalR = 10;
   return (
     <div style={{ touchAction: 'none', userSelect: 'none' }}>
       <svg
-        width={140}
-        height={140}
+        width={160}
+        height={160}
         style={{ display: 'block', cursor: 'ew-resize', overflow: 'visible' }}
         onPointerDown={onPointerDown}
         onPointerMove={onPointerMove}
@@ -697,7 +700,7 @@ function VizPetals({ idx, levels, onPointerDown, onPointerMove, onPointerUp }: V
                 <circle
                   cx={px}
                   cy={py}
-                  r={petalR + 6}
+                  r={petalR + 5}
                   fill={lv.color}
                   opacity={0.15}
                   filter="url(#pet-g)"
@@ -719,14 +722,14 @@ function VizPetals({ idx, levels, onPointerDown, onPointerMove, onPointerUp }: V
         <circle
           cx={CX}
           cy={CY}
-          r={13}
+          r={11}
           fill={c}
           filter="url(#pet-g)"
           style={{ transition: 'fill 0.3s' }}
         />
         <text
           x={CX}
-          y={CY + 5}
+          y={CY + 4}
           textAnchor="middle"
           fill="rgba(255,255,255,0.9)"
           fontSize={8}
@@ -741,8 +744,17 @@ function VizPetals({ idx, levels, onPointerDown, onPointerMove, onPointerUp }: V
 }
 
 /* V10 — Diamond Empty (outline only, thick stroke, name in centre) */
-function VizDiamondEmpty({ idx, levels, onPointerDown, onPointerMove, onPointerUp }: VizProps) {
+function VizDiamondEmpty({
+  idx,
+  levels,
+  moodWord,
+  onPointerDown,
+  onPointerMove,
+  onPointerUp,
+}: VizProps) {
   const c = levels[idx]?.color ?? '#C4A060';
+  const centreText = moodWord || levels[idx]?.label;
+  const isCustom = !!moodWord;
   const S = 142;
   const CX = S / 2,
     CY = S / 2;
@@ -788,15 +800,14 @@ function VizDiamondEmpty({ idx, levels, onPointerDown, onPointerMove, onPointerU
           textAnchor="middle"
           dominantBaseline="middle"
           fill={c}
-          fontSize={12}
+          fontSize={isCustom ? (centreText.length > 9 ? 11 : 16) : 17}
           fontWeight={700}
           style={{
-            fontFamily: 'var(--font-serif)',
-            letterSpacing: '0.1em',
-            textTransform: 'uppercase',
+            fontFamily: isCustom ? 'var(--font-handwritten)' : 'var(--font-serif)',
+            letterSpacing: '0.04em',
           }}
         >
-          {levels[idx]?.label}
+          {centreText}
         </text>
       </svg>
     </div>
@@ -804,8 +815,17 @@ function VizDiamondEmpty({ idx, levels, onPointerDown, onPointerMove, onPointerU
 }
 
 /* V11 — Diamond Full (solid fill, thick stroke, name in centre) */
-function VizDiamondFull({ idx, levels, onPointerDown, onPointerMove, onPointerUp }: VizProps) {
+function VizDiamondFull({
+  idx,
+  levels,
+  moodWord,
+  onPointerDown,
+  onPointerMove,
+  onPointerUp,
+}: VizProps) {
   const c = levels[idx]?.color ?? '#C4A060';
+  const centreText = moodWord || levels[idx]?.label;
+  const isCustom = !!moodWord;
   const S = 142;
   const CX = S / 2,
     CY = S / 2;
@@ -862,15 +882,14 @@ function VizDiamondFull({ idx, levels, onPointerDown, onPointerMove, onPointerUp
           textAnchor="middle"
           dominantBaseline="middle"
           fill={c}
-          fontSize={12}
+          fontSize={isCustom ? (centreText.length > 9 ? 11 : 16) : 17}
           fontWeight={700}
           style={{
-            fontFamily: 'var(--font-serif)',
-            letterSpacing: '0.1em',
-            textTransform: 'uppercase',
+            fontFamily: isCustom ? 'var(--font-handwritten)' : 'var(--font-serif)',
+            letterSpacing: '0.04em',
           }}
         >
-          {levels[idx]?.label}
+          {centreText}
         </text>
       </svg>
     </div>
@@ -878,8 +897,17 @@ function VizDiamondFull({ idx, levels, onPointerDown, onPointerMove, onPointerUp
 }
 
 /* V9 — Diamond / lozenge (perfect square rotated 45°, fill from bottom) */
-function VizDiamond({ idx, levels, onPointerDown, onPointerMove, onPointerUp }: VizProps) {
+function VizDiamond({
+  idx,
+  levels,
+  moodWord,
+  onPointerDown,
+  onPointerMove,
+  onPointerUp,
+}: VizProps) {
   const c = levels[idx]?.color ?? '#C4A060';
+  const centreText = moodWord || levels[idx]?.label;
+  const isCustom = !!moodWord;
   const rat = levels.length > 1 ? idx / (levels.length - 1) : 0;
   // Perfect square diamond: W = H so all four arms are equal
   const S = 142; // SVG canvas size
@@ -958,16 +986,15 @@ function VizDiamond({ idx, levels, onPointerDown, onPointerMove, onPointerUp }: 
           y={CY + 5}
           textAnchor="middle"
           fill={rat > 0.45 ? 'rgba(255,255,255,0.92)' : c}
-          fontSize={11}
+          fontSize={isCustom ? (centreText.length > 9 ? 11 : 16) : 17}
           fontWeight={700}
           style={{
-            fontFamily: 'var(--font-serif)',
-            letterSpacing: '0.1em',
-            textTransform: 'uppercase',
+            fontFamily: isCustom ? 'var(--font-handwritten)' : 'var(--font-serif)',
+            letterSpacing: '0.04em',
             transition: 'fill 0.3s',
           }}
         >
-          {levels[idx]?.label}
+          {centreText}
         </text>
       </svg>
     </div>
@@ -976,28 +1003,22 @@ function VizDiamond({ idx, levels, onPointerDown, onPointerMove, onPointerUp }: 
 
 const CIRCLE_VIZS = [
   VizDiamondEmpty,
-  VizDiamondFull,
-  VizDiamond,
   VizBall,
   VizRing,
   VizArc,
   VizSegments,
   VizLiquid,
   VizBar,
-  VizPulse,
   VizPetals,
 ] as const;
 const CIRCLE_VIZ_LABELS = [
   'Diamond',
-  'Diamond Solid',
-  'Diamond Fill',
   'Ball',
   'Ring',
   'Arc',
   'Dots',
   'Liquid',
   'Bar',
-  'Pulse',
   'Petals',
 ] as const;
 
@@ -1039,49 +1060,102 @@ function ReflectInput({
   onAdd: (note: string) => void;
 }) {
   const [val, setVal] = useState('');
+  const [lastSaved, setLastSaved] = useState('');
+  const [confirming, setConfirming] = useState(false);
+
+  const trimmed = val.trim();
+  const alreadySaved = trimmed !== '' && trimmed === lastSaved;
+  const canSave = trimmed !== '' && !alreadySaved;
+
+  function submit() {
+    if (!canSave) return;
+    onAdd(trimmed);
+    setLastSaved(trimmed);
+    setVal('');
+    setConfirming(true);
+    setTimeout(() => setConfirming(false), 1600);
+  }
+
   return (
-    <textarea
-      value={val}
-      rows={1}
-      onChange={(e) => {
-        setVal(e.target.value);
-        const el = e.currentTarget;
-        el.style.height = 'auto';
-        el.style.height = `${Math.min(el.scrollHeight, 72)}px`;
-      }}
-      onKeyDown={(e) => {
-        if (e.key === 'Enter' && !e.shiftKey) {
-          e.preventDefault();
-          if (val.trim()) {
-            onAdd(val.trim());
-            setVal('');
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+      <textarea
+        value={val}
+        rows={1}
+        onChange={(e) => {
+          setVal(e.target.value);
+          const el = e.currentTarget;
+          el.style.height = 'auto';
+          el.style.height = `${Math.min(el.scrollHeight, 72)}px`;
+        }}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault();
+            submit();
           }
-        }
-      }}
-      placeholder={placeholder}
-      spellCheck={false}
-      autoCorrect="off"
-      autoCapitalize="off"
-      className="placeholder:uppercase placeholder:tracking-[0.14em] placeholder:text-[11px] placeholder:text-[#7A5438] placeholder:opacity-80"
-      style={{
-        background: 'rgba(196,160,96,0.07)',
-        border: '1px solid rgba(196,160,96,0.2)',
-        borderRadius: 10,
-        outline: 'none',
-        fontFamily: 'var(--font-serif)',
-        fontStyle: 'normal',
-        fontSize: 13,
-        color: '#2E1206',
-        padding: '10px 14px',
-        width: '100%',
-        resize: 'none',
-        overflow: 'hidden',
-        lineHeight: 1.5,
-        maxHeight: 120,
-        boxSizing: 'border-box',
-        textAlign: 'center',
-      }}
-    />
+        }}
+        placeholder={placeholder}
+        spellCheck={false}
+        autoCorrect="off"
+        autoCapitalize="off"
+        className="placeholder:uppercase placeholder:tracking-[0.14em] placeholder:text-[11px] placeholder:text-[#7A5438] placeholder:opacity-80"
+        style={{
+          background: 'rgba(196,160,96,0.07)',
+          border: '1px solid rgba(196,160,96,0.2)',
+          borderRadius: 10,
+          outline: 'none',
+          fontFamily: 'var(--font-serif)',
+          fontStyle: 'normal',
+          fontSize: 13,
+          color: '#2E1206',
+          padding: '10px 14px',
+          width: '100%',
+          resize: 'none',
+          overflow: 'hidden',
+          lineHeight: 1.5,
+          maxHeight: 120,
+          boxSizing: 'border-box',
+          textAlign: 'center',
+        }}
+      />
+      <div style={{ display: 'flex', justifyContent: 'center', minHeight: 24 }}>
+        {(trimmed || confirming) && (
+          <button
+            type="button"
+            onClick={submit}
+            disabled={!canSave && !confirming}
+            style={{
+              padding: '3px 16px',
+              borderRadius: 99,
+              border: confirming
+                ? '1px solid rgba(196,160,96,0.85)'
+                : alreadySaved
+                  ? '1px solid rgba(196,160,96,0.15)'
+                  : '1px solid rgba(196,160,96,0.35)',
+              background: confirming
+                ? 'rgba(196,160,96,0.75)'
+                : alreadySaved
+                  ? 'transparent'
+                  : 'rgba(196,160,96,0.1)',
+              fontFamily: 'var(--font-serif)',
+              fontSize: 10,
+              fontWeight: 700,
+              letterSpacing: '0.12em',
+              textTransform: 'uppercase',
+              color: confirming
+                ? 'rgba(92,48,24,0.95)'
+                : alreadySaved
+                  ? 'rgba(122,84,56,0.25)'
+                  : 'rgba(122,84,56,0.8)',
+              cursor: canSave ? 'pointer' : 'default',
+              opacity: confirming ? 1 : 1,
+              transition: 'background 1.4s ease, border 1.4s ease, color 1.4s ease',
+            }}
+          >
+            {confirming ? '✓' : 'save'}
+          </button>
+        )}
+      </div>
+    </div>
   );
 }
 
@@ -1146,79 +1220,133 @@ function HistoryList({
   log: TrackEntry[];
   levels: { label: string; color: string }[];
 }) {
+  const [open, setOpen] = useState(false);
   if (log.length === 0) return null;
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 7 }}>
-      <span
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+      <button
+        type="button"
+        onClick={() => setOpen((v) => !v)}
         style={{
-          fontFamily: 'var(--font-serif)',
-          fontSize: 9,
-          fontWeight: 700,
-          letterSpacing: '0.18em',
-          textTransform: 'uppercase',
-          color: '#5C3018',
-          opacity: 0.65,
-          textAlign: 'center',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          gap: 6,
+          background: 'none',
+          border: 'none',
+          cursor: 'pointer',
+          padding: '2px 0',
         }}
       >
-        History
-      </span>
-      {log.slice(0, 8).map((entry, i) => {
-        const lv = levels[entry.idx];
-        return (
-          <div key={i} style={{ display: 'flex', gap: 8, alignItems: 'baseline' }}>
-            <span
+        <span
+          style={{
+            fontFamily: 'var(--font-serif)',
+            fontSize: 9,
+            fontWeight: 700,
+            letterSpacing: '0.18em',
+            textTransform: 'uppercase',
+            color: '#5C3018',
+            opacity: 0.65,
+          }}
+        >
+          History
+        </span>
+        <span
+          style={{
+            fontSize: 9,
+            color: '#C4A060',
+            opacity: 0.5,
+            transform: open ? 'rotate(180deg)' : 'rotate(0deg)',
+            transition: 'transform 0.2s',
+          }}
+        >
+          ▾
+        </span>
+      </button>
+      {open &&
+        log.slice(0, 12).map((entry, i) => {
+          const lv = levels[entry.idx];
+          return (
+            <div
+              key={i}
               style={{
-                fontFamily: 'var(--font-serif)',
-                fontSize: 10,
-                color: '#C09878',
-                opacity: 0.7,
-                flexShrink: 0,
-                minWidth: 26,
-                textAlign: 'right',
+                border: '1px solid rgba(196,160,96,0.14)',
+                borderRadius: 10,
+                padding: '8px 12px',
+                background: 'rgba(255,255,255,0.02)',
+                display: 'flex',
+                flexDirection: 'column',
+                gap: 5,
               }}
             >
-              {timeAgo(entry.ts)}
-            </span>
-            <span
-              style={{
-                display: 'inline-block',
-                width: 6,
-                height: 6,
-                borderRadius: 1.5,
-                background: lv?.color,
-                flexShrink: 0,
-                alignSelf: 'center',
-              }}
-            />
-            <span
-              style={{
-                fontFamily: 'var(--font-serif)',
-                fontSize: 10,
-                fontWeight: 700,
-                textTransform: 'uppercase',
-                letterSpacing: '0.06em',
-                color: lv?.color,
-                flexShrink: 0,
-              }}
-            >
-              {lv?.label}
-            </span>
-            <span
-              style={{
-                fontFamily: 'var(--font-serif)',
-                fontStyle: 'normal',
-                fontSize: 12,
-                color: '#3A1E08',
-                opacity: 0.85,
-                lineHeight: 1.3,
-              }}
-            >
-              {entry.note}
-            </span>
-          </div>
-        );
-      })}
+              <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                <span
+                  style={{
+                    display: 'inline-block',
+                    width: 6,
+                    height: 6,
+                    borderRadius: 1.5,
+                    background: lv?.color,
+                    flexShrink: 0,
+                  }}
+                />
+                {entry.word ? (
+                  <span
+                    style={{
+                      fontFamily: 'var(--font-serif)',
+                      fontSize: 13,
+                      fontWeight: 700,
+                      letterSpacing: '0.08em',
+                      textTransform: 'uppercase',
+                      color: lv?.color,
+                      flexShrink: 0,
+                    }}
+                  >
+                    {entry.word}
+                  </span>
+                ) : (
+                  <span
+                    style={{
+                      fontFamily: 'var(--font-serif)',
+                      fontSize: 9,
+                      fontWeight: 700,
+                      textTransform: 'uppercase',
+                      letterSpacing: '0.08em',
+                      color: lv?.color,
+                      flexShrink: 0,
+                    }}
+                  >
+                    {lv?.label}
+                  </span>
+                )}
+                <span style={{ flex: 1 }} />
+                <span
+                  style={{
+                    fontFamily: 'var(--font-serif)',
+                    fontSize: 9,
+                    color: '#C09878',
+                    opacity: 0.6,
+                  }}
+                >
+                  {timeAgo(entry.ts)}
+                </span>
+              </div>
+              {entry.note ? (
+                <span
+                  style={{
+                    fontFamily: 'var(--font-serif)',
+                    fontSize: 13,
+                    color: '#3A1E08',
+                    opacity: 0.88,
+                    lineHeight: 1.45,
+                  }}
+                >
+                  {entry.note}
+                </span>
+              ) : null}
+            </div>
+          );
+        })}
     </div>
   );
 }
@@ -1306,7 +1434,7 @@ function CircleTracker({
   const [dragging, setDragging] = useState(false);
   const [log, setLog] = useState<TrackEntry[]>([]);
   const [expanded, setExpanded] = useState(false);
-  const [designOpen, setDesignOpen] = useState(false);
+  const [moodWord, setMoodWord] = useState('');
   const dragRef = useRef<{ startX: number; startIdx: number } | null>(null);
   const idxRef = useRef(idx);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -1322,6 +1450,18 @@ function CircleTracker({
       if (l) setLog(JSON.parse(l));
     } catch {}
   }, [circle.lsIdxKey, circle.lsFragKey, circle.lsLogKey, circle.levels.length]);
+
+  useEffect(() => {
+    if (circle.id !== 'emotions') return;
+    try {
+      setMoodWord(localStorage.getItem('colourmap:mood-word') || '');
+    } catch {}
+    function onMoodChanged(e: Event) {
+      setMoodWord((e as CustomEvent<string>).detail || '');
+    }
+    window.addEventListener('colourmap:mood-changed', onMoodChanged);
+    return () => window.removeEventListener('colourmap:mood-changed', onMoodChanged);
+  }, [circle.id]);
 
   function saveIdx(i: number) {
     const c = Math.max(0, Math.min(circle.levels.length - 1, i));
@@ -1342,7 +1482,12 @@ function CircleTracker({
   }
 
   function addEntry(note: string) {
-    const entry: TrackEntry = { ts: new Date().toISOString(), idx: idxRef.current, note };
+    const entry: TrackEntry = {
+      ts: new Date().toISOString(),
+      idx: idxRef.current,
+      note,
+      word: moodWord || undefined,
+    };
     const next = [entry, ...log];
     setLog(next);
     try {
@@ -1410,74 +1555,12 @@ function CircleTracker({
           {/* Circle visual */}
           <div
             style={{
-              position: 'relative',
               display: 'flex',
               flexDirection: 'column',
               alignItems: 'center',
               gap: 10,
             }}
           >
-            {/* Design picker dot */}
-            <div style={{ position: 'absolute', top: 0, right: 0, zIndex: 10 }}>
-              <button
-                type="button"
-                onClick={() => setDesignOpen((v) => !v)}
-                style={{
-                  width: 14,
-                  height: 14,
-                  borderRadius: '50%',
-                  border: `1px solid rgba(196,160,96,${designOpen ? '0.7' : '0.4'})`,
-                  background: designOpen ? 'rgba(196,160,96,0.35)' : 'rgba(196,160,96,0.18)',
-                  cursor: 'pointer',
-                  padding: 0,
-                }}
-              />
-              {designOpen && (
-                <div
-                  style={{
-                    position: 'absolute',
-                    top: '110%',
-                    right: 0,
-                    background: '#fbf3d8',
-                    border: '1px solid rgba(160,110,40,0.18)',
-                    borderRadius: 10,
-                    padding: 6,
-                    display: 'flex',
-                    flexDirection: 'column',
-                    gap: 2,
-                    minWidth: 110,
-                    boxShadow: '0 4px 16px rgba(0,0,0,0.12)',
-                    zIndex: 200,
-                  }}
-                >
-                  {CIRCLE_VIZ_LABELS.map((lbl, i) => (
-                    <button
-                      key={i}
-                      type="button"
-                      onClick={() => {
-                        onVariantChange(i);
-                        setDesignOpen(false);
-                      }}
-                      style={{
-                        padding: '4px 10px',
-                        borderRadius: 6,
-                        border: 'none',
-                        background: circleVariant === i ? 'rgba(196,160,96,0.22)' : 'transparent',
-                        color: circleVariant === i ? '#5C3018' : '#7A5438',
-                        fontSize: 11,
-                        fontWeight: circleVariant === i ? 700 : 400,
-                        letterSpacing: '0.06em',
-                        textAlign: 'left',
-                        cursor: 'pointer',
-                        fontFamily: 'var(--font-serif)',
-                      }}
-                    >
-                      {lbl}
-                    </button>
-                  ))}
-                </div>
-              )}
-            </div>
             {(() => {
               const Viz = CIRCLE_VIZS[circleVariant] ?? VizBall;
               return (
@@ -1485,6 +1568,7 @@ function CircleTracker({
                   idx={idx}
                   levels={circle.levels}
                   dragging={dragging}
+                  moodWord={circle.id === 'emotions' ? moodWord : undefined}
                   onPointerDown={(e) => {
                     (e.currentTarget as Element).setPointerCapture(e.pointerId);
                     dragRef.current = { startX: e.clientX, startIdx: idxRef.current };
@@ -1518,29 +1602,14 @@ function CircleTracker({
           </div>
 
           {/* Write */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-            <ReflectInput placeholder={circle.reflectPrompt} onAdd={addEntry} />
-            {log.slice(0, 3).map((e, i) => (
-              <span
-                key={i}
-                style={{
-                  fontFamily: 'var(--font-serif)',
-                  fontStyle: 'normal',
-                  fontSize: 13,
-                  color: '#2E1206',
-                  opacity: 0.88,
-                  lineHeight: 1.5,
-                  paddingLeft: 4,
-                  borderLeft: '2px solid rgba(196,160,96,0.3)',
-                }}
-              >
-                {e.note}
-              </span>
-            ))}
-          </div>
+          {circle.id === 'emotions' && <MoodWord />}
+          <ReflectInput placeholder={circle.reflectPrompt} onAdd={addEntry} />
 
           {/* Weekly tracker */}
           <WeekRow log={log} levels={circle.levels} />
+
+          {/* Emotion multi-select pill */}
+          {circle.id === 'emotions' && <EmotionMultiSelect />}
 
           {/* History */}
           <HistoryList log={log} levels={circle.levels} />
@@ -1943,7 +2012,6 @@ const BEHAVIOUR_COLORS = [
   '#B8A088',
   '#7A9E58',
 ];
-const CONTEXT_TAGS = ['stress', 'weekend', 'morning', 'evening', 'tired', 'social', 'alone', 'ill'];
 
 type Behaviour = { id: string; name: string; colorIdx: number };
 type BehaviourEntry = { ts: string; behaviourId: string; contexts: string[] };
@@ -1958,7 +2026,6 @@ function BehaviourTracker() {
   const [expanded, setExpanded] = useState(false);
   const [behaviours, setBehaviours] = useState<Behaviour[]>([]);
   const [log, setLog] = useState<BehaviourEntry[]>([]);
-  const [activeContexts, setActiveContexts] = useState<string[]>([]);
   const [adding, setAdding] = useState(false);
   const [newName, setNewName] = useState('');
   const addRef = useRef<HTMLInputElement>(null);
@@ -1995,11 +2062,8 @@ function BehaviourTracker() {
       saveLog(log.filter((_, i) => i !== alreadyIdx));
     } else {
       const name = behaviours.find((b) => b.id === bId)?.name ?? bId;
-      saveLog([
-        { ts: new Date().toISOString(), behaviourId: bId, contexts: activeContexts },
-        ...log,
-      ]);
-      syncEvent('behavior_log', { behaviorId: bId, behaviorName: name, contexts: activeContexts });
+      saveLog([{ ts: new Date().toISOString(), behaviourId: bId, contexts: [] }, ...log]);
+      syncEvent('behavior_log', { behaviorId: bId, behaviorName: name });
     }
   }
 
@@ -2013,12 +2077,6 @@ function BehaviourTracker() {
     saveBehaviours(next);
     setNewName('');
     setAdding(false);
-  }
-
-  function toggleContext(tag: string) {
-    setActiveContexts((prev) =>
-      prev.includes(tag) ? prev.filter((t) => t !== tag) : [...prev, tag],
-    );
   }
 
   function isLoggedToday(bId: string) {
@@ -2107,52 +2165,6 @@ function BehaviourTracker() {
         <div
           style={{ padding: '18px 16px 20px', display: 'flex', flexDirection: 'column', gap: 16 }}
         >
-          {/* Context tags */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 7 }}>
-            <span
-              style={{
-                fontFamily: 'var(--font-serif)',
-                fontSize: 9,
-                fontWeight: 700,
-                letterSpacing: '0.18em',
-                textTransform: 'uppercase',
-                color: '#8A6A4A',
-                opacity: 0.45,
-                textAlign: 'center',
-              }}
-            >
-              Context today
-            </span>
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 5, justifyContent: 'center' }}>
-              {CONTEXT_TAGS.map((tag) => {
-                const on = activeContexts.includes(tag);
-                return (
-                  <button
-                    key={tag}
-                    type="button"
-                    onClick={() => toggleContext(tag)}
-                    style={{
-                      padding: '3px 10px',
-                      borderRadius: 99,
-                      border: `1px solid ${on ? '#C4A060' : 'rgba(196,160,96,0.2)'}`,
-                      background: on ? 'rgba(196,160,96,0.15)' : 'transparent',
-                      fontFamily: 'var(--font-serif)',
-                      fontSize: 10,
-                      fontWeight: 700,
-                      color: on ? '#C4A060' : '#8A6A4A',
-                      opacity: on ? 1 : 0.5,
-                      cursor: 'pointer',
-                      letterSpacing: '0.07em',
-                      transition: 'all 0.15s',
-                    }}
-                  >
-                    {tag}
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-
           {/* Day-label header row */}
           {behaviours.length > 0 && (
             <div style={{ display: 'flex', alignItems: 'center', paddingRight: 26 }}>
@@ -2298,6 +2310,8 @@ function BehaviourTracker() {
                   }
                 }}
                 placeholder="Name this behaviour…"
+                spellCheck={false}
+                autoCorrect="off"
                 style={{
                   flex: 1,
                   background: 'rgba(255,255,255,0.04)',

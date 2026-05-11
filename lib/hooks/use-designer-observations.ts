@@ -79,37 +79,34 @@ export function useDesignerObservations() {
     async (text: string, area: string | null): Promise<DesignerObservation | null> => {
       const trimmed = text.trim();
       if (!trimmed) return null;
-      try {
-        const res = await fetch('/api/designer-observations', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ text: trimmed, area }),
-        });
-        if (res.ok) {
-          const created = (await res.json()) as DesignerObservation;
-          persistAndSet((prev) => [created, ...prev]);
-          return created;
-        }
-      } catch {
-        /* silent */
-      }
-      return null;
+      // Always save locally first — no login required
+      const local: DesignerObservation = {
+        id: crypto.randomUUID(),
+        userId: 'local',
+        area,
+        text: trimmed,
+        done: false,
+        createdAt: new Date().toISOString(),
+      };
+      persistAndSet((prev) => [local, ...prev]);
+      // Best-effort background sync — silently ignored if unauthenticated
+      fetch('/api/designer-observations', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ text: trimmed, area }),
+      }).catch(() => {});
+      return local;
     },
     [persistAndSet],
   );
 
   const remove = useCallback(
     async (id: string) => {
-      const previous = observations;
       persistAndSet((prev) => prev.filter((o) => o.id !== id));
-      try {
-        const res = await fetch(`/api/designer-observations/${id}`, { method: 'DELETE' });
-        if (!res.ok) throw new Error('delete failed');
-      } catch {
-        persistAndSet(previous);
-      }
+      // Best-effort background sync — no rollback, local delete is final
+      fetch(`/api/designer-observations/${id}`, { method: 'DELETE' }).catch(() => {});
     },
-    [observations, persistAndSet],
+    [persistAndSet],
   );
 
   const setDone = useCallback(

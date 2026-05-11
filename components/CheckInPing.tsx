@@ -2,74 +2,44 @@
 
 import { useEffect, useState } from 'react';
 
-/*
- * CheckInPing — soft banner nudging the user to check in if the last
- * entry was more than a day or two ago. Dismissable for the day; will
- * reappear the next day if still no check-in.
- *
- * Appears at the top of the Day page only when:
- *   1. No check-ins stored at all, OR
- *   2. Most recent check-in was > PING_THRESHOLD_DAYS days ago
- *
- * Does not appear when:
- *   - User dismissed it today (colourmap:checkin-ping-dismissed)
- *   - User checked in today
- *
- * Retention feature, not a blocker — the X dismisses it, and it's
- * styled as gentle muted text, not a red alert.
- */
-
-const PING_THRESHOLD_DAYS = 2;
-const LS_CHECKINS = 'colourmap:check-ins';
 const LS_DISMISSED = 'colourmap:checkin-ping-dismissed';
 
-interface CheckInEntry {
-  date: string;
-}
-
-function daysSince(iso: string): number {
-  const then = new Date(iso).getTime();
-  if (Number.isNaN(then)) return Infinity;
-  return (Date.now() - then) / (1000 * 60 * 60 * 24);
-}
+const QUOTES = [
+  'The only way out is through. And through is always possible.',
+  'You are not behind. You are exactly where the work is.',
+  'Every state you are in — even the hard ones — is information. Use it.',
+  'Small actions compounded over time are the only kind that change lives.',
+  'Your inner world shapes your outer world more than anything else.',
+  'Clarity is not found. It is built, one honest moment at a time.',
+  'You do not need to be ready. You need to begin.',
+  'The version of you that exists in five years is shaped by today.',
+  'Resistance is the compass. It points toward what matters most.',
+  'Feeling lost is not failure. It is the beginning of orientation.',
+  'You cannot think your way to a new life. You have to move.',
+  'Rest is not laziness. It is part of the work.',
+  'The people who change the most are the ones who stay in the room.',
+  'Nothing is wasted. Even the dark years are building something.',
+  'You already have enough to start. Start with that.',
+  'The mind that notices its own patterns is already free of them.',
+  'Energy flows where attention goes. Choose carefully.',
+  'You are allowed to want more. And to build it slowly.',
+  'Discipline is just love for your future self in action.',
+  'Your story is not over. It is barely in the second act.',
+];
 
 function today(): string {
-  return new Date().toISOString().slice(0, 10); // YYYY-MM-DD
+  return new Date().toISOString().slice(0, 10);
 }
 
-function shouldShowPing(): {
-  show: boolean;
-  message: string;
-} {
-  let checkIns: CheckInEntry[] = [];
-  try {
-    checkIns = JSON.parse(localStorage.getItem(LS_CHECKINS) ?? '[]');
-  } catch {
-    return { show: false, message: '' };
-  }
-
-  if (!Array.isArray(checkIns) || checkIns.length === 0) {
-    return { show: true, message: 'New here? Try a one-minute check-in to start your map.' };
-  }
-
-  const mostRecent = checkIns[0];
-  if (!mostRecent?.date) return { show: false, message: '' };
-
-  const d = daysSince(mostRecent.date);
-  if (d < 1) return { show: false, message: '' };
-  if (d >= PING_THRESHOLD_DAYS) {
-    const days = Math.floor(d);
-    return {
-      show: true,
-      message: `Last check-in was ${days} day${days === 1 ? '' : 's'} ago. Two minutes?`,
-    };
-  }
-  return { show: false, message: '' };
+function dailyQuote(): string {
+  const seed = today().replace(/-/g, '');
+  const idx = parseInt(seed.slice(-4), 10) % QUOTES.length;
+  return QUOTES[idx];
 }
 
 export default function CheckInPing() {
   const [visible, setVisible] = useState(false);
-  const [message, setMessage] = useState('');
+  const [quote, setQuote] = useState('');
 
   useEffect(() => {
     try {
@@ -77,20 +47,15 @@ export default function CheckInPing() {
     } catch {
       return;
     }
-    const { show, message: msg } = shouldShowPing();
-    if (show) {
-      setVisible(true);
-      setMessage(msg);
-    }
+    setQuote(dailyQuote());
+    setVisible(true);
   }, []);
 
   function dismiss() {
     setVisible(false);
     try {
       localStorage.setItem(LS_DISMISSED, today());
-    } catch {
-      /* silent */
-    }
+    } catch {}
   }
 
   if (!visible) return null;
@@ -104,27 +69,28 @@ export default function CheckInPing() {
         fontStyle: 'italic',
         fontSize: 14,
         color: '#7A5438',
-        lineHeight: 1.45,
+        lineHeight: 1.55,
         display: 'flex',
         alignItems: 'center',
         gap: 10,
         justifyContent: 'space-between',
       }}
     >
-      <span style={{ flex: 1 }}>{message}</span>
+      <span style={{ flex: 1 }}>{quote}</span>
       <button
         type="button"
         onClick={dismiss}
-        aria-label="Dismiss check-in reminder"
-        className="cursor-pointer transition-opacity hover:opacity-100"
+        aria-label="Dismiss daily reminder"
         style={{
           background: 'none',
           border: 'none',
           color: '#8A6A4A',
-          opacity: 0.55,
+          opacity: 0.45,
           fontSize: 18,
           lineHeight: 1,
           padding: '2px 6px',
+          cursor: 'pointer',
+          flexShrink: 0,
         }}
       >
         ×
