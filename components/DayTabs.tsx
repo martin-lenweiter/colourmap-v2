@@ -74,7 +74,7 @@ export default function DayTabs({ emotionContent, missionContent, progressConten
   return (
     <div className="space-y-5">
       {/* ── Tab row ── */}
-      <div style={{ display: 'flex', gap: 10 }}>
+      <div style={{ display: 'flex', gap: 6 }}>
         {TABS.map((tab) => {
           const isActive = active === tab.id;
           return (
@@ -85,18 +85,19 @@ export default function DayTabs({ emotionContent, missionContent, progressConten
                 if (tab.id !== active) haptic('tap');
                 setActive(tab.id);
               }}
-              className="flex-1 min-w-0 cursor-pointer rounded-2xl px-2 py-4 transition-all duration-200"
+              className="flex-1 min-w-0 cursor-pointer rounded-2xl py-4 transition-all duration-200"
               style={{
                 background: tabBg(isActive),
                 border: tabBorder(isActive),
                 color: tabColor(isActive),
                 fontFamily: 'var(--font-serif)',
-                fontSize: '13px',
+                fontSize: '11px',
                 fontWeight: 800,
-                letterSpacing: '0.14em',
+                letterSpacing: '0.1em',
                 minHeight: 60,
                 textAlign: 'center',
                 textTransform: 'uppercase',
+                padding: '16px 4px',
               }}
             >
               {tab.label}
