@@ -1587,11 +1587,11 @@ function CircleTracker({
           {circle.id === 'emotions' && <MoodWord />}
           <ReflectInput placeholder={circle.reflectPrompt} onAdd={addEntry} />
 
+          {/* Emotion Rainbow — above week */}
+          {circle.id === 'emotions' && <EmotionMultiSelect />}
+
           {/* Weekly tracker */}
           <WeekRow log={log} levels={circle.levels} />
-
-          {/* Emotion multi-select pill */}
-          {circle.id === 'emotions' && <EmotionMultiSelect />}
 
           {/* History */}
           <HistoryList log={log} levels={circle.levels} />
