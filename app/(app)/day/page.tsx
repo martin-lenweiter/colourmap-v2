@@ -27,6 +27,7 @@ function DayContent() {
   const [viewOpen, setViewOpen] = useState(false);
   const [starsOpen, setStarsOpen] = useState(false);
   const [learnOpen, setLearnOpen] = useState(false);
+  const [experimentsOpen, setExperimentsOpen] = useState(false);
 
   // Silently restore server state into localStorage on mount.
   // Current session renders from whatever is already local (instant).
@@ -54,38 +55,75 @@ function DayContent() {
             <div style={{ paddingTop: 20 }}>
               <EmotionLearnPill insights={emotionInsights} programKey="emotional-intelligence" />
             </div>
-            {/* Road / Map / View — below insight */}
-            <div style={{ display: 'flex', justifyContent: 'center', gap: 8, paddingTop: 8 }}>
-              {(
-                [
-                  { label: 'Road', active: roadOpen, toggle: () => setRoadOpen((v) => !v) },
-                  { label: 'Map', active: mapOpen, toggle: () => setMapOpen((v) => !v) },
-                  { label: 'View', active: viewOpen, toggle: () => setViewOpen((v) => !v) },
-                ] as const
-              ).map(({ label, active, toggle }) => (
-                <button
-                  key={label}
-                  type="button"
-                  onClick={toggle}
-                  style={{
-                    padding: '4px 14px',
-                    borderRadius: 20,
-                    border: `1px solid ${active ? 'var(--panel-border, rgba(92,48,24,0.55))' : 'var(--panel-border, rgba(122,84,56,0.28))'}`,
-                    background: active ? 'var(--palette-l3-bg, rgba(92,48,24,0.1))' : 'transparent',
-                    color: active
-                      ? 'var(--palette-panel-text, #5C3018)'
-                      : 'var(--palette-panel-muted, #7A5438)',
-                    fontFamily: 'var(--font-serif)',
-                    fontSize: 11,
-                    fontWeight: active ? 700 : 500,
-                    letterSpacing: '0.1em',
-                    textTransform: 'uppercase' as const,
-                    cursor: 'pointer',
-                  }}
-                >
-                  {label}
-                </button>
-              ))}
+            {/* Experiments — collapsible pill */}
+            <div
+              style={{
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                gap: 10,
+                paddingTop: 8,
+              }}
+            >
+              <button
+                type="button"
+                onClick={() => setExperimentsOpen((v) => !v)}
+                style={{
+                  padding: '4px 18px',
+                  borderRadius: 20,
+                  border: `1px solid ${experimentsOpen ? 'var(--panel-border, rgba(122,84,56,0.45))' : 'var(--panel-border, rgba(122,84,56,0.22))'}`,
+                  background: 'transparent',
+                  color: 'var(--palette-panel-muted, #7A5438)',
+                  fontFamily: 'var(--font-serif)',
+                  fontSize: 11,
+                  fontWeight: 500,
+                  letterSpacing: '0.1em',
+                  textTransform: 'uppercase' as const,
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 6,
+                }}
+              >
+                Experiments
+                <span style={{ fontSize: 8, opacity: 0.4 }}>{experimentsOpen ? '▲' : '▼'}</span>
+              </button>
+              {experimentsOpen && (
+                <div style={{ display: 'flex', gap: 8 }}>
+                  {(
+                    [
+                      { label: 'Road', active: roadOpen, toggle: () => setRoadOpen((v) => !v) },
+                      { label: 'Map', active: mapOpen, toggle: () => setMapOpen((v) => !v) },
+                      { label: 'View', active: viewOpen, toggle: () => setViewOpen((v) => !v) },
+                    ] as const
+                  ).map(({ label, active, toggle }) => (
+                    <button
+                      key={label}
+                      type="button"
+                      onClick={toggle}
+                      style={{
+                        padding: '4px 14px',
+                        borderRadius: 20,
+                        border: `1px solid ${active ? 'var(--panel-border, rgba(92,48,24,0.55))' : 'var(--panel-border, rgba(122,84,56,0.28))'}`,
+                        background: active
+                          ? 'var(--palette-l3-bg, rgba(92,48,24,0.1))'
+                          : 'transparent',
+                        color: active
+                          ? 'var(--palette-panel-text, #5C3018)'
+                          : 'var(--palette-panel-muted, #7A5438)',
+                        fontFamily: 'var(--font-serif)',
+                        fontSize: 11,
+                        fontWeight: active ? 700 : 500,
+                        letterSpacing: '0.1em',
+                        textTransform: 'uppercase' as const,
+                        cursor: 'pointer',
+                      }}
+                    >
+                      {label}
+                    </button>
+                  ))}
+                </div>
+              )}
             </div>
             {roadOpen && <DayRoad embedded onClose={() => setRoadOpen(false)} />}
             {mapOpen && <InfographicsView embedded onClose={() => setMapOpen(false)} />}
