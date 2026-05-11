@@ -41,46 +41,8 @@ const CHANNEL_COLORS = [
   '#7A8A48', // olive
 ];
 
-const FIXED_CHANNELS: Channel[] = [
-  {
-    id: 'fixed-emotions',
-    title: 'Emotions',
-    color: '#A87858',
-    open: false,
-    compartments: [],
-    fixed: true,
-  },
-  { id: 'fixed-body', title: 'Body', color: '#7A8A6A', open: false, compartments: [], fixed: true },
-  {
-    id: 'fixed-focus',
-    title: 'Focus',
-    color: '#5A6878',
-    open: false,
-    compartments: [],
-    fixed: true,
-  },
-  {
-    id: 'fixed-behaviours',
-    title: 'Behaviours',
-    color: '#8A9878',
-    open: false,
-    compartments: [],
-    fixed: true,
-  },
-];
-
 function uid() {
   return crypto.randomUUID();
-}
-
-function ensureFixedChannels(channels: Channel[]): Channel[] {
-  const merged = [...channels];
-  for (const fixed of FIXED_CHANNELS) {
-    if (!merged.find((c) => c.id === fixed.id)) {
-      merged.unshift({ ...fixed });
-    }
-  }
-  return merged;
 }
 
 function defaultData(): CMapData {

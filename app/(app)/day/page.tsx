@@ -73,9 +73,13 @@ function DayContent() {
                     style={{
                       padding: '4px 14px',
                       borderRadius: 20,
-                      border: `1px solid ${active ? 'rgba(92,48,24,0.55)' : 'rgba(122,84,56,0.28)'}`,
-                      background: active ? 'rgba(92,48,24,0.1)' : 'transparent',
-                      color: active ? '#5C3018' : '#7A5438',
+                      border: `1px solid ${active ? 'var(--panel-border, rgba(92,48,24,0.55))' : 'var(--panel-border, rgba(122,84,56,0.28))'}`,
+                      background: active
+                        ? 'var(--palette-l3-bg, rgba(92,48,24,0.1))'
+                        : 'transparent',
+                      color: active
+                        ? 'var(--palette-panel-text, #5C3018)'
+                        : 'var(--palette-panel-muted, #7A5438)',
                       fontFamily: 'var(--font-serif)',
                       fontSize: 11,
                       fontWeight: active ? 700 : 500,
