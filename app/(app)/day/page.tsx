@@ -35,7 +35,10 @@ function DayContent() {
     hydrate();
   }, []);
   return (
-    <div className="mx-auto w-full max-w-2xl space-y-4 px-4 py-3" style={{ paddingBottom: 36 }}>
+    <div
+      className="mx-auto w-full max-w-2xl space-y-4 px-2 sm:px-4 py-3"
+      style={{ paddingBottom: 36 }}
+    >
       <FirstRunOnboarding />
       <TodaysField />
       <CheckInPing />

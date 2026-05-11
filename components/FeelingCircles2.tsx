@@ -1511,7 +1511,7 @@ function CircleTracker({
       <div
         onClick={() => setExpanded((e) => !e)}
         style={{
-          padding: '10px 16px',
+          padding: '14px 16px',
           borderBottom: expanded ? `1px solid rgba(196,160,96,0.2)` : 'none',
           background: 'rgba(196,160,96,0.1)',
           cursor: 'pointer',
@@ -1787,7 +1787,7 @@ function FocusTracker({ circleVariant }: { circleVariant: number }) {
       <div
         onClick={() => setExpanded((e) => !e)}
         style={{
-          padding: '10px 16px',
+          padding: '14px 16px',
           borderBottom: expanded ? `1px solid rgba(196,160,96,0.2)` : 'none',
           background: 'rgba(196,160,96,0.1)',
           cursor: 'pointer',
@@ -2125,7 +2125,7 @@ function BehaviourTracker() {
       <div
         onClick={() => setExpanded((v) => !v)}
         style={{
-          padding: '10px 16px',
+          padding: '14px 16px',
           borderBottom: expanded ? '1px solid rgba(196,160,96,0.2)' : 'none',
           background: 'rgba(196,160,96,0.1)',
           cursor: 'pointer',
