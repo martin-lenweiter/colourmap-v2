@@ -4,10 +4,11 @@ import { useEffect, useState } from 'react';
 import { syncPref } from '@/lib/sync';
 
 /* ── Tokens ──────────────────────────────────────────────────── */
-const OCHRE = '#C4A060';
-const BROWN = '#5C3018';
-const LABEL = '#8A6A4A';
-const CARD_BG = 'rgba(255,255,255,0.03)';
+const OCHRE = 'var(--palette-panel-text, #C4A060)';
+const OCHRE_HEX = '#C4A060'; // use only where CSS vars can't be interpolated (e.g. boxShadow hex+alpha)
+const BROWN = 'var(--palette-panel-text, rgba(240,216,152,0.88))';
+const LABEL = 'var(--palette-panel-muted, rgba(196,160,96,0.55))';
+const CARD_BG = 'rgba(196,160,96,0.05)';
 
 /* ── Types ───────────────────────────────────────────────────── */
 type Step = { id: string; text: string; done: boolean };
@@ -18,6 +19,7 @@ type Channel = {
   color: string;
   open: boolean;
   compartments: Compartment[];
+  fixed?: boolean;
 };
 type Idea = { id: string; title: string; steps: Step[] };
 interface CMapData {
@@ -28,10 +30,57 @@ interface CMapData {
 
 const LS_KEY = 'colourmap:cmap-data';
 
-const CHANNEL_COLORS = ['#7A8A6A', '#5A6878', '#A87858', '#8A9878', '#A87878', '#7A8898'];
+const CHANNEL_COLORS = [
+  '#C07040', // terracotta
+  '#4A8870', // teal-sage
+  '#4870A8', // steel blue
+  '#9858A0', // muted violet
+  '#A87038', // amber
+  '#3A8890', // deep teal
+  '#A85870', // dusty rose
+  '#7A8A48', // olive
+];
+
+const FIXED_CHANNELS: Channel[] = [
+  {
+    id: 'fixed-emotions',
+    title: 'Emotions',
+    color: '#A87858',
+    open: false,
+    compartments: [],
+    fixed: true,
+  },
+  { id: 'fixed-body', title: 'Body', color: '#7A8A6A', open: false, compartments: [], fixed: true },
+  {
+    id: 'fixed-focus',
+    title: 'Focus',
+    color: '#5A6878',
+    open: false,
+    compartments: [],
+    fixed: true,
+  },
+  {
+    id: 'fixed-behaviours',
+    title: 'Behaviours',
+    color: '#8A9878',
+    open: false,
+    compartments: [],
+    fixed: true,
+  },
+];
 
 function uid() {
   return crypto.randomUUID();
+}
+
+function ensureFixedChannels(channels: Channel[]): Channel[] {
+  const merged = [...channels];
+  for (const fixed of FIXED_CHANNELS) {
+    if (!merged.find((c) => c.id === fixed.id)) {
+      merged.unshift({ ...fixed });
+    }
+  }
+  return merged;
 }
 
 function defaultData(): CMapData {
@@ -270,6 +319,8 @@ function CompartmentCard({
             onUpdate({ ...comp, title: e.target.value });
           }}
           placeholder="compartment…"
+          spellCheck={false}
+          autoCorrect="off"
           style={{
             flex: 1,
             background: 'transparent',
@@ -443,26 +494,44 @@ function ChannelCard({
           }}
         />
 
-        <input
-          type="text"
-          value={channel.title}
-          onClick={(e) => e.stopPropagation()}
-          onChange={(e) => onUpdate({ ...channel, title: e.target.value })}
-          placeholder="channel…"
-          style={{
-            flex: 1,
-            background: 'transparent',
-            border: 'none',
-            outline: 'none',
-            fontFamily: 'var(--font-serif)',
-            fontSize: 12,
-            fontWeight: 800,
-            letterSpacing: '0.13em',
-            textTransform: 'uppercase',
-            color: channel.color,
-            cursor: 'text',
-          }}
-        />
+        {channel.fixed ? (
+          <span
+            style={{
+              flex: 1,
+              fontFamily: 'var(--font-serif)',
+              fontSize: 12,
+              fontWeight: 800,
+              letterSpacing: '0.13em',
+              textTransform: 'uppercase',
+              color: channel.color,
+            }}
+          >
+            {channel.title}
+          </span>
+        ) : (
+          <input
+            type="text"
+            value={channel.title}
+            onClick={(e) => e.stopPropagation()}
+            onChange={(e) => onUpdate({ ...channel, title: e.target.value })}
+            placeholder="channel…"
+            spellCheck={false}
+            autoCorrect="off"
+            style={{
+              flex: 1,
+              background: 'transparent',
+              border: 'none',
+              outline: 'none',
+              fontFamily: 'var(--font-serif)',
+              fontSize: 12,
+              fontWeight: 800,
+              letterSpacing: '0.13em',
+              textTransform: 'uppercase',
+              color: channel.color,
+              cursor: 'text',
+            }}
+          />
+        )}
 
         {totalSteps > 0 && (
           <span
@@ -478,26 +547,28 @@ function ChannelCard({
           </span>
         )}
 
-        <button
-          type="button"
-          onClick={(e) => {
-            e.stopPropagation();
-            onDelete();
-          }}
-          style={{
-            background: 'none',
-            border: 'none',
-            color: LABEL,
-            opacity: 0.22,
-            cursor: 'pointer',
-            fontSize: 14,
-            lineHeight: 1,
-            padding: 0,
-            flexShrink: 0,
-          }}
-        >
-          ×
-        </button>
+        {!channel.fixed && (
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              onDelete();
+            }}
+            style={{
+              background: 'none',
+              border: 'none',
+              color: LABEL,
+              opacity: 0.22,
+              cursor: 'pointer',
+              fontSize: 14,
+              lineHeight: 1,
+              padding: 0,
+              flexShrink: 0,
+            }}
+          >
+            ×
+          </button>
+        )}
 
         <span
           style={{
@@ -608,6 +679,8 @@ function IdeaCard({
           onClick={(e) => e.stopPropagation()}
           onChange={(e) => onUpdate({ ...idea, title: e.target.value })}
           placeholder="idea…"
+          spellCheck={false}
+          autoCorrect="off"
           style={{
             flex: 1,
             background: 'transparent',
@@ -719,8 +792,9 @@ export default function ColourMapPanel() {
           const parsed = JSON.parse(raw);
           if (['ColourMap', 'Branches', 'Channels'].includes(parsed.title)) {
             parsed.title = 'Areas';
-            localStorage.setItem(LS_KEY, JSON.stringify(parsed));
           }
+          parsed.channels = (parsed.channels ?? []).filter((c: Channel) => !c.fixed);
+          localStorage.setItem(LS_KEY, JSON.stringify(parsed));
           setData(parsed);
         }
       } catch {}
@@ -758,7 +832,7 @@ export default function ColourMapPanel() {
   }
 
   function deleteChannel(id: string) {
-    persist({ ...data, channels: data.channels.filter((x) => x.id !== id) });
+    persist({ ...data, channels: data.channels.filter((x) => x.id !== id && !x.fixed) });
   }
 
   function addIdea() {
@@ -786,9 +860,9 @@ export default function ColourMapPanel() {
   return (
     <div
       style={{
-        border: `1px solid rgba(196,160,96,0.2)`,
-        borderRadius: 16,
-        background: 'rgba(255,255,255,0.03)',
+        border: `1px solid var(--panel-border, rgba(196,160,96,0.18))`,
+        borderRadius: 14,
+        background: 'var(--palette-l3-bg, rgba(10,6,3,0.6))',
         overflow: 'hidden',
       }}
     >
@@ -796,8 +870,8 @@ export default function ColourMapPanel() {
       <div
         onClick={() => setOpen((v) => !v)}
         style={{
-          padding: '10px 16px',
-          background: 'rgba(196,160,96,0.1)',
+          padding: '14px 18px',
+          background: 'none',
           borderBottom: open ? `1px solid rgba(196,160,96,0.15)` : 'none',
           cursor: 'pointer',
           display: 'flex',
@@ -834,7 +908,7 @@ export default function ColourMapPanel() {
                     borderRadius: '50%',
                     background: view === v ? OCHRE : 'rgba(196,160,96,0.18)',
                     border: `1.5px solid ${view === v ? OCHRE : 'rgba(196,160,96,0.55)'}`,
-                    boxShadow: view === v ? `0 0 7px ${OCHRE}70` : 'none',
+                    boxShadow: view === v ? `0 0 7px ${OCHRE_HEX}70` : 'none',
                     transition: 'all 0.2s',
                   }}
                 />
@@ -849,7 +923,7 @@ export default function ColourMapPanel() {
               fontWeight: 800,
               textTransform: 'uppercase',
               letterSpacing: '0.14em',
-              color: '#5C3018',
+              color: 'var(--palette-panel-text, rgba(196,160,96,0.82))',
             }}
           >
             Areas
@@ -869,7 +943,9 @@ export default function ColourMapPanel() {
             </div>
           )}
         </div>
-        <span style={{ flex: 1, display: 'flex', justifyContent: 'flex-end' }}>
+        <span
+          style={{ flex: 1, display: 'flex', justifyContent: 'flex-end', alignItems: 'center' }}
+        >
           <span
             style={{
               color: OCHRE,

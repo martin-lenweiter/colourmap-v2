@@ -1527,9 +1527,10 @@ export default function InfographicsView({
               ref={svgRef}
               viewBox={`0 0 ${W} ${H}`}
               width="100%"
-              style={{ display: 'block' }}
+              style={{ display: 'block', touchAction: 'none' }}
               onPointerMove={onPointerMove}
               onPointerUp={onPointerUp}
+              onPointerCancel={onPointerUp}
             >
               {Array.from({ length: 8 }, (_, i) => (
                 <line

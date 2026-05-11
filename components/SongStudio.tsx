@@ -518,20 +518,98 @@ function SongRecordingsPanel({
   );
 }
 
-/* ─── Song view (read/play mode) ─────────────────────────── */
+/* ─── Auto-expanding textarea ────────────────────────────── */
+function AutoTextarea({
+  value,
+  onChange,
+  placeholder,
+  className,
+  style,
+}: {
+  value: string;
+  onChange: (v: string) => void;
+  placeholder?: string;
+  className?: string;
+  style?: React.CSSProperties;
+}) {
+  const ref = useCallback((el: HTMLTextAreaElement | null) => {
+    if (!el) return;
+    el.style.height = 'auto';
+    el.style.height = `${el.scrollHeight}px`;
+  }, []);
+
+  return (
+    <textarea
+      ref={ref}
+      value={value}
+      placeholder={placeholder}
+      className={className}
+      style={{ resize: 'none', overflow: 'hidden', ...style }}
+      onChange={(e) => {
+        const el = e.currentTarget;
+        el.style.height = 'auto';
+        el.style.height = `${el.scrollHeight}px`;
+        onChange(e.target.value);
+      }}
+    />
+  );
+}
+
+/* ─── Song view — inline editing, auto-save ───────────────── */
 function SongView({
   song,
-  onEdit,
+  onSave,
   onBack,
   onShowRecordings,
 }: {
   song: Song;
-  onEdit: () => void;
+  onSave: (s: Song) => void;
   onBack: () => void;
   onShowRecordings: (songId: string) => void;
 }) {
+  const [s, setS] = useState<Song>(song);
+
+  function update<K extends keyof Song>(key: K, val: Song[K]) {
+    const next = { ...s, [key]: val };
+    setS(next);
+    onSave(next);
+  }
+
+  function updateSeg(id: string, patch: Partial<SongSegment>) {
+    const next = {
+      ...s,
+      segments: s.segments.map((seg) => (seg.id === id ? { ...seg, ...patch } : seg)),
+    };
+    setS(next);
+    onSave(next);
+  }
+
+  function addSegment() {
+    const seg: SongSegment = { id: uid(), type: 'verse', chords: '', text: '' };
+    const next = { ...s, segments: [...s.segments, seg] };
+    setS(next);
+    onSave(next);
+  }
+
+  function deleteSeg(id: string) {
+    const next = { ...s, segments: s.segments.filter((seg) => seg.id !== id) };
+    setS(next);
+    onSave(next);
+  }
+
+  function moveSeg(id: string, dir: -1 | 1) {
+    const segs = [...s.segments];
+    const i = segs.findIndex((seg) => seg.id === id);
+    const j = i + dir;
+    if (j < 0 || j >= segs.length) return;
+    [segs[i], segs[j]] = [segs[j], segs[i]];
+    const next = { ...s, segments: segs };
+    setS(next);
+    onSave(next);
+  }
+
   return (
-    <div className="space-y-6">
+    <div className="space-y-5">
       {/* Nav */}
       <div className="flex items-center gap-3">
         <button
@@ -542,121 +620,197 @@ function SongView({
         >
           ← Songs
         </button>
-        <button
-          type="button"
-          onClick={onEdit}
-          className="ml-auto cursor-pointer rounded-full px-4 py-1.5 text-[11px] font-semibold uppercase tracking-[0.1em] transition-all hover:opacity-80"
-          style={{ background: '#C4A06018', color: '#C4A060', border: '1px solid #C4A06040' }}
-        >
-          Edit
-        </button>
       </div>
 
-      {/* Header */}
+      {/* Title + metadata */}
       <div>
-        <div className="flex items-start gap-3 flex-wrap">
-          <h2
-            className="text-[26px] font-bold flex-1 min-w-0"
+        <input
+          value={s.title}
+          onChange={(e) => update('title', e.target.value)}
+          placeholder="Song title…"
+          className="w-full bg-transparent text-[24px] font-bold outline-none"
+          style={{
+            color: 'var(--foreground)',
+            fontFamily: 'var(--font-serif)',
+            borderBottom: '1px solid #C4A06020',
+            paddingBottom: 4,
+          }}
+        />
+        <div className="flex flex-wrap items-center gap-x-3 gap-y-1 mt-2">
+          {/* Status next to BPM */}
+          <select
+            value={s.status}
+            onChange={(e) => update('status', e.target.value as SongStatus)}
+            className="rounded-full px-2 py-0.5 text-[10px] uppercase tracking-[0.1em] cursor-pointer outline-none font-bold"
             style={{
-              color: 'var(--foreground)',
-              fontFamily: 'var(--font-serif)',
-              letterSpacing: '0.02em',
+              background: `${statusColor(s.status)}18`,
+              color: statusColor(s.status),
+              border: `1px solid ${statusColor(s.status)}35`,
             }}
           >
-            {song.title}
-          </h2>
-          <span
-            className="mt-1 rounded-full px-3 py-0.5 text-[10px] uppercase tracking-[0.1em] shrink-0"
+            {STATUS_OPTS.map((o) => (
+              <option key={o.id} value={o.id}>
+                {o.label}
+              </option>
+            ))}
+          </select>
+          <input
+            value={s.key}
+            onChange={(e) => update('key', e.target.value)}
+            placeholder="Key"
+            className="bg-transparent text-[12px] outline-none"
             style={{
-              background: `${statusColor(song.status)}20`,
-              color: statusColor(song.status),
+              color: 'var(--muted-foreground)',
               fontFamily: 'var(--font-serif)',
-              fontWeight: 700,
+              width: 48,
+              borderBottom: '1px solid #C4A06018',
             }}
-          >
-            {song.status}
-          </span>
+          />
+          <div className="flex items-center gap-1">
+            <input
+              type="number"
+              value={s.tempo || ''}
+              onChange={(e) => update('tempo', Number(e.target.value))}
+              placeholder="BPM"
+              min={40}
+              max={240}
+              className="bg-transparent text-[12px] outline-none"
+              style={{
+                color: 'var(--muted-foreground)',
+                fontFamily: 'var(--font-serif)',
+                width: 48,
+                borderBottom: '1px solid #C4A06018',
+              }}
+            />
+            <span
+              className="text-[10px]"
+              style={{ color: 'var(--muted-foreground)', opacity: 0.5 }}
+            >
+              bpm
+            </span>
+          </div>
+          <input
+            value={s.genre}
+            onChange={(e) => update('genre', e.target.value)}
+            placeholder="Genre"
+            className="bg-transparent text-[12px] outline-none"
+            style={{
+              color: 'var(--muted-foreground)',
+              fontFamily: 'var(--font-serif)',
+              width: 80,
+              borderBottom: '1px solid #C4A06018',
+            }}
+          />
         </div>
-        <p
-          className="mt-1 text-[12px]"
-          style={{ color: 'var(--muted-foreground)', fontFamily: 'var(--font-serif)' }}
-        >
-          {[song.key && `Key: ${song.key}`, song.genre, song.tempo ? `${song.tempo} bpm` : '']
-            .filter(Boolean)
-            .join(' · ')}
-        </p>
       </div>
 
       {/* Flow strip */}
-      {song.segments.length > 0 && (
-        <div>
-          <p
-            className="mb-2 text-[10px] uppercase tracking-[0.1em]"
-            style={{ color: 'var(--muted-foreground)', fontFamily: 'var(--font-serif)' }}
-          >
-            Structure
-          </p>
-          <SongFlowStrip segments={song.segments} />
-        </div>
-      )}
+      {s.segments.length > 0 && <SongFlowStrip segments={s.segments} />}
 
-      {/* Segments */}
-      <div className="space-y-4">
-        {song.segments.map((seg) => {
+      {/* Segments — inline editable, auto-expanding */}
+      <div className="space-y-3">
+        {s.segments.map((seg, i) => {
           const color = segColor(seg.type);
           return (
-            <div key={seg.id} className="space-y-1.5">
-              <div className="flex items-center gap-2">
-                <span
-                  className="h-2 w-2 rounded-sm shrink-0"
-                  style={{ background: color, transform: 'rotate(45deg)' }}
-                />
-                <span
-                  className="text-[11px] font-semibold uppercase tracking-[0.12em]"
-                  style={{ color, fontFamily: 'var(--font-serif)' }}
+            <div
+              key={seg.id}
+              className="rounded-xl p-3 space-y-2"
+              style={{ background: `${color}08`, border: `1px solid ${color}22` }}
+            >
+              {/* Segment header */}
+              <div className="flex items-center gap-2 flex-wrap">
+                <select
+                  value={seg.type}
+                  onChange={(e) => updateSeg(seg.id, { type: e.target.value as SegmentType })}
+                  className="rounded-full px-3 py-0.5 text-[11px] font-semibold uppercase tracking-[0.08em] cursor-pointer outline-none"
+                  style={{ background: `${color}20`, color, border: `1px solid ${color}40` }}
                 >
-                  {segLabel(seg.type)}
-                </span>
-                {seg.chords && (
-                  <span
-                    className="ml-2 font-mono text-[12px]"
-                    style={{ color: '#7A5438', letterSpacing: '0.06em' }}
+                  {SEGMENT_TYPES.map((t) => (
+                    <option key={t.id} value={t.id}>
+                      {t.label}
+                    </option>
+                  ))}
+                </select>
+                <div className="ml-auto flex items-center gap-1">
+                  <button
+                    type="button"
+                    onClick={() => moveSeg(seg.id, -1)}
+                    disabled={i === 0}
+                    className="cursor-pointer rounded px-1.5 py-0.5 text-[11px] transition-all hover:opacity-70 disabled:opacity-20"
+                    style={{ color: 'var(--muted-foreground)' }}
                   >
-                    {seg.chords}
-                  </span>
-                )}
+                    ↑
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => moveSeg(seg.id, 1)}
+                    disabled={i === s.segments.length - 1}
+                    className="cursor-pointer rounded px-1.5 py-0.5 text-[11px] transition-all hover:opacity-70 disabled:opacity-20"
+                    style={{ color: 'var(--muted-foreground)' }}
+                  >
+                    ↓
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => deleteSeg(seg.id)}
+                    className="cursor-pointer rounded px-1.5 py-0.5 text-[10px] uppercase tracking-[0.08em] transition-all hover:opacity-70"
+                    style={{ color: '#C06040', fontFamily: 'var(--font-serif)' }}
+                  >
+                    del
+                  </button>
+                </div>
               </div>
-              {seg.text && (
-                <p
-                  className="pl-5 text-[14px] leading-relaxed whitespace-pre-wrap"
-                  style={{
-                    color: 'var(--foreground)',
-                    fontFamily: 'var(--font-serif)',
-                    opacity: 0.9,
-                  }}
-                >
-                  {seg.text}
-                </p>
-              )}
+              {/* Chords */}
+              <input
+                value={seg.chords}
+                onChange={(e) => updateSeg(seg.id, { chords: e.target.value })}
+                placeholder="Chord progression — Am G F E…"
+                className="w-full bg-transparent text-[12px] outline-none"
+                style={{
+                  color: '#7A5438',
+                  borderBottom: `1px solid ${color}20`,
+                  fontFamily: 'var(--font-serif)',
+                  paddingBottom: 3,
+                }}
+              />
+              {/* Lyrics / notes — auto-expanding */}
+              <AutoTextarea
+                value={seg.text}
+                onChange={(v) => updateSeg(seg.id, { text: v })}
+                placeholder="Lyrics or notes…"
+                className="w-full bg-transparent text-[14px] outline-none leading-relaxed"
+                style={{
+                  color: 'var(--foreground)',
+                  fontFamily: 'var(--font-serif)',
+                  minHeight: 80,
+                  display: 'block',
+                }}
+              />
             </div>
           );
         })}
       </div>
 
-      {song.segments.length === 0 && (
-        <p
-          className="text-center italic text-[13px] py-6"
-          style={{ color: 'var(--muted-foreground)', fontFamily: 'var(--font-serif)' }}
-        >
-          No segments yet — tap Edit to add them
-        </p>
-      )}
+      <button
+        type="button"
+        onClick={addSegment}
+        className="flex w-full cursor-pointer items-center justify-center gap-2 rounded-xl py-3 text-[12px] uppercase tracking-[0.1em] transition-all hover:opacity-80"
+        style={{
+          background: '#C4A06010',
+          border: '1px dashed #C4A06040',
+          color: '#C4A060',
+          fontFamily: 'var(--font-serif)',
+          fontWeight: 700,
+        }}
+      >
+        + Add Segment
+      </button>
 
       {/* Recordings for this song */}
       <SongRecordingsPanel
-        songId={song.id}
-        songTitle={song.title}
-        onShowAll={() => onShowRecordings(song.id)}
+        songId={s.id}
+        songTitle={s.title}
+        onShowAll={() => onShowRecordings(s.id)}
       />
     </div>
   );
@@ -785,7 +939,7 @@ function SongEditor({
           <input
             id="song-tempo"
             type="number"
-            value={s.tempo}
+            value={s.tempo || ''}
             onChange={(e) => field('tempo', Number(e.target.value))}
             min={40}
             max={240}
@@ -1003,12 +1157,11 @@ export default function SongStudio({
     const next = [song, ...songs];
     persist(next);
     setNewTitle('');
-    setMode({ kind: 'edit', id: song.id });
+    setMode({ kind: 'view', id: song.id });
   }
 
   function saveSong(updated: Song) {
     persist(songs.map((s) => (s.id === updated.id ? updated : s)));
-    setMode({ kind: 'view', id: updated.id });
   }
 
   function deleteSong(id: string) {
@@ -1022,22 +1175,9 @@ export default function SongStudio({
       return (
         <SongView
           song={song}
-          onEdit={() => setMode({ kind: 'edit', id: song.id })}
+          onSave={saveSong}
           onBack={() => setMode({ kind: 'list' })}
           onShowRecordings={(songId) => onShowRecordings?.(songId)}
-        />
-      );
-    }
-  }
-
-  if (mode.kind === 'edit') {
-    const song = songs.find((s) => s.id === mode.id);
-    if (song) {
-      return (
-        <SongEditor
-          song={song}
-          onSave={saveSong}
-          onBack={() => setMode({ kind: 'view', id: song.id })}
         />
       );
     }

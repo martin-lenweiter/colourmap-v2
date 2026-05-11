@@ -84,24 +84,28 @@ function EvolutionChart({ axisIdx, entries }: { axisIdx: number; entries: Timeli
       </svg>
       <div
         style={{
-          display: 'flex',
-          justifyContent: 'space-between',
+          textAlign: 'center',
           width: W,
-          fontSize: 8,
-          color: 'rgba(196,160,96,0.4)',
+          fontSize: 9,
+          color: '#C4A060',
+          fontWeight: 700,
           letterSpacing: '0.1em',
         }}
       >
-        <span>{levels[0]}</span>
-        <span style={{ color: '#C4A060', fontWeight: 700 }}>{levels[current]}</span>
-        <span>{levels[max]}</span>
+        {levels[current]}
       </div>
     </div>
   );
 }
 
 /* ── Main component ─────────────────────────────────────────────── */
-export default function DayView3D({ onClose }: { onClose?: () => void }) {
+export default function DayView3D({
+  onClose,
+  embedded,
+}: {
+  onClose?: () => void;
+  embedded?: boolean;
+}) {
   const mountRef = useRef<HTMLDivElement>(null);
   const [selected, setSelected] = useState<SceneNode | null>(null);
   const [entries, setEntries] = useState<TimelineEntry[]>([]);
@@ -447,6 +451,149 @@ export default function DayView3D({ onClose }: { onClose?: () => void }) {
     };
   }, []);
 
+  const inner = (
+    <div
+      onClick={(e) => e.stopPropagation()}
+      style={{
+        position: 'relative',
+        width: '100%',
+        maxWidth: embedded ? undefined : 480,
+        maxHeight: embedded ? undefined : '92svh',
+        background: '#060402',
+        borderTop: '1px solid rgba(196,160,96,0.2)',
+        borderRadius: embedded ? 14 : '20px 20px 0 0',
+        overflowY: 'auto',
+        overflowX: 'visible',
+        fontFamily: 'var(--font-serif)',
+        paddingBottom: embedded ? 0 : 'env(safe-area-inset-bottom)',
+      }}
+    >
+      {!embedded && (
+        <div style={{ display: 'flex', justifyContent: 'center', padding: '10px 0 4px' }}>
+          <div
+            style={{ width: 36, height: 3, borderRadius: 2, background: 'rgba(196,160,96,0.25)' }}
+          />
+        </div>
+      )}
+
+      {/* Header */}
+      <div style={{ padding: '2px 16px 6px', display: 'flex', alignItems: 'center' }}>
+        <span
+          style={{
+            fontSize: 10,
+            fontWeight: 800,
+            letterSpacing: '0.22em',
+            textTransform: 'uppercase',
+            color: 'rgba(196,160,96,0.45)',
+            flex: 1,
+          }}
+        >
+          {selected ? selected.label : 'View'}
+        </span>
+        {selected && (
+          <button
+            type="button"
+            onClick={() => setSelected(null)}
+            style={{
+              background: 'none',
+              border: 'none',
+              cursor: 'pointer',
+              color: 'rgba(196,160,96,0.4)',
+              fontSize: 11,
+              letterSpacing: '0.12em',
+              textTransform: 'uppercase',
+              marginRight: 12,
+            }}
+          >
+            Back
+          </button>
+        )}
+        <button
+          type="button"
+          onClick={onClose}
+          style={{
+            background: 'none',
+            border: 'none',
+            cursor: 'pointer',
+            color: 'rgba(196,160,96,0.4)',
+            fontSize: 16,
+            lineHeight: 1,
+            padding: '0 2px',
+          }}
+        >
+          ×
+        </button>
+      </div>
+
+      {/* 3D canvas */}
+      <div
+        ref={mountRef}
+        style={{
+          width: '100%',
+          height: selected ? 160 : 220,
+          position: 'relative',
+          overflow: 'hidden',
+          cursor: 'grab',
+        }}
+      />
+
+      {/* Evolution panel — slides in when node tapped */}
+      {selected && (
+        <div style={{ padding: '8px 20px 10px' }}>
+          <div style={{ marginBottom: 6, display: 'flex', alignItems: 'baseline', gap: 8 }}>
+            <span
+              style={{ fontSize: 13, fontWeight: 700, color: '#C4A060', letterSpacing: '0.04em' }}
+            >
+              {selected.label}
+            </span>
+            <span
+              style={{
+                fontSize: 9,
+                fontWeight: 700,
+                letterSpacing: '0.18em',
+                textTransform: 'uppercase',
+                color: 'rgba(196,160,96,0.4)',
+              }}
+            >
+              {selected.sublabel}
+            </span>
+          </div>
+
+          {selected.axisIdx !== undefined ? (
+            <EvolutionChart axisIdx={selected.axisIdx} entries={entries} />
+          ) : (
+            <p style={{ fontSize: 11, color: 'rgba(196,160,96,0.4)', margin: 0 }}>
+              Tap an Emotion, Mind, Body or Focus node to see your day's evolution.
+            </p>
+          )}
+        </div>
+      )}
+
+      {!selected && (
+        <p
+          style={{
+            textAlign: 'center',
+            fontSize: 8,
+            letterSpacing: '0.18em',
+            textTransform: 'uppercase',
+            color: 'rgba(196,160,96,0.2)',
+            padding: '2px 0 4px',
+            margin: 0,
+          }}
+        >
+          drag to rotate · tap to explore
+        </p>
+      )}
+
+      {/* Colour bubble map — same elements as InfographicsView */}
+      <div style={{ borderTop: '1px solid rgba(196,160,96,0.1)' }}>
+        <InfographicsView embedded onClose={onClose} />
+      </div>
+    </div>
+  );
+
+  if (embedded) return inner;
+
   return (
     <div
       style={{
@@ -467,144 +614,7 @@ export default function DayView3D({ onClose }: { onClose?: () => void }) {
           backdropFilter: 'blur(4px)',
         }}
       />
-
-      <div
-        onClick={(e) => e.stopPropagation()}
-        style={{
-          position: 'relative',
-          width: '100%',
-          maxWidth: 480,
-          maxHeight: '92svh',
-          background: '#060402',
-          borderTop: '1px solid rgba(196,160,96,0.2)',
-          borderRadius: '20px 20px 0 0',
-          overflowY: 'auto',
-          overflowX: 'visible',
-          fontFamily: 'var(--font-serif)',
-          paddingBottom: 'env(safe-area-inset-bottom)',
-        }}
-      >
-        {/* Drag handle */}
-        <div style={{ display: 'flex', justifyContent: 'center', padding: '10px 0 4px' }}>
-          <div
-            style={{ width: 36, height: 3, borderRadius: 2, background: 'rgba(196,160,96,0.25)' }}
-          />
-        </div>
-
-        {/* Header */}
-        <div style={{ padding: '2px 16px 6px', display: 'flex', alignItems: 'center' }}>
-          <span
-            style={{
-              fontSize: 10,
-              fontWeight: 800,
-              letterSpacing: '0.22em',
-              textTransform: 'uppercase',
-              color: 'rgba(196,160,96,0.45)',
-              flex: 1,
-            }}
-          >
-            {selected ? selected.label : 'View'}
-          </span>
-          {selected && (
-            <button
-              type="button"
-              onClick={() => setSelected(null)}
-              style={{
-                background: 'none',
-                border: 'none',
-                cursor: 'pointer',
-                color: 'rgba(196,160,96,0.4)',
-                fontSize: 11,
-                letterSpacing: '0.12em',
-                textTransform: 'uppercase',
-                marginRight: 12,
-              }}
-            >
-              Back
-            </button>
-          )}
-          <button
-            type="button"
-            onClick={onClose}
-            style={{
-              background: 'none',
-              border: 'none',
-              cursor: 'pointer',
-              color: 'rgba(196,160,96,0.4)',
-              fontSize: 16,
-              lineHeight: 1,
-              padding: '0 2px',
-            }}
-          >
-            ×
-          </button>
-        </div>
-
-        {/* 3D canvas */}
-        <div
-          ref={mountRef}
-          style={{
-            width: '100%',
-            height: selected ? 160 : 220,
-            position: 'relative',
-            overflow: 'hidden',
-            cursor: 'grab',
-          }}
-        />
-
-        {/* Evolution panel — slides in when node tapped */}
-        {selected && (
-          <div style={{ padding: '8px 20px 10px' }}>
-            <div style={{ marginBottom: 6, display: 'flex', alignItems: 'baseline', gap: 8 }}>
-              <span
-                style={{ fontSize: 13, fontWeight: 700, color: '#C4A060', letterSpacing: '0.04em' }}
-              >
-                {selected.label}
-              </span>
-              <span
-                style={{
-                  fontSize: 9,
-                  fontWeight: 700,
-                  letterSpacing: '0.18em',
-                  textTransform: 'uppercase',
-                  color: 'rgba(196,160,96,0.4)',
-                }}
-              >
-                {selected.sublabel}
-              </span>
-            </div>
-
-            {selected.axisIdx !== undefined ? (
-              <EvolutionChart axisIdx={selected.axisIdx} entries={entries} />
-            ) : (
-              <p style={{ fontSize: 11, color: 'rgba(196,160,96,0.4)', margin: 0 }}>
-                Tap an Emotion, Mind, Body or Focus node to see your day's evolution.
-              </p>
-            )}
-          </div>
-        )}
-
-        {!selected && (
-          <p
-            style={{
-              textAlign: 'center',
-              fontSize: 8,
-              letterSpacing: '0.18em',
-              textTransform: 'uppercase',
-              color: 'rgba(196,160,96,0.2)',
-              padding: '2px 0 4px',
-              margin: 0,
-            }}
-          >
-            drag to rotate · tap to explore
-          </p>
-        )}
-
-        {/* Colour bubble map — same elements as InfographicsView */}
-        <div style={{ borderTop: '1px solid rgba(196,160,96,0.1)' }}>
-          <InfographicsView embedded onClose={onClose} />
-        </div>
-      </div>
+      {inner}
     </div>
   );
 }

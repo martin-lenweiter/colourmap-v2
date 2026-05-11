@@ -493,16 +493,42 @@ html {
   font-size: 27px !important;
 }
 
-/* Spell-check underlines: replace harsh red with warm brown.
-   Works in Chrome/Edge (text-decoration-color on ::spelling-error)
-   and Firefox. Safari ignores the colour override but uses system. */
-::spelling-error {
-  text-decoration-color: #8a6a4a;
+/* Spell-check underlines: desaturated brownish-red, not harsh red.
+   ::spelling-error works in Chrome/Edge/Firefox.
+   ::-webkit-spelling-error works in Safari/older webkit. */
+::spelling-error,
+::-webkit-spelling-error {
+  text-decoration-color: rgba(148, 72, 62, 0.55);
   text-decoration-style: wavy;
 }
-::grammar-error {
-  text-decoration-color: #a0907a;
+::grammar-error,
+::-webkit-grammar-error {
+  text-decoration-color: rgba(148, 72, 62, 0.35);
   text-decoration-style: wavy;
+}
+
+/* Scrollbars: thin, warm brown, no white chrome */
+textarea::-webkit-scrollbar,
+div::-webkit-scrollbar {
+  width: 3px;
+  height: 3px;
+}
+textarea::-webkit-scrollbar-track,
+div::-webkit-scrollbar-track {
+  background: transparent;
+}
+textarea::-webkit-scrollbar-thumb,
+div::-webkit-scrollbar-thumb {
+  background: rgba(196, 160, 96, 0.28);
+  border-radius: 2px;
+}
+textarea::-webkit-scrollbar-thumb:hover,
+div::-webkit-scrollbar-thumb:hover {
+  background: rgba(196, 160, 96, 0.48);
+}
+textarea {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(196, 160, 96, 0.28) transparent;
 }
 
 /* GrooveMachine BPM + blend sliders — rainbow track */

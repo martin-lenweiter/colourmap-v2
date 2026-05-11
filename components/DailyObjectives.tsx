@@ -609,6 +609,7 @@ export default function DailyObjectives() {
                             placeholder="advancements, next steps..."
                             rows={2}
                             spellCheck={noteSpell}
+                            autoCorrect="off"
                             className="ml-[60px] w-[calc(100%-3.75rem)] resize-none border-b bg-transparent pb-1 pt-0.5 outline-none placeholder:text-[#7A5438] placeholder:opacity-50 animate-in fade-in duration-150"
                             style={{
                               color: '#7a5438',
@@ -927,6 +928,8 @@ export default function DailyObjectives() {
                       }}
                       autoFocus
                       onClick={(e) => e.stopPropagation()}
+                      spellCheck={false}
+                      autoCorrect="off"
                       className="bg-transparent text-center uppercase outline-none border-b"
                       style={{
                         color: '#C4A060',
@@ -1056,6 +1059,8 @@ export default function DailyObjectives() {
                                 if (e.key === 'Escape') setRenamingTodoId(null);
                               }}
                               autoFocus
+                              spellCheck={false}
+                              autoCorrect="off"
                               className="flex-1 bg-transparent text-center outline-none border-b"
                               style={{
                                 color: '#7a5438',
@@ -1171,6 +1176,8 @@ export default function DailyObjectives() {
                       if (e.key === 'Enter') addTodo();
                     }}
                     placeholder="add a to-do..."
+                    spellCheck={false}
+                    autoCorrect="off"
                     className="flex-1 border-b bg-transparent pb-1 outline-none text-center placeholder:text-center placeholder:text-[#7A5438] placeholder:opacity-50"
                     style={{
                       color: '#7a5438',

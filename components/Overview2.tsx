@@ -6,10 +6,11 @@ import { useViewMode } from './ViewModeContext';
 
 // ── Palette ──────────────────────────────────────────────────────────
 const CARD_BG = 'rgba(255,255,255,0.03)';
-const CARD_BORDER = 'rgba(196,160,96,0.2)';
-const OCHRE = '#C4A060';
-const BROWN = '#5C3018';
-const LABEL_COLOR = '#6A4A2A';
+const CARD_BORDER = 'var(--panel-border, rgba(196,160,96,0.18))';
+const OCHRE_HEX = '#C4A060'; // use only inside template literals (e.g. `${OCHRE_HEX}22`)
+const OCHRE = 'var(--palette-panel-text, #C4A060)';
+const BROWN = 'var(--palette-panel-text, rgba(196,160,96,0.88))';
+const LABEL_COLOR = 'var(--palette-panel-muted, rgba(196,160,96,0.5))';
 
 // ── LS keys ──────────────────────────────────────────────────────────
 const LS_CHAPTER = 'colourmap:life-chapter';
@@ -75,69 +76,74 @@ function Card({
   title,
   badge,
   onClick,
+  bg,
+  borderColor,
   children,
 }: {
   title: string;
   badge?: string;
   onClick?: () => void;
+  bg?: string;
+  borderColor?: string;
   children: React.ReactNode;
 }) {
   return (
     <div
       onClick={onClick}
       style={{
-        border: `1px solid ${CARD_BORDER}`,
-        borderRadius: 16,
-        background: CARD_BG,
+        border: `1px solid ${borderColor ?? CARD_BORDER}`,
+        borderRadius: 14,
+        background: bg ?? CARD_BG,
         overflow: 'hidden',
         cursor: onClick ? 'pointer' : 'default',
       }}
     >
-      {/* Header */}
-      <div
-        style={{
-          padding: '8px 16px',
-          borderBottom: `1px solid ${CARD_BORDER}`,
-          background: 'rgba(196,160,96,0.1)',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          gap: 8,
-        }}
-      >
-        <span
+      {/* Header — hidden when title is empty */}
+      {title && (
+        <div
           style={{
-            fontFamily: 'var(--font-serif)',
-            fontSize: 12,
-            fontWeight: 800,
-            letterSpacing: '0.14em',
-            textTransform: 'uppercase',
-            color: '#7A5438',
+            padding: '14px 18px',
+            borderBottom: `1px solid ${CARD_BORDER}`,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: 8,
           }}
         >
-          {title}
-        </span>
-        {badge && (
           <span
             style={{
               fontFamily: 'var(--font-serif)',
-              fontSize: 10,
-              color: OCHRE,
-              opacity: 0.65,
-              letterSpacing: '0.06em',
+              fontSize: 12,
+              fontWeight: 800,
+              letterSpacing: '0.14em',
+              textTransform: 'uppercase',
+              color: '#7A5438',
             }}
           >
-            {badge}
+            {title}
           </span>
-        )}
-        {onClick && (
-          <span
-            style={{ position: 'absolute', right: 14, fontSize: 10, color: OCHRE, opacity: 0.35 }}
-          >
-            ›
-          </span>
-        )}
-      </div>
+          {badge && (
+            <span
+              style={{
+                fontFamily: 'var(--font-serif)',
+                fontSize: 10,
+                color: OCHRE,
+                opacity: 0.65,
+                letterSpacing: '0.06em',
+              }}
+            >
+              {badge}
+            </span>
+          )}
+          {onClick && (
+            <span
+              style={{ position: 'absolute', right: 14, fontSize: 10, color: OCHRE, opacity: 0.35 }}
+            >
+              ›
+            </span>
+          )}
+        </div>
+      )}
       {children}
     </div>
   );
@@ -147,141 +153,118 @@ function Card({
 //  LIGHT-MODE SUMMARIES
 // ══════════════════════════════════════════════════════════════════════
 
-function ChapterSummary({ onTap }: { onTap: () => void }) {
-  const [chapter, setChapter] = useState('');
-  const [sub, setSub] = useState('');
-  const [descOpen, setDescOpen] = useState(false);
-
-  useEffect(() => {
-    try {
-      setChapter(localStorage.getItem(LS_CHAPTER) || '');
-      setSub(localStorage.getItem(LS_CHAPTER_SUB) || '');
-    } catch {}
-  }, []);
-
-  function saveSub(v: string) {
-    setSub(v);
-    try {
-      localStorage.setItem(LS_CHAPTER_SUB, v);
-    } catch {}
-  }
+function ChapterSummary() {
+  const [open, setOpen] = useState(false);
 
   return (
-    <div>
-      <Card title="Life Chapter" onClick={onTap}>
-        <div style={{ padding: '16px', textAlign: 'center' }}>
-          {chapter ? (
-            <p
-              style={{
-                fontFamily: 'var(--font-handwritten)',
-                fontSize: 26,
-                fontWeight: 700,
-                color: BROWN,
-                lineHeight: 1.2,
-              }}
-            >
-              {chapter}
-            </p>
-          ) : (
-            <p
-              style={{
-                fontFamily: 'var(--font-serif)',
-                fontStyle: 'italic',
-                fontSize: 14,
-                color: LABEL_COLOR,
-                opacity: 0.45,
-              }}
-            >
-              tap to name your chapter…
-            </p>
-          )}
-        </div>
-      </Card>
-
-      {/* Collapsible description segment */}
-      <div
+    <div
+      style={{
+        borderRadius: 14,
+        border: `1px solid var(--panel-border, rgba(196,160,96,0.18))`,
+        background: 'var(--palette-l3-bg, rgba(10,6,3,0.6))',
+        overflow: 'hidden',
+      }}
+    >
+      <button
+        type="button"
+        onClick={() => setOpen((v) => !v)}
         style={{
-          border: `1px solid ${CARD_BORDER}`,
-          borderTop: 'none',
-          borderRadius: '0 0 14px 14px',
-          background: CARD_BG,
-          overflow: 'hidden',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          width: '100%',
+          background: 'none',
+          border: 'none',
+          cursor: 'pointer',
+          padding: '14px 18px',
         }}
       >
-        <button
-          type="button"
-          onClick={() => setDescOpen((v) => !v)}
+        <span style={{ flex: 1 }} />
+        <span
           style={{
-            width: '100%',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            gap: 6,
-            padding: '6px 16px',
-            background: 'none',
-            border: 'none',
-            cursor: 'pointer',
-            borderTop: `1px solid ${CARD_BORDER}`,
+            fontFamily: 'var(--font-serif)',
+            fontSize: 13,
+            fontWeight: 800,
+            letterSpacing: '0.14em',
+            textTransform: 'uppercase',
+            color: 'var(--palette-panel-text, rgba(196,160,96,0.82))',
           }}
         >
+          Chapter
+        </span>
+        <span style={{ flex: 1, display: 'flex', justifyContent: 'flex-end' }}>
           <span
             style={{
               fontFamily: 'var(--font-serif)',
-              fontSize: 9,
-              fontWeight: 700,
-              letterSpacing: '0.16em',
-              textTransform: 'uppercase',
-              color: LABEL_COLOR,
-              opacity: 0.4,
-            }}
-          >
-            {sub && !descOpen ? sub : 'Description'}
-          </span>
-          <span
-            style={{
-              color: OCHRE,
+              fontSize: 8,
+              color: 'var(--palette-panel-muted, rgba(196,160,96,0.42))',
               opacity: 0.35,
-              fontSize: 10,
-              transform: descOpen ? 'rotate(90deg)' : 'rotate(0deg)',
-              transition: 'transform 0.2s',
             }}
           >
-            ›
+            {open ? '▲' : '▼'}
           </span>
-        </button>
-
-        {descOpen && (
-          <div style={{ padding: '4px 16px 14px' }}>
-            <textarea
-              value={sub}
-              rows={2}
-              onChange={(e) => saveSub(e.target.value)}
-              placeholder="what this chapter is about…"
-              spellCheck={false}
-              style={{
-                width: '100%',
-                background: 'rgba(196,160,96,0.06)',
-                border: `1px solid ${CARD_BORDER}`,
-                borderRadius: 8,
-                outline: 'none',
-                resize: 'none',
-                fontFamily: 'var(--font-serif)',
-                fontStyle: 'italic',
-                fontSize: 14,
-                color: BROWN,
-                padding: '8px 12px',
-                lineHeight: 1.5,
-                boxSizing: 'border-box',
-              }}
-            />
-          </div>
-        )}
-      </div>
+        </span>
+      </button>
+      {open && <LifeChapter />}
     </div>
   );
 }
 
-function FocusSummary({ onTap }: { onTap: () => void }) {
+function MapOfSelfSummary({ onTap }: { onTap: () => void }) {
+  return (
+    <div
+      style={{
+        borderRadius: 14,
+        border: `1px solid var(--panel-border, rgba(196,160,96,0.18))`,
+        background: 'var(--palette-l3-bg, rgba(10,6,3,0.6))',
+        overflow: 'hidden',
+      }}
+    >
+      <button
+        type="button"
+        onClick={onTap}
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          width: '100%',
+          background: 'none',
+          border: 'none',
+          cursor: 'pointer',
+          padding: '14px 18px',
+        }}
+      >
+        <span style={{ flex: 1 }} />
+        <span
+          style={{
+            fontFamily: 'var(--font-serif)',
+            fontSize: 13,
+            fontWeight: 800,
+            letterSpacing: '0.14em',
+            textTransform: 'uppercase',
+            color: 'var(--palette-panel-text, rgba(196,160,96,0.82))',
+          }}
+        >
+          Map of Self
+        </span>
+        <span style={{ flex: 1, display: 'flex', justifyContent: 'flex-end' }}>
+          <span
+            style={{
+              fontFamily: 'var(--font-serif)',
+              fontSize: 11,
+              color: 'var(--palette-panel-muted, rgba(196,160,96,0.42))',
+            }}
+          >
+            ···
+          </span>
+        </span>
+      </button>
+    </div>
+  );
+}
+
+function FocusSummary() {
+  const [open, setOpen] = useState(false);
   const [items, setItems] = useState<FocusItem[]>(DEFAULT_FOCUS);
 
   useEffect(() => {
@@ -291,109 +274,159 @@ function FocusSummary({ onTap }: { onTap: () => void }) {
     } catch {}
   }, []);
 
+  function save(next: FocusItem[]) {
+    setItems(next);
+    try {
+      localStorage.setItem(LS_FOCUS, JSON.stringify(next));
+    } catch {}
+  }
+
+  function update(id: string, patch: Partial<FocusItem>) {
+    save(items.map((it) => (it.id === id ? { ...it, ...patch } : it)));
+  }
+
   const filled = items.filter((it) => it.text.trim());
   const doneCount = filled.filter((it) => it.done).length;
 
   return (
-    <div style={{ position: 'relative' }}>
-      <Card title="Week Focus" badge={undefined} onClick={onTap}>
-        <div style={{ padding: '8px 16px 12px' }}>
-          {filled.length === 0 ? (
-            <p
+    <div
+      style={{
+        borderRadius: 14,
+        border: `1px solid ${CARD_BORDER}`,
+        background: 'var(--palette-l3-bg, rgba(10,6,3,0.6))',
+        overflow: 'hidden',
+      }}
+    >
+      <button
+        type="button"
+        onClick={() => setOpen((v) => !v)}
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          width: '100%',
+          background: 'none',
+          border: 'none',
+          cursor: 'pointer',
+          padding: '14px 18px',
+        }}
+      >
+        <span style={{ flex: 1 }} />
+        <span
+          style={{
+            fontFamily: 'var(--font-serif)',
+            fontSize: 13,
+            fontWeight: 800,
+            letterSpacing: '0.14em',
+            textTransform: 'uppercase',
+            color: OCHRE,
+          }}
+        >
+          Week Focus
+        </span>
+        <span style={{ flex: 1, display: 'flex', justifyContent: 'flex-end' }}>
+          <span
+            style={{ fontFamily: 'var(--font-serif)', fontSize: 8, color: OCHRE, opacity: 0.35 }}
+          >
+            {open ? '▲' : '▼'}
+          </span>
+        </span>
+      </button>
+      {open && (
+        <div style={{ padding: '0 18px 16px', display: 'flex', flexDirection: 'column', gap: 0 }}>
+          {items.map((item, i) => (
+            <div
+              key={item.id}
               style={{
-                fontFamily: 'var(--font-serif)',
-                fontStyle: 'italic',
-                fontSize: 13,
-                color: LABEL_COLOR,
-                opacity: 0.3,
-                textAlign: 'center',
-                padding: '6px 0',
+                display: 'flex',
+                alignItems: 'flex-start',
+                gap: 12,
+                padding: '12px 0',
+                borderBottom: i < items.length - 1 ? `1px solid ${CARD_BORDER}` : 'none',
               }}
             >
-              tap to set weekly intentions…
-            </p>
-          ) : (
-            filled.map((item, i) => (
-              <div
-                key={item.id}
+              <span
                 style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: 8,
-                  padding: '4px 0',
-                  borderBottom: i < filled.length - 1 ? `1px solid ${CARD_BORDER}` : 'none',
+                  fontFamily: 'var(--font-serif)',
+                  fontSize: 11,
+                  fontWeight: 700,
+                  color: OCHRE,
+                  opacity: 0.4,
+                  minWidth: 18,
+                  textAlign: 'center',
+                  marginTop: 4,
                 }}
               >
-                <span
-                  style={{
-                    fontFamily: 'var(--font-serif)',
-                    fontSize: 10,
-                    fontWeight: 700,
-                    color: OCHRE,
-                    opacity: 0.4,
-                    minWidth: 14,
-                    textAlign: 'center',
-                  }}
-                >
-                  {i + 1}
-                </span>
-                <span
-                  style={{
-                    flex: 1,
-                    fontFamily: 'var(--font-serif)',
-                    fontSize: 14,
-                    color: item.done ? LABEL_COLOR : BROWN,
-                    opacity: item.done ? 0.45 : 1,
-                    textDecoration: item.done ? 'line-through' : 'none',
-                    overflow: 'hidden',
-                    textOverflow: 'ellipsis',
-                    whiteSpace: 'nowrap',
-                  }}
-                >
-                  {item.text}
-                </span>
-                <div
-                  style={{
-                    width: 14,
-                    height: 14,
-                    borderRadius: '50%',
-                    flexShrink: 0,
-                    background: item.done ? `${OCHRE}22` : 'transparent',
-                    border: `1.5px solid ${item.done ? OCHRE : `${OCHRE}28`}`,
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    fontSize: 9,
-                    color: OCHRE,
-                  }}
-                >
-                  {item.done ? '✓' : ''}
-                </div>
-              </div>
-            ))
-          )}
+                {i + 1}
+              </span>
+              <textarea
+                value={item.text}
+                onChange={(e) => {
+                  update(item.id, { text: e.target.value });
+                  e.target.style.height = 'auto';
+                  e.target.style.height = `${e.target.scrollHeight}px`;
+                }}
+                onClick={(e) => e.stopPropagation()}
+                placeholder="weekly intention…"
+                rows={1}
+                spellCheck={false}
+                autoCorrect="off"
+                style={{
+                  flex: 1,
+                  background: 'transparent',
+                  border: 'none',
+                  outline: 'none',
+                  resize: 'none',
+                  overflow: 'hidden',
+                  fontFamily: 'var(--font-serif)',
+                  fontSize: 14,
+                  fontWeight: 700,
+                  color: item.done ? LABEL_COLOR : BROWN,
+                  opacity: item.done ? 0.4 : 1,
+                  textDecoration: item.done ? 'line-through' : 'none',
+                  lineHeight: 1.45,
+                }}
+              />
+              <button
+                type="button"
+                onClick={() => update(item.id, { done: !item.done })}
+                style={{
+                  background: item.done ? `${OCHRE_HEX}22` : 'transparent',
+                  border: `1.5px solid ${item.done ? OCHRE : `${OCHRE_HEX}28`}`,
+                  borderRadius: '50%',
+                  width: 24,
+                  height: 24,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  cursor: 'pointer',
+                  flexShrink: 0,
+                  marginTop: 2,
+                  color: OCHRE,
+                  fontSize: 11,
+                }}
+              >
+                {item.done ? '✓' : ''}
+              </button>
+            </div>
+          ))}
           {filled.length > 0 && (
             <div
-              style={{
-                marginTop: 8,
-                height: 2,
-                borderRadius: 99,
-                background: `${OCHRE}15`,
-              }}
+              style={{ marginTop: 10, height: 2, borderRadius: 99, background: `${OCHRE_HEX}15` }}
             >
               <div
                 style={{
                   height: '100%',
                   borderRadius: 99,
                   background: OCHRE,
-                  width: `${filled.length > 0 ? (doneCount / filled.length) * 100 : 0}%`,
+                  width: `${(doneCount / filled.length) * 100}%`,
                   transition: 'width 0.3s',
                 }}
               />
             </div>
           )}
         </div>
-      </Card>
+      )}
     </div>
   );
 }
@@ -428,6 +461,7 @@ function ArenasSummary({
   onTapArena: (id: string) => void;
   onTapAdd: () => void;
 }) {
+  const [open, setOpen] = useState(false);
   const [arenas, setArenas] = useState<Arena[]>(DEFAULT_ARENAS);
   const todayIdx = (new Date().getDay() + 6) % 7;
 
@@ -445,83 +479,129 @@ function ArenasSummary({
   }
 
   return (
-    <Card title="Life Arenas" badge={streak >= 2 ? `${streak}d streak` : undefined}>
-      {arenas.map((arena, i) => {
-        const active = arena.days.filter(Boolean).length;
-        const status = active >= 5 ? 'flowing' : active >= 2 ? 'building' : 'quiet';
-        const statusColor =
-          active >= 5 ? arena.color : active >= 2 ? `${arena.color}90` : `${arena.color}50`;
-        return (
+    <div
+      style={{
+        borderRadius: 14,
+        border: `1px solid ${CARD_BORDER}`,
+        background: 'var(--palette-l3-bg, rgba(10,6,3,0.6))',
+        overflow: 'hidden',
+      }}
+    >
+      <button
+        type="button"
+        onClick={() => setOpen((v) => !v)}
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          width: '100%',
+          background: 'none',
+          border: 'none',
+          cursor: 'pointer',
+          padding: '14px 18px',
+        }}
+      >
+        <span style={{ flex: 1 }} />
+        <span
+          style={{
+            fontFamily: 'var(--font-serif)',
+            fontSize: 13,
+            fontWeight: 800,
+            letterSpacing: '0.14em',
+            textTransform: 'uppercase',
+            color: OCHRE,
+          }}
+        >
+          Life Areas
+        </span>
+        <span style={{ flex: 1, display: 'flex', justifyContent: 'flex-end' }}>
+          <span
+            style={{ fontFamily: 'var(--font-serif)', fontSize: 8, color: OCHRE, opacity: 0.35 }}
+          >
+            {open ? '▲' : '▼'}
+          </span>
+        </span>
+      </button>
+      {open && (
+        <div>
+          {arenas.map((arena, i) => {
+            const active = arena.days.filter(Boolean).length;
+            const status = active >= 5 ? 'flowing' : active >= 2 ? 'building' : 'quiet';
+            const statusColor =
+              active >= 5 ? arena.color : active >= 2 ? `${arena.color}90` : `${arena.color}50`;
+            return (
+              <div
+                key={arena.id}
+                onClick={() => onTapArena(arena.id)}
+                style={{
+                  padding: '10px 18px',
+                  borderTop: `1px solid ${CARD_BORDER}`,
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 10,
+                  cursor: 'pointer',
+                }}
+              >
+                <div
+                  style={{
+                    width: 8,
+                    height: 8,
+                    borderRadius: '50%',
+                    background: active >= 2 ? arena.color : `${arena.color}35`,
+                    flexShrink: 0,
+                  }}
+                />
+                <span
+                  style={{
+                    fontFamily: 'var(--font-serif)',
+                    fontSize: 14,
+                    fontWeight: 700,
+                    color: BROWN,
+                    flex: 1,
+                  }}
+                >
+                  {arena.name}
+                </span>
+                <span
+                  style={{
+                    fontFamily: 'var(--font-serif)',
+                    fontStyle: 'italic',
+                    fontSize: 12,
+                    color: statusColor,
+                    letterSpacing: '0.02em',
+                  }}
+                >
+                  {status}
+                </span>
+                <span style={{ fontSize: 11, color: OCHRE, opacity: 0.3 }}>›</span>
+              </div>
+            );
+          })}
           <div
-            key={arena.id}
-            onClick={() => onTapArena(arena.id)}
+            onClick={onTapAdd}
             style={{
-              padding: '10px 16px',
-              borderBottom: i < arenas.length - 1 ? `1px solid ${CARD_BORDER}` : 'none',
+              padding: '8px 18px 12px',
+              borderTop: `1px solid ${CARD_BORDER}`,
               display: 'flex',
-              alignItems: 'center',
-              gap: 10,
+              justifyContent: 'center',
               cursor: 'pointer',
             }}
           >
-            <div
-              style={{
-                width: 8,
-                height: 8,
-                borderRadius: '50%',
-                background: active >= 2 ? arena.color : `${arena.color}35`,
-                flexShrink: 0,
-              }}
-            />
-            <span
-              style={{
-                fontFamily: 'var(--font-serif)',
-                fontSize: 14,
-                fontWeight: 700,
-                color: BROWN,
-                flex: 1,
-              }}
-            >
-              {arena.name}
-            </span>
             <span
               style={{
                 fontFamily: 'var(--font-serif)',
                 fontStyle: 'italic',
-                fontSize: 12,
-                color: statusColor,
-                letterSpacing: '0.02em',
+                fontSize: 11,
+                color: LABEL_COLOR,
+                opacity: 0.35,
               }}
             >
-              {status}
+              + add arena
             </span>
-            <span style={{ fontSize: 11, color: OCHRE, opacity: 0.3 }}>›</span>
           </div>
-        );
-      })}
-      <div
-        onClick={onTapAdd}
-        style={{
-          padding: '8px 16px',
-          borderTop: arenas.length > 0 ? `1px solid ${CARD_BORDER}` : 'none',
-          display: 'flex',
-          justifyContent: 'center',
-          cursor: 'pointer',
-        }}
-      >
-        <span
-          style={{
-            fontFamily: 'var(--font-serif)',
-            fontStyle: 'italic',
-            fontSize: 11,
-            color: LABEL_COLOR,
-            opacity: 0.35,
-          }}
-        >
-          + add arena
-        </span>
-      </div>
-    </Card>
+        </div>
+      )}
+    </div>
   );
 }
 
@@ -552,6 +632,7 @@ function LifeChapter() {
     try {
       localStorage.setItem(LS_CHAPTER, v);
     } catch {}
+    window.dispatchEvent(new CustomEvent('colourmap:chapter-changed', { detail: v }));
     if (taRef.current) {
       taRef.current.style.height = 'auto';
       taRef.current.style.height = `${taRef.current.scrollHeight}px`;
@@ -587,6 +668,8 @@ function LifeChapter() {
         onChange={(e) => saveChapter(e.target.value)}
         placeholder="Name your chapter…"
         rows={1}
+        spellCheck={false}
+        autoCorrect="off"
         style={{
           background: 'transparent',
           border: 'none',
@@ -612,11 +695,13 @@ function LifeChapter() {
           } catch {}
         }}
         placeholder="what this chapter is about…"
+        spellCheck={false}
+        autoCorrect="off"
         style={{
           background: 'transparent',
           border: 'none',
           outline: 'none',
-          borderBottom: `1px solid ${OCHRE}28`,
+          borderBottom: `1px solid ${OCHRE_HEX}28`,
           fontFamily: 'var(--font-serif)',
           fontStyle: 'italic',
           fontSize: 14,
@@ -691,6 +776,8 @@ function WeekFocus() {
             onClick={(e) => e.stopPropagation()}
             placeholder="weekly intention…"
             rows={1}
+            spellCheck={false}
+            autoCorrect="off"
             style={{
               flex: 1,
               background: 'transparent',
@@ -711,8 +798,8 @@ function WeekFocus() {
             type="button"
             onClick={() => update(item.id, { done: !item.done })}
             style={{
-              background: item.done ? `${OCHRE}22` : 'transparent',
-              border: `1.5px solid ${item.done ? OCHRE : `${OCHRE}28`}`,
+              background: item.done ? `${OCHRE_HEX}22` : 'transparent',
+              border: `1.5px solid ${item.done ? OCHRE : `${OCHRE_HEX}28`}`,
               borderRadius: '50%',
               width: 24,
               height: 24,
@@ -732,7 +819,7 @@ function WeekFocus() {
       ))}
       {filled > 0 && (
         <div style={{ paddingTop: 16, display: 'flex', alignItems: 'center', gap: 8 }}>
-          <div style={{ flex: 1, height: 3, borderRadius: 99, background: `${OCHRE}15` }}>
+          <div style={{ flex: 1, height: 3, borderRadius: 99, background: `${OCHRE_HEX}15` }}>
             <div
               style={{
                 height: '100%',
@@ -786,11 +873,13 @@ function ArenaEditor({ arenaId }: { arenaId: string }) {
           type="text"
           value={arena.name}
           onChange={(e) => patchArena({ name: e.target.value })}
+          spellCheck={false}
+          autoCorrect="off"
           style={{
             background: 'transparent',
             border: 'none',
             outline: 'none',
-            borderBottom: `1px solid ${OCHRE}28`,
+            borderBottom: `1px solid ${OCHRE_HEX}28`,
             fontFamily: 'var(--font-handwritten)',
             fontSize: 22,
             fontWeight: 700,
@@ -1008,6 +1097,7 @@ function _DeepJournalView({
           onChange={(e) => onChange({ title: e.target.value })}
           placeholder="Title…"
           spellCheck={false}
+          autoCorrect="off"
           style={{
             flex: 1,
             background: 'transparent',
@@ -1262,6 +1352,8 @@ function ArenaNotebook({
               if (e.key === 'Enter') saveQuick();
             }}
             placeholder="Quick note… (Enter to save)"
+            spellCheck={false}
+            autoCorrect="off"
             style={{
               width: '100%',
               background: 'transparent',
@@ -1293,6 +1385,8 @@ function ArenaNotebook({
               value={deepTitle}
               onChange={(e) => setDeepTitle(e.target.value)}
               placeholder="Title…"
+              spellCheck={false}
+              autoCorrect="off"
               style={{
                 background: 'transparent',
                 border: 'none',
@@ -1321,6 +1415,8 @@ function ArenaNotebook({
               }}
               placeholder="Write… (⌘+Enter to save)"
               rows={3}
+              spellCheck={false}
+              autoCorrect="off"
               style={{
                 background: 'transparent',
                 border: 'none',
@@ -1708,6 +1804,8 @@ function ArenasEditor() {
               value={arena.name}
               onChange={(e) => rename(arena.id, e.target.value)}
               onClick={(e) => e.stopPropagation()}
+              spellCheck={false}
+              autoCorrect="off"
               style={{
                 flex: 1,
                 background: 'transparent',
@@ -1794,12 +1892,14 @@ function ArenasEditor() {
             if (e.key === 'Enter') addArena(newName);
           }}
           placeholder="add an arena…"
+          spellCheck={false}
+          autoCorrect="off"
           style={{
             flex: 1,
             background: 'transparent',
             border: 'none',
             outline: 'none',
-            borderBottom: `1px solid ${OCHRE}25`,
+            borderBottom: `1px solid ${OCHRE_HEX}25`,
             fontFamily: 'var(--font-serif)',
             fontSize: 13,
             fontStyle: 'italic',
@@ -1815,8 +1915,8 @@ function ArenasEditor() {
             width: 28,
             height: 28,
             borderRadius: '50%',
-            background: `${OCHRE}18`,
-            border: `1.5px solid ${OCHRE}40`,
+            background: `${OCHRE_HEX}18`,
+            border: `1.5px solid ${OCHRE_HEX}40`,
             color: OCHRE,
             fontSize: 18,
             cursor: 'pointer',
@@ -1893,8 +1993,8 @@ function _ChapterFullScreen({ onClose }: { onClose: () => void }) {
               display: 'flex',
               alignItems: 'center',
               gap: 5,
-              background: `${OCHRE}10`,
-              border: `1px solid ${OCHRE}28`,
+              background: `${OCHRE_HEX}10`,
+              border: `1px solid ${OCHRE_HEX}28`,
               borderRadius: 20,
               padding: '4px 12px',
               fontFamily: 'var(--font-serif)',
@@ -2072,7 +2172,7 @@ function _BottomSheet({ panel, onClose }: { panel: string; onClose: () => void }
               width: 36,
               height: 4,
               borderRadius: 99,
-              background: `${OCHRE}30`,
+              background: `${OCHRE_HEX}30`,
             }}
           />
           <button
@@ -2123,25 +2223,48 @@ export default function Overview2() {
         key={refreshKey}
         style={{ display: 'flex', flexDirection: 'column', gap: 12, paddingBottom: 32 }}
       >
-        <ChapterSummary onTap={() => open('chapter')} />
-        <FocusSummary onTap={() => open('focus')} />
+        <ChapterSummary />
+        <FocusSummary />
         <ArenasSummary onTapArena={(id) => open(`arena:${id}`)} onTapAdd={() => open('arenas')} />
-        <MapOfSelf />
+        <div style={{ paddingTop: 16 }}>
+          <MapOfSelfSummary onTap={() => open('mapofself')} />
+        </div>
+        <div style={{ display: 'flex', justifyContent: 'center', paddingTop: 8, paddingBottom: 4 }}>
+          <div
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: 6,
+              padding: '6px 16px',
+              borderRadius: 999,
+              border: `1px solid ${CARD_BORDER}`,
+              background: 'var(--palette-l3-bg, rgba(10,6,3,0.4))',
+            }}
+          >
+            <span style={{ fontSize: 11, opacity: 0.4, lineHeight: 1 }}>ℹ</span>
+            <span
+              style={{
+                fontFamily: 'var(--font-serif)',
+                fontSize: 11,
+                color: LABEL_COLOR,
+                fontStyle: 'italic',
+                letterSpacing: '0.03em',
+              }}
+            >
+              This section is still growing — work in progress.
+            </span>
+          </div>
+        </div>
       </div>
 
-      {panel === 'chapter' && (
-        <CenterCard title="Life Chapter" onClose={close}>
-          <LifeChapter />
-        </CenterCard>
-      )}
-      {panel === 'focus' && (
-        <CenterCard title="Week Focus" onClose={close}>
-          <WeekFocus />
-        </CenterCard>
-      )}
       {panel === 'arenas' && (
         <CenterCard title="Life Arenas" onClose={close}>
           <ArenasEditor />
+        </CenterCard>
+      )}
+      {panel === 'mapofself' && (
+        <CenterCard title="Map of Self" onClose={close}>
+          <MapOfSelf />
         </CenterCard>
       )}
       {panel?.startsWith('arena:') && (

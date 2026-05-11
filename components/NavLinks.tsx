@@ -8,7 +8,7 @@ import { useViewMode } from './ViewModeContext';
 
 const PRIMARY_LINKS: { href: string; label: string }[] = [
   { href: '/day', label: 'Focus' },
-  { href: '/notebook', label: 'Notebook' },
+  { href: '/notebook', label: 'Notes' },
   { href: '/music', label: 'Music' },
   { href: '/geometry-field', label: 'Art' },
 ];
@@ -99,7 +99,7 @@ export default function NavLinks() {
               className="shrink-0 whitespace-nowrap transition-colors tracking-[0.04em]"
               style={{
                 fontSize: 16,
-                color: '#7A5438',
+                color: 'var(--header-text, #7A5438)',
                 fontWeight: isActive ? 600 : 400,
               }}
             >

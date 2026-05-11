@@ -1,0 +1,206 @@
+'use client';
+
+import { useState } from 'react';
+import { getProgramByKey } from '@/lib/programs';
+import type { Insight } from './InsightPill';
+import LearningProgram from './LearningProgram';
+
+const SERIF = 'var(--font-serif)';
+const brn = (a: number) => `rgba(60,30,8,${a})`;
+const brn2 = (a: number) => `rgba(92,48,24,${a})`;
+
+function todayIndex(len: number) {
+  return Math.floor(Date.now() / 86400000) % len;
+}
+
+type Props = {
+  insights: Insight[];
+  coachId?: string;
+  coachHeadline?: string;
+  coachBody?: string;
+  programKey?: string;
+};
+
+export default function EmotionLearnPill({ insights, programKey }: Props) {
+  const [open, setOpen] = useState(false);
+  const [showDeeper, setShowDeeper] = useState(false);
+  const [programOpen, setProgramOpen] = useState(false);
+  const insight = insights[todayIndex(insights.length)];
+  const program = programKey ? getProgramByKey(programKey) : null;
+
+  if (!insight) return null;
+
+  return (
+    <>
+      <div
+        style={{
+          borderRadius: 14,
+          border: `1px solid var(--panel-border, rgba(196,160,96,0.18))`,
+          background: 'var(--palette-l3-bg, rgba(10,6,3,0.6))',
+          overflow: 'hidden',
+          cursor: open ? 'default' : 'pointer',
+          width: '100%',
+        }}
+        onClick={!open ? () => setOpen(true) : undefined}
+      >
+        {/* ── Pill / header row ── */}
+        <div
+          style={{
+            display: 'flex',
+            alignItems: open ? 'flex-start' : 'center',
+            gap: 10,
+            padding: open ? '12px 14px 8px' : '9px 18px',
+            transition: 'padding 0.18s',
+          }}
+        >
+          <div style={{ flex: 1, minWidth: 0, textAlign: 'center' }}>
+            <div
+              style={{
+                fontFamily: SERIF,
+                fontSize: 13,
+                fontWeight: 500,
+                letterSpacing: '0.18em',
+                textTransform: 'uppercase',
+                color: 'var(--palette-panel-text, #C8A858)',
+              }}
+            >
+              insight
+            </div>
+            {open && (
+              <div
+                style={{
+                  fontFamily: SERIF,
+                  fontSize: 15,
+                  fontStyle: 'italic',
+                  color: brn(0.82),
+                  lineHeight: 1.45,
+                  marginTop: 4,
+                }}
+              >
+                {insight.hook}
+              </div>
+            )}
+          </div>
+          {!open && (
+            <span style={{ fontFamily: SERIF, fontSize: 11, color: brn2(0.32), flexShrink: 0 }}>
+              ···
+            </span>
+          )}
+          {open && (
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                setOpen(false);
+                setShowDeeper(false);
+              }}
+              style={{
+                background: 'none',
+                border: 'none',
+                color: brn2(0.35),
+                fontSize: 18,
+                cursor: 'pointer',
+                padding: 0,
+                lineHeight: 1,
+                flexShrink: 0,
+              }}
+            >
+              ×
+            </button>
+          )}
+        </div>
+
+        {/* ── Expanded body ── */}
+        {open && (
+          <div
+            style={{
+              padding: '0 14px 14px',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: 12,
+              alignItems: 'center',
+            }}
+          >
+            <p
+              style={{
+                fontFamily: SERIF,
+                fontSize: 15,
+                color: brn(0.78),
+                lineHeight: 1.8,
+                margin: 0,
+                textAlign: 'center',
+              }}
+            >
+              {insight.body}
+            </p>
+
+            {insight.deeper && !showDeeper && (
+              <button
+                type="button"
+                onClick={() => setShowDeeper(true)}
+                style={{
+                  background: 'none',
+                  border: `1px solid ${brn2(0.22)}`,
+                  borderRadius: 999,
+                  padding: '5px 20px',
+                  fontFamily: SERIF,
+                  fontSize: 12,
+                  color: brn2(0.55),
+                  cursor: 'pointer',
+                  letterSpacing: '0.06em',
+                }}
+              >
+                go deeper
+              </button>
+            )}
+
+            {showDeeper && insight.deeper && (
+              <p
+                style={{
+                  fontFamily: SERIF,
+                  fontSize: 14,
+                  color: brn(0.65),
+                  lineHeight: 1.8,
+                  margin: 0,
+                  borderTop: `1px solid ${brn2(0.12)}`,
+                  paddingTop: 10,
+                  textAlign: 'center',
+                  width: '100%',
+                }}
+              >
+                {insight.deeper}
+              </p>
+            )}
+
+            {program && (
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setProgramOpen(true);
+                }}
+                style={{
+                  background: 'none',
+                  border: `1px solid ${brn2(0.28)}`,
+                  borderRadius: 999,
+                  padding: '5px 18px',
+                  fontFamily: SERIF,
+                  fontSize: 12,
+                  color: brn2(0.65),
+                  cursor: 'pointer',
+                  letterSpacing: '0.08em',
+                }}
+              >
+                {program.domain}
+              </button>
+            )}
+          </div>
+        )}
+      </div>
+
+      {programOpen && program && (
+        <LearningProgram program={program} onClose={() => setProgramOpen(false)} />
+      )}
+    </>
+  );
+}

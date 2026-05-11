@@ -116,6 +116,26 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
         )}
 
         {children}
+
+        {/* Date footer — shown at the bottom of every page */}
+        <p
+          style={{
+            textAlign: 'center',
+            padding: '16px 0 8px',
+            fontFamily: 'var(--font-serif)',
+            fontSize: 11,
+            fontStyle: 'italic',
+            letterSpacing: '0.06em',
+            color: 'rgba(122,84,56,0.35)',
+            pointerEvents: 'none',
+          }}
+        >
+          {new Date().toLocaleDateString('en-GB', {
+            weekday: 'long',
+            day: 'numeric',
+            month: 'long',
+          })}
+        </p>
       </div>
 
       {/* Bottom nav — shown when navPosition='bottom' */}

@@ -554,8 +554,8 @@ function VSmooth({ indices, harmony, onSetIndex }: VP) {
         return (
           <g key={ai}>
             {axis.colors.map((c, ci) => {
-              const s = ARC_STARTS[ai] + ci * segDeg + 0.6;
-              const e = ARC_STARTS[ai] + (ci + 1) * segDeg - 0.6;
+              const s = NSEW_STARTS[ai] + ci * segDeg + 0.6;
+              const e = NSEW_STARTS[ai] + (ci + 1) * segDeg - 0.6;
               return (
                 <path
                   key={ci}
@@ -577,7 +577,7 @@ function VSmooth({ indices, harmony, onSetIndex }: VP) {
         );
       })}
       {AXES.map((axis, ai) => {
-        const midDeg = ARC_STARTS[ai] + ARC_DEG / 2;
+        const midDeg = NSEW_STARTS[ai] + ARC_DEG / 2;
         const p = ptOn(midDeg, R_RING + R_SW / 2 + 17);
         const anchor = Math.abs(p.x - CX) < 10 ? 'middle' : p.x > CX ? 'start' : 'end';
         return (
@@ -929,20 +929,12 @@ const WIDE_SW = 26;
 function V9({ indices, harmony, onSetIndex }: VP) {
   return (
     <svg width={S} height={S} style={{ display: 'block', overflow: 'visible' }}>
-      <defs>
-        <filter id="v9glow" x="-60%" y="-60%" width="220%" height="220%">
-          <feGaussianBlur stdDeviation="5" result="b" />
-          <feMerge>
-            <feMergeNode in="b" />
-            <feMergeNode in="SourceGraphic" />
-          </feMerge>
-        </filter>
-      </defs>
       {AXES.map((axis, ai) => {
         const segDeg = WIDE_DEG / axis.colors.length;
         return (
           <g key={ai}>
             {axis.colors.map((c, ci) => {
+              const isActive = indices[ai] === ci;
               const s = ARC_STARTS[ai] + ci * segDeg;
               const e = s + segDeg;
               return (
@@ -951,10 +943,9 @@ function V9({ indices, harmony, onSetIndex }: VP) {
                   d={arcPath(s, e)}
                   fill="none"
                   stroke={c}
-                  strokeWidth={WIDE_SW}
+                  strokeWidth={isActive ? WIDE_SW + 4 : WIDE_SW}
                   strokeLinecap="butt"
-                  opacity={indices[ai] === ci ? 0.95 : 0.22}
-                  filter={indices[ai] === ci ? 'url(#v9glow)' : undefined}
+                  opacity={isActive ? 1 : 0.55}
                   style={{ cursor: 'pointer' }}
                   onClick={() => onSetIndex(ai, ci)}
                   onPointerMove={(ev) => {
@@ -1113,18 +1104,8 @@ function V10({ indices, harmony, onSetIndex }: VP) {
 /* ══════════════════════════════════════════════════════
    MAIN
 ══════════════════════════════════════════════════════ */
-const VARIANTS = [V1, VSmooth, V5, V3, V6, V7, V8, V9, V10] as const;
-const V_LABELS = [
-  'Arcs',
-  'Ring',
-  'Ring+',
-  'Cross+',
-  'Clear',
-  'Orbits',
-  'Twin',
-  'Wide',
-  'Bloom',
-] as const;
+const VARIANTS = [V1, VSmooth, V8, V9] as const;
+const V_LABELS = ['Arcs', 'Ring', 'Twin', 'Wide'] as const;
 
 export default function MapOfSelf() {
   const [indices, setIndices] = useState(() => AXES.map((a) => a.defaultIdx));
@@ -1250,7 +1231,7 @@ export default function MapOfSelf() {
                 padding: 10,
                 boxShadow: '0 8px 32px rgba(0,0,0,0.18)',
                 display: 'grid',
-                gridTemplateColumns: 'repeat(3, 66px)',
+                gridTemplateColumns: 'repeat(2, 66px)',
                 gap: 8,
               }}
             >

@@ -24,7 +24,8 @@ export function appendEntry(indices: number[]): void {
   if (typeof window === 'undefined') return;
   const entries = getTodayEntries();
   const last = entries[entries.length - 1];
-  // Coalesce entries within 20 seconds to avoid spamming
+  const same = last && last.i.length === indices.length && last.i.every((v, j) => v === indices[j]);
+  if (same) return;
   if (last && Date.now() - last.t < 20_000) {
     last.i = [...indices];
     last.t = Date.now();
