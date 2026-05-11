@@ -50,55 +50,46 @@ function DayContent() {
             <InnerWork />
             <div style={{ height: 20 }} />
             <FeelingCircles2 />
-            {/* Insight + Road / Map / View grouped at bottom */}
-            <div
-              style={{
-                display: 'flex',
-                flexDirection: 'column',
-                alignItems: 'center',
-                gap: 8,
-                paddingTop: 24,
-              }}
-            >
-              <EmotionLearnPill insights={emotionInsights} programKey="emotional-intelligence" />
-              <div style={{ display: 'flex', justifyContent: 'center', gap: 8 }}>
-                {(
-                  [
-                    { label: 'Road', active: roadOpen, toggle: () => setRoadOpen((v) => !v) },
-                    { label: 'Map', active: mapOpen, toggle: () => setMapOpen((v) => !v) },
-                    { label: 'View', active: viewOpen, toggle: () => setViewOpen((v) => !v) },
-                  ] as const
-                ).map(({ label, active, toggle }) => (
-                  <button
-                    key={label}
-                    type="button"
-                    onClick={toggle}
-                    style={{
-                      padding: '4px 14px',
-                      borderRadius: 20,
-                      border: `1px solid ${active ? 'var(--panel-border, rgba(92,48,24,0.55))' : 'var(--panel-border, rgba(122,84,56,0.28))'}`,
-                      background: active
-                        ? 'var(--palette-l3-bg, rgba(92,48,24,0.1))'
-                        : 'transparent',
-                      color: active
-                        ? 'var(--palette-panel-text, #5C3018)'
-                        : 'var(--palette-panel-muted, #7A5438)',
-                      fontFamily: 'var(--font-serif)',
-                      fontSize: 11,
-                      fontWeight: active ? 700 : 500,
-                      letterSpacing: '0.1em',
-                      textTransform: 'uppercase' as const,
-                      cursor: 'pointer',
-                    }}
-                  >
-                    {label}
-                  </button>
-                ))}
-              </div>
+            {/* Road / Map / View — above insight so they're reachable without extra scroll */}
+            <div style={{ display: 'flex', justifyContent: 'center', gap: 8, paddingTop: 20 }}>
+              {(
+                [
+                  { label: 'Road', active: roadOpen, toggle: () => setRoadOpen((v) => !v) },
+                  { label: 'Map', active: mapOpen, toggle: () => setMapOpen((v) => !v) },
+                  { label: 'View', active: viewOpen, toggle: () => setViewOpen((v) => !v) },
+                ] as const
+              ).map(({ label, active, toggle }) => (
+                <button
+                  key={label}
+                  type="button"
+                  onClick={toggle}
+                  style={{
+                    padding: '4px 14px',
+                    borderRadius: 20,
+                    border: `1px solid ${active ? 'var(--panel-border, rgba(92,48,24,0.55))' : 'var(--panel-border, rgba(122,84,56,0.28))'}`,
+                    background: active ? 'var(--palette-l3-bg, rgba(92,48,24,0.1))' : 'transparent',
+                    color: active
+                      ? 'var(--palette-panel-text, #5C3018)'
+                      : 'var(--palette-panel-muted, #7A5438)',
+                    fontFamily: 'var(--font-serif)',
+                    fontSize: 11,
+                    fontWeight: active ? 700 : 500,
+                    letterSpacing: '0.1em',
+                    textTransform: 'uppercase' as const,
+                    cursor: 'pointer',
+                  }}
+                >
+                  {label}
+                </button>
+              ))}
             </div>
             {roadOpen && <DayRoad embedded onClose={() => setRoadOpen(false)} />}
             {mapOpen && <InfographicsView embedded onClose={() => setMapOpen(false)} />}
             {viewOpen && <DayView3D embedded onClose={() => setViewOpen(false)} />}
+            {/* Insight */}
+            <div style={{ paddingTop: 4 }}>
+              <EmotionLearnPill insights={emotionInsights} programKey="emotional-intelligence" />
+            </div>
           </div>
         }
         missionContent={
