@@ -2238,7 +2238,7 @@ export default function Overview2() {
               padding: '6px 16px',
               borderRadius: 999,
               border: `1px solid ${CARD_BORDER}`,
-              background: 'var(--palette-l3-bg, rgba(10,6,3,0.4))',
+              background: 'transparent',
             }}
           >
             <span style={{ fontSize: 11, opacity: 0.4, lineHeight: 1 }}>ℹ</span>
