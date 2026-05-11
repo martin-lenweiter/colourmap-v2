@@ -80,7 +80,7 @@ export default function CheckInPing() {
       <button
         type="button"
         onClick={dismiss}
-        aria-label="Dismiss"
+        aria-label="Dismiss daily reminder"
         style={{
           background: 'none',
           border: 'none',
