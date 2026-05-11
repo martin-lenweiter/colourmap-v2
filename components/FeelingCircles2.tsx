@@ -1002,7 +1002,7 @@ function VizDiamond({
 }
 
 const CIRCLE_VIZS = [
-  VizDiamondEmpty,
+  VizDiamondFull,
   VizBall,
   VizRing,
   VizArc,
