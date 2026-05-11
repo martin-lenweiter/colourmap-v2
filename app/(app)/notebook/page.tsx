@@ -1078,9 +1078,11 @@ export default function NotebookPage() {
               >
                 {activeNotebook === DELETED_NB_ID ? 'Deleted' : activeNb?.label}
               </h2>
-              {activeNotebook !== 'recordings' && activeNotebook !== DELETED_NB_ID && (
-                <span className="text-xs text-muted-foreground/50">{filtered.length} notes</span>
-              )}
+              {activeNotebook !== 'recordings' &&
+                activeNotebook !== DELETED_NB_ID &&
+                filtered.length > 0 && (
+                  <span className="text-xs text-muted-foreground/50">{filtered.length} notes</span>
+                )}
               {activeNotebook === DELETED_NB_ID && (
                 <span
                   className="text-xs"
