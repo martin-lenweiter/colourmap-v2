@@ -50,8 +50,12 @@ function DayContent() {
             <InnerWork />
             <div style={{ height: 20 }} />
             <FeelingCircles2 />
-            {/* Road / Map / View — above insight so they're reachable without extra scroll */}
-            <div style={{ display: 'flex', justifyContent: 'center', gap: 8, paddingTop: 20 }}>
+            {/* Insight */}
+            <div style={{ paddingTop: 20 }}>
+              <EmotionLearnPill insights={emotionInsights} programKey="emotional-intelligence" />
+            </div>
+            {/* Road / Map / View — below insight */}
+            <div style={{ display: 'flex', justifyContent: 'center', gap: 8, paddingTop: 8 }}>
               {(
                 [
                   { label: 'Road', active: roadOpen, toggle: () => setRoadOpen((v) => !v) },
@@ -86,10 +90,6 @@ function DayContent() {
             {roadOpen && <DayRoad embedded onClose={() => setRoadOpen(false)} />}
             {mapOpen && <InfographicsView embedded onClose={() => setMapOpen(false)} />}
             {viewOpen && <DayView3D embedded onClose={() => setViewOpen(false)} />}
-            {/* Insight */}
-            <div style={{ paddingTop: 4 }}>
-              <EmotionLearnPill insights={emotionInsights} programKey="emotional-intelligence" />
-            </div>
           </div>
         }
         missionContent={

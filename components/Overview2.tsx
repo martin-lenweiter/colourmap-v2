@@ -2221,12 +2221,12 @@ export default function Overview2() {
     <>
       <div
         key={refreshKey}
-        style={{ display: 'flex', flexDirection: 'column', gap: 12, paddingBottom: 32 }}
+        style={{ display: 'flex', flexDirection: 'column', gap: 20, paddingBottom: 32 }}
       >
         <ChapterSummary />
         <FocusSummary />
         <ArenasSummary onTapArena={(id) => open(`arena:${id}`)} onTapAdd={() => open('arenas')} />
-        <div style={{ paddingTop: 16 }}>
+        <div style={{ paddingTop: 8 }}>
           <MapOfSelfSummary onTap={() => open('mapofself')} />
         </div>
         <div style={{ display: 'flex', justifyContent: 'center', paddingTop: 8, paddingBottom: 4 }}>
@@ -2237,7 +2237,7 @@ export default function Overview2() {
               gap: 6,
               padding: '6px 16px',
               borderRadius: 999,
-              border: `1px solid ${CARD_BORDER}`,
+              border: '1px solid var(--panel-border, rgba(196,160,96,0.32))',
               background: 'transparent',
             }}
           >
