@@ -715,7 +715,7 @@ function LifeChapter() {
   );
 }
 
-function WeekFocus() {
+function _WeekFocus() {
   const [items, setItems] = useState<FocusItem[]>(DEFAULT_FOCUS);
 
   useEffect(() => {
