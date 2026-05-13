@@ -30,6 +30,7 @@ export default defineConfig({
       reporter: ['text', 'json-summary'],
     },
     environment: 'jsdom',
+    setupFiles: ['./vitest.setup.ts'],
     testTimeout: 15000,
     include: ['**/*.{test,spec}.{ts,tsx}'],
     exclude: [...configDefaults.exclude, 'e2e/**'],
