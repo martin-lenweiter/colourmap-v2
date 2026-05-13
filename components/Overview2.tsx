@@ -72,7 +72,7 @@ function saveArenasToLS(a: Arena[]) {
 }
 
 // ── Shared Section shell (light-mode card wrapper) ────────────────────
-function Card({
+function _Card({
   title,
   badge,
   onClick,
@@ -469,11 +469,11 @@ function ArenasSummary({
     setArenas(loadArenas());
   }, []);
 
-  let streak = 0;
+  let _streak = 0;
   if (arenas.length > 0) {
     const threshold = Math.max(1, Math.ceil(arenas.length / 2));
     for (let di = todayIdx; di >= 0; di--) {
-      if (arenas.filter((a) => a.days[di]).length >= threshold) streak++;
+      if (arenas.filter((a) => a.days[di]).length >= threshold) _streak++;
       else break;
     }
   }
@@ -715,7 +715,7 @@ function LifeChapter() {
   );
 }
 
-function WeekFocus() {
+function _WeekFocus() {
   const [items, setItems] = useState<FocusItem[]>(DEFAULT_FOCUS);
 
   useEffect(() => {
@@ -2221,12 +2221,12 @@ export default function Overview2() {
     <>
       <div
         key={refreshKey}
-        style={{ display: 'flex', flexDirection: 'column', gap: 12, paddingBottom: 32 }}
+        style={{ display: 'flex', flexDirection: 'column', gap: 20, paddingBottom: 32 }}
       >
         <ChapterSummary />
         <FocusSummary />
         <ArenasSummary onTapArena={(id) => open(`arena:${id}`)} onTapAdd={() => open('arenas')} />
-        <div style={{ paddingTop: 16 }}>
+        <div style={{ paddingTop: 8 }}>
           <MapOfSelfSummary onTap={() => open('mapofself')} />
         </div>
         <div style={{ display: 'flex', justifyContent: 'center', paddingTop: 8, paddingBottom: 4 }}>
@@ -2237,11 +2237,10 @@ export default function Overview2() {
               gap: 6,
               padding: '6px 16px',
               borderRadius: 999,
-              border: `1px solid ${CARD_BORDER}`,
-              background: 'var(--palette-l3-bg, rgba(10,6,3,0.4))',
+              border: '1px solid var(--panel-border, rgba(196,160,96,0.32))',
+              background: 'transparent',
             }}
           >
-            <span style={{ fontSize: 11, opacity: 0.4, lineHeight: 1 }}>ℹ</span>
             <span
               style={{
                 fontFamily: 'var(--font-serif)',

@@ -31,6 +31,7 @@ interface PaletteEntry {
   tabInactiveText?: string;
   panelText?: string;
   panelMuted?: string;
+  light?: boolean;
   quickPresets?: Array<Partial<Record<'l1' | 'l2' | 'l3', string>>>;
 }
 
@@ -72,6 +73,7 @@ const PALETTES: PaletteEntry[] = [
     tabInactiveText: 'rgba(30,16,8,0.88)',
     panelText: '#3A1A06',
     panelMuted: 'rgba(58,26,6,0.62)',
+    light: true,
     quickPresets: [
       { l1: 'b5', l2: 'b5', l3: 'b5' },
       { l1: 'b6', l2: 'b6', l3: 'b6' },
@@ -145,15 +147,17 @@ const PALETTES: PaletteEntry[] = [
   },
   {
     id: 'beige',
-    label: 'Parchment',
+    label: 'Custom',
     swatch: '#EDE4CC',
     header: { bg: 'rgba(242,232,208,0.97)', border: 'rgba(196,160,96,0.18)', text: '#5C3018' },
     tab: '#A07828',
-    panelBorder: 'rgba(196,160,96,0.18)',
+    panelBorder: 'rgba(156,108,56,0.22)',
     l1: 'rgba(242,232,208,0.32)',
     l2: 'rgba(242,232,208,0.20)',
     l3: 'rgba(242,232,208,0.11)',
-    panelText: 'rgba(240,216,152,0.92)',
+    panelText: 'rgba(58,26,6,0.88)',
+    panelMuted: 'rgba(58,26,6,0.52)',
+    light: true,
   },
 ];
 
@@ -291,20 +295,24 @@ function applyPaletteCSS(id: PaletteId) {
   set('--palette-tab-inactive-bg', p.tabInactiveBg);
   set('--palette-tab-active-text', p.tabActiveText);
   set('--palette-tab-inactive-text', p.tabInactiveText);
-  /* If no explicit panelText but base theme is light, force dark readable text */
-  if (p.panelText) {
-    root.style.setProperty('--palette-panel-text', p.panelText);
-  } else if (!root.classList.contains('dark')) {
-    root.style.setProperty('--palette-panel-text', 'rgba(30,16,8,0.88)');
+  /* Palettes with explicit panelText define their own. All dark palettes default to golden. */
+  root.style.setProperty('--palette-panel-text', p.panelText ?? 'rgba(196,160,96,0.88)');
+  root.style.setProperty('--palette-panel-muted', p.panelMuted ?? 'rgba(196,160,96,0.55)');
+  /* Light palettes override --foreground so typed text in inputs is dark, not golden */
+  if (p.light) {
+    root.style.setProperty('--foreground', '#2a1a06');
+    root.style.setProperty('--card-foreground', '#2a1a06');
+    root.style.setProperty('--popover-foreground', '#2a1a06');
+    root.style.setProperty('--muted-foreground', '#7a4a18');
+    root.style.setProperty('--palette-body-text', 'rgba(30,16,8,0.85)');
+    root.style.setProperty('--palette-body-muted', 'rgba(30,16,8,0.52)');
   } else {
-    root.style.removeProperty('--palette-panel-text');
-  }
-  if (p.panelMuted) {
-    root.style.setProperty('--palette-panel-muted', p.panelMuted);
-  } else if (!root.classList.contains('dark')) {
-    root.style.setProperty('--palette-panel-muted', 'rgba(30,16,8,0.52)');
-  } else {
-    root.style.removeProperty('--palette-panel-muted');
+    root.style.removeProperty('--foreground');
+    root.style.removeProperty('--card-foreground');
+    root.style.removeProperty('--popover-foreground');
+    root.style.removeProperty('--muted-foreground');
+    root.style.setProperty('--palette-body-text', 'rgba(240,216,152,0.85)');
+    root.style.setProperty('--palette-body-muted', 'rgba(240,216,152,0.52)');
   }
   localStorage.setItem('colourmap-palette', id);
 }
@@ -327,24 +335,18 @@ function applyCustomLevel(key: DeepLevelKey, colorId: string, palette?: PaletteE
   if (key === 'l3') {
     const root = document.documentElement;
     if (color.light) {
-      /* Light l3 colour → always dark panel text regardless of palette */
+      /* Light l3 panel → dark text */
       root.style.setProperty('--palette-panel-text', 'rgba(30,16,8,0.88)');
       root.style.setProperty('--palette-panel-muted', 'rgba(30,16,8,0.52)');
+      root.style.setProperty('--palette-body-text', 'rgba(30,16,8,0.85)');
+      root.style.setProperty('--palette-body-muted', 'rgba(30,16,8,0.52)');
       applyLightThemeTextVars();
-    } else if (palette?.panelText) {
-      /* Dark l3 + palette has explicit panel text → restore it */
-      root.style.setProperty('--palette-panel-text', palette.panelText);
-      if (palette.panelMuted) root.style.setProperty('--palette-panel-muted', palette.panelMuted);
-      else root.style.removeProperty('--palette-panel-muted');
     } else {
-      /* On light base themes (paper/golden) always force dark readable text */
-      if (!root.classList.contains('dark')) {
-        root.style.setProperty('--palette-panel-text', 'rgba(30,16,8,0.88)');
-        root.style.setProperty('--palette-panel-muted', 'rgba(30,16,8,0.52)');
-      } else {
-        root.style.removeProperty('--palette-panel-text');
-        root.style.removeProperty('--palette-panel-muted');
-      }
+      /* Dark l3 panel → golden text */
+      root.style.setProperty('--palette-panel-text', 'rgba(196,160,96,0.88)');
+      root.style.setProperty('--palette-panel-muted', 'rgba(196,160,96,0.55)');
+      root.style.setProperty('--palette-body-text', 'rgba(240,216,152,0.85)');
+      root.style.setProperty('--palette-body-muted', 'rgba(240,216,152,0.52)');
     }
   }
 }
@@ -380,7 +382,12 @@ export default function ThemeSwitcher() {
   const [allCustomIds, setAllCustomIds] = useState<AllCustomIds>({});
   const [expandedPalette, setExpandedPalette] = useState<string | null>(null);
   const [dragPos, setDragPos] = useState<{ x: number; y: number } | null>(null);
-  const { setTabStyle, setTabFillColor, appTheme, setAppTheme } = useStyle();
+  const {
+    setTabStyle,
+    setTabFillColor,
+    appTheme: _appTheme,
+    setAppTheme: _setAppTheme,
+  } = useStyle();
   const containerRef = useRef<HTMLDivElement>(null);
   const panelRef = useRef<HTMLDivElement>(null);
 
@@ -547,6 +554,7 @@ export default function ThemeSwitcher() {
                 : { position: 'absolute', right: 0, top: '2rem' }),
               background: '#fbf3d8',
               border: '1px solid rgba(160,110,40,0.18)',
+              color: '#2a1a06',
               '--foreground': '#2a1a06',
               '--muted-foreground': '#7a4a18',
               '--accent': '#c4a060',
@@ -601,22 +609,35 @@ export default function ThemeSwitcher() {
           {/* Color — page background */}
           {tab === 'color' && (
             <div className="flex flex-col gap-1">
-              {COLOR_THEMES.map((theme) => (
-                <button
-                  key={theme.id}
-                  type="button"
-                  className={`flex items-center gap-2 rounded-lg px-3 py-1.5 text-xs transition-colors ${
-                    colorActive === theme.id ? 'bg-accent font-medium' : 'hover:bg-accent/50'
-                  }`}
-                  onClick={() => selectColor(theme.id)}
-                >
-                  <div
-                    className="h-3.5 w-3.5 rounded-full border border-border"
-                    style={{ backgroundColor: theme.color }}
-                  />
-                  <span>{theme.label}</span>
-                </button>
-              ))}
+              {COLOR_THEMES.map((theme) => {
+                const isActive = colorActive === theme.id;
+                const isDark = !LIGHT_THEMES.has(theme.id);
+                return (
+                  <button
+                    key={theme.id}
+                    type="button"
+                    className={`flex items-center gap-2 rounded-lg px-3 py-1.5 text-xs transition-colors ${
+                      isActive && !isDark
+                        ? 'bg-accent font-medium'
+                        : !isActive
+                          ? 'hover:bg-accent/50'
+                          : ''
+                    }`}
+                    style={{
+                      background: isActive && isDark ? theme.color : undefined,
+                      color: isActive && isDark ? 'rgba(196,160,96,0.92)' : '#2a1a06',
+                      fontWeight: isActive ? 600 : 400,
+                    }}
+                    onClick={() => selectColor(theme.id)}
+                  >
+                    <div
+                      className="h-3.5 w-3.5 rounded-full border border-border flex-shrink-0"
+                      style={{ backgroundColor: theme.color }}
+                    />
+                    <span>{theme.label}</span>
+                  </button>
+                );
+              })}
             </div>
           )}
 

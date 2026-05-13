@@ -737,7 +737,7 @@ export default function CareCompass({ initialSlice }: { initialSlice?: string | 
           <label className="block space-y-2">
             <span
               style={{
-                color: '#5C3018',
+                color: 'var(--palette-panel-text, rgba(196,160,96,0.88))',
                 fontFamily: 'var(--font-serif)',
                 fontSize: '14px',
                 fontWeight: 600,
@@ -753,8 +753,8 @@ export default function CareCompass({ initialSlice }: { initialSlice?: string | 
               placeholder="name them, let them land..."
               className="min-h-[60px] w-full resize-none border-b bg-transparent pb-1 outline-none placeholder:opacity-50"
               style={{
-                color: '#5C3018',
-                borderColor: '#8A6A4A30',
+                color: 'var(--palette-panel-text, rgba(196,160,96,0.88))',
+                borderColor: 'var(--palette-panel-muted, rgba(196,160,96,0.3))',
                 fontFamily: 'var(--font-handwritten)',
                 fontSize: '16px',
                 lineHeight: 1.5,
@@ -764,7 +764,7 @@ export default function CareCompass({ initialSlice }: { initialSlice?: string | 
           <label className="block space-y-2">
             <span
               style={{
-                color: '#5C3018',
+                color: 'var(--palette-panel-text, rgba(196,160,96,0.88))',
                 fontFamily: 'var(--font-serif)',
                 fontSize: '14px',
                 fontWeight: 600,
@@ -780,8 +780,8 @@ export default function CareCompass({ initialSlice }: { initialSlice?: string | 
               placeholder="a person · a memory · a situation..."
               className="min-h-[60px] w-full resize-none border-b bg-transparent pb-1 outline-none placeholder:opacity-50"
               style={{
-                color: '#5C3018',
-                borderColor: '#8A6A4A30',
+                color: 'var(--palette-panel-text, rgba(196,160,96,0.88))',
+                borderColor: 'var(--palette-panel-muted, rgba(196,160,96,0.3))',
                 fontFamily: 'var(--font-handwritten)',
                 fontSize: '16px',
                 lineHeight: 1.5,
@@ -822,7 +822,7 @@ export default function CareCompass({ initialSlice }: { initialSlice?: string | 
                 </span>
                 <span
                   style={{
-                    color: '#8A6A4A',
+                    color: 'var(--palette-panel-muted, rgba(196,160,96,0.6))',
                     fontSize: '12px',
                     opacity: 0.8,
                     fontFamily: 'var(--font-serif)',
@@ -834,7 +834,7 @@ export default function CareCompass({ initialSlice }: { initialSlice?: string | 
 
               <p
                 style={{
-                  color: '#5C3018',
+                  color: 'var(--palette-panel-text, rgba(196,160,96,0.88))',
                   fontFamily: 'var(--font-serif)',
                   fontSize: '16px',
                   lineHeight: 1.5,

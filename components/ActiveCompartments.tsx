@@ -4,8 +4,8 @@ import { useEffect, useState } from 'react';
 import { syncPref } from '@/lib/sync';
 
 /* ── Tokens ──────────────────────────────────────────────────── */
-const BROWN = '#5C3018';
-const LABEL = '#8A6A4A';
+const BROWN = 'var(--palette-panel-text, #5C3018)';
+const LABEL = 'var(--palette-panel-muted, #8A6A4A)';
 
 /* ── Types (must match ColourMapPanel) ───────────────────────── */
 type Step = { id: string; text: string; done: boolean };
@@ -405,7 +405,7 @@ export default function ActiveCompartments() {
             fontWeight: 800,
             textTransform: 'uppercase',
             letterSpacing: '0.14em',
-            color: '#5C3018',
+            color: 'var(--palette-panel-text, rgba(196,160,96,0.88))',
           }}
         >
           Active Today

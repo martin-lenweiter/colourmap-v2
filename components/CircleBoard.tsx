@@ -20,6 +20,8 @@ import {
 
 const LS_ANNOTATIONS = 'colourmap:circle-annotations';
 
+const COWORKING_IMAGES = ['/coworking.png', '/coworking-2.png', '/coworking-3.png'];
+
 /* ─── Types ─────────────────────────────────────────────────── */
 
 interface ChapterMeaning {
@@ -59,6 +61,14 @@ interface HelpRequest {
   createdAt: string;
 }
 
+interface MemberFeeling {
+  memberId: string;
+  memberName: string;
+  word: string;
+  description: string;
+  sharedAt: string;
+}
+
 interface CircleAnnotations {
   chapter?: string;
   chapterMeanings?: ChapterMeaning[];
@@ -66,6 +76,7 @@ interface CircleAnnotations {
   objectives?: Objective[];
   missionObjectiveMap?: Record<string, string>;
   memberStatuses?: MemberStatus[];
+  memberFeelings?: MemberFeeling[];
   processEntries?: ProcessEntry[];
   helpRequests?: HelpRequest[];
 }
@@ -337,6 +348,11 @@ export default function CircleBoard() {
   const [processInput, setProcessInput] = useState('');
   const [helpInput, setHelpInput] = useState('');
 
+  /* Feelings */
+  const [editingFeeling, setEditingFeeling] = useState(false);
+  const [feelingWord, setFeelingWord] = useState('');
+  const [feelingDesc, setFeelingDesc] = useState('');
+
   /* Chapter */
   const [editingChapter, setEditingChapter] = useState(false);
   const [chapterInput, setChapterInput] = useState('');
@@ -345,6 +361,7 @@ export default function CircleBoard() {
   const [openSections, setOpenSections] = useState<Record<string, boolean>>({
     objectives: true,
     missions: true,
+    feelings: true,
     process: false,
     help: false,
     extras: false,
@@ -352,6 +369,10 @@ export default function CircleBoard() {
   });
 
   const boardRef = useKeyboardAware<HTMLDivElement>();
+  const coworkingHero = useMemo(
+    () => COWORKING_IMAGES[Math.floor(Math.random() * COWORKING_IMAGES.length)],
+    [],
+  );
 
   useEffect(() => {
     if (!hook.loading && !me.name) setEditingMe(true);
@@ -544,6 +565,52 @@ export default function CircleBoard() {
       memberStatuses: [...existing.filter((s) => s.memberId !== me.id), ...(t ? [status] : [])],
     });
     setEditingMyStatus(false);
+  }
+
+  /* ── Feelings ── */
+  function todayStart() {
+    const d = new Date();
+    d.setHours(0, 0, 0, 0);
+    return d.toISOString();
+  }
+
+  function saveFeeling() {
+    const w = feelingWord.trim();
+    if (!w || !activeId) return;
+    const existing = (ann().memberFeelings ?? []).filter((f) => f.memberId !== me.id);
+    const feeling: MemberFeeling = {
+      memberId: me.id,
+      memberName: me.name,
+      word: w,
+      description: feelingDesc.trim(),
+      sharedAt: new Date().toISOString(),
+    };
+    updateAnnotations(activeId, { memberFeelings: [...existing, feeling] });
+    setEditingFeeling(false);
+  }
+
+  function clearMyFeeling() {
+    if (!activeId) return;
+    updateAnnotations(activeId, {
+      memberFeelings: (ann().memberFeelings ?? []).filter((f) => f.memberId !== me.id),
+    });
+    setFeelingWord('');
+    setFeelingDesc('');
+    setEditingFeeling(false);
+  }
+
+  function useTodaysMood() {
+    try {
+      const word = localStorage.getItem('colourmap:mood-word') || '';
+      const rawLog = localStorage.getItem('colourmap:emotions-log');
+      const log: Array<{ word?: string; label?: string; createdAt?: string }> = rawLog
+        ? JSON.parse(rawLog)
+        : [];
+      const today = todayStart();
+      const todayEntry = log.find((e) => e.createdAt && e.createdAt >= today);
+      const resolved = word || todayEntry?.word || todayEntry?.label || '';
+      if (resolved) setFeelingWord(resolved);
+    } catch {}
   }
 
   /* ── Process ── */
@@ -971,6 +1038,14 @@ export default function CircleBoard() {
   const myStatus = memberStatuses.find((s) => s.memberId === me.id);
   const myStatusText = myStatus?.text || '';
 
+  /* Feelings — filter out stale entries from previous days */
+  const todayISO = todayStart();
+  const memberFeelings = (allAnnotations.memberFeelings ?? []).filter(
+    (f) => f.sharedAt >= todayISO,
+  );
+  const myFeeling = memberFeelings.find((f) => f.memberId === me.id);
+  const othersfeelings = memberFeelings.filter((f) => f.memberId !== me.id);
+
   const backlogMissions = active.missions.filter((m) => !m.done && !m.claimedBy);
   const activeMissions = active.missions.filter((m) => !m.done && !!m.claimedBy);
   const doneMissions = active.missions.filter((m) => m.done);
@@ -991,1201 +1066,1553 @@ export default function CircleBoard() {
   }));
 
   return (
-    <div ref={boardRef} className="mx-auto max-w-md space-y-3 px-4 py-5">
-      {/* ── Header ── */}
-      <div className="flex items-center gap-3">
-        <button
-          type="button"
-          onClick={() => setView('list')}
-          className="cursor-pointer text-[12px] transition-all shrink-0"
-          style={{ color: '#8A6A4A', opacity: 0.5, background: 'none', border: 'none' }}
-        >
-          ‹ back
-        </button>
-        <div className="flex-1 text-center">
-          {editingChapter ? (
-            <input
-              type="text"
-              value={chapterInput}
-              onChange={(e) => setChapterInput(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter') setChapter(chapterInput);
-              }}
-              onBlur={() => setChapter(chapterInput)}
-              placeholder="circle subtitle..."
-              autoFocus
-              className="w-full bg-transparent text-center outline-none placeholder:italic placeholder:text-[#8A6A4A] placeholder:opacity-40"
-              style={{ fontFamily: font, fontSize: 12, color: '#8A6A4A' }}
-            />
-          ) : (
-            <div>
-              <p style={{ fontFamily: font, fontSize: 16, fontWeight: 700, color: active.color }}>
-                {active.name}
-              </p>
-              <button
-                type="button"
-                onClick={() => {
-                  setChapterInput(active.chapter || '');
-                  setEditingChapter(true);
-                }}
-                style={{
-                  fontFamily: font,
-                  fontSize: 11,
-                  color: '#8A6A4A',
-                  opacity: 0.45,
-                  fontStyle: 'italic',
-                  background: 'none',
-                  border: 'none',
-                  cursor: 'pointer',
-                }}
-              >
-                {active.chapter || 'add a subtitle...'}
-              </button>
-            </div>
-          )}
-          {!hook.online && (
-            <span
-              style={{
-                fontFamily: font,
-                fontSize: 9,
-                color: '#8A6A4A',
-                opacity: 0.4,
-                display: 'block',
-                letterSpacing: '0.1em',
-                textTransform: 'uppercase',
-              }}
-            >
-              local · will sync when online
-            </span>
-          )}
-        </div>
-        <span
-          style={{
-            fontFamily: font,
-            fontSize: 11,
-            color: active.color,
-            opacity: 0.35,
-            letterSpacing: '0.15em',
-            flexShrink: 0,
-          }}
-        >
-          {active.code}
-        </span>
-      </div>
-
-      {/* ── Members strip ── */}
-      <div style={{ display: 'flex', gap: 8, overflowX: 'auto', paddingBottom: 2, paddingTop: 2 }}>
-        {active.members.map((m) => {
-          const status = memberStatuses.find((s) => s.memberId === m.id);
-          const isMe = m.id === me.id;
-          return (
-            <div
-              key={m.id}
-              style={{
-                display: 'flex',
-                flexDirection: 'column',
-                alignItems: 'center',
-                gap: 4,
-                padding: '8px 12px',
-                borderRadius: 12,
-                flexShrink: 0,
-                background: `${m.pulseColor || m.color}08`,
-                border: `1px solid ${m.pulseColor || m.color}${isMe ? '40' : '18'}`,
-                minWidth: 72,
-              }}
-            >
-              <span
-                className="block rounded-full"
-                style={{
-                  width: 14,
-                  height: 14,
-                  background: m.pulseColor || m.color,
-                  opacity: m.pulse ? 0.85 : 0.3,
-                }}
-              />
-              <span
-                style={{
-                  fontFamily: font,
-                  fontSize: 11,
-                  color: '#5C3018',
-                  fontWeight: isMe ? 700 : 500,
-                }}
-              >
-                {m.name}
-              </span>
-              {m.pulse && (
-                <span style={{ fontFamily: font, fontSize: 9, color: m.pulseColor, opacity: 0.65 }}>
-                  {m.pulse}
-                </span>
-              )}
-              {status?.text && (
-                <span
-                  style={{
-                    fontFamily: font,
-                    fontSize: 9,
-                    color: '#8A6A4A',
-                    opacity: 0.55,
-                    textAlign: 'center',
-                    fontStyle: 'italic',
-                    maxWidth: 72,
-                    overflow: 'hidden',
-                    textOverflow: 'ellipsis',
-                    whiteSpace: 'nowrap',
-                  }}
-                >
-                  {status.text}
-                </span>
-              )}
-            </div>
-          );
-        })}
-      </div>
-
-      {/* ── My Status ── */}
+    <div ref={boardRef} className="mx-auto max-w-md space-y-3 pb-5">
+      {/* ── Hero image ── */}
       <div
         style={{
-          borderRadius: 10,
-          border: '1px solid #C4A06018',
-          padding: '8px 14px',
-          background: '#C4A06006',
+          position: 'relative',
+          width: '100%',
+          height: 180,
+          overflow: 'hidden',
+          borderRadius: '0 0 20px 20px',
         }}
       >
-        {editingMyStatus ? (
-          <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-            <input
-              type="text"
-              value={myStatusInput}
-              onChange={(e) => setMyStatusInput(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter') saveMyStatus();
-              }}
-              onBlur={saveMyStatus}
-              placeholder="what are you working on right now?"
-              autoFocus
-              style={{
-                fontFamily: font,
-                fontSize: 12,
-                color: '#5C3018',
-                background: 'transparent',
-                border: 'none',
-                outline: 'none',
-                flex: 1,
-                fontStyle: 'italic',
-              }}
-            />
-          </div>
-        ) : (
-          <button
-            type="button"
-            onClick={() => {
-              setMyStatusInput(myStatusText);
-              setEditingMyStatus(true);
-            }}
-            style={{
-              fontFamily: font,
-              fontSize: 12,
-              color: myStatusText ? '#5C3018' : '#8A6A4A',
-              opacity: myStatusText ? 0.8 : 0.4,
-              fontStyle: 'italic',
-              background: 'none',
-              border: 'none',
-              cursor: 'pointer',
-              width: '100%',
-              textAlign: 'left',
-            }}
-          >
-            {myStatusText || 'what are you working on right now?'}
-          </button>
-        )}
-      </div>
-
-      {/* ── Objectives ── */}
-      <Section
-        label="objectives"
-        badge={objectives.length || undefined}
-        open={openSections.objectives}
-        onToggle={() => toggleSection('objectives')}
-        accent={active.color}
-      >
-        <div style={{ marginTop: 10, display: 'flex', flexDirection: 'column', gap: 10 }}>
-          {objectives.map((obj) => {
-            const tagged = active.missions.filter((m) => missionObjMap[m.id] === obj.id);
-            const doneCount = tagged.filter((m) => m.done).length;
-            const pct = tagged.length > 0 ? Math.round((doneCount / tagged.length) * 100) : 0;
-            return (
-              <div key={obj.id} style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                  <span
-                    style={{
-                      flex: 1,
-                      fontFamily: font,
-                      fontSize: 13,
-                      color: '#5C3018',
-                      fontWeight: 600,
-                    }}
-                  >
-                    {obj.text}
-                  </span>
-                  <span
-                    style={{ fontFamily: font, fontSize: 10, color: active.color, opacity: 0.6 }}
-                  >
-                    {pct}%
-                  </span>
-                  <button
-                    type="button"
-                    onClick={() => removeObjective(obj.id)}
-                    style={{
-                      fontFamily: font,
-                      fontSize: 11,
-                      color: '#8A6A4A',
-                      opacity: 0.2,
-                      background: 'none',
-                      border: 'none',
-                      cursor: 'pointer',
-                    }}
-                  >
-                    ×
-                  </button>
-                </div>
-                <div
-                  style={{
-                    height: 3,
-                    borderRadius: 99,
-                    background: `${active.color}18`,
-                    overflow: 'hidden',
-                  }}
-                >
-                  <div
-                    style={{
-                      height: '100%',
-                      width: `${pct}%`,
-                      background: active.color,
-                      borderRadius: 99,
-                      transition: 'width 0.4s ease',
-                    }}
-                  />
-                </div>
-                {tagged.length > 0 && (
-                  <p style={{ fontFamily: font, fontSize: 10, color: '#8A6A4A', opacity: 0.45 }}>
-                    {doneCount}/{tagged.length} missions done
-                  </p>
-                )}
-              </div>
-            );
-          })}
-          <div style={{ display: 'flex', gap: 8, alignItems: 'center', marginTop: 2 }}>
-            <input
-              type="text"
-              value={objInput}
-              onChange={(e) => setObjInput(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter') addObjective();
-              }}
-              placeholder="+ add objective..."
-              style={{
-                fontFamily: font,
-                fontSize: 12,
-                color: '#5C3018',
-                background: 'transparent',
-                border: 'none',
-                borderBottom: `1px solid ${active.color}20`,
-                outline: 'none',
-                flex: 1,
-                paddingBottom: 3,
-                fontStyle: 'italic',
-              }}
-            />
-          </div>
-        </div>
-      </Section>
-
-      {/* ── Missions ── */}
-      <Section
-        label="missions"
-        badge={`${backlogMissions.length + activeMissions.length} open`}
-        open={openSections.missions}
-        onToggle={() => toggleSection('missions')}
-        accent={active.color}
-      >
-        {/* Tabs */}
-        <div style={{ display: 'flex', gap: 4, marginTop: 10, marginBottom: 8 }}>
-          {(['backlog', 'active', 'done'] as MissionTab[]).map((tab) => {
-            const count =
-              tab === 'backlog'
-                ? backlogMissions.length
-                : tab === 'active'
-                  ? activeMissions.length
-                  : doneMissions.length;
-            return (
-              <button
-                key={tab}
-                type="button"
-                onClick={() => setMissionTab(tab)}
-                style={{
-                  fontFamily: font,
-                  fontSize: 10,
-                  fontWeight: missionTab === tab ? 700 : 500,
-                  letterSpacing: '0.1em',
-                  textTransform: 'uppercase',
-                  color: missionTab === tab ? active.color : '#8A6A4A',
-                  background: missionTab === tab ? `${active.color}12` : 'transparent',
-                  border: `1px solid ${missionTab === tab ? active.color + '40' : '#C4A06020'}`,
-                  borderRadius: 99,
-                  padding: '3px 10px',
-                  cursor: 'pointer',
-                }}
-              >
-                {tab} {count > 0 && <span style={{ opacity: 0.6 }}>({count})</span>}
-              </button>
-            );
-          })}
-        </div>
-
-        {/* Mission list */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-          {missionTabMissions.length === 0 && (
+        <img
+          src={coworkingHero}
+          alt=""
+          style={{
+            width: '100%',
+            height: '100%',
+            objectFit: 'cover',
+            objectPosition: 'center 20%',
+            display: 'block',
+          }}
+        />
+        <div
+          style={{
+            position: 'absolute',
+            inset: 0,
+            background:
+              'linear-gradient(to bottom, transparent 20%, var(--background, #150c04) 100%)',
+          }}
+        />
+        <div
+          style={{
+            position: 'absolute',
+            bottom: 14,
+            left: 20,
+            right: 20,
+            display: 'flex',
+            alignItems: 'flex-end',
+            justifyContent: 'space-between',
+          }}
+        >
+          <div>
             <p
               style={{
                 fontFamily: font,
-                fontSize: 12,
+                fontSize: 9,
+                letterSpacing: '0.18em',
+                textTransform: 'uppercase',
                 color: '#8A6A4A',
-                opacity: 0.35,
-                fontStyle: 'italic',
-                textAlign: 'center',
-                padding: '8px 0',
+                opacity: 0.55,
+                margin: 0,
               }}
             >
-              {missionTab === 'done' ? 'nothing finished yet' : 'nothing here yet'}
+              Circles
             </p>
-          )}
-          {missionTabMissions.map((m) => {
-            const claimerMember = m.claimedBy ? memberMap.get(m.claimedBy) : null;
-            const claimerColor = claimerMember
-              ? claimerMember.pulseColor || claimerMember.color
-              : active.color;
-            const due = dueLabel(m.due);
-            const isExpanded = expandedMissionId === m.id;
-            const isMine = m.claimedBy === me.id;
-            const objId = missionObjMap[m.id];
-            const objLabel = objId ? objectives.find((o) => o.id === objId)?.text : null;
+            <p
+              style={{
+                fontFamily: font,
+                fontSize: 18,
+                fontWeight: 700,
+                fontStyle: 'italic',
+                color: active.color,
+                margin: 0,
+                lineHeight: 1.2,
+              }}
+            >
+              {active.name}
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={() => setView('list')}
+            style={{
+              fontFamily: font,
+              fontSize: 11,
+              color: '#8A6A4A',
+              opacity: 0.5,
+              background: 'none',
+              border: 'none',
+              cursor: 'pointer',
+            }}
+          >
+            ‹ back
+          </button>
+        </div>
+      </div>
 
+      <div className="px-4 space-y-3">
+        {/* ── Header ── */}
+        <div className="flex items-center gap-3">
+          <div className="flex-1 text-center">
+            {editingChapter ? (
+              <input
+                type="text"
+                value={chapterInput}
+                onChange={(e) => setChapterInput(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') setChapter(chapterInput);
+                }}
+                onBlur={() => setChapter(chapterInput)}
+                placeholder="circle subtitle..."
+                autoFocus
+                className="w-full bg-transparent text-center outline-none placeholder:italic placeholder:text-[#8A6A4A] placeholder:opacity-40"
+                style={{ fontFamily: font, fontSize: 12, color: '#8A6A4A' }}
+              />
+            ) : (
+              <div>
+                <p style={{ fontFamily: font, fontSize: 16, fontWeight: 700, color: active.color }}>
+                  {active.name}
+                </p>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setChapterInput(active.chapter || '');
+                    setEditingChapter(true);
+                  }}
+                  style={{
+                    fontFamily: font,
+                    fontSize: 11,
+                    color: '#8A6A4A',
+                    opacity: 0.45,
+                    fontStyle: 'italic',
+                    background: 'none',
+                    border: 'none',
+                    cursor: 'pointer',
+                  }}
+                >
+                  {active.chapter || 'add a subtitle...'}
+                </button>
+              </div>
+            )}
+            {!hook.online && (
+              <span
+                style={{
+                  fontFamily: font,
+                  fontSize: 9,
+                  color: '#8A6A4A',
+                  opacity: 0.4,
+                  display: 'block',
+                  letterSpacing: '0.1em',
+                  textTransform: 'uppercase',
+                }}
+              >
+                local · will sync when online
+              </span>
+            )}
+          </div>
+          <span
+            style={{
+              fontFamily: font,
+              fontSize: 11,
+              color: active.color,
+              opacity: 0.35,
+              letterSpacing: '0.15em',
+              flexShrink: 0,
+            }}
+          >
+            {active.code}
+          </span>
+        </div>
+
+        {/* ── Members strip ── */}
+        <div
+          style={{ display: 'flex', gap: 8, overflowX: 'auto', paddingBottom: 2, paddingTop: 2 }}
+        >
+          {active.members.map((m) => {
+            const status = memberStatuses.find((s) => s.memberId === m.id);
+            const isMe = m.id === me.id;
             return (
               <div
                 key={m.id}
                 style={{
-                  borderRadius: 10,
-                  border: `1px solid ${claimerColor}18`,
-                  background: `${claimerColor}04`,
-                  overflow: 'hidden',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  gap: 4,
+                  padding: '8px 12px',
+                  borderRadius: 12,
+                  flexShrink: 0,
+                  background: `${m.pulseColor || m.color}08`,
+                  border: `1px solid ${m.pulseColor || m.color}${isMe ? '40' : '18'}`,
+                  minWidth: 72,
                 }}
               >
-                {/* Main row */}
-                <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '8px 10px' }}>
-                  {/* Tick */}
-                  <button
-                    type="button"
-                    onClick={() => hook.toggleMissionDone(m.id)}
+                <span
+                  className="block rounded-full"
+                  style={{
+                    width: 14,
+                    height: 14,
+                    background: m.pulseColor || m.color,
+                    opacity: m.pulse ? 0.85 : 0.3,
+                  }}
+                />
+                <span
+                  style={{
+                    fontFamily: font,
+                    fontSize: 11,
+                    color: '#5C3018',
+                    fontWeight: isMe ? 700 : 500,
+                  }}
+                >
+                  {m.name}
+                </span>
+                {m.pulse && (
+                  <span
+                    style={{ fontFamily: font, fontSize: 9, color: m.pulseColor, opacity: 0.65 }}
+                  >
+                    {m.pulse}
+                  </span>
+                )}
+                {status?.text && (
+                  <span
                     style={{
-                      width: 16,
-                      height: 16,
-                      borderRadius: 4,
-                      flexShrink: 0,
-                      cursor: 'pointer',
-                      border: `1.5px solid ${claimerColor}50`,
-                      background: m.done ? `${claimerColor}30` : 'transparent',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
+                      fontFamily: font,
+                      fontSize: 9,
+                      color: '#8A6A4A',
+                      opacity: 0.55,
+                      textAlign: 'center',
+                      fontStyle: 'italic',
+                      maxWidth: 72,
+                      overflow: 'hidden',
+                      textOverflow: 'ellipsis',
+                      whiteSpace: 'nowrap',
                     }}
                   >
-                    {m.done && <span style={{ fontSize: 9, color: claimerColor }}>✓</span>}
-                  </button>
+                    {status.text}
+                  </span>
+                )}
+              </div>
+            );
+          })}
+        </div>
 
-                  {/* Text */}
-                  <button
-                    type="button"
-                    onClick={() => setExpandedMissionId(isExpanded ? null : m.id)}
-                    style={{
-                      flex: 1,
-                      textAlign: 'left',
-                      background: 'none',
-                      border: 'none',
-                      cursor: 'pointer',
-                      padding: 0,
-                    }}
-                  >
+        {/* ── My Status ── */}
+        <div
+          style={{
+            borderRadius: 10,
+            border: '1px solid #C4A06018',
+            padding: '8px 14px',
+            background: '#C4A06006',
+          }}
+        >
+          {editingMyStatus ? (
+            <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+              <input
+                type="text"
+                value={myStatusInput}
+                onChange={(e) => setMyStatusInput(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') saveMyStatus();
+                }}
+                onBlur={saveMyStatus}
+                placeholder="what are you working on right now?"
+                autoFocus
+                style={{
+                  fontFamily: font,
+                  fontSize: 12,
+                  color: '#5C3018',
+                  background: 'transparent',
+                  border: 'none',
+                  outline: 'none',
+                  flex: 1,
+                  fontStyle: 'italic',
+                }}
+              />
+            </div>
+          ) : (
+            <button
+              type="button"
+              onClick={() => {
+                setMyStatusInput(myStatusText);
+                setEditingMyStatus(true);
+              }}
+              style={{
+                fontFamily: font,
+                fontSize: 12,
+                color: myStatusText ? '#5C3018' : '#8A6A4A',
+                opacity: myStatusText ? 0.8 : 0.4,
+                fontStyle: 'italic',
+                background: 'none',
+                border: 'none',
+                cursor: 'pointer',
+                width: '100%',
+                textAlign: 'left',
+              }}
+            >
+              {myStatusText || 'what are you working on right now?'}
+            </button>
+          )}
+        </div>
+
+        {/* ── Feelings ── */}
+        <Section
+          label="feelings"
+          badge={memberFeelings.length || undefined}
+          open={openSections.feelings}
+          onToggle={() => toggleSection('feelings')}
+          accent={active.color}
+        >
+          <div style={{ marginTop: 10, display: 'flex', flexDirection: 'column', gap: 10 }}>
+            {/* Others' feelings */}
+            {othersfeelings.map((f) => {
+              const member = memberMap.get(f.memberId);
+              const color = member?.pulseColor || member?.color || active.color;
+              return (
+                <div
+                  key={f.memberId}
+                  style={{
+                    borderRadius: 10,
+                    border: `1px solid ${color}22`,
+                    background: `${color}08`,
+                    padding: '10px 14px',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: 4,
+                  }}
+                >
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                    <span
+                      style={{
+                        width: 8,
+                        height: 8,
+                        borderRadius: '50%',
+                        background: color,
+                        flexShrink: 0,
+                        display: 'inline-block',
+                      }}
+                    />
+                    <span
+                      style={{ fontFamily: font, fontSize: 11, color: '#8A6A4A', opacity: 0.6 }}
+                    >
+                      {f.memberName}
+                    </span>
                     <span
                       style={{
                         fontFamily: font,
                         fontSize: 13,
-                        color: m.done ? '#8A6A4A' : '#5C3018',
-                        opacity: m.done ? 0.5 : 1,
-                        textDecoration: m.done ? 'line-through' : 'none',
+                        fontWeight: 700,
+                        color,
+                        fontStyle: 'italic',
+                        marginLeft: 'auto',
                       }}
                     >
-                      {m.text}
+                      {f.word}
                     </span>
-                  </button>
-
-                  {/* Objective tag */}
-                  {objLabel && (
-                    <span
+                  </div>
+                  {f.description && (
+                    <p
                       style={{
                         fontFamily: font,
-                        fontSize: 9,
-                        color: active.color,
-                        opacity: 0.55,
-                        background: `${active.color}10`,
-                        borderRadius: 99,
-                        padding: '1px 6px',
-                        flexShrink: 0,
+                        fontSize: 12,
+                        color: 'var(--palette-panel-text, rgba(196,160,96,0.88))',
+                        opacity: 0.7,
+                        margin: 0,
+                        lineHeight: 1.5,
+                        paddingLeft: 16,
                       }}
                     >
-                      {objLabel}
-                    </span>
+                      {f.description}
+                    </p>
                   )}
+                </div>
+              );
+            })}
 
-                  {/* Due */}
-                  {due && (
-                    <span
-                      style={{
-                        fontFamily: font,
-                        fontSize: 9,
-                        fontWeight: 600,
-                        flexShrink: 0,
-                        color:
-                          due.tone === 'overdue'
-                            ? '#B33A2B'
-                            : due.tone === 'soon'
-                              ? '#C4A060'
-                              : '#8A6A4A',
-                        opacity: 0.85,
-                      }}
-                    >
-                      {due.text}
-                    </span>
-                  )}
-
-                  {/* Claimer dot */}
-                  {claimerMember && (
-                    <span
-                      className="block rounded-full shrink-0"
-                      style={{ width: 8, height: 8, background: claimerColor, opacity: 0.75 }}
-                      title={claimerMember.name}
-                    />
-                  )}
-
-                  {/* Delete */}
+            {/* My feeling */}
+            {editingFeeling ? (
+              <div
+                style={{
+                  borderRadius: 10,
+                  border: `1px solid ${active.color}30`,
+                  padding: '12px 14px',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: 10,
+                }}
+              >
+                <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                  <input
+                    type="text"
+                    value={feelingWord}
+                    onChange={(e) => setFeelingWord(e.target.value)}
+                    placeholder="one word..."
+                    autoFocus
+                    style={{
+                      fontFamily: font,
+                      fontSize: 13,
+                      fontWeight: 600,
+                      fontStyle: 'italic',
+                      color: active.color,
+                      background: 'transparent',
+                      border: 'none',
+                      borderBottom: `1px solid ${active.color}30`,
+                      outline: 'none',
+                      flex: 1,
+                      paddingBottom: 3,
+                    }}
+                  />
                   <button
                     type="button"
-                    onClick={() => hook.removeMission(m.id)}
+                    onClick={useTodaysMood}
                     style={{
+                      fontFamily: font,
+                      fontSize: 10,
+                      color: active.color,
+                      opacity: 0.5,
+                      background: 'none',
+                      border: `1px solid ${active.color}25`,
+                      borderRadius: 999,
+                      padding: '3px 10px',
+                      cursor: 'pointer',
+                      whiteSpace: 'nowrap',
+                    }}
+                  >
+                    use today's
+                  </button>
+                </div>
+                <textarea
+                  value={feelingDesc}
+                  onChange={(e) => setFeelingDesc(e.target.value)}
+                  placeholder="a few words about it... (optional)"
+                  rows={2}
+                  style={{
+                    fontFamily: font,
+                    fontSize: 12,
+                    color: 'var(--palette-panel-text, rgba(196,160,96,0.88))',
+                    background: 'transparent',
+                    border: `1px solid ${active.color}18`,
+                    borderRadius: 8,
+                    outline: 'none',
+                    padding: '8px 10px',
+                    resize: 'none',
+                    lineHeight: 1.5,
+                  }}
+                />
+                <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
+                  <button
+                    type="button"
+                    onClick={() => setEditingFeeling(false)}
+                    style={{
+                      fontFamily: font,
+                      fontSize: 11,
                       color: '#8A6A4A',
-                      opacity: 0.15,
+                      opacity: 0.45,
                       background: 'none',
                       border: 'none',
                       cursor: 'pointer',
-                      fontSize: 12,
-                      flexShrink: 0,
                     }}
                   >
-                    ×
+                    cancel
+                  </button>
+                  {myFeeling && (
+                    <button
+                      type="button"
+                      onClick={clearMyFeeling}
+                      style={{
+                        fontFamily: font,
+                        fontSize: 11,
+                        color: '#8A6A4A',
+                        opacity: 0.45,
+                        background: 'none',
+                        border: 'none',
+                        cursor: 'pointer',
+                      }}
+                    >
+                      clear
+                    </button>
+                  )}
+                  <button
+                    type="button"
+                    onClick={saveFeeling}
+                    style={{
+                      fontFamily: font,
+                      fontSize: 11,
+                      color: active.color,
+                      background: `${active.color}12`,
+                      border: `1px solid ${active.color}30`,
+                      borderRadius: 999,
+                      padding: '4px 16px',
+                      cursor: 'pointer',
+                    }}
+                  >
+                    share
                   </button>
                 </div>
+              </div>
+            ) : myFeeling ? (
+              <button
+                type="button"
+                onClick={() => {
+                  setFeelingWord(myFeeling.word);
+                  setFeelingDesc(myFeeling.description);
+                  setEditingFeeling(true);
+                }}
+                style={{
+                  fontFamily: font,
+                  fontSize: 12,
+                  color: active.color,
+                  opacity: 0.75,
+                  fontStyle: 'italic',
+                  background: `${active.color}08`,
+                  border: `1px solid ${active.color}20`,
+                  borderRadius: 10,
+                  padding: '8px 14px',
+                  cursor: 'pointer',
+                  textAlign: 'left',
+                  width: '100%',
+                }}
+              >
+                you: <strong>{myFeeling.word}</strong>
+                {myFeeling.description ? ` — ${myFeeling.description}` : ''}
+              </button>
+            ) : (
+              <button
+                type="button"
+                onClick={() => {
+                  setFeelingWord('');
+                  setFeelingDesc('');
+                  setEditingFeeling(true);
+                }}
+                style={{
+                  fontFamily: font,
+                  fontSize: 12,
+                  color: '#8A6A4A',
+                  opacity: 0.4,
+                  fontStyle: 'italic',
+                  background: 'none',
+                  border: `1px dashed ${active.color}20`,
+                  borderRadius: 10,
+                  padding: '8px 14px',
+                  cursor: 'pointer',
+                  width: '100%',
+                  textAlign: 'left',
+                }}
+              >
+                + share how you're feeling today
+              </button>
+            )}
+          </div>
+        </Section>
 
-                {/* Expanded panel */}
-                {isExpanded && (
+        {/* ── Objectives ── */}
+        <Section
+          label="objectives"
+          badge={objectives.length || undefined}
+          open={openSections.objectives}
+          onToggle={() => toggleSection('objectives')}
+          accent={active.color}
+        >
+          <div style={{ marginTop: 10, display: 'flex', flexDirection: 'column', gap: 10 }}>
+            {objectives.map((obj) => {
+              const tagged = active.missions.filter((m) => missionObjMap[m.id] === obj.id);
+              const doneCount = tagged.filter((m) => m.done).length;
+              const pct = tagged.length > 0 ? Math.round((doneCount / tagged.length) * 100) : 0;
+              return (
+                <div key={obj.id} style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                    <span
+                      style={{
+                        flex: 1,
+                        fontFamily: font,
+                        fontSize: 13,
+                        color: '#5C3018',
+                        fontWeight: 600,
+                      }}
+                    >
+                      {obj.text}
+                    </span>
+                    <span
+                      style={{ fontFamily: font, fontSize: 10, color: active.color, opacity: 0.6 }}
+                    >
+                      {pct}%
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => removeObjective(obj.id)}
+                      style={{
+                        fontFamily: font,
+                        fontSize: 11,
+                        color: '#8A6A4A',
+                        opacity: 0.2,
+                        background: 'none',
+                        border: 'none',
+                        cursor: 'pointer',
+                      }}
+                    >
+                      ×
+                    </button>
+                  </div>
                   <div
                     style={{
-                      padding: '0 10px 10px 34px',
-                      borderTop: `1px solid ${claimerColor}12`,
-                      background: `${claimerColor}06`,
+                      height: 3,
+                      borderRadius: 99,
+                      background: `${active.color}18`,
+                      overflow: 'hidden',
                     }}
-                    className="animate-in fade-in duration-150"
                   >
                     <div
                       style={{
+                        height: '100%',
+                        width: `${pct}%`,
+                        background: active.color,
+                        borderRadius: 99,
+                        transition: 'width 0.4s ease',
+                      }}
+                    />
+                  </div>
+                  {tagged.length > 0 && (
+                    <p style={{ fontFamily: font, fontSize: 10, color: '#8A6A4A', opacity: 0.45 }}>
+                      {doneCount}/{tagged.length} missions done
+                    </p>
+                  )}
+                </div>
+              );
+            })}
+            <div style={{ display: 'flex', gap: 8, alignItems: 'center', marginTop: 2 }}>
+              <input
+                type="text"
+                value={objInput}
+                onChange={(e) => setObjInput(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') addObjective();
+                }}
+                placeholder="+ add objective..."
+                style={{
+                  fontFamily: font,
+                  fontSize: 12,
+                  color: '#5C3018',
+                  background: 'transparent',
+                  border: 'none',
+                  borderBottom: `1px solid ${active.color}20`,
+                  outline: 'none',
+                  flex: 1,
+                  paddingBottom: 3,
+                  fontStyle: 'italic',
+                }}
+              />
+            </div>
+          </div>
+        </Section>
+
+        {/* ── Missions ── */}
+        <Section
+          label="missions"
+          badge={`${backlogMissions.length + activeMissions.length} open`}
+          open={openSections.missions}
+          onToggle={() => toggleSection('missions')}
+          accent={active.color}
+        >
+          {/* Tabs */}
+          <div style={{ display: 'flex', gap: 4, marginTop: 10, marginBottom: 8 }}>
+            {(['backlog', 'active', 'done'] as MissionTab[]).map((tab) => {
+              const count =
+                tab === 'backlog'
+                  ? backlogMissions.length
+                  : tab === 'active'
+                    ? activeMissions.length
+                    : doneMissions.length;
+              return (
+                <button
+                  key={tab}
+                  type="button"
+                  onClick={() => setMissionTab(tab)}
+                  style={{
+                    fontFamily: font,
+                    fontSize: 10,
+                    fontWeight: missionTab === tab ? 700 : 500,
+                    letterSpacing: '0.1em',
+                    textTransform: 'uppercase',
+                    color: missionTab === tab ? active.color : '#8A6A4A',
+                    background: missionTab === tab ? `${active.color}12` : 'transparent',
+                    border: `1px solid ${missionTab === tab ? `${active.color}40` : '#C4A06020'}`,
+                    borderRadius: 99,
+                    padding: '3px 10px',
+                    cursor: 'pointer',
+                  }}
+                >
+                  {tab} {count > 0 && <span style={{ opacity: 0.6 }}>({count})</span>}
+                </button>
+              );
+            })}
+          </div>
+
+          {/* Mission list */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+            {missionTabMissions.length === 0 && (
+              <p
+                style={{
+                  fontFamily: font,
+                  fontSize: 12,
+                  color: '#8A6A4A',
+                  opacity: 0.35,
+                  fontStyle: 'italic',
+                  textAlign: 'center',
+                  padding: '8px 0',
+                }}
+              >
+                {missionTab === 'done' ? 'nothing finished yet' : 'nothing here yet'}
+              </p>
+            )}
+            {missionTabMissions.map((m) => {
+              const claimerMember = m.claimedBy ? memberMap.get(m.claimedBy) : null;
+              const claimerColor = claimerMember
+                ? claimerMember.pulseColor || claimerMember.color
+                : active.color;
+              const due = dueLabel(m.due);
+              const isExpanded = expandedMissionId === m.id;
+              const isMine = m.claimedBy === me.id;
+              const objId = missionObjMap[m.id];
+              const objLabel = objId ? objectives.find((o) => o.id === objId)?.text : null;
+
+              return (
+                <div
+                  key={m.id}
+                  style={{
+                    borderRadius: 10,
+                    border: `1px solid ${claimerColor}18`,
+                    background: `${claimerColor}04`,
+                    overflow: 'hidden',
+                  }}
+                >
+                  {/* Main row */}
+                  <div
+                    style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '8px 10px' }}
+                  >
+                    {/* Tick */}
+                    <button
+                      type="button"
+                      onClick={() => hook.toggleMissionDone(m.id)}
+                      style={{
+                        width: 16,
+                        height: 16,
+                        borderRadius: 4,
+                        flexShrink: 0,
+                        cursor: 'pointer',
+                        border: `1.5px solid ${claimerColor}50`,
+                        background: m.done ? `${claimerColor}30` : 'transparent',
                         display: 'flex',
-                        flexWrap: 'wrap',
-                        gap: 6,
-                        paddingTop: 8,
-                        paddingBottom: 8,
+                        alignItems: 'center',
+                        justifyContent: 'center',
                       }}
                     >
-                      {/* Claim */}
-                      <button
-                        type="button"
-                        onClick={() => hook.claimMission(m.id)}
+                      {m.done && <span style={{ fontSize: 9, color: claimerColor }}>✓</span>}
+                    </button>
+
+                    {/* Text */}
+                    <button
+                      type="button"
+                      onClick={() => setExpandedMissionId(isExpanded ? null : m.id)}
+                      style={{
+                        flex: 1,
+                        textAlign: 'left',
+                        background: 'none',
+                        border: 'none',
+                        cursor: 'pointer',
+                        padding: 0,
+                      }}
+                    >
+                      <span
                         style={{
                           fontFamily: font,
-                          fontSize: 10,
-                          fontWeight: 600,
-                          letterSpacing: '0.06em',
-                          borderRadius: 99,
-                          padding: '3px 10px',
-                          cursor: 'pointer',
-                          background: isMine ? `${claimerColor}20` : 'transparent',
-                          border: `1px solid ${claimerColor}40`,
-                          color: claimerColor,
+                          fontSize: 13,
+                          color: m.done ? '#8A6A4A' : '#5C3018',
+                          opacity: m.done ? 0.5 : 1,
+                          textDecoration: m.done ? 'line-through' : 'none',
                         }}
                       >
-                        {isMine ? "✓ I'm on it" : "I'm on it"}
-                      </button>
+                        {m.text}
+                      </span>
+                    </button>
 
-                      {/* Assign to */}
-                      {assigningMission === m.id ? (
-                        <div style={{ display: 'flex', gap: 4, alignItems: 'center' }}>
-                          {active.members.map((member) => (
-                            <button
-                              key={member.id}
-                              type="button"
-                              onClick={() => assignMissionTo(m.id, member.id)}
-                              title={member.name}
-                              style={{
-                                width: 14,
-                                height: 14,
-                                borderRadius: '50%',
-                                background: member.pulseColor || member.color,
-                                border: 'none',
-                                cursor: 'pointer',
-                              }}
-                            />
-                          ))}
-                          <button
-                            type="button"
-                            onClick={() => setAssigningMission(null)}
-                            style={{
-                              fontSize: 9,
-                              color: '#8A6A4A',
-                              opacity: 0.35,
-                              background: 'none',
-                              border: 'none',
-                              cursor: 'pointer',
-                            }}
-                          >
-                            ✕
-                          </button>
-                        </div>
-                      ) : (
+                    {/* Objective tag */}
+                    {objLabel && (
+                      <span
+                        style={{
+                          fontFamily: font,
+                          fontSize: 9,
+                          color: active.color,
+                          opacity: 0.55,
+                          background: `${active.color}10`,
+                          borderRadius: 99,
+                          padding: '1px 6px',
+                          flexShrink: 0,
+                        }}
+                      >
+                        {objLabel}
+                      </span>
+                    )}
+
+                    {/* Due */}
+                    {due && (
+                      <span
+                        style={{
+                          fontFamily: font,
+                          fontSize: 9,
+                          fontWeight: 600,
+                          flexShrink: 0,
+                          color:
+                            due.tone === 'overdue'
+                              ? '#B33A2B'
+                              : due.tone === 'soon'
+                                ? '#C4A060'
+                                : '#8A6A4A',
+                          opacity: 0.85,
+                        }}
+                      >
+                        {due.text}
+                      </span>
+                    )}
+
+                    {/* Claimer dot */}
+                    {claimerMember && (
+                      <span
+                        className="block rounded-full shrink-0"
+                        style={{ width: 8, height: 8, background: claimerColor, opacity: 0.75 }}
+                        title={claimerMember.name}
+                      />
+                    )}
+
+                    {/* Delete */}
+                    <button
+                      type="button"
+                      onClick={() => hook.removeMission(m.id)}
+                      style={{
+                        color: '#8A6A4A',
+                        opacity: 0.15,
+                        background: 'none',
+                        border: 'none',
+                        cursor: 'pointer',
+                        fontSize: 12,
+                        flexShrink: 0,
+                      }}
+                    >
+                      ×
+                    </button>
+                  </div>
+
+                  {/* Expanded panel */}
+                  {isExpanded && (
+                    <div
+                      style={{
+                        padding: '0 10px 10px 34px',
+                        borderTop: `1px solid ${claimerColor}12`,
+                        background: `${claimerColor}06`,
+                      }}
+                      className="animate-in fade-in duration-150"
+                    >
+                      <div
+                        style={{
+                          display: 'flex',
+                          flexWrap: 'wrap',
+                          gap: 6,
+                          paddingTop: 8,
+                          paddingBottom: 8,
+                        }}
+                      >
+                        {/* Claim */}
                         <button
                           type="button"
-                          onClick={() => setAssigningMission(m.id)}
+                          onClick={() => hook.claimMission(m.id)}
                           style={{
                             fontFamily: font,
                             fontSize: 10,
+                            fontWeight: 600,
+                            letterSpacing: '0.06em',
                             borderRadius: 99,
                             padding: '3px 10px',
-                            color: '#8A6A4A',
-                            opacity: 0.5,
-                            background: '#C4A06008',
-                            border: '1px solid #C4A06018',
                             cursor: 'pointer',
+                            background: isMine ? `${claimerColor}20` : 'transparent',
+                            border: `1px solid ${claimerColor}40`,
+                            color: claimerColor,
                           }}
                         >
-                          assign
+                          {isMine ? "✓ I'm on it" : "I'm on it"}
                         </button>
-                      )}
 
-                      {/* Tag objective */}
-                      {objectives.length > 0 &&
-                        (taggingMission === m.id ? (
-                          <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}>
+                        {/* Assign to */}
+                        {assigningMission === m.id ? (
+                          <div style={{ display: 'flex', gap: 4, alignItems: 'center' }}>
+                            {active.members.map((member) => (
+                              <button
+                                key={member.id}
+                                type="button"
+                                onClick={() => assignMissionTo(m.id, member.id)}
+                                title={member.name}
+                                style={{
+                                  width: 14,
+                                  height: 14,
+                                  borderRadius: '50%',
+                                  background: member.pulseColor || member.color,
+                                  border: 'none',
+                                  cursor: 'pointer',
+                                }}
+                              />
+                            ))}
                             <button
                               type="button"
-                              onClick={() => tagMission(m.id, null)}
+                              onClick={() => setAssigningMission(null)}
                               style={{
-                                fontFamily: font,
                                 fontSize: 9,
-                                borderRadius: 99,
-                                padding: '2px 8px',
                                 color: '#8A6A4A',
-                                opacity: 0.5,
-                                background: 'transparent',
-                                border: '1px solid #C4A06020',
+                                opacity: 0.35,
+                                background: 'none',
+                                border: 'none',
                                 cursor: 'pointer',
                               }}
                             >
-                              no objective
+                              ✕
                             </button>
-                            {objectives.map((obj) => (
-                              <button
-                                key={obj.id}
-                                type="button"
-                                onClick={() => tagMission(m.id, obj.id)}
-                                style={{
-                                  fontFamily: font,
-                                  fontSize: 9,
-                                  borderRadius: 99,
-                                  padding: '2px 8px',
-                                  color: active.color,
-                                  background: `${active.color}10`,
-                                  border: `1px solid ${active.color}30`,
-                                  cursor: 'pointer',
-                                }}
-                              >
-                                {obj.text}
-                              </button>
-                            ))}
                           </div>
                         ) : (
                           <button
                             type="button"
-                            onClick={() => setTaggingMission(m.id)}
+                            onClick={() => setAssigningMission(m.id)}
                             style={{
                               fontFamily: font,
                               fontSize: 10,
                               borderRadius: 99,
                               padding: '3px 10px',
-                              color: active.color,
+                              color: '#8A6A4A',
                               opacity: 0.5,
-                              background: `${active.color}06`,
-                              border: `1px solid ${active.color}20`,
+                              background: '#C4A06008',
+                              border: '1px solid #C4A06018',
                               cursor: 'pointer',
                             }}
                           >
-                            {objLabel || 'tag objective'}
+                            assign
                           </button>
-                        ))}
+                        )}
 
-                      {/* Due date */}
+                        {/* Tag objective */}
+                        {objectives.length > 0 &&
+                          (taggingMission === m.id ? (
+                            <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}>
+                              <button
+                                type="button"
+                                onClick={() => tagMission(m.id, null)}
+                                style={{
+                                  fontFamily: font,
+                                  fontSize: 9,
+                                  borderRadius: 99,
+                                  padding: '2px 8px',
+                                  color: '#8A6A4A',
+                                  opacity: 0.5,
+                                  background: 'transparent',
+                                  border: '1px solid #C4A06020',
+                                  cursor: 'pointer',
+                                }}
+                              >
+                                no objective
+                              </button>
+                              {objectives.map((obj) => (
+                                <button
+                                  key={obj.id}
+                                  type="button"
+                                  onClick={() => tagMission(m.id, obj.id)}
+                                  style={{
+                                    fontFamily: font,
+                                    fontSize: 9,
+                                    borderRadius: 99,
+                                    padding: '2px 8px',
+                                    color: active.color,
+                                    background: `${active.color}10`,
+                                    border: `1px solid ${active.color}30`,
+                                    cursor: 'pointer',
+                                  }}
+                                >
+                                  {obj.text}
+                                </button>
+                              ))}
+                            </div>
+                          ) : (
+                            <button
+                              type="button"
+                              onClick={() => setTaggingMission(m.id)}
+                              style={{
+                                fontFamily: font,
+                                fontSize: 10,
+                                borderRadius: 99,
+                                padding: '3px 10px',
+                                color: active.color,
+                                opacity: 0.5,
+                                background: `${active.color}06`,
+                                border: `1px solid ${active.color}20`,
+                                cursor: 'pointer',
+                              }}
+                            >
+                              {objLabel || 'tag objective'}
+                            </button>
+                          ))}
+
+                        {/* Due date */}
+                        <input
+                          type="date"
+                          value={m.due ? m.due.slice(0, 10) : ''}
+                          onChange={(e) => hook.setMissionDue(m.id, e.target.value || null)}
+                          style={{
+                            fontFamily: font,
+                            fontSize: 10,
+                            color: '#7A5438',
+                            background: 'transparent',
+                            borderRadius: 99,
+                            padding: '3px 8px',
+                            border: '1px solid #C4A06030',
+                            outline: 'none',
+                          }}
+                          title="Set due date"
+                        />
+                      </div>
+
+                      {/* Notes thread */}
+                      {(m.notes || []).map((n) => (
+                        <div key={n.id} style={{ marginBottom: 6 }}>
+                          <span
+                            style={{
+                              fontFamily: font,
+                              fontSize: 10,
+                              fontWeight: 600,
+                              color: claimerColor,
+                              opacity: 0.7,
+                            }}
+                          >
+                            {n.authorName}{' '}
+                          </span>
+                          <span
+                            style={{
+                              fontFamily: font,
+                              fontSize: 11,
+                              color: '#5C3018',
+                              opacity: 0.8,
+                            }}
+                          >
+                            {n.text}
+                          </span>
+                        </div>
+                      ))}
                       <input
-                        type="date"
-                        value={m.due ? m.due.slice(0, 10) : ''}
-                        onChange={(e) => hook.setMissionDue(m.id, e.target.value || null)}
+                        type="text"
+                        value={isExpanded ? missionNoteInput : ''}
+                        onChange={(e) => setMissionNoteInput(e.target.value)}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter' && missionNoteInput.trim()) {
+                            addMissionNote(m.id, missionNoteInput);
+                            setMissionNoteInput('');
+                          }
+                        }}
+                        placeholder="leave a note…"
                         style={{
                           fontFamily: font,
-                          fontSize: 10,
-                          color: '#7A5438',
+                          fontSize: 11,
+                          color: '#5C3018',
                           background: 'transparent',
-                          borderRadius: 99,
-                          padding: '3px 8px',
-                          border: '1px solid #C4A06030',
+                          border: 'none',
+                          borderBottom: `1px solid ${claimerColor}20`,
                           outline: 'none',
+                          width: '100%',
+                          paddingBottom: 3,
+                          fontStyle: 'italic',
                         }}
-                        title="Set due date"
                       />
                     </div>
-
-                    {/* Notes thread */}
-                    {(m.notes || []).map((n) => (
-                      <div key={n.id} style={{ marginBottom: 6 }}>
-                        <span
-                          style={{
-                            fontFamily: font,
-                            fontSize: 10,
-                            fontWeight: 600,
-                            color: claimerColor,
-                            opacity: 0.7,
-                          }}
-                        >
-                          {n.authorName}{' '}
-                        </span>
-                        <span
-                          style={{ fontFamily: font, fontSize: 11, color: '#5C3018', opacity: 0.8 }}
-                        >
-                          {n.text}
-                        </span>
-                      </div>
-                    ))}
-                    <input
-                      type="text"
-                      value={isExpanded ? missionNoteInput : ''}
-                      onChange={(e) => setMissionNoteInput(e.target.value)}
-                      onKeyDown={(e) => {
-                        if (e.key === 'Enter' && missionNoteInput.trim()) {
-                          addMissionNote(m.id, missionNoteInput);
-                          setMissionNoteInput('');
-                        }
-                      }}
-                      placeholder="leave a note…"
-                      style={{
-                        fontFamily: font,
-                        fontSize: 11,
-                        color: '#5C3018',
-                        background: 'transparent',
-                        border: 'none',
-                        borderBottom: `1px solid ${claimerColor}20`,
-                        outline: 'none',
-                        width: '100%',
-                        paddingBottom: 3,
-                        fontStyle: 'italic',
-                      }}
-                    />
-                  </div>
-                )}
-              </div>
-            );
-          })}
-        </div>
-
-        {/* Add mission */}
-        <div
-          style={{ display: 'flex', gap: 8, alignItems: 'center', marginTop: 10, flexWrap: 'wrap' }}
-        >
-          <input
-            type="text"
-            value={missionInput}
-            onChange={(e) => setMissionInput(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === 'Enter') addMission();
-            }}
-            placeholder="+ add mission..."
-            style={{
-              fontFamily: font,
-              fontSize: 13,
-              color: '#5C3018',
-              background: 'transparent',
-              border: 'none',
-              borderBottom: `1px solid ${active.color}20`,
-              outline: 'none',
-              flex: 1,
-              paddingBottom: 4,
-              minWidth: 150,
-              fontStyle: 'italic',
-            }}
-          />
-          <input
-            type="date"
-            value={missionDueInput}
-            onChange={(e) => setMissionDueInput(e.target.value)}
-            style={{
-              fontFamily: font,
-              fontSize: 10,
-              color: '#7A5438',
-              background: 'transparent',
-              borderRadius: 99,
-              padding: '3px 8px',
-              border: `1px solid ${active.color}25`,
-              outline: 'none',
-            }}
-            title="Optional due date"
-          />
-          {missionInput.trim() && (
-            <button
-              type="button"
-              onClick={addMission}
-              style={{
-                fontFamily: font,
-                fontSize: 10,
-                fontWeight: 700,
-                letterSpacing: '0.1em',
-                textTransform: 'uppercase',
-                color: active.color,
-                background: `${active.color}10`,
-                border: `1px solid ${active.color}40`,
-                borderRadius: 99,
-                padding: '4px 12px',
-                cursor: 'pointer',
-              }}
-            >
-              add
-            </button>
-          )}
-        </div>
-      </Section>
-
-      {/* ── In the Process ── */}
-      <Section
-        label="in the process"
-        badge={processEntries.length || undefined}
-        open={openSections.process}
-        onToggle={() => toggleSection('process')}
-        accent="#9B7A40"
-      >
-        <div style={{ marginTop: 10, display: 'flex', flexDirection: 'column', gap: 10 }}>
-          <div style={{ display: 'flex', gap: 8, alignItems: 'flex-start' }}>
-            <span
-              className="block rounded-full shrink-0 mt-1"
-              style={{
-                width: 8,
-                height: 8,
-                background: active.members.find((m) => m.id === me.id)?.pulseColor || active.color,
-                opacity: 0.6,
-              }}
-            />
-            <input
-              type="text"
-              value={processInput}
-              onChange={(e) => setProcessInput(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter') addProcessEntry();
-              }}
-              placeholder="share a process reflection or update..."
-              style={{
-                fontFamily: font,
-                fontSize: 12,
-                color: '#5C3018',
-                background: 'transparent',
-                border: 'none',
-                borderBottom: '1px solid #C4A06018',
-                outline: 'none',
-                flex: 1,
-                paddingBottom: 3,
-                fontStyle: 'italic',
-              }}
-            />
-          </div>
-          {processEntries.map((e) => {
-            const author = memberMap.get(e.authorId);
-            return (
-              <div key={e.id} style={{ display: 'flex', gap: 10, alignItems: 'flex-start' }}>
-                <span
-                  className="block rounded-full shrink-0 mt-1"
-                  style={{
-                    width: 8,
-                    height: 8,
-                    background: author?.pulseColor || author?.color || '#C4A060',
-                    opacity: 0.6,
-                  }}
-                />
-                <div style={{ flex: 1 }}>
-                  <span
-                    style={{
-                      fontFamily: font,
-                      fontSize: 10,
-                      fontWeight: 600,
-                      color: '#8A6A4A',
-                      opacity: 0.6,
-                    }}
-                  >
-                    {e.authorName}{' '}
-                  </span>
-                  <span style={{ fontFamily: font, fontSize: 10, color: '#8A6A4A', opacity: 0.4 }}>
-                    {timeAgo(e.createdAt)}
-                  </span>
-                  <p
-                    style={{
-                      fontFamily: font,
-                      fontSize: 13,
-                      color: '#5C3018',
-                      opacity: 0.85,
-                      fontStyle: 'italic',
-                      marginTop: 2,
-                      lineHeight: 1.5,
-                    }}
-                  >
-                    {e.text}
-                  </p>
-                </div>
-                {e.authorId === me.id && (
-                  <button
-                    type="button"
-                    onClick={() => removeProcessEntry(e.id)}
-                    style={{
-                      fontSize: 11,
-                      color: '#8A6A4A',
-                      opacity: 0.2,
-                      background: 'none',
-                      border: 'none',
-                      cursor: 'pointer',
-                      flexShrink: 0,
-                    }}
-                  >
-                    ×
-                  </button>
-                )}
-              </div>
-            );
-          })}
-          {processEntries.length === 0 && (
-            <p
-              style={{
-                fontFamily: font,
-                fontSize: 12,
-                color: '#8A6A4A',
-                opacity: 0.3,
-                fontStyle: 'italic',
-              }}
-            >
-              share what you're learning or figuring out as you go
-            </p>
-          )}
-        </div>
-      </Section>
-
-      {/* ── Help Needed ── */}
-      <Section
-        label="help needed"
-        badge={openHelpCount > 0 ? openHelpCount : undefined}
-        open={openSections.help}
-        onToggle={() => toggleSection('help')}
-        accent="#B33A2B"
-      >
-        <div style={{ marginTop: 10, display: 'flex', flexDirection: 'column', gap: 10 }}>
-          <div style={{ display: 'flex', gap: 8, alignItems: 'flex-start' }}>
-            <span style={{ fontSize: 11, opacity: 0.4, flexShrink: 0, marginTop: 2 }}>🚩</span>
-            <input
-              type="text"
-              value={helpInput}
-              onChange={(e) => setHelpInput(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter') addHelpRequest();
-              }}
-              placeholder="what are you blocked on?"
-              style={{
-                fontFamily: font,
-                fontSize: 12,
-                color: '#5C3018',
-                background: 'transparent',
-                border: 'none',
-                borderBottom: '1px solid #B33A2B20',
-                outline: 'none',
-                flex: 1,
-                paddingBottom: 3,
-                fontStyle: 'italic',
-              }}
-            />
-          </div>
-          {helpRequests.map((r) => {
-            const author = memberMap.get(r.authorId);
-            const iHelp = r.helpers.includes(me.id);
-            return (
-              <div
-                key={r.id}
-                style={{
-                  display: 'flex',
-                  gap: 10,
-                  alignItems: 'flex-start',
-                  padding: '8px 10px',
-                  borderRadius: 10,
-                  background: r.resolved ? '#7AAA5808' : '#B33A2B08',
-                  border: `1px solid ${r.resolved ? '#7AAA5820' : '#B33A2B20'}`,
-                  opacity: r.resolved ? 0.5 : 1,
-                }}
-              >
-                <span
-                  className="block rounded-full shrink-0 mt-1"
-                  style={{
-                    width: 8,
-                    height: 8,
-                    background: author?.pulseColor || author?.color || '#C4A060',
-                    opacity: 0.6,
-                  }}
-                />
-                <div style={{ flex: 1 }}>
-                  <span
-                    style={{
-                      fontFamily: font,
-                      fontSize: 10,
-                      fontWeight: 600,
-                      color: '#8A6A4A',
-                      opacity: 0.6,
-                    }}
-                  >
-                    {r.authorName}{' '}
-                  </span>
-                  <span style={{ fontFamily: font, fontSize: 10, color: '#8A6A4A', opacity: 0.4 }}>
-                    {timeAgo(r.createdAt)}
-                  </span>
-                  <p
-                    style={{
-                      fontFamily: font,
-                      fontSize: 13,
-                      color: '#5C3018',
-                      opacity: 0.9,
-                      marginTop: 2,
-                      lineHeight: 1.5,
-                    }}
-                  >
-                    {r.text}
-                  </p>
-                  {!r.resolved && (
-                    <div style={{ display: 'flex', gap: 6, marginTop: 6 }}>
-                      <button
-                        type="button"
-                        onClick={() => toggleHelper(r.id)}
-                        style={{
-                          fontFamily: font,
-                          fontSize: 10,
-                          borderRadius: 99,
-                          padding: '2px 10px',
-                          cursor: 'pointer',
-                          background: iHelp ? '#B33A2B18' : 'transparent',
-                          border: `1px solid ${iHelp ? '#B33A2B50' : '#C4A06025'}`,
-                          color: iHelp ? '#B33A2B' : '#8A6A4A',
-                        }}
-                      >
-                        {iHelp ? "✓ I'll help" : "I'll help"}
-                        {r.helpers.length > 0 && (
-                          <span style={{ opacity: 0.55 }}> ({r.helpers.length})</span>
-                        )}
-                      </button>
-                      {r.authorId === me.id && (
-                        <button
-                          type="button"
-                          onClick={() => resolveHelp(r.id)}
-                          style={{
-                            fontFamily: font,
-                            fontSize: 10,
-                            borderRadius: 99,
-                            padding: '2px 10px',
-                            cursor: 'pointer',
-                            background: '#7AAA5812',
-                            border: '1px solid #7AAA5840',
-                            color: '#7AAA58',
-                          }}
-                        >
-                          resolved
-                        </button>
-                      )}
-                    </div>
-                  )}
-                  {r.resolved && (
-                    <span
-                      style={{ fontFamily: font, fontSize: 10, color: '#7AAA58', opacity: 0.6 }}
-                    >
-                      ✓ resolved
-                    </span>
                   )}
                 </div>
-              </div>
-            );
-          })}
-          {helpRequests.length === 0 && (
-            <p
-              style={{
-                fontFamily: font,
-                fontSize: 12,
-                color: '#8A6A4A',
-                opacity: 0.3,
-                fontStyle: 'italic',
-              }}
-            >
-              ask for help — someone will step in
-            </p>
-          )}
-        </div>
-      </Section>
+              );
+            })}
+          </div>
 
-      {/* ── Extras (agenda + extra circle tools) ── */}
-      <Section
-        label="more"
-        open={openSections.extras}
-        onToggle={() => toggleSection('extras')}
-        accent="#7A8A6A"
-      >
-        <div style={{ marginTop: 10, display: 'flex', flexDirection: 'column', gap: 12 }}>
-          <CircleAgenda
-            missions={active.missions}
-            members={memberPropsList}
-            onTapMission={(id) => setExpandedMissionId(id)}
-          />
-          <CircleSparks circleId={active.id} meId={me.id} circleColor={active.color} />
-          <CircleEvents
-            circleId={active.id}
-            meId={me.id}
-            meName={me.name}
-            members={memberPropsList}
-          />
-          <CircleDecisions
-            circleId={active.id}
-            meId={me.id}
-            meName={me.name}
-            members={memberPropsList}
-          />
-          <CircleMoney
-            circleId={active.id}
-            meId={me.id}
-            meName={me.name}
-            members={memberPropsList}
-          />
-          <CircleAudio
-            circleId={active.id}
-            meId={me.id}
-            meName={me.name}
-            meColour={active.members.find((m) => m.id === me.id)?.color || active.color}
-          />
-          <CircleRainbow
-            circleId={active.id}
-            meId={me.id}
-            meName={me.name}
-            meColour={active.members.find((m) => m.id === me.id)?.color || active.color}
-          />
-        </div>
-      </Section>
-
-      {/* ── Log ── */}
-      <Section
-        label="log"
-        badge={active.notes.length > 0 ? active.notes.length : undefined}
-        open={openSections.log}
-        onToggle={() => toggleSection('log')}
-        accent="#8A8A8A"
-      >
-        <div style={{ marginTop: 10, display: 'flex', flexDirection: 'column', gap: 10 }}>
-          <div style={{ display: 'flex', gap: 8 }}>
+          {/* Add mission */}
+          <div
+            style={{
+              display: 'flex',
+              gap: 8,
+              alignItems: 'center',
+              marginTop: 10,
+              flexWrap: 'wrap',
+            }}
+          >
             <input
               type="text"
-              value={noteInput}
-              onChange={(e) => setNoteInput(e.target.value)}
+              value={missionInput}
+              onChange={(e) => setMissionInput(e.target.value)}
               onKeyDown={(e) => {
-                if (e.key === 'Enter') addNote();
+                if (e.key === 'Enter') addMission();
               }}
-              placeholder="share a note..."
+              placeholder="+ add mission..."
               style={{
                 fontFamily: font,
                 fontSize: 13,
                 color: '#5C3018',
                 background: 'transparent',
                 border: 'none',
-                borderBottom: '1px solid #C4A06018',
+                borderBottom: `1px solid ${active.color}20`,
                 outline: 'none',
                 flex: 1,
                 paddingBottom: 4,
+                minWidth: 150,
+                fontStyle: 'italic',
               }}
             />
+            <input
+              type="date"
+              value={missionDueInput}
+              onChange={(e) => setMissionDueInput(e.target.value)}
+              style={{
+                fontFamily: font,
+                fontSize: 10,
+                color: '#7A5438',
+                background: 'transparent',
+                borderRadius: 99,
+                padding: '3px 8px',
+                border: `1px solid ${active.color}25`,
+                outline: 'none',
+              }}
+              title="Optional due date"
+            />
+            {missionInput.trim() && (
+              <button
+                type="button"
+                onClick={addMission}
+                style={{
+                  fontFamily: font,
+                  fontSize: 10,
+                  fontWeight: 700,
+                  letterSpacing: '0.1em',
+                  textTransform: 'uppercase',
+                  color: active.color,
+                  background: `${active.color}10`,
+                  border: `1px solid ${active.color}40`,
+                  borderRadius: 99,
+                  padding: '4px 12px',
+                  cursor: 'pointer',
+                }}
+              >
+                add
+              </button>
+            )}
           </div>
-          {active.notes.slice(0, 25).map((n) => (
-            <div key={n.id}>
-              <div style={{ display: 'flex', gap: 8, alignItems: 'center', marginBottom: 2 }}>
-                <span
+        </Section>
+
+        {/* ── In the Process ── */}
+        <Section
+          label="in the process"
+          badge={processEntries.length || undefined}
+          open={openSections.process}
+          onToggle={() => toggleSection('process')}
+          accent="#9B7A40"
+        >
+          <div style={{ marginTop: 10, display: 'flex', flexDirection: 'column', gap: 10 }}>
+            <div style={{ display: 'flex', gap: 8, alignItems: 'flex-start' }}>
+              <span
+                className="block rounded-full shrink-0 mt-1"
+                style={{
+                  width: 8,
+                  height: 8,
+                  background:
+                    active.members.find((m) => m.id === me.id)?.pulseColor || active.color,
+                  opacity: 0.6,
+                }}
+              />
+              <input
+                type="text"
+                value={processInput}
+                onChange={(e) => setProcessInput(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') addProcessEntry();
+                }}
+                placeholder="share a process reflection or update..."
+                style={{
+                  fontFamily: font,
+                  fontSize: 12,
+                  color: '#5C3018',
+                  background: 'transparent',
+                  border: 'none',
+                  borderBottom: '1px solid #C4A06018',
+                  outline: 'none',
+                  flex: 1,
+                  paddingBottom: 3,
+                  fontStyle: 'italic',
+                }}
+              />
+            </div>
+            {processEntries.map((e) => {
+              const author = memberMap.get(e.authorId);
+              return (
+                <div key={e.id} style={{ display: 'flex', gap: 10, alignItems: 'flex-start' }}>
+                  <span
+                    className="block rounded-full shrink-0 mt-1"
+                    style={{
+                      width: 8,
+                      height: 8,
+                      background: author?.pulseColor || author?.color || '#C4A060',
+                      opacity: 0.6,
+                    }}
+                  />
+                  <div style={{ flex: 1 }}>
+                    <span
+                      style={{
+                        fontFamily: font,
+                        fontSize: 10,
+                        fontWeight: 600,
+                        color: '#8A6A4A',
+                        opacity: 0.6,
+                      }}
+                    >
+                      {e.authorName}{' '}
+                    </span>
+                    <span
+                      style={{ fontFamily: font, fontSize: 10, color: '#8A6A4A', opacity: 0.4 }}
+                    >
+                      {timeAgo(e.createdAt)}
+                    </span>
+                    <p
+                      style={{
+                        fontFamily: font,
+                        fontSize: 13,
+                        color: '#5C3018',
+                        opacity: 0.85,
+                        fontStyle: 'italic',
+                        marginTop: 2,
+                        lineHeight: 1.5,
+                      }}
+                    >
+                      {e.text}
+                    </p>
+                  </div>
+                  {e.authorId === me.id && (
+                    <button
+                      type="button"
+                      onClick={() => removeProcessEntry(e.id)}
+                      style={{
+                        fontSize: 11,
+                        color: '#8A6A4A',
+                        opacity: 0.2,
+                        background: 'none',
+                        border: 'none',
+                        cursor: 'pointer',
+                        flexShrink: 0,
+                      }}
+                    >
+                      ×
+                    </button>
+                  )}
+                </div>
+              );
+            })}
+            {processEntries.length === 0 && (
+              <p
+                style={{
+                  fontFamily: font,
+                  fontSize: 12,
+                  color: '#8A6A4A',
+                  opacity: 0.3,
+                  fontStyle: 'italic',
+                }}
+              >
+                share what you're learning or figuring out as you go
+              </p>
+            )}
+          </div>
+        </Section>
+
+        {/* ── Help Needed ── */}
+        <Section
+          label="help needed"
+          badge={openHelpCount > 0 ? openHelpCount : undefined}
+          open={openSections.help}
+          onToggle={() => toggleSection('help')}
+          accent="#B33A2B"
+        >
+          <div style={{ marginTop: 10, display: 'flex', flexDirection: 'column', gap: 10 }}>
+            <div style={{ display: 'flex', gap: 8, alignItems: 'flex-start' }}>
+              <span style={{ fontSize: 11, opacity: 0.4, flexShrink: 0, marginTop: 2 }}>🚩</span>
+              <input
+                type="text"
+                value={helpInput}
+                onChange={(e) => setHelpInput(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') addHelpRequest();
+                }}
+                placeholder="what are you blocked on?"
+                style={{
+                  fontFamily: font,
+                  fontSize: 12,
+                  color: '#5C3018',
+                  background: 'transparent',
+                  border: 'none',
+                  borderBottom: '1px solid #B33A2B20',
+                  outline: 'none',
+                  flex: 1,
+                  paddingBottom: 3,
+                  fontStyle: 'italic',
+                }}
+              />
+            </div>
+            {helpRequests.map((r) => {
+              const author = memberMap.get(r.authorId);
+              const iHelp = r.helpers.includes(me.id);
+              return (
+                <div
+                  key={r.id}
                   style={{
-                    fontFamily: font,
-                    fontSize: 11,
-                    fontWeight: 600,
-                    color: '#5C3018',
-                    opacity: 0.7,
+                    display: 'flex',
+                    gap: 10,
+                    alignItems: 'flex-start',
+                    padding: '8px 10px',
+                    borderRadius: 10,
+                    background: r.resolved ? '#7AAA5808' : '#B33A2B08',
+                    border: `1px solid ${r.resolved ? '#7AAA5820' : '#B33A2B20'}`,
+                    opacity: r.resolved ? 0.5 : 1,
                   }}
                 >
-                  {n.authorName}
-                </span>
-                <span style={{ fontFamily: font, fontSize: 10, color: '#8A6A4A', opacity: 0.35 }}>
-                  {new Date(n.createdAt).toLocaleTimeString([], {
-                    hour: '2-digit',
-                    minute: '2-digit',
-                  })}
-                </span>
-              </div>
+                  <span
+                    className="block rounded-full shrink-0 mt-1"
+                    style={{
+                      width: 8,
+                      height: 8,
+                      background: author?.pulseColor || author?.color || '#C4A060',
+                      opacity: 0.6,
+                    }}
+                  />
+                  <div style={{ flex: 1 }}>
+                    <span
+                      style={{
+                        fontFamily: font,
+                        fontSize: 10,
+                        fontWeight: 600,
+                        color: '#8A6A4A',
+                        opacity: 0.6,
+                      }}
+                    >
+                      {r.authorName}{' '}
+                    </span>
+                    <span
+                      style={{ fontFamily: font, fontSize: 10, color: '#8A6A4A', opacity: 0.4 }}
+                    >
+                      {timeAgo(r.createdAt)}
+                    </span>
+                    <p
+                      style={{
+                        fontFamily: font,
+                        fontSize: 13,
+                        color: '#5C3018',
+                        opacity: 0.9,
+                        marginTop: 2,
+                        lineHeight: 1.5,
+                      }}
+                    >
+                      {r.text}
+                    </p>
+                    {!r.resolved && (
+                      <div style={{ display: 'flex', gap: 6, marginTop: 6 }}>
+                        <button
+                          type="button"
+                          onClick={() => toggleHelper(r.id)}
+                          style={{
+                            fontFamily: font,
+                            fontSize: 10,
+                            borderRadius: 99,
+                            padding: '2px 10px',
+                            cursor: 'pointer',
+                            background: iHelp ? '#B33A2B18' : 'transparent',
+                            border: `1px solid ${iHelp ? '#B33A2B50' : '#C4A06025'}`,
+                            color: iHelp ? '#B33A2B' : '#8A6A4A',
+                          }}
+                        >
+                          {iHelp ? "✓ I'll help" : "I'll help"}
+                          {r.helpers.length > 0 && (
+                            <span style={{ opacity: 0.55 }}> ({r.helpers.length})</span>
+                          )}
+                        </button>
+                        {r.authorId === me.id && (
+                          <button
+                            type="button"
+                            onClick={() => resolveHelp(r.id)}
+                            style={{
+                              fontFamily: font,
+                              fontSize: 10,
+                              borderRadius: 99,
+                              padding: '2px 10px',
+                              cursor: 'pointer',
+                              background: '#7AAA5812',
+                              border: '1px solid #7AAA5840',
+                              color: '#7AAA58',
+                            }}
+                          >
+                            resolved
+                          </button>
+                        )}
+                      </div>
+                    )}
+                    {r.resolved && (
+                      <span
+                        style={{ fontFamily: font, fontSize: 10, color: '#7AAA58', opacity: 0.6 }}
+                      >
+                        ✓ resolved
+                      </span>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
+            {helpRequests.length === 0 && (
               <p
+                style={{
+                  fontFamily: font,
+                  fontSize: 12,
+                  color: '#8A6A4A',
+                  opacity: 0.3,
+                  fontStyle: 'italic',
+                }}
+              >
+                ask for help — someone will step in
+              </p>
+            )}
+          </div>
+        </Section>
+
+        {/* ── Extras (agenda + extra circle tools) ── */}
+        <Section
+          label="more"
+          open={openSections.extras}
+          onToggle={() => toggleSection('extras')}
+          accent="#7A8A6A"
+        >
+          <div style={{ marginTop: 10, display: 'flex', flexDirection: 'column', gap: 12 }}>
+            <CircleAgenda
+              missions={active.missions}
+              members={memberPropsList}
+              onTapMission={(id) => setExpandedMissionId(id)}
+            />
+            <CircleSparks circleId={active.id} meId={me.id} circleColor={active.color} />
+            <CircleEvents
+              circleId={active.id}
+              meId={me.id}
+              meName={me.name}
+              members={memberPropsList}
+            />
+            <CircleDecisions
+              circleId={active.id}
+              meId={me.id}
+              meName={me.name}
+              members={memberPropsList}
+            />
+            <CircleMoney
+              circleId={active.id}
+              meId={me.id}
+              meName={me.name}
+              members={memberPropsList}
+            />
+            <CircleAudio
+              circleId={active.id}
+              meId={me.id}
+              meName={me.name}
+              meColour={active.members.find((m) => m.id === me.id)?.color || active.color}
+            />
+            <CircleRainbow
+              circleId={active.id}
+              meId={me.id}
+              meName={me.name}
+              meColour={active.members.find((m) => m.id === me.id)?.color || active.color}
+            />
+          </div>
+        </Section>
+
+        {/* ── Log ── */}
+        <Section
+          label="log"
+          badge={active.notes.length > 0 ? active.notes.length : undefined}
+          open={openSections.log}
+          onToggle={() => toggleSection('log')}
+          accent="#8A8A8A"
+        >
+          <div style={{ marginTop: 10, display: 'flex', flexDirection: 'column', gap: 10 }}>
+            <div style={{ display: 'flex', gap: 8 }}>
+              <input
+                type="text"
+                value={noteInput}
+                onChange={(e) => setNoteInput(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') addNote();
+                }}
+                placeholder="share a note..."
                 style={{
                   fontFamily: font,
                   fontSize: 13,
                   color: '#5C3018',
-                  opacity: 0.85,
-                  lineHeight: 1.5,
-                  wordBreak: 'break-word',
+                  background: 'transparent',
+                  border: 'none',
+                  borderBottom: '1px solid #C4A06018',
+                  outline: 'none',
+                  flex: 1,
+                  paddingBottom: 4,
+                }}
+              />
+            </div>
+            {active.notes.slice(0, 25).map((n) => (
+              <div key={n.id}>
+                <div style={{ display: 'flex', gap: 8, alignItems: 'center', marginBottom: 2 }}>
+                  <span
+                    style={{
+                      fontFamily: font,
+                      fontSize: 11,
+                      fontWeight: 600,
+                      color: '#5C3018',
+                      opacity: 0.7,
+                    }}
+                  >
+                    {n.authorName}
+                  </span>
+                  <span style={{ fontFamily: font, fontSize: 10, color: '#8A6A4A', opacity: 0.35 }}>
+                    {new Date(n.createdAt).toLocaleTimeString([], {
+                      hour: '2-digit',
+                      minute: '2-digit',
+                    })}
+                  </span>
+                </div>
+                <p
+                  style={{
+                    fontFamily: font,
+                    fontSize: 13,
+                    color: '#5C3018',
+                    opacity: 0.85,
+                    lineHeight: 1.5,
+                    wordBreak: 'break-word',
+                  }}
+                >
+                  {n.text}
+                </p>
+              </div>
+            ))}
+            {active.notes.length === 0 && (
+              <p
+                style={{
+                  fontFamily: font,
+                  fontSize: 12,
+                  color: '#8A6A4A',
+                  opacity: 0.3,
+                  fontStyle: 'italic',
+                  textAlign: 'center',
                 }}
               >
-                {n.text}
+                no notes yet
               </p>
-            </div>
-          ))}
-          {active.notes.length === 0 && (
-            <p
-              style={{
-                fontFamily: font,
-                fontSize: 12,
-                color: '#8A6A4A',
-                opacity: 0.3,
-                fontStyle: 'italic',
-                textAlign: 'center',
-              }}
-            >
-              no notes yet
-            </p>
-          )}
-        </div>
-      </Section>
+            )}
+          </div>
+        </Section>
+      </div>
     </div>
   );
 }

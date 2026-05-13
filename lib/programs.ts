@@ -304,6 +304,376 @@ export const PROGRAMS: Program[] = [
       },
     ],
   },
+  {
+    key: 'deep-attention',
+    domain: 'Deep Attention & Flow',
+    color: '#6888B0',
+    segments: [
+      {
+        title: 'The most valuable thing you own',
+        body: 'Your attention is the only thing you can truly give. Not your time — two people can be in the same room for an hour and one is present, one is absent. Not your words — you can say the right thing while thinking about something else entirely. Attention is presence. And in a world architected to fragment it into the smallest possible pieces and sell those pieces to the highest bidder, protecting and deepening your attention is the most important skill of this century.',
+      },
+      {
+        title: 'The attention economy is not neutral',
+        body: 'Every notification, every infinite scroll, every autoplay, every streak mechanic — these are not accidental features. They are the output of thousands of engineers whose job is to capture and hold your attention as long as possible. Dopamine loops, variable reward schedules, social anxiety mechanics — the same techniques used in casino design are deployed in every major platform. Your distraction is their revenue. Understanding this is not paranoia. It is literacy.',
+      },
+      {
+        title: 'What multitasking actually costs',
+        body: "The human brain cannot multitask. What it can do is switch rapidly between tasks — and each switch carries a cost. Researcher Gloria Mark found that after an interruption, it takes an average of 23 minutes to return to deep focus. A phone glance costs nearly half an hour of cognitive depth. But the hidden cost is worse: research shows that habitual task-switching trains the brain to become worse at sustaining attention over time. You are not just wasting today's focus. You are degrading tomorrow's capacity.",
+      },
+      {
+        title: 'What flow actually is',
+        body: 'Psychologist Mihaly Csikszentmihalyi spent decades studying what he called optimal experience — states where people reported being completely absorbed, losing track of time, and feeling at their best. He called this flow. It appears across domains: athletes, surgeons, musicians, coders, writers. The common features: clear goals, immediate feedback, the challenge is slightly beyond current skill, and there are no distractions. Flow is not a reward for effort. It is a state the brain enters when conditions are right. The question is whether you know how to create those conditions.',
+      },
+      {
+        title: 'The skill-challenge balance',
+        body: 'Flow lives at the intersection of two axes: challenge and skill. Too much challenge relative to skill produces anxiety — the brain contracts into threat mode. Too little challenge relative to skill produces boredom — the brain disengages. Flow requires the sweet spot: a challenge that stretches you to the edge of your current capability without breaking you. This means flow is not a static target. As your skill grows, the challenge must grow with it. The musician who stops playing harder pieces stops experiencing flow. The writer who only writes what they already know how to write stops growing — and stops entering the state that made the work feel alive.',
+      },
+      {
+        title: 'The neuroscience of distraction',
+        body: 'The prefrontal cortex — the part of your brain responsible for sustained attention, complex reasoning, and executive function — is metabolically expensive. The brain is always looking for shortcuts, always ready to hand control to autopilot. When you give it an easy dopamine hit — a notification, a scroll, a quick check — it takes it. But prefrontal function also degrades under stress, fatigue, and fragmented attention. The brain that lives in a state of constant partial attention loses the capacity for the deep cognitive states that produce its best work. Distraction is not just an interruption. It is a training regime. And most people are unknowingly training themselves toward shallowness.',
+      },
+      {
+        title: 'Boredom is the doorway',
+        body: "Modern life has declared war on boredom. There is no empty moment that cannot be filled: a queue becomes a scroll, a walk becomes a podcast, a meal becomes a video. But boredom — genuine, unmediated boredom — is not wasted time. It is the brain's invitation to go deep. Research by Sandi Mann shows that boredom reliably activates the default mode network: the inner creative processor that makes novel connections, generates insight, and accesses material your conscious mind has been too busy to notice. The person who never tolerates boredom never receives its gifts.",
+      },
+      {
+        title: 'Training the attention muscle',
+        body: 'Sustained attention is trainable. The research on meditation shows measurable structural changes in the prefrontal cortex after eight weeks of daily practice — even twenty minutes a day. But meditation is not the only path. Any practice that requires sustained, undistracted engagement with a single object — a musical instrument, a craft, a difficult text, a physical discipline — trains the same capacity. The key element is not the method. It is the commitment to stay when the mind wants to leave. That staying is the rep. Every rep builds the muscle.',
+      },
+      {
+        title: 'Designing for depth',
+        body: 'Your environment performs your attention management for you before you make a single conscious choice. Phone in another room: focus extends significantly. Notifications off: average focus session length doubles. Single tab open: task completion rate rises. These are not hacks. They are structural changes that remove the friction of constant micro-decisions. Cal Newport, who coined the term deep work, argues that the capacity for sustained deep focus is becoming simultaneously rarer and more valuable — and that the people who structure their environment and schedule to protect it are positioned to produce disproportionate creative and intellectual output.',
+      },
+      {
+        title: 'The entry ritual',
+        body: 'Flow does not arrive on demand. But it can be reliably invited. Research on expert performers shows that most have rituals that consistently precede their peak states — specific sequences that signal to the nervous system: this is the time for deep work. The ritual does not cause flow. It removes the transition cost. The writer who always begins with the same coffee, the same seat, the same first sentence of a previous draft — is not superstitious. They are using learned cue-state association to shortcut twenty minutes of mental warm-up. Design your own ritual. Use it every time. Over weeks, the state begins to arrive faster.',
+      },
+      {
+        title: 'Recovery as part of depth',
+        body: 'Deep attention depletes the prefrontal cortex. Sustained flow states are followed by a period where the capacity is temporarily reduced — the brain needs to replenish. Attempting to force deep work during the depletion window produces diminishing returns and erodes the quality of the state itself. Research on deliberate practice by Anders Ericsson shows that elite performers in every domain work in focused blocks of 90 minutes or less, followed by genuine recovery — not passive scrolling, but actual rest: sleep, movement, nature, unstructured time. Protecting recovery is not weakness. It is how you protect the capacity for depth.',
+      },
+    ],
+  },
+  {
+    key: 'fishing-in-the-dark',
+    domain: 'Meaning & Creation',
+    color: '#7B9EC9',
+    segments: [
+      {
+        title: 'Fishing in the dark',
+        body: 'There is a particular kind of despair that arrives quietly: the feeling that what you are making no longer matters. That the act you trained your whole life for — writing, playing, composing, building — can now be replicated in seconds by something that feels nothing. This is not a crisis about skill. It is a crisis about meaning. And it is one of the defining questions of this moment in history. What are you doing here? Why make anything at all?',
+      },
+      {
+        title: 'The death of man-made art — or its transformation?',
+        body: 'Artificial intelligence can now generate paintings, write novels, produce music that moves people to tears. It does not tire. It does not doubt. It never wonders whether it is enough. The question this raises is not whether human art will survive — it is what human art is *for*. Every previous technological revolution changed the form of art without ending it. Photography did not kill painting. It freed it. The printing press did not kill storytelling. It amplified it. What AI is ending is the monopoly on technical skill as a marker of value. What it cannot end is the human need to be witnessed — to share what it feels like to be alive in this specific body at this specific moment.',
+      },
+      {
+        title: 'What music really is',
+        body: 'Music has never been primarily about the notes. It has been about transmission — one nervous system reaching across the room, across time, to touch another. The composer grieving at 3am. The guitarist who found the chord that said what words could not. The song that knew you before you knew yourself. None of that lives in the output file. It lives in the relationship between the maker, the moment, and the one who receives it. AI can produce music. It cannot need to. And that need — the aching human need to be heard — is the thing being transmitted. The instrument has always been a vehicle. The real signal is the person behind it.',
+      },
+      {
+        title: 'Discipline in the age of infinite generation',
+        body: "Here is the hard truth: practice still matters, perhaps more than ever. Not because it makes you faster or more technically precise — machines will always beat humans on those axes. But because what practice actually builds is not skill. It is sensibility. The ten thousand hours of playing scales, of writing bad drafts, of failing in front of audiences — these don't just make you better at the craft. They make you more precisely yourself. They develop the capacity to distinguish what is true from what is almost true. And that distinction — between true and almost true — is the thing AI cannot access. It has never lived. It does not know the difference from the inside.",
+      },
+      {
+        title: 'Effort as a form of love',
+        body: 'When you spend a year on a song — really spend it, revising, throwing out, beginning again — you are doing something that has no equivalent in generation at speed. You are choosing this thing over everything else you could have done with that time. That choice is visible in the work. Not always consciously, not technically, but felt. There is a quality to made things that come from sustained attention and genuine struggle. The audience may not be able to name it, but they can feel the difference between something thrown at them and something given to them. The effort is the love. The love is why it matters.',
+      },
+      {
+        title: 'What really matters — a recalibration',
+        body: 'In a world where content is infinite and free, scarcity has moved. It has moved from production to presence. From output to encounter. From the file to the human being standing in front of you, choosing to be affected. The things that will matter most in the next era are the things that have always mattered most but were hidden under the technical demands of craft: genuine attention. Real vulnerability. The willingness to make something that could fail, that might embarrass you, that comes from somewhere true. These were always the source of everything worth making. Now they are the only thing left.',
+      },
+      {
+        title: 'The guitar in the age of plugins',
+        body: 'There is something specific that happens when fingers touch strings — or when any human body engages with any real instrument or medium that offers genuine resistance. The resistance is the point. Digital tools comply. Physical instruments push back. They have character, limitation, history. The scratch of the pencil. The weight of the brush. The way a guitar string bends under pressure. These are not inefficiencies to be optimised away. They are the conditions that force you to negotiate with reality — and that negotiation is what produces the human signature in the work. Keep the guitar. Keep the thing that resists. That resistance is where you find yourself.',
+      },
+      {
+        title: 'Fishing in the dark — and staying',
+        body: 'The title of this reflection is about the act of creating without knowing whether it will land, whether it matters, whether anyone will hear it. Fishing in the dark. Most of what any artist makes never reaches anyone. Most sessions end without a good take. Most songs die in the notebook. But the fishing is not separate from the finding — it is the finding. The act of sustained attention, of showing up in the dark and casting again, is the creative life. It does not need to be validated by AI metrics or streaming counts or cultural relevance. It needs to be yours. And being yours — fully, stubbornly, with everything you have — is the only form of meaning available to a human being in any era. This one included.',
+      },
+    ],
+  },
+  {
+    key: 'sleep',
+    domain: 'Sleep',
+    color: '#5868A8',
+    segments: [
+      {
+        title: 'Sleep is not downtime',
+        body: 'Everything you do while awake depends on what happens while you sleep. The brain does not rest during sleep — it works. It consolidates the memories of the day, processes the emotions of the day, and clears the metabolic waste that accumulates during waking hours through the glymphatic system. Sleep is not recovery from life. It is the process by which life becomes integrated. Every hour you cut from it has a cost that compounds.',
+      },
+      {
+        title: 'What one bad night actually does',
+        body: 'After 17 hours without sleep, cognitive impairment is equivalent to a blood alcohol level of 0.05. After 24 hours, it matches 0.10 — above the legal driving limit in most countries. Emotional reactivity increases by up to 60% after a single night of poor sleep. Decision quality collapses. Risk assessment becomes unreliable. And critically: sleep-deprived people consistently rate their own performance as normal, even as their objective performance degrades. You cannot feel how impaired you are.',
+      },
+      {
+        title: 'The architecture of a night',
+        body: 'Sleep is not a single state — it moves through cycles of approximately 90 minutes, alternating between NREM (deep, restorative) and REM (emotionally processing, dream-rich) sleep. Deep sleep dominates the first half of the night; REM dominates the second. Cutting sleep short — even by an hour — disproportionately removes REM sleep, which is when emotional processing and creative consolidation happen. The quality of the architecture matters as much as the total hours.',
+      },
+      {
+        title: 'Why we cannot sleep',
+        body: "Cortisol and adrenaline — the stress hormones — are neurologically incompatible with sleep onset. Anxiety activates the same arousal systems that sleep requires to be quiet. Blue light from screens suppresses melatonin release by up to 50%. Alcohol — widely used as a sleep aid — blocks REM sleep and fragments the second half of the night. Most modern sleep disruption is not a sleep disorder. It is an arousal disorder: the body hasn't been given the conditions to feel safe enough to let go.",
+      },
+      {
+        title: 'The sleep-emotion loop',
+        body: 'Sleep deprivation increases emotional reactivity. Increased emotional reactivity increases anxiety and rumination. Anxiety and rumination disrupt sleep. This is one of the most common self-reinforcing loops in mental health — and one of the least recognised. Treating the sleep is often more effective than treating the anxiety directly. Research by Matthew Walker shows that the emotional memory processing that occurs during REM sleep specifically reduces the emotional charge of difficult memories — the brain essentially strips the distress from the experience overnight.',
+      },
+      {
+        title: 'Building a sleep practice',
+        body: 'The most powerful sleep interventions are not supplements — they are environmental and behavioural. Consistent sleep and wake times (including weekends) anchor the circadian rhythm. A cool room (around 18°C) supports temperature drop, which triggers sleep onset. Darkness matters: even dim light during sleep suppresses deep sleep quality. A wind-down period of 30-60 minutes without screens gives the nervous system time to downregulate. These are not tips to try. They are the conditions sleep requires. Build them like you would build any other practice.',
+      },
+      {
+        title: 'Rest beyond sleep',
+        body: 'Sleep is one form of rest, but not the only one. Dr Saundra Dalton-Smith identifies seven distinct types of rest: physical, mental, sensory, creative, emotional, social, and spiritual — the need for quiet, meaning, and connection to something larger. Many people who sleep enough hours still wake exhausted because they are depleted across these other dimensions. Recognising which kind of rest you actually need is a different skill from recognising that you are tired.',
+      },
+    ],
+  },
+  {
+    key: 'nervous-system',
+    domain: 'The Nervous System',
+    color: '#B87060',
+    segments: [
+      {
+        title: 'You are a nervous system first',
+        body: 'Before you are a thinker, a feeler, a doer — you are a nervous system. The autonomic nervous system runs continuously beneath conscious awareness, scanning for safety and threat, regulating heart rate and breath and digestion, and shaping the emotional tone of every moment of your life. Most of what you experience as mood, energy, and capacity is not a psychological state — it is a physiological one. Understanding this does not reduce you. It gives you access to yourself at a deeper level than thought alone.',
+      },
+      {
+        title: 'The three states',
+        body: "Polyvagal theory, developed by neuroscientist Stephen Porges, describes three primary nervous system states. The ventral vagal state — safe and social — is where you are at your most connected, creative, and capable. The sympathetic state — fight or flight — mobilises energy for action against threat. The dorsal vagal state — shutdown and freeze — is an ancient survival response to overwhelming threat: conserve energy, become still, disappear. You move between these states constantly. Knowing which one you're in changes what is possible.",
+      },
+      {
+        title: 'Neuroception — the body knows before you do',
+        body: "Porges coined the term neuroception to describe the nervous system's unconscious scanning for safety and threat — happening 200 milliseconds before conscious awareness. Your body responds to a tone of voice, a facial expression, a memory, before your mind has registered anything. This is why emotional reactions can feel out of proportion to what is consciously happening: the nervous system has already made its assessment and begun its response. You are not being irrational. You are running an ancient detection system that was built for a different world.",
+      },
+      {
+        title: 'Regulation and co-regulation',
+        body: 'Regulation is the capacity to return to the ventral vagal state from activation or shutdown. It can happen alone — through breath, movement, cold water, humming, or any practice that engages the vagus nerve. But co-regulation — returning to safety through the presence of another regulated nervous system — is equally real and often more powerful. This is why a calm person in a panicking crowd changes the room. Why a regulated parent settles a dysregulated child. Your nervous system state is not private. It transmits, and it receives.',
+      },
+      {
+        title: 'The window of tolerance',
+        body: "Dan Siegel's concept of the window of tolerance describes the zone of nervous system activation within which you can think, feel, and connect simultaneously. Too little activation and you are shut down, numb, disconnected. Too much and you are overwhelmed, reactive, flooded. Within the window, you are capable of your full self. Trauma narrows the window — making it harder to stay regulated. Therapeutic work and somatic practice widen it. The aim is not a life without activation but a life where your window is wide enough to hold what comes.",
+      },
+      {
+        title: 'Coming back to your body',
+        body: 'The nervous system is regulated through the body, not through thinking about the body. Breath — specifically long, slow exhalations — directly activates the parasympathetic system. Cold exposure activates and then resolves the sympathetic system, building regulation capacity over time. Movement processes incomplete stress responses that get stuck in the body. Grounding practices — feet on floor, hands on a surface, noticing five things you can see — interrupt threat loops by returning attention to present sensory reality. The body is not a vehicle for the mind. It is the regulation system.',
+      },
+      {
+        title: 'Building a regulated life',
+        body: 'A regulated nervous system is not the absence of stress — it is the capacity to return from stress to safety, repeatedly and reliably. This is built through practice, not through understanding. Regular movement. Sufficient sleep. Genuine connection. Time in nature. Breath practices. These are not wellness habits. They are the maintenance of the physiological foundation on which everything else — your relationships, your work, your emotional life — depends. The most important investment in your capacity is not in your skills or your knowledge. It is in the system that makes use of them possible.',
+      },
+    ],
+  },
+  {
+    key: 'grief',
+    domain: 'Grief & Loss',
+    color: '#7888A8',
+    segments: [
+      {
+        title: 'What grief actually is',
+        body: 'Grief is not a stage process with a beginning and an end. It is a non-linear adjustment to a world that has been permanently changed by loss. The stages model — denial, anger, bargaining, depression, acceptance — was never intended as a sequence to move through. It was a description of experiences that occur, in no particular order, sometimes simultaneously, sometimes not at all. Grief is as individual as the relationship that was lost. The only universal is this: it takes as long as it takes, and the attempt to rush it costs more than the grief itself.',
+      },
+      {
+        title: 'The losses we do not name',
+        body: "Death is the most visible loss, but not the most common. Ambiguous grief — grief without a body, without a funeral, without social permission to mourn — is everywhere. The end of a relationship. A job that held your identity. A health diagnosis that closes certain futures. A move away from home. The parent you needed and didn't have. The version of yourself you left behind. These losses are real. They deserve the same respect as the ones that come with flowers and condolences. Not naming them doesn't make them smaller. It makes them harder to carry.",
+      },
+      {
+        title: 'What grief needs',
+        body: 'Grief needs presence, not fixing. The most common mistake of those who love grieving people is to try to relieve the pain — to offer perspective, silver linings, comparisons to worse losses, timelines for recovery. These come from love. But they communicate that the grief is a problem to be solved rather than an experience to be honoured. What actually helps: sitting with someone without an agenda. Saying the name of what was lost. Not changing the subject when it comes up. Grief needs witnesses, not solutions.',
+      },
+      {
+        title: 'The body of grief',
+        body: 'Grief is not only an emotional experience — it is a physiological one. The immune system is suppressed during acute grief, increasing vulnerability to illness. Cortisol rises and remains elevated. Sleep is disrupted. Cognitive function — concentration, memory, decision-making — is genuinely impaired. The chest pain of grief is real: the vagus nerve, which runs through the chest and throat, is activated by social loss in the same way it is activated by physical pain. Caring for the body during loss is not a luxury. It is part of survival.',
+      },
+      {
+        title: 'Continuing bonds',
+        body: "The old model of grief prescribed letting go — detaching from the lost person or thing and moving forward. Research in the last three decades has overturned this. Grief theorist Klass and colleagues found that maintaining an internal, ongoing relationship with what was lost is not pathological — it is normal, and for many people, it is healing. You do not stop being someone's child when they die. You do not stop loving what you loved. The relationship changes form. The aim is not to let go but to carry what you loved into the life you are still living.",
+      },
+      {
+        title: 'When grief becomes complicated',
+        body: 'For some people, grief does not move — it becomes a permanent state of acute loss, sometimes called prolonged grief disorder or complicated grief. This is distinct from depression, though it can coexist with it. The person remains in a sustained state of yearning, disbelief, and bitterness that prevents re-engagement with life. This is not weakness or failure to grieve correctly. It is a recognised condition that responds to specific therapeutic intervention. If grief feels like it has not moved in many months — if it feels more like a wall than a wound — that is information worth acting on.',
+      },
+      {
+        title: 'Grief as transformation',
+        body: 'Research on post-traumatic growth — the phenomenon of positive psychological change following severe adversity — consistently finds that loss, when moved through rather than around, can produce a deepened sense of what matters, stronger relationships, greater compassion, and an expanded capacity for presence. This is not the silver lining. It is not a reason to be grateful for loss. It is a description of what becomes possible when the broken-open state is met with honesty rather than avoidance. The door grief opens is real. You do not have to step through it immediately. But it is there.',
+      },
+    ],
+  },
+  {
+    key: 'conflict-repair',
+    domain: 'Conflict & Repair',
+    color: '#C06848',
+    segments: [
+      {
+        title: 'Conflict is not the problem',
+        body: 'Every meaningful relationship contains conflict. The research of John Gottman, who has studied couples for over four decades, shows that the presence of conflict does not predict relationship breakdown. What predicts breakdown is the absence of repair. Couples who stay together long-term are not couples who fight less — they are couples who know how to come back together after they fight. The goal is not to eliminate conflict. It is to develop the capacity to move through it without leaving the other person behind.',
+      },
+      {
+        title: 'What happens in your body during conflict',
+        body: 'When physiological flooding occurs — heart rate above approximately 100 beats per minute, adrenaline rising, breath shortening — the prefrontal cortex loses access to its full function. You literally cannot think clearly, listen accurately, or choose your words carefully when flooded. Gottman calls this diffuse physiological arousal. Trying to resolve conflict while flooded is like trying to perform surgery while running: the conditions are wrong for the precision required. The most important conflict skill is knowing when you are flooded and being able to say so without that itself becoming an attack.',
+      },
+      {
+        title: 'The four horsemen',
+        body: 'Gottman identified four communication patterns that predict relationship breakdown with over 90% accuracy. Criticism: attacking the character of the person rather than addressing a specific behaviour. Contempt: communicating superiority, disgust, or disrespect — the most corrosive of the four. Defensiveness: responding to a complaint with a counter-complaint or self-protection rather than accountability. Stonewalling: withdrawing completely — shutting down, going silent, leaving. These patterns are not evidence that a relationship is broken. They are habits that can be replaced. But they require seeing them clearly first.',
+      },
+      {
+        title: 'Listening as a gift',
+        body: 'Most people listen in order to respond. They are building their rebuttal while the other person is still speaking, waiting for a pause to insert their point, checking whether what is being said confirms what they already believe. This is normal, and it produces conversations in which no one is heard. Genuine listening requires setting aside the need to be right, the fear of being wrong, and the impulse to fix — and simply staying with the experience of the other person long enough to understand what it is actually like to be them right now. This is one of the rarest and most valued things one human can offer another.',
+      },
+      {
+        title: 'The repair attempt',
+        body: "Gottman defines a repair attempt as any gesture — verbal or physical — that de-escalates a conflict before it becomes destructive. It can be a touch on the arm. A moment of humour. An acknowledgement: 'I'm getting flooded — can we take five minutes?' A sudden admission: 'You're right about that part.' What matters is not the sophistication of the gesture but the willingness to make it — and crucially, the willingness of the partner to receive it. The ability to send and receive repair attempts is the single most important relationship skill identified in forty years of research.",
+      },
+      {
+        title: 'Rupture and reconnect',
+        body: 'Every relationship ruptures. The attachment between two people — whether romantic, familial, or friendship — is disrupted and repaired repeatedly over the course of a relationship. This is not a failure of the relationship. It is the relationship. Research by Ed Tronick using the Still Face paradigm shows that even with attentive caregivers, infants experience misattunement 70% of the time — and what builds secure attachment is not the absence of misattunement but the consistent return to connection after it. The reconnection after rupture is where intimacy actually deepens. It is where trust is built.',
+      },
+      {
+        title: 'Having the hard conversation',
+        body: "Difficult conversations fail most often not because the content is too hard but because they begin as attacks rather than disclosures. The structure that works: start with your experience, not their behaviour. 'I felt frightened when…' lands differently than 'You always…'. Name what you need rather than what you don't want. Stay specific — general indictments ('you never listen') produce defensiveness; specific incidents produce accountability. And end with a question rather than a verdict: 'What was that like for you?' The conversation is not a prosecution. It is an attempt to understand and be understood by someone who matters to you.",
+      },
+    ],
+  },
+  {
+    key: 'money-anxiety',
+    domain: 'Money & Anxiety',
+    color: '#6A8A58',
+    segments: [
+      {
+        title: 'Money is never just money',
+        body: 'Money carries more psychological weight than almost any other domain of human life. For different people it represents security, freedom, worth, power, love, or proof of value. These meanings are not universal — they are personal, formed by childhood experiences, family narratives, cultural messages, and formative events. Until you know what money means to you specifically — what it is standing in for — you are not managing money. You are managing the feeling money represents. The financial behaviour is downstream of the psychology.',
+      },
+      {
+        title: 'Where your money script came from',
+        body: "Financial therapist Brad Klontz uses the term money scripts to describe the unconscious beliefs about money formed in childhood that drive adult financial behaviour. Common scripts: money is scarce and must be hoarded; money corrupts; rich people are greedy; I don't deserve financial security; money will solve my problems. These beliefs were formed by observing your family's relationship with money — how they talked about it, fought about it, avoided it, used it — before you had any language for what you were absorbing. Most people have never examined them. Almost all of them are running.",
+      },
+      {
+        title: 'The scarcity mindset',
+        body: 'Research by Sendhil Mullainathan and Eldar Shafir shows that experiencing scarcity — of money, time, or any resource — creates a specific cognitive state: the mind tunnels onto the scarce resource, making it temporarily more capable at managing that resource while reducing cognitive bandwidth for everything else. The cruel paradox is that scarcity impairs the kind of long-term thinking that would help you escape it. And critically, the cognitive and emotional patterns developed during genuine scarcity can persist long after the scarcity ends. Feeling financially unsafe when you are financially safe is not irrational. It is a learned response that outlasted its conditions.',
+      },
+      {
+        title: 'Financial anxiety versus financial reality',
+        body: "There is often a significant gap between the felt sense of financial threat and actual financial circumstances. Research consistently shows that wealthy people can feel financially insecure while people with objectively less feel financially adequate. The difference is not in the numbers — it is in the relationship between expectations, identity, and what money is unconsciously protecting against. Before making any financial change, it is worth asking: what am I actually afraid of? The answer is rarely 'not having enough money.' It is usually something older and more personal than that.",
+      },
+      {
+        title: 'Avoidance as a financial strategy',
+        body: "Financial anxiety most commonly produces avoidance: not checking accounts, not opening bills, not making a budget, not thinking about the future, using magical thinking ('it will somehow work out'). This is not stupidity or irresponsibility. It is a nervous system response to a perceived threat. The problem is that avoidance reliably makes anxiety worse, not better. The thing you don't look at grows in your imagination. The moment you look — even when the numbers are bad — the concrete reality is almost always more manageable than the formless dread that avoidance generates.",
+      },
+      {
+        title: 'The enough question',
+        body: "No amount of money is experienced as enough by someone who has not answered the question of what enough means to them. Without a personal definition of sufficiency, the hedonic treadmill runs indefinitely: every increase in income recalibrates upward, and the feeling of security remains just out of reach. The enough question is not a financial question. It is a values question. What kind of life am I trying to make possible? What do I actually need for that life? What am I spending on that doesn't serve it? Answering these questions honestly is more transformative than any financial strategy.",
+      },
+      {
+        title: 'Money aligned with values',
+        body: "Conscious spending is not budgeting — it is deciding in advance what you want your money to express about what you value, and then checking whether your actual spending pattern matches. Most people, when they look honestly at their bank statements, find a significant gap between what they say they value and what their spending says they value. This gap is not a moral failure. It is information. The emotional audit of a bank statement — going through it month by month and asking 'what feeling was I trying to produce with this purchase?' — is one of the most revealing exercises in personal finance.",
+      },
+    ],
+  },
+  {
+    key: 'identity-becoming',
+    domain: 'Identity & Becoming',
+    color: '#9070B8',
+    segments: [
+      {
+        title: 'The self is not fixed',
+        body: "The idea of a fixed, discoverable self — the 'real you' waiting to be found — is one of the most persistent and misleading ideas in Western culture. Developmental psychology and neuroscience both point in the opposite direction: the self is not a thing you find but a thing you construct, continuously, from the raw material of experience, relationship, story, and choice. This does not make you less real. It makes you more responsible. If the self is constructed rather than discovered, it can be constructed deliberately — which means who you are becoming is not fixed either.",
+      },
+      {
+        title: 'When roles end',
+        body: "Much of what people call identity is actually role identity — the sense of self built around a job title, a relationship, a function. When the role ends — retirement, redundancy, divorce, children leaving, illness — the person often experiences not just loss but disorientation: I don't know who I am without this. This is not weakness. It is the natural consequence of building identity on something external. The roles were real. The loss is real. But underneath the role is something that survived every previous version of yourself. The work is finding it again.",
+      },
+      {
+        title: 'Values as compass',
+        body: 'Most people, when asked what their values are, produce a list of aspirational virtues: honesty, kindness, courage. These may be genuine. But values are most accurately identified not from introspection but from behaviour — specifically from the choices you make under pressure, when it costs something. What did you protect when you had to choose? What did you sacrifice? What did you refuse to give up even when it would have been easier to let it go? Your actual values are written in your history. Looking at them honestly, without judgment, is the beginning of living more deliberately.',
+      },
+      {
+        title: 'The stories we tell',
+        body: 'Narrative identity — the concept developed by psychologist Dan McAdams — describes the ongoing story you construct about your life: who you are, where you came from, where you are going, and what it all means. This story is not a passive record. It actively shapes what you believe is possible, how you interpret new events, and what kind of future you can imagine. Research shows that the coherence, meaning, and redemptive quality of your life narrative predicts wellbeing, resilience, and identity clarity. The story can be rewritten — not by changing what happened, but by changing the meaning you make of it.',
+      },
+      {
+        title: 'Becoming versus arriving',
+        body: 'One of the most exhausting cultural myths is the idea of the finished self: that somewhere ahead of you is a version of yourself who has it together, who no longer struggles, who has arrived. This destination is always receding. People spend their lives chasing a state of completion that, by its nature, does not exist. The alternative is not resignation — it is the recognition that becoming is the condition of being alive, not a temporary phase before living begins. The feeling of not being there yet is not a problem to solve. It is the texture of a growing life.',
+      },
+      {
+        title: 'Character under pressure',
+        body: 'Constraint reveals. The person you are when things go well is one version of you. The person you are when the plan fails, when you are embarrassed, when someone is unkind, when you are tired and things are hard — that is a more honest version. Character, in the classical sense, is not a quality you possess — it is a pattern of response that becomes visible when circumstances make it costly to maintain. Knowing your character under pressure is not self-criticism. It is self-knowledge. And self-knowledge is the only reliable foundation for deliberate change.',
+      },
+      {
+        title: 'The person you are becoming',
+        body: 'Active identity construction — deciding who you are becoming rather than simply discovering who you are — requires three things. Clarity about what you actually value, which comes from honest reflection on your choices. Practices that make the valued qualities real in your body and your daily life, not just in your self-concept. And relationships with people who reflect back and reinforce the version of yourself you are working toward. Identity is not built in isolation. It is built in relationship — with other people, with practices, with the choices you make each day about what to give your time and attention to.',
+      },
+    ],
+  },
+  {
+    key: 'parenting-patterns',
+    domain: 'Parenting & Patterns',
+    color: '#B87868',
+    segments: [
+      {
+        title: 'Before you could remember',
+        body: 'The earliest experiences of your life — in the first months and years, before language, before conscious memory — shaped the architecture of your nervous system. The quality of attunement you received: whether your signals of distress were met with consistency and warmth, or with inconsistency, absence, or overwhelm. These experiences did not disappear when you grew up. They became the baseline. The default expectation your nervous system carries about whether the world is safe, whether relationships are reliable, whether you are worth caring for. Most of what you call personality has roots here.',
+      },
+      {
+        title: 'Attachment styles',
+        body: "John Bowlby and Mary Ainsworth's research on attachment identified four patterns that form in early childhood based on the consistency and responsiveness of early caregiving. Secure attachment: the caregiver is reliably available, and the world is experienced as basically safe. Anxious attachment: the caregiver is inconsistent, and the strategy becomes hypervigilance — stay close, escalate signals, never quite trust. Avoidant attachment: the caregiver is consistently unavailable, and the strategy becomes self-sufficiency — need nothing, expect nothing, stay independent. Disorganised attachment: the caregiver is both the source of fear and the only available comfort — the most destabilising pattern. These styles are not fixed in adulthood. But they are active until examined.",
+      },
+      {
+        title: 'How patterns pass down',
+        body: "Research on intergenerational transmission shows that parenting patterns move through generations not primarily through genetics but through behaviour, nervous system attunement, emotional modelling, and the stories families tell about themselves. A parent who was not taught to regulate their own emotions cannot easily teach their child to regulate theirs — not because they don't want to, but because the skill was never developed. The pattern is transmitted before anyone knows it is happening. The research of Martin Teicher shows neurobiological changes in children raised in high-stress environments that can persist across generations. This is not fatalism. It is the highest argument for doing the inner work.",
+      },
+      {
+        title: 'Breaking the cycle',
+        body: "The most important finding in attachment research may be this: the single best predictor of whether a parent will transmit insecure attachment to their child is not the quality of their own childhood — it is whether they have made sense of it. Adults with difficult early histories who have processed that history with coherence, meaning, and self-compassion are just as likely to raise securely attached children as adults who had good childhoods. You do not have to have been well-parented to parent well. But you do have to know your story clearly enough that it doesn't run you from the shadows.",
+      },
+      {
+        title: 'The good enough parent',
+        body: 'Paediatrician and psychoanalyst Donald Winnicott introduced the concept of the good enough parent — not the perfect parent, but the one who is present enough, often enough, and who repairs rupture when it happens. The imperfect moments are not the problem. They are part of the process. Children build resilience not by being protected from all frustration and distress but by experiencing manageable frustration and distress in the presence of someone who remains calm. The repeated experience of rupture and repair is what builds secure attachment — not the absence of rupture. This is important because the pursuit of perfect parenting produces anxiety that makes parenting worse.',
+      },
+      {
+        title: 'Repair with your own parents',
+        body: "Most people carry grief about the parent they needed and didn't have — not necessarily due to malice or neglect, but due to the limits of what their parent was capable of. This grief is real and deserves acknowledgement. What it does not require is resolution through the actual parent: many parents cannot provide the acknowledgement, apology, or understanding their adult child needs. The work of reconciliation — or of moving forward without it — is ultimately internal. It involves grieving what was not given, understanding the context in which a parent parented, and separating your own story from the one that was handed to you.",
+      },
+      {
+        title: 'The parent you choose to be',
+        body: 'Deliberate parenting is not about implementing the right techniques. It is about developing the capacity to be present — regulated enough to stay with a dysregulated child without becoming dysregulated yourself. This means doing your own nervous system work. It means knowing your triggers — the specific things your child does that activate your own unresolved history — and having a plan for those moments. It means building emotional vocabulary in the family: naming states, validating feelings, making distress discussable rather than shameful. The most valuable thing you can give a child is a parent who is working on themselves.',
+      },
+    ],
+  },
+  {
+    key: 'belonging',
+    domain: 'Loneliness & Belonging',
+    color: '#A07888',
+    segments: [
+      {
+        title: 'The loneliness epidemic',
+        body: 'Former US Surgeon General Vivek Murthy declared loneliness a public health epidemic in 2023. Over half of adults in many developed countries report measurable loneliness. The health impact is not metaphorical: chronic loneliness increases the risk of premature death by 26% — comparable to smoking 15 cigarettes a day. It raises cortisol, impairs sleep, suppresses immune function, and accelerates cognitive decline. We are a social species for whom isolation is physiologically dangerous. The modern design of life — remote work, urban anonymity, digital substitution for physical presence — has produced a loneliness crisis that is hiding in plain sight.',
+      },
+      {
+        title: 'Alone is not the same as lonely',
+        body: 'Solitude — chosen time alone — is restorative for many people and essential for creative work, self-reflection, and inner clarity. Loneliness is different: it is the distressing experience of a gap between the connection you have and the connection you need. You can be lonely in a crowded room, in a marriage, in a family. You can be completely alone without being lonely. The distinction matters because the solution to loneliness is not simply more social contact — it is more meaningful contact, and specifically the felt sense that you are known and that you matter to someone.',
+      },
+      {
+        title: 'Social anxiety and the entry problem',
+        body: 'For many people, the obstacle to belonging is not a lack of desire for connection but the anxiety that surrounds it. The anticipation of judgment, the fear of saying the wrong thing, the post-social review of everything said — these are features of social anxiety that make connection feel more dangerous than loneliness. The irony is that social anxiety is driven by a deep desire for connection combined with a belief that the real self is not acceptable. The work is not learning to perform better socially. It is developing enough self-acceptance that the performance anxiety gradually loses its grip.',
+      },
+      {
+        title: 'Entering the room',
+        body: "The moment of entering a new social situation is where most people's belonging failure occurs — not because of anything that happens, but because of the story told in the seconds before and after. Research by Nicholas Epley on the liking gap shows that people consistently underestimate how much they are liked after a first conversation. The inner critic narrates a reality that is significantly more negative than the actual experience of the other person. The practical knowledge: people are warmer than you expect. Curiosity is more disarming than any social skill. A genuine question is worth twenty clever things to say.",
+      },
+      {
+        title: 'Genuine belonging',
+        body: 'Belonging is not the same as fitting in. Researcher Brené Brown makes this distinction clearly: fitting in requires you to change yourself to match the group. Belonging requires the group to accept you as you are. Fitting in is the opposite of belonging — it is the performance of acceptability at the cost of authenticity. Genuine belonging — the felt experience of being welcomed as you actually are, not the version you present — requires two things: the courage to show something true about yourself, and the presence of people who can meet it without flinching. Both are rarer than they should be and more available than most people believe.',
+      },
+      {
+        title: 'The kindness practice',
+        body: "Research consistently shows that acts of kindness toward others improve the wellbeing of the giver as reliably as they improve the wellbeing of the receiver — sometimes more so. Kindness activates the same neural reward circuits as receiving kindness. It reduces cortisol and increases oxytocin. And it directly addresses one of the core mechanisms of loneliness: the sense of isolation and irrelevance that comes from feeling you don't matter. When you act with genuine kindness — not performative generosity but the small, specific acts of attention that cost you something — you are simultaneously creating belonging for someone else and reminding yourself that you have something to give.",
+      },
+      {
+        title: 'Spaces that restore',
+        body: 'Not all environments support belonging equally. Third places — spaces that are neither home nor work, where people gather without a transactional agenda — are one of the most reliable sources of low-stakes social connection: the coffee shop where the owner knows your name, the gym class with the same people every Tuesday, the community garden. These spaces build what Robert Putnam calls social capital — the accumulated trust and goodwill between people who know each other even slightly. They are disappearing from modern life, and their disappearance has a measurable cost. Finding your third place — or helping create one — is one of the most practical investments in belonging available.',
+      },
+    ],
+  },
 ];
 
 export function getProgramByKey(key: string): Program | undefined {

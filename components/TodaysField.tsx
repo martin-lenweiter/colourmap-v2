@@ -52,7 +52,7 @@ export default function TodaysField() {
           fontFamily: font,
           fontSize: '10px',
           fontWeight: 700,
-          color: colours.ochre,
+          color: 'var(--palette-panel-muted, #C4A060)',
           opacity: 0.55,
           letterSpacing: '0.18em',
           textTransform: 'uppercase',
@@ -89,7 +89,7 @@ export default function TodaysField() {
                 fontFamily: font,
                 fontSize: '14px',
                 fontWeight: 600,
-                color: colours.brownDeep,
+                color: 'var(--palette-panel-text, #5C3018)',
                 flex: 1,
                 opacity: 0.85,
               }}
@@ -102,7 +102,11 @@ export default function TodaysField() {
                 fontFamily: font,
                 fontSize: '13px',
                 color:
-                  e.trend === 'up' ? '#7AAA58' : e.trend === 'down' ? '#D4605A' : colours.warmTan,
+                  e.trend === 'up'
+                    ? '#7AAA58'
+                    : e.trend === 'down'
+                      ? '#D4605A'
+                      : 'var(--palette-panel-muted, #8A6A4A)',
                 opacity: 0.7,
                 minWidth: 14,
                 textAlign: 'center',
@@ -115,7 +119,7 @@ export default function TodaysField() {
               style={{
                 fontFamily: font,
                 fontSize: '12px',
-                color: colours.warmTan,
+                color: 'var(--palette-panel-muted, #8A6A4A)',
                 opacity: 0.55,
                 minWidth: 36,
                 textAlign: 'right',

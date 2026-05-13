@@ -205,7 +205,7 @@ function RitualNotebook({ notebookKey, onClose }: { notebookKey: string; onClose
             fontFamily: 'var(--font-serif)',
             fontSize: 20,
             fontWeight: 700,
-            color: 'rgba(240,216,152,0.88)',
+            color: 'var(--palette-body-text, rgba(240,216,152,0.85))',
           }}
         >
           {title}
@@ -284,7 +284,7 @@ function RitualNotebook({ notebookKey, onClose }: { notebookKey: string; onClose
               borderBottom: `1px solid ${color}28`,
               fontFamily: 'var(--font-serif)',
               fontSize: 15,
-              color: 'rgba(240,216,152,0.88)',
+              color: 'var(--palette-body-text, rgba(240,216,152,0.85))',
               padding: '4px 0',
               boxSizing: 'border-box',
             }}
@@ -318,7 +318,7 @@ function RitualNotebook({ notebookKey, onClose }: { notebookKey: string; onClose
                 fontFamily: 'var(--font-serif)',
                 fontSize: 16,
                 fontWeight: 700,
-                color: 'rgba(240,216,152,0.88)',
+                color: 'var(--palette-body-text, rgba(240,216,152,0.85))',
                 padding: '2px 0',
               }}
             />
@@ -348,7 +348,7 @@ function RitualNotebook({ notebookKey, onClose }: { notebookKey: string; onClose
                 overflow: 'hidden',
                 fontFamily: 'var(--font-serif)',
                 fontSize: 14,
-                color: 'rgba(240,216,152,0.78)',
+                color: 'var(--palette-body-text, rgba(240,216,152,0.85))',
                 lineHeight: 1.6,
               }}
             />
@@ -386,7 +386,7 @@ function RitualNotebook({ notebookKey, onClose }: { notebookKey: string; onClose
               fontFamily: 'var(--font-serif)',
               fontStyle: 'italic',
               fontSize: 13,
-              color: 'rgba(196,160,96,0.35)',
+              color: 'var(--palette-panel-muted, rgba(196,160,96,0.55))',
               textAlign: 'center',
               paddingTop: 24,
             }}
@@ -417,7 +417,7 @@ function RitualNotebook({ notebookKey, onClose }: { notebookKey: string; onClose
                     flex: 1,
                     fontFamily: 'var(--font-serif)',
                     fontSize: 10,
-                    color: 'rgba(196,160,96,0.4)',
+                    color: 'var(--palette-panel-muted, rgba(196,160,96,0.4))',
                   }}
                 >
                   {relativeWhen(entry.createdAt)}
@@ -428,7 +428,7 @@ function RitualNotebook({ notebookKey, onClose }: { notebookKey: string; onClose
                   style={{
                     background: 'none',
                     border: 'none',
-                    color: 'rgba(196,160,96,0.22)',
+                    color: 'var(--palette-panel-muted, rgba(196,160,96,0.55))',
                     cursor: 'pointer',
                     fontSize: 13,
                     lineHeight: 1,
@@ -443,7 +443,7 @@ function RitualNotebook({ notebookKey, onClose }: { notebookKey: string; onClose
                     fontFamily: 'var(--font-serif)',
                     fontSize: 15,
                     fontWeight: 700,
-                    color: 'rgba(240,216,152,0.82)',
+                    color: 'var(--palette-body-text, rgba(240,216,152,0.85))',
                     lineHeight: 1.3,
                     margin: '0 0 4px',
                   }}
@@ -455,7 +455,7 @@ function RitualNotebook({ notebookKey, onClose }: { notebookKey: string; onClose
                 style={{
                   fontFamily: 'var(--font-serif)',
                   fontSize: 13,
-                  color: 'rgba(240,216,152,0.65)',
+                  color: 'var(--palette-body-muted, rgba(240,216,152,0.52))',
                   lineHeight: 1.55,
                   margin: 0,
                   whiteSpace: 'pre-wrap',
@@ -510,7 +510,7 @@ function GuitarOverlay({ tab, onClose }: { tab: string; onClose: () => void }) {
             fontSize: 10,
             letterSpacing: '0.2em',
             textTransform: 'uppercase',
-            color: 'rgba(196,160,96,0.45)',
+            color: 'var(--palette-panel-muted, rgba(196,160,96,0.55))',
           }}
         >
           Guitar Studio
@@ -522,7 +522,7 @@ function GuitarOverlay({ tab, onClose }: { tab: string; onClose: () => void }) {
             background: 'none',
             border: '1px solid rgba(196,160,96,0.22)',
             borderRadius: 999,
-            color: 'rgba(196,160,96,0.45)',
+            color: 'var(--palette-panel-muted, rgba(196,160,96,0.55))',
             fontFamily: 'var(--font-serif)',
             fontSize: 11,
             letterSpacing: '0.1em',
@@ -662,7 +662,7 @@ function RitualRow({
             border: 'none',
             cursor: 'grab',
             padding: '2px 6px',
-            color: 'rgba(196,160,96,0.35)',
+            color: 'var(--palette-panel-muted, rgba(196,160,96,0.55))',
             flexShrink: 0,
             touchAction: 'none',
             display: 'flex',
@@ -1436,7 +1436,7 @@ export default function DailyRituals() {
                   fontFamily: 'var(--font-serif)',
                   fontSize: 12,
                   fontStyle: 'italic',
-                  color: 'rgba(196,160,96,0.62)',
+                  color: 'var(--palette-panel-muted, rgba(196,160,96,0.55))',
                   letterSpacing: '0.03em',
                   lineHeight: 1.6,
                   margin: 0,

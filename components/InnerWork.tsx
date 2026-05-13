@@ -36,7 +36,7 @@ const EMPTY: IWData = {
   content: [],
 };
 
-const settled = (l: ThoughtLoop) => l.payoff.trim() && l.reframe.trim();
+const _settled = (l: ThoughtLoop) => l.payoff.trim() && l.reframe.trim();
 
 function uid() {
   return crypto.randomUUID();
@@ -1455,7 +1455,7 @@ export default function InnerWork() {
     );
   }
 
-  const totalItems =
+  const _totalItems =
     data.affirmations.length +
     data.loops.length +
     data.crew.length +
@@ -1501,9 +1501,7 @@ export default function InnerWork() {
           Attitude
         </span>
         <span style={{ flex: 1, display: 'flex', justifyContent: 'flex-end' }}>
-          <span style={{ fontFamily: SERIF, fontSize: 11, color: och(0.42) }}>
-            {panelOpen ? '▲' : '▼'}
-          </span>
+          <span style={{ fontSize: 8, opacity: 0.35 }}>{panelOpen ? '▲' : '▼'}</span>
         </span>
       </button>
 
