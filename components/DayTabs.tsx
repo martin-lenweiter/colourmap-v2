@@ -29,7 +29,7 @@ function hex2rgba(hex: string, a: number) {
 
 export default function DayTabs({ emotionContent, missionContent, progressContent }: DayTabsProps) {
   const [active, setActive] = useState<Tab>('emotion');
-  const { tabStyle, tabFillColor, appTheme } = useStyle();
+  const { tabStyle, tabFillColor, appTheme: _appTheme } = useStyle();
 
   useEffect(() => {
     try {

@@ -74,7 +74,24 @@ type Mode =
   | 'hopefear'
   | 'wordecho'
   | 'wordparticle'
-  | 'wordweave';
+  | 'wordweave'
+  | 'metamorph'
+  | 'chrysalis'
+  | 'breathform'
+  | 'clock3d'
+  | 'atomlight'
+  | 'butterfly'
+  | 'pyramid3d'
+  | 'orbitdance'
+  | 'ripplemorph'
+  | 'kaleido3d'
+  | 'mirrortunnel'
+  | 'heartwave'
+  | 'eyemorph'
+  | 'sinmorph3d'
+  | 'heartdance'
+  | 'infinitedive'
+  | 'clockorbit3d';
 
 interface Pal {
   bg0: string;
@@ -2165,6 +2182,42 @@ const PRESETS: Record<string, Cfg> = {
     stars: 3,
     mode: 'treeoflife3d',
   },
+  Metamorph: {
+    preset: 'Forest Ceremony',
+    symmetry: 6,
+    complexity: 5,
+    glow: 7,
+    breathSpeed: 0.7,
+    intensity: 8,
+    particles: 3,
+    luminous: 2,
+    stars: 2,
+    mode: 'metamorph',
+  },
+  Chrysalis: {
+    preset: 'Violet Portal',
+    symmetry: 6,
+    complexity: 7,
+    glow: 8,
+    breathSpeed: 0.5,
+    intensity: 9,
+    particles: 3,
+    luminous: 2,
+    stars: 2,
+    mode: 'chrysalis',
+  },
+  Breathform: {
+    preset: 'Golden Source',
+    symmetry: 5,
+    complexity: 6,
+    glow: 6,
+    breathSpeed: 0.6,
+    intensity: 8,
+    particles: 3,
+    luminous: 2,
+    stars: 1,
+    mode: 'breathform',
+  },
   'Neon Word': {
     preset: 'Warp Tunnel',
     symmetry: 6,
@@ -2224,6 +2277,366 @@ const PRESETS: Record<string, Cfg> = {
     luminous: 1,
     stars: 2,
     mode: 'wordweave',
+  },
+  'Clock of Infinity': {
+    preset: 'Warp Tunnel',
+    symmetry: 7,
+    complexity: 7,
+    glow: 8,
+    breathSpeed: 0.8,
+    intensity: 8,
+    particles: 2,
+    luminous: 2,
+    stars: 2,
+    mode: 'clock3d',
+  },
+  'Eternal Clock': {
+    preset: 'Cosmic Indigo',
+    symmetry: 7,
+    complexity: 8,
+    glow: 7,
+    breathSpeed: 0.5,
+    intensity: 7,
+    particles: 2,
+    luminous: 2,
+    stars: 3,
+    mode: 'clock3d',
+  },
+  'Golden Clock': {
+    preset: 'Golden Source',
+    symmetry: 7,
+    complexity: 6,
+    glow: 9,
+    breathSpeed: 1.0,
+    intensity: 9,
+    particles: 2,
+    luminous: 3,
+    stars: 2,
+    mode: 'clock3d',
+  },
+  'Cosmic Astrolabe': {
+    preset: 'Blue Astral',
+    symmetry: 7,
+    complexity: 9,
+    glow: 8,
+    breathSpeed: 0.6,
+    intensity: 8,
+    particles: 3,
+    luminous: 2,
+    stars: 3,
+    mode: 'clock3d',
+  },
+  'Atom Light': {
+    preset: 'Warp Tunnel',
+    symmetry: 4,
+    complexity: 5,
+    glow: 8,
+    breathSpeed: 1.2,
+    intensity: 8,
+    particles: 2,
+    luminous: 2,
+    stars: 2,
+    mode: 'atomlight',
+  },
+  'Neon Atom': {
+    preset: 'Violet Portal',
+    symmetry: 4,
+    complexity: 6,
+    glow: 9,
+    breathSpeed: 1.6,
+    intensity: 9,
+    particles: 3,
+    luminous: 3,
+    stars: 1,
+    mode: 'atomlight',
+  },
+  'Butterfly Dance': {
+    preset: 'Forest Ceremony',
+    symmetry: 5,
+    complexity: 5,
+    glow: 7,
+    breathSpeed: 0.7,
+    intensity: 8,
+    particles: 2,
+    luminous: 1,
+    stars: 2,
+    mode: 'butterfly',
+  },
+  'Duality Wings': {
+    preset: 'DMT Vision',
+    symmetry: 5,
+    complexity: 6,
+    glow: 8,
+    breathSpeed: 0.9,
+    intensity: 8,
+    particles: 2,
+    luminous: 2,
+    stars: 2,
+    mode: 'butterfly',
+  },
+  'Sacred Pyramid': {
+    preset: 'Golden Source',
+    symmetry: 4,
+    complexity: 6,
+    glow: 8,
+    breathSpeed: 0.5,
+    intensity: 8,
+    particles: 3,
+    luminous: 2,
+    stars: 2,
+    mode: 'pyramid3d',
+  },
+  Merkaba: {
+    preset: 'Cosmic Indigo',
+    symmetry: 6,
+    complexity: 7,
+    glow: 9,
+    breathSpeed: 0.4,
+    intensity: 9,
+    particles: 3,
+    luminous: 3,
+    stars: 3,
+    mode: 'pyramid3d',
+  },
+  'Orbital Dance': {
+    preset: 'Blue Astral',
+    symmetry: 6,
+    complexity: 6,
+    glow: 7,
+    breathSpeed: 1.0,
+    intensity: 8,
+    particles: 3,
+    luminous: 2,
+    stars: 2,
+    mode: 'orbitdance',
+  },
+  'Ellipse Ballet': {
+    preset: 'Violet Portal',
+    symmetry: 6,
+    complexity: 7,
+    glow: 8,
+    breathSpeed: 0.8,
+    intensity: 8,
+    particles: 2,
+    luminous: 2,
+    stars: 2,
+    mode: 'orbitdance',
+  },
+  'Ripple Morph': {
+    preset: 'DMT Vision',
+    symmetry: 6,
+    complexity: 8,
+    glow: 7,
+    breathSpeed: 1.1,
+    intensity: 8,
+    particles: 2,
+    luminous: 1,
+    stars: 1,
+    mode: 'ripplemorph',
+  },
+  'Psychedelic Bloom': {
+    preset: 'Cosmic Indigo',
+    symmetry: 8,
+    complexity: 9,
+    glow: 9,
+    breathSpeed: 0.9,
+    intensity: 9,
+    particles: 3,
+    luminous: 2,
+    stars: 2,
+    mode: 'ripplemorph',
+  },
+  'Kaleido Storm': {
+    preset: 'Warp Tunnel',
+    symmetry: 8,
+    complexity: 7,
+    glow: 8,
+    breathSpeed: 1.0,
+    intensity: 8,
+    particles: 2,
+    luminous: 2,
+    stars: 2,
+    mode: 'kaleido3d',
+  },
+  'Rainbow Gate': {
+    preset: 'DMT Vision',
+    symmetry: 6,
+    complexity: 8,
+    glow: 9,
+    breathSpeed: 0.8,
+    intensity: 9,
+    particles: 3,
+    luminous: 3,
+    stars: 2,
+    mode: 'kaleido3d',
+  },
+  'Clock Orbit': {
+    preset: 'Warp Tunnel',
+    symmetry: 7,
+    complexity: 7,
+    glow: 8,
+    breathSpeed: 0.9,
+    intensity: 8,
+    particles: 2,
+    luminous: 3,
+    stars: 3,
+    mode: 'clockorbit3d',
+  },
+  'Armillary Gold': {
+    preset: 'Golden Source',
+    symmetry: 7,
+    complexity: 8,
+    glow: 9,
+    breathSpeed: 0.7,
+    intensity: 9,
+    particles: 2,
+    luminous: 3,
+    stars: 3,
+    mode: 'clockorbit3d',
+  },
+  'Celestial Spheres': {
+    preset: 'Violet Portal',
+    symmetry: 7,
+    complexity: 7,
+    glow: 8,
+    breathSpeed: 0.6,
+    intensity: 8,
+    particles: 3,
+    luminous: 3,
+    stars: 3,
+    mode: 'clockorbit3d',
+  },
+  'Astrolabe Deep': {
+    preset: 'Blue Astral',
+    symmetry: 7,
+    complexity: 9,
+    glow: 9,
+    breathSpeed: 0.5,
+    intensity: 9,
+    particles: 3,
+    luminous: 4,
+    stars: 4,
+    mode: 'clockorbit3d',
+  },
+  'Mirror Tunnel': {
+    preset: 'Warp Tunnel',
+    symmetry: 5,
+    complexity: 9,
+    glow: 9,
+    breathSpeed: 0.9,
+    intensity: 9,
+    particles: 2,
+    luminous: 3,
+    stars: 3,
+    mode: 'mirrortunnel',
+  },
+  'Neon Abyss': {
+    preset: 'Cosmic Indigo',
+    symmetry: 6,
+    complexity: 10,
+    glow: 10,
+    breathSpeed: 0.7,
+    intensity: 9,
+    particles: 2,
+    luminous: 3,
+    stars: 3,
+    mode: 'mirrortunnel',
+  },
+  'Infinite Dive': {
+    preset: 'Blue Astral',
+    symmetry: 6,
+    complexity: 9,
+    glow: 8,
+    breathSpeed: 1.0,
+    intensity: 8,
+    particles: 2,
+    luminous: 2,
+    stars: 2,
+    mode: 'infinitedive',
+  },
+  'Golden Vortex': {
+    preset: 'Golden Source',
+    symmetry: 8,
+    complexity: 9,
+    glow: 8,
+    breathSpeed: 0.8,
+    intensity: 9,
+    particles: 2,
+    luminous: 2,
+    stars: 2,
+    mode: 'infinitedive',
+  },
+  'Heart Wave': {
+    preset: 'Violet Portal',
+    symmetry: 4,
+    complexity: 5,
+    glow: 7,
+    breathSpeed: 1.4,
+    intensity: 8,
+    particles: 2,
+    luminous: 2,
+    stars: 1,
+    mode: 'heartwave',
+  },
+  'Heart Dance': {
+    preset: 'DMT Vision',
+    symmetry: 6,
+    complexity: 6,
+    glow: 7,
+    breathSpeed: 1.0,
+    intensity: 8,
+    particles: 2,
+    luminous: 2,
+    stars: 2,
+    mode: 'heartdance',
+  },
+  'Eye Storm': {
+    preset: 'Calm Field',
+    symmetry: 4,
+    complexity: 6,
+    glow: 6,
+    breathSpeed: 0.6,
+    intensity: 7,
+    particles: 2,
+    luminous: 1,
+    stars: 2,
+    mode: 'eyemorph',
+  },
+  'Deep Gaze': {
+    preset: 'Blue Astral',
+    symmetry: 5,
+    complexity: 7,
+    glow: 7,
+    breathSpeed: 0.4,
+    intensity: 8,
+    particles: 2,
+    luminous: 2,
+    stars: 3,
+    mode: 'eyemorph',
+  },
+  'Sin Morph': {
+    preset: 'Forest Ceremony',
+    symmetry: 6,
+    complexity: 7,
+    glow: 7,
+    breathSpeed: 0.8,
+    intensity: 8,
+    particles: 3,
+    luminous: 2,
+    stars: 2,
+    mode: 'sinmorph3d',
+  },
+  'Alien Form': {
+    preset: 'Cosmic Indigo',
+    symmetry: 6,
+    complexity: 9,
+    glow: 8,
+    breathSpeed: 0.6,
+    intensity: 9,
+    particles: 3,
+    luminous: 3,
+    stars: 2,
+    mode: 'sinmorph3d',
   },
 };
 
@@ -3223,11 +3636,36 @@ function buildModeGroup(cfg: Cfg, R: number): THREE.Group {
     case 'breath':
     case 'stream':
     case 'entropy':
+    case 'wordneon':
+    case 'hopefear':
+    case 'wordecho':
+    case 'wordparticle':
+    case 'wordweave':
+    case 'metamorph':
+    case 'chrysalis':
+    case 'breathform':
+    case 'clock3d':
+    case 'atomlight':
+    case 'butterfly':
+    case 'orbitdance':
+    case 'ripplemorph':
+    case 'kaleido3d':
+    case 'mirrortunnel':
+    case 'heartwave':
+    case 'eyemorph':
+    case 'heartdance':
+    case 'infinitedive':
       return buildCanvasMode(cfg, R);
+    case 'sinmorph3d':
+      return buildSinMorph3D(cfg, R);
     case 'entropy3d':
       return buildEntropy3D(cfg, R);
     case 'embf3d':
       return buildEmbf3D(cfg, R);
+    case 'pyramid3d':
+      return buildPyramid3D(cfg, R);
+    case 'clockorbit3d':
+      return buildClockOrbit3D(cfg, R);
     default:
       return buildSacred(cfg, R);
   }
@@ -3400,13 +3838,41 @@ function updateModeGroup(group: THREE.Group, cfg: Cfg, dots: Dot[], t: number, R
     case 'breath':
     case 'stream':
     case 'entropy':
+    case 'wordneon':
+    case 'hopefear':
+    case 'wordecho':
+    case 'wordparticle':
+    case 'wordweave':
+    case 'metamorph':
+    case 'chrysalis':
+    case 'breathform':
+    case 'clock3d':
+    case 'atomlight':
+    case 'butterfly':
+    case 'orbitdance':
+    case 'ripplemorph':
+    case 'kaleido3d':
+    case 'mirrortunnel':
+    case 'heartwave':
+    case 'eyemorph':
+    case 'heartdance':
+    case 'infinitedive':
       updateCanvasMode(group, cfg, t, R);
+      break;
+    case 'sinmorph3d':
+      updateSinMorph3D(group, cfg, t, R);
       break;
     case 'entropy3d':
       updateEntropy3D(group, cfg, t, R);
       break;
     case 'embf3d':
       updateEmbf3D(group, cfg, t, R);
+      break;
+    case 'pyramid3d':
+      updatePyramid3D(group, cfg, t, R);
+      break;
+    case 'clockorbit3d':
+      updateClockOrbit3D(group, cfg, t, R);
       break;
     default:
       updateSacred(group, cfg, dots, t, R);
@@ -9037,9 +9503,53 @@ const MODE_TO_PRESET: Partial<Record<Mode, string>> = {
   matrix3d: 'Matrix Rain',
   pulse: 'Rorschach Pulse',
   embf3d: 'Calm Field',
+  wordneon: 'Neon Word',
+  hopefear: 'Duality',
+  wordecho: 'Echo Word',
+  wordparticle: 'Particle Word',
+  wordweave: 'Woven Word',
+  metamorph: 'Metamorph',
+  chrysalis: 'Chrysalis',
+  breathform: 'Breathform',
+  clock3d: 'Clock of Infinity',
+  atomlight: 'Atom Light',
+  butterfly: 'Butterfly Dance',
+  pyramid3d: 'Sacred Pyramid',
+  orbitdance: 'Orbital Dance',
+  ripplemorph: 'Ripple Morph',
+  kaleido3d: 'Kaleido Storm',
+  mirrortunnel: 'Mirror Tunnel',
+  heartwave: 'Heart Wave',
+  eyemorph: 'Eye Storm',
+  sinmorph3d: 'Sin Morph',
+  heartdance: 'Heart Dance',
+  infinitedive: 'Infinite Dive',
+  clockorbit3d: 'Clock Orbit',
 };
 
 const MODES: { mode: Mode; label: string }[] = [
+  { mode: 'clockorbit3d', label: '⊙³ Clock Orbit' },
+  { mode: 'mirrortunnel', label: '⊟ Mirror Tunnel' },
+  { mode: 'infinitedive', label: '⊙ Infinite Dive' },
+  { mode: 'heartwave', label: '♡ Heart Wave' },
+  { mode: 'heartdance', label: '♡² Heart Dance' },
+  { mode: 'eyemorph', label: '◉ Eye Morph' },
+  { mode: 'sinmorph3d', label: '∿³ Sin Morph' },
+  { mode: 'clock3d', label: '⊙ Clock' },
+  { mode: 'atomlight', label: '⊛ Atom Light' },
+  { mode: 'butterfly', label: '◈ Butterfly' },
+  { mode: 'pyramid3d', label: '△ Pyramid' },
+  { mode: 'orbitdance', label: '◎ Orbit Dance' },
+  { mode: 'ripplemorph', label: '∿ Ripple Morph' },
+  { mode: 'kaleido3d', label: '⬡ Kaleido' },
+  { mode: 'wordneon', label: '✦ Neon Word' },
+  { mode: 'hopefear', label: '◈ Duality' },
+  { mode: 'wordecho', label: '◉ Echo Word' },
+  { mode: 'wordparticle', label: '✤ Particle Word' },
+  { mode: 'wordweave', label: '∾ Woven Word' },
+  { mode: 'metamorph', label: '∞ Metamorph' },
+  { mode: 'chrysalis', label: '◈ Chrysalis' },
+  { mode: 'breathform', label: '◉ Breathform' },
   { mode: 'lissajous', label: '∿ Lissajous' },
   { mode: 'lissajous2', label: '∿ Expand' },
   { mode: 'lissajous3d', label: '∿³ Lissajous 3D' },
@@ -9100,16 +9610,60 @@ const MODES: { mode: Mode; label: string }[] = [
   { mode: 'entropy', label: '⋮ Entropy' },
   { mode: 'entropy3d', label: '⋮³ Entropy 3D' },
   { mode: 'embf3d', label: '◎ EMBF 3D' },
-  { mode: 'wordneon', label: '✦ Neon Word' },
-  { mode: 'hopefear', label: '◈ Duality' },
-  { mode: 'wordecho', label: '◉ Echo Word' },
-  { mode: 'wordparticle', label: '✤ Particle Word' },
-  { mode: 'wordweave', label: '∾ Woven Word' },
 ];
 
 type FeaturedItem = { name: string; tag: string } | { header: string; dim?: boolean };
 
 const FEATURED_PRESETS: FeaturedItem[] = [
+  // ── Clocks & Orbits ──
+  { header: '— Tunnels & Depth —' },
+  { name: 'Mirror Tunnel', tag: 'TUNNEL' },
+  { name: 'Neon Abyss', tag: 'TUNNEL' },
+  { name: 'Infinite Dive', tag: 'DIVE' },
+  { name: 'Golden Vortex', tag: 'DIVE' },
+  { header: '— Hearts & Eyes —' },
+  { name: 'Heart Wave', tag: 'HEART' },
+  { name: 'Heart Dance', tag: 'HEART' },
+  { name: 'Eye Storm', tag: 'EYE' },
+  { name: 'Deep Gaze', tag: 'EYE' },
+  { header: '— 3D Morphs —' },
+  { name: 'Sin Morph', tag: '3D' },
+  { name: 'Alien Form', tag: '3D' },
+  { header: '— Clocks & Orbits —' },
+  { name: 'Clock Orbit', tag: '3D' },
+  { name: 'Armillary Gold', tag: '3D' },
+  { name: 'Celestial Spheres', tag: '3D' },
+  { name: 'Astrolabe Deep', tag: '3D' },
+  { name: 'Clock of Infinity', tag: 'CLOCK' },
+  { name: 'Eternal Clock', tag: 'CLOCK' },
+  { name: 'Golden Clock', tag: 'CLOCK' },
+  { name: 'Cosmic Astrolabe', tag: 'CLOCK' },
+  { name: 'Atom Light', tag: 'ATOM' },
+  { name: 'Neon Atom', tag: 'ATOM' },
+  { name: 'Orbital Dance', tag: 'ORBIT' },
+  { name: 'Ellipse Ballet', tag: 'ORBIT' },
+  // ── Life Forms ──
+  { header: '— Life Forms —' },
+  { name: 'Butterfly Dance', tag: 'LIFE' },
+  { name: 'Duality Wings', tag: 'LIFE' },
+  { name: 'Sacred Pyramid', tag: '3D' },
+  { name: 'Merkaba', tag: '3D' },
+  // ── Morphosis ──
+  { header: '— Morphosis —' },
+  { name: 'Ripple Morph', tag: 'MORPH' },
+  { name: 'Psychedelic Bloom', tag: 'MORPH' },
+  { name: 'Kaleido Storm', tag: 'KALEIDO' },
+  { name: 'Rainbow Gate', tag: 'KALEIDO' },
+  { name: 'Metamorph', tag: 'MORPH' },
+  { name: 'Chrysalis', tag: 'MORPH' },
+  { name: 'Breathform', tag: 'MORPH' },
+  // ── Word Worlds ──
+  { header: '— Word Worlds —' },
+  { name: 'Neon Word', tag: 'WORD' },
+  { name: 'Duality', tag: 'WORD' },
+  { name: 'Echo Word', tag: 'WORD' },
+  { name: 'Particle Word', tag: 'WORD' },
+  { name: 'Woven Word', tag: 'WORD' },
   // ── Entropy ──
   { header: '— Entropy —' },
   { name: 'Entropy 3D', tag: 'ENTR·3D' },
@@ -10851,6 +11405,397 @@ function updateEmbf3D(group: THREE.Group, cfg: Cfg, t: number, _R: number): void
   }
 }
 
+/* ── Sacred Pyramid 3D ──────────────────────────────────────── */
+
+function buildPyramid3D(cfg: Cfg, R: number): THREE.Group {
+  const group = new THREE.Group();
+  const pal = PAL[cfg.preset] ?? PAL['Calm Field'];
+  const [rr, gg, bb] = pal.rgb;
+  const iF = cfg.intensity / 10;
+  const PHI = 1.6180339887;
+
+  // Three concentric Merkaba pairs (up + down tetrahedra) at golden ratio scales
+  const scales = [0.38, 0.38 * PHI, 0.38 * PHI * PHI];
+  scales.forEach((sc, si) => {
+    const sz = R * sc;
+    // Up-pointing tetrahedron (wireframe)
+    const tetUp = new THREE.Mesh(
+      new THREE.TetrahedronGeometry(sz, 0),
+      new THREE.MeshBasicMaterial({
+        color: new THREE.Color(rr / 255, gg / 255, bb / 255),
+        wireframe: true,
+        transparent: true,
+        opacity: (0.55 - si * 0.1) * iF,
+      }),
+    );
+    tetUp.userData.tag = `tetUp-${si}`;
+    tetUp.userData.scaleIdx = si;
+    group.add(tetUp);
+
+    // Down-pointing tetrahedron (rotated 180° on X)
+    const tetDown = new THREE.Mesh(
+      new THREE.TetrahedronGeometry(sz * 0.92, 0),
+      new THREE.MeshBasicMaterial({
+        color: new THREE.Color(rr / 255, gg / 255, bb / 255),
+        wireframe: true,
+        transparent: true,
+        opacity: (0.35 - si * 0.07) * iF,
+      }),
+    );
+    tetDown.rotation.x = Math.PI;
+    tetDown.userData.tag = `tetDown-${si}`;
+    tetDown.userData.scaleIdx = si;
+    group.add(tetDown);
+  });
+
+  // Orbiting particles around the central form
+  const N_ORBITERS = 60 + Math.round(cfg.complexity * 4);
+  const orbPos = new Float32Array(N_ORBITERS * 3);
+  for (let i = 0; i < N_ORBITERS; i++) {
+    const theta = (i / N_ORBITERS) * Math.PI * 2;
+    const phi = Math.acos(2 * Math.random() - 1);
+    const r = R * (0.55 + Math.random() * 0.35);
+    orbPos[i * 3] = Math.sin(phi) * Math.cos(theta) * r;
+    orbPos[i * 3 + 1] = Math.sin(phi) * Math.sin(theta) * r;
+    orbPos[i * 3 + 2] = Math.cos(phi) * r * 0.62;
+  }
+  const orbGeo = new THREE.BufferGeometry();
+  const orbAttr = new THREE.BufferAttribute(orbPos, 3);
+  orbAttr.setUsage(THREE.DynamicDrawUsage);
+  orbGeo.setAttribute('position', orbAttr);
+  const orbPts = new THREE.Points(
+    orbGeo,
+    circlePtsMat(hdrColor([rr, gg, bb], 0.55 * iF, 1.5), 2.5, 0.55 * iF),
+  );
+  orbPts.userData.tag = 'orbiters';
+  group.add(orbPts);
+
+  return group;
+}
+
+function updatePyramid3D(group: THREE.Group, cfg: Cfg, t: number, _R: number): void {
+  const pal = PAL[cfg.preset] ?? PAL['Calm Field'];
+  const [rr, gg, bb] = pal.rgb;
+  const iF = cfg.intensity / 10;
+  const spd = cfg.breathSpeed;
+  const tSec = t * 0.001;
+
+  for (const child of group.children) {
+    const tag = child.userData.tag as string;
+    const si = (child.userData.scaleIdx as number) ?? 0;
+
+    if (tag?.startsWith('tetUp')) {
+      const baseSpd = 0.18 * spd * (si === 0 ? 1 : si === 1 ? 0.618 : 0.382);
+      child.rotation.y = tSec * baseSpd;
+      child.rotation.z = tSec * baseSpd * 0.38;
+      const mat = (child as THREE.Mesh).material as THREE.MeshBasicMaterial;
+      mat.color.setRGB(rr / 255, gg / 255, bb / 255);
+      mat.opacity = (0.55 - si * 0.1) * iF * (0.75 + 0.25 * Math.sin(tSec * 1.2 + si));
+    } else if (tag?.startsWith('tetDown')) {
+      const baseSpd = 0.14 * spd * (si === 0 ? 1 : si === 1 ? 0.618 : 0.382);
+      child.rotation.x = Math.PI + tSec * baseSpd * 0.77;
+      child.rotation.y = -tSec * baseSpd;
+      const mat = (child as THREE.Mesh).material as THREE.MeshBasicMaterial;
+      mat.color.setRGB(rr / 255, gg / 255, bb / 255);
+      mat.opacity = (0.35 - si * 0.07) * iF * (0.75 + 0.25 * Math.sin(tSec * 0.9 + si + 1));
+    } else if (tag === 'orbiters') {
+      const pts = child as THREE.Points;
+      pts.rotation.y = tSec * 0.08 * spd;
+      pts.rotation.z = tSec * 0.05 * spd;
+      const mat = pts.material as THREE.PointsMaterial;
+      mat.color.setRGB(rr / 255, gg / 255, bb / 255);
+      mat.opacity = 0.55 * iF * (0.8 + 0.2 * Math.sin(tSec * 1.8));
+    }
+  }
+}
+
+/* ── Sinusoidal 3D Morph — organic looping transforms ───────── */
+
+function buildSinMorph3D(cfg: Cfg, R: number): THREE.Group {
+  const group = new THREE.Group();
+  const pal = PAL[cfg.preset] ?? PAL['Calm Field'];
+  const [rr, gg, bb] = pal.rgb;
+  const iF = cfg.intensity / 10;
+  const N = 80 + Math.round(cfg.complexity * 3);
+  const positions = new Float32Array(N * N * 3);
+  let idx = 0;
+  for (let i = 0; i < N; i++) {
+    for (let j = 0; j < N; j++) {
+      const u = (i / (N - 1)) * Math.PI * 2;
+      const v = (j / (N - 1)) * Math.PI;
+      positions[idx++] = R * 0.8 * Math.sin(v) * Math.cos(u);
+      positions[idx++] = R * 0.8 * Math.sin(v) * Math.sin(u);
+      positions[idx++] = R * 0.8 * Math.cos(v);
+    }
+  }
+  const geo = new THREE.BufferGeometry();
+  const posAttr = new THREE.BufferAttribute(positions, 3);
+  posAttr.setUsage(THREE.DynamicDrawUsage);
+  geo.setAttribute('position', posAttr);
+  const pts = new THREE.Points(
+    geo,
+    circlePtsMat(hdrColor([rr, gg, bb], 0.7 * iF, 1.5), 2.8, 0.7 * iF),
+  );
+  pts.userData.tag = 'sinMorphPts';
+  pts.userData.N = N;
+  group.add(pts);
+  return group;
+}
+
+function updateSinMorph3D(group: THREE.Group, cfg: Cfg, t: number, R: number): void {
+  const pal = PAL[cfg.preset] ?? PAL['Calm Field'];
+  const [rr, gg, bb] = pal.rgb;
+  const iF = cfg.intensity / 10;
+  const spd = cfg.breathSpeed;
+  const cplx = cfg.complexity / 10;
+  const tSec = t * 0.001 * spd;
+
+  for (const child of group.children) {
+    if ((child.userData.tag as string) !== 'sinMorphPts') continue;
+    const pts = child as THREE.Points;
+    const N = child.userData.N as number;
+    const posAttr = pts.geometry.getAttribute('position') as THREE.BufferAttribute;
+    const arr = posAttr.array as Float32Array;
+
+    // Morph cycle: four shape states over time
+    const cycle = (tSec * 0.08) % 1;
+    // a1..a4 are blend amplitudes for four sine displacement waves
+    const a1 = 0.25 * cplx * Math.sin(tSec * 0.7);
+    const a2 = 0.18 * cplx * Math.sin(tSec * 0.43 + 1.2);
+    const a3 = 0.14 * cplx * Math.sin(tSec * 0.31 + 2.5);
+    const a4 = 0.1 * cplx * Math.sin(tSec * 0.19 + 0.8);
+    const breathe = 0.85 + 0.15 * Math.sin(tSec * 1.3);
+
+    let idx = 0;
+    for (let i = 0; i < N; i++) {
+      for (let j = 0; j < N; j++) {
+        const u = (i / (N - 1)) * Math.PI * 2;
+        const v = (j / (N - 1)) * Math.PI;
+        const su = Math.sin(u),
+          cu = Math.cos(u);
+        const sv = Math.sin(v),
+          cv = Math.cos(v);
+
+        // Base sphere
+        const x = sv * cu;
+        const y = sv * su;
+        const z = cv;
+
+        // Wave displacement 1: sinusoidal twist
+        const d1 = 1 + a1 * Math.sin(3 * u + tSec * 1.1) * Math.sin(2 * v + tSec * 0.7);
+        // Wave displacement 2: pulsing lobes
+        const d2 = 1 + a2 * Math.sin(5 * u - tSec * 0.9) * Math.cos(3 * v);
+        // Wave displacement 3: toroidal ripple
+        const d3 = 1 + a3 * Math.cos(4 * u + tSec * 0.5) * Math.sin(v * 4 - tSec * 0.6);
+        // Wave displacement 4: spiky outbursts
+        const d4 = 1 + a4 * Math.sin(7 * u + v * 2 + tSec * 1.7);
+
+        const r = R * 0.78 * d1 * d2 * d3 * d4 * breathe;
+        arr[idx++] = x * r;
+        arr[idx++] = y * r;
+        arr[idx++] = z * r * (0.7 + 0.3 * Math.abs(Math.sin(tSec * 0.4 + cycle * Math.PI * 2)));
+      }
+    }
+    posAttr.needsUpdate = true;
+    pts.geometry.computeBoundingSphere();
+    pts.rotation.y = tSec * 0.06;
+    pts.rotation.z = tSec * 0.04;
+
+    const mat = pts.material as THREE.PointsMaterial;
+    mat.color.setRGB(rr / 255, gg / 255, bb / 255);
+    mat.opacity = 0.7 * iF * (0.85 + 0.15 * Math.sin(tSec * 2.1));
+    mat.size = 2.8 + cfg.glow * 0.18;
+  }
+}
+
+/* ── Clock Orbit 3D — armillary sphere / 3D clock rings ─────── */
+
+const _CORB_RINGS = [
+  { r: 0.15, rotX: 0, rotZ: 0, spd: 6.5, pSz: 7.0, phase: 0 },
+  { r: 0.26, rotX: Math.PI / 2, rotZ: 0, spd: 4.0, pSz: 6.0, phase: 0.5 },
+  { r: 0.38, rotX: Math.PI / 3, rotZ: Math.PI / 5, spd: 2.6, pSz: 5.2, phase: 1.1 },
+  { r: 0.5, rotX: Math.PI * 0.65, rotZ: Math.PI / 4, spd: 1.7, pSz: 4.5, phase: 1.8 },
+  { r: 0.62, rotX: Math.PI * 0.8, rotZ: Math.PI * 0.4, spd: 1.1, pSz: 3.8, phase: 2.5 },
+  { r: 0.74, rotX: Math.PI / 5, rotZ: Math.PI * 0.65, spd: 0.6, pSz: 3.0, phase: 3.2 },
+  { r: 0.87, rotX: Math.PI * 0.9, rotZ: Math.PI * 0.7, spd: 0.33, pSz: 2.4, phase: 4.0 },
+] as const;
+
+function buildClockOrbit3D(cfg: Cfg, R: number): THREE.Group {
+  const group = new THREE.Group();
+  const pal = PAL[cfg.preset] ?? PAL['Calm Field'];
+  const [rr, gg, bb] = pal.rgb;
+  const iF = cfg.intensity / 10;
+
+  _CORB_RINGS.forEach((rc, ri) => {
+    const r = R * rc.r;
+
+    // Ring LineLoop — flat circle in XY plane, then tilted
+    const RING_PTS = 128;
+    const ringPos = new Float32Array(RING_PTS * 3);
+    for (let i = 0; i < RING_PTS; i++) {
+      const a = (i / RING_PTS) * Math.PI * 2;
+      ringPos[i * 3] = r * Math.cos(a);
+      ringPos[i * 3 + 1] = r * Math.sin(a);
+      ringPos[i * 3 + 2] = 0;
+    }
+    const ringGeo = new THREE.BufferGeometry();
+    ringGeo.setAttribute('position', new THREE.BufferAttribute(ringPos, 3));
+    const ring = new THREE.LineLoop(ringGeo, lineMat(hdrColor([rr, gg, bb], 0.28 * iF, 1.4), 0.35));
+    ring.rotation.x = rc.rotX;
+    ring.rotation.z = rc.rotZ;
+    ring.userData.tag = `ring-${ri}`;
+    ring.userData.ri = ri;
+    group.add(ring);
+
+    // 12 hour-mark dots on the ring
+    const hourPos = new Float32Array(12 * 3);
+    for (let h = 0; h < 12; h++) {
+      const a = (h / 12) * Math.PI * 2;
+      hourPos[h * 3] = r * Math.cos(a);
+      hourPos[h * 3 + 1] = r * Math.sin(a);
+      hourPos[h * 3 + 2] = 0;
+    }
+    const hourGeo = new THREE.BufferGeometry();
+    hourGeo.setAttribute('position', new THREE.BufferAttribute(hourPos, 3));
+    const hourPts = new THREE.Points(
+      hourGeo,
+      ptsMat(hdrColor([rr, gg, bb], 0.55 * iF, 1.8), 2.0, 0.55 * iF),
+    );
+    hourPts.rotation.x = rc.rotX;
+    hourPts.rotation.z = rc.rotZ;
+    hourPts.userData.tag = `hours-${ri}`;
+    group.add(hourPts);
+
+    // Planet — 1 dynamic bright point
+    const planetGeo = new THREE.BufferGeometry();
+    const planetAttr = new THREE.BufferAttribute(new Float32Array(3), 3);
+    planetAttr.setUsage(THREE.DynamicDrawUsage);
+    planetGeo.setAttribute('position', planetAttr);
+    const planet = new THREE.Points(
+      planetGeo,
+      circlePtsMat(hdrColor([rr, gg, bb], iF, 2.5), rc.pSz, 0.92 * iF),
+    );
+    planet.userData.tag = `planet-${ri}`;
+    planet.userData.ri = ri;
+    planet.userData.r = r;
+    planet.userData.rotX = rc.rotX;
+    planet.userData.rotZ = rc.rotZ;
+    planet.userData.spd = rc.spd;
+    planet.userData.phase = rc.phase;
+    planet.userData.pSz = rc.pSz;
+    group.add(planet);
+
+    // Comet trail — 18 fading points
+    const N_TRAIL = 18;
+    const trailGeo = new THREE.BufferGeometry();
+    const trailAttr = new THREE.BufferAttribute(new Float32Array(N_TRAIL * 3), 3);
+    trailAttr.setUsage(THREE.DynamicDrawUsage);
+    trailGeo.setAttribute('position', trailAttr);
+    const trail = new THREE.Points(
+      trailGeo,
+      circlePtsMat(hdrColor([rr, gg, bb], 0.55 * iF, 1.8), rc.pSz * 0.55, 0.45 * iF),
+    );
+    trail.userData.tag = `trail-${ri}`;
+    trail.userData.ri = ri;
+    trail.userData.r = r;
+    trail.userData.rotX = rc.rotX;
+    trail.userData.rotZ = rc.rotZ;
+    trail.userData.spd = rc.spd;
+    trail.userData.phase = rc.phase;
+    group.add(trail);
+  });
+
+  // Central nucleus
+  const nucGeo = new THREE.SphereGeometry(R * 0.038, 12, 12);
+  const nucMat = new THREE.MeshBasicMaterial({
+    color: hdrColor([rr, gg, bb], 1.8 * iF, 2.2),
+    transparent: true,
+    opacity: 0.9,
+  });
+  const nuc = new THREE.Mesh(nucGeo, nucMat);
+  nuc.userData.tag = 'nucleus';
+  group.add(nuc);
+
+  return group;
+}
+
+function updateClockOrbit3D(group: THREE.Group, cfg: Cfg, t: number, _R: number): void {
+  const pal = PAL[cfg.preset] ?? PAL['Calm Field'];
+  const [rr, gg, bb] = pal.rgb;
+  const iF = cfg.intensity / 10;
+  const spd = cfg.breathSpeed;
+  const tSec = t * 0.001;
+
+  for (const child of group.children) {
+    const tag = child.userData.tag as string;
+    if (!tag) continue;
+
+    if (tag === 'nucleus') {
+      const mat = (child as THREE.Mesh).material as THREE.MeshBasicMaterial;
+      mat.color.copy(hdrColor([rr, gg, bb], 1.8 * iF * (0.8 + 0.2 * Math.sin(tSec * 2.3)), 2.2));
+    } else if (tag.startsWith('ring-')) {
+      const ri = child.userData.ri as number;
+      const mat = (child as THREE.LineLoop).material as THREE.LineBasicMaterial;
+      mat.color.copy(hdrColor([rr, gg, bb], 0.28 * iF, 1.4));
+      mat.opacity = 0.35 * iF * (0.75 + 0.25 * Math.sin(tSec * 0.7 + ri * 0.6));
+    } else if (tag.startsWith('hours-')) {
+      const mat = (child as THREE.Points).material as THREE.PointsMaterial;
+      mat.color.copy(hdrColor([rr, gg, bb], 0.55 * iF, 1.8));
+    } else if (tag.startsWith('planet-')) {
+      const ri = child.userData.ri as number;
+      const r = child.userData.r as number;
+      const rotX = child.userData.rotX as number;
+      const rotZ = child.userData.rotZ as number;
+      const ringSpd = child.userData.spd as number;
+      const phase = child.userData.phase as number;
+      const pSz = child.userData.pSz as number;
+
+      const angle = tSec * ringSpd * spd * 0.22 + phase;
+      const euler = new THREE.Euler(rotX, 0, rotZ, 'XYZ');
+      const pos = new THREE.Vector3(r * Math.cos(angle), r * Math.sin(angle), 0);
+      pos.applyEuler(euler);
+
+      const attr = (child as THREE.Points).geometry.getAttribute(
+        'position',
+      ) as THREE.BufferAttribute;
+      const arr = attr.array as Float32Array;
+      arr[0] = pos.x;
+      arr[1] = pos.y;
+      arr[2] = pos.z;
+      attr.needsUpdate = true;
+
+      const mat = (child as THREE.Points).material as THREE.PointsMaterial;
+      mat.color.copy(hdrColor([rr, gg, bb], iF, 2.5));
+      mat.size = pSz * (0.85 + 0.15 * Math.sin(tSec * 2.1 + ri * 1.3)) + cfg.glow * 0.15;
+      mat.opacity = 0.92 * iF * (0.85 + 0.15 * Math.sin(tSec * 1.5 + ri));
+    } else if (tag.startsWith('trail-')) {
+      const _ri = child.userData.ri as number;
+      const r = child.userData.r as number;
+      const rotX = child.userData.rotX as number;
+      const rotZ = child.userData.rotZ as number;
+      const ringSpd = child.userData.spd as number;
+      const phase = child.userData.phase as number;
+
+      const attr = (child as THREE.Points).geometry.getAttribute(
+        'position',
+      ) as THREE.BufferAttribute;
+      const arr = attr.array as Float32Array;
+      const nTrail = arr.length / 3;
+      const euler = new THREE.Euler(rotX, 0, rotZ, 'XYZ');
+
+      for (let ti = 0; ti < nTrail; ti++) {
+        const trailAngle = tSec * ringSpd * spd * 0.22 + phase - (ti / nTrail) * 0.55;
+        const tp = new THREE.Vector3(r * Math.cos(trailAngle), r * Math.sin(trailAngle), 0);
+        tp.applyEuler(euler);
+        arr[ti * 3] = tp.x;
+        arr[ti * 3 + 1] = tp.y;
+        arr[ti * 3 + 2] = tp.z;
+      }
+      attr.needsUpdate = true;
+    }
+  }
+}
+
 /* ── Component ──────────────────────────────────────────────── */
 
 export default function GeometryField() {
@@ -11030,8 +11975,8 @@ export default function GeometryField() {
       }
       if (starsGroupRef.current) updateStars(starsGroupRef.current, t);
 
-      // Rebuild mode group when topology changes
-      const key = `${currentCfg.mode}-${currentCfg.symmetry}-${Math.round(currentCfg.complexity)}`;
+      // Rebuild mode group when topology or palette changes
+      const key = `${currentCfg.mode}-${currentCfg.preset}-${currentCfg.symmetry}-${Math.round(currentCfg.complexity)}`;
       if (key !== builtKeyRef.current || modeGroupRef.current === null) {
         if (modeGroupRef.current) {
           scene.remove(modeGroupRef.current);
@@ -11067,7 +12012,10 @@ export default function GeometryField() {
         currentCfg.mode === 'chaostri3d' ||
         currentCfg.mode === 'treeoflife3d' ||
         currentCfg.mode === 'entropy3d' ||
-        currentCfg.mode === 'embf3d';
+        currentCfg.mode === 'embf3d' ||
+        currentCfg.mode === 'pyramid3d' ||
+        currentCfg.mode === 'sinmorph3d' ||
+        currentCfg.mode === 'clockorbit3d';
       if (is3D && modeGroupRef.current) {
         if (!l3dDragRef.current) {
           // Slow auto-spin when not dragging
@@ -11316,7 +12264,21 @@ export default function GeometryField() {
       cfg.mode === 'hopefear' ||
       cfg.mode === 'wordecho' ||
       cfg.mode === 'wordparticle' ||
-      cfg.mode === 'wordweave';
+      cfg.mode === 'wordweave' ||
+      cfg.mode === 'metamorph' ||
+      cfg.mode === 'chrysalis' ||
+      cfg.mode === 'breathform' ||
+      cfg.mode === 'clock3d' ||
+      cfg.mode === 'atomlight' ||
+      cfg.mode === 'butterfly' ||
+      cfg.mode === 'orbitdance' ||
+      cfg.mode === 'ripplemorph' ||
+      cfg.mode === 'kaleido3d' ||
+      cfg.mode === 'mirrortunnel' ||
+      cfg.mode === 'heartwave' ||
+      cfg.mode === 'eyemorph' ||
+      cfg.mode === 'heartdance' ||
+      cfg.mode === 'infinitedive';
     if (!isCanvasMode) {
       canvasModeActiveRef.current = false;
       cancelAnimationFrame(canvasModeAnimRef.current);
@@ -11343,6 +12305,17 @@ export default function GeometryField() {
     const [pr, pg, pb] = pal.rgb;
     const speed = cfg.breathSpeed;
     const iF = cfg.intensity / 10;
+
+    // Initial opaque fill — covers Three.js layer from frame 0 so no Sacred geometry bleeds through.
+    // Parse bg0 hex (#rrggbb) to RGB for a palette-accurate background.
+    {
+      const h = pal.bg0.replace('#', '');
+      const bgR = parseInt(h.slice(0, 2), 16);
+      const bgG = parseInt(h.slice(2, 4), 16);
+      const bgB = parseInt(h.slice(4, 6), 16);
+      ctx.fillStyle = `rgb(${bgR},${bgG},${bgB})`;
+      ctx.fillRect(0, 0, mc.width, mc.height);
+    }
 
     /* ── BREATH: dots travel radial spokes inward then burst outward ── */
     if (cfg.mode === 'breath') {
@@ -11926,6 +12899,1011 @@ export default function GeometryField() {
       canvasModeAnimRef.current = requestAnimationFrame(drawWordWeave);
     }
 
+    /* ── METAMORPH: butterfly → bird → fish → spiral → loop ─────── */
+    if (cfg.mode === 'metamorph') {
+      const N = 120;
+      // Each shape: function(i, N) => [x, y] in normalised [-1,1] coords
+      function butterfly(i: number): [number, number] {
+        const t = (i / N) * Math.PI * 2;
+        const r = Math.abs(Math.sin(2 * t));
+        return [Math.cos(t) * r, Math.sin(t) * r * 0.85];
+      }
+      function bird(i: number): [number, number] {
+        const t = (i / N) * Math.PI * 2;
+        // V-spread wings
+        const x = Math.sin(t);
+        const y = -Math.abs(Math.cos(t)) * 0.45 + Math.sin(t * 0.5) * 0.15;
+        return [x, y];
+      }
+      function fish(i: number): [number, number] {
+        const t = (i / N) * Math.PI * 2;
+        const tail = t > Math.PI ? -Math.sin(t * 2) * 0.25 : 0;
+        return [Math.cos(t) * 0.85 + tail, Math.sin(t) * 0.42];
+      }
+      function spiral(i: number): [number, number] {
+        const t = (i / N) * Math.PI * 2;
+        const r = 0.4 + 0.55 * Math.abs(Math.sin(t * 2.5));
+        return [Math.cos(t) * r, Math.sin(t) * r];
+      }
+      const shapes = [butterfly, bird, fish, spiral, butterfly];
+      const HOLD = 1.2; // seconds paused at each shape
+      const TRANSIT = 2.8; // seconds morphing
+      const CYCLE = HOLD + TRANSIT;
+      const NUM_SHAPES = shapes.length - 1;
+
+      function drawMetamorph() {
+        if (!canvasModeActiveRef.current) return;
+        const W = mc!.width;
+        const H = mc!.height;
+        const tSec = performance.now() * 0.001 * speed;
+        const totalT = CYCLE * NUM_SHAPES;
+        const phase = (tSec % totalT) / totalT;
+        const shapeIdx = Math.min(Math.floor(phase * NUM_SHAPES), NUM_SHAPES - 1);
+        const local = phase * NUM_SHAPES - shapeIdx;
+        // local: 0..HOLD/(HOLD+TRANSIT) = hold zone, then ease into next
+        const holdFrac = HOLD / CYCLE;
+        const morphT = local < holdFrac ? 0 : (local - holdFrac) / (1 - holdFrac);
+        const eased = morphT < 0.5 ? 4 * morphT * morphT * morphT : 1 - (-2 * morphT + 2) ** 3 / 2;
+
+        ctx!.fillStyle = 'rgba(0,0,0,0.055)';
+        ctx!.fillRect(0, 0, W, H);
+
+        const scale = Math.min(W, H) * 0.4;
+        const rot = tSec * 0.08;
+
+        ctx!.save();
+        ctx!.translate(W / 2, H / 2);
+        ctx!.rotate(rot);
+        ctx!.beginPath();
+        for (let i = 0; i <= N; i++) {
+          const [ax, ay] = shapes[shapeIdx](i % N);
+          const [bx, by] = shapes[shapeIdx + 1](i % N);
+          const x = (ax + (bx - ax) * eased) * scale;
+          const y = (ay + (by - ay) * eased) * scale;
+          if (i === 0) ctx!.moveTo(x, y);
+          else ctx!.lineTo(x, y);
+        }
+        ctx!.closePath();
+        ctx!.shadowBlur = 22;
+        ctx!.shadowColor = `rgba(${pr},${pg},${pb},0.75)`;
+        ctx!.strokeStyle = `rgba(${pr},${pg},${pb},${0.85 * iF})`;
+        ctx!.lineWidth = 2;
+        ctx!.stroke();
+        // inner glow fill
+        ctx!.fillStyle = `rgba(${pr},${pg},${pb},${0.04 * iF})`;
+        ctx!.fill();
+        ctx!.restore();
+
+        canvasModeAnimRef.current = requestAnimationFrame(drawMetamorph);
+      }
+      canvasModeAnimRef.current = requestAnimationFrame(drawMetamorph);
+    }
+
+    /* ── CHRYSALIS: sacred geometry shapes morph through each other ── */
+    if (cfg.mode === 'chrysalis') {
+      // r(theta) for each polygon type — returns normalised radius
+      function polyR(sides: number, theta: number): number {
+        const seg = (Math.PI * 2) / sides;
+        return (
+          Math.cos(Math.PI / sides) / Math.cos((((theta % seg) + seg) % seg) - Math.PI / sides)
+        );
+      }
+      const shapeSeq: Array<(t: number) => number> = [
+        () => 1, // circle
+        (t) => Math.min(polyR(3, t), 2.2), // triangle
+        (t) => Math.abs(Math.cos(3 * t)) * 0.6 + 0.4, // rose 6 petals
+        (t) => Math.min(polyR(6, t), 2.2), // hexagon
+        (t) => 0.55 + 0.45 * Math.abs(Math.sin(6 * t)), // star
+        (t) => Math.abs(Math.cos(4 * t)) * 0.5 + 0.5, // 8-petal rose
+        () => 1, // back to circle
+      ];
+      const N2 = 200;
+      const HOLD2 = 0.9;
+      const TRANSIT2 = 2.4;
+      const CYCLE2 = HOLD2 + TRANSIT2;
+      const NUM_S = shapeSeq.length - 1;
+
+      function drawChrysalis() {
+        if (!canvasModeActiveRef.current) return;
+        const W = mc!.width;
+        const H = mc!.height;
+        const tSec = performance.now() * 0.001 * speed;
+        const totalT2 = CYCLE2 * NUM_S;
+        const phase2 = (tSec % totalT2) / totalT2;
+        const sIdx = Math.min(Math.floor(phase2 * NUM_S), NUM_S - 1);
+        const local2 = phase2 * NUM_S - sIdx;
+        const holdFrac2 = HOLD2 / CYCLE2;
+        const morphT2 = local2 < holdFrac2 ? 0 : (local2 - holdFrac2) / (1 - holdFrac2);
+        const eased2 =
+          morphT2 < 0.5 ? 4 * morphT2 * morphT2 * morphT2 : 1 - (-2 * morphT2 + 2) ** 3 / 2;
+
+        ctx!.fillStyle = 'rgba(0,0,0,0.04)';
+        ctx!.fillRect(0, 0, W, H);
+
+        const baseR = Math.min(W, H) * 0.38;
+        const rot2 = tSec * 0.06 * (sIdx % 2 === 0 ? 1 : -1);
+        // Draw multiple rings for depth
+        for (let ring = 0; ring < 3; ring++) {
+          const rScale = 1 - ring * 0.25;
+          const alpha = (1 - ring * 0.28) * iF;
+          ctx!.save();
+          ctx!.translate(W / 2, H / 2);
+          ctx!.rotate(rot2 + ring * 0.5);
+          ctx!.beginPath();
+          for (let i = 0; i <= N2; i++) {
+            const theta = (i / N2) * Math.PI * 2;
+            const ra = shapeSeq[sIdx](theta);
+            const rb = shapeSeq[sIdx + 1](theta);
+            const r = (ra + (rb - ra) * eased2) * baseR * rScale;
+            const x = Math.cos(theta) * r;
+            const y = Math.sin(theta) * r;
+            if (i === 0) ctx!.moveTo(x, y);
+            else ctx!.lineTo(x, y);
+          }
+          ctx!.closePath();
+          ctx!.shadowBlur = 18 - ring * 4;
+          ctx!.shadowColor = `rgba(${pr},${pg},${pb},${0.6 * alpha})`;
+          ctx!.strokeStyle = `rgba(${pr},${pg},${pb},${alpha * 0.9})`;
+          ctx!.lineWidth = 2 - ring * 0.4;
+          ctx!.stroke();
+          ctx!.restore();
+        }
+
+        canvasModeAnimRef.current = requestAnimationFrame(drawChrysalis);
+      }
+      canvasModeAnimRef.current = requestAnimationFrame(drawChrysalis);
+    }
+
+    /* ── BREATHFORM: a living geometric organism that expands/contracts ── */
+    if (cfg.mode === 'breathform') {
+      const N3 = 160;
+      const PETALS = Math.max(3, Math.round(cfg.symmetry));
+
+      function drawBreathform() {
+        if (!canvasModeActiveRef.current) return;
+        const W = mc!.width;
+        const H = mc!.height;
+        const tSec = performance.now() * 0.001 * speed;
+
+        ctx!.fillStyle = 'rgba(0,0,0,0.035)';
+        ctx!.fillRect(0, 0, W, H);
+
+        const baseR = Math.min(W, H) * 0.38;
+        // Breathe: slow inhale/exhale
+        const _breath = 0.78 + 0.22 * Math.sin(tSec * 0.7);
+        // Pulsing complexity
+        const warp = 0.15 + 0.12 * Math.sin(tSec * 0.4) * iF;
+
+        // Draw multiple overlapping layers
+        for (let layer = 0; layer < 4; layer++) {
+          const layerPhase = layer * 0.55;
+          const lBreath = 0.78 + 0.22 * Math.sin(tSec * 0.7 + layerPhase);
+          const lAlpha = (0.6 - layer * 0.12) * iF;
+          const lScale = (1 - layer * 0.18) * lBreath;
+          const lRot = tSec * (0.04 + layer * 0.025) * (layer % 2 === 0 ? 1 : -1);
+
+          ctx!.save();
+          ctx!.translate(W / 2, H / 2);
+          ctx!.rotate(lRot);
+          ctx!.beginPath();
+
+          for (let i = 0; i <= N3; i++) {
+            const theta = (i / N3) * Math.PI * 2;
+            // Rose-like with breathing warp
+            const rose = Math.abs(Math.cos(PETALS * theta * 0.5));
+            const harmonic = 1 + warp * Math.sin(PETALS * 3 * theta + tSec);
+            const r = baseR * lScale * (0.3 + 0.7 * rose) * harmonic;
+            const x = Math.cos(theta) * r;
+            const y = Math.sin(theta) * r;
+            if (i === 0) ctx!.moveTo(x, y);
+            else ctx!.lineTo(x, y);
+          }
+
+          ctx!.closePath();
+          ctx!.shadowBlur = 24 - layer * 4;
+          ctx!.shadowColor = `rgba(${pr},${pg},${pb},${lAlpha})`;
+          ctx!.strokeStyle = `rgba(${pr},${pg},${pb},${lAlpha * 0.9})`;
+          ctx!.lineWidth = 1.8 - layer * 0.3;
+          ctx!.stroke();
+          ctx!.fillStyle = `rgba(${pr},${pg},${pb},${lAlpha * 0.03})`;
+          ctx!.fill();
+          ctx!.restore();
+        }
+
+        canvasModeAnimRef.current = requestAnimationFrame(drawBreathform);
+      }
+      canvasModeAnimRef.current = requestAnimationFrame(drawBreathform);
+    }
+
+    /* ── CLOCK3D: Clocks of Infinity — astrolabe-style concentric rings ── */
+    if (cfg.mode === 'clock3d') {
+      const RING_DATA = [
+        { r: 0.13, spd: 7.2, dir: 1, notch: 12, sz: 5.5 },
+        { r: 0.24, spd: 4.4, dir: -1, notch: 18, sz: 4.5 },
+        { r: 0.36, spd: 2.8, dir: 1, notch: 24, sz: 4.0 },
+        { r: 0.49, spd: 1.7, dir: -1, notch: 36, sz: 3.2 },
+        { r: 0.63, spd: 1.1, dir: 1, notch: 48, sz: 2.5 },
+        { r: 0.77, spd: 0.6, dir: -1, notch: 60, sz: 2.0 },
+        { r: 0.89, spd: 0.3, dir: 1, notch: 72, sz: 1.5 },
+      ];
+      function drawClock3d() {
+        if (!canvasModeActiveRef.current) return;
+        const W = mc!.width,
+          H = mc!.height;
+        const cx = W / 2,
+          cy = H / 2;
+        const baseR = Math.min(W, H) * 0.46;
+        const tSec = performance.now() * 0.001;
+        ctx!.fillStyle = 'rgba(0,0,0,0.07)';
+        ctx!.fillRect(0, 0, W, H);
+        const ng = ctx!.createRadialGradient(cx, cy, 0, cx, cy, baseR * 0.08);
+        ng.addColorStop(0, `rgba(${pr},${pg},${pb},${0.95 * iF})`);
+        ng.addColorStop(0.4, `rgba(${pr},${pg},${pb},${0.35 * iF})`);
+        ng.addColorStop(1, 'rgba(0,0,0,0)');
+        ctx!.fillStyle = ng;
+        ctx!.beginPath();
+        ctx!.arc(cx, cy, baseR * 0.08, 0, Math.PI * 2);
+        ctx!.fill();
+        RING_DATA.forEach((ring, ri) => {
+          const r = baseR * ring.r;
+          const a0 = tSec * ring.spd * ring.dir * 0.14 * speed;
+          ctx!.strokeStyle = `rgba(${pr},${pg},${pb},${0.14 * iF})`;
+          ctx!.lineWidth = 0.7;
+          ctx!.beginPath();
+          ctx!.arc(cx, cy, r, 0, Math.PI * 2);
+          ctx!.stroke();
+          for (let n = 0; n < ring.notch; n++) {
+            const a = (n / ring.notch) * Math.PI * 2 + a0;
+            const major = n % (ring.notch / 12) < 1;
+            const tLen = r * (major ? 0.07 : 0.025);
+            const talpha = major ? 0.55 * iF : 0.18 * iF;
+            ctx!.strokeStyle = `rgba(${pr},${pg},${pb},${talpha})`;
+            ctx!.lineWidth = major ? 1.3 : 0.5;
+            ctx!.beginPath();
+            ctx!.moveTo(cx + (r - tLen) * Math.cos(a), cy + (r - tLen) * Math.sin(a));
+            ctx!.lineTo(cx + r * Math.cos(a), cy + r * Math.sin(a));
+            ctx!.stroke();
+          }
+          const pA = a0 * 0.7 + ri * 0.9;
+          const pX = cx + r * Math.cos(pA);
+          const pY = cy + r * Math.sin(pA);
+          const pSz = ring.sz * (0.85 + 0.15 * Math.sin(tSec * 2.1 + ri * 1.3));
+          const trailSpan = 0.35 * Math.PI;
+          const trailDir = ring.dir > 0 ? -1 : 1;
+          const tGrad = ctx!.createLinearGradient(
+            cx + r * Math.cos(pA + trailDir * trailSpan),
+            cy + r * Math.sin(pA + trailDir * trailSpan),
+            pX,
+            pY,
+          );
+          tGrad.addColorStop(0, 'rgba(0,0,0,0)');
+          tGrad.addColorStop(1, `rgba(${pr},${pg},${pb},${0.55 * iF})`);
+          ctx!.strokeStyle = tGrad;
+          ctx!.lineWidth = pSz * 0.7;
+          ctx!.lineCap = 'round';
+          ctx!.beginPath();
+          ctx!.arc(cx, cy, r, pA + trailDir * trailSpan, pA, trailDir < 0);
+          ctx!.stroke();
+          const pg2 = ctx!.createRadialGradient(pX, pY, 0, pX, pY, pSz * 5);
+          pg2.addColorStop(0, `rgba(${pr},${pg},${pb},${0.9 * iF})`);
+          pg2.addColorStop(0.4, `rgba(${pr},${pg},${pb},${0.3 * iF})`);
+          pg2.addColorStop(1, 'rgba(0,0,0,0)');
+          ctx!.fillStyle = pg2;
+          ctx!.beginPath();
+          ctx!.arc(pX, pY, pSz * 5, 0, Math.PI * 2);
+          ctx!.fill();
+          ctx!.fillStyle = `rgba(255,255,255,${iF * 0.95})`;
+          ctx!.beginPath();
+          ctx!.arc(pX, pY, pSz * 0.45, 0, Math.PI * 2);
+          ctx!.fill();
+        });
+        canvasModeAnimRef.current = requestAnimationFrame(drawClock3d);
+      }
+      canvasModeAnimRef.current = requestAnimationFrame(drawClock3d);
+    }
+
+    /* ── ATOMLIGHT: elliptical orbitals with racing electron nodes ── */
+    if (cfg.mode === 'atomlight') {
+      const ORBS = [
+        { tilt: 0, axisA: 0.92, axisB: 0.48, spd: 2.8, phase: 0, sz: 5.5 },
+        { tilt: 0.6, axisA: 0.78, axisB: 0.38, spd: 1.7, phase: Math.PI, sz: 4.5 },
+        { tilt: 1.1, axisA: 0.88, axisB: 0.28, spd: 4.1, phase: Math.PI / 2, sz: 3.5 },
+        { tilt: -0.5, axisA: 0.65, axisB: 0.45, spd: 0.9, phase: Math.PI * 1.5, sz: 3.0 },
+      ];
+      function drawAtomLight() {
+        if (!canvasModeActiveRef.current) return;
+        const W = mc!.width,
+          H = mc!.height;
+        const cx = W / 2,
+          cy = H / 2;
+        const baseR = Math.min(W, H) * 0.42;
+        const tSec = performance.now() * 0.001;
+        ctx!.fillStyle = 'rgba(0,0,0,0.05)';
+        ctx!.fillRect(0, 0, W, H);
+        const nucG = ctx!.createRadialGradient(cx, cy, 0, cx, cy, baseR * 0.12);
+        nucG.addColorStop(0, `rgba(255,255,255,${0.9 * iF})`);
+        nucG.addColorStop(0.25, `rgba(${pr},${pg},${pb},${0.65 * iF})`);
+        nucG.addColorStop(1, 'rgba(0,0,0,0)');
+        ctx!.fillStyle = nucG;
+        ctx!.beginPath();
+        ctx!.arc(cx, cy, baseR * 0.12, 0, Math.PI * 2);
+        ctx!.fill();
+        ORBS.forEach((orb) => {
+          const aX = baseR * orb.axisA;
+          const aY = baseR * orb.axisB;
+          const cosT = Math.cos(orb.tilt);
+          const sinT = Math.sin(orb.tilt);
+          ctx!.strokeStyle = `rgba(${pr},${pg},${pb},${0.18 * iF})`;
+          ctx!.lineWidth = 0.8;
+          ctx!.beginPath();
+          for (let n = 0; n <= 120; n++) {
+            const a = (n / 120) * Math.PI * 2;
+            const ex = aX * Math.cos(a),
+              ey = aY * Math.sin(a);
+            const rx = cx + ex * cosT - ey * sinT;
+            const ry = cy + ex * sinT + ey * cosT;
+            n === 0 ? ctx!.moveTo(rx, ry) : ctx!.lineTo(rx, ry);
+          }
+          ctx!.closePath();
+          ctx!.stroke();
+          const eAngle = tSec * orb.spd * speed * 0.6 + orb.phase;
+          const ex0 = aX * Math.cos(eAngle),
+            ey0 = aY * Math.sin(eAngle);
+          const eX = cx + ex0 * cosT - ey0 * sinT;
+          const eY = cy + ex0 * sinT + ey0 * cosT;
+          for (let ti = 0; ti < 30; ti++) {
+            const ta = eAngle - (ti / 30) * Math.PI * 0.6;
+            const tex = aX * Math.cos(ta),
+              tey = aY * Math.sin(ta);
+            const tX = cx + tex * cosT - tey * sinT;
+            const tY = cx + tex * sinT + tey * cosT + (cy - cx);
+            const talpha = (1 - ti / 30) * 0.5 * iF;
+            ctx!.fillStyle = `rgba(${pr},${pg},${pb},${talpha})`;
+            ctx!.beginPath();
+            ctx!.arc(tX, tY, orb.sz * (1 - ti / 30) * 0.35, 0, Math.PI * 2);
+            ctx!.fill();
+          }
+          const eGlow = ctx!.createRadialGradient(eX, eY, 0, eX, eY, orb.sz * 6);
+          eGlow.addColorStop(0, `rgba(${pr},${pg},${pb},${iF})`);
+          eGlow.addColorStop(0.35, `rgba(${pr},${pg},${pb},${0.35 * iF})`);
+          eGlow.addColorStop(1, 'rgba(0,0,0,0)');
+          ctx!.fillStyle = eGlow;
+          ctx!.beginPath();
+          ctx!.arc(eX, eY, orb.sz * 6, 0, Math.PI * 2);
+          ctx!.fill();
+          ctx!.fillStyle = `rgba(255,255,255,${iF})`;
+          ctx!.beginPath();
+          ctx!.arc(eX, eY, orb.sz * 0.5, 0, Math.PI * 2);
+          ctx!.fill();
+        });
+        canvasModeAnimRef.current = requestAnimationFrame(drawAtomLight);
+      }
+      canvasModeAnimRef.current = requestAnimationFrame(drawAtomLight);
+    }
+
+    /* ── BUTTERFLY: parametric butterfly curves in duet ── */
+    if (cfg.mode === 'butterfly') {
+      function drawButterflyMode() {
+        if (!canvasModeActiveRef.current) return;
+        const W = mc!.width,
+          H = mc!.height;
+        const cx = W / 2,
+          cy = H / 2;
+        const baseR = Math.min(W, H) * 0.36;
+        const tSec = performance.now() * 0.001;
+        ctx!.fillStyle = 'rgba(0,0,0,0.04)';
+        ctx!.fillRect(0, 0, W, H);
+        const orbit = baseR * 0.28;
+        for (let wing = 0; wing < 2; wing++) {
+          const offsetAngle = tSec * 0.18 * speed + wing * Math.PI;
+          const ocx = cx + orbit * Math.cos(offsetAngle);
+          const ocy = cy + orbit * Math.sin(offsetAngle);
+          const scale = baseR * 0.62;
+          const wingPhase = wing * Math.PI * 0.5;
+          const hue = (wing * 0.5 + tSec * 0.02 * speed) % 1;
+          const cr = (pr + (255 - pr) * hue) | 0;
+          const cg = (pg + (255 - pg) * (1 - hue)) | 0;
+          ctx!.beginPath();
+          for (let n = 0; n <= 300; n++) {
+            const theta = (n / 300) * Math.PI * 4;
+            const r2 =
+              Math.exp(Math.sin(theta)) -
+              2 * Math.cos(4 * theta) +
+              Math.sin((2 * theta - Math.PI) / 24) ** 5;
+            const rNorm = r2 * scale * 0.22;
+            const angle = theta + wingPhase + tSec * 0.08 * speed;
+            const bpx = ocx + rNorm * Math.cos(angle);
+            const bpy = ocy + rNorm * Math.sin(angle);
+            n === 0 ? ctx!.moveTo(bpx, bpy) : ctx!.lineTo(bpx, bpy);
+          }
+          ctx!.strokeStyle = `rgba(${cr},${cg},${pb},${0.7 * iF})`;
+          ctx!.lineWidth = 1.5;
+          ctx!.stroke();
+          const cg2 = ctx!.createRadialGradient(ocx, ocy, 0, ocx, ocy, scale * 0.15);
+          cg2.addColorStop(0, `rgba(${pr},${pg},${pb},${0.8 * iF})`);
+          cg2.addColorStop(1, 'rgba(0,0,0,0)');
+          ctx!.fillStyle = cg2;
+          ctx!.beginPath();
+          ctx!.arc(ocx, ocy, scale * 0.15, 0, Math.PI * 2);
+          ctx!.fill();
+        }
+        const a1 = tSec * 0.18 * speed;
+        const c1x = cx + orbit * Math.cos(a1),
+          c1y = cy + orbit * Math.sin(a1);
+        const c2x = cx + orbit * Math.cos(a1 + Math.PI),
+          c2y = cy + orbit * Math.sin(a1 + Math.PI);
+        const lineGrad = ctx!.createLinearGradient(c1x, c1y, c2x, c2y);
+        lineGrad.addColorStop(0, `rgba(${pr},${pg},${pb},${0.4 * iF})`);
+        lineGrad.addColorStop(0.5, `rgba(${pr},${pg},${pb},${0.08 * iF})`);
+        lineGrad.addColorStop(1, `rgba(${pr},${pg},${pb},${0.4 * iF})`);
+        ctx!.strokeStyle = lineGrad;
+        ctx!.lineWidth = 0.8;
+        ctx!.setLineDash([4, 6]);
+        ctx!.beginPath();
+        ctx!.moveTo(c1x, c1y);
+        ctx!.lineTo(c2x, c2y);
+        ctx!.stroke();
+        ctx!.setLineDash([]);
+        canvasModeAnimRef.current = requestAnimationFrame(drawButterflyMode);
+      }
+      canvasModeAnimRef.current = requestAnimationFrame(drawButterflyMode);
+    }
+
+    /* ── ORBITDANCE: 3D-projected elliptical orbits with dancing objects ── */
+    if (cfg.mode === 'orbitdance') {
+      const DANCERS = [
+        { a: 0.85, b: 0.38, tilt: 0, phase: 0, spd: 1.3 },
+        { a: 0.7, b: 0.45, tilt: Math.PI / 3, phase: Math.PI * 0.7, spd: 2.1 },
+        { a: 0.9, b: 0.3, tilt: Math.PI * 0.6, phase: Math.PI * 1.3, spd: 0.8 },
+        { a: 0.55, b: 0.48, tilt: Math.PI, phase: Math.PI * 0.3, spd: 3.0 },
+        { a: 0.75, b: 0.35, tilt: Math.PI * 1.4, phase: Math.PI * 0.9, spd: 1.6 },
+        { a: 0.65, b: 0.42, tilt: Math.PI * 0.2, phase: Math.PI * 1.7, spd: 2.5 },
+      ];
+      function drawOrbitDance() {
+        if (!canvasModeActiveRef.current) return;
+        const W = mc!.width,
+          H = mc!.height;
+        const cx = W / 2,
+          cy = H / 2;
+        const baseR = Math.min(W, H) * 0.44;
+        const tSec = performance.now() * 0.001;
+        ctx!.fillStyle = 'rgba(0,0,0,0.05)';
+        ctx!.fillRect(0, 0, W, H);
+        const globalRot = tSec * 0.04 * speed;
+        DANCERS.forEach((d, di) => {
+          const aX = baseR * d.a,
+            aY = baseR * d.b;
+          const tilt = d.tilt + globalRot;
+          const cosT = Math.cos(tilt),
+            sinT = Math.sin(tilt);
+          ctx!.strokeStyle = `rgba(${pr},${pg},${pb},${0.12 * iF})`;
+          ctx!.lineWidth = 0.7;
+          ctx!.beginPath();
+          for (let n = 0; n <= 80; n++) {
+            const a = (n / 80) * Math.PI * 2;
+            const ex = aX * Math.cos(a),
+              ey = aY * Math.sin(a);
+            const rx = cx + ex * cosT - ey * sinT,
+              ry = cy + ex * sinT + ey * cosT;
+            n === 0 ? ctx!.moveTo(rx, ry) : ctx!.lineTo(rx, ry);
+          }
+          ctx!.closePath();
+          ctx!.stroke();
+          const objA = tSec * d.spd * speed * 0.5 + d.phase;
+          const ox = aX * Math.cos(objA),
+            oy = aY * Math.sin(objA);
+          const dX = cx + ox * cosT - oy * sinT,
+            dY = cy + ox * sinT + oy * cosT;
+          const depth = Math.sin(objA) * 0.5 + 0.5;
+          const scaledSz = 5 * (0.5 + 0.5 * depth);
+          const dalpha = (0.4 + 0.6 * depth) * iF;
+          for (let ti = 0; ti < 20; ti++) {
+            const ta = objA - (ti / 20) * Math.PI * 0.4;
+            const tex = aX * Math.cos(ta),
+              tey = aY * Math.sin(ta);
+            const tX = cx + tex * cosT - tey * sinT,
+              tY = cy + tex * sinT + tey * cosT;
+            ctx!.fillStyle = `rgba(${pr},${pg},${pb},${(1 - ti / 20) * 0.35 * iF})`;
+            ctx!.beginPath();
+            ctx!.arc(tX, tY, scaledSz * (1 - ti / 20) * 0.4, 0, Math.PI * 2);
+            ctx!.fill();
+          }
+          const dg = ctx!.createRadialGradient(dX, dY, 0, dX, dY, scaledSz * 5);
+          dg.addColorStop(0, `rgba(${pr},${pg},${pb},${dalpha * 0.9})`);
+          dg.addColorStop(0.4, `rgba(${pr},${pg},${pb},${dalpha * 0.3})`);
+          dg.addColorStop(1, 'rgba(0,0,0,0)');
+          ctx!.fillStyle = dg;
+          ctx!.beginPath();
+          ctx!.arc(dX, dY, scaledSz * 5, 0, Math.PI * 2);
+          ctx!.fill();
+          ctx!.fillStyle = `rgba(255,255,255,${dalpha})`;
+          ctx!.save();
+          ctx!.translate(dX, dY);
+          ctx!.rotate(tSec * 1.5 + di);
+          ctx!.beginPath();
+          ctx!.moveTo(0, -scaledSz * 0.55);
+          ctx!.lineTo(scaledSz * 0.4, 0);
+          ctx!.lineTo(0, scaledSz * 0.55);
+          ctx!.lineTo(-scaledSz * 0.4, 0);
+          ctx!.closePath();
+          ctx!.fill();
+          ctx!.restore();
+        });
+        canvasModeAnimRef.current = requestAnimationFrame(drawOrbitDance);
+      }
+      canvasModeAnimRef.current = requestAnimationFrame(drawOrbitDance);
+    }
+
+    /* ── RIPPLEMORPH: psychedelic ripple rings that metamorphose ── */
+    if (cfg.mode === 'ripplemorph') {
+      const NUM_RINGS2 = Math.max(6, Math.round(cfg.complexity * 0.9));
+      function drawRippleMorph() {
+        if (!canvasModeActiveRef.current) return;
+        const W = mc!.width,
+          H = mc!.height;
+        const cx = W / 2,
+          cy = H / 2;
+        const baseR = Math.min(W, H) * 0.5;
+        const tSec = performance.now() * 0.001;
+        ctx!.fillStyle = 'rgba(0,0,0,0.06)';
+        ctx!.fillRect(0, 0, W, H);
+        for (let ri = 0; ri < NUM_RINGS2; ri++) {
+          const frac = ((ri + tSec * speed * 0.25) % NUM_RINGS2) / NUM_RINGS2;
+          const r = baseR * (0.05 + frac * 0.95);
+          const ralpha = (1 - frac) * 0.7 * iF;
+          const morphPhase = (tSec * 0.15 * speed + ri * 0.11) % 3;
+          const sides2 = morphPhase < 1 ? 6 : morphPhase < 2 ? 12 : 0;
+          const starFactor = morphPhase < 1 ? morphPhase : morphPhase < 2 ? 2 - morphPhase : 0;
+          const hueShift = (ri / NUM_RINGS2 + tSec * 0.05 * speed) % 1;
+          const cr = (pr + (255 - pr) * Math.sin(hueShift * Math.PI)) | 0;
+          const cg = (pg + (255 - pg) * Math.sin((hueShift + 0.33) * Math.PI)) | 0;
+          const cb = (pb + (255 - pb) * Math.sin((hueShift + 0.66) * Math.PI)) | 0;
+          ctx!.strokeStyle = `rgba(${cr},${cg},${cb},${ralpha})`;
+          ctx!.lineWidth = 1.5 * (1 - frac * 0.5);
+          ctx!.beginPath();
+          for (let n = 0; n <= 120; n++) {
+            const a = (n / 120) * Math.PI * 2;
+            let rad = r;
+            if (sides2 > 0) {
+              const seg = (Math.PI * 2) / sides2;
+              const polyR2 =
+                Math.cos(Math.PI / sides2) / Math.cos((((a % seg) + seg) % seg) - Math.PI / sides2);
+              const starR = 1 + starFactor * 0.45 * Math.cos(sides2 * a + tSec * speed);
+              rad = r * (polyR2 * (1 - starFactor * 0.5) + starR * starFactor * 0.5);
+            }
+            const rpx = cx + rad * Math.cos(a),
+              rpy = cy + rad * Math.sin(a);
+            n === 0 ? ctx!.moveTo(rpx, rpy) : ctx!.lineTo(rpx, rpy);
+          }
+          ctx!.closePath();
+          ctx!.stroke();
+        }
+        canvasModeAnimRef.current = requestAnimationFrame(drawRippleMorph);
+      }
+      canvasModeAnimRef.current = requestAnimationFrame(drawRippleMorph);
+    }
+
+    /* ── KALEIDO3D: kaleidoscope storm — symmetrical morphing geometry ── */
+    if (cfg.mode === 'kaleido3d') {
+      const KSYM = Math.max(4, Math.round(cfg.symmetry));
+      const KSPOKES = KSYM * 2;
+      function drawKaleido3d() {
+        if (!canvasModeActiveRef.current) return;
+        const W = mc!.width,
+          H = mc!.height;
+        const cx = W / 2,
+          cy = H / 2;
+        const baseR = Math.min(W, H) * 0.47;
+        const tSec = performance.now() * 0.001;
+        ctx!.fillStyle = 'rgba(0,0,0,0.05)';
+        ctx!.fillRect(0, 0, W, H);
+        ctx!.save();
+        ctx!.translate(cx, cy);
+        for (let layer = 0; layer < 5; layer++) {
+          const layerPhase = (layer / 5) * Math.PI * 2 + tSec * 0.08 * speed;
+          const layerR = baseR * (0.25 + layer * 0.14);
+          const layerAlpha = (0.4 + 0.3 * Math.sin(tSec * 1.1 + layer)) * iF;
+          for (let sym = 0; sym < KSPOKES; sym++) {
+            ctx!.save();
+            ctx!.rotate((sym / KSPOKES) * Math.PI * 2 + layerPhase * 0.5);
+            if (sym % 2 === 1) ctx!.scale(-1, 1);
+            const morphT = (tSec * 0.12 * speed + layer * 0.3) % 1;
+            const petalW = layerR * (0.15 + 0.15 * Math.sin(tSec * 0.8 + layer));
+            const petalH = layerR * (0.55 + 0.2 * Math.sin(tSec * 0.6 + layer * 0.7));
+            const kcr = (pr + 128 * morphT) | 0;
+            const kcg = (pg + 128 * (1 - morphT)) | 0;
+            ctx!.strokeStyle = `rgba(${kcr},${kcg},${pb},${layerAlpha})`;
+            ctx!.lineWidth = 1.2;
+            ctx!.beginPath();
+            ctx!.moveTo(0, 0);
+            ctx!.bezierCurveTo(petalW * 1.5, petalH * 0.3, petalW * 0.8, petalH * 0.75, 0, petalH);
+            ctx!.bezierCurveTo(-petalW * 0.8, petalH * 0.75, -petalW * 1.5, petalH * 0.3, 0, 0);
+            ctx!.stroke();
+            const nodeY = petalH * 0.42;
+            const nodeR2 = petalW * 0.4;
+            const kng = ctx!.createRadialGradient(0, nodeY, 0, 0, nodeY, nodeR2 * 3);
+            kng.addColorStop(0, `rgba(${pr},${pg},${pb},${layerAlpha * 1.5})`);
+            kng.addColorStop(1, 'rgba(0,0,0,0)');
+            ctx!.fillStyle = kng;
+            ctx!.beginPath();
+            ctx!.arc(0, nodeY, nodeR2 * 3, 0, Math.PI * 2);
+            ctx!.fill();
+            ctx!.restore();
+          }
+        }
+        ctx!.restore();
+        canvasModeAnimRef.current = requestAnimationFrame(drawKaleido3d);
+      }
+      canvasModeAnimRef.current = requestAnimationFrame(drawKaleido3d);
+    }
+
+    /* ── MIRRORTUNNEL: neon-framed infinite mirror tunnel ── */
+    if (cfg.mode === 'mirrortunnel') {
+      const NUM_FRAMES = Math.max(12, Math.round(cfg.complexity * 1.2));
+      function drawMirrorTunnel() {
+        if (!canvasModeActiveRef.current) return;
+        const W = mc!.width,
+          H = mc!.height;
+        const cx = W / 2,
+          cy = H / 2;
+        const tSec = performance.now() * 0.001;
+        ctx!.fillStyle = 'rgba(0,0,0,0.12)';
+        ctx!.fillRect(0, 0, W, H);
+        const maxDim = Math.max(W, H) * 0.72;
+        const drift = tSec * speed * 0.18;
+        for (let fi = 0; fi < NUM_FRAMES; fi++) {
+          // Frames shrink toward the center — nearest frame is largest
+          const frac = ((fi + drift) % NUM_FRAMES) / NUM_FRAMES;
+          const scale = (1 - frac) ** 1.4; // perspective compression
+          if (scale < 0.01) continue;
+          const w2 = maxDim * scale;
+          const h2 = w2 * (H / W);
+          const rot = frac * Math.PI * 0.18 * (cfg.symmetry / 5);
+          const alpha = scale * iF * 0.9;
+          // Color cycles along hue
+          const hueT = (fi / NUM_FRAMES + tSec * 0.04 * speed) % 1;
+          const cr = (pr + (255 - pr) * Math.abs(Math.sin(hueT * Math.PI))) | 0;
+          const cg = (pg + (200 - pg) * Math.abs(Math.sin((hueT + 0.33) * Math.PI))) | 0;
+          const cb = (pb + (255 - pb) * Math.abs(Math.sin((hueT + 0.67) * Math.PI))) | 0;
+          const glow = ctx!.createLinearGradient(cx - w2, cy - h2, cx + w2, cy + h2);
+          glow.addColorStop(0, `rgba(${cr},${cg},${cb},${alpha * 0.7})`);
+          glow.addColorStop(0.5, `rgba(${cr},${cg},${cb},${alpha})`);
+          glow.addColorStop(1, `rgba(${cr},${cg},${cb},${alpha * 0.7})`);
+          ctx!.save();
+          ctx!.translate(cx, cy);
+          ctx!.rotate(rot);
+          ctx!.strokeStyle = glow;
+          ctx!.lineWidth = (1.5 + scale * 2) * (cfg.glow / 8);
+          ctx!.shadowColor = `rgba(${cr},${cg},${cb},${alpha * 0.8})`;
+          ctx!.shadowBlur = scale * 18 * (cfg.glow / 8);
+          ctx!.strokeRect(-w2, -h2, w2 * 2, h2 * 2);
+          ctx!.shadowBlur = 0;
+          // Corner sparks
+          if (scale > 0.15) {
+            const corners = [
+              [-w2, -h2],
+              [w2, -h2],
+              [w2, h2],
+              [-w2, h2],
+            ];
+            for (const [cx2, cy2] of corners) {
+              const sg = ctx!.createRadialGradient(cx2, cy2, 0, cx2, cy2, scale * 14);
+              sg.addColorStop(0, `rgba(255,255,255,${alpha * 0.9})`);
+              sg.addColorStop(1, 'rgba(0,0,0,0)');
+              ctx!.fillStyle = sg;
+              ctx!.beginPath();
+              ctx!.arc(cx2, cy2, scale * 14, 0, Math.PI * 2);
+              ctx!.fill();
+            }
+          }
+          ctx!.restore();
+        }
+        canvasModeAnimRef.current = requestAnimationFrame(drawMirrorTunnel);
+      }
+      canvasModeAnimRef.current = requestAnimationFrame(drawMirrorTunnel);
+    }
+
+    /* ── INFINITEDIVE: perspective rings of nested polygons diving inward ── */
+    if (cfg.mode === 'infinitedive') {
+      const SIDES = Math.max(3, Math.round(cfg.symmetry));
+      const NUM_POLYS = Math.max(10, Math.round(cfg.complexity * 1.3));
+      function drawInfiniteDive() {
+        if (!canvasModeActiveRef.current) return;
+        const W = mc!.width,
+          H = mc!.height;
+        const cx = W / 2,
+          cy = H / 2;
+        const tSec = performance.now() * 0.001;
+        ctx!.fillStyle = 'rgba(0,0,0,0.1)';
+        ctx!.fillRect(0, 0, W, H);
+        const maxR = Math.min(W, H) * 0.5;
+        const drift = tSec * speed * 0.22;
+        for (let pi = 0; pi < NUM_POLYS; pi++) {
+          const frac = ((pi + drift) % NUM_POLYS) / NUM_POLYS;
+          const r = maxR * (1 - frac) ** 1.6;
+          if (r < 2) continue;
+          const rot = frac * Math.PI * 2 * (1 / SIDES) + tSec * 0.08 * speed;
+          const alpha = (1 - frac) * iF * 0.85;
+          const hueT = (pi / NUM_POLYS + tSec * 0.03 * speed) % 1;
+          const cr = (pr + (220 - pr) * Math.sin(hueT * Math.PI)) | 0;
+          const cg = (pg + (180 - pg) * Math.sin((hueT + 0.4) * Math.PI)) | 0;
+          const cb = (pb + (255 - pb) * Math.sin((hueT + 0.7) * Math.PI)) | 0;
+          ctx!.strokeStyle = `rgba(${cr},${cg},${cb},${alpha})`;
+          ctx!.lineWidth = (0.8 + (1 - frac) * 2.5) * (cfg.glow / 7);
+          ctx!.beginPath();
+          for (let s = 0; s <= SIDES; s++) {
+            const a = (s / SIDES) * Math.PI * 2 + rot;
+            const px = cx + r * Math.cos(a),
+              py = cy + r * Math.sin(a);
+            s === 0 ? ctx!.moveTo(px, py) : ctx!.lineTo(px, py);
+          }
+          ctx!.closePath();
+          ctx!.stroke();
+        }
+        canvasModeAnimRef.current = requestAnimationFrame(drawInfiniteDive);
+      }
+      canvasModeAnimRef.current = requestAnimationFrame(drawInfiniteDive);
+    }
+
+    /* ── HEARTWAVE: parametric heart curve, pulsing and breathing ── */
+    if (cfg.mode === 'heartwave') {
+      const N_HEARTS = Math.max(1, Math.round(cfg.complexity / 3));
+      function drawHeartWave() {
+        if (!canvasModeActiveRef.current) return;
+        const W = mc!.width,
+          H = mc!.height;
+        const cx = W / 2,
+          cy = H / 2;
+        const baseR = Math.min(W, H) * 0.32;
+        const tSec = performance.now() * 0.001;
+        ctx!.fillStyle = 'rgba(0,0,0,0.05)';
+        ctx!.fillRect(0, 0, W, H);
+        const pulse = 0.88 + 0.12 * Math.sin(tSec * speed * 2.2);
+        for (let hi = 0; hi < N_HEARTS; hi++) {
+          const orbitA = hi === 0 ? 0 : (hi / N_HEARTS) * Math.PI * 2 + tSec * speed * 0.2;
+          const orbitR = hi === 0 ? 0 : baseR * 0.55;
+          const hcx = cx + orbitR * Math.cos(orbitA);
+          const hcy = cy + orbitR * Math.sin(orbitA);
+          const scale = (hi === 0 ? baseR : baseR * 0.45) * pulse;
+          const phase = (hi / Math.max(1, N_HEARTS)) * Math.PI * 2;
+          ctx!.beginPath();
+          const NP = 200;
+          for (let n = 0; n <= NP; n++) {
+            const t2 = (n / NP) * Math.PI * 2;
+            // Parametric heart: x=16sin³t, y=13cost-5cos2t-2cos3t-cos4t
+            const hx = 16 * Math.sin(t2) ** 3;
+            const hy = -(
+              13 * Math.cos(t2) -
+              5 * Math.cos(2 * t2) -
+              2 * Math.cos(3 * t2) -
+              Math.cos(4 * t2)
+            );
+            const norm = scale / 17;
+            const rotAngle = phase + tSec * speed * 0.08;
+            const rx = hx * Math.cos(rotAngle) - hy * Math.sin(rotAngle);
+            const ry = hx * Math.sin(rotAngle) + hy * Math.cos(rotAngle);
+            n === 0
+              ? ctx!.moveTo(hcx + rx * norm, hcy + ry * norm)
+              : ctx!.lineTo(hcx + rx * norm, hcy + ry * norm);
+          }
+          const hue = (hi / Math.max(1, N_HEARTS) + tSec * 0.015 * speed) % 1;
+          const cr = (pr + (255 - pr) * (0.5 + 0.5 * Math.sin(hue * Math.PI * 2))) | 0;
+          const cg = (pg * (0.3 + 0.2 * Math.sin(hue * Math.PI * 2 + 1))) | 0;
+          const cb2 = (pb + (160 - pb) * (0.3 + 0.3 * Math.sin(hue * Math.PI * 2 + 2))) | 0;
+          ctx!.strokeStyle = `rgba(${cr},${cg},${cb2},${0.8 * iF})`;
+          ctx!.lineWidth = 2.2;
+          ctx!.stroke();
+          // Fill with soft glow
+          const heartGrad = ctx!.createRadialGradient(
+            hcx,
+            hcy - scale * 0.2,
+            0,
+            hcx,
+            hcy,
+            scale * 0.9,
+          );
+          heartGrad.addColorStop(0, `rgba(${cr},${cg},${cb2},${0.12 * iF})`);
+          heartGrad.addColorStop(1, 'rgba(0,0,0,0)');
+          ctx!.fillStyle = heartGrad;
+          ctx!.fill();
+        }
+        canvasModeAnimRef.current = requestAnimationFrame(drawHeartWave);
+      }
+      canvasModeAnimRef.current = requestAnimationFrame(drawHeartWave);
+    }
+
+    /* ── HEARTDANCE: multiple hearts orbiting in formation ── */
+    if (cfg.mode === 'heartdance') {
+      const N_HDANCERS = Math.max(2, Math.round(cfg.symmetry));
+      function drawHeartDance() {
+        if (!canvasModeActiveRef.current) return;
+        const W = mc!.width,
+          H = mc!.height;
+        const cx = W / 2,
+          cy = H / 2;
+        const baseR = Math.min(W, H) * 0.38;
+        const tSec = performance.now() * 0.001;
+        ctx!.fillStyle = 'rgba(0,0,0,0.04)';
+        ctx!.fillRect(0, 0, W, H);
+        // Central big heart (slowly breathing)
+        const centerPulse = 0.82 + 0.18 * Math.sin(tSec * speed * 1.8);
+        const centerScale = baseR * 0.42 * centerPulse;
+        // Orbiting small hearts
+        for (let hi = 0; hi < N_HDANCERS; hi++) {
+          const isCenter = hi === 0 && N_HDANCERS === 1;
+          const orbitA = (hi / N_HDANCERS) * Math.PI * 2 + tSec * speed * 0.25;
+          const orbitR = baseR * 0.58;
+          const hcx = isCenter ? cx : cx + orbitR * Math.cos(orbitA);
+          const hcy = isCenter ? cy : cy + orbitR * Math.sin(orbitA);
+          const localPulse = 0.88 + 0.12 * Math.sin(tSec * speed * 2.4 + hi * 1.3);
+          const scale = (isCenter ? centerScale : baseR * 0.28) * localPulse;
+          const rotAngle = orbitA + Math.PI / 2;
+          ctx!.beginPath();
+          const NP2 = 180;
+          for (let n = 0; n <= NP2; n++) {
+            const t2 = (n / NP2) * Math.PI * 2;
+            const hx = 16 * Math.sin(t2) ** 3;
+            const hy = -(
+              13 * Math.cos(t2) -
+              5 * Math.cos(2 * t2) -
+              2 * Math.cos(3 * t2) -
+              Math.cos(4 * t2)
+            );
+            const norm = scale / 17;
+            const rx = hx * Math.cos(rotAngle) - hy * Math.sin(rotAngle);
+            const ry = hx * Math.sin(rotAngle) + hy * Math.cos(rotAngle);
+            n === 0
+              ? ctx!.moveTo(hcx + rx * norm, hcy + ry * norm)
+              : ctx!.lineTo(hcx + rx * norm, hcy + ry * norm);
+          }
+          const hue = (hi / N_HDANCERS + tSec * 0.02 * speed) % 1;
+          const cr = (210 + 45 * Math.sin(hue * Math.PI * 2)) | 0;
+          const cg = (pg * 0.35) | 0;
+          const cb2 = (pb + 80 * Math.sin(hue * Math.PI)) | 0;
+          ctx!.strokeStyle = `rgba(${cr},${cg},${cb2},${0.85 * iF})`;
+          ctx!.lineWidth = isCenter ? 2.5 : 1.8;
+          ctx!.stroke();
+          const hg = ctx!.createRadialGradient(hcx, hcy, 0, hcx, hcy, scale * 0.8);
+          hg.addColorStop(0, `rgba(${cr},${cg},${cb2},${0.15 * iF})`);
+          hg.addColorStop(1, 'rgba(0,0,0,0)');
+          ctx!.fillStyle = hg;
+          ctx!.fill();
+          // Connecting thread to center
+          if (!isCenter && N_HDANCERS > 1) {
+            ctx!.strokeStyle = `rgba(${cr},${cg},${cb2},${0.15 * iF})`;
+            ctx!.lineWidth = 0.6;
+            ctx!.setLineDash([3, 5]);
+            ctx!.beginPath();
+            ctx!.moveTo(cx, cy);
+            ctx!.lineTo(hcx, hcy);
+            ctx!.stroke();
+            ctx!.setLineDash([]);
+          }
+        }
+        canvasModeAnimRef.current = requestAnimationFrame(drawHeartDance);
+      }
+      canvasModeAnimRef.current = requestAnimationFrame(drawHeartDance);
+    }
+
+    /* ── EYEMORPH: surreal blinking eyes, dilating pupils ── */
+    if (cfg.mode === 'eyemorph') {
+      const N_EYES = Math.max(1, Math.round(cfg.complexity / 2.5));
+      function drawEyeMorph() {
+        if (!canvasModeActiveRef.current) return;
+        const W = mc!.width,
+          H = mc!.height;
+        const cx = W / 2,
+          cy = H / 2;
+        const baseR = Math.min(W, H) * 0.38;
+        const tSec = performance.now() * 0.001;
+        ctx!.fillStyle = 'rgba(0,0,0,0.06)';
+        ctx!.fillRect(0, 0, W, H);
+        for (let ei = 0; ei < N_EYES; ei++) {
+          const orbitA =
+            ei === 0 ? Math.PI * 1.5 : (ei / N_EYES) * Math.PI * 2 + tSec * speed * 0.12;
+          const orbitR = ei === 0 ? 0 : baseR * 0.6;
+          const ecx = cx + orbitR * Math.cos(orbitA);
+          const ecy = cy + orbitR * Math.sin(orbitA);
+          const eyeW =
+            (ei === 0 ? baseR * 0.52 : baseR * 0.28) * (0.9 + 0.1 * Math.sin(tSec * 0.4 + ei));
+          const eyeH = eyeW * 0.45;
+          // Blink cycle: eyes slowly close and open
+          const blinkT = (tSec * speed * 0.35 + ei * 0.7) % 1;
+          const openFrac =
+            blinkT < 0.85
+              ? 1
+              : Math.max(0, 1 - (blinkT - 0.85) / 0.08) + Math.max(0, (blinkT - 0.93) / 0.07);
+          const eyeOpenH = eyeH * openFrac;
+          if (eyeOpenH < 0.5) {
+            // Draw closed slit
+            ctx!.strokeStyle = `rgba(${pr},${pg},${pb},${0.6 * iF})`;
+            ctx!.lineWidth = 1.5;
+            ctx!.beginPath();
+            ctx!.moveTo(ecx - eyeW, ecy);
+            ctx!.lineTo(ecx + eyeW, ecy);
+            ctx!.stroke();
+            continue;
+          }
+          // Pupil dilation
+          const pupilSize = eyeW * 0.28 * (0.55 + 0.45 * Math.sin(tSec * speed * 0.7 + ei * 2.1));
+          // Iris
+          const irisG = ctx!.createRadialGradient(ecx, ecy, 0, ecx, ecy, eyeW * 0.55);
+          irisG.addColorStop(0, `rgba(${pr},${pg},${pb},${0.25 * iF})`);
+          irisG.addColorStop(0.5, `rgba(${pr},${pg},${pb},${0.45 * iF})`);
+          irisG.addColorStop(1, `rgba(${pr},${pg},${pb},${0.15 * iF})`);
+          ctx!.save();
+          ctx!.beginPath();
+          ctx!.ellipse(ecx, ecy, eyeW, eyeOpenH, 0, 0, Math.PI * 2);
+          ctx!.clip();
+          ctx!.fillStyle = irisG;
+          ctx!.fillRect(ecx - eyeW, ecy - eyeOpenH, eyeW * 2, eyeOpenH * 2);
+          // Iris rings
+          for (let ring = 1; ring <= 4; ring++) {
+            const rr2 = eyeW * 0.55 * (ring / 4);
+            ctx!.strokeStyle = `rgba(${pr},${pg},${pb},${0.25 * iF})`;
+            ctx!.lineWidth = 0.5;
+            ctx!.beginPath();
+            ctx!.arc(ecx, ecy, rr2, 0, Math.PI * 2);
+            ctx!.stroke();
+          }
+          // Pupil
+          const pupilG = ctx!.createRadialGradient(ecx, ecy, 0, ecx, ecy, pupilSize);
+          pupilG.addColorStop(0, `rgba(0,0,0,0.95)`);
+          pupilG.addColorStop(0.75, `rgba(0,0,0,0.85)`);
+          pupilG.addColorStop(1, `rgba(0,0,0,0)`);
+          ctx!.fillStyle = pupilG;
+          ctx!.beginPath();
+          ctx!.arc(ecx, ecy, pupilSize, 0, Math.PI * 2);
+          ctx!.fill();
+          // Highlight sparkle
+          ctx!.fillStyle = `rgba(255,255,255,${0.7 * iF})`;
+          ctx!.beginPath();
+          ctx!.arc(ecx + pupilSize * 0.35, ecy - pupilSize * 0.35, pupilSize * 0.2, 0, Math.PI * 2);
+          ctx!.fill();
+          ctx!.restore();
+          // Eye outline (lid shape)
+          ctx!.strokeStyle = `rgba(${pr},${pg},${pb},${0.8 * iF})`;
+          ctx!.lineWidth = 1.8;
+          ctx!.beginPath();
+          ctx!.moveTo(ecx - eyeW, ecy);
+          ctx!.bezierCurveTo(
+            ecx - eyeW * 0.6,
+            ecy - eyeOpenH * 1.2,
+            ecx + eyeW * 0.6,
+            ecy - eyeOpenH * 1.2,
+            ecx + eyeW,
+            ecy,
+          );
+          ctx!.bezierCurveTo(
+            ecx + eyeW * 0.6,
+            ecy + eyeOpenH * 1.2,
+            ecx - eyeW * 0.6,
+            ecy + eyeOpenH * 1.2,
+            ecx - eyeW,
+            ecy,
+          );
+          ctx!.stroke();
+          // Lashes (subtle)
+          const N_LASHES = 8;
+          for (let l = 0; l < N_LASHES; l++) {
+            const la = -Math.PI + (l / N_LASHES) * Math.PI;
+            const lx1 = ecx + eyeW * Math.cos(la);
+            const ly1 = ecy - eyeOpenH * Math.abs(Math.sin(la)) * 1.1;
+            const lx2 = lx1 + Math.cos(la + Math.PI * 0.15) * eyeW * 0.12;
+            const ly2 = ly1 - eyeOpenH * 0.25;
+            ctx!.strokeStyle = `rgba(${pr},${pg},${pb},${0.45 * iF})`;
+            ctx!.lineWidth = 1;
+            ctx!.beginPath();
+            ctx!.moveTo(lx1, ly1);
+            ctx!.lineTo(lx2, ly2);
+            ctx!.stroke();
+          }
+        }
+        canvasModeAnimRef.current = requestAnimationFrame(drawEyeMorph);
+      }
+      canvasModeAnimRef.current = requestAnimationFrame(drawEyeMorph);
+    }
+
     const ro = new ResizeObserver(resize);
     ro.observe(mc);
     return () => {
@@ -11935,7 +13913,15 @@ export default function GeometryField() {
       const c = mc.getContext('2d');
       if (c) c.clearRect(0, 0, mc.width, mc.height);
     };
-  }, [cfg.mode, cfg.preset, cfg.breathSpeed, cfg.intensity, cfg.complexity, cfg.symmetry]);
+  }, [
+    cfg.mode,
+    cfg.preset,
+    cfg.breathSpeed,
+    cfg.intensity,
+    cfg.complexity,
+    cfg.symmetry,
+    cfg.glow,
+  ]);
 
   function startJourney(id: number) {
     setJourneyId(id);
@@ -12197,7 +14183,21 @@ export default function GeometryField() {
           cfg.mode === 'hopefear' ||
           cfg.mode === 'wordecho' ||
           cfg.mode === 'wordparticle' ||
-          cfg.mode === 'wordweave') && (
+          cfg.mode === 'wordweave' ||
+          cfg.mode === 'metamorph' ||
+          cfg.mode === 'chrysalis' ||
+          cfg.mode === 'breathform' ||
+          cfg.mode === 'clock3d' ||
+          cfg.mode === 'atomlight' ||
+          cfg.mode === 'butterfly' ||
+          cfg.mode === 'orbitdance' ||
+          cfg.mode === 'ripplemorph' ||
+          cfg.mode === 'kaleido3d' ||
+          cfg.mode === 'mirrortunnel' ||
+          cfg.mode === 'heartwave' ||
+          cfg.mode === 'eyemorph' ||
+          cfg.mode === 'heartdance' ||
+          cfg.mode === 'infinitedive') && (
           <canvas
             ref={matrixCanvasRef}
             style={{
@@ -12205,7 +14205,7 @@ export default function GeometryField() {
               inset: 0,
               width: '100%',
               height: '100%',
-              mixBlendMode: 'screen',
+              mixBlendMode: cfg.mode === 'matrix' || cfg.mode === 'matrix3d' ? 'screen' : 'normal',
               opacity: cfg.mode === 'matrix' || cfg.mode === 'matrix3d' ? 0.85 : 1,
               pointerEvents: 'none',
             }}

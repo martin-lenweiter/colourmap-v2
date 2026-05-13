@@ -107,9 +107,9 @@ export default function EmotionMultiSelect() {
   const [draggingId, setDraggingId] = useState<string | null>(null);
   const [dropIndex, setDropIndex] = useState<number | null>(null);
   const [pillTitle, setPillTitle] = useState('Emotion Rainbow');
-  const [renamingPill, setRenamingPill] = useState(false);
+  const [_renamingPill, setRenamingPill] = useState(false);
   const addInputRef = useRef<HTMLInputElement>(null);
-  const pillInputRef = useRef<HTMLInputElement>(null);
+  const _pillInputRef = useRef<HTMLInputElement>(null);
   const rowRefs = useRef<Map<string, HTMLDivElement>>(new Map());
   const emotionsRef = useRef(emotions);
   emotionsRef.current = emotions;
@@ -126,7 +126,7 @@ export default function EmotionMultiSelect() {
     } catch {}
   }, []);
 
-  function savePillTitle(v: string) {
+  function _savePillTitle(v: string) {
     const val = v.trim() || 'Rainbow';
     setPillTitle(val);
     setRenamingPill(false);

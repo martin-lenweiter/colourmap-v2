@@ -36,7 +36,7 @@ const EMPTY: IWData = {
   content: [],
 };
 
-const settled = (l: ThoughtLoop) => l.payoff.trim() && l.reframe.trim();
+const _settled = (l: ThoughtLoop) => l.payoff.trim() && l.reframe.trim();
 
 function uid() {
   return crypto.randomUUID();
@@ -1455,7 +1455,7 @@ export default function InnerWork() {
     );
   }
 
-  const totalItems =
+  const _totalItems =
     data.affirmations.length +
     data.loops.length +
     data.crew.length +

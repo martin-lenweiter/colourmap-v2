@@ -255,7 +255,7 @@ function arcPath(startDeg: number, endDeg: number): string {
   return `M ${x1} ${y1} A ${R_RING} ${R_RING} 0 ${endDeg - startDeg > 180 ? 1 : 0} 1 ${x2} ${y2}`;
 }
 
-function V5({ indices, harmony, onSetIndex }: VP) {
+function _V5({ indices, harmony, onSetIndex }: VP) {
   return (
     <svg width={S} height={S} style={{ display: 'block', overflow: 'visible' }}>
       <defs>
@@ -349,7 +349,7 @@ function V5({ indices, harmony, onSetIndex }: VP) {
 ══════════════════════════════════════════════════════ */
 const NSEW_STARTS = [-88, 2, 92, 182]; // 4° gap centred on each cardinal point
 
-function V3({ indices, harmony, onSetIndex }: VP) {
+function _V3({ indices, harmony, onSetIndex }: VP) {
   return (
     <svg width={S} height={S} style={{ display: 'block', overflow: 'visible' }}>
       <defs>
@@ -608,7 +608,7 @@ function VSmooth({ indices, harmony, onSetIndex }: VP) {
    Continuous within each quadrant (no internal gaps)
    Sharp 6° NSEW gaps, active level highlighted + tick
 ══════════════════════════════════════════════════════ */
-function V6({ indices, harmony, onSetIndex }: VP) {
+function _V6({ indices, harmony, onSetIndex }: VP) {
   return (
     <svg width={S} height={S} style={{ display: 'block', overflow: 'visible' }}>
       <defs>
@@ -696,7 +696,7 @@ function V6({ indices, harmony, onSetIndex }: VP) {
 const ORBIT_RADII = [54, 72, 90, 108];
 const ORBIT_SW = 12;
 
-function V7({ indices, harmony, onSetIndex }: VP) {
+function _V7({ indices, harmony, onSetIndex }: VP) {
   return (
     <svg width={S} height={S} style={{ display: 'block', overflow: 'visible' }}>
       <defs>
@@ -1001,7 +1001,7 @@ function V9({ indices, harmony, onSetIndex }: VP) {
    Like V6 (Clarity) but with a radial bloom behind each active segment
    Gives a soft petal / corona effect
 ══════════════════════════════════════════════════════ */
-function V10({ indices, harmony, onSetIndex }: VP) {
+function _V10({ indices, harmony, onSetIndex }: VP) {
   return (
     <svg width={S} height={S} style={{ display: 'block', overflow: 'visible' }}>
       <defs>

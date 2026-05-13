@@ -818,7 +818,7 @@ function SongView({
 
 /* ─── Song editor ────────────────────────────────────────── */
 
-function SongEditor({
+function _SongEditor({
   song,
   onSave,
   onBack,

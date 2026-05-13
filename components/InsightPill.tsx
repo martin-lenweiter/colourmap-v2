@@ -3,8 +3,9 @@
 import { useState } from 'react';
 
 const SERIF = 'var(--font-serif)';
-const brn = (a: number) => `rgba(60,30,8,${a})`;
-const brn2 = (a: number) => `rgba(92,48,24,${a})`;
+const PT = 'var(--palette-panel-text, rgba(196,160,96,0.88))';
+const PM = 'var(--palette-panel-muted, rgba(196,160,96,0.55))';
+const PB = 'var(--panel-border, rgba(196,160,96,0.18))';
 
 export type Insight = {
   hook: string;
@@ -35,8 +36,8 @@ export default function InsightPill({ insights, storageKey: _storageKey }: Props
     <div
       style={{
         borderRadius: open ? 12 : 999,
-        border: `1px solid ${brn2(open ? 0.22 : 0.18)}`,
-        background: open ? brn(0.04) : 'transparent',
+        border: `1px solid ${PB}`,
+        background: 'transparent',
         overflow: 'hidden',
         transition: 'border-radius 0.22s, background 0.22s',
         cursor: open ? 'default' : 'pointer',
@@ -59,21 +60,19 @@ export default function InsightPill({ insights, storageKey: _storageKey }: Props
             display: 'inline-block',
             width: 7,
             height: 7,
-            background: brn2(open ? 0.55 : 0.4),
+            background: PM,
             transform: 'rotate(45deg)',
             flexShrink: 0,
-            transition: 'background 0.2s',
           }}
         />
         <span
           style={{
             fontFamily: SERIF,
             fontSize: 13,
-            color: brn(open ? 0.82 : 0.68),
+            color: PT,
             flex: 1,
             lineHeight: 1.4,
             fontStyle: 'italic',
-            transition: 'color 0.2s',
           }}
         >
           {insight.hook}
@@ -83,7 +82,7 @@ export default function InsightPill({ insights, storageKey: _storageKey }: Props
             style={{
               fontFamily: SERIF,
               fontSize: 10,
-              color: brn2(0.35),
+              color: PM,
               letterSpacing: '0.1em',
               flexShrink: 0,
             }}
@@ -102,7 +101,7 @@ export default function InsightPill({ insights, storageKey: _storageKey }: Props
             style={{
               background: 'none',
               border: 'none',
-              color: brn2(0.35),
+              color: PM,
               fontSize: 16,
               cursor: 'pointer',
               padding: 0,
@@ -117,18 +116,17 @@ export default function InsightPill({ insights, storageKey: _storageKey }: Props
 
       {/* ── Expanded body ── */}
       {open && (
-        <div style={{ padding: '0 12px 12px', display: 'flex', flexDirection: 'column', gap: 10 }}>
-          <p
-            style={{
-              fontFamily: SERIF,
-              fontSize: 14,
-              color: brn(0.78),
-              lineHeight: 1.8,
-              margin: 0,
-            }}
-          >
-            {insight.body}
-          </p>
+        <div style={{ padding: '0 12px 14px', display: 'flex', flexDirection: 'column', gap: 14 }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+            {insight.body.split('\n\n').map((para, i) => (
+              <p
+                key={i}
+                style={{ fontFamily: SERIF, fontSize: 14, color: PT, lineHeight: 1.8, margin: 0 }}
+              >
+                {para}
+              </p>
+            ))}
+          </div>
 
           {insight.deeper && !showDeeper && (
             <button
@@ -137,12 +135,12 @@ export default function InsightPill({ insights, storageKey: _storageKey }: Props
               style={{
                 alignSelf: 'center',
                 background: 'none',
-                border: `1px solid ${brn2(0.25)}`,
+                border: `1px solid ${PB}`,
                 borderRadius: 999,
                 padding: '4px 18px',
                 fontFamily: SERIF,
                 fontSize: 11,
-                color: brn2(0.55),
+                color: PM,
                 cursor: 'pointer',
                 letterSpacing: '0.06em',
               }}
@@ -152,19 +150,24 @@ export default function InsightPill({ insights, storageKey: _storageKey }: Props
           )}
 
           {showDeeper && insight.deeper && (
-            <p
+            <div
               style={{
-                fontFamily: SERIF,
-                fontSize: 13,
-                color: brn(0.65),
-                lineHeight: 1.8,
-                margin: 0,
-                borderTop: `1px solid ${brn2(0.12)}`,
-                paddingTop: 10,
+                display: 'flex',
+                flexDirection: 'column',
+                gap: 10,
+                borderTop: `1px solid ${PB}`,
+                paddingTop: 12,
               }}
             >
-              {insight.deeper}
-            </p>
+              {insight.deeper.split('\n\n').map((para, i) => (
+                <p
+                  key={i}
+                  style={{ fontFamily: SERIF, fontSize: 13, color: PT, lineHeight: 1.8, margin: 0 }}
+                >
+                  {para}
+                </p>
+              ))}
+            </div>
           )}
         </div>
       )}

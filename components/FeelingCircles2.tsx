@@ -577,7 +577,7 @@ function VizBar({ idx, levels, onPointerDown, onPointerMove, onPointerUp }: VizP
 }
 
 /* V7 — Pulse (concentric rings fill outward) */
-function VizPulse({ idx, levels, onPointerDown, onPointerMove, onPointerUp }: VizProps) {
+function _VizPulse({ idx, levels, onPointerDown, onPointerMove, onPointerUp }: VizProps) {
   const n = levels.length;
   const c = levels[idx]?.color ?? '#C4A060';
   const CX = 70,
@@ -744,7 +744,7 @@ function VizPetals({ idx, levels, onPointerDown, onPointerMove, onPointerUp }: V
 }
 
 /* V10 — Diamond Empty (outline only, thick stroke, name in centre) */
-function VizDiamondEmpty({
+function _VizDiamondEmpty({
   idx,
   levels,
   moodWord,
@@ -879,7 +879,7 @@ function VizDiamondFull({
 }
 
 /* V9 — Diamond / lozenge (perfect square rotated 45°, fill from bottom) */
-function VizDiamond({
+function _VizDiamond({
   idx,
   levels,
   moodWord,
@@ -993,7 +993,7 @@ const CIRCLE_VIZS = [
   VizBar,
   VizPetals,
 ] as const;
-const CIRCLE_VIZ_LABELS = [
+const _CIRCLE_VIZ_LABELS = [
   'Diamond',
   'Ball',
   'Ring',
@@ -1152,7 +1152,7 @@ function WeekRow({ log, levels }: { log: TrackEntry[]; levels: { color: string }
           fontWeight: 700,
           letterSpacing: '0.18em',
           textTransform: 'uppercase',
-          color: '#5C3018',
+          color: 'var(--palette-panel-text, rgba(196,160,96,0.88))',
           opacity: 0.65,
           textAlign: 'center',
         }}
@@ -1182,7 +1182,7 @@ function WeekRow({ log, levels }: { log: TrackEntry[]; levels: { color: string }
               style={{
                 fontFamily: 'var(--font-serif)',
                 fontSize: 9,
-                color: '#5C3018',
+                color: 'var(--palette-panel-text, rgba(196,160,96,0.88))',
                 opacity: isToday ? 0.9 : 0.55,
               }}
             >
@@ -1227,7 +1227,7 @@ function HistoryList({
             fontWeight: 700,
             letterSpacing: '0.18em',
             textTransform: 'uppercase',
-            color: '#5C3018',
+            color: 'var(--palette-panel-text, rgba(196,160,96,0.88))',
             opacity: 0.65,
           }}
         >
@@ -1509,7 +1509,7 @@ function CircleTracker({
             fontWeight: 800,
             textTransform: 'uppercase',
             letterSpacing: '0.14em',
-            color: '#5C3018',
+            color: 'var(--palette-panel-text, rgba(196,160,96,0.88))',
           }}
         >
           {circle.title}
@@ -1785,7 +1785,7 @@ function FocusTracker({ circleVariant }: { circleVariant: number }) {
             fontWeight: 800,
             textTransform: 'uppercase',
             letterSpacing: '0.14em',
-            color: '#5C3018',
+            color: 'var(--palette-panel-text, rgba(196,160,96,0.88))',
           }}
         >
           Focus
@@ -1965,7 +1965,7 @@ function FocusTracker({ circleVariant }: { circleVariant: number }) {
                         fontFamily: 'var(--font-serif)',
                         fontStyle: 'italic',
                         fontSize: 12,
-                        color: '#5C3018',
+                        color: 'var(--palette-panel-text, rgba(196,160,96,0.88))',
                         opacity: 0.52,
                         lineHeight: 1.3,
                       }}
@@ -2123,7 +2123,7 @@ function BehaviourTracker() {
             fontWeight: 800,
             textTransform: 'uppercase',
             letterSpacing: '0.14em',
-            color: '#5C3018',
+            color: 'var(--palette-panel-text, rgba(196,160,96,0.88))',
           }}
         >
           Behaviours
@@ -2263,7 +2263,7 @@ function BehaviourTracker() {
                       background: 'none',
                       border: 'none',
                       cursor: 'pointer',
-                      color: 'rgba(196,160,96,0.2)',
+                      color: 'var(--palette-panel-muted, rgba(196,160,96,0.2))',
                       fontSize: 13,
                       lineHeight: 1,
                       padding: '0 2px',
@@ -2302,7 +2302,7 @@ function BehaviourTracker() {
                   padding: '7px 10px',
                   fontFamily: 'var(--font-serif)',
                   fontSize: 12,
-                  color: '#5C3018',
+                  color: 'var(--palette-panel-text, rgba(196,160,96,0.88))',
                   outline: 'none',
                 }}
               />
@@ -2339,7 +2339,7 @@ function BehaviourTracker() {
                 padding: '2px 0 4px',
                 fontFamily: 'var(--font-serif)',
                 fontSize: 11,
-                color: 'rgba(196,160,96,0.35)',
+                color: 'var(--palette-panel-muted, rgba(196,160,96,0.55))',
                 letterSpacing: '0.06em',
                 alignSelf: 'flex-start',
               }}

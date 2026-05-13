@@ -6,8 +6,9 @@ import type { Insight } from './InsightPill';
 import LearningProgram from './LearningProgram';
 
 const SERIF = 'var(--font-serif)';
-const brn = (a: number) => `rgba(60,30,8,${a})`;
-const brn2 = (a: number) => `rgba(92,48,24,${a})`;
+const PT = 'var(--palette-panel-text, rgba(196,160,96,0.88))';
+const PM = 'var(--palette-panel-muted, rgba(196,160,96,0.55))';
+const PB = 'var(--panel-border, rgba(196,160,96,0.18))';
 
 function todayIndex(len: number) {
   return Math.floor(Date.now() / 86400000) % len;
@@ -19,9 +20,10 @@ type Props = {
   coachHeadline?: string;
   coachBody?: string;
   programKey?: string;
+  onOpenHub?: () => void;
 };
 
-export default function EmotionLearnPill({ insights, programKey }: Props) {
+export default function EmotionLearnPill({ insights, programKey, onOpenHub }: Props) {
   const [open, setOpen] = useState(false);
   const [showDeeper, setShowDeeper] = useState(false);
   const [programOpen, setProgramOpen] = useState(false);
@@ -72,7 +74,7 @@ export default function EmotionLearnPill({ insights, programKey }: Props) {
                   fontFamily: SERIF,
                   fontSize: 15,
                   fontStyle: 'italic',
-                  color: brn(0.82),
+                  color: PT,
                   lineHeight: 1.45,
                   marginTop: 4,
                 }}
@@ -82,9 +84,7 @@ export default function EmotionLearnPill({ insights, programKey }: Props) {
             )}
           </div>
           {!open && (
-            <span style={{ fontFamily: SERIF, fontSize: 11, color: brn2(0.32), flexShrink: 0 }}>
-              ···
-            </span>
+            <span style={{ fontFamily: SERIF, fontSize: 11, color: PM, flexShrink: 0 }}>···</span>
           )}
           {open && (
             <button
@@ -97,7 +97,7 @@ export default function EmotionLearnPill({ insights, programKey }: Props) {
               style={{
                 background: 'none',
                 border: 'none',
-                color: brn2(0.35),
+                color: PM,
                 fontSize: 18,
                 cursor: 'pointer',
                 padding: 0,
@@ -114,25 +114,32 @@ export default function EmotionLearnPill({ insights, programKey }: Props) {
         {open && (
           <div
             style={{
-              padding: '0 14px 14px',
+              padding: '0 14px 16px',
               display: 'flex',
               flexDirection: 'column',
-              gap: 12,
+              gap: 14,
               alignItems: 'center',
             }}
           >
-            <p
+            {/* body — short paragraphs */}
+            <div
               style={{
-                fontFamily: SERIF,
-                fontSize: 15,
-                color: brn(0.78),
-                lineHeight: 1.8,
-                margin: 0,
+                display: 'flex',
+                flexDirection: 'column',
+                gap: 12,
+                width: '100%',
                 textAlign: 'center',
               }}
             >
-              {insight.body}
-            </p>
+              {insight.body.split('\n\n').map((para, i) => (
+                <p
+                  key={i}
+                  style={{ fontFamily: SERIF, fontSize: 15, color: PT, lineHeight: 1.8, margin: 0 }}
+                >
+                  {para}
+                </p>
+              ))}
+            </div>
 
             {insight.deeper && !showDeeper && (
               <button
@@ -140,12 +147,12 @@ export default function EmotionLearnPill({ insights, programKey }: Props) {
                 onClick={() => setShowDeeper(true)}
                 style={{
                   background: 'none',
-                  border: `1px solid ${brn2(0.22)}`,
+                  border: `1px solid ${PB}`,
                   borderRadius: 999,
                   padding: '5px 20px',
                   fontFamily: SERIF,
                   fontSize: 12,
-                  color: brn2(0.55),
+                  color: PM,
                   cursor: 'pointer',
                   letterSpacing: '0.06em',
                 }}
@@ -155,45 +162,81 @@ export default function EmotionLearnPill({ insights, programKey }: Props) {
             )}
 
             {showDeeper && insight.deeper && (
-              <p
+              <div
                 style={{
-                  fontFamily: SERIF,
-                  fontSize: 14,
-                  color: brn(0.65),
-                  lineHeight: 1.8,
-                  margin: 0,
-                  borderTop: `1px solid ${brn2(0.12)}`,
-                  paddingTop: 10,
-                  textAlign: 'center',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: 12,
                   width: '100%',
+                  textAlign: 'center',
+                  borderTop: `1px solid ${PB}`,
+                  paddingTop: 12,
                 }}
               >
-                {insight.deeper}
-              </p>
+                {insight.deeper.split('\n\n').map((para, i) => (
+                  <p
+                    key={i}
+                    style={{
+                      fontFamily: SERIF,
+                      fontSize: 14,
+                      color: PT,
+                      lineHeight: 1.8,
+                      margin: 0,
+                    }}
+                  >
+                    {para}
+                  </p>
+                ))}
+              </div>
             )}
 
-            {program && (
-              <button
-                type="button"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setProgramOpen(true);
-                }}
-                style={{
-                  background: 'none',
-                  border: `1px solid ${brn2(0.28)}`,
-                  borderRadius: 999,
-                  padding: '5px 18px',
-                  fontFamily: SERIF,
-                  fontSize: 12,
-                  color: brn2(0.65),
-                  cursor: 'pointer',
-                  letterSpacing: '0.08em',
-                }}
-              >
-                {program.domain}
-              </button>
-            )}
+            {/* action row — program + hub link */}
+            <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', justifyContent: 'center' }}>
+              {program && (
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setProgramOpen(true);
+                  }}
+                  style={{
+                    background: 'none',
+                    border: `1px solid ${PB}`,
+                    borderRadius: 999,
+                    padding: '5px 18px',
+                    fontFamily: SERIF,
+                    fontSize: 12,
+                    color: PM,
+                    cursor: 'pointer',
+                    letterSpacing: '0.08em',
+                  }}
+                >
+                  {program.domain}
+                </button>
+              )}
+              {onOpenHub && (
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onOpenHub();
+                  }}
+                  style={{
+                    background: 'none',
+                    border: `1px solid ${PB}`,
+                    borderRadius: 999,
+                    padding: '5px 18px',
+                    fontFamily: SERIF,
+                    fontSize: 12,
+                    color: PM,
+                    cursor: 'pointer',
+                    letterSpacing: '0.08em',
+                  }}
+                >
+                  all programs →
+                </button>
+              )}
+            </div>
           </div>
         )}
       </div>
