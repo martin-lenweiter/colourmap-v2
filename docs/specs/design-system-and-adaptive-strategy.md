@@ -282,6 +282,181 @@ Not adopting:
 - A redesign — current visual language is Martin's voice; this
   spec is about *infrastructure* so that voice can ship faster.
 
+## Part 7 - Expansion Without UI Chaos
+
+Colourmap is entering an expansion phase: comics, Living Atlas,
+Progress Roads, AI inquiry tools, collective pulse, creation labs,
+interactive maps, and future game-like worlds can all exist in the
+same product.
+
+The design system must make that growth feel calm.
+
+### Main Menu Rule
+
+The main navigation should stay small even when the world becomes
+large.
+
+Recommended top-level structure:
+
+```text
+Day
+Emotions
+Education
+Atlas
+More
+```
+
+This keeps the most repeated daily flows visible and puts deeper
+exploratory worlds behind one clear door.
+
+### More Menu Rule
+
+`More` is the place for depth, prototypes, and future worlds.
+
+Suggested grouping:
+
+```text
+More
+  Progress Roads
+  Collective Pulse
+  Creation Lab
+  Experiments
+  Settings
+```
+
+When an area becomes mature and frequently used, it can graduate to
+top-level navigation. Until then, it should stay grouped.
+
+### Content Type Clarity
+
+The user should be able to tell what kind of experience they are
+entering before they tap.
+
+Use stable labels:
+
+- Program: guided learning or practice
+- Comic: sequential visual education
+- Atlas: map, data, sociology, collective information
+- Road: historical progress timeline
+- Tool: practical personal utility
+- Creation: user-made or collaborative project
+- Experiment: prototype or research surface
+
+This helps a large app feel understandable.
+
+### Prototype Badge Rule
+
+Experimental areas should say so.
+
+Use simple labels such as:
+
+```text
+Prototype
+Research
+Style test
+Draft
+```
+
+This gives freedom to explore without making every surface feel like
+a finished promise.
+
+### One Screen, One Main Job
+
+Every new page should be checked against this rule:
+
+```text
+Can a tired phone user understand what to do here in five seconds?
+```
+
+If not, reduce the first screen.
+
+Common fixes:
+
+- move secondary information below the fold
+- turn extra information into tap-to-reveal cards
+- split one large page into a sequence
+- make the main action visually dominant
+- hide advanced tools behind a small control
+- replace long explanations with one strong sentence and one choice
+
+### Data-Driven Surfaces
+
+New education, atlas, and road content should be stored as structured
+data wherever possible.
+
+Preferred pattern:
+
+```text
+content JSON / TypeScript object
+-> reusable renderer
+-> visual variants
+-> interaction layer
+```
+
+Avoid building a one-off component for every new program unless the
+interaction is genuinely unique.
+
+Reusable renderers to grow:
+
+- comic reader
+- program card grid
+- progress road
+- atlas map page
+- reveal card sequence
+- interactive infographic scene
+- creation gallery
+
+### Navigation Graduation
+
+A prototype can move closer to the main product only when it passes
+these checks:
+
+- works on phone
+- has a clear entry point
+- has a clear place in the menu system
+- makes its relationship to other Colourmap projects understandable
+- has one obvious first action
+- does not duplicate another page
+- uses a reusable structure
+- has a clear category
+- has a reason to come back
+- improves clarity, hope, or agency
+
+This is how Colourmap can stay ambitious without becoming messy.
+
+### Navigation Clarity Quality Gate
+
+Before any new project, prototype, program, atlas, road, lab, or tool
+is treated as product-ready, it must answer these questions:
+
+```text
+Where does the user enter it?
+What larger area does it belong to?
+What is the difference between this and nearby projects?
+Where does the user go next after using it?
+Can the user return to the main daily app without feeling lost?
+```
+
+If these answers are unclear, the work can remain a prototype, but it
+should not be promoted into the main experience.
+
+This is especially important as Colourmap grows several parallel
+worlds:
+
+- daily emotional cockpit
+- education programs
+- comic book learning
+- Living Atlas
+- Progress Roads
+- collective pulse
+- creation projects
+- future map/game worlds
+
+The app should make those worlds feel connected, not confusing.
+
+Navigation clarity is therefore a product quality gate, equal to visual
+quality, mobile quality, and technical stability.
+
 ## Related specs
 
 - `pleasant-redesign-direction.md` — visual aesthetic direction

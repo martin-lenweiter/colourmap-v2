@@ -35,6 +35,16 @@ function DayContent() {
   useEffect(() => {
     hydrate();
   }, []);
+
+  useEffect(() => {
+    try {
+      if (sessionStorage.getItem('colourmap:open-education') === '1') {
+        sessionStorage.removeItem('colourmap:open-education');
+        setLearnOpen(true);
+      }
+    } catch {}
+  }, []);
+
   return (
     <div
       className="mx-auto w-full max-w-2xl space-y-4 px-2 sm:px-4 py-3"
@@ -59,6 +69,27 @@ function DayContent() {
                 programKey="emotional-intelligence"
                 onOpenHub={() => setLearnOpen(true)}
               />
+            </div>
+            <div style={{ display: 'flex', justifyContent: 'center', paddingTop: 4 }}>
+              <button
+                type="button"
+                onClick={() => setLearnOpen(true)}
+                style={{
+                  padding: '5px 20px',
+                  borderRadius: 999,
+                  border: '1px solid var(--panel-border, rgba(122,84,56,0.28))',
+                  background: 'transparent',
+                  color: 'var(--palette-panel-muted, #7A5438)',
+                  fontFamily: 'var(--font-serif)',
+                  fontSize: 11,
+                  fontWeight: 500,
+                  letterSpacing: '0.1em',
+                  textTransform: 'uppercase',
+                  cursor: 'pointer',
+                }}
+              >
+                Education
+              </button>
             </div>
             {/* Experiments — collapsible pill */}
             <div
