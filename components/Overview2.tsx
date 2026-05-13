@@ -72,7 +72,7 @@ function saveArenasToLS(a: Arena[]) {
 }
 
 // ── Shared Section shell (light-mode card wrapper) ────────────────────
-function Card({
+function _Card({
   title,
   badge,
   onClick,
@@ -469,11 +469,11 @@ function ArenasSummary({
     setArenas(loadArenas());
   }, []);
 
-  let streak = 0;
+  let _streak = 0;
   if (arenas.length > 0) {
     const threshold = Math.max(1, Math.ceil(arenas.length / 2));
     for (let di = todayIdx; di >= 0; di--) {
-      if (arenas.filter((a) => a.days[di]).length >= threshold) streak++;
+      if (arenas.filter((a) => a.days[di]).length >= threshold) _streak++;
       else break;
     }
   }
@@ -2241,7 +2241,6 @@ export default function Overview2() {
               background: 'transparent',
             }}
           >
-            <span style={{ fontSize: 11, opacity: 0.4, lineHeight: 1 }}>ℹ</span>
             <span
               style={{
                 fontFamily: 'var(--font-serif)',

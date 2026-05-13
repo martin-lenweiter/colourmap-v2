@@ -44,6 +44,7 @@ function DayContent() {
       <TodaysField />
       <CheckInPing />
       {starsOpen && <IdeaConstellation onClose={() => setStarsOpen(false)} />}
+      {learnOpen && <LearningHub onClose={() => setLearnOpen(false)} />}
 
       <DayTabs
         emotionContent={
@@ -53,7 +54,11 @@ function DayContent() {
             <FeelingCircles2 />
             {/* Insight */}
             <div style={{ paddingTop: 20 }}>
-              <EmotionLearnPill insights={emotionInsights} programKey="emotional-intelligence" />
+              <EmotionLearnPill
+                insights={emotionInsights}
+                programKey="emotional-intelligence"
+                onOpenHub={() => setLearnOpen(true)}
+              />
             </div>
             {/* Experiments — collapsible pill */}
             <div
@@ -132,7 +137,6 @@ function DayContent() {
         }
         missionContent={
           <div className="space-y-3">
-            {learnOpen && <LearningHub onClose={() => setLearnOpen(false)} />}
             <ActiveCompartments />
             <ColourMapPanel />
             <DoingCardsPanel />
@@ -179,7 +183,7 @@ function DayContent() {
                   cursor: 'pointer',
                 }}
               >
-                Learn
+                Education
               </button>
             </div>
           </div>

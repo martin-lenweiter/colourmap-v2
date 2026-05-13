@@ -20,9 +20,10 @@ const FOCUS_LEVELS = [
 const CARD_BG = 'rgba(255,255,255,0.03)';
 const CARD_BORDER = 'rgba(196,160,96,0.2)';
 const INNER_DIV = 'rgba(196,160,96,0.1)';
-const OCHRE = '#C4A060';
-const BROWN = '#5C3018';
-const LABEL_COLOR = '#8A6A4A';
+const OCHRE = '#C4A060'; // keep for borders/backgrounds
+const OCHRE_TEXT = 'var(--palette-panel-text, #C4A060)';
+const BROWN = 'var(--palette-panel-text, #5C3018)';
+const LABEL_COLOR = 'var(--palette-panel-muted, #8A6A4A)';
 
 /* ─── Section wrapper — collapsible box ──────────────────────── */
 function Section({
@@ -64,7 +65,7 @@ function Section({
             fontWeight: 800,
             textTransform: 'uppercase',
             letterSpacing: '0.14em',
-            color: '#5C3018',
+            color: 'var(--palette-panel-text, rgba(196,160,96,0.88))',
           }}
         >
           {title}
@@ -72,7 +73,7 @@ function Section({
         <span style={{ flex: 1, display: 'flex', justifyContent: 'flex-end' }}>
           <span
             style={{
-              color: OCHRE,
+              color: OCHRE_TEXT,
               opacity: 0.4,
               fontSize: 11,
               transform: open ? 'rotate(180deg)' : 'rotate(0deg)',
@@ -142,7 +143,7 @@ const TEXT_STYLES = [
   },
 ] as const;
 
-const STYLE_DOTS = [
+const _STYLE_DOTS = [
   { bg: BROWN, border: BROWN, rotate: false, scale: 1 },
   { bg: 'transparent', border: OCHRE, rotate: false, scale: 1 },
   { bg: `${OCHRE}55`, border: OCHRE, rotate: true, scale: 1 },
@@ -506,7 +507,9 @@ function IdeasBox({
     >
       {ideas.map((idea, i) => (
         <div key={i} style={{ display: 'flex', gap: 8, alignItems: 'flex-start' }}>
-          <span style={{ color: OCHRE, opacity: 0.5, fontSize: 12, paddingTop: 2, flexShrink: 0 }}>
+          <span
+            style={{ color: OCHRE_TEXT, opacity: 0.5, fontSize: 12, paddingTop: 2, flexShrink: 0 }}
+          >
             ·
           </span>
           <span
@@ -673,6 +676,7 @@ function MissionCard({
             onDragStart={(e) => {
               e.stopPropagation();
               e.dataTransfer.effectAllowed = 'move';
+              e.dataTransfer.setData('text/plain', item.id);
               onDragStart();
             }}
             onDragEnd={(e) => {
@@ -766,7 +770,7 @@ function MissionCard({
 
           <span
             style={{
-              color: OCHRE,
+              color: OCHRE_TEXT,
               opacity: 0.45,
               fontSize: 11,
               flexShrink: 0,
@@ -842,7 +846,7 @@ function MissionCard({
                       letterSpacing: '0.08em',
                       textTransform: 'uppercase',
                       background: isOpen ? `${OCHRE}28` : `${OCHRE}15`,
-                      color: isOpen ? BROWN : OCHRE,
+                      color: isOpen ? BROWN : OCHRE_TEXT,
                       border: `1px solid ${OCHRE}${isOpen ? 'cc' : '40'}`,
                       borderRadius: 4,
                       padding: '10px 0',
@@ -966,6 +970,8 @@ export default function DoingCardsPanel() {
 
   /* ── Drag state ─────────────────────────────────────────────── */
   const dragSrcRef = useRef<{ id: string; src: 'daily' | 'push' } | null>(null);
+  // dropTargetRef is the source of truth for logic; dropTarget state is only for visual indicators
+  const dropTargetRef = useRef<{ id: string; pos: 'before' | 'after' } | null>(null);
   const [draggingId, setDraggingId] = useState<string | null>(null);
   const [dropTarget, setDropTarget] = useState<{ id: string; pos: 'before' | 'after' } | null>(
     null,
@@ -1067,17 +1073,19 @@ export default function DoingCardsPanel() {
 
   function endDrag() {
     dragSrcRef.current = null;
+    dropTargetRef.current = null;
     setDraggingId(null);
     setDropTarget(null);
   }
 
   function hoverCard(targetId: string, pos: 'before' | 'after') {
+    dropTargetRef.current = { id: targetId, pos };
     setDropTarget({ id: targetId, pos });
   }
 
   function dropOnCard(targetId: string, dest: 'daily' | 'push') {
     const ds = dragSrcRef.current;
-    const dt = dropTarget;
+    const dt = dropTargetRef.current;
     if (!ds || !dt || ds.id === targetId) {
       endDrag();
       return;
@@ -1195,7 +1203,7 @@ export default function DoingCardsPanel() {
                 textTransform: 'uppercase',
                 background: objItem.done ? `${OCHRE}18` : 'transparent',
                 border: `1px solid ${objItem.done ? OCHRE : `${OCHRE}40`}`,
-                color: objItem.done ? OCHRE : LABEL_COLOR,
+                color: objItem.done ? OCHRE_TEXT : LABEL_COLOR,
                 opacity: objItem.done ? 1 : 0.5,
                 borderRadius: 999,
                 padding: '4px 20px',
@@ -1230,7 +1238,10 @@ export default function DoingCardsPanel() {
             onDragEnd={endDrag}
             onDragOver={(pos) => hoverCard(m.id, pos)}
             onDrop={() => dropOnCard(m.id, 'daily')}
-            onDragLeave={() => setDropTarget(null)}
+            onDragLeave={() => {
+              dropTargetRef.current = null;
+              setDropTarget(null);
+            }}
           />
         ))}
         {/* Section-end drop zone */}
@@ -1238,6 +1249,7 @@ export default function DoingCardsPanel() {
           <div
             onDragOver={(e) => {
               e.preventDefault();
+              dropTargetRef.current = null;
               setDropTarget(null);
             }}
             onDrop={(e) => {
@@ -1273,7 +1285,10 @@ export default function DoingCardsPanel() {
             onDragEnd={endDrag}
             onDragOver={(pos) => hoverCard(p.id, pos)}
             onDrop={() => dropOnCard(p.id, 'push')}
-            onDragLeave={() => setDropTarget(null)}
+            onDragLeave={() => {
+              dropTargetRef.current = null;
+              setDropTarget(null);
+            }}
           />
         ))}
         {/* Section-end drop zone */}
@@ -1281,6 +1296,7 @@ export default function DoingCardsPanel() {
           <div
             onDragOver={(e) => {
               e.preventDefault();
+              dropTargetRef.current = null;
               setDropTarget(null);
             }}
             onDrop={(e) => {

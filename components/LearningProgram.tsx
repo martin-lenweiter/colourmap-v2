@@ -7,21 +7,37 @@ const SERIF = 'var(--font-serif)';
 const cream = (a: number) => `rgba(240,216,152,${a})`;
 
 function col(color: string, a: number) {
-  // parse hex into rgba
   const r = parseInt(color.slice(1, 3), 16);
   const g = parseInt(color.slice(3, 5), 16);
   const b = parseInt(color.slice(5, 7), 16);
   return `rgba(${r},${g},${b},${a})`;
 }
 
+function toParagraphs(text: string): string[] {
+  if (text.includes('\n\n')) return text.split('\n\n').filter(Boolean);
+  const sentences = text.match(/[^.!?]+[.!?]+["']?/g) ?? [text];
+  const paras: string[] = [];
+  for (let i = 0; i < sentences.length; i += 2) {
+    paras.push(
+      sentences
+        .slice(i, i + 2)
+        .join(' ')
+        .trim(),
+    );
+  }
+  return paras.filter(Boolean);
+}
+
 export default function LearningProgram({
   program,
   onClose,
   onBack,
+  hubBg,
 }: {
   program: Program;
   onClose: () => void;
   onBack?: () => void;
+  hubBg?: string;
 }) {
   const lsKey = `colourmap:program:${program.key}`;
   const [seg, setSeg] = useState(0);
@@ -73,7 +89,7 @@ export default function LearningProgram({
         style={{
           width: '100%',
           maxWidth: 672,
-          background: 'rgba(10,6,3,0.98)',
+          background: hubBg ?? 'rgba(10,6,3,0.98)',
           display: 'flex',
           flexDirection: 'column',
           height: '100%',
@@ -206,10 +222,11 @@ export default function LearningProgram({
           <div
             style={{
               fontFamily: SERIF,
-              fontSize: 11,
+              fontSize: 10,
               color: col(program.color, 0.38),
-              letterSpacing: '0.14em',
+              letterSpacing: '0.18em',
               textTransform: 'uppercase',
+              textAlign: 'center',
             }}
           >
             segment {seg + 1}
@@ -219,12 +236,13 @@ export default function LearningProgram({
           <h2
             style={{
               fontFamily: SERIF,
-              fontSize: 'clamp(18px, 5vw, 22px)',
-              fontWeight: 600,
-              color: cream(0.88),
-              lineHeight: 1.3,
+              fontSize: 'clamp(22px, 6vw, 30px)',
+              fontWeight: 700,
+              color: cream(0.9),
+              lineHeight: 1.25,
               margin: 0,
-              letterSpacing: '-0.01em',
+              letterSpacing: '-0.02em',
+              textAlign: 'center',
             }}
           >
             {current.title}
@@ -233,25 +251,31 @@ export default function LearningProgram({
           {/* divider */}
           <div
             style={{
-              width: 32,
+              width: 36,
               height: 2,
               background: col(program.color, 0.5),
               borderRadius: 2,
+              margin: '0 auto',
             }}
           />
 
           {/* body */}
-          <p
-            style={{
-              fontFamily: SERIF,
-              fontSize: 15,
-              color: cream(0.72),
-              lineHeight: 1.85,
-              margin: 0,
-            }}
-          >
-            {current.body}
-          </p>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 28 }}>
+            {toParagraphs(current.body).map((para, i) => (
+              <p
+                key={i}
+                style={{
+                  fontFamily: SERIF,
+                  fontSize: 16,
+                  color: cream(0.78),
+                  lineHeight: 1.95,
+                  margin: 0,
+                }}
+              >
+                {para}
+              </p>
+            ))}
+          </div>
 
           {/* Next button below text */}
           <div style={{ display: 'flex', justifyContent: 'center', paddingBottom: 24 }}>
@@ -276,16 +300,25 @@ export default function LearningProgram({
                 Next
               </button>
             ) : (
-              <div
+              <button
+                type="button"
+                onClick={onBack ?? onClose}
                 style={{
+                  background: col(program.color, 0.14),
+                  border: `1px solid ${col(program.color, 0.5)}`,
+                  borderRadius: 999,
+                  padding: '10px 32px',
                   fontFamily: SERIF,
-                  fontSize: 12,
-                  color: col(program.color, 0.5),
-                  fontStyle: 'italic',
+                  fontSize: 13,
+                  fontWeight: 600,
+                  color: col(program.color, 0.9),
+                  cursor: 'pointer',
+                  letterSpacing: '0.08em',
+                  textTransform: 'uppercase',
                 }}
               >
-                end of program
-              </div>
+                Complete ← Education
+              </button>
             )}
           </div>
         </div>
@@ -342,17 +375,24 @@ export default function LearningProgram({
               next →
             </button>
           ) : (
-            <span
+            <button
+              type="button"
+              onClick={onBack ?? onClose}
               style={{
+                background: col(program.color, 0.12),
+                border: `1px solid ${col(program.color, 0.45)}`,
+                borderRadius: 999,
+                padding: '7px 20px',
                 fontFamily: SERIF,
                 fontSize: 12,
-                color: col(program.color, 0.45),
-                fontStyle: 'italic',
-                padding: '7px 20px',
+                fontWeight: 600,
+                color: col(program.color, 0.88),
+                cursor: 'pointer',
+                letterSpacing: '0.06em',
               }}
             >
-              complete
-            </span>
+              ← Education
+            </button>
           )}
         </div>
       </div>
