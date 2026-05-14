@@ -56,6 +56,7 @@ type Mode =
   | 'magneticsand'
   | 'plasma'
   | 'globe'
+  | 'nebula'
   | 'current3d'
   | 'matrix'
   | 'matrix3d'
@@ -1304,6 +1305,42 @@ const PRESETS: Record<string, Cfg> = {
     luminous: 3,
     stars: 0,
     mode: 'plasma',
+  },
+  'Nebula Veil': {
+    preset: 'Violet Portal',
+    symmetry: 4,
+    complexity: 7,
+    glow: 6,
+    breathSpeed: 0.32,
+    intensity: 8,
+    particles: 0,
+    luminous: 2,
+    stars: 8,
+    mode: 'nebula',
+  },
+  'Nebula Bloom': {
+    preset: 'Deep Current',
+    symmetry: 5,
+    complexity: 8,
+    glow: 7,
+    breathSpeed: 0.38,
+    intensity: 8,
+    particles: 0,
+    luminous: 2,
+    stars: 9,
+    mode: 'nebula',
+  },
+  'Dot Galaxy': {
+    preset: 'Cosmic Indigo',
+    symmetry: 2,
+    complexity: 10,
+    glow: 8,
+    breathSpeed: 0.28,
+    intensity: 9,
+    particles: 0,
+    luminous: 2,
+    stars: 10,
+    mode: 'nebula',
   },
   'Emotion Globe': {
     preset: 'Terra Globe',
@@ -3678,6 +3715,8 @@ function buildModeGroup(cfg: Cfg, R: number): THREE.Group {
       return buildCurrentTexture(cfg, R);
     case 'plasma':
       return buildPlasma(cfg, R);
+    case 'nebula':
+      return buildNebula(cfg, R);
     case 'globe':
       return buildGlobe(cfg, R);
     case 'current3d':
@@ -3872,6 +3911,9 @@ function updateModeGroup(group: THREE.Group, cfg: Cfg, dots: Dot[], t: number, R
       break;
     case 'plasma':
       updatePlasma(group, cfg, t, R);
+      break;
+    case 'nebula':
+      updateNebula(group, cfg, t, R);
       break;
     case 'globe':
       updateGlobe(group, cfg, t, R);
@@ -8206,6 +8248,104 @@ function updatePlasma(group: THREE.Group, cfg: Cfg, t: number, R: number): void 
 
 /* ── GLOBE mode — 3D sphere with spectral latitude bands ─────── */
 
+function buildNebula(cfg: Cfg, R: number): THREE.Group {
+  const TAU = Math.PI * 2;
+  const iF = cfg.intensity / 10;
+  const density = cfg.complexity / 10;
+  const arms = Math.max(2, Math.round(cfg.symmetry));
+  const count = Math.max(900, Math.round(lerp(1800, 5200, density)));
+  const group = new THREE.Group();
+  const pal = PAL[cfg.preset] ?? PAL['Calm Field'];
+  const [rr, gg, bb] = pal.rgb;
+  const positions = new Float32Array(count * 3);
+
+  for (let i = 0; i < count; i++) {
+    const arm = i % arms;
+    const p = Math.random();
+    const theta = arm * (TAU / arms) + p * TAU * 0.62 + (Math.random() - 0.5) * 0.42;
+    const r = R * (0.08 + p ** 0.75 * 0.95);
+    const haze = (1 - p) * R * 0.08 + R * 0.018;
+    positions[i * 3] = Math.cos(theta) * r + (Math.random() - 0.5) * haze;
+    positions[i * 3 + 1] = Math.sin(theta) * r * 0.58 + (Math.random() - 0.5) * haze;
+    positions[i * 3 + 2] = (Math.random() - 0.5) * R * 0.18;
+  }
+
+  const geo = new THREE.BufferGeometry();
+  const posAttr = new THREE.BufferAttribute(positions, 3);
+  posAttr.setUsage(THREE.DynamicDrawUsage);
+  geo.setAttribute('position', posAttr);
+
+  const pts = new THREE.Points(geo, ptsMat(hdrColor([rr, gg, bb], iF, 2.35), 1.9, 0.58));
+  pts.userData.tag = 'nebulaDust';
+  pts.userData.count = count;
+  pts.userData.prevT = -1;
+  group.add(pts);
+
+  return group;
+}
+
+function updateNebula(group: THREE.Group, cfg: Cfg, t: number, R: number): void {
+  const iF = cfg.intensity / 10;
+  const glowF = cfg.glow / 10;
+  const speed = cfg.breathSpeed * 0.38;
+  const pal = PAL[cfg.preset] ?? PAL['Calm Field'];
+  const baseRgb = pal.rgb;
+  const limit = R * 1.1;
+  const limit2 = limit * limit;
+
+  for (const child of group.children) {
+    if ((child.userData.tag as string) !== 'nebulaDust') continue;
+    const pts = child as THREE.Points;
+    const posAttr = pts.geometry.getAttribute('position') as THREE.BufferAttribute;
+    const arr = posAttr.array as Float32Array;
+    const count = child.userData.count as number;
+    const prevT = child.userData.prevT as number;
+    const dt = prevT < 0 ? 16 : Math.min(t - prevT, 32);
+    child.userData.prevT = t;
+    const drift = R * 0.0045 * speed * (dt / 16);
+    const tSlow = t * 0.00035 * speed;
+
+    for (let i = 0; i < count; i++) {
+      const x = arr[i * 3];
+      const y = arr[i * 3 + 1];
+      const z = arr[i * 3 + 2];
+      const r = Math.sqrt(x * x + y * y) + 1;
+      const swirl = 0.28 + 0.72 * Math.max(0, 1 - r / limit);
+      let nx = x + (-y / r) * drift * swirl + Math.sin(y * 0.012 + tSlow) * drift * 0.25;
+      let ny = y + (x / r) * drift * swirl * 0.65 + Math.cos(x * 0.01 - tSlow) * drift * 0.22;
+      let nz = z + Math.sin((x - y) * 0.005 + tSlow) * drift * 0.18;
+
+      if (_distortActive) {
+        const f = fingerForce(nx, ny, nz, R * 0.62);
+        nx += f.x * (0.6 + speed);
+        ny += f.y * (0.6 + speed);
+        nz += f.z * 0.4;
+      }
+
+      if (nx * nx + ny * ny > limit2) {
+        const a = Math.atan2(ny, nx) + Math.PI + (Math.random() - 0.5) * 0.7;
+        const rr = R * (0.08 + Math.random() * 0.35);
+        nx = Math.cos(a) * rr;
+        ny = Math.sin(a) * rr * 0.6;
+        nz = (Math.random() - 0.5) * R * 0.18;
+      }
+
+      arr[i * 3] = nx;
+      arr[i * 3 + 1] = ny;
+      arr[i * 3 + 2] = nz;
+    }
+    posAttr.needsUpdate = true;
+
+    const rgb: [number, number, number] = [
+      lerp(baseRgb[0], 255, glowF * 0.18),
+      lerp(baseRgb[1], 255, glowF * 0.18),
+      lerp(baseRgb[2], 255, glowF * 0.18),
+    ];
+    updateMat(child, rgb, iF, 2.45);
+    group.rotation.z = Math.sin(t * 0.00008 * cfg.breathSpeed) * 0.08;
+  }
+}
+
 function buildGlobe(cfg: Cfg, R: number): THREE.Group {
   const TAU = Math.PI * 2;
   const iF = cfg.intensity / 10;
@@ -9330,11 +9470,14 @@ function updateSpire(group: THREE.Group, cfg: Cfg, t: number, R: number): void {
 
 /* ── Background stars ───────────────────────────────────────── */
 
-function buildStars(count: number, W: number, H: number): THREE.Group {
+function buildStars(count: number, W: number, H: number, preset = 'Calm Field'): THREE.Group {
   const g = new THREE.Group();
   if (count <= 0) return g;
+  const pal = PAL[preset] ?? PAL['Calm Field'];
+  const [rr, gg, bb] = pal.rgb;
   const totalN = Math.round(count * 55 + 25);
   const half = Math.max(W, H) * 0.62;
+  const bandStrength = Math.max(0, (count - 3) / 7);
   const layers = [
     { frac: 0.65, size: 0.8, phase: 0 },
     { frac: 0.28, size: 1.4, phase: 2.1 },
@@ -9344,23 +9487,33 @@ function buildStars(count: number, W: number, H: number): THREE.Group {
     const N = Math.round(totalN * layer.frac);
     const pos = new Float32Array(N * 3);
     for (let i = 0; i < N; i++) {
-      pos[i * 3] = (Math.random() - 0.5) * 2 * half;
-      pos[i * 3 + 1] = (Math.random() - 0.5) * 2 * half;
+      const inBand = Math.random() < bandStrength * 0.72;
+      if (inBand) {
+        const along = (Math.random() - 0.5) * 2.35 * half;
+        const across = (Math.random() - 0.5) * half * lerp(0.22, 0.08, bandStrength);
+        const angle = -0.52;
+        pos[i * 3] = along * Math.cos(angle) - across * Math.sin(angle);
+        pos[i * 3 + 1] = along * Math.sin(angle) + across * Math.cos(angle);
+      } else {
+        pos[i * 3] = (Math.random() - 0.5) * 2 * half;
+        pos[i * 3 + 1] = (Math.random() - 0.5) * 2 * half;
+      }
     }
     const geo = new THREE.BufferGeometry();
     geo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
     const mat = new THREE.PointsMaterial({
-      color: new THREE.Color(1.6, 1.6, 2.0),
+      color: new THREE.Color(rr / 155, gg / 155, bb / 155),
       size: layer.size,
       sizeAttenuation: false,
       transparent: true,
-      opacity: 0.35,
+      opacity: 0.22 + bandStrength * 0.14,
       blending: THREE.AdditiveBlending,
       depthWrite: false,
     });
     const pts = new THREE.Points(geo, mat);
     pts.userData.tag = 'starLayer';
     pts.userData.phase = layer.phase;
+    pts.userData.baseOpacity = 0.22 + bandStrength * 0.14;
     g.add(pts);
   }
   return g;
@@ -9370,9 +9523,10 @@ function updateStars(group: THREE.Group, t: number): void {
   for (const child of group.children) {
     if (child.userData.tag === 'starLayer') {
       const phase = child.userData.phase as number;
+      const baseOpacity = (child.userData.baseOpacity as number | undefined) ?? 0.28;
       if ((child as THREE.Points).material instanceof THREE.PointsMaterial) {
         ((child as THREE.Points).material as THREE.PointsMaterial).opacity =
-          0.2 + 0.18 * Math.sin(t * 0.00075 + phase);
+          baseOpacity + 0.08 * Math.sin(t * 0.00075 + phase);
       }
     }
   }
@@ -9753,6 +9907,7 @@ const MODE_TO_PRESET: Partial<Record<Mode, string>> = {
   eddylace: 'Eddy Lace',
   magneticsand: 'Magnetic Sand',
   plasma: 'Solar Flare',
+  nebula: 'Nebula Veil',
   globe: 'Emotion Globe',
   current3d: 'Current 3D',
   matrix: 'Matrix Rain',
@@ -9854,6 +10009,8 @@ const MODES: { mode: Mode; label: string }[] = [
   { mode: 'magneticsand', label: 'Magnetic Sand' },
   { mode: 'current3d', label: '∿³ Current 3D' },
   { mode: 'plasma', label: '☀ Plasma' },
+  { mode: 'nebula', label: 'Nebula' },
+
   { mode: 'globe', label: '◎ Globe' },
   { mode: 'matrix', label: '⋮ Matrix' },
   { mode: 'matrix3d', label: '⋮³ Matrix 3D' },
@@ -9898,6 +10055,9 @@ const FEATURED_PRESETS: FeaturedItem[] = [
   { name: 'Deep Flow 3D', tag: 'FLOW' },
   { name: 'Plasma Field', tag: 'FLOW' },
   { name: 'Solar Flare', tag: 'FLOW' },
+  { name: 'Nebula Veil', tag: 'NEBULA' },
+  { name: 'Nebula Bloom', tag: 'NEBULA' },
+  { name: 'Dot Galaxy', tag: 'GALAXY' },
   { name: 'Ocean Drift', tag: 'FLOW' },
   { name: 'Current Scales', tag: 'FLOW' },
   { name: 'Cyclone Tiles', tag: 'FLOW' },
@@ -12214,13 +12374,13 @@ export default function GeometryField() {
       bloomPass.radius = 0.4 + currentCfg.luminous * 0.04;
 
       // Rebuild stars when count or viewport changes
-      const starsKey = `${Math.round(currentCfg.stars)}-${Math.round(W)}-${Math.round(H)}`;
+      const starsKey = `${Math.round(currentCfg.stars)}-${currentCfg.preset}-${Math.round(W)}-${Math.round(H)}`;
       if (starsKey !== builtStarsKeyRef.current) {
         if (starsGroupRef.current) {
           scene.remove(starsGroupRef.current);
           disposeGroup(starsGroupRef.current);
         }
-        starsGroupRef.current = buildStars(currentCfg.stars, W, H);
+        starsGroupRef.current = buildStars(currentCfg.stars, W, H, currentCfg.preset);
         scene.add(starsGroupRef.current);
         builtStarsKeyRef.current = starsKey;
       }
