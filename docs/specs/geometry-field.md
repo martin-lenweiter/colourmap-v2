@@ -12,7 +12,26 @@ The Current family uses dot fields to reveal hidden motion patterns before and d
 Accepted presets in this family:
 
 - **Ocean Drift**: base current field.
-- **Current Scales**: overlapping scale/petal cells with local vortex motion.
+- **Current Scales**: overlapping scale/petal cells with local vortex motion. In Music Visuals, it should behave like the main deep musical immersion machine: drums brighten and pulse dots, bass expands cell movement, pads/keys deepen flow swirl, lead/drum energy can shift colour slightly inside the selected palette, cell geometry can deform on the beat, wing-like lateral expansion can open from the scale field, and ripple finger distortion is available directly from the music panel without adding large centre rings.
+
+Current Scales should expose a few meaningful response scenes rather than dozens of decorative presets:
+
+- **Soft Tide**: quieter pulse and low geometry deformation.
+- **Bass Wings**: strong bass movement and lateral wing opening.
+- **Liquid Hands**: high flow response with ripple touch as the default.
+- **Spark Geometry**: sharper dot pulse, colour accent, and geometric deformation.
+
+Each scene is only a starting point; sliders remain available so the user can hand-shape dot pulse, movement, flow, colour, geometry, and wings.
+
+Current Scales also has a shape morph layer. The same scale field can bend toward:
+
+- **Scales**: original scale/current field.
+- **Rings**: three nested donut-like rings.
+- **Brain**: folded oval, like a brain or nut seen from above.
+- **Heart**: heart-shaped field.
+- **Losange**: diamond/losange field.
+
+These shapes must remain driven by the same music response sliders and touch distortion rather than becoming disconnected static presets.
 - **Cyclone Tiles**: square cells containing alternating cyclones.
 - **Eddy Lace**: connected whirlpools and lace-like flow trails.
 - **Magnetic Sand**: particles aligning around invisible field poles.
