@@ -8078,6 +8078,36 @@ function buildCurrentTexture(cfg: Cfg, R: number): THREE.Group {
   pts.userData.prevT = -1;
   group.add(pts);
 
+  if (cfg.mode === 'currentscales') {
+    const pulseCount = Math.max(420, Math.round(lerp(700, 1500, iF)));
+    const pulsePositions = new Float32Array(pulseCount * 3);
+    const cols = Math.max(5, Math.ceil((R * 2.2) / cell));
+    for (let i = 0; i < pulseCount; i++) {
+      const row = Math.floor(i / cols) % cols;
+      const col = i % cols;
+      const offset = row % 2 === 0 ? 0 : cell * 0.5;
+      const cx = (col - cols / 2) * cell + offset;
+      const cy = (row - cols / 2) * cell * 0.58;
+      const a = Math.PI + ((i * 0.61803398875) % 1) * Math.PI;
+      const r = cell * (0.2 + (((i * 17) % 100) / 100) * 0.42);
+      pulsePositions[i * 3] = cx + Math.cos(a) * r;
+      pulsePositions[i * 3 + 1] = cy + Math.sin(a) * r * 0.55;
+      pulsePositions[i * 3 + 2] = R * 0.012;
+    }
+    const pulseGeo = new THREE.BufferGeometry();
+    const pulseAttr = new THREE.BufferAttribute(pulsePositions, 3);
+    pulseAttr.setUsage(THREE.DynamicDrawUsage);
+    pulseGeo.setAttribute('position', pulseAttr);
+    const pulsePts = new THREE.Points(
+      pulseGeo,
+      circlePtsMat(hdrColor([rr, gg, bb], iF, 2.7), 2.2, 0.18),
+    );
+    pulsePts.userData.tag = 'currentScalePulse';
+    pulsePts.userData.count = pulseCount;
+    pulsePts.userData.base = pulsePositions.slice();
+    group.add(pulsePts);
+  }
+
   return group;
 }
 
@@ -8159,19 +8189,92 @@ function updateCurrentTexture(group: THREE.Group, cfg: Cfg, t: number, R: number
   const R2 = fieldR * fieldR;
   const currentScaleMusicMode = cfg.mode === 'currentscales';
   const beatPhase = (t / 1000) * Math.PI * 2 * (_musicBpm / 60);
+  const scaleDensity = cfg.complexity / 10;
+  const scaleCell = lerp(R * 0.32, R * 0.12, scaleDensity);
   if (currentScaleMusicMode) {
     _musicPulse *= 0.94;
     _musicBass *= 0.965;
     _musicDrums *= 0.9;
     _musicPads *= 0.985;
+    _musicKeys *= 0.975;
+    _musicLead *= 0.92;
   }
   const internalPulse = currentScaleMusicMode ? ((Math.sin(beatPhase) + 1) / 2) ** 3 * 0.24 : 0;
   const musicPulse = currentScaleMusicMode
     ? Math.min(1, internalPulse + _musicPulse * 0.95 + _musicBass * 0.42 + _musicDrums * 0.28)
     : 0;
+  const bassPush = currentScaleMusicMode ? Math.min(1, _musicBass * 0.9 + internalPulse * 0.28) : 0;
+  const flowLift = currentScaleMusicMode
+    ? Math.min(1, _musicPads * 0.55 + _musicKeys * 0.35 + internalPulse * 0.18)
+    : 0;
+  const leadFlicker = currentScaleMusicMode ? Math.min(1, _musicLead + _musicDrums * 0.25) : 0;
+  const colourShift = currentScaleMusicMode
+    ? Math.min(1, (musicPulse * 0.38 + leadFlicker * 0.5 + flowLift * 0.22) * _currentScaleColour)
+    : 0;
+  const pulseRgb: [number, number, number] = [
+    lerp(baseRgb[0], 255, glowF * 0.12 + colourShift * 0.42),
+    lerp(baseRgb[1], 230, glowF * 0.1 + colourShift * 0.22),
+    lerp(baseRgb[2], 190, glowF * 0.08 + colourShift * 0.12),
+  ];
 
   for (const child of group.children) {
-    if ((child.userData.tag as string) !== 'currentTexture') continue;
+    const tag = child.userData.tag as string;
+    if (tag === 'currentScalePulse') {
+      const pts = child as THREE.Points;
+      const posAttr = pts.geometry.getAttribute('position') as THREE.BufferAttribute;
+      const arr = posAttr.array as Float32Array;
+      const base = child.userData.base as Float32Array;
+      const count = child.userData.count as number;
+      const cellBeat = musicPulse * _currentScalePulse;
+      const cellBass = bassPush * _currentScaleBass;
+      const cellFlow = flowLift * _currentScaleFlow;
+      const geometryWarp =
+        _currentScaleGeometry * (cellBeat * 0.55 + cellBass * 0.65 + cellFlow * 0.35);
+      const wingOpen = _currentScaleWings * (cellBeat * 0.52 + cellBass * 0.32 + cellFlow * 0.26);
+      for (let i = 0; i < count; i++) {
+        const x = base[i * 3];
+        const y = base[i * 3 + 1];
+        const row = Math.floor((y + R * 1.2) / (scaleCell * 0.58));
+        const offset = row % 2 === 0 ? 0 : scaleCell * 0.5;
+        const cx = Math.round((x + offset) / scaleCell) * scaleCell - offset;
+        const cy = row * scaleCell * 0.58 - R * 1.2 + scaleCell * 0.3;
+        const dx = x - cx;
+        const dy = y - cy;
+        const d = Math.sqrt(dx * dx + dy * dy) + 1;
+        const lane = ((i * 0.61803398875) % 1) * Math.PI * 2;
+        const ripple = 0.5 + Math.sin(beatPhase - d * 0.045 + lane) * 0.5;
+        const expand = 1 + cellBeat * 0.2 + cellBass * ripple * 0.28 + geometryWarp * 0.16;
+        const ellipse = 1 + Math.sin(beatPhase + row * 0.8) * geometryWarp * 0.08;
+        const swirl =
+          cellFlow *
+          Math.sin(beatPhase * 0.5 + lane) *
+          scaleCell *
+          0.08 *
+          (1 + _currentScaleGeometry);
+        const yNorm = Math.min(1, Math.abs((cy + dy) / Math.max(R * 0.78, 1)));
+        const wingEnvelope = Math.max(0, 1 - (yNorm - 0.38) * (yNorm - 0.38) * 3.4);
+        const side = cx + dx >= 0 ? 1 : -1;
+        const wingX = side * R * 0.18 * wingOpen * wingEnvelope;
+        const wingY = Math.sin(beatPhase * 0.5 + yNorm * 4 + lane) * R * 0.026 * wingOpen;
+        const shaped = currentScaleShapeTransform(
+          cx + dx * expand + (-dy / d) * swirl + wingX,
+          cy + dy * expand * ellipse + (dx / d) * swirl * 0.62 + wingY,
+          R,
+          Math.min(1, _currentScaleGeometry * 0.74 + wingOpen * 0.2),
+          beatPhase,
+        );
+        arr[i * 3] = shaped.x;
+        arr[i * 3 + 1] = shaped.y;
+        arr[i * 3 + 2] = base[i * 3 + 2] + (ripple * cellBass + leadFlicker * 0.35) * R * 0.012;
+      }
+      posAttr.needsUpdate = true;
+      updateMat(pts, pulseRgb, iF, 2.5 + cellBeat * 1.4 + leadFlicker * 0.8);
+      const mat = pts.material as THREE.PointsMaterial;
+      mat.size = 1.55 + cellBeat * 2.4 + cellBass * 1.1 + leadFlicker * 0.8;
+      mat.opacity = 0.16 + cellBeat * 0.24 + cellBass * 0.18 + leadFlicker * 0.16;
+      continue;
+    }
+    if (tag !== 'currentTexture') continue;
     const pts = child as THREE.Points;
     const posAttr = pts.geometry.getAttribute('position') as THREE.BufferAttribute;
     const arr = posAttr.array as Float32Array;
@@ -8179,25 +8282,64 @@ function updateCurrentTexture(group: THREE.Group, cfg: Cfg, t: number, R: number
     const prevT = child.userData.prevT as number;
     const dt = prevT < 0 ? 16 : Math.min(t - prevT, 32);
     child.userData.prevT = t;
-    const step = R * 0.012 * speed * (dt / 16) * (1 + musicPulse * 0.58);
+    const step =
+      R *
+      0.012 *
+      speed *
+      (dt / 16) *
+      (1 + musicPulse * 0.42 * _currentScalePulse + flowLift * 0.36 * _currentScaleFlow);
     const tSlow = t * 0.00055 * speed;
 
     for (let i = 0; i < count; i++) {
       const x = arr[i * 3];
       const y = arr[i * 3 + 1];
       const z = arr[i * 3 + 2];
-      const v = currentTextureVector(cfg.mode, x, y, tSlow, R, cfg);
-      let nx = x + v.x * step;
-      let ny = y + v.y * step;
+      const v = currentTextureVector(
+        cfg.mode,
+        x,
+        y,
+        tSlow + flowLift * _currentScaleFlow * 0.35,
+        R,
+        cfg,
+      );
+      let nx = x + v.x * step * (1 + bassPush * _currentScaleBass * 0.18);
+      let ny = y + v.y * step * (1 + bassPush * _currentScaleBass * 0.18);
       let nz = z + Math.sin((x + y) * 0.006 + tSlow) * step * 0.08;
 
       if (currentScaleMusicMode && musicPulse > 0.01) {
-        const r = Math.sqrt(nx * nx + ny * ny) + 1;
-        const ring = 0.5 + Math.sin(r * 0.032 - t * 0.0042) * 0.5;
-        const push = R * 0.0026 * musicPulse * ring;
-        nx += (nx / r) * push;
-        ny += (ny / r) * push;
-        nz += Math.sin(r * 0.018 + tSlow * 6) * musicPulse * R * 0.0009;
+        const row = Math.floor((ny + R * 1.2) / (scaleCell * 0.58));
+        const offset = row % 2 === 0 ? 0 : scaleCell * 0.5;
+        const cx = Math.round((nx + offset) / scaleCell) * scaleCell - offset;
+        const cy = row * scaleCell * 0.58 - R * 1.2 + scaleCell * 0.3;
+        const dx = nx - cx;
+        const dy = ny - cy;
+        const d = Math.sqrt(dx * dx + dy * dy) + 1;
+        const localBeat = 0.5 + Math.sin(beatPhase - d * 0.05 + row * 0.7) * 0.5;
+        const geo = _currentScaleGeometry * (0.55 + localBeat * 0.45);
+        const push =
+          R * 0.0024 * localBeat * (musicPulse * _currentScalePulse + bassPush * _currentScaleBass);
+        const swirl = R * 0.0018 * flowLift * _currentScaleFlow * (1 + geo);
+        const shear = Math.sin(beatPhase + row * 0.9) * R * 0.0009 * geo;
+        const yNorm = Math.min(1, Math.abs(ny / Math.max(R * 0.78, 1)));
+        const wingEnvelope = Math.max(0, 1 - (yNorm - 0.38) * (yNorm - 0.38) * 3.4);
+        const wingOpen =
+          _currentScaleWings * (musicPulse * 0.38 + bassPush * 0.24 + flowLift * 0.18);
+        const wingX = (nx >= 0 ? 1 : -1) * R * 0.0018 * wingEnvelope * wingOpen;
+        nx += (dx / d) * push + (-dy / d) * swirl + shear + wingX;
+        ny += (dy / d) * push + (dx / d) * swirl * 0.6 - shear * 0.45;
+        nz += (localBeat * bassPush * _currentScaleBass + leadFlicker * 0.4) * R * 0.0012;
+      }
+
+      if (currentScaleMusicMode) {
+        const shaped = currentScaleShapeTransform(
+          nx,
+          ny,
+          R,
+          Math.min(1, _currentScaleGeometry * 0.58 + musicPulse * _currentScalePulse * 0.18),
+          beatPhase,
+        );
+        nx = shaped.x;
+        ny = shaped.y;
       }
 
       if (_distortActive) {
@@ -8221,18 +8363,68 @@ function updateCurrentTexture(group: THREE.Group, cfg: Cfg, t: number, R: number
     }
     posAttr.needsUpdate = true;
 
-    const rgb: [number, number, number] = [
-      lerp(baseRgb[0], 255, glowF * 0.12),
-      lerp(baseRgb[1], 255, glowF * 0.12),
-      lerp(baseRgb[2], 255, glowF * 0.12),
-    ];
+    const rgb: [number, number, number] = currentScaleMusicMode
+      ? pulseRgb
+      : [
+          lerp(baseRgb[0], 255, glowF * 0.12),
+          lerp(baseRgb[1], 255, glowF * 0.12),
+          lerp(baseRgb[2], 255, glowF * 0.12),
+        ];
     updateMat(child, rgb, iF, 2.3);
     const mat = pts.material as THREE.PointsMaterial;
     if (currentScaleMusicMode) {
-      mat.size = 1.55 + musicPulse * 1.35;
-      mat.opacity = 0.68 + musicPulse * 0.24;
+      mat.size =
+        1.45 + musicPulse * 0.95 * _currentScalePulse + bassPush * 0.65 * _currentScaleBass;
+      mat.opacity = 0.62 + musicPulse * 0.2 * _currentScalePulse + leadFlicker * 0.1;
     }
   }
+}
+
+function currentScaleShapeTransform(
+  x: number,
+  y: number,
+  R: number,
+  amount: number,
+  beatPhase: number,
+): { x: number; y: number } {
+  if (_currentScaleShape === 'scales' || amount <= 0.001) return { x, y };
+  const r = Math.sqrt(x * x + y * y) + 1;
+  const a = Math.atan2(y, x);
+  let tx = x;
+  let ty = y;
+
+  if (_currentScaleShape === 'rings') {
+    const ringIndex = Math.round((r / Math.max(R * 0.18, 1)) % 3);
+    const ringRadius = R * (0.2 + ringIndex * 0.18);
+    const wobble = Math.sin(a * 3 + beatPhase) * R * 0.018;
+    tx = Math.cos(a) * (ringRadius + wobble);
+    ty = Math.sin(a) * (ringRadius + wobble) * (0.86 + ringIndex * 0.04);
+  } else if (_currentScaleShape === 'brain') {
+    const fold = Math.sin(a * 6 + beatPhase * 0.45) * R * 0.045;
+    const split =
+      Math.sign(x || 1) * R * 0.08 * Math.max(0, 1 - Math.abs(y) / Math.max(R * 0.78, 1));
+    const oval = R * 0.55 + fold;
+    tx = Math.cos(a) * oval + split;
+    ty = Math.sin(a) * oval * 0.72;
+  } else if (_currentScaleShape === 'heart') {
+    const s = Math.min(1, r / Math.max(R * 0.8, 1));
+    const t = a;
+    const hx = 16 * Math.sin(t) ** 3;
+    const hy = 13 * Math.cos(t) - 5 * Math.cos(2 * t) - 2 * Math.cos(3 * t) - Math.cos(4 * t);
+    tx = (hx / 18) * R * 0.68 * s;
+    ty = (-hy / 18) * R * 0.68 * s + R * 0.08;
+  } else if (_currentScaleShape === 'losange') {
+    const denom = Math.abs(Math.cos(a)) + Math.abs(Math.sin(a)) + 0.001;
+    const diamondRadius = (R * 0.62) / denom;
+    const s = Math.min(1, r / Math.max(R * 0.82, 1));
+    tx = Math.cos(a) * diamondRadius * s;
+    ty = Math.sin(a) * diamondRadius * s;
+  }
+
+  return {
+    x: lerp(x, tx, amount),
+    y: lerp(y, ty, amount),
+  };
 }
 
 function buildPlasma(cfg: Cfg, R: number): THREE.Group {
@@ -10226,7 +10418,16 @@ let _musicPulse = 0;
 let _musicBass = 0;
 let _musicDrums = 0;
 let _musicPads = 0;
+let _musicKeys = 0;
+let _musicLead = 0;
 let _musicBpm = 122;
+let _currentScalePulse = 0.72;
+let _currentScaleBass = 0.62;
+let _currentScaleFlow = 0.68;
+let _currentScaleColour = 0.28;
+let _currentScaleGeometry = 0.58;
+let _currentScaleWings = 0.46;
+let _currentScaleShape = 'scales';
 
 function fingerForce(
   x: number,
@@ -12372,6 +12573,15 @@ export default function GeometryField() {
   const [open, setOpen] = useState(true);
   const [tab, setTab] = useState<'builder' | 'music' | 'journey'>('builder');
   const [builderView, setBuilderView] = useState<'programs' | 'sliders'>('sliders');
+  const [currentScaleResponse, setCurrentScaleResponse] = useState({
+    pulse: 0.72,
+    movement: 0.62,
+    flow: 0.68,
+    colour: 0.28,
+    geometry: 0.58,
+    wings: 0.46,
+  });
+  const [currentScaleShape, setCurrentScaleShape] = useState('scales');
   const [journeyId, setJourneyId] = useState(1);
   const [journeyRunning, setJourneyRunning] = useState(false);
   const [journeyPhaseInfo, setJourneyPhaseInfo] = useState({ phaseIdx: 0, phaseProgress: 0 });
@@ -12387,6 +12597,16 @@ export default function GeometryField() {
   useEffect(() => {
     motionModeRef.current = motionMode;
   }, [motionMode]);
+
+  useEffect(() => {
+    _currentScalePulse = currentScaleResponse.pulse;
+    _currentScaleBass = currentScaleResponse.movement;
+    _currentScaleFlow = currentScaleResponse.flow;
+    _currentScaleColour = currentScaleResponse.colour;
+    _currentScaleGeometry = currentScaleResponse.geometry;
+    _currentScaleWings = currentScaleResponse.wings;
+    _currentScaleShape = currentScaleShape;
+  }, [currentScaleResponse, currentScaleShape]);
 
   useEffect(() => {
     try {
@@ -12407,8 +12627,13 @@ export default function GeometryField() {
       }
       _musicDrums = Math.min(1, energy.drums ?? 0);
       _musicBass = Math.min(1, energy.bass ?? 0);
-      _musicPads = Math.min(1, (energy.pads ?? 0) + (energy.keys ?? 0) * 0.45);
-      _musicPulse = Math.min(1, _musicDrums * 0.55 + _musicBass * 0.35 + _musicPads * 0.18);
+      _musicKeys = Math.min(1, energy.keys ?? 0);
+      _musicLead = Math.min(1, energy.lead ?? 0);
+      _musicPads = Math.min(1, (energy.pads ?? 0) + _musicKeys * 0.45);
+      _musicPulse = Math.min(
+        1,
+        _musicDrums * 0.55 + _musicBass * 0.35 + _musicPads * 0.18 + _musicLead * 0.14,
+      );
     }
     window.addEventListener('colourmap:groove-visual-step', onGrooveStep);
     return () => window.removeEventListener('colourmap:groove-visual-step', onGrooveStep);
@@ -15668,7 +15893,10 @@ export default function GeometryField() {
                       <button
                         key={name}
                         type="button"
-                        onClick={() => applyPreset(name)}
+                        onClick={() => {
+                          applyPreset(name);
+                          if (name === 'Current Scales') setTouchMode('ripple');
+                        }}
                         style={{
                           textAlign: 'left',
                           padding: '9px 10px',
@@ -15704,6 +15932,257 @@ export default function GeometryField() {
                     );
                   })}
                 </div>
+                {cfg.mode === 'currentscales' && (
+                  <div
+                    style={{
+                      border: `1px solid ${accentMid}`,
+                      background: `rgba(${pr},${pg},${pb},0.05)`,
+                      borderRadius: 10,
+                      padding: '10px 11px',
+                      display: 'grid',
+                      gap: 8,
+                    }}
+                  >
+                    <div
+                      style={{
+                        fontFamily: 'var(--font-serif)',
+                        fontSize: 10,
+                        letterSpacing: '0.14em',
+                        textTransform: 'uppercase',
+                        color: accent,
+                        fontWeight: 700,
+                      }}
+                    >
+                      Current Scales response
+                    </div>
+                    <div
+                      style={{
+                        display: 'grid',
+                        gridTemplateColumns: 'repeat(2, minmax(0, 1fr))',
+                        gap: 6,
+                      }}
+                    >
+                      {(
+                        [
+                          [
+                            'Soft Tide',
+                            {
+                              pulse: 0.42,
+                              movement: 0.28,
+                              flow: 0.58,
+                              colour: 0.08,
+                              geometry: 0.22,
+                              wings: 0.16,
+                            },
+                            { complexity: 6, glow: 5, particles: 5, breathSpeed: 0.62 },
+                            'scales',
+                          ],
+                          [
+                            'Bass Wings',
+                            {
+                              pulse: 0.78,
+                              movement: 0.92,
+                              flow: 0.58,
+                              colour: 0.22,
+                              geometry: 0.72,
+                              wings: 0.92,
+                            },
+                            { complexity: 7, glow: 6, particles: 6, breathSpeed: 0.78 },
+                            'rings',
+                          ],
+                          [
+                            'Liquid Hands',
+                            {
+                              pulse: 0.62,
+                              movement: 0.74,
+                              flow: 0.95,
+                              colour: 0.18,
+                              geometry: 0.48,
+                              wings: 0.36,
+                            },
+                            { complexity: 8, glow: 6, particles: 7, breathSpeed: 0.7 },
+                            'brain',
+                          ],
+                          [
+                            'Spark Geometry',
+                            {
+                              pulse: 0.92,
+                              movement: 0.58,
+                              flow: 0.42,
+                              colour: 0.58,
+                              geometry: 0.96,
+                              wings: 0.54,
+                            },
+                            { complexity: 9, glow: 8, particles: 6, breathSpeed: 0.88 },
+                            'losange',
+                          ],
+                        ] as [
+                          string,
+                          typeof currentScaleResponse,
+                          Partial<Pick<Cfg, 'complexity' | 'glow' | 'particles' | 'breathSpeed'>>,
+                          string,
+                        ][]
+                      ).map(([label, response, visual, shape]) => (
+                        <button
+                          key={label}
+                          type="button"
+                          onClick={() => {
+                            setCurrentScaleResponse(response);
+                            setCurrentScaleShape(shape);
+                            setTouchMode(
+                              label === 'Liquid Hands'
+                                ? 'ripple'
+                                : fingerMode === 'off'
+                                  ? 'ripple'
+                                  : fingerMode,
+                            );
+                            setCfg((prev) => ({ ...prev, ...visual }));
+                          }}
+                          style={{
+                            borderRadius: 8,
+                            border: `1px solid ${accentMid}`,
+                            background: `rgba(${pr},${pg},${pb},0.07)`,
+                            color: accent,
+                            cursor: 'pointer',
+                            fontFamily: 'var(--font-serif)',
+                            fontSize: 10,
+                            fontWeight: 700,
+                            letterSpacing: '0.06em',
+                            padding: '7px 6px',
+                          }}
+                        >
+                          {label}
+                        </button>
+                      ))}
+                    </div>
+                    <div
+                      style={{
+                        display: 'grid',
+                        gridTemplateColumns: 'repeat(5, minmax(0, 1fr))',
+                        gap: 5,
+                      }}
+                    >
+                      {(
+                        [
+                          ['scales', 'Scales'],
+                          ['rings', 'Rings'],
+                          ['brain', 'Brain'],
+                          ['heart', 'Heart'],
+                          ['losange', 'Losange'],
+                        ] as [string, string][]
+                      ).map(([shape, label]) => {
+                        const active = currentScaleShape === shape;
+                        return (
+                          <button
+                            key={shape}
+                            type="button"
+                            onClick={() => {
+                              setCurrentScaleShape(shape);
+                              if (shape !== 'scales') {
+                                setCurrentScaleResponse((prev) => ({
+                                  ...prev,
+                                  geometry: Math.max(prev.geometry, 0.72),
+                                }));
+                              }
+                            }}
+                            style={{
+                              minWidth: 0,
+                              borderRadius: 8,
+                              border: `1px solid ${active ? accent : `rgba(${pr},${pg},${pb},0.15)`}`,
+                              background: active ? accentFaint : 'transparent',
+                              color: active ? accent : `rgba(${pr},${pg},${pb},0.48)`,
+                              cursor: 'pointer',
+                              fontFamily: 'var(--font-serif)',
+                              fontSize: 8,
+                              fontWeight: active ? 700 : 500,
+                              letterSpacing: '0.04em',
+                              padding: '6px 0',
+                              textTransform: 'uppercase',
+                            }}
+                          >
+                            {label}
+                          </button>
+                        );
+                      })}
+                    </div>
+                    {(
+                      [
+                        ['pulse', 'dot pulse'],
+                        ['movement', 'dot movement'],
+                        ['flow', 'flow swirl'],
+                        ['colour', 'beat colour'],
+                        ['geometry', 'cell geometry'],
+                        ['wings', 'wings'],
+                      ] as [keyof typeof currentScaleResponse, string][]
+                    ).map(([key, label]) => (
+                      <label
+                        key={key}
+                        style={{
+                          display: 'grid',
+                          gridTemplateColumns: '82px 1fr 28px',
+                          alignItems: 'center',
+                          gap: 7,
+                          color: `rgba(${pr},${pg},${pb},0.62)`,
+                          fontFamily: 'var(--font-serif)',
+                          fontSize: 10,
+                        }}
+                      >
+                        <span>{label}</span>
+                        <input
+                          type="range"
+                          min="0"
+                          max="1"
+                          step="0.01"
+                          value={currentScaleResponse[key]}
+                          onChange={(event) =>
+                            setCurrentScaleResponse((prev) => ({
+                              ...prev,
+                              [key]: Number(event.currentTarget.value),
+                            }))
+                          }
+                          style={{ width: '100%', accentColor: accent }}
+                        />
+                        <span style={{ textAlign: 'right', color: accent }}>
+                          {Math.round(currentScaleResponse[key] * 100)}
+                        </span>
+                      </label>
+                    ))}
+                    <div
+                      style={{
+                        display: 'grid',
+                        gridTemplateColumns: 'repeat(5, minmax(0, 1fr))',
+                        gap: 5,
+                        paddingTop: 2,
+                      }}
+                    >
+                      {(['ripple', 'push', 'pull', 'light', 'off'] as FingerMode[]).map((mode) => {
+                        const active = fingerMode === mode;
+                        return (
+                          <button
+                            key={mode}
+                            type="button"
+                            onClick={() => setTouchMode(mode)}
+                            style={{
+                              minWidth: 0,
+                              borderRadius: 8,
+                              border: `1px solid ${active ? accent : `rgba(${pr},${pg},${pb},0.15)`}`,
+                              background: active ? accentFaint : 'transparent',
+                              color: active ? accent : `rgba(${pr},${pg},${pb},0.48)`,
+                              fontFamily: 'var(--font-serif)',
+                              fontSize: 8,
+                              letterSpacing: '0.06em',
+                              padding: '5px 0',
+                              textTransform: 'uppercase',
+                              cursor: 'pointer',
+                            }}
+                          >
+                            {mode}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
                 <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
                   <button
                     type="button"
