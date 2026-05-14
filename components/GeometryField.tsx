@@ -50,6 +50,10 @@ type Mode =
   | 'liquid'
   | 'cells'
   | 'current'
+  | 'currentscales'
+  | 'cyclonetiles'
+  | 'eddylace'
+  | 'magneticsand'
   | 'plasma'
   | 'globe'
   | 'current3d'
@@ -1228,6 +1232,54 @@ const PRESETS: Record<string, Cfg> = {
     luminous: 3,
     stars: 0,
     mode: 'current',
+  },
+  'Current Scales': {
+    preset: 'Deep Current',
+    symmetry: 7,
+    complexity: 7,
+    glow: 4,
+    breathSpeed: 0.45,
+    intensity: 8,
+    particles: 0,
+    luminous: 2,
+    stars: 0,
+    mode: 'currentscales',
+  },
+  'Cyclone Tiles': {
+    preset: 'Deep Current',
+    symmetry: 8,
+    complexity: 6,
+    glow: 5,
+    breathSpeed: 0.55,
+    intensity: 8,
+    particles: 0,
+    luminous: 2,
+    stars: 0,
+    mode: 'cyclonetiles',
+  },
+  'Eddy Lace': {
+    preset: 'Deep Current',
+    symmetry: 5,
+    complexity: 8,
+    glow: 4,
+    breathSpeed: 0.5,
+    intensity: 8,
+    particles: 0,
+    luminous: 2,
+    stars: 0,
+    mode: 'eddylace',
+  },
+  'Magnetic Sand': {
+    preset: 'Golden Source',
+    symmetry: 6,
+    complexity: 8,
+    glow: 3,
+    breathSpeed: 0.35,
+    intensity: 8,
+    particles: 0,
+    luminous: 2,
+    stars: 0,
+    mode: 'magneticsand',
   },
   'Solar Flare': {
     preset: 'Solar Plasma',
@@ -3619,6 +3671,11 @@ function buildModeGroup(cfg: Cfg, R: number): THREE.Group {
       return buildCells(cfg, R);
     case 'current':
       return buildCurrent(cfg, R);
+    case 'currentscales':
+    case 'cyclonetiles':
+    case 'eddylace':
+    case 'magneticsand':
+      return buildCurrentTexture(cfg, R);
     case 'plasma':
       return buildPlasma(cfg, R);
     case 'globe':
@@ -3806,6 +3863,12 @@ function updateModeGroup(group: THREE.Group, cfg: Cfg, dots: Dot[], t: number, R
       break;
     case 'current':
       updateCurrent(group, cfg, t, R);
+      break;
+    case 'currentscales':
+    case 'cyclonetiles':
+    case 'eddylace':
+    case 'magneticsand':
+      updateCurrentTexture(group, cfg, t, R);
       break;
     case 'plasma':
       updatePlasma(group, cfg, t, R);
@@ -7850,6 +7913,175 @@ function updateCurrent(group: THREE.Group, cfg: Cfg, t: number, R: number): void
 
 /* ── PLASMA mode — solar filaments with central attractor ────── */
 
+function isCurrentTextureMode(mode: Mode): boolean {
+  return (
+    mode === 'current' ||
+    mode === 'currentscales' ||
+    mode === 'cyclonetiles' ||
+    mode === 'eddylace' ||
+    mode === 'magneticsand'
+  );
+}
+
+function buildCurrentTexture(cfg: Cfg, R: number): THREE.Group {
+  const TAU = Math.PI * 2;
+  const iF = cfg.intensity / 10;
+  const count = Math.max(900, Math.round(lerp(1800, 4600, iF)));
+  const group = new THREE.Group();
+  const pal = PAL[cfg.preset] ?? PAL['Calm Field'];
+  const [rr, gg, bb] = pal.rgb;
+  const positions = new Float32Array(count * 3);
+
+  for (let i = 0; i < count; i++) {
+    const a = Math.random() * TAU;
+    const r = Math.sqrt(Math.random()) * R * 1.08;
+    positions[i * 3] = Math.cos(a) * r;
+    positions[i * 3 + 1] = Math.sin(a) * r;
+    positions[i * 3 + 2] = (Math.random() - 0.5) * R * 0.08;
+  }
+
+  const geo = new THREE.BufferGeometry();
+  const posAttr = new THREE.BufferAttribute(positions, 3);
+  posAttr.setUsage(THREE.DynamicDrawUsage);
+  geo.setAttribute('position', posAttr);
+
+  const pts = new THREE.Points(geo, ptsMat(hdrColor([rr, gg, bb], iF, 2.45), 1.55, 0.7));
+  pts.userData.tag = 'currentTexture';
+  pts.userData.count = count;
+  pts.userData.prevT = -1;
+  group.add(pts);
+
+  return group;
+}
+
+function currentTextureVector(
+  mode: Mode,
+  x: number,
+  y: number,
+  tSlow: number,
+  R: number,
+  cfg: Cfg,
+): { x: number; y: number } {
+  const density = cfg.complexity / 10;
+  const sym = Math.max(2, Math.round(cfg.symmetry));
+  const cell = lerp(R * 0.32, R * 0.12, density);
+
+  if (mode === 'currentscales') {
+    const row = Math.floor((y + R * 1.2) / (cell * 0.58));
+    const offset = row % 2 === 0 ? 0 : cell * 0.5;
+    const cx = Math.round((x + offset) / cell) * cell - offset;
+    const cy = row * cell * 0.58 - R * 1.2 + cell * 0.3;
+    const dx = x - cx;
+    const dy = y - cy;
+    const d = Math.sqrt(dx * dx + dy * dy) + 1;
+    const scaleLip = Math.sin((d / cell) * Math.PI);
+    return {
+      x: (-dy / d) * scaleLip + Math.sin(y * 0.012 + tSlow) * 0.26,
+      y: (dx / d) * scaleLip * 0.55 + Math.cos((x + cx) * 0.01 + tSlow) * 0.18,
+    };
+  }
+
+  if (mode === 'cyclonetiles') {
+    const cx = Math.round(x / cell) * cell;
+    const cy = Math.round(y / cell) * cell;
+    const dx = x - cx;
+    const dy = y - cy;
+    const d = Math.sqrt(dx * dx + dy * dy) + 1;
+    const dir = (Math.round(cx / cell) + Math.round(cy / cell)) % 2 === 0 ? 1 : -1;
+    const spin = Math.max(0.15, 1 - d / (cell * 0.82));
+    return {
+      x: (-dy / d) * spin * dir + Math.sin(y * 0.008 + tSlow * 0.6) * 0.18,
+      y: (dx / d) * spin * dir + Math.cos(x * 0.008 - tSlow * 0.6) * 0.18,
+    };
+  }
+
+  if (mode === 'eddylace') {
+    const f = sym / Math.max(R, 1);
+    return {
+      x: Math.sin(y * f * 2.4 + tSlow) * 0.55 + Math.sin((x + y) * f * 1.1 - tSlow * 0.7) * 0.35,
+      y:
+        -Math.sin(x * f * 2.2 - tSlow * 0.8) * 0.55 +
+        Math.cos((x - y) * f * 1.3 + tSlow * 0.6) * 0.35,
+    };
+  }
+
+  const poleA = { x: Math.cos(tSlow * 0.12) * R * 0.34, y: Math.sin(tSlow * 0.09) * R * 0.18 };
+  const poleB = { x: -poleA.x, y: -poleA.y };
+  const ax = x - poleA.x;
+  const ay = y - poleA.y;
+  const bx = x - poleB.x;
+  const by = y - poleB.y;
+  const a2 = ax * ax + ay * ay + R * 9;
+  const b2 = bx * bx + by * by + R * 9;
+  const fx = ax / a2 - bx / b2;
+  const fy = ay / a2 - by / b2;
+  const angle = Math.atan2(fy, fx) + Math.PI / 2;
+  return {
+    x: Math.cos(angle) * 0.85 + Math.sin(y * 0.015 + tSlow) * 0.15,
+    y: Math.sin(angle) * 0.85 + Math.cos(x * 0.015 - tSlow) * 0.15,
+  };
+}
+
+function updateCurrentTexture(group: THREE.Group, cfg: Cfg, t: number, R: number): void {
+  const iF = cfg.intensity / 10;
+  const glowF = cfg.glow / 10;
+  const speed = cfg.breathSpeed * 0.72;
+  const pal = PAL[cfg.preset] ?? PAL['Calm Field'];
+  const baseRgb = pal.rgb;
+  const fieldR = R * 1.12;
+  const R2 = fieldR * fieldR;
+
+  for (const child of group.children) {
+    if ((child.userData.tag as string) !== 'currentTexture') continue;
+    const pts = child as THREE.Points;
+    const posAttr = pts.geometry.getAttribute('position') as THREE.BufferAttribute;
+    const arr = posAttr.array as Float32Array;
+    const count = child.userData.count as number;
+    const prevT = child.userData.prevT as number;
+    const dt = prevT < 0 ? 16 : Math.min(t - prevT, 32);
+    child.userData.prevT = t;
+    const step = R * 0.012 * speed * (dt / 16);
+    const tSlow = t * 0.00055 * speed;
+
+    for (let i = 0; i < count; i++) {
+      const x = arr[i * 3];
+      const y = arr[i * 3 + 1];
+      const z = arr[i * 3 + 2];
+      const v = currentTextureVector(cfg.mode, x, y, tSlow, R, cfg);
+      let nx = x + v.x * step;
+      let ny = y + v.y * step;
+      let nz = z + Math.sin((x + y) * 0.006 + tSlow) * step * 0.08;
+
+      if (_distortActive) {
+        const f = fingerForce(nx, ny, nz, R * 0.62);
+        nx += f.x * (0.95 + speed * 1.1);
+        ny += f.y * (0.95 + speed * 1.1);
+        nz += f.z * 0.5;
+      }
+
+      if (nx * nx + ny * ny > R2) {
+        const a = Math.atan2(ny, nx) + Math.PI + (Math.random() - 0.5) * 0.9;
+        const r = fieldR * (0.18 + Math.random() * 0.58);
+        nx = Math.cos(a) * r;
+        ny = Math.sin(a) * r;
+        nz = (Math.random() - 0.5) * R * 0.08;
+      }
+
+      arr[i * 3] = nx;
+      arr[i * 3 + 1] = ny;
+      arr[i * 3 + 2] = nz;
+    }
+    posAttr.needsUpdate = true;
+
+    const rgb: [number, number, number] = [
+      lerp(baseRgb[0], 255, glowF * 0.12),
+      lerp(baseRgb[1], 255, glowF * 0.12),
+      lerp(baseRgb[2], 255, glowF * 0.12),
+    ];
+    updateMat(child, rgb, iF, 2.3);
+  }
+}
+
 function buildPlasma(cfg: Cfg, R: number): THREE.Group {
   const TAU = Math.PI * 2;
   const iF = cfg.intensity / 10;
@@ -9516,6 +9748,10 @@ const MODE_TO_PRESET: Partial<Record<Mode, string>> = {
   liquid: 'Oil Film',
   cells: 'Living Tissue',
   current: 'Ocean Drift',
+  currentscales: 'Current Scales',
+  cyclonetiles: 'Cyclone Tiles',
+  eddylace: 'Eddy Lace',
+  magneticsand: 'Magnetic Sand',
   plasma: 'Solar Flare',
   globe: 'Emotion Globe',
   current3d: 'Current 3D',
@@ -9612,6 +9848,10 @@ const MODES: { mode: Mode; label: string }[] = [
   { mode: 'liquid', label: '〰 Liquid' },
   { mode: 'cells', label: '⬡ Cells' },
   { mode: 'current', label: '∿ Current' },
+  { mode: 'currentscales', label: 'Current Scales' },
+  { mode: 'cyclonetiles', label: 'Cyclone Tiles' },
+  { mode: 'eddylace', label: 'Eddy Lace' },
+  { mode: 'magneticsand', label: 'Magnetic Sand' },
   { mode: 'current3d', label: '∿³ Current 3D' },
   { mode: 'plasma', label: '☀ Plasma' },
   { mode: 'globe', label: '◎ Globe' },
@@ -9659,6 +9899,10 @@ const FEATURED_PRESETS: FeaturedItem[] = [
   { name: 'Plasma Field', tag: 'FLOW' },
   { name: 'Solar Flare', tag: 'FLOW' },
   { name: 'Ocean Drift', tag: 'FLOW' },
+  { name: 'Current Scales', tag: 'FLOW' },
+  { name: 'Cyclone Tiles', tag: 'FLOW' },
+  { name: 'Eddy Lace', tag: 'FLOW' },
+  { name: 'Magnetic Sand', tag: 'FLOW' },
   { name: 'Emotion Field', tag: 'SELF' },
   { name: 'Emotion Storm', tag: 'SELF' },
   { name: 'Star Map', tag: 'SELF' },
@@ -12037,7 +12281,11 @@ export default function GeometryField() {
       scene.userData.H = H;
 
       // Handle ripple rings
-      updateRippleRings(scene, rippleRingsRef.current, ripplesRef.current, t, currentCfg, R);
+      if (!isCurrentTextureMode(currentCfg.mode)) {
+        updateRippleRings(scene, rippleRingsRef.current, ripplesRef.current, t, currentCfg, R);
+      } else {
+        ripplesRef.current.length = 0;
+      }
 
       // Expire old ripples
       for (let i = ripplesRef.current.length - 1; i >= 0; i--) {
@@ -14047,6 +14295,7 @@ export default function GeometryField() {
   }
 
   function handleCanvasClick(e: React.MouseEvent<HTMLCanvasElement>) {
+    if (isCurrentTextureMode(cfgRef.current.mode)) return;
     const rect = canvasRef.current!.getBoundingClientRect();
     ripplesRef.current.push({
       x: e.clientX - rect.left,
@@ -14063,7 +14312,11 @@ export default function GeometryField() {
     _distortWorldX = e.clientX - rect.left - W / 2;
     _distortWorldY = -(e.clientY - rect.top - H / 2);
     _distortActive = true;
-    if (_distortMode === 'ripple' && ripplesRef.current.length < 10) {
+    if (
+      _distortMode === 'ripple' &&
+      !isCurrentTextureMode(cfgRef.current.mode) &&
+      ripplesRef.current.length < 10
+    ) {
       ripplesRef.current.push({
         x: e.clientX - rect.left,
         y: e.clientY - rect.top,
