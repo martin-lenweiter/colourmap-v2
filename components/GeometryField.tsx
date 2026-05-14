@@ -8157,6 +8157,18 @@ function updateCurrentTexture(group: THREE.Group, cfg: Cfg, t: number, R: number
   const baseRgb = pal.rgb;
   const fieldR = R * 1.12;
   const R2 = fieldR * fieldR;
+  const currentScaleMusicMode = cfg.mode === 'currentscales';
+  const beatPhase = (t / 1000) * Math.PI * 2 * (_musicBpm / 60);
+  if (currentScaleMusicMode) {
+    _musicPulse *= 0.94;
+    _musicBass *= 0.965;
+    _musicDrums *= 0.9;
+    _musicPads *= 0.985;
+  }
+  const internalPulse = currentScaleMusicMode ? ((Math.sin(beatPhase) + 1) / 2) ** 3 * 0.24 : 0;
+  const musicPulse = currentScaleMusicMode
+    ? Math.min(1, internalPulse + _musicPulse * 0.95 + _musicBass * 0.42 + _musicDrums * 0.28)
+    : 0;
 
   for (const child of group.children) {
     if ((child.userData.tag as string) !== 'currentTexture') continue;
@@ -8167,7 +8179,7 @@ function updateCurrentTexture(group: THREE.Group, cfg: Cfg, t: number, R: number
     const prevT = child.userData.prevT as number;
     const dt = prevT < 0 ? 16 : Math.min(t - prevT, 32);
     child.userData.prevT = t;
-    const step = R * 0.012 * speed * (dt / 16);
+    const step = R * 0.012 * speed * (dt / 16) * (1 + musicPulse * 0.58);
     const tSlow = t * 0.00055 * speed;
 
     for (let i = 0; i < count; i++) {
@@ -8178,6 +8190,15 @@ function updateCurrentTexture(group: THREE.Group, cfg: Cfg, t: number, R: number
       let nx = x + v.x * step;
       let ny = y + v.y * step;
       let nz = z + Math.sin((x + y) * 0.006 + tSlow) * step * 0.08;
+
+      if (currentScaleMusicMode && musicPulse > 0.01) {
+        const r = Math.sqrt(nx * nx + ny * ny) + 1;
+        const ring = 0.5 + Math.sin(r * 0.032 - t * 0.0042) * 0.5;
+        const push = R * 0.0026 * musicPulse * ring;
+        nx += (nx / r) * push;
+        ny += (ny / r) * push;
+        nz += Math.sin(r * 0.018 + tSlow * 6) * musicPulse * R * 0.0009;
+      }
 
       if (_distortActive) {
         const f = fingerForce(nx, ny, nz, R * 0.62);
@@ -8206,6 +8227,11 @@ function updateCurrentTexture(group: THREE.Group, cfg: Cfg, t: number, R: number
       lerp(baseRgb[2], 255, glowF * 0.12),
     ];
     updateMat(child, rgb, iF, 2.3);
+    const mat = pts.material as THREE.PointsMaterial;
+    if (currentScaleMusicMode) {
+      mat.size = 1.55 + musicPulse * 1.35;
+      mat.opacity = 0.68 + musicPulse * 0.24;
+    }
   }
 }
 
@@ -10200,6 +10226,7 @@ let _musicPulse = 0;
 let _musicBass = 0;
 let _musicDrums = 0;
 let _musicPads = 0;
+let _musicBpm = 122;
 
 function fingerForce(
   x: number,
@@ -12362,13 +12389,22 @@ export default function GeometryField() {
   }, [motionMode]);
 
   useEffect(() => {
+    try {
+      const savedBpm = Number(window.localStorage.getItem('colourmap:groove-bpm'));
+      if (Number.isFinite(savedBpm) && savedBpm >= 40 && savedBpm <= 220) _musicBpm = savedBpm;
+    } catch {}
+
     function onGrooveStep(event: Event) {
       const detail = (
         event as CustomEvent<{
+          bpm?: number;
           energy?: Partial<Record<'drums' | 'bass' | 'keys' | 'lead' | 'pads', number>>;
         }>
       ).detail;
       const energy = detail?.energy ?? {};
+      if (typeof detail?.bpm === 'number' && Number.isFinite(detail.bpm)) {
+        _musicBpm = Math.max(40, Math.min(220, detail.bpm));
+      }
       _musicDrums = Math.min(1, energy.drums ?? 0);
       _musicBass = Math.min(1, energy.bass ?? 0);
       _musicPads = Math.min(1, (energy.pads ?? 0) + (energy.keys ?? 0) * 0.45);
@@ -12867,7 +12903,7 @@ export default function GeometryField() {
         _musicBass *= 0.96;
         _musicDrums *= 0.9;
         _musicPads *= 0.985;
-        const internalBeat = (Math.sin(tt * Math.PI * 2 * speed) + 1) / 2;
+        const internalBeat = (Math.sin(tt * Math.PI * 2 * (_musicBpm / 60)) + 1) / 2;
         const beat = Math.min(1, internalBeat * 0.42 + _musicPulse * 0.85);
         const low = Math.min(
           1,

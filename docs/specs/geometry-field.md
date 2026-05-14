@@ -12,7 +12,7 @@ The Current family uses dot fields to reveal hidden motion patterns before and d
 Accepted presets in this family:
 
 - **Ocean Drift**: base current field.
-- **Current Scales**: overlapping scale/petal cells with local vortex motion.
+- **Current Scales**: overlapping scale/petal cells with local vortex motion. In Music Visuals, it should also breathe on the active Groove BPM: drums brighten and bass expands the cells without adding large centre rings.
 - **Cyclone Tiles**: square cells containing alternating cyclones.
 - **Eddy Lace**: connected whirlpools and lace-like flow trails.
 - **Magnetic Sand**: particles aligning around invisible field poles.

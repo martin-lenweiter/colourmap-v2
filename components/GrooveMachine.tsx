@@ -1152,6 +1152,13 @@ export default function GrooveMachine() {
     soundSession.setActive('groove-machine', `${preset.name} · ${bpm}bpm`);
   }, [scheduleNextNotes, soundSession, preset.name, bpm]);
 
+  useEffect(() => {
+    try {
+      window.localStorage.setItem('colourmap:groove-bpm', String(bpm));
+      window.localStorage.setItem('colourmap:groove-preset', presetId);
+    } catch {}
+  }, [bpm, presetId]);
+
   const stopAudio = useCallback(() => {
     if (timerRef.current) {
       clearInterval(timerRef.current);
