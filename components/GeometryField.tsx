@@ -77,6 +77,7 @@ type Mode =
   | 'wordweave'
   | 'metamorph'
   | 'chrysalis'
+  | 'chrysalisrings'
   | 'breathform'
   | 'clock3d'
   | 'atomlight'
@@ -130,6 +131,9 @@ interface Ripple {
   y: number;
   born: number;
 }
+
+type FingerMode = 'off' | 'ripple' | 'pull' | 'push' | 'light';
+type MotionMode = 'animate' | 'static';
 
 /* ── Palettes ───────────────────────────────────────────────── */
 
@@ -2206,6 +2210,18 @@ const PRESETS: Record<string, Cfg> = {
     stars: 2,
     mode: 'chrysalis',
   },
+  'Chrysalis Rings': {
+    preset: 'Golden Source',
+    symmetry: 3,
+    complexity: 6,
+    glow: 7,
+    breathSpeed: 0.45,
+    intensity: 8,
+    particles: 3,
+    luminous: 1.7,
+    stars: 1,
+    mode: 'chrysalisrings',
+  },
   Breathform: {
     preset: 'Golden Source',
     symmetry: 5,
@@ -3643,6 +3659,7 @@ function buildModeGroup(cfg: Cfg, R: number): THREE.Group {
     case 'wordweave':
     case 'metamorph':
     case 'chrysalis':
+    case 'chrysalisrings':
     case 'breathform':
     case 'clock3d':
     case 'atomlight':
@@ -3845,6 +3862,7 @@ function updateModeGroup(group: THREE.Group, cfg: Cfg, dots: Dot[], t: number, R
     case 'wordweave':
     case 'metamorph':
     case 'chrysalis':
+    case 'chrysalisrings':
     case 'breathform':
     case 'clock3d':
     case 'atomlight':
@@ -7718,7 +7736,7 @@ function buildCells(cfg: Cfg, R: number): THREE.Group {
 function updateCells(group: THREE.Group, cfg: Cfg, t: number, R: number): void {
   const iF = cfg.intensity / 10;
   const breathSpeed = cfg.breathSpeed;
-  const timeHue = (t * 0.00004) % 1.0;
+  const timeHue = (t * 0.00003) % 1.0;
   const tmpCol = new THREE.Color();
 
   for (const child of group.children) {
@@ -7780,8 +7798,8 @@ function updateCurrent(group: THREE.Group, cfg: Cfg, t: number, R: number): void
   const glowF = cfg.glow / 10;
   const speed = cfg.breathSpeed * 0.7;
   const freq = (Math.max(1, Math.round(cfg.symmetry)) * Math.PI) / Math.max(R, 1);
-  const timeHue = (t * 0.00004) % 1.0;
-  const tmpCol = new THREE.Color();
+  const pal = PAL[cfg.preset] ?? PAL['Calm Field'];
+  const baseRgb = pal.rgb;
   const R2 = R * R * 0.88;
 
   for (const child of group.children) {
@@ -7812,21 +7830,20 @@ function updateCurrent(group: THREE.Group, cfg: Cfg, t: number, R: number): void
       }
       // Finger distortion: repel particles from pointer
       if (_distortActive) {
-        const dx = nx - _distortWorldX,
-          dy = ny - _distortWorldY;
-        const d2 = dx * dx + dy * dy + 4;
-        const repF = Math.min((R * 0.55 * (R * 0.55)) / d2, amplitude * 8);
-        nx += (dx / Math.sqrt(d2)) * repF;
-        ny += (dy / Math.sqrt(d2)) * repF;
+        const f = fingerForce(nx, ny, 0, R * 0.55);
+        nx += f.x * (0.7 + speed);
+        ny += f.y * (0.7 + speed);
       }
       arr[i * 3] = nx;
       arr[i * 3 + 1] = ny;
     }
     posAttr.needsUpdate = true;
 
-    const h = lerp(0.58, timeHue, glowF) % 1.0;
-    tmpCol.setHSL(h, 0.88, 0.6);
-    const rgb: [number, number, number] = [tmpCol.r * 255, tmpCol.g * 255, tmpCol.b * 255];
+    const rgb: [number, number, number] = [
+      lerp(baseRgb[0], 255, glowF * 0.12),
+      lerp(baseRgb[1], 255, glowF * 0.12),
+      lerp(baseRgb[2], 255, glowF * 0.12),
+    ];
     updateMat(child, rgb, iF, 2.2);
   }
 }
@@ -7884,7 +7901,8 @@ function updatePlasma(group: THREE.Group, cfg: Cfg, t: number, R: number): void 
   const glowF = cfg.glow / 10;
   const speed = cfg.breathSpeed * 0.8;
   const freq = (Math.max(1, Math.round(cfg.symmetry)) * Math.PI) / Math.max(R, 1);
-  const timeHue = (t * 0.00006) % 1.0;
+  const pal = PAL[cfg.preset] ?? PAL['Calm Field'];
+  const baseRgb = pal.rgb;
   const tmpCol = new THREE.Color();
 
   for (const child of group.children) {
@@ -7925,26 +7943,29 @@ function updatePlasma(group: THREE.Group, cfg: Cfg, t: number, R: number): void 
         }
         // Finger distortion: chaotic outward burst from pointer
         if (_distortActive) {
-          const dx = nx - _distortWorldX,
-            dy = ny - _distortWorldY;
-          const d2 = dx * dx + dy * dy + 4;
-          const repF = Math.min((R * 0.48 * (R * 0.48)) / d2, amplitude * 12);
-          nx += (dx / Math.sqrt(d2)) * repF;
-          ny += (dy / Math.sqrt(d2)) * repF;
+          const f = fingerForce(nx, ny, 0, R * 0.48);
+          nx += f.x * (0.8 + speed * 1.2);
+          ny += f.y * (0.8 + speed * 1.2);
         }
         arr[i * 3] = nx;
         arr[i * 3 + 1] = ny;
       }
       posAttr.needsUpdate = true;
 
-      const h = lerp(0.08, timeHue, glowF);
-      tmpCol.setHSL(h, 1.0, 0.62);
-      const rgb: [number, number, number] = [tmpCol.r * 255, tmpCol.g * 255, tmpCol.b * 255];
+      const rgb: [number, number, number] = [
+        lerp(baseRgb[0], 255, glowF * 0.16),
+        lerp(baseRgb[1], 255, glowF * 0.16),
+        lerp(baseRgb[2], 255, glowF * 0.16),
+      ];
       updateMat(child, rgb, iF, 2.6);
     } else if (tag === 'plasmaSun') {
       const pulse = 1.0 + Math.sin(t * 0.0014 * speed) * 0.1;
       child.scale.setScalar(pulse);
-      tmpCol.setHSL(timeHue * 0.1, 0.22, 0.92);
+      tmpCol.setRGB(
+        lerp(baseRgb[0] / 255, 1, 0.45),
+        lerp(baseRgb[1] / 255, 1, 0.45),
+        lerp(baseRgb[2] / 255, 1, 0.45),
+      );
       const rgb: [number, number, number] = [tmpCol.r * 255, tmpCol.g * 255, tmpCol.b * 255];
       updateMat(child, rgb, iF * 1.15, 2.2);
     }
@@ -8079,8 +8100,8 @@ function updateCurrent3D(group: THREE.Group, cfg: Cfg, t: number, R: number): vo
   const glowF = cfg.glow / 10;
   const speed = cfg.breathSpeed * 0.7;
   const freq = (Math.max(1, Math.round(cfg.symmetry)) * Math.PI) / Math.max(R, 1);
-  const timeHue = (t * 0.000045) % 1.0;
-  const tmpCol = new THREE.Color();
+  const pal = PAL[cfg.preset] ?? PAL['Calm Field'];
+  const baseRgb = pal.rgb;
   const R2 = R * R * 0.84;
 
   for (const child of group.children) {
@@ -8117,13 +8138,10 @@ function updateCurrent3D(group: THREE.Group, cfg: Cfg, t: number, R: number): vo
       }
       // Finger distortion: 3D repulsion from projected pointer
       if (_distortActive) {
-        const dx = nx - _distortWorldX,
-          dy = ny - _distortWorldY;
-        const d2 = dx * dx + dy * dy + nz * nz * 0.5 + 4;
-        const repF = Math.min((R * 0.5 * (R * 0.5)) / d2, amp * 10);
-        nx += (dx / Math.sqrt(d2)) * repF;
-        ny += (dy / Math.sqrt(d2)) * repF;
-        nz += (nz / Math.sqrt(d2 + 1)) * repF * 0.3;
+        const f = fingerForce(nx, ny, nz, R * 0.5);
+        nx += f.x * (0.75 + speed);
+        ny += f.y * (0.75 + speed);
+        nz += f.z * (0.75 + speed);
       }
       arr[i * 3] = nx;
       arr[i * 3 + 1] = ny;
@@ -8131,9 +8149,11 @@ function updateCurrent3D(group: THREE.Group, cfg: Cfg, t: number, R: number): vo
     }
     posAttr.needsUpdate = true;
 
-    const h = lerp(0.58, timeHue, glowF) % 1.0;
-    tmpCol.setHSL(h, 0.92, 0.6);
-    const rgb: [number, number, number] = [tmpCol.r * 255, tmpCol.g * 255, tmpCol.b * 255];
+    const rgb: [number, number, number] = [
+      lerp(baseRgb[0], 255, glowF * 0.14),
+      lerp(baseRgb[1], 255, glowF * 0.14),
+      lerp(baseRgb[2], 255, glowF * 0.14),
+    ];
     updateMat(child, rgb, iF, 2.2);
     group.rotation.y += 0.00022 * speed * (dt / 16);
     group.rotation.x += 0.00011 * speed * (dt / 16);
@@ -9510,6 +9530,7 @@ const MODE_TO_PRESET: Partial<Record<Mode, string>> = {
   wordweave: 'Woven Word',
   metamorph: 'Metamorph',
   chrysalis: 'Chrysalis',
+  chrysalisrings: 'Chrysalis Rings',
   breathform: 'Breathform',
   clock3d: 'Clock of Infinity',
   atomlight: 'Atom Light',
@@ -9549,6 +9570,7 @@ const MODES: { mode: Mode; label: string }[] = [
   { mode: 'wordweave', label: '∾ Woven Word' },
   { mode: 'metamorph', label: '∞ Metamorph' },
   { mode: 'chrysalis', label: '◈ Chrysalis' },
+  { mode: 'chrysalisrings', label: 'Chrysalis Rings' },
   { mode: 'breathform', label: '◉ Breathform' },
   { mode: 'lissajous', label: '∿ Lissajous' },
   { mode: 'lissajous2', label: '∿ Expand' },
@@ -9615,123 +9637,101 @@ const MODES: { mode: Mode; label: string }[] = [
 type FeaturedItem = { name: string; tag: string } | { header: string; dim?: boolean };
 
 const FEATURED_PRESETS: FeaturedItem[] = [
-  // ── Clocks & Orbits ──
-  { header: '— Tunnels & Depth —' },
-  { name: 'Mirror Tunnel', tag: 'TUNNEL' },
-  { name: 'Neon Abyss', tag: 'TUNNEL' },
-  { name: 'Infinite Dive', tag: 'DIVE' },
-  { name: 'Golden Vortex', tag: 'DIVE' },
-  { header: '— Hearts & Eyes —' },
-  { name: 'Heart Wave', tag: 'HEART' },
-  { name: 'Heart Dance', tag: 'HEART' },
-  { name: 'Eye Storm', tag: 'EYE' },
-  { name: 'Deep Gaze', tag: 'EYE' },
-  { header: '— 3D Morphs —' },
-  { name: 'Sin Morph', tag: '3D' },
-  { name: 'Alien Form', tag: '3D' },
-  { header: '— Clocks & Orbits —' },
-  { name: 'Clock Orbit', tag: '3D' },
-  { name: 'Armillary Gold', tag: '3D' },
-  { name: 'Celestial Spheres', tag: '3D' },
-  { name: 'Astrolabe Deep', tag: '3D' },
-  { name: 'Clock of Infinity', tag: 'CLOCK' },
-  { name: 'Eternal Clock', tag: 'CLOCK' },
-  { name: 'Golden Clock', tag: 'CLOCK' },
-  { name: 'Cosmic Astrolabe', tag: 'CLOCK' },
-  { name: 'Atom Light', tag: 'ATOM' },
-  { name: 'Neon Atom', tag: 'ATOM' },
-  { name: 'Orbital Dance', tag: 'ORBIT' },
-  { name: 'Ellipse Ballet', tag: 'ORBIT' },
-  // ── Life Forms ──
-  { header: '— Life Forms —' },
-  { name: 'Butterfly Dance', tag: 'LIFE' },
-  { name: 'Duality Wings', tag: 'LIFE' },
-  { name: 'Sacred Pyramid', tag: '3D' },
-  { name: 'Merkaba', tag: '3D' },
-  // ── Morphosis ──
-  { header: '— Morphosis —' },
-  { name: 'Ripple Morph', tag: 'MORPH' },
-  { name: 'Psychedelic Bloom', tag: 'MORPH' },
-  { name: 'Kaleido Storm', tag: 'KALEIDO' },
-  { name: 'Rainbow Gate', tag: 'KALEIDO' },
-  { name: 'Metamorph', tag: 'MORPH' },
-  { name: 'Chrysalis', tag: 'MORPH' },
-  { name: 'Breathform', tag: 'MORPH' },
-  // ── Word Worlds ──
-  { header: '— Word Worlds —' },
-  { name: 'Neon Word', tag: 'WORD' },
-  { name: 'Duality', tag: 'WORD' },
-  { name: 'Echo Word', tag: 'WORD' },
-  { name: 'Particle Word', tag: 'WORD' },
-  { name: 'Woven Word', tag: 'WORD' },
-  // ── Entropy ──
-  { header: '— Entropy —' },
-  { name: 'Entropy 3D', tag: 'ENTR·3D' },
-  // ── Self Map ──
-  { header: '— Self Map —' },
-  { name: 'Soul Map', tag: '3D' },
-  { name: 'Mind Current', tag: '3D' },
-  { name: 'Body Flow', tag: '3D' },
-  { name: 'Focus Arc', tag: '3D' },
-  { name: 'Inner Temple', tag: '3D' },
-  // ── EMBF Live ──
-  { header: '— EMBF —' },
-  { name: 'EMBF Live', tag: 'EMBF' },
-  { name: 'EMBF Cosmos', tag: 'EMBF' },
-  { name: 'EMBF Forest', tag: 'EMBF' },
-  { name: 'EMBF Storm', tag: 'EMBF' },
-  // ── Chaos ──
-  { header: '— Chaos —' },
+  { header: 'Good Ones' },
+  { name: 'Sin Morph', tag: 'TOP' },
+  { name: 'Chrysalis Rings', tag: 'MORPH' },
+  { name: 'Yantra 3D', tag: 'YANTRA' },
+  { name: 'Yantra Prism', tag: 'YANTRA' },
+  { name: 'Yantra Colour', tag: 'YANTRA' },
+  { name: 'Yantra Mono', tag: 'YANTRA' },
   { name: 'Chaos Field', tag: 'CHAOS' },
-  { name: 'Chaos Triangles', tag: 'CHAOS·3D' },
-  { name: 'Chaos Storm 3D', tag: 'CHAOS·3D' },
   { name: 'Chaos Pulse', tag: 'CHAOS' },
-  // ── 3D Interactive ──
-  { header: '— 3D —' },
-  { name: 'Bloom Evo', tag: '3D' },
-  { name: 'Bloom Gold', tag: '3D' },
-  { name: 'Drift Field', tag: '3D' },
-  { name: 'Orbit EMBF', tag: '3D' },
-  { name: 'Current 3D', tag: '3D' },
-  { name: 'Vortex 3D', tag: '3D' },
-  { name: 'Deep Flow 3D', tag: '3D' },
-  { name: 'Nebula Drift', tag: '3D' },
-  // ── 2D Patterns ──
-  { header: '— 2D —' },
-  { name: 'Rorschach Pulse', tag: 'PULSE' },
-  { name: 'Rorschach Colour', tag: 'PULSE' },
-  { name: 'Ink Pulse', tag: 'PULSE' },
-  { name: 'Slow Breath', tag: 'PULSE' },
   { name: 'Random Burst', tag: 'CHAOS' },
   { name: 'Quantum Chaos', tag: 'CHAOS' },
-  { name: 'Yantra Prism', tag: 'CLR' },
-  { name: 'Yantra Colour', tag: 'CLR' },
-  { name: 'Yantra Mono', tag: 'CLR' },
-  // ── Not working well ──
-  { header: '— Not Working —', dim: true },
-  { name: 'Matrix Rain', tag: 'DOT' },
-  { name: 'Code Storm', tag: 'DOT' },
-  { name: 'Neon Rain', tag: 'DOT' },
-  { name: 'Fibonacci Prism', tag: 'CLR' },
-  { name: 'Fibonacci Colour', tag: 'CLR' },
-  { name: 'Atom 3D', tag: 'ATOM' },
-  { name: 'Tangka Mandala', tag: 'TIB' },
-  { name: 'Tangka Wheel', tag: 'TIB' },
+  { name: 'Chaos Triangles', tag: '3D' },
+  { name: 'Chaos Tri Gold', tag: '3D' },
+  { name: 'Chaos Storm 3D', tag: '3D' },
+  { name: 'Drift Field', tag: 'FLOW' },
+  { name: 'Drift Gold', tag: 'FLOW' },
+  { name: 'Current 3D', tag: 'FLOW' },
+  { name: 'Vortex 3D', tag: 'FLOW' },
+  { name: 'Deep Flow 3D', tag: 'FLOW' },
+  { name: 'Plasma Field', tag: 'FLOW' },
+  { name: 'Solar Flare', tag: 'FLOW' },
+  { name: 'Ocean Drift', tag: 'FLOW' },
+  { name: 'Emotion Field', tag: 'SELF' },
+  { name: 'Emotion Storm', tag: 'SELF' },
+  { name: 'Star Map', tag: 'SELF' },
+  { name: 'Constellation Gold', tag: 'SELF' },
+  { name: 'Mind Current', tag: 'SELF' },
+  { name: 'Soul Map', tag: 'SELF' },
+  { name: 'Body Flow', tag: 'SELF' },
+  { name: 'Focus Arc', tag: 'SELF' },
+  { name: 'Inner Temple', tag: 'SELF' },
+  { name: 'Sacred Pyramid', tag: '3D' },
+  { name: '4D Crystal', tag: '3D' },
+  { name: 'Celtic Forest', tag: '3D' },
+  { name: 'Torus Knot', tag: '3D' },
+  { name: 'Rose 3D', tag: '3D' },
+  { name: 'Helix 3D', tag: '3D' },
+  { name: 'Orbital 3D', tag: '3D' },
+  { name: 'Golden Clock', tag: 'CLOCK' },
+  { name: 'Armillary Gold', tag: 'CLOCK' },
+  { name: 'Atom Light', tag: 'ATOM' },
+  { name: 'Orbital Dance', tag: 'ORBIT' },
+  { name: 'Ripple Morph', tag: 'MORPH' },
+  { name: 'EMBF Live', tag: 'EMBF' },
+  { name: 'Deep Gaze', tag: 'EYE' },
+  { name: 'Cathedral Glass', tag: 'GLASS' },
+  { name: 'Prism Seed', tag: 'PRISM' },
+  { name: 'Entropy 3D', tag: 'CORE' },
+  { header: 'In Progress / To Develop', dim: true },
+  { name: 'Chrysalis', tag: 'MORPH' },
+  { name: 'Metamorph', tag: 'MORPH' },
+  { name: 'Mirror Tunnel', tag: 'DEPTH' },
+  { name: 'Infinite Dive', tag: 'DEPTH' },
+  { name: 'Kaleido Storm', tag: 'KALEIDO' },
+  { name: 'Sacred Vitral', tag: 'VITRAL' },
+  { name: 'Oil Film', tag: 'LIQUID' },
+  { name: 'Prism Bloom', tag: 'PRISM' },
+  { name: 'Living Tissue', tag: 'CELLS' },
+  { name: 'Tree of Life', tag: 'TREE' },
   { name: 'Tangka Lotus', tag: 'TIB' },
-  { name: 'Tangka Sky', tag: 'TIB' },
-  { name: 'Tangka Fire', tag: 'TIB' },
-  { name: 'Orbital Atom', tag: 'ATOM' },
-  { name: 'Aurora Globe', tag: 'GLOB' },
-  { name: 'Crystal Globe', tag: 'GLOB' },
-  { name: 'Entropy Gold', tag: 'ENTR' },
-  { name: 'Entropy Dark', tag: 'ENTR' },
-  { name: 'Entropy 3D Indigo', tag: 'ENTR·3D' },
+  { name: 'Matrix Rain', tag: 'DOT' },
 ];
-
 /* ── Finger distortion (module-level, single-instance) ───────── */
 let _distortActive = false;
 let _distortWorldX = 0;
 let _distortWorldY = 0;
+let _distortMode: FingerMode = 'off';
+
+function fingerForce(
+  x: number,
+  y: number,
+  z: number,
+  base: number,
+): { x: number; y: number; z: number; glow: number } {
+  if (!_distortActive || _distortMode === 'off') return { x: 0, y: 0, z: 0, glow: 0 };
+  const dx = x - _distortWorldX;
+  const dy = y - _distortWorldY;
+  const d2 = dx * dx + dy * dy + z * z * 0.35 + 6;
+  const d = Math.sqrt(d2);
+  const falloff = Math.min(1, (base * base) / d2);
+  const sign = _distortMode === 'pull' ? -1 : 1;
+  const strength =
+    _distortMode === 'light' ? base * 0.015 * falloff : base * 0.028 * falloff * sign;
+  if (_distortMode === 'ripple') {
+    const wave = Math.sin(d * 0.09 - performance.now() * 0.012) * base * 0.012 * falloff;
+    return { x: (dx / d) * wave, y: (dy / d) * wave, z: (z / d) * wave * 0.5, glow: falloff };
+  }
+  if (_distortMode === 'light') return { x: 0, y: 0, z: 0, glow: falloff };
+  return {
+    x: (dx / d) * strength,
+    y: (dy / d) * strength,
+    z: (z / d) * strength * 0.35,
+    glow: falloff,
+  };
+}
 
 /* ── PULSE mode — rorschach pulsing rings ────────────────────── */
 
@@ -11839,11 +11839,13 @@ export default function GeometryField() {
   const l3dRotRef = useRef({ x: 0.4, y: 0.0 });
   const l3dDragRef = useRef<{ lastX: number; lastY: number } | null>(null);
   const fingerDistortRef = useRef(false);
+  const motionModeRef = useRef<MotionMode>('animate');
 
   const [cfg, setCfg] = useState<Cfg>(PRESETS['Calm Field']);
   const [word, setWord] = useState('HOPE');
   const wordRef = useRef('HOPE');
-  const [fingerDistort, setFingerDistort] = useState(false);
+  const [fingerMode, setFingerMode] = useState<FingerMode>('off');
+  const [motionMode, setMotionMode] = useState<MotionMode>('animate');
   const [open, setOpen] = useState(true);
   const [tab, setTab] = useState<'builder' | 'journey'>('builder');
   const [builderView, setBuilderView] = useState<'programs' | 'sliders'>('sliders');
@@ -11858,6 +11860,10 @@ export default function GeometryField() {
   useEffect(() => {
     wordRef.current = word;
   }, [word]);
+
+  useEffect(() => {
+    motionModeRef.current = motionMode;
+  }, [motionMode]);
 
   useEffect(() => {
     dotsRef.current = makeDots(Math.round(cfg.particles * 40 + 20));
@@ -11919,12 +11925,13 @@ export default function GeometryField() {
 
     let phaseUpdateTimer = 0;
 
-    function tick(t: number) {
+    function tick(rawT: number) {
+      const t = motionModeRef.current === 'static' && !journeyRunningRef.current ? 0 : rawT;
       // Journey auto-pilot
       if (journeyRunningRef.current) {
         const jData = JOURNEYS[journeyIdRef.current - 1];
         if (jData) {
-          const elapsed = (t - journeyStartRef.current) / 1000;
+          const elapsed = (rawT - journeyStartRef.current) / 1000;
           const totalDur = jData.stages.reduce((s, st) => s + st.duration, 0);
           const loopTime = elapsed % totalDur;
           let acc = 0;
@@ -11935,8 +11942,8 @@ export default function GeometryField() {
               const nextStage = jData.stages[(i + 1) % jData.stages.length];
               journeyCfgRef.current = journeyLerpCfg(stage, nextStage, stageP);
               // Update phase info every ~500ms to avoid excessive re-renders
-              if (t - phaseUpdateTimer > 500) {
-                phaseUpdateTimer = t;
+              if (rawT - phaseUpdateTimer > 500) {
+                phaseUpdateTimer = rawT;
                 phaseInfoRef.current = { phaseIdx: i, phaseProgress: stageP };
               }
               break;
@@ -12017,7 +12024,7 @@ export default function GeometryField() {
         currentCfg.mode === 'sinmorph3d' ||
         currentCfg.mode === 'clockorbit3d';
       if (is3D && modeGroupRef.current) {
-        if (!l3dDragRef.current) {
+        if (!l3dDragRef.current && motionModeRef.current !== 'static') {
           // Slow auto-spin when not dragging
           l3dRotRef.current.y += 0.003;
         }
@@ -12133,7 +12140,7 @@ export default function GeometryField() {
     const ctx2 = mc.getContext('2d');
     if (!ctx2) return;
 
-    const FS = 14;
+    const FS = 10;
     const resize = () => {
       mc.width = mc.offsetWidth || 400;
       mc.height = mc.offsetHeight || 600;
@@ -12173,7 +12180,7 @@ export default function GeometryField() {
       const H = mc!.height;
 
       // Slow fade trail
-      ctx2!.fillStyle = `rgba(0,0,0,0.055)`;
+      ctx2!.fillStyle = `rgba(0,0,0,0.045)`;
       ctx2!.fillRect(0, 0, W, H);
 
       ctx2!.font = `bold ${FS}px monospace`;
@@ -12192,7 +12199,7 @@ export default function GeometryField() {
           ctx2!.fillText(ch, i * FS, y);
         }
         if (frameCount % 3 === 0) {
-          if (y > H && Math.random() > 0.972) drops[i] = 0;
+          if (y > H && Math.random() > 0.982) drops[i] = 0;
           else drops[i]++;
         }
       }
@@ -12267,6 +12274,7 @@ export default function GeometryField() {
       cfg.mode === 'wordweave' ||
       cfg.mode === 'metamorph' ||
       cfg.mode === 'chrysalis' ||
+      cfg.mode === 'chrysalisrings' ||
       cfg.mode === 'breathform' ||
       cfg.mode === 'clock3d' ||
       cfg.mode === 'atomlight' ||
@@ -12305,6 +12313,7 @@ export default function GeometryField() {
     const [pr, pg, pb] = pal.rgb;
     const speed = cfg.breathSpeed;
     const iF = cfg.intensity / 10;
+    const modeSeconds = () => (motionModeRef.current === 'static' ? 0 : performance.now() * 0.001);
 
     // Initial opaque fill — covers Three.js layer from frame 0 so no Sacred geometry bleeds through.
     // Parse bg0 hex (#rrggbb) to RGB for a palette-accurate background.
@@ -13055,6 +13064,86 @@ export default function GeometryField() {
     }
 
     /* ── BREATHFORM: a living geometric organism that expands/contracts ── */
+    if (cfg.mode === 'chrysalisrings') {
+      const rings = [
+        { radius: 0.34, phase: 0, width: 2.4 },
+        { radius: 0.53, phase: Math.PI / 3, width: 2.0 },
+        { radius: 0.72, phase: (Math.PI * 2) / 3, width: 1.6 },
+      ];
+      const smooth01 = (x: number) => {
+        const v = Math.max(0, Math.min(1, x));
+        return v * v * (3 - 2 * v);
+      };
+      const transformPhase = (loop: number) => {
+        if (loop < 0.24) return 0;
+        if (loop < 0.46) return smooth01((loop - 0.24) / 0.22);
+        if (loop < 0.74) return 1;
+        return 1 - smooth01((loop - 0.74) / 0.26);
+      };
+
+      function drawChrysalisRings() {
+        if (!canvasModeActiveRef.current) return;
+        const W = mc!.width;
+        const H = mc!.height;
+        const cx = W / 2;
+        const cy = H / 2;
+        const baseR = Math.min(W, H) * 0.46;
+        const tSec = modeSeconds() * speed;
+        const loop = (tSec * 0.075) % 1;
+        const lift = transformPhase(loop);
+        const spin = lift * tSec * 0.62;
+
+        ctx!.fillStyle = 'rgba(0,0,0,0.055)';
+        ctx!.fillRect(0, 0, W, H);
+
+        if (_distortActive && (_distortMode === 'ripple' || _distortMode === 'light')) {
+          const lx = cx + _distortWorldX;
+          const ly = cy - _distortWorldY;
+          const g = ctx!.createRadialGradient(lx, ly, 0, lx, ly, baseR * 0.42);
+          g.addColorStop(0, `rgba(${pr},${pg},${pb},${0.18 * iF})`);
+          g.addColorStop(1, 'rgba(0,0,0,0)');
+          ctx!.fillStyle = g;
+          ctx!.fillRect(0, 0, W, H);
+        }
+
+        rings.forEach((ring, idx) => {
+          const tilt = 1 - lift * (0.55 + idx * 0.08);
+          const spread = 1 + lift * (idx - 1) * 0.08;
+          const rot = ring.phase + spin * (idx % 2 === 0 ? 1 : -1);
+          const rx = baseR * ring.radius * spread;
+          const ry = rx * Math.max(0.18, tilt);
+          const alpha = (0.78 - idx * 0.12) * iF;
+
+          ctx!.save();
+          ctx!.translate(cx, cy);
+          ctx!.rotate(rot);
+          ctx!.beginPath();
+          ctx!.ellipse(0, 0, rx, ry, 0, 0, Math.PI * 2);
+          ctx!.shadowBlur = 22 + cfg.glow * 1.6;
+          ctx!.shadowColor = `rgba(${pr},${pg},${pb},${0.55 * alpha})`;
+          ctx!.strokeStyle = `rgba(${pr},${pg},${pb},${alpha})`;
+          ctx!.lineWidth = ring.width;
+          ctx!.stroke();
+
+          const beadA = tSec * (0.42 + idx * 0.08) + ring.phase;
+          const bx = Math.cos(beadA) * rx;
+          const by = Math.sin(beadA) * ry;
+          const dotG = ctx!.createRadialGradient(bx, by, 0, bx, by, 18 + cfg.glow * 2);
+          dotG.addColorStop(0, `rgba(255,255,255,${0.9 * iF})`);
+          dotG.addColorStop(0.4, `rgba(${pr},${pg},${pb},${0.55 * iF})`);
+          dotG.addColorStop(1, 'rgba(0,0,0,0)');
+          ctx!.fillStyle = dotG;
+          ctx!.beginPath();
+          ctx!.arc(bx, by, 18 + cfg.glow * 2, 0, Math.PI * 2);
+          ctx!.fill();
+          ctx!.restore();
+        });
+
+        canvasModeAnimRef.current = requestAnimationFrame(drawChrysalisRings);
+      }
+      canvasModeAnimRef.current = requestAnimationFrame(drawChrysalisRings);
+    }
+
     if (cfg.mode === 'breathform') {
       const N3 = 160;
       const PETALS = Math.max(3, Math.round(cfg.symmetry));
@@ -13974,22 +14063,53 @@ export default function GeometryField() {
     _distortWorldX = e.clientX - rect.left - W / 2;
     _distortWorldY = -(e.clientY - rect.top - H / 2);
     _distortActive = true;
+    if (_distortMode === 'ripple' && ripplesRef.current.length < 10) {
+      ripplesRef.current.push({
+        x: e.clientX - rect.left,
+        y: e.clientY - rect.top,
+        born: performance.now(),
+      });
+    }
   }
 
   function handleCanvasPointerLeave() {
     _distortActive = false;
   }
 
-  function toggleFingerDistort() {
-    const next = !fingerDistortRef.current;
-    fingerDistortRef.current = next;
-    setFingerDistort(next);
-    if (!next) _distortActive = false;
+  function setTouchMode(mode: FingerMode) {
+    _distortMode = mode;
+    fingerDistortRef.current = mode !== 'off';
+    setFingerMode(mode);
+    if (mode === 'off') _distortActive = false;
   }
+
+  function toggleFingerDistort() {
+    setTouchMode(fingerMode === 'off' ? 'ripple' : 'off');
+  }
+
+  const COLOUR_PRESET_NAMES = new Set([
+    'Yantra Colour',
+    'Rorschach Colour',
+    'Rainbow 3D',
+    'Rainbow Gate',
+    'Cathedral Glass',
+    'Prism Bloom',
+    'Solar Crown',
+    'Ice Prism',
+    'Neon Rain',
+    'Tangka Sky',
+    'Tangka Fire',
+    'Aurora Globe',
+    'Crystal Globe',
+  ]);
 
   function applyPreset(name: string) {
     const p = PRESETS[name] ?? PRESETS['Calm Field'];
-    setCfg({ ...p, luminous: Math.min(1.5, p.luminous) });
+    setCfg((prev) => ({
+      ...p,
+      preset: COLOUR_PRESET_NAMES.has(name) ? p.preset : prev.preset,
+      luminous: Math.min(1.5, p.luminous),
+    }));
   }
 
   function handleRandomize() {
@@ -14024,6 +14144,7 @@ export default function GeometryField() {
       luminous: Math.random() * 5,
       stars: Math.floor(Math.random() * 8),
       mode: modeKeys[Math.floor(Math.random() * modeKeys.length)],
+      preset: cfgRef.current.preset,
     });
   }
 
@@ -14053,6 +14174,7 @@ export default function GeometryField() {
   const accent = `rgb(${pr},${pg},${pb})`;
   const accentFaint = `rgba(${pr},${pg},${pb},0.12)`;
   const accentMid = `rgba(${pr},${pg},${pb},0.35)`;
+  const fingerDistort = fingerMode !== 'off';
 
   const activeJourney = JOURNEYS[journeyId - 1];
   const currentStage = activeJourney?.stages[journeyPhaseInfo.phaseIdx];
@@ -14186,6 +14308,7 @@ export default function GeometryField() {
           cfg.mode === 'wordweave' ||
           cfg.mode === 'metamorph' ||
           cfg.mode === 'chrysalis' ||
+          cfg.mode === 'chrysalisrings' ||
           cfg.mode === 'breathform' ||
           cfg.mode === 'clock3d' ||
           cfg.mode === 'atomlight' ||
@@ -14304,6 +14427,31 @@ export default function GeometryField() {
             ▲ Controls
           </button>
         )}
+
+        <button
+          type="button"
+          onClick={handleFullscreen}
+          title="Fullscreen"
+          style={{
+            position: 'absolute',
+            right: 14,
+            bottom: open ? 14 : 58,
+            background: 'rgba(8,6,4,0.72)',
+            border: `1px solid ${accentMid}`,
+            borderRadius: 99,
+            padding: '7px 12px',
+            color: accent,
+            fontFamily: 'var(--font-serif)',
+            fontSize: 10,
+            letterSpacing: '0.12em',
+            textTransform: 'uppercase',
+            cursor: 'pointer',
+            backdropFilter: 'blur(10px)',
+            zIndex: 21,
+          }}
+        >
+          Full
+        </button>
       </div>
 
       {/* Control panel — fixed 50% height when open */}
@@ -14719,6 +14867,70 @@ export default function GeometryField() {
                               outline: 'none',
                             }}
                           />
+                        );
+                      })}
+                    </div>
+
+                    <div
+                      style={{
+                        display: 'grid',
+                        gridTemplateColumns: 'repeat(5, 1fr)',
+                        gap: 4,
+                        marginBottom: 8,
+                      }}
+                    >
+                      {(['off', 'ripple', 'pull', 'push', 'light'] as FingerMode[]).map((mode) => {
+                        const active = fingerMode === mode;
+                        return (
+                          <button
+                            key={mode}
+                            type="button"
+                            title={`Touch ${mode}`}
+                            onClick={() => setTouchMode(mode)}
+                            style={{
+                              minWidth: 0,
+                              padding: '5px 0',
+                              borderRadius: 8,
+                              background: active ? `rgba(${pr},${pg},${pb},0.18)` : 'transparent',
+                              border: `1px solid ${active ? accent : `rgba(${pr},${pg},${pb},0.18)`}`,
+                              color: active ? accent : `rgba(${pr},${pg},${pb},0.52)`,
+                              fontFamily: 'var(--font-serif)',
+                              fontSize: 8,
+                              letterSpacing: '0.08em',
+                              textTransform: 'uppercase',
+                              cursor: 'pointer',
+                            }}
+                          >
+                            {mode}
+                          </button>
+                        );
+                      })}
+                    </div>
+
+                    <div style={{ display: 'flex', gap: 6, marginBottom: 8 }}>
+                      {(['animate', 'static'] as MotionMode[]).map((mode) => {
+                        const active = motionMode === mode;
+                        return (
+                          <button
+                            key={mode}
+                            type="button"
+                            onClick={() => setMotionMode(mode)}
+                            style={{
+                              flex: 1,
+                              padding: '6px 0',
+                              borderRadius: 8,
+                              background: active ? accentFaint : 'transparent',
+                              border: `1px solid ${active ? accentMid : `rgba(${pr},${pg},${pb},0.18)`}`,
+                              color: active ? accent : `rgba(${pr},${pg},${pb},0.55)`,
+                              fontFamily: 'var(--font-serif)',
+                              fontSize: 9,
+                              letterSpacing: '0.1em',
+                              textTransform: 'uppercase',
+                              cursor: 'pointer',
+                            }}
+                          >
+                            {mode}
+                          </button>
                         );
                       })}
                     </div>
