@@ -97,7 +97,10 @@ type Mode =
   | 'sinmorph3d'
   | 'heartdance'
   | 'infinitedive'
-  | 'clockorbit3d';
+  | 'clockorbit3d'
+  | 'musicdots'
+  | 'musicnebula'
+  | 'musiclattice';
 
 interface Pal {
   bg0: string;
@@ -1341,6 +1344,42 @@ const PRESETS: Record<string, Cfg> = {
     luminous: 2,
     stars: 10,
     mode: 'nebula',
+  },
+  'Music Entropy': {
+    preset: 'Blue Astral',
+    symmetry: 9,
+    complexity: 8,
+    glow: 7,
+    breathSpeed: 0.72,
+    intensity: 8,
+    particles: 5,
+    luminous: 2,
+    stars: 2,
+    mode: 'musicdots',
+  },
+  'Music Nebula': {
+    preset: 'Violet Portal',
+    symmetry: 6,
+    complexity: 9,
+    glow: 8,
+    breathSpeed: 0.58,
+    intensity: 8,
+    particles: 5,
+    luminous: 2,
+    stars: 6,
+    mode: 'musicnebula',
+  },
+  'Groove Lattice': {
+    preset: 'Golden Source',
+    symmetry: 8,
+    complexity: 7,
+    glow: 6,
+    breathSpeed: 0.85,
+    intensity: 8,
+    particles: 4,
+    luminous: 2,
+    stars: 1,
+    mode: 'musiclattice',
   },
   'Emotion Globe': {
     preset: 'Terra Globe',
@@ -3768,6 +3807,9 @@ function buildModeGroup(cfg: Cfg, R: number): THREE.Group {
     case 'eyemorph':
     case 'heartdance':
     case 'infinitedive':
+    case 'musicdots':
+    case 'musicnebula':
+    case 'musiclattice':
       return buildCanvasMode(cfg, R);
     case 'sinmorph3d':
       return buildSinMorph3D(cfg, R);
@@ -3980,6 +4022,9 @@ function updateModeGroup(group: THREE.Group, cfg: Cfg, dots: Dot[], t: number, R
     case 'eyemorph':
     case 'heartdance':
     case 'infinitedive':
+    case 'musicdots':
+    case 'musicnebula':
+    case 'musiclattice':
       updateCanvasMode(group, cfg, t, R);
       break;
     case 'sinmorph3d':
@@ -10095,6 +10140,9 @@ const FEATURED_PRESETS: FeaturedItem[] = [
   { name: 'Deep Flow 3D', tag: 'FLOW' },
   { name: 'Plasma Field', tag: 'FLOW' },
   { name: 'Solar Flare', tag: 'FLOW' },
+  { name: 'Music Entropy', tag: 'MUSIC' },
+  { name: 'Music Nebula', tag: 'MUSIC' },
+  { name: 'Groove Lattice', tag: 'MUSIC' },
   { name: 'Nebula Veil', tag: 'NEBULA' },
   { name: 'Nebula Bloom', tag: 'NEBULA' },
   { name: 'Dot Galaxy', tag: 'GALAXY' },
@@ -10148,6 +10196,10 @@ let _distortActive = false;
 let _distortWorldX = 0;
 let _distortWorldY = 0;
 let _distortMode: FingerMode = 'off';
+let _musicPulse = 0;
+let _musicBass = 0;
+let _musicDrums = 0;
+let _musicPads = 0;
 
 function fingerForce(
   x: number,
@@ -12291,7 +12343,7 @@ export default function GeometryField() {
   const [fingerMode, setFingerMode] = useState<FingerMode>('off');
   const [motionMode, setMotionMode] = useState<MotionMode>('animate');
   const [open, setOpen] = useState(true);
-  const [tab, setTab] = useState<'builder' | 'journey'>('builder');
+  const [tab, setTab] = useState<'builder' | 'music' | 'journey'>('builder');
   const [builderView, setBuilderView] = useState<'programs' | 'sliders'>('sliders');
   const [journeyId, setJourneyId] = useState(1);
   const [journeyRunning, setJourneyRunning] = useState(false);
@@ -12308,6 +12360,23 @@ export default function GeometryField() {
   useEffect(() => {
     motionModeRef.current = motionMode;
   }, [motionMode]);
+
+  useEffect(() => {
+    function onGrooveStep(event: Event) {
+      const detail = (
+        event as CustomEvent<{
+          energy?: Partial<Record<'drums' | 'bass' | 'keys' | 'lead' | 'pads', number>>;
+        }>
+      ).detail;
+      const energy = detail?.energy ?? {};
+      _musicDrums = Math.min(1, energy.drums ?? 0);
+      _musicBass = Math.min(1, energy.bass ?? 0);
+      _musicPads = Math.min(1, (energy.pads ?? 0) + (energy.keys ?? 0) * 0.45);
+      _musicPulse = Math.min(1, _musicDrums * 0.55 + _musicBass * 0.35 + _musicPads * 0.18);
+    }
+    window.addEventListener('colourmap:groove-visual-step', onGrooveStep);
+    return () => window.removeEventListener('colourmap:groove-visual-step', onGrooveStep);
+  }, []);
 
   useEffect(() => {
     dotsRef.current = makeDots(Math.round(cfg.particles * 40 + 20));
@@ -12734,7 +12803,10 @@ export default function GeometryField() {
       cfg.mode === 'heartwave' ||
       cfg.mode === 'eyemorph' ||
       cfg.mode === 'heartdance' ||
-      cfg.mode === 'infinitedive';
+      cfg.mode === 'infinitedive' ||
+      cfg.mode === 'musicdots' ||
+      cfg.mode === 'musicnebula' ||
+      cfg.mode === 'musiclattice';
     if (!isCanvasMode) {
       canvasModeActiveRef.current = false;
       cancelAnimationFrame(canvasModeAnimRef.current);
@@ -12772,6 +12844,102 @@ export default function GeometryField() {
       const bgB = parseInt(h.slice(4, 6), 16);
       ctx.fillStyle = `rgb(${bgR},${bgG},${bgB})`;
       ctx.fillRect(0, 0, mc.width, mc.height);
+    }
+
+    if (cfg.mode === 'musicdots' || cfg.mode === 'musicnebula' || cfg.mode === 'musiclattice') {
+      const N = Math.max(260, Math.round(lerp(520, 1700, cfg.complexity / 10)));
+      const dots = Array.from({ length: N }, (_, i) => ({
+        a: ((i * 0.61803398875) % 1) * Math.PI * 2,
+        r: Math.sqrt((i + 0.5) / N),
+        spin: 0.35 + ((i * 19) % 100) / 100,
+        lane: i % Math.max(3, Math.round(cfg.symmetry)),
+      }));
+
+      function drawMusicVisual() {
+        if (!canvasModeActiveRef.current) return;
+        const W = mc!.width;
+        const H = mc!.height;
+        const cx = W / 2;
+        const cy = H / 2;
+        const radius = Math.min(W, H) * 0.48;
+        const tt = modeSeconds();
+        _musicPulse *= 0.94;
+        _musicBass *= 0.96;
+        _musicDrums *= 0.9;
+        _musicPads *= 0.985;
+        const internalBeat = (Math.sin(tt * Math.PI * 2 * speed) + 1) / 2;
+        const beat = Math.min(1, internalBeat * 0.42 + _musicPulse * 0.85);
+        const low = Math.min(
+          1,
+          ((Math.sin(tt * Math.PI * speed * 0.52 + 1.7) + 1) / 2) * 0.45 + _musicBass,
+        );
+        ctx!.fillStyle = `rgba(0,0,0,${cfg.mode === 'musicnebula' ? 0.13 : 0.2})`;
+        ctx!.fillRect(0, 0, W, H);
+
+        if (cfg.mode === 'musiclattice') {
+          ctx!.strokeStyle = `rgba(${pr},${pg},${pb},${0.05 + beat * 0.16})`;
+          ctx!.lineWidth = 1;
+          const cells = Math.max(5, Math.round(cfg.symmetry));
+          for (let x = -cells; x <= cells; x++) {
+            for (let y = -cells; y <= cells; y++) {
+              const px = cx + (x / cells) * radius * 0.95 + Math.sin(tt + y) * beat * 8;
+              const py = cy + (y / cells) * radius * 0.95 + Math.cos(tt + x) * beat * 8;
+              ctx!.strokeRect(px - 9 - low * 5, py - 9 - low * 5, 18 + low * 10, 18 + low * 10);
+            }
+          }
+        }
+
+        for (let i = 0; i < dots.length; i++) {
+          const d = dots[i];
+          if (cfg.mode === 'musiclattice') {
+            const grid = Math.max(3, Math.round(cfg.symmetry));
+            const gx = (d.lane / grid - 0.5) * radius * 1.65;
+            const gy = (((i / grid) % grid) / grid - 0.5) * radius * 1.65;
+            const cyclone = Math.sin(tt * 1.4 + d.a * 4) * beat * 12;
+            ctx!.fillStyle = `rgba(${pr},${pg},${pb},${0.22 + beat * 0.62})`;
+            ctx!.beginPath();
+            ctx!.arc(
+              cx + gx + Math.cos(d.a) * cyclone,
+              cy + gy + Math.sin(d.a) * cyclone,
+              1.1 + beat * 1.8,
+              0,
+              Math.PI * 2,
+            );
+            ctx!.fill();
+            continue;
+          }
+          let rr = d.r * radius * (0.36 + 0.74 * low);
+          let a = d.a + tt * 0.18 * d.spin;
+          if (cfg.mode === 'musicnebula') {
+            a += d.r * 5.2 + Math.sin(tt * 0.6 + d.lane) * 0.18;
+            rr *= 0.88 + Math.sin(d.r * 10 + tt) * 0.08;
+          }
+          ctx!.fillStyle = `rgba(${pr},${pg},${pb},${0.16 + beat * 0.58})`;
+          ctx!.beginPath();
+          ctx!.arc(
+            cx + Math.cos(a) * rr,
+            cy + Math.sin(a) * rr * (cfg.mode === 'musicnebula' ? 0.58 : 0.82),
+            0.8 + beat * 2.2 * iF,
+            0,
+            Math.PI * 2,
+          );
+          ctx!.fill();
+        }
+
+        ctx!.strokeStyle = `rgba(${pr},${pg},${pb},${0.16 + beat * 0.34 + _musicPads * 0.18})`;
+        ctx!.lineWidth = 1 + beat * 2;
+        for (let k = 0; k < 3; k++) {
+          ctx!.beginPath();
+          ctx!.arc(cx, cy, radius * (0.2 + k * 0.16 + beat * 0.04), 0, Math.PI * 2);
+          ctx!.stroke();
+        }
+        canvasModeAnimRef.current = requestAnimationFrame(drawMusicVisual);
+      }
+      drawMusicVisual();
+      return () => {
+        canvasModeActiveRef.current = false;
+        cancelAnimationFrame(canvasModeAnimRef.current);
+      };
     }
 
     /* ── BREATH: dots travel radial spokes inward then burst outward ── */
@@ -14773,7 +14941,10 @@ export default function GeometryField() {
           cfg.mode === 'heartwave' ||
           cfg.mode === 'eyemorph' ||
           cfg.mode === 'heartdance' ||
-          cfg.mode === 'infinitedive') && (
+          cfg.mode === 'infinitedive' ||
+          cfg.mode === 'musicdots' ||
+          cfg.mode === 'musicnebula' ||
+          cfg.mode === 'musiclattice') && (
           <canvas
             ref={matrixCanvasRef}
             style={{
@@ -14934,7 +15105,7 @@ export default function GeometryField() {
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
               <div style={{ display: 'flex', gap: 6 }}>
                 {pill('Builder', tab === 'builder', () => setTab('builder'), true)}
-                {pill('Journey', tab === 'journey', () => setTab('journey'), true)}
+                {pill('Music Visuals', tab === 'music', () => setTab('music'), true)}
               </div>
               <button
                 type="button"
@@ -15428,7 +15599,118 @@ export default function GeometryField() {
               </>
             )}
 
-            {/* ── JOURNEY TAB ── */}
+            {/* ── MUSIC VISUALS TAB ── */}
+            {tab === 'music' && (
+              <>
+                <p
+                  style={{
+                    fontFamily: 'var(--font-serif)',
+                    fontSize: 11,
+                    color: `rgba(${pr},${pg},${pb},0.55)`,
+                    fontStyle: 'italic',
+                    lineHeight: 1.5,
+                  }}
+                >
+                  Music visuals start here: dots, nebulas, and lattices that pulse from an internal
+                  beat today, then later from Groove layers, voice recordings, microphone input, or
+                  uploaded audio.
+                </p>
+                <div style={{ display: 'grid', gap: 7 }}>
+                  {[
+                    [
+                      'Music Entropy',
+                      'Dot cloud with pulse rings. Best base for analyser-driven particles.',
+                    ],
+                    ['Music Nebula', 'Soft galaxy haze for pads, voice, and ambient recordings.'],
+                    ['Groove Lattice', 'Tiles and cyclones for drums, bass, and sequencer layers.'],
+                    ['Current Scales', 'Current texture with touch-ready pattern movement.'],
+                    ['Dot Galaxy', 'Particle galaxy ready for bass and star-density mapping.'],
+                  ].map(([name, desc]) => {
+                    const p = PRESETS[name];
+                    const isActive = p && cfg.mode === p.mode;
+                    return (
+                      <button
+                        key={name}
+                        type="button"
+                        onClick={() => applyPreset(name)}
+                        style={{
+                          textAlign: 'left',
+                          padding: '9px 10px',
+                          borderRadius: 8,
+                          background: isActive ? accentFaint : 'transparent',
+                          border: `1px solid ${isActive ? accentMid : 'rgba(255,255,255,0.05)'}`,
+                          cursor: 'pointer',
+                        }}
+                      >
+                        <div
+                          style={{
+                            fontFamily: 'var(--font-serif)',
+                            fontSize: 12,
+                            color: isActive ? accent : `rgba(${pr},${pg},${pb},0.7)`,
+                            fontWeight: isActive ? 700 : 500,
+                            letterSpacing: '0.06em',
+                          }}
+                        >
+                          {name}
+                        </div>
+                        <div
+                          style={{
+                            fontFamily: 'var(--font-serif)',
+                            fontSize: 10,
+                            color: `rgba(${pr},${pg},${pb},0.45)`,
+                            lineHeight: 1.35,
+                            marginTop: 3,
+                          }}
+                        >
+                          {desc}
+                        </div>
+                      </button>
+                    );
+                  })}
+                </div>
+                <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      try {
+                        window.localStorage.setItem('colourmap:soundlab-tab', 'groove');
+                      } catch {}
+                      window.location.assign('/music');
+                    }}
+                    style={{
+                      background: accent,
+                      border: `1px solid ${accent}`,
+                      borderRadius: 99,
+                      padding: '8px 16px',
+                      color: '#080607',
+                      fontFamily: 'var(--font-serif)',
+                      fontSize: 11,
+                      fontWeight: 700,
+                      cursor: 'pointer',
+                    }}
+                  >
+                    Open Groove Machine
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleFullscreen}
+                    style={{
+                      background: accentFaint,
+                      border: `1px solid ${accentMid}`,
+                      borderRadius: 99,
+                      padding: '8px 16px',
+                      color: accent,
+                      fontFamily: 'var(--font-serif)',
+                      fontSize: 11,
+                      cursor: 'pointer',
+                    }}
+                  >
+                    Fullscreen
+                  </button>
+                </div>
+              </>
+            )}
+
             {tab === 'journey' && (
               <>
                 {/* Journey selection */}

@@ -15,6 +15,8 @@ The product is not a meditation app (pure stillness) or a productivity tool (pur
 
 ## Core Philosophy
 
+- **Unite fragments into coherent intelligence.** Colourmap should take scattered reflections, body signals, sounds, visuals, plans, and memories, then help the user see one coherent context they can act from and evolve through.
+
 - **We work with the system, we don't fix it.** At the core, everything we do is feeding our subconscious and body. Ambitions, avoidances, routines — all mechanisms negotiating with our own nervous system. Colourmap's job is to help work *with* that system and bring clarity to it, not to optimize it away.
 - **Both movement and the feeling of movement matter.** Real progress (targets checked, patterns shifting) and the felt sense of being in motion are two different things. The subconscious responds to the felt sense. The visual layer is not decoration — it's how the app speaks to the body: *you are moving, things have shape, there is a way.*
 - **Check In is clarity. Journey is style.** Two sides of the same coin. Check-in strips everything bare. Journey takes the same data and reframes it through archetype and tone.

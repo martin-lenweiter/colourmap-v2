@@ -672,6 +672,17 @@ spec category: Progress Roads
 small prototype: one vertical historical road with 7 stages and one question per stage
 ```
 
+Current Progress Road prototype direction:
+
+- the road route should behave like an immersive full-screen learning surface below the main app
+  navigation
+- the visual road and the teaching text should remain visible together instead of forcing the user
+  to choose between image and reading
+- road selection, step navigation, and reveal controls should be persistent enough that the road
+  feels like one continuous program rather than separate cards
+- the Education return control should stay a pill, with enough contrast and touch area to feel like
+  a primary escape hatch back to learning
+
 Example:
 
 ```text
@@ -904,11 +915,22 @@ small phone
 tall phone
 -> image and text stacked with progressive layers
 
+selected vertical programs
+-> app-rendered text overlay on top of the image for comparison
+
 desktop
 -> richer map, side notes, source panel, deeper navigation
 ```
 
 The content remains the same structured data, but the layout changes intelligently.
+
+Overlay comparison rule:
+
+- only a few vertical programs should use text-on-image at first, so the team can compare reading
+  comfort, image preservation, and emotional impact against the classic format
+- text must remain app-rendered, not baked into generated images
+- overlays must sit in deliberate readable zones with sufficient contrast and must not obscure the
+  main visual meaning of the panel
 
 ## Movement Through The Web
 

@@ -46,4 +46,14 @@ Rules:
 
 ## Future Direction
 
-Music-reactive variants should be added as explicit future presets or modes, not hidden behavior inside every preset. The first likely music-reactive families are Current Flow Textures, Nebula/Galaxy, and Constellation Fluid.
+Music-reactive variants should be added as explicit presets or modes, not hidden behavior inside every preset. The first shipped seed lives behind the Geometry **Music Visuals** tab, replacing the visible Journey entry for now.
+
+Accepted starter presets:
+
+- **Music Entropy**: a dot-cloud concert surface where drums create local flashes, bass expands the field, and pads thicken the glow.
+- **Music Nebula**: a soft nebula and galaxy haze for pads, voice recordings, and ambient layers.
+- **Groove Lattice**: tiled currents with small cyclones, intended for sequencer, drum, and bass patterns.
+
+Groove Machine dispatches a `colourmap:groove-visual-step` browser event with per-group energy (`drums`, `bass`, `keys`, `lead`, `pads`). Geometry listens to that event and lets the music presets react when both surfaces are open. If no Groove event is present, the presets use a restrained internal pulse so they still work as standalone visuals.
+
+Future inputs should use the same visual-energy contract: microphone analyser, uploaded recordings, voice notes, concert stems, and eventually external player metadata where platform policy allows it.
