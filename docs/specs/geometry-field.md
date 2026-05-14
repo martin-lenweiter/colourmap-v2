@@ -67,6 +67,15 @@ When selected from Music Visuals, these candidates should actually react to musi
 
 - **Sin Morph / Sacred Sin Morph / Chaos Sin Morph**: BPM breathing, bass pressure, drum impact, pad/key depth, and lead sparkle affect the 3D morph surface.
 - **Drift Field**: bass spreads the node field, pads/keys thicken connections, drums/lead sharpen node pulses, and the field rotation responds subtly to impact.
+- **Sacred Pyramid / Focus Arc**: live in the high-priority Good Ones and Music Visuals list, with numbering and visible selected states.
+
+Preset lists in Geometry Builder and Music Visuals must be numbered. The selected preset must be visually obvious.
+
+Ripple finger distortion can be used without visible pointer rings. Visible ripple rings are controlled by a separate `Rings On/Off` button and default off.
+
+Prism Seed's center should be warm fire yellow/orange, not white.
+
+Random Burst should open less bright by default than the other chaos presets; users can still push glow, luminosity, and star density higher with controls.
 
 ## Star Field Behavior
 
