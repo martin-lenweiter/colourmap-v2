@@ -7973,12 +7973,52 @@ function buildCurrentTexture(cfg: Cfg, R: number): THREE.Group {
   const pal = PAL[cfg.preset] ?? PAL['Calm Field'];
   const [rr, gg, bb] = pal.rgb;
   const positions = new Float32Array(count * 3);
+  const density = cfg.complexity / 10;
+  const cell = lerp(R * 0.34, R * 0.13, density);
 
   for (let i = 0; i < count; i++) {
-    const a = Math.random() * TAU;
-    const r = Math.sqrt(Math.random()) * R * 1.08;
-    positions[i * 3] = Math.cos(a) * r;
-    positions[i * 3 + 1] = Math.sin(a) * r;
+    let x = 0;
+    let y = 0;
+    if (cfg.mode === 'currentscales') {
+      const cols = Math.max(5, Math.ceil((R * 2.2) / cell));
+      const row = Math.floor(Math.random() * cols);
+      const col = Math.floor(Math.random() * cols);
+      const offset = row % 2 === 0 ? 0 : cell * 0.5;
+      const cx = (col - cols / 2) * cell + offset;
+      const cy = (row - cols / 2) * cell * 0.58;
+      const a = Math.PI + Math.random() * Math.PI;
+      const r = cell * (0.14 + Math.random() * 0.48);
+      x = cx + Math.cos(a) * r;
+      y = cy + Math.sin(a) * r * 0.55;
+    } else if (cfg.mode === 'cyclonetiles') {
+      const cols = Math.max(5, Math.ceil((R * 2.15) / cell));
+      const col = Math.floor(Math.random() * cols);
+      const row = Math.floor(Math.random() * cols);
+      const cx = (col - cols / 2) * cell;
+      const cy = (row - cols / 2) * cell;
+      const turn = Math.random() * TAU * 1.8;
+      const r = cell * Math.sqrt(Math.random()) * 0.42;
+      x = cx + Math.cos(turn) * r;
+      y = cy + Math.sin(turn) * r;
+    } else if (cfg.mode === 'eddylace') {
+      const clusters = Math.max(5, Math.round(cfg.symmetry + cfg.complexity));
+      const k = i % clusters;
+      const centerA = (k / clusters) * TAU + Math.sin(k * 12.989) * 0.2;
+      const centerR = R * (0.18 + ((k * 0.618) % 1) * 0.72);
+      const cx = Math.cos(centerA) * centerR;
+      const cy = Math.sin(centerA) * centerR * 0.72;
+      const a = Math.random() * TAU;
+      const r = cell * (0.08 + Math.random() * 0.72);
+      x = cx + Math.cos(a + r * 0.035) * r;
+      y = cy + Math.sin(a + r * 0.035) * r * 0.62;
+    } else {
+      const lane = (Math.random() - 0.5) * R * 1.9;
+      const wave = Math.sin(lane * 0.012) * R * 0.28;
+      x = lane;
+      y = wave + (Math.random() - 0.5) * R * 0.22;
+    }
+    positions[i * 3] = x;
+    positions[i * 3 + 1] = y;
     positions[i * 3 + 2] = (Math.random() - 0.5) * R * 0.08;
   }
 
