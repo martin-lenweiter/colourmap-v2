@@ -63,6 +63,11 @@ The strongest music-visual candidates should also be promoted in Geometry Builde
 - Drift Field
 - Starflow Galaxy
 
+When selected from Music Visuals, these candidates should actually react to music:
+
+- **Sin Morph / Sacred Sin Morph / Chaos Sin Morph**: BPM breathing, bass pressure, drum impact, pad/key depth, and lead sparkle affect the 3D morph surface.
+- **Drift Field**: bass spreads the node field, pads/keys thicken connections, drums/lead sharpen node pulses, and the field rotation responds subtly to impact.
+
 ## Star Field Behavior
 
 The `Stars` slider is structural, not just additive. Low values create sparse background stars. Higher values should shape a soft diagonal Milky Way band behind the active form.

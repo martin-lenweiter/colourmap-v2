@@ -11016,7 +11016,18 @@ function updateDrift(group: THREE.Group, cfg: Cfg, t: number, R: number): void {
   const [rr, gg, bb] = pal.rgb;
   const iF = cfg.intensity / 10;
   const speed = cfg.breathSpeed * 0.00022;
-  const amp = R * 0.14 * (cfg.complexity / 10);
+  _musicPulse *= 0.95;
+  _musicBass *= 0.972;
+  _musicDrums *= 0.91;
+  _musicPads *= 0.986;
+  _musicKeys *= 0.978;
+  _musicLead *= 0.925;
+  const beatPhase = (t / 1000) * Math.PI * 2 * (_musicBpm / 60);
+  const internalPulse = ((Math.sin(beatPhase) + 1) / 2) ** 3 * 0.2;
+  const impact = Math.min(1, internalPulse + _musicDrums * 0.5 + _musicPulse * 0.42);
+  const pressure = Math.min(1, _musicBass * 0.86 + internalPulse * 0.25);
+  const atmosphere = Math.min(1, _musicPads * 0.58 + _musicKeys * 0.36 + internalPulse * 0.16);
+  const amp = R * 0.14 * (cfg.complexity / 10) * (1 + pressure * 0.48 + atmosphere * 0.22);
   const seeds = group.userData.seeds as THREE.Vector3[];
   const n = group.userData.n as number;
   if (!seeds) return;
@@ -11025,9 +11036,9 @@ function updateDrift(group: THREE.Group, cfg: Cfg, t: number, R: number): void {
   const live: THREE.Vector3[] = seeds.map(
     (s, i) =>
       new THREE.Vector3(
-        s.x + Math.sin(t * speed * 1.1 + i * 2.3 + 0.7) * amp,
-        s.y + Math.cos(t * speed * 0.9 + i * 1.7 + 1.3) * amp,
-        s.z + Math.sin(t * speed * 0.7 + i * 1.1 + 2.1) * amp,
+        s.x * (1 + pressure * 0.08) + Math.sin(t * speed * 1.1 + i * 2.3 + 0.7 + impact) * amp,
+        s.y * (1 + pressure * 0.08) + Math.cos(t * speed * 0.9 + i * 1.7 + 1.3 + atmosphere) * amp,
+        s.z * (1 + atmosphere * 0.18) + Math.sin(t * speed * 0.7 + i * 1.1 + 2.1) * amp,
       ),
   );
 
@@ -11043,7 +11054,8 @@ function updateDrift(group: THREE.Group, cfg: Cfg, t: number, R: number): void {
       });
       (pts.geometry.getAttribute('position') as THREE.BufferAttribute).needsUpdate = true;
       (pts.material as THREE.PointsMaterial).color.setRGB(rr / 255, gg / 255, bb / 255);
-      (pts.material as THREE.PointsMaterial).opacity = 0.92 * iF;
+      (pts.material as THREE.PointsMaterial).opacity = 0.82 * iF + atmosphere * 0.18;
+      (pts.material as THREE.PointsMaterial).size = 3.8 + impact * 2.2 + _musicLead * 1.3;
     }
     if (child.userData.tag === 'driftEdges') {
       const lines = child as THREE.LineSegments;
@@ -11051,7 +11063,7 @@ function updateDrift(group: THREE.Group, cfg: Cfg, t: number, R: number): void {
       const arr = (lines.geometry.getAttribute('position') as THREE.BufferAttribute)
         .array as Float32Array;
       // Connect nearest pairs within threshold
-      const thresh = R * 0.62;
+      const thresh = R * (0.58 + pressure * 0.12 + atmosphere * 0.08);
       let ei = 0;
       for (let a = 0; a < n && ei < maxE; a++) {
         for (let b = a + 1; b < n && ei < maxE; b++) {
@@ -11069,11 +11081,12 @@ function updateDrift(group: THREE.Group, cfg: Cfg, t: number, R: number): void {
       (lines.geometry.getAttribute('position') as THREE.BufferAttribute).needsUpdate = true;
       lines.geometry.setDrawRange(0, ei * 2);
       (lines.material as THREE.LineBasicMaterial).color.setRGB(rr / 255, gg / 255, bb / 255);
-      (lines.material as THREE.LineBasicMaterial).opacity = 0.22 * iF;
+      (lines.material as THREE.LineBasicMaterial).opacity =
+        0.18 * iF + atmosphere * 0.12 + impact * 0.08;
     }
   }
-  group.rotation.y += 0.0014;
-  group.rotation.x += 0.0005;
+  group.rotation.y += 0.0014 + impact * 0.0008;
+  group.rotation.x += 0.0005 + atmosphere * 0.0004;
 }
 
 /* ── CBloom — rings of nodes pulse outward like petals ───────── */
@@ -12509,6 +12522,18 @@ function updateSinMorph3D(group: THREE.Group, cfg: Cfg, t: number, R: number): v
   const spd = cfg.breathSpeed;
   const cplx = cfg.complexity / 10;
   const tSec = t * 0.001 * spd;
+  _musicPulse *= 0.95;
+  _musicBass *= 0.972;
+  _musicDrums *= 0.91;
+  _musicPads *= 0.986;
+  _musicKeys *= 0.978;
+  _musicLead *= 0.925;
+  const beatPhase = (t / 1000) * Math.PI * 2 * (_musicBpm / 60);
+  const internalPulse = ((Math.sin(beatPhase) + 1) / 2) ** 3 * 0.22;
+  const impact = Math.min(1, internalPulse + _musicDrums * 0.56 + _musicPulse * 0.34);
+  const pressure = Math.min(1, _musicBass * 0.78 + internalPulse * 0.24);
+  const atmosphere = Math.min(1, _musicPads * 0.55 + _musicKeys * 0.34 + internalPulse * 0.12);
+  const spark = Math.min(1, _musicLead * 0.72 + _musicDrums * 0.22);
 
   for (const child of group.children) {
     if ((child.userData.tag as string) !== 'sinMorphPts') continue;
@@ -12520,11 +12545,11 @@ function updateSinMorph3D(group: THREE.Group, cfg: Cfg, t: number, R: number): v
     // Morph cycle: four shape states over time
     const cycle = (tSec * 0.08) % 1;
     // a1..a4 are blend amplitudes for four sine displacement waves
-    const a1 = 0.25 * cplx * Math.sin(tSec * 0.7);
-    const a2 = 0.18 * cplx * Math.sin(tSec * 0.43 + 1.2);
-    const a3 = 0.14 * cplx * Math.sin(tSec * 0.31 + 2.5);
-    const a4 = 0.1 * cplx * Math.sin(tSec * 0.19 + 0.8);
-    const breathe = 0.85 + 0.15 * Math.sin(tSec * 1.3);
+    const a1 = (0.25 + impact * 0.08) * cplx * Math.sin(tSec * 0.7 + impact);
+    const a2 = (0.18 + pressure * 0.08) * cplx * Math.sin(tSec * 0.43 + 1.2);
+    const a3 = (0.14 + atmosphere * 0.08) * cplx * Math.sin(tSec * 0.31 + 2.5);
+    const a4 = (0.1 + spark * 0.09) * cplx * Math.sin(tSec * 0.19 + 0.8);
+    const breathe = 0.85 + 0.15 * Math.sin(beatPhase) + pressure * 0.08 + atmosphere * 0.04;
 
     let idx = 0;
     for (let i = 0; i < N; i++) {
@@ -12550,21 +12575,29 @@ function updateSinMorph3D(group: THREE.Group, cfg: Cfg, t: number, R: number): v
         // Wave displacement 4: spiky outbursts
         const d4 = 1 + a4 * Math.sin(7 * u + v * 2 + tSec * 1.7);
 
-        const r = R * 0.78 * d1 * d2 * d3 * d4 * breathe;
+        const beatRipple = 1 + Math.sin(beatPhase - v * 2 + u * 0.5) * impact * 0.035;
+        const r = R * 0.78 * d1 * d2 * d3 * d4 * breathe * beatRipple;
         arr[idx++] = x * r;
         arr[idx++] = y * r;
-        arr[idx++] = z * r * (0.7 + 0.3 * Math.abs(Math.sin(tSec * 0.4 + cycle * Math.PI * 2)));
+        arr[idx++] =
+          z *
+          r *
+          (0.7 + 0.3 * Math.abs(Math.sin(tSec * 0.4 + cycle * Math.PI * 2)) + atmosphere * 0.08);
       }
     }
     posAttr.needsUpdate = true;
     pts.geometry.computeBoundingSphere();
-    pts.rotation.y = tSec * 0.06;
-    pts.rotation.z = tSec * 0.04;
+    pts.rotation.y = tSec * 0.06 + pressure * 0.08;
+    pts.rotation.z = tSec * 0.04 + impact * 0.05;
 
     const mat = pts.material as THREE.PointsMaterial;
-    mat.color.setRGB(rr / 255, gg / 255, bb / 255);
-    mat.opacity = 0.7 * iF * (0.85 + 0.15 * Math.sin(tSec * 2.1));
-    mat.size = 2.8 + cfg.glow * 0.18;
+    mat.color.setRGB(
+      (lerp(rr, 255, spark * 0.18) / 255) * (1 + impact * 0.18),
+      (lerp(gg, 230, spark * 0.12) / 255) * (1 + atmosphere * 0.12),
+      (lerp(bb, 210, spark * 0.08) / 255) * (1 + atmosphere * 0.1),
+    );
+    mat.opacity = 0.64 * iF * (0.85 + 0.15 * Math.sin(tSec * 2.1)) + atmosphere * 0.14;
+    mat.size = 2.8 + cfg.glow * 0.18 + impact * 0.85 + spark * 0.65;
   }
 }
 
