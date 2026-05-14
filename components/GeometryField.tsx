@@ -1345,6 +1345,18 @@ const PRESETS: Record<string, Cfg> = {
     stars: 10,
     mode: 'nebula',
   },
+  'Starflow Galaxy': {
+    preset: 'Cosmic Indigo',
+    symmetry: 3,
+    complexity: 10,
+    glow: 8,
+    breathSpeed: 0.42,
+    intensity: 9,
+    particles: 0,
+    luminous: 2,
+    stars: 10,
+    mode: 'nebula',
+  },
   'Music Entropy': {
     preset: 'Blue Astral',
     symmetry: 9,
@@ -2768,6 +2780,30 @@ const PRESETS: Record<string, Cfg> = {
     particles: 3,
     luminous: 2,
     stars: 2,
+    mode: 'sinmorph3d',
+  },
+  'Sacred Sin Morph': {
+    preset: 'Golden Source',
+    symmetry: 8,
+    complexity: 7,
+    glow: 7,
+    breathSpeed: 0.72,
+    intensity: 8,
+    particles: 3,
+    luminous: 2,
+    stars: 2,
+    mode: 'sinmorph3d',
+  },
+  'Chaos Sin Morph': {
+    preset: 'Cosmic Indigo',
+    symmetry: 7,
+    complexity: 10,
+    glow: 8,
+    breathSpeed: 0.86,
+    intensity: 9,
+    particles: 4,
+    luminous: 3,
+    stars: 3,
     mode: 'sinmorph3d',
   },
   'Alien Form': {
@@ -8427,6 +8463,53 @@ function currentScaleShapeTransform(
   };
 }
 
+function galaxyShapeTransform(
+  x: number,
+  y: number,
+  z: number,
+  R: number,
+  amount: number,
+  beatPhase: number,
+): { x: number; y: number; z: number } {
+  if (_galaxyShape === 'galaxy' || amount <= 0.001) return { x, y, z };
+  const r = Math.sqrt(x * x + y * y) + 1;
+  const a = Math.atan2(y, x);
+  let tx = x;
+  let ty = y;
+  let tz = z;
+
+  if (_galaxyShape === 'vortex') {
+    const cone = 1 - Math.min(1, r / Math.max(R, 1));
+    const twist = a + cone * 2.4 + Math.sin(beatPhase) * 0.12;
+    tx = Math.cos(twist) * r * (0.86 + cone * 0.2);
+    ty = Math.sin(twist) * r * 0.72;
+    tz = z + cone * R * 0.24;
+  } else if (_galaxyShape === 'eye') {
+    const iris = R * 0.45 + Math.sin(a * 2 + beatPhase) * R * 0.035;
+    const s = Math.min(1, r / Math.max(R * 0.86, 1));
+    tx = Math.cos(a) * lerp(r, iris * s, 0.75);
+    ty = Math.sin(a) * lerp(r * 0.58, iris * 0.34 * s, 0.72);
+    tz = z * 0.45;
+  } else if (_galaxyShape === 'tunnel') {
+    const lane = 0.52 + Math.sin(a * 3 + beatPhase * 0.7) * 0.08;
+    tx = Math.cos(a) * r * lane;
+    ty = Math.sin(a) * r * lane;
+    tz = z + (r / Math.max(R, 1)) * R * 0.38;
+  } else if (_galaxyShape === 'double') {
+    const side = Math.sin(a) >= 0 ? 1 : -1;
+    const orbit = R * 0.28;
+    tx = Math.cos(a * 1.2 + side * 0.8) * r * 0.58 + side * orbit;
+    ty = Math.sin(a * 1.2 + side * 0.8) * r * 0.42;
+    tz = z + side * Math.sin(beatPhase) * R * 0.025;
+  }
+
+  return {
+    x: lerp(x, tx, amount),
+    y: lerp(y, ty, amount),
+    z: lerp(z, tz, amount),
+  };
+}
+
 function buildPlasma(cfg: Cfg, R: number): THREE.Group {
   const TAU = Math.PI * 2;
   const iF = cfg.intensity / 10;
@@ -8595,6 +8678,28 @@ function updateNebula(group: THREE.Group, cfg: Cfg, t: number, R: number): void 
   const baseRgb = pal.rgb;
   const limit = R * 1.1;
   const limit2 = limit * limit;
+  const galaxyMusicMode = cfg.mode === 'nebula' && cfg.complexity >= 9;
+  const beatPhase = (t / 1000) * Math.PI * 2 * (_musicBpm / 60);
+  if (galaxyMusicMode) {
+    _musicPulse *= 0.945;
+    _musicBass *= 0.97;
+    _musicDrums *= 0.9;
+    _musicPads *= 0.985;
+    _musicKeys *= 0.975;
+    _musicLead *= 0.92;
+  }
+  const internalPulse = galaxyMusicMode ? ((Math.sin(beatPhase) + 1) / 2) ** 3 * 0.22 : 0;
+  const impact = galaxyMusicMode
+    ? Math.min(1, internalPulse + _musicDrums * 0.7 + _musicPulse * 0.4)
+    : 0;
+  const gravity = galaxyMusicMode ? Math.min(1, _musicBass * 0.9 + internalPulse * 0.25) : 0;
+  const haze = galaxyMusicMode
+    ? Math.min(1, _musicPads * 0.62 + _musicKeys * 0.28 + internalPulse * 0.18)
+    : 0;
+  const sparks = galaxyMusicMode ? Math.min(1, _musicLead * 0.72 + _musicDrums * 0.34) : 0;
+  const colourShift = galaxyMusicMode
+    ? Math.min(1, (sparks * 0.55 + haze * 0.22 + impact * 0.2) * 0.42)
+    : 0;
 
   for (const child of group.children) {
     if ((child.userData.tag as string) !== 'nebulaDust') continue;
@@ -8605,7 +8710,12 @@ function updateNebula(group: THREE.Group, cfg: Cfg, t: number, R: number): void 
     const prevT = child.userData.prevT as number;
     const dt = prevT < 0 ? 16 : Math.min(t - prevT, 32);
     child.userData.prevT = t;
-    const drift = R * 0.0045 * speed * (dt / 16);
+    const drift =
+      R *
+      0.0045 *
+      speed *
+      (dt / 16) *
+      (1 + impact * _galaxyImpact * 0.42 + haze * _galaxyHaze * 0.24);
     const tSlow = t * 0.00035 * speed;
 
     for (let i = 0; i < count; i++) {
@@ -8614,9 +8724,49 @@ function updateNebula(group: THREE.Group, cfg: Cfg, t: number, R: number): void 
       const z = arr[i * 3 + 2];
       const r = Math.sqrt(x * x + y * y) + 1;
       const swirl = 0.28 + 0.72 * Math.max(0, 1 - r / limit);
-      let nx = x + (-y / r) * drift * swirl + Math.sin(y * 0.012 + tSlow) * drift * 0.25;
-      let ny = y + (x / r) * drift * swirl * 0.65 + Math.cos(x * 0.01 - tSlow) * drift * 0.22;
-      let nz = z + Math.sin((x - y) * 0.005 + tSlow) * drift * 0.18;
+      const localBeat = 0.5 + Math.sin(beatPhase - r * 0.035 + (i % 17) * 0.31) * 0.5;
+      const armDrive = galaxyMusicMode
+        ? 1 + _galaxyArms * impact * 0.55 + _galaxyGravity * gravity * 0.28
+        : 1;
+      const radial = galaxyMusicMode
+        ? (x / r) * gravity * _galaxyGravity * localBeat * R * 0.0018 -
+          (x / r) * impact * _galaxyImpact * R * 0.0007
+        : 0;
+      const radialY = galaxyMusicMode
+        ? (y / r) * gravity * _galaxyGravity * localBeat * R * 0.0018 -
+          (y / r) * impact * _galaxyImpact * R * 0.0007
+        : 0;
+      let nx =
+        x +
+        (-y / r) * drift * swirl * armDrive +
+        Math.sin(y * 0.012 + tSlow) * drift * 0.25 +
+        radial;
+      let ny =
+        y +
+        (x / r) * drift * swirl * 0.65 * armDrive +
+        Math.cos(x * 0.01 - tSlow) * drift * 0.22 +
+        radialY;
+      let nz =
+        z +
+        Math.sin((x - y) * 0.005 + tSlow) * drift * 0.18 +
+        (galaxyMusicMode ? (haze * _galaxyHaze + sparks * _galaxySparks) * R * 0.0012 : 0);
+
+      if (galaxyMusicMode) {
+        const shaped = galaxyShapeTransform(
+          nx,
+          ny,
+          nz,
+          R,
+          Math.min(
+            1,
+            _galaxyDepth * 0.42 + _galaxyArms * impact * 0.16 + _galaxyGravity * gravity * 0.18,
+          ),
+          beatPhase,
+        );
+        nx = shaped.x;
+        ny = shaped.y;
+        nz = shaped.z;
+      }
 
       if (_distortActive) {
         const f = fingerForce(nx, ny, nz, R * 0.62);
@@ -8640,12 +8790,19 @@ function updateNebula(group: THREE.Group, cfg: Cfg, t: number, R: number): void 
     posAttr.needsUpdate = true;
 
     const rgb: [number, number, number] = [
-      lerp(baseRgb[0], 255, glowF * 0.18),
-      lerp(baseRgb[1], 255, glowF * 0.18),
-      lerp(baseRgb[2], 255, glowF * 0.18),
+      lerp(baseRgb[0], 255, glowF * 0.18 + colourShift * 0.22),
+      lerp(baseRgb[1], 235, glowF * 0.16 + colourShift * 0.14),
+      lerp(baseRgb[2], 210, glowF * 0.14 + colourShift * 0.1),
     ];
-    updateMat(child, rgb, iF, 2.45);
-    group.rotation.z = Math.sin(t * 0.00008 * cfg.breathSpeed) * 0.08;
+    updateMat(child, rgb, iF, 2.45 + impact * _galaxyImpact * 0.75 + sparks * _galaxySparks * 0.65);
+    const mat = pts.material as THREE.PointsMaterial;
+    if (galaxyMusicMode) {
+      mat.size = 1.65 + impact * _galaxyImpact * 1.3 + sparks * _galaxySparks * 1.0;
+      mat.opacity = 0.46 + haze * _galaxyHaze * 0.22 + sparks * _galaxySparks * 0.12;
+    }
+    group.rotation.z =
+      Math.sin(t * 0.00008 * cfg.breathSpeed) * 0.08 +
+      (galaxyMusicMode ? impact * _galaxyArms * 0.018 : 0);
   }
 }
 
@@ -10338,7 +10495,12 @@ type FeaturedItem = { name: string; tag: string } | { header: string; dim?: bool
 
 const FEATURED_PRESETS: FeaturedItem[] = [
   { header: 'Good Ones' },
+  { name: 'Current Scales', tag: 'MUSIC' },
   { name: 'Sin Morph', tag: 'TOP' },
+  { name: 'Sacred Sin Morph', tag: 'MUSIC' },
+  { name: 'Chaos Sin Morph', tag: 'MUSIC' },
+  { name: 'Drift Field', tag: 'MUSIC' },
+  { name: 'Starflow Galaxy', tag: 'MUSIC' },
   { name: 'Chrysalis Rings', tag: 'MORPH' },
   { name: 'Yantra 3D', tag: 'YANTRA' },
   { name: 'Yantra Prism', tag: 'YANTRA' },
@@ -10351,7 +10513,6 @@ const FEATURED_PRESETS: FeaturedItem[] = [
   { name: 'Chaos Triangles', tag: '3D' },
   { name: 'Chaos Tri Gold', tag: '3D' },
   { name: 'Chaos Storm 3D', tag: '3D' },
-  { name: 'Drift Field', tag: 'FLOW' },
   { name: 'Drift Gold', tag: 'FLOW' },
   { name: 'Current 3D', tag: 'FLOW' },
   { name: 'Vortex 3D', tag: 'FLOW' },
@@ -10365,7 +10526,6 @@ const FEATURED_PRESETS: FeaturedItem[] = [
   { name: 'Nebula Bloom', tag: 'NEBULA' },
   { name: 'Dot Galaxy', tag: 'GALAXY' },
   { name: 'Ocean Drift', tag: 'FLOW' },
-  { name: 'Current Scales', tag: 'FLOW' },
   { name: 'Cyclone Tiles', tag: 'FLOW' },
   { name: 'Eddy Lace', tag: 'FLOW' },
   { name: 'Magnetic Sand', tag: 'FLOW' },
@@ -10428,6 +10588,13 @@ let _currentScaleColour = 0.28;
 let _currentScaleGeometry = 0.58;
 let _currentScaleWings = 0.46;
 let _currentScaleShape = 'scales';
+let _galaxyImpact = 0.64;
+let _galaxyGravity = 0.7;
+let _galaxyArms = 0.72;
+let _galaxyHaze = 0.58;
+let _galaxySparks = 0.52;
+let _galaxyDepth = 0.42;
+let _galaxyShape = 'galaxy';
 
 function fingerForce(
   x: number,
@@ -10849,7 +11016,18 @@ function updateDrift(group: THREE.Group, cfg: Cfg, t: number, R: number): void {
   const [rr, gg, bb] = pal.rgb;
   const iF = cfg.intensity / 10;
   const speed = cfg.breathSpeed * 0.00022;
-  const amp = R * 0.14 * (cfg.complexity / 10);
+  _musicPulse *= 0.95;
+  _musicBass *= 0.972;
+  _musicDrums *= 0.91;
+  _musicPads *= 0.986;
+  _musicKeys *= 0.978;
+  _musicLead *= 0.925;
+  const beatPhase = (t / 1000) * Math.PI * 2 * (_musicBpm / 60);
+  const internalPulse = ((Math.sin(beatPhase) + 1) / 2) ** 3 * 0.2;
+  const impact = Math.min(1, internalPulse + _musicDrums * 0.5 + _musicPulse * 0.42);
+  const pressure = Math.min(1, _musicBass * 0.86 + internalPulse * 0.25);
+  const atmosphere = Math.min(1, _musicPads * 0.58 + _musicKeys * 0.36 + internalPulse * 0.16);
+  const amp = R * 0.14 * (cfg.complexity / 10) * (1 + pressure * 0.48 + atmosphere * 0.22);
   const seeds = group.userData.seeds as THREE.Vector3[];
   const n = group.userData.n as number;
   if (!seeds) return;
@@ -10858,9 +11036,9 @@ function updateDrift(group: THREE.Group, cfg: Cfg, t: number, R: number): void {
   const live: THREE.Vector3[] = seeds.map(
     (s, i) =>
       new THREE.Vector3(
-        s.x + Math.sin(t * speed * 1.1 + i * 2.3 + 0.7) * amp,
-        s.y + Math.cos(t * speed * 0.9 + i * 1.7 + 1.3) * amp,
-        s.z + Math.sin(t * speed * 0.7 + i * 1.1 + 2.1) * amp,
+        s.x * (1 + pressure * 0.08) + Math.sin(t * speed * 1.1 + i * 2.3 + 0.7 + impact) * amp,
+        s.y * (1 + pressure * 0.08) + Math.cos(t * speed * 0.9 + i * 1.7 + 1.3 + atmosphere) * amp,
+        s.z * (1 + atmosphere * 0.18) + Math.sin(t * speed * 0.7 + i * 1.1 + 2.1) * amp,
       ),
   );
 
@@ -10876,7 +11054,8 @@ function updateDrift(group: THREE.Group, cfg: Cfg, t: number, R: number): void {
       });
       (pts.geometry.getAttribute('position') as THREE.BufferAttribute).needsUpdate = true;
       (pts.material as THREE.PointsMaterial).color.setRGB(rr / 255, gg / 255, bb / 255);
-      (pts.material as THREE.PointsMaterial).opacity = 0.92 * iF;
+      (pts.material as THREE.PointsMaterial).opacity = 0.82 * iF + atmosphere * 0.18;
+      (pts.material as THREE.PointsMaterial).size = 3.8 + impact * 2.2 + _musicLead * 1.3;
     }
     if (child.userData.tag === 'driftEdges') {
       const lines = child as THREE.LineSegments;
@@ -10884,7 +11063,7 @@ function updateDrift(group: THREE.Group, cfg: Cfg, t: number, R: number): void {
       const arr = (lines.geometry.getAttribute('position') as THREE.BufferAttribute)
         .array as Float32Array;
       // Connect nearest pairs within threshold
-      const thresh = R * 0.62;
+      const thresh = R * (0.58 + pressure * 0.12 + atmosphere * 0.08);
       let ei = 0;
       for (let a = 0; a < n && ei < maxE; a++) {
         for (let b = a + 1; b < n && ei < maxE; b++) {
@@ -10902,11 +11081,12 @@ function updateDrift(group: THREE.Group, cfg: Cfg, t: number, R: number): void {
       (lines.geometry.getAttribute('position') as THREE.BufferAttribute).needsUpdate = true;
       lines.geometry.setDrawRange(0, ei * 2);
       (lines.material as THREE.LineBasicMaterial).color.setRGB(rr / 255, gg / 255, bb / 255);
-      (lines.material as THREE.LineBasicMaterial).opacity = 0.22 * iF;
+      (lines.material as THREE.LineBasicMaterial).opacity =
+        0.18 * iF + atmosphere * 0.12 + impact * 0.08;
     }
   }
-  group.rotation.y += 0.0014;
-  group.rotation.x += 0.0005;
+  group.rotation.y += 0.0014 + impact * 0.0008;
+  group.rotation.x += 0.0005 + atmosphere * 0.0004;
 }
 
 /* ── CBloom — rings of nodes pulse outward like petals ───────── */
@@ -11834,11 +12014,80 @@ function updateTreeoflife3d(group: THREE.Group, cfg: Cfg, t: number, R: number):
 }
 
 /* ── Breath / Stream — canvas-only modes ─────────────────────── */
-// Three.js layer is empty; canvas overlay carries all rendering
-function buildCanvasMode(_cfg: Cfg, _R: number): THREE.Group {
-  return new THREE.Group();
+// Most canvas modes use only the 2D overlay. Music Entropy/Nebula also get
+// a subtle Three.js dot volume so they read as spatial, not flat.
+function buildCanvasMode(cfg: Cfg, R: number): THREE.Group {
+  const group = new THREE.Group();
+  if (cfg.mode !== 'musicdots' && cfg.mode !== 'musicnebula') return group;
+
+  const pal = PAL[cfg.preset] ?? PAL['Calm Field'];
+  const iF = cfg.intensity / 10;
+  const count = Math.max(520, Math.round(lerp(900, 2200, cfg.complexity / 10)));
+  const positions = new Float32Array(count * 3);
+  const base = new Float32Array(count * 3);
+  const arms = cfg.mode === 'musicnebula' ? 3 : Math.max(5, Math.round(cfg.symmetry));
+
+  for (let i = 0; i < count; i++) {
+    const p = (i + 0.5) / count;
+    const arm = i % arms;
+    const a = (arm / arms) * Math.PI * 2 + p * Math.PI * (cfg.mode === 'musicnebula' ? 5.2 : 2.8);
+    const r = R * (0.05 + p ** 0.62 * 0.86);
+    const z = (Math.sin(p * Math.PI * 2 * arms) + (Math.random() - 0.5)) * R * 0.16;
+    const x = Math.cos(a) * r + (Math.random() - 0.5) * R * 0.035;
+    const y =
+      Math.sin(a) * r * (cfg.mode === 'musicnebula' ? 0.58 : 0.82) +
+      (Math.random() - 0.5) * R * 0.035;
+    positions[i * 3] = base[i * 3] = x;
+    positions[i * 3 + 1] = base[i * 3 + 1] = y;
+    positions[i * 3 + 2] = base[i * 3 + 2] = z;
+  }
+
+  const geo = new THREE.BufferGeometry();
+  const attr = new THREE.BufferAttribute(positions, 3);
+  attr.setUsage(THREE.DynamicDrawUsage);
+  geo.setAttribute('position', attr);
+  const pts = new THREE.Points(geo, circlePtsMat(hdrColor(pal.rgb, iF, 2.3), 1.75, 0.34));
+  pts.userData.tag = 'musicDotVolume';
+  pts.userData.count = count;
+  pts.userData.base = base;
+  group.add(pts);
+  return group;
 }
-function updateCanvasMode(_group: THREE.Group, _cfg: Cfg, _t: number, _R: number): void {}
+function updateCanvasMode(group: THREE.Group, cfg: Cfg, t: number, R: number): void {
+  if (cfg.mode !== 'musicdots' && cfg.mode !== 'musicnebula') return;
+  const pal = PAL[cfg.preset] ?? PAL['Calm Field'];
+  const iF = cfg.intensity / 10;
+  const beatPhase = (t / 1000) * Math.PI * 2 * (_musicBpm / 60);
+  const beat = Math.min(1, ((Math.sin(beatPhase) + 1) / 2) ** 3 * 0.28 + _musicPulse * 0.82);
+  const bass = Math.min(1, _musicBass + beat * 0.18);
+  const haze = Math.min(1, _musicPads * 0.7 + _musicKeys * 0.3 + beat * 0.12);
+
+  for (const child of group.children) {
+    if ((child.userData.tag as string) !== 'musicDotVolume') continue;
+    const pts = child as THREE.Points;
+    const posAttr = pts.geometry.getAttribute('position') as THREE.BufferAttribute;
+    const arr = posAttr.array as Float32Array;
+    const base = child.userData.base as Float32Array;
+    const count = child.userData.count as number;
+    for (let i = 0; i < count; i++) {
+      const x = base[i * 3];
+      const y = base[i * 3 + 1];
+      const z = base[i * 3 + 2];
+      const r = Math.sqrt(x * x + y * y) + 1;
+      const a = Math.atan2(y, x) + t * 0.00008 * cfg.breathSpeed + bass * 0.08;
+      const pulse = 1 + bass * 0.12 + Math.sin(beatPhase - r * 0.025 + (i % 11)) * beat * 0.035;
+      arr[i * 3] = Math.cos(a) * r * pulse;
+      arr[i * 3 + 1] = Math.sin(a) * r * pulse * (cfg.mode === 'musicnebula' ? 0.58 : 0.82);
+      arr[i * 3 + 2] = z + Math.sin(beatPhase * 0.5 + r * 0.01) * R * 0.045 * haze;
+    }
+    posAttr.needsUpdate = true;
+    updateMat(pts, pal.rgb, iF, 2.25 + beat * 0.9 + haze * 0.45);
+    const mat = pts.material as THREE.PointsMaterial;
+    mat.size = 1.55 + beat * 1.2 + _musicLead * 0.8;
+    mat.opacity = 0.24 + haze * 0.22 + beat * 0.14;
+  }
+  group.rotation.y = Math.sin(t * 0.00012) * 0.18;
+}
 
 /* ── Entropy 3D — characters floating as sprites in 3D volume ─── */
 const _ENTROPY_CHARS = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZΩπ∞∑∮√∆ψφλμσεδγβα∀∃∈'.split('');
@@ -12273,6 +12522,18 @@ function updateSinMorph3D(group: THREE.Group, cfg: Cfg, t: number, R: number): v
   const spd = cfg.breathSpeed;
   const cplx = cfg.complexity / 10;
   const tSec = t * 0.001 * spd;
+  _musicPulse *= 0.95;
+  _musicBass *= 0.972;
+  _musicDrums *= 0.91;
+  _musicPads *= 0.986;
+  _musicKeys *= 0.978;
+  _musicLead *= 0.925;
+  const beatPhase = (t / 1000) * Math.PI * 2 * (_musicBpm / 60);
+  const internalPulse = ((Math.sin(beatPhase) + 1) / 2) ** 3 * 0.22;
+  const impact = Math.min(1, internalPulse + _musicDrums * 0.56 + _musicPulse * 0.34);
+  const pressure = Math.min(1, _musicBass * 0.78 + internalPulse * 0.24);
+  const atmosphere = Math.min(1, _musicPads * 0.55 + _musicKeys * 0.34 + internalPulse * 0.12);
+  const spark = Math.min(1, _musicLead * 0.72 + _musicDrums * 0.22);
 
   for (const child of group.children) {
     if ((child.userData.tag as string) !== 'sinMorphPts') continue;
@@ -12284,11 +12545,11 @@ function updateSinMorph3D(group: THREE.Group, cfg: Cfg, t: number, R: number): v
     // Morph cycle: four shape states over time
     const cycle = (tSec * 0.08) % 1;
     // a1..a4 are blend amplitudes for four sine displacement waves
-    const a1 = 0.25 * cplx * Math.sin(tSec * 0.7);
-    const a2 = 0.18 * cplx * Math.sin(tSec * 0.43 + 1.2);
-    const a3 = 0.14 * cplx * Math.sin(tSec * 0.31 + 2.5);
-    const a4 = 0.1 * cplx * Math.sin(tSec * 0.19 + 0.8);
-    const breathe = 0.85 + 0.15 * Math.sin(tSec * 1.3);
+    const a1 = (0.25 + impact * 0.08) * cplx * Math.sin(tSec * 0.7 + impact);
+    const a2 = (0.18 + pressure * 0.08) * cplx * Math.sin(tSec * 0.43 + 1.2);
+    const a3 = (0.14 + atmosphere * 0.08) * cplx * Math.sin(tSec * 0.31 + 2.5);
+    const a4 = (0.1 + spark * 0.09) * cplx * Math.sin(tSec * 0.19 + 0.8);
+    const breathe = 0.85 + 0.15 * Math.sin(beatPhase) + pressure * 0.08 + atmosphere * 0.04;
 
     let idx = 0;
     for (let i = 0; i < N; i++) {
@@ -12314,21 +12575,29 @@ function updateSinMorph3D(group: THREE.Group, cfg: Cfg, t: number, R: number): v
         // Wave displacement 4: spiky outbursts
         const d4 = 1 + a4 * Math.sin(7 * u + v * 2 + tSec * 1.7);
 
-        const r = R * 0.78 * d1 * d2 * d3 * d4 * breathe;
+        const beatRipple = 1 + Math.sin(beatPhase - v * 2 + u * 0.5) * impact * 0.035;
+        const r = R * 0.78 * d1 * d2 * d3 * d4 * breathe * beatRipple;
         arr[idx++] = x * r;
         arr[idx++] = y * r;
-        arr[idx++] = z * r * (0.7 + 0.3 * Math.abs(Math.sin(tSec * 0.4 + cycle * Math.PI * 2)));
+        arr[idx++] =
+          z *
+          r *
+          (0.7 + 0.3 * Math.abs(Math.sin(tSec * 0.4 + cycle * Math.PI * 2)) + atmosphere * 0.08);
       }
     }
     posAttr.needsUpdate = true;
     pts.geometry.computeBoundingSphere();
-    pts.rotation.y = tSec * 0.06;
-    pts.rotation.z = tSec * 0.04;
+    pts.rotation.y = tSec * 0.06 + pressure * 0.08;
+    pts.rotation.z = tSec * 0.04 + impact * 0.05;
 
     const mat = pts.material as THREE.PointsMaterial;
-    mat.color.setRGB(rr / 255, gg / 255, bb / 255);
-    mat.opacity = 0.7 * iF * (0.85 + 0.15 * Math.sin(tSec * 2.1));
-    mat.size = 2.8 + cfg.glow * 0.18;
+    mat.color.setRGB(
+      (lerp(rr, 255, spark * 0.18) / 255) * (1 + impact * 0.18),
+      (lerp(gg, 230, spark * 0.12) / 255) * (1 + atmosphere * 0.12),
+      (lerp(bb, 210, spark * 0.08) / 255) * (1 + atmosphere * 0.1),
+    );
+    mat.opacity = 0.64 * iF * (0.85 + 0.15 * Math.sin(tSec * 2.1)) + atmosphere * 0.14;
+    mat.size = 2.8 + cfg.glow * 0.18 + impact * 0.85 + spark * 0.65;
   }
 }
 
@@ -12582,6 +12851,15 @@ export default function GeometryField() {
     wings: 0.46,
   });
   const [currentScaleShape, setCurrentScaleShape] = useState('scales');
+  const [galaxyResponse, setGalaxyResponse] = useState({
+    impact: 0.64,
+    gravity: 0.7,
+    arms: 0.72,
+    haze: 0.58,
+    sparks: 0.52,
+    depth: 0.42,
+  });
+  const [galaxyShape, setGalaxyShape] = useState('galaxy');
   const [journeyId, setJourneyId] = useState(1);
   const [journeyRunning, setJourneyRunning] = useState(false);
   const [journeyPhaseInfo, setJourneyPhaseInfo] = useState({ phaseIdx: 0, phaseProgress: 0 });
@@ -12607,6 +12885,16 @@ export default function GeometryField() {
     _currentScaleWings = currentScaleResponse.wings;
     _currentScaleShape = currentScaleShape;
   }, [currentScaleResponse, currentScaleShape]);
+
+  useEffect(() => {
+    _galaxyImpact = galaxyResponse.impact;
+    _galaxyGravity = galaxyResponse.gravity;
+    _galaxyArms = galaxyResponse.arms;
+    _galaxyHaze = galaxyResponse.haze;
+    _galaxySparks = galaxyResponse.sparks;
+    _galaxyDepth = galaxyResponse.depth;
+    _galaxyShape = galaxyShape;
+  }, [galaxyResponse, galaxyShape]);
 
   useEffect(() => {
     try {
@@ -15879,12 +16167,26 @@ export default function GeometryField() {
                 <div style={{ display: 'grid', gap: 7 }}>
                   {[
                     [
+                      'Current Scales',
+                      'Main deep music surface: dots, wings, shape morphs, and touch.',
+                    ],
+                    ['Sacred Sin Morph', 'Smooth sacred 3D morph for slow musical breathing.'],
+                    ['Sin Morph', 'Organic 3D wave body for musical rise and release.'],
+                    ['Chaos Sin Morph', 'Sharper sin morph for chaotic peaks and heavy sections.'],
+                    [
+                      'Drift Field',
+                      'Floating node field for spacious pads and evolving structure.',
+                    ],
+                    [
+                      'Starflow Galaxy',
+                      'Spiral star instrument for gravity, arms, haze, and touch.',
+                    ],
+                    [
                       'Music Entropy',
                       'Dot cloud with pulse rings. Best base for analyser-driven particles.',
                     ],
                     ['Music Nebula', 'Soft galaxy haze for pads, voice, and ambient recordings.'],
                     ['Groove Lattice', 'Tiles and cyclones for drums, bass, and sequencer layers.'],
-                    ['Current Scales', 'Current texture with touch-ready pattern movement.'],
                     ['Dot Galaxy', 'Particle galaxy ready for bass and star-density mapping.'],
                   ].map(([name, desc]) => {
                     const p = PRESETS[name];
@@ -15895,7 +16197,12 @@ export default function GeometryField() {
                         type="button"
                         onClick={() => {
                           applyPreset(name);
-                          if (name === 'Current Scales') setTouchMode('ripple');
+                          if (
+                            name === 'Current Scales' ||
+                            name === 'Starflow Galaxy' ||
+                            name === 'Drift Field'
+                          )
+                            setTouchMode('ripple');
                         }}
                         style={{
                           textAlign: 'left',
@@ -16134,12 +16441,13 @@ export default function GeometryField() {
                           max="1"
                           step="0.01"
                           value={currentScaleResponse[key]}
-                          onChange={(event) =>
+                          onChange={(event) => {
+                            const value = Number(event.currentTarget.value);
                             setCurrentScaleResponse((prev) => ({
                               ...prev,
-                              [key]: Number(event.currentTarget.value),
-                            }))
-                          }
+                              [key]: value,
+                            }));
+                          }}
                           style={{ width: '100%', accentColor: accent }}
                         />
                         <span style={{ textAlign: 'right', color: accent }}>
@@ -16181,6 +16489,196 @@ export default function GeometryField() {
                         );
                       })}
                     </div>
+                  </div>
+                )}
+                {cfg.mode === 'nebula' && cfg.complexity >= 9 && (
+                  <div
+                    style={{
+                      border: `1px solid ${accentMid}`,
+                      background: `rgba(${pr},${pg},${pb},0.05)`,
+                      borderRadius: 10,
+                      padding: '10px 11px',
+                      display: 'grid',
+                      gap: 8,
+                    }}
+                  >
+                    <div
+                      style={{
+                        fontFamily: 'var(--font-serif)',
+                        fontSize: 10,
+                        letterSpacing: '0.14em',
+                        textTransform: 'uppercase',
+                        color: accent,
+                        fontWeight: 700,
+                      }}
+                    >
+                      Starflow Galaxy response
+                    </div>
+                    <div
+                      style={{
+                        display: 'grid',
+                        gridTemplateColumns: 'repeat(2, minmax(0, 1fr))',
+                        gap: 6,
+                      }}
+                    >
+                      {(
+                        [
+                          [
+                            'Cosmic Drift',
+                            {
+                              impact: 0.38,
+                              gravity: 0.46,
+                              arms: 0.54,
+                              haze: 0.78,
+                              sparks: 0.22,
+                              depth: 0.28,
+                            },
+                            'galaxy',
+                          ],
+                          [
+                            'Spiral Drive',
+                            {
+                              impact: 0.72,
+                              gravity: 0.86,
+                              arms: 0.92,
+                              haze: 0.42,
+                              sparks: 0.48,
+                              depth: 0.52,
+                            },
+                            'vortex',
+                          ],
+                          [
+                            'Star Tunnel',
+                            {
+                              impact: 0.58,
+                              gravity: 0.72,
+                              arms: 0.68,
+                              haze: 0.58,
+                              sparks: 0.42,
+                              depth: 0.92,
+                            },
+                            'tunnel',
+                          ],
+                          [
+                            'Comet Hands',
+                            {
+                              impact: 0.82,
+                              gravity: 0.52,
+                              arms: 0.74,
+                              haze: 0.36,
+                              sparks: 0.92,
+                              depth: 0.48,
+                            },
+                            'double',
+                          ],
+                        ] as [string, typeof galaxyResponse, string][]
+                      ).map(([label, response, shape]) => (
+                        <button
+                          key={label}
+                          type="button"
+                          onClick={() => {
+                            setGalaxyResponse(response);
+                            setGalaxyShape(shape);
+                            setTouchMode(fingerMode === 'off' ? 'ripple' : fingerMode);
+                          }}
+                          style={{
+                            borderRadius: 8,
+                            border: `1px solid ${accentMid}`,
+                            background: `rgba(${pr},${pg},${pb},0.07)`,
+                            color: accent,
+                            cursor: 'pointer',
+                            fontFamily: 'var(--font-serif)',
+                            fontSize: 10,
+                            fontWeight: 700,
+                            letterSpacing: '0.06em',
+                            padding: '7px 6px',
+                          }}
+                        >
+                          {label}
+                        </button>
+                      ))}
+                    </div>
+                    <div
+                      style={{
+                        display: 'grid',
+                        gridTemplateColumns: 'repeat(5, minmax(0, 1fr))',
+                        gap: 5,
+                      }}
+                    >
+                      {(
+                        [
+                          ['galaxy', 'Galaxy'],
+                          ['vortex', 'Vortex'],
+                          ['eye', 'Eye'],
+                          ['tunnel', 'Tunnel'],
+                          ['double', 'Double'],
+                        ] as [string, string][]
+                      ).map(([shape, label]) => {
+                        const active = galaxyShape === shape;
+                        return (
+                          <button
+                            key={shape}
+                            type="button"
+                            onClick={() => setGalaxyShape(shape)}
+                            style={{
+                              minWidth: 0,
+                              borderRadius: 8,
+                              border: `1px solid ${active ? accent : `rgba(${pr},${pg},${pb},0.15)`}`,
+                              background: active ? accentFaint : 'transparent',
+                              color: active ? accent : `rgba(${pr},${pg},${pb},0.48)`,
+                              cursor: 'pointer',
+                              fontFamily: 'var(--font-serif)',
+                              fontSize: 8,
+                              fontWeight: active ? 700 : 500,
+                              padding: '6px 0',
+                              textTransform: 'uppercase',
+                            }}
+                          >
+                            {label}
+                          </button>
+                        );
+                      })}
+                    </div>
+                    {(
+                      [
+                        ['impact', 'impact'],
+                        ['gravity', 'gravity'],
+                        ['arms', 'arms'],
+                        ['haze', 'haze'],
+                        ['sparks', 'sparks'],
+                        ['depth', 'depth'],
+                      ] as [keyof typeof galaxyResponse, string][]
+                    ).map(([key, label]) => (
+                      <label
+                        key={key}
+                        style={{
+                          display: 'grid',
+                          gridTemplateColumns: '70px 1fr 28px',
+                          alignItems: 'center',
+                          gap: 7,
+                          color: `rgba(${pr},${pg},${pb},0.62)`,
+                          fontFamily: 'var(--font-serif)',
+                          fontSize: 10,
+                        }}
+                      >
+                        <span>{label}</span>
+                        <input
+                          type="range"
+                          min="0"
+                          max="1"
+                          step="0.01"
+                          value={galaxyResponse[key]}
+                          onChange={(event) => {
+                            const value = Number(event.currentTarget.value);
+                            setGalaxyResponse((prev) => ({ ...prev, [key]: value }));
+                          }}
+                          style={{ width: '100%', accentColor: accent }}
+                        />
+                        <span style={{ textAlign: 'right', color: accent }}>
+                          {Math.round(galaxyResponse[key] * 100)}
+                        </span>
+                      </label>
+                    ))}
                   </div>
                 )}
                 <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>

@@ -52,6 +52,21 @@ Accepted presets:
 - **Nebula Veil**: soft spiral haze with high-star background.
 - **Nebula Bloom**: denser bloom-like nebula based on current-field motion.
 - **Dot Galaxy**: spiral galaxy made from dots, with dense star support.
+- **Starflow Galaxy**: second deep music-visual base after Current Scales. It maps drums to impact, bass to gravity, pads/keys to haze, leads to sparks, and supports galaxy/vortex/eye/tunnel/double shapes with touch distortion.
+
+The strongest music-visual candidates should also be promoted in Geometry Builder's **Good Ones** list so the improvements are not isolated to the Music Visuals tab:
+
+- Current Scales
+- Sacred Sin Morph
+- Sin Morph
+- Chaos Sin Morph
+- Drift Field
+- Starflow Galaxy
+
+When selected from Music Visuals, these candidates should actually react to music:
+
+- **Sin Morph / Sacred Sin Morph / Chaos Sin Morph**: BPM breathing, bass pressure, drum impact, pad/key depth, and lead sparkle affect the 3D morph surface.
+- **Drift Field**: bass spreads the node field, pads/keys thicken connections, drums/lead sharpen node pulses, and the field rotation responds subtly to impact.
 
 ## Star Field Behavior
 
@@ -72,6 +87,8 @@ Accepted starter presets:
 - **Music Entropy**: a dot-cloud concert surface where drums create local flashes, bass expands the field, and pads thicken the glow.
 - **Music Nebula**: a soft nebula and galaxy haze for pads, voice recordings, and ambient layers.
 - **Groove Lattice**: tiled currents with small cyclones, intended for sequencer, drum, and bass patterns.
+
+Music Entropy and Music Nebula should not be purely flat canvas effects. They carry a lightweight 3D dot volume behind the canvas layer so their music response has depth: bass expands the volume, pads/keys lift the z-depth haze, and leads/drums sharpen the dots.
 
 Groove Machine dispatches a `colourmap:groove-visual-step` browser event with per-group energy (`drums`, `bass`, `keys`, `lead`, `pads`). Geometry listens to that event and lets the music presets react when both surfaces are open. If no Groove event is present, the presets use a restrained internal pulse so they still work as standalone visuals.
 
