@@ -5,9 +5,64 @@ import { PROGRAMS, type Program } from '@/lib/programs';
 import ComicProgram from './ComicProgram';
 import LearningProgram from './LearningProgram';
 
-const COMIC_PROGRAMS = new Set(['emotional-intelligence']);
+const COMIC_PROGRAMS = new Set([
+  'room-to-breathe',
+  'emotional-intelligence',
+  'self-talk',
+  'wellbeing',
+  'hope-energy',
+  'sleep',
+  'nervous-system',
+  'grief',
+  'belonging',
+  'agency',
+  'organisational-intelligence',
+  'creativity',
+  'relational-intelligence',
+  'artificial-intelligence',
+  'ai-future',
+  'collective-evolution',
+  'deep-attention',
+  'fishing-in-the-dark',
+  'conflict-repair',
+  'money-anxiety',
+  'identity-becoming',
+  'parenting-patterns',
+]);
 
 const EDUCATION_IMAGES = ['/education-1.png', '/education-2.png', '/education-3.png'];
+const EDUCATION_WORLDS = [
+  {
+    href: '/atlas',
+    title: 'Living Atlas',
+    label: 'Maps and collective knowledge',
+    body: 'Wellbeing, society, hope, data, and human progress as a living map.',
+    tint: '#6B7A50',
+  },
+  {
+    href: '/progress-road',
+    title: 'Progress Roads',
+    label: 'History as hopeful timelines',
+    body: 'Tools, democracy, peace, kindness, freedom, happiness, and future questions.',
+    tint: '#6888B0',
+  },
+];
+
+const POSITIVE_OVERLAY_PROGRAMS = new Set([
+  'agency',
+  'organisational-intelligence',
+  'creativity',
+  'relational-intelligence',
+  'artificial-intelligence',
+  'ai-future',
+  'collective-evolution',
+  'deep-attention',
+  'fishing-in-the-dark',
+  'conflict-repair',
+  'money-anxiety',
+  'identity-becoming',
+  'parenting-patterns',
+]);
 
 const SERIF = 'var(--font-serif)';
 const cream = (a: number) => `rgba(240,216,152,${a})`;
@@ -70,6 +125,7 @@ const GROUPS: { label: string; keys: string[]; tint: string; startHere?: string 
   {
     label: 'Inner Life',
     keys: [
+      'room-to-breathe',
       'emotional-intelligence',
       'self-talk',
       'wellbeing',
@@ -293,6 +349,170 @@ function SwimCard({
 }
 
 /* ── Hub palettes ────────────────────────────────────────────── */
+function ProgramImageCard({
+  program,
+  onOpen,
+  startHere,
+  cardColor,
+}: {
+  program: Program;
+  onOpen: () => void;
+  startHere?: boolean;
+  cardColor: string;
+}) {
+  const c = cardColor;
+  const progress = getProgress(program);
+  const total = program.segments.length;
+  const started = progress > 0;
+  const imageSrc = POSITIVE_OVERLAY_PROGRAMS.has(program.key)
+    ? `/comics/${program.key}/variants/positive-overlay/panel-0.png`
+    : COMIC_PROGRAMS.has(program.key)
+      ? `/comics/${program.key}/panel-0.png`
+      : EDUCATION_IMAGES[0];
+
+  return (
+    <button
+      type="button"
+      onClick={onOpen}
+      style={{
+        flexShrink: 0,
+        width: 248,
+        display: 'flex',
+        flexDirection: 'column',
+        gap: 10,
+        background: col(c, 0.08),
+        border: `1px solid ${col(c, started ? 0.35 : 0.2)}`,
+        borderRadius: 0,
+        cursor: 'pointer',
+        padding: 10,
+        boxShadow: started ? `0 0 20px ${col(c, 0.14)}` : 'none',
+        position: 'relative',
+        textAlign: 'left',
+      }}
+    >
+      {startHere && !started && (
+        <div
+          style={{
+            position: 'absolute',
+            top: -9,
+            left: 12,
+            background: col(c, 0.9),
+            borderRadius: 999,
+            padding: '2px 10px',
+            fontFamily: SERIF,
+            fontSize: 8.5,
+            fontWeight: 700,
+            letterSpacing: '0.14em',
+            textTransform: 'uppercase',
+            color: 'rgba(10,6,3,0.9)',
+            whiteSpace: 'nowrap',
+          }}
+        >
+          start here
+        </div>
+      )}
+
+      <div
+        style={{
+          width: '100%',
+          background: 'rgba(10,6,3,0.18)',
+          border: `1px solid ${col(c, 0.16)}`,
+        }}
+      >
+        <img src={imageSrc} alt="" style={{ display: 'block', width: '100%', height: 'auto' }} />
+      </div>
+
+      <div style={{ padding: '2px 2px 0' }}>
+        <div
+          style={{
+            fontFamily: SERIF,
+            fontSize: 15,
+            fontWeight: 700,
+            color: cream(0.9),
+            lineHeight: 1.28,
+          }}
+        >
+          {program.domain}
+        </div>
+        <div
+          style={{
+            fontFamily: SERIF,
+            fontSize: 10.5,
+            color: col(c, 0.66),
+            letterSpacing: '0.04em',
+            marginTop: 5,
+          }}
+        >
+          {started ? `${progress} / ${total}` : `${total} pages`}
+        </div>
+      </div>
+    </button>
+  );
+}
+
+function EducationWorldCard({
+  world,
+  onOpen,
+}: {
+  world: (typeof EDUCATION_WORLDS)[number];
+  onOpen: () => void;
+}) {
+  function openWorld() {
+    onOpen();
+    window.location.assign(world.href);
+  }
+
+  return (
+    <button
+      type="button"
+      onClick={openWorld}
+      style={{
+        flexShrink: 0,
+        width: 238,
+        minHeight: 144,
+        display: 'flex',
+        flexDirection: 'column',
+        justifyContent: 'space-between',
+        gap: 12,
+        padding: 14,
+        border: `1px solid ${col(world.tint, 0.28)}`,
+        background: `linear-gradient(135deg, ${col(world.tint, 0.16)}, rgba(255,255,255,0.035))`,
+        color: cream(0.88),
+        textAlign: 'left',
+        cursor: 'pointer',
+        boxShadow: `inset 0 0 28px ${col(world.tint, 0.08)}`,
+      }}
+    >
+      <div>
+        <div
+          style={{
+            fontFamily: SERIF,
+            fontSize: 9.5,
+            letterSpacing: '0.12em',
+            textTransform: 'uppercase',
+            color: col(world.tint, 0.78),
+            marginBottom: 8,
+          }}
+        >
+          {world.label}
+        </div>
+        <div
+          style={{
+            fontFamily: SERIF,
+            fontSize: 22,
+            fontWeight: 700,
+            lineHeight: 1.02,
+            color: cream(0.94),
+          }}
+        >
+          {world.title}
+        </div>
+      </div>
+      <div style={{ fontSize: 12.5, lineHeight: 1.45, color: cream(0.62) }}>{world.body}</div>
+    </button>
+  );
+}
+
 const HUB_PALETTES = [
   { id: 'brown', bg: 'rgba(18,10,4,0.99)', dot: '#3E1A08' },
   { id: 'navy', bg: 'rgba(2,4,14,0.99)', dot: '#0A1830' },
@@ -302,6 +522,8 @@ const HUB_PALETTES = [
 ] as const;
 type HubPaletteId = (typeof HUB_PALETTES)[number]['id'];
 const HUB_LS = 'colourmap-learn-palette';
+type HomeDisplayMode = 'blocks' | 'images';
+const HOME_DISPLAY_LS = 'colourmap-learn-home-display';
 function loadHubPalette(): HubPaletteId {
   try {
     return (localStorage.getItem(HUB_LS) ?? 'brown') as HubPaletteId;
@@ -309,10 +531,18 @@ function loadHubPalette(): HubPaletteId {
     return 'brown';
   }
 }
+function loadHomeDisplayMode(): HomeDisplayMode {
+  try {
+    return (localStorage.getItem(HOME_DISPLAY_LS) ?? 'blocks') as HomeDisplayMode;
+  } catch {
+    return 'blocks';
+  }
+}
 
 export default function LearningHub({ onClose }: { onClose: () => void }) {
   const [active, setActive] = useState<Program | null>(null);
   const [hubPalId, setHubPalId] = useState<HubPaletteId>(loadHubPalette);
+  const [homeDisplay, setHomeDisplay] = useState<HomeDisplayMode>(loadHomeDisplayMode);
   const hubBg = HUB_PALETTES.find((p) => p.id === hubPalId)?.bg ?? 'rgba(18,10,4,0.99)';
   const heroImage = useMemo(
     () => EDUCATION_IMAGES[Math.floor(Math.random() * EDUCATION_IMAGES.length)],
@@ -324,6 +554,13 @@ export default function LearningHub({ onClose }: { onClose: () => void }) {
     setHubPalId(id);
     try {
       localStorage.setItem(HUB_LS, id);
+    } catch {}
+  }
+
+  function pickHomeDisplay(mode: HomeDisplayMode) {
+    setHomeDisplay(mode);
+    try {
+      localStorage.setItem(HOME_DISPLAY_LS, mode);
     } catch {}
   }
 
@@ -376,9 +613,10 @@ export default function LearningHub({ onClose }: { onClose: () => void }) {
           style={{
             position: 'relative',
             width: '100%',
-            height: 160,
+            minHeight: 160,
             flexShrink: 0,
-            overflow: 'hidden',
+            overflow: 'visible',
+            background: 'rgba(10,6,3,0.2)',
           }}
         >
           <img
@@ -386,9 +624,7 @@ export default function LearningHub({ onClose }: { onClose: () => void }) {
             alt=""
             style={{
               width: '100%',
-              height: '100%',
-              objectFit: 'cover',
-              objectPosition: 'center 30%',
+              height: 'auto',
               display: 'block',
             }}
           />
@@ -435,12 +671,35 @@ export default function LearningHub({ onClose }: { onClose: () => void }) {
           style={{
             display: 'flex',
             alignItems: 'center',
-            justifyContent: 'flex-end',
+            justifyContent: 'space-between',
             padding: '10px 20px',
             borderBottom: `1px solid ${och(0.12)}`,
             flexShrink: 0,
           }}
         >
+          <div style={{ display: 'flex', gap: 6 }}>
+            {(['blocks', 'images'] as HomeDisplayMode[]).map((mode) => (
+              <button
+                key={mode}
+                type="button"
+                onClick={() => pickHomeDisplay(mode)}
+                style={{
+                  borderRadius: 999,
+                  border: `1px solid ${och(homeDisplay === mode ? 0.42 : 0.18)}`,
+                  background: och(homeDisplay === mode ? 0.14 : 0.04),
+                  color: cream(homeDisplay === mode ? 0.86 : 0.48),
+                  fontFamily: SERIF,
+                  fontSize: 10.5,
+                  letterSpacing: '0.08em',
+                  cursor: 'pointer',
+                  padding: '5px 10px',
+                  textTransform: 'uppercase',
+                }}
+              >
+                {mode}
+              </button>
+            ))}
+          </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
             <div style={{ display: 'flex', gap: 5 }}>
               {HUB_PALETTES.map((p) => (
@@ -502,6 +761,38 @@ export default function LearningHub({ onClose }: { onClose: () => void }) {
 
         {/* Programs — swim lanes with group tints */}
         <div style={{ flex: 1, overflowY: 'auto', padding: '20px 0 40px' }}>
+          <div style={{ marginBottom: 32 }}>
+            <div style={{ paddingLeft: 20, marginBottom: 14 }}>
+              <div
+                style={{
+                  fontFamily: SERIF,
+                  fontSize: 14,
+                  fontWeight: 700,
+                  letterSpacing: '0.08em',
+                  textTransform: 'uppercase',
+                  color: och(0.68),
+                }}
+              >
+                Knowledge worlds
+              </div>
+            </div>
+            <div
+              style={{
+                display: 'flex',
+                gap: 10,
+                overflowX: 'auto',
+                paddingLeft: 20,
+                paddingRight: 20,
+                paddingBottom: 6,
+                scrollbarWidth: 'none',
+              }}
+            >
+              {EDUCATION_WORLDS.map((world) => (
+                <EducationWorldCard key={world.href} world={world} onOpen={onClose} />
+              ))}
+            </div>
+          </div>
+
           {GROUPS.map((group) => {
             const programs = group.keys.map((k) => byKey[k]).filter(Boolean);
             if (!programs.length) return null;
@@ -535,15 +826,25 @@ export default function LearningHub({ onClose }: { onClose: () => void }) {
                     scrollbarWidth: 'none',
                   }}
                 >
-                  {programs.map((p, i) => (
-                    <SwimCard
-                      key={p.key}
-                      program={p}
-                      onOpen={() => setActive(p)}
-                      startHere={group.startHere === p.key}
-                      cardColor={progressionColor(group.tint, i, programs.length)}
-                    />
-                  ))}
+                  {programs.map((p, i) =>
+                    homeDisplay === 'images' ? (
+                      <ProgramImageCard
+                        key={p.key}
+                        program={p}
+                        onOpen={() => setActive(p)}
+                        startHere={group.startHere === p.key}
+                        cardColor={progressionColor(group.tint, i, programs.length)}
+                      />
+                    ) : (
+                      <SwimCard
+                        key={p.key}
+                        program={p}
+                        onOpen={() => setActive(p)}
+                        startHere={group.startHere === p.key}
+                        cardColor={progressionColor(group.tint, i, programs.length)}
+                      />
+                    ),
+                  )}
                 </div>
               </div>
             );

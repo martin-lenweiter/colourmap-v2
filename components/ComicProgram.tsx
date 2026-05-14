@@ -6,6 +6,42 @@ import type { Program } from '@/lib/programs';
 const SERIF = 'var(--font-serif)';
 const cream = (a: number) => `rgba(240,216,152,${a})`;
 
+type ImageStyle = {
+  key: string;
+  label: string;
+};
+
+const DEFAULT_IMAGE_STYLE: ImageStyle = { key: 'default', label: 'Warm paper' };
+const POSITIVE_OVERLAY_STYLE: ImageStyle = { key: 'positive-overlay', label: 'Positive' };
+
+const POSITIVE_OVERLAY_PROGRAMS = new Set([
+  'agency',
+  'organisational-intelligence',
+  'creativity',
+  'relational-intelligence',
+  'artificial-intelligence',
+  'ai-future',
+  'collective-evolution',
+  'deep-attention',
+  'fishing-in-the-dark',
+  'conflict-repair',
+  'money-anxiety',
+  'identity-becoming',
+  'parenting-patterns',
+]);
+
+const PROGRAM_IMAGE_STYLES: Record<string, ImageStyle[]> = {
+  'hope-energy': [DEFAULT_IMAGE_STYLE, { key: 'euro-bd', label: 'European BD' }],
+  'emotional-intelligence': [DEFAULT_IMAGE_STYLE, { key: 'minimal', label: 'Minimal' }],
+};
+
+function getImageStyles(programKey: string): ImageStyle[] {
+  const styles = PROGRAM_IMAGE_STYLES[programKey] ?? [DEFAULT_IMAGE_STYLE];
+  if (!POSITIVE_OVERLAY_PROGRAMS.has(programKey)) return styles;
+  if (styles.some((style) => style.key === POSITIVE_OVERLAY_STYLE.key)) return styles;
+  return [POSITIVE_OVERLAY_STYLE, ...styles];
+}
+
 function col(color: string, a: number) {
   const r = parseInt(color.slice(1, 3), 16);
   const g = parseInt(color.slice(3, 5), 16);
@@ -325,20 +361,30 @@ function PanelImage({
   programKey,
   index,
   color,
+  imageStyle,
 }: {
   programKey: string;
   index: number;
   color: string;
+  imageStyle?: string;
 }) {
   const [failed, setFailed] = useState(false);
-  const src = `/comics/${programKey}/panel-${index}.png`;
+  const src =
+    imageStyle && imageStyle !== 'default'
+      ? `/comics/${programKey}/variants/${imageStyle}/panel-${index}.png`
+      : `/comics/${programKey}/panel-${index}.png`;
   if (!failed) {
     return (
       <img
         src={src}
         alt=""
         onError={() => setFailed(true)}
-        style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
+        style={{
+          width: '100%',
+          height: 'auto',
+          display: 'block',
+          background: 'rgba(10,6,3,0.24)',
+        }}
       />
     );
   }
@@ -369,6 +415,8 @@ export default function ComicProgram({
 }: Props) {
   const [intro, setIntro] = useState(true);
   const [index, setIndex] = useState(0);
+  const imageStyles = getImageStyles(program.key);
+  const [imageStyle, setImageStyle] = useState(imageStyles[0]?.key ?? 'default');
   const current = program.segments[index];
   const total = program.segments.length;
   const paras = toParagraphs(current.body);
@@ -397,6 +445,7 @@ export default function ComicProgram({
           flexDirection: 'column',
           maxWidth: 672,
           margin: '0 auto',
+          overflowY: 'auto',
         }}
       >
         {/* header */}
@@ -443,15 +492,45 @@ export default function ComicProgram({
         <div
           style={{
             margin: '10px 20px 0',
-            borderRadius: 14,
-            overflow: 'hidden',
+            borderRadius: 0,
+            overflow: 'visible',
             border: `1.5px solid ${col(program.color, 0.2)}`,
-            height: 200,
             flexShrink: 0,
           }}
         >
-          <PanelImage programKey={program.key} index={0} color={program.color} />
+          <PanelImage
+            programKey={program.key}
+            index={0}
+            color={program.color}
+            imageStyle={imageStyle}
+          />
         </div>
+
+        {imageStyles.length > 1 && (
+          <div style={{ display: 'flex', gap: 8, padding: '12px 20px 0', flexShrink: 0 }}>
+            {imageStyles.map((style) => (
+              <button
+                key={style.key}
+                type="button"
+                onClick={() => setImageStyle(style.key)}
+                style={{
+                  flex: 1,
+                  borderRadius: 999,
+                  border: `1px solid ${col(program.color, imageStyle === style.key ? 0.5 : 0.2)}`,
+                  background: col(program.color, imageStyle === style.key ? 0.16 : 0.05),
+                  color: cream(imageStyle === style.key ? 0.9 : 0.56),
+                  cursor: 'pointer',
+                  fontFamily: SERIF,
+                  fontSize: 11,
+                  letterSpacing: '0.08em',
+                  padding: '8px 10px',
+                }}
+              >
+                {style.label}
+              </button>
+            ))}
+          </div>
+        )}
 
         {/* program info */}
         <div
@@ -627,6 +706,7 @@ export default function ComicProgram({
         flexDirection: 'column',
         maxWidth: 672,
         margin: '0 auto',
+        overflowY: 'auto',
       }}
     >
       {/* ── Header ── */}
@@ -676,22 +756,74 @@ export default function ComicProgram({
       </div>
 
       {/* ── Panel art ── */}
-      <div
+      <button
+        type="button"
+        onClick={next}
+        onKeyDown={(event) => {
+          if (event.key === 'Enter' || event.key === ' ') {
+            event.preventDefault();
+            next();
+          }
+        }}
+        aria-label={index === total - 1 ? 'Return to education' : 'Next comic page'}
         style={{
           flexShrink: 0,
-          height: 240,
           margin: '16px 20px 0',
-          borderRadius: 12,
-          overflow: 'hidden',
+          borderRadius: 0,
+          overflow: 'visible',
           border: `1.5px solid ${col(program.color, 0.25)}`,
           boxShadow: `0 0 32px ${col(program.color, 0.1)}`,
+          cursor: 'pointer',
+          display: 'block',
+          padding: 0,
+          width: 'calc(100% - 40px)',
+          background: 'transparent',
+          textAlign: 'left',
         }}
       >
-        <PanelImage programKey={program.key} index={index} color={program.color} />
-      </div>
+        <PanelImage
+          programKey={program.key}
+          index={index}
+          color={program.color}
+          imageStyle={imageStyle}
+        />
+      </button>
+
+      {imageStyles.length > 1 && (
+        <div
+          style={{
+            display: 'flex',
+            gap: 8,
+            padding: '10px 20px 0',
+            flexShrink: 0,
+          }}
+        >
+          {imageStyles.map((style) => (
+            <button
+              key={style.key}
+              type="button"
+              onClick={() => setImageStyle(style.key)}
+              style={{
+                flex: 1,
+                minHeight: 34,
+                borderRadius: 999,
+                border: `1px solid ${col(program.color, imageStyle === style.key ? 0.5 : 0.2)}`,
+                background: col(program.color, imageStyle === style.key ? 0.16 : 0.05),
+                color: cream(imageStyle === style.key ? 0.9 : 0.56),
+                cursor: 'pointer',
+                fontFamily: SERIF,
+                fontSize: 11,
+                letterSpacing: '0.08em',
+              }}
+            >
+              {style.label}
+            </button>
+          ))}
+        </div>
+      )}
 
       {/* ── Caption + body ── */}
-      <div style={{ flex: 1, overflowY: 'auto', padding: '20px 20px 24px' }}>
+      <div style={{ padding: '20px 20px 24px' }}>
         {/* title caption box */}
         <div
           style={{

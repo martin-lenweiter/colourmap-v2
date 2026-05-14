@@ -1,0 +1,941 @@
+# Colourmap Education Comic Generation Pipeline
+
+## Goal
+
+Build a repeatable pipeline for generating full Colourmap education comics from one high-level concept.
+
+The system should produce coherent text-free panel images, keep all teaching copy as structured data, and let the app render captions, dialogue, translations, and interactive learning layers separately.
+
+## Core Principle
+
+Images are not the source of truth. JSON is.
+
+Pipeline:
+
+```text
+comic idea
+-> story JSON
+-> page and panel breakdown
+-> panel prompts
+-> image generation loop
+-> saved panel images
+-> app-rendered text and interactions
+-> final comic experience
+```
+
+Generated images must not contain readable text, letters, speech bubbles, labels, captions, UI, logos, or watermarks. This keeps the same image usable across languages.
+
+## Visual Universe
+
+The aim is to build one coherent Colourmap education visual universe, not disconnected illustrations.
+
+## Current Phase: Expansion And Visual Research
+
+The current phase is exploration.
+
+Colourmap should deliberately test different visual methods, formats, and styles before locking the system down:
+
+- warm paper comics
+- minimal educational diagrams
+- European BD-inspired visual storytelling
+- Human Blueprint Futurism
+- layered interactive PNG scenes
+- comic-infographic hybrids
+- user-made and hand-drawn alternatives
+- sociology/data-map visual language
+
+For now, the goal is not restriction. The goal is learning what feels alive, useful, beautiful, readable on phones, and emotionally right.
+
+Long term, the aim is to converge into an overall Colourmap visual language:
+
+```text
+coherent enough to feel like one world
+flexible enough to support many subjects
+warm enough to feel human
+intelligent enough to reveal structure
+hopeful enough to create movement
+```
+
+Until that convergence happens, experiments should be clearly documented as style tests rather than treated as final rules.
+
+Shared visual DNA:
+
+- warm aged beige paper feel
+- sober, hopeful, emotionally intelligent tone
+- refined European BD / graphic novel language
+- thin ink linework, subtle crosshatching, muted watercolor or gouache washes
+- restrained cinematic lighting
+- recurring symbolic vocabulary: rooms, windows, paths, fields, maps, constellations, breath lines, plants, quiet human silhouettes
+- enough negative space for app-rendered text overlays
+- one clear emotional idea per panel
+
+## Phone-First Adaptive Design
+
+Colourmap education should be designed for phones first.
+
+The goal is not to force every comic into one fixed shape. The goal is to preserve the full artwork and let the interface adapt around it.
+
+Rules:
+
+- phone readability first, desktop richness second
+- images must stay complete; do not crop meaningful borders, feet, faces, objects, or paper margins
+- avoid relying on fixed borders that become confusing across different phone formats
+- avoid hard-coded aspect ratios unless the format explicitly requires them
+- layouts should be reactive and adaptive to different phone sizes
+- app-rendered text should sit in flexible zones above, below, or beside the image depending on available space
+- users should be able to scroll when an image needs more vertical room
+- important content should not depend on edge details that may be near device safe areas
+- no tiny essential details
+- one main visual idea per screen
+- strong central silhouette or diagram
+- generous negative space for text and interaction
+
+Preferred approach:
+
+```text
+image keeps natural aspect ratio
+layout creates space around image
+text adapts around image
+interaction reveals layers progressively
+```
+
+Long-term goal:
+
+```text
+responsive comic-infographic system
+not fixed comic pages
+```
+
+This matters because users will read these programs on many different phones. The design should feel intentional on small, tall, narrow, and large screens without cutting the artwork or making the interface feel broken.
+
+## Human Blueprint Futurism
+
+The next canonical Colourmap style direction is Human Blueprint Futurism.
+
+Core values:
+
+```text
+beauty
+warmth
+hope
+intelligence
+```
+
+The image should make the viewer feel smarter, not because it is complicated, but because it reveals structure.
+
+Visual DNA:
+
+- warm paper or off-white notebook base
+- clear pen-and-ink drawing
+- Leonardo da Vinci notebook feeling
+- modern technical blueprint overlays
+- soft cyan, teal, or blue construction lines
+- sociology maps, paths, nodes, flows, systems, relationships
+- European adventure-comic clarity
+- poetic near-future atmosphere
+- elegant human silhouettes
+- fields, rooms, roads, windows, maps, networks, cities
+- emotional data constellations and subtle futuristic signals
+- beautiful but useful composition
+- phone-readable simplicity
+
+The feeling:
+
+```text
+I understand something better now.
+I can breathe.
+There is a path.
+The world is complex, but not impossible.
+```
+
+Avoid:
+
+- cold corporate UI
+- neon cyberpunk
+- dense technical clutter
+- depressive darkness
+- decorative images that do not explain anything
+- direct imitation of any specific living artist
+- border-heavy frames that confuse responsive display
+
+Prompt base:
+
+```text
+Create a phone-first educational comic-infographic image for Colourmap.
+
+Style:
+Human Blueprint Futurism: warm pen-and-paper craft, clear ink drawing, Leonardo notebook
+intelligence, modern technical blueprint overlays, sociology mapping diagrams, soft cyan
+construction lines, paths, nodes, flows, and subtle near-future emotional data signals.
+The image should feel beautiful, warm, hopeful, and highly intelligent.
+
+Composition:
+Readable on a phone. One clear central idea. Strong silhouette or diagram. Generous empty
+space for app-rendered text. Preserve the full artwork with natural paper margins. Do not
+depend on a fixed border or exact crop.
+
+Restrictions:
+No text, no letters, no numbers, no captions, no logos, no watermarks.
+```
+
+## Canonical Comic Style
+
+The first successful generated panel established a strong visual direction for Colourmap Education.
+
+Style description:
+
+```text
+A sober, hopeful, hand-made graphic novel style on warm aged beige paper.
+The image should feel drawn by hand, not digitally polished: soft graphite or ink linework,
+subtle crosshatching, visible paper grain, muted watercolor/gouache washes, and slightly imperfect
+edges. The palette is quiet and adult: beige paper, warm ochre, muted amber, dusty blue,
+soft teal, sage green, charcoal, and cream highlights.
+
+Characters should feel human, calm, and emotionally nuanced, with simple recurring silhouettes
+and grounded postures. The world can be symbolic, but it should stay readable and intimate:
+rooms, windows, crowds, floating colored emotional fields, paths, plants, maps, and open horizons.
+
+The feeling should be uplifting without being cute, sober without being bleak, poetic without
+becoming vague, and educational without looking like an infographic.
+```
+
+Avoid:
+
+- shiny digital fantasy polish
+- bright neon colors
+- childish cartoon style
+- superhero or manga exaggeration
+- horror/anxiety imagery
+- dense poster compositions
+- text baked into the image
+- speech bubbles or readable signs
+
+Every future comic prompt should preserve this style unless a program explicitly requires a different visual world.
+
+## Emotional Direction: Lift The Viewer
+
+The overall aim of Colourmap education images is to lift the viewer.
+
+The visuals can acknowledge difficulty, sadness, confusion, anxiety, grief, or contraction when the story requires it, but they should not trap the user inside melancholy. The default direction should be toward:
+
+- hope
+- space
+- dignity
+- warmth
+- agency
+- tenderness
+- groundedness
+- possibility
+- quiet courage
+
+This does not mean forced positivity. It means emotionally honest images that leave a little air in the room.
+
+Preferred visual movement:
+
+```text
+crowded -> spacious
+contracted -> open
+isolated -> connected
+confused -> oriented
+cold -> warm
+heavy -> breathable
+```
+
+Avoid making the education universe feel sad, depressive, darkly cinematic, or aesthetically trapped in pain. If a panel enters a difficult emotional state, it should usually include some visual sign of potential movement: a window, a path, a small light, a plant, an opening, a hand, a horizon, a warm edge, or a softening of the environment.
+
+## Writing Principle: Make It Practical
+
+Every program should move from concept to practical agency.
+
+The user should not only understand an idea. They should feel:
+
+```text
+I can improve this by doing one simple thing.
+```
+
+Preferred writing movement:
+
+```text
+here is what is happening
+-> here is why it matters
+-> here is the simple act that can help
+```
+
+Examples of the tone:
+
+- "You can improve this by simply pausing long enough to name what is present."
+- "The simple act of opening a window, drinking water, and choosing one next step can change the direction of the day."
+- "One honest message can reopen connection."
+- "Putting a feeling into words can give the nervous system more room."
+- "A small repeated ritual can change the atmosphere of an evening."
+
+The writing should stay emotionally intelligent, not simplistic. But it should always give the user a practical handle.
+
+Avoid ending pages only with abstract insight.
+
+Prefer endings that point to:
+
+- one breath
+- one name
+- one message
+- one pause
+- one small movement
+- one body anchor
+- one kind sentence
+- one useful question
+- one realistic next step
+
+The educational feeling should be:
+
+```text
+this matters
+and I can do something small with it today
+```
+
+## Warm And Cold Colour Language
+
+Colourmap Education should generally prefer warm visual worlds.
+
+Warm colours are the emotional home base:
+
+- beige paper
+- ochre
+- amber
+- cream
+- soft brown
+- muted terracotta
+- gentle warm light
+
+These tones make the experience feel human, safe, grounded, and hopeful.
+
+Cold colours should not be the default atmosphere, but they can be part of the message.
+
+Cold colours can represent:
+
+- distance
+- confusion
+- mental noise
+- loneliness
+- abstraction
+- uncertainty
+- night
+- system pressure
+- emotional contraction
+
+The important design move is progression:
+
+```text
+cold / distant / abstract
+-> mixed warm-cold transition
+-> warm / grounded / human
+```
+
+This colour movement can become a game or interaction language. A user's choices, reflections, or progress can shift a panel, room, map, or world from cold to warm. The shift should not imply that cold states are bad; it means they are being understood, integrated, or brought into relationship.
+
+In the long run, the game can use temperature as part of its emotional mechanics:
+
+- cold zones for states that feel distant, frozen, abstract, or unprocessed
+- warm zones for states that feel embodied, connected, chosen, or alive
+- mixed zones for transition and ambiguity
+- user actions that bring warmth, light, texture, or living forms into a space
+
+This should stay subtle and poetic, not gamified in a simplistic "good colour vs bad colour" way.
+
+## Old Paper / Future Signal Contrast
+
+Another important part of the Colourmap art direction is contrast between old-school paper craft and subtle futuristic mood.
+
+Base layer:
+
+- aged paper
+- hand-drawn lines
+- graphite, ink, pencil, crosshatching
+- watercolor or gouache washes
+- imperfect edges
+- tactile texture
+- human craft
+
+Future layer:
+
+- floating emotional maps
+- soft data constellations
+- luminous dots and lines
+- abstract interfaces without readable text
+- subtle holographic fields
+- near-future city silhouettes
+- symbolic systems diagrams
+- light grids or orbital forms
+
+The future layer should not erase the handmade feeling. It should sit inside it, like a quiet signal drawn onto paper.
+
+This contrast is part of the art:
+
+```text
+old paper / future signal
+handmade / systemic
+human / technological
+intimate / collective
+ancient ritual / future tool
+```
+
+For Colourmap, this visual contrast supports the message: modern inner life can be mapped with future tools, but it must remain human, warm, embodied, and handmade.
+
+Each program can have its own symbols and emotional arc, but the universe should remain recognisable.
+
+## MVP Input
+
+Example input:
+
+```json
+{
+  "title": "Room to Breathe",
+  "program_key": "room-to-breathe",
+  "idea": "A short visual guide to finding space inside your mind.",
+  "pages": 6,
+  "panels_per_page": 1,
+  "visual_style": "sober hopeful European BD, aged beige paper, muted ochre, navy, dusty blue, sage green, thin ink lines, subtle paper grain",
+  "character_bible": "A gentle recurring human figure or silhouette, quiet, grounded, emotionally neutral-to-hopeful. Keep the same silhouette and clothing language throughout.",
+  "world_bible": "Symbolic inner landscapes: rooms, windows, paths, small plants, open horizons, floating abstract thought-shapes.",
+  "tone": "spacious, hopeful, sober, grounded, not childish",
+  "format": "mobile vertical comic reader"
+}
+```
+
+## Comic JSON
+
+Generated `comic.json` should be the source of truth:
+
+```json
+{
+  "title": "Room to Breathe",
+  "program_key": "room-to-breathe",
+  "style_bible": {
+    "visual_style": "...",
+    "character_design": "...",
+    "world": "...",
+    "rules": [
+      "Keep character design consistent.",
+      "Do not generate text inside images.",
+      "Do not include speech bubbles in generated images.",
+      "Use consistent palette, paper texture, linework, and atmosphere.",
+      "Leave negative space for app-rendered text overlays."
+    ]
+  },
+  "pages": [
+    {
+      "page": 1,
+      "page_summary": "The mind feels crowded.",
+      "panels": [
+        {
+          "panel": 1,
+          "shot": "medium wide shot",
+          "description": "A quiet figure sits in a small room while abstract thought-shapes float around them.",
+          "mood": "crowded but safe",
+          "caption": "Sometimes the mind fills up before we notice.",
+          "dialogue": "",
+          "image_prompt": "..."
+        }
+      ]
+    }
+  ]
+}
+```
+
+## Panel Prompt Template
+
+Every generated panel prompt should repeat the shared visual bible and the no-text restriction.
+
+```text
+Create one text-free comic panel for Colourmap Education.
+
+Visual style:
+{visual_style}
+
+Character:
+{character_bible}
+
+World:
+{world_bible}
+
+Panel:
+{panel_description}
+
+Camera:
+{shot}
+
+Mood:
+{mood}
+
+Composition:
+Simple, elegant, readable at mobile size, with calm negative space for app-rendered text.
+
+Restrictions:
+No text, no letters, no numbers, no speech bubbles, no captions, no labels, no signs, no UI, no logos, no watermarks.
+```
+
+## App Integration
+
+Final panels for a program go here:
+
+```text
+public/comics/{program_key}/panel-0.png
+public/comics/{program_key}/panel-1.png
+...
+```
+
+For `Room to Breathe`:
+
+```text
+public/comics/room-to-breathe/panel-0.png
+public/comics/room-to-breathe/panel-1.png
+public/comics/room-to-breathe/panel-2.png
+public/comics/room-to-breathe/panel-3.png
+public/comics/room-to-breathe/panel-4.png
+public/comics/room-to-breathe/panel-5.png
+```
+
+The app should render:
+
+- title
+- body text
+- captions
+- dialogue
+- expandable learning sections
+- choices, reflections, and saved user inputs
+
+The image model should only create the visual background.
+
+## Current Test Tracks
+
+Keep `Room to Breathe` as the first successful style pilot for now.
+
+The next experiments should test two different methods:
+
+1. `Hope & Energy`: use the same wide landscape image format as the first successful generation. This should test whether the warm paper, hand-made, uplifting visual universe can hold a full education series without becoming too sad or too academic.
+2. `Mind & Self-Talk`: use a larger interactive page format. The generated comic image sits below a generous text area. Colourmap can reveal written text, choices, reflections, and explanations above the comic image, so the user experiences the page as an interactive learning object rather than a static captioned image.
+
+Important layout principle:
+
+```text
+generated image = text-free comic world
+app layer above image = teaching text, reveals, choices, reflection prompts, translations
+```
+
+For the interactive format, the written text should not be baked into the image and should not float randomly over important artwork. It should appear as a deliberate app-rendered layer with enough calm negative space around it.
+
+## Interactive Growth
+
+The comic reader should evolve from passive pages into a guided learning process.
+
+Each page can support:
+
+- `reveals`: expandable cards like "why this matters", "try this", "go deeper"
+- `interaction`: small choices or reflections
+- `saveKey`: localStorage or future account-backed persistence
+- `connectTo`: optional links into check-in, objectives, anchors, or insights
+
+Possible segment shape:
+
+```ts
+type ComicReveal = {
+  label: string;
+  body: string;
+};
+
+type ComicInteraction =
+  | {
+      type: 'choice';
+      question: string;
+      options: string[];
+      saveKey: string;
+    }
+  | {
+      type: 'reflection';
+      prompt: string;
+      saveKey: string;
+    };
+
+type ComicSegment = {
+  title: string;
+  body: string;
+  imagePrompt?: string;
+  caption?: string;
+  reveals?: ComicReveal[];
+  interaction?: ComicInteraction;
+};
+```
+
+For `Room to Breathe`, example interactions:
+
+- Page 1: choose what is crowding the mind: thought, task, memory, fear, pressure
+- Page 2: name one thought without becoming it
+- Page 3: choose one anchor: feet, breath, jaw, hand, sound
+- Page 4: choose one next step: rest, message, water, movement, open window
+- Page 5: complete "one thing that could still move is..."
+- Page 6: summary: anchor + next step + one open hope
+
+## Standalone Python Pipeline
+
+A future standalone generator can live outside the Next app:
+
+```text
+comic-generator/
+  main.py
+  config.py
+  prompts.py
+  story_generator.py
+  panel_generator.py
+  image_generator.py
+  layout_engine.py
+  lettering.py
+  export_pdf.py
+  data/
+    input.json
+    comic.json
+  outputs/
+    panels/
+    pages/
+    final_comic.pdf
+```
+
+CLI:
+
+```bash
+python main.py --config data/input.json
+python main.py --config data/input.json --skip-images
+python main.py --config data/input.json --regenerate-panel 1 3
+```
+
+Requirements:
+
+- Python
+- Pillow for page layout, borders, gutters, captions, and PDF page assembly
+- image API client for panel generation
+- environment variables for API keys
+- JSON intermediate files saved at every stage
+- clear filenames like `page_01_panel_01.png`
+- error handling so one failed panel does not stop the whole comic
+- support for regenerating one panel without regenerating the full comic
+
+## Character Consistency
+
+Consistency is the main risk.
+
+Mitigations:
+
+- repeat the same character bible in every prompt
+- repeat the same visual style bible in every prompt
+- keep outfit, silhouette, palette, and facial traits simple
+- generate a character/world reference sheet before panel generation
+- save reference assets under `outputs/reference/`
+- leave hooks for future image-to-image workflows that can pass reference images into each panel request
+
+## First Program
+
+`Room to Breathe` is the first test because it is emotionally welcoming and not too academic.
+
+Purpose:
+
+- create mental space
+- give a feeling of hope
+- be readable by someone tired, crowded, or overwhelmed
+- prove the text-free image plus app-rendered teaching model
+
+Emotional arc:
+
+```text
+crowded mind
+-> distance from noise
+-> body anchor
+-> one next step
+-> practical hope
+-> spaciousness
+```
+
+## Long-Term Vision: Collective Creation
+
+Over time, Colourmap Education can grow beyond solo learning into a collective creative practice.
+
+The comic system can become a place where users do not only consume educational material, but contribute to a living global comicbook: a shared visual record of how people understand emotions, growth, relationships, intelligence, hope, and transformation.
+
+Possible directions:
+
+- users submit personal reflections that become anonymous comic prompts
+- groups co-create shared comic pages around a theme
+- communities build collective visual stories from their check-ins, values, challenges, and hopes
+- people vote on, remix, or continue each other's story fragments
+- programs evolve into collaborative "creation rooms" rather than static lessons
+- schools, friend groups, circles, or events create their own edition of a Colourmap comic
+- collective emotional patterns become visual chapters: grief, hope, belonging, agency, transition
+
+The important principle is consent and authorship. A user's private inner work should never automatically become public material. Collective creation should be opt-in, clear, and respectful.
+
+## Human-Made Versions
+
+In the long run, generated images should not replace human creativity. They should open a door for it.
+
+Users could be invited to draw, paint, collage, photograph, or otherwise make their own version of a page:
+
+- "draw your version of this page"
+- "make your own symbol for this feeling"
+- "create a version of this room, path, window, plant, or map"
+- "upload a human-made alternative panel"
+- "remix the page with your own materials"
+- "make a local workshop edition where everyone draws one panel"
+
+This can turn education into an act of making. A page is not only something the user reads; it becomes a prompt for human expression.
+
+Possible product model:
+
+```text
+official generated page
+-> user draws their version
+-> optional private reflection
+-> optional sharing with consent
+-> collective gallery or workshop zine
+```
+
+Important values:
+
+- human-made work should be visibly valued
+- users should never feel they need artistic skill to participate
+- drawings can be simple, messy, symbolic, abstract, or unfinished
+- AI-generated panels and human-made panels can live side by side
+- collective projects should credit people clearly when they choose to be credited
+- private images should stay private unless explicitly shared
+
+## From Digital To Physical
+
+The same pipeline can eventually move beyond screens.
+
+If Colourmap can turn emotional learning into structured stories and visual worlds, those worlds can become physical artifacts:
+
+- printed comic books
+- zines made from collective reflections
+- exhibition panels
+- posters for events or workshops
+- 3D printed symbolic objects
+- small sculptures based on recurring emotional forms
+- larger statues or installations representing collective states
+- physical maps of a community's emotional landscape
+- cards, ritual objects, or educational kits
+
+The pipeline could become:
+
+```text
+collective reflections
+-> structured story/world JSON
+-> comic panels
+-> selected symbols/forms
+-> 3D model prompts or procedural geometry
+-> physical object, print, exhibition, or event
+```
+
+This makes Colourmap not only an app, but a bridge between inner life, shared story, and the real world.
+
+## Event And Project Possibilities
+
+Colourmap could host or support collective creation projects such as:
+
+- "Room to Breathe" workshops where participants create one shared comic from their reflections
+- emotional intelligence comic jams
+- school or university editions of Colourmap Education
+- community check-in events that generate a visual collective map
+- exhibitions showing anonymous emotional patterns as comic panels and physical forms
+- live collective storytelling sessions where the group chooses the next page
+- music, sound, and comic sessions where emotional data becomes image and audio
+- limited printed editions of collectively authored Colourmap chapters
+
+The deeper opportunity is that users collaborate on the creation of something meaningful together. Education becomes less like content delivery and more like a shared act of making.
+
+## Branching Comics
+
+The comic format can also become interactive and non-linear.
+
+Instead of every reader moving through the same fixed sequence, a comic can offer choices that bring the user to different places:
+
+```text
+page
+-> choice
+-> branch A / branch B / branch C
+-> different panels, reflections, exercises, or endings
+```
+
+For Colourmap, branching should not feel like a game of winning or losing. It should feel like choosing a path through an inner landscape.
+
+Examples:
+
+- "What is most present right now?" -> thought / body / relationship / future
+- "What do you need first?" -> rest / clarity / courage / connection
+- "Where do you want to go?" -> the room / the window / the path / the garden
+- "How do you want to respond?" -> pause / ask / move / let go
+
+Each choice can route to different panels, prompts, and interactions.
+
+Possible JSON shape:
+
+```ts
+type ComicChoice = {
+  id: string;
+  label: string;
+  nextNodeId: string;
+};
+
+type ComicNode = {
+  id: string;
+  title: string;
+  body: string;
+  imagePath?: string;
+  imagePrompt?: string;
+  choices?: ComicChoice[];
+  reveals?: ComicReveal[];
+  interaction?: ComicInteraction;
+};
+
+type BranchingComic = {
+  title: string;
+  startNodeId: string;
+  nodes: Record<string, ComicNode>;
+};
+```
+
+This keeps the same principle: the story structure is data first, and images are generated or loaded per node.
+
+## Long-Run Vision: Collective Videogame
+
+In the very long run, the branching comic system could evolve into a collective videogame.
+
+The path could look like:
+
+```text
+static education comic
+-> interactive comic with choices
+-> branching emotional journeys
+-> shared collective stories
+-> explorable emotional world
+-> collective videogame
+```
+
+This game would not need to start as a traditional action game. It could begin as an explorable world where emotional states, values, relationships, hopes, and challenges become places, objects, weather, music, and characters.
+
+Possible mechanics:
+
+- users enter through their current state
+- choices shape the landscape they move through
+- collective patterns become shared regions of the world
+- people collaborate to build rooms, gardens, maps, rituals, songs, statues, or paths
+- comic chapters become quests or journeys
+- learning programs become places to visit
+- community events generate temporary worlds
+- real-world workshops create artifacts that re-enter the digital world
+
+The important long-term idea:
+
+Colourmap can become a shared symbolic world generated from real human inner life.
+
+The comic system is the first small step toward that: structured story, visual universe, choices, and collective authorship.
+
+## From Fixed Comics To AI-Generated Reflection Paths
+
+The first comic programs are fixed because fixed structure is the fastest way to test quality.
+
+But the long-term model is more alive.
+
+Colourmap comics should eventually become part of an AI-guided reflective system where the app can
+generate or assemble a path from the user's current state, question, or need.
+
+The future unit is not only:
+
+```text
+program -> page -> panel
+```
+
+It can also be:
+
+```text
+reflection axis -> node -> image layer -> question -> choice -> next node
+```
+
+Possible axes:
+
+- state
+- need
+- body
+- story
+- relationship
+- future
+- collective pattern
+- history
+- practical action
+- hope
+
+AI can help choose or generate the next step, but the app should keep structured constraints:
+
+- text remains outside generated images
+- every generated path has a clear beginning and exit
+- the user can always return to the stable app navigation
+- factual claims require source-aware handling
+- emotional reflection stays safe and non-diagnostic
+- the tone stays practical, hopeful, and grounded
+- outputs are saved as structured JSON, not only conversation text
+
+This means a future AI path might create:
+
+```text
+one personal question
+one comic image
+one small practical act
+one optional map or collective fact
+one saved insight
+one next branch
+```
+
+The fixed education comics are therefore prototypes for the larger reactive system. They help define
+the visual grammar, writing tone, safety limits, and interaction patterns that future AI-generated
+paths should reuse.
+
+## Reusable Symbolic Discussion Images
+
+Education images should not only serve one fixed page.
+
+Long term, many of these images can become reusable symbolic context images inside AI-guided
+discussions. When a user talks with the future Colourmap AI agent about agency, hope, money anxiety,
+identity, attention, conflict, creativity, or belonging, the app can reuse relevant images as visual
+anchors for the conversation.
+
+This means future image prompts should avoid being too literal.
+
+Preferred image quality:
+
+- symbolic enough to fit several related contexts
+- emotionally positive and energizing
+- intelligent, successful, capable, future-oriented
+- clear enough to understand on a phone
+- visually close to the inspiring Education and coworking banner feeling
+- warm and human, with paper texture where useful
+- futuristic without becoming cold or corporate
+- no text baked into the image
+- enough calm space for app-rendered conversational text
+
+The image should transmit a state to the viewer:
+
+```text
+I am becoming clearer.
+I am capable.
+There is energy here.
+The future can be designed.
+This is serious, beautiful, and hopeful.
+```
+
+The app can then use one image in several ways:
+
+```text
+fixed education page
+-> AI reflection background
+-> suggested practice card
+-> collective atlas node
+-> future branching comic path
+```
+
+The generated image library should therefore be treated as a growing symbolic visual vocabulary,
+not only as illustrations for one program.

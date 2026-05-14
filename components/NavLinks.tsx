@@ -19,6 +19,8 @@ const SOCIAL_ROUTES = ['/circles', '/sparks', '/chat'];
 const PHONE_PRIMARY_LINKS = PRIMARY_LINKS;
 
 const MORE_LINKS = [
+  { href: '/atlas', label: 'Atlas' },
+  { href: '/progress-road', label: 'Roads' },
   { href: '/circles', label: 'Social' },
   { href: '/journey', label: 'Journey' },
   { href: '/life-scan', label: 'Life Scan' },

@@ -12,6 +12,41 @@ export type Program = {
 
 export const PROGRAMS: Program[] = [
   {
+    key: 'room-to-breathe',
+    domain: 'Room to Breathe',
+    color: '#C8B67A',
+    segments: [
+      {
+        title: 'The mind gets full',
+        body: 'Sometimes the mind fills up before we notice. Thoughts, messages, duties, memories, tiny fears. Nothing is wrong with you. The room is just crowded. The first step is not to solve everything. It is to notice how full the room has become.',
+      },
+      {
+        title: 'You are not the noise',
+        body: 'A thought can be loud without being true. A feeling can be intense without being the whole of you. A worry can visit without becoming your home. Space begins when you can say: this is happening in me, but it is not all of me.',
+      },
+      {
+        title: 'One small anchor',
+        body: 'You do not need to fix your life in one moment. Start smaller. Feel your feet. Notice your breath. Relax your jaw. Let the body become the first safe place. A small anchor is enough to stop the mind from drifting everywhere at once.',
+      },
+      {
+        title: 'One next step',
+        body: 'Clarity usually returns in pieces. Not as a grand answer, but as one possible movement. Drink water. Open the window. Send the message. Rest for ten minutes. Begin again. The next step does not need to be impressive. It only needs to be real.',
+      },
+      {
+        title: 'Hope stays practical',
+        body: 'Hope is not pretending everything is fine. Hope is keeping one small part of the future open. It is the part of you that says: something can still move. Something can still soften. Something can still grow from here.',
+      },
+      {
+        title: 'There is room',
+        body: 'The mind can become spacious again. Not empty. Not perfect. Spacious enough to breathe, choose, and move. You do not need to become a different person to find that space. You only need one honest pause, then another.',
+      },
+      {
+        title: 'Carry the space with you',
+        body: 'The space you found does not have to stay on this page. Take one piece of it into the day: one breath, one anchor, one small step, one open hope. That is how a practice begins.',
+      },
+    ],
+  },
+  {
     key: 'emotional-intelligence',
     domain: 'Emotional Intelligence',
     color: '#C4A060',
