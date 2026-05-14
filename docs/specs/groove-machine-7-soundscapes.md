@@ -36,6 +36,19 @@ What it lacks:
 
 ## The 7 Soundscapes
 
+### Starter Deep-Dive Preset: Desert Pulse
+
+Before expanding the catalogue, Groove Machine should open with one strong festival-ready preset rather than many thin options. **Desert Pulse** is the current starter: a spacious melodic-house groove designed for open-air desert energy, with a steady four-on-floor kick, patient bass, warm arps, and wide pads. It is not a clone of any artist; the target is the broad feeling of restrained, emotional, late-night electronic music.
+
+The preset must also feed visuals:
+
+- drums push dots and create flashes;
+- bass expands or compresses the visual field;
+- keys and pads thicken glow, haze, and nebula density;
+- lead/motif activity should become sparks, not random colour changes.
+
+Pad interaction should not use one identical design everywhere. Drums are strike pads, bass uses pulse gates, keys use chord tiles, leads use motif sparks, and pads use atmosphere ribbons.
+
 Each soundscape is a complete bundle: **tempo zone + drum
 pattern + bass line + chord progression + voice/instrument
 choices + colour palette + 1-line poetic name**. The user picks

@@ -15,6 +15,7 @@ import MagicMaker from '@/components/MagicMaker';
    ═══════════════════════════════════════════════════════════ */
 
 type Mode = 'tuner' | 'groove' | 'maker' | 'looper' | 'visuals';
+const SOUNDLAB_TAB_LS = 'colourmap:soundlab-tab';
 
 const VISUALIZER_MODES: { id: VisualizerMode; label: string }[] = [
   { id: 'atom', label: 'Atom' },
@@ -33,7 +34,13 @@ const VISUALIZER_MODES: { id: VisualizerMode; label: string }[] = [
 ];
 
 export default function SoundLab() {
-  const [mode, setMode] = useState<Mode>('tuner');
+  const [mode, setMode] = useState<Mode>(() => {
+    if (typeof window === 'undefined') return 'tuner';
+    const saved = window.localStorage.getItem(SOUNDLAB_TAB_LS);
+    return saved === 'groove' || saved === 'maker' || saved === 'looper' || saved === 'visuals'
+      ? saved
+      : 'tuner';
+  });
   const [visualMode, setVisualMode] = useState<VisualizerMode>('atom');
   const [visualSize, setVisualSize] = useState({ width: 360, height: 240 });
   const [fullscreen, setFullscreen] = useState(false);
@@ -69,6 +76,12 @@ export default function SoundLab() {
     if (!el || !nav) return;
     const target = el.offsetLeft - nav.clientWidth / 2 + el.clientWidth / 2;
     nav.scrollTo({ left: Math.max(0, target), behavior: 'smooth' });
+  }, [mode]);
+
+  useEffect(() => {
+    try {
+      window.localStorage.setItem(SOUNDLAB_TAB_LS, mode);
+    } catch {}
   }, [mode]);
 
   const TABS: readonly { id: Mode; label: string }[] = [

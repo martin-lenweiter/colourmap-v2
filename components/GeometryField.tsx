@@ -50,8 +50,13 @@ type Mode =
   | 'liquid'
   | 'cells'
   | 'current'
+  | 'currentscales'
+  | 'cyclonetiles'
+  | 'eddylace'
+  | 'magneticsand'
   | 'plasma'
   | 'globe'
+  | 'nebula'
   | 'current3d'
   | 'matrix'
   | 'matrix3d'
@@ -92,7 +97,10 @@ type Mode =
   | 'sinmorph3d'
   | 'heartdance'
   | 'infinitedive'
-  | 'clockorbit3d';
+  | 'clockorbit3d'
+  | 'musicdots'
+  | 'musicnebula'
+  | 'musiclattice';
 
 interface Pal {
   bg0: string;
@@ -1229,6 +1237,54 @@ const PRESETS: Record<string, Cfg> = {
     stars: 0,
     mode: 'current',
   },
+  'Current Scales': {
+    preset: 'Deep Current',
+    symmetry: 7,
+    complexity: 7,
+    glow: 4,
+    breathSpeed: 0.45,
+    intensity: 8,
+    particles: 0,
+    luminous: 2,
+    stars: 0,
+    mode: 'currentscales',
+  },
+  'Cyclone Tiles': {
+    preset: 'Deep Current',
+    symmetry: 8,
+    complexity: 6,
+    glow: 5,
+    breathSpeed: 0.55,
+    intensity: 8,
+    particles: 0,
+    luminous: 2,
+    stars: 0,
+    mode: 'cyclonetiles',
+  },
+  'Eddy Lace': {
+    preset: 'Deep Current',
+    symmetry: 5,
+    complexity: 8,
+    glow: 4,
+    breathSpeed: 0.5,
+    intensity: 8,
+    particles: 0,
+    luminous: 2,
+    stars: 0,
+    mode: 'eddylace',
+  },
+  'Magnetic Sand': {
+    preset: 'Golden Source',
+    symmetry: 6,
+    complexity: 8,
+    glow: 3,
+    breathSpeed: 0.35,
+    intensity: 8,
+    particles: 0,
+    luminous: 2,
+    stars: 0,
+    mode: 'magneticsand',
+  },
   'Solar Flare': {
     preset: 'Solar Plasma',
     symmetry: 6,
@@ -1252,6 +1308,78 @@ const PRESETS: Record<string, Cfg> = {
     luminous: 3,
     stars: 0,
     mode: 'plasma',
+  },
+  'Nebula Veil': {
+    preset: 'Violet Portal',
+    symmetry: 4,
+    complexity: 7,
+    glow: 6,
+    breathSpeed: 0.32,
+    intensity: 8,
+    particles: 0,
+    luminous: 2,
+    stars: 8,
+    mode: 'nebula',
+  },
+  'Nebula Bloom': {
+    preset: 'Deep Current',
+    symmetry: 5,
+    complexity: 8,
+    glow: 7,
+    breathSpeed: 0.38,
+    intensity: 8,
+    particles: 0,
+    luminous: 2,
+    stars: 9,
+    mode: 'nebula',
+  },
+  'Dot Galaxy': {
+    preset: 'Cosmic Indigo',
+    symmetry: 2,
+    complexity: 10,
+    glow: 8,
+    breathSpeed: 0.28,
+    intensity: 9,
+    particles: 0,
+    luminous: 2,
+    stars: 10,
+    mode: 'nebula',
+  },
+  'Music Entropy': {
+    preset: 'Blue Astral',
+    symmetry: 9,
+    complexity: 8,
+    glow: 7,
+    breathSpeed: 0.72,
+    intensity: 8,
+    particles: 5,
+    luminous: 2,
+    stars: 2,
+    mode: 'musicdots',
+  },
+  'Music Nebula': {
+    preset: 'Violet Portal',
+    symmetry: 6,
+    complexity: 9,
+    glow: 8,
+    breathSpeed: 0.58,
+    intensity: 8,
+    particles: 5,
+    luminous: 2,
+    stars: 6,
+    mode: 'musicnebula',
+  },
+  'Groove Lattice': {
+    preset: 'Golden Source',
+    symmetry: 8,
+    complexity: 7,
+    glow: 6,
+    breathSpeed: 0.85,
+    intensity: 8,
+    particles: 4,
+    luminous: 2,
+    stars: 1,
+    mode: 'musiclattice',
   },
   'Emotion Globe': {
     preset: 'Terra Globe',
@@ -3619,8 +3747,15 @@ function buildModeGroup(cfg: Cfg, R: number): THREE.Group {
       return buildCells(cfg, R);
     case 'current':
       return buildCurrent(cfg, R);
+    case 'currentscales':
+    case 'cyclonetiles':
+    case 'eddylace':
+    case 'magneticsand':
+      return buildCurrentTexture(cfg, R);
     case 'plasma':
       return buildPlasma(cfg, R);
+    case 'nebula':
+      return buildNebula(cfg, R);
     case 'globe':
       return buildGlobe(cfg, R);
     case 'current3d':
@@ -3672,6 +3807,9 @@ function buildModeGroup(cfg: Cfg, R: number): THREE.Group {
     case 'eyemorph':
     case 'heartdance':
     case 'infinitedive':
+    case 'musicdots':
+    case 'musicnebula':
+    case 'musiclattice':
       return buildCanvasMode(cfg, R);
     case 'sinmorph3d':
       return buildSinMorph3D(cfg, R);
@@ -3807,8 +3945,17 @@ function updateModeGroup(group: THREE.Group, cfg: Cfg, dots: Dot[], t: number, R
     case 'current':
       updateCurrent(group, cfg, t, R);
       break;
+    case 'currentscales':
+    case 'cyclonetiles':
+    case 'eddylace':
+    case 'magneticsand':
+      updateCurrentTexture(group, cfg, t, R);
+      break;
     case 'plasma':
       updatePlasma(group, cfg, t, R);
+      break;
+    case 'nebula':
+      updateNebula(group, cfg, t, R);
       break;
     case 'globe':
       updateGlobe(group, cfg, t, R);
@@ -3875,6 +4022,9 @@ function updateModeGroup(group: THREE.Group, cfg: Cfg, dots: Dot[], t: number, R
     case 'eyemorph':
     case 'heartdance':
     case 'infinitedive':
+    case 'musicdots':
+    case 'musicnebula':
+    case 'musiclattice':
       updateCanvasMode(group, cfg, t, R);
       break;
     case 'sinmorph3d':
@@ -7850,6 +8000,215 @@ function updateCurrent(group: THREE.Group, cfg: Cfg, t: number, R: number): void
 
 /* ── PLASMA mode — solar filaments with central attractor ────── */
 
+function isCurrentTextureMode(mode: Mode): boolean {
+  return (
+    mode === 'current' ||
+    mode === 'currentscales' ||
+    mode === 'cyclonetiles' ||
+    mode === 'eddylace' ||
+    mode === 'magneticsand'
+  );
+}
+
+function buildCurrentTexture(cfg: Cfg, R: number): THREE.Group {
+  const TAU = Math.PI * 2;
+  const iF = cfg.intensity / 10;
+  const count = Math.max(900, Math.round(lerp(1800, 4600, iF)));
+  const group = new THREE.Group();
+  const pal = PAL[cfg.preset] ?? PAL['Calm Field'];
+  const [rr, gg, bb] = pal.rgb;
+  const positions = new Float32Array(count * 3);
+  const density = cfg.complexity / 10;
+  const cell = lerp(R * 0.34, R * 0.13, density);
+
+  for (let i = 0; i < count; i++) {
+    let x = 0;
+    let y = 0;
+    if (cfg.mode === 'currentscales') {
+      const cols = Math.max(5, Math.ceil((R * 2.2) / cell));
+      const row = Math.floor(Math.random() * cols);
+      const col = Math.floor(Math.random() * cols);
+      const offset = row % 2 === 0 ? 0 : cell * 0.5;
+      const cx = (col - cols / 2) * cell + offset;
+      const cy = (row - cols / 2) * cell * 0.58;
+      const a = Math.PI + Math.random() * Math.PI;
+      const r = cell * (0.14 + Math.random() * 0.48);
+      x = cx + Math.cos(a) * r;
+      y = cy + Math.sin(a) * r * 0.55;
+    } else if (cfg.mode === 'cyclonetiles') {
+      const cols = Math.max(5, Math.ceil((R * 2.15) / cell));
+      const col = Math.floor(Math.random() * cols);
+      const row = Math.floor(Math.random() * cols);
+      const cx = (col - cols / 2) * cell;
+      const cy = (row - cols / 2) * cell;
+      const turn = Math.random() * TAU * 1.8;
+      const r = cell * Math.sqrt(Math.random()) * 0.42;
+      x = cx + Math.cos(turn) * r;
+      y = cy + Math.sin(turn) * r;
+    } else if (cfg.mode === 'eddylace') {
+      const clusters = Math.max(5, Math.round(cfg.symmetry + cfg.complexity));
+      const k = i % clusters;
+      const centerA = (k / clusters) * TAU + Math.sin(k * 12.989) * 0.2;
+      const centerR = R * (0.18 + ((k * 0.618) % 1) * 0.72);
+      const cx = Math.cos(centerA) * centerR;
+      const cy = Math.sin(centerA) * centerR * 0.72;
+      const a = Math.random() * TAU;
+      const r = cell * (0.08 + Math.random() * 0.72);
+      x = cx + Math.cos(a + r * 0.035) * r;
+      y = cy + Math.sin(a + r * 0.035) * r * 0.62;
+    } else {
+      const lane = (Math.random() - 0.5) * R * 1.9;
+      const wave = Math.sin(lane * 0.012) * R * 0.28;
+      x = lane;
+      y = wave + (Math.random() - 0.5) * R * 0.22;
+    }
+    positions[i * 3] = x;
+    positions[i * 3 + 1] = y;
+    positions[i * 3 + 2] = (Math.random() - 0.5) * R * 0.08;
+  }
+
+  const geo = new THREE.BufferGeometry();
+  const posAttr = new THREE.BufferAttribute(positions, 3);
+  posAttr.setUsage(THREE.DynamicDrawUsage);
+  geo.setAttribute('position', posAttr);
+
+  const pts = new THREE.Points(geo, ptsMat(hdrColor([rr, gg, bb], iF, 2.45), 1.55, 0.7));
+  pts.userData.tag = 'currentTexture';
+  pts.userData.count = count;
+  pts.userData.prevT = -1;
+  group.add(pts);
+
+  return group;
+}
+
+function currentTextureVector(
+  mode: Mode,
+  x: number,
+  y: number,
+  tSlow: number,
+  R: number,
+  cfg: Cfg,
+): { x: number; y: number } {
+  const density = cfg.complexity / 10;
+  const sym = Math.max(2, Math.round(cfg.symmetry));
+  const cell = lerp(R * 0.32, R * 0.12, density);
+
+  if (mode === 'currentscales') {
+    const row = Math.floor((y + R * 1.2) / (cell * 0.58));
+    const offset = row % 2 === 0 ? 0 : cell * 0.5;
+    const cx = Math.round((x + offset) / cell) * cell - offset;
+    const cy = row * cell * 0.58 - R * 1.2 + cell * 0.3;
+    const dx = x - cx;
+    const dy = y - cy;
+    const d = Math.sqrt(dx * dx + dy * dy) + 1;
+    const scaleLip = Math.sin((d / cell) * Math.PI);
+    return {
+      x: (-dy / d) * scaleLip + Math.sin(y * 0.012 + tSlow) * 0.26,
+      y: (dx / d) * scaleLip * 0.55 + Math.cos((x + cx) * 0.01 + tSlow) * 0.18,
+    };
+  }
+
+  if (mode === 'cyclonetiles') {
+    const cx = Math.round(x / cell) * cell;
+    const cy = Math.round(y / cell) * cell;
+    const dx = x - cx;
+    const dy = y - cy;
+    const d = Math.sqrt(dx * dx + dy * dy) + 1;
+    const dir = (Math.round(cx / cell) + Math.round(cy / cell)) % 2 === 0 ? 1 : -1;
+    const spin = Math.max(0.15, 1 - d / (cell * 0.82));
+    return {
+      x: (-dy / d) * spin * dir + Math.sin(y * 0.008 + tSlow * 0.6) * 0.18,
+      y: (dx / d) * spin * dir + Math.cos(x * 0.008 - tSlow * 0.6) * 0.18,
+    };
+  }
+
+  if (mode === 'eddylace') {
+    const f = sym / Math.max(R, 1);
+    return {
+      x: Math.sin(y * f * 2.4 + tSlow) * 0.55 + Math.sin((x + y) * f * 1.1 - tSlow * 0.7) * 0.35,
+      y:
+        -Math.sin(x * f * 2.2 - tSlow * 0.8) * 0.55 +
+        Math.cos((x - y) * f * 1.3 + tSlow * 0.6) * 0.35,
+    };
+  }
+
+  const poleA = { x: Math.cos(tSlow * 0.12) * R * 0.34, y: Math.sin(tSlow * 0.09) * R * 0.18 };
+  const poleB = { x: -poleA.x, y: -poleA.y };
+  const ax = x - poleA.x;
+  const ay = y - poleA.y;
+  const bx = x - poleB.x;
+  const by = y - poleB.y;
+  const a2 = ax * ax + ay * ay + R * 9;
+  const b2 = bx * bx + by * by + R * 9;
+  const fx = ax / a2 - bx / b2;
+  const fy = ay / a2 - by / b2;
+  const angle = Math.atan2(fy, fx) + Math.PI / 2;
+  return {
+    x: Math.cos(angle) * 0.85 + Math.sin(y * 0.015 + tSlow) * 0.15,
+    y: Math.sin(angle) * 0.85 + Math.cos(x * 0.015 - tSlow) * 0.15,
+  };
+}
+
+function updateCurrentTexture(group: THREE.Group, cfg: Cfg, t: number, R: number): void {
+  const iF = cfg.intensity / 10;
+  const glowF = cfg.glow / 10;
+  const speed = cfg.breathSpeed * 0.72;
+  const pal = PAL[cfg.preset] ?? PAL['Calm Field'];
+  const baseRgb = pal.rgb;
+  const fieldR = R * 1.12;
+  const R2 = fieldR * fieldR;
+
+  for (const child of group.children) {
+    if ((child.userData.tag as string) !== 'currentTexture') continue;
+    const pts = child as THREE.Points;
+    const posAttr = pts.geometry.getAttribute('position') as THREE.BufferAttribute;
+    const arr = posAttr.array as Float32Array;
+    const count = child.userData.count as number;
+    const prevT = child.userData.prevT as number;
+    const dt = prevT < 0 ? 16 : Math.min(t - prevT, 32);
+    child.userData.prevT = t;
+    const step = R * 0.012 * speed * (dt / 16);
+    const tSlow = t * 0.00055 * speed;
+
+    for (let i = 0; i < count; i++) {
+      const x = arr[i * 3];
+      const y = arr[i * 3 + 1];
+      const z = arr[i * 3 + 2];
+      const v = currentTextureVector(cfg.mode, x, y, tSlow, R, cfg);
+      let nx = x + v.x * step;
+      let ny = y + v.y * step;
+      let nz = z + Math.sin((x + y) * 0.006 + tSlow) * step * 0.08;
+
+      if (_distortActive) {
+        const f = fingerForce(nx, ny, nz, R * 0.62);
+        nx += f.x * (0.95 + speed * 1.1);
+        ny += f.y * (0.95 + speed * 1.1);
+        nz += f.z * 0.5;
+      }
+
+      if (nx * nx + ny * ny > R2) {
+        const a = Math.atan2(ny, nx) + Math.PI + (Math.random() - 0.5) * 0.9;
+        const r = fieldR * (0.18 + Math.random() * 0.58);
+        nx = Math.cos(a) * r;
+        ny = Math.sin(a) * r;
+        nz = (Math.random() - 0.5) * R * 0.08;
+      }
+
+      arr[i * 3] = nx;
+      arr[i * 3 + 1] = ny;
+      arr[i * 3 + 2] = nz;
+    }
+    posAttr.needsUpdate = true;
+
+    const rgb: [number, number, number] = [
+      lerp(baseRgb[0], 255, glowF * 0.12),
+      lerp(baseRgb[1], 255, glowF * 0.12),
+      lerp(baseRgb[2], 255, glowF * 0.12),
+    ];
+    updateMat(child, rgb, iF, 2.3);
+  }
+}
+
 function buildPlasma(cfg: Cfg, R: number): THREE.Group {
   const TAU = Math.PI * 2;
   const iF = cfg.intensity / 10;
@@ -7973,6 +8332,104 @@ function updatePlasma(group: THREE.Group, cfg: Cfg, t: number, R: number): void 
 }
 
 /* ── GLOBE mode — 3D sphere with spectral latitude bands ─────── */
+
+function buildNebula(cfg: Cfg, R: number): THREE.Group {
+  const TAU = Math.PI * 2;
+  const iF = cfg.intensity / 10;
+  const density = cfg.complexity / 10;
+  const arms = Math.max(2, Math.round(cfg.symmetry));
+  const count = Math.max(900, Math.round(lerp(1800, 5200, density)));
+  const group = new THREE.Group();
+  const pal = PAL[cfg.preset] ?? PAL['Calm Field'];
+  const [rr, gg, bb] = pal.rgb;
+  const positions = new Float32Array(count * 3);
+
+  for (let i = 0; i < count; i++) {
+    const arm = i % arms;
+    const p = Math.random();
+    const theta = arm * (TAU / arms) + p * TAU * 0.62 + (Math.random() - 0.5) * 0.42;
+    const r = R * (0.08 + p ** 0.75 * 0.95);
+    const haze = (1 - p) * R * 0.08 + R * 0.018;
+    positions[i * 3] = Math.cos(theta) * r + (Math.random() - 0.5) * haze;
+    positions[i * 3 + 1] = Math.sin(theta) * r * 0.58 + (Math.random() - 0.5) * haze;
+    positions[i * 3 + 2] = (Math.random() - 0.5) * R * 0.18;
+  }
+
+  const geo = new THREE.BufferGeometry();
+  const posAttr = new THREE.BufferAttribute(positions, 3);
+  posAttr.setUsage(THREE.DynamicDrawUsage);
+  geo.setAttribute('position', posAttr);
+
+  const pts = new THREE.Points(geo, ptsMat(hdrColor([rr, gg, bb], iF, 2.35), 1.9, 0.58));
+  pts.userData.tag = 'nebulaDust';
+  pts.userData.count = count;
+  pts.userData.prevT = -1;
+  group.add(pts);
+
+  return group;
+}
+
+function updateNebula(group: THREE.Group, cfg: Cfg, t: number, R: number): void {
+  const iF = cfg.intensity / 10;
+  const glowF = cfg.glow / 10;
+  const speed = cfg.breathSpeed * 0.38;
+  const pal = PAL[cfg.preset] ?? PAL['Calm Field'];
+  const baseRgb = pal.rgb;
+  const limit = R * 1.1;
+  const limit2 = limit * limit;
+
+  for (const child of group.children) {
+    if ((child.userData.tag as string) !== 'nebulaDust') continue;
+    const pts = child as THREE.Points;
+    const posAttr = pts.geometry.getAttribute('position') as THREE.BufferAttribute;
+    const arr = posAttr.array as Float32Array;
+    const count = child.userData.count as number;
+    const prevT = child.userData.prevT as number;
+    const dt = prevT < 0 ? 16 : Math.min(t - prevT, 32);
+    child.userData.prevT = t;
+    const drift = R * 0.0045 * speed * (dt / 16);
+    const tSlow = t * 0.00035 * speed;
+
+    for (let i = 0; i < count; i++) {
+      const x = arr[i * 3];
+      const y = arr[i * 3 + 1];
+      const z = arr[i * 3 + 2];
+      const r = Math.sqrt(x * x + y * y) + 1;
+      const swirl = 0.28 + 0.72 * Math.max(0, 1 - r / limit);
+      let nx = x + (-y / r) * drift * swirl + Math.sin(y * 0.012 + tSlow) * drift * 0.25;
+      let ny = y + (x / r) * drift * swirl * 0.65 + Math.cos(x * 0.01 - tSlow) * drift * 0.22;
+      let nz = z + Math.sin((x - y) * 0.005 + tSlow) * drift * 0.18;
+
+      if (_distortActive) {
+        const f = fingerForce(nx, ny, nz, R * 0.62);
+        nx += f.x * (0.6 + speed);
+        ny += f.y * (0.6 + speed);
+        nz += f.z * 0.4;
+      }
+
+      if (nx * nx + ny * ny > limit2) {
+        const a = Math.atan2(ny, nx) + Math.PI + (Math.random() - 0.5) * 0.7;
+        const rr = R * (0.08 + Math.random() * 0.35);
+        nx = Math.cos(a) * rr;
+        ny = Math.sin(a) * rr * 0.6;
+        nz = (Math.random() - 0.5) * R * 0.18;
+      }
+
+      arr[i * 3] = nx;
+      arr[i * 3 + 1] = ny;
+      arr[i * 3 + 2] = nz;
+    }
+    posAttr.needsUpdate = true;
+
+    const rgb: [number, number, number] = [
+      lerp(baseRgb[0], 255, glowF * 0.18),
+      lerp(baseRgb[1], 255, glowF * 0.18),
+      lerp(baseRgb[2], 255, glowF * 0.18),
+    ];
+    updateMat(child, rgb, iF, 2.45);
+    group.rotation.z = Math.sin(t * 0.00008 * cfg.breathSpeed) * 0.08;
+  }
+}
 
 function buildGlobe(cfg: Cfg, R: number): THREE.Group {
   const TAU = Math.PI * 2;
@@ -9098,11 +9555,14 @@ function updateSpire(group: THREE.Group, cfg: Cfg, t: number, R: number): void {
 
 /* ── Background stars ───────────────────────────────────────── */
 
-function buildStars(count: number, W: number, H: number): THREE.Group {
+function buildStars(count: number, W: number, H: number, preset = 'Calm Field'): THREE.Group {
   const g = new THREE.Group();
   if (count <= 0) return g;
+  const pal = PAL[preset] ?? PAL['Calm Field'];
+  const [rr, gg, bb] = pal.rgb;
   const totalN = Math.round(count * 55 + 25);
   const half = Math.max(W, H) * 0.62;
+  const bandStrength = Math.max(0, (count - 3) / 7);
   const layers = [
     { frac: 0.65, size: 0.8, phase: 0 },
     { frac: 0.28, size: 1.4, phase: 2.1 },
@@ -9112,23 +9572,33 @@ function buildStars(count: number, W: number, H: number): THREE.Group {
     const N = Math.round(totalN * layer.frac);
     const pos = new Float32Array(N * 3);
     for (let i = 0; i < N; i++) {
-      pos[i * 3] = (Math.random() - 0.5) * 2 * half;
-      pos[i * 3 + 1] = (Math.random() - 0.5) * 2 * half;
+      const inBand = Math.random() < bandStrength * 0.72;
+      if (inBand) {
+        const along = (Math.random() - 0.5) * 2.35 * half;
+        const across = (Math.random() - 0.5) * half * lerp(0.22, 0.08, bandStrength);
+        const angle = -0.52;
+        pos[i * 3] = along * Math.cos(angle) - across * Math.sin(angle);
+        pos[i * 3 + 1] = along * Math.sin(angle) + across * Math.cos(angle);
+      } else {
+        pos[i * 3] = (Math.random() - 0.5) * 2 * half;
+        pos[i * 3 + 1] = (Math.random() - 0.5) * 2 * half;
+      }
     }
     const geo = new THREE.BufferGeometry();
     geo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
     const mat = new THREE.PointsMaterial({
-      color: new THREE.Color(1.6, 1.6, 2.0),
+      color: new THREE.Color(rr / 155, gg / 155, bb / 155),
       size: layer.size,
       sizeAttenuation: false,
       transparent: true,
-      opacity: 0.35,
+      opacity: 0.22 + bandStrength * 0.14,
       blending: THREE.AdditiveBlending,
       depthWrite: false,
     });
     const pts = new THREE.Points(geo, mat);
     pts.userData.tag = 'starLayer';
     pts.userData.phase = layer.phase;
+    pts.userData.baseOpacity = 0.22 + bandStrength * 0.14;
     g.add(pts);
   }
   return g;
@@ -9138,9 +9608,10 @@ function updateStars(group: THREE.Group, t: number): void {
   for (const child of group.children) {
     if (child.userData.tag === 'starLayer') {
       const phase = child.userData.phase as number;
+      const baseOpacity = (child.userData.baseOpacity as number | undefined) ?? 0.28;
       if ((child as THREE.Points).material instanceof THREE.PointsMaterial) {
         ((child as THREE.Points).material as THREE.PointsMaterial).opacity =
-          0.2 + 0.18 * Math.sin(t * 0.00075 + phase);
+          baseOpacity + 0.08 * Math.sin(t * 0.00075 + phase);
       }
     }
   }
@@ -9516,7 +9987,12 @@ const MODE_TO_PRESET: Partial<Record<Mode, string>> = {
   liquid: 'Oil Film',
   cells: 'Living Tissue',
   current: 'Ocean Drift',
+  currentscales: 'Current Scales',
+  cyclonetiles: 'Cyclone Tiles',
+  eddylace: 'Eddy Lace',
+  magneticsand: 'Magnetic Sand',
   plasma: 'Solar Flare',
+  nebula: 'Nebula Veil',
   globe: 'Emotion Globe',
   current3d: 'Current 3D',
   matrix: 'Matrix Rain',
@@ -9612,8 +10088,14 @@ const MODES: { mode: Mode; label: string }[] = [
   { mode: 'liquid', label: '〰 Liquid' },
   { mode: 'cells', label: '⬡ Cells' },
   { mode: 'current', label: '∿ Current' },
+  { mode: 'currentscales', label: 'Current Scales' },
+  { mode: 'cyclonetiles', label: 'Cyclone Tiles' },
+  { mode: 'eddylace', label: 'Eddy Lace' },
+  { mode: 'magneticsand', label: 'Magnetic Sand' },
   { mode: 'current3d', label: '∿³ Current 3D' },
   { mode: 'plasma', label: '☀ Plasma' },
+  { mode: 'nebula', label: 'Nebula' },
+
   { mode: 'globe', label: '◎ Globe' },
   { mode: 'matrix', label: '⋮ Matrix' },
   { mode: 'matrix3d', label: '⋮³ Matrix 3D' },
@@ -9658,7 +10140,17 @@ const FEATURED_PRESETS: FeaturedItem[] = [
   { name: 'Deep Flow 3D', tag: 'FLOW' },
   { name: 'Plasma Field', tag: 'FLOW' },
   { name: 'Solar Flare', tag: 'FLOW' },
+  { name: 'Music Entropy', tag: 'MUSIC' },
+  { name: 'Music Nebula', tag: 'MUSIC' },
+  { name: 'Groove Lattice', tag: 'MUSIC' },
+  { name: 'Nebula Veil', tag: 'NEBULA' },
+  { name: 'Nebula Bloom', tag: 'NEBULA' },
+  { name: 'Dot Galaxy', tag: 'GALAXY' },
   { name: 'Ocean Drift', tag: 'FLOW' },
+  { name: 'Current Scales', tag: 'FLOW' },
+  { name: 'Cyclone Tiles', tag: 'FLOW' },
+  { name: 'Eddy Lace', tag: 'FLOW' },
+  { name: 'Magnetic Sand', tag: 'FLOW' },
   { name: 'Emotion Field', tag: 'SELF' },
   { name: 'Emotion Storm', tag: 'SELF' },
   { name: 'Star Map', tag: 'SELF' },
@@ -9704,6 +10196,10 @@ let _distortActive = false;
 let _distortWorldX = 0;
 let _distortWorldY = 0;
 let _distortMode: FingerMode = 'off';
+let _musicPulse = 0;
+let _musicBass = 0;
+let _musicDrums = 0;
+let _musicPads = 0;
 
 function fingerForce(
   x: number,
@@ -11847,7 +12343,7 @@ export default function GeometryField() {
   const [fingerMode, setFingerMode] = useState<FingerMode>('off');
   const [motionMode, setMotionMode] = useState<MotionMode>('animate');
   const [open, setOpen] = useState(true);
-  const [tab, setTab] = useState<'builder' | 'journey'>('builder');
+  const [tab, setTab] = useState<'builder' | 'music' | 'journey'>('builder');
   const [builderView, setBuilderView] = useState<'programs' | 'sliders'>('sliders');
   const [journeyId, setJourneyId] = useState(1);
   const [journeyRunning, setJourneyRunning] = useState(false);
@@ -11864,6 +12360,23 @@ export default function GeometryField() {
   useEffect(() => {
     motionModeRef.current = motionMode;
   }, [motionMode]);
+
+  useEffect(() => {
+    function onGrooveStep(event: Event) {
+      const detail = (
+        event as CustomEvent<{
+          energy?: Partial<Record<'drums' | 'bass' | 'keys' | 'lead' | 'pads', number>>;
+        }>
+      ).detail;
+      const energy = detail?.energy ?? {};
+      _musicDrums = Math.min(1, energy.drums ?? 0);
+      _musicBass = Math.min(1, energy.bass ?? 0);
+      _musicPads = Math.min(1, (energy.pads ?? 0) + (energy.keys ?? 0) * 0.45);
+      _musicPulse = Math.min(1, _musicDrums * 0.55 + _musicBass * 0.35 + _musicPads * 0.18);
+    }
+    window.addEventListener('colourmap:groove-visual-step', onGrooveStep);
+    return () => window.removeEventListener('colourmap:groove-visual-step', onGrooveStep);
+  }, []);
 
   useEffect(() => {
     dotsRef.current = makeDots(Math.round(cfg.particles * 40 + 20));
@@ -11970,13 +12483,13 @@ export default function GeometryField() {
       bloomPass.radius = 0.4 + currentCfg.luminous * 0.04;
 
       // Rebuild stars when count or viewport changes
-      const starsKey = `${Math.round(currentCfg.stars)}-${Math.round(W)}-${Math.round(H)}`;
+      const starsKey = `${Math.round(currentCfg.stars)}-${currentCfg.preset}-${Math.round(W)}-${Math.round(H)}`;
       if (starsKey !== builtStarsKeyRef.current) {
         if (starsGroupRef.current) {
           scene.remove(starsGroupRef.current);
           disposeGroup(starsGroupRef.current);
         }
-        starsGroupRef.current = buildStars(currentCfg.stars, W, H);
+        starsGroupRef.current = buildStars(currentCfg.stars, W, H, currentCfg.preset);
         scene.add(starsGroupRef.current);
         builtStarsKeyRef.current = starsKey;
       }
@@ -12037,7 +12550,11 @@ export default function GeometryField() {
       scene.userData.H = H;
 
       // Handle ripple rings
-      updateRippleRings(scene, rippleRingsRef.current, ripplesRef.current, t, currentCfg, R);
+      if (!isCurrentTextureMode(currentCfg.mode)) {
+        updateRippleRings(scene, rippleRingsRef.current, ripplesRef.current, t, currentCfg, R);
+      } else {
+        ripplesRef.current.length = 0;
+      }
 
       // Expire old ripples
       for (let i = ripplesRef.current.length - 1; i >= 0; i--) {
@@ -12286,7 +12803,10 @@ export default function GeometryField() {
       cfg.mode === 'heartwave' ||
       cfg.mode === 'eyemorph' ||
       cfg.mode === 'heartdance' ||
-      cfg.mode === 'infinitedive';
+      cfg.mode === 'infinitedive' ||
+      cfg.mode === 'musicdots' ||
+      cfg.mode === 'musicnebula' ||
+      cfg.mode === 'musiclattice';
     if (!isCanvasMode) {
       canvasModeActiveRef.current = false;
       cancelAnimationFrame(canvasModeAnimRef.current);
@@ -12324,6 +12844,102 @@ export default function GeometryField() {
       const bgB = parseInt(h.slice(4, 6), 16);
       ctx.fillStyle = `rgb(${bgR},${bgG},${bgB})`;
       ctx.fillRect(0, 0, mc.width, mc.height);
+    }
+
+    if (cfg.mode === 'musicdots' || cfg.mode === 'musicnebula' || cfg.mode === 'musiclattice') {
+      const N = Math.max(260, Math.round(lerp(520, 1700, cfg.complexity / 10)));
+      const dots = Array.from({ length: N }, (_, i) => ({
+        a: ((i * 0.61803398875) % 1) * Math.PI * 2,
+        r: Math.sqrt((i + 0.5) / N),
+        spin: 0.35 + ((i * 19) % 100) / 100,
+        lane: i % Math.max(3, Math.round(cfg.symmetry)),
+      }));
+
+      function drawMusicVisual() {
+        if (!canvasModeActiveRef.current) return;
+        const W = mc!.width;
+        const H = mc!.height;
+        const cx = W / 2;
+        const cy = H / 2;
+        const radius = Math.min(W, H) * 0.48;
+        const tt = modeSeconds();
+        _musicPulse *= 0.94;
+        _musicBass *= 0.96;
+        _musicDrums *= 0.9;
+        _musicPads *= 0.985;
+        const internalBeat = (Math.sin(tt * Math.PI * 2 * speed) + 1) / 2;
+        const beat = Math.min(1, internalBeat * 0.42 + _musicPulse * 0.85);
+        const low = Math.min(
+          1,
+          ((Math.sin(tt * Math.PI * speed * 0.52 + 1.7) + 1) / 2) * 0.45 + _musicBass,
+        );
+        ctx!.fillStyle = `rgba(0,0,0,${cfg.mode === 'musicnebula' ? 0.13 : 0.2})`;
+        ctx!.fillRect(0, 0, W, H);
+
+        if (cfg.mode === 'musiclattice') {
+          ctx!.strokeStyle = `rgba(${pr},${pg},${pb},${0.05 + beat * 0.16})`;
+          ctx!.lineWidth = 1;
+          const cells = Math.max(5, Math.round(cfg.symmetry));
+          for (let x = -cells; x <= cells; x++) {
+            for (let y = -cells; y <= cells; y++) {
+              const px = cx + (x / cells) * radius * 0.95 + Math.sin(tt + y) * beat * 8;
+              const py = cy + (y / cells) * radius * 0.95 + Math.cos(tt + x) * beat * 8;
+              ctx!.strokeRect(px - 9 - low * 5, py - 9 - low * 5, 18 + low * 10, 18 + low * 10);
+            }
+          }
+        }
+
+        for (let i = 0; i < dots.length; i++) {
+          const d = dots[i];
+          if (cfg.mode === 'musiclattice') {
+            const grid = Math.max(3, Math.round(cfg.symmetry));
+            const gx = (d.lane / grid - 0.5) * radius * 1.65;
+            const gy = (((i / grid) % grid) / grid - 0.5) * radius * 1.65;
+            const cyclone = Math.sin(tt * 1.4 + d.a * 4) * beat * 12;
+            ctx!.fillStyle = `rgba(${pr},${pg},${pb},${0.22 + beat * 0.62})`;
+            ctx!.beginPath();
+            ctx!.arc(
+              cx + gx + Math.cos(d.a) * cyclone,
+              cy + gy + Math.sin(d.a) * cyclone,
+              1.1 + beat * 1.8,
+              0,
+              Math.PI * 2,
+            );
+            ctx!.fill();
+            continue;
+          }
+          let rr = d.r * radius * (0.36 + 0.74 * low);
+          let a = d.a + tt * 0.18 * d.spin;
+          if (cfg.mode === 'musicnebula') {
+            a += d.r * 5.2 + Math.sin(tt * 0.6 + d.lane) * 0.18;
+            rr *= 0.88 + Math.sin(d.r * 10 + tt) * 0.08;
+          }
+          ctx!.fillStyle = `rgba(${pr},${pg},${pb},${0.16 + beat * 0.58})`;
+          ctx!.beginPath();
+          ctx!.arc(
+            cx + Math.cos(a) * rr,
+            cy + Math.sin(a) * rr * (cfg.mode === 'musicnebula' ? 0.58 : 0.82),
+            0.8 + beat * 2.2 * iF,
+            0,
+            Math.PI * 2,
+          );
+          ctx!.fill();
+        }
+
+        ctx!.strokeStyle = `rgba(${pr},${pg},${pb},${0.16 + beat * 0.34 + _musicPads * 0.18})`;
+        ctx!.lineWidth = 1 + beat * 2;
+        for (let k = 0; k < 3; k++) {
+          ctx!.beginPath();
+          ctx!.arc(cx, cy, radius * (0.2 + k * 0.16 + beat * 0.04), 0, Math.PI * 2);
+          ctx!.stroke();
+        }
+        canvasModeAnimRef.current = requestAnimationFrame(drawMusicVisual);
+      }
+      drawMusicVisual();
+      return () => {
+        canvasModeActiveRef.current = false;
+        cancelAnimationFrame(canvasModeAnimRef.current);
+      };
     }
 
     /* ── BREATH: dots travel radial spokes inward then burst outward ── */
@@ -14047,6 +14663,7 @@ export default function GeometryField() {
   }
 
   function handleCanvasClick(e: React.MouseEvent<HTMLCanvasElement>) {
+    if (isCurrentTextureMode(cfgRef.current.mode)) return;
     const rect = canvasRef.current!.getBoundingClientRect();
     ripplesRef.current.push({
       x: e.clientX - rect.left,
@@ -14063,7 +14680,11 @@ export default function GeometryField() {
     _distortWorldX = e.clientX - rect.left - W / 2;
     _distortWorldY = -(e.clientY - rect.top - H / 2);
     _distortActive = true;
-    if (_distortMode === 'ripple' && ripplesRef.current.length < 10) {
+    if (
+      _distortMode === 'ripple' &&
+      !isCurrentTextureMode(cfgRef.current.mode) &&
+      ripplesRef.current.length < 10
+    ) {
       ripplesRef.current.push({
         x: e.clientX - rect.left,
         y: e.clientY - rect.top,
@@ -14320,7 +14941,10 @@ export default function GeometryField() {
           cfg.mode === 'heartwave' ||
           cfg.mode === 'eyemorph' ||
           cfg.mode === 'heartdance' ||
-          cfg.mode === 'infinitedive') && (
+          cfg.mode === 'infinitedive' ||
+          cfg.mode === 'musicdots' ||
+          cfg.mode === 'musicnebula' ||
+          cfg.mode === 'musiclattice') && (
           <canvas
             ref={matrixCanvasRef}
             style={{
@@ -14481,7 +15105,7 @@ export default function GeometryField() {
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
               <div style={{ display: 'flex', gap: 6 }}>
                 {pill('Builder', tab === 'builder', () => setTab('builder'), true)}
-                {pill('Journey', tab === 'journey', () => setTab('journey'), true)}
+                {pill('Music Visuals', tab === 'music', () => setTab('music'), true)}
               </div>
               <button
                 type="button"
@@ -14975,7 +15599,118 @@ export default function GeometryField() {
               </>
             )}
 
-            {/* ── JOURNEY TAB ── */}
+            {/* ── MUSIC VISUALS TAB ── */}
+            {tab === 'music' && (
+              <>
+                <p
+                  style={{
+                    fontFamily: 'var(--font-serif)',
+                    fontSize: 11,
+                    color: `rgba(${pr},${pg},${pb},0.55)`,
+                    fontStyle: 'italic',
+                    lineHeight: 1.5,
+                  }}
+                >
+                  Music visuals start here: dots, nebulas, and lattices that pulse from an internal
+                  beat today, then later from Groove layers, voice recordings, microphone input, or
+                  uploaded audio.
+                </p>
+                <div style={{ display: 'grid', gap: 7 }}>
+                  {[
+                    [
+                      'Music Entropy',
+                      'Dot cloud with pulse rings. Best base for analyser-driven particles.',
+                    ],
+                    ['Music Nebula', 'Soft galaxy haze for pads, voice, and ambient recordings.'],
+                    ['Groove Lattice', 'Tiles and cyclones for drums, bass, and sequencer layers.'],
+                    ['Current Scales', 'Current texture with touch-ready pattern movement.'],
+                    ['Dot Galaxy', 'Particle galaxy ready for bass and star-density mapping.'],
+                  ].map(([name, desc]) => {
+                    const p = PRESETS[name];
+                    const isActive = p && cfg.mode === p.mode;
+                    return (
+                      <button
+                        key={name}
+                        type="button"
+                        onClick={() => applyPreset(name)}
+                        style={{
+                          textAlign: 'left',
+                          padding: '9px 10px',
+                          borderRadius: 8,
+                          background: isActive ? accentFaint : 'transparent',
+                          border: `1px solid ${isActive ? accentMid : 'rgba(255,255,255,0.05)'}`,
+                          cursor: 'pointer',
+                        }}
+                      >
+                        <div
+                          style={{
+                            fontFamily: 'var(--font-serif)',
+                            fontSize: 12,
+                            color: isActive ? accent : `rgba(${pr},${pg},${pb},0.7)`,
+                            fontWeight: isActive ? 700 : 500,
+                            letterSpacing: '0.06em',
+                          }}
+                        >
+                          {name}
+                        </div>
+                        <div
+                          style={{
+                            fontFamily: 'var(--font-serif)',
+                            fontSize: 10,
+                            color: `rgba(${pr},${pg},${pb},0.45)`,
+                            lineHeight: 1.35,
+                            marginTop: 3,
+                          }}
+                        >
+                          {desc}
+                        </div>
+                      </button>
+                    );
+                  })}
+                </div>
+                <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      try {
+                        window.localStorage.setItem('colourmap:soundlab-tab', 'groove');
+                      } catch {}
+                      window.location.assign('/music');
+                    }}
+                    style={{
+                      background: accent,
+                      border: `1px solid ${accent}`,
+                      borderRadius: 99,
+                      padding: '8px 16px',
+                      color: '#080607',
+                      fontFamily: 'var(--font-serif)',
+                      fontSize: 11,
+                      fontWeight: 700,
+                      cursor: 'pointer',
+                    }}
+                  >
+                    Open Groove Machine
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleFullscreen}
+                    style={{
+                      background: accentFaint,
+                      border: `1px solid ${accentMid}`,
+                      borderRadius: 99,
+                      padding: '8px 16px',
+                      color: accent,
+                      fontFamily: 'var(--font-serif)',
+                      fontSize: 11,
+                      cursor: 'pointer',
+                    }}
+                  >
+                    Fullscreen
+                  </button>
+                </div>
+              </>
+            )}
+
             {tab === 'journey' && (
               <>
                 {/* Journey selection */}

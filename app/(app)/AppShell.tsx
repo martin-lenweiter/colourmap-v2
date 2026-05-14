@@ -22,13 +22,17 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const onMusic = pathname === '/music';
   const onSocial = SOCIAL_ROUTES.some((r) => r.href === pathname);
+  const immersivePage = pathname === '/progress-road';
   const [musicSection, setMusicSection] = useState<MusicSection>('makers');
   function showRecordingsSection(_songId?: string) {
     // Recordings hidden for now — no-op
   }
 
-  const containerClass =
-    mode === 'phone' ? 'mx-auto w-full max-w-sm px-4 py-6' : 'mx-auto w-full max-w-7xl px-6 py-10';
+  const containerClass = immersivePage
+    ? 'w-full p-0'
+    : mode === 'phone'
+      ? 'mx-auto w-full max-w-sm px-4 py-6'
+      : 'mx-auto w-full max-w-7xl px-6 py-10';
 
   return (
     <ErrorBoundary>
@@ -118,24 +122,26 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
         {children}
 
         {/* Date footer — shown at the bottom of every page */}
-        <p
-          style={{
-            textAlign: 'center',
-            padding: '16px 0 8px',
-            fontFamily: 'var(--font-serif)',
-            fontSize: 11,
-            fontStyle: 'italic',
-            letterSpacing: '0.06em',
-            color: 'rgba(122,84,56,0.35)',
-            pointerEvents: 'none',
-          }}
-        >
-          {new Date().toLocaleDateString('en-GB', {
-            weekday: 'long',
-            day: 'numeric',
-            month: 'long',
-          })}
-        </p>
+        {!immersivePage && (
+          <p
+            style={{
+              textAlign: 'center',
+              padding: '16px 0 8px',
+              fontFamily: 'var(--font-serif)',
+              fontSize: 11,
+              fontStyle: 'italic',
+              letterSpacing: '0.06em',
+              color: 'rgba(122,84,56,0.35)',
+              pointerEvents: 'none',
+            }}
+          >
+            {new Date().toLocaleDateString('en-GB', {
+              weekday: 'long',
+              day: 'numeric',
+              month: 'long',
+            })}
+          </p>
+        )}
       </div>
 
       {/* Bottom nav — shown when navPosition='bottom' */}

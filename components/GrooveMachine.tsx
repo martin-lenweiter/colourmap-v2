@@ -1024,6 +1024,13 @@ export default function GrooveMachine() {
       // Swung timing: offbeat 16ths (odd step index) pushed later.
       const swingOffset = stepIdx % 2 === 1 ? secondsPerSixteenth * swingAmount : 0;
       const when = nextTimeRef.current + swingOffset;
+      const visualEnergy: Record<Group, number> = {
+        drums: 0,
+        bass: 0,
+        keys: 0,
+        lead: 0,
+        pads: 0,
+      };
 
       for (const track of tracksRef.current) {
         let allowed = currentActive[track.id];
@@ -1072,9 +1079,21 @@ export default function GrooveMachine() {
           humanizedVel = vel * (0.95 + Math.random() * 0.1);
           humanizedWhen = when + (Math.random() - 0.5) * 0.006;
         }
+        visualEnergy[track.group] += humanizedVel;
         const out = masterInRef.current ?? ctx.destination;
         VOICES[track.id](ctx, humanizedWhen, humanizedVel, out, freq);
       }
+      window.dispatchEvent(
+        new CustomEvent('colourmap:groove-visual-step', {
+          detail: {
+            step: stepIdx,
+            bar,
+            bpm: bpmRef.current,
+            preset: presetRef.current.id,
+            energy: visualEnergy,
+          },
+        }),
+      );
       nextTimeRef.current += secondsPerSixteenth;
       nextStepRef.current++;
       setStep(stepIdx);
@@ -1368,6 +1387,78 @@ export default function GrooveMachine() {
       </div>
       <style>{`@keyframes gm-dot-pulse { 0%,100% { transform: scale(1); } 50% { transform: scale(1.06); } }`}</style>
 
+      <div
+        className="rounded-2xl border px-4 py-3"
+        style={{ background: '#F3E8D2', borderColor: `${preset.dot}35` }}
+      >
+        <div className="flex items-center justify-between gap-3">
+          <div>
+            <p
+              className="uppercase"
+              style={{
+                fontFamily: 'var(--font-serif)',
+                fontSize: 10,
+                letterSpacing: '0.18em',
+                color: preset.dot,
+                fontWeight: 700,
+              }}
+            >
+              concert visual seed
+            </p>
+            <p
+              className="mt-1"
+              style={{
+                fontFamily: 'var(--font-serif)',
+                fontSize: 12,
+                lineHeight: 1.45,
+                color: '#7A5438',
+              }}
+            >
+              Groove now broadcasts a desert-stage visual pulse: drums push dots, bass expands the
+              field, keys and pads thicken the glow.
+            </p>
+          </div>
+          <a
+            href="/geometry-field"
+            style={{
+              flexShrink: 0,
+              borderRadius: 999,
+              border: `1px solid ${preset.dot}55`,
+              background: `${preset.dot}16`,
+              color: preset.dot,
+              padding: '8px 12px',
+              fontFamily: 'var(--font-serif)',
+              fontSize: 11,
+              fontWeight: 700,
+              letterSpacing: '0.1em',
+              textTransform: 'uppercase',
+              textDecoration: 'none',
+            }}
+          >
+            visuals
+          </a>
+        </div>
+        <div className="mt-3 grid grid-cols-5 gap-1.5">
+          {GROUPS.map((group) => {
+            const activeInGroup = TRACKS.some(
+              (track) => track.group === group.id && active[track.id],
+            );
+            return (
+              <div
+                key={group.id}
+                title={`${group.label} ${activeInGroup ? 'feeds visuals' : 'silent'}`}
+                style={{
+                  height: 7,
+                  borderRadius: 999,
+                  background: activeInGroup ? group.accent : '#C4A06022',
+                  opacity: activeInGroup ? 0.88 : 0.38,
+                }}
+              />
+            );
+          })}
+        </div>
+      </div>
+
       {/* Desktop DJ layout: 2 columns on md+. Phone: stacked. */}
       <div className="space-y-5 md:grid md:grid-cols-[1fr_320px] md:gap-8 md:space-y-0">
         {/* LEFT — track channel strips */}
@@ -1581,6 +1672,25 @@ export default function GrooveMachine() {
                           padding: '10px 8px 8px',
                         }}
                       >
+                        <div
+                          style={{
+                            color: `${grp.accent}B8`,
+                            fontFamily: 'var(--font-serif)',
+                            fontSize: 10,
+                            letterSpacing: '0.08em',
+                            margin: '0 2px 8px',
+                          }}
+                        >
+                          {grp.id === 'drums'
+                            ? 'strike pads'
+                            : grp.id === 'bass'
+                              ? 'pulse gates'
+                              : grp.id === 'keys'
+                                ? 'chord tiles'
+                                : grp.id === 'lead'
+                                  ? 'motif sparks'
+                                  : 'atmosphere ribbons'}
+                        </div>
                         <div className="space-y-2">
                           {tracksInGroup.map((t) => {
                             const on = active[t.id];
@@ -1614,19 +1724,41 @@ export default function GrooveMachine() {
                                         const vel = pattern[i] ?? 0;
                                         const isActive = vel > 0;
                                         const isCurrent = playing && step === i;
+                                        const padShape =
+                                          grp.id === 'drums'
+                                            ? '50%'
+                                            : grp.id === 'bass'
+                                              ? '6px 6px 14px 14px'
+                                              : grp.id === 'keys'
+                                                ? '4px'
+                                                : grp.id === 'lead'
+                                                  ? '12px 2px 12px 2px'
+                                                  : '999px';
+                                        const padScale =
+                                          grp.id === 'bass'
+                                            ? 0.72 + vel * 0.38
+                                            : grp.id === 'pads'
+                                              ? 0.86 + vel * 0.18
+                                              : 1;
                                         return (
                                           <button
                                             key={i}
                                             type="button"
-                                            className="flex-1 rounded-sm transition-all"
+                                            className="flex-1 transition-all"
                                             style={{
                                               minWidth: 0,
-                                              height: 24,
+                                              height:
+                                                grp.id === 'pads'
+                                                  ? 18
+                                                  : grp.id === 'bass'
+                                                    ? 28
+                                                    : 24,
                                               background: isCurrent
                                                 ? t.color
                                                 : isActive
                                                   ? `${t.color}${on ? 'BB' : '55'}`
                                                   : `${t.color}1A`,
+                                              borderRadius: padShape,
                                               border: `1px solid ${
                                                 isCurrent
                                                   ? t.color
@@ -1637,7 +1769,11 @@ export default function GrooveMachine() {
                                               boxShadow:
                                                 isCurrent && on ? `0 0 5px ${t.color}80` : 'none',
                                               cursor: 'pointer',
-                                              transition: 'background 60ms',
+                                              transform:
+                                                grp.id === 'keys'
+                                                  ? `rotate(45deg) scale(${isCurrent ? 1.08 : padScale})`
+                                                  : `scaleY(${padScale})`,
+                                              transition: 'background 60ms, transform 80ms',
                                             }}
                                             onMouseDown={() => handleStepMouseDown(t.id, i, vel)}
                                             onMouseEnter={() => handleStepMouseEnter(t.id, i)}
