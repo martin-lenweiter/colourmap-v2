@@ -1850,12 +1850,12 @@ const PRESETS: Record<string, Cfg> = {
     preset: 'DMT Vision',
     symmetry: 24,
     complexity: 10,
-    glow: 10,
+    glow: 6,
     breathSpeed: 1.5,
-    intensity: 10,
-    particles: 8,
-    luminous: 5,
-    stars: 5,
+    intensity: 6,
+    particles: 6,
+    luminous: 3,
+    stars: 3,
     mode: 'burst',
   },
   'Quantum Chaos': {
@@ -7491,8 +7491,8 @@ function buildPrism(cfg: Cfg, R: number): THREE.Group {
   for (let n = 0; n < 5; n++) {
     const frac = n / 4;
     const nr = 0.06 + frac * 0.22;
-    const hue = lerp(0.08, 0.13, frac);
-    tmpCol.setHSL(hue, lerp(0.15, 0.95, frac), lerp(0.95, 0.55, frac));
+    const hue = lerp(0.095, 0.055, frac);
+    tmpCol.setHSL(hue, lerp(0.92, 1.0, frac), lerp(0.62, 0.5, frac));
     const pCount = Math.max(20, Math.round(lerp(200, 60, frac) * iF));
     const pos = new Float32Array(pCount * 3);
     for (let i = 0; i < pCount; i++) {
@@ -7599,8 +7599,8 @@ function updatePrism(group: THREE.Group, cfg: Cfg, t: number, R: number): void {
 
     if (tag === 'prismNucleus') {
       const frac = (child.userData.layer as number) / 4;
-      const h = ((child.userData.hue as number) + timeHue * 0.25) % 1.0;
-      tmpCol.setHSL(h, lerp(0.15, 0.95, frac), lerp(0.95, 0.55, frac));
+      const h = child.userData.hue as number;
+      tmpCol.setHSL(h, lerp(0.92, 1.0, frac), lerp(0.62, 0.5, frac));
       const rgb: [number, number, number] = [tmpCol.r * 255, tmpCol.g * 255, tmpCol.b * 255];
       const pulse = 1.0 + Math.sin(t * 0.0012 * breathSpeed + frac * 1.8) * 0.07;
       child.scale.setScalar((child.userData.baseR as number) * pulse);
@@ -10501,6 +10501,8 @@ const FEATURED_PRESETS: FeaturedItem[] = [
   { name: 'Chaos Sin Morph', tag: 'MUSIC' },
   { name: 'Drift Field', tag: 'MUSIC' },
   { name: 'Starflow Galaxy', tag: 'MUSIC' },
+  { name: 'Sacred Pyramid', tag: 'MUSIC' },
+  { name: 'Focus Arc', tag: 'MUSIC' },
   { name: 'Chrysalis Rings', tag: 'MORPH' },
   { name: 'Yantra 3D', tag: 'YANTRA' },
   { name: 'Yantra Prism', tag: 'YANTRA' },
@@ -10536,9 +10538,7 @@ const FEATURED_PRESETS: FeaturedItem[] = [
   { name: 'Mind Current', tag: 'SELF' },
   { name: 'Soul Map', tag: 'SELF' },
   { name: 'Body Flow', tag: 'SELF' },
-  { name: 'Focus Arc', tag: 'SELF' },
   { name: 'Inner Temple', tag: 'SELF' },
-  { name: 'Sacred Pyramid', tag: '3D' },
   { name: '4D Crystal', tag: '3D' },
   { name: 'Celtic Forest', tag: '3D' },
   { name: 'Torus Knot', tag: '3D' },
@@ -10588,6 +10588,7 @@ let _currentScaleColour = 0.28;
 let _currentScaleGeometry = 0.58;
 let _currentScaleWings = 0.46;
 let _currentScaleShape = 'scales';
+let _rippleRingsVisible = false;
 let _galaxyImpact = 0.64;
 let _galaxyGravity = 0.7;
 let _galaxyArms = 0.72;
@@ -12835,9 +12836,11 @@ export default function GeometryField() {
   const motionModeRef = useRef<MotionMode>('animate');
 
   const [cfg, setCfg] = useState<Cfg>(PRESETS['Calm Field']);
+  const [selectedPresetName, setSelectedPresetName] = useState('Calm Field');
   const [word, setWord] = useState('HOPE');
   const wordRef = useRef('HOPE');
   const [fingerMode, setFingerMode] = useState<FingerMode>('off');
+  const [rippleRingsVisible, setRippleRingsVisible] = useState(false);
   const [motionMode, setMotionMode] = useState<MotionMode>('animate');
   const [open, setOpen] = useState(true);
   const [tab, setTab] = useState<'builder' | 'music' | 'journey'>('builder');
@@ -12875,6 +12878,11 @@ export default function GeometryField() {
   useEffect(() => {
     motionModeRef.current = motionMode;
   }, [motionMode]);
+
+  useEffect(() => {
+    _rippleRingsVisible = rippleRingsVisible;
+    if (!rippleRingsVisible) ripplesRef.current.length = 0;
+  }, [rippleRingsVisible]);
 
   useEffect(() => {
     _currentScalePulse = currentScaleResponse.pulse;
@@ -13098,8 +13106,9 @@ export default function GeometryField() {
       scene.userData.W = W;
       scene.userData.H = H;
 
-      // Handle ripple rings
-      if (!isCurrentTextureMode(currentCfg.mode)) {
+      // Handle optional visible ripple rings. Finger distortion remains active
+      // even when these visual rings are hidden.
+      if (_rippleRingsVisible && !isCurrentTextureMode(currentCfg.mode)) {
         updateRippleRings(scene, rippleRingsRef.current, ripplesRef.current, t, currentCfg, R);
       } else {
         ripplesRef.current.length = 0;
@@ -15212,7 +15221,7 @@ export default function GeometryField() {
   }
 
   function handleCanvasClick(e: React.MouseEvent<HTMLCanvasElement>) {
-    if (isCurrentTextureMode(cfgRef.current.mode)) return;
+    if (!_rippleRingsVisible || isCurrentTextureMode(cfgRef.current.mode)) return;
     const rect = canvasRef.current!.getBoundingClientRect();
     ripplesRef.current.push({
       x: e.clientX - rect.left,
@@ -15220,6 +15229,20 @@ export default function GeometryField() {
       born: performance.now(),
     });
     if (ripplesRef.current.length > 10) ripplesRef.current.shift();
+  }
+
+  function setRippleRingVisibility(next: boolean) {
+    _rippleRingsVisible = next;
+    setRippleRingsVisible(next);
+    if (!next) {
+      ripplesRef.current.length = 0;
+      for (const r of rippleRingsRef.current) {
+        r.parent?.remove(r);
+        r.geometry.dispose();
+        (r.material as THREE.Material).dispose();
+      }
+      rippleRingsRef.current = [];
+    }
   }
 
   function handleCanvasPointerMove(e: React.PointerEvent<HTMLCanvasElement>) {
@@ -15230,6 +15253,7 @@ export default function GeometryField() {
     _distortWorldY = -(e.clientY - rect.top - H / 2);
     _distortActive = true;
     if (
+      _rippleRingsVisible &&
       _distortMode === 'ripple' &&
       !isCurrentTextureMode(cfgRef.current.mode) &&
       ripplesRef.current.length < 10
@@ -15275,6 +15299,7 @@ export default function GeometryField() {
 
   function applyPreset(name: string) {
     const p = PRESETS[name] ?? PRESETS['Calm Field'];
+    setSelectedPresetName(name);
     setCfg((prev) => ({
       ...p,
       preset: COLOUR_PRESET_NAMES.has(name) ? p.preset : prev.preset,
@@ -15316,6 +15341,7 @@ export default function GeometryField() {
       mode: modeKeys[Math.floor(Math.random() * modeKeys.length)],
       preset: cfgRef.current.preset,
     });
+    setSelectedPresetName('Randomized');
   }
 
   function handleSave() {
@@ -15763,12 +15789,7 @@ export default function GeometryField() {
                           }
                           const { name, tag } = item;
                           const num = ++n;
-                          const isActive =
-                            Object.keys(PRESETS).includes(name) &&
-                            (() => {
-                              const p = PRESETS[name];
-                              return p && cfg.preset === (p.preset ?? name) && cfg.mode === p.mode;
-                            })();
+                          const isActive = selectedPresetName === name;
                           return (
                             <button
                               key={name}
@@ -16047,7 +16068,7 @@ export default function GeometryField() {
                     <div
                       style={{
                         display: 'grid',
-                        gridTemplateColumns: 'repeat(5, 1fr)',
+                        gridTemplateColumns: 'repeat(3, 1fr)',
                         gap: 4,
                         marginBottom: 8,
                       }}
@@ -16078,6 +16099,27 @@ export default function GeometryField() {
                           </button>
                         );
                       })}
+                      <button
+                        type="button"
+                        onClick={() => setRippleRingVisibility(!rippleRingsVisible)}
+                        style={{
+                          minWidth: 0,
+                          padding: '5px 0',
+                          borderRadius: 8,
+                          background: rippleRingsVisible
+                            ? `rgba(${pr},${pg},${pb},0.18)`
+                            : 'transparent',
+                          border: `1px solid ${rippleRingsVisible ? accent : `rgba(${pr},${pg},${pb},0.18)`}`,
+                          color: rippleRingsVisible ? accent : `rgba(${pr},${pg},${pb},0.52)`,
+                          fontFamily: 'var(--font-serif)',
+                          fontSize: 8,
+                          letterSpacing: '0.08em',
+                          textTransform: 'uppercase',
+                          cursor: 'pointer',
+                        }}
+                      >
+                        Rings {rippleRingsVisible ? 'On' : 'Off'}
+                      </button>
                     </div>
 
                     <div style={{ display: 'flex', gap: 6, marginBottom: 8 }}>
@@ -16173,6 +16215,8 @@ export default function GeometryField() {
                     ['Sacred Sin Morph', 'Smooth sacred 3D morph for slow musical breathing.'],
                     ['Sin Morph', 'Organic 3D wave body for musical rise and release.'],
                     ['Chaos Sin Morph', 'Sharper sin morph for chaotic peaks and heavy sections.'],
+                    ['Sacred Pyramid', 'Pyramid light structure for ceremonial pulse and focus.'],
+                    ['Focus Arc', 'Arc-based self-map geometry for quiet musical focus.'],
                     [
                       'Drift Field',
                       'Floating node field for spacious pads and evolving structure.',
@@ -16188,9 +16232,8 @@ export default function GeometryField() {
                     ['Music Nebula', 'Soft galaxy haze for pads, voice, and ambient recordings.'],
                     ['Groove Lattice', 'Tiles and cyclones for drums, bass, and sequencer layers.'],
                     ['Dot Galaxy', 'Particle galaxy ready for bass and star-density mapping.'],
-                  ].map(([name, desc]) => {
-                    const p = PRESETS[name];
-                    const isActive = p && cfg.mode === p.mode;
+                  ].map(([name, desc], index) => {
+                    const isActive = selectedPresetName === name;
                     return (
                       <button
                         key={name}
@@ -16209,10 +16252,25 @@ export default function GeometryField() {
                           padding: '9px 10px',
                           borderRadius: 8,
                           background: isActive ? accentFaint : 'transparent',
-                          border: `1px solid ${isActive ? accentMid : 'rgba(255,255,255,0.05)'}`,
+                          border: `1.5px solid ${isActive ? accent : 'rgba(255,255,255,0.05)'}`,
+                          boxShadow: isActive
+                            ? `0 0 0 1px ${accentMid}, 0 0 16px ${accentFaint}`
+                            : 'none',
                           cursor: 'pointer',
                         }}
                       >
+                        <div
+                          style={{
+                            fontFamily: 'var(--font-serif)',
+                            fontSize: 9,
+                            color: isActive ? accent : `rgba(${pr},${pg},${pb},0.38)`,
+                            letterSpacing: '0.12em',
+                            marginBottom: 3,
+                          }}
+                        >
+                          {String(index + 1).padStart(2, '0')}
+                          {isActive ? '  SELECTED' : ''}
+                        </div>
                         <div
                           style={{
                             fontFamily: 'var(--font-serif)',
@@ -16458,7 +16516,7 @@ export default function GeometryField() {
                     <div
                       style={{
                         display: 'grid',
-                        gridTemplateColumns: 'repeat(5, minmax(0, 1fr))',
+                        gridTemplateColumns: 'repeat(3, minmax(0, 1fr))',
                         gap: 5,
                         paddingTop: 2,
                       }}
@@ -16488,6 +16546,25 @@ export default function GeometryField() {
                           </button>
                         );
                       })}
+                      <button
+                        type="button"
+                        onClick={() => setRippleRingVisibility(!rippleRingsVisible)}
+                        style={{
+                          minWidth: 0,
+                          borderRadius: 8,
+                          border: `1px solid ${rippleRingsVisible ? accent : `rgba(${pr},${pg},${pb},0.15)`}`,
+                          background: rippleRingsVisible ? accentFaint : 'transparent',
+                          color: rippleRingsVisible ? accent : `rgba(${pr},${pg},${pb},0.48)`,
+                          fontFamily: 'var(--font-serif)',
+                          fontSize: 8,
+                          letterSpacing: '0.06em',
+                          padding: '5px 0',
+                          textTransform: 'uppercase',
+                          cursor: 'pointer',
+                        }}
+                      >
+                        Rings {rippleRingsVisible ? 'On' : 'Off'}
+                      </button>
                     </div>
                   </div>
                 )}
