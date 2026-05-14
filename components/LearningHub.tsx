@@ -136,6 +136,7 @@ const GROUPS: { label: string; keys: string[]; tint: string; startHere?: string 
       'belonging',
     ],
     tint: '#C4A060',
+    startHere: 'emotional-intelligence',
   },
   {
     label: 'Growth',
