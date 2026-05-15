@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import * as THREE from 'three';
 import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer.js';
 import { OutputPass } from 'three/examples/jsm/postprocessing/OutputPass.js';
@@ -61,6 +61,7 @@ type Mode =
   | 'matrix'
   | 'matrix3d'
   | 'pulse'
+  | 'archetypesun'
   | 'emotion'
   | 'constellation'
   | 'drift'
@@ -648,6 +649,18 @@ const PRESETS: Record<string, Cfg> = {
     luminous: 3,
     stars: 2,
     mode: 'sacred',
+  },
+  'Mode Sun': {
+    preset: 'Golden Source',
+    symmetry: 7,
+    complexity: 6,
+    glow: 7,
+    breathSpeed: 0.85,
+    intensity: 8,
+    particles: 4,
+    luminous: 3,
+    stars: 2,
+    mode: 'archetypesun',
   },
   'Golden Source': {
     preset: 'Golden Source',
@@ -3800,6 +3813,8 @@ function buildModeGroup(cfg: Cfg, R: number): THREE.Group {
       return buildMatrix(cfg, R);
     case 'matrix3d':
       return buildMatrix3D(cfg, R);
+    case 'archetypesun':
+      return buildArchetypeSun(cfg, R);
     case 'pulse':
       return buildPulse(cfg, R);
     case 'emotion':
@@ -4004,6 +4019,9 @@ function updateModeGroup(group: THREE.Group, cfg: Cfg, dots: Dot[], t: number, R
       break;
     case 'matrix3d':
       updateMatrix3D(group, cfg, t, R);
+      break;
+    case 'archetypesun':
+      updateArchetypeSun(group, cfg, t, R);
       break;
     case 'pulse':
       updatePulse(group, cfg, t, R);
@@ -10373,6 +10391,7 @@ const MODE_TO_PRESET: Partial<Record<Mode, string>> = {
   matrix: 'Matrix Rain',
   matrix3d: 'Matrix Rain',
   pulse: 'Rorschach Pulse',
+  archetypesun: 'Mode Sun',
   embf3d: 'Calm Field',
   wordneon: 'Neon Word',
   hopefear: 'Duality',
@@ -10474,6 +10493,7 @@ const MODES: { mode: Mode; label: string }[] = [
   { mode: 'globe', label: '◎ Globe' },
   { mode: 'matrix', label: '⋮ Matrix' },
   { mode: 'matrix3d', label: '⋮³ Matrix 3D' },
+  { mode: 'archetypesun', label: 'Mode Sun' },
   { mode: 'pulse', label: '◉ Pulse' },
   { mode: 'emotion', label: '◉ Emotion' },
   { mode: 'constellation', label: '✦ Constellation' },
@@ -10495,6 +10515,7 @@ type FeaturedItem = { name: string; tag: string } | { header: string; dim?: bool
 
 const FEATURED_PRESETS: FeaturedItem[] = [
   { header: 'Good Ones' },
+  { name: 'Mode Sun', tag: 'SELF' },
   { name: 'Current Scales', tag: 'MUSIC' },
   { name: 'Sin Morph', tag: 'TOP' },
   { name: 'Sacred Sin Morph', tag: 'MUSIC' },
@@ -10626,6 +10647,158 @@ function fingerForce(
 }
 
 /* ── PULSE mode — rorschach pulsing rings ────────────────────── */
+
+/* Archetype Sun - radiating compass for inner modes */
+
+const ARCHETYPE_SUN_NAMES = [
+  'creation',
+  'organisation',
+  'admin',
+  'builder',
+  'body',
+  'reflection',
+  'child',
+];
+const ARCHETYPE_SUN_PTS = 160;
+
+function readArchetypeSunState() {
+  if (typeof window === 'undefined') return { active: 'creation', avoided: 'admin' };
+  try {
+    return {
+      active: window.localStorage.getItem('colourmap:archetype-active') ?? 'creation',
+      avoided: window.localStorage.getItem('colourmap:archetype-avoided') ?? 'admin',
+    };
+  } catch {
+    return { active: 'creation', avoided: 'admin' };
+  }
+}
+
+function buildArchetypeSun(cfg: Cfg, R: number): THREE.Group {
+  const group = new THREE.Group();
+  const pal = PAL[cfg.preset] ?? PAL['Golden Source'];
+  const iF = cfg.intensity / 10;
+  const [rr, gg, bb] = pal.rgb;
+
+  const rayGeo = new THREE.BufferGeometry();
+  const rayPos = new Float32Array(ARCHETYPE_SUN_NAMES.length * 2 * 3);
+  rayGeo.setAttribute('position', new THREE.BufferAttribute(rayPos, 3));
+  const rays = new THREE.LineSegments(rayGeo, lineMat(hdrColor([rr, gg, bb], iF, 2.3), 1));
+  rays.userData.tag = 'archetypeSunRays';
+  group.add(rays);
+
+  const nodeGeo = new THREE.BufferGeometry();
+  const nodePos = new Float32Array(ARCHETYPE_SUN_NAMES.length * 3);
+  nodeGeo.setAttribute('position', new THREE.BufferAttribute(nodePos, 3));
+  const nodes = new THREE.Points(nodeGeo, ptsMat(hdrColor([rr, gg, bb], iF, 2.8), 6, 0.9));
+  nodes.userData.tag = 'archetypeSunNodes';
+  group.add(nodes);
+
+  for (let ri = 0; ri < 4; ri++) {
+    const ringGeo = new THREE.BufferGeometry();
+    const ringPos = new Float32Array((ARCHETYPE_SUN_PTS + 1) * 3);
+    ringGeo.setAttribute('position', new THREE.BufferAttribute(ringPos, 3));
+    const ring = new THREE.Line(ringGeo, lineMat(hdrColor([rr, gg, bb], iF * 0.45, 1.7), 0.42));
+    ring.userData.tag = 'archetypeSunRing';
+    ring.userData.ri = ri;
+    group.add(ring);
+  }
+
+  const core = new THREE.Mesh(
+    new THREE.CircleGeometry(R * 0.1, 72),
+    new THREE.MeshBasicMaterial({
+      color: new THREE.Color(rr / 255, gg / 255, bb / 255),
+      transparent: true,
+      opacity: 0.58,
+      side: THREE.DoubleSide,
+    }),
+  );
+  core.userData.tag = 'archetypeSunCore';
+  group.add(core);
+
+  return group;
+}
+
+function updateArchetypeSun(group: THREE.Group, cfg: Cfg, t: number, R: number): void {
+  const pal = PAL[cfg.preset] ?? PAL['Golden Source'];
+  const baseRgb = pal.rgb;
+  const iF = cfg.intensity / 10;
+  const glowF = cfg.glow / 10;
+  const speed = cfg.breathSpeed;
+  const { active, avoided } = readArchetypeSunState();
+  const activeIdx = Math.max(0, ARCHETYPE_SUN_NAMES.indexOf(active));
+  const avoidedIdx = Math.max(0, ARCHETYPE_SUN_NAMES.indexOf(avoided));
+  const TAU = Math.PI * 2;
+  const pulse = 0.5 + 0.5 * Math.sin(t * 0.0012 * speed);
+  const flow = 0.5 + 0.5 * Math.sin(t * 0.00055 * speed + 1.4);
+
+  for (const child of group.children) {
+    const tag = child.userData.tag as string;
+    if (tag === 'archetypeSunRays') {
+      const lines = child as THREE.LineSegments;
+      const arr = (lines.geometry.getAttribute('position') as THREE.BufferAttribute)
+        .array as Float32Array;
+      for (let i = 0; i < ARCHETYPE_SUN_NAMES.length; i++) {
+        const a = (i / ARCHETYPE_SUN_NAMES.length) * TAU - Math.PI / 2;
+        const isActive = i === activeIdx;
+        const isAvoided = i === avoidedIdx;
+        const strength = isActive ? 1 : isAvoided ? 0.42 + flow * 0.18 : 0.62;
+        const inner = R * (0.13 + pulse * 0.018);
+        const outer = R * (0.42 + strength * 0.38 + Math.sin(t * 0.0009 + i) * 0.018);
+        const base = i * 6;
+        arr[base] = Math.cos(a) * inner;
+        arr[base + 1] = Math.sin(a) * inner;
+        arr[base + 2] = 0;
+        arr[base + 3] = Math.cos(a) * outer;
+        arr[base + 4] = Math.sin(a) * outer;
+        arr[base + 5] = 0;
+      }
+      (lines.geometry.getAttribute('position') as THREE.BufferAttribute).needsUpdate = true;
+      updateMat(lines, baseRgb, iF * (0.54 + pulse * 0.2), 2.5 + glowF);
+    } else if (tag === 'archetypeSunNodes') {
+      const pts = child as THREE.Points;
+      const arr = (pts.geometry.getAttribute('position') as THREE.BufferAttribute)
+        .array as Float32Array;
+      for (let i = 0; i < ARCHETYPE_SUN_NAMES.length; i++) {
+        const a = (i / ARCHETYPE_SUN_NAMES.length) * TAU - Math.PI / 2;
+        const isActive = i === activeIdx;
+        const isAvoided = i === avoidedIdx;
+        const r = R * (isActive ? 0.82 + pulse * 0.04 : isAvoided ? 0.58 + flow * 0.06 : 0.68);
+        arr[i * 3] = Math.cos(a) * r;
+        arr[i * 3 + 1] = Math.sin(a) * r;
+        arr[i * 3 + 2] = isActive ? R * 0.02 : 0;
+      }
+      (pts.geometry.getAttribute('position') as THREE.BufferAttribute).needsUpdate = true;
+      const mat = pts.material as THREE.PointsMaterial;
+      mat.size = (5.5 + pulse * 2.2) * (R / 260);
+      mat.opacity = 0.72 + pulse * 0.18;
+      updateMat(pts, baseRgb, iF, 3.1 + glowF);
+    } else if (tag === 'archetypeSunRing') {
+      const ring = child as THREE.Line;
+      const ri = child.userData.ri as number;
+      const arr = (ring.geometry.getAttribute('position') as THREE.BufferAttribute)
+        .array as Float32Array;
+      const ringR = R * (0.18 + ri * 0.16 + pulse * 0.012 * (ri + 1));
+      for (let p = 0; p <= ARCHETYPE_SUN_PTS; p++) {
+        const a = (p / ARCHETYPE_SUN_PTS) * TAU;
+        const wave =
+          1 +
+          Math.sin(a * 6 + t * 0.001 * speed + ri) * 0.018 * cfg.complexity +
+          Math.sin(a * 3 - t * 0.0006 * speed) * 0.012 * cfg.symmetry;
+        arr[p * 3] = Math.cos(a) * ringR * wave;
+        arr[p * 3 + 1] = Math.sin(a) * ringR * wave;
+        arr[p * 3 + 2] = 0;
+      }
+      (ring.geometry.getAttribute('position') as THREE.BufferAttribute).needsUpdate = true;
+      updateMat(ring, baseRgb, iF * (0.24 + ri * 0.08), 1.8 + glowF);
+    } else if (tag === 'archetypeSunCore') {
+      const core = child as THREE.Mesh;
+      core.scale.setScalar(1 + pulse * 0.18 + flow * 0.04);
+      const mat = core.material as THREE.MeshBasicMaterial;
+      mat.opacity = 0.34 + pulse * 0.22;
+      mat.color.setRGB(baseRgb[0] / 255, baseRgb[1] / 255, baseRgb[2] / 255);
+    }
+  }
+}
 
 const PULSE_MAX_RINGS = 14;
 const PULSE_PTS = 80;
@@ -12878,6 +13051,29 @@ export default function GeometryField() {
   useEffect(() => {
     motionModeRef.current = motionMode;
   }, [motionMode]);
+
+  useLayoutEffect(() => {
+    try {
+      const urlPreset = new URLSearchParams(window.location.search).get('preset');
+      const requestedPreset =
+        urlPreset ?? window.sessionStorage.getItem('colourmap:geometry-preset');
+      if (!requestedPreset) return;
+      window.sessionStorage.setItem('colourmap:geometry-preset', requestedPreset);
+      const presetCfg = PRESETS[requestedPreset];
+      if (presetCfg) {
+        setSelectedPresetName(requestedPreset);
+        setCfg({ ...presetCfg });
+      }
+      setTab('builder');
+      setBuilderView('programs');
+      if (urlPreset) window.history.replaceState(null, '', window.location.pathname);
+      window.setTimeout(() => {
+        window.sessionStorage.removeItem('colourmap:geometry-preset');
+      }, 250);
+    } catch (error) {
+      console.error('Geometry preset handoff failed', error);
+    }
+  }, []);
 
   useEffect(() => {
     _rippleRingsVisible = rippleRingsVisible;

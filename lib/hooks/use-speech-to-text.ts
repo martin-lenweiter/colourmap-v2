@@ -1,6 +1,6 @@
 'use client';
 
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 interface SpeechRecognitionEventLike {
   results: ArrayLike<ArrayLike<{ transcript: string }>>;
@@ -45,11 +45,14 @@ export interface UseSpeechToTextResult {
 export function useSpeechToText(options: UseSpeechToTextOptions = {}): UseSpeechToTextResult {
   const { lang = 'en-US' } = options;
   const [listening, setListening] = useState(false);
+  const [supported, setSupported] = useState(false);
   const recRef = useRef<SpeechRecognitionLike | null>(null);
   const baseRef = useRef('');
   const setValueRef = useRef<((v: string) => void) | null>(null);
 
-  const supported = getSpeechRecognition() !== null;
+  useEffect(() => {
+    setSupported(getSpeechRecognition() !== null);
+  }, []);
 
   function start(baseText: string, setValue: (v: string) => void) {
     const Ctor = getSpeechRecognition();
