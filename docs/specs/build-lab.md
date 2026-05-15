@@ -13,6 +13,7 @@ Creator Space should eventually contain:
 
 - **Build Lab**: code, product, diffs, checkpoints, coding agents
 - **Garden of Ideas**: product ideas, reflections, decisions, relationships, and future directions
+- **Business Plan**: practical strategy, launch timing, App Store readiness, marketing, pricing, and revenue paths
 - **Project Map**: a visual intelligence board for understanding the whole Colourmap system
 - **Music Lab**: songs, groove machines, recordings, concert tools
 - **Geometry Lab**: visual worlds, mode suns, music-reactive fields
@@ -25,7 +26,42 @@ The platform should not become a generic developer dashboard. It should feel lik
 
 Creator Space needs a non-terminal layer for understanding the evolution of the work.
 
-The user should be able to keep spaces for:
+The Garden of Ideas is where the project thinks before and after code. It should have several modes, because the user needs different levels of clarity at different moments.
+
+### Garden Modes
+
+**1. Spec Map**
+
+This is the visual version of the app spec. It helps the user understand what Colourmap currently is:
+
+- core philosophy
+- active features
+- backend systems
+- visual systems
+- AI systems
+- mobile/phone-control systems
+- open specs
+- shipped missions
+- known risks
+- next practical cuts
+
+The Spec Map should not replace markdown specs. It is the digestible visual layer over them. Clicking a feature should reveal: what it is, why it exists, what files/specs define it, what is working, what is unfinished, and what should happen next.
+
+**2. Reflection / Philosophy**
+
+This is not the technical spec. It is the simple human version of the product:
+
+- what Colourmap is trying to help humans understand
+- the core tensions it works with
+- how modes/archetypes, emotions, missions, music, geometry, and AI connect
+- what the app believes about clarity, survival, creativity, and action
+- why certain features matter emotionally, not only technically
+
+This mode should be written and shown in plain language. It should help the user or a collaborator understand the soul of the project without reading implementation details.
+
+**3. Idea Garden**
+
+This is the living creative layer. The user should be able to keep spaces for:
 
 - product ideas
 - design reflections
@@ -38,6 +74,32 @@ The user should be able to keep spaces for:
 This should not feel like a normal notes app. It should feel like a product garden: ideas can branch, connect, mature, be paused, and reappear later. The user should be able to ask: "where did this idea come from?", "what did we decide?", "what is connected to this?", and "what is the next practical cut?"
 
 Long term, Build Lab missions should feed these spaces automatically. A completed mission can create or update an idea block with: original prompt, reflection, changed files, screenshots, decision, remaining next steps, and relationships to other ideas.
+
+## Business Plan
+
+Business Plan is a separate mode next to Garden of Ideas, not hidden inside coding logs. Its job is to keep Colourmap practical: how to ship, how to reach people, how to make money ethically, and how to move the user toward financial independence.
+
+Business Plan should include:
+
+- **Positioning**: what Colourmap is in one sentence, which pain it solves, and why it is different.
+- **Audience Map**: reflective creators, overwhelmed builders, artists, ADHD-like scattered thinkers, therapists/coaches as later partners, musicians/visual performers as future edge.
+- **Offer Ladder**: free intro, paid personal cockpit, creator/pro plan, future coaching/report exports, future concert/visual tools.
+- **Apple Store Readiness**: privacy labels, review risk, demo account/demo mode, screenshots, metadata, age rating, accessibility support, subscription/IAP setup, device stability.
+- **Marketing**: launch story, screenshots/video, short demos, creator diary, newsletter, social clips, App Store custom product pages later.
+- **Strategy**: what to ship first, what to delay, what makes the app understandable in 30 seconds, what creates retention.
+- **Timing**: now/next/later plan with concrete release gates.
+- **Metrics**: activation, weekly usage, check-in completion, mission creation, returning after 7 days, paid conversion, churn reasons.
+- **Financial Independence Path**: realistic revenue scenarios, monthly targets, required subscribers, pricing experiments, and survival runway.
+
+The Business Plan should be updated like a living map, not a static pitch deck. Every major product decision should be able to connect to one practical question: does this make the app clearer, shippable, lovable, or economically viable?
+
+Initial practical App Store gates:
+
+- The first public version must be stable, complete, and tested on real devices.
+- Auth and backend must work reliably, with demo/reviewer access if login is required.
+- Privacy practices must be explicit, including AI providers and any analytics or third-party services.
+- The app should avoid medical/therapy claims unless it is prepared for the review and legal burden.
+- Subscriptions or in-app purchases should be configured only when the paid value is concrete and reviewable.
 
 ## Project Map / Visual Intelligence
 
