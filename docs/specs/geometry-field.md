@@ -79,6 +79,14 @@ Dot Walker should expose five visibly different designs through its **Design** s
 
 Design 1 is the original and should remain stable because it already has the strongest first emotional fit.
 
+Dot Walker controls should stay specific and non-duplicative:
+
+- **Design 1-5** changes the figure silhouette.
+- **Liquid** changes internal particle motion.
+- **Aura Width** changes the body spread / surrounding presence.
+- **Bloom** controls light intensity.
+- Avoid duplicate sliders where two controls visually do the same thing.
+
 ### Brain Topography
 
 Aim:
@@ -145,6 +153,10 @@ Recommended pipeline:
 6. Load in Three.js and drive animation clips from Colourmap states, music, or touch.
 
 The character should not become cartoon clutter. It should feel like a calm symbolic being inside the Colourmap universe.
+
+### Chrysalis Rings
+
+Chrysalis Rings should stay visually clean: three transforming rings moving between 2D and 3D-feeling states. Decorative blooming dots or beads should not be drawn by default because they compete with the purity of the ring transformation.
 
 ### 3D Emotional Landscapes
 

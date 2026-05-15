@@ -10379,10 +10379,9 @@ const MODE_SLIDERS: Partial<Record<Mode, SliderDef[]>> = {
   dotwalker: [
     { key: 'symmetry', label: 'Design 1-5', min: 1, max: 5, step: 1 },
     { key: 'complexity', label: 'Liquid', min: 1, max: 10, step: 0.5 },
-    { key: 'glow', label: 'Aura', min: 0, max: 10, step: 0.5 },
+    { key: 'glow', label: 'Aura Width', min: 0, max: 10, step: 0.5 },
     { key: 'breathSpeed', label: 'Walk', min: 0.05, max: 2.0, step: 0.05 },
     { key: 'intensity', label: 'Colour', min: 0, max: 10, step: 0.5 },
-    { key: 'particles', label: 'Dots', min: 1, max: 10, step: 1 },
     { key: 'luminous', label: 'Bloom', min: 0, max: 5, step: 0.1 },
     { key: 'stars', label: 'Stars', min: 0, max: 10, step: 1 },
   ],
@@ -11413,8 +11412,9 @@ function updateDotWalker(group: THREE.Group, cfg: Cfg, t: number, R: number): vo
         const liquid =
           Math.sin(phase * 1.8 + sx * 5 + sy * 3 + drift * 6) * R * 0.012 * cfg.complexity;
         const force = fingerForce(p.x, p.y, 0, R);
-        let x = p.x + sx * p.scale * 0.42 + Math.cos(sy * 4 + phase) * liquid;
-        let y = p.y + sy * p.scale * 0.42 + Math.sin(sx * 4 - phase) * liquid;
+        const auraWidth = 0.34 + cfg.glow * 0.035;
+        let x = p.x + sx * p.scale * auraWidth + Math.cos(sy * 4 + phase) * liquid;
+        let y = p.y + sy * p.scale * auraWidth + Math.sin(sx * 4 - phase) * liquid;
         let z = Math.sin(phase + drift * 10) * R * 0.02;
 
         if (design === 2) {
@@ -11448,8 +11448,8 @@ function updateDotWalker(group: THREE.Group, cfg: Cfg, t: number, R: number): vo
       }
       pos.needsUpdate = true;
       const mat = dots.material as THREE.PointsMaterial;
-      mat.size = (1.8 + cfg.particles * 0.28) * (R / 260);
-      mat.opacity = 0.72 + Math.min(0.18, cfg.glow / 70);
+      mat.size = (2.35 + cfg.glow * 0.1) * (R / 260);
+      mat.opacity = 0.68 + Math.min(0.22, cfg.glow / 55);
       updateMat(dots, pal.rgb, cfg.intensity / 10, 2.4 + cfg.luminous * 0.24);
     } else if (tag === 'dotWalkerTrail') {
       const trail = child as THREE.Line;
@@ -15168,7 +15168,8 @@ export default function GeometryField() {
           const tilt = 1 - lift * (0.55 + idx * 0.08);
           const spread = 1 + lift * (idx - 1) * 0.08;
           const rot = ring.phase + spin * (idx % 2 === 0 ? 1 : -1);
-          const rx = baseR * ring.radius * spread;
+          const auraSpread = 1 + cfg.glow * 0.018;
+          const rx = baseR * ring.radius * spread * auraSpread;
           const ry = rx * Math.max(0.18, tilt);
           const alpha = (0.78 - idx * 0.12) * iF;
 
@@ -15183,17 +15184,6 @@ export default function GeometryField() {
           ctx!.lineWidth = ring.width;
           ctx!.stroke();
 
-          const beadA = tSec * (0.42 + idx * 0.08) + ring.phase;
-          const bx = Math.cos(beadA) * rx;
-          const by = Math.sin(beadA) * ry;
-          const dotG = ctx!.createRadialGradient(bx, by, 0, bx, by, 18 + cfg.glow * 2);
-          dotG.addColorStop(0, `rgba(255,255,255,${0.9 * iF})`);
-          dotG.addColorStop(0.4, `rgba(${pr},${pg},${pb},${0.55 * iF})`);
-          dotG.addColorStop(1, 'rgba(0,0,0,0)');
-          ctx!.fillStyle = dotG;
-          ctx!.beginPath();
-          ctx!.arc(bx, by, 18 + cfg.glow * 2, 0, Math.PI * 2);
-          ctx!.fill();
           ctx!.restore();
         });
 
