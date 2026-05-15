@@ -1666,6 +1666,7 @@ export default function BuildLab() {
   const queueRunnerRef = useRef(false);
   const queuedMissionsRef = useRef<QueuedMission[]>([]);
   const speech = useSpeechToText({ lang: 'en-US' });
+  const phoneSpeech = useSpeechToText({ lang: 'en-US' });
 
   const selectedAgent = useMemo(
     () => agents.find((agent) => agent.id === agentId) ?? agents[0],
@@ -2111,6 +2112,15 @@ export default function BuildLab() {
       speech.stop();
     } else {
       speech.start(prompt, setPrompt);
+    }
+  }
+
+  function togglePhoneSpeech() {
+    phoneSpeech.resetError();
+    if (phoneSpeech.listening) {
+      phoneSpeech.stop();
+    } else {
+      phoneSpeech.start(phonePrep, updatePhonePrep);
     }
   }
 
@@ -2688,6 +2698,38 @@ export default function BuildLab() {
               </button>
               {openPanels.phonePrep && (
                 <div className="mt-4 grid gap-3">
+                  <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-[#b98d52]/18 bg-[#fffdf2]/70 p-3">
+                    <div className="flex items-center gap-2">
+                      <span
+                        className="h-3 w-3 rounded-full"
+                        style={{
+                          background: phoneSpeech.listening ? '#c77822' : '#c9a76e',
+                          boxShadow: phoneSpeech.listening
+                            ? '0 0 0 6px rgba(199,120,34,0.13), 0 0 22px rgba(199,120,34,0.45)'
+                            : 'none',
+                          animation: phoneSpeech.listening
+                            ? 'build-lab-voice-pulse 1s ease-in-out infinite'
+                            : 'none',
+                        }}
+                      />
+                      <span className="text-xs uppercase tracking-[0.14em] text-[#704923]">
+                        {phoneSpeech.listening ? 'Recording phone note' : 'Phone note voice'}
+                      </span>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={togglePhoneSpeech}
+                      className="inline-flex items-center gap-2 rounded-full border border-[#8f6232]/25 px-3 py-2 text-xs text-[#704923]"
+                    >
+                      {phoneSpeech.listening ? <MicOff size={14} /> : <Mic size={14} />}
+                      {phoneSpeech.listening ? 'Stop' : 'Speak note'}
+                    </button>
+                  </div>
+                  {(phoneSpeech.error || phoneSpeech.transcript) && (
+                    <p className="rounded-xl border border-[#b98d52]/18 bg-[#fffdf2]/70 px-3 py-2 text-xs leading-5 text-[#8d653d]">
+                      {phoneSpeech.error || `Last heard: ${phoneSpeech.transcript}`}
+                    </p>
+                  )}
                   <textarea
                     value={phonePrep}
                     onChange={(event) => updatePhonePrep(event.target.value)}
