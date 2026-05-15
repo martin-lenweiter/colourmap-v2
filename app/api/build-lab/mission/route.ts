@@ -33,7 +33,7 @@ export async function POST(request: Request) {
 
   let projectPath: string;
   try {
-    projectPath = await resolveProjectDirectory(body.projectPath ?? '');
+    projectPath = await resolveProjectDirectory(body.projectPath ?? '', process.cwd());
   } catch (error) {
     return new Response(error instanceof Error ? error.message : 'Invalid project path.', {
       status: 400,

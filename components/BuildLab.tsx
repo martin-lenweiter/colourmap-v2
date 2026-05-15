@@ -1625,22 +1625,20 @@ export default function BuildLab() {
 
   async function queueMission() {
     const missionPrompt = composedPrompt();
+    const missionProjectPath = projectPath || runnerStatus?.workingDirectory || '';
     if (!missionPrompt.trim()) {
       setError('Write or dictate a mission prompt first.');
       return;
     }
-    if (!projectPath.trim()) {
-      setError('Choose a project before queueing a phone mission.');
-      return;
-    }
     setError('');
+    if (!projectPath.trim() && missionProjectPath.trim()) setProjectPath(missionProjectPath);
     const response = await fetch('/api/build-lab/queue', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         channelId: activeChannel.id,
         agentId,
-        projectPath,
+        projectPath: missionProjectPath,
         prompt: missionPrompt,
       }),
     });
@@ -1729,15 +1727,12 @@ export default function BuildLab() {
     onDone?: (status: 'complete' | 'failed', files: string[]) => void;
   }) {
     const missionPrompt = options?.promptOverride ?? composedPrompt();
-    const missionProjectPath = options?.projectPathOverride ?? projectPath;
+    const missionProjectPath =
+      (options?.projectPathOverride ?? projectPath) || (runnerStatus?.workingDirectory ?? '');
     const missionAgentId = options?.agentIdOverride ?? agentId;
     const missionAgent = agents.find((agent) => agent.id === missionAgentId);
     if (!missionPrompt.trim()) {
       setError('Write or dictate a mission prompt first.');
-      return;
-    }
-    if (!missionProjectPath.trim()) {
-      setError('Load a project folder first.');
       return;
     }
     if (!missionAgent?.available) {
@@ -1745,6 +1740,7 @@ export default function BuildLab() {
       return;
     }
     setError('');
+    if (!projectPath.trim() && missionProjectPath.trim()) setProjectPath(missionProjectPath);
     setRunning(true);
     setEvents([]);
     setDiff('');
@@ -1858,11 +1854,11 @@ export default function BuildLab() {
   );
   const runHint = !prompt.trim()
     ? 'Write a mission prompt.'
-    : !projectPath.trim()
-      ? 'Load a project folder.'
-      : !selectedAgent?.available
-        ? `${selectedAgent?.name ?? 'Agent'} is not ready.`
-        : 'Ready to run on this computer.';
+    : !selectedAgent?.available
+      ? `${selectedAgent?.name ?? 'Agent'} is not ready.`
+      : projectPath.trim() || runnerStatus?.workingDirectory
+        ? 'Ready to run on this computer.'
+        : 'Ready to use the desktop runner folder.';
 
   return (
     <main className="mx-auto w-full max-w-6xl px-3 py-5 sm:px-5">

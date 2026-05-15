@@ -64,6 +64,13 @@ describe('build lab mission route', () => {
     });
   });
 
+  it('uses the server working directory when project path is empty', async () => {
+    const response = await POST(request({ agentId: 'codex', projectPath: '', prompt: 'Do work' }));
+
+    expect(response.status).toBe(200);
+    expect(resolveProjectDirectory).toHaveBeenCalledWith('', process.cwd());
+  });
+
   it('rejects unknown agents', async () => {
     const response = await POST(
       request({ agentId: 'missing', projectPath: 'C:/repo', prompt: 'Do work' }),
