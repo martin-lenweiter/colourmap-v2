@@ -130,6 +130,24 @@ dots -> character -> face -> landscape -> story -> conversation
 
 Dot Walker is a candidate for Colourmap's long-term AI conversation interface. The user should eventually be able to speak to the AI and see the Dot Walker respond as a presence: voice creates vibrations through the body, AI replies create gestures or light pulses, readable text appears around the figure, and the whole exchange feels like talking with a living visual being rather than typing into a generic chat box.
 
+## Dot Symbol Presets
+
+Geometry Field should also support simple powerful symbolic forms made only from dots. These are not flat icons. They are living particle presences that can later become conversation interfaces, emotional maps, music visuals, education explainers, and Garden of Ideas diagrams.
+
+Accepted initial presets:
+
+- **Fire Dot Sun**: an actual-sun feeling built from warm yellow/orange dots, with a pulsing core, fire-like corona, and no non-particle mesh.
+- **Alchemical Dot Sun**: a more graphical sun made from dots, with adjustable ray count, ray length, and ray curve. Rays can feel curved or triangular depending on controls.
+- **Dot Heart**: a heart shape made only from many warm dots, with internal pulse and flowing particle motion.
+
+Rules:
+
+- These presets must be dot-only. No solid SVG/mesh fill should carry the shape.
+- They should default to warm fire/gold palettes and avoid automatic rainbow cycling.
+- Sliders should be specific to the form: ray count and ray shape for the alchemical sun, corona/fire motion for the real sun, inner flow/pulse for the heart.
+- Touch distortion should bend the dots directly so the forms feel alive and playable.
+- They should be promoted near Dot Walker and other living-symbol presets because they are part of the future visual language.
+
 ### Blender / External 3D Tool Direction
 
 Native Three.js presets are the right way to prototype movement and visual language quickly.

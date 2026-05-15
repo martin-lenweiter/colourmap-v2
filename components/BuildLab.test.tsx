@@ -55,10 +55,44 @@ describe('BuildLab', () => {
     await waitFor(() => expect(screen.getByText('Codex')).toBeDefined());
     expect(screen.getByText('Mission prompt')).toBeDefined();
     expect(screen.getByText('Mission memory')).toBeDefined();
+    expect(screen.getByText('Garden of Ideas')).toBeDefined();
+    expect(screen.getAllByText('Spec Map').length).toBeGreaterThan(0);
+    expect(screen.getByText('Business Plan')).toBeDefined();
+    expect(screen.getByText('Education Atlas')).toBeDefined();
+    expect(screen.getByText('Sun Dialogue')).toBeDefined();
+    expect(screen.getByText('Talk to the visual system')).toBeDefined();
     expect(screen.getByText('Agent console')).toBeDefined();
     expect(screen.queryByText('Scope lens')).toBeNull();
     expect(screen.queryByText('Mission cards')).toBeNull();
     expect(screen.queryByText('Mode')).toBeNull();
+  });
+
+  it('switches Garden of Ideas perspectives without replacing the spec map', async () => {
+    render(<BuildLab />);
+
+    await waitFor(() => expect(screen.getByText('Codex')).toBeDefined());
+    fireEvent.click(screen.getByRole('button', { name: 'Open Garden' }));
+    expect(screen.getByRole('button', { name: 'Bubble Map' })).toBeDefined();
+    expect(screen.getByRole('button', { name: 'Board' })).toBeDefined();
+    expect(screen.getByRole('button', { name: 'Road' })).toBeDefined();
+    expect(screen.getByRole('button', { name: 'Constellation' })).toBeDefined();
+    expect(screen.getByRole('button', { name: 'Curriculum' })).toBeDefined();
+
+    fireEvent.click(screen.getByRole('button', { name: /Education Atlas/i }));
+    expect(screen.getAllByText('Wellbeing Curriculum Compass').length).toBeGreaterThan(0);
+    fireEvent.click(screen.getByRole('button', { name: 'Curriculum' }));
+    expect(screen.getByText('Notice')).toBeDefined();
+    expect(screen.getByText('Connect')).toBeDefined();
+
+    fireEvent.click(screen.getByRole('button', { name: /Business Plan/i }));
+    expect(screen.getAllByText('App Store Path').length).toBeGreaterThan(0);
+
+    const wellbeingButton = screen
+      .getAllByRole('button')
+      .find((button) => button.textContent?.startsWith('WellbeingHow can inner clarity'));
+    expect(wellbeingButton).toBeDefined();
+    fireEvent.click(wellbeingButton as HTMLButtonElement);
+    expect(screen.getAllByText('Collective Happiness').length).toBeGreaterThan(0);
   });
 
   it('loads a project and stores it as a recent project', async () => {

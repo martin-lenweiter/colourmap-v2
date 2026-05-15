@@ -2,14 +2,21 @@
 
 import {
   Archive,
+  BookOpen,
   Bot,
+  BriefcaseBusiness,
+  Compass,
   FolderOpen,
   GitBranch,
+  Heart,
   Mic,
   MicOff,
+  Network,
+  Palette,
   Play,
   RefreshCw,
   ShieldCheck,
+  Sparkles,
   SquareTerminal,
 } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
@@ -58,8 +65,350 @@ type MissionMemory = {
   reflection?: string;
 };
 
+type GardenAngle =
+  | 'spec'
+  | 'reflection'
+  | 'business'
+  | 'education'
+  | 'wellbeing'
+  | 'art'
+  | 'practice'
+  | 'future';
+
+type GardenNode = {
+  id: string;
+  title: string;
+  tag: string;
+  angle: GardenAngle;
+  summary: string;
+  next: string;
+};
+
+type GardenDisplay = 'bubble' | 'board' | 'road' | 'constellation' | 'curriculum';
+
 const HISTORY_LS = 'colourmap:build-lab-history';
 const RECENT_PROJECTS_LS = 'colourmap:build-lab-recent-projects';
+
+const gardenAngles: Array<{
+  id: GardenAngle;
+  label: string;
+  icon: typeof Network;
+  question: string;
+}> = [
+  {
+    id: 'spec',
+    label: 'Spec Map',
+    icon: Network,
+    question: 'What exists, what connects, and what is unfinished?',
+  },
+  {
+    id: 'reflection',
+    label: 'Reflection',
+    icon: Sparkles,
+    question: 'What is the human meaning behind the system?',
+  },
+  {
+    id: 'business',
+    label: 'Business Plan',
+    icon: BriefcaseBusiness,
+    question: 'What makes this shippable, understandable, and profitable?',
+  },
+  {
+    id: 'education',
+    label: 'Education Atlas',
+    icon: BookOpen,
+    question: 'How do the learning programs explain wellbeing as one coherent map?',
+  },
+  {
+    id: 'wellbeing',
+    label: 'Wellbeing',
+    icon: Heart,
+    question: 'How can inner clarity grow into better relationships and collective happiness?',
+  },
+  {
+    id: 'art',
+    label: 'Artistic',
+    icon: Palette,
+    question: 'What visual language makes the idea felt before it is explained?',
+  },
+  {
+    id: 'practice',
+    label: 'Practical',
+    icon: ShieldCheck,
+    question: 'What tiny next cuts turn complexity into movement?',
+  },
+  {
+    id: 'future',
+    label: 'Intelligence',
+    icon: Compass,
+    question: 'How does this become a new way to understand information?',
+  },
+];
+
+const gardenNodes: GardenNode[] = [
+  {
+    id: 'field',
+    title: 'Field -> Tensions -> Action -> Patterns',
+    tag: 'core',
+    angle: 'spec',
+    summary:
+      'The central product grammar: notice the day field, name the pressure, choose a bridge action, then learn the recurring pattern.',
+    next: 'Turn this into the top-level map that explains why Check In, Missions, Progress, Geometry, and AI belong together.',
+  },
+  {
+    id: 'build-lab',
+    title: 'Build Lab',
+    tag: 'creator',
+    angle: 'spec',
+    summary:
+      'The coding-agent room: prompt, stream, diff, checkpoint, and readable mission memory in one creator cockpit.',
+    next: 'Add phone mission queue and screenshot context once Supabase/local runner wiring is ready.',
+  },
+  {
+    id: 'education',
+    title: 'Education Atlas',
+    tag: 'learning',
+    angle: 'education',
+    summary:
+      'The education program can become the illustrated explanation layer for wellbeing: simple emotional mechanics shown as roads, maps, comics, and examples.',
+    next: 'Create one overview map that groups programs by pressure, avoidance, energy, attention, and repair.',
+  },
+  {
+    id: 'education-compass',
+    title: 'Wellbeing Curriculum Compass',
+    tag: 'learning',
+    angle: 'education',
+    summary:
+      'The whole education program can be explained as a path from inner weather, to repeated loops, to repair skills, to relationships, to meaning.',
+    next: 'Group education programs into five routes: Notice, Understand, Stabilize, Act, Connect.',
+  },
+  {
+    id: 'comic-layer',
+    title: 'Comic And Atlas Layer',
+    tag: 'format',
+    angle: 'education',
+    summary:
+      'Some ideas need comics, some need maps, some need roads, and some need tiny practical exercises. The format should match the kind of insight.',
+    next: 'For every education program, choose the best visual format before designing the lesson.',
+  },
+  {
+    id: 'human-loop',
+    title: 'The Repeating Valley',
+    tag: 'human',
+    angle: 'reflection',
+    summary:
+      'People often do not fail because life is too complex. They get stuck in a repeated flow: fear, avoidance, relief, consequence, fear again.',
+    next: 'Garden should show loops as visible rivers, not only as text explanations.',
+  },
+  {
+    id: 'simple-challenge',
+    title: 'Core Simple Challenge',
+    tag: 'clarity',
+    angle: 'reflection',
+    summary:
+      'Colourmap should reduce the fog to the few forces that matter now, so the user sees the problem as smaller and more workable.',
+    next: 'Every map needs a "what is the one load-bearing tension?" block.',
+  },
+  {
+    id: 'store',
+    title: 'App Store Path',
+    tag: 'ship',
+    angle: 'business',
+    summary:
+      'The business map turns vision into gates: stable backend, phone performance, privacy wording, demo flow, screenshots, pricing, and retention.',
+    next: 'Keep a release readiness board separate from dreamy future ideas.',
+  },
+  {
+    id: 'market',
+    title: 'Audience And Offer',
+    tag: 'market',
+    angle: 'business',
+    summary:
+      'Start with reflective creators and overwhelmed builders, then expand toward coaches, musicians, and visual intelligence tools.',
+    next: 'Write a 30-second explanation for each audience and test which one feels clear.',
+  },
+  {
+    id: 'inner-peace',
+    title: 'Inner Peace Mechanics',
+    tag: 'wellbeing',
+    angle: 'wellbeing',
+    summary:
+      'Colourmap helps people notice pressure before it becomes identity, reduce the core challenge, and move energy between modes with less fear.',
+    next: 'Make the app show one stuck pattern and one bridge action instead of flooding the user with advice.',
+  },
+  {
+    id: 'relationship-field',
+    title: 'Relationship Field',
+    tag: 'social',
+    angle: 'wellbeing',
+    summary:
+      'If people understand their own pressure loops, they can communicate with less projection and more timing, clarity, and care.',
+    next: 'Future sharing should be built around readable state, consent, and simple repair signals.',
+  },
+  {
+    id: 'collective-happiness',
+    title: 'Collective Happiness',
+    tag: 'world',
+    angle: 'wellbeing',
+    summary:
+      'The long arc is not only self-optimization. It is better collective intelligence: calmer people, clearer teams, kinder decisions, and less wasted suffering.',
+    next: 'Keep the first product personal, but let the philosophy guide education, groups, and future world maps.',
+  },
+  {
+    id: 'gold-dots',
+    title: 'Golden Dot Language',
+    tag: 'visual',
+    angle: 'art',
+    summary:
+      'Dots can become fields, suns, hearts, brains, characters, trails, and maps. They are the bridge between data and felt intelligence.',
+    next: 'Use dot systems for the Garden itself: ideas as clusters, decisions as bright nodes, risks as pressure zones.',
+  },
+  {
+    id: 'info-forms',
+    title: 'Infographic Forms',
+    tag: 'forms',
+    angle: 'art',
+    summary:
+      'The same content can be shown as cards, rivers, constellations, detective boards, comics, 3D landscapes, or game-like journeys.',
+    next: 'Let the user switch view angle before switching raw data.',
+  },
+  {
+    id: 'next-cut',
+    title: 'Next Cut Discipline',
+    tag: 'action',
+    angle: 'practice',
+    summary:
+      'The system must always answer: what is the smallest concrete move that changes the field?',
+    next: 'Attach every idea node to one next action, one blocker, and one evidence screenshot or spec link.',
+  },
+  {
+    id: 'habit',
+    title: 'Clarity Habits',
+    tag: 'ritual',
+    angle: 'practice',
+    summary:
+      'After every mission: capture the prompt, changed files, decision, reflection, visual proof, and next cut. Weekly: compress into one map.',
+    next: 'Make Build Lab generate Garden entries automatically after missions.',
+  },
+  {
+    id: 'visual-ai',
+    title: 'Graphical Intelligence',
+    tag: 'future',
+    angle: 'future',
+    summary:
+      'The long-term intelligence is not only text. AI helps choose the visual form that makes a situation easiest to understand and act on.',
+    next: 'Prototype comparison lenses: business, emotional, artistic, practical, risk, and learning.',
+  },
+  {
+    id: 'world',
+    title: 'Wellbeing Knowledge Maps',
+    tag: 'world',
+    angle: 'future',
+    summary:
+      'Education, reflection, and personal data can become living maps that help people understand pressure, repair, attention, and peace.',
+    next: 'Use the education program as the first full knowledge atlas test.',
+  },
+];
+
+const gardenRelations = [
+  ['field', 'human-loop'],
+  ['field', 'education'],
+  ['education', 'education-compass'],
+  ['education-compass', 'comic-layer'],
+  ['build-lab', 'habit'],
+  ['habit', 'visual-ai'],
+  ['gold-dots', 'info-forms'],
+  ['info-forms', 'visual-ai'],
+  ['store', 'market'],
+  ['simple-challenge', 'next-cut'],
+  ['education', 'world'],
+  ['inner-peace', 'relationship-field'],
+  ['relationship-field', 'collective-happiness'],
+];
+
+const gardenPasses = [
+  {
+    title: '1. Decompose',
+    text: 'Break the fog into nodes: idea, tension, evidence, decision, risk, next cut.',
+  },
+  {
+    title: '2. Translate',
+    text: 'Choose the right form: map, road, comic, board, constellation, comparison, or landscape.',
+  },
+  {
+    title: '3. Move',
+    text: 'End every reflection with one concrete bridge action and one way to verify it changed the field.',
+  },
+];
+
+const gardenDisplays: Array<{
+  id: GardenDisplay;
+  label: string;
+  description: string;
+}> = [
+  {
+    id: 'bubble',
+    label: 'Bubble Map',
+    description: 'Best default: a few calm idea bubbles with visible lines between them.',
+  },
+  {
+    id: 'board',
+    label: 'Board',
+    description: 'Best for decisions, specs, open questions, and practical next cuts.',
+  },
+  {
+    id: 'road',
+    label: 'Road',
+    description: 'Best for sequences: education paths, launch plans, and habit journeys.',
+  },
+  {
+    id: 'constellation',
+    label: 'Constellation',
+    description: 'Best for seeing relationships between ideas without forcing chronology.',
+  },
+  {
+    id: 'curriculum',
+    label: 'Curriculum',
+    description: 'Best for explaining a complex subject as learning routes.',
+  },
+];
+
+const sunDots = Array.from({ length: 144 }, (_, index) => {
+  const ring = Math.floor(Math.sqrt(index));
+  const angle = index * 2.399963229728653;
+  const radius = Math.min(1, Math.sqrt(index / 143));
+  return {
+    id: index,
+    x: 50 + Math.cos(angle) * radius * 43,
+    y: 50 + Math.sin(angle) * radius * 43,
+    size: 2.2 + ((index + ring) % 5) * 0.45,
+    delay: (index % 17) * 0.08,
+  };
+});
+
+const sunVoices = [
+  {
+    id: 'calm',
+    label: 'Calm',
+    text: 'I am listening. Let us make the next thought smaller, clearer, and possible.',
+    rate: 0.86,
+    pitch: 0.92,
+  },
+  {
+    id: 'story',
+    label: 'Story',
+    text: 'A field of dots becomes a sun, and the sun becomes a patient voice for the work ahead.',
+    rate: 0.78,
+    pitch: 1.02,
+  },
+  {
+    id: 'focus',
+    label: 'Focus',
+    text: 'Name the center. Find the next cut. Keep the system simple enough to move.',
+    rate: 0.94,
+    pitch: 0.86,
+  },
+];
 
 function nextId() {
   return Date.now() + Math.random();
@@ -105,6 +454,633 @@ function missionReflection(status: MissionMemory['status'], files: string[]) {
   return files.length
     ? `The run did not fully complete, but it touched ${files.length} file${files.length === 1 ? '' : 's'} that may need review.`
     : 'The run did not complete and no changed files were detected.';
+}
+
+function GardenNodeCard({
+  node,
+  index,
+  compact = false,
+}: {
+  node: GardenNode;
+  index: number;
+  compact?: boolean;
+}) {
+  return (
+    <article
+      className="relative rounded-[20px] border border-[#8f6232]/22 bg-[#fff8e8]/92 p-5 shadow-[0_18px_34px_rgba(76,45,19,0.08)]"
+      style={{ marginTop: compact ? 0 : index % 3 === 1 ? 34 : index % 3 === 2 ? 12 : 0 }}
+    >
+      <div className="mb-3 flex items-center justify-between gap-3">
+        <span className="rounded-full border border-[#b98d52]/24 px-2 py-1 text-[10px] uppercase tracking-[0.14em] text-[#8d653d]">
+          {node.tag}
+        </span>
+        <span className="h-2 w-2 rounded-full bg-[#9b3128] shadow-[0_0_14px_rgba(155,49,40,0.45)]" />
+      </div>
+      <h3 className="font-serif text-lg leading-6 text-[#3f2817]">{node.title}</h3>
+      <p className="mt-2 text-sm leading-6 text-[#5f4229]">{node.summary}</p>
+      <div className="mt-3 rounded-xl border border-[#d9b879]/35 bg-[#fffdf2]/75 p-3">
+        <p className="text-[10px] uppercase tracking-[0.14em] text-[#8d653d]">Next cut</p>
+        <p className="mt-1 text-xs leading-5 text-[#704923]">{node.next}</p>
+      </div>
+    </article>
+  );
+}
+
+function GardenOfIdeas() {
+  const [angle, setAngle] = useState<GardenAngle>('spec');
+  const [expanded, setExpanded] = useState(false);
+  const [display, setDisplay] = useState<GardenDisplay>('bubble');
+  const active = gardenAngles.find((item) => item.id === angle) ?? gardenAngles[0];
+  const activeDisplay = gardenDisplays.find((item) => item.id === display) ?? gardenDisplays[0];
+  const visibleNodes = gardenNodes.filter((node) => node.angle === angle || node.tag === 'core');
+  const primaryNodes = visibleNodes.slice(0, display === 'constellation' ? 6 : 4);
+  const activeIds = new Set(visibleNodes.map((node) => node.id));
+  const visibleRelations = gardenRelations.filter(
+    ([from, to]) => activeIds.has(from) && activeIds.has(to),
+  );
+
+  return (
+    <section
+      className={
+        expanded
+          ? 'fixed inset-3 z-50 overflow-auto rounded-[26px] border border-[#b98d52]/25 bg-[#f7e7c2] shadow-[0_30px_90px_rgba(45,25,10,0.38)] sm:inset-5'
+          : 'overflow-hidden rounded-2xl border border-[#b98d52]/20 bg-[#fff8e8]/72'
+      }
+    >
+      <div
+        className={
+          expanded
+            ? 'sticky top-0 z-10 border-b border-[#b98d52]/18 bg-[#f7e7c2]/96 p-5 backdrop-blur'
+            : 'border-b border-[#b98d52]/18 p-4'
+        }
+      >
+        <div className="flex flex-wrap items-start justify-between gap-3">
+          <div>
+            <p className="flex items-center gap-2 text-xs uppercase tracking-[0.16em] text-[#704923]">
+              <Network size={14} />
+              Garden of Ideas
+            </p>
+            <h2
+              className={
+                expanded
+                  ? 'mt-1 font-serif text-4xl text-[#3f2817]'
+                  : 'mt-1 font-serif text-2xl text-[#3f2817]'
+              }
+            >
+              Visual intelligence board
+            </h2>
+            <p className="mt-2 max-w-3xl text-sm leading-6 text-[#775638]">
+              A first map for turning Colourmap's specs, reflections, education programs, and
+              business strategy into visible relationships instead of a pile of text.
+            </p>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            <div className="rounded-full border border-[#b98d52]/25 bg-[#fffdf2]/70 px-3 py-2 text-xs text-[#704923]">
+              Spec document as test subject
+            </div>
+            <button
+              type="button"
+              onClick={() => setExpanded((value) => !value)}
+              className="rounded-full bg-[#704923] px-4 py-2 text-xs text-[#fff8e8]"
+            >
+              {expanded ? 'Close Garden' : 'Open Garden'}
+            </button>
+          </div>
+        </div>
+
+        <div
+          className={
+            expanded
+              ? 'mt-5 flex gap-2 overflow-x-auto pb-1'
+              : 'mt-4 grid gap-2 sm:grid-cols-2 lg:grid-cols-4'
+          }
+        >
+          {gardenAngles.map((item) => {
+            const Icon = item.icon;
+            const selected = item.id === angle;
+            return (
+              <button
+                key={item.id}
+                type="button"
+                onClick={() => setAngle(item.id)}
+                className={
+                  expanded
+                    ? 'flex min-w-[190px] items-start gap-2 rounded-2xl border p-3 text-left transition'
+                    : 'flex min-h-16 items-start gap-2 rounded-2xl border p-3 text-left transition'
+                }
+                style={{
+                  borderColor: selected ? '#704923' : 'rgba(112,73,38,0.16)',
+                  background: selected ? 'rgba(112,73,35,0.1)' : 'rgba(255,253,242,0.72)',
+                  color: selected ? '#3f2817' : '#704923',
+                }}
+              >
+                <Icon size={15} className="mt-0.5 shrink-0" />
+                <span>
+                  <span className="block text-xs font-medium">{item.label}</span>
+                  <span className="mt-1 block text-[11px] leading-4 text-[#8d653d]">
+                    {item.question}
+                  </span>
+                </span>
+              </button>
+            );
+          })}
+        </div>
+
+        {expanded && (
+          <div className="mt-4 flex flex-wrap items-center gap-2">
+            <span className="mr-1 text-xs uppercase tracking-[0.16em] text-[#8d653d]">Display</span>
+            {gardenDisplays.map((item) => (
+              <button
+                key={item.id}
+                type="button"
+                onClick={() => setDisplay(item.id)}
+                className="rounded-full border px-3 py-2 text-xs"
+                style={{
+                  borderColor: display === item.id ? '#704923' : 'rgba(112,73,38,0.18)',
+                  background: display === item.id ? 'rgba(112,73,35,0.1)' : '#fffdf2',
+                  color: '#704923',
+                }}
+              >
+                {item.label}
+              </button>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {!expanded && (
+        <div className="grid gap-0 xl:grid-cols-[1.35fr_0.75fr]">
+          <div className="relative min-h-[430px] border-b border-[#b98d52]/18 bg-[#fffdf2]/55 p-4 xl:border-r xl:border-b-0">
+            <div
+              className="pointer-events-none absolute inset-0 opacity-70"
+              style={{
+                backgroundImage:
+                  'linear-gradient(rgba(112,73,35,0.08) 1px, transparent 1px), linear-gradient(90deg, rgba(112,73,35,0.08) 1px, transparent 1px)',
+                backgroundSize: '42px 42px',
+              }}
+            />
+            <div className="relative grid gap-3 md:grid-cols-2">
+              {visibleNodes.slice(0, 2).map((node) => (
+                <article
+                  key={node.id}
+                  className="relative rounded-2xl border border-[#8f6232]/22 bg-[#fff8e8]/90 p-4 shadow-[0_10px_24px_rgba(76,45,19,0.08)]"
+                >
+                  <div className="mb-3 flex items-center justify-between gap-3">
+                    <span className="rounded-full border border-[#b98d52]/24 px-2 py-1 text-[10px] uppercase tracking-[0.14em] text-[#8d653d]">
+                      {node.tag}
+                    </span>
+                    <span className="h-2 w-2 rounded-full bg-[#9b3128] shadow-[0_0_14px_rgba(155,49,40,0.45)]" />
+                  </div>
+                  <h3 className="font-serif text-lg leading-6 text-[#3f2817]">{node.title}</h3>
+                  <p className="mt-2 text-sm leading-6 text-[#5f4229]">{node.summary}</p>
+                </article>
+              ))}
+            </div>
+          </div>
+
+          <aside className="space-y-4 p-4">
+            <div className="rounded-2xl border border-[#b98d52]/20 bg-[#fffdf2]/78 p-4">
+              <p className="text-xs uppercase tracking-[0.16em] text-[#704923]">
+                Active perspective
+              </p>
+              <h3 className="mt-1 font-serif text-xl text-[#3f2817]">{active.label}</h3>
+              <p className="mt-2 text-sm leading-6 text-[#775638]">{active.question}</p>
+            </div>
+            <div className="rounded-2xl border border-[#b98d52]/20 bg-[#fffdf2]/78 p-4">
+              <p className="text-xs uppercase tracking-[0.16em] text-[#704923]">
+                Open for full map
+              </p>
+              <p className="mt-2 text-sm leading-6 text-[#775638]">
+                The compact view shows the current lens. Open Garden gives the idea map a full
+                studio surface with nodes, threads, method, and next cuts separated.
+              </p>
+            </div>
+          </aside>
+        </div>
+      )}
+
+      {expanded && (
+        <div className="min-h-[calc(100vh-190px)]">
+          <div className="grid gap-4 border-b border-[#b98d52]/18 bg-[#f2dfb6]/50 p-5 lg:grid-cols-[1fr_260px_1fr]">
+            <div>
+              <p className="text-xs uppercase tracking-[0.16em] text-[#704923]">Lens question</p>
+              <h3 className="mt-1 font-serif text-2xl text-[#3f2817]">{active.label}</h3>
+              <p className="mt-2 text-sm leading-6 text-[#775638]">{active.question}</p>
+            </div>
+            <div className="rounded-2xl border border-[#b98d52]/20 bg-[#fffdf2]/72 p-4">
+              <p className="text-xs uppercase tracking-[0.16em] text-[#704923]">Display mode</p>
+              <h4 className="mt-1 font-serif text-xl text-[#3f2817]">{activeDisplay.label}</h4>
+              <p className="mt-2 text-sm leading-6 text-[#775638]">{activeDisplay.description}</p>
+            </div>
+            <div className="rounded-2xl border border-[#b98d52]/20 bg-[#fffdf2]/72 p-4">
+              <p className="text-xs uppercase tracking-[0.16em] text-[#704923]">Clarity rule</p>
+              <p className="mt-2 text-sm leading-6 text-[#775638]">
+                Show only the few nodes needed for this lens. Details can open later; the first read
+                should feel calm.
+              </p>
+            </div>
+          </div>
+
+          <div className="relative min-h-[620px] bg-[#fffdf2]/48 p-7">
+            <div
+              className="pointer-events-none absolute inset-0 opacity-70"
+              style={{
+                backgroundImage:
+                  'linear-gradient(rgba(112,73,35,0.08) 1px, transparent 1px), linear-gradient(90deg, rgba(112,73,35,0.08) 1px, transparent 1px)',
+                backgroundSize: '42px 42px',
+              }}
+            />
+            {display === 'bubble' && (
+              <div className="relative mx-auto min-h-[620px] max-w-5xl overflow-hidden rounded-[28px] border border-[#b98d52]/18 bg-[#fff8e8]/70">
+                <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_42%,rgba(255,219,139,0.45),transparent_42%)]" />
+                <svg className="absolute inset-0 h-full w-full" aria-hidden="true">
+                  {visibleRelations
+                    .filter(([from, to]) =>
+                      primaryNodes.some((node) => node.id === from || node.id === to),
+                    )
+                    .slice(0, 6)
+                    .map(([from, to], index) => {
+                      const fromIndex = Math.max(
+                        0,
+                        primaryNodes.findIndex((node) => node.id === from),
+                      );
+                      const toIndex = Math.max(
+                        0,
+                        primaryNodes.findIndex((node) => node.id === to),
+                      );
+                      const positions = [
+                        [50, 22],
+                        [25, 45],
+                        [72, 47],
+                        [44, 72],
+                        [72, 76],
+                        [18, 74],
+                      ];
+                      const [x1, y1] = positions[fromIndex] ?? positions[0];
+                      const [x2, y2] = positions[toIndex] ?? positions[1];
+                      return (
+                        <line
+                          key={`${from}-${to}-${index}`}
+                          x1={`${x1}%`}
+                          y1={`${y1}%`}
+                          x2={`${x2}%`}
+                          y2={`${y2}%`}
+                          stroke="rgba(143,73,46,0.3)"
+                          strokeWidth="1.6"
+                          strokeDasharray={index % 2 ? '5 8' : undefined}
+                        />
+                      );
+                    })}
+                </svg>
+                {primaryNodes.map((node, index) => {
+                  const positions = [
+                    [50, 22],
+                    [25, 45],
+                    [72, 47],
+                    [44, 72],
+                    [72, 76],
+                    [18, 74],
+                  ];
+                  const [x, y] = positions[index] ?? positions[0];
+                  const isCore = node.tag === 'core';
+                  return (
+                    <div
+                      key={node.id}
+                      className="absolute -translate-x-1/2 -translate-y-1/2 rounded-full border p-5 text-center shadow-[0_18px_45px_rgba(83,45,18,0.12)]"
+                      style={{
+                        left: `${x}%`,
+                        top: `${y}%`,
+                        width: isCore ? 255 : 220,
+                        minHeight: isCore ? 255 : 220,
+                        borderColor: isCore ? 'rgba(112,73,35,0.38)' : 'rgba(185,141,82,0.3)',
+                        background: isCore
+                          ? 'radial-gradient(circle at 38% 32%, rgba(255,220,139,0.98), rgba(255,248,232,0.94))'
+                          : 'rgba(255,253,242,0.9)',
+                      }}
+                    >
+                      <div className="mx-auto mb-3 h-3 w-3 rounded-full bg-[#9b3128] shadow-[0_0_18px_rgba(155,49,40,0.45)]" />
+                      <p className="text-[10px] uppercase tracking-[0.14em] text-[#8d653d]">
+                        {node.tag}
+                      </p>
+                      <h3 className="mt-2 font-serif text-lg leading-6 text-[#3f2817]">
+                        {node.title}
+                      </h3>
+                      <p className="mt-2 line-clamp-4 text-xs leading-5 text-[#775638]">
+                        {node.summary}
+                      </p>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+
+            {display === 'board' && (
+              <div className="relative mx-auto grid max-w-5xl auto-rows-min gap-5 md:grid-cols-2">
+                {primaryNodes.map((node, index) => (
+                  <GardenNodeCard key={node.id} node={node} index={index} />
+                ))}
+              </div>
+            )}
+
+            {display === 'road' && (
+              <div className="relative mx-auto flex max-w-4xl flex-col gap-5">
+                <div className="absolute top-8 bottom-8 left-6 w-px bg-[#9b3128]/30 md:left-1/2" />
+                {primaryNodes.map((node, index) => (
+                  <div
+                    key={node.id}
+                    className={`relative flex ${index % 2 ? 'md:justify-end' : 'md:justify-start'}`}
+                  >
+                    <div className="absolute top-6 left-4 h-4 w-4 rounded-full border-2 border-[#f7e7c2] bg-[#9b3128] shadow-[0_0_18px_rgba(155,49,40,0.35)] md:left-1/2 md:-translate-x-1/2" />
+                    <div className="ml-12 w-[calc(100%-3rem)] md:ml-0 md:w-[44%]">
+                      <GardenNodeCard node={node} index={index} compact />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {display === 'constellation' && (
+              <div className="relative mx-auto min-h-[620px] max-w-5xl overflow-hidden rounded-[24px] border border-[#b98d52]/18 bg-[#2a140a]">
+                <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_45%,rgba(255,196,74,0.18),transparent_38%)]" />
+                {visibleRelations
+                  .filter(([from, to]) =>
+                    primaryNodes.some((node) => node.id === from || node.id === to),
+                  )
+                  .slice(0, 5)
+                  .map(([from, to], index) => {
+                    const fromIndex = Math.max(
+                      0,
+                      primaryNodes.findIndex((node) => node.id === from),
+                    );
+                    const toIndex = Math.max(
+                      0,
+                      primaryNodes.findIndex((node) => node.id === to),
+                    );
+                    const x1 = 18 + ((fromIndex * 29) % 66);
+                    const y1 = 22 + ((fromIndex * 37) % 52);
+                    const x2 = 18 + ((toIndex * 29) % 66);
+                    const y2 = 22 + ((toIndex * 37) % 52);
+                    return (
+                      <svg
+                        key={`${from}-${to}-${index}`}
+                        className="absolute inset-0 h-full w-full"
+                        aria-hidden="true"
+                      >
+                        <line
+                          x1={`${x1}%`}
+                          y1={`${y1}%`}
+                          x2={`${x2}%`}
+                          y2={`${y2}%`}
+                          stroke="rgba(255,122,68,0.34)"
+                          strokeWidth="1.4"
+                        />
+                      </svg>
+                    );
+                  })}
+                {primaryNodes.map((node, index) => {
+                  const x = 18 + ((index * 29) % 66);
+                  const y = 22 + ((index * 37) % 52);
+                  return (
+                    <div
+                      key={node.id}
+                      className="absolute max-w-[230px] -translate-x-1/2 -translate-y-1/2 rounded-2xl border border-[#ffd36c]/20 bg-[#1a0d07]/82 p-4 text-[#ffe2a5] shadow-[0_0_28px_rgba(255,137,47,0.18)]"
+                      style={{ left: `${x}%`, top: `${y}%` }}
+                    >
+                      <p className="text-[10px] uppercase tracking-[0.14em] text-[#ffb766]">
+                        {node.tag}
+                      </p>
+                      <h3 className="mt-1 font-serif text-base leading-5">{node.title}</h3>
+                      <p className="mt-2 line-clamp-3 text-xs leading-5 text-[#ffdca0]/82">
+                        {node.summary}
+                      </p>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+
+            {display === 'curriculum' && (
+              <div className="relative mx-auto grid max-w-6xl gap-4 lg:grid-cols-5">
+                {['Notice', 'Understand', 'Stabilize', 'Act', 'Connect'].map((route, index) => (
+                  <div
+                    key={route}
+                    className="min-h-[360px] rounded-[22px] border border-[#8f6232]/20 bg-[#fff8e8]/86 p-4"
+                  >
+                    <div className="mb-4 flex h-11 w-11 items-center justify-center rounded-full bg-[#704923] text-sm text-[#fff8e8]">
+                      {index + 1}
+                    </div>
+                    <h3 className="font-serif text-xl text-[#3f2817]">{route}</h3>
+                    <p className="mt-2 text-xs leading-5 text-[#775638]">
+                      {route === 'Notice'
+                        ? 'Name the field and see the pressure before becoming it.'
+                        : route === 'Understand'
+                          ? 'Find the repeated valley, loop, or hidden tension.'
+                          : route === 'Stabilize'
+                            ? 'Regulate enough that reflection becomes possible.'
+                            : route === 'Act'
+                              ? 'Choose the smallest bridge action that changes the field.'
+                              : 'Turn clarity into kinder communication and shared repair.'}
+                    </p>
+                    <div className="mt-5 space-y-3">
+                      {primaryNodes
+                        .filter((_, nodeIndex) => nodeIndex % 5 === index)
+                        .map((node) => (
+                          <div
+                            key={node.id}
+                            className="rounded-2xl border border-[#b98d52]/20 bg-[#fffdf2]/78 p-3"
+                          >
+                            <p className="text-xs font-medium leading-5 text-[#3f2817]">
+                              {node.title}
+                            </p>
+                            <p className="mt-1 text-[11px] leading-4 text-[#8d653d]">{node.tag}</p>
+                          </div>
+                        ))}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            <div className="relative mx-auto mt-6 max-w-5xl rounded-2xl border border-[#b98d52]/20 bg-[#fffdf2]/78 p-4">
+              <div className="flex flex-wrap items-center justify-between gap-3">
+                <p className="text-xs uppercase tracking-[0.16em] text-[#704923]">
+                  Hidden until useful
+                </p>
+                <p className="text-xs text-[#8d653d]">
+                  {visibleNodes.length - primaryNodes.length > 0
+                    ? `${visibleNodes.length - primaryNodes.length} more nodes available later`
+                    : 'All nodes for this lens are visible'}
+                </p>
+              </div>
+              <div className="mt-3 grid gap-3 md:grid-cols-3">
+                {gardenPasses.map((pass) => (
+                  <div key={pass.title} className="border-l border-[#9b3128]/35 pl-3">
+                    <p className="text-sm font-medium text-[#3f2817]">{pass.title}</p>
+                    <p className="mt-1 text-xs leading-5 text-[#775638]">{pass.text}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+    </section>
+  );
+}
+
+function SunDialoguePrototype() {
+  const [note, setNote] = useState('');
+  const [voiceId, setVoiceId] = useState(sunVoices[0].id);
+  const [speaking, setSpeaking] = useState(false);
+  const speech = useSpeechToText({ lang: 'en-US' });
+  const activeVoice = sunVoices.find((voice) => voice.id === voiceId) ?? sunVoices[0];
+
+  function toggleListening() {
+    speech.resetError();
+    if (speech.listening) {
+      speech.stop();
+    } else {
+      speech.start(note, setNote);
+    }
+  }
+
+  function speakFromSun() {
+    if (typeof window === 'undefined' || !('speechSynthesis' in window)) return;
+    window.speechSynthesis.cancel();
+    const utterance = new SpeechSynthesisUtterance(activeVoice.text);
+    utterance.rate = activeVoice.rate;
+    utterance.pitch = activeVoice.pitch;
+    utterance.onstart = () => setSpeaking(true);
+    utterance.onend = () => setSpeaking(false);
+    utterance.onerror = () => setSpeaking(false);
+    window.speechSynthesis.speak(utterance);
+  }
+
+  const active = speech.listening || speaking;
+
+  return (
+    <section
+      className="overflow-hidden rounded-2xl border border-[#b98d52]/20 p-4"
+      style={{
+        background:
+          'radial-gradient(circle at 28% 34%, rgba(255,178,65,0.28), transparent 34%), linear-gradient(135deg, rgba(255,248,224,0.9), rgba(89,44,21,0.16))',
+      }}
+    >
+      <div className="grid gap-5 lg:grid-cols-[0.78fr_1fr]">
+        <div className="relative flex min-h-[280px] items-center justify-center rounded-2xl border border-[#8f6232]/18 bg-[#2a140a]">
+          <div
+            className="absolute inset-0 opacity-70"
+            style={{
+              background:
+                'radial-gradient(circle at center, rgba(255,196,74,0.26), transparent 42%), radial-gradient(circle at 38% 34%, rgba(255,95,31,0.22), transparent 24%)',
+            }}
+          />
+          <div
+            className="relative h-60 w-60 rounded-full"
+            style={{
+              filter: active
+                ? 'drop-shadow(0 0 34px rgba(255,138,34,0.8))'
+                : 'drop-shadow(0 0 20px rgba(255,138,34,0.38))',
+              transform: active ? 'scale(1.04)' : 'scale(1)',
+              transition: 'transform 220ms ease, filter 220ms ease',
+            }}
+          >
+            {sunDots.map((dot) => (
+              <span
+                key={dot.id}
+                className="absolute rounded-full"
+                style={{
+                  left: `${dot.x}%`,
+                  top: `${dot.y}%`,
+                  width: `${dot.size}px`,
+                  height: `${dot.size}px`,
+                  background:
+                    dot.id % 3 === 0 ? '#ff7a24' : dot.id % 3 === 1 ? '#ffd36c' : '#ffad36',
+                  boxShadow: active
+                    ? '0 0 18px rgba(255,166,49,0.95)'
+                    : '0 0 10px rgba(255,166,49,0.48)',
+                  opacity: active ? 0.94 : 0.68,
+                  transform: `translate(-50%, -50%) scale(${active ? 1.18 : 1})`,
+                  transitionDelay: `${dot.delay * 10}ms`,
+                  transition: 'opacity 260ms ease, transform 260ms ease, box-shadow 260ms ease',
+                }}
+              />
+            ))}
+            <div className="absolute inset-[34%] rounded-full bg-[#ff9a28] shadow-[0_0_48px_rgba(255,129,31,0.82)]" />
+          </div>
+          <div className="absolute bottom-4 left-4 right-4 flex items-center justify-between rounded-full border border-[#ffd36c]/20 bg-[#1a0d07]/72 px-3 py-2 text-xs text-[#ffd99a]">
+            <span>{speech.listening ? 'listening' : speaking ? 'speaking' : 'waiting'}</span>
+            <span>{sunDots.length} dots</span>
+          </div>
+        </div>
+
+        <div className="flex flex-col justify-between gap-4">
+          <div>
+            <p className="flex items-center gap-2 text-xs uppercase tracking-[0.16em] text-[#704923]">
+              <Sparkles size={14} />
+              Sun Dialogue
+            </p>
+            <h2 className="mt-1 font-serif text-2xl text-[#3f2817]">Talk to the visual system</h2>
+            <p className="mt-2 text-sm leading-6 text-[#775638]">
+              First prototype for a future computer presence: you speak, the dot sun glows and
+              records words; the program can answer with a browser voice and movement.
+            </p>
+          </div>
+
+          <textarea
+            value={note}
+            onChange={(event) => setNote(event.target.value)}
+            placeholder="Speak to the sun or type a thought..."
+            className="min-h-28 w-full resize-y rounded-2xl border border-[#b98d52]/25 bg-[#fffdf2] p-3 text-sm leading-6 text-[#3f2817] outline-none focus:border-[#8f6232]"
+          />
+
+          <div className="flex flex-wrap gap-2">
+            {sunVoices.map((voice) => (
+              <button
+                key={voice.id}
+                type="button"
+                onClick={() => setVoiceId(voice.id)}
+                className="rounded-full border px-3 py-2 text-xs"
+                style={{
+                  borderColor: voice.id === voiceId ? '#704923' : 'rgba(112,73,38,0.18)',
+                  background: voice.id === voiceId ? 'rgba(112,73,35,0.1)' : '#fffdf2',
+                  color: '#704923',
+                }}
+              >
+                {voice.label}
+              </button>
+            ))}
+          </div>
+
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <button
+              type="button"
+              onClick={toggleListening}
+              disabled={!speech.supported}
+              className="inline-flex items-center gap-2 rounded-full border border-[#8f6232]/25 px-4 py-2 text-sm text-[#704923] disabled:opacity-45"
+            >
+              {speech.listening ? <MicOff size={15} /> : <Mic size={15} />}
+              {speech.listening ? 'Stop listening' : 'Speak to sun'}
+            </button>
+            <button
+              type="button"
+              onClick={speakFromSun}
+              className="rounded-full bg-[#704923] px-4 py-2 text-sm text-[#fff8e8]"
+            >
+              Let sun answer
+            </button>
+          </div>
+
+          <p className="text-xs leading-5 text-[#8d653d]">
+            {speech.error ||
+              (speech.supported
+                ? 'Long term this becomes AI voice, stories, emotional reflection, and geometry that reacts to speech rhythm.'
+                : 'This browser does not expose speech recognition. Typing and speech synthesis can still be used.')}
+          </p>
+        </div>
+      </div>
+    </section>
+  );
 }
 
 export default function BuildLab() {
@@ -593,6 +1569,10 @@ export default function BuildLab() {
                 </div>
               )}
             </div>
+
+            <GardenOfIdeas />
+
+            <SunDialoguePrototype />
 
             <div className="grid gap-4 xl:grid-cols-[1.1fr_0.9fr]">
               <section className="rounded-2xl border border-[#2b2118]/15 bg-[#24180f] p-4 text-[#f8e8bd]">
