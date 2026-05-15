@@ -50,6 +50,90 @@
       "when": 1775200000000,
       "tag": "0006_add_emotion_fields",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1775200000001,
+      "tag": "0007_add_checkin_cpc_fields",
+      "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1775200000002,
+      "tag": "0008_add_objectives_agenda_categories_outings",
+      "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1775200000003,
+      "tag": "0009_add_circle_decisions",
+      "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1775200000004,
+      "tag": "0010_add_designer_observations",
+      "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "7",
+      "when": 1775200000005,
+      "tag": "0011_add_desires",
+      "breakpoints": true
+    },
+    {
+      "idx": 12,
+      "version": "7",
+      "when": 1775200000006,
+      "tag": "0012_add_chat",
+      "breakpoints": true
+    },
+    {
+      "idx": 13,
+      "version": "7",
+      "when": 1775200000007,
+      "tag": "0013_add_recordings",
+      "breakpoints": true
+    },
+    {
+      "idx": 14,
+      "version": "7",
+      "when": 1775200000008,
+      "tag": "0014_add_obs_done",
+      "breakpoints": true
+    },
+    {
+      "idx": 15,
+      "version": "7",
+      "when": 1775200000009,
+      "tag": "0015_add_user_id_indexes",
+      "breakpoints": true
+    },
+    {
+      "idx": 16,
+      "version": "7",
+      "when": 1775200000010,
+      "tag": "0016_add_rls",
+      "breakpoints": true
+    },
+    {
+      "idx": 17,
+      "version": "7",
+      "when": 1775200000011,
+      "tag": "0017_recordings_storage_bucket",
+      "breakpoints": true
+    },
+    {
+      "idx": 18,
+      "version": "7",
+      "when": 1775200000012,
+      "tag": "0018_day_sync_tables",
+      "breakpoints": true
     }
   ]
 }

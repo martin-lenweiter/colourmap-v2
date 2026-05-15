@@ -37,7 +37,7 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
 }
 
 export async function POST(request: Request, { params }: { params: Promise<{ id: string }> }) {
-  return withAuthenticatedUser(async () => {
+  return withAuthenticatedUser(async (user) => {
     const { id } = await params;
 
     const bodyResult = await parseJsonBody(request);
@@ -47,9 +47,13 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
 
     try {
       const result = await mutateSectionTracker(
+        user.id,
         id,
         normalizeSectionTrackerMutationInput(bodyResult.value),
       );
+      if (!result) {
+        return jsonError('Not found', 404);
+      }
       if ('deleted' in result) {
         return NextResponse.json({ ok: result.deleted });
       }

@@ -5,6 +5,7 @@ import {
   deleteSection,
   deleteTracker,
   getEntriesForDate,
+  getSection,
   getSectionsWithTrackers,
   insertSection,
   insertTracker,
@@ -156,13 +157,22 @@ export async function renameSection(userId: string, sectionId: string, name: str
   return updated ?? null;
 }
 
-export async function mutateSectionTracker(sectionId: string, input: SectionTrackerMutationInput) {
+export async function mutateSectionTracker(
+  userId: string,
+  sectionId: string,
+  input: SectionTrackerMutationInput,
+) {
+  const db = getDb();
+
   if (input.action === 'delete') {
-    const deleted = await deleteTracker(getDb(), input.deleteTrackerId);
+    const deleted = await deleteTracker(db, userId, input.deleteTrackerId);
     return { deleted };
   }
 
-  const tracker = await insertTracker(getDb(), {
+  const section = await getSection(db, userId, sectionId);
+  if (!section) return null;
+
+  const tracker = await insertTracker(db, {
     sectionId,
     label: input.label,
     type: input.type,

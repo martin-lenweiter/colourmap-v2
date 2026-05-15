@@ -83,7 +83,38 @@ against Supabase.
 
 ---
 
-### 6. GitHub secret scanning  _(manual — 30 seconds)_
+### ✅ 6. Server ownership checks for production data isolation
+**Risk:** Server API routes use Drizzle through `DATABASE_URL`. In Supabase
+deployments this connection can be more privileged than the browser client
+and should not be treated as protected by RLS alone. Every server route that
+reads or mutates user-owned data must enforce ownership in the query/service
+layer before returning data or applying changes.
+
+**Fix:** Hardened the server-side ownership boundary for the production-ready
+surfaces touched by this audit:
+- Section tracker mutations now verify the parent section belongs to the
+  signed-in user before add/update/delete.
+- Circle read endpoints for missions, notes, sessions, and decisions now
+  require circle membership before reading.
+- The Field aggregate only includes the signed-in user's check-ins.
+
+**Done:** PR `#153`
+
+---
+
+### ✅ 7. Idempotent day sync migration
+**Risk:** Production Supabase projects may have migrations applied manually or
+partially while the app is being prepared for launch. A non-idempotent catch-all
+sync migration can fail on rerun and block deployment verification.
+
+**Fix:** `0018_day_sync_tables.sql` now uses idempotent table, index, and policy
+creation so it can be safely applied during production setup verification.
+
+**Done:** PR `#153`
+
+---
+
+### 8. GitHub secret scanning  _(manual — 30 seconds)_
 **Risk:** If a developer accidentally commits an API key or password,
 it goes to the public repo undetected.
 

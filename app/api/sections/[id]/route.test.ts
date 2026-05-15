@@ -100,7 +100,16 @@ describe('section detail route', () => {
     expect(response.status).toBe(201);
     await expect(response.json()).resolves.toEqual({ id: 'tracker-1', label: 'Energy' });
     expect(normalizeSectionTrackerMutationInput).toHaveBeenCalledWith(body);
-    expect(mutateSectionTracker).toHaveBeenCalledWith('section-1', body);
+    expect(mutateSectionTracker).toHaveBeenCalledWith('user-1', 'section-1', body);
+  });
+
+  it('returns 404 when creating a tracker for a missing section', async () => {
+    mutateSectionTracker.mockResolvedValue(null);
+
+    const response = await POST(makePostRequest({ label: 'Energy', type: 'scale' }), { params });
+
+    expect(response.status).toBe(404);
+    await expect(response.json()).resolves.toEqual({ error: 'Not found' });
   });
 
   it('deletes a section', async () => {

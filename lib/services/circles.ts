@@ -272,15 +272,28 @@ export async function endSession(
   return endCircleSession(db, sessionId, summary);
 }
 
-export async function listCircleMissions(circleId: string): Promise<CircleMission[]> {
+export async function listCircleMissions(
+  userId: string,
+  circleId: string,
+): Promise<CircleMission[]> {
+  await requireMembership(userId, circleId);
   return getCircleMissions(getDb(), circleId);
 }
 
-export async function listCircleNotes(circleId: string, limit?: number): Promise<CircleNote[]> {
+export async function listCircleNotes(
+  userId: string,
+  circleId: string,
+  limit?: number,
+): Promise<CircleNote[]> {
+  await requireMembership(userId, circleId);
   return getCircleNotes(getDb(), circleId, limit);
 }
 
-export async function getActiveCircleSession(circleId: string): Promise<CircleSession | null> {
+export async function getActiveCircleSession(
+  userId: string,
+  circleId: string,
+): Promise<CircleSession | null> {
+  await requireMembership(userId, circleId);
   return getActiveSession(getDb(), circleId);
 }
 
@@ -293,7 +306,11 @@ export interface DecisionWithVotes extends CircleDecision {
   votes: CircleDecisionVote[];
 }
 
-export async function listCircleDecisions(circleId: string): Promise<DecisionWithVotes[]> {
+export async function listCircleDecisions(
+  userId: string,
+  circleId: string,
+): Promise<DecisionWithVotes[]> {
+  await requireMembership(userId, circleId);
   const db = getDb();
   const decisions = await getCircleDecisions(db, circleId);
   if (decisions.length === 0) return [];

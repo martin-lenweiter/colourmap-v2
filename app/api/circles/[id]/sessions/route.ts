@@ -9,10 +9,17 @@ import {
 } from '@/lib/services/circles';
 
 export async function GET(_request: Request, { params }: { params: Promise<{ id: string }> }) {
-  return withAuthenticatedUser(async (_user) => {
+  return withAuthenticatedUser(async (user) => {
     const { id } = await params;
-    const session = await getActiveCircleSession(id);
-    return NextResponse.json(session);
+    try {
+      const session = await getActiveCircleSession(user.id, id);
+      return NextResponse.json(session);
+    } catch (error) {
+      if (error instanceof CircleValidationError) {
+        return jsonError(error.message, 400);
+      }
+      throw error;
+    }
   });
 }
 

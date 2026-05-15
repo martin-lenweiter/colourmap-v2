@@ -4,6 +4,7 @@ const {
   deleteSection,
   deleteTracker,
   getEntriesForDate,
+  getSection,
   getSectionsWithTrackers,
   insertSection,
   insertTracker,
@@ -12,6 +13,7 @@ const {
   deleteSection: vi.fn(),
   deleteTracker: vi.fn(),
   getEntriesForDate: vi.fn(),
+  getSection: vi.fn(),
   getSectionsWithTrackers: vi.fn(),
   insertSection: vi.fn(),
   insertTracker: vi.fn(),
@@ -32,6 +34,7 @@ vi.mock('@/lib/db/queries/cockpit-sections', () => ({
   deleteSection,
   deleteTracker,
   getEntriesForDate,
+  getSection,
   getSectionsWithTrackers,
   insertSection,
   insertTracker,
@@ -57,6 +60,7 @@ describe('sections service', () => {
     getDb.mockClear();
     getSectionsWithTrackers.mockReset();
     getEntriesForDate.mockReset();
+    getSection.mockReset();
     insertSection.mockReset();
     insertTracker.mockReset();
     deleteTracker.mockReset();
@@ -161,15 +165,37 @@ describe('sections service', () => {
   });
 
   it('creates and deletes trackers', async () => {
+    getSection.mockResolvedValue({ id: 'section-1', userId: 'user-1', name: 'Focus' });
     insertTracker.mockResolvedValue({ id: 'tracker-1' });
     deleteTracker.mockResolvedValue(true);
 
     await expect(
-      mutateSectionTracker('section-1', { action: 'create', label: 'Energy', type: 'scale' }),
+      mutateSectionTracker('user-1', 'section-1', {
+        action: 'create',
+        label: 'Energy',
+        type: 'scale',
+      }),
     ).resolves.toEqual({ tracker: { id: 'tracker-1' } });
     await expect(
-      mutateSectionTracker('section-1', { action: 'delete', deleteTrackerId: 'tracker-1' }),
+      mutateSectionTracker('user-1', 'section-1', {
+        action: 'delete',
+        deleteTrackerId: 'tracker-1',
+      }),
     ).resolves.toEqual({ deleted: true });
+    expect(deleteTracker).toHaveBeenCalledWith({ update }, 'user-1', 'tracker-1');
+  });
+
+  it('returns null when creating a tracker for a missing section', async () => {
+    getSection.mockResolvedValue(null);
+
+    await expect(
+      mutateSectionTracker('user-1', 'section-1', {
+        action: 'create',
+        label: 'Energy',
+        type: 'scale',
+      }),
+    ).resolves.toBeNull();
+    expect(insertTracker).not.toHaveBeenCalled();
   });
 
   it('removes sections and records entries', async () => {

@@ -16,7 +16,7 @@
 -- inserts never need to specify user_id — the JWT fills it automatically.
 -- RLS enforces owner-only access at the database level.
 
-CREATE TABLE day_events (
+CREATE TABLE IF NOT EXISTS day_events (
   id          UUID        PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id     UUID        NOT NULL    DEFAULT auth.uid(),
   date        DATE        NOT NULL    DEFAULT CURRENT_DATE,
@@ -25,7 +25,7 @@ CREATE TABLE day_events (
   created_at  TIMESTAMPTZ NOT NULL    DEFAULT NOW()
 );
 
-CREATE TABLE user_prefs (
+CREATE TABLE IF NOT EXISTS user_prefs (
   user_id     UUID        NOT NULL    DEFAULT auth.uid(),
   key         TEXT        NOT NULL,
   value       JSONB       NOT NULL,
@@ -33,17 +33,31 @@ CREATE TABLE user_prefs (
   PRIMARY KEY (user_id, key)
 );
 
-CREATE INDEX day_events_user_date_idx ON day_events (user_id, date);
+CREATE INDEX IF NOT EXISTS day_events_user_date_idx ON day_events (user_id, date);
 
 ALTER TABLE day_events  ENABLE ROW LEVEL SECURITY;
 ALTER TABLE user_prefs  ENABLE ROW LEVEL SECURITY;
 
-CREATE POLICY "owner" ON day_events
-  FOR ALL
-  USING      (user_id = auth.uid())
-  WITH CHECK (user_id = auth.uid());
+DO $$ BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_policies
+    WHERE schemaname = 'public' AND tablename = 'day_events' AND policyname = 'owner'
+  ) THEN
+    CREATE POLICY "owner" ON day_events
+      FOR ALL
+      USING      (user_id = auth.uid())
+      WITH CHECK (user_id = auth.uid());
+  END IF;
+END $$;
 
-CREATE POLICY "owner" ON user_prefs
-  FOR ALL
-  USING      (user_id = auth.uid())
-  WITH CHECK (user_id = auth.uid());
+DO $$ BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_policies
+    WHERE schemaname = 'public' AND tablename = 'user_prefs' AND policyname = 'owner'
+  ) THEN
+    CREATE POLICY "owner" ON user_prefs
+      FOR ALL
+      USING      (user_id = auth.uid())
+      WITH CHECK (user_id = auth.uid());
+  END IF;
+END $$;
