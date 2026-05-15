@@ -22,7 +22,7 @@ export function getCodexCliCommand(
   fileExists: (filePath: string) => boolean = existsSync,
 ): CliCommand {
   if (platform === 'win32' && env.APPDATA) {
-    const scriptPath = path.join(
+    const scriptPath = path.win32.join(
       env.APPDATA,
       'npm',
       'node_modules',
