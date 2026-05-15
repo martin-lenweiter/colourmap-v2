@@ -20,6 +20,7 @@ import {
   SquareTerminal,
 } from 'lucide-react';
 import Link from 'next/link';
+import type { CSSProperties } from 'react';
 import { useEffect, useMemo, useRef, useState } from 'react';
 
 import { useSpeechToText } from '@/lib/hooks/use-speech-to-text';
@@ -580,21 +581,45 @@ const gardenPastels: Record<GardenAngle, { bg: string; border: string; accent: s
   future: { bg: 'rgba(223,241,248,0.72)', border: 'rgba(73,134,156,0.2)', accent: '#527f91' },
 };
 
-const sunDots = Array.from({ length: 220 }, (_, index) => {
-  const ring = Math.floor(Math.sqrt(index));
+const sunDots = Array.from({ length: 280 }, (_, index) => {
+  const field = index / 279;
   const angle = index * 2.399963229728653;
-  const radius = Math.min(1, Math.sqrt(index / 219));
-  const x = 50 + Math.cos(angle) * radius * 43;
-  const y = 50 + Math.sin(angle) * radius * 43;
-  const size = 1.8 + (1 - radius) * 3.1 + ((index + ring) % 4) * 0.28;
-  const heat = 1 - radius;
+  const radius = Math.min(1.12, Math.sqrt(field) * (0.83 + ((index * 13) % 17) / 100));
+  const x = 50 + Math.cos(angle) * radius * 39;
+  const y = 50 + Math.sin(angle) * radius * 39;
+  const size = 1.35 + (1 - Math.min(radius, 1)) * 1.85 + (index % 5) * 0.12;
+  const heat = 1 - Math.min(radius, 1);
+  const flow = 2.2 + radius * 9.5;
+  const sway = 0.72 + ((index * 7) % 11) * 0.18;
+  const tangent = angle + Math.PI / 2;
   return {
     id: index,
     x: x.toFixed(3),
     y: y.toFixed(3),
     size: size.toFixed(3),
-    delay: ((index % 17) * 0.08).toFixed(3),
+    delay: ((index % 37) * 0.19).toFixed(3),
+    duration: (5.8 + (index % 13) * 0.42 + radius * 2.4).toFixed(3),
+    flowAx: (Math.cos(tangent) * flow * sway).toFixed(3),
+    flowAy: (Math.sin(tangent) * flow * sway).toFixed(3),
+    flowBx: (Math.cos(angle + 1.7) * flow * 0.55).toFixed(3),
+    flowBy: (Math.sin(angle + 1.7) * flow * 0.55).toFixed(3),
+    flowCx: (Math.cos(tangent + 2.2) * flow * 0.78).toFixed(3),
+    flowCy: (Math.sin(tangent + 2.2) * flow * 0.78).toFixed(3),
+    glint: index % 19 === 0 || index % 31 === 0,
     heat: Number(heat.toFixed(3)),
+  };
+});
+
+const sunGlints = Array.from({ length: 34 }, (_, index) => {
+  const angle = index * 2.399963229728653 + 0.42;
+  const radius = 0.56 + ((index * 17) % 41) / 100;
+  return {
+    id: index,
+    x: (50 + Math.cos(angle) * radius * 44).toFixed(3),
+    y: (50 + Math.sin(angle) * radius * 44).toFixed(3),
+    size: (1.2 + (index % 4) * 0.45).toFixed(3),
+    delay: ((index % 11) * 0.34).toFixed(3),
+    duration: (2.8 + (index % 7) * 0.36).toFixed(3),
   };
 });
 
@@ -639,7 +664,7 @@ function SunPresence({
       : livingText;
   const energy = active ? 1 : Math.min(0.72, 0.28 + livingText.trim().length / 220);
   const sunSize = compact ? 'h-32 w-32' : 'h-56 w-56';
-  const dotLimit = compact ? 150 : sunDots.length;
+  const dotLimit = compact ? 190 : sunDots.length;
 
   return (
     <div
@@ -665,7 +690,7 @@ function SunPresence({
         }
       >
         <div
-          className={`relative ${sunSize} rounded-full`}
+          className={`build-lab-sun-field relative ${sunSize} rounded-full`}
           style={{
             filter: active
               ? 'drop-shadow(0 0 34px rgba(255,138,34,0.8))'
@@ -677,32 +702,67 @@ function SunPresence({
             animation: active ? 'build-lab-sun-breathe 1.8s ease-in-out infinite' : 'none',
           }}
         >
+          <span
+            className="build-lab-sun-corona absolute inset-[7%] rounded-full"
+            style={{ opacity: active ? 1 : 0.54 }}
+          />
+          <span
+            className="build-lab-sun-wave absolute inset-[15%] rounded-full"
+            style={{ opacity: active ? 1 : 0.28 }}
+          />
           {sunDots.slice(0, dotLimit).map((dot) => {
             const color = dot.heat > 0.66 ? '#ffd86b' : dot.heat > 0.34 ? '#ffc044' : '#f59d2d';
-            const lift = active ? Math.sin((dot.id % 19) + energy * 3) * (compact ? 3 : 5) : 0;
+            const flowScale = active ? 1.12 : speaking ? 0.96 : 0.62 + energy * 0.28;
+            const baseScale = active
+              ? (0.92 + dot.heat * 0.38).toFixed(3)
+              : (0.72 + energy * 0.22 + dot.heat * 0.1).toFixed(3);
             return (
               <span
                 key={dot.id}
-                className="absolute rounded-full"
-                style={{
-                  left: `${dot.x}%`,
-                  top: `${dot.y}%`,
-                  width: `${dot.size}px`,
-                  height: `${dot.size}px`,
-                  background: color,
-                  boxShadow: active
-                    ? `0 0 ${(14 + dot.heat * 16).toFixed(2)}px rgba(255,188,63,0.92)`
-                    : `0 0 ${(7 + dot.heat * 8).toFixed(2)}px rgba(255,176,55,0.48)`,
-                  opacity: active ? '0.94' : (0.52 + dot.heat * 0.24 + energy * 0.16).toFixed(3),
-                  transform: `translate(-50%, calc(-50% + ${lift.toFixed(2)}px)) scale(${
-                    active ? (1.08 + dot.heat * 0.22).toFixed(3) : (0.92 + energy * 0.1).toFixed(3)
-                  })`,
-                  transitionDelay: `${(Number(dot.delay) * 10).toFixed(1)}ms`,
-                  transition: 'opacity 260ms ease, transform 260ms ease, box-shadow 260ms ease',
-                }}
+                className={`build-lab-sun-dot absolute rounded-full ${
+                  active ? 'build-lab-sun-dot-active' : ''
+                } ${dot.glint ? 'build-lab-sun-dot-glint' : ''}`}
+                style={
+                  {
+                    left: `${dot.x}%`,
+                    top: `${dot.y}%`,
+                    '--dot-size': `${dot.size}px`,
+                    '--dot-color': color,
+                    '--dot-shadow': active
+                      ? `${(11 + dot.heat * 18).toFixed(2)}px rgba(255,188,63,0.88)`
+                      : `${(5 + dot.heat * 9).toFixed(2)}px rgba(255,176,55,0.5)`,
+                    '--dot-opacity': active
+                      ? (0.74 + dot.heat * 0.22).toFixed(3)
+                      : (0.38 + dot.heat * 0.2 + energy * 0.18).toFixed(3),
+                    '--base-scale': baseScale,
+                    '--flow-duration': `${dot.duration}s`,
+                    '--flow-delay': `-${dot.delay}s`,
+                    '--flow-a-x': `${Number(dot.flowAx) * flowScale}px`,
+                    '--flow-a-y': `${Number(dot.flowAy) * flowScale}px`,
+                    '--flow-b-x': `${Number(dot.flowBx) * flowScale}px`,
+                    '--flow-b-y': `${Number(dot.flowBy) * flowScale}px`,
+                    '--flow-c-x': `${Number(dot.flowCx) * flowScale}px`,
+                    '--flow-c-y': `${Number(dot.flowCy) * flowScale}px`,
+                  } as CSSProperties
+                }
               />
             );
           })}
+          {sunGlints.slice(0, compact ? 18 : sunGlints.length).map((glint) => (
+            <span
+              key={`glint-${glint.id}`}
+              className="build-lab-sun-glint absolute rounded-full"
+              style={{
+                left: `${glint.x}%`,
+                top: `${glint.y}%`,
+                width: `${glint.size}px`,
+                height: `${glint.size}px`,
+                animationDelay: `-${glint.delay}s`,
+                animationDuration: `${glint.duration}s`,
+                opacity: active ? 0.9 : 0.46,
+              }}
+            />
+          ))}
         </div>
         <div className="relative w-full rounded-2xl border border-[#ffd36c]/22 bg-[#130905]/72 p-3 shadow-[0_0_34px_rgba(255,166,49,0.12)]">
           <div className="pointer-events-none absolute inset-0 opacity-35">
@@ -745,6 +805,34 @@ function SunPresence({
 
 function nextId() {
   return Date.now() + Math.random();
+}
+
+function estimateMission(prompt: string) {
+  const text = prompt.toLowerCase();
+  let score = 0;
+  if (text.length > 180) score += 1;
+  if (text.length > 420) score += 1;
+  if (/\b(api|backend|supabase|database|auth|migration|queue|stream|agent|tests?)\b/.test(text))
+    score += 1;
+  if (/\b(refactor|architecture|deep|multiple|all|system|music|geometry|voice)\b/.test(text))
+    score += 1;
+  if (/\b(fix|button|copy|text|small|simple|move|label)\b/.test(text)) score -= 1;
+
+  const difficulty = score <= 0 ? 'easy' : score <= 2 ? 'medium' : 'hard';
+  const time =
+    difficulty === 'easy'
+      ? 'loose: 5-15 min'
+      : difficulty === 'medium'
+        ? 'loose: 15-45 min'
+        : 'loose: 45+ min';
+  const challenge =
+    difficulty === 'easy'
+      ? 'Mostly a focused UI or behavior adjustment with limited blast radius.'
+      : difficulty === 'medium'
+        ? 'Needs a few connected changes and verification so the interaction stays coherent.'
+        : 'Likely touches several moving parts, so the challenge is sequencing, testing, and avoiding regressions.';
+
+  return { difficulty, time, challenge };
 }
 
 function loadJson<T>(key: string, fallback: T): T {
@@ -1566,7 +1654,16 @@ export default function BuildLab() {
   const [error, setError] = useState('');
   const [phonePrep, setPhonePrep] = useState('');
   const [screenshotNotes, setScreenshotNotes] = useState<ScreenshotNote[]>([]);
+  const [autoRunQueue, setAutoRunQueue] = useState(true);
+  const [activeMissionTitle, setActiveMissionTitle] = useState('');
+  const [missionPhase, setMissionPhase] = useState<
+    'idle' | 'starting' | 'working' | 'checking' | 'done'
+  >('idle');
+  const [showMissionDetails, setShowMissionDetails] = useState(false);
   const missionAbortRef = useRef<AbortController | null>(null);
+  const consoleEndRef = useRef<HTMLDivElement | null>(null);
+  const queueRunnerRef = useRef(false);
+  const queuedMissionsRef = useRef<QueuedMission[]>([]);
   const speech = useSpeechToText({ lang: 'en-US' });
 
   const selectedAgent = useMemo(
@@ -1581,6 +1678,7 @@ export default function BuildLab() {
   const channelScreenshotNotes = screenshotNotes.filter(
     (note) => note.channelId === activeChannel.id,
   );
+  const missionEstimate = estimateMission(prompt || activeMissionTitle);
 
   useEffect(() => {
     setHistory(loadJson<MissionMemory[]>(HISTORY_LS, []));
@@ -1619,6 +1717,13 @@ export default function BuildLab() {
     loadRunner();
     loadQueue();
   }, []);
+
+  useEffect(() => {
+    queuedMissionsRef.current = queuedMissions;
+    if (typeof consoleEndRef.current?.scrollIntoView === 'function') {
+      consoleEndRef.current.scrollIntoView({ block: 'end', behavior: 'smooth' });
+    }
+  });
 
   function selectChannel(channelId: string) {
     setActiveChannelId(channelId);
@@ -1718,6 +1823,9 @@ export default function BuildLab() {
     setQueuedMissions((prev) =>
       prev.map((mission) => (mission.id === missionId ? updated : mission)),
     );
+    queuedMissionsRef.current = queuedMissionsRef.current.map((mission) =>
+      mission.id === missionId ? updated : mission,
+    );
     return updated;
   }
 
@@ -1750,7 +1858,18 @@ export default function BuildLab() {
     }
     const mission = (await response.json()) as QueuedMission;
     setQueuedMissions((prev) => [mission, ...prev.filter((item) => item.id !== mission.id)]);
+    queuedMissionsRef.current = [
+      mission,
+      ...queuedMissionsRef.current.filter((item) => item.id !== mission.id),
+    ];
     addEvent('queue', `Queued mission: ${mission.title}`, 'meta');
+    setPrompt('');
+    if (autoRunQueue && !running && !queueRunnerRef.current) {
+      queueRunnerRef.current = true;
+      runQueuedMission(mission).finally(() => {
+        queueRunnerRef.current = false;
+      });
+    }
   }
 
   function loadQueuedMission(mission: QueuedMission) {
@@ -1762,7 +1881,10 @@ export default function BuildLab() {
   }
 
   async function runQueuedMission(mission: QueuedMission) {
-    loadQueuedMission(mission);
+    selectChannel(mission.channelId);
+    setAgentId(mission.agentId);
+    setProjectPath(mission.projectPath);
+    addEvent('queue', `Running queued mission: ${mission.title}`, 'meta');
     await patchQueuedMission(mission.id, {
       status: 'running',
       event: { type: 'claimed', text: 'Desktop runner claimed this mission.' },
@@ -1772,8 +1894,8 @@ export default function BuildLab() {
       projectPathOverride: mission.projectPath,
       agentIdOverride: mission.agentId,
       channelIdOverride: mission.channelId,
-      onDone: (status, files) => {
-        patchQueuedMission(mission.id, {
+      onDone: async (status, files) => {
+        await patchQueuedMission(mission.id, {
           status,
           event: {
             type: status,
@@ -1783,6 +1905,15 @@ export default function BuildLab() {
                 : 'Mission failed on the desktop runner.',
           },
         });
+        const nextMission = [...queuedMissionsRef.current]
+          .reverse()
+          .find(
+            (item) =>
+              item.id !== mission.id &&
+              item.channelId === mission.channelId &&
+              item.status === 'queued',
+          );
+        if (autoRunQueue && nextMission) await runQueuedMission(nextMission);
       },
     });
   }
@@ -1826,7 +1957,7 @@ export default function BuildLab() {
     projectPathOverride?: string;
     agentIdOverride?: string;
     channelIdOverride?: string;
-    onDone?: (status: 'complete' | 'failed', files: string[]) => void;
+    onDone?: (status: 'complete' | 'failed', files: string[]) => void | Promise<void>;
   }) {
     const missionPrompt = options?.promptOverride ?? composedPrompt();
     const missionProjectPath =
@@ -1847,10 +1978,11 @@ export default function BuildLab() {
     const controller = new AbortController();
     missionAbortRef.current = controller;
     setRunning(true);
-    setEvents([]);
+    setActiveMissionTitle(missionTitleFromPrompt(missionPrompt));
+    setMissionPhase('starting');
     setDiff('');
     setCheckpoints([]);
-    addEvent('mission', missionTitleFromPrompt(missionPrompt), 'meta');
+    addEvent('mission', `Starting: ${missionTitleFromPrompt(missionPrompt)}`, 'meta');
     let missionSucceeded = false;
 
     try {
@@ -1897,15 +2029,21 @@ export default function BuildLab() {
             success?: boolean;
             checkpoint?: CheckpointInfo;
           };
-          if (event.type === 'output') addEvent(event.stream ?? 'output', event.text ?? '');
-          else if (event.type === 'error') addEvent('error', event.message ?? 'Error', 'error');
+          if (event.type === 'output') {
+            setMissionPhase('working');
+            addEvent(event.stream ?? 'output', event.text ?? '');
+          } else if (event.type === 'error') addEvent('error', event.message ?? 'Error', 'error');
           else if (event.type === 'command_started') {
+            setMissionPhase('starting');
             addEvent('command', `$ ${event.command} ${(event.args ?? []).join(' ')}`, 'meta');
-          } else if (event.type === 'command_finished')
+          } else if (event.type === 'command_finished') {
+            setMissionPhase('checking');
             addEvent('command', 'Command finished', 'meta');
-          else if (event.type === 'file_changed' && event.path)
+          } else if (event.type === 'file_changed' && event.path) {
+            setMissionPhase('working');
             setChangedFiles((prev) => Array.from(new Set([...prev, event.path as string])));
-          else if (event.type === 'mission_complete') {
+          } else if (event.type === 'mission_complete') {
+            setMissionPhase('done');
             missionSucceeded = Boolean(event.success);
             addEvent(
               'complete',
@@ -1928,7 +2066,7 @@ export default function BuildLab() {
         agentId: missionAgentId,
         channelId: options?.channelIdOverride,
       });
-      options?.onDone?.(status, files);
+      await options?.onDone?.(status, files);
     } catch (missionError) {
       if (missionError instanceof DOMException && missionError.name === 'AbortError') {
         addEvent('mission', 'Mission stopped from the console.', 'meta');
@@ -1941,10 +2079,12 @@ export default function BuildLab() {
         agentId: missionAgentId,
         channelId: options?.channelIdOverride,
       });
-      options?.onDone?.('failed', changedFiles);
+      await options?.onDone?.('failed', changedFiles);
     } finally {
       if (missionAbortRef.current === controller) missionAbortRef.current = null;
       setRunning(false);
+      setActiveMissionTitle('');
+      setMissionPhase('idle');
     }
   }
 
@@ -1952,6 +2092,8 @@ export default function BuildLab() {
     missionAbortRef.current?.abort();
     missionAbortRef.current = null;
     setRunning(false);
+    setActiveMissionTitle('');
+    setMissionPhase('idle');
     addEvent('mission', 'Mission stopped from the console.', 'meta');
   }
 
@@ -1988,6 +2130,128 @@ export default function BuildLab() {
         @keyframes build-lab-sun-breathe {
           0%, 100% { transform: translateY(0) scale(1.02); }
           50% { transform: translateY(-5px) scale(1.07); }
+        }
+        .build-lab-sun-field {
+          isolation: isolate;
+        }
+        .build-lab-sun-field::before,
+        .build-lab-sun-field::after {
+          content: "";
+          position: absolute;
+          inset: 6%;
+          border-radius: 9999px;
+          pointer-events: none;
+          mix-blend-mode: screen;
+        }
+        .build-lab-sun-field::before {
+          background:
+            radial-gradient(circle at 42% 39%, rgba(255,231,152,0.52), transparent 9%),
+            radial-gradient(circle at 55% 53%, rgba(255,179,54,0.22), transparent 38%),
+            radial-gradient(circle, rgba(255,192,68,0.12), transparent 65%);
+          filter: blur(7px);
+          animation: build-lab-sun-inner-flow 7.6s ease-in-out infinite;
+        }
+        .build-lab-sun-field::after {
+          inset: -2%;
+          background:
+            radial-gradient(circle, transparent 46%, rgba(255,208,94,0.22) 47%, transparent 65%),
+            conic-gradient(from 24deg, transparent, rgba(255,210,94,0.24), transparent 18%, rgba(255,146,38,0.16), transparent 38%);
+          filter: blur(11px);
+          animation: build-lab-sun-corona-turn 14s linear infinite;
+        }
+        .build-lab-sun-corona {
+          border: 1px solid rgba(255,210,101,0.22);
+          box-shadow:
+            0 0 34px rgba(255,176,55,0.2),
+            inset 0 0 28px rgba(255,221,130,0.08);
+          transform: scale(0.98);
+          animation: build-lab-sun-corona-drift 5.6s ease-in-out infinite;
+        }
+        .build-lab-sun-wave {
+          border: 1px solid rgba(255,218,120,0.2);
+          box-shadow: 0 0 24px rgba(255,190,70,0.18);
+          animation: build-lab-sun-expand 2.8s ease-out infinite;
+        }
+        .build-lab-sun-dot {
+          z-index: 2;
+          width: var(--dot-size);
+          height: var(--dot-size);
+          background: var(--dot-color);
+          opacity: var(--dot-opacity);
+          box-shadow: 0 0 var(--dot-shadow);
+          transform: translate(-50%, -50%) translate(var(--flow-a-x), var(--flow-a-y)) scale(var(--base-scale));
+          animation: build-lab-sun-dot-flow var(--flow-duration) ease-in-out var(--flow-delay) infinite;
+          will-change: transform, opacity, box-shadow;
+        }
+        .build-lab-sun-dot-active {
+          animation-name: build-lab-sun-dot-flow, build-lab-sun-dot-pulse;
+          animation-duration: var(--flow-duration), 1.7s;
+          animation-timing-function: ease-in-out, ease-in-out;
+          animation-delay: var(--flow-delay), var(--flow-delay);
+          animation-iteration-count: infinite, infinite;
+        }
+        .build-lab-sun-dot-glint {
+          background: #fff0b6;
+          box-shadow: 0 0 14px rgba(255,236,176,0.9);
+        }
+        .build-lab-sun-glint {
+          z-index: 3;
+          background: #fff0b6;
+          box-shadow: 0 0 14px rgba(255,236,176,0.94), 0 0 28px rgba(255,181,49,0.38);
+          transform: translate(-50%, -50%);
+          animation-name: build-lab-sun-glint;
+          animation-timing-function: ease-in-out;
+          animation-iteration-count: infinite;
+        }
+        @keyframes build-lab-sun-dot-flow {
+          0%, 100% {
+            transform: translate(-50%, -50%) translate(var(--flow-a-x), var(--flow-a-y)) scale(var(--base-scale));
+          }
+          33% {
+            transform: translate(-50%, -50%) translate(var(--flow-b-x), var(--flow-b-y)) scale(calc(var(--base-scale) * 1.16));
+          }
+          66% {
+            transform: translate(-50%, -50%) translate(var(--flow-c-x), var(--flow-c-y)) scale(calc(var(--base-scale) * 0.92));
+          }
+        }
+        @keyframes build-lab-sun-dot-pulse {
+          0%, 100% { opacity: var(--dot-opacity); }
+          50% { opacity: 1; }
+        }
+        @keyframes build-lab-sun-glint {
+          0%, 100% { opacity: 0.18; transform: translate(-50%, -50%) scale(0.72); }
+          42% { opacity: 0.95; transform: translate(-50%, -50%) scale(1.8); }
+          62% { opacity: 0.36; transform: translate(-50%, -50%) scale(1.05); }
+        }
+        @keyframes build-lab-sun-inner-flow {
+          0%, 100% { transform: translate(0, 0) scale(1); opacity: 0.7; }
+          40% { transform: translate(5px, -7px) scale(1.08); opacity: 0.9; }
+          72% { transform: translate(-6px, 4px) scale(0.96); opacity: 0.62; }
+        }
+        @keyframes build-lab-sun-corona-turn {
+          from { transform: rotate(0deg) scale(1); }
+          to { transform: rotate(360deg) scale(1); }
+        }
+        @keyframes build-lab-sun-corona-drift {
+          0%, 100% { transform: scale(0.98); opacity: 0.54; }
+          50% { transform: scale(1.08); opacity: 0.92; }
+        }
+        @keyframes build-lab-sun-expand {
+          0% { transform: scale(0.68); opacity: 0; }
+          18% { opacity: 0.72; }
+          100% { transform: scale(1.72); opacity: 0; }
+        }
+        @media (prefers-reduced-motion: reduce) {
+          .build-lab-sun-field,
+          .build-lab-sun-field::before,
+          .build-lab-sun-field::after,
+          .build-lab-sun-corona,
+          .build-lab-sun-wave,
+          .build-lab-sun-dot,
+          .build-lab-sun-dot-active,
+          .build-lab-sun-glint {
+            animation: none !important;
+          }
         }
       `}</style>
       <section
@@ -2323,9 +2587,18 @@ export default function BuildLab() {
                     Local Phone Level 2 queue. Supabase will replace this storage later.
                   </p>
                 </div>
-                <span className="rounded-full border border-[#8f6232]/20 px-2 py-1 text-xs text-[#704923]">
-                  {runnableQueuedMissions.length} ready
-                </span>
+                <div className="flex flex-wrap justify-end gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setAutoRunQueue((value) => !value)}
+                    className="rounded-full border border-[#8f6232]/20 px-2 py-1 text-xs text-[#704923]"
+                  >
+                    {autoRunQueue ? 'auto-run on' : 'auto-run off'}
+                  </button>
+                  <span className="rounded-full border border-[#8f6232]/20 px-2 py-1 text-xs text-[#704923]">
+                    {runnableQueuedMissions.length} ready
+                  </span>
+                </div>
               </div>
               {activeQueuedMissions.length === 0 ? (
                 <p className="text-sm text-[#8d653d]">
@@ -2535,6 +2808,56 @@ export default function BuildLab() {
                     <span className="text-xs text-[#a98b5c]">{running ? 'streaming' : 'idle'}</span>
                   </div>
                 </div>
+                <div className="mb-3 rounded-xl border border-[#d7b978]/12 bg-[#150f0a] px-3 py-2">
+                  <div className="flex items-center justify-between gap-3">
+                    <div className="flex min-w-0 items-center gap-2">
+                      <span
+                        className="h-2.5 w-2.5 shrink-0 rounded-full"
+                        style={{
+                          background: running ? '#ffd36c' : '#7b684d',
+                          boxShadow: running ? '0 0 18px rgba(255,211,108,0.78)' : 'none',
+                          animation: running
+                            ? 'build-lab-voice-pulse 1.1s ease-in-out infinite'
+                            : 'none',
+                        }}
+                      />
+                      <p className="truncate text-xs text-[#d7b978]">
+                        {running
+                          ? `${missionPhase === 'starting' ? 'Starting' : missionPhase === 'checking' ? 'Checking' : missionPhase === 'done' ? 'Almost done' : 'Working'}: ${activeMissionTitle || 'mission'}`
+                          : autoRunQueue
+                            ? 'Ready. Queued missions will run in order.'
+                            : 'Ready. Auto-run queue is off.'}
+                      </p>
+                    </div>
+                    <div className="flex shrink-0 items-center gap-2">
+                      <span className="rounded-full border border-[#d7b978]/18 px-2 py-1 text-[11px] text-[#d7b978]">
+                        {missionEstimate.difficulty}
+                      </span>
+                      <span className="hidden text-xs text-[#a98b5c] sm:inline">
+                        {missionEstimate.time}
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => setShowMissionDetails((value) => !value)}
+                        className="rounded-full border border-[#d7b978]/18 px-2 py-1 text-[11px] text-[#d7b978]"
+                      >
+                        {showMissionDetails ? 'hide' : 'details'}
+                      </button>
+                    </div>
+                  </div>
+                  {showMissionDetails && (
+                    <div className="mt-2 rounded-lg border border-[#d7b978]/10 bg-[#0f0a07] p-2 text-xs leading-5 text-[#a98b5c]">
+                      <p>
+                        Challenge: {missionEstimate.challenge} Time estimate is intentionally loose
+                        until the agent has inspected the files.
+                      </p>
+                      <p className="mt-1">
+                        Progress: {running ? missionPhase : 'idle'} /{' '}
+                        {runnableQueuedMissions.length} queued.
+                      </p>
+                    </div>
+                  )}
+                </div>
                 <div
                   className={
                     consoleDesignMode
@@ -2575,6 +2898,7 @@ export default function BuildLab() {
                       ),
                     )
                   )}
+                  <div ref={consoleEndRef} />
                 </div>
                 <div className="mt-3 rounded-2xl border border-[#d7b978]/14 bg-[#150f0a] p-3">
                   <div className="mb-2 flex items-center justify-between gap-3">
@@ -2667,10 +2991,9 @@ export default function BuildLab() {
                       <button
                         type="button"
                         onClick={queueMission}
-                        disabled={running}
                         className="inline-flex justify-center gap-2 rounded-full border border-[#d7b978]/22 px-4 py-2 text-sm text-[#d7b978] disabled:opacity-45"
                       >
-                        Queue for runner
+                        Add to queue
                       </button>
                     </div>
                   </div>

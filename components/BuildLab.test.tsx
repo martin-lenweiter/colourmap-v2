@@ -180,7 +180,7 @@ describe('BuildLab', () => {
         target: { value: 'Build a tiny local runner queue test.' },
       },
     );
-    fireEvent.click(screen.getByRole('button', { name: 'Queue for runner' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Add to queue' }));
 
     expect(screen.getByText('Runner inbox')).toBeDefined();
     await waitFor(() =>
