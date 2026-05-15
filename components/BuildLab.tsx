@@ -1680,6 +1680,10 @@ export default function BuildLab() {
       setError('Write or dictate a mission prompt first.');
       return;
     }
+    if (!missionProjectPath.trim()) {
+      setError('Open Build Lab from the desktop runner or choose a project folder first.');
+      return;
+    }
     setError('');
     if (!projectPath.trim() && missionProjectPath.trim()) setProjectPath(missionProjectPath);
     const response = await fetch('/api/build-lab/queue', {
@@ -1795,7 +1799,7 @@ export default function BuildLab() {
     setEvents([]);
     setDiff('');
     setCheckpoints([]);
-    addEvent('mission', missionTitleFromPrompt(prompt), 'meta');
+    addEvent('mission', missionTitleFromPrompt(missionPrompt), 'meta');
     let missionSucceeded = false;
 
     try {
@@ -2137,6 +2141,58 @@ export default function BuildLab() {
                   </div>
                 </>
               )}
+
+              <section className="rounded-2xl border border-[#b98d52]/20 bg-[#fff8e8]/78 p-4">
+                <div className="mb-3 flex items-center justify-between">
+                  <p className="text-xs uppercase tracking-[0.16em] text-[#704923]">Diff desk</p>
+                  <button
+                    type="button"
+                    onClick={() => refreshDiff()}
+                    className="inline-flex items-center gap-1 rounded-full border border-[#8f6232]/25 px-2 py-1 text-xs text-[#704923]"
+                  >
+                    <RefreshCw size={12} />
+                    Refresh
+                  </button>
+                </div>
+                <div className="mb-3 rounded-xl border border-[#b98d52]/18 bg-[#fffdf2] p-3">
+                  <div className="mb-2 flex items-center gap-2 text-xs uppercase tracking-[0.14em] text-[#8d653d]">
+                    <ShieldCheck size={13} />
+                    Checkpoints
+                  </div>
+                  {checkpoints.length === 0 ? (
+                    <p className="text-sm text-[#8d653d]">No checkpoint yet.</p>
+                  ) : (
+                    <ul className="space-y-2 text-sm text-[#3f2817]">
+                      {checkpoints.map((checkpoint, index) => (
+                        <li
+                          key={`${checkpoint.path ?? checkpoint.reason ?? 'checkpoint'}-${index}`}
+                        >
+                          {checkpoint.created
+                            ? (checkpoint.path ?? 'Checkpoint saved')
+                            : (checkpoint.reason ?? 'Checkpoint skipped')}
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                </div>
+                <div className="mb-3 rounded-xl border border-[#b98d52]/18 bg-[#fffdf2] p-3">
+                  <p className="mb-2 text-xs uppercase tracking-[0.14em] text-[#8d653d]">
+                    Changed files
+                  </p>
+                  {changedFiles.length === 0 ? (
+                    <p className="text-sm text-[#8d653d]">No changes detected.</p>
+                  ) : (
+                    <ul className="space-y-1 text-sm text-[#3f2817]">
+                      {changedFiles.map((file) => (
+                        <li key={file}>{file}</li>
+                      ))}
+                    </ul>
+                  )}
+                </div>
+                <pre className="max-h-[250px] overflow-auto rounded-xl bg-[#24180f] p-3 text-xs leading-5 text-[#f8e8bd]">
+                  {diff || 'No diff loaded.'}
+                </pre>
+              </section>
             </div>
           </div>
 
@@ -2331,12 +2387,12 @@ export default function BuildLab() {
             </div>
             {openPanels.sun && <SunDialoguePrototype />}
 
-            <div className="grid gap-4 xl:grid-cols-[1.1fr_0.9fr]">
+            <div className="grid gap-4">
               <section
                 className={
                   consoleDesignMode
-                    ? 'rounded-2xl border border-[#d9b65f]/25 bg-[#07080f] p-4 text-[#ffd983] shadow-[0_0_42px_rgba(232,169,58,0.16)]'
-                    : 'rounded-2xl border border-[#2b2118]/15 bg-[#24180f] p-4 text-[#f8e8bd]'
+                    ? 'min-w-0 rounded-2xl border border-[#d9b65f]/25 bg-[#07080f] p-4 text-[#ffd983] shadow-[0_0_42px_rgba(232,169,58,0.16)]'
+                    : 'min-w-0 rounded-2xl border border-[#2b2118]/15 bg-[#24180f] p-4 text-[#f8e8bd]'
                 }
               >
                 <div className="mb-3 flex items-center justify-between">
@@ -2416,10 +2472,9 @@ export default function BuildLab() {
                     <button
                       type="button"
                       onClick={toggleSpeech}
-                      disabled={!speech.supported}
                       aria-label={speech.listening ? 'Stop voice input' : 'Start voice input'}
                       title={speech.listening ? 'Stop voice input' : 'Start voice input'}
-                      className="grid h-9 w-9 shrink-0 place-items-center rounded-full border disabled:opacity-40"
+                      className="grid h-9 w-9 shrink-0 place-items-center rounded-full border"
                       style={{
                         borderColor: speech.listening
                           ? 'rgba(245,132,38,0.75)'
@@ -2482,23 +2537,23 @@ export default function BuildLab() {
                       Channel: {activeChannel.next}
                       {error && <span className="ml-2 text-[#ff9b7d]">{error}</span>}
                     </div>
-                    <div className="flex flex-wrap gap-2">
-                      <button
-                        type="button"
-                        onClick={queueMission}
-                        disabled={!prompt.trim() || running}
-                        className="inline-flex items-center gap-2 rounded-full border border-[#d7b978]/22 px-4 py-2 text-sm text-[#d7b978] disabled:opacity-45"
-                      >
-                        Queue for runner
-                      </button>
+                    <div className="grid w-full gap-2 sm:w-auto sm:grid-cols-2">
                       <button
                         type="button"
                         onClick={() => runMission()}
                         disabled={running}
-                        className="inline-flex items-center gap-2 rounded-full bg-[#d7b978] px-4 py-2 text-sm text-[#24180f] disabled:opacity-45"
+                        className="inline-flex justify-center gap-2 rounded-full bg-[#d7b978] px-4 py-2 text-sm text-[#24180f] disabled:opacity-45"
                       >
                         <Play size={15} />
-                        {running ? 'Running' : 'Run mission'}
+                        {running ? 'Running' : 'Send mission'}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={queueMission}
+                        disabled={running}
+                        className="inline-flex justify-center gap-2 rounded-full border border-[#d7b978]/22 px-4 py-2 text-sm text-[#d7b978] disabled:opacity-45"
+                      >
+                        Queue for runner
                       </button>
                     </div>
                   </div>
@@ -2563,58 +2618,6 @@ export default function BuildLab() {
                     ) : null}
                   </div>
                 </div>
-              </section>
-
-              <section className="rounded-2xl border border-[#b98d52]/20 bg-[#fff8e8]/78 p-4">
-                <div className="mb-3 flex items-center justify-between">
-                  <p className="text-xs uppercase tracking-[0.16em] text-[#704923]">Diff desk</p>
-                  <button
-                    type="button"
-                    onClick={() => refreshDiff()}
-                    className="inline-flex items-center gap-1 rounded-full border border-[#8f6232]/25 px-2 py-1 text-xs text-[#704923]"
-                  >
-                    <RefreshCw size={12} />
-                    Refresh
-                  </button>
-                </div>
-                <div className="mb-3 rounded-xl border border-[#b98d52]/18 bg-[#fffdf2] p-3">
-                  <div className="mb-2 flex items-center gap-2 text-xs uppercase tracking-[0.14em] text-[#8d653d]">
-                    <ShieldCheck size={13} />
-                    Checkpoints
-                  </div>
-                  {checkpoints.length === 0 ? (
-                    <p className="text-sm text-[#8d653d]">No checkpoint yet.</p>
-                  ) : (
-                    <ul className="space-y-2 text-sm text-[#3f2817]">
-                      {checkpoints.map((checkpoint, index) => (
-                        <li
-                          key={`${checkpoint.path ?? checkpoint.reason ?? 'checkpoint'}-${index}`}
-                        >
-                          {checkpoint.created
-                            ? (checkpoint.path ?? 'Checkpoint saved')
-                            : (checkpoint.reason ?? 'Checkpoint skipped')}
-                        </li>
-                      ))}
-                    </ul>
-                  )}
-                </div>
-                <div className="mb-3 rounded-xl border border-[#b98d52]/18 bg-[#fffdf2] p-3">
-                  <p className="mb-2 text-xs uppercase tracking-[0.14em] text-[#8d653d]">
-                    Changed files
-                  </p>
-                  {changedFiles.length === 0 ? (
-                    <p className="text-sm text-[#8d653d]">No changes detected.</p>
-                  ) : (
-                    <ul className="space-y-1 text-sm text-[#3f2817]">
-                      {changedFiles.map((file) => (
-                        <li key={file}>{file}</li>
-                      ))}
-                    </ul>
-                  )}
-                </div>
-                <pre className="max-h-[250px] overflow-auto rounded-xl bg-[#24180f] p-3 text-xs leading-5 text-[#f8e8bd]">
-                  {diff || 'No diff loaded.'}
-                </pre>
               </section>
             </div>
           </div>
