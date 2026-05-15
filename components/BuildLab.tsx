@@ -819,6 +819,7 @@ function estimateMission(prompt: string) {
   if (/\b(fix|button|copy|text|small|simple|move|label)\b/.test(text)) score -= 1;
 
   const difficulty = score <= 0 ? 'easy' : score <= 2 ? 'medium' : 'hard';
+  const minutes = difficulty === 'easy' ? 10 : difficulty === 'medium' ? 30 : 60;
   const time =
     difficulty === 'easy'
       ? 'loose: 5-15 min'
@@ -832,7 +833,7 @@ function estimateMission(prompt: string) {
         ? 'Needs a few connected changes and verification so the interaction stays coherent.'
         : 'Likely touches several moving parts, so the challenge is sequencing, testing, and avoiding regressions.';
 
-  return { difficulty, time, challenge };
+  return { difficulty, time, minutes, challenge };
 }
 
 function loadJson<T>(key: string, fallback: T): T {
@@ -1679,6 +1680,13 @@ export default function BuildLab() {
     (note) => note.channelId === activeChannel.id,
   );
   const missionEstimate = estimateMission(prompt || activeMissionTitle);
+  const missionMetricPrompts = history.length + queuedMissions.length + (running ? 1 : 0);
+  const missionMetricMinutes =
+    history.reduce((total, mission) => total + estimateMission(mission.prompt).minutes, 0) +
+    queuedMissions.reduce((total, mission) => total + estimateMission(mission.prompt).minutes, 0) +
+    (running ? missionEstimate.minutes : 0);
+  const missionMetricHours = missionMetricMinutes / 60;
+  const roughCarbonKg = missionMetricHours * 0.02;
 
   useEffect(() => {
     setHistory(loadJson<MissionMemory[]>(HISTORY_LS, []));
@@ -2830,6 +2838,13 @@ export default function BuildLab() {
                       </p>
                     </div>
                     <div className="flex shrink-0 items-center gap-2">
+                      <span
+                        className="rounded-full border border-[#d7b978]/18 px-2 py-1 text-[11px] text-[#a98b5c]"
+                        title="Very rough local estimate from queued and saved Build Lab prompts."
+                      >
+                        {missionMetricPrompts} prompts / {missionMetricHours.toFixed(1)}h / ~
+                        {roughCarbonKg.toFixed(2)}kg CO2e
+                      </span>
                       <span className="rounded-full border border-[#d7b978]/18 px-2 py-1 text-[11px] text-[#d7b978]">
                         {missionEstimate.difficulty}
                       </span>
