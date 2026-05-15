@@ -678,10 +678,29 @@ function SunPresence({
         className="absolute inset-0 opacity-70"
         style={{
           background: active
-            ? 'radial-gradient(circle at 50% 42%, rgba(255,196,74,0.25), transparent 48%)'
-            : 'radial-gradient(circle at 50% 42%, rgba(255,196,74,0.13), transparent 44%)',
+            ? 'radial-gradient(circle at 50% 42%, rgba(255,196,74,0.12), transparent 43%)'
+            : 'radial-gradient(circle at 50% 42%, rgba(255,196,74,0.07), transparent 40%)',
         }}
       />
+      <div className="pointer-events-none absolute inset-0">
+        {sunDots.slice(0, compact ? 42 : 70).map((dot) => (
+          <span
+            key={`star-${dot.id}`}
+            className="build-lab-sun-star absolute rounded-full"
+            style={
+              {
+                left: `${dot.x}%`,
+                top: `${dot.y}%`,
+                width: `${Math.max(1, Number(dot.size) * 0.38)}px`,
+                height: `${Math.max(1, Number(dot.size) * 0.38)}px`,
+                '--star-delay': `-${dot.delay}s`,
+                '--star-duration': `${3.4 + Number(dot.duration) * 0.5}s`,
+                opacity: active ? 0.36 + dot.heat * 0.26 : 0.18 + dot.heat * 0.2,
+              } as CSSProperties
+            }
+          />
+        ))}
+      </div>
       <div
         className={
           compact
@@ -711,10 +730,10 @@ function SunPresence({
             style={{ opacity: active ? 1 : 0.28 }}
           />
           {sunDots.slice(0, dotLimit).map((dot) => {
-            const color = dot.heat > 0.66 ? '#ffd86b' : dot.heat > 0.34 ? '#ffc044' : '#f59d2d';
-            const flowScale = active ? 1.12 : speaking ? 0.96 : 0.62 + energy * 0.28;
+            const color = '#ffd36c';
+            const flowScale = active ? 1.85 : speaking ? 1.45 : 0.62 + energy * 0.28;
             const baseScale = active
-              ? (0.92 + dot.heat * 0.38).toFixed(3)
+              ? (0.96 + dot.heat * 0.42).toFixed(3)
               : (0.72 + energy * 0.22 + dot.heat * 0.1).toFixed(3);
             return (
               <span
@@ -1732,6 +1751,13 @@ export default function BuildLab() {
     if (typeof consoleEndRef.current?.scrollIntoView === 'function') {
       consoleEndRef.current.scrollIntoView({ block: 'end', behavior: 'smooth' });
     }
+    if (!autoRunQueue || running || queueRunnerRef.current) return;
+    const nextMission = nextQueuedMission(activeChannel.id);
+    if (!nextMission) return;
+    queueRunnerRef.current = true;
+    runQueuedMission(nextMission).finally(() => {
+      queueRunnerRef.current = false;
+    });
   });
 
   function selectChannel(channelId: string) {
@@ -1838,6 +1864,26 @@ export default function BuildLab() {
     return updated;
   }
 
+  function nextQueuedMission(channelId = activeChannel.id) {
+    return [...queuedMissionsRef.current]
+      .reverse()
+      .find((mission) => mission.channelId === channelId && mission.status === 'queued');
+  }
+
+  function runAllReadyMissions() {
+    setAutoRunQueue(true);
+    if (running || queueRunnerRef.current) return;
+    const mission = nextQueuedMission();
+    if (!mission) {
+      addEvent('queue', 'No queued runner missions are waiting.', 'meta');
+      return;
+    }
+    queueRunnerRef.current = true;
+    runQueuedMission(mission).finally(() => {
+      queueRunnerRef.current = false;
+    });
+  }
+
   async function queueMission() {
     const missionPrompt = composedPrompt();
     const missionProjectPath = projectPath || runnerStatus?.workingDirectory || '';
@@ -1914,15 +1960,6 @@ export default function BuildLab() {
                 : 'Mission failed on the desktop runner.',
           },
         });
-        const nextMission = [...queuedMissionsRef.current]
-          .reverse()
-          .find(
-            (item) =>
-              item.id !== mission.id &&
-              item.channelId === mission.channelId &&
-              item.status === 'queued',
-          );
-        if (autoRunQueue && nextMission) await runQueuedMission(nextMission);
       },
     });
   }
@@ -2152,6 +2189,11 @@ export default function BuildLab() {
         .build-lab-sun-field {
           isolation: isolate;
         }
+        .build-lab-sun-star {
+          background: #ffd36c;
+          box-shadow: 0 0 10px rgba(255,211,108,0.75);
+          animation: build-lab-sun-star-twinkle var(--star-duration) ease-in-out var(--star-delay) infinite;
+        }
         .build-lab-sun-field::before,
         .build-lab-sun-field::after {
           content: "";
@@ -2241,6 +2283,10 @@ export default function BuildLab() {
           42% { opacity: 0.95; transform: translate(-50%, -50%) scale(1.8); }
           62% { opacity: 0.36; transform: translate(-50%, -50%) scale(1.05); }
         }
+        @keyframes build-lab-sun-star-twinkle {
+          0%, 100% { transform: scale(0.72); opacity: 0.18; }
+          48% { transform: scale(1.35); opacity: 0.72; }
+        }
         @keyframes build-lab-sun-inner-flow {
           0%, 100% { transform: translate(0, 0) scale(1); opacity: 0.7; }
           40% { transform: translate(5px, -7px) scale(1.08); opacity: 0.9; }
@@ -2265,6 +2311,7 @@ export default function BuildLab() {
           .build-lab-sun-field::after,
           .build-lab-sun-corona,
           .build-lab-sun-wave,
+          .build-lab-sun-star,
           .build-lab-sun-dot,
           .build-lab-sun-dot-active,
           .build-lab-sun-glint {
@@ -2612,6 +2659,13 @@ export default function BuildLab() {
                     className="rounded-full border border-[#8f6232]/20 px-2 py-1 text-xs text-[#704923]"
                   >
                     {autoRunQueue ? 'auto-run on' : 'auto-run off'}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={runAllReadyMissions}
+                    className="rounded-full border border-[#8f6232]/20 bg-[#704923] px-2 py-1 text-xs text-[#fff8e8]"
+                  >
+                    Run all ready
                   </button>
                   <span className="rounded-full border border-[#8f6232]/20 px-2 py-1 text-xs text-[#704923]">
                     {runnableQueuedMissions.length} ready

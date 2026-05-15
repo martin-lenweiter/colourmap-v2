@@ -38,6 +38,7 @@ describe('BuildLab', () => {
           );
         }
         if (url.includes('/api/build-lab/queue') && url.includes('/queue/')) {
+          const body = init?.body ? JSON.parse(String(init.body)) : {};
           return new Response(
             JSON.stringify({
               id: 'queued-1',
@@ -46,12 +47,18 @@ describe('BuildLab', () => {
               agentId: 'codex',
               projectPath: 'C:/Users/victor/colourmap-v2',
               prompt: 'Build a tiny local runner queue test.',
-              status: 'running',
+              status: body.status ?? 'running',
               createdAt: new Date().toISOString(),
               updatedAt: new Date().toISOString(),
               events: [],
             }),
             { status: 200 },
+          );
+        }
+        if (url.includes('/api/build-lab/mission')) {
+          return new Response(
+            'data: {"type":"output","stream":"stdout","text":"done"}\n\ndata: {"type":"mission_complete","success":true}\n\n',
+            { status: 200, headers: { 'Content-Type': 'text/event-stream' } },
           );
         }
         if (url.includes('/api/build-lab/queue')) {
