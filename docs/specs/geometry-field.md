@@ -72,7 +72,7 @@ These presets are early research surfaces, not final products.
 Dot Walker should expose five visibly different designs through its **Design** slider:
 
 1. original walking particle figure
-2. floating genie-tail figure
+2. floating ghost figure with a swirl tornado tail for legs
 3. diagonal dancer figure
 4. compact seated thinker figure
 5. winged guardian figure
@@ -85,7 +85,12 @@ Dot Walker controls should stay specific and non-duplicative:
 - **Liquid** changes internal particle motion.
 - **Aura Width** changes the body spread / surrounding presence.
 - **Bloom** controls light intensity.
+- **Walkers 1-4** changes build mode from one character to a small side-by-side group.
 - Avoid duplicate sliders where two controls visually do the same thing.
+
+The current scintillating golden-dot quality is a success and should be preserved as a core visual language. The dots should feel alive: shimmering, breathing, and slightly unstable in a beautiful way, without losing the readable body or becoming noisy. Future visuals should return to this quality when they need presence, magic, or living intelligence.
+
+Dot Walker groups need enough space between figures that each body can be read clearly, but spacing must not change the perceived character design or silhouette. Multi-walker mode is not only a character preview; it is a future music-visual surface. Long term, groups of Dot Walkers should be able to dance to BPM, react to groove layers, move in choreographed formations, and become concert visuals or phone companions.
 
 ### Brain Topography
 

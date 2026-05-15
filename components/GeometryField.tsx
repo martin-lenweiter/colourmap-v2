@@ -644,6 +644,30 @@ const PAL_SORTED: [string, Pal][] = Object.entries(PAL).sort(
 /* ── Preset configs ─────────────────────────────────────────── */
 
 const PRESETS: Record<string, Cfg> = {
+  'Fire Dot Sun': {
+    preset: 'Golden Source',
+    symmetry: 11,
+    complexity: 6.8,
+    glow: 7.8,
+    breathSpeed: 0.78,
+    intensity: 8.4,
+    particles: 7,
+    luminous: 3.4,
+    stars: 2,
+    mode: 'dotsunfire',
+  },
+  'Dot Walker': {
+    preset: 'Golden Source',
+    symmetry: 1,
+    complexity: 7,
+    glow: 7,
+    breathSpeed: 0.9,
+    intensity: 7.6,
+    particles: 7,
+    luminous: 2.8,
+    stars: 1,
+    mode: 'dotwalker',
+  },
   'Calm Field': {
     preset: 'Calm Field',
     symmetry: 8,
@@ -691,30 +715,6 @@ const PRESETS: Record<string, Cfg> = {
     luminous: 2.2,
     stars: 1,
     mode: 'walkingfigure',
-  },
-  'Dot Walker': {
-    preset: 'Golden Source',
-    symmetry: 1,
-    complexity: 7,
-    glow: 7,
-    breathSpeed: 0.9,
-    intensity: 7.6,
-    particles: 7,
-    luminous: 2.8,
-    stars: 1,
-    mode: 'dotwalker',
-  },
-  'Fire Dot Sun': {
-    preset: 'Golden Source',
-    symmetry: 11,
-    complexity: 6.8,
-    glow: 7.8,
-    breathSpeed: 0.78,
-    intensity: 8.4,
-    particles: 7,
-    luminous: 3.4,
-    stars: 2,
-    mode: 'dotsunfire',
   },
   'Alchemical Dot Sun': {
     preset: 'Golden Source',
@@ -2864,37 +2864,37 @@ const PRESETS: Record<string, Cfg> = {
   'Sin Morph': {
     preset: 'Forest Ceremony',
     symmetry: 6,
-    complexity: 7,
-    glow: 7,
-    breathSpeed: 0.8,
-    intensity: 8,
+    complexity: 5.8,
+    glow: 5.4,
+    breathSpeed: 0.48,
+    intensity: 6.2,
     particles: 3,
-    luminous: 2,
-    stars: 2,
+    luminous: 1.4,
+    stars: 1,
     mode: 'sinmorph3d',
   },
   'Sacred Sin Morph': {
     preset: 'Golden Source',
     symmetry: 8,
-    complexity: 7,
-    glow: 7,
-    breathSpeed: 0.72,
-    intensity: 8,
+    complexity: 5.9,
+    glow: 5.3,
+    breathSpeed: 0.42,
+    intensity: 6.1,
     particles: 3,
-    luminous: 2,
-    stars: 2,
+    luminous: 1.4,
+    stars: 1,
     mode: 'sinmorph3d',
   },
   'Chaos Sin Morph': {
     preset: 'Cosmic Indigo',
     symmetry: 7,
-    complexity: 10,
-    glow: 8,
-    breathSpeed: 0.86,
-    intensity: 9,
+    complexity: 7.4,
+    glow: 5.8,
+    breathSpeed: 0.52,
+    intensity: 6.8,
     particles: 4,
-    luminous: 3,
-    stars: 3,
+    luminous: 1.7,
+    stars: 2,
     mode: 'sinmorph3d',
   },
   'Alien Form': {
@@ -10431,7 +10431,7 @@ const MODE_SLIDERS: Partial<Record<Mode, SliderDef[]>> = {
     { key: 'breathSpeed', label: 'Walk', min: 0.05, max: 2.0, step: 0.05 },
     { key: 'intensity', label: 'Colour', min: 0, max: 10, step: 0.5 },
     { key: 'luminous', label: 'Bloom', min: 0, max: 5, step: 0.1 },
-    { key: 'stars', label: 'Stars', min: 0, max: 10, step: 1 },
+    { key: 'stars', label: 'Walkers 1-4', min: 1, max: 4, step: 1 },
   ],
   dotsunfire: [
     { key: 'complexity', label: 'Fire Motion', min: 1, max: 10, step: 0.5 },
@@ -11300,11 +11300,17 @@ function buildDotWalker(cfg: Cfg, R: number): THREE.Group {
   dots.userData.tag = 'dotWalkerDots';
   group.add(dots);
 
-  const trailGeo = new THREE.BufferGeometry();
-  trailGeo.setAttribute('position', new THREE.BufferAttribute(new Float32Array(220 * 3), 3));
-  const trail = new THREE.Line(trailGeo, lineMat(hdrColor(pal.rgb, cfg.intensity / 10, 1.8), 0.22));
-  trail.userData.tag = 'dotWalkerTrail';
-  group.add(trail);
+  for (let walker = 0; walker < 4; walker++) {
+    const trailGeo = new THREE.BufferGeometry();
+    trailGeo.setAttribute('position', new THREE.BufferAttribute(new Float32Array(220 * 3), 3));
+    const trail = new THREE.Line(
+      trailGeo,
+      lineMat(hdrColor(pal.rgb, cfg.intensity / 10, 1.8), 0.2),
+    );
+    trail.userData.tag = 'dotWalkerTrail';
+    trail.userData.walkerIndex = walker;
+    group.add(trail);
+  }
 
   return group;
 }
@@ -11382,16 +11388,18 @@ function dotWalkerDesignPoint(
         y: R * (0.18 + Math.abs(sy) * 0.18),
         scale: R * 0.105,
       };
-    if (zone === 3)
+    if (zone === 3) {
+      const tail = Math.abs(sy);
       return {
-        x: Math.sin(sy * 4 + phase) * R * (0.1 + Math.abs(sx) * 0.08),
-        y: -R * (0.2 + Math.abs(sy) * 0.26),
+        x: Math.sin(tail * 10 + phase * 1.7) * R * (0.06 + tail * 0.12) + sx * R * 0.045,
+        y: -R * (0.16 + tail * 0.34),
         scale: R * 0.12,
       };
+    }
     return {
-      x: Math.sin(phase * 1.3 + sy * 6) * R * (0.06 + Math.abs(sx) * 0.08),
-      y: -R * (0.54 + Math.abs(sy) * 0.08),
-      scale: R * 0.08,
+      x: Math.sin(phase * 1.8 + sy * 12) * R * (0.03 + Math.abs(sy) * 0.12),
+      y: -R * (0.5 + Math.abs(sy) * 0.18),
+      scale: R * 0.075,
     };
   }
 
@@ -11479,6 +11487,8 @@ function updateDotWalker(group: THREE.Group, cfg: Cfg, t: number, R: number): vo
   const pal = PAL[cfg.preset] ?? PAL['Golden Source'];
   const phase = t * 0.003 * cfg.breathSpeed;
   const design = Math.max(1, Math.min(5, Math.round(cfg.symmetry)));
+  const walkerCount = Math.max(1, Math.min(4, Math.round(cfg.stars)));
+  const cloneScale = walkerCount > 1 ? 0.82 : 1;
   for (const child of group.children) {
     const tag = child.userData.tag as string;
     if (tag === 'dotWalkerDots') {
@@ -11527,43 +11537,70 @@ function updateDotWalker(group: THREE.Group, cfg: Cfg, t: number, R: number): vo
           y += R * 0.04;
         }
 
-        arr[i * 3] = x + force.x;
-        arr[i * 3 + 1] = y + force.y;
-        arr[i * 3 + 2] = z + force.z;
+        const cloneIndex = i % walkerCount;
+        const rowOffset = walkerCount === 4 ? (cloneIndex > 1 ? -R * 0.34 : R * 0.18) : 0;
+        const column =
+          walkerCount === 1
+            ? 0
+            : walkerCount === 2
+              ? cloneIndex - 0.5
+              : walkerCount === 3
+                ? cloneIndex - 1
+                : (cloneIndex % 2) - 0.5;
+        const spacing = R * (walkerCount === 2 ? 0.82 : walkerCount === 3 ? 0.64 : 0.68);
+        arr[i * 3] = x * cloneScale + force.x + column * spacing;
+        arr[i * 3 + 1] = y * cloneScale + force.y + rowOffset;
+        arr[i * 3 + 2] = z * cloneScale + force.z + cloneIndex * R * 0.012;
       }
       pos.needsUpdate = true;
       const mat = dots.material as THREE.PointsMaterial;
-      mat.size = (2.35 + cfg.glow * 0.1) * (R / 260);
+      mat.size = (2.35 + cfg.glow * 0.1) * (R / 260) * cloneScale;
       mat.opacity = 0.68 + Math.min(0.22, cfg.glow / 55);
       updateMat(dots, pal.rgb, cfg.intensity / 10, 2.4 + cfg.luminous * 0.24);
     } else if (tag === 'dotWalkerTrail') {
       const trail = child as THREE.Line;
+      const trailWalkerIndex = Math.max(0, Math.min(3, Number(trail.userData.walkerIndex ?? 0)));
+      trail.visible = trailWalkerIndex < walkerCount;
       const pos = trail.geometry.getAttribute('position') as THREE.BufferAttribute;
       const arr = pos.array as Float32Array;
       for (let i = 0; i < 220; i++) {
         const q = i / 219;
         const a = q * Math.PI * 2;
+        const rowOffset = walkerCount === 4 ? (trailWalkerIndex > 1 ? -R * 0.34 : R * 0.18) : 0;
+        const column =
+          walkerCount === 1
+            ? 0
+            : walkerCount === 2
+              ? trailWalkerIndex - 0.5
+              : walkerCount === 3
+                ? trailWalkerIndex - 1
+                : (trailWalkerIndex % 2) - 0.5;
+        const spacing = R * (walkerCount === 2 ? 0.82 : walkerCount === 3 ? 0.64 : 0.68);
         if (design === 2) {
           const rr = R * (0.08 + q * 0.28);
-          arr[i * 3] = Math.sin(a * 2.5 + phase) * rr;
-          arr[i * 3 + 1] = -R * (0.6 - q * 0.34);
-          arr[i * 3 + 2] = Math.cos(a * 2.5 + phase) * R * 0.04;
+          arr[i * 3] = Math.sin(a * 3.8 + phase * 1.6) * rr * cloneScale + column * spacing;
+          arr[i * 3 + 1] = -R * (0.62 - q * 0.36) * cloneScale + rowOffset;
+          arr[i * 3 + 2] = Math.cos(a * 3.8 + phase) * R * 0.055 * cloneScale;
         } else if (design === 3) {
-          arr[i * 3] = (q - 0.5) * R * 1.25;
-          arr[i * 3 + 1] = -R * 0.58 + Math.sin(q * Math.PI * 3 + phase * 1.2) * R * 0.08;
-          arr[i * 3 + 2] = Math.cos(q * Math.PI * 4 + phase) * R * 0.03;
+          arr[i * 3] = (q - 0.5) * R * 1.25 * cloneScale + column * spacing;
+          arr[i * 3 + 1] =
+            (-R * 0.58 + Math.sin(q * Math.PI * 3 + phase * 1.2) * R * 0.08) * cloneScale +
+            rowOffset;
+          arr[i * 3 + 2] = Math.cos(q * Math.PI * 4 + phase) * R * 0.03 * cloneScale;
         } else if (design === 4) {
-          arr[i * 3] = Math.cos(a) * R * 0.34;
-          arr[i * 3 + 1] = -R * 0.42 + Math.sin(a) * R * 0.08;
+          arr[i * 3] = Math.cos(a) * R * 0.34 * cloneScale + column * spacing;
+          arr[i * 3 + 1] = (-R * 0.42 + Math.sin(a) * R * 0.08) * cloneScale + rowOffset;
           arr[i * 3 + 2] = 0;
         } else if (design === 5) {
-          arr[i * 3] = Math.cos(a) * R * (0.34 + Math.sin(a * 2) * 0.08);
-          arr[i * 3 + 1] = R * 0.08 + Math.sin(a) * R * 0.42;
-          arr[i * 3 + 2] = Math.sin(a * 2 + phase) * R * 0.05;
+          arr[i * 3] =
+            Math.cos(a) * R * (0.34 + Math.sin(a * 2) * 0.08) * cloneScale + column * spacing;
+          arr[i * 3 + 1] = (R * 0.08 + Math.sin(a) * R * 0.42) * cloneScale + rowOffset;
+          arr[i * 3 + 2] = Math.sin(a * 2 + phase) * R * 0.05 * cloneScale;
         } else {
           const x = (q - 0.5) * R * 1.16;
-          arr[i * 3] = x;
-          arr[i * 3 + 1] = -R * 0.66 + Math.sin(q * Math.PI * 4 + phase) * R * 0.018;
+          arr[i * 3] = x * cloneScale + column * spacing;
+          arr[i * 3 + 1] =
+            (-R * 0.66 + Math.sin(q * Math.PI * 4 + phase) * R * 0.018) * cloneScale + rowOffset;
           arr[i * 3 + 2] = 0;
         }
       }
@@ -16755,6 +16792,7 @@ export default function GeometryField() {
               <div style={{ display: 'flex', gap: 6 }}>
                 {pill('Builder', tab === 'builder', () => setTab('builder'), true)}
                 {pill('Music Visuals', tab === 'music', () => setTab('music'), true)}
+                {pill('Arena', false, () => window.location.assign('/dot-walker-arena'), true)}
               </div>
               <button
                 type="button"
