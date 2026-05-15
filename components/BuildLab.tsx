@@ -427,6 +427,7 @@ export default function BuildLab() {
   }
 
   function toggleSpeech() {
+    speech.resetError();
     if (speech.listening) {
       speech.stop();
     } else {
@@ -471,6 +472,12 @@ export default function BuildLab() {
 
   return (
     <main className="mx-auto w-full max-w-6xl px-3 py-5 sm:px-5">
+      <style>{`
+        @keyframes build-lab-voice-pulse {
+          0%, 100% { transform: scale(1); opacity: 1; }
+          50% { transform: scale(1.35); opacity: 0.72; }
+        }
+      `}</style>
       <section
         className="overflow-hidden rounded-[22px] border"
         style={{
@@ -773,11 +780,59 @@ export default function BuildLab() {
                   type="button"
                   onClick={toggleSpeech}
                   disabled={!speech.supported}
-                  className="inline-flex items-center gap-2 rounded-full border border-[#8f6232]/25 px-3 py-2 text-xs text-[#704923] disabled:opacity-40"
+                  className="inline-flex items-center gap-2 rounded-full border px-3 py-2 text-xs disabled:opacity-40"
+                  style={{
+                    borderColor: speech.listening
+                      ? 'rgba(245,132,38,0.75)'
+                      : 'rgba(143,98,50,0.25)',
+                    background: speech.listening
+                      ? 'radial-gradient(circle at 30% 30%, rgba(255,178,76,0.48), rgba(255,126,35,0.2))'
+                      : 'transparent',
+                    boxShadow: speech.listening
+                      ? '0 0 0 5px rgba(255,145,49,0.14), 0 0 28px rgba(255,126,35,0.42)'
+                      : 'none',
+                    color: speech.listening ? '#7a310c' : '#704923',
+                  }}
                 >
                   {speech.listening ? <MicOff size={14} /> : <Mic size={14} />}
                   {speech.listening ? 'Stop voice' : 'Voice'}
                 </button>
+              </div>
+              <div className="mb-3 rounded-2xl border border-[#b98d52]/18 bg-[#fffdf2]/72 p-3">
+                <div className="flex items-center justify-between gap-3">
+                  <div className="flex items-center gap-2">
+                    <span
+                      className="block h-3 w-3 rounded-full"
+                      style={{
+                        background: speech.listening ? '#ff8a22' : '#c9a76e',
+                        boxShadow: speech.listening
+                          ? '0 0 0 6px rgba(255,138,34,0.13), 0 0 22px rgba(255,138,34,0.6)'
+                          : 'none',
+                        animation: speech.listening
+                          ? 'build-lab-voice-pulse 1s ease-in-out infinite'
+                          : 'none',
+                      }}
+                    />
+                    <span className="text-xs uppercase tracking-[0.14em] text-[#704923]">
+                      {speech.listening
+                        ? 'Listening'
+                        : speech.supported
+                          ? 'Voice ready'
+                          : 'Voice unavailable'}
+                    </span>
+                  </div>
+                  {speech.transcript && (
+                    <span className="text-[11px] text-[#8d653d]">transcript captured</span>
+                  )}
+                </div>
+                <p className="mt-2 text-xs leading-5 text-[#8d653d]">
+                  {speech.error ||
+                    (speech.listening
+                      ? 'Speak now. Your words should appear in the mission prompt below.'
+                      : speech.transcript
+                        ? `Last heard: ${speech.transcript}`
+                        : 'Tap Voice and allow microphone access in the browser.')}
+                </p>
               </div>
               <div className="mb-3 grid gap-3 md:grid-cols-2">
                 <label className="block">
