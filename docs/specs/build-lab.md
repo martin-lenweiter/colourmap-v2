@@ -26,7 +26,15 @@ The platform should not become a generic developer dashboard. It should feel lik
 
 Creator Space needs a non-terminal layer for understanding the evolution of the work.
 
-The Garden of Ideas is where the project thinks before and after code. It should have several modes, because the user needs different levels of clarity at different moments.
+The Garden of Ideas is where the project thinks before and after code. It should have several modes, because the user needs different levels of clarity at different moments. It is also the first seed of Colourmap's broader **graphical intelligence** system: turning dense reflections, specs, education content, strategy, and life patterns into visual fields that humans can understand faster.
+
+The Garden must not collapse every kind of understanding into one board. The user needs separate lenses:
+
+- the spec map for what the product is and how it is built
+- the simpler reflection map for the human meaning of the product
+- the business plan for shipping, revenue, and independence
+- the education atlas for explaining wellbeing programs
+- the inner/collective wellbeing map for how the app helps humans and groups become clearer
 
 ### Garden Modes
 
@@ -59,7 +67,47 @@ This is not the technical spec. It is the simple human version of the product:
 
 This mode should be written and shown in plain language. It should help the user or a collaborator understand the soul of the project without reading implementation details.
 
-**3. Idea Garden**
+**3. Business Plan**
+
+Business Plan is a practical strategy lens, not a philosophical one. It answers:
+
+- what is the first paid product?
+- what must be stable before App Store submission?
+- what story explains the app in 30 seconds?
+- what screenshots, demos, privacy wording, and review access are needed?
+- what should be delayed because it does not help shipping or retention yet?
+- what route could realistically move the user toward financial independence?
+
+**4. Education Atlas**
+
+Education Atlas is the visual explanation layer for wellbeing education. It does not replace the spec map or the simpler product reflection. It answers:
+
+- how do the education programs connect?
+- which programs explain pressure, avoidance, energy, repair, attention, relationships, and meaning?
+- which format fits each idea: comic, road, atlas, side-by-side comparison, tiny exercise, or visual metaphor?
+- how can the user see the whole education system at a glance?
+
+The first organizing routes:
+
+- **Notice**: see the field, inner weather, body signals, pressure.
+- **Understand**: identify loops, avoidance, protection, repeated valleys.
+- **Stabilize**: breathing, sleep, repair, emotional narrowing, nervous-system support.
+- **Act**: small bridge actions, admin maps, creative missions, one next cut.
+- **Connect**: relationships, communication, collective repair, shared clarity.
+
+**5. Inner And Collective Wellbeing**
+
+This mode explains why Colourmap matters beyond individual productivity. It answers:
+
+- how does inner clarity reduce wasted suffering?
+- how does seeing a pattern create distance from it?
+- how can people move between creation, admin, body, repair, and play with less fear?
+- how can clearer individuals create calmer teams, relationships, and communities?
+- what would it mean for visual intelligence to support peace, prosperity, and collective happiness?
+
+This lens should stay grounded. The first product remains personal and practical, but the long-term philosophy can guide education, sharing, group maps, and future collective intelligence surfaces.
+
+**6. Idea Garden**
 
 This is the living creative layer. The user should be able to keep spaces for:
 
@@ -74,6 +122,102 @@ This is the living creative layer. The user should be able to keep spaces for:
 This should not feel like a normal notes app. It should feel like a product garden: ideas can branch, connect, mature, be paused, and reappear later. The user should be able to ask: "where did this idea come from?", "what did we decide?", "what is connected to this?", and "what is the next practical cut?"
 
 Long term, Build Lab missions should feed these spaces automatically. A completed mission can create or update an idea block with: original prompt, reflection, changed files, screenshots, decision, remaining next steps, and relationships to other ideas.
+
+### Graphical Intelligence Method
+
+Garden of Ideas should develop through a three-pass method:
+
+**Pass 1: Decompose**
+
+Turn fog into typed nodes:
+
+- idea
+- tension
+- evidence
+- decision
+- risk
+- dependency
+- next cut
+- screenshot or visual proof
+- open question
+- business gate
+- emotional pattern
+
+**Pass 2: Translate**
+
+Choose the form that makes the content easiest to understand:
+
+- simple text boxes for first compression
+- detective board for relationships and decisions
+- road map for sequences and education programs
+- comic strip for human patterns and examples
+- constellation for related ideas
+- river/valley map for repeating loops
+- business board for launch gates and revenue paths
+- 3D landscape for complex systems once the 2D map is clear
+- golden-dot/game-like explainer for immersive future education and presentations
+
+**Pass 3: Move**
+
+Every map should end with motion:
+
+- what is the core simple challenge?
+- what is the next practical cut?
+- what evidence would show the cut worked?
+- what can wait?
+- what should be turned into a Build Lab mission?
+
+The goal is to make humans more intelligent in practice: not by giving them more information, but by showing the few relationships that matter and converting reflection into a clear next move.
+
+### MVP Visual Prototype
+
+The first implementation inside Build Lab should show Garden of Ideas as a static but navigable visual board using the current Colourmap spec as the test subject.
+
+Done when:
+
+- Build Lab has a visible **Garden of Ideas** section.
+- Garden has a compact preview in the normal Build Lab flow and an **Open Garden** mode that expands into a full-screen studio surface.
+- The compact view should not cram every node onto the page. It should show the current lens, a small preview, and invite the user to open the full map.
+- The expanded view should use space deliberately: lens controls in the header, one short context strip, one main visual field, and optional details kept below or hidden until useful.
+- The default expanded display should be a **Bubble Map**: a few large calm idea bubbles with simple connecting lines, inspired by the emotional road/map views. It should feel spacious and unified, not like a grid of blocks.
+- Alternative displays can include Board, Road, Constellation, and Curriculum, but selecting one should reduce the interface to the relevant visual form rather than adding more panels.
+- The user can switch between at least: Spec Map, Reflection, Business Plan, Education Atlas, Inner/Collective Wellbeing, Artistic, Practical, and Intelligence lenses.
+- Each lens shows idea nodes with a summary and next cut.
+- Related nodes are shown as "red thread" relationships.
+- The board makes clear that education explanation, product spec, simple reflection, business strategy, and wellbeing philosophy are separate lenses over the same project.
+- The section is useful without running a coding mission.
+
+## Sun Dialogue / Visual Computer Presence
+
+Creator Space should also test a warmer way of talking to the computer than a normal chat box. The first form is **Sun Dialogue**: a dot-only sun that reacts to voice and speaks back.
+
+The intention:
+
+- the user speaks to a visual presence, not an empty textarea
+- the sun glows, pulses, or reorganizes when listening
+- the sun moves when the system speaks
+- text remains visible so the interaction stays readable
+- the voice can later have different moods: calm, focus, story, playful, practical
+- stories, reflections, coding missions, and education explanations can all be delivered through the same presence layer
+
+MVP behavior:
+
+- browser speech-to-text writes into a local thought box
+- a warm dot sun reacts visually while listening
+- browser speech synthesis can speak short preset responses
+- voice moods adjust speech rate and pitch
+- no audio is stored
+
+Long-term behavior:
+
+- AI writes the response, not a preset line
+- voice can use a stronger provider-backed text-to-speech system
+- the visual system reacts to live audio energy: mouth/center pulse, corona vibration, ray expansion, particle drift
+- the user can ask the sun to explain a spec, education program, business plan, or personal pattern
+- the same visual presence can appear on phone, in Geometry Field, or during concerts
+- stories can unfold as visual scenes: sun, dots, roads, characters, rivers, and maps
+
+This is not a replacement for Build Lab's practical terminal surface. It is the emotional and graphical interface layer that can eventually make Colourmap feel like a living computer companion.
 
 ## Business Plan
 

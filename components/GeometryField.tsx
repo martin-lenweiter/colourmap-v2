@@ -65,6 +65,9 @@ type Mode =
   | 'braintopography'
   | 'walkingfigure'
   | 'dotwalker'
+  | 'dotsunfire'
+  | 'dotalchemicalsun'
+  | 'dotheart'
   | 'emotion'
   | 'constellation'
   | 'drift'
@@ -700,6 +703,42 @@ const PRESETS: Record<string, Cfg> = {
     luminous: 2.8,
     stars: 1,
     mode: 'dotwalker',
+  },
+  'Fire Dot Sun': {
+    preset: 'Golden Source',
+    symmetry: 11,
+    complexity: 6.8,
+    glow: 7.8,
+    breathSpeed: 0.78,
+    intensity: 8.4,
+    particles: 7,
+    luminous: 3.4,
+    stars: 2,
+    mode: 'dotsunfire',
+  },
+  'Alchemical Dot Sun': {
+    preset: 'Golden Source',
+    symmetry: 12,
+    complexity: 6.2,
+    glow: 5.5,
+    breathSpeed: 0.62,
+    intensity: 8,
+    particles: 7,
+    luminous: 3,
+    stars: 1,
+    mode: 'dotalchemicalsun',
+  },
+  'Dot Heart': {
+    preset: 'Golden Source',
+    symmetry: 9,
+    complexity: 6.4,
+    glow: 7.2,
+    breathSpeed: 0.72,
+    intensity: 8,
+    particles: 8,
+    luminous: 3,
+    stars: 1,
+    mode: 'dotheart',
   },
   'Golden Source': {
     preset: 'Golden Source',
@@ -3860,6 +3899,10 @@ function buildModeGroup(cfg: Cfg, R: number): THREE.Group {
       return buildWalkingFigure(cfg, R);
     case 'dotwalker':
       return buildDotWalker(cfg, R);
+    case 'dotsunfire':
+    case 'dotalchemicalsun':
+    case 'dotheart':
+      return buildDotSymbolField(cfg, R);
     case 'pulse':
       return buildPulse(cfg, R);
     case 'emotion':
@@ -4076,6 +4119,11 @@ function updateModeGroup(group: THREE.Group, cfg: Cfg, dots: Dot[], t: number, R
       break;
     case 'dotwalker':
       updateDotWalker(group, cfg, t, R);
+      break;
+    case 'dotsunfire':
+    case 'dotalchemicalsun':
+    case 'dotheart':
+      updateDotSymbolField(group, cfg, t, R);
       break;
     case 'pulse':
       updatePulse(group, cfg, t, R);
@@ -10385,6 +10433,34 @@ const MODE_SLIDERS: Partial<Record<Mode, SliderDef[]>> = {
     { key: 'luminous', label: 'Bloom', min: 0, max: 5, step: 0.1 },
     { key: 'stars', label: 'Stars', min: 0, max: 10, step: 1 },
   ],
+  dotsunfire: [
+    { key: 'complexity', label: 'Fire Motion', min: 1, max: 10, step: 0.5 },
+    { key: 'glow', label: 'Corona', min: 0, max: 10, step: 0.5 },
+    { key: 'breathSpeed', label: 'Pulse', min: 0.05, max: 2.0, step: 0.05 },
+    { key: 'intensity', label: 'Heat', min: 0, max: 10, step: 0.5 },
+    { key: 'particles', label: 'Dots', min: 1, max: 10, step: 1 },
+    { key: 'luminous', label: 'Bloom', min: 0, max: 5, step: 0.1 },
+    { key: 'stars', label: 'Stars', min: 0, max: 10, step: 1 },
+  ],
+  dotalchemicalsun: [
+    { key: 'symmetry', label: 'Rays', min: 5, max: 24, step: 1 },
+    { key: 'complexity', label: 'Ray Length', min: 1, max: 10, step: 0.5 },
+    { key: 'glow', label: 'Ray Curve', min: 0, max: 10, step: 0.5 },
+    { key: 'breathSpeed', label: 'Pulse', min: 0.05, max: 2.0, step: 0.05 },
+    { key: 'intensity', label: 'Heat', min: 0, max: 10, step: 0.5 },
+    { key: 'particles', label: 'Dots', min: 1, max: 10, step: 1 },
+    { key: 'luminous', label: 'Bloom', min: 0, max: 5, step: 0.1 },
+    { key: 'stars', label: 'Stars', min: 0, max: 10, step: 1 },
+  ],
+  dotheart: [
+    { key: 'complexity', label: 'Inner Flow', min: 1, max: 10, step: 0.5 },
+    { key: 'glow', label: 'Pulse Width', min: 0, max: 10, step: 0.5 },
+    { key: 'breathSpeed', label: 'Pulse', min: 0.05, max: 2.0, step: 0.05 },
+    { key: 'intensity', label: 'Warmth', min: 0, max: 10, step: 0.5 },
+    { key: 'particles', label: 'Dots', min: 1, max: 10, step: 1 },
+    { key: 'luminous', label: 'Bloom', min: 0, max: 5, step: 0.1 },
+    { key: 'stars', label: 'Stars', min: 0, max: 10, step: 1 },
+  ],
   entropy3d: [
     { key: 'complexity', label: 'Density', min: 1, max: 10, step: 1 },
     { key: 'breathSpeed', label: 'Speed', min: 0.05, max: 2.0, step: 0.05 },
@@ -10458,6 +10534,9 @@ const MODE_TO_PRESET: Partial<Record<Mode, string>> = {
   braintopography: 'Brain Topography',
   walkingfigure: 'Walking Figure',
   dotwalker: 'Dot Walker',
+  dotsunfire: 'Fire Dot Sun',
+  dotalchemicalsun: 'Alchemical Dot Sun',
+  dotheart: 'Dot Heart',
   embf3d: 'Calm Field',
   wordneon: 'Neon Word',
   hopefear: 'Duality',
@@ -10563,6 +10642,9 @@ const MODES: { mode: Mode; label: string }[] = [
   { mode: 'braintopography', label: 'Brain Topography' },
   { mode: 'walkingfigure', label: 'Walking Figure' },
   { mode: 'dotwalker', label: 'Dot Walker' },
+  { mode: 'dotsunfire', label: 'Fire Dot Sun' },
+  { mode: 'dotalchemicalsun', label: 'Alchemical Dot Sun' },
+  { mode: 'dotheart', label: 'Dot Heart' },
   { mode: 'pulse', label: '◉ Pulse' },
   { mode: 'emotion', label: '◉ Emotion' },
   { mode: 'constellation', label: '✦ Constellation' },
@@ -10588,6 +10670,9 @@ const FEATURED_PRESETS: FeaturedItem[] = [
   { name: 'Brain Topography', tag: 'SELF' },
   { name: 'Walking Figure', tag: 'CHAR' },
   { name: 'Dot Walker', tag: 'CHAR' },
+  { name: 'Fire Dot Sun', tag: 'DOT' },
+  { name: 'Alchemical Dot Sun', tag: 'DOT' },
+  { name: 'Dot Heart', tag: 'DOT' },
   { name: 'Current Scales', tag: 'MUSIC' },
   { name: 'Sin Morph', tag: 'TOP' },
   { name: 'Sacred Sin Morph', tag: 'MUSIC' },
@@ -11485,6 +11570,121 @@ function updateDotWalker(group: THREE.Group, cfg: Cfg, t: number, R: number): vo
       pos.needsUpdate = true;
       updateMat(trail, pal.rgb, cfg.intensity / 10, 1.5);
     }
+  }
+}
+
+/* Dot-only symbolic forms: warm sun, alchemical sun, and heart */
+
+const DOT_SYMBOL_COUNT = 2400;
+
+function buildDotSymbolField(cfg: Cfg, R: number): THREE.Group {
+  const group = new THREE.Group();
+  const pal = PAL[cfg.preset] ?? PAL['Golden Source'];
+  const pos = new Float32Array(DOT_SYMBOL_COUNT * 3);
+  const seed = new Float32Array(DOT_SYMBOL_COUNT * 4);
+
+  for (let i = 0; i < DOT_SYMBOL_COUNT; i++) {
+    seed[i * 4] = Math.random();
+    seed[i * 4 + 1] = Math.random();
+    seed[i * 4 + 2] = Math.random();
+    seed[i * 4 + 3] = i / DOT_SYMBOL_COUNT;
+  }
+
+  const geo = new THREE.BufferGeometry();
+  geo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+  geo.setAttribute('seed', new THREE.BufferAttribute(seed, 4));
+  const dots = new THREE.Points(
+    geo,
+    circlePtsMat(hdrColor(pal.rgb, cfg.intensity / 10, 2.9), 2.2, 0.74),
+  );
+  dots.userData.tag = 'dotSymbolField';
+  group.add(dots);
+  return group;
+}
+
+function updateDotSymbolField(group: THREE.Group, cfg: Cfg, t: number, R: number): void {
+  const pal = PAL[cfg.preset] ?? PAL['Golden Source'];
+  const phase = t * 0.001 * cfg.breathSpeed;
+  const pulse = 0.5 + 0.5 * Math.sin(phase * 2.2);
+  const heat = cfg.intensity / 10;
+  const dotLimit = Math.round(lerp(800, DOT_SYMBOL_COUNT, cfg.particles / 10));
+  const TAU = Math.PI * 2;
+
+  for (const child of group.children) {
+    if (child.userData.tag !== 'dotSymbolField') continue;
+    const dots = child as THREE.Points;
+    const pos = dots.geometry.getAttribute('position') as THREE.BufferAttribute;
+    const seed = dots.geometry.getAttribute('seed') as THREE.BufferAttribute;
+    const arr = pos.array as Float32Array;
+    const sarr = seed.array as Float32Array;
+
+    for (let i = 0; i < DOT_SYMBOL_COUNT; i++) {
+      const u = sarr[i * 4];
+      const v = sarr[i * 4 + 1];
+      const w = sarr[i * 4 + 2];
+      const q = sarr[i * 4 + 3];
+      let x = 99999;
+      let y = 99999;
+      let z = 0;
+
+      if (i < dotLimit && cfg.mode === 'dotsunfire') {
+        const a = v * TAU;
+        const corona = u > 0.72;
+        const coreR = Math.sqrt(corona ? (u - 0.72) / 0.28 : u / 0.72);
+        const flame =
+          Math.sin(a * 9 + phase * 2.1 + w * 7) * 0.04 * cfg.complexity +
+          Math.sin(a * 17 - phase * 1.3) * 0.018 * cfg.glow;
+        const r = R * (corona ? 0.34 + coreR * (0.22 + cfg.glow * 0.018) : coreR * 0.34);
+        const breathe = 1 + pulse * 0.025 + flame;
+        x = Math.cos(a) * r * breathe;
+        y = Math.sin(a) * r * breathe;
+        z = Math.sin(phase + w * TAU) * R * 0.025;
+      } else if (i < dotLimit && cfg.mode === 'dotalchemicalsun') {
+        const rays = Math.max(5, Math.round(cfg.symmetry));
+        const rayZone = u > 0.45;
+        const ray = Math.floor(v * rays);
+        const rayLocal = v * rays - ray;
+        const baseA = (ray / rays) * TAU;
+        if (rayZone) {
+          const length = lerp(0.38, 0.78, cfg.complexity / 10);
+          const curve = (cfg.glow / 10 - 0.5) * 0.45;
+          const along = (u - 0.45) / 0.55;
+          const width = (1 - along) * (0.22 / rays + 0.012) + 0.005;
+          const a = baseA + (rayLocal - 0.5) * width * TAU + Math.sin(along * Math.PI) * curve;
+          const r = R * (0.27 + along * length);
+          x = Math.cos(a) * r;
+          y = Math.sin(a) * r;
+          z = Math.sin(along * Math.PI + phase + w) * R * 0.025;
+        } else {
+          const a = v * TAU;
+          const r = R * Math.sqrt(u / 0.45) * 0.3 * (1 + pulse * 0.02);
+          x = Math.cos(a) * r;
+          y = Math.sin(a) * r;
+          z = Math.cos(a * 3 + phase) * R * 0.012;
+        }
+      } else if (i < dotLimit && cfg.mode === 'dotheart') {
+        const a = v * TAU;
+        const inner = Math.sqrt(u);
+        const hx = 16 * Math.sin(a) ** 3;
+        const hy = 13 * Math.cos(a) - 5 * Math.cos(2 * a) - 2 * Math.cos(3 * a) - Math.cos(4 * a);
+        const flow = Math.sin(phase * 1.4 + q * 18) * R * 0.006 * cfg.complexity;
+        const scale = R * 0.033 * (0.88 + cfg.glow * 0.018 + pulse * 0.04);
+        x = hx * scale * inner + Math.cos(a * 5 + phase) * flow;
+        y = (hy * scale - R * 0.06) * inner + Math.sin(a * 4 - phase) * flow;
+        z = Math.sin(phase + q * TAU) * R * 0.025;
+      }
+
+      const force = fingerForce(x, y, z, R);
+      arr[i * 3] = x + force.x;
+      arr[i * 3 + 1] = y + force.y;
+      arr[i * 3 + 2] = z + force.z;
+    }
+
+    pos.needsUpdate = true;
+    const mat = dots.material as THREE.PointsMaterial;
+    mat.size = (1.6 + cfg.luminous * 0.18 + pulse * 0.28) * (R / 260);
+    mat.opacity = 0.6 + heat * 0.24;
+    updateMat(dots, pal.rgb, heat, 2.4 + cfg.luminous * 0.32 + pulse * 0.25);
   }
 }
 
