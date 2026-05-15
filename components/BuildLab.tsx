@@ -1,17 +1,23 @@
 'use client';
 
 import {
+  AlertTriangle,
+  Archive,
   Bot,
   CheckCircle2,
   Circle,
+  ClipboardCheck,
   Clock3,
+  FolderOpen,
   GitBranch,
   Mic,
   MicOff,
   Play,
   RefreshCw,
   ShieldCheck,
+  Sparkles,
   SquareTerminal,
+  Wand2,
 } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
 
@@ -46,6 +52,33 @@ type ProjectInfo = {
   git: boolean;
   branch: string | null;
   changedFiles: string[];
+};
+
+type MissionMemory = {
+  id: string;
+  title: string;
+  mode: AgentMode;
+  worldFocus: string;
+  agentId: string;
+  projectPath: string;
+  status: 'complete' | 'failed' | 'draft';
+  prompt: string;
+  currentTension: string;
+  constraints: string;
+  successCriteria: string;
+  changedFiles: string[];
+  createdAt: string;
+};
+
+type PromptTemplate = {
+  id: string;
+  label: string;
+  mode: AgentMode;
+  title: string;
+  tension: string;
+  constraints: string;
+  success: string;
+  prompt: string;
 };
 
 const modes: { id: AgentMode; label: string }[] = [
@@ -84,9 +117,74 @@ const stageLabels: Record<MissionStage, string> = {
 };
 
 const stageOrder: MissionStage[] = ['draft', 'project', 'checkpoint', 'agent', 'diff', 'complete'];
+const HISTORY_LS = 'colourmap:build-lab-history';
+const RECENT_PROJECTS_LS = 'colourmap:build-lab-recent-projects';
+
+const templates: PromptTemplate[] = [
+  {
+    id: 'stabilise',
+    label: 'Stabilise',
+    mode: 'fix',
+    title: 'Stabilise the current branch',
+    tension: 'The idea is moving fast, but the branch needs to become safe to review.',
+    constraints:
+      'Keep the change tight. Do not rewrite unrelated modules. Preserve user work. Run the relevant checks and browser verification for UI changes.',
+    success:
+      'The branch is easy to review, the main checks pass, and remaining risks are clearly named.',
+    prompt:
+      'Inspect the current branch, fix the smallest blocking issues, and prepare it for PR review.',
+  },
+  {
+    id: 'feature',
+    label: 'Build feature',
+    mode: 'build',
+    title: 'Build one focused product improvement',
+    tension: 'Expansion needs one shippable cut instead of a huge vision dump.',
+    constraints:
+      'Follow existing product specs and patterns. Keep scope inside the named feature. Add tests where behavior changes.',
+    success:
+      'The feature works in the UI, has a clear spec trail, and can be explained in one paragraph.',
+    prompt:
+      'Build the next useful slice of this feature. Read the relevant specs first, implement, verify, and summarize the diff.',
+  },
+  {
+    id: 'review',
+    label: 'Review PR',
+    mode: 'review',
+    title: 'Review the branch for merge risk',
+    tension: 'The work exists, but it needs a calm second pass before merge.',
+    constraints:
+      'Prioritize bugs, regressions, missing tests, protected-path risks, and unclear product behavior.',
+    success: 'The review names concrete file/line risks, required fixes, and what can safely wait.',
+    prompt:
+      'Review this branch like a senior engineer. Findings first, then tests and residual risk.',
+  },
+];
 
 function nextId() {
   return Date.now() + Math.random();
+}
+
+function loadJson<T>(key: string, fallback: T): T {
+  try {
+    const raw = localStorage.getItem(key);
+    return raw ? (JSON.parse(raw) as T) : fallback;
+  } catch {
+    return fallback;
+  }
+}
+
+function saveJson(key: string, value: unknown) {
+  try {
+    localStorage.setItem(key, JSON.stringify(value));
+  } catch {}
+}
+
+function shortPath(path: string) {
+  const normalized = path.replace(/\\/g, '/');
+  const parts = normalized.split('/').filter(Boolean);
+  if (parts.length <= 2) return normalized;
+  return `${parts.at(-2)}/${parts.at(-1)}`;
 }
 
 export default function BuildLab() {
@@ -106,6 +204,9 @@ export default function BuildLab() {
   const [diff, setDiff] = useState('');
   const [stage, setStage] = useState<MissionStage>('draft');
   const [checkpoints, setCheckpoints] = useState<CheckpointInfo[]>([]);
+  const [history, setHistory] = useState<MissionMemory[]>([]);
+  const [recentProjects, setRecentProjects] = useState<string[]>([]);
+  const [showRawConsole, setShowRawConsole] = useState(false);
   const [running, setRunning] = useState(false);
   const [error, setError] = useState('');
   const speech = useSpeechToText({ lang: 'en-US' });
@@ -116,6 +217,9 @@ export default function BuildLab() {
   );
 
   useEffect(() => {
+    setHistory(loadJson<MissionMemory[]>(HISTORY_LS, []));
+    setRecentProjects(loadJson<string[]>(RECENT_PROJECTS_LS, []));
+
     async function loadAgents() {
       const response = await fetch('/api/build-lab/availability');
       if (!response.ok) {
@@ -147,6 +251,57 @@ export default function BuildLab() {
       .join('\n\n');
   }
 
+  function rememberProject(nextPath: string) {
+    const next = [nextPath, ...recentProjects.filter((path) => path !== nextPath)].slice(0, 5);
+    setRecentProjects(next);
+    saveJson(RECENT_PROJECTS_LS, next);
+  }
+
+  function rememberMission(status: MissionMemory['status'], files: string[]) {
+    const mission: MissionMemory = {
+      id: crypto.randomUUID(),
+      title: missionTitle.trim() || 'Untitled coding mission',
+      mode,
+      worldFocus,
+      agentId,
+      projectPath,
+      status,
+      prompt,
+      currentTension,
+      constraints,
+      successCriteria,
+      changedFiles: files,
+      createdAt: new Date().toISOString(),
+    };
+    const next = [mission, ...history].slice(0, 8);
+    setHistory(next);
+    saveJson(HISTORY_LS, next);
+  }
+
+  function loadMission(mission: MissionMemory) {
+    setMissionTitle(mission.title);
+    setMode(mission.mode);
+    setWorldFocus(mission.worldFocus);
+    setAgentId(mission.agentId);
+    setProjectPath(mission.projectPath);
+    setPrompt(mission.prompt);
+    setCurrentTension(mission.currentTension);
+    setConstraints(mission.constraints);
+    setSuccessCriteria(mission.successCriteria);
+    setStage('draft');
+    addEvent('memory', `Loaded mission memory: ${mission.title}`, 'meta');
+  }
+
+  function applyTemplate(template: PromptTemplate) {
+    setMissionTitle(template.title);
+    setCurrentTension(template.tension);
+    setConstraints(template.constraints);
+    setSuccessCriteria(template.success);
+    setPrompt(template.prompt);
+    setMode(template.mode);
+    setStage('draft');
+  }
+
   async function inspectProject() {
     setError('');
     const response = await fetch('/api/build-lab/project', {
@@ -163,21 +318,23 @@ export default function BuildLab() {
     setProjectPath(data.projectPath);
     setChangedFiles(data.changedFiles);
     setStage('project');
+    rememberProject(data.projectPath);
     addEvent('project', `Loaded ${data.projectPath}`, 'meta');
   }
 
   async function refreshDiff() {
-    if (!projectPath.trim()) return;
+    if (!projectPath.trim()) return null;
     const response = await fetch('/api/build-lab/diff', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ projectPath }),
     });
-    if (!response.ok) return;
+    if (!response.ok) return null;
     const data = (await response.json()) as { diff: string; changedFiles: string[] };
     setDiff(data.diff);
     setChangedFiles(data.changedFiles);
     setStage(data.changedFiles.length > 0 ? 'diff' : stage);
+    return data;
   }
 
   async function runMission() {
@@ -193,6 +350,7 @@ export default function BuildLab() {
     setCheckpoints([]);
     setStage('checkpoint');
     addEvent('mission', missionTitle || 'Untitled coding mission', 'meta');
+    let missionSucceeded = false;
 
     try {
       const response = await fetch('/api/build-lab/mission', {
@@ -242,6 +400,7 @@ export default function BuildLab() {
           else if (event.type === 'file_changed' && event.path)
             setChangedFiles((prev) => Array.from(new Set([...prev, event.path as string])));
           else if (event.type === 'mission_complete') {
+            missionSucceeded = Boolean(event.success);
             setStage(event.success ? 'complete' : 'failed');
             addEvent(
               'complete',
@@ -256,10 +415,12 @@ export default function BuildLab() {
           }
         }
       }
-      await refreshDiff();
+      const refreshed = await refreshDiff();
+      rememberMission(missionSucceeded ? 'complete' : 'failed', refreshed?.changedFiles ?? []);
     } catch (missionError) {
       setStage('failed');
       setError(missionError instanceof Error ? missionError.message : 'Mission failed.');
+      rememberMission('failed', changedFiles);
     } finally {
       setRunning(false);
     }
@@ -273,7 +434,40 @@ export default function BuildLab() {
     }
   }
 
-  const missionReady = composedPrompt().trim().length > 0 && Boolean(selectedAgent?.available);
+  const workerBrief = composedPrompt();
+  const scopeLens = useMemo(() => {
+    const brief = [
+      missionTitle,
+      currentTension,
+      worldFocus,
+      constraints,
+      successCriteria,
+      prompt,
+    ].join('\n');
+    const warnings: string[] = [];
+    const strengths: string[] = [];
+    if (projectInfo) strengths.push('project loaded');
+    else warnings.push('load the project before running');
+    if (missionTitle.trim()) strengths.push('named mission');
+    else warnings.push('add a short mission title');
+    if (successCriteria.trim()) strengths.push('success criteria');
+    else warnings.push('define what done means');
+    if (constraints.trim()) strengths.push('constraints');
+    else warnings.push('add guardrails for the worker');
+    if (prompt.trim().length > 40) strengths.push('usable brief');
+    else warnings.push('write or dictate a fuller brief');
+    if (/(everything|whole app|all the app|mega|do all this|fix all)/i.test(brief)) {
+      warnings.push('scope may be too broad');
+    }
+    if (projectInfo?.branch === 'main') warnings.push('current branch is main');
+
+    const score = Math.max(12, Math.min(100, strengths.length * 18 + (warnings.length ? 8 : 20)));
+    const label = score >= 76 ? 'Ready' : score >= 48 ? 'Shape it' : 'Too loose';
+    return { score, label, warnings, strengths };
+  }, [constraints, currentTension, missionTitle, projectInfo, prompt, successCriteria, worldFocus]);
+
+  const missionReady =
+    workerBrief.trim().length > 0 && Boolean(selectedAgent?.available) && Boolean(projectPath);
 
   return (
     <main className="mx-auto w-full max-w-6xl px-3 py-5 sm:px-5">
@@ -325,6 +519,28 @@ export default function BuildLab() {
                 </div>
               </label>
 
+              {recentProjects.length > 0 && (
+                <div className="rounded-2xl border border-[#b98d52]/20 bg-[#fff8e8]/62 p-3">
+                  <div className="mb-2 flex items-center gap-2 text-xs uppercase tracking-[0.14em] text-[#8d653d]">
+                    <FolderOpen size={14} />
+                    Recent projects
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    {recentProjects.map((path) => (
+                      <button
+                        key={path}
+                        type="button"
+                        onClick={() => setProjectPath(path)}
+                        className="rounded-full border border-[#8f6232]/20 px-3 py-1 text-xs text-[#704923]"
+                        title={path}
+                      >
+                        {shortPath(path)}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+
               <div className="grid grid-cols-2 gap-3">
                 <div className="rounded-2xl border border-[#b98d52]/20 bg-[#fff8e8]/70 p-3">
                   <div className="flex items-center gap-2 text-xs uppercase tracking-[0.14em] text-[#8d653d]">
@@ -375,6 +591,38 @@ export default function BuildLab() {
                       </div>
                     );
                   })}
+                </div>
+              </div>
+
+              <div className="rounded-2xl border border-[#b98d52]/20 bg-[#fff8e8]/70 p-3">
+                <div className="mb-3 flex items-center justify-between gap-2">
+                  <div className="flex items-center gap-2 text-xs uppercase tracking-[0.14em] text-[#8d653d]">
+                    <ClipboardCheck size={14} />
+                    Scope lens
+                  </div>
+                  <span className="rounded-full border border-[#8f6232]/20 px-2 py-1 text-[10px] uppercase tracking-[0.12em] text-[#704923]">
+                    {scopeLens.label}
+                  </span>
+                </div>
+                <div className="h-2 overflow-hidden rounded-full bg-[#e7cf9e]">
+                  <div
+                    className="h-full rounded-full bg-[#704923]"
+                    style={{ width: `${scopeLens.score}%` }}
+                  />
+                </div>
+                <div className="mt-3 grid gap-2">
+                  {scopeLens.warnings.slice(0, 4).map((warning) => (
+                    <div key={warning} className="flex items-start gap-2 text-xs text-[#8d653d]">
+                      <AlertTriangle size={13} className="mt-0.5 shrink-0 text-[#a35b38]" />
+                      <span>{warning}</span>
+                    </div>
+                  ))}
+                  {scopeLens.warnings.length === 0 && (
+                    <div className="flex items-start gap-2 text-xs text-[#3f6b45]">
+                      <CheckCircle2 size={13} className="mt-0.5 shrink-0" />
+                      <span>Mission looks tight enough to send.</span>
+                    </div>
+                  )}
                 </div>
               </div>
 
@@ -475,6 +723,42 @@ export default function BuildLab() {
           </div>
 
           <div className="space-y-4 p-5">
+            <div className="rounded-2xl border border-[#b98d52]/20 bg-[#fff8e8]/70 p-4">
+              <div className="mb-3 flex items-center justify-between gap-3">
+                <div>
+                  <p className="flex items-center gap-2 text-xs uppercase tracking-[0.16em] text-[#704923]">
+                    <Wand2 size={14} />
+                    Mission cards
+                  </p>
+                  <p className="mt-1 text-xs text-[#8d653d]">
+                    Start from a reusable shape, then speak the specific brief.
+                  </p>
+                </div>
+                <Sparkles size={18} className="text-[#8d653d]" />
+              </div>
+              <div className="grid gap-2 md:grid-cols-3">
+                {templates.map((template) => (
+                  <button
+                    key={template.id}
+                    type="button"
+                    onClick={() => applyTemplate(template)}
+                    className="rounded-2xl border p-3 text-left"
+                    style={{
+                      borderColor: mode === template.mode ? 'rgba(112,73,38,0.34)' : '#b98d5230',
+                      background: 'rgba(255,253,242,0.72)',
+                    }}
+                  >
+                    <span className="block text-sm font-medium text-[#3f2817]">
+                      {template.label}
+                    </span>
+                    <span className="mt-1 block text-xs leading-5 text-[#8d653d]">
+                      {template.title}
+                    </span>
+                  </button>
+                ))}
+              </div>
+            </div>
+
             <div className="rounded-2xl border border-[#b98d52]/20 bg-[#fff8e8]/78 p-4">
               <div className="mb-2 flex items-center justify-between gap-3">
                 <div>
@@ -530,13 +814,16 @@ export default function BuildLab() {
                   Worker brief preview
                 </summary>
                 <pre className="mt-3 max-h-56 overflow-auto whitespace-pre-wrap text-xs leading-5 text-[#5f4229]">
-                  {composedPrompt() || 'The structured brief will appear here.'}
+                  {workerBrief || 'The structured brief will appear here.'}
                 </pre>
               </details>
               <div className="mt-3 flex flex-wrap items-center justify-between gap-3">
-                <p className="text-xs text-[#8d653d]">
-                  Selected: {selectedAgent?.name ?? 'No agent'} / {mode} / {worldFocus}
-                </p>
+                <div className="flex flex-wrap gap-2 text-xs text-[#8d653d]">
+                  <span>Selected: {selectedAgent?.name ?? 'No agent'}</span>
+                  <span>/ {mode}</span>
+                  <span>/ {worldFocus}</span>
+                  <span>/ scope {scopeLens.score}%</span>
+                </div>
                 <button
                   type="button"
                   onClick={runMission}
@@ -550,35 +837,92 @@ export default function BuildLab() {
               {error && <p className="mt-3 text-sm text-[#9b3b24]">{error}</p>}
             </div>
 
+            <div className="rounded-2xl border border-[#b98d52]/20 bg-[#fff8e8]/70 p-4">
+              <div className="mb-3 flex items-center justify-between gap-3">
+                <p className="flex items-center gap-2 text-xs uppercase tracking-[0.16em] text-[#704923]">
+                  <Archive size={14} />
+                  Mission memory
+                </p>
+                <span className="text-xs text-[#8d653d]">{history.length} saved</span>
+              </div>
+              {history.length === 0 ? (
+                <p className="text-sm text-[#8d653d]">
+                  Completed and failed runs will appear here so you can reuse real missions.
+                </p>
+              ) : (
+                <div className="grid gap-2 md:grid-cols-2">
+                  {history.slice(0, 4).map((mission) => (
+                    <button
+                      key={mission.id}
+                      type="button"
+                      onClick={() => loadMission(mission)}
+                      className="rounded-2xl border border-[#b98d52]/22 bg-[#fffdf2]/75 p-3 text-left"
+                    >
+                      <div className="flex items-start justify-between gap-2">
+                        <span className="text-sm font-medium leading-5 text-[#3f2817]">
+                          {mission.title}
+                        </span>
+                        <span
+                          className={
+                            mission.status === 'complete'
+                              ? 'text-xs text-[#32724d]'
+                              : 'text-xs text-[#a35b38]'
+                          }
+                        >
+                          {mission.status}
+                        </span>
+                      </div>
+                      <div className="mt-2 flex flex-wrap gap-2 text-[11px] text-[#8d653d]">
+                        <span>{mission.mode}</span>
+                        <span>{mission.worldFocus}</span>
+                        <span>{mission.changedFiles.length} files</span>
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+
             <div className="grid gap-4 xl:grid-cols-[1.1fr_0.9fr]">
               <section className="rounded-2xl border border-[#2b2118]/15 bg-[#24180f] p-4 text-[#f8e8bd]">
                 <div className="mb-3 flex items-center justify-between">
                   <p className="text-xs uppercase tracking-[0.16em] text-[#d7b978]">
                     Agent console
                   </p>
-                  <span className="text-xs text-[#a98b5c]">{running ? 'streaming' : 'idle'}</span>
+                  <div className="flex items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={() => setShowRawConsole((value) => !value)}
+                      className="rounded-full border border-[#d7b978]/20 px-2 py-1 text-xs text-[#d7b978]"
+                    >
+                      {showRawConsole ? 'Readable' : 'Raw'}
+                    </button>
+                    <span className="text-xs text-[#a98b5c]">{running ? 'streaming' : 'idle'}</span>
+                  </div>
                 </div>
                 <div className="max-h-[360px] overflow-auto rounded-xl bg-[#150f0a] p-3 font-mono text-xs leading-5">
                   {events.length === 0 ? (
                     <p className="text-[#8e7658]">No mission output yet.</p>
                   ) : (
-                    events.map((event) => (
-                      <div
-                        key={event.id}
-                        className={
-                          event.tone === 'error'
-                            ? 'text-[#ff9b7d]'
-                            : event.tone === 'success'
-                              ? 'text-[#aee0a8]'
-                              : event.tone === 'meta'
-                                ? 'text-[#d7b978]'
-                                : 'text-[#f8e8bd]'
-                        }
-                      >
-                        <span className="opacity-50">[{event.type}] </span>
-                        <span>{event.text}</span>
-                      </div>
-                    ))
+                    (showRawConsole ? events : events.filter((event) => event.text.trim())).map(
+                      (event) => (
+                        <div
+                          key={event.id}
+                          className={
+                            event.tone === 'error'
+                              ? 'text-[#ff9b7d]'
+                              : event.tone === 'success'
+                                ? 'text-[#aee0a8]'
+                                : event.tone === 'meta'
+                                  ? 'text-[#d7b978]'
+                                  : 'text-[#f8e8bd]'
+                          }
+                        >
+                          <span className="opacity-50">[{event.type}] </span>
+                          <span>{event.text}</span>
+                        </div>
+                      ),
+                    )
                   )}
                 </div>
               </section>

@@ -62,6 +62,9 @@ type Mode =
   | 'matrix3d'
   | 'pulse'
   | 'archetypesun'
+  | 'braintopography'
+  | 'walkingfigure'
+  | 'dotwalker'
   | 'emotion'
   | 'constellation'
   | 'drift'
@@ -661,6 +664,42 @@ const PRESETS: Record<string, Cfg> = {
     luminous: 3,
     stars: 2,
     mode: 'archetypesun',
+  },
+  'Brain Topography': {
+    preset: 'Golden Source',
+    symmetry: 12,
+    complexity: 7.2,
+    glow: 6.6,
+    breathSpeed: 0.72,
+    intensity: 7.4,
+    particles: 9,
+    luminous: 2.6,
+    stars: 1,
+    mode: 'braintopography',
+  },
+  'Walking Figure': {
+    preset: 'Calm Field',
+    symmetry: 5,
+    complexity: 5.5,
+    glow: 5.8,
+    breathSpeed: 0.95,
+    intensity: 7,
+    particles: 5,
+    luminous: 2.2,
+    stars: 1,
+    mode: 'walkingfigure',
+  },
+  'Dot Walker': {
+    preset: 'Golden Source',
+    symmetry: 8,
+    complexity: 7,
+    glow: 7,
+    breathSpeed: 0.9,
+    intensity: 7.6,
+    particles: 7,
+    luminous: 2.8,
+    stars: 1,
+    mode: 'dotwalker',
   },
   'Golden Source': {
     preset: 'Golden Source',
@@ -3815,6 +3854,12 @@ function buildModeGroup(cfg: Cfg, R: number): THREE.Group {
       return buildMatrix3D(cfg, R);
     case 'archetypesun':
       return buildArchetypeSun(cfg, R);
+    case 'braintopography':
+      return buildBrainTopography(cfg, R);
+    case 'walkingfigure':
+      return buildWalkingFigure(cfg, R);
+    case 'dotwalker':
+      return buildDotWalker(cfg, R);
     case 'pulse':
       return buildPulse(cfg, R);
     case 'emotion':
@@ -4022,6 +4067,15 @@ function updateModeGroup(group: THREE.Group, cfg: Cfg, dots: Dot[], t: number, R
       break;
     case 'archetypesun':
       updateArchetypeSun(group, cfg, t, R);
+      break;
+    case 'braintopography':
+      updateBrainTopography(group, cfg, t, R);
+      break;
+    case 'walkingfigure':
+      updateWalkingFigure(group, cfg, t, R);
+      break;
+    case 'dotwalker':
+      updateDotWalker(group, cfg, t, R);
       break;
     case 'pulse':
       updatePulse(group, cfg, t, R);
@@ -10392,6 +10446,9 @@ const MODE_TO_PRESET: Partial<Record<Mode, string>> = {
   matrix3d: 'Matrix Rain',
   pulse: 'Rorschach Pulse',
   archetypesun: 'Mode Sun',
+  braintopography: 'Brain Topography',
+  walkingfigure: 'Walking Figure',
+  dotwalker: 'Dot Walker',
   embf3d: 'Calm Field',
   wordneon: 'Neon Word',
   hopefear: 'Duality',
@@ -10494,6 +10551,9 @@ const MODES: { mode: Mode; label: string }[] = [
   { mode: 'matrix', label: '⋮ Matrix' },
   { mode: 'matrix3d', label: '⋮³ Matrix 3D' },
   { mode: 'archetypesun', label: 'Mode Sun' },
+  { mode: 'braintopography', label: 'Brain Topography' },
+  { mode: 'walkingfigure', label: 'Walking Figure' },
+  { mode: 'dotwalker', label: 'Dot Walker' },
   { mode: 'pulse', label: '◉ Pulse' },
   { mode: 'emotion', label: '◉ Emotion' },
   { mode: 'constellation', label: '✦ Constellation' },
@@ -10516,6 +10576,9 @@ type FeaturedItem = { name: string; tag: string } | { header: string; dim?: bool
 const FEATURED_PRESETS: FeaturedItem[] = [
   { header: 'Good Ones' },
   { name: 'Mode Sun', tag: 'SELF' },
+  { name: 'Brain Topography', tag: 'SELF' },
+  { name: 'Walking Figure', tag: 'CHAR' },
+  { name: 'Dot Walker', tag: 'CHAR' },
   { name: 'Current Scales', tag: 'MUSIC' },
   { name: 'Sin Morph', tag: 'TOP' },
   { name: 'Sacred Sin Morph', tag: 'MUSIC' },
@@ -10796,6 +10859,447 @@ function updateArchetypeSun(group: THREE.Group, cfg: Cfg, t: number, R: number):
       const mat = core.material as THREE.MeshBasicMaterial;
       mat.opacity = 0.34 + pulse * 0.22;
       mat.color.setRGB(baseRgb[0] / 255, baseRgb[1] / 255, baseRgb[2] / 255);
+    }
+  }
+}
+
+/* Brain Topography - thousand-dot walnut field for future living maps */
+
+const BRAIN_DOT_COUNT = 1800;
+const BRAIN_RIDGE_PTS = 260;
+
+function brainRadius(a: number, side: number, cfg: Cfg, t = 0) {
+  const folded =
+    1 +
+    0.08 * Math.sin(a * 3 + side * 0.4) +
+    0.045 * Math.sin(a * 7 - side * 0.7 + t * 0.0004 * cfg.breathSpeed) +
+    0.025 * Math.cos(a * 13 + t * 0.0002);
+  const crown = 1 - 0.11 * Math.max(0, Math.cos(a - Math.PI / 2));
+  return folded * crown;
+}
+
+function buildBrainTopography(cfg: Cfg, R: number): THREE.Group {
+  const group = new THREE.Group();
+  const pal = PAL[cfg.preset] ?? PAL['Golden Source'];
+  const iF = cfg.intensity / 10;
+  const count = BRAIN_DOT_COUNT;
+  const pos = new Float32Array(count * 3);
+  const seed = new Float32Array(count * 3);
+
+  for (let i = 0; i < count; i++) {
+    const u = (i + 0.5) / count;
+    const golden = i * 2.399963229728653;
+    const side = i % 2 === 0 ? -1 : 1;
+    const a = golden;
+    const rr = Math.sqrt(u) * R * 0.78;
+    const x = Math.cos(a) * rr * 0.74 + side * R * 0.22;
+    const y = Math.sin(a) * rr * 0.94;
+    const nx = (x - side * R * 0.22) / (R * 0.74);
+    const ny = y / (R * 0.94);
+    const edge = Math.sqrt(nx * nx + ny * ny);
+    const foldedEdge = brainRadius(Math.atan2(ny, nx), side, cfg);
+    const inside = edge <= foldedEdge ? 1 : foldedEdge / Math.max(0.001, edge);
+    seed[i * 3] = x * inside;
+    seed[i * 3 + 1] = y * inside;
+    seed[i * 3 + 2] = side;
+    pos[i * 3] = seed[i * 3];
+    pos[i * 3 + 1] = seed[i * 3 + 1];
+    pos[i * 3 + 2] = 0;
+  }
+
+  const geo = new THREE.BufferGeometry();
+  geo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+  geo.setAttribute('seed', new THREE.BufferAttribute(seed, 3));
+  const dots = new THREE.Points(geo, ptsMat(hdrColor(pal.rgb, iF, 2.8), 2.4, 0.78));
+  dots.userData.tag = 'brainDots';
+  group.add(dots);
+
+  for (const side of [-1, 1]) {
+    const outlineGeo = new THREE.BufferGeometry();
+    outlineGeo.setAttribute(
+      'position',
+      new THREE.BufferAttribute(new Float32Array((BRAIN_RIDGE_PTS + 1) * 3), 3),
+    );
+    const outline = new THREE.Line(outlineGeo, lineMat(hdrColor(pal.rgb, iF * 0.5, 2.1), 0.55));
+    outline.userData.tag = 'brainOutline';
+    outline.userData.side = side;
+    group.add(outline);
+
+    for (let ridge = 0; ridge < 6; ridge++) {
+      const ridgeGeo = new THREE.BufferGeometry();
+      ridgeGeo.setAttribute(
+        'position',
+        new THREE.BufferAttribute(new Float32Array(BRAIN_RIDGE_PTS * 3), 3),
+      );
+      const line = new THREE.Line(ridgeGeo, lineMat(hdrColor(pal.rgb, iF * 0.34, 1.9), 0.28));
+      line.userData.tag = 'brainRidge';
+      line.userData.side = side;
+      line.userData.ridge = ridge;
+      group.add(line);
+    }
+  }
+
+  const midGeo = new THREE.BufferGeometry();
+  midGeo.setAttribute(
+    'position',
+    new THREE.BufferAttribute(new Float32Array(BRAIN_RIDGE_PTS * 3), 3),
+  );
+  const mid = new THREE.Line(midGeo, lineMat(hdrColor(pal.rgb, iF * 0.42, 2.1), 0.42));
+  mid.userData.tag = 'brainMiddle';
+  group.add(mid);
+
+  return group;
+}
+
+function updateBrainTopography(group: THREE.Group, cfg: Cfg, t: number, R: number): void {
+  const pal = PAL[cfg.preset] ?? PAL['Golden Source'];
+  const iF = cfg.intensity / 10;
+  const speed = cfg.breathSpeed;
+  const TAU = Math.PI * 2;
+
+  for (const child of group.children) {
+    const tag = child.userData.tag as string;
+    if (tag === 'brainDots') {
+      const dots = child as THREE.Points;
+      const pos = dots.geometry.getAttribute('position') as THREE.BufferAttribute;
+      const seed = dots.geometry.getAttribute('seed') as THREE.BufferAttribute;
+      const arr = pos.array as Float32Array;
+      const sarr = seed.array as Float32Array;
+      for (let i = 0; i < BRAIN_DOT_COUNT; i++) {
+        const bx = sarr[i * 3];
+        const by = sarr[i * 3 + 1];
+        const side = sarr[i * 3 + 2];
+        const a = Math.atan2(by, bx - side * R * 0.22);
+        const d = Math.hypot(bx / R, by / R);
+        const wave =
+          Math.sin(a * cfg.symmetry + d * 10 + t * 0.001 * speed) * R * 0.018 +
+          Math.cos((bx * 0.02 + by * 0.013) * cfg.complexity + t * 0.0007) * R * 0.012;
+        const braid = Math.sin((bx * side + by * 0.55) * 0.035 + t * 0.0012 * speed) * R * 0.012;
+        const force = fingerForce(bx, by, 0, R);
+        arr[i * 3] = bx + Math.cos(a) * wave + side * braid + force.x;
+        arr[i * 3 + 1] = by + Math.sin(a * 2) * wave * 0.5 + braid * 0.35 + force.y;
+        arr[i * 3 + 2] = force.z;
+      }
+      pos.needsUpdate = true;
+      const mat = dots.material as THREE.PointsMaterial;
+      mat.size = (1.6 + cfg.particles * 0.22) * (R / 260);
+      mat.opacity = 0.62 + Math.min(0.25, cfg.glow / 44);
+      updateMat(dots, pal.rgb, iF, 2.3 + cfg.luminous * 0.28);
+    } else if (tag === 'brainOutline') {
+      const line = child as THREE.Line;
+      const side = child.userData.side as number;
+      const pos = line.geometry.getAttribute('position') as THREE.BufferAttribute;
+      const arr = pos.array as Float32Array;
+      for (let p = 0; p <= BRAIN_RIDGE_PTS; p++) {
+        const a = (p / BRAIN_RIDGE_PTS) * TAU;
+        const rr = brainRadius(a, side, cfg, t);
+        arr[p * 3] = side * R * 0.22 + Math.cos(a) * R * 0.74 * rr;
+        arr[p * 3 + 1] = Math.sin(a) * R * 0.94 * rr;
+        arr[p * 3 + 2] = 0;
+      }
+      pos.needsUpdate = true;
+      updateMat(line, pal.rgb, iF * 0.36, 2.1);
+    } else if (tag === 'brainRidge') {
+      const line = child as THREE.Line;
+      const side = child.userData.side as number;
+      const ridge = child.userData.ridge as number;
+      const pos = line.geometry.getAttribute('position') as THREE.BufferAttribute;
+      const arr = pos.array as Float32Array;
+      const lane = -0.72 + ridge * 0.29;
+      for (let p = 0; p < BRAIN_RIDGE_PTS; p++) {
+        const q = p / (BRAIN_RIDGE_PTS - 1);
+        const y = (q - 0.5) * R * 1.55;
+        const curve = Math.sin(q * Math.PI) * R * 0.28;
+        const fold =
+          Math.sin(q * Math.PI * (2.2 + ridge * 0.2) + t * 0.0009 * speed + ridge) * R * 0.05;
+        arr[p * 3] = side * (R * 0.2 + curve * (0.35 + ridge * 0.05)) + lane * R * 0.08 + fold;
+        arr[p * 3 + 1] = y;
+        arr[p * 3 + 2] = 0;
+      }
+      pos.needsUpdate = true;
+      updateMat(line, pal.rgb, iF * 0.22, 1.8);
+    } else if (tag === 'brainMiddle') {
+      const line = child as THREE.Line;
+      const pos = line.geometry.getAttribute('position') as THREE.BufferAttribute;
+      const arr = pos.array as Float32Array;
+      for (let p = 0; p < BRAIN_RIDGE_PTS; p++) {
+        const q = p / (BRAIN_RIDGE_PTS - 1);
+        const y = (q - 0.5) * R * 1.56;
+        arr[p * 3] = Math.sin(q * Math.PI * 8 + t * 0.0008 * speed) * R * 0.018;
+        arr[p * 3 + 1] = y;
+        arr[p * 3 + 2] = 0;
+      }
+      pos.needsUpdate = true;
+      updateMat(line, pal.rgb, iF * 0.28, 2.1);
+    }
+  }
+}
+
+/* Walking Figure - sober starfish-human loop for future character language */
+
+function capsuleLine(name: string, color: THREE.Color, opacity: number, width = 1) {
+  const geo = new THREE.BufferGeometry();
+  geo.setAttribute('position', new THREE.BufferAttribute(new Float32Array(6), 3));
+  const line = new THREE.Line(
+    geo,
+    new THREE.LineBasicMaterial({ color, transparent: true, opacity, linewidth: width }),
+  );
+  line.userData.tag = 'figureLimb';
+  line.userData.name = name;
+  return line;
+}
+
+function makeJoint(name: string, R: number, color: THREE.Color, opacity: number) {
+  const joint = new THREE.Mesh(
+    new THREE.CircleGeometry(R * 0.022, 24),
+    new THREE.MeshBasicMaterial({ color, transparent: true, opacity, side: THREE.DoubleSide }),
+  );
+  joint.userData.tag = 'figureJoint';
+  joint.userData.name = name;
+  return joint;
+}
+
+function buildWalkingFigure(cfg: Cfg, R: number): THREE.Group {
+  const group = new THREE.Group();
+  const pal = PAL[cfg.preset] ?? PAL['Calm Field'];
+  const color = hdrColor(pal.rgb, cfg.intensity / 10, 2.2);
+  const soft = hdrColor(pal.rgb, cfg.intensity / 10, 1.35);
+
+  for (const name of ['spine', 'leftArm', 'rightArm', 'leftLeg', 'rightLeg', 'ground']) {
+    group.add(capsuleLine(name, name === 'ground' ? soft : color, name === 'ground' ? 0.28 : 0.72));
+  }
+
+  const head = new THREE.Mesh(
+    new THREE.CircleGeometry(R * 0.095, 48),
+    new THREE.MeshBasicMaterial({ color, transparent: true, opacity: 0.5, side: THREE.DoubleSide }),
+  );
+  head.userData.tag = 'figureHead';
+  group.add(head);
+
+  for (const name of ['chest', 'pelvis', 'leftHand', 'rightHand', 'leftFoot', 'rightFoot']) {
+    group.add(makeJoint(name, R, color, 0.56));
+  }
+
+  const auraGeo = new THREE.BufferGeometry();
+  auraGeo.setAttribute('position', new THREE.BufferAttribute(new Float32Array(180 * 3), 3));
+  const aura = new THREE.Line(auraGeo, lineMat(soft, 0.22));
+  aura.userData.tag = 'figureAura';
+  group.add(aura);
+
+  return group;
+}
+
+function setLine(line: THREE.Line, ax: number, ay: number, bx: number, by: number) {
+  const pos = line.geometry.getAttribute('position') as THREE.BufferAttribute;
+  const arr = pos.array as Float32Array;
+  arr[0] = ax;
+  arr[1] = ay;
+  arr[2] = 0;
+  arr[3] = bx;
+  arr[4] = by;
+  arr[5] = 0;
+  pos.needsUpdate = true;
+}
+
+function updateWalkingFigure(group: THREE.Group, cfg: Cfg, t: number, R: number): void {
+  const pal = PAL[cfg.preset] ?? PAL['Calm Field'];
+  const color = hdrColor(pal.rgb, cfg.intensity / 10, 2.2 + cfg.luminous * 0.16);
+  const phase = t * 0.0032 * cfg.breathSpeed;
+  const walk = Math.sin(phase);
+  const counter = Math.sin(phase + Math.PI);
+  const bob = Math.sin(phase * 2) * R * 0.018;
+  const sway = Math.sin(phase) * R * 0.022;
+
+  const chest = { x: sway, y: R * 0.14 + bob };
+  const pelvis = { x: -sway * 0.5, y: -R * 0.18 + bob * 0.3 };
+  const neck = { x: chest.x * 0.45, y: R * 0.31 + bob };
+  const head = { x: neck.x + sway * 0.32, y: R * 0.45 + bob };
+  const lHand = { x: -R * (0.29 + walk * 0.05), y: R * (0.04 - walk * 0.12) + bob };
+  const rHand = { x: R * (0.29 + counter * 0.05), y: R * (0.04 - counter * 0.12) + bob };
+  const lFoot = { x: -R * (0.16 + counter * 0.13), y: -R * 0.58 + Math.max(0, counter) * R * 0.07 };
+  const rFoot = { x: R * (0.16 + walk * 0.13), y: -R * 0.58 + Math.max(0, walk) * R * 0.07 };
+
+  for (const child of group.children) {
+    const tag = child.userData.tag as string;
+    if (tag === 'figureLimb') {
+      const line = child as THREE.Line;
+      const name = child.userData.name as string;
+      if (name === 'spine') setLine(line, neck.x, neck.y, pelvis.x, pelvis.y);
+      if (name === 'leftArm') setLine(line, chest.x - R * 0.055, chest.y, lHand.x, lHand.y);
+      if (name === 'rightArm') setLine(line, chest.x + R * 0.055, chest.y, rHand.x, rHand.y);
+      if (name === 'leftLeg') setLine(line, pelvis.x - R * 0.045, pelvis.y, lFoot.x, lFoot.y);
+      if (name === 'rightLeg') setLine(line, pelvis.x + R * 0.045, pelvis.y, rFoot.x, rFoot.y);
+      if (name === 'ground') setLine(line, -R * 0.56, -R * 0.62, R * 0.56, -R * 0.62);
+      updateMat(line, pal.rgb, cfg.intensity / 10, 1.8);
+    } else if (tag === 'figureJoint') {
+      const joint = child as THREE.Mesh;
+      const name = child.userData.name as string;
+      const point =
+        name === 'chest'
+          ? chest
+          : name === 'pelvis'
+            ? pelvis
+            : name === 'leftHand'
+              ? lHand
+              : name === 'rightHand'
+                ? rHand
+                : name === 'leftFoot'
+                  ? lFoot
+                  : rFoot;
+      joint.position.set(point.x, point.y, 0);
+      joint.scale.setScalar(1 + Math.sin(phase * 2 + point.x * 0.01) * 0.08);
+      updateMat(joint, pal.rgb, cfg.intensity / 10, 2.2);
+    } else if (tag === 'figureHead') {
+      const mesh = child as THREE.Mesh;
+      mesh.position.set(head.x, head.y, 0);
+      mesh.scale.set(0.92 + Math.sin(phase * 2) * 0.025, 1.06 + Math.cos(phase * 2) * 0.035, 1);
+      const mat = mesh.material as THREE.MeshBasicMaterial;
+      mat.color.copy(color);
+      mat.opacity = 0.42 + cfg.glow * 0.025;
+    } else if (tag === 'figureAura') {
+      const aura = child as THREE.Line;
+      const pos = aura.geometry.getAttribute('position') as THREE.BufferAttribute;
+      const arr = pos.array as Float32Array;
+      for (let i = 0; i < 180; i++) {
+        const q = i / 179;
+        const a = q * Math.PI * 2;
+        const rr = R * (0.38 + Math.sin(a * 5 + phase) * 0.02 + cfg.complexity * 0.004);
+        arr[i * 3] = Math.cos(a) * rr + sway * 0.2;
+        arr[i * 3 + 1] = Math.sin(a) * rr - R * 0.04 + bob;
+        arr[i * 3 + 2] = 0;
+      }
+      pos.needsUpdate = true;
+      updateMat(aura, pal.rgb, cfg.intensity / 10, 1.4);
+    }
+  }
+}
+
+/* Dot Walker - liquid particle character body for future morphing stories */
+
+const DOT_WALKER_COUNT = 950;
+
+function buildDotWalker(cfg: Cfg, R: number): THREE.Group {
+  const group = new THREE.Group();
+  const pal = PAL[cfg.preset] ?? PAL['Golden Source'];
+  const pos = new Float32Array(DOT_WALKER_COUNT * 3);
+  const seed = new Float32Array(DOT_WALKER_COUNT * 4);
+
+  for (let i = 0; i < DOT_WALKER_COUNT; i++) {
+    const q = i / DOT_WALKER_COUNT;
+    const zone = q < 0.2 ? 0 : q < 0.44 ? 1 : q < 0.66 ? 2 : q < 0.83 ? 3 : 4;
+    const local = (q * DOT_WALKER_COUNT * 1.61803398875) % 1;
+    const a = i * 2.399963229728653;
+    const spread = Math.sqrt(local);
+    seed[i * 4] = zone;
+    seed[i * 4 + 1] = Math.cos(a) * spread;
+    seed[i * 4 + 2] = Math.sin(a) * spread;
+    seed[i * 4 + 3] = Math.random();
+    pos[i * 3] = 0;
+    pos[i * 3 + 1] = 0;
+    pos[i * 3 + 2] = 0;
+  }
+
+  const geo = new THREE.BufferGeometry();
+  geo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+  geo.setAttribute('seed', new THREE.BufferAttribute(seed, 4));
+  const dots = new THREE.Points(geo, ptsMat(hdrColor(pal.rgb, cfg.intensity / 10, 2.9), 2.8, 0.82));
+  dots.userData.tag = 'dotWalkerDots';
+  group.add(dots);
+
+  const trailGeo = new THREE.BufferGeometry();
+  trailGeo.setAttribute('position', new THREE.BufferAttribute(new Float32Array(220 * 3), 3));
+  const trail = new THREE.Line(trailGeo, lineMat(hdrColor(pal.rgb, cfg.intensity / 10, 1.8), 0.22));
+  trail.userData.tag = 'dotWalkerTrail';
+  group.add(trail);
+
+  return group;
+}
+
+function walkerLimbPoint(zone: number, sx: number, sy: number, phase: number, R: number) {
+  const walk = Math.sin(phase);
+  const counter = Math.sin(phase + Math.PI);
+  const bob = Math.sin(phase * 2) * R * 0.018;
+  if (zone === 0) {
+    return {
+      x: sx * R * 0.075 + Math.sin(phase * 0.7 + sy) * R * 0.012,
+      y: R * 0.42 + sy * R * 0.09 + bob,
+      scale: R * 0.085,
+    };
+  }
+  if (zone === 1) {
+    return {
+      x: sx * R * 0.11 + Math.sin(sy * 3 + phase) * R * 0.018,
+      y: R * 0.06 + sy * R * 0.22 + bob,
+      scale: R * 0.13,
+    };
+  }
+  if (zone === 2) {
+    const side = sx < 0 ? -1 : 1;
+    const swing = side < 0 ? walk : counter;
+    return {
+      x: side * R * (0.22 + Math.abs(sx) * 0.13 + swing * 0.04),
+      y: R * (0.03 + sy * 0.11 - swing * 0.12) + bob,
+      scale: R * 0.1,
+    };
+  }
+  if (zone === 3) {
+    const side = sx < 0 ? -1 : 1;
+    const swing = side < 0 ? counter : walk;
+    return {
+      x: side * R * (0.12 + Math.abs(sx) * 0.11 + swing * 0.12),
+      y: -R * (0.34 + Math.abs(sy) * 0.22) + Math.max(0, swing) * R * 0.07,
+      scale: R * 0.11,
+    };
+  }
+  return {
+    x: sx * R * 0.18 + Math.sin(phase + sy * 2) * R * 0.04,
+    y: -R * 0.58 + sy * R * 0.035,
+    scale: R * 0.07,
+  };
+}
+
+function updateDotWalker(group: THREE.Group, cfg: Cfg, t: number, R: number): void {
+  const pal = PAL[cfg.preset] ?? PAL['Golden Source'];
+  const phase = t * 0.003 * cfg.breathSpeed;
+  for (const child of group.children) {
+    const tag = child.userData.tag as string;
+    if (tag === 'dotWalkerDots') {
+      const dots = child as THREE.Points;
+      const pos = dots.geometry.getAttribute('position') as THREE.BufferAttribute;
+      const seed = dots.geometry.getAttribute('seed') as THREE.BufferAttribute;
+      const arr = pos.array as Float32Array;
+      const sarr = seed.array as Float32Array;
+      for (let i = 0; i < DOT_WALKER_COUNT; i++) {
+        const zone = sarr[i * 4];
+        const sx = sarr[i * 4 + 1];
+        const sy = sarr[i * 4 + 2];
+        const drift = sarr[i * 4 + 3];
+        const p = walkerLimbPoint(zone, sx, sy, phase + drift * 0.6, R);
+        const liquid =
+          Math.sin(phase * 1.8 + sx * 5 + sy * 3 + drift * 6) * R * 0.012 * cfg.complexity;
+        const force = fingerForce(p.x, p.y, 0, R);
+        arr[i * 3] = p.x + sx * p.scale * 0.42 + Math.cos(sy * 4 + phase) * liquid + force.x;
+        arr[i * 3 + 1] = p.y + sy * p.scale * 0.42 + Math.sin(sx * 4 - phase) * liquid + force.y;
+        arr[i * 3 + 2] = Math.sin(phase + drift * 10) * R * 0.02 + force.z;
+      }
+      pos.needsUpdate = true;
+      const mat = dots.material as THREE.PointsMaterial;
+      mat.size = (1.8 + cfg.particles * 0.28) * (R / 260);
+      mat.opacity = 0.72 + Math.min(0.18, cfg.glow / 70);
+      updateMat(dots, pal.rgb, cfg.intensity / 10, 2.4 + cfg.luminous * 0.24);
+    } else if (tag === 'dotWalkerTrail') {
+      const trail = child as THREE.Line;
+      const pos = trail.geometry.getAttribute('position') as THREE.BufferAttribute;
+      const arr = pos.array as Float32Array;
+      for (let i = 0; i < 220; i++) {
+        const q = i / 219;
+        const x = (q - 0.5) * R * 1.16;
+        arr[i * 3] = x;
+        arr[i * 3 + 1] = -R * 0.66 + Math.sin(q * Math.PI * 4 + phase) * R * 0.018;
+        arr[i * 3 + 2] = 0;
+      }
+      pos.needsUpdate = true;
+      updateMat(trail, pal.rgb, cfg.intensity / 10, 1.5);
     }
   }
 }
