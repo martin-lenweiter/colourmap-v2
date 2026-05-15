@@ -69,6 +69,16 @@ The first foundations:
 
 These presets are early research surfaces, not final products.
 
+Dot Walker should expose five visibly different designs through its **Design** slider:
+
+1. original walking particle figure
+2. floating genie-tail figure
+3. diagonal dancer figure
+4. compact seated thinker figure
+5. winged guardian figure
+
+Design 1 is the original and should remain stable because it already has the strongest first emotional fit.
+
 ### Brain Topography
 
 Aim:
@@ -109,6 +119,8 @@ The long-term goal is to let dots behave like intelligent matter:
 ```text
 dots -> character -> face -> landscape -> story -> conversation
 ```
+
+Dot Walker is a candidate for Colourmap's long-term AI conversation interface. The user should eventually be able to speak to the AI and see the Dot Walker respond as a presence: voice creates vibrations through the body, AI replies create gestures or light pulses, readable text appears around the figure, and the whole exchange feels like talking with a living visual being rather than typing into a generic chat box.
 
 ### Blender / External 3D Tool Direction
 

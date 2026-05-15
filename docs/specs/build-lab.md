@@ -12,12 +12,73 @@ The aim is to develop Creator Space as the place where the user builds a beautif
 Creator Space should eventually contain:
 
 - **Build Lab**: code, product, diffs, checkpoints, coding agents
+- **Garden of Ideas**: product ideas, reflections, decisions, relationships, and future directions
+- **Project Map**: a visual intelligence board for understanding the whole Colourmap system
 - **Music Lab**: songs, groove machines, recordings, concert tools
 - **Geometry Lab**: visual worlds, mode suns, music-reactive fields
 - **Reflection Atlas**: product philosophy, life patterns, digestible specs
 - **Mission Memory**: what was attempted, what worked, what changed, how it felt
 
 The platform should not become a generic developer dashboard. It should feel like a creative studio operating system: calm, contextual, beautiful, and grounded in the user's actual life.
+
+## Garden of Ideas
+
+Creator Space needs a non-terminal layer for understanding the evolution of the work.
+
+The user should be able to keep spaces for:
+
+- product ideas
+- design reflections
+- future directions
+- open questions
+- decisions made
+- related missions and diffs
+- screenshots and visual evidence
+
+This should not feel like a normal notes app. It should feel like a product garden: ideas can branch, connect, mature, be paused, and reappear later. The user should be able to ask: "where did this idea come from?", "what did we decide?", "what is connected to this?", and "what is the next practical cut?"
+
+Long term, Build Lab missions should feed these spaces automatically. A completed mission can create or update an idea block with: original prompt, reflection, changed files, screenshots, decision, remaining next steps, and relationships to other ideas.
+
+## Project Map / Visual Intelligence
+
+Creator Space also needs a high-level map of what Colourmap is becoming.
+
+The aim is not documentation for documentation's sake. The aim is visual clarity: helping the user understand a complex living project at a glance, then zoom into the part that matters.
+
+The interface direction can borrow from a detective board:
+
+- postcards for features
+- written notes for reflections
+- screenshots for visual evidence
+- red thread lines for relationships
+- clusters for product areas
+- pins for decisions
+- highlighted paths for current missions
+- faded areas for future directions
+
+The map should let the user activate an element and see what follows from it:
+
+- related specs
+- related missions
+- screenshots
+- open questions
+- decisions already made
+- next practical cuts
+- risks or dependencies
+
+This is one of Colourmap's essential long-term aims: to become a visual intelligence system for organizing complexity. It should help people turn scattered information into an understandable visual field, then act from that clarity.
+
+Visual Intelligence should support several levels of representation:
+
+- simple text blocks and clear boxes for first understanding
+- interactive cards and reactive components for comparison and filtering
+- connected idea maps for relationships and evolution over time
+- infographic surfaces for explaining product systems and personal patterns
+- 3D maps for navigating complex structures spatially
+- game-like explanation worlds where the user moves through information
+- golden-dot systems that form shapes, characters, paths, and living diagrams
+
+The important principle is that the same information can become more visual when useful. Text remains available, but Colourmap should learn how to transform ideas into interactive visual forms that make complexity easier to feel, compare, and act on.
 
 ## V1 Scope
 

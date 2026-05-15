@@ -691,7 +691,7 @@ const PRESETS: Record<string, Cfg> = {
   },
   'Dot Walker': {
     preset: 'Golden Source',
-    symmetry: 8,
+    symmetry: 1,
     complexity: 7,
     glow: 7,
     breathSpeed: 0.9,
@@ -10376,6 +10376,16 @@ const MODE_SLIDERS: Partial<Record<Mode, SliderDef[]>> = {
     { key: 'intensity', label: 'Rings', min: 1, max: 10, step: 0.5 },
     { key: 'luminous', label: 'Bloom', min: 0, max: 5, step: 0.1 },
   ],
+  dotwalker: [
+    { key: 'symmetry', label: 'Design 1-5', min: 1, max: 5, step: 1 },
+    { key: 'complexity', label: 'Liquid', min: 1, max: 10, step: 0.5 },
+    { key: 'glow', label: 'Aura', min: 0, max: 10, step: 0.5 },
+    { key: 'breathSpeed', label: 'Walk', min: 0.05, max: 2.0, step: 0.05 },
+    { key: 'intensity', label: 'Colour', min: 0, max: 10, step: 0.5 },
+    { key: 'particles', label: 'Dots', min: 1, max: 10, step: 1 },
+    { key: 'luminous', label: 'Bloom', min: 0, max: 5, step: 0.1 },
+    { key: 'stars', label: 'Stars', min: 0, max: 10, step: 1 },
+  ],
   entropy3d: [
     { key: 'complexity', label: 'Density', min: 1, max: 10, step: 1 },
     { key: 'breathSpeed', label: 'Speed', min: 0.05, max: 2.0, step: 0.05 },
@@ -11258,9 +11268,133 @@ function walkerLimbPoint(zone: number, sx: number, sy: number, phase: number, R:
   };
 }
 
+function dotWalkerDesignPoint(
+  design: number,
+  zone: number,
+  sx: number,
+  sy: number,
+  phase: number,
+  R: number,
+  base: { x: number; y: number; scale: number },
+) {
+  if (design <= 1) return base;
+
+  const walk = Math.sin(phase);
+  const counter = Math.sin(phase + Math.PI);
+  const side = sx < 0 ? -1 : 1;
+
+  if (design === 2) {
+    // Genie: floating torso with a liquid lower tail and lifted hands.
+    if (zone === 0) return { x: sx * R * 0.07, y: R * 0.47 + sy * R * 0.08, scale: R * 0.1 };
+    if (zone === 1)
+      return {
+        x: sx * R * 0.12 + Math.sin(phase + sy * 2) * R * 0.025,
+        y: R * 0.13 + sy * R * 0.19,
+        scale: R * 0.135,
+      };
+    if (zone === 2)
+      return {
+        x: side * R * (0.24 + Math.abs(sx) * 0.16 + Math.sin(phase + side) * 0.04),
+        y: R * (0.18 + Math.abs(sy) * 0.18),
+        scale: R * 0.105,
+      };
+    if (zone === 3)
+      return {
+        x: Math.sin(sy * 4 + phase) * R * (0.1 + Math.abs(sx) * 0.08),
+        y: -R * (0.2 + Math.abs(sy) * 0.26),
+        scale: R * 0.12,
+      };
+    return {
+      x: Math.sin(phase * 1.3 + sy * 6) * R * (0.06 + Math.abs(sx) * 0.08),
+      y: -R * (0.54 + Math.abs(sy) * 0.08),
+      scale: R * 0.08,
+    };
+  }
+
+  if (design === 3) {
+    // Dancer: wider lateral sway, lifted knees, and a playful diagonal body.
+    const lean = Math.sin(phase * 0.7) * R * 0.08;
+    if (zone === 0)
+      return { x: sx * R * 0.08 + lean * 0.55, y: R * 0.43 + sy * R * 0.08, scale: R * 0.085 };
+    if (zone === 1)
+      return {
+        x: sx * R * 0.1 + lean + sy * R * 0.04,
+        y: R * 0.07 + sy * R * 0.2,
+        scale: R * 0.13,
+      };
+    if (zone === 2) {
+      const swing = side < 0 ? walk : counter;
+      return {
+        x: side * R * (0.28 + Math.abs(sx) * 0.18 + swing * 0.1) + lean,
+        y: R * (0.04 + sy * 0.13 + Math.abs(swing) * 0.08),
+        scale: R * 0.1,
+      };
+    }
+    if (zone === 3) {
+      const swing = side < 0 ? counter : walk;
+      return {
+        x: side * R * (0.12 + Math.abs(sx) * 0.15 + swing * 0.16) + lean * 0.6,
+        y: -R * (0.34 + Math.abs(sy) * 0.2) + Math.max(0, swing) * R * 0.12,
+        scale: R * 0.11,
+      };
+    }
+    return { x: sx * R * 0.16 + lean * 0.4, y: -R * 0.58 + sy * R * 0.04, scale: R * 0.07 };
+  }
+
+  if (design === 4) {
+    // Thinker: compact seated body, one arm near the head, calmer motion.
+    if (zone === 0)
+      return { x: sx * R * 0.09 - R * 0.03, y: R * 0.36 + sy * R * 0.09, scale: R * 0.1 };
+    if (zone === 1)
+      return {
+        x: sx * R * 0.12 - R * 0.02,
+        y: R * 0.02 + sy * R * 0.18,
+        scale: R * 0.145,
+      };
+    if (zone === 2)
+      return {
+        x: side * R * (0.14 + Math.abs(sx) * 0.1) - (side > 0 ? R * 0.09 : 0),
+        y: R * (0.16 + sy * 0.18) + (side > 0 ? R * 0.12 : -R * 0.03),
+        scale: R * 0.095,
+      };
+    if (zone === 3)
+      return {
+        x: side * R * (0.16 + Math.abs(sx) * 0.16),
+        y: -R * (0.24 + Math.abs(sy) * 0.14),
+        scale: R * 0.12,
+      };
+    return { x: sx * R * 0.22, y: -R * 0.4 + sy * R * 0.04, scale: R * 0.08 };
+  }
+
+  // Guardian: tall presence with wing-like arms and a slower ceremonial step.
+  if (zone === 0) return { x: sx * R * 0.085, y: R * 0.48 + sy * R * 0.08, scale: R * 0.095 };
+  if (zone === 1)
+    return {
+      x: sx * R * 0.1 + Math.sin(sy * 3 + phase) * R * 0.015,
+      y: R * 0.1 + sy * R * 0.24,
+      scale: R * 0.14,
+    };
+  if (zone === 2)
+    return {
+      x: side * R * (0.24 + Math.abs(sx) * 0.24),
+      y: R * (0.02 + sy * 0.2 + Math.abs(sx) * 0.28),
+      scale: R * 0.11,
+    };
+  if (zone === 3) {
+    const swing = side < 0 ? counter : walk;
+    return {
+      x: side * R * (0.1 + Math.abs(sx) * 0.1 + swing * 0.06),
+      y: -R * (0.36 + Math.abs(sy) * 0.2),
+      scale: R * 0.105,
+    };
+  }
+  return { x: sx * R * 0.17, y: -R * 0.62 + sy * R * 0.03, scale: R * 0.07 };
+}
+
 function updateDotWalker(group: THREE.Group, cfg: Cfg, t: number, R: number): void {
   const pal = PAL[cfg.preset] ?? PAL['Golden Source'];
   const phase = t * 0.003 * cfg.breathSpeed;
+  const design = Math.max(1, Math.min(5, Math.round(cfg.symmetry)));
   for (const child of group.children) {
     const tag = child.userData.tag as string;
     if (tag === 'dotWalkerDots') {
@@ -11274,13 +11408,43 @@ function updateDotWalker(group: THREE.Group, cfg: Cfg, t: number, R: number): vo
         const sx = sarr[i * 4 + 1];
         const sy = sarr[i * 4 + 2];
         const drift = sarr[i * 4 + 3];
-        const p = walkerLimbPoint(zone, sx, sy, phase + drift * 0.6, R);
+        const base = walkerLimbPoint(zone, sx, sy, phase + drift * 0.6, R);
+        const p = dotWalkerDesignPoint(design, zone, sx, sy, phase + drift * 0.6, R, base);
         const liquid =
           Math.sin(phase * 1.8 + sx * 5 + sy * 3 + drift * 6) * R * 0.012 * cfg.complexity;
         const force = fingerForce(p.x, p.y, 0, R);
-        arr[i * 3] = p.x + sx * p.scale * 0.42 + Math.cos(sy * 4 + phase) * liquid + force.x;
-        arr[i * 3 + 1] = p.y + sy * p.scale * 0.42 + Math.sin(sx * 4 - phase) * liquid + force.y;
-        arr[i * 3 + 2] = Math.sin(phase + drift * 10) * R * 0.02 + force.z;
+        let x = p.x + sx * p.scale * 0.42 + Math.cos(sy * 4 + phase) * liquid;
+        let y = p.y + sy * p.scale * 0.42 + Math.sin(sx * 4 - phase) * liquid;
+        let z = Math.sin(phase + drift * 10) * R * 0.02;
+
+        if (design === 2) {
+          const tail = zone >= 3 ? Math.abs(sy) + drift : 0;
+          x += Math.sin(tail * 7 + phase * 1.4) * R * 0.11 * (zone >= 3 ? 1 : 0.25);
+          y += R * 0.05;
+          z += Math.cos(tail * 5 + phase) * R * 0.05;
+        } else if (design === 3) {
+          const angle = 0.22 + Math.sin(phase * 0.8) * 0.18;
+          const nx = x * Math.cos(angle) - y * Math.sin(angle);
+          const ny = x * Math.sin(angle) + y * Math.cos(angle);
+          x = nx + Math.sin(phase * 1.4 + drift * 4) * R * 0.045;
+          y = ny;
+        } else if (design === 4) {
+          x *= 0.78;
+          y = y * 0.72 - R * 0.06;
+          if (zone === 2) y += R * 0.1;
+          z *= 0.45;
+        } else if (design === 5) {
+          if (zone === 2) {
+            x *= 1.45;
+            y += Math.abs(sx) * R * 0.28;
+            z += Math.abs(sx) * R * 0.08;
+          }
+          y += R * 0.04;
+        }
+
+        arr[i * 3] = x + force.x;
+        arr[i * 3 + 1] = y + force.y;
+        arr[i * 3 + 2] = z + force.z;
       }
       pos.needsUpdate = true;
       const mat = dots.material as THREE.PointsMaterial;
@@ -11293,10 +11457,30 @@ function updateDotWalker(group: THREE.Group, cfg: Cfg, t: number, R: number): vo
       const arr = pos.array as Float32Array;
       for (let i = 0; i < 220; i++) {
         const q = i / 219;
-        const x = (q - 0.5) * R * 1.16;
-        arr[i * 3] = x;
-        arr[i * 3 + 1] = -R * 0.66 + Math.sin(q * Math.PI * 4 + phase) * R * 0.018;
-        arr[i * 3 + 2] = 0;
+        const a = q * Math.PI * 2;
+        if (design === 2) {
+          const rr = R * (0.08 + q * 0.28);
+          arr[i * 3] = Math.sin(a * 2.5 + phase) * rr;
+          arr[i * 3 + 1] = -R * (0.6 - q * 0.34);
+          arr[i * 3 + 2] = Math.cos(a * 2.5 + phase) * R * 0.04;
+        } else if (design === 3) {
+          arr[i * 3] = (q - 0.5) * R * 1.25;
+          arr[i * 3 + 1] = -R * 0.58 + Math.sin(q * Math.PI * 3 + phase * 1.2) * R * 0.08;
+          arr[i * 3 + 2] = Math.cos(q * Math.PI * 4 + phase) * R * 0.03;
+        } else if (design === 4) {
+          arr[i * 3] = Math.cos(a) * R * 0.34;
+          arr[i * 3 + 1] = -R * 0.42 + Math.sin(a) * R * 0.08;
+          arr[i * 3 + 2] = 0;
+        } else if (design === 5) {
+          arr[i * 3] = Math.cos(a) * R * (0.34 + Math.sin(a * 2) * 0.08);
+          arr[i * 3 + 1] = R * 0.08 + Math.sin(a) * R * 0.42;
+          arr[i * 3 + 2] = Math.sin(a * 2 + phase) * R * 0.05;
+        } else {
+          const x = (q - 0.5) * R * 1.16;
+          arr[i * 3] = x;
+          arr[i * 3 + 1] = -R * 0.66 + Math.sin(q * Math.PI * 4 + phase) * R * 0.018;
+          arr[i * 3 + 2] = 0;
+        }
       }
       pos.needsUpdate = true;
       updateMat(trail, pal.rgb, cfg.intensity / 10, 1.5);
