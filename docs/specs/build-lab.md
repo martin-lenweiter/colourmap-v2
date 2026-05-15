@@ -76,21 +76,31 @@ Future voice behavior:
 
 ## Phone Control Surface
 
-The long-term goal is to write and organize Build Lab prompts from the phone, then execute them on the home computer when it is open and authenticated.
+The long-term goal is to run Build Lab from the phone while the home computer stays open as the trusted runner. The phone should feel like the control surface: create the mission, attach context, start the agent, watch the stream, and review the result.
 
 Milestone 1:
 
 - phone can save mission drafts to the backend
 - desktop Build Lab can see queued drafts
-- user manually clicks Run on the desktop
+- desktop can still require manual Run while the runner protocol is being proven
 
 Milestone 2:
 
 - phone can send a mission to the desktop runner when the desktop is online
+- phone can start the agent without touching the desktop
 - desktop owns all CLI execution, filesystem access, checkpoints, and diffs
 - phone streams readable status and mission reflection
+- phone shows whether the runner is online, busy, failed, or waiting for permission
+- destructive or risky actions still require explicit approval from the phone or desktop
 
-The phone should not directly run Codex or Claude Code. It should act as a clear prompt, review, and control layer over the trusted computer runner.
+Milestone 3:
+
+- phone can attach screenshots to a mission
+- screenshots are stored as mission context and shown to the agent when useful
+- phone can add screenshot notes such as "this button overlaps" or "make this section calmer"
+- desktop run history links prompt, screenshot context, diff, and readable reflection
+
+The phone should not directly run Codex or Claude Code. It should act as a clear prompt, screenshot, review, approval, and control layer over the trusted computer runner.
 
 ## Mission Workspace
 
