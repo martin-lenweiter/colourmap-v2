@@ -16,6 +16,7 @@ The product is not a meditation app (pure stillness) or a productivity tool (pur
 ## Core Philosophy
 
 - **Unite fragments into coherent intelligence.** Colourmap should take scattered reflections, body signals, sounds, visuals, plans, and memories, then help the user see one coherent context they can act from and evolve through.
+- **Field -> Tensions -> Action -> Patterns.** The deeper product architecture is not productivity first, but helping the user notice the field of the day, name the competing tensions underneath it, choose small bridge actions, and discover recurring life patterns. [Spec](specs/field-tensions-action-patterns.md)
 
 - **We work with the system, we don't fix it.** At the core, everything we do is feeding our subconscious and body. Ambitions, avoidances, routines — all mechanisms negotiating with our own nervous system. Colourmap's job is to help work *with* that system and bring clarity to it, not to optimize it away.
 - **Both movement and the feeling of movement matter.** Real progress (targets checked, patterns shifting) and the felt sense of being in motion are two different things. The subconscious responds to the felt sense. The visual layer is not decoration — it's how the app speaks to the body: *you are moving, things have shape, there is a way.*
@@ -107,12 +108,13 @@ Phone: Check In · Cockpit · Missions · Journey · Notebook · ◇
 11. **Design System** — Color themes (Paper/Golden/Night) + Typography themes (Normal/Cowboy/Groovy/Minimal) in a Design dropdown with two tabs. Playfair Display for titles, Caveat + Kalam for handwritten notes.
 12. **Step Back** — Breathing pause button in header (ochre dot). Full-screen overlay with 3 breathing cycles (4s in, 4s hold, 4s out). Auto-closes or tap to dismiss.
 13. **Emotional Vocabulary** — 8 poetic words mapped to slider values, shared across check-in and history. [Spec](specs/emotional-vocabulary.md)
+14. **Build Lab** — Creator-only AI coding mission control at `/build-lab`. Select a local project, choose Codex or Claude Code, dictate or type a mission, stream agent output, and inspect changed files/diffs. [Spec](specs/build-lab.md)
 
 ### Deep Layer
 
-14. **Life Scan** — Guided self-assessment through 3 Doors (Feeling, Doing, Sharing). Bipolar sliders, reflective questions, generates improvement programs. [Spec](specs/life-scan.md)
-15. **Overview** — Compass wheel (warm blue for Sharing) showing life balance from life scan data + emotional state. Chapter card. [Spec](specs/cockpit.md)
-16. **Research** — In-app research document covering psychology foundations, competitive analysis, monetization, AI integration, soul cartography vision, and feature roadmap. Accessible at `/research`.
+15. **Life Scan** — Guided self-assessment through 3 Doors (Feeling, Doing, Sharing). Bipolar sliders, reflective questions, generates improvement programs. [Spec](specs/life-scan.md)
+16. **Overview** — Compass wheel (warm blue for Sharing) showing life balance from life scan data + emotional state. Chapter card. [Spec](specs/cockpit.md)
+17. **Research** — In-app research document covering psychology foundations, competitive analysis, monetization, AI integration, soul cartography vision, and feature roadmap. Accessible at `/research`.
 
 ## Architecture
 
@@ -153,7 +155,6 @@ The long-term AI direction is a living constellation that reads all user data (c
 
 ## Non-Goals
 
-- Voice input
 - Streak mechanics or guilt
 - Social features (V1)
 - Notifications or reminders
