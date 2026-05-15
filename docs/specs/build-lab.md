@@ -34,6 +34,7 @@ The Garden must not collapse every kind of understanding into one board. The use
 - the simpler reflection map for the human meaning of the product
 - the business plan for shipping, revenue, and independence
 - the education atlas for explaining wellbeing programs
+- philosophy programs for turning large human questions into simple lived maps
 - the inner/collective wellbeing map for how the app helps humans and groups become clearer
 
 ### Garden Modes
@@ -107,7 +108,26 @@ This mode explains why Colourmap matters beyond individual productivity. It answ
 
 This lens should stay grounded. The first product remains personal and practical, but the long-term philosophy can guide education, sharing, group maps, and future collective intelligence surfaces.
 
-**6. Idea Garden**
+**6. Philosophy Program**
+
+Philosophy is a strong test subject for Garden because it can easily become abstract overload. Garden should make it usable by starting from one living question and translating it into a visual path.
+
+The first philosophy program should not begin with a history of philosophers. It should begin with:
+
+- **Wonder**: what question is alive right now?
+- **Self**: who is asking, and what patterns shape the question?
+- **Values**: what matters when life pulls in different directions?
+- **Reality**: what assumptions are underneath the question?
+- **Practice**: what experiment can be lived in the next 24 hours?
+
+Done when:
+
+- Garden has a **Philosophy** lens.
+- Bubble Map shows a small number of philosophical nodes, not a wall of theory.
+- Curriculum mode adapts from the default wellbeing route into Wonder / Self / Values / Reality / Practice.
+- The Philosophy lens makes clear that the app turns large questions into lived clarity, not academic content.
+
+**7. Idea Garden**
 
 This is the living creative layer. The user should be able to keep spaces for:
 
@@ -169,6 +189,57 @@ Every map should end with motion:
 
 The goal is to make humans more intelligent in practice: not by giving them more information, but by showing the few relationships that matter and converting reflection into a clear next move.
 
+### Visual Intelligence Design Rules
+
+Garden should follow a few hard design rules from information visualization and multimedia learning:
+
+- **Coherence first**: remove visual elements that do not help the current task.
+- **Signal the path**: make the active category, selected node, and next move obvious.
+- **Overview, then depth**: show the simple map first; reveal details only after click/tap.
+- **Glimpse before reading**: the user should understand what is going on visually before they read deeply. This is the core interaction: glimpse -> click segment -> deepen -> reflect/action.
+- **Spatial meaning**: keep related text close to the visual element it explains.
+- **One subject at a time**: category options should be available, but they should not dominate the first view.
+- **Useful beauty**: pastel colour, dots, lines, bubbles, and geometry should make relationships easier to feel, not decorate the page.
+- **Low-attention default**: assume the user is tired, distracted, or overloaded. The first screen should reduce cognitive load immediately.
+
+### Glimpse -> Dive Interaction
+
+The missing primitive is the **glimpse**. A good visual intelligence surface should let the user understand what is happening before they read deeply.
+
+The interaction model:
+
+1. **Glimpse**: one visual field, one selected subject, one meaning sentence, and three or four clickable segments.
+2. **Orient**: show the active category, why this subject matters, and what direction the next click will open.
+3. **Dive**: clicking a segment opens the deeper map, relation, reflection, evidence, or action block.
+4. **Return**: the user can always collapse back to the first-read glimpse without losing context.
+
+This is how Colourmap can move beyond normal chat:
+
+- text remains available, but it is not the first shape of understanding
+- AI can return a visual answer: map, route, comic, comparison, constellation, blueprint, or living geometry
+- each visual answer has a first-read layer for low attention and a deeper layer for serious work
+- the user can ask follow-up questions by clicking a visual segment, not only by typing another prompt
+
+The long-term target is an interactive equivalent of strong AI-generated infographics, blueprints, and comic explanations: not a static image that looks impressive once, but a living explanation where every part can be opened, revised, connected to evidence, turned into a mission, or transformed into a geometry scene.
+
+This requires an internal response structure:
+
+- **Subject**: what is this about?
+- **Core simple challenge**: what is the smallest truth that organizes the complexity?
+- **Segments**: three to seven visible pieces.
+- **Relations**: what connects, blocks, depends on, or amplifies what?
+- **View form**: glimpse, bubble map, road, board, comparison, comic, constellation, or geometry.
+- **Detail payload**: the deeper text, evidence, links, files, screenshots, and next cuts behind each segment.
+- **Action**: what can be done next from this understanding?
+
+Expert design principle applied in product language:
+
+- **Overview first** becomes Glimpse View.
+- **Zoom and details on demand** becomes click segment -> deeper layer.
+- **Coherence and signaling** become one active category, one selected node, and one obvious next move.
+- **Spatial contiguity** becomes keeping words beside the visual element they explain.
+- **Data-ink discipline** becomes removing decorative blocks that do not help the current question.
+
 ### MVP Visual Prototype
 
 The first implementation inside Build Lab should show Garden of Ideas as a static but navigable visual board using the current Colourmap spec as the test subject.
@@ -177,10 +248,14 @@ Done when:
 
 - Build Lab has a visible **Garden of Ideas** section.
 - Garden has a compact preview in the normal Build Lab flow and an **Open Garden** mode that expands into a full-screen studio surface.
-- The compact view should not cram every node onto the page. It should show the current lens, a small preview, and invite the user to open the full map.
+- Garden is designed for very low attention spans: the compact view should not cram every node onto the page. It should show one current category, one focused idea, one sentence of meaning, and one next move.
+- Lens/category options should live behind a **Category** control. Spec Map, Reflection, Business Plan, Philosophy, and other lenses should not all compete for first-row attention.
 - The expanded view should use space deliberately: lens controls in the header, one short context strip, one main visual field, and optional details kept below or hidden until useful.
-- The default expanded display should be a **Bubble Map**: a few large calm idea bubbles with simple connecting lines, inspired by the emotional road/map views. It should feel spacious and unified, not like a grid of blocks.
+- The default expanded display should be **Glimpse View**: a visual first-read of the current subject, with one title, one meaning, a few orientation chips, and clickable segments.
+- **Bubble Map** should be the next relationship view: a few large calm idea bubbles with simple connecting lines, inspired by the emotional road/map views. It should feel spacious and unified, not like a grid of blocks.
 - Alternative displays can include Board, Road, Constellation, and Curriculum, but selecting one should reduce the interface to the relevant visual form rather than adding more panels.
+- Segments, bubbles, curriculum steps, and constellation nodes should be clickable. Clicking one opens a deeper layer with meaning, next reflection, and a geometry bridge.
+- Colours should stay pastel and functional: soft subject tints can orient the user, but the paper base remains calm and the current subject stays visually dominant.
 - The user can switch between at least: Spec Map, Reflection, Business Plan, Education Atlas, Inner/Collective Wellbeing, Artistic, Practical, and Intelligence lenses.
 - Each lens shows idea nodes with a summary and next cut.
 - Related nodes are shown as "red thread" relationships.
@@ -378,6 +453,40 @@ The user should be able to:
 - load a recent project without retyping the path
 - reuse previous missions from local mission memory
 - keep raw terminal output available without making it the only interface
+
+### Strategic AI Reflection
+
+The assistant layer should not only execute prompts. It should help the user judge whether the work is useful, efficient, and connected to a real life/business objective.
+
+The core questions:
+
+- Is this action useful for Colourmap's product clarity?
+- Is this action useful for the business strategy and making a living?
+- Is this the best next move, or is it attractive but low leverage?
+- Does this create real progress, or only the feeling of progress?
+- What would be a smaller, more effective cut?
+- What evidence would prove this work mattered?
+
+This is important because Creator Space can easily amplify vision without checking survival, launch, and focus. The assistant should act as a reflective operator:
+
+- understand the current product map
+- understand the user's stated life pressure and business aim
+- compare today's mission against the launch path
+- name drift when the work is beautiful but not urgent
+- protect useful exploration when it genuinely strengthens the product
+- end with one practical recommendation: continue, narrow, pause, delegate, or switch tracks
+
+The first product version can do this manually through mission reflection blocks. Later, when Build Lab memory is backend-backed, the assistant should score or tag missions by:
+
+- product value
+- business value
+- emotional value
+- learning value
+- urgency
+- confidence
+- next evidence
+
+The point is not to shame creative exploration. The point is to help the user improve life efficiently: less fog, clearer choices, more real progress, and a better sense of whether today's effort is moving Colourmap toward stability and independence.
 
 ### Mission Memory
 

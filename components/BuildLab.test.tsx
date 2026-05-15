@@ -57,8 +57,7 @@ describe('BuildLab', () => {
     expect(screen.getByText('Mission memory')).toBeDefined();
     expect(screen.getByText('Garden of Ideas')).toBeDefined();
     expect(screen.getAllByText('Spec Map').length).toBeGreaterThan(0);
-    expect(screen.getByText('Business Plan')).toBeDefined();
-    expect(screen.getByText('Education Atlas')).toBeDefined();
+    expect(screen.getByText('Change category')).toBeDefined();
     expect(screen.getByText('Sun Dialogue')).toBeDefined();
     expect(screen.getByText('Talk to the visual system')).toBeDefined();
     expect(screen.getByText('Agent console')).toBeDefined();
@@ -72,21 +71,36 @@ describe('BuildLab', () => {
 
     await waitFor(() => expect(screen.getByText('Codex')).toBeDefined());
     fireEvent.click(screen.getByRole('button', { name: 'Open Garden' }));
+    expect(screen.getByRole('button', { name: 'Glimpse' })).toBeDefined();
     expect(screen.getByRole('button', { name: 'Bubble Map' })).toBeDefined();
     expect(screen.getByRole('button', { name: 'Board' })).toBeDefined();
     expect(screen.getByRole('button', { name: 'Road' })).toBeDefined();
     expect(screen.getByRole('button', { name: 'Constellation' })).toBeDefined();
     expect(screen.getByRole('button', { name: 'Curriculum' })).toBeDefined();
 
+    fireEvent.click(screen.getByRole('button', { name: 'Change category' }));
     fireEvent.click(screen.getByRole('button', { name: /Education Atlas/i }));
     expect(screen.getAllByText('Wellbeing Curriculum Compass').length).toBeGreaterThan(0);
     fireEvent.click(screen.getByRole('button', { name: 'Curriculum' }));
-    expect(screen.getByText('Notice')).toBeDefined();
-    expect(screen.getByText('Connect')).toBeDefined();
+    expect(screen.getAllByText('Notice').length).toBeGreaterThan(0);
+    expect(screen.getAllByText('Connect').length).toBeGreaterThan(0);
 
+    fireEvent.click(screen.getByRole('button', { name: 'Change category' }));
+    fireEvent.click(screen.getByRole('button', { name: /Philosophy/i }));
+    expect(screen.getAllByText('The Question That Organizes Life').length).toBeGreaterThan(0);
+    fireEvent.click(screen.getByRole('button', { name: 'Glimpse' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Values And Action' }));
+    expect(screen.getByText('Geometry bridge')).toBeDefined();
+    expect(screen.getByRole('link', { name: /Open Dot Heart/i })).toBeDefined();
+    fireEvent.click(screen.getByRole('button', { name: 'Curriculum' }));
+    expect(screen.getAllByText('Wonder').length).toBeGreaterThan(0);
+    expect(screen.getAllByText('Practice').length).toBeGreaterThan(0);
+
+    fireEvent.click(screen.getByRole('button', { name: 'Change category' }));
     fireEvent.click(screen.getByRole('button', { name: /Business Plan/i }));
     expect(screen.getAllByText('App Store Path').length).toBeGreaterThan(0);
 
+    fireEvent.click(screen.getByRole('button', { name: 'Change category' }));
     const wellbeingButton = screen
       .getAllByRole('button')
       .find((button) => button.textContent?.startsWith('WellbeingHow can inner clarity'));

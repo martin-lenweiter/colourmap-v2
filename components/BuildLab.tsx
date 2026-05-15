@@ -19,6 +19,7 @@ import {
   Sparkles,
   SquareTerminal,
 } from 'lucide-react';
+import Link from 'next/link';
 import { useEffect, useMemo, useState } from 'react';
 
 import { useSpeechToText } from '@/lib/hooks/use-speech-to-text';
@@ -70,6 +71,7 @@ type GardenAngle =
   | 'reflection'
   | 'business'
   | 'education'
+  | 'philosophy'
   | 'wellbeing'
   | 'art'
   | 'practice'
@@ -82,9 +84,10 @@ type GardenNode = {
   angle: GardenAngle;
   summary: string;
   next: string;
+  geometry?: string;
 };
 
-type GardenDisplay = 'bubble' | 'board' | 'road' | 'constellation' | 'curriculum';
+type GardenDisplay = 'glimpse' | 'bubble' | 'board' | 'road' | 'constellation' | 'curriculum';
 
 const HISTORY_LS = 'colourmap:build-lab-history';
 const RECENT_PROJECTS_LS = 'colourmap:build-lab-recent-projects';
@@ -118,6 +121,12 @@ const gardenAngles: Array<{
     label: 'Education Atlas',
     icon: BookOpen,
     question: 'How do the learning programs explain wellbeing as one coherent map?',
+  },
+  {
+    id: 'philosophy',
+    label: 'Philosophy',
+    icon: Compass,
+    question: 'How do we turn big questions into lived clarity and better choices?',
   },
   {
     id: 'wellbeing',
@@ -190,6 +199,56 @@ const gardenNodes: GardenNode[] = [
     summary:
       'Some ideas need comics, some need maps, some need roads, and some need tiny practical exercises. The format should match the kind of insight.',
     next: 'For every education program, choose the best visual format before designing the lesson.',
+  },
+  {
+    id: 'philosophy-center',
+    title: 'The Question That Organizes Life',
+    tag: 'program',
+    angle: 'philosophy',
+    summary:
+      'A philosophy program should begin with the living question, not a list of famous names: what kind of life am I trying to understand and practice?',
+    next: 'Let the user choose one current question, then map it through self, values, reality, practice, and community.',
+    geometry: 'Mode Sun',
+  },
+  {
+    id: 'philosophy-self',
+    title: 'Self And Attention',
+    tag: 'self',
+    angle: 'philosophy',
+    summary:
+      'The first philosophical territory is the observer: attention, identity, habits, desire, fear, and the stories that define what seems possible.',
+    next: 'Connect this to Check In and Mode Bridge so philosophy becomes daily observation.',
+    geometry: 'Brain Topography',
+  },
+  {
+    id: 'philosophy-values',
+    title: 'Values And Action',
+    tag: 'ethics',
+    angle: 'philosophy',
+    summary:
+      'Ethics becomes practical when values are translated into small actions under pressure: what do I do when creation, survival, comfort, and truth collide?',
+    next: 'Make a values-to-action worksheet that ends in one bridge action.',
+    geometry: 'Dot Heart',
+  },
+  {
+    id: 'philosophy-reality',
+    title: 'Reality And Meaning',
+    tag: 'meaning',
+    angle: 'philosophy',
+    summary:
+      'Metaphysics and meaning can be shown as maps of assumptions: what do I believe is real, valuable, changeable, connected, or mysterious?',
+    next: 'Use Bubble Map to show belief clusters without forcing one answer.',
+    geometry: 'Alchemical Dot Sun',
+  },
+  {
+    id: 'philosophy-practice',
+    title: 'Practice, Not Theory',
+    tag: 'practice',
+    angle: 'philosophy',
+    summary:
+      'The point is not to collect abstract ideas. The point is to live with more awareness, courage, compassion, precision, and freedom.',
+    next: 'Each philosophy lesson should end with a tiny experiment in the next 24 hours.',
+    geometry: 'Fire Dot Sun',
   },
   {
     id: 'human-loop',
@@ -322,6 +381,10 @@ const gardenRelations = [
   ['store', 'market'],
   ['simple-challenge', 'next-cut'],
   ['education', 'world'],
+  ['philosophy-center', 'philosophy-self'],
+  ['philosophy-center', 'philosophy-values'],
+  ['philosophy-values', 'philosophy-practice'],
+  ['philosophy-reality', 'philosophy-practice'],
   ['inner-peace', 'relationship-field'],
   ['relationship-field', 'collective-happiness'],
 ];
@@ -346,6 +409,11 @@ const gardenDisplays: Array<{
   label: string;
   description: string;
 }> = [
+  {
+    id: 'glimpse',
+    label: 'Glimpse',
+    description: 'Best first view: understand the subject visually before reading deeply into it.',
+  },
   {
     id: 'bubble',
     label: 'Bubble Map',
@@ -373,16 +441,79 @@ const gardenDisplays: Array<{
   },
 ];
 
-const sunDots = Array.from({ length: 144 }, (_, index) => {
+const curriculumRoutes: Record<
+  'default' | 'philosophy',
+  Array<{ title: string; summary: string }>
+> = {
+  default: [
+    {
+      title: 'Notice',
+      summary: 'Name the field and see the pressure before becoming it.',
+    },
+    {
+      title: 'Understand',
+      summary: 'Find the repeated valley, loop, or hidden tension.',
+    },
+    {
+      title: 'Stabilize',
+      summary: 'Regulate enough that reflection becomes possible.',
+    },
+    {
+      title: 'Act',
+      summary: 'Choose the smallest bridge action that changes the field.',
+    },
+    {
+      title: 'Connect',
+      summary: 'Turn clarity into kinder communication and shared repair.',
+    },
+  ],
+  philosophy: [
+    {
+      title: 'Wonder',
+      summary: 'Begin with a real question that has emotional weight today.',
+    },
+    {
+      title: 'Self',
+      summary: 'Notice who is asking: attention, fear, desire, identity, and habit.',
+    },
+    {
+      title: 'Values',
+      summary: 'Name what matters when comfort, truth, survival, and creation pull apart.',
+    },
+    {
+      title: 'Reality',
+      summary: 'Map the assumptions underneath the question without rushing to certainty.',
+    },
+    {
+      title: 'Practice',
+      summary: 'Turn the insight into one lived experiment in the next 24 hours.',
+    },
+  ],
+};
+
+const gardenPastels: Record<GardenAngle, { bg: string; border: string; accent: string }> = {
+  spec: { bg: 'rgba(221,235,255,0.72)', border: 'rgba(92,126,170,0.22)', accent: '#5d7898' },
+  reflection: { bg: 'rgba(237,226,255,0.72)', border: 'rgba(126,96,158,0.22)', accent: '#80639d' },
+  business: { bg: 'rgba(218,240,224,0.72)', border: 'rgba(83,132,91,0.22)', accent: '#5a875f' },
+  education: { bg: 'rgba(255,232,205,0.72)', border: 'rgba(171,118,63,0.22)', accent: '#a46f3f' },
+  philosophy: { bg: 'rgba(228,238,230,0.75)', border: 'rgba(88,122,97,0.24)', accent: '#5f7e66' },
+  wellbeing: { bg: 'rgba(255,225,229,0.72)', border: 'rgba(176,92,105,0.2)', accent: '#aa6570' },
+  art: { bg: 'rgba(232,230,255,0.72)', border: 'rgba(102,98,177,0.2)', accent: '#6965aa' },
+  practice: { bg: 'rgba(230,243,238,0.72)', border: 'rgba(79,138,118,0.2)', accent: '#547f70' },
+  future: { bg: 'rgba(223,241,248,0.72)', border: 'rgba(73,134,156,0.2)', accent: '#527f91' },
+};
+
+const sunDots = Array.from({ length: 220 }, (_, index) => {
   const ring = Math.floor(Math.sqrt(index));
   const angle = index * 2.399963229728653;
-  const radius = Math.min(1, Math.sqrt(index / 143));
+  const radius = Math.min(1, Math.sqrt(index / 219));
   return {
     id: index,
     x: 50 + Math.cos(angle) * radius * 43,
     y: 50 + Math.sin(angle) * radius * 43,
-    size: 2.2 + ((index + ring) % 5) * 0.45,
+    size: 1.8 + (1 - radius) * 3.1 + ((index + ring) % 4) * 0.28,
     delay: (index % 17) * 0.08,
+    heat: 1 - radius,
   };
 });
 
@@ -460,21 +591,30 @@ function GardenNodeCard({
   node,
   index,
   compact = false,
+  selected = false,
+  onSelect,
 }: {
   node: GardenNode;
   index: number;
   compact?: boolean;
+  selected?: boolean;
+  onSelect?: () => void;
 }) {
   return (
-    <article
-      className="relative rounded-[20px] border border-[#8f6232]/22 bg-[#fff8e8]/92 p-5 shadow-[0_18px_34px_rgba(76,45,19,0.08)]"
+    <button
+      type="button"
+      onClick={onSelect}
+      className="relative rounded-[20px] border bg-[#fff8e8]/92 p-5 text-left shadow-[0_18px_34px_rgba(76,45,19,0.08)] transition"
       style={{ marginTop: compact ? 0 : index % 3 === 1 ? 34 : index % 3 === 2 ? 12 : 0 }}
     >
       <div className="mb-3 flex items-center justify-between gap-3">
         <span className="rounded-full border border-[#b98d52]/24 px-2 py-1 text-[10px] uppercase tracking-[0.14em] text-[#8d653d]">
           {node.tag}
         </span>
-        <span className="h-2 w-2 rounded-full bg-[#9b3128] shadow-[0_0_14px_rgba(155,49,40,0.45)]" />
+        <span
+          className="h-2 w-2 rounded-full shadow-[0_0_14px_rgba(155,49,40,0.45)]"
+          style={{ background: selected ? '#f05d2c' : '#9b3128' }}
+        />
       </div>
       <h3 className="font-serif text-lg leading-6 text-[#3f2817]">{node.title}</h3>
       <p className="mt-2 text-sm leading-6 text-[#5f4229]">{node.summary}</p>
@@ -482,22 +622,40 @@ function GardenNodeCard({
         <p className="text-[10px] uppercase tracking-[0.14em] text-[#8d653d]">Next cut</p>
         <p className="mt-1 text-xs leading-5 text-[#704923]">{node.next}</p>
       </div>
-    </article>
+    </button>
   );
 }
 
 function GardenOfIdeas() {
   const [angle, setAngle] = useState<GardenAngle>('spec');
   const [expanded, setExpanded] = useState(false);
-  const [display, setDisplay] = useState<GardenDisplay>('bubble');
+  const [display, setDisplay] = useState<GardenDisplay>('glimpse');
+  const [selectedNodeId, setSelectedNodeId] = useState<string>('field');
+  const [selectedRouteIndex, setSelectedRouteIndex] = useState(0);
+  const [categoryOpen, setCategoryOpen] = useState(false);
   const active = gardenAngles.find((item) => item.id === angle) ?? gardenAngles[0];
+  const ActiveIcon = active.icon;
+  const tint = gardenPastels[angle];
   const activeDisplay = gardenDisplays.find((item) => item.id === display) ?? gardenDisplays[0];
   const visibleNodes = gardenNodes.filter((node) => node.angle === angle || node.tag === 'core');
   const primaryNodes = visibleNodes.slice(0, display === 'constellation' ? 6 : 4);
+  const selectedNode =
+    visibleNodes.find((node) => node.id === selectedNodeId) ?? primaryNodes[0] ?? gardenNodes[0];
   const activeIds = new Set(visibleNodes.map((node) => node.id));
   const visibleRelations = gardenRelations.filter(
     ([from, to]) => activeIds.has(from) && activeIds.has(to),
   );
+  const activeRoutes =
+    angle === 'philosophy' ? curriculumRoutes.philosophy : curriculumRoutes.default;
+  const selectedRoute = activeRoutes[selectedRouteIndex] ?? activeRoutes[0];
+
+  function selectAngle(nextAngle: GardenAngle) {
+    setAngle(nextAngle);
+    const firstNode = gardenNodes.find((node) => node.angle === nextAngle) ?? gardenNodes[0];
+    setSelectedNodeId(firstNode.id);
+    setSelectedRouteIndex(0);
+    setCategoryOpen(false);
+  }
 
   return (
     <section
@@ -549,41 +707,61 @@ function GardenOfIdeas() {
         </div>
 
         <div
-          className={
-            expanded
-              ? 'mt-5 flex gap-2 overflow-x-auto pb-1'
-              : 'mt-4 grid gap-2 sm:grid-cols-2 lg:grid-cols-4'
-          }
+          className="mt-4 rounded-2xl border p-3"
+          style={{ background: tint.bg, borderColor: tint.border }}
         >
-          {gardenAngles.map((item) => {
-            const Icon = item.icon;
-            const selected = item.id === angle;
-            return (
-              <button
-                key={item.id}
-                type="button"
-                onClick={() => setAngle(item.id)}
-                className={
-                  expanded
-                    ? 'flex min-w-[190px] items-start gap-2 rounded-2xl border p-3 text-left transition'
-                    : 'flex min-h-16 items-start gap-2 rounded-2xl border p-3 text-left transition'
-                }
-                style={{
-                  borderColor: selected ? '#704923' : 'rgba(112,73,38,0.16)',
-                  background: selected ? 'rgba(112,73,35,0.1)' : 'rgba(255,253,242,0.72)',
-                  color: selected ? '#3f2817' : '#704923',
-                }}
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div className="flex items-center gap-3">
+              <div
+                className="rounded-full border bg-[#fff8e8] p-2"
+                style={{ borderColor: tint.border, color: tint.accent }}
               >
-                <Icon size={15} className="mt-0.5 shrink-0" />
-                <span>
-                  <span className="block text-xs font-medium">{item.label}</span>
-                  <span className="mt-1 block text-[11px] leading-4 text-[#8d653d]">
-                    {item.question}
-                  </span>
-                </span>
-              </button>
-            );
-          })}
+                <ActiveIcon size={16} />
+              </div>
+              <div>
+                <p className="text-[10px] uppercase tracking-[0.16em] text-[#8d653d]">Category</p>
+                <p className="font-serif text-lg text-[#3f2817]">{active.label}</p>
+              </div>
+            </div>
+            <button
+              type="button"
+              onClick={() => setCategoryOpen((value) => !value)}
+              className="rounded-full border border-[#8f6232]/25 px-3 py-2 text-xs text-[#704923]"
+            >
+              {categoryOpen ? 'Close categories' : 'Change category'}
+            </button>
+          </div>
+          <p className="mt-2 text-sm leading-6 text-[#775638]">{active.question}</p>
+
+          {categoryOpen && (
+            <div className="mt-3 grid gap-2 sm:grid-cols-2 lg:grid-cols-4">
+              {gardenAngles.map((item) => {
+                const Icon = item.icon;
+                const selected = item.id === angle;
+                return (
+                  <button
+                    key={item.id}
+                    type="button"
+                    onClick={() => selectAngle(item.id)}
+                    className="flex min-h-16 items-start gap-2 rounded-2xl border p-3 text-left transition"
+                    style={{
+                      borderColor: selected ? '#704923' : 'rgba(112,73,38,0.16)',
+                      background: selected ? 'rgba(112,73,35,0.1)' : 'rgba(255,253,242,0.72)',
+                      color: selected ? '#3f2817' : '#704923',
+                    }}
+                  >
+                    <Icon size={15} className="mt-0.5 shrink-0" />
+                    <span>
+                      <span className="block text-xs font-medium">{item.label}</span>
+                      <span className="mt-1 block text-[11px] leading-4 text-[#8d653d]">
+                        {item.question}
+                      </span>
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+          )}
         </div>
 
         {expanded && (
@@ -596,9 +774,9 @@ function GardenOfIdeas() {
                 onClick={() => setDisplay(item.id)}
                 className="rounded-full border px-3 py-2 text-xs"
                 style={{
-                  borderColor: display === item.id ? '#704923' : 'rgba(112,73,38,0.18)',
-                  background: display === item.id ? 'rgba(112,73,35,0.1)' : '#fffdf2',
-                  color: '#704923',
+                  borderColor: display === item.id ? tint.accent : 'rgba(112,73,38,0.18)',
+                  background: display === item.id ? tint.bg : '#fffdf2',
+                  color: display === item.id ? tint.accent : '#704923',
                 }}
               >
                 {item.label}
@@ -609,59 +787,57 @@ function GardenOfIdeas() {
       </div>
 
       {!expanded && (
-        <div className="grid gap-0 xl:grid-cols-[1.35fr_0.75fr]">
-          <div className="relative min-h-[430px] border-b border-[#b98d52]/18 bg-[#fffdf2]/55 p-4 xl:border-r xl:border-b-0">
-            <div
-              className="pointer-events-none absolute inset-0 opacity-70"
-              style={{
-                backgroundImage:
-                  'linear-gradient(rgba(112,73,35,0.08) 1px, transparent 1px), linear-gradient(90deg, rgba(112,73,35,0.08) 1px, transparent 1px)',
-                backgroundSize: '42px 42px',
-              }}
-            />
-            <div className="relative grid gap-3 md:grid-cols-2">
-              {visibleNodes.slice(0, 2).map((node) => (
-                <article
-                  key={node.id}
-                  className="relative rounded-2xl border border-[#8f6232]/22 bg-[#fff8e8]/90 p-4 shadow-[0_10px_24px_rgba(76,45,19,0.08)]"
-                >
-                  <div className="mb-3 flex items-center justify-between gap-3">
-                    <span className="rounded-full border border-[#b98d52]/24 px-2 py-1 text-[10px] uppercase tracking-[0.14em] text-[#8d653d]">
-                      {node.tag}
-                    </span>
-                    <span className="h-2 w-2 rounded-full bg-[#9b3128] shadow-[0_0_14px_rgba(155,49,40,0.45)]" />
-                  </div>
-                  <h3 className="font-serif text-lg leading-6 text-[#3f2817]">{node.title}</h3>
-                  <p className="mt-2 text-sm leading-6 text-[#5f4229]">{node.summary}</p>
-                </article>
-              ))}
+        <div className="grid gap-4 bg-[#fffdf2]/55 p-4 lg:grid-cols-[1fr_220px]">
+          <div
+            className="rounded-2xl border bg-[#fff8e8]/88 p-5"
+            style={{ borderColor: tint.border }}
+          >
+            <p className="text-xs uppercase tracking-[0.16em] text-[#704923]">Current focus</p>
+            <h3 className="mt-1 font-serif text-2xl text-[#3f2817]">{selectedNode.title}</h3>
+            <p className="mt-2 max-w-2xl text-sm leading-6 text-[#775638]">
+              {selectedNode.summary}
+            </p>
+            <div className="mt-4 flex flex-wrap gap-2 text-xs text-[#8d653d]">
+              <span
+                className="rounded-full border px-3 py-1"
+                style={{ background: tint.bg, borderColor: tint.border, color: tint.accent }}
+              >
+                {active.label}
+              </span>
+              <span className="rounded-full border border-[#b98d52]/24 px-3 py-1">
+                {activeDisplay.label}
+              </span>
+              <span className="rounded-full border border-[#b98d52]/24 px-3 py-1">
+                low attention preview
+              </span>
             </div>
           </div>
-
-          <aside className="space-y-4 p-4">
-            <div className="rounded-2xl border border-[#b98d52]/20 bg-[#fffdf2]/78 p-4">
-              <p className="text-xs uppercase tracking-[0.16em] text-[#704923]">
-                Active perspective
-              </p>
-              <h3 className="mt-1 font-serif text-xl text-[#3f2817]">{active.label}</h3>
-              <p className="mt-2 text-sm leading-6 text-[#775638]">{active.question}</p>
+          <div
+            className="flex flex-col justify-between rounded-2xl border bg-[#fffdf2]/78 p-4"
+            style={{ borderColor: tint.border }}
+          >
+            <div>
+              <p className="text-xs uppercase tracking-[0.16em] text-[#704923]">One next move</p>
+              <p className="mt-2 text-sm leading-6 text-[#775638]">{selectedNode.next}</p>
             </div>
-            <div className="rounded-2xl border border-[#b98d52]/20 bg-[#fffdf2]/78 p-4">
-              <p className="text-xs uppercase tracking-[0.16em] text-[#704923]">
-                Open for full map
-              </p>
-              <p className="mt-2 text-sm leading-6 text-[#775638]">
-                The compact view shows the current lens. Open Garden gives the idea map a full
-                studio surface with nodes, threads, method, and next cuts separated.
-              </p>
-            </div>
-          </aside>
+            <button
+              type="button"
+              onClick={() => setExpanded(true)}
+              className="mt-4 rounded-full px-4 py-2 text-sm text-[#fff8e8]"
+              style={{ background: tint.accent }}
+            >
+              Open visual map
+            </button>
+          </div>
         </div>
       )}
 
       {expanded && (
         <div className="min-h-[calc(100vh-190px)]">
-          <div className="grid gap-4 border-b border-[#b98d52]/18 bg-[#f2dfb6]/50 p-5 lg:grid-cols-[1fr_260px_1fr]">
+          <div
+            className="grid gap-4 border-b p-5 lg:grid-cols-[1fr_260px_1fr]"
+            style={{ background: tint.bg, borderColor: tint.border }}
+          >
             <div>
               <p className="text-xs uppercase tracking-[0.16em] text-[#704923]">Lens question</p>
               <h3 className="mt-1 font-serif text-2xl text-[#3f2817]">{active.label}</h3>
@@ -675,13 +851,17 @@ function GardenOfIdeas() {
             <div className="rounded-2xl border border-[#b98d52]/20 bg-[#fffdf2]/72 p-4">
               <p className="text-xs uppercase tracking-[0.16em] text-[#704923]">Clarity rule</p>
               <p className="mt-2 text-sm leading-6 text-[#775638]">
-                Show only the few nodes needed for this lens. Details can open later; the first read
-                should feel calm.
+                {angle === 'philosophy'
+                  ? 'Start from one living question. Philosophy becomes useful when it clarifies life, not when it multiplies concepts.'
+                  : 'Show only the few nodes needed for this lens. Details can open later; the first read should feel calm.'}
               </p>
             </div>
           </div>
 
-          <div className="relative min-h-[620px] bg-[#fffdf2]/48 p-7">
+          <div
+            className="relative min-h-[620px] p-7"
+            style={{ background: 'rgba(255,253,242,0.54)' }}
+          >
             <div
               className="pointer-events-none absolute inset-0 opacity-70"
               style={{
@@ -690,6 +870,70 @@ function GardenOfIdeas() {
                 backgroundSize: '42px 42px',
               }}
             />
+            {display === 'glimpse' && (
+              <div
+                className="relative mx-auto min-h-[620px] max-w-5xl overflow-hidden rounded-[30px] border bg-[#fff8e8]/72 p-8"
+                style={{ borderColor: tint.border }}
+              >
+                <div
+                  className="absolute inset-0"
+                  style={{
+                    background: `radial-gradient(circle at 50% 42%, ${tint.bg}, transparent 42%)`,
+                  }}
+                />
+                <div className="relative mx-auto flex min-h-[560px] max-w-4xl flex-col items-center justify-center text-center">
+                  <p className="text-xs uppercase tracking-[0.2em]" style={{ color: tint.accent }}>
+                    Glimpse view
+                  </p>
+                  <h3 className="mt-3 max-w-2xl font-serif text-4xl leading-tight text-[#3f2817]">
+                    {selectedNode.title}
+                  </h3>
+                  <p className="mt-4 max-w-xl text-base leading-7 text-[#775638]">
+                    {selectedNode.summary}
+                  </p>
+                  <div className="mt-8 grid w-full max-w-3xl gap-3 md:grid-cols-3">
+                    {[
+                      ['Category', active.label],
+                      ['Shape', activeDisplay.label],
+                      ['Next', selectedNode.next],
+                    ].map(([label, value]) => (
+                      <button
+                        key={label}
+                        type="button"
+                        onClick={() => setDisplay(label === 'Next' ? 'board' : 'bubble')}
+                        className="rounded-[24px] border bg-[#fffdf2]/78 p-4 text-left shadow-[0_14px_30px_rgba(76,45,19,0.08)]"
+                        style={{ borderColor: tint.border }}
+                      >
+                        <p className="text-[10px] uppercase tracking-[0.16em] text-[#8d653d]">
+                          {label}
+                        </p>
+                        <p className="mt-2 line-clamp-3 text-sm leading-6 text-[#3f2817]">
+                          {value}
+                        </p>
+                      </button>
+                    ))}
+                  </div>
+                  <div className="mt-8 flex flex-wrap justify-center gap-2">
+                    {primaryNodes.slice(0, 4).map((node) => (
+                      <button
+                        key={node.id}
+                        type="button"
+                        onClick={() => setSelectedNodeId(node.id)}
+                        className="rounded-full border px-3 py-2 text-xs"
+                        style={{
+                          borderColor: selectedNode.id === node.id ? tint.accent : tint.border,
+                          background: selectedNode.id === node.id ? tint.bg : '#fffdf2',
+                          color: selectedNode.id === node.id ? tint.accent : '#704923',
+                        }}
+                      >
+                        {node.title}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            )}
+
             {display === 'bubble' && (
               <div className="relative mx-auto min-h-[620px] max-w-5xl overflow-hidden rounded-[28px] border border-[#b98d52]/18 bg-[#fff8e8]/70">
                 <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_42%,rgba(255,219,139,0.45),transparent_42%)]" />
@@ -744,7 +988,9 @@ function GardenOfIdeas() {
                   const [x, y] = positions[index] ?? positions[0];
                   const isCore = node.tag === 'core';
                   return (
-                    <div
+                    <button
+                      type="button"
+                      onClick={() => setSelectedNodeId(node.id)}
                       key={node.id}
                       className="absolute -translate-x-1/2 -translate-y-1/2 rounded-full border p-5 text-center shadow-[0_18px_45px_rgba(83,45,18,0.12)]"
                       style={{
@@ -752,7 +998,12 @@ function GardenOfIdeas() {
                         top: `${y}%`,
                         width: isCore ? 255 : 220,
                         minHeight: isCore ? 255 : 220,
-                        borderColor: isCore ? 'rgba(112,73,35,0.38)' : 'rgba(185,141,82,0.3)',
+                        borderColor:
+                          selectedNode.id === node.id
+                            ? 'rgba(240,93,44,0.72)'
+                            : isCore
+                              ? 'rgba(112,73,35,0.38)'
+                              : 'rgba(185,141,82,0.3)',
                         background: isCore
                           ? 'radial-gradient(circle at 38% 32%, rgba(255,220,139,0.98), rgba(255,248,232,0.94))'
                           : 'rgba(255,253,242,0.9)',
@@ -768,7 +1019,7 @@ function GardenOfIdeas() {
                       <p className="mt-2 line-clamp-4 text-xs leading-5 text-[#775638]">
                         {node.summary}
                       </p>
-                    </div>
+                    </button>
                   );
                 })}
               </div>
@@ -777,7 +1028,13 @@ function GardenOfIdeas() {
             {display === 'board' && (
               <div className="relative mx-auto grid max-w-5xl auto-rows-min gap-5 md:grid-cols-2">
                 {primaryNodes.map((node, index) => (
-                  <GardenNodeCard key={node.id} node={node} index={index} />
+                  <GardenNodeCard
+                    key={node.id}
+                    node={node}
+                    index={index}
+                    selected={selectedNode.id === node.id}
+                    onSelect={() => setSelectedNodeId(node.id)}
+                  />
                 ))}
               </div>
             )}
@@ -792,7 +1049,13 @@ function GardenOfIdeas() {
                   >
                     <div className="absolute top-6 left-4 h-4 w-4 rounded-full border-2 border-[#f7e7c2] bg-[#9b3128] shadow-[0_0_18px_rgba(155,49,40,0.35)] md:left-1/2 md:-translate-x-1/2" />
                     <div className="ml-12 w-[calc(100%-3rem)] md:ml-0 md:w-[44%]">
-                      <GardenNodeCard node={node} index={index} compact />
+                      <GardenNodeCard
+                        node={node}
+                        index={index}
+                        compact
+                        selected={selectedNode.id === node.id}
+                        onSelect={() => setSelectedNodeId(node.id)}
+                      />
                     </div>
                   </div>
                 ))}
@@ -841,7 +1104,9 @@ function GardenOfIdeas() {
                   const x = 18 + ((index * 29) % 66);
                   const y = 22 + ((index * 37) % 52);
                   return (
-                    <div
+                    <button
+                      type="button"
+                      onClick={() => setSelectedNodeId(node.id)}
                       key={node.id}
                       className="absolute max-w-[230px] -translate-x-1/2 -translate-y-1/2 rounded-2xl border border-[#ffd36c]/20 bg-[#1a0d07]/82 p-4 text-[#ffe2a5] shadow-[0_0_28px_rgba(255,137,47,0.18)]"
                       style={{ left: `${x}%`, top: `${y}%` }}
@@ -853,7 +1118,7 @@ function GardenOfIdeas() {
                       <p className="mt-2 line-clamp-3 text-xs leading-5 text-[#ffdca0]/82">
                         {node.summary}
                       </p>
-                    </div>
+                    </button>
                   );
                 })}
               </div>
@@ -861,26 +1126,21 @@ function GardenOfIdeas() {
 
             {display === 'curriculum' && (
               <div className="relative mx-auto grid max-w-6xl gap-4 lg:grid-cols-5">
-                {['Notice', 'Understand', 'Stabilize', 'Act', 'Connect'].map((route, index) => (
+                {activeRoutes.map((route, index) => (
                   <div
-                    key={route}
+                    key={route.title}
                     className="min-h-[360px] rounded-[22px] border border-[#8f6232]/20 bg-[#fff8e8]/86 p-4"
                   >
-                    <div className="mb-4 flex h-11 w-11 items-center justify-center rounded-full bg-[#704923] text-sm text-[#fff8e8]">
+                    <button
+                      type="button"
+                      onClick={() => setSelectedRouteIndex(index)}
+                      className="mb-4 flex h-11 w-11 items-center justify-center rounded-full text-sm text-[#fff8e8]"
+                      style={{ background: selectedRouteIndex === index ? '#9b3128' : '#704923' }}
+                    >
                       {index + 1}
-                    </div>
-                    <h3 className="font-serif text-xl text-[#3f2817]">{route}</h3>
-                    <p className="mt-2 text-xs leading-5 text-[#775638]">
-                      {route === 'Notice'
-                        ? 'Name the field and see the pressure before becoming it.'
-                        : route === 'Understand'
-                          ? 'Find the repeated valley, loop, or hidden tension.'
-                          : route === 'Stabilize'
-                            ? 'Regulate enough that reflection becomes possible.'
-                            : route === 'Act'
-                              ? 'Choose the smallest bridge action that changes the field.'
-                              : 'Turn clarity into kinder communication and shared repair.'}
-                    </p>
+                    </button>
+                    <h3 className="font-serif text-xl text-[#3f2817]">{route.title}</h3>
+                    <p className="mt-2 text-xs leading-5 text-[#775638]">{route.summary}</p>
                     <div className="mt-5 space-y-3">
                       {primaryNodes
                         .filter((_, nodeIndex) => nodeIndex % 5 === index)
@@ -903,20 +1163,49 @@ function GardenOfIdeas() {
 
             <div className="relative mx-auto mt-6 max-w-5xl rounded-2xl border border-[#b98d52]/20 bg-[#fffdf2]/78 p-4">
               <div className="flex flex-wrap items-center justify-between gap-3">
-                <p className="text-xs uppercase tracking-[0.16em] text-[#704923]">
-                  Hidden until useful
-                </p>
+                <p className="text-xs uppercase tracking-[0.16em] text-[#704923]">Deeper layer</p>
                 <p className="text-xs text-[#8d653d]">
                   {visibleNodes.length - primaryNodes.length > 0
                     ? `${visibleNodes.length - primaryNodes.length} more nodes available later`
                     : 'All nodes for this lens are visible'}
                 </p>
               </div>
-              <div className="mt-3 grid gap-3 md:grid-cols-3">
+              <div className="mt-3 grid gap-3 lg:grid-cols-[1.1fr_0.9fr_0.9fr]">
+                <div className="border-l border-[#9b3128]/35 pl-3">
+                  <p className="text-sm font-medium text-[#3f2817]">{selectedNode.title}</p>
+                  <p className="mt-1 text-xs leading-5 text-[#775638]">{selectedNode.summary}</p>
+                  <p className="mt-3 text-[10px] uppercase tracking-[0.14em] text-[#8d653d]">
+                    Next reflection
+                  </p>
+                  <p className="mt-1 text-xs leading-5 text-[#704923]">{selectedNode.next}</p>
+                </div>
+                <div className="border-l border-[#9b3128]/35 pl-3">
+                  <p className="text-sm font-medium text-[#3f2817]">
+                    {display === 'curriculum' ? selectedRoute.title : 'Visual form'}
+                  </p>
+                  <p className="mt-1 text-xs leading-5 text-[#775638]">
+                    {display === 'curriculum' ? selectedRoute.summary : activeDisplay.description}
+                  </p>
+                </div>
+                <div className="border-l border-[#9b3128]/35 pl-3">
+                  <p className="text-sm font-medium text-[#3f2817]">Geometry bridge</p>
+                  <p className="mt-1 text-xs leading-5 text-[#775638]">
+                    Open this idea as a living visual so the map can become an explainer, not only a
+                    diagram.
+                  </p>
+                  <Link
+                    href={`/geometry-field?preset=${encodeURIComponent(selectedNode.geometry ?? 'Mode Sun')}`}
+                    className="mt-3 inline-flex rounded-full border border-[#8f6232]/25 px-3 py-2 text-xs text-[#704923]"
+                  >
+                    Open {selectedNode.geometry ?? 'Mode Sun'}
+                  </Link>
+                </div>
+              </div>
+              <div className="mt-4 grid gap-3 md:grid-cols-3">
                 {gardenPasses.map((pass) => (
-                  <div key={pass.title} className="border-l border-[#9b3128]/35 pl-3">
-                    <p className="text-sm font-medium text-[#3f2817]">{pass.title}</p>
-                    <p className="mt-1 text-xs leading-5 text-[#775638]">{pass.text}</p>
+                  <div key={pass.title} className="rounded-xl bg-[#fff8e8]/70 p-3">
+                    <p className="text-xs font-medium text-[#3f2817]">{pass.title}</p>
+                    <p className="mt-1 text-[11px] leading-4 text-[#775638]">{pass.text}</p>
                   </div>
                 ))}
               </div>
@@ -972,7 +1261,7 @@ function SunDialoguePrototype() {
             className="absolute inset-0 opacity-70"
             style={{
               background:
-                'radial-gradient(circle at center, rgba(255,196,74,0.26), transparent 42%), radial-gradient(circle at 38% 34%, rgba(255,95,31,0.22), transparent 24%)',
+                'radial-gradient(circle at center, rgba(255,196,74,0.16), transparent 44%)',
             }}
           />
           <div
@@ -985,28 +1274,29 @@ function SunDialoguePrototype() {
               transition: 'transform 220ms ease, filter 220ms ease',
             }}
           >
-            {sunDots.map((dot) => (
-              <span
-                key={dot.id}
-                className="absolute rounded-full"
-                style={{
-                  left: `${dot.x}%`,
-                  top: `${dot.y}%`,
-                  width: `${dot.size}px`,
-                  height: `${dot.size}px`,
-                  background:
-                    dot.id % 3 === 0 ? '#ff7a24' : dot.id % 3 === 1 ? '#ffd36c' : '#ffad36',
-                  boxShadow: active
-                    ? '0 0 18px rgba(255,166,49,0.95)'
-                    : '0 0 10px rgba(255,166,49,0.48)',
-                  opacity: active ? 0.94 : 0.68,
-                  transform: `translate(-50%, -50%) scale(${active ? 1.18 : 1})`,
-                  transitionDelay: `${dot.delay * 10}ms`,
-                  transition: 'opacity 260ms ease, transform 260ms ease, box-shadow 260ms ease',
-                }}
-              />
-            ))}
-            <div className="absolute inset-[34%] rounded-full bg-[#ff9a28] shadow-[0_0_48px_rgba(255,129,31,0.82)]" />
+            {sunDots.map((dot) => {
+              const color = dot.heat > 0.66 ? '#ffd86b' : dot.heat > 0.34 ? '#ffc044' : '#f59d2d';
+              return (
+                <span
+                  key={dot.id}
+                  className="absolute rounded-full"
+                  style={{
+                    left: `${dot.x}%`,
+                    top: `${dot.y}%`,
+                    width: `${dot.size}px`,
+                    height: `${dot.size}px`,
+                    background: color,
+                    boxShadow: active
+                      ? `0 0 ${14 + dot.heat * 16}px rgba(255,188,63,0.92)`
+                      : `0 0 ${7 + dot.heat * 8}px rgba(255,176,55,0.48)`,
+                    opacity: active ? 0.94 : 0.62 + dot.heat * 0.24,
+                    transform: `translate(-50%, -50%) scale(${active ? 1.13 + dot.heat * 0.18 : 1})`,
+                    transitionDelay: `${dot.delay * 10}ms`,
+                    transition: 'opacity 260ms ease, transform 260ms ease, box-shadow 260ms ease',
+                  }}
+                />
+              );
+            })}
           </div>
           <div className="absolute bottom-4 left-4 right-4 flex items-center justify-between rounded-full border border-[#ffd36c]/20 bg-[#1a0d07]/72 px-3 py-2 text-xs text-[#ffd99a]">
             <span>{speech.listening ? 'listening' : speaking ? 'speaking' : 'waiting'}</span>

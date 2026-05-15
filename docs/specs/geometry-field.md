@@ -72,7 +72,7 @@ These presets are early research surfaces, not final products.
 Dot Walker should expose five visibly different designs through its **Design** slider:
 
 1. original walking particle figure
-2. floating genie-tail figure
+2. floating ghost figure with a swirl tornado tail for legs
 3. diagonal dancer figure
 4. compact seated thinker figure
 5. winged guardian figure
@@ -85,6 +85,7 @@ Dot Walker controls should stay specific and non-duplicative:
 - **Liquid** changes internal particle motion.
 - **Aura Width** changes the body spread / surrounding presence.
 - **Bloom** controls light intensity.
+- **Walkers 1-4** changes build mode from one character to a small side-by-side group.
 - Avoid duplicate sliders where two controls visually do the same thing.
 
 ### Brain Topography
