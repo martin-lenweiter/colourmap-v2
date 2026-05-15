@@ -70,6 +70,7 @@ async function* runCliMission(
     cwd: input.projectPath,
     shell: false,
     env: process.env,
+    stdio: ['ignore', 'pipe', 'pipe'],
   });
 
   let spawnError: Error | null = null;
@@ -121,7 +122,11 @@ class CodexAdapter implements CodingAgentAdapter {
 
   runMission(input: RunMissionInput) {
     const prompt = `${modeInstruction(input.mode)}\n\nProject root: ${input.projectPath}\n\n${input.prompt}`;
-    return runCliMission(getCodexCliCommand(), ['exec', prompt], input);
+    return runCliMission(
+      getCodexCliCommand(),
+      ['exec', '--json', '--cd', input.projectPath, prompt],
+      input,
+    );
   }
 }
 
