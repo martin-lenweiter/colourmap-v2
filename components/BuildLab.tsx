@@ -20,7 +20,7 @@ import {
   SquareTerminal,
 } from 'lucide-react';
 import Link from 'next/link';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 
 import { useSpeechToText } from '@/lib/hooks/use-speech-to-text';
 
@@ -621,6 +621,127 @@ const sunVoices = [
     pitch: 0.86,
   },
 ];
+
+function SunPresence({
+  active,
+  speaking = false,
+  compact = false,
+  livingText,
+}: {
+  active: boolean;
+  speaking?: boolean;
+  compact?: boolean;
+  livingText: string;
+}) {
+  const visibleLivingText =
+    livingText.length > (compact ? 96 : 220)
+      ? `${livingText.slice(livingText.length - (compact ? 96 : 220))}`
+      : livingText;
+  const energy = active ? 1 : Math.min(0.72, 0.28 + livingText.trim().length / 220);
+  const sunSize = compact ? 'h-32 w-32' : 'h-56 w-56';
+  const dotLimit = compact ? 150 : sunDots.length;
+
+  return (
+    <div
+      className={
+        compact
+          ? 'relative overflow-hidden rounded-2xl border border-[#8f6232]/18 bg-[#2a140a] p-3'
+          : 'relative overflow-hidden rounded-2xl border border-[#8f6232]/18 bg-[#2a140a] p-4'
+      }
+    >
+      <div
+        className="absolute inset-0 opacity-70"
+        style={{
+          background: active
+            ? 'radial-gradient(circle at 50% 42%, rgba(255,196,74,0.25), transparent 48%)'
+            : 'radial-gradient(circle at 50% 42%, rgba(255,196,74,0.13), transparent 44%)',
+        }}
+      />
+      <div
+        className={
+          compact
+            ? 'relative flex min-h-[236px] flex-col items-center justify-center gap-3'
+            : 'relative flex min-h-[330px] flex-col items-center justify-center gap-4'
+        }
+      >
+        <div
+          className={`relative ${sunSize} rounded-full`}
+          style={{
+            filter: active
+              ? 'drop-shadow(0 0 34px rgba(255,138,34,0.8))'
+              : 'drop-shadow(0 0 20px rgba(255,138,34,0.38))',
+            transform: active
+              ? `translateY(${speaking ? '-4px' : '0'}) scale(1.04)`
+              : `translateY(${Math.round((energy - 0.28) * -10)}px) scale(${(0.96 + energy * 0.06).toFixed(3)})`,
+            transition: 'transform 220ms ease, filter 220ms ease',
+            animation: active ? 'build-lab-sun-breathe 1.8s ease-in-out infinite' : 'none',
+          }}
+        >
+          {sunDots.slice(0, dotLimit).map((dot) => {
+            const color = dot.heat > 0.66 ? '#ffd86b' : dot.heat > 0.34 ? '#ffc044' : '#f59d2d';
+            const lift = active ? Math.sin((dot.id % 19) + energy * 3) * (compact ? 3 : 5) : 0;
+            return (
+              <span
+                key={dot.id}
+                className="absolute rounded-full"
+                style={{
+                  left: `${dot.x}%`,
+                  top: `${dot.y}%`,
+                  width: `${dot.size}px`,
+                  height: `${dot.size}px`,
+                  background: color,
+                  boxShadow: active
+                    ? `0 0 ${(14 + dot.heat * 16).toFixed(2)}px rgba(255,188,63,0.92)`
+                    : `0 0 ${(7 + dot.heat * 8).toFixed(2)}px rgba(255,176,55,0.48)`,
+                  opacity: active ? '0.94' : (0.52 + dot.heat * 0.24 + energy * 0.16).toFixed(3),
+                  transform: `translate(-50%, calc(-50% + ${lift.toFixed(2)}px)) scale(${
+                    active ? (1.08 + dot.heat * 0.22).toFixed(3) : (0.92 + energy * 0.1).toFixed(3)
+                  })`,
+                  transitionDelay: `${(Number(dot.delay) * 10).toFixed(1)}ms`,
+                  transition: 'opacity 260ms ease, transform 260ms ease, box-shadow 260ms ease',
+                }}
+              />
+            );
+          })}
+        </div>
+        <div className="relative w-full rounded-2xl border border-[#ffd36c]/22 bg-[#130905]/72 p-3 shadow-[0_0_34px_rgba(255,166,49,0.12)]">
+          <div className="pointer-events-none absolute inset-0 opacity-35">
+            {sunDots.slice(0, compact ? 18 : 28).map((dot) => (
+              <span
+                key={`transcript-${dot.id}`}
+                className="absolute h-1 w-1 rounded-full bg-[#ffd36c]"
+                style={{
+                  left: `${dot.x}%`,
+                  top: `${dot.y}%`,
+                  boxShadow: '0 0 9px rgba(255,190,70,0.75)',
+                  opacity: '0.55',
+                }}
+              />
+            ))}
+          </div>
+          <p className="relative text-[10px] uppercase tracking-[0.2em] text-[#ffca72]/75">
+            {compact ? 'mission sun' : 'living transcript'}
+          </p>
+          <p
+            className={
+              compact
+                ? 'relative mt-2 min-h-12 font-serif text-sm leading-6 text-[#ffe0a0]'
+                : 'relative mt-2 min-h-16 font-serif text-lg leading-7 text-[#ffe0a0]'
+            }
+            style={{ textShadow: '0 0 18px rgba(255,180,62,0.42)' }}
+          >
+            {visibleLivingText}
+            {active && <span className="ml-1 animate-pulse text-[#ffd36c]">|</span>}
+          </p>
+        </div>
+      </div>
+      <div className="absolute bottom-3 left-3 right-3 flex items-center justify-between rounded-full border border-[#ffd36c]/20 bg-[#1a0d07]/72 px-3 py-2 text-xs text-[#ffd99a]">
+        <span>{active ? (speaking ? 'speaking' : 'listening') : 'waiting'}</span>
+        <span>{dotLimit} dots</span>
+      </div>
+    </div>
+  );
+}
 
 function nextId() {
   return Date.now() + Math.random();
@@ -1341,81 +1462,7 @@ function SunDialoguePrototype() {
       }}
     >
       <div className="grid gap-5 lg:grid-cols-[0.78fr_1fr]">
-        <div className="relative overflow-hidden rounded-2xl border border-[#8f6232]/18 bg-[#2a140a] p-4">
-          <div
-            className="absolute inset-0 opacity-70"
-            style={{
-              background:
-                'radial-gradient(circle at center, rgba(255,196,74,0.16), transparent 44%)',
-            }}
-          />
-          <div className="relative flex min-h-[330px] flex-col items-center justify-center gap-4">
-            <div
-              className="relative h-56 w-56 rounded-full"
-              style={{
-                filter: active
-                  ? 'drop-shadow(0 0 34px rgba(255,138,34,0.8))'
-                  : 'drop-shadow(0 0 20px rgba(255,138,34,0.38))',
-                transform: active ? 'scale(1.04)' : 'scale(1)',
-                transition: 'transform 220ms ease, filter 220ms ease',
-              }}
-            >
-              {sunDots.map((dot) => {
-                const color = dot.heat > 0.66 ? '#ffd86b' : dot.heat > 0.34 ? '#ffc044' : '#f59d2d';
-                return (
-                  <span
-                    key={dot.id}
-                    className="absolute rounded-full"
-                    style={{
-                      left: `${dot.x}%`,
-                      top: `${dot.y}%`,
-                      width: `${dot.size}px`,
-                      height: `${dot.size}px`,
-                      background: color,
-                      boxShadow: active
-                        ? `0 0 ${(14 + dot.heat * 16).toFixed(2)}px rgba(255,188,63,0.92)`
-                        : `0 0 ${(7 + dot.heat * 8).toFixed(2)}px rgba(255,176,55,0.48)`,
-                      opacity: active ? '0.94' : (0.62 + dot.heat * 0.24).toFixed(3),
-                      transform: `translate(-50%, -50%) scale(${active ? (1.13 + dot.heat * 0.18).toFixed(3) : '1'})`,
-                      transitionDelay: `${(Number(dot.delay) * 10).toFixed(1)}ms`,
-                      transition: 'opacity 260ms ease, transform 260ms ease, box-shadow 260ms ease',
-                    }}
-                  />
-                );
-              })}
-            </div>
-            <div className="relative w-full rounded-2xl border border-[#ffd36c]/22 bg-[#130905]/72 p-4 shadow-[0_0_34px_rgba(255,166,49,0.12)]">
-              <div className="pointer-events-none absolute inset-0 opacity-35">
-                {sunDots.slice(0, 28).map((dot) => (
-                  <span
-                    key={`transcript-${dot.id}`}
-                    className="absolute h-1 w-1 rounded-full bg-[#ffd36c]"
-                    style={{
-                      left: `${dot.x}%`,
-                      top: `${dot.y}%`,
-                      boxShadow: '0 0 9px rgba(255,190,70,0.75)',
-                      opacity: '0.55',
-                    }}
-                  />
-                ))}
-              </div>
-              <p className="relative text-[10px] uppercase tracking-[0.2em] text-[#ffca72]/75">
-                living transcript
-              </p>
-              <p
-                className="relative mt-2 min-h-16 font-serif text-lg leading-7 text-[#ffe0a0]"
-                style={{ textShadow: '0 0 18px rgba(255,180,62,0.42)' }}
-              >
-                {visibleLivingText}
-                {speech.listening && <span className="ml-1 animate-pulse text-[#ffd36c]">|</span>}
-              </p>
-            </div>
-          </div>
-          <div className="absolute bottom-4 left-4 right-4 flex items-center justify-between rounded-full border border-[#ffd36c]/20 bg-[#1a0d07]/72 px-3 py-2 text-xs text-[#ffd99a]">
-            <span>{speech.listening ? 'listening' : speaking ? 'speaking' : 'waiting'}</span>
-            <span>{sunDots.length} dots</span>
-          </div>
-        </div>
+        <SunPresence active={active} speaking={speaking} livingText={visibleLivingText} />
 
         <div className="flex flex-col justify-between gap-4">
           <div>
@@ -1519,6 +1566,7 @@ export default function BuildLab() {
   const [error, setError] = useState('');
   const [phonePrep, setPhonePrep] = useState('');
   const [screenshotNotes, setScreenshotNotes] = useState<ScreenshotNote[]>([]);
+  const missionAbortRef = useRef<AbortController | null>(null);
   const speech = useSpeechToText({ lang: 'en-US' });
 
   const selectedAgent = useMemo(
@@ -1795,6 +1843,9 @@ export default function BuildLab() {
     }
     setError('');
     if (!projectPath.trim() && missionProjectPath.trim()) setProjectPath(missionProjectPath);
+    missionAbortRef.current?.abort();
+    const controller = new AbortController();
+    missionAbortRef.current = controller;
     setRunning(true);
     setEvents([]);
     setDiff('');
@@ -1806,6 +1857,7 @@ export default function BuildLab() {
       const response = await fetch('/api/build-lab/mission', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        signal: controller.signal,
         body: JSON.stringify({
           agentId: missionAgentId,
           projectPath: missionProjectPath,
@@ -1878,6 +1930,10 @@ export default function BuildLab() {
       });
       options?.onDone?.(status, files);
     } catch (missionError) {
+      if (missionError instanceof DOMException && missionError.name === 'AbortError') {
+        addEvent('mission', 'Mission stopped from the console.', 'meta');
+        return;
+      }
       setError(missionError instanceof Error ? missionError.message : 'Mission failed.');
       rememberMission('failed', changedFiles, {
         prompt: missionPrompt,
@@ -1887,8 +1943,16 @@ export default function BuildLab() {
       });
       options?.onDone?.('failed', changedFiles);
     } finally {
+      if (missionAbortRef.current === controller) missionAbortRef.current = null;
       setRunning(false);
     }
+  }
+
+  function stopMission() {
+    missionAbortRef.current?.abort();
+    missionAbortRef.current = null;
+    setRunning(false);
+    addEvent('mission', 'Mission stopped from the console.', 'meta');
   }
 
   function toggleSpeech() {
@@ -1921,6 +1985,10 @@ export default function BuildLab() {
           0%, 100% { transform: scale(1); opacity: 1; }
           50% { transform: scale(1.35); opacity: 0.72; }
         }
+        @keyframes build-lab-sun-breathe {
+          0%, 100% { transform: translateY(0) scale(1.02); }
+          50% { transform: translateY(-5px) scale(1.07); }
+        }
       `}</style>
       <section
         className="overflow-hidden rounded-[22px] border"
@@ -1949,6 +2017,56 @@ export default function BuildLab() {
             </div>
 
             <div className="space-y-4">
+              <div className="rounded-2xl border border-[#b98d52]/20 bg-[#fff8e8]/70 p-3">
+                <div className="mb-3 flex items-center justify-between gap-3">
+                  <div>
+                    <p className="flex items-center gap-2 text-xs uppercase tracking-[0.16em] text-[#704923]">
+                      <Sparkles size={14} />
+                      Mission Sun
+                    </p>
+                    <p className="mt-1 text-xs leading-5 text-[#8d653d]">
+                      A first voice-reactive geometry presence next to the dev desk.
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={toggleSpeech}
+                    aria-label={speech.listening ? 'Pause mission sun' : 'Speak with mission sun'}
+                    title={speech.listening ? 'Pause mission sun' : 'Speak with mission sun'}
+                    className="grid h-10 w-10 shrink-0 place-items-center rounded-full border"
+                    style={{
+                      borderColor: speech.listening
+                        ? 'rgba(245,132,38,0.75)'
+                        : 'rgba(143,98,50,0.22)',
+                      background: speech.listening
+                        ? 'radial-gradient(circle at 30% 30%, rgba(255,178,76,0.58), rgba(255,126,35,0.2))'
+                        : '#fffdf2',
+                      boxShadow: speech.listening
+                        ? '0 0 0 5px rgba(255,145,49,0.14), 0 0 28px rgba(255,126,35,0.42)'
+                        : '0 0 0 3px rgba(196,154,81,0.1)',
+                      color: speech.listening ? '#7a310c' : '#704923',
+                    }}
+                  >
+                    {speech.listening ? <MicOff size={15} /> : <Mic size={15} />}
+                  </button>
+                </div>
+                <SunPresence
+                  compact
+                  active={speech.listening || running}
+                  livingText={
+                    speech.transcript ||
+                    prompt ||
+                    'Speak the mission and the sun glistens while the desk writes it down.'
+                  }
+                />
+                {(speech.error || speech.listening) && (
+                  <p className="mt-3 text-xs leading-5 text-[#8d653d]">
+                    {speech.error ||
+                      'Listening. Your words are also written into the mission prompt.'}
+                  </p>
+                )}
+              </div>
+
               <div className="rounded-2xl border border-[#b98d52]/20 bg-[#fff8e8]/70 p-3">
                 <button
                   type="button"
@@ -2311,7 +2429,7 @@ export default function BuildLab() {
                   </label>
                   {channelScreenshotNotes.length === 0 ? (
                     <p className="text-sm text-[#8d653d]">
-                      Screenshots added here stay attached to {activeChannel.name} on this device.
+                      Screenshots added here stay attached to the whole app on this device.
                     </p>
                   ) : (
                     <div className="grid gap-3 sm:grid-cols-2">
@@ -2540,12 +2658,11 @@ export default function BuildLab() {
                     <div className="grid w-full gap-2 sm:w-auto sm:grid-cols-2">
                       <button
                         type="button"
-                        onClick={() => runMission()}
-                        disabled={running}
+                        onClick={() => (running ? stopMission() : runMission())}
                         className="inline-flex justify-center gap-2 rounded-full bg-[#d7b978] px-4 py-2 text-sm text-[#24180f] disabled:opacity-45"
                       >
                         <Play size={15} />
-                        {running ? 'Running' : 'Send mission'}
+                        {running ? 'Stop mission' : 'Send mission'}
                       </button>
                       <button
                         type="button"

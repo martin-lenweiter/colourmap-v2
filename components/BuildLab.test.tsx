@@ -121,12 +121,29 @@ describe('BuildLab', () => {
     expect(screen.getAllByText('Phone Level 2').length).toBeGreaterThan(0);
     expect(screen.getByText('runner ready')).toBeDefined();
     expect(screen.getByText('Garden of Ideas')).toBeDefined();
+    expect(screen.getByText('Mission Sun')).toBeDefined();
+    expect(screen.getByRole('button', { name: 'Speak with mission sun' })).toBeDefined();
     expect(screen.getByText('Display mode')).toBeDefined();
     expect(screen.getByText('Sun Dialogue visual prompt mode')).toBeDefined();
     expect(screen.getByText('Agent console')).toBeDefined();
     expect(screen.queryByText('Scope lens')).toBeNull();
     expect(screen.queryByText('Mission cards')).toBeNull();
     expect(screen.queryByText('Mode')).toBeNull();
+  });
+
+  it('keeps the mission sun beside the desk and mirrors typed mission text', async () => {
+    render(<BuildLab />);
+
+    await waitFor(() => expect(screen.getByText('Codex')).toBeDefined());
+    fireEvent.change(
+      screen.getByPlaceholderText('Tell the agent what to build, fix, review, or plan...'),
+      {
+        target: { value: 'Make the geometry sun glisten while I speak.' },
+      },
+    );
+
+    expect(screen.getAllByText('Make the geometry sun glisten while I speak.').length).toBe(2);
+    expect(screen.getByText('mission sun')).toBeDefined();
   });
 
   it('switches Build Lab work channels so mission memory is not one mixed chat', async () => {
