@@ -38,6 +38,19 @@ export async function insertSection(
   return row;
 }
 
+export async function getSection(
+  db: PostgresJsDatabase<typeof schema>,
+  userId: string,
+  sectionId: string,
+): Promise<CockpitSection | null> {
+  const [row] = await db
+    .select()
+    .from(cockpitSections)
+    .where(and(eq(cockpitSections.id, sectionId), eq(cockpitSections.userId, userId)))
+    .limit(1);
+  return row ?? null;
+}
+
 export async function insertTracker(
   db: PostgresJsDatabase<typeof schema>,
   data: { sectionId: string; label: string; type: string; position?: number },
@@ -60,8 +73,19 @@ export async function deleteSection(
 
 export async function deleteTracker(
   db: PostgresJsDatabase<typeof schema>,
+  userId: string,
   trackerId: string,
 ): Promise<boolean> {
+  const [tracker] = await db
+    .select()
+    .from(sectionTrackers)
+    .where(eq(sectionTrackers.id, trackerId))
+    .limit(1);
+  if (!tracker) return false;
+
+  const section = await getSection(db, userId, tracker.sectionId);
+  if (!section) return false;
+
   const result = await db
     .delete(sectionTrackers)
     .where(eq(sectionTrackers.id, trackerId))

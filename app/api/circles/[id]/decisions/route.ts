@@ -8,10 +8,17 @@ import {
 } from '@/lib/services/circles';
 
 export async function GET(_request: Request, { params }: { params: Promise<{ id: string }> }) {
-  return withAuthenticatedUser(async (_user) => {
+  return withAuthenticatedUser(async (user) => {
     const { id } = await params;
-    const decisions = await listCircleDecisions(id);
-    return NextResponse.json(decisions);
+    try {
+      const decisions = await listCircleDecisions(user.id, id);
+      return NextResponse.json(decisions);
+    } catch (error) {
+      if (error instanceof CircleValidationError) {
+        return jsonError(error.message, 400);
+      }
+      throw error;
+    }
   });
 }
 

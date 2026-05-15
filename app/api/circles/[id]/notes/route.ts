@@ -4,10 +4,17 @@ import { jsonError, parseJsonBody, withAuthenticatedUser } from '@/lib/api/route
 import { addNote, CircleValidationError, listCircleNotes } from '@/lib/services/circles';
 
 export async function GET(_request: Request, { params }: { params: Promise<{ id: string }> }) {
-  return withAuthenticatedUser(async (_user) => {
+  return withAuthenticatedUser(async (user) => {
     const { id } = await params;
-    const notes = await listCircleNotes(id);
-    return NextResponse.json(notes);
+    try {
+      const notes = await listCircleNotes(user.id, id);
+      return NextResponse.json(notes);
+    } catch (error) {
+      if (error instanceof CircleValidationError) {
+        return jsonError(error.message, 400);
+      }
+      throw error;
+    }
   });
 }
 

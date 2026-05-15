@@ -4,10 +4,17 @@ import { jsonError, parseJsonBody, withAuthenticatedUser } from '@/lib/api/route
 import { addMission, CircleValidationError, listCircleMissions } from '@/lib/services/circles';
 
 export async function GET(_request: Request, { params }: { params: Promise<{ id: string }> }) {
-  return withAuthenticatedUser(async (_user) => {
+  return withAuthenticatedUser(async (user) => {
     const { id } = await params;
-    const missions = await listCircleMissions(id);
-    return NextResponse.json(missions);
+    try {
+      const missions = await listCircleMissions(user.id, id);
+      return NextResponse.json(missions);
+    } catch (error) {
+      if (error instanceof CircleValidationError) {
+        return jsonError(error.message, 400);
+      }
+      throw error;
+    }
   });
 }
 

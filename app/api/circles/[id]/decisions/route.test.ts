@@ -62,7 +62,7 @@ describe('circle decisions route', () => {
     });
     expect(response.status).toBe(200);
     await expect(response.json()).resolves.toEqual([]);
-    expect(listCircleDecisions).toHaveBeenCalledWith('circle-1');
+    expect(listCircleDecisions).toHaveBeenCalledWith('user-1', 'circle-1');
   });
 
   it('proposes a decision', async () => {

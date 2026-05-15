@@ -12,7 +12,7 @@ export type FieldEntry = {
 };
 
 export async function GET() {
-  return withAuthenticatedUser(async () => {
+  return withAuthenticatedUser(async (user) => {
     const db = getDb();
 
     const rows = await db.execute<{
@@ -33,6 +33,8 @@ export async function GET() {
         )::int AS yesterday_count
       FROM check_ins
       WHERE
+        user_id = ${user.id}::uuid
+        AND
         emotion_name IS NOT NULL
         AND created_at >= NOW() - INTERVAL '30 hours'
       GROUP BY emotion_name
