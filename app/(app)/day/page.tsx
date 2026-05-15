@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import ActiveCompartments from '@/components/ActiveCompartments';
+import ArchetypeBridge from '@/components/ArchetypeBridge';
 import CheckInPing from '@/components/CheckInPing';
 import ColourMapPanel from '@/components/ColourMapPanel';
 import DailyRituals from '@/components/DailyRituals';
@@ -28,6 +29,7 @@ function DayContent() {
   const [starsOpen, setStarsOpen] = useState(false);
   const [learnOpen, setLearnOpen] = useState(false);
   const [experimentsOpen, setExperimentsOpen] = useState(false);
+  const [modesOpen, setModesOpen] = useState(false);
 
   // Silently restore server state into localStorage on mount.
   // Current session renders from whatever is already local (instant).
@@ -219,7 +221,37 @@ function DayContent() {
             </div>
           </div>
         }
-        progressContent={<Overview2 />}
+        progressContent={
+          <div className="space-y-3">
+            <Overview2 />
+            <div style={{ display: 'flex', justifyContent: 'center', paddingTop: 4 }}>
+              <button
+                type="button"
+                onClick={() => setModesOpen((v) => !v)}
+                style={{
+                  padding: '5px 20px',
+                  borderRadius: 999,
+                  border: `1px solid ${modesOpen ? 'var(--panel-border, rgba(92,48,24,0.55))' : 'var(--panel-border, rgba(122,84,56,0.28))'}`,
+                  background: modesOpen
+                    ? 'var(--palette-l3-bg, rgba(92,48,24,0.1))'
+                    : 'transparent',
+                  color: modesOpen
+                    ? 'var(--palette-panel-text, #5C3018)'
+                    : 'var(--palette-panel-muted, #7A5438)',
+                  fontFamily: 'var(--font-serif)',
+                  fontSize: 11,
+                  fontWeight: modesOpen ? 700 : 500,
+                  letterSpacing: '0.1em',
+                  textTransform: 'uppercase',
+                  cursor: 'pointer',
+                }}
+              >
+                Modes
+              </button>
+            </div>
+            {modesOpen && <ArchetypeBridge />}
+          </div>
+        }
       />
     </div>
   );

@@ -36,6 +36,20 @@ These shapes must remain driven by the same music response sliders and touch dis
 - **Eddy Lace**: connected whirlpools and lace-like flow trails.
 - **Magnetic Sand**: particles aligning around invisible field poles.
 
+## Mode Sun
+
+**Mode Sun** is the first geometry preset connected to the Mode / Archetype Platform.
+
+It should sit at the top of Geometry Builder's Good Ones list. It is a pulsing compass/sun visual for inner modes:
+
+- center = current attention
+- seven rays = Creation, Organisation, Admin, Builder, Body/Sport, Reflection, Play
+- active mode ray is longer/brighter
+- avoided mode ray is more contracted
+- rings show coherence and pressure around the whole field
+
+The Focus-page Mode Bridge can open this preset directly. For now it passes active/avoided modes through local browser state. Later the visual should read real pattern data from Colourmap and show what is flowing or blocked.
+
 Touch modes supported by this family:
 
 - `ripple`: liquid distortion through the dots.

@@ -9,6 +9,77 @@ This spec captures a deeper direction for Colourmap: not a productivity app, and
 
 Colourmap helps me turn inner conflict into a clear field, small bridges, and patterns I can trust.
 
+## Core Simple Challenge
+
+The app's aim is to help the user understand the core simple challenge underneath the apparent complexity.
+
+The user often arrives with a cloud:
+
+- too many tasks
+- too many emotions
+- too many future ideas
+- too many avoided practical details
+- too much self-judgment
+
+Colourmap should gently reveal:
+
+> This is less complex than it feels.
+
+The product should help compress the cloud into one or two core tensions, then propose a few workable paths.
+
+Example:
+
+Apparent complexity:
+
+- I am overwhelmed.
+- The app has too many directions.
+- I need money.
+- I need to build.
+- I avoided documents.
+- I am tired.
+
+Core simple challenge:
+
+> Expansion is moving fast, but Survival needs one concrete bridge.
+
+Possible paths:
+
+- 15 minute document map
+- one Build Lab mission only
+- 10 minute walk before the next decision
+
+This is not simplification by denial. It is simplification by finding the load-bearing pattern.
+
+## Reflection Digest
+
+The deeper shift discovered on 2026-05-15:
+
+Colourmap is not trying to organize tasks first.
+
+It is trying to organize flows of energy through recurring landscapes.
+
+Most productivity tools assume:
+
+```text
+human -> chooses task -> executes task
+```
+
+Colourmap's deeper ontology is closer to:
+
+```text
+energy -> enters patterns -> creates thoughts -> creates action -> creates consequences -> returns to patterns
+```
+
+Repeated tensions are not only failures or forgotten tasks. They are canyons: recurring paths carved by energy moving through the same landscape over time.
+
+The app should eventually help the user ask:
+
+> What valley am I in again?
+
+Not only:
+
+> What task did I forget?
+
 ## Product Shift
 
 The hidden purpose of Colourmap is not productivity. Productivity apps assume the user already knows what matters and simply needs to execute.
@@ -42,6 +113,12 @@ Organize the deeper model around:
 FIELD -> TENSIONS -> ACTION -> PATTERNS
 ```
 
+An even deeper future model may sit underneath it:
+
+```text
+ENERGY -> TERRITORIES -> FLOWS -> CANYONS -> BRIDGES
+```
+
 ## Field
 
 Life begins as a field: the felt landscape of the day before it becomes language or tasks.
@@ -65,6 +142,111 @@ Current Colourmap features that belong here:
 - body/presence signals
 - geometry and visual field language
 - music/chill states when used as regulation
+
+## Energy
+
+Energy is the raw pre-verbal layer.
+
+Not story first. Not explanation first.
+
+Examples:
+
+- tired
+- alive
+- compressed
+- inspired
+- scattered
+- heavy
+- expansive
+
+The app should eventually let the user feel this immediately through visual movement: dense dots, clusters, ripples, flowing fields, pressure, quiet, or expansion.
+
+The ideal experience:
+
+The user opens Colourmap and feels the state before reading it.
+
+## Archetypal Territories
+
+Energy tends to fall into recurring regions. These are not fixed identities. They are weather regions the user visits again and again.
+
+Possible territories:
+
+- **Survivor**: bills, security, structure, admin
+- **Creator**: ideas, art, Colourmap, music, visual worlds
+- **Body**: sleep, movement, food, pain, breath
+- **Philosopher**: meaning, identity, future, worldview
+- **Builder**: execution, implementation, shipping, tools
+- **Child**: play, curiosity, freedom, delight
+
+The app can show when one territory dominates and another is neglected.
+
+Example:
+
+> Creator is bright, but Survivor is underfed.
+
+This is not moral judgment. It is landscape observation.
+
+## Flows
+
+The deeper unit of progress is not only task completion. It is energy movement.
+
+Examples:
+
+- Creator -> Survivor
+- Body -> Builder
+- Rest -> Clarity
+- Structure -> Relief
+- Music -> Expansion
+- Paperwork -> Tension drop
+
+Colourmap should eventually show channels between territories: golden currents, bridges, or rivers. This makes self-understanding visual instead of purely textual.
+
+## Canyons
+
+A canyon is a repeated flow cycle.
+
+Example:
+
+```text
+forgot bills
+-> anxiety
+-> escape into creation
+-> temporary relief
+-> more anxiety later
+-> heavier creation
+-> guilt
+-> more escape
+```
+
+The app's job is not to shame the user into doing bills.
+
+The app's job is to say:
+
+> I recognize this river.
+
+That recognition matters because it lets the user observe the loop instead of becoming identical with it.
+
+## Bridges
+
+Bridges are tiny actions that redirect energy.
+
+The philosophy:
+
+> Solving tiny things can solve big things.
+
+Large dreams often do not fail because of one giant enemy. They fail through tiny leaks: admin, sleep, papers, meals, routine, one avoided message, one unclear document.
+
+A bridge should be small enough to do today.
+
+Example:
+
+> Create the Monday document map.
+
+Not:
+
+> Solve the entire survival situation.
+
+The bridge places one stone in the river so energy can change direction.
 
 ## Tensions
 
@@ -109,6 +291,36 @@ Example discovery:
 > After 30 minutes of paperwork, emotional tension drops sharply.
 
 This is more valuable than generic advice because it is discovered from the user's own life.
+
+## Visual Language Direction
+
+Words are the current interface between human and machine. In the long run, Colourmap can make patterns themselves become language.
+
+Today:
+
+```text
+human -> text -> machine
+```
+
+Future:
+
+```text
+human -> pattern -> machine
+```
+
+Possible future:
+
+- user speaks
+- field moves
+- dots become denser
+- territories brighten
+- a spiral collapses toward Survivor
+- AI recognizes a survival tension
+- the shape itself becomes understandable
+
+This is a new alphabet for inner life: not letters first, but emotional topography, weather maps, sacred geometry, MRI-like scans, and Moebius-style landscapes.
+
+This layer should not replace practical action. It should make practical action more obvious.
 
 ## Action
 
@@ -181,6 +393,32 @@ Possible programs:
 - How structure can reduce emotional pressure
 
 The style can be artistic and comic-like, but it should serve clarity first.
+
+## Reflection Atlas
+
+The user should eventually be able to access these product reflections inside Colourmap in a digestible way.
+
+Not raw markdown buried in `docs/specs`.
+
+Possible app feature:
+
+- a creator-only **Reflection Atlas**
+- short reflection cards
+- one core idea per card
+- examples from the user's own life
+- links from each reflection to affected app areas
+- "turn into feature" and "turn into mission" actions
+
+Initial digestible sections:
+
+- Field -> Tensions -> Action -> Patterns
+- Energy -> Territories -> Flows -> Canyons -> Bridges
+- Survival / Expansion / Regeneration
+- tiny bridges and tiny leaks
+- voice as thought capture
+- visual language as future alphabet
+
+This would let Colourmap keep its own evolving philosophy visible, useful, and buildable.
 
 ## Layer Separation
 

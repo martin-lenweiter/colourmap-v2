@@ -1,6 +1,18 @@
 'use client';
 
-import { Bot, GitBranch, Mic, MicOff, Play, RefreshCw, SquareTerminal } from 'lucide-react';
+import {
+  Bot,
+  CheckCircle2,
+  Circle,
+  Clock3,
+  GitBranch,
+  Mic,
+  MicOff,
+  Play,
+  RefreshCw,
+  ShieldCheck,
+  SquareTerminal,
+} from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
 
 import { useSpeechToText } from '@/lib/hooks/use-speech-to-text';
@@ -20,6 +32,15 @@ type ConsoleEvent = {
   tone?: 'normal' | 'error' | 'success' | 'meta';
 };
 
+type MissionStage = 'draft' | 'project' | 'checkpoint' | 'agent' | 'diff' | 'complete' | 'failed';
+
+type CheckpointInfo = {
+  created: boolean;
+  path?: string;
+  reason?: string;
+  changedFiles?: string[];
+};
+
 type ProjectInfo = {
   projectPath: string;
   git: boolean;
@@ -34,6 +55,36 @@ const modes: { id: AgentMode; label: string }[] = [
   { id: 'review', label: 'Review' },
 ];
 
+const worlds = [
+  {
+    id: 'Survival',
+    label: 'Survival',
+    desc: 'stability, paperwork, risk, money, basic order',
+  },
+  {
+    id: 'Expansion',
+    label: 'Expansion',
+    desc: 'creative future, product, art, code, momentum',
+  },
+  {
+    id: 'Regeneration',
+    label: 'Regeneration',
+    desc: 'body, breath, sleep, pacing, nervous system',
+  },
+];
+
+const stageLabels: Record<MissionStage, string> = {
+  draft: 'Draft',
+  project: 'Project',
+  checkpoint: 'Checkpoint',
+  agent: 'Agent',
+  diff: 'Diff',
+  complete: 'Complete',
+  failed: 'Failed',
+};
+
+const stageOrder: MissionStage[] = ['draft', 'project', 'checkpoint', 'agent', 'diff', 'complete'];
+
 function nextId() {
   return Date.now() + Math.random();
 }
@@ -44,11 +95,17 @@ export default function BuildLab() {
   const [mode, setMode] = useState<AgentMode>('build');
   const [projectPath, setProjectPath] = useState('');
   const [missionTitle, setMissionTitle] = useState('');
+  const [currentTension, setCurrentTension] = useState('');
+  const [worldFocus, setWorldFocus] = useState('Expansion');
+  const [constraints, setConstraints] = useState('');
+  const [successCriteria, setSuccessCriteria] = useState('');
   const [prompt, setPrompt] = useState('');
   const [projectInfo, setProjectInfo] = useState<ProjectInfo | null>(null);
   const [events, setEvents] = useState<ConsoleEvent[]>([]);
   const [changedFiles, setChangedFiles] = useState<string[]>([]);
   const [diff, setDiff] = useState('');
+  const [stage, setStage] = useState<MissionStage>('draft');
+  const [checkpoints, setCheckpoints] = useState<CheckpointInfo[]>([]);
   const [running, setRunning] = useState(false);
   const [error, setError] = useState('');
   const speech = useSpeechToText({ lang: 'en-US' });
@@ -77,6 +134,19 @@ export default function BuildLab() {
     setEvents((prev) => [...prev, { id: nextId(), type, text, tone }]);
   }
 
+  function composedPrompt() {
+    return [
+      missionTitle ? `Mission title: ${missionTitle}` : '',
+      currentTension ? `Current tension: ${currentTension}` : '',
+      `World focus: ${worldFocus}`,
+      constraints ? `Constraints:\n${constraints}` : '',
+      successCriteria ? `Success criteria:\n${successCriteria}` : '',
+      prompt ? `Raw spoken/written brief:\n${prompt}` : '',
+    ]
+      .filter(Boolean)
+      .join('\n\n');
+  }
+
   async function inspectProject() {
     setError('');
     const response = await fetch('/api/build-lab/project', {
@@ -92,6 +162,7 @@ export default function BuildLab() {
     setProjectInfo(data);
     setProjectPath(data.projectPath);
     setChangedFiles(data.changedFiles);
+    setStage('project');
     addEvent('project', `Loaded ${data.projectPath}`, 'meta');
   }
 
@@ -106,10 +177,12 @@ export default function BuildLab() {
     const data = (await response.json()) as { diff: string; changedFiles: string[] };
     setDiff(data.diff);
     setChangedFiles(data.changedFiles);
+    setStage(data.changedFiles.length > 0 ? 'diff' : stage);
   }
 
   async function runMission() {
-    if (!prompt.trim()) {
+    const missionPrompt = composedPrompt();
+    if (!missionPrompt.trim()) {
       setError('Write or dictate a mission prompt first.');
       return;
     }
@@ -117,13 +190,15 @@ export default function BuildLab() {
     setRunning(true);
     setEvents([]);
     setDiff('');
+    setCheckpoints([]);
+    setStage('checkpoint');
     addEvent('mission', missionTitle || 'Untitled coding mission', 'meta');
 
     try {
       const response = await fetch('/api/build-lab/mission', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ agentId, projectPath, prompt, mode }),
+        body: JSON.stringify({ agentId, projectPath, prompt: missionPrompt, mode }),
       });
 
       if (!response.ok || !response.body) {
@@ -155,27 +230,35 @@ export default function BuildLab() {
             args?: string[];
             path?: string;
             success?: boolean;
+            checkpoint?: CheckpointInfo;
           };
           if (event.type === 'output') addEvent(event.stream ?? 'output', event.text ?? '');
           else if (event.type === 'error') addEvent('error', event.message ?? 'Error', 'error');
-          else if (event.type === 'command_started')
+          else if (event.type === 'command_started') {
+            setStage('agent');
             addEvent('command', `$ ${event.command} ${(event.args ?? []).join(' ')}`, 'meta');
-          else if (event.type === 'command_finished')
+          } else if (event.type === 'command_finished')
             addEvent('command', 'Command finished', 'meta');
           else if (event.type === 'file_changed' && event.path)
             setChangedFiles((prev) => Array.from(new Set([...prev, event.path as string])));
-          else if (event.type === 'mission_complete')
+          else if (event.type === 'mission_complete') {
+            setStage(event.success ? 'complete' : 'failed');
             addEvent(
               'complete',
               event.success ? 'Mission complete' : 'Mission failed',
               event.success ? 'success' : 'error',
             );
-          else if (event.type === 'checkpoint')
+          } else if (event.type === 'checkpoint') {
+            setStage('checkpoint');
+            if (event.checkpoint)
+              setCheckpoints((prev) => [...prev, event.checkpoint as CheckpointInfo]);
             addEvent('checkpoint', 'Git checkpoint saved', 'meta');
+          }
         }
       }
       await refreshDiff();
     } catch (missionError) {
+      setStage('failed');
       setError(missionError instanceof Error ? missionError.message : 'Mission failed.');
     } finally {
       setRunning(false);
@@ -189,6 +272,8 @@ export default function BuildLab() {
       speech.start(prompt, setPrompt);
     }
   }
+
+  const missionReady = composedPrompt().trim().length > 0 && Boolean(selectedAgent?.available);
 
   return (
     <main className="mx-auto w-full max-w-6xl px-3 py-5 sm:px-5">
@@ -207,10 +292,10 @@ export default function BuildLab() {
                 <p className="text-[11px] uppercase tracking-[0.22em] text-[#8d653d]">
                   Creator Space
                 </p>
-                <h1 className="mt-1 font-serif text-3xl text-[#442510]">Build Lab</h1>
+                <h1 className="mt-1 font-serif text-3xl text-[#442510]">Creator Space</h1>
                 <p className="mt-2 max-w-md text-sm leading-6 text-[#775638]">
-                  A quiet mission desk for sending focused work to coding agents while Colourmap
-                  keeps the map, logs, checkpoints, and diff.
+                  Build Lab is the coding-agent room inside Colourmap's creator space: a quiet
+                  mission desk for prompts, logs, checkpoints, and diffs.
                 </p>
               </div>
               <div className="rounded-full border border-[#b98d52]/30 bg-[#fff7df]/70 p-3 text-[#704923]">
@@ -261,6 +346,38 @@ export default function BuildLab() {
                 </div>
               </div>
 
+              <div className="rounded-2xl border border-[#b98d52]/20 bg-[#fff8e8]/70 p-3">
+                <div className="mb-3 flex items-center gap-2 text-xs uppercase tracking-[0.14em] text-[#8d653d]">
+                  <Clock3 size={14} />
+                  Mission timeline
+                </div>
+                <div className="grid grid-cols-3 gap-2">
+                  {(Object.keys(stageLabels) as MissionStage[]).map((item) => {
+                    const active = item === stage;
+                    const complete =
+                      stage !== 'failed' &&
+                      stageOrder.indexOf(stage) >= 0 &&
+                      stageOrder.indexOf(item) >= 0 &&
+                      stageOrder.indexOf(stage) >= stageOrder.indexOf(item);
+                    const Icon = active || complete ? CheckCircle2 : Circle;
+                    return (
+                      <div
+                        key={item}
+                        className="flex items-center gap-1.5 rounded-full border px-2 py-1 text-[10px]"
+                        style={{
+                          borderColor: active ? '#704923' : 'rgba(112,73,38,0.14)',
+                          background: active ? 'rgba(112,73,35,0.1)' : 'rgba(255,253,242,0.58)',
+                          color: active ? '#3f2817' : '#8d653d',
+                        }}
+                      >
+                        <Icon size={11} />
+                        {stageLabels[item]}
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+
               <label className="block">
                 <span className="text-xs uppercase tracking-[0.16em] text-[#704923]">
                   Mission title
@@ -272,6 +389,43 @@ export default function BuildLab() {
                   className="mt-2 w-full rounded-xl border border-[#b98d52]/30 bg-[#fff8e8] px-3 py-2 text-sm text-[#3f2817] outline-none focus:border-[#8f6232]"
                 />
               </label>
+
+              <label className="block">
+                <span className="text-xs uppercase tracking-[0.16em] text-[#704923]">
+                  Current tension
+                </span>
+                <input
+                  value={currentTension}
+                  onChange={(event) => setCurrentTension(event.target.value)}
+                  placeholder="Building the future while surviving today"
+                  className="mt-2 w-full rounded-xl border border-[#b98d52]/30 bg-[#fff8e8] px-3 py-2 text-sm text-[#3f2817] outline-none focus:border-[#8f6232]"
+                />
+              </label>
+
+              <div>
+                <span className="text-xs uppercase tracking-[0.16em] text-[#704923]">
+                  World focus
+                </span>
+                <div className="mt-2 grid gap-2">
+                  {worlds.map((world) => (
+                    <button
+                      key={world.id}
+                      type="button"
+                      onClick={() => setWorldFocus(world.id)}
+                      className="rounded-2xl border px-3 py-2 text-left"
+                      style={{
+                        borderColor: worldFocus === world.id ? '#704923' : 'rgba(112,73,38,0.16)',
+                        background: worldFocus === world.id ? 'rgba(112,73,35,0.1)' : '#fff8e8',
+                      }}
+                    >
+                      <span className="block text-sm font-medium text-[#3f2817]">
+                        {world.label}
+                      </span>
+                      <span className="block text-xs leading-5 text-[#8d653d]">{world.desc}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
 
               <div>
                 <span className="text-xs uppercase tracking-[0.16em] text-[#704923]">Mode</span>
@@ -328,7 +482,7 @@ export default function BuildLab() {
                     Mission prompt
                   </p>
                   <p className="mt-1 text-xs text-[#8d653d]">
-                    Speak or write the mission. The agent runs in the selected folder.
+                    Speak naturally. Colourmap turns it into a cleaner worker brief.
                   </p>
                 </div>
                 <button
@@ -341,20 +495,52 @@ export default function BuildLab() {
                   {speech.listening ? 'Stop voice' : 'Voice'}
                 </button>
               </div>
+              <div className="mb-3 grid gap-3 md:grid-cols-2">
+                <label className="block">
+                  <span className="text-[10px] uppercase tracking-[0.14em] text-[#8d653d]">
+                    Constraints
+                  </span>
+                  <textarea
+                    value={constraints}
+                    onChange={(event) => setConstraints(event.target.value)}
+                    placeholder="Keep scope tight. Do not touch unrelated files. Verify in browser."
+                    className="mt-1 min-h-24 w-full resize-y rounded-xl border border-[#b98d52]/25 bg-[#fffdf2] p-2 text-xs leading-5 text-[#3f2817] outline-none focus:border-[#8f6232]"
+                  />
+                </label>
+                <label className="block">
+                  <span className="text-[10px] uppercase tracking-[0.14em] text-[#8d653d]">
+                    Success criteria
+                  </span>
+                  <textarea
+                    value={successCriteria}
+                    onChange={(event) => setSuccessCriteria(event.target.value)}
+                    placeholder="The page loads, checks pass, and the changed files are easy to review."
+                    className="mt-1 min-h-24 w-full resize-y rounded-xl border border-[#b98d52]/25 bg-[#fffdf2] p-2 text-xs leading-5 text-[#3f2817] outline-none focus:border-[#8f6232]"
+                  />
+                </label>
+              </div>
               <textarea
                 value={prompt}
                 onChange={(event) => setPrompt(event.target.value)}
                 placeholder="Tell the agent what to build, fix, review, or plan..."
                 className="min-h-44 w-full resize-y rounded-2xl border border-[#b98d52]/25 bg-[#fffdf2] p-3 text-sm leading-6 text-[#3f2817] outline-none focus:border-[#8f6232]"
               />
+              <details className="mt-3 rounded-xl border border-[#b98d52]/18 bg-[#fffdf2]/80 p-3">
+                <summary className="cursor-pointer text-xs uppercase tracking-[0.14em] text-[#704923]">
+                  Worker brief preview
+                </summary>
+                <pre className="mt-3 max-h-56 overflow-auto whitespace-pre-wrap text-xs leading-5 text-[#5f4229]">
+                  {composedPrompt() || 'The structured brief will appear here.'}
+                </pre>
+              </details>
               <div className="mt-3 flex flex-wrap items-center justify-between gap-3">
                 <p className="text-xs text-[#8d653d]">
-                  Selected: {selectedAgent?.name ?? 'No agent'} / {mode}
+                  Selected: {selectedAgent?.name ?? 'No agent'} / {mode} / {worldFocus}
                 </p>
                 <button
                   type="button"
                   onClick={runMission}
-                  disabled={running || !selectedAgent?.available}
+                  disabled={running || !missionReady}
                   className="inline-flex items-center gap-2 rounded-full bg-[#704923] px-4 py-2 text-sm text-[#fff8e8] disabled:opacity-45"
                 >
                   <Play size={15} />
@@ -408,6 +594,27 @@ export default function BuildLab() {
                     <RefreshCw size={12} />
                     Refresh
                   </button>
+                </div>
+                <div className="mb-3 rounded-xl border border-[#b98d52]/18 bg-[#fffdf2] p-3">
+                  <div className="mb-2 flex items-center gap-2 text-xs uppercase tracking-[0.14em] text-[#8d653d]">
+                    <ShieldCheck size={13} />
+                    Checkpoints
+                  </div>
+                  {checkpoints.length === 0 ? (
+                    <p className="text-sm text-[#8d653d]">No checkpoint yet.</p>
+                  ) : (
+                    <ul className="space-y-2 text-sm text-[#3f2817]">
+                      {checkpoints.map((checkpoint, index) => (
+                        <li
+                          key={`${checkpoint.path ?? checkpoint.reason ?? 'checkpoint'}-${index}`}
+                        >
+                          {checkpoint.created
+                            ? (checkpoint.path ?? 'Checkpoint saved')
+                            : (checkpoint.reason ?? 'Checkpoint skipped')}
+                        </li>
+                      ))}
+                    </ul>
+                  )}
                 </div>
                 <div className="mb-3 rounded-xl border border-[#b98d52]/18 bg-[#fffdf2] p-3">
                   <p className="mb-2 text-xs uppercase tracking-[0.14em] text-[#8d653d]">

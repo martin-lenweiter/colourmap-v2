@@ -26,7 +26,7 @@ const MORE_LINKS = [
   { href: '/life-scan', label: 'Life Scan' },
   { href: '/programs', label: 'Programs' },
   { href: '/research', label: 'Research' },
-  { href: '/build-lab', label: 'Build Lab' },
+  { href: '/build-lab', label: 'Creator Space' },
 ];
 
 export default function NavLinks() {
