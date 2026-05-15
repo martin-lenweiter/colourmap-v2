@@ -69,6 +69,8 @@ When selected from Music Visuals, these candidates should actually react to musi
 - **Drift Field**: bass spreads the node field, pads/keys thicken connections, drums/lead sharpen node pulses, and the field rotation responds subtly to impact.
 - **Sacred Pyramid / Focus Arc**: live in the high-priority Good Ones and Music Visuals list, with numbering and visible selected states.
 
+Music-reactive behavior is a response layer, not the default identity of those presets. The same preset selected from Geometry Builder should keep any improved geometry, palette, dot system, and touch mechanics, but it must not automatically pop, pulse, or expand to BPM/music energy unless the Music Visuals tab is active. Improvements discovered in Music Visuals can still be promoted back into the non-music preset when they make the base form stronger without requiring beat response.
+
 Preset lists in Geometry Builder and Music Visuals must be numbered. The selected preset must be visually obvious.
 
 Ripple finger distortion can be used without visible pointer rings. Visible ripple rings are controlled by a separate `Rings On/Off` button and default off.

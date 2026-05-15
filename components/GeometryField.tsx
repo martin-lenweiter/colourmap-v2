@@ -8223,7 +8223,7 @@ function updateCurrentTexture(group: THREE.Group, cfg: Cfg, t: number, R: number
   const baseRgb = pal.rgb;
   const fieldR = R * 1.12;
   const R2 = fieldR * fieldR;
-  const currentScaleMusicMode = cfg.mode === 'currentscales';
+  const currentScaleMusicMode = _musicVisualsActive && cfg.mode === 'currentscales';
   const beatPhase = (t / 1000) * Math.PI * 2 * (_musicBpm / 60);
   const scaleDensity = cfg.complexity / 10;
   const scaleCell = lerp(R * 0.32, R * 0.12, scaleDensity);
@@ -8678,7 +8678,7 @@ function updateNebula(group: THREE.Group, cfg: Cfg, t: number, R: number): void 
   const baseRgb = pal.rgb;
   const limit = R * 1.1;
   const limit2 = limit * limit;
-  const galaxyMusicMode = cfg.mode === 'nebula' && cfg.complexity >= 9;
+  const galaxyMusicMode = _musicVisualsActive && cfg.mode === 'nebula' && cfg.complexity >= 9;
   const beatPhase = (t / 1000) * Math.PI * 2 * (_musicBpm / 60);
   if (galaxyMusicMode) {
     _musicPulse *= 0.945;
@@ -10581,6 +10581,7 @@ let _musicPads = 0;
 let _musicKeys = 0;
 let _musicLead = 0;
 let _musicBpm = 122;
+let _musicVisualsActive = false;
 let _currentScalePulse = 0.72;
 let _currentScaleBass = 0.62;
 let _currentScaleFlow = 0.68;
@@ -11017,17 +11018,24 @@ function updateDrift(group: THREE.Group, cfg: Cfg, t: number, R: number): void {
   const [rr, gg, bb] = pal.rgb;
   const iF = cfg.intensity / 10;
   const speed = cfg.breathSpeed * 0.00022;
-  _musicPulse *= 0.95;
-  _musicBass *= 0.972;
-  _musicDrums *= 0.91;
-  _musicPads *= 0.986;
-  _musicKeys *= 0.978;
-  _musicLead *= 0.925;
+  const musicMode = _musicVisualsActive;
+  if (musicMode) {
+    _musicPulse *= 0.95;
+    _musicBass *= 0.972;
+    _musicDrums *= 0.91;
+    _musicPads *= 0.986;
+    _musicKeys *= 0.978;
+    _musicLead *= 0.925;
+  }
   const beatPhase = (t / 1000) * Math.PI * 2 * (_musicBpm / 60);
-  const internalPulse = ((Math.sin(beatPhase) + 1) / 2) ** 3 * 0.2;
-  const impact = Math.min(1, internalPulse + _musicDrums * 0.5 + _musicPulse * 0.42);
-  const pressure = Math.min(1, _musicBass * 0.86 + internalPulse * 0.25);
-  const atmosphere = Math.min(1, _musicPads * 0.58 + _musicKeys * 0.36 + internalPulse * 0.16);
+  const internalPulse = musicMode ? ((Math.sin(beatPhase) + 1) / 2) ** 3 * 0.2 : 0;
+  const impact = musicMode
+    ? Math.min(1, internalPulse + _musicDrums * 0.5 + _musicPulse * 0.42)
+    : 0;
+  const pressure = musicMode ? Math.min(1, _musicBass * 0.86 + internalPulse * 0.25) : 0;
+  const atmosphere = musicMode
+    ? Math.min(1, _musicPads * 0.58 + _musicKeys * 0.36 + internalPulse * 0.16)
+    : 0;
   const amp = R * 0.14 * (cfg.complexity / 10) * (1 + pressure * 0.48 + atmosphere * 0.22);
   const seeds = group.userData.seeds as THREE.Vector3[];
   const n = group.userData.n as number;
@@ -11056,7 +11064,8 @@ function updateDrift(group: THREE.Group, cfg: Cfg, t: number, R: number): void {
       (pts.geometry.getAttribute('position') as THREE.BufferAttribute).needsUpdate = true;
       (pts.material as THREE.PointsMaterial).color.setRGB(rr / 255, gg / 255, bb / 255);
       (pts.material as THREE.PointsMaterial).opacity = 0.82 * iF + atmosphere * 0.18;
-      (pts.material as THREE.PointsMaterial).size = 3.8 + impact * 2.2 + _musicLead * 1.3;
+      (pts.material as THREE.PointsMaterial).size =
+        3.8 + impact * 2.2 + (musicMode ? _musicLead * 1.3 : 0);
     }
     if (child.userData.tag === 'driftEdges') {
       const lines = child as THREE.LineSegments;
@@ -12059,9 +12068,12 @@ function updateCanvasMode(group: THREE.Group, cfg: Cfg, t: number, R: number): v
   const pal = PAL[cfg.preset] ?? PAL['Calm Field'];
   const iF = cfg.intensity / 10;
   const beatPhase = (t / 1000) * Math.PI * 2 * (_musicBpm / 60);
-  const beat = Math.min(1, ((Math.sin(beatPhase) + 1) / 2) ** 3 * 0.28 + _musicPulse * 0.82);
-  const bass = Math.min(1, _musicBass + beat * 0.18);
-  const haze = Math.min(1, _musicPads * 0.7 + _musicKeys * 0.3 + beat * 0.12);
+  const musicMode = _musicVisualsActive;
+  const beat = musicMode
+    ? Math.min(1, ((Math.sin(beatPhase) + 1) / 2) ** 3 * 0.28 + _musicPulse * 0.82)
+    : 0;
+  const bass = musicMode ? Math.min(1, _musicBass + beat * 0.18) : 0;
+  const haze = musicMode ? Math.min(1, _musicPads * 0.7 + _musicKeys * 0.3 + beat * 0.12) : 0;
 
   for (const child of group.children) {
     if ((child.userData.tag as string) !== 'musicDotVolume') continue;
@@ -12084,7 +12096,7 @@ function updateCanvasMode(group: THREE.Group, cfg: Cfg, t: number, R: number): v
     posAttr.needsUpdate = true;
     updateMat(pts, pal.rgb, iF, 2.25 + beat * 0.9 + haze * 0.45);
     const mat = pts.material as THREE.PointsMaterial;
-    mat.size = 1.55 + beat * 1.2 + _musicLead * 0.8;
+    mat.size = 1.55 + beat * 1.2 + (musicMode ? _musicLead * 0.8 : 0);
     mat.opacity = 0.24 + haze * 0.22 + beat * 0.14;
   }
   group.rotation.y = Math.sin(t * 0.00012) * 0.18;
@@ -12523,18 +12535,25 @@ function updateSinMorph3D(group: THREE.Group, cfg: Cfg, t: number, R: number): v
   const spd = cfg.breathSpeed;
   const cplx = cfg.complexity / 10;
   const tSec = t * 0.001 * spd;
-  _musicPulse *= 0.95;
-  _musicBass *= 0.972;
-  _musicDrums *= 0.91;
-  _musicPads *= 0.986;
-  _musicKeys *= 0.978;
-  _musicLead *= 0.925;
+  const musicMode = _musicVisualsActive;
+  if (musicMode) {
+    _musicPulse *= 0.95;
+    _musicBass *= 0.972;
+    _musicDrums *= 0.91;
+    _musicPads *= 0.986;
+    _musicKeys *= 0.978;
+    _musicLead *= 0.925;
+  }
   const beatPhase = (t / 1000) * Math.PI * 2 * (_musicBpm / 60);
-  const internalPulse = ((Math.sin(beatPhase) + 1) / 2) ** 3 * 0.22;
-  const impact = Math.min(1, internalPulse + _musicDrums * 0.56 + _musicPulse * 0.34);
-  const pressure = Math.min(1, _musicBass * 0.78 + internalPulse * 0.24);
-  const atmosphere = Math.min(1, _musicPads * 0.55 + _musicKeys * 0.34 + internalPulse * 0.12);
-  const spark = Math.min(1, _musicLead * 0.72 + _musicDrums * 0.22);
+  const internalPulse = musicMode ? ((Math.sin(beatPhase) + 1) / 2) ** 3 * 0.22 : 0;
+  const impact = musicMode
+    ? Math.min(1, internalPulse + _musicDrums * 0.56 + _musicPulse * 0.34)
+    : 0;
+  const pressure = musicMode ? Math.min(1, _musicBass * 0.78 + internalPulse * 0.24) : 0;
+  const atmosphere = musicMode
+    ? Math.min(1, _musicPads * 0.55 + _musicKeys * 0.34 + internalPulse * 0.12)
+    : 0;
+  const spark = musicMode ? Math.min(1, _musicLead * 0.72 + _musicDrums * 0.22) : 0;
 
   for (const child of group.children) {
     if ((child.userData.tag as string) !== 'sinMorphPts') continue;
@@ -12878,6 +12897,18 @@ export default function GeometryField() {
   useEffect(() => {
     motionModeRef.current = motionMode;
   }, [motionMode]);
+
+  useEffect(() => {
+    _musicVisualsActive = tab === 'music';
+    if (tab !== 'music') {
+      _musicPulse = 0;
+      _musicBass = 0;
+      _musicDrums = 0;
+      _musicPads = 0;
+      _musicKeys = 0;
+      _musicLead = 0;
+    }
+  }, [tab]);
 
   useEffect(() => {
     _rippleRingsVisible = rippleRingsVisible;
@@ -13421,15 +13452,20 @@ export default function GeometryField() {
         const cy = H / 2;
         const radius = Math.min(W, H) * 0.48;
         const tt = modeSeconds();
-        _musicPulse *= 0.94;
-        _musicBass *= 0.96;
-        _musicDrums *= 0.9;
-        _musicPads *= 0.985;
+        const musicMode = _musicVisualsActive;
+        if (musicMode) {
+          _musicPulse *= 0.94;
+          _musicBass *= 0.96;
+          _musicDrums *= 0.9;
+          _musicPads *= 0.985;
+        }
         const internalBeat = (Math.sin(tt * Math.PI * 2 * (_musicBpm / 60)) + 1) / 2;
-        const beat = Math.min(1, internalBeat * 0.42 + _musicPulse * 0.85);
+        const beat = musicMode ? Math.min(1, internalBeat * 0.42 + _musicPulse * 0.85) : 0;
         const low = Math.min(
           1,
-          ((Math.sin(tt * Math.PI * speed * 0.52 + 1.7) + 1) / 2) * 0.45 + _musicBass,
+          musicMode
+            ? ((Math.sin(tt * Math.PI * speed * 0.52 + 1.7) + 1) / 2) * 0.45 + _musicBass
+            : 0,
         );
         ctx!.fillStyle = `rgba(0,0,0,${cfg.mode === 'musicnebula' ? 0.13 : 0.2})`;
         ctx!.fillRect(0, 0, W, H);
