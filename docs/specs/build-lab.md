@@ -106,6 +106,58 @@ Build Lab should show a calm timeline, not only terminal output:
 
 The timeline helps the user feel oriented and in control while the agent works.
 
+## Mission Workspace
+
+Build Lab should make terminal work feel like a creator cockpit.
+
+The user should be able to:
+
+- load a recent project without retyping the path
+- start from reusable mission cards
+- see whether the brief is specific enough before running
+- reuse previous missions from local mission memory
+- keep raw terminal output available without making it the only interface
+
+### Mission Cards
+
+Initial cards:
+
+- **Stabilise**: fix/safety pass before PR review
+- **Build feature**: one focused product improvement
+- **Review PR**: senior review for merge risk
+
+These cards are not rigid workflows. They are mission shapes: enough structure to make voice input useful, but still editable.
+
+### Scope Lens
+
+The scope lens is a local client-side helper. It checks whether the mission has:
+
+- loaded project
+- title
+- constraints
+- success criteria
+- usable brief
+- branch safety
+- broad-scope warning words
+
+It does not block broad work. It makes broadness visible before an agent starts.
+
+### Mission Memory
+
+MVP mission memory is local browser storage. It saves recent completed or failed missions with:
+
+- title
+- agent
+- mode
+- world focus
+- project path
+- prompt fields
+- changed files
+- status
+- timestamp
+
+This lets the creator reload and refine real missions. Later, mission memory should move to the backend and connect to patterns: which mission shapes work, which agents perform best, and how the user's state affects mission quality.
+
 ## Access
 
 Build Lab is a creator space, not a public user feature. In production it is available only when the authenticated user's email is included in `BUILD_LAB_ALLOWED_EMAILS` or `BUILDLAB_ALLOWED_EMAILS`. Local dev auth may access it for development.
@@ -173,4 +225,5 @@ Future pattern examples:
 - The user can dictate a mission.
 - The mission brief includes current tension, world focus, constraints, and success criteria.
 - The UI shows a visible timeline and checkpoint state.
+- The UI supports mission cards, scope lens, recent projects, and local mission memory.
 - The code is modular enough to add another adapter without changing the UI contract.
