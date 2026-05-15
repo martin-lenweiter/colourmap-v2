@@ -8,6 +8,7 @@ import {
   FolderOpen,
   GitBranch,
   Heart,
+  ImagePlus,
   Mic,
   MicOff,
   Network,
@@ -96,6 +97,15 @@ type QueuedMission = {
   }>;
 };
 
+type ScreenshotNote = {
+  id: string;
+  channelId: string;
+  title: string;
+  note: string;
+  image: string;
+  createdAt: string;
+};
+
 type WorkChannel = {
   id: string;
   name: string;
@@ -129,6 +139,8 @@ type GardenDisplay = 'glimpse' | 'bubble' | 'board' | 'road' | 'constellation' |
 const HISTORY_LS = 'colourmap:build-lab-history';
 const RECENT_PROJECTS_LS = 'colourmap:build-lab-recent-projects';
 const ACTIVE_CHANNEL_LS = 'colourmap:build-lab-active-channel';
+const SCREENSHOT_NOTES_LS = 'colourmap:build-lab-screenshot-notes';
+const PHONE_PREP_LS = 'colourmap:build-lab-phone-prep';
 
 const DEFAULT_CHANNELS: WorkChannel[] = [
   {
@@ -1494,6 +1506,7 @@ export default function BuildLab() {
     channels: false,
     setup: true,
     phone: false,
+    phonePrep: false,
     memory: false,
     garden: false,
     sun: false,
@@ -1501,8 +1514,11 @@ export default function BuildLab() {
     diff: false,
   });
   const [showRawConsole, setShowRawConsole] = useState(false);
+  const [consoleDesignMode, setConsoleDesignMode] = useState(false);
   const [running, setRunning] = useState(false);
   const [error, setError] = useState('');
+  const [phonePrep, setPhonePrep] = useState('');
+  const [screenshotNotes, setScreenshotNotes] = useState<ScreenshotNote[]>([]);
   const speech = useSpeechToText({ lang: 'en-US' });
 
   const selectedAgent = useMemo(
@@ -1514,11 +1530,16 @@ export default function BuildLab() {
   const channelHistory = history.filter(
     (mission) => (mission.channelId ?? 'general') === activeChannel.id,
   );
+  const channelScreenshotNotes = screenshotNotes.filter(
+    (note) => note.channelId === activeChannel.id,
+  );
 
   useEffect(() => {
     setHistory(loadJson<MissionMemory[]>(HISTORY_LS, []));
     setActiveChannelId(localStorage.getItem(ACTIVE_CHANNEL_LS) ?? DEFAULT_CHANNELS[0].id);
     setRecentProjects(loadJson<string[]>(RECENT_PROJECTS_LS, []));
+    setPhonePrep(localStorage.getItem(PHONE_PREP_LS) ?? '');
+    setScreenshotNotes(loadJson<ScreenshotNote[]>(SCREENSHOT_NOTES_LS, []));
 
     async function loadAgents() {
       const response = await fetch('/api/build-lab/availability');
@@ -1572,6 +1593,35 @@ export default function BuildLab() {
     const next = [nextPath, ...recentProjects.filter((path) => path !== nextPath)].slice(0, 5);
     setRecentProjects(next);
     saveJson(RECENT_PROJECTS_LS, next);
+  }
+
+  function updatePhonePrep(value: string) {
+    setPhonePrep(value);
+    localStorage.setItem(PHONE_PREP_LS, value);
+  }
+
+  function addScreenshotNote(file: File) {
+    if (!file.type.startsWith('image/')) {
+      setError('Choose an image screenshot.');
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = () => {
+      const note: ScreenshotNote = {
+        id: crypto.randomUUID(),
+        channelId: activeChannel.id,
+        title: file.name,
+        note: phonePrep.trim(),
+        image: String(reader.result ?? ''),
+        createdAt: new Date().toISOString(),
+      };
+      const next = [note, ...screenshotNotes].slice(0, 12);
+      setScreenshotNotes(next);
+      saveJson(SCREENSHOT_NOTES_LS, next);
+      setError('');
+    };
+    reader.onerror = () => setError('Could not read this screenshot.');
+    reader.readAsDataURL(file);
   }
 
   function rememberMission(
@@ -2091,109 +2141,6 @@ export default function BuildLab() {
           </div>
 
           <div className="space-y-4 p-5">
-            <div className="rounded-2xl border border-[#b98d52]/20 bg-[#fff8e8]/78 p-4">
-              <div className="mb-2 flex items-center justify-between gap-3">
-                <div>
-                  <p className="text-xs uppercase tracking-[0.16em] text-[#704923]">
-                    Mission prompt
-                  </p>
-                  <p className="mt-1 text-xs text-[#8d653d]">
-                    Channel: {activeChannel.name}. {activeChannel.next}
-                  </p>
-                </div>
-                <button
-                  type="button"
-                  onClick={toggleSpeech}
-                  disabled={!speech.supported}
-                  aria-label={speech.listening ? 'Stop voice input' : 'Start voice input'}
-                  title={speech.listening ? 'Stop voice input' : 'Start voice input'}
-                  className="grid h-9 w-9 place-items-center rounded-full border disabled:opacity-40"
-                  style={{
-                    borderColor: speech.listening
-                      ? 'rgba(245,132,38,0.75)'
-                      : 'rgba(143,98,50,0.25)',
-                    background: speech.listening
-                      ? 'radial-gradient(circle at 30% 30%, rgba(255,178,76,0.48), rgba(255,126,35,0.2))'
-                      : '#c49a51',
-                    boxShadow: speech.listening
-                      ? '0 0 0 5px rgba(255,145,49,0.14), 0 0 28px rgba(255,126,35,0.42)'
-                      : '0 0 0 3px rgba(196,154,81,0.12)',
-                    color: speech.listening ? '#7a310c' : '#fff8e8',
-                    animation: speech.listening
-                      ? 'build-lab-voice-pulse 1s ease-in-out infinite'
-                      : 'none',
-                  }}
-                >
-                  {speech.listening ? <MicOff size={14} /> : <Mic size={14} />}
-                </button>
-              </div>
-              {(speech.listening || speech.error || speech.transcript) && (
-                <div className="mb-3 rounded-2xl border border-[#b98d52]/18 bg-[#fffdf2]/72 p-3">
-                  <div className="flex items-center justify-between gap-3">
-                    <div className="flex items-center gap-2">
-                      <span
-                        className="block h-3 w-3 rounded-full"
-                        style={{
-                          background: speech.listening ? '#ff8a22' : '#c9a76e',
-                          boxShadow: speech.listening
-                            ? '0 0 0 6px rgba(255,138,34,0.13), 0 0 22px rgba(255,138,34,0.6)'
-                            : 'none',
-                          animation: speech.listening
-                            ? 'build-lab-voice-pulse 1s ease-in-out infinite'
-                            : 'none',
-                        }}
-                      />
-                      <span className="text-xs uppercase tracking-[0.14em] text-[#704923]">
-                        {speech.listening ? 'Listening' : 'Voice note'}
-                      </span>
-                    </div>
-                    {speech.transcript && (
-                      <span className="text-[11px] text-[#8d653d]">transcript captured</span>
-                    )}
-                  </div>
-                  <p className="mt-2 text-xs leading-5 text-[#8d653d]">
-                    {speech.error ||
-                      (speech.listening
-                        ? 'Speak now. Your words should appear in the mission prompt below.'
-                        : `Last heard: ${speech.transcript}`)}
-                  </p>
-                </div>
-              )}
-              <textarea
-                value={prompt}
-                onChange={(event) => setPrompt(event.target.value)}
-                placeholder="Tell the agent what to build, fix, review, or plan..."
-                className="min-h-44 w-full resize-y rounded-2xl border border-[#b98d52]/25 bg-[#fffdf2] p-3 text-sm leading-6 text-[#3f2817] outline-none focus:border-[#8f6232]"
-              />
-              <div className="mt-3 flex flex-wrap items-center justify-between gap-3">
-                <div className="flex flex-wrap gap-2 text-xs text-[#8d653d]">
-                  <span>Selected: {selectedAgent?.name ?? 'No agent'}</span>
-                  <span>/ {projectPath ? shortPath(projectPath) : 'choose project'}</span>
-                  <span>/ {runHint}</span>
-                </div>
-                <div className="flex flex-wrap gap-2">
-                  <button
-                    type="button"
-                    onClick={queueMission}
-                    disabled={!prompt.trim() || !projectPath.trim()}
-                    className="inline-flex items-center gap-2 rounded-full border border-[#8f6232]/25 px-4 py-2 text-sm text-[#704923] disabled:opacity-45"
-                  >
-                    Queue for runner
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => runMission()}
-                    disabled={running}
-                    className="inline-flex items-center gap-2 rounded-full bg-[#704923] px-4 py-2 text-sm text-[#fff8e8] disabled:opacity-45"
-                  >
-                    <Play size={15} />
-                    {running ? 'Running' : 'Run mission'}
-                  </button>
-                </div>
-              </div>
-              {error && <p className="mt-3 text-sm text-[#9b3b24]">{error}</p>}
-            </div>
-
             <div className="rounded-2xl border border-[#b98d52]/20 bg-[#fff8e8]/70 p-4">
               <div className="mb-3 flex items-center justify-between gap-3">
                 <div>
@@ -2268,67 +2215,78 @@ export default function BuildLab() {
             <div className="rounded-2xl border border-[#b98d52]/20 bg-[#fff8e8]/70 p-4">
               <button
                 type="button"
-                onClick={() => togglePanel('memory')}
-                className="mb-3 flex w-full items-center justify-between gap-3 text-left"
+                onClick={() => togglePanel('phonePrep')}
+                className="flex w-full items-center justify-between gap-3 text-left"
               >
-                <p className="flex items-center gap-2 text-xs uppercase tracking-[0.16em] text-[#704923]">
-                  <Archive size={14} />
-                  Mission memory
-                </p>
+                <span>
+                  <span className="flex items-center gap-2 text-xs uppercase tracking-[0.16em] text-[#704923]">
+                    <ImagePlus size={14} />
+                    Phone notes + screenshots
+                  </span>
+                  <span className="mt-1 block text-xs leading-5 text-[#8d653d]">
+                    Prepare app feedback, screenshots, and next moves away from the computer.
+                  </span>
+                </span>
                 <span className="rounded-full border border-[#8f6232]/20 bg-[#fffdf2] px-3 py-1 text-xs text-[#704923]">
-                  {openPanels.memory ? 'close' : `${history.length} saved`}
+                  {openPanels.phonePrep ? 'close' : `${channelScreenshotNotes.length} shots`}
                 </span>
               </button>
-              {openPanels.memory && channelHistory.length === 0 ? (
-                <p className="text-sm text-[#8d653d]">
-                  Clear work blocks for {activeChannel.name} will appear here: what you asked, what
-                  happened, and what to check next.
-                </p>
-              ) : openPanels.memory ? (
-                <div className="grid gap-3">
-                  {channelHistory.slice(0, 4).map((mission) => (
-                    <button
-                      key={mission.id}
-                      type="button"
-                      onClick={() => loadMission(mission)}
-                      className="rounded-2xl border border-[#b98d52]/22 bg-[#fffdf2]/75 p-4 text-left"
-                    >
-                      <div className="flex items-start justify-between gap-2">
-                        <span className="text-sm font-medium leading-5 text-[#3f2817]">
-                          {mission.title}
-                        </span>
-                        <span
-                          className={
-                            mission.status === 'complete'
-                              ? 'text-xs text-[#32724d]'
-                              : 'text-xs text-[#a35b38]'
+              {openPanels.phonePrep && (
+                <div className="mt-4 grid gap-3">
+                  <textarea
+                    value={phonePrep}
+                    onChange={(event) => updatePhonePrep(event.target.value)}
+                    placeholder="Write what you see on the phone, what feels broken, and what the next agent should do..."
+                    className="min-h-28 w-full resize-y rounded-2xl border border-[#b98d52]/25 bg-[#fffdf2] p-3 text-sm leading-6 text-[#3f2817] outline-none focus:border-[#8f6232]"
+                  />
+                  <label className="flex cursor-pointer items-center justify-center gap-2 rounded-full border border-[#8f6232]/25 bg-[#fffdf2] px-4 py-2 text-sm text-[#704923]">
+                    <ImagePlus size={15} />
+                    Add screenshot
+                    <input
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      onChange={(event) => {
+                        const file = event.currentTarget.files?.[0];
+                        if (file) addScreenshotNote(file);
+                        event.currentTarget.value = '';
+                      }}
+                    />
+                  </label>
+                  {channelScreenshotNotes.length === 0 ? (
+                    <p className="text-sm text-[#8d653d]">
+                      Screenshots added here stay attached to {activeChannel.name} on this device.
+                    </p>
+                  ) : (
+                    <div className="grid gap-3 sm:grid-cols-2">
+                      {channelScreenshotNotes.slice(0, 4).map((item) => (
+                        <button
+                          key={item.id}
+                          type="button"
+                          onClick={() =>
+                            setPrompt((current) => `${current}\n\n${item.note}`.trim())
                           }
+                          className="overflow-hidden rounded-2xl border border-[#b98d52]/22 bg-[#fffdf2] text-left"
                         >
-                          {mission.status}
-                        </span>
-                      </div>
-                      <p className="mt-3 text-xs uppercase tracking-[0.14em] text-[#8d653d]">
-                        Last order
-                      </p>
-                      <p className="mt-1 line-clamp-3 text-sm leading-6 text-[#5f4229]">
-                        {mission.prompt || 'No prompt saved.'}
-                      </p>
-                      <p className="mt-3 text-xs uppercase tracking-[0.14em] text-[#8d653d]">
-                        Reflection
-                      </p>
-                      <p className="mt-1 text-sm leading-6 text-[#5f4229]">
-                        {mission.reflection ??
-                          missionReflection(mission.status, mission.changedFiles)}
-                      </p>
-                      <div className="mt-3 flex flex-wrap gap-2 text-[11px] text-[#8d653d]">
-                        <span>{shortPath(mission.projectPath)}</span>
-                        <span>{mission.changedFiles.length} files</span>
-                        <span>{new Date(mission.createdAt).toLocaleDateString()}</span>
-                      </div>
-                    </button>
-                  ))}
+                          <img
+                            src={item.image}
+                            alt={item.title}
+                            className="h-32 w-full object-cover"
+                          />
+                          <div className="p-3">
+                            <p className="text-xs uppercase tracking-[0.14em] text-[#8d653d]">
+                              {new Date(item.createdAt).toLocaleDateString()}
+                            </p>
+                            <p className="mt-1 line-clamp-3 text-sm leading-5 text-[#5f4229]">
+                              {item.note || item.title}
+                            </p>
+                          </div>
+                        </button>
+                      ))}
+                    </div>
+                  )}
                 </div>
-              ) : null}
+              )}
             </div>
 
             <div className="rounded-2xl border border-[#b98d52]/20 bg-[#fff8e8]/70 p-3">
@@ -2374,12 +2332,25 @@ export default function BuildLab() {
             {openPanels.sun && <SunDialoguePrototype />}
 
             <div className="grid gap-4 xl:grid-cols-[1.1fr_0.9fr]">
-              <section className="rounded-2xl border border-[#2b2118]/15 bg-[#24180f] p-4 text-[#f8e8bd]">
+              <section
+                className={
+                  consoleDesignMode
+                    ? 'rounded-2xl border border-[#d9b65f]/25 bg-[#07080f] p-4 text-[#ffd983] shadow-[0_0_42px_rgba(232,169,58,0.16)]'
+                    : 'rounded-2xl border border-[#2b2118]/15 bg-[#24180f] p-4 text-[#f8e8bd]'
+                }
+              >
                 <div className="mb-3 flex items-center justify-between">
                   <p className="text-xs uppercase tracking-[0.16em] text-[#d7b978]">
                     Agent console
                   </p>
                   <div className="flex items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={() => setConsoleDesignMode((value) => !value)}
+                      className="rounded-full border border-[#d7b978]/20 px-2 py-1 text-xs text-[#d7b978]"
+                    >
+                      {consoleDesignMode ? 'Classic' : 'Night gold'}
+                    </button>
                     <button
                       type="button"
                       onClick={() => setShowRawConsole((value) => !value)}
@@ -2390,22 +2361,38 @@ export default function BuildLab() {
                     <span className="text-xs text-[#a98b5c]">{running ? 'streaming' : 'idle'}</span>
                   </div>
                 </div>
-                <div className="max-h-[360px] overflow-auto rounded-xl bg-[#150f0a] p-3 font-mono text-xs leading-5">
+                <div
+                  className={
+                    consoleDesignMode
+                      ? 'max-h-[360px] overflow-auto rounded-xl border border-[#d9b65f]/12 bg-[radial-gradient(circle_at_20%_10%,rgba(255,209,111,0.16),transparent_32%),linear-gradient(180deg,#080914,#02030a)] p-3 font-mono text-xs leading-5 shadow-inner'
+                      : 'max-h-[360px] overflow-auto rounded-xl bg-[#150f0a] p-3 font-mono text-xs leading-5'
+                  }
+                >
                   {events.length === 0 ? (
-                    <p className="text-[#8e7658]">No mission output yet.</p>
+                    <p className={consoleDesignMode ? 'text-[#9e7f42]' : 'text-[#8e7658]'}>
+                      No mission output yet.
+                    </p>
                   ) : (
                     (showRawConsole ? events : events.filter((event) => event.text.trim())).map(
                       (event) => (
                         <div
                           key={event.id}
                           className={
-                            event.tone === 'error'
-                              ? 'text-[#ff9b7d]'
-                              : event.tone === 'success'
-                                ? 'text-[#aee0a8]'
-                                : event.tone === 'meta'
-                                  ? 'text-[#d7b978]'
-                                  : 'text-[#f8e8bd]'
+                            consoleDesignMode
+                              ? event.tone === 'error'
+                                ? 'text-[#ff9b7d]'
+                                : event.tone === 'success'
+                                  ? 'text-[#e8f0a2]'
+                                  : event.tone === 'meta'
+                                    ? 'text-[#f2b64c]'
+                                    : 'text-[#ffd983] drop-shadow-[0_0_8px_rgba(255,205,105,0.42)]'
+                              : event.tone === 'error'
+                                ? 'text-[#ff9b7d]'
+                                : event.tone === 'success'
+                                  ? 'text-[#aee0a8]'
+                                  : event.tone === 'meta'
+                                    ? 'text-[#d7b978]'
+                                    : 'text-[#f8e8bd]'
                           }
                         >
                           <span className="opacity-50">[{event.type}] </span>
@@ -2414,6 +2401,167 @@ export default function BuildLab() {
                       ),
                     )
                   )}
+                </div>
+                <div className="mt-3 rounded-2xl border border-[#d7b978]/14 bg-[#150f0a] p-3">
+                  <div className="mb-2 flex items-center justify-between gap-3">
+                    <div>
+                      <p className="text-xs uppercase tracking-[0.16em] text-[#d7b978]">
+                        Mission prompt
+                      </p>
+                      <p className="mt-1 text-xs leading-5 text-[#a98b5c]">
+                        {activeChannel.name} / {selectedAgent?.name ?? 'No agent'} /{' '}
+                        {projectPath ? shortPath(projectPath) : 'desktop folder'} / {runHint}
+                      </p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={toggleSpeech}
+                      disabled={!speech.supported}
+                      aria-label={speech.listening ? 'Stop voice input' : 'Start voice input'}
+                      title={speech.listening ? 'Stop voice input' : 'Start voice input'}
+                      className="grid h-9 w-9 shrink-0 place-items-center rounded-full border disabled:opacity-40"
+                      style={{
+                        borderColor: speech.listening
+                          ? 'rgba(245,132,38,0.75)'
+                          : 'rgba(215,185,120,0.22)',
+                        background: speech.listening
+                          ? 'radial-gradient(circle at 30% 30%, rgba(255,178,76,0.52), rgba(255,126,35,0.18))'
+                          : '#c49a51',
+                        boxShadow: speech.listening
+                          ? '0 0 0 5px rgba(255,145,49,0.14), 0 0 28px rgba(255,126,35,0.42)'
+                          : '0 0 0 3px rgba(196,154,81,0.12)',
+                        color: speech.listening ? '#7a310c' : '#fff8e8',
+                        animation: speech.listening
+                          ? 'build-lab-voice-pulse 1s ease-in-out infinite'
+                          : 'none',
+                      }}
+                    >
+                      {speech.listening ? <MicOff size={14} /> : <Mic size={14} />}
+                    </button>
+                  </div>
+                  {(speech.listening || speech.error || speech.transcript) && (
+                    <div className="mb-3 rounded-xl border border-[#d7b978]/12 bg-[#24180f] p-3">
+                      <div className="flex items-center justify-between gap-3">
+                        <div className="flex items-center gap-2">
+                          <span
+                            className="block h-3 w-3 rounded-full"
+                            style={{
+                              background: speech.listening ? '#ff8a22' : '#c9a76e',
+                              boxShadow: speech.listening
+                                ? '0 0 0 6px rgba(255,138,34,0.13), 0 0 22px rgba(255,138,34,0.6)'
+                                : 'none',
+                              animation: speech.listening
+                                ? 'build-lab-voice-pulse 1s ease-in-out infinite'
+                                : 'none',
+                            }}
+                          />
+                          <span className="text-xs uppercase tracking-[0.14em] text-[#d7b978]">
+                            {speech.listening ? 'Listening' : 'Voice note'}
+                          </span>
+                        </div>
+                        {speech.transcript && (
+                          <span className="text-[11px] text-[#a98b5c]">transcript captured</span>
+                        )}
+                      </div>
+                      <p className="mt-2 text-xs leading-5 text-[#a98b5c]">
+                        {speech.error ||
+                          (speech.listening
+                            ? 'Speak now. Your words appear in the prompt below.'
+                            : `Last heard: ${speech.transcript}`)}
+                      </p>
+                    </div>
+                  )}
+                  <textarea
+                    value={prompt}
+                    onChange={(event) => setPrompt(event.target.value)}
+                    placeholder="Tell the agent what to build, fix, review, or plan..."
+                    className="min-h-32 w-full resize-y rounded-xl border border-[#d7b978]/18 bg-[#0f0a07] p-3 text-sm leading-6 text-[#f8e8bd] outline-none placeholder:text-[#8e7658] focus:border-[#d7b978]/55"
+                  />
+                  <div className="mt-3 flex flex-wrap items-center justify-between gap-3">
+                    <div className="text-xs text-[#a98b5c]">
+                      Channel: {activeChannel.next}
+                      {error && <span className="ml-2 text-[#ff9b7d]">{error}</span>}
+                    </div>
+                    <div className="flex flex-wrap gap-2">
+                      <button
+                        type="button"
+                        onClick={queueMission}
+                        disabled={!prompt.trim() || running}
+                        className="inline-flex items-center gap-2 rounded-full border border-[#d7b978]/22 px-4 py-2 text-sm text-[#d7b978] disabled:opacity-45"
+                      >
+                        Queue for runner
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => runMission()}
+                        disabled={running}
+                        className="inline-flex items-center gap-2 rounded-full bg-[#d7b978] px-4 py-2 text-sm text-[#24180f] disabled:opacity-45"
+                      >
+                        <Play size={15} />
+                        {running ? 'Running' : 'Run mission'}
+                      </button>
+                    </div>
+                  </div>
+                  <div className="mt-3 rounded-xl border border-[#d7b978]/12 bg-[#0f0a07] p-3">
+                    <button
+                      type="button"
+                      onClick={() => togglePanel('memory')}
+                      className="flex w-full items-center justify-between gap-3 text-left"
+                    >
+                      <span className="flex items-center gap-2 text-xs uppercase tracking-[0.16em] text-[#d7b978]">
+                        <Archive size={14} />
+                        Mission memory
+                      </span>
+                      <span className="rounded-full border border-[#d7b978]/18 px-3 py-1 text-xs text-[#d7b978]">
+                        {openPanels.memory ? 'close' : `${history.length} saved`}
+                      </span>
+                    </button>
+                    {openPanels.memory && channelHistory.length === 0 ? (
+                      <p className="mt-3 text-sm leading-6 text-[#a98b5c]">
+                        Clear work blocks for {activeChannel.name} will appear here: what you asked,
+                        what happened, and what to check next.
+                      </p>
+                    ) : openPanels.memory ? (
+                      <div className="mt-3 grid gap-3">
+                        {channelHistory.slice(0, 4).map((mission) => (
+                          <button
+                            key={mission.id}
+                            type="button"
+                            onClick={() => loadMission(mission)}
+                            className="rounded-xl border border-[#d7b978]/14 bg-[#150f0a] p-3 text-left"
+                          >
+                            <div className="flex items-start justify-between gap-2">
+                              <span className="text-sm font-medium leading-5 text-[#f8e8bd]">
+                                {mission.title}
+                              </span>
+                              <span
+                                className={
+                                  mission.status === 'complete'
+                                    ? 'text-xs text-[#aee0a8]'
+                                    : 'text-xs text-[#ffb089]'
+                                }
+                              >
+                                {mission.status}
+                              </span>
+                            </div>
+                            <p className="mt-2 text-xs uppercase tracking-[0.14em] text-[#a98b5c]">
+                              Last order
+                            </p>
+                            <p className="mt-1 line-clamp-2 text-sm leading-6 text-[#d7b978]">
+                              {mission.prompt || 'No prompt saved.'}
+                            </p>
+                            <p className="mt-2 text-xs uppercase tracking-[0.14em] text-[#a98b5c]">
+                              Reflection
+                            </p>
+                            <p className="mt-1 text-sm leading-6 text-[#f8e8bd]">
+                              {mission.reflection ??
+                                missionReflection(mission.status, mission.changedFiles)}
+                            </p>
+                          </button>
+                        ))}
+                      </div>
+                    ) : null}
+                  </div>
                 </div>
               </section>
 
