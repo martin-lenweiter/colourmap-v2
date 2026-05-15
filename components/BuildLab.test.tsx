@@ -49,18 +49,16 @@ describe('BuildLab', () => {
     localStorage.clear();
   });
 
-  it('loads agent availability and applies a mission card', async () => {
+  it('loads agent availability in a simplified prompt workspace', async () => {
     render(<BuildLab />);
 
     await waitFor(() => expect(screen.getByText('Codex')).toBeDefined());
-    expect(screen.getByText('Scope lens')).toBeDefined();
-    expect(screen.getByText('Mission cards')).toBeDefined();
-
-    fireEvent.click(screen.getByRole('button', { name: /Build feature/i }));
-
-    expect(screen.getByDisplayValue('Build one focused product improvement')).toBeDefined();
-    expect(screen.getByText('Scope lens')).toBeDefined();
-    expect(screen.getByText(/Expansion needs one shippable cut/i)).toBeDefined();
+    expect(screen.getByText('Mission prompt')).toBeDefined();
+    expect(screen.getByText('Mission memory')).toBeDefined();
+    expect(screen.getByText('Agent console')).toBeDefined();
+    expect(screen.queryByText('Scope lens')).toBeNull();
+    expect(screen.queryByText('Mission cards')).toBeNull();
+    expect(screen.queryByText('Mode')).toBeNull();
   });
 
   it('loads a project and stores it as a recent project', async () => {

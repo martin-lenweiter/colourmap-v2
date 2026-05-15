@@ -31,8 +31,8 @@ The first version proves the loop:
 - stream stdout/stderr into the UI
 - show changed files
 - show the current Git diff
-- structure a natural spoken/written mission into a cleaner agent brief
-- track the mission across visible stages
+- keep the default workspace simpler than the terminal: project, agent, prompt, console, diff
+- separate readable mission reflection from raw technical agent output
 
 ## Product Direction
 
@@ -46,34 +46,16 @@ inner state -> tension -> mission brief -> agent work -> diff -> checkpoint -> p
 
 Colourmap remains the map. Codex, Claude Code, and future tools are worker engines. The user should be able to speak naturally, and Build Lab should translate that into clean missions without losing emotional or strategic context.
 
-## Mission Brief
+## Mission Prompt
 
-The mission composer should support both raw voice/thought and structured fields:
+The default composer should stay deliberately small:
 
-- mission title
-- current tension
-- world focus: Survival, Expansion, or Regeneration
-- constraints
-- success criteria
-- raw spoken/written brief
+- one project path
+- one agent selector
+- one spoken/written prompt
+- one run button
 
-The agent prompt is composed from those fields. This lets the user speak in a human way while the worker receives a practical brief.
-
-### World Focus
-
-Build Lab borrows the deeper Colourmap architecture from `field-tensions-action-patterns.md`:
-
-- **Survival**: stability, paperwork, risk, money, basic order
-- **Expansion**: creative future, product, art, code, momentum
-- **Regeneration**: body, breath, sleep, pacing, nervous system
-
-This does not mean the agent becomes a therapist. It means the mission knows what kind of life-force it serves.
-
-Examples:
-
-- Survival mission: fix deployment, billing, data safety, backup, admin flow.
-- Expansion mission: build a new creative surface, music visual, geometry idea, product feature.
-- Regeneration mission: simplify UI, reduce cognitive load, create calmer flows, remove friction.
+Earlier structured fields such as mission title, current tension, world focus, mode, constraints, and success criteria are deferred. They may return later as an optional advanced drawer or as AI-generated structure after the user speaks naturally. They should not be visible by default because the first version must feel easier than working directly in the terminal.
 
 ## Voice Input
 
@@ -87,24 +69,28 @@ MVP voice behavior:
 
 Future voice behavior:
 
-- transform spoken notes into title/context/constraints/success criteria
+- transform spoken notes into optional title/context/constraints/success criteria
 - detect if the mission is too broad and suggest a smaller cut
 - preserve the original transcript as mission memory
 - let the user dictate follow-up instructions while the agent is running
 
-## Mission Timeline
+## Phone Control Surface
 
-Build Lab should show a calm timeline, not only terminal output:
+The long-term goal is to write and organize Build Lab prompts from the phone, then execute them on the home computer when it is open and authenticated.
 
-- Draft
-- Project
-- Checkpoint
-- Agent
-- Diff
-- Complete
-- Failed
+Milestone 1:
 
-The timeline helps the user feel oriented and in control while the agent works.
+- phone can save mission drafts to the backend
+- desktop Build Lab can see queued drafts
+- user manually clicks Run on the desktop
+
+Milestone 2:
+
+- phone can send a mission to the desktop runner when the desktop is online
+- desktop owns all CLI execution, filesystem access, checkpoints, and diffs
+- phone streams readable status and mission reflection
+
+The phone should not directly run Codex or Claude Code. It should act as a clear prompt, review, and control layer over the trusted computer runner.
 
 ## Mission Workspace
 
@@ -113,34 +99,8 @@ Build Lab should make terminal work feel like a creator cockpit.
 The user should be able to:
 
 - load a recent project without retyping the path
-- start from reusable mission cards
-- see whether the brief is specific enough before running
 - reuse previous missions from local mission memory
 - keep raw terminal output available without making it the only interface
-
-### Mission Cards
-
-Initial cards:
-
-- **Stabilise**: fix/safety pass before PR review
-- **Build feature**: one focused product improvement
-- **Review PR**: senior review for merge risk
-
-These cards are not rigid workflows. They are mission shapes: enough structure to make voice input useful, but still editable.
-
-### Scope Lens
-
-The scope lens is a local client-side helper. It checks whether the mission has:
-
-- loaded project
-- title
-- constraints
-- success criteria
-- usable brief
-- branch safety
-- broad-scope warning words
-
-It does not block broad work. It makes broadness visible before an agent starts.
 
 ### Mission Memory
 
@@ -149,14 +109,25 @@ MVP mission memory is local browser storage. It saves recent completed or failed
 - title
 - agent
 - mode
-- world focus
 - project path
-- prompt fields
+- prompt
+- readable reflection
 - changed files
 - status
 - timestamp
 
-This lets the creator reload and refine real missions. Later, mission memory should move to the backend and connect to patterns: which mission shapes work, which agents perform best, and how the user's state affects mission quality.
+Mission memory is not a technical log. It should read like clear work blocks:
+
+- what the user asked
+- what happened
+- what changed
+- what to check next
+
+This protects the discussion/reflection layer from being buried by streaming build output. Later, mission memory should move to the backend and connect to patterns: which mission shapes work, which agents perform best, and how the user's state affects mission quality.
+
+### Agent Console
+
+The agent console is the live technical stream. It should behave like the current terminal experience: command starts, stdout/stderr, errors, completion events. It is useful while the agent is working, but it should not be the only record of the mission.
 
 ## Access
 
@@ -223,7 +194,7 @@ Future pattern examples:
 - A mission streams terminal output without waiting for process completion.
 - Changed files and Git diff can be refreshed after a run.
 - The user can dictate a mission.
-- The mission brief includes current tension, world focus, constraints, and success criteria.
-- The UI shows a visible timeline and checkpoint state.
-- The UI supports mission cards, scope lens, recent projects, and local mission memory.
+- The default composer stays minimal: project, agent, prompt, run.
+- The UI supports recent projects and local mission memory.
+- Mission memory is readable in human blocks, separate from the agent console.
 - The code is modular enough to add another adapter without changing the UI contract.
