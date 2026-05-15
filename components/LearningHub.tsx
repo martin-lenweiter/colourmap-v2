@@ -133,6 +133,7 @@ const GROUPS: { label: string; keys: string[]; tint: string; startHere?: string 
       'sleep',
       'nervous-system',
       'grief',
+      'struggle-letting-go',
       'belonging',
     ],
     tint: '#C4A060',
