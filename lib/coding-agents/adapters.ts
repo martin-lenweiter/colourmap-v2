@@ -1,10 +1,51 @@
 import { spawn } from 'node:child_process';
+import { existsSync } from 'node:fs';
+import path from 'node:path';
 
 import type { AgentEvent, CodingAgentAdapter, RunMissionInput } from './types';
 
-function commandExists(command: string) {
+type CliCommand = {
+  command: string;
+  baseArgs: string[];
+  displayCommand: string;
+};
+
+const plainCommand = (command: string): CliCommand => ({
+  command,
+  baseArgs: [],
+  displayCommand: command,
+});
+
+export function getCodexCliCommand(
+  env: Partial<NodeJS.ProcessEnv> = process.env,
+  platform = process.platform,
+  fileExists: (filePath: string) => boolean = existsSync,
+): CliCommand {
+  if (platform === 'win32' && env.APPDATA) {
+    const scriptPath = path.win32.join(
+      env.APPDATA,
+      'npm',
+      'node_modules',
+      '@openai',
+      'codex',
+      'bin',
+      'codex.js',
+    );
+    if (fileExists(scriptPath)) {
+      return {
+        command: 'node.exe',
+        baseArgs: [scriptPath],
+        displayCommand: 'codex',
+      };
+    }
+  }
+
+  return plainCommand('codex');
+}
+
+function commandExists(cli: CliCommand) {
   return new Promise<boolean>((resolve) => {
-    const child = spawn(command, ['--version'], { shell: false });
+    const child = spawn(cli.command, [...cli.baseArgs, '--version'], { shell: false });
     child.on('error', () => resolve(false));
     child.on('close', (code) => resolve(code === 0));
   });
@@ -19,13 +60,13 @@ function modeInstruction(mode: RunMissionInput['mode']) {
 }
 
 async function* runCliMission(
-  command: string,
+  cli: CliCommand,
   args: string[],
   input: RunMissionInput,
 ): AsyncGenerator<AgentEvent> {
-  yield { type: 'command_started', command, args };
+  yield { type: 'command_started', command: cli.displayCommand, args };
 
-  const child = spawn(command, args, {
+  const child = spawn(cli.command, [...cli.baseArgs, ...args], {
     cwd: input.projectPath,
     shell: false,
     env: process.env,
@@ -75,12 +116,12 @@ class CodexAdapter implements CodingAgentAdapter {
   name = 'Codex';
 
   isAvailable() {
-    return commandExists('codex');
+    return commandExists(getCodexCliCommand());
   }
 
   runMission(input: RunMissionInput) {
     const prompt = `${modeInstruction(input.mode)}\n\nProject root: ${input.projectPath}\n\n${input.prompt}`;
-    return runCliMission('codex', ['exec', prompt], input);
+    return runCliMission(getCodexCliCommand(), ['exec', prompt], input);
   }
 }
 
@@ -89,12 +130,12 @@ class ClaudeCodeAdapter implements CodingAgentAdapter {
   name = 'Claude Code';
 
   isAvailable() {
-    return commandExists('claude');
+    return commandExists(plainCommand('claude'));
   }
 
   runMission(input: RunMissionInput) {
     const prompt = `${modeInstruction(input.mode)}\n\nProject root: ${input.projectPath}\n\n${input.prompt}`;
-    return runCliMission('claude', ['-p', prompt], input);
+    return runCliMission(plainCommand('claude'), ['-p', prompt], input);
   }
 }
 

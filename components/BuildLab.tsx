@@ -1,10 +1,9 @@
 'use client';
 
 import {
+  Archive,
   Bot,
-  CheckCircle2,
-  Circle,
-  Clock3,
+  FolderOpen,
   GitBranch,
   Mic,
   MicOff,
@@ -32,8 +31,6 @@ type ConsoleEvent = {
   tone?: 'normal' | 'error' | 'success' | 'meta';
 };
 
-type MissionStage = 'draft' | 'project' | 'checkpoint' | 'agent' | 'diff' | 'complete' | 'failed';
-
 type CheckpointInfo = {
   created: boolean;
   path?: string;
@@ -48,64 +45,82 @@ type ProjectInfo = {
   changedFiles: string[];
 };
 
-const modes: { id: AgentMode; label: string }[] = [
-  { id: 'plan', label: 'Plan' },
-  { id: 'build', label: 'Build' },
-  { id: 'fix', label: 'Fix' },
-  { id: 'review', label: 'Review' },
-];
-
-const worlds = [
-  {
-    id: 'Survival',
-    label: 'Survival',
-    desc: 'stability, paperwork, risk, money, basic order',
-  },
-  {
-    id: 'Expansion',
-    label: 'Expansion',
-    desc: 'creative future, product, art, code, momentum',
-  },
-  {
-    id: 'Regeneration',
-    label: 'Regeneration',
-    desc: 'body, breath, sleep, pacing, nervous system',
-  },
-];
-
-const stageLabels: Record<MissionStage, string> = {
-  draft: 'Draft',
-  project: 'Project',
-  checkpoint: 'Checkpoint',
-  agent: 'Agent',
-  diff: 'Diff',
-  complete: 'Complete',
-  failed: 'Failed',
+type MissionMemory = {
+  id: string;
+  title: string;
+  mode: AgentMode;
+  agentId: string;
+  projectPath: string;
+  status: 'complete' | 'failed' | 'draft';
+  prompt: string;
+  changedFiles: string[];
+  createdAt: string;
+  reflection?: string;
 };
 
-const stageOrder: MissionStage[] = ['draft', 'project', 'checkpoint', 'agent', 'diff', 'complete'];
+const HISTORY_LS = 'colourmap:build-lab-history';
+const RECENT_PROJECTS_LS = 'colourmap:build-lab-recent-projects';
 
 function nextId() {
   return Date.now() + Math.random();
 }
 
+function loadJson<T>(key: string, fallback: T): T {
+  try {
+    const raw = localStorage.getItem(key);
+    return raw ? (JSON.parse(raw) as T) : fallback;
+  } catch {
+    return fallback;
+  }
+}
+
+function saveJson(key: string, value: unknown) {
+  try {
+    localStorage.setItem(key, JSON.stringify(value));
+  } catch {}
+}
+
+function shortPath(path: string) {
+  const normalized = path.replace(/\\/g, '/');
+  const parts = normalized.split('/').filter(Boolean);
+  if (parts.length <= 2) return normalized;
+  return `${parts.at(-2)}/${parts.at(-1)}`;
+}
+
+function missionTitleFromPrompt(prompt: string) {
+  const firstLine = prompt
+    .trim()
+    .split(/\r?\n/)
+    .find((line) => line.trim());
+  if (!firstLine) return 'Untitled coding mission';
+  return firstLine.length > 82 ? `${firstLine.slice(0, 79)}...` : firstLine;
+}
+
+function missionReflection(status: MissionMemory['status'], files: string[]) {
+  if (status === 'complete') {
+    return files.length
+      ? `The agent finished and left ${files.length} changed file${files.length === 1 ? '' : 's'} to review.`
+      : 'The agent finished without leaving changed files in the current diff.';
+  }
+  return files.length
+    ? `The run did not fully complete, but it touched ${files.length} file${files.length === 1 ? '' : 's'} that may need review.`
+    : 'The run did not complete and no changed files were detected.';
+}
+
 export default function BuildLab() {
   const [agents, setAgents] = useState<Agent[]>([]);
   const [agentId, setAgentId] = useState('codex');
-  const [mode, setMode] = useState<AgentMode>('build');
+  const mode: AgentMode = 'build';
   const [projectPath, setProjectPath] = useState('');
-  const [missionTitle, setMissionTitle] = useState('');
-  const [currentTension, setCurrentTension] = useState('');
-  const [worldFocus, setWorldFocus] = useState('Expansion');
-  const [constraints, setConstraints] = useState('');
-  const [successCriteria, setSuccessCriteria] = useState('');
   const [prompt, setPrompt] = useState('');
   const [projectInfo, setProjectInfo] = useState<ProjectInfo | null>(null);
   const [events, setEvents] = useState<ConsoleEvent[]>([]);
   const [changedFiles, setChangedFiles] = useState<string[]>([]);
   const [diff, setDiff] = useState('');
-  const [stage, setStage] = useState<MissionStage>('draft');
   const [checkpoints, setCheckpoints] = useState<CheckpointInfo[]>([]);
+  const [history, setHistory] = useState<MissionMemory[]>([]);
+  const [recentProjects, setRecentProjects] = useState<string[]>([]);
+  const [showRawConsole, setShowRawConsole] = useState(false);
   const [running, setRunning] = useState(false);
   const [error, setError] = useState('');
   const speech = useSpeechToText({ lang: 'en-US' });
@@ -116,6 +131,9 @@ export default function BuildLab() {
   );
 
   useEffect(() => {
+    setHistory(loadJson<MissionMemory[]>(HISTORY_LS, []));
+    setRecentProjects(loadJson<string[]>(RECENT_PROJECTS_LS, []));
+
     async function loadAgents() {
       const response = await fetch('/api/build-lab/availability');
       if (!response.ok) {
@@ -135,16 +153,38 @@ export default function BuildLab() {
   }
 
   function composedPrompt() {
-    return [
-      missionTitle ? `Mission title: ${missionTitle}` : '',
-      currentTension ? `Current tension: ${currentTension}` : '',
-      `World focus: ${worldFocus}`,
-      constraints ? `Constraints:\n${constraints}` : '',
-      successCriteria ? `Success criteria:\n${successCriteria}` : '',
-      prompt ? `Raw spoken/written brief:\n${prompt}` : '',
-    ]
-      .filter(Boolean)
-      .join('\n\n');
+    return prompt.trim();
+  }
+
+  function rememberProject(nextPath: string) {
+    const next = [nextPath, ...recentProjects.filter((path) => path !== nextPath)].slice(0, 5);
+    setRecentProjects(next);
+    saveJson(RECENT_PROJECTS_LS, next);
+  }
+
+  function rememberMission(status: MissionMemory['status'], files: string[]) {
+    const mission: MissionMemory = {
+      id: crypto.randomUUID(),
+      title: missionTitleFromPrompt(prompt),
+      mode,
+      agentId,
+      projectPath,
+      status,
+      prompt,
+      changedFiles: files,
+      createdAt: new Date().toISOString(),
+      reflection: missionReflection(status, files),
+    };
+    const next = [mission, ...history].slice(0, 8);
+    setHistory(next);
+    saveJson(HISTORY_LS, next);
+  }
+
+  function loadMission(mission: MissionMemory) {
+    setAgentId(mission.agentId);
+    setProjectPath(mission.projectPath);
+    setPrompt(mission.prompt);
+    addEvent('memory', `Loaded mission memory: ${mission.title}`, 'meta');
   }
 
   async function inspectProject() {
@@ -162,22 +202,22 @@ export default function BuildLab() {
     setProjectInfo(data);
     setProjectPath(data.projectPath);
     setChangedFiles(data.changedFiles);
-    setStage('project');
+    rememberProject(data.projectPath);
     addEvent('project', `Loaded ${data.projectPath}`, 'meta');
   }
 
   async function refreshDiff() {
-    if (!projectPath.trim()) return;
+    if (!projectPath.trim()) return null;
     const response = await fetch('/api/build-lab/diff', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ projectPath }),
     });
-    if (!response.ok) return;
+    if (!response.ok) return null;
     const data = (await response.json()) as { diff: string; changedFiles: string[] };
     setDiff(data.diff);
     setChangedFiles(data.changedFiles);
-    setStage(data.changedFiles.length > 0 ? 'diff' : stage);
+    return data;
   }
 
   async function runMission() {
@@ -191,8 +231,8 @@ export default function BuildLab() {
     setEvents([]);
     setDiff('');
     setCheckpoints([]);
-    setStage('checkpoint');
-    addEvent('mission', missionTitle || 'Untitled coding mission', 'meta');
+    addEvent('mission', missionTitleFromPrompt(prompt), 'meta');
+    let missionSucceeded = false;
 
     try {
       const response = await fetch('/api/build-lab/mission', {
@@ -235,37 +275,37 @@ export default function BuildLab() {
           if (event.type === 'output') addEvent(event.stream ?? 'output', event.text ?? '');
           else if (event.type === 'error') addEvent('error', event.message ?? 'Error', 'error');
           else if (event.type === 'command_started') {
-            setStage('agent');
             addEvent('command', `$ ${event.command} ${(event.args ?? []).join(' ')}`, 'meta');
           } else if (event.type === 'command_finished')
             addEvent('command', 'Command finished', 'meta');
           else if (event.type === 'file_changed' && event.path)
             setChangedFiles((prev) => Array.from(new Set([...prev, event.path as string])));
           else if (event.type === 'mission_complete') {
-            setStage(event.success ? 'complete' : 'failed');
+            missionSucceeded = Boolean(event.success);
             addEvent(
               'complete',
               event.success ? 'Mission complete' : 'Mission failed',
               event.success ? 'success' : 'error',
             );
           } else if (event.type === 'checkpoint') {
-            setStage('checkpoint');
             if (event.checkpoint)
               setCheckpoints((prev) => [...prev, event.checkpoint as CheckpointInfo]);
             addEvent('checkpoint', 'Git checkpoint saved', 'meta');
           }
         }
       }
-      await refreshDiff();
+      const refreshed = await refreshDiff();
+      rememberMission(missionSucceeded ? 'complete' : 'failed', refreshed?.changedFiles ?? []);
     } catch (missionError) {
-      setStage('failed');
       setError(missionError instanceof Error ? missionError.message : 'Mission failed.');
+      rememberMission('failed', changedFiles);
     } finally {
       setRunning(false);
     }
   }
 
   function toggleSpeech() {
+    speech.resetError();
     if (speech.listening) {
       speech.stop();
     } else {
@@ -273,10 +313,17 @@ export default function BuildLab() {
     }
   }
 
-  const missionReady = composedPrompt().trim().length > 0 && Boolean(selectedAgent?.available);
+  const missionReady =
+    prompt.trim().length > 0 && Boolean(selectedAgent?.available) && Boolean(projectPath);
 
   return (
     <main className="mx-auto w-full max-w-6xl px-3 py-5 sm:px-5">
+      <style>{`
+        @keyframes build-lab-voice-pulse {
+          0%, 100% { transform: scale(1); opacity: 1; }
+          50% { transform: scale(1.35); opacity: 0.72; }
+        }
+      `}</style>
       <section
         className="overflow-hidden rounded-[22px] border"
         style={{
@@ -325,6 +372,28 @@ export default function BuildLab() {
                 </div>
               </label>
 
+              {recentProjects.length > 0 && (
+                <div className="rounded-2xl border border-[#b98d52]/20 bg-[#fff8e8]/62 p-3">
+                  <div className="mb-2 flex items-center gap-2 text-xs uppercase tracking-[0.14em] text-[#8d653d]">
+                    <FolderOpen size={14} />
+                    Recent projects
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    {recentProjects.map((path) => (
+                      <button
+                        key={path}
+                        type="button"
+                        onClick={() => setProjectPath(path)}
+                        className="rounded-full border border-[#8f6232]/20 px-3 py-1 text-xs text-[#704923]"
+                        title={path}
+                      >
+                        {shortPath(path)}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+
               <div className="grid grid-cols-2 gap-3">
                 <div className="rounded-2xl border border-[#b98d52]/20 bg-[#fff8e8]/70 p-3">
                   <div className="flex items-center gap-2 text-xs uppercase tracking-[0.14em] text-[#8d653d]">
@@ -343,108 +412,6 @@ export default function BuildLab() {
                   <p className="mt-2 text-sm font-medium text-[#3f2817]">
                     {agents.filter((agent) => agent.available).length}/{agents.length || 2} ready
                   </p>
-                </div>
-              </div>
-
-              <div className="rounded-2xl border border-[#b98d52]/20 bg-[#fff8e8]/70 p-3">
-                <div className="mb-3 flex items-center gap-2 text-xs uppercase tracking-[0.14em] text-[#8d653d]">
-                  <Clock3 size={14} />
-                  Mission timeline
-                </div>
-                <div className="grid grid-cols-3 gap-2">
-                  {(Object.keys(stageLabels) as MissionStage[]).map((item) => {
-                    const active = item === stage;
-                    const complete =
-                      stage !== 'failed' &&
-                      stageOrder.indexOf(stage) >= 0 &&
-                      stageOrder.indexOf(item) >= 0 &&
-                      stageOrder.indexOf(stage) >= stageOrder.indexOf(item);
-                    const Icon = active || complete ? CheckCircle2 : Circle;
-                    return (
-                      <div
-                        key={item}
-                        className="flex items-center gap-1.5 rounded-full border px-2 py-1 text-[10px]"
-                        style={{
-                          borderColor: active ? '#704923' : 'rgba(112,73,38,0.14)',
-                          background: active ? 'rgba(112,73,35,0.1)' : 'rgba(255,253,242,0.58)',
-                          color: active ? '#3f2817' : '#8d653d',
-                        }}
-                      >
-                        <Icon size={11} />
-                        {stageLabels[item]}
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-
-              <label className="block">
-                <span className="text-xs uppercase tracking-[0.16em] text-[#704923]">
-                  Mission title
-                </span>
-                <input
-                  value={missionTitle}
-                  onChange={(event) => setMissionTitle(event.target.value)}
-                  placeholder="Stabilise geometry music mode"
-                  className="mt-2 w-full rounded-xl border border-[#b98d52]/30 bg-[#fff8e8] px-3 py-2 text-sm text-[#3f2817] outline-none focus:border-[#8f6232]"
-                />
-              </label>
-
-              <label className="block">
-                <span className="text-xs uppercase tracking-[0.16em] text-[#704923]">
-                  Current tension
-                </span>
-                <input
-                  value={currentTension}
-                  onChange={(event) => setCurrentTension(event.target.value)}
-                  placeholder="Building the future while surviving today"
-                  className="mt-2 w-full rounded-xl border border-[#b98d52]/30 bg-[#fff8e8] px-3 py-2 text-sm text-[#3f2817] outline-none focus:border-[#8f6232]"
-                />
-              </label>
-
-              <div>
-                <span className="text-xs uppercase tracking-[0.16em] text-[#704923]">
-                  World focus
-                </span>
-                <div className="mt-2 grid gap-2">
-                  {worlds.map((world) => (
-                    <button
-                      key={world.id}
-                      type="button"
-                      onClick={() => setWorldFocus(world.id)}
-                      className="rounded-2xl border px-3 py-2 text-left"
-                      style={{
-                        borderColor: worldFocus === world.id ? '#704923' : 'rgba(112,73,38,0.16)',
-                        background: worldFocus === world.id ? 'rgba(112,73,35,0.1)' : '#fff8e8',
-                      }}
-                    >
-                      <span className="block text-sm font-medium text-[#3f2817]">
-                        {world.label}
-                      </span>
-                      <span className="block text-xs leading-5 text-[#8d653d]">{world.desc}</span>
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              <div>
-                <span className="text-xs uppercase tracking-[0.16em] text-[#704923]">Mode</span>
-                <div className="mt-2 grid grid-cols-4 gap-2">
-                  {modes.map((item) => (
-                    <button
-                      key={item.id}
-                      type="button"
-                      onClick={() => setMode(item.id)}
-                      className="rounded-full border px-3 py-2 text-xs"
-                      style={{
-                        borderColor: mode === item.id ? '#704923' : 'rgba(112,73,38,0.18)',
-                        background: mode === item.id ? '#704923' : 'rgba(255,248,232,0.7)',
-                        color: mode === item.id ? '#fff8e8' : '#704923',
-                      }}
-                    >
-                      {item.label}
-                    </button>
-                  ))}
                 </div>
               </div>
 
@@ -482,42 +449,66 @@ export default function BuildLab() {
                     Mission prompt
                   </p>
                   <p className="mt-1 text-xs text-[#8d653d]">
-                    Speak naturally. Colourmap turns it into a cleaner worker brief.
+                    Write or speak the order you want to give the coding agent.
                   </p>
                 </div>
                 <button
                   type="button"
                   onClick={toggleSpeech}
                   disabled={!speech.supported}
-                  className="inline-flex items-center gap-2 rounded-full border border-[#8f6232]/25 px-3 py-2 text-xs text-[#704923] disabled:opacity-40"
+                  className="inline-flex items-center gap-2 rounded-full border px-3 py-2 text-xs disabled:opacity-40"
+                  style={{
+                    borderColor: speech.listening
+                      ? 'rgba(245,132,38,0.75)'
+                      : 'rgba(143,98,50,0.25)',
+                    background: speech.listening
+                      ? 'radial-gradient(circle at 30% 30%, rgba(255,178,76,0.48), rgba(255,126,35,0.2))'
+                      : 'transparent',
+                    boxShadow: speech.listening
+                      ? '0 0 0 5px rgba(255,145,49,0.14), 0 0 28px rgba(255,126,35,0.42)'
+                      : 'none',
+                    color: speech.listening ? '#7a310c' : '#704923',
+                  }}
                 >
                   {speech.listening ? <MicOff size={14} /> : <Mic size={14} />}
                   {speech.listening ? 'Stop voice' : 'Voice'}
                 </button>
               </div>
-              <div className="mb-3 grid gap-3 md:grid-cols-2">
-                <label className="block">
-                  <span className="text-[10px] uppercase tracking-[0.14em] text-[#8d653d]">
-                    Constraints
-                  </span>
-                  <textarea
-                    value={constraints}
-                    onChange={(event) => setConstraints(event.target.value)}
-                    placeholder="Keep scope tight. Do not touch unrelated files. Verify in browser."
-                    className="mt-1 min-h-24 w-full resize-y rounded-xl border border-[#b98d52]/25 bg-[#fffdf2] p-2 text-xs leading-5 text-[#3f2817] outline-none focus:border-[#8f6232]"
-                  />
-                </label>
-                <label className="block">
-                  <span className="text-[10px] uppercase tracking-[0.14em] text-[#8d653d]">
-                    Success criteria
-                  </span>
-                  <textarea
-                    value={successCriteria}
-                    onChange={(event) => setSuccessCriteria(event.target.value)}
-                    placeholder="The page loads, checks pass, and the changed files are easy to review."
-                    className="mt-1 min-h-24 w-full resize-y rounded-xl border border-[#b98d52]/25 bg-[#fffdf2] p-2 text-xs leading-5 text-[#3f2817] outline-none focus:border-[#8f6232]"
-                  />
-                </label>
+              <div className="mb-3 rounded-2xl border border-[#b98d52]/18 bg-[#fffdf2]/72 p-3">
+                <div className="flex items-center justify-between gap-3">
+                  <div className="flex items-center gap-2">
+                    <span
+                      className="block h-3 w-3 rounded-full"
+                      style={{
+                        background: speech.listening ? '#ff8a22' : '#c9a76e',
+                        boxShadow: speech.listening
+                          ? '0 0 0 6px rgba(255,138,34,0.13), 0 0 22px rgba(255,138,34,0.6)'
+                          : 'none',
+                        animation: speech.listening
+                          ? 'build-lab-voice-pulse 1s ease-in-out infinite'
+                          : 'none',
+                      }}
+                    />
+                    <span className="text-xs uppercase tracking-[0.14em] text-[#704923]">
+                      {speech.listening
+                        ? 'Listening'
+                        : speech.supported
+                          ? 'Voice ready'
+                          : 'Voice unavailable'}
+                    </span>
+                  </div>
+                  {speech.transcript && (
+                    <span className="text-[11px] text-[#8d653d]">transcript captured</span>
+                  )}
+                </div>
+                <p className="mt-2 text-xs leading-5 text-[#8d653d]">
+                  {speech.error ||
+                    (speech.listening
+                      ? 'Speak now. Your words should appear in the mission prompt below.'
+                      : speech.transcript
+                        ? `Last heard: ${speech.transcript}`
+                        : 'Tap Voice and allow microphone access in the browser.')}
+                </p>
               </div>
               <textarea
                 value={prompt}
@@ -525,18 +516,11 @@ export default function BuildLab() {
                 placeholder="Tell the agent what to build, fix, review, or plan..."
                 className="min-h-44 w-full resize-y rounded-2xl border border-[#b98d52]/25 bg-[#fffdf2] p-3 text-sm leading-6 text-[#3f2817] outline-none focus:border-[#8f6232]"
               />
-              <details className="mt-3 rounded-xl border border-[#b98d52]/18 bg-[#fffdf2]/80 p-3">
-                <summary className="cursor-pointer text-xs uppercase tracking-[0.14em] text-[#704923]">
-                  Worker brief preview
-                </summary>
-                <pre className="mt-3 max-h-56 overflow-auto whitespace-pre-wrap text-xs leading-5 text-[#5f4229]">
-                  {composedPrompt() || 'The structured brief will appear here.'}
-                </pre>
-              </details>
               <div className="mt-3 flex flex-wrap items-center justify-between gap-3">
-                <p className="text-xs text-[#8d653d]">
-                  Selected: {selectedAgent?.name ?? 'No agent'} / {mode} / {worldFocus}
-                </p>
+                <div className="flex flex-wrap gap-2 text-xs text-[#8d653d]">
+                  <span>Selected: {selectedAgent?.name ?? 'No agent'}</span>
+                  <span>/ {projectPath ? shortPath(projectPath) : 'choose project'}</span>
+                </div>
                 <button
                   type="button"
                   onClick={runMission}
@@ -550,35 +534,106 @@ export default function BuildLab() {
               {error && <p className="mt-3 text-sm text-[#9b3b24]">{error}</p>}
             </div>
 
+            <div className="rounded-2xl border border-[#b98d52]/20 bg-[#fff8e8]/70 p-4">
+              <div className="mb-3 flex items-center justify-between gap-3">
+                <p className="flex items-center gap-2 text-xs uppercase tracking-[0.16em] text-[#704923]">
+                  <Archive size={14} />
+                  Mission memory
+                </p>
+                <span className="text-xs text-[#8d653d]">{history.length} saved</span>
+              </div>
+              {history.length === 0 ? (
+                <p className="text-sm text-[#8d653d]">
+                  Clear work blocks will appear here: what you asked, what happened, and what to
+                  check next.
+                </p>
+              ) : (
+                <div className="grid gap-3">
+                  {history.slice(0, 4).map((mission) => (
+                    <button
+                      key={mission.id}
+                      type="button"
+                      onClick={() => loadMission(mission)}
+                      className="rounded-2xl border border-[#b98d52]/22 bg-[#fffdf2]/75 p-4 text-left"
+                    >
+                      <div className="flex items-start justify-between gap-2">
+                        <span className="text-sm font-medium leading-5 text-[#3f2817]">
+                          {mission.title}
+                        </span>
+                        <span
+                          className={
+                            mission.status === 'complete'
+                              ? 'text-xs text-[#32724d]'
+                              : 'text-xs text-[#a35b38]'
+                          }
+                        >
+                          {mission.status}
+                        </span>
+                      </div>
+                      <p className="mt-3 text-xs uppercase tracking-[0.14em] text-[#8d653d]">
+                        Last order
+                      </p>
+                      <p className="mt-1 line-clamp-3 text-sm leading-6 text-[#5f4229]">
+                        {mission.prompt || 'No prompt saved.'}
+                      </p>
+                      <p className="mt-3 text-xs uppercase tracking-[0.14em] text-[#8d653d]">
+                        Reflection
+                      </p>
+                      <p className="mt-1 text-sm leading-6 text-[#5f4229]">
+                        {mission.reflection ??
+                          missionReflection(mission.status, mission.changedFiles)}
+                      </p>
+                      <div className="mt-3 flex flex-wrap gap-2 text-[11px] text-[#8d653d]">
+                        <span>{shortPath(mission.projectPath)}</span>
+                        <span>{mission.changedFiles.length} files</span>
+                        <span>{new Date(mission.createdAt).toLocaleDateString()}</span>
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+
             <div className="grid gap-4 xl:grid-cols-[1.1fr_0.9fr]">
               <section className="rounded-2xl border border-[#2b2118]/15 bg-[#24180f] p-4 text-[#f8e8bd]">
                 <div className="mb-3 flex items-center justify-between">
                   <p className="text-xs uppercase tracking-[0.16em] text-[#d7b978]">
                     Agent console
                   </p>
-                  <span className="text-xs text-[#a98b5c]">{running ? 'streaming' : 'idle'}</span>
+                  <div className="flex items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={() => setShowRawConsole((value) => !value)}
+                      className="rounded-full border border-[#d7b978]/20 px-2 py-1 text-xs text-[#d7b978]"
+                    >
+                      {showRawConsole ? 'Readable' : 'Raw'}
+                    </button>
+                    <span className="text-xs text-[#a98b5c]">{running ? 'streaming' : 'idle'}</span>
+                  </div>
                 </div>
                 <div className="max-h-[360px] overflow-auto rounded-xl bg-[#150f0a] p-3 font-mono text-xs leading-5">
                   {events.length === 0 ? (
                     <p className="text-[#8e7658]">No mission output yet.</p>
                   ) : (
-                    events.map((event) => (
-                      <div
-                        key={event.id}
-                        className={
-                          event.tone === 'error'
-                            ? 'text-[#ff9b7d]'
-                            : event.tone === 'success'
-                              ? 'text-[#aee0a8]'
-                              : event.tone === 'meta'
-                                ? 'text-[#d7b978]'
-                                : 'text-[#f8e8bd]'
-                        }
-                      >
-                        <span className="opacity-50">[{event.type}] </span>
-                        <span>{event.text}</span>
-                      </div>
-                    ))
+                    (showRawConsole ? events : events.filter((event) => event.text.trim())).map(
+                      (event) => (
+                        <div
+                          key={event.id}
+                          className={
+                            event.tone === 'error'
+                              ? 'text-[#ff9b7d]'
+                              : event.tone === 'success'
+                                ? 'text-[#aee0a8]'
+                                : event.tone === 'meta'
+                                  ? 'text-[#d7b978]'
+                                  : 'text-[#f8e8bd]'
+                          }
+                        >
+                          <span className="opacity-50">[{event.type}] </span>
+                          <span>{event.text}</span>
+                        </div>
+                      ),
+                    )
                   )}
                 </div>
               </section>

@@ -3,7 +3,13 @@
 import { useEffect, useRef, useState } from 'react';
 
 interface SpeechRecognitionEventLike {
-  results: ArrayLike<ArrayLike<{ transcript: string }>>;
+  resultIndex?: number;
+  results: ArrayLike<ArrayLike<{ transcript: string }> & { isFinal?: boolean }>;
+}
+
+interface SpeechRecognitionErrorEventLike {
+  error?: string;
+  message?: string;
 }
 
 interface SpeechRecognitionLike {
@@ -14,7 +20,7 @@ interface SpeechRecognitionLike {
   stop: () => void;
   abort: () => void;
   onresult: ((ev: SpeechRecognitionEventLike) => void) | null;
-  onerror: (() => void) | null;
+  onerror: ((ev: SpeechRecognitionErrorEventLike) => void) | null;
   onend: (() => void) | null;
 }
 
@@ -36,18 +42,24 @@ export interface UseSpeechToTextOptions {
 export interface UseSpeechToTextResult {
   listening: boolean;
   supported: boolean;
+  error: string;
+  transcript: string;
   /** Call with current field value. The hook appends transcript to baseText
    *  and calls setValue on every interim + final result. */
   start: (baseText: string, setValue: (v: string) => void) => void;
   stop: () => void;
+  resetError: () => void;
 }
 
 export function useSpeechToText(options: UseSpeechToTextOptions = {}): UseSpeechToTextResult {
   const { lang = 'en-US' } = options;
   const [listening, setListening] = useState(false);
   const [supported, setSupported] = useState(false);
+  const [error, setError] = useState('');
+  const [transcript, setTranscript] = useState('');
   const recRef = useRef<SpeechRecognitionLike | null>(null);
   const baseRef = useRef('');
+  const finalRef = useRef('');
   const setValueRef = useRef<((v: string) => void) | null>(null);
 
   useEffect(() => {
@@ -56,7 +68,13 @@ export function useSpeechToText(options: UseSpeechToTextOptions = {}): UseSpeech
 
   function start(baseText: string, setValue: (v: string) => void) {
     const Ctor = getSpeechRecognition();
-    if (!Ctor) return;
+    setError('');
+    setTranscript('');
+    finalRef.current = '';
+    if (!Ctor) {
+      setError('Speech recognition is not supported in this browser. Try Chrome or Edge.');
+      return;
+    }
     if (recRef.current) {
       recRef.current.abort();
     }
@@ -67,24 +85,39 @@ export function useSpeechToText(options: UseSpeechToTextOptions = {}): UseSpeech
     rec.continuous = true;
     rec.interimResults = true;
     rec.onresult = (ev) => {
-      let transcript = '';
-      for (let i = 0; i < ev.results.length; i++) {
-        transcript += ev.results[i][0].transcript;
+      let interim = '';
+      const startIndex = ev.resultIndex ?? 0;
+      for (let i = startIndex; i < ev.results.length; i++) {
+        const part = ev.results[i][0]?.transcript ?? '';
+        if (ev.results[i].isFinal) finalRef.current += part;
+        else interim += part;
       }
+      const transcript = `${finalRef.current}${interim}`.trim();
+      setTranscript(transcript);
       const base = baseRef.current;
       const joined = base
         ? `${base}${base.endsWith('\n') || base.endsWith(' ') ? '' : ' '}${transcript}`
         : transcript;
       setValueRef.current?.(joined);
     };
-    rec.onerror = () => setListening(false);
+    rec.onerror = (ev) => {
+      const next =
+        ev.error === 'not-allowed'
+          ? 'Microphone permission was blocked.'
+          : ev.error === 'no-speech'
+            ? 'No speech was detected.'
+            : ev.message || ev.error || 'Speech recognition stopped.';
+      setError(next);
+      setListening(false);
+    };
     rec.onend = () => setListening(false);
     try {
       rec.start();
       recRef.current = rec;
       setListening(true);
-    } catch {
-      /* already started or permission denied */
+    } catch (startError) {
+      setError(startError instanceof Error ? startError.message : 'Could not start recording.');
+      setListening(false);
     }
   }
 
@@ -94,5 +127,9 @@ export function useSpeechToText(options: UseSpeechToTextOptions = {}): UseSpeech
     setListening(false);
   }
 
-  return { listening, supported, start, stop };
+  function resetError() {
+    setError('');
+  }
+
+  return { listening, supported, error, transcript, start, stop, resetError };
 }

@@ -57,6 +57,121 @@ Touch modes supported by this family:
 - `pull`: draws the field inward.
 - `light`: highlights local density without changing palette.
 
+## Living Mind And Character Presets
+
+Geometry Field should become a language for inner landscapes, consciousness maps, concert visuals, and future phone conversations.
+
+The first foundations:
+
+- **Brain Topography**: a 2D walnut/brain shape seen from above, built from thousands of dots and contour folds.
+- **Walking Figure**: a sober line-made starfish-human with a head and infinite walking motion.
+- **Dot Walker**: the same character idea as a liquid particle body.
+
+These presets are early research surfaces, not final products.
+
+Dot Walker should expose five visibly different designs through its **Design** slider:
+
+1. original walking particle figure
+2. floating genie-tail figure
+3. diagonal dancer figure
+4. compact seated thinker figure
+5. winged guardian figure
+
+Design 1 is the original and should remain stable because it already has the strongest first emotional fit.
+
+Dot Walker controls should stay specific and non-duplicative:
+
+- **Design 1-5** changes the figure silhouette.
+- **Liquid** changes internal particle motion.
+- **Aura Width** changes the body spread / surrounding presence.
+- **Bloom** controls light intensity.
+- Avoid duplicate sliders where two controls visually do the same thing.
+
+### Brain Topography
+
+Aim:
+
+- create a beautiful top-down brain/walnut shape
+- fill it with hundreds or thousands of dots
+- let dots form different internal patterns
+- support touch distortion
+- become the basis for living faces, talking presences, 3D landscapes, and consciousness maps
+
+Long-term uses:
+
+- dots gather into a living face that talks to the user
+- dots become characters, thought-clouds, or emotional organisms
+- dot fields become topographic maps of emotion, archetypes, and attention
+- music can make the dot patterns pulse, drift, and reorganize
+
+### Character Language
+
+The character direction should stay simple, sober, and symbolic at first.
+
+The desired figure is not a realistic human. It is closer to:
+
+- a starfish-human
+- a simple head
+- soft limbs
+- clear gesture
+- walking, dancing, breathing, pointing, or waiting
+- minimal enough to be universal
+
+Two render families:
+
+- **Line figure**: clear silhouette, good for explanations, navigation, and emotional diagrams.
+- **Dot figure**: liquid, morphable, good for immersion, music, concerts, and future AI presence.
+
+The long-term goal is to let dots behave like intelligent matter:
+
+```text
+dots -> character -> face -> landscape -> story -> conversation
+```
+
+Dot Walker is a candidate for Colourmap's long-term AI conversation interface. The user should eventually be able to speak to the AI and see the Dot Walker respond as a presence: voice creates vibrations through the body, AI replies create gestures or light pulses, readable text appears around the figure, and the whole exchange feels like talking with a living visual being rather than typing into a generic chat box.
+
+### Blender / External 3D Tool Direction
+
+Native Three.js presets are the right way to prototype movement and visual language quickly.
+
+Blender or similar 3D tools become useful when Colourmap needs:
+
+- reusable rigged characters
+- smoother walking/dancing cycles
+- exported animation clips
+- hand-authored gestures
+- more expressive faces and body poses
+- concert-grade staged scenes
+
+Recommended pipeline:
+
+1. Prototype the form in Geometry Field with lines/dots.
+2. Decide which character language feels emotionally correct.
+3. Create a low-poly or curve-based character in Blender.
+4. Rig only the minimum bones: head, torso, arms, legs.
+5. Export as `glTF`/`GLB`.
+6. Load in Three.js and drive animation clips from Colourmap states, music, or touch.
+
+The character should not become cartoon clutter. It should feel like a calm symbolic being inside the Colourmap universe.
+
+### Chrysalis Rings
+
+Chrysalis Rings should stay visually clean: three transforming rings moving between 2D and 3D-feeling states. Decorative blooming dots or beads should not be drawn by default because they compete with the purity of the ring transformation.
+
+### 3D Emotional Landscapes
+
+Future presets:
+
+- **River Topography Lines**: a 3D river moving between mountains with contour lines.
+- **River Topography Dots**: the same world as a dot field, more liquid and musical.
+
+Long-term aim:
+
+- navigate landscapes of emotions, consciousness, archetypes, and modes
+- let the user move through inner weather rather than only read text about it
+- use music and voice to animate the terrain
+- support concert visuals and personal reflection with the same underlying engine.
+
 ## Nebula And Galaxy Presets
 
 Nebula presets are particle-first cosmic fields, not photo backgrounds. They should remain palette-consistent: a selected colour family controls the dust and star glow, without automatic rainbow cycling.
