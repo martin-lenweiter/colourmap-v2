@@ -29,6 +29,7 @@ const COMIC_PROGRAMS = new Set([
   'money-anxiety',
   'identity-becoming',
   'parenting-patterns',
+  'carl-jung',
 ]);
 
 const EDUCATION_IMAGES = ['/education-1.png', '/education-2.png', '/education-3.png'];
@@ -177,6 +178,7 @@ const GROUPS: { label: string; keys: string[]; tint: string; startHere?: string 
       'room-to-breathe',
       'emotional-intelligence',
       'self-talk',
+      'carl-jung',
       'wellbeing',
       'hope-energy',
       'sleep',

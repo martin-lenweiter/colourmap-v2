@@ -22,6 +22,7 @@ describe('LearningHub', () => {
     expect(screen.getByText("You're here. That already matters.")).toBeDefined();
     expect(screen.getByText('Knowledge worlds')).toBeDefined();
     expect(screen.getByText('Struggle & Letting Go')).toBeDefined();
+    expect(screen.getByText('Carl Jung & The Inner Map')).toBeDefined();
     expect(screen.getByRole('button', { name: /Living Atlas/i })).toBeDefined();
     expect(screen.getByRole('button', { name: /Progress Roads/i })).toBeDefined();
     expect(screen.getByText('start here')).toBeDefined();
@@ -41,5 +42,18 @@ describe('LearningHub', () => {
     expect(screen.getByRole('button', { name: 'Next comic page' })).toBeDefined();
     const panelImage = container.querySelector('img[src*="/variants/minimal/panel-0.png"]');
     expect(panelImage).not.toBeNull();
+  });
+
+  it('opens the Carl Jung blank bubble comic book', () => {
+    const onClose = vi.fn();
+    render(<LearningHub onClose={onClose} />);
+
+    const jungProgram = screen.getByText('Carl Jung & The Inner Map').closest('button');
+    expect(jungProgram).not.toBeNull();
+    fireEvent.click(jungProgram as HTMLButtonElement);
+
+    expect(screen.getByText('Blank comic book')).toBeDefined();
+    expect(screen.getByText('The inner world is real material')).toBeDefined();
+    expect(screen.getByRole('img', { name: /Blank Carl Jung comic page 1/i })).toBeDefined();
   });
 });
