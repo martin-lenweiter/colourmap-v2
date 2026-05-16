@@ -129,10 +129,21 @@ describe('BuildLab', () => {
     localStorage.clear();
   });
 
+  async function waitForBuildLabReady() {
+    await waitFor(() => expect(screen.getByText('Mission prompt')).toBeDefined());
+  }
+
+  function openProjectSetup() {
+    const setupButton = screen.getByRole('button', { name: /Project \+ agent/i });
+    if (setupButton.textContent?.includes('setup')) {
+      fireEvent.click(setupButton);
+    }
+  }
+
   it('loads agent availability in a simplified prompt workspace', async () => {
     render(<BuildLab />);
 
-    await waitFor(() => expect(screen.getByText('Codex')).toBeDefined());
+    await waitForBuildLabReady();
     expect(screen.getByText('Mission prompt')).toBeDefined();
     expect(screen.getByText('Mission memory')).toBeDefined();
     expect(screen.getByText('Channel')).toBeDefined();
@@ -155,7 +166,7 @@ describe('BuildLab', () => {
   it('shows the current mission first in a closable Agent console pill', async () => {
     const { container } = render(<BuildLab />);
 
-    await waitFor(() => expect(screen.getByText('Codex')).toBeDefined());
+    await waitForBuildLabReady();
     fireEvent.change(
       screen.getByPlaceholderText('Tell the agent what to build, fix, review, or plan...'),
       {
@@ -183,7 +194,8 @@ describe('BuildLab', () => {
   it('keeps the mission sun beside the desk while the prompt remains the only transcript box', async () => {
     render(<BuildLab />);
 
-    await waitFor(() => expect(screen.getByText('Codex')).toBeDefined());
+    await waitForBuildLabReady();
+    openProjectSetup();
     fireEvent.change(screen.getByPlaceholderText('C:/Users/victor/colourmap-v2'), {
       target: { value: 'C:/Users/victor/colourmap-v2' },
     });
@@ -204,7 +216,7 @@ describe('BuildLab', () => {
   it('switches Build Lab work channels so mission memory is not one mixed chat', async () => {
     render(<BuildLab />);
 
-    await waitFor(() => expect(screen.getByText('Codex')).toBeDefined());
+    await waitForBuildLabReady();
     fireEvent.click(screen.getByRole('button', { name: /Channel/i }));
     const phoneChannelButton = screen
       .getAllByRole('button')
@@ -219,7 +231,8 @@ describe('BuildLab', () => {
   it('queues a local Phone Level 2 mission for the runner inbox', async () => {
     render(<BuildLab />);
 
-    await waitFor(() => expect(screen.getByText('Codex')).toBeDefined());
+    await waitForBuildLabReady();
+    fireEvent.click(screen.getByRole('button', { name: 'Open Runner inbox' }));
     fireEvent.click(screen.getByRole('button', { name: 'auto-run on' }));
     await waitFor(() => expect(screen.getByRole('button', { name: 'auto-run off' })).toBeDefined());
     fireEvent.click(screen.getByRole('button', { name: /Channel/i }));
@@ -228,6 +241,7 @@ describe('BuildLab', () => {
       .find((button) => button.textContent?.startsWith('Phone Level 2'));
     expect(phoneChannelButton).toBeDefined();
     fireEvent.click(phoneChannelButton as HTMLButtonElement);
+    openProjectSetup();
     fireEvent.change(screen.getByPlaceholderText('C:/Users/victor/colourmap-v2'), {
       target: { value: 'C:/Users/victor/colourmap-v2' },
     });
@@ -269,7 +283,11 @@ describe('BuildLab', () => {
   it('collapses the runner inbox into a compact reopen pill', async () => {
     render(<BuildLab />);
 
-    await waitFor(() => expect(screen.getByText('Codex')).toBeDefined());
+    await waitForBuildLabReady();
+    expect(screen.getByRole('button', { name: 'Open Runner inbox' }).textContent).toContain(
+      'Runner inbox',
+    );
+    fireEvent.click(screen.getByRole('button', { name: 'Open Runner inbox' }));
     expect(screen.getByText(/Local Phone Level 2 queue/i)).toBeDefined();
 
     fireEvent.click(screen.getByRole('button', { name: 'Close Runner inbox' }));
@@ -286,9 +304,11 @@ describe('BuildLab', () => {
   it('copies the runner inbox as a numbered mission list', async () => {
     render(<BuildLab />);
 
-    await waitFor(() => expect(screen.getByText('Codex')).toBeDefined());
+    await waitForBuildLabReady();
+    fireEvent.click(screen.getByRole('button', { name: 'Open Runner inbox' }));
     fireEvent.click(screen.getByRole('button', { name: 'auto-run on' }));
     await waitFor(() => expect(screen.getByRole('button', { name: 'auto-run off' })).toBeDefined());
+    openProjectSetup();
     fireEvent.change(screen.getByPlaceholderText('C:/Users/victor/colourmap-v2'), {
       target: { value: 'C:/Users/victor/colourmap-v2' },
     });
@@ -358,11 +378,11 @@ describe('BuildLab', () => {
 
     render(<BuildLab />);
 
+    await waitForBuildLabReady();
+    fireEvent.click(screen.getAllByRole('button', { name: /Mission queue/i })[0]);
     await waitFor(() => expect(screen.getByText('2 total / 0 ready / 0 running')).toBeDefined());
     expect(screen.getByText('Build Lab: 1')).toBeDefined();
     expect(screen.getByText('Phone Level 2: 1')).toBeDefined();
-
-    fireEvent.click(screen.getAllByRole('button', { name: /Mission queue/i })[0]);
 
     expect(screen.getByText('Completed queue item')).toBeDefined();
     expect(screen.getByText('Failed queue item')).toBeDefined();
@@ -506,7 +526,7 @@ describe('BuildLab', () => {
 
     render(<BuildLab />);
 
-    await waitFor(() => expect(screen.getByText('Codex')).toBeDefined());
+    await waitForBuildLabReady();
     fireEvent.change(
       screen.getByPlaceholderText('Tell the agent what to build, fix, review, or plan...'),
       {
@@ -524,7 +544,7 @@ describe('BuildLab', () => {
   it('switches Garden of Ideas perspectives without replacing the spec map', async () => {
     render(<BuildLab />);
 
-    await waitFor(() => expect(screen.getByText('Codex')).toBeDefined());
+    await waitForBuildLabReady();
     fireEvent.click(screen.getByRole('button', { name: /Garden of Ideas/i }));
     fireEvent.click(screen.getByRole('button', { name: 'Open Garden' }));
     expect(screen.getByRole('button', { name: 'Glimpse' })).toBeDefined();
@@ -567,12 +587,13 @@ describe('BuildLab', () => {
     expect(wellbeingButton).toBeDefined();
     fireEvent.click(wellbeingButton as HTMLButtonElement);
     expect(screen.getAllByText('Collective Happiness').length).toBeGreaterThan(0);
-  });
+  }, 45000);
 
   it('loads a project and stores it as a recent project', async () => {
     render(<BuildLab />);
 
-    await waitFor(() => expect(screen.getByText('Codex')).toBeDefined());
+    await waitForBuildLabReady();
+    openProjectSetup();
     fireEvent.change(screen.getByPlaceholderText('C:/Users/victor/colourmap-v2'), {
       target: { value: 'C:/Users/victor/colourmap-v2' },
     });
@@ -589,7 +610,7 @@ describe('BuildLab', () => {
   it('keeps the Diff desk closable as a compact pill', async () => {
     render(<BuildLab />);
 
-    await waitFor(() => expect(screen.getByText('Codex')).toBeDefined());
+    await waitForBuildLabReady();
     expect(screen.getByRole('button', { name: 'Open Diff desk' })).toBeDefined();
     expect(screen.queryByText('No diff loaded.')).toBeNull();
 

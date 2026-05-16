@@ -65,6 +65,7 @@ type Mode =
   | 'braintopography'
   | 'walkingfigure'
   | 'dotwalker'
+  | 'missionsun'
   | 'dotsunfire'
   | 'dotalchemicalsun'
   | 'dotheart'
@@ -667,6 +668,18 @@ const PRESETS: Record<string, Cfg> = {
     luminous: 2.8,
     stars: 1,
     mode: 'dotwalker',
+  },
+  'Mission Sun': {
+    preset: 'Golden Source',
+    symmetry: 9,
+    complexity: 7.6,
+    glow: 4.2,
+    breathSpeed: 0.9,
+    intensity: 9.2,
+    particles: 8,
+    luminous: 2.4,
+    stars: 8,
+    mode: 'missionsun',
   },
   'Calm Field': {
     preset: 'Calm Field',
@@ -3899,6 +3912,7 @@ function buildModeGroup(cfg: Cfg, R: number): THREE.Group {
       return buildWalkingFigure(cfg, R);
     case 'dotwalker':
       return buildDotWalker(cfg, R);
+    case 'missionsun':
     case 'dotsunfire':
     case 'dotalchemicalsun':
     case 'dotheart':
@@ -4120,6 +4134,7 @@ function updateModeGroup(group: THREE.Group, cfg: Cfg, dots: Dot[], t: number, R
     case 'dotwalker':
       updateDotWalker(group, cfg, t, R);
       break;
+    case 'missionsun':
     case 'dotsunfire':
     case 'dotalchemicalsun':
     case 'dotheart':
@@ -10050,14 +10065,21 @@ function updateSpire(group: THREE.Group, cfg: Cfg, t: number, R: number): void {
 
 /* ── Background stars ───────────────────────────────────────── */
 
-function buildStars(count: number, W: number, H: number, preset = 'Calm Field'): THREE.Group {
+function buildStars(
+  count: number,
+  W: number,
+  H: number,
+  preset = 'Calm Field',
+  mode?: Mode,
+): THREE.Group {
   const g = new THREE.Group();
   if (count <= 0) return g;
   const pal = PAL[preset] ?? PAL['Calm Field'];
-  const [rr, gg, bb] = pal.rgb;
-  const totalN = Math.round(count * 55 + 25);
+  const isMissionSun = mode === 'missionsun';
+  const [rr, gg, bb] = isMissionSun ? PAL['Golden Source'].rgb : pal.rgb;
+  const totalN = Math.round(count * (isMissionSun ? 82 : 55) + (isMissionSun ? 90 : 25));
   const half = Math.max(W, H) * 0.62;
-  const bandStrength = Math.max(0, (count - 3) / 7);
+  const bandStrength = isMissionSun ? 0 : Math.max(0, (count - 3) / 7);
   const layers = [
     { frac: 0.65, size: 0.8, phase: 0 },
     { frac: 0.28, size: 1.4, phase: 2.1 },
@@ -10075,9 +10097,13 @@ function buildStars(count: number, W: number, H: number, preset = 'Calm Field'):
         pos[i * 3] = along * Math.cos(angle) - across * Math.sin(angle);
         pos[i * 3 + 1] = along * Math.sin(angle) + across * Math.cos(angle);
       } else {
-        pos[i * 3] = (Math.random() - 0.5) * 2 * half;
-        pos[i * 3 + 1] = (Math.random() - 0.5) * 2 * half;
+        const halo = isMissionSun && Math.random() < 0.34;
+        const a = Math.random() * Math.PI * 2;
+        const r = halo ? lerp(0.28, 0.78, Math.random()) * half : Math.random() * half;
+        pos[i * 3] = halo ? Math.cos(a) * r : (Math.random() - 0.5) * 2 * half;
+        pos[i * 3 + 1] = halo ? Math.sin(a) * r : (Math.random() - 0.5) * 2 * half;
       }
+      pos[i * 3 + 2] = isMissionSun ? -80 - Math.random() * 90 : 0;
     }
     const geo = new THREE.BufferGeometry();
     geo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
@@ -10086,14 +10112,14 @@ function buildStars(count: number, W: number, H: number, preset = 'Calm Field'):
       size: layer.size,
       sizeAttenuation: false,
       transparent: true,
-      opacity: 0.22 + bandStrength * 0.14,
+      opacity: isMissionSun ? 0.18 + layer.frac * 0.08 : 0.22 + bandStrength * 0.14,
       blending: THREE.AdditiveBlending,
       depthWrite: false,
     });
     const pts = new THREE.Points(geo, mat);
     pts.userData.tag = 'starLayer';
     pts.userData.phase = layer.phase;
-    pts.userData.baseOpacity = 0.22 + bandStrength * 0.14;
+    pts.userData.baseOpacity = isMissionSun ? 0.18 + layer.frac * 0.08 : 0.22 + bandStrength * 0.14;
     g.add(pts);
   }
   return g;
@@ -10433,6 +10459,15 @@ const MODE_SLIDERS: Partial<Record<Mode, SliderDef[]>> = {
     { key: 'luminous', label: 'Bloom', min: 0, max: 5, step: 0.1 },
     { key: 'stars', label: 'Walkers 1-4', min: 1, max: 4, step: 1 },
   ],
+  missionsun: [
+    { key: 'complexity', label: 'Agitation', min: 1, max: 10, step: 0.5 },
+    { key: 'glow', label: 'Membrane', min: 0, max: 10, step: 0.5 },
+    { key: 'breathSpeed', label: 'Pulse', min: 0.05, max: 2.0, step: 0.05 },
+    { key: 'intensity', label: 'Gold', min: 0, max: 10, step: 0.5 },
+    { key: 'particles', label: 'Dots', min: 1, max: 10, step: 1 },
+    { key: 'luminous', label: 'Dot Bloom', min: 0, max: 5, step: 0.1 },
+    { key: 'stars', label: 'Stars', min: 0, max: 10, step: 1 },
+  ],
   dotsunfire: [
     { key: 'complexity', label: 'Fire Motion', min: 1, max: 10, step: 0.5 },
     { key: 'glow', label: 'Corona', min: 0, max: 10, step: 0.5 },
@@ -10534,6 +10569,7 @@ const MODE_TO_PRESET: Partial<Record<Mode, string>> = {
   braintopography: 'Brain Topography',
   walkingfigure: 'Walking Figure',
   dotwalker: 'Dot Walker',
+  missionsun: 'Mission Sun',
   dotsunfire: 'Fire Dot Sun',
   dotalchemicalsun: 'Alchemical Dot Sun',
   dotheart: 'Dot Heart',
@@ -10642,6 +10678,7 @@ const MODES: { mode: Mode; label: string }[] = [
   { mode: 'braintopography', label: 'Brain Topography' },
   { mode: 'walkingfigure', label: 'Walking Figure' },
   { mode: 'dotwalker', label: 'Dot Walker' },
+  { mode: 'missionsun', label: 'Mission Sun' },
   { mode: 'dotsunfire', label: 'Fire Dot Sun' },
   { mode: 'dotalchemicalsun', label: 'Alchemical Dot Sun' },
   { mode: 'dotheart', label: 'Dot Heart' },
@@ -10670,6 +10707,7 @@ const FEATURED_PRESETS: FeaturedItem[] = [
   { name: 'Brain Topography', tag: 'SELF' },
   { name: 'Walking Figure', tag: 'CHAR' },
   { name: 'Dot Walker', tag: 'CHAR' },
+  { name: 'Mission Sun', tag: 'VOICE' },
   { name: 'Fire Dot Sun', tag: 'DOT' },
   { name: 'Alchemical Dot Sun', tag: 'DOT' },
   { name: 'Dot Heart', tag: 'DOT' },
@@ -10759,6 +10797,7 @@ let _musicPads = 0;
 let _musicKeys = 0;
 let _musicLead = 0;
 let _musicBpm = 122;
+let _voiceEnergy = 0;
 let _currentScalePulse = 0.72;
 let _currentScaleBass = 0.62;
 let _currentScaleFlow = 0.68;
@@ -11664,7 +11703,40 @@ function updateDotSymbolField(group: THREE.Group, cfg: Cfg, t: number, R: number
       let y = 99999;
       let z = 0;
 
-      if (i < dotLimit && cfg.mode === 'dotsunfire') {
+      if (i < dotLimit && cfg.mode === 'missionsun') {
+        const a = v * TAU;
+        const shell = u > 0.82;
+        const coreR = Math.sqrt(shell ? (u - 0.82) / 0.18 : u / 0.82);
+        const voice = Math.min(1, _voiceEnergy * 1.25);
+        const membraneStrength = cfg.glow / 10;
+        const agitation = (cfg.complexity / 10) * (0.42 + voice * 2.15);
+        const cellular = Math.sin(a * 13 + phase * 1.2) + Math.sin(a * 7 - phase * 0.9 + w * 6);
+        const membrane = shell
+          ? 0.985 +
+            cellular * 0.012 * membraneStrength +
+            voice * Math.sin(a * 23 + phase * 9) * 0.018
+          : 1;
+        const r = R * (shell ? 0.43 + coreR * 0.035 : coreR * 0.4);
+        const swim =
+          Math.sin(phase * 1.7 + q * 32 + a * 3) * R * 0.007 * agitation +
+          Math.sin(phase * 3.1 + w * 18) * R * 0.007 * voice;
+        const jitter =
+          Math.sin(phase * 12.5 + q * 47) * R * 0.019 * voice * (0.3 + coreR) +
+          Math.cos(phase * 10.7 + w * 29) * R * 0.012 * voice;
+        const orbit = shell ? 0 : Math.sin(phase * 0.55 + coreR * 5 + q * 12) * voice * R * 0.011;
+        const breathe = 1 + pulse * 0.022 + voice * 0.04;
+        x =
+          Math.cos(a) * r * membrane * breathe +
+          Math.cos(a * 5 + phase) * swim +
+          Math.cos(a + Math.PI / 2) * orbit +
+          jitter;
+        y =
+          Math.sin(a) * r * membrane * breathe +
+          Math.sin(a * 4 - phase * 1.2) * swim -
+          Math.sin(a + Math.PI / 2) * orbit -
+          jitter * 0.62;
+        z = Math.sin(phase + w * TAU) * R * (0.018 + voice * 0.035);
+      } else if (i < dotLimit && cfg.mode === 'dotsunfire') {
         const a = v * TAU;
         const corona = u > 0.72;
         const coreR = Math.sqrt(corona ? (u - 0.72) / 0.28 : u / 0.72);
@@ -13932,6 +14004,9 @@ export default function GeometryField() {
   const l3dDragRef = useRef<{ lastX: number; lastY: number } | null>(null);
   const fingerDistortRef = useRef(false);
   const motionModeRef = useRef<MotionMode>('animate');
+  const voiceStreamRef = useRef<MediaStream | null>(null);
+  const voiceAudioContextRef = useRef<AudioContext | null>(null);
+  const voiceAnimRef = useRef<number>(0);
 
   const [cfg, setCfg] = useState<Cfg>(PRESETS['Calm Field']);
   const [selectedPresetName, setSelectedPresetName] = useState('Calm Field');
@@ -13940,6 +14015,8 @@ export default function GeometryField() {
   const [fingerMode, setFingerMode] = useState<FingerMode>('off');
   const [rippleRingsVisible, setRippleRingsVisible] = useState(false);
   const [motionMode, setMotionMode] = useState<MotionMode>('animate');
+  const [voiceListening, setVoiceListening] = useState(false);
+  const [voiceError, setVoiceError] = useState('');
   const [open, setOpen] = useState(true);
   const [tab, setTab] = useState<'builder' | 'music' | 'journey'>('builder');
   const [builderView, setBuilderView] = useState<'programs' | 'sliders'>('sliders');
@@ -14057,6 +14134,15 @@ export default function GeometryField() {
   }, []);
 
   useEffect(() => {
+    return () => {
+      cancelAnimationFrame(voiceAnimRef.current);
+      voiceStreamRef.current?.getTracks().forEach((track) => track.stop());
+      void voiceAudioContextRef.current?.close();
+      _voiceEnergy = 0;
+    };
+  }, []);
+
+  useEffect(() => {
     dotsRef.current = makeDots(Math.round(cfg.particles * 40 + 20));
   }, [cfg.particles]);
 
@@ -14161,13 +14247,19 @@ export default function GeometryField() {
       bloomPass.radius = 0.4 + currentCfg.luminous * 0.04;
 
       // Rebuild stars when count or viewport changes
-      const starsKey = `${Math.round(currentCfg.stars)}-${currentCfg.preset}-${Math.round(W)}-${Math.round(H)}`;
+      const starsKey = `${Math.round(currentCfg.stars)}-${currentCfg.preset}-${currentCfg.mode}-${Math.round(W)}-${Math.round(H)}`;
       if (starsKey !== builtStarsKeyRef.current) {
         if (starsGroupRef.current) {
           scene.remove(starsGroupRef.current);
           disposeGroup(starsGroupRef.current);
         }
-        starsGroupRef.current = buildStars(currentCfg.stars, W, H, currentCfg.preset);
+        starsGroupRef.current = buildStars(
+          currentCfg.stars,
+          W,
+          H,
+          currentCfg.preset,
+          currentCfg.mode,
+        );
         scene.add(starsGroupRef.current);
         builtStarsKeyRef.current = starsKey;
       }
@@ -16388,6 +16480,59 @@ export default function GeometryField() {
     if (mode === 'off') _distortActive = false;
   }
 
+  function stopVoiceAgitation() {
+    cancelAnimationFrame(voiceAnimRef.current);
+    voiceAnimRef.current = 0;
+    voiceStreamRef.current?.getTracks().forEach((track) => track.stop());
+    voiceStreamRef.current = null;
+    void voiceAudioContextRef.current?.close();
+    voiceAudioContextRef.current = null;
+    _voiceEnergy = 0;
+    setVoiceListening(false);
+  }
+
+  async function toggleVoiceAgitation() {
+    setVoiceError('');
+    if (voiceListening) {
+      stopVoiceAgitation();
+      return;
+    }
+    if (typeof navigator === 'undefined' || !navigator.mediaDevices?.getUserMedia) {
+      setVoiceError('Microphone input is not available in this browser.');
+      return;
+    }
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const AudioContextCtor = window.AudioContext;
+      const audioContext = new AudioContextCtor();
+      const analyser = audioContext.createAnalyser();
+      analyser.fftSize = 512;
+      const source = audioContext.createMediaStreamSource(stream);
+      source.connect(analyser);
+      const samples = new Uint8Array(analyser.fftSize);
+      voiceStreamRef.current = stream;
+      voiceAudioContextRef.current = audioContext;
+      setVoiceListening(true);
+
+      const readVoice = () => {
+        analyser.getByteTimeDomainData(samples);
+        let sum = 0;
+        for (let i = 0; i < samples.length; i++) {
+          const centered = (samples[i] - 128) / 128;
+          sum += centered * centered;
+        }
+        const rms = Math.sqrt(sum / samples.length);
+        const next = Math.min(1, Math.max(0, (rms - 0.018) * 9));
+        _voiceEnergy = _voiceEnergy * 0.72 + next * 0.28;
+        voiceAnimRef.current = requestAnimationFrame(readVoice);
+      };
+      readVoice();
+    } catch (error) {
+      setVoiceError(error instanceof Error ? error.message : 'Could not start microphone input.');
+      stopVoiceAgitation();
+    }
+  }
+
   function toggleFingerDistort() {
     setTouchMode(fingerMode === 'off' ? 'ripple' : 'off');
   }
@@ -16762,6 +16907,59 @@ export default function GeometryField() {
         >
           Full
         </button>
+        {cfg.mode === 'missionsun' && (
+          <div
+            style={{
+              position: 'absolute',
+              left: 14,
+              bottom: open ? 14 : 58,
+              zIndex: 21,
+              display: 'flex',
+              flexDirection: 'column',
+              gap: 5,
+              alignItems: 'flex-start',
+            }}
+          >
+            <button
+              type="button"
+              onClick={toggleVoiceAgitation}
+              title="Use microphone energy to agitate the Mission Sun dots"
+              style={{
+                background: voiceListening ? accentFaint : 'rgba(8,6,4,0.72)',
+                border: `1px solid ${voiceListening ? accent : accentMid}`,
+                borderRadius: 99,
+                padding: '7px 12px',
+                color: accent,
+                fontFamily: 'var(--font-serif)',
+                fontSize: 10,
+                letterSpacing: '0.12em',
+                textTransform: 'uppercase',
+                cursor: 'pointer',
+                backdropFilter: 'blur(10px)',
+                boxShadow: voiceListening ? `0 0 28px rgba(${pr},${pg},${pb},0.22)` : 'none',
+              }}
+            >
+              {voiceListening ? 'Voice On' : 'Voice'}
+            </button>
+            {voiceError && (
+              <span
+                style={{
+                  maxWidth: 220,
+                  color: `rgba(${pr},${pg},${pb},0.72)`,
+                  fontFamily: 'var(--font-serif)',
+                  fontSize: 9,
+                  lineHeight: 1.35,
+                  background: 'rgba(8,6,4,0.72)',
+                  border: `1px solid ${accentMid}`,
+                  borderRadius: 8,
+                  padding: '5px 7px',
+                }}
+              >
+                {voiceError}
+              </span>
+            )}
+          </div>
+        )}
       </div>
 
       {/* Control panel — fixed 50% height when open */}

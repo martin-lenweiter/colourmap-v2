@@ -141,6 +141,7 @@ Geometry Field should also support simple powerful symbolic forms made only from
 
 Accepted initial presets:
 
+- **Mission Sun**: the Build Lab / Sun Dialogue organism promoted into Geometry Builder. It is a circular cell-like bubble made from golden dots only, with a star-field background and optional microphone energy that agitates the internal dots while the user speaks.
 - **Fire Dot Sun**: an actual-sun feeling built from warm yellow/orange dots, with a pulsing core, fire-like corona, and no non-particle mesh.
 - **Alchemical Dot Sun**: a more graphical sun made from dots, with adjustable ray count, ray length, and ray curve. Rays can feel curved or triangular depending on controls.
 - **Dot Heart**: a heart shape made only from many warm dots, with internal pulse and flowing particle motion.
@@ -149,6 +150,7 @@ Rules:
 
 - These presets must be dot-only. No solid SVG/mesh fill should carry the shape.
 - They should default to warm fire/gold palettes and avoid automatic rainbow cycling.
+- Mission Sun should stay especially restrained: golden dots, no color variety by default, and background atmosphere should read as stars rather than a large decorative glow.
 - Sliders should be specific to the form: ray count and ray shape for the alchemical sun, corona/fire motion for the real sun, inner flow/pulse for the heart.
 - Touch distortion should bend the dots directly so the forms feel alive and playable.
 - They should be promoted near Dot Walker and other living-symbol presets because they are part of the future visual language.

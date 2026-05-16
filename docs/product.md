@@ -112,12 +112,14 @@ Phone: Check In · Cockpit · Missions · Journey · Notebook · ◇
 13. **Emotional Vocabulary** — 8 poetic words mapped to slider values, shared across check-in and history. [Spec](specs/emotional-vocabulary.md)
 14. **Creator Space / Build Lab** — Creator-only AI coding mission control at `/build-lab`. Select a local project, choose Codex or Claude Code, dictate or type a mission, stream agent output, and inspect changed files/diffs. The same Creator Space evolves into Garden of Ideas, Project Map / Visual Intelligence, and Business Plan for understanding the product, navigating specs visually, and moving toward practical launch/revenue strategy. [Spec](specs/build-lab.md)
 15. **Mode Bridge** — In-progress Focus-page surface for understanding active/avoided modes and practicing small transitions between Creation, Organisation, Admin, Builder, Body/Sport, Reflection, and Play. [Spec](specs/archetype-platform.md)
+16. **AI Presence** — Shared phone-friendly AI reflection box with a brown/gold living-cell visual. It connects to backend AI without needing local coding agents, starting as a mirror-first surface for fragments and simple tensions. [Spec](specs/ai-presence.md)
 
 ### Deep Layer
 
-16. **Life Scan** — Guided self-assessment through 3 Doors (Feeling, Doing, Sharing). Bipolar sliders, reflective questions, generates improvement programs. [Spec](specs/life-scan.md)
-17. **Overview** — Compass wheel (warm blue for Sharing) showing life balance from life scan data + emotional state. Chapter card. [Spec](specs/cockpit.md)
-18. **Research** — In-app research document covering psychology foundations, competitive analysis, monetization, AI integration, soul cartography vision, and feature roadmap. Accessible at `/research`.
+17. **Life Scan** — Guided self-assessment through 3 Doors (Feeling, Doing, Sharing). Bipolar sliders, reflective questions, generates improvement programs. [Spec](specs/life-scan.md)
+18. **Personality Type Program** — Planned self-understanding program built on free/public-domain personality foundations, especially IPIP Big Five, translated into Colourmap-native styles, gifts, frictions, and mode bridges. [Spec](specs/personality-type-program.md)
+19. **Overview** — Compass wheel (warm blue for Sharing) showing life balance from life scan data + emotional state. Chapter card. [Spec](specs/cockpit.md)
+20. **Research** — In-app research document covering psychology foundations, competitive analysis, monetization, AI integration, soul cartography vision, and feature roadmap. Accessible at `/research`.
 
 ## Architecture
 

@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 640">
+  <defs>
+    <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#f6c98c"/>
+      <stop offset="0.45" stop-color="#d8b9d2"/>
+      <stop offset="1" stop-color="#6e91bd"/>
+    </linearGradient>
+  </defs>
+  <rect width="1200" height="640" fill="url(#g)"/>
+  <circle cx="238" cy="178" r="98" fill="#ffe7a0" opacity="0.55"/>
+  <path d="M0 520 C130 470 270 502 400 432 C545 354 638 392 790 288 C945 182 1070 206 1200 144 L1200 640 L0 640Z" fill="#776aa4" opacity="0.55"/>
+  <path d="M0 590 C198 520 338 570 520 496 C704 420 874 452 1200 310 L1200 640 L0 640Z" fill="#b88388" opacity="0.58"/>
+  <g fill="#fff6c8" opacity="0.85">
+    <circle cx="420" cy="228" r="4"/>
+    <circle cx="480" cy="200" r="2"/>
+    <circle cx="546" cy="264" r="3"/>
+    <circle cx="612" cy="190" r="2.5"/>
+    <circle cx="690" cy="238" r="4"/>
+    <circle cx="780" cy="186" r="2"/>
+  </g>
+  <path d="M398 360 C480 250 584 340 676 220 C760 112 872 160 965 92" fill="none" stroke="#fff2bd" stroke-width="4" opacity="0.5"/>
+</svg>

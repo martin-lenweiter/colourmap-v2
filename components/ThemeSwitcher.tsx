@@ -1,5 +1,6 @@
 'use client';
 
+import { usePathname } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
 import { useStyle } from '@/components/StyleContext';
 
@@ -374,6 +375,7 @@ function applyFullHeader(on: boolean) {
 }
 
 export default function ThemeSwitcher() {
+  const pathname = usePathname();
   const [colorActive, setColorActive] = useState<ColorId>('paper');
   const [paletteActive, setPaletteActive] = useState<PaletteId>('brown');
   const [fullHeader, setFullHeader] = useState(false);
@@ -441,6 +443,26 @@ export default function ThemeSwitcher() {
       document.removeEventListener('mousedown', onDown);
     };
   }, [open]);
+
+  useEffect(() => {
+    if (!pathname?.startsWith('/build-lab')) return;
+    const colorId: ColorId = 'night-brown';
+    const paletteId = DARK_AUTO_PALETTE[colorId] ?? 'brown';
+    const palette = PALETTES.find((p) => p.id === paletteId);
+    setColorActive(colorId);
+    applyColorTheme(colorId);
+    setPaletteActive(paletteId);
+    applyPaletteCSS(paletteId);
+    if (palette) {
+      setTabStyle('filled');
+      setTabFillColor(palette.tab);
+    }
+    const overrides = allCustomIds[paletteId] ?? {};
+    for (const [level, customColorId] of Object.entries(overrides) as [DeepLevelKey, string][]) {
+      applyCustomLevel(level, customColorId, palette);
+    }
+    setTab('color');
+  }, [allCustomIds, pathname, setTabFillColor, setTabStyle]);
 
   function selectPalette(id: PaletteId, customOverrides?: AllCustomIds) {
     setPaletteActive(id);

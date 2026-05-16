@@ -1809,7 +1809,7 @@ export default function BuildLab() {
   const [queuedMissions, setQueuedMissions] = useState<QueuedMission[]>([]);
   const [openPanels, setOpenPanels] = useState({
     channels: false,
-    setup: true,
+    setup: false,
     phone: false,
     phonePrep: false,
     memory: false,
@@ -1817,7 +1817,7 @@ export default function BuildLab() {
     sun: false,
     console: true,
     diff: false,
-    runnerInbox: true,
+    runnerInbox: false,
     missionQueue: false,
   });
   const [showRawConsole, setShowRawConsole] = useState(false);
@@ -1846,7 +1846,7 @@ export default function BuildLab() {
   const promptTextareaRef = useRef<HTMLTextAreaElement | null>(null);
   const queueRunnerRef = useRef(false);
   const queuedMissionsRef = useRef<QueuedMission[]>([]);
-  const speech = useSpeechToText({ lang: 'en-US' });
+  const speech = useSpeechToText({ lang: 'en-US', autoRestart: true });
   const phoneSpeech = useSpeechToText({ lang: 'en-US' });
 
   const selectedAgent = useMemo(
@@ -2932,24 +2932,26 @@ export default function BuildLab() {
                 )}
               </div>
 
-              <button
-                type="button"
-                onClick={() => togglePanel('setup')}
-                className="flex w-full items-center justify-between rounded-2xl border border-[#b98d52]/20 bg-[#fff8e8]/70 p-3 text-left"
-              >
-                <span>
-                  <span className="block text-xs uppercase tracking-[0.16em] text-[#704923]">
-                    Project + agent
+              <div className="rounded-2xl border border-[#b98d52]/20 bg-[#fff8e8]/70 p-3">
+                <button
+                  type="button"
+                  onClick={() => togglePanel('setup')}
+                  className="flex w-full items-center justify-between gap-3 text-left"
+                >
+                  <span className="min-w-0">
+                    <span className="block text-xs uppercase tracking-[0.16em] text-[#704923]">
+                      Project + agent
+                    </span>
+                    <span className="mt-1 block truncate text-xs text-[#8d653d]">
+                      {shortPath(projectPath || runnerStatus?.workingDirectory || 'desktop folder')}{' '}
+                      / {selectedAgent?.name ?? 'agent'}
+                    </span>
                   </span>
-                  <span className="mt-1 block text-xs text-[#8d653d]">
-                    {projectPath ? shortPath(projectPath) : 'choose project'} /{' '}
-                    {selectedAgent?.name ?? 'agent'}
+                  <span className="rounded-full border border-[#8f6232]/20 bg-[#fffdf2] px-3 py-1 text-xs text-[#704923]">
+                    {openPanels.setup ? 'close' : 'setup'}
                   </span>
-                </span>
-                <span className="rounded-full border border-[#8f6232]/20 bg-[#fffdf2] px-3 py-1 text-xs text-[#704923]">
-                  {openPanels.setup ? 'close' : 'open'}
-                </span>
-              </button>
+                </button>
+              </div>
 
               {openPanels.setup && (
                 <>
@@ -3115,52 +3117,66 @@ export default function BuildLab() {
           </div>
 
           <div className="space-y-4 p-5 lg:col-span-2">
-            <div className="rounded-2xl border border-[#b98d52]/20 bg-[#fff8e8]/70 p-4">
+            <div
+              className={
+                openPanels.missionQueue
+                  ? 'rounded-2xl border border-[#b98d52]/20 bg-[#fff8e8]/70 p-4'
+                  : 'rounded-full border border-[#b98d52]/20 bg-[#fff8e8]/70 px-3 py-2'
+              }
+            >
               <button
                 type="button"
                 onClick={() => togglePanel('missionQueue')}
-                className="flex w-full items-start justify-between gap-3 text-left"
+                className={
+                  openPanels.missionQueue
+                    ? 'flex w-full items-start justify-between gap-3 text-left'
+                    : 'flex w-full items-center justify-between gap-3 text-left'
+                }
               >
                 <div>
                   <p className="text-xs uppercase tracking-[0.16em] text-[#704923]">
                     Mission queue
                   </p>
-                  <p className="mt-1 text-xs leading-5 text-[#8d653d]">
-                    {queuedMissions.length === 0
-                      ? 'No queued missions yet.'
-                      : `${queuedMissions.length} total / ${runnableQueuedMissions.length} ready / ${queueStatusCounts.running} running`}
-                  </p>
+                  {openPanels.missionQueue && (
+                    <p className="mt-1 text-xs leading-5 text-[#8d653d]">
+                      {queuedMissions.length === 0
+                        ? 'No queued missions yet.'
+                        : `${queuedMissions.length} total / ${runnableQueuedMissions.length} ready / ${queueStatusCounts.running} running`}
+                    </p>
+                  )}
                 </div>
                 <span className="rounded-full border border-[#8f6232]/20 bg-[#fffdf2] px-3 py-1 text-xs text-[#704923]">
-                  {openPanels.missionQueue ? 'hide list' : 'show all'}
+                  {openPanels.missionQueue ? 'hide list' : `${runnableQueuedMissions.length} ready`}
                 </span>
               </button>
 
-              <div className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-5">
-                {(
-                  [
-                    ['queued', 'Ready'],
-                    ['running', 'Running'],
-                    ['complete', 'Done'],
-                    ['failed', 'Failed'],
-                    ['draft', 'Drafts'],
-                  ] as Array<[QueuedMissionStatus, string]>
-                ).map(([status, label]) => (
-                  <div
-                    key={status}
-                    className="rounded-xl border border-[#b98d52]/18 bg-[#fffdf2]/78 px-3 py-2"
-                  >
-                    <p className="text-[10px] uppercase tracking-[0.14em] text-[#8d653d]">
-                      {label}
-                    </p>
-                    <p className="mt-1 font-serif text-2xl leading-none text-[#3f2817]">
-                      {queueStatusCounts[status]}
-                    </p>
-                  </div>
-                ))}
-              </div>
+              {openPanels.missionQueue && (
+                <div className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-5">
+                  {(
+                    [
+                      ['queued', 'Ready'],
+                      ['running', 'Running'],
+                      ['complete', 'Done'],
+                      ['failed', 'Failed'],
+                      ['draft', 'Drafts'],
+                    ] as Array<[QueuedMissionStatus, string]>
+                  ).map(([status, label]) => (
+                    <div
+                      key={status}
+                      className="rounded-xl border border-[#b98d52]/18 bg-[#fffdf2]/78 px-3 py-2"
+                    >
+                      <p className="text-[10px] uppercase tracking-[0.14em] text-[#8d653d]">
+                        {label}
+                      </p>
+                      <p className="mt-1 font-serif text-2xl leading-none text-[#3f2817]">
+                        {queueStatusCounts[status]}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              )}
 
-              {queueChannelCounts.length > 0 && (
+              {openPanels.missionQueue && queueChannelCounts.length > 0 && (
                 <div className="mt-3 flex flex-wrap gap-2">
                   {queueChannelCounts.map((channel) => (
                     <button

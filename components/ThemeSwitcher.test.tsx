@@ -5,10 +5,19 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import ThemeSwitcher from './ThemeSwitcher';
 
+const { usePathname } = vi.hoisted(() => ({
+  usePathname: vi.fn(() => '/'),
+}));
+
+vi.mock('next/navigation', () => ({
+  usePathname,
+}));
+
 describe('ThemeSwitcher', () => {
   beforeEach(() => {
     document.documentElement.className = '';
     document.documentElement.style.cssText = '';
+    usePathname.mockReturnValue('/');
     vi.stubGlobal('localStorage', {
       getItem: vi.fn(() => null),
       setItem: vi.fn(),
@@ -135,5 +144,16 @@ describe('ThemeSwitcher', () => {
     expect(screen.getByText('Beige')).toBeDefined();
     expect(screen.getByText('Brown')).toBeDefined();
     expect(screen.getByText('Full header')).toBeDefined();
+  });
+
+  it('automatically applies Night Brown inside Build Lab', () => {
+    usePathname.mockReturnValue('/build-lab');
+
+    render(<ThemeSwitcher />);
+
+    expect(document.documentElement.classList.contains('dark')).toBe(true);
+    expect(document.documentElement.classList.contains('night-brown')).toBe(true);
+    expect(localStorage.setItem).toHaveBeenCalledWith('colourmap-theme', 'night-brown');
+    expect(localStorage.setItem).toHaveBeenCalledWith('colourmap-palette', 'brown');
   });
 });

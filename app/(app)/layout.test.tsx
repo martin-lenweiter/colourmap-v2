@@ -41,6 +41,10 @@ vi.mock('@/components/ThemeSwitcher', () => ({
   default: () => <div data-testid="theme-switcher">ThemeSwitcher</div>,
 }));
 
+vi.mock('@/components/GlobalAIPresence', () => ({
+  default: () => <div data-testid="global-ai-presence">GlobalAIPresence</div>,
+}));
+
 vi.mock('@/components/ViewModeContext', () => ({
   ViewModeProvider: ({ children }: { children: React.ReactNode }) => <>{children}</>,
   useViewMode: () => ({ mode: 'desktop', navPosition: 'top' }),
@@ -105,6 +109,7 @@ describe('AppLayout', () => {
     expect(html).toContain('Colourmap');
     expect(html).toContain('Sign out');
     expect(html).toContain('Child section');
+    expect(html).toContain('GlobalAIPresence');
     expect(html).toContain('text-center');
     expect(html).toContain('color:#B33A2B');
   });
