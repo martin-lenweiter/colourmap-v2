@@ -72,7 +72,7 @@ export function createQueuedMission(
 export function updateQueuedMission(
   userId: string,
   missionId: string,
-  patch: Partial<Pick<BuildLabQueuedMission, 'status' | 'events'>>,
+  patch: Partial<Pick<BuildLabQueuedMission, 'status' | 'events' | 'title' | 'prompt'>>,
 ) {
   let updated: BuildLabQueuedMission | null = null;
   store().missions = store().missions.map((mission) => {

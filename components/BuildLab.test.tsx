@@ -7,6 +7,17 @@ import BuildLab from './BuildLab';
 describe('BuildLab', () => {
   beforeEach(() => {
     localStorage.clear();
+    vi.stubGlobal('navigator', {
+      clipboard: {
+        writeText: vi.fn(),
+      },
+    });
+    Object.defineProperty(window.navigator, 'clipboard', {
+      configurable: true,
+      value: {
+        writeText: vi.fn(),
+      },
+    });
     vi.stubGlobal(
       'fetch',
       vi.fn(async (url: string, init?: RequestInit) => {
@@ -64,14 +75,15 @@ describe('BuildLab', () => {
         if (url.includes('/api/build-lab/queue')) {
           const method = init?.method ?? 'GET';
           if (method === 'POST') {
+            const body = init?.body ? JSON.parse(String(init.body)) : {};
             return new Response(
               JSON.stringify({
                 id: 'queued-1',
-                title: 'Build a tiny local runner queue test.',
-                channelId: 'phone-runner',
-                agentId: 'codex',
-                projectPath: 'C:/Users/victor/colourmap-v2',
-                prompt: 'Build a tiny local runner queue test.',
+                title: body.prompt ?? 'Build a tiny local runner queue test.',
+                channelId: body.channelId ?? 'phone-runner',
+                agentId: body.agentId ?? 'codex',
+                projectPath: body.projectPath ?? 'C:/Users/victor/colourmap-v2',
+                prompt: body.prompt ?? 'Build a tiny local runner queue test.',
                 status: 'queued',
                 createdAt: new Date().toISOString(),
                 updatedAt: new Date().toISOString(),
@@ -133,15 +145,43 @@ describe('BuildLab', () => {
     expect(screen.getByText('Display mode')).toBeDefined();
     expect(screen.getByText('Sun Dialogue visual prompt mode')).toBeDefined();
     expect(screen.getByText('Agent console')).toBeDefined();
+    expect(screen.getByText('Current mission')).toBeDefined();
+    expect(screen.getByText('Idle: No active mission')).toBeDefined();
     expect(screen.queryByText('Scope lens')).toBeNull();
     expect(screen.queryByText('Mission cards')).toBeNull();
     expect(screen.queryByText('Mode')).toBeNull();
+  });
+
+  it('shows the current mission in a closable Agent console pill', async () => {
+    render(<BuildLab />);
+
+    await waitFor(() => expect(screen.getByText('Codex')).toBeDefined());
+    fireEvent.change(
+      screen.getByPlaceholderText('Tell the agent what to build, fix, review, or plan...'),
+      {
+        target: { value: 'Make the console mission visible at the top.' },
+      },
+    );
+
+    expect(screen.getByText('Draft: Make the console mission visible at the top.')).toBeDefined();
+
+    fireEvent.click(screen.getByRole('button', { name: 'Close current mission pill' }));
+    expect(screen.queryByText('Draft: Make the console mission visible at the top.')).toBeNull();
+    expect(screen.getByRole('button', { name: 'Open current mission pill' })).toBeDefined();
+
+    fireEvent.click(screen.getByRole('button', { name: 'Open current mission pill' }));
+    expect(screen.getByText('Draft: Make the console mission visible at the top.')).toBeDefined();
   });
 
   it('keeps the mission sun beside the desk and mirrors typed mission text', async () => {
     render(<BuildLab />);
 
     await waitFor(() => expect(screen.getByText('Codex')).toBeDefined());
+    fireEvent.click(screen.getByRole('button', { name: 'auto-run on' }));
+    await waitFor(() => expect(screen.getByRole('button', { name: 'auto-run off' })).toBeDefined());
+    fireEvent.change(screen.getByPlaceholderText('C:/Users/victor/colourmap-v2'), {
+      target: { value: 'C:/Users/victor/colourmap-v2' },
+    });
     fireEvent.change(
       screen.getByPlaceholderText('Tell the agent what to build, fix, review, or plan...'),
       {
@@ -196,6 +236,123 @@ describe('BuildLab', () => {
       ),
     );
     expect(screen.getByRole('button', { name: 'Run on this computer' })).toBeDefined();
+  });
+
+  it('copies the runner inbox as a numbered mission list', async () => {
+    render(<BuildLab />);
+
+    await waitFor(() => expect(screen.getByText('Codex')).toBeDefined());
+    fireEvent.click(screen.getByRole('button', { name: 'auto-run on' }));
+    await waitFor(() => expect(screen.getByRole('button', { name: 'auto-run off' })).toBeDefined());
+    fireEvent.change(screen.getByPlaceholderText('C:/Users/victor/colourmap-v2'), {
+      target: { value: 'C:/Users/victor/colourmap-v2' },
+    });
+    fireEvent.change(
+      screen.getByPlaceholderText('Tell the agent what to build, fix, review, or plan...'),
+      {
+        target: { value: 'Make the runner inbox copyable.' },
+      },
+    );
+    fireEvent.click(screen.getByRole('button', { name: 'Add to queue' }));
+
+    await waitFor(() =>
+      expect(screen.getAllByText(/Make the runner inbox copyable/i).length).toBeGreaterThan(0),
+    );
+    fireEvent.click(screen.getByRole('button', { name: 'Copy list' }));
+
+    await waitFor(() =>
+      expect(window.navigator.clipboard.writeText).toHaveBeenCalledWith(
+        expect.stringContaining('Make the runner inbox copyable.'),
+      ),
+    );
+  });
+
+  it('shows a mission queue overview with counts and the full cross-channel list', async () => {
+    const defaultFetch = vi.mocked(fetch).getMockImplementation();
+    vi.mocked(fetch).mockImplementation((input: string | URL | Request, init?: RequestInit) => {
+      const url = String(input);
+      if (url.includes('/api/build-lab/queue') && !url.includes('/queue/')) {
+        return Promise.resolve(
+          new Response(
+            JSON.stringify({
+              missions: [
+                {
+                  id: 'queue-complete',
+                  title: 'Completed queue item',
+                  channelId: 'lab',
+                  agentId: 'codex',
+                  projectPath: 'C:/Users/victor/colourmap-v2',
+                  prompt: 'Completed queue item',
+                  status: 'complete',
+                  createdAt: new Date().toISOString(),
+                  updatedAt: new Date().toISOString(),
+                  events: [
+                    { id: 1, type: 'complete', text: 'Done.', createdAt: new Date().toISOString() },
+                  ],
+                },
+                {
+                  id: 'queue-failed',
+                  title: 'Failed queue item',
+                  channelId: 'phone-runner',
+                  agentId: 'codex',
+                  projectPath: 'C:/Users/victor/colourmap-v2',
+                  prompt: 'Failed queue item',
+                  status: 'failed',
+                  createdAt: new Date().toISOString(),
+                  updatedAt: new Date().toISOString(),
+                  events: [],
+                },
+              ],
+            }),
+            { status: 200 },
+          ),
+        );
+      }
+      return defaultFetch?.(input, init) ?? Promise.resolve(new Response('', { status: 404 }));
+    });
+
+    render(<BuildLab />);
+
+    await waitFor(() => expect(screen.getByText('2 total / 0 ready / 0 running')).toBeDefined());
+    expect(screen.getByText('Build Lab: 1')).toBeDefined();
+    expect(screen.getByText('Phone Level 2: 1')).toBeDefined();
+
+    fireEvent.click(screen.getAllByRole('button', { name: /Mission queue/i })[0]);
+
+    expect(screen.getByText('Completed queue item')).toBeDefined();
+    expect(screen.getByText('Failed queue item')).toBeDefined();
+  });
+
+  it('keeps streaming console output inside the console and labels running follow-ups as queue work', async () => {
+    const scrollIntoView = vi.fn();
+    Object.defineProperty(Element.prototype, 'scrollIntoView', {
+      configurable: true,
+      value: scrollIntoView,
+    });
+    const defaultFetch = vi.mocked(fetch).getMockImplementation();
+    vi.mocked(fetch).mockImplementation((input: string | URL | Request, init?: RequestInit) => {
+      const url = String(input);
+      if (url.includes('/api/build-lab/mission')) {
+        return new Promise<Response>(() => undefined);
+      }
+      return defaultFetch?.(input, init) ?? Promise.resolve(new Response('', { status: 404 }));
+    });
+
+    render(<BuildLab />);
+
+    await waitFor(() => expect(screen.getByText('Codex')).toBeDefined());
+    fireEvent.change(
+      screen.getByPlaceholderText('Tell the agent what to build, fix, review, or plan...'),
+      {
+        target: { value: 'Keep the prompt steady while the console streams.' },
+      },
+    );
+    fireEvent.click(screen.getByRole('button', { name: 'Send mission' }));
+
+    await waitFor(() => expect(screen.getByText('Mission in process')).toBeDefined());
+    expect(screen.getByText(/What you type, add from screenshots, or record now/i)).toBeDefined();
+    expect(screen.getByRole('button', { name: 'Add follow-up to queue' })).toBeDefined();
+    expect(scrollIntoView).not.toHaveBeenCalled();
   });
 
   it('switches Garden of Ideas perspectives without replacing the spec map', async () => {
@@ -261,5 +418,22 @@ describe('BuildLab', () => {
     expect(localStorage.getItem('colourmap:build-lab-recent-projects')).toContain(
       'C:/Users/victor/colourmap-v2',
     );
+  });
+
+  it('keeps the Diff desk closable as a compact pill', async () => {
+    render(<BuildLab />);
+
+    await waitFor(() => expect(screen.getByText('Codex')).toBeDefined());
+    expect(screen.getByRole('button', { name: 'Open Diff desk' })).toBeDefined();
+    expect(screen.queryByText('No diff loaded.')).toBeNull();
+
+    fireEvent.click(screen.getByRole('button', { name: 'Open Diff desk' }));
+    expect(screen.getByRole('button', { name: 'Close Diff desk' })).toBeDefined();
+    expect(screen.getByRole('button', { name: 'Refresh' })).toBeDefined();
+    expect(screen.getByText('No diff loaded.')).toBeDefined();
+
+    fireEvent.click(screen.getByRole('button', { name: 'Close Diff desk' }));
+    expect(screen.getByRole('button', { name: 'Open Diff desk' })).toBeDefined();
+    expect(screen.queryByText('No diff loaded.')).toBeNull();
   });
 });

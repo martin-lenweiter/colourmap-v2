@@ -18,6 +18,7 @@ import {
   ShieldCheck,
   Sparkles,
   SquareTerminal,
+  X,
 } from 'lucide-react';
 import Link from 'next/link';
 import type { CSSProperties } from 'react';
@@ -886,6 +887,11 @@ function missionTitleFromPrompt(prompt: string) {
   return firstLine.length > 82 ? `${firstLine.slice(0, 79)}...` : firstLine;
 }
 
+function channelForId(channelId: string) {
+  if (channelId === 'build-lab') return DEFAULT_CHANNELS.find((channel) => channel.id === 'lab');
+  return DEFAULT_CHANNELS.find((channel) => channel.id === channelId);
+}
+
 function missionReflection(status: MissionMemory['status'], files: string[]) {
   if (status === 'complete') {
     return files.length
@@ -1667,21 +1673,29 @@ export default function BuildLab() {
     sun: false,
     console: true,
     diff: false,
+    runnerInbox: true,
+    missionQueue: false,
   });
   const [showRawConsole, setShowRawConsole] = useState(false);
-  const [consoleDesignMode, setConsoleDesignMode] = useState(false);
+  const [consoleDesignMode, setConsoleDesignMode] = useState(true);
   const [running, setRunning] = useState(false);
   const [error, setError] = useState('');
   const [phonePrep, setPhonePrep] = useState('');
   const [screenshotNotes, setScreenshotNotes] = useState<ScreenshotNote[]>([]);
   const [autoRunQueue, setAutoRunQueue] = useState(true);
+  const [runnerInboxCompact, setRunnerInboxCompact] = useState(false);
+  const [developerQueueOpen, setDeveloperQueueOpen] = useState(false);
+  const [developerQueueText, setDeveloperQueueText] = useState('');
+  const [editingQueueId, setEditingQueueId] = useState('');
+  const [editingQueueText, setEditingQueueText] = useState('');
   const [activeMissionTitle, setActiveMissionTitle] = useState('');
   const [missionPhase, setMissionPhase] = useState<
     'idle' | 'starting' | 'working' | 'checking' | 'done'
   >('idle');
   const [showMissionDetails, setShowMissionDetails] = useState(false);
+  const [showConsoleMissionPill, setShowConsoleMissionPill] = useState(true);
   const missionAbortRef = useRef<AbortController | null>(null);
-  const consoleEndRef = useRef<HTMLDivElement | null>(null);
+  const consoleScrollRef = useRef<HTMLDivElement | null>(null);
   const queueRunnerRef = useRef(false);
   const queuedMissionsRef = useRef<QueuedMission[]>([]);
   const speech = useSpeechToText({ lang: 'en-US' });
@@ -1748,16 +1762,14 @@ export default function BuildLab() {
 
   useEffect(() => {
     queuedMissionsRef.current = queuedMissions;
-    if (typeof consoleEndRef.current?.scrollIntoView === 'function') {
-      consoleEndRef.current.scrollIntoView({ block: 'end', behavior: 'smooth' });
-    }
-    if (!autoRunQueue || running || queueRunnerRef.current) return;
-    const nextMission = nextQueuedMission(activeChannel.id);
-    if (!nextMission) return;
-    queueRunnerRef.current = true;
-    runQueuedMission(nextMission).finally(() => {
-      queueRunnerRef.current = false;
-    });
+    if (!autoRunQueue || running || queueRunnerRef.current || agents.length === 0) return;
+    drainRunnerInbox(activeChannel.id);
+  });
+
+  useEffect(() => {
+    const consoleNode = consoleScrollRef.current;
+    if (!consoleNode) return;
+    consoleNode.scrollTop = consoleNode.scrollHeight;
   });
 
   function selectChannel(channelId: string) {
@@ -1844,10 +1856,50 @@ export default function BuildLab() {
     addEvent('memory', `Loaded mission memory: ${mission.title}`, 'meta');
   }
 
+  function applyQueuedMissionPatch(
+    missionId: string,
+    patch: {
+      status?: QueuedMissionStatus;
+      title?: string;
+      prompt?: string;
+      event?: { type: string; text: string };
+    },
+  ) {
+    const updateMission = (mission: QueuedMission): QueuedMission => {
+      if (mission.id !== missionId) return mission;
+      return {
+        ...mission,
+        status: patch.status ?? mission.status,
+        title: patch.title ?? mission.title,
+        prompt: patch.prompt ?? mission.prompt,
+        updatedAt: new Date().toISOString(),
+        events: patch.event
+          ? [
+              {
+                id: nextId(),
+                type: patch.event.type,
+                text: patch.event.text,
+                createdAt: new Date().toISOString(),
+              },
+              ...mission.events,
+            ]
+          : mission.events,
+      };
+    };
+    queuedMissionsRef.current = queuedMissionsRef.current.map(updateMission);
+    setQueuedMissions((prev) => prev.map(updateMission));
+  }
+
   async function patchQueuedMission(
     missionId: string,
-    patch: { status?: QueuedMissionStatus; event?: { type: string; text: string } },
+    patch: {
+      status?: QueuedMissionStatus;
+      title?: string;
+      prompt?: string;
+      event?: { type: string; text: string };
+    },
   ) {
+    applyQueuedMissionPatch(missionId, patch);
     const response = await fetch(`/api/build-lab/queue/${missionId}`, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
@@ -1855,45 +1907,84 @@ export default function BuildLab() {
     });
     if (!response.ok) return null;
     const updated = (await response.json()) as QueuedMission;
+    const current = queuedMissionsRef.current.find((mission) => mission.id === missionId);
+    const merged =
+      current && !patch.title && !patch.prompt
+        ? { ...updated, title: current.title, prompt: current.prompt }
+        : updated;
     setQueuedMissions((prev) =>
-      prev.map((mission) => (mission.id === missionId ? updated : mission)),
+      prev.map((mission) => (mission.id === missionId ? merged : mission)),
     );
     queuedMissionsRef.current = queuedMissionsRef.current.map((mission) =>
-      mission.id === missionId ? updated : mission,
+      mission.id === missionId ? merged : mission,
     );
-    return updated;
+    return merged;
   }
 
-  function nextQueuedMission(channelId = activeChannel.id) {
+  function nextQueuedMission(
+    channelId = activeChannel.id,
+    statuses: QueuedMissionStatus[] = ['queued', 'running'],
+  ) {
     return [...queuedMissionsRef.current]
       .reverse()
-      .find((mission) => mission.channelId === channelId && mission.status === 'queued');
+      .find((mission) => mission.channelId === channelId && statuses.includes(mission.status));
   }
 
   function runAllReadyMissions() {
     setAutoRunQueue(true);
-    if (running || queueRunnerRef.current) return;
-    const mission = nextQueuedMission();
+    const mission = nextQueuedMission(activeChannel.id);
     if (!mission) {
       addEvent('queue', 'No queued runner missions are waiting.', 'meta');
       return;
     }
-    queueRunnerRef.current = true;
-    runQueuedMission(mission).finally(() => {
-      queueRunnerRef.current = false;
-    });
+    drainRunnerInbox(activeChannel.id);
   }
 
-  async function queueMission() {
-    const missionPrompt = composedPrompt();
+  async function drainRunnerInbox(channelId = activeChannel.id) {
+    if (running || queueRunnerRef.current || agents.length === 0) return;
+    queueRunnerRef.current = true;
+    let ranCount = 0;
+    try {
+      while (true) {
+        const nextMission = nextQueuedMission(channelId, ['queued', 'running']);
+        if (!nextMission) break;
+        ranCount += 1;
+        await runQueuedMission(nextMission);
+      }
+      if (ranCount > 0)
+        addEvent('queue', `Runner inbox finished ${ranCount} mission(s).`, 'success');
+    } finally {
+      queueRunnerRef.current = false;
+    }
+  }
+
+  function numberedQueueText() {
+    return activeQueuedMissions
+      .map(
+        (mission, index) => `${index + 1}. [${mission.status}] ${mission.title}\n${mission.prompt}`,
+      )
+      .join('\n\n');
+  }
+
+  async function copyNumberedQueue() {
+    const text = numberedQueueText();
+    if (!text) {
+      addEvent('queue', 'No runner inbox missions to copy.', 'meta');
+      return;
+    }
+    await navigator.clipboard?.writeText(text);
+    addEvent('queue', `Copied ${activeQueuedMissions.length} numbered mission(s).`, 'success');
+  }
+
+  async function createQueuedMissionFromPrompt(missionPrompt: string) {
     const missionProjectPath = projectPath || runnerStatus?.workingDirectory || '';
     if (!missionPrompt.trim()) {
       setError('Write or dictate a mission prompt first.');
-      return;
+      return null;
     }
     if (!missionProjectPath.trim()) {
       setError('Open Build Lab from the desktop runner or choose a project folder first.');
-      return;
+      return null;
     }
     setError('');
     if (!projectPath.trim() && missionProjectPath.trim()) setProjectPath(missionProjectPath);
@@ -1909,7 +2000,7 @@ export default function BuildLab() {
     });
     if (!response.ok) {
       setError((await response.json().catch(() => null))?.error ?? 'Could not queue mission.');
-      return;
+      return null;
     }
     const mission = (await response.json()) as QueuedMission;
     setQueuedMissions((prev) => [mission, ...prev.filter((item) => item.id !== mission.id)]);
@@ -1918,13 +2009,88 @@ export default function BuildLab() {
       ...queuedMissionsRef.current.filter((item) => item.id !== mission.id),
     ];
     addEvent('queue', `Queued mission: ${mission.title}`, 'meta');
+    return mission;
+  }
+
+  async function queueMission() {
+    const mission = await createQueuedMissionFromPrompt(composedPrompt());
+    if (!mission) return;
     setPrompt('');
-    if (autoRunQueue && !running && !queueRunnerRef.current) {
-      queueRunnerRef.current = true;
-      runQueuedMission(mission).finally(() => {
-        queueRunnerRef.current = false;
-      });
+    if (autoRunQueue) drainRunnerInbox(mission.channelId);
+  }
+
+  function parseDeveloperQueue(text: string) {
+    const clean = text.replace(/\r/g, '').trim();
+    if (!clean) return [];
+    const numberedParts = clean
+      .split(/\n(?=\s*\d+[).]\s+)/)
+      .map((part) => part.replace(/^\s*\d+[).]\s*/, '').trim())
+      .filter(Boolean);
+    if (numberedParts.length > 1) return numberedParts;
+    return clean
+      .split('\n')
+      .map((line) => line.replace(/^\s*[-*]\s*/, '').trim())
+      .filter(Boolean);
+  }
+
+  async function addDeveloperQueueMissions() {
+    const missions = parseDeveloperQueue(developerQueueText);
+    if (missions.length === 0) {
+      setError('Write one or more numbered missions first.');
+      return;
     }
+    for (const missionPrompt of missions) {
+      await createQueuedMissionFromPrompt(missionPrompt);
+    }
+    setDeveloperQueueText('');
+    setDeveloperQueueOpen(false);
+    addEvent('queue', `Added ${missions.length} developer-box mission(s).`, 'success');
+    if (autoRunQueue) drainRunnerInbox(activeChannel.id);
+  }
+
+  function startEditingQueuedMission(mission: QueuedMission) {
+    setEditingQueueId(mission.id);
+    setEditingQueueText(mission.prompt);
+  }
+
+  async function saveQueuedMissionEdit(mission: QueuedMission) {
+    const nextPrompt = editingQueueText.trim();
+    if (!nextPrompt) {
+      setError('Queued mission text cannot be empty.');
+      return;
+    }
+    const title = missionTitleFromPrompt(nextPrompt);
+    await patchQueuedMission(mission.id, {
+      title,
+      prompt: nextPrompt,
+      event: { type: 'edited', text: 'Queued mission text edited in Build Lab.' },
+    });
+    setEditingQueueId('');
+    setEditingQueueText('');
+  }
+
+  function moveQueuedMission(missionId: string, direction: -1 | 1) {
+    const activeIds = activeQueuedMissions.map((mission) => mission.id);
+    const currentIndex = activeIds.indexOf(missionId);
+    const nextIndex = currentIndex + direction;
+    if (currentIndex < 0 || nextIndex < 0 || nextIndex >= activeIds.length) return;
+    const nextActiveIds = [...activeIds];
+    [nextActiveIds[currentIndex], nextActiveIds[nextIndex]] = [
+      nextActiveIds[nextIndex],
+      nextActiveIds[currentIndex],
+    ];
+    const rank = new Map(nextActiveIds.map((id, index) => [id, index]));
+    const next = [...queuedMissionsRef.current].sort((a, b) => {
+      if (a.channelId === activeChannel.id && b.channelId === activeChannel.id) {
+        return (rank.get(a.id) ?? 999) - (rank.get(b.id) ?? 999);
+      }
+      if (a.channelId === activeChannel.id) return -1;
+      if (b.channelId === activeChannel.id) return 1;
+      return Date.parse(b.updatedAt) - Date.parse(a.updatedAt);
+    });
+    queuedMissionsRef.current = next;
+    setQueuedMissions(next);
+    addEvent('queue', 'Runner inbox order updated locally.', 'meta');
   }
 
   function loadQueuedMission(mission: QueuedMission) {
@@ -1936,6 +2102,18 @@ export default function BuildLab() {
   }
 
   async function runQueuedMission(mission: QueuedMission) {
+    const missionAgent = agents.find((agent) => agent.id === mission.agentId);
+    if (!missionAgent?.available) {
+      await patchQueuedMission(mission.id, {
+        status: 'failed',
+        event: {
+          type: 'agent_unavailable',
+          text: `${missionAgent?.name ?? mission.agentId} is not ready on this computer.`,
+        },
+      });
+      setError(`${missionAgent?.name ?? mission.agentId} is not ready on this computer.`);
+      return;
+    }
     selectChannel(mission.channelId);
     setAgentId(mission.agentId);
     setProjectPath(mission.projectPath);
@@ -2164,8 +2342,26 @@ export default function BuildLab() {
   const activeQueuedMissions = queuedMissions.filter(
     (mission) => mission.channelId === activeChannel.id,
   );
+  const queueStatusCounts = queuedMissions.reduce<Record<QueuedMissionStatus, number>>(
+    (counts, mission) => {
+      counts[mission.status] += 1;
+      return counts;
+    },
+    { draft: 0, queued: 0, running: 0, complete: 0, failed: 0 },
+  );
+  const queueChannelCounts = DEFAULT_CHANNELS.map((channel) => ({
+    ...channel,
+    count: queuedMissions.filter(
+      (mission) =>
+        mission.channelId === channel.id ||
+        (channel.id === 'lab' && mission.channelId === 'build-lab'),
+    ).length,
+  })).filter((channel) => channel.count > 0);
+  const activeRunnableQueuedMissions = activeQueuedMissions.filter(
+    (mission) => mission.status === 'queued' || mission.status === 'running',
+  );
   const runnableQueuedMissions = queuedMissions.filter(
-    (mission) => mission.status === 'queued' || mission.status === 'failed',
+    (mission) => mission.status === 'queued' || mission.status === 'running',
   );
   const runHint = !prompt.trim()
     ? 'Write a mission prompt.'
@@ -2174,6 +2370,25 @@ export default function BuildLab() {
       : projectPath.trim() || runnerStatus?.workingDirectory
         ? 'Ready to run on this computer.'
         : 'Ready to use the desktop runner folder.';
+  const currentConsoleMission = running
+    ? activeMissionTitle || missionTitleFromPrompt(prompt)
+    : prompt.trim()
+      ? missionTitleFromPrompt(prompt)
+      : activeQueuedMissions.find((mission) => mission.status === 'queued')?.title ||
+        'No active mission';
+  const currentConsoleMissionStatus = running
+    ? missionPhase === 'starting'
+      ? 'Starting'
+      : missionPhase === 'checking'
+        ? 'Checking'
+        : missionPhase === 'done'
+          ? 'Almost done'
+          : 'Working'
+    : prompt.trim()
+      ? 'Draft'
+      : activeQueuedMissions.some((mission) => mission.status === 'queued')
+        ? 'Next queued'
+        : 'Idle';
 
   return (
     <main className="mx-auto w-full max-w-6xl px-3 py-5 sm:px-5">
@@ -2589,70 +2804,211 @@ export default function BuildLab() {
                 </>
               )}
 
-              <section className="rounded-2xl border border-[#b98d52]/20 bg-[#fff8e8]/78 p-4">
-                <div className="mb-3 flex items-center justify-between">
-                  <p className="text-xs uppercase tracking-[0.16em] text-[#704923]">Diff desk</p>
-                  <button
-                    type="button"
-                    onClick={() => refreshDiff()}
-                    className="inline-flex items-center gap-1 rounded-full border border-[#8f6232]/25 px-2 py-1 text-xs text-[#704923]"
-                  >
-                    <RefreshCw size={12} />
-                    Refresh
-                  </button>
-                </div>
-                <div className="mb-3 rounded-xl border border-[#b98d52]/18 bg-[#fffdf2] p-3">
-                  <div className="mb-2 flex items-center gap-2 text-xs uppercase tracking-[0.14em] text-[#8d653d]">
-                    <ShieldCheck size={13} />
-                    Checkpoints
+              {openPanels.diff ? (
+                <section className="rounded-2xl border border-[#b98d52]/20 bg-[#fff8e8]/78 p-4">
+                  <div className="mb-3 flex items-center justify-between gap-2">
+                    <p className="text-xs uppercase tracking-[0.16em] text-[#704923]">Diff desk</p>
+                    <div className="flex items-center gap-2">
+                      <button
+                        type="button"
+                        onClick={() => refreshDiff()}
+                        className="inline-flex items-center gap-1 rounded-full border border-[#8f6232]/25 px-2 py-1 text-xs text-[#704923]"
+                      >
+                        <RefreshCw size={12} />
+                        Refresh
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => togglePanel('diff')}
+                        className="inline-flex items-center gap-1 rounded-full border border-[#8f6232]/25 bg-[#fffdf2] px-2 py-1 text-xs text-[#704923]"
+                        aria-label="Close Diff desk"
+                      >
+                        <X size={12} />
+                        Close
+                      </button>
+                    </div>
                   </div>
-                  {checkpoints.length === 0 ? (
-                    <p className="text-sm text-[#8d653d]">No checkpoint yet.</p>
-                  ) : (
-                    <ul className="space-y-2 text-sm text-[#3f2817]">
-                      {checkpoints.map((checkpoint, index) => (
-                        <li
-                          key={`${checkpoint.path ?? checkpoint.reason ?? 'checkpoint'}-${index}`}
-                        >
-                          {checkpoint.created
-                            ? (checkpoint.path ?? 'Checkpoint saved')
-                            : (checkpoint.reason ?? 'Checkpoint skipped')}
-                        </li>
-                      ))}
-                    </ul>
-                  )}
-                </div>
-                <div className="mb-3 rounded-xl border border-[#b98d52]/18 bg-[#fffdf2] p-3">
-                  <p className="mb-2 text-xs uppercase tracking-[0.14em] text-[#8d653d]">
-                    Changed files
-                  </p>
-                  {changedFiles.length === 0 ? (
-                    <p className="text-sm text-[#8d653d]">No changes detected.</p>
-                  ) : (
-                    <ul className="space-y-1 text-sm text-[#3f2817]">
-                      {changedFiles.map((file) => (
-                        <li key={file}>{file}</li>
-                      ))}
-                    </ul>
-                  )}
-                </div>
-                <pre className="max-h-[250px] overflow-auto rounded-xl bg-[#24180f] p-3 text-xs leading-5 text-[#f8e8bd]">
-                  {diff || 'No diff loaded.'}
-                </pre>
-              </section>
+                  <div className="mb-3 rounded-xl border border-[#b98d52]/18 bg-[#fffdf2] p-3">
+                    <div className="mb-2 flex items-center gap-2 text-xs uppercase tracking-[0.14em] text-[#8d653d]">
+                      <ShieldCheck size={13} />
+                      Checkpoints
+                    </div>
+                    {checkpoints.length === 0 ? (
+                      <p className="text-sm text-[#8d653d]">No checkpoint yet.</p>
+                    ) : (
+                      <ul className="space-y-2 text-sm text-[#3f2817]">
+                        {checkpoints.map((checkpoint, index) => (
+                          <li
+                            key={`${checkpoint.path ?? checkpoint.reason ?? 'checkpoint'}-${index}`}
+                          >
+                            {checkpoint.created
+                              ? (checkpoint.path ?? 'Checkpoint saved')
+                              : (checkpoint.reason ?? 'Checkpoint skipped')}
+                          </li>
+                        ))}
+                      </ul>
+                    )}
+                  </div>
+                  <div className="mb-3 rounded-xl border border-[#b98d52]/18 bg-[#fffdf2] p-3">
+                    <p className="mb-2 text-xs uppercase tracking-[0.14em] text-[#8d653d]">
+                      Changed files
+                    </p>
+                    {changedFiles.length === 0 ? (
+                      <p className="text-sm text-[#8d653d]">No changes detected.</p>
+                    ) : (
+                      <ul className="space-y-1 text-sm text-[#3f2817]">
+                        {changedFiles.map((file) => (
+                          <li key={file}>{file}</li>
+                        ))}
+                      </ul>
+                    )}
+                  </div>
+                  <pre className="max-h-[250px] overflow-auto rounded-xl bg-[#24180f] p-3 text-xs leading-5 text-[#f8e8bd]">
+                    {diff || 'No diff loaded.'}
+                  </pre>
+                </section>
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => togglePanel('diff')}
+                  className="inline-flex w-fit items-center gap-2 rounded-full border border-[#8f6232]/20 bg-[#fff8e8]/78 px-3 py-2 text-xs text-[#704923]"
+                  aria-label="Open Diff desk"
+                >
+                  <GitBranch size={13} />
+                  <span className="uppercase tracking-[0.16em]">Diff desk</span>
+                  <span className="rounded-full bg-[#fffdf2] px-2 py-0.5 text-[#8d653d]">
+                    {changedFiles.length > 0 ? `${changedFiles.length} files` : 'closed'}
+                  </span>
+                </button>
+              )}
             </div>
           </div>
 
           <div className="space-y-4 p-5">
             <div className="rounded-2xl border border-[#b98d52]/20 bg-[#fff8e8]/70 p-4">
-              <div className="mb-3 flex items-center justify-between gap-3">
+              <button
+                type="button"
+                onClick={() => togglePanel('missionQueue')}
+                className="flex w-full items-start justify-between gap-3 text-left"
+              >
                 <div>
+                  <p className="text-xs uppercase tracking-[0.16em] text-[#704923]">
+                    Mission queue
+                  </p>
+                  <p className="mt-1 text-xs leading-5 text-[#8d653d]">
+                    {queuedMissions.length === 0
+                      ? 'No queued missions yet.'
+                      : `${queuedMissions.length} total / ${runnableQueuedMissions.length} ready / ${queueStatusCounts.running} running`}
+                  </p>
+                </div>
+                <span className="rounded-full border border-[#8f6232]/20 bg-[#fffdf2] px-3 py-1 text-xs text-[#704923]">
+                  {openPanels.missionQueue ? 'hide list' : 'show all'}
+                </span>
+              </button>
+
+              <div className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-5">
+                {(
+                  [
+                    ['queued', 'Ready'],
+                    ['running', 'Running'],
+                    ['complete', 'Done'],
+                    ['failed', 'Failed'],
+                    ['draft', 'Drafts'],
+                  ] as Array<[QueuedMissionStatus, string]>
+                ).map(([status, label]) => (
+                  <div
+                    key={status}
+                    className="rounded-xl border border-[#b98d52]/18 bg-[#fffdf2]/78 px-3 py-2"
+                  >
+                    <p className="text-[10px] uppercase tracking-[0.14em] text-[#8d653d]">
+                      {label}
+                    </p>
+                    <p className="mt-1 font-serif text-2xl leading-none text-[#3f2817]">
+                      {queueStatusCounts[status]}
+                    </p>
+                  </div>
+                ))}
+              </div>
+
+              {queueChannelCounts.length > 0 && (
+                <div className="mt-3 flex flex-wrap gap-2">
+                  {queueChannelCounts.map((channel) => (
+                    <button
+                      key={channel.id}
+                      type="button"
+                      onClick={() => selectChannel(channel.id)}
+                      className="rounded-full border border-[#8f6232]/20 px-3 py-1 text-xs text-[#704923]"
+                    >
+                      {channel.name}: {channel.count}
+                    </button>
+                  ))}
+                </div>
+              )}
+
+              {openPanels.missionQueue && (
+                <div className="mt-4 grid gap-2">
+                  {queuedMissions.length === 0 ? (
+                    <p className="text-sm text-[#8d653d]">
+                      Queue a mission and it will appear here with its channel, agent, status, and
+                      latest runner event.
+                    </p>
+                  ) : (
+                    queuedMissions.map((mission, index) => {
+                      const channelName =
+                        channelForId(mission.channelId)?.name ?? mission.channelId;
+                      return (
+                        <div
+                          key={mission.id}
+                          className="grid gap-2 rounded-xl border border-[#b98d52]/18 bg-[#fffdf2]/78 px-3 py-2 sm:grid-cols-[32px_1fr_auto] sm:items-center"
+                        >
+                          <span className="grid h-7 w-7 place-items-center rounded-full bg-[#704923] text-xs text-[#fff8e8]">
+                            {index + 1}
+                          </span>
+                          <button
+                            type="button"
+                            onClick={() => loadQueuedMission(mission)}
+                            className="min-w-0 text-left"
+                          >
+                            <span className="block truncate text-sm font-medium text-[#3f2817]">
+                              {mission.title}
+                            </span>
+                            <span className="mt-1 block truncate text-xs text-[#8d653d]">
+                              {channelName} / {mission.agentId} / {shortPath(mission.projectPath)}
+                              {mission.events[0] ? ` / ${mission.events[0].type}` : ''}
+                            </span>
+                          </button>
+                          <span className="w-fit rounded-full border border-[#8f6232]/18 px-2 py-1 text-[11px] text-[#704923]">
+                            {mission.status}
+                          </span>
+                        </div>
+                      );
+                    })
+                  )}
+                </div>
+              )}
+            </div>
+
+            <div className="rounded-2xl border border-[#b98d52]/20 bg-[#fff8e8]/70 p-4">
+              <div className="mb-3 flex items-center justify-between gap-3">
+                <div
+                  onClick={(event) => {
+                    if (event.detail >= 3) setDeveloperQueueOpen((value) => !value);
+                  }}
+                >
                   <p className="text-xs uppercase tracking-[0.16em] text-[#704923]">Runner inbox</p>
                   <p className="mt-1 text-xs leading-5 text-[#8d653d]">
                     Local Phone Level 2 queue. Supabase will replace this storage later.
                   </p>
                 </div>
                 <div className="flex flex-wrap justify-end gap-2">
+                  <button
+                    type="button"
+                    onClick={() => togglePanel('runnerInbox')}
+                    className="rounded-full border border-[#8f6232]/20 bg-[#fffdf2] px-2 py-1 text-xs text-[#704923]"
+                    aria-label={openPanels.runnerInbox ? 'Close Runner inbox' : 'Open Runner inbox'}
+                  >
+                    {openPanels.runnerInbox ? 'close' : `${activeQueuedMissions.length} items`}
+                  </button>
                   <button
                     type="button"
                     onClick={() => setAutoRunQueue((value) => !value)}
@@ -2662,23 +3018,123 @@ export default function BuildLab() {
                   </button>
                   <button
                     type="button"
+                    onClick={() => setRunnerInboxCompact((value) => !value)}
+                    className="rounded-full border border-[#8f6232]/20 px-2 py-1 text-xs text-[#704923]"
+                  >
+                    {runnerInboxCompact ? 'cards' : '1 2 3'}
+                  </button>
+                  <button
+                    type="button"
                     onClick={runAllReadyMissions}
                     className="rounded-full border border-[#8f6232]/20 bg-[#704923] px-2 py-1 text-xs text-[#fff8e8]"
                   >
                     Run all ready
                   </button>
+                  <button
+                    type="button"
+                    onClick={copyNumberedQueue}
+                    className="rounded-full border border-[#8f6232]/20 px-2 py-1 text-xs text-[#704923]"
+                  >
+                    Copy list
+                  </button>
                   <span className="rounded-full border border-[#8f6232]/20 px-2 py-1 text-xs text-[#704923]">
-                    {runnableQueuedMissions.length} ready
+                    {activeRunnableQueuedMissions.length} ready
                   </span>
                 </div>
               </div>
-              {activeQueuedMissions.length === 0 ? (
+              {developerQueueOpen && openPanels.runnerInbox && (
+                <div className="mb-3 rounded-xl border border-[#b98d52]/18 bg-[#fffdf2]/80 p-3">
+                  <p className="text-xs uppercase tracking-[0.14em] text-[#704923]">
+                    Developer quick add
+                  </p>
+                  <textarea
+                    value={developerQueueText}
+                    onChange={(event) => setDeveloperQueueText(event.target.value)}
+                    placeholder={'1. First mission\n2. Second mission\n3. Third mission'}
+                    className="mt-2 min-h-24 w-full resize-y rounded-xl border border-[#b98d52]/25 bg-[#fff8e8] p-3 text-sm leading-6 text-[#3f2817] outline-none focus:border-[#8f6232]"
+                  />
+                  <div className="mt-2 flex flex-wrap gap-2">
+                    <button
+                      type="button"
+                      onClick={addDeveloperQueueMissions}
+                      className="rounded-full bg-[#704923] px-3 py-1 text-xs text-[#fff8e8]"
+                    >
+                      Add numbered missions
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setDeveloperQueueOpen(false)}
+                      className="rounded-full border border-[#8f6232]/20 px-3 py-1 text-xs text-[#704923]"
+                    >
+                      Close
+                    </button>
+                  </div>
+                </div>
+              )}
+              {!openPanels.runnerInbox ? (
+                <button
+                  type="button"
+                  onClick={() => togglePanel('runnerInbox')}
+                  className="inline-flex items-center gap-2 rounded-full border border-[#8f6232]/20 bg-[#fffdf2] px-3 py-2 text-xs text-[#704923]"
+                >
+                  Runner inbox closed
+                  <span className="rounded-full bg-[#704923] px-2 py-0.5 text-[#fff8e8]">
+                    {activeQueuedMissions.length}
+                  </span>
+                </button>
+              ) : activeQueuedMissions.length === 0 ? (
                 <p className="text-sm text-[#8d653d]">
                   Queue a mission from this channel to see how the phone runner workflow will feel.
                 </p>
+              ) : runnerInboxCompact ? (
+                <ol className="grid gap-2">
+                  {activeQueuedMissions.slice(0, 8).map((mission, index) => (
+                    <li
+                      key={mission.id}
+                      className="grid grid-cols-[28px_1fr_auto] items-center gap-2 rounded-xl border border-[#b98d52]/18 bg-[#fffdf2]/78 px-3 py-2"
+                    >
+                      <span className="grid h-7 w-7 place-items-center rounded-full bg-[#704923] text-xs text-[#fff8e8]">
+                        {index + 1}
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => loadQueuedMission(mission)}
+                        className="min-w-0 text-left text-sm text-[#3f2817]"
+                      >
+                        <span className="block truncate">{mission.title}</span>
+                      </button>
+                      <span className="rounded-full border border-[#8f6232]/18 px-2 py-1 text-[11px] text-[#704923]">
+                        {mission.status}
+                      </span>
+                      <div className="col-span-3 flex flex-wrap gap-2 pl-9">
+                        <button
+                          type="button"
+                          onClick={() => moveQueuedMission(mission.id, -1)}
+                          className="rounded-full border border-[#8f6232]/18 px-2 py-1 text-[11px] text-[#704923]"
+                        >
+                          up
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => moveQueuedMission(mission.id, 1)}
+                          className="rounded-full border border-[#8f6232]/18 px-2 py-1 text-[11px] text-[#704923]"
+                        >
+                          down
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => startEditingQueuedMission(mission)}
+                          className="rounded-full border border-[#8f6232]/18 px-2 py-1 text-[11px] text-[#704923]"
+                        >
+                          edit
+                        </button>
+                      </div>
+                    </li>
+                  ))}
+                </ol>
               ) : (
                 <div className="grid gap-3">
-                  {activeQueuedMissions.slice(0, 5).map((mission) => (
+                  {activeQueuedMissions.slice(0, 8).map((mission) => (
                     <div
                       key={mission.id}
                       className="rounded-2xl border border-[#b98d52]/22 bg-[#fffdf2]/75 p-4"
@@ -2696,9 +3152,17 @@ export default function BuildLab() {
                           {mission.status}
                         </span>
                       </div>
-                      <p className="mt-3 line-clamp-3 text-sm leading-6 text-[#5f4229]">
-                        {mission.prompt}
-                      </p>
+                      {editingQueueId === mission.id ? (
+                        <textarea
+                          value={editingQueueText}
+                          onChange={(event) => setEditingQueueText(event.target.value)}
+                          className="mt-3 min-h-28 w-full resize-y rounded-xl border border-[#b98d52]/25 bg-[#fff8e8] p-3 text-sm leading-6 text-[#3f2817] outline-none focus:border-[#8f6232]"
+                        />
+                      ) : (
+                        <p className="mt-3 line-clamp-3 text-sm leading-6 text-[#5f4229]">
+                          {mission.prompt}
+                        </p>
+                      )}
                       <div className="mt-3 flex flex-wrap gap-2">
                         <button
                           type="button"
@@ -2709,11 +3173,56 @@ export default function BuildLab() {
                         </button>
                         <button
                           type="button"
+                          onClick={() => moveQueuedMission(mission.id, -1)}
+                          className="rounded-full border border-[#8f6232]/25 px-3 py-1 text-xs text-[#704923]"
+                        >
+                          Up
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => moveQueuedMission(mission.id, 1)}
+                          className="rounded-full border border-[#8f6232]/25 px-3 py-1 text-xs text-[#704923]"
+                        >
+                          Down
+                        </button>
+                        {editingQueueId === mission.id ? (
+                          <>
+                            <button
+                              type="button"
+                              onClick={() => saveQueuedMissionEdit(mission)}
+                              className="rounded-full border border-[#8f6232]/25 px-3 py-1 text-xs text-[#704923]"
+                            >
+                              Save edit
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setEditingQueueId('');
+                                setEditingQueueText('');
+                              }}
+                              className="rounded-full border border-[#8f6232]/25 px-3 py-1 text-xs text-[#704923]"
+                            >
+                              Cancel
+                            </button>
+                          </>
+                        ) : (
+                          <button
+                            type="button"
+                            onClick={() => startEditingQueuedMission(mission)}
+                            className="rounded-full border border-[#8f6232]/25 px-3 py-1 text-xs text-[#704923]"
+                          >
+                            Edit
+                          </button>
+                        )}
+                        <button
+                          type="button"
                           onClick={() => runQueuedMission(mission)}
                           disabled={
                             running ||
                             !selectedAgent?.available ||
-                            (mission.status !== 'queued' && mission.status !== 'failed')
+                            (mission.status !== 'queued' &&
+                              mission.status !== 'running' &&
+                              mission.status !== 'failed')
                           }
                           className="rounded-full bg-[#704923] px-3 py-1 text-xs text-[#fff8e8] disabled:opacity-45"
                         >
@@ -2912,6 +3421,55 @@ export default function BuildLab() {
                     <span className="text-xs text-[#a98b5c]">{running ? 'streaming' : 'idle'}</span>
                   </div>
                 </div>
+                <div className="mb-3">
+                  {showConsoleMissionPill ? (
+                    <div className="flex flex-wrap items-center justify-between gap-3 rounded-full border border-[#d7b978]/18 bg-[#150f0a] px-3 py-2">
+                      <div className="flex min-w-0 items-center gap-2">
+                        <span
+                          className="h-2.5 w-2.5 shrink-0 rounded-full"
+                          style={{
+                            background: running ? '#ffd36c' : '#7b684d',
+                            boxShadow: running ? '0 0 18px rgba(255,211,108,0.78)' : 'none',
+                            animation: running
+                              ? 'build-lab-voice-pulse 1.1s ease-in-out infinite'
+                              : 'none',
+                          }}
+                        />
+                        <span className="shrink-0 text-[11px] uppercase tracking-[0.14em] text-[#a98b5c]">
+                          Current mission
+                        </span>
+                        <span className="min-w-0 truncate text-xs text-[#f8e8bd]">
+                          {currentConsoleMissionStatus}: {currentConsoleMission}
+                        </span>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => setShowConsoleMissionPill(false)}
+                        aria-label="Close current mission pill"
+                        title="Close current mission pill"
+                        className="grid h-7 w-7 shrink-0 place-items-center rounded-full border border-[#d7b978]/18 text-[#d7b978]"
+                      >
+                        <X size={13} />
+                      </button>
+                    </div>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={() => setShowConsoleMissionPill(true)}
+                      aria-label="Open current mission pill"
+                      className="inline-flex items-center gap-2 rounded-full border border-[#d7b978]/18 bg-[#150f0a] px-3 py-2 text-xs text-[#d7b978]"
+                    >
+                      <span
+                        className="h-2.5 w-2.5 rounded-full"
+                        style={{
+                          background: running ? '#ffd36c' : '#7b684d',
+                          boxShadow: running ? '0 0 18px rgba(255,211,108,0.78)' : 'none',
+                        }}
+                      />
+                      Open current mission
+                    </button>
+                  )}
+                </div>
                 <div className="mb-3 rounded-xl border border-[#d7b978]/12 bg-[#150f0a] px-3 py-2">
                   <div className="flex items-center justify-between gap-3">
                     <div className="flex min-w-0 items-center gap-2">
@@ -2964,12 +3522,13 @@ export default function BuildLab() {
                       </p>
                       <p className="mt-1">
                         Progress: {running ? missionPhase : 'idle'} /{' '}
-                        {runnableQueuedMissions.length} queued.
+                        {activeRunnableQueuedMissions.length} queued.
                       </p>
                     </div>
                   )}
                 </div>
                 <div
+                  ref={consoleScrollRef}
                   className={
                     consoleDesignMode
                       ? 'max-h-[360px] overflow-auto rounded-xl border border-[#d9b65f]/12 bg-[radial-gradient(circle_at_20%_10%,rgba(255,209,111,0.16),transparent_32%),linear-gradient(180deg,#080914,#02030a)] p-3 font-mono text-xs leading-5 shadow-inner'
@@ -3009,7 +3568,6 @@ export default function BuildLab() {
                       ),
                     )
                   )}
-                  <div ref={consoleEndRef} />
                 </div>
                 <div className="mt-3 rounded-2xl border border-[#d7b978]/14 bg-[#150f0a] p-3">
                   <div className="mb-2 flex items-center justify-between gap-3">
@@ -3079,10 +3637,25 @@ export default function BuildLab() {
                       </p>
                     </div>
                   )}
+                  {running && (
+                    <div className="mb-3 rounded-xl border border-[#d7b978]/18 bg-[#24180f] p-3">
+                      <p className="text-xs uppercase tracking-[0.14em] text-[#d7b978]">
+                        Mission in process
+                      </p>
+                      <p className="mt-1 text-xs leading-5 text-[#a98b5c]">
+                        What you type, add from screenshots, or record now is a follow-up brief. Use
+                        Add to queue to register it for the runner queue.
+                      </p>
+                    </div>
+                  )}
                   <textarea
                     value={prompt}
                     onChange={(event) => setPrompt(event.target.value)}
-                    placeholder="Tell the agent what to build, fix, review, or plan..."
+                    placeholder={
+                      running
+                        ? 'Write or record a follow-up. Add to queue will register it next...'
+                        : 'Tell the agent what to build, fix, review, or plan...'
+                    }
                     className="min-h-32 w-full resize-y rounded-xl border border-[#d7b978]/18 bg-[#0f0a07] p-3 text-sm leading-6 text-[#f8e8bd] outline-none placeholder:text-[#8e7658] focus:border-[#d7b978]/55"
                   />
                   <div className="mt-3 flex flex-wrap items-center justify-between gap-3">
@@ -3104,9 +3677,72 @@ export default function BuildLab() {
                         onClick={queueMission}
                         className="inline-flex justify-center gap-2 rounded-full border border-[#d7b978]/22 px-4 py-2 text-sm text-[#d7b978] disabled:opacity-45"
                       >
-                        Add to queue
+                        {running ? 'Add follow-up to queue' : 'Add to queue'}
                       </button>
                     </div>
+                  </div>
+                  <div className="mt-3 rounded-xl border border-[#d7b978]/12 bg-[#0f0a07] p-3">
+                    <button
+                      type="button"
+                      onClick={() => togglePanel('missionQueue')}
+                      className="flex w-full items-center justify-between gap-3 text-left"
+                    >
+                      <span className="flex items-center gap-2 text-xs uppercase tracking-[0.16em] text-[#d7b978]">
+                        <SquareTerminal size={14} />
+                        Mission queue
+                      </span>
+                      <span className="rounded-full border border-[#d7b978]/18 px-3 py-1 text-xs text-[#d7b978]">
+                        {openPanels.missionQueue ? 'close' : `${activeQueuedMissions.length} items`}
+                      </span>
+                    </button>
+                    {openPanels.missionQueue && (
+                      <div className="mt-3 grid gap-2">
+                        {activeQueuedMissions.length === 0 ? (
+                          <p className="text-sm leading-6 text-[#a98b5c]">
+                            No queued missions in this channel.
+                          </p>
+                        ) : (
+                          activeQueuedMissions.slice(0, 6).map((mission, index) => (
+                            <div
+                              key={mission.id}
+                              className="grid grid-cols-[24px_1fr_auto] items-center gap-2 rounded-xl border border-[#d7b978]/12 bg-[#150f0a] px-3 py-2"
+                            >
+                              <span className="grid h-6 w-6 place-items-center rounded-full bg-[#d7b978] text-[11px] text-[#24180f]">
+                                {index + 1}
+                              </span>
+                              <button
+                                type="button"
+                                onClick={() => loadQueuedMission(mission)}
+                                className="min-w-0 text-left"
+                              >
+                                <span className="block truncate text-sm text-[#f8e8bd]">
+                                  {mission.title}
+                                </span>
+                                <span className="block text-[11px] text-[#a98b5c]">
+                                  {mission.status}
+                                </span>
+                              </button>
+                              <div className="flex gap-1">
+                                <button
+                                  type="button"
+                                  onClick={() => moveQueuedMission(mission.id, -1)}
+                                  className="rounded-full border border-[#d7b978]/18 px-2 py-1 text-[11px] text-[#d7b978]"
+                                >
+                                  up
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => moveQueuedMission(mission.id, 1)}
+                                  className="rounded-full border border-[#d7b978]/18 px-2 py-1 text-[11px] text-[#d7b978]"
+                                >
+                                  down
+                                </button>
+                              </div>
+                            </div>
+                          ))
+                        )}
+                      </div>
+                    )}
                   </div>
                   <div className="mt-3 rounded-xl border border-[#d7b978]/12 bg-[#0f0a07] p-3">
                     <button

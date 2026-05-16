@@ -376,6 +376,7 @@ The first version proves the loop:
 - stream stdout/stderr into the UI
 - show changed files
 - show the current Git diff
+- keep the Diff desk closable as a compact pill so the mission workspace can stay light until review is needed
 - keep the default workspace simpler than the terminal: project, agent, prompt, console, diff
 - separate readable mission reflection from raw technical agent output
 
@@ -411,6 +412,7 @@ MVP voice behavior:
 - browser speech-to-text appends into the raw mission brief
 - the user can edit before sending
 - no audio is stored
+- while a mission is running, the composer must clearly state that typed notes, screenshot notes, and recorded voice are follow-up briefs that should be added to the runner queue
 
 Future voice behavior:
 
@@ -583,6 +585,22 @@ This protects the discussion/reflection layer from being buried by streaming bui
 ### Agent Console
 
 The agent console is the live technical stream. It should behave like the current terminal experience: command starts, stdout/stderr, errors, completion events. It is useful while the agent is working, but it should not be the only record of the mission.
+
+The top of the console should keep the active mission visible as a closable pill. Open state shows the mission status and title. Closed state stays as a compact "Open current mission" pill so the user can recover the context without the mission prompt taking over the console.
+
+The console must scroll inside its own output region. New agent output must not pull the whole Build Lab page away from the mission prompt or composer.
+
+## Runner Inbox
+
+The runner inbox is the bridge between phone-prepared prompts and the desktop runner. It must be actionable, not just a display list:
+
+- queued and stale running missions are both treated as runnable when the desktop runner is idle
+- the inbox can be collapsed to a pill
+- the user can switch between card view and short numbered view
+- the user can copy the numbered list for pasting into the terminal/chat if the runner bridge is not trusted yet
+- queued mission text can be edited before running
+- missions can be moved up or down locally to choose the next execution order
+- a hidden developer quick-add mode can accept a numbered pasted list and turn it into runner inbox items
 
 ## Access
 

@@ -18,7 +18,12 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
   const access = await requireBuildLabAccess();
   if (!access.ok) return access.response;
 
-  let body: { status?: BuildLabQueuedMissionStatus; event?: { type?: string; text?: string } };
+  let body: {
+    status?: BuildLabQueuedMissionStatus;
+    title?: string;
+    prompt?: string;
+    event?: { type?: string; text?: string };
+  };
   try {
     body = await request.json();
   } catch {
@@ -47,6 +52,8 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
 
   const updated = updateQueuedMission(access.value.id, id, {
     status: body.status ?? current.status,
+    title: body.title?.trim() || current.title,
+    prompt: body.prompt?.trim() || current.prompt,
     events: nextEvents,
   });
 
