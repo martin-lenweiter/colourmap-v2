@@ -75,6 +75,7 @@ describe('PersonalityTypeProgram', () => {
     }
 
     expect(screen.getByText('Image Lens result')).toBeDefined();
-    expect(screen.getByText(/Vision/i)).toBeDefined();
+    expect(screen.getAllByText(/Vision/i).length).toBeGreaterThan(0);
+    expect(screen.getByText(/What to learn from this image pattern/i)).toBeDefined();
   });
 });

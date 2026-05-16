@@ -50,6 +50,14 @@ type AxisDefinition = {
   bridgeHigh: string;
 };
 
+type EducationRecommendation = {
+  title: string;
+  program: string;
+  reason: string;
+  practice: string;
+  color: string;
+};
+
 const CHOICES: Choice[] = [
   { label: 'not really', value: 1 },
   { label: 'sometimes', value: 2 },
@@ -899,6 +907,102 @@ function storyReflection(scores: Record<AxisId, number>) {
   };
 }
 
+function educationRecommendations(scores: Record<AxisId, number>): EducationRecommendation[] {
+  const recommendations: EducationRecommendation[] = [];
+
+  if (scores.emotionalWeather >= 62) {
+    recommendations.push({
+      title: 'Stabilize the weather first',
+      program: 'Nervous System + Room to Breathe',
+      reason:
+        'Your answers suggest strong inner weather. Learning works better when the body has one anchor before the mind tries to solve everything.',
+      practice: 'Name the feeling as weather, then choose one physical anchor for two minutes.',
+      color: '#8faeb5',
+    });
+  }
+
+  if (scores.openness >= 62 && scores.structure < 55) {
+    recommendations.push({
+      title: 'Give vision a container',
+      program: 'Creativity + Organisational Intelligence',
+      reason:
+        'Imagination is active, but structure may be the bridge that lets the idea become real instead of multiplying into pressure.',
+      practice: 'Put one idea inside one tiny box: one page, one timer, one next action.',
+      color: '#d8a7c4',
+    });
+  }
+
+  if (scores.care >= 62 || (scores.care >= 54 && scores.socialEnergy >= 58)) {
+    recommendations.push({
+      title: 'Protect care with boundaries',
+      program: 'Belonging + Conflict Repair',
+      reason:
+        'Care and relationship signals are important here. The learning path is not less care; it is warmth with clearer edges.',
+      practice: 'Write one kind sentence and one clear need before entering a difficult exchange.',
+      color: '#9fbf8a',
+    });
+  }
+
+  if (scores.storyLens < 48 || scores.storyLens > 70) {
+    recommendations.push({
+      title: 'Work with the story lens',
+      program: 'Self-Talk + Identity Becoming',
+      reason:
+        'The meaning you give the moment is a major lever. The next lesson is how to recontextualize without denying the pain.',
+      practice:
+        'Ask: what else could this mean besides failure, and what reaction gives power back?',
+      color: '#e0b66e',
+    });
+  }
+
+  if (scores.socialEnergy < 45) {
+    recommendations.push({
+      title: 'Check the isolation loop',
+      program: 'Belonging + Relational Intelligence',
+      reason:
+        'Quiet processing may be useful, but the result suggests one small relational bridge could keep the inner story from becoming absolute.',
+      practice: 'Send one honest message or ask for one low-pressure point of contact.',
+      color: '#d99e9a',
+    });
+  }
+
+  if (recommendations.length === 0) {
+    recommendations.push({
+      title: 'Turn recognition into movement',
+      program: 'Agency + Struggle & Letting Go',
+      reason:
+        'The profile is balanced enough that the best path is practical: learn how small actions change the inner field.',
+      practice:
+        'Choose one five-minute bridge action and notice whether the state changes even slightly.',
+      color: '#c4a060',
+    });
+  }
+
+  return recommendations.slice(0, 3);
+}
+
+function resultGlimpse(scores: Record<AxisId, number>, styleTitle: string) {
+  const highAxis = AXES.reduce((winner, axis) =>
+    scores[axis.id] > scores[winner.id] ? axis : winner,
+  );
+  const lowAxis = AXES.reduce((winner, axis) =>
+    scores[axis.id] < scores[winner.id] ? axis : winner,
+  );
+
+  return {
+    title: styleTitle,
+    pattern: `${highAxis.label} is loudest right now.`,
+    tension: `${lowAxis.label} may need a gentler bridge, not force.`,
+    move:
+      scores.structure < 50
+        ? 'Make one tiny visible container before opening more possibilities.'
+        : scores.emotionalWeather > 62
+          ? 'Regulate the body first, then decide what the story means.'
+          : 'Choose one small action that turns recognition into movement.',
+    color: highAxis.color,
+  };
+}
+
 function reverseTipi(value: number) {
   return 8 - value;
 }
@@ -1045,6 +1149,157 @@ function ImageLensIllustration({ item }: { item: ImageLensItem }) {
   );
 }
 
+function EducationRecommendationPanel({
+  title = 'Recommended learning path',
+  recommendations,
+}: {
+  title?: string;
+  recommendations: EducationRecommendation[];
+}) {
+  return (
+    <article
+      style={{
+        marginTop: 12,
+        border: '1px solid rgba(196,160,96,0.24)',
+        background:
+          'radial-gradient(circle at 10% 0%, rgba(196,160,96,0.13), transparent 34%), rgba(255,255,255,0.04)',
+        padding: 14,
+      }}
+    >
+      <p
+        style={{
+          margin: '0 0 8px',
+          fontFamily: SERIF,
+          fontSize: 10,
+          letterSpacing: '0.16em',
+          textTransform: 'uppercase',
+          color: 'rgba(255,218,168,0.68)',
+        }}
+      >
+        Education bridge
+      </p>
+      <h4 style={{ margin: '0 0 10px', fontFamily: SERIF, fontSize: 18 }}>{title}</h4>
+      <div style={{ display: 'grid', gap: 9 }}>
+        {recommendations.map((item) => (
+          <div
+            key={item.title}
+            style={{
+              border: `1px solid ${col(item.color, 0.22)}`,
+              background: col(item.color, 0.07),
+              padding: 11,
+            }}
+          >
+            <strong
+              style={{
+                display: 'block',
+                fontFamily: SERIF,
+                fontSize: 14,
+                color: 'rgba(255,241,210,0.92)',
+              }}
+            >
+              {item.title}
+            </strong>
+            <span
+              style={{
+                display: 'block',
+                marginTop: 4,
+                fontFamily: SERIF,
+                fontSize: 12,
+                color: col(item.color, 0.86),
+              }}
+            >
+              {item.program}
+            </span>
+            <p style={{ ...resultTextStyle, marginTop: 7 }}>{item.reason}</p>
+            <p style={{ ...resultTextStyle, color: 'rgba(255,232,176,0.9)' }}>
+              <b>Practice:</b> {item.practice}
+            </p>
+          </div>
+        ))}
+      </div>
+    </article>
+  );
+}
+
+function ResultGlimpseCard({ glimpse }: { glimpse: ReturnType<typeof resultGlimpse> }) {
+  return (
+    <article
+      style={{
+        marginTop: 14,
+        border: `1px solid ${col(glimpse.color, 0.28)}`,
+        background:
+          `radial-gradient(circle at 16% 0%, ${col(glimpse.color, 0.18)}, transparent 38%), ` +
+          'rgba(255,255,255,0.045)',
+        padding: 14,
+      }}
+    >
+      <p
+        style={{
+          margin: '0 0 8px',
+          fontFamily: SERIF,
+          fontSize: 10,
+          letterSpacing: '0.16em',
+          textTransform: 'uppercase',
+          color: col(glimpse.color, 0.76),
+        }}
+      >
+        Glimpse / read this first
+      </p>
+      <h4 style={{ margin: 0, fontFamily: SERIF, fontSize: 21, color: 'rgba(255,241,196,0.95)' }}>
+        {glimpse.title}
+      </h4>
+      <div
+        style={{
+          display: 'grid',
+          gap: 8,
+          gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))',
+          marginTop: 12,
+        }}
+      >
+        {[
+          ['Pattern', glimpse.pattern],
+          ['Tension', glimpse.tension],
+          ['Bridge', glimpse.move],
+        ].map(([label, text]) => (
+          <div
+            key={label}
+            style={{
+              border: `1px solid ${col(glimpse.color, 0.16)}`,
+              background: col(glimpse.color, 0.055),
+              padding: 10,
+            }}
+          >
+            <strong
+              style={{
+                display: 'block',
+                fontFamily: SERIF,
+                fontSize: 11,
+                letterSpacing: '0.08em',
+                textTransform: 'uppercase',
+                color: col(glimpse.color, 0.82),
+              }}
+            >
+              {label}
+            </strong>
+            <span
+              style={{
+                display: 'block',
+                marginTop: 5,
+                fontFamily: SERIF,
+                fontSize: 13,
+                lineHeight: 1.45,
+                color: 'rgba(250,238,205,0.72)',
+              }}
+            >
+              {text}
+            </span>
+          </div>
+        ))}
+      </div>
+    </article>
+  );
+}
+
 export default function PersonalityTypeProgram({
   onClose,
   onBack,
@@ -1087,8 +1342,15 @@ export default function PersonalityTypeProgram({
   const tipiScores = useMemo(() => scoreTipi(tipiAnswers), [tipiAnswers]);
   const story = storyReflection(scores);
   const styleProfile = useMemo(() => personalityProfile(scores), [scores]);
+  const glimpse = useMemo(() => resultGlimpse(scores, styleProfile.title), [scores, styleProfile]);
+  const recommendedPaths = useMemo(() => educationRecommendations(scores), [scores]);
   const imageScores = useMemo(() => scoreImageLens(imageAnswers), [imageAnswers]);
   const imageProfile = useMemo(() => personalityProfile(imageScores), [imageScores]);
+  const imageGlimpse = useMemo(
+    () => resultGlimpse(imageScores, imageProfile.title),
+    [imageScores, imageProfile],
+  );
+  const imageRecommendedPaths = useMemo(() => educationRecommendations(imageScores), [imageScores]);
   const imageSource =
     testMode === 'tipi' || complete
       ? complete
@@ -1419,6 +1681,11 @@ export default function PersonalityTypeProgram({
                 <p style={{ ...resultTextStyle, marginTop: 10, fontSize: 14 }}>
                   {imageProfile.essence}
                 </p>
+                <ResultGlimpseCard glimpse={imageGlimpse} />
+                <EducationRecommendationPanel
+                  title="What to learn from this image pattern"
+                  recommendations={imageRecommendedPaths}
+                />
                 <div style={{ display: 'grid', gap: 10, marginTop: 18 }}>
                   {AXES.map((item) => {
                     const score = imageScores[item.id];
@@ -1795,6 +2062,7 @@ export default function PersonalityTypeProgram({
               <p style={{ ...resultTextStyle, marginTop: 10, fontSize: 14 }}>
                 {styleProfile.essence}
               </p>
+              <ResultGlimpseCard glimpse={glimpse} />
 
               <div style={{ display: 'grid', gap: 10, marginTop: 18 }}>
                 {AXES.map((item) => {
@@ -1873,6 +2141,8 @@ export default function PersonalityTypeProgram({
                   {story.question}
                 </p>
               </article>
+
+              <EducationRecommendationPanel recommendations={recommendedPaths} />
 
               {unsureQuestionIds.length > 0 && (
                 <article

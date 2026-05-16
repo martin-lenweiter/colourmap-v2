@@ -20,6 +20,10 @@ describe('LearningHub', () => {
     const { container } = render(<LearningHub onClose={onClose} />);
 
     expect(screen.getByText("You're here. That already matters.")).toBeDefined();
+    expect(screen.getByText('How to learn here')).toBeDefined();
+    expect(screen.getByText('Glimpse')).toBeDefined();
+    expect(screen.getByText('Story')).toBeDefined();
+    expect(screen.getByText('Practice')).toBeDefined();
     expect(screen.getByText('Knowledge worlds')).toBeDefined();
     expect(screen.getByText('Struggle & Letting Go')).toBeDefined();
     expect(screen.getByRole('button', { name: /Living Atlas/i })).toBeDefined();

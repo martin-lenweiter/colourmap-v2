@@ -97,6 +97,36 @@ const EDUCATION_PATHS = [
   },
 ];
 
+const EDUCATION_DEPTH_LAYERS = [
+  {
+    id: 'glimpse',
+    title: 'Glimpse',
+    label: 'Understand before reading',
+    body: 'See the core pattern, the simple tension, and one bridge move in a few seconds.',
+    action: 'Open Personality Map',
+    tint: '#D0A35F',
+    target: 'personality',
+  },
+  {
+    id: 'story',
+    title: 'Story',
+    label: 'Make the pattern human',
+    body: 'Use comic scenes, examples, and symbolic images so psychology becomes visible.',
+    action: 'Open Self-Talk',
+    tint: '#6888B0',
+    target: 'self-talk',
+  },
+  {
+    id: 'practice',
+    title: 'Practice',
+    label: 'Leave with one move',
+    body: 'Turn the lesson into a tiny action: one breath, one bridge, one next reaction.',
+    action: 'Open Letting Go',
+    tint: '#6B7A50',
+    target: 'struggle-letting-go',
+  },
+] as const;
+
 const POSITIVE_OVERLAY_PROGRAMS = new Set([
   'agency',
   'organisational-intelligence',
@@ -749,6 +779,134 @@ function EducationAtlas({
   );
 }
 
+function LearningDepthPanel({
+  byKey,
+  onOpen,
+  onOpenPersonality,
+}: {
+  byKey: Record<string, Program>;
+  onOpen: (program: Program) => void;
+  onOpenPersonality: () => void;
+}) {
+  function openLayer(target: (typeof EDUCATION_DEPTH_LAYERS)[number]['target']) {
+    if (target === 'personality') {
+      onOpenPersonality();
+      return;
+    }
+    const program = byKey[target];
+    if (program) onOpen(program);
+  }
+
+  return (
+    <section style={{ padding: '4px 20px 0', marginBottom: 26 }}>
+      <div
+        style={{
+          border: `1px solid ${och(0.16)}`,
+          background:
+            'radial-gradient(circle at 15% 0%, rgba(196,160,96,0.16), transparent 34%), rgba(255,255,255,0.032)',
+          padding: 14,
+        }}
+      >
+        <div
+          style={{
+            fontFamily: SERIF,
+            fontSize: 10,
+            letterSpacing: '0.18em',
+            textTransform: 'uppercase',
+            color: och(0.58),
+            marginBottom: 8,
+          }}
+        >
+          How to learn here
+        </div>
+        <div
+          style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(132px, 1fr))',
+            gap: 8,
+          }}
+        >
+          {EDUCATION_DEPTH_LAYERS.map((layer, index) => (
+            <button
+              key={layer.id}
+              type="button"
+              onClick={() => openLayer(layer.target)}
+              style={{
+                minHeight: 138,
+                border: `1px solid ${col(layer.tint, 0.24)}`,
+                background: col(layer.tint, 0.08),
+                color: cream(0.84),
+                padding: 10,
+                textAlign: 'left',
+                cursor: 'pointer',
+                display: 'flex',
+                flexDirection: 'column',
+                justifyContent: 'space-between',
+                gap: 10,
+              }}
+            >
+              <span>
+                <span
+                  style={{
+                    display: 'inline-grid',
+                    placeItems: 'center',
+                    width: 25,
+                    height: 25,
+                    marginBottom: 8,
+                    border: `1px solid ${col(layer.tint, 0.34)}`,
+                    color: col(layer.tint, 0.9),
+                    fontFamily: SERIF,
+                    fontSize: 13,
+                  }}
+                >
+                  {index + 1}
+                </span>
+                <span
+                  style={{
+                    display: 'block',
+                    fontFamily: SERIF,
+                    fontSize: 17,
+                    lineHeight: 1.05,
+                    color: cream(0.94),
+                  }}
+                >
+                  {layer.title}
+                </span>
+                <span
+                  style={{
+                    display: 'block',
+                    marginTop: 5,
+                    fontSize: 10.5,
+                    letterSpacing: '0.06em',
+                    textTransform: 'uppercase',
+                    color: col(layer.tint, 0.72),
+                  }}
+                >
+                  {layer.label}
+                </span>
+                <span
+                  style={{
+                    display: 'block',
+                    marginTop: 8,
+                    fontSize: 11.5,
+                    lineHeight: 1.45,
+                    color: cream(0.58),
+                  }}
+                >
+                  {layer.body}
+                </span>
+              </span>
+              <span style={{ fontFamily: SERIF, fontSize: 11.5, color: col(layer.tint, 0.86) }}>
+                {layer.action}
+              </span>
+            </button>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
 const HUB_PALETTES = [
   { id: 'brown', bg: 'rgba(18,10,4,0.99)', dot: '#3E1A08' },
   { id: 'navy', bg: 'rgba(2,4,14,0.99)', dot: '#0A1830' },
@@ -1008,6 +1166,12 @@ export default function LearningHub({ onClose }: { onClose: () => void }) {
 
         {/* Programs — swim lanes with group tints */}
         <div style={{ flex: 1, overflowY: 'auto', padding: '20px 0 40px' }}>
+          <LearningDepthPanel
+            byKey={byKey}
+            onOpen={setActive}
+            onOpenPersonality={() => setPersonalityOpen(true)}
+          />
+
           <div style={{ marginBottom: 32 }}>
             <div style={{ paddingLeft: 20, marginBottom: 14 }}>
               <div

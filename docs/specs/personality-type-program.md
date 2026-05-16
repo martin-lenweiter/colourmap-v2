@@ -338,6 +338,30 @@ Examples:
 
 This is how personality and education mix: the test identifies the active pattern; education gives the user a learning path to understand and move through that pattern.
 
+### Education Depth System
+
+Education and tests should share the same three-step learning rhythm:
+
+1. **Glimpse**: the user understands the core pattern in a few seconds before reading. This view names the active field, the simple tension, and one possible bridge.
+2. **Story**: the user sees the pattern in human scenes, symbolic illustrations, or comic-like examples. This makes abstract psychology feel concrete.
+3. **Practice**: the user leaves with one small action, not a vague insight. The action should be small enough to do today.
+
+The Education home should surface this rhythm so users understand how to move through the library:
+
+- personality test results identify the active pattern
+- education programs explain the mechanism
+- practice prompts turn the lesson into one bridge move
+
+Results should recommend education paths dynamically. First-pass mappings:
+
+- high emotional weather -> Nervous System, Room to Breathe, Struggle & Letting Go
+- high imagination + low structure -> Creativity, Organisational Intelligence, Agency
+- high care + conflict sensitivity -> Belonging, Conflict Repair, Relational Intelligence
+- strong protective story -> Self-Talk, Identity Becoming, Hope & Energy
+- low social energy or isolation signal -> Belonging, Room to Breathe, Relational Intelligence
+
+Each recommendation should explain why it appears. The goal is not a content catalogue; it is a guided path from self-recognition to learning to action.
+
 ### Deep Dive View
 
 Clicking a trait opens:
