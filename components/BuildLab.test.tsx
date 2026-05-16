@@ -259,15 +259,13 @@ describe('BuildLab', () => {
         0,
       ),
     );
-    expect(screen.getByText('1. Build a tiny local runner queue test.')).toBeDefined();
     expect(screen.getByRole('button', { name: 'Run on this computer' })).toBeDefined();
-    fireEvent.click(screen.getByRole('button', { name: '1 2 3' }));
-    expect(screen.getByText('1. Build a tiny local runner queue test.')).toBeDefined();
-    fireEvent.click(screen.getByRole('button', { name: 'edit' }));
+    expect(screen.getAllByText('Build a tiny local runner queue test.').length).toBeGreaterThan(0);
+    fireEvent.click(screen.getByRole('button', { name: 'Edit' }));
     fireEvent.change(screen.getByDisplayValue('Build a tiny local runner queue test.'), {
       target: { value: 'Edit the runner inbox queue item.' },
     });
-    fireEvent.click(screen.getByRole('button', { name: 'save' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Save edit' }));
 
     await waitFor(() =>
       expect(fetch).toHaveBeenCalledWith(
