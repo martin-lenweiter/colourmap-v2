@@ -37,6 +37,7 @@ function getSpeechRecognition(): SpeechRecognitionCtor | null {
 
 export interface UseSpeechToTextOptions {
   lang?: string;
+  autoRestart?: boolean;
 }
 
 export interface UseSpeechToTextResult {
@@ -52,7 +53,7 @@ export interface UseSpeechToTextResult {
 }
 
 export function useSpeechToText(options: UseSpeechToTextOptions = {}): UseSpeechToTextResult {
-  const { lang = 'en-US' } = options;
+  const { lang = 'en-US', autoRestart = false } = options;
   const [listening, setListening] = useState(false);
   const [supported, setSupported] = useState(false);
   const [error, setError] = useState('');
@@ -60,17 +61,27 @@ export function useSpeechToText(options: UseSpeechToTextOptions = {}): UseSpeech
   const recRef = useRef<SpeechRecognitionLike | null>(null);
   const baseRef = useRef('');
   const finalRef = useRef('');
+  const currentValueRef = useRef('');
+  const shouldListenRef = useRef(false);
+  const restartTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const setValueRef = useRef<((v: string) => void) | null>(null);
 
   useEffect(() => {
     setSupported(getSpeechRecognition() !== null);
+    return () => {
+      if (restartTimerRef.current) clearTimeout(restartTimerRef.current);
+      recRef.current?.abort();
+    };
   }, []);
 
-  function start(baseText: string, setValue: (v: string) => void) {
+  function clearRestartTimer() {
+    if (!restartTimerRef.current) return;
+    clearTimeout(restartTimerRef.current);
+    restartTimerRef.current = null;
+  }
+
+  function createRecognition(baseText: string, setValue: (v: string) => void) {
     const Ctor = getSpeechRecognition();
-    setError('');
-    setTranscript('');
-    finalRef.current = '';
     if (!Ctor) {
       setError('Speech recognition is not supported in this browser. Try Chrome or Edge.');
       return;
@@ -79,6 +90,7 @@ export function useSpeechToText(options: UseSpeechToTextOptions = {}): UseSpeech
       recRef.current.abort();
     }
     baseRef.current = baseText;
+    currentValueRef.current = baseText;
     setValueRef.current = setValue;
     const rec = new Ctor();
     rec.lang = lang;
@@ -98,9 +110,14 @@ export function useSpeechToText(options: UseSpeechToTextOptions = {}): UseSpeech
       const joined = base
         ? `${base}${base.endsWith('\n') || base.endsWith(' ') ? '' : ' '}${transcript}`
         : transcript;
+      currentValueRef.current = joined;
       setValueRef.current?.(joined);
     };
     rec.onerror = (ev) => {
+      if (ev.error === 'no-speech' && autoRestart && shouldListenRef.current) {
+        setError('');
+        return;
+      }
       const next =
         ev.error === 'not-allowed'
           ? 'Microphone permission was blocked.'
@@ -110,7 +127,19 @@ export function useSpeechToText(options: UseSpeechToTextOptions = {}): UseSpeech
       setError(next);
       setListening(false);
     };
-    rec.onend = () => setListening(false);
+    rec.onend = () => {
+      recRef.current = null;
+      if (autoRestart && shouldListenRef.current) {
+        setListening(true);
+        clearRestartTimer();
+        restartTimerRef.current = setTimeout(() => {
+          finalRef.current = '';
+          createRecognition(currentValueRef.current, setValue);
+        }, 180);
+        return;
+      }
+      setListening(false);
+    };
     try {
       rec.start();
       recRef.current = rec;
@@ -121,7 +150,18 @@ export function useSpeechToText(options: UseSpeechToTextOptions = {}): UseSpeech
     }
   }
 
+  function start(baseText: string, setValue: (v: string) => void) {
+    setError('');
+    setTranscript('');
+    finalRef.current = '';
+    shouldListenRef.current = true;
+    clearRestartTimer();
+    createRecognition(baseText, setValue);
+  }
+
   function stop() {
+    shouldListenRef.current = false;
+    clearRestartTimer();
     recRef.current?.stop();
     recRef.current = null;
     setListening(false);

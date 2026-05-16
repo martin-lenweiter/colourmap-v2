@@ -53,11 +53,11 @@ describe('BuildLab', () => {
           return new Response(
             JSON.stringify({
               id: 'queued-1',
-              title: 'Build a tiny local runner queue test.',
+              title: body.title ?? 'Build a tiny local runner queue test.',
               channelId: 'phone-runner',
               agentId: 'codex',
               projectPath: 'C:/Users/victor/colourmap-v2',
-              prompt: 'Build a tiny local runner queue test.',
+              prompt: body.prompt ?? 'Build a tiny local runner queue test.',
               status: body.status ?? 'running',
               createdAt: new Date().toISOString(),
               updatedAt: new Date().toISOString(),
@@ -152,8 +152,8 @@ describe('BuildLab', () => {
     expect(screen.queryByText('Mode')).toBeNull();
   });
 
-  it('shows the current mission in a closable Agent console pill', async () => {
-    render(<BuildLab />);
+  it('shows the current mission first in a closable Agent console pill', async () => {
+    const { container } = render(<BuildLab />);
 
     await waitFor(() => expect(screen.getByText('Codex')).toBeDefined());
     fireEvent.change(
@@ -164,21 +164,26 @@ describe('BuildLab', () => {
     );
 
     expect(screen.getByText('Draft: Make the console mission visible at the top.')).toBeDefined();
+    const consolePanel = container.querySelector('.build-lab-live-console');
+    expect(consolePanel?.textContent?.indexOf('Current mission')).toBeLessThan(
+      consolePanel?.textContent?.indexOf('Agent console') ?? Number.POSITIVE_INFINITY,
+    );
 
     fireEvent.click(screen.getByRole('button', { name: 'Close current mission pill' }));
     expect(screen.queryByText('Draft: Make the console mission visible at the top.')).toBeNull();
+    expect(screen.getByRole('button', { name: 'Open current mission pill' })).toBeDefined();
+
+    fireEvent.click(screen.getByRole('button', { name: 'Collapse agent console output' }));
     expect(screen.getByRole('button', { name: 'Open current mission pill' })).toBeDefined();
 
     fireEvent.click(screen.getByRole('button', { name: 'Open current mission pill' }));
     expect(screen.getByText('Draft: Make the console mission visible at the top.')).toBeDefined();
   });
 
-  it('keeps the mission sun beside the desk and mirrors typed mission text', async () => {
+  it('keeps the mission sun beside the desk while the prompt remains the only transcript box', async () => {
     render(<BuildLab />);
 
     await waitFor(() => expect(screen.getByText('Codex')).toBeDefined());
-    fireEvent.click(screen.getByRole('button', { name: 'auto-run on' }));
-    await waitFor(() => expect(screen.getByRole('button', { name: 'auto-run off' })).toBeDefined());
     fireEvent.change(screen.getByPlaceholderText('C:/Users/victor/colourmap-v2'), {
       target: { value: 'C:/Users/victor/colourmap-v2' },
     });
@@ -189,8 +194,11 @@ describe('BuildLab', () => {
       },
     );
 
-    expect(screen.getAllByText('Make the geometry sun glisten while I speak.').length).toBe(2);
-    expect(screen.getByText('mission sun')).toBeDefined();
+    expect(screen.getAllByText('Make the geometry sun glisten while I speak.').length).toBe(1);
+    expect(screen.getByText('Mission Sun')).toBeDefined();
+    expect(screen.getByRole('button', { name: 'Orbit' })).toBeDefined();
+    expect(screen.getByRole('button', { name: 'Flare' })).toBeDefined();
+    expect(screen.getByRole('button', { name: 'Scatter' })).toBeDefined();
   });
 
   it('switches Build Lab work channels so mission memory is not one mixed chat', async () => {
@@ -212,6 +220,8 @@ describe('BuildLab', () => {
     render(<BuildLab />);
 
     await waitFor(() => expect(screen.getByText('Codex')).toBeDefined());
+    fireEvent.click(screen.getByRole('button', { name: 'auto-run on' }));
+    await waitFor(() => expect(screen.getByRole('button', { name: 'auto-run off' })).toBeDefined());
     fireEvent.click(screen.getByRole('button', { name: /Channel/i }));
     const phoneChannelButton = screen
       .getAllByRole('button')
@@ -235,7 +245,42 @@ describe('BuildLab', () => {
         0,
       ),
     );
+    expect(screen.getByText('1. Build a tiny local runner queue test.')).toBeDefined();
     expect(screen.getByRole('button', { name: 'Run on this computer' })).toBeDefined();
+    fireEvent.click(screen.getByRole('button', { name: '1 2 3' }));
+    expect(screen.getByText('1. Build a tiny local runner queue test.')).toBeDefined();
+    fireEvent.click(screen.getByRole('button', { name: 'edit' }));
+    fireEvent.change(screen.getByDisplayValue('Build a tiny local runner queue test.'), {
+      target: { value: 'Edit the runner inbox queue item.' },
+    });
+    fireEvent.click(screen.getByRole('button', { name: 'save' }));
+
+    await waitFor(() =>
+      expect(fetch).toHaveBeenCalledWith(
+        '/api/build-lab/queue/queued-1',
+        expect.objectContaining({
+          method: 'PATCH',
+          body: expect.stringContaining('Edit the runner inbox queue item.'),
+        }),
+      ),
+    );
+  });
+
+  it('collapses the runner inbox into a compact reopen pill', async () => {
+    render(<BuildLab />);
+
+    await waitFor(() => expect(screen.getByText('Codex')).toBeDefined());
+    expect(screen.getByText(/Local Phone Level 2 queue/i)).toBeDefined();
+
+    fireEvent.click(screen.getByRole('button', { name: 'Close Runner inbox' }));
+
+    expect(screen.queryByText(/Local Phone Level 2 queue/i)).toBeNull();
+    expect(screen.getByRole('button', { name: 'Open Runner inbox' }).textContent).toContain(
+      'Runner inbox',
+    );
+
+    fireEvent.click(screen.getByRole('button', { name: 'Open Runner inbox' }));
+    expect(screen.getByText(/Local Phone Level 2 queue/i)).toBeDefined();
   });
 
   it('copies the runner inbox as a numbered mission list', async () => {
@@ -321,6 +366,127 @@ describe('BuildLab', () => {
 
     expect(screen.getByText('Completed queue item')).toBeDefined();
     expect(screen.getByText('Failed queue item')).toBeDefined();
+  });
+
+  it('shows the prompt mission queue above memory and lets queued items be edited and dragged', async () => {
+    const defaultFetch = vi.mocked(fetch).getMockImplementation();
+    vi.mocked(fetch).mockImplementation((input: string | URL | Request, init?: RequestInit) => {
+      const url = String(input);
+      if (url.includes('/api/build-lab/queue') && url.includes('/queue/')) {
+        const body = init?.body ? JSON.parse(String(init.body)) : {};
+        return Promise.resolve(
+          new Response(
+            JSON.stringify({
+              id: 'queue-a',
+              title: body.title ?? 'First queue item',
+              channelId: 'dot-walker',
+              agentId: 'codex',
+              projectPath: 'C:/Users/victor/colourmap-v2',
+              prompt: body.prompt ?? 'First queue item',
+              status: 'failed',
+              createdAt: new Date().toISOString(),
+              updatedAt: new Date().toISOString(),
+              events: [],
+            }),
+            { status: 200 },
+          ),
+        );
+      }
+      if (url.includes('/api/build-lab/queue') && !url.includes('/queue/')) {
+        return Promise.resolve(
+          new Response(
+            JSON.stringify({
+              missions: [
+                {
+                  id: 'queue-a',
+                  title: 'First queue item',
+                  channelId: 'dot-walker',
+                  agentId: 'codex',
+                  projectPath: 'C:/Users/victor/colourmap-v2',
+                  prompt: 'First queue item',
+                  status: 'failed',
+                  createdAt: new Date().toISOString(),
+                  updatedAt: new Date().toISOString(),
+                  events: [],
+                },
+                {
+                  id: 'queue-b',
+                  title: 'Second queue item',
+                  channelId: 'dot-walker',
+                  agentId: 'codex',
+                  projectPath: 'C:/Users/victor/colourmap-v2',
+                  prompt: 'Second queue item',
+                  status: 'failed',
+                  createdAt: new Date().toISOString(),
+                  updatedAt: new Date().toISOString(),
+                  events: [],
+                },
+              ],
+            }),
+            { status: 200 },
+          ),
+        );
+      }
+      return defaultFetch?.(input, init) ?? Promise.resolve(new Response('', { status: 404 }));
+    });
+
+    const { container } = render(<BuildLab />);
+
+    await waitFor(() => expect(screen.getByText('Mission memory')).toBeDefined());
+    expect(container.textContent?.indexOf('Mission queue')).toBeLessThan(
+      container.textContent?.indexOf('Mission memory') ?? Number.POSITIVE_INFINITY,
+    );
+
+    fireEvent.click(screen.getAllByRole('button', { name: /Mission queue/i }).at(-1) as Element);
+    await waitFor(() =>
+      expect(screen.getAllByText('1. First queue item').length).toBeGreaterThan(0),
+    );
+
+    fireEvent.click(screen.getAllByRole('button', { name: 'edit' })[0]);
+    fireEvent.change(screen.getAllByDisplayValue('First queue item').at(-1) as Element, {
+      target: { value: 'Replacement queue item' },
+    });
+    fireEvent.click(screen.getByRole('button', { name: 'Save' }));
+
+    await waitFor(() =>
+      expect(fetch).toHaveBeenCalledWith(
+        '/api/build-lab/queue/queue-a',
+        expect.objectContaining({
+          method: 'PATCH',
+          body: expect.stringContaining('Replacement queue item'),
+        }),
+      ),
+    );
+
+    const dragStart = new Event('dragstart', { bubbles: true }) as DragEvent;
+    Object.defineProperty(dragStart, 'dataTransfer', {
+      value: {
+        effectAllowed: '',
+        getData: vi.fn(() => 'queue-b'),
+        setData: vi.fn(),
+      },
+    });
+    const drop = new Event('drop', { bubbles: true }) as DragEvent;
+    Object.defineProperty(drop, 'dataTransfer', {
+      value: {
+        getData: vi.fn(() => 'queue-b'),
+      },
+    });
+
+    screen
+      .getAllByText('2. Second queue item')
+      .find((element) => element.closest('[draggable="true"]'))
+      ?.closest('[draggable="true"]')
+      ?.dispatchEvent(dragStart);
+    screen
+      .getAllByText('1. Replacement queue item')
+      .find((element) => element.closest('[draggable="true"]'))
+      ?.closest('[draggable="true"]')
+      ?.dispatchEvent(drop);
+
+    await waitFor(() =>
+      expect(screen.getAllByText('1. Second queue item').length).toBeGreaterThan(0),
+    );
   });
 
   it('keeps streaming console output inside the console and labels running follow-ups as queue work', async () => {

@@ -7,8 +7,10 @@ import {
   Compass,
   FolderOpen,
   GitBranch,
+  GripVertical,
   Heart,
   ImagePlus,
+  Maximize2,
   Mic,
   MicOff,
   Network,
@@ -21,7 +23,7 @@ import {
   X,
 } from 'lucide-react';
 import Link from 'next/link';
-import type { CSSProperties } from 'react';
+import type { CSSProperties, DragEvent } from 'react';
 import { useEffect, useMemo, useRef, useState } from 'react';
 
 import { useSpeechToText } from '@/lib/hooks/use-speech-to-text';
@@ -89,6 +91,7 @@ type QueuedMission = {
   projectPath: string;
   prompt: string;
   status: QueuedMissionStatus;
+  order: number;
   createdAt: string;
   updatedAt: string;
   events: Array<{
@@ -624,6 +627,20 @@ const sunGlints = Array.from({ length: 34 }, (_, index) => {
   };
 });
 
+type MissionSunMotion = 'orbit' | 'flare' | 'scatter' | 'cell' | 'ripple';
+
+const missionSunMotionOptions: Array<{
+  id: MissionSunMotion;
+  label: string;
+  hint: string;
+}> = [
+  { id: 'orbit', label: 'Orbit', hint: 'swirling dots' },
+  { id: 'flare', label: 'Flare', hint: 'breathing rays' },
+  { id: 'scatter', label: 'Scatter', hint: 'agitated sparks' },
+  { id: 'cell', label: 'Cell', hint: 'living organism' },
+  { id: 'ripple', label: 'Ripple', hint: 'voice waves' },
+];
+
 const sunVoices = [
   {
     id: 'calm',
@@ -652,20 +669,41 @@ function SunPresence({
   active,
   speaking = false,
   compact = false,
+  showTranscript = true,
+  motion = 'orbit',
   livingText,
 }: {
   active: boolean;
   speaking?: boolean;
   compact?: boolean;
+  showTranscript?: boolean;
+  motion?: MissionSunMotion;
   livingText: string;
 }) {
   const visibleLivingText =
     livingText.length > (compact ? 96 : 220)
       ? `${livingText.slice(livingText.length - (compact ? 96 : 220))}`
       : livingText;
-  const energy = active ? 1 : Math.min(0.72, 0.28 + livingText.trim().length / 220);
-  const sunSize = compact ? 'h-32 w-32' : 'h-56 w-56';
-  const dotLimit = compact ? 190 : sunDots.length;
+  const textEnergy = Math.min(1, livingText.trim().length / (compact ? 140 : 240));
+  const energy = active ? 1 : Math.min(0.72, 0.28 + textEnergy * 0.52);
+  const agitation =
+    speaking && motion === 'scatter'
+      ? 4.15
+      : speaking && motion === 'cell'
+        ? 2.25
+        : speaking && motion === 'ripple'
+          ? 2.7
+          : speaking
+            ? 2.55
+            : active && motion === 'scatter'
+              ? 2.7
+              : active && motion === 'flare'
+                ? 2.05
+                : active
+                  ? 1.65
+                  : 1;
+  const sunSize = compact ? 'h-44 w-44 xl:h-52 xl:w-52' : 'h-56 w-56';
+  const dotLimit = compact ? (motion === 'cell' ? 230 : 190) : sunDots.length;
 
   return (
     <div
@@ -705,21 +743,49 @@ function SunPresence({
       <div
         className={
           compact
-            ? 'relative flex min-h-[236px] flex-col items-center justify-center gap-3'
+            ? 'relative flex min-h-[292px] flex-col items-center justify-center gap-3 xl:min-h-[330px]'
             : 'relative flex min-h-[330px] flex-col items-center justify-center gap-4'
         }
       >
         <div
           className={`build-lab-sun-field relative ${sunSize} rounded-full`}
+          data-motion={motion}
+          data-speaking={speaking ? 'true' : 'false'}
           style={{
             filter: active
-              ? 'drop-shadow(0 0 34px rgba(255,138,34,0.8))'
+              ? `drop-shadow(0 0 ${
+                  speaking ? (motion === 'scatter' ? 58 : 46) : motion === 'scatter' ? 44 : 34
+                }px rgba(255,138,34,0.8))`
               : 'drop-shadow(0 0 20px rgba(255,138,34,0.38))',
             transform: active
-              ? `translateY(${speaking ? '-4px' : '0'}) scale(1.04)`
+              ? `translateY(${speaking ? '-5px' : '0'}) scale(${
+                  speaking && motion === 'cell'
+                    ? '1.025'
+                    : speaking
+                      ? motion === 'scatter'
+                        ? '1.12'
+                        : '1.085'
+                      : motion === 'flare'
+                        ? '1.075'
+                        : '1.04'
+                })`
               : `translateY(${Math.round((energy - 0.28) * -10)}px) scale(${(0.96 + energy * 0.06).toFixed(3)})`,
             transition: 'transform 220ms ease, filter 220ms ease',
-            animation: active ? 'build-lab-sun-breathe 1.8s ease-in-out infinite' : 'none',
+            animation: active
+              ? `build-lab-sun-breathe ${
+                  speaking && motion === 'cell'
+                    ? '0.9s'
+                    : speaking
+                      ? motion === 'scatter'
+                        ? '0.42s'
+                        : '0.62s'
+                      : motion === 'scatter'
+                        ? '0.74s'
+                        : motion === 'flare'
+                          ? '1.05s'
+                          : '1.8s'
+                } ease-in-out infinite`
+              : 'none',
           }}
         >
           <span
@@ -732,7 +798,11 @@ function SunPresence({
           />
           {sunDots.slice(0, dotLimit).map((dot) => {
             const color = '#ffd36c';
-            const flowScale = active ? 1.85 : speaking ? 1.45 : 0.62 + energy * 0.28;
+            const flowScale = active
+              ? agitation + dot.heat * (motion === 'scatter' ? 1.8 : motion === 'cell' ? 0.25 : 0.7)
+              : speaking
+                ? 1.45
+                : 0.62 + energy * 0.28;
             const baseScale = active
               ? (0.96 + dot.heat * 0.42).toFixed(3)
               : (0.72 + energy * 0.22 + dot.heat * 0.1).toFixed(3);
@@ -756,18 +826,90 @@ function SunPresence({
                       : (0.38 + dot.heat * 0.2 + energy * 0.18).toFixed(3),
                     '--base-scale': baseScale,
                     '--flow-duration': `${dot.duration}s`,
+                    '--pulse-duration': speaking
+                      ? motion === 'scatter'
+                        ? '0.32s'
+                        : '0.48s'
+                      : motion === 'scatter'
+                        ? '0.68s'
+                        : motion === 'flare'
+                          ? '0.96s'
+                          : '1.7s',
                     '--flow-delay': `-${dot.delay}s`,
                     '--flow-a-x': `${Number(dot.flowAx) * flowScale}px`,
                     '--flow-a-y': `${Number(dot.flowAy) * flowScale}px`,
-                    '--flow-b-x': `${Number(dot.flowBx) * flowScale}px`,
-                    '--flow-b-y': `${Number(dot.flowBy) * flowScale}px`,
-                    '--flow-c-x': `${Number(dot.flowCx) * flowScale}px`,
-                    '--flow-c-y': `${Number(dot.flowCy) * flowScale}px`,
+                    '--flow-b-x': `${
+                      motion === 'flare'
+                        ? (Number(dot.x) - 50) * 0.78 * flowScale
+                        : motion === 'ripple'
+                          ? Number(dot.flowAx) * -0.55 * flowScale
+                          : Number(dot.flowBx) * flowScale
+                    }px`,
+                    '--flow-b-y': `${
+                      motion === 'flare'
+                        ? (Number(dot.y) - 50) * 0.78 * flowScale
+                        : motion === 'ripple'
+                          ? Number(dot.flowAy) * -0.55 * flowScale
+                          : Number(dot.flowBy) * flowScale
+                    }px`,
+                    '--flow-c-x': `${
+                      motion === 'flare'
+                        ? (Number(dot.x) - 50) * 0.32 * flowScale
+                        : motion === 'ripple'
+                          ? (Number(dot.x) - 50) * 0.18 * flowScale
+                          : Number(dot.flowCx) * flowScale
+                    }px`,
+                    '--flow-c-y': `${
+                      motion === 'flare'
+                        ? (Number(dot.y) - 50) * 0.32 * flowScale
+                        : motion === 'ripple'
+                          ? (Number(dot.y) - 50) * 0.18 * flowScale
+                          : Number(dot.flowCy) * flowScale
+                    }px`,
+                    '--cell-x': `${(Number(dot.x) - 50) * (motion === 'cell' ? -0.34 : 0)}px`,
+                    '--cell-y': `${(Number(dot.y) - 50) * (motion === 'cell' ? -0.34 : 0)}px`,
                   } as CSSProperties
                 }
               />
             );
           })}
+          {active &&
+            sunDots.slice(0, speaking ? (compact ? 28 : 42) : compact ? 15 : 24).map((dot) => (
+              <span
+                key={`bubble-${dot.id}`}
+                className="build-lab-sun-bubble absolute rounded-full"
+                style={
+                  {
+                    left: `${dot.x}%`,
+                    top: `${dot.y}%`,
+                    width: `${Math.max(6, Number(dot.size) * (speaking ? 3.8 : 2.4))}px`,
+                    height: `${Math.max(6, Number(dot.size) * (speaking ? 3.8 : 2.4))}px`,
+                    '--bubble-delay': `-${dot.delay}s`,
+                    '--bubble-duration': speaking
+                      ? motion === 'ripple'
+                        ? '1.25s'
+                        : motion === 'scatter'
+                          ? '0.64s'
+                          : '0.92s'
+                      : motion === 'scatter'
+                        ? '1.1s'
+                        : motion === 'flare'
+                          ? '1.55s'
+                          : '2.2s',
+                    '--bubble-x': `${
+                      motion === 'ripple'
+                        ? (Number(dot.x) - 50) * (speaking ? 0.78 : 0.45)
+                        : Number(dot.flowBx) * (speaking ? 3.7 : motion === 'scatter' ? 2.9 : 1.8)
+                    }px`,
+                    '--bubble-y': `${
+                      motion === 'ripple'
+                        ? (Number(dot.y) - 50) * (speaking ? 0.78 : 0.45)
+                        : Number(dot.flowBy) * (speaking ? 3.7 : motion === 'scatter' ? 2.9 : 1.8)
+                    }px`,
+                  } as CSSProperties
+                }
+              />
+            ))}
           {sunGlints.slice(0, compact ? 18 : sunGlints.length).map((glint) => (
             <span
               key={`glint-${glint.id}`}
@@ -784,36 +926,38 @@ function SunPresence({
             />
           ))}
         </div>
-        <div className="relative w-full rounded-2xl border border-[#ffd36c]/22 bg-[#130905]/72 p-3 shadow-[0_0_34px_rgba(255,166,49,0.12)]">
-          <div className="pointer-events-none absolute inset-0 opacity-35">
-            {sunDots.slice(0, compact ? 18 : 28).map((dot) => (
-              <span
-                key={`transcript-${dot.id}`}
-                className="absolute h-1 w-1 rounded-full bg-[#ffd36c]"
-                style={{
-                  left: `${dot.x}%`,
-                  top: `${dot.y}%`,
-                  boxShadow: '0 0 9px rgba(255,190,70,0.75)',
-                  opacity: '0.55',
-                }}
-              />
-            ))}
+        {showTranscript && (
+          <div className="relative w-full rounded-2xl border border-[#ffd36c]/22 bg-[#130905]/72 p-3 shadow-[0_0_34px_rgba(255,166,49,0.12)]">
+            <div className="pointer-events-none absolute inset-0 opacity-35">
+              {sunDots.slice(0, compact ? 18 : 28).map((dot) => (
+                <span
+                  key={`transcript-${dot.id}`}
+                  className="absolute h-1 w-1 rounded-full bg-[#ffd36c]"
+                  style={{
+                    left: `${dot.x}%`,
+                    top: `${dot.y}%`,
+                    boxShadow: '0 0 9px rgba(255,190,70,0.75)',
+                    opacity: '0.55',
+                  }}
+                />
+              ))}
+            </div>
+            <p className="relative text-[10px] uppercase tracking-[0.2em] text-[#ffca72]/75">
+              {compact ? 'mission sun' : 'living transcript'}
+            </p>
+            <p
+              className={
+                compact
+                  ? 'relative mt-2 min-h-12 font-serif text-sm leading-6 text-[#ffe0a0]'
+                  : 'relative mt-2 min-h-16 font-serif text-lg leading-7 text-[#ffe0a0]'
+              }
+              style={{ textShadow: '0 0 18px rgba(255,180,62,0.42)' }}
+            >
+              {visibleLivingText}
+              {active && <span className="ml-1 animate-pulse text-[#ffd36c]">|</span>}
+            </p>
           </div>
-          <p className="relative text-[10px] uppercase tracking-[0.2em] text-[#ffca72]/75">
-            {compact ? 'mission sun' : 'living transcript'}
-          </p>
-          <p
-            className={
-              compact
-                ? 'relative mt-2 min-h-12 font-serif text-sm leading-6 text-[#ffe0a0]'
-                : 'relative mt-2 min-h-16 font-serif text-lg leading-7 text-[#ffe0a0]'
-            }
-            style={{ textShadow: '0 0 18px rgba(255,180,62,0.42)' }}
-          >
-            {visibleLivingText}
-            {active && <span className="ml-1 animate-pulse text-[#ffd36c]">|</span>}
-          </p>
-        </div>
+        )}
       </div>
       <div className="absolute bottom-3 left-3 right-3 flex items-center justify-between rounded-full border border-[#ffd36c]/20 bg-[#1a0d07]/72 px-3 py-2 text-xs text-[#ffd99a]">
         <span>{active ? (speaking ? 'speaking' : 'listening') : 'waiting'}</span>
@@ -1537,7 +1681,7 @@ function SunDialoguePrototype() {
   const [note, setNote] = useState('');
   const [voiceId, setVoiceId] = useState(sunVoices[0].id);
   const [speaking, setSpeaking] = useState(false);
-  const speech = useSpeechToText({ lang: 'en-US' });
+  const speech = useSpeechToText({ lang: 'en-US', autoRestart: true });
   const activeVoice = sunVoices.find((voice) => voice.id === voiceId) ?? sunVoices[0];
   const livingText =
     note.trim() || 'Speak and the words begin writing themselves under the golden presence.';
@@ -1688,14 +1832,18 @@ export default function BuildLab() {
   const [developerQueueText, setDeveloperQueueText] = useState('');
   const [editingQueueId, setEditingQueueId] = useState('');
   const [editingQueueText, setEditingQueueText] = useState('');
+  const [draggingQueueId, setDraggingQueueId] = useState('');
   const [activeMissionTitle, setActiveMissionTitle] = useState('');
   const [missionPhase, setMissionPhase] = useState<
     'idle' | 'starting' | 'working' | 'checking' | 'done'
   >('idle');
   const [showMissionDetails, setShowMissionDetails] = useState(false);
   const [showConsoleMissionPill, setShowConsoleMissionPill] = useState(true);
+  const [missionSunMotion, setMissionSunMotion] = useState<MissionSunMotion>('scatter');
+  const [missionComposerFullscreen, setMissionComposerFullscreen] = useState(false);
   const missionAbortRef = useRef<AbortController | null>(null);
   const consoleScrollRef = useRef<HTMLDivElement | null>(null);
+  const promptTextareaRef = useRef<HTMLTextAreaElement | null>(null);
   const queueRunnerRef = useRef(false);
   const queuedMissionsRef = useRef<QueuedMission[]>([]);
   const speech = useSpeechToText({ lang: 'en-US' });
@@ -1768,9 +1916,16 @@ export default function BuildLab() {
 
   useEffect(() => {
     const consoleNode = consoleScrollRef.current;
-    if (!consoleNode) return;
+    if (!consoleNode || events.length === 0) return;
     consoleNode.scrollTop = consoleNode.scrollHeight;
-  });
+  }, [events.length]);
+
+  useEffect(() => {
+    if (!speech.listening && !speech.transcript) return;
+    const textarea = promptTextareaRef.current;
+    if (!textarea) return;
+    textarea.scrollTop = textarea.scrollHeight;
+  }, [speech.listening, speech.transcript]);
 
   function selectChannel(channelId: string) {
     setActiveChannelId(channelId);
@@ -1862,6 +2017,7 @@ export default function BuildLab() {
       status?: QueuedMissionStatus;
       title?: string;
       prompt?: string;
+      order?: number;
       event?: { type: string; text: string };
     },
   ) {
@@ -1872,6 +2028,7 @@ export default function BuildLab() {
         status: patch.status ?? mission.status,
         title: patch.title ?? mission.title,
         prompt: patch.prompt ?? mission.prompt,
+        order: patch.order ?? mission.order,
         updatedAt: new Date().toISOString(),
         events: patch.event
           ? [
@@ -1896,6 +2053,7 @@ export default function BuildLab() {
       status?: QueuedMissionStatus;
       title?: string;
       prompt?: string;
+      order?: number;
       event?: { type: string; text: string };
     },
   ) {
@@ -1908,10 +2066,15 @@ export default function BuildLab() {
     if (!response.ok) return null;
     const updated = (await response.json()) as QueuedMission;
     const current = queuedMissionsRef.current.find((mission) => mission.id === missionId);
-    const merged =
-      current && !patch.title && !patch.prompt
-        ? { ...updated, title: current.title, prompt: current.prompt }
-        : updated;
+    const merged = current
+      ? {
+          ...current,
+          ...updated,
+          title: patch.title ? updated.title : current.title,
+          prompt: patch.prompt ? updated.prompt : current.prompt,
+          order: updated.order ?? current.order,
+        }
+      : updated;
     setQueuedMissions((prev) =>
       prev.map((mission) => (mission.id === missionId ? merged : mission)),
     );
@@ -1925,9 +2088,9 @@ export default function BuildLab() {
     channelId = activeChannel.id,
     statuses: QueuedMissionStatus[] = ['queued', 'running'],
   ) {
-    return [...queuedMissionsRef.current]
-      .reverse()
-      .find((mission) => mission.channelId === channelId && statuses.includes(mission.status));
+    return queuedMissionsRef.current.find(
+      (mission) => mission.channelId === channelId && statuses.includes(mission.status),
+    );
   }
 
   function runAllReadyMissions() {
@@ -2069,28 +2232,62 @@ export default function BuildLab() {
     setEditingQueueText('');
   }
 
-  function moveQueuedMission(missionId: string, direction: -1 | 1) {
-    const activeIds = activeQueuedMissions.map((mission) => mission.id);
-    const currentIndex = activeIds.indexOf(missionId);
-    const nextIndex = currentIndex + direction;
-    if (currentIndex < 0 || nextIndex < 0 || nextIndex >= activeIds.length) return;
-    const nextActiveIds = [...activeIds];
-    [nextActiveIds[currentIndex], nextActiveIds[nextIndex]] = [
-      nextActiveIds[nextIndex],
-      nextActiveIds[currentIndex],
-    ];
-    const rank = new Map(nextActiveIds.map((id, index) => [id, index]));
-    const next = [...queuedMissionsRef.current].sort((a, b) => {
-      if (a.channelId === activeChannel.id && b.channelId === activeChannel.id) {
-        return (rank.get(a.id) ?? 999) - (rank.get(b.id) ?? 999);
-      }
-      if (a.channelId === activeChannel.id) return -1;
-      if (b.channelId === activeChannel.id) return 1;
-      return Date.parse(b.updatedAt) - Date.parse(a.updatedAt);
+  function commitActiveQueueOrder(nextActiveMissions: QueuedMission[]) {
+    const topOrder = Date.now();
+    const orderedActiveMissions = nextActiveMissions.map((mission, index) => ({
+      ...mission,
+      order: topOrder - index,
+    }));
+    const activeIds = new Set(nextActiveMissions.map((mission) => mission.id));
+    let activeIndex = 0;
+    const next = queuedMissionsRef.current.map((mission) => {
+      if (!activeIds.has(mission.id)) return mission;
+      const nextMission = orderedActiveMissions[activeIndex];
+      activeIndex += 1;
+      return nextMission ?? mission;
     });
     queuedMissionsRef.current = next;
     setQueuedMissions(next);
-    addEvent('queue', 'Runner inbox order updated locally.', 'meta');
+    addEvent('queue', 'Mission queue order updated locally.', 'meta');
+    for (const mission of orderedActiveMissions) {
+      void patchQueuedMission(mission.id, { order: mission.order });
+    }
+  }
+
+  function moveQueuedMission(missionId: string, direction: -1 | 1) {
+    const currentIndex = activeQueuedMissions.findIndex((mission) => mission.id === missionId);
+    const nextIndex = currentIndex + direction;
+    if (currentIndex < 0 || nextIndex < 0 || nextIndex >= activeQueuedMissions.length) return;
+    const nextActiveMissions = [...activeQueuedMissions];
+    [nextActiveMissions[currentIndex], nextActiveMissions[nextIndex]] = [
+      nextActiveMissions[nextIndex],
+      nextActiveMissions[currentIndex],
+    ];
+    commitActiveQueueOrder(nextActiveMissions);
+  }
+
+  function reorderQueuedMission(draggedMissionId: string, targetMissionId: string) {
+    if (!draggedMissionId || draggedMissionId === targetMissionId) return;
+    const nextActiveMissions = [...activeQueuedMissions];
+    const fromIndex = nextActiveMissions.findIndex((mission) => mission.id === draggedMissionId);
+    const toIndex = nextActiveMissions.findIndex((mission) => mission.id === targetMissionId);
+    if (fromIndex < 0 || toIndex < 0) return;
+    const [draggedMission] = nextActiveMissions.splice(fromIndex, 1);
+    nextActiveMissions.splice(toIndex, 0, draggedMission);
+    commitActiveQueueOrder(nextActiveMissions);
+  }
+
+  function handleQueuedMissionDrop(event: DragEvent<HTMLElement>, targetMissionId: string) {
+    event.preventDefault();
+    const draggedMissionId = event.dataTransfer.getData('text/plain') || draggingQueueId;
+    reorderQueuedMission(draggedMissionId, targetMissionId);
+    setDraggingQueueId('');
+  }
+
+  function handleQueuedMissionDragStart(event: DragEvent<HTMLElement>, missionId: string) {
+    setDraggingQueueId(missionId);
+    event.dataTransfer.effectAllowed = 'move';
+    event.dataTransfer.setData('text/plain', missionId);
   }
 
   function loadQueuedMission(mission: QueuedMission) {
@@ -2404,6 +2601,10 @@ export default function BuildLab() {
         .build-lab-sun-field {
           isolation: isolate;
         }
+        .build-lab-live-console {
+          overflow-anchor: none;
+          contain: layout paint;
+        }
         .build-lab-sun-star {
           background: #ffd36c;
           box-shadow: 0 0 10px rgba(255,211,108,0.75);
@@ -2460,10 +2661,78 @@ export default function BuildLab() {
         }
         .build-lab-sun-dot-active {
           animation-name: build-lab-sun-dot-flow, build-lab-sun-dot-pulse;
-          animation-duration: var(--flow-duration), 1.7s;
+          animation-duration: var(--flow-duration), var(--pulse-duration);
           animation-timing-function: ease-in-out, ease-in-out;
           animation-delay: var(--flow-delay), var(--flow-delay);
           animation-iteration-count: infinite, infinite;
+        }
+        .build-lab-sun-field[data-motion="flare"]::after {
+          animation-duration: 4.6s;
+          filter: blur(15px);
+        }
+        .build-lab-sun-field[data-motion="flare"][data-speaking="true"]::after {
+          animation: build-lab-sun-flare-burst 1.05s ease-out infinite;
+        }
+        .build-lab-sun-field[data-motion="scatter"]::after {
+          animation-duration: 2.9s;
+          filter: blur(18px);
+        }
+        .build-lab-sun-field[data-motion="scatter"][data-speaking="true"] .build-lab-sun-glint {
+          animation-duration: 0.72s !important;
+        }
+        .build-lab-sun-field[data-motion="cell"] {
+          border-radius: 9999px;
+          box-shadow:
+            inset 0 0 26px rgba(255,225,143,0.18),
+            inset 0 0 54px rgba(255,133,38,0.1),
+            0 0 0 1px rgba(255,218,120,0.2);
+        }
+        .build-lab-sun-field[data-motion="cell"]::before {
+          inset: 10%;
+          background:
+            radial-gradient(circle at 45% 44%, rgba(255,223,142,0.26), transparent 16%),
+            radial-gradient(circle at 51% 52%, rgba(255,174,54,0.12), transparent 43%);
+          filter: blur(9px);
+          animation-duration: 4.8s;
+        }
+        .build-lab-sun-field[data-motion="cell"]::after {
+          inset: -1%;
+          background:
+            radial-gradient(circle, transparent 60%, rgba(255,219,122,0.3) 62%, transparent 69%),
+            radial-gradient(circle, rgba(255,175,55,0.06), transparent 58%);
+          filter: blur(7px);
+          animation-duration: 9s;
+        }
+        .build-lab-sun-field[data-motion="cell"][data-speaking="true"]::after {
+          filter: blur(9px);
+          animation-duration: 2.6s;
+        }
+        .build-lab-sun-field[data-motion="ripple"] .build-lab-sun-wave {
+          animation-duration: 1.35s;
+          box-shadow: 0 0 34px rgba(255,190,70,0.3);
+        }
+        .build-lab-sun-field[data-motion="ripple"][data-speaking="true"] .build-lab-sun-wave {
+          animation-duration: 0.82s;
+          border-color: rgba(255,226,145,0.46);
+        }
+        .build-lab-sun-field[data-motion="orbit"][data-speaking="true"]::after {
+          animation-duration: 4.2s;
+        }
+        .build-lab-sun-field[data-speaking="true"] .build-lab-sun-dot-active {
+          animation-timing-function: cubic-bezier(.2,.9,.24,1.24), ease-in-out;
+        }
+        .build-lab-sun-field[data-speaking="true"] .build-lab-sun-bubble {
+          border-color: rgba(255,231,154,0.46);
+          box-shadow: 0 0 28px rgba(255,164,45,0.36);
+        }
+        .build-lab-sun-bubble {
+          z-index: 1;
+          border: 1px solid rgba(255,220,128,0.32);
+          background: radial-gradient(circle, rgba(255,226,145,0.2), rgba(255,139,35,0.04) 64%, transparent 70%);
+          box-shadow: 0 0 18px rgba(255,164,45,0.2);
+          transform: translate(-50%, -50%);
+          animation: build-lab-sun-bubble var(--bubble-duration) ease-out var(--bubble-delay) infinite;
+          will-change: transform, opacity;
         }
         .build-lab-sun-dot-glint {
           background: #fff0b6;
@@ -2480,18 +2749,23 @@ export default function BuildLab() {
         }
         @keyframes build-lab-sun-dot-flow {
           0%, 100% {
-            transform: translate(-50%, -50%) translate(var(--flow-a-x), var(--flow-a-y)) scale(var(--base-scale));
+            transform: translate(-50%, -50%) translate(var(--cell-x, 0px), var(--cell-y, 0px)) translate(var(--flow-a-x), var(--flow-a-y)) scale(var(--base-scale));
           }
           33% {
-            transform: translate(-50%, -50%) translate(var(--flow-b-x), var(--flow-b-y)) scale(calc(var(--base-scale) * 1.16));
+            transform: translate(-50%, -50%) translate(var(--cell-x, 0px), var(--cell-y, 0px)) translate(var(--flow-b-x), var(--flow-b-y)) scale(calc(var(--base-scale) * 1.16));
           }
           66% {
-            transform: translate(-50%, -50%) translate(var(--flow-c-x), var(--flow-c-y)) scale(calc(var(--base-scale) * 0.92));
+            transform: translate(-50%, -50%) translate(var(--cell-x, 0px), var(--cell-y, 0px)) translate(var(--flow-c-x), var(--flow-c-y)) scale(calc(var(--base-scale) * 0.92));
           }
         }
         @keyframes build-lab-sun-dot-pulse {
           0%, 100% { opacity: var(--dot-opacity); }
           50% { opacity: 1; }
+        }
+        @keyframes build-lab-sun-bubble {
+          0% { opacity: 0; transform: translate(-50%, -50%) scale(0.45); }
+          18% { opacity: 0.72; }
+          100% { opacity: 0; transform: translate(-50%, -50%) translate(var(--bubble-x), var(--bubble-y)) scale(1.85); }
         }
         @keyframes build-lab-sun-glint {
           0%, 100% { opacity: 0.18; transform: translate(-50%, -50%) scale(0.72); }
@@ -2520,6 +2794,11 @@ export default function BuildLab() {
           18% { opacity: 0.72; }
           100% { transform: scale(1.72); opacity: 0; }
         }
+        @keyframes build-lab-sun-flare-burst {
+          0% { transform: rotate(0deg) scale(0.86); opacity: 0.08; }
+          32% { opacity: 0.72; }
+          100% { transform: rotate(18deg) scale(1.42); opacity: 0; }
+        }
         @media (prefers-reduced-motion: reduce) {
           .build-lab-sun-field,
           .build-lab-sun-field::before,
@@ -2529,6 +2808,7 @@ export default function BuildLab() {
           .build-lab-sun-star,
           .build-lab-sun-dot,
           .build-lab-sun-dot-active,
+          .build-lab-sun-bubble,
           .build-lab-sun-glint {
             animation: none !important;
           }
@@ -2561,56 +2841,6 @@ export default function BuildLab() {
             </div>
 
             <div className="space-y-4">
-              <div className="rounded-2xl border border-[#b98d52]/20 bg-[#fff8e8]/70 p-3">
-                <div className="mb-3 flex items-center justify-between gap-3">
-                  <div>
-                    <p className="flex items-center gap-2 text-xs uppercase tracking-[0.16em] text-[#704923]">
-                      <Sparkles size={14} />
-                      Mission Sun
-                    </p>
-                    <p className="mt-1 text-xs leading-5 text-[#8d653d]">
-                      A first voice-reactive geometry presence next to the dev desk.
-                    </p>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={toggleSpeech}
-                    aria-label={speech.listening ? 'Pause mission sun' : 'Speak with mission sun'}
-                    title={speech.listening ? 'Pause mission sun' : 'Speak with mission sun'}
-                    className="grid h-10 w-10 shrink-0 place-items-center rounded-full border"
-                    style={{
-                      borderColor: speech.listening
-                        ? 'rgba(245,132,38,0.75)'
-                        : 'rgba(143,98,50,0.22)',
-                      background: speech.listening
-                        ? 'radial-gradient(circle at 30% 30%, rgba(255,178,76,0.58), rgba(255,126,35,0.2))'
-                        : '#fffdf2',
-                      boxShadow: speech.listening
-                        ? '0 0 0 5px rgba(255,145,49,0.14), 0 0 28px rgba(255,126,35,0.42)'
-                        : '0 0 0 3px rgba(196,154,81,0.1)',
-                      color: speech.listening ? '#7a310c' : '#704923',
-                    }}
-                  >
-                    {speech.listening ? <MicOff size={15} /> : <Mic size={15} />}
-                  </button>
-                </div>
-                <SunPresence
-                  compact
-                  active={speech.listening || running}
-                  livingText={
-                    speech.transcript ||
-                    prompt ||
-                    'Speak the mission and the sun glistens while the desk writes it down.'
-                  }
-                />
-                {(speech.error || speech.listening) && (
-                  <p className="mt-3 text-xs leading-5 text-[#8d653d]">
-                    {speech.error ||
-                      'Listening. Your words are also written into the mission prompt.'}
-                  </p>
-                )}
-              </div>
-
               <div className="rounded-2xl border border-[#b98d52]/20 bg-[#fff8e8]/70 p-3">
                 <button
                   type="button"
@@ -2884,7 +3114,7 @@ export default function BuildLab() {
             </div>
           </div>
 
-          <div className="space-y-4 p-5">
+          <div className="space-y-4 p-5 lg:col-span-2">
             <div className="rounded-2xl border border-[#b98d52]/20 bg-[#fff8e8]/70 p-4">
               <button
                 type="button"
@@ -2988,257 +3218,297 @@ export default function BuildLab() {
               )}
             </div>
 
-            <div className="rounded-2xl border border-[#b98d52]/20 bg-[#fff8e8]/70 p-4">
-              <div className="mb-3 flex items-center justify-between gap-3">
-                <div
-                  onClick={(event) => {
-                    if (event.detail >= 3) setDeveloperQueueOpen((value) => !value);
-                  }}
-                >
-                  <p className="text-xs uppercase tracking-[0.16em] text-[#704923]">Runner inbox</p>
-                  <p className="mt-1 text-xs leading-5 text-[#8d653d]">
-                    Local Phone Level 2 queue. Supabase will replace this storage later.
-                  </p>
-                </div>
-                <div className="flex flex-wrap justify-end gap-2">
-                  <button
-                    type="button"
-                    onClick={() => togglePanel('runnerInbox')}
-                    className="rounded-full border border-[#8f6232]/20 bg-[#fffdf2] px-2 py-1 text-xs text-[#704923]"
-                    aria-label={openPanels.runnerInbox ? 'Close Runner inbox' : 'Open Runner inbox'}
+            {!openPanels.runnerInbox ? (
+              <button
+                type="button"
+                onClick={() => togglePanel('runnerInbox')}
+                aria-label="Open Runner inbox"
+                className="inline-flex w-fit items-center gap-2 rounded-full border border-[#8f6232]/20 bg-[#fffdf2] px-3 py-2 text-xs text-[#704923]"
+              >
+                <span>Runner inbox</span>
+                <span className="rounded-full bg-[#704923] px-2 py-0.5 text-[#fff8e8]">
+                  {activeQueuedMissions.length} items
+                </span>
+                <span className="rounded-full border border-[#8f6232]/18 px-2 py-0.5">
+                  {activeRunnableQueuedMissions.length} ready
+                </span>
+              </button>
+            ) : (
+              <div className="rounded-2xl border border-[#b98d52]/20 bg-[#fff8e8]/70 p-4">
+                <div className="mb-3 flex items-center justify-between gap-3">
+                  <div
+                    onClick={(event) => {
+                      if (event.detail >= 3) setDeveloperQueueOpen((value) => !value);
+                    }}
                   >
-                    {openPanels.runnerInbox ? 'close' : `${activeQueuedMissions.length} items`}
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setAutoRunQueue((value) => !value)}
-                    className="rounded-full border border-[#8f6232]/20 px-2 py-1 text-xs text-[#704923]"
-                  >
-                    {autoRunQueue ? 'auto-run on' : 'auto-run off'}
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setRunnerInboxCompact((value) => !value)}
-                    className="rounded-full border border-[#8f6232]/20 px-2 py-1 text-xs text-[#704923]"
-                  >
-                    {runnerInboxCompact ? 'cards' : '1 2 3'}
-                  </button>
-                  <button
-                    type="button"
-                    onClick={runAllReadyMissions}
-                    className="rounded-full border border-[#8f6232]/20 bg-[#704923] px-2 py-1 text-xs text-[#fff8e8]"
-                  >
-                    Run all ready
-                  </button>
-                  <button
-                    type="button"
-                    onClick={copyNumberedQueue}
-                    className="rounded-full border border-[#8f6232]/20 px-2 py-1 text-xs text-[#704923]"
-                  >
-                    Copy list
-                  </button>
-                  <span className="rounded-full border border-[#8f6232]/20 px-2 py-1 text-xs text-[#704923]">
-                    {activeRunnableQueuedMissions.length} ready
-                  </span>
-                </div>
-              </div>
-              {developerQueueOpen && openPanels.runnerInbox && (
-                <div className="mb-3 rounded-xl border border-[#b98d52]/18 bg-[#fffdf2]/80 p-3">
-                  <p className="text-xs uppercase tracking-[0.14em] text-[#704923]">
-                    Developer quick add
-                  </p>
-                  <textarea
-                    value={developerQueueText}
-                    onChange={(event) => setDeveloperQueueText(event.target.value)}
-                    placeholder={'1. First mission\n2. Second mission\n3. Third mission'}
-                    className="mt-2 min-h-24 w-full resize-y rounded-xl border border-[#b98d52]/25 bg-[#fff8e8] p-3 text-sm leading-6 text-[#3f2817] outline-none focus:border-[#8f6232]"
-                  />
-                  <div className="mt-2 flex flex-wrap gap-2">
+                    <p className="text-xs uppercase tracking-[0.16em] text-[#704923]">
+                      Runner inbox
+                    </p>
+                    <p className="mt-1 text-xs leading-5 text-[#8d653d]">
+                      Local Phone Level 2 queue. Supabase will replace this storage later.
+                    </p>
+                  </div>
+                  <div className="flex flex-wrap justify-end gap-2">
                     <button
                       type="button"
-                      onClick={addDeveloperQueueMissions}
-                      className="rounded-full bg-[#704923] px-3 py-1 text-xs text-[#fff8e8]"
+                      onClick={() => togglePanel('runnerInbox')}
+                      className="rounded-full border border-[#8f6232]/20 bg-[#fffdf2] px-2 py-1 text-xs text-[#704923]"
+                      aria-label={
+                        openPanels.runnerInbox ? 'Close Runner inbox' : 'Open Runner inbox'
+                      }
                     >
-                      Add numbered missions
+                      {openPanels.runnerInbox ? 'close' : `${activeQueuedMissions.length} items`}
                     </button>
                     <button
                       type="button"
-                      onClick={() => setDeveloperQueueOpen(false)}
-                      className="rounded-full border border-[#8f6232]/20 px-3 py-1 text-xs text-[#704923]"
+                      onClick={() => setAutoRunQueue((value) => !value)}
+                      className="rounded-full border border-[#8f6232]/20 px-2 py-1 text-xs text-[#704923]"
                     >
-                      Close
+                      {autoRunQueue ? 'auto-run on' : 'auto-run off'}
                     </button>
+                    <button
+                      type="button"
+                      onClick={() => setRunnerInboxCompact((value) => !value)}
+                      className="rounded-full border border-[#8f6232]/20 px-2 py-1 text-xs text-[#704923]"
+                    >
+                      {runnerInboxCompact ? 'cards' : '1 2 3'}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={runAllReadyMissions}
+                      className="rounded-full border border-[#8f6232]/20 bg-[#704923] px-2 py-1 text-xs text-[#fff8e8]"
+                    >
+                      Run all ready
+                    </button>
+                    <button
+                      type="button"
+                      onClick={copyNumberedQueue}
+                      className="rounded-full border border-[#8f6232]/20 px-2 py-1 text-xs text-[#704923]"
+                    >
+                      Copy list
+                    </button>
+                    <span className="rounded-full border border-[#8f6232]/20 px-2 py-1 text-xs text-[#704923]">
+                      {activeRunnableQueuedMissions.length} ready
+                    </span>
                   </div>
                 </div>
-              )}
-              {!openPanels.runnerInbox ? (
-                <button
-                  type="button"
-                  onClick={() => togglePanel('runnerInbox')}
-                  className="inline-flex items-center gap-2 rounded-full border border-[#8f6232]/20 bg-[#fffdf2] px-3 py-2 text-xs text-[#704923]"
-                >
-                  Runner inbox closed
-                  <span className="rounded-full bg-[#704923] px-2 py-0.5 text-[#fff8e8]">
-                    {activeQueuedMissions.length}
-                  </span>
-                </button>
-              ) : activeQueuedMissions.length === 0 ? (
-                <p className="text-sm text-[#8d653d]">
-                  Queue a mission from this channel to see how the phone runner workflow will feel.
-                </p>
-              ) : runnerInboxCompact ? (
-                <ol className="grid gap-2">
-                  {activeQueuedMissions.slice(0, 8).map((mission, index) => (
-                    <li
-                      key={mission.id}
-                      className="grid grid-cols-[28px_1fr_auto] items-center gap-2 rounded-xl border border-[#b98d52]/18 bg-[#fffdf2]/78 px-3 py-2"
-                    >
-                      <span className="grid h-7 w-7 place-items-center rounded-full bg-[#704923] text-xs text-[#fff8e8]">
-                        {index + 1}
-                      </span>
+                {developerQueueOpen && openPanels.runnerInbox && (
+                  <div className="mb-3 rounded-xl border border-[#b98d52]/18 bg-[#fffdf2]/80 p-3">
+                    <p className="text-xs uppercase tracking-[0.14em] text-[#704923]">
+                      Developer quick add
+                    </p>
+                    <textarea
+                      value={developerQueueText}
+                      onChange={(event) => setDeveloperQueueText(event.target.value)}
+                      placeholder={'1. First mission\n2. Second mission\n3. Third mission'}
+                      className="mt-2 min-h-24 w-full resize-y rounded-xl border border-[#b98d52]/25 bg-[#fff8e8] p-3 text-sm leading-6 text-[#3f2817] outline-none focus:border-[#8f6232]"
+                    />
+                    <div className="mt-2 flex flex-wrap gap-2">
                       <button
                         type="button"
-                        onClick={() => loadQueuedMission(mission)}
-                        className="min-w-0 text-left text-sm text-[#3f2817]"
+                        onClick={addDeveloperQueueMissions}
+                        className="rounded-full bg-[#704923] px-3 py-1 text-xs text-[#fff8e8]"
                       >
-                        <span className="block truncate">{mission.title}</span>
+                        Add numbered missions
                       </button>
-                      <span className="rounded-full border border-[#8f6232]/18 px-2 py-1 text-[11px] text-[#704923]">
-                        {mission.status}
-                      </span>
-                      <div className="col-span-3 flex flex-wrap gap-2 pl-9">
-                        <button
-                          type="button"
-                          onClick={() => moveQueuedMission(mission.id, -1)}
-                          className="rounded-full border border-[#8f6232]/18 px-2 py-1 text-[11px] text-[#704923]"
-                        >
-                          up
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => moveQueuedMission(mission.id, 1)}
-                          className="rounded-full border border-[#8f6232]/18 px-2 py-1 text-[11px] text-[#704923]"
-                        >
-                          down
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => startEditingQueuedMission(mission)}
-                          className="rounded-full border border-[#8f6232]/18 px-2 py-1 text-[11px] text-[#704923]"
-                        >
-                          edit
-                        </button>
-                      </div>
-                    </li>
-                  ))}
-                </ol>
-              ) : (
-                <div className="grid gap-3">
-                  {activeQueuedMissions.slice(0, 8).map((mission) => (
-                    <div
-                      key={mission.id}
-                      className="rounded-2xl border border-[#b98d52]/22 bg-[#fffdf2]/75 p-4"
-                    >
-                      <div className="flex items-start justify-between gap-3">
-                        <div>
-                          <p className="text-sm font-medium leading-5 text-[#3f2817]">
-                            {mission.title}
-                          </p>
-                          <p className="mt-1 text-xs text-[#8d653d]">
-                            {shortPath(mission.projectPath)} / {mission.agentId}
-                          </p>
-                        </div>
-                        <span className="rounded-full border border-[#8f6232]/18 px-2 py-1 text-xs text-[#704923]">
-                          {mission.status}
-                        </span>
-                      </div>
-                      {editingQueueId === mission.id ? (
-                        <textarea
-                          value={editingQueueText}
-                          onChange={(event) => setEditingQueueText(event.target.value)}
-                          className="mt-3 min-h-28 w-full resize-y rounded-xl border border-[#b98d52]/25 bg-[#fff8e8] p-3 text-sm leading-6 text-[#3f2817] outline-none focus:border-[#8f6232]"
-                        />
-                      ) : (
-                        <p className="mt-3 line-clamp-3 text-sm leading-6 text-[#5f4229]">
-                          {mission.prompt}
-                        </p>
-                      )}
-                      <div className="mt-3 flex flex-wrap gap-2">
+                      <button
+                        type="button"
+                        onClick={() => setDeveloperQueueOpen(false)}
+                        className="rounded-full border border-[#8f6232]/20 px-3 py-1 text-xs text-[#704923]"
+                      >
+                        Close
+                      </button>
+                    </div>
+                  </div>
+                )}
+                {activeQueuedMissions.length === 0 ? (
+                  <p className="text-sm text-[#8d653d]">
+                    Queue a mission from this channel to see how the phone runner workflow will
+                    feel.
+                  </p>
+                ) : runnerInboxCompact ? (
+                  <ol className="grid gap-2">
+                    {activeQueuedMissions.slice(0, 8).map((mission, index) => (
+                      <li
+                        key={mission.id}
+                        className="grid grid-cols-[1fr_auto] items-center gap-2 rounded-xl border border-[#b98d52]/18 bg-[#fffdf2]/78 px-3 py-2"
+                      >
                         <button
                           type="button"
                           onClick={() => loadQueuedMission(mission)}
-                          className="rounded-full border border-[#8f6232]/25 px-3 py-1 text-xs text-[#704923]"
+                          className="min-w-0 text-left text-sm text-[#3f2817]"
                         >
-                          Load
+                          <span className="block truncate">
+                            {index + 1}. {mission.title}
+                          </span>
                         </button>
-                        <button
-                          type="button"
-                          onClick={() => moveQueuedMission(mission.id, -1)}
-                          className="rounded-full border border-[#8f6232]/25 px-3 py-1 text-xs text-[#704923]"
-                        >
-                          Up
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => moveQueuedMission(mission.id, 1)}
-                          className="rounded-full border border-[#8f6232]/25 px-3 py-1 text-xs text-[#704923]"
-                        >
-                          Down
-                        </button>
-                        {editingQueueId === mission.id ? (
-                          <>
-                            <button
-                              type="button"
-                              onClick={() => saveQueuedMissionEdit(mission)}
-                              className="rounded-full border border-[#8f6232]/25 px-3 py-1 text-xs text-[#704923]"
-                            >
-                              Save edit
-                            </button>
-                            <button
-                              type="button"
-                              onClick={() => {
-                                setEditingQueueId('');
-                                setEditingQueueText('');
-                              }}
-                              className="rounded-full border border-[#8f6232]/25 px-3 py-1 text-xs text-[#704923]"
-                            >
-                              Cancel
-                            </button>
-                          </>
-                        ) : (
+                        <span className="rounded-full border border-[#8f6232]/18 px-2 py-1 text-[11px] text-[#704923]">
+                          {mission.status}
+                        </span>
+                        {editingQueueId === mission.id && (
+                          <div className="col-span-2 grid gap-2">
+                            <textarea
+                              value={editingQueueText}
+                              onChange={(event) => setEditingQueueText(event.target.value)}
+                              className="min-h-24 w-full resize-y rounded-xl border border-[#b98d52]/25 bg-[#fff8e8] p-3 text-sm leading-6 text-[#3f2817] outline-none focus:border-[#8f6232]"
+                            />
+                            <div className="flex flex-wrap gap-2">
+                              <button
+                                type="button"
+                                onClick={() => saveQueuedMissionEdit(mission)}
+                                className="rounded-full border border-[#8f6232]/18 bg-[#704923] px-2 py-1 text-[11px] text-[#fff8e8]"
+                              >
+                                save
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  setEditingQueueId('');
+                                  setEditingQueueText('');
+                                }}
+                                className="rounded-full border border-[#8f6232]/18 px-2 py-1 text-[11px] text-[#704923]"
+                              >
+                                cancel
+                              </button>
+                            </div>
+                          </div>
+                        )}
+                        <div className="col-span-2 flex flex-wrap gap-2">
                           <button
                             type="button"
-                            onClick={() => startEditingQueuedMission(mission)}
+                            onClick={() => moveQueuedMission(mission.id, -1)}
+                            className="rounded-full border border-[#8f6232]/18 px-2 py-1 text-[11px] text-[#704923]"
+                          >
+                            up
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => moveQueuedMission(mission.id, 1)}
+                            className="rounded-full border border-[#8f6232]/18 px-2 py-1 text-[11px] text-[#704923]"
+                          >
+                            down
+                          </button>
+                          {editingQueueId !== mission.id && (
+                            <button
+                              type="button"
+                              onClick={() => startEditingQueuedMission(mission)}
+                              className="rounded-full border border-[#8f6232]/18 px-2 py-1 text-[11px] text-[#704923]"
+                            >
+                              edit
+                            </button>
+                          )}
+                        </div>
+                      </li>
+                    ))}
+                  </ol>
+                ) : (
+                  <ol className="grid gap-3">
+                    {activeQueuedMissions.slice(0, 8).map((mission, index) => (
+                      <li
+                        key={mission.id}
+                        className="rounded-2xl border border-[#b98d52]/22 bg-[#fffdf2]/75 p-4"
+                      >
+                        <div className="flex items-start justify-between gap-3">
+                          <div className="min-w-0">
+                            <p className="text-sm font-medium leading-5 text-[#3f2817]">
+                              {index + 1}. {mission.title}
+                            </p>
+                            <p className="mt-1 text-xs text-[#8d653d]">
+                              {shortPath(mission.projectPath)} / {mission.agentId}
+                            </p>
+                          </div>
+                          <span className="rounded-full border border-[#8f6232]/18 px-2 py-1 text-xs text-[#704923]">
+                            {mission.status}
+                          </span>
+                        </div>
+                        {editingQueueId === mission.id ? (
+                          <textarea
+                            value={editingQueueText}
+                            onChange={(event) => setEditingQueueText(event.target.value)}
+                            className="mt-3 min-h-28 w-full resize-y rounded-xl border border-[#b98d52]/25 bg-[#fff8e8] p-3 text-sm leading-6 text-[#3f2817] outline-none focus:border-[#8f6232]"
+                          />
+                        ) : (
+                          <p className="mt-3 line-clamp-3 text-sm leading-6 text-[#5f4229]">
+                            {mission.prompt}
+                          </p>
+                        )}
+                        <div className="mt-3 flex flex-wrap gap-2">
+                          <button
+                            type="button"
+                            onClick={() => loadQueuedMission(mission)}
                             className="rounded-full border border-[#8f6232]/25 px-3 py-1 text-xs text-[#704923]"
                           >
-                            Edit
+                            Load
                           </button>
+                          <button
+                            type="button"
+                            onClick={() => moveQueuedMission(mission.id, -1)}
+                            className="rounded-full border border-[#8f6232]/25 px-3 py-1 text-xs text-[#704923]"
+                          >
+                            Up
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => moveQueuedMission(mission.id, 1)}
+                            className="rounded-full border border-[#8f6232]/25 px-3 py-1 text-xs text-[#704923]"
+                          >
+                            Down
+                          </button>
+                          {editingQueueId === mission.id ? (
+                            <>
+                              <button
+                                type="button"
+                                onClick={() => saveQueuedMissionEdit(mission)}
+                                className="rounded-full border border-[#8f6232]/25 px-3 py-1 text-xs text-[#704923]"
+                              >
+                                Save edit
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  setEditingQueueId('');
+                                  setEditingQueueText('');
+                                }}
+                                className="rounded-full border border-[#8f6232]/25 px-3 py-1 text-xs text-[#704923]"
+                              >
+                                Cancel
+                              </button>
+                            </>
+                          ) : (
+                            <button
+                              type="button"
+                              onClick={() => startEditingQueuedMission(mission)}
+                              className="rounded-full border border-[#8f6232]/25 px-3 py-1 text-xs text-[#704923]"
+                            >
+                              Edit
+                            </button>
+                          )}
+                          <button
+                            type="button"
+                            onClick={() => runQueuedMission(mission)}
+                            disabled={
+                              running ||
+                              !selectedAgent?.available ||
+                              (mission.status !== 'queued' &&
+                                mission.status !== 'running' &&
+                                mission.status !== 'failed')
+                            }
+                            className="rounded-full bg-[#704923] px-3 py-1 text-xs text-[#fff8e8] disabled:opacity-45"
+                          >
+                            Run on this computer
+                          </button>
+                        </div>
+                        {mission.events.length > 0 && (
+                          <p className="mt-3 text-xs leading-5 text-[#8d653d]">
+                            Last event: {mission.events[0]?.type} - {mission.events[0]?.text}
+                          </p>
                         )}
-                        <button
-                          type="button"
-                          onClick={() => runQueuedMission(mission)}
-                          disabled={
-                            running ||
-                            !selectedAgent?.available ||
-                            (mission.status !== 'queued' &&
-                              mission.status !== 'running' &&
-                              mission.status !== 'failed')
-                          }
-                          className="rounded-full bg-[#704923] px-3 py-1 text-xs text-[#fff8e8] disabled:opacity-45"
-                        >
-                          Run on this computer
-                        </button>
-                      </div>
-                      {mission.events.length > 0 && (
-                        <p className="mt-3 text-xs leading-5 text-[#8d653d]">
-                          Last event: {mission.events[0]?.type} - {mission.events[0]?.text}
-                        </p>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
+                      </li>
+                    ))}
+                  </ol>
+                )}
+              </div>
+            )}
 
             <div className="rounded-2xl border border-[#b98d52]/20 bg-[#fff8e8]/70 p-4">
               <button
@@ -3395,33 +3665,11 @@ export default function BuildLab() {
               <section
                 className={
                   consoleDesignMode
-                    ? 'min-w-0 rounded-2xl border border-[#d9b65f]/25 bg-[#07080f] p-4 text-[#ffd983] shadow-[0_0_42px_rgba(232,169,58,0.16)]'
-                    : 'min-w-0 rounded-2xl border border-[#2b2118]/15 bg-[#24180f] p-4 text-[#f8e8bd]'
+                    ? 'build-lab-live-console flex min-w-0 flex-col rounded-2xl border border-[#d9b65f]/25 bg-[#07080f] p-3 text-[#ffd983] shadow-[0_0_42px_rgba(232,169,58,0.16)] sm:p-4'
+                    : 'build-lab-live-console flex min-w-0 flex-col rounded-2xl border border-[#2b2118]/15 bg-[#24180f] p-3 text-[#f8e8bd] sm:p-4'
                 }
               >
-                <div className="mb-3 flex items-center justify-between">
-                  <p className="text-xs uppercase tracking-[0.16em] text-[#d7b978]">
-                    Agent console
-                  </p>
-                  <div className="flex items-center gap-2">
-                    <button
-                      type="button"
-                      onClick={() => setConsoleDesignMode((value) => !value)}
-                      className="rounded-full border border-[#d7b978]/20 px-2 py-1 text-xs text-[#d7b978]"
-                    >
-                      {consoleDesignMode ? 'Classic' : 'Night gold'}
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setShowRawConsole((value) => !value)}
-                      className="rounded-full border border-[#d7b978]/20 px-2 py-1 text-xs text-[#d7b978]"
-                    >
-                      {showRawConsole ? 'Readable' : 'Raw'}
-                    </button>
-                    <span className="text-xs text-[#a98b5c]">{running ? 'streaming' : 'idle'}</span>
-                  </div>
-                </div>
-                <div className="mb-3">
+                <div className="order-1 mb-3">
                   {showConsoleMissionPill ? (
                     <div className="flex flex-wrap items-center justify-between gap-3 rounded-full border border-[#d7b978]/18 bg-[#150f0a] px-3 py-2">
                       <div className="flex min-w-0 items-center gap-2">
@@ -3470,7 +3718,47 @@ export default function BuildLab() {
                     </button>
                   )}
                 </div>
-                <div className="mb-3 rounded-xl border border-[#d7b978]/12 bg-[#150f0a] px-3 py-2">
+                <div className="order-2 mb-2 flex items-center justify-between">
+                  <p className="text-xs uppercase tracking-[0.16em] text-[#d7b978]">
+                    Agent console
+                  </p>
+                  <div className="flex items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={() => setConsoleDesignMode((value) => !value)}
+                      className="rounded-full border border-[#d7b978]/20 px-2 py-1 text-xs text-[#d7b978]"
+                    >
+                      {consoleDesignMode ? 'Classic' : 'Night gold'}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setShowRawConsole((value) => !value)}
+                      className="rounded-full border border-[#d7b978]/20 px-2 py-1 text-xs text-[#d7b978]"
+                    >
+                      {showRawConsole ? 'Readable' : 'Raw'}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => togglePanel('console')}
+                      aria-label={
+                        openPanels.console
+                          ? 'Collapse agent console output'
+                          : 'Expand agent console output'
+                      }
+                      className="rounded-full border border-[#d7b978]/20 px-2 py-1 text-xs text-[#d7b978]"
+                    >
+                      {openPanels.console ? 'Collapse' : 'Show output'}
+                    </button>
+                    <span className="text-xs text-[#a98b5c]">{running ? 'streaming' : 'idle'}</span>
+                  </div>
+                </div>
+                <div
+                  className={
+                    openPanels.console
+                      ? 'order-4 mb-2 rounded-xl border border-[#d7b978]/12 bg-[#150f0a] px-3 py-2'
+                      : 'hidden'
+                  }
+                >
                   <div className="flex items-center justify-between gap-3">
                     <div className="flex min-w-0 items-center gap-2">
                       <span
@@ -3527,282 +3815,479 @@ export default function BuildLab() {
                     </div>
                   )}
                 </div>
+                {openPanels.console ? (
+                  <div
+                    ref={consoleScrollRef}
+                    className={
+                      consoleDesignMode
+                        ? 'order-5 max-h-[150px] overscroll-contain overflow-auto rounded-xl border border-[#d9b65f]/12 bg-[radial-gradient(circle_at_20%_10%,rgba(255,209,111,0.16),transparent_32%),linear-gradient(180deg,#080914,#02030a)] p-3 font-mono text-xs leading-5 shadow-inner'
+                        : 'order-5 max-h-[150px] overscroll-contain overflow-auto rounded-xl bg-[#150f0a] p-3 font-mono text-xs leading-5'
+                    }
+                  >
+                    {events.length === 0 ? (
+                      <p className={consoleDesignMode ? 'text-[#9e7f42]' : 'text-[#8e7658]'}>
+                        No mission output yet.
+                      </p>
+                    ) : (
+                      (showRawConsole ? events : events.filter((event) => event.text.trim())).map(
+                        (event) => (
+                          <div
+                            key={event.id}
+                            className={
+                              consoleDesignMode
+                                ? event.tone === 'error'
+                                  ? 'text-[#ff9b7d]'
+                                  : event.tone === 'success'
+                                    ? 'text-[#e8f0a2]'
+                                    : event.tone === 'meta'
+                                      ? 'text-[#f2b64c]'
+                                      : 'text-[#ffd983] drop-shadow-[0_0_8px_rgba(255,205,105,0.42)]'
+                                : event.tone === 'error'
+                                  ? 'text-[#ff9b7d]'
+                                  : event.tone === 'success'
+                                    ? 'text-[#aee0a8]'
+                                    : event.tone === 'meta'
+                                      ? 'text-[#d7b978]'
+                                      : 'text-[#f8e8bd]'
+                            }
+                          >
+                            <span className="opacity-50">[{event.type}] </span>
+                            <span>{event.text}</span>
+                          </div>
+                        ),
+                      )
+                    )}
+                  </div>
+                ) : (
+                  <div className="order-5 rounded-xl border border-[#d7b978]/12 bg-[#150f0a] px-3 py-2 text-xs text-[#a98b5c]">
+                    Output hidden. Console stream stays available without taking over the page.
+                  </div>
+                )}
                 <div
-                  ref={consoleScrollRef}
                   className={
-                    consoleDesignMode
-                      ? 'max-h-[360px] overflow-auto rounded-xl border border-[#d9b65f]/12 bg-[radial-gradient(circle_at_20%_10%,rgba(255,209,111,0.16),transparent_32%),linear-gradient(180deg,#080914,#02030a)] p-3 font-mono text-xs leading-5 shadow-inner'
-                      : 'max-h-[360px] overflow-auto rounded-xl bg-[#150f0a] p-3 font-mono text-xs leading-5'
+                    missionComposerFullscreen
+                      ? 'fixed inset-3 z-50 order-1 overflow-auto rounded-2xl border border-[#d7b978]/24 bg-[#150f0a] p-4 shadow-[0_0_80px_rgba(0,0,0,0.62)] sm:inset-6'
+                      : 'order-1 rounded-2xl border border-[#d7b978]/14 bg-[#150f0a] p-3'
                   }
                 >
-                  {events.length === 0 ? (
-                    <p className={consoleDesignMode ? 'text-[#9e7f42]' : 'text-[#8e7658]'}>
-                      No mission output yet.
-                    </p>
-                  ) : (
-                    (showRawConsole ? events : events.filter((event) => event.text.trim())).map(
-                      (event) => (
-                        <div
-                          key={event.id}
-                          className={
-                            consoleDesignMode
-                              ? event.tone === 'error'
-                                ? 'text-[#ff9b7d]'
-                                : event.tone === 'success'
-                                  ? 'text-[#e8f0a2]'
-                                  : event.tone === 'meta'
-                                    ? 'text-[#f2b64c]'
-                                    : 'text-[#ffd983] drop-shadow-[0_0_8px_rgba(255,205,105,0.42)]'
-                              : event.tone === 'error'
-                                ? 'text-[#ff9b7d]'
-                                : event.tone === 'success'
-                                  ? 'text-[#aee0a8]'
-                                  : event.tone === 'meta'
-                                    ? 'text-[#d7b978]'
-                                    : 'text-[#f8e8bd]'
-                          }
-                        >
-                          <span className="opacity-50">[{event.type}] </span>
-                          <span>{event.text}</span>
-                        </div>
-                      ),
-                    )
+                  {missionComposerFullscreen && (
+                    <div className="fixed inset-0 z-[-1] bg-[#050302]/72 backdrop-blur-sm" />
                   )}
-                </div>
-                <div className="mt-3 rounded-2xl border border-[#d7b978]/14 bg-[#150f0a] p-3">
-                  <div className="mb-2 flex items-center justify-between gap-3">
-                    <div>
-                      <p className="text-xs uppercase tracking-[0.16em] text-[#d7b978]">
-                        Mission prompt
-                      </p>
-                      <p className="mt-1 text-xs leading-5 text-[#a98b5c]">
-                        {activeChannel.name} / {selectedAgent?.name ?? 'No agent'} /{' '}
-                        {projectPath ? shortPath(projectPath) : 'desktop folder'} / {runHint}
-                      </p>
-                    </div>
-                    <button
-                      type="button"
-                      onClick={toggleSpeech}
-                      aria-label={speech.listening ? 'Stop voice input' : 'Start voice input'}
-                      title={speech.listening ? 'Stop voice input' : 'Start voice input'}
-                      className="grid h-9 w-9 shrink-0 place-items-center rounded-full border"
-                      style={{
-                        borderColor: speech.listening
-                          ? 'rgba(245,132,38,0.75)'
-                          : 'rgba(215,185,120,0.22)',
-                        background: speech.listening
-                          ? 'radial-gradient(circle at 30% 30%, rgba(255,178,76,0.52), rgba(255,126,35,0.18))'
-                          : '#c49a51',
-                        boxShadow: speech.listening
-                          ? '0 0 0 5px rgba(255,145,49,0.14), 0 0 28px rgba(255,126,35,0.42)'
-                          : '0 0 0 3px rgba(196,154,81,0.12)',
-                        color: speech.listening ? '#7a310c' : '#fff8e8',
-                        animation: speech.listening
-                          ? 'build-lab-voice-pulse 1s ease-in-out infinite'
-                          : 'none',
-                      }}
-                    >
-                      {speech.listening ? <MicOff size={14} /> : <Mic size={14} />}
-                    </button>
-                  </div>
-                  {(speech.listening || speech.error || speech.transcript) && (
-                    <div className="mb-3 rounded-xl border border-[#d7b978]/12 bg-[#24180f] p-3">
-                      <div className="flex items-center justify-between gap-3">
-                        <div className="flex items-center gap-2">
-                          <span
-                            className="block h-3 w-3 rounded-full"
+                  <div className="grid gap-4 lg:grid-cols-[260px_minmax(0,1fr)] xl:grid-cols-[320px_minmax(0,1fr)]">
+                    <aside className="rounded-xl border border-[#d7b978]/12 bg-[#0f0a07] p-3">
+                      <div className="mb-3 flex items-center justify-between gap-3">
+                        <div>
+                          <p className="flex items-center gap-2 text-xs uppercase tracking-[0.16em] text-[#d7b978]">
+                            <Sparkles size={14} />
+                            Mission Sun
+                          </p>
+                          <p className="mt-1 text-xs leading-5 text-[#a98b5c]">
+                            Voice and prompt mirror.
+                          </p>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={toggleSpeech}
+                          aria-label={
+                            speech.listening ? 'Pause mission sun' : 'Speak with mission sun'
+                          }
+                          title={speech.listening ? 'Pause mission sun' : 'Speak with mission sun'}
+                          className="grid h-9 w-9 shrink-0 place-items-center rounded-full border"
+                          style={{
+                            borderColor: speech.listening
+                              ? 'rgba(245,132,38,0.75)'
+                              : 'rgba(215,185,120,0.22)',
+                            background: speech.listening
+                              ? 'radial-gradient(circle at 30% 30%, rgba(255,178,76,0.52), rgba(255,126,35,0.18))'
+                              : '#c49a51',
+                            boxShadow: speech.listening
+                              ? '0 0 0 5px rgba(255,145,49,0.14), 0 0 28px rgba(255,126,35,0.42)'
+                              : '0 0 0 3px rgba(196,154,81,0.12)',
+                            color: speech.listening ? '#7a310c' : '#fff8e8',
+                            animation: speech.listening
+                              ? 'build-lab-voice-pulse 1s ease-in-out infinite'
+                              : 'none',
+                          }}
+                        >
+                          {speech.listening ? <MicOff size={14} /> : <Mic size={14} />}
+                        </button>
+                      </div>
+                      <div className="mx-auto max-w-[210px] xl:max-w-[245px]">
+                        <SunPresence
+                          compact
+                          active={speech.listening || running}
+                          speaking={speech.listening}
+                          showTranscript={false}
+                          motion={missionSunMotion}
+                          livingText={
+                            speech.transcript ||
+                            prompt ||
+                            'Speak the mission and the sun glistens while the desk writes it down.'
+                          }
+                        />
+                      </div>
+                      <div className="mt-3 grid grid-cols-3 gap-1 rounded-full border border-[#d7b978]/12 bg-[#0f0a07] p-1">
+                        {missionSunMotionOptions.map((option) => (
+                          <button
+                            key={option.id}
+                            type="button"
+                            onClick={() => setMissionSunMotion(option.id)}
+                            title={option.hint}
+                            className="rounded-full px-2 py-1 text-[11px] transition"
                             style={{
-                              background: speech.listening ? '#ff8a22' : '#c9a76e',
+                              background:
+                                missionSunMotion === option.id
+                                  ? 'rgba(255,211,108,0.18)'
+                                  : 'transparent',
+                              color: missionSunMotion === option.id ? '#ffd983' : '#a98b5c',
+                            }}
+                          >
+                            {option.label}
+                          </button>
+                        ))}
+                      </div>
+                      {(speech.error || speech.listening) && (
+                        <p className="mt-3 text-xs leading-5 text-[#a98b5c]">
+                          {speech.error ||
+                            'Listening. The dots agitate while the prompt keeps your words in view.'}
+                        </p>
+                      )}
+                    </aside>
+                    <div className="min-w-0">
+                      <div className="mb-2 flex items-center justify-between gap-3">
+                        <div>
+                          <p className="text-xs uppercase tracking-[0.16em] text-[#d7b978]">
+                            Mission prompt
+                          </p>
+                          <p className="mt-1 text-xs leading-5 text-[#a98b5c]">
+                            {activeChannel.name} / {selectedAgent?.name ?? 'No agent'} /{' '}
+                            {projectPath ? shortPath(projectPath) : 'desktop folder'} / {runHint}
+                          </p>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <button
+                            type="button"
+                            onClick={() => setMissionComposerFullscreen((value) => !value)}
+                            aria-label={
+                              missionComposerFullscreen
+                                ? 'Exit mission composer fullscreen'
+                                : 'Open mission composer fullscreen'
+                            }
+                            title={
+                              missionComposerFullscreen
+                                ? 'Exit mission composer fullscreen'
+                                : 'Open mission composer fullscreen'
+                            }
+                            className="grid h-9 w-9 shrink-0 place-items-center rounded-full border border-[#d7b978]/20 text-[#d7b978]"
+                          >
+                            {missionComposerFullscreen ? <X size={14} /> : <Maximize2 size={14} />}
+                          </button>
+                          <button
+                            type="button"
+                            onClick={toggleSpeech}
+                            aria-label={speech.listening ? 'Stop voice input' : 'Start voice input'}
+                            title={speech.listening ? 'Stop voice input' : 'Start voice input'}
+                            className="grid h-9 w-9 shrink-0 place-items-center rounded-full border"
+                            style={{
+                              borderColor: speech.listening
+                                ? 'rgba(245,132,38,0.75)'
+                                : 'rgba(215,185,120,0.22)',
+                              background: speech.listening
+                                ? 'radial-gradient(circle at 30% 30%, rgba(255,178,76,0.52), rgba(255,126,35,0.18))'
+                                : '#c49a51',
                               boxShadow: speech.listening
-                                ? '0 0 0 6px rgba(255,138,34,0.13), 0 0 22px rgba(255,138,34,0.6)'
-                                : 'none',
+                                ? '0 0 0 5px rgba(255,145,49,0.14), 0 0 28px rgba(255,126,35,0.42)'
+                                : '0 0 0 3px rgba(196,154,81,0.12)',
+                              color: speech.listening ? '#7a310c' : '#fff8e8',
                               animation: speech.listening
                                 ? 'build-lab-voice-pulse 1s ease-in-out infinite'
                                 : 'none',
                             }}
-                          />
-                          <span className="text-xs uppercase tracking-[0.14em] text-[#d7b978]">
-                            {speech.listening ? 'Listening' : 'Voice note'}
-                          </span>
-                        </div>
-                        {speech.transcript && (
-                          <span className="text-[11px] text-[#a98b5c]">transcript captured</span>
-                        )}
-                      </div>
-                      <p className="mt-2 text-xs leading-5 text-[#a98b5c]">
-                        {speech.error ||
-                          (speech.listening
-                            ? 'Speak now. Your words appear in the prompt below.'
-                            : `Last heard: ${speech.transcript}`)}
-                      </p>
-                    </div>
-                  )}
-                  {running && (
-                    <div className="mb-3 rounded-xl border border-[#d7b978]/18 bg-[#24180f] p-3">
-                      <p className="text-xs uppercase tracking-[0.14em] text-[#d7b978]">
-                        Mission in process
-                      </p>
-                      <p className="mt-1 text-xs leading-5 text-[#a98b5c]">
-                        What you type, add from screenshots, or record now is a follow-up brief. Use
-                        Add to queue to register it for the runner queue.
-                      </p>
-                    </div>
-                  )}
-                  <textarea
-                    value={prompt}
-                    onChange={(event) => setPrompt(event.target.value)}
-                    placeholder={
-                      running
-                        ? 'Write or record a follow-up. Add to queue will register it next...'
-                        : 'Tell the agent what to build, fix, review, or plan...'
-                    }
-                    className="min-h-32 w-full resize-y rounded-xl border border-[#d7b978]/18 bg-[#0f0a07] p-3 text-sm leading-6 text-[#f8e8bd] outline-none placeholder:text-[#8e7658] focus:border-[#d7b978]/55"
-                  />
-                  <div className="mt-3 flex flex-wrap items-center justify-between gap-3">
-                    <div className="text-xs text-[#a98b5c]">
-                      Channel: {activeChannel.next}
-                      {error && <span className="ml-2 text-[#ff9b7d]">{error}</span>}
-                    </div>
-                    <div className="grid w-full gap-2 sm:w-auto sm:grid-cols-2">
-                      <button
-                        type="button"
-                        onClick={() => (running ? stopMission() : runMission())}
-                        className="inline-flex justify-center gap-2 rounded-full bg-[#d7b978] px-4 py-2 text-sm text-[#24180f] disabled:opacity-45"
-                      >
-                        <Play size={15} />
-                        {running ? 'Stop mission' : 'Send mission'}
-                      </button>
-                      <button
-                        type="button"
-                        onClick={queueMission}
-                        className="inline-flex justify-center gap-2 rounded-full border border-[#d7b978]/22 px-4 py-2 text-sm text-[#d7b978] disabled:opacity-45"
-                      >
-                        {running ? 'Add follow-up to queue' : 'Add to queue'}
-                      </button>
-                    </div>
-                  </div>
-                  <div className="mt-3 rounded-xl border border-[#d7b978]/12 bg-[#0f0a07] p-3">
-                    <button
-                      type="button"
-                      onClick={() => togglePanel('missionQueue')}
-                      className="flex w-full items-center justify-between gap-3 text-left"
-                    >
-                      <span className="flex items-center gap-2 text-xs uppercase tracking-[0.16em] text-[#d7b978]">
-                        <SquareTerminal size={14} />
-                        Mission queue
-                      </span>
-                      <span className="rounded-full border border-[#d7b978]/18 px-3 py-1 text-xs text-[#d7b978]">
-                        {openPanels.missionQueue ? 'close' : `${activeQueuedMissions.length} items`}
-                      </span>
-                    </button>
-                    {openPanels.missionQueue && (
-                      <div className="mt-3 grid gap-2">
-                        {activeQueuedMissions.length === 0 ? (
-                          <p className="text-sm leading-6 text-[#a98b5c]">
-                            No queued missions in this channel.
-                          </p>
-                        ) : (
-                          activeQueuedMissions.slice(0, 6).map((mission, index) => (
-                            <div
-                              key={mission.id}
-                              className="grid grid-cols-[24px_1fr_auto] items-center gap-2 rounded-xl border border-[#d7b978]/12 bg-[#150f0a] px-3 py-2"
-                            >
-                              <span className="grid h-6 w-6 place-items-center rounded-full bg-[#d7b978] text-[11px] text-[#24180f]">
-                                {index + 1}
-                              </span>
-                              <button
-                                type="button"
-                                onClick={() => loadQueuedMission(mission)}
-                                className="min-w-0 text-left"
-                              >
-                                <span className="block truncate text-sm text-[#f8e8bd]">
-                                  {mission.title}
-                                </span>
-                                <span className="block text-[11px] text-[#a98b5c]">
-                                  {mission.status}
-                                </span>
-                              </button>
-                              <div className="flex gap-1">
-                                <button
-                                  type="button"
-                                  onClick={() => moveQueuedMission(mission.id, -1)}
-                                  className="rounded-full border border-[#d7b978]/18 px-2 py-1 text-[11px] text-[#d7b978]"
-                                >
-                                  up
-                                </button>
-                                <button
-                                  type="button"
-                                  onClick={() => moveQueuedMission(mission.id, 1)}
-                                  className="rounded-full border border-[#d7b978]/18 px-2 py-1 text-[11px] text-[#d7b978]"
-                                >
-                                  down
-                                </button>
-                              </div>
-                            </div>
-                          ))
-                        )}
-                      </div>
-                    )}
-                  </div>
-                  <div className="mt-3 rounded-xl border border-[#d7b978]/12 bg-[#0f0a07] p-3">
-                    <button
-                      type="button"
-                      onClick={() => togglePanel('memory')}
-                      className="flex w-full items-center justify-between gap-3 text-left"
-                    >
-                      <span className="flex items-center gap-2 text-xs uppercase tracking-[0.16em] text-[#d7b978]">
-                        <Archive size={14} />
-                        Mission memory
-                      </span>
-                      <span className="rounded-full border border-[#d7b978]/18 px-3 py-1 text-xs text-[#d7b978]">
-                        {openPanels.memory ? 'close' : `${history.length} saved`}
-                      </span>
-                    </button>
-                    {openPanels.memory && channelHistory.length === 0 ? (
-                      <p className="mt-3 text-sm leading-6 text-[#a98b5c]">
-                        Clear work blocks for {activeChannel.name} will appear here: what you asked,
-                        what happened, and what to check next.
-                      </p>
-                    ) : openPanels.memory ? (
-                      <div className="mt-3 grid gap-3">
-                        {channelHistory.slice(0, 4).map((mission) => (
-                          <button
-                            key={mission.id}
-                            type="button"
-                            onClick={() => loadMission(mission)}
-                            className="rounded-xl border border-[#d7b978]/14 bg-[#150f0a] p-3 text-left"
                           >
-                            <div className="flex items-start justify-between gap-2">
-                              <span className="text-sm font-medium leading-5 text-[#f8e8bd]">
-                                {mission.title}
-                              </span>
+                            {speech.listening ? <MicOff size={14} /> : <Mic size={14} />}
+                          </button>
+                        </div>
+                      </div>
+                      {(speech.listening || speech.error || speech.transcript) && (
+                        <div className="mb-3 rounded-xl border border-[#d7b978]/12 bg-[#24180f] p-3">
+                          <div className="flex items-center justify-between gap-3">
+                            <div className="flex items-center gap-2">
                               <span
-                                className={
-                                  mission.status === 'complete'
-                                    ? 'text-xs text-[#aee0a8]'
-                                    : 'text-xs text-[#ffb089]'
-                                }
-                              >
-                                {mission.status}
+                                className="block h-3 w-3 rounded-full"
+                                style={{
+                                  background: speech.listening ? '#ff8a22' : '#c9a76e',
+                                  boxShadow: speech.listening
+                                    ? '0 0 0 6px rgba(255,138,34,0.13), 0 0 22px rgba(255,138,34,0.6)'
+                                    : 'none',
+                                  animation: speech.listening
+                                    ? 'build-lab-voice-pulse 1s ease-in-out infinite'
+                                    : 'none',
+                                }}
+                              />
+                              <span className="text-xs uppercase tracking-[0.14em] text-[#d7b978]">
+                                {speech.listening ? 'Listening' : 'Voice note'}
                               </span>
                             </div>
-                            <p className="mt-2 text-xs uppercase tracking-[0.14em] text-[#a98b5c]">
-                              Last order
-                            </p>
-                            <p className="mt-1 line-clamp-2 text-sm leading-6 text-[#d7b978]">
-                              {mission.prompt || 'No prompt saved.'}
-                            </p>
-                            <p className="mt-2 text-xs uppercase tracking-[0.14em] text-[#a98b5c]">
-                              Reflection
-                            </p>
-                            <p className="mt-1 text-sm leading-6 text-[#f8e8bd]">
-                              {mission.reflection ??
-                                missionReflection(mission.status, mission.changedFiles)}
-                            </p>
+                            {speech.transcript && (
+                              <span className="text-[11px] text-[#a98b5c]">
+                                transcript captured
+                              </span>
+                            )}
+                          </div>
+                          <p className="mt-2 text-xs leading-5 text-[#a98b5c]">
+                            {speech.error ||
+                              (speech.listening
+                                ? 'Speak now. Your words appear in the prompt below.'
+                                : `Last heard: ${speech.transcript}`)}
+                          </p>
+                        </div>
+                      )}
+                      {running && (
+                        <div className="mb-3 rounded-xl border border-[#d7b978]/18 bg-[#24180f] p-3">
+                          <p className="text-xs uppercase tracking-[0.14em] text-[#d7b978]">
+                            Mission in process
+                          </p>
+                          <p className="mt-1 text-xs leading-5 text-[#a98b5c]">
+                            What you type, add from screenshots, or record now is a follow-up brief.
+                            Use Add to queue to register it for the runner queue.
+                          </p>
+                        </div>
+                      )}
+                      <textarea
+                        ref={promptTextareaRef}
+                        value={prompt}
+                        onChange={(event) => setPrompt(event.target.value)}
+                        placeholder={
+                          running
+                            ? 'Write or record a follow-up. Add to queue will register it next...'
+                            : 'Tell the agent what to build, fix, review, or plan...'
+                        }
+                        className="min-h-48 w-full resize-y rounded-xl border border-[#d7b978]/24 bg-[radial-gradient(circle_at_12%_0%,rgba(255,211,108,0.12),transparent_34%),#0f0a07] p-4 font-serif text-base leading-7 text-[#ffe0a0] shadow-[inset_0_0_28px_rgba(255,178,63,0.08)] outline-none placeholder:text-[#8e7658] focus:border-[#ffd36c]/60"
+                        style={{ textShadow: '0 0 16px rgba(255,180,62,0.24)' }}
+                      />
+                      <div className="mt-3 flex flex-wrap items-center justify-between gap-3">
+                        <div className="text-xs text-[#a98b5c]">
+                          Channel: {activeChannel.next}
+                          {error && <span className="ml-2 text-[#ff9b7d]">{error}</span>}
+                        </div>
+                        <div className="grid w-full gap-2 sm:w-auto sm:grid-cols-2">
+                          <button
+                            type="button"
+                            onClick={() => (running ? stopMission() : runMission())}
+                            className="inline-flex justify-center gap-2 rounded-full bg-[#d7b978] px-4 py-2 text-sm text-[#24180f] disabled:opacity-45"
+                          >
+                            <Play size={15} />
+                            {running ? 'Stop mission' : 'Send mission'}
                           </button>
-                        ))}
+                          <button
+                            type="button"
+                            onClick={queueMission}
+                            className="inline-flex justify-center gap-2 rounded-full border border-[#d7b978]/22 px-4 py-2 text-sm text-[#d7b978] disabled:opacity-45"
+                          >
+                            {running ? 'Add follow-up to queue' : 'Add to queue'}
+                          </button>
+                        </div>
                       </div>
-                    ) : null}
+                      <div className="mt-3 rounded-xl border border-[#d7b978]/12 bg-[#0f0a07] p-3">
+                        <button
+                          type="button"
+                          onClick={() => togglePanel('missionQueue')}
+                          className="flex w-full items-center justify-between gap-3 text-left"
+                        >
+                          <span className="flex items-center gap-2 text-xs uppercase tracking-[0.16em] text-[#d7b978]">
+                            <SquareTerminal size={14} />
+                            Mission queue
+                          </span>
+                          <span className="rounded-full border border-[#d7b978]/18 px-3 py-1 text-xs text-[#d7b978]">
+                            {openPanels.missionQueue
+                              ? 'close'
+                              : `${activeQueuedMissions.length} items`}
+                          </span>
+                        </button>
+                        {openPanels.missionQueue && (
+                          <div className="mt-3 grid gap-2">
+                            {activeQueuedMissions.length === 0 ? (
+                              <p className="text-sm leading-6 text-[#a98b5c]">
+                                No queued missions in this channel.
+                              </p>
+                            ) : (
+                              <>
+                                <p className="text-xs leading-5 text-[#a98b5c]">
+                                  Drag missions above or below each other. Top item runs next.
+                                </p>
+                                {activeQueuedMissions.slice(0, 8).map((mission, index) => (
+                                  <div
+                                    key={mission.id}
+                                    draggable
+                                    onDragStart={(event) =>
+                                      handleQueuedMissionDragStart(event, mission.id)
+                                    }
+                                    onDragEnd={() => setDraggingQueueId('')}
+                                    onDragOver={(event) => event.preventDefault()}
+                                    onDrop={(event) => handleQueuedMissionDrop(event, mission.id)}
+                                    className="rounded-xl border border-[#d7b978]/12 bg-[#150f0a] px-3 py-2 transition"
+                                    style={{
+                                      opacity: draggingQueueId === mission.id ? 0.48 : 1,
+                                      borderColor:
+                                        draggingQueueId && draggingQueueId !== mission.id
+                                          ? 'rgba(215,185,120,0.28)'
+                                          : 'rgba(215,185,120,0.12)',
+                                    }}
+                                  >
+                                    <div className="grid grid-cols-[24px_1fr_auto] items-center gap-2">
+                                      <span className="grid h-6 w-6 cursor-grab place-items-center rounded-full bg-[#d7b978] text-[#24180f] active:cursor-grabbing">
+                                        <GripVertical size={13} aria-hidden="true" />
+                                      </span>
+                                      <button
+                                        type="button"
+                                        onClick={() => loadQueuedMission(mission)}
+                                        className="min-w-0 text-left"
+                                      >
+                                        <span className="block truncate text-sm text-[#f8e8bd]">
+                                          {index + 1}. {mission.title}
+                                        </span>
+                                        <span className="block truncate text-[11px] text-[#a98b5c]">
+                                          {mission.status} / {shortPath(mission.projectPath)}
+                                        </span>
+                                      </button>
+                                      <div className="flex gap-1">
+                                        <button
+                                          type="button"
+                                          onClick={() => moveQueuedMission(mission.id, -1)}
+                                          className="rounded-full border border-[#d7b978]/18 px-2 py-1 text-[11px] text-[#d7b978]"
+                                        >
+                                          up
+                                        </button>
+                                        <button
+                                          type="button"
+                                          onClick={() => moveQueuedMission(mission.id, 1)}
+                                          className="rounded-full border border-[#d7b978]/18 px-2 py-1 text-[11px] text-[#d7b978]"
+                                        >
+                                          down
+                                        </button>
+                                      </div>
+                                    </div>
+                                    {editingQueueId === mission.id ? (
+                                      <div className="mt-2 grid gap-2">
+                                        <textarea
+                                          value={editingQueueText}
+                                          onChange={(event) =>
+                                            setEditingQueueText(event.target.value)
+                                          }
+                                          className="min-h-24 w-full resize-y rounded-xl border border-[#d7b978]/18 bg-[#0f0a07] p-3 text-sm leading-6 text-[#f8e8bd] outline-none focus:border-[#d7b978]/55"
+                                        />
+                                        <div className="flex flex-wrap gap-2">
+                                          <button
+                                            type="button"
+                                            onClick={() => saveQueuedMissionEdit(mission)}
+                                            className="rounded-full bg-[#d7b978] px-3 py-1 text-xs text-[#24180f]"
+                                          >
+                                            Save
+                                          </button>
+                                          <button
+                                            type="button"
+                                            onClick={() => {
+                                              setEditingQueueId('');
+                                              setEditingQueueText('');
+                                            }}
+                                            className="rounded-full border border-[#d7b978]/18 px-3 py-1 text-xs text-[#d7b978]"
+                                          >
+                                            Cancel
+                                          </button>
+                                        </div>
+                                      </div>
+                                    ) : (
+                                      <div className="mt-2 flex flex-wrap gap-2 pl-8">
+                                        <button
+                                          type="button"
+                                          onClick={() => startEditingQueuedMission(mission)}
+                                          className="rounded-full border border-[#d7b978]/18 px-2 py-1 text-[11px] text-[#d7b978]"
+                                        >
+                                          edit
+                                        </button>
+                                        <button
+                                          type="button"
+                                          onClick={() => runQueuedMission(mission)}
+                                          disabled={
+                                            running ||
+                                            (mission.status !== 'queued' &&
+                                              mission.status !== 'running' &&
+                                              mission.status !== 'failed')
+                                          }
+                                          className="rounded-full border border-[#d7b978]/18 px-2 py-1 text-[11px] text-[#d7b978] disabled:opacity-45"
+                                        >
+                                          run
+                                        </button>
+                                      </div>
+                                    )}
+                                  </div>
+                                ))}
+                              </>
+                            )}
+                          </div>
+                        )}
+                      </div>
+                      <div className="mt-3 rounded-xl border border-[#d7b978]/12 bg-[#0f0a07] p-3">
+                        <button
+                          type="button"
+                          onClick={() => togglePanel('memory')}
+                          className="flex w-full items-center justify-between gap-3 text-left"
+                        >
+                          <span className="flex items-center gap-2 text-xs uppercase tracking-[0.16em] text-[#d7b978]">
+                            <Archive size={14} />
+                            Mission memory
+                          </span>
+                          <span className="rounded-full border border-[#d7b978]/18 px-3 py-1 text-xs text-[#d7b978]">
+                            {openPanels.memory ? 'close' : `${history.length} saved`}
+                          </span>
+                        </button>
+                        {openPanels.memory && channelHistory.length === 0 ? (
+                          <p className="mt-3 text-sm leading-6 text-[#a98b5c]">
+                            Clear work blocks for {activeChannel.name} will appear here: what you
+                            asked, what happened, and what to check next.
+                          </p>
+                        ) : openPanels.memory ? (
+                          <div className="mt-3 grid gap-3">
+                            {channelHistory.slice(0, 4).map((mission) => (
+                              <button
+                                key={mission.id}
+                                type="button"
+                                onClick={() => loadMission(mission)}
+                                className="rounded-xl border border-[#d7b978]/14 bg-[#150f0a] p-3 text-left"
+                              >
+                                <div className="flex items-start justify-between gap-2">
+                                  <span className="text-sm font-medium leading-5 text-[#f8e8bd]">
+                                    {mission.title}
+                                  </span>
+                                  <span
+                                    className={
+                                      mission.status === 'complete'
+                                        ? 'text-xs text-[#aee0a8]'
+                                        : 'text-xs text-[#ffb089]'
+                                    }
+                                  >
+                                    {mission.status}
+                                  </span>
+                                </div>
+                                <p className="mt-2 text-xs uppercase tracking-[0.14em] text-[#a98b5c]">
+                                  Last order
+                                </p>
+                                <p className="mt-1 line-clamp-2 text-sm leading-6 text-[#d7b978]">
+                                  {mission.prompt || 'No prompt saved.'}
+                                </p>
+                                <p className="mt-2 text-xs uppercase tracking-[0.14em] text-[#a98b5c]">
+                                  Reflection
+                                </p>
+                                <p className="mt-1 text-sm leading-6 text-[#f8e8bd]">
+                                  {mission.reflection ??
+                                    missionReflection(mission.status, mission.changedFiles)}
+                                </p>
+                              </button>
+                            ))}
+                          </div>
+                        ) : null}
+                      </div>
+                    </div>
                   </div>
                 </div>
               </section>

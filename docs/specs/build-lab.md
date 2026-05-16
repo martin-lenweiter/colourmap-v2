@@ -279,7 +279,13 @@ MVP behavior:
 
 - browser speech-to-text writes into a local thought box
 - a warm dot sun reacts visually while listening
-- spoken or typed words also appear below the visual presence as a golden living transcript, so the user can see the conversation forming inside the same graphical universe
+- in the mission workspace, the mission prompt is the single transcript surface; the compact Mission Sun should not duplicate the prompt text in its own pill
+- the prompt text area uses the same golden living-transcript treatment and automatically scrolls to the newest dictated words while recording
+- the compact Mission Sun offers distinct visual agitation styles: Orbit swirls, Flare pulses outward, Scatter throws sparks, Cell keeps a stable membrane with agitated internal dots, and Ripple sends wave rings through the field
+- the larger Mission Sun text box remains an important future interaction pattern: a visual transcript/conversation surface where the user can talk to an AI presence and see words writing themselves inside the same golden-dot universe
+- when the user is composing or speaking a mission, the Mission Sun and current prompt should stretch into a wider studio panel instead of staying trapped in a narrow sidebar
+- the brown Mission Sun/prompt composer needs its own fullscreen mode for focused voice prompting and visually pleasant mission writing
+- browser speech recognition may stop after silence or browser interruptions; Build Lab should restart active dictation when safe so the user does not lose the feeling that the system is still listening
 - browser speech synthesis can speak short preset responses
 - voice moods adjust speech rate and pitch
 - no audio is stored
@@ -457,6 +463,7 @@ The user should be able to:
 
 - load a recent project without retyping the path
 - reuse previous missions from local mission memory
+- manage the current channel's mission queue directly above mission memory, including loading, editing, dragging, and moving queued items before they run
 - keep raw terminal output available without making it the only interface
 
 ### Work Channels

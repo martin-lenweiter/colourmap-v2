@@ -22,6 +22,7 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
     status?: BuildLabQueuedMissionStatus;
     title?: string;
     prompt?: string;
+    order?: number;
     event?: { type?: string; text?: string };
   };
   try {
@@ -32,6 +33,9 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
 
   if (body.status && !statuses.has(body.status)) {
     return NextResponse.json({ error: 'Invalid queue status.' }, { status: 400 });
+  }
+  if (body.order !== undefined && !Number.isFinite(body.order)) {
+    return NextResponse.json({ error: 'Invalid queue order.' }, { status: 400 });
   }
 
   const { id } = await params;
@@ -54,6 +58,7 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
     status: body.status ?? current.status,
     title: body.title?.trim() || current.title,
     prompt: body.prompt?.trim() || current.prompt,
+    order: body.order ?? current.order,
     events: nextEvents,
   });
 

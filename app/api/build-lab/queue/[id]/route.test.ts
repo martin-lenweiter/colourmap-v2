@@ -6,7 +6,7 @@ const { requireBuildLabAccess } = vi.hoisted(() => ({
 
 vi.mock('@/lib/coding-agents/route-auth', () => ({ requireBuildLabAccess }));
 
-import { createQueuedMission } from '@/lib/coding-agents/queue';
+import { createQueuedMission, listQueuedMissions } from '@/lib/coding-agents/queue';
 
 import { PATCH } from './route';
 
@@ -39,6 +39,34 @@ describe('build lab queued mission route', () => {
     expect(response.status).toBe(200);
     expect(body.status).toBe('running');
     expect(body.events[0].type).toBe('claimed');
+  });
+
+  it('persists queue ordering for reordered missions', async () => {
+    const first = createQueuedMission('user-queue-patch', {
+      title: 'First queued mission',
+      channelId: 'phone-runner',
+      agentId: 'codex',
+      projectPath: 'C:/Users/victor/colourmap-v2',
+      prompt: 'First queued mission.',
+    });
+    const second = createQueuedMission('user-queue-patch', {
+      title: 'Second queued mission',
+      channelId: 'phone-runner',
+      agentId: 'codex',
+      projectPath: 'C:/Users/victor/colourmap-v2',
+      prompt: 'Second queued mission.',
+    });
+
+    const response = await PATCH(
+      new Request(`http://localhost/api/build-lab/queue/${first.id}`, {
+        method: 'PATCH',
+        body: JSON.stringify({ order: second.order + 1 }),
+      }),
+      { params: Promise.resolve({ id: first.id }) },
+    );
+
+    expect(response.status).toBe(200);
+    expect(listQueuedMissions('user-queue-patch')[0].id).toBe(first.id);
   });
 
   it('rejects invalid statuses', async () => {
