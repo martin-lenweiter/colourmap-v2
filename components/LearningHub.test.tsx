@@ -21,6 +21,7 @@ describe('LearningHub', () => {
 
     expect(screen.getByText("You're here. That already matters.")).toBeDefined();
     expect(screen.getByText('Knowledge worlds')).toBeDefined();
+    expect(screen.getByText('Struggle & Letting Go')).toBeDefined();
     expect(screen.getByRole('button', { name: /Living Atlas/i })).toBeDefined();
     expect(screen.getByRole('button', { name: /Progress Roads/i })).toBeDefined();
     expect(screen.getByText('start here')).toBeDefined();

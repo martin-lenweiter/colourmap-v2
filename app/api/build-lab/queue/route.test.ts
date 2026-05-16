@@ -14,13 +14,15 @@ describe('build lab queue route', () => {
   });
 
   it('creates and lists queued missions for the desktop runner', async () => {
+    const projectPath = process.cwd();
+
     const createResponse = await POST(
       new Request('http://localhost/api/build-lab/queue', {
         method: 'POST',
         body: JSON.stringify({
           channelId: 'phone-runner',
           agentId: 'codex',
-          projectPath: 'C:/Users/victor/colourmap-v2',
+          projectPath,
           prompt: 'Build from phone.',
         }),
       }),
@@ -42,7 +44,7 @@ describe('build lab queue route', () => {
     const response = await POST(
       new Request('http://localhost/api/build-lab/queue', {
         method: 'POST',
-        body: JSON.stringify({ projectPath: 'C:/Users/victor/colourmap-v2' }),
+        body: JSON.stringify({ projectPath: process.cwd() }),
       }),
     );
 

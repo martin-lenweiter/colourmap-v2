@@ -279,7 +279,13 @@ MVP behavior:
 
 - browser speech-to-text writes into a local thought box
 - a warm dot sun reacts visually while listening
-- spoken or typed words also appear below the visual presence as a golden living transcript, so the user can see the conversation forming inside the same graphical universe
+- in the mission workspace, the mission prompt is the single transcript surface; the compact Mission Sun should not duplicate the prompt text in its own pill
+- the prompt text area uses the same golden living-transcript treatment and automatically scrolls to the newest dictated words while recording
+- the compact Mission Sun offers distinct visual agitation styles: Orbit swirls, Flare pulses outward, Scatter throws sparks, Cell keeps a stable membrane with agitated internal dots, and Ripple sends wave rings through the field
+- the larger Mission Sun text box remains an important future interaction pattern: a visual transcript/conversation surface where the user can talk to an AI presence and see words writing themselves inside the same golden-dot universe
+- when the user is composing or speaking a mission, the Mission Sun and current prompt should stretch into a wider studio panel instead of staying trapped in a narrow sidebar
+- the brown Mission Sun/prompt composer needs its own fullscreen mode for focused voice prompting and visually pleasant mission writing
+- browser speech recognition may stop after silence or browser interruptions; Build Lab should restart active dictation when safe so the user does not lose the feeling that the system is still listening
 - browser speech synthesis can speak short preset responses
 - voice moods adjust speech rate and pitch
 - no audio is stored
@@ -376,6 +382,7 @@ The first version proves the loop:
 - stream stdout/stderr into the UI
 - show changed files
 - show the current Git diff
+- keep the Diff desk closable as a compact pill so the mission workspace can stay light until review is needed
 - keep the default workspace simpler than the terminal: project, agent, prompt, console, diff
 - separate readable mission reflection from raw technical agent output
 
@@ -411,6 +418,7 @@ MVP voice behavior:
 - browser speech-to-text appends into the raw mission brief
 - the user can edit before sending
 - no audio is stored
+- while a mission is running, the composer must clearly state that typed notes, screenshot notes, and recorded voice are follow-up briefs that should be added to the runner queue
 
 Future voice behavior:
 
@@ -455,6 +463,7 @@ The user should be able to:
 
 - load a recent project without retyping the path
 - reuse previous missions from local mission memory
+- manage the current channel's mission queue directly above mission memory, including loading, editing, dragging, and moving queued items before they run
 - keep raw terminal output available without making it the only interface
 
 ### Work Channels
@@ -583,6 +592,22 @@ This protects the discussion/reflection layer from being buried by streaming bui
 ### Agent Console
 
 The agent console is the live technical stream. It should behave like the current terminal experience: command starts, stdout/stderr, errors, completion events. It is useful while the agent is working, but it should not be the only record of the mission.
+
+The top of the console should keep the active mission visible as a closable pill. Open state shows the mission status and title. Closed state stays as a compact "Open current mission" pill so the user can recover the context without the mission prompt taking over the console.
+
+The console must scroll inside its own output region. New agent output must not pull the whole Build Lab page away from the mission prompt or composer.
+
+## Runner Inbox
+
+The runner inbox is the bridge between phone-prepared prompts and the desktop runner. It must be actionable, not just a display list:
+
+- queued and stale running missions are both treated as runnable when the desktop runner is idle
+- the inbox can be collapsed to a pill
+- the user can switch between card view and short numbered view
+- the user can copy the numbered list for pasting into the terminal/chat if the runner bridge is not trusted yet
+- queued mission text can be edited before running
+- missions can be moved up or down locally to choose the next execution order
+- a hidden developer quick-add mode can accept a numbered pasted list and turn it into runner inbox items
 
 ## Access
 

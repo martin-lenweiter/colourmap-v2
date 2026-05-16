@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 
+import { resolveProjectDirectory } from '@/lib/coding-agents/paths';
 import { createQueuedMission, listQueuedMissions } from '@/lib/coding-agents/queue';
 import { requireBuildLabAccess } from '@/lib/coding-agents/route-auth';
 
@@ -36,15 +37,21 @@ export async function POST(request: Request) {
   if (!body.prompt?.trim()) {
     return NextResponse.json({ error: 'Mission prompt is required.' }, { status: 400 });
   }
-  if (!body.projectPath?.trim()) {
-    return NextResponse.json({ error: 'Project path is required.' }, { status: 400 });
+  let projectPath: string;
+  try {
+    projectPath = await resolveProjectDirectory(body.projectPath ?? '', process.cwd());
+  } catch (error) {
+    return NextResponse.json(
+      { error: error instanceof Error ? error.message : 'Invalid project path.' },
+      { status: 400 },
+    );
   }
 
   const mission = createQueuedMission(access.value.id, {
     title: titleFromPrompt(body.prompt),
     channelId: body.channelId ?? 'general',
     agentId: body.agentId ?? 'codex',
-    projectPath: body.projectPath,
+    projectPath,
     prompt: body.prompt,
   });
 

@@ -1,8 +1,8 @@
 import { promises as fs } from 'node:fs';
 import path from 'node:path';
 
-export async function resolveProjectDirectory(projectPath: string) {
-  const trimmed = projectPath.trim();
+export async function resolveProjectDirectory(projectPath: string, fallbackPath = '') {
+  const trimmed = projectPath.trim() || fallbackPath.trim();
   if (!trimmed) throw new Error('Project path is required.');
 
   const resolved = path.resolve(trimmed);

@@ -16,6 +16,7 @@ export type BuildLabQueuedMission = {
   projectPath: string;
   prompt: string;
   status: BuildLabQueuedMissionStatus;
+  order: number;
   createdAt: string;
   updatedAt: string;
   events: BuildLabRunnerEvent[];
@@ -36,7 +37,11 @@ function store(): QueueStore {
 export function listQueuedMissions(userId: string) {
   return store()
     .missions.filter((mission) => mission.userId === userId)
-    .sort((a, b) => Date.parse(b.updatedAt) - Date.parse(a.updatedAt));
+    .sort(
+      (a, b) =>
+        (b.order ?? Date.parse(b.updatedAt)) - (a.order ?? Date.parse(a.updatedAt)) ||
+        Date.parse(b.updatedAt) - Date.parse(a.updatedAt),
+    );
 }
 
 export function createQueuedMission(
@@ -59,6 +64,7 @@ export function createQueuedMission(
     projectPath: input.projectPath,
     prompt: input.prompt,
     status: 'queued',
+    order: Date.now(),
     createdAt: now,
     updatedAt: now,
     events: [
@@ -72,7 +78,7 @@ export function createQueuedMission(
 export function updateQueuedMission(
   userId: string,
   missionId: string,
-  patch: Partial<Pick<BuildLabQueuedMission, 'status' | 'events'>>,
+  patch: Partial<Pick<BuildLabQueuedMission, 'status' | 'events' | 'title' | 'prompt' | 'order'>>,
 ) {
   let updated: BuildLabQueuedMission | null = null;
   store().missions = store().missions.map((mission) => {

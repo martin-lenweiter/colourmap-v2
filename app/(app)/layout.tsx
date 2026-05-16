@@ -5,6 +5,7 @@ import ColourmapBrandButton from '@/components/ColourmapBrandButton';
 import ConditionalTopNav from '@/components/ConditionalTopNav';
 import DevBranchHud from '@/components/DevBranchHud';
 import FeedbackOverlay from '@/components/FeedbackOverlay';
+import GlobalAIPresence from '@/components/GlobalAIPresence';
 import MiniPlayer from '@/components/MiniPlayer';
 import MobileViewportBoot from '@/components/MobileViewportBoot';
 import PhoneFrame from '@/components/PhoneFrame';
@@ -107,6 +108,7 @@ export default async function AppLayout({
             </div>
           </PhoneFrame>
           <MiniPlayer />
+          <GlobalAIPresence />
           <FeedbackOverlay />
           <DevBranchHud />
         </SoundSessionProvider>

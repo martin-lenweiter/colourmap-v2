@@ -17,7 +17,7 @@ export async function POST(request: Request) {
   const { projectPath } = body.value as { projectPath?: string };
 
   try {
-    const resolvedPath = await resolveProjectDirectory(projectPath ?? '');
+    const resolvedPath = await resolveProjectDirectory(projectPath ?? '', process.cwd());
     const [diff, changedFiles] = await Promise.all([
       getGitDiff(resolvedPath),
       listChangedFiles(resolvedPath),

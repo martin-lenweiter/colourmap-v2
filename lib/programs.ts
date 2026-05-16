@@ -155,6 +155,41 @@ export const PROGRAMS: Program[] = [
     ],
   },
   {
+    key: 'struggle-letting-go',
+    domain: 'Struggle & Letting Go',
+    color: '#B48762',
+    segments: [
+      {
+        title: 'Struggle is not always failure',
+        body: 'When life feels difficult, the mind often translates struggle as proof that something is wrong. But struggle can also mean that the system is changing. A muscle shakes when it is learning a new load. A mind becomes noisy when an old pattern is being questioned. A life feels tense when two truths are asking to be integrated. The first move is not to force an answer. It is to stop treating the struggle as evidence against yourself.',
+      },
+      {
+        title: 'What the resistance is protecting',
+        body: 'Resistance usually has intelligence inside it. The part of you that avoids, delays, freezes, or escapes may be trying to protect you from shame, exhaustion, disappointment, or too much pressure at once. If you only attack the resistance, it gets louder. If you ask what it is protecting, it becomes information. Letting go begins when you stop fighting the protector and start listening for the need underneath it.',
+      },
+      {
+        title: 'Do not force the river',
+        body: 'Forcing can look productive, but it often narrows the nervous system. You push harder, think faster, tighten the body, and lose access to the exact clarity you need. Letting go is not giving up. It is releasing the extra tension around the action. You can still move. You can still care. But you stop trying to solve your whole life from a contracted state. Sometimes the wisest move is to soften enough that the next true step becomes visible.',
+      },
+      {
+        title: 'Small steps change the weather',
+        body: 'A small step is not small to the nervous system. Opening the document, drinking water, walking outside for five minutes, sending one message, cleaning one surface: each tiny action gives the body evidence that movement is possible. This matters because overwhelm feeds on abstraction. Small steps make life concrete again. You do not need to win the whole day. You need one real movement that changes the temperature of the moment.',
+      },
+      {
+        title: 'How struggle shapes you',
+        body: 'The difficult period can become a teacher if it does not become your identity. Struggle shows where you are overextended, where you need support, where an old strategy has expired, where a desire is real enough to hurt. It can deepen patience, humility, discernment, and compassion. But only if you metabolise it. That means reflecting, resting, adjusting, and choosing what the struggle is asking you to learn rather than simply enduring it.',
+      },
+      {
+        title: 'Let go, then return',
+        body: 'Letting go is a rhythm. You release the pressure, come back to the body, name one thing that matters, and return with less violence. The aim is not to become passive. It is to stop using force as the only proof that you care. You can care deeply and move gently. You can be ambitious and patient. You can build the future while taking one honest step today.',
+      },
+      {
+        title: 'The practice for today',
+        body: 'Write the sentence: "The core struggle is..." Then write: "The smallest real step is..." Do only that step. Afterward, notice whether the inner weather changed by even five percent. That five percent matters. It is how a stuck system remembers that movement is still possible.',
+      },
+    ],
+  },
+  {
     key: 'organisational-intelligence',
     domain: 'Organisational Intelligence',
     color: '#6B7A50',
