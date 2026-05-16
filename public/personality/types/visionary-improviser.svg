@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 360" role="img" aria-label="The Visionary Improviser">
+  <rect width="1200" height="360" fill="#1f140f"/>
+  <rect x="28" y="24" width="1144" height="312" rx="22" fill="#edd9b3"/>
+  <path d="M72 282c156-62 284-56 384 18 100-112 226-151 380-116 104 24 197 15 280-27" fill="none" stroke="#6c4328" stroke-width="5" opacity=".22"/>
+  <g fill="none" stroke="#2a1710" stroke-width="7" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M248 260c-40-78-22-145 54-201 78 46 117 113 118 201"/>
+    <path d="M173 260c45-76 88-116 129-121 60 19 109 59 147 121"/>
+    <path d="M150 278c108 26 217 26 327 0"/>
+    <path d="M769 239c-12-54 6-100 55-139 52 34 82 80 89 139"/>
+    <path d="M713 239c34-48 71-76 111-83 47 12 88 40 123 83"/>
+  </g>
+  <g fill="#f3bf68" stroke="#2a1710" stroke-width="4">
+    <path d="M598 81l18 42 45 5-34 30 10 45-39-24-39 24 10-45-34-30 45-5z"/>
+    <circle cx="303" cy="139" r="18"/>
+    <circle cx="824" cy="156" r="15"/>
+    <circle cx="948" cy="101" r="10"/>
+  </g>
+  <text x="72" y="318" font-family="Georgia,serif" font-size="28" fill="#3b2518">many futures, one small container</text>
+</svg>

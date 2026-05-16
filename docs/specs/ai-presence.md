@@ -12,6 +12,8 @@ This surface is the practical first step toward the larger AI Evolution spec: an
 
 - A floating ochre/brown button is available inside the authenticated app shell.
 - Opening it reveals a calm brown panel with a living-cell dot visual.
+- The visual has five switchable presets: Cell, Mission Sun, Dot Walker, Orbit, and Nebula.
+- Mission Sun is the first talking-interface prototype: golden dots stay gathered inside the circular field and pulse faster while the user is speaking, so voice input has a visible body.
 - The user can type a reflection or dictate into the text area when browser speech recognition is available.
 - Submit streams a backend AI response into the panel.
 - The panel is usable on phone without Codex, Claude Code, or a desktop runner.

@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 360" role="img" aria-label="Symbolic openness illustration">
+  <rect width="1200" height="360" fill="#20150f"/>
+  <rect x="26" y="24" width="1148" height="312" rx="20" fill="#ead6ad" opacity=".92"/>
+  <path d="M58 74c154-34 290-24 409 20 142 52 284 57 426 16 92-27 173-28 250-5" fill="none" stroke="#7b4f2d" stroke-width="4" opacity=".25"/>
+  <path d="M602 54v252" stroke="#6f452b" stroke-width="3" stroke-dasharray="8 14" opacity=".35"/>
+  <g fill="none" stroke="#2a1710" stroke-width="7" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M198 251c58-21 88-72 88-146"/>
+    <path d="M154 250c50-78 79-126 132-145 35 30 53 78 69 146"/>
+    <path d="M138 267c76 21 154 20 234-2"/>
+    <path d="M168 105c42 21 82 21 119 0 43 20 78 19 105-3"/>
+  </g>
+  <g fill="#d8a7c4" stroke="#2a1710" stroke-width="5">
+    <circle cx="250" cy="139" r="22"/>
+    <circle cx="306" cy="154" r="15"/>
+    <circle cx="205" cy="177" r="13"/>
+  </g>
+  <g transform="translate(720 58)" fill="none" stroke="#2a1710" stroke-width="7" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M105 204c-18-62-11-119 21-172"/>
+    <path d="M126 32c32 58 55 116 72 173"/>
+    <path d="M41 205c49-33 88-91 85-173"/>
+    <path d="M199 205c-44-38-66-96-73-173"/>
+    <path d="M20 222c86 27 172 27 260 0"/>
+  </g>
+  <g fill="#f3bf68" stroke="#2a1710" stroke-width="4">
+    <path d="M875 81l15 35 38 4-29 25 9 38-33-20-33 20 9-38-29-25 38-4z"/>
+    <circle cx="955" cy="146" r="15"/>
+    <circle cx="808" cy="162" r="11"/>
+  </g>
+  <text x="80" y="315" font-family="Georgia,serif" font-size="26" fill="#3b2518">grounded form</text>
+  <text x="792" y="315" font-family="Georgia,serif" font-size="26" fill="#3b2518">possible worlds</text>
+</svg>

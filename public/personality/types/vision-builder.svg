@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 360" role="img" aria-label="The Vision Builder">
+  <rect width="1200" height="360" fill="#1f140f"/>
+  <rect x="28" y="24" width="1144" height="312" rx="22" fill="#edd9b3"/>
+  <g fill="none" stroke="#2a1710" stroke-width="7" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M166 263h310V96L321 42 166 96z"/>
+    <path d="M166 151h310M244 263V123M321 263V70M398 263V123"/>
+    <path d="M684 262c-32-75-15-141 52-199 72 49 110 115 114 199"/>
+    <path d="M620 262c40-71 79-108 116-111 54 19 99 56 135 111"/>
+  </g>
+  <g fill="#c4a060" stroke="#2a1710" stroke-width="4">
+    <circle cx="321" cy="151" r="15"/>
+    <circle cx="736" cy="151" r="17"/>
+    <path d="M982 89l14 32 35 4-27 23 8 34-30-18-30 18 8-34-27-23 35-4z"/>
+  </g>
+  <path d="M500 181c50-28 96-28 138 0" fill="none" stroke="#d8a7c4" stroke-width="8" stroke-linecap="round"/>
+  <text x="72" y="318" font-family="Georgia,serif" font-size="28" fill="#3b2518">beauty becoming architecture</text>
+</svg>

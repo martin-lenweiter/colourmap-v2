@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 360" role="img" aria-label="Symbolic care illustration">
+  <rect width="1200" height="360" fill="#20150f"/>
+  <rect x="26" y="24" width="1148" height="312" rx="20" fill="#ead6ad" opacity=".92"/>
+  <path d="M602 54v252" stroke="#6f452b" stroke-width="3" stroke-dasharray="8 14" opacity=".35"/>
+  <g fill="none" stroke="#2a1710" stroke-width="7" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M226 72c72 30 113 81 123 153-72 36-144 37-217 2 9-76 40-128 94-155z"/>
+    <path d="M226 105v122M166 165h122"/>
+    <path d="M122 255c77 23 157 23 240 0"/>
+  </g>
+  <g fill="#9fbf8a" stroke="#2a1710" stroke-width="5">
+    <circle cx="226" cy="165" r="22"/>
+    <circle cx="314" cy="93" r="14"/>
+    <circle cx="145" cy="111" r="12"/>
+  </g>
+  <g transform="translate(740 64)" fill="none" stroke="#2a1710" stroke-width="7" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M132 55c34-47 102-23 102 35 0 61-65 102-102 137C94 192 30 151 30 90c0-58 68-82 102-35z"/>
+    <path d="M38 236c62 29 126 29 192 0"/>
+    <path d="M133 79v111"/>
+  </g>
+  <g fill="#d8a7c4" stroke="#2a1710" stroke-width="4">
+    <circle cx="818" cy="122" r="10"/>
+    <circle cx="928" cy="121" r="10"/>
+    <circle cx="873" cy="213" r="11"/>
+  </g>
+  <text x="128" y="315" font-family="Georgia,serif" font-size="26" fill="#3b2518">boundary</text>
+  <text x="804" y="315" font-family="Georgia,serif" font-size="26" fill="#3b2518">warmth</text>
+</svg>
