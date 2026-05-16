@@ -111,9 +111,14 @@ export default function GlobalAIPresence() {
   const [response, setResponse] = useState('');
   const [status, setStatus] = useState<PresenceStatus>('idle');
   const [error, setError] = useState('');
+  const [mounted, setMounted] = useState(false);
   const responseRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const speech = useSpeechToText({ lang: 'en-US', autoRestart: true });
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   useEffect(() => {
     if (!responseRef.current) return;
@@ -173,6 +178,8 @@ export default function GlobalAIPresence() {
     }
     speech.start(message, setMessage);
   }
+
+  if (!mounted) return null;
 
   return (
     <>

@@ -19,7 +19,7 @@ describe('GlobalAIPresence', () => {
 
     render(<GlobalAIPresence />);
 
-    await user.click(screen.getByRole('button', { name: 'Open AI Presence' }));
+    await user.click(await screen.findByRole('button', { name: 'Open AI Presence' }));
     await user.type(
       screen.getByPlaceholderText('Drop the fragment here. What is happening?'),
       'I am stuck.',
