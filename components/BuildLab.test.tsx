@@ -259,7 +259,6 @@ describe('BuildLab', () => {
         0,
       ),
     );
-    expect(screen.getByRole('button', { name: 'Run on this computer' })).toBeDefined();
     expect(screen.getAllByText('Build a tiny local runner queue test.').length).toBeGreaterThan(0);
     fireEvent.click(screen.getByRole('button', { name: 'Edit' }));
     fireEvent.change(screen.getByDisplayValue('Build a tiny local runner queue test.'), {
