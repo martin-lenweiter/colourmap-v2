@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 360" role="img" aria-label="The Grounded Operator">
+  <rect width="1200" height="360" fill="#1f140f"/>
+  <rect x="28" y="24" width="1144" height="312" rx="22" fill="#edd9b3"/>
+  <g fill="none" stroke="#2a1710" stroke-width="7" stroke-linecap="round" stroke-linejoin="round">
+    <rect x="152" y="84" width="270" height="178"/>
+    <path d="M152 143h270M152 203h270M242 84v178M332 84v178"/>
+    <path d="M587 256h306L740 74z"/>
+    <path d="M740 74v182M655 180h170"/>
+    <path d="M946 256h116"/>
+  </g>
+  <g fill="#c4a060" stroke="#2a1710" stroke-width="4">
+    <circle cx="287" cy="143" r="14"/>
+    <circle cx="740" cy="180" r="16"/>
+    <circle cx="1020" cy="256" r="11"/>
+  </g>
+  <text x="72" y="318" font-family="Georgia,serif" font-size="28" fill="#3b2518">make it visible, make it real</text>
+</svg>

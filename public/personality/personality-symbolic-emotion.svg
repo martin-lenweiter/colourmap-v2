@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 360" role="img" aria-label="Symbolic emotional weather illustration">
+  <rect width="1200" height="360" fill="#20150f"/>
+  <rect x="26" y="24" width="1148" height="312" rx="20" fill="#ead6ad" opacity=".92"/>
+  <path d="M602 54v252" stroke="#6f452b" stroke-width="3" stroke-dasharray="8 14" opacity=".35"/>
+  <g transform="translate(118 70)" fill="none" stroke="#2a1710" stroke-width="7" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M0 147c46-51 91-51 136 0 45 51 91 51 136 0"/>
+    <path d="M0 93c46-28 91-28 136 0 45 28 91 28 136 0"/>
+    <path d="M0 201c46 28 91 28 136 0 45-28 91-28 136 0"/>
+    <circle cx="136" cy="147" r="42"/>
+  </g>
+  <g fill="#8faeb5" stroke="#2a1710" stroke-width="5">
+    <circle cx="254" cy="217" r="11"/>
+    <circle cx="352" cy="163" r="13"/>
+    <circle cx="158" cy="163" r="13"/>
+  </g>
+  <g transform="translate(755 58)" fill="none" stroke="#2a1710" stroke-width="7" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M70 50c31-34 90-34 122 0 44-2 75 29 75 70 0 47-37 76-88 76H69c-50 0-86-29-86-76 0-41 32-72 87-70z"/>
+    <path d="M52 228l-26 42M116 228l-20 42M184 228l-25 42"/>
+    <path d="M55 101c42 18 83 18 123 0"/>
+  </g>
+  <g fill="#f3bf68" stroke="#2a1710" stroke-width="4">
+    <circle cx="842" cy="123" r="10"/>
+    <circle cx="918" cy="135" r="9"/>
+    <circle cx="970" cy="217" r="12"/>
+  </g>
+  <text x="130" y="315" font-family="Georgia,serif" font-size="26" fill="#3b2518">steady water</text>
+  <text x="790" y="315" font-family="Georgia,serif" font-size="26" fill="#3b2518">sensitive sky</text>
+</svg>

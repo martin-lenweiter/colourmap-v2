@@ -22,6 +22,31 @@ describe('PersonalityTypeProgram', () => {
     expect(screen.getByText('Next scene')).toBeDefined();
   });
 
+  it('lets unclear answers be marked as confused and revisited later', () => {
+    render(<PersonalityTypeProgram onClose={vi.fn()} onBack={vi.fn()} />);
+
+    fireEvent.click(screen.getByRole('button', { name: 'what does this mean?' }));
+    expect(screen.getByText(/stress opens your imagination/i)).toBeDefined();
+
+    fireEvent.click(screen.getByRole('button', { name: 'confused / not sure' }));
+    for (let i = 0; i < 11; i++) {
+      fireEvent.click(screen.getByRole('button', { name: 'sometimes' }));
+    }
+
+    expect(screen.getByText(/Soft spots/i)).toBeDefined();
+    expect(screen.getByText(/1 question need a second look/i)).toBeDefined();
+  });
+
+  it('supports deeper Colourmap levels beyond the quick dive', () => {
+    render(<PersonalityTypeProgram onClose={vi.fn()} onBack={vi.fn()} />);
+
+    fireEvent.click(screen.getByRole('button', { name: 'Level 2' }));
+    expect(screen.getByText(/item 1 of 24/i)).toBeDefined();
+
+    fireEvent.click(screen.getByRole('button', { name: 'Level 3' }));
+    expect(screen.getByText(/item 1 of 36/i)).toBeDefined();
+  });
+
   it('runs the free TIPI Big Five glimpse', () => {
     render(<PersonalityTypeProgram onClose={vi.fn()} onBack={vi.fn()} />);
 
@@ -36,5 +61,20 @@ describe('PersonalityTypeProgram', () => {
     expect(screen.getByText('Extraversion')).toBeDefined();
     expect(screen.getByText('Openness')).toBeDefined();
     expect(screen.getByText(/Ten-Item Personality Inventory/i)).toBeDefined();
+  });
+
+  it('runs the abstract Image Lens test through square symbolic prompts', () => {
+    render(<PersonalityTypeProgram onClose={vi.fn()} onBack={vi.fn()} />);
+
+    fireEvent.click(screen.getByRole('button', { name: 'Image Lens' }));
+    expect(screen.getByText(/Block 1 \/ Inner Field/i)).toBeDefined();
+    expect(screen.getByText('The Open Gate')).toBeDefined();
+
+    for (let i = 0; i < 15; i++) {
+      fireEvent.click(screen.getByRole('button', { name: 'I move toward it' }));
+    }
+
+    expect(screen.getByText('Image Lens result')).toBeDefined();
+    expect(screen.getByText(/Vision/i)).toBeDefined();
   });
 });

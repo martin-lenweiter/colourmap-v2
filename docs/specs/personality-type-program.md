@@ -93,6 +93,32 @@ The app should not merge these into one confusing score. Instead:
 - RIASEC answers "what worlds of work/creation pull me?"
 - Colourmap Story Lens answers "what story am I living through, and what next reaction gives power back?"
 
+Even the quick Big Five layer should feel deep enough to be useful. For each trait, results should explain:
+
+- what the trait means in plain language
+- the gift of the current direction
+- the friction of the current direction
+- what tends to happen under pressure
+- one bridge move that helps the user shift modes
+
+The Big Five display should keep the old-school paper elegance but support a second comic-symbol image language: long horizontal images showing archetypal contrasts such as order / flow, solitude / shared charge, boundary / warmth, steady water / sensitive sky, and current tendency / next reaction. These images are explanatory, not decorative.
+
+### Image Lens
+
+The program should also include a more abstract visual test. This is not a clinical projective test and should not claim diagnostic power. It is a reflective image lens: the user sees symbolic square paper illustrations and answers what they move toward, feel unsure about, or move away from.
+
+MVP structure:
+
+- 15 images total
+- 3 blocks of 5:
+  - Inner Field
+  - Time Lens
+  - Action Bridge
+- Square format so image and text can coexist on one phone screen.
+- Paper-comic style with old-school elegance and a hopeful futuristic touch.
+
+Prompts can explore how the user sees the future, the past, emotional weather, hidden growth, bridges between modes, and whether scattered fragments feel like chaos or a map forming.
+
 ### Block 1: The Quick Glimpse
 
 Purpose: get the user into the experience fast.
@@ -102,11 +128,23 @@ Options:
 - 10-item TIPI-inspired quick scan
 - or a Colourmap-created 15-question mode pulse using Big Five-adjacent language
 
+The Colourmap-created mode should have three depths:
+
+- **Quick Dive**: short enough to finish immediately; gives the first self-map without friction.
+- **Level 2 / Pressure Map**: adds context questions about admin, uncertainty, dialogue, rhythm, conflict, and small action.
+- **Level 3 / Story Bridge**: adds deeper questions about life artwork, mode movement, AI presence, kindness plus standards, letting go, and the next wiser scene.
+
+Changing depth resets the current run so the result is coherent for that depth.
+
 Output:
 
 - five glowing trait channels
 - one-line summary: "Your current profile looks like creative intensity with practical friction."
 - confidence warning: "Quick glimpse only. Deeper map needs the full program."
+
+The test must also allow ambiguity. A user can mark an item as **confused / not sure**. This should count as a neutral answer for the provisional score, but it must not disappear. Results should show those unclear questions as "soft spots" to revisit, because confusion often means the answer changes by context: rested self, pressure self, creative self, survival self, or relational self.
+
+Each Colourmap-created question should have a small explanation button. The explanation translates poetic wording into plain language and gives the user a concrete example, so the program stays beautiful without becoming vague.
 
 ### Block 2: The Deep Map
 
@@ -160,6 +198,17 @@ Rules:
 - No "you are only this."
 - Always show the underlying trait pattern.
 - Always allow multiple active styles.
+
+Each final style should have a symbolic illustration. These illustrations should not look like generic avatars. They should show the inner structure of the type:
+
+- Visionary Improviser: many futures needing one small container
+- Vision Builder: beauty becoming architecture
+- Warm Connector: repair, rhythm, and shared charge
+- Sensitive Creator: weather translated into form
+- Grounded Operator: make it visible, make it real
+- Living Mix: not one box, a moving constellation
+
+The illustrations should keep the same long horizontal paper-comic format as the question images, so the result feels like a chapter opening rather than a label.
 
 ### Block 5: Pressure Map
 

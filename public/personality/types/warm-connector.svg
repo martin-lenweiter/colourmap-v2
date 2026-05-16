@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 360" role="img" aria-label="The Warm Connector">
+  <rect width="1200" height="360" fill="#1f140f"/>
+  <rect x="28" y="24" width="1144" height="312" rx="22" fill="#edd9b3"/>
+  <g fill="none" stroke="#2a1710" stroke-width="7" stroke-linecap="round" stroke-linejoin="round">
+    <circle cx="315" cy="142" r="48"/>
+    <circle cx="600" cy="121" r="54"/>
+    <circle cx="886" cy="142" r="48"/>
+    <path d="M250 265c24-58 67-87 129-87 57 0 98 29 123 87"/>
+    <path d="M525 265c28-67 78-101 151-101 67 0 116 34 147 101"/>
+    <path d="M800 265c24-58 67-87 129-87 57 0 98 29 123 87"/>
+    <path d="M365 133c65-42 125-42 181 0M656 133c64-42 123-42 178 0"/>
+  </g>
+  <g fill="#9fbf8a" stroke="#2a1710" stroke-width="4">
+    <circle cx="600" cy="121" r="17"/>
+    <circle cx="315" cy="142" r="13"/>
+    <circle cx="886" cy="142" r="13"/>
+  </g>
+  <text x="72" y="318" font-family="Georgia,serif" font-size="28" fill="#3b2518">repair, rhythm, shared charge</text>
+</svg>

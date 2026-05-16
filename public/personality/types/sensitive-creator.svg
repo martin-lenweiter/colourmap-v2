@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 360" role="img" aria-label="The Sensitive Creator">
+  <rect width="1200" height="360" fill="#1f140f"/>
+  <rect x="28" y="24" width="1144" height="312" rx="22" fill="#edd9b3"/>
+  <path d="M80 130c74-44 147-44 220 0s147 44 220 0 147-44 220 0 147 44 220 0 118-40 164-24" fill="none" stroke="#8faeb5" stroke-width="8" opacity=".72"/>
+  <path d="M80 214c74 44 147 44 220 0s147-44 220 0 147 44 220 0 147-44 220 0 118 40 164 24" fill="none" stroke="#d8a7c4" stroke-width="8" opacity=".72"/>
+  <g fill="none" stroke="#2a1710" stroke-width="7" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M480 266c-30-75-12-142 54-200 72 49 109 116 112 200"/>
+    <path d="M416 266c41-72 80-110 118-114 55 19 101 57 138 114"/>
+    <path d="M540 86c42 42 42 84 0 126"/>
+  </g>
+  <g fill="#f3bf68" stroke="#2a1710" stroke-width="4">
+    <circle cx="540" cy="154" r="18"/>
+    <circle cx="382" cy="119" r="10"/>
+    <circle cx="727" cy="218" r="12"/>
+    <circle cx="815" cy="108" r="9"/>
+  </g>
+  <text x="72" y="318" font-family="Georgia,serif" font-size="28" fill="#3b2518">weather translated into form</text>
+</svg>
