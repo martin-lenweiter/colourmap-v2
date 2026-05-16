@@ -260,6 +260,7 @@ describe('BuildLab', () => {
       ),
     );
     expect(screen.getAllByText('Build a tiny local runner queue test.').length).toBeGreaterThan(0);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'Edit' })).toBeDefined());
     fireEvent.click(screen.getByRole('button', { name: 'Edit' }));
     fireEvent.change(screen.getByDisplayValue('Build a tiny local runner queue test.'), {
       target: { value: 'Edit the runner inbox queue item.' },
