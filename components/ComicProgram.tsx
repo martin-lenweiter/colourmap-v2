@@ -37,6 +37,8 @@ const TEXT_ON_IMAGE_PROGRAMS = new Set([
   'identity-becoming',
 ]);
 
+const BLANK_BUBBLE_PROGRAMS = new Set(['carl-jung']);
+
 const PROGRAM_IMAGE_STYLES: Record<string, ImageStyle[]> = {
   'hope-energy': [DEFAULT_IMAGE_STYLE, { key: 'euro-bd', label: 'European BD' }],
   'emotional-intelligence': [DEFAULT_IMAGE_STYLE, { key: 'minimal', label: 'Minimal' }],
@@ -398,6 +400,335 @@ function PanelImage({
   return <PanelArt index={index} color={color} />;
 }
 
+function BlankBubbleComicPanel({ index, color }: { index: number; color: string }) {
+  const pages = [
+    'desk',
+    'field',
+    'shadow',
+    'mask',
+    'statues',
+    'roots',
+    'dream',
+    'symbols',
+    'knot',
+    'path',
+    'mirror',
+    'dialogue',
+    'stars',
+    'mandala',
+    'city',
+    'phone',
+    'studio',
+    'relationship',
+    'atlas',
+    'sunrise',
+  ];
+  const scene = pages[index % pages.length];
+  const line = '#4c2f1f';
+  const paper = '#ead8b4';
+  const warm = color;
+
+  return (
+    <svg
+      viewBox="0 0 390 620"
+      role="img"
+      aria-label={`Blank Carl Jung comic page ${index + 1}`}
+      style={{ display: 'block', width: '100%', height: 'auto', background: '#1b1009' }}
+    >
+      <defs>
+        <filter id={`grain-${index}`}>
+          <feTurbulence type="fractalNoise" baseFrequency="0.85" numOctaves="2" seed={index + 4} />
+          <feColorMatrix type="saturate" values="0" />
+          <feComponentTransfer>
+            <feFuncA type="table" tableValues="0 0.11" />
+          </feComponentTransfer>
+        </filter>
+        <radialGradient id={`glow-${index}`} cx="50%" cy="18%" r="80%">
+          <stop offset="0%" stopColor={warm} stopOpacity="0.24" />
+          <stop offset="68%" stopColor="#f1dfbc" stopOpacity="0.04" />
+          <stop offset="100%" stopColor="#1b1009" stopOpacity="0.08" />
+        </radialGradient>
+      </defs>
+
+      <rect width="390" height="620" fill="#20130b" />
+      <rect x="18" y="18" width="354" height="584" rx="18" fill={paper} />
+      <rect x="18" y="18" width="354" height="584" rx="18" fill={`url(#glow-${index})`} />
+      <rect x="18" y="18" width="354" height="584" rx="18" filter={`url(#grain-${index})`} />
+      <rect
+        x="32"
+        y="32"
+        width="326"
+        height="556"
+        rx="8"
+        fill="none"
+        stroke={line}
+        opacity="0.18"
+      />
+
+      <g fill="none" stroke={line} strokeLinecap="round" strokeLinejoin="round">
+        {scene === 'desk' && (
+          <>
+            <path
+              d="M76 369h238M106 369l-18 81M285 369l18 81M132 346c22-28 60-28 82 0M180 346c14-58 57-87 98-66"
+              strokeWidth="5"
+              opacity="0.72"
+            />
+            <path d="M81 275c45-31 91-31 136 0" strokeWidth="3" opacity="0.42" />
+            <circle cx="276" cy="256" r="32" strokeWidth="4" opacity="0.55" />
+          </>
+        )}
+        {scene === 'field' && (
+          <>
+            <path d="M54 372c70-41 137-41 202 0 28-18 55-26 82-22" strokeWidth="5" opacity="0.65" />
+            <path
+              d="M195 106v250M97 230c72-61 123-57 154 12M195 181c54-60 101-62 141-6"
+              strokeWidth="4"
+              opacity="0.55"
+            />
+          </>
+        )}
+        {scene === 'shadow' && (
+          <>
+            <path
+              d="M196 127c48 0 82 40 82 96 0 76-38 124-82 170-44-46-82-94-82-170 0-56 34-96 82-96z"
+              strokeWidth="5"
+              opacity="0.7"
+            />
+            <path
+              d="M201 157c47 18 68 62 51 132-11 45-34 77-51 96"
+              strokeWidth="11"
+              opacity="0.18"
+            />
+          </>
+        )}
+        {scene === 'mask' && (
+          <>
+            <path
+              d="M94 155c56-50 147-50 203 0v103c0 62-46 98-101 128-55-30-102-66-102-128z"
+              strokeWidth="5"
+              opacity="0.68"
+            />
+            <path
+              d="M132 225h54M211 225h54M155 300c31 17 60 17 88 0"
+              strokeWidth="4"
+              opacity="0.5"
+            />
+          </>
+        )}
+        {scene === 'statues' &&
+          [86, 145, 204, 263, 322].map((x, i) => (
+            <g key={x} opacity={0.48 + i * 0.04}>
+              <circle cx={x} cy={176 + (i % 2) * 12} r="18" strokeWidth="4" />
+              <path d={`M${x - 19} ${244 + (i % 2) * 10}h38l-9 98h-20z`} strokeWidth="4" />
+            </g>
+          ))}
+        {scene === 'roots' && (
+          <>
+            <circle cx="195" cy="184" r="72" strokeWidth="5" opacity="0.54" />
+            <path
+              d="M195 256v145M195 309c-44-24-82-17-112 22M195 331c43-31 80-28 111 8M195 362c-31 9-55 30-72 63M195 384c36 6 62 27 78 63"
+              strokeWidth="4"
+              opacity="0.54"
+            />
+          </>
+        )}
+        {scene === 'dream' && (
+          <>
+            <path d="M70 336c45-62 89-62 134 0s89 62 134 0" strokeWidth="5" opacity="0.55" />
+            <path
+              d="M86 224c46-31 91-31 136 0M185 164c27-32 54-32 82 0M130 420c42-18 86-18 130 0"
+              strokeWidth="4"
+              opacity="0.4"
+            />
+          </>
+        )}
+        {scene === 'symbols' && (
+          <>
+            <circle cx="119" cy="196" r="42" strokeWidth="5" opacity="0.5" />
+            <path
+              d="M248 153l49 85h-98zM195 287l28 58 64 9-46 44 11 63-57-30-57 30 11-63-46-44 64-9z"
+              strokeWidth="5"
+              opacity="0.58"
+            />
+          </>
+        )}
+        {scene === 'knot' && (
+          <>
+            <path
+              d="M118 254c54-85 129 63 183-22M118 332c54 85 129-63 183 22M116 293c68-42 88-42 160 0"
+              strokeWidth="6"
+              opacity="0.58"
+            />
+            <circle cx="195" cy="293" r="72" strokeWidth="3" opacity="0.28" />
+          </>
+        )}
+        {scene === 'path' && (
+          <>
+            <path
+              d="M55 492c74-122 131-238 140-382 16 145 72 262 140 382"
+              strokeWidth="5"
+              opacity="0.58"
+            />
+            <path d="M142 236h107M119 314h152M96 393h198" strokeWidth="3" opacity="0.32" />
+          </>
+        )}
+        {scene === 'mirror' && (
+          <>
+            <path d="M116 118h158l42 65-121 222L74 183z" strokeWidth="5" opacity="0.58" />
+            <path
+              d="M116 118l79 287 79-287M134 257c39-26 83-26 122 0"
+              strokeWidth="4"
+              opacity="0.34"
+            />
+          </>
+        )}
+        {scene === 'dialogue' && (
+          <>
+            <circle cx="132" cy="278" r="44" strokeWidth="5" opacity="0.58" />
+            <circle cx="260" cy="278" r="44" strokeWidth="5" opacity="0.58" />
+            <path
+              d="M176 278h40M132 322c17 52 60 78 128 78M260 234c-17-52-60-78-128-78"
+              strokeWidth="4"
+              opacity="0.38"
+            />
+          </>
+        )}
+        {scene === 'stars' && (
+          <>
+            <path
+              d="M195 102l20 54 57 5-44 36 14 56-47-30-47 30 14-56-44-36 57-5z"
+              strokeWidth="5"
+              opacity="0.62"
+            />
+            <path
+              d="M74 374c79-43 160-43 242 0M96 423c62-25 127-25 195 0"
+              strokeWidth="4"
+              opacity="0.35"
+            />
+            {[86, 128, 273, 313, 244].map((x, i) => (
+              <circle key={x} cx={x} cy={136 + i * 32} r="4" fill={line} opacity="0.34" />
+            ))}
+          </>
+        )}
+        {scene === 'mandala' && (
+          <>
+            {[142, 96, 52].map((radius) => (
+              <circle key={radius} cx="195" cy="286" r={radius} strokeWidth="4" opacity="0.24" />
+            ))}
+            <path
+              d="M195 144v284M53 286h284M94 185l202 202M296 185L94 387"
+              strokeWidth="3"
+              opacity="0.3"
+            />
+            <circle cx="195" cy="286" r="20" fill={warm} opacity="0.38" strokeWidth="4" />
+          </>
+        )}
+        {scene === 'city' && (
+          <>
+            <path
+              d="M62 424h266M83 424V252h48v172M154 424V185h58v239M236 424V226h68v198"
+              strokeWidth="5"
+              opacity="0.52"
+            />
+            <path d="M89 190c42-36 84-36 126 0 42-36 84-36 126 0" strokeWidth="3" opacity="0.32" />
+          </>
+        )}
+        {scene === 'phone' && (
+          <>
+            <rect x="132" y="120" width="126" height="248" rx="22" strokeWidth="5" opacity="0.55" />
+            <path
+              d="M153 205c31-29 57-29 84 0M153 270c31 29 57 29 84 0"
+              strokeWidth="4"
+              opacity="0.36"
+            />
+            <circle cx="195" cy="396" r="19" strokeWidth="4" opacity="0.38" />
+          </>
+        )}
+        {scene === 'studio' && (
+          <>
+            <path
+              d="M83 404c77-62 151-62 225 0M111 350c23-80 64-124 123-132M244 164c-13 74-5 125 25 154"
+              strokeWidth="5"
+              opacity="0.5"
+            />
+            <circle cx="244" cy="164" r="34" strokeWidth="5" opacity="0.5" />
+          </>
+        )}
+        {scene === 'relationship' && (
+          <>
+            <path
+              d="M124 186c37 0 67 34 67 76 0 73-67 112-67 112s-67-39-67-112c0-42 30-76 67-76zM266 186c37 0 67 34 67 76 0 73-67 112-67 112s-67-39-67-112c0-42 30-76 67-76z"
+              strokeWidth="5"
+              opacity="0.45"
+            />
+            <path d="M163 315c22-18 43-18 64 0" strokeWidth="4" opacity="0.42" />
+          </>
+        )}
+        {scene === 'atlas' && (
+          <>
+            <path
+              d="M75 146h240v304H75zM195 146v304M75 248h240M75 350h240"
+              strokeWidth="5"
+              opacity="0.44"
+            />
+            <path
+              d="M104 206c46-28 86-22 121 18 29-17 55-14 78 10M111 402c55-34 113-34 174 0"
+              strokeWidth="4"
+              opacity="0.44"
+            />
+          </>
+        )}
+        {scene === 'sunrise' && (
+          <>
+            <path
+              d="M56 408h278M98 408c19-66 51-99 97-99s78 33 97 99"
+              strokeWidth="5"
+              opacity="0.55"
+            />
+            <path
+              d="M195 169v93M96 247l65 65M294 247l-65 65M70 342h91M229 342h91"
+              strokeWidth="4"
+              opacity="0.4"
+            />
+          </>
+        )}
+      </g>
+
+      <g fill="#fff7df" stroke={line} strokeWidth="3" opacity="0.96">
+        {index % 4 === 0 && (
+          <>
+            <path d="M54 58h198q18 0 18 18v54q0 18-18 18H139l-35 31 8-31H54q-18 0-18-18V76q0-18 18-18z" />
+            <rect x="68" y="463" width="254" height="82" rx="18" />
+          </>
+        )}
+        {index % 4 === 1 && (
+          <>
+            <rect x="48" y="56" width="294" height="82" rx="18" />
+            <path d="M143 440h191q18 0 18 18v62q0 18-18 18H222l-45 32 12-32h-46q-18 0-18-18v-62q0-18 18-18z" />
+          </>
+        )}
+        {index % 4 === 2 && (
+          <>
+            <path d="M55 57h117q18 0 18 18v74q0 18-18 18H92l-35 30 9-30H55q-18 0-18-18V75q0-18 18-18z" />
+            <path d="M214 64h122q18 0 18 18v83q0 18-18 18h-51l-31 28 8-28h-48q-18 0-18-18V82q0-18 18-18z" />
+            <rect x="54" y="454" width="282" height="76" rx="18" />
+          </>
+        )}
+        {index % 4 === 3 && (
+          <>
+            <rect x="54" y="58" width="282" height="92" rx="20" />
+            <path d="M71 455h217q18 0 18 18v65q0 18-18 18H164l-43 31 11-31H71q-18 0-18-18v-65q0-18 18-18z" />
+          </>
+        )}
+      </g>
+      <g stroke={line} strokeWidth="1.8" opacity="0.13">
+        <path d="M65 92h144M65 116h104M84 494h196M84 519h146" />
+        <path d="M74 86h86M74 112h122M227 93h88M227 121h72" />
+      </g>
+    </svg>
+  );
+}
+
 /* ── Program descriptions shown on intro screen ────────────────── */
 const PROGRAM_INTROS: Record<string, { what: string; gain: string }> = {
   'emotional-intelligence': {
@@ -437,6 +768,214 @@ export default function ComicProgram({
   }
 
   const introData = PROGRAM_INTROS[program.key];
+
+  if (BLANK_BUBBLE_PROGRAMS.has(program.key)) {
+    return (
+      <div
+        style={{
+          position: 'fixed',
+          inset: 0,
+          zIndex: 90,
+          background: hubBg,
+          display: 'flex',
+          flexDirection: 'column',
+          maxWidth: 672,
+          margin: '0 auto',
+        }}
+      >
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            gap: 12,
+            padding: '12px 18px',
+            flexShrink: 0,
+            borderBottom: `1px solid ${col(program.color, 0.12)}`,
+          }}
+        >
+          <div>
+            <div
+              style={{
+                fontFamily: SERIF,
+                fontSize: 10,
+                letterSpacing: '0.16em',
+                textTransform: 'uppercase',
+                color: col(program.color, 0.58),
+              }}
+            >
+              Blank comic book
+            </div>
+            <div
+              style={{
+                marginTop: 3,
+                fontFamily: SERIF,
+                fontSize: 16,
+                color: cream(0.9),
+                lineHeight: 1.15,
+              }}
+            >
+              {program.domain}
+            </div>
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+            <div style={{ fontFamily: SERIF, fontSize: 11, color: col(program.color, 0.42) }}>
+              {index + 1} / {total}
+            </div>
+            <button
+              type="button"
+              onClick={onBack ?? onClose}
+              style={{
+                background: 'none',
+                border: `1px solid ${col(program.color, 0.22)}`,
+                borderRadius: 999,
+                color: col(program.color, 0.48),
+                fontFamily: SERIF,
+                fontSize: 11,
+                letterSpacing: '0.1em',
+                cursor: 'pointer',
+                padding: '5px 13px',
+              }}
+            >
+              back
+            </button>
+          </div>
+        </div>
+
+        <div
+          style={{
+            flex: 1,
+            minHeight: 0,
+            overflowY: 'auto',
+            padding: '14px 18px 18px',
+          }}
+        >
+          <button
+            type="button"
+            onClick={next}
+            aria-label={index === total - 1 ? 'Return to education' : 'Next comic page'}
+            style={{
+              display: 'block',
+              width: '100%',
+              maxWidth: 430,
+              margin: '0 auto',
+              padding: 0,
+              border: `1.5px solid ${col(program.color, 0.25)}`,
+              background: 'transparent',
+              boxShadow: `0 0 34px ${col(program.color, 0.12)}`,
+              cursor: 'pointer',
+            }}
+          >
+            <BlankBubbleComicPanel index={index} color={program.color} />
+          </button>
+
+          <div
+            style={{
+              maxWidth: 430,
+              margin: '12px auto 0',
+              border: `1px solid ${col(program.color, 0.18)}`,
+              background: 'rgba(255,255,255,0.035)',
+              padding: 12,
+            }}
+          >
+            <div
+              style={{
+                fontFamily: SERIF,
+                fontSize: 9,
+                letterSpacing: '0.18em',
+                textTransform: 'uppercase',
+                color: col(program.color, 0.6),
+                marginBottom: 5,
+              }}
+            >
+              page {index + 1} / future text note
+            </div>
+            <div
+              style={{
+                fontFamily: SERIF,
+                fontSize: 17,
+                lineHeight: 1.2,
+                color: cream(0.9),
+              }}
+            >
+              {current.title}
+            </div>
+          </div>
+        </div>
+
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            gap: 12,
+            padding: '10px 18px max(14px, env(safe-area-inset-bottom, 14px))',
+            flexShrink: 0,
+            borderTop: `1px solid ${col(program.color, 0.1)}`,
+          }}
+        >
+          <button
+            type="button"
+            onClick={prev}
+            disabled={index === 0}
+            style={{
+              border: 0,
+              background: 'transparent',
+              color: col(program.color, index === 0 ? 0.22 : 0.58),
+              fontFamily: SERIF,
+              fontSize: 13,
+              cursor: index === 0 ? 'default' : 'pointer',
+              padding: '8px 0',
+            }}
+          >
+            prev
+          </button>
+          <div
+            style={{
+              display: 'flex',
+              gap: 5,
+              maxWidth: 190,
+              flexWrap: 'wrap',
+              justifyContent: 'center',
+            }}
+          >
+            {program.segments.map((_, i) => (
+              <button
+                key={i}
+                type="button"
+                onClick={() => setIndex(i)}
+                aria-label={`Open page ${i + 1}`}
+                style={{
+                  width: i === index ? 17 : 5,
+                  height: 5,
+                  borderRadius: 999,
+                  border: 0,
+                  background: col(program.color, i === index ? 0.82 : 0.25),
+                  padding: 0,
+                  cursor: 'pointer',
+                }}
+              />
+            ))}
+          </div>
+          <button
+            type="button"
+            onClick={next}
+            style={{
+              border: 0,
+              background: 'transparent',
+              color: col(program.color, 0.62),
+              fontFamily: SERIF,
+              fontSize: 13,
+              cursor: 'pointer',
+              padding: '8px 0',
+            }}
+          >
+            {index === total - 1 ? 'Education' : 'next'}
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   /* ── Intro screen ── */
   if (intro) {

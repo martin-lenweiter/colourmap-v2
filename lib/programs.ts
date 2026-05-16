@@ -12,6 +12,93 @@ export type Program = {
 
 export const PROGRAMS: Program[] = [
   {
+    key: 'carl-jung',
+    domain: 'Carl Jung & The Inner Map',
+    color: '#B99367',
+    segments: [
+      {
+        title: 'The inner world is real material',
+        body: 'Blank comic page. Later text can introduce Jung as a mapmaker of dreams, symbols, and inner patterns.',
+      },
+      {
+        title: 'Conscious and unconscious',
+        body: 'Blank comic page. Later text can explain the visible self and the hidden field underneath it.',
+      },
+      {
+        title: 'The shadow',
+        body: 'Blank comic page. Later text can show the shadow as avoided energy that can become wisdom when met carefully.',
+      },
+      {
+        title: 'The persona',
+        body: 'Blank comic page. Later text can explain the social mask and why it helps until it becomes too tight.',
+      },
+      {
+        title: 'Archetypes',
+        body: 'Blank comic page. Later text can introduce ancient patterns such as child, wise elder, hero, trickster, mother, and creator.',
+      },
+      {
+        title: 'The collective unconscious',
+        body: 'Blank comic page. Later text can explain why similar myths and symbols appear across cultures.',
+      },
+      {
+        title: 'Dreams as messages',
+        body: 'Blank comic page. Later text can frame dreams as symbolic weather reports from the deeper mind.',
+      },
+      {
+        title: 'Symbols carry more than words',
+        body: 'Blank comic page. Later text can show why images, circles, doors, rivers, and animals can explain feelings faster than logic.',
+      },
+      {
+        title: 'Complexes',
+        body: 'Blank comic page. Later text can explain emotionally charged knots that pull behavior before we notice.',
+      },
+      {
+        title: 'Individuation',
+        body: 'Blank comic page. Later text can present individuation as becoming more whole, not more perfect.',
+      },
+      {
+        title: 'The inner opposite',
+        body: 'Blank comic page. Later text can describe the hidden complementary energies that help a person become less one-sided.',
+      },
+      {
+        title: 'Active imagination',
+        body: 'Blank comic page. Later text can show dialogue with an image, dream figure, or inner character.',
+      },
+      {
+        title: 'Synchronicity',
+        body: 'Blank comic page. Later text can explain meaningful coincidence without making it superstition.',
+      },
+      {
+        title: 'The mandala',
+        body: 'Blank comic page. Later text can show the mandala as a symbol of ordering the psyche around a center.',
+      },
+      {
+        title: 'Myth in modern life',
+        body: 'Blank comic page. Later text can explain how old stories still shape work, love, art, fame, technology, and fear.',
+      },
+      {
+        title: 'The digital shadow',
+        body: 'Blank comic page. Later text can connect Jung to phones, feeds, projection, avatars, and online identity.',
+      },
+      {
+        title: 'Creativity as integration',
+        body: 'Blank comic page. Later text can show art as a way to hold conflict until it becomes form.',
+      },
+      {
+        title: 'Relationships as mirrors',
+        body: 'Blank comic page. Later text can show projection and repair in relationships without blaming the other person.',
+      },
+      {
+        title: 'Colourmap as inner atlas',
+        body: 'Blank comic page. Later text can connect Jung to archetypes, symbols, dreams, check-ins, and visual self-understanding.',
+      },
+      {
+        title: 'Toward wholeness',
+        body: 'Blank comic page. Later text can close with hope: the aim is not perfection, but a wider, kinder, more integrated life.',
+      },
+    ],
+  },
+  {
     key: 'room-to-breathe',
     domain: 'Room to Breathe',
     color: '#C8B67A',
