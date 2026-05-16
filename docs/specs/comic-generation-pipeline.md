@@ -505,6 +505,34 @@ The app should render:
 
 The image model should only create the visual background.
 
+## Blank Bubble Comic Books
+
+Some Education programs can use a blank-bubble comic book format instead of finished illustrated
+PNG panels.
+
+Purpose:
+
+- create phone-first comic pages with large empty speech bubbles or blank text spaces
+- let the visual sequence be designed before final writing is added
+- make it easy to extend a program later by adding more page segments
+- keep text readable by avoiding small baked-in lettering
+
+The first pilot is `Carl Jung & The Inner Map`.
+
+Acceptance criteria:
+
+- the program appears in the Education Inner Life lane
+- the reader opens in a dedicated "Blank comic book" mode
+- pages use warm paper, optimistic symbolic scenes, and phone-portrait composition
+- each page has a large blank area suitable for later app-rendered text or manual lettering
+- the current page title remains visible below the artwork as a future text note
+- previous, next, and page-dot navigation work without relying on generated raster assets
+
+Unlike generated panel images, blank-bubble comic pages may be rendered as app-native SVG/vector
+art when that makes iteration faster and keeps the artwork maintainable. The same no-small-text
+principle still applies: the comic should provide clear visual space for future writing rather than
+shipping tiny text inside the image.
+
 ## Current Test Tracks
 
 Keep `Room to Breathe` as the first successful style pilot for now.
