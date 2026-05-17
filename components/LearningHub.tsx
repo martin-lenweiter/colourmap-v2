@@ -12,6 +12,7 @@ const COMIC_PROGRAMS = new Set([
   'self-talk',
   'wellbeing',
   'hope-energy',
+  'struggle-letting-go',
   'sleep',
   'nervous-system',
   'grief',
@@ -29,6 +30,7 @@ const COMIC_PROGRAMS = new Set([
   'money-anxiety',
   'identity-becoming',
   'parenting-patterns',
+  'carl-jung',
 ]);
 
 const EDUCATION_IMAGES = ['/education-1.png', '/education-2.png', '/education-3.png'];
@@ -112,6 +114,28 @@ const POSITIVE_OVERLAY_PROGRAMS = new Set([
   'identity-becoming',
   'parenting-patterns',
 ]);
+const JPG_PANEL_PROGRAMS = new Set(['carl-jung', 'struggle-letting-go']);
+const PROGRAM_COVER_PANEL: Record<string, number> = {
+  'room-to-breathe': 4,
+  'emotional-intelligence': 3,
+  'self-talk': 2,
+  wellbeing: 3,
+  'hope-energy': 5,
+  sleep: 4,
+  'nervous-system': 3,
+  grief: 5,
+  'struggle-letting-go': 2,
+  belonging: 4,
+  agency: 2,
+  'organisational-intelligence': 1,
+  creativity: 3,
+  'relational-intelligence': 2,
+  'artificial-intelligence': 2,
+  'ai-future': 4,
+  'collective-evolution': 5,
+  'deep-attention': 8,
+  'carl-jung': 13,
+};
 
 const SERIF = 'var(--font-serif)';
 const cream = (a: number) => `rgba(240,216,152,${a})`;
@@ -177,6 +201,7 @@ const GROUPS: { label: string; keys: string[]; tint: string; startHere?: string 
       'room-to-breathe',
       'emotional-intelligence',
       'self-talk',
+      'carl-jung',
       'wellbeing',
       'hope-energy',
       'sleep',
@@ -414,10 +439,11 @@ function ProgramImageCard({
   const progress = getProgress(program);
   const total = program.segments.length;
   const started = progress > 0;
+  const coverPanel = PROGRAM_COVER_PANEL[program.key] ?? 0;
   const imageSrc = POSITIVE_OVERLAY_PROGRAMS.has(program.key)
-    ? `/comics/${program.key}/variants/positive-overlay/panel-0.png`
+    ? `/comics/${program.key}/variants/positive-overlay/panel-${coverPanel}.png`
     : COMIC_PROGRAMS.has(program.key)
-      ? `/comics/${program.key}/panel-0.png`
+      ? `/comics/${program.key}/panel-${coverPanel}.${JPG_PANEL_PROGRAMS.has(program.key) ? 'jpg' : 'png'}`
       : EDUCATION_IMAGES[0];
 
   return (
