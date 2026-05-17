@@ -507,8 +507,8 @@ The image model should only create the visual background.
 
 ## Blank Bubble Comic Books
 
-Some Education programs can use a blank-bubble comic book format instead of finished illustrated
-PNG panels.
+Some Education programs can use a lettered comic book format or a blank-bubble workshop draft
+instead of the standard illustration-plus-app-text format.
 
 Purpose:
 
@@ -517,14 +517,25 @@ Purpose:
 - make it easy to extend a program later by adding more page segments
 - keep text readable by avoiding small baked-in lettering
 
-The first pilot is `Carl Jung & The Inner Map`.
+The first pilot is `Carl Jung & The Inner Map`. Its default app version is a lettered comic, while
+the blank-bubble version is preserved as an editable variant for later lettering experiments.
+
+Format guidance:
+
+- for normal app reading, prefer text-free illustrations with app-rendered text below or beside the
+  image
+- use lettered bubbles only when the page is intentionally a comic-book artifact
+- use blank bubbles for printable/workshop drafts or visual sequence planning
+- future generated bubbles should be beige, parchment, or paper-feel, not bright white
+- bubble interiors should feel integrated with the paper texture and should not look like empty UI
+  boxes pasted onto the image
 
 Acceptance criteria:
 
 - the program appears in the Education Inner Life lane
-- the reader opens in a dedicated "Blank comic book" mode
+- the reader opens in a dedicated comic-book mode
 - pages use warm paper, optimistic symbolic scenes, and phone-portrait composition
-- each page has a large blank area suitable for later app-rendered text or manual lettering
+- each page has large speech/caption areas suitable for readable lettering
 - the current page title remains visible below the artwork as a future text note
 - previous, next, and page-dot navigation work without relying on generated raster assets
 
@@ -541,6 +552,9 @@ The next experiments should test two different methods:
 
 1. `Hope & Energy`: use the same wide landscape image format as the first successful generation. This should test whether the warm paper, hand-made, uplifting visual universe can hold a full education series without becoming too sad or too academic.
 2. `Mind & Self-Talk`: use a larger interactive page format. The generated comic image sits below a generous text area. Colourmap can reveal written text, choices, reflections, and explanations above the comic image, so the user experiences the page as an interactive learning object rather than a static captioned image.
+3. `Struggle & Letting Go`: use quiet landscape panels with fewer elements and a practical river,
+   path, workshop, and small-step visual language. This track should test whether Education can feel
+   calmer, less overloaded, and still emotionally useful.
 
 Important layout principle:
 

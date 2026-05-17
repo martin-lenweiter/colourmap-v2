@@ -54,6 +54,448 @@ const KIND_COLOR: Record<BubbleKind, { fill: string; border: string; text: strin
 };
 
 /* ── Layout helpers ─────────────────────────────────────────────── */
+const VISUAL_REFLECTIONS = [
+  {
+    id: 'flow',
+    title: 'Flow blockage',
+    bestFor: 'individual tension, stuckness, next move',
+    aiUse:
+      'AI detects the blocked channel, the emotion behind it, and the smallest action that opens downstream energy.',
+    body: 'This is the base intelligence: what is flowing, what is compressed, what dam is creating tension, and which tiny intervention releases the most life energy.',
+    color: '#D2A24B',
+    sketch: 'flow',
+  },
+  {
+    id: 'glimpse',
+    title: 'Glimpse first',
+    bestFor: 'low attention, first orientation',
+    aiUse: 'AI compresses a messy reflection into one shape, three keywords, and one next move.',
+    body: 'The first screen should give the feeling: I see the problem. Reading deeper comes after the shape is clear.',
+    color: '#D0A35F',
+    sketch: 'glimpse',
+  },
+  {
+    id: 'territory',
+    title: 'Personality territory',
+    bestFor: 'modes, archetypes, energy balance',
+    aiUse: 'AI notices which mode dominates and suggests a bridge into the neglected mode.',
+    body: 'Personality can be shown as regions: creator, organiser, body, social, survival, meaning. Stuckness becomes a geography.',
+    color: '#8AAE8B',
+    sketch: 'territory',
+  },
+  {
+    id: 'education',
+    title: 'Education board',
+    bestFor: 'learning, comics, infographics',
+    aiUse:
+      'AI turns a lesson into concept, why it matters, practice, related programs, and state helped.',
+    body: 'Every Education program can have a one-screen map so the user understands the lesson before entering the pages.',
+    color: '#7FA4C4',
+    sketch: 'board',
+  },
+  {
+    id: 'mission',
+    title: 'Mission discipline',
+    bestFor: 'agency, tiny steps, follow-through',
+    aiUse: 'AI links emotion, resistance, small action, evidence, and next repeatable ritual.',
+    body: 'A mission is not only a task. It is a channel where energy moves from pressure into proof that action still works.',
+    color: '#C2866C',
+    sketch: 'road',
+  },
+  {
+    id: 'social',
+    title: 'People constellation',
+    bestFor: 'parties, teams, bands, circles',
+    aiUse:
+      'AI maps similar interests, complementary skills, compatible energy, and possible collaborations.',
+    body: 'Long term, Colourmap can help people find each other through shared interests and complementary capacities.',
+    color: '#B996CC',
+    sketch: 'constellation',
+  },
+  {
+    id: 'ecology',
+    title: 'Microcosm mode',
+    bestFor: 'world map, geology, weather, deep patterns',
+    aiUse:
+      'AI turns recurring life patterns into terrain: continents, rivers, dams, weather, and growing paths.',
+    body: 'Motivation is weather. Patterns are geology. This mode imagines the self as a living planet or city where old rivers, blocked channels, and fertile territories can be seen.',
+    color: '#6FB7A6',
+    sketch: 'planet',
+  },
+  {
+    id: 'golden-field',
+    title: 'Astral mode',
+    bestFor: 'default app style, voice, flow, progress',
+    aiUse:
+      'AI turns check-ins, plans, actions, and memory into one moving field of golden particles and readable ochre text.',
+    body: 'The geometry builder becomes the app language: dots form faces, maps, rivers, timers, and evolution trails while the interface stays calm and readable.',
+    color: '#D6A63A',
+    sketch: 'field',
+  },
+];
+
+const FLOW_STEPS = [
+  { label: 'Detect', sub: 'what is present' },
+  { label: 'Clarify', sub: 'name the pattern' },
+  { label: 'Unblock', sub: 'open one dam' },
+  { label: 'Learn', sub: 'notice the effect' },
+  { label: 'Remember', sub: 'save the river' },
+];
+
+function ReflectionSketch({ type, color }: { type: string; color: string }) {
+  const dim = `${color}33`;
+  const soft = `${color}55`;
+  return (
+    <svg viewBox="0 0 150 74" width="100%" height="74" aria-hidden="true">
+      <rect width="150" height="74" rx="10" fill="rgba(255,255,255,0.025)" />
+      {type === 'flow' && (
+        <>
+          <path
+            d="M15 42c20-26 34 16 54-8 18-21 31-10 62-22"
+            fill="none"
+            stroke={soft}
+            strokeWidth="5"
+            strokeLinecap="round"
+          />
+          <rect
+            x="66"
+            y="20"
+            width="16"
+            height="32"
+            rx="5"
+            fill="rgba(12,8,6,0.62)"
+            stroke={color}
+          />
+          <path
+            d="M85 37c11 0 21 5 35 17"
+            fill="none"
+            stroke={color}
+            strokeWidth="2"
+            strokeDasharray="3 4"
+            opacity="0.7"
+          />
+          <circle cx="33" cy="37" r="5" fill={color} opacity="0.65" />
+          <circle cx="120" cy="54" r="8" fill={dim} stroke={color} />
+        </>
+      )}
+      {type === 'glimpse' && (
+        <>
+          <circle cx="38" cy="37" r="18" fill={dim} stroke={color} strokeWidth="1.2" />
+          <path
+            d="M65 25h58M65 37h44M65 49h66"
+            stroke={soft}
+            strokeWidth="3"
+            strokeLinecap="round"
+          />
+          <circle cx="38" cy="37" r="5" fill={color} opacity="0.65" />
+        </>
+      )}
+      {type === 'territory' && (
+        <>
+          <path
+            d="M22 48c15-30 36-36 55-20 18-13 38-4 49 16-18 22-73 24-104 4Z"
+            fill={dim}
+            stroke={color}
+          />
+          <path
+            d="M58 23c-7 14-5 29 2 43M85 28c-10 9-14 22-11 37"
+            stroke={soft}
+            strokeDasharray="3 4"
+          />
+          <circle cx="49" cy="42" r="5" fill={color} opacity="0.6" />
+          <circle cx="90" cy="45" r="7" fill={color} opacity="0.35" />
+        </>
+      )}
+      {type === 'board' && (
+        <>
+          {[0, 1, 2, 3].map((i) => (
+            <rect
+              key={i}
+              x={18 + i * 31}
+              y={18 + (i % 2) * 18}
+              width="24"
+              height="18"
+              rx="4"
+              fill={dim}
+              stroke={soft}
+            />
+          ))}
+          <path d="M42 27h7M73 45h7M104 27h7" stroke={color} opacity="0.5" />
+        </>
+      )}
+      {type === 'road' && (
+        <>
+          <path
+            d="M16 52c22-31 44 2 65-25 14-18 32-10 52-2"
+            fill="none"
+            stroke={soft}
+            strokeWidth="4"
+            strokeLinecap="round"
+          />
+          {[24, 57, 84, 119].map((x, i) => (
+            <circle
+              key={x}
+              cx={x}
+              cy={[43, 42, 27, 25][i]}
+              r="6"
+              fill={i === 0 ? color : dim}
+              stroke={color}
+            />
+          ))}
+        </>
+      )}
+      {type === 'constellation' && (
+        <>
+          <path d="M35 23 67 41 103 24 116 51 67 41 42 55" stroke={soft} strokeWidth="1.2" />
+          {[
+            [35, 23, 7],
+            [67, 41, 10],
+            [103, 24, 8],
+            [116, 51, 6],
+            [42, 55, 5],
+          ].map(([x, y, r]) => (
+            <circle key={`${x}-${y}`} cx={x} cy={y} r={r} fill={dim} stroke={color} />
+          ))}
+        </>
+      )}
+      {type === 'planet' && (
+        <>
+          <circle cx="75" cy="37" r="26" fill={dim} stroke={color} strokeWidth="1.2" />
+          <path
+            d="M55 27c8-9 18-5 23 2 6 8 16 4 23 12M51 44c16-5 22 9 37 5 8-2 12-7 19-4"
+            fill="none"
+            stroke={soft}
+            strokeWidth="3"
+            strokeLinecap="round"
+          />
+          <path d="M74 12c-5 16-5 33 1 51" stroke={color} opacity="0.35" />
+          <circle cx="60" cy="43" r="4" fill="rgba(12,8,6,0.55)" stroke={color} />
+          <path d="M60 43c14 4 29-1 39-12" stroke={color} strokeDasharray="3 4" opacity="0.55" />
+        </>
+      )}
+      {type === 'field' && (
+        <>
+          <path
+            d="M14 42c22-24 44 20 68-2 20-18 34-6 55-21"
+            fill="none"
+            stroke={soft}
+            strokeWidth="2"
+          />
+          {Array.from({ length: 34 }, (_, i) => {
+            const x = 16 + ((i * 37) % 118);
+            const y = 16 + ((i * 19) % 44);
+            const r = i % 7 === 0 ? 2.5 : 1.3;
+            return (
+              <circle key={i} cx={x} cy={y} r={r} fill={color} opacity={0.22 + (i % 5) * 0.1} />
+            );
+          })}
+          <circle cx="75" cy="37" r="16" fill="none" stroke={color} strokeWidth="1.2" />
+          <circle cx="75" cy="37" r="4" fill={color} opacity="0.8" />
+          <path d="M75 21c13 7 20 18 21 33M75 53c-14-5-22-16-23-31" stroke={color} opacity="0.42" />
+        </>
+      )}
+    </svg>
+  );
+}
+
+function FlowProcessStrip() {
+  return (
+    <div
+      style={{
+        border: '1px solid rgba(210,162,75,0.26)',
+        background: 'rgba(210,162,75,0.075)',
+        borderRadius: 14,
+        padding: 10,
+        marginBottom: 10,
+      }}
+    >
+      <div
+        style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(5, minmax(0, 1fr))',
+          gap: 5,
+          alignItems: 'stretch',
+        }}
+      >
+        {FLOW_STEPS.map((step, i) => (
+          <div
+            key={step.label}
+            style={{
+              position: 'relative',
+              minHeight: 66,
+              border: '1px solid rgba(240,216,152,0.13)',
+              background: i === 2 ? 'rgba(210,162,75,0.16)' : 'rgba(255,255,255,0.025)',
+              borderRadius: 10,
+              padding: '9px 5px 7px',
+              textAlign: 'center',
+            }}
+          >
+            <div
+              style={{
+                width: 14,
+                height: 14,
+                margin: '0 auto 5px',
+                borderRadius: i === 2 ? 4 : 999,
+                background: i === 2 ? 'rgba(12,8,6,0.68)' : 'rgba(210,162,75,0.28)',
+                border: '1px solid rgba(210,162,75,0.7)',
+              }}
+            />
+            <div
+              style={{
+                fontSize: 9.5,
+                fontWeight: 800,
+                color: 'rgba(240,216,152,0.86)',
+                lineHeight: 1.1,
+              }}
+            >
+              {step.label}
+            </div>
+            <div
+              style={{
+                marginTop: 3,
+                fontSize: 7.5,
+                color: 'rgba(240,216,152,0.45)',
+                lineHeight: 1.15,
+              }}
+            >
+              {step.sub}
+            </div>
+          </div>
+        ))}
+      </div>
+      <p style={{ margin: '8px 2px 0', fontSize: 11, lineHeight: 1.45, color: '#d2a24bbb' }}>
+        Motivation changes like weather. The app should remember geology: the repeated river, the
+        dam, and what opened it last time.
+      </p>
+    </div>
+  );
+}
+
+function VisualReflectionLab() {
+  const [openId, setOpenId] = useState(VISUAL_REFLECTIONS[0].id);
+
+  return (
+    <div style={{ padding: '4px 12px 16px' }}>
+      <div
+        style={{
+          border: '1px solid rgba(196,160,96,0.16)',
+          background: 'rgba(255,255,255,0.025)',
+          borderRadius: 14,
+          padding: 12,
+        }}
+      >
+        <div
+          style={{
+            fontSize: 10,
+            fontWeight: 800,
+            letterSpacing: '0.18em',
+            textTransform: 'uppercase',
+            color: 'rgba(196,160,96,0.68)',
+            marginBottom: 8,
+          }}
+        >
+          Infographic reflections
+        </div>
+        <p
+          style={{
+            margin: '0 0 12px',
+            color: 'rgba(240,216,152,0.58)',
+            fontSize: 12,
+            lineHeight: 1.55,
+          }}
+        >
+          Experiments for turning personality, education, missions, ideas, and people into visual
+          systems you can understand at a glance.
+        </p>
+        <FlowProcessStrip />
+        <div style={{ display: 'grid', gap: 8 }}>
+          {VISUAL_REFLECTIONS.map((item) => {
+            const open = openId === item.id;
+            return (
+              <button
+                key={item.id}
+                type="button"
+                onClick={() => setOpenId(open ? '' : item.id)}
+                style={{
+                  border: `1px solid ${item.color}${open ? '66' : '2e'}`,
+                  background: open ? `${item.color}12` : 'rgba(255,255,255,0.018)',
+                  borderRadius: 12,
+                  padding: 10,
+                  cursor: 'pointer',
+                  textAlign: 'left',
+                  fontFamily: 'var(--font-serif)',
+                  color: 'rgba(240,216,152,0.86)',
+                }}
+              >
+                <ReflectionSketch type={item.sketch} color={item.color} />
+                <div
+                  style={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    gap: 10,
+                    alignItems: 'baseline',
+                    marginTop: 6,
+                  }}
+                >
+                  <span style={{ fontSize: 14, fontWeight: 800, color: `${item.color}dd` }}>
+                    {item.title}
+                  </span>
+                  <span
+                    style={{
+                      fontSize: 8,
+                      letterSpacing: '0.12em',
+                      textTransform: 'uppercase',
+                      color: `${item.color}88`,
+                      whiteSpace: 'nowrap',
+                    }}
+                  >
+                    best for
+                  </span>
+                </div>
+                <div style={{ fontSize: 11, color: 'rgba(240,216,152,0.55)', marginTop: 2 }}>
+                  {item.bestFor}
+                </div>
+                {open && (
+                  <div
+                    style={{
+                      marginTop: 9,
+                      paddingTop: 9,
+                      borderTop: `1px solid ${item.color}24`,
+                      display: 'grid',
+                      gap: 7,
+                    }}
+                  >
+                    <p
+                      style={{
+                        margin: 0,
+                        fontSize: 12,
+                        lineHeight: 1.55,
+                        color: 'rgba(240,216,152,0.68)',
+                      }}
+                    >
+                      {item.body}
+                    </p>
+                    <p
+                      style={{
+                        margin: 0,
+                        fontSize: 11,
+                        lineHeight: 1.5,
+                        color: `${item.color}bb`,
+                      }}
+                    >
+                      {item.aiUse}
+                    </p>
+                  </div>
+                )}
+              </button>
+            );
+          })}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function layoutBubbles(raw: Omit<Bubble, 'x' | 'y'>[]): Bubble[] {
   const W = 340;
   const H = 420;
@@ -1695,6 +2137,7 @@ export default function InfographicsView({
                 );
               })}
             </div>
+            <VisualReflectionLab />
           </>
         )}
       </div>

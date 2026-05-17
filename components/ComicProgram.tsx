@@ -38,6 +38,7 @@ const TEXT_ON_IMAGE_PROGRAMS = new Set([
 ]);
 
 const BLANK_BUBBLE_PROGRAMS = new Set(['carl-jung']);
+const JPG_PANEL_PROGRAMS = new Set(['carl-jung', 'struggle-letting-go']);
 
 const PROGRAM_IMAGE_STYLES: Record<string, ImageStyle[]> = {
   'hope-energy': [DEFAULT_IMAGE_STYLE, { key: 'euro-bd', label: 'European BD' }],
@@ -371,22 +372,25 @@ function PanelImage({
   index,
   color,
   imageStyle,
+  alt = '',
 }: {
   programKey: string;
   index: number;
   color: string;
   imageStyle?: string;
+  alt?: string;
 }) {
   const [failed, setFailed] = useState(false);
+  const extension = JPG_PANEL_PROGRAMS.has(programKey) ? 'jpg' : 'png';
   const src =
     imageStyle && imageStyle !== 'default'
-      ? `/comics/${programKey}/variants/${imageStyle}/panel-${index}.png`
-      : `/comics/${programKey}/panel-${index}.png`;
+      ? `/comics/${programKey}/variants/${imageStyle}/panel-${index}.${extension}`
+      : `/comics/${programKey}/panel-${index}.${extension}`;
   if (!failed) {
     return (
       <img
         src={src}
-        alt=""
+        alt={alt}
         onError={() => setFailed(true)}
         style={{
           width: '100%',
@@ -400,7 +404,7 @@ function PanelImage({
   return <PanelArt index={index} color={color} />;
 }
 
-function BlankBubbleComicPanel({ index, color }: { index: number; color: string }) {
+function _BlankBubbleComicPanel({ index, color }: { index: number; color: string }) {
   const pages = [
     'desk',
     'field',
@@ -804,7 +808,7 @@ export default function ComicProgram({
                 color: col(program.color, 0.58),
               }}
             >
-              Blank comic book
+              Comic book
             </div>
             <div
               style={{
@@ -866,7 +870,13 @@ export default function ComicProgram({
               cursor: 'pointer',
             }}
           >
-            <BlankBubbleComicPanel index={index} color={program.color} />
+            <PanelImage
+              programKey={program.key}
+              index={index}
+              color={program.color}
+              imageStyle={imageStyle}
+              alt={`Blank Carl Jung comic page ${index + 1}`}
+            />
           </button>
 
           <div

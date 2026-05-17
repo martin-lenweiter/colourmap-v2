@@ -44,7 +44,7 @@ describe('LearningHub', () => {
     expect(panelImage).not.toBeNull();
   });
 
-  it('opens the Carl Jung blank bubble comic book', () => {
+  it('opens the Carl Jung comic book', () => {
     const onClose = vi.fn();
     render(<LearningHub onClose={onClose} />);
 
@@ -52,7 +52,7 @@ describe('LearningHub', () => {
     expect(jungProgram).not.toBeNull();
     fireEvent.click(jungProgram as HTMLButtonElement);
 
-    expect(screen.getByText('Blank comic book')).toBeDefined();
+    expect(screen.getByText('Comic book')).toBeDefined();
     expect(screen.getByText('The inner world is real material')).toBeDefined();
     expect(screen.getByRole('img', { name: /Blank Carl Jung comic page 1/i })).toBeDefined();
   });
