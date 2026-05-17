@@ -520,6 +520,18 @@ Purpose:
 The first pilot is `Carl Jung & The Inner Map`. Its default app version is a lettered comic, while
 the blank-bubble version is preserved as an editable variant for later lettering experiments.
 
+The next thinker program is `Paulo Freire & Collective Hope`. It teaches transformation as a
+shared practice: naming reality, dialogue, praxis, solidarity, and hope as movement. Its reader
+uses a three-layer comic model:
+
+1. a full symbolic image as the base layer
+2. app-rendered white or cream speech/thought bubbles above the image
+3. app-rendered words on top of those bubbles
+
+The Freire images should stay calm and spacious enough to prepare terrain for bubbles and text.
+They may be symbolic, but not overloaded. Character groups should include women and mixed
+communities rather than defaulting to men.
+
 Format guidance:
 
 - for normal app reading, prefer text-free illustrations with app-rendered text below or beside the

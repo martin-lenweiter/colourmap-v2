@@ -99,6 +99,57 @@ export const PROGRAMS: Program[] = [
     ],
   },
   {
+    key: 'paulo-freire',
+    domain: 'Paulo Freire & Collective Hope',
+    color: '#D0A35F',
+    segments: [
+      {
+        title: 'The world is made, so it can be remade',
+        body: 'Freire begins from a hopeful premise: society is not a machine that simply happens to us. It is built through choices, institutions, habits, language, and power. What has been built can be examined. What can be examined can be changed. Hope is not denial. It is the refusal to treat the present arrangement as destiny.',
+      },
+      {
+        title: 'People are not empty containers',
+        body: 'Bad education treats people like containers to be filled. Freire challenged that. A person is not a passive receiver of instructions, slogans, or expert knowledge. A person already carries experience, pain, intelligence, memory, and questions. Real learning starts when those experiences become material for understanding the world.',
+      },
+      {
+        title: 'Naming reality gives power back',
+        body: 'When people cannot name what is happening to them, pressure feels private and confusing. When they learn to name the pattern, the fog changes. Debt is not only personal failure. Burnout is not only weakness. Isolation is not only bad character. Naming turns suffering into information, and information can become action.',
+      },
+      {
+        title: 'Consciousness grows through dialogue',
+        body: 'For Freire, transformation does not come from one heroic mind telling everyone else the answer. It grows through dialogue: people comparing experience, asking sharper questions, and discovering the structure underneath their daily life. Dialogue is not soft. It is disciplined attention shared between people who are trying to see clearly.',
+      },
+      {
+        title: 'The personal and political meet',
+        body: 'Your inner life is shaped by outer systems, and outer systems are reproduced through inner habits. Shame, silence, obedience, cynicism, and isolation all have social consequences. Courage, language, trust, and solidarity do too. Transformation asks for both: inner awakening and shared movement.',
+      },
+      {
+        title: 'Praxis: reflection plus action',
+        body: 'Freire used praxis for the cycle of reflection and action. Reflection without action can become a beautiful cage. Action without reflection can repeat the same pattern with more energy. The living loop is: notice, name, act, learn, return. Each cycle makes the next one more intelligent.',
+      },
+      {
+        title: 'Hope is a practice, not a mood',
+        body: 'Hope is not waiting for rescue. It is a practice of looking directly at difficulty while still making room for possibility. It asks: what is one real thing we can understand better, build differently, or refuse together? Hope becomes credible when it produces movement, even small movement.',
+      },
+      {
+        title: 'Unity is not sameness',
+        body: 'People do not unite by becoming identical. They unite by finding the shared structure beneath different experiences. One person names exhaustion. Another names money fear. Another names loneliness. The details differ, but the pattern may rhyme. Solidarity begins when private burdens become visible as connected realities.',
+      },
+      {
+        title: 'Education can be liberation',
+        body: 'Learning is not only collecting information. At its best, education helps people recover agency. It teaches them to read the world, read themselves, and participate in changing both. A good education does not make the user dependent on the teacher. It makes the learner more able to think, speak, and act with others.',
+      },
+      {
+        title: 'From one check-in to a collective map',
+        body: 'Colourmap begins with one person noticing their state. Freire helps extend that: many people noticing honestly can reveal patterns no one could see alone. The private map becomes a shared map. The shared map becomes a basis for repair, design, organising, and hope.',
+      },
+      {
+        title: 'The future needs participants',
+        body: 'A fixed world asks for adaptation. A living world asks for participation. Freire gives the deeper challenge: do not only survive the system, learn to read it with others and help remake it. The question is not whether everything can change at once. The question is where consciousness, courage, and collective action can begin.',
+      },
+    ],
+  },
+  {
     key: 'room-to-breathe',
     domain: 'Room to Breathe',
     color: '#C8B67A',

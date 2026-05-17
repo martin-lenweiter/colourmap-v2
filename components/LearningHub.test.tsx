@@ -23,6 +23,7 @@ describe('LearningHub', () => {
     expect(screen.getByText('Knowledge worlds')).toBeDefined();
     expect(screen.getByText('Struggle & Letting Go')).toBeDefined();
     expect(screen.getByText('Carl Jung & The Inner Map')).toBeDefined();
+    expect(screen.getByText('Paulo Freire & Collective Hope')).toBeDefined();
     expect(screen.getByRole('button', { name: /Living Atlas/i })).toBeDefined();
     expect(screen.getByRole('button', { name: /Progress Roads/i })).toBeDefined();
     expect(screen.getByText('start here')).toBeDefined();
@@ -55,5 +56,22 @@ describe('LearningHub', () => {
     expect(screen.getByText('Comic book')).toBeDefined();
     expect(screen.getByText('The inner world is real material')).toBeDefined();
     expect(screen.getByRole('img', { name: /Blank Carl Jung comic page 1/i })).toBeDefined();
+  });
+
+  it('opens the Paulo Freire layered comic program', () => {
+    const onClose = vi.fn();
+    render(<LearningHub onClose={onClose} />);
+
+    const freireProgram = screen.getByText('Paulo Freire & Collective Hope').closest('button');
+    expect(freireProgram).not.toBeNull();
+    fireEvent.click(freireProgram as HTMLButtonElement);
+
+    expect(screen.getByText('Paulo Freire & Collective Hope')).toBeDefined();
+    fireEvent.click(screen.getByRole('button', { name: /Begin/i }));
+
+    expect(screen.getByRole('button', { name: 'Next comic page' })).toBeDefined();
+    expect(screen.getByRole('img', { name: /Paulo Freire symbolic comic panel 1/i })).toBeDefined();
+    expect(screen.getByText('The world is made, so it can be remade')).toBeDefined();
+    expect(screen.getByText(/society is not a machine/i)).toBeDefined();
   });
 });
