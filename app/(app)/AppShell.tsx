@@ -17,6 +17,26 @@ const SOCIAL_ROUTES = [
 
 type MusicSection = 'makers' | 'guitar';
 
+function formatFooterDate(date: Date) {
+  const weekdays = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+  const months = [
+    'January',
+    'February',
+    'March',
+    'April',
+    'May',
+    'June',
+    'July',
+    'August',
+    'September',
+    'October',
+    'November',
+    'December',
+  ];
+
+  return `${weekdays[date.getDay()]} ${date.getDate()} ${months[date.getMonth()]}`;
+}
+
 export default function AppShell({ children }: { children: React.ReactNode }) {
   const { mode, navPosition } = useViewMode();
   const pathname = usePathname();
@@ -135,11 +155,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
               pointerEvents: 'none',
             }}
           >
-            {new Date().toLocaleDateString('en-GB', {
-              weekday: 'long',
-              day: 'numeric',
-              month: 'long',
-            })}
+            {formatFooterDate(new Date())}
           </p>
         )}
       </div>

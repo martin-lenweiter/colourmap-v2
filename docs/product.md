@@ -69,9 +69,9 @@ The visual system must reinforce that split. Colourmap is not a generic dashboar
 
 ## Navigation
 
-Check In · Overview · Missions · Journey · Notebook · ◇ (Life Scan, Programs, Research)
+Focus · AI · Notes · Music · Art · Arena · ◇ (Atlas, Roads, Social, Journey, Life Scan, Programs, Research, Creator Space)
 
-Phone: Check In · Cockpit · Missions · Journey · Notebook · ◇
+Phone: Focus · AI · Notes · Music · Art · Arena · ◇
 
 ## Current Features
 
@@ -103,23 +103,24 @@ Phone: Check In · Cockpit · Missions · Journey · Notebook · ◇
 
 ### Notebook
 
-10. **Notebook** — OneNote-inspired organization at `/notebook`. Vertical category tabs with icons, rich text editing (bold/italic/headings/lists), note colors (7 tints), font selector (Default/Serif/Mono/Handwritten/Sketch), text alignment, markdown-lite preview. Notes/Music toggle. Music toolkit: Songs with lyrics+chords, AI generation (Chorus/Verse/Chords/Bridge), Projects with song linking. Custom categories with color picker. [Spec](specs/notebook.md)
+10. **AI Reflection Menu** — Long-term AI home at `/ai`, placed between Focus and Notes. It explains reflection scopes, saved memory, and the freemium boundary: free users get limited small reflections, paid users get deeper pattern reading and durable AI memory. The nav dot menu can also summon the AI assistant. [Spec](specs/ai-reflection-menu.md)
+11. **Notebook** — OneNote-inspired organization at `/notebook`. Vertical category tabs with icons, rich text editing (bold/italic/headings/lists), note colors (7 tints), font selector (Default/Serif/Mono/Handwritten/Sketch), text alignment, markdown-lite preview. Notes/Music toggle. Music toolkit: Songs with lyrics+chords, AI generation (Chorus/Verse/Chords/Bridge), Projects with song linking. Custom categories with color picker. [Spec](specs/notebook.md)
 
 ### Shared
 
-11. **Design System** — Color themes (Paper/Golden/Night) + Typography themes (Normal/Cowboy/Groovy/Minimal) in a Design dropdown with two tabs. Playfair Display for titles, Caveat + Kalam for handwritten notes.
-12. **Step Back** — Breathing pause button in header (ochre dot). Full-screen overlay with 3 breathing cycles (4s in, 4s hold, 4s out). Auto-closes or tap to dismiss.
-13. **Emotional Vocabulary** — 8 poetic words mapped to slider values, shared across check-in and history. [Spec](specs/emotional-vocabulary.md)
-14. **Creator Space / Build Lab** — Creator-only AI coding mission control at `/build-lab`. Select a local project, choose Codex or Claude Code, dictate or type a mission, stream agent output, and inspect changed files/diffs. The same Creator Space evolves into Garden of Ideas, Project Map / Visual Intelligence, and Business Plan for understanding the product, navigating specs visually, and moving toward practical launch/revenue strategy. [Spec](specs/build-lab.md)
-15. **Mode Bridge** — In-progress Focus-page surface for understanding active/avoided modes and practicing small transitions between Creation, Organisation, Admin, Builder, Body/Sport, Reflection, and Play. [Spec](specs/archetype-platform.md)
-16. **AI Presence** — Shared phone-friendly AI reflection box with a brown/gold living-cell visual. It connects to backend AI without needing local coding agents, starting as a mirror-first surface for fragments and simple tensions. [Spec](specs/ai-presence.md)
+12. **Design System** — Color themes (Paper/Golden/Night) + Typography themes (Normal/Cowboy/Groovy/Minimal) in a Design dropdown with two tabs. Playfair Display for titles, Caveat + Kalam for handwritten notes.
+13. **Step Back** — Breathing pause button in header (ochre dot). Full-screen overlay with 3 breathing cycles (4s in, 4s hold, 4s out). Auto-closes or tap to dismiss.
+14. **Emotional Vocabulary** — 8 poetic words mapped to slider values, shared across check-in and history. [Spec](specs/emotional-vocabulary.md)
+15. **Creator Space / Build Lab** — Creator-only AI coding mission control at `/build-lab`. Select a local project, choose Codex or Claude Code, dictate or type a mission, stream agent output, and inspect changed files/diffs. The same Creator Space evolves into Garden of Ideas, Project Map / Visual Intelligence, and Business Plan for understanding the product, navigating specs visually, and moving toward practical launch/revenue strategy. [Spec](specs/build-lab.md)
+16. **Mode Bridge** — In-progress Focus-page surface for understanding active/avoided modes and practicing small transitions between Creation, Organisation, Admin, Builder, Body/Sport, Reflection, and Play. [Spec](specs/archetype-platform.md)
+17. **AI Presence** — Shared phone-friendly AI reflection box with a brown/gold living-cell visual. It connects to backend AI without needing local coding agents, starting as a mirror-first surface for fragments and simple tensions. [Spec](specs/ai-presence.md)
 
 ### Deep Layer
 
-17. **Life Scan** — Guided self-assessment through 3 Doors (Feeling, Doing, Sharing). Bipolar sliders, reflective questions, generates improvement programs. [Spec](specs/life-scan.md)
-18. **Personality Type Program** — Planned self-understanding program built on free/public-domain personality foundations, especially IPIP Big Five, translated into Colourmap-native styles, gifts, frictions, and mode bridges. [Spec](specs/personality-type-program.md)
-19. **Overview** — Compass wheel (warm blue for Sharing) showing life balance from life scan data + emotional state. Chapter card. [Spec](specs/cockpit.md)
-20. **Research** — In-app research document covering psychology foundations, competitive analysis, monetization, AI integration, soul cartography vision, and feature roadmap. Accessible at `/research`.
+18. **Life Scan** — Guided self-assessment through 3 Doors (Feeling, Doing, Sharing). Bipolar sliders, reflective questions, generates improvement programs. [Spec](specs/life-scan.md)
+19. **Personality Type Program** — Planned self-understanding program built on free/public-domain personality foundations, especially IPIP Big Five, translated into Colourmap-native styles, gifts, frictions, and mode bridges. [Spec](specs/personality-type-program.md)
+20. **Overview** — Compass wheel (warm blue for Sharing) showing life balance from life scan data + emotional state. Chapter card. [Spec](specs/cockpit.md)
+21. **Research** — In-app research document covering psychology foundations, competitive analysis, monetization, AI integration, soul cartography vision, and feature roadmap. Accessible at `/research`.
 
 ## Architecture
 
@@ -149,6 +150,7 @@ Notebook (always)               →  ideas, songs, reflections, plans
 - **Music generation** — Chorus/Verse/Chords/Bridge ideas for songs
 - **Day Map observation** — Pattern recognition connecting activities to emotions
 - **Check-in analysis** — Deep reflection on emotional trajectory
+- **AI Reflection Menu** — Freemium long-term synthesis home. Free users get limited small reflections; paid users get deeper pattern reading, larger context windows, saved reflection archive, and future generated maps.
 
 All AI uses Claude Haiku for cost efficiency. Respects "cockpit not coach" — names what it sees, never prescribes.
 

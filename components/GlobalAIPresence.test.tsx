@@ -37,4 +37,14 @@ describe('GlobalAIPresence', () => {
       }),
     );
   });
+
+  it('opens from the nav dot menu event', async () => {
+    const { default: GlobalAIPresence } = await import('./GlobalAIPresence');
+
+    render(<GlobalAIPresence />);
+
+    window.dispatchEvent(new CustomEvent('colourmap:open-ai-presence'));
+
+    expect(await screen.findByLabelText('AI Presence panel')).toBeTruthy();
+  });
 });
