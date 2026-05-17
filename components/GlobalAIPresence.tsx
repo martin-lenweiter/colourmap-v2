@@ -17,6 +17,8 @@ const PRESENCE_PRESETS: Array<{ id: PresencePreset; label: string }> = [
   { id: 'nebula', label: 'Nebula' },
 ];
 
+const OPEN_AI_PRESENCE_EVENT = 'colourmap:open-ai-presence';
+
 const CELL_DOTS = Array.from({ length: 72 }, (_, index) => {
   const ring = index % 3;
   const angle = index * 137.5;
@@ -230,6 +232,15 @@ export default function GlobalAIPresence() {
 
   useEffect(() => {
     setMounted(true);
+  }, []);
+
+  useEffect(() => {
+    function handleOpenPresence() {
+      setOpen(true);
+    }
+
+    window.addEventListener(OPEN_AI_PRESENCE_EVENT, handleOpenPresence);
+    return () => window.removeEventListener(OPEN_AI_PRESENCE_EVENT, handleOpenPresence);
   }, []);
 
   useEffect(() => {

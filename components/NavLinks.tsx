@@ -8,6 +8,7 @@ import { useViewMode } from './ViewModeContext';
 
 const PRIMARY_LINKS: { href: string; label: string }[] = [
   { href: '/day', label: 'Focus' },
+  { href: '/ai', label: 'AI' },
   { href: '/notebook', label: 'Notes' },
   { href: '/music', label: 'Music' },
   { href: '/geometry-field', label: 'Art' },
@@ -29,6 +30,12 @@ const MORE_LINKS = [
   { href: '/research', label: 'Research' },
   { href: '/build-lab', label: 'Creator Space' },
 ];
+
+const OPEN_AI_PRESENCE_EVENT = 'colourmap:open-ai-presence';
+
+function openAIAssistantFromMenu() {
+  window.dispatchEvent(new CustomEvent(OPEN_AI_PRESENCE_EVENT, { detail: { source: 'nav-dot' } }));
+}
 
 export default function NavLinks() {
   const pathname = usePathname();
@@ -153,6 +160,35 @@ export default function NavLinks() {
               boxShadow: '0 8px 24px rgba(0,0,0,0.14)',
             }}
           >
+            <button
+              type="button"
+              onClick={() => {
+                openAIAssistantFromMenu();
+                setMoreOpen(false);
+              }}
+              style={{
+                display: 'block',
+                width: '100%',
+                padding: '8px 16px',
+                fontSize: 13,
+                color: '#5C3018',
+                fontWeight: 700,
+                textAlign: 'left',
+                background: 'transparent',
+                border: 0,
+                cursor: 'pointer',
+              }}
+            >
+              AI Assistant
+            </button>
+            <div
+              aria-hidden="true"
+              style={{
+                height: 1,
+                margin: '4px 12px',
+                background: 'rgba(160,110,40,0.16)',
+              }}
+            />
             {MORE_LINKS.map((link) => {
               const isSocialLink = link.href === '/circles';
               const isActive = isSocialLink

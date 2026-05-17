@@ -44,3 +44,50 @@ Tasks without awareness become a grind. Awareness without tasks becomes navel-ga
 
 - Supabase auth and database.
 - Missions table with: id, userId, title, description, blocking, nextStep, completed, createdAt.
+
+## Next Direction: Mission Control
+
+The current mission card is useful for adding and editing work, but it is not yet a full life-organisation surface. The better version should become **Mission Control**: a page or mode that helps the user sort life into a few active fronts, convert vague pressure into next actions, and connect doing back to feeling.
+
+### Product Shape
+
+Mission Control should have five zones:
+
+1. **Command Line** — one fast input for dumping tasks, worries, plans, or vague obligations. The user should not have to categorize before capturing.
+2. **Today Lane** — the few things that matter today. This is not a giant todo list; it is the current operating lane.
+3. **Life Fronts** — missions grouped by life category such as Body, Organisation, Music, Work, Social, Money, Home. These are the stable areas of life.
+4. **Road View** — a visual sequence from current mission to next steps to later objectives. It should show movement, not just a list.
+5. **AI Organiser** — a scoped assistant that can read the mission dump and suggest grouping, next steps, blockers, and category links. Suggestions are never applied silently.
+
+### Mission Anatomy
+
+A mission should eventually carry:
+
+- **Why** — what this mission serves.
+- **Next visible step** — the smallest concrete action.
+- **Blocker** — what is making it hard.
+- **Life category** — the area of life it belongs to.
+- **Time horizon** — today, this week, later, someday.
+- **Energy mode** — admin, creative, body, social, focus, recovery.
+- **Evidence trail** — linked check-ins, reflections, day-map blocks, and notes.
+
+### Better UX Principles
+
+- Capture should be frictionless; organisation can happen later.
+- The page should distinguish `mission`, `task`, `habit`, and `worry`. Mixing them creates overwhelm.
+- Only a small number of missions should be active at once. The rest belong in later/someday lanes.
+- Completing a mission should feed the reflection layer: what changed in mood, pressure, or clarity?
+- The AI should help the user see the real structure: "these five tasks are all Organisation," or "this blocker has appeared three times this week."
+
+### AI Mission Agent
+
+The AI assistant can support missions through confirmable actions:
+
+- Turn a vague note into a mission proposal.
+- Break a mission into 3 next steps.
+- Identify the likely blocker.
+- Suggest a life category.
+- Move non-urgent items out of Today.
+- Create a weekly mission summary.
+
+The assistant must ask before writing changes. It can propose: "I can turn this into three missions: Shoulder, Admin, Music. Save these?" The user confirms or edits.
