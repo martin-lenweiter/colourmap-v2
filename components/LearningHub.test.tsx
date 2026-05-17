@@ -24,6 +24,7 @@ describe('LearningHub', () => {
     expect(screen.getByText('Struggle & Letting Go')).toBeDefined();
     expect(screen.getByText('Carl Jung & The Inner Map')).toBeDefined();
     expect(screen.getByText('Paulo Freire & Collective Hope')).toBeDefined();
+    expect(screen.getByText('Thich Nhat Hanh & Peace in Action')).toBeDefined();
     expect(screen.getByRole('button', { name: /Living Atlas/i })).toBeDefined();
     expect(screen.getByRole('button', { name: /Progress Roads/i })).toBeDefined();
     expect(screen.getByText('start here')).toBeDefined();
@@ -53,9 +54,12 @@ describe('LearningHub', () => {
     expect(jungProgram).not.toBeNull();
     fireEvent.click(jungProgram as HTMLButtonElement);
 
-    expect(screen.getByText('Comic book')).toBeDefined();
+    fireEvent.click(screen.getByRole('button', { name: /Begin/i }));
+
+    expect(screen.getByRole('button', { name: 'Next comic page' })).toBeDefined();
     expect(screen.getByText('The inner world is real material')).toBeDefined();
-    expect(screen.getByRole('img', { name: /Blank Carl Jung comic page 1/i })).toBeDefined();
+    expect(screen.getByText(/Dreams, symbols, moods/i)).toBeDefined();
+    expect(screen.getByRole('img', { name: /Carl Jung comic page 1/i })).toBeDefined();
   });
 
   it('opens the Paulo Freire layered comic program', () => {
@@ -73,5 +77,23 @@ describe('LearningHub', () => {
     expect(screen.getByRole('img', { name: /Paulo Freire symbolic comic panel 1/i })).toBeDefined();
     expect(screen.getByText('The world is made, so it can be remade')).toBeDefined();
     expect(screen.getByText(/society is not a machine/i)).toBeDefined();
+  });
+
+  it('opens the Thich Nhat Hanh landscape comic program', () => {
+    const onClose = vi.fn();
+    render(<LearningHub onClose={onClose} />);
+
+    const thichProgram = screen.getByText('Thich Nhat Hanh & Peace in Action').closest('button');
+    expect(thichProgram).not.toBeNull();
+    fireEvent.click(thichProgram as HTMLButtonElement);
+
+    fireEvent.click(screen.getByRole('button', { name: /Begin/i }));
+
+    expect(screen.getByRole('button', { name: 'Next comic page' })).toBeDefined();
+    expect(
+      screen.getByRole('img', { name: /Thich Nhat Hanh landscape comic panel 1/i }),
+    ).toBeDefined();
+    expect(screen.getByText('The bell of now')).toBeDefined();
+    expect(screen.getByText(/peace begins by returning/i)).toBeDefined();
   });
 });
