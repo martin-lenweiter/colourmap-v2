@@ -49,6 +49,15 @@ Tasks without awareness become a grind. Awareness without tasks becomes navel-ga
 
 The current mission card is useful for adding and editing work, but it is not yet a full life-organisation surface. The better version should become **Mission Control**: a page or mode that helps the user sort life into a few active fronts, convert vague pressure into next actions, and connect doing back to feeling.
 
+The Focus mission tab now supports a small design-format pill:
+
+- **Format 1** keeps the original mission card stack for direct editing.
+- **Format 2** opens the Mission Control organisation view using the same stored mission data.
+
+Format 2 is an alternative organisation surface, not a separate data model. Users can switch between
+formats without duplicating missions. The second format keeps capture simple, then helps the user sort
+missions by life area and by work type: `Free Card`, `Deep Thought`, `Pro Work`, and `Real Work`.
+
 ### Product Shape
 
 Mission Control should have five zones:

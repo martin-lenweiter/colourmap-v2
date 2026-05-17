@@ -9,7 +9,6 @@ import DailyRituals from '@/components/DailyRituals';
 import DayRoad from '@/components/DayRoad';
 import DayTabs from '@/components/DayTabs';
 import DayView3D from '@/components/DayView3D';
-import DoingCardsPanel from '@/components/DoingCardsPanel';
 import EmotionLearnPill from '@/components/EmotionLearnPill';
 import FeelingCircles2 from '@/components/FeelingCircles2';
 import FirstRunOnboarding from '@/components/FirstRunOnboarding';
@@ -17,6 +16,7 @@ import IdeaConstellation from '@/components/IdeaConstellation';
 import InfographicsView from '@/components/InfographicsView';
 import InnerWork from '@/components/InnerWork';
 import LearningHub from '@/components/LearningHub';
+import MissionDesignSwitcher from '@/components/MissionDesignSwitcher';
 import Overview2 from '@/components/Overview2';
 import TodaysField from '@/components/TodaysField';
 import { emotionInsights } from '@/lib/insights';
@@ -172,7 +172,7 @@ function DayContent() {
           <div className="space-y-3">
             <ActiveCompartments />
             <ColourMapPanel />
-            <DoingCardsPanel />
+            <MissionDesignSwitcher />
             <div style={{ paddingTop: 16 }}>
               <DailyRituals />
             </div>
