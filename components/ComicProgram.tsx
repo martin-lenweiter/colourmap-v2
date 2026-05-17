@@ -39,7 +39,8 @@ const TEXT_ON_IMAGE_PROGRAMS = new Set([
 
 const BLANK_BUBBLE_PROGRAMS = new Set(['carl-jung']);
 const JPG_PANEL_PROGRAMS = new Set(['carl-jung', 'struggle-letting-go']);
-const LAYERED_BUBBLE_PROGRAMS = new Set(['paulo-freire']);
+const LAYERED_BUBBLE_PROGRAMS = new Set(['carl-jung', 'paulo-freire', 'thich-nhat-hanh']);
+const LANDSCAPE_LAYERED_PROGRAMS = new Set(['thich-nhat-hanh']);
 
 const PROGRAM_IMAGE_STYLES: Record<string, ImageStyle[]> = {
   'hope-energy': [DEFAULT_IMAGE_STYLE, { key: 'euro-bd', label: 'European BD' }],
@@ -83,8 +84,9 @@ function toParagraphs(text: string): string[] {
   return paras.filter(Boolean);
 }
 
-function firstSentence(text: string) {
-  return text.match(/[^.!?]+[.!?]/)?.[0]?.trim() ?? text;
+function conciseLesson(text: string) {
+  const sentences = text.match(/[^.!?]+[.!?]/g) ?? [text];
+  return sentences.slice(0, 2).join(' ').trim();
 }
 
 /* ── Generative panel art — one composition per segment index ── */
@@ -386,7 +388,10 @@ function PanelImage({
   alt?: string;
 }) {
   const [failed, setFailed] = useState(false);
-  if (LAYERED_BUBBLE_PROGRAMS.has(programKey)) {
+  if (programKey === 'thich-nhat-hanh') {
+    return <ThichBasePanel index={index} color={color} />;
+  }
+  if (programKey === 'paulo-freire') {
     return <FreireBasePanel index={index} color={color} />;
   }
   const extension = JPG_PANEL_PROGRAMS.has(programKey) ? 'jpg' : 'png';
@@ -523,6 +528,141 @@ function FreireBasePanel({ index, color }: { index: number; color: string }) {
         <circle cx="220" cy="232" r="4" />
         <circle cx="284" cy="196" r="5" />
         <circle cx="342" cy="176" r="4" />
+      </g>
+    </svg>
+  );
+}
+
+function ThichBasePanel({ index, color }: { index: number; color: string }) {
+  const scenes = [
+    {
+      sun: [116, 82],
+      river: 'M0 258 C120 220, 212 288, 344 246 S548 208, 640 238',
+      tree: [488, 222],
+    },
+    {
+      sun: [524, 74],
+      river: 'M0 244 C92 214, 176 236, 266 214 S430 160, 640 190',
+      tree: [146, 220],
+    },
+    {
+      sun: [326, 78],
+      river: 'M0 274 C108 230, 222 256, 328 230 S514 212, 640 248',
+      tree: [520, 204],
+    },
+    {
+      sun: [92, 96],
+      river: 'M0 232 C132 206, 230 226, 336 198 S512 168, 640 202',
+      tree: [300, 214],
+    },
+  ];
+  const scene = scenes[index % scenes.length];
+  const people = [
+    { x: 170, y: 238, scale: 0.85, tone: '#5C3018' },
+    { x: 218, y: 246, scale: 0.74, tone: '#6B7A50' },
+    { x: 430, y: 232, scale: 0.78, tone: '#7A5438' },
+  ];
+
+  return (
+    <svg
+      viewBox="0 0 640 360"
+      role="img"
+      aria-label={`Thich Nhat Hanh landscape comic panel ${index + 1}`}
+      style={{ display: 'block', width: '100%', height: 'auto', background: '#ead8b4' }}
+    >
+      <defs>
+        <linearGradient id={`thich-sky-${index}`} x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor="#f2dfba" />
+          <stop offset="100%" stopColor="#d9c190" />
+        </linearGradient>
+        <radialGradient id={`thich-light-${index}`} cx="50%" cy="22%" r="68%">
+          <stop offset="0%" stopColor={color} stopOpacity="0.34" />
+          <stop offset="100%" stopColor={color} stopOpacity="0" />
+        </radialGradient>
+        <filter id={`thich-grain-${index}`}>
+          <feTurbulence type="fractalNoise" baseFrequency="0.62" numOctaves="2" seed={index + 44} />
+          <feColorMatrix type="saturate" values="0" />
+          <feComponentTransfer>
+            <feFuncA type="table" tableValues="0 0.06" />
+          </feComponentTransfer>
+        </filter>
+      </defs>
+      <rect width="640" height="360" fill={`url(#thich-sky-${index})`} />
+      <rect width="640" height="360" fill={`url(#thich-light-${index})`} />
+      <rect width="640" height="360" filter={`url(#thich-grain-${index})`} />
+
+      <g opacity="0.22" stroke="#5C3018" strokeWidth="1" fill="none">
+        <circle cx={scene.sun[0]} cy={scene.sun[1]} r="32" />
+        <circle cx={scene.sun[0]} cy={scene.sun[1]} r="56" />
+        <path d="M54 78h134M54 94h88M466 302h104M488 318h72" />
+      </g>
+
+      <g fill="none" strokeLinecap="round">
+        <path
+          d="M0 236 C110 190, 200 210, 286 188 S498 142, 640 166"
+          stroke="#6B7A50"
+          strokeWidth="18"
+          opacity="0.14"
+        />
+        <path d={scene.river} stroke="#6888B0" strokeWidth="20" opacity="0.22" />
+        <path d={scene.river} stroke="#fff7dc" strokeWidth="4" opacity="0.42" />
+        <path
+          d="M0 308 C150 292, 256 330, 410 296 S568 282, 640 306"
+          stroke="#5C3018"
+          strokeWidth="2"
+          opacity="0.18"
+        />
+      </g>
+
+      <g transform={`translate(${scene.tree[0]} ${scene.tree[1]})`}>
+        <path
+          d="M0 52 V-28"
+          stroke="#5C3018"
+          strokeWidth="5"
+          strokeLinecap="round"
+          opacity="0.72"
+        />
+        <path
+          d="M0 -12 C-34 -44, -70 -22, -62 10 C-30 12, -18 0, 0 -12Z"
+          fill="#6B7A50"
+          opacity="0.45"
+        />
+        <path d="M0 -18 C34 -56, 78 -28, 66 8 C36 14, 18 2, 0 -18Z" fill="#7A8A50" opacity="0.5" />
+        <path
+          d="M0 -34 C-18 -70, 28 -78, 42 -42 C30 -20, 16 -26, 0 -34Z"
+          fill={color}
+          opacity="0.26"
+        />
+      </g>
+
+      {people.map((person) => (
+        <g
+          key={`${person.x}-${person.y}`}
+          transform={`translate(${person.x} ${person.y}) scale(${person.scale})`}
+        >
+          <circle cx="0" cy="-24" r="10" fill="#f7e8c8" stroke={person.tone} strokeWidth="2" />
+          <path
+            d="M0 -12 V34 M-16 2 H16 M-9 34 L-20 54 M9 34 L20 54"
+            fill="none"
+            stroke={person.tone}
+            strokeWidth="3"
+            strokeLinecap="round"
+          />
+          <path
+            d="M-18 20 C-8 28, 8 28, 18 20"
+            fill="none"
+            stroke={color}
+            strokeWidth="2"
+            opacity="0.5"
+          />
+        </g>
+      ))}
+
+      <g fill={color} opacity="0.38">
+        <circle cx="250" cy="130" r="4" />
+        <circle cx="292" cy="120" r="3" />
+        <circle cx="338" cy="132" r="4" />
+        <circle cx="382" cy="112" r="3" />
       </g>
     </svg>
   );
@@ -897,7 +1037,7 @@ export default function ComicProgram({
 
   const introData = PROGRAM_INTROS[program.key];
 
-  if (BLANK_BUBBLE_PROGRAMS.has(program.key)) {
+  if (BLANK_BUBBLE_PROGRAMS.has(program.key) && !LAYERED_BUBBLE_PROGRAMS.has(program.key)) {
     return (
       <div
         style={{
@@ -1591,6 +1731,7 @@ export default function ComicProgram({
   }
 
   if (LAYERED_BUBBLE_PROGRAMS.has(program.key)) {
+    const isLandscape = LANDSCAPE_LAYERED_PROGRAMS.has(program.key);
     return (
       <div
         style={{
@@ -1649,7 +1790,7 @@ export default function ComicProgram({
           </div>
         </div>
 
-        <div style={{ flex: 1, minHeight: 0, overflowY: 'auto', padding: '14px 18px 18px' }}>
+        <div style={{ flex: 1, minHeight: 0, overflowY: 'auto', padding: '14px 14px 18px' }}>
           <button
             type="button"
             onClick={next}
@@ -1658,56 +1799,65 @@ export default function ComicProgram({
               display: 'block',
               position: 'relative',
               width: '100%',
-              maxWidth: 430,
+              maxWidth: isLandscape ? 620 : 430,
               margin: '0 auto',
               padding: 0,
-              border: `1.5px solid ${col(program.color, 0.25)}`,
+              border: 0,
               background: 'transparent',
               cursor: 'pointer',
-              boxShadow: `0 0 34px ${col(program.color, 0.12)}`,
+              boxShadow: `0 16px 42px ${col(program.color, 0.14)}`,
             }}
           >
-            <FreireBasePanel index={index} color={program.color} />
+            <PanelImage
+              programKey={program.key}
+              index={index}
+              color={program.color}
+              imageStyle={imageStyle}
+              alt={
+                program.key === 'carl-jung'
+                  ? `Carl Jung comic page ${index + 1}`
+                  : `${program.domain} comic page ${index + 1}`
+              }
+            />
             <div
               aria-hidden="true"
               style={{
                 position: 'absolute',
-                left: '7%',
-                right: '7%',
-                top: '5%',
-                minHeight: 104,
-                borderRadius: 30,
+                left: isLandscape ? '5%' : '7%',
+                right: isLandscape ? '42%' : '7%',
+                top: isLandscape ? '7%' : '5%',
+                minHeight: isLandscape ? 70 : 104,
+                borderRadius: isLandscape ? 22 : 30,
+                background: 'rgba(255,250,232,0.94)',
+                boxShadow: '0 14px 30px rgba(92,48,24,0.18)',
+              }}
+            />
+            <div
+              aria-hidden="true"
+              style={{
+                position: 'absolute',
+                left: isLandscape ? '34%' : '12%',
+                right: isLandscape ? '5%' : '12%',
+                bottom: isLandscape ? '7%' : '7%',
+                minHeight: isLandscape ? 92 : 132,
+                borderRadius: isLandscape ? 20 : 24,
                 background: 'rgba(255,250,232,0.92)',
-                border: `1.5px solid ${col(program.color, 0.34)}`,
-                boxShadow: '0 14px 30px rgba(92,48,24,0.16)',
-              }}
-            />
-            <div
-              aria-hidden="true"
-              style={{
-                position: 'absolute',
-                left: '12%',
-                right: '12%',
-                bottom: '7%',
-                minHeight: 132,
-                borderRadius: 24,
-                background: 'rgba(255,250,232,0.9)',
-                border: `1.5px solid ${col(program.color, 0.3)}`,
-                boxShadow: '0 14px 30px rgba(92,48,24,0.16)',
+                boxShadow: '0 14px 30px rgba(92,48,24,0.18)',
               }}
             />
             <div
               style={{
                 position: 'absolute',
-                left: '12%',
-                right: '12%',
-                top: '8%',
-                textAlign: 'center',
+                left: isLandscape ? '8%' : '12%',
+                right: isLandscape ? '45%' : '12%',
+                top: isLandscape ? '10%' : '8%',
+                textAlign: isLandscape ? 'left' : 'center',
                 color: '#5C3018',
                 fontFamily: SERIF,
-                fontSize: 20,
+                fontSize: isLandscape ? 18 : 20,
                 fontWeight: 700,
-                lineHeight: 1.14,
+                lineHeight: 1.15,
+                overflowWrap: 'anywhere',
               }}
             >
               {current.title}
@@ -1715,20 +1865,38 @@ export default function ComicProgram({
             <p
               style={{
                 position: 'absolute',
-                left: '17%',
-                right: '17%',
-                bottom: '10%',
+                left: isLandscape ? '38%' : '17%',
+                right: isLandscape ? '9%' : '17%',
+                bottom: isLandscape ? '11%' : '10%',
                 margin: 0,
                 color: '#5C3018',
                 fontFamily: SERIF,
-                fontSize: 13.5,
-                lineHeight: 1.5,
-                textAlign: 'center',
+                fontSize: isLandscape ? 13 : 13.5,
+                lineHeight: 1.46,
+                textAlign: isLandscape ? 'left' : 'center',
+                overflowWrap: 'anywhere',
               }}
             >
-              {firstSentence(current.body)}
+              {conciseLesson(current.body)}
             </p>
           </button>
+          {program.key === 'carl-jung' && (
+            <div
+              style={{
+                maxWidth: 430,
+                margin: '10px auto 0',
+                borderRadius: 10,
+                background: 'rgba(255,250,232,0.08)',
+                padding: '10px 12px',
+                color: cream(0.72),
+                fontFamily: SERIF,
+                fontSize: 12,
+                lineHeight: 1.5,
+              }}
+            >
+              App lettering is rendered above the image so the comic can stay editable and readable.
+            </div>
+          )}
         </div>
 
         <div

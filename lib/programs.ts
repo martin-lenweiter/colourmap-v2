@@ -18,83 +18,83 @@ export const PROGRAMS: Program[] = [
     segments: [
       {
         title: 'The inner world is real material',
-        body: 'Blank comic page. Later text can introduce Jung as a mapmaker of dreams, symbols, and inner patterns.',
+        body: 'Jung treated the inner world as real material for understanding a life. Dreams, symbols, moods, and repeating patterns are not random noise. They are clues from a deeper field of the psyche.',
       },
       {
         title: 'Conscious and unconscious',
-        body: 'Blank comic page. Later text can explain the visible self and the hidden field underneath it.',
+        body: 'The conscious mind is the part we can usually name. The unconscious is the larger hidden field shaping reactions, dreams, attractions, fears, and images before we fully understand them.',
       },
       {
         title: 'The shadow',
-        body: 'Blank comic page. Later text can show the shadow as avoided energy that can become wisdom when met carefully.',
+        body: 'The shadow is what the personality pushes away. It can hold shame, anger, envy, desire, talent, and power. When met carefully, avoided energy can become honesty and wisdom.',
       },
       {
         title: 'The persona',
-        body: 'Blank comic page. Later text can explain the social mask and why it helps until it becomes too tight.',
+        body: 'The persona is the social mask: the version of ourselves that knows how to function in the world. It helps us belong, but it becomes dangerous when we forget there is more behind it.',
       },
       {
         title: 'Archetypes',
-        body: 'Blank comic page. Later text can introduce ancient patterns such as child, wise elder, hero, trickster, mother, and creator.',
+        body: 'Archetypes are deep human patterns that appear in myths, dreams, stories, and behavior. Child, elder, hero, trickster, mother, lover, warrior, and creator are not labels. They are energies moving through a life.',
       },
       {
         title: 'The collective unconscious',
-        body: 'Blank comic page. Later text can explain why similar myths and symbols appear across cultures.',
+        body: 'Jung noticed that similar images appear across cultures and centuries. He called this shared symbolic inheritance the collective unconscious: a deep layer where human experience forms recurring shapes.',
       },
       {
         title: 'Dreams as messages',
-        body: 'Blank comic page. Later text can frame dreams as symbolic weather reports from the deeper mind.',
+        body: 'Dreams can be read as symbolic weather from the deeper mind. They rarely speak in direct instructions. They show images, tensions, and possibilities that waking life may be avoiding.',
       },
       {
         title: 'Symbols carry more than words',
-        body: 'Blank comic page. Later text can show why images, circles, doors, rivers, and animals can explain feelings faster than logic.',
+        body: 'A symbol carries more than a definition. A door, river, circle, animal, tower, or child can hold a whole emotional situation at once. Images can explain what logic has not yet organised.',
       },
       {
         title: 'Complexes',
-        body: 'Blank comic page. Later text can explain emotionally charged knots that pull behavior before we notice.',
+        body: 'A complex is an emotionally charged knot. Something small happens, and the reaction becomes much larger than the moment. The past has entered the room before the person knows it.',
       },
       {
         title: 'Individuation',
-        body: 'Blank comic page. Later text can present individuation as becoming more whole, not more perfect.',
+        body: 'Individuation is the path of becoming more whole. It is not perfection or self-improvement theatre. It is learning to include the rejected, undeveloped, and forgotten parts of the self.',
       },
       {
         title: 'The inner opposite',
-        body: 'Blank comic page. Later text can describe the hidden complementary energies that help a person become less one-sided.',
+        body: 'Jung believed the psyche often carries hidden complementary energies. A person who is all control may need softness. A person who is all feeling may need structure. Wholeness reduces one-sidedness.',
       },
       {
         title: 'Active imagination',
-        body: 'Blank comic page. Later text can show dialogue with an image, dream figure, or inner character.',
+        body: 'Active imagination means entering dialogue with an image, dream figure, feeling, or inner character. The point is not fantasy for escape. It is conversation with material already alive inside the psyche.',
       },
       {
         title: 'Synchronicity',
-        body: 'Blank comic page. Later text can explain meaningful coincidence without making it superstition.',
+        body: 'Synchronicity names moments when inner meaning and outer event seem to meet. Jung did not treat this as proof of magic. He treated it as a reminder that the psyche seeks pattern and meaning.',
       },
       {
         title: 'The mandala',
-        body: 'Blank comic page. Later text can show the mandala as a symbol of ordering the psyche around a center.',
+        body: 'The mandala is a symbol of psychic order around a center. When life feels scattered, circular images can express a wish for integration: many parts arranged around something steady.',
       },
       {
         title: 'Myth in modern life',
-        body: 'Blank comic page. Later text can explain how old stories still shape work, love, art, fame, technology, and fear.',
+        body: 'Myth is not only ancient material. Old story patterns still shape work, love, art, fame, technology, and fear. A modern life can be pulled by very old images.',
       },
       {
         title: 'The digital shadow',
-        body: 'Blank comic page. Later text can connect Jung to phones, feeds, projection, avatars, and online identity.',
+        body: 'The digital world gives the shadow new stages: feeds, avatars, projection, comparison, outrage, and performance. Jung helps ask what part of ourselves we are meeting on the screen.',
       },
       {
         title: 'Creativity as integration',
-        body: 'Blank comic page. Later text can show art as a way to hold conflict until it becomes form.',
+        body: 'Creativity can hold conflict until it becomes form. A drawing, song, story, room, or map can let opposite forces speak without immediately choosing a winner.',
       },
       {
         title: 'Relationships as mirrors',
-        body: 'Blank comic page. Later text can show projection and repair in relationships without blaming the other person.',
+        body: 'Relationships often become mirrors. We may see in another person what we cannot yet see in ourselves. Projection is not a reason to blame yourself. It is a chance to reclaim energy.',
       },
       {
         title: 'Colourmap as inner atlas',
-        body: 'Blank comic page. Later text can connect Jung to archetypes, symbols, dreams, check-ins, and visual self-understanding.',
+        body: 'Colourmap becomes Jungian when it treats inner life as image, pattern, and story. Check-ins, archetypes, symbols, dreams, and maps can help the user see the psyche as a living atlas.',
       },
       {
         title: 'Toward wholeness',
-        body: 'Blank comic page. Later text can close with hope: the aim is not perfection, but a wider, kinder, more integrated life.',
+        body: 'The aim is not perfection. The aim is a wider, kinder, more integrated life. Wholeness begins when the rejected parts are no longer exiled from the map.',
       },
     ],
   },
@@ -146,6 +146,93 @@ export const PROGRAMS: Program[] = [
       {
         title: 'The future needs participants',
         body: 'A fixed world asks for adaptation. A living world asks for participation. Freire gives the deeper challenge: do not only survive the system, learn to read it with others and help remake it. The question is not whether everything can change at once. The question is where consciousness, courage, and collective action can begin.',
+      },
+    ],
+  },
+  {
+    key: 'thich-nhat-hanh',
+    domain: 'Thich Nhat Hanh & Peace in Action',
+    color: '#8FAE86',
+    segments: [
+      {
+        title: 'The bell of now',
+        body: 'Thich Nhat Hanh taught that peace begins by returning to the present moment. Not as escape, but as contact with life. One breath can interrupt the rush. One pause can make room for a different response.',
+      },
+      {
+        title: 'Breathing is a doorway',
+        body: 'The breath is always close. When attention returns to breathing, the body receives a signal that it does not need to run everywhere at once. The practice is simple: notice the in-breath, notice the out-breath, and let the nervous system arrive.',
+      },
+      {
+        title: 'Walking without rushing',
+        body: 'Walking meditation turns movement into presence. Each step becomes a small vote for being here. The goal is not to reach the next place faster. The goal is to stop abandoning the place where life is already happening.',
+      },
+      {
+        title: 'Interbeing',
+        body: 'Interbeing means nothing exists alone. A sheet of paper contains tree, rain, soil, sunlight, worker, road, and reader. Seeing this breaks the illusion of separation. Your life is made of relationships, and your choices ripple through the field.',
+      },
+      {
+        title: 'The cloud in the paper',
+        body: 'A simple object can reveal a whole world. When you look deeply, the ordinary becomes connected: food, clothes, messages, rooms, money, conflict, and care. Mindfulness is the ability to see the many conditions inside one moment.',
+      },
+      {
+        title: 'Suffering needs tenderness',
+        body: 'Pain does not transform through punishment. It begins to soften when held with attention. Instead of attacking sadness, fear, or anger, the practice is to recognise it, make room for it, and care for it like something wounded.',
+      },
+      {
+        title: 'Anger is a signal',
+        body: 'Anger can feel like a command, but it is also information. Thich Nhat Hanh invited people to hold anger before speaking from it. The pause does not make you passive. It gives wisdom time to join the energy.',
+      },
+      {
+        title: 'Deep listening',
+        body: 'Deep listening is listening with the aim of understanding, not winning. It asks the body to stay present while another person reveals their world. When someone feels truly heard, the atmosphere can begin to change.',
+      },
+      {
+        title: 'Loving speech',
+        body: 'Speech can be a bridge or a weapon. Loving speech does not mean avoiding truth. It means choosing words that keep the door to understanding open. A difficult sentence can still carry respect.',
+      },
+      {
+        title: 'Peace is practical',
+        body: 'Peace is not only an inner mood. It appears in how we eat, walk, work, consume, argue, build, and repair. A peaceful life is made from ordinary practices repeated until the atmosphere around us changes.',
+      },
+      {
+        title: 'Engaged Buddhism',
+        body: 'For Thich Nhat Hanh, spiritual practice did not stop at the meditation cushion. During war and social suffering, practice had to enter hospitals, schools, villages, politics, and daily service. Inner peace and social action belong together.',
+      },
+      {
+        title: 'The sangha',
+        body: 'A sangha is a community of practice. Transformation becomes easier when people breathe, listen, learn, and act together. The self is not repaired alone in a private room. It is nourished through relationships that support clarity.',
+      },
+      {
+        title: 'Consuming with awareness',
+        body: 'What we consume becomes part of our mind and body. News, food, images, conversations, and entertainment all leave traces. Mindful consumption asks: does this nourish understanding, or does it feed fear, craving, and numbness?',
+      },
+      {
+        title: 'No mud, no lotus',
+        body: 'The lotus does not grow outside the mud. Difficulty can become material for compassion, depth, and wisdom when it is not denied. The point is not to romanticise pain. The point is to discover what can grow from honest contact with it.',
+      },
+      {
+        title: 'The child inside',
+        body: 'Many reactions come from younger places inside us. Mindfulness can turn toward the inner child with patience instead of shame. Healing begins when the frightened part is no longer abandoned by the adult self.',
+      },
+      {
+        title: 'Rest is part of the path',
+        body: 'Modern life often treats rest as failure. Thich Nhat Hanh treated rest as intelligent care. A tired body cannot keep producing clarity. Stopping, lying down, breathing, and doing nothing can be part of transformation.',
+      },
+      {
+        title: 'Touching the Earth',
+        body: 'To touch the Earth is to remember that we belong to something larger than our private worries. Body, ancestors, planet, and future generations meet in the present. This view can turn anxiety into responsibility and gratitude.',
+      },
+      {
+        title: 'The miracle is ordinary',
+        body: 'A cup of tea, a leaf, a step, a hand, a bowl of food: these are not small if attention is present. Mindfulness restores dignity to ordinary life. The miracle is not elsewhere. It is the life we usually rush past.',
+      },
+      {
+        title: 'Building peace together',
+        body: 'Personal calm matters, but it is not the whole story. Peace becomes stronger when families, teams, schools, communities, and movements learn to breathe before reacting and listen before hardening. The collective nervous system can change.',
+      },
+      {
+        title: 'One breath, one action',
+        body: 'The teaching returns to simplicity. Breathe. See clearly. Speak carefully. Consume wisely. Walk with the Earth. Act with others. A different world begins as a different quality of presence, repeated in ordinary life.',
       },
     ],
   },

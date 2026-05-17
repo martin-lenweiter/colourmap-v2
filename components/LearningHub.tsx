@@ -32,6 +32,7 @@ const COMIC_PROGRAMS = new Set([
   'parenting-patterns',
   'carl-jung',
   'paulo-freire',
+  'thich-nhat-hanh',
 ]);
 
 const EDUCATION_IMAGES = ['/education-1.png', '/education-2.png', '/education-3.png'];
@@ -116,7 +117,7 @@ const POSITIVE_OVERLAY_PROGRAMS = new Set([
   'parenting-patterns',
 ]);
 const JPG_PANEL_PROGRAMS = new Set(['carl-jung', 'struggle-letting-go']);
-const GENERATED_COVER_PROGRAMS = new Set(['paulo-freire']);
+const GENERATED_COVER_PROGRAMS = new Set(['paulo-freire', 'thich-nhat-hanh']);
 const PROGRAM_COVER_PANEL: Record<string, number> = {
   'room-to-breathe': 4,
   'emotional-intelligence': 3,
@@ -138,6 +139,7 @@ const PROGRAM_COVER_PANEL: Record<string, number> = {
   'deep-attention': 8,
   'carl-jung': 13,
   'paulo-freire': 5,
+  'thich-nhat-hanh': 8,
 };
 
 const SERIF = 'var(--font-serif)';
@@ -206,6 +208,7 @@ const GROUPS: { label: string; keys: string[]; tint: string; startHere?: string 
       'self-talk',
       'carl-jung',
       'paulo-freire',
+      'thich-nhat-hanh',
       'wellbeing',
       'hope-energy',
       'sleep',
