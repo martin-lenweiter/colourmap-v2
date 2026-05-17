@@ -39,6 +39,7 @@ const TEXT_ON_IMAGE_PROGRAMS = new Set([
 
 const BLANK_BUBBLE_PROGRAMS = new Set(['carl-jung']);
 const JPG_PANEL_PROGRAMS = new Set(['carl-jung', 'struggle-letting-go']);
+const LAYERED_BUBBLE_PROGRAMS = new Set(['paulo-freire']);
 
 const PROGRAM_IMAGE_STYLES: Record<string, ImageStyle[]> = {
   'hope-energy': [DEFAULT_IMAGE_STYLE, { key: 'euro-bd', label: 'European BD' }],
@@ -80,6 +81,10 @@ function toParagraphs(text: string): string[] {
     );
   }
   return paras.filter(Boolean);
+}
+
+function firstSentence(text: string) {
+  return text.match(/[^.!?]+[.!?]/)?.[0]?.trim() ?? text;
 }
 
 /* ── Generative panel art — one composition per segment index ── */
@@ -381,6 +386,9 @@ function PanelImage({
   alt?: string;
 }) {
   const [failed, setFailed] = useState(false);
+  if (LAYERED_BUBBLE_PROGRAMS.has(programKey)) {
+    return <FreireBasePanel index={index} color={color} />;
+  }
   const extension = JPG_PANEL_PROGRAMS.has(programKey) ? 'jpg' : 'png';
   const src =
     imageStyle && imageStyle !== 'default'
@@ -402,6 +410,122 @@ function PanelImage({
     );
   }
   return <PanelArt index={index} color={color} />;
+}
+
+function FreireBasePanel({ index, color }: { index: number; color: string }) {
+  const scenes = [
+    { path: 'M44 418 C112 360, 181 382, 258 330 C320 289, 352 244, 389 196', sun: [334, 132] },
+    { path: 'M34 384 C98 330, 164 330, 222 288 C282 245, 332 218, 398 214', sun: [300, 128] },
+    { path: 'M40 430 C98 374, 150 368, 214 334 C289 294, 338 248, 408 226', sun: [330, 154] },
+    { path: 'M34 398 C92 356, 150 386, 220 328 C286 274, 338 256, 400 214', sun: [322, 132] },
+  ];
+  const scene = scenes[index % scenes.length];
+  const people = [
+    { x: 86, y: 402, scale: 1.04, tone: '#5C3018', shape: 'dress' },
+    { x: 136, y: 384, scale: 0.94, tone: '#6b4429', shape: 'coat' },
+    { x: 190, y: 400, scale: 1.08, tone: '#50301f', shape: 'wide' },
+    { x: 246, y: 372, scale: 0.9, tone: '#7a5438', shape: 'dress' },
+    { x: 300, y: 346, scale: 1.02, tone: '#573621', shape: 'coat' },
+  ];
+
+  return (
+    <svg
+      viewBox="0 0 430 620"
+      role="img"
+      aria-label={`Paulo Freire symbolic comic panel ${index + 1}`}
+      style={{ display: 'block', width: '100%', height: 'auto', background: '#20120c' }}
+    >
+      <defs>
+        <radialGradient id={`freire-sun-${index}`} cx="70%" cy="22%" r="54%">
+          <stop offset="0%" stopColor={color} stopOpacity="0.55" />
+          <stop offset="100%" stopColor="#ead8b4" stopOpacity="0" />
+        </radialGradient>
+        <filter id={`freire-grain-${index}`}>
+          <feTurbulence type="fractalNoise" baseFrequency="0.7" numOctaves="2" seed={index + 21} />
+          <feColorMatrix type="saturate" values="0" />
+          <feComponentTransfer>
+            <feFuncA type="table" tableValues="0 0.08" />
+          </feComponentTransfer>
+        </filter>
+      </defs>
+      <rect width="430" height="620" fill="#ead8b4" />
+      <rect width="430" height="620" fill={`url(#freire-sun-${index})`} />
+      <rect width="430" height="620" filter={`url(#freire-grain-${index})`} />
+
+      <g opacity="0.18" stroke="#5C3018" strokeWidth="1.2" fill="none">
+        <path d="M42 72h190M42 92h130M42 112h166" />
+        <path d="M270 470h104M248 494h128M286 518h76" />
+        <circle cx={scene.sun[0]} cy={scene.sun[1]} r="54" />
+        <circle cx={scene.sun[0]} cy={scene.sun[1]} r="86" />
+      </g>
+
+      <path d={scene.path} fill="none" stroke="#5C3018" strokeWidth="4" opacity="0.26" />
+      <path
+        d={scene.path}
+        fill="none"
+        stroke={color}
+        strokeWidth="10"
+        strokeLinecap="round"
+        opacity="0.42"
+      />
+
+      <g opacity="0.55">
+        <path
+          d="M60 512 C108 476, 159 500, 205 468 C263 428, 306 444, 370 402"
+          fill="none"
+          stroke="#6B7A50"
+          strokeWidth="4"
+          strokeLinecap="round"
+        />
+        <path
+          d="M78 532 C126 510, 169 528, 224 496 C281 464, 318 472, 384 438"
+          fill="none"
+          stroke="#6888B0"
+          strokeWidth="2.5"
+          strokeLinecap="round"
+        />
+      </g>
+
+      {people.map((person) => (
+        <g
+          key={`${person.x}-${person.y}`}
+          transform={`translate(${person.x} ${person.y}) scale(${person.scale})`}
+        >
+          <circle cx="0" cy="-32" r="12" fill="#f7e8c8" stroke={person.tone} strokeWidth="2" />
+          {person.shape === 'dress' ? (
+            <path
+              d="M-16 4 L0 -20 L16 4 L10 42 H-10 Z"
+              fill="none"
+              stroke={person.tone}
+              strokeWidth="3"
+            />
+          ) : person.shape === 'wide' ? (
+            <path
+              d="M-20 -17 C-10 -3, 10 -3, 20 -17 M-15 -8 V40 M15 -8 V40"
+              fill="none"
+              stroke={person.tone}
+              strokeWidth="3"
+            />
+          ) : (
+            <path
+              d="M0 -20 V42 M-18 -6 H18 M-11 42 L-22 68 M11 42 L22 68"
+              fill="none"
+              stroke={person.tone}
+              strokeWidth="3"
+            />
+          )}
+        </g>
+      ))}
+
+      <g fill={color} opacity="0.55">
+        <circle cx="86" cy="274" r="4" />
+        <circle cx="146" cy="250" r="5" />
+        <circle cx="220" cy="232" r="4" />
+        <circle cx="284" cy="196" r="5" />
+        <circle cx="342" cy="176" r="4" />
+      </g>
+    </svg>
+  );
 }
 
 function _BlankBubbleComicPanel({ index, color }: { index: number; color: string }) {
@@ -1461,6 +1585,221 @@ export default function ComicProgram({
               </div>
             </div>
           </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (LAYERED_BUBBLE_PROGRAMS.has(program.key)) {
+    return (
+      <div
+        style={{
+          position: 'fixed',
+          inset: 0,
+          zIndex: 90,
+          background: hubBg,
+          display: 'flex',
+          flexDirection: 'column',
+          maxWidth: 672,
+          margin: '0 auto',
+        }}
+      >
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            padding: '12px 18px',
+            flexShrink: 0,
+            borderBottom: `1px solid ${col(program.color, 0.12)}`,
+          }}
+        >
+          <div
+            style={{
+              fontFamily: SERIF,
+              fontSize: 11,
+              color: col(program.color, 0.58),
+              letterSpacing: '0.1em',
+              textTransform: 'uppercase',
+            }}
+          >
+            {program.domain}
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
+            <div style={{ fontFamily: SERIF, fontSize: 11, color: col(program.color, 0.42) }}>
+              {index + 1} / {total}
+            </div>
+            <button
+              type="button"
+              onClick={onBack ?? onClose}
+              style={{
+                background: 'none',
+                border: `1px solid ${col(program.color, 0.22)}`,
+                borderRadius: 999,
+                color: col(program.color, 0.48),
+                fontFamily: SERIF,
+                fontSize: 11,
+                letterSpacing: '0.1em',
+                cursor: 'pointer',
+                padding: '5px 13px',
+              }}
+            >
+              back
+            </button>
+          </div>
+        </div>
+
+        <div style={{ flex: 1, minHeight: 0, overflowY: 'auto', padding: '14px 18px 18px' }}>
+          <button
+            type="button"
+            onClick={next}
+            aria-label={index === total - 1 ? 'Return to education' : 'Next comic page'}
+            style={{
+              display: 'block',
+              position: 'relative',
+              width: '100%',
+              maxWidth: 430,
+              margin: '0 auto',
+              padding: 0,
+              border: `1.5px solid ${col(program.color, 0.25)}`,
+              background: 'transparent',
+              cursor: 'pointer',
+              boxShadow: `0 0 34px ${col(program.color, 0.12)}`,
+            }}
+          >
+            <FreireBasePanel index={index} color={program.color} />
+            <div
+              aria-hidden="true"
+              style={{
+                position: 'absolute',
+                left: '7%',
+                right: '7%',
+                top: '5%',
+                minHeight: 104,
+                borderRadius: 30,
+                background: 'rgba(255,250,232,0.92)',
+                border: `1.5px solid ${col(program.color, 0.34)}`,
+                boxShadow: '0 14px 30px rgba(92,48,24,0.16)',
+              }}
+            />
+            <div
+              aria-hidden="true"
+              style={{
+                position: 'absolute',
+                left: '12%',
+                right: '12%',
+                bottom: '7%',
+                minHeight: 132,
+                borderRadius: 24,
+                background: 'rgba(255,250,232,0.9)',
+                border: `1.5px solid ${col(program.color, 0.3)}`,
+                boxShadow: '0 14px 30px rgba(92,48,24,0.16)',
+              }}
+            />
+            <div
+              style={{
+                position: 'absolute',
+                left: '12%',
+                right: '12%',
+                top: '8%',
+                textAlign: 'center',
+                color: '#5C3018',
+                fontFamily: SERIF,
+                fontSize: 20,
+                fontWeight: 700,
+                lineHeight: 1.14,
+              }}
+            >
+              {current.title}
+            </div>
+            <p
+              style={{
+                position: 'absolute',
+                left: '17%',
+                right: '17%',
+                bottom: '10%',
+                margin: 0,
+                color: '#5C3018',
+                fontFamily: SERIF,
+                fontSize: 13.5,
+                lineHeight: 1.5,
+                textAlign: 'center',
+              }}
+            >
+              {firstSentence(current.body)}
+            </p>
+          </button>
+        </div>
+
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            gap: 12,
+            padding: '10px 18px max(14px, env(safe-area-inset-bottom, 14px))',
+            flexShrink: 0,
+            borderTop: `1px solid ${col(program.color, 0.1)}`,
+          }}
+        >
+          <button
+            type="button"
+            onClick={prev}
+            disabled={index === 0}
+            style={{
+              border: 0,
+              background: 'transparent',
+              color: col(program.color, index === 0 ? 0.22 : 0.58),
+              fontFamily: SERIF,
+              fontSize: 13,
+              cursor: index === 0 ? 'default' : 'pointer',
+              padding: '8px 0',
+            }}
+          >
+            prev
+          </button>
+          <div
+            style={{
+              display: 'flex',
+              gap: 5,
+              maxWidth: 190,
+              flexWrap: 'wrap',
+              justifyContent: 'center',
+            }}
+          >
+            {program.segments.map((_, i) => (
+              <button
+                key={i}
+                type="button"
+                onClick={() => setIndex(i)}
+                aria-label={`Open page ${i + 1}`}
+                style={{
+                  width: i === index ? 17 : 5,
+                  height: 5,
+                  borderRadius: 999,
+                  border: 0,
+                  background: col(program.color, i === index ? 0.82 : 0.25),
+                  padding: 0,
+                  cursor: 'pointer',
+                }}
+              />
+            ))}
+          </div>
+          <button
+            type="button"
+            onClick={next}
+            style={{
+              border: 0,
+              background: 'transparent',
+              color: col(program.color, 0.62),
+              fontFamily: SERIF,
+              fontSize: 13,
+              cursor: 'pointer',
+              padding: '8px 0',
+            }}
+          >
+            {index === total - 1 ? 'Education' : 'next'}
+          </button>
         </div>
       </div>
     );
