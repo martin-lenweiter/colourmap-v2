@@ -1024,7 +1024,6 @@ export default function DoingCardsPanel() {
   const [push, setPush] = useState<CardItem[]>([]);
   const [pushExpandedId, setPushExpandedId] = useState<string | null>(null);
   const [chapter, setChapter] = useState('');
-  const [ritualCount, setRitualCount] = useState(0);
 
   /* ── Drag state ─────────────────────────────────────────────── */
   const dragSrcRef = useRef<{ id: string; src: 'daily' | 'push' } | null>(null);
@@ -1056,8 +1055,6 @@ export default function DoingCardsPanel() {
       if (raw) setMissions(JSON.parse(raw));
       const rawPush = localStorage.getItem('colourmap:checkin-todos');
       if (rawPush) setPush(JSON.parse(rawPush));
-      const rawRituals = localStorage.getItem('colourmap:rituals');
-      if (rawRituals) setRitualCount(JSON.parse(rawRituals).length);
       // text-style no longer user-configurable (fixed at caps)
       setChapter(localStorage.getItem('colourmap:life-chapter') ?? '');
       const objDone = localStorage.getItem('colourmap:objective-done');
@@ -1222,12 +1219,6 @@ export default function DoingCardsPanel() {
   const activePush = push.filter((p) => !p.done);
   const donePush = push.filter((p) => p.done);
   const currentCount = objItem.text.trim() && !objItem.done ? 1 : 0;
-  const taskCount = currentCount + activeMissions.length + activePush.length;
-  const areaCount = new Set(
-    [objItem, ...activeMissions, ...activePush]
-      .map((item) => item.tag?.categoryId ?? item.tag?.name)
-      .filter(Boolean),
-  ).size;
   const allDone = [
     ...doneMissions.map((m) => ({ ...m, _src: 'daily' as const })),
     ...donePush.map((p) => ({ ...p, _src: 'push' as const })),
@@ -1239,7 +1230,7 @@ export default function DoingCardsPanel() {
         <MissionPillBar
           items={[
             {
-              label: 'Current',
+              label: 'Current objective',
               count: currentCount,
               active: secOpen.mission,
               onClick: () => setSecOpen((s) => ({ ...s, mission: !s.mission })),
@@ -1251,18 +1242,11 @@ export default function DoingCardsPanel() {
               onClick: () => setSecOpen((s) => ({ ...s, daily: !s.daily })),
             },
             {
-              label: 'Push',
+              label: 'Push for later',
               count: activePush.length,
               active: secOpen.push,
               onClick: () => setSecOpen((s) => ({ ...s, push: !s.push })),
             },
-          ]}
-        />
-        <MissionPillBar
-          items={[
-            { label: 'Areas', count: areaCount },
-            { label: 'Tasks', count: taskCount },
-            { label: 'Routines', count: ritualCount },
           ]}
         />
       </div>

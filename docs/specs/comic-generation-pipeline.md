@@ -25,6 +25,12 @@ comic idea
 
 Generated images must not contain readable text, letters, speech bubbles, labels, captions, UI, logos, or watermarks. This keeps the same image usable across languages.
 
+Generated comic images must also avoid baked-in frames: no panel borders, page borders, white
+margins, white gutters, comic-book frames, photo frames, or edge outlines inside the image itself.
+Those borders can confuse the real framing once the app places the artwork inside a responsive
+reader, adds bubbles, or adapts the page on phone. The app owns the frame; the image should be the
+complete artwork layer.
+
 ## Visual Universe
 
 The aim is to build one coherent Colourmap education visual universe, not disconnected illustrations.
@@ -68,6 +74,7 @@ Shared visual DNA:
 - recurring symbolic vocabulary: rooms, windows, paths, fields, maps, constellations, breath lines, plants, quiet human silhouettes
 - enough negative space for app-rendered text overlays
 - one clear emotional idea per panel
+- no baked-in white border, comic panel frame, page margin, or artificial edge outline
 
 ## Phone-First Adaptive Design
 
@@ -80,6 +87,8 @@ Rules:
 - phone readability first, desktop richness second
 - images must stay complete; do not crop meaningful borders, feet, faces, objects, or paper margins
 - avoid relying on fixed borders that become confusing across different phone formats
+- do not generate internal page frames, panel outlines, white borders, or white gutters around the
+  artwork
 - avoid hard-coded aspect ratios unless the format explicitly requires them
 - layouts should be reactive and adaptive to different phone sizes
 - app-rendered text should sit in flexible zones above, below, or beside the image depending on available space
@@ -157,6 +166,7 @@ Avoid:
 - decorative images that do not explain anything
 - direct imitation of any specific living artist
 - border-heavy frames that confuse responsive display
+- white-border comic pages, fake matting, double frames, or image-in-image borders
 
 Prompt base:
 
@@ -172,10 +182,12 @@ The image should feel beautiful, warm, hopeful, and highly intelligent.
 Composition:
 Readable on a phone. One clear central idea. Strong silhouette or diagram. Generous empty
 space for app-rendered text. Preserve the full artwork with natural paper margins. Do not
-depend on a fixed border or exact crop.
+depend on a fixed border or exact crop. Do not add a white border, panel frame, page outline,
+or gutter inside the image.
 
 Restrictions:
-No text, no letters, no numbers, no captions, no logos, no watermarks.
+No text, no letters, no numbers, no captions, no logos, no watermarks, no white borders, no
+panel frames, no page outlines, no gutters.
 ```
 
 ## Canonical Comic Style
@@ -209,6 +221,7 @@ Avoid:
 - dense poster compositions
 - text baked into the image
 - speech bubbles or readable signs
+- white borders, comic-book panel frames, fake printed page margins, or decorative edge outlines
 
 Every future comic prompt should preserve this style unless a program explicitly requires a different visual world.
 
@@ -417,6 +430,7 @@ Generated `comic.json` should be the source of truth:
       "Keep character design consistent.",
       "Do not generate text inside images.",
       "Do not include speech bubbles in generated images.",
+      "Do not include image/page/panel borders or white gutters inside generated artwork.",
       "Use consistent palette, paper texture, linework, and atmosphere.",
       "Leave negative space for app-rendered text overlays."
     ]
@@ -468,9 +482,11 @@ Mood:
 
 Composition:
 Simple, elegant, readable at mobile size, with calm negative space for app-rendered text.
+No baked-in frame, no white border, no page border, no panel outline, no gutters.
 
 Restrictions:
-No text, no letters, no numbers, no speech bubbles, no captions, no labels, no signs, no UI, no logos, no watermarks.
+No text, no letters, no numbers, no speech bubbles, no captions, no labels, no signs, no UI, no
+logos, no watermarks, no white borders, no panel frames, no page outlines, no gutters.
 ```
 
 ## App Integration
@@ -544,6 +560,8 @@ Format guidance:
   image
 - use lettered bubbles only when the page is intentionally a comic-book artifact
 - use blank bubbles for printable/workshop drafts or visual sequence planning
+- comic-book artifacts may use app-rendered framing, but the generated image layer itself should
+  still avoid baked-in white borders, page borders, panel frames, gutters, or decorative edge rules
 - when text-in-bubble placement becomes unreliable, prefer app-rendered adaptive text plates over
   trying to align words inside generated bubble shapes
 - future generated bubbles should be beige, parchment, or paper-feel, not bright white

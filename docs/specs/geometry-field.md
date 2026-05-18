@@ -36,6 +36,8 @@ These shapes must remain driven by the same music response sliders and touch dis
 - **Eddy Lace**: connected whirlpools and lace-like flow trails.
 - **Magnetic Sand**: particles aligning around invisible field poles.
 
+Ocean Drift, Current 3D, Current Scales, Cyclone Tiles, Eddy Lace, and Magnetic Sand are high-priority presets and should sit together near the top of Geometry Builder's numbered Good Ones list.
+
 ## Mode Sun
 
 **Mode Sun** is the first geometry preset connected to the Mode / Archetype Platform.
@@ -143,6 +145,7 @@ Accepted initial presets:
 
 - **Mission Sun**: the Build Lab / Sun Dialogue organism promoted into Geometry Builder. It is a circular cell-like bubble made from golden dots only, with a star-field background and optional microphone energy that agitates the internal dots while the user speaks.
 - **Fire Dot Sun**: an actual-sun feeling built from warm yellow/orange dots, with a pulsing core, fire-like corona, and no non-particle mesh.
+- **Outward Sun**: a glowing fire sun that pulses outward only. The pulse should read as expanding rings/heat leaving the core, not an in-and-out breathing loop.
 - **Alchemical Dot Sun**: a more graphical sun made from dots, with adjustable ray count, ray length, and ray curve. Rays can feel curved or triangular depending on controls.
 - **Dot Heart**: a heart shape made only from many warm dots, with internal pulse and flowing particle motion.
 
@@ -154,6 +157,13 @@ Rules:
 - Sliders should be specific to the form: ray count and ray shape for the alchemical sun, corona/fire motion for the real sun, inner flow/pulse for the heart.
 - Touch distortion should bend the dots directly so the forms feel alive and playable.
 - They should be promoted near Dot Walker and other living-symbol presets because they are part of the future visual language.
+
+Chaos presets should also be easy to reach near the top of Geometry Builder:
+
+- **Chaos Field**
+- **Quantum Chaos**
+- **Chaos Triangles**
+- **Chaos Tri Sphere**: floating triangles distributed on a spherical shell so the triangle swarm reads as a hollow living sphere.
 
 ### Blender / External 3D Tool Direction
 
@@ -227,7 +237,7 @@ Preset lists in Geometry Builder and Music Visuals must be numbered. The selecte
 
 Ripple finger distortion can be used without visible pointer rings. Visible ripple rings are controlled by a separate `Rings On/Off` button and default off.
 
-Prism Seed's center should be warm fire yellow/orange, not white.
+Prism Seed, Prism Bloom, and Prism3D Core centers should be warm fire yellow/orange, not white or over-glowing. Prism3D Core and Prism Bloom should sit in the highest segment of Geometry Builder's numbered Good Ones list.
 
 Random Burst should open less bright by default than the other chaos presets; users can still push glow, luminosity, and star density higher with controls.
 
