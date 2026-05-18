@@ -614,17 +614,6 @@ function MissionControlFormatTwo() {
             >
               Mission Control
             </div>
-            <div
-              style={{
-                color: MUTED,
-                fontFamily: 'var(--font-serif)',
-                fontSize: 12,
-                lineHeight: 1.4,
-                marginTop: 3,
-              }}
-            >
-              Capture missions. Organise now.
-            </div>
           </div>
           <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', justifyContent: 'flex-end' }}>
             {[
