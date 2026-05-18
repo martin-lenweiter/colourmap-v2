@@ -55,6 +55,9 @@ type Mode =
   | 'eddylace'
   | 'magneticsand'
   | 'eclipse'
+  | 'yinyang'
+  | 'volcano'
+  | 'atomicexplosion'
   | 'gravity'
   | 'fire'
   | 'plasma'
@@ -75,10 +78,13 @@ type Mode =
   | 'dotheart'
   | 'dotphoenix'
   | 'dotbrain'
+  | 'embrace'
   | 'dottunnel'
   | 'swirldottunnel'
   | 'linetunnel3d'
   | 'dotroad'
+  | 'tripnumber1'
+  | 'touchpreset'
   | 'emotion'
   | 'constellation'
   | 'drift'
@@ -802,6 +808,18 @@ const PRESETS: Record<string, Cfg> = {
     stars: 1,
     mode: 'dotbrain',
   },
+  Embrace: {
+    preset: 'Golden Source',
+    symmetry: 8,
+    complexity: 8,
+    glow: 6.8,
+    breathSpeed: 0.42,
+    intensity: 8.4,
+    particles: 9,
+    luminous: 2.8,
+    stars: 1,
+    mode: 'embrace',
+  },
   'Dot Tunnel': {
     preset: 'Blue Astral',
     symmetry: 14,
@@ -849,6 +867,30 @@ const PRESETS: Record<string, Cfg> = {
     luminous: 2.6,
     stars: 2,
     mode: 'dotroad',
+  },
+  'Trip Number 1': {
+    preset: 'Golden Source',
+    symmetry: 10,
+    complexity: 7.6,
+    glow: 6.8,
+    breathSpeed: 0.34,
+    intensity: 8.4,
+    particles: 9,
+    luminous: 2.8,
+    stars: 3,
+    mode: 'tripnumber1',
+  },
+  'Touch Preset': {
+    preset: 'Golden Source',
+    symmetry: 9,
+    complexity: 7.8,
+    glow: 7.2,
+    breathSpeed: 0.85,
+    intensity: 8.4,
+    particles: 9,
+    luminous: 3,
+    stars: 0,
+    mode: 'touchpreset',
   },
   'Golden Source': {
     preset: 'Golden Source',
@@ -1489,14 +1531,50 @@ const PRESETS: Record<string, Cfg> = {
   Eclipse: {
     preset: 'Golden Source',
     symmetry: 9,
-    complexity: 8.4,
-    glow: 4.4,
+    complexity: 8.8,
+    glow: 3.6,
     breathSpeed: 0.28,
     intensity: 8.6,
     particles: 0,
-    luminous: 2.4,
+    luminous: 1.2,
     stars: 0,
     mode: 'eclipse',
+  },
+  'Yin Yang': {
+    preset: 'Golden Source',
+    symmetry: 8,
+    complexity: 8.6,
+    glow: 4.2,
+    breathSpeed: 0.32,
+    intensity: 8.4,
+    particles: 0,
+    luminous: 1.4,
+    stars: 0,
+    mode: 'yinyang',
+  },
+  Volcano: {
+    preset: 'Deep Fire',
+    symmetry: 8,
+    complexity: 8.8,
+    glow: 5,
+    breathSpeed: 0.36,
+    intensity: 9,
+    particles: 0,
+    luminous: 1.8,
+    stars: 0,
+    mode: 'volcano',
+  },
+  'Atomic Explosion': {
+    preset: 'Deep Fire',
+    symmetry: 12,
+    complexity: 8.4,
+    glow: 5.4,
+    breathSpeed: 0.3,
+    intensity: 9,
+    particles: 0,
+    luminous: 1.6,
+    stars: 0,
+    mode: 'atomicexplosion',
   },
   Gravity: {
     preset: 'Golden Source',
@@ -4066,6 +4144,8 @@ function buildModeGroup(cfg: Cfg, R: number): THREE.Group {
     case 'dotheart':
     case 'dotphoenix':
     case 'dotbrain':
+    case 'embrace':
+    case 'tripnumber1':
       return buildDotSymbolField(cfg, R);
     case 'dottunnel':
     case 'swirldottunnel':
@@ -4102,8 +4182,12 @@ function buildModeGroup(cfg: Cfg, R: number): THREE.Group {
     case 'wordparticle':
     case 'wordweave':
     case 'eclipse':
+    case 'yinyang':
+    case 'volcano':
+    case 'atomicexplosion':
     case 'scriptures':
     case 'scripturesjp':
+    case 'touchpreset':
     case 'metamorph':
     case 'chrysalis':
     case 'chrysalisrings':
@@ -4302,6 +4386,8 @@ function updateModeGroup(group: THREE.Group, cfg: Cfg, dots: Dot[], t: number, R
     case 'dotheart':
     case 'dotphoenix':
     case 'dotbrain':
+    case 'embrace':
+    case 'tripnumber1':
       updateDotSymbolField(group, cfg, t, R);
       break;
     case 'dottunnel':
@@ -4350,8 +4436,12 @@ function updateModeGroup(group: THREE.Group, cfg: Cfg, dots: Dot[], t: number, R
     case 'wordparticle':
     case 'wordweave':
     case 'eclipse':
+    case 'yinyang':
+    case 'volcano':
+    case 'atomicexplosion':
     case 'scriptures':
     case 'scripturesjp':
+    case 'touchpreset':
     case 'metamorph':
     case 'chrysalis':
     case 'chrysalisrings':
@@ -10910,6 +11000,15 @@ const MODE_SLIDERS: Partial<Record<Mode, SliderDef[]>> = {
     { key: 'luminous', label: 'Bloom', min: 0, max: 5, step: 0.1 },
     { key: 'stars', label: 'Signals', min: 0, max: 10, step: 1 },
   ],
+  embrace: [
+    { key: 'complexity', label: 'Dance', min: 1, max: 10, step: 0.5 },
+    { key: 'glow', label: 'Closeness', min: 0, max: 10, step: 0.5 },
+    { key: 'breathSpeed', label: 'Loop Speed', min: 0.05, max: 1.5, step: 0.05 },
+    { key: 'intensity', label: 'Warmth', min: 0, max: 10, step: 0.5 },
+    { key: 'particles', label: 'Dots', min: 1, max: 10, step: 1 },
+    { key: 'luminous', label: 'Bloom', min: 0, max: 5, step: 0.1 },
+    { key: 'stars', label: 'Aura', min: 0, max: 10, step: 1 },
+  ],
   dottunnel: [
     { key: 'symmetry', label: 'Rings', min: 6, max: 28, step: 1 },
     { key: 'complexity', label: 'Depth', min: 1, max: 10, step: 0.5 },
@@ -10941,6 +11040,24 @@ const MODE_SLIDERS: Partial<Record<Mode, SliderDef[]>> = {
     { key: 'complexity', label: 'Perspective', min: 1, max: 10, step: 0.5 },
     { key: 'glow', label: 'Horizon', min: 0, max: 10, step: 0.5 },
     { key: 'breathSpeed', label: 'Drive Speed', min: 0.05, max: 1.5, step: 0.05 },
+    { key: 'intensity', label: 'Light', min: 0, max: 10, step: 0.5 },
+    { key: 'particles', label: 'Dots', min: 1, max: 10, step: 1 },
+    { key: 'luminous', label: 'Bloom', min: 0, max: 5, step: 0.1 },
+  ],
+  tripnumber1: [
+    { key: 'symmetry', label: 'Sacred Count', min: 5, max: 16, step: 1 },
+    { key: 'complexity', label: 'Metamorphosis', min: 1, max: 10, step: 0.5 },
+    { key: 'glow', label: 'Void / Bloom', min: 0, max: 10, step: 0.5 },
+    { key: 'breathSpeed', label: 'Trip Speed', min: 0.05, max: 1.2, step: 0.05 },
+    { key: 'intensity', label: 'Light', min: 0, max: 10, step: 0.5 },
+    { key: 'particles', label: 'Dots', min: 1, max: 10, step: 1 },
+    { key: 'luminous', label: 'Bloom', min: 0, max: 5, step: 0.1 },
+  ],
+  touchpreset: [
+    { key: 'symmetry', label: 'Swirls', min: 3, max: 18, step: 1 },
+    { key: 'complexity', label: 'Liquid Trails', min: 1, max: 10, step: 0.5 },
+    { key: 'glow', label: 'Explosion', min: 0, max: 10, step: 0.5 },
+    { key: 'breathSpeed', label: 'Trail Speed', min: 0.05, max: 1.5, step: 0.05 },
     { key: 'intensity', label: 'Light', min: 0, max: 10, step: 0.5 },
     { key: 'particles', label: 'Dots', min: 1, max: 10, step: 1 },
     { key: 'luminous', label: 'Bloom', min: 0, max: 5, step: 0.1 },
@@ -11008,6 +11125,9 @@ const MODE_TO_PRESET: Partial<Record<Mode, string>> = {
   eddylace: 'Eddy Lace',
   magneticsand: 'Magnetic Sand',
   eclipse: 'Eclipse',
+  yinyang: 'Yin Yang',
+  volcano: 'Volcano',
+  atomicexplosion: 'Atomic Explosion',
   gravity: 'Gravity',
   fire: 'Fire',
   plasma: 'Solar Flare',
@@ -11028,10 +11148,13 @@ const MODE_TO_PRESET: Partial<Record<Mode, string>> = {
   dotheart: 'Dot Heart',
   dotphoenix: 'Dot Phoenix',
   dotbrain: 'Dot Brain Loop',
+  embrace: 'Embrace',
   dottunnel: 'Dot Tunnel',
   swirldottunnel: 'Swirl Dot Tunnel',
   linetunnel3d: 'Line Tunnel 3D',
   dotroad: 'Dot Road',
+  tripnumber1: 'Trip Number 1',
+  touchpreset: 'Touch Preset',
   embf3d: 'Calm Field',
   wordneon: 'Neon Word',
   hopefear: 'Duality',
@@ -11128,6 +11251,9 @@ const MODES: { mode: Mode; label: string }[] = [
   { mode: 'eddylace', label: 'Eddy Lace' },
   { mode: 'magneticsand', label: 'Magnetic Sand' },
   { mode: 'eclipse', label: 'Eclipse' },
+  { mode: 'yinyang', label: 'Yin Yang' },
+  { mode: 'volcano', label: 'Volcano' },
+  { mode: 'atomicexplosion', label: 'Atomic Explosion' },
   { mode: 'gravity', label: 'Gravity' },
   { mode: 'fire', label: 'Fire' },
   { mode: 'current3d', label: '∿³ Current 3D' },
@@ -11148,10 +11274,13 @@ const MODES: { mode: Mode; label: string }[] = [
   { mode: 'dotheart', label: 'Dot Heart' },
   { mode: 'dotphoenix', label: 'Dot Phoenix' },
   { mode: 'dotbrain', label: 'Dot Brain Loop' },
+  { mode: 'embrace', label: 'Embrace' },
   { mode: 'dottunnel', label: 'Dot Tunnel' },
   { mode: 'swirldottunnel', label: 'Swirl Dot Tunnel' },
   { mode: 'linetunnel3d', label: 'Line Tunnel 3D' },
   { mode: 'dotroad', label: 'Dot Road' },
+  { mode: 'tripnumber1', label: 'Trip Number 1' },
+  { mode: 'touchpreset', label: 'Touch Preset' },
   { mode: 'pulse', label: '◉ Pulse' },
   { mode: 'emotion', label: '◉ Emotion' },
   { mode: 'constellation', label: '✦ Constellation' },
@@ -11177,6 +11306,9 @@ const FEATURED_PRESETS: FeaturedItem[] = [
   { name: 'Scriptures', tag: 'TOP' },
   { name: 'Vertical Scriptures', tag: 'TOP' },
   { name: 'Eclipse', tag: 'TOP' },
+  { name: 'Yin Yang', tag: 'TOP' },
+  { name: 'Volcano', tag: 'TOP' },
+  { name: 'Atomic Explosion', tag: 'TOP' },
   { name: 'Gravity', tag: 'TOP' },
   { name: 'Fire', tag: 'TOP' },
   { name: 'Prism3D Core', tag: 'PRISM' },
@@ -11193,10 +11325,13 @@ const FEATURED_PRESETS: FeaturedItem[] = [
   { name: 'Dot Heart', tag: 'DOT' },
   { name: 'Dot Phoenix', tag: 'DOT' },
   { name: 'Dot Brain Loop', tag: 'DOT' },
+  { name: 'Embrace', tag: 'DOT' },
   { name: 'Dot Tunnel', tag: 'DEPTH' },
   { name: 'Swirl Dot Tunnel', tag: 'DEPTH' },
   { name: 'Line Tunnel 3D', tag: 'DEPTH' },
   { name: 'Dot Road', tag: 'ROAD' },
+  { name: 'Trip Number 1', tag: 'TRIP' },
+  { name: 'Touch Preset', tag: 'TOUCH' },
   { name: 'Outward Sun', tag: 'DOT' },
   { name: 'Chaos Field', tag: 'CHAOS' },
   { name: 'Quantum Chaos', tag: 'CHAOS' },
@@ -12246,12 +12381,16 @@ function updateDepthJourney(group: THREE.Group, cfg: Cfg, t: number, R: number):
           const laneT = laneCount === 1 ? 0 : lane / (laneCount - 1);
           const side = laneT * 2 - 1;
           const shoulder = w > 0.72;
+          const mirror = v > 0.5 ? -1 : 1;
           const roadWidth = R * lerp(0.12, 1.06, near);
           const horizonY = -R * lerp(0.18, 0.32, cfg.glow / 10);
           x =
             side * roadWidth * (shoulder ? 1.05 + (w - 0.72) * 0.8 : 0.72) +
             Math.sin(phase * 2 + q * 20) * R * 0.006 * near;
-          y = horizonY + R * 1.12 * near + Math.sin(u * 20 + phase) * R * 0.008 * near;
+          y =
+            horizonY +
+            mirror * R * 1.12 * near +
+            Math.sin(u * 20 + phase) * R * 0.008 * near * mirror;
           z = (0.5 - travel) * R * 0.54;
         }
 
@@ -12530,6 +12669,183 @@ function updateDotSymbolField(group: THREE.Group, cfg: Cfg, t: number, R: number
         x = lerp(baseX, lobeX + crease + fold, 0.42);
         y = lerp(baseY, lobeY, 0.42);
         z = Math.sin(theta * 4 + phase + w * TAU) * R * (0.018 + cfg.luminous * 0.004);
+      } else if (i < dotLimit && cfg.mode === 'embrace') {
+        const side = q < 0.5 ? -1 : 1;
+        const localQ = (q * 2) % 1;
+        const a = v * TAU;
+        const bodyBreath = 1 + Math.sin(phase * 0.72) * 0.035;
+        const closeness = lerp(0.2, 0.1, cfg.glow / 10);
+        const centerX = side * R * (closeness + Math.sin(phase * 0.54 + side) * 0.018);
+        const centerY = Math.sin(phase * 0.38 + side * 1.4) * R * 0.018;
+        let bx = 0;
+        let by = 0;
+
+        if (u < 0.12) {
+          const r = Math.sqrt(u / 0.12);
+          bx = side * R * 0.05 + Math.cos(a) * R * 0.075 * r;
+          by = R * 0.31 + Math.sin(a) * R * 0.085 * r;
+        } else if (u < 0.52) {
+          const p = (u - 0.12) / 0.4;
+          const width = R * (0.075 + Math.sin(p * Math.PI) * 0.055);
+          bx = side * R * (0.045 - p * 0.07) + Math.cos(a) * width * Math.sin(p * Math.PI);
+          by = R * (0.26 - p * 0.58) + Math.sin(a) * R * 0.055 * Math.sin(p * Math.PI);
+        } else if (u < 0.82) {
+          const p = (u - 0.52) / 0.3;
+          const front = w > 0.5;
+          const cross = front ? 1 : -1;
+          const armArc = Math.sin(p * Math.PI);
+          bx =
+            side * R * 0.055 -
+            side * R * (0.07 + p * 0.3) * (front ? 1 : 0.62) +
+            Math.sin(phase + p * Math.PI) * R * 0.025 * cross;
+          by =
+            R * (0.18 - p * 0.26) +
+            armArc * R * (front ? 0.1 : -0.07) +
+            Math.sin(localQ * TAU + phase) * R * 0.018;
+        } else {
+          const p = (u - 0.82) / 0.18;
+          const legSide = w > 0.5 ? 1 : -1;
+          bx = side * R * (0.02 + p * 0.11) + legSide * R * 0.06 * Math.sin(p * Math.PI);
+          by = -R * (0.28 + p * 0.24) + Math.sin(a + phase) * R * 0.035;
+        }
+
+        const lean = -side * (0.36 + Math.sin(phase * 0.44) * 0.07);
+        const rx = bx * Math.cos(lean) - by * Math.sin(lean);
+        const ry = bx * Math.sin(lean) + by * Math.cos(lean);
+        const orbit = phase * 0.2 + side * 0.12;
+        const swirl =
+          Math.sin(a * 2 + phase * 1.2 + localQ * 8) * R * 0.018 * (cfg.complexity / 10);
+        x =
+          (centerX + rx * bodyBreath) * Math.cos(orbit) -
+          (centerY + ry * bodyBreath) * Math.sin(orbit) +
+          Math.cos(a + phase) * swirl;
+        y =
+          (centerX + rx * bodyBreath) * Math.sin(orbit) +
+          (centerY + ry * bodyBreath) * Math.cos(orbit) +
+          Math.sin(a - phase) * swirl;
+        z = Math.sin(phase * 1.25 + a + w * TAU) * R * (0.025 + cfg.luminous * 0.006);
+      } else if (i < dotLimit && cfg.mode === 'tripnumber1') {
+        const journey = (phase * 0.052) % 1;
+        const totalPhases = 10;
+        const raw = journey * totalPhases;
+        const stage = Math.floor(raw) % totalPhases;
+        const blend = smoothstep(raw - Math.floor(raw));
+        const a = v * TAU;
+        const inner = Math.sqrt(u);
+
+        const shapePoint = (shape: number): [number, number, number] => {
+          if (shape === 0) {
+            const travel = (q + phase * 0.55) % 1;
+            const near = travel ** 1.55;
+            const eyeBand = u > 0.18;
+            const iris = R * (0.22 + near * 0.7) * (eyeBand ? 1 : 0.1);
+            const eyeOpen = 0.28 + near * 0.48;
+            return [
+              Math.cos(a + phase * 0.22) * iris,
+              Math.sin(a) * iris * eyeOpen,
+              (0.5 - travel) * R * 0.6,
+            ];
+          }
+          if (shape === 1) {
+            const r = R * (0.1 + inner * lerp(0.45, 1.18, cfg.glow / 10));
+            const burst = smoothstep((q + phase * 0.18) % 1);
+            return [
+              Math.cos(a + Math.sin(q * 20) * 0.4) * r * (0.55 + burst),
+              Math.sin(a + Math.cos(q * 17) * 0.35) * r * (0.55 + burst),
+              Math.sin(a * 3 + phase) * R * 0.08 * burst,
+            ];
+          }
+          if (shape === 2) {
+            const side = q % 1 > 0.5 ? 1 : -1;
+            const r = R * (0.08 + inner * 0.36);
+            const centerY = side * R * 0.17;
+            const angle = a + side * phase * 0.55;
+            const sCurve = Math.sin(inner * Math.PI) * R * 0.1 * side;
+            return [Math.cos(angle) * r + sCurve, centerY + Math.sin(angle) * r, 0];
+          }
+          if (shape === 3) {
+            const r = R * (0.08 + inner * 0.72);
+            const spiral = a + inner * TAU * 1.7 + phase * 1.2;
+            return [
+              Math.cos(spiral) * r,
+              Math.sin(spiral) * r * 0.82,
+              Math.sin(inner * 8 + phase) * R * 0.05,
+            ];
+          }
+          if (shape === 4) {
+            const corona = u > 0.55;
+            const core = Math.sqrt(corona ? (u - 0.55) / 0.45 : u / 0.55);
+            const r = R * (corona ? 0.24 + core * 0.48 : core * 0.28);
+            const flame = Math.sin(a * 9 + phase * 1.5 + w * 6) * R * 0.025 * (corona ? 1 : 0.3);
+            return [
+              Math.cos(a) * (r + flame),
+              Math.sin(a) * (r + flame),
+              Math.sin(phase + w * TAU) * R * 0.035,
+            ];
+          }
+          if (shape === 5) {
+            const side = v < 0.5 ? -1 : 1;
+            const local = (v * 2) % 1;
+            const body = u < 0.22;
+            const wingX = side * (R * 0.08 + local * R * 0.58);
+            const wingY =
+              -Math.sin(local * Math.PI) * R * 0.25 + Math.sin(q * 18 + phase) * R * 0.025;
+            const bodyX = Math.cos(a) * R * (0.06 + inner * 0.08);
+            const bodyY = Math.sin(a) * R * (0.08 + inner * 0.12) - R * 0.03;
+            return [
+              body ? bodyX : wingX,
+              body ? bodyY : wingY,
+              Math.sin(phase + q * TAU) * R * 0.04,
+            ];
+          }
+          if (shape === 6) {
+            const sides = Math.max(5, Math.round(cfg.symmetry));
+            const petal = Math.floor(v * sides);
+            const local = v * sides - petal;
+            const baseA = (petal / sides) * TAU + phase * 0.18;
+            const r = R * (0.16 + inner * 0.48);
+            const width = Math.sin(local * Math.PI) * R * 0.12;
+            return [
+              Math.cos(baseA) * r - Math.sin(baseA) * width,
+              Math.sin(baseA) * r + Math.cos(baseA) * width,
+              0,
+            ];
+          }
+          if (shape === 7) {
+            const ring = Math.floor(u * 7);
+            const local = (u * 7) % 1;
+            const r = R * (0.1 + ring * 0.075 + local * 0.018);
+            return [
+              Math.cos(a + ring * 0.2 + phase * 0.16) * r,
+              Math.sin(a + ring * 0.2) * r,
+              Math.sin(ring + phase) * R * 0.018,
+            ];
+          }
+          if (shape === 8) {
+            const travel = (q + phase * 0.38) % 1;
+            const near = travel ** 1.5;
+            const r = R * (0.08 + near * 0.96);
+            return [
+              Math.cos(a + near * 1.2) * r,
+              Math.sin(a + near * 1.2) * r * 0.72,
+              (0.5 - travel) * R * 0.55,
+            ];
+          }
+          const hx = 16 * Math.sin(a) ** 3;
+          const hy = 13 * Math.cos(a) - 5 * Math.cos(2 * a) - 2 * Math.cos(3 * a) - Math.cos(4 * a);
+          const scale = R * 0.031 * (0.9 + pulse * 0.08);
+          return [
+            hx * scale * inner,
+            (hy * scale - R * 0.06) * inner,
+            Math.sin(phase + q * TAU) * R * 0.025,
+          ];
+        };
+
+        const p1 = shapePoint(stage);
+        const p2 = shapePoint((stage + 1) % totalPhases);
+        x = lerp(p1[0], p2[0], blend);
+        y = lerp(p1[1], p2[1], blend);
+        z = lerp(p1[2], p2[2], blend);
       }
 
       const force = fingerForce(x, y, z, R);
@@ -14771,6 +15087,7 @@ export default function GeometryField() {
   const rippleRingsRef = useRef<THREE.Line[]>([]);
   const l3dRotRef = useRef({ x: 0.4, y: 0.0 });
   const l3dDragRef = useRef<{ lastX: number; lastY: number } | null>(null);
+  const activePointerIdRef = useRef<number | null>(null);
   const fingerDistortRef = useRef(false);
   const motionModeRef = useRef<MotionMode>('animate');
   const voiceStreamRef = useRef<MediaStream | null>(null);
@@ -15331,8 +15648,12 @@ export default function GeometryField() {
       cfg.mode === 'wordparticle' ||
       cfg.mode === 'wordweave' ||
       cfg.mode === 'eclipse' ||
+      cfg.mode === 'yinyang' ||
+      cfg.mode === 'volcano' ||
+      cfg.mode === 'atomicexplosion' ||
       cfg.mode === 'scriptures' ||
       cfg.mode === 'scripturesjp' ||
+      cfg.mode === 'touchpreset' ||
       cfg.mode === 'metamorph' ||
       cfg.mode === 'chrysalis' ||
       cfg.mode === 'chrysalisrings' ||
@@ -15700,12 +16021,12 @@ export default function GeometryField() {
 
     /* ── SCRIPTURES: sacred sand fills written characters ───────────── */
     if (cfg.mode === 'eclipse') {
-      const count = Math.max(900, Math.round(1500 + cfg.intensity * 180));
+      const count = Math.max(1400, Math.round(2200 + cfg.intensity * 260));
       const dust = Array.from({ length: count }, (_, i) => ({
-        a: (i / count) * Math.PI * 2 + Math.random() * 0.04,
-        r: 0.28 + Math.random() ** 0.55 * 0.58,
+        a: (i / count) * Math.PI * 2 + Math.random() * 0.018,
+        r: 0.34 + Math.random() ** 0.5 * 0.55,
         p: Math.random() * Math.PI * 2,
-        s: 0.8 + Math.random() * 1.8,
+        s: 0.75 + Math.random() * 0.8,
       }));
 
       function drawEclipse() {
@@ -15716,51 +16037,249 @@ export default function GeometryField() {
         const cx = W / 2;
         const cy = H / 2;
         const tt = modeSeconds() * Math.max(0.2, speed);
-        ctx!.fillStyle = 'rgba(7,3,0,0.32)';
+        ctx!.shadowBlur = 0;
+        ctx!.globalCompositeOperation = 'source-over';
+        ctx!.fillStyle = 'rgba(7,3,0,0.74)';
         ctx!.fillRect(0, 0, W, H);
 
-        const coreR = radius * (0.25 + cfg.glow * 0.012);
-        const halo = ctx!.createRadialGradient(cx, cy, coreR * 0.7, cx, cy, radius * 1.08);
-        halo.addColorStop(0, `rgba(${pr},${pg},${pb},0.02)`);
-        halo.addColorStop(0.2, `rgba(${pr},${pg},${pb},0.28)`);
-        halo.addColorStop(0.58, `rgba(${pr},${pg},${pb},0.11)`);
-        halo.addColorStop(1, 'rgba(0,0,0,0)');
-        ctx!.fillStyle = halo;
-        ctx!.beginPath();
-        ctx!.ellipse(cx, cy, radius * 1.08, radius * 0.9, 0, 0, Math.PI * 2);
-        ctx!.fill();
-
+        const coreR = radius * (0.31 + cfg.glow * 0.006);
         for (const dot of dust) {
-          const a = dot.a + tt * 0.05;
-          const ripple = Math.sin(a * cfg.symmetry + tt + dot.p) * radius * 0.025;
+          const a = dot.a + tt * 0.035;
+          const ripple = Math.sin(a * cfg.symmetry + tt * 0.7 + dot.p) * radius * 0.01;
           const rr = radius * dot.r + ripple;
           const x = cx + Math.cos(a) * rr;
-          const y = cy + Math.sin(a) * rr * 0.82;
-          const alpha = (0.22 + Math.sin(tt * 1.4 + dot.p) * 0.08) * iF;
+          const y = cy + Math.sin(a) * rr * 0.86;
+          const alpha = (0.56 + Math.sin(tt * 1.2 + dot.p) * 0.08) * iF;
           ctx!.beginPath();
           ctx!.arc(x, y, dot.s, 0, Math.PI * 2);
-          ctx!.fillStyle = `rgba(${pr},${pg},${pb},${Math.max(0.05, alpha)})`;
-          ctx!.shadowBlur = 10;
-          ctx!.shadowColor = `rgba(${pr},${pg},${pb},0.7)`;
+          ctx!.fillStyle = `rgba(${pr},${pg},${pb},${Math.max(0.18, alpha)})`;
           ctx!.fill();
         }
 
         ctx!.shadowBlur = 0;
-        ctx!.globalCompositeOperation = 'destination-out';
-        ctx!.beginPath();
-        ctx!.ellipse(cx, cy, coreR, coreR * 0.82, 0, 0, Math.PI * 2);
-        ctx!.fillStyle = 'rgba(0,0,0,0.96)';
-        ctx!.fill();
         ctx!.globalCompositeOperation = 'source-over';
-        ctx!.strokeStyle = `rgba(${pr},${pg},${pb},0.58)`;
-        ctx!.lineWidth = 1.4;
         ctx!.beginPath();
-        ctx!.ellipse(cx, cy, coreR, coreR * 0.82, 0, 0, Math.PI * 2);
-        ctx!.stroke();
+        ctx!.ellipse(cx, cy, coreR, coreR * 0.86, 0, 0, Math.PI * 2);
+        ctx!.fillStyle = 'rgb(0,0,0)';
+        ctx!.fill();
 
         canvasModeAnimRef.current = requestAnimationFrame(drawEclipse);
       }
       canvasModeAnimRef.current = requestAnimationFrame(drawEclipse);
+    }
+
+    if (cfg.mode === 'yinyang') {
+      const count = Math.max(1800, Math.round(2400 + cfg.intensity * 260));
+      const dots = Array.from({ length: count }, (_, i) => ({
+        a: ((i * 0.61803398875) % 1) * Math.PI * 2,
+        r: Math.sqrt((i + 0.5) / count) * (0.92 + Math.random() * 0.05),
+        p: Math.random() * Math.PI * 2,
+        s: 0.75 + Math.random() * 0.95,
+      }));
+
+      function drawYinYang() {
+        if (!canvasModeActiveRef.current) return;
+        const W = mc!.width;
+        const H = mc!.height;
+        const radius = Math.min(W, H) * 0.43;
+        const cx = W / 2;
+        const cy = H / 2;
+        const tt = modeSeconds() * Math.max(0.18, speed);
+        ctx!.shadowBlur = 0;
+        ctx!.globalCompositeOperation = 'source-over';
+        ctx!.fillStyle = 'rgba(4,3,1,0.62)';
+        ctx!.fillRect(0, 0, W, H);
+
+        for (const dot of dots) {
+          const a = dot.a + tt * 0.22 + Math.sin(dot.r * 7 + tt + dot.p) * 0.045;
+          const r = radius * dot.r;
+          const lx = Math.cos(a) * r;
+          const ly = Math.sin(a) * r;
+          const divider = Math.sin((ly / radius) * Math.PI) * radius * 0.34;
+          const whiteSide = lx > divider;
+          const smallLight = Math.hypot(lx, ly - radius * 0.46) < radius * 0.11;
+          const smallDark = Math.hypot(lx, ly + radius * 0.46) < radius * 0.11;
+          const lightDot = smallLight || (whiteSide && !smallDark);
+          const alpha = 0.34 + Math.sin(tt * 1.2 + dot.p) * 0.08 + iF * 0.35;
+          ctx!.beginPath();
+          ctx!.arc(cx + lx, cy + ly, dot.s, 0, Math.PI * 2);
+          ctx!.fillStyle = lightDot
+            ? `rgba(${pr},${pg},${pb},${Math.min(0.92, alpha)})`
+            : `rgba(0,0,0,${Math.min(0.86, alpha + 0.08)})`;
+          ctx!.fill();
+        }
+
+        canvasModeAnimRef.current = requestAnimationFrame(drawYinYang);
+      }
+      canvasModeAnimRef.current = requestAnimationFrame(drawYinYang);
+    }
+
+    if (cfg.mode === 'volcano' || cfg.mode === 'atomicexplosion') {
+      const count = Math.max(1800, Math.round(2500 + cfg.intensity * 280));
+      const dots = Array.from({ length: count }, (_, i) => ({
+        u: (i + 0.5) / count,
+        a: ((i * 0.61803398875) % 1) * Math.PI * 2,
+        p: Math.random() * Math.PI * 2,
+        s: 0.75 + Math.random() * 1,
+      }));
+
+      function drawExplosion() {
+        if (!canvasModeActiveRef.current) return;
+        const W = mc!.width;
+        const H = mc!.height;
+        const radius = Math.min(W, H) * 0.46;
+        const cx = W / 2;
+        const cy = H / 2;
+        const tt = modeSeconds() * Math.max(0.18, speed);
+        const loop = (tt * 0.16) % 1;
+        ctx!.shadowBlur = 0;
+        ctx!.globalCompositeOperation = 'source-over';
+        ctx!.fillStyle = 'rgba(7,2,0,0.64)';
+        ctx!.fillRect(0, 0, W, H);
+
+        for (const dot of dots) {
+          let x = 0;
+          let y = 0;
+          let alpha = 0.45 + iF * 0.32;
+          if (cfg.mode === 'volcano') {
+            const side = dot.u < 0.5 ? -1 : 1;
+            const q = (dot.u * 2) % 1;
+            const plume = (q + loop) % 1;
+            const width = radius * (0.14 + plume * 0.46);
+            const baseY = radius * 0.46;
+            const cone = q < 0.34;
+            if (cone) {
+              const h = q / 0.34;
+              x = side * width * h + Math.sin(dot.p + tt) * radius * 0.012;
+              y = baseY - h * radius * 0.42;
+              alpha = 0.5 + iF * 0.25;
+            } else {
+              const h = (q - 0.34 + loop) % 1;
+              const spread = radius * (0.08 + h * 0.58);
+              const jet = Math.sin(dot.a * cfg.symmetry + tt * 1.2) * radius * 0.04;
+              x = Math.cos(dot.a) * spread * 0.55 + jet;
+              y = -radius * 0.08 - h * radius * 0.86 + Math.sin(dot.p + tt) * radius * 0.02;
+              alpha = (1 - h * 0.55) * (0.45 + iF * 0.4);
+            }
+          } else {
+            const q = (dot.u + loop) % 1;
+            const ring = q ** 0.72;
+            const cap = Math.sin(ring * Math.PI);
+            const a = dot.a + Math.sin(dot.p + tt) * 0.05;
+            const mushroom = ring > 0.45 ? Math.sin(a * cfg.symmetry) * radius * 0.035 : 0;
+            x = Math.cos(a) * radius * (0.1 + ring * 0.82 + mushroom / radius);
+            y =
+              Math.sin(a) * radius * (0.1 + ring * 0.58) -
+              cap * radius * 0.18 +
+              (ring > 0.55 ? -radius * 0.16 : 0);
+            alpha = (1 - q * 0.42) * (0.42 + iF * 0.44);
+          }
+          ctx!.beginPath();
+          ctx!.arc(cx + x, cy + y, dot.s, 0, Math.PI * 2);
+          ctx!.fillStyle = `rgba(${pr},${pg},${pb},${Math.max(0.12, alpha)})`;
+          ctx!.fill();
+        }
+
+        canvasModeAnimRef.current = requestAnimationFrame(drawExplosion);
+      }
+      canvasModeAnimRef.current = requestAnimationFrame(drawExplosion);
+    }
+
+    if (cfg.mode === 'touchpreset') {
+      type TouchDot = {
+        x: number;
+        y: number;
+        vx: number;
+        vy: number;
+        age: number;
+        life: number;
+        size: number;
+        spin: number;
+      };
+      const dots: TouchDot[] = [];
+      let hasTouched = false;
+
+      function emitTouchDots(W: number, H: number) {
+        if (!_distortActive) return;
+        hasTouched = true;
+        const x = _distortWorldX + W / 2;
+        const y = H / 2 - _distortWorldY;
+        const emitCount = Math.round(lerp(16, 52, cfg.complexity / 10));
+        for (let i = 0; i < emitCount; i++) {
+          const a = Math.random() * Math.PI * 2;
+          const r = Math.random() ** 0.55 * Math.min(W, H) * 0.028;
+          const out = lerp(0.8, 3.2, cfg.glow / 10) * (0.55 + Math.random());
+          dots.push({
+            x: x + Math.cos(a) * r,
+            y: y + Math.sin(a) * r,
+            vx: Math.cos(a) * out + Math.cos(a + Math.PI / 2) * out * 0.62,
+            vy: Math.sin(a) * out + Math.sin(a + Math.PI / 2) * out * 0.62,
+            age: 0,
+            life: 44 + Math.random() * 74,
+            size: 0.75 + Math.random() * 1.8,
+            spin: Math.random() > 0.5 ? 1 : -1,
+          });
+        }
+        if (dots.length > 1600) dots.splice(0, dots.length - 1600);
+      }
+
+      function drawTouchPreset() {
+        if (!canvasModeActiveRef.current) return;
+        const W = mc!.width;
+        const H = mc!.height;
+        const tt = modeSeconds() * Math.max(0.2, speed);
+        ctx!.shadowBlur = 0;
+        ctx!.globalCompositeOperation = 'source-over';
+        ctx!.fillStyle = 'rgba(0,0,0,0.2)';
+        ctx!.fillRect(0, 0, W, H);
+
+        emitTouchDots(W, H);
+
+        for (let i = dots.length - 1; i >= 0; i--) {
+          const dot = dots[i];
+          const cx = _distortWorldX + W / 2;
+          const cy = H / 2 - _distortWorldY;
+          const dx = dot.x - cx;
+          const dy = dot.y - cy;
+          const d = Math.hypot(dx, dy) + 1;
+          const swirl = (0.04 + cfg.glow * 0.006) * dot.spin;
+          dot.vx += (-dy / d) * swirl + Math.sin(tt + dot.y * 0.01) * 0.018;
+          dot.vy += (dx / d) * swirl + Math.cos(tt + dot.x * 0.01) * 0.018;
+          dot.vx *= 0.986;
+          dot.vy *= 0.986;
+          dot.x += dot.vx;
+          dot.y += dot.vy;
+          dot.age += 1;
+          const lifeT = dot.age / dot.life;
+          const alpha = Math.sin(Math.min(1, lifeT) * Math.PI) * (0.34 + iF * 0.45);
+          ctx!.beginPath();
+          ctx!.arc(dot.x, dot.y, dot.size, 0, Math.PI * 2);
+          ctx!.fillStyle = `rgba(${pr},${pg},${pb},${Math.max(0, alpha)})`;
+          ctx!.fill();
+          if (
+            dot.age >= dot.life ||
+            dot.x < -40 ||
+            dot.x > W + 40 ||
+            dot.y < -40 ||
+            dot.y > H + 40
+          ) {
+            dots.splice(i, 1);
+          }
+        }
+
+        if (!hasTouched && dots.length === 0) {
+          ctx!.fillStyle = `rgba(${pr},${pg},${pb},0.66)`;
+          ctx!.font = `600 ${Math.max(14, Math.round(Math.min(W, H) * 0.036))}px serif`;
+          ctx!.textAlign = 'center';
+          ctx!.textBaseline = 'middle';
+          ctx!.fillText('touch to begin', W / 2, H / 2);
+          ctx!.textAlign = 'start';
+          ctx!.textBaseline = 'alphabetic';
+        }
+
+        canvasModeAnimRef.current = requestAnimationFrame(drawTouchPreset);
+      }
+      canvasModeAnimRef.current = requestAnimationFrame(drawTouchPreset);
     }
 
     if (cfg.mode === 'scriptures' || cfg.mode === 'scripturesjp') {
@@ -17430,7 +17949,8 @@ export default function GeometryField() {
   }
 
   function handleCanvasPointerMove(e: React.PointerEvent<HTMLCanvasElement>) {
-    if (!fingerDistortRef.current) return;
+    const isTouchPreset = cfgRef.current.mode === 'touchpreset';
+    if (!fingerDistortRef.current && !isTouchPreset && activePointerIdRef.current === null) return;
     const rect = canvasRef.current!.getBoundingClientRect();
     const { W, H } = sizeRef.current;
     _distortWorldX = e.clientX - rect.left - W / 2;
@@ -17451,7 +17971,7 @@ export default function GeometryField() {
   }
 
   function handleCanvasPointerLeave() {
-    _distortActive = false;
+    if (activePointerIdRef.current === null) _distortActive = false;
   }
 
   function setTouchMode(mode: FingerMode) {
@@ -17663,6 +18183,10 @@ export default function GeometryField() {
           ref={canvasRef}
           onClick={handleCanvasClick}
           onPointerDown={(e) => {
+            e.preventDefault();
+            activePointerIdRef.current = e.pointerId;
+            e.currentTarget.setPointerCapture(e.pointerId);
+            handleCanvasPointerMove(e);
             const is3d =
               cfg.mode === 'celtic' ||
               cfg.mode === 'lissajous3d' ||
@@ -17676,7 +18200,6 @@ export default function GeometryField() {
               cfg.mode === 'yantra3d' ||
               cfg.mode === 'rainbow3d';
             if (!is3d) return;
-            e.currentTarget.setPointerCapture(e.pointerId);
             l3dDragRef.current = { lastX: e.clientX, lastY: e.clientY };
           }}
           onPointerMove={(e) => {
@@ -17701,7 +18224,19 @@ export default function GeometryField() {
             l3dDragRef.current = { lastX: e.clientX, lastY: e.clientY };
           }}
           onPointerLeave={handleCanvasPointerLeave}
-          onPointerUp={() => {
+          onPointerUp={(e) => {
+            if (activePointerIdRef.current === e.pointerId) {
+              activePointerIdRef.current = null;
+              _distortActive = false;
+            }
+            e.currentTarget.releasePointerCapture(e.pointerId);
+            l3dDragRef.current = null;
+          }}
+          onPointerCancel={(e) => {
+            if (activePointerIdRef.current === e.pointerId) {
+              activePointerIdRef.current = null;
+              _distortActive = false;
+            }
             l3dDragRef.current = null;
           }}
           style={{
@@ -17710,6 +18245,7 @@ export default function GeometryField() {
             width: '100%',
             height: '100%',
             display: 'block',
+            touchAction: 'none',
             cursor:
               cfg.mode === 'celtic' ||
               cfg.mode === 'lissajous3d' ||
@@ -17740,8 +18276,12 @@ export default function GeometryField() {
           cfg.mode === 'wordparticle' ||
           cfg.mode === 'wordweave' ||
           cfg.mode === 'eclipse' ||
+          cfg.mode === 'yinyang' ||
+          cfg.mode === 'volcano' ||
+          cfg.mode === 'atomicexplosion' ||
           cfg.mode === 'scriptures' ||
           cfg.mode === 'scripturesjp' ||
+          cfg.mode === 'touchpreset' ||
           cfg.mode === 'metamorph' ||
           cfg.mode === 'chrysalis' ||
           cfg.mode === 'chrysalisrings' ||

@@ -150,6 +150,7 @@ Accepted initial presets:
 - **Dot Heart**: a heart shape made only from many warm dots, with internal pulse and flowing particle motion.
 - **Dot Phoenix**: a warm dot loop that blooms from a heart-like ember into a bird silhouette, then dissolves upward into flames before returning. Brighter regions should come from denser particles, not a solid fill. Long term, Phoenix should be able to transition into and out of Dot Heart as one continuous journey.
 - **Dot Brain Loop**: a symmetric walnut/brain-like dot field. It should loop between a rational mode with ordered rows, lanes, and number-like micro-patterns and a creative mode with irrational swirls and flowing folds.
+- **Embrace**: a close-up development of the best Dot Brain Loop movement, where the two moving lobes become two warm dot energy bodies leaning inward, hugging, dancing, and swirling around each other without becoming literal realistic figures.
 
 Rules:
 
@@ -166,6 +167,23 @@ Long-term journey direction:
 - Journey groups should blend compatible dot presets into each other instead of hard-cutting scenes.
 - Phoenix and Heart are the first explicit pair: heart warmth can bloom into phoenix transformation, then fall back into heart.
 - Brain Loop can become a bridge preset for moving between rational planning visuals and creative/swirl visuals.
+- Embrace can become a relationship / integration preset that bridges from Brain Loop into Heart or Phoenix without losing the warm living-dot language.
+
+## Magnetic Sand Descendants
+
+The Magnetic Sand family can produce sharper symbolic systems when its field logic is constrained into readable forms.
+
+Accepted descendants:
+
+- **Eclipse**: a crisp dot field radiating around a clean black center. The center should not have a stroked outline or blurry halo; the dots should remain precise.
+- **Yin Yang**: a circular balance field where black and warm-light dot zones rotate together from the first frame. It should read as a yin-yang dance, not as an empty field waiting to assemble.
+- **Volcano**: a symmetric mountain/plume dot loop, with a volcanic base and an upward explosion of particles.
+- **Atomic Explosion**: a symmetric explosion loop with mushroom-cloud/ring energy, built from dots rather than soft smoke.
+
+Rules:
+
+- These presets should stay more symmetric and legible than Magnetic Sand.
+- Avoid fuzzy gradients or decorative outlines when the core concept depends on sharp dots and negative space.
 
 ## Forward Journey Presets
 
@@ -183,7 +201,9 @@ Accepted initial presets:
 - **Line Tunnel 3D**: a line/rib version of the tunnel, using rings and spokes so it feels more
   architectural and three-dimensional.
 - **Dot Road**: thousands of dots form a road in perspective, with lane/edge dots expanding toward
-  the viewer to create the sensation of driving forward.
+  the viewer to create the sensation of driving forward. It should have a horizon line and a mirrored lower half so the same road logic reflects below the horizon.
+- **Trip Number 1**: a single long-form metamorphic dot journey. It should move through eye/tunnel, explosion, yin-yang, vortex, blooming sun, birds/phoenix, sacred geometry, clock/rhythm, return tunnel, and heart/love phases as one continuous blend rather than separate hard-cut presets.
+- **Touch Preset**: a black/void touch surface that says "touch to begin" at rest. Pointer, finger, and swipe movement should continuously create liquid explosions and trailing swirls of hundreds of warm dots.
 
 Rules:
 
@@ -192,6 +212,7 @@ Rules:
 - The vanishing point should remain readable and stable enough that the user feels oriented.
 - Roads, rivers, and tunnels should become a long-term journey category that can blend from one
   scene into another for concerts, focus sessions, and symbolic education programs.
+- Touch-driven presets must work continuously on phones using pointer capture and `touch-action: none`; they should not only react to a millisecond tap.
 - Future variants can include River Road, Mountain Road, Night Road, River Tunnel, and Road To Sun,
   but each should remain simple enough to read at phone size.
 

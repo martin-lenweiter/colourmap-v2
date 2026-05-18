@@ -33,6 +33,7 @@ const COMIC_PROGRAMS = new Set([
   'carl-jung',
   'paulo-freire',
   'thich-nhat-hanh',
+  'gandhi',
 ]);
 
 const EDUCATION_IMAGES = ['/education-1.png', '/education-2.png', '/education-3.png'];
@@ -79,7 +80,12 @@ const POSITIVE_OVERLAY_PROGRAMS = new Set([
   'parenting-patterns',
 ]);
 const JPG_PANEL_PROGRAMS = new Set(['carl-jung', 'struggle-letting-go']);
-const GENERATED_COVER_PROGRAMS = new Set(['paulo-freire', 'thich-nhat-hanh']);
+const GENERATED_LAYERED_PANEL_COUNTS: Record<string, number> = {
+  'carl-jung': 2,
+  'paulo-freire': 2,
+  'thich-nhat-hanh': 2,
+  gandhi: 20,
+};
 const PROGRAM_COVER_PANEL: Record<string, number> = {
   'room-to-breathe': 4,
   'emotional-intelligence': 3,
@@ -102,6 +108,7 @@ const PROGRAM_COVER_PANEL: Record<string, number> = {
   'carl-jung': 13,
   'paulo-freire': 5,
   'thich-nhat-hanh': 8,
+  gandhi: 19,
 };
 
 const SERIF = 'var(--font-serif)';
@@ -171,6 +178,7 @@ const GROUPS: { label: string; keys: string[]; tint: string; startHere?: string 
       'carl-jung',
       'paulo-freire',
       'thich-nhat-hanh',
+      'gandhi',
       'wellbeing',
       'hope-energy',
       'sleep',
@@ -206,53 +214,6 @@ const GROUPS: { label: string; keys: string[]; tint: string; startHere?: string 
     tint: '#7A8898',
   },
 ];
-
-function GeneratedProgramCover({ color }: { color: string }) {
-  return (
-    <svg
-      viewBox="0 0 352 208"
-      role="img"
-      aria-label="Generated education cover"
-      style={{ display: 'block', width: '100%', height: '100%' }}
-    >
-      <rect width="352" height="208" fill="#ead8b4" />
-      <rect width="352" height="208" fill={col(color, 0.12)} />
-      <path
-        d="M34 154 C74 104, 116 106, 154 128 C194 151, 233 96, 318 72"
-        fill="none"
-        stroke="#5C3018"
-        strokeWidth="3"
-        opacity="0.36"
-      />
-      <path
-        d="M58 145 C104 128, 139 139, 178 122 C219 104, 250 75, 305 66"
-        fill="none"
-        stroke={color}
-        strokeWidth="7"
-        strokeLinecap="round"
-        opacity="0.44"
-      />
-      {[62, 108, 154, 202, 248, 294].map((x, index) => (
-        <g key={x} transform={`translate(${x} ${index % 2 === 0 ? 132 : 112})`}>
-          <circle r="13" fill="#f8edcf" stroke="#5C3018" strokeWidth="2" opacity="0.86" />
-          <path
-            d="M-18 38 C-9 15, 9 15, 18 38"
-            fill="none"
-            stroke="#5C3018"
-            strokeWidth="2"
-            opacity="0.72"
-          />
-        </g>
-      ))}
-      <circle cx="284" cy="64" r="18" fill={color} opacity="0.68" />
-      <circle cx="284" cy="64" r="32" fill="none" stroke={color} strokeWidth="2" opacity="0.28" />
-      <g stroke="#5C3018" strokeWidth="1" opacity="0.14">
-        <path d="M28 34h188M28 48h132M28 62h92" />
-        <path d="M236 124h82M225 138h58M246 152h72" />
-      </g>
-    </svg>
-  );
-}
 
 function getProgress(program: Program): number {
   try {
@@ -456,11 +417,14 @@ function ProgramImageCard({
   const total = program.segments.length;
   const started = progress > 0;
   const coverPanel = PROGRAM_COVER_PANEL[program.key] ?? 0;
-  const imageSrc = POSITIVE_OVERLAY_PROGRAMS.has(program.key)
-    ? `/comics/${program.key}/variants/positive-overlay/panel-${coverPanel}.png`
-    : COMIC_PROGRAMS.has(program.key)
-      ? `/comics/${program.key}/panel-${coverPanel}.${JPG_PANEL_PROGRAMS.has(program.key) ? 'jpg' : 'png'}`
-      : EDUCATION_IMAGES[0];
+  const generatedCount = GENERATED_LAYERED_PANEL_COUNTS[program.key];
+  const imageSrc = generatedCount
+    ? `/comics/${program.key}/generated/panel-${coverPanel % generatedCount}.png`
+    : POSITIVE_OVERLAY_PROGRAMS.has(program.key)
+      ? `/comics/${program.key}/variants/positive-overlay/panel-${coverPanel}.png`
+      : COMIC_PROGRAMS.has(program.key)
+        ? `/comics/${program.key}/panel-${coverPanel}.${JPG_PANEL_PROGRAMS.has(program.key) ? 'jpg' : 'png'}`
+        : EDUCATION_IMAGES[0];
 
   return (
     <button
@@ -513,15 +477,11 @@ function ProgramImageCard({
           border: `1px solid ${col(c, 0.16)}`,
         }}
       >
-        {GENERATED_COVER_PROGRAMS.has(program.key) ? (
-          <GeneratedProgramCover color={c} />
-        ) : (
-          <img
-            src={imageSrc}
-            alt=""
-            style={{ display: 'block', width: '100%', height: '100%', objectFit: 'contain' }}
-          />
-        )}
+        <img
+          src={imageSrc}
+          alt=""
+          style={{ display: 'block', width: '100%', height: '100%', objectFit: 'contain' }}
+        />
       </div>
 
       <div style={{ padding: '2px 2px 0' }}>

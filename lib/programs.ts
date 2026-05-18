@@ -237,6 +237,93 @@ export const PROGRAMS: Program[] = [
     ],
   },
   {
+    key: 'gandhi',
+    domain: 'Gandhi & The Power of Small Things',
+    color: '#C9A15D',
+    segments: [
+      {
+        title: 'A life begins unfinished',
+        body: 'Gandhi did not begin as a symbol. He was shy, uncertain, ambitious, and searching. The first lesson is hopeful: purpose is not always born complete. Sometimes it is shaped slowly by discomfort, failure, study, and the decision to keep listening.',
+      },
+      {
+        title: 'An insult becomes a question',
+        body: 'In South Africa, Gandhi met humiliation that could have made him smaller or bitter. Instead, he asked a harder question: what kind of power can answer injustice without becoming the same kind of force?',
+      },
+      {
+        title: 'Purpose is made from pain',
+        body: 'His purpose did not arrive as a slogan. It formed when private hurt became moral attention. The wound became a doorway into the suffering of many people, and that made his life larger than self-protection.',
+      },
+      {
+        title: 'Dialogue before domination',
+        body: 'Gandhi’s work grew through meetings, letters, listening, disagreement, and shared discipline. He did not only want followers. He wanted ordinary people to recover their own voice and courage together.',
+      },
+      {
+        title: 'Satyagraha: holding truth',
+        body: 'Satyagraha means holding onto truth with firmness. It is not passivity. It is disciplined resistance that refuses hatred as a method. The aim is to confront wrong while still protecting the humanity of everyone involved.',
+      },
+      {
+        title: 'The spinning wheel',
+        body: 'The charkha turned politics into daily practice. Spinning cloth said: we can make something with our own hands. A small repeated act became a symbol of dignity, self-reliance, and freedom from dependency.',
+      },
+      {
+        title: 'Service gives direction',
+        body: 'Gandhi found purpose by moving closer to ordinary life: villages, food, sanitation, clothing, work, fear, and hunger. A real mission is not only an idea. It asks what people need in the texture of daily living.',
+      },
+      {
+        title: 'Ashram as practice ground',
+        body: 'The ashram was not an escape from the world. It was a laboratory for truth: simple living, shared labor, prayer, cleaning, study, and self-restraint. The future society had to be practiced in miniature.',
+      },
+      {
+        title: 'Walking turns fear into movement',
+        body: 'The Salt March showed how a road can become a school of courage. People did not need to feel powerful before acting. They became powerful by walking together, step after step, toward a clear shared act.',
+      },
+      {
+        title: 'A pinch of salt',
+        body: 'Salt was small, ordinary, and necessary. That was the point. Gandhi understood symbols: when people see freedom inside something simple, the whole world becomes easier to read and harder to accept blindly.',
+      },
+      {
+        title: 'Power returns to ordinary people',
+        body: 'His deepest strategy was empowerment. The hero was not one man. The hero was a population discovering that discipline, courage, sacrifice, and cooperation could turn weakness into collective strength.',
+      },
+      {
+        title: 'Inner freedom matters',
+        body: 'Gandhi treated self-rule as both political and personal. If fear, craving, anger, or dependency ruled the inner life, outer freedom would remain fragile. Transformation had to happen in the person and the society together.',
+      },
+      {
+        title: 'Courage is trained',
+        body: 'Nonviolence was not simply being gentle. It required training the body to pause, endure, speak truth, and keep dignity under pressure. Peace became a practice, not a mood.',
+      },
+      {
+        title: 'Freedom without hatred',
+        body: 'Independence was not meant to become revenge. Gandhi wanted freedom that did not poison the future. The hard task was to resist domination without letting bitterness become the new ruler.',
+      },
+      {
+        title: 'When the map split',
+        body: 'As India and Pakistan were born through pain and displacement, Gandhi turned toward the wound. He refused to treat people as enemies by identity. He kept asking for brotherhood when fear made brotherhood feel impossible.',
+      },
+      {
+        title: 'Brotherhood in dangerous times',
+        body: 'His message during communal violence was simple and demanding: your neighbor’s life is not disposable. Real courage is not only fighting for your side. It is protecting the human bond when the crowd wants to break it.',
+      },
+      {
+        title: 'The body as a moral bell',
+        body: 'Gandhi’s fasts were a severe form of appeal. He used his own body to ring a bell in the conscience of the community: stop, look, remember what hatred is doing to us.',
+      },
+      {
+        title: 'Peace is rebuilt locally',
+        body: 'Brotherhood is not only declared by leaders. It is rebuilt through wells, meals, apologies, protection, shared work, and the first small gesture after fear. Society changes where people meet again.',
+      },
+      {
+        title: 'A method travels',
+        body: 'Gandhi’s legacy moved beyond one country: civil rights, freedom movements, peace work, and everyday acts of conscience. The method was portable because it began with things anyone can practice: truth, discipline, courage, and care.',
+      },
+      {
+        title: 'The work continues',
+        body: 'The point is not to worship Gandhi. The point is to ask what small truthful act is available now. A thread, a step, a meal, a word, a refusal, a hand extended: transformation often begins very small.',
+      },
+    ],
+  },
+  {
     key: 'room-to-breathe',
     domain: 'Room to Breathe',
     color: '#C8B67A',
