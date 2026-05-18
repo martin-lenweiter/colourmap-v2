@@ -623,7 +623,7 @@ function MissionControlFormatTwo() {
                 marginTop: 3,
               }}
             >
-              Capture first. Then sort by today, later, and life area.
+              Capture missions. Organise now.
             </div>
           </div>
           <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', justifyContent: 'flex-end' }}>
