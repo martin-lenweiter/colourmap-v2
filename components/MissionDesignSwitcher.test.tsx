@@ -29,7 +29,10 @@ describe('MissionDesignSwitcher', () => {
 
     await user.click(screen.getByRole('button', { name: /Tasks/ }));
 
-    expect(screen.getByText('Current Mission')).toBeDefined();
+    expect(screen.getByPlaceholderText('add a mission…')).toBeDefined();
+    expect(screen.queryByText('Current Mission')).toBeNull();
+    expect(screen.queryByText('Daily Missions')).toBeNull();
+    expect(screen.queryByText('Push for Tomorrow')).toBeNull();
   });
 
   it('switches to format 2 mission control', async () => {

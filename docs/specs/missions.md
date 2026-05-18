@@ -57,8 +57,8 @@ The Focus mission tab now supports a small design-format pill:
 
 - **Format 1** reads as three parts: the existing **Areas** section, a proper full-width **Tasks**
   collapsible pill, and the existing **Daily Rituals** pill for rituals. Tasks is closed by default.
-  Opening Tasks reveals the direct editing stack for Current Mission, Daily Missions, and Push for
-  Tomorrow. Do not add separate top-level mini-pills for those three task sections.
+  Opening Tasks shows the mission cards directly as one flat list. Do not show nested headers for
+  Current Mission, Daily Missions, or Push for Tomorrow inside Tasks.
 - **Format 2** opens the Mission Control organisation view using the same stored mission data.
 
 Format 2 is an alternative organisation surface, not a separate data model. Users can switch between
