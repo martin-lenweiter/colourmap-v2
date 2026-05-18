@@ -794,7 +794,7 @@ export default function InnerWork() {
                 cursor: 'pointer',
               }}
             >
-              {tab === 'loops' ? 'my loops' : 'how it works'}
+              {tab === 'loops' ? 'negative loops' : 'shift guide'}
             </button>
           ))}
         </div>
@@ -973,7 +973,7 @@ export default function InnerWork() {
             </button>
           </div>
         ) : (
-          <AddRow label="add affirmation" onClick={() => setAddingAffirmation(true)} />
+          <AddRow label="add positive loop" onClick={() => setAddingAffirmation(true)} />
         )}
       </div>
     );
@@ -1515,7 +1515,7 @@ export default function InnerWork() {
             onDark
           />
           <Section
-            label="positive affirmations"
+            label="positive loops"
             count={data.affirmations.length}
             open={openSec === 'affirmations'}
             onToggle={() => toggleSec('affirmations')}
@@ -1523,7 +1523,7 @@ export default function InnerWork() {
             {renderAffirmations()}
           </Section>
           <Section
-            label="mind loops"
+            label="negative loops"
             count={data.loops.length}
             open={openSec === 'loops'}
             onToggle={() => toggleSec('loops')}

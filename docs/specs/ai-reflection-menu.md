@@ -107,5 +107,6 @@ interface AiReflectionMessage {
 - `AI` appears in primary navigation between `Focus` and `Notes`.
 - The dot menu can summon the global AI assistant.
 - `/ai` explains the reflection scopes and freemium boundary.
+- `/ai` uses theme-relative raised AI surfaces: Paper stays clear and slightly lifted, while Golden, Night, and Comic modes use the same relationship in their own color family instead of reusing paper beige.
 - Product docs identify the AI menu as the long-term AI home.
 - Future implementation has a clear path for quotas, saved reflections, and backend persistence.

@@ -47,3 +47,12 @@ Rules:
 - Add scope controls: Today, Mission, Body, Business, App, Letting Go.
 - Let the cell visual become a richer interaction mode: voice vibration, spoken answer, generated visual map, and deeper dive into related fragments.
 - The durable home for long-term reflection is `/ai`, specified in [`ai-reflection-menu.md`](./ai-reflection-menu.md). AI Presence remains the quick summon surface; the AI menu owns saved memory, freemium quotas, and deeper pattern reading.
+- The summoned AI panel uses the same theme-relative raised surface variables as `/ai`: a slightly clearer block on top of the current theme, not a fixed paper/beige panel.
+
+## Geometry Companion Notes
+
+- The three sine-morph presets (`Sin Morph`, `Sacred Sin Morph`, `Chaos Sin Morph`) default to slow breathing speeds so they open calmly instead of as fast pulses.
+- `Eclipse` is a top-level geometry preset derived from the static Magnetic Sand look: a hollow center with particles/rays radiating from the empty core.
+- `Gravity` is a top-level geometry preset derived from Magnetic Sand: two hollow circular vortex centers, with particles orbiting each core like two bodies pulling on each other.
+- `Scriptures` and `Vertical Scriptures` are top-level sacred-writing presets. Golden sand particles fill fixed letter patterns: a horizontal mantra-like line and a vertical Japanese-symbol column.
+- Long run: geometry presets become concert journeys, not isolated buttons. Presets should be grouped into mergeable families so a visual set can transition smoothly from one compatible preset to another during music, performance, or projection use.

@@ -14,6 +14,8 @@ This file is the operational layer: hard rules that apply to every piece of UI r
 
 **No pure black, no pure white.** Paper never is. Use sepia ink (`#5C3018`) as the darkest, cream (`#F5ECDC`) as the lightest. Accent with warm ochre (`#C4A060`) as the primary. One secondary accent at most per view.
 
+Light/pale pills and paper chips must use sepia ink (`#5C3018`, exposed as `--light-pill-text`) for typography. Keep ochre and category colors for dots, fills, borders, and dark-panel lettering; never put ochre text on beige/gold paper.
+
 ## Spacing
 
 8px grid. All spacing values must be multiples of 4: 4, 8, 12, 16, 24, 32, 48, 64. No magic numbers.

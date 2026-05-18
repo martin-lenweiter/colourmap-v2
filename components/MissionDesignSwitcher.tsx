@@ -6,7 +6,6 @@ import { DOING_CATEGORIES } from '@/components/DoingCategoryRail';
 import { syncPref } from '@/lib/sync';
 
 type MissionFormat = 'one' | 'two';
-type MissionKind = 'free' | 'deep' | 'pro' | 'real';
 
 type Subtask = { id: string; text: string; done: boolean };
 type MissionTag = { name: string; color: string; categoryId?: string };
@@ -23,7 +22,7 @@ type CardItem = {
   tag?: MissionTag;
 };
 type MissionSource = 'current' | 'daily' | 'push';
-type MissionViewItem = CardItem & { source: MissionSource; kind: MissionKind };
+type MissionViewItem = CardItem & { source: MissionSource };
 type LifeArea = { id: string; name: string; color: string };
 
 const FORMAT_KEY = 'colourmap:mission-design-format';
@@ -35,41 +34,16 @@ const OBJECTIVE_FLOWING_KEY = 'colourmap:objective-flowing-log';
 const OBJECTIVE_SUBTASKS_KEY = 'colourmap:objective-subtasks';
 const OBJECTIVE_IDEAS_KEY = 'colourmap:objective-ideas';
 const OBJECTIVE_AREA_KEY = 'colourmap:objective-area-id';
-const OBJECTIVE_KIND_KEY = 'colourmap:objective-kind';
 const MISSIONS_KEY = 'colourmap:today-objectives';
 const PUSH_KEY = 'colourmap:checkin-todos';
 const LIFE_CATS_KEY = 'colourmap:life-categories';
-const MISSION_KIND_PREFIX = 'colourmap:mission-kind:';
 
 const PAPER = 'rgba(255,255,255,0.04)';
 const LINE = 'rgba(196,160,96,0.2)';
 const LINE_SOFT = 'rgba(196,160,96,0.12)';
-const BROWN = 'var(--light-surface-text, #5C3018)';
-const MUTED = 'var(--light-surface-muted, #8A6A4A)';
+const BROWN = 'var(--light-pill-text, var(--light-surface-text, #5C3018))';
+const MUTED = 'var(--light-pill-muted, var(--light-surface-muted, #8A6A4A))';
 const OCHRE = '#C4A060';
-
-const KIND_META: Record<MissionKind, { label: string; color: string; note: string }> = {
-  free: {
-    label: 'Free',
-    color: '#C4A060',
-    note: 'Loose captures.',
-  },
-  deep: {
-    label: 'Think',
-    color: '#9B6BA0',
-    note: 'Reflection or strategy.',
-  },
-  pro: {
-    label: 'Pro',
-    color: '#688FB0',
-    note: 'Career or craft.',
-  },
-  real: {
-    label: 'Real',
-    color: '#7A8A50',
-    note: 'Body, home, admin.',
-  },
-};
 
 function readJson<T>(key: string, fallback: T): T {
   if (typeof window === 'undefined') return fallback;
@@ -98,18 +72,6 @@ function loadLifeAreas(): LifeArea[] {
     name: area.label,
     color: area.color,
   }));
-}
-
-function getKind(item: Pick<CardItem, 'id' | 'tag'>, source: MissionSource): MissionKind {
-  if (typeof window === 'undefined') return source === 'push' ? 'free' : 'real';
-  const key = source === 'current' ? OBJECTIVE_KIND_KEY : `${MISSION_KIND_PREFIX}${item.id}`;
-  const value = localStorage.getItem(key);
-  if (value === 'free' || value === 'deep' || value === 'pro' || value === 'real') return value;
-  const tag = item.tag?.name?.toLowerCase() ?? '';
-  if (tag.includes('creative') || tag.includes('music') || tag.includes('write')) return 'deep';
-  if (tag.includes('work') || tag.includes('career') || tag.includes('business')) return 'pro';
-  if (source === 'push') return 'free';
-  return 'real';
 }
 
 function getItemArea(item: CardItem, areas: LifeArea[], source: MissionSource): LifeArea | null {
@@ -143,7 +105,6 @@ function buildCurrentMission(areas: LifeArea[]): MissionViewItem | null {
     ideas: readJson<string[]>(OBJECTIVE_IDEAS_KEY, []),
     tag: area ? { name: area.name, color: area.color, categoryId: area.id } : undefined,
     source: 'current',
-    kind: getKind({ id: 'current' }, 'current'),
   };
 }
 
@@ -151,12 +112,6 @@ function persistItems(source: 'daily' | 'push', items: CardItem[]) {
   const key = source === 'daily' ? MISSIONS_KEY : PUSH_KEY;
   localStorage.setItem(key, JSON.stringify(items));
   syncPref(key, items);
-  window.dispatchEvent(new Event('colourmap:missions-updated'));
-}
-
-function setItemKind(item: MissionViewItem, kind: MissionKind) {
-  if (item.source === 'current') localStorage.setItem(OBJECTIVE_KIND_KEY, kind);
-  else localStorage.setItem(`${MISSION_KIND_PREFIX}${item.id}`, kind);
   window.dispatchEvent(new Event('colourmap:missions-updated'));
 }
 
@@ -194,7 +149,7 @@ function setItemDone(item: MissionViewItem, done: boolean) {
   );
 }
 
-function addMission(text: string, kind: MissionKind) {
+function addMission(text: string) {
   const items = readJson<CardItem[]>(MISSIONS_KEY, []);
   const next = [
     ...items,
@@ -206,8 +161,6 @@ function addMission(text: string, kind: MissionKind) {
     },
   ];
   persistItems('daily', next);
-  const created = next.at(-1);
-  if (created) setItemKind({ ...created, source: 'daily', kind }, kind);
 }
 
 function latest(items?: string[]) {
@@ -270,13 +223,12 @@ function MissionDesignPill({
 
 function MissionCapture() {
   const [text, setText] = useState('');
-  const [kind, setKind] = useState<MissionKind>('free');
 
   function submit(e: React.FormEvent) {
     e.preventDefault();
     const value = text.trim();
     if (!value) return;
-    addMission(value, kind);
+    addMission(value);
     setText('');
   }
 
@@ -314,9 +266,9 @@ function MissionCapture() {
           type="submit"
           disabled={!text.trim()}
           style={{
-            border: `1px solid ${KIND_META[kind].color}55`,
+            border: `1px solid ${OCHRE}55`,
             borderRadius: 6,
-            background: text.trim() ? `${KIND_META[kind].color}1f` : 'transparent',
+            background: text.trim() ? `${OCHRE}1f` : 'transparent',
             color: text.trim() ? BROWN : MUTED,
             padding: '0 14px',
             fontFamily: 'var(--font-serif)',
@@ -331,37 +283,12 @@ function MissionCapture() {
           Add
         </button>
       </div>
-      <div style={{ display: 'flex', gap: 6, overflowX: 'auto', paddingBottom: 1 }}>
-        {(Object.keys(KIND_META) as MissionKind[]).map((id) => (
-          <button
-            key={id}
-            type="button"
-            onClick={() => setKind(id)}
-            style={{
-              border: `1px solid ${KIND_META[id].color}${kind === id ? '80' : '2a'}`,
-              borderRadius: 999,
-              background: kind === id ? `${KIND_META[id].color}18` : 'transparent',
-              color: kind === id ? BROWN : MUTED,
-              padding: '4px 9px',
-              fontFamily: 'var(--font-serif)',
-              fontSize: 10,
-              fontWeight: 700,
-              letterSpacing: '0.08em',
-              whiteSpace: 'nowrap',
-              cursor: 'pointer',
-            }}
-          >
-            {KIND_META[id].label}
-          </button>
-        ))}
-      </div>
     </form>
   );
 }
 
 function MissionRow({ item, areas }: { item: MissionViewItem; areas: LifeArea[] }) {
   const [areaOpen, setAreaOpen] = useState(false);
-  const [kindOpen, setKindOpen] = useState(false);
   const area = item.tag
     ? (areas.find((candidate) => candidate.id === item.tag?.categoryId) ?? {
         id: item.tag.categoryId ?? item.tag.name,
@@ -373,12 +300,13 @@ function MissionRow({ item, areas }: { item: MissionViewItem; areas: LifeArea[] 
   const completedSubs = subtasks.filter((subtask) => subtask.done).length;
   const blocker = latest(item.blockingLog);
   const flow = latest(item.flowingLog);
+  const accent = area?.color ?? OCHRE;
 
   return (
     <div
       style={{
-        border: `1px solid ${item.done ? 'rgba(122,84,56,0.1)' : `${KIND_META[item.kind].color}30`}`,
-        borderLeft: `4px solid ${KIND_META[item.kind].color}`,
+        border: `1px solid ${item.done ? 'rgba(122,84,56,0.1)' : `${accent}30`}`,
+        borderLeft: `4px solid ${accent}`,
         borderRadius: 8,
         background: item.done ? 'rgba(255,255,255,0.02)' : 'rgba(255,255,255,0.045)',
         padding: 10,
@@ -394,8 +322,8 @@ function MissionRow({ item, areas }: { item: MissionViewItem; areas: LifeArea[] 
             width: 18,
             height: 18,
             borderRadius: '50%',
-            border: `1.5px solid ${KIND_META[item.kind].color}`,
-            background: item.done ? KIND_META[item.kind].color : 'transparent',
+            border: `1.5px solid ${accent}`,
+            background: item.done ? accent : 'transparent',
             color: '#fff',
             flexShrink: 0,
             cursor: 'pointer',
@@ -429,7 +357,7 @@ function MissionRow({ item, areas }: { item: MissionViewItem; areas: LifeArea[] 
           >
             <span
               style={{
-                border: `1px solid ${KIND_META[item.kind].color}42`,
+                border: `1px solid ${accent}42`,
                 borderRadius: 999,
                 color: BROWN,
                 padding: '2px 7px',
@@ -443,28 +371,12 @@ function MissionRow({ item, areas }: { item: MissionViewItem; areas: LifeArea[] 
             </span>
             <button
               type="button"
-              onClick={() => setKindOpen((open) => !open)}
-              style={{
-                border: `1px solid ${KIND_META[item.kind].color}30`,
-                borderRadius: 999,
-                background: `${KIND_META[item.kind].color}0f`,
-                color: MUTED,
-                padding: '2px 7px',
-                fontFamily: 'var(--font-serif)',
-                fontSize: 10,
-                cursor: 'pointer',
-              }}
-            >
-              {KIND_META[item.kind].label}
-            </button>
-            <button
-              type="button"
               onClick={() => setAreaOpen((open) => !open)}
               style={{
                 border: `1px solid ${area ? `${area.color}42` : LINE_SOFT}`,
                 borderRadius: 999,
                 background: area ? `${area.color}10` : 'transparent',
-                color: area ? area.color : MUTED,
+                color: area ? BROWN : MUTED,
                 padding: '2px 7px',
                 fontFamily: 'var(--font-serif)',
                 fontSize: 10,
@@ -479,76 +391,49 @@ function MissionRow({ item, areas }: { item: MissionViewItem; areas: LifeArea[] 
               </span>
             )}
           </div>
-          {(kindOpen || areaOpen) && (
+          {areaOpen && (
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: 5, marginTop: 7 }}>
-              {kindOpen &&
-                (Object.keys(KIND_META) as MissionKind[]).map((kind) => (
-                  <button
-                    key={kind}
-                    type="button"
-                    onClick={() => {
-                      setItemKind(item, kind);
-                      setKindOpen(false);
-                    }}
-                    style={{
-                      border: `1px solid ${KIND_META[kind].color}40`,
-                      borderRadius: 999,
-                      background: kind === item.kind ? `${KIND_META[kind].color}18` : 'transparent',
-                      color: BROWN,
-                      padding: '2px 7px',
-                      fontFamily: 'var(--font-serif)',
-                      fontSize: 10,
-                      cursor: 'pointer',
-                    }}
-                  >
-                    {KIND_META[kind].label}
-                  </button>
-                ))}
-              {areaOpen && (
+              <button
+                type="button"
+                onClick={() => {
+                  setItemArea(item, null);
+                  setAreaOpen(false);
+                }}
+                style={{
+                  border: `1px solid ${LINE_SOFT}`,
+                  borderRadius: 999,
+                  background: 'transparent',
+                  color: MUTED,
+                  padding: '2px 7px',
+                  fontFamily: 'var(--font-serif)',
+                  fontSize: 10,
+                  cursor: 'pointer',
+                }}
+              >
+                Unsorted
+              </button>
+              {areas.map((candidate) => (
                 <button
+                  key={candidate.id}
                   type="button"
                   onClick={() => {
-                    setItemArea(item, null);
+                    setItemArea(item, candidate);
                     setAreaOpen(false);
                   }}
                   style={{
-                    border: `1px solid ${LINE_SOFT}`,
+                    border: `1px solid ${candidate.color}42`,
                     borderRadius: 999,
-                    background: 'transparent',
-                    color: MUTED,
+                    background: candidate.id === area?.id ? `${candidate.color}18` : 'transparent',
+                    color: BROWN,
                     padding: '2px 7px',
                     fontFamily: 'var(--font-serif)',
                     fontSize: 10,
                     cursor: 'pointer',
                   }}
                 >
-                  Unsorted
+                  {candidate.name}
                 </button>
-              )}
-              {areaOpen &&
-                areas.map((candidate) => (
-                  <button
-                    key={candidate.id}
-                    type="button"
-                    onClick={() => {
-                      setItemArea(item, candidate);
-                      setAreaOpen(false);
-                    }}
-                    style={{
-                      border: `1px solid ${candidate.color}42`,
-                      borderRadius: 999,
-                      background:
-                        candidate.id === area?.id ? `${candidate.color}18` : 'transparent',
-                      color: candidate.color,
-                      padding: '2px 7px',
-                      fontFamily: 'var(--font-serif)',
-                      fontSize: 10,
-                      cursor: 'pointer',
-                    }}
-                  >
-                    {candidate.name}
-                  </button>
-                ))}
+              ))}
             </div>
           )}
           {(blocker || flow) && (
@@ -674,12 +559,10 @@ function MissionControlFormatTwo() {
     const daily = readJson<CardItem[]>(MISSIONS_KEY, []).map((item) => ({
       ...item,
       source: 'daily' as const,
-      kind: getKind(item, 'daily'),
     }));
     const push = readJson<CardItem[]>(PUSH_KEY, []).map((item) => ({
       ...item,
       source: 'push' as const,
-      kind: getKind(item, 'push'),
     }));
     const all: MissionViewItem[] = [...(current ? [current] : []), ...daily, ...push];
     const nextActive = all.filter((item) => !item.done);
@@ -895,7 +778,43 @@ function MissionControlFormatTwo() {
   );
 }
 
-export default function MissionDesignSwitcher() {
+function MissionTasksPill() {
+  const [open, setOpen] = useState(false);
+
+  return (
+    <div style={{ display: 'grid', gap: 12 }}>
+      <div style={{ display: 'flex', justifyContent: 'center' }}>
+        <button
+          type="button"
+          onClick={() => setOpen((value) => !value)}
+          style={{
+            border: `1px solid ${open ? 'rgba(92,48,24,0.52)' : LINE}`,
+            borderRadius: 999,
+            background: open ? 'rgba(196,160,96,0.16)' : PAPER,
+            color: BROWN,
+            fontFamily: 'var(--font-serif)',
+            fontSize: 11,
+            fontWeight: 900,
+            letterSpacing: '0.14em',
+            textTransform: 'uppercase',
+            padding: '7px 18px',
+            cursor: 'pointer',
+            minWidth: 108,
+          }}
+        >
+          Tasks
+        </button>
+      </div>
+      {open && <DoingCardsPanel />}
+    </div>
+  );
+}
+
+export default function MissionDesignSwitcher({
+  beforeContent,
+}: {
+  beforeContent?: React.ReactNode;
+}) {
   const [format, setFormat] = useState<MissionFormat>('one');
 
   useEffect(() => {
@@ -911,7 +830,8 @@ export default function MissionDesignSwitcher() {
   return (
     <div style={{ display: 'grid', gap: 8 }}>
       <MissionDesignPill value={format} onChange={changeFormat} />
-      {format === 'one' ? <DoingCardsPanel /> : <MissionControlFormatTwo />}
+      {beforeContent}
+      {format === 'one' ? <MissionTasksPill /> : <MissionControlFormatTwo />}
     </div>
   );
 }

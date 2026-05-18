@@ -796,11 +796,10 @@ function MissionCard({
         {/* ── By When — always visible ────────────────────────── */}
         <div
           style={{
-            display: 'flex',
+            display: expanded ? 'flex' : 'none',
             alignItems: 'center',
             justifyContent: 'center',
             gap: 3,
-            paddingTop: 5,
           }}
         >
           <span
@@ -813,7 +812,7 @@ function MissionCard({
               flexShrink: 0,
             }}
           >
-            by
+            when
           </span>
           <input
             type="text"

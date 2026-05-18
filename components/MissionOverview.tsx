@@ -139,20 +139,6 @@ function Station({
           >
             {item.text || (variant === 'objective' ? 'Current mission…' : '—')}
           </span>
-          {item.timeFrame && (
-            <span
-              style={{
-                fontFamily: 'var(--font-serif)',
-                fontSize: 10,
-                color: LABEL,
-                opacity: 0.45,
-                flexShrink: 0,
-                fontStyle: 'italic',
-              }}
-            >
-              by {item.timeFrame}
-            </span>
-          )}
           {subtasks.length > 0 && !item.done && (
             <span
               style={{

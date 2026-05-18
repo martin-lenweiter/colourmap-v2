@@ -55,13 +55,17 @@ The current mission card is useful for adding and editing work, but it is not ye
 
 The Focus mission tab now supports a small design-format pill:
 
-- **Format 1** keeps the original mission card stack for direct editing.
+- **Format 1** has one top-level **Tasks** pill, closed by default. Opening Tasks reveals the direct
+  editing stack for Current Mission, Daily Missions, and Push for Tomorrow. Do not add separate
+  top-level mini-pills for those three sections. The existing Areas pill remains the area entry point,
+  and **Routines** is the existing Daily Rituals pill/component below the mission switcher.
 - **Format 2** opens the Mission Control organisation view using the same stored mission data.
 
 Format 2 is an alternative organisation surface, not a separate data model. Users can switch between
 formats without duplicating missions. The second format keeps capture simple, then helps the user sort
-missions by today, later, and life area. Work type is a small metadata chip (`Free`, `Think`, `Pro`,
-`Real`), not a competing board system, because too many type lanes make the mission page feel crammed.
+missions by today, later, and life area. Do not add a separate work-type layer such as Free, Think,
+Pro, or Real; those labels made Format 2 feel crammed and too conceptual. The organising spine is
+Today / Later / Life Areas, with blocker and next-step context inside each mission.
 
 In Paper, Golden, and light Beige design modes, all mission labels and pills must use dark ink text on
 light surfaces. Ochre/gold text is reserved for dark panels where it has enough contrast.

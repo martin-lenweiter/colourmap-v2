@@ -91,13 +91,13 @@ export default function DayTabs({ emotionContent, missionContent, progressConten
                 border: tabBorder(isActive),
                 color: tabColor(isActive),
                 fontFamily: 'var(--font-serif)',
-                fontSize: '11px',
+                fontSize: '14px',
                 fontWeight: 900,
-                letterSpacing: '0.12em',
+                letterSpacing: '0.08em',
                 minHeight: 72,
                 textAlign: 'center',
                 textTransform: 'uppercase',
-                padding: '22px 6px',
+                padding: '20px 6px',
               }}
             >
               {tab.label}

@@ -20,9 +20,9 @@ const SOCIAL_ROUTES = ['/circles', '/sparks', '/chat'];
 const PHONE_PRIMARY_LINKS = PRIMARY_LINKS;
 
 const MORE_LINKS = [
+  { href: '/music', label: 'Music' },
   { href: '/atlas', label: 'Atlas' },
   { href: '/progress-road', label: 'Roads' },
-  { href: '/music', label: 'Music' },
   { href: '/circles', label: 'Social' },
   { href: '/journey', label: 'Journey' },
   { href: '/life-scan', label: 'Life Scan' },
@@ -139,16 +139,23 @@ export default function NavLinks() {
           onClick={() => setMoreOpen(!moreOpen)}
           aria-label="More navigation"
           aria-expanded={moreOpen}
-          className="h-5 w-5 rounded-full border border-border transition-all"
+          className="h-7 w-7 rounded-full border border-border transition-all"
           style={{
-            background: '#C4A060',
+            background: 'rgba(251,243,216,0.92)',
             boxShadow: 'none',
+            color: '#5C3018',
             cursor: 'pointer',
             padding: 0,
             flexShrink: 0,
-            display: 'block',
+            display: 'grid',
+            placeItems: 'center',
+            fontSize: 20,
+            lineHeight: 1,
+            fontWeight: 500,
           }}
-        />
+        >
+          +
+        </button>
 
         {moreOpen && (
           <div

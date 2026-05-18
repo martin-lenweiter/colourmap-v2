@@ -54,6 +54,9 @@ type Mode =
   | 'cyclonetiles'
   | 'eddylace'
   | 'magneticsand'
+  | 'eclipse'
+  | 'gravity'
+  | 'fire'
   | 'plasma'
   | 'globe'
   | 'nebula'
@@ -90,6 +93,8 @@ type Mode =
   | 'wordecho'
   | 'wordparticle'
   | 'wordweave'
+  | 'scriptures'
+  | 'scripturesjp'
   | 'metamorph'
   | 'chrysalis'
   | 'chrysalisrings'
@@ -1403,6 +1408,42 @@ const PRESETS: Record<string, Cfg> = {
     stars: 0,
     mode: 'magneticsand',
   },
+  Eclipse: {
+    preset: 'Golden Source',
+    symmetry: 9,
+    complexity: 8.4,
+    glow: 4.4,
+    breathSpeed: 0.28,
+    intensity: 8.6,
+    particles: 0,
+    luminous: 2.4,
+    stars: 0,
+    mode: 'eclipse',
+  },
+  Gravity: {
+    preset: 'Golden Source',
+    symmetry: 7,
+    complexity: 8.2,
+    glow: 4.1,
+    breathSpeed: 0.32,
+    intensity: 8.4,
+    particles: 0,
+    luminous: 2.4,
+    stars: 0,
+    mode: 'gravity',
+  },
+  Fire: {
+    preset: 'Deep Fire',
+    symmetry: 7,
+    complexity: 7.6,
+    glow: 6.2,
+    breathSpeed: 0.42,
+    intensity: 9,
+    particles: 0,
+    luminous: 2.7,
+    stars: 0,
+    mode: 'fire',
+  },
   'Solar Flare': {
     preset: 'Solar Plasma',
     symmetry: 6,
@@ -2564,6 +2605,30 @@ const PRESETS: Record<string, Cfg> = {
     stars: 2,
     mode: 'wordweave',
   },
+  Scriptures: {
+    preset: 'Golden Source',
+    symmetry: 8,
+    complexity: 8.5,
+    glow: 4.2,
+    breathSpeed: 0.32,
+    intensity: 8.8,
+    particles: 0,
+    luminous: 2.6,
+    stars: 0,
+    mode: 'scriptures',
+  },
+  'Vertical Scriptures': {
+    preset: 'Golden Source',
+    symmetry: 7,
+    complexity: 8.2,
+    glow: 4,
+    breathSpeed: 0.28,
+    intensity: 8.4,
+    particles: 0,
+    luminous: 2.4,
+    stars: 0,
+    mode: 'scripturesjp',
+  },
   'Clock of Infinity': {
     preset: 'Warp Tunnel',
     symmetry: 7,
@@ -2881,7 +2946,7 @@ const PRESETS: Record<string, Cfg> = {
     symmetry: 6,
     complexity: 5.8,
     glow: 5.4,
-    breathSpeed: 0.48,
+    breathSpeed: 0.16,
     intensity: 6.2,
     particles: 3,
     luminous: 1.4,
@@ -2893,7 +2958,7 @@ const PRESETS: Record<string, Cfg> = {
     symmetry: 8,
     complexity: 5.9,
     glow: 5.3,
-    breathSpeed: 0.42,
+    breathSpeed: 0.14,
     intensity: 6.1,
     particles: 3,
     luminous: 1.4,
@@ -2905,7 +2970,7 @@ const PRESETS: Record<string, Cfg> = {
     symmetry: 7,
     complexity: 7.4,
     glow: 5.8,
-    breathSpeed: 0.52,
+    breathSpeed: 0.18,
     intensity: 6.8,
     particles: 4,
     luminous: 1.7,
@@ -3893,6 +3958,8 @@ function buildModeGroup(cfg: Cfg, R: number): THREE.Group {
     case 'cyclonetiles':
     case 'eddylace':
     case 'magneticsand':
+    case 'gravity':
+    case 'fire':
       return buildCurrentTexture(cfg, R);
     case 'plasma':
       return buildPlasma(cfg, R);
@@ -3949,6 +4016,9 @@ function buildModeGroup(cfg: Cfg, R: number): THREE.Group {
     case 'wordecho':
     case 'wordparticle':
     case 'wordweave':
+    case 'eclipse':
+    case 'scriptures':
+    case 'scripturesjp':
     case 'metamorph':
     case 'chrysalis':
     case 'chrysalisrings':
@@ -4106,6 +4176,8 @@ function updateModeGroup(group: THREE.Group, cfg: Cfg, dots: Dot[], t: number, R
     case 'cyclonetiles':
     case 'eddylace':
     case 'magneticsand':
+    case 'gravity':
+    case 'fire':
       updateCurrentTexture(group, cfg, t, R);
       break;
     case 'plasma':
@@ -4184,6 +4256,9 @@ function updateModeGroup(group: THREE.Group, cfg: Cfg, dots: Dot[], t: number, R
     case 'wordecho':
     case 'wordparticle':
     case 'wordweave':
+    case 'eclipse':
+    case 'scriptures':
+    case 'scripturesjp':
     case 'metamorph':
     case 'chrysalis':
     case 'chrysalisrings':
@@ -8183,7 +8258,9 @@ function isCurrentTextureMode(mode: Mode): boolean {
     mode === 'currentscales' ||
     mode === 'cyclonetiles' ||
     mode === 'eddylace' ||
-    mode === 'magneticsand'
+    mode === 'magneticsand' ||
+    mode === 'gravity' ||
+    mode === 'fire'
   );
 }
 
@@ -8233,6 +8310,32 @@ function buildCurrentTexture(cfg: Cfg, R: number): THREE.Group {
       const r = cell * (0.08 + Math.random() * 0.72);
       x = cx + Math.cos(a + r * 0.035) * r;
       y = cy + Math.sin(a + r * 0.035) * r * 0.62;
+    } else if (cfg.mode === 'eclipse') {
+      const a = Math.random() * TAU;
+      const hollow = R * (0.22 + cfg.glow * 0.012);
+      const outer = R * (0.92 + Math.random() * 0.24);
+      const radial = hollow + (outer - hollow) * Math.sqrt(Math.random());
+      const ray = Math.sin(a * cfg.symmetry) * R * 0.028;
+      x = Math.cos(a) * (radial + ray);
+      y = Math.sin(a) * (radial + ray) * 0.82;
+    } else if (cfg.mode === 'gravity') {
+      const side = i % 2 === 0 ? 1 : -1;
+      const coreX = side * R * 0.32;
+      const coreY = -side * R * 0.06;
+      const a = Math.random() * TAU;
+      const hollow = R * (0.12 + cfg.glow * 0.008);
+      const outer = R * (0.24 + Math.random() * 0.28);
+      const radial = hollow + (outer - hollow) * Math.sqrt(Math.random());
+      x = coreX + Math.cos(a) * radial;
+      y = coreY + Math.sin(a) * radial;
+    } else if (cfg.mode === 'fire') {
+      const p = Math.random();
+      const yNorm = p * 2 - 1;
+      const taper = Math.max(0.05, 1 - ((yNorm + 1) / 2) ** 1.7);
+      const wave = Math.sin(yNorm * 7.2 + Math.random() * TAU) * R * 0.08 * taper;
+      const width = R * (0.1 + 0.46 * taper);
+      x = (Math.random() - 0.5) * width + wave;
+      y = yNorm * R * 0.88;
     } else {
       const lane = (Math.random() - 0.5) * R * 1.9;
       const wave = Math.sin(lane * 0.012) * R * 0.28;
@@ -8249,11 +8352,84 @@ function buildCurrentTexture(cfg: Cfg, R: number): THREE.Group {
   posAttr.setUsage(THREE.DynamicDrawUsage);
   geo.setAttribute('position', posAttr);
 
-  const pts = new THREE.Points(geo, ptsMat(hdrColor([rr, gg, bb], iF, 2.45), 1.55, 0.7));
+  const isNewSandMode = cfg.mode === 'eclipse' || cfg.mode === 'gravity' || cfg.mode === 'fire';
+  const pointSize =
+    cfg.mode === 'fire' ? 2.8 : cfg.mode === 'eclipse' || cfg.mode === 'gravity' ? 2.25 : 1.55;
+  const pointOpacity = isNewSandMode ? 0.86 : 0.7;
+  const pts = new THREE.Points(
+    geo,
+    circlePtsMat(hdrColor([rr, gg, bb], iF, isNewSandMode ? 3.1 : 2.45), pointSize, pointOpacity),
+  );
   pts.userData.tag = 'currentTexture';
   pts.userData.count = count;
   pts.userData.prevT = -1;
   group.add(pts);
+
+  if (cfg.mode === 'eclipse') {
+    const hollow = R * (0.24 + cfg.glow * 0.01);
+    const outer = R * 0.92;
+    const coronaCount = Math.max(900, Math.round(lerp(1300, 2600, iF)));
+    const coronaPositions = new Float32Array(coronaCount * 3);
+    for (let i = 0; i < coronaCount; i++) {
+      const a = (i / coronaCount) * Math.PI * 2 + Math.random() * 0.018;
+      const band = Math.random();
+      const r = hollow + (outer - hollow) * (0.18 + band ** 0.58 * 0.82);
+      const flare = Math.sin(a * cfg.symmetry) * R * 0.025;
+      coronaPositions[i * 3] = Math.cos(a) * (r + flare);
+      coronaPositions[i * 3 + 1] = Math.sin(a) * (r + flare) * 0.82;
+      coronaPositions[i * 3 + 2] = 0.06;
+    }
+    const coronaGeo = new THREE.BufferGeometry();
+    coronaGeo.setAttribute('position', new THREE.BufferAttribute(coronaPositions, 3));
+    const corona = new THREE.Points(
+      coronaGeo,
+      circlePtsMat(hdrColor([rr, gg, bb], iF, 3.4), 2.9, 0.9),
+    );
+    corona.userData.tag = 'eclipseCorona';
+    corona.userData.base = coronaPositions.slice();
+    corona.userData.count = coronaCount;
+    group.add(corona);
+    for (const [radius, opacity] of [
+      [hollow, 0.64],
+      [outer, 0.18],
+    ] as const) {
+      const ring = new THREE.Line(
+        circleGeo(160),
+        lineMat(hdrColor([rr, gg, bb], iF, 2.7), opacity),
+      );
+      ring.scale.set(radius, radius * 0.82, 1);
+      ring.userData.tag = 'currentTextureAnchor';
+      ring.userData.baseScale = [radius, radius * 0.82];
+      group.add(ring);
+    }
+  } else if (cfg.mode === 'gravity') {
+    for (const side of [1, -1]) {
+      const coreX = side * R * 0.32;
+      const coreY = -side * R * 0.06;
+      const hollow = R * (0.13 + cfg.glow * 0.008);
+      const ring = new THREE.Line(circleGeo(128), lineMat(hdrColor([rr, gg, bb], iF, 2.8), 0.5));
+      ring.position.set(coreX, coreY, 0.02);
+      ring.scale.setScalar(hollow);
+      ring.userData.tag = 'currentTextureAnchor';
+      ring.userData.baseScale = [hollow, hollow];
+      group.add(ring);
+    }
+  } else if (cfg.mode === 'fire') {
+    const spineGeo = new THREE.BufferGeometry();
+    const spine = new Float32Array(28 * 3);
+    for (let i = 0; i < 28; i++) {
+      const p = i / 27;
+      const y = lerp(-R * 0.92, R * 0.88, p);
+      const x = Math.sin(p * Math.PI * 3.2) * R * 0.055 * (1 - p * 0.65);
+      spine[i * 3] = x;
+      spine[i * 3 + 1] = y;
+      spine[i * 3 + 2] = 0.04;
+    }
+    spineGeo.setAttribute('position', new THREE.BufferAttribute(spine, 3));
+    const flameLine = new THREE.Line(spineGeo, lineMat(hdrColor([rr, gg, bb], iF, 3.2), 0.42));
+    flameLine.userData.tag = 'fireSpine';
+    group.add(flameLine);
+  }
 
   if (cfg.mode === 'currentscales') {
     const pulseCount = Math.max(420, Math.round(lerp(700, 1500, iF)));
@@ -8336,6 +8512,52 @@ function currentTextureVector(
       y:
         -Math.sin(x * f * 2.2 - tSlow * 0.8) * 0.55 +
         Math.cos((x - y) * f * 1.3 + tSlow * 0.6) * 0.35,
+    };
+  }
+
+  if (mode === 'eclipse') {
+    const r = Math.sqrt(x * x + y * y) + 1;
+    const a = Math.atan2(y, x);
+    const hollow = R * (0.21 + cfg.glow * 0.012);
+    const rim = Math.max(0, 1 - Math.abs(r - hollow) / Math.max(R * 0.12, 1));
+    const spoke = Math.sin(a * sym + tSlow * 0.45) * 0.16;
+    const out = 0.78 + rim * 0.65 + spoke;
+    return {
+      x: Math.cos(a) * out + Math.cos(a + Math.PI / 2) * spoke * 0.28,
+      y: Math.sin(a) * out * 0.82 + Math.sin(a + Math.PI / 2) * spoke * 0.22,
+    };
+  }
+
+  if (mode === 'gravity') {
+    const coreA = { x: R * 0.32, y: -R * 0.06 };
+    const coreB = { x: -R * 0.32, y: R * 0.06 };
+    const da = Math.hypot(x - coreA.x, y - coreA.y);
+    const db = Math.hypot(x - coreB.x, y - coreB.y);
+    const core = da <= db ? coreA : coreB;
+    const dx = x - core.x;
+    const dy = y - core.y;
+    const d = Math.sqrt(dx * dx + dy * dy) + 1;
+    const swirlDir = core === coreA ? 1 : -1;
+    const pull =
+      core === coreA ? { x: coreB.x - x, y: coreB.y - y } : { x: coreA.x - x, y: coreA.y - y };
+    const pd = Math.hypot(pull.x, pull.y) + 1;
+    const orbit = 0.78 + Math.sin(tSlow * 0.5 + d * 0.014) * 0.1;
+    return {
+      x: (-dy / d) * orbit * swirlDir + (pull.x / pd) * 0.16,
+      y: (dx / d) * orbit * swirlDir + (pull.y / pd) * 0.16,
+    };
+  }
+
+  if (mode === 'fire') {
+    const top = R * 0.92;
+    const y01 = Math.min(1, Math.max(0, (y + top) / (top * 2)));
+    const taper = Math.max(0.08, 1 - y01 ** 1.65);
+    const curl = Math.sin(y * 0.018 + tSlow * 1.8) * 0.52 * taper;
+    const centerPull = (-x / Math.max(R, 1)) * (0.38 + y01 * 0.42);
+    const lift = 0.82 + y01 * 0.45 + Math.sin(x * 0.018 - tSlow) * 0.12;
+    return {
+      x: curl + centerPull,
+      y: lift,
     };
   }
 
@@ -8526,11 +8748,47 @@ function updateCurrentTexture(group: THREE.Group, cfg: Cfg, t: number, R: number
         nz += f.z * 0.5;
       }
 
-      if (nx * nx + ny * ny > R2) {
-        const a = Math.atan2(ny, nx) + Math.PI + (Math.random() - 0.5) * 0.9;
-        const r = fieldR * (0.18 + Math.random() * 0.58);
-        nx = Math.cos(a) * r;
-        ny = Math.sin(a) * r;
+      const minR = cfg.mode === 'eclipse' ? R * (0.24 + cfg.glow * 0.01) : 0;
+      const fireTop = R * 0.98;
+      const fireTaper = Math.max(0.05, 1 - ((ny + fireTop) / (fireTop * 2)) ** 1.7);
+      const outsideFire =
+        cfg.mode === 'fire' &&
+        (ny > fireTop ||
+          ny < -fireTop ||
+          Math.abs(nx) > R * (0.14 + 0.5 * fireTaper) ||
+          Math.random() < 0.002);
+      const r2 = nx * nx + ny * ny;
+      const gravityCoreA = { x: R * 0.32, y: -R * 0.06 };
+      const gravityCoreB = { x: -R * 0.32, y: R * 0.06 };
+      const gravityHollow = R * (0.13 + cfg.glow * 0.008);
+      const tooCloseToGravityCore =
+        cfg.mode === 'gravity' &&
+        (Math.hypot(nx - gravityCoreA.x, ny - gravityCoreA.y) < gravityHollow ||
+          Math.hypot(nx - gravityCoreB.x, ny - gravityCoreB.y) < gravityHollow);
+      if (r2 > R2 || r2 < minR * minR || tooCloseToGravityCore || outsideFire) {
+        const a =
+          cfg.mode === 'eclipse'
+            ? Math.atan2(ny, nx) + (Math.random() - 0.5) * 0.42
+            : cfg.mode === 'gravity'
+              ? Math.random() * Math.PI * 2
+              : Math.atan2(ny, nx) + Math.PI + (Math.random() - 0.5) * 0.9;
+        const gravityCore =
+          cfg.mode === 'gravity' ? (Math.random() > 0.5 ? gravityCoreA : gravityCoreB) : null;
+        const r =
+          cfg.mode === 'eclipse'
+            ? minR + (fieldR - minR) * (0.22 + Math.random() * 0.62)
+            : cfg.mode === 'gravity'
+              ? gravityHollow + R * (0.08 + Math.random() * 0.36)
+              : fieldR * (0.18 + Math.random() * 0.58);
+        if (cfg.mode === 'fire') {
+          const yNorm = -0.98 + Math.random() * 0.24;
+          const taper = Math.max(0.05, 1 - ((yNorm + 1) / 2) ** 1.7);
+          nx = (Math.random() - 0.5) * R * (0.16 + 0.44 * taper);
+          ny = yNorm * R;
+        } else {
+          nx = (gravityCore?.x ?? 0) + Math.cos(a) * r;
+          ny = (gravityCore?.y ?? 0) + Math.sin(a) * r * (cfg.mode === 'eclipse' ? 0.82 : 1);
+        }
         nz = (Math.random() - 0.5) * R * 0.08;
       }
 
@@ -8547,12 +8805,51 @@ function updateCurrentTexture(group: THREE.Group, cfg: Cfg, t: number, R: number
           lerp(baseRgb[1], 255, glowF * 0.12),
           lerp(baseRgb[2], 255, glowF * 0.12),
         ];
-    updateMat(child, rgb, iF, 2.3);
+    const isNewSandMode = cfg.mode === 'eclipse' || cfg.mode === 'gravity' || cfg.mode === 'fire';
+    updateMat(child, rgb, iF, isNewSandMode ? 3.1 : 2.3);
     const mat = pts.material as THREE.PointsMaterial;
     if (currentScaleMusicMode) {
       mat.size =
         1.45 + musicPulse * 0.95 * _currentScalePulse + bassPush * 0.65 * _currentScaleBass;
       mat.opacity = 0.62 + musicPulse * 0.2 * _currentScalePulse + leadFlicker * 0.1;
+    } else if (isNewSandMode) {
+      mat.size = cfg.mode === 'fire' ? 2.6 + glowF * 0.8 : 2.05 + glowF * 0.55;
+      mat.opacity = 0.78 + glowF * 0.12;
+    }
+  }
+
+  for (const child of group.children) {
+    const tag = child.userData.tag as string;
+    if (tag === 'currentTextureAnchor') {
+      const [sx, sy] = child.userData.baseScale as [number, number];
+      const pulse = 1 + Math.sin(t * 0.0011 * speed) * 0.025;
+      child.scale.set(sx * pulse, sy * pulse, 1);
+      updateMat(child, baseRgb, iF, 2.55);
+    } else if (tag === 'eclipseCorona') {
+      const pts = child as THREE.Points;
+      const posAttr = pts.geometry.getAttribute('position') as THREE.BufferAttribute;
+      const arr = posAttr.array as Float32Array;
+      const base = child.userData.base as Float32Array;
+      const count = child.userData.count as number;
+      const spin = t * 0.00003 * speed;
+      const wobble = Math.sin(t * 0.001 * speed) * 0.018;
+      for (let i = 0; i < count; i++) {
+        const x = base[i * 3];
+        const y = base[i * 3 + 1];
+        const a = Math.atan2(y, x) + spin;
+        const r = Math.hypot(x, y) * (1 + wobble * Math.sin(a * cfg.symmetry));
+        arr[i * 3] = Math.cos(a) * r;
+        arr[i * 3 + 1] = Math.sin(a) * r * 0.82;
+      }
+      posAttr.needsUpdate = true;
+      const mat = pts.material as THREE.PointsMaterial;
+      mat.size = 2.5 + glowF * 0.85;
+      mat.opacity = 0.82 + glowF * 0.12;
+      updateMat(child, baseRgb, iF, 3.4);
+    } else if (tag === 'fireSpine') {
+      const pulse = 1 + Math.sin(t * 0.0018 * speed) * 0.035;
+      child.scale.set(pulse, 1, 1);
+      updateMat(child, baseRgb, iF, 3.2);
     }
   }
 }
@@ -10564,6 +10861,9 @@ const MODE_TO_PRESET: Partial<Record<Mode, string>> = {
   cyclonetiles: 'Cyclone Tiles',
   eddylace: 'Eddy Lace',
   magneticsand: 'Magnetic Sand',
+  eclipse: 'Eclipse',
+  gravity: 'Gravity',
+  fire: 'Fire',
   plasma: 'Solar Flare',
   nebula: 'Nebula Veil',
   globe: 'Emotion Globe',
@@ -10586,6 +10886,8 @@ const MODE_TO_PRESET: Partial<Record<Mode, string>> = {
   wordecho: 'Echo Word',
   wordparticle: 'Particle Word',
   wordweave: 'Woven Word',
+  scriptures: 'Scriptures',
+  scripturesjp: 'Vertical Scriptures',
   metamorph: 'Metamorph',
   chrysalis: 'Chrysalis',
   chrysalisrings: 'Chrysalis Rings',
@@ -10623,6 +10925,8 @@ const MODES: { mode: Mode; label: string }[] = [
   { mode: 'wordecho', label: '◉ Echo Word' },
   { mode: 'wordparticle', label: '✤ Particle Word' },
   { mode: 'wordweave', label: '∾ Woven Word' },
+  { mode: 'scriptures', label: 'Scriptures' },
+  { mode: 'scripturesjp', label: 'Vertical Scriptures' },
   { mode: 'metamorph', label: '∞ Metamorph' },
   { mode: 'chrysalis', label: '◈ Chrysalis' },
   { mode: 'chrysalisrings', label: 'Chrysalis Rings' },
@@ -10671,6 +10975,9 @@ const MODES: { mode: Mode; label: string }[] = [
   { mode: 'cyclonetiles', label: 'Cyclone Tiles' },
   { mode: 'eddylace', label: 'Eddy Lace' },
   { mode: 'magneticsand', label: 'Magnetic Sand' },
+  { mode: 'eclipse', label: 'Eclipse' },
+  { mode: 'gravity', label: 'Gravity' },
+  { mode: 'fire', label: 'Fire' },
   { mode: 'current3d', label: '∿³ Current 3D' },
   { mode: 'plasma', label: '☀ Plasma' },
   { mode: 'nebula', label: 'Nebula' },
@@ -10709,6 +11016,11 @@ type FeaturedItem = { name: string; tag: string } | { header: string; dim?: bool
 
 const FEATURED_PRESETS: FeaturedItem[] = [
   { header: 'Good Ones' },
+  { name: 'Scriptures', tag: 'TOP' },
+  { name: 'Vertical Scriptures', tag: 'TOP' },
+  { name: 'Eclipse', tag: 'TOP' },
+  { name: 'Gravity', tag: 'TOP' },
+  { name: 'Fire', tag: 'TOP' },
   { name: 'Prism3D Core', tag: 'PRISM' },
   { name: 'Prism Bloom', tag: 'PRISM' },
   { name: 'Clock Orbit', tag: 'CLOCK' },
@@ -14606,6 +14918,9 @@ export default function GeometryField() {
       cfg.mode === 'wordecho' ||
       cfg.mode === 'wordparticle' ||
       cfg.mode === 'wordweave' ||
+      cfg.mode === 'eclipse' ||
+      cfg.mode === 'scriptures' ||
+      cfg.mode === 'scripturesjp' ||
       cfg.mode === 'metamorph' ||
       cfg.mode === 'chrysalis' ||
       cfg.mode === 'chrysalisrings' ||
@@ -14969,6 +15284,214 @@ export default function GeometryField() {
         canvasModeAnimRef.current = requestAnimationFrame(drawEntropy);
       }
       canvasModeAnimRef.current = requestAnimationFrame(drawEntropy);
+    }
+
+    /* ── SCRIPTURES: sacred sand fills written characters ───────────── */
+    if (cfg.mode === 'eclipse') {
+      const count = Math.max(900, Math.round(1500 + cfg.intensity * 180));
+      const dust = Array.from({ length: count }, (_, i) => ({
+        a: (i / count) * Math.PI * 2 + Math.random() * 0.04,
+        r: 0.28 + Math.random() ** 0.55 * 0.58,
+        p: Math.random() * Math.PI * 2,
+        s: 0.8 + Math.random() * 1.8,
+      }));
+
+      function drawEclipse() {
+        if (!canvasModeActiveRef.current) return;
+        const W = mc!.width;
+        const H = mc!.height;
+        const radius = Math.min(W, H) * 0.46;
+        const cx = W / 2;
+        const cy = H / 2;
+        const tt = modeSeconds() * Math.max(0.2, speed);
+        ctx!.fillStyle = 'rgba(7,3,0,0.32)';
+        ctx!.fillRect(0, 0, W, H);
+
+        const coreR = radius * (0.25 + cfg.glow * 0.012);
+        const halo = ctx!.createRadialGradient(cx, cy, coreR * 0.7, cx, cy, radius * 1.08);
+        halo.addColorStop(0, `rgba(${pr},${pg},${pb},0.02)`);
+        halo.addColorStop(0.2, `rgba(${pr},${pg},${pb},0.28)`);
+        halo.addColorStop(0.58, `rgba(${pr},${pg},${pb},0.11)`);
+        halo.addColorStop(1, 'rgba(0,0,0,0)');
+        ctx!.fillStyle = halo;
+        ctx!.beginPath();
+        ctx!.ellipse(cx, cy, radius * 1.08, radius * 0.9, 0, 0, Math.PI * 2);
+        ctx!.fill();
+
+        for (const dot of dust) {
+          const a = dot.a + tt * 0.05;
+          const ripple = Math.sin(a * cfg.symmetry + tt + dot.p) * radius * 0.025;
+          const rr = radius * dot.r + ripple;
+          const x = cx + Math.cos(a) * rr;
+          const y = cy + Math.sin(a) * rr * 0.82;
+          const alpha = (0.22 + Math.sin(tt * 1.4 + dot.p) * 0.08) * iF;
+          ctx!.beginPath();
+          ctx!.arc(x, y, dot.s, 0, Math.PI * 2);
+          ctx!.fillStyle = `rgba(${pr},${pg},${pb},${Math.max(0.05, alpha)})`;
+          ctx!.shadowBlur = 10;
+          ctx!.shadowColor = `rgba(${pr},${pg},${pb},0.7)`;
+          ctx!.fill();
+        }
+
+        ctx!.shadowBlur = 0;
+        ctx!.globalCompositeOperation = 'destination-out';
+        ctx!.beginPath();
+        ctx!.ellipse(cx, cy, coreR, coreR * 0.82, 0, 0, Math.PI * 2);
+        ctx!.fillStyle = 'rgba(0,0,0,0.96)';
+        ctx!.fill();
+        ctx!.globalCompositeOperation = 'source-over';
+        ctx!.strokeStyle = `rgba(${pr},${pg},${pb},0.58)`;
+        ctx!.lineWidth = 1.4;
+        ctx!.beginPath();
+        ctx!.ellipse(cx, cy, coreR, coreR * 0.82, 0, 0, Math.PI * 2);
+        ctx!.stroke();
+
+        canvasModeAnimRef.current = requestAnimationFrame(drawEclipse);
+      }
+      canvasModeAnimRef.current = requestAnimationFrame(drawEclipse);
+    }
+
+    if (cfg.mode === 'scriptures' || cfg.mode === 'scripturesjp') {
+      const vertical = cfg.mode === 'scripturesjp';
+      const text = vertical ? ['空', '海', '心', '光'] : ['ॐ मणि पद्मे हूँ'];
+      const off = document.createElement('canvas');
+      off.width = mc.width;
+      off.height = mc.height;
+      const offCtx = off.getContext('2d')!;
+      type SandDot = {
+        x: number;
+        y: number;
+        tx: number;
+        ty: number;
+        phase: number;
+        size: number;
+        delay: number;
+      };
+      const dots: SandDot[] = [];
+
+      function rebuildScriptureDots() {
+        const W = mc!.width;
+        const H = mc!.height;
+        off.width = W;
+        off.height = H;
+        offCtx.clearRect(0, 0, W, H);
+        offCtx.fillStyle = '#fff';
+        offCtx.textAlign = 'center';
+        offCtx.textBaseline = 'middle';
+        if (vertical) {
+          const fontSize = Math.min(W * 0.2, H * 0.14, 88);
+          offCtx.font = `900 ${Math.round(fontSize)}px "Yu Mincho", "Hiragino Mincho ProN", "Noto Serif CJK JP", serif`;
+          const totalH = fontSize * (text.length - 1) * 1.12;
+          text.forEach((char, i) => {
+            offCtx.fillText(char, W / 2, H / 2 - totalH / 2 + i * fontSize * 1.12);
+          });
+        } else {
+          const fontSize = Math.min(W * 0.095, H * 0.18, 74);
+          offCtx.font = `900 ${Math.round(fontSize)}px "Noto Serif Devanagari", "Nirmala UI", "Mangal", serif`;
+          offCtx.fillText(text[0], W / 2, H / 2);
+        }
+
+        const img = offCtx.getImageData(0, 0, W, H).data;
+        dots.length = 0;
+        const stride = Math.max(3, Math.round(10 - cfg.complexity * 0.58));
+        const cx = W / 2;
+        const cy = H / 2;
+        for (let y = 0; y < H; y += stride) {
+          for (let x = 0; x < W; x += stride) {
+            const idx = (y * W + x) * 4;
+            if (img[idx + 3] <= 80) continue;
+            const angle = Math.atan2(y - cy, x - cx);
+            const fromR = Math.max(W, H) * (0.46 + Math.random() * 0.22);
+            dots.push({
+              x: cx + Math.cos(angle) * fromR + (Math.random() - 0.5) * W * 0.16,
+              y: cy + Math.sin(angle) * fromR + (Math.random() - 0.5) * H * 0.16,
+              tx: x,
+              ty: y,
+              phase: Math.random() * Math.PI * 2,
+              size: 0.8 + Math.random() * 1.5,
+              delay: Math.random() * 0.55,
+            });
+          }
+        }
+      }
+
+      rebuildScriptureDots();
+      const scriptureStart = performance.now();
+
+      function drawScriptures() {
+        if (!canvasModeActiveRef.current) return;
+        const W = mc!.width;
+        const H = mc!.height;
+        if (off.width !== W || off.height !== H) rebuildScriptureDots();
+
+        const tt =
+          motionModeRef.current === 'static'
+            ? 0
+            : (performance.now() - scriptureStart) * 0.001 * speed;
+        const cx = W / 2;
+        const cy = H / 2;
+        ctx!.fillStyle = 'rgba(0,0,0,0.2)';
+        ctx!.fillRect(0, 0, W, H);
+
+        const cycle = (tt * 0.075) % 1;
+        const destroy = Math.max(0, Math.min(1, (cycle - 0.2) / 0.48));
+        const rewrite = Math.max(0, Math.min(1, (cycle - 0.72) / 0.28));
+        const written = cycle < 0.2 ? 1 : cycle < 0.72 ? 1 - destroy : rewrite;
+        const sweep = vertical
+          ? (dot: SandDot) => Math.max(0, Math.min(1, (dot.ty / H - 0.08) / 0.84))
+          : (dot: SandDot) => Math.max(0, Math.min(1, (dot.tx / W - 0.08) / 0.84));
+
+        for (const dot of dots) {
+          const lineDelay = sweep(dot) * 0.16 + dot.delay * 0.08;
+          const local =
+            cycle < 0.2
+              ? 1
+              : cycle < 0.72
+                ? Math.max(0, Math.min(1, (written - lineDelay) * 1.45))
+                : Math.max(0, Math.min(1, (written - sweep(dot) * 0.68 - dot.delay * 0.14) * 3.2));
+          const eased = local * local * (3 - 2 * local);
+          const wind = destroy * destroy * (1 - rewrite);
+          const windDir = vertical ? (dot.tx > cx ? 1 : -1) : 1;
+          const gustX =
+            windDir * wind * W * (0.22 + dot.delay * 0.35) +
+            Math.cos(tt * 1.4 + dot.phase) * wind * W * 0.05;
+          const gustY =
+            -wind * H * (0.08 + sweep(dot) * 0.2) +
+            Math.sin(tt * 1.7 + dot.phase) * wind * H * 0.07;
+          const orbit = (1 - eased) * (vertical ? H : W) * 0.018;
+          const px =
+            dot.x + (dot.tx - dot.x) * eased + gustX + Math.cos(tt * 0.7 + dot.phase) * orbit;
+          const py =
+            dot.y + (dot.ty - dot.y) * eased + gustY + Math.sin(tt * 0.6 + dot.phase) * orbit;
+          const alpha = (0.12 + eased * 0.86) * (1 - wind * 0.55) * iF;
+          ctx!.beginPath();
+          ctx!.arc(px, py, dot.size * (0.85 + eased * 0.85 + wind * 0.35), 0, Math.PI * 2);
+          ctx!.fillStyle = `rgba(${pr},${pg},${pb},${Math.max(0, Math.min(1, alpha))})`;
+          ctx!.shadowBlur = 8 + eased * 9 + wind * 12;
+          ctx!.shadowColor = `rgba(${pr},${pg},${pb},0.72)`;
+          ctx!.fill();
+        }
+
+        ctx!.shadowBlur = 0;
+        ctx!.strokeStyle = `rgba(${pr},${pg},${pb},${0.1 * iF})`;
+        ctx!.lineWidth = 1;
+        if (vertical) {
+          ctx!.beginPath();
+          ctx!.moveTo(cx - W * 0.16, H * 0.14);
+          ctx!.lineTo(cx - W * 0.16, H * 0.86);
+          ctx!.moveTo(cx + W * 0.16, H * 0.14);
+          ctx!.lineTo(cx + W * 0.16, H * 0.86);
+          ctx!.stroke();
+        } else {
+          ctx!.beginPath();
+          ctx!.moveTo(W * 0.14, cy + H * 0.14);
+          ctx!.lineTo(W * 0.86, cy + H * 0.14);
+          ctx!.stroke();
+        }
+
+        canvasModeAnimRef.current = requestAnimationFrame(drawScriptures);
+      }
+      canvasModeAnimRef.current = requestAnimationFrame(drawScriptures);
     }
 
     /* ── WORD NEON: large word glows like a neon sign ─────────────── */
@@ -16604,7 +17127,7 @@ export default function GeometryField() {
     setSelectedPresetName(name);
     setCfg((prev) => ({
       ...p,
-      preset: COLOUR_PRESET_NAMES.has(name) ? p.preset : prev.preset,
+      preset: COLOUR_PRESET_NAMES.has(name) ? p.preset : (p.preset ?? prev.preset),
       luminous: Math.min(1.5, p.luminous),
     }));
   }
@@ -16715,9 +17238,9 @@ export default function GeometryField() {
         display: 'flex',
         flexDirection: 'column',
         width: '100%',
-        height: 'calc(100svh - 110px)',
-        minHeight: 420,
-        borderRadius: 14,
+        height: 'calc(100svh - 92px)',
+        minHeight: 0,
+        borderRadius: 0,
         overflow: 'hidden',
         background: '#080604',
       }}
@@ -16804,6 +17327,9 @@ export default function GeometryField() {
           cfg.mode === 'wordecho' ||
           cfg.mode === 'wordparticle' ||
           cfg.mode === 'wordweave' ||
+          cfg.mode === 'eclipse' ||
+          cfg.mode === 'scriptures' ||
+          cfg.mode === 'scripturesjp' ||
           cfg.mode === 'metamorph' ||
           cfg.mode === 'chrysalis' ||
           cfg.mode === 'chrysalisrings' ||
@@ -17161,34 +17687,46 @@ export default function GeometryField() {
                                   : `rgba(${pr},${pg},${pb},${dim ? 0.35 : 0.62})`,
                                 fontFamily: 'var(--font-serif)',
                                 cursor: 'pointer',
-                                textAlign: 'center' as const,
+                                textAlign: 'left' as const,
                                 display: 'flex',
-                                flexDirection: 'column' as const,
+                                flexDirection: 'row' as const,
                                 alignItems: 'center',
-                                gap: 1,
+                                gap: 5,
                               }}
                             >
-                              <span style={{ fontSize: 6, opacity: 0.34, color: accent }}>
-                                {String(num).padStart(2, '0')}
-                              </span>
                               <span
                                 style={{
-                                  fontSize: 7,
-                                  opacity: 0.4,
-                                  letterSpacing: '0.1em',
+                                  minWidth: 13,
+                                  fontSize: 9,
+                                  fontWeight: 700,
+                                  opacity: 0.48,
                                   color: accent,
+                                  textAlign: 'right',
                                 }}
                               >
-                                {tag}
+                                {num}
                               </span>
-                              <span
-                                style={{
-                                  fontSize: 10,
-                                  fontWeight: isActive ? 700 : 400,
-                                  letterSpacing: '0.04em',
-                                }}
-                              >
-                                {name}
+                              <span style={{ display: 'grid', gap: 1, minWidth: 0 }}>
+                                <span
+                                  style={{
+                                    fontSize: 10,
+                                    fontWeight: isActive ? 700 : 400,
+                                    letterSpacing: '0.04em',
+                                    color: 'inherit',
+                                  }}
+                                >
+                                  {name}
+                                </span>
+                                <span
+                                  style={{
+                                    fontSize: 7,
+                                    opacity: 0.4,
+                                    letterSpacing: '0.1em',
+                                    color: accent,
+                                  }}
+                                >
+                                  {tag}
+                                </span>
                               </span>
                             </button>
                           );

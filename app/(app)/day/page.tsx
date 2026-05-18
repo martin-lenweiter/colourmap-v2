@@ -170,9 +170,14 @@ function DayContent() {
         }
         missionContent={
           <div className="space-y-3">
-            <ActiveCompartments />
-            <ColourMapPanel />
-            <MissionDesignSwitcher />
+            <MissionDesignSwitcher
+              beforeContent={
+                <>
+                  <ActiveCompartments />
+                  <ColourMapPanel />
+                </>
+              }
+            />
             <div style={{ paddingTop: 16 }}>
               <DailyRituals />
             </div>
