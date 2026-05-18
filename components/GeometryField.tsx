@@ -8347,11 +8347,84 @@ function buildCurrentTexture(cfg: Cfg, R: number): THREE.Group {
   posAttr.setUsage(THREE.DynamicDrawUsage);
   geo.setAttribute('position', posAttr);
 
-  const pts = new THREE.Points(geo, ptsMat(hdrColor([rr, gg, bb], iF, 2.45), 1.55, 0.7));
+  const isNewSandMode = cfg.mode === 'eclipse' || cfg.mode === 'gravity' || cfg.mode === 'fire';
+  const pointSize =
+    cfg.mode === 'fire' ? 2.8 : cfg.mode === 'eclipse' || cfg.mode === 'gravity' ? 2.25 : 1.55;
+  const pointOpacity = isNewSandMode ? 0.86 : 0.7;
+  const pts = new THREE.Points(
+    geo,
+    circlePtsMat(hdrColor([rr, gg, bb], iF, isNewSandMode ? 3.1 : 2.45), pointSize, pointOpacity),
+  );
   pts.userData.tag = 'currentTexture';
   pts.userData.count = count;
   pts.userData.prevT = -1;
   group.add(pts);
+
+  if (cfg.mode === 'eclipse') {
+    const hollow = R * (0.24 + cfg.glow * 0.01);
+    const outer = R * 0.92;
+    const coronaCount = Math.max(900, Math.round(lerp(1300, 2600, iF)));
+    const coronaPositions = new Float32Array(coronaCount * 3);
+    for (let i = 0; i < coronaCount; i++) {
+      const a = (i / coronaCount) * Math.PI * 2 + Math.random() * 0.018;
+      const band = Math.random();
+      const r = hollow + (outer - hollow) * (0.18 + band ** 0.58 * 0.82);
+      const flare = Math.sin(a * cfg.symmetry) * R * 0.025;
+      coronaPositions[i * 3] = Math.cos(a) * (r + flare);
+      coronaPositions[i * 3 + 1] = Math.sin(a) * (r + flare) * 0.82;
+      coronaPositions[i * 3 + 2] = 0.06;
+    }
+    const coronaGeo = new THREE.BufferGeometry();
+    coronaGeo.setAttribute('position', new THREE.BufferAttribute(coronaPositions, 3));
+    const corona = new THREE.Points(
+      coronaGeo,
+      circlePtsMat(hdrColor([rr, gg, bb], iF, 3.4), 2.9, 0.9),
+    );
+    corona.userData.tag = 'eclipseCorona';
+    corona.userData.base = coronaPositions.slice();
+    corona.userData.count = coronaCount;
+    group.add(corona);
+    for (const [radius, opacity] of [
+      [hollow, 0.64],
+      [outer, 0.18],
+    ] as const) {
+      const ring = new THREE.Line(
+        circleGeo(160),
+        lineMat(hdrColor([rr, gg, bb], iF, 2.7), opacity),
+      );
+      ring.scale.set(radius, radius * 0.82, 1);
+      ring.userData.tag = 'currentTextureAnchor';
+      ring.userData.baseScale = [radius, radius * 0.82];
+      group.add(ring);
+    }
+  } else if (cfg.mode === 'gravity') {
+    for (const side of [1, -1]) {
+      const coreX = side * R * 0.32;
+      const coreY = -side * R * 0.06;
+      const hollow = R * (0.13 + cfg.glow * 0.008);
+      const ring = new THREE.Line(circleGeo(128), lineMat(hdrColor([rr, gg, bb], iF, 2.8), 0.5));
+      ring.position.set(coreX, coreY, 0.02);
+      ring.scale.setScalar(hollow);
+      ring.userData.tag = 'currentTextureAnchor';
+      ring.userData.baseScale = [hollow, hollow];
+      group.add(ring);
+    }
+  } else if (cfg.mode === 'fire') {
+    const spineGeo = new THREE.BufferGeometry();
+    const spine = new Float32Array(28 * 3);
+    for (let i = 0; i < 28; i++) {
+      const p = i / 27;
+      const y = lerp(-R * 0.92, R * 0.88, p);
+      const x = Math.sin(p * Math.PI * 3.2) * R * 0.055 * (1 - p * 0.65);
+      spine[i * 3] = x;
+      spine[i * 3 + 1] = y;
+      spine[i * 3 + 2] = 0.04;
+    }
+    spineGeo.setAttribute('position', new THREE.BufferAttribute(spine, 3));
+    const flameLine = new THREE.Line(spineGeo, lineMat(hdrColor([rr, gg, bb], iF, 3.2), 0.42));
+    flameLine.userData.tag = 'fireSpine';
+    group.add(flameLine);
+  }
 
   if (cfg.mode === 'currentscales') {
     const pulseCount = Math.max(420, Math.round(lerp(700, 1500, iF)));
@@ -8727,12 +8800,51 @@ function updateCurrentTexture(group: THREE.Group, cfg: Cfg, t: number, R: number
           lerp(baseRgb[1], 255, glowF * 0.12),
           lerp(baseRgb[2], 255, glowF * 0.12),
         ];
-    updateMat(child, rgb, iF, 2.3);
+    const isNewSandMode = cfg.mode === 'eclipse' || cfg.mode === 'gravity' || cfg.mode === 'fire';
+    updateMat(child, rgb, iF, isNewSandMode ? 3.1 : 2.3);
     const mat = pts.material as THREE.PointsMaterial;
     if (currentScaleMusicMode) {
       mat.size =
         1.45 + musicPulse * 0.95 * _currentScalePulse + bassPush * 0.65 * _currentScaleBass;
       mat.opacity = 0.62 + musicPulse * 0.2 * _currentScalePulse + leadFlicker * 0.1;
+    } else if (isNewSandMode) {
+      mat.size = cfg.mode === 'fire' ? 2.6 + glowF * 0.8 : 2.05 + glowF * 0.55;
+      mat.opacity = 0.78 + glowF * 0.12;
+    }
+  }
+
+  for (const child of group.children) {
+    const tag = child.userData.tag as string;
+    if (tag === 'currentTextureAnchor') {
+      const [sx, sy] = child.userData.baseScale as [number, number];
+      const pulse = 1 + Math.sin(t * 0.0011 * speed) * 0.025;
+      child.scale.set(sx * pulse, sy * pulse, 1);
+      updateMat(child, baseRgb, iF, 2.55);
+    } else if (tag === 'eclipseCorona') {
+      const pts = child as THREE.Points;
+      const posAttr = pts.geometry.getAttribute('position') as THREE.BufferAttribute;
+      const arr = posAttr.array as Float32Array;
+      const base = child.userData.base as Float32Array;
+      const count = child.userData.count as number;
+      const spin = t * 0.00003 * speed;
+      const wobble = Math.sin(t * 0.001 * speed) * 0.018;
+      for (let i = 0; i < count; i++) {
+        const x = base[i * 3];
+        const y = base[i * 3 + 1];
+        const a = Math.atan2(y, x) + spin;
+        const r = Math.hypot(x, y) * (1 + wobble * Math.sin(a * cfg.symmetry));
+        arr[i * 3] = Math.cos(a) * r;
+        arr[i * 3 + 1] = Math.sin(a) * r * 0.82;
+      }
+      posAttr.needsUpdate = true;
+      const mat = pts.material as THREE.PointsMaterial;
+      mat.size = 2.5 + glowF * 0.85;
+      mat.opacity = 0.82 + glowF * 0.12;
+      updateMat(child, baseRgb, iF, 3.4);
+    } else if (tag === 'fireSpine') {
+      const pulse = 1 + Math.sin(t * 0.0018 * speed) * 0.035;
+      child.scale.set(pulse, 1, 1);
+      updateMat(child, baseRgb, iF, 3.2);
     }
   }
 }
@@ -15194,6 +15306,7 @@ export default function GeometryField() {
       }
 
       rebuildScriptureDots();
+      const scriptureStart = performance.now();
 
       function drawScriptures() {
         if (!canvasModeActiveRef.current) return;
@@ -15201,31 +15314,50 @@ export default function GeometryField() {
         const H = mc!.height;
         if (off.width !== W || off.height !== H) rebuildScriptureDots();
 
-        const tt = modeSeconds() * speed;
+        const tt =
+          motionModeRef.current === 'static'
+            ? 0
+            : (performance.now() - scriptureStart) * 0.001 * speed;
         const cx = W / 2;
         const cy = H / 2;
-        ctx!.fillStyle = 'rgba(0,0,0,0.16)';
+        ctx!.fillStyle = 'rgba(0,0,0,0.2)';
         ctx!.fillRect(0, 0, W, H);
 
-        const write = Math.min(1, Math.max(0, (Math.sin(tt * 0.28) + 1) * 0.58));
+        const cycle = (tt * 0.075) % 1;
+        const destroy = Math.max(0, Math.min(1, (cycle - 0.2) / 0.48));
+        const rewrite = Math.max(0, Math.min(1, (cycle - 0.72) / 0.28));
+        const written = cycle < 0.2 ? 1 : cycle < 0.72 ? 1 - destroy : rewrite;
         const sweep = vertical
           ? (dot: SandDot) => Math.max(0, Math.min(1, (dot.ty / H - 0.08) / 0.84))
           : (dot: SandDot) => Math.max(0, Math.min(1, (dot.tx / W - 0.08) / 0.84));
 
         for (const dot of dots) {
-          const local = Math.max(
-            0,
-            Math.min(1, (write - sweep(dot) * 0.82 - dot.delay * 0.18) * 3.1),
-          );
+          const lineDelay = sweep(dot) * 0.16 + dot.delay * 0.08;
+          const local =
+            cycle < 0.2
+              ? 1
+              : cycle < 0.72
+                ? Math.max(0, Math.min(1, (written - lineDelay) * 1.45))
+                : Math.max(0, Math.min(1, (written - sweep(dot) * 0.68 - dot.delay * 0.14) * 3.2));
           const eased = local * local * (3 - 2 * local);
-          const orbit = (1 - eased) * (vertical ? H : W) * 0.022;
-          const px = dot.x + (dot.tx - dot.x) * eased + Math.cos(tt * 0.7 + dot.phase) * orbit;
-          const py = dot.y + (dot.ty - dot.y) * eased + Math.sin(tt * 0.6 + dot.phase) * orbit;
-          const alpha = (0.18 + eased * 0.78) * iF;
+          const wind = destroy * destroy * (1 - rewrite);
+          const windDir = vertical ? (dot.tx > cx ? 1 : -1) : 1;
+          const gustX =
+            windDir * wind * W * (0.22 + dot.delay * 0.35) +
+            Math.cos(tt * 1.4 + dot.phase) * wind * W * 0.05;
+          const gustY =
+            -wind * H * (0.08 + sweep(dot) * 0.2) +
+            Math.sin(tt * 1.7 + dot.phase) * wind * H * 0.07;
+          const orbit = (1 - eased) * (vertical ? H : W) * 0.018;
+          const px =
+            dot.x + (dot.tx - dot.x) * eased + gustX + Math.cos(tt * 0.7 + dot.phase) * orbit;
+          const py =
+            dot.y + (dot.ty - dot.y) * eased + gustY + Math.sin(tt * 0.6 + dot.phase) * orbit;
+          const alpha = (0.12 + eased * 0.86) * (1 - wind * 0.55) * iF;
           ctx!.beginPath();
-          ctx!.arc(px, py, dot.size * (0.75 + eased * 0.7), 0, Math.PI * 2);
+          ctx!.arc(px, py, dot.size * (0.85 + eased * 0.85 + wind * 0.35), 0, Math.PI * 2);
           ctx!.fillStyle = `rgba(${pr},${pg},${pb},${Math.max(0, Math.min(1, alpha))})`;
-          ctx!.shadowBlur = 8 + eased * 8;
+          ctx!.shadowBlur = 8 + eased * 9 + wind * 12;
           ctx!.shadowColor = `rgba(${pr},${pg},${pb},0.72)`;
           ctx!.fill();
         }
