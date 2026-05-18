@@ -881,10 +881,10 @@ export default function ColourMapPanel() {
           <div
             style={{
               fontFamily: 'var(--font-serif)',
-              fontSize: 13,
-              fontWeight: 800,
+              fontSize: 15,
+              fontWeight: 900,
               textTransform: 'uppercase',
-              letterSpacing: '0.14em',
+              letterSpacing: '0.18em',
               color: 'var(--palette-panel-text, rgba(196,160,96,0.82))',
             }}
           >
