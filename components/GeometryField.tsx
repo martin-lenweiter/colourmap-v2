@@ -3956,7 +3956,6 @@ function buildModeGroup(cfg: Cfg, R: number): THREE.Group {
     case 'cyclonetiles':
     case 'eddylace':
     case 'magneticsand':
-    case 'eclipse':
     case 'gravity':
     case 'fire':
       return buildCurrentTexture(cfg, R);
@@ -4013,6 +4012,7 @@ function buildModeGroup(cfg: Cfg, R: number): THREE.Group {
     case 'wordecho':
     case 'wordparticle':
     case 'wordweave':
+    case 'eclipse':
     case 'scriptures':
     case 'scripturesjp':
     case 'metamorph':
@@ -4172,7 +4172,6 @@ function updateModeGroup(group: THREE.Group, cfg: Cfg, dots: Dot[], t: number, R
     case 'cyclonetiles':
     case 'eddylace':
     case 'magneticsand':
-    case 'eclipse':
     case 'gravity':
     case 'fire':
       updateCurrentTexture(group, cfg, t, R);
@@ -4251,6 +4250,7 @@ function updateModeGroup(group: THREE.Group, cfg: Cfg, dots: Dot[], t: number, R
     case 'wordecho':
     case 'wordparticle':
     case 'wordweave':
+    case 'eclipse':
     case 'scriptures':
     case 'scripturesjp':
     case 'metamorph':
@@ -8253,7 +8253,6 @@ function isCurrentTextureMode(mode: Mode): boolean {
     mode === 'cyclonetiles' ||
     mode === 'eddylace' ||
     mode === 'magneticsand' ||
-    mode === 'eclipse' ||
     mode === 'gravity' ||
     mode === 'fire'
   );
@@ -14873,6 +14872,7 @@ export default function GeometryField() {
       cfg.mode === 'wordecho' ||
       cfg.mode === 'wordparticle' ||
       cfg.mode === 'wordweave' ||
+      cfg.mode === 'eclipse' ||
       cfg.mode === 'scriptures' ||
       cfg.mode === 'scripturesjp' ||
       cfg.mode === 'metamorph' ||
@@ -15241,6 +15241,70 @@ export default function GeometryField() {
     }
 
     /* ── SCRIPTURES: sacred sand fills written characters ───────────── */
+    if (cfg.mode === 'eclipse') {
+      const count = Math.max(900, Math.round(1500 + cfg.intensity * 180));
+      const dust = Array.from({ length: count }, (_, i) => ({
+        a: (i / count) * Math.PI * 2 + Math.random() * 0.04,
+        r: 0.28 + Math.random() ** 0.55 * 0.58,
+        p: Math.random() * Math.PI * 2,
+        s: 0.8 + Math.random() * 1.8,
+      }));
+
+      function drawEclipse() {
+        if (!canvasModeActiveRef.current) return;
+        const W = mc!.width;
+        const H = mc!.height;
+        const radius = Math.min(W, H) * 0.46;
+        const cx = W / 2;
+        const cy = H / 2;
+        const tt = modeSeconds() * Math.max(0.2, speed);
+        ctx!.fillStyle = 'rgba(7,3,0,0.32)';
+        ctx!.fillRect(0, 0, W, H);
+
+        const coreR = radius * (0.25 + cfg.glow * 0.012);
+        const halo = ctx!.createRadialGradient(cx, cy, coreR * 0.7, cx, cy, radius * 1.08);
+        halo.addColorStop(0, `rgba(${pr},${pg},${pb},0.02)`);
+        halo.addColorStop(0.2, `rgba(${pr},${pg},${pb},0.28)`);
+        halo.addColorStop(0.58, `rgba(${pr},${pg},${pb},0.11)`);
+        halo.addColorStop(1, 'rgba(0,0,0,0)');
+        ctx!.fillStyle = halo;
+        ctx!.beginPath();
+        ctx!.ellipse(cx, cy, radius * 1.08, radius * 0.9, 0, 0, Math.PI * 2);
+        ctx!.fill();
+
+        for (const dot of dust) {
+          const a = dot.a + tt * 0.05;
+          const ripple = Math.sin(a * cfg.symmetry + tt + dot.p) * radius * 0.025;
+          const rr = radius * dot.r + ripple;
+          const x = cx + Math.cos(a) * rr;
+          const y = cy + Math.sin(a) * rr * 0.82;
+          const alpha = (0.22 + Math.sin(tt * 1.4 + dot.p) * 0.08) * iF;
+          ctx!.beginPath();
+          ctx!.arc(x, y, dot.s, 0, Math.PI * 2);
+          ctx!.fillStyle = `rgba(${pr},${pg},${pb},${Math.max(0.05, alpha)})`;
+          ctx!.shadowBlur = 10;
+          ctx!.shadowColor = `rgba(${pr},${pg},${pb},0.7)`;
+          ctx!.fill();
+        }
+
+        ctx!.shadowBlur = 0;
+        ctx!.globalCompositeOperation = 'destination-out';
+        ctx!.beginPath();
+        ctx!.ellipse(cx, cy, coreR, coreR * 0.82, 0, 0, Math.PI * 2);
+        ctx!.fillStyle = 'rgba(0,0,0,0.96)';
+        ctx!.fill();
+        ctx!.globalCompositeOperation = 'source-over';
+        ctx!.strokeStyle = `rgba(${pr},${pg},${pb},0.58)`;
+        ctx!.lineWidth = 1.4;
+        ctx!.beginPath();
+        ctx!.ellipse(cx, cy, coreR, coreR * 0.82, 0, 0, Math.PI * 2);
+        ctx!.stroke();
+
+        canvasModeAnimRef.current = requestAnimationFrame(drawEclipse);
+      }
+      canvasModeAnimRef.current = requestAnimationFrame(drawEclipse);
+    }
+
     if (cfg.mode === 'scriptures' || cfg.mode === 'scripturesjp') {
       const vertical = cfg.mode === 'scripturesjp';
       const text = vertical ? ['空', '海', '心', '光'] : ['ॐ मणि पद्मे हूँ'];
@@ -17217,6 +17281,7 @@ export default function GeometryField() {
           cfg.mode === 'wordecho' ||
           cfg.mode === 'wordparticle' ||
           cfg.mode === 'wordweave' ||
+          cfg.mode === 'eclipse' ||
           cfg.mode === 'scriptures' ||
           cfg.mode === 'scripturesjp' ||
           cfg.mode === 'metamorph' ||
