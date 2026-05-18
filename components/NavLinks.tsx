@@ -10,7 +10,6 @@ const PRIMARY_LINKS: { href: string; label: string }[] = [
   { href: '/day', label: 'Focus' },
   { href: '/ai', label: 'AI' },
   { href: '/notebook', label: 'Notes' },
-  { href: '/music', label: 'Music' },
   { href: '/geometry-field', label: 'Art' },
   { href: '/programs', label: 'Education' },
 ];
@@ -23,6 +22,7 @@ const PHONE_PRIMARY_LINKS = PRIMARY_LINKS;
 const MORE_LINKS = [
   { href: '/atlas', label: 'Atlas' },
   { href: '/progress-road', label: 'Roads' },
+  { href: '/music', label: 'Music' },
   { href: '/circles', label: 'Social' },
   { href: '/journey', label: 'Journey' },
   { href: '/life-scan', label: 'Life Scan' },
