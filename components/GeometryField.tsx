@@ -67,6 +67,7 @@ type Mode =
   | 'dotwalker'
   | 'missionsun'
   | 'dotsunfire'
+  | 'dotsunoutward'
   | 'dotalchemicalsun'
   | 'dotheart'
   | 'emotion'
@@ -76,6 +77,7 @@ type Mode =
   | 'orbit'
   | 'weave'
   | 'chaostri3d'
+  | 'chaostrisphere'
   | 'treeoflife'
   | 'treeoflife3d'
   | 'breath'
@@ -656,6 +658,18 @@ const PRESETS: Record<string, Cfg> = {
     luminous: 3.4,
     stars: 2,
     mode: 'dotsunfire',
+  },
+  'Outward Sun': {
+    preset: 'Golden Source',
+    symmetry: 12,
+    complexity: 5.8,
+    glow: 7.4,
+    breathSpeed: 0.62,
+    intensity: 8.6,
+    particles: 7,
+    luminous: 3.2,
+    stars: 2,
+    mode: 'dotsunoutward',
   },
   'Dot Walker': {
     preset: 'Golden Source',
@@ -2358,6 +2372,18 @@ const PRESETS: Record<string, Cfg> = {
     stars: 0,
     mode: 'chaostri3d',
   },
+  'Chaos Tri Sphere': {
+    preset: 'Blue Astral',
+    symmetry: 9,
+    complexity: 7.4,
+    glow: 7.2,
+    breathSpeed: 0.86,
+    intensity: 8,
+    particles: 0,
+    luminous: 2.5,
+    stars: 2,
+    mode: 'chaostrisphere',
+  },
   'Chaos Tri Gold': {
     preset: 'Calm Field',
     symmetry: 7,
@@ -2610,18 +2636,6 @@ const PRESETS: Record<string, Cfg> = {
     stars: 1,
     mode: 'atomlight',
   },
-  'Butterfly Dance': {
-    preset: 'Forest Ceremony',
-    symmetry: 5,
-    complexity: 5,
-    glow: 7,
-    breathSpeed: 0.7,
-    intensity: 8,
-    particles: 2,
-    luminous: 1,
-    stars: 2,
-    mode: 'butterfly',
-  },
   'Duality Wings': {
     preset: 'DMT Vision',
     symmetry: 5,
@@ -2837,18 +2851,6 @@ const PRESETS: Record<string, Cfg> = {
     luminous: 2,
     stars: 1,
     mode: 'heartwave',
-  },
-  'Heart Dance': {
-    preset: 'DMT Vision',
-    symmetry: 6,
-    complexity: 6,
-    glow: 7,
-    breathSpeed: 1.0,
-    intensity: 8,
-    particles: 2,
-    luminous: 2,
-    stars: 2,
-    mode: 'heartdance',
   },
   'Eye Storm': {
     preset: 'Calm Field',
@@ -3914,6 +3916,7 @@ function buildModeGroup(cfg: Cfg, R: number): THREE.Group {
       return buildDotWalker(cfg, R);
     case 'missionsun':
     case 'dotsunfire':
+    case 'dotsunoutward':
     case 'dotalchemicalsun':
     case 'dotheart':
       return buildDotSymbolField(cfg, R);
@@ -3932,6 +3935,7 @@ function buildModeGroup(cfg: Cfg, R: number): THREE.Group {
     case 'weave':
       return buildWeave(cfg, R);
     case 'chaostri3d':
+    case 'chaostrisphere':
       return buildChaostri3d(cfg, R);
     case 'treeoflife':
       return buildTreeoflife(cfg, R);
@@ -4136,6 +4140,7 @@ function updateModeGroup(group: THREE.Group, cfg: Cfg, dots: Dot[], t: number, R
       break;
     case 'missionsun':
     case 'dotsunfire':
+    case 'dotsunoutward':
     case 'dotalchemicalsun':
     case 'dotheart':
       updateDotSymbolField(group, cfg, t, R);
@@ -4162,6 +4167,7 @@ function updateModeGroup(group: THREE.Group, cfg: Cfg, dots: Dot[], t: number, R
       updateWeave(group, cfg, t, R);
       break;
     case 'chaostri3d':
+    case 'chaostrisphere':
       updateChaostri3d(group, cfg, t, R);
       break;
     case 'treeoflife':
@@ -7626,8 +7632,8 @@ function buildPrism(cfg: Cfg, R: number): THREE.Group {
   for (let n = 0; n < 5; n++) {
     const frac = n / 4;
     const nr = 0.06 + frac * 0.22;
-    const hue = lerp(0.095, 0.055, frac);
-    tmpCol.setHSL(hue, lerp(0.92, 1.0, frac), lerp(0.62, 0.5, frac));
+    const hue = lerp(0.085, 0.05, frac);
+    tmpCol.setHSL(hue, lerp(0.88, 1.0, frac), lerp(0.5, 0.43, frac));
     const pCount = Math.max(20, Math.round(lerp(200, 60, frac) * iF));
     const pos = new Float32Array(pCount * 3);
     for (let i = 0; i < pCount; i++) {
@@ -7642,9 +7648,9 @@ function buildPrism(cfg: Cfg, R: number): THREE.Group {
     const pts = new THREE.Points(
       geo,
       circlePtsMat(
-        hdrColor([tmpCol.r * 255, tmpCol.g * 255, tmpCol.b * 255], iF, lerp(4.2, 1.8, frac)),
-        lerp(3.6, 2.0, frac),
-        lerp(0.92, 0.28, frac),
+        hdrColor([tmpCol.r * 255, tmpCol.g * 255, tmpCol.b * 255], iF, lerp(2.45, 1.55, frac)),
+        lerp(3.1, 2.0, frac),
+        lerp(0.72, 0.28, frac),
       ),
     );
     pts.scale.setScalar(nr * R);
@@ -7735,11 +7741,11 @@ function updatePrism(group: THREE.Group, cfg: Cfg, t: number, R: number): void {
     if (tag === 'prismNucleus') {
       const frac = (child.userData.layer as number) / 4;
       const h = child.userData.hue as number;
-      tmpCol.setHSL(h, lerp(0.92, 1.0, frac), lerp(0.62, 0.5, frac));
+      tmpCol.setHSL(h, lerp(0.88, 1.0, frac), lerp(0.5, 0.43, frac));
       const rgb: [number, number, number] = [tmpCol.r * 255, tmpCol.g * 255, tmpCol.b * 255];
       const pulse = 1.0 + Math.sin(t * 0.0012 * breathSpeed + frac * 1.8) * 0.07;
       child.scale.setScalar((child.userData.baseR as number) * pulse);
-      updateMat(child, rgb, iF * lerp(3.5, 1.5, frac), 1.0);
+      updateMat(child, rgb, iF * lerp(2.2, 1.35, frac), 1.0);
     } else if (tag === 'prismRing') {
       const hue = ((child.userData.hue as number) + timeHue) % 1.0;
       tmpCol.setHSL(hue, 1.0, 0.6);
@@ -7787,7 +7793,7 @@ function buildPrism3D(cfg: Cfg, R: number): THREE.Group {
   coreGeo.setAttribute('position', new THREE.BufferAttribute(corePos, 3));
   const corePts = new THREE.Points(
     coreGeo,
-    circlePtsMat(hdrColor([255, 245, 200], iF, 3.8), 3.2, 0.92),
+    circlePtsMat(hdrColor([255, 176, 86], iF, 2.35), 2.8, 0.72),
   );
   corePts.userData.tag = 'prism3dCore';
   group.add(corePts);
@@ -10571,6 +10577,7 @@ const MODE_TO_PRESET: Partial<Record<Mode, string>> = {
   dotwalker: 'Dot Walker',
   missionsun: 'Mission Sun',
   dotsunfire: 'Fire Dot Sun',
+  dotsunoutward: 'Outward Sun',
   dotalchemicalsun: 'Alchemical Dot Sun',
   dotheart: 'Dot Heart',
   embf3d: 'Calm Field',
@@ -10585,7 +10592,6 @@ const MODE_TO_PRESET: Partial<Record<Mode, string>> = {
   breathform: 'Breathform',
   clock3d: 'Clock of Infinity',
   atomlight: 'Atom Light',
-  butterfly: 'Butterfly Dance',
   pyramid3d: 'Sacred Pyramid',
   orbitdance: 'Orbital Dance',
   ripplemorph: 'Ripple Morph',
@@ -10594,9 +10600,9 @@ const MODE_TO_PRESET: Partial<Record<Mode, string>> = {
   heartwave: 'Heart Wave',
   eyemorph: 'Eye Storm',
   sinmorph3d: 'Sin Morph',
-  heartdance: 'Heart Dance',
   infinitedive: 'Infinite Dive',
   clockorbit3d: 'Clock Orbit',
+  chaostrisphere: 'Chaos Tri Sphere',
 };
 
 const MODES: { mode: Mode; label: string }[] = [
@@ -10604,12 +10610,10 @@ const MODES: { mode: Mode; label: string }[] = [
   { mode: 'mirrortunnel', label: '⊟ Mirror Tunnel' },
   { mode: 'infinitedive', label: '⊙ Infinite Dive' },
   { mode: 'heartwave', label: '♡ Heart Wave' },
-  { mode: 'heartdance', label: '♡² Heart Dance' },
   { mode: 'eyemorph', label: '◉ Eye Morph' },
   { mode: 'sinmorph3d', label: '∿³ Sin Morph' },
   { mode: 'clock3d', label: '⊙ Clock' },
   { mode: 'atomlight', label: '⊛ Atom Light' },
-  { mode: 'butterfly', label: '◈ Butterfly' },
   { mode: 'pyramid3d', label: '△ Pyramid' },
   { mode: 'orbitdance', label: '◎ Orbit Dance' },
   { mode: 'ripplemorph', label: '∿ Ripple Morph' },
@@ -10680,6 +10684,7 @@ const MODES: { mode: Mode; label: string }[] = [
   { mode: 'dotwalker', label: 'Dot Walker' },
   { mode: 'missionsun', label: 'Mission Sun' },
   { mode: 'dotsunfire', label: 'Fire Dot Sun' },
+  { mode: 'dotsunoutward', label: 'Outward Sun' },
   { mode: 'dotalchemicalsun', label: 'Alchemical Dot Sun' },
   { mode: 'dotheart', label: 'Dot Heart' },
   { mode: 'pulse', label: '◉ Pulse' },
@@ -10689,6 +10694,7 @@ const MODES: { mode: Mode; label: string }[] = [
   { mode: 'cbloom', label: '⊛ Bloom Evo' },
   { mode: 'orbit', label: '◎ Orbit' },
   { mode: 'weave', label: '∾ Weave' },
+  { mode: 'chaostrisphere', label: 'Chaos Tri Sphere' },
   { mode: 'chaostri3d', label: '△ Chaos Tri 3D' },
   { mode: 'treeoflife', label: '✦ Tree of Life' },
   { mode: 'treeoflife3d', label: '✦³ Tree 3D' },
@@ -10703,15 +10709,28 @@ type FeaturedItem = { name: string; tag: string } | { header: string; dim?: bool
 
 const FEATURED_PRESETS: FeaturedItem[] = [
   { header: 'Good Ones' },
+  { name: 'Prism3D Core', tag: 'PRISM' },
+  { name: 'Prism Bloom', tag: 'PRISM' },
+  { name: 'Clock Orbit', tag: 'CLOCK' },
+  { name: 'Ocean Drift', tag: 'CURRENT' },
+  { name: 'Current 3D', tag: 'CURRENT' },
+  { name: 'Current Scales', tag: 'CURRENT' },
+  { name: 'Cyclone Tiles', tag: 'CURRENT' },
+  { name: 'Eddy Lace', tag: 'CURRENT' },
+  { name: 'Magnetic Sand', tag: 'CURRENT' },
+  { name: 'Mission Sun', tag: 'VOICE' },
+  { name: 'Fire Dot Sun', tag: 'DOT' },
+  { name: 'Dot Heart', tag: 'DOT' },
+  { name: 'Outward Sun', tag: 'DOT' },
+  { name: 'Chaos Field', tag: 'CHAOS' },
+  { name: 'Quantum Chaos', tag: 'CHAOS' },
+  { name: 'Chaos Triangles', tag: '3D' },
+  { name: 'Chaos Tri Sphere', tag: '3D' },
   { name: 'Mode Sun', tag: 'SELF' },
   { name: 'Brain Topography', tag: 'SELF' },
   { name: 'Walking Figure', tag: 'CHAR' },
   { name: 'Dot Walker', tag: 'CHAR' },
-  { name: 'Mission Sun', tag: 'VOICE' },
-  { name: 'Fire Dot Sun', tag: 'DOT' },
   { name: 'Alchemical Dot Sun', tag: 'DOT' },
-  { name: 'Dot Heart', tag: 'DOT' },
-  { name: 'Current Scales', tag: 'MUSIC' },
   { name: 'Sin Morph', tag: 'TOP' },
   { name: 'Sacred Sin Morph', tag: 'MUSIC' },
   { name: 'Chaos Sin Morph', tag: 'MUSIC' },
@@ -10724,15 +10743,11 @@ const FEATURED_PRESETS: FeaturedItem[] = [
   { name: 'Yantra Prism', tag: 'YANTRA' },
   { name: 'Yantra Colour', tag: 'YANTRA' },
   { name: 'Yantra Mono', tag: 'YANTRA' },
-  { name: 'Chaos Field', tag: 'CHAOS' },
   { name: 'Chaos Pulse', tag: 'CHAOS' },
   { name: 'Random Burst', tag: 'CHAOS' },
-  { name: 'Quantum Chaos', tag: 'CHAOS' },
-  { name: 'Chaos Triangles', tag: '3D' },
   { name: 'Chaos Tri Gold', tag: '3D' },
   { name: 'Chaos Storm 3D', tag: '3D' },
   { name: 'Drift Gold', tag: 'FLOW' },
-  { name: 'Current 3D', tag: 'FLOW' },
   { name: 'Vortex 3D', tag: 'FLOW' },
   { name: 'Deep Flow 3D', tag: 'FLOW' },
   { name: 'Plasma Field', tag: 'FLOW' },
@@ -10743,10 +10758,6 @@ const FEATURED_PRESETS: FeaturedItem[] = [
   { name: 'Nebula Veil', tag: 'NEBULA' },
   { name: 'Nebula Bloom', tag: 'NEBULA' },
   { name: 'Dot Galaxy', tag: 'GALAXY' },
-  { name: 'Ocean Drift', tag: 'FLOW' },
-  { name: 'Cyclone Tiles', tag: 'FLOW' },
-  { name: 'Eddy Lace', tag: 'FLOW' },
-  { name: 'Magnetic Sand', tag: 'FLOW' },
   { name: 'Emotion Field', tag: 'SELF' },
   { name: 'Emotion Storm', tag: 'SELF' },
   { name: 'Star Map', tag: 'SELF' },
@@ -10779,7 +10790,6 @@ const FEATURED_PRESETS: FeaturedItem[] = [
   { name: 'Kaleido Storm', tag: 'KALEIDO' },
   { name: 'Sacred Vitral', tag: 'VITRAL' },
   { name: 'Oil Film', tag: 'LIQUID' },
-  { name: 'Prism Bloom', tag: 'PRISM' },
   { name: 'Living Tissue', tag: 'CELLS' },
   { name: 'Tree of Life', tag: 'TREE' },
   { name: 'Tangka Lotus', tag: 'TIB' },
@@ -11748,6 +11758,21 @@ function updateDotSymbolField(group: THREE.Group, cfg: Cfg, t: number, R: number
         x = Math.cos(a) * r * breathe;
         y = Math.sin(a) * r * breathe;
         z = Math.sin(phase + w * TAU) * R * 0.025;
+      } else if (i < dotLimit && cfg.mode === 'dotsunoutward') {
+        const a = v * TAU;
+        const corona = u > 0.68;
+        const coreR = Math.sqrt(corona ? (u - 0.68) / 0.32 : u / 0.68);
+        const wave = (phase * 0.42 + q) % 1;
+        const outward = wave * wave;
+        const ripple = Math.max(0, 1 - Math.abs(coreR - outward) * 5.2);
+        const flame =
+          Math.sin(a * 10 + phase * 1.1 + w * 8) * 0.015 * cfg.complexity +
+          Math.sin(a * 21 - phase * 0.75 + q * 5) * 0.012 * cfg.glow;
+        const r = R * (corona ? 0.36 + coreR * (0.24 + cfg.glow * 0.012) : coreR * 0.36);
+        const push = 1 + outward * 0.1 + ripple * 0.13 + flame;
+        x = Math.cos(a) * r * push;
+        y = Math.sin(a) * r * push;
+        z = Math.sin(a * 3 + phase + w * TAU) * R * 0.018 + ripple * R * 0.035;
       } else if (i < dotLimit && cfg.mode === 'dotalchemicalsun') {
         const rays = Math.max(5, Math.round(cfg.symmetry));
         const rayZone = u > 0.45;
@@ -12716,7 +12741,9 @@ function buildChaostri3d(cfg: Cfg, R: number): THREE.Group {
   const pal = PAL[cfg.preset] ?? PAL['Calm Field'];
   const [rr, gg, bb] = pal.rgb;
   const iF = cfg.intensity / 10;
-  const sz = R * 0.055;
+  const spherical = cfg.mode === 'chaostrisphere';
+  const triCount = spherical ? 180 : TRI3D_N;
+  const sz = R * (spherical ? 0.036 : 0.055);
 
   // N individual triangle meshes stored in a single instanced mesh
   const triGeo = new THREE.BufferGeometry();
@@ -12739,22 +12766,24 @@ function buildChaostri3d(cfg: Cfg, R: number): THREE.Group {
     depthWrite: false,
   });
 
-  const seeds: Float32Array = new Float32Array(TRI3D_N * 6); // x,y,z,vx,vy,vz per tri
-  for (let i = 0; i < TRI3D_N; i++) {
+  const seeds: Float32Array = new Float32Array(triCount * 8); // x,y,z,vx,vy,vz,theta,phi
+  for (let i = 0; i < triCount; i++) {
     const theta = Math.random() * Math.PI * 2;
     const phi = Math.acos(2 * Math.random() - 1);
-    const r = R * (0.15 + Math.random() * 0.75);
-    seeds[i * 6 + 0] = Math.sin(phi) * Math.cos(theta) * r;
-    seeds[i * 6 + 1] = Math.sin(phi) * Math.sin(theta) * r;
-    seeds[i * 6 + 2] = Math.cos(phi) * r;
-    seeds[i * 6 + 3] = (Math.random() - 0.5) * 0.012;
-    seeds[i * 6 + 4] = (Math.random() - 0.5) * 0.012;
-    seeds[i * 6 + 5] = (Math.random() - 0.5) * 0.012;
+    const r = spherical ? R * (0.47 + Math.random() * 0.05) : R * (0.15 + Math.random() * 0.75);
+    seeds[i * 8 + 0] = Math.sin(phi) * Math.cos(theta) * r;
+    seeds[i * 8 + 1] = Math.sin(phi) * Math.sin(theta) * r;
+    seeds[i * 8 + 2] = Math.cos(phi) * r;
+    seeds[i * 8 + 3] = (Math.random() - 0.5) * 0.012;
+    seeds[i * 8 + 4] = (Math.random() - 0.5) * 0.012;
+    seeds[i * 8 + 5] = (Math.random() - 0.5) * 0.012;
+    seeds[i * 8 + 6] = theta;
+    seeds[i * 8 + 7] = phi;
   }
 
-  for (let i = 0; i < TRI3D_N; i++) {
+  for (let i = 0; i < triCount; i++) {
     const mesh = new THREE.Mesh(triGeo, mat);
-    mesh.position.set(seeds[i * 6], seeds[i * 6 + 1], seeds[i * 6 + 2]);
+    mesh.position.set(seeds[i * 8], seeds[i * 8 + 1], seeds[i * 8 + 2]);
     mesh.rotation.set(
       Math.random() * Math.PI * 2,
       Math.random() * Math.PI * 2,
@@ -12765,6 +12794,7 @@ function buildChaostri3d(cfg: Cfg, R: number): THREE.Group {
     group.add(mesh);
   }
   group.userData.seeds = seeds;
+  group.userData.spherical = spherical;
   return group;
 }
 
@@ -12774,6 +12804,7 @@ function updateChaostri3d(group: THREE.Group, cfg: Cfg, t: number, R: number): v
   const iF = cfg.intensity / 10;
   const speed = cfg.breathSpeed * 0.6;
   const seeds = group.userData.seeds as Float32Array;
+  const spherical = group.userData.spherical === true;
   const noiseAmp = R * 0.28 * (cfg.complexity / 10);
 
   for (const child of group.children) {
@@ -12783,11 +12814,25 @@ function updateChaostri3d(group: THREE.Group, cfg: Cfg, t: number, R: number): v
     const tx = t * 0.00045 * speed + i * 0.37;
     const ty = t * 0.00038 * speed + i * 0.53;
     const tz = t * 0.00031 * speed + i * 0.71;
-    mesh.position.x = seeds[i * 6] + Math.sin(tx + Math.cos(ty) * 0.7) * noiseAmp;
-    mesh.position.y = seeds[i * 6 + 1] + Math.cos(ty + Math.sin(tz) * 0.7) * noiseAmp;
-    mesh.position.z = seeds[i * 6 + 2] + Math.sin(tz + Math.cos(tx) * 0.7) * noiseAmp;
-    mesh.rotation.x += 0.006 * speed * (seeds[i * 6 + 3] > 0 ? 1 : -1);
-    mesh.rotation.y += 0.008 * speed * (seeds[i * 6 + 4] > 0 ? 1 : -1);
+    if (spherical) {
+      const theta = seeds[i * 8 + 6] + Math.sin(tx) * 0.08 + t * 0.00008 * speed;
+      const phi = seeds[i * 8 + 7] + Math.cos(ty) * 0.06;
+      const shell =
+        R *
+        (0.5 +
+          Math.sin(tz + Math.cos(theta * 3)) * 0.035 * (cfg.complexity / 10) +
+          Math.sin(t * 0.001 * cfg.breathSpeed + i) * 0.015);
+      mesh.position.x = Math.sin(phi) * Math.cos(theta) * shell;
+      mesh.position.y = Math.sin(phi) * Math.sin(theta) * shell;
+      mesh.position.z = Math.cos(phi) * shell;
+      mesh.lookAt(0, 0, 0);
+    } else {
+      mesh.position.x = seeds[i * 8] + Math.sin(tx + Math.cos(ty) * 0.7) * noiseAmp;
+      mesh.position.y = seeds[i * 8 + 1] + Math.cos(ty + Math.sin(tz) * 0.7) * noiseAmp;
+      mesh.position.z = seeds[i * 8 + 2] + Math.sin(tz + Math.cos(tx) * 0.7) * noiseAmp;
+    }
+    mesh.rotation.x += 0.006 * speed * (seeds[i * 8 + 3] > 0 ? 1 : -1);
+    mesh.rotation.y += 0.008 * speed * (seeds[i * 8 + 4] > 0 ? 1 : -1);
     mesh.rotation.z += 0.004 * speed;
     (mesh.material as THREE.MeshBasicMaterial).color.setRGB(rr / 255, gg / 255, bb / 255);
     (mesh.material as THREE.MeshBasicMaterial).opacity = 0.45 * iF;
@@ -14300,6 +14345,7 @@ export default function GeometryField() {
         currentCfg.mode === 'orbit' ||
         currentCfg.mode === 'weave' ||
         currentCfg.mode === 'chaostri3d' ||
+        currentCfg.mode === 'chaostrisphere' ||
         currentCfg.mode === 'treeoflife3d' ||
         currentCfg.mode === 'entropy3d' ||
         currentCfg.mode === 'embf3d' ||
@@ -17122,8 +17168,8 @@ export default function GeometryField() {
                                 gap: 1,
                               }}
                             >
-                              <span style={{ fontSize: 6, opacity: 0.28, color: accent }}>
-                                {num}
+                              <span style={{ fontSize: 6, opacity: 0.34, color: accent }}>
+                                {String(num).padStart(2, '0')}
                               </span>
                               <span
                                 style={{
