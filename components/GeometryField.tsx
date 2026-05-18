@@ -73,6 +73,12 @@ type Mode =
   | 'dotsunoutward'
   | 'dotalchemicalsun'
   | 'dotheart'
+  | 'dotphoenix'
+  | 'dotbrain'
+  | 'dottunnel'
+  | 'swirldottunnel'
+  | 'linetunnel3d'
+  | 'dotroad'
   | 'emotion'
   | 'constellation'
   | 'drift'
@@ -771,6 +777,78 @@ const PRESETS: Record<string, Cfg> = {
     luminous: 3,
     stars: 1,
     mode: 'dotheart',
+  },
+  'Dot Phoenix': {
+    preset: 'Yantra Fire',
+    symmetry: 9,
+    complexity: 7.2,
+    glow: 7.6,
+    breathSpeed: 0.56,
+    intensity: 8.8,
+    particles: 9,
+    luminous: 3.4,
+    stars: 2,
+    mode: 'dotphoenix',
+  },
+  'Dot Brain Loop': {
+    preset: 'Golden Source',
+    symmetry: 12,
+    complexity: 6.8,
+    glow: 6.4,
+    breathSpeed: 0.48,
+    intensity: 7.4,
+    particles: 9,
+    luminous: 2.8,
+    stars: 1,
+    mode: 'dotbrain',
+  },
+  'Dot Tunnel': {
+    preset: 'Blue Astral',
+    symmetry: 14,
+    complexity: 7.2,
+    glow: 6.8,
+    breathSpeed: 0.72,
+    intensity: 7.8,
+    particles: 9,
+    luminous: 2.7,
+    stars: 4,
+    mode: 'dottunnel',
+  },
+  'Swirl Dot Tunnel': {
+    preset: 'Cosmic Indigo',
+    symmetry: 13,
+    complexity: 8,
+    glow: 7.4,
+    breathSpeed: 0.68,
+    intensity: 8,
+    particles: 9,
+    luminous: 3,
+    stars: 5,
+    mode: 'swirldottunnel',
+  },
+  'Line Tunnel 3D': {
+    preset: 'Blue Astral',
+    symmetry: 12,
+    complexity: 7.4,
+    glow: 6.2,
+    breathSpeed: 0.64,
+    intensity: 7.5,
+    particles: 6,
+    luminous: 2.4,
+    stars: 3,
+    mode: 'linetunnel3d',
+  },
+  'Dot Road': {
+    preset: 'Golden Source',
+    symmetry: 7,
+    complexity: 7,
+    glow: 5.6,
+    breathSpeed: 0.68,
+    intensity: 7.8,
+    particles: 9,
+    luminous: 2.6,
+    stars: 2,
+    mode: 'dotroad',
   },
   'Golden Source': {
     preset: 'Golden Source',
@@ -3986,7 +4064,14 @@ function buildModeGroup(cfg: Cfg, R: number): THREE.Group {
     case 'dotsunoutward':
     case 'dotalchemicalsun':
     case 'dotheart':
+    case 'dotphoenix':
+    case 'dotbrain':
       return buildDotSymbolField(cfg, R);
+    case 'dottunnel':
+    case 'swirldottunnel':
+    case 'linetunnel3d':
+    case 'dotroad':
+      return buildDepthJourney(cfg, R);
     case 'pulse':
       return buildPulse(cfg, R);
     case 'emotion':
@@ -4215,7 +4300,15 @@ function updateModeGroup(group: THREE.Group, cfg: Cfg, dots: Dot[], t: number, R
     case 'dotsunoutward':
     case 'dotalchemicalsun':
     case 'dotheart':
+    case 'dotphoenix':
+    case 'dotbrain':
       updateDotSymbolField(group, cfg, t, R);
+      break;
+    case 'dottunnel':
+    case 'swirldottunnel':
+    case 'linetunnel3d':
+    case 'dotroad':
+      updateDepthJourney(group, cfg, t, R);
       break;
     case 'pulse':
       updatePulse(group, cfg, t, R);
@@ -10799,6 +10892,59 @@ const MODE_SLIDERS: Partial<Record<Mode, SliderDef[]>> = {
     { key: 'luminous', label: 'Bloom', min: 0, max: 5, step: 0.1 },
     { key: 'stars', label: 'Stars', min: 0, max: 10, step: 1 },
   ],
+  dotphoenix: [
+    { key: 'complexity', label: 'Wing Bloom', min: 1, max: 10, step: 0.5 },
+    { key: 'glow', label: 'Flame Fade', min: 0, max: 10, step: 0.5 },
+    { key: 'breathSpeed', label: 'Loop Speed', min: 0.05, max: 1.5, step: 0.05 },
+    { key: 'intensity', label: 'Heat', min: 0, max: 10, step: 0.5 },
+    { key: 'particles', label: 'Dots', min: 1, max: 10, step: 1 },
+    { key: 'luminous', label: 'Bloom', min: 0, max: 5, step: 0.1 },
+    { key: 'stars', label: 'Embers', min: 0, max: 10, step: 1 },
+  ],
+  dotbrain: [
+    { key: 'complexity', label: 'Logic / Dream', min: 1, max: 10, step: 0.5 },
+    { key: 'glow', label: 'Fold Depth', min: 0, max: 10, step: 0.5 },
+    { key: 'breathSpeed', label: 'Loop Speed', min: 0.05, max: 1.5, step: 0.05 },
+    { key: 'intensity', label: 'Warmth', min: 0, max: 10, step: 0.5 },
+    { key: 'particles', label: 'Dots', min: 1, max: 10, step: 1 },
+    { key: 'luminous', label: 'Bloom', min: 0, max: 5, step: 0.1 },
+    { key: 'stars', label: 'Signals', min: 0, max: 10, step: 1 },
+  ],
+  dottunnel: [
+    { key: 'symmetry', label: 'Rings', min: 6, max: 28, step: 1 },
+    { key: 'complexity', label: 'Depth', min: 1, max: 10, step: 0.5 },
+    { key: 'glow', label: 'Vanish Point', min: 0, max: 10, step: 0.5 },
+    { key: 'breathSpeed', label: 'Forward Speed', min: 0.05, max: 1.5, step: 0.05 },
+    { key: 'intensity', label: 'Light', min: 0, max: 10, step: 0.5 },
+    { key: 'particles', label: 'Dots', min: 1, max: 10, step: 1 },
+    { key: 'luminous', label: 'Bloom', min: 0, max: 5, step: 0.1 },
+  ],
+  swirldottunnel: [
+    { key: 'symmetry', label: 'Rings', min: 6, max: 28, step: 1 },
+    { key: 'complexity', label: 'Swirl', min: 1, max: 10, step: 0.5 },
+    { key: 'glow', label: 'Vanish Point', min: 0, max: 10, step: 0.5 },
+    { key: 'breathSpeed', label: 'Forward Speed', min: 0.05, max: 1.5, step: 0.05 },
+    { key: 'intensity', label: 'Light', min: 0, max: 10, step: 0.5 },
+    { key: 'particles', label: 'Dots', min: 1, max: 10, step: 1 },
+    { key: 'luminous', label: 'Bloom', min: 0, max: 5, step: 0.1 },
+  ],
+  linetunnel3d: [
+    { key: 'symmetry', label: 'Ribs', min: 5, max: 24, step: 1 },
+    { key: 'complexity', label: 'Depth', min: 1, max: 10, step: 0.5 },
+    { key: 'glow', label: 'Curve', min: 0, max: 10, step: 0.5 },
+    { key: 'breathSpeed', label: 'Forward Speed', min: 0.05, max: 1.5, step: 0.05 },
+    { key: 'intensity', label: 'Light', min: 0, max: 10, step: 0.5 },
+    { key: 'luminous', label: 'Bloom', min: 0, max: 5, step: 0.1 },
+  ],
+  dotroad: [
+    { key: 'symmetry', label: 'Road Lines', min: 3, max: 12, step: 1 },
+    { key: 'complexity', label: 'Perspective', min: 1, max: 10, step: 0.5 },
+    { key: 'glow', label: 'Horizon', min: 0, max: 10, step: 0.5 },
+    { key: 'breathSpeed', label: 'Drive Speed', min: 0.05, max: 1.5, step: 0.05 },
+    { key: 'intensity', label: 'Light', min: 0, max: 10, step: 0.5 },
+    { key: 'particles', label: 'Dots', min: 1, max: 10, step: 1 },
+    { key: 'luminous', label: 'Bloom', min: 0, max: 5, step: 0.1 },
+  ],
   entropy3d: [
     { key: 'complexity', label: 'Density', min: 1, max: 10, step: 1 },
     { key: 'breathSpeed', label: 'Speed', min: 0.05, max: 2.0, step: 0.05 },
@@ -10880,6 +11026,12 @@ const MODE_TO_PRESET: Partial<Record<Mode, string>> = {
   dotsunoutward: 'Outward Sun',
   dotalchemicalsun: 'Alchemical Dot Sun',
   dotheart: 'Dot Heart',
+  dotphoenix: 'Dot Phoenix',
+  dotbrain: 'Dot Brain Loop',
+  dottunnel: 'Dot Tunnel',
+  swirldottunnel: 'Swirl Dot Tunnel',
+  linetunnel3d: 'Line Tunnel 3D',
+  dotroad: 'Dot Road',
   embf3d: 'Calm Field',
   wordneon: 'Neon Word',
   hopefear: 'Duality',
@@ -10994,6 +11146,12 @@ const MODES: { mode: Mode; label: string }[] = [
   { mode: 'dotsunoutward', label: 'Outward Sun' },
   { mode: 'dotalchemicalsun', label: 'Alchemical Dot Sun' },
   { mode: 'dotheart', label: 'Dot Heart' },
+  { mode: 'dotphoenix', label: 'Dot Phoenix' },
+  { mode: 'dotbrain', label: 'Dot Brain Loop' },
+  { mode: 'dottunnel', label: 'Dot Tunnel' },
+  { mode: 'swirldottunnel', label: 'Swirl Dot Tunnel' },
+  { mode: 'linetunnel3d', label: 'Line Tunnel 3D' },
+  { mode: 'dotroad', label: 'Dot Road' },
   { mode: 'pulse', label: '◉ Pulse' },
   { mode: 'emotion', label: '◉ Emotion' },
   { mode: 'constellation', label: '✦ Constellation' },
@@ -11033,6 +11191,12 @@ const FEATURED_PRESETS: FeaturedItem[] = [
   { name: 'Mission Sun', tag: 'VOICE' },
   { name: 'Fire Dot Sun', tag: 'DOT' },
   { name: 'Dot Heart', tag: 'DOT' },
+  { name: 'Dot Phoenix', tag: 'DOT' },
+  { name: 'Dot Brain Loop', tag: 'DOT' },
+  { name: 'Dot Tunnel', tag: 'DEPTH' },
+  { name: 'Swirl Dot Tunnel', tag: 'DEPTH' },
+  { name: 'Line Tunnel 3D', tag: 'DEPTH' },
+  { name: 'Dot Road', tag: 'ROAD' },
   { name: 'Outward Sun', tag: 'DOT' },
   { name: 'Chaos Field', tag: 'CHAOS' },
   { name: 'Quantum Chaos', tag: 'CHAOS' },
@@ -11971,6 +12135,190 @@ function updateDotWalker(group: THREE.Group, cfg: Cfg, t: number, R: number): vo
   }
 }
 
+/* Depth Journey presets - tunnels and roads for future forward-moving programs */
+
+const DEPTH_DOT_COUNT = 2800;
+const DEPTH_LINE_RINGS = 34;
+const DEPTH_LINE_SEGMENTS = 72;
+
+function buildDepthJourney(cfg: Cfg, R: number): THREE.Group {
+  const group = new THREE.Group();
+  const pal = PAL[cfg.preset] ?? PAL['Blue Astral'];
+  const iF = cfg.intensity / 10;
+
+  if (cfg.mode === 'linetunnel3d') {
+    for (let ring = 0; ring < DEPTH_LINE_RINGS; ring++) {
+      const geo = new THREE.BufferGeometry();
+      const pos = new Float32Array(DEPTH_LINE_SEGMENTS * 2 * 3);
+      geo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+      const ribs = new THREE.LineSegments(geo, lineMat(hdrColor(pal.rgb, iF * 0.55, 2.1), 1.0));
+      ribs.userData.tag = 'depthLineRing';
+      ribs.userData.ring = ring;
+      group.add(ribs);
+    }
+
+    const spokeGeo = new THREE.BufferGeometry();
+    const spokeCount = Math.max(5, Math.round(cfg.symmetry));
+    spokeGeo.setAttribute(
+      'position',
+      new THREE.BufferAttribute(new Float32Array(spokeCount * 2 * 3), 3),
+    );
+    const spokes = new THREE.LineSegments(
+      spokeGeo,
+      lineMat(hdrColor(pal.rgb, iF * 0.35, 1.8), 0.8),
+    );
+    spokes.userData.tag = 'depthLineSpokes';
+    group.add(spokes);
+    return group;
+  }
+
+  const positions = new Float32Array(DEPTH_DOT_COUNT * 3);
+  const seed = new Float32Array(DEPTH_DOT_COUNT * 4);
+  for (let i = 0; i < DEPTH_DOT_COUNT; i++) {
+    seed[i * 4] = Math.random();
+    seed[i * 4 + 1] = Math.random();
+    seed[i * 4 + 2] = Math.random();
+    seed[i * 4 + 3] = i / DEPTH_DOT_COUNT;
+  }
+  const geo = new THREE.BufferGeometry();
+  const posAttr = new THREE.BufferAttribute(positions, 3);
+  posAttr.setUsage(THREE.DynamicDrawUsage);
+  geo.setAttribute('position', posAttr);
+  geo.setAttribute('seed', new THREE.BufferAttribute(seed, 4));
+  const dots = new THREE.Points(geo, circlePtsMat(hdrColor(pal.rgb, iF, 2.5), 2.1, 0.58));
+  dots.userData.tag = 'depthDots';
+  group.add(dots);
+  return group;
+}
+
+function updateDepthJourney(group: THREE.Group, cfg: Cfg, t: number, R: number): void {
+  const pal = PAL[cfg.preset] ?? PAL['Blue Astral'];
+  const iF = cfg.intensity / 10;
+  const phase = t * 0.0001 * cfg.breathSpeed;
+  const TAU = Math.PI * 2;
+  const depthPower = lerp(1.15, 1.85, cfg.complexity / 10);
+  const vanishing = R * lerp(0.018, 0.09, cfg.glow / 10);
+
+  for (const child of group.children) {
+    const tag = child.userData.tag as string;
+
+    if (tag === 'depthDots') {
+      const pts = child as THREE.Points;
+      const pos = pts.geometry.getAttribute('position') as THREE.BufferAttribute;
+      const seed = pts.geometry.getAttribute('seed') as THREE.BufferAttribute;
+      const arr = pos.array as Float32Array;
+      const sarr = seed.array as Float32Array;
+      const dotLimit = Math.round(lerp(900, DEPTH_DOT_COUNT, cfg.particles / 10));
+
+      for (let i = 0; i < DEPTH_DOT_COUNT; i++) {
+        const u = sarr[i * 4];
+        const v = sarr[i * 4 + 1];
+        const w = sarr[i * 4 + 2];
+        const q = sarr[i * 4 + 3];
+        let x = 99999;
+        let y = 99999;
+        let z = 0;
+
+        if (i < dotLimit && (cfg.mode === 'dottunnel' || cfg.mode === 'swirldottunnel')) {
+          const travel = (q + phase * 0.95) % 1;
+          const near = travel ** depthPower;
+          const ring = Math.floor(u * Math.max(6, Math.round(cfg.symmetry)));
+          const ringFrac = (u * Math.max(6, Math.round(cfg.symmetry))) % 1;
+          const swirl =
+            cfg.mode === 'swirldottunnel'
+              ? phase * lerp(1.2, 4.2, cfg.complexity / 10) + travel * TAU * 1.4
+              : Math.sin(phase + travel * TAU) * 0.08;
+          const a =
+            v * TAU +
+            (ring / Math.max(6, Math.round(cfg.symmetry))) * 0.14 +
+            swirl +
+            Math.sin(w * TAU + phase * 2) * 0.025;
+          const tubeNoise = 0.84 + ringFrac * 0.18 + Math.sin(v * TAU * 5 + phase + w * 4) * 0.035;
+          const radius = vanishing + R * 1.14 * near * tubeNoise;
+          x = Math.cos(a) * radius;
+          y = Math.sin(a) * radius * 0.72;
+          z = (0.5 - travel) * R * 0.72;
+        } else if (i < dotLimit && cfg.mode === 'dotroad') {
+          const travel = (q + phase * 0.82) % 1;
+          const near = travel ** lerp(1.3, 2.15, cfg.complexity / 10);
+          const laneCount = Math.max(3, Math.round(cfg.symmetry));
+          const lane = Math.floor(u * laneCount);
+          const laneT = laneCount === 1 ? 0 : lane / (laneCount - 1);
+          const side = laneT * 2 - 1;
+          const shoulder = w > 0.72;
+          const roadWidth = R * lerp(0.12, 1.06, near);
+          const horizonY = -R * lerp(0.18, 0.32, cfg.glow / 10);
+          x =
+            side * roadWidth * (shoulder ? 1.05 + (w - 0.72) * 0.8 : 0.72) +
+            Math.sin(phase * 2 + q * 20) * R * 0.006 * near;
+          y = horizonY + R * 1.12 * near + Math.sin(u * 20 + phase) * R * 0.008 * near;
+          z = (0.5 - travel) * R * 0.54;
+        }
+
+        const force = fingerForce(x, y, z, R);
+        arr[i * 3] = x + force.x;
+        arr[i * 3 + 1] = y + force.y;
+        arr[i * 3 + 2] = z + force.z;
+      }
+
+      pos.needsUpdate = true;
+      const mat = pts.material as THREE.PointsMaterial;
+      mat.size = (1.55 + cfg.luminous * 0.2) * (R / 260);
+      mat.opacity = 0.42 + iF * 0.36;
+      updateMat(pts, pal.rgb, iF, 2.35 + cfg.luminous * 0.28);
+    }
+
+    if (tag === 'depthLineRing') {
+      const ringObj = child as THREE.LineSegments;
+      const ringIndex = child.userData.ring as number;
+      const pos = ringObj.geometry.getAttribute('position') as THREE.BufferAttribute;
+      const arr = pos.array as Float32Array;
+      const travel = (ringIndex / DEPTH_LINE_RINGS + phase * 0.62) % 1;
+      const near = travel ** depthPower;
+      const baseRadius = vanishing + R * 1.16 * near;
+      const twist = phase * 1.6 + travel * TAU * lerp(0.1, 0.7, cfg.glow / 10);
+
+      for (let seg = 0; seg < DEPTH_LINE_SEGMENTS; seg++) {
+        const a0 = (seg / DEPTH_LINE_SEGMENTS) * TAU + twist;
+        const a1 = ((seg + 1) / DEPTH_LINE_SEGMENTS) * TAU + twist;
+        const wob0 = 1 + Math.sin(a0 * 3 + phase + ringIndex) * 0.035 * (cfg.complexity / 10);
+        const wob1 = 1 + Math.sin(a1 * 3 + phase + ringIndex) * 0.035 * (cfg.complexity / 10);
+        const idx = seg * 6;
+        arr[idx] = Math.cos(a0) * baseRadius * wob0;
+        arr[idx + 1] = Math.sin(a0) * baseRadius * 0.72 * wob0;
+        arr[idx + 2] = (0.5 - travel) * R * 0.65;
+        arr[idx + 3] = Math.cos(a1) * baseRadius * wob1;
+        arr[idx + 4] = Math.sin(a1) * baseRadius * 0.72 * wob1;
+        arr[idx + 5] = (0.5 - travel) * R * 0.65;
+      }
+      pos.needsUpdate = true;
+      updateMat(ringObj, pal.rgb, iF * (0.25 + near * 0.85), 2.0 + cfg.luminous * 0.2);
+    }
+
+    if (tag === 'depthLineSpokes') {
+      const spokes = child as THREE.LineSegments;
+      const spokeCount = Math.max(5, Math.round(cfg.symmetry));
+      const pos = spokes.geometry.getAttribute('position') as THREE.BufferAttribute;
+      const arr = pos.array as Float32Array;
+      const far = vanishing + R * 0.08;
+      const near = R * 1.18;
+      const twist = phase * lerp(0.2, 1.2, cfg.glow / 10);
+      for (let i = 0; i < spokeCount; i++) {
+        const a = (i / spokeCount) * TAU + twist;
+        const idx = i * 6;
+        arr[idx] = Math.cos(a) * far;
+        arr[idx + 1] = Math.sin(a) * far * 0.72;
+        arr[idx + 2] = R * 0.32;
+        arr[idx + 3] = Math.cos(a) * near;
+        arr[idx + 4] = Math.sin(a) * near * 0.72;
+        arr[idx + 5] = -R * 0.36;
+      }
+      pos.needsUpdate = true;
+      updateMat(spokes, pal.rgb, iF * 0.48, 1.8 + cfg.luminous * 0.2);
+    }
+  }
+}
+
 /* Dot-only symbolic forms: warm sun, alchemical sun, and heart */
 
 const DOT_SYMBOL_COUNT = 2400;
@@ -12118,6 +12466,70 @@ function updateDotSymbolField(group: THREE.Group, cfg: Cfg, t: number, R: number
         x = hx * scale * inner + Math.cos(a * 5 + phase) * flow;
         y = (hy * scale - R * 0.06) * inner + Math.sin(a * 4 - phase) * flow;
         z = Math.sin(phase + q * TAU) * R * 0.025;
+      } else if (i < dotLimit && cfg.mode === 'dotphoenix') {
+        const a = v * TAU;
+        const inner = Math.sqrt(u);
+        const heartX = 16 * Math.sin(a) ** 3 * R * 0.028 * inner;
+        const heartY =
+          (13 * Math.cos(a) - 5 * Math.cos(2 * a) - 2 * Math.cos(3 * a) - Math.cos(4 * a)) *
+            R *
+            0.028 *
+            inner -
+          R * 0.08;
+        const loop = 0.5 + 0.5 * Math.sin(phase * 0.72);
+        const bird = smoothstep(Math.min(1, loop * 1.35));
+        const flame = smoothstep(Math.max(0, (loop - 0.52) / 0.48));
+        const side = v < 0.5 ? -1 : 1;
+        const local = (v * 2) % 1;
+        const bodySeed = u < 0.28;
+        const wingReach = R * lerp(0.28, 0.64, cfg.complexity / 10);
+        const wingX = side * (R * 0.07 + local * wingReach);
+        const wingY =
+          -Math.sin(local * Math.PI) * R * 0.26 +
+          (local - 0.5) * R * 0.12 +
+          Math.sin(local * 10 + phase * 2.1 + w * 5) * R * 0.018 * (cfg.glow / 10);
+        const bodyA = v * TAU;
+        const bodyX = Math.cos(bodyA) * R * (0.055 + inner * 0.08);
+        const bodyY = Math.sin(bodyA) * R * (0.1 + inner * 0.14) - R * 0.03;
+        const birdX = bodySeed ? bodyX : wingX;
+        const birdY = bodySeed ? bodyY : wingY;
+        const plume = (q + phase * 0.08) % 1;
+        const flameWidth = (1 - plume) * R * lerp(0.36, 0.56, cfg.glow / 10);
+        const flameX =
+          Math.sin(v * TAU * 2.7 + phase * 2.6 + w * 3) * flameWidth +
+          side * Math.sin(plume * Math.PI) * R * 0.08;
+        const flameY = R * (0.32 - plume * 0.78) + Math.sin(v * TAU + phase) * R * 0.028;
+        const phoenixX = lerp(birdX, flameX, flame);
+        const phoenixY = lerp(birdY, flameY, flame);
+        x = lerp(heartX, phoenixX, bird);
+        y = lerp(heartY, phoenixY, bird);
+        z = Math.sin(phase * 1.6 + q * TAU) * R * (0.025 + flame * 0.035);
+      } else if (i < dotLimit && cfg.mode === 'dotbrain') {
+        const loop = 0.5 + 0.5 * Math.sin(phase * 0.62);
+        const dream = smoothstep(loop);
+        const side = v < 0.5 ? -1 : 1;
+        const local = (v * 2) % 1;
+        const theta = local * TAU;
+        const shell = Math.sqrt(u);
+        const lobeX = side * R * (0.12 + 0.24 * shell * Math.abs(Math.cos(theta)));
+        const lobeY = Math.sin(theta) * R * (0.31 * shell) + Math.sin(theta * 3) * R * 0.018;
+        const crease = -side * R * 0.03 * Math.sin(theta * 2 + phase);
+        const fold = Math.sin(theta * 8 + local * 12 + phase * 1.4) * R * 0.025 * (cfg.glow / 10);
+        const rationalRow = Math.floor(q * 22);
+        const rationalCol = (q * 22 - rationalRow - 0.5) * 2;
+        const laneY = (rationalRow / 21 - 0.5) * R * 0.62;
+        const laneWidth = Math.sqrt(Math.max(0, 1 - (laneY / (R * 0.34)) ** 2));
+        const logicX = side * R * (0.08 + laneWidth * 0.26 * (0.18 + Math.abs(rationalCol)));
+        const logicY = laneY + Math.sin(rationalRow + phase * 0.8) * R * 0.008;
+        const swirlR = R * (0.06 + shell * 0.3);
+        const swirlA = theta + side * phase * 0.7 + Math.sin(shell * 5 + phase) * 0.55;
+        const dreamX = side * R * 0.08 + Math.cos(swirlA) * swirlR * 0.78;
+        const dreamY = Math.sin(swirlA) * swirlR + Math.sin(swirlA * 3 + phase) * R * 0.025;
+        const baseX = lerp(logicX, dreamX, dream);
+        const baseY = lerp(logicY, dreamY, dream);
+        x = lerp(baseX, lobeX + crease + fold, 0.42);
+        y = lerp(baseY, lobeY, 0.42);
+        z = Math.sin(theta * 4 + phase + w * TAU) * R * (0.018 + cfg.luminous * 0.004);
       }
 
       const force = fingerForce(x, y, z, R);

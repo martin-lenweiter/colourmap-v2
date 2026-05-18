@@ -881,10 +881,10 @@ export default function ColourMapPanel() {
           <div
             style={{
               fontFamily: 'var(--font-serif)',
-              fontSize: 13,
-              fontWeight: 800,
+              fontSize: 15,
+              fontWeight: 900,
               textTransform: 'uppercase',
-              letterSpacing: '0.14em',
+              letterSpacing: '0.18em',
               color: 'var(--palette-panel-text, rgba(196,160,96,0.82))',
             }}
           >
@@ -994,18 +994,6 @@ export default function ColourMapPanel() {
         <div style={{ padding: '18px 14px 12px' }}>
           {/* ── Horizontal orbit row ── */}
           <div style={{ position: 'relative', marginBottom: 20 }}>
-            {/* track line */}
-            <div
-              style={{
-                position: 'absolute',
-                left: 20,
-                right: 20,
-                top: 22,
-                height: 1,
-                background: 'rgba(196,160,96,0.13)',
-                pointerEvents: 'none',
-              }}
-            />
             {/* dots */}
             <div style={{ display: 'flex', gap: 0, overflowX: 'auto', paddingBottom: 4 }}>
               {data.channels.map((ch) => {

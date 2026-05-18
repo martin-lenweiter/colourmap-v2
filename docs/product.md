@@ -69,9 +69,9 @@ The visual system must reinforce that split. Colourmap is not a generic dashboar
 
 ## Navigation
 
-Focus · AI · Notes · Art · Education · ◇ (Atlas, Roads, Music, Social, Journey, Life Scan, Research, Creator Space)
+Focus · AI · Notes · Education · Art · ◇ (Atlas, Roads, Music, Social, Journey, Life Scan, Research, Creator Space)
 
-Phone: Focus · AI · Notes · Art · Education · ◇
+Phone: Focus · AI · Notes · Education · Art · ◇
 
 ## Current Features
 

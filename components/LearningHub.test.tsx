@@ -75,7 +75,10 @@ describe('LearningHub', () => {
     fireEvent.click(screen.getByRole('button', { name: /Begin/i }));
 
     expect(screen.getByRole('button', { name: 'Next comic page' })).toBeDefined();
-    expect(screen.getByRole('img', { name: /Paulo Freire symbolic comic panel 1/i })).toBeDefined();
+    const freireImage = screen.getByRole('img', {
+      name: /Paulo Freire & Collective Hope comic page 1/i,
+    });
+    expect(freireImage.getAttribute('src')).toBe('/comics/paulo-freire/generated/panel-0.png');
     expect(screen.getByText('The world is made, so it can be remade')).toBeDefined();
     expect(screen.getByText(/society is not a machine/i)).toBeDefined();
   });
@@ -91,9 +94,10 @@ describe('LearningHub', () => {
     fireEvent.click(screen.getByRole('button', { name: /Begin/i }));
 
     expect(screen.getByRole('button', { name: 'Next comic page' })).toBeDefined();
-    expect(
-      screen.getByRole('img', { name: /Thich Nhat Hanh landscape comic panel 1/i }),
-    ).toBeDefined();
+    const thichImage = screen.getByRole('img', {
+      name: /Thich Nhat Hanh & Peace in Action comic page 1/i,
+    });
+    expect(thichImage.getAttribute('src')).toBe('/comics/thich-nhat-hanh/generated/panel-0.png');
     expect(screen.getByText('The bell of now')).toBeDefined();
     expect(screen.getByText(/peace begins by returning/i)).toBeDefined();
   });

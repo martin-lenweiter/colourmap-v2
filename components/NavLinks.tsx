@@ -10,8 +10,8 @@ const PRIMARY_LINKS: { href: string; label: string }[] = [
   { href: '/day', label: 'Focus' },
   { href: '/ai', label: 'AI' },
   { href: '/notebook', label: 'Notes' },
+  { href: '/education', label: 'Education' },
   { href: '/geometry-field', label: 'Art' },
-  { href: '/programs', label: 'Education' },
 ];
 
 // Routes that belong under the Social nav item (used in AppShell too)

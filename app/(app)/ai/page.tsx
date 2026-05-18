@@ -45,14 +45,13 @@ export default function AIPage() {
             letterSpacing: 0,
           }}
         >
-          Ask. Reflect. Keep what matters.
+          Ask what matters.
         </h1>
         <p
           className="mx-auto mt-3 max-w-xl text-sm leading-6"
           style={{ color: 'var(--palette-panel-muted, #7A5438)' }}
         >
-          A quiet place for the AI to help you understand your process without turning the app into
-          another dashboard.
+          A small mirror for the process.
         </p>
       </section>
 

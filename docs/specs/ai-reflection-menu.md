@@ -26,6 +26,8 @@ The AI menu sits in primary navigation between `Focus` and `Notes`. This placeme
 - Saved reflections become part of the user's durable memory and should be visible from the AI menu and optionally mirrored into Notebook.
 - The navigation dot menu includes `AI Assistant`, which opens the same global AI Presence panel. This makes the assistant summonable from the dot menu without duplicating AI surfaces.
 - Keep the page visually light. Avoid listing every data source, quota rule, or future capability on the page itself; those belong in implementation docs and pricing flows.
+- Preserve the raised paper-block visual treatment of the AI hero, but keep its copy glanceable. The
+  hero should read like a label and small signal, not an explanatory paragraph.
 
 ## Agent Interaction Direction
 

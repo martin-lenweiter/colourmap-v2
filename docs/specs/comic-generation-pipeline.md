@@ -85,6 +85,8 @@ The goal is not to force every comic into one fixed shape. The goal is to preser
 Rules:
 
 - phone readability first, desktop richness second
+- standard education comic pages should fit as a single phone-sized frame whenever possible; the
+  reader should not require a second downward scroll just to see the bottom of an ordinary page
 - images must stay complete; do not crop meaningful borders, feet, faces, objects, or paper margins
 - avoid relying on fixed borders that become confusing across different phone formats
 - do not generate internal page frames, panel outlines, white borders, or white gutters around the
@@ -114,6 +116,14 @@ Long-term goal:
 responsive comic-infographic system
 not fixed comic pages
 ```
+
+Future symbolic journey format:
+
+- some programs may intentionally use double-height or triple-height vertical images that the user
+  scrolls through like a symbolic journey
+- those taller images should be explicit special formats, not the default reader behavior
+- long vertical pages should be reserved for symbolic landscapes, life paths, dreams, rituals, and
+  transformation sequences where scrolling adds meaning
 
 This matters because users will read these programs on many different phones. The design should feel intentional on small, tall, narrow, and large screens without cutting the artwork or making the interface feel broken.
 
@@ -545,12 +555,14 @@ uses a three-layer comic model:
 3. app-rendered words on top of those bubbles
 
 The Freire images should stay calm and spacious enough to prepare terrain for bubbles and text.
-They may be symbolic, but not overloaded. Character groups should include women and mixed
-communities rather than defaulting to men.
+They may be symbolic, but not overloaded: one collective path, dialogue circle, or shared agency
+idea per page. Character groups should include women and men in mixed communities rather than
+defaulting to male-only scenes.
 
 The `Thich Nhat Hanh & Peace in Action` program uses the same layered model in a landscape format.
-Its image layer should feel like quiet, wide reflective cinema: paths, rivers, trees, walking
-figures, bowls of tea, community circles, and open sky. The reader should never depend on baked-in
+Its image layer should feel simple, sober, and quiet, closer to the successful comic language:
+paths, rivers, trees, walking figures, bowls of tea, community circles, and open sky. Use women and
+men, keep symbolism light, and avoid decorative overload. The reader should never depend on baked-in
 speech bubbles. App-rendered cream text plates carry the title and teaching copy above the clean
 landscape artwork.
 

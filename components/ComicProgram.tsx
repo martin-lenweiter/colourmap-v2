@@ -41,6 +41,11 @@ const BLANK_BUBBLE_PROGRAMS = new Set(['carl-jung']);
 const JPG_PANEL_PROGRAMS = new Set(['carl-jung', 'struggle-letting-go']);
 const LAYERED_BUBBLE_PROGRAMS = new Set(['carl-jung', 'paulo-freire', 'thich-nhat-hanh']);
 const LANDSCAPE_LAYERED_PROGRAMS = new Set(['thich-nhat-hanh']);
+const GENERATED_LAYERED_PANEL_COUNTS: Record<string, number> = {
+  'carl-jung': 2,
+  'paulo-freire': 2,
+  'thich-nhat-hanh': 2,
+};
 
 const PROGRAM_IMAGE_STYLES: Record<string, ImageStyle[]> = {
   'hope-energy': [DEFAULT_IMAGE_STYLE, { key: 'euro-bd', label: 'European BD' }],
@@ -388,11 +393,30 @@ function PanelImage({
   alt?: string;
 }) {
   const [failed, setFailed] = useState(false);
+  const generatedCount = GENERATED_LAYERED_PANEL_COUNTS[programKey];
+  if (generatedCount && !failed) {
+    return (
+      <img
+        src={`/comics/${programKey}/generated/panel-${index % generatedCount}.png`}
+        alt={alt}
+        onError={() => setFailed(true)}
+        style={{
+          width: '100%',
+          height: 'auto',
+          display: 'block',
+          background: 'rgba(10,6,3,0.24)',
+        }}
+      />
+    );
+  }
   if (programKey === 'thich-nhat-hanh') {
     return <ThichBasePanel index={index} color={color} />;
   }
   if (programKey === 'paulo-freire') {
     return <FreireBasePanel index={index} color={color} />;
+  }
+  if (programKey === 'carl-jung') {
+    return <CarlJungBasePanel index={index} color={color} />;
   }
   const extension = JPG_PANEL_PROGRAMS.has(programKey) ? 'jpg' : 'png';
   const src =
@@ -431,6 +455,7 @@ function FreireBasePanel({ index, color }: { index: number; color: string }) {
     { x: 190, y: 400, scale: 1.08, tone: '#50301f', shape: 'wide' },
     { x: 246, y: 372, scale: 0.9, tone: '#7a5438', shape: 'dress' },
     { x: 300, y: 346, scale: 1.02, tone: '#573621', shape: 'coat' },
+    { x: 342, y: 368, scale: 0.82, tone: '#66503a', shape: 'dress' },
   ];
 
   return (
@@ -457,24 +482,24 @@ function FreireBasePanel({ index, color }: { index: number; color: string }) {
       <rect width="430" height="620" fill={`url(#freire-sun-${index})`} />
       <rect width="430" height="620" filter={`url(#freire-grain-${index})`} />
 
-      <g opacity="0.18" stroke="#5C3018" strokeWidth="1.2" fill="none">
-        <path d="M42 72h190M42 92h130M42 112h166" />
-        <path d="M270 470h104M248 494h128M286 518h76" />
+      <g opacity="0.12" stroke="#5C3018" strokeWidth="1.2" fill="none">
+        <path d="M42 72h152M42 94h102" />
+        <path d="M270 470h94M286 496h70" />
         <circle cx={scene.sun[0]} cy={scene.sun[1]} r="54" />
         <circle cx={scene.sun[0]} cy={scene.sun[1]} r="86" />
       </g>
 
-      <path d={scene.path} fill="none" stroke="#5C3018" strokeWidth="4" opacity="0.26" />
+      <path d={scene.path} fill="none" stroke="#5C3018" strokeWidth="4" opacity="0.18" />
       <path
         d={scene.path}
         fill="none"
         stroke={color}
         strokeWidth="10"
         strokeLinecap="round"
-        opacity="0.42"
+        opacity="0.32"
       />
 
-      <g opacity="0.55">
+      <g opacity="0.4">
         <path
           d="M60 512 C108 476, 159 500, 205 468 C263 428, 306 444, 370 402"
           fill="none"
@@ -524,10 +549,9 @@ function FreireBasePanel({ index, color }: { index: number; color: string }) {
 
       <g fill={color} opacity="0.55">
         <circle cx="86" cy="274" r="4" />
-        <circle cx="146" cy="250" r="5" />
+        <circle cx="146" cy="250" r="4" />
         <circle cx="220" cy="232" r="4" />
-        <circle cx="284" cy="196" r="5" />
-        <circle cx="342" cy="176" r="4" />
+        <circle cx="284" cy="196" r="4" />
       </g>
     </svg>
   );
@@ -558,9 +582,10 @@ function ThichBasePanel({ index, color }: { index: number; color: string }) {
   ];
   const scene = scenes[index % scenes.length];
   const people = [
-    { x: 170, y: 238, scale: 0.85, tone: '#5C3018' },
-    { x: 218, y: 246, scale: 0.74, tone: '#6B7A50' },
-    { x: 430, y: 232, scale: 0.78, tone: '#7A5438' },
+    { x: 170, y: 238, scale: 0.85, tone: '#5C3018', shape: 'dress' },
+    { x: 218, y: 246, scale: 0.74, tone: '#6B7A50', shape: 'coat' },
+    { x: 430, y: 232, scale: 0.78, tone: '#7A5438', shape: 'wide' },
+    { x: 474, y: 244, scale: 0.7, tone: '#4f3a2b', shape: 'dress' },
   ];
 
   return (
@@ -591,10 +616,10 @@ function ThichBasePanel({ index, color }: { index: number; color: string }) {
       <rect width="640" height="360" fill={`url(#thich-light-${index})`} />
       <rect width="640" height="360" filter={`url(#thich-grain-${index})`} />
 
-      <g opacity="0.22" stroke="#5C3018" strokeWidth="1" fill="none">
+      <g opacity="0.16" stroke="#5C3018" strokeWidth="1" fill="none">
         <circle cx={scene.sun[0]} cy={scene.sun[1]} r="32" />
         <circle cx={scene.sun[0]} cy={scene.sun[1]} r="56" />
-        <path d="M54 78h134M54 94h88M466 302h104M488 318h72" />
+        <path d="M54 78h118M466 302h92" />
       </g>
 
       <g fill="none" strokeLinecap="round">
@@ -607,10 +632,10 @@ function ThichBasePanel({ index, color }: { index: number; color: string }) {
         <path d={scene.river} stroke="#6888B0" strokeWidth="20" opacity="0.22" />
         <path d={scene.river} stroke="#fff7dc" strokeWidth="4" opacity="0.42" />
         <path
-          d="M0 308 C150 292, 256 330, 410 296 S568 282, 640 306"
+          d="M0 310 C150 294, 256 330, 410 296 S568 284, 640 306"
           stroke="#5C3018"
           strokeWidth="2"
-          opacity="0.18"
+          opacity="0.13"
         />
       </g>
 
@@ -641,24 +666,43 @@ function ThichBasePanel({ index, color }: { index: number; color: string }) {
           transform={`translate(${person.x} ${person.y}) scale(${person.scale})`}
         >
           <circle cx="0" cy="-24" r="10" fill="#f7e8c8" stroke={person.tone} strokeWidth="2" />
-          <path
-            d="M0 -12 V34 M-16 2 H16 M-9 34 L-20 54 M9 34 L20 54"
-            fill="none"
-            stroke={person.tone}
-            strokeWidth="3"
-            strokeLinecap="round"
-          />
+          {person.shape === 'dress' ? (
+            <path
+              d="M-14 34 L0 -12 L14 34 M-10 34 L-16 54 M10 34 L16 54"
+              fill="none"
+              stroke={person.tone}
+              strokeWidth="3"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+          ) : person.shape === 'wide' ? (
+            <path
+              d="M-17 -2 C-8 8, 8 8, 17 -2 M-12 6 V34 M12 6 V34 M-8 34 L-18 54 M8 34 L18 54"
+              fill="none"
+              stroke={person.tone}
+              strokeWidth="3"
+              strokeLinecap="round"
+            />
+          ) : (
+            <path
+              d="M0 -12 V34 M-16 2 H16 M-9 34 L-20 54 M9 34 L20 54"
+              fill="none"
+              stroke={person.tone}
+              strokeWidth="3"
+              strokeLinecap="round"
+            />
+          )}
           <path
             d="M-18 20 C-8 28, 8 28, 18 20"
             fill="none"
             stroke={color}
             strokeWidth="2"
-            opacity="0.5"
+            opacity="0.32"
           />
         </g>
       ))}
 
-      <g fill={color} opacity="0.38">
+      <g fill={color} opacity="0.28">
         <circle cx="250" cy="130" r="4" />
         <circle cx="292" cy="120" r="3" />
         <circle cx="338" cy="132" r="4" />
@@ -668,7 +712,7 @@ function ThichBasePanel({ index, color }: { index: number; color: string }) {
   );
 }
 
-function _BlankBubbleComicPanel({ index, color }: { index: number; color: string }) {
+function CarlJungBasePanel({ index, color }: { index: number; color: string }) {
   const pages = [
     'desk',
     'field',
@@ -701,7 +745,7 @@ function _BlankBubbleComicPanel({ index, color }: { index: number; color: string
       viewBox="0 0 390 620"
       role="img"
       aria-label={`Blank Carl Jung comic page ${index + 1}`}
-      style={{ display: 'block', width: '100%', height: 'auto', background: '#1b1009' }}
+      style={{ display: 'block', width: '100%', height: 'auto', background: paper }}
     >
       <defs>
         <filter id={`grain-${index}`}>
@@ -718,20 +762,9 @@ function _BlankBubbleComicPanel({ index, color }: { index: number; color: string
         </radialGradient>
       </defs>
 
-      <rect width="390" height="620" fill="#20130b" />
-      <rect x="18" y="18" width="354" height="584" rx="18" fill={paper} />
-      <rect x="18" y="18" width="354" height="584" rx="18" fill={`url(#glow-${index})`} />
-      <rect x="18" y="18" width="354" height="584" rx="18" filter={`url(#grain-${index})`} />
-      <rect
-        x="32"
-        y="32"
-        width="326"
-        height="556"
-        rx="8"
-        fill="none"
-        stroke={line}
-        opacity="0.18"
-      />
+      <rect width="390" height="620" fill={paper} />
+      <rect width="390" height="620" fill={`url(#glow-${index})`} />
+      <rect width="390" height="620" filter={`url(#grain-${index})`} />
 
       <g fill="none" stroke={line} strokeLinecap="round" strokeLinejoin="round">
         {scene === 'desk' && (
@@ -962,36 +995,40 @@ function _BlankBubbleComicPanel({ index, color }: { index: number; color: string
         )}
       </g>
 
-      <g fill="#fff7df" stroke={line} strokeWidth="3" opacity="0.96">
-        {index % 4 === 0 && (
-          <>
-            <path d="M54 58h198q18 0 18 18v54q0 18-18 18H139l-35 31 8-31H54q-18 0-18-18V76q0-18 18-18z" />
-            <rect x="68" y="463" width="254" height="82" rx="18" />
-          </>
-        )}
-        {index % 4 === 1 && (
-          <>
-            <rect x="48" y="56" width="294" height="82" rx="18" />
-            <path d="M143 440h191q18 0 18 18v62q0 18-18 18H222l-45 32 12-32h-46q-18 0-18-18v-62q0-18 18-18z" />
-          </>
-        )}
-        {index % 4 === 2 && (
-          <>
-            <path d="M55 57h117q18 0 18 18v74q0 18-18 18H92l-35 30 9-30H55q-18 0-18-18V75q0-18 18-18z" />
-            <path d="M214 64h122q18 0 18 18v83q0 18-18 18h-51l-31 28 8-28h-48q-18 0-18-18V82q0-18 18-18z" />
-            <rect x="54" y="454" width="282" height="76" rx="18" />
-          </>
-        )}
-        {index % 4 === 3 && (
-          <>
-            <rect x="54" y="58" width="282" height="92" rx="20" />
-            <path d="M71 455h217q18 0 18 18v65q0 18-18 18H164l-43 31 11-31H71q-18 0-18-18v-65q0-18 18-18z" />
-          </>
-        )}
+      <g fill="none" stroke={line} strokeLinecap="round" strokeLinejoin="round" opacity="0.24">
+        <circle cx="78" cy="104" r="22" strokeWidth="2" />
+        <circle cx="312" cy="116" r="28" strokeWidth="2" />
+        <path d="M78 82v44M56 104h44M292 116h40M312 96v40" strokeWidth="1.8" />
+        <path d="M78 520c42-23 78-19 108 13M220 510c31-28 67-31 108-8" strokeWidth="2.2" />
+        <path d="M310 236c24-16 45-13 62 9M31 308c28-20 56-22 86-5" strokeWidth="2" />
       </g>
-      <g stroke={line} strokeWidth="1.8" opacity="0.13">
-        <path d="M65 92h144M65 116h104M84 494h196M84 519h146" />
-        <path d="M74 86h86M74 112h122M227 93h88M227 121h72" />
+
+      <g
+        transform="translate(196 440)"
+        fill="none"
+        stroke={line}
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      >
+        <path d="M-48 94 C-42 45 -28 20 0 20 C28 20 42 45 48 94" strokeWidth="5" opacity="0.45" />
+        <path
+          d="M-34 53 C-15 66 15 66 34 53 M-22 80 C-6 86 8 86 24 80"
+          strokeWidth="3"
+          opacity="0.32"
+        />
+        <circle cx="0" cy="-7" r="37" fill={paper} strokeWidth="5" opacity="0.96" />
+        <path d="M-29 -22 C-16 -45 18 -46 32 -22" strokeWidth="6" opacity="0.5" />
+        <path d="M-31 -4 C-18 -12 -8 -12 5 -4 M9 -4 C22 -12 32 -12 43 -3" strokeWidth="3" />
+        <circle cx="-18" cy="-2" r="8" strokeWidth="2.4" opacity="0.8" />
+        <circle cx="18" cy="-2" r="8" strokeWidth="2.4" opacity="0.8" />
+        <path d="M-10 -2h20M-8 17 C0 13 8 13 16 17" strokeWidth="2.2" opacity="0.6" />
+        <path d="M-18 27 C-6 35 8 35 20 27" strokeWidth="3" opacity="0.5" />
+        <path d="M-31 -39 C-10 -54 18 -52 34 -36" strokeWidth="3" opacity="0.28" />
+      </g>
+
+      <g stroke={line} strokeWidth="1.8" opacity="0.12">
+        <path d="M54 90h118M248 520h82M72 496h86" />
+        <path d="M312 96c-23 24-45 42-72 55M72 168c34-21 68-28 102-21" />
       </g>
     </svg>
   );
@@ -1798,14 +1835,17 @@ export default function ComicProgram({
             style={{
               display: 'block',
               position: 'relative',
-              width: '100%',
-              maxWidth: isLandscape ? 620 : 430,
+              width: isLandscape
+                ? 'min(100%, 620px, calc((100dvh - 150px) * 1.78))'
+                : 'min(100%, 390px, calc((100dvh - 150px) * 0.63))',
+              maxWidth: '100%',
               margin: '0 auto',
               padding: 0,
               border: 0,
               background: 'transparent',
               cursor: 'pointer',
               boxShadow: `0 16px 42px ${col(program.color, 0.14)}`,
+              overflow: 'hidden',
             }}
           >
             <PanelImage
@@ -1828,7 +1868,7 @@ export default function ComicProgram({
                 top: isLandscape ? '7%' : '5%',
                 minHeight: isLandscape ? 70 : 104,
                 borderRadius: isLandscape ? 22 : 30,
-                background: 'rgba(255,250,232,0.94)',
+                background: 'rgba(247,232,200,0.95)',
                 boxShadow: '0 14px 30px rgba(92,48,24,0.18)',
               }}
             />
@@ -1841,7 +1881,7 @@ export default function ComicProgram({
                 bottom: isLandscape ? '7%' : '7%',
                 minHeight: isLandscape ? 92 : 132,
                 borderRadius: isLandscape ? 20 : 24,
-                background: 'rgba(255,250,232,0.92)',
+                background: 'rgba(247,232,200,0.94)',
                 boxShadow: '0 14px 30px rgba(92,48,24,0.18)',
               }}
             />
@@ -1894,7 +1934,7 @@ export default function ComicProgram({
                 lineHeight: 1.5,
               }}
             >
-              App lettering is rendered above the image so the comic can stay editable and readable.
+              Text is rendered by the app above the clean image layer.
             </div>
           )}
         </div>

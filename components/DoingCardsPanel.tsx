@@ -25,70 +25,6 @@ const OCHRE_TEXT = 'var(--palette-panel-text, #C4A060)';
 const BROWN = 'var(--palette-panel-text, #5C3018)';
 const LABEL_COLOR = 'var(--palette-panel-muted, #8A6A4A)';
 
-/* ─── Section wrapper — collapsible box ──────────────────────── */
-function Section({
-  title,
-  open,
-  onToggle,
-  children,
-}: {
-  title: string;
-  open: boolean;
-  onToggle: () => void;
-  children: React.ReactNode;
-}) {
-  return (
-    <div
-      style={{
-        border: `1px solid ${CARD_BORDER}`,
-        borderRadius: 16,
-        background: CARD_BG,
-        overflow: 'hidden',
-      }}
-    >
-      <div
-        onClick={onToggle}
-        style={{
-          padding: '10px 16px',
-          borderBottom: open ? `1px solid ${CARD_BORDER}` : 'none',
-          background: 'rgba(196,160,96,0.1)',
-          cursor: 'pointer',
-          display: 'flex',
-          alignItems: 'center',
-        }}
-      >
-        <span style={{ flex: 1 }} />
-        <span
-          style={{
-            fontFamily: 'var(--font-serif)',
-            fontSize: 13,
-            fontWeight: 800,
-            textTransform: 'uppercase',
-            letterSpacing: '0.14em',
-            color: 'var(--palette-panel-text, rgba(196,160,96,0.88))',
-          }}
-        >
-          {title}
-        </span>
-        <span style={{ flex: 1, display: 'flex', justifyContent: 'flex-end' }}>
-          <span
-            style={{
-              color: OCHRE_TEXT,
-              opacity: 0.4,
-              fontSize: 11,
-              transform: open ? 'rotate(180deg)' : 'rotate(0deg)',
-              transition: 'transform 0.2s',
-            }}
-          >
-            ▾
-          </span>
-        </span>
-      </div>
-      {open && children}
-    </div>
-  );
-}
-
 /* ─── Types ──────────────────────────────────────────────────── */
 type Subtask = { id: string; text: string; done: boolean };
 
@@ -1068,13 +1004,6 @@ export default function DoingCardsPanel() {
   function updatePush(id: string, f: Partial<CardItem>) {
     persistPush(push.map((p) => (p.id === id ? { ...p, ...f } : p)));
   }
-  function addPush(text: string) {
-    persistPush([
-      ...push,
-      { id: crypto.randomUUID(), text, done: false, createdAt: new Date().toISOString() },
-    ]);
-  }
-
   /* ── Drag handlers ──────────────────────────────────────────── */
   function startDrag(id: string, src: 'daily' | 'push') {
     dragSrcRef.current = { id, src };
@@ -1171,6 +1100,7 @@ export default function DoingCardsPanel() {
   const doneMissions = missions.filter((m) => m.done);
   const activePush = push.filter((p) => !p.done);
   const donePush = push.filter((p) => p.done);
+  const showCurrent = objItem.text.trim().length > 0 || objOpen;
   const allDone = [
     ...doneMissions.map((m) => ({ ...m, _src: 'daily' as const })),
     ...donePush.map((p) => ({ ...p, _src: 'push' as const })),
@@ -1178,62 +1108,60 @@ export default function DoingCardsPanel() {
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 16, padding: '4px 0 32px' }}>
-      {/* ── Current Mission ──────────────────────────────────── */}
-      <Section
-        title="Current Mission"
-        open={secOpen.mission}
-        onToggle={() => setSecOpen((s) => ({ ...s, mission: !s.mission }))}
+      <div
+        style={{
+          border: `1px solid ${CARD_BORDER}`,
+          borderRadius: 16,
+          background: CARD_BG,
+          overflow: 'hidden',
+        }}
       >
-        <MissionCard
-          item={objItem}
-          expanded={objOpen}
-          onToggle={() => setObjOpen((v) => !v)}
-          onChange={updateObj}
-          onDone={() => updateObj({ done: !objItem.done })}
-          textStyle={globalStyle}
-          isDragging={false}
-          dropIndicator={null}
-          onDragStart={() => {}}
-          onDragEnd={() => {}}
-          onDragOver={() => {}}
-          onDrop={() => {}}
-          onDragLeave={() => {}}
-          last
-        />
-        {secOpen.mission && (
-          <div style={{ display: 'flex', justifyContent: 'center', padding: '10px 0 4px' }}>
-            <button
-              type="button"
-              onClick={() => updateObj({ done: !objItem.done })}
-              style={{
-                fontFamily: 'var(--font-serif)',
-                fontSize: 11,
-                fontWeight: 700,
-                letterSpacing: '0.14em',
-                textTransform: 'uppercase',
-                background: objItem.done ? `${OCHRE}18` : 'transparent',
-                border: `1px solid ${objItem.done ? OCHRE : `${OCHRE}40`}`,
-                color: objItem.done ? OCHRE_TEXT : LABEL_COLOR,
-                opacity: objItem.done ? 1 : 0.5,
-                borderRadius: 999,
-                padding: '4px 20px',
-                cursor: 'pointer',
-                transition: 'all 0.15s',
-              }}
-            >
-              {objItem.done ? '↺ reopen' : 'done'}
-            </button>
-          </div>
+        {showCurrent && (
+          <>
+            <MissionCard
+              item={objItem}
+              expanded={objOpen}
+              onToggle={() => setObjOpen((v) => !v)}
+              onChange={updateObj}
+              onDone={() => updateObj({ done: !objItem.done })}
+              textStyle={globalStyle}
+              isDragging={false}
+              dropIndicator={null}
+              onDragStart={() => {}}
+              onDragEnd={() => {}}
+              onDragOver={() => {}}
+              onDrop={() => {}}
+              onDragLeave={() => {}}
+              last={activeMissions.length === 0 && activePush.length === 0}
+            />
+            {objOpen && (
+              <div style={{ display: 'flex', justifyContent: 'center', padding: '0 0 10px' }}>
+                <button
+                  type="button"
+                  onClick={() => updateObj({ done: !objItem.done })}
+                  style={{
+                    fontFamily: 'var(--font-serif)',
+                    fontSize: 11,
+                    fontWeight: 700,
+                    letterSpacing: '0.14em',
+                    textTransform: 'uppercase',
+                    background: objItem.done ? `${OCHRE}18` : 'transparent',
+                    border: `1px solid ${objItem.done ? OCHRE : `${OCHRE}40`}`,
+                    color: objItem.done ? OCHRE_TEXT : LABEL_COLOR,
+                    opacity: objItem.done ? 1 : 0.5,
+                    borderRadius: 999,
+                    padding: '4px 20px',
+                    cursor: 'pointer',
+                    transition: 'all 0.15s',
+                  }}
+                >
+                  {objItem.done ? '↺ reopen' : 'done'}
+                </button>
+              </div>
+            )}
+          </>
         )}
-      </Section>
-
-      {/* ── Daily Missions ───────────────────────────────────── */}
-      <Section
-        title="Daily Missions"
-        open={secOpen.daily}
-        onToggle={() => setSecOpen((s) => ({ ...s, daily: !s.daily }))}
-      >
-        {activeMissions.map((m) => (
+        {activeMissions.map((m, index) => (
           <MissionCard
             key={m.id}
             item={m}
@@ -1252,35 +1180,10 @@ export default function DoingCardsPanel() {
               dropTargetRef.current = null;
               setDropTarget(null);
             }}
+            last={activePush.length === 0 && index === activeMissions.length - 1}
           />
         ))}
-        {/* Section-end drop zone */}
-        {draggingId && (
-          <div
-            onDragOver={(e) => {
-              e.preventDefault();
-              dropTargetRef.current = null;
-              setDropTarget(null);
-            }}
-            onDrop={(e) => {
-              e.preventDefault();
-              dropAtSectionEnd('daily');
-            }}
-            style={{ height: 32, display: 'flex', alignItems: 'center', paddingLeft: 16 }}
-          >
-            <div style={{ height: 2, flex: 1, borderRadius: 1, background: `${OCHRE}20` }} />
-          </div>
-        )}
-        <AddRow placeholder="add a mission…" onAdd={addMission} />
-      </Section>
-
-      {/* ── Push for Tomorrow ────────────────────────────────── */}
-      <Section
-        title="Push for Tomorrow"
-        open={secOpen.push}
-        onToggle={() => setSecOpen((s) => ({ ...s, push: !s.push }))}
-      >
-        {activePush.map((p) => (
+        {activePush.map((p, index) => (
           <MissionCard
             key={p.id}
             item={p}
@@ -1299,9 +1202,9 @@ export default function DoingCardsPanel() {
               dropTargetRef.current = null;
               setDropTarget(null);
             }}
+            last={index === activePush.length - 1}
           />
         ))}
-        {/* Section-end drop zone */}
         {draggingId && (
           <div
             onDragOver={(e) => {
@@ -1311,15 +1214,15 @@ export default function DoingCardsPanel() {
             }}
             onDrop={(e) => {
               e.preventDefault();
-              dropAtSectionEnd('push');
+              dropAtSectionEnd('daily');
             }}
             style={{ height: 32, display: 'flex', alignItems: 'center', paddingLeft: 16 }}
           >
             <div style={{ height: 2, flex: 1, borderRadius: 1, background: `${OCHRE}20` }} />
           </div>
         )}
-        <AddRow placeholder="push for tomorrow…" onAdd={addPush} />
-      </Section>
+        <AddRow placeholder="add a mission…" onAdd={addMission} />
+      </div>
 
       {/* ── Done ─────────────────────────────────────────────── */}
       {allDone.length > 0 && (

@@ -148,6 +148,8 @@ Accepted initial presets:
 - **Outward Sun**: a glowing fire sun that pulses outward only. The pulse should read as expanding rings/heat leaving the core, not an in-and-out breathing loop.
 - **Alchemical Dot Sun**: a more graphical sun made from dots, with adjustable ray count, ray length, and ray curve. Rays can feel curved or triangular depending on controls.
 - **Dot Heart**: a heart shape made only from many warm dots, with internal pulse and flowing particle motion.
+- **Dot Phoenix**: a warm dot loop that blooms from a heart-like ember into a bird silhouette, then dissolves upward into flames before returning. Brighter regions should come from denser particles, not a solid fill. Long term, Phoenix should be able to transition into and out of Dot Heart as one continuous journey.
+- **Dot Brain Loop**: a symmetric walnut/brain-like dot field. It should loop between a rational mode with ordered rows, lanes, and number-like micro-patterns and a creative mode with irrational swirls and flowing folds.
 
 Rules:
 
@@ -157,6 +159,41 @@ Rules:
 - Sliders should be specific to the form: ray count and ray shape for the alchemical sun, corona/fire motion for the real sun, inner flow/pulse for the heart.
 - Touch distortion should bend the dots directly so the forms feel alive and playable.
 - They should be promoted near Dot Walker and other living-symbol presets because they are part of the future visual language.
+
+Long-term journey direction:
+
+- Geometry presets should become groupable into ordered journeys for concerts, reflection sessions, and guided visuals.
+- Journey groups should blend compatible dot presets into each other instead of hard-cutting scenes.
+- Phoenix and Heart are the first explicit pair: heart warmth can bloom into phoenix transformation, then fall back into heart.
+- Brain Loop can become a bridge preset for moving between rational planning visuals and creative/swirl visuals.
+
+## Forward Journey Presets
+
+Colourmap needs a family of visuals that feel like travelling forward through a world, not only
+watching a symbol pulse in place. These presets are the foundation for future guided programs where
+the user moves through rivers, roads, tunnels, paths, and inner landscapes.
+
+Accepted initial presets:
+
+- **Dot Tunnel**: thousands of dots form a tunnel with a clear vanishing point. The motion should
+  feel like continuous forward travel: distant dots grow outward toward the viewer, then recycle
+  back into depth.
+- **Swirl Dot Tunnel**: the same forward tunnel feeling, but with dots orbiting and spiraling around
+  the tube. It should still read as a tunnel first, not as a flat vortex.
+- **Line Tunnel 3D**: a line/rib version of the tunnel, using rings and spokes so it feels more
+  architectural and three-dimensional.
+- **Dot Road**: thousands of dots form a road in perspective, with lane/edge dots expanding toward
+  the viewer to create the sensation of driving forward.
+
+Rules:
+
+- Depth and forward motion are the core success criteria. These presets should avoid decorative
+  spinning that breaks the feeling of moving into space.
+- The vanishing point should remain readable and stable enough that the user feels oriented.
+- Roads, rivers, and tunnels should become a long-term journey category that can blend from one
+  scene into another for concerts, focus sessions, and symbolic education programs.
+- Future variants can include River Road, Mountain Road, Night Road, River Tunnel, and Road To Sun,
+  but each should remain simple enough to read at phone size.
 
 Chaos presets should also be easy to reach near the top of Geometry Builder:
 
