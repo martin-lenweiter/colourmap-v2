@@ -19,6 +19,7 @@ const DEPTH_TABS: { id: DepthTab; label: string; color: string }[] = [
   { id: 'list', label: 'List', color: '#D4805A' },
   { id: 'super', label: 'Super', color: '#6890B0' },
 ];
+const LIGHT_PILL_TEXT = 'var(--light-pill-text, var(--light-surface-text, #5C3018))';
 
 /* ─── TRIO VIEW — three circles side by side, each with 4 slices ─── */
 // Slice order matches compass: top (-π/2), right (0), bottom (π/2), left (π)
@@ -311,7 +312,7 @@ export default function CompassCarousel() {
             style={{
               background: depthTab === t.id ? `${t.color}18` : 'transparent',
               border: `1px solid ${depthTab === t.id ? `${t.color}40` : '#C4A06020'}`,
-              color: t.color,
+              color: LIGHT_PILL_TEXT,
               fontFamily: 'var(--font-serif)',
               fontWeight: 700,
             }}

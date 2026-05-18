@@ -257,6 +257,8 @@ type PanelTab = 'color' | 'design';
 const LIGHT_THEMES: ReadonlySet<ColorId> = new Set(['paper', 'golden']);
 const LIGHT_SURFACE_TEXT = 'rgba(30,16,8,0.88)';
 const LIGHT_SURFACE_MUTED = 'rgba(30,16,8,0.58)';
+const LIGHT_PILL_TEXT = LIGHT_SURFACE_TEXT;
+const LIGHT_PILL_MUTED = LIGHT_SURFACE_MUTED;
 const DARK_SURFACE_TEXT = 'rgba(196,160,96,0.88)';
 const DARK_SURFACE_MUTED = 'rgba(196,160,96,0.55)';
 
@@ -293,6 +295,8 @@ function applyPaletteCSS(id: PaletteId) {
     val ? root.style.setProperty(prop, val) : root.style.removeProperty(prop);
   root.style.setProperty('--light-surface-text', LIGHT_SURFACE_TEXT);
   root.style.setProperty('--light-surface-muted', LIGHT_SURFACE_MUTED);
+  root.style.setProperty('--light-pill-text', LIGHT_PILL_TEXT);
+  root.style.setProperty('--light-pill-muted', LIGHT_PILL_MUTED);
   root.style.setProperty('--header-bg', p.header.bg);
   root.style.setProperty('--header-border', p.header.border);
   root.style.setProperty('--header-text', p.header.text);
@@ -302,7 +306,7 @@ function applyPaletteCSS(id: PaletteId) {
   set('--palette-tab-inactive-bg', p.tabInactiveBg);
   set('--palette-tab-active-text', p.tabActiveText);
   set('--palette-tab-inactive-text', p.tabInactiveText);
-  /* Panel text follows the actual panel depth. Light pills use --light-surface-* instead. */
+  /* Panel text follows actual panel depth. Light pills use --light-pill-* instead. */
   root.style.setProperty('--palette-panel-text', p.panelText ?? DARK_SURFACE_TEXT);
   root.style.setProperty('--palette-panel-muted', p.panelMuted ?? DARK_SURFACE_MUTED);
   /* Light palettes override --foreground so typed text in inputs is dark, not golden */

@@ -16,6 +16,8 @@ import { getEmotionalWord } from '@/lib/emotional-vocabulary';
 
 const CATS_KEY = 'colourmap:life-categories';
 const CF_NAMES_KEY = 'colourmap:cf-custom-names';
+const LIGHT_PILL_TEXT = 'var(--light-pill-text, var(--light-surface-text, #5C3018))';
+const LIGHT_PILL_MUTED = 'var(--light-pill-muted, var(--light-surface-muted, #7A5438))';
 
 const COMPASS_AXES: CompassAxis[] = [
   { name: 'Care', color: '#D4805A', group: 'Feeling' },
@@ -305,7 +307,7 @@ function _NoteLog({
                 )}
                 {!timeMatch && !isTracker && <span className="w-10 shrink-0" />}
                 {isTracker && trackerInfo && (
-                  <span className="text-xs shrink-0 pt-0.5" style={{ color: trackerInfo.color }}>
+                  <span className="text-xs shrink-0 pt-0.5" style={{ color: LIGHT_PILL_TEXT }}>
                     {trackerInfo.label}
                   </span>
                 )}
@@ -400,7 +402,7 @@ function _NoteLog({
                   className="rounded-full px-2 py-0.5 text-[11px] font-medium transition-all"
                   style={{
                     background: tagged ? `${t.color}18` : 'transparent',
-                    color: tagged ? t.color : `${t.color}50`,
+                    color: tagged ? LIGHT_PILL_TEXT : LIGHT_PILL_MUTED,
                     border: `1px solid ${tagged ? `${t.color}30` : `${t.color}10`}`,
                   }}
                 >
@@ -436,18 +438,17 @@ function PulseSlider({
   onNote: (v: string) => void;
 }) {
   const idx = Math.round((value / 100) * (levels.length - 1));
-  const currentColor = PULSE_COLORS[idx];
 
   return (
     <div className="space-y-1">
       <div className="flex items-center justify-between">
         <span
           className="text-xs font-medium uppercase tracking-wider"
-          style={{ color: currentColor }}
+          style={{ color: LIGHT_PILL_TEXT }}
         >
           {label}
         </span>
-        <span className="text-xs" style={{ color: currentColor }}>
+        <span className="text-xs" style={{ color: LIGHT_PILL_MUTED }}>
           {levels[idx]}
         </span>
       </div>
@@ -670,7 +671,7 @@ function CfColumn({
             className="min-w-0 bg-transparent outline-none"
             style={{
               borderBottom: `1px solid ${accent}40`,
-              color: accent,
+              color: LIGHT_PILL_TEXT,
               fontSize: '14px',
               fontWeight: 600,
               textTransform: 'uppercase' as const,
@@ -692,7 +693,7 @@ function CfColumn({
               border: 'none',
               padding: 0,
               cursor: 'pointer',
-              color: accent,
+              color: LIGHT_PILL_TEXT,
               // Phone-readable: 16px at rest, shrinks only on very narrow
               // screens. Label sits above the Challenge/Flow textareas.
               fontSize: 'clamp(15px, 3.8vw, 17px)',
@@ -1113,7 +1114,7 @@ export default function CheckInForm({ missions = [], onCheckInComplete }: CheckI
                   {barActive && (
                     <p
                       className="text-lg font-semibold text-center transition-all duration-300"
-                      style={{ color: current.color }}
+                      style={{ color: LIGHT_PILL_TEXT }}
                     >
                       {current.level}
                     </p>
@@ -1208,7 +1209,7 @@ export default function CheckInForm({ missions = [], onCheckInComplete }: CheckI
                         <div className="space-y-2 animate-in fade-in duration-200">
                           <p
                             className="text-xs leading-relaxed px-2"
-                            style={{ color: current.color, opacity: 0.7 }}
+                            style={{ color: LIGHT_PILL_MUTED }}
                           >
                             {current.desc}
                           </p>
@@ -1354,7 +1355,7 @@ export default function CheckInForm({ missions = [], onCheckInComplete }: CheckI
                 <div className="space-y-2 animate-in fade-in duration-150">
                   <p
                     className="text-xl italic leading-none text-center"
-                    style={{ color: tracker.color }}
+                    style={{ color: LIGHT_PILL_TEXT }}
                   >
                     {tracker.label}
                   </p>
@@ -1401,7 +1402,7 @@ export default function CheckInForm({ missions = [], onCheckInComplete }: CheckI
                         >
                           <span
                             className="text-[10px] leading-none -rotate-45 font-bold"
-                            style={{ color: tracker.color }}
+                            style={{ color: LIGHT_PILL_TEXT }}
                           >
                             +
                           </span>

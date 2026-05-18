@@ -54,7 +54,7 @@ Every tab has exactly two blocks:
 
 ### CARE (Feeling)
 - **C** — Care: body, health, physical state
-- **A** — Attitude: mindset, openness, resistance
+- **A** — Attitude: mindset, openness, resistance. Its inner-work order is `Positive loops` first, then `Negative loops`; future mapping should be able to draw both loop types, not only list them.
 - **R** — Rest: calm, grounding, nervous system
 - **E** — Emotions: mood, feelings, inner state
 

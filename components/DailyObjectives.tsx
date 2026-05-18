@@ -43,6 +43,9 @@ const STATUS_CONFIG: Record<TodoStatus, { label: string; color: string }> = {
   waiting: { label: 'Waiting for reply', color: '#A08060' },
 };
 
+const LIGHT_PILL_TEXT = 'var(--light-pill-text, var(--light-surface-text, #5C3018))';
+const LIGHT_PILL_MUTED = 'var(--light-pill-muted, var(--light-surface-muted, #7A5438))';
+
 const EASE_LABELS = ['', 'Complex', 'Hard', 'Medium', 'Doable', 'Easy'];
 const EASE_COLORS = ['#E0844A', '#D8C078', '#C0D088', '#A0C8A0', '#7AAA58'];
 const WEIGHT_LABELS = ['', 'Light', 'Mild', 'Present', 'Heavy', 'Crushing'];
@@ -427,7 +430,7 @@ export default function DailyObjectives() {
                 height: 32,
                 background: todayInput.trim() ? '#C4A060' : '#C4A06025',
                 border: '1.5px solid #C4A06050',
-                color: todayInput.trim() ? '#fff' : '#C4A06070',
+                color: todayInput.trim() ? '#fff' : LIGHT_PILL_MUTED,
                 fontSize: 22,
                 lineHeight: 1,
                 display: 'flex',
@@ -510,7 +513,7 @@ export default function DailyObjectives() {
                         style={{
                           background: o.done ? '#C4A060' : '#C4A06015',
                           border: '1px solid #C4A06050',
-                          color: o.done ? '#fff' : '#C4A060',
+                          color: o.done ? '#fff' : LIGHT_PILL_TEXT,
                           minWidth: 52,
                         }}
                       >
@@ -567,7 +570,7 @@ export default function DailyObjectives() {
                           className="min-w-0 flex-1 cursor-pointer bg-transparent text-center"
                           style={{
                             color: o.done
-                              ? '#C4A060'
+                              ? LIGHT_PILL_MUTED
                               : o.status === 'waiting'
                                 ? '#A08060'
                                 : '#7a5438',
@@ -594,7 +597,7 @@ export default function DailyObjectives() {
                           {o.notes && o.notes.trim().length > 0 && !isExpanded && (
                             <span
                               className="ml-2 text-xs no-underline"
-                              style={{ color: '#C4A06080' }}
+                              style={{ color: LIGHT_PILL_MUTED }}
                             >
                               ·
                             </span>
@@ -1032,7 +1035,7 @@ export default function DailyObjectives() {
                             style={{
                               background: t.done ? '#C4A060' : '#C4A06015',
                               border: '1px solid #C4A06050',
-                              color: t.done ? '#fff' : '#C4A060',
+                              color: t.done ? '#fff' : LIGHT_PILL_TEXT,
                               minWidth: 52,
                             }}
                           >
@@ -1094,7 +1097,7 @@ export default function DailyObjectives() {
                               className="min-w-0 flex-1 cursor-pointer bg-transparent text-center"
                               style={{
                                 color: t.done
-                                  ? '#C4A060'
+                                  ? LIGHT_PILL_MUTED
                                   : t.status === 'waiting'
                                     ? '#A08060'
                                     : '#7a5438',

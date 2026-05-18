@@ -14,6 +14,9 @@ interface FacingRowProps {
 }
 
 export default function FacingRow({ activeId, trackers, onSelect }: FacingRowProps) {
+  const lightPillText = 'var(--light-pill-text, var(--light-surface-text, #5C3018))';
+  const lightPillMuted = 'var(--light-pill-muted, var(--light-surface-muted, #7A5438))';
+
   return (
     <div className="space-y-3">
       <div className="flex items-center justify-center gap-2">
@@ -30,7 +33,7 @@ export default function FacingRow({ activeId, trackers, onSelect }: FacingRowPro
               className="flex h-12 w-12 items-center justify-center rounded-full text-sm font-semibold italic transition-all"
               style={{
                 background: isActive ? tracker.color : `${tracker.color}30`,
-                color: isActive ? '#fffaf2' : tracker.color,
+                color: isActive ? '#fffaf2' : lightPillText,
                 boxShadow: isActive ? `0 8px 20px -12px ${tracker.color}` : 'none',
               }}
             >
@@ -39,7 +42,10 @@ export default function FacingRow({ activeId, trackers, onSelect }: FacingRowPro
           );
         })}
       </div>
-      <p className="text-center text-xs font-semibold uppercase tracking-[0.26em] text-[#8f6a47]">
+      <p
+        className="text-center text-xs font-semibold uppercase tracking-[0.26em]"
+        style={{ color: lightPillMuted }}
+      >
         FACING
       </p>
     </div>

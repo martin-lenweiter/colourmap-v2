@@ -44,8 +44,8 @@ const MISSION_KIND_PREFIX = 'colourmap:mission-kind:';
 const PAPER = 'rgba(255,255,255,0.04)';
 const LINE = 'rgba(196,160,96,0.2)';
 const LINE_SOFT = 'rgba(196,160,96,0.12)';
-const BROWN = 'var(--light-surface-text, #5C3018)';
-const MUTED = 'var(--light-surface-muted, #8A6A4A)';
+const BROWN = 'var(--light-pill-text, var(--light-surface-text, #5C3018))';
+const MUTED = 'var(--light-pill-muted, var(--light-surface-muted, #8A6A4A))';
 const OCHRE = '#C4A060';
 
 const KIND_META: Record<MissionKind, { label: string; color: string; note: string }> = {
@@ -464,7 +464,7 @@ function MissionRow({ item, areas }: { item: MissionViewItem; areas: LifeArea[] 
                 border: `1px solid ${area ? `${area.color}42` : LINE_SOFT}`,
                 borderRadius: 999,
                 background: area ? `${area.color}10` : 'transparent',
-                color: area ? area.color : MUTED,
+                color: area ? BROWN : MUTED,
                 padding: '2px 7px',
                 fontFamily: 'var(--font-serif)',
                 fontSize: 10,
@@ -539,7 +539,7 @@ function MissionRow({ item, areas }: { item: MissionViewItem; areas: LifeArea[] 
                       borderRadius: 999,
                       background:
                         candidate.id === area?.id ? `${candidate.color}18` : 'transparent',
-                      color: candidate.color,
+                      color: BROWN,
                       padding: '2px 7px',
                       fontFamily: 'var(--font-serif)',
                       fontSize: 10,

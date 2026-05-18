@@ -86,6 +86,8 @@
   --sidebar-accent-foreground: #2a1a06;
   --sidebar-border: rgba(160, 110, 40, 0.18);
   --sidebar-ring: #b07840;
+  --light-pill-text: rgba(30, 16, 8, 0.88);
+  --light-pill-muted: rgba(30, 16, 8, 0.58);
 }
 
 /* ─── Golden ─── */

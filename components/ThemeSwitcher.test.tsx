@@ -172,6 +172,12 @@ describe('ThemeSwitcher', () => {
     expect(document.documentElement.style.getPropertyValue('--light-surface-muted')).toContain(
       '30,16,8',
     );
+    expect(document.documentElement.style.getPropertyValue('--light-pill-text')).toContain(
+      '30,16,8',
+    );
+    expect(document.documentElement.style.getPropertyValue('--light-pill-muted')).toContain(
+      '30,16,8',
+    );
   });
 
   it('always applies the full header background to navigation', () => {

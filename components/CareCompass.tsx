@@ -11,6 +11,8 @@ import { useEffect, useState } from 'react';
 type CareAxis = 'care' | 'attitude' | 'rest' | 'emotions';
 
 type ColorTheme = 'warm' | 'rest' | 'care' | 'earth' | 'vivid' | 'vivid2';
+const LIGHT_PILL_TEXT = 'var(--light-pill-text, var(--light-surface-text, #5C3018))';
+const LIGHT_PILL_MUTED = 'var(--light-pill-muted, var(--light-surface-muted, #7A5438))';
 
 const CARE_THEMES: {
   id: ColorTheme;
@@ -339,7 +341,10 @@ export default function CareCompass({ initialSlice }: { initialSlice?: string | 
   return (
     <div className="space-y-5 px-1 py-2" style={{ background: 'transparent' }}>
       <div className="relative">
-        <p className="text-center text-xs font-semibold uppercase tracking-[0.24em] text-[#C4A060]">
+        <p
+          className="text-center text-xs font-semibold uppercase tracking-[0.24em]"
+          style={{ color: LIGHT_PILL_TEXT }}
+        >
           Feeling
         </p>
         <div className="absolute right-0 top-0" style={{ zIndex: 10 }}>
@@ -612,7 +617,7 @@ export default function CareCompass({ initialSlice }: { initialSlice?: string | 
         <div className="space-y-2 text-center">
           <span
             className="text-xl font-bold"
-            style={{ color: '#C4A060', fontFamily: 'var(--font-serif)' }}
+            style={{ color: LIGHT_PILL_TEXT, fontFamily: 'var(--font-serif)' }}
           >
             Challenge
           </span>
@@ -627,7 +632,7 @@ export default function CareCompass({ initialSlice }: { initialSlice?: string | 
                   style={{
                     background: '#C4A06012',
                     border: '1px solid #C4A06020',
-                    color: '#C4A060',
+                    color: LIGHT_PILL_TEXT,
                   }}
                 >
                   {item} ✕
@@ -645,7 +650,7 @@ export default function CareCompass({ initialSlice }: { initialSlice?: string | 
             placeholder="What's challenging?..."
             className="w-full border-b bg-transparent pb-1 text-center text-base outline-none"
             style={{
-              color: '#C4A060',
+              color: LIGHT_PILL_TEXT,
               borderColor: '#C4A06030',
               fontFamily: 'var(--font-serif)',
             }}
@@ -654,7 +659,7 @@ export default function CareCompass({ initialSlice }: { initialSlice?: string | 
         <div className="space-y-2 text-center">
           <span
             className="text-xl font-bold"
-            style={{ color: '#C4A060', fontFamily: 'var(--font-serif)' }}
+            style={{ color: LIGHT_PILL_TEXT, fontFamily: 'var(--font-serif)' }}
           >
             Flow
           </span>
@@ -669,7 +674,7 @@ export default function CareCompass({ initialSlice }: { initialSlice?: string | 
                   style={{
                     background: '#C4A06012',
                     border: '1px solid #C4A06020',
-                    color: '#C4A060',
+                    color: LIGHT_PILL_TEXT,
                   }}
                 >
                   {item} ✕
@@ -687,7 +692,7 @@ export default function CareCompass({ initialSlice }: { initialSlice?: string | 
             placeholder="What's flowing?..."
             className="w-full border-b bg-transparent pb-1 text-center text-base outline-none"
             style={{
-              color: '#C4A060',
+              color: LIGHT_PILL_TEXT,
               borderColor: '#C4A06030',
               fontFamily: 'var(--font-serif)',
             }}
@@ -737,7 +742,7 @@ export default function CareCompass({ initialSlice }: { initialSlice?: string | 
           <label className="block space-y-2">
             <span
               style={{
-                color: 'var(--palette-panel-text, rgba(196,160,96,0.88))',
+                color: LIGHT_PILL_TEXT,
                 fontFamily: 'var(--font-serif)',
                 fontSize: '14px',
                 fontWeight: 600,
@@ -753,8 +758,8 @@ export default function CareCompass({ initialSlice }: { initialSlice?: string | 
               placeholder="name them, let them land..."
               className="min-h-[60px] w-full resize-none border-b bg-transparent pb-1 outline-none placeholder:opacity-50"
               style={{
-                color: 'var(--palette-panel-text, rgba(196,160,96,0.88))',
-                borderColor: 'var(--palette-panel-muted, rgba(196,160,96,0.3))',
+                color: LIGHT_PILL_TEXT,
+                borderColor: LIGHT_PILL_MUTED,
                 fontFamily: 'var(--font-handwritten)',
                 fontSize: '16px',
                 lineHeight: 1.5,
@@ -764,7 +769,7 @@ export default function CareCompass({ initialSlice }: { initialSlice?: string | 
           <label className="block space-y-2">
             <span
               style={{
-                color: 'var(--palette-panel-text, rgba(196,160,96,0.88))',
+                color: LIGHT_PILL_TEXT,
                 fontFamily: 'var(--font-serif)',
                 fontSize: '14px',
                 fontWeight: 600,
@@ -780,8 +785,8 @@ export default function CareCompass({ initialSlice }: { initialSlice?: string | 
               placeholder="a person · a memory · a situation..."
               className="min-h-[60px] w-full resize-none border-b bg-transparent pb-1 outline-none placeholder:opacity-50"
               style={{
-                color: 'var(--palette-panel-text, rgba(196,160,96,0.88))',
-                borderColor: 'var(--palette-panel-muted, rgba(196,160,96,0.3))',
+                color: LIGHT_PILL_TEXT,
+                borderColor: LIGHT_PILL_MUTED,
                 fontFamily: 'var(--font-handwritten)',
                 fontSize: '16px',
                 lineHeight: 1.5,
@@ -834,7 +839,7 @@ export default function CareCompass({ initialSlice }: { initialSlice?: string | 
 
               <p
                 style={{
-                  color: 'var(--palette-panel-text, rgba(196,160,96,0.88))',
+                  color: LIGHT_PILL_TEXT,
                   fontFamily: 'var(--font-serif)',
                   fontSize: '16px',
                   lineHeight: 1.5,
