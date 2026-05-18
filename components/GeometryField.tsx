@@ -54,6 +54,7 @@ type Mode =
   | 'cyclonetiles'
   | 'eddylace'
   | 'magneticsand'
+  | 'eclipse'
   | 'plasma'
   | 'globe'
   | 'nebula'
@@ -1388,6 +1389,18 @@ const PRESETS: Record<string, Cfg> = {
     luminous: 2,
     stars: 0,
     mode: 'magneticsand',
+  },
+  Eclipse: {
+    preset: 'Golden Source',
+    symmetry: 9,
+    complexity: 8.4,
+    glow: 4.4,
+    breathSpeed: 0.28,
+    intensity: 8.6,
+    particles: 0,
+    luminous: 2.4,
+    stars: 0,
+    mode: 'eclipse',
   },
   'Solar Flare': {
     preset: 'Solar Plasma',
@@ -2879,7 +2892,7 @@ const PRESETS: Record<string, Cfg> = {
     symmetry: 6,
     complexity: 5.8,
     glow: 5.4,
-    breathSpeed: 0.48,
+    breathSpeed: 0.16,
     intensity: 6.2,
     particles: 3,
     luminous: 1.4,
@@ -2891,7 +2904,7 @@ const PRESETS: Record<string, Cfg> = {
     symmetry: 8,
     complexity: 5.9,
     glow: 5.3,
-    breathSpeed: 0.42,
+    breathSpeed: 0.14,
     intensity: 6.1,
     particles: 3,
     luminous: 1.4,
@@ -2903,7 +2916,7 @@ const PRESETS: Record<string, Cfg> = {
     symmetry: 7,
     complexity: 7.4,
     glow: 5.8,
-    breathSpeed: 0.52,
+    breathSpeed: 0.18,
     intensity: 6.8,
     particles: 4,
     luminous: 1.7,
@@ -8177,7 +8190,8 @@ function isCurrentTextureMode(mode: Mode): boolean {
     mode === 'currentscales' ||
     mode === 'cyclonetiles' ||
     mode === 'eddylace' ||
-    mode === 'magneticsand'
+    mode === 'magneticsand' ||
+    mode === 'eclipse'
   );
 }
 
@@ -8227,6 +8241,14 @@ function buildCurrentTexture(cfg: Cfg, R: number): THREE.Group {
       const r = cell * (0.08 + Math.random() * 0.72);
       x = cx + Math.cos(a + r * 0.035) * r;
       y = cy + Math.sin(a + r * 0.035) * r * 0.62;
+    } else if (cfg.mode === 'eclipse') {
+      const a = Math.random() * TAU;
+      const hollow = R * (0.22 + cfg.glow * 0.012);
+      const outer = R * (0.92 + Math.random() * 0.24);
+      const radial = hollow + (outer - hollow) * Math.sqrt(Math.random());
+      const ray = Math.sin(a * cfg.symmetry) * R * 0.028;
+      x = Math.cos(a) * (radial + ray);
+      y = Math.sin(a) * (radial + ray) * 0.82;
     } else {
       const lane = (Math.random() - 0.5) * R * 1.9;
       const wave = Math.sin(lane * 0.012) * R * 0.28;
@@ -8330,6 +8352,19 @@ function currentTextureVector(
       y:
         -Math.sin(x * f * 2.2 - tSlow * 0.8) * 0.55 +
         Math.cos((x - y) * f * 1.3 + tSlow * 0.6) * 0.35,
+    };
+  }
+
+  if (mode === 'eclipse') {
+    const r = Math.sqrt(x * x + y * y) + 1;
+    const a = Math.atan2(y, x);
+    const hollow = R * (0.21 + cfg.glow * 0.012);
+    const rim = Math.max(0, 1 - Math.abs(r - hollow) / Math.max(R * 0.12, 1));
+    const spoke = Math.sin(a * sym + tSlow * 0.45) * 0.16;
+    const out = 0.78 + rim * 0.65 + spoke;
+    return {
+      x: Math.cos(a) * out + Math.cos(a + Math.PI / 2) * spoke * 0.28,
+      y: Math.sin(a) * out * 0.82 + Math.sin(a + Math.PI / 2) * spoke * 0.22,
     };
   }
 
@@ -8520,11 +8555,19 @@ function updateCurrentTexture(group: THREE.Group, cfg: Cfg, t: number, R: number
         nz += f.z * 0.5;
       }
 
-      if (nx * nx + ny * ny > R2) {
-        const a = Math.atan2(ny, nx) + Math.PI + (Math.random() - 0.5) * 0.9;
-        const r = fieldR * (0.18 + Math.random() * 0.58);
+      const minR = cfg.mode === 'eclipse' ? R * (0.24 + cfg.glow * 0.01) : 0;
+      const r2 = nx * nx + ny * ny;
+      if (r2 > R2 || r2 < minR * minR) {
+        const a =
+          cfg.mode === 'eclipse'
+            ? Math.atan2(ny, nx) + (Math.random() - 0.5) * 0.42
+            : Math.atan2(ny, nx) + Math.PI + (Math.random() - 0.5) * 0.9;
+        const r =
+          cfg.mode === 'eclipse'
+            ? minR + (fieldR - minR) * (0.22 + Math.random() * 0.62)
+            : fieldR * (0.18 + Math.random() * 0.58);
         nx = Math.cos(a) * r;
-        ny = Math.sin(a) * r;
+        ny = Math.sin(a) * r * (cfg.mode === 'eclipse' ? 0.82 : 1);
         nz = (Math.random() - 0.5) * R * 0.08;
       }
 
@@ -10558,6 +10601,7 @@ const MODE_TO_PRESET: Partial<Record<Mode, string>> = {
   cyclonetiles: 'Cyclone Tiles',
   eddylace: 'Eddy Lace',
   magneticsand: 'Magnetic Sand',
+  eclipse: 'Eclipse',
   plasma: 'Solar Flare',
   nebula: 'Nebula Veil',
   globe: 'Emotion Globe',
@@ -10667,6 +10711,7 @@ const MODES: { mode: Mode; label: string }[] = [
   { mode: 'cyclonetiles', label: 'Cyclone Tiles' },
   { mode: 'eddylace', label: 'Eddy Lace' },
   { mode: 'magneticsand', label: 'Magnetic Sand' },
+  { mode: 'eclipse', label: 'Eclipse' },
   { mode: 'current3d', label: '∿³ Current 3D' },
   { mode: 'plasma', label: '☀ Plasma' },
   { mode: 'nebula', label: 'Nebula' },
@@ -10703,6 +10748,7 @@ type FeaturedItem = { name: string; tag: string } | { header: string; dim?: bool
 
 const FEATURED_PRESETS: FeaturedItem[] = [
   { header: 'Good Ones' },
+  { name: 'Eclipse', tag: 'TOP' },
   { name: 'Mode Sun', tag: 'SELF' },
   { name: 'Brain Topography', tag: 'SELF' },
   { name: 'Walking Figure', tag: 'CHAR' },

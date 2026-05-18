@@ -337,14 +337,16 @@ export default function GlobalAIPresence() {
             width: expanded ? 'min(920px, calc(100vw - 36px))' : 'min(430px, calc(100vw - 24px))',
             maxHeight: expanded ? 'calc(100svh - 36px)' : 'min(680px, calc(100svh - 104px))',
             borderRadius: 26,
-            borderColor: 'rgba(214, 160, 78, 0.34)',
-            background:
-              'linear-gradient(155deg, rgba(67,38,25,0.98), rgba(37,20,15,0.98) 52%, rgba(20,14,14,0.98))',
-            color: '#f7e5c2',
-            boxShadow: '0 22px 74px rgba(19, 10, 7, 0.48)',
+            borderColor: 'var(--ai-surface-border, rgba(214, 160, 78, 0.34))',
+            background: 'var(--ai-surface-bg, rgba(42, 24, 14, 0.94))',
+            color: 'var(--ai-surface-text, #f7e5c2)',
+            boxShadow: 'var(--ai-surface-shadow, 0 22px 74px rgba(19, 10, 7, 0.48))',
           }}
         >
-          <div className="flex items-center justify-between border-b border-amber-200/10 px-4 py-3">
+          <div
+            className="flex items-center justify-between border-b px-4 py-3"
+            style={{ borderColor: 'var(--ai-surface-accent, rgba(238, 185, 96, 0.14))' }}
+          >
             <div className="flex min-w-0 items-center gap-3">
               <PresenceCell
                 active={status === 'thinking' || speech.listening}
@@ -353,10 +355,18 @@ export default function GlobalAIPresence() {
                 preset={preset}
               />
               <div className="min-w-0">
-                <p className="text-[11px] uppercase tracking-[0.22em] text-amber-200/55">
+                <p
+                  className="text-[11px] uppercase tracking-[0.22em]"
+                  style={{ color: 'var(--ai-surface-muted, rgba(246, 217, 155, 0.6))' }}
+                >
                   {surface}
                 </p>
-                <h2 className="truncate font-serif text-lg text-amber-100">AI Presence</h2>
+                <h2
+                  className="truncate font-serif text-lg"
+                  style={{ color: 'var(--ai-surface-text, #ffecbf)' }}
+                >
+                  AI Presence
+                </h2>
               </div>
             </div>
             <div className="flex items-center gap-2">
@@ -364,7 +374,11 @@ export default function GlobalAIPresence() {
                 type="button"
                 aria-label={expanded ? 'Shrink AI Presence' : 'Expand AI Presence'}
                 onClick={() => setExpanded((value) => !value)}
-                className="rounded-full border border-amber-200/15 p-2 text-amber-100/80 transition hover:bg-amber-100/10"
+                className="rounded-full border p-2 transition hover:opacity-80"
+                style={{
+                  borderColor: 'var(--ai-surface-accent, rgba(238, 185, 96, 0.18))',
+                  color: 'var(--ai-surface-text, rgba(255, 236, 191, 0.85))',
+                }}
               >
                 <Maximize2 size={15} />
               </button>
@@ -372,7 +386,11 @@ export default function GlobalAIPresence() {
                 type="button"
                 aria-label="Close AI Presence"
                 onClick={() => setOpen(false)}
-                className="rounded-full border border-amber-200/15 p-2 text-amber-100/80 transition hover:bg-amber-100/10"
+                className="rounded-full border p-2 transition hover:opacity-80"
+                style={{
+                  borderColor: 'var(--ai-surface-accent, rgba(238, 185, 96, 0.18))',
+                  color: 'var(--ai-surface-text, rgba(255, 236, 191, 0.85))',
+                }}
               >
                 <X size={15} />
               </button>
@@ -398,15 +416,17 @@ export default function GlobalAIPresence() {
                     key={item.id}
                     type="button"
                     onClick={() => setPreset(item.id)}
-                    className="rounded-full border px-3 py-1.5 text-[11px] transition hover:bg-amber-100/10"
+                    className="rounded-full border px-3 py-1.5 text-[11px] transition hover:opacity-80"
                     style={{
                       borderColor:
                         preset === item.id
-                          ? 'rgba(255, 204, 104, 0.55)'
-                          : 'rgba(251, 190, 87, 0.2)',
+                          ? 'var(--ai-surface-accent, rgba(255, 204, 104, 0.55))'
+                          : 'var(--ai-surface-border, rgba(251, 190, 87, 0.2))',
                       background:
-                        preset === item.id ? 'rgba(241, 167, 57, 0.14)' : 'rgba(255,255,255,0.03)',
-                      color: preset === item.id ? '#ffd98e' : '#f6d99b',
+                        preset === item.id
+                          ? 'var(--ai-surface-input, rgba(241, 167, 57, 0.14))'
+                          : 'var(--ai-surface-raised, rgba(255,255,255,0.03))',
+                      color: 'var(--ai-surface-text, #f6d99b)',
                     }}
                   >
                     {item.label}
@@ -419,10 +439,11 @@ export default function GlobalAIPresence() {
                 value={message}
                 onChange={(event) => setMessage(event.target.value)}
                 placeholder="Drop the fragment here. What is happening?"
-                className="h-32 w-full resize-none rounded-2xl border bg-black/20 p-3 text-sm leading-relaxed outline-none transition focus:border-amber-200/50"
+                className="h-32 w-full resize-none rounded-2xl border p-3 text-sm leading-relaxed outline-none transition"
                 style={{
-                  borderColor: 'rgba(238, 185, 96, 0.22)',
-                  color: '#f9e5bb',
+                  background: 'var(--ai-surface-input, rgba(255,255,255,0.04))',
+                  borderColor: 'var(--ai-surface-border, rgba(238, 185, 96, 0.22))',
+                  color: 'var(--ai-surface-text, #f9e5bb)',
                 }}
               />
 
@@ -433,9 +454,9 @@ export default function GlobalAIPresence() {
                   disabled={!message.trim() || status === 'thinking'}
                   className="inline-flex items-center gap-2 rounded-full border px-4 py-2 text-xs font-semibold transition disabled:cursor-not-allowed disabled:opacity-45"
                   style={{
-                    borderColor: 'rgba(251, 190, 87, 0.42)',
-                    background: 'rgba(241, 167, 57, 0.14)',
-                    color: '#ffd98e',
+                    borderColor: 'var(--ai-surface-accent, rgba(251, 190, 87, 0.42))',
+                    background: 'var(--ai-surface-input, rgba(241, 167, 57, 0.14))',
+                    color: 'var(--ai-surface-text, #ffd98e)',
                   }}
                 >
                   {status === 'thinking' ? (
@@ -452,25 +473,36 @@ export default function GlobalAIPresence() {
                   className="inline-flex items-center gap-2 rounded-full border px-3 py-2 text-xs transition disabled:cursor-not-allowed disabled:opacity-45"
                   style={{
                     borderColor: speech.listening
-                      ? 'rgba(255, 188, 77, 0.72)'
-                      : 'rgba(251, 190, 87, 0.28)',
+                      ? 'var(--ai-surface-accent, rgba(255, 188, 77, 0.72))'
+                      : 'var(--ai-surface-border, rgba(251, 190, 87, 0.28))',
                     background: speech.listening
-                      ? 'rgba(241, 132, 45, 0.24)'
-                      : 'rgba(255,255,255,0.04)',
-                    color: '#f6d99b',
+                      ? 'var(--ai-surface-input, rgba(241, 132, 45, 0.24))'
+                      : 'var(--ai-surface-raised, rgba(255,255,255,0.04))',
+                    color: 'var(--ai-surface-text, #f6d99b)',
                   }}
                 >
                   {speech.listening ? <MicOff size={14} /> : <Mic size={14} />}
                   {speech.listening ? 'Listening' : 'Voice'}
                 </button>
-                {speech.error && <span className="text-xs text-amber-100/60">{speech.error}</span>}
+                {speech.error && (
+                  <span
+                    className="text-xs"
+                    style={{ color: 'var(--ai-surface-muted, rgba(255, 236, 191, 0.62))' }}
+                  >
+                    {speech.error}
+                  </span>
+                )}
               </div>
 
               {(response || status === 'thinking' || error) && (
                 <div
                   ref={responseRef}
-                  className="max-h-52 overflow-y-auto rounded-2xl border bg-black/20 p-3 text-sm leading-relaxed"
-                  style={{ borderColor: 'rgba(238, 185, 96, 0.18)', color: '#f8e0ad' }}
+                  className="max-h-52 overflow-y-auto rounded-2xl border p-3 text-sm leading-relaxed"
+                  style={{
+                    background: 'var(--ai-surface-input, rgba(255,255,255,0.04))',
+                    borderColor: 'var(--ai-surface-border, rgba(238, 185, 96, 0.18))',
+                    color: 'var(--ai-surface-text, #f8e0ad)',
+                  }}
                 >
                   {response && <p className="whitespace-pre-wrap">{response}</p>}
                   {status === 'thinking' && !response && (

@@ -26,13 +26,14 @@ export default function AIPage() {
         className="border px-5 py-6 text-center sm:px-8"
         style={{
           borderColor: 'var(--panel-border, rgba(122,84,56,0.22))',
-          background: 'rgba(251,243,216,0.72)',
+          background: 'var(--ai-surface-bg, rgba(251,243,216,0.72))',
           borderRadius: 8,
+          boxShadow: 'var(--ai-surface-shadow, 0 18px 44px rgba(92,48,24,0.16))',
         }}
       >
         <p
           className="text-xs font-semibold uppercase tracking-[0.18em]"
-          style={{ color: 'rgba(92,48,24,0.52)' }}
+          style={{ color: 'var(--ai-surface-muted, rgba(92,48,24,0.52))' }}
         >
           Inner AI
         </p>
@@ -61,22 +62,26 @@ export default function AIPage() {
             key={section.title}
             className="border px-5 py-4"
             style={{
-              borderColor: 'var(--panel-border, rgba(122,84,56,0.2))',
-              background: 'var(--palette-panel-bg, rgba(255,248,224,0.62))',
+              borderColor: 'var(--ai-surface-border, var(--panel-border, rgba(122,84,56,0.2)))',
+              background: 'var(--ai-surface-raised, rgba(255,248,224,0.62))',
               borderRadius: 8,
+              boxShadow: 'var(--ai-surface-shadow, 0 18px 44px rgba(92,48,24,0.16))',
             }}
           >
             <div className="flex flex-wrap items-start justify-between gap-3">
               <div>
                 <p
                   className="text-[11px] font-semibold uppercase tracking-[0.16em]"
-                  style={{ color: 'rgba(122,84,56,0.5)' }}
+                  style={{ color: 'var(--ai-surface-muted, rgba(122,84,56,0.5))' }}
                 >
                   {section.label}
                 </p>
                 <h2
                   className="mt-1 text-xl font-semibold"
-                  style={{ color: '#5C3018', fontFamily: 'var(--font-serif)' }}
+                  style={{
+                    color: 'var(--ai-surface-text, #5C3018)',
+                    fontFamily: 'var(--font-serif)',
+                  }}
                 >
                   {section.title}
                 </h2>
@@ -84,22 +89,28 @@ export default function AIPage() {
               <span
                 className="border px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.1em]"
                 style={{
-                  borderColor: 'rgba(196,160,96,0.36)',
-                  color: '#7A5438',
+                  borderColor: 'var(--ai-surface-accent, rgba(196,160,96,0.36))',
+                  color: 'var(--ai-surface-text, #7A5438)',
                   borderRadius: 999,
                 }}
               >
                 {section.availability}
               </span>
             </div>
-            <p className="mt-3 text-sm leading-6" style={{ color: '#6F5138' }}>
+            <p
+              className="mt-3 text-sm leading-6"
+              style={{ color: 'var(--ai-surface-muted, #6F5138)' }}
+            >
               {section.body}
             </p>
           </article>
         ))}
       </section>
 
-      <p className="px-2 text-center text-xs leading-5" style={{ color: 'rgba(122,84,56,0.58)' }}>
+      <p
+        className="px-2 text-center text-xs leading-5"
+        style={{ color: 'var(--ai-surface-muted, rgba(122,84,56,0.58))' }}
+      >
         The AI should read only the scope you choose. Small reflections can be free; deeper pattern
         reading is the paid layer because it uses Claude API tokens.
       </p>
