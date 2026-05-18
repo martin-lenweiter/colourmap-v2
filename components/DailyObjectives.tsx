@@ -335,7 +335,7 @@ export default function DailyObjectives() {
           <span
             className="text-center uppercase"
             style={{
-              color: 'var(--palette-panel-text, #5C3018)',
+              color: 'var(--light-surface-text, #5C3018)',
               fontSize: '17px',
               fontWeight: 700,
               letterSpacing: '0.22em',
@@ -357,7 +357,7 @@ export default function DailyObjectives() {
                 autoCapitalize="off"
                 className="bg-transparent text-center uppercase outline-none border-b"
                 style={{
-                  color: 'var(--palette-panel-text, #5C3018)',
+                  color: 'var(--light-surface-text, #5C3018)',
                   fontSize: '17px',
                   fontWeight: 700,
                   letterSpacing: '0.22em',
@@ -380,7 +380,7 @@ export default function DailyObjectives() {
           <span
             className="text-sm transition-transform duration-200"
             style={{
-              color: 'var(--palette-panel-muted, #7A5438)',
+              color: 'var(--light-surface-muted, #7A5438)',
               transform: open ? 'rotate(180deg)' : 'rotate(0deg)',
             }}
           >
@@ -918,7 +918,7 @@ export default function DailyObjectives() {
                 <span
                   className="text-center uppercase"
                   style={{
-                    color: 'var(--palette-panel-text, #5C3018)',
+                    color: 'var(--light-surface-text, #5C3018)',
                     fontSize: '17px',
                     fontWeight: 700,
                     letterSpacing: '0.22em',
@@ -940,7 +940,7 @@ export default function DailyObjectives() {
                       autoCorrect="off"
                       className="bg-transparent text-center uppercase outline-none border-b"
                       style={{
-                        color: 'var(--palette-panel-text, #5C3018)',
+                        color: 'var(--light-surface-text, #5C3018)',
                         fontSize: '17px',
                         fontWeight: 700,
                         letterSpacing: '0.22em',
@@ -964,7 +964,7 @@ export default function DailyObjectives() {
                 <span
                   className="text-sm transition-transform duration-200"
                   style={{
-                    color: 'var(--palette-panel-muted, #7A5438)',
+                    color: 'var(--light-surface-muted, #7A5438)',
                     transform: pushTomorrowOpen ? 'rotate(180deg)' : 'rotate(0deg)',
                   }}
                 >

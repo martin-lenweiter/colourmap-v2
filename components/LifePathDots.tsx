@@ -126,8 +126,8 @@ export default function LifePathDots() {
                   fontSize: '12px',
                   fontWeight: isOpen ? 700 : 500,
                   color: isOpen
-                    ? 'var(--palette-panel-text, #5C3018)'
-                    : 'var(--palette-panel-muted, #8A6A4A)',
+                    ? 'var(--light-surface-text, #5C3018)'
+                    : 'var(--light-surface-muted, #8A6A4A)',
                   letterSpacing: '0.1em',
                   opacity: isOpen ? 1 : 0.6,
                   transition: 'opacity 0.2s',
@@ -161,7 +161,7 @@ export default function LifePathDots() {
                   fontWeight: 600,
                   letterSpacing: '0.1em',
                   textTransform: 'uppercase',
-                  color: 'var(--palette-panel-text, #5C3018)',
+                  color: 'var(--light-surface-text, #5C3018)',
                   opacity: innerView === v ? 1 : 0.45,
                 }}
               >
@@ -208,7 +208,7 @@ function AxisView({
                 fontFamily: 'var(--font-serif)',
                 fontSize: '11px',
                 fontWeight: 500,
-                color: 'var(--palette-panel-text, #5C3018)',
+                color: 'var(--light-surface-text, #5C3018)',
                 letterSpacing: '0.06em',
                 textAlign: 'center',
               }}
@@ -240,7 +240,7 @@ function AxisView({
               fontFamily: 'var(--font-serif)',
               fontSize: '14px',
               fontWeight: 500,
-              color: 'var(--palette-panel-text, #5C3018)',
+              color: 'var(--light-surface-text, #5C3018)',
               letterSpacing: '0.06em',
             }}
           >
@@ -277,7 +277,7 @@ function DomainDots({ compass, categories }: { compass: Compass; categories: Lif
               fontFamily: 'var(--font-serif)',
               fontSize: '11px',
               fontWeight: 500,
-              color: 'var(--palette-panel-muted, #7A5438)',
+              color: 'var(--light-surface-muted, #7A5438)',
               opacity: 0.7,
               letterSpacing: '0.04em',
               textAlign: 'center',

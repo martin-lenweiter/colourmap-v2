@@ -81,7 +81,7 @@ function DayContent() {
                   borderRadius: 999,
                   border: '1px solid var(--panel-border, rgba(122,84,56,0.28))',
                   background: 'transparent',
-                  color: 'var(--palette-panel-muted, #7A5438)',
+                  color: 'var(--light-surface-muted, #7A5438)',
                   fontFamily: 'var(--font-serif)',
                   fontSize: 11,
                   fontWeight: 500,
@@ -111,7 +111,7 @@ function DayContent() {
                   borderRadius: 20,
                   border: `1px solid ${experimentsOpen ? 'var(--panel-border, rgba(122,84,56,0.45))' : 'var(--panel-border, rgba(122,84,56,0.22))'}`,
                   background: 'transparent',
-                  color: 'var(--palette-panel-muted, #7A5438)',
+                  color: 'var(--light-surface-muted, #7A5438)',
                   fontFamily: 'var(--font-serif)',
                   fontSize: 11,
                   fontWeight: 500,
@@ -147,8 +147,8 @@ function DayContent() {
                           ? 'var(--palette-l3-bg, rgba(92,48,24,0.1))'
                           : 'transparent',
                         color: active
-                          ? 'var(--palette-panel-text, #5C3018)'
-                          : 'var(--palette-panel-muted, #7A5438)',
+                          ? 'var(--light-surface-text, #5C3018)'
+                          : 'var(--light-surface-muted, #7A5438)',
                         fontFamily: 'var(--font-serif)',
                         fontSize: 11,
                         fontWeight: active ? 700 : 500,
@@ -185,7 +185,7 @@ function DayContent() {
                   borderRadius: 999,
                   border: '1px solid var(--panel-border, rgba(122,84,56,0.28))',
                   background: 'transparent',
-                  color: 'var(--palette-panel-muted, #7A5438)',
+                  color: 'var(--light-surface-muted, #7A5438)',
                   fontFamily: 'var(--font-serif)',
                   fontSize: 11,
                   fontWeight: 500,
@@ -207,7 +207,7 @@ function DayContent() {
                   borderRadius: 999,
                   border: '1px solid var(--panel-border, rgba(122,84,56,0.28))',
                   background: 'transparent',
-                  color: 'var(--palette-panel-muted, #7A5438)',
+                  color: 'var(--light-surface-muted, #7A5438)',
                   fontFamily: 'var(--font-serif)',
                   fontSize: 11,
                   fontWeight: 500,
@@ -236,8 +236,8 @@ function DayContent() {
                     ? 'var(--palette-l3-bg, rgba(92,48,24,0.1))'
                     : 'transparent',
                   color: modesOpen
-                    ? 'var(--palette-panel-text, #5C3018)'
-                    : 'var(--palette-panel-muted, #7A5438)',
+                    ? 'var(--light-surface-text, #5C3018)'
+                    : 'var(--light-surface-muted, #7A5438)',
                   fontFamily: 'var(--font-serif)',
                   fontSize: 11,
                   fontWeight: modesOpen ? 700 : 500,

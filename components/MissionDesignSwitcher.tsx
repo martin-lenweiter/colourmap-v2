@@ -44,8 +44,8 @@ const MISSION_KIND_PREFIX = 'colourmap:mission-kind:';
 const PAPER = 'rgba(255,255,255,0.04)';
 const LINE = 'rgba(196,160,96,0.2)';
 const LINE_SOFT = 'rgba(196,160,96,0.12)';
-const BROWN = 'var(--palette-panel-text, #5C3018)';
-const MUTED = 'var(--palette-panel-muted, #8A6A4A)';
+const BROWN = 'var(--light-surface-text, #5C3018)';
+const MUTED = 'var(--light-surface-muted, #8A6A4A)';
 const OCHRE = '#C4A060';
 
 const KIND_META: Record<MissionKind, { label: string; color: string; note: string }> = {

@@ -63,44 +63,6 @@ const EDUCATION_WORLDS = [
   },
 ];
 
-const EDUCATION_PATHS = [
-  {
-    id: 'notice',
-    title: 'Notice',
-    line: 'See the field before judging it.',
-    tint: '#C4A060',
-    keys: ['emotional-intelligence', 'nervous-system', 'deep-attention', 'room-to-breathe'],
-  },
-  {
-    id: 'understand',
-    title: 'Understand',
-    line: 'Name the loop and why it keeps returning.',
-    tint: '#6888B0',
-    keys: ['self-talk', 'money-anxiety', 'identity-becoming', 'artificial-intelligence'],
-  },
-  {
-    id: 'stabilize',
-    title: 'Stabilize',
-    line: 'Lower pressure so the next move becomes possible.',
-    tint: '#6B7A50',
-    keys: ['sleep', 'struggle-letting-go', 'grief', 'hope-energy'],
-  },
-  {
-    id: 'act',
-    title: 'Act',
-    line: 'Make one small bridge into movement.',
-    tint: '#A87455',
-    keys: ['agency', 'organisational-intelligence', 'creativity', 'conflict-repair'],
-  },
-  {
-    id: 'integrate',
-    title: 'Integrate',
-    line: 'Connect patterns into a life map.',
-    tint: '#7A8898',
-    keys: ['wellbeing', 'belonging', 'relational-intelligence', 'collective-evolution'],
-  },
-];
-
 const POSITIVE_OVERLAY_PROGRAMS = new Set([
   'agency',
   'organisational-intelligence',
@@ -653,186 +615,6 @@ function EducationWorldCard({
   );
 }
 
-function EducationAtlas({
-  byKey,
-  onOpen,
-}: {
-  byKey: Record<string, Program>;
-  onOpen: (program: Program) => void;
-}) {
-  return (
-    <div style={{ padding: '0 20px 42px' }}>
-      <section
-        style={{
-          position: 'relative',
-          overflow: 'hidden',
-          border: `1px solid ${och(0.16)}`,
-          background:
-            'radial-gradient(circle at 18% 10%, rgba(196,160,96,0.16), transparent 30%), rgba(255,255,255,0.035)',
-          padding: 16,
-        }}
-      >
-        <svg
-          aria-hidden="true"
-          viewBox="0 0 100 100"
-          preserveAspectRatio="none"
-          style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', opacity: 0.32 }}
-        >
-          <path
-            d="M8 18 C28 20 29 42 48 44 C68 46 72 67 92 72"
-            fill="none"
-            stroke="rgba(196,160,96,0.42)"
-            strokeWidth="0.8"
-          />
-          <path
-            d="M15 76 C31 58 39 70 55 52 C69 36 78 42 88 24"
-            fill="none"
-            stroke="rgba(104,136,176,0.32)"
-            strokeWidth="0.65"
-          />
-        </svg>
-
-        <div style={{ position: 'relative' }}>
-          <div
-            style={{
-              fontFamily: SERIF,
-              fontSize: 10,
-              letterSpacing: '0.18em',
-              textTransform: 'uppercase',
-              color: och(0.6),
-              marginBottom: 6,
-            }}
-          >
-            Education Atlas
-          </div>
-          <h2
-            style={{
-              margin: 0,
-              fontFamily: SERIF,
-              fontSize: 24,
-              lineHeight: 1.05,
-              color: cream(0.92),
-            }}
-          >
-            From inner weather to practical movement
-          </h2>
-          <p
-            style={{
-              maxWidth: 520,
-              margin: '10px 0 0',
-              fontSize: 13,
-              lineHeight: 1.6,
-              color: cream(0.62),
-            }}
-          >
-            A first map of how the learning programs connect: see the state, understand the loop,
-            stabilize the body, act in one small bridge, then integrate the pattern over time.
-          </p>
-        </div>
-      </section>
-
-      <div style={{ display: 'grid', gap: 10, marginTop: 12 }}>
-        {EDUCATION_PATHS.map((path, index) => {
-          const programs = path.keys.map((key) => byKey[key]).filter(Boolean);
-          return (
-            <section
-              key={path.id}
-              style={{
-                display: 'grid',
-                gridTemplateColumns: '74px minmax(0,1fr)',
-                gap: 12,
-                alignItems: 'start',
-                border: `1px solid ${col(path.tint, 0.2)}`,
-                background: col(path.tint, 0.08),
-                padding: 12,
-              }}
-            >
-              <div
-                style={{
-                  minHeight: 74,
-                  display: 'grid',
-                  placeItems: 'center',
-                  border: `1px solid ${col(path.tint, 0.28)}`,
-                  background: col(path.tint, 0.12),
-                }}
-              >
-                <div style={{ textAlign: 'center' }}>
-                  <div style={{ fontFamily: SERIF, fontSize: 22, color: cream(0.9) }}>
-                    {index + 1}
-                  </div>
-                  <div
-                    style={{
-                      fontFamily: SERIF,
-                      fontSize: 8,
-                      letterSpacing: '0.12em',
-                      textTransform: 'uppercase',
-                      color: col(path.tint, 0.72),
-                    }}
-                  >
-                    path
-                  </div>
-                </div>
-              </div>
-
-              <div>
-                <div
-                  style={{
-                    display: 'flex',
-                    alignItems: 'baseline',
-                    justifyContent: 'space-between',
-                    gap: 10,
-                    marginBottom: 6,
-                  }}
-                >
-                  <h3
-                    style={{
-                      margin: 0,
-                      fontFamily: SERIF,
-                      fontSize: 18,
-                      color: cream(0.9),
-                    }}
-                  >
-                    {path.title}
-                  </h3>
-                  <span style={{ fontSize: 10, color: col(path.tint, 0.68) }}>
-                    {programs.length} programs
-                  </span>
-                </div>
-                <p
-                  style={{ margin: '0 0 10px', fontSize: 12, lineHeight: 1.45, color: cream(0.58) }}
-                >
-                  {path.line}
-                </p>
-                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 7 }}>
-                  {programs.map((program) => (
-                    <button
-                      key={program.key}
-                      type="button"
-                      onClick={() => onOpen(program)}
-                      style={{
-                        borderRadius: 999,
-                        border: `1px solid ${col(path.tint, 0.24)}`,
-                        background: 'rgba(255,255,255,0.035)',
-                        color: cream(0.78),
-                        fontFamily: SERIF,
-                        fontSize: 11,
-                        padding: '6px 9px',
-                        cursor: 'pointer',
-                      }}
-                    >
-                      {program.domain}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            </section>
-          );
-        })}
-      </div>
-    </div>
-  );
-}
-
 const HUB_PALETTES = [
   { id: 'brown', bg: 'rgba(18,10,4,0.99)', dot: '#3E1A08' },
   { id: 'navy', bg: 'rgba(2,4,14,0.99)', dot: '#0A1830' },
@@ -842,7 +624,7 @@ const HUB_PALETTES = [
 ] as const;
 type HubPaletteId = (typeof HUB_PALETTES)[number]['id'];
 const HUB_LS = 'colourmap-learn-palette';
-type HomeDisplayMode = 'blocks' | 'images' | 'atlas';
+type HomeDisplayMode = 'blocks' | 'images';
 const HOME_DISPLAY_LS = 'colourmap-learn-home-display';
 function loadHubPalette(): HubPaletteId {
   try {
@@ -853,7 +635,8 @@ function loadHubPalette(): HubPaletteId {
 }
 function loadHomeDisplayMode(): HomeDisplayMode {
   try {
-    return (localStorage.getItem(HOME_DISPLAY_LS) ?? 'blocks') as HomeDisplayMode;
+    const saved = localStorage.getItem(HOME_DISPLAY_LS);
+    return saved === 'images' ? 'images' : 'blocks';
   } catch {
     return 'blocks';
   }
@@ -1009,7 +792,7 @@ export default function LearningHub({ onClose }: { onClose: () => void }) {
           }}
         >
           <div style={{ display: 'flex', gap: 6 }}>
-            {(['blocks', 'images', 'atlas'] as HomeDisplayMode[]).map((mode) => (
+            {(['blocks', 'images'] as HomeDisplayMode[]).map((mode) => (
               <button
                 key={mode}
                 type="button"
@@ -1131,66 +914,62 @@ export default function LearningHub({ onClose }: { onClose: () => void }) {
             </div>
           </div>
 
-          {homeDisplay === 'atlas' ? (
-            <EducationAtlas byKey={byKey} onOpen={setActive} />
-          ) : (
-            GROUPS.map((group) => {
-              const programs = group.keys.map((k) => byKey[k]).filter(Boolean);
-              if (!programs.length) return null;
-              return (
-                <div key={group.label} style={{ marginBottom: 32 }}>
-                  {/* group label */}
-                  <div style={{ paddingLeft: 20, marginBottom: 14 }}>
-                    <div
-                      style={{
-                        fontFamily: SERIF,
-                        fontSize: 14,
-                        fontWeight: 700,
-                        letterSpacing: '0.08em',
-                        textTransform: 'uppercase',
-                        color: col(group.tint, 0.75),
-                      }}
-                    >
-                      {group.label}
-                    </div>
-                  </div>
-
-                  {/* horizontal scroll lane */}
+          {GROUPS.map((group) => {
+            const programs = group.keys.map((k) => byKey[k]).filter(Boolean);
+            if (!programs.length) return null;
+            return (
+              <div key={group.label} style={{ marginBottom: 32 }}>
+                {/* group label */}
+                <div style={{ paddingLeft: 20, marginBottom: 14 }}>
                   <div
                     style={{
-                      display: 'flex',
-                      gap: 10,
-                      overflowX: 'auto',
-                      paddingLeft: 20,
-                      paddingRight: 20,
-                      paddingBottom: 6,
-                      scrollbarWidth: 'none',
+                      fontFamily: SERIF,
+                      fontSize: 14,
+                      fontWeight: 700,
+                      letterSpacing: '0.08em',
+                      textTransform: 'uppercase',
+                      color: col(group.tint, 0.75),
                     }}
                   >
-                    {programs.map((p, i) =>
-                      homeDisplay === 'images' ? (
-                        <ProgramImageCard
-                          key={p.key}
-                          program={p}
-                          onOpen={() => setActive(p)}
-                          startHere={group.startHere === p.key}
-                          cardColor={progressionColor(group.tint, i, programs.length)}
-                        />
-                      ) : (
-                        <SwimCard
-                          key={p.key}
-                          program={p}
-                          onOpen={() => setActive(p)}
-                          startHere={group.startHere === p.key}
-                          cardColor={progressionColor(group.tint, i, programs.length)}
-                        />
-                      ),
-                    )}
+                    {group.label}
                   </div>
                 </div>
-              );
-            })
-          )}
+
+                {/* horizontal scroll lane */}
+                <div
+                  style={{
+                    display: 'flex',
+                    gap: 10,
+                    overflowX: 'auto',
+                    paddingLeft: 20,
+                    paddingRight: 20,
+                    paddingBottom: 6,
+                    scrollbarWidth: 'none',
+                  }}
+                >
+                  {programs.map((p, i) =>
+                    homeDisplay === 'images' ? (
+                      <ProgramImageCard
+                        key={p.key}
+                        program={p}
+                        onOpen={() => setActive(p)}
+                        startHere={group.startHere === p.key}
+                        cardColor={progressionColor(group.tint, i, programs.length)}
+                      />
+                    ) : (
+                      <SwimCard
+                        key={p.key}
+                        program={p}
+                        onOpen={() => setActive(p)}
+                        startHere={group.startHere === p.key}
+                        cardColor={progressionColor(group.tint, i, programs.length)}
+                      />
+                    ),
+                  )}
+                </div>
+              </div>
+            );
+          })}
         </div>
       </div>
     </div>

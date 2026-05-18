@@ -258,7 +258,7 @@ function RoadLabel({ label, color = OCHRE }: { label: string; color?: string }) 
           fontWeight: 700,
           letterSpacing: '0.2em',
           textTransform: 'uppercase',
-          color: 'var(--palette-panel-muted, #7A5438)',
+          color: 'var(--light-surface-muted, #7A5438)',
           opacity: 0.86,
         }}
       >

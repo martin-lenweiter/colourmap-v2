@@ -27,6 +27,7 @@ describe('LearningHub', () => {
     expect(screen.getByText('Thich Nhat Hanh & Peace in Action')).toBeDefined();
     expect(screen.getByRole('button', { name: /Living Atlas/i })).toBeDefined();
     expect(screen.getByRole('button', { name: /Progress Roads/i })).toBeDefined();
+    expect(screen.queryByRole('button', { name: 'atlas' })).toBeNull();
     expect(screen.getByText('start here')).toBeDefined();
 
     fireEvent.click(screen.getByRole('button', { name: 'images' }));

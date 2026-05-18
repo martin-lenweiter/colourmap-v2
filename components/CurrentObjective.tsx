@@ -33,7 +33,7 @@ export default function CurrentObjective() {
         >
           <span
             className="text-center font-bold uppercase tracking-[0.22em]"
-            style={{ fontSize: '17px', color: 'var(--palette-panel-text, #5C3018)' }}
+            style={{ fontSize: '17px', color: 'var(--light-surface-text, #5C3018)' }}
           >
             Current Objective
           </span>
