@@ -56,6 +56,7 @@ type Mode =
   | 'magneticsand'
   | 'eclipse'
   | 'gravity'
+  | 'fire'
   | 'plasma'
   | 'globe'
   | 'nebula'
@@ -1416,6 +1417,18 @@ const PRESETS: Record<string, Cfg> = {
     luminous: 2.4,
     stars: 0,
     mode: 'gravity',
+  },
+  Fire: {
+    preset: 'Deep Fire',
+    symmetry: 7,
+    complexity: 7.6,
+    glow: 6.2,
+    breathSpeed: 0.42,
+    intensity: 9,
+    particles: 0,
+    luminous: 2.7,
+    stars: 0,
+    mode: 'fire',
   },
   'Solar Flare': {
     preset: 'Solar Plasma',
@@ -3943,6 +3956,9 @@ function buildModeGroup(cfg: Cfg, R: number): THREE.Group {
     case 'cyclonetiles':
     case 'eddylace':
     case 'magneticsand':
+    case 'eclipse':
+    case 'gravity':
+    case 'fire':
       return buildCurrentTexture(cfg, R);
     case 'plasma':
       return buildPlasma(cfg, R);
@@ -4156,6 +4172,9 @@ function updateModeGroup(group: THREE.Group, cfg: Cfg, dots: Dot[], t: number, R
     case 'cyclonetiles':
     case 'eddylace':
     case 'magneticsand':
+    case 'eclipse':
+    case 'gravity':
+    case 'fire':
       updateCurrentTexture(group, cfg, t, R);
       break;
     case 'plasma':
@@ -8235,7 +8254,8 @@ function isCurrentTextureMode(mode: Mode): boolean {
     mode === 'eddylace' ||
     mode === 'magneticsand' ||
     mode === 'eclipse' ||
-    mode === 'gravity'
+    mode === 'gravity' ||
+    mode === 'fire'
   );
 }
 
@@ -8303,6 +8323,14 @@ function buildCurrentTexture(cfg: Cfg, R: number): THREE.Group {
       const radial = hollow + (outer - hollow) * Math.sqrt(Math.random());
       x = coreX + Math.cos(a) * radial;
       y = coreY + Math.sin(a) * radial;
+    } else if (cfg.mode === 'fire') {
+      const p = Math.random();
+      const yNorm = p * 2 - 1;
+      const taper = Math.max(0.05, 1 - ((yNorm + 1) / 2) ** 1.7);
+      const wave = Math.sin(yNorm * 7.2 + Math.random() * TAU) * R * 0.08 * taper;
+      const width = R * (0.1 + 0.46 * taper);
+      x = (Math.random() - 0.5) * width + wave;
+      y = yNorm * R * 0.88;
     } else {
       const lane = (Math.random() - 0.5) * R * 1.9;
       const wave = Math.sin(lane * 0.012) * R * 0.28;
@@ -8439,6 +8467,19 @@ function currentTextureVector(
     return {
       x: (-dy / d) * orbit * swirlDir + (pull.x / pd) * 0.16,
       y: (dx / d) * orbit * swirlDir + (pull.y / pd) * 0.16,
+    };
+  }
+
+  if (mode === 'fire') {
+    const top = R * 0.92;
+    const y01 = Math.min(1, Math.max(0, (y + top) / (top * 2)));
+    const taper = Math.max(0.08, 1 - y01 ** 1.65);
+    const curl = Math.sin(y * 0.018 + tSlow * 1.8) * 0.52 * taper;
+    const centerPull = (-x / Math.max(R, 1)) * (0.38 + y01 * 0.42);
+    const lift = 0.82 + y01 * 0.45 + Math.sin(x * 0.018 - tSlow) * 0.12;
+    return {
+      x: curl + centerPull,
+      y: lift,
     };
   }
 
@@ -8630,6 +8671,14 @@ function updateCurrentTexture(group: THREE.Group, cfg: Cfg, t: number, R: number
       }
 
       const minR = cfg.mode === 'eclipse' ? R * (0.24 + cfg.glow * 0.01) : 0;
+      const fireTop = R * 0.98;
+      const fireTaper = Math.max(0.05, 1 - ((ny + fireTop) / (fireTop * 2)) ** 1.7);
+      const outsideFire =
+        cfg.mode === 'fire' &&
+        (ny > fireTop ||
+          ny < -fireTop ||
+          Math.abs(nx) > R * (0.14 + 0.5 * fireTaper) ||
+          Math.random() < 0.002);
       const r2 = nx * nx + ny * ny;
       const gravityCoreA = { x: R * 0.32, y: -R * 0.06 };
       const gravityCoreB = { x: -R * 0.32, y: R * 0.06 };
@@ -8638,7 +8687,7 @@ function updateCurrentTexture(group: THREE.Group, cfg: Cfg, t: number, R: number
         cfg.mode === 'gravity' &&
         (Math.hypot(nx - gravityCoreA.x, ny - gravityCoreA.y) < gravityHollow ||
           Math.hypot(nx - gravityCoreB.x, ny - gravityCoreB.y) < gravityHollow);
-      if (r2 > R2 || r2 < minR * minR || tooCloseToGravityCore) {
+      if (r2 > R2 || r2 < minR * minR || tooCloseToGravityCore || outsideFire) {
         const a =
           cfg.mode === 'eclipse'
             ? Math.atan2(ny, nx) + (Math.random() - 0.5) * 0.42
@@ -8653,8 +8702,15 @@ function updateCurrentTexture(group: THREE.Group, cfg: Cfg, t: number, R: number
             : cfg.mode === 'gravity'
               ? gravityHollow + R * (0.08 + Math.random() * 0.36)
               : fieldR * (0.18 + Math.random() * 0.58);
-        nx = (gravityCore?.x ?? 0) + Math.cos(a) * r;
-        ny = (gravityCore?.y ?? 0) + Math.sin(a) * r * (cfg.mode === 'eclipse' ? 0.82 : 1);
+        if (cfg.mode === 'fire') {
+          const yNorm = -0.98 + Math.random() * 0.24;
+          const taper = Math.max(0.05, 1 - ((yNorm + 1) / 2) ** 1.7);
+          nx = (Math.random() - 0.5) * R * (0.16 + 0.44 * taper);
+          ny = yNorm * R;
+        } else {
+          nx = (gravityCore?.x ?? 0) + Math.cos(a) * r;
+          ny = (gravityCore?.y ?? 0) + Math.sin(a) * r * (cfg.mode === 'eclipse' ? 0.82 : 1);
+        }
         nz = (Math.random() - 0.5) * R * 0.08;
       }
 
@@ -10690,6 +10746,7 @@ const MODE_TO_PRESET: Partial<Record<Mode, string>> = {
   magneticsand: 'Magnetic Sand',
   eclipse: 'Eclipse',
   gravity: 'Gravity',
+  fire: 'Fire',
   plasma: 'Solar Flare',
   nebula: 'Nebula Veil',
   globe: 'Emotion Globe',
@@ -10805,6 +10862,7 @@ const MODES: { mode: Mode; label: string }[] = [
   { mode: 'magneticsand', label: 'Magnetic Sand' },
   { mode: 'eclipse', label: 'Eclipse' },
   { mode: 'gravity', label: 'Gravity' },
+  { mode: 'fire', label: 'Fire' },
   { mode: 'current3d', label: '∿³ Current 3D' },
   { mode: 'plasma', label: '☀ Plasma' },
   { mode: 'nebula', label: 'Nebula' },
@@ -10845,6 +10903,7 @@ const FEATURED_PRESETS: FeaturedItem[] = [
   { name: 'Vertical Scriptures', tag: 'TOP' },
   { name: 'Eclipse', tag: 'TOP' },
   { name: 'Gravity', tag: 'TOP' },
+  { name: 'Fire', tag: 'TOP' },
   { name: 'Mode Sun', tag: 'SELF' },
   { name: 'Brain Topography', tag: 'SELF' },
   { name: 'Walking Figure', tag: 'CHAR' },
@@ -16826,7 +16885,7 @@ export default function GeometryField() {
     setSelectedPresetName(name);
     setCfg((prev) => ({
       ...p,
-      preset: COLOUR_PRESET_NAMES.has(name) ? p.preset : prev.preset,
+      preset: COLOUR_PRESET_NAMES.has(name) ? p.preset : (p.preset ?? prev.preset),
       luminous: Math.min(1.5, p.luminous),
     }));
   }
@@ -16937,9 +16996,9 @@ export default function GeometryField() {
         display: 'flex',
         flexDirection: 'column',
         width: '100%',
-        height: 'calc(100svh - 110px)',
-        minHeight: 420,
-        borderRadius: 14,
+        height: 'calc(100svh - 92px)',
+        minHeight: 0,
+        borderRadius: 0,
         overflow: 'hidden',
         background: '#080604',
       }}
@@ -17026,6 +17085,8 @@ export default function GeometryField() {
           cfg.mode === 'wordecho' ||
           cfg.mode === 'wordparticle' ||
           cfg.mode === 'wordweave' ||
+          cfg.mode === 'scriptures' ||
+          cfg.mode === 'scripturesjp' ||
           cfg.mode === 'metamorph' ||
           cfg.mode === 'chrysalis' ||
           cfg.mode === 'chrysalisrings' ||
@@ -17383,34 +17444,46 @@ export default function GeometryField() {
                                   : `rgba(${pr},${pg},${pb},${dim ? 0.35 : 0.62})`,
                                 fontFamily: 'var(--font-serif)',
                                 cursor: 'pointer',
-                                textAlign: 'center' as const,
+                                textAlign: 'left' as const,
                                 display: 'flex',
-                                flexDirection: 'column' as const,
+                                flexDirection: 'row' as const,
                                 alignItems: 'center',
-                                gap: 1,
+                                gap: 5,
                               }}
                             >
-                              <span style={{ fontSize: 6, opacity: 0.28, color: accent }}>
+                              <span
+                                style={{
+                                  minWidth: 13,
+                                  fontSize: 9,
+                                  fontWeight: 700,
+                                  opacity: 0.48,
+                                  color: accent,
+                                  textAlign: 'right',
+                                }}
+                              >
                                 {num}
                               </span>
-                              <span
-                                style={{
-                                  fontSize: 7,
-                                  opacity: 0.4,
-                                  letterSpacing: '0.1em',
-                                  color: accent,
-                                }}
-                              >
-                                {tag}
-                              </span>
-                              <span
-                                style={{
-                                  fontSize: 10,
-                                  fontWeight: isActive ? 700 : 400,
-                                  letterSpacing: '0.04em',
-                                }}
-                              >
-                                {name}
+                              <span style={{ display: 'grid', gap: 1, minWidth: 0 }}>
+                                <span
+                                  style={{
+                                    fontSize: 10,
+                                    fontWeight: isActive ? 700 : 400,
+                                    letterSpacing: '0.04em',
+                                    color: 'inherit',
+                                  }}
+                                >
+                                  {name}
+                                </span>
+                                <span
+                                  style={{
+                                    fontSize: 7,
+                                    opacity: 0.4,
+                                    letterSpacing: '0.1em',
+                                    color: accent,
+                                  }}
+                                >
+                                  {tag}
+                                </span>
                               </span>
                             </button>
                           );
