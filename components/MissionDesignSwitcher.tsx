@@ -782,30 +782,78 @@ function MissionTasksPill() {
   const [open, setOpen] = useState(false);
 
   return (
-    <div style={{ display: 'grid', gap: 12 }}>
-      <div style={{ display: 'flex', justifyContent: 'center' }}>
-        <button
-          type="button"
-          onClick={() => setOpen((value) => !value)}
-          style={{
-            border: `1px solid ${open ? 'rgba(92,48,24,0.52)' : LINE}`,
-            borderRadius: 999,
-            background: open ? 'rgba(196,160,96,0.16)' : PAPER,
-            color: BROWN,
-            fontFamily: 'var(--font-serif)',
-            fontSize: 11,
-            fontWeight: 900,
-            letterSpacing: '0.14em',
-            textTransform: 'uppercase',
-            padding: '7px 18px',
-            cursor: 'pointer',
-            minWidth: 108,
-          }}
-        >
-          Tasks
-        </button>
-      </div>
-      {open && <DoingCardsPanel />}
+    <div
+      style={{
+        border: `1px solid ${open ? 'rgba(196,160,96,0.34)' : 'var(--panel-border, rgba(196,160,96,0.18))'}`,
+        borderRadius: 14,
+        background: 'var(--palette-l3-bg, rgba(30,16,8,0.55))',
+        overflow: 'hidden',
+        transition: 'border-color 0.2s',
+      }}
+    >
+      <button
+        type="button"
+        onClick={() => setOpen((value) => !value)}
+        style={{
+          width: '100%',
+          border: 0,
+          padding: '12px 16px',
+          background: open ? 'var(--palette-panel-bg-tint, rgba(196,160,96,0.12))' : 'transparent',
+          borderBottom: open ? '1px solid rgba(196,160,96,0.18)' : 'none',
+          cursor: 'pointer',
+          display: 'flex',
+          alignItems: 'center',
+          transition: 'background 0.2s',
+        }}
+      >
+        <span style={{ flex: 1 }} />
+        <div style={{ textAlign: 'center' }}>
+          <div
+            style={{
+              fontFamily: 'var(--font-serif)',
+              fontSize: 15,
+              fontWeight: 900,
+              textTransform: 'uppercase',
+              letterSpacing: '0.18em',
+              color: 'var(--palette-panel-text, #C8A858)',
+            }}
+          >
+            Tasks
+          </div>
+          <div
+            style={{
+              fontFamily: 'var(--font-serif)',
+              fontSize: 10,
+              fontWeight: 600,
+              textTransform: 'uppercase',
+              letterSpacing: '0.16em',
+              color: 'var(--palette-panel-muted, rgba(196,160,96,0.60))',
+              marginTop: 2,
+            }}
+          >
+            Current · Daily · Later
+          </div>
+        </div>
+        <span style={{ flex: 1, display: 'flex', justifyContent: 'flex-end' }}>
+          <span
+            style={{
+              color: 'var(--palette-panel-muted, #C4A060)',
+              opacity: 0.4,
+              fontSize: 11,
+              transform: `rotate(${open ? 180 : 0}deg)`,
+              transition: 'transform 0.2s',
+            }}
+          >
+            ▾
+          </span>
+        </span>
+      </button>
+
+      {open && (
+        <div style={{ padding: '12px 10px 0' }}>
+          <DoingCardsPanel />
+        </div>
+      )}
     </div>
   );
 }

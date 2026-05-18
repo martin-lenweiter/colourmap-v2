@@ -24,10 +24,10 @@ describe('MissionDesignSwitcher', () => {
     render(<MissionDesignSwitcher />);
 
     expect(screen.getByRole('button', { name: 'Format 1' })).toBeDefined();
-    expect(screen.getByRole('button', { name: 'Tasks' })).toBeDefined();
+    expect(screen.getByRole('button', { name: /Tasks/ })).toBeDefined();
     expect(screen.queryByText('Current Mission')).toBeNull();
 
-    await user.click(screen.getByRole('button', { name: 'Tasks' }));
+    await user.click(screen.getByRole('button', { name: /Tasks/ }));
 
     expect(screen.getByText('Current Mission')).toBeDefined();
   });
