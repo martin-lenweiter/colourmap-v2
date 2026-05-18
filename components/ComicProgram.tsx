@@ -45,6 +45,7 @@ const GENERATED_LAYERED_PANEL_COUNTS: Record<string, number> = {
   'carl-jung': 2,
   'paulo-freire': 2,
   'thich-nhat-hanh': 2,
+
   gandhi: 20,
 };
 

@@ -808,6 +808,7 @@ const PRESETS: Record<string, Cfg> = {
     stars: 1,
     mode: 'dotbrain',
   },
+
   Embrace: {
     preset: 'Golden Source',
     symmetry: 8,
@@ -820,6 +821,7 @@ const PRESETS: Record<string, Cfg> = {
     stars: 1,
     mode: 'embrace',
   },
+
   'Dot Tunnel': {
     preset: 'Blue Astral',
     symmetry: 14,
@@ -868,6 +870,7 @@ const PRESETS: Record<string, Cfg> = {
     stars: 2,
     mode: 'dotroad',
   },
+
   'Trip Number 1': {
     preset: 'Golden Source',
     symmetry: 10,
@@ -892,6 +895,7 @@ const PRESETS: Record<string, Cfg> = {
     stars: 0,
     mode: 'touchpreset',
   },
+
   'Golden Source': {
     preset: 'Golden Source',
     symmetry: 12,
@@ -4144,6 +4148,7 @@ function buildModeGroup(cfg: Cfg, R: number): THREE.Group {
     case 'dotheart':
     case 'dotphoenix':
     case 'dotbrain':
+
     case 'embrace':
     case 'tripnumber1':
       return buildDotSymbolField(cfg, R);
@@ -4386,6 +4391,7 @@ function updateModeGroup(group: THREE.Group, cfg: Cfg, dots: Dot[], t: number, R
     case 'dotheart':
     case 'dotphoenix':
     case 'dotbrain':
+
     case 'embrace':
     case 'tripnumber1':
       updateDotSymbolField(group, cfg, t, R);
@@ -11000,6 +11006,7 @@ const MODE_SLIDERS: Partial<Record<Mode, SliderDef[]>> = {
     { key: 'luminous', label: 'Bloom', min: 0, max: 5, step: 0.1 },
     { key: 'stars', label: 'Signals', min: 0, max: 10, step: 1 },
   ],
+
   embrace: [
     { key: 'complexity', label: 'Dance', min: 1, max: 10, step: 0.5 },
     { key: 'glow', label: 'Closeness', min: 0, max: 10, step: 0.5 },
@@ -11009,6 +11016,7 @@ const MODE_SLIDERS: Partial<Record<Mode, SliderDef[]>> = {
     { key: 'luminous', label: 'Bloom', min: 0, max: 5, step: 0.1 },
     { key: 'stars', label: 'Aura', min: 0, max: 10, step: 1 },
   ],
+
   dottunnel: [
     { key: 'symmetry', label: 'Rings', min: 6, max: 28, step: 1 },
     { key: 'complexity', label: 'Depth', min: 1, max: 10, step: 0.5 },
@@ -11044,6 +11052,7 @@ const MODE_SLIDERS: Partial<Record<Mode, SliderDef[]>> = {
     { key: 'particles', label: 'Dots', min: 1, max: 10, step: 1 },
     { key: 'luminous', label: 'Bloom', min: 0, max: 5, step: 0.1 },
   ],
+
   tripnumber1: [
     { key: 'symmetry', label: 'Sacred Count', min: 5, max: 16, step: 1 },
     { key: 'complexity', label: 'Metamorphosis', min: 1, max: 10, step: 0.5 },
@@ -11062,6 +11071,7 @@ const MODE_SLIDERS: Partial<Record<Mode, SliderDef[]>> = {
     { key: 'particles', label: 'Dots', min: 1, max: 10, step: 1 },
     { key: 'luminous', label: 'Bloom', min: 0, max: 5, step: 0.1 },
   ],
+
   entropy3d: [
     { key: 'complexity', label: 'Density', min: 1, max: 10, step: 1 },
     { key: 'breathSpeed', label: 'Speed', min: 0.05, max: 2.0, step: 0.05 },
@@ -11148,13 +11158,17 @@ const MODE_TO_PRESET: Partial<Record<Mode, string>> = {
   dotheart: 'Dot Heart',
   dotphoenix: 'Dot Phoenix',
   dotbrain: 'Dot Brain Loop',
+
   embrace: 'Embrace',
+
   dottunnel: 'Dot Tunnel',
   swirldottunnel: 'Swirl Dot Tunnel',
   linetunnel3d: 'Line Tunnel 3D',
   dotroad: 'Dot Road',
+
   tripnumber1: 'Trip Number 1',
   touchpreset: 'Touch Preset',
+
   embf3d: 'Calm Field',
   wordneon: 'Neon Word',
   hopefear: 'Duality',
@@ -11274,13 +11288,17 @@ const MODES: { mode: Mode; label: string }[] = [
   { mode: 'dotheart', label: 'Dot Heart' },
   { mode: 'dotphoenix', label: 'Dot Phoenix' },
   { mode: 'dotbrain', label: 'Dot Brain Loop' },
+
   { mode: 'embrace', label: 'Embrace' },
+
   { mode: 'dottunnel', label: 'Dot Tunnel' },
   { mode: 'swirldottunnel', label: 'Swirl Dot Tunnel' },
   { mode: 'linetunnel3d', label: 'Line Tunnel 3D' },
   { mode: 'dotroad', label: 'Dot Road' },
+
   { mode: 'tripnumber1', label: 'Trip Number 1' },
   { mode: 'touchpreset', label: 'Touch Preset' },
+
   { mode: 'pulse', label: '◉ Pulse' },
   { mode: 'emotion', label: '◉ Emotion' },
   { mode: 'constellation', label: '✦ Constellation' },
@@ -11325,13 +11343,17 @@ const FEATURED_PRESETS: FeaturedItem[] = [
   { name: 'Dot Heart', tag: 'DOT' },
   { name: 'Dot Phoenix', tag: 'DOT' },
   { name: 'Dot Brain Loop', tag: 'DOT' },
+
   { name: 'Embrace', tag: 'DOT' },
+
   { name: 'Dot Tunnel', tag: 'DEPTH' },
   { name: 'Swirl Dot Tunnel', tag: 'DEPTH' },
   { name: 'Line Tunnel 3D', tag: 'DEPTH' },
   { name: 'Dot Road', tag: 'ROAD' },
+
   { name: 'Trip Number 1', tag: 'TRIP' },
   { name: 'Touch Preset', tag: 'TOUCH' },
+
   { name: 'Outward Sun', tag: 'DOT' },
   { name: 'Chaos Field', tag: 'CHAOS' },
   { name: 'Quantum Chaos', tag: 'CHAOS' },
@@ -12381,16 +12403,20 @@ function updateDepthJourney(group: THREE.Group, cfg: Cfg, t: number, R: number):
           const laneT = laneCount === 1 ? 0 : lane / (laneCount - 1);
           const side = laneT * 2 - 1;
           const shoulder = w > 0.72;
+
           const mirror = v > 0.5 ? -1 : 1;
+
           const roadWidth = R * lerp(0.12, 1.06, near);
           const horizonY = -R * lerp(0.18, 0.32, cfg.glow / 10);
           x =
             side * roadWidth * (shoulder ? 1.05 + (w - 0.72) * 0.8 : 0.72) +
             Math.sin(phase * 2 + q * 20) * R * 0.006 * near;
+
           y =
             horizonY +
             mirror * R * 1.12 * near +
             Math.sin(u * 20 + phase) * R * 0.008 * near * mirror;
+
           z = (0.5 - travel) * R * 0.54;
         }
 
