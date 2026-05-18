@@ -90,6 +90,8 @@ type Mode =
   | 'wordecho'
   | 'wordparticle'
   | 'wordweave'
+  | 'scriptures'
+  | 'scripturesjp'
   | 'metamorph'
   | 'chrysalis'
   | 'chrysalisrings'
@@ -2564,6 +2566,30 @@ const PRESETS: Record<string, Cfg> = {
     stars: 2,
     mode: 'wordweave',
   },
+  Scriptures: {
+    preset: 'Golden Source',
+    symmetry: 8,
+    complexity: 8.5,
+    glow: 4.2,
+    breathSpeed: 0.32,
+    intensity: 8.8,
+    particles: 0,
+    luminous: 2.6,
+    stars: 0,
+    mode: 'scriptures',
+  },
+  'Vertical Scriptures': {
+    preset: 'Golden Source',
+    symmetry: 7,
+    complexity: 8.2,
+    glow: 4,
+    breathSpeed: 0.28,
+    intensity: 8.4,
+    particles: 0,
+    luminous: 2.4,
+    stars: 0,
+    mode: 'scripturesjp',
+  },
   'Clock of Infinity': {
     preset: 'Warp Tunnel',
     symmetry: 7,
@@ -3971,6 +3997,8 @@ function buildModeGroup(cfg: Cfg, R: number): THREE.Group {
     case 'wordecho':
     case 'wordparticle':
     case 'wordweave':
+    case 'scriptures':
+    case 'scripturesjp':
     case 'metamorph':
     case 'chrysalis':
     case 'chrysalisrings':
@@ -4204,6 +4232,8 @@ function updateModeGroup(group: THREE.Group, cfg: Cfg, dots: Dot[], t: number, R
     case 'wordecho':
     case 'wordparticle':
     case 'wordweave':
+    case 'scriptures':
+    case 'scripturesjp':
     case 'metamorph':
     case 'chrysalis':
     case 'chrysalisrings':
@@ -10681,6 +10711,8 @@ const MODE_TO_PRESET: Partial<Record<Mode, string>> = {
   wordecho: 'Echo Word',
   wordparticle: 'Particle Word',
   wordweave: 'Woven Word',
+  scriptures: 'Scriptures',
+  scripturesjp: 'Vertical Scriptures',
   metamorph: 'Metamorph',
   chrysalis: 'Chrysalis',
   chrysalisrings: 'Chrysalis Rings',
@@ -10721,6 +10753,8 @@ const MODES: { mode: Mode; label: string }[] = [
   { mode: 'wordecho', label: '◉ Echo Word' },
   { mode: 'wordparticle', label: '✤ Particle Word' },
   { mode: 'wordweave', label: '∾ Woven Word' },
+  { mode: 'scriptures', label: 'Scriptures' },
+  { mode: 'scripturesjp', label: 'Vertical Scriptures' },
   { mode: 'metamorph', label: '∞ Metamorph' },
   { mode: 'chrysalis', label: '◈ Chrysalis' },
   { mode: 'chrysalisrings', label: 'Chrysalis Rings' },
@@ -10807,6 +10841,8 @@ type FeaturedItem = { name: string; tag: string } | { header: string; dim?: bool
 
 const FEATURED_PRESETS: FeaturedItem[] = [
   { header: 'Good Ones' },
+  { name: 'Scriptures', tag: 'TOP' },
+  { name: 'Vertical Scriptures', tag: 'TOP' },
   { name: 'Eclipse', tag: 'TOP' },
   { name: 'Gravity', tag: 'TOP' },
   { name: 'Mode Sun', tag: 'SELF' },
@@ -14666,6 +14702,8 @@ export default function GeometryField() {
       cfg.mode === 'wordecho' ||
       cfg.mode === 'wordparticle' ||
       cfg.mode === 'wordweave' ||
+      cfg.mode === 'scriptures' ||
+      cfg.mode === 'scripturesjp' ||
       cfg.mode === 'metamorph' ||
       cfg.mode === 'chrysalis' ||
       cfg.mode === 'chrysalisrings' ||
@@ -15029,6 +15067,130 @@ export default function GeometryField() {
         canvasModeAnimRef.current = requestAnimationFrame(drawEntropy);
       }
       canvasModeAnimRef.current = requestAnimationFrame(drawEntropy);
+    }
+
+    /* ── SCRIPTURES: sacred sand fills written characters ───────────── */
+    if (cfg.mode === 'scriptures' || cfg.mode === 'scripturesjp') {
+      const vertical = cfg.mode === 'scripturesjp';
+      const text = vertical ? ['空', '海', '心', '光'] : ['ॐ मणि पद्मे हूँ'];
+      const off = document.createElement('canvas');
+      off.width = mc.width;
+      off.height = mc.height;
+      const offCtx = off.getContext('2d')!;
+      type SandDot = {
+        x: number;
+        y: number;
+        tx: number;
+        ty: number;
+        phase: number;
+        size: number;
+        delay: number;
+      };
+      const dots: SandDot[] = [];
+
+      function rebuildScriptureDots() {
+        const W = mc!.width;
+        const H = mc!.height;
+        off.width = W;
+        off.height = H;
+        offCtx.clearRect(0, 0, W, H);
+        offCtx.fillStyle = '#fff';
+        offCtx.textAlign = 'center';
+        offCtx.textBaseline = 'middle';
+        if (vertical) {
+          const fontSize = Math.min(W * 0.2, H * 0.14, 88);
+          offCtx.font = `900 ${Math.round(fontSize)}px "Yu Mincho", "Hiragino Mincho ProN", "Noto Serif CJK JP", serif`;
+          const totalH = fontSize * (text.length - 1) * 1.12;
+          text.forEach((char, i) => {
+            offCtx.fillText(char, W / 2, H / 2 - totalH / 2 + i * fontSize * 1.12);
+          });
+        } else {
+          const fontSize = Math.min(W * 0.095, H * 0.18, 74);
+          offCtx.font = `900 ${Math.round(fontSize)}px "Noto Serif Devanagari", "Nirmala UI", "Mangal", serif`;
+          offCtx.fillText(text[0], W / 2, H / 2);
+        }
+
+        const img = offCtx.getImageData(0, 0, W, H).data;
+        dots.length = 0;
+        const stride = Math.max(3, Math.round(10 - cfg.complexity * 0.58));
+        const cx = W / 2;
+        const cy = H / 2;
+        for (let y = 0; y < H; y += stride) {
+          for (let x = 0; x < W; x += stride) {
+            const idx = (y * W + x) * 4;
+            if (img[idx + 3] <= 80) continue;
+            const angle = Math.atan2(y - cy, x - cx);
+            const fromR = Math.max(W, H) * (0.46 + Math.random() * 0.22);
+            dots.push({
+              x: cx + Math.cos(angle) * fromR + (Math.random() - 0.5) * W * 0.16,
+              y: cy + Math.sin(angle) * fromR + (Math.random() - 0.5) * H * 0.16,
+              tx: x,
+              ty: y,
+              phase: Math.random() * Math.PI * 2,
+              size: 0.8 + Math.random() * 1.5,
+              delay: Math.random() * 0.55,
+            });
+          }
+        }
+      }
+
+      rebuildScriptureDots();
+
+      function drawScriptures() {
+        if (!canvasModeActiveRef.current) return;
+        const W = mc!.width;
+        const H = mc!.height;
+        if (off.width !== W || off.height !== H) rebuildScriptureDots();
+
+        const tt = modeSeconds() * speed;
+        const cx = W / 2;
+        const cy = H / 2;
+        ctx!.fillStyle = 'rgba(0,0,0,0.16)';
+        ctx!.fillRect(0, 0, W, H);
+
+        const write = Math.min(1, Math.max(0, (Math.sin(tt * 0.28) + 1) * 0.58));
+        const sweep = vertical
+          ? (dot: SandDot) => Math.max(0, Math.min(1, (dot.ty / H - 0.08) / 0.84))
+          : (dot: SandDot) => Math.max(0, Math.min(1, (dot.tx / W - 0.08) / 0.84));
+
+        for (const dot of dots) {
+          const local = Math.max(
+            0,
+            Math.min(1, (write - sweep(dot) * 0.82 - dot.delay * 0.18) * 3.1),
+          );
+          const eased = local * local * (3 - 2 * local);
+          const orbit = (1 - eased) * (vertical ? H : W) * 0.022;
+          const px = dot.x + (dot.tx - dot.x) * eased + Math.cos(tt * 0.7 + dot.phase) * orbit;
+          const py = dot.y + (dot.ty - dot.y) * eased + Math.sin(tt * 0.6 + dot.phase) * orbit;
+          const alpha = (0.18 + eased * 0.78) * iF;
+          ctx!.beginPath();
+          ctx!.arc(px, py, dot.size * (0.75 + eased * 0.7), 0, Math.PI * 2);
+          ctx!.fillStyle = `rgba(${pr},${pg},${pb},${Math.max(0, Math.min(1, alpha))})`;
+          ctx!.shadowBlur = 8 + eased * 8;
+          ctx!.shadowColor = `rgba(${pr},${pg},${pb},0.72)`;
+          ctx!.fill();
+        }
+
+        ctx!.shadowBlur = 0;
+        ctx!.strokeStyle = `rgba(${pr},${pg},${pb},${0.1 * iF})`;
+        ctx!.lineWidth = 1;
+        if (vertical) {
+          ctx!.beginPath();
+          ctx!.moveTo(cx - W * 0.16, H * 0.14);
+          ctx!.lineTo(cx - W * 0.16, H * 0.86);
+          ctx!.moveTo(cx + W * 0.16, H * 0.14);
+          ctx!.lineTo(cx + W * 0.16, H * 0.86);
+          ctx!.stroke();
+        } else {
+          ctx!.beginPath();
+          ctx!.moveTo(W * 0.14, cy + H * 0.14);
+          ctx!.lineTo(W * 0.86, cy + H * 0.14);
+          ctx!.stroke();
+        }
+
+        canvasModeAnimRef.current = requestAnimationFrame(drawScriptures);
+      }
+      canvasModeAnimRef.current = requestAnimationFrame(drawScriptures);
     }
 
     /* ── WORD NEON: large word glows like a neon sign ─────────────── */

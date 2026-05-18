@@ -54,3 +54,5 @@ Rules:
 - The three sine-morph presets (`Sin Morph`, `Sacred Sin Morph`, `Chaos Sin Morph`) default to slow breathing speeds so they open calmly instead of as fast pulses.
 - `Eclipse` is a top-level geometry preset derived from the static Magnetic Sand look: a hollow center with particles/rays radiating from the empty core.
 - `Gravity` is a top-level geometry preset derived from Magnetic Sand: two hollow circular vortex centers, with particles orbiting each core like two bodies pulling on each other.
+- `Scriptures` and `Vertical Scriptures` are top-level sacred-writing presets. Golden sand particles fill fixed letter patterns: a horizontal mantra-like line and a vertical Japanese-symbol column.
+- Long run: geometry presets become concert journeys, not isolated buttons. Presets should be grouped into mergeable families so a visual set can transition smoothly from one compatible preset to another during music, performance, or projection use.
