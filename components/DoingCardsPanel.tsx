@@ -90,53 +90,6 @@ function Section({
 }
 
 /* ─── Types ──────────────────────────────────────────────────── */
-function MissionPillBar({
-  items,
-}: {
-  items: Array<{ label: string; count: number; onClick?: () => void; active?: boolean }>;
-}) {
-  return (
-    <div
-      style={{
-        display: 'inline-flex',
-        alignSelf: 'center',
-        border: `1px solid ${CARD_BORDER}`,
-        borderRadius: 999,
-        background: CARD_BG,
-        padding: 3,
-        gap: 2,
-        flexWrap: 'wrap',
-        justifyContent: 'center',
-      }}
-    >
-      {items.map((item) => (
-        <button
-          key={item.label}
-          type="button"
-          onClick={item.onClick}
-          disabled={!item.onClick}
-          style={{
-            border: 0,
-            borderRadius: 999,
-            background: item.active ? 'rgba(196,160,96,0.16)' : 'transparent',
-            color: item.active ? BROWN : LABEL_COLOR,
-            padding: '5px 9px',
-            fontFamily: 'var(--font-serif)',
-            fontSize: 10,
-            fontWeight: 800,
-            letterSpacing: '0.09em',
-            textTransform: 'uppercase',
-            whiteSpace: 'nowrap',
-            cursor: item.onClick ? 'pointer' : 'default',
-          }}
-        >
-          {item.label} <span style={{ opacity: 0.62 }}>{item.count}</span>
-        </button>
-      ))}
-    </div>
-  );
-}
-
 type Subtask = { id: string; text: string; done: boolean };
 
 type CardItem = {
@@ -1218,7 +1171,6 @@ export default function DoingCardsPanel() {
   const doneMissions = missions.filter((m) => m.done);
   const activePush = push.filter((p) => !p.done);
   const donePush = push.filter((p) => p.done);
-  const currentCount = objItem.text.trim() && !objItem.done ? 1 : 0;
   const allDone = [
     ...doneMissions.map((m) => ({ ...m, _src: 'daily' as const })),
     ...donePush.map((p) => ({ ...p, _src: 'push' as const })),
@@ -1226,30 +1178,6 @@ export default function DoingCardsPanel() {
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 16, padding: '4px 0 32px' }}>
-      <div style={{ display: 'grid', gap: 6, justifyItems: 'center' }}>
-        <MissionPillBar
-          items={[
-            {
-              label: 'Current objective',
-              count: currentCount,
-              active: secOpen.mission,
-              onClick: () => setSecOpen((s) => ({ ...s, mission: !s.mission })),
-            },
-            {
-              label: 'Daily',
-              count: activeMissions.length,
-              active: secOpen.daily,
-              onClick: () => setSecOpen((s) => ({ ...s, daily: !s.daily })),
-            },
-            {
-              label: 'Push for later',
-              count: activePush.length,
-              active: secOpen.push,
-              onClick: () => setSecOpen((s) => ({ ...s, push: !s.push })),
-            },
-          ]}
-        />
-      </div>
       {/* ── Current Mission ──────────────────────────────────── */}
       <Section
         title="Current Mission"
