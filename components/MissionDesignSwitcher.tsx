@@ -778,7 +778,43 @@ function MissionControlFormatTwo() {
   );
 }
 
-export default function MissionDesignSwitcher() {
+function MissionTasksPill() {
+  const [open, setOpen] = useState(false);
+
+  return (
+    <div style={{ display: 'grid', gap: 12 }}>
+      <div style={{ display: 'flex', justifyContent: 'center' }}>
+        <button
+          type="button"
+          onClick={() => setOpen((value) => !value)}
+          style={{
+            border: `1px solid ${open ? 'rgba(92,48,24,0.52)' : LINE}`,
+            borderRadius: 999,
+            background: open ? 'rgba(196,160,96,0.16)' : PAPER,
+            color: BROWN,
+            fontFamily: 'var(--font-serif)',
+            fontSize: 11,
+            fontWeight: 900,
+            letterSpacing: '0.14em',
+            textTransform: 'uppercase',
+            padding: '7px 18px',
+            cursor: 'pointer',
+            minWidth: 108,
+          }}
+        >
+          Tasks
+        </button>
+      </div>
+      {open && <DoingCardsPanel />}
+    </div>
+  );
+}
+
+export default function MissionDesignSwitcher({
+  beforeContent,
+}: {
+  beforeContent?: React.ReactNode;
+}) {
   const [format, setFormat] = useState<MissionFormat>('one');
 
   useEffect(() => {
@@ -794,7 +830,8 @@ export default function MissionDesignSwitcher() {
   return (
     <div style={{ display: 'grid', gap: 8 }}>
       <MissionDesignPill value={format} onChange={changeFormat} />
-      {format === 'one' ? <DoingCardsPanel /> : <MissionControlFormatTwo />}
+      {beforeContent}
+      {format === 'one' ? <MissionTasksPill /> : <MissionControlFormatTwo />}
     </div>
   );
 }

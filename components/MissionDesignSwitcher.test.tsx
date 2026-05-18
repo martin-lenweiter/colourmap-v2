@@ -19,10 +19,16 @@ describe('MissionDesignSwitcher', () => {
     vi.restoreAllMocks();
   });
 
-  it('keeps format 1 as the default mission layout', () => {
+  it('keeps format 1 as the default mission layout under the tasks pill', async () => {
+    const user = userEvent.setup();
     render(<MissionDesignSwitcher />);
 
     expect(screen.getByRole('button', { name: 'Format 1' })).toBeDefined();
+    expect(screen.getByRole('button', { name: 'Tasks' })).toBeDefined();
+    expect(screen.queryByText('Current Mission')).toBeNull();
+
+    await user.click(screen.getByRole('button', { name: 'Tasks' }));
+
     expect(screen.getByText('Current Mission')).toBeDefined();
   });
 
