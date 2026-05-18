@@ -548,6 +548,12 @@ The Freire images should stay calm and spacious enough to prepare terrain for bu
 They may be symbolic, but not overloaded. Character groups should include women and mixed
 communities rather than defaulting to men.
 
+The `Thich Nhat Hanh & Peace in Action` program uses the same layered model in a landscape format.
+Its image layer should feel like quiet, wide reflective cinema: paths, rivers, trees, walking
+figures, bowls of tea, community circles, and open sky. The reader should never depend on baked-in
+speech bubbles. App-rendered cream text plates carry the title and teaching copy above the clean
+landscape artwork.
+
 Format guidance:
 
 - for normal app reading, prefer text-free illustrations with app-rendered text below or beside the
@@ -556,6 +562,8 @@ Format guidance:
 - use blank bubbles for printable/workshop drafts or visual sequence planning
 - comic-book artifacts may use app-rendered framing, but the generated image layer itself should
   still avoid baked-in white borders, page borders, panel frames, gutters, or decorative edge rules
+- when text-in-bubble placement becomes unreliable, prefer app-rendered adaptive text plates over
+  trying to align words inside generated bubble shapes
 - future generated bubbles should be beige, parchment, or paper-feel, not bright white
 - bubble interiors should feel integrated with the paper texture and should not look like empty UI
   boxes pasted onto the image
