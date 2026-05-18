@@ -866,7 +866,13 @@ export default function MissionDesignSwitcher({
     <div style={{ display: 'grid', gap: 8 }}>
       <MissionDesignPill value={format} onChange={changeFormat} />
       {beforeContent}
-      {format === 'one' ? <MissionTasksPill /> : <MissionControlFormatTwo />}
+      {format === 'one' ? (
+        <div style={{ marginTop: 8 }}>
+          <MissionTasksPill />
+        </div>
+      ) : (
+        <MissionControlFormatTwo />
+      )}
     </div>
   );
 }
