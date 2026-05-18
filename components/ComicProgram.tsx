@@ -41,6 +41,11 @@ const BLANK_BUBBLE_PROGRAMS = new Set(['carl-jung']);
 const JPG_PANEL_PROGRAMS = new Set(['carl-jung', 'struggle-letting-go']);
 const LAYERED_BUBBLE_PROGRAMS = new Set(['carl-jung', 'paulo-freire', 'thich-nhat-hanh']);
 const LANDSCAPE_LAYERED_PROGRAMS = new Set(['thich-nhat-hanh']);
+const GENERATED_LAYERED_PANEL_COUNTS: Record<string, number> = {
+  'carl-jung': 2,
+  'paulo-freire': 2,
+  'thich-nhat-hanh': 2,
+};
 
 const PROGRAM_IMAGE_STYLES: Record<string, ImageStyle[]> = {
   'hope-energy': [DEFAULT_IMAGE_STYLE, { key: 'euro-bd', label: 'European BD' }],
@@ -388,6 +393,22 @@ function PanelImage({
   alt?: string;
 }) {
   const [failed, setFailed] = useState(false);
+  const generatedCount = GENERATED_LAYERED_PANEL_COUNTS[programKey];
+  if (generatedCount && !failed) {
+    return (
+      <img
+        src={`/comics/${programKey}/generated/panel-${index % generatedCount}.png`}
+        alt={alt}
+        onError={() => setFailed(true)}
+        style={{
+          width: '100%',
+          height: 'auto',
+          display: 'block',
+          background: 'rgba(10,6,3,0.24)',
+        }}
+      />
+    );
+  }
   if (programKey === 'thich-nhat-hanh') {
     return <ThichBasePanel index={index} color={color} />;
   }
