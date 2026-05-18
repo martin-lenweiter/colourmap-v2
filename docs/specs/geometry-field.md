@@ -167,6 +167,34 @@ Long-term journey direction:
 - Phoenix and Heart are the first explicit pair: heart warmth can bloom into phoenix transformation, then fall back into heart.
 - Brain Loop can become a bridge preset for moving between rational planning visuals and creative/swirl visuals.
 
+## Forward Journey Presets
+
+Colourmap needs a family of visuals that feel like travelling forward through a world, not only
+watching a symbol pulse in place. These presets are the foundation for future guided programs where
+the user moves through rivers, roads, tunnels, paths, and inner landscapes.
+
+Accepted initial presets:
+
+- **Dot Tunnel**: thousands of dots form a tunnel with a clear vanishing point. The motion should
+  feel like continuous forward travel: distant dots grow outward toward the viewer, then recycle
+  back into depth.
+- **Swirl Dot Tunnel**: the same forward tunnel feeling, but with dots orbiting and spiraling around
+  the tube. It should still read as a tunnel first, not as a flat vortex.
+- **Line Tunnel 3D**: a line/rib version of the tunnel, using rings and spokes so it feels more
+  architectural and three-dimensional.
+- **Dot Road**: thousands of dots form a road in perspective, with lane/edge dots expanding toward
+  the viewer to create the sensation of driving forward.
+
+Rules:
+
+- Depth and forward motion are the core success criteria. These presets should avoid decorative
+  spinning that breaks the feeling of moving into space.
+- The vanishing point should remain readable and stable enough that the user feels oriented.
+- Roads, rivers, and tunnels should become a long-term journey category that can blend from one
+  scene into another for concerts, focus sessions, and symbolic education programs.
+- Future variants can include River Road, Mountain Road, Night Road, River Tunnel, and Road To Sun,
+  but each should remain simple enough to read at phone size.
+
 Chaos presets should also be easy to reach near the top of Geometry Builder:
 
 - **Chaos Field**
