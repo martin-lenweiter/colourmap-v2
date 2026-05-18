@@ -125,7 +125,9 @@ export default function LifePathDots() {
                   fontFamily: 'var(--font-serif)',
                   fontSize: '12px',
                   fontWeight: isOpen ? 700 : 500,
-                  color: isOpen ? axis.dotColor : '#8A6A4A',
+                  color: isOpen
+                    ? 'var(--light-surface-text, #5C3018)'
+                    : 'var(--light-surface-muted, #8A6A4A)',
                   letterSpacing: '0.1em',
                   opacity: isOpen ? 1 : 0.6,
                   transition: 'opacity 0.2s',
@@ -159,7 +161,7 @@ export default function LifePathDots() {
                   fontWeight: 600,
                   letterSpacing: '0.1em',
                   textTransform: 'uppercase',
-                  color: AXES[open].dotColor,
+                  color: 'var(--light-surface-text, #5C3018)',
                   opacity: innerView === v ? 1 : 0.45,
                 }}
               >
@@ -172,7 +174,7 @@ export default function LifePathDots() {
           <AxisView axis={AXES[open]} view={innerView} />
 
           {/* Life domains for this compass */}
-          <DomainDots compass={open} categories={categories} dotColor={AXES[open].dotColor} />
+          <DomainDots compass={open} categories={categories} />
         </div>
       )}
     </div>
@@ -206,7 +208,7 @@ function AxisView({
                 fontFamily: 'var(--font-serif)',
                 fontSize: '11px',
                 fontWeight: 500,
-                color: item.color,
+                color: 'var(--light-surface-text, #5C3018)',
                 letterSpacing: '0.06em',
                 textAlign: 'center',
               }}
@@ -238,7 +240,7 @@ function AxisView({
               fontFamily: 'var(--font-serif)',
               fontSize: '14px',
               fontWeight: 500,
-              color: item.color,
+              color: 'var(--light-surface-text, #5C3018)',
               letterSpacing: '0.06em',
             }}
           >
@@ -250,15 +252,7 @@ function AxisView({
   );
 }
 
-function DomainDots({
-  compass,
-  categories,
-  dotColor,
-}: {
-  compass: Compass;
-  categories: LifeCategory[];
-  dotColor: string;
-}) {
+function DomainDots({ compass, categories }: { compass: Compass; categories: LifeCategory[] }) {
   const schemaCompass = compass === 'feeling' ? 'caring' : compass;
   const domains = categories.filter((c) => c.compass === schemaCompass || c.compass === compass);
 
@@ -283,7 +277,7 @@ function DomainDots({
               fontFamily: 'var(--font-serif)',
               fontSize: '11px',
               fontWeight: 500,
-              color: dotColor,
+              color: 'var(--light-surface-muted, #7A5438)',
               opacity: 0.7,
               letterSpacing: '0.04em',
               textAlign: 'center',

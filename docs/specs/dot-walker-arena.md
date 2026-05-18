@@ -3,7 +3,9 @@
 **Status:** MVP
 **Date:** 2026-05-15
 
-Dot Walker Arena is the first game-like surface built from the Geometry Field character language. It sits after Geometry / Music Art as a playful experiment: golden dot walkers can dance to a beat or face each other in a simple phone-friendly arena.
+Dot Walker Arena is the first game-like surface built from the Geometry Field character language.
+It is currently kept as an experiment route rather than a primary navigation item: golden dot
+walkers can dance to a beat or face each other in a simple phone-friendly arena.
 
 ## Product Aim
 
@@ -54,7 +56,8 @@ V1 is a single route: `/dot-walker-arena`.
 
 Done when:
 
-- The app has a visible **Arena** navigation item after **Art**.
+- The route remains available at `/dot-walker-arena` for experiments without occupying primary
+  navigation.
 - The page renders two golden dot walkers on a dark warm stage.
 - The user can switch between **Fight** and **Dance**.
 - Fight mode has phone-friendly buttons: Step, Strike, Block, Pulse.

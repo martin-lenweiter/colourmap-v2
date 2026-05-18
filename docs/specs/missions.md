@@ -56,7 +56,11 @@ The Focus mission tab now supports a small design-format pill:
 
 Format 2 is an alternative organisation surface, not a separate data model. Users can switch between
 formats without duplicating missions. The second format keeps capture simple, then helps the user sort
-missions by life area and by work type: `Free Card`, `Deep Thought`, `Pro Work`, and `Real Work`.
+missions by today, later, and life area. Work type is a small metadata chip (`Free`, `Think`, `Pro`,
+`Real`), not a competing board system, because too many type lanes make the mission page feel crammed.
+
+In Paper, Golden, and light Beige design modes, all mission labels and pills must use dark ink text on
+light surfaces. Ochre/gold text is reserved for dark panels where it has enough contrast.
 
 ### Product Shape
 

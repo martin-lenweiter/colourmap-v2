@@ -44,30 +44,30 @@ const MISSION_KIND_PREFIX = 'colourmap:mission-kind:';
 const PAPER = 'rgba(255,255,255,0.04)';
 const LINE = 'rgba(196,160,96,0.2)';
 const LINE_SOFT = 'rgba(196,160,96,0.12)';
-const BROWN = 'var(--palette-panel-text, #5C3018)';
-const MUTED = 'var(--palette-panel-muted, #8A6A4A)';
+const BROWN = 'var(--light-surface-text, #5C3018)';
+const MUTED = 'var(--light-surface-muted, #8A6A4A)';
 const OCHRE = '#C4A060';
 
 const KIND_META: Record<MissionKind, { label: string; color: string; note: string }> = {
   free: {
-    label: 'Free Card',
+    label: 'Free',
     color: '#C4A060',
-    note: 'Loose captures and unsorted pressure.',
+    note: 'Loose captures.',
   },
   deep: {
-    label: 'Deep Thought',
+    label: 'Think',
     color: '#9B6BA0',
-    note: 'Thinking, reflection, strategy, writing.',
+    note: 'Reflection or strategy.',
   },
   pro: {
-    label: 'Pro Work',
+    label: 'Pro',
     color: '#688FB0',
-    note: 'Career, craft, serious execution.',
+    note: 'Career or craft.',
   },
   real: {
-    label: 'Real Work',
+    label: 'Real',
     color: '#7A8A50',
-    note: 'Body, home, admin, money, repairs.',
+    note: 'Body, home, admin.',
   },
 };
 
@@ -431,7 +431,7 @@ function MissionRow({ item, areas }: { item: MissionViewItem; areas: LifeArea[] 
               style={{
                 border: `1px solid ${KIND_META[item.kind].color}42`,
                 borderRadius: 999,
-                color: KIND_META[item.kind].color,
+                color: BROWN,
                 padding: '2px 7px',
                 fontFamily: 'var(--font-serif)',
                 fontSize: 10,
@@ -494,7 +494,7 @@ function MissionRow({ item, areas }: { item: MissionViewItem; areas: LifeArea[] 
                       border: `1px solid ${KIND_META[kind].color}40`,
                       borderRadius: 999,
                       background: kind === item.kind ? `${KIND_META[kind].color}18` : 'transparent',
-                      color: KIND_META[kind].color,
+                      color: BROWN,
                       padding: '2px 7px',
                       fontFamily: 'var(--font-serif)',
                       fontSize: 10,
@@ -667,7 +667,7 @@ function MissionControlFormatTwo() {
     };
   }, []);
 
-  const { areas, active, done, byKind, byArea } = useMemo(() => {
+  const { areas, active, done, byArea } = useMemo(() => {
     void version;
     const nextAreas = loadLifeAreas();
     const current = buildCurrentMission(nextAreas);
@@ -684,10 +684,6 @@ function MissionControlFormatTwo() {
     const all: MissionViewItem[] = [...(current ? [current] : []), ...daily, ...push];
     const nextActive = all.filter((item) => !item.done);
     const nextDone = all.filter((item) => item.done);
-    const groupedByKind = {} as Record<MissionKind, MissionViewItem[]>;
-    for (const kind of Object.keys(KIND_META) as MissionKind[]) {
-      groupedByKind[kind] = nextActive.filter((item) => item.kind === kind);
-    }
     const groupedByArea = nextAreas.map((area) => ({
       area,
       items: nextActive.filter((item) => getItemArea(item, nextAreas, item.source)?.id === area.id),
@@ -696,7 +692,6 @@ function MissionControlFormatTwo() {
       areas: nextAreas,
       active: nextActive,
       done: nextDone,
-      byKind: groupedByKind,
       byArea: groupedByArea,
     };
   }, [version]);
@@ -745,7 +740,7 @@ function MissionControlFormatTwo() {
                 marginTop: 3,
               }}
             >
-              Capture first. Then sort by area and by work type.
+              Capture first. Then sort by today, later, and life area.
             </div>
           </div>
           <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', justifyContent: 'flex-end' }}>
@@ -796,10 +791,20 @@ function MissionControlFormatTwo() {
       <MissionZone
         title="Today lane"
         detail="The few items in the active operating lane."
-        color={OCHRE}
+        color={BROWN}
         items={today}
         areas={areas}
       />
+
+      {later.length > 0 && (
+        <MissionZone
+          title="Later"
+          detail="Parked for tomorrow so today stays clean."
+          color={BROWN}
+          items={later}
+          areas={areas}
+        />
+      )}
 
       <section
         style={{
@@ -836,7 +841,7 @@ function MissionControlFormatTwo() {
               <div style={{ display: 'flex', justifyContent: 'space-between', gap: 8 }}>
                 <span
                   style={{
-                    color: area.color,
+                    color: BROWN,
                     fontFamily: 'var(--font-serif)',
                     fontSize: 12,
                     fontWeight: 900,
@@ -886,25 +891,6 @@ function MissionControlFormatTwo() {
           )}
         </div>
       </section>
-
-      <div
-        style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(230px, 1fr))',
-          gap: 10,
-        }}
-      >
-        {(Object.keys(KIND_META) as MissionKind[]).map((kind) => (
-          <MissionZone
-            key={kind}
-            title={KIND_META[kind].label}
-            detail={KIND_META[kind].note}
-            color={KIND_META[kind].color}
-            items={byKind[kind]}
-            areas={areas}
-          />
-        ))}
-      </div>
     </div>
   );
 }
