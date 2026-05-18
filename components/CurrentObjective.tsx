@@ -4,6 +4,13 @@ import { useEffect, useState } from 'react';
 
 const LS_KEY = 'colourmap:current-objective';
 
+function missionTextRows(text: string): number {
+  const visualRows = text
+    .split('\n')
+    .reduce((rows, line) => rows + Math.max(1, Math.ceil(line.length / 34)), 0);
+  return Math.min(4, Math.max(1, visualRows));
+}
+
 export default function CurrentObjective() {
   const [objective, setObjective] = useState('');
 
@@ -40,15 +47,15 @@ export default function CurrentObjective() {
         </div>
       </div>
       <div className="relative w-full">
-        <input
-          type="text"
+        <textarea
           value={objective}
           onChange={(e) => save(e.target.value)}
           placeholder="set an objective..."
           spellCheck={false}
           autoCorrect="off"
           autoCapitalize="off"
-          className="w-full border-b bg-transparent pb-1 text-center outline-none placeholder:text-[#7A5438] placeholder:opacity-50"
+          rows={missionTextRows(objective)}
+          className="w-full resize-none border-b bg-transparent pb-1 text-center outline-none placeholder:text-[#7A5438] placeholder:opacity-50"
           style={{
             color: '#5C3018',
             borderColor: '#C4A06020',
@@ -56,8 +63,11 @@ export default function CurrentObjective() {
             fontSize: '24px',
             fontWeight: 700,
             letterSpacing: '0.06em',
+            lineHeight: 1.22,
             paddingLeft: '48px',
             paddingRight: '48px',
+            overflow: 'hidden',
+            overflowWrap: 'anywhere',
           }}
         />
         {objective.trim().length > 0 && (

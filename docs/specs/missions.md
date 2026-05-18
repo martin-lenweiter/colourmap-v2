@@ -15,7 +15,9 @@ Tasks without awareness become a grind. Awareness without tasks becomes navel-ga
   - **Objective** — single-line input. "Define the target."
   - **Challenge** — single-line input. "What's making this hard?" Red accent when filled.
   - **Notes** — multiline textarea. "Background, links..." Hidden behind toggle.
-- All three fields are collapsed by default, showing a truncated preview if they have content.
+- Collapsed mission text must stay readable. User-written mission titles and previews wrap naturally
+  to at least two lines, and three or more lines when needed; they must not be cut with ellipsis,
+  single-line truncation, or hidden overflow.
 - Only one field open at a time within a card.
 - Fields auto-save with 800ms debounce.
 - Circle checkbox to mark complete. Completed missions move to a "Done" section with strikethrough.
@@ -39,6 +41,8 @@ Tasks without awareness become a grind. Awareness without tasks becomes navel-ga
 - All fields auto-save without a save button.
 - The card is minimalist when collapsed, detailed when expanded.
 - Adding a mission takes one click + typing. No friction.
+- Mission text remains readable across Current Mission, Daily Missions, Push for Tomorrow, Mission
+  Overview, and Mission Control. Long user-written text wraps instead of disappearing.
 
 ## Dependencies
 
