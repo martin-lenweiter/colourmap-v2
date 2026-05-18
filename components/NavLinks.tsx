@@ -12,7 +12,7 @@ const PRIMARY_LINKS: { href: string; label: string }[] = [
   { href: '/notebook', label: 'Notes' },
   { href: '/music', label: 'Music' },
   { href: '/geometry-field', label: 'Art' },
-  { href: '/dot-walker-arena', label: 'Arena' },
+  { href: '/programs', label: 'Education' },
 ];
 
 // Routes that belong under the Social nav item (used in AppShell too)
@@ -26,7 +26,6 @@ const MORE_LINKS = [
   { href: '/circles', label: 'Social' },
   { href: '/journey', label: 'Journey' },
   { href: '/life-scan', label: 'Life Scan' },
-  { href: '/programs', label: 'Programs' },
   { href: '/research', label: 'Research' },
   { href: '/build-lab', label: 'Creator Space' },
 ];
