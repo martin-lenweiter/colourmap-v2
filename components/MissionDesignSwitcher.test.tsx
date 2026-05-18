@@ -33,14 +33,13 @@ describe('MissionDesignSwitcher', () => {
     await user.click(screen.getByRole('button', { name: 'Format 2' }));
 
     expect(screen.getByText('Mission Control')).toBeDefined();
-    expect(screen.getByRole('button', { name: 'Free' })).toBeDefined();
-    expect(screen.getByRole('button', { name: 'Think' })).toBeDefined();
-    expect(screen.getByRole('button', { name: 'Pro' })).toBeDefined();
-    expect(screen.getByRole('button', { name: 'Real' })).toBeDefined();
+    expect(screen.getByPlaceholderText('drop a mission, worry, task, or plan...')).toBeDefined();
+    expect(screen.queryByRole('button', { name: 'Free' })).toBeNull();
+    expect(screen.queryByRole('button', { name: 'Think' })).toBeNull();
     expect(localStorage.getItem('colourmap:mission-design-format')).toBe('two');
   });
 
-  it('organises existing missions by area and work type in format 2', () => {
+  it('organises existing missions by today, later, and area in format 2', () => {
     localStorage.setItem('colourmap:mission-design-format', 'two');
     localStorage.setItem(
       'colourmap:today-objectives',
@@ -53,7 +52,6 @@ describe('MissionDesignSwitcher', () => {
         },
       ]),
     );
-    localStorage.setItem('colourmap:mission-kind:mission-1', 'pro');
     localStorage.setItem(
       'colourmap:life-categories',
       JSON.stringify([{ id: 'work', name: 'Work', color: '#688FB0' }]),
@@ -63,7 +61,8 @@ describe('MissionDesignSwitcher', () => {
 
     expect(screen.getAllByText('Write investor story').length).toBeGreaterThan(0);
     expect(screen.getAllByText('Work').length).toBeGreaterThan(0);
-    expect(screen.getAllByText('Pro').length).toBeGreaterThan(0);
-    expect(screen.queryByText('Deep Thought')).toBeNull();
+    expect(screen.getAllByText('Today').length).toBeGreaterThan(0);
+    expect(screen.queryByText('Pro')).toBeNull();
+    expect(screen.queryByText('Real')).toBeNull();
   });
 });
