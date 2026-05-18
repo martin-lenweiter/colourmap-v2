@@ -53,3 +53,4 @@ Rules:
 
 - The three sine-morph presets (`Sin Morph`, `Sacred Sin Morph`, `Chaos Sin Morph`) default to slow breathing speeds so they open calmly instead of as fast pulses.
 - `Eclipse` is a top-level geometry preset derived from the static Magnetic Sand look: a hollow center with particles/rays radiating from the empty core.
+- `Gravity` is a top-level geometry preset derived from Magnetic Sand: two hollow circular vortex centers, with particles orbiting each core like two bodies pulling on each other.

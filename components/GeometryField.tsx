@@ -55,6 +55,7 @@ type Mode =
   | 'eddylace'
   | 'magneticsand'
   | 'eclipse'
+  | 'gravity'
   | 'plasma'
   | 'globe'
   | 'nebula'
@@ -1401,6 +1402,18 @@ const PRESETS: Record<string, Cfg> = {
     luminous: 2.4,
     stars: 0,
     mode: 'eclipse',
+  },
+  Gravity: {
+    preset: 'Golden Source',
+    symmetry: 7,
+    complexity: 8.2,
+    glow: 4.1,
+    breathSpeed: 0.32,
+    intensity: 8.4,
+    particles: 0,
+    luminous: 2.4,
+    stars: 0,
+    mode: 'gravity',
   },
   'Solar Flare': {
     preset: 'Solar Plasma',
@@ -8191,7 +8204,8 @@ function isCurrentTextureMode(mode: Mode): boolean {
     mode === 'cyclonetiles' ||
     mode === 'eddylace' ||
     mode === 'magneticsand' ||
-    mode === 'eclipse'
+    mode === 'eclipse' ||
+    mode === 'gravity'
   );
 }
 
@@ -8249,6 +8263,16 @@ function buildCurrentTexture(cfg: Cfg, R: number): THREE.Group {
       const ray = Math.sin(a * cfg.symmetry) * R * 0.028;
       x = Math.cos(a) * (radial + ray);
       y = Math.sin(a) * (radial + ray) * 0.82;
+    } else if (cfg.mode === 'gravity') {
+      const side = i % 2 === 0 ? 1 : -1;
+      const coreX = side * R * 0.32;
+      const coreY = -side * R * 0.06;
+      const a = Math.random() * TAU;
+      const hollow = R * (0.12 + cfg.glow * 0.008);
+      const outer = R * (0.24 + Math.random() * 0.28);
+      const radial = hollow + (outer - hollow) * Math.sqrt(Math.random());
+      x = coreX + Math.cos(a) * radial;
+      y = coreY + Math.sin(a) * radial;
     } else {
       const lane = (Math.random() - 0.5) * R * 1.9;
       const wave = Math.sin(lane * 0.012) * R * 0.28;
@@ -8365,6 +8389,26 @@ function currentTextureVector(
     return {
       x: Math.cos(a) * out + Math.cos(a + Math.PI / 2) * spoke * 0.28,
       y: Math.sin(a) * out * 0.82 + Math.sin(a + Math.PI / 2) * spoke * 0.22,
+    };
+  }
+
+  if (mode === 'gravity') {
+    const coreA = { x: R * 0.32, y: -R * 0.06 };
+    const coreB = { x: -R * 0.32, y: R * 0.06 };
+    const da = Math.hypot(x - coreA.x, y - coreA.y);
+    const db = Math.hypot(x - coreB.x, y - coreB.y);
+    const core = da <= db ? coreA : coreB;
+    const dx = x - core.x;
+    const dy = y - core.y;
+    const d = Math.sqrt(dx * dx + dy * dy) + 1;
+    const swirlDir = core === coreA ? 1 : -1;
+    const pull =
+      core === coreA ? { x: coreB.x - x, y: coreB.y - y } : { x: coreA.x - x, y: coreA.y - y };
+    const pd = Math.hypot(pull.x, pull.y) + 1;
+    const orbit = 0.78 + Math.sin(tSlow * 0.5 + d * 0.014) * 0.1;
+    return {
+      x: (-dy / d) * orbit * swirlDir + (pull.x / pd) * 0.16,
+      y: (dx / d) * orbit * swirlDir + (pull.y / pd) * 0.16,
     };
   }
 
@@ -8557,17 +8601,30 @@ function updateCurrentTexture(group: THREE.Group, cfg: Cfg, t: number, R: number
 
       const minR = cfg.mode === 'eclipse' ? R * (0.24 + cfg.glow * 0.01) : 0;
       const r2 = nx * nx + ny * ny;
-      if (r2 > R2 || r2 < minR * minR) {
+      const gravityCoreA = { x: R * 0.32, y: -R * 0.06 };
+      const gravityCoreB = { x: -R * 0.32, y: R * 0.06 };
+      const gravityHollow = R * (0.13 + cfg.glow * 0.008);
+      const tooCloseToGravityCore =
+        cfg.mode === 'gravity' &&
+        (Math.hypot(nx - gravityCoreA.x, ny - gravityCoreA.y) < gravityHollow ||
+          Math.hypot(nx - gravityCoreB.x, ny - gravityCoreB.y) < gravityHollow);
+      if (r2 > R2 || r2 < minR * minR || tooCloseToGravityCore) {
         const a =
           cfg.mode === 'eclipse'
             ? Math.atan2(ny, nx) + (Math.random() - 0.5) * 0.42
-            : Math.atan2(ny, nx) + Math.PI + (Math.random() - 0.5) * 0.9;
+            : cfg.mode === 'gravity'
+              ? Math.random() * Math.PI * 2
+              : Math.atan2(ny, nx) + Math.PI + (Math.random() - 0.5) * 0.9;
+        const gravityCore =
+          cfg.mode === 'gravity' ? (Math.random() > 0.5 ? gravityCoreA : gravityCoreB) : null;
         const r =
           cfg.mode === 'eclipse'
             ? minR + (fieldR - minR) * (0.22 + Math.random() * 0.62)
-            : fieldR * (0.18 + Math.random() * 0.58);
-        nx = Math.cos(a) * r;
-        ny = Math.sin(a) * r * (cfg.mode === 'eclipse' ? 0.82 : 1);
+            : cfg.mode === 'gravity'
+              ? gravityHollow + R * (0.08 + Math.random() * 0.36)
+              : fieldR * (0.18 + Math.random() * 0.58);
+        nx = (gravityCore?.x ?? 0) + Math.cos(a) * r;
+        ny = (gravityCore?.y ?? 0) + Math.sin(a) * r * (cfg.mode === 'eclipse' ? 0.82 : 1);
         nz = (Math.random() - 0.5) * R * 0.08;
       }
 
@@ -10602,6 +10659,7 @@ const MODE_TO_PRESET: Partial<Record<Mode, string>> = {
   eddylace: 'Eddy Lace',
   magneticsand: 'Magnetic Sand',
   eclipse: 'Eclipse',
+  gravity: 'Gravity',
   plasma: 'Solar Flare',
   nebula: 'Nebula Veil',
   globe: 'Emotion Globe',
@@ -10712,6 +10770,7 @@ const MODES: { mode: Mode; label: string }[] = [
   { mode: 'eddylace', label: 'Eddy Lace' },
   { mode: 'magneticsand', label: 'Magnetic Sand' },
   { mode: 'eclipse', label: 'Eclipse' },
+  { mode: 'gravity', label: 'Gravity' },
   { mode: 'current3d', label: '∿³ Current 3D' },
   { mode: 'plasma', label: '☀ Plasma' },
   { mode: 'nebula', label: 'Nebula' },
@@ -10749,6 +10808,7 @@ type FeaturedItem = { name: string; tag: string } | { header: string; dim?: bool
 const FEATURED_PRESETS: FeaturedItem[] = [
   { header: 'Good Ones' },
   { name: 'Eclipse', tag: 'TOP' },
+  { name: 'Gravity', tag: 'TOP' },
   { name: 'Mode Sun', tag: 'SELF' },
   { name: 'Brain Topography', tag: 'SELF' },
   { name: 'Walking Figure', tag: 'CHAR' },
