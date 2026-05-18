@@ -33,10 +33,10 @@ describe('MissionDesignSwitcher', () => {
     await user.click(screen.getByRole('button', { name: 'Format 2' }));
 
     expect(screen.getByText('Mission Control')).toBeDefined();
-    expect(screen.getAllByText('Free Card').length).toBeGreaterThan(0);
-    expect(screen.getAllByText('Deep Thought').length).toBeGreaterThan(0);
-    expect(screen.getAllByText('Pro Work').length).toBeGreaterThan(0);
-    expect(screen.getAllByText('Real Work').length).toBeGreaterThan(0);
+    expect(screen.getByRole('button', { name: 'Free' })).toBeDefined();
+    expect(screen.getByRole('button', { name: 'Think' })).toBeDefined();
+    expect(screen.getByRole('button', { name: 'Pro' })).toBeDefined();
+    expect(screen.getByRole('button', { name: 'Real' })).toBeDefined();
     expect(localStorage.getItem('colourmap:mission-design-format')).toBe('two');
   });
 
@@ -63,6 +63,7 @@ describe('MissionDesignSwitcher', () => {
 
     expect(screen.getAllByText('Write investor story').length).toBeGreaterThan(0);
     expect(screen.getAllByText('Work').length).toBeGreaterThan(0);
-    expect(screen.getAllByText('Pro Work').length).toBeGreaterThan(0);
+    expect(screen.getAllByText('Pro').length).toBeGreaterThan(0);
+    expect(screen.queryByText('Deep Thought')).toBeNull();
   });
 });

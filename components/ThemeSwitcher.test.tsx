@@ -143,7 +143,7 @@ describe('ThemeSwitcher', () => {
 
     expect(screen.getByText('Beige')).toBeDefined();
     expect(screen.getByText('Brown')).toBeDefined();
-    expect(screen.getByText('Full header')).toBeDefined();
+    expect(screen.queryByText('Full header')).toBeNull();
   });
 
   it('automatically applies Night Brown inside Build Lab', () => {
@@ -155,5 +155,28 @@ describe('ThemeSwitcher', () => {
     expect(document.documentElement.classList.contains('night-brown')).toBe(true);
     expect(localStorage.setItem).toHaveBeenCalledWith('colourmap-theme', 'night-brown');
     expect(localStorage.setItem).toHaveBeenCalledWith('colourmap-palette', 'brown');
+  });
+
+  it('keeps separate dark ink variables for light-surface pills on Paper', () => {
+    (localStorage.getItem as ReturnType<typeof vi.fn>).mockImplementation((key: string) => {
+      if (key === 'colourmap-theme') return 'paper';
+      if (key === 'colourmap-palette') return 'brown';
+      return null;
+    });
+
+    render(<ThemeSwitcher />);
+
+    expect(document.documentElement.style.getPropertyValue('--light-surface-text')).toContain(
+      '30,16,8',
+    );
+    expect(document.documentElement.style.getPropertyValue('--light-surface-muted')).toContain(
+      '30,16,8',
+    );
+  });
+
+  it('always applies the full header background to navigation', () => {
+    render(<ThemeSwitcher />);
+
+    expect(document.documentElement.style.getPropertyValue('--nav-bg')).toBe('var(--header-bg)');
   });
 });

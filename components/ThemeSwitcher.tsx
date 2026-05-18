@@ -255,6 +255,10 @@ type PaletteId = string;
 type PanelTab = 'color' | 'design';
 
 const LIGHT_THEMES: ReadonlySet<ColorId> = new Set(['paper', 'golden']);
+const LIGHT_SURFACE_TEXT = 'rgba(30,16,8,0.88)';
+const LIGHT_SURFACE_MUTED = 'rgba(30,16,8,0.58)';
+const DARK_SURFACE_TEXT = 'rgba(196,160,96,0.88)';
+const DARK_SURFACE_MUTED = 'rgba(196,160,96,0.55)';
 
 const DARK_AUTO_PALETTE: Partial<Record<ColorId, PaletteId>> = {
   night: 'brown',
@@ -287,6 +291,8 @@ function applyPaletteCSS(id: PaletteId) {
   const root = document.documentElement;
   const set = (prop: string, val?: string) =>
     val ? root.style.setProperty(prop, val) : root.style.removeProperty(prop);
+  root.style.setProperty('--light-surface-text', LIGHT_SURFACE_TEXT);
+  root.style.setProperty('--light-surface-muted', LIGHT_SURFACE_MUTED);
   root.style.setProperty('--header-bg', p.header.bg);
   root.style.setProperty('--header-border', p.header.border);
   root.style.setProperty('--header-text', p.header.text);
@@ -296,9 +302,9 @@ function applyPaletteCSS(id: PaletteId) {
   set('--palette-tab-inactive-bg', p.tabInactiveBg);
   set('--palette-tab-active-text', p.tabActiveText);
   set('--palette-tab-inactive-text', p.tabInactiveText);
-  /* Palettes with explicit panelText define their own. All dark palettes default to golden. */
-  root.style.setProperty('--palette-panel-text', p.panelText ?? 'rgba(196,160,96,0.88)');
-  root.style.setProperty('--palette-panel-muted', p.panelMuted ?? 'rgba(196,160,96,0.55)');
+  /* Panel text follows the actual panel depth. Light pills use --light-surface-* instead. */
+  root.style.setProperty('--palette-panel-text', p.panelText ?? DARK_SURFACE_TEXT);
+  root.style.setProperty('--palette-panel-muted', p.panelMuted ?? DARK_SURFACE_MUTED);
   /* Light palettes override --foreground so typed text in inputs is dark, not golden */
   if (p.light) {
     root.style.setProperty('--foreground', '#2a1a06');
@@ -330,22 +336,24 @@ function applyCustomLevel(key: DeepLevelKey, colorId: string, palette?: PaletteE
   const level = DEEP_LEVELS.find((l) => l.key === key);
   if (!color || !level) return;
   const [r, g, b] = color.base;
+  const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+  const lightLevel = color.light || luminance > 0.42;
   for (const s of level.sets) {
     document.documentElement.style.setProperty(s.var, `rgba(${r},${g},${b},${s.alpha})`);
   }
   if (key === 'l3') {
     const root = document.documentElement;
-    if (color.light) {
-      /* Light l3 panel → dark text */
-      root.style.setProperty('--palette-panel-text', 'rgba(30,16,8,0.88)');
-      root.style.setProperty('--palette-panel-muted', 'rgba(30,16,8,0.52)');
+    if (lightLevel) {
+      /* Light app/panel → dark text */
+      root.style.setProperty('--palette-panel-text', LIGHT_SURFACE_TEXT);
+      root.style.setProperty('--palette-panel-muted', LIGHT_SURFACE_MUTED);
       root.style.setProperty('--palette-body-text', 'rgba(30,16,8,0.85)');
       root.style.setProperty('--palette-body-muted', 'rgba(30,16,8,0.52)');
       applyLightThemeTextVars();
     } else {
       /* Dark l3 panel → golden text */
-      root.style.setProperty('--palette-panel-text', 'rgba(196,160,96,0.88)');
-      root.style.setProperty('--palette-panel-muted', 'rgba(196,160,96,0.55)');
+      root.style.setProperty('--palette-panel-text', DARK_SURFACE_TEXT);
+      root.style.setProperty('--palette-panel-muted', DARK_SURFACE_MUTED);
       root.style.setProperty('--palette-body-text', 'rgba(240,216,152,0.85)');
       root.style.setProperty('--palette-body-muted', 'rgba(240,216,152,0.52)');
     }
@@ -369,16 +377,14 @@ function applyLightThemeTextVars(p?: PaletteEntry) {
   }
 }
 
-function applyFullHeader(on: boolean) {
-  document.documentElement.style.setProperty('--nav-bg', on ? 'var(--header-bg)' : '#d4b896');
-  localStorage.setItem('colourmap-full-header', on ? '1' : '0');
+function applyFullHeader() {
+  document.documentElement.style.setProperty('--nav-bg', 'var(--header-bg)');
 }
 
 export default function ThemeSwitcher() {
   const pathname = usePathname();
   const [colorActive, setColorActive] = useState<ColorId>('paper');
   const [paletteActive, setPaletteActive] = useState<PaletteId>('brown');
-  const [fullHeader, setFullHeader] = useState(false);
   const [open, setOpen] = useState(false);
   const [tab, setTab] = useState<PanelTab>('color');
   const [allCustomIds, setAllCustomIds] = useState<AllCustomIds>({});
@@ -412,9 +418,7 @@ export default function ThemeSwitcher() {
     if (isLight) {
       applyLightThemeTextVars(p ?? undefined);
     }
-    const fh = localStorage.getItem('colourmap-full-header') === '1';
-    setFullHeader(fh);
-    applyFullHeader(fh);
+    applyFullHeader();
     /* Restore per-palette deep-dive custom levels */
     try {
       const savedCustom = localStorage.getItem(LS_CUSTOM);
@@ -874,28 +878,6 @@ export default function ThemeSwitcher() {
                   </div>
                 );
               })}
-
-              {/* Full Header toggle */}
-              <div className="pt-1 mt-0.5" style={{ borderTop: '1px solid rgba(160,110,40,0.14)' }}>
-                <button
-                  type="button"
-                  className={`flex w-full items-center gap-2 rounded-lg px-3 py-1.5 text-xs transition-colors ${
-                    fullHeader
-                      ? 'bg-accent font-medium'
-                      : 'hover:bg-accent/50 text-muted-foreground'
-                  }`}
-                  onClick={() => {
-                    const next = !fullHeader;
-                    setFullHeader(next);
-                    applyFullHeader(next);
-                  }}
-                >
-                  <span className="flex-1 text-left">Full header</span>
-                  <span style={{ opacity: fullHeader ? 1 : 0.45 }}>
-                    {fullHeader ? 'on' : 'off'}
-                  </span>
-                </button>
-              </div>
             </div>
           )}
         </div>
