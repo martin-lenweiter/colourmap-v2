@@ -72,6 +72,12 @@ describe('MissionTracker', () => {
     });
   });
 
+  it('does not truncate collapsed mission titles', async () => {
+    render(<MissionTracker refreshKey={0} />);
+    const title = await screen.findByText('Ship V1');
+    expect(title.className).not.toContain('truncate');
+  });
+
   it('shows active and completed missions', async () => {
     render(<MissionTracker refreshKey={0} />);
     await waitFor(() => {

@@ -613,6 +613,7 @@ function MissionCard({
   onDrop: () => void;
   onDragLeave: () => void;
 }) {
+  const titleRef = useRef<HTMLTextAreaElement>(null);
   const [subOpen, setSubOpen] = useState<Record<SubKey, boolean>>({
     process: false,
     focus: false,
@@ -624,6 +625,13 @@ function MissionCard({
   }
 
   const ts = TEXT_STYLES[textStyle % TEXT_STYLES.length];
+
+  useEffect(() => {
+    const el = titleRef.current;
+    if (!el) return;
+    el.style.height = 'auto';
+    el.style.height = `${el.scrollHeight}px`;
+  });
 
   return (
     <div
@@ -732,6 +740,7 @@ function MissionCard({
           </button>
 
           <textarea
+            ref={titleRef}
             value={item.text}
             placeholder="untitled"
             spellCheck={false}
@@ -765,6 +774,8 @@ function MissionCard({
               textAlign: 'center',
               resize: 'none',
               overflow: 'hidden',
+              overflowWrap: 'anywhere',
+              minHeight: `${ts.size * 1.3}px`,
             }}
           />
 
@@ -1433,9 +1444,9 @@ export default function DoingCardsPanel() {
                       textTransform: ts.transform,
                       color: OCHRE,
                       textDecoration: 'line-through',
-                      overflow: 'hidden',
-                      textOverflow: 'ellipsis',
-                      whiteSpace: 'nowrap',
+                      lineHeight: 1.25,
+                      overflowWrap: 'anywhere',
+                      whiteSpace: 'normal',
                     }}
                   >
                     {item.text}

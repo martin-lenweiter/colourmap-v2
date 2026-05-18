@@ -500,7 +500,7 @@ export default function DailyObjectives() {
                       transition: 'opacity 120ms, border-color 120ms',
                     }}
                   >
-                    <div className="group flex items-center gap-2">
+                    <div className="group flex items-start gap-2">
                       {/* Done — pill, ochre */}
                       <button
                         type="button"
@@ -564,7 +564,7 @@ export default function DailyObjectives() {
                             setRenamingObjId(o.id);
                             setRenameObjValue(o.text);
                           }}
-                          className="flex-1 cursor-pointer bg-transparent text-center"
+                          className="min-w-0 flex-1 cursor-pointer bg-transparent text-center"
                           style={{
                             color: o.done
                               ? '#C4A060'
@@ -576,6 +576,9 @@ export default function DailyObjectives() {
                             opacity: o.done ? 0.5 : o.status === 'waiting' ? 0.5 : 1,
                             border: 'none',
                             fontStyle: o.status === 'waiting' ? 'italic' : 'normal',
+                            lineHeight: 1.18,
+                            overflowWrap: 'anywhere',
+                            whiteSpace: 'normal',
                           }}
                           title="Click to expand · Double-click to rename"
                         >
@@ -982,7 +985,7 @@ export default function DailyObjectives() {
                     return (
                       <div key={t.id}>
                         <div
-                          className="group flex items-center gap-2"
+                          className="group flex items-start gap-2"
                           draggable
                           onDragStart={(e) => {
                             setDraggedTodoId(t.id);
@@ -1088,7 +1091,7 @@ export default function DailyObjectives() {
                                 setRenamingTodoId(t.id);
                                 setRenameTodoValue(t.text);
                               }}
-                              className="flex-1 cursor-pointer bg-transparent text-center"
+                              className="min-w-0 flex-1 cursor-pointer bg-transparent text-center"
                               style={{
                                 color: t.done
                                   ? '#C4A060'
@@ -1100,6 +1103,9 @@ export default function DailyObjectives() {
                                 opacity: t.done ? 0.5 : t.status === 'waiting' ? 0.5 : 1,
                                 border: 'none',
                                 fontStyle: t.status === 'waiting' ? 'italic' : 'normal',
+                                lineHeight: 1.18,
+                                overflowWrap: 'anywhere',
+                                whiteSpace: 'normal',
                               }}
                               title="Click to expand · Double-click to rename"
                             >

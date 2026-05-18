@@ -277,7 +277,7 @@ export default function MissionTracker({
                     >
                       done
                     </button>
-                    <span className="text-sm line-through text-muted-foreground/50 flex-1">
+                    <span className="flex-1 whitespace-normal break-words text-sm leading-snug line-through text-muted-foreground/50">
                       {mission.title}
                     </span>
                     <button
@@ -414,7 +414,9 @@ function MissionCard({
       >
         <div className="flex items-center gap-3">
           <div className="flex-1 min-w-0">
-            <p className="text-base font-semibold truncate">{mission.title}</p>
+            <p className="whitespace-normal break-words text-base font-semibold leading-snug">
+              {mission.title}
+            </p>
             <div className="flex items-center gap-3 mt-1">
               {/* Category dot */}
               <span
