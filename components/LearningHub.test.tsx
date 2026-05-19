@@ -25,6 +25,7 @@ describe('LearningHub', () => {
     expect(screen.getByText('Carl Jung & The Inner Map')).toBeDefined();
     expect(screen.getByText('Paulo Freire & Collective Hope')).toBeDefined();
     expect(screen.getByText('Thich Nhat Hanh & Peace in Action')).toBeDefined();
+    expect(screen.getByText('Gandhi & The Power of Small Things')).toBeDefined();
     expect(screen.getByRole('button', { name: /Living Atlas/i })).toBeDefined();
     expect(screen.getByRole('button', { name: /Progress Roads/i })).toBeDefined();
     expect(screen.queryByRole('button', { name: 'atlas' })).toBeNull();
@@ -100,5 +101,24 @@ describe('LearningHub', () => {
     expect(thichImage.getAttribute('src')).toBe('/comics/thich-nhat-hanh/generated/panel-0.png');
     expect(screen.getByText('The bell of now')).toBeDefined();
     expect(screen.getByText(/peace begins by returning/i)).toBeDefined();
+  });
+
+  it('opens the Gandhi layered comic program', () => {
+    const onClose = vi.fn();
+    render(<LearningHub onClose={onClose} />);
+
+    const gandhiProgram = screen.getByText('Gandhi & The Power of Small Things').closest('button');
+    expect(gandhiProgram).not.toBeNull();
+    fireEvent.click(gandhiProgram as HTMLButtonElement);
+
+    fireEvent.click(screen.getByRole('button', { name: /Begin/i }));
+
+    expect(screen.getByRole('button', { name: 'Next comic page' })).toBeDefined();
+    const gandhiImage = screen.getByRole('img', {
+      name: /Gandhi & The Power of Small Things comic page 1/i,
+    });
+    expect(gandhiImage.getAttribute('src')).toBe('/comics/gandhi/generated/panel-0.png');
+    expect(screen.getByText('A life begins unfinished')).toBeDefined();
+    expect(screen.getByText(/shy, uncertain, ambitious/i)).toBeDefined();
   });
 });

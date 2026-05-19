@@ -39,12 +39,14 @@ const TEXT_ON_IMAGE_PROGRAMS = new Set([
 
 const BLANK_BUBBLE_PROGRAMS = new Set(['carl-jung']);
 const JPG_PANEL_PROGRAMS = new Set(['carl-jung', 'struggle-letting-go']);
-const LAYERED_BUBBLE_PROGRAMS = new Set(['carl-jung', 'paulo-freire', 'thich-nhat-hanh']);
+const LAYERED_BUBBLE_PROGRAMS = new Set(['carl-jung', 'paulo-freire', 'thich-nhat-hanh', 'gandhi']);
 const LANDSCAPE_LAYERED_PROGRAMS = new Set(['thich-nhat-hanh']);
 const GENERATED_LAYERED_PANEL_COUNTS: Record<string, number> = {
   'carl-jung': 2,
   'paulo-freire': 2,
   'thich-nhat-hanh': 2,
+
+  gandhi: 20,
 };
 
 const PROGRAM_IMAGE_STYLES: Record<string, ImageStyle[]> = {
