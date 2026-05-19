@@ -20,6 +20,7 @@ const SOCIAL_ROUTES = ['/circles', '/sparks', '/chat'];
 const PHONE_PRIMARY_LINKS = PRIMARY_LINKS;
 
 const MORE_LINKS = [
+  { href: '/entertainment', label: 'Entertainment' },
   { href: '/music', label: 'Music' },
   { href: '/atlas', label: 'Atlas' },
   { href: '/progress-road', label: 'Roads' },

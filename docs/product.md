@@ -118,12 +118,16 @@ Phone: Focus · AI · Notes · Education · Art · ◇
 16. **Mode Bridge** — In-progress Focus-page surface for understanding active/avoided modes and practicing small transitions between Creation, Organisation, Admin, Builder, Body/Sport, Reflection, and Play. [Spec](specs/archetype-platform.md)
 17. **AI Presence** — Shared phone-friendly AI reflection box with a brown/gold living-cell visual. It connects to backend AI without needing local coding agents, starting as a mirror-first surface for fragments and simple tensions. [Spec](specs/ai-presence.md)
 
+### Entertainment
+
+18. **Billy Pineapple Infinite Comic** — Future entertainment-first relaxation world: an infinite interactive comic where Billy searches for The Juice through symbolic regions, soft choices, and a Colourmap-like inner map. Reflective, but not Education. [Spec](specs/infinite-comic-billy.md)
+
 ### Deep Layer
 
-18. **Life Scan** — Guided self-assessment through 3 Doors (Feeling, Doing, Sharing). Bipolar sliders, reflective questions, generates improvement programs. [Spec](specs/life-scan.md)
-19. **Personality Type Program** — Planned self-understanding program built on free/public-domain personality foundations, especially IPIP Big Five, translated into Colourmap-native styles, gifts, frictions, and mode bridges. [Spec](specs/personality-type-program.md)
-20. **Overview** — Compass wheel (warm blue for Sharing) showing life balance from life scan data + emotional state. Chapter card. [Spec](specs/cockpit.md)
-21. **Research** — In-app research document covering psychology foundations, competitive analysis, monetization, AI integration, soul cartography vision, and feature roadmap. Accessible at `/research`.
+19. **Life Scan** — Guided self-assessment through 3 Doors (Feeling, Doing, Sharing). Bipolar sliders, reflective questions, generates improvement programs. [Spec](specs/life-scan.md)
+20. **Personality Type Program** — Planned self-understanding program built on free/public-domain personality foundations, especially IPIP Big Five, translated into Colourmap-native styles, gifts, frictions, and mode bridges. [Spec](specs/personality-type-program.md)
+21. **Overview** — Compass wheel (warm blue for Sharing) showing life balance from life scan data + emotional state. Chapter card. [Spec](specs/cockpit.md)
+22. **Research** — In-app research document covering psychology foundations, competitive analysis, monetization, AI integration, soul cartography vision, and feature roadmap. Accessible at `/research`.
 
 ## Architecture
 
