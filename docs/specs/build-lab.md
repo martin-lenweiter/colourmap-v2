@@ -455,6 +455,19 @@ Milestone 3:
 
 The phone should not directly run Codex or Claude Code. It should act as a clear prompt, screenshot, review, approval, and control layer over the trusted computer runner.
 
+### Image Attachment MVP
+
+Before the durable Supabase runner exists, Build Lab still needs the same product shape locally:
+
+- phone notes and screenshots are captured in the active work channel
+- the current direct mission sends the latest channel screenshots as image attachments
+- queued runner missions also keep those image attachments so they can run later from the desktop inbox
+- the server validates that incoming attachment payloads are images, writes them to temporary local files, and adds the file paths plus user notes to the agent prompt
+- the coding agent receives file paths, not only a textual description, so it can inspect screenshots when judging visual bugs or requested UI changes
+- attachment events appear in the console so the user can see that screenshots reached the runner
+
+This is an implementation bridge, not the final storage model. Temp files are enough for the local runner; durable cross-device work must move the same attachment shape into Supabase storage.
+
 ## Mission Workspace
 
 Build Lab should make terminal work feel like a creator cockpit.

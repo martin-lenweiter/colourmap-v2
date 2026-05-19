@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 
+import { normalizeAgentAttachments } from '@/lib/coding-agents/attachments';
 import { resolveProjectDirectory } from '@/lib/coding-agents/paths';
 import { createQueuedMission, listQueuedMissions } from '@/lib/coding-agents/queue';
 import { requireBuildLabAccess } from '@/lib/coding-agents/route-auth';
@@ -27,6 +28,7 @@ export async function POST(request: Request) {
     agentId?: string;
     projectPath?: string;
     prompt?: string;
+    attachments?: unknown;
   };
   try {
     body = await request.json();
@@ -53,6 +55,7 @@ export async function POST(request: Request) {
     agentId: body.agentId ?? 'codex',
     projectPath,
     prompt: body.prompt,
+    attachments: normalizeAgentAttachments(body.attachments),
   });
 
   return NextResponse.json(mission, { status: 201 });

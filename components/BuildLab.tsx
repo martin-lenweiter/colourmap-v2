@@ -90,6 +90,7 @@ type QueuedMission = {
   agentId: string;
   projectPath: string;
   prompt: string;
+  attachments?: MissionAttachment[];
   status: QueuedMissionStatus;
   order: number;
   createdAt: string;
@@ -100,6 +101,15 @@ type QueuedMission = {
     text: string;
     createdAt: string;
   }>;
+};
+
+type MissionAttachment = {
+  id: string;
+  kind: 'screenshot' | 'image';
+  name: string;
+  note?: string;
+  mimeType?: string;
+  dataUrl?: string;
 };
 
 type ScreenshotNote = {
@@ -1944,6 +1954,20 @@ export default function BuildLab() {
     return prompt.trim();
   }
 
+  function missionAttachments(notes = channelScreenshotNotes): MissionAttachment[] {
+    return notes.slice(0, 4).map((note) => ({
+      id: note.id,
+      kind: 'screenshot',
+      name: note.title,
+      note: note.note,
+      dataUrl: note.image,
+    }));
+  }
+
+  function attachmentLabel(count: number) {
+    return count === 1 ? '1 screenshot attached' : `${count} screenshots attached`;
+  }
+
   function rememberProject(nextPath: string) {
     const next = [nextPath, ...recentProjects.filter((path) => path !== nextPath)].slice(0, 5);
     setRecentProjects(next);
@@ -2159,6 +2183,7 @@ export default function BuildLab() {
         agentId,
         projectPath: missionProjectPath,
         prompt: missionPrompt,
+        attachments: missionAttachments(),
       }),
     });
     if (!response.ok) {
@@ -2324,6 +2349,7 @@ export default function BuildLab() {
       projectPathOverride: mission.projectPath,
       agentIdOverride: mission.agentId,
       channelIdOverride: mission.channelId,
+      attachmentsOverride: mission.attachments ?? [],
       onDone: async (status, files) => {
         await patchQueuedMission(mission.id, {
           status,
@@ -2378,6 +2404,7 @@ export default function BuildLab() {
     projectPathOverride?: string;
     agentIdOverride?: string;
     channelIdOverride?: string;
+    attachmentsOverride?: MissionAttachment[];
     onDone?: (status: 'complete' | 'failed', files: string[]) => void | Promise<void>;
   }) {
     const missionPrompt = options?.promptOverride ?? composedPrompt();
@@ -2385,6 +2412,7 @@ export default function BuildLab() {
       (options?.projectPathOverride ?? projectPath) || (runnerStatus?.workingDirectory ?? '');
     const missionAgentId = options?.agentIdOverride ?? agentId;
     const missionAgent = agents.find((agent) => agent.id === missionAgentId);
+    const attachments = options?.attachmentsOverride ?? missionAttachments();
     if (!missionPrompt.trim()) {
       setError('Write or dictate a mission prompt first.');
       return;
@@ -2404,6 +2432,9 @@ export default function BuildLab() {
     setDiff('');
     setCheckpoints([]);
     addEvent('mission', `Starting: ${missionTitleFromPrompt(missionPrompt)}`, 'meta');
+    if (attachments.length > 0) {
+      addEvent('attachments', attachmentLabel(attachments.length), 'meta');
+    }
     let missionSucceeded = false;
 
     try {
@@ -2416,6 +2447,7 @@ export default function BuildLab() {
           projectPath: missionProjectPath,
           prompt: missionPrompt,
           mode,
+          attachments,
         }),
       });
 
@@ -2463,6 +2495,8 @@ export default function BuildLab() {
           } else if (event.type === 'file_changed' && event.path) {
             setMissionPhase('working');
             setChangedFiles((prev) => Array.from(new Set([...prev, event.path as string])));
+          } else if (event.type === 'attachment_saved' && event.path) {
+            addEvent('attachments', `Attached image saved for agent: ${event.path}`, 'meta');
           } else if (event.type === 'mission_complete') {
             setMissionPhase('done');
             missionSucceeded = Boolean(event.success);

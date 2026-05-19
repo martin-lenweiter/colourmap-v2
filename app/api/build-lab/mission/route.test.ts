@@ -61,7 +61,44 @@ describe('build lab mission route', () => {
       projectPath: 'C:/repo',
       prompt: 'Do work',
       mode: 'build',
+      attachments: [],
     });
+  });
+
+  it('saves image attachments and adds file paths to the agent prompt', async () => {
+    const response = await POST(
+      request({
+        agentId: 'codex',
+        projectPath: 'C:/repo',
+        prompt: 'Fix the overlap.',
+        attachments: [
+          {
+            id: 'shot-1',
+            kind: 'screenshot',
+            name: 'phone-overlap.png',
+            note: 'Button overlaps the lower text on phone.',
+            dataUrl:
+              'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAFgwJ/lY2XPwAAAABJRU5ErkJggg==',
+          },
+        ],
+      }),
+    );
+
+    expect(response.status).toBe(200);
+    const body = await readBody(response);
+    expect(body).toContain('"type":"attachment_saved"');
+    expect(runMission).toHaveBeenCalledWith(
+      expect.objectContaining({
+        projectPath: 'C:/repo',
+        prompt: expect.stringContaining('Button overlaps the lower text on phone.'),
+        attachments: [
+          expect.objectContaining({
+            id: 'shot-1',
+            filePath: expect.stringContaining('phone-overlap'),
+          }),
+        ],
+      }),
+    );
   });
 
   it('uses the server working directory when project path is empty', async () => {

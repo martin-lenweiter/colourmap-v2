@@ -24,6 +24,15 @@ describe('build lab queue route', () => {
           agentId: 'codex',
           projectPath,
           prompt: 'Build from phone.',
+          attachments: [
+            {
+              id: 'shot-1',
+              kind: 'screenshot',
+              name: 'phone.png',
+              note: 'Use this as visual evidence.',
+              dataUrl: 'data:image/png;base64,abc=',
+            },
+          ],
         }),
       }),
     );
@@ -32,6 +41,7 @@ describe('build lab queue route', () => {
     expect(createResponse.status).toBe(201);
     expect(created.status).toBe('queued');
     expect(created.channelId).toBe('phone-runner');
+    expect(created.attachments[0].note).toBe('Use this as visual evidence.');
 
     const listResponse = await GET();
     const body = await listResponse.json();

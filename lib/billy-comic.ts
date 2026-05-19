@@ -15,7 +15,7 @@ export type BillyPanel = {
 export const BILLY_QUEST_PANELS: BillyPanel[] = [
   {
     id: 'leaving-home',
-    image: '/entertainment/billy/quest-for-juice/panel-0.png',
+    image: '/entertainment/billy/quest-for-juice/panel-0.webp',
     title: 'Billy Leaves The Sofa Zone',
     text: [
       'Billy had a home, a sofa, and an empty cup. This was already more than many fruits could say.',
@@ -25,7 +25,7 @@ export const BILLY_QUEST_PANELS: BillyPanel[] = [
   },
   {
     id: 'too-many-directions',
-    image: '/entertainment/billy/quest-for-juice/panel-1.png',
+    image: '/entertainment/billy/quest-for-juice/panel-1.webp',
     title: 'The Arrows Disagree',
     text: [
       'Every direction looked meaningful. This was suspicious, because Billy had only packed one snack.',
@@ -39,7 +39,7 @@ export const BILLY_QUEST_PANELS: BillyPanel[] = [
   },
   {
     id: 'first-river',
-    image: '/entertainment/billy/quest-for-juice/panel-2.png',
+    image: '/entertainment/billy/quest-for-juice/panel-2.webp',
     title: 'The First Crossing',
     text: [
       'The first bridge was not impressive. One plank seemed to have emotional problems.',
@@ -49,7 +49,7 @@ export const BILLY_QUEST_PANELS: BillyPanel[] = [
   },
   {
     id: 'hooded-stranger',
-    image: '/entertainment/billy/quest-for-juice/panel-3.png',
+    image: '/entertainment/billy/quest-for-juice/panel-3.webp',
     title: 'A Stranger With A Lantern',
     text: [
       'A hooded stranger waited where the path split. Billy could not tell if this was wisdom or a very elaborate marketing strategy.',
@@ -63,7 +63,7 @@ export const BILLY_QUEST_PANELS: BillyPanel[] = [
   },
   {
     id: 'galaxy-gummies',
-    image: '/entertainment/billy/quest-for-juice/panel-4.png',
+    image: '/entertainment/billy/quest-for-juice/panel-4.webp',
     title: 'Galaxy Gummies',
     text: [
       'The stars on the path were small, sweet, and obviously full of terrible life advice.',
@@ -73,7 +73,7 @@ export const BILLY_QUEST_PANELS: BillyPanel[] = [
   },
   {
     id: 'crocodile-jack',
-    image: '/entertainment/billy/quest-for-juice/panel-5.png',
+    image: '/entertainment/billy/quest-for-juice/panel-5.webp',
     title: 'Crocodile Jack Seems Helpful',
     text: [
       'Crocodile Jack smiled like a shortcut that had learned to wear perfume.',
@@ -87,7 +87,7 @@ export const BILLY_QUEST_PANELS: BillyPanel[] = [
   },
   {
     id: 'groovy-jungle',
-    image: '/entertainment/billy/quest-for-juice/panel-6.png',
+    image: '/entertainment/billy/quest-for-juice/panel-6.webp',
     title: 'Groovy Jungle Opens',
     text: [
       'The monkeys were not organized, but they were rhythmically certain.',
@@ -97,7 +97,7 @@ export const BILLY_QUEST_PANELS: BillyPanel[] = [
   },
   {
     id: 'ancestral-pyramid',
-    image: '/entertainment/billy/quest-for-juice/panel-7.png',
+    image: '/entertainment/billy/quest-for-juice/panel-7.webp',
     title: 'The Triangle Pineapple Prophets',
     text: [
       'At the pyramid, the old pineapples did not explain The Juice. They just looked ancient and triangular.',
@@ -109,5 +109,57 @@ export const BILLY_QUEST_PANELS: BillyPanel[] = [
       { id: 'snack', label: 'Check if prophets eat snacks' },
     ],
     medal: 'Prophet Threshold',
+  },
+  {
+    id: 'pyramid-reflection',
+    image: '/entertainment/billy/quest-for-juice/panel-8.webp',
+    title: 'The Door Reflects Back',
+    text: [
+      'The pyramid opened in the water before it opened in the stone. Billy found this unfairly poetic.',
+      'The prophets smiled like triangles who had seen many fruits confuse a doorway with an answer.',
+    ],
+    medal: 'Saw The Reflecting Door',
+  },
+  {
+    id: 'home-in-distance',
+    image: '/entertainment/billy/quest-for-juice/panel-9.webp',
+    title: 'Home Gets Smaller',
+    text: [
+      'From the hill, home looked tiny. The sofa was now a philosophical dot.',
+      'Billy missed it immediately, which seemed rude after all this brave walking.',
+    ],
+  },
+  {
+    id: 'rhythm-chamber',
+    image: '/entertainment/billy/quest-for-juice/panel-10.webp',
+    title: 'The Rhythm Chamber',
+    text: [
+      'Inside, the chamber waited like an old drum holding its breath.',
+      'Billy held the cup carefully. Even empty things deserve manners.',
+    ],
+  },
+  {
+    id: 'cup-in-circle',
+    image: '/entertainment/billy/quest-for-juice/panel-11.webp',
+    title: 'The Cup Enters The Circle',
+    text: [
+      'The prophets did not fill the cup. They invited it to listen.',
+      'Billy had never considered that a cup could have homework.',
+    ],
+    choices: [
+      { id: 'listen', label: 'Let the cup listen' },
+      { id: 'ask', label: 'Ask what this means' },
+      { id: 'snack', label: 'Notice the snack monkey' },
+    ],
+  },
+  {
+    id: 'cup-learns',
+    image: '/entertainment/billy/quest-for-juice/panel-12.webp',
+    title: 'The Cup Learns',
+    text: [
+      'On the stone floor, the empty cup showed little pictures of everything Billy had already passed.',
+      'Maybe the first Juice was not a drink. Maybe it was noticing what kept returning.',
+    ],
+    medal: 'Cup Listener',
   },
 ];
