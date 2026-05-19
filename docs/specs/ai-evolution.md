@@ -68,6 +68,29 @@ The app helps the user find **presence, relaxation, and flow** — so they can b
 
 The AI's questions guide this cycle. It doesn't push the user through it — it helps them find their own pace through it.
 
+### Detect, Clarify, Unblock, Learn, Remember
+
+The Progress layer should eventually make repeated behaviour visible without turning the app into a
+judgment machine. It should follow the five-step pattern system already captured in
+`visual-organisation-intelligence.md`:
+
+1. **Detect** — notice state, tension, avoidance, energy, or repeated language.
+2. **Clarify** — name the pattern without blame.
+3. **Unblock** — propose the smallest bridge action that could release flow.
+4. **Learn** — ask what changed after the user acted, avoided, rested, or redirected.
+5. **Remember** — save the pattern so the user can recognize the same river next time.
+
+This should connect emotions and missions through **block and flow**. A user might say, "I am stuck
+on the Organisation emotion part and I keep going into Education. Is that bad?" Colourmap should not
+answer with shame or productivity advice. It should map the pattern: Organisation is the blocked
+river, Education may be a flow channel, and the question is whether Education is avoidance,
+preparation, recovery, or a bridge.
+
+Long term, AI-generated visuals can make these patterns concrete: paths with coloured dots, repeated
+loops, blocked rivers, diverging roads, category constellations, and evolving maps that show how a
+pattern changes over days or weeks. The important behaviour is evidence-first: show the data points,
+name the possible pattern, then let the user accept, rename, dismiss, or explore it.
+
 ---
 
 ## The Backbone — Categories

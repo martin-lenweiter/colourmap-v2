@@ -41,11 +41,11 @@ const BLANK_BUBBLE_PROGRAMS = new Set(['carl-jung']);
 const JPG_PANEL_PROGRAMS = new Set(['carl-jung', 'struggle-letting-go']);
 const LAYERED_BUBBLE_PROGRAMS = new Set(['carl-jung', 'paulo-freire', 'thich-nhat-hanh', 'gandhi']);
 const LANDSCAPE_LAYERED_PROGRAMS = new Set(['thich-nhat-hanh']);
+const LIFE_GUIDE_PROGRAMS = new Set(['carl-jung', 'paulo-freire', 'thich-nhat-hanh', 'gandhi']);
 const GENERATED_LAYERED_PANEL_COUNTS: Record<string, number> = {
-  'carl-jung': 2,
+  'carl-jung': 20,
   'paulo-freire': 2,
   'thich-nhat-hanh': 2,
-
   gandhi: 20,
 };
 
@@ -53,6 +53,13 @@ const PROGRAM_IMAGE_STYLES: Record<string, ImageStyle[]> = {
   'hope-energy': [DEFAULT_IMAGE_STYLE, { key: 'euro-bd', label: 'European BD' }],
   'emotional-intelligence': [DEFAULT_IMAGE_STYLE, { key: 'minimal', label: 'Minimal' }],
 };
+
+const THREE_PART_GUIDES = new Set(['carl-jung', 'gandhi']);
+const GUIDE_PARTS = [
+  { label: 'Part 1', start: 0, end: 5 },
+  { label: 'Part 2', start: 6, end: 12 },
+  { label: 'Part 3', start: 13, end: 19 },
+];
 
 function getImageStyles(programKey: string): ImageStyle[] {
   const styles = PROGRAM_IMAGE_STYLES[programKey] ?? [DEFAULT_IMAGE_STYLE];
@@ -396,6 +403,22 @@ function PanelImage({
 }) {
   const [failed, setFailed] = useState(false);
   const generatedCount = GENERATED_LAYERED_PANEL_COUNTS[programKey];
+  if (imageStyle && imageStyle !== 'default' && !failed) {
+    const extension = JPG_PANEL_PROGRAMS.has(programKey) ? 'jpg' : 'png';
+    return (
+      <img
+        src={`/comics/${programKey}/variants/${imageStyle}/panel-${index}.${extension}`}
+        alt={alt}
+        onError={() => setFailed(true)}
+        style={{
+          width: '100%',
+          height: 'auto',
+          display: 'block',
+          background: 'rgba(10,6,3,0.24)',
+        }}
+      />
+    );
+  }
   if (generatedCount && !failed) {
     return (
       <img
@@ -421,10 +444,7 @@ function PanelImage({
     return <CarlJungBasePanel index={index} color={color} />;
   }
   const extension = JPG_PANEL_PROGRAMS.has(programKey) ? 'jpg' : 'png';
-  const src =
-    imageStyle && imageStyle !== 'default'
-      ? `/comics/${programKey}/variants/${imageStyle}/panel-${index}.${extension}`
-      : `/comics/${programKey}/panel-${index}.${extension}`;
+  const src = `/comics/${programKey}/panel-${index}.${extension}`;
   if (!failed) {
     return (
       <img
@@ -1062,16 +1082,33 @@ export default function ComicProgram({
   const [index, setIndex] = useState(0);
   const imageStyles = getImageStyles(program.key);
   const [imageStyle, setImageStyle] = useState(imageStyles[0]?.key ?? 'default');
+  const [moreOpen, setMoreOpen] = useState(false);
+  const [jungStep, setJungStep] = useState(0);
   const current = program.segments[index];
   const total = program.segments.length;
   const paras = toParagraphs(current.body);
 
   function prev() {
-    if (index > 0) setIndex(index - 1);
+    if (index > 0) {
+      setMoreOpen(false);
+      setJungStep(0);
+      setIndex(index - 1);
+    }
   }
   function next() {
-    if (index < total - 1) setIndex(index + 1);
-    else (onBack ?? onClose)();
+    if (index < total - 1) {
+      setMoreOpen(false);
+      setJungStep(0);
+      setIndex(index + 1);
+    } else (onBack ?? onClose)();
+  }
+  function primaryNext() {
+    if (program.key === 'carl-jung' && jungStep < 3) {
+      setMoreOpen(false);
+      setJungStep(jungStep + 1);
+      return;
+    }
+    next();
   }
 
   const introData = PROGRAM_INTROS[program.key];
@@ -1082,7 +1119,7 @@ export default function ComicProgram({
         style={{
           position: 'fixed',
           inset: 0,
-          zIndex: 90,
+          zIndex: 150,
           background: hubBg,
           display: 'flex',
           flexDirection: 'column',
@@ -1256,7 +1293,10 @@ export default function ComicProgram({
               <button
                 key={i}
                 type="button"
-                onClick={() => setIndex(i)}
+                onClick={() => {
+                  setMoreOpen(false);
+                  setIndex(i);
+                }}
                 aria-label={`Open page ${i + 1}`}
                 style={{
                   width: i === index ? 17 : 5,
@@ -1298,7 +1338,7 @@ export default function ComicProgram({
         style={{
           position: 'fixed',
           inset: 0,
-          zIndex: 90,
+          zIndex: 150,
           background: hubBg,
           display: 'flex',
           flexDirection: 'column',
@@ -1348,13 +1388,22 @@ export default function ComicProgram({
         </div>
 
         {/* panel art preview — first scene */}
-        <div
+        <button
+          type="button"
+          onClick={() => setIntro(false)}
+          aria-label={`Begin ${program.domain}`}
           style={{
+            display: 'block',
+            width: 'auto',
             margin: '10px 20px 0',
+            padding: 0,
             borderRadius: 0,
             overflow: 'visible',
             border: `1.5px solid ${col(program.color, 0.2)}`,
             flexShrink: 0,
+            background: 'transparent',
+            cursor: 'pointer',
+            textAlign: 'left',
           }}
         >
           <PanelImage
@@ -1363,7 +1412,7 @@ export default function ComicProgram({
             color={program.color}
             imageStyle={imageStyle}
           />
-        </div>
+        </button>
 
         {imageStyles.length > 1 && (
           <div style={{ display: 'flex', gap: 8, padding: '12px 20px 0', flexShrink: 0 }}>
@@ -1371,7 +1420,10 @@ export default function ComicProgram({
               <button
                 key={style.key}
                 type="button"
-                onClick={() => setImageStyle(style.key)}
+                onClick={() => {
+                  setMoreOpen(false);
+                  setImageStyle(style.key);
+                }}
                 style={{
                   flex: 1,
                   borderRadius: 999,
@@ -1560,7 +1612,7 @@ export default function ComicProgram({
         style={{
           position: 'fixed',
           inset: 0,
-          zIndex: 90,
+          zIndex: 150,
           background: hubBg,
           display: 'flex',
           flexDirection: 'column',
@@ -1771,12 +1823,24 @@ export default function ComicProgram({
 
   if (LAYERED_BUBBLE_PROGRAMS.has(program.key)) {
     const isLandscape = LANDSCAPE_LAYERED_PROGRAMS.has(program.key);
+    const usesGuideTextBox = LIFE_GUIDE_PROGRAMS.has(program.key);
+    const isJung = program.key === 'carl-jung';
+    const showsGuideTextBox = usesGuideTextBox && (!isJung || jungStep === 1 || jungStep === 3);
+    const jungDeepParagraphs = paras.length > 1 ? paras.slice(1) : [current.body];
+    const visibleGuideParagraphs = isJung
+      ? jungStep === 3
+        ? jungDeepParagraphs
+        : [conciseLesson(current.body)]
+      : moreOpen
+        ? paras
+        : [conciseLesson(current.body)];
+    const activeImageStyle = isJung ? (jungStep >= 2 ? 'default' : 'no-bubbles') : imageStyle;
     return (
       <div
         style={{
           position: 'fixed',
           inset: 0,
-          zIndex: 90,
+          zIndex: 150,
           background: hubBg,
           display: 'flex',
           flexDirection: 'column',
@@ -1829,11 +1893,61 @@ export default function ComicProgram({
           </div>
         </div>
 
-        <div style={{ flex: 1, minHeight: 0, overflowY: 'auto', padding: '14px 14px 18px' }}>
-          <button
-            type="button"
-            onClick={next}
-            aria-label={index === total - 1 ? 'Return to education' : 'Next comic page'}
+        {THREE_PART_GUIDES.has(program.key) && (
+          <div
+            style={{
+              display: 'flex',
+              gap: 6,
+              padding: '10px 14px 0',
+              flexShrink: 0,
+            }}
+          >
+            {GUIDE_PARTS.map((part) => {
+              const activePart = index >= part.start && index <= part.end;
+              return (
+                <button
+                  key={part.label}
+                  type="button"
+                  aria-label={`${part.label} ${part.start + 1}-${part.end + 1}`}
+                  onClick={() => {
+                    setMoreOpen(false);
+                    setJungStep(0);
+                    setIndex(part.start);
+                  }}
+                  style={{
+                    flex: 1,
+                    borderRadius: 999,
+                    border: `1px solid ${col(program.color, activePart ? 0.48 : 0.18)}`,
+                    background: col(program.color, activePart ? 0.16 : 0.05),
+                    color: cream(activePart ? 0.9 : 0.54),
+                    cursor: 'pointer',
+                    fontFamily: SERIF,
+                    fontSize: 10.5,
+                    letterSpacing: '0.08em',
+                    padding: '7px 8px',
+                  }}
+                >
+                  {part.label}
+                  <span style={{ opacity: 0.55 }}>
+                    {' '}
+                    {part.start + 1}-{part.end + 1}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+        )}
+
+        <div
+          style={{
+            flex: 1,
+            minHeight: 0,
+            overflowY: 'auto',
+            padding: '14px 14px 18px',
+            paddingBottom: 'max(18px, env(safe-area-inset-bottom, 18px))',
+          }}
+        >
+          <div
             style={{
               display: 'block',
               position: 'relative',
@@ -1850,93 +1964,157 @@ export default function ComicProgram({
               overflow: 'hidden',
             }}
           >
+            <button
+              type="button"
+              onClick={primaryNext}
+              aria-label={
+                isJung && jungStep === 0
+                  ? 'Reveal first comic text'
+                  : isJung && jungStep === 1
+                    ? 'Show second comic image'
+                    : isJung && jungStep === 2
+                      ? 'Reveal deeper comic text'
+                      : index === total - 1
+                        ? 'Return to education'
+                        : 'Next comic page'
+              }
+              style={{
+                position: 'absolute',
+                inset: 0,
+                zIndex: 1,
+                border: 0,
+                background: 'transparent',
+                cursor: 'pointer',
+                padding: 0,
+              }}
+            />
             <PanelImage
               programKey={program.key}
               index={index}
               color={program.color}
-              imageStyle={imageStyle}
+              imageStyle={activeImageStyle}
               alt={
                 program.key === 'carl-jung'
                   ? `Carl Jung comic page ${index + 1}`
                   : `${program.domain} comic page ${index + 1}`
               }
             />
+            {showsGuideTextBox && (
+              <div
+                style={{
+                  position: 'absolute',
+                  left: isLandscape ? 16 : 14,
+                  right: isLandscape ? 16 : 14,
+                  bottom: isLandscape ? 14 : 16,
+                  zIndex: 2,
+                  border: `1px solid ${col(program.color, 0.28)}`,
+                  background: 'rgba(44, 24, 13, 0.84)',
+                  backdropFilter: 'blur(8px)',
+                  padding: isLandscape ? '12px 14px' : '13px 14px',
+                  boxShadow: `0 18px 44px ${col(program.color, 0.18)}`,
+                  maxHeight: moreOpen ? (isLandscape ? '58%' : '48%') : '42%',
+                  overflowY: moreOpen ? 'auto' : 'hidden',
+                }}
+              >
+                <div
+                  style={{
+                    display: 'flex',
+                    alignItems: 'start',
+                    justifyContent: 'space-between',
+                    gap: 12,
+                    marginBottom: 7,
+                  }}
+                >
+                  <div
+                    style={{
+                      fontFamily: SERIF,
+                      fontSize: isLandscape ? 16 : 18,
+                      fontWeight: 700,
+                      color: cream(0.95),
+                      lineHeight: 1.18,
+                      overflowWrap: 'anywhere',
+                    }}
+                  >
+                    {current.title}
+                  </div>
+                  {!isJung && (
+                    <button
+                      type="button"
+                      onClick={(event) => {
+                        event.stopPropagation();
+                        setMoreOpen((value) => !value);
+                      }}
+                      style={{
+                        flexShrink: 0,
+                        borderRadius: 999,
+                        border: `1px solid ${col(program.color, 0.36)}`,
+                        background: col(program.color, 0.12),
+                        color: col(program.color, 0.86),
+                        cursor: 'pointer',
+                        fontFamily: SERIF,
+                        fontSize: 10,
+                        letterSpacing: '0.12em',
+                        textTransform: 'uppercase',
+                        padding: '5px 9px',
+                      }}
+                    >
+                      {moreOpen ? 'less' : 'more'}
+                    </button>
+                  )}
+                </div>
+                <div style={{ display: 'grid', gap: moreOpen ? 8 : 0 }}>
+                  {visibleGuideParagraphs.map((paragraph, paragraphIndex) => (
+                    <p
+                      key={paragraph}
+                      style={{
+                        margin: 0,
+                        color: paragraphIndex === 0 ? col(program.color, 0.9) : cream(0.68),
+                        fontFamily: SERIF,
+                        fontSize: isLandscape ? 12.5 : 13,
+                        lineHeight: 1.48,
+                        overflowWrap: 'anywhere',
+                      }}
+                    >
+                      {paragraph}
+                    </p>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+          {!isJung && imageStyles.length > 1 && (
             <div
-              aria-hidden="true"
               style={{
-                position: 'absolute',
-                left: isLandscape ? '5%' : '7%',
-                right: isLandscape ? '42%' : '7%',
-                top: isLandscape ? '7%' : '5%',
-                minHeight: isLandscape ? 70 : 104,
-                borderRadius: isLandscape ? 22 : 30,
-                background: 'rgba(247,232,200,0.95)',
-                boxShadow: '0 14px 30px rgba(92,48,24,0.18)',
-              }}
-            />
-            <div
-              aria-hidden="true"
-              style={{
-                position: 'absolute',
-                left: isLandscape ? '34%' : '12%',
-                right: isLandscape ? '5%' : '12%',
-                bottom: isLandscape ? '7%' : '7%',
-                minHeight: isLandscape ? 92 : 132,
-                borderRadius: isLandscape ? 20 : 24,
-                background: 'rgba(247,232,200,0.94)',
-                boxShadow: '0 14px 30px rgba(92,48,24,0.18)',
-              }}
-            />
-            <div
-              style={{
-                position: 'absolute',
-                left: isLandscape ? '8%' : '12%',
-                right: isLandscape ? '45%' : '12%',
-                top: isLandscape ? '10%' : '8%',
-                textAlign: isLandscape ? 'left' : 'center',
-                color: '#5C3018',
-                fontFamily: SERIF,
-                fontSize: isLandscape ? 18 : 20,
-                fontWeight: 700,
-                lineHeight: 1.15,
-                overflowWrap: 'anywhere',
-              }}
-            >
-              {current.title}
-            </div>
-            <p
-              style={{
-                position: 'absolute',
-                left: isLandscape ? '38%' : '17%',
-                right: isLandscape ? '9%' : '17%',
-                bottom: isLandscape ? '11%' : '10%',
-                margin: 0,
-                color: '#5C3018',
-                fontFamily: SERIF,
-                fontSize: isLandscape ? 13 : 13.5,
-                lineHeight: 1.46,
-                textAlign: isLandscape ? 'left' : 'center',
-                overflowWrap: 'anywhere',
-              }}
-            >
-              {conciseLesson(current.body)}
-            </p>
-          </button>
-          {program.key === 'carl-jung' && (
-            <div
-              style={{
-                maxWidth: 430,
+                display: 'flex',
+                gap: 7,
+                maxWidth: isLandscape ? 620 : 390,
                 margin: '10px auto 0',
-                borderRadius: 10,
-                background: 'rgba(255,250,232,0.08)',
-                padding: '10px 12px',
-                color: cream(0.72),
-                fontFamily: SERIF,
-                fontSize: 12,
-                lineHeight: 1.5,
               }}
             >
-              Text is rendered by the app above the clean image layer.
+              {imageStyles.map((style) => (
+                <button
+                  key={style.key}
+                  type="button"
+                  onClick={() => {
+                    setMoreOpen(false);
+                    setImageStyle(style.key);
+                  }}
+                  style={{
+                    flex: 1,
+                    borderRadius: 999,
+                    border: `1px solid ${col(program.color, imageStyle === style.key ? 0.5 : 0.2)}`,
+                    background: col(program.color, imageStyle === style.key ? 0.16 : 0.05),
+                    color: cream(imageStyle === style.key ? 0.9 : 0.56),
+                    cursor: 'pointer',
+                    fontFamily: SERIF,
+                    fontSize: 11,
+                    letterSpacing: '0.08em',
+                    padding: '8px 10px',
+                  }}
+                >
+                  {style.label}
+                </button>
+              ))}
             </div>
           )}
         </div>
@@ -1981,7 +2159,11 @@ export default function ComicProgram({
               <button
                 key={i}
                 type="button"
-                onClick={() => setIndex(i)}
+                onClick={() => {
+                  setMoreOpen(false);
+                  setJungStep(0);
+                  setIndex(i);
+                }}
                 aria-label={`Open page ${i + 1}`}
                 style={{
                   width: i === index ? 17 : 5,
@@ -1997,7 +2179,7 @@ export default function ComicProgram({
           </div>
           <button
             type="button"
-            onClick={next}
+            onClick={primaryNext}
             style={{
               border: 0,
               background: 'transparent',
@@ -2008,7 +2190,15 @@ export default function ComicProgram({
               padding: '8px 0',
             }}
           >
-            {index === total - 1 ? 'Education' : 'next'}
+            {isJung && jungStep === 0
+              ? 'text'
+              : isJung && jungStep === 1
+                ? 'image'
+                : isJung && jungStep === 2
+                  ? 'more'
+                  : index === total - 1
+                    ? 'Education'
+                    : 'next'}
           </button>
         </div>
       </div>
@@ -2020,7 +2210,7 @@ export default function ComicProgram({
       style={{
         position: 'fixed',
         inset: 0,
-        zIndex: 90,
+        zIndex: 150,
         background: hubBg,
         display: 'flex',
         flexDirection: 'column',
@@ -2122,7 +2312,10 @@ export default function ComicProgram({
             <button
               key={style.key}
               type="button"
-              onClick={() => setImageStyle(style.key)}
+              onClick={() => {
+                setMoreOpen(false);
+                setImageStyle(style.key);
+              }}
               style={{
                 flex: 1,
                 minHeight: 34,
@@ -2231,7 +2424,10 @@ export default function ComicProgram({
             <button
               key={i}
               type="button"
-              onClick={() => setIndex(i)}
+              onClick={() => {
+                setMoreOpen(false);
+                setIndex(i);
+              }}
               style={{
                 width: i === index ? 18 : 6,
                 height: 6,

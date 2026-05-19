@@ -41,26 +41,29 @@ const EDUCATION_WORLDS = [
   {
     href: '#personality-map',
     title: 'Personality Map',
-    label: 'Traits, story, and mode bridges',
-    body: 'A positive self-understanding test that maps tendencies, story lens, gifts, frictions, and next reactions.',
+    label: 'Self-understanding test',
+    body: 'Traits, story, gifts, frictions, and mode bridges.',
     tint: '#D0A35F',
     kind: 'personality',
+    cover: '/education-worlds/personality-map-cover.png',
   },
   {
     href: '/atlas',
     title: 'Living Atlas',
-    label: 'Maps and collective knowledge',
-    body: 'Wellbeing, society, hope, data, and human progress as a living map.',
+    label: 'Maps and knowledge',
+    body: 'Wellbeing, society, hope, and shared maps.',
     tint: '#6B7A50',
     kind: 'link',
+    cover: '/education-worlds/living-atlas-cover.png',
   },
   {
     href: '/progress-road',
     title: 'Progress Roads',
-    label: 'History as hopeful timelines',
-    body: 'Tools, democracy, peace, kindness, freedom, happiness, and future questions.',
+    label: 'Hopeful timelines',
+    body: 'History, change, peace, freedom, and future questions.',
     tint: '#6888B0',
     kind: 'link',
+    cover: '/education-worlds/progress-roads-cover.png',
   },
 ];
 
@@ -81,11 +84,12 @@ const POSITIVE_OVERLAY_PROGRAMS = new Set([
 ]);
 const JPG_PANEL_PROGRAMS = new Set(['carl-jung', 'struggle-letting-go']);
 const GENERATED_LAYERED_PANEL_COUNTS: Record<string, number> = {
-  'carl-jung': 2,
+  'carl-jung': 20,
   'paulo-freire': 2,
   'thich-nhat-hanh': 2,
   gandhi: 20,
 };
+const LANDSCAPE_GENERATED_COVERS = new Set(['thich-nhat-hanh']);
 const PROGRAM_COVER_PANEL: Record<string, number> = {
   'room-to-breathe': 4,
   'emotional-intelligence': 3,
@@ -105,7 +109,7 @@ const PROGRAM_COVER_PANEL: Record<string, number> = {
   'ai-future': 4,
   'collective-evolution': 5,
   'deep-attention': 8,
-  'carl-jung': 13,
+  'carl-jung': 12,
   'paulo-freire': 5,
   'thich-nhat-hanh': 8,
   gandhi: 19,
@@ -168,17 +172,19 @@ function progressionColor(tint: string, index: number, total: number): string {
 }
 
 /* ── Groups with tint color per category ─────────────────────── */
-const GROUPS: { label: string; keys: string[]; tint: string; startHere?: string }[] = [
+const GROUPS: {
+  label: string;
+  keys: string[];
+  tint: string;
+  startHere?: string;
+  format?: 'guides';
+}[] = [
   {
     label: 'Inner Life',
     keys: [
       'room-to-breathe',
       'emotional-intelligence',
       'self-talk',
-      'carl-jung',
-      'paulo-freire',
-      'thich-nhat-hanh',
-      'gandhi',
       'wellbeing',
       'hope-energy',
       'sleep',
@@ -189,6 +195,12 @@ const GROUPS: { label: string; keys: string[]; tint: string; startHere?: string 
     ],
     tint: '#C4A060',
     startHere: 'emotional-intelligence',
+  },
+  {
+    label: 'World Guides',
+    keys: ['carl-jung', 'paulo-freire', 'thich-nhat-hanh', 'gandhi'],
+    tint: '#B99367',
+    format: 'guides',
   },
   {
     label: 'Growth',
@@ -418,6 +430,8 @@ function ProgramImageCard({
   const started = progress > 0;
   const coverPanel = PROGRAM_COVER_PANEL[program.key] ?? 0;
   const generatedCount = GENERATED_LAYERED_PANEL_COUNTS[program.key];
+  const isPortraitGenerated =
+    Boolean(generatedCount) && !LANDSCAPE_GENERATED_COVERS.has(program.key);
   const imageSrc = generatedCount
     ? `/comics/${program.key}/generated/panel-${coverPanel % generatedCount}.png`
     : POSITIVE_OVERLAY_PROGRAMS.has(program.key)
@@ -432,15 +446,15 @@ function ProgramImageCard({
       onClick={onOpen}
       style={{
         flexShrink: 0,
-        width: 176,
+        width: isPortraitGenerated ? 214 : 176,
         display: 'flex',
-        flexDirection: 'column',
+        flexDirection: isPortraitGenerated ? 'row' : 'column',
         gap: 8,
         background: col(c, 0.08),
         border: `1px solid ${col(c, started ? 0.35 : 0.2)}`,
         borderRadius: 0,
         cursor: 'pointer',
-        padding: 8,
+        padding: isPortraitGenerated ? 7 : 8,
         boxShadow: started ? `0 0 20px ${col(c, 0.14)}` : 'none',
         position: 'relative',
         textAlign: 'left',
@@ -470,28 +484,37 @@ function ProgramImageCard({
 
       <div
         style={{
-          width: '100%',
-          height: 104,
+          width: isPortraitGenerated ? 74 : '100%',
+          height: isPortraitGenerated ? 110 : 104,
+          flexShrink: 0,
           overflow: 'hidden',
           background: 'rgba(10,6,3,0.18)',
-          border: `1px solid ${col(c, 0.16)}`,
         }}
       >
         <img
           src={imageSrc}
           alt=""
-          style={{ display: 'block', width: '100%', height: '100%', objectFit: 'contain' }}
+          style={{ display: 'block', width: '100%', height: '100%', objectFit: 'cover' }}
         />
       </div>
 
-      <div style={{ padding: '2px 2px 0' }}>
+      <div
+        style={{
+          padding: isPortraitGenerated ? '3px 2px 0' : '2px 2px 0',
+          minWidth: 0,
+          display: 'flex',
+          flexDirection: 'column',
+          justifyContent: isPortraitGenerated ? 'center' : 'flex-start',
+        }}
+      >
         <div
           style={{
             fontFamily: SERIF,
-            fontSize: 13,
+            fontSize: isPortraitGenerated ? 12.5 : 13.5,
             fontWeight: 700,
             color: cream(0.9),
-            lineHeight: 1.28,
+            lineHeight: isPortraitGenerated ? 1.22 : 1.24,
+            overflowWrap: 'anywhere',
           }}
         >
           {program.domain}
@@ -502,7 +525,102 @@ function ProgramImageCard({
             fontSize: 9.5,
             color: col(c, 0.66),
             letterSpacing: '0.04em',
-            marginTop: 5,
+            marginTop: isPortraitGenerated ? 7 : 5,
+          }}
+        >
+          {started ? `${progress} / ${total}` : `${total} pages`}
+        </div>
+      </div>
+    </button>
+  );
+}
+
+function GuideProgramCard({
+  program,
+  onOpen,
+  cardColor,
+}: {
+  program: Program;
+  onOpen: () => void;
+  cardColor: string;
+}) {
+  const c = cardColor;
+  const progress = getProgress(program);
+  const total = program.segments.length;
+  const started = progress > 0;
+  const coverPanel = PROGRAM_COVER_PANEL[program.key] ?? 0;
+  const generatedCount = GENERATED_LAYERED_PANEL_COUNTS[program.key] ?? 1;
+  const imageSrc = `/comics/${program.key}/generated/panel-${coverPanel % generatedCount}.png`;
+  const title = program.domain.split(' & ')[0] ?? program.domain;
+  const subtitle = program.domain.includes(' & ')
+    ? program.domain.split(' & ').slice(1).join(' & ')
+    : '';
+
+  return (
+    <button
+      type="button"
+      onClick={onOpen}
+      style={{
+        flexShrink: 0,
+        width: 142,
+        display: 'flex',
+        flexDirection: 'column',
+        gap: 8,
+        background: col(c, 0.08),
+        border: `1px solid ${col(c, started ? 0.35 : 0.2)}`,
+        borderRadius: 0,
+        cursor: 'pointer',
+        padding: 7,
+        boxShadow: started ? `0 0 20px ${col(c, 0.14)}` : 'none',
+        textAlign: 'left',
+      }}
+    >
+      <div
+        style={{
+          width: '100%',
+          height: 158,
+          overflow: 'hidden',
+          background: 'rgba(10,6,3,0.18)',
+        }}
+      >
+        <img
+          src={imageSrc}
+          alt=""
+          style={{ display: 'block', width: '100%', height: '100%', objectFit: 'cover' }}
+        />
+      </div>
+      <div style={{ minWidth: 0, padding: '1px 1px 0' }}>
+        <div
+          style={{
+            fontFamily: SERIF,
+            fontSize: 14,
+            fontWeight: 700,
+            lineHeight: 1.12,
+            color: cream(0.92),
+          }}
+        >
+          {title}
+        </div>
+        {subtitle && (
+          <div
+            style={{
+              marginTop: 4,
+              fontFamily: SERIF,
+              fontSize: 10.5,
+              lineHeight: 1.18,
+              color: col(c, 0.72),
+            }}
+          >
+            {subtitle}
+          </div>
+        )}
+        <div
+          style={{
+            marginTop: 7,
+            fontFamily: SERIF,
+            fontSize: 9.5,
+            color: col(c, 0.58),
+            letterSpacing: '0.04em',
           }}
         >
           {started ? `${progress} / ${total}` : `${total} pages`}
@@ -530,30 +648,42 @@ function EducationWorldCard({
       onClick={openWorld}
       style={{
         flexShrink: 0,
-        width: 194,
-        minHeight: 118,
+        width: 206,
+        minHeight: 172,
         display: 'flex',
         flexDirection: 'column',
-        justifyContent: 'space-between',
-        gap: 12,
-        padding: 12,
+        gap: 9,
+        padding: 8,
         border: `1px solid ${col(world.tint, 0.28)}`,
-        background: `linear-gradient(135deg, ${col(world.tint, 0.16)}, rgba(255,255,255,0.035))`,
+        background: col(world.tint, 0.08),
         color: cream(0.88),
         textAlign: 'left',
         cursor: 'pointer',
-        boxShadow: `inset 0 0 28px ${col(world.tint, 0.08)}`,
       }}
     >
+      <div
+        style={{
+          width: '100%',
+          height: 92,
+          overflow: 'hidden',
+          background: 'rgba(10,6,3,0.18)',
+        }}
+      >
+        <img
+          src={world.cover}
+          alt=""
+          style={{ display: 'block', width: '100%', height: '100%', objectFit: 'cover' }}
+        />
+      </div>
       <div>
         <div
           style={{
             fontFamily: SERIF,
-            fontSize: 9.5,
+            fontSize: 9,
             letterSpacing: '0.12em',
             textTransform: 'uppercase',
             color: col(world.tint, 0.78),
-            marginBottom: 8,
+            marginBottom: 5,
           }}
         >
           {world.label}
@@ -561,16 +691,16 @@ function EducationWorldCard({
         <div
           style={{
             fontFamily: SERIF,
-            fontSize: 18,
+            fontSize: 17,
             fontWeight: 700,
-            lineHeight: 1.02,
+            lineHeight: 1.06,
             color: cream(0.94),
           }}
         >
           {world.title}
         </div>
       </div>
-      <div style={{ fontSize: 11.5, lineHeight: 1.45, color: cream(0.62) }}>{world.body}</div>
+      <div style={{ fontSize: 11.5, lineHeight: 1.34, color: cream(0.62) }}>{world.body}</div>
     </button>
   );
 }
@@ -908,7 +1038,14 @@ export default function LearningHub({ onClose }: { onClose: () => void }) {
                   }}
                 >
                   {programs.map((p, i) =>
-                    homeDisplay === 'images' ? (
+                    group.format === 'guides' && homeDisplay === 'images' ? (
+                      <GuideProgramCard
+                        key={p.key}
+                        program={p}
+                        onOpen={() => setActive(p)}
+                        cardColor={progressionColor(group.tint, i, programs.length)}
+                      />
+                    ) : homeDisplay === 'images' ? (
                       <ProgramImageCard
                         key={p.key}
                         program={p}
