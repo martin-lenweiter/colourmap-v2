@@ -737,6 +737,7 @@ export default function LearningHub({ onClose }: { onClose: () => void }) {
   const [personalityOpen, setPersonalityOpen] = useState(false);
   const [hubPalId, setHubPalId] = useState<HubPaletteId>(loadHubPalette);
   const [homeDisplay, setHomeDisplay] = useState<HomeDisplayMode>(loadHomeDisplayMode);
+  const [philosophyOpen, setPhilosophyOpen] = useState(false);
   const hubBg = HUB_PALETTES.find((p) => p.id === hubPalId)?.bg ?? 'rgba(18,10,4,0.99)';
   const heroImage = useMemo(
     () => EDUCATION_IMAGES[Math.floor(Math.random() * EDUCATION_IMAGES.length)],
@@ -856,7 +857,10 @@ export default function LearningHub({ onClose }: { onClose: () => void }) {
           >
             Colourmap
           </div>
-          <div
+          <button
+            type="button"
+            onClick={() => setPhilosophyOpen((value) => !value)}
+            aria-expanded={philosophyOpen}
             style={{
               fontFamily: SERIF,
               fontSize: 32,
@@ -864,10 +868,29 @@ export default function LearningHub({ onClose }: { onClose: () => void }) {
               color: cream(0.92),
               letterSpacing: '-0.02em',
               lineHeight: 1,
+              background: 'transparent',
+              border: 0,
+              cursor: 'pointer',
+              padding: 0,
             }}
           >
             Education
-          </div>
+          </button>
+          {philosophyOpen && (
+            <p
+              style={{
+                maxWidth: 520,
+                margin: '12px auto 0',
+                color: cream(0.68),
+                fontFamily: SERIF,
+                fontSize: 13.5,
+                lineHeight: 1.65,
+              }}
+            >
+              Life is not fixed. You can understand your patterns, organise your energy, transform
+              yourself, and participate in transforming the world.
+            </p>
+          )}
         </div>
 
         {/* Header — palette + close */}
