@@ -1,4 +1,9 @@
 import { getCodingAgentAdapter } from '@/lib/coding-agents/adapters';
+import {
+  appendAttachmentContext,
+  normalizeAgentAttachments,
+  persistAgentAttachments,
+} from '@/lib/coding-agents/attachments';
 import { createCheckpoint, listChangedFiles } from '@/lib/coding-agents/git';
 import { resolveProjectDirectory } from '@/lib/coding-agents/paths';
 import { requireBuildLabAccess } from '@/lib/coding-agents/route-auth';
@@ -19,6 +24,7 @@ export async function POST(request: Request) {
     projectPath?: string;
     prompt?: string;
     mode?: AgentMode;
+    attachments?: unknown;
   };
 
   try {
@@ -30,6 +36,7 @@ export async function POST(request: Request) {
   const adapter = getCodingAgentAdapter(body.agentId ?? '');
   if (!adapter) return new Response('Unknown coding agent.', { status: 400 });
   if (!body.prompt?.trim()) return new Response('Mission prompt is required.', { status: 400 });
+  const attachments = normalizeAgentAttachments(body.attachments);
 
   let projectPath: string;
   try {
@@ -49,13 +56,24 @@ export async function POST(request: Request) {
       }
 
       try {
+        const savedAttachments = await persistAgentAttachments(access.value.id, attachments);
+        for (const attachment of savedAttachments) {
+          if (attachment.filePath) {
+            send({
+              type: 'attachment_saved',
+              path: attachment.filePath,
+              name: attachment.name,
+            });
+          }
+        }
         const checkpoint = await createCheckpoint(projectPath);
         send({ type: 'checkpoint', checkpoint });
 
         for await (const event of adapter.runMission({
           projectPath,
-          prompt: body.prompt ?? '',
+          prompt: appendAttachmentContext(body.prompt ?? '', savedAttachments),
           mode: body.mode ?? 'build',
+          attachments: savedAttachments,
         })) {
           send(event);
         }

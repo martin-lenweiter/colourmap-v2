@@ -18,6 +18,60 @@ The comic should feel funny, beautiful, reflective, and alive. It should never b
 tool, a therapy replacement, or a rigid personality quiz. It is a pocket labyrinth for imagination,
 rest, and self-recognition.
 
+## Infinite Loop Architecture
+
+Billy should eventually become a connected 300-page first world, not 300 unrelated panels.
+
+The structure is a closed loop:
+
+```text
+Pineapple Planet
+-> region journey
+-> symbolic test
+-> comic choice
+-> wisdom fragment
+-> Observatory overview
+-> return home wider
+-> new leaf opens
+```
+
+The loop never means "start over." It means each journey changes what the same places mean.
+
+Core loop rules:
+
+- every 3-6 pages may offer a choice, but some beats can be faster when the joke is the choice
+- each 25-50 page arc should return to a known gate: Pineapple Planet, The Observatory, a crossroads, a river, or a door in Babylon
+- images can be reused when the text and choice state make the meaning different
+- intersection pages should feel more like concept art: reflections in water, bridges, mountains, doorways, sunsets, maps, strangers, symbolic roads
+- normal pages should stay more cartoony and readable, with fewer details and clearer character action
+- Galaxy Gummies are a small recurring temptation, not the main story
+- Crocodile Jack is the recurring sabotage force: greed, shortcuts, desire, branding, winning, and hollow success
+- every region has a gift and risk, so the story avoids simple good-place/bad-place morality
+- education themes from Colourmap can appear as story wisdom, but never as lectures
+- the bottom area of each portrait image should usually stay calm enough for the app's separate text layer
+- no generated image should contain speech bubbles, captions, page numbers, borders, white frames, or UI text
+
+### 300-Page First World
+
+The first serious world can be organized as six 50-page loops:
+
+1. **The Quest Begins**: home, crossroads, Groovy Jungle, pyramid, first river.
+2. **Waters And Loneliness**: River of Regret, Ocean of Sadness, Desert of Loneliness, lights of hope.
+3. **Babylon And Progress**: solarpunk gifts, system traps, Crocodile Jack, the question of progress.
+4. **Creativity And Discipline**: Groovy Jungle returns, Mountain of Discipline, Square Billy, body and rhythm.
+5. **Time And Memory**: past/future doors, ancestors, shadow Billy versions, repeated symbols.
+6. **The Observatory Loop**: overview, friends' journeys, medals, Pineapple Planet leaves opening into the next world.
+
+Each 50-page loop should end with:
+
+- one comic question users can answer
+- one medal or place stamp
+- one reusable symbolic image
+- one open door into the next loop
+
+The final page of the 300-page first world should not solve The Juice. It should show Billy back on
+Pineapple Planet, looking at a wider map, with a new unknown path quietly opening.
+
 ## Core Character
 
 The main character is **Billy the Pineapple**.

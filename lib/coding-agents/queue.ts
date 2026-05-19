@@ -1,3 +1,5 @@
+import type { AgentAttachment } from './types';
+
 export type BuildLabQueuedMissionStatus = 'draft' | 'queued' | 'running' | 'complete' | 'failed';
 
 export type BuildLabRunnerEvent = {
@@ -15,6 +17,7 @@ export type BuildLabQueuedMission = {
   agentId: string;
   projectPath: string;
   prompt: string;
+  attachments: AgentAttachment[];
   status: BuildLabQueuedMissionStatus;
   order: number;
   createdAt: string;
@@ -52,6 +55,7 @@ export function createQueuedMission(
     agentId: string;
     projectPath: string;
     prompt: string;
+    attachments?: AgentAttachment[];
   },
 ) {
   const now = new Date().toISOString();
@@ -63,6 +67,7 @@ export function createQueuedMission(
     agentId: input.agentId,
     projectPath: input.projectPath,
     prompt: input.prompt,
+    attachments: input.attachments ?? [],
     status: 'queued',
     order: Date.now(),
     createdAt: now,
