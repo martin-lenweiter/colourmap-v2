@@ -31,6 +31,11 @@ Those borders can confuse the real framing once the app places the artwork insid
 reader, adds bubbles, or adapts the page on phone. The app owns the frame; the image should be the
 complete artwork layer.
 
+Education menu covers follow the same rule. Cover images for programs, personality tests, atlas,
+roads, and future learning worlds should be full-bleed artwork only: no beige border, no white
+matte, no fake paper edge, and no partial frame line inside the raster. The UI may place the image
+inside a card, but the image itself must stay borderless.
+
 ## Visual Universe
 
 The aim is to build one coherent Colourmap education visual universe, not disconnected illustrations.
@@ -75,6 +80,7 @@ Shared visual DNA:
 - enough negative space for app-rendered text overlays
 - one clear emotional idea per panel
 - no baked-in white border, comic panel frame, page margin, or artificial edge outline
+- no generated frame or border on cover images; card framing belongs to the app, not the artwork
 
 ## Phone-First Adaptive Design
 
@@ -701,7 +707,8 @@ python main.py --config data/input.json --regenerate-panel 1 3
 Requirements:
 
 - Python
-- Pillow for page layout, borders, gutters, captions, and PDF page assembly
+- Pillow for optional PDF/page assembly and captions. Do not add baked-in image borders, gutters,
+  fake mattes, or frame lines to generated artwork.
 - image API client for panel generation
 - environment variables for API keys
 - JSON intermediate files saved at every stage
