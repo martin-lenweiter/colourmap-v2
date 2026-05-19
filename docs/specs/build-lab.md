@@ -528,6 +528,16 @@ Next implementation cut:
 - Desktop runner executes Codex/Claude locally, streams events back to the queue record, and updates diffs/checkpoints.
 - Phone watches mission status and output from the queue.
 
+Backend contract now prepared:
+
+- migration: `drizzle/migrations/0019_build_lab_runner.sql`
+- storage bucket: `build-lab-attachments`
+- tables: `build_lab_runners`, `build_lab_missions`, `build_lab_events`, `build_lab_attachments`
+- shared TypeScript contract: `lib/coding-agents/remote-runner.ts`
+
+This prepares the Supabase side without requiring the app to switch away from the local queue before
+the project has the needed Supabase capacity/settings.
+
 Safety:
 
 - CLI execution stays on the trusted desktop runner.
