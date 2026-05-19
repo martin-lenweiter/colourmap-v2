@@ -58,36 +58,35 @@ describe('LearningHub', () => {
 
     fireEvent.click(screen.getByRole('button', { name: /Begin Carl Jung & The Inner Map/i }));
 
-    expect(screen.getByRole('button', { name: 'Next comic page' })).toBeDefined();
+    expect(screen.getByRole('button', { name: 'Reveal first comic text' })).toBeDefined();
     expect(screen.getByRole('button', { name: 'Part 1 1-6' })).toBeDefined();
     expect(screen.getByRole('button', { name: 'Part 2 7-13' })).toBeDefined();
     expect(screen.getByRole('button', { name: 'Part 3 14-20' })).toBeDefined();
+    expect(screen.queryByText('The inner world is real material')).toBeNull();
+    const firstImage = screen.getByRole('img', { name: /Carl Jung comic page 1/i });
+    expect(firstImage.getAttribute('src')).toBe(
+      '/comics/carl-jung/variants/no-bubbles/panel-0.jpg',
+    );
+
+    fireEvent.click(screen.getByRole('button', { name: 'Reveal first comic text' }));
     expect(screen.getByText('The inner world is real material')).toBeDefined();
     expect(screen.getByText(/Dreams, symbols, moods/i)).toBeDefined();
-    expect(screen.getByRole('img', { name: /Carl Jung comic page 1/i })).toBeDefined();
-    expect(screen.getByRole('button', { name: 'more' })).toBeDefined();
 
-    fireEvent.click(screen.getByRole('button', { name: 'more' }));
-    expect(screen.getByRole('button', { name: 'less' })).toBeDefined();
+    fireEvent.click(screen.getByRole('button', { name: 'Show second comic image' }));
+    const cleanImage = screen.getByRole('img', { name: /Carl Jung comic page 1/i });
+    expect(cleanImage.getAttribute('src')).toBe('/comics/carl-jung/generated/panel-0.png');
+
+    fireEvent.click(screen.getByRole('button', { name: 'Reveal deeper comic text' }));
+    expect(screen.getByText(/They are clues from a deeper field/i)).toBeDefined();
 
     fireEvent.click(screen.getByRole('button', { name: 'Part 3 14-20' }));
     const laterImage = screen.getByRole('img', { name: /Carl Jung comic page 14/i });
-    expect(laterImage.getAttribute('src')).toBe('/comics/carl-jung/generated/panel-13.png');
-
-    fireEvent.click(screen.getByRole('button', { name: 'Empty bubbles' }));
-    const variantImage = screen.getByRole('img', { name: /Carl Jung comic page 14/i });
-    expect(variantImage.getAttribute('src')).toBe(
-      '/comics/carl-jung/variants/blank-bubbles/panel-13.jpg',
+    expect(laterImage.getAttribute('src')).toBe(
+      '/comics/carl-jung/variants/no-bubbles/panel-13.jpg',
     );
     expect(
       container.querySelector('img[src*="/comics/carl-jung/generated/panel-13.png"]'),
     ).toBeNull();
-
-    fireEvent.click(screen.getByRole('button', { name: 'No bubbles' }));
-    const noBubbleImage = screen.getByRole('img', { name: /Carl Jung comic page 14/i });
-    expect(noBubbleImage.getAttribute('src')).toBe(
-      '/comics/carl-jung/variants/no-bubbles/panel-13.jpg',
-    );
   });
 
   it('opens the Paulo Freire layered comic program', () => {

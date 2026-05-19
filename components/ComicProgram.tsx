@@ -50,11 +50,6 @@ const GENERATED_LAYERED_PANEL_COUNTS: Record<string, number> = {
 };
 
 const PROGRAM_IMAGE_STYLES: Record<string, ImageStyle[]> = {
-  'carl-jung': [
-    { key: 'default', label: 'Clean layer' },
-    { key: 'blank-bubbles', label: 'Empty bubbles' },
-    { key: 'no-bubbles', label: 'No bubbles' },
-  ],
   'hope-energy': [DEFAULT_IMAGE_STYLE, { key: 'euro-bd', label: 'European BD' }],
   'emotional-intelligence': [DEFAULT_IMAGE_STYLE, { key: 'minimal', label: 'Minimal' }],
 };
@@ -1088,6 +1083,7 @@ export default function ComicProgram({
   const imageStyles = getImageStyles(program.key);
   const [imageStyle, setImageStyle] = useState(imageStyles[0]?.key ?? 'default');
   const [moreOpen, setMoreOpen] = useState(false);
+  const [jungStep, setJungStep] = useState(0);
   const current = program.segments[index];
   const total = program.segments.length;
   const paras = toParagraphs(current.body);
@@ -1095,14 +1091,24 @@ export default function ComicProgram({
   function prev() {
     if (index > 0) {
       setMoreOpen(false);
+      setJungStep(0);
       setIndex(index - 1);
     }
   }
   function next() {
     if (index < total - 1) {
       setMoreOpen(false);
+      setJungStep(0);
       setIndex(index + 1);
     } else (onBack ?? onClose)();
+  }
+  function primaryNext() {
+    if (program.key === 'carl-jung' && jungStep < 3) {
+      setMoreOpen(false);
+      setJungStep(jungStep + 1);
+      return;
+    }
+    next();
   }
 
   const introData = PROGRAM_INTROS[program.key];
@@ -1818,7 +1824,17 @@ export default function ComicProgram({
   if (LAYERED_BUBBLE_PROGRAMS.has(program.key)) {
     const isLandscape = LANDSCAPE_LAYERED_PROGRAMS.has(program.key);
     const usesGuideTextBox = LIFE_GUIDE_PROGRAMS.has(program.key);
-    const visibleGuideParagraphs = moreOpen ? paras : [conciseLesson(current.body)];
+    const isJung = program.key === 'carl-jung';
+    const showsGuideTextBox = usesGuideTextBox && (!isJung || jungStep === 1 || jungStep === 3);
+    const jungDeepParagraphs = paras.length > 1 ? paras.slice(1) : [current.body];
+    const visibleGuideParagraphs = isJung
+      ? jungStep === 3
+        ? jungDeepParagraphs
+        : [conciseLesson(current.body)]
+      : moreOpen
+        ? paras
+        : [conciseLesson(current.body)];
+    const activeImageStyle = isJung ? (jungStep >= 2 ? 'default' : 'no-bubbles') : imageStyle;
     return (
       <div
         style={{
@@ -1895,6 +1911,7 @@ export default function ComicProgram({
                   aria-label={`${part.label} ${part.start + 1}-${part.end + 1}`}
                   onClick={() => {
                     setMoreOpen(false);
+                    setJungStep(0);
                     setIndex(part.start);
                   }}
                   style={{
@@ -1949,8 +1966,18 @@ export default function ComicProgram({
           >
             <button
               type="button"
-              onClick={next}
-              aria-label={index === total - 1 ? 'Return to education' : 'Next comic page'}
+              onClick={primaryNext}
+              aria-label={
+                isJung && jungStep === 0
+                  ? 'Reveal first comic text'
+                  : isJung && jungStep === 1
+                    ? 'Show second comic image'
+                    : isJung && jungStep === 2
+                      ? 'Reveal deeper comic text'
+                      : index === total - 1
+                        ? 'Return to education'
+                        : 'Next comic page'
+              }
               style={{
                 position: 'absolute',
                 inset: 0,
@@ -1965,14 +1992,14 @@ export default function ComicProgram({
               programKey={program.key}
               index={index}
               color={program.color}
-              imageStyle={imageStyle}
+              imageStyle={activeImageStyle}
               alt={
                 program.key === 'carl-jung'
                   ? `Carl Jung comic page ${index + 1}`
                   : `${program.domain} comic page ${index + 1}`
               }
             />
-            {usesGuideTextBox && (
+            {showsGuideTextBox && (
               <div
                 style={{
                   position: 'absolute',
@@ -2010,28 +2037,30 @@ export default function ComicProgram({
                   >
                     {current.title}
                   </div>
-                  <button
-                    type="button"
-                    onClick={(event) => {
-                      event.stopPropagation();
-                      setMoreOpen((value) => !value);
-                    }}
-                    style={{
-                      flexShrink: 0,
-                      borderRadius: 999,
-                      border: `1px solid ${col(program.color, 0.36)}`,
-                      background: col(program.color, 0.12),
-                      color: col(program.color, 0.86),
-                      cursor: 'pointer',
-                      fontFamily: SERIF,
-                      fontSize: 10,
-                      letterSpacing: '0.12em',
-                      textTransform: 'uppercase',
-                      padding: '5px 9px',
-                    }}
-                  >
-                    {moreOpen ? 'less' : 'more'}
-                  </button>
+                  {!isJung && (
+                    <button
+                      type="button"
+                      onClick={(event) => {
+                        event.stopPropagation();
+                        setMoreOpen((value) => !value);
+                      }}
+                      style={{
+                        flexShrink: 0,
+                        borderRadius: 999,
+                        border: `1px solid ${col(program.color, 0.36)}`,
+                        background: col(program.color, 0.12),
+                        color: col(program.color, 0.86),
+                        cursor: 'pointer',
+                        fontFamily: SERIF,
+                        fontSize: 10,
+                        letterSpacing: '0.12em',
+                        textTransform: 'uppercase',
+                        padding: '5px 9px',
+                      }}
+                    >
+                      {moreOpen ? 'less' : 'more'}
+                    </button>
+                  )}
                 </div>
                 <div style={{ display: 'grid', gap: moreOpen ? 8 : 0 }}>
                   {visibleGuideParagraphs.map((paragraph, paragraphIndex) => (
@@ -2053,7 +2082,7 @@ export default function ComicProgram({
               </div>
             )}
           </div>
-          {imageStyles.length > 1 && (
+          {!isJung && imageStyles.length > 1 && (
             <div
               style={{
                 display: 'flex',
@@ -2132,6 +2161,7 @@ export default function ComicProgram({
                 type="button"
                 onClick={() => {
                   setMoreOpen(false);
+                  setJungStep(0);
                   setIndex(i);
                 }}
                 aria-label={`Open page ${i + 1}`}
@@ -2149,7 +2179,7 @@ export default function ComicProgram({
           </div>
           <button
             type="button"
-            onClick={next}
+            onClick={primaryNext}
             style={{
               border: 0,
               background: 'transparent',
@@ -2160,7 +2190,15 @@ export default function ComicProgram({
               padding: '8px 0',
             }}
           >
-            {index === total - 1 ? 'Education' : 'next'}
+            {isJung && jungStep === 0
+              ? 'text'
+              : isJung && jungStep === 1
+                ? 'image'
+                : isJung && jungStep === 2
+                  ? 'more'
+                  : index === total - 1
+                    ? 'Education'
+                    : 'next'}
           </button>
         </div>
       </div>
