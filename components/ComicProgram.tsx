@@ -53,6 +53,7 @@ const PROGRAM_IMAGE_STYLES: Record<string, ImageStyle[]> = {
   'carl-jung': [
     { key: 'default', label: 'Clean layer' },
     { key: 'blank-bubbles', label: 'Empty bubbles' },
+    { key: 'no-bubbles', label: 'No bubbles' },
   ],
   'hope-energy': [DEFAULT_IMAGE_STYLE, { key: 'euro-bd', label: 'European BD' }],
   'emotional-intelligence': [DEFAULT_IMAGE_STYLE, { key: 'minimal', label: 'Minimal' }],

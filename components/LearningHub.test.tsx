@@ -82,6 +82,12 @@ describe('LearningHub', () => {
     expect(
       container.querySelector('img[src*="/comics/carl-jung/generated/panel-13.png"]'),
     ).toBeNull();
+
+    fireEvent.click(screen.getByRole('button', { name: 'No bubbles' }));
+    const noBubbleImage = screen.getByRole('img', { name: /Carl Jung comic page 14/i });
+    expect(noBubbleImage.getAttribute('src')).toBe(
+      '/comics/carl-jung/variants/no-bubbles/panel-13.jpg',
+    );
   });
 
   it('opens the Paulo Freire layered comic program', () => {
