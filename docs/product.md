@@ -15,6 +15,7 @@ The product is not a meditation app (pure stillness) or a productivity tool (pur
 
 ## Core Philosophy
 
+- **World peace is the horizon.** Colourmap's long-term aim is to become a platform for world peace: not as a slogan, but through the practical foundations that make peace possible at human scale. Self-understanding, emotional regulation, dialogue, repair, shared maps, education, and collective agency are treated as peace infrastructure.
 - **Unite fragments into coherent intelligence.** Colourmap should take scattered reflections, body signals, sounds, visuals, plans, and memories, then help the user see one coherent context they can act from and evolve through.
 - **Field -> Tensions -> Action -> Patterns.** The deeper product architecture is not productivity first, but helping the user notice the field of the day, name the competing tensions underneath it, choose small bridge actions, and discover recurring life patterns. [Spec](specs/field-tensions-action-patterns.md)
 - **Find the core simple challenge.** Colourmap should show how the user's situation is less complex than it feels, identify the load-bearing tension, and propose a few workable paths instead of multiplying dashboards or advice.

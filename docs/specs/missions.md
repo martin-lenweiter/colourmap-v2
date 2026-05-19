@@ -99,6 +99,22 @@ A mission should eventually carry:
 - Only a small number of missions should be active at once. The rest belong in later/someday lanes.
 - Completing a mission should feed the reflection layer: what changed in mood, pressure, or clarity?
 - The AI should help the user see the real structure: "these five tasks are all Organisation," or "this blocker has appeared three times this week."
+- Missions should connect to the block/flow pattern system. A mission is not only a task; it can be
+  evidence that an area is blocked, flowing, avoided, repeated, or ready for a bridge action.
+
+### Progress Pattern Link
+
+Future Progress should read mission history alongside check-ins, categories, day-map blocks, and
+notes. The goal is to show repeated life patterns such as:
+
+- an Organisation task appearing for days while Education activity increases
+- a Body mission improving mood after completion
+- a creative flow repeatedly used as recovery after admin pressure
+- a blocker reappearing across unrelated-looking missions
+
+The UI should express this as simple visual paths first: colour-dot trails, repeated loops, blocked
+river segments, and possible bridge roads. AI can name the pattern and offer interpretations, but it
+must show the evidence and ask before saving any new category, pattern, or mission change.
 
 ### AI Mission Agent
 
