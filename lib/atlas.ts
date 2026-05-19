@@ -37,9 +37,9 @@ export type AtlasNode = {
 
 export const HUMAN_PROGRESS_ATLAS = {
   title: 'The Human Progress Atlas',
-  subtitle: 'A warm map of tools, hope, AI, and the next human era.',
+  subtitle: 'One warm road from survival pressure toward a more human future.',
   opening:
-    'Human life has already changed many times. The next transformation can be technical, emotional, social, and collective.',
+    'Human life has already changed many times. This is one road: from survival pressure, through tools and progress, toward emotional intelligence and a more peaceful future.',
   nodes: [
     {
       id: 'harder',
@@ -47,7 +47,7 @@ export const HUMAN_PROGRESS_ATLAS = {
       title: 'Life Was Harder',
       short: 'For most of history, survival was the main project.',
       x: 12,
-      y: 54,
+      y: 64,
       color: '#B88A58',
       links: ['tools'],
       steps: [
@@ -67,10 +67,10 @@ export const HUMAN_PROGRESS_ATLAS = {
       title: 'Tools Changed Life',
       short:
         'Sanitation, medicine, energy, education, rights, and communication changed the baseline.',
-      x: 30,
-      y: 36,
+      x: 26,
+      y: 48,
       color: '#C8A05E',
-      links: ['progress', 'ai'],
+      links: ['progress'],
       steps: [
         {
           type: 'text',
@@ -91,8 +91,8 @@ export const HUMAN_PROGRESS_ATLAS = {
       kind: 'progress',
       title: 'Quality Of Life Improved',
       short: 'The data is imperfect, but the direction of many human basics is real.',
-      x: 50,
-      y: 22,
+      x: 41,
+      y: 34,
       color: '#A8B870',
       links: ['wounds'],
       steps: [
@@ -120,10 +120,10 @@ export const HUMAN_PROGRESS_ATLAS = {
       title: 'What Still Hurts',
       short:
         'Loneliness, anxiety, inequality, burnout, conflict, and ecological pressure remain real.',
-      x: 68,
-      y: 40,
+      x: 56,
+      y: 45,
       color: '#A07888',
-      links: ['emotional'],
+      links: ['ai'],
       steps: [
         {
           type: 'text',
@@ -140,10 +140,10 @@ export const HUMAN_PROGRESS_ATLAS = {
       kind: 'ai',
       title: 'AI As A New Tool',
       short: 'AI can amplify access, creativity, pattern recognition, and learning.',
-      x: 52,
-      y: 62,
+      x: 70,
+      y: 60,
       color: '#78A8A8',
-      links: ['emotional', 'future'],
+      links: ['emotional'],
       steps: [
         {
           type: 'text',
@@ -164,8 +164,8 @@ export const HUMAN_PROGRESS_ATLAS = {
       kind: 'emotional',
       title: 'The Missing Technology',
       short: 'The next frontier may be emotional intelligence, belonging, and collective trust.',
-      x: 74,
-      y: 67,
+      x: 82,
+      y: 42,
       color: '#D0A068',
       links: ['future'],
       steps: [
@@ -184,8 +184,8 @@ export const HUMAN_PROGRESS_ATLAS = {
       kind: 'future',
       title: 'A Beautiful World Is Buildable',
       short: 'Better tools plus better inner life could unlock enormous human happiness.',
-      x: 88,
-      y: 28,
+      x: 91,
+      y: 23,
       color: '#D8C878',
       links: [],
       steps: [

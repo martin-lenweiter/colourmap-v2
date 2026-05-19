@@ -39,14 +39,27 @@ const TEXT_ON_IMAGE_PROGRAMS = new Set([
 
 const BLANK_BUBBLE_PROGRAMS = new Set(['carl-jung']);
 const JPG_PANEL_PROGRAMS = new Set(['carl-jung', 'struggle-letting-go']);
-const LAYERED_BUBBLE_PROGRAMS = new Set(['carl-jung', 'paulo-freire', 'thich-nhat-hanh', 'gandhi']);
+const LAYERED_BUBBLE_PROGRAMS = new Set([
+  'carl-jung',
+  'paulo-freire',
+  'thich-nhat-hanh',
+  'gandhi',
+  'clear-allen',
+]);
 const LANDSCAPE_LAYERED_PROGRAMS = new Set(['thich-nhat-hanh']);
-const LIFE_GUIDE_PROGRAMS = new Set(['carl-jung', 'paulo-freire', 'thich-nhat-hanh', 'gandhi']);
+const LIFE_GUIDE_PROGRAMS = new Set([
+  'carl-jung',
+  'paulo-freire',
+  'thich-nhat-hanh',
+  'gandhi',
+  'clear-allen',
+]);
 const GENERATED_LAYERED_PANEL_COUNTS: Record<string, number> = {
   'carl-jung': 20,
   'paulo-freire': 2,
   'thich-nhat-hanh': 2,
   gandhi: 20,
+  'clear-allen': 16,
 };
 
 const PROGRAM_IMAGE_STYLES: Record<string, ImageStyle[]> = {
@@ -60,6 +73,47 @@ const GUIDE_PARTS = [
   { label: 'Part 2', start: 6, end: 12 },
   { label: 'Part 3', start: 13, end: 19 },
 ];
+
+const JUNG_PART_REFLECTIONS: Record<number, { label: string; questions: string[] }> = {
+  5: {
+    label: 'End of Part 1',
+    questions: [
+      'What inner signal keeps returning in your life?',
+      'Which hidden part of you may be asking to be included?',
+    ],
+  },
+  12: {
+    label: 'End of Part 2',
+    questions: [
+      'Which dream, image, coincidence, or reaction has carried more meaning than logic could explain?',
+      'What would change if you treated it as information instead of noise?',
+    ],
+  },
+  19: {
+    label: 'End of Part 3',
+    questions: [
+      'Where does your life feel scattered, and what center could help the parts gather?',
+      'What rejected energy could become wisdom if it was welcomed carefully?',
+    ],
+  },
+};
+
+function guideReflectionPrompts(programKey: string, index: number): string[] {
+  if (programKey !== 'carl-jung') return [];
+  const reflection = JUNG_PART_REFLECTIONS[index];
+  if (!reflection) return [];
+  return [reflection.label, ...reflection.questions];
+}
+
+function complementaryJungText(title: string, body: string, reflectionPrompts: string[]): string[] {
+  const concise = conciseLesson(body);
+  const remaining = body.replace(concise, '').trim();
+  const complement =
+    remaining ||
+    `Look at this image as a second door into ${title.toLowerCase()}. What does it reveal that the first image did not?`;
+  if (reflectionPrompts.length === 0) return [complement];
+  return [complement, ...reflectionPrompts];
+}
 
 function getImageStyles(programKey: string): ImageStyle[] {
   const styles = PROGRAM_IMAGE_STYLES[programKey] ?? [DEFAULT_IMAGE_STYLE];
@@ -1083,7 +1137,7 @@ export default function ComicProgram({
   const imageStyles = getImageStyles(program.key);
   const [imageStyle, setImageStyle] = useState(imageStyles[0]?.key ?? 'default');
   const [moreOpen, setMoreOpen] = useState(false);
-  const [jungStep, setJungStep] = useState(0);
+  const [guideStep, setGuideStep] = useState(0);
   const current = program.segments[index];
   const total = program.segments.length;
   const paras = toParagraphs(current.body);
@@ -1091,24 +1145,31 @@ export default function ComicProgram({
   function prev() {
     if (index > 0) {
       setMoreOpen(false);
-      setJungStep(0);
+      setGuideStep(0);
       setIndex(index - 1);
     }
   }
   function next() {
     if (index < total - 1) {
       setMoreOpen(false);
-      setJungStep(0);
+      setGuideStep(0);
       setIndex(index + 1);
     } else (onBack ?? onClose)();
   }
   function primaryNext() {
-    if (program.key === 'carl-jung' && jungStep < 3) {
-      setMoreOpen(false);
-      setJungStep(jungStep + 1);
-      return;
+    if (LIFE_GUIDE_PROGRAMS.has(program.key)) {
+      const finalGuideStep = program.key === 'carl-jung' ? 3 : 1;
+      if (guideStep < finalGuideStep) {
+        setMoreOpen(false);
+        setGuideStep(guideStep + 1);
+        return;
+      }
     }
     next();
+  }
+  function resetGuidePage() {
+    setMoreOpen(false);
+    setGuideStep(0);
   }
 
   const introData = PROGRAM_INTROS[program.key];
@@ -1825,16 +1886,23 @@ export default function ComicProgram({
     const isLandscape = LANDSCAPE_LAYERED_PROGRAMS.has(program.key);
     const usesGuideTextBox = LIFE_GUIDE_PROGRAMS.has(program.key);
     const isJung = program.key === 'carl-jung';
-    const showsGuideTextBox = usesGuideTextBox && (!isJung || jungStep === 1 || jungStep === 3);
-    const jungDeepParagraphs = paras.length > 1 ? paras.slice(1) : [current.body];
+    const showsGuideTextBox =
+      usesGuideTextBox && (isJung ? guideStep === 1 || guideStep === 3 : guideStep >= 1);
+    const reflectionPrompts = guideReflectionPrompts(program.key, index);
+    const jungDeepParagraphs = complementaryJungText(
+      current.title,
+      current.body,
+      reflectionPrompts,
+    );
     const visibleGuideParagraphs = isJung
-      ? jungStep === 3
+      ? guideStep === 3
         ? jungDeepParagraphs
         : [conciseLesson(current.body)]
       : moreOpen
         ? paras
         : [conciseLesson(current.body)];
-    const activeImageStyle = isJung ? (jungStep >= 2 ? 'default' : 'no-bubbles') : imageStyle;
+    const activeImageStyle = isJung ? (guideStep >= 2 ? 'default' : 'no-bubbles') : imageStyle;
+    const showGuideTitle = !isJung || guideStep !== 3;
     return (
       <div
         style={{
@@ -1910,8 +1978,7 @@ export default function ComicProgram({
                   type="button"
                   aria-label={`${part.label} ${part.start + 1}-${part.end + 1}`}
                   onClick={() => {
-                    setMoreOpen(false);
-                    setJungStep(0);
+                    resetGuidePage();
                     setIndex(part.start);
                   }}
                   style={{
@@ -1968,11 +2035,11 @@ export default function ComicProgram({
               type="button"
               onClick={primaryNext}
               aria-label={
-                isJung && jungStep === 0
-                  ? 'Reveal first comic text'
-                  : isJung && jungStep === 1
+                usesGuideTextBox && guideStep === 0
+                  ? 'Reveal comic text'
+                  : isJung && guideStep === 1
                     ? 'Show second comic image'
-                    : isJung && jungStep === 2
+                    : isJung && guideStep === 2
                       ? 'Reveal deeper comic text'
                       : index === total - 1
                         ? 'Return to education'
@@ -2022,21 +2089,23 @@ export default function ComicProgram({
                     alignItems: 'start',
                     justifyContent: 'space-between',
                     gap: 12,
-                    marginBottom: 7,
+                    marginBottom: showGuideTitle ? 7 : 0,
                   }}
                 >
-                  <div
-                    style={{
-                      fontFamily: SERIF,
-                      fontSize: isLandscape ? 16 : 18,
-                      fontWeight: 700,
-                      color: cream(0.95),
-                      lineHeight: 1.18,
-                      overflowWrap: 'anywhere',
-                    }}
-                  >
-                    {current.title}
-                  </div>
+                  {showGuideTitle && (
+                    <div
+                      style={{
+                        fontFamily: SERIF,
+                        fontSize: isLandscape ? 16 : 18,
+                        fontWeight: 700,
+                        color: cream(0.95),
+                        lineHeight: 1.18,
+                        overflowWrap: 'anywhere',
+                      }}
+                    >
+                      {current.title}
+                    </div>
+                  )}
                   {!isJung && (
                     <button
                       type="button"
@@ -2160,8 +2229,7 @@ export default function ComicProgram({
                 key={i}
                 type="button"
                 onClick={() => {
-                  setMoreOpen(false);
-                  setJungStep(0);
+                  resetGuidePage();
                   setIndex(i);
                 }}
                 aria-label={`Open page ${i + 1}`}
@@ -2190,11 +2258,11 @@ export default function ComicProgram({
               padding: '8px 0',
             }}
           >
-            {isJung && jungStep === 0
+            {usesGuideTextBox && guideStep === 0
               ? 'text'
-              : isJung && jungStep === 1
+              : isJung && guideStep === 1
                 ? 'image'
-                : isJung && jungStep === 2
+                : isJung && guideStep === 2
                   ? 'more'
                   : index === total - 1
                     ? 'Education'

@@ -64,3 +64,57 @@ Single screen that answers: *where am I going, how am I growing, and what am I d
 - No Supabase changes needed
 - No new data models
 - All three blocks already have their own persistence
+
+## Future: Process Maps
+
+Progress should also become the place where the user can see personal process roads: how states,
+actions, guilt, regulation, creativity, reflection, and return-to-action actually connect. This is
+not a productivity score. It is a map of movement.
+
+Example:
+
+```text
+Work pressure -> agitation -> guitar/music -> guilt -> song -> reflection -> philosophy -> work bridge
+```
+
+The same action can have different functions. Music might be avoidance, regulation, creative
+transformation, culture, or a bridge back to work. The map should capture the function, not morally
+judge the action.
+
+Process Maps should appear as stacked horizontal roads:
+
+```text
+Organisation: Pressure -> Music -> Guilt -> Song -> Reflection -> Next work block
+Body: Tension -> Stretch -> Resistance -> Relief -> Energy
+```
+
+Each road scrolls sideways. The page scrolls vertically across different processes.
+
+Each dot can eventually store:
+
+- state
+- action
+- function
+- risk
+- bridge
+
+### Low-Data Start
+
+The app should not infer deep patterns from almost no data. Process Maps start as activation:
+
+```text
+What happened first?
+What did you do next?
+What did that action give you?
+Where did guilt, resistance, relief, or clarity appear?
+What helped you return?
+```
+
+Only after the user creates or confirms several roads should Colourmap say a process is recurring.
+Until then, AI should use cautious language:
+
+```text
+This may be a road worth mapping.
+Does this sequence feel true?
+What would you rename this step?
+```

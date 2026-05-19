@@ -128,6 +128,127 @@ The individual and collective systems use the same pattern engine at different s
 milestone should prove the individual version: show the user what is blocked, why it is blocked, and
 what one action could release the most energy.
 
+## Process Maps In Progress
+
+Process Maps are the Progress-tab expression of the pattern engine. They should map how a user's
+life actually moves, not judge whether each action is "productive."
+
+Example:
+
+```text
+work pressure
+-> agitation
+-> music / guitar as regulation
+-> guilt about not working
+-> singing about the guilt
+-> reflection
+-> philosophy and culture give meaning
+-> return to work with more clarity
+```
+
+The app should not collapse this into "user avoided work." The more useful reading is:
+
+```text
+Pressure created agitation.
+Music regulated the body.
+Guilt appeared because of productivity conditioning.
+Singing transformed guilt into expression.
+Reflection turned expression into understanding.
+Culture gave the experience a wider frame.
+The user can return to work through a bridge instead of a fight.
+```
+
+This is the distinction Colourmap must protect:
+
+```text
+same action, different function
+
+guitar as avoidance
+guitar as regulation
+guitar as creative transformation
+guitar as culture / meaning
+guitar as bridge back to work
+```
+
+The map should ask what role an action played in the flow before labeling it.
+
+### Process Road UI
+
+Process Maps should be shown as stacked horizontal roads inside Progress:
+
+```text
+Organisation Road
+Pressure -> Agitation -> Music -> Guilt -> Song -> Reflection -> Next work block
+
+Social Road
+Loneliness -> Message friend -> Fear -> Avoid -> Walk -> Try again
+
+Body Road
+Tension -> Stretch -> Resistance -> Relief -> Energy
+```
+
+Each road scrolls sideways. The page scrolls vertically across different processes. Each dot can open
+a small explanation:
+
+- **state:** what was felt
+- **action:** what happened
+- **function:** avoidance, regulation, transformation, meaning, or bridge
+- **risk:** where the pattern can become stuck
+- **bridge:** the small move that reconnects the user to life
+
+The visual should feel like Progress Roads but personal: one life process per line, dots connected by
+a warm road, with enough empty space that it remains readable on phone.
+
+## Low-Data Activation
+
+Process Maps will be hard when the app has little user history. The first version must not pretend to
+infer deep patterns from thin data. It should begin as a guided activation tool.
+
+Starting modes:
+
+```text
+1. Guided prompt
+   "What happened first?"
+   "What did you do next?"
+   "What did that action give you?"
+   "Where did guilt, resistance, relief, or clarity appear?"
+   "What bridge brought you back?"
+
+2. Template road
+   Pressure -> Regulation -> Guilt / Resistance -> Transformation -> Meaning -> Next move
+
+3. Manual dot builder
+   User adds dots quickly: state, action, feeling, next move.
+
+4. AI mirror only after input
+   AI can suggest a possible process name after the user gives at least a few dots.
+
+5. Memory later
+   Only after repeated maps should the app say "this pattern returns."
+```
+
+Low-data principle:
+
+```text
+At the start, Colourmap should guide the user to notice a process.
+Later, after enough confirmed examples, Colourmap can recognize recurring processes.
+```
+
+The first useful AI question is not "Here is your pattern." It is:
+
+```text
+Do you want to map what just happened as a road?
+```
+
+Activation triggers can appear after:
+
+- a check-in note with tension words such as guilt, avoidance, pressure, agitation, stuck, relief
+- a mission note that mentions switching activities
+- a music or notebook fragment after a difficult work state
+- a repeated contrast between "I should work" and "I need music / walk / body / reflection"
+
+The user should always confirm the map. AI proposes; the user owns the road.
+
 ## First Principles
 
 - **Glimpse first.** The user should understand the rough shape before reading paragraphs.

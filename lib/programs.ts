@@ -525,6 +525,77 @@ export const PROGRAMS: Program[] = [
     ],
   },
   {
+    key: 'clear-allen',
+    domain: 'Clear & Allen: Organisation As Freedom',
+    color: '#7C8A5E',
+    segments: [
+      {
+        title: 'Part 1: James Clear',
+        body: 'James Clear begins with a quiet idea: life changes less through dramatic promises than through tiny repeated systems. A habit is a vote for the person you are becoming. Organisation is not punishment. It is the shape that lets change compound.',
+      },
+      {
+        title: 'Identity before intensity',
+        body: 'Clear shifts the question from "what do I want to achieve?" to "who am I practicing becoming?" A writer writes. A musician returns to the instrument. A healthy person prepares the next small healthy action. Identity becomes practical when it is repeated in small visible acts.',
+      },
+      {
+        title: 'Make it visible',
+        body: 'The first law is to make the cue obvious. The environment should show the next action instead of hiding it. A guitar on a stand, a notebook open, shoes by the door, one visible task: the world starts helping the behavior instead of asking memory to carry everything.',
+      },
+      {
+        title: 'Make it attractive',
+        body: 'Change becomes easier when the next step has emotional gravity. Beauty, music, ritual, friendship, and a good setting can pull the body toward action. Discipline is not only force. It can be designed as attraction.',
+      },
+      {
+        title: 'Make it easy',
+        body: 'The smallest version of the habit matters because it lowers the gate. Two minutes can protect the thread. Open the file. Tune the guitar. Put one object away. The action is small, but the identity stays alive.',
+      },
+      {
+        title: 'Make it satisfying',
+        body: 'The nervous system learns from completion. A checkmark, a clear surface, a song recorded, a small page finished: satisfaction closes the loop. The point is not childish reward. It is evidence that action changes the field.',
+      },
+      {
+        title: 'Systems beat moods',
+        body: 'Clear is useful because he removes shame from inconsistency. If the habit fails, inspect the system. Was the cue hidden? Was the action too hard? Was the reward too distant? The problem is often design, not character.',
+      },
+      {
+        title: 'Organisation as a garden',
+        body: 'Clear turns growth into gardening: place the seeds, shape the light, remove friction, return often. Change becomes less theatrical and more alive. The future is not forced once. It is cultivated.',
+      },
+      {
+        title: 'Part 2: David Allen',
+        body: 'David Allen begins from a different door: the mind is not built to hold every open loop. When commitments live only in the head, attention stays tense. Capture gives the mind a place to put the unfinished world.',
+      },
+      {
+        title: 'Capture everything',
+        body: 'Allen starts with collection. Tasks, worries, promises, ideas, errands, fragments, and creative sparks all need a trusted place outside the head. Capture is not organisation yet. It is relief: nothing important has to shout to be remembered.',
+      },
+      {
+        title: 'Clarify the next action',
+        body: 'A vague task creates fog. "Fix life" is impossible. "Send the message," "open the invoice," or "write the first paragraph" gives the body a handle. Clarifying means turning pressure into a visible next move.',
+      },
+      {
+        title: 'Organise by context',
+        body: 'Allen separates material by what it needs: calendar, next actions, waiting for, projects, someday. This matters because the right list appears at the right moment. Organisation becomes a map of possible action, not a pile of guilt.',
+      },
+      {
+        title: 'Review to trust the system',
+        body: 'A system is only calming if you return to it. Review is the ritual that keeps the map alive. You look at what is open, update what changed, and choose with a clearer mind. Trust is maintained by return.',
+      },
+      {
+        title: 'Engage from clarity',
+        body: 'The final move is not more planning. It is doing the right thing from a clear field. Allen helps action feel lighter because the mind knows the rest is held somewhere. Focus becomes possible because the whole system is not screaming.',
+      },
+      {
+        title: 'Clear plus Allen',
+        body: 'Together they make a powerful bridge. Clear teaches the tiny system that changes identity. Allen teaches the trusted system that frees attention. One helps behavior repeat. The other helps the mind relax enough to choose.',
+      },
+      {
+        title: 'Colourmap organisation',
+        body: 'For Colourmap, organisation should not mean productivity capitalism. It should mean inner freedom: capture the fragments, design the next step, notice the emotional resistance, and build systems that let life move with less violence.',
+      },
+    ],
+  },
+  {
     key: 'creativity',
     domain: 'Creativity',
     color: '#B898D0',

@@ -34,6 +34,7 @@ const COMIC_PROGRAMS = new Set([
   'paulo-freire',
   'thich-nhat-hanh',
   'gandhi',
+  'clear-allen',
 ]);
 
 const EDUCATION_IMAGES = ['/education-1.png', '/education-2.png', '/education-3.png'];
@@ -88,6 +89,7 @@ const GENERATED_LAYERED_PANEL_COUNTS: Record<string, number> = {
   'paulo-freire': 2,
   'thich-nhat-hanh': 2,
   gandhi: 20,
+  'clear-allen': 16,
 };
 const LANDSCAPE_GENERATED_COVERS = new Set(['thich-nhat-hanh']);
 const PROGRAM_COVER_PANEL: Record<string, number> = {
@@ -110,9 +112,10 @@ const PROGRAM_COVER_PANEL: Record<string, number> = {
   'collective-evolution': 5,
   'deep-attention': 8,
   'carl-jung': 12,
-  'paulo-freire': 5,
+  'paulo-freire': 0,
   'thich-nhat-hanh': 8,
-  gandhi: 19,
+  gandhi: 11,
+  'clear-allen': 0,
 };
 
 const SERIF = 'var(--font-serif)';
@@ -217,7 +220,12 @@ const GROUPS: {
   },
   {
     label: 'Systems',
-    keys: ['organisational-intelligence', 'collective-evolution', 'parenting-patterns'],
+    keys: [
+      'clear-allen',
+      'organisational-intelligence',
+      'collective-evolution',
+      'parenting-patterns',
+    ],
     tint: '#6B7A50',
   },
   {
