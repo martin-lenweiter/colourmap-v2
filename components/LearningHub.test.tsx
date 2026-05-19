@@ -21,6 +21,10 @@ describe('LearningHub', () => {
 
     expect(screen.getByText("You're here. That already matters.")).toBeDefined();
     expect(screen.getByText('Knowledge worlds')).toBeDefined();
+    expect(screen.queryByText(/Life is not fixed/i)).toBeNull();
+    fireEvent.click(screen.getByRole('button', { name: 'Education' }));
+    expect(screen.getByText(/Life is not fixed/i)).toBeDefined();
+    expect(screen.getByText(/participate in transforming the world/i)).toBeDefined();
     expect(screen.getByText('Struggle & Letting Go')).toBeDefined();
     expect(screen.getByText('Carl Jung & The Inner Map')).toBeDefined();
     expect(screen.getByText('Paulo Freire & Collective Hope')).toBeDefined();
