@@ -16,6 +16,8 @@ The product is not a meditation app (pure stillness) or a productivity tool (pur
 ## Core Philosophy
 
 - **World peace is the horizon.** Colourmap's long-term aim is to become a platform for world peace: not as a slogan, but through the practical foundations that make peace possible at human scale. Self-understanding, emotional regulation, dialogue, repair, shared maps, education, and collective agency are treated as peace infrastructure.
+- **Life is not fixed.** Colourmap's core teaching is that the user can understand their patterns, organise their energy, transform themselves, and participate in transforming the world. Every education path should approach that same truth from a different angle.
+- **Overview intelligence is the point.** Colourmap should help the user take a step back from hundreds of fragments and see the larger shape: what is blocked, what is flowing, what repeats, what matters now, and what kind of movement is possible. The product is not just capture; it is a living overview that turns scattered life material into usable intelligence.
 - **Unite fragments into coherent intelligence.** Colourmap should take scattered reflections, body signals, sounds, visuals, plans, and memories, then help the user see one coherent context they can act from and evolve through.
 - **Field -> Tensions -> Action -> Patterns.** The deeper product architecture is not productivity first, but helping the user notice the field of the day, name the competing tensions underneath it, choose small bridge actions, and discover recurring life patterns. [Spec](specs/field-tensions-action-patterns.md)
 - **Find the core simple challenge.** Colourmap should show how the user's situation is less complex than it feels, identify the load-bearing tension, and propose a few workable paths instead of multiplying dashboards or advice.
@@ -116,12 +118,16 @@ Phone: Focus · AI · Notes · Education · Art · ◇
 16. **Mode Bridge** — In-progress Focus-page surface for understanding active/avoided modes and practicing small transitions between Creation, Organisation, Admin, Builder, Body/Sport, Reflection, and Play. [Spec](specs/archetype-platform.md)
 17. **AI Presence** — Shared phone-friendly AI reflection box with a brown/gold living-cell visual. It connects to backend AI without needing local coding agents, starting as a mirror-first surface for fragments and simple tensions. [Spec](specs/ai-presence.md)
 
+### Entertainment
+
+18. **Billy Pineapple Infinite Comic** — Future entertainment-first relaxation world: an infinite interactive comic where Billy searches for The Juice through symbolic regions, soft choices, and a Colourmap-like inner map. Reflective, but not Education. [Spec](specs/infinite-comic-billy.md)
+
 ### Deep Layer
 
-18. **Life Scan** — Guided self-assessment through 3 Doors (Feeling, Doing, Sharing). Bipolar sliders, reflective questions, generates improvement programs. [Spec](specs/life-scan.md)
-19. **Personality Type Program** — Planned self-understanding program built on free/public-domain personality foundations, especially IPIP Big Five, translated into Colourmap-native styles, gifts, frictions, and mode bridges. [Spec](specs/personality-type-program.md)
-20. **Overview** — Compass wheel (warm blue for Sharing) showing life balance from life scan data + emotional state. Chapter card. [Spec](specs/cockpit.md)
-21. **Research** — In-app research document covering psychology foundations, competitive analysis, monetization, AI integration, soul cartography vision, and feature roadmap. Accessible at `/research`.
+19. **Life Scan** — Guided self-assessment through 3 Doors (Feeling, Doing, Sharing). Bipolar sliders, reflective questions, generates improvement programs. [Spec](specs/life-scan.md)
+20. **Personality Type Program** — Planned self-understanding program built on free/public-domain personality foundations, especially IPIP Big Five, translated into Colourmap-native styles, gifts, frictions, and mode bridges. [Spec](specs/personality-type-program.md)
+21. **Overview** — Compass wheel (warm blue for Sharing) showing life balance from life scan data + emotional state. Chapter card. [Spec](specs/cockpit.md)
+22. **Research** — In-app research document covering psychology foundations, competitive analysis, monetization, AI integration, soul cartography vision, and feature roadmap. Accessible at `/research`.
 
 ## Architecture
 

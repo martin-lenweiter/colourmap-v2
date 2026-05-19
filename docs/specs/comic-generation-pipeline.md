@@ -40,6 +40,23 @@ inside a card, but the image itself must stay borderless.
 
 The aim is to build one coherent Colourmap education visual universe, not disconnected illustrations.
 
+## Core Education Philosophy
+
+Colourmap Education teaches one big thing from many angles:
+
+> Life is not fixed. You can understand your patterns, organise your energy, transform yourself, and
+> participate in transforming the world.
+
+Every thinker, comic, test, map, and practice should connect back to that spine. Jung explains inner
+patterns. Clear and Allen explain organisation and clarity. Freire, Gandhi, and Thich Nhat Hanh
+explain agency, peace, dialogue, and collective transformation. The education platform should feel
+like one continuous learning map, not a library of disconnected fragments.
+
+The deeper purpose is **overview intelligence**. Education should not only teach ideas; it should
+help the user step back and see the structure of life: what is blocked, what is flowing, what repeats,
+what matters now, and what kind of action or reflection could create movement. Learning content
+becomes useful when it helps the user understand their own map.
+
 ## Current Phase: Expansion And Visual Research
 
 The current phase is exploration.

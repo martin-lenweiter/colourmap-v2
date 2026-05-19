@@ -119,6 +119,124 @@ MVP structure:
 
 Prompts can explore how the user sees the future, the past, emotional weather, hidden growth, bridges between modes, and whether scattered fragments feel like chaos or a map forming.
 
+### Symbolic Psychology Image Questions
+
+The image lens should go deeper than a decorative preference test. It should use symbolic images as
+conversation doors into inner tensions:
+
+- order vs chaos
+- rest vs forcing
+- anger vs clean boundary
+- party / stimulation vs peace / recovery
+- subconscious tension vs conscious explanation
+- unresolved emotion vs useful signal
+- confusion vs many possible truths
+- guilt vs genuine responsibility
+- ambition vs nervous-system pressure
+- solitude vs isolation
+- structure as freedom vs structure as prison
+- creative escape vs creative transformation
+
+These are not diagnoses and should not be presented as clinical projective tests. They are guided
+self-reflection scenes. The image gives the user enough distance to discuss the pattern without
+feeling accused.
+
+Each symbolic question should have:
+
+```text
+1 image
+1 plain question
+3 answer pills
+1 Go deeper option
+```
+
+Example:
+
+```text
+Image: a room half ordered, half wind-scattered, with one open window.
+Question: When life becomes intense, what do you usually need first?
+
+Pills:
+- More order
+- More freedom
+- A bridge between both
+
+Go deeper:
+"Write what order gives you, what it costs you, and where chaos might also be alive."
+```
+
+The three answer pills are for momentum. They should be psychologically meaningful, not generic:
+
+```text
+move toward / move away / unsure
+need order / need space / need both
+express anger / contain anger / understand anger
+party energy / quiet peace / switching rhythm
+force through / rest first / tiny bridge
+```
+
+The `Go deeper` mode opens a writing surface under the image. It should ask one focused prompt and
+let the user write freely. This is where the app can capture nuance that a pill cannot:
+
+```text
+What part of this image feels like you today?
+What part feels rejected or hidden?
+What would make the scene safer without making it dead?
+What does this tension protect?
+What would a wiser next reaction look like?
+```
+
+When the user writes, the app can save that fragment as a future Process Map seed. Example:
+
+```text
+symbolic scene = order / chaos
+pill = "need both"
+deep note = "I need music before admin, but then I feel guilty."
+possible process seed = pressure -> music regulation -> guilt -> reflection -> bridge back
+```
+
+This connects the personality test to Progress. The test does not only create a score; it gathers
+living material for the user's roads, blocks, and bridges.
+
+### Low-Data Personality Activation
+
+At the start, Colourmap will not have enough history to infer a rich personality map. The image lens
+solves this by helping the user generate useful data through reflection.
+
+Low-data rule:
+
+```text
+The app should ask before it interprets.
+The image should activate the user's own language.
+The first map is co-authored, not inferred.
+```
+
+MVP activation flow:
+
+```text
+1. User chooses a symbolic image question.
+2. User taps one of three answer pills.
+3. App offers "Go deeper" without forcing it.
+4. User writes a short reflection if the image touches something real.
+5. App saves the answer, optional note, and tension theme.
+6. Results show "signals to revisit" instead of pretending certainty.
+```
+
+After repeated sessions, Colourmap can begin to say:
+
+```text
+This theme returns often: order helps you, but forcing order too early creates agitation.
+Music and reflection may be one of your bridges from chaos back into structure.
+```
+
+Until then, language must stay tentative:
+
+```text
+This may be a useful tension to map.
+Does this feel true today?
+Would you rename this pattern?
+```
+
 ### Block 1: The Quick Glimpse
 
 Purpose: get the user into the experience fast.

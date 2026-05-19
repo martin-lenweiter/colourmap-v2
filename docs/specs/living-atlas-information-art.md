@@ -452,6 +452,24 @@ World
 
 But this should happen only when the content is strong enough. Until then, keep the main menu calm.
 
+## Human Progress Atlas Route
+
+The Human Progress Atlas should read as **one road first**, not two branches that later rejoin.
+For the first prototype, keep the guided route linear:
+
+```text
+Life was harder
+-> tools changed life
+-> quality of life improved
+-> what still hurts
+-> AI as a new tool
+-> emotional intelligence and trust
+-> a beautiful world is buildable
+```
+
+The free map can still allow exploration, but the visual should not imply two equal routes at the
+same time. Branching can return later only when the user is intentionally choosing between paths.
+
 ## UI Stability Rules
 
 Because Colourmap is exploring a very large creative space, the interface must stay disciplined.
