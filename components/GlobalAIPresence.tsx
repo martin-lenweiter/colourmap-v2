@@ -8,16 +8,16 @@ import { useSpeechToText } from '@/lib/hooks/use-speech-to-text';
 
 type PresenceStatus = 'idle' | 'thinking' | 'error';
 type PresencePreset = 'cell' | 'sun' | 'dotwalker' | 'orbit' | 'nebula';
-
-const PRESENCE_PRESETS: Array<{ id: PresencePreset; label: string }> = [
-  { id: 'cell', label: 'Cell' },
-  { id: 'sun', label: 'Mission Sun' },
-  { id: 'dotwalker', label: 'Dot Walker' },
-  { id: 'orbit', label: 'Orbit' },
-  { id: 'nebula', label: 'Nebula' },
-];
+type PresenceTurn = {
+  id: string;
+  surface: string;
+  message: string;
+  response: string;
+  createdAt: string;
+};
 
 const OPEN_AI_PRESENCE_EVENT = 'colourmap:open-ai-presence';
+const PRESENCE_HISTORY_LS = 'colourmap:ai-presence-discussion';
 
 const CELL_DOTS = Array.from({ length: 72 }, (_, index) => {
   const ring = index % 3;
@@ -225,13 +225,17 @@ export default function GlobalAIPresence() {
   const [status, setStatus] = useState<PresenceStatus>('idle');
   const [error, setError] = useState('');
   const [mounted, setMounted] = useState(false);
-  const [preset, setPreset] = useState<PresencePreset>('cell');
+  const [history, setHistory] = useState<PresenceTurn[]>([]);
   const responseRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const speech = useSpeechToText({ lang: 'en-US', autoRestart: true });
 
   useEffect(() => {
     setMounted(true);
+    try {
+      const saved = localStorage.getItem(PRESENCE_HISTORY_LS);
+      if (saved) setHistory(JSON.parse(saved));
+    } catch {}
   }, []);
 
   useEffect(() => {
@@ -281,17 +285,40 @@ export default function GlobalAIPresence() {
 
       const reader = res.body.getReader();
       const decoder = new TextDecoder();
+      let streamed = '';
       while (true) {
         const { done, value } = await reader.read();
         if (done) break;
-        setResponse((current) => current + decoder.decode(value, { stream: true }));
+        const next = decoder.decode(value, { stream: true });
+        streamed += next;
+        setResponse((current) => current + next);
       }
-      setResponse((current) => current + decoder.decode());
+      const finalChunk = decoder.decode();
+      streamed += finalChunk;
+      setResponse((current) => current + finalChunk);
+      saveTurn(trimmed, streamed);
       setStatus('idle');
     } catch (requestError) {
       setStatus('error');
       setError(requestError instanceof Error ? requestError.message : 'AI Presence failed.');
     }
+  }
+
+  function saveTurn(prompt: string, answer: string) {
+    const turn: PresenceTurn = {
+      id: crypto.randomUUID(),
+      surface,
+      message: prompt,
+      response: answer,
+      createdAt: new Date().toISOString(),
+    };
+    setHistory((existing) => {
+      const next = [turn, ...existing].slice(0, 30);
+      try {
+        localStorage.setItem(PRESENCE_HISTORY_LS, JSON.stringify(next));
+      } catch {}
+      return next;
+    });
   }
 
   function toggleSpeech() {
@@ -322,7 +349,7 @@ export default function GlobalAIPresence() {
           active={status === 'thinking' || speech.listening}
           listening={speech.listening}
           compact
-          preset={preset}
+          preset="cell"
         />
         AI Presence
       </button>
@@ -337,8 +364,8 @@ export default function GlobalAIPresence() {
             width: expanded ? 'min(920px, calc(100vw - 36px))' : 'min(430px, calc(100vw - 24px))',
             maxHeight: expanded ? 'calc(100svh - 36px)' : 'min(680px, calc(100svh - 104px))',
             borderRadius: 26,
-            borderColor: 'var(--ai-surface-border, rgba(214, 160, 78, 0.34))',
-            background: 'var(--ai-surface-bg, rgba(42, 24, 14, 0.94))',
+            borderColor: 'var(--ai-surface-border, rgba(214, 160, 78, 0.52))',
+            background: 'var(--ai-surface-bg, rgb(42, 24, 14))',
             color: 'var(--ai-surface-text, #f7e5c2)',
             boxShadow: 'var(--ai-surface-shadow, 0 22px 74px rgba(19, 10, 7, 0.48))',
           }}
@@ -352,7 +379,7 @@ export default function GlobalAIPresence() {
                 active={status === 'thinking' || speech.listening}
                 listening={speech.listening}
                 compact
-                preset={preset}
+                preset="cell"
               />
               <div className="min-w-0">
                 <p
@@ -405,34 +432,22 @@ export default function GlobalAIPresence() {
               <PresenceCell
                 active={status === 'thinking' || speech.listening}
                 listening={speech.listening}
-                preset={preset}
+                preset="cell"
               />
             </div>
 
             <div className="min-w-0 space-y-3">
-              <div className="flex flex-wrap gap-2">
-                {PRESENCE_PRESETS.map((item) => (
-                  <button
-                    key={item.id}
-                    type="button"
-                    onClick={() => setPreset(item.id)}
-                    className="rounded-full border px-3 py-1.5 text-[11px] transition hover:opacity-80"
-                    style={{
-                      borderColor:
-                        preset === item.id
-                          ? 'var(--ai-surface-accent, rgba(255, 204, 104, 0.55))'
-                          : 'var(--ai-surface-border, rgba(251, 190, 87, 0.2))',
-                      background:
-                        preset === item.id
-                          ? 'var(--ai-surface-input, rgba(241, 167, 57, 0.14))'
-                          : 'var(--ai-surface-raised, rgba(255,255,255,0.03))',
-                      color: 'var(--ai-surface-text, #f6d99b)',
-                    }}
-                  >
-                    {item.label}
-                  </button>
-                ))}
-              </div>
+              <p
+                className="rounded-2xl border px-3 py-2 text-xs leading-relaxed"
+                style={{
+                  borderColor: 'var(--ai-surface-border, rgba(238, 185, 96, 0.2))',
+                  background: 'var(--ai-surface-raised, rgb(54, 31, 18))',
+                  color: 'var(--ai-surface-muted, rgba(255, 230, 184, 0.72))',
+                }}
+              >
+                Ask about your current state, the Colourmap specs, strategy, Build Lab, education,
+                or Billy. This discussion is saved on this device.
+              </p>
 
               <textarea
                 ref={inputRef}
@@ -512,6 +527,40 @@ export default function GlobalAIPresence() {
                     </p>
                   )}
                   {error && <p className="text-amber-100">{error}</p>}
+                </div>
+              )}
+
+              {history.length > 0 && (
+                <div
+                  className="max-h-44 overflow-y-auto rounded-2xl border p-3"
+                  style={{
+                    background: 'var(--ai-surface-raised, rgb(54, 31, 18))',
+                    borderColor: 'var(--ai-surface-border, rgba(238, 185, 96, 0.18))',
+                  }}
+                >
+                  <div
+                    className="mb-2 text-[10px] uppercase tracking-[0.18em]"
+                    style={{ color: 'var(--ai-surface-muted, rgba(246, 217, 155, 0.56))' }}
+                  >
+                    Saved discussion
+                  </div>
+                  <div className="space-y-3">
+                    {history.slice(0, 5).map((turn) => (
+                      <button
+                        key={turn.id}
+                        type="button"
+                        onClick={() => {
+                          setMessage(turn.message);
+                          setResponse(turn.response);
+                        }}
+                        className="block w-full text-left text-xs leading-relaxed"
+                        style={{ color: 'var(--ai-surface-text, #f8e0ad)' }}
+                      >
+                        <strong>{turn.surface}</strong>: {turn.message.slice(0, 92)}
+                        {turn.message.length > 92 ? '...' : ''}
+                      </button>
+                    ))}
+                  </div>
                 </div>
               )}
             </div>

@@ -66,6 +66,15 @@ const EDUCATION_WORLDS = [
     kind: 'link',
     cover: '/education-worlds/progress-roads-cover.png',
   },
+  {
+    href: '/entertainment',
+    title: 'Billy Pineapple',
+    label: 'Interactive comic',
+    body: 'A funny, reflective quest for The Juice through symbolic worlds.',
+    tint: '#D39A3D',
+    kind: 'link',
+    cover: '/entertainment/billy/quest-for-juice/panel-13.webp',
+  },
 ];
 
 const POSITIVE_OVERLAY_PROGRAMS = new Set([
@@ -293,7 +302,7 @@ function getOpening(): { headline: string; sub: string } {
 }
 
 /* ── Swim card ───────────────────────────────────────────────── */
-function SwimCard({
+function _SwimCard({
   program,
   onOpen,
   startHere,
@@ -559,10 +568,8 @@ function GuideProgramCard({
   const coverPanel = PROGRAM_COVER_PANEL[program.key] ?? 0;
   const generatedCount = GENERATED_LAYERED_PANEL_COUNTS[program.key] ?? 1;
   const imageSrc = `/comics/${program.key}/generated/panel-${coverPanel % generatedCount}.png`;
-  const title = program.domain.split(' & ')[0] ?? program.domain;
-  const subtitle = program.domain.includes(' & ')
-    ? program.domain.split(' & ').slice(1).join(' & ')
-    : '';
+  const title = program.domain;
+  const subtitle = '';
 
   return (
     <button
@@ -722,8 +729,6 @@ const HUB_PALETTES = [
 ] as const;
 type HubPaletteId = (typeof HUB_PALETTES)[number]['id'];
 const HUB_LS = 'colourmap-learn-palette';
-type HomeDisplayMode = 'blocks' | 'images';
-const HOME_DISPLAY_LS = 'colourmap-learn-home-display';
 function loadHubPalette(): HubPaletteId {
   try {
     return (localStorage.getItem(HUB_LS) ?? 'brown') as HubPaletteId;
@@ -731,20 +736,10 @@ function loadHubPalette(): HubPaletteId {
     return 'brown';
   }
 }
-function loadHomeDisplayMode(): HomeDisplayMode {
-  try {
-    const saved = localStorage.getItem(HOME_DISPLAY_LS);
-    return saved === 'images' ? 'images' : 'blocks';
-  } catch {
-    return 'blocks';
-  }
-}
-
 export default function LearningHub({ onClose }: { onClose: () => void }) {
   const [active, setActive] = useState<Program | null>(null);
   const [personalityOpen, setPersonalityOpen] = useState(false);
   const [hubPalId, setHubPalId] = useState<HubPaletteId>(loadHubPalette);
-  const [homeDisplay, setHomeDisplay] = useState<HomeDisplayMode>(loadHomeDisplayMode);
   const [philosophyOpen, setPhilosophyOpen] = useState(false);
   const hubBg = HUB_PALETTES.find((p) => p.id === hubPalId)?.bg ?? 'rgba(18,10,4,0.99)';
   const heroImage = useMemo(
@@ -757,13 +752,6 @@ export default function LearningHub({ onClose }: { onClose: () => void }) {
     setHubPalId(id);
     try {
       localStorage.setItem(HUB_LS, id);
-    } catch {}
-  }
-
-  function pickHomeDisplay(mode: HomeDisplayMode) {
-    setHomeDisplay(mode);
-    try {
-      localStorage.setItem(HOME_DISPLAY_LS, mode);
     } catch {}
   }
 
@@ -912,28 +900,16 @@ export default function LearningHub({ onClose }: { onClose: () => void }) {
             flexShrink: 0,
           }}
         >
-          <div style={{ display: 'flex', gap: 6 }}>
-            {(['blocks', 'images'] as HomeDisplayMode[]).map((mode) => (
-              <button
-                key={mode}
-                type="button"
-                onClick={() => pickHomeDisplay(mode)}
-                style={{
-                  borderRadius: 999,
-                  border: `1px solid ${och(homeDisplay === mode ? 0.42 : 0.18)}`,
-                  background: och(homeDisplay === mode ? 0.14 : 0.04),
-                  color: cream(homeDisplay === mode ? 0.86 : 0.48),
-                  fontFamily: SERIF,
-                  fontSize: 10.5,
-                  letterSpacing: '0.08em',
-                  cursor: 'pointer',
-                  padding: '5px 10px',
-                  textTransform: 'uppercase',
-                }}
-              >
-                {mode}
-              </button>
-            ))}
+          <div
+            style={{
+              fontFamily: SERIF,
+              fontSize: 10.5,
+              letterSpacing: '0.08em',
+              textTransform: 'uppercase',
+              color: cream(0.5),
+            }}
+          >
+            image paths
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
             <div style={{ display: 'flex', gap: 5 }}>
@@ -1069,23 +1045,15 @@ export default function LearningHub({ onClose }: { onClose: () => void }) {
                   }}
                 >
                   {programs.map((p, i) =>
-                    group.format === 'guides' && homeDisplay === 'images' ? (
+                    group.format === 'guides' ? (
                       <GuideProgramCard
                         key={p.key}
                         program={p}
                         onOpen={() => setActive(p)}
                         cardColor={progressionColor(group.tint, i, programs.length)}
                       />
-                    ) : homeDisplay === 'images' ? (
-                      <ProgramImageCard
-                        key={p.key}
-                        program={p}
-                        onOpen={() => setActive(p)}
-                        startHere={group.startHere === p.key}
-                        cardColor={progressionColor(group.tint, i, programs.length)}
-                      />
                     ) : (
-                      <SwimCard
+                      <ProgramImageCard
                         key={p.key}
                         program={p}
                         onOpen={() => setActive(p)}
