@@ -480,4 +480,175 @@ export const BILLY_QUEST_PANELS: BillyPanel[] = [
       { id: 'water', label: 'Choose the quiet water' },
     ],
   },
+  {
+    id: 'pineapple-planet-return-door',
+    image: '/entertainment/billy/quest-for-juice/panel-45.webp',
+    title: 'Back On Pineapple Planet',
+    text: [
+      'Billy stepped out of New Babylon with the same empty cup and a slightly larger inside.',
+      'Home had not become smaller. Billy had become more complicated, which was inconvenient for the sofa.',
+    ],
+    medal: 'Returned Wider',
+  },
+  {
+    id: 'pineapple-planet-overview',
+    image: '/entertainment/billy/quest-for-juice/panel-46.webp',
+    title: 'Home Is A Map',
+    text: [
+      'From above, Pineapple Planet looked less like a place and more like a question wearing leaves.',
+      'Every path began at home. This did not mean home was simple.',
+    ],
+  },
+  {
+    id: 'juice-square',
+    image: '/entertainment/billy/quest-for-juice/panel-47.webp',
+    title: 'Juice Square',
+    text: [
+      'Juice Square was ordinary in the suspicious way ordinary things can be sacred.',
+      'People bought fruit, fixed roofs, argued gently, carried bags, and somehow kept the planet from floating apart.',
+    ],
+  },
+  {
+    id: 'sofa-threshold',
+    image: '/entertainment/billy/quest-for-juice/panel-48.webp',
+    title: 'The Sofa Threshold',
+    text: [
+      'The sofa waited inside like a wise old rectangle.',
+      'Billy could not tell if resting was returning to himself or hiding from the next road.',
+    ],
+    choices: [
+      { id: 'rest', label: 'Sit on the sofa' },
+      { id: 'map', label: 'Open Colourmap' },
+      { id: 'walk', label: 'Walk around home first' },
+    ],
+  },
+  {
+    id: 'sofa-room',
+    image: '/entertainment/billy/quest-for-juice/panel-49.webp',
+    title: 'The Room Remembers',
+    text: [
+      'Inside, the room had collected Billy quietly: dust from roads, strange maps, one cup, several doubts.',
+      'The phone glowed on the table like it had been waiting to be useful without becoming bossy.',
+    ],
+  },
+  {
+    id: 'home-map-projection',
+    image: '/entertainment/billy/quest-for-juice/panel-50.webp',
+    title: 'The Map Wakes Up',
+    text: [
+      'Colourmap opened Pineapple Planet as a living field of paths, dots, doors, and unfinished meanings.',
+      'It did not say what Billy should do. This was rude and probably wise.',
+    ],
+  },
+  {
+    id: 'crown-forest-bridge',
+    image: '/entertainment/billy/quest-for-juice/panel-51.webp',
+    title: 'The Crown Forest',
+    text: [
+      'In the crown leaves, paths grew like thoughts after rain.',
+      'A stranger waited near the bridge. Not every unknown thing is danger. Not every guide is safe.',
+    ],
+    choices: [
+      { id: 'bridge', label: 'Cross the bridge' },
+      { id: 'stranger', label: 'Approach the stranger' },
+      { id: 'listen', label: 'Listen to the leaves first' },
+    ],
+  },
+  {
+    id: 'seed-tunnels',
+    image: '/entertainment/billy/quest-for-juice/panel-52.webp',
+    title: 'Seed Tunnels',
+    text: [
+      'Under the shell, old seeds glowed with scenes Billy had almost forgotten.',
+      'Maybe memory was not behind him. Maybe it was the underground road holding the planet together.',
+    ],
+  },
+  {
+    id: 'roof-stars',
+    image: '/entertainment/billy/quest-for-juice/panel-53.webp',
+    title: 'The Cup Under Stars',
+    text: [
+      'That night, Billy looked up and the sky arranged itself into bridges, trains, rivers, and one suspicious crocodile shape.',
+      'The cup caught a star. It was not The Juice. It still helped.',
+    ],
+  },
+  {
+    id: 'new-leaf-opens',
+    image: '/entertainment/billy/quest-for-juice/panel-54.webp',
+    title: 'A New Leaf Opens',
+    text: [
+      'At the top of the crown, a new leaf opened like a door pretending to be a plant.',
+      'Billy sighed. The universe had once again failed to respect a quiet evening.',
+    ],
+    choices: [
+      { id: 'new-babylon', label: 'Return to New Babylon' },
+      { id: 'ocean', label: 'Look for the Ocean' },
+      { id: 'home', label: 'Stay home a little longer' },
+    ],
+    medal: 'New Leaf Witness',
+  },
+  {
+    id: 'new-babylon-late-desk',
+    image: '/entertainment/billy/quest-for-juice/panel-55.webp',
+    title: 'Back At The Desk',
+    text: [
+      'New Babylon was still beautiful outside the window. This was rude, because Billy was inside improving beauty.',
+      'The keyboard glowed. The cup waited. Somewhere outside, real music happened without a dashboard.',
+    ],
+  },
+  {
+    id: 'optimized-calm-pods',
+    image: '/entertainment/billy/quest-for-juice/panel-56.webp',
+    title: 'Optimized Calm',
+    text: [
+      'Crocodile Corp had built pods that helped workers relax with excellent compliance.',
+      'One pear opened a window instead. Billy watched fresh air defeat a premium feature.',
+    ],
+  },
+  {
+    id: 'spreadsheet-map',
+    image: '/entertainment/billy/quest-for-juice/panel-57.webp',
+    title: 'The Spreadsheet Opens',
+    text: [
+      'The spreadsheet blinked, rearranged, and became a map.',
+      'Billy had found many strange things in life, but a secret inside admin felt personally targeted.',
+    ],
+    choices: [
+      { id: 'follow', label: 'Follow the hidden map' },
+      { id: 'report', label: 'Report it politely' },
+      { id: 'close', label: 'Close the spreadsheet' },
+    ],
+  },
+  {
+    id: 'service-corridor',
+    image: '/entertainment/billy/quest-for-juice/panel-58.webp',
+    title: 'Service Corridor',
+    text: [
+      'Under the office, the building stopped pretending to be a workplace and became a body.',
+      'Golden pipes carried desire through the walls. Billy followed the dots carefully.',
+    ],
+  },
+  {
+    id: 'juice-pipe-chamber',
+    image: '/entertainment/billy/quest-for-juice/panel-59.webp',
+    title: 'The Pipes Below',
+    text: [
+      'Below New Babylon, Juice moved like a river that had been hired by a corporation.',
+      'The machine was not ugly. That was part of the danger.',
+    ],
+  },
+  {
+    id: 'artificial-juice-booth',
+    image: '/entertainment/billy/quest-for-juice/panel-60.webp',
+    title: 'Artificial Juice',
+    text: [
+      'The bottles were tiny, glowing, convenient, and almost convincing.',
+      'Billy wondered if a substitute becomes dangerous when it works just enough.',
+    ],
+    choices: [
+      { id: 'taste', label: 'Taste one drop' },
+      { id: 'water', label: 'Ask about the water cup' },
+      { id: 'machine', label: 'Keep following the pipes' },
+    ],
+  },
 ];
