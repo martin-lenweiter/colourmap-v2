@@ -204,6 +204,83 @@ Funny cross-links:
 - Crime Billy sells bottled Juice to both.
 - Observer Billy realizes all three are thirsty.
 
+### Crocodile Jack Side Timeline
+
+New Babylon should eventually include a separate Crocodile Jack timeline: a stylish, cinematic
+"day in the life" and later a flashback rise-to-power arc. This should feel like a Guy Ritchie crime
+film translated into Pineapple Planet language: cool, funny, dangerous, visually rich, but still
+symbolic rather than generic gangster cosplay.
+
+This is not the main Billy path at first. It is a contrast layer the user can later unlock, then
+recognize from Billy's perspective in another timeline.
+
+Core idea:
+
+```text
+Crocodile Jack did not simply appear at the top of New Babylon.
+He learned how desire moves, then built roads around it.
+```
+
+Visual ingredients:
+
+- golden crocodile-style limousine
+- crocodile-shaped motorbike and shady motorbike gangs
+- leather boots, rings, dark floral shirts, heavy coats, stylish sunglasses
+- piranha aquariums in deep executive offices
+- secret lair under Crocodile Corp with Juice valves, money stashes, old contracts, and wanted
+  posters
+- rusty bars, back rooms, neon alleys, cyberpunk markets, hidden fighting rooms
+- shady fruit characters with strong silhouettes: piranha dealers, mango bookies, lemon drivers,
+  pineapple bouncers, potato fixers, tomato informants, crocodile lieutenants
+- barehanded underground fights where Crocodile Jack watches Billy struggle and later become a
+  champion in a different branch
+
+Tone rules:
+
+- cool and badass, but not empty violence
+- stylish crime energy, but still phone-friendly and comic-symbolic
+- no gore
+- fights are about pressure, pride, fear, discipline, and survival, not cruelty
+- women should be present as powerful operators, fighters, drivers, strategists, journalists, and
+  rivals, not decoration
+- Crocodile Jack stays charming, intelligent, and dangerous; his evil is extraction through style,
+  not random brutality
+
+Future branch structure:
+
+1. **Day In The Life Of Jack**
+   - Jack wakes in luxury above New Babylon.
+   - Golden limousine through palm-neon streets.
+   - Piranha aquarium office.
+   - Motorbike ride through the shady Juice district.
+   - Rusty bar meeting with strange fruit operators.
+   - Underground fight night where Billy appears from another timeline.
+   - Secret lair below Crocodile Corp.
+   - Jack studies the Fantastic Juice Machine like a priest studying a false god.
+
+2. **Young Jack Flashbacks**
+   - young Crocodile Jack as a street hustler in early New Babylon
+   - first discovery that desire can be packaged
+   - first motorbike gang
+   - first betrayal
+   - first Artificial Juice experiment
+   - first time he realizes friendly power works better than obvious violence
+   - rise from back rooms to Crocodile Corp
+
+3. **Billy Contrast Timeline**
+   - Billy enters the fighting world from his own angle.
+   - Jack watches him struggle before understanding him as useful or dangerous.
+   - The same scenes from Jack's timeline later reappear with different meaning in Billy's path.
+   - The reader realizes New Babylon is not one story, but overlapping roads.
+
+The deeper question of this branch:
+
+```text
+When does charisma become capture?
+When does survival become extraction?
+When does style hide hunger?
+```
+
 ## Page Plan: 150 Pages
 
 ### 1-25: Arrival And Wonder
@@ -384,3 +461,13 @@ Generate in batches of 10-15. After each batch:
 - check lower overlay calm area
 - compress to WebP for phone loading
 - update `lib/billy-comic.ts`
+
+## Generated Batches
+
+- **Panels 45-54: Pineapple Planet return loop.** Billy returns home, sees Pineapple Planet as a
+  living map, re-enters the sofa/home threshold, opens Colourmap, explores crown forest and seed
+  tunnels, then sees a new leaf open. This is a reusable hub loop between larger region arcs.
+- **Panels 55-60: New Babylon worker descent.** Billy returns to the office branch, sees optimized
+  calm, finds a hidden spreadsheet map, follows the service corridor into the Juice pipes, and meets
+  the Artificial Juice economy. This stops at a checkable choice gate before the deeper machine/core
+  branch continues.
