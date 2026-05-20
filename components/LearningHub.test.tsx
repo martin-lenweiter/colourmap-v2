@@ -36,8 +36,8 @@ describe('LearningHub', () => {
     expect(screen.queryByRole('button', { name: 'atlas' })).toBeNull();
     expect(screen.getByText('start here')).toBeDefined();
 
-    fireEvent.click(screen.getByRole('button', { name: 'images' }));
-    expect(localStorage.getItem('colourmap-learn-home-display')).toBe('images');
+    expect(screen.queryByRole('button', { name: 'images' })).toBeNull();
+    expect(screen.getByText('image paths')).toBeDefined();
 
     const emotionalIntelligence = screen.getByText('Emotional Intelligence').closest('button');
     expect(emotionalIntelligence).not.toBeNull();

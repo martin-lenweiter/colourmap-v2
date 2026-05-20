@@ -14,10 +14,12 @@ const { streamText } = vi.hoisted(() => ({
     toTextStreamResponse: () => streamedResponse,
   })),
 }));
+const { readFile } = vi.hoisted(() => ({ readFile: vi.fn() }));
 
 vi.mock('@/lib/supabase/server', () => ({ createClient }));
 vi.mock('@ai-sdk/anthropic', () => ({ anthropic }));
 vi.mock('ai', () => ({ streamText }));
+vi.mock('node:fs/promises', () => ({ default: { readFile }, readFile }));
 
 import { POST } from './route';
 
@@ -37,6 +39,8 @@ describe('POST /api/ai/presence', () => {
     getUser.mockReset();
     anthropic.mockClear();
     streamText.mockClear();
+    readFile.mockReset();
+    readFile.mockResolvedValue('# Spec file\nColourmap spec context');
     getUser.mockResolvedValue({ data: { user } });
   });
 
@@ -51,6 +55,11 @@ describe('POST /api/ai/presence', () => {
         model: 'model',
         prompt: 'I feel scattered.',
         system: expect.stringContaining('phone'),
+      }),
+    );
+    expect(streamText).toHaveBeenCalledWith(
+      expect.objectContaining({
+        system: expect.stringContaining('Colourmap spec context'),
       }),
     );
   });

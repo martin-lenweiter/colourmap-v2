@@ -162,4 +162,322 @@ export const BILLY_QUEST_PANELS: BillyPanel[] = [
     ],
     medal: 'Cup Listener',
   },
+  {
+    id: 'new-babylon-arrival',
+    image: '/entertainment/billy/quest-for-juice/panel-13.webp',
+    title: 'New Babylon Appears',
+    text: [
+      'Beyond the jungle, a city rose out of the palms like paradise had learned to use spreadsheets.',
+      'Billy held up the empty cup. The cup looked impressed and still unemployed.',
+    ],
+    medal: 'Reached New Babylon',
+  },
+  {
+    id: 'new-babylon-gate',
+    image: '/entertainment/billy/quest-for-juice/panel-14.webp',
+    title: 'The City Of Hope',
+    text: [
+      'The gate promised clean trains, glowing gardens, helpful robots, and almost no existential confusion.',
+      'Banana Guy waved like he had already joined three tours and forgiven the future.',
+    ],
+  },
+  {
+    id: 'ai-train',
+    image: '/entertainment/billy/quest-for-juice/panel-15.webp',
+    title: 'All Roads Board Here',
+    text: [
+      'The AI train arrived exactly on time, which made Billy suspicious of both the train and time.',
+      'In the window, he saw versions of himself: party Billy, worker Billy, observer Billy, and one Billy pretending not to want snacks.',
+    ],
+  },
+  {
+    id: 'fantastic-juice-machine',
+    image: '/entertainment/billy/quest-for-juice/panel-16.webp',
+    title: 'The Fantastic Juice Machine',
+    text: [
+      'At the center of New Babylon, the Fantastic Juice Machine poured golden rivers through the city.',
+      'Everyone had access to abundance. Strangely, everyone still queued for more.',
+    ],
+  },
+  {
+    id: 'helpful-map',
+    image: '/entertainment/billy/quest-for-juice/panel-17.webp',
+    title: 'The Helpful Map',
+    text: [
+      'A tiny guide robot opened four routes: pleasure, work, mystery, and sitting quietly by water.',
+      'The map did not say which path was wise. Maps help. Maps are not reality.',
+    ],
+  },
+  {
+    id: 'four-road-fork',
+    image: '/entertainment/billy/quest-for-juice/panel-18.webp',
+    title: 'Four Ways To Be Thirsty',
+    text: [
+      'New Babylon offered every kind of future at once. This was generous and a little rude.',
+      'Billy wondered if choosing a road was the same as choosing a self.',
+    ],
+    choices: [
+      { id: 'party', label: 'Follow the party road' },
+      { id: 'work', label: 'Take the Crocodile Corp badge' },
+      { id: 'machine', label: 'Inspect the Juice Machine' },
+      { id: 'quiet', label: 'Sit by the canal first' },
+    ],
+  },
+  {
+    id: 'rooftop-party',
+    image: '/entertainment/billy/quest-for-juice/panel-19.webp',
+    title: 'Good Time Road',
+    text: [
+      'The party was genuinely wonderful. Music, fountains, fruit friends, and Banana Guy achieving advanced happiness.',
+      'Billy laughed so hard he almost forgot to check whether he was having fun correctly.',
+    ],
+  },
+  {
+    id: 'crocodile-lobby',
+    image: '/entertainment/billy/quest-for-juice/panel-20.webp',
+    title: 'Worker Road',
+    text: [
+      'Crocodile Corp gave Billy a badge, a desk, and a mission to improve every cup on the planet.',
+      'Outside, paradise glowed through the glass. Inside, someone scheduled a meeting about freeing time.',
+    ],
+    medal: 'Crocodile Corp Intern',
+  },
+  {
+    id: 'canal-observer',
+    image: '/entertainment/billy/quest-for-juice/panel-21.webp',
+    title: 'Observer Road',
+    text: [
+      'By the canal, Billy watched the city reflect back three possible lives.',
+      'One was partying, one was working, one was chasing power. All of them looked thirsty.',
+    ],
+  },
+  {
+    id: 'crocodile-billboard',
+    image: '/entertainment/billy/quest-for-juice/panel-22.webp',
+    title: 'One Bite At A Time',
+    text: [
+      'Crocodile Jack smiled from the tower like a shortcut with excellent lighting.',
+      'He did not ask Billy to sell his soul. He simply offered to make The Juice easier.',
+    ],
+    choices: [
+      { id: 'pitch', label: 'Hear the pitch' },
+      { id: 'map', label: 'Check Colourmap first' },
+      { id: 'walk', label: 'Keep walking slowly' },
+    ],
+  },
+  {
+    id: 'crocodile-welcome-video',
+    image: '/entertainment/billy/quest-for-juice/panel-23.webp',
+    title: 'The Welcome Video',
+    text: [
+      'The Crocodile Corp welcome video promised to improve life, cups, sadness, lunch, and possibly weather.',
+      'Billy was not sure he had joined anything. The badge disagreed.',
+    ],
+  },
+  {
+    id: 'productivity-aura',
+    image: '/entertainment/billy/quest-for-juice/panel-24.webp',
+    title: 'Productivity Aura',
+    text: [
+      'A friendly AI assistant scanned Billy and discovered excellent potential for being busy.',
+      'This sounded like a compliment until the map quietly coughed.',
+    ],
+  },
+  {
+    id: 'desk-arrives',
+    image: '/entertainment/billy/quest-for-juice/panel-25.webp',
+    title: 'The Desk Appears',
+    text: [
+      'A desk rose from the floor. It had a plant, a keyboard, and the confidence of something already in charge.',
+      'Billy had not accepted the job. The job had accepted Billy.',
+    ],
+  },
+  {
+    id: 'sunset-outside',
+    image: '/entertainment/billy/quest-for-juice/panel-26.webp',
+    title: 'The Sunset Outside',
+    text: [
+      'Outside, the city threw a sunset festival with music, fountains, and actual air.',
+      'Inside, Billy learned that missing paradise can be scheduled very efficiently.',
+    ],
+  },
+  {
+    id: 'sunset-optimization',
+    image: '/entertainment/billy/quest-for-juice/panel-27.webp',
+    title: 'Sunset Optimization',
+    text: [
+      'The meeting was about improving sunsets without wasting time looking at them.',
+      'A potato nodded. A robot took notes. Billy worried this might be progress.',
+    ],
+  },
+  {
+    id: 'new-babylon-second-fork',
+    image: '/entertainment/billy/quest-for-juice/panel-28.webp',
+    title: 'The Roads Return',
+    text: [
+      'The city opened again: party lights, office glass, machine stairs, quiet water.',
+      'Every path looked reasonable. That was the difficult part.',
+    ],
+    choices: [
+      { id: 'party-road', label: 'Try the party road' },
+      { id: 'worker-road', label: 'Stay with the desk' },
+      { id: 'machine-road', label: 'Follow the machine glow' },
+      { id: 'observer-road', label: 'Sit near water' },
+    ],
+  },
+  {
+    id: 'rooftop-pool',
+    image: '/entertainment/billy/quest-for-juice/panel-29.webp',
+    title: 'The Party Road',
+    text: [
+      'Billy changed shirts and tried happiness with buttons open.',
+      'The party was not fake. That made the question harder.',
+    ],
+  },
+  {
+    id: 'floating-dance-floor',
+    image: '/entertainment/billy/quest-for-juice/panel-30.webp',
+    title: 'Dance Floor River',
+    text: [
+      'The dance floor floated on golden Juice, which seemed financially unwise and emotionally persuasive.',
+      'For three minutes, Billy forgot to ask what anything meant.',
+    ],
+  },
+  {
+    id: 'perfect-snacks',
+    image: '/entertainment/billy/quest-for-juice/panel-31.webp',
+    title: 'Perfect Snacks',
+    text: [
+      'The AI chef made perfect snacks. Too perfect. Philosophically suspicious snacks.',
+      'Billy ate one anyway, because wisdom should not be rude.',
+    ],
+  },
+  {
+    id: 'notification-dance',
+    image: '/entertainment/billy/quest-for-juice/panel-32.webp',
+    title: 'The Alert Enters',
+    text: [
+      'In the middle of music, Billy checked a glowing notification.',
+      'The rhythm did not stop. Billy did.',
+    ],
+  },
+  {
+    id: 'efficient-relaxation',
+    image: '/entertainment/billy/quest-for-juice/panel-33.webp',
+    title: 'Efficient Relaxation',
+    text: [
+      'New Babylon had perfected relaxation. Everyone rested with excellent posture and measurable calm.',
+      'Billy wondered whether peace still counted if it needed a timer.',
+    ],
+  },
+  {
+    id: 'delivery-parade',
+    image: '/entertainment/billy/quest-for-juice/panel-34.webp',
+    title: 'Same-Day Enlightenment',
+    text: [
+      'A banana tycoon delivered convenience, towels, snacks, and almost-spiritual upgrades by drone.',
+      'The packages arrived before Billy had decided he wanted them.',
+    ],
+  },
+  {
+    id: 'unnecessary-tunnel',
+    image: '/entertainment/billy/quest-for-juice/panel-35.webp',
+    title: 'The Tunnel To Somewhere',
+    text: [
+      'A dramatic inventor opened a tunnel to somewhere that might already have been reachable by walking.',
+      'New Babylon applauded. Walking felt underfunded.',
+    ],
+  },
+  {
+    id: 'bad-ribbon',
+    image: '/entertainment/billy/quest-for-juice/panel-36.webp',
+    title: 'The Ribbon Ceremony',
+    text: [
+      'A loud little president cut the ribbon badly and called it historic.',
+      'Crocodile Corp smiled behind the fountain like history had signed a contract.',
+    ],
+  },
+  {
+    id: 'cups-not-drunk',
+    image: '/entertainment/billy/quest-for-juice/panel-37.webp',
+    title: 'Beautiful Cups',
+    text: [
+      'The cups were beautiful. The poses were beautiful. The fountain was beautiful.',
+      'Almost nobody was drinking slowly enough to taste anything.',
+    ],
+  },
+  {
+    id: 'party-sees-worker',
+    image: '/entertainment/billy/quest-for-juice/panel-38.webp',
+    title: 'Another Billy In Glass',
+    text: [
+      'Across the plaza, Party Billy saw Worker Billy through the office glass.',
+      'He nearly laughed. Then he recognized the shoes.',
+    ],
+  },
+  {
+    id: 'worker-sees-party',
+    image: '/entertainment/billy/quest-for-juice/panel-39.webp',
+    title: 'The Window Looks Back',
+    text: [
+      'Worker Billy saw Party Billy below and judged him for wasting the evening.',
+      'Then the office lights reflected his own tired eyes, which was annoying evidence.',
+    ],
+  },
+  {
+    id: 'sponsored-party',
+    image: '/entertainment/billy/quest-for-juice/panel-40.webp',
+    title: 'Sponsored Joy',
+    text: [
+      'The party became smoother after Crocodile Corp sponsored it.',
+      'Smoother was not worse. Smoother was just harder to question.',
+    ],
+  },
+  {
+    id: 'premium-bracelets',
+    image: '/entertainment/billy/quest-for-juice/panel-41.webp',
+    title: 'Premium Meaning',
+    text: [
+      'The bracelets promised better access to better feelings in better areas.',
+      'Billy looked at his wrist and felt slightly upgraded, which was the problem.',
+    ],
+    choices: [
+      { id: 'pay', label: 'Upgrade the bracelet' },
+      { id: 'share', label: 'Ask who gets left out' },
+      { id: 'dance', label: 'Dance without upgrading' },
+    ],
+  },
+  {
+    id: 'networking-party',
+    image: '/entertainment/billy/quest-for-juice/panel-42.webp',
+    title: 'The Party Learns Business',
+    text: [
+      'The party slowly became a networking event wearing better lighting.',
+      'Billy hid near the snacks, where at least the carrots were honest.',
+    ],
+  },
+  {
+    id: 'empty-cup-fountain',
+    image: '/entertainment/billy/quest-for-juice/panel-43.webp',
+    title: 'After The Music',
+    text: [
+      'When the crowd thinned, the fountain kept pouring.',
+      'Billy saw the cup in the reflection. Empty, but less stupid than before.',
+    ],
+    medal: 'Questioned The Party Road',
+  },
+  {
+    id: 'party-work-machine-fork',
+    image: '/entertainment/billy/quest-for-juice/panel-44.webp',
+    title: 'The Alert Returns',
+    text: [
+      'The work alert returned like a tiny blue mosquito with career advice.',
+      'Billy stood between party, office, machine, and water. The future waited without blinking.',
+    ],
+    choices: [
+      { id: 'office', label: 'Enter the office branch' },
+      { id: 'machine', label: 'Follow the machine stairs' },
+      { id: 'water', label: 'Choose the quiet water' },
+    ],
+  },
 ];
