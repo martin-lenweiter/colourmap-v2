@@ -1262,6 +1262,10 @@ Panels like Jack alone with the machine work because they communicate desire, th
 power, and loneliness in one readable image. Future panels should aim for that kind of cinematic
 clarity: emotionally rich without becoming visually noisy.
 
+Panels like "After The Music" are also quality references: the crowd is gone, the fountain keeps
+pouring, and the empty cup in the reflection carries the feeling. This is the right kind of quiet
+cinematic beat after a louder scene.
+
 ### Pineapple Character Readability
 
 Fruit characters should read as fruit beings first, not humans wearing fruit costumes.
