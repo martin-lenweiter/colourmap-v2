@@ -92,6 +92,12 @@ Before commit, complete the verification pipeline in `rules/workflow.md`:
 - `lib/db/**` must not import `app/**`, `components/**`, or `lib/services/**`.
 - `app/api/**/route.ts` must not import components.
 
+### Persistence And User Data
+
+- New features that store meaningful user-created personal data must persist through Supabase under `auth.uid()`, unless the relevant spec explicitly marks the data as device-local UI preferences or a temporary experiment.
+- Device-local storage is acceptable for UI preferences, visual settings, onboarding flags, draft-only experiments, and fast local caches of Supabase-backed data.
+- If a feature starts as local-only and later becomes part of the authenticated product surface, the follow-up work must include Supabase schema/API wiring, RLS, and a migration or hydration path for existing local data when needed.
+
 ### Tooling And Repo Defaults
 
 - Use Bun as the package manager.
