@@ -47,6 +47,7 @@ type EducationWorld = {
   tint: string;
   kind: 'link' | 'personality' | 'program';
   cover: string;
+  coverPosition?: string;
   programKey?: string;
 };
 
@@ -59,6 +60,7 @@ const EDUCATION_ENTERTAINMENT: EducationWorld[] = [
     tint: '#D39A3D',
     kind: 'link',
     cover: '/entertainment/billy/quest-for-juice/panel-9.webp',
+    coverPosition: 'center 18%',
   },
   {
     href: '#colourmap-vision-comic',
@@ -67,7 +69,7 @@ const EDUCATION_ENTERTAINMENT: EducationWorld[] = [
     body: 'The mission, interface dream, and future library of Colourmap.',
     tint: '#78A9B8',
     kind: 'program',
-    cover: '/education-worlds/colourmap-vision-cover.svg',
+    cover: '/comics/colourmap-vision-comic/panel-0.webp',
     programKey: 'colourmap-vision-comic',
   },
 ];
@@ -80,7 +82,7 @@ const EDUCATION_WORLDS: EducationWorld[] = [
     body: 'Traits, story, gifts, frictions, and mode bridges.',
     tint: '#D0A35F',
     kind: 'personality',
-    cover: '/education-worlds/personality-map-cover.png',
+    cover: '/education-worlds/personality-map-cover.webp',
   },
   {
     href: '/atlas',
@@ -89,7 +91,7 @@ const EDUCATION_WORLDS: EducationWorld[] = [
     body: 'Wellbeing, society, hope, and shared maps.',
     tint: '#6B7A50',
     kind: 'link',
-    cover: '/education-worlds/living-atlas-cover.png',
+    cover: '/education-worlds/living-atlas-cover.webp',
   },
   {
     href: '/progress-road',
@@ -98,7 +100,7 @@ const EDUCATION_WORLDS: EducationWorld[] = [
     body: 'History, change, peace, freedom, and future questions.',
     tint: '#6888B0',
     kind: 'link',
-    cover: '/education-worlds/progress-roads-cover.png',
+    cover: '/education-worlds/progress-roads-cover.webp',
   },
 ];
 
@@ -738,7 +740,13 @@ function EducationWorldCard({ world, onOpen }: { world: EducationWorld; onOpen: 
         <img
           src={world.cover}
           alt=""
-          style={{ display: 'block', width: '100%', height: '100%', objectFit: 'cover' }}
+          style={{
+            display: 'block',
+            width: '100%',
+            height: '100%',
+            objectFit: 'cover',
+            objectPosition: world.coverPosition ?? 'center center',
+          }}
         />
       </div>
       <div>
