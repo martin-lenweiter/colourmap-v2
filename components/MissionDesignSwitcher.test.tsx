@@ -28,7 +28,7 @@ describe('MissionDesignSwitcher', () => {
 
     await user.click(screen.getByRole('button', { name: /Tasks/ }));
 
-    expect(screen.getByRole('button', { name: 'Format 1' })).toBeDefined();
+    expect(screen.getByRole('button', { name: '1' })).toBeDefined();
     expect(screen.getByPlaceholderText('add a mission…')).toBeDefined();
     expect(screen.queryByText('Current Mission')).toBeNull();
     expect(screen.queryByText('Daily Missions')).toBeNull();
@@ -40,7 +40,7 @@ describe('MissionDesignSwitcher', () => {
     render(<MissionDesignSwitcher />);
 
     await user.click(screen.getByRole('button', { name: /Tasks/ }));
-    await user.click(screen.getByRole('button', { name: 'Format 2' }));
+    await user.click(screen.getByRole('button', { name: '2' }));
 
     expect(screen.getByText('Mission Control')).toBeDefined();
     expect(screen.getByPlaceholderText('drop a mission, worry, task, or plan...')).toBeDefined();

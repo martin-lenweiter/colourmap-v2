@@ -188,21 +188,21 @@ function MissionDesignPill({
   onChange: (format: MissionFormat) => void;
 }) {
   return (
-    <div style={{ display: 'flex', justifyContent: 'center', padding: '0 0 4px' }}>
+    <div style={{ display: 'flex', justifyContent: 'center', padding: '0 0 2px' }}>
       <div
         style={{
           display: 'inline-flex',
           border: `1px solid ${LINE}`,
           borderRadius: 999,
           background: 'rgba(255,255,255,0.03)',
-          padding: 3,
-          gap: 3,
+          padding: 2,
+          gap: 2,
         }}
       >
         {(
           [
-            ['one', 'Format 1'],
-            ['two', 'Format 2'],
+            ['one', '1'],
+            ['two', '2'],
           ] as const
         ).map(([format, label]) => {
           const active = value === format;
@@ -214,14 +214,14 @@ function MissionDesignPill({
               style={{
                 border: 0,
                 borderRadius: 999,
-                padding: '6px 14px',
+                minWidth: 30,
+                minHeight: 26,
+                padding: '3px 9px',
                 background: active ? 'rgba(196,160,96,0.18)' : 'transparent',
                 color: active ? BROWN : MUTED,
                 fontFamily: 'var(--font-serif)',
-                fontSize: 11,
+                fontSize: 12,
                 fontWeight: active ? 800 : 600,
-                letterSpacing: '0.12em',
-                textTransform: 'uppercase',
                 cursor: 'pointer',
               }}
             >

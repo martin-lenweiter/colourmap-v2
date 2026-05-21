@@ -685,7 +685,7 @@ function ColourmapVisionRasterPanel({
       alt={alt}
       width={1200}
       height={1800}
-      quality={72}
+      quality={75}
       sizes="(max-width: 720px) 92vw, 760px"
       loading={index === 0 ? 'eager' : 'lazy'}
       priority={index === 0}
