@@ -1,5 +1,6 @@
 'use client';
 
+import Image from 'next/image';
 import type { MouseEvent } from 'react';
 import { useState } from 'react';
 import type { Program } from '@/lib/programs';
@@ -663,6 +664,42 @@ function ColourmapVisionPanel({ index, color }: { index: number; color: string }
   );
 }
 
+function ColourmapVisionRasterPanel({
+  index,
+  color,
+  alt,
+}: {
+  index: number;
+  color: string;
+  alt: string;
+}) {
+  const [failed, setFailed] = useState(false);
+
+  if (failed) {
+    return <ColourmapVisionPanel index={index} color={color} />;
+  }
+
+  return (
+    <Image
+      src={`/comics/colourmap-vision-comic/panel-${index}.webp`}
+      alt={alt}
+      width={1200}
+      height={1800}
+      quality={72}
+      sizes="(max-width: 720px) 92vw, 760px"
+      loading={index === 0 ? 'eager' : 'lazy'}
+      priority={index === 0}
+      onError={() => setFailed(true)}
+      style={{
+        width: '100%',
+        height: 'auto',
+        display: 'block',
+        background: 'rgba(10,6,3,0.24)',
+      }}
+    />
+  );
+}
+
 function PanelImage({
   programKey,
   index,
@@ -679,6 +716,9 @@ function PanelImage({
   const [failed, setFailed] = useState(false);
   const generatedCount = GENERATED_LAYERED_PANEL_COUNTS[programKey];
   if (programKey === 'colourmap-vision-comic') {
+    if (index < 3) {
+      return <ColourmapVisionRasterPanel index={index} color={color} alt={alt} />;
+    }
     return <ColourmapVisionPanel index={index} color={color} />;
   }
   if (imageStyle && imageStyle !== 'default' && !failed) {

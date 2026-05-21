@@ -867,7 +867,13 @@ function MissionControlFormatTwo() {
   );
 }
 
-function MissionTasksPill() {
+function MissionTasksPill({
+  format,
+  onFormatChange,
+}: {
+  format: MissionFormat;
+  onFormatChange: (format: MissionFormat) => void;
+}) {
   const [open, setOpen] = useState(false);
 
   return (
@@ -927,7 +933,10 @@ function MissionTasksPill() {
 
       {open && (
         <div style={{ padding: '12px 10px 0' }}>
-          <DoingCardsPanel />
+          <MissionDesignPill value={format} onChange={onFormatChange} />
+          <div style={{ marginTop: 10 }}>
+            {format === 'one' ? <DoingCardsPanel /> : <MissionControlFormatTwo />}
+          </div>
         </div>
       )}
     </div>
@@ -954,14 +963,9 @@ export default function MissionDesignSwitcher({
   return (
     <div style={{ display: 'grid', gap: 8 }}>
       {beforeContent}
-      <MissionDesignPill value={format} onChange={changeFormat} />
-      {format === 'one' ? (
-        <div style={{ marginTop: 8 }}>
-          <MissionTasksPill />
-        </div>
-      ) : (
-        <MissionControlFormatTwo />
-      )}
+      <div style={{ marginTop: 8 }}>
+        <MissionTasksPill format={format} onFormatChange={changeFormat} />
+      </div>
     </div>
   );
 }

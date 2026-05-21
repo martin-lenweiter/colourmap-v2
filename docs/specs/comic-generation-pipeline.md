@@ -64,6 +64,7 @@ becomes useful when it helps the user understand their own map.
 - Comic art should be textless by default. Titles, captions, dialogue, and teaching copy should be app-rendered in text boxes on top of, above, or below the artwork.
 - Text boxes must own their layout: text must remain inside the box at every supported viewport, with wrapping, readable font sizes, enough padding, and no overflow outside the box. If a caption is too long, the UI should expand, scroll, paginate, or reduce the amount of text shown rather than letting typography spill out of the frame.
 - App-rendered comic text boxes should make future translation, editing, accessibility, and style changes possible without regenerating the artwork.
+- Raster comic pages must be compressed before shipping. Prefer WebP or AVIF, lazy-load non-current pages, and keep individual files small enough for weak mobile connections. Use SVG or code fallback art when a heavy raster panel is unavailable.
 
 ## Current Phase: Expansion And Visual Research
 
