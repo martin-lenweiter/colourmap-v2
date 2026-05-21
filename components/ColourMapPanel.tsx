@@ -5,7 +5,6 @@ import { syncPref } from '@/lib/sync';
 
 /* ── Tokens ──────────────────────────────────────────────────── */
 const OCHRE = 'var(--palette-panel-text, #C4A060)';
-const OCHRE_HEX = '#C4A060'; // use only where CSS vars can't be interpolated (e.g. boxShadow hex+alpha)
 const BROWN = 'var(--palette-panel-text, rgba(240,216,152,0.88))';
 const LABEL = 'var(--palette-panel-muted, rgba(196,160,96,0.55))';
 const CARD_BG = 'rgba(196,160,96,0.05)';
@@ -22,6 +21,13 @@ type Channel = {
   fixed?: boolean;
 };
 type Idea = { id: string; title: string; steps: Step[] };
+type AreaMission = {
+  id: string;
+  text: string;
+  done: boolean;
+  createdAt?: string;
+  tag?: { name: string; color: string; categoryId?: string };
+};
 interface CMapData {
   title: string;
   channels: Channel[];
@@ -29,6 +35,7 @@ interface CMapData {
 }
 
 const LS_KEY = 'colourmap:cmap-data';
+const MISSIONS_KEY = 'colourmap:today-objectives';
 
 const CHANNEL_COLORS = [
   '#C07040', // terracotta
@@ -43,6 +50,23 @@ const CHANNEL_COLORS = [
 
 function uid() {
   return crypto.randomUUID();
+}
+
+function readJson<T>(key: string, fallback: T): T {
+  try {
+    const raw = localStorage.getItem(key);
+    return raw ? (JSON.parse(raw) as T) : fallback;
+  } catch {
+    return fallback;
+  }
+}
+
+function persistAreaMissions(next: AreaMission[]) {
+  try {
+    localStorage.setItem(MISSIONS_KEY, JSON.stringify(next));
+  } catch {}
+  syncPref(MISSIONS_KEY, next);
+  window.dispatchEvent(new Event('colourmap:missions-updated'));
 }
 
 function defaultData(): CMapData {
@@ -393,8 +417,60 @@ function ChannelCard({
   onUpdate: (c: Channel) => void;
   onDelete: () => void;
 }) {
+  const [missionText, setMissionText] = useState('');
+  const [areaMissions, setAreaMissions] = useState<AreaMission[]>(() =>
+    readJson<AreaMission[]>(MISSIONS_KEY, []).filter(
+      (mission) => mission.tag?.categoryId === channel.id,
+    ),
+  );
+
+  useEffect(() => {
+    function refreshAreaMissions() {
+      setAreaMissions(
+        readJson<AreaMission[]>(MISSIONS_KEY, []).filter(
+          (mission) => mission.tag?.categoryId === channel.id,
+        ),
+      );
+    }
+    refreshAreaMissions();
+    window.addEventListener('colourmap:missions-updated', refreshAreaMissions);
+    return () => window.removeEventListener('colourmap:missions-updated', refreshAreaMissions);
+  }, [channel.id]);
+
   function toggle() {
     onUpdate({ ...channel, open: !channel.open });
+  }
+
+  function addAreaMission() {
+    const text = missionText.trim();
+    if (!text) return;
+    const all = readJson<AreaMission[]>(MISSIONS_KEY, []);
+    const next: AreaMission[] = [
+      ...all,
+      {
+        id: uid(),
+        text,
+        done: false,
+        createdAt: new Date().toISOString(),
+        tag: {
+          name: channel.title || 'Area',
+          color: channel.color,
+          categoryId: channel.id,
+        },
+      },
+    ];
+    persistAreaMissions(next);
+    setMissionText('');
+    setAreaMissions(next.filter((mission) => mission.tag?.categoryId === channel.id));
+  }
+
+  function toggleAreaMission(missionId: string) {
+    const all = readJson<AreaMission[]>(MISSIONS_KEY, []);
+    const next = all.map((mission) =>
+      mission.id === missionId ? { ...mission, done: !mission.done } : mission,
+    );
+    persistAreaMissions(next);
+    setAreaMissions(next.filter((mission) => mission.tag?.categoryId === channel.id));
   }
 
   function addCompartment() {
@@ -549,6 +625,124 @@ function ChannelCard({
       {/* Compartments */}
       {channel.open && (
         <div style={{ padding: '10px 12px' }}>
+          <div
+            style={{
+              border: `1px solid ${channel.color}24`,
+              borderRadius: 10,
+              background: `${channel.color}08`,
+              padding: 10,
+              marginBottom: 10,
+            }}
+          >
+            <div
+              style={{
+                fontFamily: 'var(--font-serif)',
+                fontSize: 13,
+                fontWeight: 900,
+                color: BROWN,
+                marginBottom: 8,
+              }}
+            >
+              Missions in this area
+            </div>
+            {areaMissions.length > 0 && (
+              <div style={{ display: 'grid', gap: 6, marginBottom: 9 }}>
+                {areaMissions.slice(0, 5).map((mission) => (
+                  <button
+                    key={mission.id}
+                    type="button"
+                    onClick={() => toggleAreaMission(mission.id)}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 8,
+                      width: '100%',
+                      border: `1px solid ${channel.color}26`,
+                      borderRadius: 8,
+                      background: mission.done ? `${channel.color}0a` : 'rgba(255,255,255,0.035)',
+                      padding: '8px 10px',
+                      cursor: 'pointer',
+                      textAlign: 'left',
+                    }}
+                  >
+                    <span
+                      style={{
+                        width: 12,
+                        height: 12,
+                        borderRadius: '50%',
+                        border: `1.5px solid ${channel.color}`,
+                        background: mission.done ? channel.color : 'transparent',
+                        flexShrink: 0,
+                      }}
+                    />
+                    <span
+                      style={{
+                        flex: 1,
+                        minWidth: 0,
+                        fontFamily: 'var(--font-serif)',
+                        fontSize: 14,
+                        fontWeight: 700,
+                        lineHeight: 1.25,
+                        color: BROWN,
+                        textDecoration: mission.done ? 'line-through' : 'none',
+                        opacity: mission.done ? 0.55 : 1,
+                        overflowWrap: 'anywhere',
+                      }}
+                    >
+                      {mission.text}
+                    </span>
+                  </button>
+                ))}
+              </div>
+            )}
+            <form
+              onSubmit={(event) => {
+                event.preventDefault();
+                addAreaMission();
+              }}
+              style={{ display: 'flex', gap: 8 }}
+            >
+              <input
+                type="text"
+                value={missionText}
+                onChange={(event) => setMissionText(event.target.value)}
+                placeholder="Add mission in this area..."
+                spellCheck={false}
+                autoCorrect="off"
+                style={{
+                  flex: 1,
+                  minWidth: 0,
+                  border: `1px solid ${channel.color}24`,
+                  borderRadius: 8,
+                  background: 'rgba(255,255,255,0.04)',
+                  color: BROWN,
+                  fontFamily: 'var(--font-serif)',
+                  fontSize: 14,
+                  padding: '9px 10px',
+                  outline: 'none',
+                }}
+              />
+              <button
+                type="submit"
+                disabled={!missionText.trim()}
+                style={{
+                  border: `1px solid ${channel.color}44`,
+                  borderRadius: 8,
+                  background: missionText.trim() ? `${channel.color}18` : 'transparent',
+                  color: BROWN,
+                  fontFamily: 'var(--font-serif)',
+                  fontSize: 13,
+                  fontWeight: 900,
+                  padding: '0 12px',
+                  cursor: missionText.trim() ? 'pointer' : 'default',
+                  opacity: missionText.trim() ? 1 : 0.45,
+                }}
+              >
+                Add
+              </button>
+            </form>
+          </div>
+
           {channel.compartments.map((comp) => (
             <CompartmentCard
               key={comp.id}
@@ -843,7 +1037,12 @@ export default function ColourMapPanel() {
         {/* view toggle — left side as dots */}
         <span style={{ flex: 1, display: 'flex', alignItems: 'center', gap: 6, paddingLeft: 2 }}>
           {open &&
-            (['list', 'dots'] as const).map((v) => (
+            (
+              [
+                ['list', 'Vertical'],
+                ['dots', 'Horizontal'],
+              ] as const
+            ).map(([v, label]) => (
               <button
                 key={v}
                 type="button"
@@ -852,28 +1051,27 @@ export default function ColourMapPanel() {
                   setView(v);
                 }}
                 style={{
-                  width: 28,
-                  height: 28,
+                  minHeight: 32,
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  background: 'none',
-                  border: 'none',
+                  background:
+                    view === v ? 'color-mix(in srgb, var(--card) 78%, transparent)' : 'transparent',
+                  border:
+                    view === v
+                      ? '1px solid color-mix(in srgb, var(--foreground) 22%, transparent)'
+                      : '1px solid transparent',
+                  borderRadius: 999,
                   cursor: 'pointer',
-                  padding: 0,
+                  padding: '6px 10px',
+                  color: view === v ? 'var(--foreground)' : 'var(--muted-foreground)',
+                  fontFamily: 'var(--font-serif)',
+                  fontSize: 12,
+                  fontWeight: 900,
+                  lineHeight: 1,
                 }}
               >
-                <div
-                  style={{
-                    width: view === v ? 10 : 7,
-                    height: view === v ? 10 : 7,
-                    borderRadius: '50%',
-                    background: view === v ? OCHRE : 'rgba(196,160,96,0.18)',
-                    border: `1.5px solid ${view === v ? OCHRE : 'rgba(196,160,96,0.55)'}`,
-                    boxShadow: view === v ? `0 0 7px ${OCHRE_HEX}70` : 'none',
-                    transition: 'all 0.2s',
-                  }}
-                />
+                {label}
               </button>
             ))}
         </span>
@@ -943,17 +1141,18 @@ export default function ColourMapPanel() {
               background: 'none',
               border: `1px dashed rgba(196,160,96,0.22)`,
               borderRadius: 10,
-              padding: '7px 0',
+              padding: '10px 0',
               fontFamily: 'var(--font-serif)',
-              fontSize: 11,
+              fontSize: 14,
+              fontWeight: 900,
               color: OCHRE,
-              opacity: 0.55,
+              opacity: 0.8,
               cursor: 'pointer',
-              letterSpacing: '0.1em',
+              letterSpacing: '0.06em',
               marginBottom: 18,
             }}
           >
-            + area
+            Add area
           </button>
 
           <SectionLabel label="Ideas" />
@@ -995,7 +1194,7 @@ export default function ColourMapPanel() {
           {/* ── Horizontal orbit row ── */}
           <div style={{ position: 'relative', marginBottom: 20 }}>
             {/* dots */}
-            <div style={{ display: 'flex', gap: 0, overflowX: 'auto', paddingBottom: 4 }}>
+            <div style={{ display: 'flex', gap: 12, overflowX: 'auto', paddingBottom: 4 }}>
               {data.channels.map((ch) => {
                 const isSel = selectedDot === ch.id;
                 const done = ch.compartments.reduce(
@@ -1008,20 +1207,20 @@ export default function ColourMapPanel() {
                     key={ch.id}
                     onClick={() => setSelectedDot(isSel ? null : ch.id)}
                     style={{
-                      flex: '1 0 0',
-                      minWidth: 56,
+                      flex: '0 0 92px',
+                      width: 92,
                       display: 'flex',
                       flexDirection: 'column',
                       alignItems: 'center',
-                      gap: 6,
+                      gap: 9,
                       cursor: 'pointer',
                       paddingTop: 4,
                     }}
                   >
                     <div
                       style={{
-                        width: 38,
-                        height: 38,
+                        width: 62,
+                        height: 62,
                         borderRadius: '50%',
                         background: isSel ? `${ch.color}28` : `${ch.color}12`,
                         border: `2px solid ${isSel ? ch.color : `${ch.color}50`}`,
@@ -1036,9 +1235,10 @@ export default function ColourMapPanel() {
                         <span
                           style={{
                             fontFamily: 'var(--font-serif)',
-                            fontSize: 8,
-                            color: ch.color,
-                            opacity: 0.7,
+                            fontSize: 12,
+                            color: 'var(--foreground)',
+                            opacity: 0.9,
+                            fontWeight: 900,
                           }}
                         >
                           {done}/{total}
@@ -1048,17 +1248,17 @@ export default function ColourMapPanel() {
                     <span
                       style={{
                         fontFamily: 'var(--font-serif)',
-                        fontSize: 8,
-                        fontWeight: 700,
-                        letterSpacing: '0.12em',
-                        textTransform: 'uppercase',
-                        color: ch.color,
-                        opacity: isSel ? 0.85 : 0.5,
+                        fontSize: 14,
+                        fontWeight: 900,
+                        letterSpacing: '0.02em',
+                        color: 'var(--foreground)',
+                        opacity: isSel ? 1 : 0.78,
                         textAlign: 'center',
-                        maxWidth: 54,
+                        maxWidth: 92,
                         overflow: 'hidden',
                         textOverflow: 'ellipsis',
-                        whiteSpace: 'nowrap',
+                        whiteSpace: 'normal',
+                        lineHeight: 1.1,
                       }}
                     >
                       {ch.title || '—'}
@@ -1071,20 +1271,20 @@ export default function ColourMapPanel() {
               <div
                 onClick={addChannel}
                 style={{
-                  flex: '1 0 0',
-                  minWidth: 56,
+                  flex: '0 0 92px',
+                  width: 92,
                   display: 'flex',
                   flexDirection: 'column',
                   alignItems: 'center',
-                  gap: 6,
+                  gap: 9,
                   cursor: 'pointer',
                   paddingTop: 4,
                 }}
               >
                 <div
                   style={{
-                    width: 38,
-                    height: 38,
+                    width: 62,
+                    height: 62,
                     borderRadius: '50%',
                     border: '1.5px dashed rgba(196,160,96,0.22)',
                     display: 'flex',
@@ -1092,20 +1292,24 @@ export default function ColourMapPanel() {
                     justifyContent: 'center',
                   }}
                 >
-                  <span style={{ color: OCHRE, opacity: 0.35, fontSize: 18, lineHeight: 1 }}>
+                  <span style={{ color: OCHRE, opacity: 0.58, fontSize: 26, lineHeight: 1 }}>
                     +
                   </span>
                 </div>
                 <span
                   style={{
                     fontFamily: 'var(--font-serif)',
-                    fontSize: 8,
+                    fontSize: 14,
+                    fontWeight: 900,
                     color: OCHRE,
-                    opacity: 0.3,
-                    letterSpacing: '0.08em',
+                    opacity: 0.72,
+                    letterSpacing: '0.02em',
+                    textAlign: 'center',
+                    width: 92,
+                    lineHeight: 1.1,
                   }}
                 >
-                  add
+                  Add area
                 </span>
               </div>
             </div>

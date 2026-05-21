@@ -37,12 +37,13 @@ const OBJECTIVE_AREA_KEY = 'colourmap:objective-area-id';
 const MISSIONS_KEY = 'colourmap:today-objectives';
 const PUSH_KEY = 'colourmap:checkin-todos';
 const LIFE_CATS_KEY = 'colourmap:life-categories';
+const CMAP_KEY = 'colourmap:cmap-data';
 
-const PAPER = 'rgba(255,255,255,0.04)';
-const LINE = 'rgba(196,160,96,0.2)';
-const LINE_SOFT = 'rgba(196,160,96,0.12)';
-const BROWN = 'var(--light-pill-text, var(--light-surface-text, #5C3018))';
-const MUTED = 'var(--light-pill-muted, var(--light-surface-muted, #8A6A4A))';
+const PAPER = 'color-mix(in srgb, var(--card) 72%, transparent)';
+const LINE = 'color-mix(in srgb, var(--foreground) 18%, transparent)';
+const LINE_SOFT = 'color-mix(in srgb, var(--foreground) 12%, transparent)';
+const BROWN = 'var(--foreground)';
+const MUTED = 'var(--muted-foreground)';
 const OCHRE = '#C4A060';
 
 function readJson<T>(key: string, fallback: T): T {
@@ -60,13 +61,25 @@ function loadLifeAreas(): LifeArea[] {
     LIFE_CATS_KEY,
     [],
   );
-  if (stored.length > 0) {
-    return stored.map((area, index) => ({
-      id: area.id,
-      name: area.name ?? area.title ?? `Area ${index + 1}`,
-      color: area.color ?? OCHRE,
-    }));
+  const lifeAreas = stored.map((area, index) => ({
+    id: area.id,
+    name: area.name ?? area.title ?? `Area ${index + 1}`,
+    color: area.color ?? OCHRE,
+  }));
+  const cmap = readJson<{ channels?: Array<{ id: string; title?: string; color?: string }> }>(
+    CMAP_KEY,
+    {},
+  );
+  const cmapAreas = (cmap.channels ?? []).map((area, index) => ({
+    id: area.id,
+    name: area.title ?? `Area ${index + 1}`,
+    color: area.color ?? OCHRE,
+  }));
+  const merged = [...lifeAreas];
+  for (const area of cmapAreas) {
+    if (!merged.some((candidate) => candidate.id === area.id)) merged.push(area);
   }
+  if (merged.length > 0) return merged;
   return DOING_CATEGORIES.map((area) => ({
     id: area.id,
     name: area.label,
@@ -355,35 +368,41 @@ function MissionRow({ item, areas }: { item: MissionViewItem; areas: LifeArea[] 
               alignItems: 'center',
             }}
           >
-            <span
-              style={{
-                border: `1px solid ${accent}42`,
-                borderRadius: 999,
-                color: BROWN,
-                padding: '2px 7px',
-                fontFamily: 'var(--font-serif)',
-                fontSize: 10,
-                fontWeight: 800,
-                letterSpacing: '0.08em',
-              }}
-            >
-              {item.source === 'current' ? 'Current' : item.source === 'push' ? 'Later' : 'Today'}
-            </span>
+            {item.source !== 'daily' && (
+              <span
+                style={{
+                  border: `1px solid ${accent}42`,
+                  borderRadius: 999,
+                  color: BROWN,
+                  padding: '2px 7px',
+                  fontFamily: 'var(--font-serif)',
+                  fontSize: 10,
+                  fontWeight: 800,
+                  letterSpacing: '0.08em',
+                }}
+              >
+                {item.source === 'current' ? 'Current' : 'Later'}
+              </span>
+            )}
             <button
               type="button"
               onClick={() => setAreaOpen((open) => !open)}
               style={{
                 border: `1px solid ${area ? `${area.color}42` : LINE_SOFT}`,
-                borderRadius: 999,
-                background: area ? `${area.color}10` : 'transparent',
+                borderRadius: 8,
+                background: area
+                  ? `color-mix(in srgb, ${area.color} 12%, var(--card))`
+                  : 'color-mix(in srgb, var(--card) 72%, transparent)',
                 color: area ? BROWN : MUTED,
-                padding: '2px 7px',
+                padding: '7px 10px',
                 fontFamily: 'var(--font-serif)',
-                fontSize: 10,
+                fontSize: 13,
+                fontWeight: 900,
+                lineHeight: 1.1,
                 cursor: 'pointer',
               }}
             >
-              {area ? area.name : '+ area'}
+              {area ? area.name : 'Add area'}
             </button>
             {subtasks.length > 0 && (
               <span style={{ color: MUTED, fontFamily: 'var(--font-serif)', fontSize: 10 }}>
@@ -539,6 +558,7 @@ function MissionZone({
 
 function MissionControlFormatTwo() {
   const [version, setVersion] = useState(0);
+  const [showEmptyAreas, setShowEmptyAreas] = useState(false);
 
   useEffect(() => {
     function refresh() {
@@ -582,6 +602,8 @@ function MissionControlFormatTwo() {
   const today = active.filter((item) => item.source === 'current' || item.source === 'daily');
   const later = active.filter((item) => item.source === 'push');
   const unsorted = active.filter((item) => !getItemArea(item, areas, item.source));
+  const activeAreaGroups = byArea.filter(({ items }) => items.length > 0);
+  const emptyAreaGroups = byArea.filter(({ items }) => items.length === 0);
 
   return (
     <div style={{ display: 'grid', gap: 12, paddingBottom: 32 }}>
@@ -690,7 +712,7 @@ function MissionControlFormatTwo() {
           style={{
             color: BROWN,
             fontFamily: 'var(--font-serif)',
-            fontSize: 12,
+            fontSize: 15,
             fontWeight: 900,
             letterSpacing: '0.14em',
             textTransform: 'uppercase',
@@ -699,45 +721,123 @@ function MissionControlFormatTwo() {
         >
           Life Areas
         </div>
-        <div style={{ display: 'grid', gap: 8 }}>
-          {byArea.map(({ area, items }) => (
+        <div style={{ display: 'grid', gap: 10 }}>
+          {activeAreaGroups.length === 0 && (
+            <div
+              style={{
+                border: `1px dashed ${LINE}`,
+                borderRadius: 8,
+                padding: '12px 10px',
+                color: MUTED,
+                fontFamily: 'var(--font-serif)',
+                fontSize: 13,
+                lineHeight: 1.35,
+              }}
+            >
+              No active area yet. Link a mission to one area so this stays focused.
+            </div>
+          )}
+
+          {activeAreaGroups.map(({ area, items }) => (
             <div
               key={area.id}
               style={{
-                border: `1px solid ${items.length > 0 ? `${area.color}35` : LINE_SOFT}`,
-                borderRadius: 7,
-                padding: 8,
-                background: items.length > 0 ? `${area.color}08` : 'transparent',
+                border: `1px solid ${area.color}55`,
+                borderLeft: `5px solid ${area.color}`,
+                borderRadius: 8,
+                padding: 10,
+                background: `linear-gradient(135deg, ${area.color}14, rgba(255,255,255,0.045))`,
               }}
             >
-              <div style={{ display: 'flex', justifyContent: 'space-between', gap: 8 }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', gap: 10 }}>
                 <span
                   style={{
                     color: BROWN,
                     fontFamily: 'var(--font-serif)',
-                    fontSize: 12,
+                    fontSize: 16,
                     fontWeight: 900,
+                    lineHeight: 1.12,
+                    overflowWrap: 'anywhere',
                   }}
                 >
                   {area.name}
                 </span>
-                <span style={{ color: MUTED, fontFamily: 'var(--font-serif)', fontSize: 11 }}>
+                <span
+                  style={{
+                    color: BROWN,
+                    fontFamily: 'var(--font-serif)',
+                    fontSize: 13,
+                    fontWeight: 900,
+                    minWidth: 24,
+                    textAlign: 'right',
+                  }}
+                >
                   {items.length}
                 </span>
               </div>
-              {items.length > 0 && (
-                <div style={{ display: 'grid', gap: 6, marginTop: 7 }}>
-                  {items.slice(0, 3).map((item) => (
-                    <MissionRow
-                      key={`area-${area.id}-${item.source}-${item.id}`}
-                      item={item}
-                      areas={areas}
-                    />
-                  ))}
-                </div>
-              )}
+              <div style={{ display: 'grid', gap: 6, marginTop: 9 }}>
+                {items.slice(0, 3).map((item) => (
+                  <MissionRow
+                    key={`area-${area.id}-${item.source}-${item.id}`}
+                    item={item}
+                    areas={areas}
+                  />
+                ))}
+              </div>
             </div>
           ))}
+          {emptyAreaGroups.length > 0 && (
+            <button
+              type="button"
+              onClick={() => setShowEmptyAreas((open) => !open)}
+              style={{
+                border: `1px solid ${LINE_SOFT}`,
+                borderRadius: 8,
+                background: 'rgba(255,255,255,0.035)',
+                color: MUTED,
+                padding: '10px 11px',
+                fontFamily: 'var(--font-serif)',
+                fontSize: 13,
+                fontWeight: 800,
+                textAlign: 'left',
+                cursor: 'pointer',
+              }}
+            >
+              {showEmptyAreas ? 'Hide' : 'Show'} empty areas ({emptyAreaGroups.length})
+            </button>
+          )}
+          {showEmptyAreas &&
+            emptyAreaGroups.map(({ area }) => (
+              <div
+                key={area.id}
+                style={{
+                  border: `1px solid ${LINE_SOFT}`,
+                  borderLeft: `4px solid ${area.color}88`,
+                  borderRadius: 8,
+                  padding: '9px 10px',
+                  background: 'rgba(255,255,255,0.02)',
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  gap: 10,
+                }}
+              >
+                <span
+                  style={{
+                    color: BROWN,
+                    fontFamily: 'var(--font-serif)',
+                    fontSize: 15,
+                    fontWeight: 900,
+                    lineHeight: 1.15,
+                    overflowWrap: 'anywhere',
+                  }}
+                >
+                  {area.name}
+                </span>
+                <span style={{ color: MUTED, fontFamily: 'var(--font-serif)', fontSize: 12 }}>
+                  0
+                </span>
+              </div>
+            ))}
           {unsorted.length > 0 && (
             <div style={{ border: `1px dashed ${LINE}`, borderRadius: 7, padding: 8 }}>
               <div
@@ -853,8 +953,8 @@ export default function MissionDesignSwitcher({
 
   return (
     <div style={{ display: 'grid', gap: 8 }}>
-      <MissionDesignPill value={format} onChange={changeFormat} />
       {beforeContent}
+      <MissionDesignPill value={format} onChange={changeFormat} />
       {format === 'one' ? (
         <div style={{ marginTop: 8 }}>
           <MissionTasksPill />

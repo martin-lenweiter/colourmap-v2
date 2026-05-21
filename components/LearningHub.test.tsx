@@ -31,7 +31,9 @@ describe('LearningHub', () => {
     expect(screen.getByText('Thich Nhat Hanh & Peace in Action')).toBeDefined();
     expect(screen.getByText('Gandhi & The Power of Small Things')).toBeDefined();
     expect(screen.getByText('Clear & Allen: Organisation As Freedom')).toBeDefined();
+    expect(screen.getByText('Entertainment')).toBeDefined();
     expect(screen.getByText('Pineapple Planet')).toBeDefined();
+    expect(screen.getByText('Colourmap Vision Comic')).toBeDefined();
     expect(screen.getByRole('button', { name: /Living Atlas/i })).toBeDefined();
     expect(screen.getByRole('button', { name: /Progress Roads/i })).toBeDefined();
     expect(screen.queryByRole('button', { name: 'atlas' })).toBeNull();
@@ -54,6 +56,9 @@ describe('LearningHub', () => {
       hubText.lastIndexOf('Intelligence'),
     );
     expect(hubText.indexOf('Pineapple Planet')).toBeLessThan(hubText.indexOf('Personality Map'));
+    expect(hubText.indexOf('Colourmap Vision Comic')).toBeLessThan(
+      hubText.indexOf('Personality Map'),
+    );
 
     expect(screen.queryByRole('button', { name: 'images' })).toBeNull();
     expect(screen.getByText('image paths')).toBeDefined();
@@ -70,6 +75,19 @@ describe('LearningHub', () => {
     expect(screen.getByRole('button', { name: 'Next comic page' })).toBeDefined();
     const panelImage = container.querySelector('img[src*="/variants/minimal/panel-0.png"]');
     expect(panelImage).not.toBeNull();
+  }, 30000);
+
+  it('opens the Colourmap Vision Comic from the entertainment lane', () => {
+    render(<LearningHub onClose={vi.fn()} />);
+
+    const visionComic = screen.getByText('Colourmap Vision Comic').closest('button');
+    expect(visionComic).not.toBeNull();
+    fireEvent.click(visionComic as HTMLButtonElement);
+
+    fireEvent.click(screen.getByRole('button', { name: /Begin Colourmap Vision Comic/i }));
+    expect(screen.getByText('A living map, not a pile')).toBeDefined();
+    expect(screen.getByText(/It is a living map of knowledge/i)).toBeDefined();
+    expect(screen.getByRole('button', { name: 'Next' })).toBeDefined();
   });
 
   it('opens the Carl Jung comic book', () => {

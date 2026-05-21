@@ -7,8 +7,8 @@ import { haptic } from '@/lib/haptics';
 type Tab = 'emotion' | 'mission' | 'progress';
 
 const TABS: { id: Tab; label: string }[] = [
-  { id: 'emotion', label: 'Emotion' },
-  { id: 'mission', label: 'Mission' },
+  { id: 'emotion', label: 'Emotions' },
+  { id: 'mission', label: 'Missions' },
   { id: 'progress', label: 'Progress' },
 ];
 

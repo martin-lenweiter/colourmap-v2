@@ -70,7 +70,6 @@ describe('MissionDesignSwitcher', () => {
 
     expect(screen.getAllByText('Write investor story').length).toBeGreaterThan(0);
     expect(screen.getAllByText('Work').length).toBeGreaterThan(0);
-    expect(screen.getAllByText('Today').length).toBeGreaterThan(0);
     expect(screen.queryByText('Pro')).toBeNull();
     expect(screen.queryByText('Real')).toBeNull();
   });

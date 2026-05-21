@@ -172,12 +172,15 @@ The variants are kept as exploration scaffolding — "for now" — so the design
 
 Iteration through many variants for the same axis revealed there is no single perfect axis for "how am I." The product ships with **balance** as the default frame because the centre is the answer (equilibrium), not just a midpoint, and both extremes are valid contexts (rest is not failure, focus is not failure). The variants stay available behind one toggle so the visual language can keep evolving without collapsing back into a flat form. The pillbox layout makes the check-in feel like distinct cards rather than a long form, and the click-to-expand notes on each daily objective preserve the "clarity-not-clutter" rule.
 
-## Day Page Shell — Check in / Overview
+## Day Page Shell — Emotions / Missions / Progress
 
-The top-level tabs on `/day` are `Check in` and `Overview`, not the old `Caring / Doing / Sharing`.
+The top-level tabs on `/day` remain `Emotions`, `Missions`, and `Progress`, not the old `Caring / Doing / Sharing`.
 
-- **Check in** — daily pulse. Holds box 1 only (`FeelingCheckInCard` — balance-arc variant picker + the three pillboxes: Current Objective, Other Missions, Logbook & Emotions). Kept deliberately narrow so the daily register feels like a single focused surface.
-- **Overview** — wide-angle map. Holds a new pre-AI synthesis surface (`OverviewSections`) at the top, then box 2 (`LifeCategories` — the backbone of named life areas, their targets, and their logbook), then box 3 (`CompassCarousel` — Caring / Doing / Sharing compasses with the two-question Emotions reflective card), then a design-exploration surface (`OverviewVisualDemos`) showing five candidate renderings of flow-and-stuck-over-time. Different altitude from the check-in: step-back scanning rather than daily pulse.
+- **Emotions** — daily pulse and inner weather. Holds the emotional register, inner work, circles, and emotional insight. It should not carry a generic `Education` pill; education remains reachable from the global navigation and contextual learning surfaces.
+- **Emotions** should not show a `Focus` pill/tracker. Focus can return later in a better lane, but it should not compete with the emotional register.
+- **Missions** — active daily body/missions lane. Holds practical daily movement, rituals, and embodied mission surfaces. It should not carry a generic `Education` pill.
+- **Progress** — wide-angle pattern lane. Holds overview, modes, and behaviour-pattern surfaces.
+- The `Chapter` panel label in Progress can be renamed by the user without changing the underlying chapter text fields.
 
 ### OverviewSections — compressed three-answer surface (pre-AI)
 

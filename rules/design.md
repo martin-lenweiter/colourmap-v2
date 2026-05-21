@@ -24,6 +24,8 @@ Light/pale pills and paper chips must use sepia ink (`#5C3018`, exposed as `--li
 
 One font family per project. Scale: 12 / 14 / 16 / 20 / 24 / 32 / 48. Line-height 1.5 for body, 1.2 for headings. Max line length 65ch.
 
+**Readable by default.** Critical UI labels, controls, area names, tab names, and action labels must be clear and readable in both light and dark themes. Do not use tiny typography for important navigation or organisation controls. Area/category labels should use at least 13px, with stronger weight and dark/light theme-aware foreground text. Dots and colors can support recognition, but text must carry the meaning.
+
 ## Color
 
 60-30-10 rule: 60% neutral background, 30% secondary, 10% accent. Max 3 brand colors + neutrals. Contrast ratio ≥ 4.5:1 for all text.

@@ -70,6 +70,16 @@ Today / Later / Life Areas, with blocker and next-step context inside each missi
 In Paper, Golden, and light Beige design modes, all mission labels and pills must use dark ink text on
 light surfaces. Ochre/gold text is reserved for dark panels where it has enough contrast.
 
+Mission area names and area controls must be readable, not mini chips. Use clear labels such as
+`Add area`, `Vertical`, and `Horizontal`; avoid tiny symbolic controls, unlabeled dots, or `+ area`
+microcopy for important organisation actions. Area text must adapt to light and dark backgrounds
+using theme foreground variables, with dots/color used as support rather than the only identifier.
+
+User-created areas are not only containers for compartments. Each area must also allow the user to
+add missions directly inside that area, because the point of Areas is to ask: what do I have to do
+in this part of life? Area-created missions should use the normal mission storage shape and carry an
+area tag/category id so Mission Control can group them with the rest of the user's active work.
+
 ### Product Shape
 
 Mission Control should have five zones:

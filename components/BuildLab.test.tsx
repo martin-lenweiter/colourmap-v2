@@ -208,9 +208,12 @@ describe('BuildLab', () => {
 
     expect(screen.getAllByText('Make the geometry sun glisten while I speak.').length).toBe(1);
     expect(screen.getByText('Mission Sun')).toBeDefined();
-    expect(screen.getByRole('button', { name: 'Orbit' })).toBeDefined();
-    expect(screen.getByRole('button', { name: 'Flare' })).toBeDefined();
-    expect(screen.getByRole('button', { name: 'Scatter' })).toBeDefined();
+    expect(screen.queryByRole('button', { name: 'Orbit' })).toBeNull();
+    expect(screen.queryByRole('button', { name: 'Flare' })).toBeNull();
+    expect(screen.queryByRole('button', { name: 'Scatter' })).toBeNull();
+    expect(screen.queryByRole('button', { name: 'Cell' })).toBeNull();
+    expect(screen.queryByRole('button', { name: 'Ripple' })).toBeNull();
+    expect(screen.getByRole('button', { name: 'Speak with mission sun' })).toBeDefined();
   });
 
   it('switches Build Lab work channels so mission memory is not one mixed chat', async () => {
