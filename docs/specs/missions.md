@@ -80,12 +80,16 @@ add missions directly inside that area, because the point of Areas is to ask: wh
 in this part of life? Area-created missions should use the normal mission storage shape and carry an
 area tag/category id so Mission Control can group them with the rest of the user's active work.
 
+Daily Rituals text must stay readable in dark palettes. Ritual names, section labels, add controls,
+counters, and quotes use the same golden/ochre text family as the `Daily Rituals` title rather than
+faded muted typography.
+
 ### Product Shape
 
 Mission Control should have five zones:
 
 1. **Command Line** — one fast input for dumping tasks, worries, plans, or vague obligations. The user should not have to categorize before capturing.
-2. **Today Lane** — the few things that matter today. This is not a giant todo list; it is the current operating lane.
+2. **Daily Focus** — the few things that matter today. This is not a giant todo list; it is the current operating lane.
 3. **Life Fronts** — missions grouped by life category such as Body, Organisation, Music, Work, Social, Money, Home. These are the stable areas of life.
 4. **Road View** — a visual sequence from current mission to next steps to later objectives. It should show movement, not just a list.
 5. **AI Organiser** — a scoped assistant that can read the mission dump and suggest grouping, next steps, blockers, and category links. Suggestions are never applied silently.

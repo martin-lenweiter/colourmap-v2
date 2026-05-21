@@ -683,7 +683,7 @@ function MissionControlFormatTwo() {
       <MissionCapture />
 
       <MissionZone
-        title="Today lane"
+        title="Daily Focus"
         detail="The few items in the active operating lane."
         color={BROWN}
         items={today}
