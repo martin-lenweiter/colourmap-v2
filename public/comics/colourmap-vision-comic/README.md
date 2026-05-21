@@ -5,6 +5,9 @@ Raster panels for the Colourmap Vision Comic live here as compressed WebP files:
 - `panel-0.webp` - Colourmap mission overview comic page.
 - `panel-1.webp` - Warm paper six-panel Colourmap design comic page.
 - `panel-2.webp` - Dark library/interface six-panel Colourmap design comic page.
+- `panel-3.webp` - Colourmap design comic page.
+- `panel-4.webp` - Colourmap design comic page.
+- `panel-5.webp` - Colourmap design comic page.
 
 Keep these files lightweight for weak mobile connections:
 
