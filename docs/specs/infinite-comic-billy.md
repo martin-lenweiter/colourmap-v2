@@ -889,6 +889,65 @@ The phone experience should support:
 - left/right/up/down choice moments
 - future AI-generated branches inside a coherent universe bible
 
+### Hard Choices And Moral Dilemmas
+
+The comic should eventually feel closer to a story-rich game than a linear book. The inspiration is
+meaningful narrative choice: Fallout 3, The Witcher 3, South Park, Rick and Morty, and Adventure Time
+translated into Billy's absurd but deep world.
+
+The user should face choices that pull in different directions:
+
+- honesty vs power
+- comfort vs truth
+- friendship vs ambition
+- loyalty vs justice
+- pleasure vs presence
+- safety vs growth
+- mercy vs revenge
+- scarcity control vs shared abundance
+- joining Crocodile Corp vs resisting it
+- saving one character vs protecting a larger system
+
+Some routes should be wrong paths. Not morally fixed forever, but routes that create consequences,
+strange detours, guilt, power, loss, or later repair. The user should be able to try honest,
+boring, bad, rich, poor, relaxed, corrupted, successful, miserable, and redemptive lifelines.
+
+The funniest choices can be random, over-intellectual, or absurd when the context supports it:
+
+- Did you read Nietzsche's *Beyond Good and Evil* before signing this contract?
+- Did you ever listen carefully to what the Rolling Stones are saying in that song?
+- Solve this calculus problem to open the emotional door.
+- Answer a deep accounting question about Juice depreciation.
+- Explain whether scarcity is a balance-sheet event or a spiritual tragedy.
+
+These should not become constant gimmicks. They are tools for surprise: a deep philosophical debate,
+a ridiculous multiple-choice answer, or a user-written response can suddenly change the tone of a
+scene.
+
+The system should support:
+
+- 2-option moral dilemmas
+- 3-5 answer polls
+- write-in responses
+- long dialogue debates where two philosophical positions compete
+- later aggregate graphs showing what other readers chose
+- routes where earlier answers change later text
+
+### Dialogue Debates
+
+Some choice points should become two-position debates. Billy, Crocodile Jack, a philosopher-fruit, a
+scientist, or a street character can present opposed views.
+
+Example:
+
+```text
+Jack: The Juice must be controlled or everyone wastes it.
+Worker: The Juice dies when it becomes permission.
+```
+
+The user chooses who to challenge, who to trust, or which question to ask. The answer can shift the
+route, unlock a scene, or reveal a character's hidden motive.
+
 Reflection is optional. It can be fun, but the core loop should not require the user to journal. The
 comic should work when the user only wants to look, laugh, choose, and keep moving.
 
@@ -1191,6 +1250,175 @@ Meaning should evolve.
 
 This can become one of the most fun parts of the system. The reader may recognize an image from
 earlier, but the text now knows what they have lived through with Billy.
+
+## Reusable Archetypal Scene Library
+
+The comic should deliberately build reusable emotional plates that can work across multiple
+timelines. These are not filler. They are archetypal scenes that carry a feeling and can later be
+reused with different text depending on whether Billy is honest, corrupted, successful, poor,
+relaxed, powerful, or lost.
+
+Reusable success/failure plates:
+
+- Billy in a power pose with graphs rising in the background
+- Billy with all graphs falling
+- Billy surrounded by full Juice bottles
+- Billy surrounded by empty Juice bottles
+- Billy juiced up with glowing Powerjuice energy
+- Billy rich, stylish, cigar-like prop, golden Juice bottle, absurd confidence
+- Billy dancing the Pineapple Boogie as a success signal
+- Billy alone after success, still holding an empty cup
+- Billy on a plain paper background receiving a medal, bill, warning, or strange invitation
+- Billy watching one bottle roll away
+- Billy at a desk where every chart goes up but the cup stays empty
+
+Each reusable image needs a known role so it can be retrieved later:
+
+```text
+scene family: success / failure / temptation / power / loneliness / repair / travel / fight
+timeline use: honest / bad / boring / rich / poor / underworld / office / love / bounty
+reusable symbols: cup, graph, bottle, cigar prop, dance, spotlight, window, shadow
+```
+
+Not every page should be dense. The visual rhythm should alternate between full cinematic pages,
+sober relaxing pages, symbolic archetypal plates, Jungian inner-world images, light cartoon beats,
+and silent 4-5 image process sequences. The comic should stay a light read even when the underlying
+architecture becomes deep.
+
+## Multiverse Echoes And Background Clues
+
+The world should constantly plant echoes of future and parallel arcs in backgrounds. These should be
+small enough not to overload the main scene, but meaningful for readers who pay attention.
+
+Examples:
+
+- posters about the Desert of Loneliness
+- postcards from space stations
+- pineapple astronaut photos
+- rocket launches or spaceships in the far sky
+- blueprints for new pineapple robots
+- blueprints for rocketships
+- wanted posters for underworld characters
+- underworld fighters hidden in crowds
+- bike gang symbols
+- circus flyers
+- old Juice Machine diagrams
+- hints of homeless fruit citizens in the city margins
+- symbols of hope, kindness, innocence, or greatness in dark scenes
+- corrupted good-cop characters who appear helpful in Crocodile Corp but reappear in the night
+  district
+
+Background clues should suggest larger stories, not steal attention from the current page.
+
+## Love Arc
+
+Billy should eventually fall in love with a pineapple woman. This must not be written as a generic
+prize or male fantasy. She should have her own agency, work, contradictions, route, humour, and
+relationship to The Juice.
+
+Possible roles:
+
+- engineer of the Juice Machine
+- artist in New Babylon
+- underworld fighter
+- quiet philosopher of Juice Square
+- bounty hunter rival
+- robot-rights investigator
+- circus escape artist
+- someone who understands joy better than Billy does
+
+The love arc should ask:
+
+```text
+Is love another kind of Juice?
+Can Billy receive love without turning it into a quest?
+Can success, danger, power, or productivity make him miss the person in front of him?
+```
+
+## Juice Mythology
+
+The Juice is the central symbolic substance of the world. It can be abundant, scarce, artificial,
+rare, beautiful, scientific, spiritual, political, and addictive in different arcs.
+
+Visual forms:
+
+- rivers
+- fountains
+- tiny bottles
+- lab drops
+- Powerjuice vials
+- machine cores
+- sacred cups
+- scarce canteens
+- everyday water
+- glowing graphs
+- underground pipes
+
+The design of Juice rivers, Juice machines, Juice bottles, and Juice fountains is essential. They
+should be visually memorable and consistent enough to become iconic.
+
+Philosophical questions:
+
+```text
+Is abundant Juice really good Juice?
+Is real Juice rare?
+Can a substitute become dangerous when it works just enough?
+Does Powerjuice make someone stronger, or only hungrier?
+Who owns the river when the river runs through everyone?
+```
+
+Powerjuice can function like a mythic resource: something that grants strength, status, charisma, or
+focus, but changes the user's relation to desire. It should echo Dune's spice in structural role,
+without copying its lore.
+
+## Underworld, Circus, Bounty, And Robot Mystery Arcs
+
+New Babylon needs several connected side-series.
+
+### Underworld And Fight World
+
+The underworld includes bike gangs, shady bars, neon alleys, rusty back rooms, underground fights,
+money stashes, wanted posters, corrupt cops, and strange fruit operators. Fights should be stylish,
+symbolic, and non-gory. They are about discipline, pride, fear, survival, and transformation.
+
+Some fight sequences can be almost silent: 4-5 images of preparation, impact, struggle, and victory
+or failure with very little text.
+
+### Circus Escape Arc
+
+Somewhere in New Babylon there should be a strange circus episode: funky circus characters, cool
+moustaches, oldschool weights, strong fruit performers, strange clowns, escape artists, mad lemon
+scientists, and absurd machines. This circus can be part of the underworld and help Billy escape
+from a trap.
+
+### Bounty Hunter Timeline
+
+In one timeline, Billy becomes a bounty hunter connected to the underworld. Wanted posters become
+real routes. Characters like Tiger Dude, Blake the Snake, Cobra Brothers, and other shady figures can
+appear first as background posters or crowd silhouettes, then become story targets or allies.
+
+The bounty arc should ask:
+
+```text
+When does justice become performance?
+When does chasing villains become a way to avoid yourself?
+Can Billy hunt darkness without becoming owned by it?
+```
+
+### Pineapple Robot Mystery
+
+The pineapple robots should become a deep mystery, not just background helpers. The comic should
+ask:
+
+- who builds them?
+- are they good, bad, or trapped?
+- do they understand Juice?
+- are they workers, citizens, tools, or children of New Babylon?
+- why do some robots help Billy while others enforce Crocodile Corp systems?
+
+The robot mystery can include pineapple robot blueprints, potato robots with arms and legs, robot
+repair shops, hidden robot memories, robot rights debates, and rocketship plans hidden in Crocodile
+Corp files. This can connect to future space-travel arcs.
 
 ## Symbolic Scene Library
 

@@ -471,3 +471,12 @@ Generate in batches of 10-15. After each batch:
   calm, finds a hidden spreadsheet map, follows the service corridor into the Juice pipes, and meets
   the Artificial Juice economy. This stops at a checkable choice gate before the deeper machine/core
   branch continues.
+- **Panels 61-70: Crocodile Jack side timeline.** Jack's day-in-the-life and origin glimpse:
+  piranha office, golden limousine, motorbike gang, rusty bar, underground fight night, secret lair,
+  young Jack flashback, betrayal, crew pact, and the machine-priest image. This is a contrast route
+  that later echoes back into Billy's timeline.
+- **Panels 71-80: Billy Night District and first fight.** Billy enters the underworld from his own
+  angle, meets the pineapple bounty hunter, crosses into the fight room, trains, struggles, stands
+  back up, and earns respect. Do not keep repeating the cup charm as a long-term device; the cup
+  remains central, but later arcs should vary the symbols so the story does not become visually
+  repetitive.
