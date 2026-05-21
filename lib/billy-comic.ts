@@ -651,4 +651,201 @@ export const BILLY_QUEST_PANELS: BillyPanel[] = [
       { id: 'machine', label: 'Keep following the pipes' },
     ],
   },
+  {
+    id: 'jack-piranha-office',
+    image: '/entertainment/billy/quest-for-juice/panel-61.webp',
+    title: 'Jack Before The Day Begins',
+    text: [
+      'Crocodile Jack did not wake up evil. He woke up organized.',
+      'The piranhas circled quietly, which was what Jack liked about them: honest appetite.',
+    ],
+  },
+  {
+    id: 'jack-golden-limousine',
+    image: '/entertainment/billy/quest-for-juice/panel-62.webp',
+    title: 'The Golden Ride',
+    text: [
+      'His limousine looked like wealth had learned to bite politely.',
+      'New Babylon opened around him in neon rain, pretending not to know who owned the puddles.',
+    ],
+  },
+  {
+    id: 'jack-motorbike-gang',
+    image: '/entertainment/billy/quest-for-juice/panel-63.webp',
+    title: 'Night Riders',
+    text: [
+      'Some people drive through a city. Jack arrived like a rumour with an engine.',
+      'The gang followed because everyone wants to stand near certainty, even when certainty has teeth.',
+    ],
+  },
+  {
+    id: 'jack-rusty-bar',
+    image: '/entertainment/billy/quest-for-juice/panel-64.webp',
+    title: 'The Back Room',
+    text: [
+      'In the rusty bars, Jack listened more than he spoke.',
+      'That was how he bought the city: not all at once, just one secret at a time.',
+    ],
+  },
+  {
+    id: 'jack-fight-night',
+    image: '/entertainment/billy/quest-for-juice/panel-65.webp',
+    title: 'Fight Night',
+    text: [
+      'Below the polite streets, fruits learned what their fear weighed.',
+      'Jack watched Billy struggle in a timeline Billy had not reached yet.',
+    ],
+    choices: [
+      { id: 'bet', label: 'Bet on the fighter' },
+      { id: 'help', label: 'Help the fighter' },
+      { id: 'watch', label: 'Watch what Jack watches' },
+    ],
+  },
+  {
+    id: 'jack-secret-lair',
+    image: '/entertainment/billy/quest-for-juice/panel-66.webp',
+    title: 'The Lair Under Progress',
+    text: [
+      'Jack kept maps, valves, money, engines, and old promises in the same room.',
+      'A city is easier to steer when every road, debt, and desire has a pin in it.',
+    ],
+  },
+  {
+    id: 'young-jack-alley',
+    image: '/entertainment/billy/quest-for-juice/panel-67.webp',
+    title: 'Young Jack',
+    text: [
+      'Before the tower, before the limousine, Jack was just a hungry shape in a wet alley.',
+      'He did not want everything yet. He only wanted enough to never feel small again.',
+    ],
+  },
+  {
+    id: 'young-jack-betrayal',
+    image: '/entertainment/billy/quest-for-juice/panel-68.webp',
+    title: 'The First Smile',
+    text: [
+      'The first time they took the Juice from him, Jack did not shout.',
+      'He smiled. That was when the room became afraid.',
+    ],
+  },
+  {
+    id: 'young-jack-pact',
+    image: '/entertainment/billy/quest-for-juice/panel-69.webp',
+    title: 'The Pact Under The Pipes',
+    text: [
+      'Under the highways of Juice, Jack found others who were tired of asking permission.',
+      'They did not call it corruption. They called it a crew.',
+    ],
+  },
+  {
+    id: 'jack-machine-priest',
+    image: '/entertainment/billy/quest-for-juice/panel-70.webp',
+    title: 'The Machine And The Thief',
+    text: [
+      'At night, Jack returned to the machine alone.',
+      'He looked at The Juice like a thief, a priest, and a child who still remembered thirst.',
+    ],
+    medal: 'Saw Jack From The Inside',
+  },
+  {
+    id: 'night-district-entry',
+    image: '/entertainment/billy/quest-for-juice/panel-71.webp',
+    title: 'Night District',
+    text: [
+      'Billy entered the part of New Babylon where the streetlights looked like they knew too much.',
+      'A friendly cop smiled at him with the exact warmth of a closed door.',
+    ],
+  },
+  {
+    id: 'wanted-wall',
+    image: '/entertainment/billy/quest-for-juice/panel-72.webp',
+    title: 'The Wall Of Almost Trouble',
+    text: [
+      'The wall showed faces Billy did not know yet: tigers, snakes, lemons, shadows, old debts.',
+      'Every poster looked like a future pretending to be paper.',
+    ],
+  },
+  {
+    id: 'pineapple-bounty-hunter',
+    image: '/entertainment/billy/quest-for-juice/panel-73.webp',
+    title: 'The Bounty Hunter',
+    text: [
+      'She stepped out of the alley like she had already read the next three chapters.',
+      'Billy tried to look ready. His face submitted a complaint.',
+    ],
+    choices: [
+      { id: 'trust', label: 'Trust her lead' },
+      { id: 'question', label: 'Ask why she helps' },
+      { id: 'leave', label: 'Walk away from the night road' },
+    ],
+  },
+  {
+    id: 'underworld-threshold',
+    image: '/entertainment/billy/quest-for-juice/panel-74.webp',
+    title: 'The Door Below The Bar',
+    text: [
+      'The entrance did not say danger. It said opportunity in a leather jacket.',
+      'Some doors open because you are brave. Some open because you look useful.',
+    ],
+  },
+  {
+    id: 'hands-wrapped',
+    image: '/entertainment/billy/quest-for-juice/panel-75.webp',
+    title: 'Wrapped Hands',
+    text: [
+      'The bounty hunter wrapped Billy’s hands without making it heroic.',
+      'Courage, she seemed to imply, is mostly preparation plus one very bad idea.',
+    ],
+  },
+  {
+    id: 'training-montage',
+    image: '/entertainment/billy/quest-for-juice/panel-76.webp',
+    title: 'Training Without Dignity',
+    text: [
+      'Billy trained. The rope won. The bag won. Gravity had several excellent rounds.',
+      'Still, something in him began to stand straighter.',
+    ],
+  },
+  {
+    id: 'first-fight-faceoff',
+    image: '/entertainment/billy/quest-for-juice/panel-77.webp',
+    title: 'First Fight',
+    text: [
+      'His opponent was huge, kind-eyed, and built like a potato with legal representation.',
+      'Billy realized fear is louder when the other person is not even evil.',
+    ],
+  },
+  {
+    id: 'fight-setback',
+    image: '/entertainment/billy/quest-for-juice/panel-78.webp',
+    title: 'The Floor Explains Reality',
+    text: [
+      'The floor met Billy with total honesty.',
+      'Jack watched from above. The bounty hunter did not rescue him. This was either cruel or exactly the lesson.',
+    ],
+  },
+  {
+    id: 'stand-back-up',
+    image: '/entertainment/billy/quest-for-juice/panel-79.webp',
+    title: 'Stand Back Up',
+    text: [
+      'Billy stood again, not because he had become strong, but because he had not finished being afraid.',
+      'For the first time, Jack leaned forward.',
+    ],
+    choices: [
+      { id: 'win', label: 'Fight to win' },
+      { id: 'respect', label: 'Fight with respect' },
+      { id: 'refuse', label: 'Refuse the crowd’s hunger' },
+    ],
+  },
+  {
+    id: 'fight-respect',
+    image: '/entertainment/billy/quest-for-juice/panel-80.webp',
+    title: 'Respect In The Ring',
+    text: [
+      'The fight ended without a villain.',
+      'Billy had not found The Juice. He had found one room where fear could turn into respect.',
+    ],
+    medal: 'First Ring Respect',
+  },
 ];

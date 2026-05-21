@@ -167,7 +167,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
       {navPosition === 'bottom' && (
         <div
           className="fixed bottom-0 left-0 right-0 border-t border-border"
-          style={{ background: 'var(--secondary)', zIndex: 100 }}
+          style={{ background: 'var(--secondary)', zIndex: 1000 }}
         >
           <NavLinks />
         </div>

@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { PROGRAMS, type Program } from '@/lib/programs';
 import ComicProgram from './ComicProgram';
 import LearningProgram from './LearningProgram';
@@ -40,6 +40,15 @@ const COMIC_PROGRAMS = new Set([
 const EDUCATION_IMAGES = ['/education-1.png', '/education-2.png', '/education-3.png'];
 const EDUCATION_WORLDS = [
   {
+    href: '/entertainment',
+    title: 'Pineapple Planet',
+    label: 'Interactive comic',
+    body: 'A funny, reflective quest for The Juice through symbolic worlds.',
+    tint: '#D39A3D',
+    kind: 'link',
+    cover: '/entertainment/billy/quest-for-juice/panel-13.webp',
+  },
+  {
     href: '#personality-map',
     title: 'Personality Map',
     label: 'Self-understanding test',
@@ -65,15 +74,6 @@ const EDUCATION_WORLDS = [
     tint: '#6888B0',
     kind: 'link',
     cover: '/education-worlds/progress-roads-cover.png',
-  },
-  {
-    href: '/entertainment',
-    title: 'Billy Pineapple',
-    label: 'Interactive comic',
-    body: 'A funny, reflective quest for The Juice through symbolic worlds.',
-    tint: '#D39A3D',
-    kind: 'link',
-    cover: '/entertainment/billy/quest-for-juice/panel-13.webp',
   },
 ];
 
@@ -102,8 +102,8 @@ const GENERATED_LAYERED_PANEL_COUNTS: Record<string, number> = {
 };
 const LANDSCAPE_GENERATED_COVERS = new Set(['thich-nhat-hanh']);
 const PROGRAM_COVER_PANEL: Record<string, number> = {
-  'room-to-breathe': 4,
-  'emotional-intelligence': 3,
+  'room-to-breathe': 2,
+  'emotional-intelligence': 5,
   'self-talk': 2,
   wellbeing: 3,
   'hope-energy': 5,
@@ -210,7 +210,7 @@ const GROUPS: {
   },
   {
     label: 'World Guides',
-    keys: ['carl-jung', 'paulo-freire', 'thich-nhat-hanh', 'gandhi'],
+    keys: ['carl-jung', 'gandhi', 'clear-allen', 'paulo-freire', 'thich-nhat-hanh'],
     tint: '#B99367',
     format: 'guides',
   },
@@ -226,21 +226,19 @@ const GROUPS: {
       'identity-becoming',
     ],
     tint: '#6888B0',
+    format: 'guides',
   },
   {
     label: 'Systems',
-    keys: [
-      'clear-allen',
-      'organisational-intelligence',
-      'collective-evolution',
-      'parenting-patterns',
-    ],
+    keys: ['organisational-intelligence', 'collective-evolution', 'parenting-patterns'],
     tint: '#6B7A50',
+    format: 'guides',
   },
   {
     label: 'Intelligence',
     keys: ['artificial-intelligence', 'ai-future'],
     tint: '#7A8898',
+    format: 'guides',
   },
 ];
 
@@ -250,6 +248,21 @@ function getProgress(program: Program): number {
     if (saved !== null) return Math.min(Number(saved) + 1, program.segments.length);
   } catch {}
   return 0;
+}
+
+function getProgramCoverSrc(program: Program): string {
+  const coverPanel = PROGRAM_COVER_PANEL[program.key] ?? 0;
+  const generatedCount = GENERATED_LAYERED_PANEL_COUNTS[program.key];
+  if (generatedCount) {
+    return `/comics/${program.key}/generated/panel-${coverPanel % generatedCount}.png`;
+  }
+  if (POSITIVE_OVERLAY_PROGRAMS.has(program.key)) {
+    return `/comics/${program.key}/variants/positive-overlay/panel-${coverPanel}.png`;
+  }
+  if (COMIC_PROGRAMS.has(program.key)) {
+    return `/comics/${program.key}/panel-${coverPanel}.${JPG_PANEL_PROGRAMS.has(program.key) ? 'jpg' : 'png'}`;
+  }
+  return EDUCATION_IMAGES[0];
 }
 
 /* ── Dynamic opening based on today's emotion ───────────────── */
@@ -445,17 +458,10 @@ function ProgramImageCard({
   const progress = getProgress(program);
   const total = program.segments.length;
   const started = progress > 0;
-  const coverPanel = PROGRAM_COVER_PANEL[program.key] ?? 0;
   const generatedCount = GENERATED_LAYERED_PANEL_COUNTS[program.key];
   const isPortraitGenerated =
     Boolean(generatedCount) && !LANDSCAPE_GENERATED_COVERS.has(program.key);
-  const imageSrc = generatedCount
-    ? `/comics/${program.key}/generated/panel-${coverPanel % generatedCount}.png`
-    : POSITIVE_OVERLAY_PROGRAMS.has(program.key)
-      ? `/comics/${program.key}/variants/positive-overlay/panel-${coverPanel}.png`
-      : COMIC_PROGRAMS.has(program.key)
-        ? `/comics/${program.key}/panel-${coverPanel}.${JPG_PANEL_PROGRAMS.has(program.key) ? 'jpg' : 'png'}`
-        : EDUCATION_IMAGES[0];
+  const imageSrc = getProgramCoverSrc(program);
 
   return (
     <button
@@ -565,9 +571,7 @@ function GuideProgramCard({
   const progress = getProgress(program);
   const total = program.segments.length;
   const started = progress > 0;
-  const coverPanel = PROGRAM_COVER_PANEL[program.key] ?? 0;
-  const generatedCount = GENERATED_LAYERED_PANEL_COUNTS[program.key] ?? 1;
-  const imageSrc = `/comics/${program.key}/generated/panel-${coverPanel % generatedCount}.png`;
+  const imageSrc = getProgramCoverSrc(program);
   const title = program.domain;
   const subtitle = '';
 
@@ -663,12 +667,11 @@ function EducationWorldCard({
       onClick={openWorld}
       style={{
         flexShrink: 0,
-        width: 206,
-        minHeight: 172,
+        width: 142,
         display: 'flex',
         flexDirection: 'column',
-        gap: 9,
-        padding: 8,
+        gap: 8,
+        padding: 7,
         border: `1px solid ${col(world.tint, 0.28)}`,
         background: col(world.tint, 0.08),
         color: cream(0.88),
@@ -679,7 +682,7 @@ function EducationWorldCard({
       <div
         style={{
           width: '100%',
-          height: 92,
+          height: 158,
           overflow: 'hidden',
           background: 'rgba(10,6,3,0.18)',
         }}
@@ -706,16 +709,16 @@ function EducationWorldCard({
         <div
           style={{
             fontFamily: SERIF,
-            fontSize: 17,
+            fontSize: 14,
             fontWeight: 700,
-            lineHeight: 1.06,
+            lineHeight: 1.12,
             color: cream(0.94),
           }}
         >
           {world.title}
         </div>
       </div>
-      <div style={{ fontSize: 11.5, lineHeight: 1.34, color: cream(0.62) }}>{world.body}</div>
+      <div style={{ fontSize: 10.5, lineHeight: 1.25, color: cream(0.62) }}>{world.body}</div>
     </button>
   );
 }
@@ -739,14 +742,20 @@ function loadHubPalette(): HubPaletteId {
 export default function LearningHub({ onClose }: { onClose: () => void }) {
   const [active, setActive] = useState<Program | null>(null);
   const [personalityOpen, setPersonalityOpen] = useState(false);
-  const [hubPalId, setHubPalId] = useState<HubPaletteId>(loadHubPalette);
+  const [hubPalId, setHubPalId] = useState<HubPaletteId>('brown');
   const [philosophyOpen, setPhilosophyOpen] = useState(false);
+  const [opening, setOpening] = useState({
+    headline: 'Every state is information.',
+    sub: 'This is where you learn to read it, use it, and move through it. Pick any program. Open one page. That is enough.',
+  });
   const hubBg = HUB_PALETTES.find((p) => p.id === hubPalId)?.bg ?? 'rgba(18,10,4,0.99)';
-  const heroImage = useMemo(
-    () => EDUCATION_IMAGES[Math.floor(Math.random() * EDUCATION_IMAGES.length)],
-    [],
-  );
-  const opening = useMemo(() => getOpening(), []);
+  const [heroImage, setHeroImage] = useState(EDUCATION_IMAGES[0]);
+
+  useEffect(() => {
+    setHubPalId(loadHubPalette());
+    setOpening(getOpening());
+    setHeroImage(EDUCATION_IMAGES[Math.floor(Math.random() * EDUCATION_IMAGES.length)]);
+  }, []);
 
   function pickPalette(id: HubPaletteId) {
     setHubPalId(id);
@@ -972,45 +981,6 @@ export default function LearningHub({ onClose }: { onClose: () => void }) {
 
         {/* Programs — swim lanes with group tints */}
         <div style={{ flex: 1, overflowY: 'auto', padding: '20px 0 40px' }}>
-          <div style={{ marginBottom: 32 }}>
-            <div style={{ paddingLeft: 20, marginBottom: 14 }}>
-              <div
-                style={{
-                  fontFamily: SERIF,
-                  fontSize: 14,
-                  fontWeight: 700,
-                  letterSpacing: '0.08em',
-                  textTransform: 'uppercase',
-                  color: och(0.68),
-                }}
-              >
-                Knowledge worlds
-              </div>
-            </div>
-            <div
-              style={{
-                display: 'flex',
-                gap: 10,
-                overflowX: 'auto',
-                paddingLeft: 20,
-                paddingRight: 20,
-                paddingBottom: 6,
-                scrollbarWidth: 'none',
-              }}
-            >
-              {EDUCATION_WORLDS.map((world) => (
-                <EducationWorldCard
-                  key={world.href}
-                  world={world}
-                  onOpen={() => {
-                    if (world.kind === 'personality') setPersonalityOpen(true);
-                    else onClose();
-                  }}
-                />
-              ))}
-            </div>
-          </div>
-
           {GROUPS.map((group) => {
             const programs = group.keys.map((k) => byKey[k]).filter(Boolean);
             if (!programs.length) return null;
@@ -1066,6 +1036,45 @@ export default function LearningHub({ onClose }: { onClose: () => void }) {
               </div>
             );
           })}
+
+          <div style={{ marginBottom: 32 }}>
+            <div style={{ paddingLeft: 20, marginBottom: 14 }}>
+              <div
+                style={{
+                  fontFamily: SERIF,
+                  fontSize: 14,
+                  fontWeight: 700,
+                  letterSpacing: '0.08em',
+                  textTransform: 'uppercase',
+                  color: och(0.68),
+                }}
+              >
+                Knowledge worlds
+              </div>
+            </div>
+            <div
+              style={{
+                display: 'flex',
+                gap: 10,
+                overflowX: 'auto',
+                paddingLeft: 20,
+                paddingRight: 20,
+                paddingBottom: 6,
+                scrollbarWidth: 'none',
+              }}
+            >
+              {EDUCATION_WORLDS.map((world) => (
+                <EducationWorldCard
+                  key={world.href}
+                  world={world}
+                  onOpen={() => {
+                    if (world.kind === 'personality') setPersonalityOpen(true);
+                    else onClose();
+                  }}
+                />
+              ))}
+            </div>
+          </div>
         </div>
       </div>
     </div>
