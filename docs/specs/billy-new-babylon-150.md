@@ -459,6 +459,10 @@ Generate in batches of 10-15. After each batch:
 - reject accidental real-person likeness if too direct
 - check costume continuity
 - check lower overlay calm area
+- reject panels that feel overloaded: one clear action, relaxed visual density, and only a few
+  background clues should be the default
+- alternate density across the batch: if one scene is visually loaded, the next should breathe
+- pineapple girls should read as pineapple beings first, not humans with pineapple hair
 - compress to WebP for phone loading
 - update `lib/billy-comic.ts`
 
@@ -475,8 +479,17 @@ Generate in batches of 10-15. After each batch:
   piranha office, golden limousine, motorbike gang, rusty bar, underground fight night, secret lair,
   young Jack flashback, betrayal, crew pact, and the machine-priest image. This is a contrast route
   that later echoes back into Billy's timeline.
+  - **Regenerate panel 63 / Night Riders before merge if possible.** The current version has a
+    foreground purple female rider that feels too loud, too fantasy-humanoid, and too distracting
+    from Jack. Replacement direction: keep Jack and the gang, remove the purple rider, reduce visual
+    density, and make any fruit riders read as fruit beings first.
 - **Panels 71-80: Billy Night District and first fight.** Billy enters the underworld from his own
   angle, meets the pineapple bounty hunter, crosses into the fight room, trains, struggles, stands
   back up, and earns respect. Do not keep repeating the cup charm as a long-term device; the cup
   remains central, but later arcs should vary the symbols so the story does not become visually
   repetitive.
+  - **Add a focused tiger wanted-poster page after panel 72 / The Wall Of Almost Trouble.** The wall
+    image works because the posters feel like future routes. Add one quiet follow-up image that
+    zooms into the tiger poster: old paper wanted-poster feel, hand-drawn tiger character, more like
+    the drawing style visible on the wall poster than a full cinematic scene. This should let the
+    reader focus on one future trouble thread before returning to the underworld route.

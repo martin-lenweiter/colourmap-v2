@@ -1,6 +1,7 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { useState } from 'react';
 import { BILLY_QUEST_PANELS } from '@/lib/billy-comic';
 
 const SERIF = 'var(--font-serif)';
@@ -10,6 +11,7 @@ function cream(alpha: number) {
 }
 
 export default function BillyInfiniteComic() {
+  const router = useRouter();
   const [index, setIndex] = useState(0);
   const [textStep, setTextStep] = useState(0);
   const [chosen, setChosen] = useState<Record<string, string>>({});
@@ -17,17 +19,9 @@ export default function BillyInfiniteComic() {
   const revealed = textStep > 0;
   const complete = index === BILLY_QUEST_PANELS.length - 1 && revealed;
 
-  const earnedMedals = useMemo(
-    () =>
-      BILLY_QUEST_PANELS.slice(0, index + 1)
-        .map((item) => item.medal)
-        .filter(Boolean),
-    [index],
-  );
-
   function advance() {
     if (!revealed) {
-      setTextStep(1);
+      setTextStep(panel.text.length);
       return;
     }
     if (textStep < panel.text.length) {
@@ -38,6 +32,15 @@ export default function BillyInfiniteComic() {
       setIndex(index + 1);
       setTextStep(0);
     }
+  }
+
+  function goBack() {
+    if (index === 0) {
+      setTextStep(0);
+      return;
+    }
+    setIndex(index - 1);
+    setTextStep(0);
   }
 
   function choose(choiceId: string) {
@@ -67,33 +70,61 @@ export default function BillyInfiniteComic() {
       >
         <header
           style={{
-            display: 'flex',
-            justifyContent: 'space-between',
-            gap: 12,
+            display: 'grid',
+            gridTemplateColumns: '74px minmax(0, 1fr) 92px',
+            alignItems: 'center',
+            gap: 8,
             padding: '12px 14px',
             flexShrink: 0,
             borderBottom: '1px solid rgba(255, 221, 150, 0.12)',
           }}
         >
-          <div>
-            <div
-              style={{
-                fontSize: 10,
-                letterSpacing: '0.16em',
-                textTransform: 'uppercase',
-                color: 'rgba(255, 205, 126, 0.58)',
-              }}
-            >
-              Entertainment
-            </div>
-            <h1 style={{ margin: '2px 0 0', fontSize: 20, lineHeight: 1 }}>
-              Billy & The Quest For Juice
-            </h1>
-          </div>
-          <div style={{ textAlign: 'right', fontSize: 11, color: 'rgba(255, 222, 164, 0.58)' }}>
+          <div
+            style={{
+              fontFamily: SERIF,
+              fontSize: 11.5,
+              fontWeight: 700,
+              letterSpacing: '0.08em',
+              textTransform: 'uppercase',
+              color: 'rgba(255, 222, 164, 0.58)',
+            }}
+          >
             {index + 1} / {BILLY_QUEST_PANELS.length}
-            <div style={{ marginTop: 3 }}>{earnedMedals.length} medals</div>
           </div>
+          <h1
+            style={{
+              margin: 0,
+              minWidth: 0,
+              textAlign: 'center',
+              fontFamily: SERIF,
+              fontSize: 22,
+              fontWeight: 800,
+              lineHeight: 1.05,
+              color: cream(0.94),
+              overflowWrap: 'anywhere',
+            }}
+          >
+            Pineapple Planet
+          </h1>
+          <button
+            type="button"
+            onClick={() => router.push('/education')}
+            style={{
+              justifySelf: 'end',
+              minWidth: 82,
+              border: '1px solid rgba(255, 205, 126, 0.34)',
+              borderRadius: 999,
+              background: 'rgba(255, 190, 82, 0.1)',
+              color: cream(0.82),
+              fontFamily: SERIF,
+              fontSize: 13,
+              fontWeight: 700,
+              cursor: 'pointer',
+              padding: '7px 10px',
+            }}
+          >
+            Education
+          </button>
         </header>
 
         <section
@@ -115,6 +146,32 @@ export default function BillyInfiniteComic() {
               background: '#130d07',
             }}
           >
+            <img
+              src={panel.image}
+              alt={`${panel.title} comic panel`}
+              style={{
+                display: 'block',
+                width: '100%',
+                height: 'auto',
+              }}
+            />
+            <button
+              type="button"
+              onClick={goBack}
+              aria-label="Previous Billy comic panel"
+              style={{
+                position: 'absolute',
+                top: 0,
+                bottom: 0,
+                left: 0,
+                zIndex: 1,
+                width: '42%',
+                border: 0,
+                padding: 0,
+                background: 'transparent',
+                cursor: index === 0 && !revealed ? 'default' : 'w-resize',
+              }}
+            />
             <button
               type="button"
               onClick={advance}
@@ -126,24 +183,18 @@ export default function BillyInfiniteComic() {
                     : 'Next Billy comic beat'
               }
               style={{
-                display: 'block',
-                width: '100%',
+                position: 'absolute',
+                top: 0,
+                right: 0,
+                bottom: 0,
+                zIndex: 1,
+                width: '58%',
                 border: 0,
                 padding: 0,
                 background: 'transparent',
-                cursor: 'pointer',
+                cursor: 'e-resize',
               }}
-            >
-              <img
-                src={panel.image}
-                alt={`${panel.title} comic panel`}
-                style={{
-                  display: 'block',
-                  width: '100%',
-                  height: 'auto',
-                }}
-              />
-            </button>
+            />
 
             {revealed && (
               <div
@@ -152,7 +203,8 @@ export default function BillyInfiniteComic() {
                   left: 12,
                   right: 12,
                   bottom: 12,
-                  padding: '13px 14px',
+                  zIndex: 2,
+                  padding: '15px 15px',
                   background: 'rgba(39, 22, 11, 0.82)',
                   border: '1px solid rgba(255, 220, 148, 0.24)',
                   boxShadow: '0 18px 44px rgba(0,0,0,0.32)',
@@ -163,9 +215,9 @@ export default function BillyInfiniteComic() {
                   style={{
                     marginBottom: 7,
                     color: cream(0.96),
-                    fontSize: 17,
+                    fontSize: 20,
                     fontWeight: 800,
-                    lineHeight: 1.08,
+                    lineHeight: 1.12,
                   }}
                 >
                   {panel.title}
@@ -174,8 +226,8 @@ export default function BillyInfiniteComic() {
                   style={{
                     margin: 0,
                     color: 'rgba(255, 217, 140, 0.9)',
-                    fontSize: 13.5,
-                    lineHeight: 1.42,
+                    fontSize: 15.5,
+                    lineHeight: 1.48,
                   }}
                 >
                   {panel.text.slice(0, textStep).join(' ')}
@@ -199,8 +251,8 @@ export default function BillyInfiniteComic() {
                               : 'rgba(255, 238, 196, 0.06)',
                             color: cream(active ? 0.98 : 0.78),
                             fontFamily: SERIF,
-                            fontSize: 12,
-                            padding: '8px 10px',
+                            fontSize: 13.5,
+                            padding: '9px 10px',
                             cursor: 'pointer',
                             textAlign: 'left',
                           }}
@@ -229,14 +281,7 @@ export default function BillyInfiniteComic() {
         >
           <button
             type="button"
-            onClick={() => {
-              if (index === 0) {
-                setTextStep(0);
-                return;
-              }
-              setIndex(index - 1);
-              setTextStep(0);
-            }}
+            onClick={goBack}
             style={{
               border: 0,
               background: 'transparent',
@@ -250,34 +295,18 @@ export default function BillyInfiniteComic() {
           </button>
           <div
             style={{
-              display: 'flex',
-              gap: 5,
-              justifyContent: 'center',
-              flexWrap: 'wrap',
-              maxWidth: 170,
+              minWidth: 116,
+              textAlign: 'center',
+              fontFamily: SERIF,
+              fontSize: 13,
+              fontWeight: 700,
+              letterSpacing: '0.08em',
+              textTransform: 'uppercase',
+              color: 'rgba(255, 222, 164, 0.68)',
             }}
           >
-            {BILLY_QUEST_PANELS.map((item, itemIndex) => (
-              <button
-                key={item.id}
-                type="button"
-                aria-label={`Open Billy panel ${itemIndex + 1}`}
-                onClick={() => {
-                  setIndex(itemIndex);
-                  setTextStep(0);
-                }}
-                style={{
-                  width: itemIndex === index ? 18 : 5,
-                  height: 5,
-                  borderRadius: 999,
-                  border: 0,
-                  background:
-                    itemIndex === index ? 'rgba(255, 205, 126, 0.9)' : 'rgba(255, 205, 126, 0.28)',
-                  padding: 0,
-                  cursor: 'pointer',
-                }}
-              />
-            ))}
+            Page {index + 1}
+            <span style={{ opacity: 0.45 }}> / {BILLY_QUEST_PANELS.length}</span>
           </div>
           <button
             type="button"
@@ -287,6 +316,7 @@ export default function BillyInfiniteComic() {
               background: 'transparent',
               color: 'rgba(255, 222, 164, 0.7)',
               fontFamily: SERIF,
+              fontSize: 13,
               cursor: 'pointer',
               padding: '8px 0',
             }}

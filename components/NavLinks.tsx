@@ -160,7 +160,7 @@ export default function NavLinks() {
 
         {moreOpen && (
           <div
-            className="absolute top-full mt-1 right-0 z-[200] min-w-[160px] rounded-xl py-2 animate-in fade-in slide-in-from-top-1 duration-150"
+            className="absolute top-full mt-1 right-0 z-[1100] min-w-[160px] rounded-xl py-2 animate-in fade-in slide-in-from-top-1 duration-150"
             style={{
               background: '#fbf3d8',
               border: '1px solid rgba(160,110,40,0.18)',

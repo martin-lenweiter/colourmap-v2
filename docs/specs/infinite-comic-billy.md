@@ -40,10 +40,18 @@ The loop never means "start over." It means each journey changes what the same p
 Core loop rules:
 
 - every 3-6 pages may offer a choice, but some beats can be faster when the joke is the choice
+- relaxation beats should usually offer 0-2 choices, not dense 4-choice forks; use 3-5 answers only
+  for deliberate poll/comedy moments
 - each 25-50 page arc should return to a known gate: Pineapple Planet, The Observatory, a crossroads, a river, or a door in Babylon
 - images can be reused when the text and choice state make the meaning different
 - intersection pages should feel more like concept art: reflections in water, bridges, mountains, doorways, sunsets, maps, strangers, symbolic roads
 - normal pages should stay more cartoony and readable, with fewer details and clearer character action
+- most panels should show one main action, one emotional signal, and enough quiet space for the body
+  to relax; avoid carnival-density scenes with many competing props, characters, signs, vehicles,
+  symbols, and background clues at once
+- visual density must alternate across zones: some zones can be detailed and loaded, but a loaded
+  zone should be followed by calmer panels or a quieter region; never stack dense area after dense
+  area for long stretches
 - Galaxy Gummies are a small recurring temptation, not the main story
 - Crocodile Jack is the recurring sabotage force: greed, shortcuts, desire, branding, winning, and hollow success
 - every region has a gift and risk, so the story avoids simple good-place/bad-place morality
@@ -1199,6 +1207,80 @@ The best merch will come from repeated jokes, medals, regions, and user polls.
 Images contain no readable text.
 
 Text overlays are separate app-rendered layers so the comic can adapt, translate, and evolve.
+
+### Relaxed Visual Density
+
+Billy is an entertainment and recovery world. The mood can be strange, funny, cinematic, and rich,
+but the reading experience must stay simple and relaxing.
+
+Hard rule:
+
+```text
+Relaxing first.
+One clear scene before many clever details.
+```
+
+Generated panels should not look like a carnival where every corner competes for attention. Prefer:
+
+- one main character action per image
+- one dominant mood or question
+- clear silhouettes readable at phone size
+- calm lower or side areas for the app text layer
+- 1-3 meaningful background clues at most
+- repeated quiet plates: train rides, windows, doors, roads, rooms, bridges, water, rooftops,
+  campfires, simple faceoffs
+
+Avoid:
+
+- crowded scenes with many unrelated characters
+- too many signs, props, vehicles, machines, posters, symbols, and side jokes in one image
+- constant neon/circus/festival intensity
+- every page trying to introduce a new world, faction, object, joke, and future clue at once
+- four or five choices at ordinary branch points
+
+The comic can still have maximalist special moments, but those should be punctuation. The default
+rhythm should be spacious:
+
+```text
+quiet image
+short text
+small movement
+occasional simple choice
+```
+
+If a panel contains a lot of lore, the next panels should breathe. The reader should feel like they
+are wandering through Pineapple Planet, not studying a dense infographic.
+
+Quality target:
+
+```text
+Cinematic, emotional, and symbolic beats are the bar.
+Dense spectacle is only useful when it serves that feeling.
+```
+
+Panels like Jack alone with the machine work because they communicate desire, theft, childhood,
+power, and loneliness in one readable image. Future panels should aim for that kind of cinematic
+clarity: emotionally rich without becoming visually noisy.
+
+### Pineapple Character Readability
+
+Fruit characters should read as fruit beings first, not humans wearing fruit costumes.
+
+Pineapple girls, pineapple women, and other pineapple citizens should preserve the same world logic
+as Billy:
+
+- pineapple body, crown, skin texture, silhouette, or fruit geometry must be immediately visible
+- human-like posture, clothing, eyes, and expression are allowed, but should not erase the pineapple
+  identity
+- avoid designs that look like a normal human with pineapple hair
+- keep them expressive, charming, and stylish without turning them into generic human characters
+
+Rule:
+
+```text
+Pineapple first.
+Human charm second.
+```
 
 This separation also allows image reuse. Some images can become loops, recurring scenes, or reusable
 visual plates while the text changes depending on context.

@@ -14,12 +14,12 @@ describe('LearningHub', () => {
     localStorage.clear();
   });
 
-  it('renders education worlds and opens the comic reader with image style choices', () => {
+  it('renders education worlds and opens the comic reader with image style choices', async () => {
     localStorage.setItem('colourmap:mood-word', 'anxious');
     const onClose = vi.fn();
     const { container } = render(<LearningHub onClose={onClose} />);
 
-    expect(screen.getByText("You're here. That already matters.")).toBeDefined();
+    expect(await screen.findByText("You're here. That already matters.")).toBeDefined();
     expect(screen.getByText('Knowledge worlds')).toBeDefined();
     expect(screen.queryByText(/Life is not fixed/i)).toBeNull();
     fireEvent.click(screen.getByRole('button', { name: 'Education' }));
@@ -31,10 +31,29 @@ describe('LearningHub', () => {
     expect(screen.getByText('Thich Nhat Hanh & Peace in Action')).toBeDefined();
     expect(screen.getByText('Gandhi & The Power of Small Things')).toBeDefined();
     expect(screen.getByText('Clear & Allen: Organisation As Freedom')).toBeDefined();
+    expect(screen.getByText('Pineapple Planet')).toBeDefined();
     expect(screen.getByRole('button', { name: /Living Atlas/i })).toBeDefined();
     expect(screen.getByRole('button', { name: /Progress Roads/i })).toBeDefined();
     expect(screen.queryByRole('button', { name: 'atlas' })).toBeNull();
     expect(screen.getByText('start here')).toBeDefined();
+    expect(
+      container.querySelector('img[src="/comics/room-to-breathe/panel-2.png"]'),
+    ).not.toBeNull();
+    expect(
+      container.querySelector('img[src="/comics/emotional-intelligence/panel-5.png"]'),
+    ).not.toBeNull();
+
+    const hubText = container.textContent ?? '';
+    expect(hubText.indexOf('Carl Jung & The Inner Map')).toBeLessThan(
+      hubText.indexOf('Gandhi & The Power of Small Things'),
+    );
+    expect(hubText.indexOf('Gandhi & The Power of Small Things')).toBeLessThan(
+      hubText.indexOf('Clear & Allen: Organisation As Freedom'),
+    );
+    expect(hubText.indexOf('Knowledge worlds')).toBeGreaterThan(
+      hubText.lastIndexOf('Intelligence'),
+    );
+    expect(hubText.indexOf('Pineapple Planet')).toBeLessThan(hubText.indexOf('Personality Map'));
 
     expect(screen.queryByRole('button', { name: 'images' })).toBeNull();
     expect(screen.getByText('image paths')).toBeDefined();

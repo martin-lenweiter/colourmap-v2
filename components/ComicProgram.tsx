@@ -1231,18 +1231,20 @@ export default function ComicProgram({
               type="button"
               onClick={onBack ?? onClose}
               style={{
-                background: 'none',
-                border: `1px solid ${col(program.color, 0.22)}`,
+                minWidth: 58,
+                background: col(program.color, 0.1),
+                border: `1px solid ${col(program.color, 0.34)}`,
                 borderRadius: 999,
-                color: col(program.color, 0.48),
+                color: cream(0.82),
                 fontFamily: SERIF,
-                fontSize: 11,
-                letterSpacing: '0.1em',
+                fontSize: 12,
+                fontWeight: 700,
+                letterSpacing: '0.04em',
                 cursor: 'pointer',
-                padding: '5px 13px',
+                padding: '7px 12px',
               }}
             >
-              back
+              Back
             </button>
           </div>
         </div>
@@ -1683,9 +1685,9 @@ export default function ComicProgram({
       >
         <div
           style={{
-            display: 'flex',
+            display: 'grid',
+            gridTemplateColumns: '74px minmax(0, 1fr) 74px',
             alignItems: 'center',
-            justifyContent: 'space-between',
             padding: '12px 18px',
             flexShrink: 0,
             borderBottom: `1px solid ${col(program.color, 0.12)}`,
@@ -1695,17 +1697,29 @@ export default function ComicProgram({
             style={{
               fontFamily: SERIF,
               fontSize: 11,
-              color: col(program.color, 0.58),
+              color: col(program.color, 0.42),
               letterSpacing: '0.1em',
               textTransform: 'uppercase',
             }}
           >
-            {program.domain}
+            {index + 1} / {total}
           </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
-            <div style={{ fontFamily: SERIF, fontSize: 11, color: col(program.color, 0.42) }}>
-              {index + 1} / {total}
-            </div>
+          <h1
+            style={{
+              margin: 0,
+              minWidth: 0,
+              textAlign: 'center',
+              fontFamily: SERIF,
+              fontSize: 18,
+              fontWeight: 800,
+              lineHeight: 1.08,
+              color: cream(0.94),
+              overflowWrap: 'anywhere',
+            }}
+          >
+            {program.domain}
+          </h1>
+          <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
             <button
               type="button"
               onClick={onBack ?? onClose}
@@ -1918,9 +1932,9 @@ export default function ComicProgram({
       >
         <div
           style={{
-            display: 'flex',
+            display: 'grid',
+            gridTemplateColumns: '74px minmax(0, 1fr) 74px',
             alignItems: 'center',
-            justifyContent: 'space-between',
             padding: '12px 18px',
             flexShrink: 0,
             borderBottom: `1px solid ${col(program.color, 0.12)}`,
@@ -1930,33 +1944,47 @@ export default function ComicProgram({
             style={{
               fontFamily: SERIF,
               fontSize: 11,
-              color: col(program.color, 0.58),
+              color: col(program.color, 0.42),
               letterSpacing: '0.1em',
               textTransform: 'uppercase',
             }}
           >
-            {program.domain}
+            {index + 1} / {total}
           </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
-            <div style={{ fontFamily: SERIF, fontSize: 11, color: col(program.color, 0.42) }}>
-              {index + 1} / {total}
-            </div>
+          <h1
+            style={{
+              margin: 0,
+              minWidth: 0,
+              textAlign: 'center',
+              fontFamily: SERIF,
+              fontSize: 18,
+              fontWeight: 800,
+              lineHeight: 1.08,
+              color: cream(0.94),
+              overflowWrap: 'anywhere',
+            }}
+          >
+            {program.domain}
+          </h1>
+          <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
             <button
               type="button"
               onClick={onBack ?? onClose}
               style={{
-                background: 'none',
-                border: `1px solid ${col(program.color, 0.22)}`,
+                minWidth: 58,
+                background: col(program.color, 0.1),
+                border: `1px solid ${col(program.color, 0.34)}`,
                 borderRadius: 999,
-                color: col(program.color, 0.48),
+                color: cream(0.82),
                 fontFamily: SERIF,
-                fontSize: 11,
-                letterSpacing: '0.1em',
+                fontSize: 12,
+                fontWeight: 700,
+                letterSpacing: '0.04em',
                 cursor: 'pointer',
-                padding: '5px 13px',
+                padding: '7px 12px',
               }}
             >
-              back
+              Back
             </button>
           </div>
         </div>
