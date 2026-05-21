@@ -46,7 +46,7 @@ const EDUCATION_WORLDS = [
     body: 'A funny, reflective quest for The Juice through symbolic worlds.',
     tint: '#D39A3D',
     kind: 'link',
-    cover: '/entertainment/billy/quest-for-juice/panel-13.webp',
+    cover: '/entertainment/billy/quest-for-juice/panel-9.webp',
   },
   {
     href: '#personality-map',
@@ -265,6 +265,19 @@ function getProgramCoverSrc(program: Program): string {
   return EDUCATION_IMAGES[0];
 }
 
+const PROGRAM_COVER_CROP: Record<string, { scale: number; position?: string }> = {
+  'emotional-intelligence': { scale: 1.06, position: 'center center' },
+  'self-talk': { scale: 1.06, position: 'center center' },
+  'hope-energy': { scale: 1.06, position: 'center center' },
+  'nervous-system': { scale: 1.035, position: 'center center' },
+  grief: { scale: 1.035, position: 'center center' },
+  belonging: { scale: 1.035, position: 'center center' },
+};
+
+function getProgramCoverCrop(program: Program) {
+  return PROGRAM_COVER_CROP[program.key] ?? { scale: 1, position: 'center center' };
+}
+
 /* ── Dynamic opening based on today's emotion ───────────────── */
 function getOpening(): { headline: string; sub: string } {
   try {
@@ -462,6 +475,7 @@ function ProgramImageCard({
   const isPortraitGenerated =
     Boolean(generatedCount) && !LANDSCAPE_GENERATED_COVERS.has(program.key);
   const imageSrc = getProgramCoverSrc(program);
+  const imageCrop = getProgramCoverCrop(program);
 
   return (
     <button
@@ -517,7 +531,14 @@ function ProgramImageCard({
         <img
           src={imageSrc}
           alt=""
-          style={{ display: 'block', width: '100%', height: '100%', objectFit: 'cover' }}
+          style={{
+            display: 'block',
+            width: '100%',
+            height: '100%',
+            objectFit: 'cover',
+            objectPosition: imageCrop.position,
+            transform: `scale(${imageCrop.scale})`,
+          }}
         />
       </div>
 
@@ -572,6 +593,7 @@ function GuideProgramCard({
   const total = program.segments.length;
   const started = progress > 0;
   const imageSrc = getProgramCoverSrc(program);
+  const imageCrop = getProgramCoverCrop(program);
   const title = program.domain;
   const subtitle = '';
 
@@ -605,7 +627,14 @@ function GuideProgramCard({
         <img
           src={imageSrc}
           alt=""
-          style={{ display: 'block', width: '100%', height: '100%', objectFit: 'cover' }}
+          style={{
+            display: 'block',
+            width: '100%',
+            height: '100%',
+            objectFit: 'cover',
+            objectPosition: imageCrop.position,
+            transform: `scale(${imageCrop.scale})`,
+          }}
         />
       </div>
       <div style={{ minWidth: 0, padding: '1px 1px 0' }}>

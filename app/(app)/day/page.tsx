@@ -9,7 +9,6 @@ import DailyRituals from '@/components/DailyRituals';
 import DayRoad from '@/components/DayRoad';
 import DayTabs from '@/components/DayTabs';
 import DayView3D from '@/components/DayView3D';
-import EmotionLearnPill from '@/components/EmotionLearnPill';
 import FeelingCircles2 from '@/components/FeelingCircles2';
 import FirstRunOnboarding from '@/components/FirstRunOnboarding';
 import IdeaConstellation from '@/components/IdeaConstellation';
@@ -19,7 +18,6 @@ import LearningHub from '@/components/LearningHub';
 import MissionDesignSwitcher from '@/components/MissionDesignSwitcher';
 import Overview2 from '@/components/Overview2';
 import TodaysField from '@/components/TodaysField';
-import { emotionInsights } from '@/lib/insights';
 import { hydrate } from '@/lib/sync';
 
 function DayContent() {
@@ -64,35 +62,6 @@ function DayContent() {
             <InnerWork />
             <div style={{ height: 20 }} />
             <FeelingCircles2 />
-            {/* Insight */}
-            <div style={{ paddingTop: 20 }}>
-              <EmotionLearnPill
-                insights={emotionInsights}
-                programKey="emotional-intelligence"
-                onOpenHub={() => setLearnOpen(true)}
-              />
-            </div>
-            <div style={{ display: 'flex', justifyContent: 'center', paddingTop: 4 }}>
-              <button
-                type="button"
-                onClick={() => setLearnOpen(true)}
-                style={{
-                  padding: '5px 20px',
-                  borderRadius: 999,
-                  border: '1px solid var(--panel-border, rgba(122,84,56,0.28))',
-                  background: 'transparent',
-                  color: 'var(--light-surface-muted, #7A5438)',
-                  fontFamily: 'var(--font-serif)',
-                  fontSize: 11,
-                  fontWeight: 500,
-                  letterSpacing: '0.1em',
-                  textTransform: 'uppercase',
-                  cursor: 'pointer',
-                }}
-              >
-                Education
-              </button>
-            </div>
             {/* Experiments — collapsible pill */}
             <div
               style={{
@@ -200,28 +169,6 @@ function DayContent() {
                 }}
               >
                 Constellation
-              </button>
-              <button
-                type="button"
-                onClick={() => setLearnOpen(true)}
-                style={{
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: 5,
-                  padding: '5px 18px',
-                  borderRadius: 999,
-                  border: '1px solid var(--panel-border, rgba(122,84,56,0.28))',
-                  background: 'transparent',
-                  color: 'var(--light-surface-muted, #7A5438)',
-                  fontFamily: 'var(--font-serif)',
-                  fontSize: 11,
-                  fontWeight: 500,
-                  letterSpacing: '0.1em',
-                  textTransform: 'uppercase',
-                  cursor: 'pointer',
-                }}
-              >
-                Education
               </button>
             </div>
           </div>

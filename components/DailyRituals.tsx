@@ -1310,19 +1310,6 @@ export default function DailyRituals() {
             >
               Daily Rituals
             </div>
-            <div
-              style={{
-                fontFamily: 'var(--font-serif)',
-                fontSize: 10,
-                fontWeight: 600,
-                textTransform: 'uppercase',
-                letterSpacing: '0.18em',
-                color: 'var(--palette-panel-muted, rgba(196,160,96,0.60))',
-                marginTop: 2,
-              }}
-            >
-              {peaked ? '✦ Peak Alignment ✦' : 'Build Your Peak'}
-            </div>
           </div>
           <span style={{ flex: 1, display: 'flex', justifyContent: 'flex-end' }}>
             <span

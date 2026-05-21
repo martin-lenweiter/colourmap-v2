@@ -7,9 +7,9 @@ import { haptic } from '@/lib/haptics';
 type Tab = 'emotion' | 'mission' | 'progress';
 
 const TABS: { id: Tab; label: string }[] = [
-  { id: 'emotion', label: 'Emotion' },
-  { id: 'mission', label: 'Mission' },
-  { id: 'progress', label: 'Progress' },
+  { id: 'emotion', label: 'Emotions' },
+  { id: 'mission', label: 'Body' },
+  { id: 'progress', label: 'Behaviours' },
 ];
 
 const TAB_KEY = 'colourmap:day-tab2';

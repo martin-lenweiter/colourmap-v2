@@ -57,6 +57,11 @@ help the user step back and see the structure of life: what is blocked, what is 
 what matters now, and what kind of action or reflection could create movement. Learning content
 becomes useful when it helps the user understand their own map.
 
+## Reader Interaction
+
+- Education comic and program readers use the same side-click pattern as Pineapple Planet: clicking the left half of the image/page goes to the previous page, and clicking the right half advances or reveals the next layer.
+- Explicit previous/next buttons may remain for accessibility, but the primary reading surface should support relaxed left/right tapping.
+
 ## Current Phase: Expansion And Visual Research
 
 The current phase is exploration.
