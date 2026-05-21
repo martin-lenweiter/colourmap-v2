@@ -1,5 +1,6 @@
 'use client';
 
+import type { MouseEvent } from 'react';
 import { useState } from 'react';
 import type { Program } from '@/lib/programs';
 
@@ -1171,6 +1172,14 @@ export default function ComicProgram({
     setMoreOpen(false);
     setGuideStep(0);
   }
+  function handleComicSurfaceClick(event: MouseEvent<HTMLElement>, nextAction = next) {
+    const rect = event.currentTarget.getBoundingClientRect();
+    if (event.clientX - rect.left < rect.width / 2) {
+      prev();
+      return;
+    }
+    nextAction();
+  }
 
   const introData = PROGRAM_INTROS[program.key];
 
@@ -1259,8 +1268,8 @@ export default function ComicProgram({
         >
           <button
             type="button"
-            onClick={next}
-            aria-label={index === total - 1 ? 'Return to education' : 'Next comic page'}
+            onClick={handleComicSurfaceClick}
+            aria-label="Comic page navigation: left previous, right next"
             style={{
               display: 'block',
               width: '100%',
@@ -1750,8 +1759,8 @@ export default function ComicProgram({
         >
           <button
             type="button"
-            onClick={next}
-            aria-label={index === total - 1 ? 'Return to education' : 'Next comic page'}
+            onClick={handleComicSurfaceClick}
+            aria-label="Comic page navigation: left previous, right next"
             style={{
               display: 'block',
               width: '100%',
@@ -2061,7 +2070,7 @@ export default function ComicProgram({
           >
             <button
               type="button"
-              onClick={primaryNext}
+              onClick={(event) => handleComicSurfaceClick(event, primaryNext)}
               aria-label={
                 usesGuideTextBox && guideStep === 0
                   ? 'Reveal comic text'
@@ -2364,7 +2373,7 @@ export default function ComicProgram({
       {/* ── Panel art ── */}
       <button
         type="button"
-        onClick={next}
+        onClick={handleComicSurfaceClick}
         onKeyDown={(event) => {
           if (event.key === 'Enter' || event.key === ' ') {
             event.preventDefault();

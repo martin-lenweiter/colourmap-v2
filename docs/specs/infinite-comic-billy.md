@@ -1266,6 +1266,10 @@ Panels like "After The Music" are also quality references: the crowd is gone, th
 pouring, and the empty cup in the reflection carries the feeling. This is the right kind of quiet
 cinematic beat after a louder scene.
 
+Panels like "Back On Pineapple Planet" are quality references for calm return beats. The image
+should not be overcrowded: Billy, the empty cup, the feeling of coming home changed, and enough
+space for the sofa/home symbolism to land.
+
 ### Pineapple Character Readability
 
 Fruit characters should read as fruit beings first, not humans wearing fruit costumes.

@@ -51,7 +51,7 @@ export default function BillyInfiniteComic() {
     <main
       style={{
         minHeight: '100svh',
-        margin: '-40px auto',
+        margin: '0 auto',
         background: '#090704',
         color: cream(0.96),
         fontFamily: SERIF,

@@ -35,6 +35,20 @@ describe('ThemeSwitcher', () => {
     expect(screen.getByLabelText('Design settings')).toBeDefined();
   });
 
+  it('defaults new users to Paper with Beige preset 2 titles', () => {
+    render(<ThemeSwitcher />);
+
+    expect(localStorage.setItem).toHaveBeenCalledWith('colourmap-theme', 'paper');
+    expect(localStorage.setItem).toHaveBeenCalledWith('colourmap-palette', 'light-brown');
+    expect(localStorage.setItem).toHaveBeenCalledWith(
+      'colourmap-titles-custom-v2',
+      JSON.stringify({ 'light-brown': { l1: 'b6', l2: 'b6', l3: 'b6' } }),
+    );
+    expect(document.documentElement.style.getPropertyValue('--header-bg')).toBe(
+      'rgba(200,168,112,0.92)',
+    );
+  });
+
   it('shows color theme options when opened', async () => {
     const user = userEvent.setup();
     render(<ThemeSwitcher />);
@@ -160,7 +174,7 @@ describe('ThemeSwitcher', () => {
   it('keeps separate dark ink variables for light-surface pills on Paper', () => {
     (localStorage.getItem as ReturnType<typeof vi.fn>).mockImplementation((key: string) => {
       if (key === 'colourmap-theme') return 'paper';
-      if (key === 'colourmap-palette') return 'brown';
+      if (key === 'colourmap-palette') return 'light-brown';
       return null;
     });
 

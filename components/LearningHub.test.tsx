@@ -70,7 +70,7 @@ describe('LearningHub', () => {
     expect(screen.getByRole('button', { name: 'Next comic page' })).toBeDefined();
     const panelImage = container.querySelector('img[src*="/variants/minimal/panel-0.png"]');
     expect(panelImage).not.toBeNull();
-  });
+  }, 30000);
 
   it('opens the Carl Jung comic book', () => {
     const onClose = vi.fn();

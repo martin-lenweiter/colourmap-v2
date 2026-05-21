@@ -39,15 +39,15 @@ The restless reflective person — not a beginner, not an expert. Someone who fe
 
 **Check in** (notice where you are emotionally) **+ Do** (track today's missions and tasks) **-> Over time, patterns emerge** (the relationship between what you do and how you feel becomes visible) **-> Journey** (the story of who you are and who you're becoming takes shape).
 
-The cockpit has two sides: **feeling** (left) and **doing** (right). They sit side by side because that's the point — constant interaction between practical tasks and body/mind/emotions.
+The cockpit has three daily lanes: **Emotions**, **Body**, and **Behaviours**. They sit close together because that's the point — constant interaction between practical tasks, body signals, emotions, and repeated patterns.
 
-The visual system must reinforce that split. Colourmap is not a generic dashboard with themed widgets. It is a paper cockpit built from cells: framed zones, small compartments, labeled islands, and intentional empty space. The feeling side and doing side should feel like two halves of one notebook spread, not two unrelated panels.
+The visual system must reinforce that split. Colourmap is not a generic dashboard with themed widgets. It is a paper cockpit built from cells: framed zones, small compartments, labeled islands, and intentional empty space. The Emotions, Body, and Behaviours lanes should feel like one notebook spread, not unrelated panels.
 
 ## Design Principles
 
 - **Minimalist by default, open if needed.** Every element starts collapsed or hidden. Detail appears on demand, never forced.
 - **Cockpit, not coach.** Shows your state — doesn't tell you what to do.
-- **Two columns, one glance.** Left = feeling. Right = doing. Scannable in 5 seconds.
+- **Three lanes, one glance.** Emotions, Body, and Behaviours stay scannable in 5 seconds.
 - **Warm, not clinical.** Brown tones, poetic words, breathing room. This is a personal space.
 - **The losange.** Diamond shapes as visual motif — section dividers, toggle buttons, accent marks. A subtle signature throughout.
 - **Cell system, not cards.** The interface should be composed from notebook-like cells, compartments, and framed regions. Avoid generic SaaS card grids.
@@ -179,6 +179,8 @@ The long-term AI direction is a living constellation that reads all user data (c
 ## Open Ideas (not decided yet)
 
 - **Doing compass reframe (STAR → Clarity · Target · Resources · Action)**: potential future direction for the Doing compass. Four axes where Action sits at the south position and the other three (Clarity, Target, Resources) are the conditions that feed it. Would replace the current STAR wiring. Not committed — captured here so it isn't lost when we circle back to box 3.
+
+- **Future library navigation reflections, May 21 2026**: long-term direction for a PSP-like horizontal/vertical navigation model, portal-map education system, and machine-inspired information structure that can hold abundant teachers, comics, poetry, psychology, symbolic worlds, and personal missions without overwhelming the user. Captured in [Living Atlas / Information Art](specs/living-atlas-information-art.md#reflection-future-library-navigation-may-21-2026) and [Machine Organisation And Human Flow](specs/living-atlas-information-art.md#reflection-machine-organisation-and-human-flow-may-21-2026).
 
 ## Key Decisions
 

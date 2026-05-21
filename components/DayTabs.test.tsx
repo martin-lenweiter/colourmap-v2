@@ -36,11 +36,11 @@ describe('DayTabs', () => {
     localStorage.clear();
   });
 
-  it('renders the Emotion / Mission / Progress tab strip', () => {
+  it('renders the Emotions / Body / Behaviours tab strip', () => {
     renderTabs();
-    expect(screen.getByText('Emotion')).toBeDefined();
-    expect(screen.getByText('Mission')).toBeDefined();
-    expect(screen.getByText('Progress')).toBeDefined();
+    expect(screen.getByText('Emotions')).toBeDefined();
+    expect(screen.getByText('Body')).toBeDefined();
+    expect(screen.getByText('Behaviours')).toBeDefined();
   });
 
   it('shows emotion content by default', () => {
@@ -48,17 +48,17 @@ describe('DayTabs', () => {
     expect(screen.getByText('emotion-content')).toBeDefined();
   });
 
-  it('switches to Mission when the Mission tab is clicked', async () => {
+  it('switches to Body when the Body tab is clicked', async () => {
     const user = userEvent.setup();
     renderTabs();
-    await user.click(screen.getByText('Mission'));
+    await user.click(screen.getByText('Body'));
     expect(screen.getByText('mission-content')).toBeDefined();
   });
 
-  it('switches to Progress when the Progress tab is clicked', async () => {
+  it('switches to Behaviours when the Behaviours tab is clicked', async () => {
     const user = userEvent.setup();
     renderTabs();
-    await user.click(screen.getByText('Progress'));
+    await user.click(screen.getByText('Behaviours'));
     expect(screen.getByText('progress-content')).toBeDefined();
   });
 });

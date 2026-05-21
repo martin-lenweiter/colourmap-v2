@@ -1692,7 +1692,7 @@ function FocusLogSection({
 }
 
 /* ─── Focus tracker ──────────────────────────────────────────── */
-function FocusTracker({ circleVariant }: { circleVariant: number }) {
+function _FocusTracker({ circleVariant }: { circleVariant: number }) {
   const [focusIdx, setFocusIdx] = useState(3);
   const [dragging, setDragging] = useState(false);
   const [log, setLog] = useState<FocusEntry[]>([]);
@@ -2382,7 +2382,6 @@ export default function FeelingCircles2() {
           onVariantChange={switchCircleVariant}
         />
       ))}
-      <FocusTracker circleVariant={circleVariant} />
       <BehaviourTracker />
     </div>
   );

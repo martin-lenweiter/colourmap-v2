@@ -11321,6 +11321,7 @@ type FeaturedItem = { name: string; tag: string } | { header: string; dim?: bool
 
 const FEATURED_PRESETS: FeaturedItem[] = [
   { header: 'Good Ones' },
+  { name: 'Trip Number 1', tag: 'TRIP' },
   { name: 'Scriptures', tag: 'TOP' },
   { name: 'Vertical Scriptures', tag: 'TOP' },
   { name: 'Eclipse', tag: 'TOP' },
@@ -11351,7 +11352,6 @@ const FEATURED_PRESETS: FeaturedItem[] = [
   { name: 'Line Tunnel 3D', tag: 'DEPTH' },
   { name: 'Dot Road', tag: 'ROAD' },
 
-  { name: 'Trip Number 1', tag: 'TRIP' },
   { name: 'Touch Preset', tag: 'TOUCH' },
 
   { name: 'Outward Sun', tag: 'DOT' },
