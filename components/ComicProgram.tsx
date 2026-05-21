@@ -32,6 +32,8 @@ const POSITIVE_OVERLAY_PROGRAMS = new Set([
   'identity-becoming',
   'avoidance-action',
   'parenting-patterns',
+  'viktor-frankl',
+  'bukowski-poems',
 ]);
 
 const TEXT_ON_IMAGE_PROGRAMS = new Set([
@@ -77,6 +79,8 @@ const POSITIVE_OVERLAY_PANEL_EXTENSIONS: Record<string, string> = {
   'money-anxiety': 'webp',
   'identity-becoming': 'webp',
   'avoidance-action': 'webp',
+  'viktor-frankl': 'webp',
+  'bukowski-poems': 'webp',
 };
 
 const POSITIVE_OVERLAY_PANEL_COUNTS: Record<string, number> = {
@@ -84,6 +88,8 @@ const POSITIVE_OVERLAY_PANEL_COUNTS: Record<string, number> = {
   'money-anxiety': 1,
   'identity-becoming': 1,
   'avoidance-action': 1,
+  'viktor-frankl': 1,
+  'bukowski-poems': 1,
 };
 
 const PROGRAM_IMAGE_STYLES: Record<string, ImageStyle[]> = {

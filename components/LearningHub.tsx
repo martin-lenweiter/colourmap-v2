@@ -32,6 +32,8 @@ const COMIC_PROGRAMS = new Set([
   'identity-becoming',
   'avoidance-action',
   'parenting-patterns',
+  'viktor-frankl',
+  'bukowski-poems',
   'carl-jung',
   'paulo-freire',
   'thich-nhat-hanh',
@@ -120,6 +122,8 @@ const POSITIVE_OVERLAY_PROGRAMS = new Set([
   'identity-becoming',
   'avoidance-action',
   'parenting-patterns',
+  'viktor-frankl',
+  'bukowski-poems',
 ]);
 const JPG_PANEL_PROGRAMS = new Set(['carl-jung', 'struggle-letting-go']);
 const GENERATED_LAYERED_PANEL_COUNTS: Record<string, number> = {
@@ -138,6 +142,8 @@ const POSITIVE_OVERLAY_PANEL_EXTENSIONS: Record<string, string> = {
   'money-anxiety': 'webp',
   'identity-becoming': 'webp',
   'avoidance-action': 'webp',
+  'viktor-frankl': 'webp',
+  'bukowski-poems': 'webp',
 };
 const LANDSCAPE_GENERATED_COVERS = new Set<string>();
 const PROGRAM_COVER_PANEL: Record<string, number> = {
@@ -249,8 +255,21 @@ const GROUPS: {
   },
   {
     label: 'World Guides',
-    keys: ['carl-jung', 'gandhi', 'clear-allen', 'paulo-freire', 'thich-nhat-hanh'],
+    keys: [
+      'carl-jung',
+      'gandhi',
+      'clear-allen',
+      'viktor-frankl',
+      'paulo-freire',
+      'thich-nhat-hanh',
+    ],
     tint: '#B99367',
+    format: 'guides',
+  },
+  {
+    label: 'Poetry',
+    keys: ['bukowski-poems'],
+    tint: '#9A7658',
     format: 'guides',
   },
   {

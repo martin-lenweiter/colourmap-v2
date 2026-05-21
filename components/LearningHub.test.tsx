@@ -32,6 +32,8 @@ describe('LearningHub', () => {
     expect(screen.getByText('Thich Nhat Hanh & Peace in Action')).toBeDefined();
     expect(screen.getByText('Gandhi & The Power of Small Things')).toBeDefined();
     expect(screen.getByText('Clear & Allen: Organisation As Freedom')).toBeDefined();
+    expect(screen.getByText('Viktor Frankl & Meaning Under Pressure')).toBeDefined();
+    expect(screen.getByText('Bukowski: Poems From The Hard Room')).toBeDefined();
     expect(screen.getByText('Entertainment')).toBeDefined();
     expect(screen.getByText('Pineapple Planet')).toBeDefined();
     expect(screen.getByText('Colourmap Vision Comic')).toBeDefined();

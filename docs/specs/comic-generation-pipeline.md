@@ -620,6 +620,18 @@ or scene: the money mountain, the repaired bowl, the mirror-and-path, the avoide
 They should share Colourmap's warm paper universe while giving each theme a slightly distinct touch
 so the platform feels coherent but not repetitive.
 
+`Viktor Frankl & Meaning Under Pressure` belongs in World Guides. Its visual language should be
+sober, respectful, and never graphic: portrait, notebook, corridor, light, doorway, responsibility,
+and the last inner freedom. The program should not aestheticize historical suffering or use explicit
+camp imagery as decoration. The educational center is meaning, dignity, responsibility, love, and the
+space before response.
+
+Poetry programs can become their own lane. `Bukowski: Poems From The Hard Room` should be vertical,
+real, poetic, and not overloaded: room, typewriter, race track, rough persona, hidden tenderness,
+and the small protected inner life behind the mask. The app may point users toward poems such as
+`Bluebird`, `The Laughing Heart`, `Roll the Dice`, `So You Want To Be A Writer?`, `Nirvana`, and
+`The Genius of the Crowd`, but it should not reproduce full copyrighted poems without permission.
+
 Every program should eventually end with a small further-reading section: books, authors, essays,
 or search directions that let the user continue without adding more visual load. These references
 are app-rendered text and do not require new images.

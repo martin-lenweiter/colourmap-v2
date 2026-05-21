@@ -193,6 +193,61 @@ export const PROGRAMS: Program[] = [
     ],
   },
   {
+    key: 'viktor-frankl',
+    domain: 'Viktor Frankl & Meaning Under Pressure',
+    color: '#9A8A68',
+    segments: [
+      {
+        title: 'Meaning is not decoration',
+        body: 'Frankl treated meaning as one of the deepest human needs. Not a motivational quote, not a pleasant mood, but a direction strong enough to organize a life under pressure. When comfort disappears, the question of meaning becomes more serious, not less.',
+      },
+      {
+        title: 'The space before response',
+        body: "One of Frankl's central insights is that human beings can still carry a space between what happens and how they respond. That space may be small. It may be painfully hard to reach. But it is where dignity, responsibility, and inner freedom begin.",
+      },
+      {
+        title: 'Suffering is not automatically meaningful',
+        body: 'Frankl did not romanticize pain. Avoidable suffering should be reduced. Injustice should be resisted. The point is different: when suffering cannot be avoided, a person may still choose the attitude, values, and commitments they bring into it.',
+      },
+      {
+        title: 'The question turns around',
+        body: 'Instead of asking only what life can give us, Frankl asks what life is asking from us. This changes the posture. A difficult day becomes less like a verdict and more like a question: what is the next responsible act available here?',
+      },
+      {
+        title: 'Love as a way of seeing',
+        body: 'For Frankl, love can reveal the possible person inside another human being. To love someone is not only to need them. It is to see their dignity, their future, and their unreduced humanity even when circumstances are trying to shrink them.',
+      },
+      {
+        title: 'Work can become service',
+        body: 'Work becomes meaningful when it connects effort to contribution. The task may still be hard, boring, or imperfect, but it changes when the person can see who or what it serves. Meaning often arrives through responsibility carried for something beyond the ego.',
+      },
+      {
+        title: 'The last freedom',
+        body: 'The outer world can restrict choices, but Frankl keeps returning to the inner question: what remains mine? A tone of response. A remembered love. A decision not to become cruel. A small act of help. These are not small when everything else is being stripped away.',
+      },
+      {
+        title: 'Values give direction',
+        body: 'Frankl described meaning through creative values, experiential values, and attitudinal values: what we give, what we receive deeply, and how we stand when life is difficult. A meaningful life usually needs all three.',
+      },
+      {
+        title: 'Do not chase happiness directly',
+        body: 'Happiness becomes fragile when it is hunted as the main target. Frankl argued that happiness often appears as a by-product of meaning: doing the task, loving the person, serving the value, answering the demand of the moment.',
+      },
+      {
+        title: 'Despair as meaning blocked',
+        body: 'Despair can appear when suffering feels larger than meaning. This does not mean a person has failed. It means the map needs care. The practical question becomes: what small responsibility, relationship, or value can still be contacted today?',
+      },
+      {
+        title: 'A future to answer to',
+        body: 'Frankl often points attention toward a future that needs something from us. A book unwritten, a person unloved, a repair not yet made, a service not yet offered. The future becomes a quiet witness calling the present into shape.',
+      },
+      {
+        title: 'Colourmap as meaning map',
+        body: 'In Colourmap, Frankl belongs wherever emotion meets responsibility. A check-in does not only ask how you feel. It can ask what the feeling is protecting, what value is calling, and what one meaningful response could be made now.',
+      },
+    ],
+  },
+  {
     key: 'thich-nhat-hanh',
     domain: 'Thich Nhat Hanh & Peace in Action',
     color: '#8FAE86',
@@ -1101,6 +1156,53 @@ export const PROGRAMS: Program[] = [
       {
         title: 'The real task is becoming visible',
         body: 'Avoidance loses power when the hidden fear becomes visible and the next move becomes concrete. You do not need to become a different person first. You need one honest contact with the thing that matters, then another.',
+      },
+    ],
+  },
+  {
+    key: 'bukowski-poems',
+    domain: 'Bukowski: Poems From The Hard Room',
+    color: '#9A7658',
+    segments: [
+      {
+        title: 'The room before the myth',
+        body: 'Bukowski works best in Colourmap if we begin with the room, not the legend. A small apartment, a table, a typewriter, bad light, rent pressure, ordinary ugliness, and the strange fact that a poem can still appear there.',
+      },
+      {
+        title: 'Do not polish the wound',
+        body: 'The power is not that the life is beautiful. The power is that the writing refuses to pretend. Bukowski gives language to boredom, lust, shame, anger, work, failure, and survival without making them clean.',
+      },
+      {
+        title: 'The job and the soul',
+        body: 'Postal work, repetition, bosses, exhaustion, and time stolen from writing are not background details. They are part of the pressure. The question is what remains alive in a person after the day has taken most of them.',
+      },
+      {
+        title: 'The race track',
+        body: 'The horse races give Bukowski a theatre of hope and damage: chance, calculation, loss, waiting, small belief, the absurd dignity of risking money on a moment. It is not only gambling. It is a picture of wanting life to break open.',
+      },
+      {
+        title: 'The bottle is not the teacher',
+        body: 'A Bukowski program should not romanticize self-destruction. The drink, the dirt, and the hard persona belong to the world, but they are not the wisdom. The wisdom is the honesty that survives underneath them.',
+      },
+      {
+        title: 'The hidden tenderness',
+        body: 'The important counterweight is tenderness. Poems like Bluebird matter because they show the protected soft thing inside the rough voice. The mask is loud because the hidden part is vulnerable.',
+      },
+      {
+        title: 'When the crowd is false',
+        body: 'Bukowski often attacks the crowd: polite cruelty, fake morality, dead language, social performance. The useful lesson is not contempt for people. It is distrust of any life where the inner voice has been traded for approval.',
+      },
+      {
+        title: 'Risk and vocation',
+        body: 'Roll the Dice and So You Want To Be A Writer? point toward vocation as a dangerous demand. Not everyone needs to live that way. But the question is useful: what part of you asks for more truth than your routine allows?',
+      },
+      {
+        title: 'Ordinary transcendence',
+        body: 'Nirvana shows another Bukowski: brief grace, a simple place, weather, a room of strangers, the sense that life can become bearable for a moment without becoming solved. That quiet lift is important.',
+      },
+      {
+        title: 'Poems to read next',
+        body: 'Read the poems themselves outside the app: Bluebird, The Laughing Heart, Roll the Dice, So You Want To Be A Writer?, Nirvana, The Genius of the Crowd, alone with everybody, and Dinosauria, We. The app should guide you toward them, not replace them.',
       },
     ],
   },

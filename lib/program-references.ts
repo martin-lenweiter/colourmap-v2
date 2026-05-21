@@ -49,6 +49,16 @@ export const PROGRAM_REFERENCES: Record<string, string[]> = {
     'Piers Steel, The Procrastination Equation.',
     'David Burns, Feeling Good, especially the anti-procrastination techniques.',
   ],
+  'viktor-frankl': [
+    "Viktor Frankl, Man's Search for Meaning.",
+    'Viktor Frankl, The Will to Meaning.',
+    'Viktor Frankl, The Doctor and the Soul.',
+  ],
+  'bukowski-poems': [
+    'Charles Bukowski, The Last Night of the Earth Poems.',
+    'Charles Bukowski, Love Is a Dog from Hell.',
+    'Read next: Bluebird, The Laughing Heart, Roll the Dice, Nirvana, and The Genius of the Crowd.',
+  ],
   'emotional-intelligence': [
     'Daniel Goleman, Emotional Intelligence.',
     'Marc Brackett, Permission to Feel.',
