@@ -3,6 +3,7 @@
 import Image from 'next/image';
 import type { MouseEvent } from 'react';
 import { useState } from 'react';
+import { getProgramReferences } from '@/lib/program-references';
 import type { Program } from '@/lib/programs';
 
 const SERIF = 'var(--font-serif)';
@@ -29,6 +30,7 @@ const POSITIVE_OVERLAY_PROGRAMS = new Set([
   'conflict-repair',
   'money-anxiety',
   'identity-becoming',
+  'avoidance-action',
   'parenting-patterns',
 ]);
 
@@ -59,10 +61,29 @@ const LIFE_GUIDE_PROGRAMS = new Set([
 ]);
 const GENERATED_LAYERED_PANEL_COUNTS: Record<string, number> = {
   'carl-jung': 20,
-  'paulo-freire': 2,
-  'thich-nhat-hanh': 2,
+  'paulo-freire': 3,
+  'thich-nhat-hanh': 4,
   gandhi: 20,
   'clear-allen': 16,
+};
+
+const GENERATED_LAYERED_PANEL_EXTENSIONS: Record<string, string> = {
+  'paulo-freire': 'webp',
+  'thich-nhat-hanh': 'webp',
+};
+
+const POSITIVE_OVERLAY_PANEL_EXTENSIONS: Record<string, string> = {
+  'conflict-repair': 'webp',
+  'money-anxiety': 'webp',
+  'identity-becoming': 'webp',
+  'avoidance-action': 'webp',
+};
+
+const POSITIVE_OVERLAY_PANEL_COUNTS: Record<string, number> = {
+  'conflict-repair': 1,
+  'money-anxiety': 1,
+  'identity-becoming': 1,
+  'avoidance-action': 1,
 };
 
 const PROGRAM_IMAGE_STYLES: Record<string, ImageStyle[]> = {
@@ -722,10 +743,17 @@ function PanelImage({
     return <ColourmapVisionPanel index={index} color={color} />;
   }
   if (imageStyle && imageStyle !== 'default' && !failed) {
-    const extension = JPG_PANEL_PROGRAMS.has(programKey) ? 'jpg' : 'png';
+    const extension =
+      imageStyle === POSITIVE_OVERLAY_STYLE.key
+        ? (POSITIVE_OVERLAY_PANEL_EXTENSIONS[programKey] ?? 'png')
+        : JPG_PANEL_PROGRAMS.has(programKey)
+          ? 'jpg'
+          : 'png';
     return (
       <img
-        src={`/comics/${programKey}/variants/${imageStyle}/panel-${index}.${extension}`}
+        src={`/comics/${programKey}/variants/${imageStyle}/panel-${
+          index % (POSITIVE_OVERLAY_PANEL_COUNTS[programKey] ?? Number.POSITIVE_INFINITY)
+        }.${extension}`}
         alt={alt}
         onError={() => setFailed(true)}
         style={{
@@ -738,9 +766,10 @@ function PanelImage({
     );
   }
   if (generatedCount && !failed) {
+    const extension = GENERATED_LAYERED_PANEL_EXTENSIONS[programKey] ?? 'png';
     return (
       <img
-        src={`/comics/${programKey}/generated/panel-${index % generatedCount}.png`}
+        src={`/comics/${programKey}/generated/panel-${index % generatedCount}.${extension}`}
         alt={alt}
         onError={() => setFailed(true)}
         style={{
@@ -1381,6 +1410,54 @@ const PROGRAM_INTROS: Record<string, { what: string; gain: string }> = {
     gain: "You'll leave with a practical vocabulary for your inner life — and a different relationship to the states you've been trying to avoid.",
   },
 };
+
+function FurtherReadingBlock({
+  program,
+  compact = false,
+}: {
+  program: Program;
+  compact?: boolean;
+}) {
+  const references = getProgramReferences(program.key);
+  return (
+    <div
+      style={{
+        border: `1px solid ${col(program.color, 0.18)}`,
+        background: col(program.color, 0.05),
+        padding: compact ? 11 : 14,
+        marginTop: compact ? 12 : 22,
+      }}
+    >
+      <div
+        style={{
+          fontFamily: SERIF,
+          fontSize: 9,
+          letterSpacing: '0.18em',
+          textTransform: 'uppercase',
+          color: col(program.color, 0.62),
+          marginBottom: 8,
+        }}
+      >
+        Further reading
+      </div>
+      <div style={{ display: 'grid', gap: 7 }}>
+        {references.map((reference) => (
+          <div
+            key={reference}
+            style={{
+              fontFamily: SERIF,
+              fontSize: compact ? 12 : 13,
+              lineHeight: 1.45,
+              color: cream(0.72),
+            }}
+          >
+            {reference}
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
 
 /* ── Comic Program Reader ──────────────────────────────────────── */
 type Props = {
@@ -2102,6 +2179,7 @@ export default function ComicProgram({
                   </p>
                 ))}
               </div>
+              {index === total - 1 && <FurtherReadingBlock program={program} compact />}
               <div
                 style={{
                   display: 'flex',
@@ -2169,7 +2247,10 @@ export default function ComicProgram({
   }
 
   if (LAYERED_BUBBLE_PROGRAMS.has(program.key)) {
-    const isLandscape = LANDSCAPE_LAYERED_PROGRAMS.has(program.key);
+    const isLandscape =
+      LANDSCAPE_LAYERED_PROGRAMS.has(program.key) && program.key === 'thich-nhat-hanh'
+        ? index < 2
+        : LANDSCAPE_LAYERED_PROGRAMS.has(program.key);
     const usesGuideTextBox = LIFE_GUIDE_PROGRAMS.has(program.key);
     const isJung = program.key === 'carl-jung';
     const showsGuideTextBox =
@@ -2486,6 +2567,11 @@ export default function ComicProgram({
               ))}
             </div>
           )}
+          {index === total - 1 && showsGuideTextBox && (
+            <div style={{ maxWidth: isLandscape ? 620 : 390, margin: '12px auto 0' }}>
+              <FurtherReadingBlock program={program} compact />
+            </div>
+          )}
         </div>
 
         <div
@@ -2756,6 +2842,7 @@ export default function ComicProgram({
             </p>
           ))}
         </div>
+        {index === total - 1 && <FurtherReadingBlock program={program} />}
       </div>
 
       {/* ── Navigation ── */}

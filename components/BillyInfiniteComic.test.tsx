@@ -14,8 +14,10 @@ describe('BillyInfiniteComic', () => {
   it('uses right and left image zones to reveal, advance, and go back', () => {
     render(<BillyInfiniteComic />);
 
-    expect(screen.getByText('Pineapple Planet')).toBeDefined();
-    expect(screen.getByRole('button', { name: 'Education' })).toBeDefined();
+    expect(screen.getAllByText('Pineapple Planet').length).toBeGreaterThan(0);
+    expect(screen.getAllByRole('button', { name: 'Education' }).length).toBeGreaterThan(0);
+    expect(screen.getByAltText('Pineapple Planet intro')).toBeDefined();
+    fireEvent.click(screen.getByRole('button', { name: 'Begin the quest' }));
     expect(screen.getByAltText('Billy Leaves The Sofa Zone comic panel')).toBeDefined();
     expect(screen.queryByText('Billy Leaves The Sofa Zone')).toBeNull();
 

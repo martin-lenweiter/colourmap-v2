@@ -36,6 +36,12 @@ roads, and future learning worlds should be full-bleed artwork only: no beige bo
 matte, no fake paper edge, and no partial frame line inside the raster. The UI may place the image
 inside a card, but the image itself must stay borderless.
 
+Home-screen covers for stories, life stories, teachers, poets, and theme programs should usually be
+simple one-concept images. The cover must read from far away on a small phone card: one portrait, one
+object, one gesture, one room, one road, one window, or one symbolic contradiction. Do not turn the
+cover into a miniature poster of every idea in the program. The cover's job is to unlock thought,
+not to summarize the whole lesson.
+
 ## Visual Universe
 
 The aim is to build one coherent Colourmap education visual universe, not disconnected illustrations.
@@ -597,6 +603,26 @@ paths, rivers, trees, walking figures, bowls of tea, community circles, and open
 men, keep symbolism light, and avoid decorative overload. The reader should never depend on baked-in
 speech bubbles. App-rendered cream text plates carry the title and teaching copy above the clean
 landscape artwork.
+
+The first two Thich images can remain as landscape introduction images, but the main reader sequence
+should move into vertical phone-first images. This keeps the successful intro atmosphere while making
+the rest of the program feel closer to the Clear and Allen life-guide card system. Later/future-facing
+Thich pages may use a small modern or future signal when the message turns toward what we leave for
+future generations, but the tone must remain human, sober, and non-futuristic by default.
+
+`Paulo Freire & Collective Hope` needs a portrait-forward home image. The cover should focus on
+Freire's face and one readable symbolic element, such as an open book becoming a circle of dialogue.
+That image may also become an extra program page.
+
+Theme programs such as `Money & Anxiety`, `Conflict & Repair`, `Identity & Becoming`, and `Avoidance
+& The Real Task` should not use dense concept collages. Each one should have a strong symbolic object
+or scene: the money mountain, the repaired bowl, the mirror-and-path, the avoided notebook and door.
+They should share Colourmap's warm paper universe while giving each theme a slightly distinct touch
+so the platform feels coherent but not repetitive.
+
+Every program should eventually end with a small further-reading section: books, authors, essays,
+or search directions that let the user continue without adding more visual load. These references
+are app-rendered text and do not require new images.
 
 Format guidance:
 
