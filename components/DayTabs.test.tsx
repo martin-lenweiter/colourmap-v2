@@ -36,10 +36,10 @@ describe('DayTabs', () => {
     localStorage.clear();
   });
 
-  it('renders the Emotion / Mission / Progress tab strip', () => {
+  it('renders the Emotions / Missions / Progress tab strip', () => {
     renderTabs();
-    expect(screen.getByText('Emotion')).toBeDefined();
-    expect(screen.getByText('Mission')).toBeDefined();
+    expect(screen.getByText('Emotions')).toBeDefined();
+    expect(screen.getByText('Missions')).toBeDefined();
     expect(screen.getByText('Progress')).toBeDefined();
   });
 
@@ -48,10 +48,10 @@ describe('DayTabs', () => {
     expect(screen.getByText('emotion-content')).toBeDefined();
   });
 
-  it('switches to Mission when the Mission tab is clicked', async () => {
+  it('switches to Missions when the Missions tab is clicked', async () => {
     const user = userEvent.setup();
     renderTabs();
-    await user.click(screen.getByText('Mission'));
+    await user.click(screen.getByText('Missions'));
     expect(screen.getByText('mission-content')).toBeDefined();
   });
 

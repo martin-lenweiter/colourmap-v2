@@ -132,27 +132,33 @@ function PresenceCell({
       style={{
         width: compact ? 42 : 128,
         height: compact ? 42 : 128,
-        borderColor: listening ? 'rgba(245, 170, 70, 0.78)' : 'rgba(214, 165, 83, 0.48)',
+        borderColor: listening
+          ? 'color-mix(in srgb, var(--foreground) 70%, var(--primary))'
+          : 'color-mix(in srgb, var(--foreground) 34%, transparent)',
         background: isSun
-          ? 'radial-gradient(circle at 50% 50%, rgba(255,210,88,0.52), rgba(209,84,25,0.45) 31%, rgba(56,25,14,0.98) 68%, rgba(18,12,11,0.98))'
+          ? 'radial-gradient(circle at 50% 50%, color-mix(in srgb, var(--primary) 62%, var(--foreground)), color-mix(in srgb, var(--primary) 42%, var(--card)) 31%, color-mix(in srgb, var(--card) 92%, black) 68%, var(--card))'
           : isWalker
-            ? 'radial-gradient(circle at 50% 46%, rgba(246,188,77,0.2), rgba(41,23,17,0.96) 62%, rgba(18,12,11,0.98))'
+            ? 'radial-gradient(circle at 50% 46%, color-mix(in srgb, var(--primary) 24%, transparent), color-mix(in srgb, var(--card) 92%, black) 62%, var(--card))'
             : isOrbit
-              ? 'radial-gradient(circle at 50% 50%, rgba(245,185,82,0.14), rgba(38,31,38,0.96) 58%, rgba(14,12,18,0.98))'
+              ? 'radial-gradient(circle at 50% 50%, color-mix(in srgb, var(--primary) 16%, transparent), color-mix(in srgb, var(--card) 88%, var(--muted)) 58%, var(--card))'
               : isNebula
-                ? 'radial-gradient(circle at 44% 48%, rgba(218,167,196,0.28), rgba(90,67,104,0.28) 34%, rgba(30,17,24,0.98) 70%)'
-                : 'radial-gradient(circle at 50% 50%, rgba(247,185,82,0.18), rgba(64,32,18,0.96) 54%, rgba(22,13,11,0.98))',
+                ? 'radial-gradient(circle at 44% 48%, color-mix(in srgb, var(--foreground) 24%, transparent), color-mix(in srgb, var(--primary) 28%, transparent) 34%, var(--card) 70%)'
+                : 'radial-gradient(circle at 50% 50%, color-mix(in srgb, var(--primary) 22%, transparent), color-mix(in srgb, var(--card) 88%, var(--primary)) 54%, var(--card))',
         boxShadow: listening
-          ? '0 0 42px rgba(241, 143, 45, 0.5), inset 0 0 34px rgba(246, 187, 78, 0.22)'
-          : '0 0 24px rgba(174, 116, 42, 0.24), inset 0 0 24px rgba(240, 186, 90, 0.12)',
+          ? '0 0 42px color-mix(in srgb, var(--primary) 46%, transparent), inset 0 0 34px color-mix(in srgb, var(--foreground) 18%, transparent)'
+          : '0 0 24px color-mix(in srgb, var(--primary) 24%, transparent), inset 0 0 24px color-mix(in srgb, var(--foreground) 10%, transparent)',
       }}
     >
       <div
         className="absolute rounded-full border"
         style={{
           inset: isWalker ? '18% 27% 14%' : '14%',
-          borderColor: listening ? 'rgba(255, 204, 104, 0.42)' : 'rgba(238, 184, 92, 0.2)',
-          boxShadow: active ? 'inset 0 0 28px rgba(255, 176, 69, 0.2)' : undefined,
+          borderColor: listening
+            ? 'color-mix(in srgb, var(--foreground) 38%, transparent)'
+            : 'color-mix(in srgb, var(--foreground) 18%, transparent)',
+          boxShadow: active
+            ? 'inset 0 0 28px color-mix(in srgb, var(--primary) 20%, transparent)'
+            : undefined,
         }}
       />
       {dots.map((dot) => (
@@ -167,16 +173,16 @@ function PresenceCell({
               height: compact ? dot.size * 0.72 : dot.size,
               background: isNebula
                 ? dot.id % 7 === 0
-                  ? '#ffe0ef'
-                  : '#f4b84f'
+                  ? 'var(--foreground)'
+                  : 'var(--primary)'
                 : isSun
                   ? dot.id % 5 === 0
-                    ? '#fff2a6'
-                    : '#f39a35'
+                    ? 'var(--foreground)'
+                    : 'var(--primary)'
                   : dot.id % 5 === 0
-                    ? '#fff1a8'
-                    : '#f4b84f',
-              boxShadow: '0 0 10px rgba(251, 190, 73, 0.9)',
+                    ? 'var(--foreground)'
+                    : 'var(--primary)',
+              boxShadow: '0 0 10px color-mix(in srgb, var(--primary) 78%, transparent)',
               opacity: listening ? 0.94 : 0.62,
               transform: 'translate(-50%, -50%)',
               animation: `${
@@ -339,10 +345,10 @@ export default function GlobalAIPresence() {
         onClick={() => setOpen(true)}
         className="fixed bottom-5 right-5 z-[130] flex items-center gap-2 rounded-full border px-3 py-2 text-xs font-semibold shadow-lg transition hover:scale-[1.02]"
         style={{
-          borderColor: 'rgba(205, 148, 68, 0.52)',
-          background: 'rgba(45, 24, 17, 0.94)',
-          color: '#f5d28c',
-          boxShadow: '0 14px 44px rgba(28, 14, 8, 0.32)',
+          borderColor: 'color-mix(in srgb, var(--foreground) 28%, transparent)',
+          background: 'color-mix(in srgb, var(--card) 92%, black)',
+          color: 'var(--foreground)',
+          boxShadow: '0 14px 44px color-mix(in srgb, var(--background) 55%, black)',
         }}
       >
         <PresenceCell

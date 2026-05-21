@@ -637,19 +637,7 @@ const sunGlints = Array.from({ length: 34 }, (_, index) => {
   };
 });
 
-type MissionSunMotion = 'orbit' | 'flare' | 'scatter' | 'cell' | 'ripple';
-
-const missionSunMotionOptions: Array<{
-  id: MissionSunMotion;
-  label: string;
-  hint: string;
-}> = [
-  { id: 'orbit', label: 'Orbit', hint: 'swirling dots' },
-  { id: 'flare', label: 'Flare', hint: 'breathing rays' },
-  { id: 'scatter', label: 'Scatter', hint: 'agitated sparks' },
-  { id: 'cell', label: 'Cell', hint: 'living organism' },
-  { id: 'ripple', label: 'Ripple', hint: 'voice waves' },
-];
+type MissionSunMotion = 'cell';
 
 const sunVoices = [
   {
@@ -680,7 +668,7 @@ function SunPresence({
   speaking = false,
   compact = false,
   showTranscript = true,
-  motion = 'orbit',
+  motion = 'cell',
   livingText,
 }: {
   active: boolean;
@@ -696,24 +684,9 @@ function SunPresence({
       : livingText;
   const textEnergy = Math.min(1, livingText.trim().length / (compact ? 140 : 240));
   const energy = active ? 1 : Math.min(0.72, 0.28 + textEnergy * 0.52);
-  const agitation =
-    speaking && motion === 'scatter'
-      ? 4.15
-      : speaking && motion === 'cell'
-        ? 2.25
-        : speaking && motion === 'ripple'
-          ? 2.7
-          : speaking
-            ? 2.55
-            : active && motion === 'scatter'
-              ? 2.7
-              : active && motion === 'flare'
-                ? 2.05
-                : active
-                  ? 1.65
-                  : 1;
+  const agitation = speaking ? 1.32 : active ? 1.12 : 0.74;
   const sunSize = compact ? 'h-44 w-44 xl:h-52 xl:w-52' : 'h-56 w-56';
-  const dotLimit = compact ? (motion === 'cell' ? 230 : 190) : sunDots.length;
+  const dotLimit = compact ? 210 : sunDots.length;
 
   return (
     <div
@@ -763,38 +736,14 @@ function SunPresence({
           data-speaking={speaking ? 'true' : 'false'}
           style={{
             filter: active
-              ? `drop-shadow(0 0 ${
-                  speaking ? (motion === 'scatter' ? 58 : 46) : motion === 'scatter' ? 44 : 34
-                }px rgba(255,138,34,0.8))`
-              : 'drop-shadow(0 0 20px rgba(255,138,34,0.38))',
+              ? `drop-shadow(0 0 ${speaking ? 34 : 28}px rgba(255,166,48,0.68))`
+              : 'drop-shadow(0 0 18px rgba(255,166,48,0.32))',
             transform: active
-              ? `translateY(${speaking ? '-5px' : '0'}) scale(${
-                  speaking && motion === 'cell'
-                    ? '1.025'
-                    : speaking
-                      ? motion === 'scatter'
-                        ? '1.12'
-                        : '1.085'
-                      : motion === 'flare'
-                        ? '1.075'
-                        : '1.04'
-                })`
+              ? `translateY(${speaking ? '-2px' : '0'}) scale(${speaking ? '1.018' : '1.025'})`
               : `translateY(${Math.round((energy - 0.28) * -10)}px) scale(${(0.96 + energy * 0.06).toFixed(3)})`,
-            transition: 'transform 220ms ease, filter 220ms ease',
+            transition: 'transform 520ms ease, filter 520ms ease',
             animation: active
-              ? `build-lab-sun-breathe ${
-                  speaking && motion === 'cell'
-                    ? '0.9s'
-                    : speaking
-                      ? motion === 'scatter'
-                        ? '0.42s'
-                        : '0.62s'
-                      : motion === 'scatter'
-                        ? '0.74s'
-                        : motion === 'flare'
-                          ? '1.05s'
-                          : '1.8s'
-                } ease-in-out infinite`
+              ? `build-lab-sun-breathe ${speaking ? '2.4s' : '3.8s'} ease-in-out infinite`
               : 'none',
           }}
         >
@@ -808,13 +757,9 @@ function SunPresence({
           />
           {sunDots.slice(0, dotLimit).map((dot) => {
             const color = '#ffd36c';
-            const flowScale = active
-              ? agitation + dot.heat * (motion === 'scatter' ? 1.8 : motion === 'cell' ? 0.25 : 0.7)
-              : speaking
-                ? 1.45
-                : 0.62 + energy * 0.28;
+            const flowScale = active ? agitation + dot.heat * 0.18 : 0.5 + energy * 0.18;
             const baseScale = active
-              ? (0.96 + dot.heat * 0.42).toFixed(3)
+              ? (0.82 + dot.heat * 0.34).toFixed(3)
               : (0.72 + energy * 0.22 + dot.heat * 0.1).toFixed(3);
             return (
               <span
@@ -836,55 +781,23 @@ function SunPresence({
                       : (0.38 + dot.heat * 0.2 + energy * 0.18).toFixed(3),
                     '--base-scale': baseScale,
                     '--flow-duration': `${dot.duration}s`,
-                    '--pulse-duration': speaking
-                      ? motion === 'scatter'
-                        ? '0.32s'
-                        : '0.48s'
-                      : motion === 'scatter'
-                        ? '0.68s'
-                        : motion === 'flare'
-                          ? '0.96s'
-                          : '1.7s',
+                    '--pulse-duration': speaking ? '2.15s' : '3.2s',
                     '--flow-delay': `-${dot.delay}s`,
                     '--flow-a-x': `${Number(dot.flowAx) * flowScale}px`,
                     '--flow-a-y': `${Number(dot.flowAy) * flowScale}px`,
-                    '--flow-b-x': `${
-                      motion === 'flare'
-                        ? (Number(dot.x) - 50) * 0.78 * flowScale
-                        : motion === 'ripple'
-                          ? Number(dot.flowAx) * -0.55 * flowScale
-                          : Number(dot.flowBx) * flowScale
-                    }px`,
-                    '--flow-b-y': `${
-                      motion === 'flare'
-                        ? (Number(dot.y) - 50) * 0.78 * flowScale
-                        : motion === 'ripple'
-                          ? Number(dot.flowAy) * -0.55 * flowScale
-                          : Number(dot.flowBy) * flowScale
-                    }px`,
-                    '--flow-c-x': `${
-                      motion === 'flare'
-                        ? (Number(dot.x) - 50) * 0.32 * flowScale
-                        : motion === 'ripple'
-                          ? (Number(dot.x) - 50) * 0.18 * flowScale
-                          : Number(dot.flowCx) * flowScale
-                    }px`,
-                    '--flow-c-y': `${
-                      motion === 'flare'
-                        ? (Number(dot.y) - 50) * 0.32 * flowScale
-                        : motion === 'ripple'
-                          ? (Number(dot.y) - 50) * 0.18 * flowScale
-                          : Number(dot.flowCy) * flowScale
-                    }px`,
-                    '--cell-x': `${(Number(dot.x) - 50) * (motion === 'cell' ? -0.34 : 0)}px`,
-                    '--cell-y': `${(Number(dot.y) - 50) * (motion === 'cell' ? -0.34 : 0)}px`,
+                    '--flow-b-x': `${Number(dot.flowBx) * flowScale}px`,
+                    '--flow-b-y': `${Number(dot.flowBy) * flowScale}px`,
+                    '--flow-c-x': `${Number(dot.flowCx) * flowScale}px`,
+                    '--flow-c-y': `${Number(dot.flowCy) * flowScale}px`,
+                    '--cell-x': `${(Number(dot.x) - 50) * -0.52}px`,
+                    '--cell-y': `${(Number(dot.y) - 50) * -0.52}px`,
                   } as CSSProperties
                 }
               />
             );
           })}
           {active &&
-            sunDots.slice(0, speaking ? (compact ? 28 : 42) : compact ? 15 : 24).map((dot) => (
+            sunDots.slice(0, speaking ? (compact ? 14 : 24) : compact ? 10 : 16).map((dot) => (
               <span
                 key={`bubble-${dot.id}`}
                 className="build-lab-sun-bubble absolute rounded-full"
@@ -895,27 +808,9 @@ function SunPresence({
                     width: `${Math.max(6, Number(dot.size) * (speaking ? 3.8 : 2.4))}px`,
                     height: `${Math.max(6, Number(dot.size) * (speaking ? 3.8 : 2.4))}px`,
                     '--bubble-delay': `-${dot.delay}s`,
-                    '--bubble-duration': speaking
-                      ? motion === 'ripple'
-                        ? '1.25s'
-                        : motion === 'scatter'
-                          ? '0.64s'
-                          : '0.92s'
-                      : motion === 'scatter'
-                        ? '1.1s'
-                        : motion === 'flare'
-                          ? '1.55s'
-                          : '2.2s',
-                    '--bubble-x': `${
-                      motion === 'ripple'
-                        ? (Number(dot.x) - 50) * (speaking ? 0.78 : 0.45)
-                        : Number(dot.flowBx) * (speaking ? 3.7 : motion === 'scatter' ? 2.9 : 1.8)
-                    }px`,
-                    '--bubble-y': `${
-                      motion === 'ripple'
-                        ? (Number(dot.y) - 50) * (speaking ? 0.78 : 0.45)
-                        : Number(dot.flowBy) * (speaking ? 3.7 : motion === 'scatter' ? 2.9 : 1.8)
-                    }px`,
+                    '--bubble-duration': speaking ? '4.8s' : '6.4s',
+                    '--bubble-x': `${Number(dot.flowBx) * (speaking ? 1.8 : 1.2)}px`,
+                    '--bubble-y': `${Number(dot.flowBy) * (speaking ? 1.8 : 1.2)}px`,
                   } as CSSProperties
                 }
               />
@@ -1849,14 +1744,13 @@ export default function BuildLab() {
   >('idle');
   const [showMissionDetails, setShowMissionDetails] = useState(false);
   const [showConsoleMissionPill, setShowConsoleMissionPill] = useState(true);
-  const [missionSunMotion, setMissionSunMotion] = useState<MissionSunMotion>('scatter');
   const [missionComposerFullscreen, setMissionComposerFullscreen] = useState(false);
   const missionAbortRef = useRef<AbortController | null>(null);
   const consoleScrollRef = useRef<HTMLDivElement | null>(null);
   const promptTextareaRef = useRef<HTMLTextAreaElement | null>(null);
   const queueRunnerRef = useRef(false);
   const queuedMissionsRef = useRef<QueuedMission[]>([]);
-  const speech = useSpeechToText({ lang: 'en-US', autoRestart: true });
+  const speech = useSpeechToText({ lang: 'en-US' });
   const phoneSpeech = useSpeechToText({ lang: 'en-US' });
 
   const selectedAgent = useMemo(
@@ -2700,64 +2594,39 @@ export default function BuildLab() {
           animation-delay: var(--flow-delay), var(--flow-delay);
           animation-iteration-count: infinite, infinite;
         }
-        .build-lab-sun-field[data-motion="flare"]::after {
-          animation-duration: 4.6s;
-          filter: blur(15px);
-        }
-        .build-lab-sun-field[data-motion="flare"][data-speaking="true"]::after {
-          animation: build-lab-sun-flare-burst 1.05s ease-out infinite;
-        }
-        .build-lab-sun-field[data-motion="scatter"]::after {
-          animation-duration: 2.9s;
-          filter: blur(18px);
-        }
-        .build-lab-sun-field[data-motion="scatter"][data-speaking="true"] .build-lab-sun-glint {
-          animation-duration: 0.72s !important;
-        }
         .build-lab-sun-field[data-motion="cell"] {
           border-radius: 9999px;
           box-shadow:
-            inset 0 0 26px rgba(255,225,143,0.18),
-            inset 0 0 54px rgba(255,133,38,0.1),
-            0 0 0 1px rgba(255,218,120,0.2);
+            inset 0 0 34px rgba(255,225,143,0.22),
+            inset 0 0 70px rgba(255,153,40,0.12),
+            0 0 0 1px rgba(255,218,120,0.24);
         }
         .build-lab-sun-field[data-motion="cell"]::before {
-          inset: 10%;
+          inset: 8%;
           background:
-            radial-gradient(circle at 45% 44%, rgba(255,223,142,0.26), transparent 16%),
-            radial-gradient(circle at 51% 52%, rgba(255,174,54,0.12), transparent 43%);
-          filter: blur(9px);
-          animation-duration: 4.8s;
-        }
-        .build-lab-sun-field[data-motion="cell"]::after {
-          inset: -1%;
-          background:
-            radial-gradient(circle, transparent 60%, rgba(255,219,122,0.3) 62%, transparent 69%),
-            radial-gradient(circle, rgba(255,175,55,0.06), transparent 58%);
-          filter: blur(7px);
+            radial-gradient(circle at 45% 44%, rgba(255,223,142,0.32), transparent 18%),
+            radial-gradient(circle at 51% 52%, rgba(255,174,54,0.14), transparent 46%);
+          filter: blur(12px);
           animation-duration: 9s;
         }
+        .build-lab-sun-field[data-motion="cell"]::after {
+          inset: -5%;
+          background:
+            radial-gradient(circle, transparent 58%, rgba(255,219,122,0.22) 63%, transparent 72%),
+            radial-gradient(circle, rgba(255,175,55,0.07), transparent 62%);
+          filter: blur(13px);
+          animation-duration: 14s;
+        }
         .build-lab-sun-field[data-motion="cell"][data-speaking="true"]::after {
-          filter: blur(9px);
-          animation-duration: 2.6s;
-        }
-        .build-lab-sun-field[data-motion="ripple"] .build-lab-sun-wave {
-          animation-duration: 1.35s;
-          box-shadow: 0 0 34px rgba(255,190,70,0.3);
-        }
-        .build-lab-sun-field[data-motion="ripple"][data-speaking="true"] .build-lab-sun-wave {
-          animation-duration: 0.82s;
-          border-color: rgba(255,226,145,0.46);
-        }
-        .build-lab-sun-field[data-motion="orbit"][data-speaking="true"]::after {
-          animation-duration: 4.2s;
+          filter: blur(15px);
+          animation-duration: 8s;
         }
         .build-lab-sun-field[data-speaking="true"] .build-lab-sun-dot-active {
-          animation-timing-function: cubic-bezier(.2,.9,.24,1.24), ease-in-out;
+          animation-timing-function: ease-in-out, ease-in-out;
         }
         .build-lab-sun-field[data-speaking="true"] .build-lab-sun-bubble {
-          border-color: rgba(255,231,154,0.46);
-          box-shadow: 0 0 28px rgba(255,164,45,0.36);
+          border-color: rgba(255,231,154,0.34);
+          box-shadow: 0 0 22px rgba(255,164,45,0.26);
         }
         .build-lab-sun-bubble {
           z-index: 1;
@@ -2786,10 +2655,10 @@ export default function BuildLab() {
             transform: translate(-50%, -50%) translate(var(--cell-x, 0px), var(--cell-y, 0px)) translate(var(--flow-a-x), var(--flow-a-y)) scale(var(--base-scale));
           }
           33% {
-            transform: translate(-50%, -50%) translate(var(--cell-x, 0px), var(--cell-y, 0px)) translate(var(--flow-b-x), var(--flow-b-y)) scale(calc(var(--base-scale) * 1.16));
+            transform: translate(-50%, -50%) translate(var(--cell-x, 0px), var(--cell-y, 0px)) translate(var(--flow-b-x), var(--flow-b-y)) scale(calc(var(--base-scale) * 1.07));
           }
           66% {
-            transform: translate(-50%, -50%) translate(var(--cell-x, 0px), var(--cell-y, 0px)) translate(var(--flow-c-x), var(--flow-c-y)) scale(calc(var(--base-scale) * 0.92));
+            transform: translate(-50%, -50%) translate(var(--cell-x, 0px), var(--cell-y, 0px)) translate(var(--flow-c-x), var(--flow-c-y)) scale(calc(var(--base-scale) * 0.96));
           }
         }
         @keyframes build-lab-sun-dot-pulse {
@@ -2798,13 +2667,13 @@ export default function BuildLab() {
         }
         @keyframes build-lab-sun-bubble {
           0% { opacity: 0; transform: translate(-50%, -50%) scale(0.45); }
-          18% { opacity: 0.72; }
-          100% { opacity: 0; transform: translate(-50%, -50%) translate(var(--bubble-x), var(--bubble-y)) scale(1.85); }
+          26% { opacity: 0.46; }
+          100% { opacity: 0; transform: translate(-50%, -50%) translate(var(--bubble-x), var(--bubble-y)) scale(1.42); }
         }
         @keyframes build-lab-sun-glint {
-          0%, 100% { opacity: 0.18; transform: translate(-50%, -50%) scale(0.72); }
-          42% { opacity: 0.95; transform: translate(-50%, -50%) scale(1.8); }
-          62% { opacity: 0.36; transform: translate(-50%, -50%) scale(1.05); }
+          0%, 100% { opacity: 0.16; transform: translate(-50%, -50%) scale(0.72); }
+          42% { opacity: 0.72; transform: translate(-50%, -50%) scale(1.42); }
+          62% { opacity: 0.3; transform: translate(-50%, -50%) scale(1.02); }
         }
         @keyframes build-lab-sun-star-twinkle {
           0%, 100% { transform: scale(0.72); opacity: 0.18; }
@@ -3968,7 +3837,7 @@ export default function BuildLab() {
                           active={speech.listening || running}
                           speaking={speech.listening}
                           showTranscript={false}
-                          motion={missionSunMotion}
+                          motion="cell"
                           livingText={
                             speech.transcript ||
                             prompt ||
@@ -3976,30 +3845,10 @@ export default function BuildLab() {
                           }
                         />
                       </div>
-                      <div className="mt-3 grid grid-cols-3 gap-1 rounded-full border border-[#d7b978]/12 bg-[#0f0a07] p-1">
-                        {missionSunMotionOptions.map((option) => (
-                          <button
-                            key={option.id}
-                            type="button"
-                            onClick={() => setMissionSunMotion(option.id)}
-                            title={option.hint}
-                            className="rounded-full px-2 py-1 text-[11px] transition"
-                            style={{
-                              background:
-                                missionSunMotion === option.id
-                                  ? 'rgba(255,211,108,0.18)'
-                                  : 'transparent',
-                              color: missionSunMotion === option.id ? '#ffd983' : '#a98b5c',
-                            }}
-                          >
-                            {option.label}
-                          </button>
-                        ))}
-                      </div>
                       {(speech.error || speech.listening) && (
                         <p className="mt-3 text-xs leading-5 text-[#a98b5c]">
                           {speech.error ||
-                            'Listening. The dots agitate while the prompt keeps your words in view.'}
+                            'Listening. The cell holds steady while the prompt keeps your words in view.'}
                         </p>
                       )}
                     </aside>

@@ -9,7 +9,6 @@ import DailyRituals from '@/components/DailyRituals';
 import DayRoad from '@/components/DayRoad';
 import DayTabs from '@/components/DayTabs';
 import DayView3D from '@/components/DayView3D';
-import EmotionLearnPill from '@/components/EmotionLearnPill';
 import FeelingCircles2 from '@/components/FeelingCircles2';
 import FirstRunOnboarding from '@/components/FirstRunOnboarding';
 import IdeaConstellation from '@/components/IdeaConstellation';
@@ -19,8 +18,63 @@ import LearningHub from '@/components/LearningHub';
 import MissionDesignSwitcher from '@/components/MissionDesignSwitcher';
 import Overview2 from '@/components/Overview2';
 import TodaysField from '@/components/TodaysField';
-import { emotionInsights } from '@/lib/insights';
 import { hydrate } from '@/lib/sync';
+
+const EMOTION_BACKDROPS = [
+  '/emotions/emotion-city-night-1.webp',
+  '/emotions/emotion-city-night-2.webp',
+  '/emotions/emotion-sunset-1.webp',
+  '/emotions/emotion-sunset-2.webp',
+];
+
+function EmotionMoodSurface({ children }: { children: React.ReactNode }) {
+  const [index, setIndex] = useState(0);
+
+  useEffect(() => {
+    const timer = window.setInterval(
+      () => setIndex((current) => (current + 1) % EMOTION_BACKDROPS.length),
+      18_000,
+    );
+    return () => window.clearInterval(timer);
+  }, []);
+
+  return (
+    <div
+      style={{
+        position: 'relative',
+        overflow: 'hidden',
+        borderRadius: 18,
+        padding: '12px 8px 14px',
+        background: 'var(--palette-l2-bg, rgba(30,16,8,0.5))',
+      }}
+    >
+      <div
+        aria-hidden="true"
+        style={{
+          position: 'absolute',
+          inset: 0,
+          backgroundImage: `url("${EMOTION_BACKDROPS[index]}")`,
+          backgroundSize: 'cover',
+          backgroundPosition: index < 2 ? 'center 42%' : 'center 50%',
+          opacity: 0.24,
+          transition: 'background-image 900ms ease, opacity 900ms ease',
+        }}
+      />
+      <div
+        aria-hidden="true"
+        style={{
+          position: 'absolute',
+          inset: 0,
+          background:
+            'linear-gradient(180deg, color-mix(in srgb, var(--background) 72%, transparent), color-mix(in srgb, var(--background) 88%, black))',
+        }}
+      />
+      <div style={{ position: 'relative', zIndex: 1 }} className="space-y-3">
+        {children}
+      </div>
+    </div>
+  );
+}
 
 function DayContent() {
   const [roadOpen, setRoadOpen] = useState(false);
@@ -60,39 +114,10 @@ function DayContent() {
 
       <DayTabs
         emotionContent={
-          <div className="space-y-3">
+          <EmotionMoodSurface>
             <InnerWork />
             <div style={{ height: 20 }} />
             <FeelingCircles2 />
-            {/* Insight */}
-            <div style={{ paddingTop: 20 }}>
-              <EmotionLearnPill
-                insights={emotionInsights}
-                programKey="emotional-intelligence"
-                onOpenHub={() => setLearnOpen(true)}
-              />
-            </div>
-            <div style={{ display: 'flex', justifyContent: 'center', paddingTop: 4 }}>
-              <button
-                type="button"
-                onClick={() => setLearnOpen(true)}
-                style={{
-                  padding: '5px 20px',
-                  borderRadius: 999,
-                  border: '1px solid var(--panel-border, rgba(122,84,56,0.28))',
-                  background: 'transparent',
-                  color: 'var(--light-surface-muted, #7A5438)',
-                  fontFamily: 'var(--font-serif)',
-                  fontSize: 11,
-                  fontWeight: 500,
-                  letterSpacing: '0.1em',
-                  textTransform: 'uppercase',
-                  cursor: 'pointer',
-                }}
-              >
-                Education
-              </button>
-            </div>
             {/* Experiments — collapsible pill */}
             <div
               style={{
@@ -166,7 +191,7 @@ function DayContent() {
             {roadOpen && <DayRoad embedded onClose={() => setRoadOpen(false)} />}
             {mapOpen && <InfographicsView embedded onClose={() => setMapOpen(false)} />}
             {viewOpen && <DayView3D embedded onClose={() => setViewOpen(false)} />}
-          </div>
+          </EmotionMoodSurface>
         }
         missionContent={
           <div className="space-y-3">
@@ -200,28 +225,6 @@ function DayContent() {
                 }}
               >
                 Constellation
-              </button>
-              <button
-                type="button"
-                onClick={() => setLearnOpen(true)}
-                style={{
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: 5,
-                  padding: '5px 18px',
-                  borderRadius: 999,
-                  border: '1px solid var(--panel-border, rgba(122,84,56,0.28))',
-                  background: 'transparent',
-                  color: 'var(--light-surface-muted, #7A5438)',
-                  fontFamily: 'var(--font-serif)',
-                  fontSize: 11,
-                  fontWeight: 500,
-                  letterSpacing: '0.1em',
-                  textTransform: 'uppercase',
-                  cursor: 'pointer',
-                }}
-              >
-                Education
               </button>
             </div>
           </div>

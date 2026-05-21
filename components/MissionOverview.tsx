@@ -576,14 +576,15 @@ export default function MissionOverview() {
                       style={{
                         background: linkedChannel ? `${linkedChannel.color}12` : 'none',
                         border: `1px solid ${linkedChannel ? `${linkedChannel.color}40` : 'rgba(196,160,96,0.18)'}`,
-                        borderRadius: 999,
-                        padding: '2px 9px',
+                        borderRadius: 8,
+                        padding: '7px 10px',
                         fontFamily: 'var(--font-serif)',
-                        fontSize: 9,
+                        fontSize: 13,
+                        fontWeight: 900,
                         color: linkedChannel ? linkedChannel.color : LABEL,
-                        opacity: linkedChannel ? 0.85 : 0.4,
+                        opacity: linkedChannel ? 1 : 0.78,
                         cursor: 'pointer',
-                        letterSpacing: '0.08em',
+                        letterSpacing: '0.04em',
                         display: 'inline-flex',
                         alignItems: 'center',
                         gap: 4,
@@ -605,7 +606,7 @@ export default function MissionOverview() {
                           {linkedChannel.title || 'Unnamed'}
                         </>
                       ) : (
-                        '+ area'
+                        'Add area'
                       )}
                     </button>
                   )}

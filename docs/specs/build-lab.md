@@ -281,7 +281,8 @@ MVP behavior:
 - a warm dot sun reacts visually while listening
 - in the mission workspace, the mission prompt is the single transcript surface; the compact Mission Sun should not duplicate the prompt text in its own pill
 - the prompt text area uses the same golden living-transcript treatment and automatically scrolls to the newest dictated words while recording
-- the compact Mission Sun offers distinct visual agitation styles: Orbit swirls, Flare pulses outward, Scatter throws sparks, Cell keeps a stable membrane with agitated internal dots, and Ripple sends wave rings through the field
+- the compact Mission Sun uses one default visual preset for now: a slow golden cell with a stable outer membrane, gathered inner dots, soft collective pulsing, and very slow diffuse background motion. Avoid Orbit/Flare/Scatter/Ripple mode picking until there is a clearer need.
+- mission voice input should not flicker on/off in restart loops. If browser speech recognition ends after silence, stop cleanly and let the user restart it.
 - the larger Mission Sun text box remains an important future interaction pattern: a visual transcript/conversation surface where the user can talk to an AI presence and see words writing themselves inside the same golden-dot universe
 - when the user is composing or speaking a mission, the Mission Sun and current prompt should stretch into a wider studio panel instead of staying trapped in a narrow sidebar
 - the brown Mission Sun/prompt composer needs its own fullscreen mode for focused voice prompting and visually pleasant mission writing

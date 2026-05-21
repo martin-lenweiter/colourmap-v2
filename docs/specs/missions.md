@@ -70,12 +70,26 @@ Today / Later / Life Areas, with blocker and next-step context inside each missi
 In Paper, Golden, and light Beige design modes, all mission labels and pills must use dark ink text on
 light surfaces. Ochre/gold text is reserved for dark panels where it has enough contrast.
 
+Mission area names and area controls must be readable, not mini chips. Use clear labels such as
+`Add area`, `Vertical`, and `Horizontal`; avoid tiny symbolic controls, unlabeled dots, or `+ area`
+microcopy for important organisation actions. Area text must adapt to light and dark backgrounds
+using theme foreground variables, with dots/color used as support rather than the only identifier.
+
+User-created areas are not only containers for compartments. Each area must also allow the user to
+add missions directly inside that area, because the point of Areas is to ask: what do I have to do
+in this part of life? Area-created missions should use the normal mission storage shape and carry an
+area tag/category id so Mission Control can group them with the rest of the user's active work.
+
+Daily Rituals text must stay readable in dark palettes. Ritual names, section labels, add controls,
+counters, and quotes use the same golden/ochre text family as the `Daily Rituals` title rather than
+faded muted typography.
+
 ### Product Shape
 
 Mission Control should have five zones:
 
 1. **Command Line** — one fast input for dumping tasks, worries, plans, or vague obligations. The user should not have to categorize before capturing.
-2. **Today Lane** — the few things that matter today. This is not a giant todo list; it is the current operating lane.
+2. **Daily Focus** — the few things that matter today. This is not a giant todo list; it is the current operating lane.
 3. **Life Fronts** — missions grouped by life category such as Body, Organisation, Music, Work, Social, Money, Home. These are the stable areas of life.
 4. **Road View** — a visual sequence from current mission to next steps to later objectives. It should show movement, not just a list.
 5. **AI Organiser** — a scoped assistant that can read the mission dump and suggest grouping, next steps, blockers, and category links. Suggestions are never applied silently.

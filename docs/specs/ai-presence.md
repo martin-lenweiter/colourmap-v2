@@ -1,6 +1,6 @@
 # AI Presence
 
-> A small shared AI surface that can appear from anywhere in Colourmap and reflect through the brown/gold living-cell visual language.
+> A small shared AI surface that can appear from anywhere in Colourmap and reflect through a theme-adaptive living-cell visual language.
 
 ## Purpose
 
@@ -10,14 +10,15 @@ This surface is the practical first step toward the larger AI Evolution spec: an
 
 ## First Milestone
 
-- A floating ochre/brown button is available inside the authenticated app shell.
-- Opening it reveals a calm brown panel with a living-cell dot visual.
+- A floating theme-adaptive button is available inside the authenticated app shell.
+- Opening it reveals a calm panel with a living-cell dot visual that fits the active Colourmap theme.
 - The visual has five switchable presets: Cell, Mission Sun, Dot Walker, Orbit, and Nebula.
-- Mission Sun is the first talking-interface prototype: golden dots stay gathered inside the circular field and pulse faster while the user is speaking, so voice input has a visible body.
+- Mission Sun is the first talking-interface prototype: warm theme-relative dots stay gathered inside the circular field and pulse faster while the user is speaking, so voice input has a visible body.
 - The user can type a reflection or dictate into the text area when browser speech recognition is available.
 - Submit streams a backend AI response into the panel.
 - The panel is usable on phone without Codex, Claude Code, or a desktop runner.
 - The response stays mirror-first: it names what it sees, asks one useful question, and avoids pretending to be therapy.
+- The cell, dots, border, glow, and panel surface must use theme-relative colors. They must stay readable in beige, dark, purple, and future palettes instead of staying fixed brown/gold.
 
 ## Backend
 

@@ -11,6 +11,7 @@ const LS_RITUALS = 'colourmap:rituals';
 const LS_DONE = `colourmap:rituals-done-${TODAY}`;
 const LS_SESSIONS = 'colourmap:rituals-sessions';
 const NB_LS_KEY = 'colourmap:notebook-entries';
+const OCHRE_TEXT = 'var(--palette-panel-text, #C8A858)';
 
 const QUOTES = [
   'Discipline is hard. Rituals are easy. Systems set you free.',
@@ -380,20 +381,6 @@ function RitualNotebook({ notebookKey, onClose }: { notebookKey: string; onClose
 
       {/* Entry list */}
       <div style={{ flex: 1, overflowY: 'auto', padding: '12px 20px 60px' }}>
-        {entries.length === 0 && (
-          <p
-            style={{
-              fontFamily: 'var(--font-serif)',
-              fontStyle: 'italic',
-              fontSize: 13,
-              color: 'var(--palette-panel-muted, rgba(196,160,96,0.55))',
-              textAlign: 'center',
-              paddingTop: 24,
-            }}
-          >
-            No entries yet
-          </p>
-        )}
         {entries.map((entry) => {
           const isDeep = entry.tags?.includes('deep');
           return (
@@ -417,7 +404,7 @@ function RitualNotebook({ notebookKey, onClose }: { notebookKey: string; onClose
                     flex: 1,
                     fontFamily: 'var(--font-serif)',
                     fontSize: 10,
-                    color: 'var(--palette-panel-muted, rgba(196,160,96,0.4))',
+                    color: OCHRE_TEXT,
                   }}
                 >
                   {relativeWhen(entry.createdAt)}
@@ -428,7 +415,7 @@ function RitualNotebook({ notebookKey, onClose }: { notebookKey: string; onClose
                   style={{
                     background: 'none',
                     border: 'none',
-                    color: 'var(--palette-panel-muted, rgba(196,160,96,0.55))',
+                    color: OCHRE_TEXT,
                     cursor: 'pointer',
                     fontSize: 13,
                     lineHeight: 1,
@@ -510,7 +497,7 @@ function GuitarOverlay({ tab, onClose }: { tab: string; onClose: () => void }) {
             fontSize: 10,
             letterSpacing: '0.2em',
             textTransform: 'uppercase',
-            color: 'var(--palette-panel-muted, rgba(196,160,96,0.55))',
+            color: OCHRE_TEXT,
           }}
         >
           Guitar Studio
@@ -522,7 +509,7 @@ function GuitarOverlay({ tab, onClose }: { tab: string; onClose: () => void }) {
             background: 'none',
             border: '1px solid rgba(196,160,96,0.22)',
             borderRadius: 999,
-            color: 'var(--palette-panel-muted, rgba(196,160,96,0.55))',
+            color: OCHRE_TEXT,
             fontFamily: 'var(--font-serif)',
             fontSize: 11,
             letterSpacing: '0.1em',
@@ -662,7 +649,7 @@ function RitualRow({
             border: 'none',
             cursor: 'grab',
             padding: '2px 6px',
-            color: 'var(--palette-panel-muted, rgba(196,160,96,0.55))',
+            color: OCHRE_TEXT,
             flexShrink: 0,
             touchAction: 'none',
             display: 'flex',
@@ -716,9 +703,7 @@ function RitualRow({
             fontFamily: 'var(--font-serif)',
             fontSize: 14,
             fontWeight: checked ? 700 : 400,
-            color: checked
-              ? 'var(--palette-panel-text, #C8A858)'
-              : 'var(--palette-panel-muted, rgba(196,160,96,0.72))',
+            color: OCHRE_TEXT,
             flex: 1,
             letterSpacing: '0.02em',
             transition: 'color 0.2s',
@@ -745,7 +730,7 @@ function RitualRow({
               cursor: 'pointer',
               fontFamily: 'var(--font-serif)',
               fontSize: 11,
-              color: 'var(--palette-panel-muted, rgba(196,160,96,0.5))',
+              color: OCHRE_TEXT,
               letterSpacing: '0.04em',
               flexShrink: 0,
               transition: 'all 0.15s',
@@ -772,7 +757,7 @@ function RitualRow({
               cursor: 'pointer',
               fontFamily: 'var(--font-serif)',
               fontSize: 12,
-              color: 'var(--palette-panel-muted, rgba(196,160,96,0.5))',
+              color: OCHRE_TEXT,
               flexShrink: 0,
               transition: 'all 0.15s',
             }}
@@ -790,8 +775,8 @@ function RitualRow({
                 fontFamily: 'var(--font-serif)',
                 fontSize: 10,
                 fontWeight: 700,
-                color: 'var(--palette-panel-muted, #C8A858)',
-                opacity: 0.8,
+                color: OCHRE_TEXT,
+                opacity: 1,
               }}
             >
               {ritual.streakCount}
@@ -811,7 +796,7 @@ function RitualRow({
             border: 'none',
             cursor: 'pointer',
             padding: '0 2px',
-            color: 'var(--palette-panel-muted, rgba(196,160,96,0.2))',
+            color: OCHRE_TEXT,
             fontSize: 13,
             lineHeight: 1,
             flexShrink: 0,
@@ -857,15 +842,21 @@ function AddRitual({ time, onAdd }: { time: string; onAdd: (name: string) => voi
           background: 'none',
           border: 'none',
           cursor: 'pointer',
-          padding: '4px 4px 10px',
+          width: 28,
+          height: 28,
+          margin: '2px auto 10px',
+          padding: 0,
           fontFamily: 'var(--font-serif)',
-          fontSize: 12,
-          color: 'var(--palette-panel-muted, rgba(196,160,96,0.55))',
-          letterSpacing: '0.06em',
-          display: 'block',
+          fontSize: 18,
+          fontWeight: 800,
+          color: OCHRE_TEXT,
+          lineHeight: 1,
+          display: 'grid',
+          placeItems: 'center',
         }}
+        aria-label={`Add ${time} ritual`}
       >
-        + add ritual
+        +
       </button>
     );
   }
@@ -947,7 +938,7 @@ function AddSession({ onAdd }: { onAdd: (name: string) => void }) {
           padding: '4px 4px 10px',
           fontFamily: 'var(--font-serif)',
           fontSize: 12,
-          color: 'var(--palette-panel-muted, rgba(196,160,96,0.55))',
+          color: OCHRE_TEXT,
           letterSpacing: '0.06em',
           display: 'block',
         }}
@@ -1053,9 +1044,7 @@ function TimeSection({
             fontWeight: emptyLabel ? 400 : 700,
             textTransform: 'uppercase',
             letterSpacing: emptyLabel ? '0.2em' : '0.18em',
-            color: emptyLabel
-              ? 'var(--palette-panel-muted, rgba(196,160,96,0.35))'
-              : 'var(--palette-panel-muted, rgba(196,160,96,0.65))',
+            color: OCHRE_TEXT,
           }}
         >
           {icon} {label}
@@ -1075,11 +1064,11 @@ function TimeSection({
           onOpenLink={r.linkTarget ? () => onOpenLink(r.linkTarget!) : undefined}
         />
       ))}
-      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
-        <div style={{ flex: 1 }}>
-          <AddRitual time={label.toLowerCase()} onAdd={onAdd} />
+      <div>
+        <AddRitual time={label.toLowerCase()} onAdd={onAdd} />
+        <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+          <AddSession onAdd={onAddSession} />
         </div>
-        <AddSession onAdd={onAddSession} />
       </div>
     </div>
   );
@@ -1310,25 +1299,12 @@ export default function DailyRituals() {
             >
               Daily Rituals
             </div>
-            <div
-              style={{
-                fontFamily: 'var(--font-serif)',
-                fontSize: 10,
-                fontWeight: 600,
-                textTransform: 'uppercase',
-                letterSpacing: '0.18em',
-                color: 'var(--palette-panel-muted, rgba(196,160,96,0.60))',
-                marginTop: 2,
-              }}
-            >
-              {peaked ? '✦ Peak Alignment ✦' : 'Build Your Peak'}
-            </div>
           </div>
           <span style={{ flex: 1, display: 'flex', justifyContent: 'flex-end' }}>
             <span
               style={{
-                color: 'var(--palette-panel-muted, #C4A060)',
-                opacity: 0.4,
+                color: OCHRE_TEXT,
+                opacity: 1,
                 fontSize: 11,
                 transform: `rotate(${open ? 180 : 0}deg)`,
                 transition: 'transform 0.2s',
@@ -1360,7 +1336,7 @@ export default function DailyRituals() {
                     fontWeight: 600,
                     textTransform: 'uppercase',
                     letterSpacing: '0.16em',
-                    color: 'var(--palette-panel-muted, rgba(196,160,96,0.65))',
+                    color: OCHRE_TEXT,
                   }}
                 >
                   Today's Alignment
@@ -1436,7 +1412,7 @@ export default function DailyRituals() {
                   fontFamily: 'var(--font-serif)',
                   fontSize: 12,
                   fontStyle: 'italic',
-                  color: 'var(--palette-panel-muted, rgba(196,160,96,0.55))',
+                  color: OCHRE_TEXT,
                   letterSpacing: '0.03em',
                   lineHeight: 1.6,
                   margin: 0,

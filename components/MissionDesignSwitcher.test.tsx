@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { cleanup, render, screen } from '@testing-library/react';
+import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
@@ -23,12 +23,12 @@ describe('MissionDesignSwitcher', () => {
     const user = userEvent.setup();
     render(<MissionDesignSwitcher />);
 
-    expect(screen.getByRole('button', { name: 'Format 1' })).toBeDefined();
     expect(screen.getByRole('button', { name: /Tasks/ })).toBeDefined();
     expect(screen.queryByText('Current Mission')).toBeNull();
 
     await user.click(screen.getByRole('button', { name: /Tasks/ }));
 
+    expect(screen.getByRole('button', { name: '1' })).toBeDefined();
     expect(screen.getByPlaceholderText('add a mission…')).toBeDefined();
     expect(screen.queryByText('Current Mission')).toBeNull();
     expect(screen.queryByText('Daily Missions')).toBeNull();
@@ -39,7 +39,8 @@ describe('MissionDesignSwitcher', () => {
     const user = userEvent.setup();
     render(<MissionDesignSwitcher />);
 
-    await user.click(screen.getByRole('button', { name: 'Format 2' }));
+    await user.click(screen.getByRole('button', { name: /Tasks/ }));
+    await user.click(screen.getByRole('button', { name: '2' }));
 
     expect(screen.getByText('Mission Control')).toBeDefined();
     expect(screen.getByPlaceholderText('drop a mission, worry, task, or plan...')).toBeDefined();
@@ -68,9 +69,9 @@ describe('MissionDesignSwitcher', () => {
 
     render(<MissionDesignSwitcher />);
 
+    fireEvent.click(screen.getByRole('button', { name: /Tasks/ }));
     expect(screen.getAllByText('Write investor story').length).toBeGreaterThan(0);
     expect(screen.getAllByText('Work').length).toBeGreaterThan(0);
-    expect(screen.getAllByText('Today').length).toBeGreaterThan(0);
     expect(screen.queryByText('Pro')).toBeNull();
     expect(screen.queryByText('Real')).toBeNull();
   });

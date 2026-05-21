@@ -15,6 +15,7 @@ const LABEL_COLOR = 'var(--palette-panel-muted, rgba(196,160,96,0.5))';
 // ── LS keys ──────────────────────────────────────────────────────────
 const LS_CHAPTER = 'colourmap:life-chapter';
 const LS_CHAPTER_SUB = 'colourmap:life-chapter-sub';
+const LS_CHAPTER_TAB = 'colourmap:life-chapter-tab-label';
 const LS_FOCUS = 'colourmap:week-focus';
 const LS_ARENAS = 'colourmap:life-arenas';
 
@@ -155,6 +156,29 @@ function _Card({
 
 function ChapterSummary() {
   const [open, setOpen] = useState(false);
+  const [tabLabel, setTabLabel] = useState('Chapter');
+  const [editingLabel, setEditingLabel] = useState(false);
+  const tabInputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem(LS_CHAPTER_TAB);
+      if (saved?.trim()) setTabLabel(saved);
+    } catch {}
+  }, []);
+
+  useEffect(() => {
+    if (editingLabel) setTimeout(() => tabInputRef.current?.focus(), 0);
+  }, [editingLabel]);
+
+  function saveTabLabel(value: string) {
+    const next = value.trim() || 'Chapter';
+    setTabLabel(next);
+    setEditingLabel(false);
+    try {
+      localStorage.setItem(LS_CHAPTER_TAB, next);
+    } catch {}
+  }
 
   return (
     <div
@@ -165,9 +189,7 @@ function ChapterSummary() {
         overflow: 'hidden',
       }}
     >
-      <button
-        type="button"
-        onClick={() => setOpen((v) => !v)}
+      <div
         style={{
           display: 'flex',
           alignItems: 'center',
@@ -180,21 +202,81 @@ function ChapterSummary() {
         }}
       >
         <span style={{ flex: 1 }} />
-        <span
-          style={{
-            fontFamily: 'var(--font-serif)',
-            fontSize: 13,
-            fontWeight: 800,
-            letterSpacing: '0.14em',
-            textTransform: 'uppercase',
-            color: 'var(--palette-panel-text, rgba(196,160,96,0.82))',
-          }}
-        >
-          Chapter
-        </span>
-        <span style={{ flex: 1, display: 'flex', justifyContent: 'flex-end' }}>
-          <span
+        {editingLabel ? (
+          <input
+            ref={tabInputRef}
+            value={tabLabel}
+            onClick={(event) => event.stopPropagation()}
+            onChange={(event) => setTabLabel(event.target.value)}
+            onBlur={() => saveTabLabel(tabLabel)}
+            onKeyDown={(event) => {
+              if (event.key === 'Enter') saveTabLabel(tabLabel);
+              if (event.key === 'Escape') {
+                setEditingLabel(false);
+              }
+            }}
             style={{
+              width: 160,
+              border: 'none',
+              borderBottom: '1px solid var(--panel-border, rgba(196,160,96,0.28))',
+              background: 'transparent',
+              color: 'var(--palette-panel-text, rgba(196,160,96,0.82))',
+              fontFamily: 'var(--font-serif)',
+              fontSize: 13,
+              fontWeight: 800,
+              letterSpacing: '0.08em',
+              outline: 'none',
+              textAlign: 'center',
+              textTransform: 'uppercase',
+            }}
+          />
+        ) : (
+          <button
+            type="button"
+            onClick={() => setOpen((v) => !v)}
+            style={{
+              border: 'none',
+              background: 'transparent',
+              cursor: 'pointer',
+              fontFamily: 'var(--font-serif)',
+              fontSize: 13,
+              fontWeight: 800,
+              letterSpacing: '0.14em',
+              textTransform: 'uppercase',
+              color: 'var(--palette-panel-text, rgba(196,160,96,0.82))',
+            }}
+          >
+            {tabLabel}
+          </button>
+        )}
+        <span style={{ flex: 1, display: 'flex', justifyContent: 'flex-end' }}>
+          <button
+            type="button"
+            onClick={(event) => {
+              event.stopPropagation();
+              setEditingLabel(true);
+            }}
+            style={{
+              border: 'none',
+              background: 'transparent',
+              marginRight: 12,
+              fontFamily: 'var(--font-serif)',
+              fontSize: 10,
+              color: 'var(--palette-panel-muted, rgba(196,160,96,0.42))',
+              cursor: 'pointer',
+              letterSpacing: '0.08em',
+              textTransform: 'uppercase',
+            }}
+          >
+            rename
+          </button>
+          <button
+            type="button"
+            onClick={() => setOpen((v) => !v)}
+            style={{
+              border: 'none',
+              background: 'transparent',
+              cursor: 'pointer',
               fontFamily: 'var(--font-serif)',
               fontSize: 8,
               color: 'var(--palette-panel-muted, rgba(196,160,96,0.42))',
@@ -202,9 +284,9 @@ function ChapterSummary() {
             }}
           >
             {open ? '▲' : '▼'}
-          </span>
+          </button>
         </span>
-      </button>
+      </div>
       {open && <LifeChapter />}
     </div>
   );

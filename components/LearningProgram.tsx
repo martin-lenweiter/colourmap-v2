@@ -1,5 +1,6 @@
 'use client';
 
+import type { MouseEvent } from 'react';
 import { useCallback, useEffect, useState } from 'react';
 import type { Program } from '@/lib/programs';
 
@@ -73,6 +74,18 @@ export default function LearningProgram({
   const current = program.segments[seg];
   const total = program.segments.length;
   const isLast = seg === total - 1;
+  function handlePageSideClick(event: MouseEvent<HTMLDivElement>) {
+    const target = event.target as HTMLElement;
+    if (target.closest('button, a, input, textarea, select')) return;
+    const rect = event.currentTarget.getBoundingClientRect();
+    if (event.clientX - rect.left < rect.width / 2) {
+      goTo(seg - 1);
+    } else if (!isLast) {
+      goTo(seg + 1);
+    } else {
+      (onBack ?? onClose)();
+    }
+  }
 
   return (
     <div
@@ -209,6 +222,7 @@ export default function LearningProgram({
 
         {/* ── Content ── */}
         <div
+          onClick={handlePageSideClick}
           style={{
             flex: 1,
             overflowY: 'auto',

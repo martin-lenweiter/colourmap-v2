@@ -254,6 +254,12 @@ type ColorId = (typeof COLOR_THEMES)[number]['id'];
 type PaletteId = string;
 type PanelTab = 'color' | 'design';
 
+const DEFAULT_COLOR_THEME: ColorId = 'paper';
+const DEFAULT_PALETTE: PaletteId = 'light-brown';
+const DEFAULT_PALETTE_CUSTOM: AllCustomIds = {
+  'light-brown': { l1: 'b6', l2: 'b6', l3: 'b6' },
+};
+
 const LIGHT_THEMES: ReadonlySet<ColorId> = new Set(['paper', 'golden']);
 const LIGHT_SURFACE_TEXT = 'rgba(30,16,8,0.88)';
 const LIGHT_SURFACE_MUTED = 'rgba(30,16,8,0.58)';
@@ -387,8 +393,8 @@ function applyFullHeader() {
 
 export default function ThemeSwitcher() {
   const pathname = usePathname();
-  const [colorActive, setColorActive] = useState<ColorId>('paper');
-  const [paletteActive, setPaletteActive] = useState<PaletteId>('brown');
+  const [colorActive, setColorActive] = useState<ColorId>(DEFAULT_COLOR_THEME);
+  const [paletteActive, setPaletteActive] = useState<PaletteId>(DEFAULT_PALETTE);
   const [open, setOpen] = useState(false);
   const [tab, setTab] = useState<PanelTab>('color');
   const [allCustomIds, setAllCustomIds] = useState<AllCustomIds>({});
@@ -408,9 +414,12 @@ export default function ThemeSwitcher() {
     if (savedColor && COLOR_THEMES.some((t) => t.id === savedColor)) {
       setColorActive(savedColor);
       applyColorTheme(savedColor);
+    } else {
+      applyColorTheme(DEFAULT_COLOR_THEME);
     }
-    const savedPalette = (localStorage.getItem('colourmap-palette') ?? 'brown') as PaletteId;
-    const resolvedPalette = PALETTES.some((p) => p.id === savedPalette) ? savedPalette : 'brown';
+    const savedPalette = localStorage.getItem('colourmap-palette') as PaletteId | null;
+    const resolvedPalette =
+      savedPalette && PALETTES.some((p) => p.id === savedPalette) ? savedPalette : DEFAULT_PALETTE;
     setPaletteActive(resolvedPalette);
     applyPaletteCSS(resolvedPalette);
     const p = PALETTES.find((p) => p.id === resolvedPalette);
@@ -426,11 +435,19 @@ export default function ThemeSwitcher() {
     /* Restore per-palette deep-dive custom levels */
     try {
       const savedCustom = localStorage.getItem(LS_CUSTOM);
+      const defaultCustom = savedPalette ? {} : DEFAULT_PALETTE_CUSTOM;
       if (savedCustom) {
         const allIds = JSON.parse(savedCustom) as AllCustomIds;
         setAllCustomIds(allIds);
         /* Apply overrides for the active palette only */
         const overrides = allIds[resolvedPalette] ?? {};
+        for (const [level, colorId] of Object.entries(overrides) as [DeepLevelKey, string][]) {
+          applyCustomLevel(level, colorId, p);
+        }
+      } else {
+        setAllCustomIds(defaultCustom);
+        localStorage.setItem(LS_CUSTOM, JSON.stringify(defaultCustom));
+        const overrides = defaultCustom[resolvedPalette] ?? {};
         for (const [level, colorId] of Object.entries(overrides) as [DeepLevelKey, string][]) {
           applyCustomLevel(level, colorId, p);
         }

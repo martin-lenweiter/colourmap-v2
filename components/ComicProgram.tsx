@@ -1,5 +1,7 @@
 'use client';
 
+import Image from 'next/image';
+import type { MouseEvent } from 'react';
 import { useState } from 'react';
 import type { Program } from '@/lib/programs';
 
@@ -31,6 +33,7 @@ const POSITIVE_OVERLAY_PROGRAMS = new Set([
 ]);
 
 const TEXT_ON_IMAGE_PROGRAMS = new Set([
+  'colourmap-vision-comic',
   'agency',
   'creativity',
   'deep-attention',
@@ -442,6 +445,261 @@ function PanelArt({ index, color }: { index: number; color: string }) {
 }
 
 /* ── Panel image — real file if exists, SVG art fallback ───────── */
+function ColourmapVisionPanel({ index, color }: { index: number; color: string }) {
+  const { r, g, b } = hex2rgb(color);
+  const c = `rgb(${r},${g},${b})`;
+  const gold = '#D6A64F';
+  const paper = '#E8D5AE';
+  const nodes = [
+    [450, 190],
+    [210, 390],
+    [690, 390],
+    [300, 680],
+    [600, 680],
+    [450, 900],
+  ];
+
+  return (
+    <svg viewBox="0 0 900 1280" width="100%" height="100%" role="img">
+      <defs>
+        <linearGradient id={`visionSky${index}`} x1="0" x2="1" y1="0" y2="1">
+          <stop offset="0%" stopColor={index % 2 === 0 ? '#182c3d' : '#071018'} />
+          <stop offset="55%" stopColor={index % 2 === 0 ? '#6f8fa3' : '#132b38'} />
+          <stop offset="100%" stopColor="#17100b" />
+        </linearGradient>
+        <radialGradient id={`visionGlow${index}`} cx="50%" cy="42%" r="54%">
+          <stop offset="0%" stopColor={c} stopOpacity="0.42" />
+          <stop offset="100%" stopColor={c} stopOpacity="0" />
+        </radialGradient>
+      </defs>
+      <rect width="900" height="1280" fill={`url(#visionSky${index})`} />
+      <rect width="900" height="1280" fill={`url(#visionGlow${index})`} />
+      <path
+        d="M0 650 C160 590 268 560 390 608 C548 670 650 560 900 500 L900 1280 L0 1280 Z"
+        fill="#172a2f"
+        opacity="0.66"
+      />
+      <path
+        d="M0 850 C180 790 330 838 470 770 C610 704 720 790 900 708 L900 1280 L0 1280 Z"
+        fill="#241a10"
+        opacity="0.54"
+      />
+
+      {index === 0 && (
+        <g>
+          <rect
+            x="66"
+            y="90"
+            width="768"
+            height="520"
+            rx="18"
+            fill="rgba(232,244,246,0.1)"
+            stroke="rgba(232,244,246,0.28)"
+          />
+          {[0, 1, 2, 3, 4].map((item) => (
+            <g key={item} transform={`translate(${128 + item * 132} 178)`}>
+              <circle
+                cx="40"
+                cy="40"
+                r="34"
+                fill="rgba(255,255,255,0.07)"
+                stroke={item === 3 ? gold : 'rgba(232,213,174,0.36)'}
+                strokeWidth={item === 3 ? 3 : 1.3}
+              />
+              <rect
+                x="0"
+                y="104"
+                width="80"
+                height="148"
+                rx="10"
+                fill={item === 3 ? 'rgba(214,166,79,0.24)' : 'rgba(255,255,255,0.08)'}
+                stroke={item === 3 ? gold : 'rgba(255,255,255,0.16)'}
+              />
+              <circle cx="40" cy="178" r="18" fill={item === 3 ? gold : c} opacity="0.72" />
+            </g>
+          ))}
+        </g>
+      )}
+
+      {index === 1 && (
+        <g>
+          {[170, 260, 350, 440].map((radius) => (
+            <circle
+              key={radius}
+              cx="450"
+              cy="545"
+              r={radius}
+              fill="none"
+              stroke="rgba(232,213,174,0.16)"
+              strokeWidth="2"
+            />
+          ))}
+          <line x1="450" y1="105" x2="450" y2="990" stroke={gold} strokeWidth="2" opacity="0.5" />
+          <line x1="100" y1="545" x2="800" y2="545" stroke={gold} strokeWidth="2" opacity="0.5" />
+          {nodes.map(([x, y], item) => (
+            <g key={item}>
+              <line x1="450" y1="545" x2={x} y2={y} stroke={item % 2 ? gold : c} opacity="0.35" />
+              <circle
+                cx={x}
+                cy={y}
+                r="54"
+                fill={item % 2 ? 'rgba(214,166,79,0.2)' : `rgba(${r},${g},${b},0.18)`}
+                stroke={item % 2 ? gold : c}
+                strokeWidth="3"
+              />
+              <circle cx={x} cy={y} r="14" fill={item % 2 ? gold : c} opacity="0.72" />
+            </g>
+          ))}
+          <circle
+            cx="450"
+            cy="545"
+            r="70"
+            fill="rgba(232,213,174,0.16)"
+            stroke={paper}
+            strokeWidth="3"
+          />
+        </g>
+      )}
+
+      {index === 2 && (
+        <g>
+          <circle
+            cx="450"
+            cy="515"
+            r="340"
+            fill="rgba(120,169,184,0.08)"
+            stroke="rgba(232,213,174,0.18)"
+          />
+          {Array.from({ length: 34 }).map((_, item) => {
+            const angle = item * 0.74;
+            const ring = 160 + (item % 4) * 54;
+            const x = 450 + Math.cos(angle) * ring;
+            const y = 515 + Math.sin(angle) * ring;
+            return (
+              <g key={item}>
+                <line
+                  x1="450"
+                  y1="515"
+                  x2={x}
+                  y2={y}
+                  stroke={item % 5 === 0 ? gold : c}
+                  opacity="0.14"
+                />
+                <rect
+                  x={x - 26}
+                  y={y - 34}
+                  width="52"
+                  height="68"
+                  rx="7"
+                  fill={item % 5 === 0 ? 'rgba(214,166,79,0.2)' : `rgba(${r},${g},${b},0.14)`}
+                  stroke={item % 5 === 0 ? gold : c}
+                />
+                <circle cx={x} cy={y} r="8" fill={item % 5 === 0 ? gold : c} opacity="0.62" />
+              </g>
+            );
+          })}
+          <circle
+            cx="450"
+            cy="515"
+            r="82"
+            fill="rgba(232,213,174,0.14)"
+            stroke={paper}
+            strokeWidth="3"
+          />
+        </g>
+      )}
+
+      {index >= 3 && (
+        <g>
+          {[0, 1, 2, 3, 4].map((row) =>
+            [0, 1, 2, 3].map((colIndex) => (
+              <g
+                key={`${row}-${colIndex}`}
+                transform={`translate(${132 + colIndex * 168} ${250 + row * 118})`}
+              >
+                <rect
+                  width="112"
+                  height="76"
+                  rx="12"
+                  fill={`rgba(${r},${g},${b},0.11)`}
+                  stroke={`rgba(${r},${g},${b},0.34)`}
+                />
+                <circle
+                  cx="56"
+                  cy="38"
+                  r="16"
+                  fill={(row + colIndex) % 3 === 0 ? gold : c}
+                  opacity="0.58"
+                />
+                {colIndex < 3 && (
+                  <path
+                    d="M112 38 C132 24 148 52 168 38"
+                    stroke="rgba(232,213,174,0.28)"
+                    strokeWidth="2"
+                    fill="none"
+                  />
+                )}
+              </g>
+            )),
+          )}
+          <path
+            d="M170 940 C272 862 360 1014 468 920 C590 814 690 976 796 890"
+            stroke={index === 4 ? gold : c}
+            strokeWidth="5"
+            fill="none"
+            opacity="0.62"
+          />
+          <circle
+            cx="450"
+            cy="1034"
+            r="44"
+            fill="rgba(232,213,174,0.12)"
+            stroke={paper}
+            strokeWidth="3"
+          />
+          <circle cx="450" cy="1034" r="18" fill={gold} opacity="0.82" />
+        </g>
+      )}
+    </svg>
+  );
+}
+
+function ColourmapVisionRasterPanel({
+  index,
+  color,
+  alt,
+}: {
+  index: number;
+  color: string;
+  alt: string;
+}) {
+  const [failed, setFailed] = useState(false);
+
+  if (failed) {
+    return <ColourmapVisionPanel index={index} color={color} />;
+  }
+
+  return (
+    <Image
+      src={`/comics/colourmap-vision-comic/panel-${index}.webp`}
+      alt={alt}
+      width={1200}
+      height={1800}
+      quality={75}
+      sizes="(max-width: 720px) 92vw, 760px"
+      loading={index === 0 ? 'eager' : 'lazy'}
+      priority={index === 0}
+      onError={() => setFailed(true)}
+      style={{
+        width: '100%',
+        height: 'auto',
+        display: 'block',
+        background: 'rgba(10,6,3,0.24)',
+      }}
+    />
+  );
+}
+
 function PanelImage({
   programKey,
   index,
@@ -457,6 +715,12 @@ function PanelImage({
 }) {
   const [failed, setFailed] = useState(false);
   const generatedCount = GENERATED_LAYERED_PANEL_COUNTS[programKey];
+  if (programKey === 'colourmap-vision-comic') {
+    if (index < 9) {
+      return <ColourmapVisionRasterPanel index={index} color={color} alt={alt} />;
+    }
+    return <ColourmapVisionPanel index={index} color={color} />;
+  }
   if (imageStyle && imageStyle !== 'default' && !failed) {
     const extension = JPG_PANEL_PROGRAMS.has(programKey) ? 'jpg' : 'png';
     return (
@@ -1171,6 +1435,14 @@ export default function ComicProgram({
     setMoreOpen(false);
     setGuideStep(0);
   }
+  function handleComicSurfaceClick(event: MouseEvent<HTMLElement>, nextAction = next) {
+    const rect = event.currentTarget.getBoundingClientRect();
+    if (event.clientX - rect.left < rect.width / 2) {
+      prev();
+      return;
+    }
+    nextAction();
+  }
 
   const introData = PROGRAM_INTROS[program.key];
 
@@ -1259,8 +1531,8 @@ export default function ComicProgram({
         >
           <button
             type="button"
-            onClick={next}
-            aria-label={index === total - 1 ? 'Return to education' : 'Next comic page'}
+            onClick={handleComicSurfaceClick}
+            aria-label="Comic page navigation: left previous, right next"
             style={{
               display: 'block',
               width: '100%',
@@ -1750,8 +2022,8 @@ export default function ComicProgram({
         >
           <button
             type="button"
-            onClick={next}
-            aria-label={index === total - 1 ? 'Return to education' : 'Next comic page'}
+            onClick={handleComicSurfaceClick}
+            aria-label="Comic page navigation: left previous, right next"
             style={{
               display: 'block',
               width: '100%',
@@ -2061,7 +2333,7 @@ export default function ComicProgram({
           >
             <button
               type="button"
-              onClick={primaryNext}
+              onClick={(event) => handleComicSurfaceClick(event, primaryNext)}
               aria-label={
                 usesGuideTextBox && guideStep === 0
                   ? 'Reveal comic text'
@@ -2364,7 +2636,7 @@ export default function ComicProgram({
       {/* ── Panel art ── */}
       <button
         type="button"
-        onClick={next}
+        onClick={handleComicSurfaceClick}
         onKeyDown={(event) => {
           if (event.key === 'Enter' || event.key === ' ') {
             event.preventDefault();

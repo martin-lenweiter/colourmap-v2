@@ -7,6 +7,7 @@ import LearningProgram from './LearningProgram';
 import PersonalityTypeProgram from './PersonalityTypeProgram';
 
 const COMIC_PROGRAMS = new Set([
+  'colourmap-vision-comic',
   'room-to-breathe',
   'emotional-intelligence',
   'self-talk',
@@ -38,7 +39,19 @@ const COMIC_PROGRAMS = new Set([
 ]);
 
 const EDUCATION_IMAGES = ['/education-1.png', '/education-2.png', '/education-3.png'];
-const EDUCATION_WORLDS = [
+type EducationWorld = {
+  href: string;
+  title: string;
+  label: string;
+  body: string;
+  tint: string;
+  kind: 'link' | 'personality' | 'program';
+  cover: string;
+  coverPosition?: string;
+  programKey?: string;
+};
+
+const EDUCATION_ENTERTAINMENT: EducationWorld[] = [
   {
     href: '/entertainment',
     title: 'Pineapple Planet',
@@ -46,8 +59,22 @@ const EDUCATION_WORLDS = [
     body: 'A funny, reflective quest for The Juice through symbolic worlds.',
     tint: '#D39A3D',
     kind: 'link',
-    cover: '/entertainment/billy/quest-for-juice/panel-13.webp',
+    cover: '/entertainment/billy/quest-for-juice/panel-9.webp',
+    coverPosition: 'center 18%',
   },
+  {
+    href: '#colourmap-vision-comic',
+    title: 'Colourmap Vision Comic',
+    label: 'Project vision',
+    body: 'The mission, interface dream, and future library of Colourmap.',
+    tint: '#78A9B8',
+    kind: 'program',
+    cover: '/comics/colourmap-vision-comic/panel-0.webp',
+    programKey: 'colourmap-vision-comic',
+  },
+];
+
+const EDUCATION_WORLDS: EducationWorld[] = [
   {
     href: '#personality-map',
     title: 'Personality Map',
@@ -55,7 +82,7 @@ const EDUCATION_WORLDS = [
     body: 'Traits, story, gifts, frictions, and mode bridges.',
     tint: '#D0A35F',
     kind: 'personality',
-    cover: '/education-worlds/personality-map-cover.png',
+    cover: '/education-worlds/personality-map-cover.webp',
   },
   {
     href: '/atlas',
@@ -64,7 +91,7 @@ const EDUCATION_WORLDS = [
     body: 'Wellbeing, society, hope, and shared maps.',
     tint: '#6B7A50',
     kind: 'link',
-    cover: '/education-worlds/living-atlas-cover.png',
+    cover: '/education-worlds/living-atlas-cover.webp',
   },
   {
     href: '/progress-road',
@@ -73,7 +100,7 @@ const EDUCATION_WORLDS = [
     body: 'History, change, peace, freedom, and future questions.',
     tint: '#6888B0',
     kind: 'link',
-    cover: '/education-worlds/progress-roads-cover.png',
+    cover: '/education-worlds/progress-roads-cover.webp',
   },
 ];
 
@@ -263,6 +290,19 @@ function getProgramCoverSrc(program: Program): string {
     return `/comics/${program.key}/panel-${coverPanel}.${JPG_PANEL_PROGRAMS.has(program.key) ? 'jpg' : 'png'}`;
   }
   return EDUCATION_IMAGES[0];
+}
+
+const PROGRAM_COVER_CROP: Record<string, { scale: number; position?: string }> = {
+  'emotional-intelligence': { scale: 1.06, position: 'center center' },
+  'self-talk': { scale: 1.06, position: 'center center' },
+  'hope-energy': { scale: 1.06, position: 'center center' },
+  'nervous-system': { scale: 1.035, position: 'center center' },
+  grief: { scale: 1.035, position: 'center center' },
+  belonging: { scale: 1.035, position: 'center center' },
+};
+
+function getProgramCoverCrop(program: Program) {
+  return PROGRAM_COVER_CROP[program.key] ?? { scale: 1, position: 'center center' };
 }
 
 /* ── Dynamic opening based on today's emotion ───────────────── */
@@ -462,6 +502,7 @@ function ProgramImageCard({
   const isPortraitGenerated =
     Boolean(generatedCount) && !LANDSCAPE_GENERATED_COVERS.has(program.key);
   const imageSrc = getProgramCoverSrc(program);
+  const imageCrop = getProgramCoverCrop(program);
 
   return (
     <button
@@ -517,7 +558,14 @@ function ProgramImageCard({
         <img
           src={imageSrc}
           alt=""
-          style={{ display: 'block', width: '100%', height: '100%', objectFit: 'cover' }}
+          style={{
+            display: 'block',
+            width: '100%',
+            height: '100%',
+            objectFit: 'cover',
+            objectPosition: imageCrop.position,
+            transform: `scale(${imageCrop.scale})`,
+          }}
         />
       </div>
 
@@ -572,6 +620,7 @@ function GuideProgramCard({
   const total = program.segments.length;
   const started = progress > 0;
   const imageSrc = getProgramCoverSrc(program);
+  const imageCrop = getProgramCoverCrop(program);
   const title = program.domain;
   const subtitle = '';
 
@@ -605,7 +654,14 @@ function GuideProgramCard({
         <img
           src={imageSrc}
           alt=""
-          style={{ display: 'block', width: '100%', height: '100%', objectFit: 'cover' }}
+          style={{
+            display: 'block',
+            width: '100%',
+            height: '100%',
+            objectFit: 'cover',
+            objectPosition: imageCrop.position,
+            transform: `scale(${imageCrop.scale})`,
+          }}
         />
       </div>
       <div style={{ minWidth: 0, padding: '1px 1px 0' }}>
@@ -649,13 +705,7 @@ function GuideProgramCard({
   );
 }
 
-function EducationWorldCard({
-  world,
-  onOpen,
-}: {
-  world: (typeof EDUCATION_WORLDS)[number];
-  onOpen: () => void;
-}) {
+function EducationWorldCard({ world, onOpen }: { world: EducationWorld; onOpen: () => void }) {
   function openWorld() {
     onOpen();
     if (world.kind === 'link') window.location.assign(world.href);
@@ -690,7 +740,13 @@ function EducationWorldCard({
         <img
           src={world.cover}
           alt=""
-          style={{ display: 'block', width: '100%', height: '100%', objectFit: 'cover' }}
+          style={{
+            display: 'block',
+            width: '100%',
+            height: '100%',
+            objectFit: 'cover',
+            objectPosition: world.coverPosition ?? 'center center',
+          }}
         />
       </div>
       <div>
@@ -1049,6 +1105,49 @@ export default function LearningHub({ onClose }: { onClose: () => void }) {
                   color: och(0.68),
                 }}
               >
+                Entertainment
+              </div>
+            </div>
+            <div
+              style={{
+                display: 'flex',
+                gap: 10,
+                overflowX: 'auto',
+                paddingLeft: 20,
+                paddingRight: 20,
+                paddingBottom: 6,
+                scrollbarWidth: 'none',
+              }}
+            >
+              {EDUCATION_ENTERTAINMENT.map((world) => (
+                <EducationWorldCard
+                  key={world.href}
+                  world={world}
+                  onOpen={() => {
+                    if (world.kind === 'program') {
+                      const program = byKey[world.programKey ?? ''];
+                      if (program) setActive(program);
+                    } else {
+                      onClose();
+                    }
+                  }}
+                />
+              ))}
+            </div>
+          </div>
+
+          <div style={{ marginBottom: 32 }}>
+            <div style={{ paddingLeft: 20, marginBottom: 14 }}>
+              <div
+                style={{
+                  fontFamily: SERIF,
+                  fontSize: 14,
+                  fontWeight: 700,
+                  letterSpacing: '0.08em',
+                  textTransform: 'uppercase',
+                  color: och(0.68),
+                }}
+              >
                 Knowledge worlds
               </div>
             </div>
@@ -1069,7 +1168,10 @@ export default function LearningHub({ onClose }: { onClose: () => void }) {
                   world={world}
                   onOpen={() => {
                     if (world.kind === 'personality') setPersonalityOpen(true);
-                    else onClose();
+                    else if (world.kind === 'program') {
+                      const program = byKey[world.programKey ?? ''];
+                      if (program) setActive(program);
+                    } else onClose();
                   }}
                 />
               ))}

@@ -57,6 +57,15 @@ help the user step back and see the structure of life: what is blocked, what is 
 what matters now, and what kind of action or reflection could create movement. Learning content
 becomes useful when it helps the user understand their own map.
 
+## Reader Interaction
+
+- Education comic and program readers use the same side-click pattern as Pineapple Planet: clicking the left half of the image/page goes to the previous page, and clicking the right half advances or reveals the next layer.
+- Explicit previous/next buttons may remain for accessibility, but the primary reading surface should support relaxed left/right tapping.
+- Comic art should be textless by default. Titles, captions, dialogue, and teaching copy should be app-rendered in text boxes on top of, above, or below the artwork.
+- Text boxes must own their layout: text must remain inside the box at every supported viewport, with wrapping, readable font sizes, enough padding, and no overflow outside the box. If a caption is too long, the UI should expand, scroll, paginate, or reduce the amount of text shown rather than letting typography spill out of the frame.
+- App-rendered comic text boxes should make future translation, editing, accessibility, and style changes possible without regenerating the artwork.
+- Raster comic pages must be compressed before shipping. Prefer WebP or AVIF, lazy-load non-current pages, and keep individual files small enough for weak mobile connections. Use SVG or code fallback art when a heavy raster panel is unavailable.
+
 ## Current Phase: Expansion And Visual Research
 
 The current phase is exploration.

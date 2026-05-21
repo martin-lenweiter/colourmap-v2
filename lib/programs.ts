@@ -12,6 +12,49 @@ export type Program = {
 
 export const PROGRAMS: Program[] = [
   {
+    key: 'colourmap-vision-comic',
+    domain: 'Colourmap Vision Comic',
+    color: '#78A9B8',
+    segments: [
+      {
+        title: 'A living map, not a pile',
+        body: 'Colourmap is not just information. It is a living map of knowledge, emotions, missions, progress, and life. The system should not overwhelm the user with more and more pages. It should orient them.',
+      },
+      {
+        title: 'Move like a console menu',
+        body: 'The navigation can feel like a PlayStation or PSP menu: horizontal movement chooses the world, vertical movement opens the doors inside that world. Emotions, Missions, Progress, Education, Atlas, and Entertainment become places you can glide through.',
+      },
+      {
+        title: 'The library of the future',
+        body: 'Education can grow into teachers, comics, poetry, maps, tests, history, and symbolic worlds. The question is not only what content exists. The question is how a person moves through the infinity of knowledge without getting lost.',
+      },
+      {
+        title: 'Roads, cells, and portals',
+        body: 'The interface can become a disco-ball library, a cross map, or cells connected by roads. Each dot is a portal. Each road creates meaning and direction. The map should make complexity feel beautiful and usable.',
+      },
+      {
+        title: 'Vision must return to ground',
+        body: 'The app should also know when imagination is becoming drift. Big future ideas need a bridge back to the center: what matters now, what mission is clear, what problem needs solving, and what can be done today.',
+      },
+      {
+        title: 'The mission',
+        body: 'Colourmap exists to translate inner life, knowledge, and action into one usable field. It should help the user understand themselves, organize their energy, learn from the world, and return to real life with a clearer next move.',
+      },
+      {
+        title: 'A map that knows your center',
+        body: 'The system should help the user see when they are exploring and when they are drifting. It does not punish imagination. It gives the imagination a center to return to.',
+      },
+      {
+        title: 'Knowledge becomes a place',
+        body: 'A future library should feel spatial. Subjects, teachers, comics, missions, emotions, and projects can become rooms, roads, portals, and living areas the user can move through calmly.',
+      },
+      {
+        title: 'The interface should guide gently',
+        body: 'The goal is a beautiful system that makes complexity easier to enter. Horizontal movement chooses worlds. Vertical movement opens doors. The user should feel oriented, not buried.',
+      },
+    ],
+  },
+  {
     key: 'carl-jung',
     domain: 'Carl Jung & The Inner Map',
     color: '#B99367',
