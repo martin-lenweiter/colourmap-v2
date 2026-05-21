@@ -59,6 +59,31 @@ export const PROGRAM_REFERENCES: Record<string, string[]> = {
     'Charles Bukowski, Love Is a Dog from Hell.',
     'Read next: Bluebird, The Laughing Heart, Roll the Dice, Nirvana, and The Genius of the Crowd.',
   ],
+  'plato-cave': [
+    'Plato, Republic, Book VII, the Allegory of the Cave.',
+    'Pierre Hadot, Philosophy as a Way of Life.',
+    'Shoshana Zuboff, The Age of Surveillance Capitalism, for a modern attention-system contrast.',
+  ],
+  'alan-watts': [
+    'Alan Watts, The Wisdom of Insecurity.',
+    'Alan Watts, The Book: On the Taboo Against Knowing Who You Are.',
+    'Listen to Watts talks on music, dancing, and treating life as play rather than only progress.',
+  ],
+  'david-hawkins': [
+    'David R. Hawkins, Power vs. Force.',
+    'David R. Hawkins, Letting Go.',
+    'Read critically: his consciousness calibrations are disputed, but his state-pattern language can be used symbolically.',
+  ],
+  nietzsche: [
+    'Friedrich Nietzsche, Thus Spoke Zarathustra.',
+    'Friedrich Nietzsche, The Gay Science.',
+    'Friedrich Nietzsche, Beyond Good and Evil.',
+  ],
+  'campbell-hero-quest': [
+    'Joseph Campbell, The Hero with a Thousand Faces.',
+    'Joseph Campbell, The Power of Myth.',
+    'Christopher Vogler, The Writer’s Journey.',
+  ],
   'emotional-intelligence': [
     'Daniel Goleman, Emotional Intelligence.',
     'Marc Brackett, Permission to Feel.',

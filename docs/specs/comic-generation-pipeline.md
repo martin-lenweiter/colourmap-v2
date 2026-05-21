@@ -632,6 +632,22 @@ and the small protected inner life behind the mask. The app may point users towa
 `Bluebird`, `The Laughing Heart`, `Roll the Dice`, `So You Want To Be A Writer?`, `Nirvana`, and
 `The Genius of the Crowd`, but it should not reproduce full copyrighted poems without permission.
 
+Philosophy comics can form a connected symbolic chain. `Plato's Cave & Modern Attention` should
+play the ancient cave myth against the modern attention cave: old shadows, modern projections,
+social comparison, false urgency, and a liberating path toward light. `Alan Watts: Life Is Not The
+Final Note` should use music, rhythm, river, dance, and participation to show that life is not only a
+race to an outcome. `David Hawkins & Fields of Consciousness` should use the consciousness scale,
+state fields, attractor-pattern gravity, and surrender as symbolic tools while clearly noting that
+his calibration claims are disputed and not scientific consensus. `Nietzsche & Becoming Who You Are`
+should use mountain, burden, lion, child, abyss, and amor fati without collapsing into gloom.
+`Campbell & The Hero's Quest` should map call, refusal, threshold, trials, inner cave, gift, and
+return as a universal transformation pattern.
+
+For these linked philosophy comics, use one raster track only. Do not expose a warm-paper placeholder
+mode or any old non-raster fallback as a visible alternate style once a compressed raster sequence is
+available. The first release can use 6-7 pages per program, with the final page naming pages 8-11 as
+future expansion ideas before the app-rendered further-reading section.
+
 Every program should eventually end with a small further-reading section: books, authors, essays,
 or search directions that let the user continue without adding more visual load. These references
 are app-rendered text and do not require new images.

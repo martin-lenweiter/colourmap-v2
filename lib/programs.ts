@@ -335,6 +335,177 @@ export const PROGRAMS: Program[] = [
     ],
   },
   {
+    key: 'plato-cave',
+    domain: "Plato's Cave & Modern Attention",
+    color: '#8870A8',
+    segments: [
+      {
+        title: 'The old cave',
+        body: 'Plato imagines people chained in a cave, watching shadows on a wall and mistaking them for reality. The point is not that people are stupid. The point is that a whole environment can train attention until a partial image feels like the world.',
+      },
+      {
+        title: 'The modern cave',
+        body: 'Today the cave can look like a room, a phone, a feed, a wall of projections, a culture of comparison, or a constant state of urgency. The shadows are not only online. They are any representation that becomes stronger than lived experience.',
+      },
+      {
+        title: 'Turning around',
+        body: 'The first movement is not escape. It is turning around. A person begins to ask: who is choosing what I see? What is being projected? What part of life am I mistaking for the whole?',
+      },
+      {
+        title: 'The map on the wall',
+        body: 'The ancient cave becomes useful because it gives the modern person a map. Shadow, projector, chain, turn, tunnel, light. These are not museum ideas. They are still active wherever attention is captured.',
+      },
+      {
+        title: 'Walking toward light',
+        body: 'Finding the light is uncomfortable at first. Reality is brighter, less controlled, and less flattering than the shadow wall. Liberation often begins as withdrawal from the familiar illusion.',
+      },
+      {
+        title: 'What is the light?',
+        body: 'The light is not a perfect life. It is contact with what is real: body, time, place, people, consequences, nature, work, silence, and the parts of experience that cannot be optimized into an image.',
+      },
+      {
+        title: 'Where this can expand next',
+        body: 'Page 8 could show returning to the cave without contempt. Page 9 could connect the cave to Watts and life as participation. Page 10 could map attention as a Colourmap field. Page 11 could ask the reader what shadow currently feels most real.',
+      },
+    ],
+  },
+  {
+    key: 'alan-watts',
+    domain: 'Alan Watts: Life Is Not The Final Note',
+    color: '#7FA08A',
+    segments: [
+      {
+        title: 'Next mode',
+        body: 'Watts helps name a modern sickness: living as if the present is only a corridor to the next result. Next task, next message, next proof, next success. The day becomes a race through itself.',
+      },
+      {
+        title: 'The final note',
+        body: 'If music were only about reaching the last note, the best musician would play as fast as possible. Life works the same way. A life treated only as arrival loses the rhythm that makes it alive.',
+      },
+      {
+        title: 'Trying to win the river',
+        body: 'The mind tries to measure the river instead of entering the flow. This is not anti-discipline. It is a warning: control can become a way of missing experience.',
+      },
+      {
+        title: 'Participation',
+        body: 'Watts points back toward participation. A day has tempo, silence, repetition, surprise, work, rest, and return. You do not win a dance by reaching the wall first.',
+      },
+      {
+        title: 'The senses return',
+        body: 'Presence begins in simple contact: the cup, the rain, the plant, the breath, the room. The ordinary is not lesser than achievement. It is where life actually happens.',
+      },
+      {
+        title: 'A day as music',
+        body: 'Colourmap can show whether a day is pure urgency, numb scrolling, scattered noise, or a livable rhythm. The aim is not to remove ambition. It is to give ambition a body and a beat.',
+      },
+      {
+        title: 'Where this can expand next',
+        body: 'Page 8 could show work with rhythm instead of panic. Page 9 could connect Watts to Plato: leaving the shadow wall for lived reality. Page 10 could ask what part of the user’s day has no music. Page 11 could become a practical attention ritual.',
+      },
+    ],
+  },
+  {
+    key: 'david-hawkins',
+    domain: 'David Hawkins & Fields of Consciousness',
+    color: '#8E9A68',
+    segments: [
+      {
+        title: 'A symbolic scale',
+        body: 'Hawkins proposed a scale of consciousness moving from contracted states toward courage, love, peace, and higher clarity. His calibration system is criticized and should not be treated as scientific consensus, but the symbolic map can still be useful.',
+      },
+      {
+        title: 'Attractor patterns',
+        body: 'One strong idea is that life is not pure chaos. States behave like fields. Shame, fear, courage, love, and peace each have a gravity. A person can be pulled by a field before they understand the thought.',
+      },
+      {
+        title: 'Self-pity as gravity',
+        body: 'Hawkins wrote often about lower states like self-pity and resentment. The point is not to shame the person. It is to notice the field: what does this state keep pulling me toward, and what small movement loosens it?',
+      },
+      {
+        title: 'Surrender is release',
+        body: 'Surrender does not mean defeat. It means releasing the inner argument with what is already present, so attention can return to the next true action. Sometimes the clenched hand is the prison.',
+      },
+      {
+        title: 'When times get tough',
+        body: 'When pressure rises, the practical question is: what field am I feeding now? Panic, blame, courage, service, humility, trust. A single helpful act can shift the atmosphere of the whole room.',
+      },
+      {
+        title: 'Useful, but disputed',
+        body: 'Hawkins can be read as a symbolic thinker rather than a scientific authority. Keep the discernment. Take the useful question: which state is organizing me, and what would lift the pattern one degree?',
+      },
+      {
+        title: 'Where this can expand next',
+        body: 'Page 8 could show the consciousness scale beside emotions. Page 9 could connect surrender to Watts and participation. Page 10 could map attractor fields inside Colourmap. Page 11 could ask the reader what field they want to stop feeding.',
+      },
+    ],
+  },
+  {
+    key: 'nietzsche',
+    domain: 'Nietzsche & Becoming Who You Are',
+    color: '#9A6F58',
+    segments: [
+      {
+        title: 'Inherited values',
+        body: 'Nietzsche asks a hard question: which values are truly yours, and which ones were handed to you by fear, obedience, resentment, fashion, or the crowd? His work is dangerous because it removes easy innocence.',
+      },
+      {
+        title: 'The burden',
+        body: 'The camel carries what it has been told to carry. Duty, guilt, family scripts, cultural scripts, old ideals. Endurance matters, but endurance alone is not freedom.',
+      },
+      {
+        title: 'The no',
+        body: 'The lion says no. No to inherited command, no to false gods, no to the voice that says you must remain small. This no is not the whole path, but it clears space for a real yes.',
+      },
+      {
+        title: 'The child',
+        body: 'The child represents creation: play, beginning again, making values instead of only obeying or rejecting them. Becoming is not only rebellion. It is the courage to create a new form of life.',
+      },
+      {
+        title: 'The abyss',
+        body: 'Looking into the abyss means meeting what is difficult, shadowed, and dangerous in yourself and the world. The aim is not to worship darkness. The aim is to see without being swallowed.',
+      },
+      {
+        title: 'Amor fati',
+        body: 'Amor fati means learning to say yes to the whole path, not because everything was good, but because this is the material from which your life must be made. The broken stones can become the road.',
+      },
+      {
+        title: 'Where this can expand next',
+        body: 'Page 8 could explore eternal recurrence as a life question. Page 9 could connect Nietzsche to Campbell’s hero path. Page 10 could ask which inherited value the reader is ready to examine. Page 11 could become a Colourmap values ritual.',
+      },
+    ],
+  },
+  {
+    key: 'campbell-hero-quest',
+    domain: "Campbell & The Hero's Quest",
+    color: '#B58A58',
+    segments: [
+      {
+        title: 'The call',
+        body: 'Campbell described a recurring story pattern: ordinary world, call to adventure, threshold, trials, ordeal, gift, return. It matters because it gives shape to change without pretending change is easy.',
+      },
+      {
+        title: 'Refusing the call',
+        body: 'Most quests begin with hesitation. The known world may be painful, but it is familiar. Refusal is not failure. It is the psyche measuring the cost of crossing the threshold.',
+      },
+      {
+        title: 'Crossing the threshold',
+        body: 'At some point the person steps out of the known room. The threshold can be a journey, a breakup, a project, a recovery, a conversation, a risk, or a decision to stop lying to yourself.',
+      },
+      {
+        title: 'Trials and helpers',
+        body: 'The road is not walked alone. Helpers, tools, symbols, books, friends, mentors, and strange accidents appear. The task is learning which guides are real and which are distractions.',
+      },
+      {
+        title: 'The inner cave',
+        body: 'The ordeal is often an encounter with the self: fear, shadow, grief, desire, power, shame, or truth. The treasure is rarely outside the cave. It is the transformation that happens inside it.',
+      },
+      {
+        title: 'Where this can expand next',
+        body: 'Page 7 could show the return with the gift. Page 8 could connect the quest to Plato’s cave. Page 9 could connect Nietzsche’s self-creation. Page 10 could ask what call the reader is refusing. Page 11 could become a personal quest map.',
+      },
+    ],
+  },
+  {
     key: 'gandhi',
     domain: 'Gandhi & The Power of Small Things',
     color: '#C9A15D',

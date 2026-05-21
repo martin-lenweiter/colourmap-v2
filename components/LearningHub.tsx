@@ -34,6 +34,11 @@ const COMIC_PROGRAMS = new Set([
   'parenting-patterns',
   'viktor-frankl',
   'bukowski-poems',
+  'plato-cave',
+  'alan-watts',
+  'david-hawkins',
+  'nietzsche',
+  'campbell-hero-quest',
   'carl-jung',
   'paulo-freire',
   'thich-nhat-hanh',
@@ -124,6 +129,11 @@ const POSITIVE_OVERLAY_PROGRAMS = new Set([
   'parenting-patterns',
   'viktor-frankl',
   'bukowski-poems',
+  'plato-cave',
+  'alan-watts',
+  'david-hawkins',
+  'nietzsche',
+  'campbell-hero-quest',
 ]);
 const JPG_PANEL_PROGRAMS = new Set(['carl-jung', 'struggle-letting-go']);
 const GENERATED_LAYERED_PANEL_COUNTS: Record<string, number> = {
@@ -144,6 +154,11 @@ const POSITIVE_OVERLAY_PANEL_EXTENSIONS: Record<string, string> = {
   'avoidance-action': 'webp',
   'viktor-frankl': 'webp',
   'bukowski-poems': 'webp',
+  'plato-cave': 'webp',
+  'alan-watts': 'webp',
+  'david-hawkins': 'webp',
+  nietzsche: 'webp',
+  'campbell-hero-quest': 'webp',
 };
 const LANDSCAPE_GENERATED_COVERS = new Set<string>();
 const PROGRAM_COVER_PANEL: Record<string, number> = {
@@ -270,6 +285,12 @@ const GROUPS: {
     label: 'Poetry',
     keys: ['bukowski-poems'],
     tint: '#9A7658',
+    format: 'guides',
+  },
+  {
+    label: 'Philosophy',
+    keys: ['plato-cave', 'alan-watts', 'david-hawkins', 'nietzsche', 'campbell-hero-quest'],
+    tint: '#8870A8',
     format: 'guides',
   },
   {

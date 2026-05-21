@@ -34,6 +34,11 @@ const POSITIVE_OVERLAY_PROGRAMS = new Set([
   'parenting-patterns',
   'viktor-frankl',
   'bukowski-poems',
+  'plato-cave',
+  'alan-watts',
+  'david-hawkins',
+  'nietzsche',
+  'campbell-hero-quest',
 ]);
 
 const TEXT_ON_IMAGE_PROGRAMS = new Set([
@@ -81,6 +86,11 @@ const POSITIVE_OVERLAY_PANEL_EXTENSIONS: Record<string, string> = {
   'avoidance-action': 'webp',
   'viktor-frankl': 'webp',
   'bukowski-poems': 'webp',
+  'plato-cave': 'webp',
+  'alan-watts': 'webp',
+  'david-hawkins': 'webp',
+  nietzsche: 'webp',
+  'campbell-hero-quest': 'webp',
 };
 
 const POSITIVE_OVERLAY_PANEL_COUNTS: Record<string, number> = {
@@ -88,9 +98,24 @@ const POSITIVE_OVERLAY_PANEL_COUNTS: Record<string, number> = {
   'money-anxiety': 1,
   'identity-becoming': 1,
   'avoidance-action': 1,
-  'viktor-frankl': 1,
+  'viktor-frankl': 3,
   'bukowski-poems': 1,
+  'plato-cave': 7,
+  'alan-watts': 7,
+  'david-hawkins': 7,
+  nietzsche: 7,
+  'campbell-hero-quest': 6,
 };
+
+const SINGLE_RASTER_PROGRAMS = new Set([
+  'viktor-frankl',
+  'bukowski-poems',
+  'plato-cave',
+  'alan-watts',
+  'david-hawkins',
+  'nietzsche',
+  'campbell-hero-quest',
+]);
 
 const PROGRAM_IMAGE_STYLES: Record<string, ImageStyle[]> = {
   'hope-energy': [DEFAULT_IMAGE_STYLE, { key: 'euro-bd', label: 'European BD' }],
@@ -146,6 +171,7 @@ function complementaryJungText(title: string, body: string, reflectionPrompts: s
 }
 
 function getImageStyles(programKey: string): ImageStyle[] {
+  if (SINGLE_RASTER_PROGRAMS.has(programKey)) return [POSITIVE_OVERLAY_STYLE];
   const styles = PROGRAM_IMAGE_STYLES[programKey] ?? [DEFAULT_IMAGE_STYLE];
   if (!POSITIVE_OVERLAY_PROGRAMS.has(programKey)) return styles;
   if (styles.some((style) => style.key === POSITIVE_OVERLAY_STYLE.key)) return styles;
