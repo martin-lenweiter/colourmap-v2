@@ -716,7 +716,7 @@ function PanelImage({
   const [failed, setFailed] = useState(false);
   const generatedCount = GENERATED_LAYERED_PANEL_COUNTS[programKey];
   if (programKey === 'colourmap-vision-comic') {
-    if (index < 6) {
+    if (index < 9) {
       return <ColourmapVisionRasterPanel index={index} color={color} alt={alt} />;
     }
     return <ColourmapVisionPanel index={index} color={color} />;

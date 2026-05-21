@@ -8,6 +8,9 @@ Raster panels for the Colourmap Vision Comic live here as compressed WebP files:
 - `panel-3.webp` - Colourmap design comic page.
 - `panel-4.webp` - Colourmap design comic page.
 - `panel-5.webp` - Colourmap design comic page.
+- `panel-6.webp` - Colourmap design comic page.
+- `panel-7.webp` - Colourmap design comic page.
+- `panel-8.webp` - Colourmap design comic page.
 
 Keep these files lightweight for weak mobile connections:
 

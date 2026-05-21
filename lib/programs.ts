@@ -40,6 +40,18 @@ export const PROGRAMS: Program[] = [
         title: 'The mission',
         body: 'Colourmap exists to translate inner life, knowledge, and action into one usable field. It should help the user understand themselves, organize their energy, learn from the world, and return to real life with a clearer next move.',
       },
+      {
+        title: 'A map that knows your center',
+        body: 'The system should help the user see when they are exploring and when they are drifting. It does not punish imagination. It gives the imagination a center to return to.',
+      },
+      {
+        title: 'Knowledge becomes a place',
+        body: 'A future library should feel spatial. Subjects, teachers, comics, missions, emotions, and projects can become rooms, roads, portals, and living areas the user can move through calmly.',
+      },
+      {
+        title: 'The interface should guide gently',
+        body: 'The goal is a beautiful system that makes complexity easier to enter. Horizontal movement chooses worlds. Vertical movement opens doors. The user should feel oriented, not buried.',
+      },
     ],
   },
   {
