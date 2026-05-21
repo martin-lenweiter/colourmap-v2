@@ -20,6 +20,62 @@ import Overview2 from '@/components/Overview2';
 import TodaysField from '@/components/TodaysField';
 import { hydrate } from '@/lib/sync';
 
+const EMOTION_BACKDROPS = [
+  '/emotions/emotion-city-night-1.webp',
+  '/emotions/emotion-city-night-2.webp',
+  '/emotions/emotion-sunset-1.webp',
+  '/emotions/emotion-sunset-2.webp',
+];
+
+function EmotionMoodSurface({ children }: { children: React.ReactNode }) {
+  const [index, setIndex] = useState(0);
+
+  useEffect(() => {
+    const timer = window.setInterval(
+      () => setIndex((current) => (current + 1) % EMOTION_BACKDROPS.length),
+      18_000,
+    );
+    return () => window.clearInterval(timer);
+  }, []);
+
+  return (
+    <div
+      style={{
+        position: 'relative',
+        overflow: 'hidden',
+        borderRadius: 18,
+        padding: '12px 8px 14px',
+        background: 'var(--palette-l2-bg, rgba(30,16,8,0.5))',
+      }}
+    >
+      <div
+        aria-hidden="true"
+        style={{
+          position: 'absolute',
+          inset: 0,
+          backgroundImage: `url("${EMOTION_BACKDROPS[index]}")`,
+          backgroundSize: 'cover',
+          backgroundPosition: index < 2 ? 'center 42%' : 'center 50%',
+          opacity: 0.24,
+          transition: 'background-image 900ms ease, opacity 900ms ease',
+        }}
+      />
+      <div
+        aria-hidden="true"
+        style={{
+          position: 'absolute',
+          inset: 0,
+          background:
+            'linear-gradient(180deg, color-mix(in srgb, var(--background) 72%, transparent), color-mix(in srgb, var(--background) 88%, black))',
+        }}
+      />
+      <div style={{ position: 'relative', zIndex: 1 }} className="space-y-3">
+        {children}
+      </div>
+    </div>
+  );
+}
+
 function DayContent() {
   const [roadOpen, setRoadOpen] = useState(false);
   const [mapOpen, setMapOpen] = useState(false);
@@ -58,7 +114,7 @@ function DayContent() {
 
       <DayTabs
         emotionContent={
-          <div className="space-y-3">
+          <EmotionMoodSurface>
             <InnerWork />
             <div style={{ height: 20 }} />
             <FeelingCircles2 />
@@ -135,7 +191,7 @@ function DayContent() {
             {roadOpen && <DayRoad embedded onClose={() => setRoadOpen(false)} />}
             {mapOpen && <InfographicsView embedded onClose={() => setMapOpen(false)} />}
             {viewOpen && <DayView3D embedded onClose={() => setViewOpen(false)} />}
-          </div>
+          </EmotionMoodSurface>
         }
         missionContent={
           <div className="space-y-3">

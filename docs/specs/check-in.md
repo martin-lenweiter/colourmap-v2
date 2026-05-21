@@ -52,6 +52,7 @@ The live CPC check-in also carries a very specific visual grammar that matters t
 - This mix should feel studied and coherent, like a field journal assembled over time, not like a novelty theme pack.
 - Microcopy should participate in the atmosphere. Time-based prompt lines such as the note placeholder should feel written, playful, and alive rather than system-generated.
 - Color must be restrained and strategic: emotional letters, active chips, and feeling states may carry color, while the paper base remains calm and warm.
+- The Emotions lane may use one atmospheric backdrop image at a time, rotating slowly between compressed mood images such as night city and sunset scenes. These images are mood support only: they must stay subtle, compressed, and covered by overlays so all text remains readable.
 - On light/pale pill surfaces, labels such as `FACING`, `Body`, `Attitude`, `Structure`, `Challenge`, `Flow`, and the emotions reflection prompts use deep sepia ink (`#5C3018` via `--light-pill-text`), not ochre-on-beige. The emotional color stays in dots, fills, bars, borders, and active selected states.
 - The design should preserve the Leonardo notebook / captain's log / pirate-ink recipe the CPC app already established, while also keeping the playful color notes that make the interface feel alive rather than antique.
 - The check-in should visually support scanning by cells:
