@@ -42,10 +42,10 @@ describe('ThemeSwitcher', () => {
     expect(localStorage.setItem).toHaveBeenCalledWith('colourmap-palette', 'light-brown');
     expect(localStorage.setItem).toHaveBeenCalledWith(
       'colourmap-titles-custom-v2',
-      JSON.stringify({ 'light-brown': { l1: 'b6', l2: 'b6', l3: 'b6' } }),
+      JSON.stringify({ 'light-brown': { l1: 'b5', l2: 'b6', l3: 'b6' } }),
     );
     expect(document.documentElement.style.getPropertyValue('--header-bg')).toBe(
-      'rgba(200,168,112,0.92)',
+      'rgba(168,112,64,0.92)',
     );
   });
 
@@ -146,6 +146,27 @@ describe('ThemeSwitcher', () => {
     expect(document.documentElement.classList.contains('night-purple')).toBe(false);
     expect(document.documentElement.classList.contains('night-blue')).toBe(false);
     expect(document.documentElement.classList.contains('night-brown')).toBe(false);
+  });
+
+  it('returns Paper and Golden to a light Beige title palette after a night mode', async () => {
+    const user = userEvent.setup();
+    render(<ThemeSwitcher />);
+
+    await user.click(screen.getByLabelText('Design settings'));
+    await user.click(screen.getByText('Night Blue'));
+    expect(localStorage.setItem).toHaveBeenCalledWith('colourmap-palette', 'navy');
+
+    if (!screen.queryByText('Golden')) {
+      await user.click(screen.getByLabelText('Design settings'));
+    }
+    await user.click(screen.getByText('Golden'));
+
+    expect(document.documentElement.classList.contains('dark')).toBe(false);
+    expect(document.documentElement.classList.contains('golden')).toBe(true);
+    expect(localStorage.setItem).toHaveBeenCalledWith('colourmap-palette', 'light-brown');
+    expect(document.documentElement.style.getPropertyValue('--header-bg')).toBe(
+      'rgba(168,112,64,0.92)',
+    );
   });
 
   it('shows Titles tab when clicked', async () => {

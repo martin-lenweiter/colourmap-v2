@@ -257,7 +257,7 @@ type PanelTab = 'color' | 'design';
 const DEFAULT_COLOR_THEME: ColorId = 'paper';
 const DEFAULT_PALETTE: PaletteId = 'light-brown';
 const DEFAULT_PALETTE_CUSTOM: AllCustomIds = {
-  'light-brown': { l1: 'b6', l2: 'b6', l3: 'b6' },
+  'light-brown': { l1: 'b5', l2: 'b6', l3: 'b6' },
 };
 
 const LIGHT_THEMES: ReadonlySet<ColorId> = new Set(['paper', 'golden']);
@@ -512,10 +512,21 @@ export default function ThemeSwitcher() {
       selectPalette(auto);
       setTab('color');
     } else {
-      /* Re-apply current palette so dark-theme vars (e.g. golden active text) are cleared */
-      applyPaletteCSS(paletteActive);
-      const p = PALETTES.find((p) => p.id === paletteActive);
+      const currentPalette = PALETTES.find((p) => p.id === paletteActive);
+      const lightPaletteId = currentPalette?.light ? paletteActive : DEFAULT_PALETTE;
+      const p = PALETTES.find((palette) => palette.id === lightPaletteId);
+      setPaletteActive(lightPaletteId);
+      applyPaletteCSS(lightPaletteId);
+      if (p) {
+        setTabStyle('filled');
+        setTabFillColor(p.tab);
+      }
       applyLightThemeTextVars(p);
+      const overrides =
+        allCustomIds[lightPaletteId] ?? DEFAULT_PALETTE_CUSTOM[lightPaletteId] ?? {};
+      for (const [level, colorId] of Object.entries(overrides) as [DeepLevelKey, string][]) {
+        applyCustomLevel(level, colorId, p);
+      }
     }
   }
 
