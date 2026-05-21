@@ -1066,6 +1066,45 @@ export const PROGRAMS: Program[] = [
     ],
   },
   {
+    key: 'avoidance-action',
+    domain: 'Avoidance & The Real Task',
+    color: '#B88A58',
+    segments: [
+      {
+        title: 'Avoidance is often protection',
+        body: 'When you hide from the thing you need to do, it is rarely because you are lazy in any simple way. Avoidance is often the nervous system trying to protect you from shame, uncertainty, rejection, failure, or the feeling of not knowing where to begin. The task becomes a threat before it becomes an action.',
+      },
+      {
+        title: 'The task becomes a fog',
+        body: 'A concrete action can turn into a cloud when it stays unnamed. "Sort my life out" is too large for the body. "Open the document for ten minutes" is an action. The first move is to shrink the fog back into one visible object.',
+      },
+      {
+        title: 'Shame makes work heavier',
+        body: 'The more you punish yourself for avoiding, the more dangerous the task feels. Shame does not create clean discipline. It adds another layer to avoid. A kinder question works better: what feeling appears when I move toward this?',
+      },
+      {
+        title: 'Fear often hides inside importance',
+        body: 'Sometimes the avoided task matters because it is connected to money, love, identity, health, or a future you care about. The weight is not proof you are weak. It is proof the task touches something important. Respect the weight, then make the next step smaller.',
+      },
+      {
+        title: 'Open the door, not the whole house',
+        body: 'The useful move is not to finish everything. It is to create contact. Open the file. Put the shoes by the door. Write the first sentence badly. Send the one message. Look at the number. Contact turns dread into information.',
+      },
+      {
+        title: 'Make the first action embarrassingly small',
+        body: 'A real first step should feel almost too small to count. Two minutes. One line. One tab. One call prepared but not made. Small is not childish. Small is how the nervous system learns that approaching the task does not destroy you.',
+      },
+      {
+        title: 'Build a return ritual',
+        body: 'You will drift again. The point is not perfect focus. The point is a reliable way back: one breath, name the task, choose the next visible action, start a five-minute timer. A return ritual turns focus into a road you can find again.',
+      },
+      {
+        title: 'The real task is becoming visible',
+        body: 'Avoidance loses power when the hidden fear becomes visible and the next move becomes concrete. You do not need to become a different person first. You need one honest contact with the thing that matters, then another.',
+      },
+    ],
+  },
+  {
     key: 'identity-becoming',
     domain: 'Identity & Becoming',
     color: '#9070B8',

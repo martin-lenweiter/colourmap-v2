@@ -26,6 +26,7 @@ describe('LearningHub', () => {
     expect(screen.getByText(/Life is not fixed/i)).toBeDefined();
     expect(screen.getByText(/participate in transforming the world/i)).toBeDefined();
     expect(screen.getByText('Struggle & Letting Go')).toBeDefined();
+    expect(screen.getByText('Avoidance & The Real Task')).toBeDefined();
     expect(screen.getByText('Carl Jung & The Inner Map')).toBeDefined();
     expect(screen.getByText('Paulo Freire & Collective Hope')).toBeDefined();
     expect(screen.getByText('Thich Nhat Hanh & Peace in Action')).toBeDefined();
@@ -166,7 +167,7 @@ describe('LearningHub', () => {
     const freireImage = screen.getByRole('img', {
       name: /Paulo Freire & Collective Hope comic page 1/i,
     });
-    expect(freireImage.getAttribute('src')).toBe('/comics/paulo-freire/generated/panel-0.png');
+    expect(freireImage.getAttribute('src')).toBe('/comics/paulo-freire/generated/panel-0.webp');
     expect(screen.queryByText('The world is made, so it can be remade')).toBeNull();
 
     fireEvent.click(screen.getByRole('button', { name: 'Reveal comic text' }));
@@ -191,7 +192,7 @@ describe('LearningHub', () => {
     const thichImage = screen.getByRole('img', {
       name: /Thich Nhat Hanh & Peace in Action comic page 1/i,
     });
-    expect(thichImage.getAttribute('src')).toBe('/comics/thich-nhat-hanh/generated/panel-0.png');
+    expect(thichImage.getAttribute('src')).toBe('/comics/thich-nhat-hanh/generated/panel-0.webp');
     expect(screen.queryByText('The bell of now')).toBeNull();
 
     fireEvent.click(screen.getByRole('button', { name: 'Reveal comic text' }));

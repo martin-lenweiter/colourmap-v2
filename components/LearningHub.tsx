@@ -30,6 +30,7 @@ const COMIC_PROGRAMS = new Set([
   'conflict-repair',
   'money-anxiety',
   'identity-becoming',
+  'avoidance-action',
   'parenting-patterns',
   'carl-jung',
   'paulo-freire',
@@ -117,17 +118,28 @@ const POSITIVE_OVERLAY_PROGRAMS = new Set([
   'conflict-repair',
   'money-anxiety',
   'identity-becoming',
+  'avoidance-action',
   'parenting-patterns',
 ]);
 const JPG_PANEL_PROGRAMS = new Set(['carl-jung', 'struggle-letting-go']);
 const GENERATED_LAYERED_PANEL_COUNTS: Record<string, number> = {
   'carl-jung': 20,
-  'paulo-freire': 2,
-  'thich-nhat-hanh': 2,
+  'paulo-freire': 3,
+  'thich-nhat-hanh': 4,
   gandhi: 20,
   'clear-allen': 16,
 };
-const LANDSCAPE_GENERATED_COVERS = new Set(['thich-nhat-hanh']);
+const GENERATED_LAYERED_PANEL_EXTENSIONS: Record<string, string> = {
+  'paulo-freire': 'webp',
+  'thich-nhat-hanh': 'webp',
+};
+const POSITIVE_OVERLAY_PANEL_EXTENSIONS: Record<string, string> = {
+  'conflict-repair': 'webp',
+  'money-anxiety': 'webp',
+  'identity-becoming': 'webp',
+  'avoidance-action': 'webp',
+};
+const LANDSCAPE_GENERATED_COVERS = new Set<string>();
 const PROGRAM_COVER_PANEL: Record<string, number> = {
   'room-to-breathe': 2,
   'emotional-intelligence': 5,
@@ -148,8 +160,8 @@ const PROGRAM_COVER_PANEL: Record<string, number> = {
   'collective-evolution': 5,
   'deep-attention': 8,
   'carl-jung': 12,
-  'paulo-freire': 0,
-  'thich-nhat-hanh': 8,
+  'paulo-freire': 2,
+  'thich-nhat-hanh': 2,
   gandhi: 11,
   'clear-allen': 0,
 };
@@ -250,6 +262,7 @@ const GROUPS: {
       'deep-attention',
       'conflict-repair',
       'money-anxiety',
+      'avoidance-action',
       'identity-becoming',
     ],
     tint: '#6888B0',
@@ -281,10 +294,12 @@ function getProgramCoverSrc(program: Program): string {
   const coverPanel = PROGRAM_COVER_PANEL[program.key] ?? 0;
   const generatedCount = GENERATED_LAYERED_PANEL_COUNTS[program.key];
   if (generatedCount) {
-    return `/comics/${program.key}/generated/panel-${coverPanel % generatedCount}.png`;
+    const extension = GENERATED_LAYERED_PANEL_EXTENSIONS[program.key] ?? 'png';
+    return `/comics/${program.key}/generated/panel-${coverPanel % generatedCount}.${extension}`;
   }
   if (POSITIVE_OVERLAY_PROGRAMS.has(program.key)) {
-    return `/comics/${program.key}/variants/positive-overlay/panel-${coverPanel}.png`;
+    const extension = POSITIVE_OVERLAY_PANEL_EXTENSIONS[program.key] ?? 'png';
+    return `/comics/${program.key}/variants/positive-overlay/panel-${coverPanel}.${extension}`;
   }
   if (COMIC_PROGRAMS.has(program.key)) {
     return `/comics/${program.key}/panel-${coverPanel}.${JPG_PANEL_PROGRAMS.has(program.key) ? 'jpg' : 'png'}`;
