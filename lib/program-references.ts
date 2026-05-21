@@ -59,6 +59,11 @@ export const PROGRAM_REFERENCES: Record<string, string[]> = {
     'Charles Bukowski, Love Is a Dog from Hell.',
     'Read next: Bluebird, The Laughing Heart, Roll the Dice, Nirvana, and The Genius of the Crowd.',
   ],
+  'maya-angelou': [
+    'Maya Angelou, I Know Why the Caged Bird Sings.',
+    'Maya Angelou, And Still I Rise.',
+    'Maya Angelou, The Heart of a Woman.',
+  ],
   'plato-cave': [
     'Plato, Republic, Book VII, the Allegory of the Cave.',
     'Pierre Hadot, Philosophy as a Way of Life.',

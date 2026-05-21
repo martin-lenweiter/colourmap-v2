@@ -34,6 +34,7 @@ describe('LearningHub', () => {
     expect(screen.getByText('Clear & Allen: Organisation As Freedom')).toBeDefined();
     expect(screen.getByText('Viktor Frankl & Meaning Under Pressure')).toBeDefined();
     expect(screen.getByText('Bukowski: Poems From The Hard Room')).toBeDefined();
+    expect(screen.getByText('Maya Angelou & The Voice That Rises')).toBeDefined();
     expect(screen.getByText("Plato's Cave & Modern Attention")).toBeDefined();
     expect(screen.getByText('Alan Watts: Life Is Not The Final Note')).toBeDefined();
     expect(screen.getByText('David Hawkins & Fields of Consciousness')).toBeDefined();

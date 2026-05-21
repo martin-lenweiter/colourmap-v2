@@ -628,7 +628,10 @@ space before response.
 
 Poetry programs can become their own lane. `Bukowski: Poems From The Hard Room` should be vertical,
 real, poetic, and not overloaded: room, typewriter, race track, rough persona, hidden tenderness,
-and the small protected inner life behind the mask. The app may point users toward poems such as
+and the small protected inner life behind the mask. `Maya Angelou & The Voice That Rises` should
+bring a woman-led, dignity-centered counterweight: voice, silence, recovery, collective courage, and
+reader questions about what gives a person their voice back. Poetry pages should feel readable,
+symbolic, and memorable rather than poster-dense. The app may point users toward poems such as
 `Bluebird`, `The Laughing Heart`, `Roll the Dice`, `So You Want To Be A Writer?`, `Nirvana`, and
 `The Genius of the Crowd`, but it should not reproduce full copyrighted poems without permission.
 
@@ -645,8 +648,10 @@ return as a universal transformation pattern.
 
 For these linked philosophy comics, use one raster track only. Do not expose a warm-paper placeholder
 mode or any old non-raster fallback as a visible alternate style once a compressed raster sequence is
-available. The first release can use 6-7 pages per program, with the final page naming pages 8-11 as
-future expansion ideas before the app-rendered further-reading section.
+available. The first release can use roughly 7-8 pages per program, with the final page naming future
+expansion ideas before the app-rendered further-reading section. Extra pages should be sober,
+relaxing, and symbolic: one image users can remember, not a dense collage. Avoid overusing white
+masks or cutout-like white blocks; quiet negative space should usually come from the artwork itself.
 
 Every program should eventually end with a small further-reading section: books, authors, essays,
 or search directions that let the user continue without adding more visual load. These references

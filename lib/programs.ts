@@ -399,8 +399,12 @@ export const PROGRAMS: Program[] = [
         body: 'Colourmap can show whether a day is pure urgency, numb scrolling, scattered noise, or a livable rhythm. The aim is not to remove ambition. It is to give ambition a body and a beat.',
       },
       {
+        title: 'Listening before reaching',
+        body: 'Presence is not passive. It is a different kind of intelligence: hearing the rhythm before forcing the next move. A calmer life does not have to be smaller. It can simply stop skipping itself.',
+      },
+      {
         title: 'Where this can expand next',
-        body: 'Page 8 could show work with rhythm instead of panic. Page 9 could connect Watts to Plato: leaving the shadow wall for lived reality. Page 10 could ask what part of the user’s day has no music. Page 11 could become a practical attention ritual.',
+        body: 'Page 9 could show work with rhythm instead of panic. Page 10 could connect Watts to Plato: leaving the shadow wall for lived reality. Page 11 could ask what part of the user’s day has no music. Page 12 could become a practical attention ritual.',
       },
     ],
   },
@@ -434,8 +438,12 @@ export const PROGRAMS: Program[] = [
         body: 'Hawkins can be read as a symbolic thinker rather than a scientific authority. Keep the discernment. Take the useful question: which state is organizing me, and what would lift the pattern one degree?',
       },
       {
+        title: 'A quieter field',
+        body: 'A state can change the room before anyone explains it. One relaxed breath, one honest apology, one act of service, one refusal to feed panic. The field shifts through small embodied choices.',
+      },
+      {
         title: 'Where this can expand next',
-        body: 'Page 8 could show the consciousness scale beside emotions. Page 9 could connect surrender to Watts and participation. Page 10 could map attractor fields inside Colourmap. Page 11 could ask the reader what field they want to stop feeding.',
+        body: 'Page 9 could show the consciousness scale beside emotions. Page 10 could connect surrender to Watts and participation. Page 11 could map attractor fields inside Colourmap. Page 12 could ask the reader what field they want to stop feeding.',
       },
     ],
   },
@@ -469,8 +477,12 @@ export const PROGRAMS: Program[] = [
         body: 'Amor fati means learning to say yes to the whole path, not because everything was good, but because this is the material from which your life must be made. The broken stones can become the road.',
       },
       {
+        title: 'The mask on the desk',
+        body: 'Becoming often begins when the old mask is finally placed down. Not destroyed in drama. Just seen clearly, thanked if it once protected you, and no longer mistaken for the face.',
+      },
+      {
         title: 'Where this can expand next',
-        body: 'Page 8 could explore eternal recurrence as a life question. Page 9 could connect Nietzsche to Campbell’s hero path. Page 10 could ask which inherited value the reader is ready to examine. Page 11 could become a Colourmap values ritual.',
+        body: 'Page 9 could explore eternal recurrence as a life question. Page 10 could connect Nietzsche to Campbell’s hero path. Page 11 could ask which inherited value the reader is ready to examine. Page 12 could become a Colourmap values ritual.',
       },
     ],
   },
@@ -500,8 +512,12 @@ export const PROGRAMS: Program[] = [
         body: 'The ordeal is often an encounter with the self: fear, shadow, grief, desire, power, shame, or truth. The treasure is rarely outside the cave. It is the transformation that happens inside it.',
       },
       {
+        title: 'The conscious threshold',
+        body: 'A quest does not always begin with a dramatic road. Sometimes it begins with a cloak on a chair, a lamp on a table, and one door you can no longer pretend not to see.',
+      },
+      {
         title: 'Where this can expand next',
-        body: 'Page 7 could show the return with the gift. Page 8 could connect the quest to Plato’s cave. Page 9 could connect Nietzsche’s self-creation. Page 10 could ask what call the reader is refusing. Page 11 could become a personal quest map.',
+        body: 'Page 8 could show the return with the gift. Page 9 could connect the quest to Plato’s cave. Page 10 could connect Nietzsche’s self-creation. Page 11 could ask what call the reader is refusing. Page 12 could become a personal quest map.',
       },
     ],
   },
@@ -1374,6 +1390,45 @@ export const PROGRAMS: Program[] = [
       {
         title: 'Poems to read next',
         body: 'Read the poems themselves outside the app: Bluebird, The Laughing Heart, Roll the Dice, So You Want To Be A Writer?, Nirvana, The Genius of the Crowd, alone with everybody, and Dinosauria, We. The app should guide you toward them, not replace them.',
+      },
+    ],
+  },
+  {
+    key: 'maya-angelou',
+    domain: 'Maya Angelou & The Voice That Rises',
+    color: '#A86F70',
+    segments: [
+      {
+        title: 'The voice returns',
+        body: 'Maya Angelou matters because her work shows a voice returning after silence. The lesson is not performance. It is dignity: the human capacity to speak again after life has tried to reduce you.',
+      },
+      {
+        title: 'Silence can protect',
+        body: 'Silence is not always emptiness. Sometimes it is protection, listening, survival, or a room where language is rebuilding itself. A Colourmap reader should feel that recovery can begin quietly before it becomes visible.',
+      },
+      {
+        title: 'Dignity rises',
+        body: 'Angelou gives dignity a physical feeling. Not a slogan, not a pose, but a spine becoming upright again. The question is simple and powerful: what helps a person stand inside their own life?',
+      },
+      {
+        title: 'The page becomes a room',
+        body: 'Writing can make a room where pain is not denied and still does not own everything. Memory, rhythm, humor, anger, tenderness, and truth can sit together without becoming a lecture.',
+      },
+      {
+        title: 'A voice joins voices',
+        body: 'The personal voice becomes collective when it gives other people permission to recognize themselves. One story can open a door for many stories.',
+      },
+      {
+        title: 'The reader question',
+        body: 'What part of your voice has gone quiet? Not the loud public voice, necessarily. The honest one. The creative one. The one that says no, or asks for help, or names what matters.',
+      },
+      {
+        title: 'What others may answer',
+        body: 'Later, this page could let readers see gentle anonymous answers from other people: small sentences about courage, shame, art, family, grief, and the first moment they felt their voice return.',
+      },
+      {
+        title: 'Where this can expand next',
+        body: 'Page 9 could explore memoir as healing. Page 10 could connect Angelou to other poets of survival. Page 11 could ask the reader for one sentence they are ready to say. Page 12 could become a shared wall of voices.',
       },
     ],
   },

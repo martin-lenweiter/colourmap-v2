@@ -34,6 +34,7 @@ const COMIC_PROGRAMS = new Set([
   'parenting-patterns',
   'viktor-frankl',
   'bukowski-poems',
+  'maya-angelou',
   'plato-cave',
   'alan-watts',
   'david-hawkins',
@@ -129,6 +130,7 @@ const POSITIVE_OVERLAY_PROGRAMS = new Set([
   'parenting-patterns',
   'viktor-frankl',
   'bukowski-poems',
+  'maya-angelou',
   'plato-cave',
   'alan-watts',
   'david-hawkins',
@@ -154,6 +156,7 @@ const POSITIVE_OVERLAY_PANEL_EXTENSIONS: Record<string, string> = {
   'avoidance-action': 'webp',
   'viktor-frankl': 'webp',
   'bukowski-poems': 'webp',
+  'maya-angelou': 'webp',
   'plato-cave': 'webp',
   'alan-watts': 'webp',
   'david-hawkins': 'webp',
@@ -185,6 +188,8 @@ const PROGRAM_COVER_PANEL: Record<string, number> = {
   'thich-nhat-hanh': 2,
   gandhi: 11,
   'clear-allen': 0,
+  'alan-watts': 1,
+  'campbell-hero-quest': 2,
 };
 
 const SERIF = 'var(--font-serif)';
@@ -283,7 +288,7 @@ const GROUPS: {
   },
   {
     label: 'Poetry',
-    keys: ['bukowski-poems'],
+    keys: ['bukowski-poems', 'maya-angelou'],
     tint: '#9A7658',
     format: 'guides',
   },
