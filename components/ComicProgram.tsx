@@ -41,6 +41,9 @@ const POSITIVE_OVERLAY_PROGRAMS = new Set([
   'david-hawkins',
   'nietzsche',
   'campbell-hero-quest',
+  'economic-systems',
+  'planetary-ecology',
+  'future-transitions',
 ]);
 
 const TEXT_ON_IMAGE_PROGRAMS = new Set([
@@ -95,6 +98,9 @@ const POSITIVE_OVERLAY_PANEL_EXTENSIONS: Record<string, string> = {
   'david-hawkins': 'webp',
   nietzsche: 'webp',
   'campbell-hero-quest': 'webp',
+  'economic-systems': 'webp',
+  'planetary-ecology': 'webp',
+  'future-transitions': 'webp',
 };
 
 const POSITIVE_OVERLAY_PANEL_COUNTS: Record<string, number> = {
@@ -111,6 +117,9 @@ const POSITIVE_OVERLAY_PANEL_COUNTS: Record<string, number> = {
   'david-hawkins': 8,
   nietzsche: 8,
   'campbell-hero-quest': 7,
+  'economic-systems': 32,
+  'planetary-ecology': 32,
+  'future-transitions': 32,
 };
 
 const SINGLE_RASTER_PROGRAMS = new Set([
@@ -123,6 +132,9 @@ const SINGLE_RASTER_PROGRAMS = new Set([
   'david-hawkins',
   'nietzsche',
   'campbell-hero-quest',
+  'economic-systems',
+  'planetary-ecology',
+  'future-transitions',
 ]);
 
 const PROGRAM_IMAGE_STYLES: Record<string, ImageStyle[]> = {

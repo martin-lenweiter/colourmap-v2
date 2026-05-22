@@ -1248,6 +1248,46 @@ Expansion pages could later cover social media, productivity theater, perfection
 seen, emotional regulation before action, and how Colourmap helps the user map where attention is
 going.
 
+## World Systems Education Comics
+
+The first world-systems education comics are:
+
+- **Economic Systems In Motion**
+- **Planetary Ecology & Living Intelligence**
+- **Future Transitions: AI, Work & Globalisation**
+
+Each program should launch as four parts of eight pages, for thirty-two story pages. A separate
+app-rendered reference section can provide the extra learning material without forcing more visual
+density into the story pages.
+
+Shared format:
+
+- text-free raster pages with app-rendered titles, teaching copy, and references
+- compressed WebP assets under `public/comics/{program}/variants/positive-overlay/`
+- no white border, no baked-in frame, no gutters, no readable labels, no numbers, no logos
+- one strong central idea per page, with occasional multi-block compositions only when they clarify a
+  historical sequence, tradeoff, system loop, or comparison
+- coherent Colourmap education style: sober, warm, symbolic, high-quality linework, calm empty space,
+  and enough visual clarity to read on a phone
+
+**Economic Systems In Motion** should show the passage of eras. The visual language remains coherent,
+but the mood evolves from village ledgers and old markets, to mercantilist ships and treasure, to
+industrial smoke, Marx and the factory, Keynes and public works, Hayek/Friedman maps and rules,
+global supply chains, climate balance sheets, AI capital, and future economic design. The goal is to
+show that political and economic systems are always in motion, not fixed natural laws.
+
+**Planetary Ecology & Living Intelligence** should be hopeful without hiding the crisis. It should
+show soil, fungi, forests, rivers, oceans, heat, biodiversity, restoration, regenerative agriculture,
+rewilding, Indigenous stewardship, cities, circular materials, food, data, and adaptation as one
+living system. Real data belongs in app-rendered text and references; images should carry symbolic
+structure and emotional clarity.
+
+**Future Transitions** should use an elegant solarpunk and civic-future style. It should explore
+globalisation, AI, work, global politics, trust, climate pressure, skills, institutions, democracy,
+attention, ecological belonging, and practical adaptation. It should distinguish medium-term
+transition from long-term possibility and leave the user with one practical question: what can I
+learn, build, repair, or practice now?
+
 ## Future Visual Direction: Flying Light Bird
 
 Later, the AI Presence / geometry language can include a light-bird made from golden dots. The aim is

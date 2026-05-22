@@ -125,6 +125,37 @@ export const PROGRAM_REFERENCES: Record<string, string[]> = {
     'Stuart Russell, Human Compatible.',
     'Kai-Fu Lee and Chen Qiufan, AI 2041.',
   ],
+  'economic-systems': [
+    'Adam Smith, The Wealth of Nations.',
+    'Karl Marx, Capital and The Communist Manifesto.',
+    'John Maynard Keynes, The General Theory of Employment, Interest and Money.',
+    'Friedrich Hayek, The Use of Knowledge in Society.',
+    'Karl Polanyi, The Great Transformation.',
+    'Elinor Ostrom, Governing the Commons.',
+    'Amartya Sen, Development as Freedom.',
+    'Kate Raworth, Doughnut Economics.',
+    'Thomas Piketty, Capital in the Twenty-First Century.',
+    'Mariana Mazzucato, Mission Economy.',
+  ],
+  'planetary-ecology': [
+    'IPCC, Sixth Assessment Report: Synthesis Report.',
+    'IPBES, Global Assessment Report on Biodiversity and Ecosystem Services.',
+    'UNEP, Emissions Gap Report.',
+    "FAO, The State of the World's Forests.",
+    'IEA, World Energy Outlook and renewables reports.',
+    'Suzanne Simard, Finding the Mother Tree.',
+    'Robin Wall Kimmerer, Braiding Sweetgrass.',
+  ],
+  'future-transitions': [
+    'IMF, Artificial Intelligence and the Future of Work.',
+    'ILO, Generative AI and Jobs.',
+    'OECD, Artificial Intelligence and the Future of Skills.',
+    'WTO, World Trade Report.',
+    'World Bank, Global Economic Prospects.',
+    'Stuart Russell, Human Compatible.',
+    'Kai-Fu Lee and Chen Qiufan, AI 2041.',
+    'Mariana Mazzucato, Mission Economy.',
+  ],
 };
 
 export function getProgramReferences(programKey: string): string[] {

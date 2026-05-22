@@ -138,6 +138,9 @@ const POSITIVE_OVERLAY_PROGRAMS = new Set([
   'david-hawkins',
   'nietzsche',
   'campbell-hero-quest',
+  'economic-systems',
+  'planetary-ecology',
+  'future-transitions',
 ]);
 const JPG_PANEL_PROGRAMS = new Set(['carl-jung', 'struggle-letting-go']);
 const GENERATED_LAYERED_PANEL_COUNTS: Record<string, number> = {
@@ -165,6 +168,9 @@ const POSITIVE_OVERLAY_PANEL_EXTENSIONS: Record<string, string> = {
   'david-hawkins': 'webp',
   nietzsche: 'webp',
   'campbell-hero-quest': 'webp',
+  'economic-systems': 'webp',
+  'planetary-ecology': 'webp',
+  'future-transitions': 'webp',
 };
 const LANDSCAPE_GENERATED_COVERS = new Set<string>();
 const PROGRAM_COVER_PANEL: Record<string, number> = {
@@ -195,6 +201,9 @@ const PROGRAM_COVER_PANEL: Record<string, number> = {
   'david-hawkins': 6,
   'jack-london': 6,
   'campbell-hero-quest': 2,
+  'economic-systems': 23,
+  'planetary-ecology': 23,
+  'future-transitions': 19,
 };
 const SPECIAL_PROGRAM_COVERS: Record<string, string> = {};
 
@@ -323,6 +332,12 @@ const GROUPS: {
     label: 'Systems',
     keys: ['organisational-intelligence', 'collective-evolution', 'parenting-patterns'],
     tint: '#6B7A50',
+    format: 'guides',
+  },
+  {
+    label: 'World Systems',
+    keys: ['economic-systems', 'planetary-ecology', 'future-transitions'],
+    tint: '#6F8A58',
     format: 'guides',
   },
   {
