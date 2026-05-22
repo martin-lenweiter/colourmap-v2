@@ -382,7 +382,7 @@ export default function ActiveCompartments() {
       style={{
         border: `1px solid rgba(196,160,96,0.2)`,
         borderRadius: 16,
-        background: 'rgba(255,255,255,0.03)',
+        background: 'var(--collapsible-shell-bg, rgba(255,255,255,0.03))',
         overflow: 'hidden',
       }}
     >
@@ -423,7 +423,15 @@ export default function ActiveCompartments() {
       </div>
 
       {/* cards */}
-      <div style={{ padding: '10px 12px', display: 'flex', flexDirection: 'column', gap: 8 }}>
+      <div
+        style={{
+          padding: '10px 12px',
+          display: 'flex',
+          flexDirection: 'column',
+          gap: 8,
+          background: 'var(--collapsible-open-bg, transparent)',
+        }}
+      >
         {active.map(({ channel, comp }) => (
           <ActiveCard
             key={comp.id}

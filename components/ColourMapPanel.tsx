@@ -1132,7 +1132,7 @@ export default function ColourMapPanel() {
       style={{
         border: `1px solid var(--panel-border, rgba(196,160,96,0.18))`,
         borderRadius: 14,
-        background: 'var(--palette-l3-bg, rgba(10,6,3,0.6))',
+        background: 'var(--collapsible-shell-bg, var(--palette-l3-bg, rgba(10,6,3,0.6)))',
         overflow: 'hidden',
       }}
     >
@@ -1240,7 +1240,12 @@ export default function ColourMapPanel() {
       </div>
 
       {open && view === 'list' && (
-        <div style={{ padding: '14px 14px 10px' }}>
+        <div
+          style={{
+            padding: '14px 14px 10px',
+            background: 'var(--collapsible-open-bg, transparent)',
+          }}
+        >
           {data.channels.map((ch) => (
             <ChannelCard
               key={ch.id}
@@ -1309,7 +1314,12 @@ export default function ColourMapPanel() {
       )}
 
       {open && view === 'dots' && (
-        <div style={{ padding: '18px 14px 12px' }}>
+        <div
+          style={{
+            padding: '18px 14px 12px',
+            background: 'var(--collapsible-open-bg, transparent)',
+          }}
+        >
           {/* ── Horizontal orbit row ── */}
           <div style={{ position: 'relative', marginBottom: 20 }}>
             {/* dots */}

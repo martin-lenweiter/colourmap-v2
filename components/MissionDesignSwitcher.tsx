@@ -880,7 +880,7 @@ function MissionTasksPill({
       style={{
         border: `1px solid ${open ? 'rgba(196,160,96,0.34)' : 'var(--panel-border, rgba(196,160,96,0.18))'}`,
         borderRadius: 14,
-        background: 'var(--palette-l3-bg, rgba(30,16,8,0.55))',
+        background: 'var(--collapsible-shell-bg, var(--palette-l3-bg, rgba(30,16,8,0.55)))',
         overflow: 'hidden',
         transition: 'border-color 0.2s',
       }}
@@ -937,7 +937,9 @@ function MissionTasksPill({
       </button>
 
       {open && (
-        <div style={{ padding: '12px 10px 0' }}>
+        <div
+          style={{ padding: '12px 10px 0', background: 'var(--collapsible-open-bg, transparent)' }}
+        >
           <MissionDesignPill value={format} onChange={onFormatChange} />
           <div style={{ marginTop: 10 }}>
             {format === 'one' ? <DoingCardsPanel /> : <MissionControlFormatTwo />}

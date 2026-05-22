@@ -1262,7 +1262,7 @@ export default function DailyRituals() {
         style={{
           border: `1px solid ${peaked ? 'rgba(200,168,88,0.6)' : 'var(--panel-border, rgba(196,160,96,0.18))'}`,
           borderRadius: 14,
-          background: 'var(--palette-l3-bg, rgba(30,16,8,0.55))',
+          background: 'var(--collapsible-shell-bg, var(--palette-l3-bg, rgba(30,16,8,0.55)))',
           overflow: 'hidden',
           transition: 'border-color 0.4s',
         }}
@@ -1320,7 +1320,7 @@ export default function DailyRituals() {
         </div>
 
         {open && (
-          <>
+          <div style={{ background: 'var(--collapsible-open-bg, transparent)' }}>
             {/* Alignment bar */}
             <div
               style={{ padding: '12px 16px 10px', borderBottom: '1px solid rgba(196,160,96,0.08)' }}
@@ -1425,7 +1425,7 @@ export default function DailyRituals() {
                 {QUOTES[quoteIdx]}
               </p>
             </div>
-          </>
+          </div>
         )}
       </div>
     </>
