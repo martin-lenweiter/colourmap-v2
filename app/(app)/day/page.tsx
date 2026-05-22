@@ -20,56 +20,69 @@ import Overview2 from '@/components/Overview2';
 import TodaysField from '@/components/TodaysField';
 import { hydrate } from '@/lib/sync';
 
-const EMOTION_BACKDROPS = [
+const DAY_EMOTION_IMAGES = ['/emotions/emotion-sunset-1.webp', '/emotions/emotion-sunset-2.webp'];
+
+const NIGHT_EMOTION_IMAGES = [
   '/emotions/emotion-city-night-1.webp',
   '/emotions/emotion-city-night-2.webp',
-  '/emotions/emotion-sunset-1.webp',
-  '/emotions/emotion-sunset-2.webp',
 ];
 
 function EmotionMoodSurface({ children }: { children: React.ReactNode }) {
   const [index, setIndex] = useState(0);
+  const [nightMode, setNightMode] = useState(false);
+
+  const images = nightMode ? NIGHT_EMOTION_IMAGES : DAY_EMOTION_IMAGES;
+  const currentImage = images[index % images.length];
 
   useEffect(() => {
-    const timer = window.setInterval(
-      () => setIndex((current) => (current + 1) % EMOTION_BACKDROPS.length),
-      18_000,
-    );
+    const timer = window.setInterval(() => setIndex((current) => current + 1), 18_000);
     return () => window.clearInterval(timer);
+  }, []);
+
+  useEffect(() => {
+    const root = document.documentElement;
+    const update = () => {
+      setNightMode(root.classList.contains('dark'));
+      setIndex(0);
+    };
+    update();
+    const observer = new MutationObserver(update);
+    observer.observe(root, { attributes: true, attributeFilter: ['class'] });
+    return () => observer.disconnect();
   }, []);
 
   return (
     <div
       style={{
-        position: 'relative',
-        overflow: 'hidden',
-        borderRadius: 18,
-        padding: '12px 8px 14px',
-        background: 'var(--palette-l2-bg, rgba(30,16,8,0.5))',
+        display: 'grid',
+        gap: 12,
       }}
     >
       <div
-        aria-hidden="true"
         style={{
-          position: 'absolute',
-          inset: 0,
-          backgroundImage: `url("${EMOTION_BACKDROPS[index]}")`,
-          backgroundSize: 'cover',
-          backgroundPosition: index < 2 ? 'center 42%' : 'center 50%',
-          opacity: 0.24,
-          transition: 'background-image 900ms ease, opacity 900ms ease',
+          border: '1px solid var(--panel-border, rgba(122,84,56,0.22))',
+          borderRadius: 14,
+          overflow: 'hidden',
+          background: 'var(--card)',
+          boxShadow: '0 12px 28px rgba(92,48,24,0.1)',
         }}
-      />
-      <div
-        aria-hidden="true"
-        style={{
-          position: 'absolute',
-          inset: 0,
-          background:
-            'linear-gradient(180deg, color-mix(in srgb, var(--background) 72%, transparent), color-mix(in srgb, var(--background) 88%, black))',
-        }}
-      />
-      <div style={{ position: 'relative', zIndex: 1 }} className="space-y-3">
+      >
+        <img
+          src={currentImage}
+          alt=""
+          aria-hidden="true"
+          loading="eager"
+          style={{
+            display: 'block',
+            width: '100%',
+            aspectRatio: '16 / 7',
+            objectFit: 'cover',
+            objectPosition: nightMode ? 'center 42%' : 'center 50%',
+            transition: 'opacity 900ms ease',
+          }}
+        />
+      </div>
+      <div className="space-y-3" style={{ background: 'transparent' }}>
         {children}
       </div>
     </div>

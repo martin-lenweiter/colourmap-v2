@@ -88,6 +88,8 @@
   --sidebar-ring: #b07840;
   --light-pill-text: rgba(30, 16, 8, 0.88);
   --light-pill-muted: rgba(30, 16, 8, 0.58);
+  --collapsible-shell-bg: transparent;
+  --collapsible-open-bg: transparent;
   --ai-surface-bg: rgba(251, 243, 216, 0.72);
   --ai-surface-raised: rgba(255, 248, 224, 0.62);
   --ai-surface-input: rgba(255, 251, 235, 0.52);
@@ -126,6 +128,8 @@
   --sidebar-accent-foreground: #2a1a06;
   --sidebar-border: rgba(160, 110, 40, 0.28);
   --sidebar-ring: #a86a28;
+  --collapsible-shell-bg: transparent;
+  --collapsible-open-bg: transparent;
   --ai-surface-bg: rgba(246, 214, 132, 0.54);
   --ai-surface-raised: rgba(255, 229, 154, 0.58);
   --ai-surface-input: rgba(255, 238, 181, 0.46);
@@ -169,6 +173,8 @@
   --sidebar-accent-foreground: #f0dfc0;
   --sidebar-border: rgba(200, 160, 96, 0.18);
   --sidebar-ring: #906840;
+  --collapsible-shell-bg: var(--palette-l3-bg, rgba(30, 16, 8, 0.55));
+  --collapsible-open-bg: var(--palette-l3-bg, rgba(30, 16, 8, 0.55));
   --ai-surface-bg: rgba(42, 24, 14, 0.88);
   --ai-surface-raised: rgba(58, 34, 20, 0.84);
   --ai-surface-input: rgba(72, 42, 24, 0.58);
