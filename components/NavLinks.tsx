@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef } from 'react';
 
 import { useViewMode } from './ViewModeContext';
 
@@ -14,50 +14,16 @@ const PRIMARY_LINKS: { href: string; label: string }[] = [
   { href: '/geometry-field', label: 'Art' },
 ];
 
-// Routes that belong under the Social nav item (used in AppShell too)
-const SOCIAL_ROUTES = ['/circles', '/sparks', '/chat'];
-
 const PHONE_PRIMARY_LINKS = PRIMARY_LINKS;
-
-const MORE_LINKS = [
-  { href: '/entertainment', label: 'Entertainment' },
-  { href: '/music', label: 'Music' },
-  { href: '/atlas', label: 'Atlas' },
-  { href: '/progress-road', label: 'Roads' },
-  { href: '/circles', label: 'Social' },
-  { href: '/journey', label: 'Journey' },
-  { href: '/life-scan', label: 'Life Scan' },
-  { href: '/research', label: 'Research' },
-  { href: '/build-lab', label: 'Creator Space' },
-];
-
-const OPEN_AI_PRESENCE_EVENT = 'colourmap:open-ai-presence';
-
-function openAIAssistantFromMenu() {
-  window.dispatchEvent(new CustomEvent(OPEN_AI_PRESENCE_EVENT, { detail: { source: 'nav-dot' } }));
-}
 
 export default function NavLinks() {
   const pathname = usePathname();
   const { mode } = useViewMode();
   const isPhone = mode === 'phone';
-  const [moreOpen, setMoreOpen] = useState(false);
-  const menuRef = useRef<HTMLDivElement>(null);
   const navRef = useRef<HTMLElement | null>(null);
   const activeLinkRef = useRef<HTMLAnchorElement | null>(null);
 
   const primary = isPhone ? PHONE_PRIMARY_LINKS : PRIMARY_LINKS;
-  const _isMoreActive = MORE_LINKS.some((l) => l.href === pathname);
-
-  useEffect(() => {
-    function onClickOutside(e: MouseEvent) {
-      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
-        setMoreOpen(false);
-      }
-    }
-    if (moreOpen) document.addEventListener('mousedown', onClickOutside);
-    return () => document.removeEventListener('mousedown', onClickOutside);
-  }, [moreOpen]);
 
   // Auto-scroll the active tab into view on route change so the user
   // never loses orientation. Especially matters on phone where only
@@ -82,7 +48,7 @@ export default function NavLinks() {
       className="relative flex items-center w-full"
       style={{ background: 'var(--nav-bg, #d4b896)' }}
     >
-      {/* Nav centered in full width — More button is absolutely positioned so it doesn't shift the center */}
+      {/* Nav centered in full width. Extra surfaces live in the Colourmap title menu. */}
       <nav
         ref={(el) => {
           navRef.current = el;
@@ -110,8 +76,10 @@ export default function NavLinks() {
               className="shrink-0 whitespace-nowrap transition-colors tracking-[0.04em]"
               style={{
                 fontSize: 16,
+                fontFamily: 'var(--font-serif)',
                 color: 'var(--header-text, #7A5438)',
-                fontWeight: isActive ? 600 : 400,
+                fontWeight: isActive ? 800 : 700,
+                letterSpacing: '0.08em',
               }}
             >
               {link.label}
@@ -132,96 +100,6 @@ export default function NavLinks() {
           );
         })}
       </nav>
-
-      {/* More menu — absolute, right-aligned to match ThemeSwitcher dot above */}
-      <div className="absolute right-4 top-1/2 -translate-y-1/2" ref={menuRef}>
-        <button
-          type="button"
-          onClick={() => setMoreOpen(!moreOpen)}
-          aria-label="More navigation"
-          aria-expanded={moreOpen}
-          className="h-7 w-7 rounded-full border border-border transition-all"
-          style={{
-            background: 'rgba(251,243,216,0.92)',
-            boxShadow: 'none',
-            color: '#5C3018',
-            cursor: 'pointer',
-            padding: 0,
-            flexShrink: 0,
-            display: 'grid',
-            placeItems: 'center',
-            fontSize: 20,
-            lineHeight: 1,
-            fontWeight: 500,
-          }}
-        >
-          +
-        </button>
-
-        {moreOpen && (
-          <div
-            className="absolute top-full mt-1 right-0 z-[1100] min-w-[160px] rounded-xl py-2 animate-in fade-in slide-in-from-top-1 duration-150"
-            style={{
-              background: '#fbf3d8',
-              border: '1px solid rgba(160,110,40,0.18)',
-              boxShadow: '0 8px 24px rgba(0,0,0,0.14)',
-            }}
-          >
-            <button
-              type="button"
-              onClick={() => {
-                openAIAssistantFromMenu();
-                setMoreOpen(false);
-              }}
-              style={{
-                display: 'block',
-                width: '100%',
-                padding: '8px 16px',
-                fontSize: 13,
-                color: '#5C3018',
-                fontWeight: 700,
-                textAlign: 'left',
-                background: 'transparent',
-                border: 0,
-                cursor: 'pointer',
-              }}
-            >
-              AI Assistant
-            </button>
-            <div
-              aria-hidden="true"
-              style={{
-                height: 1,
-                margin: '4px 12px',
-                background: 'rgba(160,110,40,0.16)',
-              }}
-            />
-            {MORE_LINKS.map((link) => {
-              const isSocialLink = link.href === '/circles';
-              const isActive = isSocialLink
-                ? SOCIAL_ROUTES.includes(pathname)
-                : pathname === link.href;
-              return (
-                <Link
-                  key={link.href}
-                  href={link.href}
-                  onClick={() => setMoreOpen(false)}
-                  style={{
-                    display: 'block',
-                    padding: '8px 16px',
-                    fontSize: 13,
-                    color: isActive ? '#5C3018' : '#7A5438',
-                    fontWeight: isActive ? 600 : 400,
-                    textDecoration: 'none',
-                  }}
-                >
-                  {link.label}
-                </Link>
-              );
-            })}
-          </div>
-        )}
-      </div>
     </div>
   );
 }

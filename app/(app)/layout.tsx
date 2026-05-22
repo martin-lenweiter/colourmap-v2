@@ -67,9 +67,7 @@ export default async function AppLayout({
           <PhoneFrame>
             <div className="min-h-svh bg-background" style={{ position: 'relative' }}>
               <StarField />
-              <header
-                style={{ borderBottom: '1px solid var(--header-border, rgba(196,160,96,0.22))' }}
-              >
+              <header style={{ borderBottom: 'none' }}>
                 {/* Three-column grid so the Colourmap brand stays visually
                 centered on every viewport — not just desktop. Left column
                 is an empty spacer matching the width of the right column

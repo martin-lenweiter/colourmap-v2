@@ -28,6 +28,8 @@ One font family per project. Scale: 12 / 14 / 16 / 20 / 24 / 32 / 48. Line-heigh
 
 **Compressed image assets by default.** Any raster image added to the app must be compressed before commit, preferably as WebP or AVIF. Keep decorative/background images lightweight enough for weak mobile connections, and layer them behind readable text with theme-aware overlays.
 
+**No baked-in image frames.** Generated raster assets must not include white frames, white gutters, fake paper mats, rounded white borders, page borders, or edge outlines unless the user explicitly asks for an image of a framed object. The app owns framing and border radius; generated artwork should reach the image edges so it can crop cleanly inside cards, pills, comic readers, and phone-width backdrops.
+
 ## Color
 
 60-30-10 rule: 60% neutral background, 30% secondary, 10% accent. Max 3 brand colors + neutrals. Contrast ratio ≥ 4.5:1 for all text.

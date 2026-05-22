@@ -48,6 +48,25 @@ const CHANNEL_COLORS = [
   '#7A8A48', // olive
 ];
 
+const AREA_PALETTE = [
+  '#C07040',
+  '#D08A48',
+  '#C4A060',
+  '#A8A058',
+  '#7A8A48',
+  '#4A8870',
+  '#3A8890',
+  '#4870A8',
+  '#5265B0',
+  '#7258A8',
+  '#9858A0',
+  '#A85870',
+  '#B85C52',
+  '#8A6A4A',
+  '#CFC0A0',
+  '#F0D898',
+];
+
 function uid() {
   return crypto.randomUUID();
 }
@@ -67,6 +86,36 @@ function persistAreaMissions(next: AreaMission[]) {
   } catch {}
   syncPref(MISSIONS_KEY, next);
   window.dispatchEvent(new Event('colourmap:missions-updated'));
+}
+
+function syncAreaMissionTag(channel: Channel) {
+  const all = readJson<AreaMission[]>(MISSIONS_KEY, []);
+  const next = all.map((mission) =>
+    mission.tag?.categoryId === channel.id
+      ? {
+          ...mission,
+          tag: {
+            ...mission.tag,
+            name: channel.title || 'Area',
+            color: channel.color,
+            categoryId: channel.id,
+          },
+        }
+      : mission,
+  );
+  persistAreaMissions(next);
+}
+
+function uniqueMissions(items: AreaMission[]) {
+  const seen = new Set<string>();
+  return items.filter((mission) => {
+    const key = [mission.tag?.categoryId ?? 'none', mission.text.trim().toLocaleLowerCase()].join(
+      '::',
+    );
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
 }
 
 function defaultData(): CMapData {
@@ -418,8 +467,9 @@ function ChannelCard({
   onDelete: () => void;
 }) {
   const [missionText, setMissionText] = useState('');
+  const [paletteOpen, setPaletteOpen] = useState(false);
   const [areaMissions, setAreaMissions] = useState<AreaMission[]>(() =>
-    readJson<AreaMission[]>(MISSIONS_KEY, []).filter(
+    uniqueMissions(readJson<AreaMission[]>(MISSIONS_KEY, [])).filter(
       (mission) => mission.tag?.categoryId === channel.id,
     ),
   );
@@ -427,7 +477,7 @@ function ChannelCard({
   useEffect(() => {
     function refreshAreaMissions() {
       setAreaMissions(
-        readJson<AreaMission[]>(MISSIONS_KEY, []).filter(
+        uniqueMissions(readJson<AreaMission[]>(MISSIONS_KEY, [])).filter(
           (mission) => mission.tag?.categoryId === channel.id,
         ),
       );
@@ -444,7 +494,18 @@ function ChannelCard({
   function addAreaMission() {
     const text = missionText.trim();
     if (!text) return;
-    const all = readJson<AreaMission[]>(MISSIONS_KEY, []);
+    const all = uniqueMissions(readJson<AreaMission[]>(MISSIONS_KEY, []));
+    const alreadyExists = all.some(
+      (mission) =>
+        mission.tag?.categoryId === channel.id &&
+        mission.text.trim().toLocaleLowerCase() === text.toLocaleLowerCase(),
+    );
+    if (alreadyExists) {
+      setMissionText('');
+      setAreaMissions(all.filter((mission) => mission.tag?.categoryId === channel.id));
+      persistAreaMissions(all);
+      return;
+    }
     const next: AreaMission[] = [
       ...all,
       {
@@ -465,7 +526,7 @@ function ChannelCard({
   }
 
   function toggleAreaMission(missionId: string) {
-    const all = readJson<AreaMission[]>(MISSIONS_KEY, []);
+    const all = uniqueMissions(readJson<AreaMission[]>(MISSIONS_KEY, []));
     const next = all.map((mission) =>
       mission.id === missionId ? { ...mission, done: !mission.done } : mission,
     );
@@ -521,14 +582,23 @@ function ChannelCard({
           borderBottom: channel.open ? `1px solid ${channel.color}1e` : 'none',
         }}
       >
-        <div
+        <button
+          type="button"
+          aria-label={`Change ${channel.title || 'area'} color`}
+          onClick={(e) => {
+            e.stopPropagation();
+            setPaletteOpen((value) => !value);
+          }}
           style={{
-            width: 7,
-            height: 7,
+            width: 18,
+            height: 18,
             borderRadius: '50%',
+            border: `1.5px solid color-mix(in srgb, ${channel.color} 72%, white)`,
             background: channel.color,
-            opacity: 0.75,
             flexShrink: 0,
+            cursor: 'pointer',
+            padding: 0,
+            boxShadow: `0 0 0 4px ${channel.color}18`,
           }}
         />
 
@@ -625,6 +695,48 @@ function ChannelCard({
       {/* Compartments */}
       {channel.open && (
         <div style={{ padding: '10px 12px' }}>
+          {paletteOpen && (
+            <div
+              style={{
+                border: `1px solid ${channel.color}30`,
+                borderRadius: 12,
+                background:
+                  'linear-gradient(135deg, color-mix(in srgb, var(--card) 84%, transparent), color-mix(in srgb, var(--background) 72%, transparent))',
+                padding: 10,
+                marginBottom: 10,
+                display: 'grid',
+                gridTemplateColumns: 'repeat(8, minmax(0, 1fr))',
+                gap: 8,
+              }}
+            >
+              {AREA_PALETTE.map((color) => (
+                <button
+                  key={color}
+                  type="button"
+                  aria-label={`Use area color ${color}`}
+                  onClick={(event) => {
+                    event.stopPropagation();
+                    onUpdate({ ...channel, color });
+                    setPaletteOpen(false);
+                  }}
+                  style={{
+                    width: '100%',
+                    aspectRatio: '1 / 1',
+                    minHeight: 28,
+                    borderRadius: 9,
+                    border:
+                      color === channel.color
+                        ? '2px solid var(--foreground)'
+                        : '1px solid color-mix(in srgb, var(--foreground) 20%, transparent)',
+                    background: color,
+                    boxShadow:
+                      color === channel.color ? `0 0 18px ${color}70` : `0 4px 12px ${color}22`,
+                    cursor: 'pointer',
+                  }}
+                />
+              ))}
+            </div>
+          )}
           <div
             style={{
               border: `1px solid ${channel.color}24`,
@@ -641,6 +753,7 @@ function ChannelCard({
                 fontWeight: 900,
                 color: BROWN,
                 marginBottom: 8,
+                textAlign: 'center',
               }}
             >
               Missions in this area
@@ -984,6 +1097,7 @@ export default function ColourMapPanel() {
   }
 
   function updateChannel(id: string, ch: Channel) {
+    syncAreaMissionTag(ch);
     persist({ ...data, channels: data.channels.map((x) => (x.id === id ? ch : x)) });
   }
 
@@ -1027,7 +1141,11 @@ export default function ColourMapPanel() {
         onClick={() => setOpen((v) => !v)}
         style={{
           padding: '14px 18px',
-          background: 'none',
+          backgroundColor: 'var(--palette-l3-bg, rgba(30,16,8,0.55))',
+          backgroundImage:
+            'linear-gradient(90deg, color-mix(in srgb, var(--palette-l3-bg, rgba(30,16,8,0.55)) 94%, transparent), color-mix(in srgb, var(--palette-l3-bg, rgba(30,16,8,0.55)) 58%, transparent)), url("/emotions/pills/areas.webp")',
+          backgroundSize: 'cover',
+          backgroundPosition: 'center 48%',
           borderBottom: open ? `1px solid rgba(196,160,96,0.15)` : 'none',
           cursor: 'pointer',
           display: 'flex',
@@ -1039,8 +1157,8 @@ export default function ColourMapPanel() {
           {open &&
             (
               [
-                ['list', 'Vertical'],
-                ['dots', 'Horizontal'],
+                ['list', 'V'],
+                ['dots', 'H'],
               ] as const
             ).map(([v, label]) => (
               <button
@@ -1064,6 +1182,7 @@ export default function ColourMapPanel() {
                   borderRadius: 999,
                   cursor: 'pointer',
                   padding: '6px 10px',
+                  minWidth: 34,
                   color: view === v ? 'var(--foreground)' : 'var(--muted-foreground)',
                   fontFamily: 'var(--font-serif)',
                   fontSize: 12,

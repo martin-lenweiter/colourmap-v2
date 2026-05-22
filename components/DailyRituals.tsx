@@ -1272,9 +1272,13 @@ export default function DailyRituals() {
           onClick={() => setOpen((v) => !v)}
           style={{
             padding: '12px 16px',
-            background: peaked
+            backgroundColor: peaked
               ? 'var(--palette-panel-bg-tint, rgba(196,160,96,0.2))'
               : 'transparent',
+            backgroundImage:
+              'linear-gradient(90deg, color-mix(in srgb, var(--palette-l3-bg, rgba(30,16,8,0.55)) 92%, transparent), color-mix(in srgb, var(--palette-l3-bg, rgba(30,16,8,0.55)) 56%, transparent)), url("/emotions/pills/rituals.webp")',
+            backgroundSize: 'cover',
+            backgroundPosition: 'center 48%',
             borderBottom: open ? '1px solid rgba(196,160,96,0.18)' : 'none',
             cursor: 'pointer',
             display: 'flex',

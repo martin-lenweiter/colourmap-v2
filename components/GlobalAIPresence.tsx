@@ -20,14 +20,21 @@ const OPEN_AI_PRESENCE_EVENT = 'colourmap:open-ai-presence';
 const PRESENCE_HISTORY_LS = 'colourmap:ai-presence-discussion';
 
 const CELL_DOTS = Array.from({ length: 72 }, (_, index) => {
-  const ring = index % 3;
+  const ring = index % 4;
   const angle = index * 137.5;
-  const radius = ring === 0 ? 18 + (index % 7) * 2.4 : ring === 1 ? 28 + (index % 9) * 1.7 : 39;
+  const radius =
+    ring === 0
+      ? 7 + (index % 6) * 1.8
+      : ring === 1
+        ? 15 + (index % 8) * 1.7
+        : ring === 2
+          ? 24 + (index % 7) * 1.45
+          : 32;
   return {
     id: index,
     x: 50 + Math.cos((angle * Math.PI) / 180) * radius,
-    y: 50 + Math.sin((angle * Math.PI) / 180) * radius,
-    size: ring === 0 ? 2.2 : ring === 1 ? 1.7 : 1.2,
+    y: 50 + Math.sin((angle * Math.PI) / 180) * radius * 0.84,
+    size: ring === 0 ? 2.25 : ring === 1 ? 1.9 : ring === 2 ? 1.55 : 1.2,
     delay: `${(index % 12) * -0.18}s`,
     drift: ring + 1,
   };
@@ -143,7 +150,7 @@ function PresenceCell({
               ? 'radial-gradient(circle at 50% 50%, color-mix(in srgb, var(--primary) 16%, transparent), color-mix(in srgb, var(--card) 88%, var(--muted)) 58%, var(--card))'
               : isNebula
                 ? 'radial-gradient(circle at 44% 48%, color-mix(in srgb, var(--foreground) 24%, transparent), color-mix(in srgb, var(--primary) 28%, transparent) 34%, var(--card) 70%)'
-                : 'radial-gradient(circle at 50% 50%, color-mix(in srgb, var(--primary) 22%, transparent), color-mix(in srgb, var(--card) 88%, var(--primary)) 54%, var(--card))',
+                : 'radial-gradient(circle at 50% 50%, rgba(196,160,96,0.24), color-mix(in srgb, var(--card) 86%, #c4a060) 48%, color-mix(in srgb, var(--card) 96%, black) 76%)',
         boxShadow: listening
           ? '0 0 42px color-mix(in srgb, var(--primary) 46%, transparent), inset 0 0 34px color-mix(in srgb, var(--foreground) 18%, transparent)'
           : '0 0 24px color-mix(in srgb, var(--primary) 24%, transparent), inset 0 0 24px color-mix(in srgb, var(--foreground) 10%, transparent)',
@@ -152,7 +159,7 @@ function PresenceCell({
       <div
         className="absolute rounded-full border"
         style={{
-          inset: isWalker ? '18% 27% 14%' : '14%',
+          inset: isWalker ? '18% 27% 14%' : '18%',
           borderColor: listening
             ? 'color-mix(in srgb, var(--foreground) 38%, transparent)'
             : 'color-mix(in srgb, var(--foreground) 18%, transparent)',
@@ -179,11 +186,13 @@ function PresenceCell({
                   ? dot.id % 5 === 0
                     ? 'var(--foreground)'
                     : 'var(--primary)'
-                  : dot.id % 5 === 0
-                    ? 'var(--foreground)'
-                    : 'var(--primary)',
-              boxShadow: '0 0 10px color-mix(in srgb, var(--primary) 78%, transparent)',
-              opacity: listening ? 0.94 : 0.62,
+                  : dot.id % 6 === 0
+                    ? '#f5d98f'
+                    : dot.id % 4 === 0
+                      ? '#d8b65d'
+                      : '#c4a060',
+              boxShadow: '0 0 12px rgba(216,182,93,0.72)',
+              opacity: listening ? 0.96 : 0.76,
               transform: 'translate(-50%, -50%)',
               animation: `${
                 isWalker ? 'presenceWalker' : isOrbit ? 'presenceOrbit' : 'presenceCellDrift'

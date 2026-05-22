@@ -14,12 +14,12 @@ const { streamText } = vi.hoisted(() => ({
     toTextStreamResponse: () => streamedResponse,
   })),
 }));
-const { readFile } = vi.hoisted(() => ({ readFile: vi.fn() }));
+const { readdir, readFile } = vi.hoisted(() => ({ readdir: vi.fn(), readFile: vi.fn() }));
 
 vi.mock('@/lib/supabase/server', () => ({ createClient }));
 vi.mock('@ai-sdk/anthropic', () => ({ anthropic }));
 vi.mock('ai', () => ({ streamText }));
-vi.mock('node:fs/promises', () => ({ default: { readFile }, readFile }));
+vi.mock('node:fs/promises', () => ({ default: { readdir, readFile }, readdir, readFile }));
 
 import { POST } from './route';
 
@@ -39,7 +39,9 @@ describe('POST /api/ai/presence', () => {
     getUser.mockReset();
     anthropic.mockClear();
     streamText.mockClear();
+    readdir.mockReset();
     readFile.mockReset();
+    readdir.mockResolvedValue(['ai-presence.md', 'comic-generation-pipeline.md']);
     readFile.mockResolvedValue('# Spec file\nColourmap spec context');
     getUser.mockResolvedValue({ data: { user } });
   });
@@ -62,6 +64,10 @@ describe('POST /api/ai/presence', () => {
         system: expect.stringContaining('Colourmap spec context'),
       }),
     );
+    expect(readdir).toHaveBeenCalled();
+    const readPaths = readFile.mock.calls.map(([file]) => String(file).replaceAll('\\', '/'));
+    expect(readPaths).toContainEqual(expect.stringContaining('docs/product.md'));
+    expect(readPaths).toContainEqual(expect.stringContaining('docs/specs/ai-presence.md'));
   });
 
   it('returns 401 text when unauthenticated', async () => {

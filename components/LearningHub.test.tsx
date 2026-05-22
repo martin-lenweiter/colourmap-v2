@@ -5,6 +5,7 @@ import LearningHub from './LearningHub';
 describe('LearningHub', () => {
   beforeEach(() => {
     localStorage.clear();
+    sessionStorage.clear();
     vi.spyOn(Math, 'random').mockReturnValue(0);
   });
 
@@ -12,6 +13,7 @@ describe('LearningHub', () => {
     cleanup();
     vi.restoreAllMocks();
     localStorage.clear();
+    sessionStorage.clear();
   });
 
   it('renders education worlds and opens the comic reader with image style choices', async () => {
@@ -19,7 +21,11 @@ describe('LearningHub', () => {
     const onClose = vi.fn();
     const { container } = render(<LearningHub onClose={onClose} />);
 
-    expect(await screen.findByText("You're here. That already matters.")).toBeDefined();
+    expect(
+      await screen.findByText(
+        'Until you make the unconscious conscious, it will direct your life.',
+      ),
+    ).toBeDefined();
     expect(screen.getByText('Knowledge worlds')).toBeDefined();
     expect(screen.queryByText(/Life is not fixed/i)).toBeNull();
     fireEvent.click(screen.getByRole('button', { name: 'Education' }));
@@ -34,6 +40,7 @@ describe('LearningHub', () => {
     expect(screen.getByText('Clear & Allen: Organisation As Freedom')).toBeDefined();
     expect(screen.getByText('Viktor Frankl & Meaning Under Pressure')).toBeDefined();
     expect(screen.getByText('Bukowski: Poems From The Hard Room')).toBeDefined();
+    expect(screen.getByText('Jack London: The Wild And The Fire')).toBeDefined();
     expect(screen.getByText('Maya Angelou & The Voice That Rises')).toBeDefined();
     expect(screen.getByText("Plato's Cave & Modern Attention")).toBeDefined();
     expect(screen.getByText('Alan Watts: Life Is Not The Final Note')).toBeDefined();
@@ -70,7 +77,7 @@ describe('LearningHub', () => {
     );
 
     expect(screen.queryByRole('button', { name: 'images' })).toBeNull();
-    expect(screen.getByText('image paths')).toBeDefined();
+    expect(screen.queryByText('visual tones')).toBeNull();
 
     const emotionalIntelligence = screen.getByText('Emotional Intelligence').closest('button');
     expect(emotionalIntelligence).not.toBeNull();
@@ -180,7 +187,7 @@ describe('LearningHub', () => {
 
     fireEvent.click(screen.getByRole('button', { name: 'Reveal comic text' }));
     expect(screen.getByText('The world is made, so it can be remade')).toBeDefined();
-    expect(screen.getByText(/society is not a machine/i)).toBeDefined();
+    expect(screen.getByText(/poverty in Recife/i)).toBeDefined();
     expect(screen.getByRole('button', { name: 'more' })).toBeDefined();
   });
 

@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import { useEffect, useRef, useState } from 'react';
 
 import { BUILD_DATE, CHANGELOG, CURRENT_BRANCH, LATEST_HASH } from '@/lib/generated/changelog';
@@ -234,6 +235,26 @@ const PRIMER_SECTIONS: { title: string; items: { term: string; def: string }[] }
   },
 ];
 
+const MORE_SEGMENTS = [
+  { href: '/entertainment', label: 'Entertainment' },
+  { href: '/music', label: 'Music' },
+  { href: '/atlas', label: 'Atlas' },
+  { href: '/progress-road', label: 'Roads' },
+  { href: '/circles', label: 'Social' },
+  { href: '/journey', label: 'Journey' },
+  { href: '/life-scan', label: 'Life Scan' },
+  { href: '/research', label: 'Research' },
+  { href: '/build-lab', label: 'Creator Space' },
+];
+
+const OPEN_AI_PRESENCE_EVENT = 'colourmap:open-ai-presence';
+
+function openAIPresenceFromTitleMenu() {
+  window.dispatchEvent(
+    new CustomEvent(OPEN_AI_PRESENCE_EVENT, { detail: { source: 'brand-menu' } }),
+  );
+}
+
 export default function ColourmapBrandButton({ initials, email }: ColourmapBrandButtonProps = {}) {
   const [open, setOpen] = useState(false);
   const [changelogOpen, setChangelogOpen] = useState(false);
@@ -317,7 +338,7 @@ export default function ColourmapBrandButton({ initials, email }: ColourmapBrand
           }}
         >
           <div
-            className="relative w-full max-w-md rounded-[24px] border border-border bg-card p-6 shadow-[0_24px_80px_rgba(94,58,20,0.25)]"
+            className="relative max-h-[88vh] w-full max-w-md overflow-y-auto rounded-[24px] border border-border bg-card p-6 shadow-[0_24px_80px_rgba(94,58,20,0.25)]"
             style={{ fontFamily: 'var(--font-serif)' }}
           >
             {/* Close button */}
@@ -463,6 +484,91 @@ export default function ColourmapBrandButton({ initials, email }: ColourmapBrand
                 Vikash and Martin
               </strong>
             </p>
+
+            <section
+              className="mt-5 rounded-2xl px-4 py-3"
+              style={{
+                background: 'rgba(196,160,96,0.08)',
+                border: '1px solid rgba(196,160,96,0.22)',
+              }}
+            >
+              <div className="mb-3 flex items-center justify-between gap-3">
+                <div>
+                  <p
+                    style={{
+                      fontSize: 11,
+                      fontWeight: 800,
+                      letterSpacing: '0.18em',
+                      textTransform: 'uppercase',
+                      color: '#5C3018',
+                    }}
+                  >
+                    More segments
+                  </p>
+                  <p
+                    style={{
+                      marginTop: 2,
+                      fontSize: 11.5,
+                      lineHeight: 1.35,
+                      color: 'var(--muted-foreground)',
+                      opacity: 0.82,
+                    }}
+                  >
+                    Developing areas of Colourmap.
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => {
+                    openAIPresenceFromTitleMenu();
+                    setOpen(false);
+                  }}
+                  style={{
+                    border: '1px solid rgba(196,160,96,0.38)',
+                    borderRadius: 999,
+                    background: 'rgba(196,160,96,0.12)',
+                    color: '#5C3018',
+                    cursor: 'pointer',
+                    fontSize: 11,
+                    fontWeight: 800,
+                    letterSpacing: '0.08em',
+                    padding: '7px 11px',
+                    textTransform: 'uppercase',
+                    whiteSpace: 'nowrap',
+                  }}
+                >
+                  AI Presence
+                </button>
+              </div>
+              <div
+                style={{
+                  display: 'grid',
+                  gridTemplateColumns: 'repeat(2, minmax(0, 1fr))',
+                  gap: 7,
+                }}
+              >
+                {MORE_SEGMENTS.map((segment) => (
+                  <Link
+                    key={segment.href}
+                    href={segment.href}
+                    onClick={() => setOpen(false)}
+                    style={{
+                      border: '1px solid rgba(92,48,24,0.16)',
+                      borderRadius: 999,
+                      color: '#5C3018',
+                      fontSize: 12,
+                      fontWeight: 700,
+                      padding: '7px 10px',
+                      textAlign: 'center',
+                      textDecoration: 'none',
+                      background: 'rgba(255,248,226,0.2)',
+                    }}
+                  >
+                    {segment.label}
+                  </Link>
+                ))}
+              </div>
+            </section>
 
             {/* Divider before build footer */}
             <div

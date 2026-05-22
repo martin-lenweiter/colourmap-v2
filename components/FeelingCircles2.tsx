@@ -50,6 +50,53 @@ const CIRCLES = [
   },
 ];
 
+type EmotionVisualDesign = 1 | 2;
+
+const PILL_IMAGES: Record<string, string> = {
+  emotions: '/emotions/pills/emotions.webp',
+  body: '/emotions/pills/body.webp',
+  behaviours: '/emotions/pills/behaviour.webp',
+};
+
+function pillHeaderBackground(darkImageMode: boolean) {
+  return darkImageMode
+    ? 'linear-gradient(135deg, rgba(196,160,96,0.12), rgba(196,160,96,0.05))'
+    : 'linear-gradient(135deg, color-mix(in srgb, var(--card, #f2e3c8) 88%, white), rgba(196,160,96,0.22))';
+}
+
+function pillImageOverlay(src: string, darkImageMode: boolean) {
+  const overlay = darkImageMode
+    ? 'linear-gradient(90deg, rgba(8,5,3,0.04), rgba(8,5,3,0.24))'
+    : 'linear-gradient(90deg, rgba(250,241,222,0.08), rgba(250,241,222,0.46))';
+  return `${overlay}, url("${src}")`;
+}
+
+function useDarkImageMode() {
+  const [enabled, setEnabled] = useState(false);
+
+  useEffect(() => {
+    function sync() {
+      try {
+        const color = localStorage.getItem('colourmap-theme') ?? 'paper';
+        const palette = localStorage.getItem('colourmap-palette') ?? 'light-brown';
+        setEnabled(color !== 'golden' && !(color === 'paper' && palette === 'light-brown'));
+      } catch {
+        setEnabled(false);
+      }
+    }
+    sync();
+    const observer = new MutationObserver(sync);
+    observer.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
+    window.addEventListener('storage', sync);
+    return () => {
+      observer.disconnect();
+      window.removeEventListener('storage', sync);
+    };
+  }, []);
+
+  return enabled;
+}
+
 /* ─── Focus levels ───────────────────────────────────────────── */
 const FOCUS_LEVELS = [
   { label: 'Scattered', color: '#9098A8' },
@@ -153,7 +200,14 @@ function VizRing({ idx, levels, onPointerDown, onPointerMove, onPointerUp }: Viz
   const c = levels[idx]?.color ?? '#C4A060';
   return (
     <div
-      style={{ display: 'flex', justifyContent: 'center', touchAction: 'none', userSelect: 'none' }}
+      style={{
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        gap: 10,
+        touchAction: 'none',
+        userSelect: 'none',
+      }}
     >
       <div style={{ position: 'relative', width: SIZE, height: SIZE }}>
         <svg
@@ -197,7 +251,7 @@ function VizRing({ idx, levels, onPointerDown, onPointerMove, onPointerUp }: Viz
           <span
             style={{
               fontFamily: 'var(--font-handwritten)',
-              fontSize: 26,
+              fontSize: 24,
               fontWeight: 700,
               color: c,
               lineHeight: 1.1,
@@ -1405,10 +1459,12 @@ function CircleTracker({
   circle,
   circleVariant,
   onVariantChange,
+  visualDesign = 1,
 }: {
   circle: Circle;
   circleVariant: number;
   onVariantChange: (v: number) => void;
+  visualDesign?: EmotionVisualDesign;
 }) {
   const [idx, setIdx] = useState(circle.defaultIdx);
   const [fragment, setFragment] = useState('');
@@ -1417,6 +1473,8 @@ function CircleTracker({
   const [log, setLog] = useState<TrackEntry[]>([]);
   const [expanded, setExpanded] = useState(false);
   const [moodWord, setMoodWord] = useState('');
+  const darkImageMode = useDarkImageMode();
+  const showPillImage = visualDesign === 2;
   const dragRef = useRef<{ startX: number; startIdx: number } | null>(null);
   const idxRef = useRef(idx);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -1493,23 +1551,49 @@ function CircleTracker({
       <div
         onClick={() => setExpanded((e) => !e)}
         style={{
-          padding: '14px 16px',
+          minHeight: visualDesign === 2 ? 86 : undefined,
+          padding: visualDesign === 2 ? '13px 14px' : '14px 16px',
           borderBottom: expanded ? `1px solid rgba(196,160,96,0.2)` : 'none',
-          background: 'rgba(196,160,96,0.1)',
+          background: pillHeaderBackground(darkImageMode),
           cursor: 'pointer',
           display: 'flex',
           alignItems: 'center',
+          gap: visualDesign === 2 ? 12 : 0,
+          justifyContent: 'stretch',
         }}
       >
-        <span style={{ flex: 1 }} />
+        {showPillImage && (
+          <span
+            aria-hidden="true"
+            style={{
+              width: '42%',
+              maxWidth: 150,
+              alignSelf: 'stretch',
+              minHeight: 60,
+              borderRadius: 14,
+              backgroundImage: pillImageOverlay(PILL_IMAGES[circle.id], darkImageMode),
+              backgroundSize: 'cover',
+              backgroundPosition: circle.id === 'body' ? 'center 60%' : 'center',
+              border: darkImageMode
+                ? '1px solid rgba(196,160,96,0.24)'
+                : '1px solid rgba(132,91,44,0.18)',
+              boxShadow: darkImageMode
+                ? 'inset 0 0 24px rgba(0,0,0,0.16)'
+                : 'inset 0 0 18px rgba(255,255,255,0.28)',
+              flexShrink: 0,
+            }}
+          />
+        )}
         <span
           style={{
             fontFamily: 'var(--font-serif)',
-            fontSize: 13,
+            fontSize: visualDesign === 2 ? 16 : 13,
             fontWeight: 800,
             textTransform: 'uppercase',
-            letterSpacing: '0.14em',
+            letterSpacing: visualDesign === 2 ? '0.12em' : '0.14em',
             color: 'var(--palette-panel-text, rgba(196,160,96,0.88))',
+            textAlign: 'center',
+            flex: 1,
           }}
         >
           {circle.title}
@@ -2004,13 +2088,15 @@ const DEFAULT_BEHAVIOURS: Behaviour[] = [
   { id: 'bdef4', name: 'Journalled', colorIdx: 0 },
 ];
 
-function BehaviourTracker() {
+function BehaviourTracker({ visualDesign = 1 }: { visualDesign?: EmotionVisualDesign }) {
   const [expanded, setExpanded] = useState(false);
   const [behaviours, setBehaviours] = useState<Behaviour[]>([]);
   const [log, setLog] = useState<BehaviourEntry[]>([]);
   const [adding, setAdding] = useState(false);
   const [newName, setNewName] = useState('');
   const addRef = useRef<HTMLInputElement>(null);
+  const darkImageMode = useDarkImageMode();
+  const showPillImage = visualDesign === 2;
 
   useEffect(() => {
     try {
@@ -2107,23 +2193,49 @@ function BehaviourTracker() {
       <div
         onClick={() => setExpanded((v) => !v)}
         style={{
-          padding: '14px 16px',
+          minHeight: visualDesign === 2 ? 86 : undefined,
+          padding: visualDesign === 2 ? '13px 14px' : '14px 16px',
           borderBottom: expanded ? '1px solid rgba(196,160,96,0.2)' : 'none',
-          background: 'rgba(196,160,96,0.1)',
+          background: pillHeaderBackground(darkImageMode),
           cursor: 'pointer',
           display: 'flex',
           alignItems: 'center',
+          gap: visualDesign === 2 ? 12 : 0,
+          justifyContent: 'stretch',
         }}
       >
-        <span style={{ flex: 1 }} />
+        {showPillImage && (
+          <span
+            aria-hidden="true"
+            style={{
+              width: '42%',
+              maxWidth: 150,
+              alignSelf: 'stretch',
+              minHeight: 60,
+              borderRadius: 14,
+              backgroundImage: pillImageOverlay(PILL_IMAGES.behaviours, darkImageMode),
+              backgroundSize: 'cover',
+              backgroundPosition: 'center 42%',
+              border: darkImageMode
+                ? '1px solid rgba(196,160,96,0.24)'
+                : '1px solid rgba(132,91,44,0.18)',
+              boxShadow: darkImageMode
+                ? 'inset 0 0 24px rgba(0,0,0,0.16)'
+                : 'inset 0 0 18px rgba(255,255,255,0.28)',
+              flexShrink: 0,
+            }}
+          />
+        )}
         <span
           style={{
             fontFamily: 'var(--font-serif)',
-            fontSize: 13,
+            fontSize: visualDesign === 2 ? 16 : 13,
             fontWeight: 800,
             textTransform: 'uppercase',
-            letterSpacing: '0.14em',
+            letterSpacing: visualDesign === 2 ? '0.12em' : '0.14em',
             color: 'var(--palette-panel-text, rgba(196,160,96,0.88))',
+            textAlign: 'center',
+            flex: 1,
           }}
         >
           Behaviours
@@ -2354,7 +2466,11 @@ function BehaviourTracker() {
 }
 
 /* ─── Export ─────────────────────────────────────────────────── */
-export default function FeelingCircles2() {
+export default function FeelingCircles2({
+  visualDesign = 1,
+}: {
+  visualDesign?: EmotionVisualDesign;
+}) {
   const [circleVariant, setCircleVariant] = useState(0);
 
   useEffect(() => {
@@ -2380,9 +2496,10 @@ export default function FeelingCircles2() {
           circle={c}
           circleVariant={circleVariant}
           onVariantChange={switchCircleVariant}
+          visualDesign={visualDesign}
         />
       ))}
-      <BehaviourTracker />
+      <BehaviourTracker visualDesign={visualDesign} />
     </div>
   );
 }

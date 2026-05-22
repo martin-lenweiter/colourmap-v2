@@ -13,6 +13,7 @@ export const PROGRAM_REFERENCES: Record<string, string[]> = {
     'Paulo Freire, Pedagogy of the Oppressed.',
     'Paulo Freire, Pedagogy of Hope.',
     'bell hooks, Teaching to Transgress.',
+    'Teachers Institute, Paulo Freire’s Pedagogy: Education as a Practice of Freedom.',
   ],
   'thich-nhat-hanh': [
     'Thich Nhat Hanh, Peace Is Every Step.',
@@ -58,6 +59,11 @@ export const PROGRAM_REFERENCES: Record<string, string[]> = {
     'Charles Bukowski, The Last Night of the Earth Poems.',
     'Charles Bukowski, Love Is a Dog from Hell.',
     'Read next: Bluebird, The Laughing Heart, Roll the Dice, Nirvana, and The Genius of the Crowd.',
+  ],
+  'jack-london': [
+    'Jack London, The Call of the Wild.',
+    'Jack London, White Fang.',
+    'Jack London, To Build a Fire, Martin Eden, and The Sea-Wolf.',
   ],
   'maya-angelou': [
     'Maya Angelou, I Know Why the Caged Bird Sings.',
