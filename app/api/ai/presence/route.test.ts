@@ -65,11 +65,9 @@ describe('POST /api/ai/presence', () => {
       }),
     );
     expect(readdir).toHaveBeenCalled();
-    expect(readFile).toHaveBeenCalledWith(expect.stringContaining('docs\\product.md'), 'utf8');
-    expect(readFile).toHaveBeenCalledWith(
-      expect.stringContaining('docs\\specs\\ai-presence.md'),
-      'utf8',
-    );
+    const readPaths = readFile.mock.calls.map(([file]) => String(file).replaceAll('\\', '/'));
+    expect(readPaths).toContainEqual(expect.stringContaining('docs/product.md'));
+    expect(readPaths).toContainEqual(expect.stringContaining('docs/specs/ai-presence.md'));
   });
 
   it('returns 401 text when unauthenticated', async () => {
