@@ -193,6 +193,61 @@ export const PROGRAMS: Program[] = [
     ],
   },
   {
+    key: 'viktor-frankl',
+    domain: 'Viktor Frankl & Meaning Under Pressure',
+    color: '#9A8A68',
+    segments: [
+      {
+        title: 'Meaning is not decoration',
+        body: 'Frankl treated meaning as one of the deepest human needs. Not a motivational quote, not a pleasant mood, but a direction strong enough to organize a life under pressure. When comfort disappears, the question of meaning becomes more serious, not less.',
+      },
+      {
+        title: 'The space before response',
+        body: "One of Frankl's central insights is that human beings can still carry a space between what happens and how they respond. That space may be small. It may be painfully hard to reach. But it is where dignity, responsibility, and inner freedom begin.",
+      },
+      {
+        title: 'Suffering is not automatically meaningful',
+        body: 'Frankl did not romanticize pain. Avoidable suffering should be reduced. Injustice should be resisted. The point is different: when suffering cannot be avoided, a person may still choose the attitude, values, and commitments they bring into it.',
+      },
+      {
+        title: 'The question turns around',
+        body: 'Instead of asking only what life can give us, Frankl asks what life is asking from us. This changes the posture. A difficult day becomes less like a verdict and more like a question: what is the next responsible act available here?',
+      },
+      {
+        title: 'Love as a way of seeing',
+        body: 'For Frankl, love can reveal the possible person inside another human being. To love someone is not only to need them. It is to see their dignity, their future, and their unreduced humanity even when circumstances are trying to shrink them.',
+      },
+      {
+        title: 'Work can become service',
+        body: 'Work becomes meaningful when it connects effort to contribution. The task may still be hard, boring, or imperfect, but it changes when the person can see who or what it serves. Meaning often arrives through responsibility carried for something beyond the ego.',
+      },
+      {
+        title: 'The last freedom',
+        body: 'The outer world can restrict choices, but Frankl keeps returning to the inner question: what remains mine? A tone of response. A remembered love. A decision not to become cruel. A small act of help. These are not small when everything else is being stripped away.',
+      },
+      {
+        title: 'Values give direction',
+        body: 'Frankl described meaning through creative values, experiential values, and attitudinal values: what we give, what we receive deeply, and how we stand when life is difficult. A meaningful life usually needs all three.',
+      },
+      {
+        title: 'Do not chase happiness directly',
+        body: 'Happiness becomes fragile when it is hunted as the main target. Frankl argued that happiness often appears as a by-product of meaning: doing the task, loving the person, serving the value, answering the demand of the moment.',
+      },
+      {
+        title: 'Despair as meaning blocked',
+        body: 'Despair can appear when suffering feels larger than meaning. This does not mean a person has failed. It means the map needs care. The practical question becomes: what small responsibility, relationship, or value can still be contacted today?',
+      },
+      {
+        title: 'A future to answer to',
+        body: 'Frankl often points attention toward a future that needs something from us. A book unwritten, a person unloved, a repair not yet made, a service not yet offered. The future becomes a quiet witness calling the present into shape.',
+      },
+      {
+        title: 'Colourmap as meaning map',
+        body: 'In Colourmap, Frankl belongs wherever emotion meets responsibility. A check-in does not only ask how you feel. It can ask what the feeling is protecting, what value is calling, and what one meaningful response could be made now.',
+      },
+    ],
+  },
+  {
     key: 'thich-nhat-hanh',
     domain: 'Thich Nhat Hanh & Peace in Action',
     color: '#8FAE86',
@@ -276,6 +331,193 @@ export const PROGRAMS: Program[] = [
       {
         title: 'One breath, one action',
         body: 'The teaching returns to simplicity. Breathe. See clearly. Speak carefully. Consume wisely. Walk with the Earth. Act with others. A different world begins as a different quality of presence, repeated in ordinary life.',
+      },
+    ],
+  },
+  {
+    key: 'plato-cave',
+    domain: "Plato's Cave & Modern Attention",
+    color: '#8870A8',
+    segments: [
+      {
+        title: 'The old cave',
+        body: 'Plato imagines people chained in a cave, watching shadows on a wall and mistaking them for reality. The point is not that people are stupid. The point is that a whole environment can train attention until a partial image feels like the world.',
+      },
+      {
+        title: 'The modern cave',
+        body: 'Today the cave can look like a room, a phone, a feed, a wall of projections, a culture of comparison, or a constant state of urgency. The shadows are not only online. They are any representation that becomes stronger than lived experience.',
+      },
+      {
+        title: 'Turning around',
+        body: 'The first movement is not escape. It is turning around. A person begins to ask: who is choosing what I see? What is being projected? What part of life am I mistaking for the whole?',
+      },
+      {
+        title: 'The map on the wall',
+        body: 'The ancient cave becomes useful because it gives the modern person a map. Shadow, projector, chain, turn, tunnel, light. These are not museum ideas. They are still active wherever attention is captured.',
+      },
+      {
+        title: 'Walking toward light',
+        body: 'Finding the light is uncomfortable at first. Reality is brighter, less controlled, and less flattering than the shadow wall. Liberation often begins as withdrawal from the familiar illusion.',
+      },
+      {
+        title: 'What is the light?',
+        body: 'The light is not a perfect life. It is contact with what is real: body, time, place, people, consequences, nature, work, silence, and the parts of experience that cannot be optimized into an image.',
+      },
+      {
+        title: 'Where this can expand next',
+        body: 'Page 8 could show returning to the cave without contempt. Page 9 could connect the cave to Watts and life as participation. Page 10 could map attention as a Colourmap field. Page 11 could ask the reader what shadow currently feels most real.',
+      },
+    ],
+  },
+  {
+    key: 'alan-watts',
+    domain: 'Alan Watts: Life Is Not The Final Note',
+    color: '#7FA08A',
+    segments: [
+      {
+        title: 'Next mode',
+        body: 'Watts helps name a modern sickness: living as if the present is only a corridor to the next result. Next task, next message, next proof, next success. The day becomes a race through itself.',
+      },
+      {
+        title: 'The final note',
+        body: 'If music were only about reaching the last note, the best musician would play as fast as possible. Life works the same way. A life treated only as arrival loses the rhythm that makes it alive.',
+      },
+      {
+        title: 'Trying to win the river',
+        body: 'The mind tries to measure the river instead of entering the flow. This is not anti-discipline. It is a warning: control can become a way of missing experience.',
+      },
+      {
+        title: 'Participation',
+        body: 'Watts points back toward participation. A day has tempo, silence, repetition, surprise, work, rest, and return. You do not win a dance by reaching the wall first.',
+      },
+      {
+        title: 'The senses return',
+        body: 'Presence begins in simple contact: the cup, the rain, the plant, the breath, the room. The ordinary is not lesser than achievement. It is where life actually happens.',
+      },
+      {
+        title: 'A day as music',
+        body: 'Colourmap can show whether a day is pure urgency, numb scrolling, scattered noise, or a livable rhythm. The aim is not to remove ambition. It is to give ambition a body and a beat.',
+      },
+      {
+        title: 'Listening before reaching',
+        body: 'Presence is not passive. It is a different kind of intelligence: hearing the rhythm before forcing the next move. A calmer life does not have to be smaller. It can simply stop skipping itself.',
+      },
+      {
+        title: 'Where this can expand next',
+        body: 'Page 9 could show work with rhythm instead of panic. Page 10 could connect Watts to Plato: leaving the shadow wall for lived reality. Page 11 could ask what part of the user’s day has no music. Page 12 could become a practical attention ritual.',
+      },
+    ],
+  },
+  {
+    key: 'david-hawkins',
+    domain: 'David Hawkins & Fields of Consciousness',
+    color: '#8E9A68',
+    segments: [
+      {
+        title: 'A symbolic scale',
+        body: 'Hawkins proposed a scale of consciousness moving from contracted states toward courage, love, peace, and higher clarity. His calibration system is criticized and should not be treated as scientific consensus, but the symbolic map can still be useful.',
+      },
+      {
+        title: 'Attractor patterns',
+        body: 'One strong idea is that life is not pure chaos. States behave like fields. Shame, fear, courage, love, and peace each have a gravity. A person can be pulled by a field before they understand the thought.',
+      },
+      {
+        title: 'Self-pity as gravity',
+        body: 'Hawkins wrote often about lower states like self-pity and resentment. The point is not to shame the person. It is to notice the field: what does this state keep pulling me toward, and what small movement loosens it?',
+      },
+      {
+        title: 'Surrender is release',
+        body: 'Surrender does not mean defeat. It means releasing the inner argument with what is already present, so attention can return to the next true action. Sometimes the clenched hand is the prison.',
+      },
+      {
+        title: 'When times get tough',
+        body: 'When pressure rises, the practical question is: what field am I feeding now? Panic, blame, courage, service, humility, trust. A single helpful act can shift the atmosphere of the whole room.',
+      },
+      {
+        title: 'Useful, but disputed',
+        body: 'Hawkins can be read as a symbolic thinker rather than a scientific authority. Keep the discernment. Take the useful question: which state is organizing me, and what would lift the pattern one degree?',
+      },
+      {
+        title: 'A quieter field',
+        body: 'A state can change the room before anyone explains it. One relaxed breath, one honest apology, one act of service, one refusal to feed panic. The field shifts through small embodied choices.',
+      },
+      {
+        title: 'Where this can expand next',
+        body: 'Page 9 could show the consciousness scale beside emotions. Page 10 could connect surrender to Watts and participation. Page 11 could map attractor fields inside Colourmap. Page 12 could ask the reader what field they want to stop feeding.',
+      },
+    ],
+  },
+  {
+    key: 'nietzsche',
+    domain: 'Nietzsche & Becoming Who You Are',
+    color: '#9A6F58',
+    segments: [
+      {
+        title: 'Inherited values',
+        body: 'Nietzsche asks a hard question: which values are truly yours, and which ones were handed to you by fear, obedience, resentment, fashion, or the crowd? His work is dangerous because it removes easy innocence.',
+      },
+      {
+        title: 'The burden',
+        body: 'The camel carries what it has been told to carry. Duty, guilt, family scripts, cultural scripts, old ideals. Endurance matters, but endurance alone is not freedom.',
+      },
+      {
+        title: 'The no',
+        body: 'The lion says no. No to inherited command, no to false gods, no to the voice that says you must remain small. This no is not the whole path, but it clears space for a real yes.',
+      },
+      {
+        title: 'The child',
+        body: 'The child represents creation: play, beginning again, making values instead of only obeying or rejecting them. Becoming is not only rebellion. It is the courage to create a new form of life.',
+      },
+      {
+        title: 'The abyss',
+        body: 'Looking into the abyss means meeting what is difficult, shadowed, and dangerous in yourself and the world. The aim is not to worship darkness. The aim is to see without being swallowed.',
+      },
+      {
+        title: 'Amor fati',
+        body: 'Amor fati means learning to say yes to the whole path, not because everything was good, but because this is the material from which your life must be made. The broken stones can become the road.',
+      },
+      {
+        title: 'The mask on the desk',
+        body: 'Becoming often begins when the old mask is finally placed down. Not destroyed in drama. Just seen clearly, thanked if it once protected you, and no longer mistaken for the face.',
+      },
+      {
+        title: 'Where this can expand next',
+        body: 'Page 9 could explore eternal recurrence as a life question. Page 10 could connect Nietzsche to Campbell’s hero path. Page 11 could ask which inherited value the reader is ready to examine. Page 12 could become a Colourmap values ritual.',
+      },
+    ],
+  },
+  {
+    key: 'campbell-hero-quest',
+    domain: "Campbell & The Hero's Quest",
+    color: '#B58A58',
+    segments: [
+      {
+        title: 'The call',
+        body: 'Campbell described a recurring story pattern: ordinary world, call to adventure, threshold, trials, ordeal, gift, return. It matters because it gives shape to change without pretending change is easy.',
+      },
+      {
+        title: 'Refusing the call',
+        body: 'Most quests begin with hesitation. The known world may be painful, but it is familiar. Refusal is not failure. It is the psyche measuring the cost of crossing the threshold.',
+      },
+      {
+        title: 'Crossing the threshold',
+        body: 'At some point the person steps out of the known room. The threshold can be a journey, a breakup, a project, a recovery, a conversation, a risk, or a decision to stop lying to yourself.',
+      },
+      {
+        title: 'Trials and helpers',
+        body: 'The road is not walked alone. Helpers, tools, symbols, books, friends, mentors, and strange accidents appear. The task is learning which guides are real and which are distractions.',
+      },
+      {
+        title: 'The inner cave',
+        body: 'The ordeal is often an encounter with the self: fear, shadow, grief, desire, power, shame, or truth. The treasure is rarely outside the cave. It is the transformation that happens inside it.',
+      },
+      {
+        title: 'The conscious threshold',
+        body: 'A quest does not always begin with a dramatic road. Sometimes it begins with a cloak on a chair, a lamp on a table, and one door you can no longer pretend not to see.',
+      },
+      {
+        title: 'Where this can expand next',
+        body: 'Page 8 could show the return with the gift. Page 9 could connect the quest to Plato’s cave. Page 10 could connect Nietzsche’s self-creation. Page 11 could ask what call the reader is refusing. Page 12 could become a personal quest map.',
       },
     ],
   },
@@ -1101,6 +1343,92 @@ export const PROGRAMS: Program[] = [
       {
         title: 'The real task is becoming visible',
         body: 'Avoidance loses power when the hidden fear becomes visible and the next move becomes concrete. You do not need to become a different person first. You need one honest contact with the thing that matters, then another.',
+      },
+    ],
+  },
+  {
+    key: 'bukowski-poems',
+    domain: 'Bukowski: Poems From The Hard Room',
+    color: '#9A7658',
+    segments: [
+      {
+        title: 'The room before the myth',
+        body: 'Bukowski works best in Colourmap if we begin with the room, not the legend. A small apartment, a table, a typewriter, bad light, rent pressure, ordinary ugliness, and the strange fact that a poem can still appear there.',
+      },
+      {
+        title: 'Do not polish the wound',
+        body: 'The power is not that the life is beautiful. The power is that the writing refuses to pretend. Bukowski gives language to boredom, lust, shame, anger, work, failure, and survival without making them clean.',
+      },
+      {
+        title: 'The job and the soul',
+        body: 'Postal work, repetition, bosses, exhaustion, and time stolen from writing are not background details. They are part of the pressure. The question is what remains alive in a person after the day has taken most of them.',
+      },
+      {
+        title: 'The race track',
+        body: 'The horse races give Bukowski a theatre of hope and damage: chance, calculation, loss, waiting, small belief, the absurd dignity of risking money on a moment. It is not only gambling. It is a picture of wanting life to break open.',
+      },
+      {
+        title: 'The bottle is not the teacher',
+        body: 'A Bukowski program should not romanticize self-destruction. The drink, the dirt, and the hard persona belong to the world, but they are not the wisdom. The wisdom is the honesty that survives underneath them.',
+      },
+      {
+        title: 'The hidden tenderness',
+        body: 'The important counterweight is tenderness. Poems like Bluebird matter because they show the protected soft thing inside the rough voice. The mask is loud because the hidden part is vulnerable.',
+      },
+      {
+        title: 'When the crowd is false',
+        body: 'Bukowski often attacks the crowd: polite cruelty, fake morality, dead language, social performance. The useful lesson is not contempt for people. It is distrust of any life where the inner voice has been traded for approval.',
+      },
+      {
+        title: 'Risk and vocation',
+        body: 'Roll the Dice and So You Want To Be A Writer? point toward vocation as a dangerous demand. Not everyone needs to live that way. But the question is useful: what part of you asks for more truth than your routine allows?',
+      },
+      {
+        title: 'Ordinary transcendence',
+        body: 'Nirvana shows another Bukowski: brief grace, a simple place, weather, a room of strangers, the sense that life can become bearable for a moment without becoming solved. That quiet lift is important.',
+      },
+      {
+        title: 'Poems to read next',
+        body: 'Read the poems themselves outside the app: Bluebird, The Laughing Heart, Roll the Dice, So You Want To Be A Writer?, Nirvana, The Genius of the Crowd, alone with everybody, and Dinosauria, We. The app should guide you toward them, not replace them.',
+      },
+    ],
+  },
+  {
+    key: 'maya-angelou',
+    domain: 'Maya Angelou & The Voice That Rises',
+    color: '#A86F70',
+    segments: [
+      {
+        title: 'The voice returns',
+        body: 'Maya Angelou matters because her work shows a voice returning after silence. The lesson is not performance. It is dignity: the human capacity to speak again after life has tried to reduce you.',
+      },
+      {
+        title: 'Silence can protect',
+        body: 'Silence is not always emptiness. Sometimes it is protection, listening, survival, or a room where language is rebuilding itself. A Colourmap reader should feel that recovery can begin quietly before it becomes visible.',
+      },
+      {
+        title: 'Dignity rises',
+        body: 'Angelou gives dignity a physical feeling. Not a slogan, not a pose, but a spine becoming upright again. The question is simple and powerful: what helps a person stand inside their own life?',
+      },
+      {
+        title: 'The page becomes a room',
+        body: 'Writing can make a room where pain is not denied and still does not own everything. Memory, rhythm, humor, anger, tenderness, and truth can sit together without becoming a lecture.',
+      },
+      {
+        title: 'A voice joins voices',
+        body: 'The personal voice becomes collective when it gives other people permission to recognize themselves. One story can open a door for many stories.',
+      },
+      {
+        title: 'The reader question',
+        body: 'What part of your voice has gone quiet? Not the loud public voice, necessarily. The honest one. The creative one. The one that says no, or asks for help, or names what matters.',
+      },
+      {
+        title: 'What others may answer',
+        body: 'Later, this page could let readers see gentle anonymous answers from other people: small sentences about courage, shame, art, family, grief, and the first moment they felt their voice return.',
+      },
+      {
+        title: 'Where this can expand next',
+        body: 'Page 9 could explore memoir as healing. Page 10 could connect Angelou to other poets of survival. Page 11 could ask the reader for one sentence they are ready to say. Page 12 could become a shared wall of voices.',
       },
     ],
   },

@@ -620,6 +620,39 @@ or scene: the money mountain, the repaired bowl, the mirror-and-path, the avoide
 They should share Colourmap's warm paper universe while giving each theme a slightly distinct touch
 so the platform feels coherent but not repetitive.
 
+`Viktor Frankl & Meaning Under Pressure` belongs in World Guides. Its visual language should be
+sober, respectful, and never graphic: portrait, notebook, corridor, light, doorway, responsibility,
+and the last inner freedom. The program should not aestheticize historical suffering or use explicit
+camp imagery as decoration. The educational center is meaning, dignity, responsibility, love, and the
+space before response.
+
+Poetry programs can become their own lane. `Bukowski: Poems From The Hard Room` should be vertical,
+real, poetic, and not overloaded: room, typewriter, race track, rough persona, hidden tenderness,
+and the small protected inner life behind the mask. `Maya Angelou & The Voice That Rises` should
+bring a woman-led, dignity-centered counterweight: voice, silence, recovery, collective courage, and
+reader questions about what gives a person their voice back. Poetry pages should feel readable,
+symbolic, and memorable rather than poster-dense. The app may point users toward poems such as
+`Bluebird`, `The Laughing Heart`, `Roll the Dice`, `So You Want To Be A Writer?`, `Nirvana`, and
+`The Genius of the Crowd`, but it should not reproduce full copyrighted poems without permission.
+
+Philosophy comics can form a connected symbolic chain. `Plato's Cave & Modern Attention` should
+play the ancient cave myth against the modern attention cave: old shadows, modern projections,
+social comparison, false urgency, and a liberating path toward light. `Alan Watts: Life Is Not The
+Final Note` should use music, rhythm, river, dance, and participation to show that life is not only a
+race to an outcome. `David Hawkins & Fields of Consciousness` should use the consciousness scale,
+state fields, attractor-pattern gravity, and surrender as symbolic tools while clearly noting that
+his calibration claims are disputed and not scientific consensus. `Nietzsche & Becoming Who You Are`
+should use mountain, burden, lion, child, abyss, and amor fati without collapsing into gloom.
+`Campbell & The Hero's Quest` should map call, refusal, threshold, trials, inner cave, gift, and
+return as a universal transformation pattern.
+
+For these linked philosophy comics, use one raster track only. Do not expose a warm-paper placeholder
+mode or any old non-raster fallback as a visible alternate style once a compressed raster sequence is
+available. The first release can use roughly 7-8 pages per program, with the final page naming future
+expansion ideas before the app-rendered further-reading section. Extra pages should be sober,
+relaxing, and symbolic: one image users can remember, not a dense collage. Avoid overusing white
+masks or cutout-like white blocks; quiet negative space should usually come from the artwork itself.
+
 Every program should eventually end with a small further-reading section: books, authors, essays,
 or search directions that let the user continue without adding more visual load. These references
 are app-rendered text and do not require new images.
