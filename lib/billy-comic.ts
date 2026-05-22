@@ -848,4 +848,450 @@ export const BILLY_QUEST_PANELS: BillyPanel[] = [
     ],
     medal: 'First Ring Respect',
   },
+  {
+    id: 'handshake-disaster',
+    image: '/entertainment/billy/quest-for-juice/panel-81.webp',
+    title: 'Handshake Disaster',
+    text: [
+      'Billy and Big Potato Man shook hands like two exhausted vegetables who had accidentally found honor.',
+      'This was the exact moment New Babylon decided to become worse.',
+    ],
+  },
+  {
+    id: 'productivity-panic',
+    image: '/entertainment/billy/quest-for-juice/panel-82.webp',
+    title: 'Productivity Panic',
+    text: [
+      'Donald Grump saw friendship in the arena and treated it like an economic emergency.',
+      'Behind the gate, something metal began to wake up.',
+    ],
+  },
+  {
+    id: 'pineapple-steel-storm',
+    image: '/entertainment/billy/quest-for-juice/panel-83.webp',
+    title: 'Pineapple Steel Storm',
+    text: [
+      'The robots arrived shaped like pineapples, which felt personally disrespectful.',
+      'Big Potato Man discovered that diplomacy has limits when a machine tries to punch your friend.',
+    ],
+  },
+  {
+    id: 'above-new-babylon',
+    image: '/entertainment/billy/quest-for-juice/panel-84.webp',
+    title: 'Above New Babylon',
+    text: [
+      'High above the city, Crocodile Jack watched the chaos with the calm of a man who owned several exits.',
+      'The phones on his table trembled like tiny guilty animals.',
+    ],
+  },
+  {
+    id: 'crocodile-flowers',
+    image: '/entertainment/billy/quest-for-juice/panel-85.webp',
+    title: 'Crocodile Jack Arranges Flowers',
+    text: [
+      'Jack arranged flowers while the city rearranged itself into panic.',
+      'This was the problem with Crocodile Jack: even his villainy had excellent posture.',
+    ],
+  },
+  {
+    id: 'crocs-strange-office',
+    image: '/entertainment/billy/quest-for-juice/panel-86.webp',
+    title: "Croc's Strange Office",
+    text: [
+      'The office had books, plants, meditation cushions, and the peaceful atmosphere of a trap that had taken yoga.',
+      'An assistant panicked around Jack. Jack remained beautifully inconvenient.',
+    ],
+  },
+  {
+    id: 'arena-madness',
+    image: '/entertainment/billy/quest-for-juice/panel-87.webp',
+    title: 'Arena Madness',
+    text: [
+      'Billy kicked, Potato charged, robots broke, and the crowd forgot which part was entertainment.',
+      'Somewhere above them, Donald laughed like a spreadsheet had learned thunder.',
+    ],
+  },
+  {
+    id: 'too-many-robots',
+    image: '/entertainment/billy/quest-for-juice/panel-88.webp',
+    title: 'Too Many',
+    text: [
+      'There were too many robots.',
+      'This was not a metaphor. There were simply too many robots.',
+    ],
+  },
+  {
+    id: 'escape-vehicle',
+    image: '/entertainment/billy/quest-for-juice/panel-89.webp',
+    title: 'Escape Vehicle',
+    text: [
+      'In the maintenance tunnel, Billy found a motorcycle that looked retired from several crimes.',
+      'Big Potato Man climbed on anyway, because friendship sometimes has terrible suspension.',
+    ],
+  },
+  {
+    id: 'golden-sewers',
+    image: '/entertainment/billy/quest-for-juice/panel-90.webp',
+    title: 'Golden Sewers',
+    text: [
+      'The tunnels opened into rivers of Golden Juice, and every rat in New Babylon filed a complaint.',
+      'Behind them came the Cobra Brothers and Tiger Khan, which was too many animal problems for one morning.',
+    ],
+  },
+  {
+    id: 'donald-air-support',
+    image: '/entertainment/billy/quest-for-juice/panel-91.webp',
+    title: 'Donald Grump Air Support',
+    text: [
+      'The motorcycle burst out of the sewer and into the rooftops.',
+      'A helicopter appeared beside Billy, because panic with a budget can fly.',
+    ],
+  },
+  {
+    id: 'roof-chase',
+    image: '/entertainment/billy/quest-for-juice/panel-92.webp',
+    title: 'Roof Chase',
+    text: [
+      'Billy crossed rooftops with the confidence of someone who had not checked the landing.',
+      'The Cobra Brothers introduced themselves to gravity in family order.',
+    ],
+  },
+  {
+    id: 'vanishing-act',
+    image: '/entertainment/billy/quest-for-juice/panel-93.webp',
+    title: 'Vanishing Act',
+    text: [
+      'The fog swallowed the chase all at once.',
+      'For one whole breath, New Babylon could not find Billy. Billy deeply recommended this feeling.',
+    ],
+  },
+  {
+    id: 'circus-forgotten-people',
+    image: '/entertainment/billy/quest-for-juice/panel-94.webp',
+    title: 'The Circus Of Forgotten People',
+    text: [
+      'Morning found Billy outside a circus hidden between towers, where old lights glowed like second chances.',
+      'The mustached potato at the gate looked at him and seemed to recognize more than the disguise could hide.',
+    ],
+  },
+  {
+    id: 'billy-becomes-someone-else',
+    image: '/entertainment/billy/quest-for-juice/panel-95.webp',
+    title: 'Billy Becomes Someone Else',
+    text: [
+      'Backstage, Billy became a completely different person using a mustache, glasses, and optimism.',
+      'Everyone recognized him immediately.',
+    ],
+  },
+  {
+    id: 'undercover-tightrope',
+    image: '/entertainment/billy/quest-for-juice/panel-96.webp',
+    title: 'Undercover Tightrope',
+    text: [
+      'The circus hid Billy by putting him somewhere nobody sane would look: directly above everyone.',
+      'His disguise held together better than his knees.',
+    ],
+  },
+  {
+    id: 'tiger-in-crowd',
+    image: '/entertainment/billy/quest-for-juice/panel-97.webp',
+    title: 'Tiger In The Crowd',
+    text: [
+      'Then Billy saw Tiger Khan in the audience.',
+      'The applause kept going, which felt unfair, because terror should at least pause the show.',
+    ],
+  },
+  {
+    id: 'trick-distraction',
+    image: '/entertainment/billy/quest-for-juice/panel-98.webp',
+    title: 'The Trick Distraction',
+    text: [
+      'Billy did the only logical thing: he turned fear into circus business.',
+      'Big Potato Man helped by causing an accident that looked almost professional.',
+    ],
+  },
+  {
+    id: 'backstage-corridor',
+    image: '/entertainment/billy/quest-for-juice/panel-99.webp',
+    title: 'Backstage Corridor',
+    text: [
+      'Behind the curtain, the circus became quieter and stranger.',
+      'The mirrors at the end of the hallway seemed to know Billy before Billy had introduced himself.',
+    ],
+  },
+  {
+    id: 'magic-mirror-room',
+    image: '/entertainment/billy/quest-for-juice/panel-100.webp',
+    title: 'Magic Mirror Room',
+    text: [
+      'Billy stood in a room full of versions of Billy.',
+      'Some looked brave. Some looked tired. One looked like he understood taxes, which was the most frightening reflection.',
+    ],
+  },
+  {
+    id: 'tiger-shadow',
+    image: '/entertainment/billy/quest-for-juice/panel-101.webp',
+    title: 'Tiger Shadow',
+    text: [
+      'Tiger Khan entered the mirrors before he entered the room.',
+      'His shadow arrived first, larger than his body and probably worse at apologizing.',
+    ],
+  },
+  {
+    id: 'mirror-labyrinth-chase',
+    image: '/entertainment/billy/quest-for-juice/panel-102.webp',
+    title: 'Mirror Labyrinth Chase',
+    text: [
+      'The hallway became a maze of exits that were mostly lies.',
+      'Billy ran past a hundred Billys, none of whom looked like they had a plan.',
+    ],
+  },
+  {
+    id: 'tiger-fight-in-mirrors',
+    image: '/entertainment/billy/quest-for-juice/panel-103.webp',
+    title: 'Tiger Fight In Mirrors',
+    text: [
+      'There was nowhere left to run without becoming a reflection.',
+      'Billy turned around, which was inconveniently similar to courage.',
+    ],
+  },
+  {
+    id: 'broken-mirrors',
+    image: '/entertainment/billy/quest-for-juice/panel-104.webp',
+    title: 'Broken Mirrors',
+    text: [
+      'The mirrors broke into futures.',
+      'Billy saw versions of himself scattered across desert, ocean, office, space, sofa, and places that had not happened yet.',
+    ],
+  },
+  {
+    id: 'two-futures',
+    image: '/entertainment/billy/quest-for-juice/panel-105.webp',
+    title: 'Two Futures',
+    text: [
+      'Two pieces of glass glowed brighter than the others.',
+      'One future ended with victory. The other ended with somebody changing.',
+    ],
+    choices: [
+      { id: 'fight', label: 'Fight the tiger' },
+      { id: 'see', label: 'Look deeper' },
+    ],
+  },
+  {
+    id: 'tiger-sees-himself',
+    image: '/entertainment/billy/quest-for-juice/panel-106.webp',
+    title: 'Tiger Sees Himself',
+    text: [
+      'Tiger Khan hit the floor and saw his whole life looking back.',
+      'This was rude of the mirrors, but possibly useful.',
+    ],
+  },
+  {
+    id: 'tiger-misunderstanding',
+    image: '/entertainment/billy/quest-for-juice/panel-107.webp',
+    title: 'Tiger Tries To Explain',
+    text: [
+      'Tiger reached out to say something soft.',
+      'Billy saw the paw, misunderstood the entire emotional development, and ran for his life.',
+    ],
+  },
+  {
+    id: 'tigers-bad-guy-home',
+    image: '/entertainment/billy/quest-for-juice/panel-108.webp',
+    title: "Tiger's Bad Guy Home",
+    text: [
+      'Tiger Khan went home and looked at the evidence.',
+      'It turned out a villain apartment is mostly a museum of bad decisions with dramatic lighting.',
+    ],
+  },
+  {
+    id: 'tiger-quits',
+    image: '/entertainment/billy/quest-for-juice/panel-109.webp',
+    title: 'Tiger Quits',
+    text: [
+      'By morning, Tiger had packed the leather jacket away.',
+      'The old ukulele still remembered him, which was embarrassing and also kind.',
+    ],
+  },
+  {
+    id: 'tiny-ship-out',
+    image: '/entertainment/billy/quest-for-juice/panel-110.webp',
+    title: 'Tiny Ship Out Of New Babylon',
+    text: [
+      'Tiger left New Babylon on a ship far too small for his history.',
+      'The sunset did not forgive him. It simply gave him somewhere else to begin.',
+    ],
+    medal: 'Tiger Took The Ukulele',
+  },
+  {
+    id: 'crocodile-rooftop-yoga',
+    image: '/entertainment/billy/quest-for-juice/panel-111.webp',
+    title: 'Crocodile Rooftop Yoga',
+    text: [
+      'Above Crocodile Corp, Jack stretched beside Juice stashes and money crates with total spiritual confidence.',
+      'New Babylon continued panicking below. Jack breathed in. Jack monetized the exhale.',
+    ],
+  },
+  {
+    id: 'edge-of-the-desert-line',
+    image: '/entertainment/billy/quest-for-juice/panel-112.webp',
+    title: 'The Edge Of The Desert Line',
+    text: [
+      'The train station at the edge of New Babylon smelled like brass, dust, and plans that had not been checked.',
+      'Billy looked at the desert. The desert looked back with excellent silence.',
+    ],
+  },
+  {
+    id: 'desert-border-station',
+    image: '/entertainment/billy/quest-for-juice/panel-113.webp',
+    title: 'Desert Border Station',
+    text: [
+      'By noon, the city had become a blue mistake on the horizon.',
+      'A lizard porter carried too much luggage with the dignity of someone who had seen worse travelers.',
+    ],
+  },
+  {
+    id: 'tiny-sand-scooter',
+    image: '/entertainment/billy/quest-for-juice/panel-114.webp',
+    title: 'Tiny Sand Scooter',
+    text: [
+      'The vehicle was too small for adventure, which made it perfect for adventure.',
+      'Behind them, two riders appeared in the heat, elegant enough to be trouble.',
+    ],
+  },
+  {
+    id: 'spice-town-blue-hour',
+    image: '/entertainment/billy/quest-for-juice/panel-115.webp',
+    title: 'Spice Town At Blue Hour',
+    text: [
+      'The desert opened into lanterns, tiles, music, spice, and water speaking softly in the dark.',
+      'Billy suddenly understood that survival could also be beautiful.',
+    ],
+  },
+  {
+    id: 'hidden-map-room',
+    image: '/entertainment/billy/quest-for-juice/panel-116.webp',
+    title: 'The Hidden Map Room',
+    text: [
+      'Behind a carpet shop, an old mapmaker unfolded the desert without flattening its mystery.',
+      'The route glowed gently. Big Potato Man held the lamp like a serious potato moon.',
+    ],
+  },
+  {
+    id: 'moonlit-ambush',
+    image: '/entertainment/billy/quest-for-juice/panel-117.webp',
+    title: 'Moonlit Ambush',
+    text: [
+      'They left the town under a clean moon and followed the map line into the dunes.',
+      'Then the dunes stood up and became bandits.',
+    ],
+  },
+  {
+    id: 'theatrical-toll',
+    image: '/entertainment/billy/quest-for-juice/panel-118.webp',
+    title: 'The Theatrical Toll',
+    text: [
+      'The ambush became a negotiation with excellent scarves.',
+      'The bandits wanted Juice, but not for greed. The wells had gone quiet.',
+    ],
+  },
+  {
+    id: 'reluctant-guide',
+    image: '/entertainment/billy/quest-for-juice/panel-119.webp',
+    title: 'The Reluctant Guide',
+    text: [
+      'By dawn, the bandit leader had become their guide, which is what happens when danger has local knowledge.',
+      'He pointed toward the storm. Billy tried to look like storms were in his skill set.',
+    ],
+  },
+  {
+    id: 'sandstorm-sail',
+    image: '/entertainment/billy/quest-for-juice/panel-120.webp',
+    title: 'Sandstorm Sail',
+    text: [
+      'The storm arrived like the desert clearing its throat.',
+      'Their plan involved fabric, rope, courage, and no meaningful engineering.',
+    ],
+  },
+  {
+    id: 'after-the-storm',
+    image: '/entertainment/billy/quest-for-juice/panel-121.webp',
+    title: 'After The Storm',
+    text: [
+      'Morning found them half-buried but still officially alive.',
+      'The guide made tea, because some people respond to disaster with culture.',
+    ],
+  },
+  {
+    id: 'oasis-reflection',
+    image: '/entertainment/billy/quest-for-juice/panel-122.webp',
+    title: 'The Oasis Reflection',
+    text: [
+      'The oasis did not announce itself. It simply appeared where thirst had become convincing.',
+      'In the water, Billy saw a golden constellation shaped like a question.',
+    ],
+  },
+  {
+    id: 'door-behind-the-water',
+    image: '/entertainment/billy/quest-for-juice/panel-123.webp',
+    title: 'The Door Behind The Water',
+    text: [
+      'Behind the waterfall, stone steps opened into a light that had been waiting underground.',
+      'The desert had not ended. It had become deeper.',
+    ],
+  },
+  {
+    id: 'steps-under-the-oasis',
+    image: '/entertainment/billy/quest-for-juice/panel-124.webp',
+    title: 'Steps Under The Oasis',
+    text: [
+      'The passage was cool, wet, and older than anybody who was willing to explain it.',
+      'Billy walked down carefully. Big Potato Man introduced his head to several low arches.',
+    ],
+  },
+  {
+    id: 'underground-train-platform',
+    image: '/entertainment/billy/quest-for-juice/panel-125.webp',
+    title: 'The Underground Train Platform',
+    text: [
+      'At the bottom, an old train waited under the desert like a secret that preferred brass.',
+      'Big Potato Man distrusted underground public transport, which was fair.',
+    ],
+  },
+  {
+    id: 'mineral-tunnel-train',
+    image: '/entertainment/billy/quest-for-juice/panel-126.webp',
+    title: 'The Mineral Tunnel',
+    text: [
+      'The train woke up and carried them through blue crystal darkness.',
+      'Billy leaned into wonder. Big Potato Man leaned into the window frame because there was no space.',
+    ],
+  },
+  {
+    id: 'ruby-mine-city',
+    image: '/entertainment/billy/quest-for-juice/panel-127.webp',
+    title: 'Ruby City Under The Dunes',
+    text: [
+      'The tunnel opened into a city built around red light and patient hands.',
+      'The rubies glowed like hearts that had learned architecture.',
+    ],
+  },
+  {
+    id: 'kiwi-market-tragedy',
+    image: '/entertainment/billy/quest-for-juice/panel-128.webp',
+    title: 'The Kiwi Market Tragedy',
+    text: [
+      'In the market square, a cracked kiwi idol had caused a public emotional emergency.',
+      'Billy knelt down gently. Big Potato Man offered a handkerchief too small for history.',
+    ],
+  },
+  {
+    id: 'dry-golden-spring',
+    image: '/entertainment/billy/quest-for-juice/panel-129.webp',
+    title: 'The Dry Golden Spring',
+    text: [
+      'Then the elders showed them the real problem.',
+      'The spring that fed the wells had almost stopped. One drop remained, glowing like a tiny responsibility.',
+    ],
+  },
 ];

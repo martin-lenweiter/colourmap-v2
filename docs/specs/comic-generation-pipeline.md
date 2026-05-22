@@ -596,6 +596,11 @@ The Freire images should stay calm and spacious enough to prepare terrain for bu
 They may be symbolic, but not overloaded: one collective path, dialogue circle, or shared agency
 idea per page. Character groups should include women and men in mixed communities rather than
 defaulting to male-only scenes.
+Freire needs one future page about praxis as a symbolic continuing cycle: reflection and action as a
+spiral rather than a straight line. The image should be sober, clean, and rooted in the Freire comic
+style: people in dialogue, a simple spiral path or circular field, one side showing reflection, one
+side showing action, and the spiral continuing outward toward future generations or visible social
+impact. No dense labels or infographic clutter; the app-rendered text explains praxis.
 
 The `Thich Nhat Hanh & Peace in Action` program uses the same layered model in a landscape format.
 Its image layer should feel simple, sober, and quiet, closer to the successful comic language:
@@ -634,6 +639,17 @@ reader questions about what gives a person their voice back. Poetry pages should
 symbolic, and memorable rather than poster-dense. The app may point users toward poems such as
 `Bluebird`, `The Laughing Heart`, `Roll the Dice`, `So You Want To Be A Writer?`, `Nirvana`, and
 `The Genius of the Crowd`, but it should not reproduce full copyrighted poems without permission.
+`Jack London: The Wild And The Fire` should sit in this poetry/literature lane as a symbolic,
+physical counterweight: cold, fire, wolves, ships, labour, trust, survival, and the wild as a question
+about what remains alive under comfort or pressure. Its raster pages should include one no-human wolf
+image that can stand alone as a sober menu cover or extra page, and the app-rendered copy may include
+short original poetic lines without replacing London's public-domain books and stories.
+The first generated Jack London sequence has the right emotional direction but reads softer and more
+blurred than the stronger Money/Identity visual direction. Treat it as a wired first pass, not the
+final visual bar. The next pass should be sharper, more grounded in London's biography and books, and
+more nourishing: Oakland, ships, Klondike cold, fire, Buck, White Fang, Martin Eden, and short
+public-domain fragments that pull the reader toward the source texts. The current page 7 image is the
+preferred home-card cover for now.
 
 Philosophy comics can form a connected symbolic chain. `Plato's Cave & Modern Attention` should
 play the ancient cave myth against the modern attention cave: old shadows, modern projections,
@@ -646,6 +662,15 @@ should use mountain, burden, lion, child, abyss, and amor fati without collapsin
 `Campbell & The Hero's Quest` should map call, refusal, threshold, trials, inner cave, gift, and
 return as a universal transformation pattern.
 
+Home/menu covers for `David Hawkins & Fields of Consciousness` and `Alan Watts: Life Is Not The
+Final Note` need more sober first-presentation images than the richer internal pages. Hawkins should
+use a full-light cover: a human figure walking toward a consciousness scale arranged like a triangle
+or ascending road, with the light unified in natural warm tones. A later Hawkins page can use the
+current coloured-light version where the figure has stopped and is observing the field. The attractor
+pattern sequence needs the same two-step logic: first a natural-light pattern image with warm light
+dots and subtle walking motion, then a later coloured-light pattern image for contrast. The point is
+that the first impression is clear, aesthetic, hopeful, and not rainbow-overloaded.
+
 For these linked philosophy comics, use one raster track only. Do not expose a warm-paper placeholder
 mode or any old non-raster fallback as a visible alternate style once a compressed raster sequence is
 available. The first release can use roughly 7-8 pages per program, with the final page naming future
@@ -657,6 +682,62 @@ Every program should eventually end with a small further-reading section: books,
 or search directions that let the user continue without adding more visual load. These references
 are app-rendered text and do not require new images.
 
+## Long-Term Education Platform Evolution
+
+Colourmap Education should evolve from a row of programs into a living symbolic library. The first
+layer is fixed comics and guided programs because they are easy to test, read, and improve. The next
+layer should organize those programs into routes, constellations, and bridges: attention, meaning,
+money, avoidance, repair, body, creativity, society, philosophy, literature, and collective hope.
+
+The platform should not become a generic content library. Each thinker or theme should answer one
+Colourmap question: what does this help the user see about their life, attention, emotions, missions,
+or relationship to the world? The reader should leave with a clearer inner map and a next question,
+not only information.
+
+Potential thinker and series lanes:
+
+- **Meaning and crisis**: Viktor Frankl, Camus, Dostoevsky, Kierkegaard, Simone Weil.
+- **Attention and presence**: Alan Watts, Plato's Cave, Thich Nhat Hanh, Jenny Odell, Cal Newport.
+- **Self-creation and myth**: Nietzsche, Joseph Campbell, Jung, Ursula K. Le Guin, mythic archetypes.
+- **Education and liberation**: Paulo Freire, bell hooks, Ivan Illich, Montessori, John Dewey.
+- **Power and society**: Hannah Arendt, James Baldwin, Martin Luther King Jr., Gandhi, Nelson Mandela.
+- **Poetry and survival**: Maya Angelou, Mary Oliver, Rilke, Rumi, Bukowski, Jack London, Emily
+  Dickinson, Walt Whitman, Langston Hughes.
+- **Money, work, and reality**: money anxiety, scarcity, work identity, creative vocation,
+  organization, James Clear, David Allen, Peter Drucker.
+- **Body and nervous system**: emotional intelligence, nervous system literacy, grief, loneliness,
+  sleep, movement, somatic awareness.
+- **Economic and political imagination**: a long-form history of economic thinking that weaves
+  Adam Smith, Karl Marx, Keynes, Hayek, Polanyi, Schumpeter, Amartya Sen, Elinor Ostrom, Kate
+  Raworth, Mariana Mazzucato, Thomas Piketty, and other writers into one evolving story. The aim is
+  not to teach ideology as fixed camps. The aim is to show that political and economic systems have
+  always been in motion, despite the illusion that the system visible during one lifetime is
+  permanent. The final reflection should help users see institutions, markets, labour, debt, welfare,
+  ecology, technology, and democracy as historical designs still being revised.
+- **Political philosophy and the history of power**: a long-form program about how humans have
+  justified, challenged, centralized, and redistributed power. It can move from church authority,
+  popes, kings, divine right, Luther and the Reformation, sovereignty, Hobbes, Locke, Rousseau,
+  Montesquieu, revolutions, rights, constitutions, liberalism, socialism, nationalism, fascism,
+  colonialism, democracy, bureaucracy, media power, and digital governance. The goal is to show that
+  political authority has never been one fixed thing: who gets to speak for truth, law, God, the
+  people, property, security, and freedom has changed repeatedly. The reader should feel history as a
+  sequence of power arrangements people inherited, contested, and redesigned.
+- **Plants, nature intelligence, and planetary conservation**: a program about plant life,
+  ecosystems, fungal networks, animal habitats, restoration, biodiversity loss, conservation data,
+  and the current global landscape of planetary protection. This track should ask what data we have,
+  where the trends are leading, which interventions are working, and what it means to act as a
+  species living inside a larger intelligence of forests, oceans, soil, and climate.
+
+Theme programs should sit beside person programs. Examples: `Noise vs Signal`, `Why We Hide From The
+Real Task`, `The Shape of Avoidance`, `Attention Is A Life`, `How Money Becomes Emotion`, `Conflict
+And Repair`, `Identity And Becoming`, `The Body Keeps Score In Daily Life`, and `What Makes Hope
+Practical`. These should use strong symbolic images, not dense lectures.
+
+As the library grows, navigation should move toward a map: horizontal worlds, vertical doors inside
+each world, and later a 2D/3D constellation where users can move by need, mood, or question. The app
+can recommend routes such as "I feel lost", "I avoid the real task", "I need meaning", "I need to
+repair a relationship", or "I want creative courage". This keeps expansion from becoming overload.
+
 Format guidance:
 
 - for normal app reading, prefer text-free illustrations with app-rendered text below or beside the
@@ -665,6 +746,10 @@ Format guidance:
 - use blank bubbles for printable/workshop drafts or visual sequence planning
 - comic-book artifacts may use app-rendered framing, but the generated image layer itself should
   still avoid baked-in white borders, page borders, panel frames, gutters, or decorative edge rules
+- some pages may use a true comic-book rhythm with multiple blocks/panels when that helps explain a
+  process, contrast, chase, fight, historical sequence, or idea unfolding over time. Use this
+  deliberately for clarity and rhythm, not as default density. Single-image symbolic pages should
+  remain the baseline when one strong image can carry the idea.
 - when text-in-bubble placement becomes unreliable, prefer app-rendered adaptive text plates over
   trying to align words inside generated bubble shapes
 - future generated bubbles should be beige, parchment, or paper-feel, not bright white
@@ -1123,3 +1208,67 @@ fixed education page
 
 The generated image library should therefore be treated as a growing symbolic visual vocabulary,
 not only as illustrations for one program.
+
+## Future Education Program: Signal vs Noise
+
+Prepare this as a future education program, not an immediate implementation.
+
+Core idea:
+
+- The phrase comes from signal-to-noise ratio in communications and information theory: signal is
+  the meaningful pattern; noise is interference that makes the pattern harder to read.
+- Colourmap can translate this into life practice: what actually matters now, what is distraction,
+  and which emotions are making the task feel larger than it is.
+- The program should not shame distraction. It should show that avoidance, anxiety, comparison,
+  shame, self-pity, and over-planning can act like emotional static around a smaller real task.
+- The central insight: often the work is not as hard as the emotional projection around the work.
+  Once the signal is named, the next action can be simple.
+
+Tone:
+
+- clear, grounded, sober, and hopeful
+- symbolic images, not overloaded diagrams
+- one strong concept per page
+- enough empty space for the viewer's own thought to unlock
+
+Possible first 7 pages:
+
+1. **The Room Of Noise**: a person surrounded by screens, tabs, opinions, fears, and urgent-looking
+   shadows.
+2. **The Signal**: one quiet line of light or one clear object remains visible inside the clutter.
+3. **Emotional Static**: anxiety and shame distort the size of a simple task.
+4. **Projection**: the task looks like a mountain from far away, then becomes a small door up close.
+5. **The Load-Bearing Move**: one precise action matters more than ten busy gestures.
+6. **Leaving The Noise Field**: the character turns away from false urgency and returns to the real
+   work.
+7. **Practice Page / References**: questions for the reader and suggested reading on attention,
+   information, focus, and avoidance.
+
+Expansion pages could later cover social media, productivity theater, perfectionism, fear of being
+seen, emotional regulation before action, and how Colourmap helps the user map where attention is
+going.
+
+## Future Visual Direction: Flying Light Bird
+
+Later, the AI Presence / geometry language can include a light-bird made from golden dots. The aim is
+not a literal animal illustration but a living particle figure that can turn into other symbolic
+forms inside journeys.
+
+First geometry preset idea:
+
+- one preset named something like `Light Bird`
+- five style modes inside the same preset:
+  - gliding bird: calm wings, slow horizon movement
+  - flock-bird: many dots briefly form the body, then dissolve
+  - phoenix trace: warmer fire-like tail, still readable and not overloaded
+  - heartbeat bird: wings pulse inward and outward with a heart-like center
+  - metamorph bird: bird shifts toward heart, fire, phoenix, and abstract field
+- flight patterns should feel liquid and alive, using golden dots gathered around a center rather
+  than wide chaotic scatter.
+
+Future use:
+
+- visual journeys where one shape becomes another
+- AI Presence mood states
+- metamorphosis sequences from bird to heart to fire to phoenix
+- calm symbolic movement that feels protective and spacious

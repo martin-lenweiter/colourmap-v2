@@ -27,15 +27,36 @@ const EMOTION_BACKDROPS = [
   '/emotions/emotion-sunset-2.webp',
 ];
 
-function EmotionMoodSurface({ children }: { children: React.ReactNode }) {
-  const [index, setIndex] = useState(0);
+type EmotionVisualDesign = 1 | 2;
+
+function EmotionMoodSurface({
+  children,
+  design,
+  onDesignChange,
+  imageIndex,
+}: {
+  children: React.ReactNode;
+  design: EmotionVisualDesign;
+  onDesignChange: (design: EmotionVisualDesign) => void;
+  imageIndex: number;
+}) {
+  const [isLightTheme, setIsLightTheme] = useState(true);
+  const dayImages = imageIndex >= 2;
 
   useEffect(() => {
-    const timer = window.setInterval(
-      () => setIndex((current) => (current + 1) % EMOTION_BACKDROPS.length),
-      18_000,
-    );
-    return () => window.clearInterval(timer);
+    function syncLightTheme() {
+      const color = localStorage.getItem('colourmap-theme') ?? 'paper';
+      const palette = localStorage.getItem('colourmap-palette') ?? 'light-brown';
+      setIsLightTheme(color === 'golden' || (color === 'paper' && palette === 'light-brown'));
+    }
+    syncLightTheme();
+    const observer = new MutationObserver(syncLightTheme);
+    observer.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
+    window.addEventListener('storage', syncLightTheme);
+    return () => {
+      observer.disconnect();
+      window.removeEventListener('storage', syncLightTheme);
+    };
   }, []);
 
   return (
@@ -43,35 +64,85 @@ function EmotionMoodSurface({ children }: { children: React.ReactNode }) {
       style={{
         position: 'relative',
         overflow: 'hidden',
-        borderRadius: 18,
-        padding: '12px 8px 14px',
-        background: 'var(--palette-l2-bg, rgba(30,16,8,0.5))',
+        borderRadius: isLightTheme ? 0 : 18,
+        padding: isLightTheme ? '0 0 14px' : design === 2 ? '8px 8px 14px' : '12px 8px 14px',
+        background: isLightTheme
+          ? 'transparent'
+          : 'linear-gradient(180deg, var(--palette-l2-bg, rgba(30,16,8,0.54)), color-mix(in srgb, var(--palette-l2-bg, rgba(30,16,8,0.54)) 82%, black))',
+        boxShadow: isLightTheme
+          ? 'none'
+          : 'inset 0 1px 0 rgba(255,255,255,0.04), 0 18px 42px rgba(0,0,0,0.14)',
       }}
     >
-      <div
-        aria-hidden="true"
-        style={{
-          position: 'absolute',
-          inset: 0,
-          backgroundImage: `url("${EMOTION_BACKDROPS[index]}")`,
-          backgroundSize: 'cover',
-          backgroundPosition: index < 2 ? 'center 42%' : 'center 50%',
-          opacity: 0.24,
-          transition: 'background-image 900ms ease, opacity 900ms ease',
-        }}
-      />
-      <div
-        aria-hidden="true"
-        style={{
-          position: 'absolute',
-          inset: 0,
-          background:
-            'linear-gradient(180deg, color-mix(in srgb, var(--background) 72%, transparent), color-mix(in srgb, var(--background) 88%, black))',
-        }}
-      />
-      <div style={{ position: 'relative', zIndex: 1 }} className="space-y-3">
-        {children}
+      <div style={{ display: 'flex', justifyContent: 'center', margin: '0 0 10px' }}>
+        <fieldset
+          aria-label="Emotion image design"
+          style={{
+            display: 'inline-flex',
+            border: '1px solid var(--panel-border, rgba(196,160,96,0.22))',
+            borderRadius: 999,
+            background: isLightTheme
+              ? 'color-mix(in srgb, var(--card) 74%, transparent)'
+              : 'rgba(10,6,3,0.28)',
+            padding: 2,
+            gap: 2,
+            margin: 0,
+          }}
+        >
+          {([1, 2] as const).map((option) => (
+            <button
+              key={option}
+              type="button"
+              onClick={() => onDesignChange(option)}
+              style={{
+                border: 0,
+                borderRadius: 999,
+                minWidth: 32,
+                minHeight: 26,
+                background: design === option ? 'rgba(196,160,96,0.2)' : 'transparent',
+                color:
+                  design === option
+                    ? 'var(--palette-panel-text, #5C3018)'
+                    : 'var(--palette-panel-muted, rgba(196,160,96,0.72))',
+                fontFamily: 'var(--font-serif)',
+                fontSize: 12,
+                fontWeight: 900,
+                cursor: 'pointer',
+              }}
+            >
+              {option}
+            </button>
+          ))}
+        </fieldset>
       </div>
+      <div
+        aria-hidden="true"
+        style={{
+          position: 'relative',
+          height: design === 2 ? 0 : 128,
+          margin: '0 0 14px',
+          borderRadius: design === 2 ? 22 : 18,
+          backgroundImage: `url("${EMOTION_BACKDROPS[imageIndex]}")`,
+          backgroundSize: 'cover',
+          backgroundPosition: imageIndex < 2 ? 'center 42%' : 'center 50%',
+          opacity: 1,
+          transition: 'background-image 900ms ease, opacity 900ms ease, height 260ms ease',
+          display: design === 2 ? 'none' : 'block',
+        }}
+      >
+        <div
+          aria-hidden="true"
+          style={{
+            position: 'absolute',
+            inset: 0,
+            borderRadius: design === 2 ? 22 : 18,
+            background: dayImages
+              ? 'linear-gradient(180deg, rgba(255,248,226,0.03), rgba(46,18,6,0.24))'
+              : 'linear-gradient(180deg, rgba(10,6,3,0.03), rgba(10,6,3,0.38))',
+          }}
+        />
+      </div>
+      <div className="space-y-3">{children}</div>
     </div>
   );
 }
@@ -84,6 +155,8 @@ function DayContent() {
   const [learnOpen, setLearnOpen] = useState(false);
   const [experimentsOpen, setExperimentsOpen] = useState(false);
   const [modesOpen, setModesOpen] = useState(false);
+  const [emotionVisualDesign, setEmotionVisualDesign] = useState<EmotionVisualDesign>(1);
+  const [emotionImageIndex, setEmotionImageIndex] = useState(0);
 
   // Silently restore server state into localStorage on mount.
   // Current session renders from whatever is already local (instant).
@@ -91,6 +164,28 @@ function DayContent() {
   useEffect(() => {
     hydrate();
   }, []);
+
+  useEffect(() => {
+    const timer = window.setInterval(
+      () => setEmotionImageIndex((current) => (current + 1) % EMOTION_BACKDROPS.length),
+      18_000,
+    );
+    return () => window.clearInterval(timer);
+  }, []);
+
+  useEffect(() => {
+    try {
+      const stored = localStorage.getItem('colourmap:emotion-visual-design');
+      if (stored === '2') setEmotionVisualDesign(2);
+    } catch {}
+  }, []);
+
+  function changeEmotionVisualDesign(next: EmotionVisualDesign) {
+    setEmotionVisualDesign(next);
+    try {
+      localStorage.setItem('colourmap:emotion-visual-design', String(next));
+    } catch {}
+  }
 
   useEffect(() => {
     try {
@@ -113,11 +208,20 @@ function DayContent() {
       {learnOpen && <LearningHub onClose={() => setLearnOpen(false)} />}
 
       <DayTabs
+        headerBackdrop={{
+          enabled: emotionVisualDesign === 2,
+          image: EMOTION_BACKDROPS[emotionImageIndex],
+          dayImage: emotionImageIndex >= 2,
+        }}
         emotionContent={
-          <EmotionMoodSurface>
+          <EmotionMoodSurface
+            design={emotionVisualDesign}
+            onDesignChange={changeEmotionVisualDesign}
+            imageIndex={emotionImageIndex}
+          >
             <InnerWork />
             <div style={{ height: 20 }} />
-            <FeelingCircles2 />
+            <FeelingCircles2 visualDesign={emotionVisualDesign} />
             {/* Experiments — collapsible pill */}
             <div
               style={{

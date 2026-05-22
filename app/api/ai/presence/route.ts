@@ -1,4 +1,4 @@
-import { readFile } from 'node:fs/promises';
+import { readdir, readFile } from 'node:fs/promises';
 import path from 'node:path';
 import { anthropic } from '@ai-sdk/anthropic';
 import { streamText } from 'ai';
@@ -11,28 +11,38 @@ import {
 
 const MAX_MESSAGE_LENGTH = 5_000;
 const MAX_SURFACE_LENGTH = 80;
-const MAX_SPEC_CHARS = 28_000;
-
-const SPEC_FILES = [
-  'docs/product.md',
-  'docs/specs/ai-presence.md',
-  'docs/specs/build-lab.md',
-  'docs/specs/infinite-comic-billy.md',
-  'docs/specs/billy-new-babylon-150.md',
-  'docs/specs/ai-reflection-menu.md',
-];
+const MAX_SPEC_CHARS = 96_000;
+const PRODUCT_FILE = path.join(process.cwd(), 'docs', 'product.md');
+const SPECS_DIR = path.join(process.cwd(), 'docs', 'specs');
 
 async function loadSpecContext() {
-  const chunks = await Promise.all(
-    SPEC_FILES.map(async (file) => {
-      try {
-        const content = await readFile(path.join(process.cwd(), file), 'utf8');
-        return `\n\n--- ${file} ---\n${content}`;
-      } catch {
-        return '';
-      }
-    }),
-  );
+  let specFiles: string[] = [];
+  try {
+    specFiles = (await readdir(SPECS_DIR)).filter((file) => file.endsWith('.md')).sort();
+  } catch {}
+
+  const chunks = [];
+  const files = [
+    { label: 'docs/product.md', absolutePath: PRODUCT_FILE },
+    ...specFiles.map((file) => ({
+      label: `docs/specs/${file}`,
+      absolutePath: path.join(SPECS_DIR, file),
+    })),
+  ];
+
+  for (const file of files) {
+    if (chunks.join('').length >= MAX_SPEC_CHARS) break;
+    chunks.push(
+      await (async () => {
+        try {
+          const content = await readFile(file.absolutePath, 'utf8');
+          return `\n\n--- ${file.label} ---\n${content}`;
+        } catch {
+          return '';
+        }
+      })(),
+    );
+  }
   return chunks.join('').slice(0, MAX_SPEC_CHARS);
 }
 
@@ -81,9 +91,9 @@ export async function POST(req: Request) {
         model: anthropic('claude-haiku-4-5-20251001'),
         system: `You are Colourmap's AI Presence: a calm reflective interface inside a personal cockpit app.
 The user is speaking or writing from the ${input.value.surface} surface.
-You have access to a compact bundle of the live Colourmap product/spec documents below.
+You have access to the live Colourmap product document and a sorted corpus of docs/specs/*.md below, capped for request size.
 Use it when the user asks about product direction, strategy, Build Lab, AI, education, Billy/Pineapple Planet, or what to do next.
-If the answer depends on the specs, say what the specs imply. If the docs do not contain something, say that clearly.
+If the answer depends on the specs, say what the specs imply. If the relevant detail may be outside the included cap, say that clearly and suggest which spec to inspect next.
 Spec context:
 ${specContext || 'Spec context unavailable.'}
 

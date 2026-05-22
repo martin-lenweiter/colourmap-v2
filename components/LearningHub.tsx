@@ -34,6 +34,7 @@ const COMIC_PROGRAMS = new Set([
   'parenting-patterns',
   'viktor-frankl',
   'bukowski-poems',
+  'jack-london',
   'maya-angelou',
   'plato-cave',
   'alan-watts',
@@ -130,6 +131,7 @@ const POSITIVE_OVERLAY_PROGRAMS = new Set([
   'parenting-patterns',
   'viktor-frankl',
   'bukowski-poems',
+  'jack-london',
   'maya-angelou',
   'plato-cave',
   'alan-watts',
@@ -156,6 +158,7 @@ const POSITIVE_OVERLAY_PANEL_EXTENSIONS: Record<string, string> = {
   'avoidance-action': 'webp',
   'viktor-frankl': 'webp',
   'bukowski-poems': 'webp',
+  'jack-london': 'webp',
   'maya-angelou': 'webp',
   'plato-cave': 'webp',
   'alan-watts': 'webp',
@@ -189,8 +192,11 @@ const PROGRAM_COVER_PANEL: Record<string, number> = {
   gandhi: 11,
   'clear-allen': 0,
   'alan-watts': 1,
+  'david-hawkins': 6,
+  'jack-london': 6,
   'campbell-hero-quest': 2,
 };
+const SPECIAL_PROGRAM_COVERS: Record<string, string> = {};
 
 const SERIF = 'var(--font-serif)';
 const cream = (a: number) => `rgba(240,216,152,${a})`;
@@ -288,7 +294,7 @@ const GROUPS: {
   },
   {
     label: 'Poetry',
-    keys: ['bukowski-poems', 'maya-angelou'],
+    keys: ['bukowski-poems', 'jack-london', 'maya-angelou'],
     tint: '#9A7658',
     format: 'guides',
   },
@@ -336,6 +342,8 @@ function getProgress(program: Program): number {
 }
 
 function getProgramCoverSrc(program: Program): string {
+  const specialCover = SPECIAL_PROGRAM_COVERS[program.key];
+  if (specialCover) return specialCover;
   const coverPanel = PROGRAM_COVER_PANEL[program.key] ?? 0;
   const generatedCount = GENERATED_LAYERED_PANEL_COUNTS[program.key];
   if (generatedCount) {
@@ -359,59 +367,55 @@ const PROGRAM_COVER_CROP: Record<string, { scale: number; position?: string }> =
   'nervous-system': { scale: 1.035, position: 'center center' },
   grief: { scale: 1.035, position: 'center center' },
   belonging: { scale: 1.035, position: 'center center' },
+  'jack-london': { scale: 1.02, position: '30% center' },
 };
 
 function getProgramCoverCrop(program: Program) {
   return PROGRAM_COVER_CROP[program.key] ?? { scale: 1, position: 'center center' };
 }
 
-/* ── Dynamic opening based on today's emotion ───────────────── */
-function getOpening(): { headline: string; sub: string } {
-  try {
-    const word = (localStorage.getItem('colourmap:mood-word') ?? '').toLowerCase();
-    const anxious = [
-      'anxious',
-      'anxiety',
-      'stressed',
-      'nervous',
-      'overwhelmed',
-      'worried',
-      'tense',
-      'fearful',
-    ];
-    const low = ['sad', 'low', 'tired', 'exhausted', 'empty', 'lost', 'grief', 'heavy', 'numb'];
-    const good = [
-      'good',
-      'great',
-      'energised',
-      'excited',
-      'clear',
-      'focused',
-      'grateful',
-      'hopeful',
-      'alive',
-    ];
+const EDUCATION_QUOTES = [
+  { text: 'Until you make the unconscious conscious, it will direct your life.', by: 'Carl Jung' },
+  { text: 'The privilege of a lifetime is to become who you truly are.', by: 'Carl Jung' },
+  { text: 'Be the change you wish to see in the world.', by: 'M. K. Gandhi' },
+  { text: 'In a gentle way, you can shake the world.', by: 'M. K. Gandhi' },
+  { text: 'Between stimulus and response, there is a space.', by: 'Viktor Frankl' },
+  {
+    text: 'When we cannot change a situation, we are challenged to change ourselves.',
+    by: 'Viktor Frankl',
+  },
+  { text: 'The point of life is not the final note.', by: 'Alan Watts' },
+  { text: 'You are something the whole universe is doing.', by: 'Alan Watts' },
+  { text: 'Peace is every step.', by: 'Thich Nhat Hanh' },
+  { text: 'No mud, no lotus.', by: 'Thich Nhat Hanh' },
+  { text: 'Education is an act of love.', by: 'Paulo Freire' },
+  { text: 'Hope is an ontological need.', by: 'Paulo Freire' },
+  { text: 'Follow your bliss.', by: 'Joseph Campbell' },
+  { text: 'The cave you fear to enter holds the treasure you seek.', by: 'Joseph Campbell' },
+  { text: 'He who has a why can bear almost any how.', by: 'Friedrich Nietzsche' },
+  { text: 'Become who you are.', by: 'Friedrich Nietzsche' },
+  { text: 'Surrender releases the resistance that keeps suffering alive.', by: 'David Hawkins' },
+  { text: 'Rise with dignity, even after silence.', by: 'Maya Angelou' },
+  { text: 'What you pay attention to becomes the shape of your life.', by: 'Colourmap' },
+  { text: 'The real task is often smaller than the emotion around it.', by: 'Colourmap' },
+  { text: 'A map is useful when it helps you return to the road.', by: 'Colourmap' },
+  { text: 'The wild asks whether comfort has become too small.', by: 'Jack London' },
+  { text: 'Courage is not noise. It is a steady movement through fear.', by: 'Colourmap' },
+  { text: 'The signal is the thing that still matters after the panic fades.', by: 'Colourmap' },
+  { text: 'A life grows when attention becomes honest.', by: 'Colourmap' },
+  { text: 'The page is not the lesson. The return to life is the lesson.', by: 'Colourmap' },
+] as const;
 
-    if (anxious.some((w) => word.includes(w)))
-      return {
-        headline: "You're here. That already matters.",
-        sub: 'Anxiety is information — about what you value, what you fear, what needs attention. Start anywhere. One page is enough.',
-      };
-    if (low.some((w) => word.includes(w)))
-      return {
-        headline: 'Start anywhere. The reading finds you.',
-        sub: "Low states are not obstacles to learning — they're often the entry point. Pick one program. Open one page.",
-      };
-    if (good.some((w) => word.includes(w)))
-      return {
-        headline: 'Good moment to go deeper.',
-        sub: 'Use the clarity. Pick what pulls you. Each program is a tool — not a course, not a commitment. One page at a time.',
-      };
-  } catch {}
-  return {
-    headline: 'Every state is information.',
-    sub: 'This is where you learn to read it, use it, and move through it. Pick any program. Open one page. That is enough.',
-  };
+function pickEducationQuote() {
+  const next = Math.floor(Math.random() * EDUCATION_QUOTES.length);
+  try {
+    const previous = Number(sessionStorage.getItem('colourmap:last-education-quote') ?? -1);
+    const index = next === previous ? (next + 1) % EDUCATION_QUOTES.length : next;
+    sessionStorage.setItem('colourmap:last-education-quote', String(index));
+    return EDUCATION_QUOTES[index] ?? EDUCATION_QUOTES[0];
+  } catch {
+    return EDUCATION_QUOTES[next] ?? EDUCATION_QUOTES[0];
+  }
 }
 
 /* ── Swim card ───────────────────────────────────────────────── */
@@ -860,16 +864,15 @@ export default function LearningHub({ onClose }: { onClose: () => void }) {
   const [personalityOpen, setPersonalityOpen] = useState(false);
   const [hubPalId, setHubPalId] = useState<HubPaletteId>('brown');
   const [philosophyOpen, setPhilosophyOpen] = useState(false);
-  const [opening, setOpening] = useState({
-    headline: 'Every state is information.',
-    sub: 'This is where you learn to read it, use it, and move through it. Pick any program. Open one page. That is enough.',
-  });
+  const [educationQuote, setEducationQuote] = useState<(typeof EDUCATION_QUOTES)[number]>(
+    EDUCATION_QUOTES[0],
+  );
   const hubBg = HUB_PALETTES.find((p) => p.id === hubPalId)?.bg ?? 'rgba(18,10,4,0.99)';
   const [heroImage, setHeroImage] = useState(EDUCATION_IMAGES[0]);
 
   useEffect(() => {
     setHubPalId(loadHubPalette());
-    setOpening(getOpening());
+    setEducationQuote(pickEducationQuote());
     setHeroImage(EDUCATION_IMAGES[Math.floor(Math.random() * EDUCATION_IMAGES.length)]);
   }, []);
 
@@ -1012,6 +1015,39 @@ export default function LearningHub({ onClose }: { onClose: () => void }) {
               yourself, and participate in transforming the world.
             </p>
           )}
+          <figure
+            style={{
+              maxWidth: 560,
+              margin: '18px auto 0',
+              textAlign: 'center',
+            }}
+          >
+            <blockquote
+              style={{
+                margin: 0,
+                color: cream(0.88),
+                fontFamily: SERIF,
+                fontSize: 15,
+                fontWeight: 600,
+                lineHeight: 1.55,
+              }}
+            >
+              {educationQuote.text}
+            </blockquote>
+            <figcaption
+              style={{
+                marginTop: 7,
+                color: och(0.62),
+                fontFamily: SERIF,
+                fontSize: 10.5,
+                fontWeight: 700,
+                letterSpacing: '0.14em',
+                textTransform: 'uppercase',
+              }}
+            >
+              {educationQuote.by}
+            </figcaption>
+          </figure>
         </div>
 
         {/* Header — palette + close */}
@@ -1025,17 +1061,7 @@ export default function LearningHub({ onClose }: { onClose: () => void }) {
             flexShrink: 0,
           }}
         >
-          <div
-            style={{
-              fontFamily: SERIF,
-              fontSize: 10.5,
-              letterSpacing: '0.08em',
-              textTransform: 'uppercase',
-              color: cream(0.5),
-            }}
-          >
-            image paths
-          </div>
+          <div aria-hidden="true" />
           <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
             <div style={{ display: 'flex', gap: 5 }}>
               {HUB_PALETTES.map((p) => (
@@ -1077,22 +1103,6 @@ export default function LearningHub({ onClose }: { onClose: () => void }) {
               close
             </button>
           </div>
-        </div>
-
-        {/* Opening statement — dynamic */}
-        <div style={{ padding: '16px 20px 4px', flexShrink: 0 }}>
-          <p
-            style={{
-              fontFamily: SERIF,
-              fontSize: 15,
-              color: cream(0.82),
-              lineHeight: 1.7,
-              margin: '0 0 6px',
-              fontWeight: 600,
-            }}
-          >
-            {opening.headline}
-          </p>
         </div>
 
         {/* Programs — swim lanes with group tints */}

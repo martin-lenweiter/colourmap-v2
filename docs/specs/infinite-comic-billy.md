@@ -57,6 +57,9 @@ Core loop rules:
 - every region has a gift and risk, so the story avoids simple good-place/bad-place morality
 - education themes from Colourmap can appear as story wisdom, but never as lectures
 - the bottom area of each portrait image should usually stay calm enough for the app's separate text layer
+- when a page uses the text overlay, the lower quarter can hide a small funny, symbolic, or
+  surprising element that is revealed when the user advances and the text leaves the artwork; this
+  reveal should add pleasure or meaning without being required to understand the page
 - no generated image should contain speech bubbles, captions, page numbers, borders, white frames, or UI text
 
 ### 300-Page First World

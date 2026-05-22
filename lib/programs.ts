@@ -148,19 +148,19 @@ export const PROGRAMS: Program[] = [
     segments: [
       {
         title: 'The world is made, so it can be remade',
-        body: 'Freire begins from a hopeful premise: society is not a machine that simply happens to us. It is built through choices, institutions, habits, language, and power. What has been built can be examined. What can be examined can be changed. Hope is not denial. It is the refusal to treat the present arrangement as destiny.',
+        body: 'Freire was born into poverty in Recife, Brazil, and felt early how hunger and social conditions could block access to knowledge, confidence, and dignity. His hope was not abstract. It came from lived experience: if the world is organized in ways that silence people, then education must help them read that world and participate in changing it.',
       },
       {
         title: 'People are not empty containers',
-        body: 'Bad education treats people like containers to be filled. Freire challenged that. A person is not a passive receiver of instructions, slogans, or expert knowledge. A person already carries experience, pain, intelligence, memory, and questions. Real learning starts when those experiences become material for understanding the world.',
+        body: 'Freire called the controlling version of school the banking model of education. The teacher deposits knowledge; the student stores it. The teacher speaks; the student adapts. This serves power because passive learners are easier to dominate. The problem is dehumanization: people are treated as receiving objects instead of thinking beings with prior knowledge, skills, memory, questions, and creative power.',
       },
       {
         title: 'Naming reality gives power back',
-        body: 'When people cannot name what is happening to them, pressure feels private and confusing. When they learn to name the pattern, the fog changes. Debt is not only personal failure. Burnout is not only weakness. Isolation is not only bad character. Naming turns suffering into information, and information can become action.',
+        body: 'Freire said banking education suffers from "narration sickness": reality is narrated as a static thing, separated from the learner\'s actual life. Naming reality works differently. Debt, hunger, silence, shame, exclusion, and work are not private fog. They become material for understanding the structure of life and acting inside it.',
       },
       {
         title: 'Consciousness grows through dialogue',
-        body: 'For Freire, transformation does not come from one heroic mind telling everyone else the answer. It grows through dialogue: people comparing experience, asking sharper questions, and discovering the structure underneath their daily life. Dialogue is not soft. It is disciplined attention shared between people who are trying to see clearly.',
+        body: 'Freire did not replace one monologue with another. His alternative was problem-posing education: teacher and learner become co-investigators of reality. The teacher still carries responsibility for content, structure, and expertise, but also becomes a learner among learners. The curriculum begins with actual lives: experiences, concerns, and questions. Knowledge is constructed together, and the deeper shift is about who has the right to speak, know, and imagine a different world.',
       },
       {
         title: 'The personal and political meet',
@@ -168,7 +168,7 @@ export const PROGRAMS: Program[] = [
       },
       {
         title: 'Praxis: reflection plus action',
-        body: 'Freire used praxis for the cycle of reflection and action. Reflection without action can become a beautiful cage. Action without reflection can repeat the same pattern with more energy. The living loop is: notice, name, act, learn, return. Each cycle makes the next one more intelligent.',
+        body: 'Freire used praxis for the living combination of reflection and action. People reflect on their reality, act to change it, reflect again on what happened, and act further. It is not a straight line. It is a spiral. It is also not only individual: real praxis becomes collective, because people learn from shared action and carry its impact into the future.',
       },
       {
         title: 'Hope is a practice, not a mood',
@@ -1390,6 +1390,49 @@ export const PROGRAMS: Program[] = [
       {
         title: 'Poems to read next',
         body: 'Read the poems themselves outside the app: Bluebird, The Laughing Heart, Roll the Dice, So You Want To Be A Writer?, Nirvana, The Genius of the Crowd, alone with everybody, and Dinosauria, We. The app should guide you toward them, not replace them.',
+      },
+    ],
+  },
+  {
+    key: 'jack-london',
+    domain: 'Jack London: The Wild And The Fire',
+    color: '#8B6F4E',
+    segments: [
+      {
+        title: 'The boy before the books',
+        body: 'Jack London was not born inside a library. He came through poverty, work, docks, newspapers, ships, factories, and hunger before he became a famous writer. The spirit begins there: a young person looking at the world directly and refusing to stay asleep.',
+      },
+      {
+        title: 'Oakland, sea, and survival',
+        body: 'He worked hard, read hard, and threw himself into life. He sailed, chased experience, joined the Klondike gold rush, wrote with ferocious discipline, and turned rough contact with reality into story. London feels nourishing when the app remembers this: the writer is built from lived pressure, not only ideas.',
+      },
+      {
+        title: 'The call of the wild',
+        body: 'The Call of the Wild is not only about a dog going north. It is about buried strength waking up. Buck is pulled out of comfort and learns an older intelligence: body, instinct, cold, loyalty, danger, and the deep memory of the wild.',
+      },
+      {
+        title: 'White Fang and trust',
+        body: 'White Fang moves in the other direction. A creature shaped by violence slowly learns that not every hand is danger. This is where London becomes more than survival. The real nourishment is trust returning without making the wild disappear.',
+      },
+      {
+        title: 'To Build a Fire',
+        body: 'In To Build a Fire, the cold is not symbolic decoration. It is real, patient, and deadly. The story teaches humility: intelligence is not only confidence. It is respect for conditions, body, weather, limits, and the old knowledge we ignore at our own risk.',
+      },
+      {
+        title: 'Martin Eden',
+        body: 'Martin Eden brings the hunger closer to the human soul: ambition, class, reading, love, fame, exhaustion, and the danger of building a life only to find the inside still starving. London understood the cost of becoming visible.',
+      },
+      {
+        title: 'Fragments by the fire',
+        body: 'Read these as sparks, not summaries: "The proper function of man is to live, not to exist." "I would rather be ashes than dust." "The Wild still lingered in him." Each line points back to appetite, courage, and aliveness.',
+      },
+      {
+        title: 'The reader question',
+        body: 'Where has your life become too tame, and where has it become too harsh? London is not asking you to become brutal. He is asking whether your fire, discipline, body, courage, tenderness, and contact with nature are still alive.',
+      },
+      {
+        title: 'Read beside the fire',
+        body: 'Read The Call of the Wild, White Fang, To Build a Fire, Martin Eden, The Sea-Wolf, and the short credo often printed as Jack London by Himself. Then step outside, feel the air, and ask what kind of life your body still wants.',
       },
     ],
   },

@@ -459,6 +459,22 @@ Generate in batches of 10-15. After each batch:
 - reject accidental real-person likeness if too direct
 - check costume continuity
 - check lower overlay calm area
+- use the lower quarter intentionally: if the app text covers it at first, place a small funny,
+  symbolic, or reveal-worthy detail there so the full-art reveal feels rewarding after the user taps
+  next; do not make that detail essential to understanding the page
+- simple powerful scenes are the default. Big story ideas should usually be carried by one memorable
+  image: a handshake under a spotlight, one gate opening, one calm crocodile reflection, one hidden
+  motorcycle, one mirror fragment. Avoid explaining the whole plot inside one picture.
+- action can use two valid rhythms:
+  - **multi-block comic page:** one image contains 2-5 clear blocks/panels when the reader needs to
+    understand a process, fight beat, chase turn, or gag escalation in one page. Keep the blocks big,
+    readable, and textless; the app can add sound effects like BAM, KRAKK, FWIP, or THOOOM later.
+  - **rapid single-action sequence:** 2-5 separate simple images in a row, each showing one movement
+    beat with almost no text. This is best for action feeling: dodge, impact, crash, silence, reveal.
+    Each click advances the rhythm instead of revealing more explanation.
+- details can echo future mega-comic ideas, but they should behave like seeds: a tiny tiger sticker,
+  a broken mirror fragment, a circus poster, a miniature sofa, a future-Billy reflection. The reader
+  can discover them after the overlay leaves, but the panel must still read clearly without them.
 - reject panels that feel overloaded: one clear action, relaxed visual density, and only a few
   background clues should be the default
 - alternate density across the batch: if one scene is visually loaded, the next should breathe
@@ -493,3 +509,166 @@ Generate in batches of 10-15. After each batch:
     zooms into the tiger poster: old paper wanted-poster feel, hand-drawn tiger character, more like
     the drawing style visible on the wall poster than a full cinematic scene. This should let the
     reader focus on one future trouble thread before returning to the underworld route.
+- **Panels 81-89: Handshake disaster and robot escape.** Pick up immediately after Billy and Big
+  Potato Man earn mutual respect. The fight should breathe more than shout: no speech bubbles, no
+  dense dialogue, no four-choice forks, and no carnival overload. Use cinematic action, clear shapes,
+  and a Moebius / European adventure-comic sense of architecture and atmosphere.
+  1. Handshake disaster: Billy and Big Potato Man shake hands after battle; Donald Grump bursts into
+     the arena spotlight with collapsing productivity graphs behind him.
+  2. Productivity panic: Donald performs exaggerated panic before giant charts; a dark gate opens
+     with rows of robot eyes.
+  3. Pineapple steel storm: metal pineapple robots enter through smoke; Billy dodges, Potato throws
+     one through concrete.
+  4. Above New Babylon: Crocodile Jack watches from a luxury tower, phones, betting chips, money,
+     maps, and city holograms vibrating on a table.
+  5. Crocodile Jack contradiction: he delicately arranges flowers while city chaos reflects in the
+     glass behind him.
+  6. Croc's strange office: books, plants, sculptures, meditation cushions, Jack meditating while an
+     assistant panics and helicopter holograms activate.
+  7. Arena madness: Billy and Potato fight robots, Donald laughs, and the arena breaks into chaos.
+  8. Too many: Billy and Potato are tiny inside a sea of incoming robots while Donald sneaks away and
+     Billy notices.
+  9. Escape vehicle: in a dark maintenance tunnel, Billy and Potato discover a dust-covered
+     motorcycle under pipes and launch into the next route.
+- **Panels 90-95: Golden sewers, rooftop chase, and circus refuge.** The city opens into a chase
+  organism: golden sewer rivers, snake bikers, Tiger Khan, Donald Grump air support, rooftop jumps,
+  vanishing into fog, and a strange old circus hidden between skyscrapers. Keep it stylish and
+  readable, not overloaded. The Cobra Brothers can be funny crash-energy side villains. Tiger Khan
+  should feel dangerous but iconic and readable, not too visually busy. The circus should be warm,
+  vintage, slightly stressful, and funny as Billy tries to hide in plain sight.
+  1. Golden Sewers: Billy and Potato fly through glowing Juice tunnels while rats scatter, three
+     snake bikers and Tiger Khan follow behind.
+  2. Donald Grump air support: motorcycles explode upward from tunnel exits into New Babylon
+     rooftops while a fictional orange-haired chaos-capitalist president leans from a helicopter.
+  3. Roof chase: Billy jumps roof to roof with clean James Bond energy; Cobra bikers collide in a
+     stupid chain reaction.
+  4. Vanishing act: Billy enters a quiet fog cloud above New Babylon; Tiger brakes, helicopter
+     circles, and Billy is hidden in a tiny calm corner.
+  5. Circus of Forgotten People: morning outside a hidden vintage circus between skyscrapers; the
+     potato-mustached circus master recognizes Billy's courage and invites him in.
+  6. Billy becomes someone else: backstage disguise scene with fake mustache, glasses, and ridiculous
+     circus outfit; everyone immediately recognizes him.
+- **Panels 96-110: Circus undercover and Tiger Khan mirror branch.** This is a follow-up episode,
+  not all one dense action scene. Alternate stressful chase pages with simple symbolic pages. Billy
+  performs dangerous circus tasks while staying undercover, notices Tiger in the crowd, uses a trick
+  distraction, and disappears into the circus interior. The magic mirror labyrinth distorts Billy
+  into fragments of other storylines: desert Billy, space Billy, scuba Billy, worker Billy,
+  adventurer Billy, sad future Billy, and brilliant possible future Billy. This becomes a branch
+  point. One branch shows Billy defeating Tiger; Tiger sees his own life fragments, regrets the bad
+  he has done, quits villainy, picks up an old ukulele and flower shirt, and leaves New Babylon on a
+  tiny old-school sunset ship toward a lighter life. Keep it funny, strange, and emotionally clean.
+
+## Mega-Comic Direction Notes
+
+The long Billy comic should become a strange living city-world without becoming visually exhausting.
+Use the following as a high-level compass:
+
+- New Babylon can contain politics, gambling networks, robot panic, rooftop chases, circus refuge,
+  mirror labyrinths, and redemption routes, but each page should still feel readable in one glance.
+- Large arcs should alternate modes: action, quiet room, funny disguise, symbolic mirror, chase,
+  soft regret, strange hope.
+- Villains should have comic lives behind the villain mask. Tiger Khan can become funny and moving
+  because the mirror shows baby tiger, zoo captivity, villain habits, regret, ukulele, flower shirt,
+  and a tiny ship out of New Babylon.
+- Crocodile Jack should remain elegant and contradictory: flowers, meditation, books, money, chaos
+  reflected behind him. He is stronger when he is not shouting.
+- Donald Grump is a fictional chaos-capitalist pressure burst: loud, ridiculous, short, and useful
+  for satire. Do not make him the emotional center.
+- The circus should feel like a shelter that is also stressful: warm lights, old posters, strange
+  performers, everyone recognizing Billy despite his bad disguise, pressure to perform while hiding.
+- The circus arc should become strange, funny, touching, and beautiful. It is a refuge for forgotten
+  people and odd creatures New Babylon could not monetize cleanly: retired acrobats, nervous lions,
+  melancholy clowns, potato jugglers, mirror magicians, tired monkeys, and performers who look silly
+  until the reader realizes they are protecting one another. Billy should feel both hidden and seen.
+  The emotional core is temporary family: ridiculous costumes, bad disguises, real kindness.
+- Magic mirrors are a major future branch device. They can show other Billy timelines without
+  explaining them: desert, space, scuba, worker, adventurer, sofa, sad future, bright future.
+- Branch points should come from images that feel emotionally true, not from menus with many choices.
+  Two strong futures are usually better than four options.
+- Elon Dusk and Jeff Bananos can remain in the satire layer as fictional New Babylon figures. Use
+  them as background power-network cameos, not direct real-person portraits and not the emotional
+  center.
+- John Lemon should remain available as a cool future character from Crocodile Jack's wider team:
+  a lemon guy with round sunglasses and sporty streetwear energy. He can appear in background photos,
+  crew reflections, posters, or side tables before becoming important later.
+- Cute cartoony underworld cockroaches can appear on a few pages as reaction witnesses: hiding,
+  applauding, wearing tiny goggles, carrying crumbs, or reacting to explosions. Use them sparingly so
+  they become a recurring funny underworld hook, not visual noise.
+- A later Crocodile Jack roof/yoga page should show him above Crocodile Corp in absurd serenity:
+  yoga pants, funny instructor, tiny tongues or silly crocodile details, stashes of Juice and money
+  nearby, New Babylon below. This belongs after the Tiger/circus continuation, as a comic contrast
+  page showing Jack's calm absurdity while everyone else is in chaos.
+- The latest rooftop-yoga / Tiger-redemption illustration style is a strong reference for Pineapple
+  Planet: funny, readable, expressive, warm, strange, and not overstuffed. Keep this tone as a
+  reference for future New Babylon pages.
+- The Donald Grump robot-panic pages should eventually be regenerated to match his first appearance
+  in the comic more closely. Current versions are usable for local review, but the final merged art
+  should preserve the earlier fictional character design instead of drifting into a different face.
+- Page 86, `Croc's Strange Office`, is reusable later as a city-burning timeline image. The calm
+  office / chaos-reflection contrast can return when one New Babylon future catches fire.
+- **Panels 112-123: Desert entry, spice town, storm, and oasis threshold.** The story should not
+  jump too suddenly from New Babylon into pyramids or cosmic mystery. The first desert sequence
+  should clarify the route step by step: city edge, border station, first chase, blue-hour spice
+  town, hidden map room, night ambush, negotiation, reluctant guide, sandstorm, recovery, oasis, and
+  hidden door. The lizard bandits are not random enemies; they become desert characters with local
+  knowledge and a reason to need Golden Juice because the wells are drying. Keep the tone James Bond
+  / Indiana Jones but slightly decalé: stylish, adventurous, funny, and emotionally readable.
+- **Panels 124-129: Underground train and ruby city.** The oasis door should lead gradually into an
+  underground passage, then a hidden brass train, mineral tunnel, ruby mine city, kiwi market
+  melodrama, and finally the real stakes: the Golden Juice spring has nearly dried. Treat the ruby
+  city as an ancient craft civilization, not a greedy mine. The kiwi drama can be absurd and
+  touching, but fruit damage remains cartoon/symbolic, not graphic.
+
+## Post-New-Babylon Adventure Horizon
+
+New Babylon can keep deepening for a long time, but Billy's larger first world should eventually
+open into a more adventurous desert and cosmic route. Keep the same mixture: absurdity, beauty,
+emotion, naive innocence, badass danger, and symbolic mystery.
+
+Future arc seeds:
+
+- **Desert Mystery Lands:** desert towns, old trains, rare Juice markets, gangsters with huge
+  mustaches, snake charmers, scorpions, abandoned airstrips, desert storms, oasis scenes, secret surf
+  beaches, crab-like desert creatures, mines, rubies, hidden idols, pyramids, and conspiracies.
+- **Desert town characters:** add cool desert lizard characters in the towns: expressive, stylish,
+  funny, and memorable. They should feel like real inhabitants of the desert world, not disposable
+  background noise.
+- **Oriental / One Thousand And One Nights desert arc:** before the cowboy desert towns, create a
+  chapter inspired by the beauty of Arabic and North African desert cultures: spice markets,
+  lanterns, courtyards, tiled passages, old libraries, music, magic, and night air. Treat the
+  culture with wonder and dignity, avoiding caricature. The mood can be magical and funny, but it
+  should communicate beauty, hospitality, mystery, and craft.
+- **Cowboy desert towns later:** after the oriental desert chapter, the route can shift into
+  rougher frontier towns with old saloons, dust, trains, posters, standoffs, comic moustaches, and
+  vintage western-adventure rhythm.
+- **Vintage travel contrast:** some desert pages can borrow old-school travel poster composition:
+  strong silhouettes, simple color blocks, clear skies, a promise of adventure. Balance that dream
+  with the real struggle: thirst, heat, broken vehicles, fear, exhaustion, and Billy's comic
+  determination. The ideal desert and the difficult desert should coexist.
+- **Rango-like desert feeling:** aim for expressive faces, dusty texture, odd locals, dry humor,
+  dramatic skies, and a desert that feels alive. Keep the latest rooftop-yoga art direction as the
+  quality bar, but let the desert develop its own flavor.
+- **Old Adventure Energy:** old airplanes, airmail-pineapple routes, old-school uniforms, soldiers
+  chasing Billy through dunes, treasure maps, train chases, station platforms, shadows inside sand
+  storms, and stylish dangerous strangers. It can nod toward classic adventure cinema without
+  becoming imitation.
+- **Fruit Drama:** a kiwi tragedy can appear as cartoon melodrama, not graphic gore: a kiwi split in
+  a symbolic accident, crying kiwi faces, and abandoned baby kiwis. The point is emotional absurdity
+  and stakes, not shock.
+- **Desert Surrealism:** as Billy gets lost and dry, the desert can become more dreamlike: ghost
+  cities, projections in sand storms, huge silent statues, funny mummy chases, impossible pineapple
+  trees, mirages of future cities, and sacred-light moments that feel mysterious but still comic.
+- **Alien Abduction Route:** after the desert becomes cosmic, strange antennas appear, alien
+  pineapples arrive, Billy is abducted in a funny but beautiful scene, and the next arc moves into a
+  spaceship. The aliens should be weird, expressive, and lovable, with cosmic travel, sacred light,
+  surreal visions, and jokes about how seriously everyone takes the universe.
+
+These arcs should not be generated as one overloaded dump. Build them in batches with strong
+chapter identity:
+
+1. New Babylon underworld/circus/mirror/Tiger redemption.
+2. Crocodile Jack rooftop/yoga and power-network absurdity.
+3. New Babylon exit route into old train / desert border.
+4. Desert towns, rare Juice, storms, mines, pyramids.
+5. Desert surrealism, ghosts, mummy chase, future-city mirages.
+6. Alien abduction and cosmic ship arc.

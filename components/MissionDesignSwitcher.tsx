@@ -639,7 +639,6 @@ function MissionControlFormatTwo() {
           </div>
           <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', justifyContent: 'flex-end' }}>
             {[
-              ['Today', today.length],
               ['Later', later.length],
               ['Areas', byArea.filter((group) => group.items.length > 0).length],
               ['Done', done.length],
@@ -893,7 +892,13 @@ function MissionTasksPill({
           width: '100%',
           border: 0,
           padding: '12px 16px',
-          background: open ? 'var(--palette-panel-bg-tint, rgba(196,160,96,0.12))' : 'transparent',
+          backgroundColor: open
+            ? 'var(--palette-panel-bg-tint, rgba(196,160,96,0.12))'
+            : 'var(--palette-l3-bg, rgba(30,16,8,0.55))',
+          backgroundImage:
+            'linear-gradient(90deg, color-mix(in srgb, var(--palette-l3-bg, rgba(30,16,8,0.55)) 92%, transparent), color-mix(in srgb, var(--palette-l3-bg, rgba(30,16,8,0.55)) 56%, transparent)), url("/emotions/pills/tasks.webp")',
+          backgroundSize: 'cover',
+          backgroundPosition: 'center 52%',
           borderBottom: open ? '1px solid rgba(196,160,96,0.18)' : 'none',
           cursor: 'pointer',
           display: 'flex',

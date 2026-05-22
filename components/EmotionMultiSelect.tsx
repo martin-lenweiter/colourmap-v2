@@ -262,7 +262,8 @@ export default function EmotionMultiSelect() {
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          padding: '8px 14px',
+          minHeight: 42,
+          padding: '10px 14px',
           borderRadius: 10,
           border: '1px solid var(--panel-border, rgba(196,160,96,0.18))',
           background: 'transparent',
@@ -273,7 +274,7 @@ export default function EmotionMultiSelect() {
         <span
           style={{
             fontFamily: SERIF,
-            fontSize: 10,
+            fontSize: 11,
             fontWeight: 700,
             letterSpacing: '0.18em',
             textTransform: 'uppercase',
