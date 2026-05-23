@@ -47,6 +47,9 @@ describe('LearningHub', () => {
     expect(screen.getByText('David Hawkins & Fields of Consciousness')).toBeDefined();
     expect(screen.getByText('Nietzsche & Becoming Who You Are')).toBeDefined();
     expect(screen.getByText("Campbell & The Hero's Quest")).toBeDefined();
+    expect(screen.getByText('Economic Systems In Motion')).toBeDefined();
+    expect(screen.getByText('Planetary Ecology & Living Intelligence')).toBeDefined();
+    expect(screen.getByText('Future Transitions: AI, Work & Globalisation')).toBeDefined();
     expect(screen.getByText('Entertainment')).toBeDefined();
     expect(screen.getByText('Pineapple Planet')).toBeDefined();
     expect(screen.getByText('Colourmap Vision Comic')).toBeDefined();

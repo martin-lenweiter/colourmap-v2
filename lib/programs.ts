@@ -1,3 +1,5 @@
+import { WORLD_SYSTEM_PROGRAMS } from './world-system-programs';
+
 export type Segment = {
   title: string;
   body: string;
@@ -1545,6 +1547,7 @@ export const PROGRAMS: Program[] = [
       },
     ],
   },
+  ...WORLD_SYSTEM_PROGRAMS,
   {
     key: 'belonging',
     domain: 'Loneliness & Belonging',
