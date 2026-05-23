@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import AnimatedFigure from '@/components/AnimatedFigure';
+import Billy3D from '@/components/Billy3D';
 import GoldenGod, { type FigureAsset } from '@/components/GoldenGod';
 
 const STATIC_FIGURES: FigureAsset[] = [
@@ -31,7 +32,7 @@ const ANIMATED_FIGURES = [
 
 const SERIF = 'var(--font-serif)';
 
-type Mode = 'static' | 'animated';
+type Mode = 'static' | 'animated' | 'billy';
 
 export default function FiguresPage() {
   const [mode, setMode] = useState<Mode>('static');
@@ -77,27 +78,32 @@ export default function FiguresPage() {
           <ModeButton active={mode === 'animated'} onClick={() => setMode('animated')}>
             Animated (Level B)
           </ModeButton>
+          <ModeButton active={mode === 'billy'} onClick={() => setMode('billy')}>
+            Billy
+          </ModeButton>
         </div>
-        <div style={{ display: 'flex', gap: 6 }}>
-          {(mode === 'static' ? STATIC_FIGURES : ANIMATED_FIGURES).map((f) => {
-            const isActive = mode === 'static' ? staticFig.key === f.key : animFig.key === f.key;
-            return (
-              <ModeButton
-                key={f.key}
-                active={isActive}
-                onClick={() => {
-                  if (mode === 'static') setStaticFig(f as FigureAsset);
-                  else setAnimFig(f as (typeof ANIMATED_FIGURES)[number]);
-                }}
-              >
-                {f.label}
-              </ModeButton>
-            );
-          })}
-        </div>
+        {mode !== 'billy' && (
+          <div style={{ display: 'flex', gap: 6 }}>
+            {(mode === 'static' ? STATIC_FIGURES : ANIMATED_FIGURES).map((f) => {
+              const isActive = mode === 'static' ? staticFig.key === f.key : animFig.key === f.key;
+              return (
+                <ModeButton
+                  key={f.key}
+                  active={isActive}
+                  onClick={() => {
+                    if (mode === 'static') setStaticFig(f as FigureAsset);
+                    else setAnimFig(f as (typeof ANIMATED_FIGURES)[number]);
+                  }}
+                >
+                  {f.label}
+                </ModeButton>
+              );
+            })}
+          </div>
+        )}
       </header>
       <div style={{ flex: 1, position: 'relative' }}>
-        {mode === 'static' ? (
+        {mode === 'static' && (
           <GoldenGod
             key={staticFig.key}
             assetUrl={staticFig.url}
@@ -105,9 +111,11 @@ export default function FiguresPage() {
             hologramColor={staticFig.hologramColor}
             starColor={staticFig.starColor}
           />
-        ) : (
+        )}
+        {mode === 'animated' && (
           <AnimatedFigure key={animFig.key} assetUrl={animFig.url} color={animFig.color} />
         )}
+        {mode === 'billy' && <Billy3D />}
       </div>
     </div>
   );
