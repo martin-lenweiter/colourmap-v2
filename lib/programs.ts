@@ -1650,6 +1650,17 @@ export const PROGRAMS: Program[] = [
       },
     ],
   },
+  {
+    key: 'math-trainer',
+    domain: 'Math Trainer',
+    color: '#6B9B4E',
+    segments: [
+      {
+        title: 'Four operations, seven levels each',
+        body: 'Addition, subtraction, multiplication, division. Each operation runs from single-digit basics up through three- and four-number challenges. Subtraction goes below zero. Multiplication covers squares and 2-digit × 2-digit. Division includes remainders and clean decimal results. Each level opens with the tips and worked examples that explain the move, then a ten-question practice round with an optional timer.',
+      },
+    ],
+  },
 ];
 
 export function getProgramByKey(key: string): Program | undefined {
