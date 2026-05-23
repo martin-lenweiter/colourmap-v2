@@ -1288,6 +1288,55 @@ attention, ecological belonging, and practical adaptation. It should distinguish
 transition from long-term possibility and leave the user with one practical question: what can I
 learn, build, repair, or practice now?
 
+## Literary And Adventure Education Comics
+
+The literary branch should keep the current Bukowski direction and the current Thich Nhat Hanh page
+count, then complete missing raster coverage without turning the programs into dense lecture slides.
+These programs should move from a real life story toward a universal reflection: biography first,
+then the idea that still matters to the reader.
+
+Shared rules:
+
+- use clean, compressed WebP pages; avoid blurry placeholder-looking raster output
+- keep images text-free and borderless
+- allow occasional multi-block comic pages when they clarify a process, memory, journey, contrast, or
+  rhythm
+- keep the first young-Gandhi image direction as a quality reference: clean linework, warm paper,
+  clear silhouettes, sober symbolic power, and no visual noise
+- use sketches, routes, diagrams, constellations, sacred geometry, notebooks, maps, and subtle
+  solarpunk signals only when they make the idea clearer
+- each thinker or writer should have a cultural and historical atmosphere, not a generic repeated
+  road/window/man composition
+
+**Jack London** needs a richer second pass. The program should include his personal story, city and
+class pressure, sea life, Klondike hardship, dogs and wilderness, The Sea-Wolf, Martin Eden, White
+Fang, The Call of the Wild, and the question of what survives when comfort disappears. New images
+should capture the spirit of his period and avoid the low-quality blurred feeling of early tests.
+
+**Jules Verne** should become an education branch about the writer and the worlds he imagined:
+ports, notebooks, maps, submarines, moon machines, underground journeys, global routes, invention,
+and the ethical question of what imagination builds. The style can mix old paper adventure with a
+small hopeful future signal.
+
+## Pineapple Planet Desert Direction
+
+After the New Babylon and underground material, the Pineapple Planet desert arc should breathe more.
+The direction is less crystal-cave fantasy and more old-school desert mystery with a restrained
+touch of futurism.
+
+Desired ingredients:
+
+- James Bond / Indiana Jones adventure energy, but slightly offbeat and funny
+- vintage travel poster atmosphere, old trains, old planes, desert towers, maps, markets, wells,
+  spice towns, lizard characters, and local culture handled with beauty rather than caricature
+- simple emotional pages between action pages so the reader has space to feel the journey
+- Big Potato Man eventually separates from Billy for a clear emotional reason, so Billy has to walk
+  part of the desert alone
+- futuristic elements should be subtle: solar mirrors, brass instruments, glowing wells, delicate
+  maps, and light geometry, not heavy crystal-cave spectacle
+- preserve the lower-quarter reveal rule for jokes, clues, maps, broken objects, reflections, and
+  plot hints where it helps the page
+
 ## Future Visual Direction: Flying Light Bird
 
 Later, the AI Presence / geometry language can include a light-bird made from golden dots. The aim is

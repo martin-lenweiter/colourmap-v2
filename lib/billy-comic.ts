@@ -1294,4 +1294,148 @@ export const BILLY_QUEST_PANELS: BillyPanel[] = [
       'The spring that fed the wells had almost stopped. One drop remained, glowing like a tiny responsibility.',
     ],
   },
+  {
+    id: 'spring-chooses-silence',
+    image: '/entertainment/billy/quest-for-juice/panel-130.webp',
+    title: 'The Spring Chooses Silence',
+    text: [
+      'Nobody shouted. Even Big Potato Man understood that some problems are too old for noise.',
+      'A lizard elder pointed at the last drop as if it were a tiny sun with rent to pay.',
+    ],
+  },
+  {
+    id: 'brass-route',
+    image: '/entertainment/billy/quest-for-juice/panel-131.webp',
+    title: 'The Brass Route',
+    text: [
+      'Under the dust, the elders unfolded an old brass map of wells, rail lines, and forgotten desert towns.',
+      'The route did not promise answers. It promised heat, mystery, and questionable transport.',
+    ],
+  },
+  {
+    id: 'desert-postcard-morning',
+    image: '/entertainment/billy/quest-for-juice/panel-132.webp',
+    title: 'Desert Postcard Morning',
+    text: [
+      'At sunrise, Billy and Big Potato Man left Ruby City on a sand train that looked more confident than it sounded.',
+      'The desert opened like an old travel poster, then immediately charged them for the privilege.',
+    ],
+  },
+  {
+    id: 'lizard-town-of-wind-clocks',
+    image: '/entertainment/billy/quest-for-juice/panel-133.webp',
+    title: 'The Lizard Town Of Wind Clocks',
+    text: [
+      'The next town measured time with wind clocks, tea steam, and the angle of suspicious reptiles.',
+      'Billy tried to look like a serious explorer. A small lizard sold him a hat with emotional damage.',
+    ],
+  },
+  {
+    id: 'future-well',
+    image: '/entertainment/billy/quest-for-juice/panel-134.webp',
+    title: 'The Future Well',
+    text: [
+      'In the square, an ancient well had been rebuilt with mirrors, brass pipes, and a little light geometry.',
+      'The desert did not hate the future. It simply preferred when the future removed its shoes.',
+    ],
+  },
+  {
+    id: 'potato-hears-city-calling',
+    image: '/entertainment/billy/quest-for-juice/panel-135.webp',
+    title: 'Potato Hears The City Calling',
+    text: [
+      'That evening, a message arrived from the towns behind them. The wells were failing faster than expected.',
+      'Big Potato Man stared at the horizon with the face of someone realizing loyalty can split in two directions.',
+    ],
+  },
+  {
+    id: 'two-roads-at-dune-gate',
+    image: '/entertainment/billy/quest-for-juice/panel-136.webp',
+    title: 'Two Roads At The Dune Gate',
+    text: [
+      'At the dune gate, the map divided. One road led back to help the towns. The other led deeper toward the source.',
+      'They hugged with great dignity, except for the part where Potato cried directly into Billys ear.',
+    ],
+  },
+  {
+    id: 'billy-alone-with-too-much-sand',
+    image: '/entertainment/billy/quest-for-juice/panel-137.webp',
+    title: 'Billy Alone With Too Much Sand',
+    text: [
+      'For the first time in a long while, Billy walked without footsteps beside him.',
+      'The desert became very large. His cup became very small. Both facts were rude but useful.',
+    ],
+  },
+  {
+    id: 'old-aeropostale-tower',
+    image: '/entertainment/billy/quest-for-juice/panel-138.webp',
+    title: 'The Old Aeropostale Tower',
+    text: [
+      'By noon, he found an abandoned mail tower where old pilots had once crossed the dunes by nerve and bad weather.',
+      'A plane slept inside, wearing dust like a veteran coat.',
+    ],
+  },
+  {
+    id: 'map-in-the-propeller',
+    image: '/entertainment/billy/quest-for-juice/panel-139.webp',
+    title: 'The Map In The Propeller',
+    text: [
+      'When the propeller turned, its shadow drew a second map across the floor.',
+      'Billy respected this because normal maps rarely require aviation archaeology.',
+    ],
+  },
+  {
+    id: 'sand-racers-at-dusk',
+    image: '/entertainment/billy/quest-for-juice/panel-140.webp',
+    title: 'Sand Racers At Dusk',
+    text: [
+      'At dusk, the dunes filled with racers chasing the same lost water route.',
+      'Their engines screamed. Billys plan was mostly balance, luck, and not becoming a cautionary stain.',
+    ],
+  },
+  {
+    id: 'mirage-market',
+    image: '/entertainment/billy/quest-for-juice/panel-141.webp',
+    title: 'The Mirage Market',
+    text: [
+      'The race ended at a market that appeared only when the sun got theatrical.',
+      'Every stall sold something impossible. Billy bought a compass that apologized before pointing north.',
+    ],
+  },
+  {
+    id: 'quiet-idol',
+    image: '/entertainment/billy/quest-for-juice/panel-142.webp',
+    title: 'The Quiet Idol',
+    text: [
+      'Behind the market, a small shrine held an old pineapple idol with no jewels and no drama.',
+      'It was more powerful that way. Billy found this suspicious.',
+    ],
+  },
+  {
+    id: 'blue-letter',
+    image: '/entertainment/billy/quest-for-juice/panel-143.webp',
+    title: 'The Blue Letter',
+    text: [
+      'A desert courier arrived with a blue letter from Big Potato Man.',
+      'It only said: Still helping. Still enormous. Do not die before dinner.',
+    ],
+  },
+  {
+    id: 'dune-observatory',
+    image: '/entertainment/billy/quest-for-juice/panel-144.webp',
+    title: 'The Dune Observatory',
+    text: [
+      'Night brought Billy to an observatory made of brass, old stone, and stubborn hope.',
+      'Above him, the stars arranged themselves into a route that looked almost polite.',
+    ],
+  },
+  {
+    id: 'road-past-the-map',
+    image: '/entertainment/billy/quest-for-juice/panel-145.webp',
+    title: 'The Road Past The Map',
+    text: [
+      'By morning, the map had ended. The road had not.',
+      'Billy stepped forward anyway, because adventure often begins where the instructions become useless.',
+    ],
+  },
 ];

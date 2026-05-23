@@ -1410,11 +1410,15 @@ export const PROGRAMS: Program[] = [
       },
       {
         title: 'The call of the wild',
-        body: 'The Call of the Wild is not only about a dog going north. It is about buried strength waking up. Buck is pulled out of comfort and learns an older intelligence: body, instinct, cold, loyalty, danger, and the deep memory of the wild.',
+        body: 'The Call of the Wild is not only about a dog going north. It is about buried strength waking up. Buck is pulled out of comfort and learns an older intelligence: body, instinct, cold, loyalty, danger, and the deep memory of the wild. The story works because the landscape is not decoration. It changes the creature.',
       },
       {
         title: 'White Fang and trust',
         body: 'White Fang moves in the other direction. A creature shaped by violence slowly learns that not every hand is danger. This is where London becomes more than survival. The real nourishment is trust returning without making the wild disappear.',
+      },
+      {
+        title: 'The Klondike lesson',
+        body: 'The Klondike gave London cold, hunger, dogs, rivers, cabins, gold fever, and men pushed beyond their self-image. This is why his best wilderness stories feel physical. They ask a clean question: what remains true when comfort stops protecting the personality?',
       },
       {
         title: 'To Build a Fire',
@@ -1423,6 +1427,14 @@ export const PROGRAMS: Program[] = [
       {
         title: 'Martin Eden',
         body: 'Martin Eden brings the hunger closer to the human soul: ambition, class, reading, love, fame, exhaustion, and the danger of building a life only to find the inside still starving. London understood the cost of becoming visible.',
+      },
+      {
+        title: 'The Sea-Wolf',
+        body: 'The Sea-Wolf turns survival into philosophy. Strength without tenderness becomes domination. Intelligence without compassion becomes a weapon. London keeps asking whether power makes a person larger, or only better defended.',
+      },
+      {
+        title: 'Cities, class, and hunger',
+        body: 'London also wrote about cities, poverty, labor, drink, status, and the machinery of class. The wild is not only forest. It is also the social world where people fight for dignity, money, warmth, and a place to stand.',
       },
       {
         title: 'Fragments by the fire',
@@ -1435,6 +1447,61 @@ export const PROGRAMS: Program[] = [
       {
         title: 'Read beside the fire',
         body: 'Read The Call of the Wild, White Fang, To Build a Fire, Martin Eden, The Sea-Wolf, and the short credo often printed as Jack London by Himself. Then step outside, feel the air, and ask what kind of life your body still wants.',
+      },
+    ],
+  },
+  {
+    key: 'jules-verne',
+    domain: 'Jules Verne & The Worlds Ahead',
+    color: '#6F8FA6',
+    segments: [
+      {
+        title: 'The boy who watched ships',
+        body: 'Jules Verne was born in Nantes, a port city full of ships, maps, trade, weather, and distant names. Before the impossible journeys, there was a child watching departures and learning that imagination begins where the horizon refuses to explain itself.',
+      },
+      {
+        title: 'Science becomes adventure',
+        body: 'Verne did not imagine magic floating outside reality. He imagined science becoming adventure: machines, pressure, speed, geography, engineering, electricity, oceans, caves, skies, and routes that made knowledge feel alive.',
+      },
+      {
+        title: 'Journey to the center',
+        body: 'In Journey to the Center of the Earth, descent becomes wonder. The underground world is not only darkness. It is memory, geology, danger, fossil time, and the feeling that the planet has rooms older than human certainty.',
+      },
+      {
+        title: 'Twenty thousand leagues',
+        body: 'Captain Nemo turns the ocean into freedom, grief, invention, exile, and power. The Nautilus is a miracle and a wound at once: a beautiful machine carrying a man who has escaped the world without becoming free from himself.',
+      },
+      {
+        title: 'Around the world',
+        body: 'Around the World in Eighty Days turns the planet into rhythm: trains, ships, clocks, bets, delays, borders, friendship, and surprise. The lesson is not only speed. It is that the world is wider than the schedule trying to control it.',
+      },
+      {
+        title: 'From the Earth to the Moon',
+        body: 'Verne looked upward before space travel existed. The moon journey is not prediction as much as permission: the human mind can rehearse tomorrow before technology has arrived.',
+      },
+      {
+        title: 'The inventor and the wound',
+        body: 'Verne also warns that invention is never neutral. Machines amplify the person using them. Exploration can become wonder, empire, escape, domination, repair, or loneliness. The question is not only what can be built, but what kind of soul builds it.',
+      },
+      {
+        title: 'Maps that open the mind',
+        body: 'Verne made maps feel like doors. Islands, volcanoes, submarines, balloons, trains, and stars become ways of thinking. A good map does not shrink the unknown. It gives courage to enter it.',
+      },
+      {
+        title: 'Old paper, future signal',
+        body: 'For Colourmap, Verne is a bridge between old paper and future signal. Brass instruments, notebooks, sketches, sacred geometry, engines, constellations, and solarpunk machines can all say the same thing: imagination becomes useful when it learns structure.',
+      },
+      {
+        title: 'The reader question',
+        body: 'What future are you rehearsing in private? What journey keeps returning in your mind: the sea, the moon, the underground, the city, the invention, the book, the life you have not built yet?',
+      },
+      {
+        title: 'Build the vessel',
+        body: 'A dream needs a vessel: a page, a plan, a prototype, a map, a room, a team, a first experiment. Verne does not only say imagine. He says draw the machine carefully enough that the dream can begin to move.',
+      },
+      {
+        title: 'Read the voyages',
+        body: 'Read Journey to the Center of the Earth, Twenty Thousand Leagues Under the Seas, Around the World in Eighty Days, From the Earth to the Moon, and The Mysterious Island. Then ask what kind of voyage your own work is preparing.',
       },
     ],
   },
