@@ -23,6 +23,16 @@ const MATERIALS: { key: Material; label: string }[] = [
   { key: 'stars', label: 'Stars' },
 ];
 
+const HOLOGRAM_PALETTES: { key: string; label: string; main: string; emissive: string }[] = [
+  { key: 'gold', label: 'Gold', main: '#FFD080', emissive: '#A06014' },
+  { key: 'cyan', label: 'Cyan', main: '#8AE6FF', emissive: '#1860A0' },
+  { key: 'violet', label: 'Violet', main: '#C8A8FF', emissive: '#5028A0' },
+  { key: 'rose', label: 'Rose', main: '#FF9AB8', emissive: '#A02850' },
+  { key: 'mint', label: 'Mint', main: '#9AE8C0', emissive: '#208060' },
+  { key: 'fire', label: 'Fire', main: '#FFAA60', emissive: '#A03020' },
+  { key: 'pure', label: 'Pure', main: '#F5F0E0', emissive: '#806848' },
+];
+
 const STAR_COUNT = 32000;
 
 export default function GoldenGod({
@@ -40,11 +50,13 @@ export default function GoldenGod({
   const [material, setMaterial] = useState<Material>('gold');
   const [status, setStatus] = useState<'loading' | 'ready' | 'error'>('loading');
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  const [holoPaletteKey, setHoloPaletteKey] = useState<string>('gold');
 
   // Refs the animation loop reads. Material changes only swap which mesh is visible —
   // they don't tear the scene down.
   const meshRef = useRef<THREE.Mesh | null>(null);
   const hologramRef = useRef<THREE.Mesh | null>(null);
+  const hologramMatRef = useRef<THREE.MeshPhysicalMaterial | null>(null);
   const starsRef = useRef<THREE.Points | null>(null);
   const materialRef = useRef<Material>('gold');
 
@@ -54,6 +66,18 @@ export default function GoldenGod({
     if (meshRef.current) meshRef.current.visible = m === 'gold';
     if (hologramRef.current) hologramRef.current.visible = m === 'hologram';
     if (starsRef.current) starsRef.current.visible = m === 'stars';
+  }, []);
+
+  const setHoloPalette = useCallback((key: string) => {
+    const palette = HOLOGRAM_PALETTES.find((p) => p.key === key);
+    if (!palette) return;
+    setHoloPaletteKey(key);
+    const mat = hologramMatRef.current;
+    if (mat) {
+      mat.color = new THREE.Color(palette.main);
+      mat.emissive = new THREE.Color(palette.emissive);
+      mat.needsUpdate = true;
+    }
   }, []);
 
   useEffect(() => {
@@ -109,6 +133,7 @@ export default function GoldenGod({
       emissive: '#A06014',
       emissiveIntensity: 0.45,
     });
+    hologramMatRef.current = hologramMat;
 
     let mesh: THREE.Mesh | null = null;
     let hologramMesh: THREE.Mesh | null = null;
@@ -317,6 +342,46 @@ export default function GoldenGod({
           }}
         >
           {errorMsg ?? 'Failed to load.'}
+        </div>
+      )}
+      {material === 'hologram' && (
+        <div
+          style={{
+            position: 'absolute',
+            bottom: 58,
+            left: 0,
+            right: 0,
+            display: 'flex',
+            justifyContent: 'center',
+            gap: 8,
+            flexWrap: 'wrap',
+            padding: '0 18px',
+          }}
+        >
+          {HOLOGRAM_PALETTES.map((p) => (
+            <button
+              key={p.key}
+              type="button"
+              onClick={() => setHoloPalette(p.key)}
+              aria-pressed={holoPaletteKey === p.key}
+              aria-label={`Hologram ${p.label}`}
+              title={p.label}
+              style={{
+                width: 28,
+                height: 28,
+                borderRadius: '50%',
+                cursor: 'pointer',
+                background: p.main,
+                border: `2px solid ${holoPaletteKey === p.key ? '#FFF' : 'rgba(0,0,0,0.5)'}`,
+                boxShadow:
+                  holoPaletteKey === p.key
+                    ? `0 0 0 2px rgba(255,255,255,0.55), 0 0 12px ${p.main}`
+                    : '0 0 0 1px rgba(0,0,0,0.3)',
+                padding: 0,
+                transition: 'box-shadow 150ms',
+              }}
+            />
+          ))}
         </div>
       )}
       <div
