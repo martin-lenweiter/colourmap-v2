@@ -4,7 +4,10 @@ import { useEffect, useState } from 'react';
 import { PROGRAMS, type Program } from '@/lib/programs';
 import ComicProgram from './ComicProgram';
 import LearningProgram from './LearningProgram';
+import MathTrainer from './MathTrainer';
 import PersonalityTypeProgram from './PersonalityTypeProgram';
+
+const TRAINER_PROGRAMS = new Set(['math-trainer']);
 
 const COMIC_PROGRAMS = new Set([
   'colourmap-vision-comic',
@@ -353,6 +356,11 @@ const GROUPS: {
     keys: ['artificial-intelligence', 'ai-future'],
     tint: '#7A8898',
     format: 'guides',
+  },
+  {
+    label: 'Skills',
+    keys: ['math-trainer'],
+    tint: '#6B9B4E',
   },
 ];
 
@@ -909,6 +917,16 @@ export default function LearningHub({ onClose }: { onClose: () => void }) {
   const byKey = Object.fromEntries(PROGRAMS.map((p) => [p.key, p]));
 
   if (active) {
+    if (TRAINER_PROGRAMS.has(active.key)) {
+      return (
+        <MathTrainer
+          program={active}
+          onClose={() => setActive(null)}
+          onBack={() => setActive(null)}
+          hubBg={hubBg}
+        />
+      );
+    }
     if (COMIC_PROGRAMS.has(active.key)) {
       return (
         <ComicProgram
