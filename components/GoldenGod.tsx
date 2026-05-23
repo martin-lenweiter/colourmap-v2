@@ -190,10 +190,45 @@ export default function GoldenGod({
       },
     );
 
+    // Drag-to-rotate (Level A interactivity)
+    let isDragging = false;
+    let lastX = 0;
+    let lastY = 0;
+    let targetRotY = 0;
+    let targetRotX = 0;
+    let currentRotY = 0;
+    let currentRotX = 0;
+    const onPointerDown = (e: PointerEvent) => {
+      isDragging = true;
+      lastX = e.clientX;
+      lastY = e.clientY;
+      mount.setPointerCapture(e.pointerId);
+    };
+    const onPointerMove = (e: PointerEvent) => {
+      if (!isDragging) return;
+      targetRotY += (e.clientX - lastX) * 0.01;
+      targetRotX += (e.clientY - lastY) * 0.01;
+      targetRotX = Math.max(-0.8, Math.min(0.8, targetRotX));
+      lastX = e.clientX;
+      lastY = e.clientY;
+    };
+    const onPointerUp = (e: PointerEvent) => {
+      isDragging = false;
+      mount.releasePointerCapture(e.pointerId);
+    };
+    mount.addEventListener('pointerdown', onPointerDown);
+    mount.addEventListener('pointermove', onPointerMove);
+    mount.addEventListener('pointerup', onPointerUp);
+    mount.addEventListener('pointercancel', onPointerUp);
+
     const clock = new THREE.Clock();
     const animate = () => {
       const t = clock.getElapsedTime();
-      root.rotation.y = t * 0.18;
+      currentRotY += (targetRotY - currentRotY) * 0.15;
+      currentRotX += (targetRotX - currentRotX) * 0.15;
+      // When idle, slow auto-rotate. When dragging, follow finger.
+      root.rotation.y = currentRotY + (isDragging ? 0 : t * 0.12);
+      root.rotation.x = currentRotX;
       // Subtle breathing
       const breath = 1 + Math.sin(t * 0.8) * 0.012;
       root.scale.setScalar(breath);
@@ -219,6 +254,10 @@ export default function GoldenGod({
       disposed = true;
       cancelAnimationFrame(frameId);
       window.removeEventListener('resize', onResize);
+      mount.removeEventListener('pointerdown', onPointerDown);
+      mount.removeEventListener('pointermove', onPointerMove);
+      mount.removeEventListener('pointerup', onPointerUp);
+      mount.removeEventListener('pointercancel', onPointerUp);
       renderer.dispose();
       goldMat.dispose();
       hologramMat.dispose();
@@ -243,7 +282,7 @@ export default function GoldenGod({
         background: '#0A0604',
       }}
     >
-      <div ref={mountRef} style={{ position: 'absolute', inset: 0 }} />
+      <div ref={mountRef} style={{ position: 'absolute', inset: 0, cursor: 'grab' }} />
       {status === 'loading' && (
         <div
           style={{

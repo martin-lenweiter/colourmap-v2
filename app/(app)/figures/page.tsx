@@ -1,9 +1,10 @@
 'use client';
 
 import { useState } from 'react';
+import AnimatedFigure from '@/components/AnimatedFigure';
 import GoldenGod, { type FigureAsset } from '@/components/GoldenGod';
 
-const FIGURES: FigureAsset[] = [
+const STATIC_FIGURES: FigureAsset[] = [
   {
     key: 'golden-god',
     label: 'Golden God',
@@ -22,10 +23,20 @@ const FIGURES: FigureAsset[] = [
   },
 ];
 
+const ANIMATED_FIGURES = [
+  { key: 'robot', label: 'Robot', url: '/models/robot.glb', color: '#E0A040' },
+  { key: 'soldier', label: 'Soldier', url: '/models/soldier.glb', color: '#C9A06A' },
+  { key: 'cesium', label: 'Cesium Man', url: '/models/test-animated.glb', color: '#E8C898' },
+];
+
 const SERIF = 'var(--font-serif)';
 
+type Mode = 'static' | 'animated';
+
 export default function FiguresPage() {
-  const [figure, setFigure] = useState<FigureAsset>(FIGURES[0]);
+  const [mode, setMode] = useState<Mode>('static');
+  const [staticFig, setStaticFig] = useState<FigureAsset>(STATIC_FIGURES[0]);
+  const [animFig, setAnimFig] = useState(ANIMATED_FIGURES[0]);
 
   return (
     <div
@@ -44,6 +55,8 @@ export default function FiguresPage() {
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
+          flexWrap: 'wrap',
+          gap: 10,
         }}
       >
         <div
@@ -57,39 +70,76 @@ export default function FiguresPage() {
         >
           3D Figures · preview
         </div>
-        <div style={{ display: 'flex', gap: 8 }}>
-          {FIGURES.map((f) => (
-            <button
-              key={f.key}
-              type="button"
-              onClick={() => setFigure(f)}
-              aria-pressed={figure.key === f.key}
-              style={{
-                background: figure.key === f.key ? 'rgba(255,200,100,0.18)' : 'transparent',
-                border: `1px solid ${figure.key === f.key ? 'rgba(255,200,100,0.55)' : 'rgba(240,216,152,0.25)'}`,
-                borderRadius: 999,
-                color: figure.key === f.key ? '#FFD080' : 'rgba(240,216,152,0.7)',
-                fontFamily: SERIF,
-                fontSize: 12,
-                letterSpacing: '0.1em',
-                cursor: 'pointer',
-                padding: '6px 14px',
-              }}
-            >
-              {f.label}
-            </button>
-          ))}
+        <div style={{ display: 'flex', gap: 6 }}>
+          <ModeButton active={mode === 'static'} onClick={() => setMode('static')}>
+            Static (Level A)
+          </ModeButton>
+          <ModeButton active={mode === 'animated'} onClick={() => setMode('animated')}>
+            Animated (Level B)
+          </ModeButton>
+        </div>
+        <div style={{ display: 'flex', gap: 6 }}>
+          {(mode === 'static' ? STATIC_FIGURES : ANIMATED_FIGURES).map((f) => {
+            const isActive = mode === 'static' ? staticFig.key === f.key : animFig.key === f.key;
+            return (
+              <ModeButton
+                key={f.key}
+                active={isActive}
+                onClick={() => {
+                  if (mode === 'static') setStaticFig(f as FigureAsset);
+                  else setAnimFig(f as (typeof ANIMATED_FIGURES)[number]);
+                }}
+              >
+                {f.label}
+              </ModeButton>
+            );
+          })}
         </div>
       </header>
       <div style={{ flex: 1, position: 'relative' }}>
-        <GoldenGod
-          key={figure.key}
-          assetUrl={figure.url}
-          goldColor={figure.goldColor}
-          hologramColor={figure.hologramColor}
-          starColor={figure.starColor}
-        />
+        {mode === 'static' ? (
+          <GoldenGod
+            key={staticFig.key}
+            assetUrl={staticFig.url}
+            goldColor={staticFig.goldColor}
+            hologramColor={staticFig.hologramColor}
+            starColor={staticFig.starColor}
+          />
+        ) : (
+          <AnimatedFigure key={animFig.key} assetUrl={animFig.url} color={animFig.color} />
+        )}
       </div>
     </div>
+  );
+}
+
+function ModeButton({
+  active,
+  onClick,
+  children,
+}: {
+  active: boolean;
+  onClick: () => void;
+  children: React.ReactNode;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      aria-pressed={active}
+      style={{
+        background: active ? 'rgba(255,200,100,0.18)' : 'transparent',
+        border: `1px solid ${active ? 'rgba(255,200,100,0.55)' : 'rgba(240,216,152,0.25)'}`,
+        borderRadius: 999,
+        color: active ? '#FFD080' : 'rgba(240,216,152,0.7)',
+        fontFamily: SERIF,
+        fontSize: 12,
+        letterSpacing: '0.1em',
+        cursor: 'pointer',
+        padding: '6px 14px',
+      }}
+    >
+      {children}
+    </button>
   );
 }
