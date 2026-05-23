@@ -122,7 +122,6 @@ export default function FigureStarsBuilder() {
     mount.appendChild(renderer.domElement);
 
     setStatus('loading');
-
     const installGeom = (geom: THREE.BufferGeometry) => {
       geom.computeVertexNormals();
       geom.center();
