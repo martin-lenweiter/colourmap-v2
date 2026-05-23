@@ -65,6 +65,13 @@ export const PROGRAM_REFERENCES: Record<string, string[]> = {
     'Jack London, White Fang.',
     'Jack London, To Build a Fire, Martin Eden, and The Sea-Wolf.',
   ],
+  'jules-verne': [
+    'Jules Verne, Journey to the Center of the Earth.',
+    'Jules Verne, Twenty Thousand Leagues Under the Seas.',
+    'Jules Verne, Around the World in Eighty Days.',
+    'Jules Verne, From the Earth to the Moon.',
+    'Jules Verne, The Mysterious Island.',
+  ],
   'maya-angelou': [
     'Maya Angelou, I Know Why the Caged Bird Sings.',
     'Maya Angelou, And Still I Rise.',
