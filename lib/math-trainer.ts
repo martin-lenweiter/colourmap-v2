@@ -1,4 +1,4 @@
-export type Operation = 'add' | 'sub' | 'mul' | 'div';
+export type Operation = 'add' | 'sub' | 'mul' | 'div' | 'alg' | 'frac';
 
 export type WorkedExample = {
   problem: string;
@@ -756,6 +756,428 @@ const DIVISION_LEVELS: Level[] = [
   },
 ];
 
+const ALGEBRA_LEVELS: Level[] = [
+  {
+    number: 1,
+    title: 'Find x: x + n = result',
+    summary: 'A missing number on one side. Subtract to isolate.',
+    tips: [
+      'To get x alone, undo the operation. x + 7 = 12 means x = 12 − 7.',
+      'Whatever you do to one side, do to the other. Adding 5 left and right keeps the equation balanced.',
+      'Check by substituting back. If x + 7 = 12 and you got x = 5, verify: 5 + 7 = 12. ✓',
+      'These are addition facts in disguise. Strong addition makes algebra fast.',
+    ],
+    examples: [
+      { problem: 'x + 7 = 12', answer: '5', trick: 'x = 12 − 7 = 5.' },
+      { problem: 'x + 4 = 11', answer: '7', trick: 'x = 11 − 4 = 7.' },
+      { problem: 'x + 9 = 15', answer: '6', trick: 'x = 15 − 9 = 6.' },
+    ],
+    generate: (rng) => {
+      const x = ri(rng, 2, 12);
+      const b = ri(rng, 1, 9);
+      const r = x + b;
+      return { problem: `x + ${b} = ${r}`, answer: x, operands: [b, r], operation: 'alg' };
+    },
+  },
+  {
+    number: 2,
+    title: 'Find x: x − n = result',
+    summary: 'Subtraction equations. Add to isolate.',
+    tips: [
+      'The inverse of subtraction is addition. x − 3 = 8 means x = 8 + 3.',
+      'Picture a balance scale. Adding the subtracted amount to both sides restores x alone.',
+      'Always check by plugging your answer back in.',
+      'If the result is small or negative, the answer might still be positive — read carefully.',
+    ],
+    examples: [
+      { problem: 'x − 3 = 8', answer: '11', trick: 'x = 8 + 3 = 11.' },
+      { problem: 'x − 9 = 4', answer: '13', trick: 'x = 4 + 9 = 13.' },
+      { problem: 'x − 6 = 0', answer: '6', trick: 'x = 0 + 6 = 6.' },
+    ],
+    generate: (rng) => {
+      const x = ri(rng, 5, 20);
+      const b = ri(rng, 1, x - 1);
+      return { problem: `x − ${b} = ${x - b}`, answer: x, operands: [b, x - b], operation: 'alg' };
+    },
+  },
+  {
+    number: 3,
+    title: 'Find x: n − x = result',
+    summary: 'x is the thing being subtracted. Rearrange or think backwards.',
+    tips: [
+      'If 12 − x = 8, then x is the difference: x = 12 − 8 = 4.',
+      'Mental check: what number must be removed from n to leave the result? That number is x.',
+      'Same balance rule: add x to both sides to get n = result + x, then subtract result.',
+      'These problems are common in word problems: "I had 12 apples, now I have 8. How many did I lose?"',
+    ],
+    examples: [
+      { problem: '12 − x = 8', answer: '4', trick: 'x = 12 − 8 = 4.' },
+      { problem: '20 − x = 15', answer: '5', trick: 'x = 20 − 15 = 5.' },
+      { problem: '9 − x = 2', answer: '7', trick: 'x = 9 − 2 = 7.' },
+    ],
+    generate: (rng) => {
+      const a = ri(rng, 8, 25);
+      const x = ri(rng, 1, a - 1);
+      return { problem: `${a} − x = ${a - x}`, answer: x, operands: [a, a - x], operation: 'alg' };
+    },
+  },
+  {
+    number: 4,
+    title: 'Find x: ax = result',
+    summary: 'Multiplication equations. Divide to isolate.',
+    tips: [
+      'To undo multiplication, divide. 3x = 24 means x = 24 ÷ 3 = 8.',
+      'These are division problems disguised as algebra. Recognising the inverse is the whole move.',
+      'Stick to whole-number problems first. Mixed fractions come later.',
+      'Check by multiplying: 3 × 8 = 24. ✓',
+    ],
+    examples: [
+      { problem: '3x = 24', answer: '8', trick: 'x = 24 ÷ 3 = 8.' },
+      { problem: '7x = 35', answer: '5', trick: 'x = 35 ÷ 7 = 5.' },
+      { problem: '4x = 36', answer: '9', trick: 'x = 36 ÷ 4 = 9.' },
+    ],
+    generate: (rng) => {
+      const a = ri(rng, 2, 9);
+      const x = ri(rng, 2, 12);
+      return { problem: `${a}x = ${a * x}`, answer: x, operands: [a, a * x], operation: 'alg' };
+    },
+  },
+  {
+    number: 5,
+    title: 'Find x: ax + b = result',
+    summary: 'Two operations. Undo them in reverse order.',
+    tips: [
+      'Undo addition first, then multiplication. 2x + 5 = 13 → 2x = 8 → x = 4.',
+      'Reverse the order of operations: PEMDAS goes forward, undo goes backward.',
+      'Always isolate the term with x before dividing.',
+      'Check by plugging in: 2(4) + 5 = 13. ✓',
+    ],
+    examples: [
+      { problem: '2x + 5 = 13', answer: '4', trick: 'Subtract 5: 2x = 8. Divide by 2: x = 4.' },
+      { problem: '3x + 7 = 22', answer: '5', trick: 'Subtract 7: 3x = 15. Divide by 3: x = 5.' },
+      { problem: '5x + 4 = 24', answer: '4', trick: 'Subtract 4: 5x = 20. Divide by 5: x = 4.' },
+    ],
+    generate: (rng) => {
+      const a = ri(rng, 2, 9);
+      const x = ri(rng, 2, 12);
+      const b = ri(rng, 1, 15);
+      return {
+        problem: `${a}x + ${b} = ${a * x + b}`,
+        answer: x,
+        operands: [a, b, a * x + b],
+        operation: 'alg',
+      };
+    },
+  },
+  {
+    number: 6,
+    title: 'Find x with negatives',
+    summary: 'Equations where x can be negative.',
+    tips: [
+      'Negative numbers obey the same balance rules. x + 8 = 3 still gives x = 3 − 8 = −5.',
+      'If you see −x, flip the sign at the end. −x = 7 means x = −7.',
+      'Sign tracking is the most common source of error. Write the sign first, then the digit.',
+      'Always check by substituting back. Negative solutions catch errors easily.',
+    ],
+    examples: [
+      { problem: 'x + 8 = 3', answer: '-5', trick: 'x = 3 − 8 = −5.' },
+      { problem: '2x + 10 = 4', answer: '-3', trick: '2x = −6, so x = −3.' },
+      { problem: 'x − 4 = −9', answer: '-5', trick: 'x = −9 + 4 = −5.' },
+    ],
+    generate: (rng) => {
+      const mode = ri(rng, 0, 1);
+      if (mode === 0) {
+        const x = -ri(rng, 1, 9);
+        const b = ri(rng, 1, 12);
+        return {
+          problem: `x + ${b} = ${x + b}`,
+          answer: x,
+          operands: [b, x + b],
+          operation: 'alg',
+        };
+      }
+      const a = ri(rng, 2, 5);
+      const x = -ri(rng, 1, 6);
+      const b = ri(rng, 1, 10);
+      return {
+        problem: `${a}x + ${b} = ${a * x + b}`,
+        answer: x,
+        operands: [a, b, a * x + b],
+        operation: 'alg',
+      };
+    },
+  },
+  {
+    number: 7,
+    title: 'Two-step mixed challenge',
+    summary: 'Anything from the previous six. Confidence under variety.',
+    tips: [
+      'Read the equation once before doing anything. Identify the structure first.',
+      'Always: undo addition/subtraction first, then multiplication/division.',
+      'Substitute your answer back into the original equation. Always. This single habit prevents most errors.',
+      'When stuck, write each step on a new line. Showing the work is faster than redoing it.',
+    ],
+    examples: [
+      { problem: '4x − 3 = 17', answer: '5', trick: '4x = 20, x = 5.' },
+      { problem: '6x + 12 = 0', answer: '-2', trick: '6x = −12, x = −2.' },
+      { problem: '3x = 21', answer: '7', trick: 'x = 7.' },
+    ],
+    generate: (rng) => {
+      const a = ri(rng, 2, 8);
+      const x = ri(rng, -6, 10) || 1;
+      const b = ri(rng, -8, 12);
+      return {
+        problem: `${a}x ${b >= 0 ? '+' : '−'} ${Math.abs(b)} = ${a * x + b}`,
+        answer: x,
+        operands: [a, b, a * x + b],
+        operation: 'alg',
+      };
+    },
+  },
+];
+
+function gcd(a: number, b: number): number {
+  let x = Math.abs(a);
+  let y = Math.abs(b);
+  while (y) {
+    [x, y] = [y, x % y];
+  }
+  return x || 1;
+}
+
+function simplifyFraction(n: number, d: number): [number, number] {
+  const g = gcd(n, d);
+  return [n / g, d / g];
+}
+
+const FRACTION_LEVELS: Level[] = [
+  {
+    number: 1,
+    title: 'Simplify fractions',
+    summary: 'Reduce a fraction to its simplest form. Find the common factor.',
+    tips: [
+      'Divide top and bottom by their greatest common factor. 6/9 → divide both by 3 → 2/3.',
+      'A fraction is fully simplified when top and bottom share no factor other than 1.',
+      'If both are even, halve them first. Then keep halving.',
+      'Check by multiplying back: 2/3 × 3/3 = 6/9. ✓',
+    ],
+    examples: [
+      { problem: '6/9', answer: '2/3', trick: 'Divide both by 3.' },
+      { problem: '8/12', answer: '2/3', trick: 'Divide both by 4.' },
+      { problem: '15/25', answer: '3/5', trick: 'Divide both by 5.' },
+    ],
+    generate: (rng) => {
+      const a = ri(rng, 1, 9);
+      const b = ri(rng, a + 1, 12);
+      const m = ri(rng, 2, 5);
+      const [sn, sd] = simplifyFraction(a, b);
+      return {
+        problem: `${a * m}/${b * m}`,
+        answer: sn / sd,
+        operands: [a * m, b * m, sn, sd],
+        operation: 'frac',
+      };
+    },
+  },
+  {
+    number: 2,
+    title: 'Same denominator: add',
+    summary: 'When denominators match, just add the numerators.',
+    tips: [
+      'Same bottom number? Add the tops. 2/7 + 3/7 = 5/7.',
+      'Never add the bottoms — they stay the same.',
+      'After adding, simplify if possible.',
+      'Picture the same-size pie with slices: 2 slices + 3 slices = 5 slices.',
+    ],
+    examples: [
+      { problem: '2/7 + 3/7', answer: '5/7', trick: 'Tops: 2+3 = 5. Bottom stays 7.' },
+      { problem: '1/4 + 1/4', answer: '1/2', trick: '2/4 simplifies to 1/2.' },
+      { problem: '3/8 + 1/8', answer: '1/2', trick: '4/8 simplifies to 1/2.' },
+    ],
+    generate: (rng) => {
+      const d = ri(rng, 3, 10);
+      const a = ri(rng, 1, d - 1);
+      const b = ri(rng, 1, d - 1);
+      const [sn, sd] = simplifyFraction(a + b, d);
+      return {
+        problem: `${a}/${d} + ${b}/${d}`,
+        answer: sn / sd,
+        operands: [a, b, d, sn, sd],
+        operation: 'frac',
+      };
+    },
+  },
+  {
+    number: 3,
+    title: 'Same denominator: subtract',
+    summary: 'Match denominators, subtract numerators.',
+    tips: [
+      'Same bottom? Subtract the tops. 5/8 − 2/8 = 3/8.',
+      'Order matters in subtraction. 5/8 − 2/8 is not 2/8 − 5/8.',
+      'Result can be 0/d = 0.',
+      'Always simplify the result.',
+    ],
+    examples: [
+      { problem: '5/8 − 2/8', answer: '3/8', trick: '5−2 = 3. Bottom stays 8.' },
+      { problem: '4/9 − 1/9', answer: '1/3', trick: '3/9 simplifies to 1/3.' },
+      { problem: '7/10 − 3/10', answer: '2/5', trick: '4/10 simplifies to 2/5.' },
+    ],
+    generate: (rng) => {
+      const d = ri(rng, 4, 12);
+      const a = ri(rng, 2, d - 1);
+      const b = ri(rng, 1, a - 1);
+      const [sn, sd] = simplifyFraction(a - b, d);
+      return {
+        problem: `${a}/${d} − ${b}/${d}`,
+        answer: sn / sd,
+        operands: [a, b, d, sn, sd],
+        operation: 'frac',
+      };
+    },
+  },
+  {
+    number: 4,
+    title: 'Different denominators: add',
+    summary: 'Find a common denominator first, then add.',
+    tips: [
+      'Find a common denominator — usually the product, but use LCM when convenient.',
+      'Convert each fraction: multiply top and bottom by the missing factor.',
+      '1/2 + 1/3: common denom 6 → 3/6 + 2/6 = 5/6.',
+      'Always simplify. Always.',
+    ],
+    examples: [
+      { problem: '1/2 + 1/3', answer: '5/6', trick: '3/6 + 2/6 = 5/6.' },
+      { problem: '1/4 + 1/6', answer: '5/12', trick: '3/12 + 2/12 = 5/12.' },
+      { problem: '2/3 + 1/4', answer: '11/12', trick: '8/12 + 3/12 = 11/12.' },
+    ],
+    generate: (rng) => {
+      const d1 = ri(rng, 2, 6);
+      let d2 = ri(rng, 2, 6);
+      while (d2 === d1) d2 = ri(rng, 2, 6);
+      const a = ri(rng, 1, d1 - 1);
+      const b = ri(rng, 1, d2 - 1);
+      const commonD = d1 * d2;
+      const sumN = a * d2 + b * d1;
+      const [sn, sd] = simplifyFraction(sumN, commonD);
+      return {
+        problem: `${a}/${d1} + ${b}/${d2}`,
+        answer: sn / sd,
+        operands: [a, d1, b, d2, sn, sd],
+        operation: 'frac',
+      };
+    },
+  },
+  {
+    number: 5,
+    title: 'Different denominators: subtract',
+    summary: 'Same approach as addition. Common denominator, then subtract.',
+    tips: [
+      'Find a common denominator first. The product of the two always works.',
+      'Convert both fractions, then subtract numerators.',
+      '3/4 − 1/6: common denom 12 → 9/12 − 2/12 = 7/12.',
+      'Estimate first: 3/4 is about 0.75, 1/6 is about 0.17, so the answer should be near 0.58.',
+    ],
+    examples: [
+      { problem: '3/4 − 1/6', answer: '7/12', trick: '9/12 − 2/12 = 7/12.' },
+      { problem: '2/3 − 1/4', answer: '5/12', trick: '8/12 − 3/12 = 5/12.' },
+      { problem: '5/6 − 1/2', answer: '1/3', trick: '5/6 − 3/6 = 2/6 = 1/3.' },
+    ],
+    generate: (rng) => {
+      const d1 = ri(rng, 2, 6);
+      let d2 = ri(rng, 2, 6);
+      while (d2 === d1) d2 = ri(rng, 2, 6);
+      let a = ri(rng, 1, d1 - 1);
+      let b = ri(rng, 1, d2 - 1);
+      // ensure a/d1 > b/d2 so result is positive
+      if (a * d2 <= b * d1) {
+        [a, b] = [(b * d1) / d2 + 1, a];
+        a = Math.min(d1 - 1, Math.max(1, Math.round(a)));
+        b = Math.min(d2 - 1, Math.max(1, Math.round(b)));
+      }
+      const commonD = d1 * d2;
+      const diffN = a * d2 - b * d1;
+      if (diffN <= 0) {
+        // fallback to simple
+        return {
+          problem: `1/2 − 1/3`,
+          answer: 1 / 6,
+          operands: [1, 2, 1, 3, 1, 6],
+          operation: 'frac',
+        };
+      }
+      const [sn, sd] = simplifyFraction(diffN, commonD);
+      return {
+        problem: `${a}/${d1} − ${b}/${d2}`,
+        answer: sn / sd,
+        operands: [a, d1, b, d2, sn, sd],
+        operation: 'frac',
+      };
+    },
+  },
+  {
+    number: 6,
+    title: 'Multiply fractions',
+    summary: 'Top times top, bottom times bottom. Simplest of all fraction operations.',
+    tips: [
+      'Multiply tops together, multiply bottoms together. 2/3 × 4/5 = 8/15.',
+      'No common denominator needed — multiplication is straightforward.',
+      'Simplify before multiplying when possible: cross-cancel.',
+      'Multiplying makes most fractions smaller (when both are less than 1).',
+    ],
+    examples: [
+      { problem: '2/3 × 4/5', answer: '8/15', trick: 'Tops: 2×4 = 8. Bottoms: 3×5 = 15.' },
+      {
+        problem: '3/4 × 2/9',
+        answer: '1/6',
+        trick: 'Cross-cancel 2/4 and 3/9, get 1/2 × 1/3 = 1/6.',
+      },
+      { problem: '1/2 × 1/2', answer: '1/4', trick: 'Half of a half is a quarter.' },
+    ],
+    generate: (rng) => {
+      const a = ri(rng, 1, 8);
+      const b = ri(rng, a + 1, 10);
+      const c = ri(rng, 1, 8);
+      const d = ri(rng, c + 1, 10);
+      const [sn, sd] = simplifyFraction(a * c, b * d);
+      return {
+        problem: `${a}/${b} × ${c}/${d}`,
+        answer: sn / sd,
+        operands: [a, b, c, d, sn, sd],
+        operation: 'frac',
+      };
+    },
+  },
+  {
+    number: 7,
+    title: 'Divide fractions',
+    summary: 'Flip the second fraction and multiply. "Keep, change, flip."',
+    tips: [
+      'To divide, multiply by the reciprocal. 2/3 ÷ 4/5 = 2/3 × 5/4 = 10/12 = 5/6.',
+      '"Keep, change, flip": keep the first, change ÷ to ×, flip the second.',
+      'Dividing by a fraction less than 1 makes the result bigger.',
+      'Always simplify at the end.',
+    ],
+    examples: [
+      { problem: '2/3 ÷ 4/5', answer: '5/6', trick: '2/3 × 5/4 = 10/12 = 5/6.' },
+      { problem: '1/2 ÷ 1/4', answer: '2', trick: '1/2 × 4/1 = 4/2 = 2.' },
+      { problem: '3/4 ÷ 1/2', answer: '3/2', trick: '3/4 × 2/1 = 6/4 = 3/2.' },
+    ],
+    generate: (rng) => {
+      const a = ri(rng, 1, 6);
+      const b = ri(rng, a + 1, 9);
+      const c = ri(rng, 1, 6);
+      const d = ri(rng, c + 1, 9);
+      const [sn, sd] = simplifyFraction(a * d, b * c);
+      return {
+        problem: `${a}/${b} ÷ ${c}/${d}`,
+        answer: sn / sd,
+        operands: [a, b, c, d, sn, sd],
+        operation: 'frac',
+      };
+    },
+  },
+];
+
 export const MATH_OPERATIONS: OperationConfig[] = [
   { key: 'add', symbol: '+', label: 'Addition', color: '#6B9B4E', levels: ADDITION_LEVELS },
   { key: 'sub', symbol: '−', label: 'Subtraction', color: '#C57A4E', levels: SUBTRACTION_LEVELS },
@@ -767,6 +1189,8 @@ export const MATH_OPERATIONS: OperationConfig[] = [
     levels: MULTIPLICATION_LEVELS,
   },
   { key: 'div', symbol: '÷', label: 'Division', color: '#9A6CA8', levels: DIVISION_LEVELS },
+  { key: 'alg', symbol: 'x', label: 'Algebra', color: '#B89A4E', levels: ALGEBRA_LEVELS },
+  { key: 'frac', symbol: '½', label: 'Fractions', color: '#8A8AB8', levels: FRACTION_LEVELS },
 ];
 
 export function getOperation(key: Operation): OperationConfig {
@@ -810,9 +1234,23 @@ export function checkAnswer(problem: GeneratedProblem, input: string): boolean {
       return q === expectedQ && r === expectedR;
     }
   }
-  const n = Number(trimmed);
-  if (Number.isNaN(n)) return false;
+  const n = parseFractionInput(trimmed);
+  if (n === null) return false;
   return Math.abs(n - problem.answer) < 1e-6;
+}
+
+function parseFractionInput(input: string): number | null {
+  const trimmed = input.trim().replace(/\s+/g, '');
+  const fracMatch = trimmed.match(/^(-?\d+)\/(-?\d+)$/);
+  if (fracMatch) {
+    const num = Number(fracMatch[1]);
+    const den = Number(fracMatch[2]);
+    if (den === 0) return null;
+    return num / den;
+  }
+  const n = Number(trimmed);
+  if (Number.isNaN(n)) return null;
+  return n;
 }
 
 export function formatAnswer(problem: GeneratedProblem): string {
@@ -825,6 +1263,17 @@ export function formatAnswer(problem: GeneratedProblem): string {
       remPart < problem.operands[1]
     ) {
       return `${wholeQ} r ${Math.round(remPart)}`;
+    }
+  }
+  if (problem.operation === 'frac') {
+    const ops = problem.operands;
+    if (ops.length >= 2) {
+      const sd = ops[ops.length - 1];
+      const sn = ops[ops.length - 2];
+      if (Number.isInteger(sn) && Number.isInteger(sd) && sd > 0) {
+        if (sd === 1) return String(sn);
+        return `${sn}/${sd}`;
+      }
     }
   }
   return String(problem.answer);

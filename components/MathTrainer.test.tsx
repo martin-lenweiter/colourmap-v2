@@ -78,6 +78,31 @@ describe('MathTrainer', () => {
     expect(localStorage.getItem('colourmap:math-trainer:session-length')).toBe('5');
   });
 
+  it('opens the algebra track and renders L1 tips', () => {
+    render(<MathTrainer program={mathProgram} onClose={vi.fn()} />);
+    fireEvent.click(screen.getByRole('button', { name: /Algebra/i }));
+    fireEvent.click(screen.getByRole('button', { name: 'Open level 1: Find x: x + n = result' }));
+    expect(screen.getAllByText(/undo the operation/).length).toBeGreaterThan(0);
+  });
+
+  it('opens the fractions track and renders the simplify level', () => {
+    render(<MathTrainer program={mathProgram} onClose={vi.fn()} />);
+    fireEvent.click(screen.getByRole('button', { name: /Fractions/i }));
+    fireEvent.click(screen.getByRole('button', { name: 'Open level 1: Simplify fractions' }));
+    expect(screen.getAllByText(/greatest common factor/).length).toBeGreaterThan(0);
+  });
+
+  it('launches the 60s sprint from the tips screen', () => {
+    vi.useFakeTimers();
+    render(<MathTrainer program={mathProgram} onClose={vi.fn()} />);
+    fireEvent.click(screen.getByRole('button', { name: /Addition/i }));
+    fireEvent.click(screen.getByRole('button', { name: 'Open level 1: Single digits' }));
+    fireEvent.click(screen.getByRole('button', { name: /60s sprint/i }));
+    expect(screen.getByText(/Addition sprint/)).toBeDefined();
+    expect(screen.getByText(/⏱ 60s/)).toBeDefined();
+    vi.useRealTimers();
+  });
+
   it('records a weak spot when an answer is wrong', () => {
     vi.spyOn(Math, 'random').mockReturnValue(0);
     render(<MathTrainer program={mathProgram} onClose={vi.fn()} />);

@@ -26,7 +26,25 @@ function col(color: string, a: number) {
   return `rgba(${r},${g},${b},${a})`;
 }
 
-type Stage = 'home' | 'level' | 'tips' | 'practice';
+type Stage = 'home' | 'level' | 'tips' | 'practice' | 'sprint';
+const SPRINT_BEST_KEY = 'colourmap:math-trainer:sprint-best';
+const SPRINT_DURATION_SECONDS = 60;
+
+function loadSprintBest(): Record<string, number> {
+  try {
+    const raw = localStorage.getItem(SPRINT_BEST_KEY);
+    if (!raw) return {};
+    return JSON.parse(raw) as Record<string, number>;
+  } catch {
+    return {};
+  }
+}
+
+function saveSprintBest(b: Record<string, number>) {
+  try {
+    localStorage.setItem(SPRINT_BEST_KEY, JSON.stringify(b));
+  } catch {}
+}
 
 type LevelProgress = {
   best: number;
@@ -221,12 +239,34 @@ export default function MathTrainer({
     );
   }
 
+  if (stage === 'sprint' && selectedOp && selectedLevel !== null) {
+    const op = getOperation(selectedOp);
+    const level = op.levels[selectedLevel - 1];
+    return (
+      <Shell hubBg={hubBg} program={program} onClose={onClose} onBack={() => setStage('tips')}>
+        <SprintView
+          key={practiceKey}
+          op={op}
+          level={level}
+          soundOn={soundOn}
+          onExit={() => setStage('tips')}
+          onRetry={() => setPracticeKey((k) => k + 1)}
+        />
+      </Shell>
+    );
+  }
+
   if (stage === 'tips' && selectedOp && selectedLevel !== null) {
     const op = getOperation(selectedOp);
     const level = op.levels[selectedLevel - 1];
     return (
       <Shell hubBg={hubBg} program={program} onClose={onClose} onBack={() => setStage('level')}>
-        <TipsView op={op} level={level} onStartPractice={() => setStage('practice')} />
+        <TipsView
+          op={op}
+          level={level}
+          onStartPractice={() => setStage('practice')}
+          onStartSprint={() => setStage('sprint')}
+        />
       </Shell>
     );
   }
@@ -692,10 +732,12 @@ function TipsView({
   op,
   level,
   onStartPractice,
+  onStartSprint,
 }: {
   op: OperationConfig;
   level: Level;
   onStartPractice: () => void;
+  onStartSprint: () => void;
 }) {
   return (
     <div>
@@ -816,6 +858,25 @@ function TipsView({
         </button>
         <button
           type="button"
+          onClick={onStartSprint}
+          style={{
+            background: 'rgba(255,200,100,0.14)',
+            border: '1px solid rgba(255,200,100,0.5)',
+            borderRadius: 999,
+            color: '#FFD080',
+            fontFamily: SERIF,
+            fontSize: 14,
+            letterSpacing: '0.1em',
+            cursor: 'pointer',
+            padding: '10px 22px',
+            marginTop: 6,
+            fontWeight: 700,
+          }}
+        >
+          ⏱ 60s sprint
+        </button>
+        <button
+          type="button"
           onClick={() => {
             if (typeof window !== 'undefined') window.print();
           }}
@@ -832,10 +893,295 @@ function TipsView({
             marginTop: 6,
           }}
         >
-          🖨 Print practice card
+          🖨 Print
         </button>
       </div>
       <PrintCard op={op} level={level} />
+    </div>
+  );
+}
+
+function SprintView({
+  op,
+  level,
+  soundOn,
+  onExit,
+  onRetry,
+}: {
+  op: OperationConfig;
+  level: Level;
+  soundOn: boolean;
+  onExit: () => void;
+  onRetry: () => void;
+}) {
+  const rng = useMemo(() => Math.random, []);
+  const [problem, setProblem] = useState<GeneratedProblem>(() => level.generate(rng));
+  const [input, setInput] = useState('');
+  const [score, setScore] = useState(0);
+  const [misses, setMisses] = useState(0);
+  const [remaining, setRemaining] = useState(SPRINT_DURATION_SECONDS);
+  const [flash, setFlash] = useState<'idle' | 'right' | 'wrong'>('idle');
+  const [bestBefore, setBestBefore] = useState<number>(0);
+  const inputRef = useRef<HTMLInputElement | null>(null);
+  const sprintKey = `${op.key}-${level.number}`;
+
+  useEffect(() => {
+    setBestBefore(loadSprintBest()[sprintKey] ?? 0);
+    inputRef.current?.focus();
+  }, [sprintKey]);
+
+  useEffect(() => {
+    if (remaining <= 0) return;
+    const id = setInterval(() => setRemaining((r) => Math.max(0, r - 1)), 1000);
+    return () => clearInterval(id);
+  }, [remaining]);
+
+  useEffect(() => {
+    if (remaining === 0) {
+      if (soundOn) playSessionComplete();
+      const all = loadSprintBest();
+      if ((all[sprintKey] ?? 0) < score) {
+        all[sprintKey] = score;
+        saveSprintBest(all);
+      }
+    }
+  }, [remaining, score, sprintKey, soundOn]);
+
+  const finished = remaining <= 0;
+
+  const submit = () => {
+    if (!input.trim() || finished) return;
+    const correct = checkAnswer(problem, input);
+    if (correct) {
+      if (soundOn) playCorrect();
+      setScore((s) => s + 1);
+      setFlash('right');
+    } else {
+      if (soundOn) playWrong();
+      setMisses((m) => m + 1);
+      setFlash('wrong');
+    }
+    setInput('');
+    setProblem(level.generate(rng));
+    setTimeout(() => setFlash('idle'), 200);
+    inputRef.current?.focus();
+  };
+
+  if (finished) {
+    const newBest = score > bestBefore;
+    return (
+      <div
+        style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', paddingTop: 16 }}
+      >
+        <div
+          style={{
+            fontFamily: SERIF,
+            fontSize: 14,
+            letterSpacing: '0.18em',
+            textTransform: 'uppercase',
+            color: '#FFD080',
+            marginBottom: 12,
+          }}
+        >
+          ⏱ Sprint complete
+        </div>
+        <div
+          style={{
+            fontFamily: '"SF Pro Display", "Segoe UI", system-ui, sans-serif',
+            fontSize: 72,
+            color: col(op.color, 1),
+            fontWeight: 800,
+            fontVariantNumeric: 'tabular-nums',
+          }}
+        >
+          {score}
+        </div>
+        <div style={{ fontFamily: SERIF, fontSize: 13, color: cream(0.6), marginBottom: 4 }}>
+          correct in 60 seconds
+        </div>
+        <div style={{ fontFamily: SERIF, fontSize: 13, color: cream(0.5), marginBottom: 18 }}>
+          {misses} miss{misses === 1 ? '' : 'es'}
+        </div>
+        {newBest ? (
+          <div
+            style={{
+              fontFamily: SERIF,
+              fontSize: 15,
+              color: '#FFD080',
+              fontWeight: 700,
+              marginBottom: 18,
+            }}
+          >
+            🏅 new personal best (was {bestBefore})
+          </div>
+        ) : (
+          <div style={{ fontFamily: SERIF, fontSize: 13, color: cream(0.55), marginBottom: 18 }}>
+            personal best: {Math.max(bestBefore, score)}
+          </div>
+        )}
+        <div style={{ display: 'flex', gap: 10 }}>
+          <button
+            type="button"
+            onClick={onRetry}
+            style={{
+              background: col(op.color, 0.2),
+              border: `1px solid ${col(op.color, 0.65)}`,
+              borderRadius: 999,
+              color: col(op.color, 1),
+              fontFamily: SERIF,
+              fontSize: 14,
+              letterSpacing: '0.1em',
+              cursor: 'pointer',
+              padding: '10px 22px',
+              fontWeight: 700,
+            }}
+          >
+            Sprint again
+          </button>
+          <button
+            type="button"
+            onClick={onExit}
+            style={{
+              background: 'none',
+              border: `1px solid ${col(op.color, 0.3)}`,
+              borderRadius: 999,
+              color: col(op.color, 0.75),
+              fontFamily: SERIF,
+              fontSize: 14,
+              letterSpacing: '0.1em',
+              cursor: 'pointer',
+              padding: '10px 22px',
+            }}
+          >
+            Back
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div>
+      <div
+        style={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          marginBottom: 12,
+          fontFamily: SERIF,
+          fontSize: 12,
+          color: col(op.color, 0.55),
+          letterSpacing: '0.1em',
+        }}
+      >
+        <span>
+          {op.label} sprint · L{level.number}
+        </span>
+        <span style={{ color: remaining <= 10 ? '#E78878' : '#FFD080', fontWeight: 700 }}>
+          ⏱ {remaining}s
+        </span>
+      </div>
+
+      <div
+        style={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          fontFamily: SERIF,
+          fontSize: 12,
+          color: cream(0.55),
+          marginBottom: 6,
+        }}
+      >
+        <span>Score {score}</span>
+        <span style={{ color: '#FFD080' }}>best {Math.max(bestBefore, score)}</span>
+      </div>
+
+      <div
+        style={{
+          background:
+            flash === 'right'
+              ? 'rgba(158,216,143,0.08)'
+              : flash === 'wrong'
+                ? 'rgba(231,136,120,0.08)'
+                : '#0E0A06',
+          border: `1px solid ${
+            flash === 'right'
+              ? 'rgba(158,216,143,0.4)'
+              : flash === 'wrong'
+                ? 'rgba(231,136,120,0.4)'
+                : col(op.color, 0.35)
+          }`,
+          borderRadius: 14,
+          padding: '36px 18px',
+          textAlign: 'center',
+          marginBottom: 16,
+          transition: 'background 120ms, border 120ms',
+        }}
+      >
+        <div
+          style={{
+            fontFamily: '"SF Pro Display", "Segoe UI", system-ui, sans-serif',
+            fontSize: 'clamp(36px, 11vw, 60px)',
+            color: '#FFF6E0',
+            fontWeight: 700,
+            lineHeight: 1.1,
+            fontVariantNumeric: 'tabular-nums',
+          }}
+        >
+          {problem.problem} = <span style={{ color: col(op.color, 0.85) }}>?</span>
+        </div>
+      </div>
+
+      <form
+        onSubmit={(e) => {
+          e.preventDefault();
+          submit();
+        }}
+        style={{ display: 'flex', gap: 8 }}
+      >
+        <input
+          ref={inputRef}
+          type="text"
+          inputMode="numeric"
+          value={input}
+          onChange={(e) => setInput(e.target.value)}
+          placeholder="answer"
+          aria-label="Answer"
+          style={{
+            flex: 1,
+            background: '#0E0A06',
+            border: `1px solid ${col(op.color, 0.4)}`,
+            borderRadius: 10,
+            color: '#FFF6E0',
+            fontFamily: '"SF Pro Display", "Segoe UI", system-ui, sans-serif',
+            fontSize: 26,
+            fontWeight: 600,
+            padding: '12px 16px',
+            textAlign: 'center',
+            outline: 'none',
+            fontVariantNumeric: 'tabular-nums',
+          }}
+        />
+        <button
+          type="submit"
+          disabled={!input.trim()}
+          style={{
+            background: col(op.color, 0.2),
+            border: `1px solid ${col(op.color, 0.65)}`,
+            borderRadius: 10,
+            color: col(op.color, 1),
+            fontFamily: SERIF,
+            fontSize: 14,
+            letterSpacing: '0.1em',
+            cursor: input.trim() ? 'pointer' : 'not-allowed',
+            padding: '12px 20px',
+            fontWeight: 700,
+            opacity: input.trim() ? 1 : 0.5,
+          }}
+        >
+          ✓
+        </button>
+      </form>
     </div>
   );
 }
