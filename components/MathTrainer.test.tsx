@@ -29,8 +29,8 @@ describe('MathTrainer', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Open level 1: Single digits' }));
 
     expect(screen.getByText('Tips and tricks')).toBeDefined();
-    expect(screen.getByText(/Memorise doubles/)).toBeDefined();
-    expect(screen.getByText('Worked examples')).toBeDefined();
+    expect(screen.getAllByText(/Memorise doubles/).length).toBeGreaterThan(0);
+    expect(screen.getAllByText('Worked examples').length).toBeGreaterThan(0);
 
     fireEvent.click(screen.getByRole('button', { name: /Start practice/i }));
     expect(screen.getByText(/Question 1\/10/)).toBeDefined();
@@ -63,5 +63,34 @@ describe('MathTrainer', () => {
     fireEvent.click(toggle);
     expect(screen.getByRole('button', { name: /Timer: on/i })).toBeDefined();
     expect(localStorage.getItem('colourmap:math-trainer:timer')).toBe('on');
+  });
+
+  it('toggles sound and persists the choice', () => {
+    render(<MathTrainer program={mathProgram} onClose={vi.fn()} />);
+    fireEvent.click(screen.getByRole('button', { name: /Sound: on/i }));
+    expect(screen.getByRole('button', { name: /Sound: off/i })).toBeDefined();
+    expect(localStorage.getItem('colourmap:math-trainer:sound')).toBe('off');
+  });
+
+  it('switches the session length and persists it', () => {
+    render(<MathTrainer program={mathProgram} onClose={vi.fn()} />);
+    fireEvent.click(screen.getByRole('button', { name: 'Session of 5 questions' }));
+    expect(localStorage.getItem('colourmap:math-trainer:session-length')).toBe('5');
+  });
+
+  it('records a weak spot when an answer is wrong', () => {
+    vi.spyOn(Math, 'random').mockReturnValue(0);
+    render(<MathTrainer program={mathProgram} onClose={vi.fn()} />);
+    fireEvent.click(screen.getByRole('button', { name: /Addition/i }));
+    fireEvent.click(screen.getByRole('button', { name: 'Open level 1: Single digits' }));
+    fireEvent.click(screen.getByRole('button', { name: /Start practice/i }));
+
+    const input = screen.getByLabelText('Answer') as HTMLInputElement;
+    fireEvent.change(input, { target: { value: '999' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Check' }));
+
+    const stored = JSON.parse(localStorage.getItem('colourmap:math-trainer:weak-spots') ?? '{}');
+    expect(stored['add-1']?.failures).toBe(1);
+    vi.restoreAllMocks();
   });
 });

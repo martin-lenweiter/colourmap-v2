@@ -775,6 +775,28 @@ export function getOperation(key: Operation): OperationConfig {
   return found;
 }
 
+export type Difficulty = 'easier' | 'normal' | 'harder';
+
+function problemComplexity(p: GeneratedProblem): number {
+  // a rough complexity score: sum of operand magnitudes
+  return p.operands.reduce((sum, n) => sum + Math.abs(n), 0);
+}
+
+export function generateAdaptive(
+  level: Level,
+  rng: () => number,
+  difficulty: Difficulty,
+): GeneratedProblem {
+  if (difficulty === 'normal') return level.generate(rng);
+  const candidates: GeneratedProblem[] = [level.generate(rng), level.generate(rng)];
+  if (difficulty === 'easier') {
+    candidates.sort((a, b) => problemComplexity(a) - problemComplexity(b));
+  } else {
+    candidates.sort((a, b) => problemComplexity(b) - problemComplexity(a));
+  }
+  return candidates[0];
+}
+
 export function checkAnswer(problem: GeneratedProblem, input: string): boolean {
   const trimmed = input.trim();
   if (problem.operation === 'div') {
