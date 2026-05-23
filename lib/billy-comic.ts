@@ -1151,12 +1151,48 @@ export const BILLY_QUEST_PANELS: BillyPanel[] = [
     ],
   },
   {
+    id: 'sand-scooter-yard',
+    image: '/entertainment/billy/quest-for-juice/panel-146.webp',
+    title: 'The Sand Scooter Yard',
+    text: [
+      'Behind the station, old sand scooters slept under canvas like retired insects.',
+      'The lizard porter tapped one engine and announced that it had character, which was not the same as brakes.',
+    ],
+  },
+  {
+    id: 'how-to-ride-badly',
+    image: '/entertainment/billy/quest-for-juice/panel-147.webp',
+    title: 'How To Ride Badly',
+    text: [
+      'Billy learned the throttle, the balance fin, and the sacred desert rule: never argue with loose sand.',
+      'Big Potato Man sat on a scooter. The scooter immediately reconsidered its beliefs.',
+    ],
+  },
+  {
+    id: 'lizard-hangs-on',
+    image: '/entertainment/billy/quest-for-juice/panel-148.webp',
+    title: 'The Lizard Hangs On',
+    text: [
+      'The porter refused to drive. Then he climbed onto the back anyway, holding three bags, one kettle, and a professional expression.',
+      'He said he was only coming until the wind changed. The wind changed immediately and betrayed everyone.',
+    ],
+  },
+  {
     id: 'tiny-sand-scooter',
     image: '/entertainment/billy/quest-for-juice/panel-114.webp',
     title: 'Tiny Sand Scooter',
     text: [
       'The vehicle was too small for adventure, which made it perfect for adventure.',
       'Behind them, two riders appeared in the heat, elegant enough to be trouble.',
+    ],
+  },
+  {
+    id: 'scooter-desert-rhythm',
+    image: '/entertainment/billy/quest-for-juice/panel-149.webp',
+    title: 'Scooter Desert Rhythm',
+    text: [
+      'Once the wheels found the dune rhythm, the desert stopped feeling empty and started feeling fast.',
+      'The lizard leaned left, Billy leaned right, and Big Potato Man leaned spiritually.',
     ],
   },
   {
@@ -1211,6 +1247,33 @@ export const BILLY_QUEST_PANELS: BillyPanel[] = [
     text: [
       'The storm arrived like the desert clearing its throat.',
       'Their plan involved fabric, rope, courage, and no meaningful engineering.',
+    ],
+  },
+  {
+    id: 'inside-the-dust',
+    image: '/entertainment/billy/quest-for-juice/panel-150.webp',
+    title: 'Inside The Dust',
+    text: [
+      'Inside the storm, daylight became bronze and every shadow looked older than the desert.',
+      'A giant scorpion shape crossed the dust wall. It may have been real. It may have been fear wearing legs.',
+    ],
+  },
+  {
+    id: 'ghosts-in-the-gust',
+    image: '/entertainment/billy/quest-for-juice/panel-151.webp',
+    title: 'Ghosts In The Gust',
+    text: [
+      'The wind showed them ruined towers, old caravans, and faces made from sand reflections.',
+      'The lizard closed his eyes and listened, because some maps are heard before they are seen.',
+    ],
+  },
+  {
+    id: 'lizard-saves-the-line',
+    image: '/entertainment/billy/quest-for-juice/panel-152.webp',
+    title: 'The Lizard Saves The Line',
+    text: [
+      'When the scooter slid toward a black drop, the lizard hooked his tail around the guide rope.',
+      'Nobody had respected the tail enough. The tail accepted their apology later.',
     ],
   },
   {

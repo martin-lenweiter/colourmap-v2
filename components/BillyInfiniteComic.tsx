@@ -5,6 +5,12 @@ import { useState } from 'react';
 import { BILLY_QUEST_PANELS } from '@/lib/billy-comic';
 
 const SERIF = 'var(--font-serif)';
+const BILLY_CHAPTERS = [
+  { label: '1 Departure', start: 0 },
+  { label: '2 New Babylon', start: 13 },
+  { label: '3 Underground', start: 65 },
+  { label: '4 Desert', start: 112 },
+] as const;
 
 function cream(alpha: number) {
   return `rgba(255, 238, 196, ${alpha})`;
@@ -404,6 +410,48 @@ export default function BillyInfiniteComic() {
                     : 'next'}
           </button>
         </footer>
+        {!intro && (
+          <nav
+            aria-label="Pineapple Planet chapters"
+            style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(2, minmax(0, 1fr))',
+              gap: 8,
+              padding: '0 14px 14px',
+              flexShrink: 0,
+            }}
+          >
+            {BILLY_CHAPTERS.map((chapter, chapterIndex) => {
+              const active =
+                index >= chapter.start &&
+                index < (BILLY_CHAPTERS[chapterIndex + 1]?.start ?? BILLY_QUEST_PANELS.length);
+              return (
+                <button
+                  key={chapter.label}
+                  type="button"
+                  onClick={() => {
+                    setIndex(chapter.start);
+                    setTextStep(0);
+                  }}
+                  style={{
+                    border: `1px solid rgba(255, 205, 126, ${active ? 0.56 : 0.22})`,
+                    borderRadius: 999,
+                    background: active ? 'rgba(255, 190, 82, 0.16)' : 'rgba(255, 238, 196, 0.05)',
+                    color: cream(active ? 0.94 : 0.72),
+                    fontFamily: SERIF,
+                    fontSize: 12.5,
+                    fontWeight: 800,
+                    cursor: 'pointer',
+                    padding: '8px 9px',
+                    textAlign: 'center',
+                  }}
+                >
+                  {chapter.label}
+                </button>
+              );
+            })}
+          </nav>
+        )}
       </div>
     </main>
   );

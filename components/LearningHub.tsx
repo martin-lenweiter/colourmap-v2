@@ -47,6 +47,9 @@ const COMIC_PROGRAMS = new Set([
   'thich-nhat-hanh',
   'gandhi',
   'clear-allen',
+  'economic-systems',
+  'planetary-ecology',
+  'future-transitions',
 ]);
 
 const EDUCATION_IMAGES = ['/education-1.png', '/education-2.png', '/education-3.png'];
@@ -133,6 +136,7 @@ const POSITIVE_OVERLAY_PROGRAMS = new Set([
   'viktor-frankl',
   'bukowski-poems',
   'jack-london',
+  'jules-verne',
   'maya-angelou',
   'plato-cave',
   'alan-watts',
@@ -203,10 +207,10 @@ const PROGRAM_COVER_PANEL: Record<string, number> = {
   'alan-watts': 1,
   'david-hawkins': 6,
   'jack-london': 6,
-  'jules-verne': 3,
+  'jules-verne': 12,
   'campbell-hero-quest': 2,
-  'economic-systems': 23,
-  'planetary-ecology': 23,
+  'economic-systems': 40,
+  'planetary-ecology': 40,
   'future-transitions': 19,
 };
 const SPECIAL_PROGRAM_COVERS: Record<string, string> = {};

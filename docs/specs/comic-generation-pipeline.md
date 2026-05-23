@@ -1318,6 +1318,12 @@ ports, notebooks, maps, submarines, moon machines, underground journeys, global 
 and the ethical question of what imagination builds. The style can mix old paper adventure with a
 small hopeful future signal.
 
+Important image-quality note: deterministic SVG/WebP generators are acceptable only as temporary
+compressed scaffolding for wiring and tests. They should not be accepted as final art for Jules
+Verne, economics, ecology, or other story-heavy education comics when the user expects the richer
+imagegen style. Final pages should be generated as high-quality raster illustrations, then
+compressed to WebP/AVIF for the app.
+
 ## Pineapple Planet Desert Direction
 
 After the New Babylon and underground material, the Pineapple Planet desert arc should breathe more.
@@ -1336,6 +1342,12 @@ Desired ingredients:
   maps, and light geometry, not heavy crystal-cave spectacle
 - preserve the lower-quarter reveal rule for jokes, clues, maps, broken objects, reflections, and
   plot hints where it helps the page
+- transitions into action scenes need enough process. If Billy suddenly appears on a sand scooter,
+  the comic should first show the station yard, how the scooter is found, the basic riding process,
+  the lizard helper climbing onto the back, and why the lizard later matters in the storm.
+- storm pages can use dreamlike Gustave Dore-inspired dust silhouettes, giant scorpion shadows,
+  ghost caravans, and reflected visions, but keep values readable enough for low-light users and
+  avoid making the scene too dark or visually confusing.
 
 ## Future Visual Direction: Flying Light Bird
 

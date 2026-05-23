@@ -122,8 +122,8 @@ const POSITIVE_OVERLAY_PANEL_COUNTS: Record<string, number> = {
   'david-hawkins': 8,
   nietzsche: 8,
   'campbell-hero-quest': 7,
-  'economic-systems': 32,
-  'planetary-ecology': 32,
+  'economic-systems': 40,
+  'planetary-ecology': 40,
   'future-transitions': 32,
 };
 
@@ -2941,6 +2941,7 @@ export default function ComicProgram({
                 setMoreOpen(false);
                 setIndex(i);
               }}
+              aria-label={`Open page ${i + 1}`}
               style={{
                 width: i === index ? 18 : 6,
                 height: 6,

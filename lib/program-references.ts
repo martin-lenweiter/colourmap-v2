@@ -143,6 +143,8 @@ export const PROGRAM_REFERENCES: Record<string, string[]> = {
     'Kate Raworth, Doughnut Economics.',
     'Thomas Piketty, Capital in the Twenty-First Century.',
     'Mariana Mazzucato, Mission Economy.',
+    'Leonard E. Read, I, Pencil.',
+    'Diane Coyle, GDP: A Brief but Affectionate History.',
   ],
   'planetary-ecology': [
     'IPCC, Sixth Assessment Report: Synthesis Report.',
@@ -150,6 +152,9 @@ export const PROGRAM_REFERENCES: Record<string, string[]> = {
     'UNEP, Emissions Gap Report.',
     "FAO, The State of the World's Forests.",
     'IEA, World Energy Outlook and renewables reports.',
+    'NASA Global Climate Change, Ocean warming indicators.',
+    'UN Decade on Ecosystem Restoration, restoration knowledge hub.',
+    'UNEP, State of Finance for Nature.',
     'Suzanne Simard, Finding the Mother Tree.',
     'Robin Wall Kimmerer, Braiding Sweetgrass.',
   ],
