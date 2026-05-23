@@ -210,3 +210,14 @@ If you want to maximize impact per unit of effort:
 - **Phone performance varies wildly.** A 2024 iPhone is 5–10× faster than a 2019 mid-range Android. Build for the middle, expect to optimize for the bottom.
 
 But within those limits, **most of the 3D vision is achievable in the next 2–3 months of incremental work,** and almost none of it requires technologies that don't already exist. Three.js + your existing assets + Mixamo + careful loading = surprisingly far.
+
+## Surfacing inside the app
+
+Both 3D pages are reachable from the **Art** tab (`/geometry-field`). The bottom drawer top-pill row contains:
+
+`Builder · Music Visuals · Arena · Figures · Figure Stars`
+
+- **Figures** → `/figures` — Golden God, Kid Lotus, and procedural Billy with the material switcher (gold / hologram / stars), seven hologram palette swatches, drag-to-rotate, and the Animated tab driving Mixamo-style skeletal animations.
+- **Figure Stars** → `/figure-stars` — the dot-of-stars geometry-builder UI: any figure × seven palettes × density / size / pulse controls, all live.
+
+Both routes are marked as immersive in `AppShell.tsx` so they render edge-to-edge without the standard padded column wrapper.

@@ -4,6 +4,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import * as THREE from 'three';
 import { OBJLoader } from 'three/examples/jsm/loaders/OBJLoader.js';
 import { MeshSurfaceSampler } from 'three/examples/jsm/math/MeshSurfaceSampler.js';
+import { buildBillyGeometry } from '@/lib/billy-geometry';
 
 const SERIF = 'var(--font-serif)';
 
@@ -11,11 +12,13 @@ export type Figure = {
   key: string;
   label: string;
   url: string;
+  procedural?: 'billy';
 };
 
 const FIGURES: Figure[] = [
   { key: 'golden-god', label: 'Golden God', url: '/models/golden-god.obj' },
   { key: 'kid-lotus', label: 'Kid Lotus', url: '/models/kid-lotus.obj' },
+  { key: 'billy', label: 'Billy', url: '', procedural: 'billy' },
   { key: 'spirit', label: 'Spirit', url: '/models/spirit.obj' },
   { key: 'butterfly-priest', label: 'Butterfly Priest', url: '/models/butterfly-priest.obj' },
   { key: 'butterfly-man', label: 'Butterfly Man', url: '/models/butterfly-man.obj' },
@@ -119,40 +122,46 @@ export default function FigureStarsBuilder() {
     mount.appendChild(renderer.domElement);
 
     setStatus('loading');
-    const loader = new OBJLoader();
-    loader.load(
-      figure.url,
-      (group) => {
-        if (disposed) return;
-        let firstGeom: THREE.BufferGeometry | null = null;
-        group.traverse((child) => {
-          if (firstGeom) return;
-          if ((child as THREE.Mesh).isMesh) {
-            firstGeom = (child as THREE.Mesh).geometry.clone();
-          }
-        });
-        if (!firstGeom) {
-          setStatus('error');
-          return;
-        }
-        const geom = firstGeom as THREE.BufferGeometry;
-        geom.computeVertexNormals();
-        geom.center();
-        geom.computeBoundingSphere();
-        const radius = geom.boundingSphere?.radius ?? 1;
-        const scale = 1 / radius;
-        geom.scale(scale, scale, scale);
+    const installGeom = (geom: THREE.BufferGeometry) => {
+      geom.computeVertexNormals();
+      geom.center();
+      geom.computeBoundingSphere();
+      const radius = geom.boundingSphere?.radius ?? 1;
+      geom.scale(1 / radius, 1 / radius, 1 / radius);
+      const tempMesh = new THREE.Mesh(geom);
+      samplerRef.current = new MeshSurfaceSampler(tempMesh).build();
+      setSamplerVersion((v) => v + 1);
+      setStatus('ready');
+    };
 
-        const tempMesh = new THREE.Mesh(geom);
-        samplerRef.current = new MeshSurfaceSampler(tempMesh).build();
-        setSamplerVersion((v) => v + 1);
-        setStatus('ready');
-      },
-      undefined,
-      () => {
-        if (!disposed) setStatus('error');
-      },
-    );
+    if (figure.procedural === 'billy') {
+      const geom = buildBillyGeometry();
+      if (!disposed) installGeom(geom);
+    } else {
+      const loader = new OBJLoader();
+      loader.load(
+        figure.url,
+        (group) => {
+          if (disposed) return;
+          let firstGeom: THREE.BufferGeometry | null = null;
+          group.traverse((child) => {
+            if (firstGeom) return;
+            if ((child as THREE.Mesh).isMesh) {
+              firstGeom = (child as THREE.Mesh).geometry.clone();
+            }
+          });
+          if (!firstGeom) {
+            setStatus('error');
+            return;
+          }
+          installGeom(firstGeom);
+        },
+        undefined,
+        () => {
+          if (!disposed) setStatus('error');
+        },
+      );
+    }
 
     let isDragging = false;
     let lastX = 0;
@@ -227,7 +236,7 @@ export default function FigureStarsBuilder() {
     // Re-init only when the figure URL changes. Palette and density are
     // applied without re-loading.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [figure.url]);
+  }, [figure.url, figure.procedural]);
 
   // Apply density / size / palette changes without re-loading the OBJ.
   // The samplerVersion dep ensures this also fires the very first time the

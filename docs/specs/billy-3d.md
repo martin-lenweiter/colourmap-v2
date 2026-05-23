@@ -134,6 +134,16 @@ A 3D Billy can enhance the existing Pineapple Planet comic reader several ways:
 4. **Choices interface:** when a comic page offers a choice (`BillyChoice` type already exists in `lib/billy-comic.ts`), 3D Billy mimes considering each option
 5. **End-of-chapter rewards:** 3D Billy does a small celebration animation
 
+## Billy in the FigureStars builder
+
+The procedural Billy is exposed inside `/figure-stars` alongside the OBJ-backed figures.
+`lib/billy-geometry.ts` builds a single merged `BufferGeometry` from the same primitives
+the Billy3D component uses (body + crown + eyes + brows + mouth + arms + legs + shoes),
+centred and unit-scaled. `FigureStarsBuilder` picks this up via the `procedural: 'billy'`
+marker on the figure entry, skips the `OBJLoader` path, and feeds the merged geometry
+straight into `MeshSurfaceSampler`. So Billy renders as stars / dots in every palette,
+density, and pulse mode the other figures support — no asset download needed.
+
 ## Effort summary
 
 | Path | Quality | Cost | User time |

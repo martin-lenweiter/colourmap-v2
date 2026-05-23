@@ -18646,10 +18646,12 @@ export default function GeometryField() {
             }}
           >
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-              <div style={{ display: 'flex', gap: 6 }}>
+              <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
                 {pill('Builder', tab === 'builder', () => setTab('builder'), true)}
                 {pill('Music Visuals', tab === 'music', () => setTab('music'), true)}
                 {pill('Arena', false, () => window.location.assign('/dot-walker-arena'), true)}
+                {pill('Figures', false, () => window.location.assign('/figures'), true)}
+                {pill('Figure Stars', false, () => window.location.assign('/figure-stars'), true)}
               </div>
               <button
                 type="button"
