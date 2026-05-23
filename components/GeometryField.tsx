@@ -78,6 +78,7 @@ type Mode =
   | 'dotheart'
   | 'dotphoenix'
   | 'dotbrain'
+  | 'neuronweb'
   | 'embrace'
   | 'dottunnel'
   | 'swirldottunnel'
@@ -807,6 +808,66 @@ const PRESETS: Record<string, Cfg> = {
     luminous: 2.8,
     stars: 1,
     mode: 'dotbrain',
+  },
+  'Neuron Web 1': {
+    preset: 'Golden Source',
+    symmetry: 7,
+    complexity: 4.2,
+    glow: 5.6,
+    breathSpeed: 0.38,
+    intensity: 7.4,
+    particles: 8,
+    luminous: 2.8,
+    stars: 2,
+    mode: 'neuronweb',
+  },
+  'Neuron Web 2': {
+    preset: 'Blue Astral',
+    symmetry: 9,
+    complexity: 5.8,
+    glow: 6.4,
+    breathSpeed: 0.48,
+    intensity: 7.8,
+    particles: 8,
+    luminous: 3,
+    stars: 3,
+    mode: 'neuronweb',
+  },
+  'Neuron Web 3': {
+    preset: 'Tangka Gold',
+    symmetry: 12,
+    complexity: 7.2,
+    glow: 7,
+    breathSpeed: 0.56,
+    intensity: 8.3,
+    particles: 9,
+    luminous: 3.2,
+    stars: 4,
+    mode: 'neuronweb',
+  },
+  'Neuron Web 4': {
+    preset: 'Matrix Sacred',
+    symmetry: 14,
+    complexity: 8.2,
+    glow: 7.6,
+    breathSpeed: 0.62,
+    intensity: 8.6,
+    particles: 9,
+    luminous: 3.5,
+    stars: 5,
+    mode: 'neuronweb',
+  },
+  'Neuron Web 5': {
+    preset: 'Cosmic Indigo',
+    symmetry: 16,
+    complexity: 9.2,
+    glow: 8.2,
+    breathSpeed: 0.72,
+    intensity: 9,
+    particles: 10,
+    luminous: 3.8,
+    stars: 6,
+    mode: 'neuronweb',
   },
 
   Embrace: {
@@ -4148,6 +4209,7 @@ function buildModeGroup(cfg: Cfg, R: number): THREE.Group {
     case 'dotheart':
     case 'dotphoenix':
     case 'dotbrain':
+    case 'neuronweb':
 
     case 'embrace':
     case 'tripnumber1':
@@ -4391,6 +4453,7 @@ function updateModeGroup(group: THREE.Group, cfg: Cfg, dots: Dot[], t: number, R
     case 'dotheart':
     case 'dotphoenix':
     case 'dotbrain':
+    case 'neuronweb':
 
     case 'embrace':
     case 'tripnumber1':
@@ -11006,6 +11069,16 @@ const MODE_SLIDERS: Partial<Record<Mode, SliderDef[]>> = {
     { key: 'luminous', label: 'Bloom', min: 0, max: 5, step: 0.1 },
     { key: 'stars', label: 'Signals', min: 0, max: 10, step: 1 },
   ],
+  neuronweb: [
+    { key: 'symmetry', label: 'Cells', min: 5, max: 22, step: 1 },
+    { key: 'complexity', label: 'Branching', min: 1, max: 10, step: 0.5 },
+    { key: 'glow', label: 'Signal Flow', min: 0, max: 10, step: 0.5 },
+    { key: 'breathSpeed', label: 'Pulse Speed', min: 0.05, max: 1.5, step: 0.05 },
+    { key: 'intensity', label: 'Warmth', min: 0, max: 10, step: 0.5 },
+    { key: 'particles', label: 'Dots', min: 1, max: 10, step: 1 },
+    { key: 'luminous', label: 'Bloom', min: 0, max: 5, step: 0.1 },
+    { key: 'stars', label: 'Background', min: 0, max: 10, step: 1 },
+  ],
 
   embrace: [
     { key: 'complexity', label: 'Dance', min: 1, max: 10, step: 0.5 },
@@ -11158,6 +11231,7 @@ const MODE_TO_PRESET: Partial<Record<Mode, string>> = {
   dotheart: 'Dot Heart',
   dotphoenix: 'Dot Phoenix',
   dotbrain: 'Dot Brain Loop',
+  neuronweb: 'Neuron Web 1',
 
   embrace: 'Embrace',
 
@@ -11288,6 +11362,7 @@ const MODES: { mode: Mode; label: string }[] = [
   { mode: 'dotheart', label: 'Dot Heart' },
   { mode: 'dotphoenix', label: 'Dot Phoenix' },
   { mode: 'dotbrain', label: 'Dot Brain Loop' },
+  { mode: 'neuronweb', label: 'Neuron Web' },
 
   { mode: 'embrace', label: 'Embrace' },
 
@@ -11344,6 +11419,11 @@ const FEATURED_PRESETS: FeaturedItem[] = [
   { name: 'Dot Heart', tag: 'DOT' },
   { name: 'Dot Phoenix', tag: 'DOT' },
   { name: 'Dot Brain Loop', tag: 'DOT' },
+  { name: 'Neuron Web 1', tag: 'NEURON' },
+  { name: 'Neuron Web 2', tag: 'NEURON' },
+  { name: 'Neuron Web 3', tag: 'NEURON' },
+  { name: 'Neuron Web 4', tag: 'NEURON' },
+  { name: 'Neuron Web 5', tag: 'NEURON' },
 
   { name: 'Embrace', tag: 'DOT' },
 
@@ -12695,6 +12775,35 @@ function updateDotSymbolField(group: THREE.Group, cfg: Cfg, t: number, R: number
         x = lerp(baseX, lobeX + crease + fold, 0.42);
         y = lerp(baseY, lobeY, 0.42);
         z = Math.sin(theta * 4 + phase + w * TAU) * R * (0.018 + cfg.luminous * 0.004);
+      } else if (i < dotLimit && cfg.mode === 'neuronweb') {
+        const cells = Math.max(5, Math.round(cfg.symmetry));
+        const cell = Math.floor(q * cells);
+        const local = q * cells - cell;
+        const cellA = (cell / cells) * TAU + Math.sin(phase * 0.18) * 0.08;
+        const orbit = R * (0.14 + 0.28 * ((cell * 0.61803398875) % 1));
+        const cx = Math.cos(cellA) * orbit;
+        const cy = Math.sin(cellA) * orbit * 0.82;
+        const branch = Math.floor(v * 5);
+        const branchA = cellA + (branch - 2) * 0.42 + Math.sin(phase * 0.33 + cell) * 0.2;
+        const soma = u < 0.2;
+        if (soma) {
+          const a = v * TAU;
+          const rr = R * (0.018 + Math.sqrt(u / 0.2) * 0.045);
+          x = cx + Math.cos(a) * rr * (1 + pulse * 0.08);
+          y = cy + Math.sin(a) * rr * (1 + pulse * 0.08);
+        } else {
+          const along = (u - 0.2) / 0.8;
+          const length = R * lerp(0.12, 0.34, cfg.complexity / 10);
+          const curl = Math.sin(along * Math.PI * 2 + phase + w * 8) * R * 0.025;
+          x = cx + Math.cos(branchA) * length * along + Math.cos(branchA + Math.PI / 2) * curl;
+          y =
+            cy + Math.sin(branchA) * length * along * 0.82 + Math.sin(branchA + Math.PI / 2) * curl;
+        }
+        const signal = Math.max(
+          0,
+          1 - Math.abs(((phase * 0.18 + cell / cells + local) % 1) - u) * 8,
+        );
+        z = Math.sin(phase * 1.2 + cell + w * TAU) * R * 0.02 + signal * R * 0.045;
       } else if (i < dotLimit && cfg.mode === 'embrace') {
         const side = q < 0.5 ? -1 : 1;
         const localQ = (q * 2) % 1;

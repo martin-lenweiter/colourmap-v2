@@ -127,6 +127,38 @@ const economicSegments = [
     title: 'Systems are still moving',
     body: 'The final lesson is liberating: the economy visible in one lifetime is not permanent. Humans built it through conflict, imagination, crisis, and repair. Humans will keep revising it.',
   },
+  {
+    title: 'Miracle of trade - the pencil',
+    body: 'A simple pencil is already a world economy: cedar, graphite, clay, lacquer, rubber, metal, tools, transport, workers, standards, stores, and trust. No single person knows how to make it all alone. Economics becomes less abstract when you see cooperation hidden inside ordinary objects.',
+  },
+  {
+    title: 'The price signal and the human signal',
+    body: 'A price can carry astonishing information: scarcity, demand, risk, distance, timing. But it cannot carry everything. It may miss loneliness, beauty, unpaid care, ecological damage, cultural loss, and the dignity of the person doing the work.',
+  },
+  {
+    title: 'Externalities - the shadow bill',
+    body: 'Some costs are pushed outside the transaction: smoke, heat, waste, stress, water loss, broken bodies, broken neighborhoods. The shadow bill still gets paid. The question is who pays it, when, and whether the system is honest enough to see it.',
+  },
+  {
+    title: 'Money as memory',
+    body: 'Money is not only coins or numbers. It is social memory: who contributed, who is owed, what can be exchanged, what society trusts, and what power can be moved through time. Inflation, debt, savings, and credit are all arguments about memory and confidence.',
+  },
+  {
+    title: 'The supply chain as nervous system',
+    body: 'Modern supply chains work like planetary nerves. A chip shortage, blocked canal, pandemic port closure, war, drought, or tariff can send pain through the whole body. Efficiency without resilience is a beautiful machine with fragile bones.',
+  },
+  {
+    title: 'The commons that quietly works',
+    body: 'Some resources survive because communities build rules around them: shared water, fisheries, forests, irrigation, grazing, knowledge, code. The commons is not a romantic free-for-all. It is practical cooperation with boundaries, trust, monitoring, and repair.',
+  },
+  {
+    title: 'Metrics that change the story',
+    body: 'GDP can measure activity while missing depletion, care, inequality, leisure, health, and ecological damage. New dashboards ask better questions: capabilities, wellbeing, carbon, biodiversity, distribution, resilience, and whether growth is actually serving life.',
+  },
+  {
+    title: 'The economy as a garden',
+    body: 'A future economy may need less machine mythology and more garden intelligence: cultivate, prune, compost, diversify, protect roots, share water, watch seasons, and design for renewal. Markets, states, commons, and missions are tools inside that larger craft.',
+  },
 ];
 
 const ecologySegments = [
@@ -257,6 +289,38 @@ const ecologySegments = [
   {
     title: 'The living future',
     body: 'The final image is not paradise. It is participation. Humans can become a species that understands it lives inside a larger living intelligence and designs accordingly.',
+  },
+  {
+    title: 'The whale pump',
+    body: 'Whales dive deep, feed, surface, breathe, migrate, and fertilize ocean life through their movement and waste. One huge animal becomes a moving nutrient system. The miracle is not only the whale. It is the invisible bloom that follows.',
+  },
+  {
+    title: 'Beavers as water engineers',
+    body: 'Beavers slow water, build wetlands, cool streams, store sediment, shelter species, and make landscapes more drought-resistant. A small animal with teeth can change hydrology better than many expensive machines.',
+  },
+  {
+    title: 'Mangrove shields',
+    body: 'Mangroves are coastal guardians: tangled roots hold soil, shelter young fish, store carbon, and soften storm waves before they hit people. They look messy because living protection is not always symmetrical.',
+  },
+  {
+    title: 'The fungal internet',
+    body: 'Mycorrhizal fungi thread through soil and roots, moving nutrients and chemical signals. Forest intelligence is not a command center. It is relationship, exchange, warning, and support under the ground.',
+  },
+  {
+    title: 'Coral cities',
+    body: 'Coral reefs are living cities built by tiny animals in partnership with algae. They cover a small fraction of the ocean but shelter extraordinary life. Their beauty is also a warning: heat and acidity can bleach a miracle.',
+  },
+  {
+    title: 'Seed banks and sleeping futures',
+    body: 'Seeds can wait through drought, winter, fire, burial, and time. A seed bank is not just storage. It is a library of possible futures: food, medicine, adaptation, memory, and resilience waiting in small hard forms.',
+  },
+  {
+    title: 'Metrics that wake us up',
+    body: 'The data is not there to make the user numb. It should orient action: species risk, ocean heat, forest loss and recovery, protected areas, restoration progress, clean energy growth, and where local repair is working.',
+  },
+  {
+    title: 'Good news is not denial',
+    body: 'Hopeful ecology should show real repair stories without hiding the emergency: river removals, forest corridors, community conservation, regenerative farms, city shade, cleaner energy, and species returning when pressure drops. Good news becomes useful when it teaches what works.',
   },
 ];
 

@@ -110,6 +110,34 @@ describe('LearningHub', () => {
     expect(screen.getByRole('button', { name: 'Next' })).toBeDefined();
   });
 
+  it('opens newly generated education rasters from the hub', () => {
+    const { container } = render(<LearningHub onClose={vi.fn()} />);
+
+    const verneProgram = screen.getByText('Jules Verne & The Worlds Ahead').closest('button');
+    expect(verneProgram).not.toBeNull();
+    fireEvent.click(verneProgram as HTMLButtonElement);
+    fireEvent.click(screen.getByRole('button', { name: /Begin Jules Verne & The Worlds Ahead/i }));
+    expect(
+      container.querySelector(
+        'img[src="/comics/jules-verne/variants/positive-overlay/panel-0.webp"]',
+      ),
+    ).not.toBeNull();
+
+    fireEvent.click(screen.getByRole('button', { name: '← back' }));
+    const ecologyProgram = screen
+      .getByText('Planetary Ecology & Living Intelligence')
+      .closest('button');
+    expect(ecologyProgram).not.toBeNull();
+    fireEvent.click(ecologyProgram as HTMLButtonElement);
+    fireEvent.click(
+      screen.getByRole('button', { name: /Begin Planetary Ecology & Living Intelligence/i }),
+    );
+    fireEvent.click(screen.getByRole('button', { name: 'Open page 40' }));
+    expect(container.innerHTML).toContain(
+      '/comics/planetary-ecology/variants/positive-overlay/panel-39.webp',
+    );
+  });
+
   it('opens the Carl Jung comic book', () => {
     const onClose = vi.fn();
     const { container } = render(<LearningHub onClose={onClose} />);

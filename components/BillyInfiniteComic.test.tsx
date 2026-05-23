@@ -29,10 +29,12 @@ describe('BillyInfiniteComic', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Next Billy comic beat' }));
     expect(screen.getByAltText('The Arrows Disagree comic panel')).toBeDefined();
     expect(screen.getByText('Page 2')).toBeDefined();
+    expect(screen.getByRole('navigation', { name: 'Pineapple Planet chapters' })).toBeDefined();
+    fireEvent.click(screen.getByRole('button', { name: '4 Desert' }));
+    expect(screen.getByAltText('The Edge Of The Desert Line comic panel')).toBeDefined();
 
     fireEvent.click(screen.getByRole('button', { name: 'Previous Billy comic panel' }));
-    expect(screen.getByAltText('Billy Leaves The Sofa Zone comic panel')).toBeDefined();
-    expect(screen.queryByText('Billy Leaves The Sofa Zone')).toBeNull();
-    expect(screen.getByText('Page 1')).toBeDefined();
+    expect(screen.getByAltText('Crocodile Rooftop Yoga comic panel')).toBeDefined();
+    expect(screen.getByText('Page 112')).toBeDefined();
   });
 });

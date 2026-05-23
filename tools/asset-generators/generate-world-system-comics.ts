@@ -114,6 +114,115 @@ function nodes(p: Palette, index: number, count = 12) {
 
 function economicScene(index: number, p: Palette) {
   const era = Math.floor(index / 8);
+  if (era === 4) {
+    const local = index - 32;
+    if (local === 0) {
+      return `
+        ${grid(p, index)}
+        <g fill="none" stroke="${p.ink}" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" opacity="0.78">
+          <path d="M232 706 C310 590 404 578 450 454 C504 590 592 600 670 706 C566 745 338 745 232 706 Z" fill="${p.paper}" opacity="0.34"/>
+          <path d="M450 454 L450 812"/>
+          <path d="M450 812 L308 1052 M450 812 L592 1052"/>
+          <path d="M308 1052 C402 1002 498 1002 592 1052"/>
+          <path d="M296 654 C188 584 154 498 118 408"/>
+          <path d="M604 654 C714 584 744 498 788 408"/>
+        </g>
+        <g fill="${p.light}" opacity="0.68">
+          <circle cx="116" cy="408" r="28"/>
+          <circle cx="788" cy="408" r="28"/>
+          <circle cx="308" cy="1052" r="22"/>
+          <circle cx="592" cy="1052" r="22"/>
+        </g>
+      `;
+    }
+    if (local === 1) {
+      return `
+        <path d="M130 1010 C250 840 350 890 448 700 C562 480 680 470 794 330" fill="none" stroke="${p.accent2}" stroke-width="18" opacity="0.46"/>
+        <path d="M140 1030 C250 960 360 1040 450 952 C564 840 660 910 792 800" fill="none" stroke="${p.accent}" stroke-width="20" opacity="0.32"/>
+        ${nodes(p, index, 18)}
+        ${figure(450, 780, 0.72, p, index)}
+      `;
+    }
+    if (local === 2) {
+      return `
+        <rect x="155" y="340" width="590" height="690" rx="38" fill="${p.shadow}" opacity="0.13"/>
+        <path d="M230 904 C338 800 368 650 450 548 C536 658 570 802 680 904" fill="none" stroke="${p.ink}" stroke-width="8" stroke-opacity="0.48"/>
+        <path d="M222 938 H690" stroke="${p.ink}" stroke-width="8" stroke-opacity="0.4"/>
+        <g fill="${p.accent}" opacity="0.44">
+          <circle cx="290" cy="480" r="56"/>
+          <circle cx="610" cy="480" r="56"/>
+          <circle cx="450" cy="840" r="68"/>
+        </g>
+        <path d="M290 480 C360 590 534 592 610 480" fill="none" stroke="${p.accent2}" stroke-width="11" opacity="0.52"/>
+      `;
+    }
+    if (local === 3) {
+      return `
+        <g fill="none" stroke="${p.ink}" stroke-linecap="round" opacity="0.74">
+          <circle cx="450" cy="610" r="220" stroke-width="7"/>
+          <path d="M450 390 V830 M230 610 H670" stroke-width="6" stroke-opacity="0.44"/>
+          <path d="M270 950 C356 870 538 870 628 950" stroke-width="9"/>
+          <path d="M312 960 L252 1088 M588 960 L648 1088" stroke-width="7"/>
+        </g>
+        <g fill="${p.light}" opacity="0.72">
+          <circle cx="450" cy="610" r="52"/>
+          <circle cx="270" cy="950" r="30"/>
+          <circle cx="628" cy="950" r="30"/>
+        </g>
+        ${nodes(p, index, 12)}
+      `;
+    }
+    if (local === 4) {
+      return `
+        <path d="M110 870 C250 760 330 802 450 680 C582 548 660 610 800 486" fill="none" stroke="${p.accent2}" stroke-width="16" opacity="0.48"/>
+        <g fill="${p.shadow}" opacity="0.26">
+          <rect x="120" y="700" width="90" height="210" rx="14"/>
+          <rect x="290" y="610" width="110" height="300" rx="16"/>
+          <rect x="510" y="560" width="100" height="350" rx="16"/>
+          <rect x="690" y="650" width="80" height="260" rx="14"/>
+        </g>
+        <g fill="none" stroke="${p.ink}" stroke-width="4" opacity="0.5">
+          ${Array.from({ length: 8 }, (_, i) => `<path d="M${120 + i * 86} 1000 C${150 + i * 70} 900 ${210 + i * 58} 870 ${260 + i * 54} 780"/>`).join('')}
+        </g>
+        ${figure(450, 850, 0.6, p, index)}
+      `;
+    }
+    if (local === 5) {
+      return `
+        <g fill="none" stroke="${p.ink}" stroke-width="5" opacity="0.58">
+          <circle cx="450" cy="650" r="310"/>
+          <circle cx="450" cy="650" r="210"/>
+          <circle cx="450" cy="650" r="110"/>
+        </g>
+        <path d="M190 840 C290 700 350 730 450 612 C560 490 620 540 720 400" fill="none" stroke="${p.accent}" stroke-width="15" opacity="0.5"/>
+        ${nodes(p, index, 22)}
+        <circle cx="450" cy="650" r="62" fill="${p.light}" opacity="0.78"/>
+      `;
+    }
+    if (local === 6) {
+      return `
+        <g fill="none" stroke="${p.ink}" stroke-width="5" opacity="0.52">
+          <rect x="168" y="348" width="220" height="180" rx="24"/>
+          <rect x="512" y="348" width="220" height="180" rx="24"/>
+          <rect x="168" y="742" width="220" height="180" rx="24"/>
+          <rect x="512" y="742" width="220" height="180" rx="24"/>
+          <path d="M388 438 H512 M278 528 V742 M622 528 V742 M388 832 H512"/>
+        </g>
+        <g fill="${p.accent2}" opacity="0.38">
+          <circle cx="278" cy="438" r="54"/>
+          <circle cx="622" cy="438" r="54"/>
+          <circle cx="278" cy="832" r="54"/>
+          <circle cx="622" cy="832" r="54"/>
+        </g>
+      `;
+    }
+    return `
+      <path d="M450 1095 C380 925 390 740 450 520 C510 740 520 925 450 1095" fill="${p.accent}" opacity="0.24" stroke="${p.ink}" stroke-opacity="0.28" stroke-width="7"/>
+      <path d="M450 760 C320 700 230 650 120 530 M450 720 C575 660 690 590 800 430 M450 900 C318 960 240 1040 150 1160 M450 900 C588 960 680 1040 760 1160" fill="none" stroke="${p.ink}" stroke-width="8" stroke-opacity="0.42"/>
+      ${nodes(p, index, 18)}
+      ${figure(450, 760, 0.62, p, index)}
+    `;
+  }
   if (era === 0) {
     return `
       ${grid(p, index)}
@@ -181,6 +290,106 @@ function economicScene(index: number, p: Palette) {
 
 function ecologyScene(index: number, p: Palette) {
   const era = Math.floor(index / 8);
+  if (era === 4) {
+    const local = index - 32;
+    if (local === 0) {
+      return `
+        <path d="M450 980 C382 830 392 700 450 560 C508 700 518 830 450 980" fill="${p.accent2}" opacity="0.28" stroke="${p.ink}" stroke-opacity="0.28" stroke-width="7"/>
+        <path d="M450 560 C650 480 746 360 810 220" fill="none" stroke="${p.accent}" stroke-width="18" opacity="0.4"/>
+        <path d="M450 980 C390 1090 300 1160 210 1220 M450 980 C540 1090 630 1160 720 1220" fill="none" stroke="${p.ink}" stroke-width="8" stroke-opacity="0.4"/>
+        ${nodes(p, index, 14)}
+      `;
+    }
+    if (local === 1) {
+      return `
+        <path d="M70 900 C250 760 355 860 450 720 C560 560 690 640 835 480 L835 1350 L70 1350 Z" fill="${p.accent2}" opacity="0.22"/>
+        <g fill="none" stroke="${p.ink}" stroke-width="8" stroke-linecap="round" stroke-linejoin="round" opacity="0.62">
+          <path d="M168 760 C306 810 400 790 512 706 C612 632 708 630 792 668"/>
+          <path d="M205 742 L236 850 M330 774 L360 890 M488 720 L524 842 M650 658 L688 784"/>
+        </g>
+        <g fill="${p.accent}" opacity="0.36">
+          <ellipse cx="350" cy="850" rx="190" ry="70"/>
+          <ellipse cx="610" cy="770" rx="170" ry="58"/>
+        </g>
+      `;
+    }
+    if (local === 2) {
+      return `
+        <path d="M0 840 C160 760 260 860 420 780 C600 690 710 790 900 700 L900 1350 L0 1350 Z" fill="${p.accent2}" opacity="0.24"/>
+        <g fill="none" stroke="${p.ink}" stroke-width="8" stroke-linecap="round" opacity="0.58">
+          ${Array.from({ length: 9 }, (_, i) => {
+            const x = 150 + i * 76;
+            return `<path d="M${x} 990 C${x - 38} 820 ${x + 30} 690 ${x - 10} 540"/><path d="M${x} 840 C${x - 56} 800 ${x - 90} 742 ${x - 120} 672"/><path d="M${x} 860 C${x + 52} 812 ${x + 88} 752 ${x + 130} 680"/>`;
+          }).join('')}
+        </g>
+        ${nodes(p, index, 10)}
+      `;
+    }
+    if (local === 3) {
+      return `
+        <path d="M450 1010 C418 830 420 630 450 360" stroke="${p.shadow}" stroke-width="24" stroke-linecap="round" fill="none" opacity="0.5"/>
+        <g fill="none" stroke="${p.accent}" stroke-width="6" stroke-linecap="round" opacity="0.52">
+          ${Array.from({ length: 16 }, (_, i) => {
+            const y = 520 + i * 34;
+            const amp = 120 + (i % 4) * 38;
+            return `<path d="M450 ${y} C${450 - amp} ${y - 60} ${450 - amp} ${y + 60} ${450} ${y + 4} C${450 + amp} ${y - 60} ${450 + amp} ${y + 60} ${450} ${y + 8}"/>`;
+          }).join('')}
+        </g>
+        ${nodes(p, index, 18)}
+      `;
+    }
+    if (local === 4) {
+      return `
+        <circle cx="450" cy="620" r="305" fill="${p.accent2}" opacity="0.22"/>
+        <g fill="none" stroke="${p.ink}" stroke-width="6" opacity="0.52">
+          ${Array.from({ length: 13 }, (_, i) => `<path d="M${160 + (i % 5) * 135} ${500 + Math.floor(i / 5) * 125} q52 -70 104 0 q-52 76 -104 0"/>`).join('')}
+        </g>
+        <g fill="${p.light}" opacity="0.62">
+          <circle cx="450" cy="620" r="58"/>
+          <circle cx="338" cy="520" r="28"/>
+          <circle cx="565" cy="720" r="24"/>
+        </g>
+        ${figure(450, 900, 0.54, p, index)}
+      `;
+    }
+    if (local === 5) {
+      return `
+        <path d="M450 1040 C360 800 390 560 450 310 C510 560 540 800 450 1040" fill="${p.light}" opacity="0.34" stroke="${p.ink}" stroke-opacity="0.26" stroke-width="7"/>
+        <path d="M450 310 C346 480 344 620 450 780 C556 620 554 480 450 310" fill="none" stroke="${p.accent2}" stroke-width="11" opacity="0.42"/>
+        <g fill="${p.accent}" opacity="0.38">
+          <circle cx="320" cy="800" r="50"/>
+          <circle cx="580" cy="800" r="50"/>
+          <circle cx="450" cy="1010" r="42"/>
+        </g>
+      `;
+    }
+    if (local === 6) {
+      return `
+        <g fill="none" stroke="${p.ink}" stroke-width="5" opacity="0.52">
+          <circle cx="450" cy="650" r="315"/>
+          <path d="M135 650 H765 M450 335 V965"/>
+          <path d="M230 890 C330 760 390 800 450 650 C520 480 606 520 720 386" stroke="${p.accent}" stroke-width="15" stroke-opacity="0.5"/>
+        </g>
+        <g fill="${p.accent2}" opacity="0.38">
+          <circle cx="260" cy="790" r="62"/>
+          <circle cx="450" cy="650" r="70"/>
+          <circle cx="640" cy="510" r="62"/>
+        </g>
+        ${nodes(p, index, 16)}
+      `;
+    }
+    return `
+      <path d="M120 960 C260 805 352 850 450 675 C552 500 642 550 780 365" fill="none" stroke="${p.light}" stroke-width="26" opacity="0.6"/>
+      <path d="M160 1050 C280 960 390 1030 520 930 C640 840 720 890 820 800" fill="none" stroke="${p.accent}" stroke-width="20" opacity="0.36"/>
+      <g fill="${p.accent2}" opacity="0.32">
+        <circle cx="220" cy="850" r="64"/>
+        <circle cx="372" cy="742" r="48"/>
+        <circle cx="570" cy="574" r="56"/>
+        <circle cx="720" cy="415" r="64"/>
+      </g>
+      ${figure(450, 820, 0.64, p, index)}
+    `;
+  }
   if (era === 0) {
     return `
       <path d="M450 1030 C420 850 420 650 450 410" stroke="${p.shadow}" stroke-width="28" stroke-linecap="round" fill="none" opacity="0.58"/>
@@ -318,7 +527,8 @@ async function generate() {
   for (const key of Object.keys(programs) as ProgramKey[]) {
     const dir = path.join(ROOT, 'public', 'comics', key, 'variants', 'positive-overlay');
     await mkdir(dir, { recursive: true });
-    for (let i = 0; i < 32; i += 1) {
+    const count = key === 'future-transitions' ? 32 : 40;
+    for (let i = 0; i < count; i += 1) {
       const out = path.join(dir, `panel-${i}.webp`);
       await sharp(Buffer.from(svg(key, i)))
         .webp({ quality: 78, effort: 5 })

@@ -132,7 +132,7 @@ const programs: Scene[] = [
   {
     key: 'billy',
     dir: 'public/entertainment/billy/quest-for-juice',
-    indices: range(130, 145),
+    indices: range(130, 152),
     palette: desert,
     kind: 'desert',
   },
@@ -338,7 +338,20 @@ function desertScene(index: number, p: Palette) {
     return `${dunes}${person(450, 590, 0.72, p, 1)}${letter(p, 520, 760)}${lizard(280, 840, 0.55, p)}`;
   if (i === 14)
     return `${dunes}${observatory(p)}${geometry(p, 450, 600, 230)}${person(450, 700, 0.54, p, 0)}`;
-  return `${dunes}${person(450, 560, 0.78, p, 1)}${pathLine(p)}${sky(p)}`;
+  if (i === 15) return `${dunes}${person(450, 560, 0.78, p, 1)}${pathLine(p)}${sky(p)}`;
+  if (i === 16)
+    return `${dunes}${hangar(p)}${sandScooter(p, 310, 790, 1.05)}${sandScooter(p, 560, 810, 0.9)}${lizard(640, 760, 0.62, p)}`;
+  if (i === 17)
+    return `${dunes}${sandScooter(p, 345, 800, 1)}${person(345, 560, 0.52, p, 1)}${potato(590, 735, 0.78, p)}${sandScooter(p, 585, 850, 0.95)}`;
+  if (i === 18)
+    return `${dunes}${sandScooter(p, 380, 820, 1.05)}${person(340, 600, 0.52, p, 0)}${lizard(560, 760, 0.54, p)}${pathLine(p)}`;
+  if (i === 19)
+    return `${dunes}${sandRacers(p)}${sandScooter(p, 380, 850, 1.08)}${person(360, 620, 0.5, p, 1)}${lizard(540, 805, 0.48, p)}`;
+  if (i === 20)
+    return `${dunes}${stormWall(p)}${scorpionShadow(p)}${sandScooter(p, 385, 900, 0.9)}${person(360, 690, 0.44, p, 0)}`;
+  if (i === 21)
+    return `${dunes}${stormWall(p)}${ghostCaravan(p)}${lizard(520, 840, 0.5, p)}${person(385, 715, 0.44, p, 1)}`;
+  return `${dunes}${stormWall(p)}${sandScooter(p, 400, 890, 0.98)}${person(350, 665, 0.46, p, 0)}${lizard(570, 775, 0.56, p)}${pathLine(p)}`;
 }
 
 function room(p: Palette) {
@@ -435,6 +448,22 @@ function plane(p: Palette, x = 180, y = 690, s = 1) {
 
 function sandRacers(p: Palette) {
   return `<g fill="none" stroke="${p.ink}" stroke-width="6" stroke-linecap="round" opacity="0.78">${[0, 1, 2].map((i) => `<path d="M${110 + i * 210} ${880 - i * 70} C${210 + i * 190} ${785 - i * 45} ${270 + i * 150} ${845 - i * 45} ${360 + i * 160} ${755 - i * 60}" stroke="${i % 2 ? p.accent2 : p.accent}" stroke-opacity="0.46"/><circle cx="${220 + i * 190}" cy="${890 - i * 70}" r="28"/><circle cx="${300 + i * 190}" cy="${880 - i * 70}" r="28"/>`).join('')}</g>`;
+}
+
+function sandScooter(p: Palette, x: number, y: number, s: number) {
+  return `<g transform="translate(${x} ${y}) scale(${s})" fill="none" stroke="${p.ink}" stroke-width="7" stroke-linecap="round" stroke-linejoin="round" opacity="0.82"><path d="M-150 70 C-42 8 96 18 178 80 C80 126 -60 128 -150 70 Z" fill="${p.accent2}" opacity="0.24"/><circle cx="-72" cy="94" r="30"/><circle cx="110" cy="98" r="30"/><path d="M-30 40 C24 -60 92 -58 128 36"/><path d="M-132 58 L-206 18 M150 72 L222 28"/></g>`;
+}
+
+function stormWall(p: Palette) {
+  return `<g opacity="0.62"><path d="M0 235 C170 150 285 290 430 210 C590 120 710 225 900 130 L900 1350 L0 1350 Z" fill="${p.shadow}" opacity="0.18"/><path d="M60 390 C210 315 320 460 470 350 C610 250 725 360 860 300" fill="none" stroke="${p.accent}" stroke-width="18" stroke-opacity="0.22"/><path d="M110 620 C260 540 380 670 520 570 C650 480 760 570 850 510" fill="none" stroke="${p.light}" stroke-width="14" stroke-opacity="0.24"/></g>`;
+}
+
+function scorpionShadow(p: Palette) {
+  return `<g transform="translate(450 610)" fill="none" stroke="${p.ink}" stroke-width="8" stroke-linecap="round" stroke-linejoin="round" opacity="0.36"><path d="M-120 60 C-40 -40 80 -40 150 54"/><path d="M-110 62 L-220 20 M-80 20 L-190 -68 M-25 -16 L-78 -132 M42 -18 L82 -138 M96 20 L198 -76 M130 62 L238 12"/><path d="M140 50 C260 -28 255 -178 150 -220"/><path d="M150 -220 L192 -170"/></g>`;
+}
+
+function ghostCaravan(p: Palette) {
+  return `<g fill="none" stroke="${p.ink}" stroke-width="6" stroke-linecap="round" opacity="0.28">${[0, 1, 2, 3].map((i) => `<path d="M${185 + i * 145} ${590 - i * 24} q48 -70 96 0 q-48 84 -96 0"/><path d="M${205 + i * 145} ${612 - i * 24} C${230 + i * 145} ${700 - i * 20} ${260 + i * 145} ${730 - i * 16} ${295 + i * 145} ${780 - i * 10}"/>`).join('')}</g>`;
 }
 
 function idol(p: Palette) {

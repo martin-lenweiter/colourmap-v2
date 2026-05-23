@@ -150,6 +150,7 @@ Accepted initial presets:
 - **Dot Heart**: a heart shape made only from many warm dots, with internal pulse and flowing particle motion.
 - **Dot Phoenix**: a warm dot loop that blooms from a heart-like ember into a bird silhouette, then dissolves upward into flames before returning. Brighter regions should come from denser particles, not a solid fill. Long term, Phoenix should be able to transition into and out of Dot Heart as one continuous journey.
 - **Dot Brain Loop**: a symmetric walnut/brain-like dot field. It should loop between a rational mode with ordered rows, lanes, and number-like micro-patterns and a creative mode with irrational swirls and flowing folds.
+- **Neuron Web**: a five-preset series (`Neuron Web 1` through `Neuron Web 5`) inside the same dot-neuron visual language. The series should move from calm sparse neurons to denser branching webs, with pulses travelling through the branches like thought, memory, or signal flow. It belongs in Art / Geometry as a living symbolic system for intelligence, learning, AI, and nervous-system metaphors.
 
 - **Embrace**: a close-up development of the best Dot Brain Loop movement, where the two moving lobes become two warm dot energy bodies leaning inward, hugging, dancing, and swirling around each other without becoming literal realistic figures.
 
