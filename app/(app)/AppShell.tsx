@@ -45,7 +45,9 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
   const immersivePage =
     pathname === '/progress-road' ||
     pathname === '/geometry-field' ||
-    pathname === '/entertainment';
+    pathname === '/entertainment' ||
+    pathname === '/figures' ||
+    pathname === '/figure-stars';
   const [musicSection, setMusicSection] = useState<MusicSection>('makers');
   function showRecordingsSection(_songId?: string) {
     // Recordings hidden for now — no-op
