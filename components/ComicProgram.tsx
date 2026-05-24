@@ -830,6 +830,9 @@ function PanelImage({
           index % (POSITIVE_OVERLAY_PANEL_COUNTS[programKey] ?? Number.POSITIVE_INFINITY)
         }.${extension}`}
         alt={alt}
+        loading={index === 0 ? 'eager' : 'lazy'}
+        fetchPriority={index === 0 ? 'high' : 'auto'}
+        decoding="async"
         onError={() => setFailed(true)}
         style={{
           width: '100%',
@@ -846,6 +849,9 @@ function PanelImage({
       <img
         src={`/comics/${programKey}/generated/panel-${index % generatedCount}.${extension}`}
         alt={alt}
+        loading={index === 0 ? 'eager' : 'lazy'}
+        fetchPriority={index === 0 ? 'high' : 'auto'}
+        decoding="async"
         onError={() => setFailed(true)}
         style={{
           width: '100%',
@@ -872,6 +878,9 @@ function PanelImage({
       <img
         src={src}
         alt={alt}
+        loading={index === 0 ? 'eager' : 'lazy'}
+        fetchPriority={index === 0 ? 'high' : 'auto'}
+        decoding="async"
         onError={() => setFailed(true)}
         style={{
           width: '100%',

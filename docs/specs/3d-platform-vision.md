@@ -2,9 +2,22 @@
 
 **Status:** Vision + capability map, not implementation
 **Date:** 2026-05-23
-**Lives in:** Cross-cutting (Progress, Education, GeometryField, Body Engine)
+**Lives in:** Cross-cutting (Art, Progress, GeometryField, Body Engine)
 
-The user owns 3D Blender/ZBrush assets and wants to know how far we can take them inside Colourmap: anatomy for medical learning, video-game-style yoga/stretch characters, hologram objects for Progress, animated characters, all delivered on phones over wifi. This doc maps what's achievable, what's hard, what's *truly* hard, and what each tier unlocks.
+The user owns 3D Blender/ZBrush assets and wants to know how far we can take them inside Colourmap: anatomy for body learning, video-game-style yoga/stretch characters, hologram objects for Progress, animated characters, all delivered on phones over wifi. This doc maps what's achievable, what's hard, what's *truly* hard, and what each tier unlocks.
+
+## Product boundary: not Education for now
+
+3D should not be surfaced inside the Education library for now. Education is already image-heavy and should remain focused on readable programs, comics, teachers, and world-system material. Adding live 3D canvases or 3D lab cards there makes the library noisier and works against the weak-wifi image-performance constraint.
+
+Current 3D surfacing belongs in:
+
+- The Colourmap title menu pills for direct discovery
+- The Art / Geometry Field area
+- Dedicated immersive routes: `/figures` and `/figure-stars`
+- Future Progress, Body Engine, or Billy/Entertainment surfaces when the use case is specific
+
+Education may reference 3D later only if a dedicated spec says why it improves learning more than it adds load, distraction, or navigation clutter.
 
 ## TL;DR — what's realistic, in three buckets
 
@@ -45,7 +58,7 @@ Solid 3D figure on the Progress page, slow rotation, breathing. Material switche
 The hologram material we already built is *the* answer for floating UI elements:
 - Notebook tile becomes a small floating golden book
 - Ritual tile becomes a translucent ring
-- Each Education program tile becomes a small symbolic 3D icon
+- Learning tiles could eventually become symbolic 3D objects, but not inside the Education library until a later dedicated spec approves that direction
 - Settings could be a slowly-rotating cube with each face labeled
 
 Performance cost is tiny: each tile is one small mesh (~5k tris), drawn once per frame. Ten of them = trivial. Mobile-safe.
@@ -168,7 +181,7 @@ Ranking by uniqueness (something no other app does):
 
 1. **Personal art as the dashboard.** Most apps use stock illustrations. Colourmap uses *your own* Blender deity as the avatar. That's irreplaceable.
 
-2. **Hologram-style interaction surfaces.** Apple-quality translucent UI for tiles, rituals, education programs — using *your* shapes, not Apple's. Brand-distinct.
+2. **Hologram-style interaction surfaces.** Apple-quality translucent UI for tiles and rituals — using *your* shapes, not Apple's. Brand-distinct.
 
 3. **Yoga + stretches as 3D-animated routines** tied to mood/journal. Headspace doesn't have this. Calm doesn't have this. The integration with the journal + ritual system is unique.
 
@@ -213,11 +226,13 @@ But within those limits, **most of the 3D vision is achievable in the next 2–3
 
 ## Surfacing inside the app
 
-Both 3D pages are reachable from the **Art** tab (`/geometry-field`). The bottom drawer top-pill row contains:
+Both 3D pages are reachable from the **Art** tab (`/geometry-field`) and the Colourmap title menu. The bottom drawer top-pill row contains:
 
 `Builder · Music Visuals · Arena · Figures · Figure Stars`
 
 - **Figures** → `/figures` — Golden God, Kid Lotus, and procedural Billy with the material switcher (gold / hologram / stars), seven hologram palette swatches, drag-to-rotate, and the Animated tab driving Mixamo-style skeletal animations.
 - **Figure Stars** → `/figure-stars` — the dot-of-stars geometry-builder UI: any figure × seven palettes × density / size / pulse controls, all live.
+
+The Education hub deliberately does not include 3D entry cards in this phase.
 
 Both routes are marked as immersive in `AppShell.tsx` so they render edge-to-edge without the standard padded column wrapper.

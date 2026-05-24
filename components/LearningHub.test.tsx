@@ -54,6 +54,7 @@ describe('LearningHub', () => {
     expect(screen.getByText('Future Transitions: AI, Work & Globalisation')).toBeDefined();
     expect(screen.getByText('Signal vs Noise')).toBeDefined();
     expect(screen.getByText('Finding Your Place')).toBeDefined();
+    expect(screen.queryByText('Visual labs')).toBeNull();
     expect(screen.getByText('Entertainment')).toBeDefined();
     expect(screen.getByText('Pineapple Planet')).toBeDefined();
     expect(screen.getByText('Colourmap Vision Comic')).toBeDefined();

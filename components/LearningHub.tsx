@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { PROGRAMS, type Program } from '@/lib/programs';
 import ComicProgram from './ComicProgram';
 import LearningProgram from './LearningProgram';
@@ -668,6 +668,8 @@ function ProgramImageCard({
         <img
           src={imageSrc}
           alt=""
+          loading="lazy"
+          decoding="async"
           style={{
             display: 'block',
             width: '100%',
@@ -764,6 +766,8 @@ function GuideProgramCard({
         <img
           src={imageSrc}
           alt=""
+          loading="lazy"
+          decoding="async"
           style={{
             display: 'block',
             width: '100%',
@@ -850,6 +854,8 @@ function EducationWorldCard({ world, onOpen }: { world: EducationWorld; onOpen: 
         <img
           src={world.cover}
           alt=""
+          loading="lazy"
+          decoding="async"
           style={{
             display: 'block',
             width: '100%',
@@ -897,6 +903,7 @@ const HUB_PALETTES = [
   { id: 'slate', bg: 'rgba(6,8,10,0.99)', dot: '#202830' },
 ] as const;
 type HubPaletteId = (typeof HUB_PALETTES)[number]['id'];
+type HubOrganisationMode = 'themes' | 'library';
 const HUB_LS = 'colourmap-learn-palette';
 function loadHubPalette(): HubPaletteId {
   try {
@@ -909,6 +916,7 @@ export default function LearningHub({ onClose }: { onClose: () => void }) {
   const [active, setActive] = useState<Program | null>(null);
   const [personalityOpen, setPersonalityOpen] = useState(false);
   const [hubPalId, setHubPalId] = useState<HubPaletteId>('brown');
+  const [organisationMode, setOrganisationMode] = useState<HubOrganisationMode>('themes');
   const [philosophyOpen, setPhilosophyOpen] = useState(false);
   const [educationQuote, setEducationQuote] = useState<(typeof EDUCATION_QUOTES)[number]>(
     EDUCATION_QUOTES[0],
@@ -930,6 +938,10 @@ export default function LearningHub({ onClose }: { onClose: () => void }) {
   }
 
   const byKey = Object.fromEntries(PROGRAMS.map((p) => [p.key, p]));
+  const libraryPrograms = useMemo(
+    () => [...PROGRAMS].sort((a, b) => a.domain.localeCompare(b.domain)),
+    [],
+  );
 
   if (active) {
     if (TRAINER_PROGRAMS.has(active.key)) {
@@ -1007,6 +1019,8 @@ export default function LearningHub({ onClose }: { onClose: () => void }) {
           <img
             src={heroImage}
             alt=""
+            fetchPriority="high"
+            decoding="async"
             style={{
               width: '100%',
               height: 'auto',
@@ -1162,14 +1176,116 @@ export default function LearningHub({ onClose }: { onClose: () => void }) {
         </div>
 
         {/* Programs — swim lanes with group tints */}
-        <div style={{ flex: 1, overflowY: 'auto', padding: '20px 0 40px' }}>
-          {GROUPS.map((group) => {
-            const programs = group.keys.map((k) => byKey[k]).filter(Boolean);
-            if (!programs.length) return null;
+        <div
+          style={{
+            display: 'flex',
+            justifyContent: 'center',
+            gap: 6,
+            padding: '12px 20px 0',
+            flexShrink: 0,
+          }}
+        >
+          {(
+            [
+              { id: 'themes', label: 'Themes' },
+              { id: 'library', label: 'A-Z Library' },
+            ] as const
+          ).map((mode) => {
+            const activeMode = organisationMode === mode.id;
             return (
-              <div key={group.label} style={{ marginBottom: 32 }}>
-                {/* group label */}
-                <div style={{ paddingLeft: 20, marginBottom: 14 }}>
+              <button
+                key={mode.id}
+                type="button"
+                onClick={() => setOrganisationMode(mode.id)}
+                aria-pressed={activeMode}
+                style={{
+                  border: `1px solid ${activeMode ? och(0.44) : och(0.18)}`,
+                  borderRadius: 999,
+                  background: activeMode ? och(0.13) : 'transparent',
+                  color: activeMode ? cream(0.88) : och(0.56),
+                  cursor: 'pointer',
+                  fontFamily: SERIF,
+                  fontSize: 11,
+                  fontWeight: 800,
+                  letterSpacing: '0.1em',
+                  padding: '6px 14px',
+                  textTransform: 'uppercase',
+                }}
+              >
+                {mode.label}
+              </button>
+            );
+          })}
+        </div>
+
+        <div style={{ flex: 1, overflowY: 'auto', padding: '20px 0 40px' }}>
+          {organisationMode === 'themes' ? (
+            GROUPS.map((group) => {
+              const programs = group.keys.map((k) => byKey[k]).filter(Boolean);
+              if (!programs.length) return null;
+              return (
+                <div key={group.label} style={{ marginBottom: 32 }}>
+                  {/* group label */}
+                  <div style={{ paddingLeft: 20, marginBottom: 14 }}>
+                    <div
+                      style={{
+                        fontFamily: SERIF,
+                        fontSize: 14,
+                        fontWeight: 700,
+                        letterSpacing: '0.08em',
+                        textTransform: 'uppercase',
+                        color: col(group.tint, 0.75),
+                      }}
+                    >
+                      {group.label}
+                    </div>
+                  </div>
+
+                  {/* horizontal scroll lane */}
+                  <div
+                    style={{
+                      display: 'flex',
+                      gap: 10,
+                      overflowX: 'auto',
+                      paddingLeft: 20,
+                      paddingRight: 20,
+                      paddingBottom: 6,
+                      scrollbarWidth: 'none',
+                    }}
+                  >
+                    {programs.map((p, i) =>
+                      group.format === 'guides' ? (
+                        <GuideProgramCard
+                          key={p.key}
+                          program={p}
+                          onOpen={() => setActive(p)}
+                          cardColor={progressionColor(group.tint, i, programs.length)}
+                        />
+                      ) : (
+                        <ProgramImageCard
+                          key={p.key}
+                          program={p}
+                          onOpen={() => setActive(p)}
+                          startHere={group.startHere === p.key}
+                          cardColor={progressionColor(group.tint, i, programs.length)}
+                        />
+                      ),
+                    )}
+                  </div>
+                </div>
+              );
+            })
+          ) : (
+            <div style={{ marginBottom: 32 }}>
+              <div style={{ paddingLeft: 20, paddingRight: 20, marginBottom: 14 }}>
+                <div
+                  style={{
+                    display: 'flex',
+                    alignItems: 'baseline',
+                    justifyContent: 'space-between',
+                    gap: 12,
+                  }}
+                >
                   <div
                     style={{
                       fontFamily: SERIF,
@@ -1177,47 +1293,44 @@ export default function LearningHub({ onClose }: { onClose: () => void }) {
                       fontWeight: 700,
                       letterSpacing: '0.08em',
                       textTransform: 'uppercase',
-                      color: col(group.tint, 0.75),
+                      color: och(0.68),
                     }}
                   >
-                    {group.label}
+                    A-Z Library
+                  </div>
+                  <div
+                    style={{
+                      color: och(0.48),
+                      fontFamily: SERIF,
+                      fontSize: 10,
+                      letterSpacing: '0.12em',
+                      textTransform: 'uppercase',
+                    }}
+                  >
+                    {libraryPrograms.length} programs
                   </div>
                 </div>
-
-                {/* horizontal scroll lane */}
-                <div
-                  style={{
-                    display: 'flex',
-                    gap: 10,
-                    overflowX: 'auto',
-                    paddingLeft: 20,
-                    paddingRight: 20,
-                    paddingBottom: 6,
-                    scrollbarWidth: 'none',
-                  }}
-                >
-                  {programs.map((p, i) =>
-                    group.format === 'guides' ? (
-                      <GuideProgramCard
-                        key={p.key}
-                        program={p}
-                        onOpen={() => setActive(p)}
-                        cardColor={progressionColor(group.tint, i, programs.length)}
-                      />
-                    ) : (
-                      <ProgramImageCard
-                        key={p.key}
-                        program={p}
-                        onOpen={() => setActive(p)}
-                        startHere={group.startHere === p.key}
-                        cardColor={progressionColor(group.tint, i, programs.length)}
-                      />
-                    ),
-                  )}
-                </div>
               </div>
-            );
-          })}
+              <div
+                style={{
+                  display: 'flex',
+                  flexWrap: 'wrap',
+                  gap: 10,
+                  paddingLeft: 20,
+                  paddingRight: 20,
+                }}
+              >
+                {libraryPrograms.map((program, i) => (
+                  <GuideProgramCard
+                    key={program.key}
+                    program={program}
+                    onOpen={() => setActive(program)}
+                    cardColor={progressionColor('#C4A060', i, libraryPrograms.length)}
+                  />
+                ))}
+              </div>
+            </div>
+          )}
 
           <div style={{ marginBottom: 32 }}>
             <div style={{ paddingLeft: 20, marginBottom: 14 }}>

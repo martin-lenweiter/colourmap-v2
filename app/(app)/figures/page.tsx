@@ -1,6 +1,8 @@
 'use client';
 
-import { useState } from 'react';
+import Link from 'next/link';
+import { useSearchParams } from 'next/navigation';
+import { useEffect, useState } from 'react';
 import AnimatedFigure from '@/components/AnimatedFigure';
 import Billy3D from '@/components/Billy3D';
 import GoldenGod, { type FigureAsset } from '@/components/GoldenGod';
@@ -16,11 +18,35 @@ const STATIC_FIGURES: FigureAsset[] = [
   },
   {
     key: 'kid-lotus',
-    label: 'Kid Lotus',
+    label: 'Buddha Boy',
     url: '/models/kid-lotus.obj',
     goldColor: '#C9A06A',
     hologramColor: '#E8C898',
     starColor: '#F2D89A',
+  },
+  {
+    key: 'spirit',
+    label: 'Spirit',
+    url: '/models/spirit.obj',
+    goldColor: '#CFAE78',
+    hologramColor: '#BFE8D8',
+    starColor: '#D8FFE8',
+  },
+  {
+    key: 'butterfly-priest',
+    label: 'Butterfly Priest',
+    url: '/models/butterfly-priest.obj',
+    goldColor: '#D2A86A',
+    hologramColor: '#D6C0FF',
+    starColor: '#E5D7FF',
+  },
+  {
+    key: 'butterfly-man',
+    label: 'Butterfly Man',
+    url: '/models/butterfly-man.obj',
+    goldColor: '#C78E58',
+    hologramColor: '#FFC7A2',
+    starColor: '#FFD8B8',
   },
 ];
 
@@ -35,9 +61,34 @@ const SERIF = 'var(--font-serif)';
 type Mode = 'static' | 'animated' | 'billy';
 
 export default function FiguresPage() {
-  const [mode, setMode] = useState<Mode>('static');
-  const [staticFig, setStaticFig] = useState<FigureAsset>(STATIC_FIGURES[0]);
-  const [animFig, setAnimFig] = useState(ANIMATED_FIGURES[0]);
+  const searchParams = useSearchParams();
+  const requestedMode = searchParams.get('mode');
+  const requestedFigure = searchParams.get('figure');
+  const [mode, setMode] = useState<Mode>(getInitialMode(requestedMode));
+  const [staticFig, setStaticFig] = useState<FigureAsset>(
+    findStaticFigure(requestedFigure) ?? STATIC_FIGURES[0],
+  );
+  const [animFig, setAnimFig] = useState(
+    ANIMATED_FIGURES.find((figure) => figure.key === requestedFigure) ?? ANIMATED_FIGURES[0],
+  );
+
+  useEffect(() => {
+    const nextMode = getInitialMode(requestedMode);
+    const nextStatic = findStaticFigure(requestedFigure);
+    const nextAnimated = ANIMATED_FIGURES.find((figure) => figure.key === requestedFigure);
+
+    if (nextStatic && requestedMode !== 'billy') {
+      setMode('static');
+      setStaticFig(nextStatic);
+      return;
+    }
+    if (nextAnimated && requestedMode === 'animated') {
+      setMode('animated');
+      setAnimFig(nextAnimated);
+      return;
+    }
+    setMode(nextMode);
+  }, [requestedFigure, requestedMode]);
 
   return (
     <div
@@ -71,16 +122,31 @@ export default function FiguresPage() {
         >
           3D Figures · preview
         </div>
-        <div style={{ display: 'flex', gap: 6 }}>
+        <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
           <ModeButton active={mode === 'static'} onClick={() => setMode('static')}>
-            Static (Level A)
+            Static
           </ModeButton>
           <ModeButton active={mode === 'animated'} onClick={() => setMode('animated')}>
-            Animated (Level B)
+            Animated
           </ModeButton>
           <ModeButton active={mode === 'billy'} onClick={() => setMode('billy')}>
-            Billy
+            Billy 3D
           </ModeButton>
+          <Link
+            href="/figure-stars?figure=billy"
+            style={{
+              border: '1px solid rgba(240,216,152,0.25)',
+              borderRadius: 999,
+              color: 'rgba(240,216,152,0.7)',
+              fontFamily: SERIF,
+              fontSize: 12,
+              letterSpacing: '0.1em',
+              padding: '6px 14px',
+              textDecoration: 'none',
+            }}
+          >
+            Billy Stars
+          </Link>
         </div>
         {mode !== 'billy' && (
           <div style={{ display: 'flex', gap: 6 }}>
@@ -119,6 +185,15 @@ export default function FiguresPage() {
       </div>
     </div>
   );
+}
+
+function getInitialMode(mode: string | null): Mode {
+  if (mode === 'animated' || mode === 'billy') return mode;
+  return 'static';
+}
+
+function findStaticFigure(key: string | null) {
+  return STATIC_FIGURES.find((figure) => figure.key === key);
 }
 
 function ModeButton({
