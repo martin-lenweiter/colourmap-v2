@@ -1545,6 +1545,80 @@ export const PROGRAMS: Program[] = [
     ],
   },
   {
+    key: 'signal-vs-noise',
+    domain: 'Signal vs Noise',
+    color: '#6F8FA6',
+    segments: [
+      {
+        title: 'The room of noise',
+        body: 'Noise is not only sound. It is tabs, opinions, urgency, comparison, shame, and the emotional weather around a task. When everything shouts at once, the real next move can disappear even when it is still nearby.',
+      },
+      {
+        title: 'The signal',
+        body: 'The signal is the thing that still matters after the panic fades. It is usually smaller than the noise: one sentence to write, one call to make, one tool to pick up, one honest problem to name.',
+      },
+      {
+        title: 'Emotional static',
+        body: 'Anxiety and shame can make a simple task look enormous. The work may be real, but the projection around the work adds extra weight. Naming the static helps separate the task from the storm around it.',
+      },
+      {
+        title: 'Projection',
+        body: 'From far away, the task can look like a mountain. Up close, it may be a door, a form, a question, or a first awkward attempt. Clarity often comes from approaching the thing, not from thinking about it forever.',
+      },
+      {
+        title: 'The load-bearing move',
+        body: 'Ten busy gestures can avoid one meaningful action. The load-bearing move is the small action that actually changes the situation: sending the message, opening the document, asking the question, moving the first object.',
+      },
+      {
+        title: 'Leaving the noise field',
+        body: 'Leaving noise is not dramatic. It is turning away from false urgency and returning to the real work. The body does one clean thing, and the mind slowly receives evidence that the situation is not only fog.',
+      },
+      {
+        title: 'Practice and references',
+        body: 'A useful practice: ask what is signal, what is noise, and what one action would touch reality. The point is not perfect focus. The point is learning to notice interference and return to what matters.',
+      },
+    ],
+  },
+  {
+    key: 'finding-your-place',
+    domain: 'Finding Your Place',
+    color: '#A07888',
+    segments: [
+      {
+        title: 'The wrong-shaped room',
+        body: 'Sometimes the problem is not that you are broken. It is that the room, role, job, group, or relationship was never shaped for the piece you are carrying. Mismatch can hurt, but it can also become information.',
+      },
+      {
+        title: 'The job door stays closed',
+        body: 'A closed door can feel like a verdict. It may also point toward missing skills, bad timing, a narrow market, or a path that needs to be built sideways. The side window matters: another form of work can begin before permission arrives.',
+      },
+      {
+        title: 'The love seat is empty',
+        body: 'Loneliness should not be mocked or rushed into advice. The empty seat is real. But emptiness is not proof that love is impossible. It is a place where tenderness, standards, patience, and honest contact can slowly return.',
+      },
+      {
+        title: 'The inner world is real',
+        body: 'A person may carry beauty, imagination, care, and intelligence that the street does not immediately recognize. The inner light still counts before it is witnessed. Protecting it is not fantasy; it is keeping the signal alive.',
+      },
+      {
+        title: 'Belonging is not begging',
+        body: 'Belonging is not earned by knocking forever on the wrong door. At some point dignity turns the body toward another path. This is not bitterness. It is the decision to stop asking a closed room to define your worth.',
+      },
+      {
+        title: 'Make a small place',
+        body: 'A place can begin with a table, a notebook, a tool, a plant, a ritual, or one honest message. The first square of belonging is often made, not found. It gives the nervous system evidence that life can hold you somewhere.',
+      },
+      {
+        title: 'People who recognize the signal',
+        body: 'The right people do not need every part of you explained in advance. They notice a signal, answer with their own, and a small constellation appears. Recognition is quieter than applause, but it is stronger.',
+      },
+      {
+        title: 'The puzzle grows',
+        body: 'Finding your place does not always mean squeezing into the old picture. Sometimes the puzzle itself becomes larger. Stranger shapes create a wider world, and what once looked like exile becomes part of the map.',
+      },
+    ],
+  },
+  {
     key: 'art-of-trying',
     domain: 'The Art Of Trying',
     color: '#A8794E',

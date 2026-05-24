@@ -34,6 +34,8 @@ const POSITIVE_OVERLAY_PROGRAMS = new Set([
   'fishing-in-the-dark',
   'conflict-repair',
   'money-anxiety',
+  'signal-vs-noise',
+  'finding-your-place',
   'art-of-trying',
   'identity-becoming',
   'avoidance-action',
@@ -94,6 +96,8 @@ const GENERATED_LAYERED_PANEL_EXTENSIONS: Record<string, string> = {
 const POSITIVE_OVERLAY_PANEL_EXTENSIONS: Record<string, string> = {
   'conflict-repair': 'webp',
   'money-anxiety': 'webp',
+  'signal-vs-noise': 'webp',
+  'finding-your-place': 'webp',
   'art-of-trying': 'webp',
   'identity-becoming': 'webp',
   'avoidance-action': 'webp',
@@ -116,6 +120,8 @@ const POSITIVE_OVERLAY_PANEL_EXTENSIONS: Record<string, string> = {
 const POSITIVE_OVERLAY_PANEL_COUNTS: Record<string, number> = {
   'conflict-repair': 7,
   'money-anxiety': 7,
+  'signal-vs-noise': 7,
+  'finding-your-place': 8,
   'art-of-trying': 10,
   'identity-becoming': 7,
   'avoidance-action': 1,
@@ -138,6 +144,8 @@ const POSITIVE_OVERLAY_PANEL_COUNTS: Record<string, number> = {
 const SINGLE_RASTER_PROGRAMS = new Set([
   'viktor-frankl',
   'bukowski-poems',
+  'signal-vs-noise',
+  'finding-your-place',
   'art-of-trying',
   'jack-london',
   'jules-verne',
