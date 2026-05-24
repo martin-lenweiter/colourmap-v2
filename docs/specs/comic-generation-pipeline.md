@@ -1209,9 +1209,9 @@ fixed education page
 The generated image library should therefore be treated as a growing symbolic visual vocabulary,
 not only as illustrations for one program.
 
-## Future Education Program: Signal vs Noise
+## Education Program: Signal vs Noise
 
-Prepare this as a future education program, not an immediate implementation.
+Signal vs Noise now ships as a seven-page Education program in the Growth lane.
 
 Core idea:
 
@@ -1324,9 +1324,11 @@ Verne, economics, ecology, or other story-heavy education comics when the user e
 imagegen style. Final pages should be generated as high-quality raster illustrations, then
 compressed to WebP/AVIF for the app.
 
-## Future Education Program: Finding Your Place
+## Education Program: Finding Your Place
 
 Working title: **Finding Your Place**.
+
+Finding Your Place now ships as an eight-page Education program in the Growth lane.
 
 Theme: what to do when you do not fit, do not find love, do not find a job, or feel like a piece
 outside the puzzle, while still feeling the magic of the world alive in your soul. The tone should

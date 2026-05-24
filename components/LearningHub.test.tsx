@@ -52,6 +52,8 @@ describe('LearningHub', () => {
     expect(screen.getByText('Economic Systems In Motion')).toBeDefined();
     expect(screen.getByText('Planetary Ecology & Living Intelligence')).toBeDefined();
     expect(screen.getByText('Future Transitions: AI, Work & Globalisation')).toBeDefined();
+    expect(screen.getByText('Signal vs Noise')).toBeDefined();
+    expect(screen.getByText('Finding Your Place')).toBeDefined();
     expect(screen.getByText('Entertainment')).toBeDefined();
     expect(screen.getByText('Pineapple Planet')).toBeDefined();
     expect(screen.getByText('Colourmap Vision Comic')).toBeDefined();
@@ -83,6 +85,16 @@ describe('LearningHub', () => {
     expect(
       container.querySelector(
         'img[src="/comics/art-of-trying/variants/positive-overlay/panel-9.webp"]',
+      ),
+    ).not.toBeNull();
+    expect(
+      container.querySelector(
+        'img[src="/comics/signal-vs-noise/variants/positive-overlay/panel-5.webp"]',
+      ),
+    ).not.toBeNull();
+    expect(
+      container.querySelector(
+        'img[src="/comics/finding-your-place/variants/positive-overlay/panel-7.webp"]',
       ),
     ).not.toBeNull();
 
@@ -144,7 +156,7 @@ describe('LearningHub', () => {
       ),
     ).not.toBeNull();
 
-    fireEvent.click(screen.getByRole('button', { name: '← back' }));
+    fireEvent.click(screen.getByRole('button', { name: /back/i }));
     const ecologyProgram = screen
       .getByText('Planetary Ecology & Living Intelligence')
       .closest('button');
@@ -157,6 +169,28 @@ describe('LearningHub', () => {
     expect(container.innerHTML).toContain(
       '/comics/planetary-ecology/variants/positive-overlay/panel-39.webp',
     );
+
+    fireEvent.click(screen.getByRole('button', { name: /back/i }));
+    const signalProgram = screen.getByText('Signal vs Noise').closest('button');
+    expect(signalProgram).not.toBeNull();
+    fireEvent.click(signalProgram as HTMLButtonElement);
+    fireEvent.click(screen.getByRole('button', { name: /Begin Signal vs Noise/i }));
+    expect(
+      container.querySelector(
+        'img[src="/comics/signal-vs-noise/variants/positive-overlay/panel-0.webp"]',
+      ),
+    ).not.toBeNull();
+
+    fireEvent.click(screen.getByRole('button', { name: /back/i }));
+    const placeProgram = screen.getByText('Finding Your Place').closest('button');
+    expect(placeProgram).not.toBeNull();
+    fireEvent.click(placeProgram as HTMLButtonElement);
+    fireEvent.click(screen.getByRole('button', { name: /Begin Finding Your Place/i }));
+    expect(
+      container.querySelector(
+        'img[src="/comics/finding-your-place/variants/positive-overlay/panel-0.webp"]',
+      ),
+    ).not.toBeNull();
   });
 
   it('opens the Carl Jung comic book', () => {
