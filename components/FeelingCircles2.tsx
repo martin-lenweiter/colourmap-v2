@@ -50,7 +50,7 @@ const CIRCLES = [
   },
 ];
 
-type EmotionVisualDesign = 1 | 2;
+type EmotionVisualDesign = 1 | 2 | 3;
 
 const PILL_IMAGES: Record<string, string> = {
   emotions: '/emotions/pills/emotions.webp',

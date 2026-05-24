@@ -156,6 +156,8 @@ export default function BillyInfiniteComic() {
                 <img
                   src="/entertainment/billy/quest-for-juice/panel-9.webp"
                   alt="Pineapple Planet intro"
+                  fetchPriority="high"
+                  decoding="async"
                   style={{
                     display: 'block',
                     width: '100%',
@@ -226,6 +228,9 @@ export default function BillyInfiniteComic() {
               <img
                 src={panel.image}
                 alt={`${panel.title} comic panel`}
+                loading={index === 0 ? 'eager' : 'lazy'}
+                fetchPriority={index === 0 ? 'high' : 'auto'}
+                decoding="async"
                 style={{
                   display: 'block',
                   width: '100%',

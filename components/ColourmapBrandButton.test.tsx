@@ -32,6 +32,22 @@ describe('ColourmapBrandButton', () => {
     expect(screen.getByText('Vikash and Martin')).toBeDefined();
   });
 
+  it('shows the 3D shortcuts in the title menu', () => {
+    render(<ColourmapBrandButton />);
+    fireEvent.click(screen.getByRole('button', { name: 'Colourmap' }));
+
+    expect(screen.getByRole('link', { name: '3D Figures' }).getAttribute('href')).toBe('/figures');
+    expect(screen.getByRole('link', { name: 'Figure Stars' }).getAttribute('href')).toBe(
+      '/figure-stars',
+    );
+    expect(screen.getByRole('link', { name: 'Billy 3D' }).getAttribute('href')).toBe(
+      '/figures?mode=billy',
+    );
+    expect(screen.getByRole('link', { name: 'Buddha Boy' }).getAttribute('href')).toBe(
+      '/figures?mode=static&figure=kid-lotus',
+    );
+  });
+
   it('closes the dialog when the close button is clicked', () => {
     render(<ColourmapBrandButton />);
     fireEvent.click(screen.getByRole('button', { name: 'Colourmap' }));
