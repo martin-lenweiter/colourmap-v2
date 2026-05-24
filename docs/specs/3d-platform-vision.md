@@ -53,6 +53,12 @@ Solid 3D figure on the Progress page, slow rotation, breathing. Material switche
 
 **Effort:** existing component drops in. ~1 day to wire pose changes from state.
 
+**Sober success rule:** the Progress avatar must feel calm and earned, not noisy. Use one 3D
+presence at a time, slow breathing or rotation, and a simple rising light / graph relationship
+around it. Avoid stacked 3D objects, game-like reward bursts, constant camera motion, or symbolic
+overload. The asset should support the user's sense of witnessed effort: "I am improving because I
+can see the evidence," not "the app is trying to hype me up."
+
 ### 2. Hologram interaction objects (Easy tier — phone-friendly)
 
 The hologram material we already built is *the* answer for floating UI elements:
