@@ -134,6 +134,20 @@
       "when": 1775200000012,
       "tag": "0018_day_sync_tables",
       "breakpoints": true
+    },
+    {
+      "idx": 19,
+      "version": "7",
+      "when": 1775200000013,
+      "tag": "0019_build_lab_runner",
+      "breakpoints": true
+    },
+    {
+      "idx": 20,
+      "version": "7",
+      "when": 1775200000014,
+      "tag": "0020_spatial_ref_sys_rls",
+      "breakpoints": true
     }
   ]
 }
