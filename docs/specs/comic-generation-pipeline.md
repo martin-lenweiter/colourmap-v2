@@ -1324,6 +1324,115 @@ Verne, economics, ecology, or other story-heavy education comics when the user e
 imagegen style. Final pages should be generated as high-quality raster illustrations, then
 compressed to WebP/AVIF for the app.
 
+## Future Education Program: Finding Your Place
+
+Working title: **Finding Your Place**.
+
+Theme: what to do when you do not fit, do not find love, do not find a job, or feel like a piece
+outside the puzzle, while still feeling the magic of the world alive in your soul. The tone should
+not shame the reader or turn pain into a productivity problem. It should help them see that exile,
+delay, rejection, and mismatch can become information about environment, timing, skills, courage,
+attachment, imagination, and the kind of life that might actually fit.
+
+Visual direction:
+
+- 8 pages first.
+- Inspired by the Maya Angelou comic's dignity, warmth, and symbolic simplicity.
+- Use both women and men across the series so the message feels universal.
+- Images should be strong, simple, symbolic, and memorable from far away.
+- Avoid crowded motivational poster energy, self-help cliches, dating-app imagery, office stock
+  imagery, and sad gray faces on every page.
+- The feeling should be tender but not weak: loneliness, courage, inner magic, practical movement,
+  and slowly finding a place in the world.
+
+Suggested first 8 pages:
+
+1. **The wrong-shaped room**: a person holding a glowing puzzle piece that does not fit the wall in
+   front of them.
+2. **The job door stays closed**: a corridor of closed doors, with one small side window showing a
+   workshop, field, or studio being built.
+3. **The love seat is empty**: a simple public bench with one person and a warm light beside them,
+   not romantic despair.
+4. **The inner world is real**: the person carrying a small galaxy/forest/light inside their chest
+   while the street misses it.
+5. **Belonging is not begging**: the person stops knocking on the wrong door and turns toward a
+   different path.
+6. **Make a small place**: table, notebook, tool, plant, and one honest action that creates a first
+   square of belonging.
+7. **People who recognize the signal**: a few different people notice the same small light, forming
+   a quiet constellation.
+8. **The puzzle grows**: the world does not simply accept the piece; the puzzle itself becomes
+   larger, with room for stranger shapes.
+
+## Education Program: The Art Of Trying
+
+**The Art Of Trying** is an Education comic about honest effort: effort as real contact with life,
+not as a guarantee that the world will answer immediately. It should sit near the Growth programs
+and connect to Finding Your Place without duplicating it. Finding Your Place asks where a person can
+belong. The Art Of Trying asks how a person keeps making real attempts without breaking themselves.
+
+Core teaching:
+
+```text
+Honest effort is repair. Forcing demands that the world answer now. Trying builds the engine that
+lets you meet the road.
+```
+
+The visual metaphor is a late-1950s garage and an old motorbike. The bike is not sleek or perfect.
+It is dusty, incomplete, and dignified. At the start the room is chaotic, the front wheel is off the
+bike, and the wheel leans against the wall. The man is about 48 years old: honest, imperfect,
+expressive, tired but not defeated. He should feel like a real person putting sincere effort into a
+hard thing, not a heroic fantasy figure.
+
+Visual language:
+
+- clean, mature educational graphic novel illustration close to the stronger Gandhi direction
+- a touch of clean European adventure realism, similar in spirit to Largo Winch clarity
+- warm late-1950s garage atmosphere with family-drama chiaroscuro, but never too dark to read on a
+  phone in low light
+- warm lamp light, dusty daylight, ochre floor, cream walls, charcoal shadows, and small blue-gray
+  blueprint accents
+- the wrench is the symbol of honest effort and direct contact with reality
+- the clock is the symbol of pressure, patience, and the difference between forcing and process
+- magazines, manuals, blueprints, and graphs represent clean logic, reason, knowledge, and learnable
+  structure
+- the dust road represents freedom as movement, not perfection
+
+The comic should alternate dense and simple images. Dense pages are allowed only when density
+communicates the state of the room or the emerging order. Most pages should carry one action or one
+symbol so the reader is not overwhelmed.
+
+Ten-page shape:
+
+1. **The impossible garage**: chaotic garage, dusty old motorbike, missing wheel against the wall,
+   scattered tools, piles of magazines, and a wall clock. The room feels too much, but the bike
+   silhouette remains clear.
+2. **The dream on the floor**: a quieter page where an old magazine or blueprint image of a
+   motorbike on open dust roads is half-buried in the mess. The dream is still present.
+3. **The wrench**: close-up of the man's hand picking up the wrench. Honest effort begins as one
+   physical point of contact.
+4. **Mind versus work**: a diagonal split. The top half shows hopeless imagined stuckness and
+   non-resolution. The bottom half shows body, effort, logic, organisation, and small physical
+   reward.
+5. **The stuck bolt**: one action meets resistance. The man is discouraged and tense, but not
+   humiliated or raging.
+6. **The helpless moment**: the man sits bent forward, head in hands, back curved, wrench on the
+   floor. The light remains present. This is the low point, not the destination.
+7. **Step back**: he stops forcing and observes the whole room. The same problem becomes a system he
+   can understand.
+8. **Order emerging**: tools sorted, wheel close, manual open, parts grouped, more floor visible,
+   more light entering. The bike still does not work, but the context has changed and the man is
+   calmer.
+9. **The engine turns**: the bike starts inside the garage. Headlamp glow, dust lifting, vibration,
+   relief, and disbelief.
+10. **The dust road**: the man rides the old motorbike into golden dusty freedom. The bike is still
+    imperfect, but alive. The wrench is strapped to the side.
+
+Avoid turning the program into "try harder" advice. The point is not to shame exhaustion or deny
+closed doors. Some doors really are closed; some systems really are unfair; some efforts do not get
+rewarded. The hopeful claim is narrower and stronger: honest effort changes capacity, context,
+skill, courage, timing, and future options before it changes the visible result.
+
 ## Pineapple Planet Desert Direction
 
 After the New Babylon and underground material, the Pineapple Planet desert arc should breathe more.

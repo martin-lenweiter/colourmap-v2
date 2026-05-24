@@ -1545,6 +1545,53 @@ export const PROGRAMS: Program[] = [
     ],
   },
   {
+    key: 'art-of-trying',
+    domain: 'The Art Of Trying',
+    color: '#A8794E',
+    segments: [
+      {
+        title: 'The impossible garage',
+        body: 'The room is chaos before the work begins. The bike is old, dusty, and incomplete; even the wheel is leaning against the wall. This is what many goals feel like from the inside: job, love, health, art, money, repair. Not one clean problem, but a whole room of loose parts.',
+      },
+      {
+        title: 'The dream on the floor',
+        body: 'Even in the mess, there is still a dream. It may be half-buried under tools, bills, old plans, or disappointment, but it is there: the image of movement, freedom, competence, and life opening again. Trying begins when the dream is still visible enough to call you back.',
+      },
+      {
+        title: 'The wrench',
+        body: 'Honest effort begins with contact. Not the heroic fantasy of changing everything, but one hand reaching for the real tool. A wrench, a message, a practice session, a small application, a cleaned corner, one difficult conversation. The first useful action is usually smaller than the mind wanted.',
+      },
+      {
+        title: 'Mind versus work',
+        body: 'The mind can live in an unresolved future: this will never work, nothing answers, I am too late, the door is closed. The body can still do one real thing in the present. Work does not always defeat hopelessness immediately, but it gives the nervous system evidence that movement is still possible.',
+      },
+      {
+        title: 'The stuck bolt',
+        body: 'Resistance is not always a sign to stop. Sometimes it is information. The bolt is rusted. The angle is wrong. The tool slips. Forcing demands the result now and tightens around the obstacle. Trying stays in contact long enough to learn what the obstacle is made of.',
+      },
+      {
+        title: 'The helpless moment',
+        body: 'Sometimes the honest truth is: I cannot make this work right now. The body folds, the head drops, and the room feels larger than the person inside it. This moment is not failure. It is the place where forcing finally runs out of air.',
+      },
+      {
+        title: 'Step back',
+        body: 'Stepping back is not quitting. It is changing the scale of attention. Instead of attacking one stuck part, the person sees the whole room: what is missing, what is scattered, what needs light, what can be moved, what can wait. A calmer view makes a better next attempt possible.',
+      },
+      {
+        title: 'Order emerging',
+        body: 'Before the engine works, the context works. Tools are sorted. The wheel is close. The manual is open. The floor is visible. Nothing magical has happened, but the next action now has somewhere to land. Honest effort often builds the conditions for success before success appears.',
+      },
+      {
+        title: 'The engine turns',
+        body: 'The first signal may be small: a cough, a vibration, a headlamp, a sound that says the system is alive. The work was not pointless because it did not answer immediately. It was assembling capacity, knowledge, timing, and trust inside the machine and inside the person.',
+      },
+      {
+        title: 'The dust road',
+        body: 'Success is not only getting what you wanted back from the world. It is also becoming someone who can move again. The bike is still old. The road is still dusty. But the engine runs, the body knows the work was real, and freedom begins as motion.',
+      },
+    ],
+  },
+  {
     key: 'identity-becoming',
     domain: 'Identity & Becoming',
     color: '#9070B8',

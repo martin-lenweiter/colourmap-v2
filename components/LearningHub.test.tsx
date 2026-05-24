@@ -33,6 +33,7 @@ describe('LearningHub', () => {
     expect(screen.getByText(/participate in transforming the world/i)).toBeDefined();
     expect(screen.getByText('Struggle & Letting Go')).toBeDefined();
     expect(screen.getByText('Avoidance & The Real Task')).toBeDefined();
+    expect(screen.getByText('The Art Of Trying')).toBeDefined();
     expect(screen.getByText('Carl Jung & The Inner Map')).toBeDefined();
     expect(screen.getByText('Paulo Freire & Collective Hope')).toBeDefined();
     expect(screen.getByText('Thich Nhat Hanh & Peace in Action')).toBeDefined();
@@ -63,6 +64,26 @@ describe('LearningHub', () => {
     ).not.toBeNull();
     expect(
       container.querySelector('img[src="/comics/emotional-intelligence/panel-5.png"]'),
+    ).not.toBeNull();
+    expect(
+      container.querySelector(
+        'img[src="/comics/jules-verne/variants/positive-overlay/panel-11.webp"]',
+      ),
+    ).not.toBeNull();
+    expect(
+      container.querySelector(
+        'img[src="/comics/economic-systems/variants/positive-overlay/panel-39.webp"]',
+      ),
+    ).not.toBeNull();
+    expect(
+      container.querySelector(
+        'img[src="/comics/planetary-ecology/variants/positive-overlay/panel-39.webp"]',
+      ),
+    ).not.toBeNull();
+    expect(
+      container.querySelector(
+        'img[src="/comics/art-of-trying/variants/positive-overlay/panel-9.webp"]',
+      ),
     ).not.toBeNull();
 
     const hubText = container.textContent ?? '';
