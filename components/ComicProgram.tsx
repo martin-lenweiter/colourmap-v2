@@ -8,6 +8,11 @@ import type { Program } from '@/lib/programs';
 
 const SERIF = 'var(--font-serif)';
 const cream = (a: number) => `rgba(240,216,152,${a})`;
+const TEXT_SIZE_OPTIONS = [
+  { label: 'A', value: 0 },
+  { label: 'A+', value: 2 },
+  { label: 'A++', value: 4 },
+] as const;
 
 type ImageStyle = {
   key: string;
@@ -29,6 +34,7 @@ const POSITIVE_OVERLAY_PROGRAMS = new Set([
   'fishing-in-the-dark',
   'conflict-repair',
   'money-anxiety',
+  'art-of-trying',
   'identity-becoming',
   'avoidance-action',
   'parenting-patterns',
@@ -88,6 +94,7 @@ const GENERATED_LAYERED_PANEL_EXTENSIONS: Record<string, string> = {
 const POSITIVE_OVERLAY_PANEL_EXTENSIONS: Record<string, string> = {
   'conflict-repair': 'webp',
   'money-anxiety': 'webp',
+  'art-of-trying': 'webp',
   'identity-becoming': 'webp',
   'avoidance-action': 'webp',
   'parenting-patterns': 'webp',
@@ -109,6 +116,7 @@ const POSITIVE_OVERLAY_PANEL_EXTENSIONS: Record<string, string> = {
 const POSITIVE_OVERLAY_PANEL_COUNTS: Record<string, number> = {
   'conflict-repair': 7,
   'money-anxiety': 7,
+  'art-of-trying': 10,
   'identity-becoming': 7,
   'avoidance-action': 1,
   'parenting-patterns': 7,
@@ -130,6 +138,7 @@ const POSITIVE_OVERLAY_PANEL_COUNTS: Record<string, number> = {
 const SINGLE_RASTER_PROGRAMS = new Set([
   'viktor-frankl',
   'bukowski-poems',
+  'art-of-trying',
   'jack-london',
   'jules-verne',
   'maya-angelou',
@@ -1537,6 +1546,8 @@ export default function ComicProgram({
   const [imageStyle, setImageStyle] = useState(imageStyles[0]?.key ?? 'default');
   const [moreOpen, setMoreOpen] = useState(false);
   const [guideStep, setGuideStep] = useState(0);
+  const [textSizeBoost, setTextSizeBoost] =
+    useState<(typeof TEXT_SIZE_OPTIONS)[number]['value']>(0);
   const current = program.segments[index];
   const total = program.segments.length;
   const paras = toParagraphs(current.body);
@@ -1578,6 +1589,50 @@ export default function ComicProgram({
     }
     nextAction();
   }
+  const bodyFontSize = 15 + textSizeBoost;
+  const guideFontSize = 13 + textSizeBoost;
+  const landscapeGuideFontSize = 12.5 + textSizeBoost;
+
+  const textSizeControl = (
+    <fieldset
+      aria-label="Education text size"
+      style={{
+        display: 'flex',
+        gap: 4,
+        padding: 3,
+        margin: 0,
+        border: `1px solid ${col(program.color, 0.2)}`,
+        borderRadius: 999,
+        background: col(program.color, 0.06),
+      }}
+    >
+      {TEXT_SIZE_OPTIONS.map((option) => {
+        const active = textSizeBoost === option.value;
+        return (
+          <button
+            key={option.label}
+            type="button"
+            aria-pressed={active}
+            onClick={() => setTextSizeBoost(option.value)}
+            style={{
+              minWidth: option.value === 0 ? 28 : 36,
+              border: 0,
+              borderRadius: 999,
+              background: active ? col(program.color, 0.22) : 'transparent',
+              color: active ? cream(0.92) : col(program.color, 0.62),
+              cursor: 'pointer',
+              fontFamily: SERIF,
+              fontSize: 11 + option.value * 0.55,
+              fontWeight: 800,
+              padding: '5px 7px',
+            }}
+          >
+            {option.label}
+          </button>
+        );
+      })}
+    </fieldset>
+  );
 
   const introData = PROGRAM_INTROS[program.key];
 
@@ -1630,10 +1685,11 @@ export default function ComicProgram({
               {program.domain}
             </div>
           </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
             <div style={{ fontFamily: SERIF, fontSize: 11, color: col(program.color, 0.42) }}>
               {index + 1} / {total}
             </div>
+            {textSizeControl}
             <button
               type="button"
               onClick={onBack ?? onClose}
@@ -2578,7 +2634,7 @@ export default function ComicProgram({
                         margin: 0,
                         color: paragraphIndex === 0 ? col(program.color, 0.9) : cream(0.68),
                         fontFamily: SERIF,
-                        fontSize: isLandscape ? 12.5 : 13,
+                        fontSize: isLandscape ? landscapeGuideFontSize : guideFontSize,
                         lineHeight: 1.48,
                         overflowWrap: 'anywhere',
                       }}
@@ -2753,10 +2809,11 @@ export default function ComicProgram({
         >
           {program.domain}
         </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
           <div style={{ fontFamily: SERIF, fontSize: 11, color: col(program.color, 0.4) }}>
             {index + 1} / {total}
           </div>
+          {textSizeControl}
           <button
             type="button"
             onClick={onBack ?? onClose}
@@ -2890,7 +2947,7 @@ export default function ComicProgram({
               key={i}
               style={{
                 fontFamily: SERIF,
-                fontSize: 15,
+                fontSize: bodyFontSize,
                 color: cream(0.72),
                 lineHeight: 1.9,
                 margin: 0,
