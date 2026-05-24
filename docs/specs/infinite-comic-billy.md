@@ -479,6 +479,67 @@ Risk:
 slowly becoming trapped inside systems
 ```
 
+### New Babylon Decadence Arc
+
+The New Babylon fall arc should feel theatrical, stylish, funny, and strangely beautiful. The
+reference mood is an elegant dream city slowly turning into a city of vice: terrace parties, marble,
+silver light, rooftop pools, glowing Juice, rich interiors, sunrise towers, gangster pressure,
+credit systems, and comic humiliation. It should carry rise-and-fall energy without copying any
+specific film, actor, shot, or copyrighted character.
+
+Core visual rule:
+
+```text
+Debaucherously fantastic, but not overloaded.
+Grace remains visible even in the mess.
+```
+
+The city should begin as a place of genuine beauty. Then appetite grows: too much Juice, too much
+status, too many glowing stars, too much confidence. Billy becomes ridiculous before he becomes
+lost. The images should never become grimy for grimy's sake. Even when Billy wakes dehydrated among
+empty bottles, or thinks he is king of the world, the frame should still contain some sacred wind:
+morning light, water, silver reflections, a quiet skyline, a poetic shadow, or one clean patch of
+space.
+
+Required ordered beats:
+
+1. Billy discovers New Babylon and life feels like a party.
+2. He overparties and overindulges in Juice.
+3. He wakes wasted, dehydrated, craving the last drop, with Friendly Tomato also ruined nearby.
+4. A shady iguana / Banana figure introduces small glowing stars on a silver platter.
+5. Billy eats one and feels unstoppable; the city glows around him.
+6. The stars become addictive; Billy makes a fool of himself.
+7. Billy urinates in the jacuzzi while thinking he is king of the world; Banana and Tomato explode
+   with laughter, while tired cleaning cockroaches reveal the sad reality.
+8. Billy climbs a New Babylon tower at sunrise and believes he owns the city.
+9. Credits collapse: pineapple robots deliver debt notices, falling graphs, and the end of the
+   fantasy.
+10. Bad-company party scenes bring crocodile operators, leather-jacket Tiger boss, and shady iguana
+    pressure.
+11. Billy falls from "king of the world" to zero.
+12. Pineapple rehab / Alcoholics Anonymous begins: funny, humble, hopeful, with Tomato present and
+    sad but trying.
+13. The road to recovery becomes the real learning: the voice of reason returns quietly.
+14. Billy later gets a job at Pineapple Corp from a clearer place, not from delusion.
+
+Tone:
+
+- funny light caricature, not moralizing
+- addiction and debt shown as learning traps, not glamorized solutions
+- one clear comic action per image
+- theatrical lighting, refined composition, sparse props, readable faces
+- no dense party crowd unless the crowd is the single point of the page
+- hidden background jokes can exist, but they must not steal the focal point
+- any hidden red-capped arcade-plumber cameo must be generic and tiny, not a recognizable branded
+  character
+
+Writing direction:
+
+- narration should become simpler, more poetic, and often rhymed
+- rhymes should feel light and musical, not forced nursery-rhyme copy
+- every funny fall should carry a small serious question underneath: what is pleasure, what is
+  hunger, what is false power, what is the voice of reason, and how does recovery begin?
+
 Subregions:
 
 - Optimization District
