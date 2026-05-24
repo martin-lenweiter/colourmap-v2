@@ -238,6 +238,10 @@ const PRIMER_SECTIONS: { title: string; items: { term: string; def: string }[] }
 const MORE_SEGMENTS = [
   { href: '/entertainment', label: 'Entertainment' },
   { href: '/music', label: 'Music' },
+  { href: '/figures', label: '3D Figures' },
+  { href: '/figure-stars', label: 'Figure Stars' },
+  { href: '/figures?mode=billy', label: 'Billy 3D' },
+  { href: '/figures?mode=static&figure=kid-lotus', label: 'Buddha Boy' },
   { href: '/atlas', label: 'Atlas' },
   { href: '/progress-road', label: 'Roads' },
   { href: '/circles', label: 'Social' },

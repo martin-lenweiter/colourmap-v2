@@ -1,5 +1,6 @@
 'use client';
 
+import { useSearchParams } from 'next/navigation';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import * as THREE from 'three';
 import { OBJLoader } from 'three/examples/jsm/loaders/OBJLoader.js';
@@ -38,8 +39,12 @@ const DENSITY_PRESETS = [8000, 16000, 32000, 64000, 96000];
 const SIZE_PRESETS = [0.004, 0.006, 0.009, 0.014];
 
 export default function FigureStarsBuilder() {
+  const searchParams = useSearchParams();
+  const requestedFigure = searchParams.get('figure');
   const mountRef = useRef<HTMLDivElement | null>(null);
-  const [figure, setFigure] = useState<Figure>(FIGURES[0]);
+  const [figure, setFigure] = useState<Figure>(
+    FIGURES.find((entry) => entry.key === requestedFigure) ?? FIGURES[0],
+  );
   const [palette, setPalette] = useState(PALETTES[0]);
   const [density, setDensity] = useState(32000);
   const [size, setSize] = useState(0.006);
@@ -60,6 +65,11 @@ export default function FigureStarsBuilder() {
   const pointsRef = useRef<THREE.Points | null>(null);
   const sceneRef = useRef<THREE.Scene | null>(null);
   const figureUrlRef = useRef<string>(figure.url);
+
+  useEffect(() => {
+    const next = FIGURES.find((entry) => entry.key === requestedFigure);
+    if (next) setFigure(next);
+  }, [requestedFigure]);
 
   const rebuildPoints = useCallback(
     (sampler: MeshSurfaceSampler, n: number, color: string, particleSize: number) => {
