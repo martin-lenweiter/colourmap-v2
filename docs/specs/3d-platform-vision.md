@@ -67,9 +67,48 @@ Current PR follow-up:
 - Low-power mode reduces render pixel ratio and pairs naturally with lower particle density for weak
   wifi / older phones.
 - The main `/figures` Stars material shares the same movement language: stillness, currents, spiral,
-  wave, storm, agitation, and scale.
+  wave, storm, shimmer, vortex, scales, nebula, agitation, and scale.
+- Star colour should be tunable with Geometry-Builder-like HSL controls: hue, saturation, and
+  lightness. Palette swatches remain quick presets, but the user can fine-tune the actual star light.
+- Movement patterns divide into two families:
+  - **silhouette-deforming**: currents, spiral, wave, storm. These visibly bend the outer form.
+  - **shape-preserving internal energy**: shimmer, vortex, scales, nebula. These keep the readable
+    body/figure outline while the stars appear to move, pulse, orbit, or agitate inside the shape.
 - Near-term polish should keep adding phone-simple preset buttons before deeper 3D complexity:
   `Reset camera`, `Save as calm`, and per-asset default zoom are higher value than new effects.
+
+Golden material should expose lighting levels. Low lighting is cinematic, but the user must be able
+to switch to `Studio`, `Bright`, or `Radiant` when the asset reads too dark on a phone or projector.
+
+## Object capacity and use cases
+
+Colourmap can import many 3D assets over time, but should not render many heavy assets at once. The
+right unit is a library of reusable objects with one or a few mounted per surface.
+
+Practical capacity:
+
+- **Library size**: dozens to hundreds of OBJ/GLB files are fine if lazy-loaded and compressed.
+- **Per screen, phone**: one hero mesh, or one hero mesh plus a few very small hologram tiles.
+- **Per screen, desktop / projector**: one to four strong meshes, or one mesh sampled into a large
+  particle field. More than that becomes a performance and composition problem.
+- **Best file format**: GLB for anything textured, animated, or production-ready; OBJ is acceptable
+  for static sculpt tests and star-sampling experiments.
+- **Asset prep**: decimate heavy ZBrush sculpts, compress GLBs with Draco or meshopt, keep mobile
+  hero meshes near 5k-30k triangles where possible, and lazy-load only when the user opens the 3D
+  surface.
+
+Four product uses:
+
+1. **Concert projections**: fullscreen `/figure-stars` or Geometry Field presets. Prioritize large,
+   readable silhouettes, HSL colour sliders, dark/transparent backgrounds, slow shape-preserving
+   internal currents, and external audio/MIDI-reactive controls later.
+2. **Exploration / curiosity**: an object lab where the user can load a figure, orbit it, switch
+   gold/hologram/stars, inspect close/far, and save visual presets. This can be more experimental.
+3. **App aesthetics**: restrained one-object moments inside Progress, Art, or menu pills. These must
+   be calm, lazy-loaded, and never inserted into Education in this phase.
+4. **Yoga and body movement programs**: rigged GLB characters with baked animation clips. The correct
+   next level is Mixamo-style skeletal animation, pose scrubbing, slow loops, and eventually body-area
+   annotations linked to recovery notes.
 
 ## The five surfaces 3D can power
 

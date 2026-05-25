@@ -37,13 +37,26 @@ const PALETTES: { key: string; label: string; color: string; bg: string }[] = [
 
 const DENSITY_PRESETS = [8000, 16000, 32000, 64000, 96000];
 const SIZE_PRESETS = [0.004, 0.006, 0.009, 0.014];
-type StarPattern = 'still' | 'current' | 'spiral' | 'wave' | 'storm';
+type StarPattern =
+  | 'still'
+  | 'current'
+  | 'spiral'
+  | 'wave'
+  | 'storm'
+  | 'shimmer'
+  | 'vortex'
+  | 'scales'
+  | 'nebula';
 const STAR_PATTERNS: { key: StarPattern; label: string }[] = [
   { key: 'still', label: 'Still' },
   { key: 'current', label: 'Currents' },
   { key: 'spiral', label: 'Spiral' },
   { key: 'wave', label: 'Wave' },
   { key: 'storm', label: 'Storm' },
+  { key: 'shimmer', label: 'Shimmer' },
+  { key: 'vortex', label: 'Vortex' },
+  { key: 'scales', label: 'Scales' },
+  { key: 'nebula', label: 'Nebula' },
 ];
 const PRESET_KEY = 'colourmap:figure-star-presets';
 
@@ -57,6 +70,9 @@ type StarPreset = {
   glow: number;
   pulseStrength: number;
   pulseSpeed: number;
+  hue: number;
+  saturation: number;
+  lightness: number;
   agitation: number;
   flowScale: number;
   pattern: StarPattern;
@@ -74,6 +90,9 @@ const DEFAULT_STAR_PRESETS: StarPreset[] = [
     glow: 0.9,
     pulseStrength: 0.7,
     pulseSpeed: 0.6,
+    hue: 45,
+    saturation: 48,
+    lightness: 88,
     agitation: 0.25,
     flowScale: 0.7,
     pattern: 'current',
@@ -89,6 +108,9 @@ const DEFAULT_STAR_PRESETS: StarPreset[] = [
     glow: 1.35,
     pulseStrength: 1.2,
     pulseSpeed: 1,
+    hue: 42,
+    saturation: 100,
+    lightness: 82,
     agitation: 0.75,
     flowScale: 1.2,
     pattern: 'spiral',
@@ -104,6 +126,9 @@ const DEFAULT_STAR_PRESETS: StarPreset[] = [
     glow: 0.8,
     pulseStrength: 0.4,
     pulseSpeed: 0.5,
+    hue: 42,
+    saturation: 88,
+    lightness: 82,
     agitation: 0.1,
     flowScale: 0.5,
     pattern: 'still',
@@ -125,6 +150,9 @@ export default function FigureStarsBuilder() {
   const [pulseSpeed, setPulseSpeed] = useState(1);
   const [cameraDistance, setCameraDistance] = useState(3.1);
   const [glow, setGlow] = useState(1);
+  const [starHue, setStarHue] = useState(42);
+  const [starSaturation, setStarSaturation] = useState(100);
+  const [starLightness, setStarLightness] = useState(82);
   const [agitation, setAgitation] = useState(0.5);
   const [flowScale, setFlowScale] = useState(1);
   const [pattern, setPattern] = useState<StarPattern>('current');
@@ -136,6 +164,9 @@ export default function FigureStarsBuilder() {
   const pulseSpeedRef = useRef(1);
   const cameraDistanceRef = useRef(3.1);
   const glowRef = useRef(1);
+  const starHueRef = useRef(42);
+  const starSaturationRef = useRef(100);
+  const starLightnessRef = useRef(82);
   const agitationRef = useRef(0.5);
   const flowScaleRef = useRef(1);
   const patternRef = useRef<StarPattern>('current');
@@ -145,6 +176,9 @@ export default function FigureStarsBuilder() {
   pulseSpeedRef.current = pulseSpeed;
   cameraDistanceRef.current = cameraDistance;
   glowRef.current = glow;
+  starHueRef.current = starHue;
+  starSaturationRef.current = starSaturation;
+  starLightnessRef.current = starLightness;
   agitationRef.current = agitation;
   flowScaleRef.current = flowScale;
   patternRef.current = pattern;
@@ -185,6 +219,9 @@ export default function FigureStarsBuilder() {
     setGlow(preset.glow);
     setPulseStrength(preset.pulseStrength);
     setPulseSpeed(preset.pulseSpeed);
+    setStarHue(preset.hue);
+    setStarSaturation(preset.saturation);
+    setStarLightness(preset.lightness);
     setAgitation(preset.agitation);
     setFlowScale(preset.flowScale);
     setPattern(preset.pattern);
@@ -202,6 +239,9 @@ export default function FigureStarsBuilder() {
       glow,
       pulseStrength,
       pulseSpeed,
+      hue: starHue,
+      saturation: starSaturation,
+      lightness: starLightness,
       agitation,
       flowScale,
       pattern,
@@ -227,6 +267,9 @@ export default function FigureStarsBuilder() {
     pattern,
     pulseSpeed,
     pulseStrength,
+    starHue,
+    starLightness,
+    starSaturation,
     size,
   ]);
 
@@ -236,7 +279,12 @@ export default function FigureStarsBuilder() {
   }, [requestedFigure]);
 
   const rebuildPoints = useCallback(
-    (sampler: MeshSurfaceSampler, n: number, color: string, particleSize: number) => {
+    (
+      sampler: MeshSurfaceSampler,
+      n: number,
+      color: THREE.ColorRepresentation,
+      particleSize: number,
+    ) => {
       const scene = sceneRef.current;
       if (!scene) return;
       // Remove previous
@@ -438,8 +486,22 @@ export default function FigureStarsBuilder() {
     void samplerVersion;
     if (!samplerRef.current || !sceneRef.current) return;
     sceneRef.current.background = new THREE.Color(palette.bg);
-    rebuildPoints(samplerRef.current, density, palette.color, size);
-  }, [density, palette.bg, palette.color, size, rebuildPoints, samplerVersion]);
+    rebuildPoints(
+      samplerRef.current,
+      density,
+      starHsl(starHue, starSaturation, starLightness),
+      size,
+    );
+  }, [
+    density,
+    palette.bg,
+    size,
+    rebuildPoints,
+    samplerVersion,
+    starHue,
+    starLightness,
+    starSaturation,
+  ]);
 
   const figureMemo = useMemo(() => figure, [figure]);
 
@@ -514,7 +576,13 @@ export default function FigureStarsBuilder() {
             <button
               key={p.key}
               type="button"
-              onClick={() => setPalette(p)}
+              onClick={() => {
+                setPalette(p);
+                const hsl = hexToHsl(p.color);
+                setStarHue(hsl.h);
+                setStarSaturation(hsl.s);
+                setStarLightness(hsl.l);
+              }}
               aria-pressed={palette.key === p.key}
               aria-label={`Palette ${p.label}`}
               title={p.label}
@@ -589,6 +657,27 @@ export default function FigureStarsBuilder() {
             max={3}
             step={0.1}
             onChange={setPulseSpeed}
+          />
+        </div>
+
+        <div style={{ display: 'flex', gap: 14, alignItems: 'center', flexWrap: 'wrap' }}>
+          <span style={{ letterSpacing: '0.16em', textTransform: 'uppercase' }}>star colour</span>
+          <Slider label="hue" value={starHue} min={0} max={360} step={1} onChange={setStarHue} />
+          <Slider
+            label="sat"
+            value={starSaturation}
+            min={0}
+            max={100}
+            step={1}
+            onChange={setStarSaturation}
+          />
+          <Slider
+            label="light"
+            value={starLightness}
+            min={25}
+            max={95}
+            step={1}
+            onChange={setStarLightness}
           />
         </div>
 
@@ -704,6 +793,30 @@ function animateStarPattern(
       nx += Math.sin(t * 2.1 + y * 9.1 + z * 3.7) * amp * 1.35;
       ny += Math.cos(t * 1.8 + x * 8.4) * amp * 1.1;
       nz += Math.sin(t * 2.4 + x * 3.1 + y * 6.6) * amp * 1.35;
+    } else if (pattern === 'shimmer') {
+      const local = Math.sin(t * 2.4 + x * 18.0 + y * 9.0 + z * 13.0) * amp * 0.22;
+      nx += x * local;
+      ny += y * local;
+      nz += z * local;
+    } else if (pattern === 'vortex') {
+      const radius = Math.max(0.001, Math.sqrt(x * x + z * z));
+      const tangentX = -z / radius;
+      const tangentZ = x / radius;
+      const drift = Math.sin(t * 1.1 + y * 7.0 + radius * 5.0) * amp * 0.55;
+      nx += tangentX * drift;
+      nz += tangentZ * drift;
+      ny += Math.cos(t * 0.9 + radius * 10.0) * amp * 0.12;
+    } else if (pattern === 'scales') {
+      const bands = Math.sin((y + 1.0) * 18.0 + t * 1.5);
+      const ribs = Math.cos(Math.atan2(z, x) * 10.0 + t * 0.8);
+      const shell = Math.max(0, bands * ribs) * amp * 0.28;
+      nx += x * shell;
+      ny += Math.sin(t * 1.4 + x * 12.0) * amp * 0.08;
+      nz += z * shell;
+    } else if (pattern === 'nebula') {
+      nx += Math.sin(t * 0.9 + x * 11.0 + y * 3.0) * amp * 0.32;
+      ny += Math.cos(t * 1.0 + y * 12.0 + z * 2.0) * amp * 0.32;
+      nz += Math.sin(t * 0.8 + z * 11.0 + x * 3.0) * amp * 0.32;
     }
 
     arr[i] = nx;
@@ -711,6 +824,29 @@ function animateStarPattern(
     arr[i + 2] = nz;
   }
   attr.needsUpdate = true;
+}
+
+function starHsl(hue: number, saturation: number, lightness: number) {
+  return `hsl(${hue}, ${saturation}%, ${lightness}%)`;
+}
+
+function hexToHsl(hex: string) {
+  const r = parseInt(hex.slice(1, 3), 16) / 255;
+  const g = parseInt(hex.slice(3, 5), 16) / 255;
+  const b = parseInt(hex.slice(5, 7), 16) / 255;
+  const max = Math.max(r, g, b);
+  const min = Math.min(r, g, b);
+  const l = (max + min) / 2;
+  if (max === min) {
+    return { h: 0, s: 0, l: Math.round(l * 100) };
+  }
+  const d = max - min;
+  const s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+  let h = 0;
+  if (max === r) h = (g - b) / d + (g < b ? 6 : 0);
+  else if (max === g) h = (b - r) / d + 2;
+  else h = (r - g) / d + 4;
+  return { h: Math.round(h * 60), s: Math.round(s * 100), l: Math.round(l * 100) };
 }
 
 function pillStyle(active: boolean, scale: 'normal' | 'tiny' = 'normal'): React.CSSProperties {

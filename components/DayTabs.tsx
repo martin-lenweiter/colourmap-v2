@@ -6,6 +6,12 @@ import { haptic } from '@/lib/haptics';
 
 type Tab = 'emotion' | 'mission' | 'progress';
 
+export type BackgroundPlacement = {
+  x: number;
+  y: number;
+  zoom: number;
+};
+
 const TABS: { id: Tab; label: string }[] = [
   { id: 'emotion', label: 'Emotions' },
   { id: 'mission', label: 'Missions' },
@@ -23,6 +29,7 @@ interface DayTabsProps {
     enabled: boolean;
     dayImage?: boolean;
     position?: string;
+    placement?: BackgroundPlacement;
     fullBleed?: boolean;
     overlay?: string;
   };
@@ -34,6 +41,7 @@ interface DayTabsProps {
         enabled: boolean;
         dayImage?: boolean;
         position?: string;
+        placement?: BackgroundPlacement;
         fullBleed?: boolean;
         overlay?: string;
       }
@@ -183,8 +191,13 @@ export default function DayTabs({
                 position: 'absolute',
                 inset: 0,
                 backgroundImage: `url("${activeHeaderBackdrop.image}")`,
-                backgroundSize: 'cover',
-                backgroundPosition: activeHeaderBackdrop.position ?? 'center 46%',
+                backgroundSize: activeHeaderBackdrop.placement
+                  ? `${activeHeaderBackdrop.placement.zoom}vw auto`
+                  : 'cover',
+                backgroundPosition: activeHeaderBackdrop.placement
+                  ? `${activeHeaderBackdrop.placement.x}% ${activeHeaderBackdrop.placement.y}%`
+                  : (activeHeaderBackdrop.position ?? 'center 46%'),
+                backgroundRepeat: 'no-repeat',
                 backgroundAttachment: activeHeaderBackdrop.fullBleed ? 'fixed' : undefined,
                 transition: 'background-image 900ms ease',
               }}
