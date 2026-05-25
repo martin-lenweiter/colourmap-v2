@@ -205,3 +205,22 @@ Done when:
 - Text and inputs stay legible through restrained overlays; no lane should become visually
   overwhelming.
 - Education navigation stays visible and unchanged; 3D is not added to Education in this phase.
+
+### Background placement calibration
+
+The image-backed lane modes should expose a temporary lightweight placement tuner so the user can
+visually adjust each background without editing code.
+
+Controls:
+
+- `x` controls horizontal background anchor in percent.
+- `y` controls vertical background anchor in percent.
+- `zoom` controls rendered background width in viewport-width units.
+- Values persist locally under `colourmap:lane-background-placement`.
+- The tuner displays a compact copyable coordinate string, e.g. `mission x 50 y 44 zoom 116`.
+
+Workflow:
+
+1. User adjusts the image until it feels framed correctly.
+2. User sends the coordinate string back.
+3. The coordinates are promoted into the app defaults in a later PR.

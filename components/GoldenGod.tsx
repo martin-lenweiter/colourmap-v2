@@ -6,7 +6,17 @@ import { OBJLoader } from 'three/examples/jsm/loaders/OBJLoader.js';
 import { MeshSurfaceSampler } from 'three/examples/jsm/math/MeshSurfaceSampler.js';
 
 type Material = 'gold' | 'hologram' | 'stars';
-type StarPattern = 'still' | 'current' | 'spiral' | 'wave' | 'storm';
+type StarPattern =
+  | 'still'
+  | 'current'
+  | 'spiral'
+  | 'wave'
+  | 'storm'
+  | 'shimmer'
+  | 'vortex'
+  | 'scales'
+  | 'nebula';
+type LightingMode = 'low' | 'studio' | 'bright' | 'radiant';
 
 export type FigureAsset = {
   key: string;
@@ -41,6 +51,23 @@ const STAR_PATTERNS: { key: StarPattern; label: string }[] = [
   { key: 'spiral', label: 'Spiral' },
   { key: 'wave', label: 'Wave' },
   { key: 'storm', label: 'Storm' },
+  { key: 'shimmer', label: 'Shimmer' },
+  { key: 'vortex', label: 'Vortex' },
+  { key: 'scales', label: 'Scales' },
+  { key: 'nebula', label: 'Nebula' },
+];
+const LIGHTING_MODES: {
+  key: LightingMode;
+  label: string;
+  exposure: number;
+  keyLight: number;
+  rim: number;
+  ambient: number;
+}[] = [
+  { key: 'low', label: 'Low', exposure: 1.0, keyLight: 2.0, rim: 1.0, ambient: 0.35 },
+  { key: 'studio', label: 'Studio', exposure: 1.25, keyLight: 3.0, rim: 1.6, ambient: 0.65 },
+  { key: 'bright', label: 'Bright', exposure: 1.55, keyLight: 4.2, rim: 2.2, ambient: 0.9 },
+  { key: 'radiant', label: 'Radiant', exposure: 1.85, keyLight: 5.3, rim: 3.0, ambient: 1.15 },
 ];
 
 export default function GoldenGod({
@@ -64,6 +91,10 @@ export default function GoldenGod({
   const [starPattern, setStarPattern] = useState<StarPattern>('current');
   const [starAgitation, setStarAgitation] = useState(0.35);
   const [starScale, setStarScale] = useState(0.8);
+  const [starHue, setStarHue] = useState(() => hexToHsl(starColor).h);
+  const [starSaturation, setStarSaturation] = useState(() => hexToHsl(starColor).s);
+  const [starLightness, setStarLightness] = useState(() => hexToHsl(starColor).l);
+  const [lightingMode, setLightingMode] = useState<LightingMode>('studio');
 
   // Refs the animation loop reads. Material changes only swap which mesh is visible —
   // they don't tear the scene down.
@@ -77,11 +108,19 @@ export default function GoldenGod({
   const starPatternRef = useRef<StarPattern>('current');
   const starAgitationRef = useRef(0.35);
   const starScaleRef = useRef(0.8);
+  const starHueRef = useRef(42);
+  const starSaturationRef = useRef(100);
+  const starLightnessRef = useRef(82);
+  const lightingModeRef = useRef<LightingMode>('studio');
   cameraDistanceRef.current = cameraDistance;
   starGlowRef.current = starGlow;
   starPatternRef.current = starPattern;
   starAgitationRef.current = starAgitation;
   starScaleRef.current = starScale;
+  starHueRef.current = starHue;
+  starSaturationRef.current = starSaturation;
+  starLightnessRef.current = starLightness;
+  lightingModeRef.current = lightingMode;
 
   const setActiveMaterial = useCallback((m: Material) => {
     setMaterial(m);
@@ -122,17 +161,20 @@ export default function GoldenGod({
     renderer.setSize(width, height);
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     renderer.toneMapping = THREE.ACESFilmicToneMapping;
-    renderer.toneMappingExposure = 1.1;
+    renderer.toneMappingExposure = getLighting(lightingModeRef.current).exposure;
     mount.appendChild(renderer.domElement);
 
     // Warm key + rim lighting for the metallic look
-    const key = new THREE.DirectionalLight('#FFE2A8', 2.6);
+    const key = new THREE.DirectionalLight(
+      '#FFE2A8',
+      getLighting(lightingModeRef.current).keyLight,
+    );
     key.position.set(2, 2, 3);
     scene.add(key);
-    const rim = new THREE.DirectionalLight('#B07020', 1.4);
+    const rim = new THREE.DirectionalLight('#B07020', getLighting(lightingModeRef.current).rim);
     rim.position.set(-3, 1, -2);
     scene.add(rim);
-    const ambient = new THREE.AmbientLight('#3A2614', 0.5);
+    const ambient = new THREE.AmbientLight('#3A2614', getLighting(lightingModeRef.current).ambient);
     scene.add(ambient);
 
     const root = new THREE.Group();
@@ -215,7 +257,7 @@ export default function GoldenGod({
         const starGeom = new THREE.BufferGeometry();
         starGeom.setAttribute('position', new THREE.BufferAttribute(positions, 3));
         const starMat = new THREE.PointsMaterial({
-          color: starColor,
+          color: starHsl(starHueRef.current, starSaturationRef.current, starLightnessRef.current),
           size: 0.006,
           sizeAttenuation: true,
           transparent: true,
@@ -283,9 +325,17 @@ export default function GoldenGod({
       root.scale.setScalar(breath);
       // Stars drift slightly outward and back
       if (starPoints) {
+        const lighting = getLighting(lightingModeRef.current);
+        renderer.toneMappingExposure += (lighting.exposure - renderer.toneMappingExposure) * 0.08;
+        key.intensity += (lighting.keyLight - key.intensity) * 0.08;
+        rim.intensity += (lighting.rim - rim.intensity) * 0.08;
+        ambient.intensity += (lighting.ambient - ambient.intensity) * 0.08;
         camera.position.z += (cameraDistanceRef.current - camera.position.z) * 0.08;
         starPoints.rotation.y = t * 0.05;
         const starMat = starPoints.material as THREE.PointsMaterial;
+        starMat.color = new THREE.Color(
+          starHsl(starHueRef.current, starSaturationRef.current, starLightnessRef.current),
+        );
         starMat.size = 0.004 + starGlowRef.current * 0.0035;
         starMat.opacity = Math.min(0.98, 0.44 + starGlowRef.current * 0.22);
         animateStarPattern(
@@ -330,7 +380,7 @@ export default function GoldenGod({
         mount.removeChild(renderer.domElement);
       }
     };
-  }, [assetUrl, goldColor, hologramColor, starColor]);
+  }, [assetUrl, goldColor, hologramColor]);
 
   return (
     <div
@@ -419,6 +469,37 @@ export default function GoldenGod({
           ))}
         </div>
       )}
+      {material === 'gold' && (
+        <div
+          style={{
+            position: 'absolute',
+            bottom: 58,
+            left: 0,
+            right: 0,
+            display: 'flex',
+            justifyContent: 'center',
+            gap: 8,
+            flexWrap: 'wrap',
+            padding: '0 18px',
+            fontFamily: SERIF,
+            color: 'rgba(240,216,152,0.78)',
+            fontSize: 11,
+          }}
+        >
+          <span style={{ letterSpacing: '0.16em', textTransform: 'uppercase' }}>lighting</span>
+          {LIGHTING_MODES.map((mode) => (
+            <button
+              key={mode.key}
+              type="button"
+              onClick={() => setLightingMode(mode.key)}
+              aria-pressed={lightingMode === mode.key}
+              style={smallPillStyle(lightingMode === mode.key)}
+            >
+              {mode.label}
+            </button>
+          ))}
+        </div>
+      )}
       {material === 'stars' && (
         <div
           style={{
@@ -454,6 +535,32 @@ export default function GoldenGod({
               max={2.4}
               step={0.1}
               onChange={setStarGlow}
+            />
+          </div>
+          <div style={{ display: 'flex', gap: 14, flexWrap: 'wrap', justifyContent: 'center' }}>
+            <SceneSlider
+              label="hue"
+              value={starHue}
+              min={0}
+              max={360}
+              step={1}
+              onChange={setStarHue}
+            />
+            <SceneSlider
+              label="sat"
+              value={starSaturation}
+              min={0}
+              max={100}
+              step={1}
+              onChange={setStarSaturation}
+            />
+            <SceneSlider
+              label="light"
+              value={starLightness}
+              min={25}
+              max={95}
+              step={1}
+              onChange={setStarLightness}
             />
           </div>
           <section
@@ -569,6 +676,30 @@ function animateStarPattern(
       nx += Math.sin(t * 2.1 + y * 9.1 + z * 3.7) * amp * 1.35;
       ny += Math.cos(t * 1.8 + x * 8.4) * amp * 1.1;
       nz += Math.sin(t * 2.4 + x * 3.1 + y * 6.6) * amp * 1.35;
+    } else if (pattern === 'shimmer') {
+      const local = Math.sin(t * 2.4 + x * 18.0 + y * 9.0 + z * 13.0) * amp * 0.22;
+      nx += x * local;
+      ny += y * local;
+      nz += z * local;
+    } else if (pattern === 'vortex') {
+      const radius = Math.max(0.001, Math.sqrt(x * x + z * z));
+      const tangentX = -z / radius;
+      const tangentZ = x / radius;
+      const drift = Math.sin(t * 1.1 + y * 7.0 + radius * 5.0) * amp * 0.55;
+      nx += tangentX * drift;
+      nz += tangentZ * drift;
+      ny += Math.cos(t * 0.9 + radius * 10.0) * amp * 0.12;
+    } else if (pattern === 'scales') {
+      const bands = Math.sin((y + 1.0) * 18.0 + t * 1.5);
+      const ribs = Math.cos(Math.atan2(z, x) * 10.0 + t * 0.8);
+      const shell = Math.max(0, bands * ribs) * amp * 0.28;
+      nx += x * shell;
+      ny += Math.sin(t * 1.4 + x * 12.0) * amp * 0.08;
+      nz += z * shell;
+    } else if (pattern === 'nebula') {
+      nx += Math.sin(t * 0.9 + x * 11.0 + y * 3.0) * amp * 0.32;
+      ny += Math.cos(t * 1.0 + y * 12.0 + z * 2.0) * amp * 0.32;
+      nz += Math.sin(t * 0.8 + z * 11.0 + x * 3.0) * amp * 0.32;
     }
 
     arr[i] = nx;
@@ -576,6 +707,33 @@ function animateStarPattern(
     arr[i + 2] = nz;
   }
   attr.needsUpdate = true;
+}
+
+function starHsl(hue: number, saturation: number, lightness: number) {
+  return `hsl(${hue}, ${saturation}%, ${lightness}%)`;
+}
+
+function hexToHsl(hex: string) {
+  const r = parseInt(hex.slice(1, 3), 16) / 255;
+  const g = parseInt(hex.slice(3, 5), 16) / 255;
+  const b = parseInt(hex.slice(5, 7), 16) / 255;
+  const max = Math.max(r, g, b);
+  const min = Math.min(r, g, b);
+  const l = (max + min) / 2;
+  if (max === min) {
+    return { h: 0, s: 0, l: Math.round(l * 100) };
+  }
+  const d = max - min;
+  const s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+  let h = 0;
+  if (max === r) h = (g - b) / d + (g < b ? 6 : 0);
+  else if (max === g) h = (b - r) / d + 2;
+  else h = (r - g) / d + 4;
+  return { h: Math.round(h * 60), s: Math.round(s * 100), l: Math.round(l * 100) };
+}
+
+function getLighting(mode: LightingMode) {
+  return LIGHTING_MODES.find((entry) => entry.key === mode) ?? LIGHTING_MODES[1];
 }
 
 function smallPillStyle(active: boolean): React.CSSProperties {

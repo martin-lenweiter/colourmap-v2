@@ -7,7 +7,7 @@ import CheckInPing from '@/components/CheckInPing';
 import ColourMapPanel from '@/components/ColourMapPanel';
 import DailyRituals from '@/components/DailyRituals';
 import DayRoad from '@/components/DayRoad';
-import DayTabs from '@/components/DayTabs';
+import DayTabs, { type BackgroundPlacement } from '@/components/DayTabs';
 import DayView3D from '@/components/DayView3D';
 import FeelingCircles2 from '@/components/FeelingCircles2';
 import FirstRunOnboarding from '@/components/FirstRunOnboarding';
@@ -34,6 +34,16 @@ const NIGHT_EMOTION_IMAGES = [
 const EMOTION_BACKDROPS = [...NIGHT_EMOTION_IMAGES, ...DAY_EMOTION_IMAGES];
 
 type EmotionVisualDesign = 1 | 2 | 3;
+type LaneKey = 'emotion' | 'mission' | 'progress';
+type LanePlacements = Record<LaneKey, BackgroundPlacement>;
+
+const DEFAULT_LANE_PLACEMENTS: LanePlacements = {
+  emotion: { x: 50, y: 36, zoom: 118 },
+  mission: { x: 50, y: 48, zoom: 118 },
+  progress: { x: 50, y: 45, zoom: 118 },
+};
+
+const PLACEMENT_KEY = 'colourmap:lane-background-placement';
 
 function getAreaFillEmotionImage(index: number) {
   return (
@@ -50,16 +60,193 @@ function getLaneImagePosition(tone: 'mission' | 'progress') {
   return tone === 'mission' ? 'center 48%' : 'center 45%';
 }
 
+function getBackgroundStyle(placement: BackgroundPlacement, fallbackPosition: string) {
+  return {
+    backgroundSize: `${placement.zoom}vw auto`,
+    backgroundPosition: `${placement.x}% ${placement.y}%`,
+    backgroundRepeat: 'no-repeat',
+    fallbackPosition,
+  };
+}
+
+function loadLanePlacements(): LanePlacements {
+  try {
+    const raw = localStorage.getItem(PLACEMENT_KEY);
+    if (!raw) return DEFAULT_LANE_PLACEMENTS;
+    const parsed = JSON.parse(raw) as Partial<Record<LaneKey, Partial<BackgroundPlacement>>>;
+    return {
+      emotion: { ...DEFAULT_LANE_PLACEMENTS.emotion, ...parsed.emotion },
+      mission: { ...DEFAULT_LANE_PLACEMENTS.mission, ...parsed.mission },
+      progress: { ...DEFAULT_LANE_PLACEMENTS.progress, ...parsed.progress },
+    };
+  } catch {
+    return DEFAULT_LANE_PLACEMENTS;
+  }
+}
+
+function PlacementTuner({
+  lane,
+  placement,
+  onChange,
+}: {
+  lane: LaneKey;
+  placement: BackgroundPlacement;
+  onChange: (next: BackgroundPlacement) => void;
+}) {
+  const [open, setOpen] = useState(false);
+  const code = `${lane} x ${placement.x} y ${placement.y} zoom ${placement.zoom}`;
+
+  function update(key: keyof BackgroundPlacement, value: number) {
+    onChange({ ...placement, [key]: value });
+  }
+
+  return (
+    <div
+      style={{
+        position: 'relative',
+        zIndex: 2,
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        gap: 8,
+        margin: '0 0 10px',
+      }}
+    >
+      <button
+        type="button"
+        onClick={() => setOpen((current) => !current)}
+        style={{
+          border: '1px solid rgba(240,216,152,0.28)',
+          borderRadius: 999,
+          background: 'rgba(18,10,5,0.32)',
+          color: 'rgba(240,216,152,0.86)',
+          fontFamily: 'var(--font-serif)',
+          fontSize: 10,
+          fontWeight: 800,
+          letterSpacing: '0.12em',
+          padding: '4px 12px',
+          textTransform: 'uppercase',
+          cursor: 'pointer',
+          backdropFilter: 'blur(8px)',
+        }}
+      >
+        Place image
+      </button>
+      {open && (
+        <div
+          style={{
+            width: 'min(560px, calc(100vw - 28px))',
+            border: '1px solid rgba(240,216,152,0.24)',
+            borderRadius: 12,
+            background: 'rgba(18,10,5,0.52)',
+            color: 'rgba(240,216,152,0.88)',
+            padding: 12,
+            fontFamily: 'var(--font-serif)',
+            fontSize: 11,
+            backdropFilter: 'blur(12px)',
+            boxShadow: '0 12px 32px rgba(0,0,0,0.22)',
+          }}
+        >
+          <div style={{ display: 'grid', gap: 8 }}>
+            <PlacementSlider label="x" value={placement.x} min={0} max={100} onChange={update} />
+            <PlacementSlider label="y" value={placement.y} min={0} max={100} onChange={update} />
+            <PlacementSlider
+              label="zoom"
+              value={placement.zoom}
+              min={100}
+              max={170}
+              onChange={update}
+            />
+          </div>
+          <div
+            style={{
+              display: 'flex',
+              gap: 8,
+              justifyContent: 'center',
+              alignItems: 'center',
+              flexWrap: 'wrap',
+              paddingTop: 10,
+            }}
+          >
+            <code style={{ color: 'rgba(240,216,152,0.9)' }}>{code}</code>
+            <button
+              type="button"
+              onClick={() => navigator.clipboard?.writeText(code)}
+              style={{
+                border: '1px solid rgba(240,216,152,0.28)',
+                borderRadius: 999,
+                background: 'rgba(255,248,226,0.08)',
+                color: 'rgba(240,216,152,0.9)',
+                fontFamily: 'var(--font-serif)',
+                fontSize: 10,
+                fontWeight: 800,
+                letterSpacing: '0.08em',
+                padding: '4px 10px',
+                textTransform: 'uppercase',
+                cursor: 'pointer',
+              }}
+            >
+              Copy
+            </button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function PlacementSlider({
+  label,
+  value,
+  min,
+  max,
+  onChange,
+}: {
+  label: keyof BackgroundPlacement;
+  value: number;
+  min: number;
+  max: number;
+  onChange: (key: keyof BackgroundPlacement, value: number) => void;
+}) {
+  return (
+    <label
+      style={{
+        display: 'grid',
+        gridTemplateColumns: '54px 1fr 42px',
+        alignItems: 'center',
+        gap: 8,
+      }}
+    >
+      <span style={{ letterSpacing: '0.14em', textTransform: 'uppercase' }}>{label}</span>
+      <input
+        type="range"
+        min={min}
+        max={max}
+        step={1}
+        value={value}
+        onChange={(event) => onChange(label, Number(event.target.value))}
+        aria-label={`${label} background placement`}
+        style={{ accentColor: '#FFD080', width: '100%' }}
+      />
+      <span style={{ textAlign: 'right' }}>{value}</span>
+    </label>
+  );
+}
+
 function EmotionMoodSurface({
   children,
   design,
   onDesignChange,
   imageIndex,
+  placement,
+  onPlacementChange,
 }: {
   children: React.ReactNode;
   design: EmotionVisualDesign;
   onDesignChange: (design: EmotionVisualDesign) => void;
   imageIndex: number;
+  placement: BackgroundPlacement;
+  onPlacementChange: (next: BackgroundPlacement) => void;
 }) {
   const [isLightTheme, setIsLightTheme] = useState(true);
   const [nightMode, setNightMode] = useState(false);
@@ -68,6 +255,7 @@ function EmotionMoodSurface({
   const areaFillImages = areaFill ? AREA_FILL_EMOTION_IMAGES : images;
   const currentImage = areaFillImages[imageIndex % areaFillImages.length] ?? DAY_EMOTION_IMAGES[0];
   const currentPosition = getEmotionImagePosition(currentImage, nightMode);
+  const placedBackground = getBackgroundStyle(placement, currentPosition);
 
   useEffect(() => {
     function syncLightTheme() {
@@ -135,8 +323,9 @@ function EmotionMoodSurface({
               position: 'absolute',
               inset: 0,
               backgroundImage: `url("${currentImage}")`,
-              backgroundSize: 'cover',
-              backgroundPosition: currentPosition,
+              backgroundSize: placedBackground.backgroundSize,
+              backgroundPosition: placedBackground.backgroundPosition,
+              backgroundRepeat: placedBackground.backgroundRepeat,
               backgroundAttachment: 'fixed',
               transform: 'scale(1.01)',
               transition: 'background-image 900ms ease',
@@ -163,6 +352,9 @@ function EmotionMoodSurface({
           margin: '0 0 10px',
         }}
       >
+        {areaFill && (
+          <PlacementTuner lane="emotion" placement={placement} onChange={onPlacementChange} />
+        )}
         <fieldset
           aria-label="Emotion image design"
           style={{
@@ -252,6 +444,8 @@ function AreaFillLaneSurface({
   image,
   label,
   tone,
+  placement,
+  onPlacementChange,
 }: {
   children: React.ReactNode;
   design: LaneImageDesign;
@@ -259,8 +453,11 @@ function AreaFillLaneSurface({
   image: string;
   label: string;
   tone: 'mission' | 'progress';
+  placement: BackgroundPlacement;
+  onPlacementChange: (next: BackgroundPlacement) => void;
 }) {
   const areaFill = design === 2;
+  const placedBackground = getBackgroundStyle(placement, getLaneImagePosition(tone));
   return (
     <div
       style={{
@@ -282,8 +479,9 @@ function AreaFillLaneSurface({
               position: 'absolute',
               inset: 0,
               backgroundImage: `url("${image}")`,
-              backgroundSize: 'cover',
-              backgroundPosition: getLaneImagePosition(tone),
+              backgroundSize: placedBackground.backgroundSize,
+              backgroundPosition: placedBackground.backgroundPosition,
+              backgroundRepeat: placedBackground.backgroundRepeat,
               backgroundAttachment: 'fixed',
               transform: 'scale(1.01)',
             }}
@@ -310,6 +508,9 @@ function AreaFillLaneSurface({
           margin: '0 0 10px',
         }}
       >
+        {areaFill && (
+          <PlacementTuner lane={tone} placement={placement} onChange={onPlacementChange} />
+        )}
         <fieldset
           aria-label={`${label} image design`}
           style={{
@@ -368,12 +569,17 @@ function DayContent() {
   const [missionVisualDesign, setMissionVisualDesign] = useState<LaneImageDesign>(1);
   const [progressVisualDesign, setProgressVisualDesign] = useState<LaneImageDesign>(1);
   const [emotionImageIndex, setEmotionImageIndex] = useState(0);
+  const [lanePlacements, setLanePlacements] = useState<LanePlacements>(DEFAULT_LANE_PLACEMENTS);
 
   // Silently restore server state into localStorage on mount.
   // Current session renders from whatever is already local (instant).
   // Next session (or cross-device) benefits from the restored values.
   useEffect(() => {
     hydrate();
+  }, []);
+
+  useEffect(() => {
+    setLanePlacements(loadLanePlacements());
   }, []);
 
   useEffect(() => {
@@ -421,6 +627,16 @@ function DayContent() {
     } catch {}
   }
 
+  function changeLanePlacement(lane: LaneKey, next: BackgroundPlacement) {
+    setLanePlacements((current) => {
+      const updated = { ...current, [lane]: next };
+      try {
+        localStorage.setItem(PLACEMENT_KEY, JSON.stringify(updated));
+      } catch {}
+      return updated;
+    });
+  }
+
   useEffect(() => {
     try {
       if (sessionStorage.getItem('colourmap:open-education') === '1') {
@@ -454,6 +670,7 @@ function DayContent() {
               emotionVisualDesign === 3
                 ? getEmotionImagePosition(getAreaFillEmotionImage(emotionImageIndex), false)
                 : 'center 46%',
+            placement: lanePlacements.emotion,
             fullBleed: emotionVisualDesign === 3,
           },
           mission: {
@@ -461,6 +678,7 @@ function DayContent() {
             image: MISSION_AREA_IMAGE,
             dayImage: true,
             position: getLaneImagePosition('mission'),
+            placement: lanePlacements.mission,
             fullBleed: true,
             overlay: 'rgba(48,22,7,0.34)',
           },
@@ -469,6 +687,7 @@ function DayContent() {
             image: PROGRESS_AREA_IMAGE,
             dayImage: true,
             position: getLaneImagePosition('progress'),
+            placement: lanePlacements.progress,
             fullBleed: true,
             overlay: 'rgba(17,28,22,0.36)',
           },
@@ -478,6 +697,8 @@ function DayContent() {
             design={emotionVisualDesign}
             onDesignChange={changeEmotionVisualDesign}
             imageIndex={emotionImageIndex}
+            placement={lanePlacements.emotion}
+            onPlacementChange={(next) => changeLanePlacement('emotion', next)}
           >
             <InnerWork />
             <div style={{ height: 20 }} />
@@ -564,6 +785,8 @@ function DayContent() {
             image={MISSION_AREA_IMAGE}
             label="Mission"
             tone="mission"
+            placement={lanePlacements.mission}
+            onPlacementChange={(next) => changeLanePlacement('mission', next)}
           >
             <div className="space-y-3">
               <MissionDesignSwitcher
@@ -608,6 +831,8 @@ function DayContent() {
             image={PROGRESS_AREA_IMAGE}
             label="Progress"
             tone="progress"
+            placement={lanePlacements.progress}
+            onPlacementChange={(next) => changeLanePlacement('progress', next)}
           >
             <div className="space-y-3">
               <Overview2 />

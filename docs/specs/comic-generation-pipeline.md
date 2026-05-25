@@ -1346,6 +1346,24 @@ Verne, economics, ecology, or other story-heavy education comics when the user e
 imagegen style. Final pages should be generated as high-quality raster illustrations, then
 compressed to WebP/AVIF for the app.
 
+### Raster Coverage Audit, 2026-05-25
+
+The app-referenced positive-overlay education rasters were checked after the sober comic pass:
+
+- `jack-london`: 12/12 WebP panels present.
+- `jules-verne`: 12/12 WebP panels present.
+- `finding-your-place`: 8/8 WebP panels present.
+- `art-of-trying`: 10/10 WebP panels present.
+- `economic-systems`: 40/40 WebP panels present.
+- `planetary-ecology`: 40/40 WebP panels present.
+- The generated layered education sets currently referenced by `ComicProgram` are also complete:
+  Carl Jung 20/20, Paulo Freire 11/11, Thich Nhat Hanh 20/20, Gandhi 20/20, Clear Allen 16/16.
+
+If new missing education panels are discovered, regenerate only the gaps unless the whole visual arc
+is incoherent. Use the sober reference direction from `finding-your-place` and `art-of-trying`: one
+clear action or symbol per page, controlled negative space, readable human posture, restrained
+lighting, and no overpacked lecture-collage composition.
+
 ## Education Program: Finding Your Place
 
 Working title: **Finding Your Place**.
