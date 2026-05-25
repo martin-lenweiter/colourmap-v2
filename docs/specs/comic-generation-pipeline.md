@@ -1289,6 +1289,8 @@ Simplification pass required:
   too many people, and decorative graphs that do not clarify the lesson.
 - The final feeling should be sober and relaxing to watch, not a poster trying to explain the whole
   economy or the whole planet at once.
+- This correction must use final raster illustration generation, not deterministic SVG scaffolding.
+  The SVG generator remains useful for wiring, contact sheets, and temporary fallbacks only.
 
 **Economic Systems In Motion** should show the passage of eras. The visual language remains coherent,
 but the mood evolves from village ledgers and old markets, to mercantilist ships and treasure, to
