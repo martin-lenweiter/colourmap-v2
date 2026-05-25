@@ -44,6 +44,42 @@ Good image direction:
 - restrained color, not a one-note beige or purple-blue wash
 - emotionally spacious rather than depressive
 
+## Progress Success Dashboard Direction
+
+Progress should make improvement visible and felt, but it must stay sober, spacious, and relaxing
+to watch. The goal is not gamification noise. The goal is a calm success dashboard that quietly
+shows: "things are moving, I can see what is improving, and my effort is becoming context."
+
+Core feeling:
+
+- evidence-based confidence, not hype
+- upward movement without pressure
+- visual success without confetti, flashing badges, or aggressive productivity language
+- a stable screen the user can leave open without fatigue
+- encouragement that comes from real patterns, not empty motivation
+
+Visual language:
+
+- slow rising graph paths, light trails, observatory lines, terraces, roads, or milestones
+- one dominant calm image field, with enough empty space for the UI to breathe
+- one or two slow ambient motions at most: breathing glow, soft light shift, or slow graph shimmer
+- power quotes can appear, but they should be short, quiet, and visually secondary to the user's data
+- 3D, when used here, should appear as one calm progress presence or avatar, not a cluster of widgets
+
+Avoid:
+
+- dense metric walls
+- many simultaneous animations
+- celebratory overload
+- fake achievement language detached from the user's actual data
+- dark, heavy, or defeated imagery
+- layouts that make Progress feel like a trading dashboard or a game menu
+
+AI-generated Progress observations must be grounded in recorded behavior: missions completed,
+categories revisited, check-ins made, patterns noticed, streaks recovered, or emotional range
+becoming clearer. The subconscious message should be success through witnessed effort, not success
+through forced positivity.
+
 ## States & Edge Cases
 
 - No check-in data yet: show the cockpit structure with empty/placeholder emotional state. Don't hide the screen.
