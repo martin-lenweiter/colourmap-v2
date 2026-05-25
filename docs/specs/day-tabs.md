@@ -186,3 +186,22 @@ The four items under each F / D / S axis in the Overview panel (`FdsPanel`) are 
 
 ## Unity (Future)
 The three compasses merge into a single double/triple-ring compass showing all 12 dimensions. This will be built as a separate view that reads from the same localStorage keys.
+
+## Image-Backed Lane Menu Experiments
+
+Mission, Emotions, and Progress may each expose an image-backed design option, but the default remains
+minimal and readable. The image option must feel like one calm surface behind the lane, not a busy
+wallpaper behind controls.
+
+Done when:
+
+- The active lane can place the Mission / Emotions / Progress tab row in front of its own image.
+- Emotions design 3 uses the round-window / terrace image language with warm tones and readable
+  controls.
+- Mission design 2 and Progress design 2 use their own full-bleed symbolic images, reaching to the
+  viewport edges below the top app header.
+- The selected lane content starts immediately under the image-backed tab row, with no intentional
+  spacer band.
+- Text and inputs stay legible through restrained overlays; no lane should become visually
+  overwhelming.
+- Education navigation stays visible and unchanged; 3D is not added to Education in this phase.

@@ -6,6 +6,7 @@ import { OBJLoader } from 'three/examples/jsm/loaders/OBJLoader.js';
 import { MeshSurfaceSampler } from 'three/examples/jsm/math/MeshSurfaceSampler.js';
 
 type Material = 'gold' | 'hologram' | 'stars';
+type StarPattern = 'still' | 'current' | 'spiral' | 'wave' | 'storm';
 
 export type FigureAsset = {
   key: string;
@@ -34,6 +35,13 @@ const HOLOGRAM_PALETTES: { key: string; label: string; main: string; emissive: s
 ];
 
 const STAR_COUNT = 32000;
+const STAR_PATTERNS: { key: StarPattern; label: string }[] = [
+  { key: 'still', label: 'Still' },
+  { key: 'current', label: 'Currents' },
+  { key: 'spiral', label: 'Spiral' },
+  { key: 'wave', label: 'Wave' },
+  { key: 'storm', label: 'Storm' },
+];
 
 export default function GoldenGod({
   assetUrl = '/models/golden-god.obj',
@@ -53,6 +61,9 @@ export default function GoldenGod({
   const [holoPaletteKey, setHoloPaletteKey] = useState<string>('gold');
   const [cameraDistance, setCameraDistance] = useState(3);
   const [starGlow, setStarGlow] = useState(1);
+  const [starPattern, setStarPattern] = useState<StarPattern>('current');
+  const [starAgitation, setStarAgitation] = useState(0.35);
+  const [starScale, setStarScale] = useState(0.8);
 
   // Refs the animation loop reads. Material changes only swap which mesh is visible —
   // they don't tear the scene down.
@@ -63,8 +74,14 @@ export default function GoldenGod({
   const materialRef = useRef<Material>('gold');
   const cameraDistanceRef = useRef(3);
   const starGlowRef = useRef(1);
+  const starPatternRef = useRef<StarPattern>('current');
+  const starAgitationRef = useRef(0.35);
+  const starScaleRef = useRef(0.8);
   cameraDistanceRef.current = cameraDistance;
   starGlowRef.current = starGlow;
+  starPatternRef.current = starPattern;
+  starAgitationRef.current = starAgitation;
+  starScaleRef.current = starScale;
 
   const setActiveMaterial = useCallback((m: Material) => {
     setMaterial(m);
@@ -207,6 +224,7 @@ export default function GoldenGod({
           depthWrite: false,
         });
         starPoints = new THREE.Points(starGeom, starMat);
+        starPoints.userData.basePositions = Float32Array.from(positions);
         starPoints.visible = materialRef.current === 'stars';
         starsRef.current = starPoints;
         root.add(starPoints);
@@ -270,6 +288,13 @@ export default function GoldenGod({
         const starMat = starPoints.material as THREE.PointsMaterial;
         starMat.size = 0.004 + starGlowRef.current * 0.0035;
         starMat.opacity = Math.min(0.98, 0.44 + starGlowRef.current * 0.22);
+        animateStarPattern(
+          starPoints,
+          t,
+          starPatternRef.current,
+          starAgitationRef.current,
+          starScaleRef.current,
+        );
       }
       renderer.render(scene, camera);
       frameId = requestAnimationFrame(animate);
@@ -402,6 +427,8 @@ export default function GoldenGod({
             left: 0,
             right: 0,
             display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
             justifyContent: 'center',
             gap: 14,
             flexWrap: 'wrap',
@@ -411,22 +438,59 @@ export default function GoldenGod({
             fontSize: 11,
           }}
         >
-          <SceneSlider
-            label="zoom"
-            value={cameraDistance}
-            min={1.8}
-            max={5.2}
-            step={0.1}
-            onChange={setCameraDistance}
-          />
-          <SceneSlider
-            label="glow"
-            value={starGlow}
-            min={0.2}
-            max={2.4}
-            step={0.1}
-            onChange={setStarGlow}
-          />
+          <div style={{ display: 'flex', gap: 14, flexWrap: 'wrap', justifyContent: 'center' }}>
+            <SceneSlider
+              label="zoom"
+              value={cameraDistance}
+              min={1.8}
+              max={5.2}
+              step={0.1}
+              onChange={setCameraDistance}
+            />
+            <SceneSlider
+              label="glow"
+              value={starGlow}
+              min={0.2}
+              max={2.4}
+              step={0.1}
+              onChange={setStarGlow}
+            />
+          </div>
+          <section
+            aria-label="Star movement menu"
+            style={{ display: 'flex', gap: 8, flexWrap: 'wrap', justifyContent: 'center' }}
+          >
+            <span style={{ letterSpacing: '0.16em', textTransform: 'uppercase' }}>movement</span>
+            {STAR_PATTERNS.map((pattern) => (
+              <button
+                key={pattern.key}
+                type="button"
+                onClick={() => setStarPattern(pattern.key)}
+                aria-pressed={starPattern === pattern.key}
+                style={smallPillStyle(starPattern === pattern.key)}
+              >
+                {pattern.label}
+              </button>
+            ))}
+          </section>
+          <div style={{ display: 'flex', gap: 14, flexWrap: 'wrap', justifyContent: 'center' }}>
+            <SceneSlider
+              label="agitate"
+              value={starAgitation}
+              min={0}
+              max={2.5}
+              step={0.1}
+              onChange={setStarAgitation}
+            />
+            <SceneSlider
+              label="scale"
+              value={starScale}
+              min={0.4}
+              max={3}
+              step={0.1}
+              onChange={setStarScale}
+            />
+          </div>
         </div>
       )}
       <div
@@ -464,6 +528,68 @@ export default function GoldenGod({
       </div>
     </div>
   );
+}
+
+function animateStarPattern(
+  points: THREE.Points,
+  t: number,
+  pattern: StarPattern,
+  agitation: number,
+  flowScale: number,
+) {
+  const base = points.userData.basePositions as Float32Array | undefined;
+  if (!base) return;
+  const attr = points.geometry.getAttribute('position') as THREE.BufferAttribute;
+  const arr = attr.array as Float32Array;
+  const amp = agitation * 0.035 * flowScale;
+
+  for (let i = 0; i < base.length; i += 3) {
+    const x = base[i];
+    const y = base[i + 1];
+    const z = base[i + 2];
+    let nx = x;
+    let ny = y;
+    let nz = z;
+
+    if (pattern === 'current') {
+      nx += Math.sin(t * 0.8 + y * 4.5 + z * 2.2) * amp * 0.5;
+      ny += Math.sin(t * 1.2 + x * 5.2) * amp;
+      nz += Math.cos(t * 0.9 + y * 3.4) * amp * 0.45;
+    } else if (pattern === 'spiral') {
+      const angle = Math.atan2(z, x);
+      const radius = Math.sqrt(x * x + z * z);
+      const swirl = angle + Math.sin(t * 0.55 + y * 4.2) * amp * 2.6;
+      nx = Math.cos(swirl) * radius;
+      nz = Math.sin(swirl) * radius;
+      ny += Math.sin(t * 0.7 + radius * 6) * amp * 0.5;
+    } else if (pattern === 'wave') {
+      ny += Math.sin(t * 1.6 + x * 7.5) * amp * 1.35;
+      nz += Math.cos(t * 1.1 + y * 5.5) * amp * 0.6;
+    } else if (pattern === 'storm') {
+      nx += Math.sin(t * 2.1 + y * 9.1 + z * 3.7) * amp * 1.35;
+      ny += Math.cos(t * 1.8 + x * 8.4) * amp * 1.1;
+      nz += Math.sin(t * 2.4 + x * 3.1 + y * 6.6) * amp * 1.35;
+    }
+
+    arr[i] = nx;
+    arr[i + 1] = ny;
+    arr[i + 2] = nz;
+  }
+  attr.needsUpdate = true;
+}
+
+function smallPillStyle(active: boolean): React.CSSProperties {
+  return {
+    background: active ? 'rgba(255,200,100,0.18)' : 'rgba(0,0,0,0.4)',
+    border: `1px solid ${active ? 'rgba(255,200,100,0.55)' : 'rgba(240,216,152,0.25)'}`,
+    borderRadius: 999,
+    color: active ? '#FFD080' : 'rgba(240,216,152,0.7)',
+    fontFamily: SERIF,
+    fontSize: 11,
+    letterSpacing: '0.08em',
+    cursor: 'pointer',
+    padding: '4px 10px',
+  };
 }
 
 function SceneSlider({

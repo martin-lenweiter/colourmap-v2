@@ -46,6 +46,10 @@ function getEmotionImagePosition(image: string, nightMode: boolean) {
   return nightMode ? 'center 42%' : 'center 48%';
 }
 
+function getLaneImagePosition(tone: 'mission' | 'progress') {
+  return tone === 'mission' ? 'center 48%' : 'center 45%';
+}
+
 function EmotionMoodSurface({
   children,
   design,
@@ -102,6 +106,7 @@ function EmotionMoodSurface({
         left: areaFill ? '50%' : undefined,
         marginLeft: areaFill ? '-50vw' : undefined,
         marginRight: areaFill ? '-50vw' : undefined,
+        marginTop: areaFill ? -1 : undefined,
         borderRadius: areaFill || isLightTheme ? 0 : 18,
         padding: areaFill
           ? '12px max(12px, calc((100vw - 672px) / 2 + 16px)) 40px'
@@ -132,6 +137,7 @@ function EmotionMoodSurface({
               backgroundImage: `url("${currentImage}")`,
               backgroundSize: 'cover',
               backgroundPosition: currentPosition,
+              backgroundAttachment: 'fixed',
               transform: 'scale(1.01)',
               transition: 'background-image 900ms ease',
             }}
@@ -277,7 +283,8 @@ function AreaFillLaneSurface({
               inset: 0,
               backgroundImage: `url("${image}")`,
               backgroundSize: 'cover',
-              backgroundPosition: tone === 'mission' ? 'center 48%' : 'center 45%',
+              backgroundPosition: getLaneImagePosition(tone),
+              backgroundAttachment: 'fixed',
               transform: 'scale(1.01)',
             }}
           />
@@ -288,8 +295,8 @@ function AreaFillLaneSurface({
               inset: 0,
               background:
                 tone === 'mission'
-                  ? 'linear-gradient(180deg, rgba(255,214,138,0.08), rgba(48,22,7,0.42) 44%, rgba(18,10,5,0.62))'
-                  : 'linear-gradient(180deg, rgba(180,204,172,0.08), rgba(17,28,22,0.46) 46%, rgba(8,12,10,0.68))',
+                  ? 'linear-gradient(180deg, rgba(48,22,7,0.34), rgba(48,22,7,0.42) 44%, rgba(18,10,5,0.62))'
+                  : 'linear-gradient(180deg, rgba(17,28,22,0.36), rgba(17,28,22,0.46) 46%, rgba(8,12,10,0.68))',
             }}
           />
         </>
@@ -435,18 +442,36 @@ function DayContent() {
       {learnOpen && <LearningHub onClose={() => setLearnOpen(false)} />}
 
       <DayTabs
-        headerBackdrop={{
-          enabled: emotionVisualDesign === 2 || emotionVisualDesign === 3,
-          image:
-            emotionVisualDesign === 3
-              ? getAreaFillEmotionImage(emotionImageIndex)
-              : EMOTION_BACKDROPS[emotionImageIndex],
-          dayImage: emotionVisualDesign === 3 || emotionImageIndex >= 2,
-          position:
-            emotionVisualDesign === 3
-              ? getEmotionImagePosition(getAreaFillEmotionImage(emotionImageIndex), false)
-              : 'center 46%',
-          fullBleed: emotionVisualDesign === 3,
+        headerBackdrops={{
+          emotion: {
+            enabled: emotionVisualDesign === 2 || emotionVisualDesign === 3,
+            image:
+              emotionVisualDesign === 3
+                ? getAreaFillEmotionImage(emotionImageIndex)
+                : EMOTION_BACKDROPS[emotionImageIndex],
+            dayImage: emotionVisualDesign === 3 || emotionImageIndex >= 2,
+            position:
+              emotionVisualDesign === 3
+                ? getEmotionImagePosition(getAreaFillEmotionImage(emotionImageIndex), false)
+                : 'center 46%',
+            fullBleed: emotionVisualDesign === 3,
+          },
+          mission: {
+            enabled: missionVisualDesign === 2,
+            image: MISSION_AREA_IMAGE,
+            dayImage: true,
+            position: getLaneImagePosition('mission'),
+            fullBleed: true,
+            overlay: 'rgba(48,22,7,0.34)',
+          },
+          progress: {
+            enabled: progressVisualDesign === 2,
+            image: PROGRESS_AREA_IMAGE,
+            dayImage: true,
+            position: getLaneImagePosition('progress'),
+            fullBleed: true,
+            overlay: 'rgba(17,28,22,0.36)',
+          },
         }}
         emotionContent={
           <EmotionMoodSurface

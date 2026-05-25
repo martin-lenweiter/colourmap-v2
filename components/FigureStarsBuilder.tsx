@@ -45,6 +45,71 @@ const STAR_PATTERNS: { key: StarPattern; label: string }[] = [
   { key: 'wave', label: 'Wave' },
   { key: 'storm', label: 'Storm' },
 ];
+const PRESET_KEY = 'colourmap:figure-star-presets';
+
+type StarPreset = {
+  label: string;
+  figureKey: string;
+  paletteKey: string;
+  density: number;
+  size: number;
+  cameraDistance: number;
+  glow: number;
+  pulseStrength: number;
+  pulseSpeed: number;
+  agitation: number;
+  flowScale: number;
+  pattern: StarPattern;
+  lowPower: boolean;
+};
+
+const DEFAULT_STAR_PRESETS: StarPreset[] = [
+  {
+    label: 'Calm Lotus',
+    figureKey: 'kid-lotus',
+    paletteKey: 'pure',
+    density: 16000,
+    size: 0.006,
+    cameraDistance: 4.4,
+    glow: 0.9,
+    pulseStrength: 0.7,
+    pulseSpeed: 0.6,
+    agitation: 0.25,
+    flowScale: 0.7,
+    pattern: 'current',
+    lowPower: true,
+  },
+  {
+    label: 'Billy Spiral',
+    figureKey: 'billy',
+    paletteKey: 'gold',
+    density: 32000,
+    size: 0.009,
+    cameraDistance: 4.8,
+    glow: 1.35,
+    pulseStrength: 1.2,
+    pulseSpeed: 1,
+    agitation: 0.75,
+    flowScale: 1.2,
+    pattern: 'spiral',
+    lowPower: false,
+  },
+  {
+    label: 'Low Wifi',
+    figureKey: 'golden-god',
+    paletteKey: 'gold',
+    density: 8000,
+    size: 0.006,
+    cameraDistance: 4.9,
+    glow: 0.8,
+    pulseStrength: 0.4,
+    pulseSpeed: 0.5,
+    agitation: 0.1,
+    flowScale: 0.5,
+    pattern: 'still',
+    lowPower: true,
+  },
+];
 
 export default function FigureStarsBuilder() {
   const searchParams = useSearchParams();
@@ -63,6 +128,8 @@ export default function FigureStarsBuilder() {
   const [agitation, setAgitation] = useState(0.5);
   const [flowScale, setFlowScale] = useState(1);
   const [pattern, setPattern] = useState<StarPattern>('current');
+  const [lowPower, setLowPower] = useState(false);
+  const [savedPresets, setSavedPresets] = useState<StarPreset[]>([]);
   const [status, setStatus] = useState<'loading' | 'ready' | 'error'>('loading');
 
   const pulseStrengthRef = useRef(1);
@@ -72,6 +139,8 @@ export default function FigureStarsBuilder() {
   const agitationRef = useRef(0.5);
   const flowScaleRef = useRef(1);
   const patternRef = useRef<StarPattern>('current');
+  const lowPowerRef = useRef(false);
+  const rendererRef = useRef<THREE.WebGLRenderer | null>(null);
   pulseStrengthRef.current = pulseStrength;
   pulseSpeedRef.current = pulseSpeed;
   cameraDistanceRef.current = cameraDistance;
@@ -79,6 +148,7 @@ export default function FigureStarsBuilder() {
   agitationRef.current = agitation;
   flowScaleRef.current = flowScale;
   patternRef.current = pattern;
+  lowPowerRef.current = lowPower;
 
   const [samplerVersion, setSamplerVersion] = useState(0);
 
@@ -88,6 +158,77 @@ export default function FigureStarsBuilder() {
   const pointsRef = useRef<THREE.Points | null>(null);
   const sceneRef = useRef<THREE.Scene | null>(null);
   const figureUrlRef = useRef<string>(figure.url);
+
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem(PRESET_KEY);
+      if (!raw) return;
+      const parsed = JSON.parse(raw) as StarPreset[];
+      if (Array.isArray(parsed)) setSavedPresets(parsed.slice(0, 6));
+    } catch {}
+  }, []);
+
+  useEffect(() => {
+    const renderer = rendererRef.current;
+    if (!renderer) return;
+    renderer.setPixelRatio(lowPower ? 1 : Math.min(window.devicePixelRatio, 2));
+  }, [lowPower]);
+
+  const applyPreset = useCallback((preset: StarPreset) => {
+    const nextFigure = FIGURES.find((entry) => entry.key === preset.figureKey);
+    const nextPalette = PALETTES.find((entry) => entry.key === preset.paletteKey);
+    if (nextFigure) setFigure(nextFigure);
+    if (nextPalette) setPalette(nextPalette);
+    setDensity(preset.density);
+    setSize(preset.size);
+    setCameraDistance(preset.cameraDistance);
+    setGlow(preset.glow);
+    setPulseStrength(preset.pulseStrength);
+    setPulseSpeed(preset.pulseSpeed);
+    setAgitation(preset.agitation);
+    setFlowScale(preset.flowScale);
+    setPattern(preset.pattern);
+    setLowPower(preset.lowPower);
+  }, []);
+
+  const saveCurrentPreset = useCallback(() => {
+    const nextPreset: StarPreset = {
+      label: `${figure.label} ${pattern}`,
+      figureKey: figure.key,
+      paletteKey: palette.key,
+      density,
+      size,
+      cameraDistance,
+      glow,
+      pulseStrength,
+      pulseSpeed,
+      agitation,
+      flowScale,
+      pattern,
+      lowPower,
+    };
+    setSavedPresets((current) => {
+      const next = [nextPreset, ...current].slice(0, 6);
+      try {
+        localStorage.setItem(PRESET_KEY, JSON.stringify(next));
+      } catch {}
+      return next;
+    });
+  }, [
+    agitation,
+    cameraDistance,
+    density,
+    figure.key,
+    figure.label,
+    flowScale,
+    glow,
+    lowPower,
+    palette.key,
+    pattern,
+    pulseSpeed,
+    pulseStrength,
+    size,
+  ]);
 
   useEffect(() => {
     const next = FIGURES.find((entry) => entry.key === requestedFigure);
@@ -152,8 +293,9 @@ export default function FigureStarsBuilder() {
 
     const renderer = new THREE.WebGLRenderer({ antialias: true });
     renderer.setSize(width, height);
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    renderer.setPixelRatio(lowPowerRef.current ? 1 : Math.min(window.devicePixelRatio, 2));
     renderer.toneMapping = THREE.ACESFilmicToneMapping;
+    rendererRef.current = renderer;
     mount.appendChild(renderer.domElement);
 
     setStatus('loading');
@@ -272,6 +414,7 @@ export default function FigureStarsBuilder() {
       mount.removeEventListener('pointerup', onPointerUp);
       mount.removeEventListener('pointercancel', onPointerUp);
       renderer.dispose();
+      rendererRef.current = null;
       if (pointsRef.current) {
         pointsRef.current.geometry.dispose();
         (pointsRef.current.material as THREE.PointsMaterial).dispose();
@@ -473,6 +616,14 @@ export default function FigureStarsBuilder() {
                 {p.label}
               </button>
             ))}
+            <button
+              type="button"
+              onClick={() => setLowPower((current) => !current)}
+              aria-pressed={lowPower}
+              style={pillStyle(lowPower, 'tiny')}
+            >
+              Low power
+            </button>
           </div>
           <div style={{ display: 'flex', gap: 14, alignItems: 'center', flexWrap: 'wrap' }}>
             <Slider
@@ -491,6 +642,22 @@ export default function FigureStarsBuilder() {
               step={0.1}
               onChange={setFlowScale}
             />
+          </div>
+          <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
+            <span style={{ letterSpacing: '0.16em', textTransform: 'uppercase' }}>presets</span>
+            {[...DEFAULT_STAR_PRESETS, ...savedPresets].map((preset, index) => (
+              <button
+                key={`${preset.label}-${index}`}
+                type="button"
+                onClick={() => applyPreset(preset)}
+                style={pillStyle(false, 'tiny')}
+              >
+                {preset.label}
+              </button>
+            ))}
+            <button type="button" onClick={saveCurrentPreset} style={pillStyle(false, 'tiny')}>
+              Save current
+            </button>
           </div>
         </section>
       </footer>
