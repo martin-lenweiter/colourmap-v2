@@ -1270,6 +1270,26 @@ Shared format:
 - coherent Colourmap education style: sober, warm, symbolic, high-quality linework, calm empty space,
   and enough visual clarity to read on a phone
 
+Simplification pass required:
+
+- Economics and ecology/environment pages currently tend to become visually overloaded because the
+  subjects invite too many systems, symbols, actors, eras, and consequences in one image. Future
+  generation and editing passes should simplify them a lot before treating them as final art.
+- Each page should keep one dominant action, one dominant symbol, or one dominant relationship. Extra
+  systems detail belongs in app-rendered teaching copy, references, or a later reveal layer.
+- Prefer calmer compositions with large quiet zones, clear silhouettes, and fewer foreground objects.
+  The viewer should be able to understand the image while tired, on a phone, and on a weak network.
+- Dense pages are allowed only when the density is the point, such as a marketplace, factory, supply
+  chain, forest web, or climate pressure scene. Even then, the image needs one simple reading path
+  and one obvious focal point.
+- The motorbike "Art Of Trying" direction is a good quality reference for this correction: strong
+  metaphor, clear room logic, symbolic objects used sparingly, alternating dense and simple pages,
+  and visible movement from chaos toward order.
+- Editing should remove duplicated symbols, tiny background stories, excessive futuristic overlays,
+  too many people, and decorative graphs that do not clarify the lesson.
+- The final feeling should be sober and relaxing to watch, not a poster trying to explain the whole
+  economy or the whole planet at once.
+
 **Economic Systems In Motion** should show the passage of eras. The visual language remains coherent,
 but the mood evolves from village ledgers and old markets, to mercantilist ships and treasure, to
 industrial smoke, Marx and the factory, Keynes and public works, Hayek/Friedman maps and rules,
