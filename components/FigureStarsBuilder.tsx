@@ -37,6 +37,14 @@ const PALETTES: { key: string; label: string; color: string; bg: string }[] = [
 
 const DENSITY_PRESETS = [8000, 16000, 32000, 64000, 96000];
 const SIZE_PRESETS = [0.004, 0.006, 0.009, 0.014];
+type StarPattern = 'still' | 'current' | 'spiral' | 'wave' | 'storm';
+const STAR_PATTERNS: { key: StarPattern; label: string }[] = [
+  { key: 'still', label: 'Still' },
+  { key: 'current', label: 'Currents' },
+  { key: 'spiral', label: 'Spiral' },
+  { key: 'wave', label: 'Wave' },
+  { key: 'storm', label: 'Storm' },
+];
 
 export default function FigureStarsBuilder() {
   const searchParams = useSearchParams();
@@ -50,12 +58,27 @@ export default function FigureStarsBuilder() {
   const [size, setSize] = useState(0.006);
   const [pulseStrength, setPulseStrength] = useState(1);
   const [pulseSpeed, setPulseSpeed] = useState(1);
+  const [cameraDistance, setCameraDistance] = useState(3.1);
+  const [glow, setGlow] = useState(1);
+  const [agitation, setAgitation] = useState(0.5);
+  const [flowScale, setFlowScale] = useState(1);
+  const [pattern, setPattern] = useState<StarPattern>('current');
   const [status, setStatus] = useState<'loading' | 'ready' | 'error'>('loading');
 
   const pulseStrengthRef = useRef(1);
   const pulseSpeedRef = useRef(1);
+  const cameraDistanceRef = useRef(3.1);
+  const glowRef = useRef(1);
+  const agitationRef = useRef(0.5);
+  const flowScaleRef = useRef(1);
+  const patternRef = useRef<StarPattern>('current');
   pulseStrengthRef.current = pulseStrength;
   pulseSpeedRef.current = pulseSpeed;
+  cameraDistanceRef.current = cameraDistance;
+  glowRef.current = glow;
+  agitationRef.current = agitation;
+  flowScaleRef.current = flowScale;
+  patternRef.current = pattern;
 
   const [samplerVersion, setSamplerVersion] = useState(0);
 
@@ -102,6 +125,8 @@ export default function FigureStarsBuilder() {
         depthWrite: false,
       });
       const points = new THREE.Points(geom, mat);
+      points.userData.basePositions = Float32Array.from(positions);
+      points.userData.baseSize = particleSize;
       scene.add(points);
       pointsRef.current = points;
     },
@@ -123,7 +148,7 @@ export default function FigureStarsBuilder() {
     sceneRef.current = scene;
 
     const camera = new THREE.PerspectiveCamera(40, width / height, 0.01, 100);
-    camera.position.set(0, 0, 2.4);
+    camera.position.set(0, 0, cameraDistanceRef.current);
 
     const renderer = new THREE.WebGLRenderer({ antialias: true });
     renderer.setSize(width, height);
@@ -202,12 +227,27 @@ export default function FigureStarsBuilder() {
       currentRot += (targetRot - currentRot) * 0.15;
       const points = pointsRef.current;
       if (points) {
+        camera.position.z += (cameraDistanceRef.current - camera.position.z) * 0.08;
         points.rotation.y = currentRot + (isDragging ? 0 : t * 0.12);
         const breath =
           1 + Math.sin(t * 0.9 * pulseSpeedRef.current) * 0.04 * pulseStrengthRef.current;
         points.scale.setScalar(breath);
         const mat = points.material as THREE.PointsMaterial;
-        mat.opacity = 0.7 + 0.22 * (0.5 + 0.5 * Math.sin(t * 1.3 * pulseSpeedRef.current));
+        const baseSize = (points.userData.baseSize as number | undefined) ?? 0.006;
+        mat.size = baseSize * (0.72 + glowRef.current * 0.24);
+        mat.opacity = Math.min(
+          0.98,
+          0.42 +
+            glowRef.current * 0.18 +
+            0.22 * (0.5 + 0.5 * Math.sin(t * 1.3 * pulseSpeedRef.current)),
+        );
+        animateStarPattern(
+          points,
+          t,
+          patternRef.current,
+          agitationRef.current,
+          flowScaleRef.current,
+        );
       }
       renderer.render(scene, camera);
       frameId = requestAnimationFrame(animate);
@@ -383,6 +423,15 @@ export default function FigureStarsBuilder() {
 
         <div style={{ display: 'flex', gap: 14, alignItems: 'center', flexWrap: 'wrap' }}>
           <Slider
+            label="zoom"
+            value={cameraDistance}
+            min={1.8}
+            max={5.2}
+            step={0.1}
+            onChange={setCameraDistance}
+          />
+          <Slider label="glow" value={glow} min={0.2} max={2.4} step={0.1} onChange={setGlow} />
+          <Slider
             label="pulse"
             value={pulseStrength}
             min={0}
@@ -399,9 +448,102 @@ export default function FigureStarsBuilder() {
             onChange={setPulseSpeed}
           />
         </div>
+
+        <section
+          aria-label="Star movement menu"
+          style={{
+            display: 'grid',
+            gap: 8,
+            borderTop: '1px solid rgba(240,216,152,0.1)',
+            paddingTop: 10,
+          }}
+        >
+          <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
+            <span style={{ letterSpacing: '0.16em', textTransform: 'uppercase' }}>
+              star movement
+            </span>
+            {STAR_PATTERNS.map((p) => (
+              <button
+                key={p.key}
+                type="button"
+                onClick={() => setPattern(p.key)}
+                aria-pressed={pattern === p.key}
+                style={pillStyle(pattern === p.key, 'tiny')}
+              >
+                {p.label}
+              </button>
+            ))}
+          </div>
+          <div style={{ display: 'flex', gap: 14, alignItems: 'center', flexWrap: 'wrap' }}>
+            <Slider
+              label="agitate"
+              value={agitation}
+              min={0}
+              max={2.5}
+              step={0.1}
+              onChange={setAgitation}
+            />
+            <Slider
+              label="scale"
+              value={flowScale}
+              min={0.4}
+              max={3}
+              step={0.1}
+              onChange={setFlowScale}
+            />
+          </div>
+        </section>
       </footer>
     </div>
   );
+}
+
+function animateStarPattern(
+  points: THREE.Points,
+  t: number,
+  pattern: StarPattern,
+  agitation: number,
+  flowScale: number,
+) {
+  const base = points.userData.basePositions as Float32Array | undefined;
+  if (!base) return;
+  const attr = points.geometry.getAttribute('position') as THREE.BufferAttribute;
+  const arr = attr.array as Float32Array;
+  const amp = agitation * 0.035 * flowScale;
+
+  for (let i = 0; i < base.length; i += 3) {
+    const x = base[i];
+    const y = base[i + 1];
+    const z = base[i + 2];
+    let nx = x;
+    let ny = y;
+    let nz = z;
+
+    if (pattern === 'current') {
+      nx += Math.sin(t * 0.8 + y * 4.5 + z * 2.2) * amp * 0.5;
+      ny += Math.sin(t * 1.2 + x * 5.2) * amp;
+      nz += Math.cos(t * 0.9 + y * 3.4) * amp * 0.45;
+    } else if (pattern === 'spiral') {
+      const angle = Math.atan2(z, x);
+      const radius = Math.sqrt(x * x + z * z);
+      const swirl = angle + Math.sin(t * 0.55 + y * 4.2) * amp * 2.6;
+      nx = Math.cos(swirl) * radius;
+      nz = Math.sin(swirl) * radius;
+      ny += Math.sin(t * 0.7 + radius * 6) * amp * 0.5;
+    } else if (pattern === 'wave') {
+      ny += Math.sin(t * 1.6 + x * 7.5) * amp * 1.35;
+      nz += Math.cos(t * 1.1 + y * 5.5) * amp * 0.6;
+    } else if (pattern === 'storm') {
+      nx += Math.sin(t * 2.1 + y * 9.1 + z * 3.7) * amp * 1.35;
+      ny += Math.cos(t * 1.8 + x * 8.4) * amp * 1.1;
+      nz += Math.sin(t * 2.4 + x * 3.1 + y * 6.6) * amp * 1.35;
+    }
+
+    arr[i] = nx;
+    arr[i + 1] = ny;
+    arr[i + 2] = nz;
+  }
+  attr.needsUpdate = true;
 }
 
 function pillStyle(active: boolean, scale: 'normal' | 'tiny' = 'normal'): React.CSSProperties {
@@ -437,6 +579,7 @@ function Slider({
     <label style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
       <span style={{ letterSpacing: '0.16em', textTransform: 'uppercase' }}>{label}</span>
       <input
+        aria-label={`${label} slider`}
         type="range"
         value={value}
         min={min}

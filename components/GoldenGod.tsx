@@ -51,6 +51,8 @@ export default function GoldenGod({
   const [status, setStatus] = useState<'loading' | 'ready' | 'error'>('loading');
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [holoPaletteKey, setHoloPaletteKey] = useState<string>('gold');
+  const [cameraDistance, setCameraDistance] = useState(3);
+  const [starGlow, setStarGlow] = useState(1);
 
   // Refs the animation loop reads. Material changes only swap which mesh is visible —
   // they don't tear the scene down.
@@ -59,6 +61,10 @@ export default function GoldenGod({
   const hologramMatRef = useRef<THREE.MeshPhysicalMaterial | null>(null);
   const starsRef = useRef<THREE.Points | null>(null);
   const materialRef = useRef<Material>('gold');
+  const cameraDistanceRef = useRef(3);
+  const starGlowRef = useRef(1);
+  cameraDistanceRef.current = cameraDistance;
+  starGlowRef.current = starGlow;
 
   const setActiveMaterial = useCallback((m: Material) => {
     setMaterial(m);
@@ -93,7 +99,7 @@ export default function GoldenGod({
     scene.background = new THREE.Color('#0A0604');
 
     const camera = new THREE.PerspectiveCamera(40, width / height, 0.01, 100);
-    camera.position.set(0, 0, 2.4);
+    camera.position.set(0, 0, cameraDistanceRef.current);
 
     const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
     renderer.setSize(width, height);
@@ -259,7 +265,11 @@ export default function GoldenGod({
       root.scale.setScalar(breath);
       // Stars drift slightly outward and back
       if (starPoints) {
+        camera.position.z += (cameraDistanceRef.current - camera.position.z) * 0.08;
         starPoints.rotation.y = t * 0.05;
+        const starMat = starPoints.material as THREE.PointsMaterial;
+        starMat.size = 0.004 + starGlowRef.current * 0.0035;
+        starMat.opacity = Math.min(0.98, 0.44 + starGlowRef.current * 0.22);
       }
       renderer.render(scene, camera);
       frameId = requestAnimationFrame(animate);
@@ -384,6 +394,41 @@ export default function GoldenGod({
           ))}
         </div>
       )}
+      {material === 'stars' && (
+        <div
+          style={{
+            position: 'absolute',
+            bottom: 58,
+            left: 0,
+            right: 0,
+            display: 'flex',
+            justifyContent: 'center',
+            gap: 14,
+            flexWrap: 'wrap',
+            padding: '0 18px',
+            fontFamily: SERIF,
+            color: 'rgba(240,216,152,0.78)',
+            fontSize: 11,
+          }}
+        >
+          <SceneSlider
+            label="zoom"
+            value={cameraDistance}
+            min={1.8}
+            max={5.2}
+            step={0.1}
+            onChange={setCameraDistance}
+          />
+          <SceneSlider
+            label="glow"
+            value={starGlow}
+            min={0.2}
+            max={2.4}
+            step={0.1}
+            onChange={setStarGlow}
+          />
+        </div>
+      )}
       <div
         style={{
           position: 'absolute',
@@ -418,5 +463,38 @@ export default function GoldenGod({
         ))}
       </div>
     </div>
+  );
+}
+
+function SceneSlider({
+  label,
+  value,
+  min,
+  max,
+  step,
+  onChange,
+}: {
+  label: string;
+  value: number;
+  min: number;
+  max: number;
+  step: number;
+  onChange: (n: number) => void;
+}) {
+  return (
+    <label style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+      <span style={{ letterSpacing: '0.16em', textTransform: 'uppercase' }}>{label}</span>
+      <input
+        aria-label={`${label} slider`}
+        type="range"
+        value={value}
+        min={min}
+        max={max}
+        step={step}
+        onChange={(event) => onChange(Number(event.target.value))}
+        style={{ accentColor: '#FFD080', width: 132 }}
+      />
+      <span style={{ minWidth: 32 }}>{value.toFixed(1)}</span>
+    </label>
   );
 }

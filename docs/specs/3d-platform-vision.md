@@ -39,6 +39,27 @@ The honest line: **Easy and Medium are the right home for Colourmap.** Hard is f
 
 This is the foundation. Everything below builds on this same loader + material switcher pattern.
 
+## Current star-control prototype
+
+The dedicated `/figure-stars` route is the active 3D experimentation surface. It should let the user
+view the existing assets from farther away, tune glow and density, and switch star movement patterns
+without leaving the page. Star movement is part of the visual language, not a decorative afterthought:
+stillness, currents, spirals, waves, and storm-like agitation should all preserve the figure's
+recognizable shape while activating the same beauty explored in Geometry Builder.
+
+Controls should remain phone-simple:
+
+- figure picker
+- palette, density, and particle size
+- zoom / desoom distance
+- glow, pulse, and speed
+- a compact **Star movement** menu for pattern, agitation, and scale
+
+The easy next step is saved presets for combinations that work well, such as `Kid Lotus / Currents /
+low agitation`, `Billy / Spiral / medium glow`, and `Spirit / Storm / low density`. The medium next
+step is sharing this movement grammar with Geometry Field so the same currents can appear in music,
+progress, and art modes.
+
 ## The five surfaces 3D can power
 
 ### 1. Progress hero — the personal avatar

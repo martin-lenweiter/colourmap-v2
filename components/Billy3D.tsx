@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import * as THREE from 'three';
 
 const SERIF = 'var(--font-serif)';
@@ -92,6 +92,9 @@ function makeLeaf(color: string): THREE.Mesh {
 
 export default function Billy3D() {
   const mountRef = useRef<HTMLDivElement | null>(null);
+  const [cameraDistance, setCameraDistance] = useState(4.8);
+  const cameraDistanceRef = useRef(4.8);
+  cameraDistanceRef.current = cameraDistance;
 
   useEffect(() => {
     const mount = mountRef.current;
@@ -105,7 +108,7 @@ export default function Billy3D() {
     scene.background = new THREE.Color('#1a0f06');
 
     const camera = new THREE.PerspectiveCamera(35, width / height, 0.01, 100);
-    camera.position.set(0, 1.4, 4.4);
+    camera.position.set(0, 1.4, cameraDistanceRef.current);
     camera.lookAt(0, 1, 0);
 
     const renderer = new THREE.WebGLRenderer({ antialias: true });
@@ -295,6 +298,7 @@ export default function Billy3D() {
     const clock = new THREE.Clock();
     const animate = () => {
       const t = clock.getElapsedTime();
+      camera.position.z += (cameraDistanceRef.current - camera.position.z) * 0.08;
       currentRot += (targetRot - currentRot) * 0.15;
       billy.rotation.y = currentRot + (isDragging ? 0 : Math.sin(t * 0.25) * 0.25);
 
@@ -376,6 +380,34 @@ export default function Billy3D() {
         }}
       >
         Billy · procedural v1
+      </div>
+      <div
+        style={{
+          position: 'absolute',
+          bottom: 18,
+          left: 0,
+          right: 0,
+          display: 'flex',
+          justifyContent: 'center',
+          fontFamily: SERIF,
+          fontSize: 11,
+          color: 'rgba(240,216,152,0.74)',
+        }}
+      >
+        <label style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          <span style={{ letterSpacing: '0.16em', textTransform: 'uppercase' }}>zoom</span>
+          <input
+            type="range"
+            min={3.2}
+            max={7}
+            step={0.1}
+            value={cameraDistance}
+            onChange={(event) => setCameraDistance(Number(event.target.value))}
+            aria-label="Billy camera zoom"
+            style={{ accentColor: '#FFD080', width: 150 }}
+          />
+          <span style={{ minWidth: 32 }}>{cameraDistance.toFixed(1)}</span>
+        </label>
       </div>
     </div>
   );
