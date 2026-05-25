@@ -24,7 +24,21 @@ interface DayTabsProps {
     dayImage?: boolean;
     position?: string;
     fullBleed?: boolean;
+    overlay?: string;
   };
+  headerBackdrops?: Partial<
+    Record<
+      Tab,
+      {
+        image: string;
+        enabled: boolean;
+        dayImage?: boolean;
+        position?: string;
+        fullBleed?: boolean;
+        overlay?: string;
+      }
+    >
+  >;
 }
 
 function hex2rgba(hex: string, a: number) {
@@ -39,11 +53,13 @@ export default function DayTabs({
   missionContent,
   progressContent,
   headerBackdrop,
+  headerBackdrops,
 }: DayTabsProps) {
   const [active, setActive] = useState<Tab>('emotion');
   const [isLightTheme, setIsLightTheme] = useState(true);
   const [isPhone, setIsPhone] = useState(false);
   const { tabStyle, tabFillColor } = useStyle();
+  const activeHeaderBackdrop = headerBackdrops?.[active] ?? headerBackdrop;
 
   useEffect(() => {
     try {
@@ -120,51 +136,56 @@ export default function DayTabs({
       style={{
         display: 'flex',
         flexDirection: 'column',
-        gap: headerBackdrop?.enabled ? 0 : 24,
+        gap: activeHeaderBackdrop?.enabled ? 0 : 24,
       }}
     >
       {/* ── Tab row ── */}
       <div
         style={{
           position: 'relative',
-          width: headerBackdrop?.enabled
-            ? headerBackdrop.fullBleed
+          width: activeHeaderBackdrop?.enabled
+            ? activeHeaderBackdrop.fullBleed
               ? '100vw'
               : isPhone
                 ? 'calc(100% + 16px)'
                 : 'calc(100% + 32px)'
             : undefined,
-          left: headerBackdrop?.enabled && headerBackdrop.fullBleed ? '50%' : undefined,
-          marginLeft: headerBackdrop?.enabled
-            ? headerBackdrop.fullBleed
+          left: activeHeaderBackdrop?.enabled && activeHeaderBackdrop.fullBleed ? '50%' : undefined,
+          marginLeft: activeHeaderBackdrop?.enabled
+            ? activeHeaderBackdrop.fullBleed
               ? '-50vw'
               : isPhone
                 ? -8
                 : -16
             : undefined,
-          marginRight: headerBackdrop?.enabled
-            ? headerBackdrop.fullBleed
+          marginRight: activeHeaderBackdrop?.enabled
+            ? activeHeaderBackdrop.fullBleed
               ? '-50vw'
               : isPhone
                 ? -8
                 : -16
             : undefined,
-          marginTop: headerBackdrop?.enabled ? -12 : 0,
-          padding: headerBackdrop?.enabled ? (isPhone ? '16px 8px 12px' : '20px 16px 14px') : 0,
-          minHeight: headerBackdrop?.enabled ? (isPhone ? 126 : 154) : undefined,
+          marginTop: activeHeaderBackdrop?.enabled ? -12 : 0,
+          padding: activeHeaderBackdrop?.enabled
+            ? isPhone
+              ? '16px 8px 12px'
+              : '20px 16px 14px'
+            : 0,
+          minHeight: activeHeaderBackdrop?.enabled ? (isPhone ? 126 : 154) : undefined,
           overflow: 'hidden',
         }}
       >
-        {headerBackdrop?.enabled && (
+        {activeHeaderBackdrop?.enabled && (
           <>
             <div
               aria-hidden="true"
               style={{
                 position: 'absolute',
                 inset: 0,
-                backgroundImage: `url("${headerBackdrop.image}")`,
+                backgroundImage: `url("${activeHeaderBackdrop.image}")`,
                 backgroundSize: 'cover',
-                backgroundPosition: headerBackdrop.position ?? 'center 46%',
+                backgroundPosition: activeHeaderBackdrop.position ?? 'center 46%',
+                backgroundAttachment: activeHeaderBackdrop.fullBleed ? 'fixed' : undefined,
                 transition: 'background-image 900ms ease',
               }}
             />
@@ -173,9 +194,11 @@ export default function DayTabs({
               style={{
                 position: 'absolute',
                 inset: 0,
-                background: headerBackdrop.dayImage
-                  ? 'linear-gradient(180deg, rgba(255,248,226,0.12), rgba(46,18,6,0.38))'
-                  : 'linear-gradient(180deg, rgba(5,3,2,0.1), rgba(5,3,2,0.58))',
+                background:
+                  activeHeaderBackdrop.overlay ??
+                  (activeHeaderBackdrop.dayImage
+                    ? 'linear-gradient(180deg, rgba(255,248,226,0.12), rgba(46,18,6,0.38))'
+                    : 'linear-gradient(180deg, rgba(5,3,2,0.1), rgba(5,3,2,0.58))'),
               }}
             />
           </>
@@ -203,25 +226,27 @@ export default function DayTabs({
                 }}
                 className="flex-1 min-w-0 cursor-pointer rounded-2xl transition-all duration-200"
                 style={{
-                  background: headerBackdrop?.enabled
+                  background: activeHeaderBackdrop?.enabled
                     ? isActive
                       ? 'rgba(18,10,5,0.42)'
                       : 'rgba(18,10,5,0.22)'
                     : tabBg(isActive),
-                  border: headerBackdrop?.enabled
+                  border: activeHeaderBackdrop?.enabled
                     ? `1.5px solid ${isActive ? 'rgba(240,216,152,0.7)' : 'rgba(240,216,152,0.32)'}`
                     : tabBorder(isActive),
-                  color: headerBackdrop?.enabled ? 'rgba(240,216,152,0.94)' : tabColor(isActive),
+                  color: activeHeaderBackdrop?.enabled
+                    ? 'rgba(240,216,152,0.94)'
+                    : tabColor(isActive),
                   fontFamily: 'var(--font-serif)',
                   fontSize: '14px',
                   fontWeight: 900,
                   letterSpacing: '0.08em',
-                  minHeight: headerBackdrop?.enabled && isPhone ? 58 : 72,
+                  minHeight: activeHeaderBackdrop?.enabled && isPhone ? 58 : 72,
                   textAlign: 'center',
                   textTransform: 'uppercase',
-                  padding: headerBackdrop?.enabled && isPhone ? '15px 4px' : '20px 6px',
-                  backdropFilter: headerBackdrop?.enabled ? 'blur(2px)' : undefined,
-                  boxShadow: headerBackdrop?.enabled
+                  padding: activeHeaderBackdrop?.enabled && isPhone ? '15px 4px' : '20px 6px',
+                  backdropFilter: activeHeaderBackdrop?.enabled ? 'blur(2px)' : undefined,
+                  boxShadow: activeHeaderBackdrop?.enabled
                     ? '0 8px 24px rgba(0,0,0,0.16), inset 0 1px 0 rgba(255,255,255,0.08)'
                     : undefined,
                 }}

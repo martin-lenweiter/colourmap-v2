@@ -60,6 +60,17 @@ low agitation`, `Billy / Spiral / medium glow`, and `Spirit / Storm / low densit
 step is sharing this movement grammar with Geometry Field so the same currents can appear in music,
 progress, and art modes.
 
+Current PR follow-up:
+
+- `/figure-stars` exposes default presets (`Calm Lotus`, `Billy Spiral`, `Low Wifi`) plus user-saved
+  presets stored locally for quick return to good combinations.
+- Low-power mode reduces render pixel ratio and pairs naturally with lower particle density for weak
+  wifi / older phones.
+- The main `/figures` Stars material shares the same movement language: stillness, currents, spiral,
+  wave, storm, agitation, and scale.
+- Near-term polish should keep adding phone-simple preset buttons before deeper 3D complexity:
+  `Reset camera`, `Save as calm`, and per-asset default zoom are higher value than new effects.
+
 ## The five surfaces 3D can power
 
 ### 1. Progress hero — the personal avatar
