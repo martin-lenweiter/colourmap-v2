@@ -22,6 +22,8 @@ interface DayTabsProps {
     image: string;
     enabled: boolean;
     dayImage?: boolean;
+    position?: string;
+    fullBleed?: boolean;
   };
 }
 
@@ -114,18 +116,39 @@ export default function DayTabs({
   }
 
   return (
-    <div className="space-y-6">
+    <div
+      style={{
+        display: 'flex',
+        flexDirection: 'column',
+        gap: headerBackdrop?.enabled ? 0 : 24,
+      }}
+    >
       {/* ── Tab row ── */}
       <div
         style={{
           position: 'relative',
           width: headerBackdrop?.enabled
-            ? isPhone
-              ? 'calc(100% + 16px)'
-              : 'calc(100% + 32px)'
+            ? headerBackdrop.fullBleed
+              ? '100vw'
+              : isPhone
+                ? 'calc(100% + 16px)'
+                : 'calc(100% + 32px)'
             : undefined,
-          marginLeft: headerBackdrop?.enabled ? (isPhone ? -8 : -16) : undefined,
-          marginRight: headerBackdrop?.enabled ? (isPhone ? -8 : -16) : undefined,
+          left: headerBackdrop?.enabled && headerBackdrop.fullBleed ? '50%' : undefined,
+          marginLeft: headerBackdrop?.enabled
+            ? headerBackdrop.fullBleed
+              ? '-50vw'
+              : isPhone
+                ? -8
+                : -16
+            : undefined,
+          marginRight: headerBackdrop?.enabled
+            ? headerBackdrop.fullBleed
+              ? '-50vw'
+              : isPhone
+                ? -8
+                : -16
+            : undefined,
           marginTop: headerBackdrop?.enabled ? -12 : 0,
           padding: headerBackdrop?.enabled ? (isPhone ? '16px 8px 12px' : '20px 16px 14px') : 0,
           minHeight: headerBackdrop?.enabled ? (isPhone ? 126 : 154) : undefined,
@@ -141,7 +164,7 @@ export default function DayTabs({
                 inset: 0,
                 backgroundImage: `url("${headerBackdrop.image}")`,
                 backgroundSize: 'cover',
-                backgroundPosition: 'center 46%',
+                backgroundPosition: headerBackdrop.position ?? 'center 46%',
                 transition: 'background-image 900ms ease',
               }}
             />

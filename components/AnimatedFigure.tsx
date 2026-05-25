@@ -29,11 +29,14 @@ export default function AnimatedFigure({
   const [animations, setAnimations] = useState<string[]>([]);
   const [active, setActive] = useState<string | null>(null);
   const [speed, setSpeed] = useState(1);
+  const [cameraDistance, setCameraDistance] = useState(3.8);
 
   const mixerRef = useRef<THREE.AnimationMixer | null>(null);
   const actionsRef = useRef<Record<string, THREE.AnimationAction>>({});
   const currentActionRef = useRef<THREE.AnimationAction | null>(null);
   const speedRef = useRef(1);
+  const cameraDistanceRef = useRef(3.8);
+  cameraDistanceRef.current = cameraDistance;
 
   const playAnimation = useCallback((name: string) => {
     const next = actionsRef.current[name];
@@ -70,7 +73,7 @@ export default function AnimatedFigure({
     scene.background = new THREE.Color('#0A0604');
 
     const camera = new THREE.PerspectiveCamera(35, width / height, 0.01, 100);
-    camera.position.set(0, 1.4, 3.4);
+    camera.position.set(0, 1.4, cameraDistanceRef.current);
     camera.lookAt(0, 0.8, 0);
 
     const renderer = new THREE.WebGLRenderer({ antialias: true });
@@ -196,6 +199,7 @@ export default function AnimatedFigure({
     const animate = () => {
       const delta = clock.getDelta();
       const t = clock.elapsedTime;
+      camera.position.z += (cameraDistanceRef.current - camera.position.z) * 0.08;
 
       // Smoothly approach drag-driven rotation
       currentRot += (targetRot - currentRot) * 0.15;
@@ -325,6 +329,29 @@ export default function AnimatedFigure({
               style={{ accentColor: '#FFD080', width: 160 }}
             />
             <span style={{ minWidth: 28 }}>{speed.toFixed(1)}×</span>
+          </div>
+          <div
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: 10,
+              fontFamily: SERIF,
+              fontSize: 11,
+              color: 'rgba(240,216,152,0.7)',
+            }}
+          >
+            <span>zoom</span>
+            <input
+              type="range"
+              min={2.4}
+              max={6}
+              step={0.1}
+              value={cameraDistance}
+              onChange={(event) => setCameraDistance(Number(event.target.value))}
+              aria-label="Animated figure camera zoom"
+              style={{ accentColor: '#FFD080', width: 160 }}
+            />
+            <span style={{ minWidth: 28 }}>{cameraDistance.toFixed(1)}</span>
           </div>
         </div>
       )}

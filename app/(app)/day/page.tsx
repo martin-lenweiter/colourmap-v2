@@ -35,6 +35,17 @@ const EMOTION_BACKDROPS = [...NIGHT_EMOTION_IMAGES, ...DAY_EMOTION_IMAGES];
 
 type EmotionVisualDesign = 1 | 2 | 3;
 
+function getAreaFillEmotionImage(index: number) {
+  return (
+    AREA_FILL_EMOTION_IMAGES[index % AREA_FILL_EMOTION_IMAGES.length] ?? ROUND_WINDOW_EMOTION_IMAGE
+  );
+}
+
+function getEmotionImagePosition(image: string, nightMode: boolean) {
+  if (image === ROUND_WINDOW_EMOTION_IMAGE) return 'center 36%';
+  return nightMode ? 'center 42%' : 'center 48%';
+}
+
 function EmotionMoodSurface({
   children,
   design,
@@ -52,6 +63,7 @@ function EmotionMoodSurface({
   const images = nightMode ? NIGHT_EMOTION_IMAGES : DAY_EMOTION_IMAGES;
   const areaFillImages = areaFill ? AREA_FILL_EMOTION_IMAGES : images;
   const currentImage = areaFillImages[imageIndex % areaFillImages.length] ?? DAY_EMOTION_IMAGES[0];
+  const currentPosition = getEmotionImagePosition(currentImage, nightMode);
 
   useEffect(() => {
     function syncLightTheme() {
@@ -119,7 +131,7 @@ function EmotionMoodSurface({
               inset: 0,
               backgroundImage: `url("${currentImage}")`,
               backgroundSize: 'cover',
-              backgroundPosition: nightMode ? 'center 42%' : 'center 50%',
+              backgroundPosition: currentPosition,
               transform: 'scale(1.01)',
               transition: 'background-image 900ms ease',
             }}
@@ -205,7 +217,7 @@ function EmotionMoodSurface({
               width: '100%',
               aspectRatio: '16 / 7',
               objectFit: 'cover',
-              objectPosition: nightMode ? 'center 42%' : 'center 50%',
+              objectPosition: currentPosition,
               transition: 'opacity 900ms ease',
             }}
           />
@@ -424,9 +436,17 @@ function DayContent() {
 
       <DayTabs
         headerBackdrop={{
-          enabled: emotionVisualDesign === 2,
-          image: EMOTION_BACKDROPS[emotionImageIndex],
-          dayImage: emotionImageIndex >= 2,
+          enabled: emotionVisualDesign === 2 || emotionVisualDesign === 3,
+          image:
+            emotionVisualDesign === 3
+              ? getAreaFillEmotionImage(emotionImageIndex)
+              : EMOTION_BACKDROPS[emotionImageIndex],
+          dayImage: emotionVisualDesign === 3 || emotionImageIndex >= 2,
+          position:
+            emotionVisualDesign === 3
+              ? getEmotionImagePosition(getAreaFillEmotionImage(emotionImageIndex), false)
+              : 'center 46%',
+          fullBleed: emotionVisualDesign === 3,
         }}
         emotionContent={
           <EmotionMoodSurface
