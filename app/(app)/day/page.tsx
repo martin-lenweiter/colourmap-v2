@@ -38,9 +38,9 @@ type LaneKey = 'emotion' | 'mission' | 'progress';
 type LanePlacements = Record<LaneKey, BackgroundPlacement>;
 
 const DEFAULT_LANE_PLACEMENTS: LanePlacements = {
-  emotion: { x: 50, y: 36, zoom: 118 },
-  mission: { x: 50, y: 48, zoom: 118 },
-  progress: { x: 50, y: 45, zoom: 118 },
+  emotion: { x: 50, y: 32, zoom: 142 },
+  mission: { x: 50, y: 42, zoom: 132 },
+  progress: { x: 50, y: 40, zoom: 132 },
 };
 
 const PLACEMENT_KEY = 'colourmap:lane-background-placement';
@@ -58,15 +58,6 @@ function getEmotionImagePosition(image: string, nightMode: boolean) {
 
 function getLaneImagePosition(tone: 'mission' | 'progress') {
   return tone === 'mission' ? 'center 48%' : 'center 45%';
-}
-
-function getBackgroundStyle(placement: BackgroundPlacement, fallbackPosition: string) {
-  return {
-    backgroundSize: `${placement.zoom}vw auto`,
-    backgroundPosition: `${placement.x}% ${placement.y}%`,
-    backgroundRepeat: 'no-repeat',
-    fallbackPosition,
-  };
 }
 
 function loadLanePlacements(): LanePlacements {
@@ -94,6 +85,7 @@ function PlacementTuner({
   onChange: (next: BackgroundPlacement) => void;
 }) {
   const [open, setOpen] = useState(false);
+  const defaults = DEFAULT_LANE_PLACEMENTS[lane];
   const code = `${lane} x ${placement.x} y ${placement.y} zoom ${placement.zoom}`;
 
   function update(key: keyof BackgroundPlacement, value: number) {
@@ -153,8 +145,8 @@ function PlacementTuner({
             <PlacementSlider
               label="zoom"
               value={placement.zoom}
-              min={100}
-              max={170}
+              min={86}
+              max={190}
               onChange={update}
             />
           </div>
@@ -187,6 +179,25 @@ function PlacementTuner({
               }}
             >
               Copy
+            </button>
+            <button
+              type="button"
+              onClick={() => onChange(defaults)}
+              style={{
+                border: '1px solid rgba(240,216,152,0.2)',
+                borderRadius: 999,
+                background: 'rgba(255,248,226,0.05)',
+                color: 'rgba(240,216,152,0.78)',
+                fontFamily: 'var(--font-serif)',
+                fontSize: 10,
+                fontWeight: 800,
+                letterSpacing: '0.08em',
+                padding: '4px 10px',
+                textTransform: 'uppercase',
+                cursor: 'pointer',
+              }}
+            >
+              Reset
             </button>
           </div>
         </div>
@@ -255,7 +266,6 @@ function EmotionMoodSurface({
   const areaFillImages = areaFill ? AREA_FILL_EMOTION_IMAGES : images;
   const currentImage = areaFillImages[imageIndex % areaFillImages.length] ?? DAY_EMOTION_IMAGES[0];
   const currentPosition = getEmotionImagePosition(currentImage, nightMode);
-  const placedBackground = getBackgroundStyle(placement, currentPosition);
 
   useEffect(() => {
     function syncLightTheme() {
@@ -290,10 +300,7 @@ function EmotionMoodSurface({
       style={{
         position: 'relative',
         overflow: 'hidden',
-        width: areaFill ? '100vw' : undefined,
-        left: areaFill ? '50%' : undefined,
-        marginLeft: areaFill ? '-50vw' : undefined,
-        marginRight: areaFill ? '-50vw' : undefined,
+        width: areaFill ? '100%' : undefined,
         marginTop: areaFill ? -1 : undefined,
         borderRadius: areaFill || isLightTheme ? 0 : 18,
         padding: areaFill
@@ -315,34 +322,6 @@ function EmotionMoodSurface({
             : 'inset 0 1px 0 rgba(255,255,255,0.04), 0 18px 42px rgba(0,0,0,0.14)',
       }}
     >
-      {areaFill && (
-        <>
-          <div
-            aria-hidden="true"
-            style={{
-              position: 'absolute',
-              inset: 0,
-              backgroundImage: `url("${currentImage}")`,
-              backgroundSize: placedBackground.backgroundSize,
-              backgroundPosition: placedBackground.backgroundPosition,
-              backgroundRepeat: placedBackground.backgroundRepeat,
-              backgroundAttachment: 'fixed',
-              transform: 'scale(1.01)',
-              transition: 'background-image 900ms ease',
-            }}
-          />
-          <div
-            aria-hidden="true"
-            style={{
-              position: 'absolute',
-              inset: 0,
-              background: nightMode
-                ? 'linear-gradient(180deg, rgba(5,3,2,0.42), rgba(5,3,2,0.74))'
-                : 'linear-gradient(180deg, rgba(255,248,226,0.16), rgba(46,18,6,0.44) 46%, rgba(18,10,5,0.62))',
-            }}
-          />
-        </>
-      )}
       <div
         style={{
           position: 'relative',
@@ -457,48 +436,16 @@ function AreaFillLaneSurface({
   onPlacementChange: (next: BackgroundPlacement) => void;
 }) {
   const areaFill = design === 2;
-  const placedBackground = getBackgroundStyle(placement, getLaneImagePosition(tone));
   return (
     <div
       style={{
         position: 'relative',
         overflow: 'hidden',
-        width: areaFill ? '100vw' : undefined,
-        left: areaFill ? '50%' : undefined,
-        marginLeft: areaFill ? '-50vw' : undefined,
-        marginRight: areaFill ? '-50vw' : undefined,
+        width: areaFill ? '100%' : undefined,
         padding: areaFill ? '12px max(12px, calc((100vw - 672px) / 2 + 16px)) 40px' : undefined,
         minHeight: areaFill ? 'calc(100svh - 168px)' : undefined,
       }}
     >
-      {areaFill && (
-        <>
-          <div
-            aria-hidden="true"
-            style={{
-              position: 'absolute',
-              inset: 0,
-              backgroundImage: `url("${image}")`,
-              backgroundSize: placedBackground.backgroundSize,
-              backgroundPosition: placedBackground.backgroundPosition,
-              backgroundRepeat: placedBackground.backgroundRepeat,
-              backgroundAttachment: 'fixed',
-              transform: 'scale(1.01)',
-            }}
-          />
-          <div
-            aria-hidden="true"
-            style={{
-              position: 'absolute',
-              inset: 0,
-              background:
-                tone === 'mission'
-                  ? 'linear-gradient(180deg, rgba(48,22,7,0.34), rgba(48,22,7,0.42) 44%, rgba(18,10,5,0.62))'
-                  : 'linear-gradient(180deg, rgba(17,28,22,0.36), rgba(17,28,22,0.46) 46%, rgba(8,12,10,0.68))',
-            }}
-          />
-        </>
-      )}
       <div
         style={{
           position: 'relative',

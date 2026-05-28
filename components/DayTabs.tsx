@@ -68,6 +68,8 @@ export default function DayTabs({
   const [isPhone, setIsPhone] = useState(false);
   const { tabStyle, tabFillColor } = useStyle();
   const activeHeaderBackdrop = headerBackdrops?.[active] ?? headerBackdrop;
+  const showSharedBackdrop = Boolean(activeHeaderBackdrop?.enabled);
+  const sharedBackdropFullBleed = Boolean(showSharedBackdrop && activeHeaderBackdrop?.fullBleed);
 
   useEffect(() => {
     try {
@@ -142,80 +144,81 @@ export default function DayTabs({
   return (
     <div
       style={{
+        position: 'relative',
         display: 'flex',
         flexDirection: 'column',
-        gap: activeHeaderBackdrop?.enabled ? 0 : 24,
+        gap: showSharedBackdrop ? 0 : 24,
+        width: showSharedBackdrop
+          ? sharedBackdropFullBleed
+            ? '100vw'
+            : isPhone
+              ? 'calc(100% + 16px)'
+              : 'calc(100% + 32px)'
+          : undefined,
+        left: sharedBackdropFullBleed ? '50%' : undefined,
+        marginLeft: showSharedBackdrop
+          ? sharedBackdropFullBleed
+            ? '-50vw'
+            : isPhone
+              ? -8
+              : -16
+          : undefined,
+        marginRight: showSharedBackdrop
+          ? sharedBackdropFullBleed
+            ? '-50vw'
+            : isPhone
+              ? -8
+              : -16
+          : undefined,
+        overflow: showSharedBackdrop ? 'hidden' : undefined,
       }}
     >
+      {showSharedBackdrop && activeHeaderBackdrop && (
+        <>
+          <div
+            aria-hidden="true"
+            style={{
+              position: 'absolute',
+              inset: 0,
+              backgroundImage: `url("${activeHeaderBackdrop.image}")`,
+              backgroundSize: activeHeaderBackdrop.placement
+                ? `${activeHeaderBackdrop.placement.zoom}vw auto`
+                : 'cover',
+              backgroundPosition: activeHeaderBackdrop.placement
+                ? `${activeHeaderBackdrop.placement.x}% ${activeHeaderBackdrop.placement.y}%`
+                : (activeHeaderBackdrop.position ?? 'center 46%'),
+              backgroundRepeat: 'no-repeat',
+              backgroundAttachment: sharedBackdropFullBleed ? 'fixed' : undefined,
+              transition:
+                'background-image 900ms ease, background-position 180ms ease, background-size 180ms ease',
+              transform: 'scale(1.01)',
+            }}
+          />
+          <div
+            aria-hidden="true"
+            style={{
+              position: 'absolute',
+              inset: 0,
+              background:
+                activeHeaderBackdrop.overlay ??
+                (activeHeaderBackdrop.dayImage
+                  ? 'linear-gradient(180deg, rgba(255,248,226,0.12), rgba(46,18,6,0.38))'
+                  : 'linear-gradient(180deg, rgba(5,3,2,0.1), rgba(5,3,2,0.58))'),
+            }}
+          />
+        </>
+      )}
       {/* ── Tab row ── */}
       <div
         style={{
           position: 'relative',
-          width: activeHeaderBackdrop?.enabled
-            ? activeHeaderBackdrop.fullBleed
-              ? '100vw'
-              : isPhone
-                ? 'calc(100% + 16px)'
-                : 'calc(100% + 32px)'
-            : undefined,
-          left: activeHeaderBackdrop?.enabled && activeHeaderBackdrop.fullBleed ? '50%' : undefined,
-          marginLeft: activeHeaderBackdrop?.enabled
-            ? activeHeaderBackdrop.fullBleed
-              ? '-50vw'
-              : isPhone
-                ? -8
-                : -16
-            : undefined,
-          marginRight: activeHeaderBackdrop?.enabled
-            ? activeHeaderBackdrop.fullBleed
-              ? '-50vw'
-              : isPhone
-                ? -8
-                : -16
-            : undefined,
-          marginTop: activeHeaderBackdrop?.enabled ? -12 : 0,
-          padding: activeHeaderBackdrop?.enabled
-            ? isPhone
-              ? '16px 8px 12px'
-              : '20px 16px 14px'
-            : 0,
-          minHeight: activeHeaderBackdrop?.enabled ? (isPhone ? 126 : 154) : undefined,
+          zIndex: 1,
+          marginTop: showSharedBackdrop ? -12 : 0,
+          padding: showSharedBackdrop ? (isPhone ? '16px 8px 12px' : '20px 16px 14px') : 0,
+          minHeight: showSharedBackdrop ? (isPhone ? 118 : 142) : undefined,
           overflow: 'hidden',
         }}
       >
-        {activeHeaderBackdrop?.enabled && (
-          <>
-            <div
-              aria-hidden="true"
-              style={{
-                position: 'absolute',
-                inset: 0,
-                backgroundImage: `url("${activeHeaderBackdrop.image}")`,
-                backgroundSize: activeHeaderBackdrop.placement
-                  ? `${activeHeaderBackdrop.placement.zoom}vw auto`
-                  : 'cover',
-                backgroundPosition: activeHeaderBackdrop.placement
-                  ? `${activeHeaderBackdrop.placement.x}% ${activeHeaderBackdrop.placement.y}%`
-                  : (activeHeaderBackdrop.position ?? 'center 46%'),
-                backgroundRepeat: 'no-repeat',
-                backgroundAttachment: activeHeaderBackdrop.fullBleed ? 'fixed' : undefined,
-                transition: 'background-image 900ms ease',
-              }}
-            />
-            <div
-              aria-hidden="true"
-              style={{
-                position: 'absolute',
-                inset: 0,
-                background:
-                  activeHeaderBackdrop.overlay ??
-                  (activeHeaderBackdrop.dayImage
-                    ? 'linear-gradient(180deg, rgba(255,248,226,0.12), rgba(46,18,6,0.38))'
-                    : 'linear-gradient(180deg, rgba(5,3,2,0.1), rgba(5,3,2,0.58))'),
-              }}
-            />
-          </>
-        )}
         <div
           style={{
             position: 'relative',
@@ -271,7 +274,7 @@ export default function DayTabs({
         </div>
       </div>
 
-      <div className="animate-in fade-in duration-200">
+      <div className="animate-in fade-in duration-200" style={{ position: 'relative', zIndex: 1 }}>
         {active === 'emotion' && emotionContent}
         {active === 'mission' && missionContent}
         {active === 'progress' && progressContent}
