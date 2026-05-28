@@ -352,7 +352,8 @@ export default function GlobalAIPresence() {
         type="button"
         aria-label="Open AI Presence"
         onClick={() => setOpen(true)}
-        className="fixed bottom-5 right-5 z-[130] flex items-center gap-2 rounded-full border px-3 py-2 text-xs font-semibold shadow-lg transition hover:scale-[1.02]"
+        title="AI Presence"
+        className="fixed bottom-4 right-4 z-[130] flex h-14 w-14 items-center justify-center rounded-full border p-1 shadow-lg transition hover:scale-[1.03]"
         style={{
           borderColor: 'color-mix(in srgb, var(--foreground) 28%, transparent)',
           background: 'color-mix(in srgb, var(--card) 92%, black)',
@@ -366,7 +367,6 @@ export default function GlobalAIPresence() {
           compact
           preset="cell"
         />
-        AI Presence
       </button>
 
       {open && (

@@ -11,6 +11,9 @@ This surface is the practical first step toward the larger AI Evolution spec: an
 ## First Milestone
 
 - A floating theme-adaptive button is available inside the authenticated app shell.
+- The floating launcher should stay compact: show the living-cell circle only, with an accessible
+  label/title, not visible `AI Presence` text. The text label belongs inside the opened panel so the
+  launcher does not block phone controls, projection tools, or 3D canvases.
 - Opening it reveals a calm panel with a living-cell dot visual that fits the active Colourmap theme.
 - The visual has five switchable presets: Cell, Mission Sun, Dot Walker, Orbit, and Nebula.
 - Mission Sun is the first talking-interface prototype: warm theme-relative dots stay gathered inside the circular field and pulse faster while the user is speaking, so voice input has a visible body.

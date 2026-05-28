@@ -85,6 +85,7 @@ type Mode =
   | 'linetunnel3d'
   | 'dotroad'
   | 'tripnumber1'
+  | 'tripnumber2'
   | 'touchpreset'
   | 'emotion'
   | 'constellation'
@@ -943,6 +944,18 @@ const PRESETS: Record<string, Cfg> = {
     luminous: 2.8,
     stars: 3,
     mode: 'tripnumber1',
+  },
+  'Trip Number 2': {
+    preset: 'Amber Dust',
+    symmetry: 9,
+    complexity: 6.8,
+    glow: 3.2,
+    breathSpeed: 1.18,
+    intensity: 9.2,
+    particles: 9,
+    luminous: 3.6,
+    stars: 4,
+    mode: 'tripnumber2',
   },
   'Touch Preset': {
     preset: 'Golden Source',
@@ -3817,6 +3830,84 @@ const JOURNEYS: Journey[] = [
       },
     ],
   },
+  {
+    id: 10,
+    name: 'Desert Pulse',
+    icon: 'DROP',
+    desc: 'Trip 2 starts from the drop: amber desert pulse for deep chill, violins, and Burning Man energy. Turn Voice on to let sound push the rings.',
+    stages: [
+      {
+        name: 'The Drop',
+        preset: 'Amber Dust',
+        mode: 'tripnumber2',
+        duration: 36,
+        symmetry: 9,
+        complexity: 6.8,
+        glow: 3.2,
+        breathSpeed: 1.18,
+        intensity: 9.2,
+        particles: 9,
+        luminous: 3.6,
+        stars: 4,
+      },
+      {
+        name: 'Violin Heat',
+        preset: 'Golden Source',
+        mode: 'tripnumber2',
+        duration: 34,
+        symmetry: 11,
+        complexity: 5.6,
+        glow: 2.6,
+        breathSpeed: 0.92,
+        intensity: 8.4,
+        particles: 8,
+        luminous: 4.2,
+        stars: 5,
+      },
+      {
+        name: 'Dust Vortex',
+        preset: 'Amber Dust',
+        mode: 'swirldottunnel',
+        duration: 32,
+        symmetry: 16,
+        complexity: 7.8,
+        glow: 7.2,
+        breathSpeed: 0.94,
+        intensity: 8.6,
+        particles: 9,
+        luminous: 3.2,
+        stars: 3,
+      },
+      {
+        name: 'Fire Walk',
+        preset: 'Golden Source',
+        mode: 'dotroad',
+        duration: 30,
+        symmetry: 7,
+        complexity: 7.4,
+        glow: 6.8,
+        breathSpeed: 0.86,
+        intensity: 8.8,
+        particles: 9,
+        luminous: 3.4,
+        stars: 3,
+      },
+      {
+        name: 'Return to Pulse',
+        preset: 'Amber Dust',
+        mode: 'tripnumber2',
+        duration: 28,
+        symmetry: 10,
+        complexity: 5.2,
+        glow: 2.4,
+        breathSpeed: 0.72,
+        intensity: 8,
+        particles: 7,
+        luminous: 3.8,
+        stars: 4,
+      },
+    ],
+  },
 ];
 
 /* ── Particle helpers ───────────────────────────────────────── */
@@ -4220,6 +4311,7 @@ function buildModeGroup(cfg: Cfg, R: number): THREE.Group {
     case 'dotroad':
       return buildDepthJourney(cfg, R);
     case 'pulse':
+    case 'tripnumber2':
       return buildPulse(cfg, R);
     case 'emotion':
       return buildEmotion(cfg, R);
@@ -4466,6 +4558,7 @@ function updateModeGroup(group: THREE.Group, cfg: Cfg, dots: Dot[], t: number, R
       updateDepthJourney(group, cfg, t, R);
       break;
     case 'pulse':
+    case 'tripnumber2':
       updatePulse(group, cfg, t, R);
       break;
     case 'emotion':
@@ -11135,6 +11228,15 @@ const MODE_SLIDERS: Partial<Record<Mode, SliderDef[]>> = {
     { key: 'particles', label: 'Dots', min: 1, max: 10, step: 1 },
     { key: 'luminous', label: 'Bloom', min: 0, max: 5, step: 0.1 },
   ],
+  tripnumber2: [
+    { key: 'symmetry', label: 'Mirrors', min: 3, max: 14, step: 1 },
+    { key: 'complexity', label: 'Desert Chaos', min: 1, max: 10, step: 0.5 },
+    { key: 'glow', label: 'Heat Colour', min: 0, max: 10, step: 0.5 },
+    { key: 'breathSpeed', label: 'Drop Pulse', min: 0.2, max: 2.2, step: 0.05 },
+    { key: 'intensity', label: 'Rings', min: 1, max: 10, step: 0.5 },
+    { key: 'particles', label: 'Dust', min: 1, max: 10, step: 1 },
+    { key: 'luminous', label: 'Bloom', min: 0, max: 5, step: 0.1 },
+  ],
   touchpreset: [
     { key: 'symmetry', label: 'Swirls', min: 3, max: 18, step: 1 },
     { key: 'complexity', label: 'Liquid Trails', min: 1, max: 10, step: 0.5 },
@@ -11241,6 +11343,7 @@ const MODE_TO_PRESET: Partial<Record<Mode, string>> = {
   dotroad: 'Dot Road',
 
   tripnumber1: 'Trip Number 1',
+  tripnumber2: 'Trip Number 2',
   touchpreset: 'Touch Preset',
 
   embf3d: 'Calm Field',
@@ -11372,6 +11475,7 @@ const MODES: { mode: Mode; label: string }[] = [
   { mode: 'dotroad', label: 'Dot Road' },
 
   { mode: 'tripnumber1', label: 'Trip Number 1' },
+  { mode: 'tripnumber2', label: 'Trip Number 2' },
   { mode: 'touchpreset', label: 'Touch Preset' },
 
   { mode: 'pulse', label: '◉ Pulse' },
@@ -11397,6 +11501,7 @@ type FeaturedItem = { name: string; tag: string } | { header: string; dim?: bool
 const FEATURED_PRESETS: FeaturedItem[] = [
   { header: 'Good Ones' },
   { name: 'Trip Number 1', tag: 'TRIP' },
+  { name: 'Trip Number 2', tag: 'DROP' },
   { name: 'Scriptures', tag: 'TOP' },
   { name: 'Vertical Scriptures', tag: 'TOP' },
   { name: 'Eclipse', tag: 'TOP' },
@@ -13024,9 +13129,12 @@ function updatePulse(group: THREE.Group, cfg: Cfg, t: number, R: number): void {
   const [rr, gg, bb] = pal.rgb;
   const iF = cfg.intensity / 10;
   const glowF = cfg.glow / 10;
+  const desertDrop = cfg.mode === 'tripnumber2';
+  const soundEnergy = desertDrop ? Math.min(1, _voiceEnergy * 1.55 + _musicPulse * 0.45) : 0;
+  const dropPush = desertDrop ? 0.38 + soundEnergy * 0.72 : 0;
   const ringCount = Math.max(2, Math.round(lerp(4, PULSE_MAX_RINGS, iF)));
   const speed = cfg.breathSpeed;
-  const chaosAmt = Math.max(0, cfg.complexity - 1) / 9;
+  const chaosAmt = Math.min(1.35, Math.max(0, cfg.complexity - 1) / 9 + dropPush * 0.28);
   const TAU = Math.PI * 2;
   const halfPts = PULSE_PTS >> 1;
   const timeHue = (t * 0.00004) % 1.0;
@@ -13043,11 +13151,12 @@ function updatePulse(group: THREE.Group, cfg: Cfg, t: number, R: number): void {
     }
 
     const phaseOff = ri / ringCount;
-    const phase = (t * 0.00052 * speed + phaseOff) % 1.0;
+    const phase = (t * 0.00052 * speed * (desertDrop ? 1.18 : 1) + phaseOff) % 1.0;
     // Smooth pulse: expand and contract with ease
     const rFrac = 0.5 - 0.5 * Math.cos(phase * TAU);
-    const radius = rFrac * R * 0.96;
-    const opacity = Math.sin(phase * Math.PI) * iF * 0.88;
+    const beatKick = desertDrop ? Math.sin(phase * Math.PI) ** 3 * dropPush : 0;
+    const radius = rFrac * R * (0.96 + beatKick * 0.2);
+    const opacity = Math.min(1, Math.sin(phase * Math.PI) * iF * (0.88 + dropPush * 0.28));
 
     const posAttr = pts.geometry.getAttribute('position') as THREE.BufferAttribute;
     const arr = posAttr.array as Float32Array;
@@ -13058,28 +13167,37 @@ function updatePulse(group: THREE.Group, cfg: Cfg, t: number, R: number): void {
         Math.sin(a * 4 + t * 0.00068 * speed + ri * 1.4) * 0.55 +
         Math.sin(a * 9 + t * 0.00031 * speed + ri * 0.8) * 0.35 +
         Math.sin(a * 17 + t * 0.00014 * speed) * 0.1;
-      const rOff = sym ? noise * chaosAmt * R * 0.32 : noise * chaosAmt * R * 0.28 * Math.sin(a);
+      const desertLift = desertDrop
+        ? Math.sin(a * 2 + t * 0.0011 + ri) * R * 0.035 * (0.45 + soundEnergy)
+        : 0;
+      const rOff =
+        (sym ? noise * chaosAmt * R * 0.32 : noise * chaosAmt * R * 0.28 * Math.sin(a)) +
+        desertLift;
       const r2 = Math.max(0, radius + rOff);
       // Right side
       arr[p * 3] = Math.cos(a) * r2;
-      arr[p * 3 + 1] = Math.sin(a) * r2;
-      arr[p * 3 + 2] = 0;
+      arr[p * 3 + 1] = Math.sin(a) * r2 * (desertDrop ? 0.72 + beatKick * 0.08 : 1);
+      arr[p * 3 + 2] = desertDrop ? Math.sin(a * 3 + t * 0.001 + ri) * R * 0.035 * soundEnergy : 0;
       // Mirrored left side (rorschach)
       arr[(halfPts + p) * 3] = -Math.cos(a) * r2;
-      arr[(halfPts + p) * 3 + 1] = Math.sin(a) * r2;
-      arr[(halfPts + p) * 3 + 2] = 0;
+      arr[(halfPts + p) * 3 + 1] = Math.sin(a) * r2 * (desertDrop ? 0.72 + beatKick * 0.08 : 1);
+      arr[(halfPts + p) * 3 + 2] = desertDrop
+        ? -Math.sin(a * 3 + t * 0.001 + ri) * R * 0.035 * soundEnergy
+        : 0;
     }
     posAttr.needsUpdate = true;
     pts.geometry.setDrawRange(0, PULSE_PTS);
 
-    const ringHue = ((ri / ringCount) * 0.72 + timeHue) % 1.0;
-    tmpCol.setHSL(ringHue, 0.96, 0.54);
+    const ringHue = desertDrop
+      ? 0.09 + ri * 0.011 + soundEnergy * 0.03
+      : ((ri / ringCount) * 0.72 + timeHue) % 1.0;
+    tmpCol.setHSL(ringHue, desertDrop ? 0.84 : 0.96, desertDrop ? 0.52 + soundEnergy * 0.12 : 0.54);
     const col: [number, number, number] = [
       lerp(rr, tmpCol.r * 255, glowF),
       lerp(gg, tmpCol.g * 255, glowF),
       lerp(bb, tmpCol.b * 255, glowF),
     ];
-    updateMat(pts, col, opacity, 2.4);
+    updateMat(pts, col, opacity, 2.4 + (desertDrop ? 0.9 + soundEnergy * 1.8 : 0));
   }
 }
 

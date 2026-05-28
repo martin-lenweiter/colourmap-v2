@@ -5,6 +5,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import * as THREE from 'three';
 import { OBJLoader } from 'three/examples/jsm/loaders/OBJLoader.js';
 import { MeshSurfaceSampler } from 'three/examples/jsm/math/MeshSurfaceSampler.js';
+import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 import { buildBillyGeometry } from '@/lib/billy-geometry';
 
 const SERIF = 'var(--font-serif)';
@@ -368,18 +369,26 @@ export default function FigureStarsBuilder() {
         figure.url,
         (group) => {
           if (disposed) return;
-          let firstGeom: THREE.BufferGeometry | null = null;
+          group.updateMatrixWorld(true);
+          const geometries: THREE.BufferGeometry[] = [];
           group.traverse((child) => {
-            if (firstGeom) return;
             if ((child as THREE.Mesh).isMesh) {
-              firstGeom = (child as THREE.Mesh).geometry.clone();
+              const mesh = child as THREE.Mesh;
+              const geom = mesh.geometry.clone();
+              geom.applyMatrix4(mesh.matrixWorld);
+              geometries.push(geom);
             }
           });
-          if (!firstGeom) {
+          const mergedGeom =
+            geometries.length === 1 ? geometries[0] : mergeGeometries(geometries, false);
+          for (const geom of geometries) {
+            if (geom !== mergedGeom) geom.dispose();
+          }
+          if (!mergedGeom) {
             setStatus('error');
             return;
           }
-          installGeom(firstGeom);
+          installGeom(mergedGeom);
         },
         undefined,
         () => {

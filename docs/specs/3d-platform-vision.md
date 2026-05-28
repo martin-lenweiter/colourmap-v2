@@ -76,6 +76,11 @@ Current PR follow-up:
     body/figure outline while the stars appear to move, pulse, orbit, or agitate inside the shape.
 - Near-term polish should keep adding phone-simple preset buttons before deeper 3D complexity:
   `Reset camera`, `Save as calm`, and per-asset default zoom are higher value than new effects.
+- A trio mode should let the user place three star-sampled figures side by side, starting with
+  Golden God, Kid Lotus, and Billy, so currents, waves, vortexes, scales, and storm patterns can be
+  watched as a group. This is useful for projection tests and for seeing how the same movement
+  grammar behaves across different silhouettes. Keep it one shared movement menu first; individual
+  per-figure controls can come later if the group composition proves useful.
 
 Golden material should expose lighting levels. Low lighting is cinematic, but the user must be able
 to switch to `Studio`, `Bright`, or `Radiant` when the asset reads too dark on a phone or projector.
@@ -102,6 +107,11 @@ Four product uses:
 1. **Concert projections**: fullscreen `/figure-stars` or Geometry Field presets. Prioritize large,
    readable silhouettes, HSL colour sliders, dark/transparent backgrounds, slow shape-preserving
    internal currents, and external audio/MIDI-reactive controls later.
+   - Near-term export proof: Geometry Field can host short phone-recordable party trips. `Trip
+     Number 2 / Desert Pulse` should start directly from the drop instead of a long intro: amber
+     desert pulse rings, strong beat energy, and a harmonic Deep Chill + violin sound direction.
+     The first shippable version is screen-recorded from fullscreen with microphone reactivity on;
+     true MP4 export can come after the visual journey feels good.
 2. **Exploration / curiosity**: an object lab where the user can load a figure, orbit it, switch
    gold/hologram/stars, inspect close/far, and save visual presets. This can be more experimental.
 3. **App aesthetics**: restrained one-object moments inside Progress, Art, or menu pills. These must
