@@ -4,6 +4,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import * as THREE from 'three';
 import { OBJLoader } from 'three/examples/jsm/loaders/OBJLoader.js';
 import { MeshSurfaceSampler } from 'three/examples/jsm/math/MeshSurfaceSampler.js';
+import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 
 type Material = 'gold' | 'hologram' | 'stars';
 type StarPattern =
@@ -64,10 +65,10 @@ const LIGHTING_MODES: {
   rim: number;
   ambient: number;
 }[] = [
-  { key: 'low', label: 'Low', exposure: 1.0, keyLight: 2.0, rim: 1.0, ambient: 0.35 },
-  { key: 'studio', label: 'Studio', exposure: 1.25, keyLight: 3.0, rim: 1.6, ambient: 0.65 },
-  { key: 'bright', label: 'Bright', exposure: 1.55, keyLight: 4.2, rim: 2.2, ambient: 0.9 },
-  { key: 'radiant', label: 'Radiant', exposure: 1.85, keyLight: 5.3, rim: 3.0, ambient: 1.15 },
+  { key: 'low', label: 'Low', exposure: 0.68, keyLight: 1.0, rim: 0.25, ambient: 0.08 },
+  { key: 'studio', label: 'Studio', exposure: 1.15, keyLight: 3.2, rim: 1.4, ambient: 0.46 },
+  { key: 'bright', label: 'Bright', exposure: 1.75, keyLight: 6.2, rim: 3.2, ambient: 0.9 },
+  { key: 'radiant', label: 'Radiant', exposure: 2.35, keyLight: 9.5, rim: 5.8, ambient: 1.35 },
 ];
 
 export default function GoldenGod({
@@ -176,6 +177,9 @@ export default function GoldenGod({
     scene.add(rim);
     const ambient = new THREE.AmbientLight('#3A2614', getLighting(lightingModeRef.current).ambient);
     scene.add(ambient);
+    const fill = new THREE.PointLight('#FFF1B8', 0.9, 8);
+    fill.position.set(0, -1.2, 2.4);
+    scene.add(fill);
 
     const root = new THREE.Group();
     scene.add(root);
@@ -210,21 +214,28 @@ export default function GoldenGod({
       (group) => {
         if (disposed) return;
 
-        // Take the first mesh inside the loaded group and center it.
-        let firstGeom: THREE.BufferGeometry | null = null;
+        group.updateMatrixWorld(true);
+        const geometries: THREE.BufferGeometry[] = [];
         group.traverse((child) => {
-          if (firstGeom) return;
           if ((child as THREE.Mesh).isMesh) {
-            firstGeom = (child as THREE.Mesh).geometry.clone();
+            const sourceMesh = child as THREE.Mesh;
+            const sourceGeom = sourceMesh.geometry.clone();
+            sourceGeom.applyMatrix4(sourceMesh.matrixWorld);
+            geometries.push(sourceGeom);
           }
         });
-        if (!firstGeom) {
+        const mergedGeom =
+          geometries.length === 1 ? geometries[0] : mergeGeometries(geometries, false);
+        for (const sourceGeom of geometries) {
+          if (sourceGeom !== mergedGeom) sourceGeom.dispose();
+        }
+        if (!mergedGeom) {
           setStatus('error');
           setErrorMsg('No mesh found inside the OBJ.');
           return;
         }
 
-        const geom = firstGeom as THREE.BufferGeometry;
+        const geom = mergedGeom;
         geom.computeVertexNormals();
         geom.center();
 
@@ -323,13 +334,32 @@ export default function GoldenGod({
       // Subtle breathing
       const breath = 1 + Math.sin(t * 0.8) * 0.012;
       root.scale.setScalar(breath);
+      const lighting = getLighting(lightingModeRef.current);
+      renderer.toneMappingExposure += (lighting.exposure - renderer.toneMappingExposure) * 0.08;
+      key.intensity += (lighting.keyLight - key.intensity) * 0.08;
+      rim.intensity += (lighting.rim - rim.intensity) * 0.08;
+      ambient.intensity += (lighting.ambient - ambient.intensity) * 0.08;
+      fill.intensity += ((lighting.keyLight + lighting.rim) * 0.18 - fill.intensity) * 0.08;
+      const glowTarget =
+        lightingModeRef.current === 'radiant'
+          ? 0.35
+          : lightingModeRef.current === 'bright'
+            ? 0.16
+            : 0.02;
+      goldMat.emissive = new THREE.Color('#B06A18');
+      goldMat.emissiveIntensity += (glowTarget - goldMat.emissiveIntensity) * 0.08;
+      goldMat.envMapIntensity += (0.45 + lighting.exposure * 1.25 - goldMat.envMapIntensity) * 0.08;
+      scene.background = new THREE.Color(
+        lightingModeRef.current === 'low'
+          ? '#050302'
+          : lightingModeRef.current === 'studio'
+            ? '#0A0604'
+            : lightingModeRef.current === 'bright'
+              ? '#100905'
+              : '#180D05',
+      );
       // Stars drift slightly outward and back
       if (starPoints) {
-        const lighting = getLighting(lightingModeRef.current);
-        renderer.toneMappingExposure += (lighting.exposure - renderer.toneMappingExposure) * 0.08;
-        key.intensity += (lighting.keyLight - key.intensity) * 0.08;
-        rim.intensity += (lighting.rim - rim.intensity) * 0.08;
-        ambient.intensity += (lighting.ambient - ambient.intensity) * 0.08;
         camera.position.z += (cameraDistanceRef.current - camera.position.z) * 0.08;
         starPoints.rotation.y = t * 0.05;
         const starMat = starPoints.material as THREE.PointsMaterial;

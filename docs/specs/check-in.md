@@ -29,6 +29,20 @@ The live CPC check-in also carries a very specific visual grammar that matters t
 - The check-in also includes two optional inline expansions below the main feeling section: `Challenge` and `Flow`.
 - `Challenge` captures what feels blocking or difficult right now.
 - `Flow` captures what feels open, moving, or supportive right now.
+- Future daily procedure: the Emotions lane should add a simple three-dot road that helps the
+  user move from overwhelm into one honest next action:
+  1. **What do you feel?**
+  2. **What is the highest tension right now?**
+  3. **What is the simple step that would bridge or fill that tension?**
+- This simple road belongs in Emotions, not Progress. It is a live regulation/check-in procedure,
+  not a dashboard. The interface should feel almost childlike in its clarity: three dots connected
+  by one soft line, each dot opening a tiny input. Once the three points are named, the line lights
+  up to show that the tension has a shape and there is a next dot.
+- The simple road should stay visually sober and non-pressuring. It must reduce complexity rather
+  than add another form. It can sit after the immediate feeling register or near `Challenge / Flow`,
+  but it should never make the fast path slower.
+- Progress may later read repeated simple roads as pattern memory: which tensions recur, which
+  bridge steps help, and how the user's capacity for action is changing over time.
 - Supporting pulse-like signals should be expressed through the feeling compass and related structured fields, not through a second heavy form.
 - Single submit action. No multi-step flow.
 - On-demand. No scheduled cadence, no streaks, no reminders.

@@ -240,6 +240,7 @@ const MORE_SEGMENTS = [
   { href: '/music', label: 'Music' },
   { href: '/figures', label: '3D Figures' },
   { href: '/figure-stars', label: 'Figure Stars' },
+  { href: '/figure-stars-trio', label: 'Figure Trio' },
   { href: '/figures?mode=billy', label: 'Billy 3D' },
   { href: '/figures?mode=static&figure=kid-lotus', label: 'Buddha Boy' },
   { href: '/atlas', label: 'Atlas' },
