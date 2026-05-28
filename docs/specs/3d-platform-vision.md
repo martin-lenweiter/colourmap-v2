@@ -112,6 +112,12 @@ Four product uses:
      desert pulse rings, strong beat energy, and a harmonic Deep Chill + violin sound direction.
      The first shippable version is screen-recorded from fullscreen with microphone reactivity on;
      true MP4 export can come after the visual journey feels good.
+   - `Trip Number 3 / Triangle Yantra Desert` extends the same Desert Pulse family into angular,
+     line-based geometry: layered 3D triangles, yantra gates, spokes, hexagonal anchors, and moving
+     star points that travel through the structure. It should feel sharper and more ceremonial than
+     Trip 2 while staying projection-friendly: big readable geometry, not dense texture. Voice/music
+     energy may brighten the amber cut, push the depth, and accelerate the moving stars, but the
+     overall triangular structure should remain legible.
 2. **Exploration / curiosity**: an object lab where the user can load a figure, orbit it, switch
    gold/hologram/stars, inspect close/far, and save visual presets. This can be more experimental.
 3. **App aesthetics**: restrained one-object moments inside Progress, Art, or menu pills. These must

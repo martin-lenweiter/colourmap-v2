@@ -86,6 +86,7 @@ type Mode =
   | 'dotroad'
   | 'tripnumber1'
   | 'tripnumber2'
+  | 'tripnumber3'
   | 'touchpreset'
   | 'emotion'
   | 'constellation'
@@ -956,6 +957,18 @@ const PRESETS: Record<string, Cfg> = {
     luminous: 3.6,
     stars: 4,
     mode: 'tripnumber2',
+  },
+  'Trip Number 3': {
+    preset: 'Golden Source',
+    symmetry: 12,
+    complexity: 7.4,
+    glow: 4.8,
+    breathSpeed: 0.86,
+    intensity: 8.8,
+    particles: 8,
+    luminous: 3.8,
+    stars: 5,
+    mode: 'tripnumber3',
   },
   'Touch Preset': {
     preset: 'Golden Source',
@@ -3908,6 +3921,98 @@ const JOURNEYS: Journey[] = [
       },
     ],
   },
+  {
+    id: 11,
+    name: 'Triangle Yantra Desert',
+    icon: 'TRI',
+    desc: 'Trip 3: angular 3D yantra lines, triangle gates, and desert-pulse geometry. Built for projection journeys that feel sacred, sharp, and rhythmic.',
+    stages: [
+      {
+        name: 'Triangle Gate',
+        preset: 'Golden Source',
+        mode: 'tripnumber3',
+        duration: 32,
+        symmetry: 9,
+        complexity: 5.4,
+        glow: 3.8,
+        breathSpeed: 0.72,
+        intensity: 7.8,
+        particles: 6,
+        luminous: 3,
+        stars: 3,
+      },
+      {
+        name: 'Yantra Lift',
+        preset: 'Amber Dust',
+        mode: 'yantra3d',
+        duration: 34,
+        symmetry: 12,
+        complexity: 7.2,
+        glow: 5.8,
+        breathSpeed: 0.82,
+        intensity: 8.6,
+        particles: 7,
+        luminous: 3.6,
+        stars: 5,
+      },
+      {
+        name: 'Line Temple',
+        preset: 'Golden Source',
+        mode: 'tripnumber3',
+        duration: 34,
+        symmetry: 14,
+        complexity: 7.8,
+        glow: 5.2,
+        breathSpeed: 0.94,
+        intensity: 9.2,
+        particles: 8,
+        luminous: 4.1,
+        stars: 5,
+      },
+      {
+        name: 'Desert Cut',
+        preset: 'Amber Dust',
+        mode: 'linetunnel3d',
+        duration: 30,
+        symmetry: 16,
+        complexity: 8.2,
+        glow: 6.8,
+        breathSpeed: 1.05,
+        intensity: 8.8,
+        particles: 8,
+        luminous: 3.8,
+        stars: 4,
+      },
+      {
+        name: 'Sacred Drop',
+        preset: 'Amber Dust',
+        mode: 'tripnumber3',
+        duration: 30,
+        symmetry: 12,
+        complexity: 8.8,
+        glow: 6.2,
+        breathSpeed: 1.14,
+        intensity: 9.4,
+        particles: 9,
+        luminous: 4.5,
+        stars: 6,
+      },
+      {
+        name: 'Still Triangle',
+        preset: 'Golden Source',
+        mode: 'tripnumber3',
+        duration: 26,
+        symmetry: 6,
+        complexity: 4.4,
+        glow: 3.2,
+        breathSpeed: 0.58,
+        intensity: 7.6,
+        particles: 5,
+        luminous: 3.2,
+        stars: 3,
+      },
+    ],
+  },
 ];
 
 /* ── Particle helpers ───────────────────────────────────────── */
@@ -4313,6 +4418,8 @@ function buildModeGroup(cfg: Cfg, R: number): THREE.Group {
     case 'pulse':
     case 'tripnumber2':
       return buildPulse(cfg, R);
+    case 'tripnumber3':
+      return buildTriangleYantraTrip(cfg, R);
     case 'emotion':
       return buildEmotion(cfg, R);
     case 'constellation':
@@ -4560,6 +4667,9 @@ function updateModeGroup(group: THREE.Group, cfg: Cfg, dots: Dot[], t: number, R
     case 'pulse':
     case 'tripnumber2':
       updatePulse(group, cfg, t, R);
+      break;
+    case 'tripnumber3':
+      updateTriangleYantraTrip(group, cfg, t, R);
       break;
     case 'emotion':
       updateEmotion(group, cfg, t, R);
@@ -11237,6 +11347,16 @@ const MODE_SLIDERS: Partial<Record<Mode, SliderDef[]>> = {
     { key: 'particles', label: 'Dust', min: 1, max: 10, step: 1 },
     { key: 'luminous', label: 'Bloom', min: 0, max: 5, step: 0.1 },
   ],
+  tripnumber3: [
+    { key: 'symmetry', label: 'Spokes', min: 3, max: 18, step: 1 },
+    { key: 'complexity', label: 'Triangle Layers', min: 1, max: 10, step: 0.5 },
+    { key: 'glow', label: 'Amber Cut', min: 0, max: 10, step: 0.5 },
+    { key: 'breathSpeed', label: 'Yantra Speed', min: 0.2, max: 2.2, step: 0.05 },
+    { key: 'intensity', label: 'Line Light', min: 1, max: 10, step: 0.5 },
+    { key: 'particles', label: 'Moving Stars', min: 1, max: 10, step: 1 },
+    { key: 'luminous', label: 'Bloom', min: 0, max: 5, step: 0.1 },
+    { key: 'stars', label: 'Depth', min: 0, max: 10, step: 1 },
+  ],
   touchpreset: [
     { key: 'symmetry', label: 'Swirls', min: 3, max: 18, step: 1 },
     { key: 'complexity', label: 'Liquid Trails', min: 1, max: 10, step: 0.5 },
@@ -11344,6 +11464,7 @@ const MODE_TO_PRESET: Partial<Record<Mode, string>> = {
 
   tripnumber1: 'Trip Number 1',
   tripnumber2: 'Trip Number 2',
+  tripnumber3: 'Trip Number 3',
   touchpreset: 'Touch Preset',
 
   embf3d: 'Calm Field',
@@ -11476,6 +11597,7 @@ const MODES: { mode: Mode; label: string }[] = [
 
   { mode: 'tripnumber1', label: 'Trip Number 1' },
   { mode: 'tripnumber2', label: 'Trip Number 2' },
+  { mode: 'tripnumber3', label: 'Trip Number 3' },
   { mode: 'touchpreset', label: 'Touch Preset' },
 
   { mode: 'pulse', label: '◉ Pulse' },
@@ -11502,6 +11624,7 @@ const FEATURED_PRESETS: FeaturedItem[] = [
   { header: 'Good Ones' },
   { name: 'Trip Number 1', tag: 'TRIP' },
   { name: 'Trip Number 2', tag: 'DROP' },
+  { name: 'Trip Number 3', tag: 'TRI' },
   { name: 'Scriptures', tag: 'TOP' },
   { name: 'Vertical Scriptures', tag: 'TOP' },
   { name: 'Eclipse', tag: 'TOP' },
@@ -13198,6 +13321,176 @@ function updatePulse(group: THREE.Group, cfg: Cfg, t: number, R: number): void {
       lerp(bb, tmpCol.b * 255, glowF),
     ];
     updateMat(pts, col, opacity, 2.4 + (desertDrop ? 0.9 + soundEnergy * 1.8 : 0));
+  }
+}
+
+/* ── Triangle Yantra Trip ───────────────────────────────────── */
+const TRI_YANTRA_MAX_SEGMENTS = 760;
+const TRI_YANTRA_DOTS = 960;
+
+function buildTriangleYantraTrip(cfg: Cfg, R: number): THREE.Group {
+  const group = new THREE.Group();
+  const pal = PAL[cfg.preset] ?? PAL['Golden Source'];
+  const iF = cfg.intensity / 10;
+
+  const lineGeo = new THREE.BufferGeometry();
+  const linePositions = new Float32Array(TRI_YANTRA_MAX_SEGMENTS * 2 * 3);
+  const lineAttr = new THREE.BufferAttribute(linePositions, 3);
+  lineAttr.setUsage(THREE.DynamicDrawUsage);
+  lineGeo.setAttribute('position', lineAttr);
+  const lines = new THREE.LineSegments(lineGeo, lineMat(hdrColor(pal.rgb, iF * 0.85, 2.4), 0.78));
+  lines.userData.tag = 'triangleYantraLines';
+  group.add(lines);
+
+  const dotGeo = new THREE.BufferGeometry();
+  const dotPositions = new Float32Array(TRI_YANTRA_DOTS * 3);
+  const dotAttr = new THREE.BufferAttribute(dotPositions, 3);
+  dotAttr.setUsage(THREE.DynamicDrawUsage);
+  dotGeo.setAttribute('position', dotAttr);
+  const dots = new THREE.Points(dotGeo, ptsMat(hdrColor(pal.rgb, iF, 2.8), 2.1, 0.78));
+  dots.userData.tag = 'triangleYantraDots';
+  group.add(dots);
+
+  return group;
+}
+
+function updateTriangleYantraTrip(group: THREE.Group, cfg: Cfg, t: number, R: number): void {
+  const pal = PAL[cfg.preset] ?? PAL['Golden Source'];
+  const [rr, gg, bb] = pal.rgb;
+  const iF = cfg.intensity / 10;
+  const glowF = cfg.glow / 10;
+  const speed = cfg.breathSpeed;
+  const soundEnergy = Math.min(1, _voiceEnergy * 1.3 + _musicPulse * 0.5);
+  const beat = 0.5 + 0.5 * Math.sin(t * 0.0046 * speed);
+  const pulse = 0.5 + 0.5 * Math.sin(t * 0.00115 * speed + soundEnergy * 1.2);
+  const angularHeat = Math.min(1, 0.35 + glowF * 0.45 + soundEnergy * 0.4);
+  const TAU = Math.PI * 2;
+  const triCount = Math.max(3, Math.round(lerp(4, 14, cfg.complexity / 10)));
+  const spokeCount = Math.max(3, Math.round(cfg.symmetry));
+  const templeDepth = R * (0.12 + cfg.stars * 0.012 + soundEnergy * 0.07);
+  const scalePulse = 1 + pulse * 0.035 + soundEnergy * 0.055;
+  const tmpCol = new THREE.Color();
+  tmpCol.setHSL(0.085 + glowF * 0.07 + soundEnergy * 0.025, 0.82, 0.54 + soundEnergy * 0.1);
+  const col: [number, number, number] = [
+    lerp(rr, tmpCol.r * 255, angularHeat),
+    lerp(gg, tmpCol.g * 255, angularHeat),
+    lerp(bb, tmpCol.b * 255, angularHeat),
+  ];
+
+  const lines = group.children.find((child) => child.userData.tag === 'triangleYantraLines') as
+    | THREE.LineSegments
+    | undefined;
+  if (lines) {
+    const posAttr = lines.geometry.getAttribute('position') as THREE.BufferAttribute;
+    const arr = posAttr.array as Float32Array;
+    let seg = 0;
+    const addSegment = (ax: number, ay: number, az: number, bx: number, by: number, bz: number) => {
+      if (seg >= TRI_YANTRA_MAX_SEGMENTS) return;
+      const o = seg * 6;
+      arr[o] = ax;
+      arr[o + 1] = ay;
+      arr[o + 2] = az;
+      arr[o + 3] = bx;
+      arr[o + 4] = by;
+      arr[o + 5] = bz;
+      seg++;
+    };
+
+    for (let layer = 0; layer < triCount; layer++) {
+      const frac = layer / Math.max(1, triCount - 1);
+      const radius = R * lerp(0.12, 0.82, frac) * scalePulse;
+      const spin = t * 0.00022 * speed * (layer % 2 === 0 ? 1 : -1);
+      const depth = Math.sin(t * 0.001 * speed + layer * 0.72) * templeDepth * (0.25 + frac);
+      const tilt = Math.sin(t * 0.00058 * speed + layer) * R * 0.018;
+
+      for (let invert = 0; invert < 2; invert++) {
+        const rot = spin + invert * Math.PI + layer * 0.09 + (invert ? Math.PI / 3 : 0);
+        const pts: Array<[number, number, number]> = [];
+        for (let p = 0; p < 3; p++) {
+          const a = rot + p * (TAU / 3);
+          const warp = 1 + Math.sin(a * 3 + t * 0.0014 * speed + layer) * 0.014 * cfg.complexity;
+          pts.push([
+            Math.cos(a) * radius * warp,
+            Math.sin(a) * radius * warp * 0.86,
+            depth + Math.cos(a + layer) * tilt,
+          ]);
+        }
+        addSegment(...pts[0], ...pts[1]);
+        addSegment(...pts[1], ...pts[2]);
+        addSegment(...pts[2], ...pts[0]);
+      }
+
+      if (layer % 2 === 0) {
+        const sides = 6;
+        const rot = -spin * 0.55 + layer * 0.05;
+        const hex: Array<[number, number, number]> = [];
+        for (let p = 0; p < sides; p++) {
+          const a = rot + p * (TAU / sides);
+          hex.push([Math.cos(a) * radius * 0.72, Math.sin(a) * radius * 0.62, -depth * 0.35]);
+        }
+        for (let p = 0; p < sides; p++) addSegment(...hex[p], ...hex[(p + 1) % sides]);
+      }
+    }
+
+    for (let i = 0; i < spokeCount; i++) {
+      const a = i * (TAU / spokeCount) + t * 0.00016 * speed;
+      const inner = R * (0.1 + pulse * 0.04);
+      const outer = R * (0.9 + soundEnergy * 0.08);
+      const z = Math.sin(t * 0.0011 * speed + i) * templeDepth * 0.8;
+      addSegment(
+        Math.cos(a) * inner,
+        Math.sin(a) * inner * 0.86,
+        -z,
+        Math.cos(a) * outer,
+        Math.sin(a) * outer * 0.86,
+        z,
+      );
+    }
+
+    const mat = lines.material as THREE.LineBasicMaterial;
+    mat.color.setRGB(
+      (col[0] / 255) * (1.1 + iF),
+      (col[1] / 255) * (1.1 + iF),
+      (col[2] / 255) * (1.1 + iF),
+    );
+    mat.opacity = Math.min(1, 0.32 + iF * 0.34 + pulse * 0.12 + soundEnergy * 0.18);
+    lines.geometry.setDrawRange(0, seg * 2);
+    posAttr.needsUpdate = true;
+    lines.rotation.z = Math.sin(t * 0.00018 * speed) * 0.06;
+    lines.rotation.x = Math.sin(t * 0.00021 * speed) * 0.18;
+  }
+
+  const dots = group.children.find((child) => child.userData.tag === 'triangleYantraDots') as
+    | THREE.Points
+    | undefined;
+  if (dots) {
+    const posAttr = dots.geometry.getAttribute('position') as THREE.BufferAttribute;
+    const arr = posAttr.array as Float32Array;
+    const dotCount = Math.min(
+      TRI_YANTRA_DOTS,
+      Math.round(lerp(320, TRI_YANTRA_DOTS, cfg.particles / 10)),
+    );
+    for (let i = 0; i < dotCount; i++) {
+      const lane = i % Math.max(3, spokeCount);
+      const laneF = lane / Math.max(3, spokeCount);
+      const crawl = (i / dotCount + t * 0.00012 * speed * (1.1 + soundEnergy)) % 1;
+      const side = Math.floor(i / Math.max(3, spokeCount)) % 3;
+      const a0 = laneF * TAU + side * (TAU / 3) + t * 0.00026 * speed;
+      const snap = Math.round(crawl * 8) / 8;
+      const angularSnap = lerp(crawl, snap, 0.38 + glowF * 0.2);
+      const rr2 = R * (0.12 + angularSnap * 0.72);
+      const flicker = Math.sin(t * 0.004 * speed + i * 0.31) * R * 0.008 * (1 + soundEnergy);
+      arr[i * 3] = Math.cos(a0) * rr2 + Math.cos(a0 + Math.PI / 2) * flicker;
+      arr[i * 3 + 1] = Math.sin(a0) * rr2 * 0.86 + Math.sin(a0 + Math.PI / 2) * flicker;
+      arr[i * 3 + 2] = Math.sin(crawl * TAU + t * 0.0012 * speed + lane) * templeDepth;
+    }
+    dots.geometry.setDrawRange(0, dotCount);
+    posAttr.needsUpdate = true;
+    const mat = dots.material as THREE.PointsMaterial;
+    mat.size = (1.7 + cfg.luminous * 0.28 + beat * 0.55 + soundEnergy * 1.1) * (R / 260);
+    mat.opacity = Math.min(1, 0.5 + iF * 0.22 + soundEnergy * 0.2);
+    updateMat(dots, col, mat.opacity, 2.7 + cfg.luminous * 0.4 + soundEnergy * 1.4);
+    dots.rotation.z = -t * 0.00012 * speed;
   }
 }
 
