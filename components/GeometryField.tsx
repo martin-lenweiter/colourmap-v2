@@ -87,6 +87,7 @@ type Mode =
   | 'tripnumber1'
   | 'tripnumber2'
   | 'tripnumber3'
+  | 'buddhaboycurrents'
   | 'touchpreset'
   | 'emotion'
   | 'constellation'
@@ -153,6 +154,9 @@ interface Cfg {
   luminous: number;
   stars: number;
   mode: Mode;
+  danceMove?: DanceMove;
+  danceBpm?: number;
+  danceAmount?: number;
 }
 
 interface Dot {
@@ -172,6 +176,7 @@ interface Ripple {
 
 type FingerMode = 'off' | 'ripple' | 'pull' | 'push' | 'light';
 type MotionMode = 'animate' | 'static';
+type DanceMove = 'still' | 'breath' | 'headnod' | 'armrise' | 'pulse';
 
 /* ── Palettes ───────────────────────────────────────────────── */
 
@@ -969,6 +974,21 @@ const PRESETS: Record<string, Cfg> = {
     luminous: 3.8,
     stars: 5,
     mode: 'tripnumber3',
+  },
+  'Buddha Boy Currents': {
+    preset: 'Golden Source',
+    symmetry: 9,
+    complexity: 6.8,
+    glow: 5.4,
+    breathSpeed: 0.66,
+    intensity: 8.2,
+    particles: 8,
+    luminous: 3.8,
+    stars: 5,
+    mode: 'buddhaboycurrents',
+    danceMove: 'headnod',
+    danceBpm: 92,
+    danceAmount: 5,
   },
   'Touch Preset': {
     preset: 'Golden Source',
@@ -4420,6 +4440,8 @@ function buildModeGroup(cfg: Cfg, R: number): THREE.Group {
       return buildPulse(cfg, R);
     case 'tripnumber3':
       return buildTriangleYantraTrip(cfg, R);
+    case 'buddhaboycurrents':
+      return buildBuddhaBoyCurrents(cfg, R);
     case 'emotion':
       return buildEmotion(cfg, R);
     case 'constellation':
@@ -4670,6 +4692,9 @@ function updateModeGroup(group: THREE.Group, cfg: Cfg, dots: Dot[], t: number, R
       break;
     case 'tripnumber3':
       updateTriangleYantraTrip(group, cfg, t, R);
+      break;
+    case 'buddhaboycurrents':
+      updateBuddhaBoyCurrents(group, cfg, t, R);
       break;
     case 'emotion':
       updateEmotion(group, cfg, t, R);
@@ -11357,6 +11382,18 @@ const MODE_SLIDERS: Partial<Record<Mode, SliderDef[]>> = {
     { key: 'luminous', label: 'Bloom', min: 0, max: 5, step: 0.1 },
     { key: 'stars', label: 'Depth', min: 0, max: 10, step: 1 },
   ],
+  buddhaboycurrents: [
+    { key: 'symmetry', label: 'Tide Lanes', min: 4, max: 16, step: 1 },
+    { key: 'complexity', label: 'Currents', min: 1, max: 10, step: 0.5 },
+    { key: 'glow', label: 'Amber Glow', min: 0, max: 10, step: 0.5 },
+    { key: 'breathSpeed', label: 'Breath Speed', min: 0.05, max: 1.8, step: 0.05 },
+    { key: 'danceBpm', label: 'BPM', min: 50, max: 180, step: 1 },
+    { key: 'danceAmount', label: 'Move Amount', min: 0, max: 10, step: 0.5 },
+    { key: 'intensity', label: 'Light', min: 1, max: 10, step: 0.5 },
+    { key: 'particles', label: 'Aura', min: 1, max: 10, step: 1 },
+    { key: 'luminous', label: 'Bloom', min: 0, max: 5, step: 0.1 },
+    { key: 'stars', label: 'Depth', min: 0, max: 10, step: 1 },
+  ],
   touchpreset: [
     { key: 'symmetry', label: 'Swirls', min: 3, max: 18, step: 1 },
     { key: 'complexity', label: 'Liquid Trails', min: 1, max: 10, step: 0.5 },
@@ -11465,6 +11502,7 @@ const MODE_TO_PRESET: Partial<Record<Mode, string>> = {
   tripnumber1: 'Trip Number 1',
   tripnumber2: 'Trip Number 2',
   tripnumber3: 'Trip Number 3',
+  buddhaboycurrents: 'Buddha Boy Currents',
   touchpreset: 'Touch Preset',
 
   embf3d: 'Calm Field',
@@ -11598,6 +11636,7 @@ const MODES: { mode: Mode; label: string }[] = [
   { mode: 'tripnumber1', label: 'Trip Number 1' },
   { mode: 'tripnumber2', label: 'Trip Number 2' },
   { mode: 'tripnumber3', label: 'Trip Number 3' },
+  { mode: 'buddhaboycurrents', label: 'Buddha Boy Currents' },
   { mode: 'touchpreset', label: 'Touch Preset' },
 
   { mode: 'pulse', label: '◉ Pulse' },
@@ -11625,6 +11664,7 @@ const FEATURED_PRESETS: FeaturedItem[] = [
   { name: 'Trip Number 1', tag: 'TRIP' },
   { name: 'Trip Number 2', tag: 'DROP' },
   { name: 'Trip Number 3', tag: 'TRI' },
+  { name: 'Buddha Boy Currents', tag: 'FORM' },
   { name: 'Scriptures', tag: 'TOP' },
   { name: 'Vertical Scriptures', tag: 'TOP' },
   { name: 'Eclipse', tag: 'TOP' },
@@ -13227,6 +13267,8 @@ function updateDotSymbolField(group: THREE.Group, cfg: Cfg, t: number, R: number
 
 const PULSE_MAX_RINGS = 14;
 const PULSE_PTS = 80;
+const TRIP2_DUST_POINTS = 520;
+const TRIP2_HORIZON_POINTS = 180;
 
 function buildPulse(cfg: Cfg, R: number): THREE.Group {
   const group = new THREE.Group();
@@ -13243,6 +13285,36 @@ function buildPulse(cfg: Cfg, R: number): THREE.Group {
     pts.userData.tag = 'pulseRing';
     pts.userData.ri = ri;
     group.add(pts);
+  }
+  if (cfg.mode === 'tripnumber2') {
+    const dustGeo = new THREE.BufferGeometry();
+    const dustPositions = new Float32Array(TRIP2_DUST_POINTS * 3);
+    const dustSeeds = new Float32Array(TRIP2_DUST_POINTS * 4);
+    for (let i = 0; i < TRIP2_DUST_POINTS; i++) {
+      dustSeeds[i * 4] = (i * 0.61803398875) % 1;
+      dustSeeds[i * 4 + 1] = (i * 0.41421356237) % 1;
+      dustSeeds[i * 4 + 2] = (i * 0.73205080757) % 1;
+      dustSeeds[i * 4 + 3] = i % 2 === 0 ? 1 : -1;
+    }
+    const dustAttr = new THREE.BufferAttribute(dustPositions, 3);
+    dustAttr.setUsage(THREE.DynamicDrawUsage);
+    dustGeo.setAttribute('position', dustAttr);
+    dustGeo.setAttribute('seed', new THREE.BufferAttribute(dustSeeds, 4));
+    const dust = new THREE.Points(dustGeo, ptsMat(hdrColor(pal.rgb, iF * 0.86, 2.6), 1.7, 0.66));
+    dust.userData.tag = 'trip2Dust';
+    group.add(dust);
+
+    const horizonGeo = new THREE.BufferGeometry();
+    const horizonPositions = new Float32Array(TRIP2_HORIZON_POINTS * 3);
+    const horizonAttr = new THREE.BufferAttribute(horizonPositions, 3);
+    horizonAttr.setUsage(THREE.DynamicDrawUsage);
+    horizonGeo.setAttribute('position', horizonAttr);
+    const horizon = new THREE.Points(
+      horizonGeo,
+      ptsMat(hdrColor(pal.rgb, iF * 0.7, 2.1), 2.0, 0.52),
+    );
+    horizon.userData.tag = 'trip2Horizon';
+    group.add(horizon);
   }
   return group;
 }
@@ -13263,9 +13335,65 @@ function updatePulse(group: THREE.Group, cfg: Cfg, t: number, R: number): void {
   const timeHue = (t * 0.00004) % 1.0;
   const tmpCol = new THREE.Color();
   const sym = cfg.symmetry > 4; // bilateral rorschach mirror
+  const dustCount = Math.round(lerp(140, TRIP2_DUST_POINTS, cfg.particles / 10));
 
   for (const child of group.children) {
-    if ((child.userData.tag as string) !== 'pulseRing') continue;
+    const tag = child.userData.tag as string;
+    if (tag === 'trip2Dust') {
+      const pts = child as THREE.Points;
+      const posAttr = pts.geometry.getAttribute('position') as THREE.BufferAttribute;
+      const seedAttr = pts.geometry.getAttribute('seed') as THREE.BufferAttribute;
+      const arr = posAttr.array as Float32Array;
+      const seeds = seedAttr.array as Float32Array;
+      for (let i = 0; i < dustCount; i++) {
+        const u = seeds[i * 4];
+        const v = seeds[i * 4 + 1];
+        const phase = seeds[i * 4 + 2];
+        const side = seeds[i * 4 + 3];
+        const fall = (phase + t * 0.00018 * speed * (1 + dropPush)) % 1;
+        const spread = R * (0.18 + v * 0.88 + soundEnergy * 0.18);
+        const angle = side * (0.18 + u * Math.PI * 0.82);
+        const gust = Math.sin(t * 0.0012 * speed + u * 8 + fall * TAU) * R * 0.08 * chaosAmt;
+        const lift = Math.sin(fall * Math.PI) * R * (0.16 + soundEnergy * 0.22);
+        arr[i * 3] = Math.cos(angle) * spread + gust;
+        arr[i * 3 + 1] = -R * 0.44 + fall * R * 1.08 + lift;
+        arr[i * 3 + 2] =
+          Math.sin(angle * 2.4 + t * 0.001 * speed) * R * (0.08 + soundEnergy * 0.08);
+      }
+      pts.geometry.setDrawRange(0, dustCount);
+      posAttr.needsUpdate = true;
+      const mat = pts.material as THREE.PointsMaterial;
+      mat.size = (1.1 + cfg.luminous * 0.24 + soundEnergy * 1.2) * (R / 260);
+      mat.opacity = Math.min(1, 0.22 + iF * 0.24 + soundEnergy * 0.3);
+      updateMat(pts, [255, 168, 82], mat.opacity, 2.2 + cfg.luminous * 0.35 + soundEnergy);
+      continue;
+    }
+
+    if (tag === 'trip2Horizon') {
+      const pts = child as THREE.Points;
+      const posAttr = pts.geometry.getAttribute('position') as THREE.BufferAttribute;
+      const arr = posAttr.array as Float32Array;
+      for (let i = 0; i < TRIP2_HORIZON_POINTS; i++) {
+        const u = i / Math.max(1, TRIP2_HORIZON_POINTS - 1);
+        const x = lerp(-R * 1.08, R * 1.08, u);
+        const ripple =
+          Math.sin(u * Math.PI * Math.max(3, cfg.symmetry) + t * 0.0016 * speed) *
+          R *
+          0.018 *
+          (1 + soundEnergy);
+        arr[i * 3] = x;
+        arr[i * 3 + 1] = -R * 0.24 + ripple;
+        arr[i * 3 + 2] = -R * 0.18 + Math.sin(u * TAU + t * 0.0008 * speed) * R * 0.04;
+      }
+      posAttr.needsUpdate = true;
+      const mat = pts.material as THREE.PointsMaterial;
+      mat.size = (1.4 + cfg.luminous * 0.18 + soundEnergy * 0.5) * (R / 260);
+      mat.opacity = Math.min(0.82, 0.18 + iF * 0.22 + soundEnergy * 0.24);
+      updateMat(pts, [255, 196, 116], mat.opacity, 2.0 + cfg.luminous * 0.25);
+      continue;
+    }
+
+    if (tag !== 'pulseRing') continue;
     const ri = child.userData.ri as number;
     const pts = child as THREE.Points;
     if (ri >= ringCount) {
@@ -13327,6 +13455,8 @@ function updatePulse(group: THREE.Group, cfg: Cfg, t: number, R: number): void {
 /* ── Triangle Yantra Trip ───────────────────────────────────── */
 const TRI_YANTRA_MAX_SEGMENTS = 760;
 const TRI_YANTRA_DOTS = 960;
+const TRI_YANTRA_RAYS = 220;
+const TRI_YANTRA_ORBIT_DOTS = 360;
 
 function buildTriangleYantraTrip(cfg: Cfg, R: number): THREE.Group {
   const group = new THREE.Group();
@@ -13350,6 +13480,24 @@ function buildTriangleYantraTrip(cfg: Cfg, R: number): THREE.Group {
   const dots = new THREE.Points(dotGeo, ptsMat(hdrColor(pal.rgb, iF, 2.8), 2.1, 0.78));
   dots.userData.tag = 'triangleYantraDots';
   group.add(dots);
+
+  const rayGeo = new THREE.BufferGeometry();
+  const rayPositions = new Float32Array(TRI_YANTRA_RAYS * 2 * 3);
+  const rayAttr = new THREE.BufferAttribute(rayPositions, 3);
+  rayAttr.setUsage(THREE.DynamicDrawUsage);
+  rayGeo.setAttribute('position', rayAttr);
+  const rays = new THREE.LineSegments(rayGeo, lineMat(hdrColor(pal.rgb, iF * 0.62, 2.2), 0.38));
+  rays.userData.tag = 'triangleYantraRays';
+  group.add(rays);
+
+  const orbitGeo = new THREE.BufferGeometry();
+  const orbitPositions = new Float32Array(TRI_YANTRA_ORBIT_DOTS * 3);
+  const orbitAttr = new THREE.BufferAttribute(orbitPositions, 3);
+  orbitAttr.setUsage(THREE.DynamicDrawUsage);
+  orbitGeo.setAttribute('position', orbitAttr);
+  const orbit = new THREE.Points(orbitGeo, ptsMat(hdrColor(pal.rgb, iF * 0.9, 2.6), 1.6, 0.68));
+  orbit.userData.tag = 'triangleYantraOrbit';
+  group.add(orbit);
 
   return group;
 }
@@ -13460,6 +13608,73 @@ function updateTriangleYantraTrip(group: THREE.Group, cfg: Cfg, t: number, R: nu
     lines.rotation.x = Math.sin(t * 0.00021 * speed) * 0.18;
   }
 
+  const rays = group.children.find((child) => child.userData.tag === 'triangleYantraRays') as
+    | THREE.LineSegments
+    | undefined;
+  if (rays) {
+    const posAttr = rays.geometry.getAttribute('position') as THREE.BufferAttribute;
+    const arr = posAttr.array as Float32Array;
+    const rayCount = Math.min(
+      TRI_YANTRA_RAYS,
+      Math.round(lerp(42, TRI_YANTRA_RAYS, (cfg.stars + cfg.particles) / 20)),
+    );
+    for (let i = 0; i < rayCount; i++) {
+      const lane = i % spokeCount;
+      const band = Math.floor(i / Math.max(1, spokeCount));
+      const a = lane * (TAU / spokeCount) + band * 0.037 + t * 0.0001 * speed;
+      const flicker = 0.55 + 0.45 * Math.sin(t * 0.0035 * speed + i * 0.7);
+      const inner = R * (0.05 + (band % 4) * 0.035 + pulse * 0.025);
+      const outer = R * (0.35 + ((band % 9) / 9) * 0.62 + flicker * 0.06 + soundEnergy * 0.08);
+      const z0 = -templeDepth * (0.2 + (band % 3) * 0.18);
+      const z1 = templeDepth * (0.28 + flicker * 0.72);
+      const o = i * 6;
+      arr[o] = Math.cos(a) * inner;
+      arr[o + 1] = Math.sin(a) * inner * 0.86;
+      arr[o + 2] = z0;
+      arr[o + 3] = Math.cos(a) * outer;
+      arr[o + 4] = Math.sin(a) * outer * 0.86;
+      arr[o + 5] = z1;
+    }
+    rays.geometry.setDrawRange(0, rayCount * 2);
+    posAttr.needsUpdate = true;
+    const mat = rays.material as THREE.LineBasicMaterial;
+    mat.color.setRGB((col[0] / 255) * 1.35, (col[1] / 255) * 1.25, (col[2] / 255) * 1.1);
+    mat.opacity = Math.min(0.72, 0.12 + glowF * 0.24 + soundEnergy * 0.22 + pulse * 0.08);
+    rays.rotation.z = -t * 0.00008 * speed;
+    rays.rotation.x = Math.sin(t * 0.00015 * speed) * 0.1;
+  }
+
+  const orbit = group.children.find((child) => child.userData.tag === 'triangleYantraOrbit') as
+    | THREE.Points
+    | undefined;
+  if (orbit) {
+    const posAttr = orbit.geometry.getAttribute('position') as THREE.BufferAttribute;
+    const arr = posAttr.array as Float32Array;
+    const orbitCount = Math.min(
+      TRI_YANTRA_ORBIT_DOTS,
+      Math.round(lerp(80, TRI_YANTRA_ORBIT_DOTS, cfg.stars / 10)),
+    );
+    const rings = Math.max(2, Math.round(lerp(2, 6, cfg.glow / 10)));
+    for (let i = 0; i < orbitCount; i++) {
+      const ring = i % rings;
+      const u = i / Math.max(1, orbitCount);
+      const a = u * TAU * rings + ring * (TAU / rings) - t * 0.00038 * speed;
+      const triSnap = Math.round((u * 3 + t * 0.00008 * speed) % 3) / 3;
+      const stepped = lerp(u, triSnap, 0.18 + glowF * 0.28);
+      const radius = R * (0.18 + stepped * 0.52 + ring * 0.035 + pulse * 0.018);
+      arr[i * 3] = Math.cos(a) * radius;
+      arr[i * 3 + 1] = Math.sin(a) * radius * 0.86;
+      arr[i * 3 + 2] = Math.sin(a * 3 + t * 0.001 * speed + ring) * templeDepth * 0.65;
+    }
+    orbit.geometry.setDrawRange(0, orbitCount);
+    posAttr.needsUpdate = true;
+    const mat = orbit.material as THREE.PointsMaterial;
+    mat.size = (1.25 + cfg.luminous * 0.2 + soundEnergy * 0.8) * (R / 260);
+    mat.opacity = Math.min(0.95, 0.34 + iF * 0.22 + soundEnergy * 0.2);
+    updateMat(orbit, [255, 210, 132], mat.opacity, 2.4 + cfg.luminous * 0.32 + pulse * 0.5);
+    orbit.rotation.z = t * 0.00018 * speed;
+  }
+
   const dots = group.children.find((child) => child.userData.tag === 'triangleYantraDots') as
     | THREE.Points
     | undefined;
@@ -13492,6 +13707,174 @@ function updateTriangleYantraTrip(group: THREE.Group, cfg: Cfg, t: number, R: nu
     updateMat(dots, col, mat.opacity, 2.7 + cfg.luminous * 0.4 + soundEnergy * 1.4);
     dots.rotation.z = -t * 0.00012 * speed;
   }
+}
+
+const BUDDHA_BOY_POINTS = 1700;
+const BUDDHA_BOY_TIDE_POINTS = 900;
+const DANCE_MOVES: { key: DanceMove; label: string }[] = [
+  { key: 'still', label: 'Still' },
+  { key: 'breath', label: 'Breath' },
+  { key: 'headnod', label: 'Head Nod' },
+  { key: 'armrise', label: 'Arm Rise' },
+  { key: 'pulse', label: 'Pulse' },
+];
+
+function buildBuddhaBoyCurrents(cfg: Cfg, R: number): THREE.Group {
+  const group = new THREE.Group();
+  const pal = PAL[cfg.preset] ?? PAL['Golden Source'];
+  const iF = cfg.intensity / 10;
+
+  const bodyGeo = new THREE.BufferGeometry();
+  const bodyPositions = new Float32Array(BUDDHA_BOY_POINTS * 3);
+  const bodySeeds = new Float32Array(BUDDHA_BOY_POINTS * 3);
+  for (let i = 0; i < BUDDHA_BOY_POINTS; i++) {
+    const u = i / BUDDHA_BOY_POINTS;
+    const zone = u < 0.18 ? 0 : u < 0.48 ? 1 : u < 0.72 ? 2 : 3;
+    const a = ((i * 0.61803398875) % 1) * Math.PI * 2;
+    const r = Math.sqrt((i * 0.41421356237) % 1);
+    bodySeeds[i * 3] = zone;
+    bodySeeds[i * 3 + 1] = a;
+    bodySeeds[i * 3 + 2] = r;
+  }
+  const bodyAttr = new THREE.BufferAttribute(bodyPositions, 3);
+  bodyAttr.setUsage(THREE.DynamicDrawUsage);
+  bodyGeo.setAttribute('position', bodyAttr);
+  bodyGeo.setAttribute('seed', new THREE.BufferAttribute(bodySeeds, 3));
+  const body = new THREE.Points(bodyGeo, ptsMat(hdrColor(pal.rgb, iF, 2.7), 2.2, 0.82));
+  body.userData.tag = 'buddhaBody';
+  group.add(body);
+
+  const tideGeo = new THREE.BufferGeometry();
+  const tidePositions = new Float32Array(BUDDHA_BOY_TIDE_POINTS * 3);
+  const tideSeeds = new Float32Array(BUDDHA_BOY_TIDE_POINTS * 3);
+  for (let i = 0; i < BUDDHA_BOY_TIDE_POINTS; i++) {
+    tideSeeds[i * 3] = (i * 0.61803398875) % 1;
+    tideSeeds[i * 3 + 1] = Math.floor((i / BUDDHA_BOY_TIDE_POINTS) * 9);
+    tideSeeds[i * 3 + 2] = Math.random();
+  }
+  const tideAttr = new THREE.BufferAttribute(tidePositions, 3);
+  tideAttr.setUsage(THREE.DynamicDrawUsage);
+  tideGeo.setAttribute('position', tideAttr);
+  tideGeo.setAttribute('seed', new THREE.BufferAttribute(tideSeeds, 3));
+  const tides = new THREE.Points(tideGeo, ptsMat(hdrColor(pal.rgb, iF * 0.75, 2.5), 1.8, 0.72));
+  tides.userData.tag = 'buddhaTides';
+  group.add(tides);
+
+  return group;
+}
+
+function updateBuddhaBoyCurrents(group: THREE.Group, cfg: Cfg, t: number, R: number): void {
+  const pal = PAL[cfg.preset] ?? PAL['Golden Source'];
+  const iF = cfg.intensity / 10;
+  const glowF = cfg.glow / 10;
+  const speed = cfg.breathSpeed;
+  const TAU = Math.PI * 2;
+  const danceMove = cfg.danceMove ?? 'still';
+  const danceAmount = ((cfg.danceAmount ?? 0) / 10) * (danceMove === 'still' ? 0 : 1);
+  const beat = beatPulse(t, cfg.danceBpm ?? 92);
+  const groove = Math.sin(beatPhase(t, cfg.danceBpm ?? 92) * TAU);
+  const danceBreath = danceMove === 'breath' || danceMove === 'pulse' ? beat * danceAmount : 0;
+  const breath = 1 + Math.sin(t * 0.0011 * speed) * 0.035 + danceBreath * 0.055;
+  const current = cfg.complexity / 10;
+  const tideCol = new THREE.Color().setHSL(0.095 + glowF * 0.08, 0.9, 0.58);
+  const col: [number, number, number] = [
+    lerp(pal.rgb[0], tideCol.r * 255, glowF),
+    lerp(pal.rgb[1], tideCol.g * 255, glowF),
+    lerp(pal.rgb[2], tideCol.b * 255, glowF),
+  ];
+
+  for (const child of group.children) {
+    if (child.userData.tag === 'buddhaBody') {
+      const pts = child as THREE.Points;
+      const pos = pts.geometry.getAttribute('position') as THREE.BufferAttribute;
+      const seed = pts.geometry.getAttribute('seed') as THREE.BufferAttribute;
+      const arr = pos.array as Float32Array;
+      const seeds = seed.array as Float32Array;
+      for (let i = 0; i < BUDDHA_BOY_POINTS; i++) {
+        const zone = seeds[i * 3];
+        const a = seeds[i * 3 + 1];
+        const r = seeds[i * 3 + 2];
+        let x = 0;
+        let y = 0;
+        let z = 0;
+        if (zone === 0) {
+          x = Math.cos(a) * R * 0.12 * r;
+          y = R * (0.24 + Math.sin(a) * 0.16 * r);
+          z = Math.sin(a) * R * 0.08 * r;
+          if (danceMove === 'headnod') {
+            const headCenter = R * 0.24;
+            const angle = groove * 0.34 * danceAmount;
+            const localY = y - headCenter;
+            const localZ = z;
+            y = headCenter + localY * Math.cos(angle) - localZ * Math.sin(angle);
+            z = localZ * Math.cos(angle) + localY * Math.sin(angle);
+          }
+        } else if (zone === 1) {
+          x = Math.cos(a) * R * 0.18 * r;
+          y = R * (-0.02 + Math.sin(a) * 0.28 * r);
+          z = Math.sin(a) * R * 0.1 * r;
+        } else if (zone === 2) {
+          const side = Math.sign(Math.cos(a)) || 1;
+          x = side * R * (0.16 + r * 0.28);
+          y = R * (-0.28 + Math.sin(a) * 0.1 * r);
+          z = Math.sin(a) * R * 0.09 * r;
+          if (danceMove === 'armrise') {
+            y += beat * R * 0.2 * danceAmount;
+            x *= 1 - beat * 0.12 * danceAmount;
+            z += groove * R * 0.025 * danceAmount;
+          }
+        } else {
+          x = Math.cos(a) * R * 0.42 * r;
+          y = R * (-0.34 + Math.sin(a) * 0.12 * r);
+          z = Math.sin(a) * R * 0.08 * r;
+        }
+        const shimmer = Math.sin(t * 0.0016 * speed + x * 0.025 + y * 0.018) * R * 0.008 * current;
+        arr[i * 3] = x * breath + shimmer;
+        arr[i * 3 + 1] = y * breath;
+        arr[i * 3 + 2] = z + shimmer * 0.4;
+      }
+      pos.needsUpdate = true;
+      const mat = pts.material as THREE.PointsMaterial;
+      mat.size = (1.8 + cfg.luminous * 0.28 + beat * danceAmount * 0.62) * (R / 260);
+      mat.opacity = 0.56 + iF * 0.28 + beat * danceAmount * 0.08;
+      updateMat(pts, col, mat.opacity, 2.6 + cfg.luminous * 0.38 + beat * danceAmount * 0.7);
+    } else if (child.userData.tag === 'buddhaTides') {
+      const pts = child as THREE.Points;
+      const pos = pts.geometry.getAttribute('position') as THREE.BufferAttribute;
+      const seed = pts.geometry.getAttribute('seed') as THREE.BufferAttribute;
+      const arr = pos.array as Float32Array;
+      const seeds = seed.array as Float32Array;
+      const lanes = Math.max(4, Math.round(cfg.symmetry));
+      for (let i = 0; i < BUDDHA_BOY_TIDE_POINTS; i++) {
+        const u = (seeds[i * 3] + t * 0.00008 * speed * (0.7 + current)) % 1;
+        const lane = seeds[i * 3 + 1] % lanes;
+        const drift = seeds[i * 3 + 2];
+        const a = u * TAU + lane * (TAU / lanes) + Math.sin(t * 0.00032 * speed + lane) * 0.5;
+        const r =
+          R *
+          (0.35 +
+            0.48 * u +
+            Math.sin(t * 0.001 * speed + lane) * 0.04 +
+            beat * danceAmount * 0.025);
+        arr[i * 3] = Math.cos(a) * r;
+        arr[i * 3 + 1] = Math.sin(a) * r * 0.42 + R * (drift - 0.5) * 0.08;
+        arr[i * 3 + 2] = Math.sin(a * 2 + t * 0.001 * speed) * R * 0.12;
+      }
+      pos.needsUpdate = true;
+      const mat = pts.material as THREE.PointsMaterial;
+      mat.size = (1.3 + cfg.luminous * 0.22 + beat * danceAmount * 0.35) * (R / 260);
+      mat.opacity = 0.36 + iF * 0.28 + beat * danceAmount * 0.08;
+      updateMat(pts, col, mat.opacity, 2.3 + cfg.luminous * 0.4 + beat * danceAmount * 0.55);
+    }
+  }
+}
+
+function beatPhase(t: number, bpm: number) {
+  return ((t * 0.001 * Math.max(1, bpm)) / 60) % 1;
+}
+
+function beatPulse(t: number, bpm: number) {
+  return (0.5 - Math.cos(beatPhase(t, bpm) * Math.PI * 2) * 0.5) ** 2.8;
 }
 
 /* ── Emotion ────────────────────────────────────────────────── */
@@ -19301,7 +19684,7 @@ export default function GeometryField() {
                       style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '6px 20px' }}
                     >
                       {slidersFor(cfg.mode).map(({ key, label, min, max, step }) => {
-                        const val = cfg[key] as number;
+                        const val = (cfg[key] as number | undefined) ?? min;
                         return (
                           <div key={key}>
                             <div
@@ -19345,6 +19728,39 @@ export default function GeometryField() {
                         );
                       })}
                     </div>
+
+                    {cfg.mode === 'buddhaboycurrents' && (
+                      <div
+                        style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          gap: 6,
+                          flexWrap: 'wrap',
+                          marginTop: 10,
+                        }}
+                      >
+                        <span
+                          style={{
+                            fontFamily: 'var(--font-serif)',
+                            fontSize: 9,
+                            color: `rgba(${pr},${pg},${pb},0.6)`,
+                            letterSpacing: '0.12em',
+                            textTransform: 'uppercase',
+                          }}
+                        >
+                          Beat Move
+                        </span>
+                        {DANCE_MOVES.map((move) =>
+                          pill(
+                            move.label,
+                            (cfg.danceMove ?? 'still') === move.key,
+                            () => update('danceMove', move.key),
+                            true,
+                          ),
+                        )}
+                      </div>
+                    )}
 
                     {/* Word input — shown for word modes */}
                     {(cfg.mode === 'wordneon' ||

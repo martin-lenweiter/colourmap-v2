@@ -78,6 +78,7 @@ type StarPreset = {
   flowScale: number;
   pattern: StarPattern;
   lowPower: boolean;
+  autoRotate?: boolean;
 };
 
 const DEFAULT_STAR_PRESETS: StarPreset[] = [
@@ -158,6 +159,7 @@ export default function FigureStarsBuilder() {
   const [flowScale, setFlowScale] = useState(1);
   const [pattern, setPattern] = useState<StarPattern>('current');
   const [lowPower, setLowPower] = useState(false);
+  const [autoRotate, setAutoRotate] = useState(true);
   const [savedPresets, setSavedPresets] = useState<StarPreset[]>([]);
   const [status, setStatus] = useState<'loading' | 'ready' | 'error'>('loading');
 
@@ -172,6 +174,7 @@ export default function FigureStarsBuilder() {
   const flowScaleRef = useRef(1);
   const patternRef = useRef<StarPattern>('current');
   const lowPowerRef = useRef(false);
+  const autoRotateRef = useRef(true);
   const rendererRef = useRef<THREE.WebGLRenderer | null>(null);
   pulseStrengthRef.current = pulseStrength;
   pulseSpeedRef.current = pulseSpeed;
@@ -184,6 +187,7 @@ export default function FigureStarsBuilder() {
   flowScaleRef.current = flowScale;
   patternRef.current = pattern;
   lowPowerRef.current = lowPower;
+  autoRotateRef.current = autoRotate;
 
   const [samplerVersion, setSamplerVersion] = useState(0);
 
@@ -227,6 +231,7 @@ export default function FigureStarsBuilder() {
     setFlowScale(preset.flowScale);
     setPattern(preset.pattern);
     setLowPower(preset.lowPower);
+    setAutoRotate(preset.autoRotate ?? true);
   }, []);
 
   const saveCurrentPreset = useCallback(() => {
@@ -247,6 +252,7 @@ export default function FigureStarsBuilder() {
       flowScale,
       pattern,
       lowPower,
+      autoRotate,
     };
     setSavedPresets((current) => {
       const next = [nextPreset, ...current].slice(0, 6);
@@ -272,6 +278,7 @@ export default function FigureStarsBuilder() {
     starLightness,
     starSaturation,
     size,
+    autoRotate,
   ]);
 
   useEffect(() => {
@@ -344,6 +351,7 @@ export default function FigureStarsBuilder() {
     renderer.setSize(width, height);
     renderer.setPixelRatio(lowPowerRef.current ? 1 : Math.min(window.devicePixelRatio, 2));
     renderer.toneMapping = THREE.ACESFilmicToneMapping;
+    renderer.toneMappingExposure = 1.35;
     rendererRef.current = renderer;
     mount.appendChild(renderer.domElement);
 
@@ -427,18 +435,24 @@ export default function FigureStarsBuilder() {
       const points = pointsRef.current;
       if (points) {
         camera.position.z += (cameraDistanceRef.current - camera.position.z) * 0.08;
-        points.rotation.y = currentRot + (isDragging ? 0 : t * 0.12);
+        points.rotation.y = currentRot + (isDragging || !autoRotateRef.current ? 0 : t * 0.12);
         const breath =
           1 + Math.sin(t * 0.9 * pulseSpeedRef.current) * 0.04 * pulseStrengthRef.current;
         points.scale.setScalar(breath);
         const mat = points.material as THREE.PointsMaterial;
         const baseSize = (points.userData.baseSize as number | undefined) ?? 0.006;
-        mat.size = baseSize * (0.72 + glowRef.current * 0.24);
+        mat.size = baseSize * (0.86 + glowRef.current * 0.34);
         mat.opacity = Math.min(
           0.98,
-          0.42 +
-            glowRef.current * 0.18 +
+          0.5 +
+            glowRef.current * 0.16 +
             0.22 * (0.5 + 0.5 * Math.sin(t * 1.3 * pulseSpeedRef.current)),
+        );
+        mat.color = starGlowColor(
+          starHueRef.current,
+          starSaturationRef.current,
+          starLightnessRef.current,
+          glowRef.current,
         );
         animateStarPattern(
           points,
@@ -498,11 +512,12 @@ export default function FigureStarsBuilder() {
     rebuildPoints(
       samplerRef.current,
       density,
-      starHsl(starHue, starSaturation, starLightness),
+      starGlowColor(starHue, starSaturation, starLightness, glow),
       size,
     );
   }, [
     density,
+    glow,
     palette.bg,
     size,
     rebuildPoints,
@@ -598,7 +613,7 @@ export default function FigureStarsBuilder() {
               style={{
                 width: 22,
                 height: 22,
-                borderRadius: '50%',
+                borderRadius: 6,
                 cursor: 'pointer',
                 background: p.color,
                 border: `2px solid ${palette.key === p.key ? '#FFF' : 'rgba(0,0,0,0.6)'}`,
@@ -650,7 +665,7 @@ export default function FigureStarsBuilder() {
             step={0.1}
             onChange={setCameraDistance}
           />
-          <Slider label="glow" value={glow} min={0.2} max={2.4} step={0.1} onChange={setGlow} />
+          <Slider label="glow" value={glow} min={0.2} max={4.2} step={0.1} onChange={setGlow} />
           <Slider
             label="pulse"
             value={pulseStrength}
@@ -671,6 +686,18 @@ export default function FigureStarsBuilder() {
 
         <div style={{ display: 'flex', gap: 14, alignItems: 'center', flexWrap: 'wrap' }}>
           <span style={{ letterSpacing: '0.16em', textTransform: 'uppercase' }}>star colour</span>
+          <span
+            aria-hidden="true"
+            title="Current star light"
+            style={{
+              width: 24,
+              height: 24,
+              borderRadius: 6,
+              background: starHsl(starHue, starSaturation, starLightness),
+              border: '1px solid rgba(255,255,255,0.68)',
+              boxShadow: `0 0 ${8 + glow * 6}px ${starHsl(starHue, starSaturation, starLightness)}`,
+            }}
+          />
           <Slider label="hue" value={starHue} min={0} max={360} step={1} onChange={setStarHue} />
           <Slider
             label="sat"
@@ -721,6 +748,14 @@ export default function FigureStarsBuilder() {
               style={pillStyle(lowPower, 'tiny')}
             >
               Low power
+            </button>
+            <button
+              type="button"
+              onClick={() => setAutoRotate((current) => !current)}
+              aria-pressed={!autoRotate}
+              style={pillStyle(!autoRotate, 'tiny')}
+            >
+              Static
             </button>
           </div>
           <div style={{ display: 'flex', gap: 14, alignItems: 'center', flexWrap: 'wrap' }}>
@@ -837,6 +872,12 @@ function animateStarPattern(
 
 function starHsl(hue: number, saturation: number, lightness: number) {
   return `hsl(${hue}, ${saturation}%, ${lightness}%)`;
+}
+
+function starGlowColor(hue: number, saturation: number, lightness: number, glow: number) {
+  return new THREE.Color(
+    starHsl(hue, saturation, Math.min(98, lightness + glow * 3)),
+  ).multiplyScalar(1.1 + glow * 0.42);
 }
 
 function hexToHsl(hex: string) {

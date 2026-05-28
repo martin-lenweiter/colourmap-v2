@@ -32,6 +32,16 @@ const STAR_PATTERNS: { key: StarPattern; label: string }[] = [
   { key: 'nebula', label: 'Nebula' },
 ];
 
+const STAR_COLORS = [
+  { label: 'Gold', color: '#FFE2A0' },
+  { label: 'Cyan', color: '#8AE6FF' },
+  { label: 'Violet', color: '#C8A8FF' },
+  { label: 'Rose', color: '#FF9AB8' },
+  { label: 'Mint', color: '#9AE8C0' },
+  { label: 'Fire', color: '#FFAA60' },
+  { label: 'Pure', color: '#F5F0E0' },
+];
+
 const TRIO = [
   { key: 'golden-god', label: 'Golden God', url: '/models/golden-god.obj', x: -1.25 },
   { key: 'kid-lotus', label: 'Kid Lotus', url: '/models/kid-lotus.obj', x: 0 },
@@ -43,19 +53,31 @@ export default function FigureStarsTrio() {
   const [pattern, setPattern] = useState<StarPattern>('current');
   const [cameraDistance, setCameraDistance] = useState(4.8);
   const [glow, setGlow] = useState(1.2);
+  const [starHue, setStarHue] = useState(42);
+  const [starSaturation, setStarSaturation] = useState(100);
+  const [starLightness, setStarLightness] = useState(82);
   const [agitation, setAgitation] = useState(0.6);
   const [speed, setSpeed] = useState(1);
+  const [autoRotate, setAutoRotate] = useState(true);
   const [status, setStatus] = useState<'loading' | 'ready' | 'error'>('loading');
   const patternRef = useRef<StarPattern>('current');
   const cameraDistanceRef = useRef(4.8);
   const glowRef = useRef(1.2);
+  const starHueRef = useRef(42);
+  const starSaturationRef = useRef(100);
+  const starLightnessRef = useRef(82);
   const agitationRef = useRef(0.6);
   const speedRef = useRef(1);
+  const autoRotateRef = useRef(true);
   patternRef.current = pattern;
   cameraDistanceRef.current = cameraDistance;
   glowRef.current = glow;
+  starHueRef.current = starHue;
+  starSaturationRef.current = starSaturation;
+  starLightnessRef.current = starLightness;
   agitationRef.current = agitation;
   speedRef.current = speed;
+  autoRotateRef.current = autoRotate;
 
   const loadObjGeometry = useCallback(async (url: string) => {
     const loader = new OBJLoader();
@@ -180,14 +202,21 @@ export default function FigureStarsTrio() {
       const t = clock.getElapsedTime();
       camera.position.z += (cameraDistanceRef.current - camera.position.z) * 0.08;
       currentRot += (targetRot - currentRot) * 0.12;
-      group.rotation.y = currentRot + (dragging ? 0 : Math.sin(t * 0.16) * 0.08);
+      group.rotation.y =
+        currentRot + (dragging || !autoRotateRef.current ? 0 : Math.sin(t * 0.16) * 0.08);
       for (const points of pointsList) {
         const phase = (points.userData.phase as number) ?? 0;
-        points.rotation.y = Math.sin(t * 0.35 + phase) * 0.22;
-        points.rotation.z = Math.sin(t * 0.22 + phase) * 0.035;
+        points.rotation.y = autoRotateRef.current ? Math.sin(t * 0.35 + phase) * 0.22 : 0;
+        points.rotation.z = autoRotateRef.current ? Math.sin(t * 0.22 + phase) * 0.035 : 0;
         const mat = points.material as THREE.PointsMaterial;
-        mat.size = 0.005 + glowRef.current * 0.0028;
-        mat.opacity = Math.min(0.98, 0.5 + glowRef.current * 0.18);
+        mat.color = starGlowColor(
+          starHueRef.current,
+          starSaturationRef.current,
+          starLightnessRef.current,
+          glowRef.current,
+        );
+        mat.size = 0.006 + glowRef.current * 0.0042;
+        mat.opacity = Math.min(0.98, 0.52 + glowRef.current * 0.14);
         animateStarPattern(
           points,
           t * speedRef.current + phase,
@@ -299,7 +328,48 @@ export default function FigureStarsTrio() {
           step={0.1}
           onChange={setCameraDistance}
         />
-        <Slider label="glow" value={glow} min={0.2} max={2.8} step={0.1} onChange={setGlow} />
+        <Slider label="glow" value={glow} min={0.2} max={4.2} step={0.1} onChange={setGlow} />
+        {STAR_COLORS.map((item) => (
+          <button
+            key={item.label}
+            type="button"
+            onClick={() => {
+              const hsl = hexToHsl(item.color);
+              setStarHue(hsl.h);
+              setStarSaturation(hsl.s);
+              setStarLightness(hsl.l);
+            }}
+            aria-label={`Star colour ${item.label}`}
+            title={item.label}
+            style={{
+              width: 24,
+              height: 24,
+              borderRadius: 6,
+              cursor: 'pointer',
+              background: item.color,
+              border: '1px solid rgba(255,255,255,0.65)',
+              boxShadow: `0 0 ${8 + glow * 5}px ${item.color}`,
+              padding: 0,
+            }}
+          />
+        ))}
+        <Slider label="hue" value={starHue} min={0} max={360} step={1} onChange={setStarHue} />
+        <Slider
+          label="sat"
+          value={starSaturation}
+          min={0}
+          max={100}
+          step={1}
+          onChange={setStarSaturation}
+        />
+        <Slider
+          label="light"
+          value={starLightness}
+          min={25}
+          max={95}
+          step={1}
+          onChange={setStarLightness}
+        />
         <Slider
           label="agitate"
           value={agitation}
@@ -309,6 +379,14 @@ export default function FigureStarsTrio() {
           onChange={setAgitation}
         />
         <Slider label="speed" value={speed} min={0.2} max={2.6} step={0.1} onChange={setSpeed} />
+        <button
+          type="button"
+          onClick={() => setAutoRotate((current) => !current)}
+          aria-pressed={!autoRotate}
+          style={pillStyle(!autoRotate)}
+        >
+          Static
+        </button>
       </footer>
     </div>
   );
@@ -395,6 +473,35 @@ function pillStyle(active: boolean): React.CSSProperties {
     cursor: 'pointer',
     padding: '5px 11px',
   };
+}
+
+function starHsl(hue: number, saturation: number, lightness: number) {
+  return `hsl(${hue}, ${saturation}%, ${lightness}%)`;
+}
+
+function starGlowColor(hue: number, saturation: number, lightness: number, glow: number) {
+  return new THREE.Color(
+    starHsl(hue, saturation, Math.min(98, lightness + glow * 3)),
+  ).multiplyScalar(1.1 + glow * 0.42);
+}
+
+function hexToHsl(hex: string) {
+  const r = parseInt(hex.slice(1, 3), 16) / 255;
+  const g = parseInt(hex.slice(3, 5), 16) / 255;
+  const b = parseInt(hex.slice(5, 7), 16) / 255;
+  const max = Math.max(r, g, b);
+  const min = Math.min(r, g, b);
+  const l = (max + min) / 2;
+  if (max === min) {
+    return { h: 0, s: 0, l: Math.round(l * 100) };
+  }
+  const d = max - min;
+  const s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+  let h = 0;
+  if (max === r) h = (g - b) / d + (g < b ? 6 : 0);
+  else if (max === g) h = (b - r) / d + 2;
+  else h = (r - g) / d + 4;
+  return { h: Math.round(h * 60), s: Math.round(s * 100), l: Math.round(l * 100) };
 }
 
 function Slider({
