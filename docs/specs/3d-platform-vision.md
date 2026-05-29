@@ -70,6 +70,12 @@ Current PR follow-up:
   wave, storm, shimmer, vortex, scales, nebula, agitation, and scale.
 - Star colour should be tunable with Geometry-Builder-like HSL controls: hue, saturation, and
   lightness. Palette swatches remain quick presets, but the user can fine-tune the actual star light.
+- Figure-star glow should behave closer to Geometry Field presets than to literal mesh lighting:
+  additive point materials, higher tone-mapped exposure, color multiplied by glow strength, and
+  visible square colour swatches next to HSL sliders. The user should be able to make the stars feel
+  like luminous geometry-builder light, not only small dim mesh particles.
+- A static mode should stop automatic figure/object rotation while preserving optional internal star
+  movement. Drag-to-rotate remains available; `Static` means the object does not spin by itself.
 - Movement patterns divide into two families:
   - **silhouette-deforming**: currents, spiral, wave, storm. These visibly bend the outer form.
   - **shape-preserving internal energy**: shimmer, vortex, scales, nebula. These keep the readable
@@ -81,6 +87,15 @@ Current PR follow-up:
   watched as a group. This is useful for projection tests and for seeing how the same movement
   grammar behaves across different silhouettes. Keep it one shared movement menu first; individual
   per-figure controls can come later if the group composition proves useful.
+- Geometry Field may include figure-inspired presets without mounting the heavy 3D figure UI. The
+  first example is `Buddha Boy Currents`: a calm seated/lotos silhouette made of star points with
+  current swirls and tide rings moving around it. This belongs in Geometry presets, not the 3D
+  figures menu, because it is a projection/visual journey surface rather than an object viewer.
+- Procedural BPM movement should ship before rigging-dependent character animation. `Buddha Boy
+  Currents` exposes beat movement controls first: BPM, amount, and movement modes (`Still`, `Breath`,
+  `Head Nod`, `Arm Rise`, `Pulse`). Head and arm zones move independently because the figure is built
+  from generated point zones. Golden God may expose beat bob/nod/pulse controls, but these are whole
+  object and aura movements until a rigged GLB with bones exists.
 
 Golden material should expose lighting levels. Low lighting is cinematic, but the user must be able
 to switch to `Studio`, `Bright`, or `Radiant` when the asset reads too dark on a phone or projector.
@@ -109,15 +124,17 @@ Four product uses:
    internal currents, and external audio/MIDI-reactive controls later.
    - Near-term export proof: Geometry Field can host short phone-recordable party trips. `Trip
      Number 2 / Desert Pulse` should start directly from the drop instead of a long intro: amber
-     desert pulse rings, strong beat energy, and a harmonic Deep Chill + violin sound direction.
-     The first shippable version is screen-recorded from fullscreen with microphone reactivity on;
-     true MP4 export can come after the visual journey feels good.
+     desert pulse rings, strong beat energy, drifting dust sparks, a low horizon shimmer, and a
+     harmonic Deep Chill + violin sound direction. The first shippable version is screen-recorded
+     from fullscreen with microphone reactivity on; true MP4 export can come after the visual
+     journey feels good.
    - `Trip Number 3 / Triangle Yantra Desert` extends the same Desert Pulse family into angular,
      line-based geometry: layered 3D triangles, yantra gates, spokes, hexagonal anchors, and moving
-     star points that travel through the structure. It should feel sharper and more ceremonial than
-     Trip 2 while staying projection-friendly: big readable geometry, not dense texture. Voice/music
-     energy may brighten the amber cut, push the depth, and accelerate the moving stars, but the
-     overall triangular structure should remain legible.
+     star points that travel through the structure. The developed version adds temple rays and inner
+     orbit dots so the shape has depth without becoming texture noise. It should feel sharper and
+     more ceremonial than Trip 2 while staying projection-friendly: big readable geometry, not dense
+     texture. Voice/music energy may brighten the amber cut, push the depth, and accelerate the
+     moving stars, but the overall triangular structure should remain legible.
 2. **Exploration / curiosity**: an object lab where the user can load a figure, orbit it, switch
    gold/hologram/stars, inspect close/far, and save visual presets. This can be more experimental.
 3. **App aesthetics**: restrained one-object moments inside Progress, Art, or menu pills. These must
@@ -267,6 +284,25 @@ You're already past this. The pipeline that works:
 Every step has free options. No paid software needed if you already own ZBrush/Blender.
 
 **Skill gap:** what you need is good UV unwrapping for texture work. Without UVs, you can use solid colors and emissive — which is exactly what we're doing now with Golden God and that already looks great. Adding textures is a "later, when motivated" addition, not a blocker.
+
+## Dance and character motion direction
+
+Mixamo is still useful for quick rigging and standard walk/idle actions, but its dance presets can
+feel too generic for Colourmap's projection language. The near-term direction should be:
+
+- **Procedural dance for star figures first:** bobbing, breathing, swaying, head-nod illusion, and
+  region-based upper/lower body offsets for OBJ-derived star clouds. This works without a rig and can
+  be driven by music energy.
+- **Custom authored loops second:** in Blender, animate a few simple high-quality loops for the
+  specific assets: slow arm rise, shoulder sway, head bow/lift, devotional pulse, and party bounce.
+  Export as GLB when a real rig exists.
+- **Mocap only when curated:** use BVH/FBX motion capture libraries as raw material, but retarget and
+  simplify them in Blender instead of shipping generic dance clips. Sources to evaluate include CMU
+  Graphics Lab mocap, Rokoko sample motions, Mixamo for non-dance basics, and custom phone/video
+  reference converted later through a motion-capture workflow.
+
+For today, the useful software step is not "more Mixamo presets"; it is a small procedural dance
+menu for star figures: `Still`, `Breath`, `Bob`, `Sway`, `Arm Lift Illusion`, and `Party Pulse`.
 
 ## Concrete use cases — what unique value this adds to Colourmap
 

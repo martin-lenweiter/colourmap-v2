@@ -196,6 +196,9 @@ wallpaper behind controls.
 Done when:
 
 - The active lane can place the Mission / Emotions / Progress tab row in front of its own image.
+- Image-backed modes use one shared full-bleed image layer behind the tab row and lane content. They
+  must not paint a second copy of the same image inside the lane body, because that creates a visible
+  seam/cut between header and content.
 - Emotions design 3 uses the round-window / terrace image language with warm tones and readable
   controls.
 - Mission design 2 and Progress design 2 use their own full-bleed symbolic images, reaching to the
@@ -215,9 +218,17 @@ Controls:
 
 - `x` controls horizontal background anchor in percent.
 - `y` controls vertical background anchor in percent.
-- `zoom` controls rendered background width in viewport-width units.
+- `zoom` controls rendered background width in viewport-width units. The range must allow heavy
+  desoom as well as close crops so the user can test both panoramic and tight placements.
+- The tuner can switch between built-in lane images and a locally imported custom image. Browser
+  uploads are stored locally as a data URL for that device; if a custom image becomes canonical, it
+  should later be promoted into `public/` as a compressed WebP/AVIF asset.
+- A reset control restores the current lane's app default coordinates.
 - Values persist locally under `colourmap:lane-background-placement`.
 - The tuner displays a compact copyable coordinate string, e.g. `mission x 50 y 44 zoom 116`.
+- In image-backed focus mode, the lane image should start directly under the global Focus / Notes
+  header line. Extra daily prompt strips above the tab row may be suppressed in this visual mode so
+  the image reads as the first surface below the header.
 
 Workflow:
 

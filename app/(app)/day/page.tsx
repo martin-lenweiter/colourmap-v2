@@ -36,14 +36,36 @@ const EMOTION_BACKDROPS = [...NIGHT_EMOTION_IMAGES, ...DAY_EMOTION_IMAGES];
 type EmotionVisualDesign = 1 | 2 | 3;
 type LaneKey = 'emotion' | 'mission' | 'progress';
 type LanePlacements = Record<LaneKey, BackgroundPlacement>;
+type LaneImages = Record<LaneKey, string | null>;
+
+const LANE_IMAGE_OPTIONS: Record<LaneKey, { label: string; src: string }[]> = {
+  emotion: [
+    { label: 'Round window', src: ROUND_WINDOW_EMOTION_IMAGE },
+    { label: 'Sunset 1', src: DAY_EMOTION_IMAGES[0] },
+    { label: 'Sunset 2', src: DAY_EMOTION_IMAGES[1] },
+    { label: 'Night 1', src: NIGHT_EMOTION_IMAGES[0] },
+    { label: 'Night 2', src: NIGHT_EMOTION_IMAGES[1] },
+  ],
+  mission: [
+    { label: 'Mission terrace', src: MISSION_AREA_IMAGE },
+    { label: 'Emotion sunset 1', src: DAY_EMOTION_IMAGES[0] },
+    { label: 'Emotion sunset 2', src: DAY_EMOTION_IMAGES[1] },
+  ],
+  progress: [
+    { label: 'Observatory', src: PROGRESS_AREA_IMAGE },
+    { label: 'Emotion sunset 1', src: DAY_EMOTION_IMAGES[0] },
+    { label: 'Emotion sunset 2', src: DAY_EMOTION_IMAGES[1] },
+  ],
+};
 
 const DEFAULT_LANE_PLACEMENTS: LanePlacements = {
-  emotion: { x: 50, y: 36, zoom: 118 },
-  mission: { x: 50, y: 48, zoom: 118 },
-  progress: { x: 50, y: 45, zoom: 118 },
+  emotion: { x: 44, y: -6, zoom: 36 },
+  mission: { x: 50, y: 42, zoom: 132 },
+  progress: { x: 50, y: 40, zoom: 132 },
 };
 
 const PLACEMENT_KEY = 'colourmap:lane-background-placement';
+const IMAGE_KEY = 'colourmap:lane-background-images';
 
 function getAreaFillEmotionImage(index: number) {
   return (
@@ -58,15 +80,6 @@ function getEmotionImagePosition(image: string, nightMode: boolean) {
 
 function getLaneImagePosition(tone: 'mission' | 'progress') {
   return tone === 'mission' ? 'center 48%' : 'center 45%';
-}
-
-function getBackgroundStyle(placement: BackgroundPlacement, fallbackPosition: string) {
-  return {
-    backgroundSize: `${placement.zoom}vw auto`,
-    backgroundPosition: `${placement.x}% ${placement.y}%`,
-    backgroundRepeat: 'no-repeat',
-    fallbackPosition,
-  };
 }
 
 function loadLanePlacements(): LanePlacements {
@@ -84,20 +97,50 @@ function loadLanePlacements(): LanePlacements {
   }
 }
 
+function loadLaneImages(): LaneImages {
+  try {
+    const raw = localStorage.getItem(IMAGE_KEY);
+    if (!raw) return { emotion: null, mission: null, progress: null };
+    const parsed = JSON.parse(raw) as Partial<LaneImages>;
+    return {
+      emotion: parsed.emotion ?? null,
+      mission: parsed.mission ?? null,
+      progress: parsed.progress ?? null,
+    };
+  } catch {
+    return { emotion: null, mission: null, progress: null };
+  }
+}
+
 function PlacementTuner({
   lane,
   placement,
   onChange,
+  image,
+  onImageChange,
 }: {
   lane: LaneKey;
   placement: BackgroundPlacement;
   onChange: (next: BackgroundPlacement) => void;
+  image?: string | null;
+  onImageChange: (src: string | null) => void;
 }) {
   const [open, setOpen] = useState(false);
+  const defaults = DEFAULT_LANE_PLACEMENTS[lane];
+  const currentImage = image ?? LANE_IMAGE_OPTIONS[lane][0]?.src ?? '';
   const code = `${lane} x ${placement.x} y ${placement.y} zoom ${placement.zoom}`;
 
   function update(key: keyof BackgroundPlacement, value: number) {
     onChange({ ...placement, [key]: value });
+  }
+
+  function loadLocalImage(file: File | undefined) {
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+      if (typeof reader.result === 'string') onImageChange(reader.result);
+    };
+    reader.readAsDataURL(file);
   }
 
   return (
@@ -148,13 +191,64 @@ function PlacementTuner({
           }}
         >
           <div style={{ display: 'grid', gap: 8 }}>
+            <label
+              style={{
+                display: 'grid',
+                gridTemplateColumns: '54px 1fr',
+                alignItems: 'center',
+                gap: 8,
+              }}
+            >
+              <span style={{ letterSpacing: '0.14em', textTransform: 'uppercase' }}>image</span>
+              <select
+                value={currentImage.startsWith('data:') ? '__custom__' : currentImage}
+                onChange={(event) => {
+                  if (event.target.value === '__custom__') return;
+                  onImageChange(event.target.value);
+                }}
+                style={{
+                  width: '100%',
+                  border: '1px solid rgba(240,216,152,0.22)',
+                  borderRadius: 8,
+                  background: 'rgba(255,248,226,0.08)',
+                  color: 'rgba(240,216,152,0.9)',
+                  padding: '6px 8px',
+                  fontFamily: 'var(--font-serif)',
+                }}
+              >
+                {currentImage.startsWith('data:') && (
+                  <option value="__custom__">Custom image</option>
+                )}
+                {LANE_IMAGE_OPTIONS[lane].map((option) => (
+                  <option key={option.src} value={option.src}>
+                    {option.label}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <label
+              style={{
+                display: 'grid',
+                gridTemplateColumns: '54px 1fr',
+                alignItems: 'center',
+                gap: 8,
+              }}
+            >
+              <span style={{ letterSpacing: '0.14em', textTransform: 'uppercase' }}>file</span>
+              <input
+                type="file"
+                accept="image/*"
+                onChange={(event) => loadLocalImage(event.target.files?.[0])}
+                style={{ width: '100%', color: 'rgba(240,216,152,0.82)' }}
+              />
+            </label>
             <PlacementSlider label="x" value={placement.x} min={0} max={100} onChange={update} />
-            <PlacementSlider label="y" value={placement.y} min={0} max={100} onChange={update} />
+            <PlacementSlider label="y" value={placement.y} min={-40} max={100} onChange={update} />
             <PlacementSlider
               label="zoom"
               value={placement.zoom}
-              min={100}
-              max={170}
+              min={35}
+              max={220}
               onChange={update}
             />
           </div>
@@ -187,6 +281,28 @@ function PlacementTuner({
               }}
             >
               Copy
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                onChange(defaults);
+                onImageChange(null);
+              }}
+              style={{
+                border: '1px solid rgba(240,216,152,0.2)',
+                borderRadius: 999,
+                background: 'rgba(255,248,226,0.05)',
+                color: 'rgba(240,216,152,0.78)',
+                fontFamily: 'var(--font-serif)',
+                fontSize: 10,
+                fontWeight: 800,
+                letterSpacing: '0.08em',
+                padding: '4px 10px',
+                textTransform: 'uppercase',
+                cursor: 'pointer',
+              }}
+            >
+              Reset
             </button>
           </div>
         </div>
@@ -238,6 +354,8 @@ function EmotionMoodSurface({
   design,
   onDesignChange,
   imageIndex,
+  imageOverride,
+  onImageChange,
   placement,
   onPlacementChange,
 }: {
@@ -245,6 +363,8 @@ function EmotionMoodSurface({
   design: EmotionVisualDesign;
   onDesignChange: (design: EmotionVisualDesign) => void;
   imageIndex: number;
+  imageOverride: string | null;
+  onImageChange: (src: string | null) => void;
   placement: BackgroundPlacement;
   onPlacementChange: (next: BackgroundPlacement) => void;
 }) {
@@ -253,9 +373,9 @@ function EmotionMoodSurface({
   const areaFill = design === 3;
   const images = nightMode ? NIGHT_EMOTION_IMAGES : DAY_EMOTION_IMAGES;
   const areaFillImages = areaFill ? AREA_FILL_EMOTION_IMAGES : images;
-  const currentImage = areaFillImages[imageIndex % areaFillImages.length] ?? DAY_EMOTION_IMAGES[0];
+  const currentImage =
+    imageOverride ?? areaFillImages[imageIndex % areaFillImages.length] ?? DAY_EMOTION_IMAGES[0];
   const currentPosition = getEmotionImagePosition(currentImage, nightMode);
-  const placedBackground = getBackgroundStyle(placement, currentPosition);
 
   useEffect(() => {
     function syncLightTheme() {
@@ -290,10 +410,7 @@ function EmotionMoodSurface({
       style={{
         position: 'relative',
         overflow: 'hidden',
-        width: areaFill ? '100vw' : undefined,
-        left: areaFill ? '50%' : undefined,
-        marginLeft: areaFill ? '-50vw' : undefined,
-        marginRight: areaFill ? '-50vw' : undefined,
+        width: areaFill ? '100%' : undefined,
         marginTop: areaFill ? -1 : undefined,
         borderRadius: areaFill || isLightTheme ? 0 : 18,
         padding: areaFill
@@ -315,34 +432,6 @@ function EmotionMoodSurface({
             : 'inset 0 1px 0 rgba(255,255,255,0.04), 0 18px 42px rgba(0,0,0,0.14)',
       }}
     >
-      {areaFill && (
-        <>
-          <div
-            aria-hidden="true"
-            style={{
-              position: 'absolute',
-              inset: 0,
-              backgroundImage: `url("${currentImage}")`,
-              backgroundSize: placedBackground.backgroundSize,
-              backgroundPosition: placedBackground.backgroundPosition,
-              backgroundRepeat: placedBackground.backgroundRepeat,
-              backgroundAttachment: 'fixed',
-              transform: 'scale(1.01)',
-              transition: 'background-image 900ms ease',
-            }}
-          />
-          <div
-            aria-hidden="true"
-            style={{
-              position: 'absolute',
-              inset: 0,
-              background: nightMode
-                ? 'linear-gradient(180deg, rgba(5,3,2,0.42), rgba(5,3,2,0.74))'
-                : 'linear-gradient(180deg, rgba(255,248,226,0.16), rgba(46,18,6,0.44) 46%, rgba(18,10,5,0.62))',
-            }}
-          />
-        </>
-      )}
       <div
         style={{
           position: 'relative',
@@ -353,7 +442,13 @@ function EmotionMoodSurface({
         }}
       >
         {areaFill && (
-          <PlacementTuner lane="emotion" placement={placement} onChange={onPlacementChange} />
+          <PlacementTuner
+            lane="emotion"
+            placement={placement}
+            onChange={onPlacementChange}
+            image={currentImage}
+            onImageChange={onImageChange}
+          />
         )}
         <fieldset
           aria-label="Emotion image design"
@@ -444,6 +539,7 @@ function AreaFillLaneSurface({
   image,
   label,
   tone,
+  onImageChange,
   placement,
   onPlacementChange,
 }: {
@@ -453,52 +549,21 @@ function AreaFillLaneSurface({
   image: string;
   label: string;
   tone: 'mission' | 'progress';
+  onImageChange: (src: string | null) => void;
   placement: BackgroundPlacement;
   onPlacementChange: (next: BackgroundPlacement) => void;
 }) {
   const areaFill = design === 2;
-  const placedBackground = getBackgroundStyle(placement, getLaneImagePosition(tone));
   return (
     <div
       style={{
         position: 'relative',
         overflow: 'hidden',
-        width: areaFill ? '100vw' : undefined,
-        left: areaFill ? '50%' : undefined,
-        marginLeft: areaFill ? '-50vw' : undefined,
-        marginRight: areaFill ? '-50vw' : undefined,
+        width: areaFill ? '100%' : undefined,
         padding: areaFill ? '12px max(12px, calc((100vw - 672px) / 2 + 16px)) 40px' : undefined,
         minHeight: areaFill ? 'calc(100svh - 168px)' : undefined,
       }}
     >
-      {areaFill && (
-        <>
-          <div
-            aria-hidden="true"
-            style={{
-              position: 'absolute',
-              inset: 0,
-              backgroundImage: `url("${image}")`,
-              backgroundSize: placedBackground.backgroundSize,
-              backgroundPosition: placedBackground.backgroundPosition,
-              backgroundRepeat: placedBackground.backgroundRepeat,
-              backgroundAttachment: 'fixed',
-              transform: 'scale(1.01)',
-            }}
-          />
-          <div
-            aria-hidden="true"
-            style={{
-              position: 'absolute',
-              inset: 0,
-              background:
-                tone === 'mission'
-                  ? 'linear-gradient(180deg, rgba(48,22,7,0.34), rgba(48,22,7,0.42) 44%, rgba(18,10,5,0.62))'
-                  : 'linear-gradient(180deg, rgba(17,28,22,0.36), rgba(17,28,22,0.46) 46%, rgba(8,12,10,0.68))',
-            }}
-          />
-        </>
-      )}
       <div
         style={{
           position: 'relative',
@@ -509,7 +574,13 @@ function AreaFillLaneSurface({
         }}
       >
         {areaFill && (
-          <PlacementTuner lane={tone} placement={placement} onChange={onPlacementChange} />
+          <PlacementTuner
+            lane={tone}
+            placement={placement}
+            onChange={onPlacementChange}
+            image={image}
+            onImageChange={onImageChange}
+          />
         )}
         <fieldset
           aria-label={`${label} image design`}
@@ -570,6 +641,11 @@ function DayContent() {
   const [progressVisualDesign, setProgressVisualDesign] = useState<LaneImageDesign>(1);
   const [emotionImageIndex, setEmotionImageIndex] = useState(0);
   const [lanePlacements, setLanePlacements] = useState<LanePlacements>(DEFAULT_LANE_PLACEMENTS);
+  const [laneImages, setLaneImages] = useState<LaneImages>({
+    emotion: null,
+    mission: null,
+    progress: null,
+  });
 
   // Silently restore server state into localStorage on mount.
   // Current session renders from whatever is already local (instant).
@@ -580,6 +656,7 @@ function DayContent() {
 
   useEffect(() => {
     setLanePlacements(loadLanePlacements());
+    setLaneImages(loadLaneImages());
   }, []);
 
   useEffect(() => {
@@ -637,6 +714,16 @@ function DayContent() {
     });
   }
 
+  function changeLaneImage(lane: LaneKey, src: string | null) {
+    setLaneImages((current) => {
+      const updated = { ...current, [lane]: src };
+      try {
+        localStorage.setItem(IMAGE_KEY, JSON.stringify(updated));
+      } catch {}
+      return updated;
+    });
+  }
+
   useEffect(() => {
     try {
       if (sessionStorage.getItem('colourmap:open-education') === '1') {
@@ -646,14 +733,17 @@ function DayContent() {
     } catch {}
   }, []);
 
+  const imageBackedFocus =
+    emotionVisualDesign === 3 || missionVisualDesign === 2 || progressVisualDesign === 2;
+
   return (
     <div
-      className="mx-auto w-full max-w-2xl space-y-4 px-2 sm:px-4 py-3"
-      style={{ paddingBottom: 36 }}
+      className="mx-auto w-full max-w-2xl space-y-4 px-2 sm:px-4"
+      style={{ paddingTop: imageBackedFocus ? 0 : 12, paddingBottom: 36 }}
     >
       <FirstRunOnboarding />
-      <TodaysField />
-      <CheckInPing />
+      {!imageBackedFocus && <TodaysField />}
+      {!imageBackedFocus && <CheckInPing />}
       {starsOpen && <IdeaConstellation onClose={() => setStarsOpen(false)} />}
       {learnOpen && <LearningHub onClose={() => setLearnOpen(false)} />}
 
@@ -662,9 +752,10 @@ function DayContent() {
           emotion: {
             enabled: emotionVisualDesign === 2 || emotionVisualDesign === 3,
             image:
-              emotionVisualDesign === 3
+              laneImages.emotion ??
+              (emotionVisualDesign === 3
                 ? getAreaFillEmotionImage(emotionImageIndex)
-                : EMOTION_BACKDROPS[emotionImageIndex],
+                : EMOTION_BACKDROPS[emotionImageIndex]),
             dayImage: emotionVisualDesign === 3 || emotionImageIndex >= 2,
             position:
               emotionVisualDesign === 3
@@ -675,7 +766,7 @@ function DayContent() {
           },
           mission: {
             enabled: missionVisualDesign === 2,
-            image: MISSION_AREA_IMAGE,
+            image: laneImages.mission ?? MISSION_AREA_IMAGE,
             dayImage: true,
             position: getLaneImagePosition('mission'),
             placement: lanePlacements.mission,
@@ -684,7 +775,7 @@ function DayContent() {
           },
           progress: {
             enabled: progressVisualDesign === 2,
-            image: PROGRESS_AREA_IMAGE,
+            image: laneImages.progress ?? PROGRESS_AREA_IMAGE,
             dayImage: true,
             position: getLaneImagePosition('progress'),
             placement: lanePlacements.progress,
@@ -697,6 +788,8 @@ function DayContent() {
             design={emotionVisualDesign}
             onDesignChange={changeEmotionVisualDesign}
             imageIndex={emotionImageIndex}
+            imageOverride={laneImages.emotion}
+            onImageChange={(src) => changeLaneImage('emotion', src)}
             placement={lanePlacements.emotion}
             onPlacementChange={(next) => changeLanePlacement('emotion', next)}
           >
@@ -782,9 +875,10 @@ function DayContent() {
           <AreaFillLaneSurface
             design={missionVisualDesign}
             onDesignChange={changeMissionVisualDesign}
-            image={MISSION_AREA_IMAGE}
+            image={laneImages.mission ?? MISSION_AREA_IMAGE}
             label="Mission"
             tone="mission"
+            onImageChange={(src) => changeLaneImage('mission', src)}
             placement={lanePlacements.mission}
             onPlacementChange={(next) => changeLanePlacement('mission', next)}
           >
@@ -828,9 +922,10 @@ function DayContent() {
           <AreaFillLaneSurface
             design={progressVisualDesign}
             onDesignChange={changeProgressVisualDesign}
-            image={PROGRESS_AREA_IMAGE}
+            image={laneImages.progress ?? PROGRESS_AREA_IMAGE}
             label="Progress"
             tone="progress"
+            onImageChange={(src) => changeLaneImage('progress', src)}
             placement={lanePlacements.progress}
             onPlacementChange={(next) => changeLanePlacement('progress', next)}
           >

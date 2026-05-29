@@ -7,6 +7,7 @@ import { MeshSurfaceSampler } from 'three/examples/jsm/math/MeshSurfaceSampler.j
 import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 
 type Material = 'gold' | 'hologram' | 'stars';
+type FigureDanceMove = 'still' | 'breath' | 'nod' | 'pulse';
 type StarPattern =
   | 'still'
   | 'current'
@@ -57,6 +58,12 @@ const STAR_PATTERNS: { key: StarPattern; label: string }[] = [
   { key: 'scales', label: 'Scales' },
   { key: 'nebula', label: 'Nebula' },
 ];
+const FIGURE_DANCE_MOVES: { key: FigureDanceMove; label: string }[] = [
+  { key: 'still', label: 'Still' },
+  { key: 'breath', label: 'Breath' },
+  { key: 'nod', label: 'Nod' },
+  { key: 'pulse', label: 'Pulse' },
+];
 const LIGHTING_MODES: {
   key: LightingMode;
   label: string;
@@ -96,6 +103,10 @@ export default function GoldenGod({
   const [starSaturation, setStarSaturation] = useState(() => hexToHsl(starColor).s);
   const [starLightness, setStarLightness] = useState(() => hexToHsl(starColor).l);
   const [lightingMode, setLightingMode] = useState<LightingMode>('studio');
+  const [autoRotate, setAutoRotate] = useState(true);
+  const [danceMove, setDanceMove] = useState<FigureDanceMove>('nod');
+  const [danceBpm, setDanceBpm] = useState(92);
+  const [danceAmount, setDanceAmount] = useState(4);
 
   // Refs the animation loop reads. Material changes only swap which mesh is visible —
   // they don't tear the scene down.
@@ -113,6 +124,10 @@ export default function GoldenGod({
   const starSaturationRef = useRef(100);
   const starLightnessRef = useRef(82);
   const lightingModeRef = useRef<LightingMode>('studio');
+  const autoRotateRef = useRef(true);
+  const danceMoveRef = useRef<FigureDanceMove>('nod');
+  const danceBpmRef = useRef(92);
+  const danceAmountRef = useRef(4);
   cameraDistanceRef.current = cameraDistance;
   starGlowRef.current = starGlow;
   starPatternRef.current = starPattern;
@@ -122,6 +137,10 @@ export default function GoldenGod({
   starSaturationRef.current = starSaturation;
   starLightnessRef.current = starLightness;
   lightingModeRef.current = lightingMode;
+  autoRotateRef.current = autoRotate;
+  danceMoveRef.current = danceMove;
+  danceBpmRef.current = danceBpm;
+  danceAmountRef.current = danceAmount;
 
   const setActiveMaterial = useCallback((m: Material) => {
     setMaterial(m);
@@ -328,11 +347,19 @@ export default function GoldenGod({
       const t = clock.getElapsedTime();
       currentRotY += (targetRotY - currentRotY) * 0.15;
       currentRotX += (targetRotX - currentRotX) * 0.15;
+      const move = danceMoveRef.current;
+      const moveAmount = move === 'still' ? 0 : danceAmountRef.current / 10;
+      const beat = beatPulse(t, danceBpmRef.current);
+      const groove = Math.sin(beatPhase(t, danceBpmRef.current) * Math.PI * 2);
+      const nod = move === 'nod' ? groove * 0.12 * moveAmount : 0;
+      const beatBob = move === 'nod' || move === 'pulse' ? beat * 0.035 * moveAmount : 0;
+      const beatScale = move === 'breath' || move === 'pulse' ? beat * 0.05 * moveAmount : 0;
       // When idle, slow auto-rotate. When dragging, follow finger.
-      root.rotation.y = currentRotY + (isDragging ? 0 : t * 0.12);
-      root.rotation.x = currentRotX;
+      root.rotation.y = currentRotY + (isDragging || !autoRotateRef.current ? 0 : t * 0.12);
+      root.rotation.x = currentRotX + nod;
+      root.position.y = beatBob;
       // Subtle breathing
-      const breath = 1 + Math.sin(t * 0.8) * 0.012;
+      const breath = 1 + Math.sin(t * 0.8) * 0.012 + beatScale;
       root.scale.setScalar(breath);
       const lighting = getLighting(lightingModeRef.current);
       renderer.toneMappingExposure += (lighting.exposure - renderer.toneMappingExposure) * 0.08;
@@ -361,13 +388,19 @@ export default function GoldenGod({
       // Stars drift slightly outward and back
       if (starPoints) {
         camera.position.z += (cameraDistanceRef.current - camera.position.z) * 0.08;
-        starPoints.rotation.y = t * 0.05;
+        starPoints.rotation.y = autoRotateRef.current ? t * 0.05 : 0;
         const starMat = starPoints.material as THREE.PointsMaterial;
-        starMat.color = new THREE.Color(
-          starHsl(starHueRef.current, starSaturationRef.current, starLightnessRef.current),
+        starMat.color = starGlowColor(
+          starHueRef.current,
+          starSaturationRef.current,
+          starLightnessRef.current,
+          starGlowRef.current,
         );
-        starMat.size = 0.004 + starGlowRef.current * 0.0035;
-        starMat.opacity = Math.min(0.98, 0.44 + starGlowRef.current * 0.22);
+        starMat.size = 0.005 + starGlowRef.current * 0.0048 + beat * moveAmount * 0.0035;
+        starMat.opacity = Math.min(
+          0.98,
+          0.52 + starGlowRef.current * 0.15 + beat * moveAmount * 0.1,
+        );
         animateStarPattern(
           starPoints,
           t,
@@ -562,12 +595,48 @@ export default function GoldenGod({
               label="glow"
               value={starGlow}
               min={0.2}
-              max={2.4}
+              max={4.2}
               step={0.1}
               onChange={setStarGlow}
             />
           </div>
           <div style={{ display: 'flex', gap: 14, flexWrap: 'wrap', justifyContent: 'center' }}>
+            {HOLOGRAM_PALETTES.map((p) => (
+              <button
+                key={p.key}
+                type="button"
+                onClick={() => {
+                  const hsl = hexToHsl(p.main);
+                  setStarHue(hsl.h);
+                  setStarSaturation(hsl.s);
+                  setStarLightness(hsl.l);
+                }}
+                aria-label={`Star colour ${p.label}`}
+                title={p.label}
+                style={{
+                  width: 24,
+                  height: 24,
+                  borderRadius: 6,
+                  cursor: 'pointer',
+                  background: p.main,
+                  border: '1px solid rgba(255,255,255,0.65)',
+                  boxShadow: `0 0 ${8 + starGlow * 5}px ${p.main}`,
+                  padding: 0,
+                }}
+              />
+            ))}
+            <span
+              aria-hidden="true"
+              title="Current star light"
+              style={{
+                width: 24,
+                height: 24,
+                borderRadius: 6,
+                background: starHsl(starHue, starSaturation, starLightness),
+                border: '1px solid rgba(255,255,255,0.76)',
+                boxShadow: `0 0 ${8 + starGlow * 6}px ${starHsl(starHue, starSaturation, starLightness)}`,
+              }}
+            />
             <SceneSlider
               label="hue"
               value={starHue}
@@ -609,6 +678,14 @@ export default function GoldenGod({
                 {pattern.label}
               </button>
             ))}
+            <button
+              type="button"
+              onClick={() => setAutoRotate((current) => !current)}
+              aria-pressed={!autoRotate}
+              style={smallPillStyle(!autoRotate)}
+            >
+              Static
+            </button>
           </section>
           <div style={{ display: 'flex', gap: 14, flexWrap: 'wrap', justifyContent: 'center' }}>
             <SceneSlider
@@ -630,6 +707,54 @@ export default function GoldenGod({
           </div>
         </div>
       )}
+      <section
+        aria-label="BPM figure movement"
+        style={{
+          position: 'absolute',
+          top: 14,
+          left: 0,
+          right: 0,
+          zIndex: 2,
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          gap: 10,
+          flexWrap: 'wrap',
+          padding: '0 18px',
+          fontFamily: SERIF,
+          color: 'rgba(240,216,152,0.78)',
+          fontSize: 11,
+        }}
+      >
+        <span style={{ letterSpacing: '0.16em', textTransform: 'uppercase' }}>BPM move</span>
+        {FIGURE_DANCE_MOVES.map((move) => (
+          <button
+            key={move.key}
+            type="button"
+            onClick={() => setDanceMove(move.key)}
+            aria-pressed={danceMove === move.key}
+            style={smallPillStyle(danceMove === move.key)}
+          >
+            {move.label}
+          </button>
+        ))}
+        <SceneSlider
+          label="bpm"
+          value={danceBpm}
+          min={50}
+          max={180}
+          step={1}
+          onChange={setDanceBpm}
+        />
+        <SceneSlider
+          label="amount"
+          value={danceAmount}
+          min={0}
+          max={10}
+          step={0.5}
+          onChange={setDanceAmount}
+        />
+      </section>
       <div
         style={{
           position: 'absolute',
@@ -741,6 +866,20 @@ function animateStarPattern(
 
 function starHsl(hue: number, saturation: number, lightness: number) {
   return `hsl(${hue}, ${saturation}%, ${lightness}%)`;
+}
+
+function starGlowColor(hue: number, saturation: number, lightness: number, glow: number) {
+  return new THREE.Color(
+    starHsl(hue, saturation, Math.min(98, lightness + glow * 3)),
+  ).multiplyScalar(1.1 + glow * 0.42);
+}
+
+function beatPhase(t: number, bpm: number) {
+  return ((t * Math.max(1, bpm)) / 60) % 1;
+}
+
+function beatPulse(t: number, bpm: number) {
+  return (0.5 - Math.cos(beatPhase(t, bpm) * Math.PI * 2) * 0.5) ** 2.8;
 }
 
 function hexToHsl(hex: string) {

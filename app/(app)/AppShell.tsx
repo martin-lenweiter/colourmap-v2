@@ -41,6 +41,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
   const { mode, navPosition } = useViewMode();
   const pathname = usePathname();
   const onMusic = pathname === '/music';
+  const onDay = pathname === '/day';
   const onSocial = SOCIAL_ROUTES.some((r) => r.href === pathname);
   const immersivePage =
     pathname === '/progress-road' ||
@@ -55,9 +56,11 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
 
   const containerClass = immersivePage
     ? 'w-full p-0'
-    : mode === 'phone'
-      ? 'mx-auto w-full max-w-sm px-4 py-6'
-      : 'mx-auto w-full max-w-7xl px-6 py-10';
+    : onDay
+      ? 'mx-auto w-full max-w-7xl px-0 py-0'
+      : mode === 'phone'
+        ? 'mx-auto w-full max-w-sm px-4 py-6'
+        : 'mx-auto w-full max-w-7xl px-6 py-10';
 
   return (
     <ErrorBoundary>
