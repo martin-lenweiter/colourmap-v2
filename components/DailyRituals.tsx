@@ -1075,11 +1075,16 @@ function TimeSection({
 }
 
 /* ── Main component ──────────────────────────────────────────── */
-export default function DailyRituals() {
+export default function DailyRituals({
+  surfaceMode = 'sober',
+}: {
+  surfaceMode?: 'sober' | 'image';
+}) {
+  const imageMode = surfaceMode === 'image';
   const [rituals, setRituals] = useState<Ritual[]>(DEFAULT_RITUALS);
   const [sessions, setSessions] = useState<string[]>(['morning', 'evening']);
   const [doneIds, setDoneIds] = useState<Set<string>>(new Set());
-  const [open, setOpen] = useState(false);
+  const [open, setOpen] = useState(imageMode);
   const [quoteIdx, setQuoteIdx] = useState(0);
   const [dragId, setDragId] = useState<string | null>(null);
   const [dropTarget, setDropTarget] = useState<DropTarget>(null);
@@ -1260,66 +1265,72 @@ export default function DailyRituals() {
 
       <div
         style={{
-          border: `1px solid ${peaked ? 'rgba(200,168,88,0.6)' : 'var(--panel-border, rgba(196,160,96,0.18))'}`,
-          borderRadius: 14,
-          background: 'var(--collapsible-shell-bg, var(--palette-l3-bg, rgba(30,16,8,0.55)))',
+          border: imageMode
+            ? '1px solid rgba(240,216,152,0.18)'
+            : `1px solid ${peaked ? 'rgba(200,168,88,0.6)' : 'var(--panel-border, rgba(196,160,96,0.18))'}`,
+          borderRadius: imageMode ? 0 : 14,
+          background: imageMode
+            ? 'rgba(255,244,204,0.06)'
+            : 'var(--collapsible-shell-bg, var(--palette-l3-bg, rgba(30,16,8,0.55)))',
           overflow: 'hidden',
           transition: 'border-color 0.4s',
         }}
       >
         {/* Header */}
-        <div
-          onClick={() => setOpen((v) => !v)}
-          style={{
-            padding: '12px 16px',
-            backgroundColor: peaked
-              ? 'var(--palette-panel-bg-tint, rgba(196,160,96,0.2))'
-              : 'transparent',
-            backgroundImage:
-              'linear-gradient(90deg, color-mix(in srgb, var(--palette-l3-bg, rgba(30,16,8,0.55)) 92%, transparent), color-mix(in srgb, var(--palette-l3-bg, rgba(30,16,8,0.55)) 56%, transparent)), url("/emotions/pills/rituals.webp")',
-            backgroundSize: 'cover',
-            backgroundPosition: 'center 48%',
-            borderBottom: open ? '1px solid rgba(196,160,96,0.18)' : 'none',
-            cursor: 'pointer',
-            display: 'flex',
-            alignItems: 'center',
-            transition: 'background 0.3s',
-          }}
-        >
-          <span style={{ flex: 1 }} />
-          <div style={{ textAlign: 'center' }}>
-            <div
-              style={{
-                fontFamily: 'var(--font-serif)',
-                fontSize: 15,
-                fontWeight: 900,
-                textTransform: 'uppercase',
-                letterSpacing: '0.18em',
-                color: peaked
-                  ? 'var(--palette-panel-text, #F0D090)'
-                  : 'var(--palette-panel-text, #C8A858)',
-                transition: 'color 0.3s',
-              }}
-            >
-              Daily Rituals
+        {!imageMode && (
+          <div
+            onClick={() => setOpen((v) => !v)}
+            style={{
+              padding: '12px 16px',
+              backgroundColor: peaked
+                ? 'var(--palette-panel-bg-tint, rgba(196,160,96,0.2))'
+                : 'transparent',
+              backgroundImage:
+                'linear-gradient(90deg, color-mix(in srgb, var(--palette-l3-bg, rgba(30,16,8,0.55)) 92%, transparent), color-mix(in srgb, var(--palette-l3-bg, rgba(30,16,8,0.55)) 56%, transparent)), url("/emotions/pills/rituals.webp")',
+              backgroundSize: 'cover',
+              backgroundPosition: 'center 48%',
+              borderBottom: open ? '1px solid rgba(196,160,96,0.18)' : 'none',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              transition: 'background 0.3s',
+            }}
+          >
+            <span style={{ flex: 1 }} />
+            <div style={{ textAlign: 'center' }}>
+              <div
+                style={{
+                  fontFamily: 'var(--font-serif)',
+                  fontSize: 15,
+                  fontWeight: 900,
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.18em',
+                  color: peaked
+                    ? 'var(--palette-panel-text, #F0D090)'
+                    : 'var(--palette-panel-text, #C8A858)',
+                  transition: 'color 0.3s',
+                }}
+              >
+                Daily Rituals
+              </div>
             </div>
-          </div>
-          <span style={{ flex: 1, display: 'flex', justifyContent: 'flex-end' }}>
-            <span
-              style={{
-                color: OCHRE_TEXT,
-                opacity: 1,
-                fontSize: 11,
-                transform: `rotate(${open ? 180 : 0}deg)`,
-                transition: 'transform 0.2s',
-              }}
-            >
-              ▾
+            <span style={{ flex: 1, display: 'flex', justifyContent: 'flex-end' }}>
+              <span
+                style={{
+                  color: OCHRE_TEXT,
+                  opacity: 1,
+                  fontSize: 11,
+                  transform: `rotate(${open ? 180 : 0}deg)`,
+                  transition: 'transform 0.2s',
+                }}
+              >
+                ▾
+              </span>
             </span>
-          </span>
-        </div>
+          </div>
+        )}
 
-        {open && (
+        {(open || imageMode) && (
           <div style={{ background: 'var(--collapsible-open-bg, transparent)' }}>
             {/* Alignment bar */}
             <div

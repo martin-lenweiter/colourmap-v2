@@ -193,6 +193,20 @@ Mission, Emotions, and Progress may each expose an image-backed design option, b
 minimal and readable. The image option must feel like one calm surface behind the lane, not a busy
 wallpaper behind controls.
 
+The Focus lane has two top-level design modes:
+
+- **Sober**: the stable daily-use mode. No lane background image is rendered, the `/day` page keeps
+  the compact centered notebook layout, and Areas / Tasks / Daily Rituals remain in their existing
+  collapsible pill form.
+- **Image**: the exploratory ritual mode. The active lane image starts directly under the global
+  Focus / Notes header, and the lane content below the image becomes connected full-width bands
+  rather than small isolated pills. Mission bands are Areas, Tasks, and Daily Rituals. Emotions uses
+  equivalent full-width bands for Inner Work and Attitude / Emotions / Body / Behaviour.
+
+The Sober / Image choice lives in the design pill and persists locally under
+`colourmap:focus-design-mode`. Sober protects the pre-image app experience while Image mode can keep
+evolving as the visual language gets tuned.
+
 Done when:
 
 - The active lane can place the Mission / Emotions / Progress tab row in front of its own image.
@@ -217,9 +231,14 @@ visually adjust each background without editing code.
 Controls:
 
 - `x` controls horizontal background anchor in percent.
-- `y` controls vertical background anchor in percent.
+- `y` controls vertical background anchor in percent. Lane image defaults should use `y 0` so
+  image-backed modes visually connect to the global Focus / Notes header line unless a specific
+  asset needs an intentional exception.
 - `zoom` controls rendered background width in viewport-width units. The range must allow heavy
   desoom as well as close crops so the user can test both panoramic and tight placements.
+- Phone may use its own curated placement defaults when the same crop cannot serve desktop and
+  mobile. For example, the Emotions round-window phone crop can be more zoomed and right-anchored
+  than desktop while still keeping `y 0`.
 - The tuner can switch between built-in lane images and a locally imported custom image. Browser
   uploads are stored locally as a data URL for that device; if a custom image becomes canonical, it
   should later be promoted into `public/` as a compressed WebP/AVIF asset.

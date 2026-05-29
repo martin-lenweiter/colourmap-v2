@@ -1047,9 +1047,14 @@ function SectionLabel({ label }: { label: string }) {
 }
 
 /* ── Main panel ──────────────────────────────────────────────── */
-export default function ColourMapPanel() {
+export default function ColourMapPanel({
+  surfaceMode = 'sober',
+}: {
+  surfaceMode?: 'sober' | 'image';
+}) {
   const [data, setData] = useState<CMapData>(defaultData());
-  const [open, setOpen] = useState(false);
+  const imageMode = surfaceMode === 'image';
+  const [open, setOpen] = useState(imageMode);
   const [view, setView] = useState<'list' | 'dots'>('list');
   const [selectedDot, setSelectedDot] = useState<string | null>(null);
 
@@ -1130,116 +1135,124 @@ export default function ColourMapPanel() {
   return (
     <div
       style={{
-        border: `1px solid var(--panel-border, rgba(196,160,96,0.18))`,
-        borderRadius: 14,
-        background: 'var(--collapsible-shell-bg, var(--palette-l3-bg, rgba(10,6,3,0.6)))',
+        border: imageMode
+          ? '1px solid rgba(240,216,152,0.18)'
+          : `1px solid var(--panel-border, rgba(196,160,96,0.18))`,
+        borderRadius: imageMode ? 0 : 14,
+        background: imageMode
+          ? 'rgba(255,244,204,0.06)'
+          : 'var(--collapsible-shell-bg, var(--palette-l3-bg, rgba(10,6,3,0.6)))',
         overflow: 'hidden',
       }}
     >
       {/* Header */}
-      <div
-        onClick={() => setOpen((v) => !v)}
-        style={{
-          padding: '14px 18px',
-          backgroundColor: 'var(--palette-l3-bg, rgba(30,16,8,0.55))',
-          backgroundImage:
-            'linear-gradient(90deg, color-mix(in srgb, var(--palette-l3-bg, rgba(30,16,8,0.55)) 94%, transparent), color-mix(in srgb, var(--palette-l3-bg, rgba(30,16,8,0.55)) 58%, transparent)), url("/emotions/pills/areas.webp")',
-          backgroundSize: 'cover',
-          backgroundPosition: 'center 48%',
-          borderBottom: open ? `1px solid rgba(196,160,96,0.15)` : 'none',
-          cursor: 'pointer',
-          display: 'flex',
-          alignItems: 'center',
-        }}
-      >
-        {/* view toggle — left side as dots */}
-        <span style={{ flex: 1, display: 'flex', alignItems: 'center', gap: 6, paddingLeft: 2 }}>
-          {open &&
-            (
-              [
-                ['list', 'V'],
-                ['dots', 'H'],
-              ] as const
-            ).map(([v, label]) => (
-              <button
-                key={v}
-                type="button"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setView(v);
-                }}
-                style={{
-                  minHeight: 32,
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  background:
-                    view === v ? 'color-mix(in srgb, var(--card) 78%, transparent)' : 'transparent',
-                  border:
-                    view === v
-                      ? '1px solid color-mix(in srgb, var(--foreground) 22%, transparent)'
-                      : '1px solid transparent',
-                  borderRadius: 999,
-                  cursor: 'pointer',
-                  padding: '6px 10px',
-                  minWidth: 34,
-                  color: view === v ? 'var(--foreground)' : 'var(--muted-foreground)',
-                  fontFamily: 'var(--font-serif)',
-                  fontSize: 12,
-                  fontWeight: 900,
-                  lineHeight: 1,
-                }}
-              >
-                {label}
-              </button>
-            ))}
-        </span>
-        <div style={{ textAlign: 'center' }}>
-          <div
-            style={{
-              fontFamily: 'var(--font-serif)',
-              fontSize: 15,
-              fontWeight: 900,
-              textTransform: 'uppercase',
-              letterSpacing: '0.18em',
-              color: 'var(--palette-panel-text, rgba(196,160,96,0.82))',
-            }}
-          >
-            Areas
-          </div>
-          {totalChannelSteps > 0 && (
+      {!imageMode && (
+        <div
+          onClick={() => setOpen((v) => !v)}
+          style={{
+            padding: '14px 18px',
+            backgroundColor: 'var(--palette-l3-bg, rgba(30,16,8,0.55))',
+            backgroundImage:
+              'linear-gradient(90deg, color-mix(in srgb, var(--palette-l3-bg, rgba(30,16,8,0.55)) 94%, transparent), color-mix(in srgb, var(--palette-l3-bg, rgba(30,16,8,0.55)) 58%, transparent)), url("/emotions/pills/areas.webp")',
+            backgroundSize: 'cover',
+            backgroundPosition: 'center 48%',
+            borderBottom: open ? `1px solid rgba(196,160,96,0.15)` : 'none',
+            cursor: 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+          }}
+        >
+          {/* view toggle — left side as dots */}
+          <span style={{ flex: 1, display: 'flex', alignItems: 'center', gap: 6, paddingLeft: 2 }}>
+            {open &&
+              (
+                [
+                  ['list', 'V'],
+                  ['dots', 'H'],
+                ] as const
+              ).map(([v, label]) => (
+                <button
+                  key={v}
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setView(v);
+                  }}
+                  style={{
+                    minHeight: 32,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    background:
+                      view === v
+                        ? 'color-mix(in srgb, var(--card) 78%, transparent)'
+                        : 'transparent',
+                    border:
+                      view === v
+                        ? '1px solid color-mix(in srgb, var(--foreground) 22%, transparent)'
+                        : '1px solid transparent',
+                    borderRadius: 999,
+                    cursor: 'pointer',
+                    padding: '6px 10px',
+                    minWidth: 34,
+                    color: view === v ? 'var(--foreground)' : 'var(--muted-foreground)',
+                    fontFamily: 'var(--font-serif)',
+                    fontSize: 12,
+                    fontWeight: 900,
+                    lineHeight: 1,
+                  }}
+                >
+                  {label}
+                </button>
+              ))}
+          </span>
+          <div style={{ textAlign: 'center' }}>
             <div
               style={{
                 fontFamily: 'var(--font-serif)',
-                fontSize: 10,
-                color: LABEL,
-                opacity: 0.45,
-                marginTop: 1,
-                letterSpacing: '0.06em',
+                fontSize: 15,
+                fontWeight: 900,
+                textTransform: 'uppercase',
+                letterSpacing: '0.18em',
+                color: 'var(--palette-panel-text, rgba(196,160,96,0.82))',
               }}
             >
-              {doneChannelSteps}/{totalChannelSteps} steps
+              Areas
             </div>
-          )}
-        </div>
-        <span
-          style={{ flex: 1, display: 'flex', justifyContent: 'flex-end', alignItems: 'center' }}
-        >
+            {totalChannelSteps > 0 && (
+              <div
+                style={{
+                  fontFamily: 'var(--font-serif)',
+                  fontSize: 10,
+                  color: LABEL,
+                  opacity: 0.45,
+                  marginTop: 1,
+                  letterSpacing: '0.06em',
+                }}
+              >
+                {doneChannelSteps}/{totalChannelSteps} steps
+              </div>
+            )}
+          </div>
           <span
-            style={{
-              color: OCHRE,
-              opacity: 0.4,
-              fontSize: 11,
-              transform: open ? 'rotate(180deg)' : 'rotate(0deg)',
-              transition: 'transform 0.2s',
-            }}
+            style={{ flex: 1, display: 'flex', justifyContent: 'flex-end', alignItems: 'center' }}
           >
-            ▾
+            <span
+              style={{
+                color: OCHRE,
+                opacity: 0.4,
+                fontSize: 11,
+                transform: open ? 'rotate(180deg)' : 'rotate(0deg)',
+                transition: 'transform 0.2s',
+              }}
+            >
+              ▾
+            </span>
           </span>
-        </span>
-      </div>
+        </div>
+      )}
 
-      {open && view === 'list' && (
+      {(open || imageMode) && view === 'list' && (
         <div
           style={{
             padding: '14px 14px 10px',
@@ -1313,7 +1326,7 @@ export default function ColourMapPanel() {
         </div>
       )}
 
-      {open && view === 'dots' && (
+      {(open || imageMode) && view === 'dots' && (
         <div
           style={{
             padding: '18px 14px 12px',

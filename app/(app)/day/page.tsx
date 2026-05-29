@@ -34,6 +34,7 @@ const NIGHT_EMOTION_IMAGES = [
 const EMOTION_BACKDROPS = [...NIGHT_EMOTION_IMAGES, ...DAY_EMOTION_IMAGES];
 
 type EmotionVisualDesign = 1 | 2 | 3;
+type FocusDesignMode = 'sober' | 'image';
 type LaneKey = 'emotion' | 'mission' | 'progress';
 type LanePlacements = Record<LaneKey, BackgroundPlacement>;
 type LaneImages = Record<LaneKey, string | null>;
@@ -59,19 +60,18 @@ const LANE_IMAGE_OPTIONS: Record<LaneKey, { label: string; src: string }[]> = {
 };
 
 const DEFAULT_LANE_PLACEMENTS: LanePlacements = {
-  emotion: { x: 44, y: -6, zoom: 36 },
-  mission: { x: 50, y: 42, zoom: 132 },
-  progress: { x: 50, y: 40, zoom: 132 },
+  emotion: { x: 44, y: 0, zoom: 36 },
+  mission: { x: 100, y: 0, zoom: 119 },
+  progress: { x: 50, y: 0, zoom: 132 },
+};
+
+const PHONE_LANE_PLACEMENTS: Partial<LanePlacements> = {
+  emotion: { x: 80, y: 0, zoom: 181 },
 };
 
 const PLACEMENT_KEY = 'colourmap:lane-background-placement';
 const IMAGE_KEY = 'colourmap:lane-background-images';
-
-function getAreaFillEmotionImage(index: number) {
-  return (
-    AREA_FILL_EMOTION_IMAGES[index % AREA_FILL_EMOTION_IMAGES.length] ?? ROUND_WINDOW_EMOTION_IMAGE
-  );
-}
+const FOCUS_DESIGN_MODE_KEY = 'colourmap:focus-design-mode';
 
 function getEmotionImagePosition(image: string, nightMode: boolean) {
   if (image === ROUND_WINDOW_EMOTION_IMAGE) return 'center 36%';
@@ -110,6 +110,128 @@ function loadLaneImages(): LaneImages {
   } catch {
     return { emotion: null, mission: null, progress: null };
   }
+}
+
+function loadFocusDesignMode(): FocusDesignMode {
+  try {
+    return localStorage.getItem(FOCUS_DESIGN_MODE_KEY) === 'image' ? 'image' : 'sober';
+  } catch {
+    return 'sober';
+  }
+}
+
+function FocusDesignPill({
+  value,
+  onChange,
+  floating = false,
+}: {
+  value: FocusDesignMode;
+  onChange: (next: FocusDesignMode) => void;
+  floating?: boolean;
+}) {
+  return (
+    <fieldset
+      aria-label="Focus design mode"
+      style={{
+        display: 'inline-flex',
+        border: '1px solid var(--panel-border, rgba(196,160,96,0.22))',
+        borderRadius: 999,
+        background: floating
+          ? 'rgba(18,10,5,0.42)'
+          : 'color-mix(in srgb, var(--card) 74%, transparent)',
+        padding: 2,
+        gap: 2,
+        margin: 0,
+        backdropFilter: floating ? 'blur(8px)' : undefined,
+      }}
+    >
+      {(
+        [
+          ['sober', 'Sober'],
+          ['image', 'Image'],
+        ] as const
+      ).map(([mode, label]) => {
+        const active = value === mode;
+        return (
+          <button
+            key={mode}
+            type="button"
+            onClick={() => onChange(mode)}
+            aria-pressed={active}
+            style={{
+              border: 0,
+              borderRadius: 999,
+              minHeight: 28,
+              padding: '4px 12px',
+              background: active ? 'rgba(196,160,96,0.24)' : 'transparent',
+              color: floating
+                ? 'rgba(240,216,152,0.92)'
+                : active
+                  ? 'var(--palette-panel-text, #5C3018)'
+                  : 'var(--palette-panel-muted, rgba(122,84,56,0.72))',
+              fontFamily: 'var(--font-serif)',
+              fontSize: 12,
+              fontWeight: 900,
+              letterSpacing: '0.08em',
+              textTransform: 'uppercase',
+              cursor: 'pointer',
+            }}
+          >
+            {label}
+          </button>
+        );
+      })}
+    </fieldset>
+  );
+}
+
+function RitualBand({
+  title,
+  children,
+  tone = 'mission',
+}: {
+  title: string;
+  children: React.ReactNode;
+  tone?: 'emotion' | 'mission' | 'progress';
+}) {
+  const accent =
+    tone === 'emotion' ? '214,128,90' : tone === 'progress' ? '128,170,132' : '196,160,96';
+  return (
+    <section
+      style={{
+        width: '100%',
+        borderTop: `1px solid rgba(${accent},0.34)`,
+        borderBottom: `1px solid rgba(${accent},0.18)`,
+        background: `linear-gradient(180deg, rgba(18,10,5,0.5), rgba(18,10,5,0.34)), rgba(${accent},0.08)`,
+        color: 'rgba(255,241,204,0.92)',
+        backdropFilter: 'blur(10px)',
+      }}
+    >
+      <div
+        style={{
+          maxWidth: 672,
+          margin: '0 auto',
+          padding: '14px 12px 18px',
+        }}
+      >
+        <div
+          style={{
+            textAlign: 'center',
+            fontFamily: 'var(--font-serif)',
+            fontSize: 13,
+            fontWeight: 900,
+            letterSpacing: '0.18em',
+            textTransform: 'uppercase',
+            color: 'rgba(255,220,150,0.86)',
+            paddingBottom: 12,
+          }}
+        >
+          {title}
+        </div>
+        {children}
+      </div>
+    </section>
+  );
 }
 
 function PlacementTuner({
@@ -352,7 +474,8 @@ function PlacementSlider({
 function EmotionMoodSurface({
   children,
   design,
-  onDesignChange,
+  focusMode,
+  onFocusModeChange,
   imageIndex,
   imageOverride,
   onImageChange,
@@ -361,7 +484,8 @@ function EmotionMoodSurface({
 }: {
   children: React.ReactNode;
   design: EmotionVisualDesign;
-  onDesignChange: (design: EmotionVisualDesign) => void;
+  focusMode: FocusDesignMode;
+  onFocusModeChange: (next: FocusDesignMode) => void;
   imageIndex: number;
   imageOverride: string | null;
   onImageChange: (src: string | null) => void;
@@ -370,11 +494,13 @@ function EmotionMoodSurface({
 }) {
   const [isLightTheme, setIsLightTheme] = useState(true);
   const [nightMode, setNightMode] = useState(false);
-  const areaFill = design === 3;
+  const areaFill = focusMode === 'image';
   const images = nightMode ? NIGHT_EMOTION_IMAGES : DAY_EMOTION_IMAGES;
   const areaFillImages = areaFill ? AREA_FILL_EMOTION_IMAGES : images;
   const currentImage =
-    imageOverride ?? areaFillImages[imageIndex % areaFillImages.length] ?? DAY_EMOTION_IMAGES[0];
+    imageOverride ??
+    (areaFill ? ROUND_WINDOW_EMOTION_IMAGE : areaFillImages[imageIndex % areaFillImages.length]) ??
+    DAY_EMOTION_IMAGES[0];
   const currentPosition = getEmotionImagePosition(currentImage, nightMode);
 
   useEffect(() => {
@@ -450,45 +576,11 @@ function EmotionMoodSurface({
             onImageChange={onImageChange}
           />
         )}
-        <fieldset
-          aria-label="Emotion image design"
-          style={{
-            display: 'inline-flex',
-            border: '1px solid var(--panel-border, rgba(196,160,96,0.22))',
-            borderRadius: 999,
-            background: isLightTheme
-              ? 'color-mix(in srgb, var(--card) 74%, transparent)'
-              : 'rgba(10,6,3,0.28)',
-            padding: 2,
-            gap: 2,
-            margin: 0,
-          }}
-        >
-          {([1, 2, 3] as const).map((option) => (
-            <button
-              key={option}
-              type="button"
-              onClick={() => onDesignChange(option)}
-              style={{
-                border: 0,
-                borderRadius: 999,
-                minWidth: 32,
-                minHeight: 26,
-                background: design === option ? 'rgba(196,160,96,0.2)' : 'transparent',
-                color:
-                  design === option
-                    ? 'var(--palette-panel-text, #5C3018)'
-                    : 'var(--palette-panel-muted, rgba(196,160,96,0.72))',
-                fontFamily: 'var(--font-serif)',
-                fontSize: 12,
-                fontWeight: 900,
-                cursor: 'pointer',
-              }}
-            >
-              {option}
-            </button>
-          ))}
-        </fieldset>
+        <FocusDesignPill
+          value={focusMode}
+          onChange={onFocusModeChange}
+          floating={areaFill || !isLightTheme}
+        />
       </div>
       {design === 1 && (
         <div
@@ -530,12 +622,10 @@ function EmotionMoodSurface({
   );
 }
 
-type LaneImageDesign = 1 | 2;
-
 function AreaFillLaneSurface({
   children,
-  design,
-  onDesignChange,
+  focusMode,
+  onFocusModeChange,
   image,
   label,
   tone,
@@ -544,8 +634,8 @@ function AreaFillLaneSurface({
   onPlacementChange,
 }: {
   children: React.ReactNode;
-  design: LaneImageDesign;
-  onDesignChange: (design: LaneImageDesign) => void;
+  focusMode: FocusDesignMode;
+  onFocusModeChange: (next: FocusDesignMode) => void;
   image: string;
   label: string;
   tone: 'mission' | 'progress';
@@ -553,7 +643,7 @@ function AreaFillLaneSurface({
   placement: BackgroundPlacement;
   onPlacementChange: (next: BackgroundPlacement) => void;
 }) {
-  const areaFill = design === 2;
+  const areaFill = focusMode === 'image';
   return (
     <div
       style={{
@@ -582,46 +672,7 @@ function AreaFillLaneSurface({
             onImageChange={onImageChange}
           />
         )}
-        <fieldset
-          aria-label={`${label} image design`}
-          style={{
-            display: 'inline-flex',
-            border: '1px solid var(--panel-border, rgba(196,160,96,0.22))',
-            borderRadius: 999,
-            background: areaFill ? 'rgba(18,10,5,0.36)' : 'transparent',
-            padding: 2,
-            gap: 2,
-            margin: 0,
-            backdropFilter: areaFill ? 'blur(8px)' : undefined,
-          }}
-        >
-          {([1, 2] as const).map((option) => (
-            <button
-              key={option}
-              type="button"
-              onClick={() => onDesignChange(option)}
-              aria-pressed={design === option}
-              style={{
-                border: 0,
-                borderRadius: 999,
-                minWidth: 32,
-                minHeight: 26,
-                background: design === option ? 'rgba(196,160,96,0.22)' : 'transparent',
-                color: areaFill
-                  ? 'rgba(240,216,152,0.9)'
-                  : design === option
-                    ? 'var(--palette-panel-text, #5C3018)'
-                    : 'var(--palette-panel-muted, rgba(196,160,96,0.72))',
-                fontFamily: 'var(--font-serif)',
-                fontSize: 12,
-                fontWeight: 900,
-                cursor: 'pointer',
-              }}
-            >
-              {option}
-            </button>
-          ))}
-        </fieldset>
+        <FocusDesignPill value={focusMode} onChange={onFocusModeChange} floating={areaFill} />
       </div>
       <div style={{ position: 'relative', zIndex: 1 }}>{children}</div>
     </div>
@@ -636,9 +687,7 @@ function DayContent() {
   const [learnOpen, setLearnOpen] = useState(false);
   const [experimentsOpen, setExperimentsOpen] = useState(false);
   const [modesOpen, setModesOpen] = useState(false);
-  const [emotionVisualDesign, setEmotionVisualDesign] = useState<EmotionVisualDesign>(1);
-  const [missionVisualDesign, setMissionVisualDesign] = useState<LaneImageDesign>(1);
-  const [progressVisualDesign, setProgressVisualDesign] = useState<LaneImageDesign>(1);
+  const [focusDesignMode, setFocusDesignMode] = useState<FocusDesignMode>('sober');
   const [emotionImageIndex, setEmotionImageIndex] = useState(0);
   const [lanePlacements, setLanePlacements] = useState<LanePlacements>(DEFAULT_LANE_PLACEMENTS);
   const [laneImages, setLaneImages] = useState<LaneImages>({
@@ -657,6 +706,7 @@ function DayContent() {
   useEffect(() => {
     setLanePlacements(loadLanePlacements());
     setLaneImages(loadLaneImages());
+    setFocusDesignMode(loadFocusDesignMode());
   }, []);
 
   useEffect(() => {
@@ -667,40 +717,10 @@ function DayContent() {
     return () => window.clearInterval(timer);
   }, []);
 
-  useEffect(() => {
+  function changeFocusDesignMode(next: FocusDesignMode) {
+    setFocusDesignMode(next);
     try {
-      const stored = localStorage.getItem('colourmap:emotion-visual-design');
-      if (stored === '2' || stored === '3') setEmotionVisualDesign(Number(stored) as 2 | 3);
-    } catch {}
-  }, []);
-
-  function changeEmotionVisualDesign(next: EmotionVisualDesign) {
-    setEmotionVisualDesign(next);
-    try {
-      localStorage.setItem('colourmap:emotion-visual-design', String(next));
-    } catch {}
-  }
-
-  useEffect(() => {
-    try {
-      const missionStored = localStorage.getItem('colourmap:mission-visual-design');
-      const progressStored = localStorage.getItem('colourmap:progress-visual-design');
-      if (missionStored === '2') setMissionVisualDesign(2);
-      if (progressStored === '2') setProgressVisualDesign(2);
-    } catch {}
-  }, []);
-
-  function changeMissionVisualDesign(next: LaneImageDesign) {
-    setMissionVisualDesign(next);
-    try {
-      localStorage.setItem('colourmap:mission-visual-design', String(next));
-    } catch {}
-  }
-
-  function changeProgressVisualDesign(next: LaneImageDesign) {
-    setProgressVisualDesign(next);
-    try {
-      localStorage.setItem('colourmap:progress-visual-design', String(next));
+      localStorage.setItem(FOCUS_DESIGN_MODE_KEY, next);
     } catch {}
   }
 
@@ -733,8 +753,7 @@ function DayContent() {
     } catch {}
   }, []);
 
-  const imageBackedFocus =
-    emotionVisualDesign === 3 || missionVisualDesign === 2 || progressVisualDesign === 2;
+  const imageBackedFocus = focusDesignMode === 'image';
 
   return (
     <div
@@ -750,22 +769,24 @@ function DayContent() {
       <DayTabs
         headerBackdrops={{
           emotion: {
-            enabled: emotionVisualDesign === 2 || emotionVisualDesign === 3,
+            enabled: imageBackedFocus,
             image:
               laneImages.emotion ??
-              (emotionVisualDesign === 3
-                ? getAreaFillEmotionImage(emotionImageIndex)
+              (imageBackedFocus
+                ? ROUND_WINDOW_EMOTION_IMAGE
                 : EMOTION_BACKDROPS[emotionImageIndex]),
-            dayImage: emotionVisualDesign === 3 || emotionImageIndex >= 2,
-            position:
-              emotionVisualDesign === 3
-                ? getEmotionImagePosition(getAreaFillEmotionImage(emotionImageIndex), false)
-                : 'center 46%',
-            placement: lanePlacements.emotion,
-            fullBleed: emotionVisualDesign === 3,
+            dayImage: true,
+            position: imageBackedFocus
+              ? getEmotionImagePosition(ROUND_WINDOW_EMOTION_IMAGE, false)
+              : 'center 46%',
+            placement: {
+              ...lanePlacements.emotion,
+              phone: PHONE_LANE_PLACEMENTS.emotion,
+            },
+            fullBleed: imageBackedFocus,
           },
           mission: {
-            enabled: missionVisualDesign === 2,
+            enabled: imageBackedFocus,
             image: laneImages.mission ?? MISSION_AREA_IMAGE,
             dayImage: true,
             position: getLaneImagePosition('mission'),
@@ -774,7 +795,7 @@ function DayContent() {
             overlay: 'rgba(48,22,7,0.34)',
           },
           progress: {
-            enabled: progressVisualDesign === 2,
+            enabled: imageBackedFocus,
             image: laneImages.progress ?? PROGRESS_AREA_IMAGE,
             dayImage: true,
             position: getLaneImagePosition('progress'),
@@ -785,17 +806,31 @@ function DayContent() {
         }}
         emotionContent={
           <EmotionMoodSurface
-            design={emotionVisualDesign}
-            onDesignChange={changeEmotionVisualDesign}
+            design={1}
+            focusMode={focusDesignMode}
+            onFocusModeChange={changeFocusDesignMode}
             imageIndex={emotionImageIndex}
             imageOverride={laneImages.emotion}
             onImageChange={(src) => changeLaneImage('emotion', src)}
             placement={lanePlacements.emotion}
             onPlacementChange={(next) => changeLanePlacement('emotion', next)}
           >
-            <InnerWork />
-            <div style={{ height: 20 }} />
-            <FeelingCircles2 visualDesign={emotionVisualDesign} />
+            {imageBackedFocus ? (
+              <>
+                <RitualBand title="Inner Work" tone="emotion">
+                  <InnerWork />
+                </RitualBand>
+                <RitualBand title="Attitude · Emotions · Body · Behaviour" tone="emotion">
+                  <FeelingCircles2 visualDesign={3} />
+                </RitualBand>
+              </>
+            ) : (
+              <>
+                <InnerWork />
+                <div style={{ height: 20 }} />
+                <FeelingCircles2 visualDesign={1} />
+              </>
+            )}
             {/* Experiments — collapsible pill */}
             <div
               style={{
@@ -873,8 +908,8 @@ function DayContent() {
         }
         missionContent={
           <AreaFillLaneSurface
-            design={missionVisualDesign}
-            onDesignChange={changeMissionVisualDesign}
+            focusMode={focusDesignMode}
+            onFocusModeChange={changeFocusDesignMode}
             image={laneImages.mission ?? MISSION_AREA_IMAGE}
             label="Mission"
             tone="mission"
@@ -882,18 +917,35 @@ function DayContent() {
             placement={lanePlacements.mission}
             onPlacementChange={(next) => changeLanePlacement('mission', next)}
           >
-            <div className="space-y-3">
-              <MissionDesignSwitcher
-                beforeContent={
-                  <>
+            <div className={imageBackedFocus ? undefined : 'space-y-3'}>
+              {imageBackedFocus ? (
+                <>
+                  <RitualBand title="Areas" tone="mission">
                     <ActiveCompartments />
-                    <ColourMapPanel />
-                  </>
-                }
-              />
-              <div style={{ paddingTop: 16 }}>
-                <DailyRituals />
-              </div>
+                    <ColourMapPanel surfaceMode="image" />
+                  </RitualBand>
+                  <RitualBand title="Tasks" tone="mission">
+                    <MissionDesignSwitcher surfaceMode="image" />
+                  </RitualBand>
+                  <RitualBand title="Daily Rituals" tone="mission">
+                    <DailyRituals surfaceMode="image" />
+                  </RitualBand>
+                </>
+              ) : (
+                <>
+                  <MissionDesignSwitcher
+                    beforeContent={
+                      <>
+                        <ActiveCompartments />
+                        <ColourMapPanel />
+                      </>
+                    }
+                  />
+                  <div style={{ paddingTop: 16 }}>
+                    <DailyRituals />
+                  </div>
+                </>
+              )}
               <div style={{ display: 'flex', justifyContent: 'center', gap: 8, paddingTop: 4 }}>
                 <button
                   type="button"
@@ -920,8 +972,8 @@ function DayContent() {
         }
         progressContent={
           <AreaFillLaneSurface
-            design={progressVisualDesign}
-            onDesignChange={changeProgressVisualDesign}
+            focusMode={focusDesignMode}
+            onFocusModeChange={changeFocusDesignMode}
             image={laneImages.progress ?? PROGRESS_AREA_IMAGE}
             label="Progress"
             tone="progress"
