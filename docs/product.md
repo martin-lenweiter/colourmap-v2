@@ -182,7 +182,7 @@ The long-term AI direction is a living constellation that reads all user data (c
 
 - **Future library navigation reflections, May 21 2026**: long-term direction for a PSP-like horizontal/vertical navigation model, portal-map education system, and machine-inspired information structure that can hold abundant teachers, comics, poetry, psychology, symbolic worlds, and personal missions without overwhelming the user. Captured in [Living Atlas / Information Art](specs/living-atlas-information-art.md#reflection-future-library-navigation-may-21-2026) and [Machine Organisation And Human Flow](specs/living-atlas-information-art.md#reflection-machine-organisation-and-human-flow-may-21-2026).
 
-- **Collective Evolution comic**: next education / Living Atlas comic direction about how unregulated collective emotion becomes war risk, supply-chain cost, inflation, insurance, and institutional fragility. It uses Hawkins as symbolic inspiration, not empirical proof, and asks when humanity blooms out of the lower equilibrium of fear, pride, humiliation, and domination into relational security. [Spec](specs/collective-evolution-comic.md)
+- **The Price of Separation**: next education / Living Atlas comic direction about how unregulated collective emotion becomes war risk, supply-chain cost, inflation, insurance, and institutional fragility. It uses Hawkins as symbolic inspiration, not empirical proof, and asks when humanity blooms out of the lower equilibrium of fear, pride, humiliation, and domination into relational security. [Spec](specs/collective-evolution-comic.md)
 
 ## Key Decisions
 

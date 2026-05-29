@@ -1,8 +1,8 @@
-# Collective Evolution Comic
+# The Price of Separation
 
 ## Purpose
 
-The Collective Evolution comic is an education / Living Atlas comic about one central idea:
+**The Price of Separation** is an education / Living Atlas comic about one central idea:
 
 ```text
 Unregulated collective emotion is not private.
