@@ -5,6 +5,7 @@ import { syncPref } from '@/lib/sync';
 
 /* ── Tokens ──────────────────────────────────────────────────── */
 const BROWN = 'var(--palette-panel-text, #5C3018)';
+const AREA_TEXT = 'var(--light-surface-text, #3A1D0F)';
 const LABEL = 'var(--palette-panel-muted, #8A6A4A)';
 
 /* ── Types (must match ColourMapPanel) ───────────────────────── */
@@ -209,8 +210,8 @@ function ActiveCard({
             fontWeight: 700,
             letterSpacing: '0.18em',
             textTransform: 'uppercase',
-            color: channel.color,
-            opacity: 0.65,
+            color: AREA_TEXT,
+            opacity: 0.82,
             flexShrink: 0,
           }}
         >
@@ -225,7 +226,7 @@ function ActiveCard({
             fontFamily: 'var(--font-serif)',
             fontSize: 13,
             fontWeight: 600,
-            color: allDone ? channel.color : BROWN,
+            color: BROWN,
             textDecoration: allDone ? 'line-through' : 'none',
             opacity: allDone ? 0.6 : 1,
             minWidth: 0,

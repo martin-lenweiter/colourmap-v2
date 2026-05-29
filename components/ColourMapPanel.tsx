@@ -6,6 +6,7 @@ import { syncPref } from '@/lib/sync';
 /* ── Tokens ──────────────────────────────────────────────────── */
 const OCHRE = 'var(--palette-panel-text, #C4A060)';
 const BROWN = 'var(--palette-panel-text, rgba(240,216,152,0.88))';
+const AREA_TEXT = 'var(--light-surface-text, #3A1D0F)';
 const LABEL = 'var(--palette-panel-muted, rgba(196,160,96,0.55))';
 const CARD_BG = 'rgba(196,160,96,0.05)';
 
@@ -84,7 +85,9 @@ function persistAreaMissions(next: AreaMission[]) {
   try {
     localStorage.setItem(MISSIONS_KEY, JSON.stringify(next));
   } catch {}
-  syncPref(MISSIONS_KEY, next);
+  try {
+    syncPref(MISSIONS_KEY, next);
+  } catch {}
   window.dispatchEvent(new Event('colourmap:missions-updated'));
 }
 
@@ -491,6 +494,11 @@ function ChannelCard({
     onUpdate({ ...channel, open: !channel.open });
   }
 
+  function changeChannelColor(color: string) {
+    setPaletteOpen(false);
+    onUpdate({ ...channel, color });
+  }
+
   function addAreaMission() {
     const text = missionText.trim();
     if (!text) return;
@@ -585,6 +593,7 @@ function ChannelCard({
         <button
           type="button"
           aria-label={`Change ${channel.title || 'area'} color`}
+          onPointerDown={(e) => e.stopPropagation()}
           onClick={(e) => {
             e.stopPropagation();
             setPaletteOpen((value) => !value);
@@ -611,7 +620,7 @@ function ChannelCard({
               fontWeight: 800,
               letterSpacing: '0.13em',
               textTransform: 'uppercase',
-              color: channel.color,
+              color: AREA_TEXT,
             }}
           >
             {channel.title}
@@ -635,7 +644,7 @@ function ChannelCard({
               fontWeight: 800,
               letterSpacing: '0.13em',
               textTransform: 'uppercase',
-              color: channel.color,
+              color: AREA_TEXT,
               cursor: 'text',
             }}
           />
@@ -697,6 +706,8 @@ function ChannelCard({
         <div style={{ padding: '10px 12px' }}>
           {paletteOpen && (
             <div
+              onPointerDown={(event) => event.stopPropagation()}
+              onClick={(event) => event.stopPropagation()}
               style={{
                 border: `1px solid ${channel.color}30`,
                 borderRadius: 12,
@@ -714,10 +725,34 @@ function ChannelCard({
                   key={color}
                   type="button"
                   aria-label={`Use area color ${color}`}
-                  onClick={(event) => {
+                  onPointerDownCapture={(event) => {
+                    event.preventDefault();
                     event.stopPropagation();
-                    onUpdate({ ...channel, color });
-                    setPaletteOpen(false);
+                    changeChannelColor(color);
+                  }}
+                  onClickCapture={(event) => {
+                    event.preventDefault();
+                    event.stopPropagation();
+                    changeChannelColor(color);
+                  }}
+                  onPointerDown={(event) => {
+                    event.preventDefault();
+                    event.stopPropagation();
+                    changeChannelColor(color);
+                  }}
+                  onMouseDown={(event) => {
+                    event.preventDefault();
+                    event.stopPropagation();
+                    changeChannelColor(color);
+                  }}
+                  onTouchStart={(event) => {
+                    event.preventDefault();
+                    event.stopPropagation();
+                    changeChannelColor(color);
+                  }}
+                  onClick={(event) => {
+                    event.preventDefault();
+                    event.stopPropagation();
                   }}
                   style={{
                     width: '100%',
@@ -1083,7 +1118,9 @@ export default function ColourMapPanel({
     try {
       localStorage.setItem(LS_KEY, JSON.stringify(next));
     } catch {}
-    syncPref(LS_KEY, next);
+    try {
+      syncPref(LS_KEY, next);
+    } catch {}
     if (typeof window !== 'undefined') {
       window.dispatchEvent(new CustomEvent('colourmap:cmap-updated'));
     }
@@ -1102,8 +1139,10 @@ export default function ColourMapPanel({
   }
 
   function updateChannel(id: string, ch: Channel) {
-    syncAreaMissionTag(ch);
     persist({ ...data, channels: data.channels.map((x) => (x.id === id ? ch : x)) });
+    try {
+      syncAreaMissionTag(ch);
+    } catch {}
   }
 
   function deleteChannel(id: string) {
