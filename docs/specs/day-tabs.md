@@ -201,7 +201,8 @@ The Focus lane has two top-level design modes:
 - **Image**: the exploratory ritual mode. The active lane image starts directly under the global
   Focus / Notes header, and the lane content below the image becomes connected full-width bands
   rather than small isolated pills. Mission bands are Areas, Tasks, and Daily Rituals. Emotions uses
-  equivalent full-width bands for Inner Work and Attitude / Emotions / Body / Behaviour.
+  equivalent full-width bands for Inner Work and Attitude / Emotions / Body / Behaviour. These bands
+  are collapsed by default like the original pills; opening one reveals its contents inline.
 
 The Sober / Image choice lives in the design pill and persists locally under
 `colourmap:focus-design-mode`. Sober protects the pre-image app experience while Image mode can keep
@@ -219,6 +220,9 @@ Done when:
   viewport edges below the top app header.
 - The selected lane content starts immediately under the image-backed tab row, with no intentional
   spacer band.
+- Image-mode bands should reach the lane side edges without overflowing past the viewport or
+  overlapping adjacent content. The full-width band owns the edge-to-edge surface; inner controls may
+  stay constrained for readability.
 - Text and inputs stay legible through restrained overlays; no lane should become visually
   overwhelming.
 - Education navigation stays visible and unchanged; 3D is not added to Education in this phase.

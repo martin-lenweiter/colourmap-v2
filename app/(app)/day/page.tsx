@@ -194,41 +194,77 @@ function RitualBand({
   children: React.ReactNode;
   tone?: 'emotion' | 'mission' | 'progress';
 }) {
+  const [open, setOpen] = useState(false);
   const accent =
     tone === 'emotion' ? '214,128,90' : tone === 'progress' ? '128,170,132' : '196,160,96';
   return (
     <section
       style={{
         width: '100%',
+        maxWidth: '100%',
+        boxSizing: 'border-box',
         borderTop: `1px solid rgba(${accent},0.34)`,
         borderBottom: `1px solid rgba(${accent},0.18)`,
         background: `linear-gradient(180deg, rgba(18,10,5,0.5), rgba(18,10,5,0.34)), rgba(${accent},0.08)`,
         color: 'rgba(255,241,204,0.92)',
         backdropFilter: 'blur(10px)',
+        overflow: 'hidden',
       }}
     >
+      <button
+        type="button"
+        onClick={() => setOpen((value) => !value)}
+        aria-expanded={open}
+        style={{
+          width: '100%',
+          border: 0,
+          borderBottom: open ? `1px solid rgba(${accent},0.18)` : 0,
+          background: 'rgba(255,244,204,0.04)',
+          color: 'rgba(255,220,150,0.9)',
+          cursor: 'pointer',
+          display: 'grid',
+          gridTemplateColumns: '32px minmax(0, 1fr) 32px',
+          alignItems: 'center',
+          minHeight: 54,
+          padding: '10px max(12px, calc((100vw - 672px) / 2 + 16px))',
+          textAlign: 'center',
+        }}
+      >
+        <span aria-hidden="true" />
+        <span
+          style={{
+            minWidth: 0,
+            overflowWrap: 'anywhere',
+            fontFamily: 'var(--font-serif)',
+            fontSize: 13,
+            fontWeight: 900,
+            letterSpacing: '0.14em',
+            lineHeight: 1.2,
+            textTransform: 'uppercase',
+          }}
+        >
+          {title}
+        </span>
+        <span
+          aria-hidden="true"
+          style={{
+            justifySelf: 'end',
+            fontSize: 12,
+            transform: `rotate(${open ? 180 : 0}deg)`,
+            transition: 'transform 0.2s ease',
+          }}
+        >
+          v
+        </span>
+      </button>
       <div
         style={{
           maxWidth: 672,
           margin: '0 auto',
-          padding: '14px 12px 18px',
+          padding: open ? '14px 12px 18px' : 0,
         }}
       >
-        <div
-          style={{
-            textAlign: 'center',
-            fontFamily: 'var(--font-serif)',
-            fontSize: 13,
-            fontWeight: 900,
-            letterSpacing: '0.18em',
-            textTransform: 'uppercase',
-            color: 'rgba(255,220,150,0.86)',
-            paddingBottom: 12,
-          }}
-        >
-          {title}
-        </div>
-        {children}
+        {open && children}
       </div>
     </section>
   );
@@ -540,7 +576,7 @@ function EmotionMoodSurface({
         marginTop: areaFill ? -1 : undefined,
         borderRadius: areaFill || isLightTheme ? 0 : 18,
         padding: areaFill
-          ? '12px max(12px, calc((100vw - 672px) / 2 + 16px)) 40px'
+          ? '12px 0 40px'
           : isLightTheme
             ? '0 0 14px'
             : design === 2
@@ -609,7 +645,7 @@ function EmotionMoodSurface({
         </div>
       )}
       <div
-        className="space-y-3"
+        className={areaFill ? undefined : 'space-y-3'}
         style={{
           position: 'relative',
           zIndex: 1,
@@ -650,7 +686,7 @@ function AreaFillLaneSurface({
         position: 'relative',
         overflow: 'hidden',
         width: areaFill ? '100%' : undefined,
-        padding: areaFill ? '12px max(12px, calc((100vw - 672px) / 2 + 16px)) 40px' : undefined,
+        padding: areaFill ? '12px 0 40px' : undefined,
         minHeight: areaFill ? 'calc(100svh - 168px)' : undefined,
       }}
     >
