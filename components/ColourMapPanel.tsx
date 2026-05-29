@@ -8,6 +8,7 @@ const OCHRE = 'var(--palette-panel-text, #C4A060)';
 const BROWN = 'var(--light-surface-text, #3A1D0F)';
 const AREA_TEXT = 'var(--light-surface-text, #3A1D0F)';
 const LABEL = 'var(--light-surface-muted, #6B4226)';
+const FAINT_LABEL = 'color-mix(in srgb, var(--light-surface-text, #3A1D0F) 74%, transparent)';
 const CARD_BG = 'rgba(196,160,96,0.05)';
 
 /* ── Types ───────────────────────────────────────────────────── */
@@ -217,7 +218,7 @@ function StepList({
                 fontSize: 13,
                 color: s.done ? `${LABEL}` : BROWN,
                 textDecoration: s.done ? 'line-through' : 'none',
-                opacity: s.done ? 0.5 : 1,
+                opacity: s.done ? 0.72 : 1,
                 lineHeight: 1.4,
               }}
             >
@@ -254,6 +255,7 @@ function StepList({
             if (e.key === 'Enter') submit();
           }}
           placeholder="add step…"
+          className="placeholder:text-[#5C3018] placeholder:opacity-65"
           spellCheck={false}
           autoCorrect="off"
           autoCapitalize="off"
@@ -266,8 +268,8 @@ function StepList({
             outline: 'none',
             fontFamily: 'var(--font-serif)',
             fontSize: 12,
-            color: LABEL,
-            opacity: 0.7,
+            color: BROWN,
+            opacity: 0.94,
             padding: '4px 0',
             letterSpacing: '0.04em',
           }}
@@ -357,6 +359,7 @@ function CompartmentCard({
             onUpdate({ ...comp, title: e.target.value });
           }}
           placeholder="compartment…"
+          className="placeholder:text-[#5C3018] placeholder:opacity-65"
           spellCheck={false}
           autoCorrect="off"
           style={{
@@ -368,8 +371,8 @@ function CompartmentCard({
             fontSize: 12,
             fontWeight: 700,
             letterSpacing: '0.08em',
-            color: channelColor,
-            opacity: 0.85,
+            color: BROWN,
+            opacity: 1,
             cursor: 'text',
           }}
         />
@@ -378,8 +381,8 @@ function CompartmentCard({
             style={{
               fontFamily: 'var(--font-serif)',
               fontSize: 10,
-              color: LABEL,
-              opacity: 0.45,
+              color: FAINT_LABEL,
+              opacity: 1,
               flexShrink: 0,
             }}
           >
@@ -401,8 +404,9 @@ function CompartmentCard({
             padding: '2px 8px',
             fontFamily: 'var(--font-serif)',
             fontSize: 9,
+            fontWeight: 900,
             letterSpacing: '0.1em',
-            color: comp.linkedToDay ? channelColor : `${channelColor}88`,
+            color: comp.linkedToDay ? BROWN : FAINT_LABEL,
             cursor: 'pointer',
             flexShrink: 0,
             transition: 'all 0.15s',
@@ -419,8 +423,8 @@ function CompartmentCard({
           style={{
             background: 'none',
             border: 'none',
-            color: LABEL,
-            opacity: 0.25,
+            color: FAINT_LABEL,
+            opacity: 1,
             cursor: 'pointer',
             fontSize: 13,
             lineHeight: 1,
@@ -433,7 +437,7 @@ function CompartmentCard({
         <span
           style={{
             color: channelColor,
-            opacity: 0.4,
+            opacity: 0.82,
             fontSize: 10,
             transform: open ? 'rotate(180deg)' : 'none',
             transition: 'transform 0.2s',
@@ -705,8 +709,8 @@ function ChannelCard({
             style={{
               fontFamily: 'var(--font-serif)',
               fontSize: 10,
-              color: LABEL,
-              opacity: 0.4,
+              color: FAINT_LABEL,
+              opacity: 1,
               flexShrink: 0,
             }}
           >
@@ -724,8 +728,8 @@ function ChannelCard({
             style={{
               background: 'none',
               border: 'none',
-              color: LABEL,
-              opacity: 0.22,
+              color: FAINT_LABEL,
+              opacity: 1,
               cursor: 'pointer',
               fontSize: 14,
               lineHeight: 1,
@@ -740,7 +744,7 @@ function ChannelCard({
         <span
           style={{
             color: channel.color,
-            opacity: 0.45,
+            opacity: 0.82,
             fontSize: 11,
             transform: channel.open ? 'rotate(180deg)' : 'none',
             transition: 'transform 0.2s',
@@ -862,6 +866,7 @@ function ChannelCard({
                 value={missionText}
                 onChange={(event) => setMissionText(event.target.value)}
                 placeholder="Add mission in this area..."
+                className="placeholder:text-[#5C3018] placeholder:opacity-70"
                 spellCheck={false}
                 autoCorrect="off"
                 style={{
@@ -911,7 +916,7 @@ function ChannelCard({
                     fontWeight: 900,
                     letterSpacing: '0.14em',
                     textTransform: 'uppercase',
-                    color: LABEL,
+                    color: BROWN,
                     marginBottom: 7,
                     textAlign: 'center',
                   }}
@@ -950,8 +955,8 @@ function ChannelCard({
               padding: '6px 0',
               fontFamily: 'var(--font-serif)',
               fontSize: 11,
-              color: channel.color,
-              opacity: 0.5,
+              color: BROWN,
+              opacity: 0.92,
               cursor: 'pointer',
               letterSpacing: '0.08em',
             }}
@@ -1011,7 +1016,7 @@ function IdeaCard({
           cursor: 'pointer',
         }}
       >
-        <span style={{ color: OCHRE, opacity: 0.35, fontSize: 14, flexShrink: 0 }}>·</span>
+        <span style={{ color: OCHRE, opacity: 0.78, fontSize: 14, flexShrink: 0 }}>·</span>
 
         <input
           type="text"
@@ -1019,6 +1024,7 @@ function IdeaCard({
           onClick={(e) => e.stopPropagation()}
           onChange={(e) => onUpdate({ ...idea, title: e.target.value })}
           placeholder="idea…"
+          className="placeholder:text-[#5C3018] placeholder:opacity-65"
           spellCheck={false}
           autoCorrect="off"
           style={{
@@ -1038,8 +1044,8 @@ function IdeaCard({
             style={{
               fontFamily: 'var(--font-serif)',
               fontSize: 10,
-              color: LABEL,
-              opacity: 0.4,
+              color: FAINT_LABEL,
+              opacity: 1,
               flexShrink: 0,
             }}
           >
@@ -1056,8 +1062,8 @@ function IdeaCard({
           style={{
             background: 'none',
             border: 'none',
-            color: LABEL,
-            opacity: 0.25,
+            color: FAINT_LABEL,
+            opacity: 1,
             cursor: 'pointer',
             fontSize: 13,
             lineHeight: 1,
@@ -1071,7 +1077,7 @@ function IdeaCard({
         <span
           style={{
             color: OCHRE,
-            opacity: 0.35,
+            opacity: 0.82,
             fontSize: 10,
             transform: open ? 'rotate(180deg)' : 'none',
             transition: 'transform 0.2s',
@@ -1107,7 +1113,7 @@ function SectionLabel({ label }: { label: string }) {
         letterSpacing: '0.22em',
         textTransform: 'uppercase',
         color: LABEL,
-        opacity: 0.45,
+        opacity: 1,
         marginBottom: 8,
         textAlign: 'center',
       }}
@@ -1425,7 +1431,7 @@ export default function ColourMapPanel({
                 return (
                   <div
                     key={ch.id}
-                    onClick={() => setSelectedDot(isSel ? null : ch.id)}
+                    onClick={() => setSelectedDot(ch.id)}
                     style={{
                       flex: '0 0 calc((100% - 30px) / 4)',
                       minWidth: 72,
@@ -1442,9 +1448,11 @@ export default function ColourMapPanel({
                         width: 'min(62px, 100%)',
                         aspectRatio: '1 / 1',
                         borderRadius: '50%',
-                        background: isSel ? `${ch.color}28` : `${ch.color}12`,
-                        border: `2px solid ${isSel ? ch.color : `${ch.color}50`}`,
-                        boxShadow: isSel ? `0 0 16px ${ch.color}40` : 'none',
+                        background: isSel ? `${ch.color}66` : `${ch.color}28`,
+                        border: `2px solid ${ch.color}`,
+                        boxShadow: isSel
+                          ? `0 0 0 4px ${ch.color}18, 0 0 18px ${ch.color}48`
+                          : `0 0 0 3px ${ch.color}10`,
                         transition: 'all 0.2s',
                         display: 'flex',
                         alignItems: 'center',
@@ -1456,8 +1464,8 @@ export default function ColourMapPanel({
                           style={{
                             fontFamily: 'var(--font-serif)',
                             fontSize: 12,
-                            color: 'var(--foreground)',
-                            opacity: 0.9,
+                            color: isSel ? 'rgba(255,248,226,0.96)' : BROWN,
+                            opacity: 1,
                             fontWeight: 900,
                           }}
                         >
