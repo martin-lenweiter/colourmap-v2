@@ -486,12 +486,12 @@ function EmotionMoodSurface({
     <div
       style={{
         position: 'relative',
-        overflow: 'hidden',
+        overflow: areaFill ? 'visible' : 'hidden',
         width: areaFill ? '100%' : undefined,
         marginTop: areaFill ? -1 : undefined,
         borderRadius: areaFill || isLightTheme ? 0 : 18,
         padding: areaFill
-          ? '12px 0 40px'
+          ? '0 0 40px'
           : isLightTheme
             ? '0 0 14px'
             : design === 2
@@ -511,11 +511,17 @@ function EmotionMoodSurface({
     >
       <div
         style={{
-          position: 'relative',
-          zIndex: 1,
+          position: areaFill ? 'absolute' : 'relative',
+          zIndex: 3,
+          top: areaFill ? -42 : undefined,
+          left: areaFill ? 8 : undefined,
+          right: areaFill ? 8 : undefined,
           display: 'flex',
+          flexWrap: 'wrap',
+          gap: 8,
           justifyContent: 'center',
-          margin: '0 0 10px',
+          margin: areaFill ? 0 : '0 0 10px',
+          pointerEvents: 'auto',
         }}
       >
         {areaFill && (
@@ -599,19 +605,25 @@ function AreaFillLaneSurface({
     <div
       style={{
         position: 'relative',
-        overflow: 'hidden',
+        overflow: areaFill ? 'visible' : 'hidden',
         width: areaFill ? '100%' : undefined,
-        padding: areaFill ? '12px 0 40px' : undefined,
+        padding: areaFill ? '0 0 40px' : undefined,
         minHeight: areaFill ? 'calc(100svh - 168px)' : undefined,
       }}
     >
       <div
         style={{
-          position: 'relative',
-          zIndex: 1,
+          position: areaFill ? 'absolute' : 'relative',
+          zIndex: 3,
+          top: areaFill ? -42 : undefined,
+          left: areaFill ? 8 : undefined,
+          right: areaFill ? 8 : undefined,
           display: 'flex',
+          flexWrap: 'wrap',
+          gap: 8,
           justifyContent: 'center',
-          margin: '0 0 10px',
+          margin: areaFill ? 0 : '0 0 10px',
+          pointerEvents: 'auto',
         }}
       >
         {areaFill && (

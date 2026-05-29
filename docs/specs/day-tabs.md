@@ -219,7 +219,8 @@ Done when:
 - Mission design 2 and Progress design 2 use their own full-bleed symbolic images, reaching to the
   viewport edges below the top app header.
 - The selected lane content starts immediately under the image-backed tab row, with no intentional
-  spacer band.
+  spacer band. Image-mode design controls may float over the image/header area, but they must not
+  consume vertical content space between the image and the first box.
 - Image-mode boxes should sit below the image, reach the lane side edges where appropriate, and never
   overflow past the phone viewport or overlap adjacent content. Inner controls may stay constrained
   for readability.
