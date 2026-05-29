@@ -1054,7 +1054,7 @@ export default function ColourMapPanel({
 }) {
   const [data, setData] = useState<CMapData>(defaultData());
   const imageMode = surfaceMode === 'image';
-  const [open, setOpen] = useState(imageMode);
+  const [open, setOpen] = useState(false);
   const [view, setView] = useState<'list' | 'dots'>('list');
   const [selectedDot, setSelectedDot] = useState<string | null>(null);
 
@@ -1146,14 +1146,17 @@ export default function ColourMapPanel({
       }}
     >
       {/* Header */}
-      {!imageMode && (
+      {
         <div
           onClick={() => setOpen((v) => !v)}
           style={{
             padding: '14px 18px',
-            backgroundColor: 'var(--palette-l3-bg, rgba(30,16,8,0.55))',
-            backgroundImage:
-              'linear-gradient(90deg, color-mix(in srgb, var(--palette-l3-bg, rgba(30,16,8,0.55)) 94%, transparent), color-mix(in srgb, var(--palette-l3-bg, rgba(30,16,8,0.55)) 58%, transparent)), url("/emotions/pills/areas.webp")',
+            backgroundColor: imageMode
+              ? 'rgba(255,244,204,0.06)'
+              : 'var(--palette-l3-bg, rgba(30,16,8,0.55))',
+            backgroundImage: imageMode
+              ? undefined
+              : 'linear-gradient(90deg, color-mix(in srgb, var(--palette-l3-bg, rgba(30,16,8,0.55)) 94%, transparent), color-mix(in srgb, var(--palette-l3-bg, rgba(30,16,8,0.55)) 58%, transparent)), url("/emotions/pills/areas.webp")',
             backgroundSize: 'cover',
             backgroundPosition: 'center 48%',
             borderBottom: open ? `1px solid rgba(196,160,96,0.15)` : 'none',
@@ -1250,9 +1253,9 @@ export default function ColourMapPanel({
             </span>
           </span>
         </div>
-      )}
+      }
 
-      {(open || imageMode) && view === 'list' && (
+      {open && view === 'list' && (
         <div
           style={{
             padding: '14px 14px 10px',
@@ -1326,7 +1329,7 @@ export default function ColourMapPanel({
         </div>
       )}
 
-      {(open || imageMode) && view === 'dots' && (
+      {open && view === 'dots' && (
         <div
           style={{
             padding: '18px 14px 12px',

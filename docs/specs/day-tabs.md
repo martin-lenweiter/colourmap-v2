@@ -199,10 +199,10 @@ The Focus lane has two top-level design modes:
   the compact centered notebook layout, and Areas / Tasks / Daily Rituals remain in their existing
   collapsible pill form.
 - **Image**: the exploratory ritual mode. The active lane image starts directly under the global
-  Focus / Notes header, and the lane content below the image becomes connected full-width bands
-  rather than small isolated pills. Mission bands are Areas, Tasks, and Daily Rituals. Emotions uses
-  equivalent full-width bands for Inner Work and Attitude / Emotions / Body / Behaviour. These bands
-  are collapsed by default like the original pills; opening one reveals its contents inline.
+  Focus / Notes header, and the lane content below the image keeps the original one-pill-one-box
+  rhythm. Mission renders Areas, Tasks, and Daily Rituals as separate collapsed boxes. Emotions keeps
+  Inner Work and each Attitude / Emotions / Body / Behaviour tracker as its own collapsed unit rather
+  than wrapping multiple pills in one parent box.
 
 The Sober / Image choice lives in the design pill and persists locally under
 `colourmap:focus-design-mode`. Sober protects the pre-image app experience while Image mode can keep
@@ -220,9 +220,9 @@ Done when:
   viewport edges below the top app header.
 - The selected lane content starts immediately under the image-backed tab row, with no intentional
   spacer band.
-- Image-mode bands should reach the lane side edges without overflowing past the viewport or
-  overlapping adjacent content. The full-width band owns the edge-to-edge surface; inner controls may
-  stay constrained for readability.
+- Image-mode boxes should sit below the image, reach the lane side edges where appropriate, and never
+  overflow past the phone viewport or overlap adjacent content. Inner controls may stay constrained
+  for readability.
 - Text and inputs stay legible through restrained overlays; no lane should become visually
   overwhelming.
 - Education navigation stays visible and unchanged; 3D is not added to Education in this phase.

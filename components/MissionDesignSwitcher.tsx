@@ -876,7 +876,7 @@ function MissionTasksPill({
   surfaceMode?: 'sober' | 'image';
 }) {
   const imageMode = surfaceMode === 'image';
-  const [open, setOpen] = useState(imageMode);
+  const [open, setOpen] = useState(false);
 
   return (
     <div
@@ -892,7 +892,7 @@ function MissionTasksPill({
         transition: 'border-color 0.2s',
       }}
     >
-      {!imageMode && (
+      {
         <button
           type="button"
           onClick={() => setOpen((value) => !value)}
@@ -900,11 +900,14 @@ function MissionTasksPill({
             width: '100%',
             border: 0,
             padding: '12px 16px',
-            backgroundColor: open
-              ? 'var(--palette-panel-bg-tint, rgba(196,160,96,0.12))'
-              : 'var(--palette-l3-bg, rgba(30,16,8,0.55))',
-            backgroundImage:
-              'linear-gradient(90deg, color-mix(in srgb, var(--palette-l3-bg, rgba(30,16,8,0.55)) 92%, transparent), color-mix(in srgb, var(--palette-l3-bg, rgba(30,16,8,0.55)) 56%, transparent)), url("/emotions/pills/tasks.webp")',
+            backgroundColor: imageMode
+              ? 'rgba(255,244,204,0.06)'
+              : open
+                ? 'var(--palette-panel-bg-tint, rgba(196,160,96,0.12))'
+                : 'var(--palette-l3-bg, rgba(30,16,8,0.55))',
+            backgroundImage: imageMode
+              ? undefined
+              : 'linear-gradient(90deg, color-mix(in srgb, var(--palette-l3-bg, rgba(30,16,8,0.55)) 92%, transparent), color-mix(in srgb, var(--palette-l3-bg, rgba(30,16,8,0.55)) 56%, transparent)), url("/emotions/pills/tasks.webp")',
             backgroundSize: 'cover',
             backgroundPosition: 'center 52%',
             borderBottom: open ? '1px solid rgba(196,160,96,0.18)' : 'none',
@@ -943,9 +946,9 @@ function MissionTasksPill({
             </span>
           </span>
         </button>
-      )}
+      }
 
-      {(open || imageMode) && (
+      {open && (
         <div
           style={{ padding: '12px 10px 0', background: 'var(--collapsible-open-bg, transparent)' }}
         >
