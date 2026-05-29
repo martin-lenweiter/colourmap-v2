@@ -870,24 +870,24 @@ function ChannelCard({
                   outline: 'none',
                 }}
               />
-              <button
-                type="submit"
-                disabled={!missionText.trim()}
-                style={{
-                  border: `1px solid ${channel.color}44`,
-                  borderRadius: 8,
-                  background: missionText.trim() ? `${channel.color}18` : 'transparent',
-                  color: BROWN,
-                  fontFamily: 'var(--font-serif)',
-                  fontSize: 13,
-                  fontWeight: 900,
-                  padding: '0 12px',
-                  cursor: missionText.trim() ? 'pointer' : 'default',
-                  opacity: missionText.trim() ? 1 : 0.45,
-                }}
-              >
-                Add
-              </button>
+              {missionText.trim() && (
+                <button
+                  type="submit"
+                  style={{
+                    border: `1px solid ${channel.color}44`,
+                    borderRadius: 8,
+                    background: `${channel.color}18`,
+                    color: BROWN,
+                    fontFamily: 'var(--font-serif)',
+                    fontSize: 13,
+                    fontWeight: 900,
+                    padding: '0 12px',
+                    cursor: 'pointer',
+                  }}
+                >
+                  Add
+                </button>
+              )}
             </form>
           </div>
 
