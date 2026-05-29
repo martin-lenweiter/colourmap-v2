@@ -134,6 +134,21 @@ If we had one week to move the app toward this vision, the highest-leverage work
 
 The rest of the roadmap (drums, instruments, visuals, multiplayer) adds surface area. The above five make the surface area *worth* having.
 
+## 8b. Long Soft Loop Engine
+
+The best Chill Machine evolution is a simple surface with a deeper slow-loop engine underneath.
+
+The user should still pick plain moods like Relax, Focus, Sleep, Still, and Ground. Under each mood, the engine can run two or three closely related 16-second generated beds. They should not all begin at the same instant. Track 1 starts immediately, track 2 starts about 7 seconds later, and track 3 starts about 14 seconds later. That 7-second decalage means the combined sound keeps folding over itself without the brain catching the loop point.
+
+The family should feel connected, not like three unrelated sounds. One layer can be lighter and airy, one warmer and mid-body, one deeper and grounding. The difference is depth, brightness, and motion, not melody. Strong delay and generous reverb are allowed, but the result must remain super soft and non-binaural by default.
+
+This should sit on top of the simple system, not replace it:
+- Simple mode: one tap chooses the mood and starts the 2-3 layer bed.
+- Full mode: the user can open the layers and adjust each bed manually.
+- Engine rule: avoid more than three long generated beds at once on phone unless performance is verified.
+- Feel rule: no sudden starts, no clicks, no obvious loop seams, no beat pressure.
+- Sleep/focus rule: base tone and binaural beat stay off unless the user explicitly turns them back on.
+
 ## 9. What to never build
 
 Naming what's out of scope protects focus:

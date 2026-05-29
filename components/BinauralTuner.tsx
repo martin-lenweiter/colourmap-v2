@@ -105,6 +105,81 @@ function buildTone(
   return { node: osc, source: osc };
 }
 
+type LongSoftTone = {
+  freq: number;
+  amp: number;
+  driftSeconds: number;
+};
+
+function buildLongSoftLoop(
+  ctx: AudioContext,
+  options: {
+    tones: LongSoftTone[];
+    noise: number;
+    lowpass: number;
+    delaySeconds: number;
+    delayWet: number;
+    feedback: number;
+  },
+): { node: AudioNode; source: AudioBufferSourceNode } {
+  const seconds = 16;
+  const frames = ctx.sampleRate * seconds;
+  const buffer = ctx.createBuffer(2, frames, ctx.sampleRate);
+
+  for (let ch = 0; ch < 2; ch++) {
+    const data = buffer.getChannelData(ch);
+    let smoothNoise = 0;
+
+    for (let i = 0; i < frames; i++) {
+      const t = i / ctx.sampleRate;
+      const loop = t / seconds;
+      const edgeFrames = ctx.sampleRate * 0.35;
+      const edge = Math.min(1, i / edgeFrames, (frames - i - 1) / edgeFrames);
+      const breath = 0.74 + 0.26 * Math.sin(loop * Math.PI * 2 + ch * 0.7);
+      const white = Math.random() * 2 - 1;
+      smoothNoise = smoothNoise * 0.985 + white * 0.015;
+      let sample = smoothNoise * options.noise;
+
+      for (const tone of options.tones) {
+        const drift = 1 + 0.006 * Math.sin((t / tone.driftSeconds) * Math.PI * 2 + ch * 0.45);
+        sample += Math.sin(t * tone.freq * drift * Math.PI * 2 + ch * 0.32) * tone.amp;
+      }
+
+      data[i] = sample * breath * edge;
+    }
+  }
+
+  const source = ctx.createBufferSource();
+  source.buffer = buffer;
+  source.loop = true;
+
+  const filter = ctx.createBiquadFilter();
+  filter.type = 'lowpass';
+  filter.frequency.value = options.lowpass;
+  filter.Q.value = 0.35;
+
+  const output = ctx.createGain();
+  const dry = ctx.createGain();
+  dry.gain.value = 1 - options.delayWet;
+  const wet = ctx.createGain();
+  wet.gain.value = options.delayWet;
+  const delay = ctx.createDelay(3);
+  delay.delayTime.value = options.delaySeconds;
+  const feedback = ctx.createGain();
+  feedback.gain.value = options.feedback;
+
+  source.connect(filter);
+  filter.connect(dry);
+  dry.connect(output);
+  filter.connect(delay);
+  delay.connect(feedback);
+  feedback.connect(delay);
+  delay.connect(wet);
+  wet.connect(output);
+
+  return { node: output, source };
+}
+
 const LAYERS: LayerDef[] = [
   // Nature
   {
@@ -1120,6 +1195,82 @@ const REAL_LAYERS: LayerDef[] = [
       return { node: f, source: s };
     },
   },
+  {
+    id: 'long-soft-light',
+    label: 'Long Soft Light',
+    color: '#D7C9A1',
+    group: 'ambient' as const,
+    build: (ctx: AudioContext) =>
+      buildLongSoftLoop(ctx, {
+        tones: [
+          { freq: 132.0, amp: 0.024, driftSeconds: 11 },
+          { freq: 198.5, amp: 0.014, driftSeconds: 13 },
+          { freq: 264.0, amp: 0.008, driftSeconds: 16 },
+        ],
+        noise: 0.018,
+        lowpass: 980,
+        delaySeconds: 0.82,
+        delayWet: 0.48,
+        feedback: 0.42,
+      }),
+  },
+  {
+    id: 'long-soft-ground',
+    label: 'Long Soft Ground',
+    color: '#9B7A58',
+    group: 'ambient' as const,
+    build: (ctx: AudioContext) =>
+      buildLongSoftLoop(ctx, {
+        tones: [
+          { freq: 48.0, amp: 0.03, driftSeconds: 14 },
+          { freq: 72.0, amp: 0.018, driftSeconds: 16 },
+          { freq: 96.0, amp: 0.01, driftSeconds: 19 },
+        ],
+        noise: 0.012,
+        lowpass: 520,
+        delaySeconds: 1.12,
+        delayWet: 0.52,
+        feedback: 0.46,
+      }),
+  },
+  {
+    id: 'long-soft-cloud',
+    label: 'Long Soft Cloud',
+    color: '#A7B3C8',
+    group: 'ambient' as const,
+    build: (ctx: AudioContext) =>
+      buildLongSoftLoop(ctx, {
+        tones: [
+          { freq: 86.0, amp: 0.02, driftSeconds: 15 },
+          { freq: 129.0, amp: 0.015, driftSeconds: 18 },
+          { freq: 172.0, amp: 0.009, driftSeconds: 21 },
+        ],
+        noise: 0.022,
+        lowpass: 740,
+        delaySeconds: 1.36,
+        delayWet: 0.58,
+        feedback: 0.5,
+      }),
+  },
+  {
+    id: 'long-soft-deep',
+    label: 'Long Soft Deep',
+    color: '#6F665C',
+    group: 'ambient' as const,
+    build: (ctx: AudioContext) =>
+      buildLongSoftLoop(ctx, {
+        tones: [
+          { freq: 36.0, amp: 0.034, driftSeconds: 16 },
+          { freq: 54.0, amp: 0.018, driftSeconds: 20 },
+          { freq: 108.0, amp: 0.008, driftSeconds: 24 },
+        ],
+        noise: 0.01,
+        lowpass: 360,
+        delaySeconds: 1.58,
+        delayWet: 0.5,
+        feedback: 0.44,
+      }),
+  },
 ];
 
 const ALL_LAYERS = [...LAYERS, ...REAL_LAYERS];
@@ -1168,6 +1319,10 @@ function getLayerCategory(id: string): LayerCategory {
       'chimes',
       'bubbles',
       'echoes',
+      'long-soft-light',
+      'long-soft-ground',
+      'long-soft-cloud',
+      'long-soft-deep',
     ].includes(id)
   )
     return 'drones';
@@ -1288,6 +1443,86 @@ const GENRES: Genre[] = [
     beat: 4,
     base: 45,
     layers: ['bowl', 'breath'],
+  },
+];
+
+type LongSoftMoodId = 'relax' | 'focus' | 'sleep' | 'still' | 'ground';
+
+type LongSoftMood = {
+  id: LongSoftMoodId;
+  label: string;
+  subtitle: string;
+  color: string;
+  volume: number;
+  reverb: number;
+  layers: Record<string, number>;
+};
+
+const LONG_SOFT_MOODS: LongSoftMood[] = [
+  {
+    id: 'relax',
+    label: 'Relax',
+    subtitle: 'light cloud, soft ground',
+    color: '#B9A86C',
+    volume: 0.12,
+    reverb: 76,
+    layers: {
+      'long-soft-light': 0.36,
+      'long-soft-cloud': 0.22,
+      rollingwaves: 0.08,
+    },
+  },
+  {
+    id: 'focus',
+    label: 'Focus',
+    subtitle: 'clear air, low room',
+    color: '#718AA5',
+    volume: 0.1,
+    reverb: 62,
+    layers: {
+      'long-soft-light': 0.24,
+      'long-soft-ground': 0.18,
+      hum: 0.06,
+    },
+  },
+  {
+    id: 'sleep',
+    label: 'Sleep',
+    subtitle: 'deep cloud, brown hush',
+    color: '#66768E',
+    volume: 0.08,
+    reverb: 84,
+    layers: {
+      'long-soft-cloud': 0.34,
+      'long-soft-deep': 0.22,
+      brownnoise: 0.08,
+    },
+  },
+  {
+    id: 'still',
+    label: 'Still',
+    subtitle: 'one quiet horizon',
+    color: '#A0907A',
+    volume: 0.08,
+    reverb: 82,
+    layers: {
+      'long-soft-cloud': 0.24,
+      'long-soft-light': 0.18,
+      breath: 0.06,
+    },
+  },
+  {
+    id: 'ground',
+    label: 'Ground',
+    subtitle: 'deeper, slower body',
+    color: '#8C7259',
+    volume: 0.09,
+    reverb: 72,
+    layers: {
+      'long-soft-ground': 0.34,
+      'long-soft-deep': 0.28,
+      ocean: 0.06,
+    },
   },
 ];
 
@@ -1425,6 +1660,7 @@ export default function BinauralTuner() {
   const [volume, setVolume] = useState(0.15);
   const [activeLayers, setActiveLayers] = useState<Record<string, number>>({});
   const [activeGenre, setActiveGenre] = useState<string | null>(null);
+  const [longSoftMood, setLongSoftMood] = useState<LongSoftMoodId | null>(null);
   const [_showSuggestion, _setShowSuggestion] = useState(true);
   const [_view, _setView] = useState<'presets' | 'layers' | 'genres'>('presets');
   const [tremolo, setTremolo] = useState(false);
@@ -2319,7 +2555,12 @@ export default function BinauralTuner() {
     layerNodesRef.current.set(layerId, { source, gain: layerGain });
   }
 
-  function startLayerWithFadeIn(ctx: AudioContext, layerId: string, targetVol: number) {
+  function startLayerWithFadeIn(
+    ctx: AudioContext,
+    layerId: string,
+    targetVol: number,
+    delaySeconds = 0,
+  ) {
     const def = ALL_LAYERS.find((l) => l.id === layerId);
     if (!def) return;
     ensureLayerReverb(ctx);
@@ -2333,12 +2574,13 @@ export default function BinauralTuner() {
     } else {
       layerGain.connect(ctx.destination);
     }
-    if ('start' in source) source.start();
+    const now = ctx.currentTime;
+    if ('start' in source) source.start(now + delaySeconds);
     layerNodesRef.current.set(layerId, { source, gain: layerGain });
     // Fade in over crossfade duration
-    const now = ctx.currentTime;
     layerGain.gain.setValueAtTime(0, now);
-    layerGain.gain.linearRampToValueAtTime(targetVol, now + CROSSFADE_DURATION);
+    layerGain.gain.setValueAtTime(0, now + delaySeconds);
+    layerGain.gain.linearRampToValueAtTime(targetVol, now + delaySeconds + CROSSFADE_DURATION);
   }
 
   function fadeOutLayer(ctx: AudioContext, layerId: string) {
@@ -2389,6 +2631,7 @@ export default function BinauralTuner() {
   function applyGenre(genre: Genre) {
     const ctx = ctxRef.current;
     setActiveGenre(genre.id);
+    setLongSoftMood(null);
     setBaseFreq(genre.base);
     setBeatFreq(genre.beat);
 
@@ -2422,9 +2665,42 @@ export default function BinauralTuner() {
     }
   }
 
+  function applyLongSoftMood(mood: LongSoftMood) {
+    const ctx = ctxRef.current;
+    setLongSoftMood(mood.id);
+    setActiveGenre(null);
+    setBinauralOn(false);
+    setBaseToneOn(false);
+    setEngineBreathing(false);
+    setBeatPreset('off');
+    setVolume(mood.volume);
+    setLayerReverb(mood.reverb);
+
+    if (ctx && !crossfadingRef.current) {
+      crossfadingRef.current = true;
+      const oldLayerIds = [...layerNodesRef.current.keys()];
+      for (const id of oldLayerIds) {
+        fadeOutLayer(ctx, id);
+      }
+      setTimeout(
+        () => {
+          Object.entries(mood.layers).forEach(([id, vol], index) => {
+            startLayerWithFadeIn(ctx, id, vol, index * 7);
+          });
+          setActiveLayers(mood.layers);
+          crossfadingRef.current = false;
+        },
+        CROSSFADE_DURATION * 1000 + 150,
+      );
+    } else {
+      setActiveLayers(mood.layers);
+    }
+  }
+
   function applyPresetWithLayers(preset: (typeof PRESETS)[0]) {
     setBaseFreq(preset.base);
     setBeatFreq(preset.beat);
+    setLongSoftMood(null);
     const defaultLayers = PRESET_LAYERS[preset.id];
     if (!defaultLayers) return;
 
@@ -2904,7 +3180,8 @@ export default function BinauralTuner() {
   const pathD = `M ${points.join(' L ')}`;
   const preset = PRESETS.find((p) => p.beat === beatFreq && p.base === baseFreq);
   const genre = GENRES.find((g) => g.id === activeGenre);
-  const activeColor = genre?.color || preset?.color || '#C4A060';
+  const mood = LONG_SOFT_MOODS.find((item) => item.id === longSoftMood);
+  const activeColor = mood?.color || genre?.color || preset?.color || '#C4A060';
   const _activeLayerCount = Object.values(activeLayers).filter((v) => v > 0).length;
 
   return (
@@ -3167,6 +3444,55 @@ export default function BinauralTuner() {
               ))}
             </div>
           )}
+          <div className="flex flex-wrap justify-center gap-2">
+            {LONG_SOFT_MOODS.map((mood) => {
+              const isActive = longSoftMood === mood.id;
+              return (
+                <button
+                  key={mood.id}
+                  type="button"
+                  onClick={() => {
+                    haptic('tap');
+                    if (!playing) startAudio();
+                    applyLongSoftMood(mood);
+                  }}
+                  className="min-w-[92px] cursor-pointer rounded-[10px] px-3 py-2 transition-all"
+                  style={{
+                    background: isActive ? `${mood.color}22` : 'rgba(196,160,96,0.05)',
+                    border: `1px solid ${isActive ? `${mood.color}70` : `${mood.color}32`}`,
+                    boxShadow: isActive ? `0 8px 24px ${mood.color}18` : 'none',
+                  }}
+                  title={mood.subtitle}
+                >
+                  <span
+                    style={{
+                      display: 'block',
+                      fontFamily: 'var(--font-serif)',
+                      fontSize: 13,
+                      fontWeight: 800,
+                      color: isActive ? mood.color : '#5C3018',
+                      lineHeight: 1.15,
+                    }}
+                  >
+                    {mood.label}
+                  </span>
+                  <span
+                    style={{
+                      display: 'block',
+                      marginTop: 3,
+                      fontFamily: 'var(--font-serif)',
+                      fontSize: 10,
+                      color: '#7A5438',
+                      opacity: 0.78,
+                      lineHeight: 1.15,
+                    }}
+                  >
+                    {mood.subtitle}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
           {/* Genre pills — always visible in simple mode */}
           <div className="flex flex-wrap justify-center gap-2">
             {GENRES.map((g) => {
