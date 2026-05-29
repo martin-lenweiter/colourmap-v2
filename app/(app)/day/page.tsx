@@ -618,7 +618,7 @@ function EmotionMoodSurface({
           floating={areaFill || !isLightTheme}
         />
       </div>
-      {design === 1 && (
+      {design === 1 && !areaFill && (
         <div
           style={{
             border: '1px solid var(--panel-border, rgba(122,84,56,0.22))',
