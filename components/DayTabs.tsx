@@ -12,6 +12,10 @@ export type BackgroundPlacement = {
   zoom: number;
 };
 
+type ResponsiveBackgroundPlacement = BackgroundPlacement & {
+  phone?: BackgroundPlacement;
+};
+
 const TABS: { id: Tab; label: string }[] = [
   { id: 'emotion', label: 'Emotions' },
   { id: 'mission', label: 'Missions' },
@@ -29,7 +33,7 @@ interface DayTabsProps {
     enabled: boolean;
     dayImage?: boolean;
     position?: string;
-    placement?: BackgroundPlacement;
+    placement?: ResponsiveBackgroundPlacement;
     fullBleed?: boolean;
     overlay?: string;
   };
@@ -41,7 +45,7 @@ interface DayTabsProps {
         enabled: boolean;
         dayImage?: boolean;
         position?: string;
-        placement?: BackgroundPlacement;
+        placement?: ResponsiveBackgroundPlacement;
         fullBleed?: boolean;
         overlay?: string;
       }
@@ -70,6 +74,10 @@ export default function DayTabs({
   const activeHeaderBackdrop = headerBackdrops?.[active] ?? headerBackdrop;
   const showSharedBackdrop = Boolean(activeHeaderBackdrop?.enabled);
   const sharedBackdropFullBleed = Boolean(showSharedBackdrop && activeHeaderBackdrop?.fullBleed);
+  const activePlacement =
+    isPhone && activeHeaderBackdrop?.placement?.phone
+      ? activeHeaderBackdrop.placement.phone
+      : activeHeaderBackdrop?.placement;
 
   useEffect(() => {
     try {
@@ -181,17 +189,13 @@ export default function DayTabs({
               position: 'absolute',
               inset: 0,
               backgroundImage: `url("${activeHeaderBackdrop.image}")`,
-              backgroundSize: activeHeaderBackdrop.placement
-                ? `${activeHeaderBackdrop.placement.zoom}vw auto`
-                : 'cover',
-              backgroundPosition: activeHeaderBackdrop.placement
-                ? `${activeHeaderBackdrop.placement.x}% ${activeHeaderBackdrop.placement.y}%`
+              backgroundSize: activePlacement ? `${activePlacement.zoom}vw auto` : 'cover',
+              backgroundPosition: activePlacement
+                ? `${activePlacement.x}% ${activePlacement.y}%`
                 : (activeHeaderBackdrop.position ?? 'center 46%'),
               backgroundRepeat: 'no-repeat',
-              backgroundAttachment: sharedBackdropFullBleed ? 'fixed' : undefined,
               transition:
                 'background-image 900ms ease, background-position 180ms ease, background-size 180ms ease',
-              transform: 'scale(1.01)',
             }}
           />
           <div

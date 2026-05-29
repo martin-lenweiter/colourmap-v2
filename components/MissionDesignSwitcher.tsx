@@ -869,72 +869,84 @@ function MissionControlFormatTwo() {
 function MissionTasksPill({
   format,
   onFormatChange,
+  surfaceMode = 'sober',
 }: {
   format: MissionFormat;
   onFormatChange: (format: MissionFormat) => void;
+  surfaceMode?: 'sober' | 'image';
 }) {
+  const imageMode = surfaceMode === 'image';
   const [open, setOpen] = useState(false);
 
   return (
     <div
       style={{
-        border: `1px solid ${open ? 'rgba(196,160,96,0.34)' : 'var(--panel-border, rgba(196,160,96,0.18))'}`,
-        borderRadius: 14,
-        background: 'var(--collapsible-shell-bg, var(--palette-l3-bg, rgba(30,16,8,0.55)))',
+        border: imageMode
+          ? '1px solid rgba(240,216,152,0.18)'
+          : `1px solid ${open ? 'rgba(196,160,96,0.34)' : 'var(--panel-border, rgba(196,160,96,0.18))'}`,
+        borderRadius: imageMode ? 0 : 14,
+        background: imageMode
+          ? 'rgba(255,244,204,0.06)'
+          : 'var(--collapsible-shell-bg, var(--palette-l3-bg, rgba(30,16,8,0.55)))',
         overflow: 'hidden',
         transition: 'border-color 0.2s',
       }}
     >
-      <button
-        type="button"
-        onClick={() => setOpen((value) => !value)}
-        style={{
-          width: '100%',
-          border: 0,
-          padding: '12px 16px',
-          backgroundColor: open
-            ? 'var(--palette-panel-bg-tint, rgba(196,160,96,0.12))'
-            : 'var(--palette-l3-bg, rgba(30,16,8,0.55))',
-          backgroundImage:
-            'linear-gradient(90deg, color-mix(in srgb, var(--palette-l3-bg, rgba(30,16,8,0.55)) 92%, transparent), color-mix(in srgb, var(--palette-l3-bg, rgba(30,16,8,0.55)) 56%, transparent)), url("/emotions/pills/tasks.webp")',
-          backgroundSize: 'cover',
-          backgroundPosition: 'center 52%',
-          borderBottom: open ? '1px solid rgba(196,160,96,0.18)' : 'none',
-          cursor: 'pointer',
-          display: 'flex',
-          alignItems: 'center',
-          transition: 'background 0.2s',
-        }}
-      >
-        <span style={{ flex: 1 }} />
-        <div style={{ textAlign: 'center' }}>
-          <div
-            style={{
-              fontFamily: 'var(--font-serif)',
-              fontSize: 15,
-              fontWeight: 900,
-              textTransform: 'uppercase',
-              letterSpacing: '0.18em',
-              color: 'var(--palette-panel-text, #C8A858)',
-            }}
-          >
-            Tasks
+      {
+        <button
+          type="button"
+          onClick={() => setOpen((value) => !value)}
+          style={{
+            width: '100%',
+            border: 0,
+            padding: '12px 16px',
+            backgroundColor: imageMode
+              ? 'rgba(255,244,204,0.06)'
+              : open
+                ? 'var(--palette-panel-bg-tint, rgba(196,160,96,0.12))'
+                : 'var(--palette-l3-bg, rgba(30,16,8,0.55))',
+            backgroundImage: imageMode
+              ? undefined
+              : 'linear-gradient(90deg, color-mix(in srgb, var(--palette-l3-bg, rgba(30,16,8,0.55)) 92%, transparent), color-mix(in srgb, var(--palette-l3-bg, rgba(30,16,8,0.55)) 56%, transparent)), url("/emotions/pills/tasks.webp")',
+            backgroundSize: 'cover',
+            backgroundPosition: 'center 52%',
+            borderBottom: open ? '1px solid rgba(196,160,96,0.18)' : 'none',
+            cursor: 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+            transition: 'background 0.2s',
+          }}
+        >
+          <span style={{ flex: 1 }} />
+          <div style={{ textAlign: 'center' }}>
+            <div
+              style={{
+                fontFamily: 'var(--font-serif)',
+                fontSize: 15,
+                fontWeight: 900,
+                textTransform: 'uppercase',
+                letterSpacing: '0.18em',
+                color: 'var(--palette-panel-text, #C8A858)',
+              }}
+            >
+              Tasks
+            </div>
           </div>
-        </div>
-        <span style={{ flex: 1, display: 'flex', justifyContent: 'flex-end' }}>
-          <span
-            style={{
-              color: 'var(--palette-panel-muted, #C4A060)',
-              opacity: 0.4,
-              fontSize: 11,
-              transform: `rotate(${open ? 180 : 0}deg)`,
-              transition: 'transform 0.2s',
-            }}
-          >
-            ▾
+          <span style={{ flex: 1, display: 'flex', justifyContent: 'flex-end' }}>
+            <span
+              style={{
+                color: 'var(--palette-panel-muted, #C4A060)',
+                opacity: 0.4,
+                fontSize: 11,
+                transform: `rotate(${open ? 180 : 0}deg)`,
+                transition: 'transform 0.2s',
+              }}
+            >
+              ▾
+            </span>
           </span>
-        </span>
-      </button>
+        </button>
+      }
 
       {open && (
         <div
@@ -952,8 +964,10 @@ function MissionTasksPill({
 
 export default function MissionDesignSwitcher({
   beforeContent,
+  surfaceMode = 'sober',
 }: {
   beforeContent?: React.ReactNode;
+  surfaceMode?: 'sober' | 'image';
 }) {
   const [format, setFormat] = useState<MissionFormat>('one');
 
@@ -971,7 +985,7 @@ export default function MissionDesignSwitcher({
     <div style={{ display: 'grid', gap: 8 }}>
       {beforeContent}
       <div style={{ marginTop: 8 }}>
-        <MissionTasksPill format={format} onFormatChange={changeFormat} />
+        <MissionTasksPill format={format} onFormatChange={changeFormat} surfaceMode={surfaceMode} />
       </div>
     </div>
   );

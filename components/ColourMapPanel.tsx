@@ -5,8 +5,10 @@ import { syncPref } from '@/lib/sync';
 
 /* ── Tokens ──────────────────────────────────────────────────── */
 const OCHRE = 'var(--palette-panel-text, #C4A060)';
-const BROWN = 'var(--palette-panel-text, rgba(240,216,152,0.88))';
-const LABEL = 'var(--palette-panel-muted, rgba(196,160,96,0.55))';
+const BROWN = 'var(--light-surface-text, #3A1D0F)';
+const AREA_TEXT = 'var(--light-surface-text, #3A1D0F)';
+const LABEL = 'var(--light-surface-muted, #6B4226)';
+const FAINT_LABEL = 'color-mix(in srgb, var(--light-surface-text, #3A1D0F) 74%, transparent)';
 const CARD_BG = 'rgba(196,160,96,0.05)';
 
 /* ── Types ───────────────────────────────────────────────────── */
@@ -84,7 +86,9 @@ function persistAreaMissions(next: AreaMission[]) {
   try {
     localStorage.setItem(MISSIONS_KEY, JSON.stringify(next));
   } catch {}
-  syncPref(MISSIONS_KEY, next);
+  try {
+    syncPref(MISSIONS_KEY, next);
+  } catch {}
   window.dispatchEvent(new Event('colourmap:missions-updated'));
 }
 
@@ -214,7 +218,7 @@ function StepList({
                 fontSize: 13,
                 color: s.done ? `${LABEL}` : BROWN,
                 textDecoration: s.done ? 'line-through' : 'none',
-                opacity: s.done ? 0.5 : 1,
+                opacity: s.done ? 0.72 : 1,
                 lineHeight: 1.4,
               }}
             >
@@ -251,6 +255,7 @@ function StepList({
             if (e.key === 'Enter') submit();
           }}
           placeholder="add step…"
+          className="placeholder:text-[#5C3018] placeholder:opacity-65"
           spellCheck={false}
           autoCorrect="off"
           autoCapitalize="off"
@@ -263,8 +268,8 @@ function StepList({
             outline: 'none',
             fontFamily: 'var(--font-serif)',
             fontSize: 12,
-            color: LABEL,
-            opacity: 0.7,
+            color: BROWN,
+            opacity: 0.94,
             padding: '4px 0',
             letterSpacing: '0.04em',
           }}
@@ -354,6 +359,7 @@ function CompartmentCard({
             onUpdate({ ...comp, title: e.target.value });
           }}
           placeholder="compartment…"
+          className="placeholder:text-[#5C3018] placeholder:opacity-65"
           spellCheck={false}
           autoCorrect="off"
           style={{
@@ -365,8 +371,8 @@ function CompartmentCard({
             fontSize: 12,
             fontWeight: 700,
             letterSpacing: '0.08em',
-            color: channelColor,
-            opacity: 0.85,
+            color: BROWN,
+            opacity: 1,
             cursor: 'text',
           }}
         />
@@ -375,8 +381,8 @@ function CompartmentCard({
             style={{
               fontFamily: 'var(--font-serif)',
               fontSize: 10,
-              color: LABEL,
-              opacity: 0.45,
+              color: FAINT_LABEL,
+              opacity: 1,
               flexShrink: 0,
             }}
           >
@@ -398,8 +404,9 @@ function CompartmentCard({
             padding: '2px 8px',
             fontFamily: 'var(--font-serif)',
             fontSize: 9,
+            fontWeight: 900,
             letterSpacing: '0.1em',
-            color: comp.linkedToDay ? channelColor : `${channelColor}88`,
+            color: comp.linkedToDay ? BROWN : FAINT_LABEL,
             cursor: 'pointer',
             flexShrink: 0,
             transition: 'all 0.15s',
@@ -416,8 +423,8 @@ function CompartmentCard({
           style={{
             background: 'none',
             border: 'none',
-            color: LABEL,
-            opacity: 0.25,
+            color: FAINT_LABEL,
+            opacity: 1,
             cursor: 'pointer',
             fontSize: 13,
             lineHeight: 1,
@@ -430,7 +437,7 @@ function CompartmentCard({
         <span
           style={{
             color: channelColor,
-            opacity: 0.4,
+            opacity: 0.82,
             fontSize: 10,
             transform: open ? 'rotate(180deg)' : 'none',
             transition: 'transform 0.2s',
@@ -489,6 +496,11 @@ function ChannelCard({
 
   function toggle() {
     onUpdate({ ...channel, open: !channel.open });
+  }
+
+  function changeChannelColor(color: string) {
+    setPaletteOpen(false);
+    onUpdate({ ...channel, color });
   }
 
   function addAreaMission() {
@@ -558,6 +570,56 @@ function ChannelCard({
     (acc, c) => acc + c.steps.filter((s) => s.done).length,
     0,
   );
+  const openAreaMissions = areaMissions.filter((mission) => !mission.done);
+  const doneAreaMissions = areaMissions.filter((mission) => mission.done);
+
+  function AreaMissionRow({ mission }: { mission: AreaMission }) {
+    return (
+      <button
+        type="button"
+        onClick={() => toggleAreaMission(mission.id)}
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: 8,
+          width: '100%',
+          border: `1px solid ${channel.color}26`,
+          borderRadius: 8,
+          background: mission.done ? `${channel.color}0a` : 'rgba(255,255,255,0.52)',
+          padding: '8px 10px',
+          cursor: 'pointer',
+          textAlign: 'left',
+        }}
+      >
+        <span
+          style={{
+            width: 12,
+            height: 12,
+            borderRadius: '50%',
+            border: `1.5px solid ${channel.color}`,
+            background: mission.done ? channel.color : 'transparent',
+            flexShrink: 0,
+          }}
+        />
+        <span
+          style={{
+            flex: 1,
+            minWidth: 0,
+            fontFamily: 'var(--font-serif)',
+            fontSize: 14,
+            fontWeight: 800,
+            lineHeight: 1.3,
+            color: BROWN,
+            textDecoration: mission.done ? 'line-through' : 'none',
+            opacity: mission.done ? 0.62 : 1,
+            overflowWrap: 'anywhere',
+          }}
+        >
+          {mission.text}
+        </span>
+      </button>
+    );
+  }
 
   return (
     <div
@@ -585,6 +647,7 @@ function ChannelCard({
         <button
           type="button"
           aria-label={`Change ${channel.title || 'area'} color`}
+          onPointerDown={(e) => e.stopPropagation()}
           onClick={(e) => {
             e.stopPropagation();
             setPaletteOpen((value) => !value);
@@ -611,7 +674,7 @@ function ChannelCard({
               fontWeight: 800,
               letterSpacing: '0.13em',
               textTransform: 'uppercase',
-              color: channel.color,
+              color: AREA_TEXT,
             }}
           >
             {channel.title}
@@ -635,7 +698,7 @@ function ChannelCard({
               fontWeight: 800,
               letterSpacing: '0.13em',
               textTransform: 'uppercase',
-              color: channel.color,
+              color: AREA_TEXT,
               cursor: 'text',
             }}
           />
@@ -646,8 +709,8 @@ function ChannelCard({
             style={{
               fontFamily: 'var(--font-serif)',
               fontSize: 10,
-              color: LABEL,
-              opacity: 0.4,
+              color: FAINT_LABEL,
+              opacity: 1,
               flexShrink: 0,
             }}
           >
@@ -665,8 +728,8 @@ function ChannelCard({
             style={{
               background: 'none',
               border: 'none',
-              color: LABEL,
-              opacity: 0.22,
+              color: FAINT_LABEL,
+              opacity: 1,
               cursor: 'pointer',
               fontSize: 14,
               lineHeight: 1,
@@ -681,7 +744,7 @@ function ChannelCard({
         <span
           style={{
             color: channel.color,
-            opacity: 0.45,
+            opacity: 0.82,
             fontSize: 11,
             transform: channel.open ? 'rotate(180deg)' : 'none',
             transition: 'transform 0.2s',
@@ -697,6 +760,8 @@ function ChannelCard({
         <div style={{ padding: '10px 12px' }}>
           {paletteOpen && (
             <div
+              onPointerDown={(event) => event.stopPropagation()}
+              onClick={(event) => event.stopPropagation()}
               style={{
                 border: `1px solid ${channel.color}30`,
                 borderRadius: 12,
@@ -714,10 +779,34 @@ function ChannelCard({
                   key={color}
                   type="button"
                   aria-label={`Use area color ${color}`}
-                  onClick={(event) => {
+                  onPointerDownCapture={(event) => {
+                    event.preventDefault();
                     event.stopPropagation();
-                    onUpdate({ ...channel, color });
-                    setPaletteOpen(false);
+                    changeChannelColor(color);
+                  }}
+                  onClickCapture={(event) => {
+                    event.preventDefault();
+                    event.stopPropagation();
+                    changeChannelColor(color);
+                  }}
+                  onPointerDown={(event) => {
+                    event.preventDefault();
+                    event.stopPropagation();
+                    changeChannelColor(color);
+                  }}
+                  onMouseDown={(event) => {
+                    event.preventDefault();
+                    event.stopPropagation();
+                    changeChannelColor(color);
+                  }}
+                  onTouchStart={(event) => {
+                    event.preventDefault();
+                    event.stopPropagation();
+                    changeChannelColor(color);
+                  }}
+                  onClick={(event) => {
+                    event.preventDefault();
+                    event.stopPropagation();
                   }}
                   style={{
                     width: '100%',
@@ -758,53 +847,10 @@ function ChannelCard({
             >
               Missions in this area
             </div>
-            {areaMissions.length > 0 && (
+            {openAreaMissions.length > 0 && (
               <div style={{ display: 'grid', gap: 6, marginBottom: 9 }}>
-                {areaMissions.slice(0, 5).map((mission) => (
-                  <button
-                    key={mission.id}
-                    type="button"
-                    onClick={() => toggleAreaMission(mission.id)}
-                    style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: 8,
-                      width: '100%',
-                      border: `1px solid ${channel.color}26`,
-                      borderRadius: 8,
-                      background: mission.done ? `${channel.color}0a` : 'rgba(255,255,255,0.035)',
-                      padding: '8px 10px',
-                      cursor: 'pointer',
-                      textAlign: 'left',
-                    }}
-                  >
-                    <span
-                      style={{
-                        width: 12,
-                        height: 12,
-                        borderRadius: '50%',
-                        border: `1.5px solid ${channel.color}`,
-                        background: mission.done ? channel.color : 'transparent',
-                        flexShrink: 0,
-                      }}
-                    />
-                    <span
-                      style={{
-                        flex: 1,
-                        minWidth: 0,
-                        fontFamily: 'var(--font-serif)',
-                        fontSize: 14,
-                        fontWeight: 700,
-                        lineHeight: 1.25,
-                        color: BROWN,
-                        textDecoration: mission.done ? 'line-through' : 'none',
-                        opacity: mission.done ? 0.55 : 1,
-                        overflowWrap: 'anywhere',
-                      }}
-                    >
-                      {mission.text}
-                    </span>
-                  </button>
+                {openAreaMissions.slice(0, 5).map((mission) => (
+                  <AreaMissionRow key={mission.id} mission={mission} />
                 ))}
               </div>
             )}
@@ -820,6 +866,7 @@ function ChannelCard({
                 value={missionText}
                 onChange={(event) => setMissionText(event.target.value)}
                 placeholder="Add mission in this area..."
+                className="placeholder:text-[#5C3018] placeholder:opacity-70"
                 spellCheck={false}
                 autoCorrect="off"
                 style={{
@@ -835,25 +882,54 @@ function ChannelCard({
                   outline: 'none',
                 }}
               />
-              <button
-                type="submit"
-                disabled={!missionText.trim()}
+              {missionText.trim() && (
+                <button
+                  type="submit"
+                  style={{
+                    border: `1px solid ${channel.color}44`,
+                    borderRadius: 8,
+                    background: `${channel.color}18`,
+                    color: BROWN,
+                    fontFamily: 'var(--font-serif)',
+                    fontSize: 13,
+                    fontWeight: 900,
+                    padding: '0 12px',
+                    cursor: 'pointer',
+                  }}
+                >
+                  Add
+                </button>
+              )}
+            </form>
+            {doneAreaMissions.length > 0 && (
+              <div
                 style={{
-                  border: `1px solid ${channel.color}44`,
-                  borderRadius: 8,
-                  background: missionText.trim() ? `${channel.color}18` : 'transparent',
-                  color: BROWN,
-                  fontFamily: 'var(--font-serif)',
-                  fontSize: 13,
-                  fontWeight: 900,
-                  padding: '0 12px',
-                  cursor: missionText.trim() ? 'pointer' : 'default',
-                  opacity: missionText.trim() ? 1 : 0.45,
+                  borderTop: `1px solid ${channel.color}20`,
+                  marginTop: 10,
+                  paddingTop: 9,
                 }}
               >
-                Add
-              </button>
-            </form>
+                <div
+                  style={{
+                    fontFamily: 'var(--font-serif)',
+                    fontSize: 11,
+                    fontWeight: 900,
+                    letterSpacing: '0.14em',
+                    textTransform: 'uppercase',
+                    color: BROWN,
+                    marginBottom: 7,
+                    textAlign: 'center',
+                  }}
+                >
+                  Done
+                </div>
+                <div style={{ display: 'grid', gap: 6 }}>
+                  {doneAreaMissions.map((mission) => (
+                    <AreaMissionRow key={mission.id} mission={mission} />
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
 
           {channel.compartments.map((comp) => (
@@ -879,8 +955,8 @@ function ChannelCard({
               padding: '6px 0',
               fontFamily: 'var(--font-serif)',
               fontSize: 11,
-              color: channel.color,
-              opacity: 0.5,
+              color: BROWN,
+              opacity: 0.92,
               cursor: 'pointer',
               letterSpacing: '0.08em',
             }}
@@ -940,7 +1016,7 @@ function IdeaCard({
           cursor: 'pointer',
         }}
       >
-        <span style={{ color: OCHRE, opacity: 0.35, fontSize: 14, flexShrink: 0 }}>·</span>
+        <span style={{ color: OCHRE, opacity: 0.78, fontSize: 14, flexShrink: 0 }}>·</span>
 
         <input
           type="text"
@@ -948,6 +1024,7 @@ function IdeaCard({
           onClick={(e) => e.stopPropagation()}
           onChange={(e) => onUpdate({ ...idea, title: e.target.value })}
           placeholder="idea…"
+          className="placeholder:text-[#5C3018] placeholder:opacity-65"
           spellCheck={false}
           autoCorrect="off"
           style={{
@@ -967,8 +1044,8 @@ function IdeaCard({
             style={{
               fontFamily: 'var(--font-serif)',
               fontSize: 10,
-              color: LABEL,
-              opacity: 0.4,
+              color: FAINT_LABEL,
+              opacity: 1,
               flexShrink: 0,
             }}
           >
@@ -985,8 +1062,8 @@ function IdeaCard({
           style={{
             background: 'none',
             border: 'none',
-            color: LABEL,
-            opacity: 0.25,
+            color: FAINT_LABEL,
+            opacity: 1,
             cursor: 'pointer',
             fontSize: 13,
             lineHeight: 1,
@@ -1000,7 +1077,7 @@ function IdeaCard({
         <span
           style={{
             color: OCHRE,
-            opacity: 0.35,
+            opacity: 0.82,
             fontSize: 10,
             transform: open ? 'rotate(180deg)' : 'none',
             transition: 'transform 0.2s',
@@ -1036,7 +1113,7 @@ function SectionLabel({ label }: { label: string }) {
         letterSpacing: '0.22em',
         textTransform: 'uppercase',
         color: LABEL,
-        opacity: 0.45,
+        opacity: 1,
         marginBottom: 8,
         textAlign: 'center',
       }}
@@ -1047,8 +1124,13 @@ function SectionLabel({ label }: { label: string }) {
 }
 
 /* ── Main panel ──────────────────────────────────────────────── */
-export default function ColourMapPanel() {
+export default function ColourMapPanel({
+  surfaceMode = 'sober',
+}: {
+  surfaceMode?: 'sober' | 'image';
+}) {
   const [data, setData] = useState<CMapData>(defaultData());
+  const imageMode = surfaceMode === 'image';
   const [open, setOpen] = useState(false);
   const [view, setView] = useState<'list' | 'dots'>('list');
   const [selectedDot, setSelectedDot] = useState<string | null>(null);
@@ -1078,7 +1160,9 @@ export default function ColourMapPanel() {
     try {
       localStorage.setItem(LS_KEY, JSON.stringify(next));
     } catch {}
-    syncPref(LS_KEY, next);
+    try {
+      syncPref(LS_KEY, next);
+    } catch {}
     if (typeof window !== 'undefined') {
       window.dispatchEvent(new CustomEvent('colourmap:cmap-updated'));
     }
@@ -1097,8 +1181,10 @@ export default function ColourMapPanel() {
   }
 
   function updateChannel(id: string, ch: Channel) {
-    syncAreaMissionTag(ch);
     persist({ ...data, channels: data.channels.map((x) => (x.id === id ? ch : x)) });
+    try {
+      syncAreaMissionTag(ch);
+    } catch {}
   }
 
   function deleteChannel(id: string) {
@@ -1130,114 +1216,125 @@ export default function ColourMapPanel() {
   return (
     <div
       style={{
-        border: `1px solid var(--panel-border, rgba(196,160,96,0.18))`,
-        borderRadius: 14,
-        background: 'var(--collapsible-shell-bg, var(--palette-l3-bg, rgba(10,6,3,0.6)))',
+        border: imageMode
+          ? '1px solid rgba(240,216,152,0.18)'
+          : `1px solid var(--panel-border, rgba(196,160,96,0.18))`,
+        borderRadius: imageMode ? 0 : 14,
+        background: imageMode
+          ? 'rgba(255,244,204,0.06)'
+          : 'var(--collapsible-shell-bg, var(--palette-l3-bg, rgba(10,6,3,0.6)))',
         overflow: 'hidden',
       }}
     >
       {/* Header */}
-      <div
-        onClick={() => setOpen((v) => !v)}
-        style={{
-          padding: '14px 18px',
-          backgroundColor: 'var(--palette-l3-bg, rgba(30,16,8,0.55))',
-          backgroundImage:
-            'linear-gradient(90deg, color-mix(in srgb, var(--palette-l3-bg, rgba(30,16,8,0.55)) 94%, transparent), color-mix(in srgb, var(--palette-l3-bg, rgba(30,16,8,0.55)) 58%, transparent)), url("/emotions/pills/areas.webp")',
-          backgroundSize: 'cover',
-          backgroundPosition: 'center 48%',
-          borderBottom: open ? `1px solid rgba(196,160,96,0.15)` : 'none',
-          cursor: 'pointer',
-          display: 'flex',
-          alignItems: 'center',
-        }}
-      >
-        {/* view toggle — left side as dots */}
-        <span style={{ flex: 1, display: 'flex', alignItems: 'center', gap: 6, paddingLeft: 2 }}>
-          {open &&
-            (
-              [
-                ['list', 'V'],
-                ['dots', 'H'],
-              ] as const
-            ).map(([v, label]) => (
-              <button
-                key={v}
-                type="button"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setView(v);
-                }}
-                style={{
-                  minHeight: 32,
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  background:
-                    view === v ? 'color-mix(in srgb, var(--card) 78%, transparent)' : 'transparent',
-                  border:
-                    view === v
-                      ? '1px solid color-mix(in srgb, var(--foreground) 22%, transparent)'
-                      : '1px solid transparent',
-                  borderRadius: 999,
-                  cursor: 'pointer',
-                  padding: '6px 10px',
-                  minWidth: 34,
-                  color: view === v ? 'var(--foreground)' : 'var(--muted-foreground)',
-                  fontFamily: 'var(--font-serif)',
-                  fontSize: 12,
-                  fontWeight: 900,
-                  lineHeight: 1,
-                }}
-              >
-                {label}
-              </button>
-            ))}
-        </span>
-        <div style={{ textAlign: 'center' }}>
-          <div
-            style={{
-              fontFamily: 'var(--font-serif)',
-              fontSize: 15,
-              fontWeight: 900,
-              textTransform: 'uppercase',
-              letterSpacing: '0.18em',
-              color: 'var(--palette-panel-text, rgba(196,160,96,0.82))',
-            }}
-          >
-            Areas
-          </div>
-          {totalChannelSteps > 0 && (
+      {
+        <div
+          onClick={() => setOpen((v) => !v)}
+          style={{
+            padding: '14px 18px',
+            backgroundColor: imageMode
+              ? 'rgba(255,244,204,0.06)'
+              : 'var(--palette-l3-bg, rgba(30,16,8,0.55))',
+            backgroundImage: imageMode
+              ? undefined
+              : 'linear-gradient(90deg, color-mix(in srgb, var(--palette-l3-bg, rgba(30,16,8,0.55)) 94%, transparent), color-mix(in srgb, var(--palette-l3-bg, rgba(30,16,8,0.55)) 58%, transparent)), url("/emotions/pills/areas.webp")',
+            backgroundSize: 'cover',
+            backgroundPosition: 'center 48%',
+            borderBottom: open ? `1px solid rgba(196,160,96,0.15)` : 'none',
+            cursor: 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+          }}
+        >
+          {/* view toggle — left side as dots */}
+          <span style={{ flex: 1, display: 'flex', alignItems: 'center', gap: 6, paddingLeft: 2 }}>
+            {open &&
+              (
+                [
+                  ['list', 'V'],
+                  ['dots', 'H'],
+                ] as const
+              ).map(([v, label]) => (
+                <button
+                  key={v}
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setView(v);
+                  }}
+                  style={{
+                    minHeight: 32,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    background:
+                      view === v
+                        ? 'color-mix(in srgb, var(--card) 78%, transparent)'
+                        : 'transparent',
+                    border:
+                      view === v
+                        ? '1px solid color-mix(in srgb, var(--foreground) 22%, transparent)'
+                        : '1px solid transparent',
+                    borderRadius: 999,
+                    cursor: 'pointer',
+                    padding: '6px 10px',
+                    minWidth: 34,
+                    color: view === v ? 'var(--foreground)' : 'var(--muted-foreground)',
+                    fontFamily: 'var(--font-serif)',
+                    fontSize: 12,
+                    fontWeight: 900,
+                    lineHeight: 1,
+                  }}
+                >
+                  {label}
+                </button>
+              ))}
+          </span>
+          <div style={{ textAlign: 'center' }}>
             <div
               style={{
                 fontFamily: 'var(--font-serif)',
-                fontSize: 10,
-                color: LABEL,
-                opacity: 0.45,
-                marginTop: 1,
-                letterSpacing: '0.06em',
+                fontSize: 15,
+                fontWeight: 900,
+                textTransform: 'uppercase',
+                letterSpacing: '0.18em',
+                color: 'var(--palette-panel-text, rgba(196,160,96,0.82))',
               }}
             >
-              {doneChannelSteps}/{totalChannelSteps} steps
+              Areas
             </div>
-          )}
-        </div>
-        <span
-          style={{ flex: 1, display: 'flex', justifyContent: 'flex-end', alignItems: 'center' }}
-        >
+            {totalChannelSteps > 0 && (
+              <div
+                style={{
+                  fontFamily: 'var(--font-serif)',
+                  fontSize: 10,
+                  color: LABEL,
+                  opacity: 0.45,
+                  marginTop: 1,
+                  letterSpacing: '0.06em',
+                }}
+              >
+                {doneChannelSteps}/{totalChannelSteps} steps
+              </div>
+            )}
+          </div>
           <span
-            style={{
-              color: OCHRE,
-              opacity: 0.4,
-              fontSize: 11,
-              transform: open ? 'rotate(180deg)' : 'rotate(0deg)',
-              transition: 'transform 0.2s',
-            }}
+            style={{ flex: 1, display: 'flex', justifyContent: 'flex-end', alignItems: 'center' }}
           >
-            ▾
+            <span
+              style={{
+                color: OCHRE,
+                opacity: 0.4,
+                fontSize: 11,
+                transform: open ? 'rotate(180deg)' : 'rotate(0deg)',
+                transition: 'transform 0.2s',
+              }}
+            >
+              ▾
+            </span>
           </span>
-        </span>
-      </div>
+        </div>
+      }
 
       {open && view === 'list' && (
         <div
@@ -1323,7 +1420,7 @@ export default function ColourMapPanel() {
           {/* ── Horizontal orbit row ── */}
           <div style={{ position: 'relative', marginBottom: 20 }}>
             {/* dots */}
-            <div style={{ display: 'flex', gap: 12, overflowX: 'auto', paddingBottom: 4 }}>
+            <div style={{ display: 'flex', gap: 10, overflowX: 'auto', padding: '4px 0 6px' }}>
               {data.channels.map((ch) => {
                 const isSel = selectedDot === ch.id;
                 const done = ch.compartments.reduce(
@@ -1334,10 +1431,10 @@ export default function ColourMapPanel() {
                 return (
                   <div
                     key={ch.id}
-                    onClick={() => setSelectedDot(isSel ? null : ch.id)}
+                    onClick={() => setSelectedDot(ch.id)}
                     style={{
-                      flex: '0 0 92px',
-                      width: 92,
+                      flex: '0 0 calc((100% - 30px) / 4)',
+                      minWidth: 72,
                       display: 'flex',
                       flexDirection: 'column',
                       alignItems: 'center',
@@ -1348,12 +1445,14 @@ export default function ColourMapPanel() {
                   >
                     <div
                       style={{
-                        width: 62,
-                        height: 62,
+                        width: 'min(62px, 100%)',
+                        aspectRatio: '1 / 1',
                         borderRadius: '50%',
-                        background: isSel ? `${ch.color}28` : `${ch.color}12`,
-                        border: `2px solid ${isSel ? ch.color : `${ch.color}50`}`,
-                        boxShadow: isSel ? `0 0 16px ${ch.color}40` : 'none',
+                        background: isSel ? `${ch.color}66` : `${ch.color}28`,
+                        border: `2px solid ${ch.color}`,
+                        boxShadow: isSel
+                          ? `0 0 0 4px ${ch.color}18, 0 0 18px ${ch.color}48`
+                          : `0 0 0 3px ${ch.color}10`,
                         transition: 'all 0.2s',
                         display: 'flex',
                         alignItems: 'center',
@@ -1365,8 +1464,8 @@ export default function ColourMapPanel() {
                           style={{
                             fontFamily: 'var(--font-serif)',
                             fontSize: 12,
-                            color: 'var(--foreground)',
-                            opacity: 0.9,
+                            color: isSel ? 'rgba(255,248,226,0.96)' : BROWN,
+                            opacity: 1,
                             fontWeight: 900,
                           }}
                         >
@@ -1383,7 +1482,7 @@ export default function ColourMapPanel() {
                         color: 'var(--foreground)',
                         opacity: isSel ? 1 : 0.78,
                         textAlign: 'center',
-                        maxWidth: 92,
+                        maxWidth: '100%',
                         overflow: 'hidden',
                         textOverflow: 'ellipsis',
                         whiteSpace: 'normal',
@@ -1400,8 +1499,8 @@ export default function ColourMapPanel() {
               <div
                 onClick={addChannel}
                 style={{
-                  flex: '0 0 92px',
-                  width: 92,
+                  flex: '0 0 calc((100% - 30px) / 4)',
+                  minWidth: 72,
                   display: 'flex',
                   flexDirection: 'column',
                   alignItems: 'center',
@@ -1412,8 +1511,8 @@ export default function ColourMapPanel() {
               >
                 <div
                   style={{
-                    width: 62,
-                    height: 62,
+                    width: 'min(62px, 100%)',
+                    aspectRatio: '1 / 1',
                     borderRadius: '50%',
                     border: '1.5px dashed rgba(196,160,96,0.22)',
                     display: 'flex',
@@ -1434,7 +1533,7 @@ export default function ColourMapPanel() {
                     opacity: 0.72,
                     letterSpacing: '0.02em',
                     textAlign: 'center',
-                    width: 92,
+                    width: '100%',
                     lineHeight: 1.1,
                   }}
                 >

@@ -59,4 +59,33 @@ describe('ColourMapPanel', () => {
 
     expect(screen.getAllByText('Call accountant')).toHaveLength(1);
   });
+
+  it('keeps a horizontal area dot selected when it is clicked again', () => {
+    localStorage.setItem(
+      'colourmap:cmap-data',
+      JSON.stringify({
+        title: 'Areas',
+        channels: [
+          {
+            id: 'area-music',
+            title: 'Music',
+            color: '#4870A8',
+            open: true,
+            compartments: [],
+          },
+        ],
+        ideas: [],
+      }),
+    );
+
+    render(<ColourMapPanel />);
+
+    fireEvent.click(screen.getByText('Areas'));
+    fireEvent.click(screen.getByRole('button', { name: 'H' }));
+    fireEvent.click(screen.getByText('Music'));
+    expect(screen.getByText('Missions in this area')).toBeDefined();
+
+    fireEvent.click(screen.getByText('Music'));
+    expect(screen.getByText('Missions in this area')).toBeDefined();
+  });
 });
