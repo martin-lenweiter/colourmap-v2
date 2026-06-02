@@ -137,18 +137,18 @@ function FocusDesignPill({
         border: '1px solid var(--panel-border, rgba(196,160,96,0.22))',
         borderRadius: 999,
         background: floating
-          ? 'rgba(18,10,5,0.42)'
-          : 'color-mix(in srgb, var(--card) 74%, transparent)',
-        padding: 2,
-        gap: 2,
+          ? 'rgba(18,10,5,0.30)'
+          : 'color-mix(in srgb, var(--card) 54%, transparent)',
+        padding: 1,
+        gap: 1,
         margin: 0,
         backdropFilter: floating ? 'blur(8px)' : undefined,
       }}
     >
       {(
         [
-          ['sober', 'Sober'],
-          ['image', 'Image'],
+          ['sober', 'S'],
+          ['image', 'I'],
         ] as const
       ).map(([mode, label]) => {
         const active = value === mode;
@@ -157,22 +157,27 @@ function FocusDesignPill({
             key={mode}
             type="button"
             onClick={() => onChange(mode)}
+            aria-label={mode === 'sober' ? 'Use sober focus design' : 'Use image focus design'}
             aria-pressed={active}
+            title={mode === 'sober' ? 'Sober mode' : 'Image mode'}
             style={{
               border: 0,
               borderRadius: 999,
-              minHeight: 28,
-              padding: '4px 12px',
-              background: active ? 'rgba(196,160,96,0.24)' : 'transparent',
+              width: 22,
+              height: 22,
+              padding: 0,
+              background: active ? 'rgba(196,160,96,0.22)' : 'transparent',
               color: floating
-                ? 'rgba(240,216,152,0.92)'
+                ? active
+                  ? 'rgba(246,222,156,0.96)'
+                  : 'rgba(246,222,156,0.54)'
                 : active
                   ? 'var(--palette-panel-text, #5C3018)'
-                  : 'var(--palette-panel-muted, rgba(122,84,56,0.72))',
+                  : 'var(--palette-panel-muted, rgba(122,84,56,0.52))',
               fontFamily: 'var(--font-serif)',
-              fontSize: 12,
+              fontSize: 10,
               fontWeight: 900,
-              letterSpacing: '0.08em',
+              letterSpacing: 0,
               textTransform: 'uppercase',
               cursor: 'pointer',
             }}

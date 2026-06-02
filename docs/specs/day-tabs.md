@@ -206,9 +206,10 @@ The Focus lane has two top-level design modes:
   Inner Work and each Attitude / Emotions / Body / Behaviour tracker as its own collapsed unit rather
   than wrapping multiple pills in one parent box.
 
-The Sober / Image choice lives in the design pill and persists locally under
-`colourmap:focus-design-mode`. Sober protects the pre-image app experience while Image mode can keep
-evolving as the visual language gets tuned.
+The Sober / Image choice lives in a compact design switch and persists locally under
+`colourmap:focus-design-mode`. The visible control should stay deliberately small, because it is an
+occasional design-mode switch rather than a daily content surface. Sober protects the pre-image app
+experience while Image mode can keep evolving as the visual language gets tuned.
 
 Done when:
 
