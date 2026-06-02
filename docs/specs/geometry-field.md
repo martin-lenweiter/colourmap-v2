@@ -333,3 +333,29 @@ Music Entropy and Music Nebula should not be purely flat canvas effects. They ca
 Groove Machine dispatches a `colourmap:groove-visual-step` browser event with per-group energy (`drums`, `bass`, `keys`, `lead`, `pads`). Geometry listens to that event and lets the music presets react when both surfaces are open. If no Groove event is present, the presets use a restrained internal pulse so they still work as standalone visuals.
 
 Future inputs should use the same visual-energy contract: microphone analyser, uploaded recordings, voice notes, concert stems, and eventually external player metadata where platform policy allows it.
+
+### DJ Projection Installation Seed
+
+Geometry Field supports a first local DJ/projection workflow:
+
+- `/geometry-field?projection=1` is the crowd-facing output. It uses the full viewport and hides the
+  control panel, title, and fullscreen button so only the visual field is projected.
+- Projection mode must still have a discreet operator escape path: `Escape` exits back to normal
+  Geometry Field, and a hidden top-left tap/click zone exits without exposing controls to the crowd.
+- `/geometry-field?control=1` is the private controller. It keeps the normal controls visible and
+  publishes the selected preset and slider state to a local in-memory endpoint,
+  `/api/geometry-live`.
+- The projection route polls `/api/geometry-live` on the same app server. This is a LAN-first setup:
+  laptop renders the projection, phone/tablet/browser controls the state, and no cloud or 4G
+  connection is required once the app server is running.
+- Music Visuals exposes a DJ audio input toggle. It uses browser audio input with echo cancellation,
+  noise suppression, and auto gain disabled where the browser supports it. The preferred physical
+  source is mixer `REC OUT` or `BOOTH OUT` into a USB audio interface connected to the laptop; a
+  microphone input is acceptable only as a fallback.
+- The analyser maps RMS level, bass, mids, highs, and kick-like onsets into the existing Geometry
+  music response variables: bass expands pressure/gravity, drums create impact pulses, mids feed
+  pad/key atmosphere, highs feed lead/spark response.
+
+This seed is intentionally local and lightweight. Later versions may replace polling with WebSocket,
+MIDI, Ableton Link, OSC, or DJ software metadata, but the crowd-facing projection must remain a clean
+fullscreen output separate from the controller.

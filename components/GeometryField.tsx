@@ -177,6 +177,14 @@ interface Ripple {
 type FingerMode = 'off' | 'ripple' | 'pull' | 'push' | 'light';
 type MotionMode = 'animate' | 'static';
 type DanceMove = 'still' | 'breath' | 'headnod' | 'armrise' | 'pulse';
+type LiveMode = 'studio' | 'control' | 'projection';
+
+type GeometryLivePayload = {
+  presetName?: string;
+  cfg?: Partial<Cfg>;
+  updatedAt?: number;
+  sourceId?: string;
+};
 
 /* ── Palettes ───────────────────────────────────────────────── */
 
@@ -671,7 +679,7 @@ const PAL_SORTED: [string, Pal][] = Object.entries(PAL).sort(
 
 /* ── Preset configs ─────────────────────────────────────────── */
 
-const PRESETS: Record<string, Cfg> = {
+export const PRESETS: Record<string, Cfg> = {
   'Fire Dot Sun': {
     preset: 'Golden Source',
     symmetry: 11,
@@ -903,15 +911,15 @@ const PRESETS: Record<string, Cfg> = {
     mode: 'dottunnel',
   },
   'Swirl Dot Tunnel': {
-    preset: 'Cosmic Indigo',
+    preset: 'Golden Source',
     symmetry: 13,
-    complexity: 8,
-    glow: 7.4,
+    complexity: 8.4,
+    glow: 8.4,
     breathSpeed: 0.68,
-    intensity: 8,
-    particles: 9,
-    luminous: 3,
-    stars: 5,
+    intensity: 8.8,
+    particles: 10,
+    luminous: 4.2,
+    stars: 7,
     mode: 'swirldottunnel',
   },
   'Line Tunnel 3D': {
@@ -1676,15 +1684,15 @@ const PRESETS: Record<string, Cfg> = {
     mode: 'volcano',
   },
   'Atomic Explosion': {
-    preset: 'Deep Fire',
+    preset: 'Golden Source',
     symmetry: 12,
-    complexity: 8.4,
-    glow: 5.4,
+    complexity: 8.8,
+    glow: 8.2,
     breathSpeed: 0.3,
-    intensity: 9,
-    particles: 0,
-    luminous: 1.6,
-    stars: 0,
+    intensity: 9.4,
+    particles: 2,
+    luminous: 4.2,
+    stars: 5,
     mode: 'atomicexplosion',
   },
   Gravity: {
@@ -11659,7 +11667,7 @@ const MODES: { mode: Mode; label: string }[] = [
 
 type FeaturedItem = { name: string; tag: string } | { header: string; dim?: boolean };
 
-const FEATURED_PRESETS: FeaturedItem[] = [
+export const FEATURED_PRESETS: FeaturedItem[] = [
   { header: 'Good Ones' },
   { name: 'Trip Number 1', tag: 'TRIP' },
   { name: 'Trip Number 2', tag: 'DROP' },
@@ -11669,7 +11677,6 @@ const FEATURED_PRESETS: FeaturedItem[] = [
   { name: 'Vertical Scriptures', tag: 'TOP' },
   { name: 'Eclipse', tag: 'TOP' },
   { name: 'Yin Yang', tag: 'TOP' },
-  { name: 'Volcano', tag: 'TOP' },
   { name: 'Atomic Explosion', tag: 'TOP' },
   { name: 'Gravity', tag: 'TOP' },
   { name: 'Fire', tag: 'TOP' },
@@ -11692,12 +11699,7 @@ const FEATURED_PRESETS: FeaturedItem[] = [
   { name: 'Neuron Web 3', tag: 'NEURON' },
   { name: 'Neuron Web 4', tag: 'NEURON' },
   { name: 'Neuron Web 5', tag: 'NEURON' },
-
-  { name: 'Embrace', tag: 'DOT' },
-
-  { name: 'Dot Tunnel', tag: 'DEPTH' },
   { name: 'Swirl Dot Tunnel', tag: 'DEPTH' },
-  { name: 'Line Tunnel 3D', tag: 'DEPTH' },
   { name: 'Dot Road', tag: 'ROAD' },
 
   { name: 'Touch Preset', tag: 'TOUCH' },
@@ -11763,6 +11765,9 @@ const FEATURED_PRESETS: FeaturedItem[] = [
   { name: 'Cathedral Glass', tag: 'GLASS' },
   { name: 'Prism Seed', tag: 'PRISM' },
   { name: 'Entropy 3D', tag: 'CORE' },
+  { name: 'Embrace', tag: 'DOT' },
+  { name: 'Dot Tunnel', tag: 'DEPTH' },
+  { name: 'Line Tunnel 3D', tag: 'DEPTH' },
   { header: 'In Progress / To Develop', dim: true },
   { name: 'Chrysalis', tag: 'MORPH' },
   { name: 'Metamorph', tag: 'MORPH' },
@@ -13412,29 +13417,40 @@ function updatePulse(group: THREE.Group, cfg: Cfg, t: number, R: number): void {
     const posAttr = pts.geometry.getAttribute('position') as THREE.BufferAttribute;
     const arr = posAttr.array as Float32Array;
 
-    for (let p = 0; p < halfPts; p++) {
-      const a = (p / halfPts) * Math.PI; // 0..PI (one side)
-      const noise =
-        Math.sin(a * 4 + t * 0.00068 * speed + ri * 1.4) * 0.55 +
-        Math.sin(a * 9 + t * 0.00031 * speed + ri * 0.8) * 0.35 +
-        Math.sin(a * 17 + t * 0.00014 * speed) * 0.1;
-      const desertLift = desertDrop
-        ? Math.sin(a * 2 + t * 0.0011 + ri) * R * 0.035 * (0.45 + soundEnergy)
-        : 0;
-      const rOff =
-        (sym ? noise * chaosAmt * R * 0.32 : noise * chaosAmt * R * 0.28 * Math.sin(a)) +
-        desertLift;
-      const r2 = Math.max(0, radius + rOff);
-      // Right side
-      arr[p * 3] = Math.cos(a) * r2;
-      arr[p * 3 + 1] = Math.sin(a) * r2 * (desertDrop ? 0.72 + beatKick * 0.08 : 1);
-      arr[p * 3 + 2] = desertDrop ? Math.sin(a * 3 + t * 0.001 + ri) * R * 0.035 * soundEnergy : 0;
-      // Mirrored left side (rorschach)
-      arr[(halfPts + p) * 3] = -Math.cos(a) * r2;
-      arr[(halfPts + p) * 3 + 1] = Math.sin(a) * r2 * (desertDrop ? 0.72 + beatKick * 0.08 : 1);
-      arr[(halfPts + p) * 3 + 2] = desertDrop
-        ? -Math.sin(a * 3 + t * 0.001 + ri) * R * 0.035 * soundEnergy
-        : 0;
+    if (desertDrop) {
+      for (let p = 0; p < PULSE_PTS; p++) {
+        const a = (p / PULSE_PTS) * TAU;
+        const mirrorA = Math.atan2(Math.sin(a), Math.abs(Math.cos(a)));
+        const noise =
+          Math.sin(mirrorA * 4 + t * 0.00068 * speed + ri * 1.4) * 0.5 +
+          Math.sin(mirrorA * 9 + t * 0.00031 * speed + ri * 0.8) * 0.32 +
+          Math.sin(mirrorA * 17 + t * 0.00014 * speed) * 0.08;
+        const desertLift =
+          Math.sin(mirrorA * 2 + t * 0.0011 + ri) * R * 0.026 * (0.35 + soundEnergy);
+        const rOff = noise * chaosAmt * R * 0.22 + desertLift;
+        const r2 = Math.max(0, radius + rOff);
+        arr[p * 3] = Math.cos(a) * r2;
+        arr[p * 3 + 1] = Math.sin(a) * r2 * (0.86 + beatKick * 0.06);
+        arr[p * 3 + 2] = Math.sin(a * 3 + t * 0.001 + ri) * R * 0.035 * soundEnergy;
+      }
+    } else {
+      for (let p = 0; p < halfPts; p++) {
+        const a = (p / halfPts) * Math.PI; // 0..PI (one side)
+        const noise =
+          Math.sin(a * 4 + t * 0.00068 * speed + ri * 1.4) * 0.55 +
+          Math.sin(a * 9 + t * 0.00031 * speed + ri * 0.8) * 0.35 +
+          Math.sin(a * 17 + t * 0.00014 * speed) * 0.1;
+        const rOff = sym ? noise * chaosAmt * R * 0.32 : noise * chaosAmt * R * 0.28 * Math.sin(a);
+        const r2 = Math.max(0, radius + rOff);
+        // Right side
+        arr[p * 3] = Math.cos(a) * r2;
+        arr[p * 3 + 1] = Math.sin(a) * r2;
+        arr[p * 3 + 2] = 0;
+        // Mirrored left side (rorschach)
+        arr[(halfPts + p) * 3] = -Math.cos(a) * r2;
+        arr[(halfPts + p) * 3 + 1] = Math.sin(a) * r2;
+        arr[(halfPts + p) * 3 + 2] = 0;
+      }
     }
     posAttr.needsUpdate = true;
     pts.geometry.setDrawRange(0, PULSE_PTS);
@@ -16022,6 +16038,13 @@ export default function GeometryField() {
   const voiceStreamRef = useRef<MediaStream | null>(null);
   const voiceAudioContextRef = useRef<AudioContext | null>(null);
   const voiceAnimRef = useRef<number>(0);
+  const djStreamRef = useRef<MediaStream | null>(null);
+  const djAudioContextRef = useRef<AudioContext | null>(null);
+  const djAnimRef = useRef<number>(0);
+  const liveSourceIdRef = useRef(`geometry-${Math.random().toString(36).slice(2)}`);
+  const liveLastSeenRef = useRef(0);
+  const livePublishTimerRef = useRef<number>(0);
+  const projectionExitTimerRef = useRef<number>(0);
 
   const [cfg, setCfg] = useState<Cfg>(PRESETS['Calm Field']);
   const [selectedPresetName, setSelectedPresetName] = useState('Calm Field');
@@ -16032,9 +16055,14 @@ export default function GeometryField() {
   const [motionMode, setMotionMode] = useState<MotionMode>('animate');
   const [voiceListening, setVoiceListening] = useState(false);
   const [voiceError, setVoiceError] = useState('');
+  const [djListening, setDjListening] = useState(false);
+  const [djError, setDjError] = useState('');
+  const [djEnergy, setDjEnergy] = useState({ level: 0, bass: 0, highs: 0 });
   const [open, setOpen] = useState(true);
   const [tab, setTab] = useState<'builder' | 'music' | 'journey'>('builder');
   const [builderView, setBuilderView] = useState<'programs' | 'sliders'>('sliders');
+  const [liveMode, setLiveMode] = useState<LiveMode>('studio');
+  const [liveStatus, setLiveStatus] = useState('local');
   const [currentScaleResponse, setCurrentScaleResponse] = useState({
     pulse: 0.72,
     movement: 0.62,
@@ -16071,26 +16099,132 @@ export default function GeometryField() {
 
   useLayoutEffect(() => {
     try {
-      const urlPreset = new URLSearchParams(window.location.search).get('preset');
+      const params = new URLSearchParams(window.location.search);
+      const mode: LiveMode =
+        params.get('projection') === '1'
+          ? 'projection'
+          : params.get('control') === '1'
+            ? 'control'
+            : 'studio';
+      setLiveMode(mode);
+      if (mode === 'projection') setOpen(false);
+      if (mode === 'control') setOpen(true);
+
+      const urlPreset = params.get('preset');
       const requestedPreset =
         urlPreset ?? window.sessionStorage.getItem('colourmap:geometry-preset');
-      if (!requestedPreset) return;
-      window.sessionStorage.setItem('colourmap:geometry-preset', requestedPreset);
-      const presetCfg = PRESETS[requestedPreset];
-      if (presetCfg) {
-        setSelectedPresetName(requestedPreset);
-        setCfg({ ...presetCfg });
+      if (requestedPreset) {
+        window.sessionStorage.setItem('colourmap:geometry-preset', requestedPreset);
+        const presetCfg = PRESETS[requestedPreset];
+        if (presetCfg) {
+          setSelectedPresetName(requestedPreset);
+          setCfg({ ...presetCfg });
+        }
+        setTab('builder');
+        setBuilderView('programs');
+        if (urlPreset) {
+          params.delete('preset');
+          const query = params.toString();
+          window.history.replaceState(
+            null,
+            '',
+            `${window.location.pathname}${query ? `?${query}` : ''}`,
+          );
+        }
+        window.setTimeout(() => {
+          window.sessionStorage.removeItem('colourmap:geometry-preset');
+        }, 250);
       }
-      setTab('builder');
-      setBuilderView('programs');
-      if (urlPreset) window.history.replaceState(null, '', window.location.pathname);
-      window.setTimeout(() => {
-        window.sessionStorage.removeItem('colourmap:geometry-preset');
-      }, 250);
     } catch (error) {
       console.error('Geometry preset handoff failed', error);
     }
   }, []);
+
+  useEffect(() => {
+    if (liveMode !== 'control') return;
+    window.clearTimeout(livePublishTimerRef.current);
+    livePublishTimerRef.current = window.setTimeout(() => {
+      fetch('/api/geometry-live', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          presetName: selectedPresetName,
+          cfg,
+          sourceId: liveSourceIdRef.current,
+        }),
+      })
+        .then(() => setLiveStatus('sending'))
+        .catch(() => setLiveStatus('offline'));
+    }, 120);
+
+    return () => window.clearTimeout(livePublishTimerRef.current);
+  }, [cfg, liveMode, selectedPresetName]);
+
+  useEffect(() => {
+    if (liveMode !== 'projection') return;
+    let stopped = false;
+
+    async function pullLiveState() {
+      try {
+        const response = await fetch('/api/geometry-live', { cache: 'no-store' });
+        if (!response.ok) throw new Error('Live state unavailable');
+        const payload = (await response.json()) as GeometryLivePayload;
+        if (stopped || !payload.updatedAt || payload.updatedAt <= liveLastSeenRef.current) return;
+        liveLastSeenRef.current = payload.updatedAt;
+        if (payload.presetName) setSelectedPresetName(payload.presetName);
+        if (payload.cfg) {
+          setCfg((prev) => ({
+            ...prev,
+            ...payload.cfg,
+          }));
+        }
+        setLiveStatus('receiving');
+      } catch {
+        if (!stopped) setLiveStatus('offline');
+      }
+    }
+
+    void pullLiveState();
+    const id = window.setInterval(pullLiveState, 300);
+    return () => {
+      stopped = true;
+      window.clearInterval(id);
+    };
+  }, [liveMode]);
+
+  useEffect(() => {
+    if (liveMode !== 'projection') return;
+    function onKeyDown(event: KeyboardEvent) {
+      if (event.key !== 'Escape') return;
+      window.location.assign('/geometry-field');
+    }
+    function onPointerDown(event: PointerEvent) {
+      if (event.clientX > 80 || event.clientY > 80) return;
+      projectionExitTimerRef.current = window.setTimeout(() => {
+        window.location.assign('/geometry-field');
+      }, 900);
+    }
+    function onClick(event: MouseEvent) {
+      if (event.clientX > 80 || event.clientY > 80) return;
+      window.location.assign('/geometry-field');
+    }
+    function clearProjectionExit() {
+      window.clearTimeout(projectionExitTimerRef.current);
+    }
+    window.addEventListener('keydown', onKeyDown);
+    document.addEventListener('pointerdown', onPointerDown);
+    document.addEventListener('click', onClick);
+    document.addEventListener('pointerup', clearProjectionExit);
+    document.addEventListener('pointercancel', clearProjectionExit);
+    return () => {
+      window.removeEventListener('keydown', onKeyDown);
+      document.removeEventListener('pointerdown', onPointerDown);
+      document.removeEventListener('click', onClick);
+      document.removeEventListener('pointerup', clearProjectionExit);
+      document.removeEventListener('pointercancel', clearProjectionExit);
+      clearProjectionExit();
+    };
+  }, [liveMode]);
 
   useEffect(() => {
     _rippleRingsVisible = rippleRingsVisible;
@@ -16153,7 +16287,16 @@ export default function GeometryField() {
       cancelAnimationFrame(voiceAnimRef.current);
       voiceStreamRef.current?.getTracks().forEach((track) => track.stop());
       void voiceAudioContextRef.current?.close();
+      cancelAnimationFrame(djAnimRef.current);
+      djStreamRef.current?.getTracks().forEach((track) => track.stop());
+      void djAudioContextRef.current?.close();
       _voiceEnergy = 0;
+      _musicPulse = 0;
+      _musicBass = 0;
+      _musicDrums = 0;
+      _musicPads = 0;
+      _musicKeys = 0;
+      _musicLead = 0;
     };
   }, []);
 
@@ -18921,6 +19064,116 @@ export default function GeometryField() {
     setVoiceListening(false);
   }
 
+  function stopDjInput() {
+    cancelAnimationFrame(djAnimRef.current);
+    djAnimRef.current = 0;
+    djStreamRef.current?.getTracks().forEach((track) => track.stop());
+    djStreamRef.current = null;
+    void djAudioContextRef.current?.close();
+    djAudioContextRef.current = null;
+    _musicPulse = 0;
+    _musicBass = 0;
+    _musicDrums = 0;
+    _musicPads = 0;
+    _musicKeys = 0;
+    _musicLead = 0;
+    setDjListening(false);
+    setDjEnergy({ level: 0, bass: 0, highs: 0 });
+  }
+
+  async function toggleDjInput() {
+    setDjError('');
+    if (djListening) {
+      stopDjInput();
+      return;
+    }
+    if (typeof navigator === 'undefined' || !navigator.mediaDevices?.getUserMedia) {
+      setDjError('Audio input is not available in this browser.');
+      return;
+    }
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({
+        audio: {
+          echoCancellation: false,
+          noiseSuppression: false,
+          autoGainControl: false,
+        },
+      });
+      const audioContext = new window.AudioContext();
+      const analyser = audioContext.createAnalyser();
+      analyser.fftSize = 1024;
+      analyser.smoothingTimeConstant = 0.78;
+      audioContext.createMediaStreamSource(stream).connect(analyser);
+
+      const timeData = new Uint8Array(analyser.fftSize);
+      const freqData = new Uint8Array(analyser.frequencyBinCount);
+      let lastKick = 0;
+      let levelSmooth = 0;
+      let bassSmooth = 0;
+      let highSmooth = 0;
+
+      djStreamRef.current = stream;
+      djAudioContextRef.current = audioContext;
+      setDjListening(true);
+
+      const bandAvg = (from: number, to: number) => {
+        let sum = 0;
+        let count = 0;
+        for (let i = from; i <= to && i < freqData.length; i++) {
+          sum += freqData[i] / 255;
+          count++;
+        }
+        return count ? sum / count : 0;
+      };
+
+      const readDj = () => {
+        analyser.getByteTimeDomainData(timeData);
+        analyser.getByteFrequencyData(freqData);
+
+        let sum = 0;
+        for (let i = 0; i < timeData.length; i++) {
+          const centered = (timeData[i] - 128) / 128;
+          sum += centered * centered;
+        }
+
+        const rms = Math.sqrt(sum / timeData.length);
+        const level = Math.min(1, Math.max(0, (rms - 0.018) * 8));
+        const bass = Math.min(1, bandAvg(1, 8) * 1.55);
+        const mids = Math.min(1, bandAvg(9, 34) * 1.2);
+        const highs = Math.min(1, bandAvg(35, 120) * 1.25);
+        const kick = Math.max(0, bass - bassSmooth * 1.08);
+
+        levelSmooth = levelSmooth * 0.82 + level * 0.18;
+        bassSmooth = bassSmooth * 0.76 + bass * 0.24;
+        highSmooth = highSmooth * 0.82 + highs * 0.18;
+
+        const now = performance.now();
+        const kickHit = kick > 0.11 && now - lastKick > 170;
+        if (kickHit) lastKick = now;
+
+        _musicBass = Math.max(_musicBass * 0.9, bassSmooth);
+        _musicDrums = Math.max(
+          _musicDrums * 0.82,
+          kickHit ? Math.min(1, kick * 5.5) : level * 0.32,
+        );
+        _musicKeys = Math.max(_musicKeys * 0.88, mids * 0.62);
+        _musicLead = Math.max(_musicLead * 0.84, highSmooth);
+        _musicPads = Math.max(_musicPads * 0.9, Math.min(1, mids * 0.28 + levelSmooth * 0.24));
+        _musicPulse = Math.max(
+          _musicPulse * 0.82,
+          Math.min(1, _musicDrums * 0.62 + bassSmooth * 0.34 + levelSmooth * 0.2),
+        );
+
+        setDjEnergy({ level: levelSmooth, bass: bassSmooth, highs: highSmooth });
+        djAnimRef.current = requestAnimationFrame(readDj);
+      };
+      readDj();
+    } catch (error) {
+      setDjError(error instanceof Error ? error.message : 'Could not start DJ audio input.');
+      stopDjInput();
+    }
+  }
+
   async function toggleVoiceAgitation() {
     setVoiceError('');
     if (voiceListening) {
@@ -19057,6 +19310,8 @@ export default function GeometryField() {
   const accentFaint = `rgba(${pr},${pg},${pb},0.12)`;
   const accentMid = `rgba(${pr},${pg},${pb},0.35)`;
   const fingerDistort = fingerMode !== 'off';
+  const isProjectionMode = liveMode === 'projection';
+  const isControlMode = liveMode === 'control';
 
   const activeJourney = JOURNEYS[journeyId - 1];
   const currentStage = activeJourney?.stages[journeyPhaseInfo.phaseIdx];
@@ -19099,8 +19354,11 @@ export default function GeometryField() {
         display: 'flex',
         flexDirection: 'column',
         width: '100%',
-        height: 'calc(100svh - 92px)',
+        height: isProjectionMode ? '100svh' : 'calc(100svh - 92px)',
         minHeight: 0,
+        position: isProjectionMode ? 'fixed' : undefined,
+        inset: isProjectionMode ? 0 : undefined,
+        zIndex: isProjectionMode ? 2147483000 : undefined,
         borderRadius: 0,
         overflow: 'hidden',
         background: '#080604',
@@ -19244,28 +19502,30 @@ export default function GeometryField() {
         )}
 
         {/* Page title */}
-        <div
-          style={{
-            position: 'absolute',
-            top: 14,
-            left: 0,
-            right: 0,
-            textAlign: 'center',
-            pointerEvents: 'none',
-          }}
-        >
-          <p
+        {!isProjectionMode && (
+          <div
             style={{
-              fontFamily: 'var(--font-serif)',
-              fontSize: 11,
-              letterSpacing: '0.24em',
-              color: `rgba(${pr},${pg},${pb},0.45)`,
-              textTransform: 'uppercase',
+              position: 'absolute',
+              top: 14,
+              left: 0,
+              right: 0,
+              textAlign: 'center',
+              pointerEvents: 'none',
             }}
           >
-            Geometry Field
-          </p>
-        </div>
+            <p
+              style={{
+                fontFamily: 'var(--font-serif)',
+                fontSize: 11,
+                letterSpacing: '0.24em',
+                color: `rgba(${pr},${pg},${pb},0.45)`,
+                textTransform: 'uppercase',
+              }}
+            >
+              Geometry Field
+            </p>
+          </div>
+        )}
 
         {/* Journey live phase badge */}
         {journeyRunning && open && (
@@ -19309,7 +19569,7 @@ export default function GeometryField() {
         )}
 
         {/* Show-controls button when panel closed */}
-        {!open && (
+        {!open && !isProjectionMode && (
           <button
             type="button"
             onClick={() => setOpen(true)}
@@ -19336,30 +19596,32 @@ export default function GeometryField() {
           </button>
         )}
 
-        <button
-          type="button"
-          onClick={handleFullscreen}
-          title="Fullscreen"
-          style={{
-            position: 'absolute',
-            right: 14,
-            bottom: open ? 14 : 58,
-            background: 'rgba(8,6,4,0.72)',
-            border: `1px solid ${accentMid}`,
-            borderRadius: 99,
-            padding: '7px 12px',
-            color: accent,
-            fontFamily: 'var(--font-serif)',
-            fontSize: 10,
-            letterSpacing: '0.12em',
-            textTransform: 'uppercase',
-            cursor: 'pointer',
-            backdropFilter: 'blur(10px)',
-            zIndex: 21,
-          }}
-        >
-          Full
-        </button>
+        {!isProjectionMode && (
+          <button
+            type="button"
+            onClick={handleFullscreen}
+            title="Fullscreen"
+            style={{
+              position: 'absolute',
+              right: 14,
+              bottom: open ? 14 : 58,
+              background: 'rgba(8,6,4,0.72)',
+              border: `1px solid ${accentMid}`,
+              borderRadius: 99,
+              padding: '7px 12px',
+              color: accent,
+              fontFamily: 'var(--font-serif)',
+              fontSize: 10,
+              letterSpacing: '0.12em',
+              textTransform: 'uppercase',
+              cursor: 'pointer',
+              backdropFilter: 'blur(10px)',
+              zIndex: 21,
+            }}
+          >
+            Full
+          </button>
+        )}
         {cfg.mode === 'missionsun' && (
           <div
             style={{
@@ -19413,10 +19675,44 @@ export default function GeometryField() {
             )}
           </div>
         )}
+        {isProjectionMode && (
+          <button
+            type="button"
+            aria-label="Exit projection mode"
+            title="Exit projection"
+            onClick={() => window.location.assign('/geometry-field')}
+            onMouseDown={() => {
+              projectionExitTimerRef.current = window.setTimeout(() => {
+                window.location.assign('/geometry-field');
+              }, 900);
+            }}
+            onMouseUp={() => window.clearTimeout(projectionExitTimerRef.current)}
+            onMouseLeave={() => window.clearTimeout(projectionExitTimerRef.current)}
+            onTouchStart={() => {
+              projectionExitTimerRef.current = window.setTimeout(() => {
+                window.location.assign('/geometry-field');
+              }, 900);
+            }}
+            onTouchEnd={() => window.clearTimeout(projectionExitTimerRef.current)}
+            onTouchCancel={() => window.clearTimeout(projectionExitTimerRef.current)}
+            style={{
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              width: 72,
+              height: 72,
+              border: 0,
+              background: 'transparent',
+              cursor: 'default',
+              zIndex: 100,
+              pointerEvents: 'auto',
+            }}
+          />
+        )}
       </div>
 
       {/* Control panel — fixed 50% height when open */}
-      {open && (
+      {open && !isProjectionMode && (
         <div
           style={{
             flexShrink: 0,
@@ -19443,6 +19739,13 @@ export default function GeometryField() {
               <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
                 {pill('Builder', tab === 'builder', () => setTab('builder'), true)}
                 {pill('Music Visuals', tab === 'music', () => setTab('music'), true)}
+                {pill(
+                  'Projection',
+                  isProjectionMode,
+                  () =>
+                    window.open('/geometry-field?projection=1', '_blank', 'noopener,noreferrer'),
+                  true,
+                )}
                 {pill('Arena', false, () => window.location.assign('/dot-walker-arena'), true)}
                 {pill('Figures', false, () => window.location.assign('/figures'), true)}
                 {pill('Figure Stars', false, () => window.location.assign('/figure-stars'), true)}
@@ -19465,6 +19768,41 @@ export default function GeometryField() {
                 ▼
               </button>
             </div>
+            {isControlMode && (
+              <div
+                style={{
+                  display: 'grid',
+                  gridTemplateColumns: '1fr auto',
+                  gap: 8,
+                  alignItems: 'center',
+                  color: `rgba(${pr},${pg},${pb},0.58)`,
+                  fontFamily: 'var(--font-serif)',
+                  fontSize: 9,
+                  letterSpacing: '0.08em',
+                  textTransform: 'uppercase',
+                }}
+              >
+                <span>LAN control {liveStatus} · projection: /geometry-field?projection=1</span>
+                <button
+                  type="button"
+                  onClick={() => window.open('/geometry-field?projection=1', '_blank')}
+                  style={{
+                    border: `1px solid ${accentMid}`,
+                    background: accentFaint,
+                    borderRadius: 99,
+                    color: accent,
+                    cursor: 'pointer',
+                    fontFamily: 'var(--font-serif)',
+                    fontSize: 9,
+                    letterSpacing: '0.1em',
+                    padding: '3px 9px',
+                    textTransform: 'uppercase',
+                  }}
+                >
+                  Open output
+                </button>
+              </div>
+            )}
             {tab === 'builder' && (
               <div
                 style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}
@@ -20003,6 +20341,115 @@ export default function GeometryField() {
             {/* ── MUSIC VISUALS TAB ── */}
             {tab === 'music' && (
               <>
+                <div
+                  style={{
+                    border: `1px solid ${djListening ? accent : accentMid}`,
+                    background: djListening ? accentFaint : `rgba(${pr},${pg},${pb},0.05)`,
+                    borderRadius: 10,
+                    padding: '10px 11px',
+                    display: 'grid',
+                    gap: 8,
+                    boxShadow: djListening ? `0 0 26px rgba(${pr},${pg},${pb},0.14)` : 'none',
+                  }}
+                >
+                  <div
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      gap: 8,
+                    }}
+                  >
+                    <div
+                      style={{
+                        fontFamily: 'var(--font-serif)',
+                        fontSize: 10,
+                        letterSpacing: '0.14em',
+                        textTransform: 'uppercase',
+                        color: accent,
+                        fontWeight: 700,
+                      }}
+                    >
+                      DJ audio input
+                    </div>
+                    <button
+                      type="button"
+                      onClick={toggleDjInput}
+                      style={{
+                        border: `1px solid ${djListening ? accent : accentMid}`,
+                        background: djListening ? accent : 'transparent',
+                        borderRadius: 99,
+                        color: djListening ? '#080607' : accent,
+                        cursor: 'pointer',
+                        fontFamily: 'var(--font-serif)',
+                        fontSize: 9,
+                        fontWeight: 700,
+                        letterSpacing: '0.1em',
+                        padding: '5px 11px',
+                        textTransform: 'uppercase',
+                      }}
+                    >
+                      {djListening ? 'Input on' : 'Start input'}
+                    </button>
+                  </div>
+                  <div
+                    style={{
+                      display: 'grid',
+                      gridTemplateColumns: 'repeat(3, minmax(0, 1fr))',
+                      gap: 6,
+                    }}
+                  >
+                    {(
+                      [
+                        ['level', djEnergy.level],
+                        ['bass', djEnergy.bass],
+                        ['highs', djEnergy.highs],
+                      ] as [string, number][]
+                    ).map(([label, value]) => (
+                      <div
+                        key={label}
+                        style={{
+                          border: `1px solid rgba(${pr},${pg},${pb},0.14)`,
+                          borderRadius: 8,
+                          padding: '6px 7px',
+                          display: 'grid',
+                          gap: 4,
+                        }}
+                      >
+                        <span
+                          style={{
+                            color: `rgba(${pr},${pg},${pb},0.55)`,
+                            fontFamily: 'var(--font-serif)',
+                            fontSize: 8,
+                            letterSpacing: '0.12em',
+                            textTransform: 'uppercase',
+                          }}
+                        >
+                          {label}
+                        </span>
+                        <span
+                          style={{
+                            height: 4,
+                            borderRadius: 99,
+                            background: `linear-gradient(90deg, ${accent} ${Math.round(value * 100)}%, rgba(${pr},${pg},${pb},0.12) 0)`,
+                          }}
+                        />
+                      </div>
+                    ))}
+                  </div>
+                  {djError && (
+                    <div
+                      style={{
+                        color: `rgba(${pr},${pg},${pb},0.72)`,
+                        fontFamily: 'var(--font-serif)',
+                        fontSize: 10,
+                        lineHeight: 1.35,
+                      }}
+                    >
+                      {djError}
+                    </div>
+                  )}
+                </div>
                 <p
                   style={{
                     fontFamily: 'var(--font-serif)',
