@@ -671,7 +671,7 @@ const PAL_SORTED: [string, Pal][] = Object.entries(PAL).sort(
 
 /* ── Preset configs ─────────────────────────────────────────── */
 
-const PRESETS: Record<string, Cfg> = {
+export const PRESETS: Record<string, Cfg> = {
   'Fire Dot Sun': {
     preset: 'Golden Source',
     symmetry: 11,
@@ -903,15 +903,15 @@ const PRESETS: Record<string, Cfg> = {
     mode: 'dottunnel',
   },
   'Swirl Dot Tunnel': {
-    preset: 'Cosmic Indigo',
+    preset: 'Golden Source',
     symmetry: 13,
-    complexity: 8,
-    glow: 7.4,
+    complexity: 8.4,
+    glow: 8.4,
     breathSpeed: 0.68,
-    intensity: 8,
-    particles: 9,
-    luminous: 3,
-    stars: 5,
+    intensity: 8.8,
+    particles: 10,
+    luminous: 4.2,
+    stars: 7,
     mode: 'swirldottunnel',
   },
   'Line Tunnel 3D': {
@@ -1676,15 +1676,15 @@ const PRESETS: Record<string, Cfg> = {
     mode: 'volcano',
   },
   'Atomic Explosion': {
-    preset: 'Deep Fire',
+    preset: 'Golden Source',
     symmetry: 12,
-    complexity: 8.4,
-    glow: 5.4,
+    complexity: 8.8,
+    glow: 8.2,
     breathSpeed: 0.3,
-    intensity: 9,
-    particles: 0,
-    luminous: 1.6,
-    stars: 0,
+    intensity: 9.4,
+    particles: 2,
+    luminous: 4.2,
+    stars: 5,
     mode: 'atomicexplosion',
   },
   Gravity: {
@@ -11659,7 +11659,7 @@ const MODES: { mode: Mode; label: string }[] = [
 
 type FeaturedItem = { name: string; tag: string } | { header: string; dim?: boolean };
 
-const FEATURED_PRESETS: FeaturedItem[] = [
+export const FEATURED_PRESETS: FeaturedItem[] = [
   { header: 'Good Ones' },
   { name: 'Trip Number 1', tag: 'TRIP' },
   { name: 'Trip Number 2', tag: 'DROP' },
@@ -11669,7 +11669,6 @@ const FEATURED_PRESETS: FeaturedItem[] = [
   { name: 'Vertical Scriptures', tag: 'TOP' },
   { name: 'Eclipse', tag: 'TOP' },
   { name: 'Yin Yang', tag: 'TOP' },
-  { name: 'Volcano', tag: 'TOP' },
   { name: 'Atomic Explosion', tag: 'TOP' },
   { name: 'Gravity', tag: 'TOP' },
   { name: 'Fire', tag: 'TOP' },
@@ -11692,12 +11691,7 @@ const FEATURED_PRESETS: FeaturedItem[] = [
   { name: 'Neuron Web 3', tag: 'NEURON' },
   { name: 'Neuron Web 4', tag: 'NEURON' },
   { name: 'Neuron Web 5', tag: 'NEURON' },
-
-  { name: 'Embrace', tag: 'DOT' },
-
-  { name: 'Dot Tunnel', tag: 'DEPTH' },
   { name: 'Swirl Dot Tunnel', tag: 'DEPTH' },
-  { name: 'Line Tunnel 3D', tag: 'DEPTH' },
   { name: 'Dot Road', tag: 'ROAD' },
 
   { name: 'Touch Preset', tag: 'TOUCH' },
@@ -11763,6 +11757,9 @@ const FEATURED_PRESETS: FeaturedItem[] = [
   { name: 'Cathedral Glass', tag: 'GLASS' },
   { name: 'Prism Seed', tag: 'PRISM' },
   { name: 'Entropy 3D', tag: 'CORE' },
+  { name: 'Embrace', tag: 'DOT' },
+  { name: 'Dot Tunnel', tag: 'DEPTH' },
+  { name: 'Line Tunnel 3D', tag: 'DEPTH' },
   { header: 'In Progress / To Develop', dim: true },
   { name: 'Chrysalis', tag: 'MORPH' },
   { name: 'Metamorph', tag: 'MORPH' },
@@ -13412,29 +13409,40 @@ function updatePulse(group: THREE.Group, cfg: Cfg, t: number, R: number): void {
     const posAttr = pts.geometry.getAttribute('position') as THREE.BufferAttribute;
     const arr = posAttr.array as Float32Array;
 
-    for (let p = 0; p < halfPts; p++) {
-      const a = (p / halfPts) * Math.PI; // 0..PI (one side)
-      const noise =
-        Math.sin(a * 4 + t * 0.00068 * speed + ri * 1.4) * 0.55 +
-        Math.sin(a * 9 + t * 0.00031 * speed + ri * 0.8) * 0.35 +
-        Math.sin(a * 17 + t * 0.00014 * speed) * 0.1;
-      const desertLift = desertDrop
-        ? Math.sin(a * 2 + t * 0.0011 + ri) * R * 0.035 * (0.45 + soundEnergy)
-        : 0;
-      const rOff =
-        (sym ? noise * chaosAmt * R * 0.32 : noise * chaosAmt * R * 0.28 * Math.sin(a)) +
-        desertLift;
-      const r2 = Math.max(0, radius + rOff);
-      // Right side
-      arr[p * 3] = Math.cos(a) * r2;
-      arr[p * 3 + 1] = Math.sin(a) * r2 * (desertDrop ? 0.72 + beatKick * 0.08 : 1);
-      arr[p * 3 + 2] = desertDrop ? Math.sin(a * 3 + t * 0.001 + ri) * R * 0.035 * soundEnergy : 0;
-      // Mirrored left side (rorschach)
-      arr[(halfPts + p) * 3] = -Math.cos(a) * r2;
-      arr[(halfPts + p) * 3 + 1] = Math.sin(a) * r2 * (desertDrop ? 0.72 + beatKick * 0.08 : 1);
-      arr[(halfPts + p) * 3 + 2] = desertDrop
-        ? -Math.sin(a * 3 + t * 0.001 + ri) * R * 0.035 * soundEnergy
-        : 0;
+    if (desertDrop) {
+      for (let p = 0; p < PULSE_PTS; p++) {
+        const a = (p / PULSE_PTS) * TAU;
+        const mirrorA = Math.atan2(Math.sin(a), Math.abs(Math.cos(a)));
+        const noise =
+          Math.sin(mirrorA * 4 + t * 0.00068 * speed + ri * 1.4) * 0.5 +
+          Math.sin(mirrorA * 9 + t * 0.00031 * speed + ri * 0.8) * 0.32 +
+          Math.sin(mirrorA * 17 + t * 0.00014 * speed) * 0.08;
+        const desertLift =
+          Math.sin(mirrorA * 2 + t * 0.0011 + ri) * R * 0.026 * (0.35 + soundEnergy);
+        const rOff = noise * chaosAmt * R * 0.22 + desertLift;
+        const r2 = Math.max(0, radius + rOff);
+        arr[p * 3] = Math.cos(a) * r2;
+        arr[p * 3 + 1] = Math.sin(a) * r2 * (0.86 + beatKick * 0.06);
+        arr[p * 3 + 2] = Math.sin(a * 3 + t * 0.001 + ri) * R * 0.035 * soundEnergy;
+      }
+    } else {
+      for (let p = 0; p < halfPts; p++) {
+        const a = (p / halfPts) * Math.PI; // 0..PI (one side)
+        const noise =
+          Math.sin(a * 4 + t * 0.00068 * speed + ri * 1.4) * 0.55 +
+          Math.sin(a * 9 + t * 0.00031 * speed + ri * 0.8) * 0.35 +
+          Math.sin(a * 17 + t * 0.00014 * speed) * 0.1;
+        const rOff = sym ? noise * chaosAmt * R * 0.32 : noise * chaosAmt * R * 0.28 * Math.sin(a);
+        const r2 = Math.max(0, radius + rOff);
+        // Right side
+        arr[p * 3] = Math.cos(a) * r2;
+        arr[p * 3 + 1] = Math.sin(a) * r2;
+        arr[p * 3 + 2] = 0;
+        // Mirrored left side (rorschach)
+        arr[(halfPts + p) * 3] = -Math.cos(a) * r2;
+        arr[(halfPts + p) * 3 + 1] = Math.sin(a) * r2;
+        arr[(halfPts + p) * 3 + 2] = 0;
+      }
     }
     posAttr.needsUpdate = true;
     pts.geometry.setDrawRange(0, PULSE_PTS);
