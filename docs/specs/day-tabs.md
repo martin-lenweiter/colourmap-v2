@@ -195,9 +195,11 @@ wallpaper behind controls.
 
 The Focus lane has two top-level design modes:
 
-- **Sober**: the stable daily-use mode. No lane background image is rendered, the `/day` page keeps
-  the compact centered notebook layout, and Areas / Tasks / Daily Rituals remain in their existing
-  collapsible pill form.
+- **Sober**: the stable daily-use mode. No full-bleed lane background image is rendered, the `/day`
+  page keeps the compact centered notebook layout, and Areas / Tasks / Daily Rituals remain in their
+  existing collapsible pill form. A lane may still show one contained rectangular sober image banner
+  below the Emotions / Missions / Progress tab row, matching the calm Emotions banner pattern; this
+  banner is not placement-tuned and does not use the round-window / full-bleed Image mode system.
 - **Image**: the exploratory ritual mode. The active lane image starts directly under the global
   Focus / Notes header, and the lane content below the image keeps the original one-pill-one-box
   rhythm. Mission renders Areas, Tasks, and Daily Rituals as separate collapsed boxes. Emotions keeps
@@ -216,6 +218,8 @@ Done when:
   seam/cut between header and content.
 - Emotions design 3 uses the round-window / terrace image language with warm tones and readable
   controls.
+- In Sober mode, Mission and Progress may mirror Emotions with one contained rectangular image banner
+  below the tab row before the clean collapsed sections.
 - Mission design 2 and Progress design 2 use their own full-bleed symbolic images, reaching to the
   viewport edges below the top app header.
 - The selected lane content starts immediately under the image-backed tab row, with no intentional

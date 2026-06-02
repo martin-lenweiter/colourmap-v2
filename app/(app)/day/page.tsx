@@ -586,6 +586,7 @@ function AreaFillLaneSurface({
   image,
   label,
   tone,
+  soberBanner = false,
   onImageChange,
   placement,
   onPlacementChange,
@@ -596,18 +597,20 @@ function AreaFillLaneSurface({
   image: string;
   label: string;
   tone: 'mission' | 'progress';
+  soberBanner?: boolean;
   onImageChange: (src: string | null) => void;
   placement: BackgroundPlacement;
   onPlacementChange: (next: BackgroundPlacement) => void;
 }) {
   const areaFill = focusMode === 'image';
+  const imagePosition = getLaneImagePosition(tone);
   return (
     <div
       style={{
         position: 'relative',
         overflow: areaFill ? 'visible' : 'hidden',
         width: areaFill ? '100%' : undefined,
-        padding: areaFill ? '0 0 40px' : undefined,
+        padding: areaFill ? '0 0 40px' : '0 0 14px',
         minHeight: areaFill ? 'calc(100svh - 168px)' : undefined,
       }}
     >
@@ -637,6 +640,32 @@ function AreaFillLaneSurface({
         )}
         <FocusDesignPill value={focusMode} onChange={onFocusModeChange} floating={areaFill} />
       </div>
+      {!areaFill && soberBanner && (
+        <div
+          style={{
+            border: '1px solid var(--panel-border, rgba(122,84,56,0.22))',
+            borderRadius: 14,
+            overflow: 'hidden',
+            background: 'var(--card)',
+            boxShadow: '0 12px 28px rgba(92,48,24,0.1)',
+            marginBottom: 12,
+          }}
+        >
+          <img
+            src={image}
+            alt=""
+            aria-hidden="true"
+            loading="eager"
+            style={{
+              display: 'block',
+              width: '100%',
+              aspectRatio: '16 / 7',
+              objectFit: 'cover',
+              objectPosition: imagePosition,
+            }}
+          />
+        </div>
+      )}
       <div style={{ position: 'relative', zIndex: 1 }}>{children}</div>
     </div>
   );
@@ -872,6 +901,7 @@ function DayContent() {
             image={laneImages.mission ?? MISSION_AREA_IMAGE}
             label="Mission"
             tone="mission"
+            soberBanner
             onImageChange={(src) => changeLaneImage('mission', src)}
             placement={lanePlacements.mission}
             onPlacementChange={(next) => changeLanePlacement('mission', next)}
@@ -934,6 +964,7 @@ function DayContent() {
             image={laneImages.progress ?? PROGRESS_AREA_IMAGE}
             label="Progress"
             tone="progress"
+            soberBanner
             onImageChange={(src) => changeLaneImage('progress', src)}
             placement={lanePlacements.progress}
             onPlacementChange={(next) => changeLanePlacement('progress', next)}
