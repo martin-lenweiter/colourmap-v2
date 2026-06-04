@@ -1,6 +1,7 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import type { PointerEvent, WheelEvent } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 
 type OverlayMode = 'lines' | 'x' | 'triangle';
 
@@ -16,15 +17,25 @@ type ReferenceImage = {
   id: string;
   name: string;
   image: string | null;
+  offsetX: number;
+  offsetY: number;
+  zoom: number;
+  stretchY: number;
   topCrop: number;
   bottomCrop: number;
   baseOffset: number;
+  gridHeight: number;
+  fixed: boolean;
 };
 
 type BuddyState = {
+  version: number;
   image: string | null;
   activeReferenceId: string;
   suggestionMode: boolean;
+  showGrid: boolean;
+  showProportions: boolean;
+  showLabels: boolean;
   references: ReferenceImage[];
   totalHeight: number;
   topSkull: number;
@@ -54,41 +65,118 @@ type BuddyState = {
 };
 
 const STORAGE_KEY = 'colourmap:proportion-buddy';
+const STATE_VERSION = 7;
 const CUSTOM_COLORS = ['#ffd166', '#7bdff2', '#f7aef8', '#b8f2e6', '#f08080', '#c4f07a'];
+const MIN_IMAGE_Y = -620;
+const MAX_IMAGE_Y = 360;
+const MIN_IMAGE_ZOOM = 40;
+const MAX_IMAGE_ZOOM = 900;
+const MIN_GRID_ZERO = -140;
+const MAX_GRID_ZERO = 240;
+const MIN_GRID_HEIGHT = 40;
+const MAX_GRID_HEIGHT = 280;
+const GRID_RULER_GUTTER_PX = 34;
+const X_RULER_LABEL_START_CM = 10;
+const X_RULER_LEFT_GUTTER_PERCENT = 5;
+const EXTRA_GRID_LINES = [88];
 const DEFAULT_REFERENCES: ReferenceImage[] = [
   {
     id: 'image-1',
-    name: 'Image 1',
-    image: null,
+    name: 'Face',
+    image: '/proportion-buddy/prop-image-face.jpg',
+    offsetX: 0,
+    offsetY: 25,
+    zoom: 92,
+    stretchY: 108,
     topCrop: 0,
     bottomCrop: 100,
-    baseOffset: 0,
+    baseOffset: -1,
+    gridHeight: 71,
+    fixed: false,
   },
   {
     id: 'image-2',
-    name: 'Image 2',
+    name: 'Front',
     image: '/proportion-buddy/prop-2.png',
+    offsetX: 0,
+    offsetY: -4,
+    zoom: 106,
+    stretchY: 106,
     topCrop: 0,
     bottomCrop: 100,
-    baseOffset: 3,
+    baseOffset: 0,
+    gridHeight: 100,
+    fixed: false,
   },
   {
     id: 'image-3',
-    name: 'Image 3',
+    name: 'Front 2',
     image: '/proportion-buddy/prop-3.png',
+    offsetX: 0,
+    offsetY: 11,
+    zoom: 106,
+    stretchY: 106,
     topCrop: 0,
     bottomCrop: 100,
-    baseOffset: 2,
+    baseOffset: 0,
+    gridHeight: 78,
+    fixed: false,
+  },
+  {
+    id: 'image-4',
+    name: 'Left',
+    image: '/proportion-buddy/prop-image-left.png',
+    offsetX: 0,
+    offsetY: -6,
+    zoom: 108,
+    stretchY: 108,
+    topCrop: 0,
+    bottomCrop: 100,
+    baseOffset: 0,
+    gridHeight: 100,
+    fixed: false,
+  },
+  {
+    id: 'image-5',
+    name: 'Board',
+    image: '/proportion-buddy/proportions-board.png',
+    offsetX: 0,
+    offsetY: 0,
+    zoom: 100,
+    stretchY: 100,
+    topCrop: 0,
+    bottomCrop: 100,
+    baseOffset: 0,
+    gridHeight: 100,
+    fixed: false,
+  },
+  {
+    id: 'image-6',
+    name: 'Plinth',
+    image: '/proportion-buddy/front-plinth.png',
+    offsetX: 0,
+    offsetY: -5,
+    zoom: 106,
+    stretchY: 106,
+    topCrop: 0,
+    bottomCrop: 100,
+    baseOffset: 0,
+    gridHeight: 100,
+    fixed: false,
   },
 ];
 
 const DEFAULT_STATE: BuddyState = {
+  version: STATE_VERSION,
   image: null,
   activeReferenceId: 'image-2',
   suggestionMode: false,
+  showGrid: true,
+  showProportions: false,
+  showLabels: false,
   references: DEFAULT_REFERENCES,
-  totalHeight: 84,
-  topSkull: 84,
+  totalHeight: 90,
+  topSkull: 82,
   browRidge: 72,
   eyes: 70,
   noseBase: 66,
@@ -104,7 +192,7 @@ const DEFAULT_STATE: BuddyState = {
   armsBottom: 17,
   elbowCenter: 27,
   headBase: 62,
-  headLow: 82,
+  headLow: 80,
   headHigh: 84,
   topCrop: 0,
   bottomCrop: 100,
@@ -156,13 +244,40 @@ function clamp(value: number, min: number, max: number) {
   return Math.min(max, Math.max(min, value));
 }
 
+function distance(a: { x: number; y: number }, b: { x: number; y: number }) {
+  return Math.hypot(a.x - b.x, a.y - b.y);
+}
+
+function xPositionPercent(cm: number, totalHeight: number) {
+  return (
+    X_RULER_LEFT_GUTTER_PERCENT +
+    (clamp(cm, 0, totalHeight) / Math.max(1, totalHeight)) * (100 - X_RULER_LEFT_GUTTER_PERCENT)
+  );
+}
+
+function isMajorGridLine(cm: number, totalHeight: number) {
+  return cm % 10 === 0 || cm === totalHeight || EXTRA_GRID_LINES.includes(cm);
+}
+
+function xRulerLabelSide(cm: number, totalHeight: number) {
+  if (cm >= totalHeight - 10) return 'left';
+  return 'right';
+}
+
 function loadState(): BuddyState {
   if (typeof window === 'undefined') return DEFAULT_STATE;
   try {
     const raw = window.localStorage.getItem(STORAGE_KEY);
     if (!raw) return DEFAULT_STATE;
-    const parsed = JSON.parse(raw) as Partial<BuddyState>;
-    const references =
+    const parsed = JSON.parse(raw) as Partial<BuddyState> & { showGuides?: boolean };
+    if (parsed.version !== STATE_VERSION) {
+      return {
+        ...DEFAULT_STATE,
+        customLandmarks: parsed.customLandmarks ?? DEFAULT_STATE.customLandmarks,
+        visible: { ...DEFAULT_STATE.visible, ...(parsed.visible ?? {}) },
+      };
+    }
+    const rawReferences =
       parsed.references && parsed.references.length > 0
         ? parsed.references
         : DEFAULT_REFERENCES.map((reference) =>
@@ -170,12 +285,21 @@ function loadState(): BuddyState {
               ? { ...reference, image: parsed.image }
               : reference,
           );
+    const references = DEFAULT_REFERENCES.map((defaultReference) => ({
+      ...defaultReference,
+      ...(rawReferences.find((reference) => reference.id === defaultReference.id) ?? {}),
+    }));
     return {
       ...DEFAULT_STATE,
       ...parsed,
       activeReferenceId:
         parsed.activeReferenceId ?? references[0]?.id ?? DEFAULT_STATE.activeReferenceId,
       suggestionMode: parsed.suggestionMode ?? DEFAULT_STATE.suggestionMode,
+      showGrid: parsed.showGrid ?? DEFAULT_STATE.showGrid,
+      showProportions:
+        parsed.showProportions ??
+        (parsed.showGuides === undefined ? DEFAULT_STATE.showProportions : parsed.showGuides),
+      showLabels: parsed.showLabels ?? DEFAULT_STATE.showLabels,
       references,
       overlayMode: parsed.overlayMode ?? DEFAULT_STATE.overlayMode,
       customLandmarks: parsed.customLandmarks ?? DEFAULT_STATE.customLandmarks,
@@ -186,9 +310,11 @@ function loadState(): BuddyState {
   }
 }
 
-function guideTopWithBase(cm: number, totalHeight: number, baseOffset: number) {
-  const range = 100 + clamp(baseOffset, 0, 14);
-  return `${100 + clamp(baseOffset, 0, 14) - (clamp(cm, 0, totalHeight) / totalHeight) * range}%`;
+function guideTopWithBase(cm: number, totalHeight: number, baseOffset: number, gridHeight: number) {
+  const ratio = Math.max(0, cm) / totalHeight;
+  const zeroLine = 100 + clamp(baseOffset, MIN_GRID_ZERO, MAX_GRID_ZERO);
+  const range = clamp(gridHeight, MIN_GRID_HEIGHT, MAX_GRID_HEIGHT);
+  return `calc(${zeroLine - ratio * range}% - ${GRID_RULER_GUTTER_PX * (1 - ratio)}px)`;
 }
 
 function numberInput(
@@ -237,6 +363,18 @@ export default function ProportionBuddy() {
   const [hydrated, setHydrated] = useState(false);
   const [draftLabel, setDraftLabel] = useState('');
   const [draftCm, setDraftCm] = useState(42);
+  const stageRef = useRef<HTMLDivElement | null>(null);
+  const gestureRef = useRef<{
+    lastY: number;
+    pinchDistance: number;
+    pinchZoom: number;
+    points: Map<number, { x: number; y: number }>;
+  }>({
+    lastY: 0,
+    pinchDistance: 0,
+    pinchZoom: 100,
+    points: new Map(),
+  });
 
   useEffect(() => {
     setState(loadState());
@@ -257,14 +395,27 @@ export default function ProportionBuddy() {
   const cropTop = clamp(activeReference.topCrop, 0, 96);
   const cropBottom = clamp(activeReference.bottomCrop, cropTop + 4, 100);
   const cropRange = cropBottom - cropTop;
-  const baseOffset = clamp(activeReference.baseOffset, 0, 14);
+  const baseOffset = clamp(activeReference.baseOffset, MIN_GRID_ZERO, MAX_GRID_ZERO);
+  const gridHeight = clamp(activeReference.gridHeight, MIN_GRID_HEIGHT, MAX_GRID_HEIGHT);
+  const imageZoom = clamp(activeReference.zoom, MIN_IMAGE_ZOOM, MAX_IMAGE_ZOOM);
+  const imageOffsetX = clamp(activeReference.offsetX, -80, 80);
+  const imageOffsetY = clamp(activeReference.offsetY, MIN_IMAGE_Y, MAX_IMAGE_Y);
   const gridLines = useMemo(() => {
     const lines: number[] = [];
     const step = Math.max(1, state.gridStep);
     for (let cm = 0; cm <= state.totalHeight; cm += step) lines.push(cm);
+    for (const cm of EXTRA_GRID_LINES) {
+      if (cm <= state.totalHeight && !lines.includes(cm)) lines.push(cm);
+    }
+    if (!lines.includes(state.totalHeight)) lines.push(state.totalHeight);
+    return lines.sort((a, b) => a - b);
+  }, [state.gridStep, state.totalHeight]);
+  const xGridLines = useMemo(() => {
+    const lines: number[] = [];
+    for (let cm = 0; cm <= state.totalHeight; cm += 10) lines.push(cm);
     if (!lines.includes(state.totalHeight)) lines.push(state.totalHeight);
     return lines;
-  }, [state.gridStep, state.totalHeight]);
+  }, [state.totalHeight]);
   const landmarks = useMemo(
     () =>
       LANDMARKS.map((mark) => ({
@@ -330,11 +481,25 @@ export default function ProportionBuddy() {
   }
 
   function updateActiveReference(patch: Partial<ReferenceImage>) {
-    update({
-      references: state.references.map((reference) =>
-        reference.id === activeReference.id ? { ...reference, ...patch } : reference,
+    setState((current) => ({
+      ...current,
+      references: current.references.map((reference) =>
+        reference.id === current.activeReferenceId ? { ...reference, ...patch } : reference,
       ),
-    });
+    }));
+  }
+
+  function updateActiveReferenceWith(
+    updater: (reference: ReferenceImage) => Partial<ReferenceImage>,
+  ) {
+    setState((current) => ({
+      ...current,
+      references: current.references.map((reference) =>
+        reference.id === current.activeReferenceId
+          ? { ...reference, ...updater(reference) }
+          : reference,
+      ),
+    }));
   }
 
   function updateLandmark(key: LandmarkKey, value: number) {
@@ -390,33 +555,99 @@ export default function ProportionBuddy() {
     reader.readAsDataURL(file);
   }
 
+  function handleStagePointerDown(event: PointerEvent<HTMLDivElement>) {
+    if (activeReference.fixed) return;
+    event.currentTarget.setPointerCapture(event.pointerId);
+    gestureRef.current.points.set(event.pointerId, { x: event.clientX, y: event.clientY });
+    gestureRef.current.lastY = event.clientY;
+    if (gestureRef.current.points.size === 2) {
+      const points = [...gestureRef.current.points.values()];
+      gestureRef.current.pinchDistance = distance(points[0], points[1]);
+      gestureRef.current.pinchZoom = imageZoom;
+    }
+  }
+
+  function handleStagePointerMove(event: PointerEvent<HTMLDivElement>) {
+    if (activeReference.fixed) return;
+    if (!gestureRef.current.points.has(event.pointerId)) return;
+    gestureRef.current.points.set(event.pointerId, { x: event.clientX, y: event.clientY });
+
+    if (gestureRef.current.points.size >= 2) {
+      const points = [...gestureRef.current.points.values()];
+      const nextDistance = distance(points[0], points[1]);
+      if (gestureRef.current.pinchDistance > 0) {
+        const nextZoom = clamp(
+          gestureRef.current.pinchZoom * (nextDistance / gestureRef.current.pinchDistance),
+          MIN_IMAGE_ZOOM,
+          MAX_IMAGE_ZOOM,
+        );
+        updateActiveReference({ zoom: Number(nextZoom.toFixed(1)) });
+      }
+      return;
+    }
+
+    const stageHeight = stageRef.current?.getBoundingClientRect().height ?? 1;
+    const deltaY = event.clientY - gestureRef.current.lastY;
+    gestureRef.current.lastY = event.clientY;
+    const deltaPercent = (deltaY / stageHeight) * 100;
+    updateActiveReferenceWith((reference) => ({
+      offsetY: Number(clamp(reference.offsetY + deltaPercent, MIN_IMAGE_Y, MAX_IMAGE_Y).toFixed(2)),
+    }));
+  }
+
+  function handleStagePointerUp(event: PointerEvent<HTMLDivElement>) {
+    gestureRef.current.points.delete(event.pointerId);
+    if (gestureRef.current.points.size === 1) {
+      gestureRef.current.lastY = [...gestureRef.current.points.values()][0].y;
+    }
+    if (gestureRef.current.points.size < 2) {
+      gestureRef.current.pinchDistance = 0;
+    }
+  }
+
+  function handleStageWheel(event: WheelEvent<HTMLDivElement>) {
+    event.preventDefault();
+    if (activeReference.fixed) return;
+    updateActiveReferenceWith((reference) => ({
+      zoom: Number(
+        clamp(reference.zoom - event.deltaY * 0.12, MIN_IMAGE_ZOOM, MAX_IMAGE_ZOOM).toFixed(1),
+      ),
+    }));
+  }
+
   return (
     <main
       style={{
         minHeight: 'calc(100svh - 120px)',
         background:
           'linear-gradient(180deg, rgba(236,220,188,0.72), rgba(206,184,145,0.34)), radial-gradient(circle at 20% 12%, rgba(122,84,56,0.10), transparent 34%)',
-        border: '1px solid rgba(116,83,49,0.14)',
-        padding: 'clamp(12px, 3vw, 26px)',
+        borderBlock: '1px solid rgba(116,83,49,0.14)',
+        width: 'calc(100% + 48px)',
+        overflowX: 'clip',
+        marginInline: '-24px',
+        padding: 'clamp(3px, 1vw, 10px) 0 clamp(10px, 2vw, 18px)',
       }}
     >
       <div
         style={{
           display: 'grid',
-          gridTemplateColumns: 'minmax(0, 1fr) minmax(260px, 340px)',
+          gridTemplateColumns: 'minmax(0, 1fr)',
           gap: 18,
           alignItems: 'start',
+          justifyContent: 'center',
+          width: '100%',
         }}
         className="proportion-buddy-shell"
       >
-        <section style={{ minWidth: 0 }}>
+        <section style={{ minWidth: 0, width: '100%' }}>
           <div
             style={{
               display: 'flex',
-              justifyContent: 'space-between',
+              justifyContent: 'flex-start',
               gap: 12,
               alignItems: 'end',
               marginBottom: 12,
+              paddingInline: 'clamp(8px, 2vw, 18px)',
             }}
           >
             <div>
@@ -444,81 +675,29 @@ export default function ProportionBuddy() {
                 Proportion Buddy
               </h1>
             </div>
-            <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', justifyContent: 'end' }}>
-              <button
-                type="button"
-                aria-pressed={state.suggestionMode}
-                onClick={() => update({ suggestionMode: !state.suggestionMode })}
-                style={{
-                  ...buttonStyle,
-                  background: state.suggestionMode
-                    ? 'rgba(92,48,24,0.16)'
-                    : 'rgba(255,248,231,0.72)',
-                }}
-              >
-                AI suggestions
-              </button>
-              <label style={buttonStyle}>
-                Upload
-                <input
-                  aria-label={`Upload reference image for ${activeReference.name}`}
-                  type="file"
-                  accept="image/*"
-                  onChange={(event) => loadImage(event.currentTarget.files?.[0])}
-                  style={{ display: 'none' }}
-                />
-              </label>
-            </div>
           </div>
 
-          <fieldset
-            style={{
-              display: 'grid',
-              gridTemplateColumns: 'repeat(3, minmax(0, 1fr))',
-              gap: 8,
-              marginBottom: 10,
-              border: 0,
-              padding: 0,
-            }}
-          >
-            <legend className="sr-only">Reference images</legend>
-            {state.references.map((reference) => (
-              <button
-                key={reference.id}
-                type="button"
-                onClick={() => update({ activeReferenceId: reference.id })}
-                style={{
-                  border: '1px solid rgba(116,83,49,0.24)',
-                  borderRadius: 6,
-                  background:
-                    reference.id === activeReference.id
-                      ? 'rgba(92,48,24,0.15)'
-                      : 'rgba(255,248,231,0.58)',
-                  color: '#3a291a',
-                  cursor: 'pointer',
-                  fontFamily: 'var(--font-serif)',
-                  fontSize: 12,
-                  fontWeight: 800,
-                  letterSpacing: '0.08em',
-                  padding: '8px 9px',
-                  textTransform: 'uppercase',
-                }}
-              >
-                {reference.name}
-              </button>
-            ))}
-          </fieldset>
-
           <div
+            ref={stageRef}
             data-testid="proportion-stage"
+            onPointerDown={handleStagePointerDown}
+            onPointerMove={handleStagePointerMove}
+            onPointerUp={handleStagePointerUp}
+            onPointerCancel={handleStagePointerUp}
+            onWheel={handleStageWheel}
             style={{
               position: 'relative',
               overflow: 'hidden',
-              minHeight: 520,
+              width: '100%',
+              minHeight: 'min(92svh, 860px)',
               background:
                 'linear-gradient(180deg, rgba(47,36,25,0.96), rgba(26,20,15,0.96)), repeating-linear-gradient(0deg, transparent 0 18px, rgba(255,255,255,0.03) 18px 19px)',
-              border: '1px solid rgba(68,47,30,0.32)',
+              borderBlock: '1px solid rgba(68,47,30,0.32)',
+              borderInline: 0,
+              cursor: activeReference.image ? 'grab' : 'default',
               boxShadow: '0 18px 60px rgba(48,31,16,0.24)',
+              touchAction: 'none',
+              userSelect: 'none',
             }}
           >
             {activeReference.image ? (
@@ -527,14 +706,15 @@ export default function ProportionBuddy() {
                 alt={`${activeReference.name} sculpture reference`}
                 style={{
                   position: 'absolute',
-                  left: '50%',
-                  top: `${-(cropTop / cropRange) * 100}%`,
-                  width: '100%',
-                  height: `${(100 / cropRange) * 100}%`,
+                  left: `${50 + imageOffsetX}%`,
+                  top: `calc(${-(cropTop / cropRange) * imageZoom}% + ${imageOffsetY}%)`,
+                  width: `${imageZoom}%`,
+                  height: 'auto',
                   objectFit: 'contain',
                   objectPosition: 'center top',
                   transform: 'translateX(-50%)',
                   filter: 'contrast(1.02) saturate(0.82)',
+                  pointerEvents: 'none',
                 }}
               />
             ) : (
@@ -554,116 +734,421 @@ export default function ProportionBuddy() {
                   <div style={{ fontSize: 42, marginBottom: 8 }}>+</div>
                   <div style={{ fontSize: 18 }}>Upload {activeReference.name}</div>
                   <div style={{ fontSize: 12, marginTop: 7, opacity: 0.72 }}>
-                    The 17cm arms line and 80-84cm head zone are ready.
+                    The 17cm arms target and 80-84cm head zone are ready.
                   </div>
                 </div>
               </div>
             )}
 
-            <div
-              aria-hidden="true"
-              style={{
-                position: 'absolute',
-                inset: 0,
-                background:
-                  'linear-gradient(90deg, transparent 33.25%, rgba(244,216,160,0.24) 33.3%, transparent 33.45%, transparent 49.85%, rgba(255,248,231,0.42) 50%, transparent 50.15%, transparent 66.55%, rgba(244,216,160,0.24) 66.7%, transparent 66.85%)',
-                pointerEvents: 'none',
-              }}
-            />
-            {gridLines.map((cm) => {
-              const major = cm % 10 === 0 || cm === state.totalHeight;
-              return (
-                <div
-                  key={cm}
-                  aria-hidden="true"
-                  style={{
-                    position: 'absolute',
-                    left: 0,
-                    right: 0,
-                    top: guideTopWithBase(cm, state.totalHeight, baseOffset),
-                    borderTop: `1px solid rgba(255,238,198,${major ? 0.38 : 0.15})`,
-                    pointerEvents: 'none',
-                  }}
-                >
-                  {major && (
-                    <span
-                      style={{
-                        position: 'absolute',
-                        left: 8,
-                        top: -10,
-                        color: 'rgba(255,238,198,0.76)',
-                        fontFamily: 'var(--font-serif)',
-                        fontSize: 11,
-                        textShadow: '0 1px 2px rgba(0,0,0,0.6)',
-                      }}
-                    >
-                      {cm}cm
-                    </span>
-                  )}
-                </div>
-              );
-            })}
-
-            {landmarks
-              .filter((mark) => mark.visible)
-              .map((mark) => (
-                <GuideLine
-                  key={mark.key}
-                  cm={mark.cm}
-                  total={state.totalHeight}
-                  baseOffset={baseOffset}
-                  label={`${mark.label} ${mark.cm % 1 ? mark.cm.toFixed(1) : Math.round(mark.cm)}cm`}
-                  color={mark.color}
-                />
-              ))}
-            {customLandmarks
-              .filter((mark) => mark.visible)
-              .map((mark) => (
-                <GuideLine
-                  key={mark.id}
-                  cm={mark.cm}
-                  total={state.totalHeight}
-                  baseOffset={baseOffset}
-                  label={`${mark.label} ${mark.cm % 1 ? mark.cm.toFixed(1) : Math.round(mark.cm)}cm`}
-                  color={mark.color}
-                />
-              ))}
-            <ShapeGuides mode={state.overlayMode} />
-            <div
-              role="img"
-              aria-label="Head guide band"
-              style={{
-                position: 'absolute',
-                left: 0,
-                right: 0,
-                top: guideTopWithBase(state.headHigh, state.totalHeight, baseOffset),
-                height: `calc(${guideTopWithBase(
-                  state.headLow,
-                  state.totalHeight,
-                  baseOffset,
-                )} - ${guideTopWithBase(state.headHigh, state.totalHeight, baseOffset)})`,
-                background: 'rgba(244,199,104,0.16)',
-                borderTop: '2px solid rgba(244,199,104,0.86)',
-                borderBottom: '2px solid rgba(244,199,104,0.7)',
-                pointerEvents: 'none',
-              }}
-            >
-              <span
+            {state.showGrid && (
+              <div
+                aria-hidden="true"
                 style={{
                   position: 'absolute',
-                  right: 10,
-                  top: 4,
-                  color: '#ffe6aa',
-                  fontFamily: 'var(--font-serif)',
-                  fontSize: 12,
-                  fontWeight: 800,
-                  textShadow: '0 1px 2px rgba(0,0,0,0.75)',
+                  inset: 0,
+                  pointerEvents: 'none',
                 }}
               >
-                head {state.headLow}-{state.headHigh}cm
-              </span>
-            </div>
+                {xGridLines.map((cm) => (
+                  <span
+                    key={`x-grid-${cm}`}
+                    data-x-grid-line="true"
+                    style={{
+                      position: 'absolute',
+                      top: 0,
+                      bottom: GRID_RULER_GUTTER_PX,
+                      left: `${xPositionPercent(cm, state.totalHeight)}%`,
+                      borderLeft: `1px solid rgba(255,238,198,${cm % 20 === 0 ? 0.2 : 0.12})`,
+                      transform: 'translateX(-50%)',
+                    }}
+                  />
+                ))}
+              </div>
+            )}
+            {state.showGrid &&
+              gridLines.map((cm) => {
+                const major = isMajorGridLine(cm, state.totalHeight);
+                return (
+                  <div
+                    key={cm}
+                    aria-hidden="true"
+                    style={{
+                      position: 'absolute',
+                      left: 0,
+                      right: 0,
+                      top: guideTopWithBase(cm, state.totalHeight, baseOffset, gridHeight),
+                      borderTop: `1px solid rgba(255,238,198,${major ? 0.28 : 0.1})`,
+                      pointerEvents: 'none',
+                    }}
+                  >
+                    {major && (
+                      <span
+                        style={{
+                          position: 'absolute',
+                          left: 8,
+                          top: -10,
+                          color: 'rgba(255,238,198,0.76)',
+                          fontFamily: 'var(--font-serif)',
+                          fontSize: 11,
+                          textShadow: '0 1px 2px rgba(0,0,0,0.6)',
+                        }}
+                      >
+                        {cm}cm
+                      </span>
+                    )}
+                  </div>
+                );
+              })}
+            {state.showGrid && (
+              <div
+                role="img"
+                aria-label="Horizontal centimeter ruler"
+                style={{
+                  position: 'absolute',
+                  left: 0,
+                  right: 0,
+                  bottom: 0,
+                  height: GRID_RULER_GUTTER_PX,
+                  background: 'linear-gradient(180deg, rgba(20,15,11,0), rgba(20,15,11,0.78))',
+                  borderTop: '1px solid rgba(255,238,198,0.42)',
+                  pointerEvents: 'none',
+                }}
+              >
+                {gridLines
+                  .filter((cm) => cm >= X_RULER_LABEL_START_CM)
+                  .map((cm) => {
+                    const major = cm % 10 === 0 || cm === state.totalHeight;
+                    const labelSide = xRulerLabelSide(cm, state.totalHeight);
+                    return (
+                      <span
+                        key={`horizontal-${cm}`}
+                        style={{
+                          position: 'absolute',
+                          left: `${xPositionPercent(cm, state.totalHeight)}%`,
+                          top: 0,
+                          width: 1,
+                          height: major ? 18 : 10,
+                          background: `rgba(255,238,198,${major ? 0.42 : 0.2})`,
+                          transform: 'translateX(-50%)',
+                        }}
+                      >
+                        {major && (
+                          <span
+                            style={{
+                              position: 'absolute',
+                              left: labelSide === 'right' ? 3 : 'auto',
+                              right: labelSide === 'left' ? 3 : 'auto',
+                              top: 15,
+                              color: 'rgba(255,238,198,0.78)',
+                              fontFamily: 'var(--font-serif)',
+                              fontSize: 10,
+                              lineHeight: 1,
+                              textShadow: '0 1px 2px rgba(0,0,0,0.7)',
+                              whiteSpace: 'nowrap',
+                            }}
+                          >
+                            {cm}cm
+                          </span>
+                        )}
+                      </span>
+                    );
+                  })}
+              </div>
+            )}
+
+            {state.showProportions &&
+              landmarks
+                .filter((mark) => mark.visible)
+                .map((mark) => (
+                  <GuideLine
+                    key={mark.key}
+                    cm={mark.cm}
+                    total={state.totalHeight}
+                    baseOffset={baseOffset}
+                    gridHeight={gridHeight}
+                    showLabel={state.showLabels}
+                    label={`${mark.label} ${mark.cm % 1 ? mark.cm.toFixed(1) : Math.round(mark.cm)}cm`}
+                    color={mark.color}
+                  />
+                ))}
+            {state.showProportions &&
+              customLandmarks
+                .filter((mark) => mark.visible)
+                .map((mark) => (
+                  <GuideLine
+                    key={mark.id}
+                    cm={mark.cm}
+                    total={state.totalHeight}
+                    baseOffset={baseOffset}
+                    gridHeight={gridHeight}
+                    showLabel={state.showLabels}
+                    label={`${mark.label} ${mark.cm % 1 ? mark.cm.toFixed(1) : Math.round(mark.cm)}cm`}
+                    color={mark.color}
+                  />
+                ))}
+            {state.showProportions && <ShapeGuides mode={state.overlayMode} />}
+            {state.showProportions && (
+              <div
+                role="img"
+                aria-label="Head guide band"
+                style={{
+                  position: 'absolute',
+                  left: 0,
+                  right: 0,
+                  top: guideTopWithBase(state.headHigh, state.totalHeight, baseOffset, gridHeight),
+                  height: `calc(${guideTopWithBase(
+                    state.headLow,
+                    state.totalHeight,
+                    baseOffset,
+                    gridHeight,
+                  )} - ${guideTopWithBase(
+                    state.headHigh,
+                    state.totalHeight,
+                    baseOffset,
+                    gridHeight,
+                  )})`,
+                  background: 'rgba(244,199,104,0.1)',
+                  borderTop: '1px solid rgba(244,199,104,0.72)',
+                  borderBottom: '1px solid rgba(244,199,104,0.62)',
+                  pointerEvents: 'none',
+                }}
+              >
+                {state.showLabels && (
+                  <span
+                    style={{
+                      position: 'absolute',
+                      right: 10,
+                      top: 4,
+                      color: '#ffe6aa',
+                      fontFamily: 'var(--font-serif)',
+                      fontSize: 12,
+                      fontWeight: 800,
+                      textShadow: '0 1px 2px rgba(0,0,0,0.75)',
+                    }}
+                  >
+                    head {state.headLow}-{state.headHigh}cm
+                  </span>
+                )}
+              </div>
+            )}
           </div>
+          <section
+            aria-label="Image controls"
+            style={{
+              border: '1px solid rgba(116,83,49,0.16)',
+              background: 'rgba(255,248,231,0.62)',
+              marginTop: 10,
+              padding: 10,
+              display: 'grid',
+              gap: 10,
+              marginInline: 'clamp(6px, 2vw, 18px)',
+              minWidth: 0,
+              overflow: 'hidden',
+            }}
+          >
+            <div
+              style={{
+                display: 'grid',
+                gridTemplateColumns: '1fr',
+                gap: 8,
+                width: '100%',
+                minWidth: 0,
+                maxWidth: '100%',
+                opacity: activeReference.fixed ? 0.42 : 1,
+              }}
+              className="proportion-buddy-placement-row"
+            >
+              <ControlSlider
+                label="H"
+                value={activeReference.gridHeight}
+                min={MIN_GRID_HEIGHT}
+                max={MAX_GRID_HEIGHT}
+                suffix="%"
+                disabled={activeReference.fixed}
+                onChange={(gridHeight) =>
+                  updateActiveReference({
+                    gridHeight: clamp(gridHeight, MIN_GRID_HEIGHT, MAX_GRID_HEIGHT),
+                  })
+                }
+              />
+              <ControlSlider
+                label="M"
+                value={activeReference.offsetY}
+                min={MIN_IMAGE_Y}
+                max={MAX_IMAGE_Y}
+                suffix="%"
+                disabled={activeReference.fixed}
+                onChange={(offsetY) =>
+                  updateActiveReference({ offsetY: clamp(offsetY, MIN_IMAGE_Y, MAX_IMAGE_Y) })
+                }
+              />
+              <ControlSlider
+                label="S"
+                value={activeReference.zoom}
+                min={MIN_IMAGE_ZOOM}
+                max={MAX_IMAGE_ZOOM}
+                suffix="%"
+                disabled={activeReference.fixed}
+                onChange={(zoom) =>
+                  updateActiveReference({ zoom: clamp(zoom, MIN_IMAGE_ZOOM, MAX_IMAGE_ZOOM) })
+                }
+              />
+              <ControlSlider
+                label="0 cm line"
+                value={activeReference.baseOffset}
+                min={MIN_GRID_ZERO}
+                max={MAX_GRID_ZERO}
+                suffix="%"
+                disabled={activeReference.fixed}
+                onChange={(baseOffset) =>
+                  updateActiveReference({
+                    baseOffset: clamp(baseOffset, MIN_GRID_ZERO, MAX_GRID_ZERO),
+                  })
+                }
+              />
+            </div>
+            <button
+              type="button"
+              aria-pressed={activeReference.fixed}
+              onClick={() => updateActiveReference({ fixed: !activeReference.fixed })}
+              style={{
+                border: '1px solid rgba(126,54,28,0.42)',
+                borderRadius: 8,
+                background: activeReference.fixed
+                  ? 'linear-gradient(180deg, rgba(176,70,32,0.96), rgba(126,54,28,0.92))'
+                  : 'linear-gradient(180deg, rgba(221,127,49,0.96), rgba(180,78,34,0.92))',
+                boxShadow: activeReference.fixed
+                  ? '0 8px 22px rgba(126,54,28,0.28)'
+                  : '0 8px 20px rgba(180,78,34,0.22)',
+                color: '#fff6df',
+                cursor: 'pointer',
+                fontFamily: 'var(--font-serif)',
+                fontSize: 12,
+                fontWeight: 900,
+                letterSpacing: '0.08em',
+                padding: '11px 12px',
+                textTransform: 'uppercase',
+                width: '100%',
+              }}
+            >
+              {activeReference.fixed ? 'Unlock proportions' : 'Lock proportions'}
+            </button>
+            <fieldset
+              style={{
+                display: 'flex',
+                gap: 8,
+                border: 0,
+                width: '100%',
+                maxWidth: '100%',
+                minInlineSize: 0,
+                overflowX: 'auto',
+                padding: 0,
+                scrollbarWidth: 'thin',
+              }}
+            >
+              <legend className="sr-only">Reference images</legend>
+              {state.references.map((reference) => (
+                <button
+                  key={reference.id}
+                  type="button"
+                  onClick={() => update({ activeReferenceId: reference.id })}
+                  style={{
+                    ...flatButtonStyle,
+                    flex: '0 0 auto',
+                    minWidth: 84,
+                    background:
+                      reference.id === activeReference.id
+                        ? 'rgba(92,48,24,0.15)'
+                        : 'rgba(255,248,231,0.58)',
+                  }}
+                >
+                  {reference.name}
+                </button>
+              ))}
+            </fieldset>
+            <div
+              style={{
+                display: 'flex',
+                gap: 8,
+                width: '100%',
+                maxWidth: '100%',
+                minWidth: 0,
+                overflowX: 'auto',
+                scrollbarWidth: 'thin',
+              }}
+              className="proportion-buddy-action-row"
+            >
+              <button
+                type="button"
+                aria-pressed={state.showGrid}
+                onClick={() => update({ showGrid: !state.showGrid })}
+                style={{
+                  ...flatButtonStyle,
+                  flex: '0 0 88px',
+                  background: state.showGrid ? 'rgba(92,48,24,0.15)' : 'rgba(255,248,231,0.58)',
+                }}
+              >
+                Grid
+              </button>
+              <button
+                type="button"
+                aria-pressed={state.showProportions}
+                onClick={() => update({ showProportions: !state.showProportions })}
+                style={{
+                  ...flatButtonStyle,
+                  flex: '0 0 108px',
+                  background: state.showProportions
+                    ? 'rgba(92,48,24,0.15)'
+                    : 'rgba(255,248,231,0.58)',
+                }}
+              >
+                Proportions
+              </button>
+              <button
+                type="button"
+                aria-pressed={state.showLabels}
+                onClick={() => update({ showLabels: !state.showLabels })}
+                style={{
+                  ...flatButtonStyle,
+                  flex: '0 0 92px',
+                  background: state.showLabels ? 'rgba(92,48,24,0.15)' : 'rgba(255,248,231,0.58)',
+                }}
+              >
+                Labels
+              </button>
+              <button
+                type="button"
+                aria-pressed={state.suggestionMode}
+                onClick={() => update({ suggestionMode: !state.suggestionMode })}
+                style={{
+                  ...flatButtonStyle,
+                  flex: '0 0 76px',
+                  background: state.suggestionMode
+                    ? 'rgba(92,48,24,0.15)'
+                    : 'rgba(255,248,231,0.58)',
+                }}
+              >
+                AI
+              </button>
+              <label style={{ ...flatButtonStyle, flex: '0 0 88px' }}>
+                Upload
+                <input
+                  aria-label={`Upload reference image for ${activeReference.name}`}
+                  type="file"
+                  accept="image/*"
+                  onChange={(event) => loadImage(event.currentTarget.files?.[0])}
+                  style={{ display: 'none' }}
+                />
+              </label>
+              <button
+                type="button"
+                onClick={() => updateActiveReference({ image: null })}
+                style={{ ...flatButtonStyle, flex: '0 0 82px' }}
+              >
+                Clear
+              </button>
+            </div>
+          </section>
           {state.suggestionMode && (
             <AiSuggestions
               activeId={activeReference.id}
@@ -771,17 +1256,6 @@ export default function ProportionBuddy() {
               update({ headHigh: clamp(headHigh, 0, state.totalHeight) }),
             )}
           </div>
-
-          <ControlSlider
-            label="base lower"
-            value={activeReference.baseOffset}
-            min={0}
-            max={14}
-            suffix="%"
-            onChange={(baseOffset) =>
-              updateActiveReference({ baseOffset: clamp(baseOffset, 0, 14) })
-            }
-          />
 
           <section
             aria-label="Reference point switches"
@@ -1087,6 +1561,12 @@ export default function ProportionBuddy() {
           .proportion-buddy-shell {
             grid-template-columns: 1fr !important;
           }
+          .proportion-buddy-action-row {
+            grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+          }
+          .proportion-buddy-placement-row {
+            grid-template-columns: 1fr !important;
+          }
         }
       `}</style>
     </main>
@@ -1097,12 +1577,16 @@ function GuideLine({
   cm,
   total,
   baseOffset,
+  gridHeight,
+  showLabel,
   label,
   color,
 }: {
   cm: number;
   total: number;
   baseOffset: number;
+  gridHeight: number;
+  showLabel: boolean;
   label: string;
   color: string;
 }) {
@@ -1114,31 +1598,33 @@ function GuideLine({
         position: 'absolute',
         left: 0,
         right: 0,
-        top: guideTopWithBase(cm, total, baseOffset),
+        top: guideTopWithBase(cm, total, baseOffset, gridHeight),
         borderTop: `2px solid ${color}`,
         boxShadow: `0 0 18px ${color}55`,
         pointerEvents: 'none',
       }}
     >
-      <span
-        style={{
-          position: 'absolute',
-          right: 10,
-          top: -22,
-          background: 'rgba(23,17,12,0.72)',
-          border: `1px solid ${color}99`,
-          borderRadius: 999,
-          color,
-          fontFamily: 'var(--font-serif)',
-          fontSize: 12,
-          fontWeight: 800,
-          letterSpacing: '0.05em',
-          padding: '3px 8px',
-          textTransform: 'uppercase',
-        }}
-      >
-        {label}
-      </span>
+      {showLabel && (
+        <span
+          style={{
+            position: 'absolute',
+            right: 10,
+            top: -22,
+            background: 'rgba(23,17,12,0.82)',
+            border: `1px solid ${color}99`,
+            borderRadius: 999,
+            color,
+            fontFamily: 'var(--font-serif)',
+            fontSize: 12,
+            fontWeight: 800,
+            letterSpacing: '0.05em',
+            padding: '3px 8px',
+            textTransform: 'uppercase',
+          }}
+        >
+          {label}
+        </span>
+      )}
     </div>
   );
 }
@@ -1198,14 +1684,14 @@ function AiSuggestions({
       </div>
       {[
         ...imageSuggestions,
-        `Keep bottom of arms locked near ${armsBottom}cm (${armsPercent.toFixed(
+        `Use bottom of arms near ${armsBottom}cm (${armsPercent.toFixed(
           1,
         )}% of total height). Across the three photos this is the strongest stabilising anchor.`,
         `Treat the head as a flexible top zone, not one line: ${headZone}. The skull can read taller depending on crop and hair texture.`,
         `Use chin, shirt opening V, visible armpits, arm-crossing top, and arm-crossing bottom as the main sequence. These are easier to sculpt against than facial details too early.`,
         baseOffset > 0
-          ? `This image has the base imagined ${baseOffset}% lower, so the grid is allowed to start slightly below the visible plinth.`
-          : 'If the plinth/photo crop feels too high, raise the base-lower control a little so the 17cm and head lines stay believable.',
+          ? `The 0cm line is set ${baseOffset}% lower than the stage bottom. Move the 0cm line and height until the base and 82cm skull anchor both make sense.`
+          : 'If the plinth/photo crop feels too high, move the 0cm line and height until the 17cm target and 82cm anchor feel believable.',
       ].map((suggestion) => (
         <p
           key={suggestion}
@@ -1298,6 +1784,8 @@ function ControlSlider({
   min,
   max,
   suffix = '%',
+  step = 0.5,
+  disabled = false,
   onChange,
 }: {
   label: string;
@@ -1305,10 +1793,20 @@ function ControlSlider({
   min: number;
   max: number;
   suffix?: string;
+  step?: number;
+  disabled?: boolean;
   onChange: (next: number) => void;
 }) {
   return (
-    <label style={{ display: 'grid', gap: 5 }}>
+    <label
+      style={{
+        display: 'grid',
+        gap: 5,
+        minWidth: 0,
+        maxWidth: '100%',
+        cursor: disabled ? 'not-allowed' : 'default',
+      }}
+    >
       <span
         style={{
           display: 'flex',
@@ -1318,6 +1816,7 @@ function ControlSlider({
           fontSize: 11,
           letterSpacing: '0.1em',
           textTransform: 'uppercase',
+          minWidth: 0,
         }}
       >
         <span>{label}</span>
@@ -1330,9 +1829,17 @@ function ControlSlider({
         type="range"
         min={min}
         max={max}
+        step={step}
         value={value}
+        disabled={disabled}
+        onInput={(event) => onChange(Number(event.currentTarget.value))}
         onChange={(event) => onChange(Number(event.currentTarget.value))}
-        style={{ width: '100%', accentColor: '#8b5e2f' }}
+        style={{
+          width: '100%',
+          minWidth: 0,
+          accentColor: '#8b5e2f',
+          cursor: disabled ? 'not-allowed' : 'pointer',
+        }}
       />
     </label>
   );
@@ -1349,6 +1856,21 @@ const buttonStyle = {
   fontWeight: 800,
   letterSpacing: '0.08em',
   padding: '8px 12px',
+  textTransform: 'uppercase' as const,
+};
+
+const flatButtonStyle = {
+  border: '1px solid rgba(92,48,24,0.15)',
+  borderRadius: 8,
+  background: 'rgba(255,248,231,0.58)',
+  color: '#4f321d',
+  cursor: 'pointer',
+  fontFamily: 'var(--font-serif)',
+  fontSize: 10,
+  fontWeight: 800,
+  letterSpacing: '0.08em',
+  padding: '8px 6px',
+  textAlign: 'center' as const,
   textTransform: 'uppercase' as const,
 };
 

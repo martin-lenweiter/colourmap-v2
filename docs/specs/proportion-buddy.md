@@ -15,25 +15,53 @@ measurements. The tool should make proportions visible quickly without becoming 
 Current sculpture reference:
 
 - Base = `0cm`
-- Bottom of arms = `18cm` from base
-- Head/top zone = `82-84cm` from base
+- Bottom of arms target = around `17-18cm` from base. This is the proportion the user is trying to
+  reach, not a confirmed fixed measurement.
+- Head/top zone = `80-84cm` from base
 - The provided cropped bust image should work immediately without requiring more crop cleanup.
-- The workbench can hold multiple references for the same sculpture proportion map. The current set is
-  `Image 1`, `Image 2`, and `Image 3`.
-- `Image 2` and `Image 3` are bundled reference photos. `Image 1` can be uploaded/replaced by the user.
+- The workbench can hold multiple references for the same sculpture proportion map. The current default
+  set is `Face`, `Front`, `Front 2`, `Left`, `Plinth`, and `Board`.
+- `Face`, `Front`, `Front 2`, `Left`, and `Plinth` are bundled sculpture reference photos. `Board` is the
+  generated proportion-board reference.
+- This tool is currently project-specific: every bundled image uses the same sculpture measurement
+  system by default, with `0cm` at the baseline, an active `82cm` skull reference, an `88cm` possible
+  final-size reference line, and a `90cm` total grid extent.
 
 ## V1 Behavior
 
 - Route: `/proportion-buddy`.
 - The Colourmap title menu includes a `Proportion Buddy` shortcut.
 - User can upload an image from the browser.
-- User can switch between `Image 1`, `Image 2`, and `Image 3`.
+- User can switch between `Face`, `Front`, `Front 2`, `Left`, `Plinth`, and `Board`.
+- Each reference image can be fixed/unfixed independently. Fixing one image does not lock the other
+  references.
 - Each image keeps its own crop and base-lower adjustment.
+- Each image keeps its own placement adjustment:
+  - `H` / height, which changes the grid/centimeter scale rather than stretching the photo
+  - `M` / move up-down, which moves the image against the grid
+  - `S` / size, which uniformly scales the reference photo without changing its proportions
+  - 0 cm line
+- Image placement moves/scales the photo against the fixed grid/proportion overlay. This lets the user
+  align the skull to the `82cm` reference / `80-84cm` zone and bottom arms near the `17cm` target when
+  the source photo crop is not already
+  proportional to the measurement grid.
+- Grid placement can be changed separately from image placement:
+  - `0 cm line` moves the base/zero line up or down in the stage
+  - `height` changes the pixel height of the centimeter system without renaming the centimeter values
+- The image can be manipulated directly:
+  - drag the image vertically to place the head or base against the grid
+  - mouse wheel or pinch gesture changes size
+  - sliders below the image provide precise adjustment
+- When an image is fixed, the app remembers that image's current placement and grid relationship, disables
+  drag/pinch/wheel movement, and fades/disables the placement sliders until the user clicks
+  `Unlock proportions`.
 - Uploaded image is stored locally so a reload keeps the current workbench.
 - Crop controls adjust top and bottom crop percentages.
 - The image surface shows:
-  - horizontal centimeter grid
-  - centerline and vertical thirds
+  - the active reference image as the first and dominant visual surface
+  - horizontal centimeter grid when `Grid` is enabled
+  - vertical X-grid lines every `10cm`
+  - a horizontal `88cm` reference line because this may become the final sculpture size
   - base line
   - bottom-of-arms line
   - elbow-center line
@@ -43,6 +71,14 @@ Current sculpture reference:
   - editable total height and guide measurements
   - user-written custom landmarks that can be named, measured, toggled, edited, and removed
   - optional guide-shape modes: plain lines, X diagonals, or a triangle/centerline scaffold
+- The app opens in clean image mode:
+  - the image is visible by default
+  - `Grid` is on by default
+  - `Proportions` is off by default
+  - `Labels` is off by default so no label boxes cover the sculpture
+- The image selector and tool buttons sit below the placement sliders, Geometry Builder style. Reference
+  buttons stay on one horizontal scroll axis. They must not sit above the image or compete with the image
+  as a right-side panel.
 - The side panel calculates reusable comparative proportions:
   - each landmark as a percentage of total sculpture height
   - each landmark as a `1:x` ratio against total height
@@ -52,10 +88,10 @@ Current sculpture reference:
   guidance from the active image profile, the project measurements, the base-lower offset, and the named
   landmark sequence. It should not pretend to detect anatomy or run computer vision until a real
   image-analysis pipeline exists.
-- AI suggestions differ by active image. Image 2 and Image 3 can reuse the same intelligence because they
-  are visually close; Image 1 gets its own working-reference guidance.
+- AI suggestions differ by active image. Similar front-facing references can reuse the same intelligence;
+  side/left references get their own working-reference guidance.
 - Defaults are set for the current sculpture project:
-  - total height `84`
+  - total height / grid extent `90`
   - arms bottom `17`
   - elbow center `27`
   - shirt opening V `48`
@@ -64,23 +100,36 @@ Current sculpture reference:
   - arms crossing bottom `24`
   - bottom chin `60`
   - head base `62`
-  - head low `82`
+  - head low `80`
   - head high `84`
   - top crop `0`
   - bottom crop `100`
-  - `Image 2` and `Image 3` use a small base-lower nudge because their photographed plinth/base may sit
-    slightly above the imagined sculpture base.
+  - all bundled images default to `0 cm line = 0` and `height = 100` so the same project proportions
+    appear across every reference.
+  - `Face` is currently calibrated from the user's found setup: `H = 71`, `M = 25`, `S = 92`,
+    `0 cm line = -1`.
+  - `Front 2` is currently calibrated from the user's found setup: `H = 78`, `M = 11`, `S = 106`,
+    `0 cm line = 0`.
 
 ## Interaction
 
 - Controls must stay compact and legible on phone.
 - The reference stage should be the first visual signal.
+- The reference stage should run close to the side edges of the available page, especially on phone.
+- The reference stage should be tall enough that the image can continue below the baseline/ruler when the
+  source photo continues; avoid cutting off the lower part of the reference prematurely.
+- The user sees the image first, then placement sliders, then reference selection and compact tool
+  controls.
 - Sliders and number inputs update the overlay immediately.
 - Writing a landmark name and centimeter value adds it to the overlay and persists it locally.
 - Landmark checkboxes hide/show individual guides without deleting their measurements.
 - Image tabs switch the displayed reference while preserving the shared proportion map.
 - Base-lower lets the user imagine the measurement base slightly below the visible photo when the crop is
   not perfectly proportional to the sculpture base.
+- Move up/down and size let the user move and uniformly scale the photo under the grid. The image must
+  keep its natural proportions and must not be stretched horizontally or vertically.
+- 0 cm line and height let the user move the grid under the same image when the photo should stay in
+  place but the measurement system needs recalibration.
 - AI suggestions mode calculates which anchors to compare across all images: bottom of arms, head zone,
   chin, shirt opening V, visible armpits, arms crossing top, arms crossing bottom, and elbow center.
 - Shape mode helps compare large silhouette proportions without replacing the centimeter lines:
@@ -94,8 +143,15 @@ Current sculpture reference:
 
 - A user can upload the provided cropped image and immediately see the figure with proportional
   guides.
-- The `17cm` arm-bottom guide and `82-84cm` head zone are visible over the cropped reference.
-- The user can switch between Image 1, Image 2, and Image 3.
+- The `17cm` arm-bottom target guide and `80-84cm` head zone are visible over the cropped reference.
+- The default screen shows the picture cleanly before overlays are enabled.
+- `Grid`, `Proportions`, and `Labels` can be toggled independently.
+- The user can pin the skull visually around the `82cm` reference, then drag/resize/stretch the image so the lower body
+  or base can be explored against `0cm`.
+- The `0cm` Y-axis mark sits above the bottom horizontal X-coordinate ruler. The X ruler labels begin
+  after zero with a small left breathing gutter, so the baseline and coordinate labels do not overlap.
+- Placement controls reposition the active image without changing the measured centimeter landmarks.
+- The user can switch between the bundled reference images.
 - The user can add a custom landmark such as `shirt split`, reload, and keep the saved line.
 - The user can toggle default and custom landmarks independently.
 - The user can switch to X or triangle guide mode for broader proportion checking.
