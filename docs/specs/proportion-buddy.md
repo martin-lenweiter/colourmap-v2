@@ -106,8 +106,10 @@ Current sculpture reference:
   - bottom crop `100`
   - all bundled images default to `0 cm line = 0` and `height = 100` so the same project proportions
     appear across every reference.
-  - `Front 2` is currently calibrated from the user's found setup: `H = 81`, `M = 11`, `S = 106`, so
-    the top of head reads near `84cm`.
+  - `Face` is currently calibrated from the user's found setup: `H = 71`, `M = 25`, `S = 92`,
+    `0 cm line = -1`.
+  - `Front 2` is currently calibrated from the user's found setup: `H = 78`, `M = 11`, `S = 106`,
+    `0 cm line = 0`.
 
 ## Interaction
 

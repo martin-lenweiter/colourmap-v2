@@ -79,11 +79,17 @@ describe('ProportionBuddy', () => {
     expect(screen.getByLabelText('0 cm line0%')).toBeDefined();
     expect(screen.getByRole('button', { name: 'Lock proportions' })).toBeDefined();
 
+    fireEvent.click(screen.getByRole('button', { name: 'Face' }));
+    expect(screen.getByLabelText('H71%')).toBeDefined();
+    expect(screen.getByLabelText('M25%')).toBeDefined();
+    expect(screen.getByLabelText('S92%')).toBeDefined();
+    expect(screen.getByLabelText('0 cm line-1%')).toBeDefined();
+
     fireEvent.click(screen.getByRole('button', { name: 'Left' }));
     expect(screen.getByRole('img', { name: 'Left sculpture reference' })).toBeDefined();
 
     fireEvent.click(screen.getByRole('button', { name: 'Front 2' }));
-    expect(screen.getByLabelText('H81%')).toBeDefined();
+    expect(screen.getByLabelText('H78%')).toBeDefined();
     expect(screen.getByLabelText('M11%')).toBeDefined();
     expect(screen.getByLabelText('S106%')).toBeDefined();
 
@@ -179,7 +185,7 @@ describe('ProportionBuddy', () => {
     localStorage.setItem(
       'colourmap:proportion-buddy',
       JSON.stringify({
-        version: 6,
+        version: 7,
         activeReferenceId: 'image-1',
         references: [
           {

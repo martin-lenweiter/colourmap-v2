@@ -65,7 +65,7 @@ type BuddyState = {
 };
 
 const STORAGE_KEY = 'colourmap:proportion-buddy';
-const STATE_VERSION = 6;
+const STATE_VERSION = 7;
 const CUSTOM_COLORS = ['#ffd166', '#7bdff2', '#f7aef8', '#b8f2e6', '#f08080', '#c4f07a'];
 const MIN_IMAGE_Y = -620;
 const MAX_IMAGE_Y = 360;
@@ -85,13 +85,13 @@ const DEFAULT_REFERENCES: ReferenceImage[] = [
     name: 'Face',
     image: '/proportion-buddy/prop-image-face.jpg',
     offsetX: 0,
-    offsetY: -7,
-    zoom: 108,
+    offsetY: 25,
+    zoom: 92,
     stretchY: 108,
     topCrop: 0,
     bottomCrop: 100,
-    baseOffset: 0,
-    gridHeight: 100,
+    baseOffset: -1,
+    gridHeight: 71,
     fixed: false,
   },
   {
@@ -119,7 +119,7 @@ const DEFAULT_REFERENCES: ReferenceImage[] = [
     topCrop: 0,
     bottomCrop: 100,
     baseOffset: 0,
-    gridHeight: 81,
+    gridHeight: 78,
     fixed: false,
   },
   {
@@ -259,6 +259,11 @@ function isMajorGridLine(cm: number, totalHeight: number) {
   return cm % 10 === 0 || cm === totalHeight || EXTRA_GRID_LINES.includes(cm);
 }
 
+function xRulerLabelSide(cm: number, totalHeight: number) {
+  if (cm >= totalHeight - 10) return 'left';
+  return 'right';
+}
+
 function loadState(): BuddyState {
   if (typeof window === 'undefined') return DEFAULT_STATE;
   try {
@@ -306,7 +311,7 @@ function loadState(): BuddyState {
 }
 
 function guideTopWithBase(cm: number, totalHeight: number, baseOffset: number, gridHeight: number) {
-  const ratio = clamp(cm, 0, totalHeight) / totalHeight;
+  const ratio = Math.max(0, cm) / totalHeight;
   const zeroLine = 100 + clamp(baseOffset, MIN_GRID_ZERO, MAX_GRID_ZERO);
   const range = clamp(gridHeight, MIN_GRID_HEIGHT, MAX_GRID_HEIGHT);
   return `calc(${zeroLine - ratio * range}% - ${GRID_RULER_GUTTER_PX * (1 - ratio)}px)`;
@@ -813,7 +818,7 @@ export default function ProportionBuddy() {
                   .filter((cm) => cm >= X_RULER_LABEL_START_CM)
                   .map((cm) => {
                     const major = cm % 10 === 0 || cm === state.totalHeight;
-                    const isLast = cm === state.totalHeight;
+                    const labelSide = xRulerLabelSide(cm, state.totalHeight);
                     return (
                       <span
                         key={`horizontal-${cm}`}
@@ -831,8 +836,8 @@ export default function ProportionBuddy() {
                           <span
                             style={{
                               position: 'absolute',
-                              left: isLast ? 'auto' : 3,
-                              right: isLast ? 3 : 'auto',
+                              left: labelSide === 'right' ? 3 : 'auto',
+                              right: labelSide === 'left' ? 3 : 'auto',
                               top: 15,
                               color: 'rgba(255,238,198,0.78)',
                               fontFamily: 'var(--font-serif)',
