@@ -16,12 +16,15 @@ Current sculpture reference:
 
 - Base = `0cm`
 - Bottom of arms = `18cm` from base
-- Head/top zone = `82-84cm` from base
+- Head/top zone = `80-84cm` from base
 - The provided cropped bust image should work immediately without requiring more crop cleanup.
 - The workbench can hold multiple references for the same sculpture proportion map. The current default
   set is `Face`, `Front`, `Front 2`, `Left`, `Plinth`, and `Board`.
 - `Face`, `Front`, `Front 2`, `Left`, and `Plinth` are bundled sculpture reference photos. `Board` is the
   generated proportion-board reference.
+- This tool is currently project-specific: every bundled image uses the same sculpture measurement
+  system by default, with `0cm` at the baseline, `84cm` at the skull/top height, and a small bottom
+  ruler gutter below `0cm` for horizontal centimeter labels.
 
 ## V1 Behavior
 
@@ -90,12 +93,12 @@ Current sculpture reference:
   - arms crossing bottom `24`
   - bottom chin `60`
   - head base `62`
-  - head low `82`
+  - head low `80`
   - head high `84`
   - top crop `0`
   - bottom crop `100`
-  - `Front` and `Front 2` use a small base-lower nudge because their photographed plinth/base may sit
-    slightly above the imagined sculpture base.
+  - all bundled images default to `0 cm line = 0` and `cm scale = 100` so the same project proportions
+    appear across every reference.
 
 ## Interaction
 
@@ -126,10 +129,10 @@ Current sculpture reference:
 
 - A user can upload the provided cropped image and immediately see the figure with proportional
   guides.
-- The `17cm` arm-bottom guide and `82-84cm` head zone are visible over the cropped reference.
+- The `17cm` arm-bottom guide and `80-84cm` head zone are visible over the cropped reference.
 - The default screen shows the picture cleanly before overlays are enabled.
 - `Grid`, `Proportions`, and `Labels` can be toggled independently.
-- The user can pin the skull visually around `82cm`, then drag/resize/stretch the image so the lower body
+- The user can pin the skull visually around `84cm`, then drag/resize/stretch the image so the lower body
   or base can be explored against `0cm`.
 - Placement controls reposition the active image without changing the measured centimeter landmarks.
 - The user can switch between the bundled reference images.

@@ -18,7 +18,7 @@ describe('ProportionBuddy', () => {
 
     expect(screen.getByRole('heading', { name: 'Proportion Buddy' })).toBeDefined();
     expect(screen.getByLabelText('total cm')).toHaveProperty('value', '84');
-    expect(screen.getByLabelText('top skull centimeters')).toHaveProperty('value', '82');
+    expect(screen.getByLabelText('top skull centimeters')).toHaveProperty('value', '84');
     expect(screen.getByLabelText('bottom arms centimeters')).toHaveProperty('value', '17');
     expect(screen.getByLabelText('elbow center centimeters')).toHaveProperty('value', '27');
     expect(screen.getByLabelText('shirt opening V centimeters')).toHaveProperty('value', '48');
@@ -26,7 +26,7 @@ describe('ProportionBuddy', () => {
 
     const ratios = screen.getByLabelText('Reusable proportion ratios');
     expect(within(ratios).getByText('head size')).toBeDefined();
-    expect(within(ratios).getByText(/20\.0cm . 23\.8% . 1:4\.20/)).toBeDefined();
+    expect(within(ratios).getByText(/22\.0cm . 26\.2% . 1:3\.82/)).toBeDefined();
     expect(within(ratios).getByText('shirt opening')).toBeDefined();
     expect(within(ratios).getByText(/48\.0cm . 57\.1% . 1:1\.75/)).toBeDefined();
   });
@@ -38,10 +38,13 @@ describe('ProportionBuddy', () => {
     expect(screen.queryByLabelText('Head guide band')).toBeNull();
 
     fireEvent.click(screen.getByRole('button', { name: 'Grid' }));
+    expect(within(screen.getByTestId('proportion-stage')).getAllByText('80cm')).toHaveLength(2);
+    expect(screen.getByLabelText('Horizontal centimeter ruler')).toBeDefined();
+
     fireEvent.click(screen.getByRole('button', { name: 'Proportions' }));
     fireEvent.click(screen.getByRole('button', { name: 'Labels' }));
 
-    expect(screen.getByLabelText('top skull 82cm')).toBeDefined();
+    expect(screen.getByLabelText('top skull 84cm')).toBeDefined();
     expect(screen.getByLabelText('bottom arms 17cm')).toBeDefined();
     expect(screen.getByLabelText('elbow center 27cm')).toBeDefined();
     expect(screen.getByLabelText('shirt opening V 48cm')).toBeDefined();
@@ -66,8 +69,8 @@ describe('ProportionBuddy', () => {
     expect(screen.getByLabelText('move up / down-4%')).toBeDefined();
     expect(screen.getByLabelText('size106%')).toBeDefined();
     expect(screen.getByLabelText('height stretch100%')).toBeDefined();
-    expect(screen.getByLabelText('0 cm line3%')).toBeDefined();
-    expect(screen.getByLabelText('cm scale103%')).toBeDefined();
+    expect(screen.getByLabelText('0 cm line0%')).toBeDefined();
+    expect(screen.getByLabelText('cm scale100%')).toBeDefined();
 
     fireEvent.click(screen.getByRole('button', { name: 'Left' }));
     expect(screen.getByRole('img', { name: 'Left sculpture reference' })).toBeDefined();
@@ -83,8 +86,8 @@ describe('ProportionBuddy', () => {
     fireEvent.change(screen.getByLabelText('move up / down-4%'), { target: { value: '-120' } });
     fireEvent.change(screen.getByLabelText('size106%'), { target: { value: '180' } });
     fireEvent.change(screen.getByLabelText('height stretch100%'), { target: { value: '140' } });
-    fireEvent.change(screen.getByLabelText('0 cm line3%'), { target: { value: '42' } });
-    fireEvent.change(screen.getByLabelText('cm scale103%'), { target: { value: '180' } });
+    fireEvent.change(screen.getByLabelText('0 cm line0%'), { target: { value: '42' } });
+    fireEvent.change(screen.getByLabelText('cm scale100%'), { target: { value: '180' } });
 
     const image = screen.getByRole('img', { name: 'Front sculpture reference' });
     expect(image.getAttribute('style')).toContain('-120%');
@@ -124,7 +127,7 @@ describe('ProportionBuddy', () => {
     expect(localStorage.getItem('colourmap:proportion-buddy')).toContain('shirt split');
   });
 
-  it('resets stale saved placement so the 82cm defaults take effect', async () => {
+  it('resets stale saved placement so the project grid defaults take effect', async () => {
     localStorage.setItem(
       'colourmap:proportion-buddy',
       JSON.stringify({
@@ -138,14 +141,14 @@ describe('ProportionBuddy', () => {
 
     const image = await screen.findByRole('img', { name: 'Front sculpture reference' });
     expect(image.getAttribute('src')).toBe('/proportion-buddy/prop-2.png');
-    expect(screen.getByLabelText('top skull centimeters')).toHaveProperty('value', '82');
+    expect(screen.getByLabelText('top skull centimeters')).toHaveProperty('value', '84');
   });
 
   it('loads a current-version saved reference image without overwriting it during hydration', async () => {
     localStorage.setItem(
       'colourmap:proportion-buddy',
       JSON.stringify({
-        version: 2,
+        version: 3,
         activeReferenceId: 'image-1',
         references: [
           {
@@ -159,6 +162,7 @@ describe('ProportionBuddy', () => {
             topCrop: 0,
             bottomCrop: 100,
             baseOffset: 0,
+            gridHeight: 100,
           },
         ],
       }),
