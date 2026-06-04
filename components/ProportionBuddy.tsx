@@ -25,6 +25,7 @@ type ReferenceImage = {
   bottomCrop: number;
   baseOffset: number;
   gridHeight: number;
+  fixed: boolean;
 };
 
 type BuddyState = {
@@ -64,19 +65,19 @@ type BuddyState = {
 };
 
 const STORAGE_KEY = 'colourmap:proportion-buddy';
-const STATE_VERSION = 3;
+const STATE_VERSION = 5;
 const CUSTOM_COLORS = ['#ffd166', '#7bdff2', '#f7aef8', '#b8f2e6', '#f08080', '#c4f07a'];
 const MIN_IMAGE_Y = -620;
 const MAX_IMAGE_Y = 360;
 const MIN_IMAGE_ZOOM = 40;
 const MAX_IMAGE_ZOOM = 900;
-const MIN_IMAGE_HEIGHT = 40;
-const MAX_IMAGE_HEIGHT = 620;
 const MIN_GRID_ZERO = -140;
 const MAX_GRID_ZERO = 240;
 const MIN_GRID_HEIGHT = 40;
 const MAX_GRID_HEIGHT = 280;
 const GRID_RULER_GUTTER_PX = 34;
+const X_RULER_LABEL_START_CM = 10;
+const X_RULER_LEFT_GUTTER_PERCENT = 5;
 const DEFAULT_REFERENCES: ReferenceImage[] = [
   {
     id: 'image-1',
@@ -85,11 +86,12 @@ const DEFAULT_REFERENCES: ReferenceImage[] = [
     offsetX: 0,
     offsetY: -7,
     zoom: 108,
-    stretchY: 100,
+    stretchY: 108,
     topCrop: 0,
     bottomCrop: 100,
     baseOffset: 0,
     gridHeight: 100,
+    fixed: false,
   },
   {
     id: 'image-2',
@@ -98,11 +100,12 @@ const DEFAULT_REFERENCES: ReferenceImage[] = [
     offsetX: 0,
     offsetY: -4,
     zoom: 106,
-    stretchY: 100,
+    stretchY: 106,
     topCrop: 0,
     bottomCrop: 100,
     baseOffset: 0,
     gridHeight: 100,
+    fixed: false,
   },
   {
     id: 'image-3',
@@ -111,11 +114,12 @@ const DEFAULT_REFERENCES: ReferenceImage[] = [
     offsetX: 0,
     offsetY: -4,
     zoom: 106,
-    stretchY: 100,
+    stretchY: 106,
     topCrop: 0,
     bottomCrop: 100,
     baseOffset: 0,
     gridHeight: 100,
+    fixed: false,
   },
   {
     id: 'image-4',
@@ -124,11 +128,12 @@ const DEFAULT_REFERENCES: ReferenceImage[] = [
     offsetX: 0,
     offsetY: -6,
     zoom: 108,
-    stretchY: 100,
+    stretchY: 108,
     topCrop: 0,
     bottomCrop: 100,
     baseOffset: 0,
     gridHeight: 100,
+    fixed: false,
   },
   {
     id: 'image-5',
@@ -142,6 +147,7 @@ const DEFAULT_REFERENCES: ReferenceImage[] = [
     bottomCrop: 100,
     baseOffset: 0,
     gridHeight: 100,
+    fixed: false,
   },
   {
     id: 'image-6',
@@ -150,11 +156,12 @@ const DEFAULT_REFERENCES: ReferenceImage[] = [
     offsetX: 0,
     offsetY: -5,
     zoom: 106,
-    stretchY: 100,
+    stretchY: 106,
     topCrop: 0,
     bottomCrop: 100,
     baseOffset: 0,
     gridHeight: 100,
+    fixed: false,
   },
 ];
 
@@ -168,7 +175,7 @@ const DEFAULT_STATE: BuddyState = {
   showLabels: false,
   references: DEFAULT_REFERENCES,
   totalHeight: 84,
-  topSkull: 84,
+  topSkull: 82,
   browRidge: 72,
   eyes: 70,
   noseBase: 66,
@@ -238,6 +245,13 @@ function clamp(value: number, min: number, max: number) {
 
 function distance(a: { x: number; y: number }, b: { x: number; y: number }) {
   return Math.hypot(a.x - b.x, a.y - b.y);
+}
+
+function xPositionPercent(cm: number, totalHeight: number) {
+  return (
+    X_RULER_LEFT_GUTTER_PERCENT +
+    (clamp(cm, 0, totalHeight) / Math.max(1, totalHeight)) * (100 - X_RULER_LEFT_GUTTER_PERCENT)
+  );
 }
 
 function loadState(): BuddyState {
@@ -374,7 +388,6 @@ export default function ProportionBuddy() {
   const baseOffset = clamp(activeReference.baseOffset, MIN_GRID_ZERO, MAX_GRID_ZERO);
   const gridHeight = clamp(activeReference.gridHeight, MIN_GRID_HEIGHT, MAX_GRID_HEIGHT);
   const imageZoom = clamp(activeReference.zoom, MIN_IMAGE_ZOOM, MAX_IMAGE_ZOOM);
-  const imageStretchY = clamp(activeReference.stretchY, MIN_IMAGE_HEIGHT, MAX_IMAGE_HEIGHT);
   const imageOffsetX = clamp(activeReference.offsetX, -80, 80);
   const imageOffsetY = clamp(activeReference.offsetY, MIN_IMAGE_Y, MAX_IMAGE_Y);
   const gridLines = useMemo(() => {
@@ -384,6 +397,12 @@ export default function ProportionBuddy() {
     if (!lines.includes(state.totalHeight)) lines.push(state.totalHeight);
     return lines;
   }, [state.gridStep, state.totalHeight]);
+  const xGridLines = useMemo(() => {
+    const lines: number[] = [];
+    for (let cm = 0; cm <= state.totalHeight; cm += 10) lines.push(cm);
+    if (!lines.includes(state.totalHeight)) lines.push(state.totalHeight);
+    return lines;
+  }, [state.totalHeight]);
   const landmarks = useMemo(
     () =>
       LANDMARKS.map((mark) => ({
@@ -524,6 +543,7 @@ export default function ProportionBuddy() {
   }
 
   function handleStagePointerDown(event: PointerEvent<HTMLDivElement>) {
+    if (activeReference.fixed) return;
     event.currentTarget.setPointerCapture(event.pointerId);
     gestureRef.current.points.set(event.pointerId, { x: event.clientX, y: event.clientY });
     gestureRef.current.lastY = event.clientY;
@@ -535,6 +555,7 @@ export default function ProportionBuddy() {
   }
 
   function handleStagePointerMove(event: PointerEvent<HTMLDivElement>) {
+    if (activeReference.fixed) return;
     if (!gestureRef.current.points.has(event.pointerId)) return;
     gestureRef.current.points.set(event.pointerId, { x: event.clientX, y: event.clientY });
 
@@ -573,6 +594,7 @@ export default function ProportionBuddy() {
 
   function handleStageWheel(event: WheelEvent<HTMLDivElement>) {
     event.preventDefault();
+    if (activeReference.fixed) return;
     updateActiveReferenceWith((reference) => ({
       zoom: Number(
         clamp(reference.zoom - event.deltaY * 0.12, MIN_IMAGE_ZOOM, MAX_IMAGE_ZOOM).toFixed(1),
@@ -654,7 +676,7 @@ export default function ProportionBuddy() {
               position: 'relative',
               overflow: 'hidden',
               width: '100%',
-              minHeight: 'min(78svh, 760px)',
+              minHeight: 'min(92svh, 860px)',
               background:
                 'linear-gradient(180deg, rgba(47,36,25,0.96), rgba(26,20,15,0.96)), repeating-linear-gradient(0deg, transparent 0 18px, rgba(255,255,255,0.03) 18px 19px)',
               borderBlock: '1px solid rgba(68,47,30,0.32)',
@@ -674,7 +696,7 @@ export default function ProportionBuddy() {
                   left: `${50 + imageOffsetX}%`,
                   top: `calc(${-(cropTop / cropRange) * imageZoom}% + ${imageOffsetY}%)`,
                   width: `${imageZoom}%`,
-                  height: `${((imageZoom * imageStretchY) / 100 / cropRange) * 100}%`,
+                  height: 'auto',
                   objectFit: 'contain',
                   objectPosition: 'center top',
                   transform: 'translateX(-50%)',
@@ -699,7 +721,7 @@ export default function ProportionBuddy() {
                   <div style={{ fontSize: 42, marginBottom: 8 }}>+</div>
                   <div style={{ fontSize: 18 }}>Upload {activeReference.name}</div>
                   <div style={{ fontSize: 12, marginTop: 7, opacity: 0.72 }}>
-                    The 17cm arms line and 80-84cm head zone are ready.
+                    The 17cm arms target and 80-84cm head zone are ready.
                   </div>
                 </div>
               </div>
@@ -711,11 +733,24 @@ export default function ProportionBuddy() {
                 style={{
                   position: 'absolute',
                   inset: 0,
-                  background:
-                    'linear-gradient(90deg, transparent 33.25%, rgba(244,216,160,0.16) 33.3%, transparent 33.45%, transparent 49.85%, rgba(255,248,231,0.22) 50%, transparent 50.15%, transparent 66.55%, rgba(244,216,160,0.16) 66.7%, transparent 66.85%)',
                   pointerEvents: 'none',
                 }}
-              />
+              >
+                {xGridLines.map((cm) => (
+                  <span
+                    key={`x-grid-${cm}`}
+                    data-x-grid-line="true"
+                    style={{
+                      position: 'absolute',
+                      top: 0,
+                      bottom: GRID_RULER_GUTTER_PX,
+                      left: `${xPositionPercent(cm, state.totalHeight)}%`,
+                      borderLeft: `1px solid rgba(255,238,198,${cm % 20 === 0 ? 0.2 : 0.12})`,
+                      transform: 'translateX(-50%)',
+                    }}
+                  />
+                ))}
+              </div>
             )}
             {state.showGrid &&
               gridLines.map((cm) => {
@@ -766,43 +801,45 @@ export default function ProportionBuddy() {
                   pointerEvents: 'none',
                 }}
               >
-                {gridLines.map((cm) => {
-                  const major = cm % 10 === 0 || cm === state.totalHeight;
-                  const isLast = cm === state.totalHeight;
-                  return (
-                    <span
-                      key={`horizontal-${cm}`}
-                      style={{
-                        position: 'absolute',
-                        left: `${(cm / Math.max(1, state.totalHeight)) * 100}%`,
-                        top: 0,
-                        width: 1,
-                        height: major ? 18 : 10,
-                        background: `rgba(255,238,198,${major ? 0.42 : 0.2})`,
-                        transform: 'translateX(-50%)',
-                      }}
-                    >
-                      {major && (
-                        <span
-                          style={{
-                            position: 'absolute',
-                            left: isLast ? 'auto' : 3,
-                            right: isLast ? 3 : 'auto',
-                            top: 15,
-                            color: 'rgba(255,238,198,0.78)',
-                            fontFamily: 'var(--font-serif)',
-                            fontSize: 10,
-                            lineHeight: 1,
-                            textShadow: '0 1px 2px rgba(0,0,0,0.7)',
-                            whiteSpace: 'nowrap',
-                          }}
-                        >
-                          {cm}cm
-                        </span>
-                      )}
-                    </span>
-                  );
-                })}
+                {gridLines
+                  .filter((cm) => cm >= X_RULER_LABEL_START_CM)
+                  .map((cm) => {
+                    const major = cm % 10 === 0 || cm === state.totalHeight;
+                    const isLast = cm === state.totalHeight;
+                    return (
+                      <span
+                        key={`horizontal-${cm}`}
+                        style={{
+                          position: 'absolute',
+                          left: `${xPositionPercent(cm, state.totalHeight)}%`,
+                          top: 0,
+                          width: 1,
+                          height: major ? 18 : 10,
+                          background: `rgba(255,238,198,${major ? 0.42 : 0.2})`,
+                          transform: 'translateX(-50%)',
+                        }}
+                      >
+                        {major && (
+                          <span
+                            style={{
+                              position: 'absolute',
+                              left: isLast ? 'auto' : 3,
+                              right: isLast ? 3 : 'auto',
+                              top: 15,
+                              color: 'rgba(255,238,198,0.78)',
+                              fontFamily: 'var(--font-serif)',
+                              fontSize: 10,
+                              lineHeight: 1,
+                              textShadow: '0 1px 2px rgba(0,0,0,0.7)',
+                              whiteSpace: 'nowrap',
+                            }}
+                          >
+                            {cm}cm
+                          </span>
+                        )}
+                      </span>
+                    );
+                  })}
               </div>
             )}
 
@@ -993,6 +1030,20 @@ export default function ProportionBuddy() {
               >
                 AI
               </button>
+              <button
+                type="button"
+                aria-pressed={activeReference.fixed}
+                onClick={() => updateActiveReference({ fixed: !activeReference.fixed })}
+                style={{
+                  ...flatButtonStyle,
+                  flex: '0 0 96px',
+                  background: activeReference.fixed
+                    ? 'rgba(92,48,24,0.2)'
+                    : 'rgba(255,248,231,0.58)',
+                }}
+              >
+                {activeReference.fixed ? 'Unfix' : 'Fix this'}
+              </button>
               <label style={{ ...flatButtonStyle, flex: '0 0 88px' }}>
                 Upload
                 <input
@@ -1019,15 +1070,30 @@ export default function ProportionBuddy() {
                 width: '100%',
                 minWidth: 0,
                 maxWidth: '100%',
+                opacity: activeReference.fixed ? 0.42 : 1,
               }}
               className="proportion-buddy-placement-row"
             >
+              <ControlSlider
+                label="height"
+                value={activeReference.gridHeight}
+                min={MIN_GRID_HEIGHT}
+                max={MAX_GRID_HEIGHT}
+                suffix="%"
+                disabled={activeReference.fixed}
+                onChange={(gridHeight) =>
+                  updateActiveReference({
+                    gridHeight: clamp(gridHeight, MIN_GRID_HEIGHT, MAX_GRID_HEIGHT),
+                  })
+                }
+              />
               <ControlSlider
                 label="move up / down"
                 value={activeReference.offsetY}
                 min={MIN_IMAGE_Y}
                 max={MAX_IMAGE_Y}
                 suffix="%"
+                disabled={activeReference.fixed}
                 onChange={(offsetY) =>
                   updateActiveReference({ offsetY: clamp(offsetY, MIN_IMAGE_Y, MAX_IMAGE_Y) })
                 }
@@ -1038,20 +1104,9 @@ export default function ProportionBuddy() {
                 min={MIN_IMAGE_ZOOM}
                 max={MAX_IMAGE_ZOOM}
                 suffix="%"
+                disabled={activeReference.fixed}
                 onChange={(zoom) =>
                   updateActiveReference({ zoom: clamp(zoom, MIN_IMAGE_ZOOM, MAX_IMAGE_ZOOM) })
-                }
-              />
-              <ControlSlider
-                label="height stretch"
-                value={activeReference.stretchY}
-                min={MIN_IMAGE_HEIGHT}
-                max={MAX_IMAGE_HEIGHT}
-                suffix="%"
-                onChange={(stretchY) =>
-                  updateActiveReference({
-                    stretchY: clamp(stretchY, MIN_IMAGE_HEIGHT, MAX_IMAGE_HEIGHT),
-                  })
                 }
               />
               <ControlSlider
@@ -1060,21 +1115,10 @@ export default function ProportionBuddy() {
                 min={MIN_GRID_ZERO}
                 max={MAX_GRID_ZERO}
                 suffix="%"
+                disabled={activeReference.fixed}
                 onChange={(baseOffset) =>
                   updateActiveReference({
                     baseOffset: clamp(baseOffset, MIN_GRID_ZERO, MAX_GRID_ZERO),
-                  })
-                }
-              />
-              <ControlSlider
-                label="cm scale"
-                value={activeReference.gridHeight}
-                min={MIN_GRID_HEIGHT}
-                max={MAX_GRID_HEIGHT}
-                suffix="%"
-                onChange={(gridHeight) =>
-                  updateActiveReference({
-                    gridHeight: clamp(gridHeight, MIN_GRID_HEIGHT, MAX_GRID_HEIGHT),
                   })
                 }
               />
@@ -1615,14 +1659,14 @@ function AiSuggestions({
       </div>
       {[
         ...imageSuggestions,
-        `Keep bottom of arms locked near ${armsBottom}cm (${armsPercent.toFixed(
+        `Use bottom of arms near ${armsBottom}cm (${armsPercent.toFixed(
           1,
         )}% of total height). Across the three photos this is the strongest stabilising anchor.`,
         `Treat the head as a flexible top zone, not one line: ${headZone}. The skull can read taller depending on crop and hair texture.`,
         `Use chin, shirt opening V, visible armpits, arm-crossing top, and arm-crossing bottom as the main sequence. These are easier to sculpt against than facial details too early.`,
         baseOffset > 0
-          ? `The 0cm line is set ${baseOffset}% lower than the stage bottom. Move the 0cm line and cm scale until the base and 84cm skull anchor both make sense.`
-          : 'If the plinth/photo crop feels too high, move the 0cm line and cm scale until the 17cm and 84cm anchors feel believable.',
+          ? `The 0cm line is set ${baseOffset}% lower than the stage bottom. Move the 0cm line and height until the base and 82cm skull anchor both make sense.`
+          : 'If the plinth/photo crop feels too high, move the 0cm line and height until the 17cm target and 82cm anchor feel believable.',
       ].map((suggestion) => (
         <p
           key={suggestion}
@@ -1716,6 +1760,7 @@ function ControlSlider({
   max,
   suffix = '%',
   step = 0.5,
+  disabled = false,
   onChange,
 }: {
   label: string;
@@ -1724,10 +1769,19 @@ function ControlSlider({
   max: number;
   suffix?: string;
   step?: number;
+  disabled?: boolean;
   onChange: (next: number) => void;
 }) {
   return (
-    <label style={{ display: 'grid', gap: 5, minWidth: 0, maxWidth: '100%' }}>
+    <label
+      style={{
+        display: 'grid',
+        gap: 5,
+        minWidth: 0,
+        maxWidth: '100%',
+        cursor: disabled ? 'not-allowed' : 'default',
+      }}
+    >
       <span
         style={{
           display: 'flex',
@@ -1752,9 +1806,15 @@ function ControlSlider({
         max={max}
         step={step}
         value={value}
+        disabled={disabled}
         onInput={(event) => onChange(Number(event.currentTarget.value))}
         onChange={(event) => onChange(Number(event.currentTarget.value))}
-        style={{ width: '100%', minWidth: 0, accentColor: '#8b5e2f' }}
+        style={{
+          width: '100%',
+          minWidth: 0,
+          accentColor: '#8b5e2f',
+          cursor: disabled ? 'not-allowed' : 'pointer',
+        }}
       />
     </label>
   );

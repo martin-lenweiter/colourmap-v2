@@ -15,7 +15,8 @@ measurements. The tool should make proportions visible quickly without becoming 
 Current sculpture reference:
 
 - Base = `0cm`
-- Bottom of arms = `18cm` from base
+- Bottom of arms target = around `17-18cm` from base. This is the proportion the user is trying to
+  reach, not a confirmed fixed measurement.
 - Head/top zone = `80-84cm` from base
 - The provided cropped bust image should work immediately without requiring more crop cleanup.
 - The workbench can hold multiple references for the same sculpture proportion map. The current default
@@ -32,23 +33,27 @@ Current sculpture reference:
 - The Colourmap title menu includes a `Proportion Buddy` shortcut.
 - User can upload an image from the browser.
 - User can switch between `Face`, `Front`, `Front 2`, `Left`, `Plinth`, and `Board`.
+- Each reference image can be fixed/unfixed independently. Fixing one image does not lock the other
+  references.
 - Each image keeps its own crop and base-lower adjustment.
 - Each image keeps its own placement adjustment:
   - move up / down
-  - size
-  - height stretch
+  - size, which uniformly scales the reference photo without changing its proportions
   - 0 cm line
-  - cm scale
+  - height, which changes the grid/centimeter scale rather than stretching the photo
 - Image placement moves/scales the photo against the fixed grid/proportion overlay. This lets the user
-  align the skull to `80-84cm` and bottom arms to `17cm` when the source photo crop is not already
+  align the skull to the `82cm` reference / `80-84cm` zone and bottom arms near the `17cm` target when
+  the source photo crop is not already
   proportional to the measurement grid.
 - Grid placement can be changed separately from image placement:
   - `0 cm line` moves the base/zero line up or down in the stage
-  - `cm scale` changes the pixel height of the centimeter system without renaming the centimeter values
+  - `height` changes the pixel height of the centimeter system without renaming the centimeter values
 - The image can be manipulated directly:
   - drag the image vertically to place the head or base against the grid
   - mouse wheel or pinch gesture changes size
   - sliders below the image provide precise adjustment
+- When an image is fixed, the app remembers that image's current placement and grid relationship, disables
+  drag/pinch/wheel movement, and fades/disables the placement sliders until the user clicks `Unfix`.
 - Uploaded image is stored locally so a reload keeps the current workbench.
 - Crop controls adjust top and bottom crop percentages.
 - The image surface shows:
@@ -97,7 +102,7 @@ Current sculpture reference:
   - head high `84`
   - top crop `0`
   - bottom crop `100`
-  - all bundled images default to `0 cm line = 0` and `cm scale = 100` so the same project proportions
+  - all bundled images default to `0 cm line = 0` and `height = 100` so the same project proportions
     appear across every reference.
 
 ## Interaction
@@ -105,6 +110,8 @@ Current sculpture reference:
 - Controls must stay compact and legible on phone.
 - The reference stage should be the first visual signal.
 - The reference stage should run close to the side edges of the available page, especially on phone.
+- The reference stage should be tall enough that the image can continue below the baseline/ruler when the
+  source photo continues; avoid cutting off the lower part of the reference prematurely.
 - The user sees the image first, then reference selection, then compact controls.
 - Sliders and number inputs update the overlay immediately.
 - Writing a landmark name and centimeter value adds it to the overlay and persists it locally.
@@ -112,9 +119,9 @@ Current sculpture reference:
 - Image tabs switch the displayed reference while preserving the shared proportion map.
 - Base-lower lets the user imagine the measurement base slightly below the visible photo when the crop is
   not perfectly proportional to the sculpture base.
-- Move up/down, size, and height stretch let the user move the photo under the grid. The grid and
-  proportion lines stay fixed.
-- 0 cm line and cm scale let the user move the grid under the same image when the photo should stay in
+- Move up/down and size let the user move and uniformly scale the photo under the grid. The image must
+  keep its natural proportions and must not be stretched horizontally or vertically.
+- 0 cm line and height let the user move the grid under the same image when the photo should stay in
   place but the measurement system needs recalibration.
 - AI suggestions mode calculates which anchors to compare across all images: bottom of arms, head zone,
   chin, shirt opening V, visible armpits, arms crossing top, arms crossing bottom, and elbow center.
@@ -129,11 +136,13 @@ Current sculpture reference:
 
 - A user can upload the provided cropped image and immediately see the figure with proportional
   guides.
-- The `17cm` arm-bottom guide and `80-84cm` head zone are visible over the cropped reference.
+- The `17cm` arm-bottom target guide and `80-84cm` head zone are visible over the cropped reference.
 - The default screen shows the picture cleanly before overlays are enabled.
 - `Grid`, `Proportions`, and `Labels` can be toggled independently.
-- The user can pin the skull visually around `84cm`, then drag/resize/stretch the image so the lower body
+- The user can pin the skull visually around the `82cm` reference, then drag/resize/stretch the image so the lower body
   or base can be explored against `0cm`.
+- The `0cm` Y-axis mark sits above the bottom horizontal X-coordinate ruler. The X ruler labels begin
+  after zero with a small left breathing gutter, so the baseline and coordinate labels do not overlap.
 - Placement controls reposition the active image without changing the measured centimeter landmarks.
 - The user can switch between the bundled reference images.
 - The user can add a custom landmark such as `shirt split`, reload, and keep the saved line.
