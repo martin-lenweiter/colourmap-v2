@@ -117,17 +117,18 @@ Phone: Focus · AI · Notes · Education · Art · ◇
 15. **Creator Space / Build Lab** — Creator-only AI coding mission control at `/build-lab`. Select a local project, choose Codex or Claude Code, dictate or type a mission, stream agent output, and inspect changed files/diffs. The same Creator Space evolves into Garden of Ideas, Project Map / Visual Intelligence, and Business Plan for understanding the product, navigating specs visually, and moving toward practical launch/revenue strategy. [Spec](specs/build-lab.md)
 16. **Mode Bridge** — In-progress Focus-page surface for understanding active/avoided modes and practicing small transitions between Creation, Organisation, Admin, Builder, Body/Sport, Reflection, and Play. [Spec](specs/archetype-platform.md)
 17. **AI Presence** — Shared phone-friendly AI reflection box with a brown/gold living-cell visual. It connects to backend AI without needing local coding agents, starting as a mirror-first surface for fragments and simple tensions. [Spec](specs/ai-presence.md)
+18. **Proportion Buddy** — Art utility at `/proportion-buddy` for sculpture reference work: upload/crop a reference image and overlay centimeter grids, base/arm/head guide lines, and editable project measurements. [Spec](specs/proportion-buddy.md)
 
 ### Entertainment
 
-18. **Billy Pineapple Infinite Comic** — Future entertainment-first relaxation world: an infinite interactive comic where Billy searches for The Juice through symbolic regions, soft choices, and a Colourmap-like inner map. Reflective, but not Education. [Spec](specs/infinite-comic-billy.md)
+19. **Billy Pineapple Infinite Comic** — Future entertainment-first relaxation world: an infinite interactive comic where Billy searches for The Juice through symbolic regions, soft choices, and a Colourmap-like inner map. Reflective, but not Education. [Spec](specs/infinite-comic-billy.md)
 
 ### Deep Layer
 
-19. **Life Scan** — Guided self-assessment through 3 Doors (Feeling, Doing, Sharing). Bipolar sliders, reflective questions, generates improvement programs. [Spec](specs/life-scan.md)
-20. **Personality Type Program** — Planned self-understanding program built on free/public-domain personality foundations, especially IPIP Big Five, translated into Colourmap-native styles, gifts, frictions, and mode bridges. [Spec](specs/personality-type-program.md)
-21. **Overview** — Compass wheel (warm blue for Sharing) showing life balance from life scan data + emotional state. Chapter card. [Spec](specs/cockpit.md)
-22. **Research** — In-app research document covering psychology foundations, competitive analysis, monetization, AI integration, soul cartography vision, and feature roadmap. Accessible at `/research`.
+20. **Life Scan** — Guided self-assessment through 3 Doors (Feeling, Doing, Sharing). Bipolar sliders, reflective questions, generates improvement programs. [Spec](specs/life-scan.md)
+21. **Personality Type Program** — Planned self-understanding program built on free/public-domain personality foundations, especially IPIP Big Five, translated into Colourmap-native styles, gifts, frictions, and mode bridges. [Spec](specs/personality-type-program.md)
+22. **Overview** — Compass wheel (warm blue for Sharing) showing life balance from life scan data + emotional state. Chapter card. [Spec](specs/cockpit.md)
+23. **Research** — In-app research document covering psychology foundations, competitive analysis, monetization, AI integration, soul cartography vision, and feature roadmap. Accessible at `/research`.
 
 ## Architecture
 

@@ -243,6 +243,7 @@ const MORE_SEGMENTS = [
   { href: '/figure-stars-trio', label: 'Figure Trio' },
   { href: '/figures?mode=billy', label: 'Billy 3D' },
   { href: '/figures?mode=static&figure=kid-lotus', label: 'Buddha Boy' },
+  { href: '/proportion-buddy', label: 'Proportion Buddy' },
   { href: '/atlas', label: 'Atlas' },
   { href: '/progress-road', label: 'Roads' },
   { href: '/circles', label: 'Social' },

@@ -46,6 +46,9 @@ describe('ColourmapBrandButton', () => {
     expect(screen.getByRole('link', { name: 'Buddha Boy' }).getAttribute('href')).toBe(
       '/figures?mode=static&figure=kid-lotus',
     );
+    expect(screen.getByRole('link', { name: 'Proportion Buddy' }).getAttribute('href')).toBe(
+      '/proportion-buddy',
+    );
   });
 
   it('closes the dialog when the close button is clicked', () => {
