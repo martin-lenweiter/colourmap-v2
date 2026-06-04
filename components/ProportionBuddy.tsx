@@ -24,6 +24,7 @@ type ReferenceImage = {
   topCrop: number;
   bottomCrop: number;
   baseOffset: number;
+  gridHeight: number;
 };
 
 type BuddyState = {
@@ -65,12 +66,16 @@ type BuddyState = {
 const STORAGE_KEY = 'colourmap:proportion-buddy';
 const STATE_VERSION = 2;
 const CUSTOM_COLORS = ['#ffd166', '#7bdff2', '#f7aef8', '#b8f2e6', '#f08080', '#c4f07a'];
-const MIN_IMAGE_Y = -260;
-const MAX_IMAGE_Y = 180;
+const MIN_IMAGE_Y = -620;
+const MAX_IMAGE_Y = 360;
 const MIN_IMAGE_ZOOM = 40;
-const MAX_IMAGE_ZOOM = 420;
+const MAX_IMAGE_ZOOM = 900;
 const MIN_IMAGE_HEIGHT = 40;
-const MAX_IMAGE_HEIGHT = 320;
+const MAX_IMAGE_HEIGHT = 620;
+const MIN_GRID_ZERO = -140;
+const MAX_GRID_ZERO = 240;
+const MIN_GRID_HEIGHT = 40;
+const MAX_GRID_HEIGHT = 280;
 const DEFAULT_REFERENCES: ReferenceImage[] = [
   {
     id: 'image-1',
@@ -83,6 +88,7 @@ const DEFAULT_REFERENCES: ReferenceImage[] = [
     topCrop: 0,
     bottomCrop: 100,
     baseOffset: 0,
+    gridHeight: 100,
   },
   {
     id: 'image-2',
@@ -95,6 +101,7 @@ const DEFAULT_REFERENCES: ReferenceImage[] = [
     topCrop: 0,
     bottomCrop: 100,
     baseOffset: 3,
+    gridHeight: 103,
   },
   {
     id: 'image-3',
@@ -107,6 +114,7 @@ const DEFAULT_REFERENCES: ReferenceImage[] = [
     topCrop: 0,
     bottomCrop: 100,
     baseOffset: 2,
+    gridHeight: 102,
   },
   {
     id: 'image-4',
@@ -119,6 +127,7 @@ const DEFAULT_REFERENCES: ReferenceImage[] = [
     topCrop: 0,
     bottomCrop: 100,
     baseOffset: 2,
+    gridHeight: 102,
   },
   {
     id: 'image-5',
@@ -131,6 +140,7 @@ const DEFAULT_REFERENCES: ReferenceImage[] = [
     topCrop: 0,
     bottomCrop: 100,
     baseOffset: 0,
+    gridHeight: 100,
   },
   {
     id: 'image-6',
@@ -143,6 +153,7 @@ const DEFAULT_REFERENCES: ReferenceImage[] = [
     topCrop: 0,
     bottomCrop: 100,
     baseOffset: 2,
+    gridHeight: 102,
   },
 ];
 
@@ -274,9 +285,10 @@ function loadState(): BuddyState {
   }
 }
 
-function guideTopWithBase(cm: number, totalHeight: number, baseOffset: number) {
-  const range = 100 + clamp(baseOffset, 0, 14);
-  return `${100 + clamp(baseOffset, 0, 14) - (clamp(cm, 0, totalHeight) / totalHeight) * range}%`;
+function guideTopWithBase(cm: number, totalHeight: number, baseOffset: number, gridHeight: number) {
+  const zeroLine = 100 + clamp(baseOffset, MIN_GRID_ZERO, MAX_GRID_ZERO);
+  const range = clamp(gridHeight, MIN_GRID_HEIGHT, MAX_GRID_HEIGHT);
+  return `${zeroLine - (clamp(cm, 0, totalHeight) / totalHeight) * range}%`;
 }
 
 function numberInput(
@@ -357,7 +369,8 @@ export default function ProportionBuddy() {
   const cropTop = clamp(activeReference.topCrop, 0, 96);
   const cropBottom = clamp(activeReference.bottomCrop, cropTop + 4, 100);
   const cropRange = cropBottom - cropTop;
-  const baseOffset = clamp(activeReference.baseOffset, 0, 14);
+  const baseOffset = clamp(activeReference.baseOffset, MIN_GRID_ZERO, MAX_GRID_ZERO);
+  const gridHeight = clamp(activeReference.gridHeight, MIN_GRID_HEIGHT, MAX_GRID_HEIGHT);
   const imageZoom = clamp(activeReference.zoom, MIN_IMAGE_ZOOM, MAX_IMAGE_ZOOM);
   const imageStretchY = clamp(activeReference.stretchY, MIN_IMAGE_HEIGHT, MAX_IMAGE_HEIGHT);
   const imageOffsetX = clamp(activeReference.offsetX, -80, 80);
@@ -571,21 +584,24 @@ export default function ProportionBuddy() {
         minHeight: 'calc(100svh - 120px)',
         background:
           'linear-gradient(180deg, rgba(236,220,188,0.72), rgba(206,184,145,0.34)), radial-gradient(circle at 20% 12%, rgba(122,84,56,0.10), transparent 34%)',
-        border: '1px solid rgba(116,83,49,0.14)',
-        padding: 'clamp(12px, 3vw, 26px)',
+        borderBlock: '1px solid rgba(116,83,49,0.14)',
+        width: '100dvw',
+        marginInline: 'calc(50% - 50dvw)',
+        padding: 'clamp(3px, 1vw, 10px) 0 clamp(10px, 2vw, 18px)',
       }}
     >
       <div
         style={{
           display: 'grid',
-          gridTemplateColumns: 'minmax(0, 980px)',
+          gridTemplateColumns: 'minmax(0, 1fr)',
           gap: 18,
           alignItems: 'start',
           justifyContent: 'center',
+          width: '100%',
         }}
         className="proportion-buddy-shell"
       >
-        <section style={{ minWidth: 0 }}>
+        <section style={{ minWidth: 0, width: '100%' }}>
           <div
             style={{
               display: 'flex',
@@ -593,6 +609,7 @@ export default function ProportionBuddy() {
               gap: 12,
               alignItems: 'end',
               marginBottom: 12,
+              paddingInline: 'clamp(8px, 2vw, 18px)',
             }}
           >
             <div>
@@ -633,10 +650,12 @@ export default function ProportionBuddy() {
             style={{
               position: 'relative',
               overflow: 'hidden',
-              minHeight: 520,
+              width: '100%',
+              minHeight: 'min(78svh, 760px)',
               background:
                 'linear-gradient(180deg, rgba(47,36,25,0.96), rgba(26,20,15,0.96)), repeating-linear-gradient(0deg, transparent 0 18px, rgba(255,255,255,0.03) 18px 19px)',
-              border: '1px solid rgba(68,47,30,0.32)',
+              borderBlock: '1px solid rgba(68,47,30,0.32)',
+              borderInline: 0,
               cursor: activeReference.image ? 'grab' : 'default',
               boxShadow: '0 18px 60px rgba(48,31,16,0.24)',
               touchAction: 'none',
@@ -657,6 +676,7 @@ export default function ProportionBuddy() {
                   objectPosition: 'center top',
                   transform: 'translateX(-50%)',
                   filter: 'contrast(1.02) saturate(0.82)',
+                  pointerEvents: 'none',
                 }}
               />
             ) : (
@@ -705,7 +725,7 @@ export default function ProportionBuddy() {
                       position: 'absolute',
                       left: 0,
                       right: 0,
-                      top: guideTopWithBase(cm, state.totalHeight, baseOffset),
+                      top: guideTopWithBase(cm, state.totalHeight, baseOffset, gridHeight),
                       borderTop: `1px solid rgba(255,238,198,${major ? 0.28 : 0.1})`,
                       pointerEvents: 'none',
                     }}
@@ -738,6 +758,7 @@ export default function ProportionBuddy() {
                     cm={mark.cm}
                     total={state.totalHeight}
                     baseOffset={baseOffset}
+                    gridHeight={gridHeight}
                     showLabel={state.showLabels}
                     label={`${mark.label} ${mark.cm % 1 ? mark.cm.toFixed(1) : Math.round(mark.cm)}cm`}
                     color={mark.color}
@@ -752,6 +773,7 @@ export default function ProportionBuddy() {
                     cm={mark.cm}
                     total={state.totalHeight}
                     baseOffset={baseOffset}
+                    gridHeight={gridHeight}
                     showLabel={state.showLabels}
                     label={`${mark.label} ${mark.cm % 1 ? mark.cm.toFixed(1) : Math.round(mark.cm)}cm`}
                     color={mark.color}
@@ -766,12 +788,18 @@ export default function ProportionBuddy() {
                   position: 'absolute',
                   left: 0,
                   right: 0,
-                  top: guideTopWithBase(state.headHigh, state.totalHeight, baseOffset),
+                  top: guideTopWithBase(state.headHigh, state.totalHeight, baseOffset, gridHeight),
                   height: `calc(${guideTopWithBase(
                     state.headLow,
                     state.totalHeight,
                     baseOffset,
-                  )} - ${guideTopWithBase(state.headHigh, state.totalHeight, baseOffset)})`,
+                    gridHeight,
+                  )} - ${guideTopWithBase(
+                    state.headHigh,
+                    state.totalHeight,
+                    baseOffset,
+                    gridHeight,
+                  )})`,
                   background: 'rgba(244,199,104,0.1)',
                   borderTop: '1px solid rgba(244,199,104,0.72)',
                   borderBottom: '1px solid rgba(244,199,104,0.62)',
@@ -806,15 +834,17 @@ export default function ProportionBuddy() {
               padding: 10,
               display: 'grid',
               gap: 10,
+              marginInline: 'clamp(6px, 2vw, 18px)',
             }}
           >
             <fieldset
               style={{
-                display: 'grid',
-                gridTemplateColumns: 'repeat(auto-fit, minmax(84px, 1fr))',
+                display: 'flex',
                 gap: 8,
                 border: 0,
+                overflowX: 'auto',
                 padding: 0,
+                scrollbarWidth: 'thin',
               }}
             >
               <legend className="sr-only">Reference images</legend>
@@ -825,6 +855,8 @@ export default function ProportionBuddy() {
                   onClick={() => update({ activeReferenceId: reference.id })}
                   style={{
                     ...flatButtonStyle,
+                    flex: '0 0 auto',
+                    minWidth: 84,
                     background:
                       reference.id === activeReference.id
                         ? 'rgba(92,48,24,0.15)'
@@ -837,9 +869,10 @@ export default function ProportionBuddy() {
             </fieldset>
             <div
               style={{
-                display: 'grid',
-                gridTemplateColumns: 'repeat(6, minmax(0, 1fr))',
+                display: 'flex',
                 gap: 8,
+                overflowX: 'auto',
+                scrollbarWidth: 'thin',
               }}
               className="proportion-buddy-action-row"
             >
@@ -849,6 +882,7 @@ export default function ProportionBuddy() {
                 onClick={() => update({ showGrid: !state.showGrid })}
                 style={{
                   ...flatButtonStyle,
+                  flex: '0 0 88px',
                   background: state.showGrid ? 'rgba(92,48,24,0.15)' : 'rgba(255,248,231,0.58)',
                 }}
               >
@@ -860,6 +894,7 @@ export default function ProportionBuddy() {
                 onClick={() => update({ showProportions: !state.showProportions })}
                 style={{
                   ...flatButtonStyle,
+                  flex: '0 0 108px',
                   background: state.showProportions
                     ? 'rgba(92,48,24,0.15)'
                     : 'rgba(255,248,231,0.58)',
@@ -873,6 +908,7 @@ export default function ProportionBuddy() {
                 onClick={() => update({ showLabels: !state.showLabels })}
                 style={{
                   ...flatButtonStyle,
+                  flex: '0 0 92px',
                   background: state.showLabels ? 'rgba(92,48,24,0.15)' : 'rgba(255,248,231,0.58)',
                 }}
               >
@@ -884,6 +920,7 @@ export default function ProportionBuddy() {
                 onClick={() => update({ suggestionMode: !state.suggestionMode })}
                 style={{
                   ...flatButtonStyle,
+                  flex: '0 0 76px',
                   background: state.suggestionMode
                     ? 'rgba(92,48,24,0.15)'
                     : 'rgba(255,248,231,0.58)',
@@ -891,7 +928,7 @@ export default function ProportionBuddy() {
               >
                 AI
               </button>
-              <label style={flatButtonStyle}>
+              <label style={{ ...flatButtonStyle, flex: '0 0 88px' }}>
                 Upload
                 <input
                   aria-label={`Upload reference image for ${activeReference.name}`}
@@ -904,7 +941,7 @@ export default function ProportionBuddy() {
               <button
                 type="button"
                 onClick={() => updateActiveReference({ image: null })}
-                style={flatButtonStyle}
+                style={{ ...flatButtonStyle, flex: '0 0 82px' }}
               >
                 Clear
               </button>
@@ -946,6 +983,30 @@ export default function ProportionBuddy() {
                 onChange={(stretchY) =>
                   updateActiveReference({
                     stretchY: clamp(stretchY, MIN_IMAGE_HEIGHT, MAX_IMAGE_HEIGHT),
+                  })
+                }
+              />
+              <ControlSlider
+                label="0 cm line"
+                value={activeReference.baseOffset}
+                min={MIN_GRID_ZERO}
+                max={MAX_GRID_ZERO}
+                suffix="%"
+                onChange={(baseOffset) =>
+                  updateActiveReference({
+                    baseOffset: clamp(baseOffset, MIN_GRID_ZERO, MAX_GRID_ZERO),
+                  })
+                }
+              />
+              <ControlSlider
+                label="cm scale"
+                value={activeReference.gridHeight}
+                min={MIN_GRID_HEIGHT}
+                max={MAX_GRID_HEIGHT}
+                suffix="%"
+                onChange={(gridHeight) =>
+                  updateActiveReference({
+                    gridHeight: clamp(gridHeight, MIN_GRID_HEIGHT, MAX_GRID_HEIGHT),
                   })
                 }
               />
@@ -1058,17 +1119,6 @@ export default function ProportionBuddy() {
               update({ headHigh: clamp(headHigh, 0, state.totalHeight) }),
             )}
           </div>
-
-          <ControlSlider
-            label="base lower"
-            value={activeReference.baseOffset}
-            min={0}
-            max={14}
-            suffix="%"
-            onChange={(baseOffset) =>
-              updateActiveReference({ baseOffset: clamp(baseOffset, 0, 14) })
-            }
-          />
 
           <section
             aria-label="Reference point switches"
@@ -1390,6 +1440,7 @@ function GuideLine({
   cm,
   total,
   baseOffset,
+  gridHeight,
   showLabel,
   label,
   color,
@@ -1397,6 +1448,7 @@ function GuideLine({
   cm: number;
   total: number;
   baseOffset: number;
+  gridHeight: number;
   showLabel: boolean;
   label: string;
   color: string;
@@ -1409,7 +1461,7 @@ function GuideLine({
         position: 'absolute',
         left: 0,
         right: 0,
-        top: guideTopWithBase(cm, total, baseOffset),
+        top: guideTopWithBase(cm, total, baseOffset, gridHeight),
         borderTop: `2px solid ${color}`,
         boxShadow: `0 0 18px ${color}55`,
         pointerEvents: 'none',
@@ -1501,8 +1553,8 @@ function AiSuggestions({
         `Treat the head as a flexible top zone, not one line: ${headZone}. The skull can read taller depending on crop and hair texture.`,
         `Use chin, shirt opening V, visible armpits, arm-crossing top, and arm-crossing bottom as the main sequence. These are easier to sculpt against than facial details too early.`,
         baseOffset > 0
-          ? `This image has the base imagined ${baseOffset}% lower, so the grid is allowed to start slightly below the visible plinth.`
-          : 'If the plinth/photo crop feels too high, raise the base-lower control a little so the 17cm and head lines stay believable.',
+          ? `The 0cm line is set ${baseOffset}% lower than the stage bottom. Move the 0cm line and cm scale until the base and 82cm skull anchor both make sense.`
+          : 'If the plinth/photo crop feels too high, move the 0cm line and cm scale until the 17cm and 82cm anchors feel believable.',
       ].map((suggestion) => (
         <p
           key={suggestion}

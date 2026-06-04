@@ -34,9 +34,14 @@ Current sculpture reference:
   - move up / down
   - size
   - height stretch
+  - 0 cm line
+  - cm scale
 - Image placement moves/scales the photo against the fixed grid/proportion overlay. This lets the user
   align the skull to `80-84cm` and bottom arms to `17cm` when the source photo crop is not already
   proportional to the measurement grid.
+- Grid placement can be changed separately from image placement:
+  - `0 cm line` moves the base/zero line up or down in the stage
+  - `cm scale` changes the pixel height of the centimeter system without renaming the centimeter values
 - The image can be manipulated directly:
   - drag the image vertically to place the head or base against the grid
   - mouse wheel or pinch gesture changes size
@@ -61,8 +66,9 @@ Current sculpture reference:
   - `Grid` is off by default
   - `Proportions` is off by default
   - `Labels` is off by default so no label boxes cover the sculpture
-- The image selector and tool controls sit below the image, Geometry Builder style. They must not sit
-  above the image or compete with the image as a right-side panel.
+- The image selector and tool controls sit below the image, Geometry Builder style. Reference buttons stay
+  on one horizontal scroll axis. They must not sit above the image or compete with the image as a
+  right-side panel.
 - The side panel calculates reusable comparative proportions:
   - each landmark as a percentage of total sculpture height
   - each landmark as a `1:x` ratio against total height
@@ -95,6 +101,7 @@ Current sculpture reference:
 
 - Controls must stay compact and legible on phone.
 - The reference stage should be the first visual signal.
+- The reference stage should run close to the side edges of the available page, especially on phone.
 - The user sees the image first, then reference selection, then compact controls.
 - Sliders and number inputs update the overlay immediately.
 - Writing a landmark name and centimeter value adds it to the overlay and persists it locally.
@@ -104,6 +111,8 @@ Current sculpture reference:
   not perfectly proportional to the sculpture base.
 - Move up/down, size, and height stretch let the user move the photo under the grid. The grid and
   proportion lines stay fixed.
+- 0 cm line and cm scale let the user move the grid under the same image when the photo should stay in
+  place but the measurement system needs recalibration.
 - AI suggestions mode calculates which anchors to compare across all images: bottom of arms, head zone,
   chin, shirt opening V, visible armpits, arms crossing top, arms crossing bottom, and elbow center.
 - Shape mode helps compare large silhouette proportions without replacing the centimeter lines:

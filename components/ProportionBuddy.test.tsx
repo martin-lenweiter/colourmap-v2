@@ -66,6 +66,8 @@ describe('ProportionBuddy', () => {
     expect(screen.getByLabelText('move up / down-4%')).toBeDefined();
     expect(screen.getByLabelText('size106%')).toBeDefined();
     expect(screen.getByLabelText('height stretch100%')).toBeDefined();
+    expect(screen.getByLabelText('0 cm line3%')).toBeDefined();
+    expect(screen.getByLabelText('cm scale103%')).toBeDefined();
 
     fireEvent.click(screen.getByRole('button', { name: 'Left' }));
     expect(screen.getByRole('img', { name: 'Left sculpture reference' })).toBeDefined();
@@ -81,11 +83,15 @@ describe('ProportionBuddy', () => {
     fireEvent.change(screen.getByLabelText('move up / down-4%'), { target: { value: '-120' } });
     fireEvent.change(screen.getByLabelText('size106%'), { target: { value: '180' } });
     fireEvent.change(screen.getByLabelText('height stretch100%'), { target: { value: '140' } });
+    fireEvent.change(screen.getByLabelText('0 cm line3%'), { target: { value: '42' } });
+    fireEvent.change(screen.getByLabelText('cm scale103%'), { target: { value: '180' } });
 
     const image = screen.getByRole('img', { name: 'Front sculpture reference' });
     expect(image.getAttribute('style')).toContain('-120%');
     expect(image.getAttribute('style')).toContain('width: 180%');
     expect(image.getAttribute('style')).toContain('height: 252%');
+    expect(screen.getByLabelText('0 cm line42%')).toBeDefined();
+    expect(screen.getByLabelText('cm scale180%')).toBeDefined();
   });
 
   it('can hide a default landmark and switch to triangle guides', () => {
