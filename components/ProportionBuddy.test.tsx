@@ -17,7 +17,7 @@ describe('ProportionBuddy', () => {
     render(<ProportionBuddy />);
 
     expect(screen.getByRole('heading', { name: 'Proportion Buddy' })).toBeDefined();
-    expect(screen.getByLabelText('total cm')).toHaveProperty('value', '84');
+    expect(screen.getByLabelText('total cm')).toHaveProperty('value', '90');
     expect(screen.getByLabelText('top skull centimeters')).toHaveProperty('value', '82');
     expect(screen.getByLabelText('bottom arms centimeters')).toHaveProperty('value', '17');
     expect(screen.getByLabelText('elbow center centimeters')).toHaveProperty('value', '27');
@@ -26,9 +26,9 @@ describe('ProportionBuddy', () => {
 
     const ratios = screen.getByLabelText('Reusable proportion ratios');
     expect(within(ratios).getByText('head size')).toBeDefined();
-    expect(within(ratios).getByText(/22\.0cm . 26\.2% . 1:3\.82/)).toBeDefined();
+    expect(within(ratios).getByText(/22\.0cm . 24\.4% . 1:4\.09/)).toBeDefined();
     expect(within(ratios).getByText('shirt opening')).toBeDefined();
-    expect(within(ratios).getByText(/48\.0cm . 57\.1% . 1:1\.75/)).toBeDefined();
+    expect(within(ratios).getByText(/48\.0cm . 53\.3% . 1:1\.88/)).toBeDefined();
   });
 
   it('opens with the picture clean until grid and proportion overlays are enabled', () => {
@@ -37,6 +37,7 @@ describe('ProportionBuddy', () => {
     expect(screen.queryByLabelText('bottom arms 17cm')).toBeNull();
     expect(screen.queryByLabelText('Head guide band')).toBeNull();
     expect(within(screen.getByTestId('proportion-stage')).getAllByText('80cm')).toHaveLength(2);
+    expect(within(screen.getByTestId('proportion-stage')).getAllByText('88cm')).toHaveLength(1);
     expect(within(screen.getByTestId('proportion-stage')).getAllByText('0cm')).toHaveLength(1);
     expect(screen.getByLabelText('Horizontal centimeter ruler')).toBeDefined();
     expect(
@@ -76,7 +77,7 @@ describe('ProportionBuddy', () => {
     expect(screen.getByLabelText('M-4%')).toBeDefined();
     expect(screen.getByLabelText('S106%')).toBeDefined();
     expect(screen.getByLabelText('0 cm line0%')).toBeDefined();
-    expect(screen.getByRole('button', { name: 'Fix this' })).toBeDefined();
+    expect(screen.getByRole('button', { name: 'Lock proportions' })).toBeDefined();
 
     fireEvent.click(screen.getByRole('button', { name: 'Left' }));
     expect(screen.getByRole('img', { name: 'Left sculpture reference' })).toBeDefined();
@@ -112,9 +113,9 @@ describe('ProportionBuddy', () => {
 
     fireEvent.change(screen.getByLabelText('H100%'), { target: { value: '180' } });
     fireEvent.change(screen.getByLabelText('0 cm line0%'), { target: { value: '42' } });
-    fireEvent.click(screen.getByRole('button', { name: 'Fix this' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Lock proportions' }));
 
-    expect(screen.getByRole('button', { name: 'Unfix' })).toBeDefined();
+    expect(screen.getByRole('button', { name: 'Unlock proportions' })).toBeDefined();
     expect(screen.getByLabelText('M-4%')).toHaveProperty('disabled', true);
     expect(screen.getByLabelText('S106%')).toHaveProperty('disabled', true);
     expect(screen.getByLabelText('0 cm line42%')).toHaveProperty('disabled', true);
@@ -123,7 +124,7 @@ describe('ProportionBuddy', () => {
     expect(localStorage.getItem('colourmap:proportion-buddy')).toContain('"gridHeight":180');
     expect(localStorage.getItem('colourmap:proportion-buddy')).toContain('"baseOffset":42');
 
-    fireEvent.click(screen.getByRole('button', { name: 'Unfix' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Unlock proportions' }));
     expect(screen.getByLabelText('S106%')).toHaveProperty('disabled', false);
   });
 
@@ -162,7 +163,7 @@ describe('ProportionBuddy', () => {
       'colourmap:proportion-buddy',
       JSON.stringify({
         image: 'data:image/svg+xml;base64,PHN2Zy8+',
-        totalHeight: 84,
+        totalHeight: 90,
         armsBottom: 17,
       }),
     );

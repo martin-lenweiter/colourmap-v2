@@ -78,6 +78,7 @@ const MAX_GRID_HEIGHT = 280;
 const GRID_RULER_GUTTER_PX = 34;
 const X_RULER_LABEL_START_CM = 10;
 const X_RULER_LEFT_GUTTER_PERCENT = 5;
+const EXTRA_GRID_LINES = [88];
 const DEFAULT_REFERENCES: ReferenceImage[] = [
   {
     id: 'image-1',
@@ -174,7 +175,7 @@ const DEFAULT_STATE: BuddyState = {
   showProportions: false,
   showLabels: false,
   references: DEFAULT_REFERENCES,
-  totalHeight: 84,
+  totalHeight: 90,
   topSkull: 82,
   browRidge: 72,
   eyes: 70,
@@ -252,6 +253,10 @@ function xPositionPercent(cm: number, totalHeight: number) {
     X_RULER_LEFT_GUTTER_PERCENT +
     (clamp(cm, 0, totalHeight) / Math.max(1, totalHeight)) * (100 - X_RULER_LEFT_GUTTER_PERCENT)
   );
+}
+
+function isMajorGridLine(cm: number, totalHeight: number) {
+  return cm % 10 === 0 || cm === totalHeight || EXTRA_GRID_LINES.includes(cm);
 }
 
 function loadState(): BuddyState {
@@ -394,8 +399,11 @@ export default function ProportionBuddy() {
     const lines: number[] = [];
     const step = Math.max(1, state.gridStep);
     for (let cm = 0; cm <= state.totalHeight; cm += step) lines.push(cm);
+    for (const cm of EXTRA_GRID_LINES) {
+      if (cm <= state.totalHeight && !lines.includes(cm)) lines.push(cm);
+    }
     if (!lines.includes(state.totalHeight)) lines.push(state.totalHeight);
-    return lines;
+    return lines.sort((a, b) => a - b);
   }, [state.gridStep, state.totalHeight]);
   const xGridLines = useMemo(() => {
     const lines: number[] = [];
@@ -754,7 +762,7 @@ export default function ProportionBuddy() {
             )}
             {state.showGrid &&
               gridLines.map((cm) => {
-                const major = cm % 10 === 0 || cm === state.totalHeight;
+                const major = isMajorGridLine(cm, state.totalHeight);
                 return (
                   <div
                     key={cm}
@@ -994,6 +1002,32 @@ export default function ProportionBuddy() {
                 }
               />
             </div>
+            <button
+              type="button"
+              aria-pressed={activeReference.fixed}
+              onClick={() => updateActiveReference({ fixed: !activeReference.fixed })}
+              style={{
+                border: '1px solid rgba(126,54,28,0.42)',
+                borderRadius: 8,
+                background: activeReference.fixed
+                  ? 'linear-gradient(180deg, rgba(176,70,32,0.96), rgba(126,54,28,0.92))'
+                  : 'linear-gradient(180deg, rgba(221,127,49,0.96), rgba(180,78,34,0.92))',
+                boxShadow: activeReference.fixed
+                  ? '0 8px 22px rgba(126,54,28,0.28)'
+                  : '0 8px 20px rgba(180,78,34,0.22)',
+                color: '#fff6df',
+                cursor: 'pointer',
+                fontFamily: 'var(--font-serif)',
+                fontSize: 12,
+                fontWeight: 900,
+                letterSpacing: '0.08em',
+                padding: '11px 12px',
+                textTransform: 'uppercase',
+                width: '100%',
+              }}
+            >
+              {activeReference.fixed ? 'Unlock proportions' : 'Lock proportions'}
+            </button>
             <fieldset
               style={{
                 display: 'flex',
@@ -1090,20 +1124,6 @@ export default function ProportionBuddy() {
                 }}
               >
                 AI
-              </button>
-              <button
-                type="button"
-                aria-pressed={activeReference.fixed}
-                onClick={() => updateActiveReference({ fixed: !activeReference.fixed })}
-                style={{
-                  ...flatButtonStyle,
-                  flex: '0 0 96px',
-                  background: activeReference.fixed
-                    ? 'rgba(92,48,24,0.2)'
-                    : 'rgba(255,248,231,0.58)',
-                }}
-              >
-                {activeReference.fixed ? 'Unfix' : 'Fix this'}
               </button>
               <label style={{ ...flatButtonStyle, flex: '0 0 88px' }}>
                 Upload

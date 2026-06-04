@@ -24,8 +24,8 @@ Current sculpture reference:
 - `Face`, `Front`, `Front 2`, `Left`, and `Plinth` are bundled sculpture reference photos. `Board` is the
   generated proportion-board reference.
 - This tool is currently project-specific: every bundled image uses the same sculpture measurement
-  system by default, with `0cm` at the baseline, `84cm` at the skull/top height, and a small bottom
-  ruler gutter below `0cm` for horizontal centimeter labels.
+  system by default, with `0cm` at the baseline, an active `82cm` skull reference, an `88cm` possible
+  final-size reference line, and a `90cm` total grid extent.
 
 ## V1 Behavior
 
@@ -53,13 +53,15 @@ Current sculpture reference:
   - mouse wheel or pinch gesture changes size
   - sliders below the image provide precise adjustment
 - When an image is fixed, the app remembers that image's current placement and grid relationship, disables
-  drag/pinch/wheel movement, and fades/disables the placement sliders until the user clicks `Unfix`.
+  drag/pinch/wheel movement, and fades/disables the placement sliders until the user clicks
+  `Unlock proportions`.
 - Uploaded image is stored locally so a reload keeps the current workbench.
 - Crop controls adjust top and bottom crop percentages.
 - The image surface shows:
   - the active reference image as the first and dominant visual surface
   - horizontal centimeter grid when `Grid` is enabled
-  - centerline and vertical thirds
+  - vertical X-grid lines every `10cm`
+  - a horizontal `88cm` reference line because this may become the final sculpture size
   - base line
   - bottom-of-arms line
   - elbow-center line
@@ -89,7 +91,7 @@ Current sculpture reference:
 - AI suggestions differ by active image. Similar front-facing references can reuse the same intelligence;
   side/left references get their own working-reference guidance.
 - Defaults are set for the current sculpture project:
-  - total height `84`
+  - total height / grid extent `90`
   - arms bottom `17`
   - elbow center `27`
   - shirt opening V `48`
