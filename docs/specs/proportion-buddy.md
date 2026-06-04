@@ -32,7 +32,8 @@ Current sculpture reference:
 - Uploaded image is stored locally so a reload keeps the current workbench.
 - Crop controls adjust top and bottom crop percentages.
 - The image surface shows:
-  - horizontal centimeter grid
+  - the active reference image as the first and dominant visual surface
+  - horizontal centimeter grid when `Grid` is enabled
   - centerline and vertical thirds
   - base line
   - bottom-of-arms line
@@ -43,6 +44,13 @@ Current sculpture reference:
   - editable total height and guide measurements
   - user-written custom landmarks that can be named, measured, toggled, edited, and removed
   - optional guide-shape modes: plain lines, X diagonals, or a triangle/centerline scaffold
+- The app opens in clean image mode:
+  - the image is visible by default
+  - `Grid` is off by default
+  - `Proportions` is off by default
+  - `Labels` is off by default so no label boxes cover the sculpture
+- The image selector and tool controls sit below the image, Geometry Builder style. They must not sit
+  above the image or compete with the image as a right-side panel.
 - The side panel calculates reusable comparative proportions:
   - each landmark as a percentage of total sculpture height
   - each landmark as a `1:x` ratio against total height
@@ -75,6 +83,7 @@ Current sculpture reference:
 
 - Controls must stay compact and legible on phone.
 - The reference stage should be the first visual signal.
+- The user sees the image first, then Image 1 / Image 2 / Image 3 selection, then compact controls.
 - Sliders and number inputs update the overlay immediately.
 - Writing a landmark name and centimeter value adds it to the overlay and persists it locally.
 - Landmark checkboxes hide/show individual guides without deleting their measurements.
@@ -95,6 +104,8 @@ Current sculpture reference:
 - A user can upload the provided cropped image and immediately see the figure with proportional
   guides.
 - The `17cm` arm-bottom guide and `82-84cm` head zone are visible over the cropped reference.
+- The default screen shows the picture cleanly before overlays are enabled.
+- `Grid`, `Proportions`, and `Labels` can be toggled independently.
 - The user can switch between Image 1, Image 2, and Image 3.
 - The user can add a custom landmark such as `shirt split`, reload, and keep the saved line.
 - The user can toggle default and custom landmarks independently.

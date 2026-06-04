@@ -25,6 +25,9 @@ type BuddyState = {
   image: string | null;
   activeReferenceId: string;
   suggestionMode: boolean;
+  showGrid: boolean;
+  showProportions: boolean;
+  showLabels: boolean;
   references: ReferenceImage[];
   totalHeight: number;
   topSkull: number;
@@ -59,7 +62,7 @@ const DEFAULT_REFERENCES: ReferenceImage[] = [
   {
     id: 'image-1',
     name: 'Image 1',
-    image: null,
+    image: '/proportion-buddy/proportions-board.png',
     topCrop: 0,
     bottomCrop: 100,
     baseOffset: 0,
@@ -86,6 +89,9 @@ const DEFAULT_STATE: BuddyState = {
   image: null,
   activeReferenceId: 'image-2',
   suggestionMode: false,
+  showGrid: false,
+  showProportions: false,
+  showLabels: false,
   references: DEFAULT_REFERENCES,
   totalHeight: 84,
   topSkull: 84,
@@ -161,7 +167,7 @@ function loadState(): BuddyState {
   try {
     const raw = window.localStorage.getItem(STORAGE_KEY);
     if (!raw) return DEFAULT_STATE;
-    const parsed = JSON.parse(raw) as Partial<BuddyState>;
+    const parsed = JSON.parse(raw) as Partial<BuddyState> & { showGuides?: boolean };
     const references =
       parsed.references && parsed.references.length > 0
         ? parsed.references
@@ -176,6 +182,11 @@ function loadState(): BuddyState {
       activeReferenceId:
         parsed.activeReferenceId ?? references[0]?.id ?? DEFAULT_STATE.activeReferenceId,
       suggestionMode: parsed.suggestionMode ?? DEFAULT_STATE.suggestionMode,
+      showGrid: parsed.showGrid ?? DEFAULT_STATE.showGrid,
+      showProportions:
+        parsed.showProportions ??
+        (parsed.showGuides === undefined ? DEFAULT_STATE.showProportions : parsed.showGuides),
+      showLabels: parsed.showLabels ?? DEFAULT_STATE.showLabels,
       references,
       overlayMode: parsed.overlayMode ?? DEFAULT_STATE.overlayMode,
       customLandmarks: parsed.customLandmarks ?? DEFAULT_STATE.customLandmarks,
@@ -403,9 +414,10 @@ export default function ProportionBuddy() {
       <div
         style={{
           display: 'grid',
-          gridTemplateColumns: 'minmax(0, 1fr) minmax(260px, 340px)',
+          gridTemplateColumns: 'minmax(0, 980px)',
           gap: 18,
           alignItems: 'start',
+          justifyContent: 'center',
         }}
         className="proportion-buddy-shell"
       >
@@ -413,7 +425,7 @@ export default function ProportionBuddy() {
           <div
             style={{
               display: 'flex',
-              justifyContent: 'space-between',
+              justifyContent: 'flex-start',
               gap: 12,
               alignItems: 'end',
               marginBottom: 12,
@@ -444,70 +456,7 @@ export default function ProportionBuddy() {
                 Proportion Buddy
               </h1>
             </div>
-            <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', justifyContent: 'end' }}>
-              <button
-                type="button"
-                aria-pressed={state.suggestionMode}
-                onClick={() => update({ suggestionMode: !state.suggestionMode })}
-                style={{
-                  ...buttonStyle,
-                  background: state.suggestionMode
-                    ? 'rgba(92,48,24,0.16)'
-                    : 'rgba(255,248,231,0.72)',
-                }}
-              >
-                AI suggestions
-              </button>
-              <label style={buttonStyle}>
-                Upload
-                <input
-                  aria-label={`Upload reference image for ${activeReference.name}`}
-                  type="file"
-                  accept="image/*"
-                  onChange={(event) => loadImage(event.currentTarget.files?.[0])}
-                  style={{ display: 'none' }}
-                />
-              </label>
-            </div>
           </div>
-
-          <fieldset
-            style={{
-              display: 'grid',
-              gridTemplateColumns: 'repeat(3, minmax(0, 1fr))',
-              gap: 8,
-              marginBottom: 10,
-              border: 0,
-              padding: 0,
-            }}
-          >
-            <legend className="sr-only">Reference images</legend>
-            {state.references.map((reference) => (
-              <button
-                key={reference.id}
-                type="button"
-                onClick={() => update({ activeReferenceId: reference.id })}
-                style={{
-                  border: '1px solid rgba(116,83,49,0.24)',
-                  borderRadius: 6,
-                  background:
-                    reference.id === activeReference.id
-                      ? 'rgba(92,48,24,0.15)'
-                      : 'rgba(255,248,231,0.58)',
-                  color: '#3a291a',
-                  cursor: 'pointer',
-                  fontFamily: 'var(--font-serif)',
-                  fontSize: 12,
-                  fontWeight: 800,
-                  letterSpacing: '0.08em',
-                  padding: '8px 9px',
-                  textTransform: 'uppercase',
-                }}
-              >
-                {reference.name}
-              </button>
-            ))}
-          </fieldset>
 
           <div
             data-testid="proportion-stage"
@@ -560,110 +509,234 @@ export default function ProportionBuddy() {
               </div>
             )}
 
-            <div
-              aria-hidden="true"
-              style={{
-                position: 'absolute',
-                inset: 0,
-                background:
-                  'linear-gradient(90deg, transparent 33.25%, rgba(244,216,160,0.24) 33.3%, transparent 33.45%, transparent 49.85%, rgba(255,248,231,0.42) 50%, transparent 50.15%, transparent 66.55%, rgba(244,216,160,0.24) 66.7%, transparent 66.85%)',
-                pointerEvents: 'none',
-              }}
-            />
-            {gridLines.map((cm) => {
-              const major = cm % 10 === 0 || cm === state.totalHeight;
-              return (
-                <div
-                  key={cm}
-                  aria-hidden="true"
-                  style={{
-                    position: 'absolute',
-                    left: 0,
-                    right: 0,
-                    top: guideTopWithBase(cm, state.totalHeight, baseOffset),
-                    borderTop: `1px solid rgba(255,238,198,${major ? 0.38 : 0.15})`,
-                    pointerEvents: 'none',
-                  }}
-                >
-                  {major && (
-                    <span
-                      style={{
-                        position: 'absolute',
-                        left: 8,
-                        top: -10,
-                        color: 'rgba(255,238,198,0.76)',
-                        fontFamily: 'var(--font-serif)',
-                        fontSize: 11,
-                        textShadow: '0 1px 2px rgba(0,0,0,0.6)',
-                      }}
-                    >
-                      {cm}cm
-                    </span>
-                  )}
-                </div>
-              );
-            })}
-
-            {landmarks
-              .filter((mark) => mark.visible)
-              .map((mark) => (
-                <GuideLine
-                  key={mark.key}
-                  cm={mark.cm}
-                  total={state.totalHeight}
-                  baseOffset={baseOffset}
-                  label={`${mark.label} ${mark.cm % 1 ? mark.cm.toFixed(1) : Math.round(mark.cm)}cm`}
-                  color={mark.color}
-                />
-              ))}
-            {customLandmarks
-              .filter((mark) => mark.visible)
-              .map((mark) => (
-                <GuideLine
-                  key={mark.id}
-                  cm={mark.cm}
-                  total={state.totalHeight}
-                  baseOffset={baseOffset}
-                  label={`${mark.label} ${mark.cm % 1 ? mark.cm.toFixed(1) : Math.round(mark.cm)}cm`}
-                  color={mark.color}
-                />
-              ))}
-            <ShapeGuides mode={state.overlayMode} />
-            <div
-              role="img"
-              aria-label="Head guide band"
-              style={{
-                position: 'absolute',
-                left: 0,
-                right: 0,
-                top: guideTopWithBase(state.headHigh, state.totalHeight, baseOffset),
-                height: `calc(${guideTopWithBase(
-                  state.headLow,
-                  state.totalHeight,
-                  baseOffset,
-                )} - ${guideTopWithBase(state.headHigh, state.totalHeight, baseOffset)})`,
-                background: 'rgba(244,199,104,0.16)',
-                borderTop: '2px solid rgba(244,199,104,0.86)',
-                borderBottom: '2px solid rgba(244,199,104,0.7)',
-                pointerEvents: 'none',
-              }}
-            >
-              <span
+            {state.showGrid && (
+              <div
+                aria-hidden="true"
                 style={{
                   position: 'absolute',
-                  right: 10,
-                  top: 4,
-                  color: '#ffe6aa',
-                  fontFamily: 'var(--font-serif)',
-                  fontSize: 12,
-                  fontWeight: 800,
-                  textShadow: '0 1px 2px rgba(0,0,0,0.75)',
+                  inset: 0,
+                  background:
+                    'linear-gradient(90deg, transparent 33.25%, rgba(244,216,160,0.16) 33.3%, transparent 33.45%, transparent 49.85%, rgba(255,248,231,0.22) 50%, transparent 50.15%, transparent 66.55%, rgba(244,216,160,0.16) 66.7%, transparent 66.85%)',
+                  pointerEvents: 'none',
+                }}
+              />
+            )}
+            {state.showGrid &&
+              gridLines.map((cm) => {
+                const major = cm % 10 === 0 || cm === state.totalHeight;
+                return (
+                  <div
+                    key={cm}
+                    aria-hidden="true"
+                    style={{
+                      position: 'absolute',
+                      left: 0,
+                      right: 0,
+                      top: guideTopWithBase(cm, state.totalHeight, baseOffset),
+                      borderTop: `1px solid rgba(255,238,198,${major ? 0.28 : 0.1})`,
+                      pointerEvents: 'none',
+                    }}
+                  >
+                    {major && state.showLabels && (
+                      <span
+                        style={{
+                          position: 'absolute',
+                          left: 8,
+                          top: -10,
+                          color: 'rgba(255,238,198,0.76)',
+                          fontFamily: 'var(--font-serif)',
+                          fontSize: 11,
+                          textShadow: '0 1px 2px rgba(0,0,0,0.6)',
+                        }}
+                      >
+                        {cm}cm
+                      </span>
+                    )}
+                  </div>
+                );
+              })}
+
+            {state.showProportions &&
+              landmarks
+                .filter((mark) => mark.visible)
+                .map((mark) => (
+                  <GuideLine
+                    key={mark.key}
+                    cm={mark.cm}
+                    total={state.totalHeight}
+                    baseOffset={baseOffset}
+                    showLabel={state.showLabels}
+                    label={`${mark.label} ${mark.cm % 1 ? mark.cm.toFixed(1) : Math.round(mark.cm)}cm`}
+                    color={mark.color}
+                  />
+                ))}
+            {state.showProportions &&
+              customLandmarks
+                .filter((mark) => mark.visible)
+                .map((mark) => (
+                  <GuideLine
+                    key={mark.id}
+                    cm={mark.cm}
+                    total={state.totalHeight}
+                    baseOffset={baseOffset}
+                    showLabel={state.showLabels}
+                    label={`${mark.label} ${mark.cm % 1 ? mark.cm.toFixed(1) : Math.round(mark.cm)}cm`}
+                    color={mark.color}
+                  />
+                ))}
+            {state.showProportions && <ShapeGuides mode={state.overlayMode} />}
+            {state.showProportions && (
+              <div
+                role="img"
+                aria-label="Head guide band"
+                style={{
+                  position: 'absolute',
+                  left: 0,
+                  right: 0,
+                  top: guideTopWithBase(state.headHigh, state.totalHeight, baseOffset),
+                  height: `calc(${guideTopWithBase(
+                    state.headLow,
+                    state.totalHeight,
+                    baseOffset,
+                  )} - ${guideTopWithBase(state.headHigh, state.totalHeight, baseOffset)})`,
+                  background: 'rgba(244,199,104,0.1)',
+                  borderTop: '1px solid rgba(244,199,104,0.72)',
+                  borderBottom: '1px solid rgba(244,199,104,0.62)',
+                  pointerEvents: 'none',
                 }}
               >
-                head {state.headLow}-{state.headHigh}cm
-              </span>
-            </div>
+                {state.showLabels && (
+                  <span
+                    style={{
+                      position: 'absolute',
+                      right: 10,
+                      top: 4,
+                      color: '#ffe6aa',
+                      fontFamily: 'var(--font-serif)',
+                      fontSize: 12,
+                      fontWeight: 800,
+                      textShadow: '0 1px 2px rgba(0,0,0,0.75)',
+                    }}
+                  >
+                    head {state.headLow}-{state.headHigh}cm
+                  </span>
+                )}
+              </div>
+            )}
           </div>
+          <section
+            aria-label="Image controls"
+            style={{
+              border: '1px solid rgba(116,83,49,0.16)',
+              background: 'rgba(255,248,231,0.62)',
+              marginTop: 10,
+              padding: 10,
+              display: 'grid',
+              gap: 10,
+            }}
+          >
+            <fieldset
+              style={{
+                display: 'grid',
+                gridTemplateColumns: 'repeat(3, minmax(0, 1fr))',
+                gap: 8,
+                border: 0,
+                padding: 0,
+              }}
+            >
+              <legend className="sr-only">Reference images</legend>
+              {state.references.map((reference) => (
+                <button
+                  key={reference.id}
+                  type="button"
+                  onClick={() => update({ activeReferenceId: reference.id })}
+                  style={{
+                    ...flatButtonStyle,
+                    background:
+                      reference.id === activeReference.id
+                        ? 'rgba(92,48,24,0.15)'
+                        : 'rgba(255,248,231,0.58)',
+                  }}
+                >
+                  {reference.name}
+                </button>
+              ))}
+            </fieldset>
+            <div
+              style={{
+                display: 'grid',
+                gridTemplateColumns: 'repeat(6, minmax(0, 1fr))',
+                gap: 8,
+              }}
+              className="proportion-buddy-action-row"
+            >
+              <button
+                type="button"
+                aria-pressed={state.showGrid}
+                onClick={() => update({ showGrid: !state.showGrid })}
+                style={{
+                  ...flatButtonStyle,
+                  background: state.showGrid ? 'rgba(92,48,24,0.15)' : 'rgba(255,248,231,0.58)',
+                }}
+              >
+                Grid
+              </button>
+              <button
+                type="button"
+                aria-pressed={state.showProportions}
+                onClick={() => update({ showProportions: !state.showProportions })}
+                style={{
+                  ...flatButtonStyle,
+                  background: state.showProportions
+                    ? 'rgba(92,48,24,0.15)'
+                    : 'rgba(255,248,231,0.58)',
+                }}
+              >
+                Proportions
+              </button>
+              <button
+                type="button"
+                aria-pressed={state.showLabels}
+                onClick={() => update({ showLabels: !state.showLabels })}
+                style={{
+                  ...flatButtonStyle,
+                  background: state.showLabels ? 'rgba(92,48,24,0.15)' : 'rgba(255,248,231,0.58)',
+                }}
+              >
+                Labels
+              </button>
+              <button
+                type="button"
+                aria-pressed={state.suggestionMode}
+                onClick={() => update({ suggestionMode: !state.suggestionMode })}
+                style={{
+                  ...flatButtonStyle,
+                  background: state.suggestionMode
+                    ? 'rgba(92,48,24,0.15)'
+                    : 'rgba(255,248,231,0.58)',
+                }}
+              >
+                AI
+              </button>
+              <label style={flatButtonStyle}>
+                Upload
+                <input
+                  aria-label={`Upload reference image for ${activeReference.name}`}
+                  type="file"
+                  accept="image/*"
+                  onChange={(event) => loadImage(event.currentTarget.files?.[0])}
+                  style={{ display: 'none' }}
+                />
+              </label>
+              <button
+                type="button"
+                onClick={() => updateActiveReference({ image: null })}
+                style={flatButtonStyle}
+              >
+                Clear
+              </button>
+            </div>
+          </section>
           {state.suggestionMode && (
             <AiSuggestions
               activeId={activeReference.id}
@@ -1087,6 +1160,9 @@ export default function ProportionBuddy() {
           .proportion-buddy-shell {
             grid-template-columns: 1fr !important;
           }
+          .proportion-buddy-action-row {
+            grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+          }
         }
       `}</style>
     </main>
@@ -1097,12 +1173,14 @@ function GuideLine({
   cm,
   total,
   baseOffset,
+  showLabel,
   label,
   color,
 }: {
   cm: number;
   total: number;
   baseOffset: number;
+  showLabel: boolean;
   label: string;
   color: string;
 }) {
@@ -1120,25 +1198,27 @@ function GuideLine({
         pointerEvents: 'none',
       }}
     >
-      <span
-        style={{
-          position: 'absolute',
-          right: 10,
-          top: -22,
-          background: 'rgba(23,17,12,0.72)',
-          border: `1px solid ${color}99`,
-          borderRadius: 999,
-          color,
-          fontFamily: 'var(--font-serif)',
-          fontSize: 12,
-          fontWeight: 800,
-          letterSpacing: '0.05em',
-          padding: '3px 8px',
-          textTransform: 'uppercase',
-        }}
-      >
-        {label}
-      </span>
+      {showLabel && (
+        <span
+          style={{
+            position: 'absolute',
+            right: 10,
+            top: -22,
+            background: 'rgba(23,17,12,0.82)',
+            border: `1px solid ${color}99`,
+            borderRadius: 999,
+            color,
+            fontFamily: 'var(--font-serif)',
+            fontSize: 12,
+            fontWeight: 800,
+            letterSpacing: '0.05em',
+            padding: '3px 8px',
+            textTransform: 'uppercase',
+          }}
+        >
+          {label}
+        </span>
+      )}
     </div>
   );
 }
@@ -1349,6 +1429,21 @@ const buttonStyle = {
   fontWeight: 800,
   letterSpacing: '0.08em',
   padding: '8px 12px',
+  textTransform: 'uppercase' as const,
+};
+
+const flatButtonStyle = {
+  border: '1px solid rgba(92,48,24,0.15)',
+  borderRadius: 8,
+  background: 'rgba(255,248,231,0.58)',
+  color: '#4f321d',
+  cursor: 'pointer',
+  fontFamily: 'var(--font-serif)',
+  fontSize: 10,
+  fontWeight: 800,
+  letterSpacing: '0.08em',
+  padding: '8px 6px',
+  textAlign: 'center' as const,
   textTransform: 'uppercase' as const,
 };
 
