@@ -18,6 +18,7 @@ describe('ProportionBuddy', () => {
 
     expect(screen.getByRole('heading', { name: 'Proportion Buddy' })).toBeDefined();
     expect(screen.getByLabelText('total cm')).toHaveProperty('value', '84');
+    expect(screen.getByLabelText('top skull centimeters')).toHaveProperty('value', '82');
     expect(screen.getByLabelText('bottom arms centimeters')).toHaveProperty('value', '17');
     expect(screen.getByLabelText('elbow center centimeters')).toHaveProperty('value', '27');
     expect(screen.getByLabelText('shirt opening V centimeters')).toHaveProperty('value', '48');
@@ -25,7 +26,7 @@ describe('ProportionBuddy', () => {
 
     const ratios = screen.getByLabelText('Reusable proportion ratios');
     expect(within(ratios).getByText('head size')).toBeDefined();
-    expect(within(ratios).getByText(/22\.0cm . 26\.2% . 1:3\.82/)).toBeDefined();
+    expect(within(ratios).getByText(/20\.0cm . 23\.8% . 1:4\.20/)).toBeDefined();
     expect(within(ratios).getByText('shirt opening')).toBeDefined();
     expect(within(ratios).getByText(/48\.0cm . 57\.1% . 1:1\.75/)).toBeDefined();
   });
@@ -40,6 +41,7 @@ describe('ProportionBuddy', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Proportions' }));
     fireEvent.click(screen.getByRole('button', { name: 'Labels' }));
 
+    expect(screen.getByLabelText('top skull 82cm')).toBeDefined();
     expect(screen.getByLabelText('bottom arms 17cm')).toBeDefined();
     expect(screen.getByLabelText('elbow center 27cm')).toBeDefined();
     expect(screen.getByLabelText('shirt opening V 48cm')).toBeDefined();
@@ -51,20 +53,39 @@ describe('ProportionBuddy', () => {
     expect(screen.getByLabelText('Head guide band')).toBeDefined();
   });
 
-  it('opens with three selectable reference images and AI suggestions', () => {
+  it('opens with selectable reference images and AI suggestions', () => {
     render(<ProportionBuddy />);
 
-    expect(screen.getByRole('button', { name: 'Image 1' })).toBeDefined();
-    expect(screen.getByRole('button', { name: 'Image 2' })).toBeDefined();
-    expect(screen.getByRole('button', { name: 'Image 3' })).toBeDefined();
-    expect(screen.getByRole('img', { name: 'Image 2 sculpture reference' })).toBeDefined();
+    expect(screen.getByRole('button', { name: 'Face' })).toBeDefined();
+    expect(screen.getByRole('button', { name: 'Front' })).toBeDefined();
+    expect(screen.getByRole('button', { name: 'Front 2' })).toBeDefined();
+    expect(screen.getByRole('button', { name: 'Left' })).toBeDefined();
+    expect(screen.getByRole('button', { name: 'Board' })).toBeDefined();
+    expect(screen.getByRole('button', { name: 'Plinth' })).toBeDefined();
+    expect(screen.getByRole('img', { name: 'Front sculpture reference' })).toBeDefined();
+    expect(screen.getByLabelText('move up / down-4%')).toBeDefined();
+    expect(screen.getByLabelText('size106%')).toBeDefined();
+    expect(screen.getByLabelText('height stretch100%')).toBeDefined();
 
-    fireEvent.click(screen.getByRole('button', { name: 'Image 3' }));
-    expect(screen.getByRole('img', { name: 'Image 3 sculpture reference' })).toBeDefined();
+    fireEvent.click(screen.getByRole('button', { name: 'Left' }));
+    expect(screen.getByRole('img', { name: 'Left sculpture reference' })).toBeDefined();
 
     fireEvent.click(screen.getByRole('button', { name: 'AI' }));
     expect(screen.getByLabelText('AI proportion suggestions')).toBeDefined();
     expect(screen.getByText(/Keep bottom of arms locked near 17cm/)).toBeDefined();
+  });
+
+  it('moves and zooms the active image against the fixed grid', () => {
+    render(<ProportionBuddy />);
+
+    fireEvent.change(screen.getByLabelText('move up / down-4%'), { target: { value: '-120' } });
+    fireEvent.change(screen.getByLabelText('size106%'), { target: { value: '180' } });
+    fireEvent.change(screen.getByLabelText('height stretch100%'), { target: { value: '140' } });
+
+    const image = screen.getByRole('img', { name: 'Front sculpture reference' });
+    expect(image.getAttribute('style')).toContain('-120%');
+    expect(image.getAttribute('style')).toContain('width: 180%');
+    expect(image.getAttribute('style')).toContain('height: 252%');
   });
 
   it('can hide a default landmark and switch to triangle guides', () => {
@@ -97,7 +118,7 @@ describe('ProportionBuddy', () => {
     expect(localStorage.getItem('colourmap:proportion-buddy')).toContain('shirt split');
   });
 
-  it('loads a saved reference image without overwriting it during hydration', async () => {
+  it('resets stale saved placement so the 82cm defaults take effect', async () => {
     localStorage.setItem(
       'colourmap:proportion-buddy',
       JSON.stringify({
@@ -109,10 +130,37 @@ describe('ProportionBuddy', () => {
 
     render(<ProportionBuddy />);
 
-    const image = await screen.findByRole('img', { name: 'Image 1 sculpture reference' });
-    expect(image.getAttribute('src')).toBe('data:image/svg+xml;base64,PHN2Zy8+');
-    expect(localStorage.getItem('colourmap:proportion-buddy')).toContain(
-      'data:image/svg+xml;base64,PHN2Zy8+',
+    const image = await screen.findByRole('img', { name: 'Front sculpture reference' });
+    expect(image.getAttribute('src')).toBe('/proportion-buddy/prop-2.png');
+    expect(screen.getByLabelText('top skull centimeters')).toHaveProperty('value', '82');
+  });
+
+  it('loads a current-version saved reference image without overwriting it during hydration', async () => {
+    localStorage.setItem(
+      'colourmap:proportion-buddy',
+      JSON.stringify({
+        version: 2,
+        activeReferenceId: 'image-1',
+        references: [
+          {
+            id: 'image-1',
+            name: 'Face',
+            image: 'data:image/svg+xml;base64,PHN2Zy8+',
+            offsetX: 0,
+            offsetY: -7,
+            zoom: 108,
+            stretchY: 100,
+            topCrop: 0,
+            bottomCrop: 100,
+            baseOffset: 0,
+          },
+        ],
+      }),
     );
+
+    render(<ProportionBuddy />);
+
+    const image = await screen.findByRole('img', { name: 'Face sculpture reference' });
+    expect(image.getAttribute('src')).toBe('data:image/svg+xml;base64,PHN2Zy8+');
   });
 });

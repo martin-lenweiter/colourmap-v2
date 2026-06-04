@@ -1,6 +1,7 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import type { PointerEvent, WheelEvent } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 
 type OverlayMode = 'lines' | 'x' | 'triangle';
 
@@ -16,12 +17,17 @@ type ReferenceImage = {
   id: string;
   name: string;
   image: string | null;
+  offsetX: number;
+  offsetY: number;
+  zoom: number;
+  stretchY: number;
   topCrop: number;
   bottomCrop: number;
   baseOffset: number;
 };
 
 type BuddyState = {
+  version: number;
   image: string | null;
   activeReferenceId: string;
   suggestionMode: boolean;
@@ -57,28 +63,83 @@ type BuddyState = {
 };
 
 const STORAGE_KEY = 'colourmap:proportion-buddy';
+const STATE_VERSION = 2;
 const CUSTOM_COLORS = ['#ffd166', '#7bdff2', '#f7aef8', '#b8f2e6', '#f08080', '#c4f07a'];
+const MIN_IMAGE_Y = -260;
+const MAX_IMAGE_Y = 180;
+const MIN_IMAGE_ZOOM = 40;
+const MAX_IMAGE_ZOOM = 420;
+const MIN_IMAGE_HEIGHT = 40;
+const MAX_IMAGE_HEIGHT = 320;
 const DEFAULT_REFERENCES: ReferenceImage[] = [
   {
     id: 'image-1',
-    name: 'Image 1',
-    image: '/proportion-buddy/proportions-board.png',
+    name: 'Face',
+    image: '/proportion-buddy/prop-image-face.jpg',
+    offsetX: 0,
+    offsetY: -7,
+    zoom: 108,
+    stretchY: 100,
     topCrop: 0,
     bottomCrop: 100,
     baseOffset: 0,
   },
   {
     id: 'image-2',
-    name: 'Image 2',
+    name: 'Front',
     image: '/proportion-buddy/prop-2.png',
+    offsetX: 0,
+    offsetY: -4,
+    zoom: 106,
+    stretchY: 100,
     topCrop: 0,
     bottomCrop: 100,
     baseOffset: 3,
   },
   {
     id: 'image-3',
-    name: 'Image 3',
+    name: 'Front 2',
     image: '/proportion-buddy/prop-3.png',
+    offsetX: 0,
+    offsetY: -4,
+    zoom: 106,
+    stretchY: 100,
+    topCrop: 0,
+    bottomCrop: 100,
+    baseOffset: 2,
+  },
+  {
+    id: 'image-4',
+    name: 'Left',
+    image: '/proportion-buddy/prop-image-left.png',
+    offsetX: 0,
+    offsetY: -6,
+    zoom: 108,
+    stretchY: 100,
+    topCrop: 0,
+    bottomCrop: 100,
+    baseOffset: 2,
+  },
+  {
+    id: 'image-5',
+    name: 'Board',
+    image: '/proportion-buddy/proportions-board.png',
+    offsetX: 0,
+    offsetY: 0,
+    zoom: 100,
+    stretchY: 100,
+    topCrop: 0,
+    bottomCrop: 100,
+    baseOffset: 0,
+  },
+  {
+    id: 'image-6',
+    name: 'Plinth',
+    image: '/proportion-buddy/front-plinth.png',
+    offsetX: 0,
+    offsetY: -5,
+    zoom: 106,
+    stretchY: 100,
     topCrop: 0,
     bottomCrop: 100,
     baseOffset: 2,
@@ -86,6 +147,7 @@ const DEFAULT_REFERENCES: ReferenceImage[] = [
 ];
 
 const DEFAULT_STATE: BuddyState = {
+  version: STATE_VERSION,
   image: null,
   activeReferenceId: 'image-2',
   suggestionMode: false,
@@ -94,7 +156,7 @@ const DEFAULT_STATE: BuddyState = {
   showLabels: false,
   references: DEFAULT_REFERENCES,
   totalHeight: 84,
-  topSkull: 84,
+  topSkull: 82,
   browRidge: 72,
   eyes: 70,
   noseBase: 66,
@@ -110,8 +172,8 @@ const DEFAULT_STATE: BuddyState = {
   armsBottom: 17,
   elbowCenter: 27,
   headBase: 62,
-  headLow: 82,
-  headHigh: 84,
+  headLow: 80,
+  headHigh: 82,
   topCrop: 0,
   bottomCrop: 100,
   gridStep: 2,
@@ -162,13 +224,24 @@ function clamp(value: number, min: number, max: number) {
   return Math.min(max, Math.max(min, value));
 }
 
+function distance(a: { x: number; y: number }, b: { x: number; y: number }) {
+  return Math.hypot(a.x - b.x, a.y - b.y);
+}
+
 function loadState(): BuddyState {
   if (typeof window === 'undefined') return DEFAULT_STATE;
   try {
     const raw = window.localStorage.getItem(STORAGE_KEY);
     if (!raw) return DEFAULT_STATE;
     const parsed = JSON.parse(raw) as Partial<BuddyState> & { showGuides?: boolean };
-    const references =
+    if (parsed.version !== STATE_VERSION) {
+      return {
+        ...DEFAULT_STATE,
+        customLandmarks: parsed.customLandmarks ?? DEFAULT_STATE.customLandmarks,
+        visible: { ...DEFAULT_STATE.visible, ...(parsed.visible ?? {}) },
+      };
+    }
+    const rawReferences =
       parsed.references && parsed.references.length > 0
         ? parsed.references
         : DEFAULT_REFERENCES.map((reference) =>
@@ -176,6 +249,10 @@ function loadState(): BuddyState {
               ? { ...reference, image: parsed.image }
               : reference,
           );
+    const references = DEFAULT_REFERENCES.map((defaultReference) => ({
+      ...defaultReference,
+      ...(rawReferences.find((reference) => reference.id === defaultReference.id) ?? {}),
+    }));
     return {
       ...DEFAULT_STATE,
       ...parsed,
@@ -248,6 +325,18 @@ export default function ProportionBuddy() {
   const [hydrated, setHydrated] = useState(false);
   const [draftLabel, setDraftLabel] = useState('');
   const [draftCm, setDraftCm] = useState(42);
+  const stageRef = useRef<HTMLDivElement | null>(null);
+  const gestureRef = useRef<{
+    lastY: number;
+    pinchDistance: number;
+    pinchZoom: number;
+    points: Map<number, { x: number; y: number }>;
+  }>({
+    lastY: 0,
+    pinchDistance: 0,
+    pinchZoom: 100,
+    points: new Map(),
+  });
 
   useEffect(() => {
     setState(loadState());
@@ -269,6 +358,10 @@ export default function ProportionBuddy() {
   const cropBottom = clamp(activeReference.bottomCrop, cropTop + 4, 100);
   const cropRange = cropBottom - cropTop;
   const baseOffset = clamp(activeReference.baseOffset, 0, 14);
+  const imageZoom = clamp(activeReference.zoom, MIN_IMAGE_ZOOM, MAX_IMAGE_ZOOM);
+  const imageStretchY = clamp(activeReference.stretchY, MIN_IMAGE_HEIGHT, MAX_IMAGE_HEIGHT);
+  const imageOffsetX = clamp(activeReference.offsetX, -80, 80);
+  const imageOffsetY = clamp(activeReference.offsetY, MIN_IMAGE_Y, MAX_IMAGE_Y);
   const gridLines = useMemo(() => {
     const lines: number[] = [];
     const step = Math.max(1, state.gridStep);
@@ -341,11 +434,25 @@ export default function ProportionBuddy() {
   }
 
   function updateActiveReference(patch: Partial<ReferenceImage>) {
-    update({
-      references: state.references.map((reference) =>
-        reference.id === activeReference.id ? { ...reference, ...patch } : reference,
+    setState((current) => ({
+      ...current,
+      references: current.references.map((reference) =>
+        reference.id === current.activeReferenceId ? { ...reference, ...patch } : reference,
       ),
-    });
+    }));
+  }
+
+  function updateActiveReferenceWith(
+    updater: (reference: ReferenceImage) => Partial<ReferenceImage>,
+  ) {
+    setState((current) => ({
+      ...current,
+      references: current.references.map((reference) =>
+        reference.id === current.activeReferenceId
+          ? { ...reference, ...updater(reference) }
+          : reference,
+      ),
+    }));
   }
 
   function updateLandmark(key: LandmarkKey, value: number) {
@@ -399,6 +506,63 @@ export default function ProportionBuddy() {
       if (typeof reader.result === 'string') updateActiveReference({ image: reader.result });
     };
     reader.readAsDataURL(file);
+  }
+
+  function handleStagePointerDown(event: PointerEvent<HTMLDivElement>) {
+    event.currentTarget.setPointerCapture(event.pointerId);
+    gestureRef.current.points.set(event.pointerId, { x: event.clientX, y: event.clientY });
+    gestureRef.current.lastY = event.clientY;
+    if (gestureRef.current.points.size === 2) {
+      const points = [...gestureRef.current.points.values()];
+      gestureRef.current.pinchDistance = distance(points[0], points[1]);
+      gestureRef.current.pinchZoom = imageZoom;
+    }
+  }
+
+  function handleStagePointerMove(event: PointerEvent<HTMLDivElement>) {
+    if (!gestureRef.current.points.has(event.pointerId)) return;
+    gestureRef.current.points.set(event.pointerId, { x: event.clientX, y: event.clientY });
+
+    if (gestureRef.current.points.size >= 2) {
+      const points = [...gestureRef.current.points.values()];
+      const nextDistance = distance(points[0], points[1]);
+      if (gestureRef.current.pinchDistance > 0) {
+        const nextZoom = clamp(
+          gestureRef.current.pinchZoom * (nextDistance / gestureRef.current.pinchDistance),
+          MIN_IMAGE_ZOOM,
+          MAX_IMAGE_ZOOM,
+        );
+        updateActiveReference({ zoom: Number(nextZoom.toFixed(1)) });
+      }
+      return;
+    }
+
+    const stageHeight = stageRef.current?.getBoundingClientRect().height ?? 1;
+    const deltaY = event.clientY - gestureRef.current.lastY;
+    gestureRef.current.lastY = event.clientY;
+    const deltaPercent = (deltaY / stageHeight) * 100;
+    updateActiveReferenceWith((reference) => ({
+      offsetY: Number(clamp(reference.offsetY + deltaPercent, MIN_IMAGE_Y, MAX_IMAGE_Y).toFixed(2)),
+    }));
+  }
+
+  function handleStagePointerUp(event: PointerEvent<HTMLDivElement>) {
+    gestureRef.current.points.delete(event.pointerId);
+    if (gestureRef.current.points.size === 1) {
+      gestureRef.current.lastY = [...gestureRef.current.points.values()][0].y;
+    }
+    if (gestureRef.current.points.size < 2) {
+      gestureRef.current.pinchDistance = 0;
+    }
+  }
+
+  function handleStageWheel(event: WheelEvent<HTMLDivElement>) {
+    event.preventDefault();
+    updateActiveReferenceWith((reference) => ({
+      zoom: Number(
+        clamp(reference.zoom - event.deltaY * 0.12, MIN_IMAGE_ZOOM, MAX_IMAGE_ZOOM).toFixed(1),
+      ),
+    }));
   }
 
   return (
@@ -459,7 +623,13 @@ export default function ProportionBuddy() {
           </div>
 
           <div
+            ref={stageRef}
             data-testid="proportion-stage"
+            onPointerDown={handleStagePointerDown}
+            onPointerMove={handleStagePointerMove}
+            onPointerUp={handleStagePointerUp}
+            onPointerCancel={handleStagePointerUp}
+            onWheel={handleStageWheel}
             style={{
               position: 'relative',
               overflow: 'hidden',
@@ -467,7 +637,10 @@ export default function ProportionBuddy() {
               background:
                 'linear-gradient(180deg, rgba(47,36,25,0.96), rgba(26,20,15,0.96)), repeating-linear-gradient(0deg, transparent 0 18px, rgba(255,255,255,0.03) 18px 19px)',
               border: '1px solid rgba(68,47,30,0.32)',
+              cursor: activeReference.image ? 'grab' : 'default',
               boxShadow: '0 18px 60px rgba(48,31,16,0.24)',
+              touchAction: 'none',
+              userSelect: 'none',
             }}
           >
             {activeReference.image ? (
@@ -476,10 +649,10 @@ export default function ProportionBuddy() {
                 alt={`${activeReference.name} sculpture reference`}
                 style={{
                   position: 'absolute',
-                  left: '50%',
-                  top: `${-(cropTop / cropRange) * 100}%`,
-                  width: '100%',
-                  height: `${(100 / cropRange) * 100}%`,
+                  left: `${50 + imageOffsetX}%`,
+                  top: `calc(${-(cropTop / cropRange) * imageZoom}% + ${imageOffsetY}%)`,
+                  width: `${imageZoom}%`,
+                  height: `${((imageZoom * imageStretchY) / 100 / cropRange) * 100}%`,
                   objectFit: 'contain',
                   objectPosition: 'center top',
                   transform: 'translateX(-50%)',
@@ -638,7 +811,7 @@ export default function ProportionBuddy() {
             <fieldset
               style={{
                 display: 'grid',
-                gridTemplateColumns: 'repeat(3, minmax(0, 1fr))',
+                gridTemplateColumns: 'repeat(auto-fit, minmax(84px, 1fr))',
                 gap: 8,
                 border: 0,
                 padding: 0,
@@ -735,6 +908,47 @@ export default function ProportionBuddy() {
               >
                 Clear
               </button>
+            </div>
+            <div
+              style={{
+                display: 'grid',
+                gridTemplateColumns: '1fr',
+                gap: 8,
+              }}
+              className="proportion-buddy-placement-row"
+            >
+              <ControlSlider
+                label="move up / down"
+                value={activeReference.offsetY}
+                min={MIN_IMAGE_Y}
+                max={MAX_IMAGE_Y}
+                suffix="%"
+                onChange={(offsetY) =>
+                  updateActiveReference({ offsetY: clamp(offsetY, MIN_IMAGE_Y, MAX_IMAGE_Y) })
+                }
+              />
+              <ControlSlider
+                label="size"
+                value={activeReference.zoom}
+                min={MIN_IMAGE_ZOOM}
+                max={MAX_IMAGE_ZOOM}
+                suffix="%"
+                onChange={(zoom) =>
+                  updateActiveReference({ zoom: clamp(zoom, MIN_IMAGE_ZOOM, MAX_IMAGE_ZOOM) })
+                }
+              />
+              <ControlSlider
+                label="height stretch"
+                value={activeReference.stretchY}
+                min={MIN_IMAGE_HEIGHT}
+                max={MAX_IMAGE_HEIGHT}
+                suffix="%"
+                onChange={(stretchY) =>
+                  updateActiveReference({
+                    stretchY: clamp(stretchY, MIN_IMAGE_HEIGHT, MAX_IMAGE_HEIGHT),
+                  })
+                }
+              />
             </div>
           </section>
           {state.suggestionMode && (
@@ -1163,6 +1377,9 @@ export default function ProportionBuddy() {
           .proportion-buddy-action-row {
             grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
           }
+          .proportion-buddy-placement-row {
+            grid-template-columns: 1fr !important;
+          }
         }
       `}</style>
     </main>
@@ -1378,6 +1595,7 @@ function ControlSlider({
   min,
   max,
   suffix = '%',
+  step = 0.5,
   onChange,
 }: {
   label: string;
@@ -1385,6 +1603,7 @@ function ControlSlider({
   min: number;
   max: number;
   suffix?: string;
+  step?: number;
   onChange: (next: number) => void;
 }) {
   return (
@@ -1410,7 +1629,9 @@ function ControlSlider({
         type="range"
         min={min}
         max={max}
+        step={step}
         value={value}
+        onInput={(event) => onChange(Number(event.currentTarget.value))}
         onChange={(event) => onChange(Number(event.currentTarget.value))}
         style={{ width: '100%', accentColor: '#8b5e2f' }}
       />
