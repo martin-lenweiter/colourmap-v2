@@ -65,7 +65,7 @@ type BuddyState = {
 };
 
 const STORAGE_KEY = 'colourmap:proportion-buddy';
-const STATE_VERSION = 5;
+const STATE_VERSION = 6;
 const CUSTOM_COLORS = ['#ffd166', '#7bdff2', '#f7aef8', '#b8f2e6', '#f08080', '#c4f07a'];
 const MIN_IMAGE_Y = -620;
 const MAX_IMAGE_Y = 360;
@@ -112,13 +112,13 @@ const DEFAULT_REFERENCES: ReferenceImage[] = [
     name: 'Front 2',
     image: '/proportion-buddy/prop-3.png',
     offsetX: 0,
-    offsetY: -4,
+    offsetY: 11,
     zoom: 106,
     stretchY: 106,
     topCrop: 0,
     bottomCrop: 100,
     baseOffset: 0,
-    gridHeight: 100,
+    gridHeight: 81,
     fixed: false,
   },
   {
@@ -170,7 +170,7 @@ const DEFAULT_STATE: BuddyState = {
   image: null,
   activeReferenceId: 'image-2',
   suggestionMode: false,
-  showGrid: false,
+  showGrid: true,
   showProportions: false,
   showLabels: false,
   references: DEFAULT_REFERENCES,
@@ -933,6 +933,67 @@ export default function ProportionBuddy() {
               overflow: 'hidden',
             }}
           >
+            <div
+              style={{
+                display: 'grid',
+                gridTemplateColumns: '1fr',
+                gap: 8,
+                width: '100%',
+                minWidth: 0,
+                maxWidth: '100%',
+                opacity: activeReference.fixed ? 0.42 : 1,
+              }}
+              className="proportion-buddy-placement-row"
+            >
+              <ControlSlider
+                label="H"
+                value={activeReference.gridHeight}
+                min={MIN_GRID_HEIGHT}
+                max={MAX_GRID_HEIGHT}
+                suffix="%"
+                disabled={activeReference.fixed}
+                onChange={(gridHeight) =>
+                  updateActiveReference({
+                    gridHeight: clamp(gridHeight, MIN_GRID_HEIGHT, MAX_GRID_HEIGHT),
+                  })
+                }
+              />
+              <ControlSlider
+                label="M"
+                value={activeReference.offsetY}
+                min={MIN_IMAGE_Y}
+                max={MAX_IMAGE_Y}
+                suffix="%"
+                disabled={activeReference.fixed}
+                onChange={(offsetY) =>
+                  updateActiveReference({ offsetY: clamp(offsetY, MIN_IMAGE_Y, MAX_IMAGE_Y) })
+                }
+              />
+              <ControlSlider
+                label="S"
+                value={activeReference.zoom}
+                min={MIN_IMAGE_ZOOM}
+                max={MAX_IMAGE_ZOOM}
+                suffix="%"
+                disabled={activeReference.fixed}
+                onChange={(zoom) =>
+                  updateActiveReference({ zoom: clamp(zoom, MIN_IMAGE_ZOOM, MAX_IMAGE_ZOOM) })
+                }
+              />
+              <ControlSlider
+                label="0 cm line"
+                value={activeReference.baseOffset}
+                min={MIN_GRID_ZERO}
+                max={MAX_GRID_ZERO}
+                suffix="%"
+                disabled={activeReference.fixed}
+                onChange={(baseOffset) =>
+                  updateActiveReference({
+                    baseOffset: clamp(baseOffset, MIN_GRID_ZERO, MAX_GRID_ZERO),
+                  })
+                }
+              />
+            </div>
             <fieldset
               style={{
                 display: 'flex',
@@ -1061,67 +1122,6 @@ export default function ProportionBuddy() {
               >
                 Clear
               </button>
-            </div>
-            <div
-              style={{
-                display: 'grid',
-                gridTemplateColumns: '1fr',
-                gap: 8,
-                width: '100%',
-                minWidth: 0,
-                maxWidth: '100%',
-                opacity: activeReference.fixed ? 0.42 : 1,
-              }}
-              className="proportion-buddy-placement-row"
-            >
-              <ControlSlider
-                label="height"
-                value={activeReference.gridHeight}
-                min={MIN_GRID_HEIGHT}
-                max={MAX_GRID_HEIGHT}
-                suffix="%"
-                disabled={activeReference.fixed}
-                onChange={(gridHeight) =>
-                  updateActiveReference({
-                    gridHeight: clamp(gridHeight, MIN_GRID_HEIGHT, MAX_GRID_HEIGHT),
-                  })
-                }
-              />
-              <ControlSlider
-                label="move up / down"
-                value={activeReference.offsetY}
-                min={MIN_IMAGE_Y}
-                max={MAX_IMAGE_Y}
-                suffix="%"
-                disabled={activeReference.fixed}
-                onChange={(offsetY) =>
-                  updateActiveReference({ offsetY: clamp(offsetY, MIN_IMAGE_Y, MAX_IMAGE_Y) })
-                }
-              />
-              <ControlSlider
-                label="size"
-                value={activeReference.zoom}
-                min={MIN_IMAGE_ZOOM}
-                max={MAX_IMAGE_ZOOM}
-                suffix="%"
-                disabled={activeReference.fixed}
-                onChange={(zoom) =>
-                  updateActiveReference({ zoom: clamp(zoom, MIN_IMAGE_ZOOM, MAX_IMAGE_ZOOM) })
-                }
-              />
-              <ControlSlider
-                label="0 cm line"
-                value={activeReference.baseOffset}
-                min={MIN_GRID_ZERO}
-                max={MAX_GRID_ZERO}
-                suffix="%"
-                disabled={activeReference.fixed}
-                onChange={(baseOffset) =>
-                  updateActiveReference({
-                    baseOffset: clamp(baseOffset, MIN_GRID_ZERO, MAX_GRID_ZERO),
-                  })
-                }
-              />
             </div>
           </section>
           {state.suggestionMode && (

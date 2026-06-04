@@ -36,8 +36,6 @@ describe('ProportionBuddy', () => {
 
     expect(screen.queryByLabelText('bottom arms 17cm')).toBeNull();
     expect(screen.queryByLabelText('Head guide band')).toBeNull();
-
-    fireEvent.click(screen.getByRole('button', { name: 'Grid' }));
     expect(within(screen.getByTestId('proportion-stage')).getAllByText('80cm')).toHaveLength(2);
     expect(within(screen.getByTestId('proportion-stage')).getAllByText('0cm')).toHaveLength(1);
     expect(screen.getByLabelText('Horizontal centimeter ruler')).toBeDefined();
@@ -63,6 +61,10 @@ describe('ProportionBuddy', () => {
   it('opens with selectable reference images and AI suggestions', () => {
     render(<ProportionBuddy />);
 
+    const controlsText = screen.getByLabelText('Image controls').textContent ?? '';
+    expect(controlsText.indexOf('H')).toBeLessThan(controlsText.indexOf('Face'));
+    expect(controlsText.indexOf('Face')).toBeLessThan(controlsText.indexOf('Grid'));
+
     expect(screen.getByRole('button', { name: 'Face' })).toBeDefined();
     expect(screen.getByRole('button', { name: 'Front' })).toBeDefined();
     expect(screen.getByRole('button', { name: 'Front 2' })).toBeDefined();
@@ -70,14 +72,19 @@ describe('ProportionBuddy', () => {
     expect(screen.getByRole('button', { name: 'Board' })).toBeDefined();
     expect(screen.getByRole('button', { name: 'Plinth' })).toBeDefined();
     expect(screen.getByRole('img', { name: 'Front sculpture reference' })).toBeDefined();
-    expect(screen.getByLabelText('move up / down-4%')).toBeDefined();
-    expect(screen.getByLabelText('size106%')).toBeDefined();
+    expect(screen.getByLabelText('H100%')).toBeDefined();
+    expect(screen.getByLabelText('M-4%')).toBeDefined();
+    expect(screen.getByLabelText('S106%')).toBeDefined();
     expect(screen.getByLabelText('0 cm line0%')).toBeDefined();
-    expect(screen.getByLabelText('height100%')).toBeDefined();
     expect(screen.getByRole('button', { name: 'Fix this' })).toBeDefined();
 
     fireEvent.click(screen.getByRole('button', { name: 'Left' }));
     expect(screen.getByRole('img', { name: 'Left sculpture reference' })).toBeDefined();
+
+    fireEvent.click(screen.getByRole('button', { name: 'Front 2' }));
+    expect(screen.getByLabelText('H81%')).toBeDefined();
+    expect(screen.getByLabelText('M11%')).toBeDefined();
+    expect(screen.getByLabelText('S106%')).toBeDefined();
 
     fireEvent.click(screen.getByRole('button', { name: 'AI' }));
     expect(screen.getByLabelText('AI proportion suggestions')).toBeDefined();
@@ -87,37 +94,37 @@ describe('ProportionBuddy', () => {
   it('moves and zooms the active image against the fixed grid', () => {
     render(<ProportionBuddy />);
 
-    fireEvent.change(screen.getByLabelText('move up / down-4%'), { target: { value: '-120' } });
-    fireEvent.change(screen.getByLabelText('size106%'), { target: { value: '180' } });
+    fireEvent.change(screen.getByLabelText('M-4%'), { target: { value: '-120' } });
+    fireEvent.change(screen.getByLabelText('S106%'), { target: { value: '180' } });
     fireEvent.change(screen.getByLabelText('0 cm line0%'), { target: { value: '42' } });
-    fireEvent.change(screen.getByLabelText('height100%'), { target: { value: '180' } });
+    fireEvent.change(screen.getByLabelText('H100%'), { target: { value: '180' } });
 
     const image = screen.getByRole('img', { name: 'Front sculpture reference' });
     expect(image.getAttribute('style')).toContain('-120%');
     expect(image.getAttribute('style')).toContain('width: 180%');
     expect(image.getAttribute('style')).toContain('height: auto');
     expect(screen.getByLabelText('0 cm line42%')).toBeDefined();
-    expect(screen.getByLabelText('height180%')).toBeDefined();
+    expect(screen.getByLabelText('H180%')).toBeDefined();
   });
 
   it('locks placement controls for the active image when fixed', () => {
     render(<ProportionBuddy />);
 
-    fireEvent.change(screen.getByLabelText('height100%'), { target: { value: '180' } });
+    fireEvent.change(screen.getByLabelText('H100%'), { target: { value: '180' } });
     fireEvent.change(screen.getByLabelText('0 cm line0%'), { target: { value: '42' } });
     fireEvent.click(screen.getByRole('button', { name: 'Fix this' }));
 
     expect(screen.getByRole('button', { name: 'Unfix' })).toBeDefined();
-    expect(screen.getByLabelText('move up / down-4%')).toHaveProperty('disabled', true);
-    expect(screen.getByLabelText('size106%')).toHaveProperty('disabled', true);
+    expect(screen.getByLabelText('M-4%')).toHaveProperty('disabled', true);
+    expect(screen.getByLabelText('S106%')).toHaveProperty('disabled', true);
     expect(screen.getByLabelText('0 cm line42%')).toHaveProperty('disabled', true);
-    expect(screen.getByLabelText('height180%')).toHaveProperty('disabled', true);
+    expect(screen.getByLabelText('H180%')).toHaveProperty('disabled', true);
     expect(localStorage.getItem('colourmap:proportion-buddy')).toContain('"fixed":true');
     expect(localStorage.getItem('colourmap:proportion-buddy')).toContain('"gridHeight":180');
     expect(localStorage.getItem('colourmap:proportion-buddy')).toContain('"baseOffset":42');
 
     fireEvent.click(screen.getByRole('button', { name: 'Unfix' }));
-    expect(screen.getByLabelText('size106%')).toHaveProperty('disabled', false);
+    expect(screen.getByLabelText('S106%')).toHaveProperty('disabled', false);
   });
 
   it('can hide a default landmark and switch to triangle guides', () => {
@@ -171,7 +178,7 @@ describe('ProportionBuddy', () => {
     localStorage.setItem(
       'colourmap:proportion-buddy',
       JSON.stringify({
-        version: 5,
+        version: 6,
         activeReferenceId: 'image-1',
         references: [
           {

@@ -37,10 +37,10 @@ Current sculpture reference:
   references.
 - Each image keeps its own crop and base-lower adjustment.
 - Each image keeps its own placement adjustment:
-  - move up / down
-  - size, which uniformly scales the reference photo without changing its proportions
+  - `H` / height, which changes the grid/centimeter scale rather than stretching the photo
+  - `M` / move up-down, which moves the image against the grid
+  - `S` / size, which uniformly scales the reference photo without changing its proportions
   - 0 cm line
-  - height, which changes the grid/centimeter scale rather than stretching the photo
 - Image placement moves/scales the photo against the fixed grid/proportion overlay. This lets the user
   align the skull to the `82cm` reference / `80-84cm` zone and bottom arms near the `17cm` target when
   the source photo crop is not already
@@ -71,12 +71,12 @@ Current sculpture reference:
   - optional guide-shape modes: plain lines, X diagonals, or a triangle/centerline scaffold
 - The app opens in clean image mode:
   - the image is visible by default
-  - `Grid` is off by default
+  - `Grid` is on by default
   - `Proportions` is off by default
   - `Labels` is off by default so no label boxes cover the sculpture
-- The image selector and tool controls sit below the image, Geometry Builder style. Reference buttons stay
-  on one horizontal scroll axis. They must not sit above the image or compete with the image as a
-  right-side panel.
+- The image selector and tool buttons sit below the placement sliders, Geometry Builder style. Reference
+  buttons stay on one horizontal scroll axis. They must not sit above the image or compete with the image
+  as a right-side panel.
 - The side panel calculates reusable comparative proportions:
   - each landmark as a percentage of total sculpture height
   - each landmark as a `1:x` ratio against total height
@@ -104,6 +104,8 @@ Current sculpture reference:
   - bottom crop `100`
   - all bundled images default to `0 cm line = 0` and `height = 100` so the same project proportions
     appear across every reference.
+  - `Front 2` is currently calibrated from the user's found setup: `H = 81`, `M = 11`, `S = 106`, so
+    the top of head reads near `84cm`.
 
 ## Interaction
 
@@ -112,7 +114,8 @@ Current sculpture reference:
 - The reference stage should run close to the side edges of the available page, especially on phone.
 - The reference stage should be tall enough that the image can continue below the baseline/ruler when the
   source photo continues; avoid cutting off the lower part of the reference prematurely.
-- The user sees the image first, then reference selection, then compact controls.
+- The user sees the image first, then placement sliders, then reference selection and compact tool
+  controls.
 - Sliders and number inputs update the overlay immediately.
 - Writing a landmark name and centimeter value adds it to the overlay and persists it locally.
 - Landmark checkboxes hide/show individual guides without deleting their measurements.
