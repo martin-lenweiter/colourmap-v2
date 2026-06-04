@@ -30,8 +30,15 @@ describe('ProportionBuddy', () => {
     expect(within(ratios).getByText(/48\.0cm . 57\.1% . 1:1\.75/)).toBeDefined();
   });
 
-  it('shows the sculpture landmark guide labels on the stage', () => {
+  it('opens with the picture clean until grid and proportion overlays are enabled', () => {
     render(<ProportionBuddy />);
+
+    expect(screen.queryByLabelText('bottom arms 17cm')).toBeNull();
+    expect(screen.queryByLabelText('Head guide band')).toBeNull();
+
+    fireEvent.click(screen.getByRole('button', { name: 'Grid' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Proportions' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Labels' }));
 
     expect(screen.getByLabelText('bottom arms 17cm')).toBeDefined();
     expect(screen.getByLabelText('elbow center 27cm')).toBeDefined();
@@ -55,7 +62,7 @@ describe('ProportionBuddy', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Image 3' }));
     expect(screen.getByRole('img', { name: 'Image 3 sculpture reference' })).toBeDefined();
 
-    fireEvent.click(screen.getByRole('button', { name: 'AI suggestions' }));
+    fireEvent.click(screen.getByRole('button', { name: 'AI' }));
     expect(screen.getByLabelText('AI proportion suggestions')).toBeDefined();
     expect(screen.getByText(/Keep bottom of arms locked near 17cm/)).toBeDefined();
   });
@@ -63,6 +70,8 @@ describe('ProportionBuddy', () => {
   it('can hide a default landmark and switch to triangle guides', () => {
     render(<ProportionBuddy />);
 
+    fireEvent.click(screen.getByRole('button', { name: 'Proportions' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Labels' }));
     fireEvent.click(screen.getByLabelText('Show shirt opening V'));
     expect(screen.queryByLabelText('shirt opening V 48cm')).toBeNull();
 
@@ -81,6 +90,8 @@ describe('ProportionBuddy', () => {
     });
     fireEvent.click(screen.getByRole('button', { name: 'Add landmark' }));
 
+    fireEvent.click(screen.getByRole('button', { name: 'Proportions' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Labels' }));
     expect(screen.getByLabelText('shirt split 46cm')).toBeDefined();
     expect(screen.getByLabelText('shirt split name')).toHaveProperty('value', 'shirt split');
     expect(localStorage.getItem('colourmap:proportion-buddy')).toContain('shirt split');
