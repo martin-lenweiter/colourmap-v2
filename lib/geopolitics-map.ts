@@ -1,0 +1,190 @@
+export type MapLayer = 'military' | 'commercial' | 'energy';
+
+export type Chokepoint = {
+  slug: string;
+  name: string;
+  x: number;
+  y: number;
+  status: 'OPEN' | 'OPEN-THROTTLED' | 'DEGRADED' | 'CLOSED';
+  pageSlug: string;
+};
+
+export type Movement = {
+  id: string;
+  layer: MapLayer;
+  label: string;
+  from: { x: number; y: number; name: string };
+  to: { x: number; y: number; name: string };
+  pageSlug: string;
+  weekIso: string;
+  recency: 'this-week' | 'last-week' | 'older';
+};
+
+export type RegionPath = {
+  id: string;
+  name: string;
+  d: string;
+};
+
+export const MAP_VIEWBOX = { width: 1000, height: 700 };
+
+// Stylized Middle East / Indian Ocean region paths. Hand-drawn shapes, not
+// topographically faithful — readable parchment cartography. Coordinates are
+// in viewBox units (0..1000 horizontal, 0..700 vertical).
+export const REGIONS: RegionPath[] = [
+  {
+    id: 'arabian-peninsula',
+    name: 'Arabian Peninsula',
+    d: 'M 380 220 L 470 200 L 530 220 L 580 280 L 600 360 L 590 430 L 540 490 L 460 520 L 400 500 L 360 440 L 340 360 L 350 290 Z',
+  },
+  {
+    id: 'iran',
+    name: 'Iran',
+    d: 'M 520 130 L 640 120 L 730 150 L 760 220 L 720 280 L 640 310 L 570 290 L 520 250 L 510 190 Z',
+  },
+  {
+    id: 'iraq-syria',
+    name: 'Iraq · Syria',
+    d: 'M 380 130 L 510 130 L 520 230 L 460 240 L 410 220 L 380 180 Z',
+  },
+  {
+    id: 'turkey',
+    name: 'Türkiye',
+    d: 'M 280 80 L 450 70 L 510 110 L 470 150 L 380 140 L 300 130 Z',
+  },
+  {
+    id: 'horn-of-africa',
+    name: 'Horn of Africa',
+    d: 'M 300 380 L 360 390 L 380 470 L 330 540 L 280 540 L 250 480 L 250 420 Z',
+  },
+  {
+    id: 'india',
+    name: 'India',
+    d: 'M 800 220 L 880 240 L 920 320 L 880 420 L 820 460 L 770 410 L 760 320 Z',
+  },
+  {
+    id: 'pakistan',
+    name: 'Pakistan',
+    d: 'M 740 200 L 800 210 L 810 280 L 760 290 L 720 250 Z',
+  },
+  {
+    id: 'egypt',
+    name: 'Egypt',
+    d: 'M 240 280 L 330 290 L 350 360 L 320 410 L 250 410 L 220 350 Z',
+  },
+];
+
+export const CHOKEPOINTS: Chokepoint[] = [
+  {
+    slug: 'hormuz',
+    name: 'Strait of Hormuz',
+    x: 645,
+    y: 295,
+    status: 'OPEN-THROTTLED',
+    pageSlug: 'hormuz-geography',
+  },
+  {
+    slug: 'bab-el-mandeb',
+    name: 'Bab el-Mandeb',
+    x: 330,
+    y: 425,
+    status: 'DEGRADED',
+    pageSlug: 'hormuz-vs-redsea',
+  },
+  {
+    slug: 'suez',
+    name: 'Suez Canal',
+    x: 280,
+    y: 250,
+    status: 'DEGRADED',
+    pageSlug: 'hormuz-vs-redsea',
+  },
+  {
+    slug: 'fujairah',
+    name: 'Fujairah (Hormuz bypass)',
+    x: 615,
+    y: 330,
+    status: 'OPEN',
+    pageSlug: 'iran-leverage',
+  },
+];
+
+export const MOVEMENTS: Movement[] = [
+  // Military
+  {
+    id: 'us-carrier-into-gulf-of-oman',
+    layer: 'military',
+    label: 'US carrier group → Gulf of Oman',
+    from: { x: 760, y: 540, name: 'Indian Ocean station' },
+    to: { x: 700, y: 360, name: 'Gulf of Oman' },
+    pageSlug: 'epic-fury',
+    weekIso: '2026-W23',
+    recency: 'this-week',
+  },
+  {
+    id: 'irgc-fast-boats',
+    layer: 'military',
+    label: 'IRGC fast-attack boats throttling Hormuz',
+    from: { x: 720, y: 250, name: 'Bandar Abbas' },
+    to: { x: 645, y: 295, name: 'Strait of Hormuz' },
+    pageSlug: 'iran-leverage',
+    weekIso: '2026-W23',
+    recency: 'this-week',
+  },
+  {
+    id: 'houthi-launches',
+    layer: 'military',
+    label: 'Houthi anti-ship launches into Bab el-Mandeb',
+    from: { x: 380, y: 480, name: 'Yemen coast' },
+    to: { x: 330, y: 425, name: 'Bab el-Mandeb' },
+    pageSlug: 'twelve-day-war',
+    weekIso: '2026-W23',
+    recency: 'this-week',
+  },
+
+  // Commercial
+  {
+    id: 'container-reroute-cape',
+    layer: 'commercial',
+    label: 'Container reroute via Cape of Good Hope',
+    from: { x: 760, y: 360, name: 'Asia-Europe lane' },
+    to: { x: 220, y: 660, name: 'Cape of Good Hope' },
+    pageSlug: 'hormuz-vs-redsea',
+    weekIso: '2026-W23',
+    recency: 'this-week',
+  },
+  {
+    id: 'cma-cgm-watch-routes',
+    layer: 'commercial',
+    label: 'CMA CGM Asia → Europe routings (Ocean Alliance)',
+    from: { x: 900, y: 480, name: 'East Asia' },
+    to: { x: 180, y: 220, name: 'Marseille' },
+    pageSlug: 'alliances',
+    weekIso: '2026-W23',
+    recency: 'this-week',
+  },
+
+  // Energy
+  {
+    id: 'crude-out-of-hormuz',
+    layer: 'energy',
+    label: 'Crude exports out of Hormuz (~20 mb/d)',
+    from: { x: 580, y: 320, name: 'Gulf producers' },
+    to: { x: 880, y: 380, name: 'India / Asia demand' },
+    pageSlug: 'hormuz-oil-share',
+    weekIso: '2026-W23',
+    recency: 'this-week',
+  },
+  {
+    id: 'east-west-pipeline',
+    layer: 'energy',
+    label: 'Saudi East-West pipeline (Hormuz bypass)',
+    from: { x: 500, y: 320, name: 'Abqaiq' },
+    to: { x: 380, y: 380, name: 'Yanbu' },
+    pageSlug: 'iran-leverage',
+    weekIso: '2026-W23',
+    recency: 'last-week',
+  },
+];
+
+export const AVAILABLE_WEEKS = ['2026-W23'];
