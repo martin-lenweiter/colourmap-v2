@@ -125,6 +125,10 @@ export type Category = {
   title: string;
   blurb: string;
   tier: Tier;
+  /** Accent colour (hex). Drives the gradient cover and tinted reader. */
+  tint: string;
+  /** Optional public image (e.g. /world/hormuz.webp). Procedural cover used if absent. */
+  cover?: string;
   programs: Program[];
 };
 
@@ -1732,6 +1736,7 @@ export const GEOPOLITICS_CATEGORIES: Category[] = [
     slug: 'hormuz-crisis',
     title: 'Hormuz Crisis',
     tier: 'now',
+    tint: '#B85A2E',
     blurb:
       "Iran, the US, Israel, and the Gulf — what they are doing to the world's most consequential strait.",
     programs: [HORMUZ_BRIEFING],
@@ -1740,6 +1745,7 @@ export const GEOPOLITICS_CATEGORIES: Category[] = [
     slug: 'shipping-industry',
     title: 'Shipping Industry',
     tier: 'decade',
+    tint: '#3D6C8A',
     blurb: 'Carriers, alliances, lanes, money flows. The system that moves 80% of world trade.',
     programs: [SHIPPING_BIG_NINE],
   },
@@ -1747,6 +1753,7 @@ export const GEOPOLITICS_CATEGORIES: Category[] = [
     slug: 'alliances-reshuffle',
     title: 'Alliances Reshuffle',
     tier: 'decade',
+    tint: '#7A4B96',
     blurb:
       'NATO under strain, BRICS+ expansion, Russia–Iran 20-year pact, Trumpism. The old order fraying and the new blocs forming.',
     programs: [ALLIANCES_RESHUFFLE_PROGRAM],
@@ -1755,6 +1762,7 @@ export const GEOPOLITICS_CATEGORIES: Category[] = [
     slug: 'critical-materials',
     title: 'Critical Materials Atlas',
     tier: 'decade',
+    tint: '#8E6A2C',
     blurb:
       'Copper, lithium, cobalt, coltan, rare earths, gallium, uranium. Who mines, who refines, who can shut the tap.',
     programs: [CRITICAL_MATERIALS_PROGRAM],
@@ -1763,6 +1771,7 @@ export const GEOPOLITICS_CATEGORIES: Category[] = [
     slug: 'world-2050',
     title: 'The World in 2050',
     tier: 'horizon',
+    tint: '#5C7A4F',
     blurb:
       'End of petroleum, AI, carbon turning points, demographics, the long arc. Calibrated bets and the data behind them.',
     programs: [WORLD_2050_PROGRAM],
@@ -1771,6 +1780,7 @@ export const GEOPOLITICS_CATEGORIES: Category[] = [
     slug: 'middle-east',
     title: 'Middle East',
     tier: 'now',
+    tint: '#C49044',
     blurb:
       'Post-Khamenei Iran, post-Assad Syria, post-Gaza Israel, post-oil Gulf. New alliances, current conflicts, country-by-country.',
     programs: [MIDDLE_EAST_PROGRAM],
@@ -1779,11 +1789,17 @@ export const GEOPOLITICS_CATEGORIES: Category[] = [
     slug: 'africa',
     title: 'Africa to 2050',
     tier: 'horizon',
+    tint: '#A8543A',
     blurb:
       'Demographic dividend, resource nationalism, climate exposure, the new scramble. One billion more people by 2050, half the answers still open.',
     programs: [AFRICA_PROGRAM],
   },
 ];
+
+export const WORLD_HERO_QUOTE = {
+  text: 'The world is not made of atoms. It is made of stories.',
+  attribution: 'Muriel Rukeyser',
+} as const;
 
 export function categoriesByTier(tier: Tier): Category[] {
   return GEOPOLITICS_CATEGORIES.filter((c) => c.tier === tier);

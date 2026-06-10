@@ -9,6 +9,7 @@ import {
   type Page,
   TIER_DEFINITION,
   TIER_ORDER,
+  WORLD_HERO_QUOTE,
 } from '@/lib/geopolitics-content';
 import EducationModeSwitch from './EducationModeSwitch';
 import TrustBadge from './TrustBadge';
@@ -170,6 +171,42 @@ function CategoryGrid({
         >
           Six worlds. Short pages. One claim each. Read three, and the news starts making sense.
         </p>
+        <figure
+          style={{
+            margin: '14px auto 0',
+            maxWidth: 560,
+            display: 'grid',
+            gap: 4,
+          }}
+        >
+          <blockquote
+            style={{
+              margin: 0,
+              color: GOLD,
+              fontFamily: 'var(--font-serif)',
+              fontStyle: 'italic',
+              fontSize: 13,
+              lineHeight: 1.55,
+              borderLeft: `2px solid ${GOLD_BORDER}`,
+              paddingLeft: 12,
+              textAlign: 'left',
+            }}
+          >
+            &ldquo;{WORLD_HERO_QUOTE.text}&rdquo;
+          </blockquote>
+          <figcaption
+            style={{
+              color: GOLD_FAINT,
+              fontFamily: 'var(--font-serif)',
+              fontSize: 11,
+              letterSpacing: '0.14em',
+              textTransform: 'uppercase',
+              textAlign: 'right',
+            }}
+          >
+            — {WORLD_HERO_QUOTE.attribution}
+          </figcaption>
+        </figure>
         <div
           style={{
             display: 'flex',
@@ -243,127 +280,130 @@ function CategoryGrid({
                     border: `1px solid ${GOLD_BORDER}`,
                     background: 'linear-gradient(180deg, rgba(54,36,18,0.78), rgba(34,22,10,0.92))',
                     borderRadius: 14,
-                    padding: '16px 18px',
+                    overflow: 'hidden',
                     display: 'grid',
-                    gap: 12,
+                    gap: 0,
                     boxShadow: '0 8px 24px rgba(0,0,0,0.32)',
                   }}
                 >
-                  <header>
-                    <h3
-                      style={{
-                        margin: '0 0 4px',
-                        color: GOLD_STRONG,
-                        fontSize: 22,
-                        letterSpacing: '0.01em',
-                        fontWeight: 700,
-                      }}
-                    >
-                      {category.title}
-                    </h3>
-                    <p
-                      style={{
-                        margin: 0,
-                        color: GOLD_MID,
-                        fontSize: 13,
-                        lineHeight: 1.5,
-                      }}
-                    >
-                      {category.blurb}
-                    </p>
-                  </header>
-                  {category.programs.map((program) => {
-                    const first = firstPageOf(program.slug);
-                    return (
-                      <button
-                        key={program.slug}
-                        type="button"
-                        onClick={() => first && onOpen(first.slug)}
-                        data-testid={`open-program-${program.slug}`}
+                  <CategoryCover category={category} />
+                  <div style={{ padding: '12px 18px 16px', display: 'grid', gap: 12 }}>
+                    <header>
+                      <h3
                         style={{
-                          textAlign: 'left',
-                          border: `1px solid ${GOLD_BORDER_SOFT}`,
-                          borderRadius: 10,
-                          background: 'rgba(255,238,200,0.06)',
-                          cursor: first ? 'pointer' : 'not-allowed',
-                          padding: '11px 14px',
-                          display: 'grid',
-                          gap: 6,
-                          fontFamily: 'var(--font-serif)',
-                          color: GOLD,
+                          margin: '0 0 4px',
+                          color: GOLD_STRONG,
+                          fontSize: 22,
+                          letterSpacing: '0.01em',
+                          fontWeight: 700,
                         }}
                       >
-                        <span
+                        {category.title}
+                      </h3>
+                      <p
+                        style={{
+                          margin: 0,
+                          color: GOLD_MID,
+                          fontSize: 13,
+                          lineHeight: 1.5,
+                        }}
+                      >
+                        {category.blurb}
+                      </p>
+                    </header>
+                    {category.programs.map((program) => {
+                      const first = firstPageOf(program.slug);
+                      return (
+                        <button
+                          key={program.slug}
+                          type="button"
+                          onClick={() => first && onOpen(first.slug)}
+                          data-testid={`open-program-${program.slug}`}
                           style={{
-                            color: GOLD_STRONG,
-                            fontWeight: 700,
-                            fontSize: 15,
-                            letterSpacing: '0.005em',
-                          }}
-                        >
-                          {program.title}
-                        </span>
-                        <span
-                          style={{
-                            color: GOLD_MID,
-                            fontSize: 12,
-                            lineHeight: 1.5,
-                          }}
-                        >
-                          {program.blurb}
-                        </span>
-                        <span
-                          style={{
-                            color: GOLD_FAINT,
-                            fontSize: 10,
-                            letterSpacing: '0.16em',
-                            textTransform: 'uppercase',
-                          }}
-                        >
-                          {program.durationMinutes} min · {program.chapters.length} chapter
-                          {program.chapters.length === 1 ? '' : 's'}
-                        </span>
-                        <ol
-                          style={{
-                            margin: '6px 0 0',
-                            padding: '8px 0 0 0',
-                            borderTop: `1px solid ${GOLD_BORDER_SOFT}`,
+                            textAlign: 'left',
+                            border: `1px solid ${GOLD_BORDER_SOFT}`,
+                            borderRadius: 10,
+                            background: 'rgba(255,238,200,0.06)',
+                            cursor: first ? 'pointer' : 'not-allowed',
+                            padding: '11px 14px',
                             display: 'grid',
-                            gap: 4,
-                            listStyle: 'none',
+                            gap: 6,
+                            fontFamily: 'var(--font-serif)',
+                            color: GOLD,
                           }}
                         >
-                          {program.chapters.map((chapter, idx) => (
-                            <li
-                              key={chapter.slug}
-                              style={{
-                                display: 'grid',
-                                gridTemplateColumns: '56px 1fr',
-                                gap: 10,
-                                fontFamily: 'var(--font-serif)',
-                                fontSize: 12,
-                                color: GOLD_MID,
-                                lineHeight: 1.4,
-                              }}
-                            >
-                              <span
+                          <span
+                            style={{
+                              color: GOLD_STRONG,
+                              fontWeight: 700,
+                              fontSize: 15,
+                              letterSpacing: '0.005em',
+                            }}
+                          >
+                            {program.title}
+                          </span>
+                          <span
+                            style={{
+                              color: GOLD_MID,
+                              fontSize: 12,
+                              lineHeight: 1.5,
+                            }}
+                          >
+                            {program.blurb}
+                          </span>
+                          <span
+                            style={{
+                              color: GOLD_FAINT,
+                              fontSize: 10,
+                              letterSpacing: '0.16em',
+                              textTransform: 'uppercase',
+                            }}
+                          >
+                            {program.durationMinutes} min · {program.chapters.length} chapter
+                            {program.chapters.length === 1 ? '' : 's'}
+                          </span>
+                          <ol
+                            style={{
+                              margin: '6px 0 0',
+                              padding: '8px 0 0 0',
+                              borderTop: `1px solid ${GOLD_BORDER_SOFT}`,
+                              display: 'grid',
+                              gap: 4,
+                              listStyle: 'none',
+                            }}
+                          >
+                            {program.chapters.map((chapter, idx) => (
+                              <li
+                                key={chapter.slug}
                                 style={{
-                                  color: GOLD_STRONG,
-                                  fontWeight: 700,
-                                  fontSize: 11,
-                                  letterSpacing: '0.12em',
-                                  textTransform: 'uppercase',
+                                  display: 'grid',
+                                  gridTemplateColumns: '56px 1fr',
+                                  gap: 10,
+                                  fontFamily: 'var(--font-serif)',
+                                  fontSize: 12,
+                                  color: GOLD_MID,
+                                  lineHeight: 1.4,
                                 }}
                               >
-                                {chapter.number} of {program.chapters.length}
-                              </span>
-                              <span>{chapter.title}</span>
-                            </li>
-                          ))}
-                        </ol>
-                      </button>
-                    );
-                  })}
+                                <span
+                                  style={{
+                                    color: GOLD_STRONG,
+                                    fontWeight: 700,
+                                    fontSize: 11,
+                                    letterSpacing: '0.12em',
+                                    textTransform: 'uppercase',
+                                  }}
+                                >
+                                  {chapter.number} of {program.chapters.length}
+                                </span>
+                                <span>{chapter.title}</span>
+                              </li>
+                            ))}
+                          </ol>
+                        </button>
+                      );
+                    })}
+                  </div>
                 </article>
               ))}
             </div>
@@ -602,6 +642,78 @@ function PageReader({
         </section>
       </footer>
     </article>
+  );
+}
+
+function CategoryCover({ category }: { category: ReturnType<typeof categoriesByTier>[number] }) {
+  if (category.cover) {
+    // Real photo cover (drop into /public/world/<slug>.webp)
+    return (
+      <div
+        style={{
+          width: '100%',
+          aspectRatio: '16 / 9',
+          backgroundImage: `linear-gradient(180deg, rgba(0,0,0,0) 50%, rgba(18,10,4,0.78) 100%), url('${category.cover}')`,
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          borderBottom: `1px solid ${GOLD_BORDER_SOFT}`,
+        }}
+        aria-hidden="true"
+      />
+    );
+  }
+
+  // Procedural cover — warm gradient on the tint + diagonal sweep + title slug
+  const tint = category.tint;
+  const dark = '#1a0e05';
+  return (
+    <div
+      style={{
+        width: '100%',
+        aspectRatio: '16 / 9',
+        position: 'relative',
+        background: `radial-gradient(circle at 70% 40%, ${tint} 0%, ${tint}aa 35%, ${dark} 95%)`,
+        borderBottom: `1px solid ${GOLD_BORDER_SOFT}`,
+        overflow: 'hidden',
+      }}
+      aria-hidden="true"
+    >
+      <svg
+        viewBox="0 0 320 180"
+        width="100%"
+        height="100%"
+        preserveAspectRatio="xMidYMid slice"
+        style={{ position: 'absolute', inset: 0, mixBlendMode: 'screen', opacity: 0.55 }}
+      >
+        <defs>
+          <linearGradient id={`grad-${category.slug}`} x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0" stopColor="rgba(255,238,200,0.5)" />
+            <stop offset="1" stopColor="rgba(255,238,200,0)" />
+          </linearGradient>
+        </defs>
+        <path
+          d="M -20 130 Q 60 70 160 90 Q 260 110 340 60 L 340 220 L -20 220 Z"
+          fill={`url(#grad-${category.slug})`}
+        />
+        <circle cx="246" cy="56" r="22" fill="rgba(255,238,200,0.32)" />
+      </svg>
+      <span
+        style={{
+          position: 'absolute',
+          left: 14,
+          bottom: 10,
+          color: 'rgba(255,238,200,0.86)',
+          fontFamily: 'var(--font-serif)',
+          fontSize: 10,
+          fontWeight: 800,
+          letterSpacing: '0.22em',
+          textTransform: 'uppercase',
+          textShadow: '0 1px 3px rgba(0,0,0,0.5)',
+        }}
+      >
+        {category.tier}
+      </span>
+    </div>
   );
 }
 
