@@ -103,6 +103,12 @@ type QueuedMission = {
   }>;
 };
 
+function uniqueQueuedMissions(missions: QueuedMission[]) {
+  const byId = new Map<string, QueuedMission>();
+  for (const mission of missions) byId.set(mission.id, mission);
+  return Array.from(byId.values());
+}
+
 type MissionAttachment = {
   id: string;
   kind: 'screenshot' | 'image';
@@ -1804,7 +1810,7 @@ export default function BuildLab() {
       const response = await fetch('/api/build-lab/queue');
       if (!response.ok) return;
       const data = (await response.json()) as { missions: QueuedMission[] };
-      setQueuedMissions(data.missions);
+      setQueuedMissions(uniqueQueuedMissions(data.missions));
     }
 
     loadAgents();
@@ -2464,10 +2470,11 @@ export default function BuildLab() {
     }
   }
 
-  const activeQueuedMissions = queuedMissions.filter(
+  const uniqueQueuedMissionList = uniqueQueuedMissions(queuedMissions);
+  const activeQueuedMissions = uniqueQueuedMissionList.filter(
     (mission) => mission.channelId === activeChannel.id,
   );
-  const queueStatusCounts = queuedMissions.reduce<Record<QueuedMissionStatus, number>>(
+  const queueStatusCounts = uniqueQueuedMissionList.reduce<Record<QueuedMissionStatus, number>>(
     (counts, mission) => {
       counts[mission.status] += 1;
       return counts;
@@ -2476,7 +2483,7 @@ export default function BuildLab() {
   );
   const queueChannelCounts = DEFAULT_CHANNELS.map((channel) => ({
     ...channel,
-    count: queuedMissions.filter(
+    count: uniqueQueuedMissionList.filter(
       (mission) =>
         mission.channelId === channel.id ||
         (channel.id === 'lab' && mission.channelId === 'build-lab'),
@@ -2485,7 +2492,7 @@ export default function BuildLab() {
   const activeRunnableQueuedMissions = activeQueuedMissions.filter(
     (mission) => mission.status === 'queued' || mission.status === 'running',
   );
-  const runnableQueuedMissions = queuedMissions.filter(
+  const runnableQueuedMissions = uniqueQueuedMissionList.filter(
     (mission) => mission.status === 'queued' || mission.status === 'running',
   );
   const runHint = !prompt.trim()
@@ -3102,12 +3109,12 @@ export default function BuildLab() {
                       latest runner event.
                     </p>
                   ) : (
-                    queuedMissions.map((mission, index) => {
+                    uniqueQueuedMissionList.map((mission, index) => {
                       const channelName =
                         channelForId(mission.channelId)?.name ?? mission.channelId;
                       return (
                         <div
-                          key={mission.id}
+                          key={`mission-queue-${mission.id}`}
                           className="grid gap-2 rounded-xl border border-[#b98d52]/18 bg-[#fffdf2]/78 px-3 py-2 sm:grid-cols-[32px_1fr_auto] sm:items-center"
                         >
                           <span className="grid h-7 w-7 place-items-center rounded-full bg-[#704923] text-xs text-[#fff8e8]">
@@ -3249,7 +3256,7 @@ export default function BuildLab() {
                   <ol className="grid gap-2">
                     {activeQueuedMissions.slice(0, 8).map((mission, index) => (
                       <li
-                        key={mission.id}
+                        key={`runner-inbox-compact-${mission.id}`}
                         className="grid grid-cols-[1fr_auto] items-center gap-2 rounded-xl border border-[#b98d52]/18 bg-[#fffdf2]/78 px-3 py-2"
                       >
                         <button
@@ -3324,7 +3331,7 @@ export default function BuildLab() {
                   <ol className="grid gap-3">
                     {activeQueuedMissions.slice(0, 8).map((mission, index) => (
                       <li
-                        key={mission.id}
+                        key={`runner-inbox-card-${mission.id}`}
                         className="rounded-2xl border border-[#b98d52]/22 bg-[#fffdf2]/75 p-4"
                       >
                         <div className="flex items-start justify-between gap-3">
@@ -4016,7 +4023,7 @@ export default function BuildLab() {
                                 </p>
                                 {activeQueuedMissions.slice(0, 8).map((mission, index) => (
                                   <div
-                                    key={mission.id}
+                                    key={`runner-inbox-drag-${mission.id}`}
                                     draggable
                                     onDragStart={(event) =>
                                       handleQueuedMissionDragStart(event, mission.id)
