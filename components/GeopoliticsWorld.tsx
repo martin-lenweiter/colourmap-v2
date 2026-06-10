@@ -21,6 +21,7 @@ type Props = {
   onOpenMap?: () => void;
   onOpenGraph?: () => void;
   onOpenSources?: () => void;
+  onOpenSpace?: () => void;
   initialPageSlug?: string | null;
 };
 
@@ -30,6 +31,7 @@ export default function GeopoliticsWorld({
   onOpenMap,
   onOpenGraph,
   onOpenSources,
+  onOpenSpace,
   initialPageSlug,
 }: Props) {
   const [hydrated, setHydrated] = useState(false);
@@ -96,6 +98,7 @@ export default function GeopoliticsWorld({
           onOpenMap={onOpenMap}
           onOpenGraph={onOpenGraph}
           onOpenSources={onOpenSources}
+          onOpenSpace={onOpenSpace}
         />
       )}
     </main>
@@ -108,12 +111,14 @@ function CategoryGrid({
   onOpenMap,
   onOpenGraph,
   onOpenSources,
+  onOpenSpace,
 }: {
   onOpen: (firstSlug: string) => void;
   onOpenIntel?: () => void;
   onOpenMap?: () => void;
   onOpenGraph?: () => void;
   onOpenSources?: () => void;
+  onOpenSpace?: () => void;
 }) {
   return (
     <section data-testid="world-hub">
@@ -182,6 +187,16 @@ function CategoryGrid({
               style={hubButtonSecondary}
             >
               Data garden →
+            </button>
+          )}
+          {onOpenSpace && (
+            <button
+              type="button"
+              data-testid="open-space"
+              onClick={onOpenSpace}
+              style={hubButtonPrimary}
+            >
+              ✨ Space (3D) →
             </button>
           )}
         </div>

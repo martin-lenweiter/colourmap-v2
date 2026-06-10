@@ -1423,9 +1423,70 @@ const AFRICA_PROGRAM: Program = {
       ],
     },
     {
+      slug: 'africa-countries',
+      title: 'Country briefs',
+      number: 3,
+      pages: [
+        {
+          slug: 'country-nigeria',
+          title: 'Nigeria — third-largest country by 2044, dividend not until ~2058',
+          bluf: "Africa's largest economy and population (~228 M in 2024, projected ~377 M by 2050). Overtakes the US around 2044 to become world #3 — but does not cross the 1.7:1 dividend ratio until ~2058.",
+          body:
+            'Key resource: hydrocarbons (oil ~85% of exports) plus a fast-growing tech sector (Lagos as the African AI hub). Biggest external dependence: refined-fuel imports and fertiliser supply — Russia / Eastern Europe shock-exposed. Biggest internal challenge: insurgency belt (Boko Haram + ISWAP in the North-East, banditry in the North-West, IPOB in the South-East), federal-state revenue disputes, and a chronically over-leveraged FX regime. ' +
+            'Climate exposure: Lagos is one of four named African coastal cities in the IPCC AR6 WG2 sea-level-rise list (190-245 M total African coastal exposure by 2060). ' +
+            '2035 trajectory: a probable demographic late-mover. Sub-saturated dividend, rising labour force, fragile institutions. Watch whether power-sector reform actually delivers reliable electricity.',
+          confidence: 'MED',
+          lastVerified: '2026-06-10',
+          dependsOn: ['africa-2-5b', 'africa-dividend-window'],
+          feedsInto: [],
+          related: ['lobito-corridor'],
+          entities: ['nigeria', 'lagos'],
+          tags: ['climate'],
+          timeframe: 'long-arc',
+          sources: [SOURCE_UNECA_DEMOG, SOURCE_ISS_FUTURES, SOURCE_IPCC_AR6_WG2_AFRICA],
+        },
+        {
+          slug: 'country-drc',
+          title: 'DRC — 70-76% of global cobalt, ~110 M people, fragile',
+          bluf: "Democratic Republic of the Congo: 70-76% of global cobalt, world's #2 copper producer, the structural spine of the energy transition.",
+          body:
+            'Population ~110 M (2025), projected ~217 M by 2050 — the third-largest African population by mid-century behind Nigeria and Ethiopia. Biggest external dependence: Chinese refining-buy-side for cobalt and copper exports (~70%+); diversification via the Lobito Corridor (EU/US/Angola/AfDB) is in flight. Biggest internal challenge: the eastern provinces — M23, Wazalendo, FDLR, ADF — and the 2023-2024 Rwanda-DRC border crisis. Mining-royalty reform in 2018 raised state take but enforcement remains uneven. ' +
+            'Climate exposure: equatorial forest loss and food-security stress; less direct sea-level exposure. ' +
+            '2035 trajectory: indispensable to global decarbonisation supply chains, internally fragile. The single most consequential African country for the energy transition.',
+          confidence: 'HIGH',
+          lastVerified: '2026-06-10',
+          dependsOn: ['lobito-corridor'],
+          feedsInto: [],
+          related: ['copper-demand', 'china-refining'],
+          entities: ['drc', 'china'],
+          tags: ['decarbonisation', 'alliances'],
+          timeframe: 'now',
+          sources: [SOURCE_AFRIPOLI_DRC, SOURCE_ISS_FUTURES],
+        },
+        {
+          slug: 'country-egypt',
+          title: 'Egypt — early-dividend, water-stressed, Suez-dependent',
+          bluf: 'Egypt entered the demographic-dividend window pre-2010 — but the economic gain has been throttled by sovereign-debt distress, IMF programme dependence, and a structurally over-leveraged state economy.',
+          body:
+            'Population ~115 M (2025). Already in the demographic dividend window. Biggest external dependence: Suez Canal revenue (~$10 bn/yr pre-Houthi disruption, ~50% drop through 2024-2025), wheat imports (Russia + Ukraine), Gulf rescue financing (Saudi, UAE, Qatar). Biggest internal challenge: state economic over-reach and a military-owned business sector that crowds out private investment. ' +
+            'Climate exposure: Alexandria is on the IPCC named-city list. Nile water — the GERD upstream — is the multi-decade strategic challenge. ' +
+            '2035 trajectory: chronically vulnerable to external shock, but a regional pivot via the new bloc (Türkiye-Qatar-Iran restraining-the-West formation). Watch IMF Article IV cycles for reform credibility.',
+          confidence: 'MED',
+          lastVerified: '2026-06-10',
+          dependsOn: ['africa-dividend-window'],
+          feedsInto: [],
+          related: ['hormuz-vs-redsea', 'allies-of-circumstance'],
+          entities: ['egypt', 'imf', 'gulf-states'],
+          tags: ['climate', 'alliances'],
+          timeframe: 'now',
+          sources: [SOURCE_ISS_FUTURES, SOURCE_IPCC_AR6_WG2_AFRICA],
+        },
+      ],
+    },
+    {
       slug: 'africa-climate',
       title: 'Climate exposure and the adaptation gap',
-      number: 3,
+      number: 4,
       pages: [
         {
           slug: 'africa-migrants',
@@ -1562,9 +1623,88 @@ const MIDDLE_EAST_PROGRAM: Program = {
       ],
     },
     {
+      slug: 'me-countries',
+      title: 'Country briefs',
+      number: 3,
+      pages: [
+        {
+          slug: 'country-saudi-arabia',
+          title: 'Saudi Arabia — MBS, Vision 2030, the oil-vs-renewables hedge',
+          bluf: "The Gulf hegemon, world's top oil exporter, $700 bn+ Public Investment Fund. Vision 2030 is the bet that NEOM + sport + AI + tourism outrun the oil decline.",
+          body:
+            'Ruler: Crown Prince and Prime Minister Mohammed bin Salman, de facto since 2017. Population ~33 M. Top exports: crude (~70%+), refined products, petrochemicals. Top imports: machinery, vehicles, food. Key alliance: residual US framework + China-mediated 2023 restoration with Iran + selective normalisation hedging with Israel. ' +
+            'Biggest external dependence: oil price > $80/bbl for the budget breakeven; declining as Vision 2030 diversifies, but still binding through 2030. Biggest internal weakness: succession fragility (single decision-maker) and the gap between Vision 2030 announcements and verified delivery (NEOM, The Line). ' +
+            '2035 trajectory: declining single-source dependence on oil, growing diplomatic optionality, structural Gulf-wide air-defence cost trap (see Epic Fury page).',
+          confidence: 'HIGH',
+          lastVerified: '2026-06-10',
+          dependsOn: ['allies-of-circumstance'],
+          feedsInto: [],
+          related: ['gulf-lng-glut', 'peak-oil-demand'],
+          entities: ['saudi-arabia', 'mbs', 'pif', 'neom'],
+          tags: ['alliances', 'energy-transition'],
+          timeframe: 'now',
+          sources: [SOURCE_CARNEGIE_DIWAN, SOURCE_IEA_WEO],
+        },
+        {
+          slug: 'country-iran',
+          title: 'Iran — post-Khamenei, sanctioned, retaliatory capacity proven',
+          bluf: 'Operation Epic Fury (28 Feb 2026) killed Supreme Leader Ali Khamenei. The regime endured. Iran demonstrated retaliatory capacity across seven Gulf states in 48 hours.',
+          body:
+            'Governance: contested transition post-Khamenei; the IRGC is the dominant institution. Population ~89 M. Top exports: crude (~3 mb/d in the "shadow" trade to China), petrochemicals, condensates. Top imports: refined fuels, machinery, food. Key alliances: Russia (20-year Comprehensive Strategic Partnership Treaty Jan 2025), China (asymmetric — strategic but not urgent for Beijing), restraining-the-West bloc with Türkiye-Qatar-Egypt. ' +
+            'Biggest external dependence: Chinese crude offtake (single-buyer concentration). Biggest internal weakness: currency collapse, generational distrust of the regime, succession fragility. ' +
+            '2035 trajectory: degraded proxy network, intact retaliatory capacity against Gulf, increasingly dependent on China. Watch nuclear-restart signals.',
+          confidence: 'HIGH',
+          lastVerified: '2026-06-10',
+          dependsOn: ['epic-fury-2026'],
+          feedsInto: [],
+          related: ['russia-iran', 'china-asymmetric', 'epic-fury'],
+          entities: ['iran', 'khamenei', 'irgc-navy', 'china'],
+          tags: ['alliances', 'iran-axis', 'chokepoint'],
+          timeframe: 'now',
+          sources: [SOURCE_CARNEGIE_DIWAN, SOURCE_CSIS_RU_IR],
+        },
+        {
+          slug: 'country-uae',
+          title: 'UAE — port empire, tech hedge, Iran-exposed',
+          bluf: "The Gulf's most globalised state. Trade re-export hub, Masdar 100 GW by 2030, soft-power via DP World and Edge Group. Iranian retaliation in Feb 2026 exposed how close the threat sits.",
+          body:
+            'Ruler: President Mohamed bin Zayed (MBZ). Population ~10 M (90% expatriate). Top exports: re-exports, crude, aluminium, gold. Top imports: machinery, food, textiles. Key alliances: US framework + Abraham Accords with Israel + new "circumstance" bloc proximity + China-tech hedging. ' +
+            "Biggest external dependence: trade-flow stability — Dubai's re-export model collapses if Hormuz / Bab el-Mandeb fall. Biggest internal weakness: 90% expatriate population is structurally non-citizen; ruler-dependent succession; Iranian missile/drone range covers all infrastructure. " +
+            '2035 trajectory: hedged, diversified, exposed. Watch Masdar global expansion + ADNOC IPO follow-through + the speed of Saudi competitive convergence.',
+          confidence: 'HIGH',
+          lastVerified: '2026-06-10',
+          dependsOn: ['epic-fury-2026'],
+          feedsInto: [],
+          related: ['gulf-lng-glut'],
+          entities: ['uae', 'mbz', 'dp-world', 'masdar', 'adnoc'],
+          tags: ['alliances', 'energy-transition', 'chokepoint'],
+          timeframe: 'now',
+          sources: [SOURCE_CARNEGIE_SHOCKWAVES, SOURCE_IEA_WEO],
+        },
+        {
+          slug: 'country-turkiye',
+          title: 'Türkiye — drone diplomacy, NATO-tense, "circumstance" pivot',
+          bluf: 'NATO member, but increasingly transactional with the US. Drone export power. Central to the new "allies of circumstance" bloc restraining a US-supported Israel.',
+          body:
+            'Ruler: Recep Tayyip Erdoğan, in his last constitutional term (succession 2028). Population ~85 M. Top exports: vehicles, machinery, textiles, defence (drones). Top imports: energy, machinery, gold. Key alliances: NATO formally; "circumstance" bloc with Qatar-Egypt-Iran-Pakistan; transactional with Russia (S-400, gas); BRICS application pending. ' +
+            'Biggest external dependence: energy imports (Russia + Iran + Azerbaijan), refugee load (~3.5 M Syrians, gradually returning post-Assad), currency stability. Biggest internal weakness: lira credibility, succession transition, Kurdish question. ' +
+            '2035 trajectory: more independent from the US, more central to Middle Eastern diplomacy, more present in Africa (drones). Watch the 2028 succession.',
+          confidence: 'HIGH',
+          lastVerified: '2026-06-10',
+          dependsOn: ['allies-of-circumstance'],
+          feedsInto: [],
+          related: ['schrodinger-nato'],
+          entities: ['turkey', 'erdogan', 'nato', 'qatar', 'russia'],
+          tags: ['alliances'],
+          timeframe: 'now',
+          sources: [SOURCE_CARNEGIE_DIWAN, SOURCE_IISS_QUADRILATERAL],
+        },
+      ],
+    },
+    {
       slug: 'me-energy',
       title: 'Energy through 2030',
-      number: 3,
+      number: 4,
       pages: [
         {
           slug: 'gulf-lng-glut',
