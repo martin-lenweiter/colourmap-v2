@@ -15,6 +15,7 @@ export default function GeopoliticsWorldPage() {
       onOpenIntel={() => router.push('/education/world/intel')}
       onOpenMap={() => router.push('/education/world/map')}
       onOpenGraph={() => router.push('/education/world/graph')}
+      onOpenSources={() => router.push('/education/world/sources')}
       initialPageSlug={initialPageSlug}
     />
   );
