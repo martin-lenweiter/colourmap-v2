@@ -371,6 +371,102 @@ const SOURCE_IEA_CM_OUTLOOK: Source = {
   quality: 'primary',
 };
 
+// AFRICA sources
+const SOURCE_UNECA_DEMOG: Source = {
+  ref: 50,
+  title: "UNECA — Africa's population crosses 1.5 billion (demographic window)",
+  url: 'https://www.uneca.org/stories/(blog)-as-africa%E2%80%99s-population-crosses-1.5-billion,-the-demographic-window-is-opening-getting',
+  date: '2025',
+  quality: 'primary',
+};
+const SOURCE_ISS_FUTURES: Source = {
+  ref: 51,
+  title: 'ISS African Futures — Demographic Dividend thematic guide',
+  url: 'https://futures.issafrica.org/thematic/guide.pdf?thematic=03-demographic-dividend',
+  date: '2026-03',
+  quality: 'primary',
+};
+const SOURCE_AFRIPOLI_DRC: Source = {
+  ref: 52,
+  title:
+    "AfriPoli — Navigating critical mineral supply chains: EU's partnerships with the DRC and Zambia",
+  url: 'https://afripoli.org/navigating-critical-mineral-supply-chains-the-eus-partnerships-with-the-drc-and-zambia',
+  date: '2024',
+  quality: 'primary',
+};
+const SOURCE_IPCC_AR6_WG2_AFRICA: Source = {
+  ref: 53,
+  title: 'IPCC AR6 WG2 Chapter 9 — Africa',
+  url: 'https://www.ipcc.ch/report/ar6/wg2/chapter/chapter-9/',
+  date: '2022',
+  quality: 'primary',
+};
+const SOURCE_GCA_ADAPT_2023: Source = {
+  ref: 54,
+  title: 'Global Center on Adaptation — State and Trends in Climate Adaptation Finance 2023',
+  url: 'https://gca.org/wp-content/uploads/2023/12/State-and-Trends-in-Climate-Adaptation-Finance-2023_WEB.pdf',
+  date: '2023-12',
+  quality: 'primary',
+};
+const SOURCE_ISS_AES: Source = {
+  ref: 55,
+  title: 'ISS Africa — Will the AES Unified Force succeed where the G5 Sahel failed?',
+  url: 'https://issafrica.org/iss-today/will-the-aes-unified-force-succeed-where-the-g5-sahel-failed',
+  date: '2026-02',
+  quality: 'primary',
+};
+const SOURCE_CHATHAM_FOCAC: Source = {
+  ref: 56,
+  title: 'Chatham House — China-Africa summit: why the continent has more options than ever',
+  url: 'https://www.chathamhouse.org/2024/09/china-africa-summit-why-continent-has-more-options-ever',
+  date: '2024-09',
+  quality: 'primary',
+};
+const SOURCE_BU_GDP_FOCAC: Source = {
+  ref: 57,
+  title: 'Boston University GDP Center — Back in action: the Ninth FOCAC',
+  url: 'https://www.bu.edu/gdp/2024/10/15/back-in-action-the-ninth-forum-on-china-africa-cooperation-sees-renewed-relations-and-development-prospects/',
+  date: '2024-10',
+  quality: 'primary',
+};
+
+// MIDDLE EAST sources
+const SOURCE_CARNEGIE_DIWAN: Source = {
+  ref: 60,
+  title: 'Carnegie Middle East — The Iran crisis in a new geopolitical moment',
+  url: 'https://carnegieendowment.org/middle-east/diwan/2026/02/the-iran-crisis-in-a-new-geopolitical-moment',
+  date: '2026-02',
+  quality: 'primary',
+};
+const SOURCE_CARNEGIE_SHOCKWAVES: Source = {
+  ref: 61,
+  title: 'Carnegie Middle East — Shockwaves across the Gulf',
+  url: 'https://carnegieendowment.org/middle-east/diwan/2026/03/shockwaves-across-the-gulf',
+  date: '2026-03',
+  quality: 'primary',
+};
+const SOURCE_CRS_IRAN_STRIKES: Source = {
+  ref: 62,
+  title: 'Congressional Research Service — U.S. Strikes on Nuclear Sites in Iran (IN12571)',
+  url: 'https://crsreports.congress.gov/',
+  date: '2025-06',
+  quality: 'primary',
+};
+const SOURCE_IISS_QUADRILATERAL: Source = {
+  ref: 63,
+  title: 'IISS — A new Middle Eastern quadrilateral is taking shape',
+  url: 'https://www.iiss.org/',
+  date: '2026-05',
+  quality: 'primary',
+};
+const SOURCE_UNSC_SYRIA: Source = {
+  ref: 64,
+  title: 'UNSC delisting of al-Sharaa & Khattab (14-0, China abstaining)',
+  url: 'https://www.un.org/securitycouncil/',
+  date: '2025-11',
+  quality: 'primary',
+};
+
 const HORMUZ_BRIEFING: Program = {
   slug: 'hormuz-briefing',
   title: 'Hormuz Crisis Briefing',
@@ -1215,6 +1311,284 @@ const CRITICAL_MATERIALS_PROGRAM: Program = {
   ],
 };
 
+const AFRICA_PROGRAM: Program = {
+  slug: 'africa-program',
+  title: 'Africa to 2050',
+  blurb:
+    'Demographic dividend, resource nationalism, climate exposure, the new scramble. A continent at the centre of every 2050 story.',
+  durationMinutes: 75,
+  chapters: [
+    {
+      slug: 'africa-demographics',
+      title: 'The demographic foundation',
+      number: 1,
+      pages: [
+        {
+          slug: 'africa-2-5b',
+          title: 'Africa adds a billion people by 2050',
+          bluf: "Africa's population reaches ~2.5 billion by 2050 — a 63% increase on 2024, lifting Africa's share of humanity from 10% in 1960 to 28% in 2050.",
+          body:
+            'UNECA, drawing on UN WPP 2024, gives the headline trajectory verbatim: +950 M to 2.5 B by 2050, ~3.85 B by 2100. ISS African Futures (IFs v8.55, March 2026) corroborates and adds that **five of the eight countries driving more than half of global population growth to 2050 are African**: DRC, Egypt, Ethiopia, Nigeria, Tanzania. ' +
+            "The working-age cohort nearly doubles from 883 M (2024) to 1.6 B (2050) — about 25% of the global working-age pool. ISS projects Africa's 15-64 cohort exceeds India's *and* China's combined by 2040 under the IFs current-path scenario. " +
+            'This is the single most important fact about the 21st-century world.',
+          confidence: 'HIGH',
+          lastVerified: '2026-06-10',
+          dependsOn: [],
+          feedsInto: ['africa-dividend-window', 'lobito-corridor'],
+          related: ['population-peak'],
+          entities: ['un-desa', 'uneca', 'iss-african-futures', 'nigeria', 'drc'],
+          tags: ['climate'],
+          timeframe: 'long-arc',
+          sources: [SOURCE_UNECA_DEMOG, SOURCE_ISS_FUTURES, SOURCE_UN_WPP],
+        },
+        {
+          slug: 'africa-dividend-window',
+          title: 'Only 11 African countries had entered the dividend window by 2025',
+          bluf: 'ISS African Futures: 11 countries already in the demographic-dividend window (working-age:dependants ≥1.7:1). 33 are projected to enter by 2050. Central Africa not until 2062.',
+          body:
+            'The 11 countries already in the window (2025): Mauritius, Seychelles, Cabo Verde, Libya, South Africa, Tunisia, Morocco, Djibouti, Botswana, Algeria, Egypt. North Africa crossed in 2005; Southern Africa around 2046; East Africa 2048; West Africa 2055; **Central Africa not until 2062**. ' +
+            "Nigeria — projected to become the world's third-largest country around 2044 — does not cross the dividend ratio until ~2058 and peaks at only 2:1 around 2092, far later than China (2010-15) or India captured theirs. " +
+            'The dividend is a *potential* structural window, not a guaranteed economic outcome. Realisation depends on literacy gains, urbanisation, formalisation, and stability policy.',
+          confidence: 'HIGH',
+          lastVerified: '2026-06-10',
+          dependsOn: ['africa-2-5b'],
+          feedsInto: ['lobito-corridor', 'aes-unified-force'],
+          related: [],
+          entities: ['iss-african-futures', 'nigeria'],
+          tags: ['climate'],
+          timeframe: 'long-arc',
+          sources: [SOURCE_ISS_FUTURES],
+        },
+      ],
+    },
+    {
+      slug: 'africa-resources',
+      title: 'Resources, alliances, the new scramble',
+      number: 2,
+      pages: [
+        {
+          slug: 'lobito-corridor',
+          title: 'The Lobito Corridor: an EU-US-Africa bet on critical minerals',
+          bluf: 'On 26 October 2023, the EU signed two CRMA strategic-partnership MoUs (DRC, Zambia) plus a trilateral-plus Lobito Corridor MoU (US, EU, Angola, DRC, Zambia, AfDB, AFC) — a single coordinated Western bet on African critical-mineral routing.',
+          body:
+            "DRC supplies ~70-76% of global cobalt and is the world's #2 copper producer (3.3 Mt in 2024, behind Chile). Zambia is Africa's #2 copper producer (~820 kt, world #7-8). Together they sit at the spine of the energy transition. " +
+            'The October 2023 Global Gateway Forum locked in five cooperation areas: sustainable value chains, infrastructure funding, sustainable production standards, R&I, and capacity building. AFC was appointed lead developer for the Lobito Transport Corridor (Angola-DRC-Zambia rail to Atlantic). ' +
+            "This is the cleanest example of how the EU's Critical Raw Materials Act translates into actual diplomacy. China's BRI mineral footprint remains larger in stock terms — but the Lobito play targets the *new* flow.",
+          confidence: 'HIGH',
+          lastVerified: '2026-06-10',
+          dependsOn: ['africa-2-5b'],
+          feedsInto: ['focac-2024'],
+          related: ['eu-crma', 'copper-demand', 'china-refining'],
+          entities: ['european-commission', 'us-government', 'drc', 'zambia', 'angola', 'afc'],
+          tags: ['decarbonisation', 'alliances'],
+          timeframe: 'now',
+          sources: [SOURCE_AFRIPOLI_DRC, SOURCE_EU_CRMA],
+        },
+        {
+          slug: 'aes-unified-force',
+          title: "AES Unified Force: the Sahel's new security pact, with Russia",
+          bluf: "The Alliance of Sahel States (Mali, Burkina Faso, Niger) launched a 6,000-strong Unified Force in December 2025 in Niamey. Russia's Africa Corps is the preferred partner.",
+          body:
+            'ISS frames the AES Unified Force as the *third* attempt at joint Sahel security after the 2017 Liptako-Gourma JTF and the G5 Sahel Joint Force, which collapsed when Mali (May 2022), Burkina Faso and Niger (late 2023) withdrew. Chad and Mauritania formally dissolved G5 Sahel on 6 December 2023. ' +
+            "**Russia's Africa Corps** (Wagner successor) is the AES's preferred security partner, with combat engagement in Mali but training-only roles in Burkina Faso and Niger. The AES is diversifying procurement across Russia, Turkey, Iran and China — a deliberate reduction of single-power dependence. " +
+            "This is the cleanest example of France's loss of Sahel influence and the multi-aligned posture replacing it.",
+          confidence: 'HIGH',
+          lastVerified: '2026-06-10',
+          dependsOn: ['africa-dividend-window'],
+          feedsInto: ['focac-2024'],
+          related: ['russia-iran'],
+          entities: ['aes', 'russia', 'wagner', 'mali', 'burkina-faso', 'niger', 'france'],
+          tags: ['alliances'],
+          timeframe: 'now',
+          sources: [SOURCE_ISS_AES],
+        },
+        {
+          slug: 'focac-2024',
+          title: "China's $50bn pledge — and the debt-trap myth",
+          bluf: 'FOCAC 9 (Beijing, 4-6 September 2024) produced a Chinese pledge of $50.7-51.32 bn over three years. Yet Chinese lenders hold only ~12% of African external debt — less than multilateral creditors or private creditors.',
+          body:
+            '**The pledge:** $50.7 bn over three years — broken down as RMB 210 bn (~$29.6 bn) credit lines + RMB 80 bn (~$11.8 bn) development assistance + RMB 70 bn (~$9.87 bn) Chinese-firm investment + $50 m to a China-World Bank fund. China explicitly *declined* broad-based debt relief despite African requests. ' +
+            "**The debt-trap reality check** (Chatham House, BU GDP Center): Chinese lenders hold ~12% of African external debt — versus multilateral creditors at ~35% and private creditors at ~42%. Chinese lending to Africa fell from a $28.8 bn 2016 peak to ~$2.1 bn across six projects in 2024. The pivot is to 1,000 'small and beautiful' projects + zero-tariff access for African LDCs + only 30 connectivity infrastructure projects in the 2025-2027 plan. " +
+            "China remains a major player. The dramatic 'debt-trap' framing does not survive contact with the data.",
+          confidence: 'HIGH',
+          lastVerified: '2026-06-10',
+          dependsOn: ['lobito-corridor'],
+          feedsInto: [],
+          related: ['china-asymmetric'],
+          entities: ['china', 'focac', 'au', 'chatham-house', 'bu-gdp'],
+          tags: ['alliances', 'decarbonisation'],
+          timeframe: 'this-decade',
+          sources: [SOURCE_CHATHAM_FOCAC, SOURCE_BU_GDP_FOCAC],
+        },
+      ],
+    },
+    {
+      slug: 'africa-climate',
+      title: 'Climate exposure and the adaptation gap',
+      number: 3,
+      pages: [
+        {
+          slug: 'africa-migrants',
+          title: 'Up to 86 million internal climate migrants by 2050',
+          bluf: 'IPCC AR6 WG2: 17-40 M internal climate migrants in sub-Saharan Africa by 2050 at 1.7 °C warming, rising to 56-86 M at 2.5 °C. More than 60% concentrated in West Africa.',
+          body:
+            'IPCC AR6 WG2 Chapter 9 (Africa) Executive Summary gives the figures verbatim. The drivers are water stress, reduced crop productivity, and sea-level rise. ' +
+            'Sea-level exposure: 108-116 M Africans by 2030, rising to **190-245 M by 2060** — up from 54 M in 2000. Lagos, Cotonou, Dakar and Alexandria are the headline coastal exposures. ' +
+            'These are *lower-bound* figures: AR6 explicitly excludes rapid-onset hazards like floods and cyclones, which add to the trajectory. AR7 will likely revise upward.',
+          confidence: 'HIGH',
+          lastVerified: '2026-06-10',
+          dependsOn: ['africa-2-5b'],
+          feedsInto: ['africa-adaptation-gap'],
+          related: ['co2-budget-contested'],
+          entities: ['ipcc', 'lagos', 'alexandria', 'dakar', 'cotonou'],
+          tags: ['climate'],
+          timeframe: 'long-arc',
+          sources: [SOURCE_IPCC_AR6_WG2_AFRICA],
+        },
+        {
+          slug: 'africa-adaptation-gap',
+          title: 'Africa needs $53bn/year for adaptation. It receives $13bn.',
+          bluf: 'Africa needs ~$53 bn/year for climate adaptation (2020-2035 NDCs). It receives ~$13 bn — about a quarter of stated need and only 20% of global adaptation flows, versus ~45% to East Asia and Pacific.',
+          body:
+            "Global Center on Adaptation / CPI 'State and Trends in Climate Adaptation Finance 2023' is the canonical source. African NDCs themselves may understate the need by up to 100% — so the true gap could be $1.6 trillion cumulatively, more than 8× the $195 bn projected at current trajectories. " +
+            "Globally, UNEP Adaptation Gap Report 2025 ('Running on Empty') puts developing-country adaptation need at >$310 bn/year by 2035; the COP29 Baku-to-Belem Roadmap targets $1.3 trillion/year in total climate finance from public and private sources by 2035, with UN authors urging grants over loans to avoid deepening debt. " +
+            'Three structural facts the 2050 reader needs to know: the funding gap is huge, the trajectory has been *worsening* not closing, and most adaptation finance arrives as debt — not grants.',
+          confidence: 'HIGH',
+          lastVerified: '2026-06-10',
+          dependsOn: ['africa-migrants'],
+          feedsInto: [],
+          related: ['co2-budget-contested'],
+          entities: ['gca', 'unep', 'cop29'],
+          tags: ['climate', 'alliances'],
+          timeframe: 'this-decade',
+          sources: [SOURCE_GCA_ADAPT_2023, SOURCE_IPCC_AR6_WG2_AFRICA],
+        },
+      ],
+    },
+  ],
+};
+
+const MIDDLE_EAST_PROGRAM: Program = {
+  slug: 'middle-east-program',
+  title: 'The Middle East to 2035',
+  blurb:
+    'Post-Khamenei Iran, post-Assad Syria, post-Gaza Israel, post-oil Gulf. The hinge years and the new bloc forming.',
+  durationMinutes: 70,
+  chapters: [
+    {
+      slug: 'me-hinge',
+      title: 'The hinge years, 2024-2026',
+      number: 1,
+      pages: [
+        {
+          slug: 'assad-falls',
+          title: '8 December 2024: Assad falls. The arc breaks.',
+          bluf: 'HTS removed Bashar al-Assad on 8 December 2024 — collapsing the Tehran-Baghdad-Damascus-Beirut "arc of resistance" overnight, and rewiring every Middle Eastern alliance calculation.',
+          body:
+            "The Assad regime's collapse was the single most consequential event of the 2024-2026 Middle East period. It eliminated Iran's land bridge to Hezbollah, removed the Russian strategic anchor in Latakia/Tartus, opened Syria to Turkish and Gulf influence, and produced a transitional HTS-led government under Ahmad al-Sharaa. " +
+            'By May 2025, ~$15 bn of US sanctions on Syria had been lifted. The US de-proscribed HTS in July 2025; the UK followed in October 2025. On 6 November 2025, the UNSC delisted al-Sharaa and Khattab by 14-0 (China abstaining). ' +
+            "The post-Assad transition is a fragile success. The 'arc of resistance' framing is functionally dead.",
+          confidence: 'HIGH',
+          lastVerified: '2026-06-10',
+          dependsOn: [],
+          feedsInto: ['epic-fury-2026', 'allies-of-circumstance'],
+          related: ['axis-of-resistance-collapse'],
+          entities: ['syria', 'hts', 'al-sharaa', 'iran', 'russia'],
+          tags: ['alliances'],
+          timeframe: 'now',
+          sources: [SOURCE_UNSC_SYRIA, SOURCE_CARNEGIE_DIWAN],
+        },
+        {
+          slug: 'midnight-hammer',
+          title: '22 June 2025: Operation Midnight Hammer',
+          bluf: "The US struck Iran's nuclear sites on 22 June 2025 — 14 GBU-57 MOPs from B-2s on Fordow, Natanz, Isfahan, plus submarine-launched Tomahawks. Iran's nuclear programme was set back, not eliminated.",
+          body:
+            'Operation Midnight Hammer was the largest US combat use of the GBU-57 Massive Ordnance Penetrator. Targets: Fordow, Natanz, Isfahan. The strikes coincided with Israeli operations against Iranian air-defence and missile sites. ' +
+            "Damage assessments (CFR, Cambridge AJIL, CRS IN12571) converged on a 1-2 year setback for centrifuge enrichment but stopped short of declaring the programme destroyed. Iran's retained nuclear infrastructure was substantial. " +
+            'Midnight Hammer set the stage for Operation Epic Fury in February 2026 — and for the Iranian retaliation that swept seven Gulf states.',
+          confidence: 'HIGH',
+          lastVerified: '2026-06-10',
+          dependsOn: ['assad-falls'],
+          feedsInto: ['epic-fury-2026'],
+          related: ['epic-fury'],
+          entities: ['us-government', 'iran', 'israel'],
+          tags: ['alliances', 'chokepoint'],
+          timeframe: 'now',
+          sources: [SOURCE_CRS_IRAN_STRIKES, SOURCE_CARNEGIE_DIWAN],
+        },
+        {
+          slug: 'epic-fury-2026',
+          title: 'The 48 hours that exposed the Gulf air-defence cost trap',
+          bluf: "Iran's February 2026 retaliation against seven Gulf states fired >400 ballistic missiles and ~1,000 drones in 48 hours. GCC interception was ~90% — but the cost ratio is unsustainable.",
+          body:
+            'The 28 February 2026 US-Israeli strike (Operation Epic Fury) — already covered in the Hormuz Crisis briefing — triggered an Iranian retaliation across Bahrain, Jordan, Kuwait, Qatar, Saudi Arabia, UAE and Iraq. The UAE alone engaged 537 ballistic missiles, 26 cruise missiles and 2,256 drones; 35 drones penetrated defences. ' +
+            'Interception worked — ~90% on ballistic missiles, ~85% on drones — but the **cost asymmetry** is the strategic lesson: Patriot interceptors run $4-5 M each (typically two per incoming) versus Shahed drones at $20-50 K. The cost ratio is 100-200×. ' +
+            "Carnegie verbatim: 'By targeting multiple locations in the Gulf, Iran signaled that it was willing to bring the confrontation closer to the region's core economic and political centers.' This is why Saudi Arabia, UAE, Kuwait and Qatar are reassessing the US defence framework.",
+          confidence: 'HIGH',
+          lastVerified: '2026-06-10',
+          dependsOn: ['midnight-hammer'],
+          feedsInto: ['allies-of-circumstance'],
+          related: ['epic-fury'],
+          entities: ['iran', 'uae', 'saudi-arabia', 'qatar', 'kuwait'],
+          tags: ['alliances', 'chokepoint'],
+          timeframe: 'now',
+          sources: [SOURCE_CARNEGIE_SHOCKWAVES, SOURCE_CARNEGIE_DIWAN],
+        },
+      ],
+    },
+    {
+      slug: 'me-new-bloc',
+      title: 'The new bloc forming',
+      number: 2,
+      pages: [
+        {
+          slug: 'allies-of-circumstance',
+          title: 'Türkiye, Egypt, Qatar, Iran, Pakistan: allies of circumstance',
+          bluf: 'Carnegie (2 Feb 2026): a pragmatic bloc of Türkiye, Egypt, Qatar, Iran and (loosely) Pakistan emerged in 2025-2026 to restrain a US-supported Israel. Not a formal alliance. A shared restraining function.',
+          body:
+            "Carnegie's Michael Young documents the bloc taking shape through 2025-2026: 'Türkiye and Qatar, with the collaboration of Russia and Egypt, had managed to delay a U.S. attack against Iran' via a framework covering nuclear, missile, regional and hydrocarbon issues — through a Trump-Pezeshkian / Witkoff-Araghchi negotiating track that collapsed on 28 February 2026. " +
+            "IISS describes an overlapping 'quadrilateral' of Türkiye-Pakistan-Saudi Arabia-Egypt with Qatar 'in the fold'. The Saudi presence is notable — Riyadh hedges. " +
+            'The bloc is not anti-Western. It is restraining-Western. It is what a multipolar Middle East looks like when no single external power can deliver a unilateral outcome.',
+          confidence: 'HIGH',
+          lastVerified: '2026-06-10',
+          dependsOn: ['epic-fury-2026'],
+          feedsInto: ['gulf-lng-glut'],
+          related: ['china-asymmetric'],
+          entities: ['turkey', 'egypt', 'qatar', 'iran', 'pakistan', 'russia'],
+          tags: ['alliances'],
+          timeframe: 'now',
+          sources: [SOURCE_CARNEGIE_DIWAN, SOURCE_IISS_QUADRILATERAL],
+        },
+      ],
+    },
+    {
+      slug: 'me-energy',
+      title: 'Energy through 2030',
+      number: 3,
+      pages: [
+        {
+          slug: 'gulf-lng-glut',
+          title: 'The 2028-2030 LNG glut and the Gulf budget squeeze',
+          bluf: 'A ~360 bcm/year LNG capacity wave hits 2028-2030 — about 50% growth on 2024 trade. Qatar is adding 88 bcm/year, largely uncontracted. Gulf budgets are structurally exposed.',
+          body:
+            "QatarEnergy's North Field expansion is the headline addition. US Gulf-Coast LNG (Plaquemines, Corpus Christi, Rio Grande) plus Mozambique restarts plus Russian sanction-evading flows add the rest. The 2028-2030 window is when supply outpaces demand growth even in IEA STEPS. " +
+            "Spot LNG prices are likely to compress. Long-term contract prices follow with a 1-2 year lag. Gulf state budgets — especially Qatar's — depend on these prices being above breakeven. " +
+            'Pair this with the renewables hedge: NEOM Green Hydrogen targets 600 t/day by end-2026; Masdar (UAE) targets 100 GW renewable capacity by 2030. These are real bets, not just press releases. But they do not close the budget gap if oil and LNG prices drop.',
+          confidence: 'MED',
+          lastVerified: '2026-06-10',
+          dependsOn: ['epic-fury-2026'],
+          feedsInto: [],
+          related: ['peak-oil-demand'],
+          entities: ['qatar', 'saudi-arabia', 'uae', 'neom', 'masdar'],
+          tags: ['energy-transition', 'alliances'],
+          timeframe: 'this-decade',
+          sources: [SOURCE_CARNEGIE_SHOCKWAVES, SOURCE_IEA_WEO],
+        },
+      ],
+    },
+  ],
+};
+
 export const GEOPOLITICS_CATEGORIES: Category[] = [
   {
     slug: 'hormuz-crisis',
@@ -1261,15 +1635,7 @@ export const GEOPOLITICS_CATEGORIES: Category[] = [
     tier: 'now',
     blurb:
       'Post-Khamenei Iran, post-Assad Syria, post-Gaza Israel, post-oil Gulf. New alliances, current conflicts, country-by-country.',
-    programs: [
-      {
-        slug: 'middle-east-program',
-        title: 'The Middle East to 2035',
-        blurb: 'Cited research landing — placeholder while the workflow runs.',
-        durationMinutes: 75,
-        chapters: [],
-      },
-    ],
+    programs: [MIDDLE_EAST_PROGRAM],
   },
   {
     slug: 'africa',
@@ -1277,15 +1643,7 @@ export const GEOPOLITICS_CATEGORIES: Category[] = [
     tier: 'horizon',
     blurb:
       'Demographic dividend, resource nationalism, climate exposure, the new scramble. One billion more people by 2050, half the answers still open.',
-    programs: [
-      {
-        slug: 'africa-program',
-        title: 'Africa to 2050',
-        blurb: 'Cited research landing — placeholder while the workflow runs.',
-        durationMinutes: 75,
-        chapters: [],
-      },
-    ],
+    programs: [AFRICA_PROGRAM],
   },
 ];
 
