@@ -482,12 +482,11 @@ const HORMUZ_BRIEFING: Program = {
         {
           slug: 'hormuz-geography',
           title: 'Hormuz is a 21-mile pinch between Iran and Oman',
-          bluf: 'The Strait of Hormuz is the only sea passage between the Persian Gulf and open ocean. At its narrowest it is about 21 nautical miles wide.',
+          bluf: 'Picture the Persian Gulf as a swimming pool. Hormuz is the door. About 21 nautical miles wide at the narrowest — and Iran sits on one side of it.',
           body:
-            'The Strait of Hormuz connects the Persian Gulf to the Gulf of Oman and from there to the Arabian Sea. ' +
-            'It is bordered by Iran to the north and Oman (the Musandam peninsula) to the south. ' +
-            'Inbound and outbound shipping lanes are separated by a 2-mile median, with a 2-mile-wide traffic separation scheme on each side. ' +
-            "Vessels transiting in either direction pass within range of Iran's southern coast — that geography is the source of every other fact in this chapter.",
+            'The Strait connects the Gulf (where most of the oil is) to the Gulf of Oman, and from there to the open Arabian Sea. Iran owns the north shore. Oman owns the south — a thumb of land called the Musandam peninsula. ' +
+            'Tankers transit in one of two lanes about two miles wide each, separated by a two-mile median. Every ship that passes does so within easy missile, drone, and fast-boat range of the Iranian coast. ' +
+            'That geographic fact is the source of every other fact in this chapter. The rest is just consequences.',
           confidence: 'HIGH',
           lastVerified: '2026-06-04',
           dependsOn: [],
@@ -499,12 +498,11 @@ const HORMUZ_BRIEFING: Program = {
         {
           slug: 'hormuz-oil-share',
           title: '~20% of global oil moves through Hormuz',
-          bluf: 'About 20 million barrels per day transit the Strait — roughly one in five barrels consumed globally.',
+          bluf: 'Every fifth barrel of oil the world consumes passes through Hormuz. About 20 million barrels a day.',
           body:
-            'EIA estimates put Hormuz throughput at ~20.9 million barrels per day in the first half of 2025 — about 20% of global oil supply, plus a substantial share of LNG. ' +
-            'The Strait is predominantly a tanker chokepoint: crude oil from Saudi Arabia, the UAE, Iraq, Kuwait, Qatar, and Iran moves westward; LNG from Qatar moves to Europe and Asia. ' +
-            'Container traffic through Hormuz is comparatively small — this is the critical framing distinction. ' +
-            'When the news says "Hormuz", it means oil; when it says "Red Sea" or "Bab el-Mandeb", it means containers.',
+            'The EIA pegs Hormuz throughput at ~20.9 mb/d in the first half of 2025 — roughly 20% of global oil supply, plus a chunky share of LNG. ' +
+            'It is overwhelmingly a tanker road, not a container road. Saudi, UAE, Iraqi, Kuwaiti, Qatari and Iranian crude moves out westbound. Qatari LNG moves out toward Europe and Asia. Container ships pass through too, but they are a footnote. ' +
+            "So a quick rule: when the news says 'Hormuz', think oil. When it says 'Red Sea' or 'Bab el-Mandeb', think containers. Confusing the two is the most common Hormuz mistake.",
           confidence: 'HIGH',
           lastVerified: '2026-06-04',
           dependsOn: ['hormuz-geography'],
@@ -757,7 +755,7 @@ const SHIPPING_BIG_NINE: Program = {
         {
           slug: 'top-3',
           title: 'Top 3 carriers control nearly half of global capacity',
-          bluf: 'MSC, Maersk, and CMA CGM together hold roughly 46% of global container fleet capacity.',
+          bluf: "Three boxes carry half the world's containers. MSC (Geneva), Maersk (Copenhagen), CMA CGM (Marseille). About 46% of capacity, between them.",
           body:
             'As of January 2026 (Alphaliner): MSC at 7.136 M TEU (+13.2% YoY), Maersk at 4.612 M TEU, CMA CGM at 4.140 M TEU. ' +
             'The three together are about 46% of global capacity. The top 10 collectively control ~84%. ' +
@@ -1326,7 +1324,7 @@ const AFRICA_PROGRAM: Program = {
         {
           slug: 'africa-2-5b',
           title: 'Africa adds a billion people by 2050',
-          bluf: "Africa's population reaches ~2.5 billion by 2050 — a 63% increase on 2024, lifting Africa's share of humanity from 10% in 1960 to 28% in 2050.",
+          bluf: 'In 1960, one in ten humans was African. By 2050 it will be roughly one in three. Africa adds about a billion people in the next 25 years — and most of them will be young.',
           body:
             'UNECA, drawing on UN WPP 2024, gives the headline trajectory verbatim: +950 M to 2.5 B by 2050, ~3.85 B by 2100. ISS African Futures (IFs v8.55, March 2026) corroborates and adds that **five of the eight countries driving more than half of global population growth to 2050 are African**: DRC, Egypt, Ethiopia, Nigeria, Tanzania. ' +
             "The working-age cohort nearly doubles from 883 M (2024) to 1.6 B (2050) — about 25% of the global working-age pool. ISS projects Africa's 15-64 cohort exceeds India's *and* China's combined by 2040 under the IFs current-path scenario. " +
