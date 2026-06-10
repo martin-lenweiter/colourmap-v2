@@ -15,6 +15,8 @@ export type ChangelogEntry = {
   note: string;
 };
 
+export type Timeframe = 'now' | 'this-decade' | 'long-arc';
+
 export type Page = {
   slug: string;
   title: string;
@@ -26,9 +28,68 @@ export type Page = {
   feedsInto: string[];
   related: string[];
   entities: string[];
+  tags?: string[];
+  timeframe?: Timeframe;
   sources: Source[];
   changelog?: ChangelogEntry[];
 };
+
+export const ALL_TAGS = [
+  'chokepoint',
+  'tankers',
+  'containers',
+  'iran-axis',
+  'cma-cgm',
+  'war-risk',
+  'decarbonisation',
+  'ai',
+  'media',
+  'france',
+  'energy-transition',
+  'climate',
+  'alliances',
+  'trumpism',
+  'biodiversity',
+] as const;
+
+export type Tag = (typeof ALL_TAGS)[number];
+
+export function pagesByTag(
+  tag: string,
+): { categorySlug: string; programSlug: string; chapterSlug: string; page: Page }[] {
+  const out: { categorySlug: string; programSlug: string; chapterSlug: string; page: Page }[] = [];
+  for (const category of GEOPOLITICS_CATEGORIES) {
+    for (const program of category.programs) {
+      for (const chapter of program.chapters) {
+        for (const page of chapter.pages) {
+          if (page.tags?.includes(tag)) {
+            out.push({
+              categorySlug: category.slug,
+              programSlug: program.slug,
+              chapterSlug: chapter.slug,
+              page,
+            });
+          }
+        }
+      }
+    }
+  }
+  return out;
+}
+
+export function allUsedTags(): string[] {
+  const set = new Set<string>();
+  for (const category of GEOPOLITICS_CATEGORIES) {
+    for (const program of category.programs) {
+      for (const chapter of program.chapters) {
+        for (const page of chapter.pages) {
+          for (const tag of page.tags ?? []) set.add(tag);
+        }
+      }
+    }
+  }
+  return Array.from(set).sort();
+}
 
 export const CONFIDENCE_DEFINITION: Record<Confidence, string> = {
   HIGH: 'Multiple independent primary sources corroborate this claim. Adversarial verification ≥2/3.',
@@ -45,6 +106,7 @@ export function daysSince(iso: string, now: Date = new Date()): number {
 export type Chapter = {
   slug: string;
   title: string;
+  number: number;
   pages: Page[];
 };
 
@@ -56,12 +118,33 @@ export type Program = {
   chapters: Chapter[];
 };
 
+export type Tier = 'now' | 'decade' | 'horizon';
+
 export type Category = {
   slug: string;
   title: string;
   blurb: string;
+  tier: Tier;
   programs: Program[];
 };
+
+export const TIER_DEFINITION: Record<Tier, { title: string; oneLiner: string }> = {
+  now: {
+    title: 'Now',
+    oneLiner: 'The breaking world. Last 30 days, live status, evolving threads.',
+  },
+  decade: {
+    title: 'Decade',
+    oneLiner: 'The world we are in. 2024-2034. Structural forces, named players, current dynamics.',
+  },
+  horizon: {
+    title: 'Horizon',
+    oneLiner:
+      'The world we are walking into. 2030-2050. Long-arc forecasts, turning points, calibrated bets.',
+  },
+};
+
+export const TIER_ORDER: Tier[] = ['now', 'decade', 'horizon'];
 
 const SOURCE_EIA: Source = {
   ref: 1,
@@ -151,6 +234,7 @@ const HORMUZ_BRIEFING: Program = {
     {
       slug: 'what-is-hormuz',
       title: 'What is the Strait of Hormuz?',
+      number: 1,
       pages: [
         {
           slug: 'hormuz-geography',
@@ -242,6 +326,7 @@ const HORMUZ_BRIEFING: Program = {
     {
       slug: 'escalation-2026',
       title: 'How the 2025-2026 escalation unfolded',
+      number: 2,
       pages: [
         {
           slug: 'twelve-day-war',
@@ -275,6 +360,8 @@ const HORMUZ_BRIEFING: Program = {
           feedsInto: ['hormuz-closure', 'oil-spike'],
           related: ['war-risk-repricing'],
           entities: ['us-government', 'israel', 'iran', 'khamenei', 'irgc-navy'],
+          tags: ['iran-axis', 'chokepoint', 'alliances'],
+          timeframe: 'now',
           sources: [SOURCE_BELFER, SOURCE_HOWDEN],
           changelog: [
             {
@@ -341,6 +428,7 @@ const HORMUZ_BRIEFING: Program = {
     {
       slug: 'alignment',
       title: 'Who is backing whom',
+      number: 3,
       pages: [
         {
           slug: 'axis-of-resistance-collapse',
@@ -421,6 +509,7 @@ const SHIPPING_BIG_NINE: Program = {
     {
       slug: 'the-big-9',
       title: 'The Big 9 carriers, ranked',
+      number: 1,
       pages: [
         {
           slug: 'top-3',
@@ -480,6 +569,7 @@ const SHIPPING_BIG_NINE: Program = {
     {
       slug: 'cma-cgm-strategy',
       title: 'The CMA CGM Group',
+      number: 2,
       pages: [
         {
           slug: 'cma-cgm-strategy',
@@ -522,6 +612,7 @@ export const GEOPOLITICS_CATEGORIES: Category[] = [
   {
     slug: 'hormuz-crisis',
     title: 'Hormuz Crisis',
+    tier: 'now',
     blurb:
       "Iran, the US, Israel, and the Gulf — what they are doing to the world's most consequential strait.",
     programs: [HORMUZ_BRIEFING],
@@ -529,10 +620,63 @@ export const GEOPOLITICS_CATEGORIES: Category[] = [
   {
     slug: 'shipping-industry',
     title: 'Shipping Industry',
+    tier: 'decade',
     blurb: 'Carriers, alliances, lanes, money flows. The system that moves 80% of world trade.',
     programs: [SHIPPING_BIG_NINE],
   },
+  {
+    slug: 'alliances-reshuffle',
+    title: 'Alliances Reshuffle',
+    tier: 'decade',
+    blurb:
+      'NATO under strain, BRICS+ expansion, Russia–Iran 20-year pact, Trumpism. The old order fraying and the new blocs forming.',
+    programs: [
+      {
+        slug: 'alliances-reshuffle-program',
+        title: 'How the alliance map is changing',
+        blurb: 'Cited research landing — placeholder while the workflow runs.',
+        durationMinutes: 30,
+        chapters: [],
+      },
+    ],
+  },
+  {
+    slug: 'critical-materials',
+    title: 'Critical Materials Atlas',
+    tier: 'decade',
+    blurb:
+      'Copper, lithium, cobalt, coltan, rare earths, gallium, uranium. Who mines, who refines, who can shut the tap.',
+    programs: [
+      {
+        slug: 'critical-materials-atlas',
+        title: 'Critical materials, per-material',
+        blurb: 'Cited research landing — placeholder while the workflow runs.',
+        durationMinutes: 45,
+        chapters: [],
+      },
+    ],
+  },
+  {
+    slug: 'world-2050',
+    title: 'The World in 2050',
+    tier: 'horizon',
+    blurb:
+      'End of petroleum, AI, carbon turning points, demographics, the long arc. Calibrated bets and the data behind them.',
+    programs: [
+      {
+        slug: 'world-2050-program',
+        title: 'The World in 2050',
+        blurb: 'Cited research landing — placeholder while the workflow runs.',
+        durationMinutes: 60,
+        chapters: [],
+      },
+    ],
+  },
 ];
+
+export function categoriesByTier(tier: Tier): Category[] {
+  return GEOPOLITICS_CATEGORIES.filter((c) => c.tier === tier);
+}
 
 export function findPage(slug: string): Page | null {
   for (const category of GEOPOLITICS_CATEGORIES) {

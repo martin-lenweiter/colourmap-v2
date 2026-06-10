@@ -3,10 +3,12 @@
 import { useEffect, useMemo, useState } from 'react';
 
 import {
+  categoriesByTier,
   firstPageOf,
-  GEOPOLITICS_CATEGORIES,
   locatePage,
   type Page,
+  TIER_DEFINITION,
+  TIER_ORDER,
 } from '@/lib/geopolitics-content';
 import EducationModeSwitch from './EducationModeSwitch';
 import TrustBadge from './TrustBadge';
@@ -63,7 +65,7 @@ export default function GeopoliticsWorld({
       style={{
         minHeight: 'calc(100svh - 120px)',
         background:
-          'linear-gradient(180deg, rgba(236,220,188,0.74), rgba(206,184,145,0.34)), radial-gradient(circle at 20% 12%, rgba(36,52,82,0.12), transparent 36%)',
+          'linear-gradient(180deg, rgba(236,220,188,0.74), rgba(206,184,145,0.34)), radial-gradient(circle at 20% 12%, rgba(122,84,56,0.12), transparent 36%)',
         width: 'calc(100% + 48px)',
         marginInline: '-24px',
         padding: 'clamp(10px, 2vw, 22px) clamp(12px, 4vw, 28px)',
@@ -75,6 +77,7 @@ export default function GeopoliticsWorld({
         <PageReader
           page={located.page}
           chapterTitle={located.chapter.title}
+          chapterNumber={located.chapter.number}
           programTitle={located.program.title}
           categoryTitle={located.category.title}
           pageIndex={located.pageIndex}
@@ -114,7 +117,7 @@ function CategoryGrid({
         <h1
           style={{
             margin: '4px 0 8px',
-            color: '#1f2a3d',
+            color: '#2a1d0e',
             fontFamily: 'var(--font-serif)',
             fontSize: 'clamp(30px, 5vw, 48px)',
             letterSpacing: '0.01em',
@@ -169,104 +172,184 @@ function CategoryGrid({
         </div>
       </header>
 
-      <div
-        style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
-          gap: 16,
-        }}
-      >
-        {GEOPOLITICS_CATEGORIES.map((category) => (
-          <article
-            key={category.slug}
+      {TIER_ORDER.map((tier) => {
+        const categoriesInTier = categoriesByTier(tier);
+        if (categoriesInTier.length === 0) return null;
+        return (
+          <section
+            key={tier}
+            data-testid={`tier-${tier}`}
             style={{
-              border: '1px solid rgba(36,52,82,0.18)',
-              background: 'rgba(255,248,231,0.7)',
-              borderRadius: 14,
-              padding: '14px 18px',
-              display: 'grid',
-              gap: 12,
+              marginTop: 22,
+              borderTop: '1px solid rgba(122,84,56,0.22)',
+              paddingTop: 14,
             }}
           >
-            <header>
-              <p style={smallLabel}>category</p>
-              <h2
-                style={{
-                  margin: '4px 0 6px',
-                  color: '#1f2a3d',
-                  fontFamily: 'var(--font-serif)',
-                  fontSize: 22,
-                }}
-              >
-                {category.title}
-              </h2>
-              <p
-                style={{
-                  margin: 0,
-                  color: 'rgba(40,32,22,0.74)',
-                  fontFamily: 'var(--font-serif)',
-                  fontSize: 13,
-                  lineHeight: 1.45,
-                }}
-              >
-                {category.blurb}
-              </p>
-            </header>
-            {category.programs.map((program) => {
-              const first = firstPageOf(program.slug);
-              return (
-                <button
-                  key={program.slug}
-                  type="button"
-                  onClick={() => first && onOpen(first.slug)}
-                  data-testid={`open-program-${program.slug}`}
+            <header style={{ marginBottom: 10 }}>
+              <div style={{ display: 'flex', alignItems: 'baseline', gap: 10, flexWrap: 'wrap' }}>
+                <h2
                   style={{
-                    textAlign: 'left',
-                    border: '1px solid rgba(36,52,82,0.18)',
-                    borderRadius: 10,
-                    background: 'rgba(255,248,231,0.45)',
-                    cursor: first ? 'pointer' : 'not-allowed',
-                    padding: '10px 12px',
-                    display: 'grid',
-                    gap: 4,
+                    margin: 0,
+                    color: '#7a4b18',
                     fontFamily: 'var(--font-serif)',
+                    fontSize: 22,
+                    letterSpacing: '0.02em',
+                    fontWeight: 800,
+                    textTransform: 'uppercase',
                   }}
                 >
-                  <span
-                    style={{
-                      color: '#1f2a3d',
-                      fontWeight: 800,
-                      letterSpacing: '0.02em',
-                    }}
-                  >
-                    {program.title}
-                  </span>
-                  <span
-                    style={{
-                      color: 'rgba(40,32,22,0.72)',
-                      fontSize: 12,
-                      lineHeight: 1.45,
-                    }}
-                  >
-                    {program.blurb}
-                  </span>
-                  <span
-                    style={{
-                      color: 'rgba(36,52,82,0.66)',
-                      fontSize: 11,
-                      letterSpacing: '0.08em',
-                      textTransform: 'uppercase',
-                    }}
-                  >
-                    {program.durationMinutes} min · {program.chapters.length} chapter
-                    {program.chapters.length === 1 ? '' : 's'}
-                  </span>
-                </button>
-              );
-            })}
-          </article>
-        ))}
-      </div>
+                  {TIER_DEFINITION[tier].title}
+                </h2>
+                <span
+                  style={{
+                    color: 'rgba(40,32,22,0.74)',
+                    fontFamily: 'var(--font-serif)',
+                    fontSize: 13,
+                    lineHeight: 1.4,
+                  }}
+                >
+                  {TIER_DEFINITION[tier].oneLiner}
+                </span>
+              </div>
+            </header>
+            <div
+              style={{
+                display: 'grid',
+                gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
+                gap: 14,
+              }}
+            >
+              {categoriesInTier.map((category) => (
+                <article
+                  key={category.slug}
+                  style={{
+                    border: '1px solid rgba(122,84,56,0.22)',
+                    background: 'rgba(255,248,231,0.7)',
+                    borderRadius: 14,
+                    padding: '14px 18px',
+                    display: 'grid',
+                    gap: 12,
+                  }}
+                >
+                  <header>
+                    <p style={smallLabel}>category</p>
+                    <h2
+                      style={{
+                        margin: '4px 0 6px',
+                        color: '#2a1d0e',
+                        fontFamily: 'var(--font-serif)',
+                        fontSize: 22,
+                      }}
+                    >
+                      {category.title}
+                    </h2>
+                    <p
+                      style={{
+                        margin: 0,
+                        color: 'rgba(40,32,22,0.74)',
+                        fontFamily: 'var(--font-serif)',
+                        fontSize: 13,
+                        lineHeight: 1.45,
+                      }}
+                    >
+                      {category.blurb}
+                    </p>
+                  </header>
+                  {category.programs.map((program) => {
+                    const first = firstPageOf(program.slug);
+                    return (
+                      <button
+                        key={program.slug}
+                        type="button"
+                        onClick={() => first && onOpen(first.slug)}
+                        data-testid={`open-program-${program.slug}`}
+                        style={{
+                          textAlign: 'left',
+                          border: '1px solid rgba(122,84,56,0.22)',
+                          borderRadius: 10,
+                          background: 'rgba(255,248,231,0.45)',
+                          cursor: first ? 'pointer' : 'not-allowed',
+                          padding: '10px 12px',
+                          display: 'grid',
+                          gap: 6,
+                          fontFamily: 'var(--font-serif)',
+                        }}
+                      >
+                        <span
+                          style={{
+                            color: '#2a1d0e',
+                            fontWeight: 800,
+                            letterSpacing: '0.02em',
+                          }}
+                        >
+                          {program.title}
+                        </span>
+                        <span
+                          style={{
+                            color: 'rgba(40,32,22,0.72)',
+                            fontSize: 12,
+                            lineHeight: 1.45,
+                          }}
+                        >
+                          {program.blurb}
+                        </span>
+                        <span
+                          style={{
+                            color: 'rgba(82,58,38,0.66)',
+                            fontSize: 11,
+                            letterSpacing: '0.08em',
+                            textTransform: 'uppercase',
+                          }}
+                        >
+                          {program.durationMinutes} min · {program.chapters.length} chapter
+                          {program.chapters.length === 1 ? '' : 's'}
+                        </span>
+                        <ol
+                          style={{
+                            margin: '6px 0 0',
+                            padding: '6px 0 0 0',
+                            borderTop: '1px solid rgba(122,84,56,0.16)',
+                            display: 'grid',
+                            gap: 3,
+                            listStyle: 'none',
+                          }}
+                        >
+                          {program.chapters.map((chapter) => (
+                            <li
+                              key={chapter.slug}
+                              style={{
+                                display: 'grid',
+                                gridTemplateColumns: '48px 1fr',
+                                gap: 8,
+                                fontFamily: 'var(--font-serif)',
+                                fontSize: 12,
+                                color: 'rgba(40,32,22,0.78)',
+                                lineHeight: 1.35,
+                              }}
+                            >
+                              <span
+                                style={{
+                                  color: '#7a4b18',
+                                  fontWeight: 800,
+                                  letterSpacing: '0.08em',
+                                  textTransform: 'uppercase',
+                                }}
+                              >
+                                Ch {chapter.number}
+                              </span>
+                              <span>{chapter.title}</span>
+                            </li>
+                          ))}
+                        </ol>
+                      </button>
+                    );
+                  })}
+                </article>
+              ))}
+            </div>
+          </section>
+        );
+      })}
     </section>
   );
 }
@@ -274,6 +357,7 @@ function CategoryGrid({
 function PageReader({
   page,
   chapterTitle,
+  chapterNumber,
   programTitle,
   categoryTitle,
   pageIndex,
@@ -285,6 +369,7 @@ function PageReader({
 }: {
   page: Page;
   chapterTitle: string;
+  chapterNumber: number;
   programTitle: string;
   categoryTitle: string;
   pageIndex: number;
@@ -301,7 +386,7 @@ function PageReader({
         maxWidth: 720,
         marginInline: 'auto',
         background: 'rgba(255,248,231,0.86)',
-        border: '1px solid rgba(36,52,82,0.22)',
+        border: '1px solid rgba(122,84,56,0.26)',
         borderRadius: 14,
         padding: 'clamp(16px, 3vw, 26px)',
         display: 'grid',
@@ -318,7 +403,7 @@ function PageReader({
             justifySelf: 'start',
             border: 0,
             background: 'transparent',
-            color: 'rgba(36,52,82,0.78)',
+            color: 'rgba(82,58,38,0.78)',
             cursor: 'pointer',
             fontFamily: 'var(--font-serif)',
             fontSize: 12,
@@ -329,21 +414,42 @@ function PageReader({
         >
           ← {categoryTitle} · {programTitle}
         </button>
-        <p style={smallLabel}>
-          chapter · {chapterTitle.toLowerCase()} · {pageIndex + 1} / {totalInChapter}
+        <p style={smallLabel} data-testid="chapter-crumb">
+          Chapter {chapterNumber} · {chapterTitle.toLowerCase()} · {pageIndex + 1} /{' '}
+          {totalInChapter}
         </p>
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, alignItems: 'center' }}>
           <TrustBadge
             confidence={page.confidence}
             lastVerified={page.lastVerified}
             sources={page.sources}
             changelog={page.changelog}
           />
+          {(page.tags ?? []).map((tag) => (
+            <span
+              key={tag}
+              data-testid={`page-tag-${tag}`}
+              style={{
+                border: '1px solid rgba(122,84,56,0.32)',
+                borderRadius: 999,
+                background: 'rgba(255,243,217,0.62)',
+                color: '#5a3d18',
+                fontFamily: 'var(--font-serif)',
+                fontSize: 11,
+                fontWeight: 800,
+                letterSpacing: '0.08em',
+                padding: '3px 9px',
+                textTransform: 'uppercase',
+              }}
+            >
+              #{tag}
+            </span>
+          ))}
         </div>
         <h1
           style={{
             margin: '4px 0 0',
-            color: '#1a2433',
+            color: '#1f1408',
             fontSize: 'clamp(22px, 3.5vw, 30px)',
             lineHeight: 1.2,
           }}
@@ -356,7 +462,7 @@ function PageReader({
         data-testid="page-bluf"
         style={{
           margin: 0,
-          color: '#1f2a3d',
+          color: '#2a1d0e',
           fontSize: 16,
           fontWeight: 700,
           lineHeight: 1.5,
@@ -432,7 +538,7 @@ function PageReader({
                   href={source.url}
                   target="_blank"
                   rel="noreferrer noopener"
-                  style={{ color: '#1f2a3d' }}
+                  style={{ color: '#2a1d0e' }}
                 >
                   {source.title}
                 </a>{' '}
@@ -470,10 +576,10 @@ function ChipRow({
               type="button"
               onClick={() => target && onNavigate(slug)}
               style={{
-                border: '1px solid rgba(36,52,82,0.32)',
+                border: '1px solid rgba(122,84,56,0.32)',
                 borderRadius: 999,
                 background: target ? 'rgba(255,248,231,0.6)' : 'rgba(255,248,231,0.28)',
-                color: '#1f2a3d',
+                color: '#2a1d0e',
                 cursor: target ? 'pointer' : 'not-allowed',
                 fontFamily: 'var(--font-serif)',
                 fontSize: 12,
@@ -492,7 +598,7 @@ function ChipRow({
 
 const smallLabel = {
   margin: 0,
-  color: 'rgba(36,52,82,0.66)',
+  color: 'rgba(82,58,38,0.66)',
   fontFamily: 'var(--font-serif)',
   fontSize: 11,
   letterSpacing: '0.18em',
@@ -500,9 +606,9 @@ const smallLabel = {
 };
 
 const hubButtonPrimary = {
-  border: '1px solid rgba(36,52,82,0.4)',
+  border: '1px solid rgba(122,84,56,0.42)',
   borderRadius: 999,
-  background: 'rgba(36,52,82,0.92)',
+  background: 'rgba(82,58,38,0.92)',
   color: '#ffe6aa',
   cursor: 'pointer',
   fontFamily: 'var(--font-serif)',
@@ -516,14 +622,14 @@ const hubButtonPrimary = {
 const hubButtonSecondary = {
   ...hubButtonPrimary,
   background: 'rgba(255,248,231,0.78)',
-  color: '#1f2a3d',
+  color: '#2a1d0e',
 };
 
 const navButton = {
-  border: '1px solid rgba(36,52,82,0.32)',
+  border: '1px solid rgba(122,84,56,0.32)',
   borderRadius: 999,
   background: 'rgba(255,248,231,0.7)',
-  color: '#1f2a3d',
+  color: '#2a1d0e',
   cursor: 'pointer',
   fontFamily: 'var(--font-serif)',
   fontSize: 12,
